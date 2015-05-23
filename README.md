@@ -4,6 +4,11 @@ zKillboard is a killboard created for EVE-Online, for use on zkillboard.com, but
 # WARNING WARNING
 This is the latest verison of zKillboard.com, which prefers NoSQL over MySQL. If you do not have experience with installing and maintaining a NoSQL database, specifically TokuMX v2.4, we do not recommend you try this at home unless you truly enjoy a challenge! There are some aspects of zKillboard.com that still utilize MySQL, but that is only because they haven't been integrated into NoSQL yet.
 
+## History and previous versions
+zKillboard.com came as the brainchild of Squizz Caphinator who wanted to improve upon [http://wiki.eve-id.net/EDK](Eve-Dev Killboard). Squizz decided to write a new killboard completely from scratch and began the zKillboard project. Karbowiak of eve-kill.net eventually joined into the project, contributed much code,, [created a repository on Github](https://github.com/EVE-KILL/zKillboard), and announced zkillboard as the new Beta killboard for eve-kill.net. zKillboard matured and gained a fanbase, and of course, haters. As time went on Squizz and Karbowiak had some differences and Squizz forked his code into [this repository](https://github.com/3zLabs/zKillboard) and made this new repository the primary code base for zkillboard.com. After about a year Squizz then began dabbling in NoSQL, as it seemed the perfect database for the type of data consumed by zKillboard. Two months of heavy coding and extreme database changes, the repository [zKillboard/zKillboard](https://github.com/zKillboard/zKillboard) was created to make the code public to the masses with the various NoSQL changes.
+
+Fun fact: zKillboard.com was originally called killwhore.com until it was discovered that the Eve Online forums censored the word whore.
+
 # WARNING
 This is BETA, which means it is a work in progress.  It lacks complete documentation and is currently not meant for use in production.
 
