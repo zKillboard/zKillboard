@@ -1,6 +1,9 @@
 # zKillboard
 zKillboard is a killboard created for EVE-Online, for use on zkillboard.com, but can also be used for single entities.
 
+### License and Copyright
+Licensing for all files in this repository can be found in in AGPL.md
+
 # WARNING WARNING
 This is the latest verison of zKillboard.com, which prefers NoSQL over MySQL. If you do not have experience with installing and maintaining a NoSQL database, specifically TokuMX v2.4, we do not recommend you try this at home unless you truly enjoy a challenge! There are some aspects of zKillboard.com that still utilize MySQL, but that is only because they haven't been integrated into NoSQL yet.
 
