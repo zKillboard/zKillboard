@@ -1,6 +1,6 @@
 <?php
 
-global $baseDir;
+global $baseDir, $mdb;
 
 $systemID = (int) $system;
 $relatedTime = (int) $time;
@@ -34,8 +34,10 @@ if ($redirect)
 	die();
 }
 
-$systemName = Info::getSystemName($systemID);
-$regionName = Info::getRegionName(Info::getRegionIDFromSystemID($systemID));
+$systemInfo = $mdb->findDoc("information", ['cacheTime' => 3600, 'type' => 'solarSystemID', 'id' => $systemID]);
+$systemName = $systemInfo["name"];
+$regionInfo = $mdb->findDoc("information", ['cacheTime' => 3600, 'type' => 'regionID', 'id' => $systemInfo["regionID"]]);
+$regionName = $regionInfo["name"];
 $unixTime = strtotime($relatedTime);
 $time = date("Y-m-d H:i", $unixTime);
 
