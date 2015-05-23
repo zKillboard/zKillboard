@@ -1,0 +1,17 @@
+{% set first = true %}
+{% set imageSize = 64 %}
+{% set resizeImage = 40 %}
+<div class="pull-left col-lg-4">
+  <center><h5>{{ fieldset.title }}</h5></center>
+  <table class="table table-condensed topBoxes" style="padding: 0px; margin: 0px; width: 100%;">
+    <tr><th style="width: 42px;">&nbsp;</th><th>Character</th><th style="width: 100px; text-align: right;">Kills</th></tr>
+  {% for field in fieldset.data %}
+    <tr>
+        <td>{% include 'components/image_char.html' %}</td>
+        <td>{% include 'components/text_char.html' %}<br/>{{ field.shipName }}</td>
+        <td style="text-align: right;">{{ field.kills|number_format(0) }}</td>
+	<td>{{ field.title }}</td>
+    </tr>
+  {% endfor %}
+</table>
+</div>

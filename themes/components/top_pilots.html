@@ -1,0 +1,11 @@
+<table class="table table-condensed table-striped">
+<caption><h5>Top Pilots</h5></caption>
+<tr><th>Pilot</th><th>Kills</th></tr>
+{% for pilot in topPilots %}
+    <tr><td>
+        <a href="/kill/{{ pilot.characterID}}/">{{ pilot.characterName }}</a>
+    </td><td style="text-align: right">
+    {{ pilot.kills|number_format(0) }}
+    </td></tr>
+{% endfor %}
+</table>

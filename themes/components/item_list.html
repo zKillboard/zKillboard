@@ -1,0 +1,51 @@
+<h3>Item(s) <small>Dropped / Destroyed</small></h3>
+<table class="table table-condensed item_list">
+	<thead>
+	<tr class="titles">
+		<th class="hidden-xs">&nbsp;</th>
+		<th>Item Type</th>
+		<th><div align="right">Quantity</div></th>
+		<th><div align="right">Price (ISK)</div></th>
+	</tr>
+	</thead>
+	<tbody>
+	{% set items = extra.items %}
+	{% for flag, flagName in flags %}
+		{% include 'components/flag_list.html' %}
+	{% endfor %}
+	<tr>
+		{% if killdata.victim.characterID >= 2100000000 and killdata.victim.characterID <= 2999999999 %}
+		<th colspan="6"><h5>Dropsuit</h5></th>
+		{% else %}
+		<th colspan="6"><h5>Ship</h5></th>
+		{% endif %}
+	</tr>
+	<tr>
+	{% set imageSize = 32 %}
+	{% set field = killdata.victim %}
+		<td class="icons hidden-xs"><div align="center">{% include 'components/image_ship.html' %}</div></td>
+		<td><a href="/item/{{killdata.victim.shipTypeID}}/">{{killdata.victim.shipName}}</a></td>
+		<td><div align="right" class="qty">1</div></td>
+		<td class="price"><div align="right">{{ killdata.victim.shipPrice|number_format(2, '.', ',') }}</div></td>
+	</tr>
+	<tr class="item_dropped_row hidden-xs">
+		<td colspan="2"><h5>Total Dropped:</h5></td>
+		<td colspan="4" style="text-align: right;"><div class="pull-right" style="width: 100%;"><h5 class="item_dropped" rel="tooltip" title="&#36;{{ extra.droppedprice.usd|number_format(2, '.', ',') }} / {{ extra.droppedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.droppedprice.gbp|number_format(2, '.', ',') }}">{{ extra.droppedisk|number_format(2, '.', ',')}} ISK</h5></div></td>
+	</tr>
+	<tr class="hidden-xs">
+		<td colspan="2"><h5>Total Destroyed:</h5></td>
+		<td colspan="4" style="text-align: right;"><div class="pull-right" style="width: 100%;"><h5 class="item_destroyed" rel="tooltip" title="&#36;{{ extra.destroyedprice.usd|number_format(2, '.', ',') }} / {{ extra.destroyedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.destroyedprice.gbp|number_format(2, '.', ',') }}">{{ extra.lostisk|number_format(2, '.', ',')}} ISK</h5></div></td>
+	</tr>
+	{% if extra.fittedisk > 0 %}
+	<tr class="hidden-xs">
+		<td colspan="2"><h5>Fitted:</h5></td>
+		<td colspan="4" style="text-align: right;"><div class="pull-right" style="width: 100%;"><h5 rel="tooltip" title="&#36;{{ extra.fittedprice.usd|number_format(2, '.', ',') }} / {{ extra.fittedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.fittedprice.gbp|number_format(2, '.', ',') }}">{{ extra.fittedisk|number_format(2, '.', ',')}} ISK</h5></div></td>
+	</tr>
+	{% endif %}
+	<tr class="hidden-xs">
+		<td colspan="2"><h5>Grand Total:</h5></td>
+		<td colspan="4" style="text-align: right;" class="totalprice"><div class="pull-right" style="width: 100%;"><h5 rel="tooltip" title="&#36;{{ extra.totalprice.usd|number_format(2, '.', ',') }} / {{ extra.totalprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.totalprice.gbp|number_format(2, '.', ',') }}">{{ killdata.info.zkb.totalValue|number_format(2, '.', ',')}} ISK</h5></div></td>
+	</tr>
+	</tbody>
+</table>
+

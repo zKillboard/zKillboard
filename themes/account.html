@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% set pageTitle = 'Account' %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+	<h2>My Account</h2>
+	{% if message %}
+		<div class="alert alert-success" data-dismiss="alert"><button type="button" class="close" data-dismiss="alert">&times;</button>{{ message }}</div>
+	{% endif %}
+
+	<div class="navbar navbar-default">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-sub">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+		</div>
+		<div class="collapse navbar-collapse nav-sub">
+			<ul class="nav navbar-nav">
+				<li class="{{ isActive('me', key) }}"><a href="/account/me/">Me</a></li>
+				<li class="{{ isActive('changepassword', key) }}"><a href="/account/changepassword/">Change Password</a></li>
+				<li class="{{ isActive('changeemail', key) }}"><a href="/account/changeemail/">Change Email</a></li>
+				<li class="{{ isActive('api', key) }}"><a href="/account/api/">API</a></li>
+				<li class="{{ isActive('sitesettings', key) }}"><a href="/account/sitesettings/">Site Settings</a></li>
+				<li class="{{ isActive('tracker', key) }}"><a href="/account/tracker/">Tracker</a></li>
+				{% if adFreeMonthCost > 0 %}
+				<li class="{{ isActive('payments', key) }}"><a href="/account/payments/">Payments</a></li>
+				{% endif %}
+				<li class="{{ isActive('Domains', key) }}"><a href="/account/domains/">Domains</a></li>
+				<li class="{{ isActive('sessions', key) }}"><a href="/account/sessions/">Active Sessions</a></li>
+			</ul>
+		</div>
+	</div>
+
+	{% if key == 'me' %}
+		{% include 'account/me.html' %}
+	{% elseif key == 'changepassword' %}
+		{% include 'account/changepassword.html' %}
+	{% elseif key == 'changeemail' %}
+		{% include 'account/changeemail.html' %}
+	{% elseif key == 'api' %}
+		{% include 'account/api.html' %}
+	{% elseif key == 'sitesettings' %}
+		{% include 'account/sitesettings.html' %}
+	{% elseif key == 'tracker' %}
+		{% include 'account/tracker.html' %}
+	{% elseif key == 'subdomains' and reqid %}
+		{% include 'account/subdomain_management.html' %}
+	{% elseif key == 'subdomains' %}
+       		{% include 'account/subdomains.html' %}
+	{% elseif key == 'sessions' %}
+		{% include 'account/sessions.html' %}
+	{% elseif key == 'payments' %}
+		{% include 'account/payments.html' %}
+	{% elseif key == 'campaigns' %}
+		{% include 'account/campaigns.html' %}
+	{% elseif key == 'domains' %}
+		{% include 'account/domains.html' %}
+	{% endif %}
+{% endblock %}
+{% block script %}
+{% endblock %}

@@ -1,0 +1,107 @@
+[[Category:ZKillboard]][[Category:Third Party APIs]]
+
+== API ==
+The zKillboard API is for developers and/or enthusiasts who wants to integrate zKB into their website and/or application.
+
+== Rules ==
+* Do not hammer the server with API requests.
+* Follow the cacheTime indicated in the expires headers, or the cachedUntil value if you are requesting XML
+* If you must do several requests in a row, place space them out as much as possible.
+* Please send ''Accept-Encoding: gzip'' as header, to help save bandwidth.
+* Please send ''User-Agent: <something>'' as a header. Replace ''<something>'' with your name, email, website etc. Example: User-Agent: https://zkillboard.com/ Maintainer: Karbowiak Mail: karbowiak@gmail.com
+
+== Advice ==
+* If you are hitting the API limit, perhaps you should condense your requests.  E.G., instead of requesting one character at a time, request multiple characters.
+* Be reasonable with your requests.  Most entities don't have new kills every single hour, keep this in mind while programming your utility.
+* When developing a tool, try caching the requests locally.  This will help ensure you don't hit API limits during testing and also ensures you are testing against the same set of data.
+
+== Extra Info (Read before you start fetching) ==
+* Look at the X-Bin-Request-Count header and X-Bin-Max-Requests header for how many requests you've made, and how many you can make pr. hour.
+* You can do any amount of requests pr. second that you want.
+* All IDs used with the API are CCP IDs (Except killmail IDs, which can be internally set, but they are denoted with a - infront (negative numbers))
+* If you get an error 403, look at the ''Retry-After'' header.
+* The API will maximum deliver of 200 killmails.
+* If the ''/limit/'' modifier is used, then ''/page/'' is unavailable.
+* startTime and endTime is datetime timestamps, in the format ''YmdHi''.. Example ''2012-11-25 19:00'' is written as ''201211251900''
+* ''/w-space/'' and ''/solo/'' can be combined with ''/kills/'' and ''/losses/''
+* To get combined ''/kills/'' and ''/losses/'', don't pass either ''/kills/'' or ''/losses/''
+* Up to 10 IDs can be fetched at the same time, by seperating them with a , (Comma)
+* pastSeconds returns only kills that have happened in the past x seconds.
+* pastSeconds can maximum go up to 7 days (604800 seconds)
+* Default return is JSON, XML is available with ''/xml/'' parameter.
+* Remember to finish with a / (Forward slash)
+* All modifiers can be combined in any order
+* If you do not paass /killID/ then you must pass at least two of the following modifiers. ''/w-space/'', ''/solo/'' or any of the ''/xID/'' ones. (characterID, allianceID, factionID etc.)
+* Negative killIDs denote manually posted killmails.
+* JSONP is available
+* The API has CORS set.
+* Page requests over 10 are only allowed for characterID, corporationID and allianceID
+
+== Defaults ==
+* Default sort is desc (latest to oldest)
+* Default page is 1
+* Default format is JSON
+
+== URL Info ==
+* ''#'' is a number
+* ''YmdHi'' is a timestamp in the following format: ''201201012333'' (2012-01-01 23:33)
+* ''Y'' is a year in the following format: ''2012''
+* ''m'' is a month in the following format: ''01''
+* ''w'' is a week in the following format: ''01''
+* ''s'' is seconds
+
+== Page / Time / Limit modifiers ==
+* /limit/#/
+* /page/#/
+* /startTime/YmdHi/
+* /endTime/YmdHi/
+* /year/Y/
+* /month/m/
+* /week/w/
+* /beforeKillID/#/
+* /afterKillID/#/
+* /pastSeconds/s/
+* /killID/#/
+
+== Fetch Type modifiers ==
+* /kills/
+* /losses/
+* /w-space/
+* /solo/
+
+== Order modifiers ==
+* /orderDirection/asc/ (Oldest to latest)
+* /orderDirection/desc/ (Latest to oldest)
+
+== Fetch modifiers ==
+* /characterID/#/
+* /corporationID/#/
+* /allianceID/#/
+* /factionID/#/
+* /shipTypeID/#/
+* /groupID/#/
+* /solarSystemID/#/
+* /regionID/#/
+
+== Information modifiers ==
+* /no-items/
+* /no-attackers/
+* /api-only/
+
+== Format modifiers ==
+* /xml/
+
+== Examples ==
+* https://zkillboard.com/api/kills/w-space/
+* https://zkillboard.com/api/kills/w-space/xml/
+* https://zkillboard.com/api/losses/solo/
+* https://zkillboard.com/api/losses/solo/xml/
+* https://zkillboard.com/api/kills/characterID/268946627/
+* https://zkillboard.com/api/kills/characterID/268946627,1633218082/
+* https://zkillboard.com/api/kills/characterID/268946627/xml/
+* https://zkillboard.com/api/solo/kills/characterID/268946627/
+* https://zkillboard.com/api/w-space/corporationID/98076299/
+* https://zkillboard.com/api/w-space/corporationID/98076299/page/2/
+* https://zkillboard.com/api/kills/shipID/644,638/orderDirection/asc/
+* https://zkillboard.com/api/kills/regionID/10000002/
+

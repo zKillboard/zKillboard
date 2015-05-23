@@ -1,0 +1,98 @@
+@media (min-width: 768px) {
+	body {
+		background-color: #060606;
+		background-image: url("/themes/img/bg_cyborg_blueish.jpg");
+		-webkit-background-size: cover;
+		-moz-background-size: cover;
+		-o-background-size: cover;
+		background-size: cover;
+		background-attachment: fixed;
+	}
+}
+
+.nobackground {
+	background: #060606;
+	background-color: rgba(6,6,6,0.95);
+	box-shadow: 0 0 5px 5px rgba(6,6,6,0.95);
+	opacity: 0.95;
+}
+
+.table tbody tr.error td
+{
+  background-color: #2F0202;
+}
+
+.table tbody tr.winwin td
+{
+  background-color: #001600;
+}
+
+select, textarea, input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], input[type="date"], input[type="month"], input[type="time"], input[type="week"], input[type="number"], input[type="email"], input[type="url"], input[type="search"], input[type="tel"], input[type="color"], .uneditable-input
+{
+color: black;
+ }
+
+.item_dropped_row {
+	background-color: #001600;
+}
+.item_dropped {
+	color: white;
+}
+.item_dropped_qty {
+	color: white;
+}
+.item_destroyed, .red {
+	color: red;
+}
+.green {
+	color: green;
+}
+
+.no-stripe {
+	background-color: black;
+}
+
+.table-no-hover tbody tr:hover td, .table tbody tr:hover th {
+	background-color: transparent;
+}
+
+.alert-danger {
+	background-color: #800000;
+}
+
+table, .table {
+	color: #888;
+}
+
+table a, .table a {
+	color: #2a9fd6;
+	text-decoration: none;
+}
+
+tr.heading {
+	background-color: #000;
+}
+
+.nav .caret, .nav a:hover .caret {
+	border-top-color: #888;
+	border-bottom-color: #888;
+}
+
+input.datepicker {
+	cursor: pointer !important;
+	outline: none;
+	color: #FFF; 
+	width: 70px;
+	background-color: #222;
+	border: 1px solid #282828;	
+	margin-right: 10px;
+	margin-top: 0px !important;
+	text-align: center;
+}
+
+pre {
+	background-color: #000;
+	font-weight: bold;
+	color: #6E6E6E;
+	border-color: #333;
+}

@@ -1,0 +1,14 @@
+<h3>Change Email</h3>
+<form class="well form-horizontal" name="updatepassword" method="post" action="/account/changeemail/">
+	<div class="form-group">
+        <label for="email" class="col-lg-2 control-label">Email</label>
+        <div class="col-lg-3">
+			<input id="email" name="email" type="email" required placeholder="{{ data.userInfo.email }}" class="form-control">
+        </div>
+    </div>
+	<div class="form-group">
+        <div class="col-lg-3 col-lg-offset-2">
+			 <input type="submit" value="Change Email" class="btn btn-primary" />
+        </div>
+    </div>
+</form>

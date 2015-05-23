@@ -1,0 +1,26 @@
+<table class="table table-condensed">
+	<tr>
+		<th style="width: 135px;">Aggressor</th>
+		<th style="text-align: right; width: 30px;">Kills</th>
+		<th style="text-align: right; width: 30px;">ISK</th>
+		<th style="width: 10px;">&nbsp;</th>
+		<th style="text-align: right; width: 30px;">Kills</th>
+		<th style="text-align: right; width: 30px;">ISK</th>
+		<th>Defender</th>
+	</tr>
+	{% for war in wars %}
+	<tr>
+		<td>{{ shortString(war.aggressor.name, 30) }}</td>
+		{% set color = (war.aggressor.shipsKilled >= war.defender.shipsKilled) ? "green" : "red" %}
+		<td class="{{ color }}" style="text-align: right">{{ shortNum(war.aggressor.shipsKilled) }}</td>
+		{% set color = (war.aggressor.iskKilled >= war.defender.iskKilled) ? "green" : "red" %}
+		<td class="{{ color }}" style="text-align: right">{{ shortNum(war.aggressor.iskKilled) }}</td>
+		<td><center><a href="/war/{{ war.id}}/"<i class="fa fa-info"></i></a></center></td>
+		{% set color = (war.aggressor.shipsKilled >= war.defender.shipsKilled) ? "red" : "green" %}
+		<td style="text-align: right" class="{{ color }}">{{ shortNum(war.defender.shipsKilled) }}</td>
+		{% set color = (war.aggressor.iskKilled >= war.defender.iskKilled) ? "red" : "green" %}
+		<td style="text-align: right" class="{{ color }}">{{ shortNum(war.defender.iskKilled) }}</td>
+		<td>{{ shortString(war.defender.name, 30) }}</td>
+	</tr>
+	{% endfor %}
+</table>

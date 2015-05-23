@@ -1,0 +1,30 @@
+{% if entities %}
+<table class="table table-condensed table-striped">
+{% for type, entity in entities %}
+    {% for field in entity %}
+        <tr><td style="width: 32px;">
+        {% if type == "faction" %}{% include 'components/image_faction.html' %}</td><td>{% include 'components/text_faction.html' %}
+        {% elseif type == "alliance" %}{% include 'components/image_alli.html' %}</td><td>{% include 'components/text_alli.html' %}
+        {% elseif type == "corporation" %}{% include 'components/image_corp.html' %}</td><td>{% include 'components/text_corp.html' %}
+        {% elseif type == "character" %}{% include 'components/image_char.html' %}</td><td>{% include 'components/text_char.html' %}
+        {% elseif type == "ship" or type == "item"%}{% include 'components/image_ship.html' %}</td><td>{% include 'components/text_ship.html' %}
+        {% elseif type == "region" %}{% include 'components/image_region.html' %}</td><td><a href="/region/{{ field.regionID }}/">{{ field.regionName }}</a>
+        {% elseif type == "system" %}{% include 'components/image_system.html' %}</td><td><a href="/system/{{ field.solarSystemID }}/">{{ field.solarSystemName }}</a>
+      {% endif %}
+        </td>
+        <td style="text-align:right;">
+        <form name="deleteentity" method="post" action="/account/campaigns/">
+            <input id="deleteentityid" name="deleteentityid" type="hidden" value="{{ field.id }}">
+            <input id="deleteentitytype" name="deleteentitytype" type="hidden" value="{{ type }}">
+	    <input type="hidden" name="campaignID" value="{{ data.campainID }}"/>
+            <input type="submit" class="btn btn-danger btn-sm" value="Remove" onclick="return confirm('Are you sure you want to remove {{ field.name }}?');">
+        </form>
+    </td>
+        </tr>
+    {% endfor %}
+{% endfor %}
+</table>
+{% else %}
+<i>Nothing to list here yet...</i>
+{% endif %}
+

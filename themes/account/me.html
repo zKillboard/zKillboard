@@ -1,0 +1,23 @@
+<div class="row">
+	<div class="col-lg-6">
+		<h3>My information</h3>
+		<table class="table">
+			<tbody>
+				<tr><td>Username</td><td>{{ data.userInfo.username }}</td></tr>
+				<tr><td>eMail</td><td>{{ data.userInfo.email }}</td></tr>
+				<tr><td>Date Registered</td><td>{{ data.userInfo.dateCreated }}</td></tr>
+			</tbody>
+		</table>
+	</div>
+	<div class="col-lg-6">
+		<h3>My API characters</h3>
+		<table class="table table-striped">
+			<tbody>
+			{% for data in data.apiChars %}
+				<tr><td><a href="/character/{{ data.characterID }}/">{{ data.characterName }}</a></td></tr>
+			{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+

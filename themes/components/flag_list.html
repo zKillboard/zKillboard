@@ -1,0 +1,35 @@
+{% set imageSize = 32 %}
+{% set resizeImage = 24 %}
+{% set headerDisplayed = false %}
+{% for item in items %}
+	{% if item.flagName == flagName %}
+	{% if headerDisplayed == false %}
+	{% if killdata.victim.characterID >= 2100000000 and killdata.victim.characterID <= 2999999999 %}
+		<tr class="hidden-lg hidden-md hidden-sm">
+			<th colspan="5"><h5>Suit Fittings</h5></th>
+		</tr>
+		<tr class="hidden-xs">
+			<th colspan="6"><h5>Suit Fittings</h5></th>
+		</tr>
+	{% else %}
+		<tr class="hidden-lg hidden-md hidden-sm">
+			<th colspan="5"><h5>{{ flagName }}</h5></th>
+		</tr>
+		<tr class="hidden-xs">
+			<th colspan="6"><h5>{{ flagName }}</h5></th>
+		</tr>
+	{% endif %}
+	{% set headerDisplayed = true %}
+	{% endif %}
+	{% set droppedRow = item.quantityDropped > 0 ? 'item_dropped_row' : '' %}
+    {% set dropped = item.quantityDropped > 0 ? 'item_dropped' : '' %}
+    {% set destroyed = item.quantityDestroyed > 0 ? 'item_destroyed' : '' %}
+	<tr class="{{ droppedRow }}">
+		{% set field = item %}
+		<td class="icons hidden-xs"><div align="center">{% include 'components/image_item.html' %}</div></td>
+		<td class="{% if dropped %}{{ dropped }}{% else %}{{ destroyed }}{% endif %}">{% if item.inContainer == 1%}&mdash; {% endif %}<a href="/item/{{item.typeID}}/">{{ item.typeName }}{% if item.singleton == 2%} (Copy){% endif %}</a></td>
+		<td class="{% if dropped %}{{ dropped }}{% else %}{{ destroyed }}{% endif %}" style="text-align: right;">{% if item.quantityDropped %}{{ item.quantityDropped|number_format(0) }}{%else%}{{ item.quantityDestroyed|number_format(0) }}{% endif %}</td>
+		<td class="price" style="text-align: right;">{{ (item.singleton == 2 ? (item.price / 100) : item.price)|number_format(2) }}</td>
+</tr>
+	{% endif %}
+{% endfor %}

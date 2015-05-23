@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% set pageTitle = 'Register' %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+{% if type %}
+	<div class="alert alert-{{ type }}">
+	<p>{{ message }}</p>
+	</div>
+{% else %}
+<h2>Registration</h2>
+<div class="alert alert-info">Please remember to read our <a href="/information/legal/" target="_blank">TOS.</a> and <a href="/information/faq/" target="_blank">FAQ.</a></div>
+<div class="well">
+<form class="form-horizontal" name="registration" method="post" action="/register/">
+	<div class="form-group">
+		<label for="inputUsername" class="col-lg-2 control-label">Username</label>
+		<div class="col-lg-5">
+			<input id="inputUsername" name="username" type="text" autofocus="true" required placeholder="username" class="form-control">
+		</div>
+	</div>
+	<div class="form-group">
+		<label for="inputPassword" class="col-lg-2 control-label">Password</label>
+		<div class="col-lg-5">
+			<input id="inputPassword" name="password" type="password" required placeholder="password" class="form-control">
+		</div>
+	</div>
+	<div class="form-group">
+		<label for="inputPassword2" class="col-lg-2 control-label">Confirm password</label>
+		<div class="col-lg-5">
+			<input id="password2" name="password2" type="password" required placeholder="password confirmation" class="form-control">
+		</div>
+	</div>
+	<div class="form-group">
+		<label for="inputEmail" class="col-lg-2 control-label">Email</label>
+		<div class="col-lg-5">
+			<input id="email" name="email" type="email" required placeholder="email address" class="form-control">
+		</div>
+	</div>
+	<div class="form-group">
+		<div class="col-lg-offset-2 col-lg-5">
+			<input type="submit" class="btn btn-primary" value="Register">
+		</div>
+	</div>	
+</form>
+</div>
+{% endif %}
+{% endblock %}

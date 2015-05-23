@@ -1,0 +1,87 @@
+<h3>API Keys</h3>
+<table class="table table-striped table-condensed">
+    <thead>
+	<th>Label</th>
+        <th>keyID</th>
+        <th>vCode</th>
+        <th>Last Validated</th>
+		<th>Error</th>
+        <th>&nbsp;</th>
+    </thead>
+    <tbody>
+        {% for data in data.apiKeys %}
+		<tr>
+			<td>{{ data.label }}</td>
+			<td>{{ data.keyID }}</td>
+			<td>{{ shortString(data.vCode, 10) }}</td>
+			<td>{{ data.lastValidation }}</td>
+			<td>{% if data.errorCode > 0%}<font class="item_destroyed">{{ data.errorCode }}</font>{% else %}<em>None</em>{% endif %}</td>
+			<td style="text-align: right;">
+				<form name="deleteapi" method="post" action="/account/api/">
+					<input id="deletekeyid" name="deletekeyid" type="hidden" value="{{ data.keyID }}">
+					<input type="submit" class="btn btn-danger btn-sm" value="Remove" onclick="return confirm('Are you sure you want to remove this API key?');">
+				</form>
+			</td>
+	    </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Characters</h3>
+<table class="table table-striped table-condensed">
+	<thead>
+		<tr>
+	        <th>keyID</th>
+			<th>Character</th>
+			<th>Corporation</th>
+			<th>Key Type</th>
+			<th>Last Checked</th>
+			<th>Cached Until</th>
+			<th>Error</th>
+		</tr>
+	</thead>
+    <tbody>
+        {% for data in data.apiCharKeys %}
+		{% set field = data %}
+		<tr>
+			<td>{{ data.keyID }}</td>
+			<td>{% include 'components/text_char.html' %}</td>
+			<td>{% include 'components/text_corp.html' %}</td>
+			<td>{{ data.isDirector == 'T' ?  'Corporation' : 'Character' }}</td>
+			<td>{{ data.lastCheckedTime }}</td>
+			<td>{{ data.cachedUntilTime }}</td>
+			<td>{% if data.errorCode > 0%}<font class="item_destroyed">{{ data.errorCode }}</font>{% else %}<em>None</em>{% endif %}</td>
+		</tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Add API key</h3>
+<div class="well">
+	<form name="addapi" method="post" action="/account/api/" class="form-horizontal">
+		<p>To quickly create an API key, go to <a href="https://support.eveonline.com/api/Key/CreatePredefined/524544" target="_blank">https://support.eveonline.com/</a><br>(We only require KillLog, but feel free to tick off more.)</p>
+		<div class="form-group">
+			<label for="keyid" class="form-label col-lg-1">Key ID</label>
+			<div class="col-lg-3">
+				<input id="keyid" name="keyid" type="text" required placeholder="Key ID" class="form-control">
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="vcode" class="form-label col-lg-1">vCode</label>
+			<div class="col-lg-5">
+				<input id="vcode" name="vcode" type="text" required placeholder="vCode" class="form-control">
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="label" class="form-label col-lg-1">Label</label>
+			<div class="col-lg-3">
+				<input id="label" name="label" type="text" placeholder="Label" class="form-control">
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-lg-2 col-lg-offset-1">
+				<input type="submit" class="btn btn-primary" value="Add API">
+			</div>
+		</div>
+</form>
+</div>

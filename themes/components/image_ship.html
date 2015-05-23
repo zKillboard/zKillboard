@@ -1,0 +1,16 @@
+{% set actualSize = (resizeImage is defined) ? resizeImage : imageSize %}
+{% if field.shipTypeID == 0 %}
+	<img src="//{{ siteurl }}/themes/img/eve-question.png" height="{{actualSize}}" width="{{actualSize}}" class="eveimage img-rounded" alt=""/>
+{% else %}
+	{% if shipImageLinkOverride != 0 %}
+		{% set url = "/kill/" ~ shipImageLinkOverride ~ "/" %}
+		{% set title = "Detail for " ~ shipImageLinkOverride %}
+	{% else %}
+		{% set url = "/ship/" ~ field.shipTypeID ~ "/" %}
+		{% set title = field.shipName %}
+	{% endif %}
+	{% set source = ( actualSize >= 64 ? image_ship : image_item ) %}
+	<a href="{{ url }}" rel="tooltip" title="{{ title }}" class="{{ isPullLeft ? "pull-left " : "" }}">
+		<img src="{{ source }}{{ field.shipTypeID }}_{{imageSize}}.png" height="{{actualSize}}" width="{{actualSize}}" class="{{ isDelayed ? "delayed " : "" }}{{ isPullLeft ? "pull-left " : "" }}eveimage img-rounded" alt="{{field.shipName}}"/>
+	</a>
+{% endif %}

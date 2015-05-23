@@ -1,0 +1,87 @@
+{% set showImage = true %}
+{% set field = killdata.victim %}
+<div style="padding: 0px; width: 100%; margin: 0px;">
+<table class="table table-condensed" style="width: 100%; margin: 0px;">
+	<tr>
+		<td style="width: 66px; padding: 0px;">
+			{% set imageSize = 64 %}
+			{% set imageResize = 64 %}
+			{% include 'components/image_char.html' %}
+		</td>
+		<td style="width: 34px; padding: 0px;">
+			{% set imageSize = 32 %}
+			{% include 'components/image_corp.html' %}<br/>
+			{% if field.allianceID != 0 %}
+				{% include 'components/image_alli.html' %}
+			{% elseif field.factionID != 0 %}
+				{% include 'components/image_faction.html' %}
+			{% endif %}
+		</td>
+		<td>
+			{% set showImage = false %}
+			{% include 'components/text_char.html' %}<br/>
+			{% include 'components/text_corp.html' %}<br/>
+			{% if field.allianceID != 0 %}
+				{% include 'components/text_alli.html' %}<br/>
+			{% elseif field.factionID != 0 %}
+				{% include 'components/text_faction.html' %}
+			{% endif %}
+		</td>
+	</tr>
+</table>
+<table class="table table-condensed table-striped table-hover" style="width: 100%; padding: 0px; margin: 0px;">
+	{% if killdata.victim.factionName %}
+		<tr>
+			<th>Faction:</th>
+		<td>{% include 'components/text_faction.html' %}</td>
+		</tr>
+	{% endif %}
+	<tr>
+		<th>Ship:</th>
+		<td style="width: 100%">{% include 'components/text_ship.html' %} <small>( {% include 'components/text_group.html' %} )</small></td>
+	</tr>
+        {% if killdata.victim.related.killID %}
+		{% set shipImageLinkOverride = killdata.victim.related.killID %}
+		{% set field = killdata.victim.related %}
+	<tr>
+		<th>Related:</th>
+		<td>{% include 'components/text_ship.html' %}</td>
+	</tr>
+        {% endif %}
+	{% set field = killdata.info.system %}
+	<tr>
+		<th>System:</th>
+		<td>{% include 'components/text_system.html' %} <span>(<span style="color: {{ field.systemColorCode }}">{{ "%1.1f"|format(field.solarSystemSecurity) }}</span>)</span> / {% include 'components/text_region.html' %}</td>
+	</tr>
+	<tr>
+		<th>Time:</th>
+		<td class="info_kill_dttm">{{ killdata.info.dttm }}</td>
+	</tr>
+	<tr>
+		<th>Points:</th>
+		<td>{{ killdata.info.zkb.points | number_format(0) }}</td>
+	</tr>
+	<tr>
+		<th>Damage:</th>
+		<td>{{ killdata.info.damage|number_format(0) }}</td>
+	</tr>
+	<tr class="item_dropped_row" rel="tooltip" title="&#36;{{ extra.droppedprice.usd|number_format(2, '.', ',') }} / {{ extra.droppedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.droppedprice.gbp|number_format(2, '.', ',') }}">
+		<th>Dropped:</th>
+		<td class="item_dropped">{{ extra.droppedisk|number_format(2, '.', ',') }} ISK</td>
+	</tr>
+	<tr rel="tooltip" title="&#36;{{ extra.destroyedprice.usd|number_format(2, '.', ',') }} / {{ extra.destroyedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.destroyedprice.gbp|number_format(2, '.', ',') }}">
+		<th>Destroyed:</th>
+		<td class="item_destroyed">{{ extra.lostisk | number_format(2, '.', ',') }} ISK</td>
+	</tr>
+	{% if extra.fittedisk > 0 %}
+	<tr rel="tooltip" title="&#36;{{ extra.fittedprice.usd|number_format(2, '.', ',') }} / {{ extra.fittedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.fittedprice.gbp|number_format(2, '.', ',') }}">
+		<th>Fitted:</th>
+		<td class="item_fitted">{{ extra.fittedisk | number_format(2, '.', ',') }} ISK</td>
+	</tr>
+	{% endif %}
+	<tr rel="tooltip" title="&#36;{{ extra.totalprice.usd|number_format(2, '.', ',') }} / {{ extra.totalprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.totalprice.gbp|number_format(2, '.', ',') }}">
+		<th>Total:</th>
+		<td><strong class="item_dropped">{{ killdata.info.zkb.totalValue|number_format(2, '.', ',') }} ISK</strong></td>
+	</tr>
+</table>
+</div>

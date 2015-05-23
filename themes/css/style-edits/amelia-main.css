@@ -1,0 +1,12 @@
+.item_dropped_row {
+        background-color: black;
+}
+.item_dropped {
+        color: white;
+}
+.item_dropped_qty {
+        color: white;
+}
+.item_destroyed {
+        color: red;
+}

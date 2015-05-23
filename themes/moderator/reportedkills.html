@@ -1,0 +1,50 @@
+{% if actualURI|last == '/' %}
+    {% set pageBase = actualURI ~ 'page/' %}
+{% else %}
+	{% set pageBase = actualURI ~ '/page/' %}
+{% endif %}
+
+<ul class="pagination pull-right">
+	{% if page > 1 %}
+		<li><a href="{{ pageBase }}{{ page - 1 }}/" rel="nofollow prev">&laquo;</a></li>
+	{% endif %}
+
+	{% set startIndex = page - 3 %}
+	{% set endIndex = page + 3 %}
+
+	{% for pageIndex in startIndex..endIndex %}
+		{% if pageIndex > 0 %}
+			<li class="{{ isActive(pageIndex, page, 'active') }}"><a href="{{ pageBase }}{{pageIndex}}/" rel="nofollow">{{ pageIndex }}</a></li>
+		{% endif %}
+	{% endfor %}
+	<li><a href="{{ pageBase }}{{ page + 1 }}/" rel="nofollow next">&raquo;</a></li>
+</ul>
+
+<div class="span12">
+	<table class="table table-condensed table-hover">
+		<thead>
+			<tr>
+			<th class="span2"></th>
+			<th class="span7"></th>
+			<th class="span5"></th>
+			<th class="span1"></th>
+			<th class="span3"></th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for data in info %}
+			<tr onclick="window.location='/moderator/reportedkills/{{ data.id }}/'">
+			<td><strong>{{ data.name }}</strong></td>
+			<td><strong>{{ shortString(data.ticket, 60) }}</strong></td>
+			<td>
+				{% for tag in data.tags %}
+					<span class="label label-warning">{{ tag }}</span>
+				{% endfor %}
+			</td>
+			<td>{% if data.status %}<span class="label label-success pull-right">Open{% else %}<span class="label label-important pull-right">Closed{% endif %}</span></td>
+			<td><strong>{{ data.datePosted }}</strong></td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>

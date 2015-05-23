@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /api/*
+Disallow: */page/*
+Disallow: *related*
+Disallow: *stats*
+Disallow: *top*
+sitemap: https://zkillboard.com/sitemaps/sitemaps.xml

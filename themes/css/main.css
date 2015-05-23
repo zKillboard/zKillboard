@@ -1,0 +1,180 @@
+body, html {
+	height: 100%;
+}
+
+.centered { vertical-align:middle; text-align:center; }
+.centered img { display:block; margin:0 auto; }
+
+.eveimage { background-color: #222; max-width:100%; height:auto; overflow: hidden; font-size: 0.1px;}
+
+#back-top {
+	position: fixed;
+	bottom: 50px;
+	margin-left: -65px;
+}
+
+#back-top a {
+	width: 55px;
+	display: block;
+	text-align: center;
+	font: 11px/100% Arial, Helvetica, sans-serif;
+	text-transform: uppercase;
+	text-decoration: none;
+	color: #444;
+
+	/* transition */
+	-webkit-transition: 1s;
+	-moz-transition: 1s;
+	transition: 1s;
+}
+#back-top a:hover {
+	color: #999;
+}
+
+/* arrow icon (span tag) */
+#back-top span {
+	width: 55px;
+	height: 60px;
+	display: block;
+	margin-bottom: 7px;
+	background: url(/themes/img/up-arrow.png) no-repeat center center;
+
+	/* transition */
+	-webkit-transition: 1s;
+	-moz-transition: 1s;
+	transition: 1s;
+}
+
+.accordion-group {
+  margin-bottom: 0px;
+  border: 0px;
+  -webkit-border-radius: 0px;
+     -moz-border-radius: 0px;
+          border-radius: 0px;
+}
+.accordion-inner{
+    padding:0px 0px;
+    border-top:0px solid #e5e5e5;
+}
+
+#left-banner {
+position: fixed;
+top: 70px;
+left: 5px;
+z-index: 0;
+cursor: pointer;
+width: 160px;
+}
+
+#right-banner {
+position: fixed;
+top: 70px;
+right: 5px;
+z-index: 9500;
+cursor: pointer;
+width: 160px;
+}
+
+.facebook{
+	background: url("/themes/img/social/fb_1.png") no-repeat center center;
+}
+.twitter {
+	background: url("/themes/img/social/twitter_1.png") no-repeat center center;
+}
+.googleplus {
+	background: url("/themes/img/social/google_plus.png") no-repeat center center;
+}
+.reddit {
+	background: url("/themes/img/social/reddit.png") no-repeat center center;
+}
+
+.rank-table tr td, .rank-table tr th {
+	text-align: right;
+}
+
+.collapse {
+overflow: hidden !important;
+}
+
+.footer {
+	margin-top: 20px;
+	padding-top: 20px;
+}
+
+/* also hide the stuff from ladscape ipad */
+@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) {
+	.hidden-tablet {
+		display: none;
+	}
+}
+
+ul.autocomplete { width: 375px; }
+ul.autocomplete img { position: absolute; top: 4px; left: 4px; }
+ul.autocomplete a { position: relative; padding: 10px 2px 0px 40px; height: 40px; }
+ul.autocomplete span { position: absolute; top: 10px; right: 5px; }
+
+
+#addentity label { margin-right: 15px; }
+#addentity h3 { display: inline-block; }
+
+[rel=tooltip] + div.tooltip {
+	/* prevent hover loop when a tooltip is shown above its triggering element */
+	pointer-events: none;
+}
+
+/* mobile menu stuff */
+.mobileNav {
+	position: absolute;
+	left: -200px;
+	top: 0px;
+	width: 200px;
+	z-index: 99;
+	height: 100%;
+}
+
+.content {
+	position: relative;
+	left: 0;
+	top: 0;
+	right: 0px;
+}
+
+.content.opened {
+	left: 200px;
+}
+
+.mobileNav.opened {
+	left: 0px;
+}
+
+.content, .mobileNav {
+	-webkit-transition: all 0.2s ease-in-out;
+	-moz-transition: all 0.2s ease-in-out;
+	-o-transition: all 0.2s ease-in-out;
+	transition: all 0.2s ease-in-out;
+}
+
+.listPilots {
+	padding: 10px 0px 10px 0px;
+	margin: 10px 0px 10px 0px;
+	background: #111;
+	border: 1px solid #000;
+}
+
+.topimage img {
+	width: 100%;
+}
+
+@media screen and (min-width: 1024px) {
+	.topimage {
+		width: 100%;
+	}
+}
+
+@media only screen and (min-device-width: 320px) and (max-device-width: 480px) {
+	.dropdown-menu {
+		max-height: 200px;
+		overflow-y: auto;
+		overflow-x: hidden;
+	}
+}

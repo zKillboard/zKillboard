@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns#" lang="en" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		{% if description is not defined %}
+			{% set description =  siteurl ~ " is a killboard for the Massively Multiplayer Online Role Playing Game (MMORPG) EVE-Online." %}
+		{% endif %}
+		<meta name="description" content="{{ description }}">
+		<meta name="title" content="{{ pageTitle }} | {{ siteurl }}">
+		<meta name="keywords" content="eve-online, eve, ccp, ccp games, kills, kill, massively, multiplayer, online, role, playing, game, mmorpg, rank, isk, mmorpg, killboard, zkillboard">
+		<meta name="robots" content="index,follow">
+		<meta name="og:locale" content="en_US">
+		<meta name="og:type" content="website">
+		<meta name="og:site_name" content="{{ siteurl }}">
+		<meta name="fb:app_id" content="{{ fbAppID }}">
+		<meta name="twitter:site" content="@zKillboard">
+		<meta name="twitter:domain" content="{{ fullsiteurl }}">
+		<meta name="application-name" content="{{ siteurl }}"/>
+		<meta name="msapplication-TileColor" content="#000000"/>
+		<meta name="mobile-web-app-capable" content="yes">
+		<link rel="shortcut icon" sizes="16x16" href="//{{ siteurl }}/themes/favicon.ico" />
+		{% block opengraph %}
+			<meta name="twitter:title" content="{{ pageTitle }} | {{ siteurl }}">
+			<meta name="twitter:card" content="summary">
+			<meta name="twitter:description" content="{{ description }}">
+			<meta name="twitter:image" content="{{ fullsiteurl }}/themes/img/3D.png">
+			<meta name="og:title" content="{{ siteurl }} / {{ pageTitle }}">
+			<meta name="og:url" content="{{ fullsiteurl }}">
+			<meta name="og:description" content="{{ description }}">
+			<meta name="og:image" content="{{ fullsiteurl }}/themes/img/3D.png">
+		{% endblock %}
+
+		{% block robots %}
+		{% endblock %}
+
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<title>
+			{% block title %}
+				{{ siteurl }}
+			{% endblock %}
+		</title>
+
+		{% if canonical is not defined %}
+			{% set canonical = fullsiteurl ~ requesturi %}
+		{% endif %}
+
+		<link rel="canonical" href="{{ canonical }}">
+		<link rel="search" type="application/opensearchdescription+xml" href="//{{ siteurl }}/themes/xml/zkbsearch.xml" title="search">
+
+		{% if style == "cyborg" %}
+			{% set version = "3.1.1" %}
+		{% else %}
+			{% set version = "latest" %}
+		{% endif %}
+
+		{% if style == "default" %}
+			<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
+		{% else %}
+			<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/{{ version }}/{{ style }}/bootstrap.min.css">
+		{% endif %}
+
+		<link rel="stylesheet" href="//{{ siteurl }}/themes/css/style-edits/{{ style }}-main.css">
+		<link rel="stylesheet" href="//{{ siteurl }}/themes/css/datepicker.css">
+		<link rel="stylesheet" href="//{{ siteurl }}/themes/css/main.css">
+		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.min.css">
+
+		{% block style %}
+		{% endblock %}
+
+		{% if showAnalytics != false %}
+			{{ analytics|raw }}
+		{% endif %}
+
+		<style type="text/css">
+			.topBoxes td {
+			vertical-align: middle !important;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="content">
+
+			<!-- The navbar -->
+			<div class="container" style="mgin: 0px; padding: 0px;">
+				{% include "navigationbar.html" %}
+			</div>
+
+<!--
+					<center><div class="alert alert-danger" style="padding: 0px; margin: 0px; psition: relative; top: -15px; width:800px;"><center>Some big backend changes have been completed. Some things will still need to be tweaked (including stats).<br/>I'll finish more tomorrow! - Squizz</center></div></center>
+<br/><br/> -->
+
+
+			<div class="container nobackground">
+				<!-- Notification header -->
+				{% if getNotification() %}
+					<div class="alert" style="padding: 0px; margin: 0px; psition: relative; top: -15px;"><center>{{ getNotification()|raw }}</center></div>
+				{% endif %}
+
+				<!-- Account balance information -->
+				{% if accountBalance >= adFreeMonthCost and accountBalance > 0 %}
+					<div class="alert alert-success" style="font-weight: bold"><center><a href='/account/payments'>You have an account balance of {{ accountBalance|number_format(2) }} ISK.  Click here to do something with it!</a></center></div>
+				{% endif %}
+
+				<!-- Top ad -->
+				{% if showAds != false %}
+					<div class="centered visible-lg visible-md" id="adsensetop" style="margin-bottom: 5px;">
+						{{ topad|raw }}
+					</div>
+				{% endif %}
+
+				<!-- The text header -->
+				{% block header %}{% endblock %}
+				<!-- The actual site content-->
+				{% block content %}Default content{% endblock %}
+
+				<div class="clearfix"></div>
+
+				<!-- Bottom ad -->
+				{% if showAds != false %}
+					<br/><hr/><br/>
+					<div class="centered visible-lg visible-md" id="adsensebottom" style="margin-bottom: 5px;">
+						{{ bottomad|raw }}
+					</div>
+				{% endif %}
+
+				<!-- Footer -->
+				<div class="hidden-xs">{% include "footer.html" %}</div>
+			</div>
+
+			<!-- Modals -->
+			<div class="container">
+				{% block modal %}{% endblock %}
+			</div>
+		</div>
+
+		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.1.0/jquery.timeago.min.js"></script>
+		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min.js"></script>
+		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="//{{ siteurl }}/themes/js/bootstrap-datepicker.js"></script>
+		<script type="text/javascript" src="//{{ siteurl }}/themes/js/search.js"></script>
+		<script type="text/javascript" src="//{{ siteurl }}/themes/js/common.js?a=1"></script>
+		<script type="text/javascript" src="//{{ siteurl }}/themes/js/sclock1.js"></script>
+		{% if disqusLoad %}
+			<script type="text/javascript">
+				var disqus_shortname = '{{ disqusShortName }}';
+				(function () {
+				var s = document.createElement('script'); s.async = true;
+				s.type = 'text/javascript';
+				s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+				(document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+				}());
+			</script>
+		{% endif %}
+		{% if disqusSSO and disqusLoad %}
+			<script type="text/javascript">
+				{{ disqusSSO|raw }}
+			</script>
+		{% endif %}
+
+		<script type="text/javascript">
+			var datepicker = $('.datepicker').datepicker({
+				format: "mm/yyyy",
+				viewMode: 1,
+				minViewMode: 1,
+				autoclose: true
+			}).on("changeDate", function(ev){
+				console.log(ev);
+				date = new Date(ev.date);
+				var year = date.getFullYear();
+				var month = date.getMonth() +1;
+				location.href = '{{ actualURI }}' + 'year/' + year + '/month/' + month + '/';
+				console.log(month)
+			});
+		</script>
+
+		{% block script %}
+		{% endblock %}
+
+<div class="modal fade" id="iframed">
+        <div class="modal-dialog">
+                <div class="modal-content">
+                        <div class="modal-header">
+                                <h4 class="modal-title">&lt;iframe&gt; detected</h4>
+                        </div>
+                        <div class="modal-body">
+				<p>zKillboard has detected that it has been embedded in an iframe.  We're ok with this, however, your experience might not be that great.  <a href="{{ fullsiteurl }}{{ requesturi}}" target="_blank">Click here to view this embedded window properly</a>, or just click anywhere below this dialog to view the iframe.</p>
+                        </div>
+                </div>
+        </div>
+</div>
+	</body>
+</html>

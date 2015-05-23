@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% set pageTitle = "Last Hour" %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+{% set showImage = true %}
+
+<h4>Top Killers in the Last Hour as of {{ time }}</h4>
+{% set topLists = topKillers %}
+{% include 'components/top_list.html' %}
+
+<hr/>
+<h4>Top Losers in the Last Hour as of {{ time }}</h4>
+
+{% set topLists = topLosers %}
+{% include 'components/top_list.html' %}
+
+
+{% endblock %}

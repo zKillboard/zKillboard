@@ -1,0 +1,35 @@
+<table id="corpstats" class="table table-hover table-striped tablesorter" id="corpstats">
+	<thead>
+		<tr>
+			<th>Corporation</th>
+			<th>Ticker</th>
+			<th>Members</th>
+			<th style="text-align: right">CEO</th>
+			<th style="text-align: right">Kills</th>
+			<th style="text-align: right">ISK</th>
+			<th style="text-align: right">Points</th>
+			<th style="text-align: right">Losses</th>
+			<th style="text-align: right">ISK</th>
+			<th style="text-align: right">Points</th>
+			<th style="text-align: right">Effeciency</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for corp in corpStats %}
+		{% set field = corp %}
+		<tr>
+			<td>{% include 'components/text_corp.html' %}</td>
+			<td>[{{corp.ticker}}]</td>
+			<td style="text-align: right">{{ corp.members | number_format(0) }}</td>
+			<td style="text-align: right"><a href="/character/{{ corp.ceoID }}/">{{ corp.ceoName }}</a></td>
+			<td style="text-align: right">{{ corp.kills | number_format(0)}}</td>
+			<td style="text-align: right">{{ corp.killsIsk | number_format(0)}}</td>
+			<td style="text-align: right">{{ corp.killPoints | number_format(0) }}</td>
+			<td style="text-align: right">{{ corp.losses | number_format(0) }}</td>
+			<td style="text-align: right">{{ corp.lossesIsk | number_format(0) }}</td>
+			<td style="text-align: right">{{ corp.lossesPoints | number_format(0) }}</td>
+			<td style="text-align: right">{{ corp.effeciency | number_format(0) }}%</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>

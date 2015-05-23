@@ -1,0 +1,12 @@
+{% if field.weaponTypeID != 0 %}
+    {% set typeID = field.weaponTypeID %}
+    {% set typeName = field.weaponTypeName %}
+{% elseif field.typeID != 0 %}
+    {% set typeID = field.typeID %}
+    {% set typeName = field.typeName %}
+{% endif %}
+{% if showImage %}
+        {% set imageSize = 32 %}
+        {% include 'components/image_item.html' %}
+{% endif %}
+<a href="/item/{{typeID}}/">{{ shortString(typeName, 30) }}</a>

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% set pageTitle = 'Sitemap' %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+<div class="row">
+<h3>Sitemap</h3>
+<ul>
+{% for key, values in data %}
+	<li> {{ key|upper }}</li>
+	<ul>
+	{% for page, url in values %}
+		{% if url|slice(0,1) == "/" or url|slice(0,4) == "http" %}
+			<li><a href="{{ url }}">{{ page }}</a></li>
+		{% elseif url|length == 0 %}
+			<li><a href="/{{ key }}/">{{ page }}</a></li>
+		{% else %}
+			<li><a href="/{{ key }}/{{ url }}/">{{ page }}</a></li>
+		{% endif %}
+	{% endfor %}
+	</ul>
+{% endfor %}
+</ul>
+</div>
+{% endblock %}

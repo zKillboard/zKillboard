@@ -1,0 +1,4 @@
+{% set actualSize = resizeImage is defined ? resizeImage : imageSize %}
+<a href="/region/{{ field.regionID }}/" rel='tooltip' title='{{ field.regionName }}'>
+	<img class="eveimage img-rounded" src="//{{ siteurl }}/themes/img/region_64.png" width="{{actualSize}}" height="{{actualSize}}" alt="{{ field.regionName }}">
+</a>

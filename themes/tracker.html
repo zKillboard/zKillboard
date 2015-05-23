@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+<h2>{{ pageTitle }}</h2>
+{% include 'components/summary.html' %}
+{% set killList = kills %}
+{% include 'components/kill_list.html' %}
+
+{% endblock %}

@@ -1,0 +1,30 @@
+<div class="col-lg-6">
+<table class="table table-condensed">
+	<tr>
+		<th>&nbsp;</th>
+		<th>&nbsp;</th>
+		<th style="text-align: right">Kills</th>
+		<th style="text-align: right">ISK</th>
+	</tr>
+	{% for war in wars %}
+	<tr>
+		<th>Aggressor</th>
+		<td><a href="{{ war.aggressorLink }}">{{ war.aggressorName }}</a></td>
+		{% set color = (war.aggressor.shipsKilled >= war.defender.shipsKilled) ? "green" : "red" %}
+		<td class="{{ color }}" style="text-align: right">{{ war.aggressor.shipsKilled|number_format(0) }}</td>
+		{% set color = (war.aggressor.iskKilled >= war.defender.iskKilled) ? "green" : "red" %}
+		<td class="{{ color }}" style="text-align: right">{{ war.aggressor.iskKilled|number_format(2) }}</td>
+	</tr>
+	<tr>
+		<th>Defender</th>
+		<td><a href="{{ war.defenderLink }}">{{ war.defenderName }}</a></td>
+		{% set color = (war.aggressor.shipsKilled >= war.defender.shipsKilled) ? "red" : "green" %}
+		<td class="{{ color }}" style="text-align: right">{{ war.defender.shipsKilled|number_format(0) }}</td>
+		{% set color = (war.aggressor.iskKilled >= war.defender.iskKilled) ? "red" : "green" %}
+		<td class="{{ color }}" style="text-align: right">{{ war.defender.iskKilled|number_format(2) }}</td>
+	</tr>
+	{% endfor %}
+</table>
+<span>
+This war is {{ ( war.mutual ? "" : "not") }} mutual and this war is {{ ( war.openForAllies ? "" : "not") }} open for allies.
+</div>

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% set pageTitle = 'Campaign' %}
+{% block title %}{% include 'components/title.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+	<div class="pull-left col-lg-7">
+		<h4>{{ pageTitle }}</h4>
+		<span>{{ subTitle }}</span>
+	</div>
+
+	<div class="col-lg-3 pull-right">
+		{% include "components/stats_box.html" %}
+	</div>
+</div>
+<div class="clearfix"></div>
+
+{% set killListTitle = 'Most recent kills' %}
+{% set killList = kills %}
+<div class="row">
+<div class="col-sm-10 pull-left" style="padding-left: 0px;">
+	<div>
+		{% set shipNameLength = 11 %}
+		{% set topTitle = 'Most Valuable Kills - Last 7 Days' %}
+		{% set topSet = topIsk %}
+		{% include 'components/big_top_list.html' %}
+	</div>
+  <div class="clearfix"></div>
+{% include 'components/kill_list.html' %}
+</div>
+<div class="col-sm-2 pull-left" style="padding: 0px;">
+	{% set isEmbedded = true %}
+	{% for topSet in topKillers %}
+	{% include 'components/top_killer_list.html' %}
+	{% endfor %}
+</div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,135 @@
+{% set imageSize = 32 %}
+{% set fitting = extra.fittingwheel %}
+{% set eveImageClass = false %}
+{% set placement = "top" %}
+<div id="Fitting_Panel" style="position: relative; height:398px; width:398px; z-index: 3">
+<div id="mask" style="position:absolute; left: 0px; top: 0 px; width:398px; height:398px; z-index:-1;">
+	{% if killdata.victim.characterID >= 2100000000 and killdata.victim.characterID <= 2999999999 %}
+	<img style="position:absolute; left: 0px; top: 0px;  height:398px; width:398px; border:0px" src='//{{ siteurl }}/themes/img/panel/dustwheel.png' alt='' />
+
+	{% else %}
+	<img style="position:absolute; left: 0px; top: 0px;  height:398px; width:398px; border:0px" src='//{{ siteurl }}/themes/img/panel/tyrannis.png' alt='' />
+	{% endif %}
+</div>
+
+{% set slotCount = (fitting.high | length > extra.slotCounts.highSlotCount ) ? fitting.high | length : extra.slotCounts.highSlotCount %}
+{% set slotCount = min(8, max(0, slotCount)) %}
+{% if killdata.victim.groupID == 29 %}{% set slotCount = 5 %}{% endif %}
+<div id="highx" style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;">
+	<img src="//{{ siteurl }}/themes/img/panel/{{ slotCount }}h.png" alt="" style="border:0px;" />
+</div>
+<div id="high1" style="position:absolute; left:73px; top:60px; width:32px; height:32px;">{% set field = fitting.high.27.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="high2" style="position:absolute; left:102px; top:42px; width:32px; height:32px;">{% set field = fitting.high.28.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="high3" style="position:absolute; left:134px; top:27px; width:32px; height:32px;">{% set field = fitting.high.29.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="high4" style="position:absolute; left:169px; top:21px; width:32px; height:32px;">{% set field = fitting.high.30.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="high5" style="position:absolute; left:203px; top:22px; width:32px; height:32px;">{% set field = fitting.high.31.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="high6" style="position:absolute; left:238px; top:30px; width:32px; height:32px;">{% set field = fitting.high.32.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="high7" style="position:absolute; left:270px; top:45px; width:32px; height:32px;">{% set field = fitting.high.33.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="high8" style="position:absolute; left:295px; top:64px; width:32px; height:32px;">{% set field = fitting.high.34.0.0 %}{% include 'components/image_item.html' %}</div>
+
+{% set slotCount = (fitting.mid | length > extra.slotCounts.midSlotCount ) ? fitting.mid | length : extra.slotCounts.midSlotCount %}
+{% set slotCount = min(8, max(0, slotCount)) %}
+<div id="midx" style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;">
+	<img src="//{{ siteurl }}/themes/img/panel/{{ slotCount }}m.png" alt="" style="border:0px;" />
+</div>
+<div id="mid1" style="position:absolute; left:26px; top:140px; width:32px; height:32px;">{% set field =fitting.mid.19.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="mid2" style="position:absolute; left:24px; top:176px; width:32px; height:32px;">{% set field =fitting.mid.20.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="mid3" style="position:absolute; left:23px; top:212px; width:32px; height:32px;">{% set field =fitting.mid.21.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="mid4" style="position:absolute; left:30px; top:245px; width:32px; height:32px;">{% set field =fitting.mid.22.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="mid5" style="position:absolute; left:46px; top:278px; width:32px; height:32px;">{% set field =fitting.mid.23.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="mid6" style="position:absolute; left:69px; top:304px; width:32px; height:32px;">{% set field =fitting.mid.24.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="mid7" style="position:absolute; left:100px; top:328px; width:32px; height:32px;">{% set field =fitting.mid.25.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="mid8" style="position:absolute; left:133px; top:342px; width:32px; height:32px;">{% set field =fitting.mid.26.0.0 %}{% include 'components/image_item.html' %}</div>
+
+{% set slotCount = (fitting.low | length > extra.slotCounts.lowSlotCount ) ? fitting.low | length : extra.slotCounts.lowSlotCount %}
+{% set slotCount = min(8, max(0, slotCount)) %}
+{% if killdata.victim.groupID == 29 %}{% set slotCount = 5 %}{% endif %}
+<div id="lowx" style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;">
+	<img src="//{{ siteurl }}/themes/img/panel/{{ slotCount }}l.png" alt="" style="border:0px;" />
+</div>
+<div id="low1" style="position:absolute; left:344px; top:143px; width:32px; height:32px;">{% set field = fitting.low.11.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="low2" style="position:absolute; left:350px; top:178px; width:32px; height:32px;">{% set field = fitting.low.12.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="low3" style="position:absolute; left:349px; top:213px; width:32px; height:32px;">{% set field = fitting.low.13.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="low4" style="position:absolute; left:340px; top:246px; width:32px; height:32px;">{% set field = fitting.low.14.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="low5" style="position:absolute; left:323px; top:277px; width:32px; height:32px;">{% set field = fitting.low.15.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="low6" style="position:absolute; left:300px; top:304px; width:32px; height:32px;">{% set field = fitting.low.16.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="low7" style="position:absolute; left:268px; top:324px; width:32px; height:32px;">{% set field = fitting.low.17.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="low8" style="position:absolute; left:234px; top:338px; width:32px; height:32px;">{% set field = fitting.low.18.0.0 %}{% include 'components/image_item.html' %}</div>
+
+{% set slotCount = (fitting.rig | length > extra.slotCounts.rigSlotCount ) ? fitting.rig | length : extra.slotCounts.rigSlotCount %}
+<div id="rigxx" style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;">
+	<img src="//{{ siteurl }}/themes/img/panel/{{ slotCount }}r.png" alt="" style="border:0px;" />
+</div>
+<div id="rig1" style="position:absolute; left:148px; top:259px; width:32px; height:32px;">{% set field = fitting.rig.92.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="rig2" style="position:absolute; left:185px; top:267px; width:32px; height:32px;">{% set field = fitting.rig.93.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="rig3" style="position:absolute; left:221px; top:259px; width:32px; height:32px;">{% set field = fitting.rig.94.0.0 %}{% include 'components/image_item.html' %}</div>
+
+{% if fitting.sub | length %}
+<div id="subx" style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;">
+	<img src="//{{ siteurl }}/themes/img/panel/5s.png" alt="" style="border:0px;" />
+</div>
+<div id="sub1" style="position:absolute; left:117px; top:131px; width:32px; height:32px;">{% set field = fitting.sub.125.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="sub2" style="position:absolute; left:147px; top:108px; width:32px; height:32px;">{% set field = fitting.sub.126.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="sub3" style="position:absolute; left:184px; top:98px; width:32px; height:32px;">{% set field = fitting.sub.127.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="sub4" style="position:absolute; left:221px; top:107px; width:32px; height:32px;">{% set field = fitting.sub.128.0.0 %}{% include 'components/image_item.html' %}</div>
+<div id="sub5" style="position:absolute; left:250px; top:131px; width:32px; height:32px;">{% set field = fitting.sub.129.0.0 %}{% include 'components/image_item.html' %}</div>
+{% endif %}
+
+<div id="high1l" style="position:absolute; left:94px; top:88px; width:24px; height:24px;">{% set field = fitting.high.27.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="high2l" style="position:absolute; left:119px; top:70px; width:24px; height:24px;">{% set field = fitting.high.28.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="high3l" style="position:absolute; left:146px; top:58px; width:24px; height:24px;">{% set field = fitting.high.29.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="high4l" style="position:absolute; left:175px; top:52px; width:24px; height:24px;">{% set field = fitting.high.30.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="high5l" style="position:absolute; left:204px; top:52px; width:24px; height:24px;">{% set field = fitting.high.31.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="high6l" style="position:absolute; left:232px; top:60px; width:24px; height:24px;">{% set field = fitting.high.32.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="high7l" style="position:absolute; left:258px; top:72px; width:24px; height:24px;">{% set field = fitting.high.33.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="high8l" style="position:absolute; left:280px; top:91px; width:24px; height:24px;">{% set field = fitting.high.34.0.1 %}{% include 'components/image_item.html' %}</div>
+
+<div id="mid1l" style="position:absolute; left:59px; top:154px; width:24px; height:24px;">{% set field = fitting.mid.19.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="mid2l" style="position:absolute; left:54px; top:182px; width:24px; height:24px;">{% set field = fitting.mid.20.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="mid3l" style="position:absolute; left:56px; top:210px; width:24px; height:24px;">{% set field = fitting.mid.21.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="mid4l" style="position:absolute; left:62px; top:238px; width:24px; height:24px;">{% set field = fitting.mid.22.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="mid5l" style="position:absolute; left:76px; top:265px; width:24px; height:24px;">{% set field = fitting.mid.23.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="mid6l" style="position:absolute; left:94px; top:288px; width:24px; height:24px;">{% set field = fitting.mid.24.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="mid7l" style="position:absolute; left:118px; top:305px; width:24px; height:24px;">{% set field = fitting.mid.25.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="mid8l" style="position:absolute; left:146px; top:318px; width:24px; height:24px;">{% set field = fitting.mid.26.0.1 %}{% include 'components/image_item.html' %}</div>
+
+<div id="low1l" style="position:absolute; left:315px; top:150px; width:24px; height:24px;">{% set field = fitting.low.11.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="low2l" style="position:absolute; left:319px; top:179px; width:24px; height:24px;">{% set field = fitting.low.12.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="low3l" style="position:absolute; left:318px; top:206px; width:24px; height:24px;">{% set field = fitting.low.13.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="low4l" style="position:absolute; left:310px; top:234px; width:24px; height:24px;">{% set field = fitting.low.14.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="low5l" style="position:absolute; left:297px; top:261px; width:24px; height:24px;">{% set field = fitting.low.15.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="low6l" style="position:absolute; left:275px; top:283px; width:24px; height:24px;">{% set field = fitting.low.16.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="low7l" style="position:absolute; left:251px; top:300px; width:24px; height:24px;">{% set field = fitting.low.17.0.1 %}{% include 'components/image_item.html' %}</div>
+<div id="low8l" style="position:absolute; left:225px; top:310px; width:24px; height:24px;">{% set field = fitting.low.18.0.1 %}{% include 'components/image_item.html' %}</div>
+
+{% if killdata.victim.characterID >= 2100000000 and killdata.victim.characterID <= 2999999999 %}
+<div id="bigship" style="position:absolute; left:72px; top:71px; width:256px; height:256px; z-index:-2;">
+	<div id="ship"><img src="//{{ siteurl }}/themes/img/dust514.png"/></div>
+</div>
+{% else %}
+<div id="bigship" style='position:absolute; left:72px; top:71px; width:256px; height:256px; z-index:-2;'>
+        {% set imageSize = 256 %}
+        {% set field = killdata.victim %}
+        {% include 'components/image_ship.html' %}
+</div>
+{% endif %}
+{% if extra.crest %}<span><small><a class="green" target="_blank" href="http://public-crest.eveonline.com/killmails/{{ extra.crest.killID }}/{{ extra.crest.hash }}/">CREST Verified</a></small></span>
+{% elseif killdata.victim.killID > 0 %}<span class="green"><small>API Verified</small></span>{% endif %}
+</div>
+
+{% set eveImageClass = true %}
+
+
+<!--<script src="http://web.ccpgamescdn.com/shipviewer/ccp.shipviewer-0.989.min.js"></script>
+<script>
+    var sv = new CCPShipViewer({
+    parentElementId: 'ship',
+    height: 256,
+    width: 256,
+    assetsPath: 'http://web.ccpgamescdn.com/shipviewer/assets/',
+    quality: 1,
+    boosterGain: 0.6,
+    showOverlay: true,
+    defaultShip: '{{ killdata.victim.shipName }}'
+    });
+</script>-->

@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% set pageTitle = 'Related Kills | ' ~ systemName ~ ' | ' ~ time %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+
+<h2><small>Battle Report: </small>{{ systemName }} / {{ time }} <small> +/- {{ exHours }} Hour{% if exHours > 1%}s{% endif %}</h2>
+
+{% set teamATotal = summary.teamA.totals.total_price %}
+{% set teamBTotal = summary.teamB.totals.total_price %}
+{% set total = teamATotal + teamBTotal %}
+
+{% set teamAPoints = summary.teamA.totals.total_points %}
+{% set teamBPoints = summary.teamB.totals.total_points %}
+
+{% if total == 0 %}
+<em>There was no battle in {{ systemName }} at {{ time }}.</em><br/><br/>
+{% else %}
+{% set totalSize = summary.teamA.totals.pilotCount + summary.teamB.totals.pilotCount %}
+
+{% set teamASize = summary.teamA.totals.pilotCount %}
+{% set teamBSize = summary.teamB.totals.pilotCount %}
+{% set teamAEff = teamBTotal / total * 100 %}
+{% set teamBEff = teamATotal / total * 100 %}
+
+<table class="table table-condensed">
+	<tr>
+		<th class="col-lg-6" style="text-align: center"><h5>Team A ({{ teamASize }} involved)</h5></th>
+		<th class="col-lg-6" style="text-align: center"><h5>Team B ({{ teamBSize }} involved)</h5></th>
+	</tr>
+	<tr>
+		<td><a class="btn btn-sm btn-success active" href="/related/{{ solarSystemID }}/{{ relatedTime }}/">Reset Report</a> </td>
+		<td style="text-align: right"><a class="btn btn-sm btn-success active" rel="nofollow" href="/brsave/?sID={{ solarSystemID }}&dttm={{ relatedTime }}&options={{ options }}">Save Battle Report</a></td>
+	</tr>
+	<tr>
+		<td>
+			{% for entity, name in summary.teamA.entities %}
+				<div><a rel="nofollow" href="./?right={{entity}}"><span class="glyphicon glyphicon-circle-arrow-right"></span></a> {{ name }}</div>
+			{% endfor %}
+		</td>
+		<td style="text-align: right;">
+			{% for entity, name in summary.teamB.entities %}
+			<div>{{ name }} <a rel="nofollow" href="./?left={{entity}}"><span class="glyphicon glyphicon-circle-arrow-left"></a></div>
+			{% endfor %}
+		</td>
+	</tr>
+	<tr>
+		<td>{% set groupIDs = summary.teamA.totals.groupIDs %}{% include 'components/related_summary.html' %}</td>
+		<td>{% set groupIDs = summary.teamB.totals.groupIDs %}{% include 'components/related_summary.html' %}</td>
+	</tr>
+	<tr>
+		<td>Ships Lost: <div class="pull-right"><strong>{{ summary.teamA.totals.totalShips | number_format(0)}} Ships</strong></div></td>
+		<td>Ships Lost: <div class="pull-right"><strong>{{ summary.teamB.totals.totalShips | number_format(0)}} Ships</strong></div></td>
+	</tr>
+	<tr>
+		<td>Points Lost: <div class="pull-right"><strong>{{ teamAPoints | number_format(0)}}</strong></div></td>
+		<td>Points Lost: <div class="pull-right"><strong>{{ teamBPoints | number_format(0)}}</strong></div></td>
+	</tr>
+	<tr>
+		<td>ISK Lost: <div class="pull-right"><strong>{{ teamATotal | number_format(2)}}</strong></div></td>
+		<td>ISK Lost: <div class="pull-right"><strong>{{ teamBTotal | number_format(2)}}</strong></div></td>
+	</tr>
+	<tr>
+		<td>Efficiency: <div class="pull-right"><strong>{{ teamAEff | number_format(1)}} %</strong></div></td>
+		<td>Efficiency: <div class="pull-right"><strong>{{ teamBEff | number_format(1)}} %</strong></div></td>
+	</tr>
+	<tr>
+		<td>{% set list = summary.teamA.list %}{% include 'components/related_list.html' %}</td>
+		<td>{% set list = summary.teamB.list %}{% include 'components/related_list.html' %}</td>
+	</tr>
+</table>
+
+{% set killListTitle = 'Team B Losses' %}
+{% set killList = summary.teamB.kills %}
+{% set isEmbedded = true %}
+{% include 'components/kill_list.html' %}
+
+
+{% set killListTitle = 'Team A Losses' %}
+{% set killList = summary.teamA.kills %}
+{% set isEmbedded = true %}
+{% include 'components/kill_list.html' %}
+
+{% endif %}
+
+{% endblock %}
+
+{% block opengraph %}
+	{% set totalLostISK = summary.teamA.totals.total_price + summary.teamB.totals.total_price %}
+	{% set totalSize = summary.teamA.totals.pilotCount + summary.teamB.totals.pilotCount %}
+	<meta name="twitter:title" content="zKillboard.com / {{ pageTitle }}">
+	<meta name="twitter:image" content="{{ fullsiteurl }}/themes/img/3D.png">
+	<meta name="twitter:card" content="summary">
+	<meta name="og:title" content="zKillboard.com / {{ pageTitle }}">
+	<meta name="twitter:description" content="A battle took place in {{ systemName }} ({{ regionName }}) involving {{ totalSize }} pilots. Who lost a total of {{ totalLostISK|number_format(2, '.', ',') }} isk">
+	<meta name="og:description" content="A battle took place in {{ systemName }} ({{ regionName }}) involving {{ totalSize }} pilots. Who lost a total of {{ totalLostISK|number_format(2, '.', ',') }} isk">
+	<meta name="og:image" content="{{ fullsiteurl }}/themes/img/3D.png">
+{% endblock %}

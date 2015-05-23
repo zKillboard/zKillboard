@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% set pageTitle = pageTitle ~ ' - ' ~ subType|capitalize %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+
+<div class="navbar navbar-default">
+	<ul class="nav navbar-nav">
+		<li class="dropdown">
+			<a href="#" class="dropdown-toggle" data-toggle="dropdown">Recent <b class="caret"></b></a>
+			<ul class="dropdown-menu">
+				<li><a href="/ranks/recent/killers/">Killers</a></li>
+				<li><a href="/ranks/recent/losers/">Losers</a></li>
+			</ul>
+		</li>
+		<li class="dropdown">
+			<a href="#" class="dropdown-toggle" data-toggle="dropdown">Alltime <b class="caret"></b></a>
+			<ul class="dropdown-menu">
+				<li><a href="/ranks/alltime/killers/">Killers</a></li>
+				<li><a href="/ranks/alltime/losers/">Losers</a></li>
+			</ul>
+		</li>
+	</ul>
+</div>
+
+<h2>{{ pageTitle }}</h2>
+{% for rankTable in ranks %}
+	{% include 'components/rank_table.html' %}
+{% endfor %}
+
+<div class="alert alert-info">Ranks are updated daily...</div>
+{% endblock %}
+
+{% block script %}
+        <script type="text/javascript" src="//{{ siteurl }}/themes/js/rankstablesort.js"></script>
+{% endblock %}

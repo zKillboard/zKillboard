@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% set pageTitle = 'Post' %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+{% for message in message %}
+	{% if message != "" %}
+		<div class="row"><div class="alert alert-success">{{ message }}</div></div>
+	{% endif %}
+{% endfor %}
+<div class="row">
+        <div class="col-lg-6">
+                <div class="row">
+                <h3>Post External Killmail Link (CREST)</h3>
+                <form name="postkillmailurl" method="post" action="/post/" class="form">
+                        <div class="form-group">
+                                <input type="text" id="killmailurl" name="killmailurl" required placeholder="External Killmail Link" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                                        <div class="col-lg-2">
+                                                <input type="submit" class="btn btn-primary">
+                                        </div>
+                        </div>
+                </form>
+                </div>
+                <div class="row">
+                <br/><img src="//{{ siteurl }}/themes/img/km_external_link.png"/><br/>
+        </div>
+        <hr/>
+	</div>
+
+	<div class="col-lg-5">
+		<h3>API Key Post</h3>
+		<div class="well">
+			<p>Post an API Key, to let the API automatically import kills for you!</p>
+			<p>To quickly create an API key, go to <a href="https://community.eveonline.com/support/api-key/CreatePredefined?accessMask=524544" target="_blank">https://community.eveonline.com</a><br>(We only require KillLog, but feel free to tick off more.)
+			<form class="form-horizontal" name="addapi" method="post" action="/post/">
+				<div class="form-group">
+					<label for="keyid" class="form-label col-lg-2">KeyID:</label>
+					<div class="col-lg-4">
+						<input type="text" id="keyid" name="keyid" required placeholder="Key ID" class="form-control">
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="vcode" class="form-label col-lg-2">vCode:</label>
+					<div class="col-lg-8">
+						<input type="text" id="vcode" name="vcode" required placeholder="Verification Code" class="form-control">
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-lg-2 col-lg-offset-2">
+						<input type="submit" class="btn btn-primary" class="Post API key">
+					</div>
+				</div>
+				<p>If you're logged in you can view your API keys <a href="/account/api/">here</a>.</p>
+			</form>
+		</div>
+		<h3>API polling frequency <span class="red">(New - please read)</span></h3>
+		<div class="well">
+		<ul>
+			<li>Newly entered API keys are polled almost immediately.</li>
+			<li>API keys with killmails are polled every 3 hours.</li>
+			<li>API keys without killmails (e.g. alts) are polled once a day.</li>
+			<li>API keys that become expired are never checked again since they almost never become un-expired.</li>
+		</ul>
+		</div>
+		<h3>Frequently Asked Questions</h3>
+		<div class="well">
+			<ul>
+				<li>
+					<h5>I posted my personal API but my kills didn't show up!!! Where are they?!</h5>
+					<p>API will only post kills in which you are the final blow.  If someone else you were flying with got the final blow then they need to post their API.  However, the API will always post your losses.  Also keep in mind that personal (Character) api's only go back to the last 25 kills/losses.  Beyond that CCP doesn't provide any more history.</p>
+				</li>
+				<li>
+					<h5>I posted a corporation API key and yet some kills are still missing.  Why?</h5>
+					<p>If a member of the corporation didn't get the final blow then your corp API won't have a record of the kill.  The corp API will return all losses by corp members.  Corporation API's only go back to the last 100 kills/losses.</p>
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
+
+{% block robots %}
+<meta name="robots" content="nofollow">
+{% endblock %}

@@ -1,0 +1,23 @@
+{
+	"apiErrorList":{
+		"3600":""
+	},
+	"stompReceive":{
+		"0":"disabled"
+	},
+	"feedEDK":{
+		"3600":"fetch"
+	},
+	"feedzKB":{
+		"60":""
+	},
+	"warFetcher":{
+		"10800":"disabled"
+	},
+	"wars":{
+		"0":"disabled"
+	},
+	"sitemap":{
+		"86400":"disabled"
+	}
+}

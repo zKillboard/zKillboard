@@ -1,0 +1,7 @@
+{% if showImage %}
+        {% set imageSize = 32 %}
+        {% include 'components/image_alli.html' %}
+{% endif %}
+{% if field.allianceID != 0 %}
+<a href="/alliance/{{ field.allianceID }}/">{{ shortString(field.allianceName, 30) }}</a>
+{% endif %}

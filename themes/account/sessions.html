@@ -1,0 +1,29 @@
+<h3>Sessions</h3>
+<p>Deleting a session here does not instantly log you out, it however prevents you from automatically logging in from said device, once the browser session times out.</p>
+<table class="table table-striped table-condensed">
+    <thead>
+        <th>session Hash</th>
+        <th>date Created</th>
+        <th>Valid Till</th>
+		<th>userAgent</th>
+		<th>IP</th>
+        <th>&nbsp;</th>
+    </thead>
+    <tbody>
+        {% for data in data.sessions %}
+		<tr>
+			<td>{{ shortString(data.sessionHash, 10) }}</td>
+			<td>{{ data.dateCreated }}</td>
+			<td>{{ data.validTill }}</td>
+			<td>{{ data.userAgent }}</td>
+			<td>{{ data.ip }}</td>
+			<td style="text-align: right;">
+				<form name="deletesession" method="post" action="/account/sessions/">
+					<input id="deletesessionid" name="deletesessionid" type="hidden" value="{{ data.sessionHash }}">
+					<input type="submit" class="btn btn-danger btn-sm" value="Remove" onclick="return confirm('Are you sure you want to terminate this autologin session?');">
+				</form>
+			</td>
+	    </tr>
+        {% endfor %}
+    </tbody>
+</table>

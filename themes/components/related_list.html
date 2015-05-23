@@ -1,0 +1,29 @@
+{% set imageSize = 64 %}
+<table class="table table-condensed table-striped table-hover">
+{% for related in list %}
+    {% set class='' %}
+    {% set onClick = 'return false;' %}
+    {% set shipImageLinkOverride = 0 %}
+    {% if related.destroyed > 0 %}
+		{% set class='error' %}
+		{% autoescape false %}
+		{% set onClick = 'if (event.which == 2) return false; window.location="/kill/' ~ related.destroyed ~ '/"' %}
+		{% set shipImageLinkOverride = related.destroyed %}
+		{% endautoescape %}
+    {% endif %}
+    <tr class="{{ class }}" onClick='{{onClick|raw}}'>
+    <td style="width: 285px">
+    {% set field = related %}
+    {% include 'components/image_ship.html' %}
+    {% include 'components/image_char.html' %}
+    {% include 'components/image_corp.html' %}
+    {% include 'components/image_alli.html' %}
+    </td><td> 
+    {{ related.characterName }}{% if related.shipTypeID != 0%} ({{ related.shipName}}{% if related.shipTypeID != 670 and related.podded == 1%} / Capsule{%endif%}){% endif %}<br/>
+    {{ related.corporationName }}<br/>
+    {% if related.allianceID != 0 %}{{ related.allianceName}}<br/>{% endif %}
+    {% if related.factionID != 0 %}{{ related.factionName}}<br/>{% endif %}
+    </td></tr>
+{% endfor %}
+</table>
+

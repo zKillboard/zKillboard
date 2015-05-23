@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}
+	{% set pageTitle = 'Moderator' %}
+	{% include 'components/title.html' %}
+{% endblock %}
+
+{% block content %}
+	{% block panelheader %}
+		<h1>Moderator Panel</h1>
+	{% endblock %}
+
+	{% if message %}
+		<div class="alert alert-{{ messagetype }} fade in" data-dismiss="alert"><button type="button" class="close" data-dismiss="alert">&times;</button>{{ message }}</div>
+	{% endif %}
+
+	<div class="navbar navbar-default">
+		<div class="collapse navbar-collapse navbar-sub">
+			<ul class="nav navbar-nav">
+				<li class="{{ isActive('reportedkills', key) }}"><a href="/{{url}}/reportedkills/">Reported Kills</a></li>
+				<li class="{{ isActive('Tickets', key) }}"><a href ="/{{url}}/tickets/" >Tickets</a></li>
+			</ul>
+		</div>
+	</div>
+	{% if key == 'tickets' and id != 0 %}
+		{% include url~"/ticket_view.html" %}
+	{% elseif key == 'tickets' %}
+		{% include url~"/tickets.html" %}
+	{% elseif key == 'reportedkills' and id != 0 %}
+		{% include url~"/reportedkills_view.html" %}
+	{% elseif key == 'reportedkills' %}
+		{% include url~"/reportedkills.html" %}
+	{% endif %}
+{% endblock %}
+
+{% block style %}
+	<link rel="stylesheet" href="//{{ siteurl }}/themes/css/bootstrap-wysihtml5.css">
+{% endblock %}
+
+{% block script %}
+	<script type="text/javascript" src="//{{ siteurl }}/themes/js/wysihtml5-0.3.0.js"></script>
+	<script type="text/javascript" src="//{{ siteurl }}/themes/js/bootstrap-wysihtml5.js"></script>
+	<script type="text/javascript">
+	$('#reply').wysihtml5({"font-styles": true, "emphasis": true, "lists": true, "html": false, "link": true, "image": true, "color": false});
+	</script>
+	<script type="text/javascript">
+	$(document).ready(function()
+		{
+			$(".sortableTable").dataTable();
+		});
+	</script>
+	<script type="text/javascript">
+	$(document).on("click", ".open-userid", function () {
+		 var myuserID = $(this).data('id');
+		 $(".modal-body #userID").val( myuserID );
+		$('#access').modal('show');
+	});
+	</script>
+{% endblock %}

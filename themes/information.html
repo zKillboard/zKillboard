@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% set pageTitle = "Information" %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+
+{{ data|raw }}
+{% endblock %}

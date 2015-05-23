@@ -1,0 +1,120 @@
+{% set shortLength = 100 %}
+{% if detail.characterName %}{% set name = detail.characterName %}
+{% elseif detail.corporationName %}{% set name = detail.corporationName %}
+{% elseif detail.allianceName %}{% set name = detail.allianceName %}
+{% elseif detail.factionName %}{% set name = detail.factionName %}
+{% elseif pageName %}{% set name = pageName %}{% endif %}
+
+{% if detail.aticker %}{% set ticker = ' <' ~ detail.aticker ~ '>' %}{% endif %}
+{% if detail.cticker %}{% set ticker = ' [' ~ detail.cticker ~ ']' %}{% endif %}
+
+{% if key != '' %}
+	{% set field = detail %}
+{% else %}
+<h2><small>Overview for</small> {{ name }}</h2>
+{% endif %}
+
+<div class="row" style="margin: 0px; padding: 0px;">
+	<div class="col-lg-6" style="margin: 0px; padding: 0px;">
+		<table style="margin: 0px; padding: 0px; background-color: transparent;" class="table table-condensed">
+		<tr><td style="{{ not detail.groupShips ? 'width: 128px; ' : ''}}border-top: none;">
+		{% include 'components/info_top_image.html' %}
+		</td><td style="border-top: none;">
+		<div itemscope class="pull-left">
+		{% if not detail.groupShips %}
+	        <table class="table table-condensed">
+			<tbody>
+   	         {% if detail.characterID %}
+   	         <tr>
+                <th>Character:</th>
+				<td itemprop="name">{% include 'components/text_char.html' %} {% if apiVerified is defined and key == "character" and apiVerified == 1 %}<b rel="tooltip" title="API Verified" class="fa fa-check" style="color:#00FF00"></b>{% endif %}</td>
+            </tr>
+            {% endif %}
+            {% if detail.corporationID %}
+            <tr>
+                <th>Corporation:</th>
+				<td itemprop="corporation">{% include 'components/text_corp.html' %} {% if detail.cticker %}[{{ detail.cticker }}]{% endif %} {% if apiVerified is defined and key == "corporation" and apiVerified > 0 %}<b rel="tooltip" title="API Verified" class="fa fa-check" style="color:#00FF00"></b>{% endif %}</td>
+            </tr>
+			{% endif %}
+			{% if detail.ceoID and detail.ceoName %}
+			<tr>
+				<th class="span2">CEO:</th>
+				<td itemprop="ceo">{% include 'components/text_char.html' %}</td>
+			</tr>
+			{% endif %}
+			{% if detail.allianceName %}
+			<tr>
+				<th>Alliance:</th>
+				<td itemprop="alliance">{% include 'components/text_alli.html' %} {% if detail.aticker %}&lt;{{ detail.aticker }}&gt;{% endif %}</td>
+			</tr>
+			{% endif %}
+			{% if detail.executorCorpID and detail.executorCorpName %}
+			<tr>
+				<th class="span2">Executor:</th>
+				<td itemprop="executor">{% include 'components/text_corp.html' %}</td>
+			</tr>
+			{% endif %}
+            {% if detail.factionName %}
+			<tr>
+				<th>Faction:</th>
+				<td itemprop="faction">{% include 'components/text_faction.html' %}</td>
+			</tr>
+            {% endif %}
+            {% if detail.shipName %}
+			<tr>
+				<th>Ship:</th>
+				<td itemprop="ship"><a href="/item/{{ detail.shipTypeID}}/">{{ detail.shipName }}</a></td>
+			</tr>
+            {% endif %}
+            {% if detail.groupName and detail.groupName != "#System" %}
+			<tr>
+				<th>Class:</th>
+				<td itemprop="class"><a href="/group/{{ detail.groupID }}/">{{ detail.groupName }}</a></td>
+			</tr>
+            {% endif %}
+            {% if detail.solarSystemName %}
+			<tr>
+				<th>System:</th>
+				<td itemprop="systemname">{{ detail.solarSystemName }}</td>
+			</tr>
+            {% endif %}
+            {% if detail.solarSystemSecurity %}
+			<tr>
+				<th>Security:</th>
+				<td itemprop="security"><font color="{{ detail.systemColorCode}}">{{ detail.solarSystemSecurity|number_format(1) }}</font></td>
+			</tr>
+            {% endif %}
+			{% if detail.systemClass %}
+			<tr>
+				<th>Class:</th>
+				<td itemprop="systemclass">{{ detail.systemClass }}</td>
+			</tr>
+			{% endif %}
+			{% if detail.systemEffect %}
+			<tr>
+				<th>Effect:</th>
+				<td itemprop="effect">{{ detail.systemEffect }}</td>
+			</tr>
+			{% endif %}
+            {% if detail.regionName %}
+			<tr>
+				<th>Region:</th>
+				<td itemprop="region"><a href="/region/{{detail.regionID}}/">{{ detail.regionName }}</a></td>
+			</tr>
+            {% endif %}
+	    	{% if detail.memberCount is defined and detail.memberCount > 0 %}
+			<tr>
+				<th>Members:</th>
+				<td itemprop="members">{% if detail.memberCount == 0 %}(Closed){% else %}{{ detail.memberCount | number_format(0) }}{% endif %}</td>
+			</tr>
+            {% endif %}
+		</tbody>
+        </table>
+		{% endif %}
+	</div>
+	</td></tr></table>
+	</div>
+	<div class="col-lg-6 pull-right">
+		{% include 'components/stats_box.html' %}
+	</div>
+</div>

@@ -1,0 +1,10 @@
+{% if shipNameLength is not defined %}{% set shipNameLength = 30 %}{% endif %}
+{% if showImage %}
+        {% set imageSize = 32 %}
+        {% include 'components/image_ship.html' %}
+{% endif %}
+{% if shipImageLinkOverride > 0 %}
+	<a href="/kill/{{shipImageLinkOverride}}/" rel="tooltip" title="Detail for {{shipImageLinkOverride}}">{{ shortString(field.shipName, shipNameLength) }}</a>
+{% else %}
+	<a href="/ship/{{ field.shipTypeID }}/">{{ shortString(field.shipName, shipNameLength) }}</a>
+{% endif %}

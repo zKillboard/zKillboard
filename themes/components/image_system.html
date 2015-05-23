@@ -1,0 +1,4 @@
+{% set actualSize = (resizeImage is defined) ? resizeImage : imageSize %}
+<a href="/system/{{ field.solarSystemID }}/" rel='tooltip' title='{{ field.solarSystemName }}'>
+	<img class="eveimage img-rounded" src="{{ image_item }}{{ field.sunTypeID}}_{{imageSize}}.png" width="{{actualSize}}" height="{{actualSize}}" alt="{{ field.solarSystemName }}">
+</a>

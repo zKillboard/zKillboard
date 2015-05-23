@@ -1,0 +1,9 @@
+{% if showImage %}
+	{% set imageSize = 32 %}
+	{% include 'components/image_char.html' %}
+{% endif %}
+{% if field.characterID is not defined and field.ceoID is defined and field.ceoName is defined %}
+	<a href="/character/{{ field.ceoID }}/">{{ shortString(field.ceoName, 30) }}</a>
+{% else %}
+	<a href="/character/{{ field.characterID }}/">{{ shortString(field.characterName, 30) }}</a>
+{% endif %}

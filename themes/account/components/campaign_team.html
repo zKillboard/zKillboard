@@ -1,0 +1,14 @@
+	<div class="col-lg-6 panel panel-default">
+		<div class="panel-heading"><h5>{{ teamName }}</h5></div>
+		<div class="panel-body">
+			<p>Select which Character, Corporation, Alliance, Faction, Ship, System, Region you would like to add to {{ teamName }}.</p>
+			<form class="form-inline" name="addentity" id="addentity" method="post" action="/account/campaigns/">
+				<input type="hidden" name="entitymetadata" value="" />
+				<input type="hidden" name="campaignID" value="{{ data.campainID }}"/>
+				<input type="text" class="form-control" autocomplete="off" placeholder="Start typing a name..." id="addEntity{{ team }}" name="addEntity{{ team }}">
+			</form>
+		<br/>
+		{% set imageSize = 32 %}
+		{% include 'account/components/entity_list.html' %}
+		</div>
+	</div>

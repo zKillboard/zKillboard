@@ -1,0 +1,23 @@
+<table class="table table-hover table-striped">
+	<tr><th>Corp. Name</th><th>Ticker</th>
+	<th style="text-align: right">Members</th>
+	<th style="text-align: right">API</th>
+	<th style="text-align: right">API Key Count</th>
+	<th>Next Check</th>
+	</tr>
+{% for corp in corps %}
+	{% set field = corp %}
+	<tr>
+		<td>{% include 'components/text_corp.html' %}</td>
+		<td>[{{corp.ticker}}]</td>
+		<td style="text-align: right">{{ corp.memberCount | number_format(0) }}</td>
+		<td style="text-align: right">
+			{% if corp.apiVerified == 1%}<font class="green">API Verified</font>
+			{% elseif corp.apiPercentage is defined %}{{ corp.apiPercentage }}% Verified
+			{% endif %}
+		</td>
+		<td style="text-align: right">{{ corp.keyCount}}</td>
+		<td>{{ corp.cachedUntilTime }}</td>
+	</tr>
+{% endfor %}
+</table>

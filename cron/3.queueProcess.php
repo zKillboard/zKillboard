@@ -1,0 +1,190 @@
+<?php
+
+require_once "../init.php";
+
+$timer = new Timer();
+$crestmails = $mdb->getCollection("crestmails");
+$killmails = $mdb->getCollection("killmails");
+$queueProcess = $mdb->getCollection("queueProcess");
+$storage = $mdb->getCollection("storage");
+
+$counter = 0;
+$timer = new Timer();
+
+while(!Util::exitNow())
+{
+	$mails = $queueProcess->find()->sort(['killID' => -1]);
+	if (!$mails->hasNext()) sleep(1);
+	foreach ($mails as $row)
+	{
+		$killID = $row["killID"];
+		$raw = $mdb->findDoc("rawmails", ['killID' => $killID]);
+		$mail = $raw;
+
+		$kill = array();
+		$kill["killID"] = $killID;
+
+		$crestmail = $crestmails->findOne(["killID" => $killID, "processed" => true]);
+		if ($crestmail == null) continue;
+
+		$date = substr($mail["killTime"], 0, 10);
+		$date = str_replace(".", "-", $date);
+		$today = date("Y-m-d");
+		$kill["dttm"] = new MongoDate(strtotime(str_replace(".", "-", $mail["killTime"]) . " UTC"));
+
+		$system = $mdb->findDoc("information", ['type' => 'solarSystemID', 'id' => (int) $mail["solarSystem"]["id"]]);
+		if ($system == null)
+		{
+			Util::out("Unknown system - " . $mail["solarSystem"]["id"]);
+			continue;
+		}
+		$solarSystem = array();
+		$solarSystem["solarSystemID"] = (int) $mail["solarSystem"]["id"];
+		$solarSystem["security"] = (double) $system["secStatus"];
+		$solarSystem["regionID"] = (int) $system["regionID"];
+		$kill["system"] = $solarSystem;
+
+		$sequence = $mdb->findField("killmails", "sequence", ['sequence' => [ '$ne' => null]], ['sequence' => -1]);
+		if ($sequence == null) $sequence = 0;
+		$kill["sequence"] = $sequence + 1;
+
+		$kill["attackerCount"] = (int) $mail["attackerCount"];
+		$victim = createInvolved($mail["victim"]);
+		$victim["isVictim"] = true;
+		$kill["vGroupID"] = $victim["groupID"];
+
+		$involved = array();
+		$involved[] = $victim;
+
+		foreach($mail["attackers"] as $attacker)
+		{
+			$att = createInvolved($attacker);
+			$att["isVictim"] = false;
+			$involved[] = $att;
+		}
+		$kill["involved"] = $involved;
+		$kill["awox"] = isAwox($kill);
+		$kill["solo"] = isSolo($kill);
+
+		$items = $mail["victim"]["items"];
+		$i = array();
+		$destroyedValue = 0;
+		$droppedValue = 0;
+
+		$totalValue = processItems($mail["victim"]["items"], $date);
+		$totalValue += Price::getItemPrice($mail["victim"]["shipType"]["id"], $date, true);
+
+		$zkb = array();
+
+		if (isset($mail["war"]["id"]) && $mail["war"]["id"] != 0) $kill["warID"] = (int) $mail["war"]["id"];
+
+		$zkb["hash"] = $crestmail["hash"];
+		$zkb["totalValue"] = (double) $totalValue;
+		$zkb["points"] = (int) Points::getKillPoints($kill, $zkb["totalValue"]);
+		$kill["zkb"] = $zkb;
+
+		$exists = $killmails->count(['killID' => $killID]);
+		if ($exists == 0) $killmails->save($kill);
+		$oneWeekExists = $mdb->exists("oneWeek", ['killID' => $killID]);
+		if (!$oneWeekExists) $mdb->getCollection("oneWeek")->save($kill);
+
+		$storage->update(array("locker" => "killsProcessed"), array('$inc' => array('contents' => 1)), array('upsert' => true));
+		$storage->update(array("locker" => "totalKills"), array('$inc' => array('contents' => 1)), array('upsert' => true));
+		$mdb->insertUpdate("queueInfo", ['killID' => $killID]);
+		$mdb->insertUpdate("queueSocial", ['killID' => $killID]);
+
+		$queueProcess->remove($row);
+
+		$counter++;
+		if (Util::exitNow()) break;
+	}
+	sleep(1);
+	if ($timer->stop() > 110000) exit();
+}
+if ($debug && $counter > 0) Util::out("Processed " . number_format($counter, 0) . " Kills.");
+
+function createInvolved($data)
+{
+	global $mdb;
+	$dataArray = array("character", "corporation", "alliance", "faction", "shipType");
+	$array = array();
+
+	foreach ($dataArray as $index)
+	{
+		if (isset($data[$index]["id"]) && $data[$index]["id"] != 0) $array["${index}ID"] = (int) $data[$index]["id"];
+	}
+	if (isset($array["shipTypeID"]) && Info::getGroupID($array["shipTypeID"]) == -1)
+	{
+		$mdb->getCollection("information")->update(['type' => 'group'], ['$set' => [ 'lastCrestUpdate' => new MongoDate(1)]]);
+		Util::out("Bailing on processing a kill, unable to find groupID for " . $array["shipTypeID"]);
+		exit();
+	}
+	if (isset($array["shipTypeID"])) $array["groupID"] = (int) Info::getGroupID($array["shipTypeID"]);
+	if (isset($data["finalBlow"]) && $data["finalBlow"] == true) $array["finalBlow"] = true;
+	return $array;
+}
+
+function processItems($items, $dttm, $isCargo = false, $parentFlag = 0)
+{
+	$totalCost = 0;
+	foreach ($items as $item) {
+		$totalCost += processItem($item, $dttm, $isCargo, $parentFlag);
+		if (@is_array($item["items"])) {
+			$itemContainerFlag = $item["flag"];
+			$totalCost += processItems($item["items"], $dttm, true, $itemContainerFlag);
+		}
+	}
+	return $totalCost;
+}
+
+function processItem($item, $dttm, $isCargo = false, $parentContainerFlag = -1)
+{
+	$typeID = $item["itemType"]["id"];
+	$itemName = Db::queryField("select typeName from ccp_invTypes where typeID = :typeID", "typeName", array(":typeID" => $typeID), 0);
+	if ($itemName == null) $itemName = "TypeID $typeID";
+
+	if ($typeID == 33329 && $item["flag"] == 89) $price = 0.01; // Golden pod implant can't be destroyed
+	else $price = Price::getItemPrice($typeID, $dttm, true);
+	if ($isCargo && strpos($itemName, "Blueprint") !== false) $item["singleton"] = 2;
+	if ($item["singleton"] == 2) {
+		$price = $price / 100;
+	}
+
+	return ($price * (@$item["quantityDropped"] + @$item["quantityDestroyed"]));
+}
+
+function isAwox($row)
+{
+	$isAwox = false;
+	$victim = $row["involved"][0];
+	$vGroupID = $row["vGroupID"];
+	if (isset($victim["corporationID"]) && $vGroupID != 29)
+	{
+		$vicCorpID = $victim["corporationID"];
+		if ($vicCorpID > 0) foreach ($row["involved"] as $key=>$involved)
+		{
+			if ($key == 0) continue;
+			if (!isset($involved["finalBlow"])) continue;
+			if ($involved["finalBlow"] != true) continue;
+
+			if (!isset($involved["corporationID"])) continue;
+			$invCorpID = $involved["corporationID"];
+			if ($invCorpID == 0) continue;
+			if ($invCorpID <= 1999999) continue;
+			$isAwox |= $vicCorpID == $invCorpID;
+		}
+	}
+	return $isAwox;
+}
+
+function isSolo($row)
+{
+	$notSolo = [29, 31, 237];
+
+	if ($row["attackerCount"] > 1) return false;
+
+	// make sure the victim isn't a pod, shuttle, or noobship
+	$vGroupID = $row["vGroupID"];
+	return !in_array($vGroupID, $notSolo);
+	exit();
+}

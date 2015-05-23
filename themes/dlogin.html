@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html prefix="og: http://ogp.me/ns#" lang="en" class="no-js"> <!--<![endif]-->
+	<head>
+		<meta http-equiv="content-type" content="text/html;"charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="title" content="{{ siteurl }} / {{ pageTitle }}">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<title>{{ siteurl }} / Disqus Login</title>
+		{% if sessiontheme is not defined %}{% set sessiontheme = 'cyborg' %}{% endif %}
+		{% if sessiontheme == "default" %}
+		<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/3.0.0/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
+		{% else %}
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/{{ sessiontheme }}/bootstrap.min.css">
+		{% endif %}
+	</head>
+	<body>
+		<div class="container" style="width: 300px;">
+
+			{% if close %}
+				<script type="text/javascript">
+					window.open('javascript:window.open("", "_self", "");window.close();', '_self');
+				</script>
+			{% endif %}
+			{% if error %}
+				<div class="alert alert-error">
+				<strong>Error...</strong>
+				{{ error }}
+			</div>
+
+			<strong>Can't login? Passwords were reset, click the Forget Password button!</strong><br/>
+			<a class="btn btn-block btn-warning" href="/forgotpassword/" style="width: 100px;">Forgot password</a>
+			{% else %}
+			<div class="well">
+				<form class="form" name="login" method="post" action="/dlogin/">
+					<div class="form-group">
+						<input class="col-lg-12 form-control" id="username" name="username" type="text" autofocus="true" placeholder="username">
+					</div>
+					<div class="form-group">
+						<input class="col-lg-12 form-control" id="password" name="password" type="password" placeholder="password">
+					</div>
+					<div class="form-group">
+						<input id="requesturi" name="requesturi" type="hidden" value="{{ requesturi }}" class="form-control">
+						<label class="checkbox">
+							<input id="autologin" name="autologin" type="checkbox">Remember Me
+						</label>
+					</div>
+					<div class="form-group">
+						<button type="submit" value="Login" class="btn btn-primary">Login</button>
+					</div>
+				</form>
+			</div>
+			{% endif %}
+		</div>
+	</body>
+</html>

@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% set pageTitle = 'Tickets' %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+<div class="navbar navbar-default">
+	<ul class="nav navbar-nav">
+		<li class="{{ isActive('tickets', pageview) }}"><a href="/tickets/">Tickets</a></li>
+		{% if sessionusername %}<li><a data-toggle="modal" data-target="#newIssue" href="#">New Issue</a></li>{% endif %}
+	</ul>
+</div>
+
+{% if sessionusername %}
+	<div class="row">
+		<div class="col-lg-12">
+			{% if tickets|length == 0 %}
+				<em>You do not have any tickets...</em>
+			{% else %}
+			<h3>Your Tickets</h3>
+			<table class="table table-condensed table-hover">
+				<thead>
+					<tr>
+					<th class="span7"></th>
+					<th class="span5"></th>
+					<th class="span1"></th>
+					<th class="span3"></th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for data in tickets %}
+					<tr onclick="window.location='/tickets/view/{{ data.id }}/'">
+					<td><strong>{{ shortString(data.ticket|striptags, 60)|raw }}</strong></td>
+					<td>
+						{% for tag in data.tags %}
+							<span class="label label-warning">{{ tag }}</span>
+						{% endfor %}
+					</td>
+					<td>{% if data.status %}<span class="label label-success pull-right">Open{% else %}<span class="label label-important pull-right">Closed{% endif %}</span></td>
+					<td><strong>{{ data.datePosted }}</strong></td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			{% endif %}
+		</div>
+	</div>
+{% else %}
+<pre>
+You are not logged in, and thus cannot see any tickets, or submit any tickets.
+Please register and login to send tickets, or go to the <a href="/livechat/">Live Chat</a>
+</pre>
+{% endif %}
+
+{% endblock %}
+
+{% block modal %}
+	<div class="modal fade" id="newIssue">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4>New Issue</h4>
+				</div>
+				<div class="modal-body">
+					<p>The ticket will be sent using your account name, and a copy will be sent to your accounts email.<br>
+					Also, please only use tags appropriate for your ticket.</p>
+	
+					<form name="tickets" method="post" action="/tickets/">
+						<label>Tags (Seperate Tags with comma)</label>
+						<input type="text" autocomplete="off" data-provide="typeahead" name="tags" placeholder="Tags" class="form-control tagManager" data-original-title=""/>
+						<div class="form-group">
+							<textarea id="ticket" name="ticket" type="text" required placeholder="Ticket" class="form-control" rows="12" style="color: black"></textarea>
+						</div>
+						<div class="form-group">
+							<button type="submit" class="btn btn-primary">Post Ticket</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block robots %}
+	<meta name="robots" content="nofollow">
+{% endblock %}
+
+{% block style %}
+	<link rel="stylesheet" href="//{{ siteurl }}/themes/css/bootstrap-tagmanager.css">
+	<link rel="stylesheet" href="//{{ siteurl }}/themes/css/bootstrap-wysihtml5.css">
+{% endblock %}
+{% block script %}
+<script type="text/javascript" src="//{{ siteurl }}/themes/js/wysihtml5-0.3.0.js"></script>
+<script type="text/javascript" src="//{{ siteurl }}/themes/js/bootstrap-wysihtml5.js"></script>
+<script type="text/javascript" src="//{{ siteurl }}/themes/js/bootstrap-tagmanager.js"></script>
+<script type="text/javascript">
+$(".modal-newissue").css("width", "800px");
+$(".modal-newissue").css("margin-left", "-400px");
+$(".modal-newissue").css("show");
+$('#ticket').wysihtml5({"font-styles": true, "emphasis": true, "lists": true, "html": false, "link": true, "image": true, "color": false});
+jQuery(".tagManager").tagsManager({
+	//prefilled: ["New Issue"],
+	preventSubmitOnEnter: true,
+	typeahead: true,
+	typeaheadAjaxSource: null,
+	typeaheadSource: ["API", "Bugs", "Fake Kill", "Suggestion", "Question", "General", "Unban", "Harassment"],
+    blinkBGColor_1: '#FFFF9C',
+    blinkBGColor_2: '#CDE69C',
+	maxTags: 7,
+	backspace: [8]
+});
+</script>
+{% endblock %}

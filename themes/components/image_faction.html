@@ -1,0 +1,6 @@
+{% if field.factionID != 0 %}
+{% set actualSize = (resizeImage is defined) ? resizeImage : imageSize %}
+<a href="/faction/{{field.factionID}}/" rel="tooltip" title="{{field.factionName}}">
+    <img class="eveimage img-rounded" src="{{ image_alliance }}{{field.factionID}}_{{imageSize}}.png" width="{{actualSize}}" height="{{actualSize}}" alt="{{ field.factionName }}"/>
+</a>
+{% endif %}

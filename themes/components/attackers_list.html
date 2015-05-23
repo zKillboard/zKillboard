@@ -1,0 +1,66 @@
+<table class="table table-condensed table-striped table-hover" style="margin-bottom: 0px;">
+	{% if not hideTableHeading %}
+	<thead>
+		<tr class="titles">
+			<th colspan="2" class="hidden-md hidden-xs">{{ killdata.info.number_involved }} Involved</th>
+			<th clasS="hidden-lg" colspan="2">{{ killdata.info.number_involved }} Involved</th>
+			<th style="text-align: right" colspan="2" class="hidden-md hidden-xs">Damage</th>
+			<th style="text-align: right" class="hidden-lg">Damage</th>
+		</tr>
+	</thead>
+	{% endif %}
+	<tbody>
+	{% for attacker in attackList %}
+	{% set field = attacker %}
+		<tr class="attacker">
+			<td class="hidden-lg hidden-md hidden-sm" style="width: 40px; vertical-align: middle;">
+				{% set imageSize = 64 %}
+				{% include 'components/image_char.html' %}
+				{% include 'components/image_ship.html' %}
+			</td>
+			<td class="hidden-xs" style="width: 64px; vertical-align: middle;">
+				{% set imageSize = 64 %}
+				{% if field.characterID != 0 %}
+					{% include 'components/image_char.html' %}
+				{% else %}
+					{% include 'components/image_corp.html' %}
+				{% endif %}
+			</td>
+			<td class="hidden-xs" style="width: 35px; vertical-align: middle;">
+				{% set imageSize = 32 %}
+				{% include 'components/image_ship.html' %}
+				{% if field.weaponTypeID == 0 %}
+					{% include 'components/image_ship.html' %}
+				{% else %}
+					{% include 'components/image_item.html' %}
+				{% endif %}
+			</td>
+			<td class="pilotinfo">
+				{% set field = attacker %}
+				{% set shortLength = 25 %}
+				<div class="hidden-lg">
+					{% include 'components/text_char.html' %} / {% include 'components/text_ship.html' %}<br/>
+					{% include 'components/text_corp.html' %} / {% include 'components/text_item.html' %}<br/>
+					{% include 'components/text_alli.html' %}{% if field.factionName %} ({% include 'components/text_faction.html' %}){% endif %}
+				</div>
+				<div class="hidden-sm hidden-md hidden-xs">
+					{% include 'components/text_char.html' %}
+					{% if field.characterID == 0 %}
+						{% include 'components/text_ship.html' %}
+					{% endif %}
+					<br/>
+					{% include 'components/text_corp.html' %}<br/>
+					{% include 'components/text_alli.html' %}
+				</div>
+				{% set shortLength = 30 %}
+			</td>
+			<td class="damage" style="vertical-align: middle; text-align: right;">
+					{{ attacker.damage|number_format(0) }}<br/>
+					{% if attacker.damage > 0 and killdata.victim.damage > 0 %}
+						<small>{{ ((attacker.damage / killdata.victim.damage) * 100)|number_format(1) }}%<small>
+					{% endif %}
+			</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>

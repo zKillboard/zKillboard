@@ -1,0 +1,62 @@
+<div class="row">
+	<div class="col-lg-6">
+		<h3>Skin / Theme</h3>
+		<div class="well">
+			<h4>Skin</h4>
+			<div class="row">
+				<form class="form-horizontal" name="styles" method="post" action="/account/sitesettings/">
+					<div class="form-group col-lg-3">
+						<select name="style" class="form-control input-sm">
+						{% for style in data.stylesAvailable %}
+							{% set selected = "" %}
+							{% if style == data.currentStyle %}{% set selected = "selected"%}{% endif %}
+							<option value="{{ style }}" {{ selected }}>{{ style }}</option>
+						{% endfor %}
+						</select>
+					</div>
+					<div class="form-group col-lg-2">
+						<input type="submit" class="btn btn-primary btn-sm" value="Set skin">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-lg-6">
+		<h3>Show Condensed Timestamps</h3>
+		<div class="well">
+			<form class="form-horizontal" name="turnonofftimestamps" method="post" action="/account/sitesettings/">
+				<div class="form-group col-lg-3">
+					<select name="timeago" class="form-control input-sm">
+						<option value="true" {% if data.timeago == "true" %}selected{% endif %}>On</option>
+						<option value="false" {% if data.timeago == "false" %}selected{% endif %}>Off</option>
+					</select>
+				</div>
+				<div class="form-group col-lg-2">
+					<input type="submit" class="btn btn-primary btn-sm" value="Set">
+				</div>
+			</form>
+			<p>Will replace all killlist timestamps with Facebook style timestamps, instead of saying "2012-11-01 12:00:00" it will say "2 hours ago", "3 months ago" etc.</p>
+		</div>
+	</div>
+
+	<div class="col-lg-6">
+		<h3>Show Facebook Like Button</h3>
+		<div class="well">
+			<form class="form-horizontal" name="turnonofftimestamps" method="post" action="/account/sitesettings/">
+				<div class="form-group col-lg-3">
+					<select name="showFacebook" class="form-control input-sm">
+						{% if true == data.showFacebook %}{% set selected = "selected"%}{% endif %}
+						<option value="true" {{ selected }}>On</option>
+						{% set selected = "" %}
+						{% if true != data.showFacebook %}{% set selected = "selected"%}{% endif %}
+						<option value="false" {{ selected }}>Off</option>
+					</select>
+				</div>
+				<div class="form-group col-lg-2">
+					<input type="submit" class="btn btn-primary btn-sm" value="Set">
+				</div>
+			</form>
+			<p>If on, display the Facebook like button.  If off, don't display it.</p>
+	</div>
+</div>

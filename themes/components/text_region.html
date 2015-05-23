@@ -1,0 +1,5 @@
+{% if showImage %}
+	{% set imageSize = 32 %}
+	{% include 'components/image_region.html' %}
+{% endif %}
+<a href="/region/{{ field.regionID }}/">{{ shortString(field.regionName, 30) }}</a>

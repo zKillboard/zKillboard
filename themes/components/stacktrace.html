@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% set pageTitle = 'stackTrace' %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+<h2><a href="{{ url }}">stackTrace</a></h2>
+Problem page: <a href="{{ url }}">{{ siteurl }}{{ url }}</a>
+<pre>
+{{ stacktrace|raw }}
+</pre>
+
+{% endblock %}

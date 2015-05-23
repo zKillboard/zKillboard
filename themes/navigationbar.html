@@ -1,0 +1,169 @@
+{% if headerImage is defined %}
+	<div class="container">
+		<div class="navbar-header topimage">
+			<a href="/"><img src="{{ headerImage }}" alt=""></a>
+		</div>
+	</div>
+{% endif %}
+<div class="navbar navbar-default">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle openMenu" data-toggle="collapse" data-target=".navbar-main">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="/"><img src='//{{ siteurl }}/themes/img/wreck.png'/> {% if KillboardName %}{{ KillboardName }}{% else %}zKillboard{% endif %}</a>
+		</div>
+		<div class="collapse navbar-collapse navbar-main">
+			<ul class="nav navbar-nav">
+				<li class="dropdown">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu <b class="caret"></b></a>
+					<ul class="dropdown-menu">
+						<li><a href="/wars/">Wars</a></li>
+						<li><a href="/intel/supers/">Intel - Supers</a></li>
+						<li><a href="/ranks/recent/killers">Top Ranks</a></li>
+						<li class="divider"></li>
+						<li><a href="/kills/bigkills/">Big Kills</a></li>
+						<li><a href="/kills/awox/">Awox</a></li>
+						<li><a href="/kills/w-space/">W-Space</a></li>
+						<li><a href="/kills/highsec/">Highsec</a></li>
+						<li><a href="/kills/lowsec/">Lowsec</a></li>
+						<li><a href="/kills/nullsec/">Nullsec</a></li>
+						<li><a href="/kills/solo/">Solo</a></li>
+						<li><a href="/kills/5b/">+5b</a></li>
+						<li><a href="/kills/10b">+10b</a></li>
+						<li class="divider"></li>
+						<li class="dropdown-header">Hull Sizes</li>
+						<li><a href="/kills/capitals/">Capitals</a></li>
+						<li><a href="/kills/freighters/">Freighters</a></li>
+						<li><a href="/kills/supers/">Supers</a></li>
+						<li class="divider"></li>
+						<li class="dropdown-header">DUST 514</li>
+						<li><a href="/kills/dust/">All Kills</a></li>
+						<li><a href="/kills/dust_vehicles/">Vehicles</a></li>
+					</ul>
+				</li>
+				{% if tracker_character or tracker_corporation or tracker_alliance or tracker_faction or tracker_ship or tracker_item or tracker_system or tracker_region %}
+				<li class="dropdown">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Tracker <b class="caret"></b></a>
+					<ul class="dropdown-menu">
+						{% if tracker_character %}
+						<li class="dropdown-header">Pilots</li>
+						{% for data in tracker_character %}
+						<li><a href="/character/{{ data.id }}/">{{ data.name }}</a></li>
+						{% endfor %}
+						{% endif %}
+						{% if tracker_corporation %}
+						<li class="dropdown-header">Corps</li>
+						{% for data in tracker_corporation %}
+						<li><a href="/corporation/{{ data.id }}/">{{ data.name }}</a></li>
+						{% endfor %}
+						{% endif %}
+						{% if tracker_alliance %}
+						<li class="dropdown-header">Alliances</li>
+						{% for data in tracker_alliance %}
+						<li><a href="/alliance/{{ data.id }}/">{{ data.name }}</a></li>
+						{% endfor %}
+						{% endif %}
+						{% if tracker_faction %}
+						<li class="dropdown-header">Factions</li>
+						{% for data in tracker_faction %}
+						<li><a href="/faction/{{ data.id }}/">{{ data.name }}</a></li>
+						{% endfor %}
+						{% endif %}
+						{% if tracker_ship %}
+						<li class="dropdown-header">Ships</li>
+						{% for data in tracker_ship %}
+						<li><a href="/ship/{{ data.id }}/">{{ data.name }}</a></li>
+						{% endfor %}
+						{% endif %}
+						{% if tracker_item %}
+						<li class="dropdown-header">Ships</li>
+						{% for data in tracker_item %}
+						<li><a href="/ship/{{ data.id }}/">{{ data.name }}</a></li>
+						{% endfor %}
+						{% endif %}
+						{% if tracker_system %}
+						<li class="dropdown-header">Systems</li>
+						{% for data in tracker_system %}
+						<li><a href="/system/{{ data.id }}/">{{ data.name }}</a></li>
+						{% endfor %}
+						{% endif %}
+						{% if tracker_region %}
+						<li class="dropdown-header">Regions</li>
+						{% for data in tracker_region %}
+						<li><a href="/region/{{ data.id }}/">{{ data.name }}</a></li>
+						{% endfor %}
+						{% endif %}
+						<li class="dropdown-header">Tracker</li>
+						<li><a href="/tracker/">Track All</a></li>
+					</ul>
+				</li>
+				{% endif %}
+				<li class="hidden-xs hidden-sm"><a href="/post/">Post</a></li>
+				<!-- <li><a href="https://map.zkillboard.com/" target="_blank">Map</a></li> -->
+				{% if statslink %}
+					<li class="hidden-xs hidden-sm"><a href="{{ statslink }}">Stats</a></li>
+				{% endif %}
+			</ul>
+			<ul class="nav navbar-nav navbar-right">
+            			<li class="hidden-xs hidden-sm hidden-md"><div class="fb-like" data-width="1" data-layout="button_count" data-action="like" data-show-faces="false" data-share="false" data-colorscheme="dark" style="padding-top: 15px;"></div></a>
+				<li class="hidden-xs hidden-sm"><a href="/top/lasthour/" rel="tooltip" title="Kills added this hour" id="lasthour">{{ killsLastHour | number_format(0)}}</a></li>
+				<li class="hidden-xs hidden-sm"><a href="#" onclick="return false;" rel="tooltip" title="Eve Time"><div id="my_clock"></div></a></li>
+				<li>
+					<form name="search" id="search" class="navbar-form navbar-right" action="/search/" method="post">
+						<div class="form-group">
+							<input type="text" class="form-control" placeholder="Search" autocomplete="off" id="searchbox" name="searchbox">
+						</div>
+					</form>
+				</li>
+				<li class="dropdown hidden-xs">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-info"></i> <b class="caret"></b></a>
+					<ul class="dropdown-menu">
+						<li class="dropdown-header">Support</li>
+						<li><a href="/tickets/">Tickets</a></li>
+						<li class="divider"></li>
+						<li class="dropdown-header">Information</li>
+						{% for key, data in navInfo %}
+							{% if data is not iterable %}
+								{% if data == "payments" and adFreeMonthCost == 0 %}
+								{% else %}
+									<li><a href="/information/{{ data }}/">{{ data|capitalize }}</a></li>
+								{% endif %}
+							{% else %}
+								{% for sub in data %}
+									<li><a href="/information/{{ sub }}/">{{ sub|replace({(key~'/'): "" }) }}</a></li>
+								{% endfor %}
+							{% endif %}
+						{% endfor %}
+						<li><a href="https://neweden-dev.com/ZKillboard_API" target="_blank">API</a></li>
+					</ul>
+				</li>
+				<li class="dropdown">
+					<a href="#" class="dropdown-toggle hidden-xs" data-toggle="dropdown"><i class="fa fa-user"></i><span class="caret"></span></a>
+					<a href="#" class="dropdown-toggle hidden-lg hidden-md hidden-sm" data-toggle="dropdown">Account <span class="caret"></span></a>
+					<ul class="dropdown-menu">
+						{% if sessionusername %}
+							<li class="dropdown-header">{{ sessionusername|capitalize }}</li>
+							<li><a href="/account/">Account</a></li>
+							<li><a href="/account/domains/">Domains</a></li>
+							{% if sessionmoderator or sessionadmin %}
+								<li><a href="/moderator/">Moderation</a></li>
+							{% endif %}
+							<li class="divider hidden-xs"></li>
+							<li><a href="/logout/">Logout</a></li>
+						{% else %}
+							<li><a href="/login/">Login</a></li>
+							<li><a href="/forgotpassword/">Forgot Password</a></li>
+							<li><a href="/register/">Register</a></li>
+							{% if eveSSOEnabled %}
+							<li><a href="{{ eveSSOURL }}"><img src="https://images.contentful.com/idjq7aai9ylm/4fSjj56uD6CYwYyus4KmES/4f6385c91e6de56274d99496e6adebab/EVE_SSO_Login_Buttons_Large_Black.png?w=270&h=45"/></a></li>
+							{% endif %}
+						{% endif %}
+					</ul>
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>

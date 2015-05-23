@@ -1,0 +1,24 @@
+{% set actualSize = (resizeImage is defined) ? resizeImage : imageSize %}
+{% if field.weaponTypeID != 0 %}
+    {% set typeID = field.weaponTypeID %}
+    {% set typeName = field.weaponTypeName %}
+{% elseif field.typeID != 0 %}
+    {% set typeID = field.typeID %}
+    {% set typeName = field.typeName %}
+{% endif %}
+{% if typeID %}
+{% if eveImageClass is not defined %}{% set eveImageClass = true%}{%endif%}
+{% set eveImage = eveImageClass == true ? 'eveimage ' : '' %}
+
+{% if placement %}
+<a href="/item/{{typeID}}/" rel='tooltip' data-placement="{{ placement }}" title='{{typeName}}'>
+{% else %}
+<a href="/item/{{typeID}}/" rel='tooltip' title='{{typeName}}'>
+{% endif %}
+	{% if isDelayed %}
+		<img class="{{eveImage}}img-rounded delayed" src="#" data-src="{{ image_item }}{{typeID}}_{{imageSize}}.png" width="{{actualSize}}" height="{{actualSize}}" alt="{{ typeName }}">
+	{% else %}
+		<img class="{{eveImage}}img-rounded" src="{{ image_item }}{{typeID}}_{{imageSize}}.png" width="{{actualSize}}" height="{{actualSize}}" alt="{{ typeName }}">
+	{% endif %}
+</a>
+{% endif %}

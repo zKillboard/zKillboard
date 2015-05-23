@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% set pageTitle = 'Tickets' %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+<div class="navbar navbar-default">
+	<ul class="nav navbar-nav">
+		<li class="{{ isActive('tickets', pageview) }}"><a href="/tickets/">Tickets</a></li>
+		{% if sessionusername %}<li><a data-toggle="modal" data-target="#newIssue" href="#">New Issue</a></li>{% endif %}
+	</ul>
+</div>
+
+{% if message %} <h1>{{ message.message }}</h1> {% endif %}
+
+<h3>Ticket By: <small>{{ ticket.name }}</small> Posted The: <small>{{ ticket.datePosted }}</small></h3>
+<div class="well">{{ ticket.ticket|raw }}</div>
+<hr/>
+
+
+{% if replies is not empty %}
+        <h4>Replies</h4>
+        <table class="table table-striped">
+                <thead>
+                        <tr>
+                                <th class="col-lg-1"></th>
+                                <th class="col-lg-10"></th>
+                        </tr>
+                </thead>
+                <tbody>
+                        {% for data in replies %}
+                        <tr>
+                                <td><strong>{{ data.name|capitalize }} <br> {% if data.moderator %}<i class="label label-info">Moderator</i>{% endif %}</strong></td>
+                                <td>{{ data.reply|raw }}</td>
+                        </tr>
+                        {% endfor %}
+                </tbody>
+        </table>
+
+{% endif %}
+
+{% if ticket.status %}
+<hr>
+<h4>Reply</h4>
+<form name="tickets" method="post" action="/tickets/view/{{ page }}/">
+	<div class="form-group">
+		<textarea id="reply" name="reply" type="text" required placeholder="Reply Here" rows="12" class="form-control" style="color: black"></textarea>
+	</div>
+	<div class="form-group">
+		<button type="submit" class="btn btn-primary">Post Reply</button>
+	</div>
+</form>
+{% endif %}
+{% endblock %}
+
+{% block robots %}
+<meta name="robots" content="nofollow, noindex">
+{% endblock %}
+
+{% block style %}
+	<link rel="stylesheet" href="//{{ siteurl }}/themes/css/bootstrap-wysihtml5.css">
+{% endblock %}
+{% block script %}
+<script type="text/javascript" src="//{{ siteurl }}/themes/js/wysihtml5-0.3.0.js"></script>
+<script type="text/javascript" src="//{{ siteurl }}/themes/js/bootstrap-wysihtml5.js"></script>
+<script type="text/javascript">
+$('#reply').wysihtml5({"font-styles": true, "emphasis": true, "lists": true, "html": false, "link": true, "image": true, "color": false});
+</script>
+{% endblock %}

@@ -1,0 +1,35 @@
+<div class="row">
+<h4>Balance: {{ accountBalance|number_format(2) }} ISK</h4>
+Each month of ad free time costs {{ adFreeMonthCost|number_format(2) }} ISK. Each 6 months you purchase will give you a bonus month.<br/><br/>
+{% if accountBalance == 0 %}
+	<a href='/information/payments/'>For details on how to make payments click here</a>.<br/>
+	<em>Your balance is 0, sorry, but you currently do not have any options...</em>
+{% else %}
+	<form role="form" method="post">
+	{% for i in 12..1 %}
+		{% if accountBalance >= (adFreeMonthCost * i) %}
+			<div class="radio">
+			<label>
+				<input class="input" type="radio" id="buy{{ i }}" name="purchase" value="buy{{ i }}"> Purchase {{ i }} month{% if i > 1 %}s{% endif %} of no ads for your account.</input>
+			</label>
+			</div>
+		{% endif %}
+	{% endfor %}
+	<div class="radio"><label><input type="radio" name="purchase" value="donate"> Donate to {{ siteurl }} - Thank you!</input></label></div>
+	<button type="submit" class="btn btn-primary">Purchase</button>
+	</form>
+{% endif %}
+<hr/>
+<h4>Payment History</h4>
+{% if data.history|length %}
+<table class="table table-striped table-hover col-xs-6">
+	<tr><th>Date</th><th>Type</th><th>Amount</th></tr>
+{% for row in data.history %}
+	<tr><td>{{ row.dttm }}</td><td>{{ row.purchase }}</td><td>{{ row.amount }}</td></tr>
+{% endfor %}
+</table>
+{% else %}
+<em>No payment history at this time...</em>
+{% endif %}
+
+</div>

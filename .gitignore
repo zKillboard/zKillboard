@@ -1,0 +1,6 @@
+cache/
+composer.phar
+db
+config.php
+vendor/
+sitemaps/

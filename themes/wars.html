@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% set pageTitle = 'Wars' %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+{% for row in warTables %}
+	<div class="pull-left col-lg-6">
+	<center><h4>{{ row.name }}</h4></center>
+	{% set wars = row.wars %}
+	{% include 'components/wars_table.html' %}
+	</div>
+
+	{% if loop.index0 is odd %}
+		<div class="clearfix"></div>
+	{% endif %}
+{% endfor %}
+<div class="clearfix"></div>
+{% endblock %}

@@ -1,0 +1,19 @@
+<table class="table table-striped table-condensed table-bordered table-hover">
+	<thead>
+		<tr><th>Date</th>
+		<th style="text-align: right">Low Price</th>
+		<th style="text-align: right">Avg Price</th>
+		<th style="text-align: right">High Price</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for row in field %}
+		<tr>
+			<td>{{ row.priceDate }}</td>
+			<td style="text-align: right">{{ row.lowPrice|number_format(2) }}</td>
+			<td style="text-align: right">{{ row.avgPrice|number_format(2) }}</td>
+			<td style="text-align: right">{{ row.highPrice|number_format(2) }}</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>

@@ -1,0 +1,37 @@
+<div class="pull-left hidden-md hidden-xs hidden-sm" style="padding-right: 0.5em;">
+	{% set imageSize = 128 %}
+	{% set field = detail %}
+	{% if detail.shipTypeID and key == 'ship' %}
+		{% include 'components/image_ship.html' %}
+	{% endif %}
+	{% if detail.characterID and key == 'character' %}
+		{% include 'components/image_char.html' %}
+	{% endif %}
+	{% if detail.corporationID and key == 'corporation' %}
+		{% include 'components/image_corp.html' %}
+	{% endif %}
+	{% if detail.allianceID != 0 and key == 'alliance' %}
+		{% include 'components/image_alli.html' %}
+	{% endif %}
+	{% if detail.factionID != 0 and key == 'faction'%}
+		{% include 'components/image_faction.html' %}
+	{% endif %}
+	{% if detail.solarSystemName and key == 'system' %}
+		{% set imageSize = 64 %}
+		{% include 'components/image_system.html' %}
+	{% endif %}
+	{% if detail.regionName and key == 'region' %}
+		{% set imageSize = 64 %}
+		{% include 'components/image_region.html' %}
+	{% endif %}
+</div>
+{% if detail.groupShips %}
+<div class="pull-left">
+	{% set imageSize = 64 %}
+	{% set isPullLeft = true %}
+	{% for field in detail.groupShips %}
+		{% include 'components/image_ship.html' %}
+	{% endfor %}
+	{% set isPullLeft = false %}
+</div>
+{% endif %}

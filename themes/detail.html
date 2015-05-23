@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+
+{% if killdata.victim.characterID != 0 %}
+	{% set victim = killdata.victim.characterName %}
+{% else %}
+	{% set victim = killdata.victim.corporationName %}
+{% endif %}
+{% set pageTitle = killdata.victim.shipName ~ ' | ' ~ victim ~ ' | Killmail' %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% set description = victim ~ " lost their " ~ killdata.victim.shipName ~ " worth " ~ killdata.info.total_price|number_format(2, '.', ',') ~ " ISK." %}
+{% set canonical = fullsiteurl ~ "/kill/" ~ killdata.info.killID ~ "/" %}
+
+{% block header %}
+
+{% if message %}
+<div class="alert">
+	<a class="close" data-dismiss="alert" href="#" aria-hidden="true">&times;</a>
+	{{ message }}
+</div>
+{% endif %}
+{% set showImage = true %}
+{% endblock %}
+
+{% block content %}
+<div class="navbar navbar-default hidden-xs">
+	<div class="navbar-header">
+		<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+		</button>
+	</div>
+	<div class="collapse navbar-collapse navbar-sub">
+		<ul class="nav navbar-nav">
+			{% if extra.prevKillID %}
+			<li class="hidden-xs"><a href="/kill/{{ extra.prevKillID }}/">&lt;</a></li>
+			<li class="{{ isActive('overview', pageview) }}"><a href="/kill/{{ killdata.info.killID }}/overview/">Overview</a></li>
+			<li class="visible-lg {{ isActive('involved', pageview) }} hidden-xs"><a href="/kill/{{ killdata.info.killID }}/involved/">Involved Pilots ({{ killdata.info.number_involved }})</a></li>
+			{% endif %}
+		</ul>
+		<ul class="nav navbar-nav pull-right">
+			{% if killdata.info.killID < 0 %}
+			<li><a data-toggle="modal" data-target="#report" href="#">Report ({{ extra.reports }})</a></li>
+			{% endif %}
+			<li class="dropdown">
+				<a href="#" class="dropdown-toggle" data-toggle="dropdown">External <b class="caret"></b></i></a>
+				<ul class="dropdown-menu">
+					<li class="dropdown-header">O.smium</li>
+					<li><a href="http://o.smium.org/loadout/dna/{{ extra.dnatext}}" target="_blank">{{ killdata.victim.shipName }} Fit</a></li>
+					<li class="divider"></li>
+					<li class="dropdown-header">DOTLAN</li>
+					<li><a href="http://evemaps.dotlan.net/system/{{ killdata.info.system.solarSystemName|url_encode }}" target="_blank">{{ killdata.info.solarSystemName }}</a></li>
+					<li><a href="http://evemaps.dotlan.net/region/{{ killdata.info.system.regionName|url_encode }}" target="_blank">{{ killdata.info.regionName }}</a></li>
+					<li class="divider"></li>
+					<li class="dropdown-header">EVEGate</li>
+					<li><a href="https://gate.eveonline.com/Profile/{{ killdata.victim.characterName }}" target="_blank">{{ killdata.victim.characterName }}</a></li>
+					<li><a href="https://gate.eveonline.com/Profile/{{ finalBlow.characterName }}" target="_blank">{{ finalBlow.characterName }}</a></li>
+					<li><a href="https://gate.eveonline.com/Profile/{{ topDamage.characterName }}" target="_blank">{{ topDamage.characterName }}</a></li>
+					<li class="divider"></li>
+					<li class="dropdown-header">EVEWho Char Info</li>
+					<li><a href="http://evewho.com/pilot/{{ killdata.victim.characterName|url_encode }}" target="_blank">{{ killdata.victim.characterName }}</a></li>
+					<li><a href="http://evewho.com/pilot/{{ finalBlow.characterName|url_encode }}" target="_blank">{{ finalBlow.characterName }}</a></li>
+					<li><a href="http://evewho.com/pilot/{{ topDamage.characterName|url_encode }}" target="_blank">{{ topDamage.characterName }}</a></li>
+				</ul>
+			</li>
+			<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Export <b class="caret"></b></a>
+				<ul class="dropdown-menu">
+					{% if eveigb == true %}
+					<li><a data-toggle="modal" onclick="CCPEVE.showFitting('{{ extra.dnatext}}');" href="#">DNA</a></li>
+					{% else %}
+					<li><a data-toggle="modal" data-target="#DNA" href="#">DNA</a></li>
+					{% endif %}
+					{% if extra.crest %}
+					<li><a target="_blank" href="http://public-crest.eveonline.com/killmails/{{ extra.crest.killID }}/{{ extra.crest.hash }}/">CREST Link</a></li>
+					{% endif %}
+					<li><a data-toggle="modal" data-target="#EFT" href="#">EFT</a></li>
+					<li><a data-toggle="modal" data-target="#rawMailEDK" href="#">Killmail (EDK)</a></li>
+					<li><a data-toggle="modal" data-target="#rawMailzKB" href="#">Killmail (zKB)</a></li>
+				</ul>
+			</li>
+			<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Social <b class="caret"></b></i></a>
+				<ul class="dropdown-menu">
+					<li><a href="https://www.facebook.com/sharer/sharer.php?u={{url}}" target="_blank"><img src="//{{ siteurl }}/themes/img/social/fb_1.png"> Facebook</a></li>
+					<li><a href="https://twitter.com/intent/tweet?text={{ pageTitle|url_encode }}&url={{url}}" target="_blank"><img src="//{{ siteurl }}/themes/img/social/twitter_1.png"> Twitter</a></li>
+					<li><a href="https://plus.google.com/share?url={{url}}" target="_blank"><img src="//{{ siteurl }}/themes/img/social/google_plus.png"> Google+</a></li>
+					<li><a href="http://www.reddit.com/submit?url={{url}}&title={{ pageTitle|url_encode }}" target="_blank"><img src="//{{ siteurl }}/themes/img/social/reddit.png"> Reddit</a></li>
+				</ul>
+			</li>
+			<li><a href="/related/{{ killdata.info.system.solarSystemID }}/{{ extra.relatedtime }}/">Related</a></li>
+			{% if extra.nextKillID %}
+			<li class="hidden-xs"><a href="/kill/{{ extra.nextKillID }}/">&gt;</a></li>
+			{% endif %}
+		</ul>
+	</div>
+</div>
+
+{% if pageview == "overview" %}
+<div class="col-lg-8" style="padding-left: 0px;">
+	<table class="hidden-xs" style="background-color:transparent;">
+		<tr>
+			<td style="padding: 0px;">{% include 'components/fitting_wheel.html' %}</td>
+			<td style="width: 100%;" valign="top">{% include 'components/victim_info.html' %}</td>
+		<tr>
+	</table>
+	<div class="row visible-xs" style="padding: 0px;">
+		<div class="col-lg-5" style="padding: 0px;">{% include 'components/fitting_wheel.html' %}</div>
+		<div class="col-lg-5" style="padding: 0px;">{% include 'components/victim_info.html' %}</div>
+	</div>
+	<div class="row">
+		<div>{% include 'components/item_list.html' %}</div>
+	</div>
+</div>
+
+<div class="col-lg-4">
+		<div class="tab-pane fade in active" id="details">
+			{% if extra.warInfo.dscr %}
+			<div>
+				<table class="table table-condensed" style="margin: 0px; text-align: center;">
+				<tr><th style='text-align: center;'>War</th></tr>
+				<tr><td><a href="/war/{{ extra.warInfo.warID }}/">{{ extra.warInfo.dscr }}</a></td></tr>
+				</table>
+			</div>
+			{% endif %}
+			<div style='margin-bottom: 0.25em;'>{% include 'components/tdfb.html' %}</div>
+			<div>
+				<div style="margin: 0px;">{% include 'components/attackers.html' %}</div>
+			</div>
+			{% if extra.invAll | length %}
+			<div style="margin: 0px;">{% set field = extra.invAll %}{% include 'components/involved_summary.html' %}</div>
+			{% endif %}
+			<!--<div><small>Kill Added: {{ extra.insertTime }}</small></div>-->
+		</div>
+{% if disqusLoad %}
+	{% set disqusID = extra.commentID %}
+	<a name="comments"></a>
+	{% include 'components/disqus.html' %}
+{% endif %}
+</div>
+
+
+{% elseif pageview == "involved" %}
+<table class="table table-condensed table-striped">
+	<thead>
+		<tr class="titles">
+			<th colspan="2">Attacker</th>
+			<th colspan="2">Equipment</th>
+			<th>Damage</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% set imageSize = 32 %}
+	{% set resizeImage = 40 %}
+	{% for attacker in killdata.involved %}
+		<tr class="attacker">
+			<td class="icons" style="vertical-align: middle; width: 200px;">
+				{% set field = attacker %}
+				{% include 'components/image_char.html' %}
+				{% include 'components/image_corp.html' %}
+				{% include 'components/image_alli.html' %}
+				{% include 'components/image_faction.html' %}
+			</td>
+			<td class="pilot">
+				<a href="/character/{{ attacker.characterID }}/">{{ attacker.characterName }}</a><br>
+				<a href="/corporation/{{ attacker.corporationID }}/">{{ attacker.corporationName }}</a>
+				{% if attacker.allianceID != 0 %} / <a href="/alliance/{{attacker.allianceID}}/">{{ attacker.allianceName }}</a>{% endif %}
+				{% if attacker.factionID != 0 %} / <a href="/faction/{{attacker.factionID}}/">{{ attacker.factionName }}</a>{% endif %}
+			</td>
+			<td class="icons" style="width:100px;">
+				{% include 'components/image_ship.html' %}
+				{% include 'components/image_item.html' %}
+			</td>
+			<td class="equipment">
+				<a href="/item/{{attacker.shipTypeID}}/">{{ attacker.shipName }}</a> <br>
+				<a href="/item/{{attacker.weaponTypeID}}/">{{ attacker.weaponTypeName }}</a>
+			</td>
+			<td class="damage" style="vertical-align: middle;">{{ attacker.damage }}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% endif %}
+{% endblock %}
+
+{% block modal %}
+<!-- modal -->
+<div class="modal fade" id="report">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-content">
+				<h4 class="modal-title">Report Mail</h4>
+			</div>
+			<div class="modal-body">
+				{% if sessionusername %}
+					<form name="report" method="post" action="/kill/{{ killdata.info.killID }}/">
+						<div class="form-group">
+							<textarea id="report" name="report" type="text" required placeholder="Report Reason" class="col-md-12" rows="12"></textarea>
+						</div>
+						<div class="form-group">
+							<button type="submiut" class="btn btn-primary">Post Report</button>
+						</div>
+					</form>
+				{% else %}
+					<div class="alert alert-warning">Sorry, you are not logged in.</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</div>
+
+{% if eveigb != true %}
+<div class="modal fade" id="DNA">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title">DNA</h4>
+			</div>
+			<div class="modal-body">
+				<form name="myform">
+					<div class="form-group">
+						<textarea onClick="this.select();" class="fitting col-md-12" rows="2" id="dna" name="dna">{{ extra.dnatext }}</textarea>
+					</div>
+					<div class="form-group">			
+						<a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+{% endif %}
+<div class="modal fade" id="EFT">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title">EFT</h4>
+			</div>
+			<div class="modal-body">
+				<form name="myform">
+					<div class="form-group">
+						<textarea onClick="this.select();" class="fitting col-md-12" rows="15" id="eft" name="eft" readonly="readonly">[{{ killdata.victim.shipName }}, {{ killdata.victim.characterName }}'s {{ killdata.victim.shipName }}]
+{{ extra.efttext }}</textarea>
+					</div>
+					<div class="form-group">
+						<a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="rawMailEDK">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title">Killmail</h4>
+			</div>
+			<div class="modal-body">
+				<form name="myform" class="form">
+					<div class="form-group">
+						<textarea onClick="this.select();" class="fitting col-md-12" rows="15" id="eft" name="eft">{{ extra.edkrawmail }}</textarea>
+					</div>
+					<div class="form-group">	
+						<a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="rawMailzKB">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title">Killmail</h4>
+			</div>
+			<div class="modal-body">
+				<form name="myform" class="form">
+					<div class="form-group">
+						<textarea onClick="this.select();" class="fitting col-md-12" rows="15" id="eft" name="eft">{{ extra.zkbrawmail }}</textarea>
+					</div>
+					<div class="form-group">
+						<a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>	
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="//{{ siteurl }}/themes/css/bootstrap-wysihtml5.css">
+{% endblock %}
+{% block script %}
+<script type="text/javascript" src="//{{ siteurl }}/themes/js/wysihtml5-0.3.0.js"></script>
+<script type="text/javascript" src="//{{ siteurl }}/themes/js/bootstrap-wysihtml5.js"></script>
+<script type="text/javascript" src="//{{ siteurl }}/themes/js/bootstrap-tagmanager.js"></script>
+<script type="text/javascript">
+$(".modal-newissue").css("width", "800px");
+$(".modal-newissue").css("margin-left", "-400px");
+$(".modal-newissue").css("show");
+$('#ticket').wysihtml5({"font-styles": true, "emphasis": true, "lists": true, "html": false, "link": true, "image": true, "color": false});
+jQuery(".tagManager").tagsManager({
+	prefilled: ["New Issue"],
+	preventSubmitOnEnter: true,
+	typeahead: true,
+	typeaheadAjaxSource: null,
+	typeaheadSource: ["API", "Bugs", "Fake Kill", "Suggestion", "Question", "General", "Unban", "Harassment"],
+    blinkBGColor_1: '#FFFF9C',
+    blinkBGColor_2: '#CDE69C',
+	maxTags: 7,
+	backspace: [8]
+});
+</script>
+{% endblock %}
+{% block opengraph %}
+	<meta name="twitter:title" content="{{ pageTitle }}">
+	<meta name="twitter:image" content="https://image.eveonline.com/Render/{{ killdata.victim.shipTypeID }}_64.png">
+	<meta name="twitter:card" content="summary">
+	<meta name="og:title" content="{{ pageTitle }}">
+	<meta name="og:url" content="{{ fullsiteurl }}/kill/{{ killdata.info.killID }}/">
+{% if finalBlow.characterName == NULL %}
+	<meta name="twitter:description" content="{{ killdata.victim.characterName }} ({{ killdata.victim.corporationName}}) lost their {{ killdata.victim.shipName }} in {{ killdata.info.solarSystemName }} ({{ killdata.info.regionName }})">
+	<meta name="og:description" content="{{ killdata.victim.characterName }} ({{ killdata.victim.corporationName}}) lost their {{ killdata.victim.shipName }} in {{ killdata.info.solarSystemName }} ({{ killdata.info.regionName }})">
+{% else %}
+	<meta name="twitter:description" content="{{ killdata.victim.characterName }} ({{ killdata.victim.corporationName}}) lost their {{ killdata.victim.shipName }} in {{ killdata.info.system.solarSystemName }} ({{ killdata.info.system.regionName }}). Final Blow by {{ finalBlow.characterName }} ({{ finalBlow.corporationName }}) flying in a {{ finalBlow.shipName }}. Total Value: {{ killdata.info.zkb.totalValue|number_format(2, '.', ',')}} ISK">
+	<meta name="og:description" content="{{ killdata.victim.characterName }} ({{ killdata.victim.corporationName}}) lost their {{ killdata.victim.shipName }} in {{ killdata.info.system.solarSystemName }} ({{ killdata.info.system.regionName }}). Final Blow by {{ finalBlow.characterName }} ({{ finalBlow.corporationName }}) flying in a {{ finalBlow.shipName }}. Total Value: {{ killdata.info.zkb.totalValue|number_format(2, '.', ',')}} ISK">
+{% endif %}
+	<meta name="og:image" content="https://image.eveonline.com/Render/{{ killdata.victim.shipTypeID }}_128.png">
+{% endblock %}

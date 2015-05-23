@@ -1,0 +1,32 @@
+{% if topSet | length %}
+<div class="container"> 
+{% if topSet.title %}
+<h4 style="text-align: center;">{{ topSet.title }}</h4>
+{% else %}
+<h4 style="text-align: center;">{{ topTitle }}</h4>
+{% endif %}
+<div class="clearfix"></div>
+<div class="clearfix"></div>
+{% set imageSize = 64 %}
+{% set shipNameLength = 32 %}
+{% for data in topSet %}
+  <div class="col-sm-2 pull-left" style="text-align: center">
+		{% set field = data.victim %}
+		{% set shipImageLinkOverride = data.killID %}
+		{% set shipNameLength = 20 %}
+		<span class="hidden-xs">{% include 'components/text_ship.html' %}<br/></span>
+		{% include 'components/image_ship.html' %}<br/>
+		<span class="hidden-xs">{% if field.characterName|length > 0 %}
+		  {% include 'components/text_char.html' %} </td>
+		{% else %}
+		  {% include 'components/text_corp.html' %} </td>
+		{% endif %}<br/></span>
+		<h6>{{ formatIsk(data.zkb.totalValue) }} ISK
+          {% if disqusLoad %}
+            <a class="hidden-xs" href="/kill/{{ data.killID }}/#comments" data-disqus-identifier="{{ data.killID }}" rel="tooltip" title="Comments"></a>
+          {% endif %}</h6>
+	  <br/>
+  </div>
+{% endfor %}
+</div>
+{% endif %}

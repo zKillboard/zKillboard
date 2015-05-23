@@ -1,0 +1,36 @@
+body {
+	background-color: #F0FFFF;
+	background-image: url("/themes/img/bg_white.jpg");
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
+	background-attachment: fixed;
+	filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='.myBackground.jpg', sizingMethod='scale');
+	-ms-filter: "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='myBackground.jpg', sizingMethod='scale')";
+}
+
+.nobackground {
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	border-radius: 10px;
+	background: #F8FEFE;
+	border: #solid 10px #F8FEFE;
+	background-color: rgba(248,254,254,0.7);
+	border-color: solid 5px rgba(0,0,0,0.1);
+	box-shadow: 0 0 15px 15px rgba(248,254,254,0.7);
+	opacity: 0.95;
+}
+
+.item_dropped_row {
+	background-color: #FBEFEF;
+}
+.item_dropped {
+	color: black;
+}
+.item_dropped_qty {
+	color: white;
+}
+.item_destroyed {
+	color: red;
+}

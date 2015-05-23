@@ -1,0 +1,58 @@
+<strong><a href="/kill/{{ info.ticket.0.killID }}/" target="_blank">KillID: {{ info.ticket.0.killID }}</a></strong>
+<hr/>
+<table>
+	<tr>
+		<td>
+			<form name="statusform" method="post" action="/moderator/reportedkills/{{ id }}/">
+				{% if info.ticket.0.status != 0 %}
+					<input id="status" name="status" value="0" type="hidden">
+					<button type="submit" class="btn btn-large btn-warning">Close</button>
+				{% else %}
+					<input id="status" name="status" value="1" type="hidden">
+					<button type="submit" class="btn btn-large btn-primary">Open</button>
+				{% endif %}
+			</form>
+		</td>
+		<td>
+			<form name="statusform" method="post" action="/moderator/reportedkills/{{ id }}/">
+				<input id="delete" name="delete" value="{{ info.ticket.0.killID }}" type="hidden">
+				<button type="submit" class="btn btn-large btn-primary">Delete</button>
+			</form>
+		</td>
+	</tr>
+</table>
+
+<h3>Ticket By: <small>{{ info.ticket.0.name }}</small> Posted The: <small>{{ info.ticket.0.datePosted }}</small></h3>
+<div class="well">{{ info.ticket.0.ticket|raw }}</div>
+<hr/>
+
+{% if info.replies is not empty %}
+	<h4>Replies</h4>
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th class="col-lg-1"></th>
+				<th class="col-lg-10"></th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for data in info.replies %}
+			<tr>
+				<td><strong>{{ data.name }} <br> {% if data.moderator %}<i class="label label-info">Moderator</i>{% endif %}</strong></td>
+				<td>{{ data.reply|raw }}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endif %}
+
+{% if info.ticket.0.status %}
+<h4>Reply</h4>
+<div class="col-lg-12 pull-left">
+	<form name="reports" method="post" action="/moderator/reportedkills/{{ id }}/">
+		<textarea id="reply" name="reply" type="text" required placeholder="Reply" class="col-lg-12" rows="12"></textarea>
+		<input type="hidden" id="report" name="report" value="report">
+		<p><button type="submit" class="btn btn-large btn-primary" style="margin-left: 30px;" >Post Reply</button></p>
+	</form>
+</div>
+{% endif %}
