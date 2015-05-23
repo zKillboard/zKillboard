@@ -85,7 +85,7 @@ class Detail {
 			$key = $itm["typeName"] . "|" . $itm["flagName"];
 			if(isset($itm["flagName"]))
 			{
-				if(@$itm["fittable"] && $itm["inContainer"] == 0) // not ammo or whatever
+				if($itm["fittable"] && $itm["inContainer"] == 0) // not ammo or whatever
 				{
 					$repeats = @$itm["quantityDropped"] + @$itm["quantityDestroyed"];
 					$i = 0;
@@ -155,7 +155,7 @@ subs:
 		// Ammo shit
 		foreach($items as $itm) {
 			if (!isset($itm["inContainer"])) $itm["inContainer"] = 0;
-			if($itm["inContainer"] == 0 && !@$itm["fittable"] && isset($itm["flagName"])) // possibly ammo
+			if($itm["inContainer"] == 0 && !$itm["fittable"] && isset($itm["flagName"])) // possibly ammo
 			{
 				if($itm["flagName"] == "High Slots") // high slot ammo
 					$eftarray["high"][$itm["flag"]][] = array("typeName" => $itm["typeName"], "typeID" => $itm["typeID"], "charge" => true);
