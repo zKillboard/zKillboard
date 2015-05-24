@@ -176,7 +176,7 @@ class MongoFilter
 					break;
 				case "endTime":
 					$killID = self::getKillIDFromDttm($value, 1);
-					$and[] = ['killID' => ['$lte' => $killID ]];
+					if ($killID !== null) $and[] = ['killID' => ['$lte' => $killID ]];
 					break;
 				case "orderBy":
 					// handled by sort, can be ignored
@@ -250,6 +250,7 @@ class MongoFilter
 
 		if (is_string($dttm)) $time = strtotime($dttm);
 		else $time = $dttm;
+		if ($time > time()) return null;
 
 		$start = null;
 		$end = null;
