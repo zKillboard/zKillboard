@@ -87,17 +87,7 @@
 				{% include "navigationbar.html" %}
 			</div>
 
-<!--
-					<center><div class="alert alert-danger" style="padding: 0px; margin: 0px; psition: relative; top: -15px; width:800px;"><center>Some big backend changes have been completed. Some things will still need to be tweaked (including stats).<br/>I'll finish more tomorrow! - Squizz</center></div></center>
-<br/><br/> -->
-
-
 			<div class="container nobackground">
-				<!-- Notification header -->
-				{% if getNotification() %}
-					<div class="alert" style="padding: 0px; margin: 0px; psition: relative; top: -15px;"><center>{{ getNotification()|raw }}</center></div>
-				{% endif %}
-
 				<!-- Account balance information -->
 				{% if accountBalance >= adFreeMonthCost and accountBalance > 0 %}
 					<div class="alert alert-success" style="font-weight: bold"><center><a href='/account/payments'>You have an account balance of {{ accountBalance|number_format(2) }} ISK.  Click here to do something with it!</a></center></div>
