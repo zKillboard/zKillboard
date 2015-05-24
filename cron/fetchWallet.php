@@ -2,6 +2,7 @@
 
 require_once "../init.php";
 
+global $mdb;
 $lastWalletFetch = Storage::retrieve("NextWalletFetch");
 $time = strtotime($lastWalletFetch);
 if ($time >= time()) exit();
@@ -35,7 +36,7 @@ applyBalances();
 
 function applyBalances()
 {
-	global $walletCharacterID, $baseAddr;
+	global $walletCharacterID, $baseAddr, $mdb;
 	$toBeApplied = Db::query("select * from zz_account_wallet where paymentApplied = 0", array(), 0);
 	foreach($toBeApplied as $row)
 	{
@@ -66,11 +67,11 @@ function applyBalances()
 		if ($userID == null) 
 		{
 			$charID = $row["ownerID1"];
-			$keyIDs = Db::query("select keyID from zz_api_characters where characterID = :charID", array(":charID" => $charID), 1);
+			$keyIDs = $mdb->find("apiCharacters", ['characterID' => (int) $charID]);
 			foreach($keyIDs as $keyIDRow) {
 				if ($userID) continue;
-				$keyID = $keyIDRow["keyID"];
-				$userID = Db::queryField("select userID from zz_api where keyID = :keyID", "userID", array(":keyID" => $keyID), 1);
+				$keyID = (int) $keyIDRow["keyID"];
+				$userID = $mdb->findField("apis", "userID", ['keyID' => $keyID]);
 			}
 		}
 
