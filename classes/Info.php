@@ -557,7 +557,7 @@ class Info
 					$groupID = self::getGroupID($value);
 					if (!isset($element["groupID"])) $element["groupID"] = $groupID;
 					if (!isset($element["groupName"])) $element["groupName"] = self::getGroupName($groupID);
-					$element["fittable"] = (int) $mdb->findField("information", "fittable", ['type' => "typeID", 'id' => (int) $value]);
+					$element["fittable"] = (int) $mdb->findField("information", "fittable", ['cacheTime' => 3600, 'type' => "typeID", 'id' => (int) $value]);
 					break;
 				case "solarSystemID":
 					$info = self::getSystemInfo($value);
