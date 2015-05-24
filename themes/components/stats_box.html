@@ -22,7 +22,7 @@
 		{% set greenred = shipEff >= 50 ? 'green' : 'red' %}
 		<td class="{{greenred}} hidden-xs" style="text-align: right">{{ shipEff | number_format(1) }}</td>
 		<th style="text-align: right;">
-			<strong>{{ statistics.overallRank == 0 ? '-' : statistics.overallRank }}</strong>
+			<strong>{{ statistics.overallRank == 0 ? '-' : statistics.overallRank|number_format(0) }}</strong>
 			{% if statistics.overallRank < statistics.prevRanks.overallRank and statistics.overallRank != 0 and statistics.prevRanks.overallRank != 0 %}
 				<small><span rel="tooltip" title="Ranked #{{ statistics.prevRanks.overallRank|number_format(0) }} on {{ statistics.prevRanks.date }}" class="glyphicon glyphicon-arrow-up green"></span></small>
 			{% elseif statistics.overallRank > statistics.prevRanks.overallRank and statistics.overallRank != 0 and statistics.prevRanks.overallRank != 0 %}
