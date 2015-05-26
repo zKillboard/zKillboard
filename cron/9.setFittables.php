@@ -13,7 +13,7 @@ foreach ($json["groups"] as $group)
 {
 	$href = $group["href"];
 	$types = CrestTools::getJSON($href);
-	foreach ($types["types"] as $type)
+	if ($types != null && $types["types"] != null) foreach ($types["types"] as $type)
 	{
 		$typeID = getTypeID($type["href"]);
 		$mdb->set("information", ['type' => 'typeID', 'id' => $typeID], ['fittable' => true]);
