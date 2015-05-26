@@ -19,8 +19,8 @@ class Account
 					case "system":
 						$row["solarSystemID"] = $row["id"];
 						$row["solarSystemName"] = $row["name"];
-						$sunType = Db::queryField("SELECT sunTypeID FROM ccp_systems WHERE solarSystemID = :id", "sunTypeID", array(":id" => $row["id"]));
-						$row["sunTypeID"] = $sunType;
+						//$sunType = Db::queryField("SELECT sunTypeID FROM ccp_systems WHERE solarSystemID = :id", "sunTypeID", array(":id" => $row["id"]));
+						//$row["sunTypeID"] = $sunType;
 						break;
 
 					case "item":
