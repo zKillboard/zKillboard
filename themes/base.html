@@ -166,6 +166,16 @@
 			});
 		</script>
 
+        <script type="text/javascript">
+            $(function() {
+                $(document).keyup(function(e) {
+                    if ($("input:focus, textarea:focus").length === 0 && e.which === 191) {
+                        $("#searchbox").focus();
+                    }
+                });
+            });
+        </script>
+
 		{% block script %}
 		{% endblock %}
 
