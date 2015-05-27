@@ -131,9 +131,6 @@ $twig->addFunction(new Twig_SimpleFunction("truncate", "Util::truncate"));
 $twig->addFunction(new Twig_SimpleFunction("chart", "Chart::addChart"));
 $twig->addFunction(new Twig_SimpleFunction("getMonth", "Util::getMonth"));
 $twig->addFunction(new Twig_SimpleFunction("getLongMonth", "Util::getLongMonth"));
-$twig->addFunction(new Twig_SimpleFunction("isMaintenance", "Util::isMaintenanceMode"));
-$twig->addFunction(new Twig_SimpleFunction("getMaintenanceReason", "Util::getMaintenanceReason"));
-$twig->addFunction(new Twig_SimpleFunction("getNotification", "Util::getNotification"));
 
 // Information dropdown
 $links = Util::informationPages();
