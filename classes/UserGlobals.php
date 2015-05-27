@@ -24,7 +24,7 @@ class UserGlobals extends Twig_Extension
     	}
 
 		global $mdb;
-		$kills = $mdb->findField("storage", "contents", ['cacheTime' => 60, 'locker' => 'killsProcessed']);
+		$kills = $mdb->count("oneHour");
 		$this->addGlobal($result, "killsLastHour", $kills, 0);
 		return $result;
 	}

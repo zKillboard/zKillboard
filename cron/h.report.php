@@ -7,7 +7,7 @@ if ($minute != 0) exit();
 
 $mdb = new Mdb();
 
-$kills = $mdb->findField("storage", "contents", ['locker' => 'killsProcessed']);
+$kills = $mdb->count("oneHour");
 $count = $mdb->findField("storage", "contents", ['locker' => 'totalKills']);
 
 if ($kills > 0)

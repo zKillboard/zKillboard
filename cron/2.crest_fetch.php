@@ -37,6 +37,7 @@ while (!Util::exitNow() && $timer->stop() < 115000)
 		unset($killmail["zkb"]);
 		unset($killmail["_id"]);
 
+		$mdb->save("oneHour", ['killID' => $id, 'added' => $mdb->now()]);
 		if (!$mdb->exists("rawmails", ['killID' => (int) $id])) $rawmails->save($killmail);
 
 		if (!validKill($killmail))
