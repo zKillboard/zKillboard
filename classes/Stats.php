@@ -150,11 +150,6 @@ class Stats
 		if (!$debug) MongoCursor::$timeout = -1;
 		$result = $killmails->aggregateCursor($pipeline);
 		$result = iterator_to_array($result);
-		/*if ($timer->stop() > 100)
-		{
-			$params = serialize($parameters);
-			Log::log("agg by $groupByColumn took " . $timer->stop() . "ms - $params");
-		}*/
 
 		Info::addInfo($result);
 		Cache::set($hashKey, $result, 3600);
