@@ -11,7 +11,6 @@ $mdb = new Mdb();
 $types = ['characterID', 'corporationID', 'allianceID', 'factionID', 'groupID', 'shipTypeID', 'solarSystemID', 'regionID'];
 $timer = new Timer();
 $ninetyDayKillID = MongoFilter::getKillIDFromTime(time() - (90 * 86400));
-//echo "$ninetyDayKillID\n";
 $date = new MongoDate(strtotime(date("Y-m-d")));
 
 // Clear out ranks more than two weeks old
@@ -20,8 +19,8 @@ $mdb->remove("ranksProgress", ['date' => [ '$lt' => $mdb->now(-86400 * 14) ]]);
 foreach ($types as $type)
 {
 	Util::out("Started recent calcs for $type");
-	//$calcStats = $mdb->find("information", ['type' => $type]);
-	//foreach ($calcStats as $row) calcStats($row, $ninetyDayKillID);
+	$calcStats = $mdb->find("information", ['type' => $type]);
+	foreach ($calcStats as $row) calcStats($row, $ninetyDayKillID);
 	Util::out("Completed recent calcs for $type");
 }
 
@@ -34,9 +33,9 @@ function calcStats($row, $ninetyDayKillID)
 
 	$killID = (int) @$row["killID"];
 	$key = ['type' => $type, 'id' => $id];
-	if ($killID < $ninetyDayKillID || !$mdb->exists("statistics", $key))
+	if ($killID < $ninetyDayKillID)
 	{
-		$mdb->getCollection("statistics")->update($key, ['$unset' => ['recentShipsLost' => 1, 'recentPointsLost' => 1, 'recentIskLost' => 1, 'recentShipsDestroyed' => 1, 'recentPointsDestroyed' => 1, 'recentIskDestroyed' => 1]]);
+		$mdb->getCollection("statistics")->update($key, ['$unset' => ['recentShipsLost' => 1, 'recentPointsLost' => 1, 'recentIskLost' => 1, 'recentShipsDestroyed' => 1, 'recentPointsDestroyed' => 1, 'recentIskDestroyed' => 1, 'recentOverallRank' => 1, 'recentOverallScore' => 1]]);
 		return;
 	}
 
