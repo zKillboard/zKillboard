@@ -34,7 +34,6 @@ while ($timer->stop() <= 58000)
 		\Pheal\Core\Config::getInstance()->http_post = false;
 		\Pheal\Core\Config::getInstance()->http_keepalive = 30; // KeepAliveTimeout in seconds
 		\Pheal\Core\Config::getInstance()->http_timeout = 60;
-		//if ($phealCacheLocation != null) \Pheal\Core\Config::getInstance()->cache = new \Pheal\Cache\FileStorage($phealCacheLocation);
 		\Pheal\Core\Config::getInstance()->api_customkeys = true;
 		\Pheal\Core\Config::getInstance()->api_base = "https://api.eveonline.com/";
 		$pheal = new \Pheal\Pheal($keyID, $vCode);
@@ -50,7 +49,6 @@ while ($timer->stop() <= 58000)
 		try 
 		{
 			$result = $pheal->KillMails($params);
-			//Util::out("(apiConsumer) Poked KillLog $keyID $vCode $charID");
 		} catch (Exception $ex)
 		{
 			$errorCode = $ex->getCode();
@@ -118,12 +116,10 @@ while ($timer->stop() <= 58000)
 			Util::out("$killsAdded kills added by $name");
 		}
 
-		// Temp code to show chars as api verified in the mariadb
 		$corpID = (int) @$info["corporationID"];
-		//Db::execute("replace into zz_api_characters (keyID, characterID, corporationID, isDirector, maxKillID, lastChecked, errorCode) values (:keyID, :charID, :corpID, :isD, :maxKillID, now(), 0)", array(":keyID" => $keyID, ":charID" => $charID, ":isD" => ($type == "Corporation" ? 'T' : 'F'), ":maxKillID" => $newMaxKillID, ":corpID" => $corpID));
 
 		$cachedUntil = $newMaxKillID == 0 ? $mdb->now(86400) : new MongoDate(strtotime($result->cached_until));
-		$mdb->set("apiCharacters", $row, ['maxKillID' => $newMaxKillID, 'cachedUntil' => $cachedUntil]);
+		$mdb->set("apiCharacters", ['_id' => $row["_id"]], ['maxKillID' => $newMaxKillID, 'cachedUntil' => $cachedUntil]);
 		exit();
 	}
 }
