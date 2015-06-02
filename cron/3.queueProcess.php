@@ -35,8 +35,42 @@ while(!Util::exitNow())
 		$system = $mdb->findDoc("information", ['type' => 'solarSystemID', 'id' => (int) $mail["solarSystem"]["id"]]);
 		if ($system == null)
 		{
-			Util::out("Unknown system - " . $mail["solarSystem"]["id"]);
-			continue;
+			// system doesn't exist in our database yet
+			$crestSystem = CrestTools::getJSON($mail["solarSystem"]["href"]);
+			$name = $mail["solarSystem"]["name"];
+			if ($crestSystem == "") exit("no system \o/ $killID $id" . $system["href"]);
+
+			$ex = explode("/", $crestSystem["constellation"]["href"]);
+			$constID = (int) $ex[4];
+			if (!$mdb->exists("information", ['type' => 'constellationID', 'id' => $constID]))
+			{
+				$crestConst = CrestTools::getJSON($crestSystem["constellation"]["href"]);
+				if ($crestConst == "") exit();
+				$constName = $crestConst["name"];
+
+				$regionURL = $crestConst["region"]["href"];
+				$ex = explode("/", $regionURL);
+				$regionID = (int) $ex[4];
+
+				$mdb->insertUpdate("information", ['type' => 'constellationID', 'id' => $constID], ['name' => $constName, 'regionID' => $regionID]);
+				if ($debug) Util::out("Added constellation: $constName");
+			}
+			$constellation = $mdb->findDoc("information", ['type' => 'constellationID', 'id' => $constID]);
+			$regionID = (int) $constellation["regionID"];
+			if (!$mdb->exists("information", ['type' => 'regionID', 'id' => $regionID]))
+			{
+				$regionURL = "http://public-crest.eveonline.com/regions/$regionID/";
+				$crestRegion = CrestTools::getJSON($regionURL);
+				if ($crestRegion == "") exit();
+
+				$regionName = $crestRegion["name"];
+				$mdb->insertUpdate("information", ['type' => 'regionID', 'id' => $regionID], ['name' => $regionName]);
+				if ($debug) Util::out("Added region: $regionName");
+			}
+			$mdb->insertUpdate("information", ['type' => 'solarSystemID', 'id' => (int) $mail["solarSystem"]["id"]], ['name' => $name, 'regionID' => $regionID, "secStatus" => ((double) $crestSystem["securityStatus"]), "secClass" => $crestSystem["securityClass"]]);
+			Util::out("Added system: $name");
+
+			$system = $mdb->findDoc("information", ['type' => 'solarSystemID', 'id' => (int) $mail["solarSystem"]["id"]]);
 		}
 		$solarSystem = array();
 		$solarSystem["solarSystemID"] = (int) $mail["solarSystem"]["id"];
