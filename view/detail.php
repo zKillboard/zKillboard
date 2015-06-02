@@ -79,6 +79,7 @@ if ($details == null)
 	$extra["destroyedprice"] = usdeurgbp($extra["lostisk"]);
 	$extra["droppedprice"] = usdeurgbp($extra["droppedisk"]);
 	$extra["fittedprice"] = usdeurgbp($extra["fittedisk"]);
+	$extra["shipprice"] = Price::getItemPrice($killdata["victim"]["shipTypeID"], date("Ymd", strtotime($killdata["info"]["dttm"])));
 	$extra["efttext"] = Fitting::EFT($extra["fittingwheel"]);
 	$extra["dnatext"] = Fitting::DNA($killdata["items"],$killdata["victim"]["shipTypeID"]);
 	$extra["edkrawmail"] = "deprecated - use CREST";
