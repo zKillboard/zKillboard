@@ -13,6 +13,11 @@ class Api
 		$exists = $mdb->exists("apis", ['keyID' => $keyID, 'vCode' => $vCode]);
 		if ($exists)
 		{
+			if ($userID > 0)
+			{
+				$mdb->set("apis", ['keyID' => $keyID, 'vCode' => $vCode], ['userID' => $userID]);
+				return "We have assigned this API key to your account.";
+			}
 			return "We already have this API in our database.";
 		}
 
