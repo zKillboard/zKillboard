@@ -262,17 +262,17 @@ foreach ($domainChars as $domainChar) {
 		$allis[] = $domainChar;
 	}
 
-	$showFacebook = Util::getPost("showFacebook");
-	if ($showFacebook)
+	$showDisqus = Util::getPost("showDisqus");
+	if ($showDisqus)
 	{
-		UserConfig::set("showFacebook", $showFacebook == "true");
-		$error = "Facebook setting updated to " . ($showFacebook ? " display." : " not display.") . " The next page load will reflect the change.";
+		UserConfig::set("showDisqus", $showDisqus == "true");
+		$error = "Disqus setting updated to " . ($showDisqus ? " display." : " not display.") . " The next page load will reflect the change.";
 	}
 }
 $data["domainCorps"] = $corps;
 $data["domainAllis"] = $allis;
 $data["domainChars"] = $domainChars;
-$data["showFacebook"] = UserConfig::get("showFacebook", true);
+$data["showDisqus"] = UserConfig::get("showDisqus", true);
 
 $app->render("account.html", array("data" => $data, "message" => $error, "key" => $key, "reqid" => $reqid));
 

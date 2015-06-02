@@ -21,7 +21,7 @@ class UserGlobals extends Twig_Extension
 			$this->addGlobal($result, "sessionuserid", $u["id"]);
 			$this->addGlobal($result, "sessionadmin", (bool)$u["admin"]);
 			$this->addGlobal($result, "sessionmoderator", (bool)$u["moderator"]);
-    	}
+		}
 
 		global $mdb;
 		$kills = $mdb->count("oneHour");

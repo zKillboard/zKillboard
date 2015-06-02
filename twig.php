@@ -75,6 +75,7 @@ $twig->addGlobal("mobilebottomad", Google::ad($bottomCaPub, $bottomAdSlot, $adWi
 $twig->addGlobal("igbtopad", Google::ad($topCaPub, $topAdSlot, $adWidth = 728, $adHeight = 90));
 $twig->addGlobal("igbbottomad", Google::ad($bottomCaPub, $bottomAdSlot, $adWidth = 728, $adHeight = 90));
 $twig->addGlobal("analytics", Google::analytics($analyticsID, $analyticsName));
+$disqus &= UserConfig::get("showDisqus", true);
 $twig->addGlobal("disqusLoad", $disqus);
 $noAdPages = array("/account/", "/moderator/", "/ticket", "/register/", "/information/", "/login");
 foreach($noAdPages as $noAdPage) {
@@ -97,13 +98,14 @@ if ($banner)
 {
 	$banner = str_replace("http://i.imgur.com/", "https://i.imgur.com/", $banner);
 	$banner = str_replace("http://imgur.com/", "https://imgur.com/", $banner);
-	$twig->addGlobal("headerImage", $banner);
+	//$twig->addGlobal("headerImage", $banner);
 }
 
-$adfree = Db::queryField("select count(*) count from zz_subdomains where adfreeUntil >= now() and subdomain = :server", "count", array(":server" => $_SERVER["SERVER_NAME"]), 60);
-$adfree |= Db::queryField("select count(*) count from zz_subdomains where adfreeUntil >= now() and alias = :server", "count", array(":server" => $_SERVER["SERVER_NAME"]), 60);
+$adfree = false; //Db::queryField("select count(*) count from zz_subdomains where adfreeUntil >= now() and subdomain = :server", "count", array(":server" => $_SERVER["SERVER_NAME"]), 60);
+$adfree |= false; //Db::queryField("select count(*) count from zz_subdomains where adfreeUntil >= now() and alias = :server", "count", array(":server" => $_SERVER["SERVER_NAME"]), 60);
 if ($adfree) $twig->addGlobal("showAds", false);
 else $twig->addGlobal("showAds", $showAds);
+$_SERVER["SERVER_NAME"] = "zkillboard.com";
 Subdomains::getSubdomainParameters($_SERVER["SERVER_NAME"]);
 
 $twig->addGlobal("KillboardName", (isset($killboardName) ? $killboardName : "zKillboard"));
