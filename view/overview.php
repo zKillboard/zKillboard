@@ -149,6 +149,7 @@ if ($pageType == "stats" && in_array($key, $onlyHistory)) {
 
 // Figure out if the character or corporation has any API keys in the database
 $apiVerified = false;
+$nextApiCheck = null;
 if(in_array($key, array("character", "corporation")))
 {
 	if($key == "character")
@@ -158,7 +159,9 @@ if(in_array($key, array("character", "corporation")))
 	}
 	else
 	{
-		$apiVerified = $mdb->exists("apiCharacters", ['type' => 'Corporation', 'corporationID' => (int) $id]);
+		$apiDoc = $mdb->findDoc("apiCharacters", ['type' => 'Corporation', 'corporationID' => (int) $id], ['cachedUntil' => 1]);
+		if ($apiDoc != null) $apiVerified = true;
+		if ($apiVerified && $apiDoc["cachedUntil"]->sec > time()) $nextApiCheck = date("H:i", $apiDoc["cachedUntil"]->sec);
 	}
 }
 
@@ -258,7 +261,7 @@ if (is_array($months) && sizeof($months) > 0)
 
 } else $statistics["months"] = null;
 
-$renderParams = array("pageName" => $pageName, "kills" => $kills, "losses" => $losses, "detail" => $detail, "page" => $page, "topKills" => $topKills, "mixed" => $mixedKills, "key" => $key, "id" => $id, "pageType" => $pageType, "solo" => $solo, "topLists" => $topLists, "corps" => $corpList, "corpStats" => $corpStats, "summaryTable" => $stats, "pager" => (sizeof($kills) + sizeof($losses) >= $limit), "datepicker" => true, "apiVerified" => $apiVerified, "prevID" => $prevID, "nextID" => $nextID, "extra" => $extra, "statistics" => $statistics);
+$renderParams = array("pageName" => $pageName, "kills" => $kills, "losses" => $losses, "detail" => $detail, "page" => $page, "topKills" => $topKills, "mixed" => $mixedKills, "key" => $key, "id" => $id, "pageType" => $pageType, "solo" => $solo, "topLists" => $topLists, "corps" => $corpList, "corpStats" => $corpStats, "summaryTable" => $stats, "pager" => (sizeof($kills) + sizeof($losses) >= $limit), "datepicker" => true, "nextApiCheck" => $nextApiCheck, "apiVerified" => $apiVerified, "prevID" => $prevID, "nextID" => $nextID, "extra" => $extra, "statistics" => $statistics);
 
 $app->render("overview.html", $renderParams);
 
