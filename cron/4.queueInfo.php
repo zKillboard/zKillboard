@@ -85,7 +85,7 @@ function updateInfo($killID)
 			$mdb->insertUpdate("information", ['type' => 'constellationID', 'id' => $constID], ['name' => $constName, 'regionID' => $regionID]);
 			if ($debug) Util::out("Added constellation: $constName");
 		}
-		$constellation = $mdb->findDoc("information", ['type' => 'constellation', 'id' => $constID]);
+		$constellation = $mdb->findDoc("information", ['type' => 'constellationID', 'id' => $constID]);
 		$regionID = (int) $constellation["regionID"];
 
 		if (!$mdb->exists("information", ['type' => 'regionID', 'id' => $regionID]))
