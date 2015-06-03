@@ -26,7 +26,7 @@
 		<td class="icons hidden-xs"><div align="center">{% include 'components/image_ship.html' %}</div></td>
 		<td><a href="/item/{{killdata.victim.shipTypeID}}/">{{killdata.victim.shipName}}</a></td>
 		<td><div align="right" class="qty">1</div></td>
-		<td class="price"><div align="right">0 {{ extra.shipprice|number_format(2, '.', ',') }}</div></td>
+		<td class="price"><div align="right">{{ extra.shipprice|number_format(2, '.', ',') }}</div></td>
 	</tr>
 	<tr class="item_dropped_row hidden-xs">
 		<td colspan="2"><h5>Total Dropped:</h5></td>
