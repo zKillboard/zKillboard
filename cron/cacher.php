@@ -18,7 +18,7 @@ while (!Util::exitNow())
 				{
 					if (!$mdb->exists("htmlCache", ['uri' => $uri]))
 					{
-						$contents = @file_get_contents("https://zkillboard.com{$uri}");
+						$contents = @file_get_contents("http://zkillboard.com{$uri}");
 						if ($contents != "")
 						{
 							$mdb->save("htmlCache", ['uri' => $uri, 'dttm' => $mdb->now(), 'contents' => $contents]);
