@@ -87,17 +87,20 @@ class Mdb
 
 	public function removeField($collection, $key, $value)
 	{
+		$key = isset($key['_id']) ? ['_id' => $key['_id']] : $key;
 		return $this->getCollection($collection)->update($key, ['$unset' => [$value => 1]]);
 	}
 
 	public function set($collection, $key, $value, $multi = false)
 	{
+		$key = isset($key['_id']) ? ['_id' => $key['_id']] : $key;
 		return $this->getCollection($collection)->update($key, ['$set' => $value], ['multiple' => $multi]);
 	}
 
 
 	public function remove($collection, $key)
 	{
+		$key = isset($key['_id']) ? ['_id' => $key['_id']] : $key;
 		return $this->getCollection($collection)->remove($key);
 	}
 
