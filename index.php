@@ -17,7 +17,7 @@ session_start();
 // Check if the user has autologin turned on
 if(!User::isLoggedIn()) User::autoLogin();
 
-if (!User::isLoggedIn() && @$_SERVER["SERVER_NAME"] == "zkillboard.com")
+if (!User::isLoggedIn())
 {
         $uri = @$_SERVER["REQUEST_URI"];
         if ($uri != "")
