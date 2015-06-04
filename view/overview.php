@@ -62,6 +62,11 @@ try {
 	return;
 }
 $pageName = isset($detail[$map[$key]["column"] . "Name"]) ? $detail[$map[$key]["column"] . "Name"] : "???";
+if ($pageName == "???" && !$mdb->exists("information", ['id' => $id]))
+{
+	return $app->render("404.html", array("message" => "This entity is not in our database."), 404);
+	die();
+}
 $columnName = $map[$key]["column"] . "ID";
 $mixedKills = $pageType == "overview" && $map[$key]["mixed"] && UserConfig::get("mixKillsWithLosses", true);
 
