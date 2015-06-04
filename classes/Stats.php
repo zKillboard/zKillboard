@@ -179,4 +179,51 @@ class Stats
 	private static function statDestroyed($type, $typeID, $groupID, $modifier, $points, $isk)
 	{
 	}
+
+	public static function getDistinctCount($groupByColumn, $parameters = [])
+	{
+		global $mdb, $debug;
+
+		$hashKey = "distinctCount::$groupByColumn:" . serialize($parameters);
+		$result = Cache::get($hashKey);
+		if ($result != null) return $result;
+
+		if ($parameters == [])
+		{
+			$type = ($groupByColumn == "solarSystemID" || $groupByColumn == "regionID") ? "system.$groupByColumn" : "involved.$groupByColumn";
+			$result = $mdb->getCollection("oneWeek")->distinct($type);
+			Cache::set($hashKey, sizeof($result), 3600);
+			return sizeof($result);
+		}
+
+		$query = MongoFilter::buildQuery($parameters);
+		if (!$mdb->exists("oneWeek", $query)) return [];
+		$andQuery = MongoFilter::buildQuery($parameters, false);
+
+		if ($groupByColumn == "solarSystemID" || $groupByColumn == "regionID") $keyField = "system.$groupByColumn";
+		else $keyField = "involved.$groupByColumn";
+
+		$id = $type = $isVictim = null;
+		if ($groupByColumn == "solarSystemID" || $groupByColumn == "regionID") $type = "system.$groupByColumn";
+		if ($type == null) $type = "involved.$groupByColumn";
+
+		$timer = new Timer();
+		$pipeline = [];
+		$pipeline[] = [ '$match' =>  $query];
+		if ($groupByColumn != "solarSystemID" && $groupByColumn != "regionID") $pipeline[] = ['$unwind' => '$involved'];
+		if ($type != null && $id != null) $pipeline[] = ['$match' => [$type => $id]];
+		$pipeline[] = ['$match' => [$keyField => ['$ne' => null]]];
+		$pipeline[] = ['$match' => $andQuery];
+		$pipeline[] = ['$group' => ['_id' => '$' . $type, 'foo' => ['$sum' => 1]]];
+		$pipeline[] = ['$group' => ['_id' => 'total', 'value' => ['$sum' => 1]]];
+
+		if (!$debug) MongoCursor::$timeout = -1;
+		$result = $mdb->getCollection("oneWeek")->aggregateCursor($pipeline);
+		$result = iterator_to_array($result);
+
+		$retValue = sizeof($result) == 0 ? 0 : $result[0]['value'];
+
+		Cache::set($hashKey, $retValue, 3600);
+		return $retValue;
+	}
 }

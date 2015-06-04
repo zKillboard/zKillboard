@@ -1,5 +1,7 @@
 <?php
 
+global $mdb;
+
 $page = 1;
 $pageTitle = "";
 $pageType = "index";
@@ -66,6 +68,25 @@ if ($serverName != $baseAddr) {
 
 	// get latest kills
 	$kills = Kills::getKills(array('cacheTime' => 60, "limit" => 50));
+
+	// Collect active PVP stats
+	$types = ['characterID', 'corporationID', 'allianceID', 'shipTypeID', 'solarSystemID', 'regionID'];
+	$activePvP = [];
+	foreach ($types as $type)
+	{
+		$result = Stats::getDistinctCount($type, []);
+		if ($result <= 1) continue;
+		$type = str_replace("ID", "", $type);
+		if ($type == "shipType") $type = "Ship";
+		else if ($type == "solarSystem") $type = "System";
+		else $type = ucfirst($type);
+		$type = $type . "s";
+		$row["type"] = $type;
+		$row["count"] = $result;
+		$activePvP[] = $row;
+	}
+	$totalKills = $mdb->count("oneWeek");
+	$activePvP[] = ['type' => 'Total Kills', 'count' => "$totalKills"];
 }
 
-$app->render("index.html", array("topPods" => $topPods, "topIsk" => $topIsk, "topPoints" => $topPoints, "topKillers" => $top, "kills" => $kills, "page" => $page, "pageType" => $pageType, "pager" => true, "pageTitle" => $pageTitle, "requestUriPager" => $requestUriPager));
+$app->render("index.html", array("topPods" => $topPods, "topIsk" => $topIsk, "topPoints" => $topPoints, "topKillers" => $top, "kills" => $kills, "page" => $page, "pageType" => $pageType, "pager" => true, "pageTitle" => $pageTitle, "requestUriPager" => $requestUriPager, 'activePvP' => $activePvP));

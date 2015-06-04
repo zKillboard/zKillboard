@@ -261,7 +261,27 @@ if (is_array($months) && sizeof($months) > 0)
 
 } else $statistics["months"] = null;
 
-$renderParams = array("pageName" => $pageName, "kills" => $kills, "losses" => $losses, "detail" => $detail, "page" => $page, "topKills" => $topKills, "mixed" => $mixedKills, "key" => $key, "id" => $id, "pageType" => $pageType, "solo" => $solo, "topLists" => $topLists, "corps" => $corpList, "corpStats" => $corpStats, "summaryTable" => $stats, "pager" => (sizeof($kills) + sizeof($losses) >= $limit), "datepicker" => true, "nextApiCheck" => $nextApiCheck, "apiVerified" => $apiVerified, "prevID" => $prevID, "nextID" => $nextID, "extra" => $extra, "statistics" => $statistics);
+// Collect active PVP stats
+$types = ['characterID', 'corporationID', 'allianceID', 'shipTypeID', 'solarSystemID', 'regionID'];
+$activePvP = [];
+foreach ($types as $type)
+{
+	$result = Stats::getDistinctCount($type, $parameters);
+	if ((int) $result <= 1) continue;
+	$type = str_replace("ID", "", $type);
+	if ($type == "shipType") $type = "Ship";
+	else if ($type == "solarSystem") $type = "System";
+	else $type = ucfirst($type);
+	$type = $type . "s";
+	$row["type"] = $type;
+	$row["count"] = $result;
+	$activePvP[] = $row;
+}
+$mongoParams = MongoFilter::buildQuery($parameters);
+$killCount = $mdb->getCollection("oneWeek")->count($mongoParams);
+if ($killCount > 0) $activePvP[] = ['type' => 'Total Kills', 'count' => $killCount];
+
+$renderParams = array("pageName" => $pageName, "kills" => $kills, "losses" => $losses, "detail" => $detail, "page" => $page, "topKills" => $topKills, "mixed" => $mixedKills, "key" => $key, "id" => $id, "pageType" => $pageType, "solo" => $solo, "topLists" => $topLists, "corps" => $corpList, "corpStats" => $corpStats, "summaryTable" => $stats, "pager" => (sizeof($kills) + sizeof($losses) >= $limit), "datepicker" => true, "nextApiCheck" => $nextApiCheck, "apiVerified" => $apiVerified, "prevID" => $prevID, "nextID" => $nextID, "extra" => $extra, "statistics" => $statistics, "activePvP" => $activePvP);
 
 $app->render("overview.html", $renderParams);
 

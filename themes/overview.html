@@ -123,6 +123,7 @@
     {% include 'components/kill_list.html' %}
   </div>
   <div class="col-lg-2 pull-left" style="padding: 0px;">
+	{% include 'components/activePvP.html' %}
 	{% if topSet|length %}
         	{% for topSet in topLists %}
         		{% include 'components/top_killer_list.html' %}

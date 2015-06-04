@@ -1,0 +1,11 @@
+{% if activePvP|length > 0 %}
+<div class="pull-left" style="width: 100%; padding: 0px; margin: 0px;">
+	<center><h5>Active PVP</h5></center>
+	<table class="table table-condensed topBoxes col-lg-2" style="padding: 0px; margin: 0px; width: 100%;">
+	{% for row in activePvP %}
+		<tr><td>{{ row.type }}</td><td align="right">{{ row.count|number_format(0) }}</td></tr>
+	{% endfor %}
+	</table>
+	<center><small><i>Last 7 days...</i></small></center>
+</div>
+{% endif %}
