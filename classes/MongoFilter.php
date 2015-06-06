@@ -183,7 +183,7 @@ class MongoFilter
 					break;
 				case "w-space":
 					$and[] = ['system.regionID' => ['$gte' => 11000001]];
-					$and[] = ['system.regionID' => ['$lte' => 11000032]];
+					$and[] = ['system.regionID' => ['$lte' => 11000033]];
 					break;
 				case "highsec":
 					$and[] = ['system.security' => ['$gte' => 0.45]];
