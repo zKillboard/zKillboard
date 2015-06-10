@@ -24,6 +24,7 @@ class CrestTools
 			$body = curl_exec($ch);
 			$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			if ($httpCode == 200) return $body;
+			if ($httpCode == 403) return null;
 			if ($httpCode == 500) return null;
 			if ($httpCode == 415) return null;
 			$numTries++;
