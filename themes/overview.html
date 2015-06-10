@@ -74,7 +74,9 @@
 		<li class="hidden-md hidden-sm"><a href="http://evewho.com/alli/{{ pageName|url_encode }}/" target="_blank">EVEWho</a></li>
 	{% elseif key == "system" %}
 		<li><a href="http://evemaps.dotlan.net/system/{{ pageName|url_encode }}/" target="_blank">DOTLAN</a></li>
-		<li><a href="http://eveeye.com/?system={{ pageName|url_encode }}" target="_blank">EVEEye</a></li>
+		{% if detail.regionID >= 11000001 and detail.regionID <= 11000033 %}
+			<li><a href="http://wh.pizza.moe/{{ pageName|url_encode }}" target="_blank">Wormhol.es</a></li>
+		{% endif %}
 	{% elseif key == "region" %}
 		<li><a href="http://evemaps.dotlan.net/region/{{ pageName|url_encode }}/" target="_blank">DOTLAN</a></li>
 	{% elseif key == "ship" %}
