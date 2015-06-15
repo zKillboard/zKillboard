@@ -26,6 +26,9 @@ try {
 	
 	$array = $mdb->findDoc("statistics", ['type' => $type, 'id' => (int) $id]);
 	unset($array["_id"]);
+	$array["activepvp"] = Stats::getActivePvpStats($parameters);
+	$array["info"] = $mdb->findDoc("information", ['type' => $type, 'id' => (int) $id]);
+	unset($array["info"]["_id"]);
 
 	header("Access-Control-Allow-Origin: *");
 	header("Access-Control-Allow-Methods: GET");
