@@ -5,7 +5,7 @@ global $mdb;
 $timeStarted = date("Y-m-dTH:m:s", time() - (86400 * 90));
 
 $wars = array();
-$wars[] = ["name" => "Recent Declared Wars - Open to Allies", "wars" => $mdb->find("information", ['cacheTime' => 1800, 'type' => 'warID', 'openForAll25ies' => true], ['timeStarted' => -1], 50)];
+$wars[] = ["name" => "Recent Declared Wars - Open to Allies", "wars" => $mdb->find("information", ['cacheTime' => 1800, 'type' => 'warID', 'openForAllies' => true], ['timeStarted' => -1], 50)];
 $wars[] = ["name" => "Recent Declared Wars - Mutual", "wars" => $mdb->find("information", ['cacheTime' => 1800, 'type' => 'warID', 'mutual' => true], ['timeStarted' => -1], 50)];
 $wars[] = ["name" => "Recently Declared Wars", "wars" => $mdb->find("information", ['cacheTime' => 1800, 'type' => 'warID'], ['timeStarted' => -1], 25)];
 $wars[] = ["name" => "Recently Finished Wars", "wars" => $mdb->find("information", ['cacheTime' => 1800, 'type' => 'warID'], ['timeFinished' => -1], 25)];
