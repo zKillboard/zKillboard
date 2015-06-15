@@ -226,4 +226,29 @@ class Stats
 		Cache::set($hashKey, $retValue, 3600);
 		return $retValue;
 	}
+
+	// Collect active PVP stats
+	public static function getActivePvpStats($parameters)
+	{
+		global $mdb;
+		$types = ['characterID', 'corporationID', 'allianceID', 'shipTypeID', 'solarSystemID', 'regionID'];
+		$activePvP = [];
+		foreach ($types as $type)
+		{
+			$result = Stats::getDistinctCount($type, $parameters);
+			if ((int) $result <= 1) continue;
+			$type = str_replace("ID", "", $type);
+			if ($type == "shipType") $type = "Ship";
+			else if ($type == "solarSystem") $type = "System";
+			else $type = ucfirst($type);
+			$type = $type . "s";
+			$row["type"] = $type;
+			$row["count"] = $result;
+			$activePvP[strtolower($type)] = $row;
+		}
+		$mongoParams = MongoFilter::buildQuery($parameters);
+		$killCount = $mdb->getCollection("oneWeek")->count($mongoParams);
+		if ($killCount > 0) $activePvP["kills"] = ['type' => 'Total Kills', 'count' => $killCount];
+		return $activePvP;
+	}
 }
