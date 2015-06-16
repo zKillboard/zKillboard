@@ -1,7 +1,5 @@
 <?php
 
-Util::scrapeCheck();
-
 global $mdb;
 
 $id = (int) $id;

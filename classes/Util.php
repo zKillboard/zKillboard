@@ -256,21 +256,6 @@ class Util
 			$currentIndex++;
 		}
 
-		if (false && isset($parameters["page"]) && $parameters["page"] > 10 && isset($parameters["api"])) {
-			// Verify that the request is for a character, corporation, or alliance
-			// This will prevent scrape attempts against regions, ships, systems, etc. which
-			// are very hard against the database
-			$legitEntities = array("characterID", "corporationID", "allianceID");
-			$legit = false;
-			foreach ($legitEntities as $entity) {
-				$legit |= in_array($entity, array_keys($parameters));
-			}
-			if (!$legit)
-			{
-				header("HTTP/1.1 403 page > 10 not allowed for this modifier type.");
-				die();
-			}
-		}
 		return $parameters;
 	}
 
@@ -321,14 +306,6 @@ class Util
 	public static function getLongMonth($month)
 	{
 		return self::$longMonths[(int) $month];
-	}
-
-	/**
-	 * @deprecated
-	*/
-	public static function scrapeCheck()
-	{
-		return;
 	}
 
 	public static function isValidCallback($subject)

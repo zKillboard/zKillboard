@@ -1,8 +1,5 @@
 <?php
 
-//make sure the requester is not being a naughty boy
-Util::scrapeCheck();
-
 //set the headers to cache the request properly
 $dna = array();
 $parameters = Util::convertUriToParameters();
