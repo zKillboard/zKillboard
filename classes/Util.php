@@ -87,24 +87,6 @@ class Util
 		return substr($haystack, -strlen($needle)) === $needle;
 	}
 
-	public static function getKillHash($killID = null, $kill = null)
-	{
-		if ($killID != null) {
-			$json = Killmail::get($killID);
-			if ($json === null) throw new Exception("Cannot find kill $killID");
-			$kill = json_decode($json);
-			if ($kill === null) throw new Exception("Cannot json_decode $killID");
-		}
-		if ($kill === null) throw new Exception("Can't hash an empty kill");
-
-		$hashStr = "";
-		$hashStr .= ":$kill->killTime:$kill->solarSystemID:$kill->moonID:";
-		$victim = $kill->victim;
-		$hashStr .= ":$victim->characterID:$victim->shipTypeID:$victim->damageTaken:";
-
-		return hash("sha256", $hashStr);
-	}
-
 	public static function calcX($slot, $size)
 	{
 		$angle = $slot * (360 / 32) - 4;

@@ -165,32 +165,4 @@ class Kills
 		}
 		return $resultArray;
 	}
-
-	/**
-	 * Returns an array of the kill
-	 *
-	 * @param $killID the ID of the kill
-	 * @return array
-	 */
-	public static function getArray($killID)
-	{
-		$jsonRaw = Killmail::get($killID);
-		$decode = json_decode($jsonRaw, true);
-		$killarray = Info::addInfo($decode);
-		return $killarray;
-	}
-
-	/**
-	 * Returns json of the kill
-	 *
-	 * @param $killID the ID of the kill
-	 * @return string
-	 */
-	public static function getJson($killID)
-	{
-		$jsonRaw = Killmail::get($killID);
-		$decoded = json_decode($jsonRaw, true);
-		$killarray = Info::addInfo($decoded);
-		return json_encode($killarray);
-	}
 }

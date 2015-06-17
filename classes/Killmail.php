@@ -2,6 +2,7 @@
 
 class Killmail
 {
+	// @deprecated
 	public static function get($killID)
 	{
 		$kill = Cache::get("Kill$killID");
@@ -43,10 +44,8 @@ class Killmail
 	}
 
 	// https://forums.eveonline.com/default.aspx?g=posts&m=4900335#post4900335
-	public static function getCrestHash($killID, $killmail = null)
+	public static function getCrestHash($killID, $killmail)
 	{
-		if ($killmail == null) $killmail = json_decode(Killmail::get($killID), true);
-
 		$victim = $killmail["victim"];
 		$victimID = $victim["characterID"] == 0 ? "None" : $victim["characterID"];
 
