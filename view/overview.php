@@ -88,13 +88,15 @@ $solo = Kills::mergeKillArrays($soloKills, array(), $limit, $columnName, $id);
 $validAllTimePages = array("character", "corporation", "alliance", "faction");
 $topLists = array();
 $topKills = array();
-if ($pageType == "top" || ($pageType == "topalltime" && in_array($key, $validAllTimePages))) {
+if ($pageType == "top" || $pageType == "topalltime") {
 	$topParameters = $parameters; // array("limit" => 10, "kills" => true, "$columnName" => $id);
 	$topParameters["limit"] = 10;
 
-	if ($pageType == "topalltime" && ($key == "corporation" || $key == "alliance" || $key == "faction"))
+	if ($pageType == "topalltime")
 	{
-		$topLists = $mdb->findField("statistics", "topAllTime", ['type' => "{$key}ID", 'id' => (int) $id]);
+$useType = $key;
+if ($useType == "ship") $useType = "shipType";
+		$topLists = $mdb->findField("statistics", "topAllTime", ['type' => "{$useType}ID", 'id' => (int) $id]);
 	} else {
 		if($pageType != "topalltime")
 		{
