@@ -2,12 +2,13 @@
 
 require_once "../init.php";
 
-if (date("Hi") != "1100") exit();
+if (date("Hi") != "0001") exit();
 
-$types = ['allianceID', 'corporationID', 'factionID'];
+$types = ['allianceID', 'corporationID', 'factionID', 'shipTypeID', 'groupID'];
 
 foreach ($types as $type)
 {
+	Util::out($type);
 	$entities = $mdb->find("statistics", ['type' => $type]);
 	foreach ($entities as $row) calcTop($row);
 }
@@ -17,6 +18,7 @@ function calcTop($row)
 	global $mdb;
 
 	if (date("d") != "01" && isset($row["topAllTime"])) return;
+	Util::out($row["type"] . " " . $row["id"]);
 
 	$parameters = [$row["type"] => $row["id"]];
         $parameters["limit"] = 10;
