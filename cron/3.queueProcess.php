@@ -125,7 +125,6 @@ while(!Util::exitNow())
 		$storage->update(array("locker" => "killsProcessed"), array('$inc' => array('contents' => 1)), array('upsert' => true));
 		$storage->update(array("locker" => "totalKills"), array('$inc' => array('contents' => 1)), array('upsert' => true));
 		$mdb->insertUpdate("queueInfo", ['killID' => $killID]);
-		$mdb->insertUpdate("queueSocial", ['killID' => $killID]);
 
 		$queueProcess->remove($row);
 

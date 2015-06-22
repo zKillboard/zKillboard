@@ -2,16 +2,11 @@
 
 require_once "../init.php";
 
+$queueSocial = new RedisQueue("queueSocial");
 while (!Util::exitNow())
 {
-	$result = $mdb->find("queueSocial", [], [], 100);
-	foreach ($result as $row) 
-	{
-		$killID = $row["killID"];
-		beSocial($killID);
-		$mdb->getCollection("queueSocial")->remove($row);
-	}
-	if (sizeof($result) == 0) sleep(1);
+	$killID = $queueSocial->pop();
+	if ($killID != null) beSocial($killID);
 }
 
 function beSocial($killID)

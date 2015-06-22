@@ -3,6 +3,7 @@
 require_once "../init.php";
 
 $queueInfo = $mdb->getCollection("queueInfo");
+$queueSocial = new RedisQueue("queueSocial");
 $queueStats = $mdb->getCollection("queueStats");
 $killmails = $mdb->getCollection("killmails");
 $rawmails = $mdb->getCollection("rawmails");
@@ -21,6 +22,7 @@ while (!Util::exitNow())
 		updateInfo($killID);
 		updateStatsQueue($killID);
 
+		$queueSocial->push($killID);
 		$queueInfo->remove(['killID' => $killID]);
 	}
 }
