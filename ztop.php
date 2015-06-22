@@ -27,13 +27,10 @@ while (true)
 	addInfo("Top killID", $mdb->findField("killmails", "killID", [], ['killID' => -1]));
 
 	addInfo("", 0);
-	addInfo("Api KillLog's to check", $mdb->count("apiCharacters", ['cachedUntil' => [ '$lt' => $mdb->now() ]]));
-	addInfo("Api KeyInfo's to check", $mdb->count("apis", ['lastApiUpdate' => [ '$lt' => $mdb->now(-10800) ]]));
-	addInfo("Corporation Keys", $mdb->count("apiCharacters", ['type' => 'Corporation']));
-	addInfo("Character Keys", $mdb->count("apiCharacters", ['type' => 'Character']));
-	addInfo("Account Keys", $mdb->count("apiCharacters", ['type' => 'Account']));
-	addInfo("Total KillLog Keys", $mdb->count("apiCharacters"));
-	addInfo("Total Apis", $mdb->count("apis"));
+	addInfo("Api KillLogs to check", $redis->zCount("tqApiChars", 0, time()));
+	addInfo("Api KeyInfo's to check", $redis->zCount("tqApis", 0, time()));
+	addInfo("Char/Corp Apis", $redis->zCard("tqApiChars"));
+	addInfo("Valid Apis", $redis->zCard("tqApis"));
 
 	$maxLen = 0;
 	foreach($infoArray as $i) foreach ($i as $key=>$value) $maxLen = max($maxLen, strlen("$value"));

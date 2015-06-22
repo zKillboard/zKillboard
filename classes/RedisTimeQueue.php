@@ -3,10 +3,12 @@
 class RedisTimeQueue
 {
 	private $queueName;
+	private $deltaSeconds;
 
-	function __construct($queueName)
+	function __construct($queueName, $deltaSeconds = 3600)
 	{
 		$this->queueName = $queueName;
+		$this->deltaSeconds = $deltaSeconds;
 	}
 
 	public function add($value, $deltaSeconds = 0)
@@ -39,6 +41,7 @@ class RedisTimeQueue
 
 		$next = $redis->zRange($this->queueName, 0, 0, true);
 		if ($next === null) return null;
+		if (!is_array($next)) return null;
 		$value = key($next);
 		$time = $next[$value];
 
@@ -49,7 +52,7 @@ class RedisTimeQueue
 			return $this->next(false);
 		}
 
-		$redis->zAdd($this->queueName, time(), $value);
+		$redis->zAdd($this->queueName, time() + $this->deltaSeconds, $value);
 		$value = unserialize($value);
 		return $value;
 	}

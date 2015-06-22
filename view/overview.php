@@ -1,6 +1,6 @@
 <?php
 
-global $mdb;
+global $mdb, $redis;
 
 $key = $input[0];
 if (!isset($input[1])) $app->redirect("/");
@@ -159,17 +159,7 @@ $apiVerified = false;
 $nextApiCheck = null;
 if(in_array($key, array("character", "corporation")))
 {
-	if($key == "character")
-	{
-		$apiVerified = $mdb->exists("apiCharacters", ['type' => 'Account', 'characterID' => (int) $id]);
-		if ($apiVerified == false) $apiVerified = $mdb->exists("apiCharacters", ['type' => 'Character', 'characterID' => (int) $id]);
-	}
-	else
-	{
-		$apiDoc = $mdb->findDoc("apiCharacters", ['type' => 'Corporation', 'corporationID' => (int) $id], ['cachedUntil' => 1]);
-		if ($apiDoc != null) $apiVerified = true;
-		if ($apiVerified && $apiDoc["cachedUntil"]->sec > time()) $nextApiCheck = date("H:i", $apiDoc["cachedUntil"]->sec);
-	}
+	$apiVerified = $redis->get("apiVerified:$id"); 
 }
 
 $cnt = 0;
