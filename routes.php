@@ -173,12 +173,6 @@ $app->get("/api/:input+", function($input) use ($app) {
 	include( "view/api.php" );
 });
 
-// Kills in the last hour
-$app->get("/killslasthour/", function() use ($app) {
-die("<script type='text/javascript'>location.reload();</script>");
-	die(number_format(Storage::retrieve("KillsLastHour", null)));
-});
-
 // Post
 $app->get("/post/", function() use ($app) {
 	include( "view/postmail.php" );
