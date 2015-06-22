@@ -2,36 +2,37 @@
 
 require_once "../init.php";
 $agents = [];
+$qServer = new RedisQueue("queueServer");
 
 while (!Util::exitNow())
 {
-	$queueServer = $mdb->find("queueServer");
-	foreach ($queueServer as $row)
+	$next = $qServer->pop();
+	if ($next != null)
 	{
+		$row = unserialize($next);
 		$agent = strtolower(@$row["HTTP_USER_AGENT"]);
 		if (!isBot($agent))
 		{
 			if (isset($row["REQUEST_URI"]))
 			{
 				$uri = $row["REQUEST_URI"];
+				$key = "cache:$uri";
 				if (Util::startsWith($uri, "/kill/") || $uri == "/")
 				{
-					if (!$mdb->exists("htmlCache", ['uri' => $uri]))
+					if (!$redis->exists($key))
 					{
 						$contents = @file_get_contents("http://zkillboard.com{$uri}");
 						if ($contents != "")
 						{
-							$mdb->save("htmlCache", ['uri' => $uri, 'dttm' => $mdb->now(), 'contents' => $contents]);
-							//echo strlen($contents) . " $uri\n";
+							$redis->set($key, $contents);
+							$redis->setTimeout($key, 300);
 						}
 					}
 
 				}
 			}
 		}
-		$mdb->remove("queueServer", $row);
 	}
-	usleep(100000);
 }
 
 function isBot($agent)

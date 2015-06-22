@@ -22,15 +22,16 @@ if (!User::isLoggedIn())
         $uri = @$_SERVER["REQUEST_URI"];
         if ($uri != "")
 	{
-                $contents = $mdb->findField("htmlCache", "contents", ['uri' => $uri]);
-                if ($contents != null)
+                $contents = $redis->get("cache:$uri");
+                if ($contents !== false)
                 {
                         echo $contents;
                         exit();
                 }
 
                 $_SERVER["requestDttm"] = $mdb->now();
-                $mdb->insert("queueServer", $_SERVER);
+		$qServer = new RedisQueue("queueServer");
+		$qServer->push(serialize($_SERVER));
         }
 }
 
