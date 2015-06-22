@@ -12,18 +12,6 @@ $deltaArray = [];
 while (true)
 {
 	$infoArray = [];
-	$coll = $mdb->getDb()->listCollections();
-	$collections = [];
-	foreach($coll as $col) $collections[] = $col->getName();
-
-	sort($collections);
-	foreach ($collections as $name)
-	{
-		if (substr($name, 0, 5) != "queue") continue;
-		$count = $mdb->count($name);
-		addInfo($name, $count);
-	}
-	addInfo("", 0);
 
 	$queues = $redis->keys("queue*");
 	foreach ($queues as $queue) $redisQueues[$queue] = true;
