@@ -1,6 +1,6 @@
 cache/
 composer.phar
-db
+composer.lock
 config.php
+db
 vendor/
-sitemaps/
