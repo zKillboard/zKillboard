@@ -4,6 +4,7 @@
 require_once "init.php";
 
 echo "gathering information....\n";
+$redisQueues = [];
 $priorKillLog = 0;
 
 $deltaArray = [];
@@ -23,7 +24,12 @@ while (true)
 		addInfo($name, $count);
 	}
 	addInfo("", 0);
-	addInfo("queueServer", $redis->lLen("queueServer"));
+
+	$queues = $redis->keys("queue*");
+	foreach ($queues as $queue) $redisQueues[$queue] = true;
+
+	foreach ($redisQueues as $queue=>$v) addInfo($queue, $redis->lLen($queue));
+
 	addInfo("", 0);
 
 	addInfo("Kills remaining to be fetched.", $mdb->count("crestmails", ['processed' => false]));
