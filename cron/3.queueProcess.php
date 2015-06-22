@@ -121,7 +121,6 @@ while(!Util::exitNow())
 		$oneWeekExists = $mdb->exists("oneWeek", ['killID' => $killID]);
 		if (!$oneWeekExists) $mdb->getCollection("oneWeek")->save($kill);
 
-		$storage->update(array("locker" => "killsProcessed"), array('$inc' => array('contents' => 1)), array('upsert' => true));
 		$storage->update(array("locker" => "totalKills"), array('$inc' => array('contents' => 1)), array('upsert' => true));
 		$queueInfo->push($killID);
 
