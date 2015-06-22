@@ -31,7 +31,7 @@ if (!User::isLoggedIn())
 
                 $_SERVER["requestDttm"] = $mdb->now();
 		$qServer = new RedisQueue("queueServer");
-		$qServer->push(serialize($_SERVER));
+		$qServer->push($_SERVER);
         }
 }
 

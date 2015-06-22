@@ -7,9 +7,8 @@ $qServer = new RedisQueue("queueServer");
 while (!Util::exitNow())
 {
 	$next = $qServer->pop();
-	if ($next != null)
+	if ($row != null)
 	{
-		$row = unserialize($next);
 		$agent = strtolower(@$row["HTTP_USER_AGENT"]);
 		if (!isBot($agent))
 		{
