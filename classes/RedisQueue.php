@@ -13,7 +13,7 @@ class RedisQueue
 	{
 		global $redis;
 
-		$r = $redis->rPush($this->queueName, $value);
+		$r = $redis->rPush($this->queueName, serialize($value));
 	}
 
 	public function pop()
@@ -22,6 +22,6 @@ class RedisQueue
 
 		$array = $redis->blPop($this->queueName, 1);
 		if (sizeof($array) == 0) return null;
-		return $array[1];
+		return unserialize($array[1]);
 	}
 }
