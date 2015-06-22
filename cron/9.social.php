@@ -32,8 +32,6 @@ function beSocial($killID)
 	if ($victimInfo == null) return;
 	$totalPrice = $kill["zkb"]["totalValue"];
 
-
-	while ($mdb->count("queueInfo", ['killID' => $killID])) sleep(1);
 	Info::addInfo($victimInfo);
 
 	// Reduce spam of freighters and jump freighters

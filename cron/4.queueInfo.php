@@ -2,7 +2,7 @@
 
 require_once "../init.php";
 
-$queueInfo = $mdb->getCollection("queueInfo");
+$queueInfo = new RedisQueue("queueInfo");
 $queueSocial = new RedisQueue("queueSocial");
 $queueStats = $mdb->getCollection("queueStats");
 $killmails = $mdb->getCollection("killmails");
@@ -12,18 +12,14 @@ $statArray = ["characterID", "corporationID", "allianceID", "factionID", "shipTy
 
 while (!Util::exitNow())
 {
-	$queue = $queueInfo->find()->sort(['_id' => -1])->limit(1000);
-	if (!$queue->hasNext()) sleep(1);
-	foreach ($queue as $row)
-	{
-		if (Util::exitNow()) break;
-		$killID = $row["killID"];
+	$killID = $queueInfo->pop();
 
+	if ($killID !== null)
+	{
 		updateInfo($killID);
 		updateStatsQueue($killID);
 
 		$queueSocial->push($killID);
-		$queueInfo->remove(['killID' => $killID]);
 	}
 }
 

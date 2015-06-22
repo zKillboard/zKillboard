@@ -5,6 +5,7 @@ require_once "../init.php";
 $timer = new Timer();
 $crestmails = $mdb->getCollection("crestmails");
 $killmails = $mdb->getCollection("killmails");
+$queueInfo = new RedisQueue("queueInfo");
 $queueProcess = new RedisQueue("queueProcess");
 $storage = $mdb->getCollection("storage");
 
@@ -122,7 +123,7 @@ while(!Util::exitNow())
 
 		$storage->update(array("locker" => "killsProcessed"), array('$inc' => array('contents' => 1)), array('upsert' => true));
 		$storage->update(array("locker" => "totalKills"), array('$inc' => array('contents' => 1)), array('upsert' => true));
-		$mdb->insertUpdate("queueInfo", ['killID' => $killID]);
+		$queueInfo->push($killID);
 
 		$counter++;
 		if (Util::exitNow()) break;
