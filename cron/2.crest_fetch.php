@@ -7,6 +7,7 @@ global $baseAddr;
 $crestmails = $mdb->getCollection("crestmails");
 $rawmails = $mdb->getCollection("rawmails");
 $queueProcess = $mdb->getCollection("queueProcess");
+$queueShare = new RedisQueue("queueShare");
 
 $counter = 0;
 $timer = new Timer();
@@ -56,7 +57,7 @@ while (!Util::exitNow() && $timer->stop() < 115000)
 			$queueProcess->update(["killID" => $id], ["killID" => $id], ["upsert" => true]);
 			$counter++;
 
-			$mdb->getCollection("queueShare")->insert(['killID' => $killID]);
+			$queueShare->push($killID);
 		}
 		else
 		{
