@@ -4,7 +4,7 @@ require_once "../init.php";
 
 $queueInfo = new RedisQueue("queueInfo");
 $queueSocial = new RedisQueue("queueSocial");
-$queueStats = $mdb->getCollection("queueStats");
+$queueStats = new RedisQueue("queueStats");
 $killmails = $mdb->getCollection("killmails");
 $rawmails = $mdb->getCollection("rawmails");
 $information = $mdb->getCollection("information");
@@ -50,7 +50,7 @@ function addToStatsQueue($type, $id, $sequence)
 	global $queueStats, $mdb;
 
 	$arr = ['type' => $type, 'id' => $id, 'sequence' => $sequence];
-	if (!$mdb->exists("queueStats", $arr)) $queueStats->insert($arr);
+	$queueStats->push($arr);
 }
 
 function updateInfo($killID)

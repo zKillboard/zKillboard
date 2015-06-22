@@ -8,10 +8,12 @@ $inProgress = [];
 $maxChildren = 10;
 $maxTime = 295000;
 
+$queueStats = new RedisQueue("queueStats");
+
 do
 {
-	$calcStats = $mdb->find("queueStats", [], ['sequence' => -1], 10000);
-	foreach ($calcStats as $row)
+	$row = $queueStats->pop();
+	if ($row !== null)
 	{
 		if ($timer->stop() > $maxTime) break;
 		while (sizeof($children) >= $maxChildren)
@@ -34,16 +36,16 @@ do
 		{
 			//echo "running $type $id\n";
 			calcStats($row);
-			$mdb->getCollection("queueStats")->remove($row);
-			$mdb->getCollection("queueStats")->remove(['type' => $row["type"], 'id' => $row["id"], 'sequence' => ['$lte' => $row["sequence"]]]);
 			exit();
 		}
 		$children[$pid] = true;
 	}
 	$status = 0;
-	foreach($children as $child=>$v) pcntl_waitpid($child, $status);
-	$inProgress = [];
-	if (sizeof($calcStats) == 0) sleep(1);
+	if (sizeof($children) > 1000)
+	{
+		foreach($children as $child=>$v) pcntl_waitpid($child, $status);
+		$inProgress = [];
+	}
 } while ($timer->stop() <= $maxTime);
 $status = 0;
 foreach ($children as $pid=>$value) pcntl_wait($pid, $status);
