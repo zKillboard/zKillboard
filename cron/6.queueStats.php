@@ -15,40 +15,13 @@ do
 	$row = $queueStats->pop();
 	if ($row !== null)
 	{
-		if ($timer->stop() > $maxTime) break;
-		while (sizeof($children) >= $maxChildren)
-		{
-			foreach($children as $child=>$v)
-			{
-				$status = 0;
-				$pid = pcntl_waitpid($child, $status, WNOHANG);
-				if ($pid == -1 || $pid > 0) unset($children[$child]);
-			}
-			if (sizeof($children) >= $maxChildren) usleep(1000);
-		}
-
 		$id = $row["id"];
 		$type = $row["type"];
-		if (in_array($id, $inProgress)) continue;
-		$inProgress[] = $id;
-		$pid = pcntl_fork();
-		if ($pid == 0)
-		{
-			//echo "running $type $id\n";
-			calcStats($row);
-			exit();
-		}
-		$children[$pid] = true;
-	}
-	$status = 0;
-	if (sizeof($children) > 1000)
-	{
-		foreach($children as $child=>$v) pcntl_waitpid($child, $status);
-		$inProgress = [];
+		calcStats($row);
+
 	}
 } while ($timer->stop() <= $maxTime);
 $status = 0;
-foreach ($children as $pid=>$value) pcntl_wait($pid, $status);
 
 function calcStats($row)
 {
