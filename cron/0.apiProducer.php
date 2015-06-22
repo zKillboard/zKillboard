@@ -34,11 +34,6 @@ while ($timer->stop() <= 58000)
 	$vCode = $row["vCode"];
 
 	if (!isset($row["characters"])) $row["characters"] = [];
-	$hasKills = false;
-	foreach ($row["characters"] as $charID=>$killID)
-	{
-		$hasKills |= $killID > 0;
-	}
 
 	$errorCode = (int) @$row["errorCode"];
 	if ($errorCode == 0 || $errorCode == 221)
@@ -48,12 +43,8 @@ while ($timer->stop() <= 58000)
 		\Pheal\Core\Config::getInstance()->http_keepalive = true; // default 15 seconds
 		\Pheal\Core\Config::getInstance()->http_keepalive = 10; // KeepAliveTimeout in seconds
 		\Pheal\Core\Config::getInstance()->http_timeout = 30;
-		//if ($phealCacheLocation != null) \Pheal\Core\Config::getInstance()->cache = new \Pheal\Cache\FileStorage($phealCacheLocation);
 		\Pheal\Core\Config::getInstance()->api_customkeys = true;
 
-		$requestNum++;
-		$apiServer = $apiServers[($requestNum % (sizeof($apiServers)))];
-		\Pheal\Core\Config::getInstance()->api_base = $apiServer;
 		$pheal = new \Pheal\Pheal($keyID, $vCode);
 		try
 		{
