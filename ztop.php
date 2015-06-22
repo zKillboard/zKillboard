@@ -27,6 +27,7 @@ while (true)
 
 	$queues = $redis->keys("queue*");
 	foreach ($queues as $queue) $redisQueues[$queue] = true;
+	ksort($redisQueues);
 
 	foreach ($redisQueues as $queue=>$v) addInfo($queue, $redis->lLen($queue));
 
