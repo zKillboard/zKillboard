@@ -6,7 +6,7 @@ $qServer = new RedisQueue("queueServer");
 
 while (!Util::exitNow())
 {
-	$next = $qServer->pop();
+	$row = $qServer->pop();
 	if ($row != null)
 	{
 		$agent = strtolower(@$row["HTTP_USER_AGENT"]);
