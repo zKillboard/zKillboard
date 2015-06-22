@@ -92,10 +92,10 @@ if ($pageType == "top" || $pageType == "topalltime") {
 	$topParameters = $parameters; // array("limit" => 10, "kills" => true, "$columnName" => $id);
 	$topParameters["limit"] = 10;
 
-	if ($pageType == "topalltime")
+	if ($pageType == "topalltime" && $key != "character")
 	{
-$useType = $key;
-if ($useType == "ship") $useType = "shipType";
+		$useType = $key;
+		if ($useType == "ship") $useType = "shipType";
 		$topLists = $mdb->findField("statistics", "topAllTime", ['type' => "{$useType}ID", 'id' => (int) $id]);
 	} else {
 		if($pageType != "topalltime")
