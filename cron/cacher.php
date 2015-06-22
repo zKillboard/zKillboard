@@ -21,11 +21,7 @@ while (!Util::exitNow())
 					if (!$redis->exists($key))
 					{
 						$contents = @file_get_contents("http://zkillboard.com{$uri}");
-						if ($contents != "")
-						{
-							$redis->set($key, $contents);
-							$redis->setTimeout($key, 300);
-						}
+						if ($contents != "") $redis->setex($key, 300, $contents);
 					}
 
 				}
