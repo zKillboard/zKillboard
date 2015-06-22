@@ -5,7 +5,7 @@ require_once "../init.php";
 $timer = new Timer();
 $crestmails = $mdb->getCollection("crestmails");
 $killmails = $mdb->getCollection("killmails");
-$queueProcess = $mdb->getCollection("queueProcess");
+$queueProcess = new RedisQueue("queueProcess");
 $storage = $mdb->getCollection("storage");
 
 $counter = 0;
@@ -13,11 +13,9 @@ $timer = new Timer();
 
 while(!Util::exitNow())
 {
-	$mails = $queueProcess->find()->sort(['killID' => -1]);
-	if (!$mails->hasNext()) sleep(1);
-	foreach ($mails as $row)
+	$killID = $queueProcess->pop();
+	if ($killID !== null)
 	{
-		$killID = $row["killID"];
 		$raw = $mdb->findDoc("rawmails", ['killID' => $killID]);
 		$mail = $raw;
 
@@ -126,12 +124,9 @@ while(!Util::exitNow())
 		$storage->update(array("locker" => "totalKills"), array('$inc' => array('contents' => 1)), array('upsert' => true));
 		$mdb->insertUpdate("queueInfo", ['killID' => $killID]);
 
-		$queueProcess->remove($row);
-
 		$counter++;
 		if (Util::exitNow()) break;
 	}
-	sleep(1);
 	if ($timer->stop() > 110000) exit();
 }
 if ($debug && $counter > 0) Util::out("Processed " . number_format($counter, 0) . " Kills.");
