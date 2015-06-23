@@ -3,23 +3,6 @@ require_once "../init.php";
 $m = new MongoClient();
 $db = $m->selectDB("zkillboard");
 
-// apiCharacters
-echo "\nCreating collection apiCharacters ... ";
-$apiCharacters = $db->createCollection("apiCharacters");
-echo "Done\n";
-echo "Creating index : 'keyID' => 1, 'vCode' => 1, 'characterID' => 1, 'type' => 1, with sparse = 0 and unique = 1 ... ";
-$apiCharacters->ensureIndex(array('keyID' => 1, 'vCode' => 1, 'characterID' => 1, 'type' => 1), array("sparse" => 0, "unique" => 1));
-echo "Done\n";
-echo "Creating index : 'cachedUntil' => 1, with sparse = 0 and unique = 0 ... ";
-$apiCharacters->ensureIndex(array('cachedUntil' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-echo "Creating index : 'type' => 1, 'characterID' => 1, with sparse = 0 and unique = 0 ... ";
-$apiCharacters->ensureIndex(array('type' => 1, 'characterID' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-echo "Creating index : 'type' => 1, 'corporationID' => 1, with sparse = 0 and unique = 0 ... ";
-$apiCharacters->ensureIndex(array('type' => 1, 'corporationID' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-
 // apimails
 echo "\nCreating collection apimails ... ";
 $apimails = $db->createCollection("apimails");
@@ -77,17 +60,6 @@ echo "Creating index : 'hash' => 1, with sparse = 0 and unique = 0 ... ";
 $crestmails->ensureIndex(array('hash' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
-// htmlCache
-echo "\nCreating collection htmlCache ... ";
-$htmlCache = $db->createCollection("htmlCache");
-echo "Done\n";
-echo "Creating index : 'uri' => 1, with sparse = 0 and unique = 1 ... ";
-$htmlCache->ensureIndex(array('uri' => 1), array("sparse" => 0, "unique" => 1));
-echo "Done\n";
-echo "Creating index : 'dttm' => 1, with sparse = 0 and unique = 0 ... ";
-$htmlCache->ensureIndex(array('dttm' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-
 // information
 echo "\nCreating collection information ... ";
 $information = $db->createCollection("information");
@@ -130,6 +102,12 @@ $information->ensureIndex(array('type' => 1, 'timeFinished' => -1), array("spars
 echo "Done\n";
 echo "Creating index : 'type' => 1, 'lastCrestUpdate' => 1, 'finished' => 1, with sparse = 1 and unique = 0 ... ";
 $information->ensureIndex(array('type' => 1, 'lastCrestUpdate' => 1, 'finished' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'mutual' => 1, 'timeStarted' => -1, with sparse = 1 and unique = 0 ... ";
+$information->ensureIndex(array('type' => 1, 'mutual' => 1, 'timeStarted' => -1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'timeStarted' => -1, with sparse = 1 and unique = 0 ... ";
+$information->ensureIndex(array('type' => 1, 'timeStarted' => -1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
 
 // itemmails
@@ -209,14 +187,6 @@ $killmails->ensureIndex(array('awox' => 1), array("sparse" => 0, "unique" => 0))
 echo "Done\n";
 echo "Creating index : 'involved.shipTypeID' => 1, 'involved.groupID' => 1, 'killID' => -1, with sparse = 0 and unique = 0 ... ";
 $killmails->ensureIndex(array('involved.shipTypeID' => 1, 'involved.groupID' => 1, 'killID' => -1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-
-// oneHour
-echo "\nCreating collection oneHour ... ";
-$oneHour = $db->createCollection("oneHour");
-echo "Done\n";
-echo "Creating index : 'added' => 1, with sparse = 0 and unique = 0 ... ";
-$oneHour->ensureIndex(array('added' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // oneWeek
@@ -398,63 +368,6 @@ $prices = $db->createCollection("prices");
 echo "Done\n";
 echo "Creating index : 'typeID' => 1, with sparse = 0 and unique = 1 ... ";
 $prices->ensureIndex(array('typeID' => 1), array("sparse" => 0, "unique" => 1));
-echo "Done\n";
-
-// queueInfo
-echo "\nCreating collection queueInfo ... ";
-$queueInfo = $db->createCollection("queueInfo");
-echo "Done\n";
-echo "Creating index : 'killID' => 1, with sparse = 0 and unique = 0 ... ";
-$queueInfo->ensureIndex(array('killID' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-
-// queueProcess
-echo "\nCreating collection queueProcess ... ";
-$queueProcess = $db->createCollection("queueProcess");
-echo "Done\n";
-echo "Creating index : 'killID' => 1, with sparse = 0 and unique = 1 ... ";
-$queueProcess->ensureIndex(array('killID' => 1), array("sparse" => 0, "unique" => 1));
-echo "Done\n";
-
-// queueServer
-echo "\nCreating collection queueServer ... ";
-$queueServer = $db->createCollection("queueServer");
-echo "Done\n";
-echo "Creating index : 'requestDttm' => 1, with sparse = 0 and unique = 0 ... ";
-$queueServer->ensureIndex(array('requestDttm' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-
-// queueShare
-echo "\nCreating collection queueShare ... ";
-$queueShare = $db->createCollection("queueShare");
-echo "Done\n";
-echo "Creating index : 'killID' => 1, with sparse = 0 and unique = 0 ... ";
-$queueShare->ensureIndex(array('killID' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-
-// queueSocial
-echo "\nCreating collection queueSocial ... ";
-$queueSocial = $db->createCollection("queueSocial");
-echo "Done\n";
-echo "Creating index : 'killID' => 1, with sparse = 0 and unique = 0 ... ";
-$queueSocial->ensureIndex(array('killID' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-
-// queueStats
-echo "\nCreating collection queueStats ... ";
-$queueStats = $db->createCollection("queueStats");
-echo "Done\n";
-echo "Creating index : 'type' => 1, 'id' => 1, 'sequence' => 1, with sparse = 0 and unique = 1 ... ";
-$queueStats->ensureIndex(array('type' => 1, 'id' => 1, 'sequence' => 1), array("sparse" => 0, "unique" => 1));
-echo "Done\n";
-echo "Creating index : 'type' => 1, 'sequence' => 1, with sparse = 0 and unique = 0 ... ";
-$queueStats->ensureIndex(array('type' => 1, 'sequence' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-echo "Creating index : 'sequence' => 1, with sparse = 0 and unique = 0 ... ";
-$queueStats->ensureIndex(array('sequence' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-echo "Creating index : 'type' => 1, with sparse = 0 and unique = 0 ... ";
-$queueStats->ensureIndex(array('type' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // ranksProgress
