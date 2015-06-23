@@ -34,7 +34,7 @@
 		//get the position of the input so we can correctly offset the search window
 		get_position: function() {
 			var pos = $.extend({}, this.data['element'].offset(), { height: this.data['element'][0].offsetHeight });
-			return { top: (pos.top + pos.height), left: pos.left };
+			return { top: (pos.top + pos.height), left: pos.left - 90 };
 		}, 
 				
 		//move the selection around
@@ -60,7 +60,7 @@
 				$.ajax('https://zkillboard.com/autocomplete/', { 'data' : { 'query' : this.data['element'].val() }, 'type' : 'post', 'dataType' : 'json', 'success' : $.proxy(function(result) {
 					//empty the dropdown and append the new data
 					this.data['menu'].empty().append($.map(result, $.proxy(function(item, index) {
-						return $('<li><a href="#">' + ((item.image != '') ? '<img src="https://image.eveonline.com/' + item.image + '" width="32" height="32" alt=" ">' : '') + item.name.replace(RegExp('(' + this.data['element'].val() + ')', "gi"), function($1, match){ return '<strong>' + match + '</strong>'; } ) + '<span>' + item.type + '</span></a></li>').attr('data-value', JSON.stringify(item));
+						return $('<li><a href="#">' + ((item.image != '') ? '<img src="https://image.eveonline.com/' + item.image + '" width="32" height="32" alt=" ">' : '') + item.name.replace(RegExp('(' + this.data['element'].val() + ')', "gi"), function($1, match){ return '<strong>' + match + '</strong>'; } ) + '<span><small>' + item.type + '</small></span></a></li>').attr('data-value', JSON.stringify(item));
 					}, this)));
 
 					//if its not visible already fade it in - and position it as needed and autoselect the first item
