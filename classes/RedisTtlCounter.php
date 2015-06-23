@@ -16,14 +16,14 @@ class RedisTtlCounter
 		global $redis;
 
 		$value = serialize($value);
-		$redis->zAdd($this->queueName, (time() + $this->ttl), $value);
+		$redis->zAdd($this->queueName, time(), $value);
 	}
 
 	public function count()
 	{
 		global $redis;
 		
-		$redis->zRemRangeByScore($this->queueName, 0, time());
+		$redis->zRemRangeByScore($this->queueName, 0, (time() - $this->ttl));
 		return $redis->zCard($this->queueName);
 	}
 }

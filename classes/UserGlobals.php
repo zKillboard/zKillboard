@@ -24,8 +24,8 @@ class UserGlobals extends Twig_Extension
 		}
 
 		global $mdb;
-		$kills = $mdb->count("oneHour");
-		$this->addGlobal($result, "killsLastHour", $kills, 0);
+		$killsLastHour = new RedisTtlCounter("killsLastHour", 3600);
+		$this->addGlobal($result, "killsLastHour", $killsLastHour->count(), 0);
 		return $result;
 	}
 

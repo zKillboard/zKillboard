@@ -7,7 +7,8 @@ if ($minute != 0) exit();
 
 $mdb = new Mdb();
 
-$kills = $mdb->count("oneHour");
+$killsLastHour = new RedisTtlCounter("killsLastHour", 3600);
+$kills = $killsLastHour->count();
 $count = $mdb->findField("storage", "contents", ['locker' => 'totalKills']);
 
 if ($kills > 0)

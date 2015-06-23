@@ -8,6 +8,7 @@ $crestmails = $mdb->getCollection("crestmails");
 $rawmails = $mdb->getCollection("rawmails");
 $queueProcess = new RedisQueue("queueProcess");
 $queueShare = new RedisQueue("queueShare");
+$killsLastHour = new RedisTtlCounter("killsLastHour");
 
 $counter = 0;
 $timer = new Timer();
@@ -38,7 +39,7 @@ while (!Util::exitNow() && $timer->stop() < 115000)
 		unset($killmail["zkb"]);
 		unset($killmail["_id"]);
 
-		$mdb->save("oneHour", ['killID' => $id, 'added' => $mdb->now()]);
+		$killsLastHour->add($id);
 		if (!$mdb->exists("rawmails", ['killID' => (int) $id])) $rawmails->save($killmail);
 
 		if (!validKill($killmail))
