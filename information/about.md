@@ -7,11 +7,6 @@ zKillboard is a collaborative effort by many people, see our GitHub repository f
 - Squizz Caphinator
  - Twitter: [@squizzc](https://twitter.com/squizzc)
  - EMail: squizzc@gmail.com
-- Karbowiak:
- - Facebook: [http://facebook.com/Karbowiak](http://facebook.com/Karbowiak)
- - EMail: karbowiak@gmail.com
- - Twitter: [@mkarbowiak](https://twitter.com/mkarbowiak)
- - G+: [Michael Karbowiak](https://plus.google.com/+MichaelKarbowiak/)
 
 # 3rd Parties
 
@@ -28,6 +23,6 @@ Information from 3rd party sites, are owned by the 3rd party site, and are made 
 - EVEFit
 - EVE-Online
 - EVEEye
-- Wormhol.es
+- Wormhol.es (via wh.pasta.gg)
 
 Social images by http://www.pinkmoustache.net/

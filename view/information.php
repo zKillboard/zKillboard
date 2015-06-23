@@ -22,9 +22,7 @@ foreach($pages as $key => $val)
 	}
 }
 
-// If path is null, then none of the above triggered, in which case, the request isn't valid.. REDIRECTION TIME BRO...... Atleast i'm not sending you to goatse or something
-if($path == null)
-	$app->redirect("/");
+if($path == null) $app->redirect("/");
 
 // Load the markdown file
 $markdown = file_get_contents($path);

@@ -4,11 +4,6 @@
 {kills} kills processed ({percentage}%)<br>
 ######*These numbers are updated hourly...*
 
-### API
-Number of API calls and their result in the last hour.<br/>
-
-{apitable}
-
 ### Points
 ```
 Calculation:

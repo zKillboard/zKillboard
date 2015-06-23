@@ -15,8 +15,6 @@ arising from the use of this website.</p>
 
 <h4>License</h4>
 zKillboard uses the AGPLv3 license. Full license text is available in the `AGPL.md` file.
-<h4>Copyright</h4>
-Copyright (C) 2012-2013, EVE-KILL Team and EVSCO. All rights reserved.
 
 <hr/>
 
