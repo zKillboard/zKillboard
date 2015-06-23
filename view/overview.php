@@ -160,6 +160,7 @@ $nextApiCheck = null;
 if(in_array($key, array("character", "corporation")))
 {
 	$apiVerified = $redis->get("apiVerified:$id"); 
+	$nextApiCheck = date("H:i", $apiVerified + 3600);
 }
 
 $cnt = 0;

@@ -103,7 +103,7 @@ while ($timer->stop() <= 59000)
 		$info = $mdb->findDoc("information", ['type' => 'characterID', 'id' => $charID], [], [ 'name' => 1, 'corporationID' => 1]);
 		$corpInfo = $mdb->findDoc("information", ['type' => 'corporationID', 'id' => @$info["corporationID"]], [], [ 'name' => 1]);
 
-		$redis->setex("apiVerified:" . ($type == "Corporation" ? @$info["corporationID"] : $charID), 86400, true);
+		$redis->setex("apiVerified:" . ($type == "Corporation" ? @$info["corporationID"] : $charID), 86400, time());
 		if ($newMaxKillID == 0) $tqApiChars->setTime($row, time() + rand(72000, 86400));
 
 		// If we got new kills tell the log about it

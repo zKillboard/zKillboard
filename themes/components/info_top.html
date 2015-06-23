@@ -27,13 +27,13 @@
    	         {% if detail.characterID %}
    	         <tr>
                 <th>Character:</th>
-				<td itemprop="name">{% include 'components/text_char.html' %} {% if apiVerified is defined and key == "character" and apiVerified == 1 %}<b rel="tooltip" title="API Verified" class="fa fa-check" style="color:#00FF00"></b>{% endif %}</td>
+				<td itemprop="name">{% include 'components/text_char.html' %} {% if key == "character" and apiVerified > 0 %}<b rel="tooltip" title="API Verified{% if nextApiCheck != '' %}{{ '\n'|raw }}Next check at {{ nextApiCheck }}{% endif %}" class="fa fa-check" style="color:#00FF00"></b>{% endif %}</td>
             </tr>
             {% endif %}
             {% if detail.corporationID %}
             <tr>
                 <th>Corporation:</th>
-				<td itemprop="corporation">{% include 'components/text_corp.html' %} {% if detail.cticker %}[{{ detail.cticker }}]{% endif %} {% if apiVerified is defined and key == "corporation" and apiVerified > 0 %}<b rel="tooltip" title="API Verified{% if nextApiCheck != '' %}{{ '\n'|raw }}Next check at {{ nextApiCheck }}{% endif %}" class="fa fa-check" style="color:#00FF00"></b>{% endif %}</td>
+				<td itemprop="corporation">{% include 'components/text_corp.html' %} {% if detail.cticker %}[{{ detail.cticker }}]{% endif %} {% if key == "corporation" and apiVerified > 0 %}<b rel="tooltip" title="API Verified{% if nextApiCheck != '' %}{{ '\n'|raw }}Next check at {{ nextApiCheck }}{% endif %}" class="fa fa-check" style="color:#00FF00"></b>{% endif %}</td>
             </tr>
 			{% endif %}
 			{% if detail.ceoID and detail.ceoName %}
