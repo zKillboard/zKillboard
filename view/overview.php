@@ -161,7 +161,8 @@ if(in_array($key, array("character", "corporation")))
 {
 	$apiVerifiedSet = new RedisTtlSortedSet("ttlss:apiVerified", 86400);
 	$apiVerified = $apiVerifiedSet->getTime((int) $id);
-	$nextApiCheck = date("H:i", $apiVerified + 3600);
+	if ($apiVerified == null) $apiVerified = $apiVerifiedSet->getTime((int) @$detail["corporationID"]);
+	if ($apiVerified != null) $nextApiCheck = date("H:i", $apiVerified + 3600);
 }
 
 $cnt = 0;
