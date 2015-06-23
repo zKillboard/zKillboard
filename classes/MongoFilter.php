@@ -13,7 +13,7 @@ class MongoFilter
 
                 $hashKey = "MongoFilter::getKills:" . serialize($parameters) . ":$limit:$page";
 		$result = Cache::get($hashKey);
-                //if ($result != null) return $result;
+                if ($result != null) return $result;
 
 		// Build the query parameters
 		$query = self::buildQuery($parameters);
@@ -21,7 +21,7 @@ class MongoFilter
 
 		// Start the query
 		$killmails = $mdb->getCollection("killmails");
-		$cursor = $killmails->find($query, ['_id' => 0, 'killID' => 1 ])->timeout(-1); //->timeout(25000);
+		$cursor = $killmails->find($query, ['_id' => 0, 'killID' => 1 ])->timeout(-1);
 
 		// Apply the sort order
 		$sortDirection = isset($parameters["orderDirection"]) ? ($parameters["orderDirection"] == "asc" ? 1 : -1  )  : -1;
@@ -75,12 +75,6 @@ class MongoFilter
 				case "asc":
 				case "desc":
 				case "orderDirection":
-					break;
-				default:
-					if (is_numeric($key)) break;
-					if (strpos($key, ",") !== false) break;
-					error_log(date("Ymd H:i:s") . " Unknown flag $key\n", 3, "/var/www/zkillboard.com/cache/mf.log");
-					//return array("giving up $key");
 					break;
 				case "year":
 					$start = strtotime("$value-01-01");

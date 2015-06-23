@@ -102,7 +102,7 @@ class User
 	}
 
 	/**
-	 * @return int|null
+	 * @return int
 	*/
 	public static function getUserID()
 	{
@@ -110,7 +110,7 @@ class User
 			$id = Db::queryField("SELECT id FROM zz_users WHERE username = :username", "id", array(":username" => $_SESSION["loggedin"]), 30);
 			return (int) $id;
 		}
-		return null;
+		return 0;
 	}
 
 	/**

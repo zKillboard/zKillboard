@@ -619,10 +619,8 @@ class Info
 			case 0.1:
 				return "#DC3201";
 			default:
-			case 0.0:
 				return "#F30202";
 		}
-		return "";
 	}
 
 

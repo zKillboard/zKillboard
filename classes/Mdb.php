@@ -8,8 +8,6 @@ class Mdb
 
 	private $queryCount = 0;
 	private $emptyArray = [];
-	private $upsert = ['upsert' => true];
-	private $multi = ['multiple' => true];
 
 	/*
 	   Return a connection to the Mongo Database
@@ -193,6 +191,7 @@ class Mdb
 			else $ids[$key] = ['$' . $key => '$' . $value];
 		}
 		if (sizeof($ids) == 1 && isset($ids[0])) $ids = $ids[0];
+		$group = [];
 		$group['_id'] = $ids;
 
 		// If no counts or sums are given, assume a count based on the keys for the $group
@@ -210,6 +209,7 @@ class Mdb
 		$pipeline[] = ['$group' => $group];
 
 		// $project the keys into the result
+		$project = [];
 		$project['_id'] = 0;
 		foreach ($keys as $key=>$value)
 		{
@@ -225,7 +225,6 @@ class Mdb
 		if (sizeof($sort) > 0) $pipeline[] = ['$sort' => $sort];
 		// And add the limit
 		if ($limit != null) $pipeline[] = ['$limit' => (int) $limit];
-		//if ($debug) print_r($pipeline);
 
 		// Prep the cursor
 		$mdb = new Mdb();
