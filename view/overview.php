@@ -159,7 +159,8 @@ $apiVerified = false;
 $nextApiCheck = null;
 if(in_array($key, array("character", "corporation")))
 {
-	$apiVerified = $redis->get("apiVerified:$id"); 
+	$apiVerifiedSet = new RedisTtlSortedSet("ttlss:apiVerified", 86400);
+	$apiVerified = $apiVerifiedSet->getTime((int) $id);
 	$nextApiCheck = date("H:i", $apiVerified + 3600);
 }
 
