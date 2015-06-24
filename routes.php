@@ -32,11 +32,6 @@ $app->map("/tickets/view/:id/", function($id) use ($app) {
 	include( "view/tickets_view.php" );
 })->via("GET", "POST");
 
-// Tracker
-$app->get("/tracker(/page/:page)/", function($page = 1) use ($app) {
-	include( "view/tracker.php" );
-});
-
 // View kills
 $app->get("/kills/page/:page/", function($page = 1) use ($app) {
 	$type = NULL;
