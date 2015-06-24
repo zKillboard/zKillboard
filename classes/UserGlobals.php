@@ -10,7 +10,7 @@ class UserGlobals extends Twig_Extension
 	public function getGlobals()
 	{
 		$result = array();
-		if (isset($_SESSION["loggedin"])) {
+		if (User::isLoggedIn()) {
 			$u = User::getUserInfo();
 
 			$config = UserConfig::getAll();

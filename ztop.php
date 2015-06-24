@@ -33,6 +33,12 @@ while (true)
 	addInfo("Char/Corp Apis", $redis->zCard("tqApiChars"));
 	addInfo("Valid Apis", $redis->zCard("tqApis"));
 
+	addInfo("", 0);
+	$visitors = new RedisTtlCounter("ttlc:visitors", 300);
+	addInfo("Unique IPs in last 5 minutes", $visitors->count());
+	$requests = new RedisTtlCounter("ttlc:requests", 300);
+	addInfo("Requests in last 5 minutes", $requests->count());
+
 	$maxLen = 0;
 	foreach($infoArray as $i) foreach ($i as $key=>$value) $maxLen = max($maxLen, strlen("$value"));
 

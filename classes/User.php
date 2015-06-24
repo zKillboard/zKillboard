@@ -86,6 +86,9 @@ class User
 	*/
 	public static function isLoggedIn()
 	{
+		global $load;
+
+		if ($load >= 10) return false;
 		return isset($_SESSION["loggedin"]);
 	}
 
@@ -94,7 +97,7 @@ class User
 	*/
 	public static function getUserInfo()
 	{
-		if (isset($_SESSION["loggedin"])) {
+		if (self::isLoggedIn()) {
 			$id = Db::query("SELECT id, username, email, dateCreated, admin, moderator, characterID FROM zz_users WHERE username = :username", array(":username" => $_SESSION["loggedin"]), 1);
 			return @array("id" => $id[0]["id"], "username" => $id[0]["username"], "admin" => $id[0]["admin"], "moderator" => $id[0]["moderator"], "email" => $id[0]["email"], "characterID" => $id[0]["characterID"], "dateCreated" => $id[0]["dateCreated"]);
 		}
@@ -106,7 +109,7 @@ class User
 	*/
 	public static function getUserID()
 	{
-		if (isset($_SESSION["loggedin"])) {
+		if (self::isLoggedIn()) {
 			$id = Db::queryField("SELECT id FROM zz_users WHERE username = :username", "id", array(":username" => $_SESSION["loggedin"]), 30);
 			return (int) $id;
 		}

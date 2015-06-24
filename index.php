@@ -14,10 +14,18 @@ session_set_save_handler($session, true);
 session_cache_limiter(false);
 session_start();
 
-// Check if the user has autologin turned on
-if(!User::isLoggedIn()) User::autoLogin();
+$visitors = new RedisTtlCounter("ttlc:visitors", 300);
+$visitors->add(IP::get());
+$requests = new RedisTtlCounter("ttlc:requests", 300);
+$requests->add(uniqid());
 
-if (!User::isLoggedIn())
+$redis->get("foo");
+
+$load = getLoad();
+
+// Check if the user has autologin turned on
+if($load < 10 && !User::isLoggedIn()) User::autoLogin();
+if ($load >= 10)
 {
         $uri = @$_SERVER["REQUEST_URI"];
         if ($uri != "")
@@ -53,3 +61,12 @@ require_once("themes/zkillboard.php");
 
 // Run the thing!
 $app->run();
+
+function getLoad() {
+        $output = array();
+        $result = exec("cat /proc/loadavg", $output);
+
+        $split = explode(" ", $result);
+        $load = $split[0];
+        return $load;
+}
