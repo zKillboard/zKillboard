@@ -46,7 +46,7 @@ if ($load >= 10) {
 if (User::isLoggedIn()) {
     $theme = UserConfig::get('theme');
 }
-$app->config(array('templates.path' => $baseDir.'themes/'));
+$app->config(array('templates.path' => $baseDir.'templates/'));
 
 // Error handling
 $app->error(function (\Exception $e) use ($app) { include 'view/error.php'; });
