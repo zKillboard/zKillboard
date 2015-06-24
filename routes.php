@@ -18,11 +18,6 @@ $app->get('/information/(:page/)(:subPage/)', function ($page = 'about', $subPag
     include 'view/information.php';
 });
 
-// Support
-$app->get('/livechat/', function () use ($app) {
-    include 'view/livechat.php';
-});
-
 // Tickets
 $app->map('/tickets/', function () use ($app) {
     include 'view/tickets.php';
