@@ -103,24 +103,6 @@ class Util
         return substr($haystack, -strlen($needle)) === $needle;
     }
 
-    public static function calcX($slot, $size)
-    {
-        $angle = $slot * (360 / 32) - 4;
-        $rad = deg2rad($angle);
-        $radius = $size / 2;
-
-        return (int) (($radius * cos($rad)));
-    }
-
-    public static function calcY($slot, $size)
-    {
-        $angle = $slot * (360 / 32) - 4;
-        $rad = deg2rad($angle);
-        $radius = $size / 2;
-
-        return (int) (($radius * sin($rad)));
-    }
-
     private static $formatIskIndexes = array('', 'k', 'm', 'b', 't', 'tt', 'ttt');
 
     public static function formatIsk($value)

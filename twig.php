@@ -21,9 +21,6 @@ $view->parserOptions = array(
     'cache' => $cachepath,
 );
 
-// Load Whoops
-$app->add(new \Zeuxisoo\Whoops\Provider\Slim\WhoopsMiddleware());
-
 $twig = $app->view()->getEnvironment();
 
 $uri = $_SERVER['REQUEST_URI'];
@@ -110,19 +107,12 @@ $twig->addGlobal('KillboardName', (isset($killboardName) ? $killboardName : 'zKi
 // Set the style used side wide to the user selected one, or the config default
 $twig->addGlobal('style', UserConfig::get('style', $style));
 
-// Detect mobile devices
-$detect = new Mobile_Detect();
-$twig->addGlobal('isMobile', ($detect->isMobile() ? true : false));
-$twig->addGlobal('isTablet', ($detect->isTablet() ? true : false));
-
 $twig->addExtension(new UserGlobals());
 
 $twig->addFunction(new Twig_SimpleFunction('pageTimer', 'Util::pageTimer'));
 $twig->addFunction(new Twig_SimpleFunction('queryCount', 'Db::getQueryCount'));
 $twig->addFunction(new Twig_SimpleFunction('isActive', 'Util::isActive'));
 $twig->addFunction(new Twig_SimpleFunction('pluralize', 'Util::pluralize'));
-$twig->addFunction(new Twig_SimpleFunction('calcX', 'Util::calcX'));
-$twig->addFunction(new Twig_SimpleFunction('calcY', 'Util::calcY'));
 $twig->addFunction(new Twig_SimpleFunction('formatIsk', 'Util::formatIsk'));
 $twig->addFunction(new Twig_SimpleFunction('shortNum', 'Util::formatIsk'));
 $twig->addFunction(new Twig_SimpleFunction('shortString', 'Util::shortString'));

@@ -144,14 +144,6 @@ $app->get('/item/:id/', function ($id) use ($app) {
     include 'view/item.php';
 });
 
-// StackTrace
-$app->get('/stacktrace/:hash/', function ($hash) use ($app) {
-    $q = Db::query('SELECT error, url FROM zz_errors WHERE id = :hash', array(':hash' => $hash));
-    $trace = $q[0]['error'];
-    $url = $q[0]['url'];
-    $app->render('/components/stacktrace.html', array('stacktrace' => $trace, 'url' => $url));
-});
-
 $app->get('/comments/', function () use ($app) {
     $app->render('/comments.html');
 });
