@@ -2,9 +2,9 @@
 
 class Google
 {
-	public static function analytics($analyticsID, $analyticsName)
-	{
-		$html = "
+    public static function analytics($analyticsID, $analyticsName)
+    {
+        $html = "
 			<script>
 			  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 			  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -16,12 +16,13 @@ class Google
 
 			</script>
 			";
-		return $html;
-	}
 
-        public static function ad($caPub, $adSlot, $adWidth = 728, $adHeight = 90)
-        {
-		$html = '
+        return $html;
+    }
+
+    public static function ad($caPub, $adSlot, $adWidth = 728, $adHeight = 90)
+    {
+        $html = '
 			<script type="text/javascript"><!--
 			google_ad_client = "'.$caPub.'";
 			google_ad_slot = "'.$adSlot.'";
@@ -33,6 +34,7 @@ class Google
 			src="//pagead2.googlesyndication.com/pagead/show_ads.js">
 			</script>
 		';
-                return $html;
-        }
+
+        return $html;
+    }
 }

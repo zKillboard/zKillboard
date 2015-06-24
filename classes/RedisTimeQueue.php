@@ -2,58 +2,66 @@
 
 class RedisTimeQueue
 {
-	private $queueName;
-	private $deltaSeconds;
+    private $queueName;
+    private $deltaSeconds;
 
-	function __construct($queueName, $deltaSeconds = 3600)
-	{
-		$this->queueName = $queueName;
-		$this->deltaSeconds = $deltaSeconds;
-	}
+    public function __construct($queueName, $deltaSeconds = 3600)
+    {
+        $this->queueName = $queueName;
+        $this->deltaSeconds = $deltaSeconds;
+    }
 
-	public function add($value, $deltaSeconds = 0)
-	{
-		global $redis;
+    public function add($value, $deltaSeconds = 0)
+    {
+        global $redis;
 
-		$value = serialize($value);
-		if ($redis->zScore($this->queueName, $value) === false) $redis->zAdd($this->queueName, (0 + $deltaSeconds), $value);
-	}
+        $value = serialize($value);
+        if ($redis->zScore($this->queueName, $value) === false) {
+            $redis->zAdd($this->queueName, (0 + $deltaSeconds), $value);
+        }
+    }
 
-	public function remove($value)
-	{
-		global $redis;
-		
-		$value = serialize($value);
-		$redis->zRem($this->queueName, $value);
-	}
+    public function remove($value)
+    {
+        global $redis;
 
-	public function setTime($value, $time)
-	{
-		global $redis; 
+        $value = serialize($value);
+        $redis->zRem($this->queueName, $value);
+    }
 
-		$value = serialize($value);
-		$redis->zAdd($this->queueName, $time, $value);
-	}
+    public function setTime($value, $time)
+    {
+        global $redis;
 
-	public function next($block = true)
-	{
-		global $redis;
+        $value = serialize($value);
+        $redis->zAdd($this->queueName, $time, $value);
+    }
 
-		$next = $redis->zRange($this->queueName, 0, 0, true);
-		if ($next === null) return null;
-		if (!is_array($next)) return null;
-		$value = key($next);
-		$time = $next[$value];
+    public function next($block = true)
+    {
+        global $redis;
 
-		if ($time >= time() && $block == false) return null;
-		if ($time >= time())
-		{
-			sleep(1); // Block...
-			return $this->next(false);
-		}
+        $next = $redis->zRange($this->queueName, 0, 0, true);
+        if ($next === null) {
+            return;
+        }
+        if (!is_array($next)) {
+            return;
+        }
+        $value = key($next);
+        $time = $next[$value];
 
-		$redis->zAdd($this->queueName, time() + $this->deltaSeconds, $value);
-		$value = unserialize($value);
-		return $value;
-	}
+        if ($time >= time() && $block == false) {
+            return;
+        }
+        if ($time >= time()) {
+            sleep(1); // Block...
+            return $this->next(false);
+        }
+
+        $redis->zAdd($this->queueName, time() + $this->deltaSeconds, $value);
+        $value = unserialize($value);
+
+        return $value;
+    }
 }

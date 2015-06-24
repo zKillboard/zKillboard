@@ -2,60 +2,67 @@
 
 class RedisTtlSortedSet
 {
-	private $queueName;
-	private $ttl = 3600;
+    private $queueName;
+    private $ttl = 3600;
 
-	function __construct($queueName, $ttl)
-	{
-		$this->queueName = $queueName;
-		$this->ttl = $ttl;
-	}
+    public function __construct($queueName, $ttl)
+    {
+        $this->queueName = $queueName;
+        $this->ttl = $ttl;
+    }
 
-	public function add($time, $value)
-	{
-		global $redis;
+    public function add($time, $value)
+    {
+        global $redis;
 
-		if ($time < (time() - $this->ttl)) return;
+        if ($time < (time() - $this->ttl)) {
+            return;
+        }
 
-		$value = serialize($value);
-		$redis->zAdd($this->queueName, $time, $value);
-	}
+        $value = serialize($value);
+        $redis->zAdd($this->queueName, $time, $value);
+    }
 
-	public function cleanup()
-	{
-		global $redis;
-		
-		$redis->zRemRangeByScore($this->queueName, 0, (time() - $this->ttl));
-	}
+    public function cleanup()
+    {
+        global $redis;
 
-	public function count()
-	{
-		global $redis;
+        $redis->zRemRangeByScore($this->queueName, 0, (time() - $this->ttl));
+    }
 
-		$this->cleanup();
-		return $redis->zCard($this->queueName);
-	}
+    public function count()
+    {
+        global $redis;
 
-	public function getTime($value)
-	{
-		global $redis;
+        $this->cleanup();
 
-		$this->cleanup();
-		$value = serialize($value);
-		$time = $redis->zScore($this->queueName, $value);
-		return $time;
-	}
+        return $redis->zCard($this->queueName);
+    }
 
-	public function getRevResult($page, $numPerPage)
-	{
-		global $redis;
+    public function getTime($value)
+    {
+        global $redis;
 
-		$this->cleanup();
-		$start = $page * $numPerPage;
-		$values = $redis->zRevRange($this->queueName, $start, $numPerPage - 1);
+        $this->cleanup();
+        $value = serialize($value);
+        $time = $redis->zScore($this->queueName, $value);
 
-		$result = [];
-		foreach ($values as $value) $result[] = unserialize($value);
-		return $result;
-	}
+        return $time;
+    }
+
+    public function getRevResult($page, $numPerPage)
+    {
+        global $redis;
+
+        $this->cleanup();
+        $start = $page * $numPerPage;
+        $values = $redis->zRevRange($this->queueName, $start, $numPerPage - 1);
+
+        $result = [];
+        foreach ($values as $value) {
+            $result[] = unserialize($value);
+        }
+
+        return $result;
+    }
 }

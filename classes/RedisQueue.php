@@ -2,26 +2,29 @@
 
 class RedisQueue
 {
-	private $queueName = null;
+    private $queueName = null;
 
-	function __construct($queueName)
-	{
-		$this->queueName = $queueName;
-	}
+    public function __construct($queueName)
+    {
+        $this->queueName = $queueName;
+    }
 
-	public function push($value)
-	{
-		global $redis;
+    public function push($value)
+    {
+        global $redis;
 
-		$r = $redis->rPush($this->queueName, serialize($value));
-	}
+        $r = $redis->rPush($this->queueName, serialize($value));
+    }
 
-	public function pop()
-	{
-		global $redis;
+    public function pop()
+    {
+        global $redis;
 
-		$array = $redis->blPop($this->queueName, 1);
-		if (sizeof($array) == 0) return null;
-		return unserialize($array[1]);
-	}
+        $array = $redis->blPop($this->queueName, 1);
+        if (sizeof($array) == 0) {
+            return;
+        }
+
+        return unserialize($array[1]);
+    }
 }

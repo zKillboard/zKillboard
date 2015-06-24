@@ -1,3 +1,3 @@
 <?php
 
-$app->render("livechat.html");
+$app->render('livechat.html');
