@@ -1,6 +1,6 @@
 body {
 	background-color: #F0FFFF;
-	background-image: url("/themes/img/bg_white.jpg");
+	background-image: url("/img/bg_white.jpg");
 	-webkit-background-size: cover;
 	-moz-background-size: cover;
 	-o-background-size: cover;
@@ -22,15 +22,31 @@ body {
 	opacity: 0.95;
 }
 
+.table tbody tr.error td
+{
+  background-color: #CECECE;
+}
+
 .item_dropped_row {
 	background-color: #FBEFEF;
 }
 .item_dropped {
-	color: black;
+color: black;
 }
 .item_dropped_qty {
-	color: white;
+color: white;
 }
 .item_destroyed {
-	color: red;
+color: red;
+}
+
+.item_destroyed, .red {
+color: red;
+}
+.green {
+color: green;
+}
+
+.table-no-hover tbody tr:hover td, .table tbody tr:hover th {
+	background-color: transparent;
 }

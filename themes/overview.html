@@ -187,8 +187,8 @@
 		<meta name="twitter:image" content="https://image.eveonline.com/Type/8_64.png">
         <meta name="og:image" content="https://image.eveonline.com/Type/8_64.png">
 {% elseif key == "region" %}
-		<meta name="twitter:image" content="{{ fullsiteurl }}/themes/img/region_64.png">
-        <meta name="og:image" content="{{ fullsiteurl }}/themes/img/region_64.png">
+		<meta name="twitter:image" content="{{ fullsiteurl }}/img/region_64.png">
+        <meta name="og:image" content="{{ fullsiteurl }}/img/region_64.png">
 {% else %}
 		<meta name="twitter:image" content="https://image.eveonline.com/{{ key }}/{{ id }}_128.png">
         <meta name="og:image" content="https://image.eveonline.com/{{ key }}/{{ id }}_128.png">
@@ -196,7 +196,7 @@
 {% endblock %}
 
 {% block script %}
-	<script type="text/javascript" src="//{{ siteurl }}/themes/js/tablesorter/jquery.tablesorter.min.js"></script>
+	<script type="text/javascript" src="//{{ siteurl }}/js/tablesorter/jquery.tablesorter.min.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function() {
 			$("#corpstats").tablesorter({textExtraction: removeCommas});

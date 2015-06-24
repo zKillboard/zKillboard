@@ -37,7 +37,7 @@ body, html {
 	height: 60px;
 	display: block;
 	margin-bottom: 7px;
-	background: url(/themes/img/up-arrow.png) no-repeat center center;
+	background: url(/img/up-arrow.png) no-repeat center center;
 
 	/* transition */
 	-webkit-transition: 1s;
@@ -76,16 +76,16 @@ width: 160px;
 }
 
 .facebook{
-	background: url("/themes/img/social/fb_1.png") no-repeat center center;
+	background: url("/img/social/fb_1.png") no-repeat center center;
 }
 .twitter {
-	background: url("/themes/img/social/twitter_1.png") no-repeat center center;
+	background: url("/img/social/twitter_1.png") no-repeat center center;
 }
 .googleplus {
-	background: url("/themes/img/social/google_plus.png") no-repeat center center;
+	background: url("/img/social/google_plus.png") no-repeat center center;
 }
 .reddit {
-	background: url("/themes/img/social/reddit.png") no-repeat center center;
+	background: url("/img/social/reddit.png") no-repeat center center;
 }
 
 .rank-table tr td, .rank-table tr th {

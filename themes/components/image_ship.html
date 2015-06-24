@@ -1,6 +1,6 @@
 {% set actualSize = (resizeImage is defined) ? resizeImage : imageSize %}
 {% if field.shipTypeID == 0 %}
-	<img src="//{{ siteurl }}/themes/img/eve-question.png" height="{{actualSize}}" width="{{actualSize}}" class="eveimage img-rounded" alt=""/>
+	<img src="//{{ siteurl }}/img/eve-question.png" height="{{actualSize}}" width="{{actualSize}}" class="eveimage img-rounded" alt=""/>
 {% else %}
 	{% if shipImageLinkOverride != 0 %}
 		{% set url = "/kill/" ~ shipImageLinkOverride ~ "/" %}

@@ -81,10 +81,10 @@
 			</li>
 			<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Social <b class="caret"></b></i></a>
 				<ul class="dropdown-menu">
-					<li><a href="https://www.facebook.com/sharer/sharer.php?u={{url}}" target="_blank"><img src="//{{ siteurl }}/themes/img/social/fb_1.png"> Facebook</a></li>
-					<li><a href="https://twitter.com/intent/tweet?text={{ pageTitle|url_encode }}&url={{url}}" target="_blank"><img src="//{{ siteurl }}/themes/img/social/twitter_1.png"> Twitter</a></li>
-					<li><a href="https://plus.google.com/share?url={{url}}" target="_blank"><img src="//{{ siteurl }}/themes/img/social/google_plus.png"> Google+</a></li>
-					<li><a href="http://www.reddit.com/submit?url={{url}}&title={{ pageTitle|url_encode }}" target="_blank"><img src="//{{ siteurl }}/themes/img/social/reddit.png"> Reddit</a></li>
+					<li><a href="https://www.facebook.com/sharer/sharer.php?u={{url}}" target="_blank"><img src="//{{ siteurl }}/img/social/fb_1.png"> Facebook</a></li>
+					<li><a href="https://twitter.com/intent/tweet?text={{ pageTitle|url_encode }}&url={{url}}" target="_blank"><img src="//{{ siteurl }}/img/social/twitter_1.png"> Twitter</a></li>
+					<li><a href="https://plus.google.com/share?url={{url}}" target="_blank"><img src="//{{ siteurl }}/img/social/google_plus.png"> Google+</a></li>
+					<li><a href="http://www.reddit.com/submit?url={{url}}&title={{ pageTitle|url_encode }}" target="_blank"><img src="//{{ siteurl }}/img/social/reddit.png"> Reddit</a></li>
 				</ul>
 			</li>
 			<li><a href="/related/{{ killdata.info.system.solarSystemID }}/{{ extra.relatedtime }}/">Related</a></li>
@@ -292,12 +292,12 @@
 {% endblock %}
 
 {% block style %}
-<link rel="stylesheet" href="//{{ siteurl }}/themes/css/bootstrap-wysihtml5.css">
+<link rel="stylesheet" href="//{{ siteurl }}/css/bootstrap-wysihtml5.css">
 {% endblock %}
 {% block script %}
-<script type="text/javascript" src="//{{ siteurl }}/themes/js/wysihtml5-0.3.0.js"></script>
-<script type="text/javascript" src="//{{ siteurl }}/themes/js/bootstrap-wysihtml5.js"></script>
-<script type="text/javascript" src="//{{ siteurl }}/themes/js/bootstrap-tagmanager.js"></script>
+<script type="text/javascript" src="//{{ siteurl }}/js/wysihtml5-0.3.0.js"></script>
+<script type="text/javascript" src="//{{ siteurl }}/js/bootstrap-wysihtml5.js"></script>
+<script type="text/javascript" src="//{{ siteurl }}/js/bootstrap-tagmanager.js"></script>
 <script type="text/javascript">
 $(".modal-newissue").css("width", "800px");
 $(".modal-newissue").css("margin-left", "-400px");

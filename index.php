@@ -57,9 +57,6 @@ include 'routes.php';
 // Load twig stuff
 include 'twig.php';
 
-// Load the theme stuff AFTER routes and Twig, so themers can add crap to twig's global space
-require_once 'themes/zkillboard.php';
-
 // Run the thing!
 $app->run();
 
