@@ -342,19 +342,6 @@ class Util
         return preg_match($identifier_syntax, $subject) && !in_array(mb_strtolower($subject, 'UTF-8'), $reserved_words);
     }
 
-    public static function themesAvailable()
-    {
-        $dir = 'themes/';
-        $avail = scandir($dir);
-        foreach ($avail as $key => $val) {
-            if ($val == '.' || $val == '..') {
-                unset($avail[$key]);
-            }
-        }
-
-        return $avail;
-    }
-
     /**
      * @param string $haystack
      */
@@ -502,7 +489,7 @@ class Util
 
         // Look if the theme has any information pages it wants to present
         $theme = UserConfig::get('theme', $theme);
-        $tDir = $baseDir.'themes/'.$theme.'/information/';
+        $tDir = $baseDir.'/information/';
         $data = null;
         if (is_dir($tDir)) {
             $data = scandir($tDir);

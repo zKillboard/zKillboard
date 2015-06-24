@@ -182,7 +182,7 @@ $data['entities'] = Account::getUserTrackerData();
 
 // Theme
 $theme = UserConfig::get('theme', 'zkillboard');
-$data['themesAvailable'] = Util::themesAvailable();
+$data['themesAvailable'] = [];
 $data['currentTheme'] = $theme;
 
 // Style

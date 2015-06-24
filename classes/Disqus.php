@@ -33,8 +33,8 @@ class Disqus
         $js .= "\n";
         $js .= "		this.sso = {\n";
         $js .= "			name: 'zKillboard',\n";
-        $js .= "			button: '".$fullAddr.'/themes/'.$theme."/img/disqus_button.png',\n";
-        $js .= "			icon: '".$fullAddr.'/themes/'.$theme."/favicon.ico',\n";
+        $js .= "			button: '".$fullAddr."/img/disqus_button.png',\n";
+        $js .= "			icon: '".$fullAddr."/favicon.ico',\n";
         $js .= "			url: '".$fullAddr."/dlogin/',\n";
         $js .= "			logout: '".$fullAddr."/logout',\n";
         $js .= "			width: '300',\n";
