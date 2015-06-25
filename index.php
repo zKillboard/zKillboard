@@ -9,8 +9,7 @@ $timer = new Timer();
 $app = new \Slim\Slim($config);
 
 // Session
-$session = new zKBSession();
-session_set_save_handler($session, true);
+session_set_save_handler(new RedisSessionHandler(), true);
 session_cache_limiter(false);
 session_start();
 

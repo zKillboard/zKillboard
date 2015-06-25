@@ -1,6 +1,6 @@
 <?php
 
-class zKBSession implements SessionHandlerInterface
+class RedisSessionHandler implements SessionHandlerInterface
 {
     private $ttl = 7200; // 2hrs of cache
 
@@ -16,19 +16,25 @@ class zKBSession implements SessionHandlerInterface
 
     public function read($id)
     {
-        return Cache::get($id);
+	global $redis;
+
+	return $redis->get($id);
     }
 
     public function write($id, $data)
     {
-        Cache::set($id, $data, $this->ttl);
+	global $redis;
+	
+	$redis->setex($id, $this->ttl, $data);
 
         return true;
     }
 
     public function destroy($id)
     {
-        Cache::delete($id);
+	global $redis;
+
+	$redis->del($id);
 
         return true;
     }
