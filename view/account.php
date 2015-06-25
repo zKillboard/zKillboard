@@ -178,7 +178,7 @@ if ($_POST) {
     }
 }
 
-$data['entities'] = Account::getUserTrackerData();
+$data['entities'] = User::getUserTrackerData();
 
 // Theme
 $theme = UserConfig::get('theme', 'zkillboard');
