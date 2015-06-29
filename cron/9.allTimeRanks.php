@@ -2,14 +2,16 @@
 
 require_once '../init.php';
 
-$minute = (int) date('i');
-$hour = (int) date('H');
-if ($hour != 14) {
+$now = date("Hi");
+if ($now != "1441") {
     exit();
 }
-if ($minute != 41) {
-    exit();
+
+if (date("d") == 1) {
+    // Reset all topAllTime's on the first of each month
+    $mdb->getCollection("statistics")->update(['$unset' => ['topAllTime' => 1]]);
 }
+
 
 $date = new MongoDate(strtotime(date('Y-m-d')));
 $types = ['corporationID', 'allianceID', 'factionID', 'shipTypeID', 'groupID', 'solarSystemID', 'regionID', 'characterID'];

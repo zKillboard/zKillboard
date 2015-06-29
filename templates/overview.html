@@ -141,6 +141,8 @@
 	{% include 'components/top_list.html' %}
 {% elseif pageType == 'topalltime' %}
 	{% set showImage = true %}
+	<h4>Top All Time</h4>
+	{% if key != 'character' %}<h6><small>All time numbers are reset on the 1st of each month.</small></h6>{% endif %}
 	{% include 'components/top_list.html' %}
 {% elseif pageType == 'corpstats' %}
 	{% include 'components/corpstats.html' %}
