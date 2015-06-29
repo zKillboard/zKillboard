@@ -123,19 +123,10 @@
 						<li><a href="/tickets/">Tickets</a></li>
 						<li class="divider"></li>
 						<li class="dropdown-header">Information</li>
-						{% for key, data in navInfo %}
-							{% if data is not iterable %}
-								{% if data == "payments" and adFreeMonthCost == 0 %}
-								{% else %}
-									<li><a href="/information/{{ data }}/">{{ data|capitalize }}</a></li>
-								{% endif %}
-							{% else %}
-								{% for sub in data %}
-									<li><a href="/information/{{ sub }}/">{{ sub|replace({(key~'/'): "" }) }}</a></li>
-								{% endfor %}
-							{% endif %}
-						{% endfor %}
+						<li><a href="/information/about/">About</a></li>
 						<li><a href="https://neweden-dev.com/ZKillboard_API" target="_blank">API</a></li>
+						<li><a href="/information/legal/">Legal</a></li>
+						<li><a href="/information/statistics/">Statistics</a></li>
 					</ul>
 				</li>
 				<li class="dropdown">

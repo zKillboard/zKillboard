@@ -1,27 +1,9 @@
 <?php
 
-// Get the information pages available
-$pages = Util::informationPages();
+global $baseDir;
 
-// Figure out the path based on the request
-$path = null;
-foreach ($pages as $key => $val) {
-    if ($key == $page) {
-        if (count($val) >= 2) {
-            // It's a folder
-
-            foreach ($val as $sub) {
-                if ($sub['name'] == $subPage) {
-                    $path = $sub['path'];
-                }
-            }
-        } else {
-            $path = $val[0]['path'];
-        }
-    }
-}
-
-if ($path == null) {
+$path = $baseDir . "/information/$page.md";
+if (!is_file($path)) {
     $app->redirect('/');
 }
 

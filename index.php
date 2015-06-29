@@ -3,6 +3,14 @@
 // Include Init
 require_once 'init.php';
 
+// http requests should already be prevented, but use this just in case
+// also prevents sessions from being created without ssl
+if (isset($_SERVER["HTTP_X_FORWARDED_PROTO"]) && $_SERVER["HTTP_X_FORWARDED_PROTO"] != "https") {
+	$uri = @$_SERVER['REQUEST_URI'];
+	header("Location: https://zkillboard.com$uri");
+	die();
+}
+
 $timer = new Timer();
 
 // Starting Slim Framework
@@ -17,8 +25,6 @@ $visitors = new RedisTtlCounter('ttlc:visitors', 300);
 $visitors->add(IP::get());
 $requests = new RedisTtlCounter('ttlc:requests', 300);
 $requests->add(uniqid());
-
-$redis->get('foo');
 
 $load = getLoad();
 

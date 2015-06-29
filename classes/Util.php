@@ -462,63 +462,6 @@ class Util
         return isset($_POST[$var]) ? $_POST[$var] : null;
     }
 
-    public static function informationPages()
-    {
-        global $baseDir, $theme;
-        $mdDir = $baseDir.'information/';
-        $data = scandir($mdDir);
-
-        foreach ($data as $key => $file) {
-            if ($file == '.' || $file == '..') {
-                continue;
-            }
-
-            if (is_dir($mdDir.$file)) {
-                $subData = scandir($mdDir.$file);
-                foreach ($subData as $key => $subDir) {
-                    if ($subDir == '.' || $subDir == '..') {
-                        continue;
-                    }
-
-                    $pages[$file][] = array('name' => strtolower(str_replace('.md', '', $subDir)), 'path' => "$mdDir$file/$subDir");
-                }
-            } else {
-                $pages[strtolower(str_replace('.md', '', $file))][] = array('name' => strtolower(str_replace('.md', '', $file)), 'path' => "$mdDir$file");
-            }
-        }
-
-        // Look if the theme has any information pages it wants to present
-        $theme = UserConfig::get('theme', $theme);
-        $tDir = $baseDir.'/information/';
-        $data = null;
-        if (is_dir($tDir)) {
-            $data = scandir($tDir);
-        }
-
-        if ($data) {
-            foreach ($data as $key => $file) {
-                if ($file == '.' || $file == '..') {
-                    continue;
-                }
-
-                if (is_dir($tDir.$file)) {
-                    $subData = scandir($tDir.$file);
-                    foreach ($subData as $key => $subDir) {
-                        if ($subDir == '.' || $subDir == '..') {
-                            continue;
-                        }
-
-                        $pages[$file][] = array('name' => strtolower(str_replace('.md', '', $subDir)), 'path' => "$tDir$file/$subDir");
-                    }
-                } else {
-                    $pages[strtolower(str_replace('.md', '', $file))][] = array('name' => strtolower(str_replace('.md', '', $file)), 'path' => "$tDir$file");
-                }
-            }
-        }
-
-        return $pages;
-    }
-
     public static function out($text)
     {
         echo date('Y-m-d H:i:s')." > $text\n";
