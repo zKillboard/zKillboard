@@ -91,7 +91,7 @@ function updateInfo($killID)
         $regionID = (int) $constellation['regionID'];
 
         if (!$mdb->exists('information', ['type' => 'regionID', 'id' => $regionID])) {
-            $regionURL = "http://public-crest.eveonline.com/regions/$regionID/";
+            $regionURL = "https://public-crest.eveonline.com/regions/$regionID/";
             $crestRegion = CrestTools::getJSON($regionURL);
             if ($crestRegion == '') {
                 exit();

@@ -80,7 +80,7 @@ class Price
         }
 
         //Log::log("Fetching price for $typeID: " . Info::getItemName($typeID));
-        $url = "http://public-crest.eveonline.com/market/10000002/types/$typeID/history/";
+        $url = "https://public-crest.eveonline.com/market/10000002/types/$typeID/history/";
         $raw = Util::getData($url);
         $json = json_decode($raw, true);
         if (isset($json['items'])) {

@@ -16,7 +16,7 @@ class CrestTools
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_USERAGENT, "Crest Fetcher for http://$baseAddr");
+            curl_setopt($ch, CURLOPT_USERAGENT, "Crest Fetcher for https://$baseAddr");
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
             curl_setopt($ch, CURLOPT_TIMEOUT, 5); //timeout in seconds
             $body = curl_exec($ch);
@@ -55,7 +55,7 @@ class CrestTools
         if ($hash == null) {
             throw new Exception('rawmail not on record, must provide a hash');
         }
-        $url = "http://public-crest.eveonline.com/killmails/$id/$hash/";
+        $url = "https://public-crest.eveonline.com/killmails/$id/$hash/";
 
         return self::getJSON($url);
     }

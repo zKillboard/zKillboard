@@ -11,7 +11,7 @@ if ($minute != 15) {
     exit();
 }
 
-$json = CrestTools::getJSON('http://public-crest.eveonline.com/inventory/categories/7/');
+$json = CrestTools::getJSON('https://public-crest.eveonline.com/inventory/categories/7/');
 
 foreach ($json['groups'] as $group) {
     $href = $group['href'];

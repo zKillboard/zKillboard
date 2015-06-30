@@ -23,7 +23,7 @@ foreach ($alliances as $alliance) {
         continue;
     }
 
-    $alliCrest = CrestTools::getJSON("http://public-crest.eveonline.com/alliances/$id/");
+    $alliCrest = CrestTools::getJSON("https://public-crest.eveonline.com/alliances/$id/");
     if ($alliCrest == null || !isset($alliCrest['name'])) {
         sleep(1);
         $mdb->set('information', ['type' => 'alliance', 'id' => $id], ['lastApiUpdate' => $mdb->now()]);

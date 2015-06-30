@@ -26,11 +26,13 @@ while ($timer->stop() <= 59000) {
         $keyID = $row['keyID'];
         $vCode = $row['vCode'];
         $type = $row['type'];
+	$userID = $row['userID'];
+	if ($userID != 0) $redis->setex("userID:api:$userID:$charID", 86400, serialize(['charID' => $charID, 'keyID' => $keyID, 'time' => time()]));
         $charCorp = $type == 'Corporation' ? 'corp' : 'char';
         $killsAdded = 0;
 
         \Pheal\Core\Config::getInstance()->http_method = 'curl';
-        \Pheal\Core\Config::getInstance()->http_user_agent = "API Fetcher for http://$baseAddr";
+        \Pheal\Core\Config::getInstance()->http_user_agent = "API Fetcher for https://$baseAddr";
         \Pheal\Core\Config::getInstance()->http_post = false;
         \Pheal\Core\Config::getInstance()->http_keepalive = 30; // KeepAliveTimeout in seconds
         \Pheal\Core\Config::getInstance()->http_timeout = 60;
@@ -65,6 +67,10 @@ while ($timer->stop() <= 59000) {
             }
             continue;
         }
+
+	$nextCheck = $result->cached_until_unixtime;
+	$tqApiChars->setTime($row, $nextCheck);
+
         $newMaxKillID = 0;
         foreach ($result->kills as $kill) {
             $killID = (int) $kill->killID;

@@ -24,9 +24,10 @@ if ($pid != 0 && date('i') % 5 == 0) {
 
     $allApis = $mdb->find('apis');
     foreach ($allApis as $api) {
-        $keyID = $api['keyID'];
-        $vCode = $api['vCode'];
-        $value = ['keyID' => $keyID, 'vCode' => $vCode];
+        $keyID  = $api['keyID'];
+        $vCode  = $api['vCode'];
+	$userID = $api['userID'];
+        $value  = ['keyID' => $keyID, 'vCode' => $vCode, 'userID' => $userID];
 	$errorCode = (int) @$api['errorCode'];
 	if (in_array($errorCode, [0, 18, 106, 503, 522, 901, 902, 904])) {
 		$tqApis->add($value);
@@ -45,8 +46,9 @@ $requestNum = 0;
 while ($timer->stop() <= 58000) {
 	$row = $tqApis->next();
 	if ($row !== null) {
-		$keyID = $row['keyID'];
-		$vCode = $row['vCode'];
+		$keyID  = $row['keyID'];
+		$vCode  = $row['vCode'];
+		$userID = $row['userID'];
 
 		if (!isset($row['characters'])) {
 			$row['characters'] = [];
@@ -54,7 +56,7 @@ while ($timer->stop() <= 58000) {
 
 		$errorCode = (int) @$row['errorCode'];
 		if ($errorCode == 0 || $errorCode == 221) {
-			\Pheal\Core\Config::getInstance()->http_user_agent = "API Fetcher for http://$baseAddr";
+			\Pheal\Core\Config::getInstance()->http_user_agent = "API Fetcher for https://$baseAddr";
 			\Pheal\Core\Config::getInstance()->http_post = false;
 			\Pheal\Core\Config::getInstance()->http_keepalive = true; // default 15 seconds
 			\Pheal\Core\Config::getInstance()->http_keepalive = 10; // KeepAliveTimeout in seconds
@@ -102,7 +104,7 @@ while ($timer->stop() <= 58000) {
 						Util::out("Adding $keyID $characterID $type $vCode");
 					}
 
-					$char = ['keyID' => $keyID, 'vCode' => $vCode, 'characterID' => $characterID, 'type' => $type];
+					$char = ['keyID' => $keyID, 'vCode' => $vCode, 'characterID' => $characterID, 'type' => $type, 'userID' => $userID];
 					$tqApiChars->add($char);
 				}
 			}

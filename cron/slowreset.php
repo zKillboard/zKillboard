@@ -16,7 +16,6 @@ for ($i = $killID; $i >= ($killID - 5000); --$i) {
     }
 
     $hash = $crestmail['hash'];
-    //echo "Reseting http://public-crest.eveonline.com/killmails/$i/$hash/\n";
     $mdb->set('crestmails', ['killID' => $i], ['processed' => false]);
     sleep(1);
 }
