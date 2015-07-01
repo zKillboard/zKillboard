@@ -31,8 +31,6 @@ if ($pid != 0 && date('i') % 5 == 0) {
 	$errorCode = (int) @$api['errorCode'];
 	if (in_array($errorCode, [0, 18, 106, 503, 522, 901, 902, 904])) {
 		$tqApis->add($value);
-	} else {
-		$tqApis->remove($value);
 	}
     }
 }
