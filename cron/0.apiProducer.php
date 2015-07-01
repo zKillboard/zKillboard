@@ -81,6 +81,7 @@ while ($timer->stop() <= 58000) {
 					Util::out("(apiProducer) Error Validating $keyID: ".$ex->getCode().' '.$ex->getMessage());
 				}
 				$apis->update(['keyID' => $keyID, 'vCode' => $vCode], ['$set' => ['errorCode' => $errorCode]]);
+				sleep(3);
 				continue;
 			}
 

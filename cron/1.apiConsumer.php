@@ -65,6 +65,7 @@ while ($timer->stop() <= 59000) {
             if ($errorCode != 0 && $errorCode != 221) {
                 $tqApiChars->remove($row);
             }
+            sleep(3);
             continue;
         }
 
