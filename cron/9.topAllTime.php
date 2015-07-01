@@ -23,7 +23,6 @@ function calcTop($row)
     if (date('d') != '01' && isset($row['topAllTime'])) {
         return;
     }
-    Util::out($row['type'].' '.$row['id']);
 
     $parameters = [$row['type'] => $row['id']];
     $parameters['limit'] = 10;
