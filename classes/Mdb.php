@@ -124,7 +124,7 @@ class Mdb
         $serialized = "Mdb::find|$collection|".serialize($query).'|'.serialize($sort)."|$limit|".serialize($includes);
         $cacheKey = $serialized;
         if ($cacheTime > 0) {
-            $cached = Cache::get($cacheKey);
+            $cached = RedisCache::get($cacheKey);
             if ($cached != null) {
                 return $cached;
             }
@@ -156,7 +156,7 @@ class Mdb
         //if ($time > 1000) Log::log("Long query (${time}ms): $serialized");
 
         if ($cacheTime > 0 && sizeof($result) > 0) {
-            Cache::set($cacheKey, $result, $cacheTime);
+            RedisCache::set($cacheKey, $result, $cacheTime);
         }
 
         return $result;

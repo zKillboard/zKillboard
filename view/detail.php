@@ -26,7 +26,7 @@ if (!$exists) {
 }
 
 $killKey = "CacheKill:$id:$pageview";
-$details = Cache::get($killKey);
+$details = RedisCache::get($killKey);
 if ($details == null) {
     // Create the details on this kill
     $killdata = Kills::getKillDetails($id);
@@ -124,7 +124,7 @@ if ($details == null) {
     $killdata['victim']['related'] = $relatedShip;
 
     $details = array('pageview' => $pageview, 'killdata' => $killdata, 'extra' => $extra, 'message' => $message, 'flags' => Info::$effectToSlot, 'topDamage' => $topDamage, 'finalBlow' => $finalBlow, 'url' => $url);
-    Cache::set($killKey, $details);
+    RedisCache::set($killKey, $details, 3600);
 }
 
 header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + (24 * 3600)));
@@ -183,7 +183,7 @@ function buildItemKey($itm)
 
 function involvedCorpsAndAllis($md5, $involved)
 {
-    $Cache = Cache::get($md5.'involvedCorpsAndAllis');
+    $Cache = RedisCache::get($md5.'involvedCorpsAndAllis');
     if ($Cache) {
         return $Cache;
     }
@@ -233,7 +233,7 @@ function involvedCorpsAndAllis($md5, $involved)
     if ($involvedCorpCount <= 1 && $involvedAlliCount <= 1) {
         $invAll = array();
     }
-    Cache::set($md5.'involvedCorpsAndAllis', $invAll);
+    RedisCache::set($md5.'involvedCorpsAndAllis', $invAll, 3600);
 
     return $invAll;
 }
@@ -249,7 +249,7 @@ function involvedSort($field1, $field2)
 
 function droppedIsk($md5, $items)
 {
-    $Cache = Cache::get($md5.'droppedisk');
+    $Cache = RedisCache::get($md5.'droppedisk');
     if ($Cache) {
         return $Cache;
     }
@@ -259,7 +259,7 @@ function droppedIsk($md5, $items)
         $droppedisk += $dropped['price'] * (@$dropped['singleton'] ? @$dropped['quantityDropped'] / 100 : @$dropped['quantityDropped']);
     }
 
-    Cache::set($md5.'droppedisk', $droppedisk);
+    RedisCache::set($md5.'droppedisk', $droppedisk, 3600);
 
     return $droppedisk;
 }
@@ -267,7 +267,7 @@ function droppedIsk($md5, $items)
 function fittedIsk($md5, $items)
 {
     $key = $md5.'fittedIsk';
-    $cache = Cache::get($key);
+    $cache = RedisCache::get($key);
     if ($cache) {
         return $cache;
     }
@@ -281,7 +281,7 @@ function fittedIsk($md5, $items)
             $fittedIsk = $fittedIsk + ($item['price'] * $qty);
         }
     }
-    Cache::set($key, $fittedIsk);
+    RedisCache::set($key, $fittedIsk, 3600);
 
     return $fittedIsk;
 }

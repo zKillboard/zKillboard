@@ -18,8 +18,8 @@ class Kills
         global $mdb;
 
         $hashKey = 'Kills::getKills:'.serialize($parameters);
-        $result = Cache::get($hashKey);
-        //if ($result != null) return $result;
+        $result = RedisCache::get($hashKey);
+        if ($result != null) return $result;
 
         $kills = MongoFilter::getKills($parameters);
 
@@ -30,7 +30,7 @@ class Kills
         foreach ($kills as $kill) {
             $killID = (int) $kill['killID'];
             $killHashKey = "killDetail:$killID";
-            $killmail = Cache::get($killHashKey);
+            $killmail = RedisCache::get($killHashKey);
             if ($killmail == null) {
                 $killmail = $mdb->findDoc('killmails', ['killID' => $killID, 'cacheTime' => 3600]);
                 Info::addInfo($killmail);
@@ -44,11 +44,11 @@ class Kills
                 $killmail['finalBlow']['killID'] = $killID;
                 unset($killmail['_id']);
 
-                Cache::set($killHashKey, $killmail, 3600);
+                RedisCache::set($killHashKey, $killmail, 3600);
             }
             $details[$killID] = $killmail;
         }
-        Cache::set($hashKey, $details, 60);
+        RedisCache::set($hashKey, $details, 60);
 
         return $details;
     }

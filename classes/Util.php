@@ -42,7 +42,7 @@ class Util
         if ($overRide == false) {
             return;
         }
-        global $phealCacheLocation, $apiServer, $baseAddr, $ipsAvailable;
+        global $apiServer, $baseAddr, $ipsAvailable;
 
         if (!$overRide && static::is904Error()) {
             if (php_sapi_name() == 'cli') {
@@ -63,9 +63,6 @@ class Util
         \Pheal\Core\Config::getInstance()->http_keepalive = true; // default 15 seconds
         \Pheal\Core\Config::getInstance()->http_keepalive = 10; // KeepAliveTimeout in seconds
         \Pheal\Core\Config::getInstance()->http_timeout = 30;
-        if ($phealCacheLocation != null) {
-            \Pheal\Core\Config::getInstance()->cache = new \Pheal\Cache\FileStorage($phealCacheLocation);
-        }
         \Pheal\Core\Config::getInstance()->api_customkeys = true;
         \Pheal\Core\Config::getInstance()->api_base = $apiServer;
 
@@ -371,7 +368,7 @@ class Util
         global $ipsAvailable, $baseAddr;
 
         $md5 = md5($url);
-        $result = $cacheTime > 0 ? Cache::get($md5) : null;
+        $result = $cacheTime > 0 ? RedisCache::get($md5) : null;
 
         if (!$result) {
             $curl = curl_init();
@@ -394,7 +391,7 @@ class Util
             }
             $result = curl_exec($curl);
             if ($cacheTime > 0) {
-                Cache::set($md5, $result, $cacheTime);
+                RedisCache::set($md5, $result, $cacheTime);
             }
         }
 

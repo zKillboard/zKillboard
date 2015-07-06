@@ -19,7 +19,7 @@ class MongoFilter
         $page = isset($parameters['page']) ? ($parameters['page'] == 0 ? 0 : $parameters['page'] - 1) : 0;
 
         $hashKey = 'MongoFilter::getKills:'.serialize($parameters).":$limit:$page:$sortKey:$sortDirection";
-        $result = Cache::get($hashKey);
+        $result = RedisCache::get($hashKey);
         if ($result != null) {
             return $result;
         }
@@ -55,7 +55,7 @@ class MongoFilter
             $result[] = $row;
         }
 
-        Cache::set($hashKey, $result, 30);
+        RedisCache::set($hashKey, $result, 30);
 
         return $result;
     }

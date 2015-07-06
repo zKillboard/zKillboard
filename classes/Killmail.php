@@ -5,14 +5,14 @@ class Killmail
     // @deprecated
     public static function get($killID)
     {
-        $kill = Cache::get("Kill$killID");
+        $kill = RedisCache::get("Kill$killID");
         if ($kill != null) {
             return $kill;
         }
 
         $kill = Db::queryField('select kill_json from zz_killmails where killID = :killID', 'kill_json', array(':killID' => $killID));
         if ($kill != '') {
-            Cache::set("Kill$killID", $kill);
+            RedisCache::set("Kill$killID", $kill);
 
             return $kill;
         }

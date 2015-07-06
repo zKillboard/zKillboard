@@ -104,13 +104,13 @@ class Stats
         $parameters['orderBy'] = 'zkb.totalValue';
 
         $hashKey = 'getTopIsk:'.serialize($parameters);
-        $result = Cache::get($hashKey);
+        $result = RedisCache::get($hashKey);
         if ($result != null) {
             return $result;
         }
 
         $result = Kills::getKills($parameters);
-        Cache::set($hashKey, $result, 300);
+        RedisCache::set($hashKey, $result, 300);
 
         return $result;
     }
@@ -125,7 +125,7 @@ class Stats
         global $mdb, $debug;
 
         $hashKey = "Stats::getTop:$groupByColumn:".serialize($parameters);
-        $result = Cache::get($hashKey);
+        $result = RedisCache::get($hashKey);
         if ($result != null) {
             return $result;
         }
@@ -195,7 +195,7 @@ class Stats
         $result = iterator_to_array($result);
 
         Info::addInfo($result);
-        Cache::set($hashKey, $result, 3600);
+        RedisCache::set($hashKey, $result, 3600);
 
         return $result;
     }
@@ -228,7 +228,7 @@ class Stats
         global $mdb, $debug;
 
         $hashKey = "distinctCount::$groupByColumn:".serialize($parameters);
-        $result = Cache::get($hashKey);
+        $result = RedisCache::get($hashKey);
         if ($result != null) {
             return $result;
         }
@@ -236,7 +236,7 @@ class Stats
         if ($parameters == []) {
             $type = ($groupByColumn == 'solarSystemID' || $groupByColumn == 'regionID') ? "system.$groupByColumn" : "involved.$groupByColumn";
             $result = $mdb->getCollection('oneWeek')->distinct($type);
-            Cache::set($hashKey, sizeof($result), 3600);
+            RedisCache::set($hashKey, sizeof($result), 3600);
 
             return sizeof($result);
         }
@@ -283,7 +283,7 @@ class Stats
 
         $retValue = sizeof($result) == 0 ? 0 : $result[0]['value'];
 
-        Cache::set($hashKey, $retValue, 3600);
+        RedisCache::set($hashKey, $retValue, 3600);
 
         return $retValue;
     }

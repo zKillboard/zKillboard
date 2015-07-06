@@ -40,11 +40,6 @@ class Detail
 
     public static function eftarray($md5, $items, $victimID = 0)
     {
-        $Cache = Cache::get($md5.'eftarray');
-        if ($Cache) {
-            return $Cache;
-        }
-
         // EFT / Fitting Wheel
         $eftarray['high'] = array(); // high
         $eftarray['mid'] = array(); // mid
@@ -183,18 +178,12 @@ class Detail
                 unset($eftarray[$key]);
             }
         }
-        Cache::set($md5.'eftarray', $eftarray);
 
         return $eftarray;
     }
 
     public static function combineditems($md5, $items)
     {
-        $Cache = Cache::get($md5.'combineditems');
-        if ($Cache) {
-            return $Cache;
-        }
-
         // Create the new item array with combined items and whatnot
         $itemList = array();
         foreach ($items as $itm) {
@@ -230,8 +219,6 @@ class Detail
                 }
             }
         }
-        Cache::set($md5.'combineditems', $itemList);
-
         return $itemList;
     }
 
@@ -290,11 +277,6 @@ class Detail
 
     public static function involvedCorpsAndAllis($md5, $involved)
     {
-        $Cache = Cache::get($md5.'involvedCorpsAndAllis');
-        if ($Cache) {
-            return $Cache;
-        }
-
         $involvedAlliCount = 0;
         $involvedCorpCount = 0;
         // Create the involved corps / alliances list
@@ -340,8 +322,6 @@ class Detail
         if ($involvedCorpCount <= 1 && $involvedAlliCount <= 1) {
             $invAll = array();
         }
-        Cache::set($md5.'involvedCorpsAndAllis', $invAll);
-
         return $invAll;
     }
 
@@ -356,17 +336,10 @@ class Detail
 
     public static function droppedIsk($md5, $items)
     {
-        $Cache = Cache::get($md5.'droppedisk');
-        if ($Cache) {
-            return $Cache;
-        }
-
         $droppedisk = 0;
         foreach ($items as $dropped) {
             $droppedisk += $dropped['price'] * ($dropped['singleton'] ? $dropped['quantityDropped'] / 100 : $dropped['quantityDropped']);
         }
-
-        Cache::set($md5.'droppedisk', $droppedisk);
 
         return $droppedisk;
     }
@@ -374,10 +347,6 @@ class Detail
     public static function fittedIsk($md5, $items)
     {
         $key = $md5.'fittedIsk';
-        $cache = Cache::get($key);
-        if ($cache) {
-            return $cache;
-        }
 
         $fittedIsk = 0;
         $flags = array('High Slots', 'Mid Slots', 'Low Slots', 'SubSystems', 'Rigs', 'Drone Bay', 'Fuel Bay');
@@ -388,8 +357,6 @@ class Detail
                 $fittedIsk = $fittedIsk + ($item['price'] * $qty);
             }
         }
-        Cache::set($key, $fittedIsk);
-
         return $fittedIsk;
     }
 }
