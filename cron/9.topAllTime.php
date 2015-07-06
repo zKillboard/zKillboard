@@ -6,7 +6,7 @@ if (date('Hi') != '0001') {
     exit();
 }
 
-$types = ['allianceID', 'corporationID', 'factionID', 'shipTypeID', 'groupID'];
+$types = ['allianceID', 'corporationID', 'factionID', 'shipTypeID', 'groupID', 'solarSystemID', 'regionID'];
 
 foreach ($types as $type) {
     Util::out($type);
