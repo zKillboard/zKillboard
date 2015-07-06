@@ -28,10 +28,10 @@ class CrestTools
                 return;
             }
             if ($httpCode == 500) {
-                return;
+                return 500;
             }
             if ($httpCode == 415) {
-                return;
+                return 415;
             }
             ++$numTries;
             sleep(1);
