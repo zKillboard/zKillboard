@@ -36,7 +36,7 @@
 			<th>Corporation</th>
 			<th>Key Type</th>
 			<th>Last Checked</th>
-			<th>Cached Until</th>
+			<th>Next Check</th>
 			<th>Error</th>
 		</tr>
 	</thead>
@@ -47,7 +47,7 @@
 			<td>{{ data.keyID }}</td>
 			<td>{% include 'components/text_char.html' %}</td>
 			<td>{% include 'components/text_corp.html' %}</td>
-			<td>{{ data.isDirector == 'T' ?  'Corporation' : 'Character' }}</td>
+			<td>{{ data.keyType }}</td>
 			<td>{{ data.lastCheckedTime }}</td>
 			<td>{{ data.cachedUntilTime }}</td>
 			<td>{% if data.errorCode > 0%}<font class="item_destroyed">{{ data.errorCode }}</font>{% else %}<em>None</em>{% endif %}</td>

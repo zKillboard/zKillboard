@@ -61,18 +61,24 @@ class Api
 
     public static function getCharacterKeys($userID)
     {
-        global $mdb;
+        global $mdb, $redis;
 
-        $keys = self::getKeys($userID);
-        $result = [];
-        foreach ($keys as $key) {
-            $chars = $mdb->find('apiCharacters', ['keyID' => $key['keyID']]);
-            foreach ($chars as $char) {
-                $result[] = $char;
-            }
-        }
+	$characterIDs = $redis->keys("userID:api:$userID:*");
 
-        return $result;
+        $charIDs = [];
+	foreach ($characterIDs as $charKey) {
+		$row = unserialize($redis->get($charKey));
+		$charID = $row['charID'];
+		if (!isset($charIDs["$charID"])) $charIDs["$charID"] = [];
+		$charIDs["$charID"]['characterID'] = $charID;
+		if ($row['time'] > @$charIDs["$charID"]['time']) $charIDs["$charID"]['time'] = $row['time'];
+		$charIDs["$charID"]['lastChecked'] = date('Y-m-d H:i', $charIDs["$charID"]['time']);
+		$charIDs["$charID"]['keyID'] = $row['keyID'];
+		$charIDs["$charID"]['keyType'] = @$row['type'];
+		$charIDs["$charID"]['corporationID'] = $mdb->findField("information", "corporationID", ['cacheTime' => 3600, 'type' => 'characterID', 'id' => $charID]);
+	}
+	Info::addInfo($charIDs);
+	return $charIDs;
     }
 
     /**

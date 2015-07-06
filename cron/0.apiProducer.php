@@ -65,6 +65,7 @@ while ($timer->stop() <= 58000) {
 			try {
 				$apiKeyInfo = $pheal->ApiKeyInfo();
 			} catch (Exception $ex) {
+				$tqApis->remove($row); // Problem with api the key, remove it from rotation
 				$errorCode = (int) $ex->getCode();
 				if ($errorCode == 904) {
 					Util::out("(apiProducer) 904'ed");
@@ -74,7 +75,6 @@ while ($timer->stop() <= 58000) {
 					Util::out('(apiProducer) API Server timeout');
 					exit();
 				}
-				$tqApis->remove($row); // Problem with api the key, remove it from rotation
 				if ($errorCode != 221 && $debug) {
 					Util::out("(apiProducer) Error Validating $keyID: ".$ex->getCode().' '.$ex->getMessage());
 				}

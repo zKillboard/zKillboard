@@ -27,7 +27,7 @@ while ($timer->stop() <= 59000) {
         $vCode = $row['vCode'];
         $type = $row['type'];
 	$userID = $row['userID'];
-	if ($userID != 0) $redis->setex("userID:api:$userID:$charID", 86400, serialize(['charID' => $charID, 'keyID' => $keyID, 'time' => time()]));
+	if ($userID != 0) $redis->setex("userID:api:$userID:$charID", 86400, serialize(['charID' => $charID, 'keyID' => $keyID, 'time' => time(), 'type' => $type]));
         $charCorp = $type == 'Corporation' ? 'corp' : 'char';
         $killsAdded = 0;
 
