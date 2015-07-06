@@ -23,7 +23,7 @@ foreach ($groups['items'] as $group) {
     $mdb->insertUpdate('information', ['type' => 'groupID', 'id' => $groupID], ['name' => $name, 'lastCrestUpdate' => $mdb->now()]);
 
     $types = CrestTools::getJSON($href);
-    if ($types != null) {
+    if (@$types['types'] != null) {
         foreach ($types['types'] as $type) {
             $typeID = (int) getTypeID($type['href']);
             $name = $type['name'];
