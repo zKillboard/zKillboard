@@ -13,9 +13,12 @@ class MongoFilter
         if ($limit < 1) {
             $limit = 1;
         }
+        $sortDirection = isset($parameters['orderDirection']) ? ($parameters['orderDirection'] == 'asc' ? 1 : -1)  : -1;
+	if (isset($parameters['startTime'])) $sortDirection = 'asc';
+        $sortKey = isset($parameters['orderBy']) ? $parameters['orderBy'] : 'killID';
         $page = isset($parameters['page']) ? ($parameters['page'] == 0 ? 0 : $parameters['page'] - 1) : 0;
 
-        $hashKey = 'MongoFilter::getKills:'.serialize($parameters).":$limit:$page";
+        $hashKey = 'MongoFilter::getKills:'.serialize($parameters).":$limit:$page:$sortKey:$sortDirection";
         $result = Cache::get($hashKey);
         if ($result != null) {
             return $result;
@@ -32,8 +35,6 @@ class MongoFilter
         $cursor = $killmails->find($query, ['_id' => 0, 'killID' => 1])->timeout(-1);
 
         // Apply the sort order
-        $sortDirection = isset($parameters['orderDirection']) ? ($parameters['orderDirection'] == 'asc' ? 1 : -1)  : -1;
-        $sortKey = isset($parameters['orderBy']) ? $parameters['orderBy'] : 'killID';
         $cursor->sort([$sortKey => $sortDirection]);
 
         // Apply the limit
