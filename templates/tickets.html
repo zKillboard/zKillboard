@@ -4,6 +4,11 @@
 {% block title %}{% include 'components/title.html' %}{% endblock %}
 
 {% block content %}
+<div class="alert alert-success">
+<h3>Are you missing kills?</h3>
+<p>Before you create a ticket about missing kills, have you read the FAQ on the <a href='/post/'>Post</a> page?  Have you given zKillboard your API? If not, please keep in mind that zKillboard doesn't automagically get all the kills. Kills are submitted via API or CREST, and if we don't have that, we don't get your kills!<br/>-- Squizz and especially FlyBoy</p>
+</div>
+<hr/>
 <div class="navbar navbar-default">
 	<ul class="nav navbar-nav">
 		<li class="{{ isActive('tickets', pageview) }}"><a href="/tickets/">Tickets</a></li>
