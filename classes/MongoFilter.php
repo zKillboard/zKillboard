@@ -14,7 +14,9 @@ class MongoFilter
             $limit = 1;
         }
         $sortDirection = isset($parameters['orderDirection']) ? ($parameters['orderDirection'] == 'asc' ? 1 : -1)  : -1;
-	if (isset($parameters['startTime'])) $sortDirection = 'asc';
+        if (isset($parameters['startTime'])) {
+            $sortDirection = 'asc';
+        }
         $sortKey = isset($parameters['orderBy']) ? $parameters['orderBy'] : 'killID';
         $page = isset($parameters['page']) ? ($parameters['page'] == 0 ? 0 : $parameters['page'] - 1) : 0;
 

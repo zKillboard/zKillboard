@@ -219,6 +219,7 @@ class Detail
                 }
             }
         }
+
         return $itemList;
     }
 
@@ -322,6 +323,7 @@ class Detail
         if ($involvedCorpCount <= 1 && $involvedAlliCount <= 1) {
             $invAll = array();
         }
+
         return $invAll;
     }
 
@@ -357,6 +359,7 @@ class Detail
                 $fittedIsk = $fittedIsk + ($item['price'] * $qty);
             }
         }
+
         return $fittedIsk;
     }
 }

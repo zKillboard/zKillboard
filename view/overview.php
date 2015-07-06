@@ -113,9 +113,9 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
         $useType = $key;
         if ($useType == 'ship') {
             $useType = 'shipType';
-        } else if ($useType == 'system') {
-           $useType = 'solarSystem';
-	}
+        } elseif ($useType == 'system') {
+            $useType = 'solarSystem';
+        }
         $topLists = $mdb->findField('statistics', 'topAllTime', ['type' => "{$useType}ID", 'id' => (int) $id]);
     } else {
         if ($pageType != 'topalltime') {

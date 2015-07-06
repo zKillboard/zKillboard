@@ -19,7 +19,9 @@ class Kills
 
         $hashKey = 'Kills::getKills:'.serialize($parameters);
         $result = RedisCache::get($hashKey);
-        if ($result != null) return $result;
+        if ($result != null) {
+            return $result;
+        }
 
         $kills = MongoFilter::getKills($parameters);
 

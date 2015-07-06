@@ -2,7 +2,7 @@
 
 global $baseDir;
 
-$path = $baseDir . "/information/$page.md";
+$path = $baseDir."/information/$page.md";
 if (!is_file($path)) {
     $app->redirect('/');
 }

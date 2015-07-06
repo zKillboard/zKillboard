@@ -16,25 +16,25 @@ class RedisSessionHandler implements SessionHandlerInterface
 
     public function read($id)
     {
-	global $redis;
+        global $redis;
 
-	return $redis->get($id);
+        return $redis->get($id);
     }
 
     public function write($id, $data)
     {
-	global $redis;
-	
-	$redis->setex($id, $this->ttl, $data);
+        global $redis;
+
+        $redis->setex($id, $this->ttl, $data);
 
         return true;
     }
 
     public function destroy($id)
     {
-	global $redis;
+        global $redis;
 
-	$redis->del($id);
+        $redis->del($id);
 
         return true;
     }
