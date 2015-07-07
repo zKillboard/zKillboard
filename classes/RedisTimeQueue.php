@@ -49,6 +49,9 @@ class RedisTimeQueue
             return;
         }
         $value = key($next);
+	if (!isset($next[$value])) {
+		return null;
+	}
         $time = $next[$value];
 
         if ($time >= time() && $block == false) {
