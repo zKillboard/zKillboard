@@ -14,7 +14,7 @@ foreach ($topics as $topic) {
 $stompCount = 0;
 $timer = new Timer();
 
-while ($timer->stop() <= 86400000) {
+while ($timer->stop() <= 59000) {
     $frame = $stomp->readFrame();
     if (!empty($frame)) {
         $killdata = json_decode($frame->body, true);
