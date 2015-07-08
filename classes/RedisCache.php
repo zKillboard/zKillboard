@@ -21,8 +21,8 @@ class RedisCache
         if ($expireSeconds < 1) {
             return;
         }
-        if ($expireSeconds > 3600) {
-            $expireSeconds = 3600;
+        if ($expireSeconds > 900) {
+            $expireSeconds = 900;
         }
         $redis->setex("RC:$key", $expireSeconds, serialize($value));
     }
