@@ -243,6 +243,9 @@ class Util
                 case 'pretty':
                     $parameters[$key] = true;
                 break;
+                case 'no-attackers':
+                    $parameters[$key] = true;
+                break;
                 case 'no-items':
                     $parameters[$key] = true;
                 break;
