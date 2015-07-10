@@ -136,6 +136,12 @@ class Util
                 case 'nullsec':
                 case 'highsec':
                 case 'solo':
+                case 'pretty':
+                case 'xml':
+                case 'zkbOnly':
+                case 'awox':
+                case 'no-attackers':
+                case 'no-items':
                     $parameters[$key] = true;
                     break;
                 case 'character':
@@ -233,21 +239,6 @@ class Util
                         throw new Exception("$value is not a valid entry for $key");
                     }
                     $parameters[$key] = (int) $value;
-                break;
-                case 'xml':
-                    $parameters[$key] = true;
-                break;
-                case 'zkbOnly':
-                    $parameters[$key] = true;
-                break;
-                case 'pretty':
-                    $parameters[$key] = true;
-                break;
-                case 'no-attackers':
-                    $parameters[$key] = true;
-                break;
-                case 'no-items':
-                    $parameters[$key] = true;
                 break;
                 default:
                     if ($addExtraParameters == true) {
