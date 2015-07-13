@@ -98,7 +98,7 @@ class MongoFilter
                     break;
                 case 'year':
                     $start = strtotime("$value-01-01");
-                    $end = strtotime("$value-12-31");
+                    $end = strtotime("$value-12-31 11:59:59");
                     $startKillID = self::getKillIDFromTime($start, 1);
                     $endKillID = self::getKillIDFromTime($end, -1);
                     $and[] = ['killID' => ['$gte' => $startKillID]];
@@ -109,7 +109,11 @@ class MongoFilter
                 case 'month':
                     $year = $parameters['year'];
                     $start = strtotime("$year-$value-01");
-                    $nextMonth = $value + 1;
+                    $nextMonth = (int) $value + 1;
+                    if ($nextMonth == 13) {
+                        $nextMonth = 1;
+                        $year++;
+                    }
                     $end = strtotime("$year-$nextMonth-01");
                     $startKillID = self::getKillIDFromTime($start, 1);
                     $endKillID = self::getKillIDFromTime($end, -1);
