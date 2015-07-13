@@ -36,7 +36,7 @@ while (!Util::exitNow() && $timer->stop() < 115000) {
             continue;
         }
 	if ($killmail == 415 || $killmail == 500) {
-            $crestmails->update($crestmail, array('$set' => array('processed' => null, 'errorCode' => $killmail)));
+            $crestmails->update($crestmail, array('$set' => array('processed' => true, 'errorCode' => $killmail)));
             continue;
 	}
         unset($crestmail['npcOnly']);
