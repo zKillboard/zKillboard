@@ -42,6 +42,13 @@ while (true) {
     $requests = new RedisTtlCounter('ttlc:requests', 300);
     addInfo('Requests in last 5 minutes', $requests->count());
 
+    $info = $redis->info();
+    $mem = $info['used_memory_human'];
+
+    $stats = $mdb->getDb()->command(['dbstats' => 1]);
+    $dataSize = number_format($stats['dataSize'] / (1024 * 1024 * 1024), 2);
+    $storageSize = number_format($stats['storageSize'] / (1024 * 1024 * 1024), 2);
+
     $maxLen = 0;
     foreach ($infoArray as $i) {
         foreach ($i as $key => $value) {
@@ -49,8 +56,7 @@ while (true) {
         }
     }
 
-    echo exec('clear; date');
-    echo "\n";
+    echo exec('clear; date').'    Load: '.getLoad()."    Redis: $mem    TokuDB: ${storageSize}G / ${dataSize}G\n";
     echo "\n";
     foreach ($infoArray as $i) {
         foreach ($i as $name => $count) {
@@ -79,4 +85,15 @@ function addInfo($text, $number)
     }
     $dtext = $delta == 0 ? '' : "($delta)";
     $infoArray[] = ["$text $dtext" => number_format($number, 0)];
+}
+
+function getLoad()
+{
+    $output = array();
+    $result = exec('cat /proc/loadavg', $output);
+
+    $split = explode(' ', $result);
+    $load = $split[0];
+
+    return $load;
 }
