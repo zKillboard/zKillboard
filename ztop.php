@@ -49,6 +49,10 @@ while (true) {
     $dataSize = number_format($stats['dataSize'] / (1024 * 1024 * 1024), 2);
     $storageSize = number_format($stats['storageSize'] / (1024 * 1024 * 1024), 2);
 
+    $memory = getSystemMemInfo();
+    $memTotal = number_format($memory['MemTotal'] / (1024 * 1024), 2);
+    $memUsed = number_format(($memory['MemTotal'] - $memory['MemFree']) / (1024 * 1024), 2);
+
     $maxLen = 0;
     foreach ($infoArray as $i) {
         foreach ($i as $key => $value) {
@@ -56,7 +60,7 @@ while (true) {
         }
     }
 
-    echo exec('clear; date').'    Load: '.getLoad()."    Redis: $mem    TokuDB: ${storageSize}G / ${dataSize}G\n";
+    echo exec('clear; date').'  Load: '.getLoad()."  Memory: ${memUsed}G/${memTotal}G  Redis: $mem  TokuDB: ${storageSize}G / ${dataSize}G\n";
     echo "\n";
     foreach ($infoArray as $i) {
         foreach ($i as $name => $count) {
@@ -96,4 +100,19 @@ function getLoad()
     $load = $split[0];
 
     return $load;
+}
+
+function getSystemMemInfo()
+{
+    $data = explode("\n", file_get_contents('/proc/meminfo'));
+    $meminfo = array();
+    foreach ($data as $line) {
+        if ($line == '') {
+            continue;
+        }
+        list($key, $val) = explode(':', $line);
+        $meminfo[$key] = trim($val);
+    }
+
+    return $meminfo;
 }
