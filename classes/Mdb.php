@@ -153,7 +153,7 @@ class Mdb
         }
         $result = iterator_to_array($cursor);
         $time = $timer->stop();
-        //if ($time > 1000) Log::log("Long query (${time}ms): $serialized");
+        if ($time > 1000) Log::log("Long query (${time}ms): $serialized");
 
         if ($cacheTime > 0 && sizeof($result) > 0) {
             RedisCache::set($cacheKey, $result, $cacheTime);
