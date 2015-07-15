@@ -127,16 +127,13 @@ class Stats
         $hashKey = "Stats::getTop:$groupByColumn:".serialize($parameters);
         $result = RedisCache::get($hashKey);
         if ($result != null) {
-            return $result;
+            //return $result;
         }
 
-        if (isset($parameters['pastSeconds']) && $parameters['pastSeconds'] == 604800) {
+        if (isset($parameters['pastSeconds'])) { // && $parameters['pastSeconds'] <= 604800) {
             $killmails = $mdb->getCollection('oneWeek');
         } else {
             $killmails = $mdb->getCollection('killmails');
-        }
-        if (isset($parameters['pastSeconds']) && $parameters['pastSeconds'] == 604800) {
-            unset($parameters['pastSeconds']);
         }
 
         $query = MongoFilter::buildQuery($parameters);
@@ -194,15 +191,18 @@ class Stats
         $result = $killmails->aggregateCursor($pipeline);
         $result = iterator_to_array($result);
 
-        Info::addInfo($result);
-        RedisCache::set($hashKey, $result, 3600);
+	$time = $timer->stop();
+	if ($time > 1000) Log::log("Aggregate Long query (${time}ms): $hashKey");
 
-        return $result;
+	Info::addInfo($result);
+	RedisCache::set($hashKey, $result, 3600);
+
+	return $result;
     }
 
     private static function getExtendedTop($groupByColumn, $parameters = array(), $allTime = false)
     {
-        return array();
+	    return array();
     }
 
     public static function calcStats($killID, $adding = true)
@@ -225,99 +225,102 @@ class Stats
 
     public static function getDistinctCount($groupByColumn, $parameters = [])
     {
-        global $mdb, $debug;
+	    global $mdb, $debug;
 
-        $hashKey = "distinctCount::$groupByColumn:".serialize($parameters);
-        $result = RedisCache::get($hashKey);
-        if ($result != null) {
-            return $result;
-        }
+	    $hashKey = "distinctCount::$groupByColumn:".serialize($parameters);
+	    $result = RedisCache::get($hashKey);
+	    if ($result != null) {
+		    return $result;
+	    }
 
-        if ($parameters == []) {
-            $type = ($groupByColumn == 'solarSystemID' || $groupByColumn == 'regionID') ? "system.$groupByColumn" : "involved.$groupByColumn";
-            $result = $mdb->getCollection('oneWeek')->distinct($type);
-            RedisCache::set($hashKey, sizeof($result), 3600);
+	    if ($parameters == []) {
+		    $type = ($groupByColumn == 'solarSystemID' || $groupByColumn == 'regionID') ? "system.$groupByColumn" : "involved.$groupByColumn";
+		    $result = $mdb->getCollection('oneWeek')->distinct($type);
+		    RedisCache::set($hashKey, sizeof($result), 3600);
 
-            return sizeof($result);
-        }
+		    return sizeof($result);
+	    }
 
-        $query = MongoFilter::buildQuery($parameters);
-        if (!$mdb->exists('oneWeek', $query)) {
-            return [];
-        }
-        $andQuery = MongoFilter::buildQuery($parameters, false);
+	    $query = MongoFilter::buildQuery($parameters);
+	    if (!$mdb->exists('oneWeek', $query)) {
+		    return [];
+	    }
+	    $andQuery = MongoFilter::buildQuery($parameters, false);
 
-        if ($groupByColumn == 'solarSystemID' || $groupByColumn == 'regionID') {
-            $keyField = "system.$groupByColumn";
-        } else {
-            $keyField = "involved.$groupByColumn";
-        }
+	    if ($groupByColumn == 'solarSystemID' || $groupByColumn == 'regionID') {
+		    $keyField = "system.$groupByColumn";
+	    } else {
+		    $keyField = "involved.$groupByColumn";
+	    }
 
-        $id = $type = $isVictim = null;
-        if ($groupByColumn == 'solarSystemID' || $groupByColumn == 'regionID') {
-            $type = "system.$groupByColumn";
-        }
-        if ($type == null) {
-            $type = "involved.$groupByColumn";
-        }
+	    $id = $type = $isVictim = null;
+	    if ($groupByColumn == 'solarSystemID' || $groupByColumn == 'regionID') {
+		    $type = "system.$groupByColumn";
+	    }
+	    if ($type == null) {
+		    $type = "involved.$groupByColumn";
+	    }
 
-        $timer = new Timer();
-        $pipeline = [];
-        $pipeline[] = ['$match' => $query];
-        if ($groupByColumn != 'solarSystemID' && $groupByColumn != 'regionID') {
-            $pipeline[] = ['$unwind' => '$involved'];
-        }
-        if ($type != null && $id != null) {
-            $pipeline[] = ['$match' => [$type => $id]];
-        }
-        $pipeline[] = ['$match' => [$keyField => ['$ne' => null]]];
-        $pipeline[] = ['$match' => $andQuery];
-        $pipeline[] = ['$group' => ['_id' => '$'.$type, 'foo' => ['$sum' => 1]]];
-        $pipeline[] = ['$group' => ['_id' => 'total', 'value' => ['$sum' => 1]]];
+	    $timer = new Timer();
+	    $pipeline = [];
+	    $pipeline[] = ['$match' => $query];
+	    if ($groupByColumn != 'solarSystemID' && $groupByColumn != 'regionID') {
+		    $pipeline[] = ['$unwind' => '$involved'];
+	    }
+	    if ($type != null && $id != null) {
+		    $pipeline[] = ['$match' => [$type => $id]];
+	    }
+	    $pipeline[] = ['$match' => [$keyField => ['$ne' => null]]];
+	    $pipeline[] = ['$match' => $andQuery];
+	    $pipeline[] = ['$group' => ['_id' => '$'.$type, 'foo' => ['$sum' => 1]]];
+	    $pipeline[] = ['$group' => ['_id' => 'total', 'value' => ['$sum' => 1]]];
 
-        if (!$debug) {
-            MongoCursor::$timeout = -1;
-        }
-        $result = $mdb->getCollection('oneWeek')->aggregateCursor($pipeline);
-        $result = iterator_to_array($result);
+	    if (!$debug) {
+		    MongoCursor::$timeout = -1;
+	    }
+	    $result = $mdb->getCollection('oneWeek')->aggregateCursor($pipeline);
+	    $result = iterator_to_array($result);
 
-        $retValue = sizeof($result) == 0 ? 0 : $result[0]['value'];
+		$time = $timer->stop();
+		if ($time > 1000) Log::log("Distinct Long query (${time}ms): $hashKey");
 
-        RedisCache::set($hashKey, $retValue, 3600);
+	    $retValue = sizeof($result) == 0 ? 0 : $result[0]['value'];
 
-        return $retValue;
+	    RedisCache::set($hashKey, $retValue, 3600);
+
+	    return $retValue;
     }
 
     // Collect active PVP stats
     public static function getActivePvpStats($parameters)
     {
-        global $mdb;
-        $types = ['characterID', 'corporationID', 'allianceID', 'shipTypeID', 'solarSystemID', 'regionID'];
-        $activePvP = [];
-        foreach ($types as $type) {
-            $result = self::getDistinctCount($type, $parameters);
-            if ((int) $result <= 1) {
-                continue;
-            }
-            $type = str_replace('ID', '', $type);
-            if ($type == 'shipType') {
-                $type = 'Ship';
-            } elseif ($type == 'solarSystem') {
-                $type = 'System';
-            } else {
-                $type = ucfirst($type);
-            }
-            $type = $type.'s';
-            $row['type'] = $type;
-            $row['count'] = $result;
-            $activePvP[strtolower($type)] = $row;
-        }
-        $mongoParams = MongoFilter::buildQuery($parameters);
-        $killCount = $mdb->getCollection('oneWeek')->count($mongoParams);
-        if ($killCount > 0) {
-            $activePvP['kills'] = ['type' => 'Total Kills', 'count' => $killCount];
-        }
+	    global $mdb;
+	    $types = ['characterID', 'corporationID', 'allianceID', 'shipTypeID', 'solarSystemID', 'regionID'];
+	    $activePvP = [];
+	    foreach ($types as $type) {
+		    $result = self::getDistinctCount($type, $parameters);
+		    if ((int) $result <= 1) {
+			    continue;
+		    }
+		    $type = str_replace('ID', '', $type);
+		    if ($type == 'shipType') {
+			    $type = 'Ship';
+		    } elseif ($type == 'solarSystem') {
+			    $type = 'System';
+		    } else {
+			    $type = ucfirst($type);
+		    }
+		    $type = $type.'s';
+		    $row['type'] = $type;
+		    $row['count'] = $result;
+		    $activePvP[strtolower($type)] = $row;
+	    }
+	    $mongoParams = MongoFilter::buildQuery($parameters);
+	    $killCount = $mdb->getCollection('oneWeek')->count($mongoParams);
+	    if ($killCount > 0) {
+		    $activePvP['kills'] = ['type' => 'Total Kills', 'count' => $killCount];
+	    }
 
-        return $activePvP;
+	    return $activePvP;
     }
 }
