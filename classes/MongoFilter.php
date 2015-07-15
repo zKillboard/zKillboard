@@ -131,7 +131,7 @@ class MongoFilter
                     $and[] = ['killID' => ['$lte' => $endKillID]];
                     break;
                 case 'pastSeconds':
-                    $prevKillID = self::getKillIDFromTime(time() - $value);
+                    $prevKillID = self::getKillIDFromTime(time() - $value, -1);
                     $and[] = ['killID' => ['$gte' => $prevKillID]];
                     break;
                 case 'beforeKillID':
@@ -281,7 +281,7 @@ class MongoFilter
             return $row['killID'];
         }
 
-        return 0;
+        return $sort == 1 ? 0 : 999999999999;
     }
 
     public static function getKillIDFromDttm($dttm, $sort)
@@ -317,6 +317,6 @@ class MongoFilter
             return $row['killID'];
         }
 
-        return 0;
+        return $sort == 1 ? 0 : 999999999999;
     }
 }
