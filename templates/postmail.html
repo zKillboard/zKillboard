@@ -56,11 +56,11 @@
 				<p>If you're logged in you can view your API keys <a href="/account/api/">here</a>.</p>
 			</form>
 		</div>
-		<h3>API polling frequency <span class="red">(New - please read)</span></h3>
+		<h3>API polling frequency</h3>
 		<div class="well">
 		<ul>
 			<li>Newly entered API keys are polled almost immediately.</li>
-			<li>API keys with killmails are polled every 3 hours.</li>
+			<li>API keys with killmails are polled when the cachedUntil timer expires.</li>
 			<li>API keys without killmails (e.g. alts) are polled once a day.</li>
 			<li>API keys that become expired are never checked again since they almost never become un-expired.</li>
 		</ul>
