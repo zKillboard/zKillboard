@@ -127,11 +127,12 @@ class Stats
         $hashKey = "Stats::getTop:$groupByColumn:".serialize($parameters);
         $result = RedisCache::get($hashKey);
         if ($result != null) {
-            //return $result;
+            return $result;
         }
 
-        if (isset($parameters['pastSeconds'])) { // && $parameters['pastSeconds'] <= 604800) {
+        if (isset($parameters['pastSeconds'])) {
             $killmails = $mdb->getCollection('oneWeek');
+            if ($parameters['pastSeconds'] >= 604800) unset($parameters['pastSeconds']);
         } else {
             $killmails = $mdb->getCollection('killmails');
         }
