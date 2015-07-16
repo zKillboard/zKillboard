@@ -18,14 +18,14 @@ class RedisSessionHandler implements SessionHandlerInterface
     {
         global $redis;
 
-        return $redis->get($id);
+        return $redis->get("sess:$id");
     }
 
     public function write($id, $data)
     {
         global $redis;
 
-        $redis->setex($id, $this->ttl, $data);
+        $redis->setex("sess:$id", $this->ttl, $data);
 
         return true;
     }
@@ -34,7 +34,7 @@ class RedisSessionHandler implements SessionHandlerInterface
     {
         global $redis;
 
-        $redis->del($id);
+        $redis->del("sess:$id");
 
         return true;
     }
