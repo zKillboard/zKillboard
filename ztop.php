@@ -51,7 +51,7 @@ while (true) {
 
     $memory = getSystemMemInfo();
     $memTotal = number_format($memory['MemTotal'] / (1024 * 1024), 2);
-    $memUsed = number_format(($memory['MemTotal'] - $memory['MemFree']) / (1024 * 1024), 2);
+    $memUsed = number_format(($memory['MemTotal'] - $memory['MemFree'] - $memory['Cached']) / (1024 * 1024), 2);
 
     $maxLen = 0;
     foreach ($infoArray as $i) {
