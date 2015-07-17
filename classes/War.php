@@ -37,7 +37,9 @@ class War
             return $warInfo;
         }
         $warInfo = $mdb->findDoc('information', ['type' => 'warID', 'id' => $warID]);
-	if (!isset($warInfo['aggressor'])) return [];
+        if (!isset($warInfo['aggressor'])) {
+            return [];
+        }
 
         $warInfo['warID'] = $warID;
         $agr = $warInfo['aggressor']['id'];

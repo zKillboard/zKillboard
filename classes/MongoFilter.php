@@ -112,7 +112,7 @@ class MongoFilter
                     $nextMonth = (int) $value + 1;
                     if ($nextMonth == 13) {
                         $nextMonth = 1;
-                        $year++;
+                        ++$year;
                     }
                     $end = strtotime("$year-$nextMonth-01 23:59:99");
                     $startKillID = self::getKillIDFromTime($start, 1);

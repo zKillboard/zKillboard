@@ -4,7 +4,9 @@ require_once '../init.php';
 
 // Run once an hour
 $minute = (int) date('i');
-if ($minute != 0) exit();
+if ($minute != 0) {
+    exit();
+}
 
 $page = ceil($mdb->count('information', ['type' => 'warID']) / 2000);
 if ($page == 0) {

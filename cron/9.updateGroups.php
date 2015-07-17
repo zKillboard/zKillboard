@@ -18,7 +18,7 @@ foreach ($groups['items'] as $group) {
 
     $exists = $mdb->count('information', ['type' => 'groupID', 'id' => $groupID]);
     if ($exists == 0) {
-        $newGroups++;
+        ++$newGroups;
     }
     $mdb->insertUpdate('information', ['type' => 'groupID', 'id' => $groupID], ['name' => $name, 'lastCrestUpdate' => $mdb->now()]);
 

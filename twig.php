@@ -55,8 +55,8 @@ $twig->addGlobal('image_alliance', $imageServer.'Alliance/');
 $twig->addGlobal('image_item', $imageServer.'Type/');
 $twig->addGlobal('image_ship', $imageServer.'Render/');
 
-$twig->addGlobal('tqStatus', $redis->get("tqStatus"));
-$twig->addGlobal('tqCount', $redis->get("tqCount"));
+$twig->addGlobal('tqStatus', $redis->get('tqStatus'));
+$twig->addGlobal('tqCount', $redis->get('tqCount'));
 
 $twig->addGlobal('siteurl', $baseAddr);
 $twig->addGlobal('fullsiteurl', $fullAddr);

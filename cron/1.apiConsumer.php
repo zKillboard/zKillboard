@@ -26,8 +26,10 @@ while ($timer->stop() <= 59000) {
         $keyID = $row['keyID'];
         $vCode = $row['vCode'];
         $type = $row['type'];
-	$userID = $row['userID'];
-	if ($userID != 0) $redis->setex("userID:api:$userID:$charID", 86400, serialize(['charID' => $charID, 'keyID' => $keyID, 'time' => time(), 'type' => $type]));
+        $userID = $row['userID'];
+        if ($userID != 0) {
+            $redis->setex("userID:api:$userID:$charID", 86400, serialize(['charID' => $charID, 'keyID' => $keyID, 'time' => time(), 'type' => $type]));
+        }
         $charCorp = $type == 'Corporation' ? 'corp' : 'char';
         $killsAdded = 0;
 
@@ -69,8 +71,8 @@ while ($timer->stop() <= 59000) {
             continue;
         }
 
-	$nextCheck = $result->cached_until_unixtime;
-	$tqApiChars->setTime($row, $nextCheck);
+        $nextCheck = $result->cached_until_unixtime;
+        $tqApiChars->setTime($row, $nextCheck);
 
         $newMaxKillID = 0;
         foreach ($result->kills as $kill) {
@@ -116,7 +118,7 @@ while ($timer->stop() <= 59000) {
                 $mdb->getCollection('crestmails')->save(['killID' => (int) $killID, 'hash' => $hash, 'processed' => false, 'source' => 'api', 'added' => $mdb->now()]);
             }
             if (!$exists) {
-                $killsAdded++;
+                ++$killsAdded;
             }
             if (!$exists && $debug) {
                 Util::out("Added $killID from API");
