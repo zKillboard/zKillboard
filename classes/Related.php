@@ -117,7 +117,7 @@ class Related
 
                     if ($add) {
                         $key = @$entry['characterID'].':'.@$entry['corporationID'].':'.@$entry['allianceID'].':'.@$entry['shipTypeID'];
-                        $entry['shipName'] = Info::getItemName(@$entry['shipTypeID']);
+                        $entry['shipName'] = Info::getInfoField('typeID', @$entry['shipTypeID'], 'name');
                         if (!in_array($key, $involved)) {
                             $involved[$key] = $entry;
                         }

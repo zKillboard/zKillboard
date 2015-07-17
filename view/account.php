@@ -206,7 +206,7 @@ $apiChars = Api::getCharacters($userID);
 $domainChars = array();
 if ($apiChars != null) {
     foreach ($apiChars as $apiChar) {
-        $char = Info::getPilotDetails($apiChar['characterID'], null);
+        $char = Info::getInfoDetails('characterID', $apiChar['characterID']);
         $char['corpTicker'] = modifyTicker($mdb->findField('information', 'ticker', ['type' => 'corporationID', 'id' => (int) @$char['corporationID']]));
         $char['alliTicker'] = modifyTicker($mdb->findField('information', 'ticker', ['type' => 'corporationID', 'id' => (int) @$char['allianceID']]));
 

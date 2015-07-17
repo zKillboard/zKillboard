@@ -153,7 +153,7 @@ class Kills
                 if ($inContainer) {
                     $item['flag'] = $parentFlag;
                 }
-                if ($inContainer && strpos(Info::getItemName($typeID), 'Blueprint')) {
+                if ($inContainer && strpos(Info::getInfoField('typeID', $typeID, 'name'), 'Blueprint')) {
                     $item['singleton'] = 2;
                 }
                 unset($item['_stringValue']);
