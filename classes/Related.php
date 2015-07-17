@@ -89,6 +89,7 @@ class Related
     private static function addInvolved(&$entities, &$entry)
     {
         $entity = isset($entry['allianceID']) && $entry['allianceID'] != 0 ? $entry['allianceID'] : @$entry['corporationID'];
+	if ($entity == 0) return;
         if (!isset($entities["$entity"])) {
             $entities["$entity"] = array();
         }
