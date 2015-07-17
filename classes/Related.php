@@ -136,7 +136,7 @@ class Related
             $victim = $kill['victim'];
             Info::addInfo($victim);
             if (@$victim['characterID'] > 0 && @$victim['groupID'] != 29) {
-                $key = @$victim['characterID'].':'.@$victim['corporationID'].':'.(int) @$victim['allianceID'].':'.$victim['shipTypeID'];
+                $key = @$victim['characterID'].':'.@$victim['corporationID'].':'.@$victim['allianceID'].':'.$victim['shipTypeID'];
                 $victim['destroyed'] = $victim['killID'];
                 $team[$key] = $victim;
             }
