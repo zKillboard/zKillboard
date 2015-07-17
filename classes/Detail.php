@@ -55,7 +55,7 @@ class Detail
                 $itm['inContainer'] = 0;
             }
             if ($victimID >= 2100000000 && $victimID <= 2999999999) {
-                $itm['flagName'] = Info::getGroupName(Info::getGroupID($itm['typeID']));
+                $itm['flagName'] = Info::getInfoField('groupID', Info::getGroupID($itm['typeID']), 'name');
             } elseif (!isset($itm['flagName'])) {
                 $itm['flagName'] = Info::getFlagName($itm['flag']);
             }
