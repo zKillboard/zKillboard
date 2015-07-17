@@ -12,7 +12,7 @@ class Related
         }
 
         $blueTeam = array();
-        $redTeam = static::findWinners($kills, 'allianceID');
+        $redTeam = static::findWinners($kills);
         foreach ($involvedEntities as $entity => $chars) {
             if (!in_array($entity, $redTeam)) {
                 $blueTeam[] = $entity;
@@ -206,7 +206,7 @@ class Related
     /**
      * @param string $typeColumn
      */
-    private static function findWinners(&$kills, $typeColumn)
+    private static function findWinners(&$kills)
     {
         $involvedArray = array();
         foreach ($kills as $killID => $kill) {
