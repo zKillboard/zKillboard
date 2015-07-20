@@ -9,7 +9,8 @@
 		"slim/slim": "2.*",
 		"slim/views": "0.1.*",
 		"twig/twig": "1.*",
-		"erusev/parsedown": "dev-master"
+		"erusev/parsedown": "dev-master",
+		"zkillboard/redisq": "master-dev"
 	},
 	"minimum-stability": "stable",
 	"prefer-stable": true
