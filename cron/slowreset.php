@@ -2,20 +2,20 @@
 
 require_once '../init.php';
 
-$killID = $mdb->findField('killmails', 'killID', [], ['killID' => -1]);
-for ($i = $killID; $i >= ($killID - 5000); --$i) {
-    $crestmail = $mdb->findDoc('crestmails', ['killID' => $i]);
-    if ($crestmail == null) {
+$count = 0;
+$crest = $mdb->getCollection('crestmails')->find()->sort(['killID' => -1]);
+foreach ($crest as $row) {
+    ++$count;
+    if ($count > 50000) {
+        exit();
+    }
+    if (@$row['npcOnly'] == true) {
         continue;
     }
-    if (@$crestmail['processed'] === true) {
+    $killID = $row['killID'];
+    if ($mdb->exists('killmails', ['killID' => $killID])) {
         continue;
     }
-    if (@$crestmail['processed'] === false) {
-        continue;
-    }
-
-    $hash = $crestmail['hash'];
-    $mdb->set('crestmails', ['killID' => $i], ['processed' => false]);
+    $mdb->set('crestmails', ['killID' => $killID], ['processed' => false]);
     sleep(1);
 }
