@@ -26,5 +26,5 @@ while ($timer->stop() <= 59000) {
 
     $redisQServer = 'redisq.zkillboard.com';
 
-    RedisQ\Action::queue('redisq.zkillboard.com', 'zkb', 'RedisQ:auth:99apples', $package);
+    RedisQ\Action::queue('redisq.zkillboard.com', $redisQAuthUser, $redisQAuthPass, $package);
 }
