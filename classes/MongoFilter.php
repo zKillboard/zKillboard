@@ -99,40 +99,30 @@ class MongoFilter
                 case 'year':
                     $start = strtotime("$value-01-01");
                     $end = strtotime("$value-12-31 23:59:59");
-                    $startKillID = self::getKillIDFromTime($start, 1);
-                    $endKillID = self::getKillIDFromTime($end, -1);
-                    $and[] = ['killID' => ['$gte' => $startKillID]];
-                    if ($endKillID > 0) {
-                        $and[] = ['killID' => ['$lte' => $endKillID]];
-                    }
+                    $and[] = ['dttm' => ['$gte' => new MongoDate($start)]];
+                    $and[] = ['dttm' => ['$lt' => new MongoDate($end)]];
                     break;
                 case 'month':
                     $year = $parameters['year'];
-                    $start = strtotime("$year-$value-01");
+                    $start = strtotime("$year-$value-01 00:00:00");
                     $nextMonth = (int) $value + 1;
                     if ($nextMonth == 13) {
                         $nextMonth = 1;
                         ++$year;
                     }
-                    $end = strtotime("$year-$nextMonth-01 23:59:99");
-                    $startKillID = self::getKillIDFromTime($start, 1);
-                    $endKillID = self::getKillIDFromTime($end, -1);
-                    $and[] = ['killID' => ['$gte' => $startKillID]];
-                    if ($endKillID > 0) {
-                        $and[] = ['killID' => ['$lt' => $endKillID]];
-                    }
+                    $end = strtotime("$year-$nextMonth-01 00:00:00");
+                    $and[] = ['dttm' => ['$gte' => new MongoDate($start)]];
+                    $and[] = ['dttm' => ['$lt' => new MongoDate($end)]];
                     break;
                 case 'relatedTime':
                     $time = strtotime($value);
                     $exHours = isset($parameters['exHours']) ? (int) $parameters['exHours'] : 1;
-                    $startKillID = self::getKillIDFromTime($time - ($exHours * 3600), 1);
-                    $endKillID = self::getKillIDFromTime($time + ($exHours * 3600), -1);
-                    $and[] = ['killID' => ['$gte' => $startKillID]];
-                    $and[] = ['killID' => ['$lte' => $endKillID]];
+                    $and[] = ['dttm' => ['$gte' => new MongoDate($time - (3600 * $exHours))]];
+                    $and[] = ['dttm' => ['$lte' => new MongoDate($time + (3600 * $exHours))]];
                     break;
                 case 'pastSeconds':
-                    $prevKillID = self::getKillIDFromTime(time() - $value, -1);
-                    $and[] = ['killID' => ['$gte' => $prevKillID]];
+            $value = min($value, 604800);
+                    $and[] = ['dttm' => ['$gte' => new MongoDate(time() - $value)]];
                     break;
                 case 'beforeKillID':
                     $and[] = ['killID' => ['$lt' => ((int) $value)]];
@@ -205,15 +195,11 @@ class MongoFilter
                     $and[] = ['solo' => true];
                     break;
                 case 'startTime':
-                    $killID = self::getKillIDFromDttm($value, 1);
-                    $and[] = ['killID' => ['$gte' => $killID]];
+                    $and[] = ['dttm' => ['$gte' => new MongoDate($value)]];
                     $parameters['orderDirection'] = 'asc';
                     break;
                 case 'endTime':
-                    $killID = self::getKillIDFromDttm($value, 1);
-                    if ($killID !== null) {
-                        $and[] = ['killID' => ['$lte' => $killID]];
-                    }
+                    $and[] = ['dttm' => ['$lte' => new MongoDate($value)]];
                     break;
                 case 'orderBy':
                     // handled by sort, can be ignored
@@ -255,68 +241,5 @@ class MongoFilter
         }
 
         return $query;
-    }
-
-    public static function getKillIDFromTime($time, $sort = 1)
-    {
-        global $mdb;
-
-        $start = null;
-        $end = null;
-        if ($sort == 1) {
-            $start = $time;
-            $end = $time + 9600;
-        } else {
-            $start = $time - 9600;
-            $end = $time;
-        }
-
-        $begin = new MongoDate($start);
-        $final = new MongoDate($end);
-
-        $killmails = $mdb->getCollection('killmails');
-        $query = ['$and' => [['dttm' => ['$gte' => $begin]], ['dttm' => ['$lte' => $final]]]];
-        $result = $killmails->find($query, ['_id' => 0, 'killID' => true])->sort(['killID' => $sort])->limit(1);
-        foreach ($result as $row) {
-            return $row['killID'];
-        }
-
-        return $sort == 1 ? 0 : 999999999999;
-    }
-
-    public static function getKillIDFromDttm($dttm, $sort)
-    {
-        global $mdb;
-
-        if (is_string($dttm)) {
-            $time = strtotime($dttm);
-        } else {
-            $time = $dttm;
-        }
-        if ($time > time()) {
-            return;
-        }
-
-        $start = null;
-        $end = null;
-        if ($sort == 1) {
-            $start = $time;
-            $end = $time + 9600;
-        } else {
-            $start = $time - 9600;
-            $end = $time;
-        }
-
-        $begin = new MongoDate($start);
-        $final = new MongoDate($end);
-
-        $killmails = $mdb->getCollection('killmails');
-        $query = ['$and' => [['dttm' => ['$gte' => $begin]], ['dttm' => ['$lte' => $final]]]];
-        $result = $killmails->find($query, ['_id' => 0, 'killID' => true])->sort(['killID' => $sort])->limit(1);
-        foreach ($result as $row) {
-            return $row['killID'];
-        }
-
-        return $sort == 1 ? 0 : 999999999999;
     }
 }
