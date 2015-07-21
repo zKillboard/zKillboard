@@ -6,17 +6,26 @@ $counter = 0;
 $information = $mdb->getCollection('information');
 $timer = new Timer();
 
-$information->update(['type' => 'corporationID', 'lastApiUpdate' => null], ['$set' => ['lastApiUpdate' => new MongoDate(2)]], ['multiple' => true]);
+$queueCorps = new RedisTimeQueue('tqCorporations', 86400);
 
-$result = $mdb->find('information', ['type' => 'corporationID', 'lastApiUpdate' => ['$lt' => $mdb->now(86400)]], ['lastApiUpdate' => 1], 1000);
-foreach ($result as $row) {
-    if (Util::exitNow() || $timer->stop() > 110000) {
-        exit();
+$i = date('i');
+if ($i == 30) {
+    $corps = $information->find(['type' => 'corporationID']);
+    foreach ($corps as $corp) {
+        $queueCorps->add($corp['id']);
     }
+}
+
+while ($timer->stop() < 55000) {
+    $id = $queueCorps->next();
+    if ($id == null) {
+        continue;
+    }
+    $row = $mdb->findDoc('information', ['type' => 'corporationID', 'id' => (int) $id]);
 
     $updates = [];
     if (!isset($row['memberCount']) || (isset($row['memberCount']) && $row['memberCount'] != 0)) {
-        $id = $row['id'];
+        $id = (int) $row['id'];
         sleep(1); // slow things down
         $raw = @file_get_contents("https://api.eveonline.com/corp/CorporationSheet.xml.aspx?corporationID=$id");
         if ($raw != '') {

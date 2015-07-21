@@ -4,20 +4,25 @@ require_once '../init.php';
 
 $counter = 0;
 $information = $mdb->getCollection('information');
+$queueCharacters = new RedisTimeQueue('tqCharacters', 86400);
 $timer = new Timer();
 $counter = 0;
 
-// This method doesn't lock the database for seconds at a time
-$notSet = $information->find(['type' => 'characterID', 'lastApiUpdate' => null]);
-foreach ($notSet as $row) {
-    $information->update($row, ['$set' => ['lastApiUpdate' => new MongoDate(2)]]);
+$i = date('i');
+if ($i == 15) {
+    $characters = $information->find(['type' => 'characterID']);
+    foreach ($characters as $char) {
+        $queueCharacters->add($char['id']);
+    }
 }
 
 while ($timer->stop() < 55000) {
-    $result = $mdb->find('information', ['type' => 'characterID', 'lastApiUpdate' => ['$lt' => $mdb->now(86400)]], ['lastApiUpdate' => 1], 100);
     $ids = [];
-    foreach ($result as $row) {
-        $ids[] = $row['id'];
+    for ($i = 0; $i < 100; ++$i) {
+        $id = $queueCharacters->next();
+        if ($id != null) {
+            $ids[] = $id;
+        }
     }
     $stringIDs = implode(',', $ids);
     $href = "https://api.eveonline.com/eve/CharacterAffiliation.xml.aspx?ids=$stringIDs";

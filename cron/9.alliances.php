@@ -5,23 +5,26 @@ require_once '../init.php';
 $mdb = new Mdb();
 $old = $mdb->now(3600 * 3); // 8 hours
 $timer = new Timer();
+$queueAllis = new RedisTimeQueue('tqAlliances', 9600);
 
-$mdb->getCollection('information')->update(['type' => 'allianceID', 'lastApiUpdate' => null], ['$set' => ['lastApiUpdate' => new MongoDate(2)]], ['multiple' => true]);
-$alliances = $mdb->find('information', ['type' => 'allianceID', 'lastApiUpdate' => ['$lt' => $old]], ['lastApiUpdate' => 1], 100);
-foreach ($alliances as $alliance) {
-    if (Util::exitNow() || $timer->stop() > 110000) {
-        exit();
+$i = date('i');
+if ($i == 45) {
+    $allis = $mdb->find('information', ['type' => 'allianceID']);
+    foreach ($allis as $alli) {
+        $queueAllis->add($alli['id']);
     }
-    $id = $alliance['id'];
-    $name = $alliance['name'];
-    //echo "$id $name\n";
+}
 
-    $currentInfo = $mdb->findDoc('information', ['type' => 'alliance', 'id' => $id]);
-
-    if (false && @$currentInfo['deleted'] == true) {
-        $mdb->set('information', ['type' => 'alliance', 'id' => $id], ['lastApiUpdate' => $mdb->now()]);
+while ($timer->stop() <= 55000) {
+    $id = (int) $queueAllis->next();
+    if ($id == null) {
         continue;
     }
+    $alliance = $mdb->findDoc('information', ['type' => 'allianceID', 'id' => $id]);
+    $id = $alliance['id'];
+    $name = $alliance['name'];
+
+    $currentInfo = $mdb->findDoc('information', ['type' => 'alliance', 'id' => $id]);
 
     $alliCrest = CrestTools::getJSON("https://public-crest.eveonline.com/alliances/$id/");
     if ($alliCrest == null || !isset($alliCrest['name'])) {
