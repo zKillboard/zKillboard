@@ -6,4 +6,4 @@
 	{% set wormholeclass = extra.wormhole.class %}
 {% endif %}
 
-<a href="/system/{{ field.solarSystemID }}/">{{ shortString(field.solarSystemName, 30) }} {% if wormholeclass %}(C{{ wormholeclass}}){% endif %}</a>
+<a href="/system/{{ field.solarSystemID }}/">{{ field.solarSystemName }} {% if wormholeclass %}(C{{ wormholeclass}}){% endif %}</a>

@@ -13,7 +13,7 @@
 		<tr>
 			<td>{{ data.label }}</td>
 			<td>{{ data.keyID }}</td>
-			<td>{{ shortString(data.vCode, 10) }}</td>
+			<td>{{ data.vCode }}</td>
 			<td>{{ data.lastValidation }}</td>
 			<td>{% if data.errorCode > 0%}<font class="item_destroyed">{{ data.errorCode }}</font>{% else %}<em>None</em>{% endif %}</td>
 			<td style="text-align: right;">

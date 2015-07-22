@@ -35,7 +35,7 @@
 				<tbody>
 					{% for data in tickets %}
 					<tr onclick="window.location='/tickets/view/{{ data.id }}/'">
-					<td><strong>{{ shortString(data.ticket|striptags, 60)|raw }}</strong></td>
+					<td><strong>{{ data.ticket|striptags|raw }}</strong></td>
 					<td>
 						{% for tag in data.tags %}
 							<span class="label label-warning">{{ tag }}</span>

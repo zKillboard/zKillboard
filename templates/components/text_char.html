@@ -3,7 +3,7 @@
 	{% include 'components/image_char.html' %}
 {% endif %}
 {% if field.characterID is not defined and field.ceoID is defined and field.ceoName is defined %}
-	<a href="/character/{{ field.ceoID }}/">{{ shortString(field.ceoName, 30) }}</a>
+	<a href="/character/{{ field.ceoID }}/">{{ field.ceoName }}</a>
 {% else %}
-	<a href="/character/{{ field.characterID }}/">{{ shortString(field.characterName, 30) }}</a>
+	<a href="/character/{{ field.characterID }}/">{{ field.characterName }}</a>
 {% endif %}

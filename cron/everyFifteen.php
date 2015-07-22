@@ -2,9 +2,9 @@
 
 require_once '../init.php';
 
-$minute = date('i');
-if (!in_array('-f', $argv) && $minute != 15) {
-    return;
+$i = date('i');
+if ($i % 15 != 0) {
+    exit();
 }
 
 $p = array();
@@ -22,8 +22,6 @@ Storage::store('TopAllis', json_encode(Info::doMakeCommon('Top Alliances', 'alli
 Storage::store('TopShips', json_encode(Info::doMakeCommon('Top Ships', 'shipTypeID', getStats('shipTypeID'))));
 Storage::store('TopSystems', json_encode(Info::doMakeCommon('Top Systems', 'solarSystemID', getStats('solarSystemID'))));
 Storage::store('TopIsk', json_encode(Stats::getTopIsk(array('pastSeconds' => ($numDays * 86400), 'limit' => 5))));
-Storage::store('TopPods', json_encode(Stats::getTopIsk(array('groupID' => 29, 'pastSeconds' => ($numDays * 86400), 'limit' => 5))));
-Storage::store('TopPoints', json_encode(Stats::getTopPoints('killID', array('losses' => true, 'pastSeconds' => ($numDays * 86400), 'limit' => 5))));
 
 function getStats($column)
 {

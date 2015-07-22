@@ -12,7 +12,7 @@
     <tbody>
         {% for data in data.sessions %}
 		<tr>
-			<td>{{ shortString(data.sessionHash, 10) }}</td>
+			<td>{{ data.sessionHash }}</td>
 			<td>{{ data.dateCreated }}</td>
 			<td>{{ data.validTill }}</td>
 			<td>{{ data.userAgent }}</td>

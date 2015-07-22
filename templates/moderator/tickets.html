@@ -38,7 +38,7 @@
 			{% for data in info %}
 			<tr onclick="window.location='/moderator/tickets/{{ data.id }}/'">
 			<td><strong>{{ data.name|capitalize }}</strong></td>
-			<td><strong>{{ shortString(data.ticket|striptags, 60)|raw }}</strong></td>
+			<td><strong>{{ data.ticket|striptags|raw }}</strong></td>
 			<td>
 				{% for tag in data.tags %}
 					<span class="label label-warning">{{ tag }}</span>

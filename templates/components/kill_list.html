@@ -54,8 +54,8 @@
           {% include 'components/image_ship.html' %}
         </td>
         <td>
-          <a href="/system/{{ kill.system.solarSystemID }}/">{{ shortString(kill.system.solarSystemName, 13) }}</a> <span style="color: {{ kill.system.systemColorCode }}">{{ "%1.1f"|format(kill.system.solarSystemSecurity) }}</span><br/>
-          <a href="/region/{{ kill.system.regionID }}/">{{ shortString(kill.system.regionName, 17) }}</a>
+          <a href="/system/{{ kill.system.solarSystemID }}/">{{ kill.system.solarSystemName }}</a> <span style="color: {{ kill.system.systemColorCode }}">{{ "%1.1f"|format(kill.system.solarSystemSecurity) }}</span><br/>
+          <a href="/region/{{ kill.system.regionID }}/">{{ kill.system.regionName }}</a>
         </td>
         <td class="hidden-xs" style="text-align: center; vertical-align: middle; width: 64px;">
           {% if kill.victim.allianceID != 0 %}
@@ -66,9 +66,9 @@
         </td>
         <td class="victim" style="text-align: left; vertical-align: top;">
           <a href="/character/{{ kill.victim.characterID }}/">{{ kill.victim.characterName }}</a> ({{ kill.victim.shipName }})<br />
-          <a href="/corporation/{{ kill.victim.corporationID }}/">{{ shortString(kill.victim.corporationName, txtLength) }}</a>
+          <a href="/corporation/{{ kill.victim.corporationID }}/">{{ kill.victim.corporationName }}</a>
           {% if kill.victim.allianceID != 0 %}
-            / <a href="/alliance/{{ kill.victim.allianceID }}/">{{ shortString(kill.victim.allianceName, txtLength) }}</a>
+            / <a href="/alliance/{{ kill.victim.allianceID }}/">{{ kill.victim.allianceName }}</a>
           {% endif %}
         </td>
         {% set field = kill.finalBlow %}
@@ -86,9 +86,9 @@
                 {% include 'components/text_ship.html' %}
           {% endif %}
           ({{ kill.attackerCount }})<br />
-          <a href="/corporation/{{ kill.finalBlow.corporationID }}/">{{ shortString(kill.finalBlow.corporationName, txtLength) }}</a>
+          <a href="/corporation/{{ kill.finalBlow.corporationID }}/">{{ kill.finalBlow.corporationName }}</a>
           {% if kill.finalBlow.allianceID != 0 %}
-            / <a href="/alliance/{{ kill.finalBlow.allianceID }}/">{{ shortString(kill.finalBlow.allianceName, txtLength) }}</a>
+            / <a href="/alliance/{{ kill.finalBlow.allianceID }}/">{{ kill.finalBlow.allianceName }}</a>
           {% endif %}
           {% if kill.finalBlow.factionID == 500021 %}
             <a href="/faction/{{ kill.finalBlow.factionID }}/">Unknown</a>

@@ -4,7 +4,7 @@
         {% include 'components/image_ship.html' %}
 {% endif %}
 {% if shipImageLinkOverride > 0 %}
-	<a href="/kill/{{shipImageLinkOverride}}/" rel="tooltip" title="Detail for {{shipImageLinkOverride}}">{{ shortString(field.shipName, shipNameLength) }}</a>
+	<a href="/kill/{{shipImageLinkOverride}}/" rel="tooltip" title="Detail for {{shipImageLinkOverride}}">{{ field.shipName }}</a>
 {% else %}
-	<a href="/ship/{{ field.shipTypeID }}/">{{ shortString(field.shipName, shipNameLength) }}</a>
+	<a href="/ship/{{ field.shipTypeID }}/">{{ field.shipName }}</a>
 {% endif %}
