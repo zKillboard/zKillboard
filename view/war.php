@@ -20,11 +20,11 @@ if (!$warFinished) {
 }
 
 $top = array();
-$top[] = Info::doMakeCommon('Top Characters', 'characterID', Stats::getTopPilots($p, $warFinished));
-$top[] = Info::doMakeCommon('Top Corporations', 'corporationID', Stats::getTopCorps($p, $warFinished));
-$top[] = Info::doMakeCommon('Top Alliances', 'allianceID', Stats::getTopAllis($p, $warFinished));
-$top[] = Info::doMakeCommon('Top Ships', 'shipTypeID', Stats::getTopShips($p, $warFinished));
-$top[] = Info::doMakeCommon('Top Systems', 'solarSystemID', Stats::getTopSystems($p, $warFinished));
+$top[] = Info::doMakeCommon('Top Characters', 'characterID', Stats::getTop('characterID', $p));
+$top[] = Info::doMakeCommon('Top Corporations', 'corporationID', Stats::getTop('corporationID', $p));
+$top[] = Info::doMakeCommon('Top Alliances', 'allianceID', Stats::getTop('allianceID', $p));
+$top[] = Info::doMakeCommon('Top Ships', 'shipTypeID', Stats::getTop('shipTypeID', $p));
+$top[] = Info::doMakeCommon('Top Systems', 'solarSystemID', Stats::getTop('solarSystemID', $p));
 
 $p['limit'] = 5;
 $topIsk = array(); //Stats::getTopIsk($p);

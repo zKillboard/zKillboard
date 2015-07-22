@@ -17,11 +17,11 @@ $topPoints = array();
 $topPods = array();
 
 $top = array();
-$top[] = Info::doMakeCommon('Top Characters', 'characterID', Stats::getTopPilots($p, true));
-$top[] = Info::doMakeCommon('Top Corporations', 'corporationID', Stats::getTopCorps($p, true));
-$top[] = Info::doMakeCommon('Top Alliances', 'allianceID', Stats::getTopAllis($p, true));
-$top[] = Info::doMakeCommon('Top Ships', 'shipTypeID', Stats::getTopShips($p, true));
-$top[] = Info::doMakeCommon('Top Systems', 'solarSystemID', Stats::getTopSystems($p, true));
+$top[] = Info::doMakeCommon('Top Characters', 'characterID', Stats::getTop('characterID', $p));
+$top[] = Info::doMakeCommon('Top Corporations', 'corporationID', Stats::getTop('corporationID', $p));
+$top[] = Info::doMakeCommon('Top Alliances', 'allianceID', Stats::getTop('allianceID', $p));
+$top[] = Info::doMakeCommon('Top Ships', 'shipTypeID', Stats::getTop('shipTypeID', $p));
+$top[] = Info::doMakeCommon('Top Systems', 'solarSystemID', Stats::getTop('solarSystemID', $p));
 
 $p['pastSeconds'] = ($numDays * 86400);
 $p['limit'] = 5;

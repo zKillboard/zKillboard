@@ -4,7 +4,7 @@ class Related
 {
     private static $killstorage = array();
 
-    public static function buildSummary(&$kills, $parameters, $options)
+    public static function buildSummary(&$kills, $options)
     {
         $involvedEntities = array();
         foreach ($kills as $killID => $kill) {

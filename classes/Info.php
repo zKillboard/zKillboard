@@ -161,7 +161,7 @@ class Info
         $statList = array();
         foreach ($corpList as $corp) {
             $parameters['corporationID'] = $corp['id'];
-            $data = self::getInfoDetails('corporationID', $corp['id'], $parameters);
+            $data = self::getInfoDetails('corporationID', $corp['id']);
             $statList[$corp['name']]['corporationName'] = $data['corporationName'];
             $statList[$corp['name']]['corporationID'] = $data['corporationID'];
             $statList[$corp['name']]['ticker'] = $data['cticker'];
@@ -289,34 +289,6 @@ class Info
         $result = Db::query('select * from zz_name_search where name like :search limit 10', ['search' => "$search%"], 3600);
 
         return $result;
-    }
-
-    /**
-     * @param string $search
-     */
-    private static function findEntitySearch(&$resultArray, $type, $query, $search)
-    {
-        $results = Db::query("${query}", array(':search' => $search), 3600);
-        self::addResults($resultArray, $type, $results);
-    }
-
-    /**
-     * [addResults description].
-     *
-     * @param array      $resultArray
-     * @param string     $type
-     * @param array|null $results
-     */
-    private static function addResults(&$resultArray, $type, $results)
-    {
-        if ($results != null) {
-            foreach ($results as $result) {
-                $keys = array_keys($result);
-                $result['type'] = $type;
-                $value = $result[$keys[0]];
-                $resultArray["$type|$value"] = $result;
-            }
-        }
     }
 
     /**

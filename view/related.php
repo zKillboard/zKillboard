@@ -64,7 +64,7 @@ $mc = RedisCache::get($key);
 if (!$mc) {
     $parameters = array('solarSystemID' => $systemID, 'relatedTime' => $relatedTime, 'exHours' => $exHours);
     $kills = Kills::getKills($parameters);
-    $summary = Related::buildSummary($kills, $parameters, $json_options);
+    $summary = Related::buildSummary($kills, $json_options);
     $mc = array('summary' => $summary, 'systemName' => $systemName, 'regionName' => $regionName, 'time' => $time, 'exHours' => $exHours, 'solarSystemID' => $systemID, 'relatedTime' => $relatedTime, 'options' => json_encode($json_options));
     RedisCache::set($key, $mc, 600);
 }

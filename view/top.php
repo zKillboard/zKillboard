@@ -21,24 +21,14 @@ if (!isset($time)) {
 
 $topLists = array();
 if ($type == 'kills') {
-    $topLists[] = array('type' => 'character', 'data' => Stats::getTopPilots($parameters, $alltime));
-    $topLists[] = array('type' => 'corporation', 'data' => Stats::getTopCorps($parameters, $alltime));
-    $topLists[] = array('type' => 'alliance', 'data' => Stats::getTopAllis($parameters, $alltime));
-    $topLists[] = array('type' => 'ship', 'data' => Stats::getTopShips($parameters, $alltime));
-    $topLists[] = array('type' => 'system', 'data' => Stats::getTopSystems($parameters, $alltime));
-    //$topLists[] = array("type" => "weapon", "data" => Stats::getTopWeapons($parameters, $alltime));
+    $topLists[] = array('type' => 'character', 'data' => Stats::getTop('characterID', $parameters));
+    $topLists[] = array('type' => 'corporation', 'data' => Stats::getTop('corporationID', $parameters));
+    $topLists[] = array('type' => 'alliance', 'data' => Stats::getTop('allianceID', $parameters));
+    $topLists[] = array('type' => 'ship', 'data' => Stats::getTop('shipTypeID', $parameters));
+    $topLists[] = array('type' => 'system', 'data' => Stats::getTop('solarSystemID', $parameters));
     $parameters['!factionID'] = 0;
-    $topLists[] = array('name' => 'Top Faction Characters', 'type' => 'character', 'data' => Stats::getTopPilots($parameters, $alltime));
-    $topLists[] = array('name' => 'Top Faction Corporations', 'type' => 'corporation', 'data' => Stats::getTopCorps($parameters, $alltime));
-    $topLists[] = array('name' => 'Top Faction Alliances', 'type' => 'alliance', 'data' => Stats::getTopAllis($parameters, $alltime));
-} elseif ($type == 'points') {
-    $topLists[] = array('name' => 'Top Character Points', 'ranked' => 'Points', 'type' => 'character', 'data' => Stats::getTopPointsPilot($parameters));
-    $topLists[] = array('name' => 'Top Corporation Points', 'ranked' => 'Points', 'type' => 'corporation', 'data' => Stats::getTopPointsCorp($parameters));
-    $topLists[] = array('name' => 'Top Alliance Points', 'ranked' => 'Points', 'type' => 'alliance', 'data' => Stats::getTopPointsAlli($parameters));
-    $parameters['!factionID'] = 0;
-    $topLists[] = array('name' => 'Top Faction Character Points', 'ranked' => 'Points', 'type' => 'character', 'data' => Stats::getTopPointsPilot($parameters));
-    $topLists[] = array('name' => 'Top Faction Corporation Points', 'ranked' => 'Points', 'type' => 'corporation', 'data' => Stats::getTopPointsCorp($parameters));
-    $topLists[] = array('name' => 'Top Faction Alliance Points', 'ranked' => 'Points', 'type' => 'alliance', 'data' => Stats::getTopPointsAlli($parameters));
+    $topLists[] = array('name' => 'Top Faction Characters', 'type' => 'character', 'data' => Stats::getTop('characterID', $parameters));
+    $topLists[] = array('name' => 'Top Faction Corporations', 'type' => 'corporation', 'data' => Stats::getTop('corporationID', $parameters));
 }
 
 $app->render('top.html', array('topLists' => $topLists, 'page' => $page, 'type' => $type));

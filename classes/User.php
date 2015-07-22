@@ -71,7 +71,6 @@ class User
         if (!empty($sessionCookie)) {
             $cookie = explode('/', $sessionCookie);
             $username = $cookie[0];
-            //$cookieHash = $cookie[1];
             $userID = Db::queryField('SELECT id FROM zz_users WHERE username = :username', 'id', array(':username' => $username), 30);
             $hashes = self::checkLoginHashed($userID);
             foreach ($hashes as $hash) {
@@ -211,8 +210,6 @@ class User
                     case 'system':
                         $row['solarSystemID'] = $row['id'];
                         $row['solarSystemName'] = $row['name'];
-                        //$sunType = Db::queryField("SELECT sunTypeID FROM ccp_systems WHERE solarSystemID = :id", "sunTypeID", array(":id" => $row["id"]));
-                        //$row["sunTypeID"] = $sunType;
                         break;
 
                     case 'item':

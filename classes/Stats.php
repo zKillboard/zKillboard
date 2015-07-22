@@ -2,98 +2,6 @@
 
 class Stats
 {
-    public static function getTopPilots($parameters = array(), $allTime = false)
-    {
-        $parameters['cacheTime'] = 3600;
-
-        return self::getTop('characterID', $parameters, $allTime);
-    }
-
-    public static function getTopPointsPilot($parameters = array(), $allTime = false)
-    {
-        $parameters['cacheTime'] = 3600;
-
-        return self::getTopPoints('characterID', $parameters, $allTime);
-    }
-
-    public static function getTopCorps($parameters = array(), $allTime = false)
-    {
-        $parameters['cacheTime'] = 3600;
-
-        return self::getTop('corporationID', $parameters, $allTime);
-    }
-
-    public static function getTopPointsCorp($parameters = array(), $allTime = false)
-    {
-        $parameters['cacheTime'] = 3600;
-
-        return self::getTopPoints('corporationID', $parameters, $allTime);
-    }
-
-    public static function getTopAllis($parameters = array(), $allTime = false)
-    {
-        $parameters['cacheTime'] = 3600;
-
-        return self::getTop('allianceID', $parameters, $allTime);
-    }
-
-    public static function getTopFactions($parameters = array(), $allTime = false)
-    {
-        $parameters['cacheTime'] = 3600;
-
-        return self::getTop('factionID', $parameters, $allTime);
-    }
-
-    public static function getTopPointsAlli($parameters = array(), $allTime = false)
-    {
-        $parameters['cacheTime'] = 3600;
-
-        return self::getTopPoints('allianceID', $parameters, $allTime);
-    }
-
-    public static function getTopShips($parameters = array(), $allTime = false)
-    {
-        $parameters['cacheTime'] = 3600;
-
-        return self::getTop('shipTypeID', $parameters, $allTime);
-    }
-
-    public static function getTopGroups($parameters = array(), $allTime = false)
-    {
-        $parameters['cacheTime'] = 3600;
-
-        return self::getTop('groupID', $parameters, $allTime);
-    }
-
-    public static function getTopWeapons($parameters = array(), $allTime = false)
-    {
-        $parameters['cacheTime'] = 3600;
-
-        return self::getTop('weaponTypeID', $parameters, $allTime);
-    }
-
-    public static function getTopSystems($parameters = array(), $allTime = false)
-    {
-        $parameters['cacheTime'] = 3600;
-
-        return self::getTop('solarSystemID', $parameters, $allTime);
-    }
-
-    public static function getTopRegions($parameters = array(), $allTime = false)
-    {
-        $parameters['cacheTime'] = 3600;
-
-        return self::getTop('regionID', $parameters, $allTime);
-    }
-
-    /**
-     * @param string $groupByColumn
-     */
-    public static function getTopPoints($groupByColumn, $parameters = array(), $allTime = false)
-    {
-        return [];
-    }
-
     public static function getTopIsk($parameters = array(), $allTime = false)
     {
         global $mdb;
@@ -114,8 +22,6 @@ class Stats
 
         return $result;
     }
-
-    private static $extendedGroupColumns = array('characterID'); //, "corporationID"); //, "allianceID");
 
     /**
      * @param string $groupByColumn
@@ -203,29 +109,6 @@ class Stats
         RedisCache::set($hashKey, $result, 3600);
 
         return $result;
-    }
-
-    private static function getExtendedTop($groupByColumn, $parameters = array(), $allTime = false)
-    {
-        return array();
-    }
-
-    public static function calcStats($killID, $adding = true)
-    {
-    }
-
-    /**
-     * @param string $type
-     */
-    private static function statLost($type, $typeID, $groupID, $modifier, $points, $isk)
-    {
-    }
-
-    /**
-     * @param string $type
-     */
-    private static function statDestroyed($type, $typeID, $groupID, $modifier, $points, $isk)
-    {
     }
 
     public static function getDistinctCount($groupByColumn, $parameters = [])

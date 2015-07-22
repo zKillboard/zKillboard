@@ -28,11 +28,11 @@ if ($serverName != $baseAddr) {
     $p['pastSeconds'] = ($numDays * 86400);
 
     $top = array();
-    $top[] = Info::doMakeCommon('Top Characters', 'characterID', Stats::getTopPilots($p));
-    $top[] = ($columnName != 'corporationID' ? Info::doMakeCommon('Top Corporations', 'corporationID', Stats::getTopCorps($p)) : array());
-    $top[] = ($columnName != 'corporationID' && $columnName != 'allianceID' ? Info::doMakeCommon('Top Alliances', 'allianceID', Stats::getTopAllis($p)) : array());
-    $top[] = Info::doMakeCommon('Top Ships', 'shipTypeID', Stats::getTopShips($p));
-    $top[] = Info::doMakeCommon('Top Systems', 'solarSystemID', Stats::getTopSystems($p));
+    $top[] = Info::doMakeCommon('Top Characters', 'characterID', Stats::getTop('characterID', $p));
+    $top[] = ($columnName != 'corporationID' ? Info::doMakeCommon('Top Corporations', 'corporationID', Stats::getTop('corporationID', $p)) : array());
+    $top[] = ($columnName != 'corporationID' && $columnName != 'allianceID' ? Info::doMakeCommon('Top Alliances', 'allianceID', Stats::getTop('allianceID', $p)) : array());
+    $top[] = Info::doMakeCommon('Top Ships', 'shipTypeID', Stats::getTop('shipTypeID', $p));
+    $top[] = Info::doMakeCommon('Top Systems', 'solarSystemID', Stats::getTop('solarSystemID', $p));
 
     $requestUriPager = str_replace('ID', '', $columnName)."/$id/";
 

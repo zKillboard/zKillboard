@@ -2,9 +2,6 @@
 
 require_once '../init.php';
 
-if (Util::isMaintenanceMode()) {
-    return;
-}
 $minute = date('i');
 if (!in_array('-f', $argv) && $minute != 15) {
     return;

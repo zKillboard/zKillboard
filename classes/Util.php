@@ -2,13 +2,6 @@
 
 class Util
 {
-    public static function isMaintenanceMode()
-    {
-        return false;
-
-        return 'true' == Db::queryField("select contents from zz_storage where locker = 'maintenance'", 'contents', array(), 0);
-    }
-
     public static function getMaintenanceReason()
     {
         return Storage::retrieve('MaintenanceReason', '');

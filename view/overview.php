@@ -131,18 +131,17 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
             $topParameters['kills'] = true;
         }
 
-        $topLists[] = array('type' => 'character', 'data' => Stats::getTopPilots($topParameters, true));
-        $topLists[] = array('type' => 'corporation', 'data' => Stats::getTopCorps($topParameters, true));
-        $topLists[] = array('type' => 'alliance', 'data' => Stats::getTopAllis($topParameters, true));
-        $topLists[] = array('type' => 'ship', 'data' => Stats::getTopShips($topParameters, true));
-        $topLists[] = array('type' => 'system', 'data' => Stats::getTopSystems($topParameters, true));
-        //$topLists[] = array("type" => "weapon", "data" => Stats::getTopWeapons($topParameters, true));
+        $topLists[] = array('type' => 'character', 'data' => Stats::getTop('characterID', $topParameters));
+        $topLists[] = array('type' => 'corporation', 'data' => Stats::getTop('corporationID', $topParameters));
+        $topLists[] = array('type' => 'alliance', 'data' => Stats::getTop('allianceID', $topParameters));
+        $topLists[] = array('type' => 'ship', 'data' => Stats::getTop('shipTypeID', $topParameters));
+        $topLists[] = array('type' => 'system', 'data' => Stats::getTop('solarSystemID', $topParameters));
 
         if (isset($detail['factionID']) && $detail['factionID'] != 0 && $key != 'faction') {
             $topParameters['!factionID'] = 0;
-            $topLists[] = array('name' => 'Top Faction Characters', 'type' => 'character', 'data' => Stats::getTopPilots($topParameters, true));
-            $topLists[] = array('name' => 'Top Faction Corporations', 'type' => 'corporation', 'data' => Stats::getTopCorps($topParameters, true));
-            $topLists[] = array('name' => 'Top Faction Alliances', 'type' => 'alliance', 'data' => Stats::getTopAllis($topParameters, true));
+            $topLists[] = array('name' => 'Top Faction Characters', 'type' => 'character', 'data' => Stats::getTop('characterID', $topParameters));
+            $topLists[] = array('name' => 'Top Faction Corporations', 'type' => 'corporation', 'data' => Stats::getTop('corporationID', $topParameters));
+            $topLists[] = array('name' => 'Top Faction Alliances', 'type' => 'alliance', 'data' => Stats::getTop('allianceID', $topParameters));
         }
     }
 } else {
@@ -153,19 +152,19 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
     $p['kills'] = $pageType != 'losses';
 
     if ($key != 'character') {
-        $topLists[] = Info::doMakeCommon('Top Characters', 'characterID', Stats::getTopPilots($p));
+        $topLists[] = Info::doMakeCommon('Top Characters', 'characterID', Stats::getTop('characterID', $p));
         if ($key != 'corporation') {
-            $topLists[] = Info::doMakeCommon('Top Corporations', 'corporationID', Stats::getTopCorps($p));
+            $topLists[] = Info::doMakeCommon('Top Corporations', 'corporationID', Stats::getTop('corporationID', $p));
             if ($key != 'alliance') {
-                $topLists[] = Info::doMakeCommon('Top Alliances', 'allianceID', Stats::getTopAllis($p));
+                $topLists[] = Info::doMakeCommon('Top Alliances', 'allianceID', Stats::getTop('allianceID', $p));
             }
         }
     }
     if ($key != 'ship') {
-        $topLists[] = Info::doMakeCommon('Top Ships', 'shipTypeID', Stats::getTopShips($p));
+        $topLists[] = Info::doMakeCommon('Top Ships', 'shipTypeID', Stats::getTop('shipTypeID', $p));
     }
     if ($key != 'system') {
-        $topLists[] = Info::doMakeCommon('Top Systems', 'solarSystemID', Stats::getTopSystems($p));
+        $topLists[] = Info::doMakeCommon('Top Systems', 'solarSystemID', Stats::getTop('solarSystemID', $p));
     }
     $p['limit'] = 5;
     $topKills = Stats::getTopIsk($p);

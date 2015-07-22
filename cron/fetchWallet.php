@@ -9,9 +9,6 @@ if ($time >= time()) {
     exit();
 }
 
-if (Util::isMaintenanceMode()) {
-    return;
-}
 if (Util::is904Error()) {
     return;
 }

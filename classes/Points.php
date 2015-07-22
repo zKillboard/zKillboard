@@ -91,16 +91,6 @@ class Points
         return $arr[1];
     }
 
-    public static function updatePoints($killID, $tempTables = false)
-    {
-        return 1;
-    }
-
-    public static function calculatePoints($killID, $tempTables = false)
-    {
-        return 1;
-    }
-
     public static function getKillPoints($kill, $price)
     {
         $vicpoints = self::getPoints($kill['involved']['0']['groupID']);

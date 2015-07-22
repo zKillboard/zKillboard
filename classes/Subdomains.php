@@ -35,7 +35,7 @@ class Subdomains
             return [];
         }
 
-        $faction = null; //Db::queryRow("select * from ccp_zfactions where ticker = :board", array(":board" => $board), 3600);
+        $faction = $mdb->findDoc('information', ['cacheTime' => 3600, 'type' => 'factionID', 'ticker' => strtoupper($board)]);
         $alli = $mdb->findDoc('information', ['cacheTime' => 3600, 'type' => 'allianceID', 'ticker' => strtoupper($board)], ['memberCount' => -1]);
         $corp = $mdb->findDoc('information', ['cacheTime' => 3600, 'type' => 'corporationID', 'ticker' => strtoupper($board)], ['memberCount' => -1]);
 

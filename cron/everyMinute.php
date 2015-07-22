@@ -2,10 +2,6 @@
 
 require_once '../init.php';
 
-if (Util::isMaintenanceMode()) {
-    return;
-}
-
 // Cleanup old sessions
 Db::execute('delete from zz_users_sessions where validTill < now()');
 
