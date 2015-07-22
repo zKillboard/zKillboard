@@ -1,7 +1,8 @@
 # Statistics
 <hr/>
 ### Kills
-{kills} kills processed ({percentage}%)<br>
+{kills} total kills processed<br/>
+{crest} manual kills remaining to be validated by CREST<br/> 
 ######*These numbers are updated hourly...*
 
 ### Points

@@ -3,9 +3,6 @@
 require_once '../init.php';
 
 // Send the mails to eve-kill cuz we're nice like that
-
-$timer = new Timer();
-
 $queueShare = new RedisQueue('queueShare');
 do {
     $killID = $queueShare->pop();

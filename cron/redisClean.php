@@ -2,6 +2,11 @@
 
 require_once '../init.php';
 
+$i = date('i');
+if ($i % 5 != 0) {
+    exit();
+}
+
 $keys = $redis->keys('RC:*');
 
 foreach ($keys as $key) {

@@ -28,14 +28,6 @@ Storage::store('TopIsk', json_encode(Stats::getTopIsk(array('pastSeconds' => ($n
 Storage::store('TopPods', json_encode(Stats::getTopIsk(array('groupID' => 29, 'pastSeconds' => ($numDays * 86400), 'limit' => 5))));
 Storage::store('TopPoints', json_encode(Stats::getTopPoints('killID', array('losses' => true, 'pastSeconds' => ($numDays * 86400), 'limit' => 5))));
 
-// Clean up the related killmails cache
-$cache = new FileCache($baseDir.'/cache/related/');
-$cache->cleanUp();
-
-// Cleanup the overall file cache
-$fc = new FileCache();
-$fc->cleanup();
-
 function getStats($type, $column)
 {
     $result = Stats::getTop($column, ['isVictim' => false, 'pastSeconds' => 604800]);

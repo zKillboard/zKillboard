@@ -16,7 +16,8 @@ if ($i == 45) {
 }
 
 while ($timer->stop() <= 55000) {
-    $id = (int) $queueAllis->next();
+    sleep(1);
+    $id = (int) $queueAllis->next(false);
     if ($id == null) {
         continue;
     }
@@ -28,7 +29,6 @@ while ($timer->stop() <= 55000) {
 
     $alliCrest = CrestTools::getJSON("https://public-crest.eveonline.com/alliances/$id/");
     if ($alliCrest == null || !isset($alliCrest['name'])) {
-        sleep(1);
         $mdb->set('information', ['type' => 'alliance', 'id' => $id], ['lastApiUpdate' => $mdb->now()]);
         continue;
     }
@@ -56,7 +56,6 @@ while ($timer->stop() <= 55000) {
     $update['name'] = $alliCrest['name'];
 
     $mdb->insertUpdate('information', ['type' => 'allianceID', 'id' => $id], $update);
-    sleep(1);
 }
 
 function addCorp($id)

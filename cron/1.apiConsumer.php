@@ -115,10 +115,12 @@ while ($timer->stop() <= 59000) {
             $killInsert = ['killID' => (int) $killID, 'hash' => $hash];
             $exists = $mdb->exists('crestmails', $killInsert);
             if (!$exists) {
-                $mdb->getCollection('crestmails')->save(['killID' => (int) $killID, 'hash' => $hash, 'processed' => false, 'source' => 'api', 'added' => $mdb->now()]);
-            }
-            if (!$exists) {
-                ++$killsAdded;
+                try {
+                    $mdb->getCollection('crestmails')->save(['killID' => (int) $killID, 'hash' => $hash, 'processed' => false, 'source' => 'api', 'added' => $mdb->now()]);
+                    ++$killsAdded;
+                } catch (MongoDuplicateKeyException $ex) {
+                    // ignore it *sigh*
+                }
             }
             if (!$exists && $debug) {
                 Util::out("Added $killID from API");

@@ -138,7 +138,7 @@ while (!Util::exitNow()) {
 
         $storage->update(array('locker' => 'totalKills'), array('$inc' => array('contents' => 1)), array('upsert' => true));
         $queueInfo->push($killID);
-	$queueRedisQ->push($killID);
+        $queueRedisQ->push($killID);
 
         ++$counter;
         if (Util::exitNow()) {

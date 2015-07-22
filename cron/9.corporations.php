@@ -17,7 +17,8 @@ if ($i == 30) {
 }
 
 while ($timer->stop() < 55000) {
-    $id = $queueCorps->next();
+    sleep(1);
+    $id = $queueCorps->next(false);
     if ($id == null) {
         continue;
     }
@@ -26,7 +27,6 @@ while ($timer->stop() < 55000) {
     $updates = [];
     if (!isset($row['memberCount']) || (isset($row['memberCount']) && $row['memberCount'] != 0)) {
         $id = (int) $row['id'];
-        sleep(1); // slow things down
         $raw = @file_get_contents("https://api.eveonline.com/corp/CorporationSheet.xml.aspx?corporationID=$id");
         if ($raw != '') {
             ++$counter;

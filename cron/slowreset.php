@@ -6,7 +6,7 @@ $count = 0;
 $crest = $mdb->getCollection('crestmails')->find()->sort(['killID' => -1]);
 foreach ($crest as $row) {
     ++$count;
-    if ($count > 50000) {
+    if ($count > 5000) {
         exit();
     }
     if (@$row['npcOnly'] == true) {

@@ -17,6 +17,7 @@ if ($i == 15) {
 }
 
 while ($timer->stop() < 55000) {
+    sleep(1);
     $ids = [];
     for ($i = 0; $i < 100; ++$i) {
         $id = $queueCharacters->next(false);
@@ -24,11 +25,15 @@ while ($timer->stop() < 55000) {
             $ids[] = $id;
         }
     }
-    if (sizeof($ids) == 0) exit();
+    if (sizeof($ids) == 0) {
+        exit();
+    }
     $stringIDs = implode(',', $ids);
     $href = "https://api.eveonline.com/eve/CharacterAffiliation.xml.aspx?ids=$stringIDs";
     $raw = file_get_contents($href);
-    if ($raw == "") exit();
+    if ($raw == '') {
+        exit();
+    }
     $xml = @simplexml_load_string($raw);
 
     foreach ($xml->result->rowset->row as $info) {
@@ -69,5 +74,4 @@ while ($timer->stop() < 55000) {
         $updates['lastApiUpdate'] = new MongoDate(time());
         $mdb->insertUpdate('information', ['type' => 'characterID', 'id' => (int) $row['id']], $updates);
     }
-    sleep(1);
 }

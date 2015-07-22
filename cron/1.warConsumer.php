@@ -7,7 +7,7 @@ $queueWars = new RedisTimeQueue('tqWars', 9600);
 
 $minute = date('i');
 if ($minute == 30) {
-    $allWars = $mdb->find('information', ['type' => 'warID']);
+    $allWars = $mdb->getCollection('information')->find(['type' => 'warID'], ['id' => 1]);
     foreach ($allWars as $war) {
         if (@$war['finished'] == 1) {
             $queueWars->remove($war['id']);
@@ -19,6 +19,7 @@ if ($minute == 30) {
 
 $added = 0;
 while ($timer->stop() < 58000) {
+    sleep(1);
     $id = $queueWars->next();
     if ($id == null) {
         exit();
@@ -39,7 +40,6 @@ while ($timer->stop() < 58000) {
     $war = CrestTools::getJSON($href);
 
     if (!isset($warRow['agrShipsKilled']) || !isset($warRow['dfdShipsKilled'])) {
-        sleep(1);
         continue;
     }
 
@@ -63,7 +63,6 @@ while ($timer->stop() < 58000) {
         }
         while ($kmHref != null) {
             //echo "$kmHref\n";
-            sleep(1);
             $killmails = CrestTools::getJSON($kmHref);
 
             foreach ($killmails['items'] as $kill) {

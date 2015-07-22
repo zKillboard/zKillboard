@@ -2,12 +2,8 @@
 
 require_once '../init.php';
 
-$minute = (int) date('i');
-$hour = (int) date('H');
-if ($hour != 13) {
-    exit();
-}
-if ($minute != 15) {
+$time = date('Hi');
+if ($time != '1315') {
     exit();
 }
 
