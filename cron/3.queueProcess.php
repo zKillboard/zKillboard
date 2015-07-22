@@ -266,5 +266,4 @@ function isSolo($row)
     $vGroupID = $row['vGroupID'];
 
     return !in_array($vGroupID, $notSolo);
-    exit();
 }

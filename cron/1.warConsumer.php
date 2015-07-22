@@ -50,7 +50,6 @@ while ($timer->stop() < 58000) {
 
     $prevKills = @$warRow['agrShipsKilled'] + @$warRow['dfdShipsKilled'];
     $currKills = $war['aggressor']['shipsKilled'] + $war['defender']['shipsKilled'];
-    //echo "$id - $prevKills $currKills " . $warRow["lastCrestUpdate"] . "\n";
 
     // Don't fetch killmail api for wars with no kill count change
     if ($prevKills != $currKills) {
@@ -62,7 +61,6 @@ while ($timer->stop() < 58000) {
             $kmHref .= "?page=$page";
         }
         while ($kmHref != null) {
-            //echo "$kmHref\n";
             $killmails = CrestTools::getJSON($kmHref);
 
             foreach ($killmails['items'] as $kill) {
@@ -76,7 +74,6 @@ while ($timer->stop() < 58000) {
                     $mdb->insert('crestmails', ['killID' => (int) $killID, 'hash' => $hash], ['processed' => false]);
                     Util::out("New WARmail $killID");
                 }
-                //$added += $aff;
             }
             $next = @$killmails['next']['href'];
             if ($next != $kmHref) {

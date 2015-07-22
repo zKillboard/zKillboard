@@ -17,7 +17,7 @@ function beSocial($killID)
     if (!isset($beSocial)) {
         $beSocial = false;
     }
-    if ($beSocial == false) {
+    if ($beSocial === false) {
         return;
     }
 

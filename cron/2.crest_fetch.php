@@ -81,9 +81,6 @@ function validKill(&$kill)
     }
 
     $npcOnly = true;
-    $victimCorp = $kill['victim']['corporation']['id'] < 1000999 ? 0 : $kill['victim']['corporation']['id'];
-
-    $blueOnBlue = true;
     foreach ($kill['attackers'] as $attacker) {
         if (isset($attacker['shipType']['id'])) {
             $attackerGroupID = Info::getGroupID($attacker['shipType']['id']);
@@ -103,12 +100,7 @@ function validKill(&$kill)
         if (isset($attacker['corporation']['id']) && $attacker['corporation']['id'] == 1000125) {
             return true;
         }
-        //if (!isset($attacker["character"]["id"]) || !isset($attacker["corporation"]["id"])) continue;
         $npcOnly &= @$attacker['character']['id'] == 0 && (@$attacker['corporation']['id'] < 1999999 && @$attacker['corporation']['id'] != 1000125);
     }
-    if ($npcOnly) {
-        return false;
-    }
-
-    return true;
+    return !$npcOnly;
 }

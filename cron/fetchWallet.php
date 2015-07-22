@@ -38,7 +38,6 @@ foreach ($walletApis as $api) {
         continue;
     }
 
-    //$cachedUntil = $q->cached_until;
     if (count($q->transactions)) {
         insertRecords($charID, $q->transactions);
     }
@@ -51,6 +50,7 @@ function applyBalances()
 {
     global $walletCharacterID, $baseAddr, $mdb;
     $toBeApplied = Db::query('select * from zz_account_wallet where paymentApplied = 0', array(), 0);
+    if ($toBeApplied == null) $toBeApplied = [];
     foreach ($toBeApplied as $row) {
         if ($row['ownerID2'] != $walletCharacterID) {
             continue;

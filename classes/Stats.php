@@ -151,7 +151,7 @@ class Stats
             $keyField = "involved.$groupByColumn";
         }
 
-        $id = $type = $isVictim = null;
+        $id = $type = null;
         if ($groupByColumn != 'solarSystemID' && $groupByColumn != 'regionID') {
             foreach ($parameters as $k => $v) {
                 if (strpos($k, 'ID') === false) {
@@ -258,7 +258,7 @@ class Stats
             $keyField = "involved.$groupByColumn";
         }
 
-        $id = $type = $isVictim = null;
+        $id = $type = null;
         if ($groupByColumn == 'solarSystemID' || $groupByColumn == 'regionID') {
             $type = "system.$groupByColumn";
         }

@@ -13,7 +13,7 @@ class RedisQueue
     {
         global $redis;
 
-        $r = $redis->rPush($this->queueName, serialize($value));
+        $redis->rPush($this->queueName, serialize($value));
     }
 
     public function pop()

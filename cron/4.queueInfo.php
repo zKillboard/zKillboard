@@ -33,7 +33,6 @@ function updateStatsQueue($killID)
     addToStatsQueue('solarSystemID', $kill['system']['solarSystemID'], $sequence);
     addToStatsQueue('regionID', $kill['system']['regionID'], $sequence);
 
-    $addedArray = [];
     foreach ($involved as $inv) {
         foreach ($statArray as $stat) {
             if (isset($inv[$stat])) {
@@ -140,7 +139,6 @@ function updateEntity($killID, $entity)
     global $information, $mdb, $debug;
     $types = ['character', 'corporation', 'alliance', 'faction'];
 
-    $timer = new Timer();
     for ($index = 0; $index < 4; ++$index) {
         $type = $types[$index];
         if (!isset($entity[$type]['id'])) {

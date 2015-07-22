@@ -5,8 +5,6 @@ class Crest2Api
     public static function convert($killID)
     {
         global $mdb;
-        $count = 0;
-        $timer = new Timer();
 
         $crestmail = $mdb->findDoc('rawmails', ['killID' => $killID]);
         $kill = $mdb->findDoc('killmails', ['killID' => $killID]);
@@ -17,7 +15,6 @@ class Crest2Api
         $killmail['killTime'] = str_replace('.', '-', $crestmail['killTime']);
         $killmail['moonID'] = (int) @$crestmail['moon']['id'];
 
-        $victim = array();
         $killmail['victim'] = self::getVictim($crestmail['victim']);
         $killmail['attackers'] = self::getAttackers($crestmail['attackers']);
         $killmail['items'] = self::getItems($crestmail['victim']['items']);

@@ -36,7 +36,6 @@ class Killmail
             $contents = file_get_contents($file);
             $deflated = gzdecode($contents);
             $kills = unserialize($deflated);
-            $contents = null;
         }
         if (!isset($kills["$killID"])) {
             $kills["$killID"] = $raw;

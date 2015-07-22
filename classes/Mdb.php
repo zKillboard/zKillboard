@@ -120,7 +120,6 @@ class Mdb
     {
 	global $longQueryMS;
 
-        $cacheKey = null;
         $cacheTime = isset($query['cacheTime']) ? $query['cacheTime'] : 0;
         unset($query['cacheTime']); // reserved zkb field for caching doesn't need to be in queries
         $serialized = "Mdb::find|$collection|".serialize($query).'|'.serialize($sort)."|$limit|".serialize($includes);
@@ -130,9 +129,6 @@ class Mdb
             if ($cached != null) {
                 return $cached;
             }
-        }
-        if (php_sapi_name() != 'cli' && $cacheTime == 0) {
-            $params = "$collection|".serialize($query).'|'.serialize($sort)."|$limit|".serialize($includes);
         }
 
         $timer = new Timer();

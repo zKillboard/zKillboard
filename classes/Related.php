@@ -8,7 +8,7 @@ class Related
     {
         $involvedEntities = array();
         foreach ($kills as $killID => $kill) {
-            static::addAllInvolved($involvedEntities, $killID);
+            self::addAllInvolved($involvedEntities, $killID);
         }
 
         $blueTeam = array();
@@ -23,28 +23,28 @@ class Related
             static::assignSides($options['A'], $redTeam, $blueTeam);
         }
         if (isset($options['B'])) {
-            static::assignSides($options['B'], $blueTeam, $redTeam);
+            self::assignSides($options['B'], $blueTeam, $redTeam);
         }
 
-        $redInvolved = static::getInvolved($kills, $redTeam);
-        $blueInvolved = static::getInvolved($kills, $blueTeam);
+        $redInvolved = self::getInvolved($kills, $redTeam);
+        $blueInvolved = self::getInvolved($kills, $blueTeam);
 
-        $redKills = static::getKills($kills, $redTeam);
-        $blueKills = static::getKills($kills, $blueTeam);
+        $redKills = self::getKills($kills, $redTeam);
+        $blueKills = self::getKills($kills, $blueTeam);
 
-        static::addMoreInvolved($redInvolved, $redKills);
-        static::addMoreInvolved($blueInvolved, $blueKills);
+        self::addMoreInvolved($redInvolved, $redKills);
+        self::addMoreInvolved($blueInvolved, $blueKills);
         Info::addInfo($redInvolved);
         Info::addInfo($blueInvolved);
 
-        $redTotals = static::getStatsKillList(array_keys($redKills));
+        $redTotals = self::getStatsKillList(array_keys($redKills));
         $redTotals['pilotCount'] = sizeof($redInvolved);
-        $blueTotals = static::getStatsKillList(array_keys($blueKills));
+        $blueTotals = self::getStatsKillList(array_keys($blueKills));
         $blueTotals['pilotCount'] = sizeof($blueInvolved);
 
-        $red = static::addInfo($redTeam);
+        $red = self::addInfo($redTeam);
         asort($red);
-        $blue = static::addInfo($blueTeam);
+        $blue = self::addInfo($blueTeam);
         asort($blue);
 
         usort($redInvolved, 'Related::compareShips');
@@ -216,7 +216,7 @@ class Related
                 $added = self::addInvolvedEntity($involvedArray, $killID, @$finalBlow['corporationID']);
             }
             if (!$added) {
-                $added = self::addInvolvedEntity($involvedArray, $killID, @$finalBlow['characterID']);
+                self::addInvolvedEntity($involvedArray, $killID, @$finalBlow['characterID']);
             }
         }
 

@@ -4,7 +4,6 @@ class War
 {
     public static function getWars($id, $active = true, $combined = false)
     {
-        return [];
         if (!self::isAlliance($id)) {
             $alliID = Db::queryField('select allianceID from zz_corporations where corporationID = :id', 'allianceID', array(':id' => $id));
             if ($alliID != 0) {

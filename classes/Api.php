@@ -40,7 +40,7 @@ class Api
 
         $result = $mdb->remove('apis', ['keyID' => $keyID, 'userID' => $userID]);
         if ($result['n'] > 0) {
-            $result = $mdb->remove('apiCharacters', ['keyID' => $keyID]);
+            $mdb->remove('apiCharacters', ['keyID' => $keyID]);
         }
 
         return "$keyID has been deleted";

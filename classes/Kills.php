@@ -100,7 +100,6 @@ class Kills
         $victim = $killmail['involved'][0];
         $victim['damage'] = $damage;
 
-        $kill = $victim;
         $involved = $killmail['involved'];
         array_shift($involved); // remove the victim
 

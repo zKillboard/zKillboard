@@ -127,7 +127,6 @@ class Info
 
             if ($count) {
                 $corp['keyCount'] = $mdb->count('apiCharacters', ['corporationID' => (int) $corp['id'], 'type' => 'Corporation']);
-                $errorValues = array();
                 $nextCheck = $mdb->findField('apiCharacters', 'cachedUntil', ['type' => 'Corporation', 'corporationID' => (int) $corp['id']], ['cachedUntil' => -1]);
                 $corp['cachedUntilTime'] = date('Y-m-d H:i', $nextCheck->sec);
             } else {

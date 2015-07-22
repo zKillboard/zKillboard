@@ -21,5 +21,4 @@ foreach ($apimails as $mail) {
     if ($mdb->exists('crestmails', ['killID' => $killID, 'processed' => true])) {
         $mdb->remove('apimails', $mail);
     }
-    //else $mdb->set("crestmails", ['killID' => $killID], ['processed' => false]);
 }
