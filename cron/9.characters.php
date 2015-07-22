@@ -19,14 +19,16 @@ if ($i == 15) {
 while ($timer->stop() < 55000) {
     $ids = [];
     for ($i = 0; $i < 100; ++$i) {
-        $id = $queueCharacters->next();
+        $id = $queueCharacters->next(false);
         if ($id != null) {
             $ids[] = $id;
         }
     }
+    if (sizeof($ids) == 0) exit();
     $stringIDs = implode(',', $ids);
     $href = "https://api.eveonline.com/eve/CharacterAffiliation.xml.aspx?ids=$stringIDs";
     $raw = file_get_contents($href);
+    if ($raw == "") exit();
     $xml = @simplexml_load_string($raw);
 
     foreach ($xml->result->rowset->row as $info) {
