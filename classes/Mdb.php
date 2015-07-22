@@ -118,6 +118,8 @@ class Mdb
      */
     public function find($collection, $query = [], $sort = [], $limit = null, $includes = [])
     {
+	global $longQueryMS;
+
         $cacheKey = null;
         $cacheTime = isset($query['cacheTime']) ? $query['cacheTime'] : 0;
         unset($query['cacheTime']); // reserved zkb field for caching doesn't need to be in queries
@@ -153,7 +155,7 @@ class Mdb
         }
         $result = iterator_to_array($cursor);
         $time = $timer->stop();
-        if ($time > 1000) {
+        if ($time > $longQueryMS) {
             Log::log("Long query (${time}ms): $serialized");
         }
 

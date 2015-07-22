@@ -122,7 +122,7 @@ class Stats
      */
     public static function getTop($groupByColumn, $parameters = array())
     {
-        global $mdb, $debug;
+        global $mdb, $debug, $longQueryMS;
 
         $hashKey = "Stats::getTop:$groupByColumn:".serialize($parameters);
         $result = RedisCache::get($hashKey);
@@ -195,7 +195,7 @@ class Stats
         $result = iterator_to_array($result);
 
         $time = $timer->stop();
-        if ($time > 1000) {
+        if ($time > $longQueryMS) {
             Log::log("Aggregate Long query (${time}ms): $hashKey");
         }
 
@@ -230,7 +230,7 @@ class Stats
 
     public static function getDistinctCount($groupByColumn, $parameters = [])
     {
-        global $mdb, $debug;
+        global $mdb, $debug, $longQueryMS;
 
         $hashKey = "distinctCount::$groupByColumn:".serialize($parameters);
         $result = RedisCache::get($hashKey);
@@ -287,7 +287,7 @@ class Stats
         $result = iterator_to_array($result);
 
         $time = $timer->stop();
-        if ($time > 1000) {
+        if ($time > $longQueryMS) {
             Log::log("Distinct Long query (${time}ms): $hashKey");
         }
 
