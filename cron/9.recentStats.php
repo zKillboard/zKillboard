@@ -2,20 +2,25 @@
 
 require_once '../init.php';
 
-$minute = (int) date('i');
-$hour = (int) date('H');
-if ($hour != 4) {
-    exit();
-}
-if ($minute != 0) {
-    exit();
-}
+$i = date('Hi');
+if ($i != "400") exit();
 
 $mdb = new Mdb();
 $types = ['characterID', 'corporationID', 'allianceID', 'factionID', 'groupID', 'shipTypeID', 'solarSystemID', 'regionID'];
 $timer = new Timer();
-$ninetyDayKillID = MongoFilter::getKillIDFromTime(time() - (90 * 86400));
-$date = new MongoDate(strtotime(date('Y-m-d')));
+$now = time();
+$now = $now - ($now % 60);
+$then = $now - (90 * 6400);
+$ninetyDayKillID = null;
+do {
+	$result = $mdb->getCollection('killmails')->find(['dttm' => new MongoDate($then)], ['killID' => 1])->sort(['killID' => 1])->limit(1);
+	if ($row = $result->next()) {
+		$ninetyDayKillID = (int) $row['killID'];
+	} else {
+		$then += 60;
+	}
+	if ($then > $now) exit();
+} while ($ninetyDayKillID === null);
 
 // Clear out ranks more than two weeks old
 $mdb->remove('ranksProgress', ['date' => ['$lt' => $mdb->now(-86400 * 14)]]);
