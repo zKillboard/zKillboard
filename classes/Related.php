@@ -12,7 +12,7 @@ class Related
         }
 
         $blueTeam = array();
-        $redTeam = static::findWinners($kills);
+        $redTeam = self::findWinners($kills);
         foreach ($involvedEntities as $entity => $chars) {
             if (!in_array($entity, $redTeam)) {
                 $blueTeam[] = $entity;
@@ -20,7 +20,7 @@ class Related
         }
 
         if (isset($options['A'])) {
-            static::assignSides($options['A'], $redTeam, $blueTeam);
+            self::assignSides($options['A'], $redTeam, $blueTeam);
         }
         if (isset($options['B'])) {
             self::assignSides($options['B'], $blueTeam, $redTeam);
@@ -73,15 +73,15 @@ class Related
         global $mdb;
         $kill = $mdb->findDoc('killmails', ['cacheTime' => 3600, 'killID' => $killID]);
 
-        static::$killstorage[$killID] = $kill;
+        self::$killstorage[$killID] = $kill;
 
         $victim = $kill['involved'][0];
-        static::addInvolved($entities, $victim);
+        self::addInvolved($entities, $victim);
         $involved = $kill['involved'];
         array_shift($involved);
         if (is_array($involved)) {
             foreach ($involved as $entry) {
-                static::addInvolved($entities, $entry);
+                self::addInvolved($entities, $entry);
             }
         }
     }
@@ -102,7 +102,7 @@ class Related
     {
         $involved = array();
         foreach ($kills as $kill) {
-            $kill = static::$killstorage[$kill['victim']['killID']];
+            $kill = self::$killstorage[$kill['victim']['killID']];
 
             $attackers = $kill['involved'];
             array_shift($attackers);

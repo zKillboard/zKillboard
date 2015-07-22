@@ -66,7 +66,7 @@ class Util
         \Pheal\Core\Config::getInstance()->api_customkeys = true;
         \Pheal\Core\Config::getInstance()->api_base = $apiServer;
 
-        if ($keyID != null && $vCode != null) {
+        if ($keyID !== null && $vCode !== null) {
             $pheal = new \Pheal\Pheal($keyID, $vCode);
         } else {
             $pheal = new \Pheal\Pheal();
@@ -266,20 +266,26 @@ class Util
         return $parameters;
     }
 
+    /**
+     * @deprecated
+    */
     public static function shortString($string, $maxLength = 8)
     {
         return $string;
-        if (strlen($string) <= $maxLength) {
+        /*if (strlen($string) <= $maxLength) {
             return $string;
         }
 
-        return substr($string, 0, $maxLength - 3).'...';
+        return substr($string, 0, $maxLength - 3).'...';*/
     }
 
+    /**
+     * @deprecated
+    */
     public static function truncate($str, $length = 200, $trailing = '...')
     {
         return $str;
-        $length -= mb_strlen($trailing);
+        /*$length -= mb_strlen($trailing);
         if (mb_strlen($str) > $length) {
             // string exceeded length, truncate and add trailing dots
             return mb_substr($str, 0, $length).$trailing;
@@ -288,7 +294,7 @@ class Util
             $res = $str;
         }
 
-        return $res;
+        return $res;*/
     }
 
     public static function pageTimer()

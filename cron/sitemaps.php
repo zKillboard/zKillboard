@@ -6,7 +6,7 @@ if (date('H:i') != '11:15') {
     exit();
 }
 
-@mkdir("$baseDir/public/sitemaps/");
+mkdir("$baseDir/public/sitemaps/");
 $locations = array();
 
 $types = array('character', 'corporation', 'alliance', 'faction');
