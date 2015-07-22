@@ -195,11 +195,12 @@ class MongoFilter
                     $and[] = ['solo' => true];
                     break;
                 case 'startTime':
-                    $and[] = ['dttm' => ['$gte' => new MongoDate($value)]];
-                    $parameters['orderDirection'] = 'asc';
+                    $time = strtotime($value);
+                    $and[] = ['dttm' => ['$gte' => new MongoDate($time)]];
                     break;
                 case 'endTime':
-                    $and[] = ['dttm' => ['$lte' => new MongoDate($value)]];
+                    $time = strtotime($value);
+                    $and[] = ['dttm' => ['$lte' => new MongoDate($time)]];
                     break;
                 case 'orderBy':
                     // handled by sort, can be ignored
