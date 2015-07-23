@@ -276,7 +276,7 @@ if ($key == 'system') {
 }
 $statistics = $mdb->findDoc('statistics', ['type' => $statType, 'id' => (int) $id]);
 $prevRanks = $mdb->findDoc('ranksProgress', ['cacheTime' => 36000, 'type' => $statType, 'id' => (int) $id], ['date' => 1]);
-if ($prevRanks != null) {
+if ($prevRanks != null && isset($prevRanks['date']->sec)) {
     $prevRanks['date'] = date('Y-m-d', $prevRanks['date']->sec);
     $statistics['prevRanks'] = $prevRanks;
 }
