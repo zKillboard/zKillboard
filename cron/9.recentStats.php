@@ -5,7 +5,7 @@ require_once '../init.php';
 $i = date('Hi');
 if ($i != "400") exit();
 
-$mdb = new Mdb();
+$date = new MongoDate(strtotime(date('Ymd')));
 $types = ['characterID', 'corporationID', 'allianceID', 'factionID', 'groupID', 'shipTypeID', 'solarSystemID', 'regionID'];
 $timer = new Timer();
 $now = time();
