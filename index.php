@@ -29,7 +29,7 @@ $requests->add(uniqid());
 $load = getLoad();
 
 // Check if the user has autologin turned on
-if ($load < 10 && !User::isLoggedIn()) {
+if ($load < 20 && !User::isLoggedIn()) {
     User::autoLogin();
 }
 if ($load >= 10) {
