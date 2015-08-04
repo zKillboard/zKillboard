@@ -32,7 +32,7 @@ $load = getLoad();
 if ($load < 20 && !User::isLoggedIn()) {
     User::autoLogin();
 }
-if ($load >= 10) {
+if ($load >= 20) {
     $uri = @$_SERVER['REQUEST_URI'];
     if ($uri != '') {
         $contents = $redis->get("cache:$uri");

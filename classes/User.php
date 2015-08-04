@@ -95,7 +95,7 @@ class User
     {
         global $load;
 
-        if ($load >= 10) {
+        if ($load >= 20) {
             return false;
         }
 
