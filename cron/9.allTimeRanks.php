@@ -7,11 +7,6 @@ if ($now != '1441') {
     exit();
 }
 
-if (date('d') == 1) {
-    // Reset all topAllTime's on the first of each month
-    $mdb->getCollection('statistics')->update(['$unset' => ['topAllTime' => 1]]);
-}
-
 $date = new MongoDate(strtotime(date('Y-m-d')));
 $types = ['corporationID', 'allianceID', 'factionID', 'shipTypeID', 'groupID', 'solarSystemID', 'regionID', 'characterID'];
 $categories = ['ships', 'isk', 'points'];
