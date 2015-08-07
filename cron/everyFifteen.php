@@ -23,6 +23,21 @@ Storage::store('TopShips', json_encode(Info::doMakeCommon('Top Ships', 'shipType
 Storage::store('TopSystems', json_encode(Info::doMakeCommon('Top Systems', 'solarSystemID', getStats('solarSystemID'))));
 Storage::store('TopIsk', json_encode(Stats::getTopIsk(array('pastSeconds' => ($numDays * 86400), 'limit' => 5))));
 
+// Cleanup old sessions
+Db::execute('delete from zz_users_sessions where validTill < now()');
+
+// Keep the account balance table clean
+Db::execute('delete from zz_account_balance where balance = 0');
+
+// Cleanup subdomain stuff
+Db::execute('update zz_subdomains set adfreeUntil = null where adfreeUntil < now()');
+Db::execute("update zz_subdomains set banner = null where banner = ''");
+Db::execute("delete from zz_subdomains where adfreeUntil is null and banner is null and (alias is null or alias = '')");
+
+// Expire change expirations
+Db::execute('update zz_users set change_expiration = null, change_hash = null where change_expiration < date_sub(now(), interval 3 day)');
+
+
 function getStats($column)
 {
     $result = Stats::getTop($column, ['isVictim' => false, 'pastSeconds' => 604800]);
