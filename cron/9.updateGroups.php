@@ -11,35 +11,42 @@ $groups = CrestTools::getJSON('https://public-crest.eveonline.com/inventory/grou
 $newGroups = 0;
 $newItems = 0;
 
-foreach ($groups['items'] as $group) {
-    $href = $group['href'];
-    $groupID = (int) getGroupID($href);
-    $name = $group['name'];
+do {
+    foreach ($groups['items'] as $group) {
+        $href = $group['href'];
+        $groupID = (int) getGroupID($href);
+        $name = $group['name'];
 
-    $exists = $mdb->count('information', ['type' => 'groupID', 'id' => $groupID]);
-    if ($exists == 0) {
-        ++$newGroups;
-    }
-    $mdb->insertUpdate('information', ['type' => 'groupID', 'id' => $groupID], ['name' => $name, 'lastCrestUpdate' => $mdb->now()]);
+        $exists = $mdb->count('information', ['type' => 'groupID', 'id' => $groupID]);
+        if ($exists == 0) {
+            ++$newGroups;
+        }
+        $mdb->insertUpdate('information', ['type' => 'groupID', 'id' => $groupID], ['name' => $name, 'lastCrestUpdate' => $mdb->now()]);
 
-    $types = CrestTools::getJSON($href);
-    if (@$types['types'] != null) {
-        foreach ($types['types'] as $type) {
-            $typeID = (int) getTypeID($type['href']);
-            $name = $type['name'];
+        $types = CrestTools::getJSON($href);
+        if (@$types['types'] != null) {
+            foreach ($types['types'] as $type) {
+                $typeID = (int) getTypeID($type['href']);
+                $name = $type['name'];
 
-            $exists = $mdb->count('information', ['type' => 'typeID', 'id' => $typeID]);
-            if ($exists > 0) {
-                continue;
+                $exists = $mdb->count('information', ['type' => 'typeID', 'id' => $typeID]);
+                if ($exists > 0) {
+                    continue;
+                }
+
+                Util::out("Discovered item: $name");
+                ++$newItems;
+
+                $mdb->insertUpdate('information', ['type' => 'typeID', 'id' => $typeID], ['name' => $name, 'groupID' => $groupID, 'lastCrestUpdate' => new MongoDate(1)]);
             }
-
-            Util::out("Discovered item: $name");
-            ++$newItems;
-
-            $mdb->insertUpdate('information', ['type' => 'typeID', 'id' => $typeID], ['name' => $name, 'groupID' => $groupID, 'lastCrestUpdate' => new MongoDate(1)]);
         }
     }
-}
+    $next = @$groups['next']['href'];
+    if ($next != null) {
+        $groups = CrestTools::getJSON($next);
+    }
+} while ($next != null);
+
 $mdb->insertUpdate('storage', ['locker' => 'groupsPopulated'], ['contents' => true]);
 if ($newGroups > 0) {
     Log::irc("Added $newGroups new groupIDs");
