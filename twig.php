@@ -42,7 +42,9 @@ foreach ($explode as $key => $ex) {
     }
 }
 
-$twig->addGlobal('requestUriPager', implode('/', $expager));
+$requestUri = implode('/', $expager);
+if (sizeof($requestUri) == 0 || substr($requestUri, -1) != '/') $requestUri .= '/';
+$twig->addGlobal('requestUriPager', $requestUri);
 $actualURI = implode('/', $explode);
 $twig->addGlobal('actualURI', $actualURI);
 $uriParams = Util::convertUriToParameters();
