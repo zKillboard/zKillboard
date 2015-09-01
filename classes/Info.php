@@ -27,7 +27,7 @@ class Info
         $data[str_replace('ID', 'Name', $type)] = isset($data['name']) ? $data['name'] : "$type $id";
         switch ($type) {
             case 'solarSystemID':
-                $data['security'] = $data['secStatus'];
+                $data['security'] = @$data['secStatus'];
                 $data['sunTypeID'] = 3802;
                 break;
             case 'characterID':
@@ -122,21 +122,12 @@ class Info
         foreach ($corpList as $corp) {
             $corp['corporationName'] = $corp['name'];
             $corp['corporationID'] = $corp['id'];
-            $count = $mdb->count('apiCharacters', ['corporationID' => (int) $corp['id'], 'type' => 'Corporation']);
-            $corp['apiVerified'] = $count > 0 ? 1 : 0;
+            $apiVerifiedSet = new RedisTtlSortedSet('ttlss:apiVerified', 86400);
+            $count = $apiVerifiedSet->getTime((int) $corp['corporationID']);
 
             if ($count) {
-                $corp['keyCount'] = $mdb->count('apiCharacters', ['corporationID' => (int) $corp['id'], 'type' => 'Corporation']);
-                $nextCheck = $mdb->findField('apiCharacters', 'cachedUntil', ['type' => 'Corporation', 'corporationID' => (int) $corp['id']], ['cachedUntil' => -1]);
-                $corp['cachedUntilTime'] = date('Y-m-d H:i', $nextCheck->sec);
-            } else {
-                $count = $mdb->count('apiCharacters', ['corporationID' => (int) $corp['id']]);
-                $percentage = $corp['memberCount'] == 0 ? 0 : $count / $corp['memberCount'];
-                if ($percentage == 1) {
-                    $corp['apiVerified'] = 1;
-                } elseif ($percentage > 0) {
-                    $corp['apiPercentage'] = number_format($percentage * 100, 1);
-                }
+                $corp['cachedUntilTime'] = date('Y-m-d H:i', $count);
+		$corp['apiVerified'] = 1;
             }
             self::addInfo($corp);
             $retList[] = $corp;

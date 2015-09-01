@@ -2,7 +2,6 @@
 	<tr><th>Corp. Name</th><th>Ticker</th>
 	<th style="text-align: right">Members</th>
 	<th style="text-align: right">API</th>
-	<th style="text-align: right">API Key Count</th>
 	<th>Next Check</th>
 	</tr>
 {% for corp in corps %}
@@ -16,7 +15,6 @@
 			{% elseif corp.apiPercentage is defined %}{{ corp.apiPercentage }}% Verified
 			{% endif %}
 		</td>
-		<td style="text-align: right">{{ corp.keyCount}}</td>
 		<td>{{ corp.cachedUntilTime }}</td>
 	</tr>
 {% endfor %}
