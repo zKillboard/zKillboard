@@ -186,36 +186,6 @@ $app->get('/wars/', function () use ($app) {
     include 'view/wars.php';
 });
 
-// EVE SSO
-$app->get('/auth/eve/', function () use ($app) {
-    global $ssoEnable;
-
-    if ($ssoEnable == false) {
-        die('SSO is disabled');
-    }
-
-    $code = isset($_GET['code']) ? $_GET['code'] : null;
-    $state = isset($_GET['state']) ? $_GET['state'] : null;
-    //header("Content-type: application/json;charset=utf-8");
-
-    if (!$code) {
-        echo json_encode(array('Error'));
-        die();
-    }
-    OAuth::eveSSOLoginToken($code, $state);
-});
-
-// Merge accounts
-$app->map('/merge/:characterID/', function ($characterID) use ($app) {
-    global $ssoEnable;
-
-    if ($ssoEnable == false) {
-        die('SSO is disabled');
-    }
-
-    include 'view/merge.php';
-})->via('GET', 'POST');
-
 // The Overview stuff
 $app->get('/:input+/', function ($input) use ($app) {
     include 'view/overview.php';
