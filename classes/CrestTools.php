@@ -9,11 +9,11 @@ class CrestTools
 
     public static function curlFetch($url)
     {
+        global $baseAddr;
+
         $numTries = 0;
 	$httpCode = null;
         do {
-            global $baseAddr;
-
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
