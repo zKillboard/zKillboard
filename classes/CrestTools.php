@@ -10,6 +10,7 @@ class CrestTools
     public static function curlFetch($url)
     {
         $numTries = 0;
+	$httpCode = null;
         do {
             global $baseAddr;
 
@@ -25,7 +26,7 @@ class CrestTools
                 return $body;
             }
             if ($httpCode == 403) {
-                return;
+                return 403;
             }
             if ($httpCode == 500) {
                 return 500;
@@ -38,7 +39,7 @@ class CrestTools
         } while ($httpCode != 200 && $numTries <= 3);
         Log::log("Gave up on $url");
 
-        return;
+        return $httpCode;
     }
 
     public static function fetch($id, $hash = null)

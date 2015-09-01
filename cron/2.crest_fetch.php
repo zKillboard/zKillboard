@@ -35,7 +35,7 @@ while (!Util::exitNow() && $timer->stop() < 115000) {
             $crestmails->update($crestmail, array('$set' => array('processed' => null)));
             continue;
         }
-        if ($killmail == 415 || $killmail == 500) {
+        if ($killmail == 415 || $killmail == 500 || $killmail == 403) {
             $crestmails->update($crestmail, array('$set' => array('processed' => true, 'errorCode' => $killmail)));
             continue;
         }
