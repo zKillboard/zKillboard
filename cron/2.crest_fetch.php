@@ -43,8 +43,8 @@ while (!Util::exitNow() && $timer->stop() < 115000) {
         unset($killmail['zkb']);
         unset($killmail['_id']);
 
-        $killsLastHour->add($id);
         if (!$mdb->exists('rawmails', ['killID' => (int) $id])) {
+            $killsLastHour->add($id);
             $rawmails->save($killmail);
         }
 
