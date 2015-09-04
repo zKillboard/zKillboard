@@ -20,13 +20,9 @@ $tqApiChars = new RedisTimeQueue('tqApiChars');
 if ($pid != 0 && date('i') % 5 == 0) {
     $allApis = $mdb->find('apis');
     foreach ($allApis as $api) {
-        $keyID = $api['keyID'];
-        $vCode = $api['vCode'];
-        $userID = $api['userID'];
-        $value = ['keyID' => $keyID, 'vCode' => $vCode, 'userID' => $userID];
         $errorCode = (int) @$api['errorCode'];
         if (in_array($errorCode, [106, 203, 220, 222, 404, 522])) continue;
-        $tqApis->add($value);
+        $tqApis->add($api['_id']);
     }
 }
 if ($pid != 0) exit();
@@ -35,8 +31,9 @@ $timer = new Timer();
 $requestNum = 0;
 
 while ($timer->stop() <= 58000) {
-    $row = $tqApis->next();
-    if ($row !== null) {
+    $id = $tqApis->next();
+    if ($id !== null) {
+	$row = $mdb->findDoc('apis', ['_id' => $id]);
         $keyID = $row['keyID'];
         $vCode = $row['vCode'];
         $userID = $row['userID'];
@@ -45,8 +42,8 @@ while ($timer->stop() <= 58000) {
             $row['characters'] = [];
         }
 
-        $errorCode = (int) $mdb->findField("apis", "errorCode", ['keyID' => $keyID, 'vCode' => $vCode]);
-	if (in_array($errorCode, [106, 203, 220, 222, 404, 522])) continue;
+        $errorCode = $mdb->findField("apis", "errorCode", ['keyID' => $keyID, 'vCode' => $vCode]);
+	//if (in_array($errorCode, [106, 203, 220, 222, 404, 522])) continue;
 	\Pheal\Core\Config::getInstance()->http_user_agent = "API Fetcher for https://$baseAddr";
 	\Pheal\Core\Config::getInstance()->http_post = false;
 	\Pheal\Core\Config::getInstance()->http_keepalive = true; // default 15 seconds
@@ -57,9 +54,9 @@ while ($timer->stop() <= 58000) {
 	$pheal = new \Pheal\Pheal($keyID, $vCode);
 	try {
 		$apiKeyInfo = $pheal->ApiKeyInfo();
-		$apis->update(['keyID' => $keyID, 'vCode' => $vCode], ['$set' => ['errorCode' => 0]]);
+		if ($errorCode != 0) $apis->update(['keyID' => $keyID, 'vCode' => $vCode], ['$set' => ['errorCode' => 0]]);
 	} catch (Exception $ex) {
-		$tqApis->remove($row); // Problem with api the key, remove it from rotation
+		$tqApis->remove($id); // Problem with api the key, remove it from rotation
 		$errorCode = (int) $ex->getCode();
 		if ($errorCode == 904) {
 			Util::out("(apiProducer) 904'ed");
