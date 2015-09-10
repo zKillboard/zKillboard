@@ -12,4 +12,3 @@ foreach ($crest as $row) {
     ++$count;
     sleep(1);
 }
-echo "Reset " . number_format($count, 0) . " killmails\n";
