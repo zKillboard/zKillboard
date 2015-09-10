@@ -3,19 +3,13 @@
 require_once '../init.php';
 
 $count = 0;
-$crest = $mdb->getCollection('crestmails')->find()->sort(['killID' => -1]);
+$crest = $mdb->getCollection('crestmails')->find(['errorCode' => 500]);
 foreach ($crest as $row) {
-    ++$count;
-    if ($count > 5000) {
-        exit();
-    }
-    if (@$row['npcOnly'] == true) {
-        continue;
-    }
     $killID = $row['killID'];
-    if ($mdb->exists('killmails', ['killID' => $killID])) {
-        continue;
-    }
+    $mdb->getCollection('crestmails')->update(['killID' => $killID], ['$unset' => ['errorCode' => 1, 'npcOnly' => 1]]);
+
     $mdb->set('crestmails', ['killID' => $killID], ['processed' => false]);
+    ++$count;
     sleep(1);
 }
+echo "Reset " . number_format($count, 0) . " killmails\n";
