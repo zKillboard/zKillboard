@@ -5,7 +5,7 @@
 
 {% block content %}
 
-<h2><small>Battle Report: </small>{{ systemName }} / {{ time }} <small> +/- {{ exHours }} Hour{% if exHours > 1%}s{% endif %}</h2>
+<h2><small>Battle Report: </small>{{ systemName }} ({{ regionName }}) / {{ time }} <small> +/- {{ exHours }} Hour{% if exHours > 1%}s{% endif %}</h2>
 
 {% set teamATotal = summary.teamA.totals.total_price %}
 {% set teamBTotal = summary.teamB.totals.total_price %}
@@ -15,7 +15,7 @@
 {% set teamBPoints = summary.teamB.totals.total_points %}
 
 {% if total == 0 %}
-<em>There was no battle in {{ systemName }} at {{ time }}.</em><br/><br/>
+<em>There was no battle in {{ systemName }} <small>({{ regionName }}</small> at {{ time }}.</em><br/><br/>
 {% else %}
 {% set totalSize = summary.teamA.totals.pilotCount + summary.teamB.totals.pilotCount %}
 
