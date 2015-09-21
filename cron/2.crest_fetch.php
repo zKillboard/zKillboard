@@ -31,7 +31,7 @@ while (!Util::exitNow() && $timer->stop() < 115000) {
         }
 
         $killmail = CrestTools::fetch($id, $hash);
-        if ($killmail == null || $killmail == '') {
+        if ($killmail == null || $killmail == '' || !isset($killmail['attackers'])) {
             $crestmails->update($crestmail, array('$set' => array('processed' => null)));
             continue;
         }
