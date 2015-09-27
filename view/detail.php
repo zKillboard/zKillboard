@@ -77,7 +77,8 @@ if ($details == null) {
 
     $extra['totalisk'] = $killdata['info']['zkb']['totalValue'];
     $extra['droppedisk'] = droppedIsk(md5($id), $killdata['items']);
-    $extra['lostisk'] = $killdata['info']['zkb']['totalValue'] - $extra['droppedisk'];
+    $extra['shipprice'] = Price::getItemPrice($killdata['victim']['shipTypeID'], date('Ymd', strtotime($killdata['info']['dttm'])));
+    $extra['lostisk'] = $extra['shipprice'] + destroyedIsk(md5($id), $killdata['items']);
     $extra['fittedisk'] = fittedIsk(md5($id), $killdata['items']);
     $extra['relatedtime'] = date('YmdH00', strtotime($killdata['info']['dttm']));
     $extra['fittingwheel'] = Detail::eftarray(md5($id), $killdata['items'], @$killdata['victim']['characterID']);
@@ -87,7 +88,6 @@ if ($details == null) {
     $extra['destroyedprice'] = usdeurgbp($extra['lostisk']);
     $extra['droppedprice'] = usdeurgbp($extra['droppedisk']);
     $extra['fittedprice'] = usdeurgbp($extra['fittedisk']);
-    $extra['shipprice'] = Price::getItemPrice($killdata['victim']['shipTypeID'], date('Ymd', strtotime($killdata['info']['dttm'])));
     $extra['efttext'] = Fitting::EFT($extra['fittingwheel']);
     $extra['dnatext'] = Fitting::DNA($killdata['items'], $killdata['victim']['shipTypeID']);
     $extra['edkrawmail'] = 'deprecated - use CREST';
@@ -183,11 +183,6 @@ function buildItemKey($itm)
 
 function involvedCorpsAndAllis($md5, $involved)
 {
-    $Cache = RedisCache::get($md5.'involvedCorpsAndAllis');
-    if ($Cache) {
-        return $Cache;
-    }
-
     $involvedAlliCount = 0;
     $involvedCorpCount = 0;
     // Create the involved corps / alliances list
@@ -233,7 +228,6 @@ function involvedCorpsAndAllis($md5, $involved)
     if ($involvedCorpCount <= 1 && $involvedAlliCount <= 1) {
         $invAll = array();
     }
-    RedisCache::set($md5.'involvedCorpsAndAllis', $invAll, 3600);
 
     return $invAll;
 }
@@ -247,30 +241,28 @@ function involvedSort($field1, $field2)
     return $field2['involved'] - $field1['involved'];
 }
 
+function destroyedIsk($md5, $items)
+{
+    $itemisk = 0;
+    foreach ($items as $item) {
+        $itemisk += $item['price'] * (@$item['singleton'] ? @$item['quantityDestroyed'] / 100 : @$item['quantityDestroyed']);
+    }
+
+    return $itemisk;
+}
 function droppedIsk($md5, $items)
 {
-    $Cache = RedisCache::get($md5.'droppedisk');
-    if ($Cache) {
-        return $Cache;
+    $itemisk = 0;
+    foreach ($items as $item) {
+        $itemisk += $item['price'] * (@$item['singleton'] ? @$item['quantityDropped'] / 100 : @$item['quantityDropped']);
     }
 
-    $droppedisk = 0;
-    foreach ($items as $dropped) {
-        $droppedisk += $dropped['price'] * (@$dropped['singleton'] ? @$dropped['quantityDropped'] / 100 : @$dropped['quantityDropped']);
-    }
-
-    RedisCache::set($md5.'droppedisk', $droppedisk, 3600);
-
-    return $droppedisk;
+    return $itemisk;
 }
 
 function fittedIsk($md5, $items)
 {
     $key = $md5.'fittedIsk';
-    $cache = RedisCache::get($key);
-    if ($cache) {
-        return $cache;
-    }
 
     $fittedIsk = 0;
     $flags = array('High Slots', 'Mid Slots', 'Low Slots', 'SubSystems', 'Rigs', 'Drone Bay', 'Fuel Bay');
@@ -281,7 +273,5 @@ function fittedIsk($md5, $items)
             $fittedIsk = $fittedIsk + ($item['price'] * $qty);
         }
     }
-    RedisCache::set($key, $fittedIsk, 3600);
-
     return $fittedIsk;
 }
