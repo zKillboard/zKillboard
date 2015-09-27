@@ -22,6 +22,7 @@
 	</tr>
 	<tr>
 	{% set imageSize = 32 %}
+	<tr class="hidden-xs">
 	{% set field = killdata.victim %}
 		<td class="icons hidden-xs"><div align="center">{% include 'components/image_ship.html' %}</div></td>
 		<td><a href="/item/{{killdata.victim.shipTypeID}}/">{{killdata.victim.shipName}}</a></td>
@@ -36,12 +37,6 @@
 		<td colspan="2"><h5>Total Destroyed:</h5></td>
 		<td colspan="4" style="text-align: right;"><div class="pull-right" style="width: 100%;"><h5 class="item_destroyed" rel="tooltip" title="&#36;{{ extra.destroyedprice.usd|number_format(2, '.', ',') }} / {{ extra.destroyedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.destroyedprice.gbp|number_format(2, '.', ',') }}">{{ extra.lostisk|number_format(2, '.', ',')}} ISK</h5></div></td>
 	</tr>
-	{% if extra.fittedisk > 0 %}
-	<tr class="hidden-xs">
-		<td colspan="2"><h5>Fitted:</h5></td>
-		<td colspan="4" style="text-align: right;"><div class="pull-right" style="width: 100%;"><h5 rel="tooltip" title="&#36;{{ extra.fittedprice.usd|number_format(2, '.', ',') }} / {{ extra.fittedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.fittedprice.gbp|number_format(2, '.', ',') }}">{{ extra.fittedisk|number_format(2, '.', ',')}} ISK</h5></div></td>
-	</tr>
-	{% endif %}
 	<tr class="hidden-xs">
 		<td colspan="2"><h5>Grand Total:</h5></td>
 		<td colspan="4" style="text-align: right;" class="totalprice"><div class="pull-right" style="width: 100%;"><h5 rel="tooltip" title="&#36;{{ extra.totalprice.usd|number_format(2, '.', ',') }} / {{ extra.totalprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.totalprice.gbp|number_format(2, '.', ',') }}">{{ (extra.lostisk + extra.droppedisk)|number_format(2, '.', ',')}} ISK</h5></div></td>

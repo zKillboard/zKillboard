@@ -65,6 +65,12 @@
 		<th>Damage:</th>
 		<td>{{ killdata.info.damage|number_format(0) }}</td>
 	</tr>
+	{% if extra.fittedisk > 0 %}
+	<tr rel="tooltip" title="&#36;{{ extra.fittedprice.usd|number_format(2, '.', ',') }} / {{ extra.fittedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.fittedprice.gbp|number_format(2, '.', ',') }}">
+		<th>Fitted:</th>
+		<td class="item_fitted">{{ extra.fittedisk | number_format(2, '.', ',') }} ISK</td>
+	</tr>
+	{% endif %}
 	<tr class="item_dropped_row" rel="tooltip" title="&#36;{{ extra.droppedprice.usd|number_format(2, '.', ',') }} / {{ extra.droppedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.droppedprice.gbp|number_format(2, '.', ',') }}">
 		<th>Dropped:</th>
 		<td class="item_dropped">{{ extra.droppedisk|number_format(2, '.', ',') }} ISK</td>
@@ -73,12 +79,6 @@
 		<th>Destroyed:</th>
 		<td class="item_destroyed">{{ extra.lostisk | number_format(2, '.', ',') }} ISK</td>
 	</tr>
-	{% if extra.fittedisk > 0 %}
-	<tr rel="tooltip" title="&#36;{{ extra.fittedprice.usd|number_format(2, '.', ',') }} / {{ extra.fittedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.fittedprice.gbp|number_format(2, '.', ',') }}">
-		<th>Fitted:</th>
-		<td class="item_fitted">{{ extra.fittedisk | number_format(2, '.', ',') }} ISK</td>
-	</tr>
-	{% endif %}
 	<tr rel="tooltip" title="&#36;{{ extra.totalprice.usd|number_format(2, '.', ',') }} / {{ extra.totalprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.totalprice.gbp|number_format(2, '.', ',') }}">
 		<th>Total:</th>
 		<td><strong class="item_dropped">{{ (extra.droppedisk + extra.lostisk)|number_format(2, '.', ',') }} ISK</strong></td>

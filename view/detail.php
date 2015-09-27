@@ -262,8 +262,6 @@ function droppedIsk($md5, $items)
 
 function fittedIsk($md5, $items)
 {
-    $key = $md5.'fittedIsk';
-
     $fittedIsk = 0;
     $flags = array('High Slots', 'Mid Slots', 'Low Slots', 'SubSystems', 'Rigs', 'Drone Bay', 'Fuel Bay');
     foreach ($items as $item) {
