@@ -95,7 +95,7 @@ class Detail
 
             $key = $itm['typeName'].'|'.$itm['flagName'];
             if (isset($itm['flagName'])) {
-                if ($itm['fittable'] && $itm['inContainer'] == 0) {
+		if ($itm['flagName'] == 'SubSystems' || ($itm['fittable'] && $itm['inContainer'] == 0)) {
                     // not ammo or whatever
 
                     $repeats = @$itm['quantityDropped'] + @$itm['quantityDestroyed'];
