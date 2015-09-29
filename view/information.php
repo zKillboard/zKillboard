@@ -22,8 +22,8 @@ if ($page == 'payments') {
 if ($page == 'statistics') {
     // Replace certain tags with different data
     $info = array();
-    $info['kills'] = number_format($redis->get("zkb:totalKills"), 0);
-    $info["crest"] = number_format($redis->get("zkb:crestRemaining"), 0);
+    $info['kills'] = number_format($redis->get('zkb:totalKills'), 0);
+    $info['crest'] = number_format($redis->get('zkb:crestRemaining'), 0);
     $info['total'] = number_format(Storage::retrieve('actualKills'), 0, '.', ',');
     $info['percentage'] = number_format($info['total'] / $info['kills'] * 100, 2, '.', ',');
     $info['NextWalletFetch'] = Storage::retrieve('NextWalletFetch');

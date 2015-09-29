@@ -12,7 +12,7 @@ class CrestTools
         global $baseAddr;
 
         $numTries = 0;
-	$httpCode = null;
+        $httpCode = null;
         do {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);

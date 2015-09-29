@@ -271,5 +271,6 @@ function fittedIsk($md5, $items)
             $fittedIsk = $fittedIsk + ($item['price'] * $qty);
         }
     }
+
     return $fittedIsk;
 }

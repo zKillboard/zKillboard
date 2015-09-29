@@ -43,7 +43,9 @@ foreach ($explode as $key => $ex) {
 }
 
 $requestUri = implode('/', $expager);
-if (sizeof($requestUri) == 0 || substr($requestUri, -1) != '/') $requestUri .= '/';
+if (sizeof($requestUri) == 0 || substr($requestUri, -1) != '/') {
+    $requestUri .= '/';
+}
 $twig->addGlobal('requestUriPager', $requestUri);
 $actualURI = implode('/', $explode);
 $twig->addGlobal('actualURI', $actualURI);

@@ -127,7 +127,7 @@ class Info
 
             if ($count) {
                 $corp['cachedUntilTime'] = date('Y-m-d H:i', $count);
-		$corp['apiVerified'] = 1;
+                $corp['apiVerified'] = 1;
             }
             self::addInfo($corp);
             $retList[] = $corp;
