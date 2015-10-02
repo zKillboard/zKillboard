@@ -156,6 +156,10 @@ class Price
         static::setPrice(33675, 120000000000); // Chameleon
         static::setPrice(33673, 100000000000); // Whiptail
 
+        // AT XIII Prizes
+        static::setPrice(35871, 140000000000); // Fiend
+        static::setPrice(35779, 120000000000); // Imp
+
         // Rare CCP Ships (1 trillion! cuz why not)
         static::setPrice(9860, 1000000000000); // Polaris
         static::setPrice(11019, 1000000000000); // Cockroach
