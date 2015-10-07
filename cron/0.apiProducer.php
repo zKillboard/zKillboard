@@ -10,22 +10,13 @@ for ($i = 0; $i < 20; ++$i) {
     }
 }
 
+
 require_once '../init.php';
 
 $apis = $mdb->getCollection('apis');
 $information = $mdb->getCollection('information');
 $tqApis = new RedisTimeQueue('tqApis', 9600);
 $tqApiChars = new RedisTimeQueue('tqApiChars');
-
-if ($pid != 0 && date('i') % 5 == 0) {
-    $allApis = $mdb->find('apis');
-    foreach ($allApis as $api) {
-        $errorCode = (int) @$api['errorCode'];
-        if (in_array($errorCode, [106, 203, 220, 222, 404, 522])) continue;
-        $tqApis->add($api['_id']);
-    }
-}
-if ($pid != 0) exit();
 
 $timer = new Timer();
 $requestNum = 0;
@@ -43,7 +34,6 @@ while ($timer->stop() <= 58000) {
         }
 
         $errorCode = $mdb->findField("apis", "errorCode", ['keyID' => $keyID, 'vCode' => $vCode]);
-	//if (in_array($errorCode, [106, 203, 220, 222, 404, 522])) continue;
 	\Pheal\Core\Config::getInstance()->http_user_agent = "API Fetcher for https://$baseAddr";
 	\Pheal\Core\Config::getInstance()->http_post = false;
 	\Pheal\Core\Config::getInstance()->http_keepalive = true; // default 15 seconds
