@@ -2,7 +2,6 @@
 <hr/>
 ### Kills
 {kills} total kills processed<br/>
-{crest} manual kills remaining to be validated by CREST<br/> 
 ######*These numbers are updated hourly...*
 
 ### Points

@@ -19,4 +19,3 @@ if ($kills > 0) {
 }
 
 $redis->set('zkb:totalKills', $mdb->count('killmails'));
-$redis->set('zkb:crestRemaining', Db::queryField('select count(*) count from kills_by_dttm where status = 0', 'count'));
