@@ -1,6 +1,6 @@
 <?php
 
-for ($i = 0; $i < 40; ++$i) {
+for ($i = 0; $i < 20; ++$i) {
     $pid = pcntl_fork();
     if ($pid == -1) {
         exit();
