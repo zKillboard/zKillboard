@@ -10,10 +10,7 @@ while ($timer->stop() <= 59000) {
     if ($killID == null) {
         continue;
     }
-    if ($killID < 16000000) {
-        continue;
-    }
-    //echo "$killID\n";
+
     $rawmail = $mdb->findDoc('rawmails', ['killID' => $killID]);
     $zkb = $mdb->findField('killmails', 'zkb', ['killID' => $killID]);
 
