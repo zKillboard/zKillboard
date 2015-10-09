@@ -4,11 +4,18 @@ class RedisTimeQueue
 {
     private $queueName;
     private $deltaSeconds;
+    private $queueSemNumber;
 
     public function __construct($queueName, $deltaSeconds = 3600)
     {
         $this->queueName = $queueName;
         $this->deltaSeconds = $deltaSeconds;
+
+	$name = strtolower($queueName);
+	while (strlen($name) > 0) {
+		$this->queueSemNumber += ord(substr($name, 0, 1));
+		$name = substr($name, 1);
+	}
     }
 
     public function add($value, $deltaSeconds = 0)
@@ -41,7 +48,7 @@ class RedisTimeQueue
     {
         global $redis;
 
-        $sem = sem_get(6398);
+        $sem = sem_get($this->queueSemNumber);
         if (!sem_acquire($sem)) {
             throw new Exception('Unable to obtain kmdb semaphore');
         }
