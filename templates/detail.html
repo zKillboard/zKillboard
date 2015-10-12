@@ -8,7 +8,7 @@
 {% set pageTitle = killdata.victim.shipName ~ ' | ' ~ victim ~ ' | Killmail' %}
 {% block title %}{% include 'components/title.html' %}{% endblock %}
 
-{% set description = victim ~ " lost their " ~ killdata.victim.shipName ~ " worth " ~ killdata.info.total_price|number_format(2, '.', ',') ~ " ISK." %}
+{% set description = victim ~ " lost their " ~ killdata.victim.shipName ~ " worth " ~ (extra.droppedisk + extra.lostisk)|number_format(2, '.', ',') ~ " ISK." %}
 {% set canonical = fullsiteurl ~ "/kill/" ~ killdata.info.killID ~ "/" %}
 
 {% block header %}
@@ -326,8 +326,8 @@ jQuery(".tagManager").tagsManager({
 	<meta name="twitter:description" content="{{ killdata.victim.characterName }} ({{ killdata.victim.corporationName}}) lost their {{ killdata.victim.shipName }} in {{ killdata.info.system.solarSystemName }} ({{ killdata.info.system.regionName }})">
 	<meta name="og:description" content="{{ killdata.victim.characterName }} ({{ killdata.victim.corporationName}}) lost their {{ killdata.victim.shipName }} in {{ killdata.info.system.solarSystemName }} ({{ killdata.info.system.regionName }})">
 {% else %}
-	<meta name="twitter:description" content="{{ killdata.victim.characterName }} ({{ killdata.victim.corporationName}}) lost their {{ killdata.victim.shipName }} in {{ killdata.info.system.solarSystemName }} ({{ killdata.info.system.regionName }}). Final Blow by {{ finalBlow.characterName }} ({{ finalBlow.corporationName }}) flying in a {{ finalBlow.shipName }}. Total Value: {{ (extra.desroyedIsk + extra.droppedIsk)|number_format(2, '.', ',')}} ISK">
-	<meta name="og:description" content="{{ killdata.victim.characterName }} ({{ killdata.victim.corporationName}}) lost their {{ killdata.victim.shipName }} in {{ killdata.info.system.solarSystemName }} ({{ killdata.info.system.regionName }}). Final Blow by {{ finalBlow.characterName }} ({{ finalBlow.corporationName }}) flying in a {{ finalBlow.shipName }}. Total Value: {{ (extra.destroyedIsk + extra.droppedIsk)|number_format(2, '.', ',')}} ISK">
+	<meta name="twitter:description" content="{{ killdata.victim.characterName }} ({{ killdata.victim.corporationName}}) lost their {{ killdata.victim.shipName }} in {{ killdata.info.system.solarSystemName }} ({{ killdata.info.system.regionName }}). Final Blow by {{ finalBlow.characterName }} ({{ finalBlow.corporationName }}) flying in a {{ finalBlow.shipName }}. Total Value: {{ (extra.droppedisk + extra.lostisk)|number_format(2, '.', ',')}} ISK">
+	<meta name="og:description" content="{{ killdata.victim.characterName }} ({{ killdata.victim.corporationName}}) lost their {{ killdata.victim.shipName }} in {{ killdata.info.system.solarSystemName }} ({{ killdata.info.system.regionName }}). Final Blow by {{ finalBlow.characterName }} ({{ finalBlow.corporationName }}) flying in a {{ finalBlow.shipName }}. Total Value: {{ (extra.droppedisk + extra.lostisk)|number_format(2, '.', ',')}} ISK">
 {% endif %}
 	<meta name="og:image" content="https://image.eveonline.com/Render/{{ killdata.victim.shipTypeID }}_128.png">
 {% endblock %}
