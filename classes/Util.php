@@ -167,11 +167,13 @@ class Util
                         $exploded = explode(',', $value);
                         foreach ($exploded as $aValue) {
                             if ($aValue != (int) $aValue || ((int) $aValue) == 0) {
+                                header('HTTP/1.0 400 Client requesting entity ID of 0.');
                                 die();
-                            } //throw new Exception("Invalid ID passed: $aValue");
+                            }
                         }
                         if (sizeof($exploded) > 10) {
-                            throw new Exception('Too many IDs! Max: 10');
+                            header('HTTP/1.0 400 Client requesting too many parameters.');
+                            die();
                         }
                         $ints = [];
                         foreach ($exploded as $ex) {
