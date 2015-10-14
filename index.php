@@ -29,10 +29,10 @@ $requests->add(uniqid());
 $load = getLoad();
 
 // Check if the user has autologin turned on
-if ($load < 20 && !User::isLoggedIn()) {
+if ($load < $loadTripValue && !User::isLoggedIn()) {
     User::autoLogin();
 }
-if ($load >= 20) {
+if ($load >= $loadTripValue) {
     $uri = @$_SERVER['REQUEST_URI'];
     if ($uri != '') {
         $contents = $redis->get("cache:$uri");
