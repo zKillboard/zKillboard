@@ -186,6 +186,13 @@ $app->get('/wars/', function () use ($app) {
     include 'view/wars.php';
 });
 
+$app->get('/ccplogin/', function() use ($app) {
+	include 'view/ccplogin.php';
+});
+$app->get('/ccpcallback/', function() use ($app) {
+	include 'view/ccpcallback.php';
+});
+
 // The Overview stuff
 $app->get('/:input+/', function ($input) use ($app) {
     include 'view/overview.php';

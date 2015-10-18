@@ -1,6 +1,11 @@
 <?php
 
-global $cookie_name;
+global $cookie_name, $ssoCharacterID, $ssoHash, $redis;
+
+if ($ssoCharacterID != null && $ssoHash != null) {
+        $value = $redis->del("login:$ssoCharacterID:$ssoHash");
+}
+
 $requesturi = '';
 if (isset($_SERVER['HTTP_REFERER'])) {
     $requesturi = $_SERVER['HTTP_REFERER'];
@@ -18,7 +23,7 @@ $twig->addGlobal('sessionmoderator', '');
 setcookie($cookie_name, '', time() - $cookie_time, '/', $baseAddr);
 setcookie($cookie_name, '', time() - $cookie_time, '/', '.'.$baseAddr);
 if (isset($requesturi) && $requesturi != '') {
-    $app->redirect($requesturi);
+    $app->redirect($requesturi, 302);
 } else {
-    $app->render('logout.html', array('message' => 'You are now logged out'));
+    $app->redirect('/', 302);
 }

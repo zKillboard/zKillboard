@@ -134,3 +134,17 @@ if (stristr(@$_SERVER['HTTP_USER_AGENT'], 'EVE-IGB')) {
     $igb = true;
 }
 $twig->addGlobal('eveigb', $igb);
+
+// Check SSO values
+$ssoCharacterID = @$_SESSION['characterID'];
+$ssoHash = @$_SESSION['characterHash'];
+$twig->addGlobal('characterID', (int) $ssoCharacterID);
+
+if ($ssoCharacterID != null && $ssoHash != null) {
+	$value = $redis->get("login:$ssoCharacterID:$ssoHash");
+	if ($value == false) {
+		unset($_SESSION['characterID']);
+		unset($_SESSION['characterHash']);
+	}
+}
+

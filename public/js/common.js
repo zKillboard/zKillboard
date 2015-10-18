@@ -81,6 +81,10 @@ $(document).ready(function() {
 		$("#iframed").modal('show');
 	}
 
+	if (characterID > 0) {
+		$('#characterID').prepend('<img src="http://image.eveonline.com/Character/' + characterID + '_32.jpg" style="height: 24px; width: 24px;"/>');
+		$('#fauser').hide();
+	}
 });
 
 function updateKillsLastHour() {
