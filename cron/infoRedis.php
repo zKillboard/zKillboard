@@ -19,6 +19,7 @@ foreach ($types as $type) {
     foreach ($typeRows as $row) {
         $id = $row['id'];
         $key = "tq:$type:$id";
+	$redis->del($key);
         $redis->hMSet($key, $row);
         $redis->expire($key, 9600);
     }
