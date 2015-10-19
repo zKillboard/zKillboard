@@ -82,10 +82,7 @@ while ($timer->stop() <= 59000) {
 
             $json = json_encode($kill->toArray());
             $killmail = json_decode($json, true);
-            $killmail['killID'] = (int) $killID; // make sure killID is an int;
-            if (!$mdb->exists('crestmails', ['killID' => $killID]) && !$mdb->exists('apimails', ['killID' => $killID])) {
-                $mdb->insertUpdate('apimails', $killmail);
-            }
+            $killmail['killID'] = (int) $killID;
 
             $victim = $killmail['victim'];
             $victimID = $victim['characterID'] == 0 ? 'None' : $victim['characterID'];

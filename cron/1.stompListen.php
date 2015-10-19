@@ -24,17 +24,13 @@ while ($timer->stop() <= 59000) {
             continue;
         }
         $hash = $hash = Killmail::getCrestHash($killID, $killdata);
-        $killdata['killID'] = $killID; // Make sure its an int
-        if (!$mdb->exists('apimails', ['killID' => $killID])) {
-            $mdb->insertUpdate('apimails', $killdata);
-        }
+        $killdata['killID'] = (int) $killID;
+
         if (!$mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash])) {
             ++$stompCount;
             $i = $mdb->getCollection('crestmails')->insert(['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => 'stomp', 'added' => $mdb->now()]);
         }
-        if (!$mdb->exists('stompmails', ['killID' => $killID])) {
-            $mdb->save('stompmails', $killdata);
-        }
+
         $stomp->ack($frame->headers['message-id']);
     }
 }
