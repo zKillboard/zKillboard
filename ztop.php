@@ -32,7 +32,7 @@ while (true) {
 
     addInfo('', 0);
     addInfo('Api KillLogs to check', $redis->zCount('tqApiChars', 0, time()));
-    addInfo("Api KeyInfo's to check", $redis->zCount('tqApis', 0, time()));
+    addInfo("Api KeyInfos to check", $redis->zCount('tqApis', 0, time()));
     addInfo('Char/Corp Apis', $redis->zCard('tqApiChars'));
     addInfo('Valid Apis', $redis->zCard('tqApis'));
 
