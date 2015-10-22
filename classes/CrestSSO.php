@@ -105,8 +105,8 @@ class CrestSSO
 		$expires = $time - time();
 		$key = "login:" . $response->CharacterID . ":" . session_id();
 		$redis->setex($key, $time, true);
-		$redis->setex("$key:refreshToken", $time, $refresh_token);
-		$redis->setex("$key:accessToken", $time, $access_token);
+		$redis->setex("$key:refreshToken", $expires, $refresh_token);
+		$redis->setex("$key:accessToken", $expires, $access_token);
 
 		$_SESSION['characterID'] = $response->CharacterID;
 		$_SESSION['characterName'] = $response->CharacterName;
@@ -120,7 +120,7 @@ class CrestSSO
 		exit();
 	}
 
-	public function getAccessToken() {
+	public static function getAccessToken() {
 		global $app, $redis, $ccpClientID, $ccpSecret;
 
 		$charID = @$_SESSION['characterID'];
@@ -187,24 +187,22 @@ class CrestSSO
 
 		$accessToken = CrestSSO::getAccessToken();
                 $authHeader = "Authorization: Bearer $accessToken";
+		$data = json_encode($fields);
 
-                $fields_string = '';
-                foreach ($fields as $key => $value) {
-                        $fields_string .= $key.'='.$value.'&';
-                }
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, "$url");
+		curl_setopt($ch, CURLOPT_USERAGENT, CrestSSO::$userAgent);
+		curl_setopt( $ch, CURLOPT_HTTPHEADER, array($authHeader, 'Content-Type:application/json'));
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+		$result = curl_exec($ch);
+		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
 
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, "$url?access_token=$accessToken");
-                curl_setopt($ch, CURLOPT_USERAGENT, CrestSSO::$userAgent);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array($authHeader));
-                curl_setopt($ch, CURLOPT_POST, count($fields));
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-                $result = curl_exec($ch);
-                curl_close($ch);
-                $json = json_decode($result, true);
-                return $json;
-        }
+		$json = json_decode($result, true);
+		$json['httpCode'] = $httpCode;
+		return $json;
+	}
 }
