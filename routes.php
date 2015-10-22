@@ -195,6 +195,9 @@ $app->get('/ccpcallback/', function() use ($app) {
 $app->get('/fittings/', function() use ($app) {
 	CrestFittings::getFittings();
 });
+$app->get('/ccpsavefit/:killID/', function($killID) use ($app) {
+	include 'view/ccpsavefit.php';
+});
 
 // The Overview stuff
 $app->get('/:input+/', function ($input) use ($app) {

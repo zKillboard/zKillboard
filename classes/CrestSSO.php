@@ -105,7 +105,7 @@ class CrestSSO
 		$expires = $time - time();
 		$key = "login:" . $response->CharacterID . ":" . session_id();
 		$redis->setex($key, $time, true);
-		$redis->setex("$key:refreshToken", $expires, $refresh_token);
+		$redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);
 		$redis->setex("$key:accessToken", $expires, $access_token);
 
 		$_SESSION['characterID'] = $response->CharacterID;
@@ -136,6 +136,7 @@ class CrestSSO
 			$app->redirect("/ccplogin/", 302);
 			exit();
 		}
+		$redis->setex("$key:refreshToken", (86400 * 14), $refresh_token); // Reset the timer on the refreshToken
 		$header = array( 'Authorization' => 'Basic '.base64_encode($ccpClientID.':'.$ccpSecret));
 		$fields = array('grant_type' => 'refresh_token','refresh_token' => $refreshToken);
 

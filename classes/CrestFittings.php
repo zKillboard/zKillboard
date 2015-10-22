@@ -15,14 +15,14 @@ class CrestFittings {
 	}
 
 	public static function saveFitting($killID) {
-		global $mdb, $redis;
+		global $mdb;
 	
 		$killmail = $mdb->findDoc('rawmails', ['killID' => (int) $killID]);
 		$victim = $killmail['victim'];
 		header('Content-Type: application/json');
 		$export = [];
-		$export['name'] = $victim['character']['name'] . "'s " . $victim['shipType']['name'];
-		$export['description'] = "Imported from zKillboard";
+		$export['name'] = @$victim['character']['name'] . "'s " . $victim['shipType']['name'];
+		$export['description'] = "Imported from https://zkillboard.com/kill/$killID/";
 		$export['ship'] = ['id' => $victim['shipType']['id']];
 		$export['ship']['name'] = $victim['shipType']['name'];
 		$export['ship']['href'] = $victim['shipType']['href'];
@@ -30,7 +30,7 @@ class CrestFittings {
 		$items = $victim['items'];
 		foreach ($items as $item) {
 			$flag = $item['flag'];
-			if (!self::isFittableFlag($flag)) continue;
+			if (!self::isFit($flag)) continue;
 			$nextItem = [];	
 			$nextItem['flag'] = $flag;
 			$nextItem['quantity'] = @$item['quantityDropped'] + @$item['quantityDestroyed'];
@@ -40,8 +40,8 @@ class CrestFittings {
 			$export['items'][] = $nextItem;
 		}
 
-		$r = CrestSSO::crestGet("https://api-sisi.testeveonline.com/decode/");
-		$character = CrestSSO::crestGet($r['character']['href']);
+		$decode = CrestSSO::crestGet("https://api-sisi.testeveonline.com/decode/");
+		$character = CrestSSO::crestGet($decode['character']['href']);
 		$result = CrestSSO::crestPost($character['fittings']['href'], $export);
 		if ($result['httpCode'] == 201) return ['message' => 'Fit successfully saved to Eve client.'];
 		return $result;
@@ -49,6 +49,7 @@ class CrestFittings {
 
 	private static $infernoFlags = array(
 			4 => array(116, 121),
+			5 => array(5, 5),
 			12 => array(27, 34), // Highs
 			13 => array(19, 26), // Mids
 			11 => array(11, 18), // Lows
@@ -57,7 +58,7 @@ class CrestFittings {
 			3772 => array(125, 132), // Subs
 			);
 
-	public static function isFittableFlag($flag) {
+	public static function isFit($flag) {
 		foreach (self::$infernoFlags as $key=>$range) {
 			if ($flag >= $range[0] && $flag <= $range[1]) return true;
 		}

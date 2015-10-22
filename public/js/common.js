@@ -92,6 +92,22 @@ function updateKillsLastHour() {
 	setTimeout(updateKillsLastHour, 60000);
 }
 
+function saveFitting(id) {
+		$('#modalMessageBody').html('Saving fit....');
+		$('#modalMessage').modal('show');
+	
+		var request = $.ajax({
+			url: "https://zkillboard.com/ccpsavefit/" + id + "/",
+			type: "GET",			
+			dataType: "text"
+		});
+
+		request.done(function(msg) {
+			$('#modalMessageBody').html(msg);
+			$('#modalMessage').modal('show');
+		});
+}
+
 $('body').on('touchstart.dropdown', '.dropdown-menu', function (e) { e.stopPropagation(); });
 
 $(function() {
