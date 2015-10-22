@@ -192,6 +192,9 @@ $app->get('/ccplogin/', function() use ($app) {
 $app->get('/ccpcallback/', function() use ($app) {
 	include 'view/ccpcallback.php';
 });
+$app->get('/fittings/', function() use ($app) {
+	CrestFittings::getFittings();
+});
 
 // The Overview stuff
 $app->get('/:input+/', function ($input) use ($app) {

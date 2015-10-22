@@ -3,6 +3,29 @@
 // Load Twig globals
 $app->view(new \Slim\Views\Twig());
 
+// Setup Twig
+$cachepath = 'cache/templates/';
+$view = $app->view();
+$view->parserOptions = array(
+    'debug' => ($debug ? true : false),
+    'cache' => $cachepath,
+);
+
+$twig = $app->view()->getEnvironment();
+
+// Check SSO values
+$ssoCharacterID = @$_SESSION['characterID'];
+$ssoHash = @$_SESSION['characterHash'];
+$twig->addGlobal('characterID', (int) $ssoCharacterID);
+
+if ($ssoCharacterID != null && $ssoHash != null) {
+        $value = $redis->get("login:$ssoCharacterID:" . session_id());
+        if ($value == false) {
+                unset($_SESSION['characterID']);
+                unset($_SESSION['characterHash']);
+        }
+}
+
 // Theme
 $viewtheme = null;
 $accountBalance = 0;
@@ -13,15 +36,6 @@ if (User::isLoggedIn()) {
     $userShowAds = $adFreeUntil == null ? true : $adFreeUntil <= date('Y-m-d H:i');
 }
 
-// Setup Twig
-$cachepath = 'cache/templates/';
-$view = $app->view();
-$view->parserOptions = array(
-    'debug' => ($debug ? true : false),
-    'cache' => $cachepath,
-);
-
-$twig = $app->view()->getEnvironment();
 
 $uri = $_SERVER['REQUEST_URI'];
 $explode = explode('/', $uri);
@@ -134,17 +148,3 @@ if (stristr(@$_SERVER['HTTP_USER_AGENT'], 'EVE-IGB')) {
     $igb = true;
 }
 $twig->addGlobal('eveigb', $igb);
-
-// Check SSO values
-$ssoCharacterID = @$_SESSION['characterID'];
-$ssoHash = @$_SESSION['characterHash'];
-$twig->addGlobal('characterID', (int) $ssoCharacterID);
-
-if ($ssoCharacterID != null && $ssoHash != null) {
-	$value = $redis->get("login:$ssoCharacterID:$ssoHash");
-	if ($value == false) {
-		unset($_SESSION['characterID']);
-		unset($_SESSION['characterHash']);
-	}
-}
-
