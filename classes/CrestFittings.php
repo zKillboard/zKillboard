@@ -28,6 +28,7 @@ class CrestFittings {
 		$export['ship']['href'] = $victim['shipType']['href'];
 
 		$items = $victim['items'];
+		$export['items'] = [];
 		foreach ($items as $item) {
 			$flag = $item['flag'];
 			if (!self::isFit($flag)) continue;
