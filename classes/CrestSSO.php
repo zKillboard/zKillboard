@@ -106,7 +106,7 @@ class CrestSSO
 		$key = "login:" . $response->CharacterID . ":" . session_id();
 		$redis->setex($key, $time, true);
 		$redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);
-		$redis->setex("$key:accessToken", $expires, $access_token);
+		$redis->setex("$key:accessToken", 1000, $access_token);
 
 		$_SESSION['characterID'] = $response->CharacterID;
 		$_SESSION['characterName'] = $response->CharacterName;
@@ -124,7 +124,6 @@ class CrestSSO
 		global $app, $redis, $ccpClientID, $ccpSecret;
 
 		$charID = @$_SESSION['characterID'];
-		$hash = @$_SESSION['characterHash'];
 
 		$key = "login:" . $charID . ":" . session_id();
 		$accessToken = $redis->get("$key:accessToken");
@@ -136,7 +135,7 @@ class CrestSSO
 			$app->redirect("/ccplogin/", 302);
 			exit();
 		}
-		$redis->setex("$key:refreshToken", (86400 * 14), $refresh_token); // Reset the timer on the refreshToken
+		$redis->setex("$key:refreshToken", (86400 * 14), $refreshToken); // Reset the timer on the refreshToken
 		$header = array( 'Authorization' => 'Basic '.base64_encode($ccpClientID.':'.$ccpSecret));
 		$fields = array('grant_type' => 'refresh_token','refresh_token' => $refreshToken);
 
@@ -144,8 +143,8 @@ class CrestSSO
 		$verify_url = 'https://sisilogin.testeveonline.com/oauth/verify';
 		$header = 'Authorization: Basic '.base64_encode($ccpClientID.':'.$ccpSecret);
 		$fields_string = '';
-		foreach ($fields as $key => $value) {
-			$fields_string .= $key.'='.$value.'&';
+		foreach ($fields as $arrKey => $value) {
+			$fields_string .= $arrKey.'='.$value.'&';
 		}
 		rtrim($fields_string, '&');
 		$ch = curl_init();
@@ -158,9 +157,11 @@ class CrestSSO
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 		$result = curl_exec($ch);
-		$time = $result['expires_in'];
+		$result = json_decode($result, true);
+		$time = $result["expires_in"];
 		$accessToken = $result['access_token'];
-		$redis->setex("$key:accessToken", $time, $accessToken);
+		$redis->setex("$key:accessToken", 1000, $accessToken);
+
 		return $accessToken;
 	}
 
