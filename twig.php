@@ -15,15 +15,14 @@ $twig = $app->view()->getEnvironment();
 
 // Check SSO values
 $ssoCharacterID = @$_SESSION['characterID'];
-$ssoHash = @$_SESSION['characterHash'];
-$twig->addGlobal('characterID', (int) $ssoCharacterID);
-
-if ($ssoCharacterID != null && $ssoHash != null) {
-        $value = $redis->get("login:$ssoCharacterID:" . session_id());
-        if ($value == false) {
-                unset($_SESSION['characterID']);
-                unset($_SESSION['characterHash']);
-        }
+if ($ssoCharacterID != null) {
+	$key = "login:" . $ssoCharacterID . ":" . session_id();
+	$refreshToken = $redis->get("$key:refreshToken");
+	if ($refreshToken != null) {
+		$twig->addGlobal('characterID', (int) $ssoCharacterID);
+	} else {
+		unset($_SESSION['characterID']);
+	}
 }
 
 // Theme
@@ -31,9 +30,9 @@ $viewtheme = null;
 $accountBalance = 0;
 $userShowAds = true;
 if (User::isLoggedIn()) {
-    $accountBalance = User::getBalance(User::getUserID());
-    $adFreeUntil = UserConfig::get('adFreeUntil', null);
-    $userShowAds = $adFreeUntil == null ? true : $adFreeUntil <= date('Y-m-d H:i');
+	$accountBalance = User::getBalance(User::getUserID());
+	$adFreeUntil = UserConfig::get('adFreeUntil', null);
+	$userShowAds = $adFreeUntil == null ? true : $adFreeUntil <= date('Y-m-d H:i');
 }
 
 
@@ -42,23 +41,23 @@ $explode = explode('/', $uri);
 $expager = explode('/', $uri);
 
 foreach ($expager as $key => $ex) {
-    if (in_array($ex, array('page'))) {
-        unset($expager[$key]);
-        unset($expager[$key + 1]);
-    }
+	if (in_array($ex, array('page'))) {
+		unset($expager[$key]);
+		unset($expager[$key + 1]);
+	}
 }
 
 foreach ($explode as $key => $ex) {
-    if (in_array($ex, array('year', 'month', 'page'))) {
-        // find the key for the page array
-        unset($explode[$key]);
-        unset($explode[$key + 1]);
-    }
+	if (in_array($ex, array('year', 'month', 'page'))) {
+		// find the key for the page array
+		unset($explode[$key]);
+		unset($explode[$key + 1]);
+	}
 }
 
 $requestUri = implode('/', $expager);
 if (sizeof($requestUri) == 0 || substr($requestUri, -1) != '/') {
-    $requestUri .= '/';
+	$requestUri .= '/';
 }
 $twig->addGlobal('requestUriPager', $requestUri);
 $actualURI = implode('/', $explode);
@@ -90,15 +89,15 @@ $disqus &= UserConfig::get('showDisqus', true);
 $twig->addGlobal('disqusLoad', $disqus);
 $noAdPages = array('/account/', '/moderator/', '/ticket', '/register/', '/information/', '/login');
 foreach ($noAdPages as $noAdPage) {
-    $showAds &= !Util::startsWith($uri, $noAdPage);
-    $showAds &= $userShowAds;
+	$showAds &= !Util::startsWith($uri, $noAdPage);
+	$showAds &= $userShowAds;
 }
 $twig->addglobal('showAnalytics', $showAnalytics);
 if ($disqus) {
-    $twig->addGlobal('disqusShortName', $disqusShortName);
+	$twig->addGlobal('disqusShortName', $disqusShortName);
 }
 if ($disqusSSO) {
-    $twig->addglobal('disqusSSO', Disqus::init());
+	$twig->addglobal('disqusSSO', Disqus::init());
 }
 
 // User's account balance
@@ -108,17 +107,17 @@ $twig->addGlobal('adFreeMonthCost', $adFreeMonthCost);
 // Display a banner?
 $banner = Db::queryField('select banner from zz_subdomains where (subdomain = :server or alias = :server)', 'banner', array(':server' => $_SERVER['SERVER_NAME']), 60);
 if ($banner) {
-    $banner = str_replace('http://i.imgur.com/', 'https://i.imgur.com/', $banner);
-    $banner = str_replace('http://imgur.com/', 'https://imgur.com/', $banner);
-    //$twig->addGlobal("headerImage", $banner);
+	$banner = str_replace('http://i.imgur.com/', 'https://i.imgur.com/', $banner);
+	$banner = str_replace('http://imgur.com/', 'https://imgur.com/', $banner);
+	//$twig->addGlobal("headerImage", $banner);
 }
 
 $adfree = false; //Db::queryField("select count(*) count from zz_subdomains where adfreeUntil >= now() and subdomain = :server", "count", array(":server" => $_SERVER["SERVER_NAME"]), 60);
 $adfree |= false; //Db::queryField("select count(*) count from zz_subdomains where adfreeUntil >= now() and alias = :server", "count", array(":server" => $_SERVER["SERVER_NAME"]), 60);
 if ($adfree) {
-    $twig->addGlobal('showAds', false);
+	$twig->addGlobal('showAds', false);
 } else {
-    $twig->addGlobal('showAds', $showAds);
+	$twig->addGlobal('showAds', $showAds);
 }
 $_SERVER['SERVER_NAME'] = 'zkillboard.com';
 Subdomains::getSubdomainParameters($_SERVER['SERVER_NAME']);
@@ -145,6 +144,6 @@ $twig->addFunction(new Twig_SimpleFunction('getLongMonth', 'Util::getLongMonth')
 // IGB
 $igb = false;
 if (stristr(@$_SERVER['HTTP_USER_AGENT'], 'EVE-IGB')) {
-    $igb = true;
+	$igb = true;
 }
 $twig->addGlobal('eveigb', $igb);
