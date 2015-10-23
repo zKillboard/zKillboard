@@ -65,7 +65,7 @@ class Points
             834 => array('Stealth Bomber', 80),
             963 => array('Strategic Cruiser', 750),
             659 => array('Supercarrier', 6000),
-            1305 => array('Tactical Destroyer', 450),
+            1305 => array('Tactical Destroyer', 250),
             1003 => array('Territorial Claim Units', 500),
             30 => array('Titan', 20000),
             473 => array('Tracking Array', 10),
