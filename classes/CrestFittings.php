@@ -40,8 +40,10 @@ class CrestFittings {
 			$nextItem['type']['href'] = $item['itemType']['href'];
 			$export['items'][] = $nextItem;
 		}
+		if (sizeof($export['items']) == 0) return ['message' => 'Cannot save this fit, no hardware.'];
 
 		$decode = CrestSSO::crestGet("https://api-sisi.testeveonline.com/decode/");
+		if (isset($decode['message'])) return $decode;
 		$character = CrestSSO::crestGet($decode['character']['href']);
 		$result = CrestSSO::crestPost($character['fittings']['href'], $export);
 		if ($result['httpCode'] == 201) return ['message' => 'Fit successfully saved to Eve client.'];
@@ -49,8 +51,6 @@ class CrestFittings {
 	}
 
 	private static $infernoFlags = array(
-			4 => array(116, 121),
-			5 => array(5, 5),
 			12 => array(27, 34), // Highs
 			13 => array(19, 26), // Mids
 			11 => array(11, 18), // Lows

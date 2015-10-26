@@ -104,7 +104,6 @@ class CrestSSO
 		$time = strtotime($response->ExpiresOn);
 		$expires = $time - time();
 		$key = "login:" . $response->CharacterID . ":" . session_id();
-		$redis->setex($key, $time, true);
 		$redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);
 		$redis->setex("$key:accessToken", 1000, $access_token);
 
