@@ -102,7 +102,6 @@ class CrestSSO
 		}
 
 		$time = strtotime($response->ExpiresOn);
-		$expires = $time - time();
 		$key = "login:" . $response->CharacterID . ":" . session_id();
 		$redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);
 		$redis->setex("$key:accessToken", 1000, $access_token);
@@ -157,7 +156,6 @@ class CrestSSO
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 		$result = curl_exec($ch);
 		$result = json_decode($result, true);
-		$time = $result["expires_in"];
 		$accessToken = $result['access_token'];
 		$redis->setex("$key:accessToken", 1000, $accessToken);
 
