@@ -2,7 +2,7 @@
 
 class RedisSessionHandler implements SessionHandlerInterface
 {
-    private $ttl = 7200; // 2hrs of cache
+    private $ttl = 1209600;
 
     public function open($savePath, $sessionName)
     {
