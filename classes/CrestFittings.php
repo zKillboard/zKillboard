@@ -24,8 +24,8 @@ class CrestFittings {
 		$export['name'] = @$victim['character']['name'] . "'s " . $victim['shipType']['name'];
 		$export['description'] = "Imported from https://zkillboard.com/kill/$killID/";
 		$export['ship'] = ['id' => $victim['shipType']['id']];
-		$export['ship']['name'] = $victim['shipType']['name'];
-		$export['ship']['href'] = $victim['shipType']['href'];
+		$export['ship']['name'] = Info::getInfoField('typeID', $victim['shipType']['id'], 'name');
+		$export['ship']['href'] = "https://public-crest.eveonline.com/types/" . $victim['shipType']['id'] . "/";
 
 		$items = $victim['items'];
 		$export['items'] = [];
@@ -36,8 +36,8 @@ class CrestFittings {
 			$nextItem['flag'] = $flag;
 			$nextItem['quantity'] = @$item['quantityDropped'] + @$item['quantityDestroyed'];
 			$nextItem['type']['id'] = $item['itemType']['id'];
-			$nextItem['type']['name'] = $item['itemType']['name'];
-			$nextItem['type']['href'] = $item['itemType']['href'];
+			$nextItem['type']['name'] = Info::getInfoField('typeID', $item['itemType']['id'], 'name');
+			$nextItem['type']['href'] = "https://public-crest.eveonline.com/types/" . $item['itemType']['id'] . "/";
 			$export['items'][] = $nextItem;
 		}
 		if (sizeof($export['items']) == 0) return ['message' => 'Cannot save this fit, no hardware.'];
