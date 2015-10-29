@@ -51,10 +51,12 @@ class CrestFittings {
 	}
 
 	private static $infernoFlags = array(
+			//5 => array(5,5), // Cargo
 			12 => array(27, 34), // Highs
 			13 => array(19, 26), // Mids
 			11 => array(11, 18), // Lows
 			87 => array(87, 87), // Drones
+			//133 => array(133, 133), // Fuel Bay
 			2663 => array(92, 98), // Rigs
 			3772 => array(125, 132), // Subs
 			);
