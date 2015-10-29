@@ -62,11 +62,7 @@ while ($timer->stop() <= 59000) {
                 Util::out('(apiConsumer) API Server timeout');
                 exit();
             }
-            // Error code 0: Scotty is up to his shenanigans again (aka server issue)
-            // Error code 221: server randomly throwing an illegal access error even though this is a legit call
-            if ($errorCode != 0 && $errorCode != 221) {
-                $tqApiChars->remove($row);
-            }
+            $tqApiChars->remove($row);
             sleep(3);
             continue;
         }
