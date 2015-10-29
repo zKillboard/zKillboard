@@ -23,7 +23,6 @@ function calcTop($row)
     $currentSum = (int) @$row['shipsDestroyed'];
 
     if ($allTimeSum == $currentSum) return;
-    Util::out("Calculating all time Top 10 for " . $row['type'] . " " . $row['id']);
 
     $parameters = [$row['type'] => $row['id']];
     $parameters['limit'] = 10;
