@@ -32,7 +32,11 @@ while (!Util::exitNow() && $timer->stop() < 115000) {
 
         $killmail = CrestTools::fetch($id, $hash);
         if ($killmail == null || $killmail == '' || !isset($killmail['attackers'])) {
-            $crestmails->update($crestmail, array('$set' => array('processed' => null)));
+            if ($killmail == 403) {
+                $mdb->remove('crestmails', $crestmail);
+            } else {
+                $crestmails->update($crestmail, array('$set' => array('processed' => null)));
+            }
             continue;
         }
         if ($killmail == 415 || $killmail == 500 || $killmail == 403) {
@@ -102,5 +106,6 @@ function validKill(&$kill)
         }
         $npcOnly &= @$attacker['character']['id'] == 0 && (@$attacker['corporation']['id'] < 1999999 && @$attacker['corporation']['id'] != 1000125);
     }
+
     return !$npcOnly;
 }
