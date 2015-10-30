@@ -17,10 +17,12 @@ foreach ($types as $type) {
     $typeRows = $information->find(['type' => $type]);
     Util::out("Adding $type to redis");
     foreach ($typeRows as $row) {
+        unset($row['_id']);
         $id = $row['id'];
         $key = "tq:$type:$id";
-	$redis->del($key);
-        $redis->hMSet($key, $row);
-        $redis->expire($key, 9600);
+        $multi = $redis->multi();
+        $multi->del($key);
+        $multi->hMSet($key, $row);
+        $multi->exec();
     }
 }
