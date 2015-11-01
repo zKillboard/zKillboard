@@ -2,8 +2,6 @@
 
 class RedisSessionHandler implements SessionHandlerInterface
 {
-    private $ttl = 1209600;
-
     public function open($savePath, $sessionName)
     {
         return true;
@@ -23,9 +21,14 @@ class RedisSessionHandler implements SessionHandlerInterface
 
     public function write($id, $data)
     {
-        global $redis;
+        global $redis, $cookie_time;
 
-        $redis->setex("sess:$id", $this->ttl, $data);
+	if ($data == '' || $data == 'slim.flash|a:0:{}') {
+		$redis->del("sess:$id");
+		return true;
+	}
+
+        $redis->setex("sess:$id", $cookie_time, $data);
 
         return true;
     }
