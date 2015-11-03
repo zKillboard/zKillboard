@@ -6,7 +6,7 @@ $i = date('Hi');
 if ($i != "400") exit();
 
 $date = new MongoDate(strtotime(date('Ymd')));
-$types = ['characterID', 'corporationID', 'allianceID', 'factionID', 'groupID', 'shipTypeID', 'solarSystemID', 'regionID'];
+$types = ['characterID', 'corporationID', 'allianceID', 'factionID', 'groupID', 'shipTypeID', 'solarSystemID', 'regionID', 'locationID'];
 $timer = new Timer();
 $now = time();
 $now = $now - ($now % 60);

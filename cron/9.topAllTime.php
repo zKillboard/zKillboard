@@ -6,7 +6,7 @@ if (date('H') != 11) {
     exit();
 }
 
-$types = ['allianceID', 'corporationID', 'factionID', 'shipTypeID', 'groupID', 'solarSystemID', 'regionID'];
+$types = ['allianceID', 'corporationID', 'factionID', 'shipTypeID', 'groupID', 'solarSystemID', 'regionID', 'locationID'];
 
 foreach ($types as $type) {
     $entities = $mdb->find('statistics', ['type' => $type]);

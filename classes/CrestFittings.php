@@ -46,7 +46,7 @@ class CrestFittings {
 		if (isset($decode['message'])) return $decode;
 		$character = CrestSSO::crestGet($decode['character']['href']);
 		$result = CrestSSO::crestPost($character['fittings']['href'], $export);
-		if ($result['httpCode'] == 201) return ['message' => 'Fit successfully saved to Eve client.'];
+		if ($result['httpCode'] == 201) return ['message' => "Fit successfully saved to your character's fittings."];
 		return $result;
 	}
 

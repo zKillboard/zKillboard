@@ -32,6 +32,7 @@ function updateStatsQueue($killID)
     // solar system
     addToStatsQueue('solarSystemID', $kill['system']['solarSystemID'], $sequence);
     addToStatsQueue('regionID', $kill['system']['regionID'], $sequence);
+    if (isset($kill['locationID'])) addToStatsQueue('locationID', $kill['locationID'], $sequence);
 
     foreach ($involved as $inv) {
         foreach ($statArray as $stat) {
