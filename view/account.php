@@ -70,12 +70,6 @@ if ($_POST) {
         $error = Api::addKey($keyid, $vcode, $label);
     }
 
-    $deletesessionid = Util::getPost('deletesessionid');
-    // delete a session
-    if (isset($deletesessionid)) {
-        User::deleteSession($userID, $deletesessionid);
-    }
-
     $deletekeyid = Util::getPost('deletekeyid');
     $deleteentity = Util::getPost('deleteentity');
     // Delete an apikey
