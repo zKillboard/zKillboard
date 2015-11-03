@@ -18,6 +18,7 @@ class Crest2Api
         $killmail['victim'] = self::getVictim($crestmail['victim']);
         $killmail['attackers'] = self::getAttackers($crestmail['attackers']);
         $killmail['items'] = self::getItems($crestmail['victim']['items']);
+	if (isset($crestmail['victim']['position'])) $killmail['position'] = $crestmail['victim']['position'];
         $killmail['zkb'] = $kill['zkb'];
 
         return $killmail;
