@@ -40,7 +40,7 @@ if ($_POST) {
                 Log::irc("User replied to ticket: |g|$name|n|  https://$baseAddr/moderator/tickets/$id/");
             }
             if ($moderator != 0) {
-                Email::send($ticmail, $subject, $message);
+                //Email::send($ticmail, $subject, $message);
             }
             if (isset($report)) {
                 $app->redirect("/moderator/reportedkills/$id/");

@@ -104,22 +104,6 @@ if ($_POST) {
         Db::execute('UPDATE zz_users SET email = :email WHERE id = :userID', array(':email' => $email, ':userID' => $userID));
     }
 
-    // Password
-    $orgpw = Util::getPost('orgpw');
-    $password = Util::getPost('password');
-    $password2 = Util::getPost('password2');
-    // Password
-    if (isset($orgpw) && isset($password) && isset($password2)) {
-        if ($password != $password2) {
-            $error = "Passwords don't match, try again";
-        } elseif (Password::checkPassword($orgpw) == true) {
-            Password::updatePassword($password);
-            $error = 'Password updated';
-        } else {
-            $error = 'Original password is wrong, please try again';
-        }
-    }
-
     $timeago = Util::getPost('timeago');
     if (isset($timeago)) {
         UserConfig::set('timeago', $timeago);

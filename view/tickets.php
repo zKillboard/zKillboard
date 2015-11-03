@@ -19,7 +19,7 @@ if ($_POST) {
             Log::irc("|g|New ticket from $name:|n| https://$baseAddr/moderator/tickets/$id/");
             $subject = 'zKillboard Ticket';
             $message = "$name, you can find your ticket here, we will reply to your ticket asap. https://$baseAddr/tickets/view/$id/";
-            Email::send($email, $subject, $message);
+            //Email::send($email, $subject, $message);
             $app->redirect("/tickets/view/$id/");
         } else {
             $message = array('type' => 'error', 'message' => 'Ticket already posted');

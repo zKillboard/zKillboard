@@ -81,15 +81,6 @@ $app->map('/search(/:search)/', function ($search = null) use ($app) {
     include 'view/search.php';
 })->via('GET', 'POST');
 
-// Login stuff
-$app->map('/dlogin/', function () use ($app) {
-	$app->redirect('/ccplogin/', 302);
-})->via('GET', 'POST');
-
-$app->map('/login/', function () use ($app) {
-	$app->redirect('/ccplogin/', 302);
-})->via('GET', 'POST');
-
 // Sitemap
 $app->get('/sitemap/', function () use ($app) {
     global $cookie_name, $cookie_time, $baseAddr;
@@ -101,23 +92,6 @@ $app->get('/logout/', function () use ($app) {
     global $cookie_name, $cookie_time, $baseAddr;
     include 'view/logout.php';
 });
-
-// Forgot password
-$app->map('/forgotpassword/', function () use ($app) {
-    global $cookie_name, $cookie_time;
-    include 'view/forgotpassword.php';
-})->via('GET', 'POST');
-
-// Change password
-$app->map('/changepassword/:hash/', function ($hash) use ($app) {
-    include 'view/changepassword.php';
-})->via('GET', 'POST');
-
-// Register
-$app->map('/register/', function () use ($app) {
-    global $cookie_name, $cookie_time;
-    include 'view/register.php';
-})->via('GET', 'POST');
 
 // Account
 $app->map('/account(/:req)(/:reqid)/', function ($req = null, $reqid = null) use ($app) {
