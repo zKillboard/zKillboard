@@ -115,7 +115,6 @@ if ($details == null) {
     RedisCache::set($killKey, $details, 3600);
 }
 
-header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + (24 * 3600)));
 $app->render('detail.html', $details);
 
 function involvedships($array)

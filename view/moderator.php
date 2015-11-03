@@ -2,12 +2,13 @@
 
 $message = '';
 if (!User::isLoggedIn()) {
-    $app->render('login.html');
+    $app->redirect('/ccplogin', 302);
     die();
 }
 $info = User::getUserInfo();
 if (!User::isModerator()) {
-    $app->redirect('/');
+    $app->redirect('/ccplogin', 302);
+    die();
 }
 
 if ($_POST) {
@@ -83,9 +84,8 @@ if ($req == 'tickets' && $id) {
     foreach ($info as $key => $val) {
         //if($val["tags"]) $info[$key]["tags"] = explode(",", $val["tags"]);
     }
-} elseif ($req == 'users') {
-    $info = Moderator::getUsers($page);
 }
+
 if ($req == 'reportedkills' && $id) {
     $info['ticket'] = Db::query('SELECT * FROM zz_tickets WHERE id = :id', array(':id' => $id), 0);
     $info['replies'] = Db::query('SELECT * FROM zz_tickets_replies WHERE belongsTo = :id', array(':id' => $id), 0);

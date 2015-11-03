@@ -107,7 +107,6 @@ class User
         $entlist = array();
 
         foreach ($entities as $ent) {
-            Db::execute("update zz_users_config set locker = 'tracker_$ent' where locker = '$ent'");
             $result = UserConfig::get("tracker_$ent");
             $part = array();
 

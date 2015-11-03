@@ -64,12 +64,12 @@ if ($serverName != $baseAddr) {
     $topPods = array();
 
     $top = array();
-    $top[] = json_decode(Storage::retrieve('TopChars', [], 900), true);
-    $top[] = json_decode(Storage::retrieve('TopCorps', [], 900), true);
-    $top[] = json_decode(Storage::retrieve('TopAllis', [], 900), true);
-    $top[] = json_decode(Storage::retrieve('TopShips', [], 900), true);
-    $top[] = json_decode(Storage::retrieve('TopSystems', [], 900), true);
-    $top[] = json_decode(Storage::retrieve('TopLocations', [], 900), true);
+    $top[] = json_decode(Storage::retrieve('TopChars', [], 1), true);
+    $top[] = json_decode(Storage::retrieve('TopCorps', [], 1), true);
+    $top[] = json_decode(Storage::retrieve('TopAllis', [], 1), true);
+    $top[] = json_decode(Storage::retrieve('TopShips', [], 1), true);
+    $top[] = json_decode(Storage::retrieve('TopSystems', [], 1), true);
+    $top[] = json_decode(Storage::retrieve('TopLocations', [], 1), true);
 
     // get latest kills
     $kills = Kills::getKills(array('cacheTime' => 60, 'limit' => 50));
