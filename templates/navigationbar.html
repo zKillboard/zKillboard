@@ -130,12 +130,12 @@
 						<li><a href="/information/statistics/">Statistics</a></li>
 					</ul>
 				</li>
-				<li class="dropdown">
-					<a href="#" class="dropdown-toggle hidden-xs" data-toggle="dropdown"><i class="fa fa-user" id='fauser'></i><span id='characterID'></span><span class="caret"></span></a>
+				<li class="dropdown hidden-xs">
+					<a href="#" class="dropdown-toggle hidden-xs" data-toggle="dropdown">{% if characterID > 0 %}<img src="http://image.eveonline.com/Character/{{ characterID }}_32.jpg" style='padding: 0px; margin: 0px; margin-top: -8px;'/>{% else %}<i class="fa fa-user" id='fauser'></i>{% endif %}<span class="caret"></span></a>
 					<a href="#" class="dropdown-toggle hidden-lg hidden-md hidden-sm" data-toggle="dropdown">Account <span class="caret"></span></a>
 					<ul class="dropdown-menu">
 						{% if sessionusername %}
-							<li class="dropdown-header">{{ sessionusername|capitalize }}</li>
+							<li class="dropdown-header">{{ sessionusername }}</li>
 							<li><a href="/account/">Account</a></li>
 							<!--<li><a href="/account/domains/">Domains</a></li>-->
 							{% if sessionmoderator or sessionadmin %}
@@ -144,13 +144,10 @@
 							<li class="divider hidden-xs"></li>
 							<li><a href="/logout/">Logout</a></li>
 						{% else %}
-							<li><a href="/login/">Login</a></li>
-							<li><a href="/forgotpassword/">Forgot Password</a></li>
-							<li><a href="/register/">Register</a></li>
-							{% if eveSSOEnabled %}
-							<li><a href="{{ eveSSOURL }}"><img src="https://images.contentful.com/idjq7aai9ylm/4fSjj56uD6CYwYyus4KmES/4f6385c91e6de56274d99496e6adebab/EVE_SSO_Login_Buttons_Large_Black.png?w=270&h=45"/></a></li>
-							{% endif %}
+							<li><a href='/ccplogin/'><img src='/img/ssologin.png'/></a></li>
 						{% endif %}
+							<li class="divider hidden-xs"></li>
+							<li><a target='_new' href='https://www.reddit.com/r/Eve/comments/3raw3v/psa_zkillboard_has_switched_to_crest_sso/'>What this?! SSO explained - Click here</a></li>
 					</ul>
 				</li>
 			</ul>

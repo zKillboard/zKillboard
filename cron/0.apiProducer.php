@@ -28,12 +28,8 @@ while ($timer->stop() <= 58000) {
         $keyID = $row['keyID'];
         $vCode = $row['vCode'];
         $userID = $row['userID'];
+	$errorCode = (int) @$row['errorCode'];
 
-        if (!isset($row['characters'])) {
-            $row['characters'] = [];
-        }
-
-        $errorCode = $mdb->findField("apis", "errorCode", ['keyID' => $keyID, 'vCode' => $vCode]);
 	\Pheal\Core\Config::getInstance()->http_user_agent = "API Fetcher for https://$baseAddr";
 	\Pheal\Core\Config::getInstance()->http_post = false;
 	\Pheal\Core\Config::getInstance()->http_keepalive = true; // default 15 seconds
@@ -43,8 +39,9 @@ while ($timer->stop() <= 58000) {
 
 	$pheal = new \Pheal\Pheal($keyID, $vCode);
 	try {
+		$mdb->set('apis', $row, ['lastApiUpdate' => $mdb->now()]);
 		$apiKeyInfo = $pheal->ApiKeyInfo();
-		if ($errorCode != 0) $apis->update(['keyID' => $keyID, 'vCode' => $vCode], ['$set' => ['errorCode' => 0]]);
+		if ($errorCode != 0) $mdb->set('apis', $row, ['errorCode' => 0]);
 	} catch (Exception $ex) {
 		$tqApis->remove($id); // Problem with api the key, remove it from rotation
 		$errorCode = (int) $ex->getCode();
@@ -67,26 +64,37 @@ while ($timer->stop() <= 58000) {
 	$key = @$apiKeyInfo->key;
 	$accessMask = @$key->accessMask;
 	$characterIDs = array();
-	if ($accessMask & 256) {
-		foreach ($apiKeyInfo->key->characters as $character) {
-			$characterID = (int) $character->characterID;
-			if (!isset($row['characters'][$characterID])) {
-				$row['characters']["$characterID"] = 0;
-			}
-			$lastKillID = $row['characters']["$characterID"];
 
-			// Make sure we have the names and id's in the information table
-			$mdb->insertUpdate('information', ['type' => 'corporationID', 'id' => ((int) $character->corporationID)], ['name' => ((string) $character->corporationName)]);
-			$mdb->insertUpdate('information', ['type' => 'characterID', 'id' => ((int) $characterID)], ['name' => ((string) $character->characterName), 'corporationID' => ((int) $character->corporationID)]);
+	foreach ($apiKeyInfo->key->characters as $character) {
+		$characterID = (int) $character->characterID;
+		$characterIDs[] = $characterID;
 
-			$type = $apiKeyInfo->key->type;
-			if ($debug) {
-				Util::out("Adding $keyID $characterID $type $vCode");
-			}
+		// Make sure we have the names and id's in the information table
+		$mdb->insertUpdate('information', ['type' => 'corporationID', 'id' => ((int) $character->corporationID)], ['name' => ((string) $character->corporationName)]);
+		$mdb->insertUpdate('information', ['type' => 'characterID', 'id' => ((int) $characterID)], ['name' => ((string) $character->characterName), 'corporationID' => ((int) $character->corporationID)]);
 
-			$char = ['keyID' => $keyID, 'vCode' => $vCode, 'characterID' => $characterID, 'type' => $type, 'userID' => $userID];
-			$tqApiChars->add($char);
+		$type = $apiKeyInfo->key->type;
+		if ($debug) {
+			Util::out("Adding $keyID $characterID $type $vCode");
 		}
+
+		$char = ['keyID' => $keyID, 'vCode' => $vCode, 'characterID' => $characterID, 'type' => $type, 'userID' => $userID];
+		if ($accessMask & 256) $tqApiChars->add($char);
+	}
+
+	if (sizeof($characterIDs) == 1) {
+		$charID = $characterIDs[0];
+		$mdb->set('apis', $row, ['userID' => (int) $charID]);
+	} else {
+		$scores = [];
+		foreach ($characterIDs as $charID) {
+			$kills = $mdb->findField('statistics', 'shipsDestroyed', ['type' => 'characterID', 'id' => (int) $charID]);
+			$scores[$charID] = (int) $kills;
+		}
+		arsort($scores);
+		reset($scores);
+		$charID = key($scores);
+		$mdb->set('apis', $row, ['userID' => (int) $charID]);
 	}
     }
     sleep(1);

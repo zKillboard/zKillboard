@@ -19,10 +19,10 @@ class UserGlobals extends Twig_Extension
                 $this->addGlobal($result, $key, $val);
             }
 
-            $this->addGlobal($result, 'sessionusername', $u['username']);
-            $this->addGlobal($result, 'sessionuserid', $u['id']);
-            $this->addGlobal($result, 'sessionadmin', (bool) $u['admin']);
-            $this->addGlobal($result, 'sessionmoderator', (bool) $u['moderator']);
+            $this->addGlobal($result, 'sessionusername', @$u['username']);
+            $this->addGlobal($result, 'sessionuserid', (int) @$_SESSION['characterID']);
+            $this->addGlobal($result, 'sessionadmin', (bool) @$u['admin']);
+            $this->addGlobal($result, 'sessionmoderator', (bool) @$u['moderator']);
         }
 
         global $mdb;

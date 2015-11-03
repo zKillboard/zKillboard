@@ -83,13 +83,11 @@ $app->map('/search(/:search)/', function ($search = null) use ($app) {
 
 // Login stuff
 $app->map('/dlogin/', function () use ($app) {
-    global $cookie_name, $cookie_time;
-    include 'view/dlogin.php';
+	$app->redirect('/ccplogin/', 302);
 })->via('GET', 'POST');
 
 $app->map('/login/', function () use ($app) {
-    global $cookie_name, $cookie_time;
-    include 'view/login.php';
+	$app->redirect('/ccplogin/', 302);
 })->via('GET', 'POST');
 
 // Sitemap

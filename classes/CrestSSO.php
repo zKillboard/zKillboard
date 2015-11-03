@@ -25,7 +25,8 @@ class CrestSSO
 			}
 		}
 
-		$url = "https://sisilogin.testeveonline.com/oauth/authorize/?response_type=code&redirect_uri=https://zkillboard.com/ccpcallback/&client_id=$ccpClientID&scope=characterFittingsWrite&state=redirect:$referrer";
+		//$url = "https://sisilogin.testeveonline.com/oauth/authorize/?response_type=code&redirect_uri=https://zkillboard.com/ccpcallback/&client_id=$ccpClientID&scope=characterFittingsWrite&state=redirect:$referrer";
+		$url = "https://login.eveonline.com/oauth/authorize/?response_type=code&redirect_uri=https://zkillboard.com/ccpcallback/&client_id=$ccpClientID&scope=publicData&state=redirect:$referrer";
 		$app->redirect($url, 302);
 		exit();
 	}
@@ -45,8 +46,8 @@ class CrestSSO
 			}
 		}
 
-		$url = 'https://sisilogin.testeveonline.com/oauth/token';
-		$verify_url = 'https://sisilogin.testeveonline.com/oauth/verify';
+		$url = 'https://login.eveonline.com/oauth/token';
+		$verify_url = 'https://login.eveonline.com/oauth/verify';
 		$header = 'Authorization: Basic '.base64_encode($ccpClientID.':'.$ccpSecret);
 		$fields_string = '';
 		$fields = array(
@@ -137,8 +138,8 @@ class CrestSSO
 		$header = array( 'Authorization' => 'Basic '.base64_encode($ccpClientID.':'.$ccpSecret));
 		$fields = array('grant_type' => 'refresh_token','refresh_token' => $refreshToken);
 
-		$url = 'https://sisilogin.testeveonline.com/oauth/token';
-		$verify_url = 'https://sisilogin.testeveonline.com/oauth/verify';
+		$url = 'https://login.eveonline.com/oauth/token';
+		$verify_url = 'https://login.eveonline.com/oauth/verify';
 		$header = 'Authorization: Basic '.base64_encode($ccpClientID.':'.$ccpSecret);
 		$fields_string = '';
 		foreach ($fields as $arrKey => $value) {

@@ -5,15 +5,6 @@ global $mdb;
 $involved = array();
 $message = '';
 
-if ($pageview == 'comments') {
-    $app->redirect("/detail/$id/#comment", 302);
-}
-
-$info = User::getUserInfo();
-$name = $info['username'];
-$userID = $info['id'];
-$email = $info['email'];
-
 $id = (int) $id;
 
 while ($mdb->count('queueInfo', ['killID' => $id])) {
@@ -69,10 +60,6 @@ if ($details == null) {
         $extra['invAll'] = involvedCorpsAndAllis(md5($id), $killdata['involved']);
         $extra['involved'] = $involved;
         $extra['allinvolved'] = $allinvolved;
-    }
-    if ($pageview == 'comments') {
-        $extra['cmtChars'] = Api::getCharacters($userID);
-        $extra['cmtChars'][] = array('characterID' => 0, 'characterName' => 'Anonymous');
     }
 
     $extra['totalisk'] = $killdata['info']['zkb']['totalValue'];

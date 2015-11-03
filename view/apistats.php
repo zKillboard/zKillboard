@@ -1,6 +1,6 @@
 <?php
 
-global $apiWhiteList, $mdb;
+global $mdb;
 
 try {
     $parameters = Util::convertUriToParameters();

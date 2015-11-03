@@ -55,14 +55,20 @@ class Api
         }
 
         $result = $mdb->find('apis', ['userID' => $userID]);
+	$retVal = [];
+	foreach ($result as $row) {
+		$row['lastValidation'] = date('Y/m/d H:i', $row['lastApiUpdate']->sec);
+		$retVal[] = $row;
+	}
 
-        return $result;
+        return $retVal;
     }
 
     public static function getCharacterKeys($userID)
     {
         global $mdb, $redis;
 
+    	$apiVerifiedSet = new RedisTtlSortedSet('ttlss:apiVerified', 86400);
         $characterIDs = $redis->keys("userID:api:$userID:*");
 
         $charIDs = [];
@@ -75,15 +81,19 @@ class Api
             $charIDs["$charID"]['characterID'] = $charID;
             if ($row['time'] > @$charIDs["$charID"]['time']) {
                 $charIDs["$charID"]['time'] = $row['time'];
-            }
-            $charIDs["$charID"]['lastChecked'] = date('Y-m-d H:i', $charIDs["$charID"]['time']);
-            $charIDs["$charID"]['keyID'] = $row['keyID'];
-            $charIDs["$charID"]['keyType'] = @$row['type'];
-            $charIDs["$charID"]['corporationID'] = $mdb->findField('information', 'corporationID', ['cacheTime' => 3600, 'type' => 'characterID', 'id' => $charID]);
-        }
-        Info::addInfo($charIDs);
+	    }
+	    $charIDs["$charID"]['lastChecked'] = date('Y-m-d H:i', $charIDs["$charID"]['time']);
+	    $charIDs["$charID"]['keyID'] = $row['keyID'];
+	    $charIDs["$charID"]['keyType'] = @$row['type'];
+	    $charIDs["$charID"]['corporationID'] = $mdb->findField('information', 'corporationID', ['cacheTime' => 3600, 'type' => 'characterID', 'id' => $charID]);
+	    $apiVerified = $apiVerifiedSet->getTime((int) $charID);
+	    if ($apiVerified != null) {
+		    $charIDs["$charID"]['cachedUntilTime'] = date('Y-m-d H:i', $apiVerified + 3600);
+	    }
+	}
+	Info::addInfo($charIDs);
 
-        return $charIDs;
+	return $charIDs;
     }
 
     /**
@@ -97,10 +107,10 @@ class Api
      */
     public static function getCharacters($userID)
     {
-        $result = self::getCharacterKeys($userID);
-        Info::addInfo($result);
+	    $result = self::getCharacterKeys($userID);
+	    Info::addInfo($result);
 
-        return $result;
+	    return $result;
     }
 
     /**
@@ -114,6 +124,6 @@ class Api
      */
     public static function hasBits($accessMask)
     {
-        return ((int) ($accessMask & 256) > 0);
+	    return ((int) ($accessMask & 256) > 0);
     }
 }

@@ -80,11 +80,6 @@ $(document).ready(function() {
 	if (top !== self) {
 		$("#iframed").modal('show');
 	}
-
-	if (characterID > 0) {
-		$('#characterID').prepend('<img src="http://image.eveonline.com/Character/' + characterID + '_32.jpg" style="height: 24px; width: 24px;"/>');
-		$('#fauser').hide();
-	}
 });
 
 function updateKillsLastHour() {
@@ -109,11 +104,3 @@ function saveFitting(id) {
 }
 
 $('body').on('touchstart.dropdown', '.dropdown-menu', function (e) { e.stopPropagation(); });
-
-$(function() {
-    //$('.nav-wrapper').height($("#nav").height());
-    
-    $('#nav').affix({
-        offset: { top: $('#nav').offset().top }
-    });
-});

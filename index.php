@@ -28,10 +28,6 @@ $requests->add(uniqid());
 
 $load = getLoad();
 
-// Check if the user has autologin turned on
-if ($load < $loadTripValue && !User::isLoggedIn()) {
-    User::autoLogin();
-}
 if ($load >= $loadTripValue) {
     $uri = @$_SERVER['REQUEST_URI'];
     if ($uri != '') {
@@ -48,9 +44,7 @@ if ($load >= $loadTripValue) {
 }
 
 // Theme
-if (User::isLoggedIn()) {
-    $theme = UserConfig::get('theme');
-}
+$theme = UserConfig::get('theme', 'cyborg');
 $app->config(array('templates.path' => $baseDir.'templates/'));
 
 // Error handling

@@ -23,17 +23,19 @@ if ($ssoCharacterID != null) {
 	} else {
 		unset($_SESSION['characterID']);
 	}
+} else {
+		$twig->addGlobal('characterID', 0);
 }
 
 // Theme
 $viewtheme = null;
 $accountBalance = 0;
 $userShowAds = true;
-if (User::isLoggedIn()) {
+/*if (User::isLoggedIn()) {
 	$accountBalance = User::getBalance(User::getUserID());
 	$adFreeUntil = UserConfig::get('adFreeUntil', null);
 	$userShowAds = $adFreeUntil == null ? true : $adFreeUntil <= date('Y-m-d H:i');
-}
+}*/
 
 
 $uri = $_SERVER['REQUEST_URI'];

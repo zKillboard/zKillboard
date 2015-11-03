@@ -70,6 +70,7 @@ class RedisTimeQueue
         $time = $next[$value];
 
         if ($time >= time() && $block == false) {
+	    sem_release($sem);
             return;
         }
         if ($time >= time()) {
