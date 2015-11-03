@@ -115,7 +115,9 @@
 {% endif %}
 {% if extra.crest %}<span><small><a class="green" target="_blank" href="https://public-crest.eveonline.com/killmails/{{ extra.crest.killID }}/{{ extra.crest.hash }}/">CREST Verified</a></small></span>
 {% if characterID > 0 %}
-<!--<br/><span><small><a class="green" target="_blank" onClick="saveFitting({{ extra.crest.killID }});">Import Fit</a></small></span>-->
+<br/><span><small><a class="green" href='#' onClick="saveFitting({{ extra.crest.killID }}); return false;">Import Fit</a></small></span>
+{% else %}
+<br/><span><small><a class="green" href='#' onClick="alert('Please login first.'); return false;">Import Fit</a></small></span>
 {% endif %}
 {% elseif killdata.victim.killID > 0 %}<span class="green"><small>API Verified</small></span>{% endif %}
 </div>

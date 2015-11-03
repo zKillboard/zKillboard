@@ -8,7 +8,7 @@ class CrestFittings {
 		$charID = @$_SESSION['characterID'];
 		$accessToken = CrestSSO::getAccessToken();
 		
-		$r = CrestSSO::crestGet("https://api-sisi.testeveonline.com/decode/");
+		$r = CrestSSO::crestGet("https://crest-tq.eveonline.com//decode/");
 		$character = CrestSSO::crestGet($r['character']['href']);
 		$fittings = CrestSSO::crestGet($character['fittings']['href']);
 		print_r($fittings);
@@ -42,7 +42,7 @@ class CrestFittings {
 		}
 		if (sizeof($export['items']) == 0) return ['message' => 'Cannot save this fit, no hardware.'];
 
-		$decode = CrestSSO::crestGet("https://api-sisi.testeveonline.com/decode/");
+		$decode = CrestSSO::crestGet("https://crest-tq.eveonline.com/decode/");
 		if (isset($decode['message'])) return $decode;
 		$character = CrestSSO::crestGet($decode['character']['href']);
 		$result = CrestSSO::crestPost($character['fittings']['href'], $export);

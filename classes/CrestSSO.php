@@ -25,8 +25,7 @@ class CrestSSO
 			}
 		}
 
-		//$url = "https://sisilogin.testeveonline.com/oauth/authorize/?response_type=code&redirect_uri=https://zkillboard.com/ccpcallback/&client_id=$ccpClientID&scope=characterFittingsWrite&state=redirect:$referrer";
-		$url = "https://login.eveonline.com/oauth/authorize/?response_type=code&redirect_uri=https://zkillboard.com/ccpcallback/&client_id=$ccpClientID&scope=publicData&state=redirect:$referrer";
+		$url = "https://login.eveonline.com/oauth/authorize/?response_type=code&redirect_uri=https://zkillboard.com/ccpcallback/&client_id=$ccpClientID&scope=publicData+characterFittingsWrite&state=redirect:$referrer";
 		$app->redirect($url, 302);
 		exit();
 	}
