@@ -53,6 +53,12 @@
 		<th>System:</th>
 		<td>{% include 'components/text_system.html' %} <span>(<span style="color: {{ field.systemColorCode }}">{{ "%1.1f"|format(field.solarSystemSecurity) }}</span>)</span> / {% include 'components/text_region.html' %}</td>
 	</tr>
+	{% if (killdata.info.location.itemName) %}
+        <tr>
+		<th>Location:</th>
+		<td><a href='/location/{{ killdata.info.locationID }}/'>{{ killdata.info.location.itemName }}</a></td>
+	</tr>
+        {% endif %}
 	<tr>
 		<th>Time:</th>
 		<td class="info_kill_dttm">{{ killdata.info.dttm }}</td>

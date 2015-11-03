@@ -365,6 +365,12 @@ class Info
                     case 'weaponTypeID':
                         $element['weaponTypeName'] = self::getInfoField('typeID', $value, 'name');
                         break;
+		    case 'locationID':
+		    case 'itemID':
+			$element['itemName'] = self::getInfoField('itemID', $value, 'name');
+			$element['locationName'] = $element['itemName'];
+			$element['typeID'] = self::getInfoField('itemID', $value, 'typeID');
+			break;
                     case 'typeID':
                         if (!isset($element['typeName'])) {
                             $element['typeName'] = self::getInfoField('typeID', $value, 'name');
@@ -582,6 +588,7 @@ class Info
         foreach ($array as $row) {
             $data = $row;
             $data['id'] = $row[$field];
+	    $data['typeID'] = @$row['typeID'];
             if (isset($row[$retArray['type'].'Name'])) {
                 $data['name'] = $row[$retArray['type'].'Name'];
             } elseif (isset($row['shipName'])) {
@@ -592,5 +599,10 @@ class Info
         }
 
         return $retArray;
+    }
+
+    public static function getLocationID($solarSystemID, $position) {
+	$location = Db::queryRow("select (pow(:x-x,2)+pow(:y-y,2)+pow(:z-z,2)) distance,itemName,itemID,typeID from ccp_mapDenormalize where solarsystemid=:solarsystemid order by distance asc limit 1", [':x' => $position['x'], ':y' => $position['y'], ':z' => $position['z'], ':solarsystemid' => $solarSystemID], 300);
+	return $location['itemID'];
     }
 }

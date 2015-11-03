@@ -112,6 +112,15 @@ class Kills
         $attackerCount = sizeof($rawmailInv);
         $killmail['number_involved'] = $attackerCount;
 
+	if (isset($rawmail['victim']['position'])) {
+		$position = $rawmail['victim']['position'];
+		$location = Db::queryRow("select (pow(:x-x,2)+pow(:y-y,2)+pow(:z-z,2)) distance,itemName,itemID,typeID from ccp_mapDenormalize where solarsystemid=:solarsystemid order by distance asc limit 1", [':x' => $position['x'], ':y' => $position['y'], ':z' => $position['z'], ':solarsystemid' => $rawmail['solarSystem']['id']], 300);
+		if ($location['itemName'] == null) {
+			$location['itemName'] = Db::queryField("select itemName from ccp_invNames where itemID = :id", "itemName", [':id' => $location['itemID']], 300);
+		}
+		$killmail['location'] = $location;
+	}
+
         for ($index = 0; $index < $attackerCount; ++$index) {
             $rawI = $rawmailInv[$index];
             $i = $involved[$index];

@@ -31,7 +31,7 @@ class Stats
         global $mdb, $debug, $longQueryMS;
 
         $hashKey = "Stats::getTop:$groupByColumn:".serialize($parameters);
-        $result = RedisCache::get($hashKey);
+        $result = null; //RedisCache::get($hashKey);
         if ($result != null) {
             return $result;
         }
@@ -53,12 +53,12 @@ class Stats
 
         if ($groupByColumn == 'solarSystemID' || $groupByColumn == 'regionID') {
             $keyField = "system.$groupByColumn";
-        } else {
+        } else if ($groupByColumn != 'locationID') {
             $keyField = "involved.$groupByColumn";
-        }
+        } else $keyField = $groupByColumn;
 
         $id = $type = null;
-        if ($groupByColumn != 'solarSystemID' && $groupByColumn != 'regionID') {
+        if ($groupByColumn != 'solarSystemID' && $groupByColumn != 'regionID' && $groupByColumn != 'locationID') {
             foreach ($parameters as $k => $v) {
                 if (strpos($k, 'ID') === false) {
                     continue;
@@ -78,7 +78,7 @@ class Stats
         $timer = new Timer();
         $pipeline = [];
         $pipeline[] = ['$match' => $query];
-        if ($groupByColumn != 'solarSystemID' && $groupByColumn != 'regionID') {
+        if ($groupByColumn != 'solarSystemID' && $groupByColumn != 'regionID' && $groupByColumn != 'locationID') {
             $pipeline[] = ['$unwind' => '$involved'];
         }
         if ($type != null && $id != null) {
@@ -93,6 +93,7 @@ class Stats
             $pipeline[] = ['$limit' => 10];
         }
         $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
+//if (isset($parameters['locationID'])) { print_r($pipeline); die(); }
 
         if (!$debug) {
             MongoCursor::$timeout = -1;

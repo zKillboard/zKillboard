@@ -155,6 +155,8 @@ class Util
                 case 'systemID':
                 case 'region':
                 case 'regionID':
+		case 'location':
+		case 'locationID':
                     if ($value != null) {
                         if (strpos($key, 'ID') === false) {
                             $key = $key.'ID';

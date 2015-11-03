@@ -33,6 +33,7 @@ if ($serverName != $baseAddr) {
     $top[] = ($columnName != 'corporationID' && $columnName != 'allianceID' ? Info::doMakeCommon('Top Alliances', 'allianceID', Stats::getTop('allianceID', $p)) : array());
     $top[] = Info::doMakeCommon('Top Ships', 'shipTypeID', Stats::getTop('shipTypeID', $p));
     $top[] = Info::doMakeCommon('Top Systems', 'solarSystemID', Stats::getTop('solarSystemID', $p));
+    $top[] = Info::doMakeCommon('Top Locations', 'locationID', Stats::getTop('locationID', $p));
 
     $requestUriPager = str_replace('ID', '', $columnName)."/$id/";
 
@@ -68,6 +69,7 @@ if ($serverName != $baseAddr) {
     $top[] = json_decode(Storage::retrieve('TopAllis', [], 900), true);
     $top[] = json_decode(Storage::retrieve('TopShips', [], 900), true);
     $top[] = json_decode(Storage::retrieve('TopSystems', [], 900), true);
+    $top[] = json_decode(Storage::retrieve('TopLocations', [], 900), true);
 
     // get latest kills
     $kills = Kills::getKills(array('cacheTime' => 60, 'limit' => 50));

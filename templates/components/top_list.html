@@ -33,6 +33,7 @@
 						{% elseif list.type == "faction" %}{% include 'components/text_faction.html' %}
 						{% elseif list.type == "system" %}{% include 'components/text_system.html' %}
 						{% elseif list.type == "region" %}{% include 'components/text_region.html' %}
+						{% elseif list.type == "location" %}{% include 'components/text_location.html' %}
 						{% else %} {{ list.type }}
 						{% endif %}
 					</td>

@@ -171,6 +171,9 @@ class MongoFilter
                         $and[] = ['involved.finalBlow' => true];
                     }
                     break;
+		case 'locationID':
+                    $and[] = ['locationID' => $filter];
+                    break;	
                 case 'allianceID':
                 case 'characterID':
                 case 'corporationID':

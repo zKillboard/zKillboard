@@ -66,16 +66,23 @@
 				<td itemprop="ship"><a href="/item/{{ detail.shipTypeID}}/">{{ detail.shipName }}</a></td>
 			</tr>
             {% endif %}
+            {% if detail.itemID %}
+                        <tr>   
+                                <th>Location:</th>
+                                <td itemprop="location"><a href="/location/{{detail.locationID}}/">{{ detail.name }}</a></td>
+                        </tr>
+
+            {% endif %}
             {% if detail.groupName and detail.groupName != "#System" %}
-			<tr>
-				<th>Class:</th>
-				<td itemprop="class"><a href="/group/{{ detail.groupID }}/">{{ detail.groupName }}</a></td>
-			</tr>
+                        <tr>   
+                                <th>Class:</th>
+                                <td itemprop="class"><a href="/group/{{ detail.groupID }}/">{{ detail.groupName }}</a></td>
+                        </tr>
             {% endif %}
             {% if detail.solarSystemName %}
 			<tr>
 				<th>System:</th>
-				<td itemprop="systemname">{{ detail.solarSystemName }}</td>
+				<td itemprop="systemname"><a href='/system/{{ detail.solarSystemID }}/'>{{ detail.solarSystemName }}</a></td>
 			</tr>
             {% endif %}
             {% if detail.solarSystemSecurity %}

@@ -13,10 +13,6 @@ if (strlen("$id") > 11) {
     $app->redirect('/');
 }
 
-if ($pageType == 'history') {
-    $app->redirect('../stats/');
-}
-
 $validPageTypes = array('overview', 'kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'top');
 if ($key == 'alliance') {
     $validPageTypes[] = 'api';
@@ -38,6 +34,7 @@ $map = array(
         'region' => array('column' => 'region', 'mixed' => true),
         'group' => array('column' => 'group', 'mixed' => true),
         'ship' => array('column' => 'shipType', 'mixed' => true),
+	'location' => array('column' => 'item', 'mixed' => true),
         );
 if (!array_key_exists($key, $map)) {
     $app->notFound();
@@ -136,6 +133,7 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
         $topLists[] = array('type' => 'alliance', 'data' => Stats::getTop('allianceID', $topParameters));
         $topLists[] = array('type' => 'ship', 'data' => Stats::getTop('shipTypeID', $topParameters));
         $topLists[] = array('type' => 'system', 'data' => Stats::getTop('solarSystemID', $topParameters));
+        $topLists[] = array('type' => 'location', 'data' => Stats::getTop('locationID', $topParameters));
 
         if (isset($detail['factionID']) && $detail['factionID'] != 0 && $key != 'faction') {
             $topParameters['!factionID'] = 0;
@@ -163,8 +161,11 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
     if ($key != 'ship') {
         $topLists[] = Info::doMakeCommon('Top Ships', 'shipTypeID', Stats::getTop('shipTypeID', $p));
     }
-    if ($key != 'system') {
+    if ($key != 'system' && $key != 'location') {
         $topLists[] = Info::doMakeCommon('Top Systems', 'solarSystemID', Stats::getTop('solarSystemID', $p));
+    }
+    if ($key != 'location') { 
+        $topLists[] = Info::doMakeCommon('Top Locations', 'locationID', Stats::getTop('locationID', $p));
     }
     $p['limit'] = 5;
     $topKills = Stats::getTopIsk($p);

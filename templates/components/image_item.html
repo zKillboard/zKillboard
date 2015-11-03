@@ -2,6 +2,9 @@
 {% if field.weaponTypeID != 0 %}
     {% set typeID = field.weaponTypeID %}
     {% set typeName = field.weaponTypeName %}
+{% elseif field.locationID != 0 %}
+    {% set typeID = field.typeID %}
+    {% set typeName = field.locationName %}
 {% elseif field.typeID != 0 %}
     {% set typeID = field.typeID %}
     {% set typeName = field.typeName %}

@@ -84,6 +84,10 @@ while (!Util::exitNow()) {
         $solarSystem['security'] = (double) $system['secStatus'];
         $solarSystem['regionID'] = (int) $system['regionID'];
         $kill['system'] = $solarSystem;
+	if (isset($raw['victim']['position'])) {
+		$locationID = Info::getLocationID($mail['solarSystem']['id'], $raw['victim']['position']);
+		$kill['locationID'] = (int) $locationID;
+	}
 
         $sequence = $mdb->findField('killmails', 'sequence', ['sequence' => ['$ne' => null]], ['sequence' => -1]);
         if ($sequence == null) {

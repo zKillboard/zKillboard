@@ -1,0 +1,8 @@
+{% set actualSize = (resizeImage is defined) ? resizeImage : imageSize %}
+{% set typeID = field.locationID %}
+{% set typeName = field.locationName %}
+{% if showImage %}
+        {% set imageSize = 32 %}
+        {% include 'components/image_item.html' %}
+{% endif %}
+<a href="/location/{{ typeID }}/">{{ typeName }}</a>

@@ -21,6 +21,7 @@ Storage::store('TopCorps', json_encode(Info::doMakeCommon('Top Corporations', 'c
 Storage::store('TopAllis', json_encode(Info::doMakeCommon('Top Alliances', 'allianceID', getStats('allianceID'))));
 Storage::store('TopShips', json_encode(Info::doMakeCommon('Top Ships', 'shipTypeID', getStats('shipTypeID'))));
 Storage::store('TopSystems', json_encode(Info::doMakeCommon('Top Systems', 'solarSystemID', getStats('solarSystemID'))));
+Storage::store('TopLocations', json_encode(Info::doMakeCommon('Top Locations', 'locationID', getStats('locationID'))));
 Storage::store('TopIsk', json_encode(Stats::getTopIsk(array('pastSeconds' => ($numDays * 86400), 'limit' => 5))));
 
 // Cleanup old sessions

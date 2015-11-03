@@ -19,6 +19,8 @@
           <td>{% include 'components/image_system.html' %}</td>
 	{% elseif topSet.type == 'shipType' %}
           <td>{% include 'components/image_ship.html' %}</td>
+	{% elseif topSet.type == 'location' %}
+          <td>{% include 'components/image_item.html' %}</td>
         {% endif %}
       </tr>
       {% set first = false %}
@@ -34,6 +36,8 @@
           <td>{% include 'components/text_system.html' %}</td>
 	{% elseif topSet.type == 'shipType' %}
           <td>{% include 'components/text_ship.html' %}</td>
+	{% elseif topSet.type == 'location' %}
+          <td>{% include 'components/text_location.html' %}</td>
         {% endif %}
         <td style="text-align: right;">{{ data.kills|number_format(0) }}</td>
     </tr>

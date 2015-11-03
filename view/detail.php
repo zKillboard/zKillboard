@@ -62,6 +62,7 @@ if ($details == null) {
         $extra['allinvolved'] = $allinvolved;
     }
 
+    $extra['location'] = @$killdata['info']['location']['itemName'];
     $extra['totalisk'] = $killdata['info']['zkb']['totalValue'];
     $extra['droppedisk'] = droppedIsk(md5($id), $killdata['items']);
     $extra['shipprice'] = Price::getItemPrice($killdata['victim']['shipTypeID'], date('Ymd', strtotime($killdata['info']['dttm'])));
