@@ -8,12 +8,12 @@ if ($_POST) {
 
     $info = User::getUserInfo();
     $name = $info['username'];
-    $email = $info['email'];
+    //$email = $info['email'];
 
-    if (isset($name) && isset($email) && isset($tags) && isset($ticket)) {
-        $check = Db::query('SELECT * FROM zz_tickets WHERE ticket = :ticket AND email = :email', array(':ticket' => $ticket, ':email' => $email), 0);
+    if (isset($name) && isset($tags) && isset($ticket)) {
+        $check = Db::query('SELECT * FROM zz_tickets WHERE ticket = :ticket', array(':ticket' => $ticket), 0);
         if (!$check) {
-            Db::execute('INSERT INTO zz_tickets (userid, name, email, tags, ticket) VALUES (:userid, :name, :email, :tags, :ticket)', array(':userid' => User::getUserID(), ':name' => $name, ':email' => $email, ':tags' => $tags, ':ticket' => $ticket));
+            Db::execute('INSERT INTO zz_tickets (userid, name, tags, ticket) VALUES (:userid, :name, :tags, :ticket)', array(':userid' => User::getUserID(), ':name' => $name, ':tags' => $tags, ':ticket' => $ticket));
             $id = Db::queryField('SELECT id FROM zz_tickets WHERE userid = :userid AND name = :name AND tags = :tags AND ticket = :ticket', 'id', array(':userid' => User::getUserID(), ':name' => $name, ':tags' => $tags, ':ticket' => $ticket));
             global $baseAddr;
             Log::irc("|g|New ticket from $name:|n| https://$baseAddr/moderator/tickets/$id/");

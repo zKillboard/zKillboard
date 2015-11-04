@@ -28,9 +28,9 @@ if ($_POST) {
     if (isset($reply)) {
         $name = $info['username'];
         $moderator = $info['moderator'];
-        $check = Db::query('SELECT * FROM zz_tickets_replies WHERE reply = :reply AND userid = :userid', array(':reply' => $reply, ':userid' => $info['id']), 0);
+        $check = Db::query('SELECT * FROM zz_tickets_replies WHERE reply = :reply AND userid = :userid', array(':reply' => $reply, ':userid' => User::getUserID()), 0);
         if (!$check) {
-            Db::execute('INSERT INTO zz_tickets_replies (userid, belongsTo, name, reply, moderator) VALUES (:userid, :belongsTo, :name, :reply, :moderator)', array(':userid' => $info['id'], ':belongsTo' => $id, ':name' => $name, ':reply' => $reply, ':moderator' => $moderator));
+            Db::execute('INSERT INTO zz_tickets_replies (userid, belongsTo, name, reply, moderator) VALUES (:userid, :belongsTo, :name, :reply, :moderator)', array(':userid' => User::getUserID(), ':belongsTo' => $id, ':name' => $name, ':reply' => $reply, ':moderator' => $moderator));
             $tic = Db::query('SELECT name,email FROM zz_tickets WHERE id = :id', array(':id' => $id));
             $ticname = $tic[0]['name'];
             $ticmail = $tic[0]['email'];
