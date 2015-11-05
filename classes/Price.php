@@ -57,10 +57,12 @@ class Price
 
     protected static function doPopulatePrice($typeID, $date)
     {
+	global $redis;
+
         $todaysLookup = 'CREST-Market:'.date('Ymd');
         $todaysLookupTypeID = $todaysLookup.":$typeID";
 
-        $isDone = (bool) Storage::retrieve($todaysLookupTypeID, false);
+	$isDone = $redis->get($todaysLookupTypeID) == 'true';
         if ($typeID != 2233 && $isDone) {
             return;
         }
@@ -75,12 +77,12 @@ class Price
             $cores = self::getItemPrice(2872, $date, true);
             $total = $gantry + (($nodes + $modules + $mainframes + $cores) * 8);
             Db::execute('replace into zz_item_price_lookup (typeID, priceDate, lowPrice, avgPrice, highPrice) values (:typeID, :date, :low, :avg, :high)', array(':typeID' => $typeID, ':date' => $date, ':low' => $total, ':avg' => $total, ':high' => $total));
-            Storage::store($todaysLookupTypeID, 'true'); // Add today's lookup entry for this item
+	    $redis->setex($todaysLookupTypeID, 86400, 'true');
             return $total;
         }
 
         $url = "https://public-crest.eveonline.com/market/10000002/types/$typeID/history/";
-        $raw = Util::getData($url);
+        $raw = Util::getData($url, 0);
         $json = json_decode($raw, true);
         if (isset($json['items'])) {
             foreach ($json['items'] as $row) {
@@ -90,7 +92,7 @@ class Price
                 }
             }
         }
-        Storage::store($todaysLookupTypeID, 'true'); // Add today's lookup entry for this item
+	$redis->setex($todaysLookupTypeID, 86400, 'true');
     }
 
     /**
@@ -100,23 +102,23 @@ class Price
      */
     protected static function doPopulateRareItemPrices($todaysLookup)
     {
-        global $mdb;
+        global $mdb, $redis;
 
-        $isDone = (bool) Storage::retrieve($todaysLookup, false);
+        $isDone = $redis->get($todaysLookup) == 'true';
         if ($isDone) {
             return;
         }
 
         // Base lookups for today have been populated - do it here to allow later recursion
-        Storage::store($todaysLookup, 'true');
+	$redis->setex($todaysLookup, 86400, 'true');
 
         $motherships = $mdb->find('information', ['type' => 'typeID', 'groupID' => 659]);
         if (sizeof($motherships) == 0) {
             exit('no motherships, bailing');
         } // Haven't loaded all data yet, bail!
         foreach ($motherships as $mothership) {
-            $typeID = $mothership['typeid'];
-            if ($typeID == 3514) {
+            $typeID = $mothership['id'];
+            if ($typeID == 3514 || $typeID == null) {
                 continue;
             }
             static::setPrice($typeID, 20000000000); // 20b
