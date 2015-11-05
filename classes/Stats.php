@@ -31,7 +31,7 @@ class Stats
         global $mdb, $debug, $longQueryMS;
 
         $hashKey = "Stats::getTop:$groupByColumn:".serialize($parameters);
-        $result = null; //RedisCache::get($hashKey);
+        $result = RedisCache::get($hashKey);
         if ($result != null) {
             return $result;
         }
@@ -93,7 +93,6 @@ class Stats
             $pipeline[] = ['$limit' => 10];
         }
         $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
-//if (isset($parameters['locationID'])) { print_r($pipeline); die(); }
 
         if (!$debug) {
             MongoCursor::$timeout = -1;
