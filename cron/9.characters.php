@@ -36,6 +36,7 @@ while ($timer->stop() < 59000) {
 
         if (isset($info['characterName'])) {
             ++$counter;
+	    if (!isset($row['name'])) continue;
             if ($row['name'] != (string) $info['characterName']) {
                 $mdb->set('information', $row, ['name' => (string) $info['characterName']]);
             }
