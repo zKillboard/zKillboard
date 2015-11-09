@@ -36,6 +36,11 @@ foreach ($entities as $entity) {
                 $flag = 'ship';
             }
             break;
+	case 'solarSystemID':
+		$regionID = Info::getInfoField('solarSystemID', $id, 'regionID');
+		$regionName = Info::getInfoField('regionID', $regionID, 'name');
+		$name = "$name ($regionName)";
+		break;
     }
     if ($flag == null) {
         $flag = '';
@@ -45,6 +50,5 @@ foreach ($entities as $entity) {
     if ($count > 0) {
         continue;
     }
-    //echo "$type $id $name $flag\n";
-    Db::execute('insert ignore into zz_name_search (type, id, name, flag) values (:type, :id, :name, :flag)', [':type' => $type, ':id' => $id, ':name' => $name, ':flag' => $flag]);
+    Db::execute('replace into zz_name_search (type, id, name, flag) values (:type, :id, :name, :flag)', [':type' => $type, ':id' => $id, ':name' => $name, ':flag' => $flag]);
 }
