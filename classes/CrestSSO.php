@@ -94,11 +94,10 @@ class CrestSSO
 			auth_error('No character ID returned');
 		}
 		// Lookup the character details in the DB.
-		$userdetails = $mdb->findDoc('information', ['type' => 'characterID', 'id' => (int) $response->CharacterID]);
-		while (!isset($userdetails['name'])) {
-			if ($userdetails == null) $mdb->save('information', ['type' => 'characterID', 'id' => (int) $response->CharacterID]);
-			sleep(1);
-			$userdetails = $mdb->findDoc('information', ['type' => 'characterID', 'id' => (int) $response->CharacterID]);
+		$userdetails = $mdb->findDoc('information', ['type' => 'characterID', 'id' => (int) $response->CharacterID, 'cacheTime' => 0]);
+		if (!isset($userdetails['name'])) {
+			if ($userdetails == null) $mdb->save('information', ['type' => 'characterID', 'id' => (int) $response->CharacterID, 'name' => $response->CharacterName]);
+			Db::execute("insert ignore into zz_name_search values ('characterID', :id, :name, null)", ['id' => (int) $response->CharacterID, 'name' => $response->CharacterName]);
 		}
 
 		$time = strtotime($response->ExpiresOn);
