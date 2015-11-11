@@ -125,6 +125,7 @@ while (!Util::exitNow()) {
         if (isset($mail['war']['id']) && $mail['war']['id'] != 0) {
             $kill['warID'] = (int) $mail['war']['id'];
         }
+	if (isset($kill['locationID'])) $zkb['locationID'] = $kill['locationID'];
 
         $zkb['hash'] = $crestmail['hash'];
         $zkb['totalValue'] = (double) $totalValue;
