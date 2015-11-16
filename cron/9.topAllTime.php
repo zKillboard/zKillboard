@@ -2,7 +2,7 @@
 
 require_once '../init.php';
 
-if (date('H') != 11) {
+if (date('H') != 4) {
     exit();
 }
 
