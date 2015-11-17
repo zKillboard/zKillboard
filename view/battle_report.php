@@ -1,6 +1,15 @@
 <?php
 
+global $mdb;
+
+$battleID = (int) $battleID;
+
+//$battle = $mdb->findDoc("battles", ['battleID' => $battleID]);
 $battle = Db::queryRow('select * from zz_battle_report where battleID = :id', array(':id' => $battleID));
+$battle['battleID'] = (int) $battle['battleID'];
+
+$mdb->remove("battles", ['battleID' => $battleID]);
+$mdb->save("battles", $battle);
 
 $system = @$battle['solarSystemID'];
 $time = @$battle['dttm'];
