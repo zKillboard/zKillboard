@@ -29,7 +29,7 @@ $accountBalance = 0;
 $userShowAds = true;
 if ($ssoCharacterID > 0) {
 	$adFreeUntil = (int) $redis->hGet("user:$ssoCharacterID", "adFreeUntil");
-	$userShowAds = ($adFreeUntil > time());
+	$userShowAds = ($adFreeUntil < time());
 }
 
 $uri = $_SERVER['REQUEST_URI'];
@@ -108,13 +108,7 @@ if ($banner) {
 	//$twig->addGlobal("headerImage", $banner);
 }
 
-$adfree = $userShowAds; 
-$adfree |= false; // domain show ads?
-if ($adfree) {
-	$twig->addGlobal('showAds', false);
-} else {
-	$twig->addGlobal('showAds', $showAds);
-}
+$twig->addGlobal('showAds', $userShowAds);
 $_SERVER['SERVER_NAME'] = 'zkillboard.com';
 //Subdomains::getSubdomainParameters($_SERVER['SERVER_NAME']);
 
