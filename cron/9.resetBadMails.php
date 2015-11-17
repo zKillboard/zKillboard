@@ -2,13 +2,22 @@
 
 require_once '../init.php';
 
-$count = 0;
-$crest = $mdb->getCollection('crestmails')->find(['errorCode' => 500]);
-foreach ($crest as $row) {
-    $killID = $row['killID'];
-    $mdb->getCollection('crestmails')->update(['killID' => $killID], ['$unset' => ['errorCode' => 1, 'npcOnly' => 1]]);
+if (date('i') % 5 != 0) exit();
 
-    $mdb->set('crestmails', ['killID' => $killID], ['processed' => false]);
-    ++$count;
-    sleep(1);
+$count = 0;
+$crest = $mdb->getCollection('crestmails')->find()->sort(['added' => -1]);
+foreach ($crest as $row) {
+	$killID = $row['killID'];
+	if (isset($row['npcOnly'])) continue;
+	$killmail = $mdb->findDoc("killmails", ['killID' => $killID]);
+	$count ++;
+	if ($killmail != null) {
+		if ($count > 10000) exit();
+		continue;
+	}
+	$count = 0;
+	Util::out("Resetting $killID");
+
+	$mdb->set('crestmails', ['killID' => $killID], ['processed' => false]);
+	sleep(1);
 }
