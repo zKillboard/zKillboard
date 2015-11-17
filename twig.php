@@ -31,12 +31,10 @@ if ($ssoCharacterID != null) {
 $viewtheme = null;
 $accountBalance = 0;
 $userShowAds = true;
-/*if (User::isLoggedIn()) {
-	$accountBalance = User::getBalance(User::getUserID());
-	$adFreeUntil = UserConfig::get('adFreeUntil', null);
-	$userShowAds = $adFreeUntil == null ? true : $adFreeUntil <= date('Y-m-d H:i');
-}*/
-
+if ($ssoCharacterID > 0) {
+	$adFreeUntil = (int) $redis->hGet("user:$ssoCharacterID", "adFreeUntil");
+	$userShowAds = ($adFreeUntil > time());
+}
 
 $uri = $_SERVER['REQUEST_URI'];
 $explode = explode('/', $uri);
@@ -107,22 +105,22 @@ $twig->addGlobal('accountBalance', $accountBalance);
 $twig->addGlobal('adFreeMonthCost', $adFreeMonthCost);
 
 // Display a banner?
-$banner = Db::queryField('select banner from zz_subdomains where (subdomain = :server or alias = :server)', 'banner', array(':server' => $_SERVER['SERVER_NAME']), 60);
+$banner = false; // Db::queryField('select banner from zz_subdomains where (subdomain = :server or alias = :server)', 'banner', array(':server' => $_SERVER['SERVER_NAME']), 60);
 if ($banner) {
 	$banner = str_replace('http://i.imgur.com/', 'https://i.imgur.com/', $banner);
 	$banner = str_replace('http://imgur.com/', 'https://imgur.com/', $banner);
 	//$twig->addGlobal("headerImage", $banner);
 }
 
-$adfree = false; //Db::queryField("select count(*) count from zz_subdomains where adfreeUntil >= now() and subdomain = :server", "count", array(":server" => $_SERVER["SERVER_NAME"]), 60);
-$adfree |= false; //Db::queryField("select count(*) count from zz_subdomains where adfreeUntil >= now() and alias = :server", "count", array(":server" => $_SERVER["SERVER_NAME"]), 60);
+$adfree = $userShowAds; 
+$adfree |= false; // domain show ads?
 if ($adfree) {
 	$twig->addGlobal('showAds', false);
 } else {
 	$twig->addGlobal('showAds', $showAds);
 }
 $_SERVER['SERVER_NAME'] = 'zkillboard.com';
-Subdomains::getSubdomainParameters($_SERVER['SERVER_NAME']);
+//Subdomains::getSubdomainParameters($_SERVER['SERVER_NAME']);
 
 $twig->addGlobal('KillboardName', (isset($killboardName) ? $killboardName : 'zKillboard'));
 
