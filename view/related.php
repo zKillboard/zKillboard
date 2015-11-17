@@ -59,9 +59,9 @@ if (((int) $exHours) < 1 || ((int) $exHours > 12)) {
 	$exHours = 1;
 }
 
-$key = "$systemID:$relatedTime:$exHours:".json_encode($json_options);
+$key = md5("br:$systemID:$relatedTime:$exHours:".json_encode($json_options) . (isset($battleID) ? ":$battleID" : ""));
 $mc = RedisCache::get($key);
-if (!$mc) {
+if ($mc == null) {
 	$parameters = array('solarSystemID' => $systemID, 'relatedTime' => $relatedTime, 'exHours' => $exHours);
 	$kills = Kills::getKills($parameters);
 	$summary = Related::buildSummary($kills, $json_options);
@@ -76,7 +76,7 @@ if (!$mc) {
 		$mdb->set("battles", ['battleID' => $battleID], ['teamB' => $teamB]);
 	}
 
-	RedisCache::set($key, $mc, 600);
+	RedisCache::set($key, $mc, 300);
 }
 
 $app->render('related.html', $mc);
