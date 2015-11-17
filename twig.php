@@ -4,12 +4,8 @@
 $app->view(new \Slim\Views\Twig());
 
 // Setup Twig
-$cachepath = 'cache/templates/';
 $view = $app->view();
-$view->parserOptions = array(
-    'debug' => ($debug ? true : false),
-    'cache' => $cachepath,
-);
+$view->parserOptions = array('debug' => $twigDebug, 'cache' => $twigCache);
 
 $twig = $app->view()->getEnvironment();
 

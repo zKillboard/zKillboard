@@ -13,7 +13,7 @@
 
 {% if message %} <h1>{{ message.message }}</h1> {% endif %}
 
-<h3>Ticket By: <small>{{ ticket.name }}</small> Posted The: <small>{{ ticket.datePosted }}</small></h3>
+<h3>** Ticket By: <small>{{ ticket.name }}</small> Posted The: <small>{{ ticket.datePosted }}</small></h3>
 <div class="well">{{ ticket.ticket|raw }}</div>
 <hr/>
 
@@ -30,8 +30,8 @@
                 <tbody>
                         {% for data in replies %}
                         <tr>
-                                <td><strong>{{ data.name|capitalize }} <br> {% if data.moderator %}<i class="label label-info">Moderator</i>{% endif %}</strong></td>
-                                <td>{{ data.reply|raw }}</td>
+                                <td><strong>{{ data.name }}<br>{% if data.moderator %}<i class="label label-info">Moderator</i>{% endif %}</strong></td>
+                                <td>** {{ data.reply|raw }}</td>
                         </tr>
                         {% endfor %}
                 </tbody>
