@@ -167,12 +167,6 @@ class Util
                             $key = 'shipTypeID';
                         }
                         $exploded = explode(',', $value);
-                        foreach ($exploded as $aValue) {
-                            if ($aValue != (int) $aValue || ((int) $aValue) == 0) {
-                                header('HTTP/1.0 400 Client requesting entity ID of 0.');
-                                die();
-                            }
-                        }
                         if (sizeof($exploded) > 10) {
                             header('HTTP/1.0 400 Client requesting too many parameters.');
                             die();

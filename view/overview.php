@@ -9,6 +9,15 @@ if (!isset($input[1])) {
 $id = $input[1];
 $pageType = @$input[2];
 
+if ((int) $id == 0) {
+	$searchKey = $key;
+	if ($key == "system") $searchKey = "solarSystem";
+	$id = $mdb->findField("information", "id", ['type' => "${searchKey}ID", 'name' => $id]);
+	if ($id > 0) $app->redirect("/$key/$id/");
+	else $app->redirect("/");
+	die();
+}
+
 if (strlen("$id") > 11) {
     $app->redirect('/');
 }
