@@ -197,8 +197,10 @@ function processItems($items, $dttm, $isCargo = false, $parentFlag = 0)
 
 function processItem($item, $dttm, $isCargo = false, $parentContainerFlag = -1)
 {
+    global $mdb;
+
     $typeID = $item['itemType']['id'];
-    $itemName = Db::queryField('select typeName from ccp_invTypes where typeID = :typeID', 'typeName', array(':typeID' => $typeID), 0);
+    $itemName = $mdb->findField("information", 'name', ['type' => 'typeID', 'id' => (int) $typeID]);
     if ($itemName == null) {
         $itemName = "TypeID $typeID";
     }
