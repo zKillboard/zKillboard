@@ -21,7 +21,7 @@ do {
         if ($exists == 0) {
             ++$newGroups;
         }
-        $mdb->insertUpdate('information', ['type' => 'groupID', 'id' => $groupID], ['name' => $name, 'lastCrestUpdate' => $mdb->now()]);
+        $mdb->insertUpdate('information', ['type' => 'groupID', 'id' => $groupID], ['name' => $name, 'lastCrestUpdate' => $mdb->now(-86400)]);
 
         $types = CrestTools::getJSON($href);
         if (@$types['types'] != null) {
