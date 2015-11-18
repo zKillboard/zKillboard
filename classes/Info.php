@@ -548,30 +548,11 @@ class Info
      */
     public static function getSlotCounts($shipTypeID)
     {
-        $result = Db::query('select attributeID, valueInt, valueFloat from ccp_dgmTypeAttributes where typeID = :typeID and attributeID in (12, 13, 14, 1137)',
-                array(':typeID' => $shipTypeID), 86400);
-        $slotArray = array();
-        foreach ($result as $row) {
-            if ($row['valueInt'] == null && $row['valueFloat'] != null) {
-                $value = $row['valueFloat'];
-            } elseif ($row['valueInt'] != null && $row['valueFloat'] == null) {
-                $value = $row['valueInt'];
-            } else {
-                $value = null;
-            }
+	global $mdb;
 
-            if ($row['attributeID'] == 12) {
-                $slotArray['lowSlotCount'] = $value;
-            } elseif ($row['attributeID'] == 13) {
-                $slotArray['midSlotCount'] = $value;
-            } elseif ($row['attributeID'] == 14) {
-                $slotArray['highSlotCount'] = $value;
-            } elseif ($row['attributeID'] == 1137) {
-                $slotArray['rigSlotCount'] = $value;
-            }
-        }
+	$slotArray = $mdb->findDoc("information", ['type' => 'typeID', 'id' => (int) $shipTypeID, 'cacheTime' => 300], [], ['lowSlotCount', 'midSlotCount', 'highSlotCount', 'rigSlotCount']);
 
-        return $slotArray;
+	return $slotArray;
     }
 
     /**
