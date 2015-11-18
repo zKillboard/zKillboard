@@ -8,7 +8,6 @@ $killmails = $mdb->getCollection('killmails');
 $queueInfo = new RedisQueue('queueInfo');
 $queueProcess = new RedisQueue('queueProcess');
 $storage = $mdb->getCollection('storage');
-$queueRedisQ = new RedisQueue('queueRedisQ');
 
 $counter = 0;
 $timer = new Timer();
@@ -141,9 +140,7 @@ while (!Util::exitNow()) {
             $mdb->getCollection('oneWeek')->save($kill);
         }
 
-        $storage->update(array('locker' => 'totalKills'), array('$inc' => array('contents' => 1)), array('upsert' => true));
         $queueInfo->push($killID);
-        $queueRedisQ->push($killID);
 
         ++$counter;
         if (Util::exitNow()) {
