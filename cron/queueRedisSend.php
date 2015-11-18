@@ -19,9 +19,5 @@ while ($timer->stop() <= 59000) {
 
     $package = ['killID' => $killID, 'killmail' => $rawmail, 'zkb' => $zkb];
 
-    $queueAuth = [['zkb' => 'RedisQ:auth:99apples']];
-
-    $redisQServer = 'redisq.zkillboard.com';
-
-    RedisQ\Action::queue('redisq.zkillboard.com', $redisQAuthUser, $redisQAuthPass, $package);
+    RedisQ\Action::queue($redisQServer, $redisQAuthUser, $redisQAuthPass, $package);
 }
