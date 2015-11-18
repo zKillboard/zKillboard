@@ -1,5 +1,7 @@
 <?php
 
+global $mdb;
+
 if (!is_numeric($id)) {
     $id = Info::getItemId($id);
     if ($id > 0) {
@@ -10,7 +12,7 @@ if (!is_numeric($id)) {
     die();
 }
 
-$info = Db::queryRow('select typeID, typeName, description from ccp_invTypes where typeID = :id', array(':id' => $id), 3600);
+$info = $mdb->findDoc("information", ['type' => 'typeID', 'id' => (int) $id, 'cacheTime' => 3600]);
 $info['description'] = str_replace('<br>', "\n", @$info['description']);
 $info['description'] = strip_tags(@$info['description']);
 $info['price'] = Price::getItemPrice($id, date('Ymd'));
