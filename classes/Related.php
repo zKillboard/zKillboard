@@ -256,8 +256,10 @@ class Related
 
     public static function compareShips($a, $b)
     {
-        $aSize = Db::queryField('select mass from ccp_invTypes where typeID = :typeID', 'mass', array(':typeID' => @$a['shipTypeID']));
-        $bSize = Db::queryField('select mass from ccp_invTypes where typeID = :typeID', 'mass', array(':typeID' => @$b['shipTypeID']));
+	global $redis;
+
+        $aSize = (int) $redis->hGet("tq:typeID:" . @$a['shipTypeID'], "mass");
+        $bSize = (int) $redis->hGet("tq:typeID:" . @$b['shipTypeID'], "mass"); 
 
         return $aSize < $bSize;
     }
