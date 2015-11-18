@@ -24,9 +24,6 @@ Storage::store('TopSystems', json_encode(Info::doMakeCommon('Top Systems', 'sola
 Storage::store('TopLocations', json_encode(Info::doMakeCommon('Top Locations', 'locationID', getStats('locationID'))));
 Storage::store('TopIsk', json_encode(Stats::getTopIsk(array('pastSeconds' => ($numDays * 86400), 'limit' => 5))));
 
-// Keep the account balance table clean
-Db::execute('delete from zz_account_balance where balance = 0');
-
 // Cleanup subdomain stuff
 Db::execute('update zz_subdomains set adfreeUntil = null where adfreeUntil < now()');
 Db::execute("update zz_subdomains set banner = null where banner = ''");

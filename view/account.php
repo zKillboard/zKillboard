@@ -26,9 +26,8 @@ if ($_POST) {
         if ($purchase == 'donate') {
             $amount = User::getBalance($userID);
             if ($amount > 0) {
-                Db::execute('insert into zz_account_history (userID, purchase, amount) values (:userID, :purchase, :amount)',
-                    array(':userID' => $userID, ':purchase' => 'donation', ':amount' => $amount));
-                Db::execute('update zz_account_balance set balance = 0 where userID = :userID', array(':userID' => $userID));
+                //Db::execute('insert into zz_account_history (userID, purchase, amount) values (:userID, :purchase, :amount)', array(':userID' => $userID, ':purchase' => 'donation', ':amount' => $amount));
+                //Db::execute('update zz_account_balance set balance = 0 where userID = :userID', array(':userID' => $userID));
                 $twig->addGlobal('accountBalance', User::getBalance($userID));
                 $error = 'Thank you VERY much for your donation!';
             } else {
@@ -47,10 +46,8 @@ if ($_POST) {
                 $dttm = UserConfig::get('adFreeUntil', null);
                 $now = $dttm == null ? ' now() ' : "'$dttm'";
                 $newDTTM = Db::queryField("select date_add($now, interval $months month) as dttm", 'dttm', array(), 0);
-                Db::execute('update zz_account_balance set balance = balance - :amount where userID = :userID',
-                        array(':userID' => $userID, ':amount' => $amount));
-                Db::execute('insert into zz_account_history (userID, purchase, amount) values (:userID, :purchase, :amount)',
-                        array(':userID' => $userID, ':purchase' => $purchase, ':amount' => $amount));
+                //Db::execute('update zz_account_balance set balance = balance - :amount where userID = :userID', array(':userID' => $userID, ':amount' => $amount));
+                //Db::execute('insert into zz_account_history (userID, purchase, amount) values (:userID, :purchase, :amount)', array(':userID' => $userID, ':purchase' => $purchase, ':amount' => $amount));
                 UserConfig::set('adFreeUntil', $newDTTM);
 
                 $twig->addGlobal('accountBalance', User::getBalance($userID));

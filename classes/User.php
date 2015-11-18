@@ -88,17 +88,12 @@ class User
 
     public static function getBalance($userID)
     {
-        $balance = Db::queryField('select balance from zz_account_balance where userID = :userID', 'balance', array(':userID' => $userID), 3600);
-        if ($balance == null) {
-            $balance = 0;
-        }
-
-        return $balance;
+	return 0;
     }
 
     public static function getPaymentHistory($userID)
     {
-        return Db::query('select * from zz_account_history where userID = :userID', array(':userID' => $userID), 0);
+        return [];
     }
 
     public static function getUserTrackerData()
