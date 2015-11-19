@@ -2,6 +2,8 @@
 
 require_once '../init.php';
 
+global $redis;
+
 $minute = date('i');
 if ($minute != 0) {
     exit();
@@ -9,6 +11,8 @@ if ($minute != 0) {
 $hour = date('H');
 if ($hour == 10) {
     Db::execute('truncate zz_name_search');
+    $keys = $redis->keys("search:*");
+    foreach ($keys as $key) $redis->del($key);
 }
 
 $entities = $mdb->getCollection('information')->find();
@@ -46,6 +50,8 @@ foreach ($entities as $entity) {
         $flag = '';
     }
 
+    $redis->zAdd("search:$type", 0, strtolower($name) . "\xFF$id");
+    if ($flag != '') $redis->zAdd("search:$type:flag", 0, "$flag\xFF$id");
     $count = Db::queryField('select count(1) count from zz_name_search where type = :type and id = :id', 'count', [':type' => $type, ':id' => $id], 0);
     if ($count > 0) {
         continue;
