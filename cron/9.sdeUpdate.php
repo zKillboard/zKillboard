@@ -2,12 +2,12 @@
 
 require_once "../init.php";
 
-//if (date('i') != 0) exit();
+if (date('i') != 0) exit();
 
 $redisMD5 = $redis->get("tqSDE:MD5");
 $sdeMD5 = file_get_contents("https://www.fuzzwork.co.uk/dump/mysql-latest.tar.bz2.md5");
 
-//if ($sdeMD5 == $redisMD5) exit();
+if ($sdeMD5 == $redisMD5) exit();
 
 Util::out("New SDE detected, importing now");
 
