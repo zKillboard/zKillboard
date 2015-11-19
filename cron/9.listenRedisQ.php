@@ -17,6 +17,7 @@ $timer = new Timer();
 while ($timer->stop() < 58000) {
 	$raw = curl_exec($ch);
 	$json = json_decode($raw, true);
+	if (!isset($json['package'])) exit(); // Something's wrong , exit and try again later
 	$killmail = $json['package'];
 	if ($killmail == null) continue;
 
