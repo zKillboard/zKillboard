@@ -1,6 +1,6 @@
 <?php
 
-global $mdb;
+global $mdb, $redis;
 
 $page = 1;
 $pageTitle = '';
@@ -64,12 +64,12 @@ if ($serverName != $baseAddr) {
     $topPods = array();
 
     $top = array();
-    $top[] = json_decode(Storage::retrieve('TopChars', [], 1), true);
-    $top[] = json_decode(Storage::retrieve('TopCorps', [], 1), true);
-    $top[] = json_decode(Storage::retrieve('TopAllis', [], 1), true);
-    $top[] = json_decode(Storage::retrieve('TopShips', [], 1), true);
-    $top[] = json_decode(Storage::retrieve('TopSystems', [], 1), true);
-    $top[] = json_decode(Storage::retrieve('TopLocations', [], 1), true);
+    $top[] = json_decode($redis->get('RC:TopChars'), true);
+    $top[] = json_decode($redis->get('RC:TopCorps'), true);
+    $top[] = json_decode($redis->get('RC:TopAllis'), true);
+    $top[] = json_decode($redis->get('RC:TopShips'), true);
+    $top[] = json_decode($redis->get('RC:TopSystems'), true);
+    $top[] = json_decode($redis->get('RC:TopLocations'), true);
 
     // get latest kills
     $kills = Kills::getKills(array('cacheTime' => 60, 'limit' => 50));

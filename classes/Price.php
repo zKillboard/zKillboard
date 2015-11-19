@@ -187,9 +187,6 @@ class Price
         foreach ($rareBattleships as $typeID) {
             static::setPrice($typeID, 750000000000);
         } // 750b
-
-        // Clear all older lookup entries and leave today's lookup entries
-        Db::execute("delete from zz_storage where locker not like '$todaysLookup%' and locker like 'CREST-Market%'");
     }
 
     protected static function setPrice($typeID, $price, $low = -1, $high = -1)

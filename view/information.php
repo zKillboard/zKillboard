@@ -24,9 +24,9 @@ if ($page == 'statistics') {
     $info = array();
     $info['kills'] = number_format($redis->get('zkb:totalKills'), 0);
     $info['crest'] = number_format($redis->get('zkb:crestRemaining'), 0);
-    $info['total'] = number_format(Storage::retrieve('actualKills'), 0, '.', ',');
+    $info['total'] = number_format($redis->get('zkb:totalkills'), 0);
     $info['percentage'] = number_format($info['total'] / $info['kills'] * 100, 2, '.', ',');
-    $info['NextWalletFetch'] = Storage::retrieve('NextWalletFetch');
+    //$info['NextWalletFetch'] = Storage::retrieve('NextWalletFetch');
 
     foreach ($info as $k => $d) {
         $output = str_replace('{'.$k.'}', $d, $output);

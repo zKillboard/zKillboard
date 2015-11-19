@@ -2,23 +2,6 @@
 
 class Util
 {
-    public static function getMaintenanceReason()
-    {
-        return Storage::retrieve('MaintenanceReason', '');
-    }
-
-    public static function getNotification()
-    {
-        return Storage::retrieve('notification', null);
-    }
-
-    public static function is904Error()
-    {
-        $stop904 = Db::queryField("select count(*) count from zz_storage where locker = 'ApiStop904' and contents > now()", 'count', array(), 1);
-
-        return $stop904 > 0;
-    }
-
     public static function getCrest($url)
     {
         \Perry\Setup::$fetcherOptions = ['connect_timeout' => 15, 'timeout' => 30];
@@ -37,7 +20,7 @@ class Util
         }
         global $apiServer, $baseAddr, $ipsAvailable;
 
-        if (!$overRide && static::is904Error()) {
+        if (!$overRide) {
             if (php_sapi_name() == 'cli') {
                 exit();
             }
