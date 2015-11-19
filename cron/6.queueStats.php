@@ -85,9 +85,12 @@ function mergeAllTime(&$stats, $result, $isVictim)
 
     $row = $result[0];
     $dl = ($isVictim ? 'Lost' : 'Destroyed');
-    @$stats["ships$dl"] += $row['killIDCount'];
-    @$stats["points$dl"] += $row['zkb_pointsSum'];
-    @$stats["isk$dl"] += (int) $row['zkb_totalValueSum'];
+    if (!isset($stats["ships$dl"])) $stats["ships$dl"] = 0;
+    $stats["ships$dl"] += $row['killIDCount'];
+    if (!isset($stats["points$dl"])) $stats["points$dl"] = 0;
+    $stats["points$dl"] += $row['zkb_pointsSum'];
+    if (!isset($stats["isk$dl"])) $stats["isk$dl"] = 0;
+    $stats["isk$dl"] += (int) $row['zkb_totalValueSum'];
 }
 
 function mergeGroups(&$stats, $result, $isVictim)

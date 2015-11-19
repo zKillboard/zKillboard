@@ -76,9 +76,12 @@ function mergeAllTime(&$stats, $result, $isVictim)
 
     $row = $result[0];
     $dl = ($isVictim ? 'Lost' : 'Destroyed');
-    @$stats["recentShips$dl"] += $row['killIDCount'];
-    @$stats["recentPoints$dl"] += $row['zkb_pointsSum'];
-    @$stats["recentIsk$dl"] += (int) $row['zkb_totalValueSum'];
+    if (!isset($stats["recentShips$dl"])) $stats["recentShips$dl"] = 0;
+    $stats["recentShips$dl"] += $row['killIDCount'];
+    if (!isset($stats["recentPoints$dl"])) $stats["recentPoints$dl"] = 0;
+    $stats["recentPoints$dl"] += $row['zkb_pointsSum'];
+    if (!isset($stats["recentIsk$dl"])) $stats["recentIsk$dl"] = 0;
+    $stats["recentIsk$dl"] += (int) $row['zkb_totalValueSum'];
 }
 
 $categories = ['Ships', 'Isk', 'Points'];

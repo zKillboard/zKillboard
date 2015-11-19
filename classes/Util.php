@@ -99,7 +99,7 @@ class Util
     public static function convertUriToParameters($additionalParameters = array(), $addExtraParameters = true)
     {
         $parameters = array();
-        @$uri = $_SERVER['REQUEST_URI'];
+        $uri = $_SERVER['REQUEST_URI'];
         $split = explode('/', $uri);
         $currentIndex = 0;
         foreach ($split as $key) {

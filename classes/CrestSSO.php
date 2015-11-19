@@ -100,7 +100,6 @@ class CrestSSO
 			Db::execute("insert ignore into zz_name_search values ('characterID', :id, :name, null)", ['id' => (int) $response->CharacterID, 'name' => $response->CharacterName]);
 		}
 
-		$time = strtotime($response->ExpiresOn);
 		$key = "login:" . $response->CharacterID . ":" . session_id();
 		$redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);
 		$redis->setex("$key:accessToken", 1000, $access_token);
@@ -133,11 +132,9 @@ class CrestSSO
 			exit();
 		}
 		$redis->setex("$key:refreshToken", (86400 * 14), $refreshToken); // Reset the timer on the refreshToken
-		$header = array( 'Authorization' => 'Basic '.base64_encode($ccpClientID.':'.$ccpSecret));
 		$fields = array('grant_type' => 'refresh_token','refresh_token' => $refreshToken);
 
 		$url = 'https://login.eveonline.com/oauth/token';
-		$verify_url = 'https://login.eveonline.com/oauth/verify';
 		$header = 'Authorization: Basic '.base64_encode($ccpClientID.':'.$ccpSecret);
 		$fields_string = '';
 		foreach ($fields as $arrKey => $value) {
