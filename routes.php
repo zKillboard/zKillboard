@@ -163,14 +163,12 @@ $app->get('/wars/', function () use ($app) {
     include 'view/wars.php';
 });
 
+// CREST
 $app->get('/ccplogin/', function() use ($app) {
 	include 'view/ccplogin.php';
 });
 $app->get('/ccpcallback/', function() use ($app) {
 	include 'view/ccpcallback.php';
-});
-$app->get('/fittings/', function() use ($app) {
-	CrestFittings::getFittings();
 });
 $app->get('/ccpsavefit/:killID/', function($killID) use ($app) {
 	include 'view/ccpsavefit.php';
