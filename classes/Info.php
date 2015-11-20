@@ -583,7 +583,39 @@ class Info
     }
 
     public static function getLocationID($solarSystemID, $position) {
-	$location = Db::queryRow("select (pow(:x-x,2)+pow(:y-y,2)+pow(:z-z,2)) distance,itemName,itemID,typeID from ccp_mapDenormalize where solarsystemid=:solarsystemid order by distance asc limit 1", [':x' => $position['x'], ':y' => $position['y'], ':z' => $position['z'], ':solarsystemid' => $solarSystemID], 300);
-	return $location['itemID'];
+	    global $redis, $mdb;
+
+	    $x = $position['x'];
+	    $y = $position['y'];
+	    $z = $position['z'];
+
+	    $key = "tqMap:$solarSystemID";
+	    if (!$redis->exists($key)) {
+		    echo " * ";
+		    $multi = $redis->multi();
+		    $raw = file_get_contents("https://www.fuzzwork.co.uk/api/mapdata.php?solarsystemid=$solarSystemID&format=json");
+		    $json = json_decode($raw, true);
+		    foreach ($json as $row) {
+			    unset($row['complete']);
+			    $itemID = $row['itemid'];
+			    $multi->hSet($key, $itemID, 1);
+			    $multi->hMSet("tqItemID:$itemID", $row);
+		    }
+		    $multi->exec();
+	    }
+	    $distances = [];
+	    $itemIDs = $redis->hGetAll($key);
+	    foreach ($itemIDs as $itemID=>$v) {
+		    $row = $redis->hGetAll("tqItemID:$itemID");
+
+		    $distance = sqrt(pow($row['x'] - $x, 2) + pow($row['y'] - $y, 2) + pow($row['z'] - $z, 2));
+		    $distances[$itemID] = $distance;
+	    }
+	    asort($distances);
+	    reset($distances);
+	    $itemID = key($distances);
+	    $name = $redis->hGet("tqItemID:$itemID", "itemname");
+	    if ($name == null) $name = $mdb->findField("information", "name", ['type' => 'locationID', 'id' => (int) $itemID]);
+	    return $itemID;
     }
 }
