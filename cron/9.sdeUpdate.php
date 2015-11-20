@@ -2,9 +2,9 @@
 
 require_once "../init.php";
 
-if (date('i') != 0) exit();
-
 $redisMD5 = $redis->get("tqSDE:MD5");
+if ($redisMD5 != null && date('i') != 0) exit();
+
 $sdeMD5 = file_get_contents("https://www.fuzzwork.co.uk/dump/mysql-latest.tar.bz2.md5");
 
 if ($sdeMD5 == $redisMD5) exit();
@@ -42,6 +42,8 @@ function updateLocationID($fields) {
 }
 
 function updateSlots($row) {
+	global $redis, $mdb;
+
 	$typeID = $row['TYPEID'];
 	$value = max($row['VALUEINT'], $row['VALUEFLOAT']);
 	switch($row['ATTRIBUTEID']) {
