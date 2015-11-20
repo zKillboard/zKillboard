@@ -6,6 +6,7 @@ require_once '../init.php';
 $queueShare = new RedisQueue('queueShare');
 do {
     $killID = $queueShare->pop();
+    if ($killID == null) continue;
 
     $hash = $mdb->findField('crestmails', 'hash', ['killID' => $killID, 'processed' => true]);
     file_get_contents("https://beta.eve-kill.net/crestmail/$killID/$hash/");
