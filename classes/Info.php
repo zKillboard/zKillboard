@@ -614,8 +614,7 @@ class Info
 	    asort($distances);
 	    reset($distances);
 	    $itemID = key($distances);
-	    $name = $redis->hGet("tqItemID:$itemID", "itemname");
-	    if ($name == null) $name = $mdb->findField("information", "name", ['type' => 'locationID', 'id' => (int) $itemID]);
+
 	    return $itemID;
     }
 }
