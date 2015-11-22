@@ -85,12 +85,13 @@ class Info
      */
     public static function getWormholeSystemInfo($systemID)
     {
+	global $redis;
+
         if ($systemID < 3100000) {
             return;
         }
 
-        return Db::queryRow('select * from ccp_zwormhole_info where solarSystemID = :systemID',
-                array(':systemID' => $systemID), 3600);
+	return $redis->hGetAll("tqMap:wh:$systemID");
     }
 
     /**
@@ -401,7 +402,7 @@ class Info
                             $wspaceInfo = self::getWormholeSystemInfo($value);
                             if ($wspaceInfo) {
                                 $element['systemClass'] = $wspaceInfo['class'];
-                                $element['systemEffect'] = $wspaceInfo['effectName'];
+                                $element['systemEffect'] = isset($wspaceInfo['effectName']) ? $wspaceInfo['effectName'] : null;
                             }
                         }
                         break;
