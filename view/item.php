@@ -13,6 +13,7 @@ if (!is_numeric($id)) {
 }
 
 $info = $mdb->findDoc("information", ['type' => 'typeID', 'id' => (int) $id, 'cacheTime' => 3600]);
+$info['typeName'] = $info['name'];
 $info['description'] = str_replace('<br>', "\n", @$info['description']);
 $info['description'] = strip_tags(@$info['description']);
 $info['price'] = Price::getItemPrice($id, date('Ymd'));
