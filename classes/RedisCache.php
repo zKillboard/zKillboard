@@ -6,6 +6,7 @@ class RedisCache
     {
         global $redis;
 
+	$key = md5($key);
         $result = $redis->get("RC:$key");
         if ($result != null) {
             return unserialize($result);
@@ -24,6 +25,7 @@ class RedisCache
         if ($expireSeconds > 900) {
             $expireSeconds = 900;
         }
+	$key = md5($key);
         $redis->setex("RC:$key", $expireSeconds, serialize($value));
     }
 }
