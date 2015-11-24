@@ -28,7 +28,11 @@ while ($timer->stop() <= 59000) {
         $type = $row['type'];
         $userID = $row['userID'];
         if ($userID != 0) {
-            $redis->setex("userID:api:$userID:$charID", 86400, serialize(['charID' => $charID, 'keyID' => $keyID, 'time' => time(), 'type' => $type]));
+	    $multi = $redis->multi();
+	    $multi->hSet("userID:api:$userID", $charID, true);
+	    $multi->expire("userID:api:$userID", 86400);
+            $multi->setex("userID:api:$userID:$charID", 86400, serialize(['charID' => $charID, 'keyID' => $keyID, 'time' => time(), 'type' => $type]));
+	    $multi->exec();
         }
         $charCorp = $type == 'Corporation' ? 'corp' : 'char';
         $killsAdded = 0;

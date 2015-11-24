@@ -69,12 +69,13 @@ class Api
         global $mdb, $redis;
 
     	$apiVerifiedSet = new RedisTtlSortedSet('ttlss:apiVerified', 86400);
-        $characterIDs = $redis->keys("userID:api:$userID:*");
+        $characterIDs = $redis->hGetAll("userID:api:$userID");
+	if ($characterIDs == null) $characterIDs = [];
 
         $charIDs = [];
-        foreach ($characterIDs as $charKey) {
-            $row = unserialize($redis->get($charKey));
-            $charID = $row['charID'];
+        foreach ($characterIDs as $charID => $value) {
+	    $raw = $redis->get("userID:api:$userID:$charID");
+            $row = unserialize($raw);
             if (!isset($charIDs["$charID"])) {
                 $charIDs["$charID"] = [];
             }

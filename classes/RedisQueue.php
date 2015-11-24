@@ -6,7 +6,10 @@ class RedisQueue
 
     public function __construct($queueName)
     {
+	global $redis;
+
         $this->queueName = $queueName;
+	$redis->sadd('queues', $queueName);
     }
 
     public function push($value)

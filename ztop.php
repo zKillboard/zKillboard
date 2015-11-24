@@ -12,7 +12,7 @@ $deltaArray = [];
 while (true) {
     $infoArray = [];
 
-    $queues = $redis->keys('queue*');
+    $queues = $redis->sMembers('queues');
     foreach ($queues as $queue) {
         $redisQueues[$queue] = true;
     }
