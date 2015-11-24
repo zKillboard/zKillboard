@@ -4,10 +4,7 @@ require_once '../init.php';
 
 global $redis;
 
-$i = date('i');
-if ($i % 15 != 0) {
-    exit();
-}
+if (date('i') % 15 != 0) exit();
 
 $p = array();
 $numDays = 7;
@@ -37,3 +34,5 @@ function getStats($column)
 
     return $result;
 }
+
+$redis->keys('*'); // Helps purge expired ttl's
