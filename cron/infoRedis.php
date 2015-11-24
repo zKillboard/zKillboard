@@ -2,7 +2,7 @@
 
 require_once '../init.php';
 
-if ($date('i') != 15) exit();
+if (date('i') != 15) exit();
 
 $information = $mdb->getCollection('information');
 $types = $mdb->getCollection('information')->distinct('type');
