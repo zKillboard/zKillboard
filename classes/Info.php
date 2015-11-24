@@ -20,7 +20,7 @@ class Info
 
         $data = $redis->hGetAll("tq:$type:$id");
         if ($data == null) {
-            $data = $mdb->find('information', ['type' => $type, 'id' => (int) $id, 'cacheTime' => 300]);
+            $data = $mdb->findDoc('information', ['type' => $type, 'id' => (int) $id, 'cacheTime' => 300]);
         }
 
         $data[$type] = (int) $id;
