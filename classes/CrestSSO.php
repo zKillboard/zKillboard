@@ -97,7 +97,6 @@ class CrestSSO
 		$userdetails = $mdb->findDoc('information', ['type' => 'characterID', 'id' => (int) $response->CharacterID, 'cacheTime' => 0]);
 		if (!isset($userdetails['name'])) {
 			if ($userdetails == null) $mdb->save('information', ['type' => 'characterID', 'id' => (int) $response->CharacterID, 'name' => $response->CharacterName]);
-			Db::execute("insert ignore into zz_name_search values ('characterID', :id, :name, null)", ['id' => (int) $response->CharacterID, 'name' => $response->CharacterName]);
 		}
 
 		$key = "login:" . $response->CharacterID . ":" . session_id();

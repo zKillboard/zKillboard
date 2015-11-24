@@ -276,13 +276,6 @@ class Info
         return $groupID;
     }
 
-    public static function findEntity($search)
-    {
-        $result = Db::query('select * from zz_name_search where name like :search limit 10', ['search' => "$search%"], 3600);
-
-        return $result;
-    }
-
     /**
      * [addInfo description].
      *

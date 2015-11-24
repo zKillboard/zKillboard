@@ -4,13 +4,9 @@ require_once '../init.php';
 
 global $redis;
 
-$minute = date('i');
-if ($minute != 0) {
-	exit();
-}
-$hour = date('H');
-if ($hour == 10) {
-	Db::execute('truncate zz_name_search');
+if (date('i') != 0) exit();
+if (date('H') == 10) {
+	// Purge, just in case of name changes and what not
 	$keys = $redis->keys("search:*");
 	foreach ($keys as $key) $redis->del($key);
 }
@@ -27,6 +23,7 @@ foreach ($entities as $entity) {
 
 	$flag = '';
 	switch ($type) {
+		case 'locationID':
 		case 'warID':
 			continue;
 		case 'corporationID':
@@ -36,9 +33,8 @@ foreach ($entities as $entity) {
 			$flag = @$entity['ticker'];
 			break;
 		case 'typeID':
-			if ($mdb->exists('killmails', ['involved.shipTypeID' => $id])) {
-				$flag = strtolower($name);
-			}
+			if ($mdb->exists('killmails', ['involved.shipTypeID' => $id])) 	$flag = strtolower($name);
+			if ($entity['published'] != true && $flag == '') continue;
 			break;
 		case 'solarSystemID':
 			$regionID = Info::getInfoField('solarSystemID', $id, 'regionID');
@@ -46,15 +42,7 @@ foreach ($entities as $entity) {
 			$name = "$name ($regionName)";
 			break;
 	}
-	if ($flag == null) {
-		$flag = '';
-	}
 
 	$redis->zAdd("search:$type", 0, strtolower($name) . "\xFF$id");
-	if ($flag != '') $redis->zAdd("search:$type:flag", 0, "$flag\xFF$id");
-	$count = Db::queryField('select count(1) count from zz_name_search where type = :type and id = :id', 'count', [':type' => $type, ':id' => $id], 0);
-	if ($count > 0) {
-		continue;
-	}
-	Db::execute('replace into zz_name_search (type, id, name, flag) values (:type, :id, :name, :flag)', [':type' => $type, ':id' => $id, ':name' => $name, ':flag' => $flag]);
+	if (strlen($flag) > 0) $redis->zAdd("search:$type:flag", 0, "$flag\xFF$id");
 }
