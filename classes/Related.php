@@ -338,15 +338,15 @@ class Related
                     if (!isset($score[$involvedId])) {
                         $score[$involvedId] = [];
                     }
-//                    if (!isset($score[$victimId][$involvedId])) {
-//                        $score[$victimId][$involvedId] = 0;
-//                    }
-//                    if (!isset($score[$involvedId][$victimId])) {
-//                        $score[$involvedId][$victimId] = 0;
-//                    }
+                    if (!isset($score[$victimId][$involvedId])) {
+                        $score[$victimId][$involvedId] = 0;
+                    }
+                    if (!isset($score[$involvedId][$victimId])) {
+                        $score[$involvedId][$victimId] = 0;
+                    }
 
-                    $score[$victimId][$involvedId] = 5;
-                    $score[$involvedId][$victimId] = 5;
+                    $score[$victimId][$involvedId] += 5;
+                    $score[$involvedId][$victimId] += 5;
                 }
             }
         }
