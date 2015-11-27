@@ -22,6 +22,7 @@ foreach ($entities as $entity) {
 	}
 	if (strpos($name, "!") !== false) continue;
 
+	$isShip = false;
 	$flag = '';
 	switch ($type) {
 		case 'locationID':
@@ -36,6 +37,7 @@ foreach ($entities as $entity) {
 		case 'typeID':
 			if ($mdb->exists('killmails', ['involved.shipTypeID' => $id])) 	$flag = strtolower($name);
 			if (@$entity['published'] != true && $flag == '') continue;
+			$isShip = $flag != '';
 			break;
 		case 'solarSystemID':
 			$regionID = Info::getInfoField('solarSystemID', $id, 'regionID');
@@ -44,6 +46,6 @@ foreach ($entities as $entity) {
 			break;
 	}
 
-	$redis->zAdd("search:$type", 0, strtolower($name) . "\x00$id");
+	if (!$isShip) $redis->zAdd("search:$type", 0, strtolower($name) . "\x00$id");
 	if (strlen($flag) > 0) $redis->zAdd("search:$type:flag", 0, strtolower("$flag\x00$id"));
 }
