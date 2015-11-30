@@ -20,7 +20,7 @@ foreach ($types as $type) {
 		$multi = $redis->multi();
 		$multi->del($key);
 		$multi->hMSet($key, $row);
-		$multi->expire($key, 86400);
+		//$multi->expire($key, 86400);
 		$multi->exec();
 	}
 }
