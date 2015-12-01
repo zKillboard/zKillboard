@@ -5,6 +5,7 @@ require_once '../init.php';
 if (date('H') != 4) {
     exit();
 }
+if (date('d') % 3 != 0) exit(); // Run every 3 days
 
 $types = ['allianceID', 'corporationID', 'factionID', 'shipTypeID', 'groupID', 'solarSystemID', 'regionID', 'locationID'];
 
