@@ -227,24 +227,14 @@ class Related
                 static::addScore($victim, $involved, $score);
             }
         }
-
-        // sort by affiliation, this makes the natural grouping of entities better.
-        // If we don't sometimes entities will start occupying both groups.
-        uasort($entities, function ($a, $b) {
-            $a = static::determineGroupId($a);
-            $b = static::determineGroupId($b);
-            if ($a == $b) {
-                return 0;
-            }
-            return ($a > $b) ? +1 : -1;
-        });
+        $entities = static::sortEntitiesByLargestGroup($entities);
 
         // Calculate who hates who
         foreach ($entities as $entityId => $entity) {
             $groupEntity = static::determineGroupId($entity);
             if (is_null($groupEntity)) continue;
 
-            if (static::calcScore($entity, $score, $teams['red']) < static::calcScore($entity, $score, $teams['blue'])) {
+            if (static::calcScore($entity, $score, $teams['red']) <= static::calcScore($entity, $score, $teams['blue'])) {
                 $teams['red'][$groupEntity] = $entity;
             } else {
                 $teams['blue'][$groupEntity] = $entity;
@@ -369,7 +359,7 @@ class Related
                 foreach (array('characterID', 'corporationID', 'allianceID') as $typeId2) {
 
                     if (isset($entity[$typeId]) && isset($memberEntity[$typeId2])) {
-                        if ($entity[$typeId] == $memberEntity[$typeId2]) return 0;
+                        if ($entity[$typeId] == $memberEntity[$typeId2]) return -50;
 
                         // If we have beef, apply the score
                         if (isset($scoreList[$entity[$typeId]][$memberEntity[$typeId2]])) {
@@ -402,5 +392,31 @@ class Related
         $bSize = (int) $redis->hGet("tq:typeID:" . @$b['shipTypeID'], "mass"); 
 
         return $aSize < $bSize;
+    }
+
+    /**
+     * find the largest "Blocks" and sort their members to the top
+     * There really must be a more elegant way to do this shit.
+     *
+     * @param array $entities
+     * @return array
+     */
+    private static function sortEntitiesByLargestGroup($entities)
+    {
+        $sortArray = [];
+        $sortOrder = [];
+        foreach ($entities as $key => $entity) {
+            $groupId = static::determineGroupId($entity);
+            if (!isset($sortArray[static::determineGroupId($entity)])) {
+                $sortArray[$groupId] = 1;
+
+            } else {
+                $sortArray[$groupId] += 1;
+            }
+            $sortOrder[$key] = &$sortArray[$groupId];
+        }
+        array_multisort($sortOrder, SORT_DESC, $entities);
+
+        return $entities;
     }
 }
