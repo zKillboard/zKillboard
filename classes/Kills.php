@@ -89,8 +89,8 @@ class Kills
     public static function getKillDetails($killID)
     {
         global $mdb;
-        $killmail = $mdb->findDoc('killmails', ['killID' => (int) $killID]);
-        $rawmail = $mdb->findDoc('rawmails', ['killID' => (int) $killID]);
+        $killmail = $mdb->findDoc('killmails', ['cacheTime' => 3600, 'killID' => (int) $killID]);
+        $rawmail = $mdb->findDoc('rawmails', ['cacheTime' => 3600, 'killID' => (int) $killID]);
         $damage = (int) $rawmail['victim']['damageTaken'];
         $killmail['damage'] = $damage;
 
@@ -115,7 +115,7 @@ class Kills
 	if (isset($rawmail['victim']['position'])) {
 		$location = [];
 		$location['itemID'] = (int) $killmail['locationID'];
-		$location['itemName'] = $mdb->findField("information", "name", ['type' => 'locationID', 'id' => (int) $killmail['locationID']]);
+		$location['itemName'] = $mdb->findField("information", "name", ['cacheTime' => 3600, 'type' => 'locationID', 'id' => (int) $killmail['locationID']]);
 		$killmail['location'] = $location;
 	}
 

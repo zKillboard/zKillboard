@@ -195,11 +195,15 @@ class Related
 
     private static function addInfo(&$team)
     {
-        global $mdb;
+        global $mdb, $redis;
 
         $retValue = array();
         foreach ($team as $entity) {
-            $retValue[$entity] = $mdb->findField('information', 'name', ['id' => ((int) $entity)]);
+	    $name = $redis->hGet("tq:allianceID:$entity", "name");
+	    if ($name == null) $name = $redis->hGet("tq:corporationID:$entity", "name");
+	    if ($name == null) $name = $mdb->findField('information', 'name', ['cacheTime' => 3600, 'id' => ((int) $entity)]);
+	    if ($name == null) $name = "Entity $entity";
+	    $retValue[$entity] = $name;
         }
 
         return $retValue;
