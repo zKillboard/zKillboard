@@ -11,13 +11,7 @@ class Related
             self::addAllInvolved($involvedEntities, $killID);
         }
 
-        $blueTeam = array();
-        $redTeam = self::findWinners($kills);
-        foreach ($involvedEntities as $entity => $chars) {
-            if (!in_array($entity, $redTeam)) {
-                $blueTeam[] = $entity;
-            }
-        }
+        list($redTeam, $blueTeam) = self::createTeams($kills);
 
         if (isset($options['A'])) {
             self::assignSides($options['A'], $redTeam, $blueTeam);
@@ -210,40 +204,173 @@ class Related
     }
 
     /**
-     * @param string $typeColumn
+     * Take all involved parties from the kills and divide them into 2 groups based on who shot who
+     *
+     * @param array $kills
+     * @return array
      */
-    private static function findWinners(&$kills)
+    private static function createTeams($kills)
     {
-        $involvedArray = array();
-        foreach ($kills as $killID => $kill) {
-            $finalBlow = @$kill['finalBlow'];
-            $added = self::addInvolvedEntity($involvedArray, $killID, @$finalBlow['allianceID']);
-            if (!$added) {
-                $added = self::addInvolvedEntity($involvedArray, $killID, @$finalBlow['corporationID']);
+        $score = [];
+        $entities = [];
+        foreach ($kills as $kill) {
+            $victim   = $kill['victim'];
+            $entities[self::determineEntityId($victim)] = $victim;
+
+            foreach ($kill['involved'] as $involved) {
+                $entities[self::determineEntityId($involved)] = $involved;
+                self::addScore($victim, $involved, $score);
             }
-            if (!$added) {
-                self::addInvolvedEntity($involvedArray, $killID, @$finalBlow['characterID']);
+        }
+        $entities = self::sortEntitiesByLargestGroup($entities);
+
+        // Calculate who hates who
+        $teams = [
+            'red' => [],
+            'blue' => []
+        ];
+        foreach ($entities as $entityId => $entity) {
+            $affiliationId = self::determineAffiliationId($entity);
+            if (is_null($affiliationId)) {
+                continue;
+            }
+
+            if (self::calcScore($entity, $score, $teams['red']) <= self::calcScore($entity, $score, $teams['blue'])) {
+                $teams['red'][$affiliationId] = $entity;
+            } else {
+                $teams['blue'][$affiliationId] = $entity;
             }
         }
 
-        return array_keys($involvedArray);
+        // Distill sorted involved parties into their most broad affiliation.
+        $groups = [];
+        foreach ($teams as $teamName => $team) {
+            $groups[$teamName] = [];
+            foreach ($team as $entity) {
+                $groups[$teamName][self::determineAffiliationId($entity)] = self::determineAffiliationId($entity);
+            }
+        }
+
+        return array_values($groups);
     }
 
-    private static function addInvolvedEntity(&$involvedArray, &$killID, $entity)
+    /**
+     * Returns the Id of the most broad affiliation of the given entity.
+     * This can be a corporationID or allianceID
+     *
+     * @param array $entity
+     * @return null|int
+     */
+    private static function determineAffiliationId($entity)
     {
-        if ($entity == 0) {
-            return false;
+        foreach (array('allianceID','corporationID') as $possibleId) {
+            if (isset($entity[$possibleId])) {
+                return $entity[$possibleId];
+            }
         }
-        if (!isset($involvedArray["$entity"])) {
-            $involvedArray["$entity"] = array();
-        }
-        if (!in_array($killID, $involvedArray["$entity"])) {
-            $involvedArray["$entity"][] = $killID;
+        return null;
+    }
 
-            return true;
+    /**
+     * Return the most specific identifier for an entity.
+     * This can be characterID, corporationID or allianceID
+     *
+     * @param array $entity
+     * @return null
+     */
+    private static function determineEntityId($entity)
+    {
+        foreach (array('characterID','corporationID','allianceID') as $possibleId) {
+            if (isset($entity[$possibleId])) {
+                return $entity[$possibleId];
+            }
         }
+        return null;
+    }
 
-        return false;
+    /**
+     * Add a hate score between two entities for each stage of uniqueness and working both ways.
+     *
+     * The score list runs both ways and cross affiliation, so corp X can hate char Y for shooting
+     * the affiliated pilots, and char Z can hate all pilots from alliance X for shooting him.
+     *
+     * $score = array(
+     *      'victim.characterID' => array(
+     *          'involved.characterID' => 5,
+     *          'involved.corporationID' => 5,
+     *          'involved.allianceID' => 5
+     *      ),
+     *      'victim.corporationID' => array(
+     *          ...
+     *      ),
+     *      'victim.allianceID' => array(
+     *          ...
+     *      ),
+     *      'involved.characterID' => array(
+     *      ...
+     *      ...
+     * )
+     *
+     * @param array $victim
+     * @param array $involved
+     * @param array $score
+     */
+    private static function addScore($victim, $involved, &$score)
+    {
+        foreach (array('characterID', 'corporationID', 'allianceID') as $type) {
+            foreach (array('characterID', 'corporationID', 'allianceID') as $type2) {
+                if (isset($victim[$type]) && isset($involved[$type2])) {
+                    $victimId = $victim[$type];
+                    $involvedId = $involved[$type2];
+
+                    if (!isset($score[$type][$victimId])) {
+                        $score[$victimId] = [];
+                    }
+                    if (!isset($score[$involvedId])) {
+                        $score[$involvedId] = [];
+                    }
+                    if (!isset($score[$victimId][$involvedId])) {
+                        $score[$victimId][$involvedId] = 0;
+                    }
+                    if (!isset($score[$involvedId][$victimId])) {
+                        $score[$involvedId][$victimId] = 0;
+                    }
+
+                    $score[$victimId][$involvedId] += 5;
+                    $score[$involvedId][$victimId] =& $score[$victimId][$involvedId];
+                }
+            }
+        }
+    }
+
+    /**
+     * Aggregate the combined hate score based on the members in a given team vs the given entity.
+     * Scoring between entities belonging to the same group are ignored. Bads shoot each other too much.
+     *
+     * @param array $entity
+     * @param array $scoreList
+     * @param array $team
+     * @return int
+     */
+    private static function calcScore($entity, $scoreList, $team)
+    {
+        $score = 0;
+        foreach ($team as $memberEntity) {
+            foreach (array('characterID', 'corporationID', 'allianceID') as $typeId) {
+                foreach (array('characterID', 'corporationID', 'allianceID') as $typeId2) {
+
+                    if (isset($entity[$typeId]) && isset($memberEntity[$typeId2])) {
+                        if ($entity[$typeId] == $memberEntity[$typeId2]) return -50;
+
+                        // If we have beef, apply the score
+                        if (isset($scoreList[$entity[$typeId]][$memberEntity[$typeId2]])) {
+                            $score += $scoreList[$entity[$typeId]][$memberEntity[$typeId2]];
+                        }
+                    }
+                }
+            }
+        }
+        return $score;
     }
 
     private static function assignSides($assignees, &$teamA, &$teamB)
@@ -266,5 +393,31 @@ class Related
         $bSize = (int) $redis->hGet("tq:typeID:" . @$b['shipTypeID'], "mass"); 
 
         return $aSize < $bSize;
+    }
+
+    /**
+     * find the largest "Blocks" and sort their members to the top
+     * There really must be a more elegant way to do this shit.
+     *
+     * @param array $entities
+     * @return array
+     */
+    private static function sortEntitiesByLargestGroup($entities)
+    {
+        $sortArray = [];
+        $sortOrder = [];
+        foreach ($entities as $key => $entity) {
+            $groupId = self::determineAffiliationId($entity);
+            if (!isset($sortArray[self::determineAffiliationId($entity)])) {
+                $sortArray[$groupId] = 1;
+
+            } else {
+                $sortArray[$groupId] += 1;
+            }
+            $sortOrder[$key] = &$sortArray[$groupId];
+        }
+        array_multisort($sortOrder, SORT_DESC, $entities);
+
+        return $entities;
     }
 }
