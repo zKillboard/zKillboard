@@ -9,5 +9,5 @@ do {
     if ($killID == null) continue;
 
     $hash = $mdb->findField('crestmails', 'hash', ['killID' => $killID, 'processed' => true]);
-    file_get_contents("https://beta.eve-kill.net/crestmail/$killID/$hash/");
+    Util::getData("https://beta.eve-kill.net/crestmail/$killID/$hash/", 0);
 } while ($killID != null);
