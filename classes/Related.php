@@ -230,12 +230,12 @@ class Related
             'blue' => []
         ];
         foreach ($entities as $entityId => $entity) {
-            $affiliationId = static::determineAffiliationId($entity);
+            $affiliationId = self::determineAffiliationId($entity);
             if (is_null($affiliationId)) {
                 continue;
             }
 
-            if (static::calcScore($entity, $score, $teams['red']) <= static::calcScore($entity, $score, $teams['blue'])) {
+            if (static::calcScore($entity, $score, $teams['red']) <= self::calcScore($entity, $score, $teams['blue'])) {
                 $teams['red'][$affiliationId] = $entity;
             } else {
                 $teams['blue'][$affiliationId] = $entity;
@@ -247,7 +247,7 @@ class Related
         foreach ($teams as $teamName => $team) {
             $groups[$teamName] = [];
             foreach ($team as $entity) {
-                $groups[$teamName][static::determineAffiliationId($entity)] = static::determineAffiliationId($entity);
+                $groups[$teamName][self::determineAffiliationId($entity)] = self::determineAffiliationId($entity);
             }
         }
 
@@ -407,8 +407,8 @@ class Related
         $sortArray = [];
         $sortOrder = [];
         foreach ($entities as $key => $entity) {
-            $groupId = static::determineAffiliationId($entity);
-            if (!isset($sortArray[static::determineAffiliationId($entity)])) {
+            $groupId = self::determineAffiliationId($entity);
+            if (!isset($sortArray[self::determineAffiliationId($entity)])) {
                 $sortArray[$groupId] = 1;
 
             } else {
