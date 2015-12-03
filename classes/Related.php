@@ -215,14 +215,14 @@ class Related
         $entities = [];
         foreach ($kills as $kill) {
             $victim   = $kill['victim'];
-            $entities[static::determineEntityId($victim)] = $victim;
+            $entities[self::determineEntityId($victim)] = $victim;
 
             foreach ($kill['involved'] as $involved) {
-                $entities[static::determineEntityId($involved)] = $involved;
-                static::addScore($victim, $involved, $score);
+                $entities[self::determineEntityId($involved)] = $involved;
+                self::addScore($victim, $involved, $score);
             }
         }
-        $entities = static::sortEntitiesByLargestGroup($entities);
+        $entities = self::sortEntitiesByLargestGroup($entities);
 
         // Calculate who hates who
         $teams = [
@@ -235,7 +235,7 @@ class Related
                 continue;
             }
 
-            if (static::calcScore($entity, $score, $teams['red']) <= self::calcScore($entity, $score, $teams['blue'])) {
+            if (self::calcScore($entity, $score, $teams['red']) <= self::calcScore($entity, $score, $teams['blue'])) {
                 $teams['red'][$affiliationId] = $entity;
             } else {
                 $teams['blue'][$affiliationId] = $entity;
