@@ -211,11 +211,6 @@ class Related
      */
     private static function createTeams($kills)
     {
-        $teams = [
-            'red' => [],
-            'blue' => []
-        ];
-
         $score = [];
         $entities = [];
         foreach ($kills as $kill) {
@@ -230,14 +225,20 @@ class Related
         $entities = static::sortEntitiesByLargestGroup($entities);
 
         // Calculate who hates who
+        $teams = [
+            'red' => [],
+            'blue' => []
+        ];
         foreach ($entities as $entityId => $entity) {
-            $groupEntity = static::determineGroupId($entity);
-            if (is_null($groupEntity)) continue;
+            $affiliationId = static::determineAffiliationId($entity);
+            if (is_null($affiliationId)) {
+                continue;
+            }
 
             if (static::calcScore($entity, $score, $teams['red']) <= static::calcScore($entity, $score, $teams['blue'])) {
-                $teams['red'][$groupEntity] = $entity;
+                $teams['red'][$affiliationId] = $entity;
             } else {
-                $teams['blue'][$groupEntity] = $entity;
+                $teams['blue'][$affiliationId] = $entity;
             }
         }
 
@@ -246,7 +247,7 @@ class Related
         foreach ($teams as $teamName => $team) {
             $groups[$teamName] = [];
             foreach ($team as $entity) {
-                $groups[$teamName][static::determineGroupId($entity)] = static::determineGroupId($entity);
+                $groups[$teamName][static::determineAffiliationId($entity)] = static::determineAffiliationId($entity);
             }
         }
 
@@ -260,7 +261,7 @@ class Related
      * @param array $entity
      * @return null|int
      */
-    private static function determineGroupId($entity)
+    private static function determineAffiliationId($entity)
     {
         foreach (array('allianceID','corporationID') as $possibleId) {
             if (isset($entity[$possibleId])) {
@@ -336,7 +337,7 @@ class Related
                     }
 
                     $score[$victimId][$involvedId] += 5;
-                    $score[$involvedId][$victimId] += 5;
+                    $score[$involvedId][$victimId] =& $score[$victimId][$involvedId];
                 }
             }
         }
@@ -406,8 +407,8 @@ class Related
         $sortArray = [];
         $sortOrder = [];
         foreach ($entities as $key => $entity) {
-            $groupId = static::determineGroupId($entity);
-            if (!isset($sortArray[static::determineGroupId($entity)])) {
+            $groupId = static::determineAffiliationId($entity);
+            if (!isset($sortArray[static::determineAffiliationId($entity)])) {
                 $sortArray[$groupId] = 1;
 
             } else {
