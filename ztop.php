@@ -27,7 +27,7 @@ while (true) {
     addInfo('Kills remaining to be fetched.', $mdb->count('crestmails', ['processed' => false]));
     $killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
     addInfo('Kills last hour', $killsLastHour->count());
-    addInfo('Total Kills', $mdb->findField('storage', 'contents', ['locker' => 'totalKills']));
+    addInfo('Total Kills', $redis->get('zkb:totalKills'));
     addInfo('Top killID', $mdb->findField('killmails', 'killID', [], ['killID' => -1]));
 
     addInfo('', 0);
