@@ -135,6 +135,11 @@ $app->post('/post/', function () use ($app) {
     include 'view/postmail.php';
 });
 
+// Search
+$app->map('/search(/:search)/', function ($search = null) use ($app) {
+    include 'view/search.php';
+})->via('GET', 'POST');
+
 // Autocomplete
 $app->map('/autocomplete/', function () use ($app) {
     include 'view/autocomplete.php';
