@@ -81,8 +81,9 @@ while ($row = $iter->next()) {
 	$expires[$type] = true;
 }
 
-foreach ($expires as $type) $redis->expire("tq:ranks:$type:alltime:$today", (86400 * 15));
-foreach ($cleanup as $key) $redis->del($key);
+foreach ($expires as $type=>$value) $redis->expire("tq:ranks:$type:alltime:$today", (86400 * 15));
+foreach ($cleanup as $key=>$value) $redis->del($key);
+
 
 $redis->setex($todaysKey, 87000, true);
 
