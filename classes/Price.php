@@ -131,6 +131,7 @@ class Price
         } // Haven't loaded all data yet, bail!
         foreach ($titans as $titan) {
             $typeID = $titan['typeid'];
+	    if ($typeID == null) continue;
             static::setPrice($typeID, 100000000000); // 100b
         }
 
