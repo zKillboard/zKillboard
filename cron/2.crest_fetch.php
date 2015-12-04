@@ -88,28 +88,17 @@ function validKill(&$kill)
 		return true;
 	}
 
-	$npcOnly = true;
 	foreach ($kill['attackers'] as $attacker) {
-		if (isset($attacker['shipType']['id'])) {
-			$attackerGroupID = Info::getGroupID($attacker['shipType']['id']);
-			if ($attackerGroupID == 365) {
-				return true;
-			} // A tower is involved
-			if ($attackerGroupID == 99) {
-				return true;
-			} // A sentry gun is involved
-		}
+		if (@$attacker['character']['id'] > 0) return true;
+		if (@$attacker['corporation']['id'] > 1999999) return true;
+		if (@$attacker['alliance']['id'] > 0) return true;
 
-		if (isset($attacker['shipType']['id']) && $attacker['shipType']['id'] == 34495) {
-			return true;
-		} // A drifter is involved
-
-		// Don't process the kill if it's NPC only
-		if (isset($attacker['corporation']['id']) && $attacker['corporation']['id'] == 1000125) {
-			return true;
-		}
-		$npcOnly &= @$attacker['character']['id'] == 0 && (@$attacker['corporation']['id'] < 1999999 && @$attacker['corporation']['id'] != 1000125);
+		$attackerGroupID = Info::getGroupID(@$attacker['shipType']['id']);
+		if ($attackerGroupID == 365 || $attackerGroupID == 99) return true; // Tower or Sentry gun
+		
+		if (@$attacker['shipType']['id'] == 34495) return true; // Drifters
+		if (@$attacker['corporation']['id'] == 1000125) return true; // Drifters
 	}
 
-	return !$npcOnly;
+	return false;
 }
