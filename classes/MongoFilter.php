@@ -50,7 +50,7 @@ class MongoFilter
         if ($page > 0) {
             $cursor->skip($page * $limit);
         }
-        $cursor->limit($limit);
+        if (!isset($parameters['nolimit'])) $cursor->limit($limit);
 
         $result = array();
         foreach ($cursor as $row) {

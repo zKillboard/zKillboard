@@ -214,6 +214,9 @@ class Util
                     }
                     $parameters[$key] = (int) $value;
                 break;
+		case 'nolimit':
+			// This can and should be ignored since its a parameter that will remove limits for battle eeports
+			break;
                 default:
                     if ($addExtraParameters == true) {
                         if (is_numeric($value) && $value < 0) {
