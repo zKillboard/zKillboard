@@ -11,18 +11,18 @@ if ($app->request()->isPost()) {
 $search = strtolower($search);
 $low = "[$search\x00";
         
+$exactMatch = [];
+$partialMatch = [];
 $retVal = [];
 $types = ['typeID:flag', 'regionID', 'solarSystemID', 'allianceID', 'allianceID:flag', 'corporationID', 'corporationID:flag', 'characterID', 'typeID'];
 $timer = new Timer();
 foreach ($types as $type) {
-        if (sizeof($retVal) > 15) continue;
         $result = $redis->zRangeByLex("search:$type", $low, "+", 0, 9);
         
         $next = [];
 	$searchType = $type;
 	$type = str_replace(":flag", "", $type);
 	foreach ($result as $row) {
-		if (sizeof($retVal) > 15) continue;
 		$split = explode("\x00", $row);
 		if (substr($split[0], 0, strlen($search)) != $search) continue;
 		$id = $split[1];
@@ -39,9 +39,13 @@ foreach ($types as $type) {
 			$regionName = Info::getInfoField('regionID', $regionID, 'name');
 			$name = "$name ($regionName)";
 		}
-		$retVal[] = ['id' => $id, 'name' => $name, 'type' => str_replace("ID", "", $searchType), 'image' => $image];
+		if (strtolower($name) === $search) $exactMatch[] = ['id' => $id, 'name' => $name, 'type' => str_replace("ID", "", $searchType), 'image' => $image];
+		else $partialMatch[] = ['id' => $id, 'name' => $name, 'type' => str_replace("ID", "", $searchType), 'image' => $image];
 	}
 }   
+
+$result = array_merge($exactMatch, $partialMatch);
+if (sizeof($result) > 15) $result = array_slice($result, 0, 15);
 
 // Declare out json return type
 $app->contentType('application/json; charset=utf-8');
@@ -50,4 +54,4 @@ $app->contentType('application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 
-echo json_encode($retVal);
+echo json_encode($result);
