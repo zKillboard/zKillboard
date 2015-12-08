@@ -1,168 +1,154 @@
 <?php
 
-require_once '../init.php';
+require_once "../init.php";
 
-$i = date('Hi');
-if ($i != "400") exit();
+$today = date('Ymd', time() - (3600 * 4));
+$todaysKey = "RC:recentRanksCalculated:$today";
+if ($redis->get($todaysKey) == true) exit();
 
-$date = new MongoDate(strtotime(date('Ymd')));
-$types = ['characterID', 'corporationID', 'allianceID', 'factionID', 'groupID', 'shipTypeID', 'solarSystemID', 'regionID', 'locationID'];
-$timer = new Timer();
+$keys = $redis->keys("*recent*");
+foreach ($keys as $key) $redis->del($key);
+
+$statClasses = ['ships', 'isk', 'points'];
+$statTypes = ['Destroyed', 'Lost'];
+
 $now = time();
 $now = $now - ($now % 60);
-$then = $now - (90 * 6400);
+$then = $now - (90 * 86400);
 $ninetyDayKillID = null;
-do {
-	$result = $mdb->getCollection('killmails')->find(['dttm' => new MongoDate($then)], ['killID' => 1])->sort(['killID' => 1])->limit(1);
-	if ($row = $result->next()) {
-		$ninetyDayKillID = (int) $row['killID'];
-	} else {
-		$then += 60;
-	}
-	if ($then > $now) exit();
+do {   
+        $result = $mdb->getCollection('killmails')->find(['dttm' => new MongoDate($then)], ['killID' => 1])->sort(['killID' => 1])->limit(1);
+        if ($row = $result->next()) {
+                $ninetyDayKillID = (int) $row['killID'];
+        } else {
+                $then += 1;
+        }
+        if ($then > $now) exit();
 } while ($ninetyDayKillID === null);
+exit();
 
-// Clear out ranks more than two weeks old
-$mdb->remove('ranksProgress', ['date' => ['$lt' => $mdb->now(-86400 * 14)]]);
+$information = $mdb->getCollection("statistics");
 
-foreach ($types as $type) {
-    Util::out("Started recent calcs for $type");
-    $calcStats = $mdb->find('information', ['type' => $type]);
-    foreach ($calcStats as $row) {
-        calcStats($row, $ninetyDayKillID);
-    }
-    Util::out("Completed recent calcs for $type");
+Util::out("recent time ranks - first iteration");
+$iter = $information->find();
+while ($row = $iter->next()) {
+	$type = $row['type'];
+	$id = $row['id'];
+
+	$killID = getLatestKillID($type, $id, $ninetyDayKillID);
+	if ($killID < $ninetyDayKillID) continue;
+
+	$key = "tq:ranks:recent:$type";
+
+	$recentKills = getRecent($row['type'], $row['id'], true, $ninetyDayKillID); 
+	$recentLosses = getRecent($row['type'], $row['id'], false, $ninetyDayKillID); 
+
+	$update['recentShipsDestroyed'] = (int) $recentKills['killIDCount'];
+	$redis->zAdd("$key:shipsDestroyed", (int) $recentKills['killIDCount'], $id);
+	$update['recentPointsDestroyed'] = (int) $recentKills['zkb_pointsSum'];
+	$redis->zAdd("$key:pointsDestroyed", (int) $recentKills['zkb_pointsSum'], $id);
+	$update['recentIskDestroyed'] = (int) $recentKills['zkb_totalValueSum'];
+	$redis->zAdd("$key:iskDestroyed", (int) $recentKills['zkb_totalValueSum'], $id);
+	$update['recentShipsLost'] = (int) $recentLosses['killIDCount'];
+	$redis->zAdd("$key:shipsLost", (int) $recentLosses['killIDCount'], $id);
+	$update['recentPointsLost'] = (int) $recentLosses['zkb_pointsSum'];
+	$redis->zAdd("$key:pointsLost", (int) $recentLosses['zkb_pointsSum'], $id);
+	$update['recentIskLost'] = (int) $recentLosses['zkb_totalValueSum'];
+	$redis->zAdd("$key:iskLost", (int) $recentLosses['zkb_totalValueSum'], $id);
+
+	$mdb->set("statistics", ['type' => $type, 'id' => $id], $update);
 }
 
-function calcStats($row, $ninetyDayKillID)
-{
-    global $mdb, $debug;
+Util::out("recent time ranks - second iteration");
+$iter = $information->find();
+while ($row = $iter->next()) {
+	$type = $row['type'];
+	$id = $row['id'];
+	$key = "tq:ranks:recent:$type";
+	$update = [];
+	foreach ($statClasses as $statClass) {
+		foreach ($statTypes as $statType) {
+			$rank = $redis->zRevRank("$key:${statClass}${statType}", $id);
+			$st = ucwords("${statClass}${statType}Rank");
+			$update["recent$st"] = $rank;
+		}
+	}
 
-    $type = $row['type'];
-    $id = $row['id'];
+	$shipsDestroyed = getValue($row, 'shipsDestroyed');
+	$iskDestroyed = getValue($row, 'iskDestroyed');
+	$pointsDestroyed = getValue($row, 'pointsDestroyed');
+	if ($shipsDestroyed > 0 && $iskDestroyed > 0 && $pointsDestroyed > 0) {
+		$shipsDestroyedRank = getValue($update, 'shipsDestroyedRank');
+		$shipsLost = getValue($row, 'shipsLost');
+		$shipsLostRank = getValue($update, 'shipsLostRank');
+		$shipsEff = ($shipsDestroyed / ($shipsDestroyed + $shipsLost));
 
-    $killID = (int) @$row['killID'];
-    $key = ['type' => $type, 'id' => $id];
-    if ($killID < $ninetyDayKillID) {
-        $mdb->getCollection('statistics')->update($key, ['$unset' => ['recentShipsLost' => 1, 'recentPointsLost' => 1, 'recentIskLost' => 1, 'recentShipsDestroyed' => 1, 'recentPointsDestroyed' => 1, 'recentIskDestroyed' => 1, 'recentOverallRank' => 1, 'recentOverallScore' => 1]]);
+		$iskDestroyedRank = getValue($update, 'iskDestroyedRank');
+		$iskLost = getValue($row, 'iskLost');
+		$iskLostRank = getValue($update, 'iskLostRank');
+		$iskEff = ($iskDestroyed / ($iskDestroyed + $iskLost));
 
-        return;
-    }
+		$pointsDestroyedRank = getValue($row, 'pointsDestroyedRank');
+		$pointsLost = getValue($row, 'pointsLost');
+		$pointsLostRank = getValue($row, 'pointsLostRank');
+		$pointsEff = ($pointsDestroyed / ($pointsDestroyed + $pointsLost));
 
-    $stats = [];
-    for ($i = 0; $i <= 1; ++$i) {
-        $isVictim = ($i == 0);
-        if (($type == 'regionID' || $type == 'solarSystemID') && $isVictim == true) {
-            continue;
-        }
+		$avg = ceil(($shipsDestroyedRank + $iskDestroyedRank + $pointsDestroyedRank) / 3);
+		$adjuster = (1 + $shipsEff + $iskEff + $pointsEff) / 4;
+		$score = ceil($avg / $adjuster);
+		$redis->zAdd("tq:ranks:recent:$type:score", $score, $id);
+		$mdb->set("statistics", ['type' => $type, 'id' => $id], $update);
+	}
+	else
+	{
+		$mdb->getCollection('statistics')->update(['type' => $type, 'id' => $id], ['$unset' => ['recentShipsLost' => 1, 'recentPointsLost' => 1, 'recentIskLost' => 1, 'recentShipsDestroyed' => 1, 'recentPointsDestroyed' => 1, 'recentIskDestroyed' => 1, 'recentOverallRank' => 1, 'recentOverallScore' => 1]]);
+	}
+}
+
+Util::out("recent time ranks - third iteration");
+$iter = $information->find();
+while ($row = $iter->next()) {
+	$type = $row['type'];
+	$id = $row['id'];
+	$rank = $redis->zRank("tq:ranks:recent:$type:score", $id);
+	if ($rank !== false) $mdb->set("statistics", $row, ['recentOverallRank' => (1 + $rank)]);
+}
+
+$keys = $redis->keys("*recent*");
+foreach ($keys as $key) $redis->del($key);
+
+$redis->setex($todaysKey, 87000, true);
+Util::out("Recent rankings complete");
+
+function getValue(&$array, $index) {
+	$index = ucwords($index);
+	$value = @$array["recent$index"];
+	return $value;
+}
+
+function getRecent($type, $id, $isVictim, $ninetyDayKillID) {
+	global $mdb;
+
+	// build the query
+	$query = [$type => $id, 'isVictim' => $isVictim];
+	$query = MongoFilter::buildQuery($query);
+	// set the proper sequence values
+	$query = ['$and' => [['killID' => ['$gte' => $ninetyDayKillID]], $query]];
+
+	$result = $mdb->group('killmails', [], $query, 'killID', ['zkb.points', 'zkb.totalValue']);
+	return sizeof($result) ? $result[0] : ['killIDCount' => 0, 'zkb_pointsSum' => 0, 'zkb_totalValueSum' => 0];
+}
+
+function getLatestKillID($type, $id, $ninetyDayKillID) {
+        global $mdb;
 
         // build the query
-        $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim];
+        $query = [$type => $id, 'isVictim' => false];
         $query = MongoFilter::buildQuery($query);
         // set the proper sequence values
         $query = ['$and' => [['killID' => ['$gte' => $ninetyDayKillID]], $query]];
 
-        $recent = $mdb->group('killmails', [], $query, 'killID', ['zkb.points', 'zkb.totalValue']);
-        mergeAllTime($stats, $recent, $isVictim);
-    }
-    $mdb->getCollection('statistics')->update($key, ['$set' => $stats]);
-}
-
-function mergeAllTime(&$stats, $result, $isVictim)
-{
-    if (sizeof($result) == 0) {
-        return;
-    }
-
-    $row = $result[0];
-    $dl = ($isVictim ? 'Lost' : 'Destroyed');
-    if (!isset($stats["recentShips$dl"])) $stats["recentShips$dl"] = 0;
-    $stats["recentShips$dl"] += $row['killIDCount'];
-    if (!isset($stats["recentPoints$dl"])) $stats["recentPoints$dl"] = 0;
-    $stats["recentPoints$dl"] += $row['zkb_pointsSum'];
-    if (!isset($stats["recentIsk$dl"])) $stats["recentIsk$dl"] = 0;
-    $stats["recentIsk$dl"] += (int) $row['zkb_totalValueSum'];
-}
-
-$categories = ['Ships', 'Isk', 'Points'];
-
-foreach ($types as $type) {
-    Util::out("Starting recent ranking for $type");
-    $size = $mdb->count('statistics', ['type' => $type]);
-    $rankingIDs = [];
-
-    foreach ($categories as $category) {
-        for ($i = 0; $i <= 1; ++$i) {
-            $field = $category.($i == 0 ? 'Destroyed' : 'Lost');
-
-            $currentValue = -1;
-            $currentRank = 0;
-
-            $allIDs = $mdb->find('statistics', ['type' => $type], ["recent$field" => -1], null, ['months' => 0, 'groups' => 0]);
-            $currentRank = 0;
-
-            foreach ($allIDs as $row) {
-                if (!isset($row["recent$field"])) {
-                    continue;
-                }
-                ++$currentRank;
-                $mdb->getCollection('statistics')->update($row, ['$set' => ["recent{$field}Rank" => $currentRank]]);
-            }
-        }
-    }
-
-    $size = $mdb->count('statistics', ['type' => $type]);
-    $counter = 0;
-    $cursor = $mdb->find('statistics', ['type' => $type], [], null, ['months' => 0, 'groups' => 0]);
-    foreach ($cursor as $row) {
-        ++$counter;
-        $id = $row['id'];
-
-        $shipsDestroyed = getValue($row, 'recentShipsDestroyed', $size);
-        $shipsDestroyedRank = getValue($row, 'recentShipsDestroyedRank', $size);
-        $shipsLost = getValue($row, 'recentShipsLost', $size);
-        $shipsLostRank = getValue($row, 'recentShipsLostRank', $size);
-        $shipsEff = ($shipsDestroyed / ($shipsDestroyed + $shipsLost));
-
-        $iskDestroyed = getValue($row, 'recentIskDestroyed', $size);
-        $iskDestroyedRank = getValue($row, 'recentIskDestroyedRank', $size);
-        $iskLost = getValue($row, 'recentIskLost', $size);
-        $iskLostRank = getValue($row, 'recentIskLostRank', $size);
-        $iskEff = ($iskDestroyed / ($iskDestroyed + $iskLost));
-
-        $pointsDestroyed = getValue($row, 'recentPointsDestroyed', $size);
-        $pointsDestroyedRank = getValue($row, 'recentPointsDestroyedRank', $size);
-        $pointsLost = getValue($row, 'recentPointsLost', $size);
-        $pointsLostRank = getValue($row, 'recentPointsLostRank', $size);
-        $pointsEff = ($pointsDestroyed / ($pointsDestroyed + $pointsLost));
-
-        $avg = ceil(($shipsDestroyedRank + $iskDestroyedRank + $pointsDestroyedRank) / 3);
-        $adjuster = (1 + $shipsEff + $iskEff + $pointsEff) / 4;
-        $score = ceil($avg / $adjuster);
-
-        $mdb->getCollection('statistics')->update($row, ['$set' => ['recentOverallScore' => (int) $score]]);
-    }
-
-    $currentRank = 0;
-    $result = $mdb->find('statistics', ['type' => $type], ['recentOverallScore' => 1], null, ['months' => 0, 'groups' => 0]);
-
-    foreach ($result as $row) {
-        if (@$row['recentOverallScore'] == null) {
-            $mdb->getCollection('statistics')->update($row, ['$unset' => ['recentOverallRank' => 1]]);
-        } else {
-            ++$currentRank;
-            $mdb->getCollection('statistics')->update($row, ['$set' => ['recentOverallRank' => $currentRank]]);
-            $mdb->insertUpdate('ranksProgress', ['type' => $type, 'id' => $row['id'], 'date' => $date], ['recentOverallRank' => $currentRank]);
-        }
-    }
-}
-
-function getValue($array, $field, $default)
-{
-    $value = @$array[$field];
-    if (((int) $value) != 0) {
-        return $value;
-    }
-
-    return $default;
+	$killmail = $mdb->findDoc("killmails", $query);
+	if ($killmail == null) return 0;
+	return $killmail['killID'];
 }
