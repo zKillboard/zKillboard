@@ -269,11 +269,7 @@ class Info
      */
     public static function getGroupID($id)
     {
-        global $mdb;
-
-        $groupID = (int) $mdb->findField('information', 'groupID', ['cacheTime' => 3600, 'type' => 'typeID', 'id' => (int) $id]);
-
-        return $groupID;
+	return Info::getInfoField('typeID', $id, 'groupID');
     }
 
     /**
