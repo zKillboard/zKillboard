@@ -2,19 +2,19 @@
 
 require_once '../init.php';
 
-if (date('H') != 4) {
-    exit();
-}
-if (date('d') % 3 != 0) exit(); // Run every 3 days
+$date = date('Ymd');
+$redisKey = "tq:topAllTime:$date";
+if ($redis->get($redisKey) == true) exit();
 
 $types = ['allianceID', 'corporationID', 'factionID', 'shipTypeID', 'groupID', 'solarSystemID', 'regionID', 'locationID'];
 
-foreach ($types as $type) {
-    $entities = $mdb->find('statistics', ['type' => $type]);
-    foreach ($entities as $row) {
-        calcTop($row);
-    }
+$iter = $mdb->getCollection('statistics')->find();
+while ($row = $iter->next()) {
+	calcTop($row);
+	$redis->get('_'); // Prevent redis from timing out
 }
+
+$redis->setex($redisKey, 86400, true);
 
 function calcTop($row)
 {
