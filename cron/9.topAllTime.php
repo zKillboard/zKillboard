@@ -8,6 +8,7 @@ if ($redis->get($redisKey) == true) exit();
 
 $types = ['allianceID', 'corporationID', 'factionID', 'shipTypeID', 'groupID', 'solarSystemID', 'regionID', 'locationID'];
 
+MongoCursor::$timeout = -1;
 $iter = $mdb->getCollection('statistics')->find();
 while ($row = $iter->next()) {
 	calcTop($row);
