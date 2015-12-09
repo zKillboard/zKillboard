@@ -31,7 +31,7 @@ function getCSV($url, $method) {
 }
 
 function updateLocationID($fields) {
-	global $mdb;
+	global $mdb, $redis;
 
 	$locationID = (int) $fields['ITEMID'];
 	$name = $fields['ITEMNAME'];
