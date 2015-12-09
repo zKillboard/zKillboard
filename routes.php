@@ -144,6 +144,9 @@ $app->map('/search(/:search)/', function ($search = null) use ($app) {
 $app->map('/autocomplete/', function () use ($app) {
     include 'view/autocomplete.php';
 })->via('POST');
+$app->map('/autocomplete/:search', function ($search) use ($app) {
+    include 'view/autocomplete.php';
+})->via('GET');
 
 // Intel
 $app->get('/intel/supers/', function () use ($app) {
