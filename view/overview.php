@@ -285,18 +285,27 @@ if ($key == 'system') {
     $statType = "{$key}ID";
 }
 $statistics = $mdb->findDoc('statistics', ['type' => $statType, 'id' => (int) $id]);
-$prevRanks = $mdb->findDoc('ranksProgress', ['cacheTime' => 36000, 'type' => $statType, 'id' => (int) $id], ['date' => 1]);
-if ($prevRanks != null && isset($prevRanks['date']->sec)) {
-    $prevRanks['date'] = date('Y-m-d', $prevRanks['date']->sec);
-    $statistics['prevRanks'] = $prevRanks;
-}
+
+// Get previous rankings 
+$twoWeeks = time() - (14 * 86400);
+$twoWeeksDate = date('Ymd');
+$twoWeeksRank = null;
+do {
+	$twoWeeksDate = date('Ymd', $twoWeeks);
+	$twoWeeksRank = $redis->hGet("tq:ranks:$statType:alltime:$twoWeeksDate", $id);
+	if ($twoWeeksRank == null) $twoWeeks += 86400;
+} while ($twoWeeksRank == null && $twoWeeks < time());
+$prevRanks = ['overallRank' => $twoWeeksRank, 'date' => date('Y-m-d', $twoWeeks)];
+
+if ($twoWeeksRank != null) $prevRanks['overallRecentRank'] = $redis->hGet("tq:ranks:$statType:recent:$twoWeeksDate", $id);
+$statistics['prevRanks'] = $prevRanks;
 
 $groups = @$statistics['groups'];
 if (is_array($groups) and sizeof($groups) > 0) {
     Info::addInfo($groups);
     $g = [];
     foreach ($groups as $group) {
-        $g[$group['groupName']] = $group;
+        @$g[$group['groupName']] = $group;
     }
     ksort($g);
 

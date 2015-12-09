@@ -6,7 +6,7 @@ $today = date('Ymd', time() - (3600 * 4));
 $todaysKey = "RC:recentRanksCalculated:$today";
 if ($redis->get($todaysKey) == true) exit();
 
-$keys = $redis->keys("*recent*");
+$keys = $redis->keys("tq:ranks:recent:*");
 foreach ($keys as $key) $redis->del($key);
 
 $statClasses = ['ships', 'isk', 'points'];
@@ -25,7 +25,6 @@ do {
         }
         if ($then > $now) exit();
 } while ($ninetyDayKillID === null);
-exit();
 
 $information = $mdb->getCollection("statistics");
 
@@ -45,14 +44,19 @@ while ($row = $iter->next()) {
 
 	$update['recentShipsDestroyed'] = (int) $recentKills['killIDCount'];
 	$redis->zAdd("$key:shipsDestroyed", (int) $recentKills['killIDCount'], $id);
+
 	$update['recentPointsDestroyed'] = (int) $recentKills['zkb_pointsSum'];
 	$redis->zAdd("$key:pointsDestroyed", (int) $recentKills['zkb_pointsSum'], $id);
+
 	$update['recentIskDestroyed'] = (int) $recentKills['zkb_totalValueSum'];
 	$redis->zAdd("$key:iskDestroyed", (int) $recentKills['zkb_totalValueSum'], $id);
+
 	$update['recentShipsLost'] = (int) $recentLosses['killIDCount'];
 	$redis->zAdd("$key:shipsLost", (int) $recentLosses['killIDCount'], $id);
+
 	$update['recentPointsLost'] = (int) $recentLosses['zkb_pointsSum'];
 	$redis->zAdd("$key:pointsLost", (int) $recentLosses['zkb_pointsSum'], $id);
+
 	$update['recentIskLost'] = (int) $recentLosses['zkb_totalValueSum'];
 	$redis->zAdd("$key:iskLost", (int) $recentLosses['zkb_totalValueSum'], $id);
 
@@ -111,11 +115,19 @@ while ($row = $iter->next()) {
 	$type = $row['type'];
 	$id = $row['id'];
 	$rank = $redis->zRank("tq:ranks:recent:$type:score", $id);
-	if ($rank !== false) $mdb->set("statistics", $row, ['recentOverallRank' => (1 + $rank)]);
+	if ($rank !== false) {
+		$rank = 1 + $rank;
+		$mdb->set("statistics", $row, ['recentOverallRank' => $rank]);
+		$redis->hSet("tq:ranks:$type:recent:$today", $rank, $id);
+	}
 }
 
-$keys = $redis->keys("*recent*");
+
+$keys = $redis->keys("tq:ranks:recent:*");
 foreach ($keys as $key) $redis->del($key);
+
+$keys = $redis->keys("tq:ranks:*:recent:*");
+foreach ($keys as $key) $redis->expire($key, (14 * 86400));
 
 $redis->setex($todaysKey, 87000, true);
 Util::out("Recent rankings complete");
