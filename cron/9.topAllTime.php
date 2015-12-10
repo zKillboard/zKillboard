@@ -48,6 +48,6 @@ function calcTop($row)
 	$topLists[] = array('type' => 'ship', 'data' => Stats::getTop('shipTypeID', $parameters, true));
 	$topLists[] = array('type' => 'system', 'data' => Stats::getTop('solarSystemID', $parameters, true));
 
-	$r = $mdb->set('statistics', $row, ['topAllTime' => $topLists, 'allTimeSum' => $currentSum]);
+	$mdb->set('statistics', $row, ['topAllTime' => $topLists, 'allTimeSum' => $currentSum]);
 	if ($timer->stop() > 60000) exit();
 }
