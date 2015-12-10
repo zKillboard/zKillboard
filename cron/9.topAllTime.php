@@ -4,39 +4,50 @@ require_once '../init.php';
 
 $date = date('Ymd');
 $redisKey = "tq:topAllTime:$date";
-if ($redis->get($redisKey) == true) exit();
+$queueTopAlltime = new RedisQueue("queueTopAlltime");
+if ($redis->get($redisKey) != true)
+{
+	$queueTopAlltime->clear();
+	$iter = $mdb->getCollection('statistics')->find([], ['months' => 0, 'groups' => 0, 'topAllTime' => 0]);
+	while ($row = $iter->next()) {
+		if ($row['type'] == 'characterID') continue;
 
-$types = ['allianceID', 'corporationID', 'factionID', 'shipTypeID', 'groupID', 'solarSystemID', 'regionID', 'locationID'];
+		$allTimeSum = (int) @$row['allTimeSum'];
+		$currentSum = (int) @$row['shipsDestroyed'];
 
-MongoCursor::$timeout = -1;
-$iter = $mdb->getCollection('statistics')->find();
-while ($row = $iter->next()) {
-	calcTop($row);
-	$redis->get('_'); // Prevent redis from timing out
+		if ($currentSum == 0) continue;
+		if ($currentSum == $allTimeSum) continue;
+		if (($currentSum - $allTimeSum) < ($allTimeSum * 0.01)) continue;
+
+		$queueTopAlltime->push($row['_id']);
+	}
 }
 
 $redis->setex($redisKey, 86400, true);
 
+while ($id = $queueTopAlltime->pop()) {
+	$row = $mdb->findDoc('statistics', ['_id' => $id]);
+	calcTop($row);
+}
+
 function calcTop($row)
 {
-    global $mdb;
+	global $mdb;
 
-    $allTimeSum = (int) @$row['allTimeSum'];
-    $currentSum = (int) @$row['shipsDestroyed'];
+	$timer = new Timer();
+	$currentSum = (int) @$row['shipsDestroyed'];
 
-    if ($allTimeSum == $currentSum) return;
+	$parameters = [$row['type'] => $row['id']];
+	$parameters['limit'] = 10;
+	$parameters['kills'] = true;
 
-    $parameters = [$row['type'] => $row['id']];
-    $parameters['limit'] = 10;
-    $parameters['kills'] = true;
+	$topLists[] = array('type' => 'character', 'data' => Stats::getTop('characterID', $parameters));
+	$topLists[] = array('type' => 'corporation', 'data' => Stats::getTop('corporationID', $parameters, true));
+	$topLists[] = array('type' => 'alliance', 'data' => Stats::getTop('allianceID', $parameters, true));
+	$topLists[] = array('type' => 'faction', 'data' => Stats::getTop('factionID', $parameters, true));
+	$topLists[] = array('type' => 'ship', 'data' => Stats::getTop('shipTypeID', $parameters, true));
+	$topLists[] = array('type' => 'system', 'data' => Stats::getTop('solarSystemID', $parameters, true));
 
-    $topLists[] = array('type' => 'character', 'data' => Stats::getTop('characterID', $parameters));
-    $topLists[] = array('type' => 'corporation', 'data' => Stats::getTop('corporationID', $parameters, true));
-    $topLists[] = array('type' => 'alliance', 'data' => Stats::getTop('allianceID', $parameters, true));
-    $topLists[] = array('type' => 'faction', 'data' => Stats::getTop('factionID', $parameters, true));
-    $topLists[] = array('type' => 'ship', 'data' => Stats::getTop('shipTypeID', $parameters, true));
-    $topLists[] = array('type' => 'system', 'data' => Stats::getTop('solarSystemID', $parameters, true));
-    do {
-        $r = $mdb->set('statistics', $row, ['topAllTime' => $topLists, 'allTimeSum' => $currentSum]);
-    } while ($r['ok'] != 1);
+	$r = $mdb->set('statistics', $row, ['topAllTime' => $topLists, 'allTimeSum' => $currentSum]);
+	if ($timer->stop() > 60000) exit();
 }
