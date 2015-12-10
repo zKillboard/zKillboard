@@ -48,7 +48,6 @@ function applyBalances()
 		if ($row['ownerID2'] != $walletCharacterID) {
 			continue;
 		}
-		$userID = null;
 
 		$date = $row['date'];
 		$time = strtotime($date);

@@ -2,15 +2,7 @@
 
 global $mdb;
 
-if (!is_numeric($id)) {
-    $id = Info::getItemId($id);
-    if ($id > 0) {
-        header("Location: /item/$id/");
-    } else {
-        header('Location: /');
-    }
-    die();
-}
+if (!is_numeric($id)) header('Location: /');
 
 $info = $mdb->findDoc("information", ['type' => 'typeID', 'id' => (int) $id, 'cacheTime' => 3600]);
 $info['typeName'] = $info['name'];

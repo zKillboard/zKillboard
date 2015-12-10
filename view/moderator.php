@@ -49,15 +49,6 @@ if ($_POST) {
             $app->redirect("/moderator/tickets/$id/");
         }
     }
-    if (isset($delete)) {
-        if ($delete < 0) {
-            Util::deleteKill($delete);
-            Db::execute('DELETE FROM zz_tickets WHERE id = :id', array(':id' => $id));
-            Db::execute('DELETE FROM zz_tickets_replies WHERE belongsTo = :belongsTo', array(':belongsTo' => $id));
-            $app->redirect('/moderator/reportedkills/');
-        }
-        $message = 'Error, kill is positive, and thus api verified.. something is wrong!';
-    }
 
     if (isset($manualpull)) {
         $message = 'ah';

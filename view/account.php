@@ -22,7 +22,7 @@ global $twig, $adFreeMonthCost, $baseAddr;
 if ($_POST) {
     // Check for adfree purchase
     $purchase = Util::getPost('purchase');
-    if ($purchase) {
+    if ($purchase != null) {
         if ($purchase == 'donate') {
             $amount = User::getBalance($userID);
             if ($amount > 0) {
@@ -135,7 +135,7 @@ if ($_POST) {
     }
 
     $subdomain = Util::getPost('subdomain');
-    if ($subdomain) {
+    if ($subdomain != null) {
         $banner = Util::getPost('banner');
         $alias = Util::getPost('alias');
         $bannerUpdates = array("$subdomain" => $banner);
@@ -225,7 +225,7 @@ foreach ($domainChars as $domainChar) {
     }
 
     $showDisqus = Util::getPost('showDisqus');
-    if ($showDisqus) {
+    if ($showDisqus != null) {
         UserConfig::set('showDisqus', $showDisqus == 'true');
         $error = 'Disqus setting updated to '.($showDisqus ? ' display.' : ' not display.').' The next page load will reflect the change.';
     }
