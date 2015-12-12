@@ -2,15 +2,24 @@
 
 class Info
 {
+    /**
+     * @var array  Used for static caching of getInfoField results
+     */
+    static $infoFieldCache;
+
     public static function getInfoField($type, $id, $field)
     {
         global $mdb, $redis;
+        $key = "$type . $id . $field";
+        if (isset(self::$infoFieldCache[$key])) {
+            return self::$infoFieldCache[$key];
+        }
 
         $data = $redis->hGet("tq:$type:$id", $field);
         if ($data == null) {
             $data = $mdb->findField('information', "$field", ['type' => $type, 'id' => (int) $id, 'cacheTime' => 300]);
         }
-
+        self::$infoFieldCache[$key] = $data;
         return $data;
     }
 
