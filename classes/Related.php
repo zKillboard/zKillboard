@@ -323,7 +323,7 @@ class Related
                     $victimId = $victim[$type];
                     $involvedId = $involved[$type2];
 
-                    if (!isset($score[$type][$victimId])) {
+                    if (!isset($score[$victimId])) {
                         $score[$victimId] = [];
                     }
                     if (!isset($score[$involvedId])) {
