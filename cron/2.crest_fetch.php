@@ -31,21 +31,26 @@ while (!Util::exitNow() && $timer->stop() < 115000) {
 		}
 
 		$killmail = CrestTools::fetch($id, $hash);
-		if (!isset($killmail['attackers'])) $killmail = null;
-		switch ($killmail) {
-			case 403:
-				$mdb->remove('crestmails', $crestmail);
-				continue;
-			case 503:
+		if (is_integer($killmail)) Util::out("$id $killmail");
+		// The following if statements used to be a switch statement, but for some reason it didn't always process correctly
+		if ($killmail == 403) {
+			$mdb->getCollection("crestmails")->remove(['_id' => $crestmail["_id"]]);
+			continue;
+		}
+		if ($killmail == 503) {
 				$crestmails->update($crestmail, array('$set' => array('processed' => false, 'errorCode' => $killmail)));
 				continue;
-			case 415:
-			case 500:
-			case '':
-			case null:
+		}
+		if ($killmail == 0) {
+				$crestmails->update($crestmail, array('$set' => array('processed' => false)));
+				continue;
+		}
+		if (in_array($killmail, [415, 500, '', null])) {
 				$crestmails->update($crestmail, array('$set' => array('processed' => null, 'error' => $error)));
 				continue;
 		}
+		if (is_integer($killmail)) Util::out("after $id $killmail");
+		if (is_integer($killmail)) var_dump($killmail);
 
 		unset($crestmail['npcOnly']);
 		unset($killmail['zkb']);
@@ -53,6 +58,9 @@ while (!Util::exitNow() && $timer->stop() < 115000) {
 
 		if (!$mdb->exists('rawmails', ['killID' => (int) $id])) {
 			$killsLastHour->add($id);
+			if ($killmail == null) {
+				Util::out("saving null killmail? id is $id");
+			}
 			$rawmails->save($killmail);
 		}
 
@@ -95,7 +103,7 @@ function validKill(&$kill)
 
 		$attackerGroupID = Info::getGroupID(@$attacker['shipType']['id']);
 		if ($attackerGroupID == 365 || $attackerGroupID == 99) return true; // Tower or Sentry gun
-		
+
 		if (@$attacker['shipType']['id'] == 34495) return true; // Drifters
 		if (@$attacker['corporation']['id'] == 1000125) return true; // Drifters
 	}
