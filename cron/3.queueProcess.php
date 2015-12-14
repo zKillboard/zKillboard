@@ -141,6 +141,7 @@ while (!Util::exitNow()) {
         }
 
         $queueInfo->push($killID);
+	$redis->incr("zkb:totalKills");
 
         ++$counter;
         if (Util::exitNow()) {
