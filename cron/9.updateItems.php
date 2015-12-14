@@ -5,7 +5,7 @@ require_once "../init.php";
 if (date('i') != 45) exit();
 
 $assign = ['capacity', 'name', 'portionSize', 'mass', 'volume', 'description', 'radius', 'published'];
-$rows = $mdb->getCollection("information")->find(['type' => 'typeID']);
+$rows = $mdb->find("information", ['type' => 'typeID']);
 foreach ($rows as $row) {
 	$typeID = (int) $row['id'];
 	$lastCrestUpdate = @$row['lastCrestUpdate'];
