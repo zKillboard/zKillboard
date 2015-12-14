@@ -1,15 +1,15 @@
 #!/usr/bin/php5
 <?php
 
-require_once 'init.php';
+require_once '../init.php';
 
-echo "gathering information....\n";
 $redisQueues = [];
 $priorKillLog = 0;
 
 $deltaArray = [];
 
 while (true) {
+    ob_start();
     $infoArray = [];
 
     $queues = $redis->sMembers('queues');
@@ -60,7 +60,7 @@ while (true) {
         }
     }
 
-    echo exec('clear; date').'  Load: '.getLoad()."  Memory: ${memUsed}G/${memTotal}G  Redis: $mem  TokuDB: ${storageSize}G / ${dataSize}G\n";
+    echo exec('date').'  Load: '.getLoad()."  Memory: ${memUsed}G/${memTotal}G  Redis: $mem  TokuDB: ${storageSize}G / ${dataSize}G\n";
     echo "\n";
     foreach ($infoArray as $i) {
         foreach ($i as $name => $count) {
@@ -74,6 +74,8 @@ while (true) {
             echo "$count $name\n";
         }
     }
+    $output = ob_get_contents();
+    file_put_contents("${baseDir}/public/ztop.txt", $output);
     sleep(3);
 }
 

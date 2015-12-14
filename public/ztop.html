@@ -1,0 +1,20 @@
+<html>
+  <head>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  </head>
+  <body>
+    <pre id="textblock">
+    </pre>
+  </body>
+  <script type="text/javascript">
+    $( document ).ready(function() { 
+       updateTextBlock();
+    });
+    function updateTextBlock() {
+      $.get("/ztop.txt", function( data ) {
+        $("#textblock").text(data);
+        setTimeout("updateTextBlock();", 3000);
+      });
+    }
+  </script>
+</html>
