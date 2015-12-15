@@ -31,15 +31,15 @@
 	</tr>
 	<tr class="item_dropped_row hidden-xs">
 		<td colspan="2"><h5>Total Dropped:</h5></td>
-		<td colspan="4" style="text-align: right;"><div class="pull-right" style="width: 100%;"><h5 class="item_dropped" rel="tooltip" title="&#36;{{ extra.droppedprice.usd|number_format(2, '.', ',') }} / {{ extra.droppedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.droppedprice.gbp|number_format(2, '.', ',') }}">{{ extra.droppedisk|number_format(2, '.', ',')}} ISK</h5></div></td>
+		<td colspan="4" style="text-align: right;"><div class="pull-right" style="width: 100%;"><h5 class="item_dropped" rel="tooltip" title="&#36;{{ extra.droppedprice.usd|number_format(2, '.', ',') }} / {{ extra.droppedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.droppedprice.gbp|number_format(2, '.', ',') }}">{{ extra.droppedisk|number_format(2, '.', ',')}}</h5></div></td>
 	</tr>
 	<tr class="hidden-xs">
 		<td colspan="2"><h5>Total Destroyed:</h5></td>
-		<td colspan="4" style="text-align: right;"><div class="pull-right" style="width: 100%;"><h5 class="item_destroyed" rel="tooltip" title="&#36;{{ extra.destroyedprice.usd|number_format(2, '.', ',') }} / {{ extra.destroyedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.destroyedprice.gbp|number_format(2, '.', ',') }}">{{ extra.lostisk|number_format(2, '.', ',')}} ISK</h5></div></td>
+		<td colspan="4" style="text-align: right;"><div class="pull-right" style="width: 100%;"><h5 class="item_destroyed" rel="tooltip" title="&#36;{{ extra.destroyedprice.usd|number_format(2, '.', ',') }} / {{ extra.destroyedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.destroyedprice.gbp|number_format(2, '.', ',') }}">{{ extra.lostisk|number_format(2, '.', ',')}}</h5></div></td>
 	</tr>
 	<tr class="hidden-xs">
 		<td colspan="2"><h5>Grand Total:</h5></td>
-		<td colspan="4" style="text-align: right;" class="totalprice"><div class="pull-right" style="width: 100%;"><h5 rel="tooltip" title="&#36;{{ extra.totalprice.usd|number_format(2, '.', ',') }} / {{ extra.totalprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.totalprice.gbp|number_format(2, '.', ',') }}">{{ (extra.lostisk + extra.droppedisk)|number_format(2, '.', ',')}} ISK</h5></div></td>
+		<td colspan="4" style="text-align: right;" class="totalprice"><div class="pull-right" style="width: 100%;"><h5 rel="tooltip" title="&#36;{{ extra.totalprice.usd|number_format(2, '.', ',') }} / {{ extra.totalprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.totalprice.gbp|number_format(2, '.', ',') }}">{{ (extra.lostisk + extra.droppedisk)|number_format(2, '.', ',')}}</h5></div></td>
 	</tr>
 	</tbody>
 </table>
