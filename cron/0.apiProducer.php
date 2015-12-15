@@ -67,6 +67,7 @@ while ($timer->stop() <= 58000) {
 
 	foreach ($apiKeyInfo->key->characters as $character) {
 		$characterID = (int) $character->characterID;
+		$redis->setex("tq:keyID:$keyID:$characterID", 86400, true);
 		$characterIDs[] = $characterID;
 
 		// Make sure we have the names and id's in the information table
