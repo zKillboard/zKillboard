@@ -2,92 +2,103 @@
 
 require_once "../init.php";
 
-$today = date('Ymd');
+$today = date('Ymd', time() - (3600 * 4));
 $todaysKey = "RC:alltimeRanksCalculated:$today";
 if ($redis->get($todaysKey) == true) exit();
 
 $statClasses = ['ships', 'isk', 'points'];
 $statTypes = ['Destroyed', 'Lost'];
-$cleanup = [];
-$expires = [];
 
 $information = $mdb->getCollection("statistics");
 
-Util::out("All time ranks - first iteration");
-$iter = $information->find();
+Util::out("Alltime ranks - first iteration");
+$types = [];
+$iter = $information->find(['type' => 'allianceID']);
 while ($row = $iter->next()) {
 	$type = $row['type'];
 	$id = $row['id'];
-	$key = "tq:ranks:$type";
-	foreach ($statClasses as $statClass) {
-		foreach ($statTypes as $statType) {
-			$value = (int) @$row["${statClass}${statType}"];
-			$redisKey = "${key}:${statClass}${statType}";
-			$redis->zAdd($redisKey, $value, $id);
-			$cleanup[$redisKey] = true;
+
+	$types[$type] = true;
+	$key = "tq:ranks:alltime:$type:$today";
+
+	$multi = $redis->multi();
+	zAdd($multi, "$key:shipsDestroyed", @$row['shipsDestroyed'], $id);
+	zAdd($multi, "$key:pointsDestroyed", @$row['shipsLost'], $id);
+	zAdd($multi, "$key:iskDestroyed", @$row['iskDestroyed'], $id);
+	zAdd($multi, "$key:shipsLost", @$row['iskLost'], $id);
+	zAdd($multi, "$key:pointsLost", @$row['pointsDestroyed'], $id);
+	zAdd($multi, "$key:iskLost", @$row['pointsLost'], $id);
+	$multi->exec();
+}
+
+Util::out("Alltime ranks - second iteration");
+foreach ($types as $type=>$value)
+{
+	$key = "tq:ranks:alltime:$type:$today";
+	$indexKey = "$key:shipsDestroyed";
+	$max = $redis->zCard($indexKey);
+	$redis->del("tq:ranks:alltime:$type:$today");
+
+	$it = NULL;
+	while($arr_matches = $redis->zScan($indexKey, $it)) {
+		foreach($arr_matches as $id => $score) {
+			$shipsDestroyed = $redis->zScore("$key:shipsDestroyed", $id); 
+			$shipsDestroyedRank = rankCheck($max, $redis->zRevRank("$key:shipsDestroyed", $id));
+			$shipsLost = $redis->zScore("$key:shipsLost", $id); 
+			$shipsLostRank = rankCheck($max, $redis->zRevRank("$key:shipsLost", $id));
+			$shipsEff = ($shipsDestroyed / ($shipsDestroyed + $shipsLost));
+
+			$iskDestroyed = $redis->zScore("$key:iskDestroyed", $id); 
+			if ($iskDestroyed == 0) continue;
+			$iskDestroyedRank = rankCheck($max, $redis->zRevRank("$key:iskDestroyed", $id));
+			$iskLost = $redis->zScore("$key:iskLost", $id); 
+			$iskLostRank = rankCheck($max, $redis->zRevRank("$key:iskLost", $id));
+			$iskEff = ($iskDestroyed / ($iskDestroyed + $iskLost));
+
+			$pointsDestroyed = $redis->zScore("$key:pointsDestroyed", $id); 
+			$pointsDestroyedRank = rankCheck($max, $redis->zRevRank("$key:pointsDestroyed", $id));
+			$pointsLost = $redis->zScore("$key:pointsLost", $id); 
+			$pointsLostRank = rankCheck($max, $redis->zRevRank("$key:pointsLost", $id));
+			$pointsEff = ($pointsDestroyed / ($pointsDestroyed + $pointsLost));
+
+			$avg = ceil(($shipsDestroyedRank + $iskDestroyedRank + $pointsDestroyedRank) / 3);
+			$adjuster = (1 + $shipsEff + $iskEff + $pointsEff) / 4;
+			$score = ceil($avg / $adjuster);
+
+			$redis->zAdd("tq:ranks:alltime:$type:$today", $score, $id);
 		}
 	}
 }
 
-Util::out("All time ranks - second iteration");
-$iter = $information->find();
-while ($row = $iter->next()) {
-	$type = $row['type'];
-	$id = $row['id'];
-	$key = "tq:ranks:$type";
-	$update = [];
-	foreach ($statClasses as $statClass) {
-		foreach ($statTypes as $statType) {
-			$rank = 1 + $redis->zRevRank("${key}:${statClass}${statType}", $id);
-			$update["${statClass}${statType}Rank"] = $rank;
-		}
-	}
-
-	$shipsDestroyed = getValue($row, 'shipsDestroyed');
-	$shipsDestroyedRank = getValue($update, 'shipsDestroyedRank');
-	$shipsLost = getValue($row, 'shipsLost');
-	$shipsLostRank = getValue($update, 'shipsLostRank');
-	$shipsEff = ($shipsDestroyed / ($shipsDestroyed + $shipsLost));
-
-	$iskDestroyed = getValue($row, 'iskDestroyed');
-	$iskDestroyedRank = getValue($update, 'iskDestroyedRank');
-	$iskLost = getValue($row, 'iskLost');
-	$iskLostRank = getValue($update, 'iskLostRank');
-	$iskEff = ($iskDestroyed / ($iskDestroyed + $iskLost));
-
-	$pointsDestroyed = getValue($row, 'pointsDestroyed');
-	$pointsDestroyedRank = getValue($row, 'pointsDestroyedRank');
-	$pointsLost = getValue($row, 'pointsLost');
-	$pointsLostRank = getValue($row, 'pointsLostRank');
-	$pointsEff = ($pointsDestroyed / ($pointsDestroyed + $pointsLost));
-
-	$avg = ceil(($shipsDestroyedRank + $iskDestroyedRank + $pointsDestroyedRank) / 3);
-	$adjuster = (1 + $shipsEff + $iskEff + $pointsEff) / 4;
-	$score = ceil($avg / $adjuster);
-	$redis->zAdd("tq:ranks:$type:score", $score, $id);
-	$mdb->set("statistics", $row, $update);
+foreach ($types as $type=>$value) {
+	$multi = $redis->multi();
+	$multi->zUnion("tq:ranks:alltime:$type", ["tq:ranks:alltime:$type:$today"]);
+	$multi->expire("tq:ranks:alltime:$type", 100000);
+	$multi->expire("tq:ranks:alltime:$type:$today", (7 * 86400));
+	moveAndExpire($multi, $today, "tq:ranks:alltime:$type:$today:shipsDestroyed");
+	moveAndExpire($multi, $today, "tq:ranks:alltime:$type:$today:shipsLost");
+	moveAndExpire($multi, $today, "tq:ranks:alltime:$type:$today:iskDestroyed");
+	moveAndExpire($multi, $today, "tq:ranks:alltime:$type:$today:iskLost");
+	moveAndExpire($multi, $today, "tq:ranks:alltime:$type:$today:pointsDestroyed");
+	moveAndExpire($multi, $today, "tq:ranks:alltime:$type:$today:pointsLost");
+	$multi->exec();
 }
-
-$count = 0;
-Util::out("All time ranks - third iteration");
-$iter = $information->find();
-while ($row = $iter->next()) {
-	$type = $row['type'];
-	$id = $row['id'];
-	$cleanup["tq:ranks:$type:score"] = 1;
-	$rank = 1 + $redis->zRank("tq:ranks:$type:score", $id);
-	$mdb->set("statistics", $row, ['overallRank' => $rank]);
-	$redis->hSet("tq:ranks:$type:alltime:$today", $id, $rank);
-	$expires[$type] = true;
-}
-
-foreach ($expires as $type=>$value) $redis->expire("tq:ranks:$type:alltime:$today", (86400 * 15));
-foreach ($cleanup as $key=>$value) $redis->del($key);
-
 
 $redis->setex($todaysKey, 87000, true);
+Util::out("Alltime rankings complete");
 
-function getValue(&$array, $index) {
-	$value = (int) @$array[$index];
-	return $value > 0 ? $value : 1000000000000;
+function zAdd(&$multi, $key, $value, $id) {
+	$value = max(1, (int) $value);
+	$multi->zAdd($key, $value, $id);
+	$multi->expire($key, 100000);
+}
+
+function moveAndExpire(&$multi, $today, $key) {
+	$newKey = str_replace(":$today", "", $key);
+	$multi->rename($key, $newKey);
+	$multi->expire($newKey, 100000);
+}
+
+function rankCheck($max, $rank) {
+	return $rank === false ? $max : ($rank + 1);
 }

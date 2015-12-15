@@ -419,4 +419,9 @@ class Util
     {
         return ['amelia', 'cerulean', 'cyborg', 'default', 'journal', 'readable', 'simplex', 'slate', 'spacelab', 'united'];
     }
+
+    public static function rankCheck($rank) 
+    {
+	return $rank === false || $rank === null ? '-' : (1 + $rank);
+    }
 }

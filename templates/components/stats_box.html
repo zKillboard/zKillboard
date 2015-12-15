@@ -52,7 +52,7 @@
 		<td class="red hidden-xs" style="text-align: right">{{ statistics.iskLostRank == 0 ? '-' : statistics.iskLostRank | number_format(0) }}</td>
 		{% set greenred = iskEff >= 50 ? 'green' : 'red' %}
 		<td class="{{greenred}} hidden-xs" style="text-align: right">{{ iskEff | number_format(1) }}</td>
-		{% set recentOverallRank = ( statistics.recentOverallRank is defined ? statistics.recentOverallRank | number_format(0) : '-') %}
+		{% set recentOverallRank = ( statistics.recentOverallRank > 0 ? statistics.recentOverallRank | number_format(0) : '-') %}
         	<th class="" style="text-align: right;">
 			<strong>{{ recentOverallRank }}</strong>
                         {% if statistics.recentOverallRank < statistics.prevRanks.recentOverallRank and statistics.recentOverallRank != 0 and statistics.prevRanks.recentOverallRank != 0 %}

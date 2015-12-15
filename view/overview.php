@@ -286,18 +286,26 @@ if ($key == 'system') {
 }
 $statistics = $mdb->findDoc('statistics', ['type' => $statType, 'id' => (int) $id]);
 
+$statistics['shipsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:shipsDestroyed", $id));
+$statistics['shipsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:shipsLost", $id));
+$statistics['iskDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:iskDestroyed", $id));
+$statistics['iskLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:iskLost", $id));
+$statistics['pointsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:pointsDestroyed", $id));
+$statistics['pointsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:pointsLost", $id));
+$statistics['recentOverallRank'] = Util::rankCheck($redis->zRank("tq:ranks:recent:$statType", $id));
+$statistics['overallRank'] = Util::rankCheck($redis->zRank("tq:ranks:alltime:$statType", $id));
+
 // Get previous rankings 
 $twoWeeks = time() - (14 * 86400);
 $twoWeeksDate = date('Ymd');
 $twoWeeksRank = null;
 do {
 	$twoWeeksDate = date('Ymd', $twoWeeks);
-	$twoWeeksRank = $redis->hGet("tq:ranks:$statType:alltime:$twoWeeksDate", $id);
-	if ($twoWeeksRank == null) $twoWeeks += 86400;
-} while ($twoWeeksRank == null && $twoWeeks < time());
-$prevRanks = ['overallRank' => $twoWeeksRank, 'date' => date('Y-m-d', $twoWeeks)];
-
-if ($twoWeeksRank != null) $prevRanks['overallRecentRank'] = $redis->hGet("tq:ranks:$statType:recent:$twoWeeksDate", $id);
+	$twoWeeksRank = Util::rankCheck($redis->zRank("tq:ranks:alltime:$statType:$twoWeeksDate", $id));
+	if ($twoWeeksRank === '-') $twoWeeks += 86400;
+} while ($twoWeeksRank == '-' && $twoWeeks < time());
+$prevRanks = ['overallRank' => Util::rankCheck($twoWeeksRank), 'date' => date('Y-m-d', $twoWeeks)];
+$prevRanks['overallRecentRank'] = Util::rankCheck($redis->zRank("tq:ranks:recent:$statType:$twoWeeksDate", $id));
 $statistics['prevRanks'] = $prevRanks;
 
 $groups = @$statistics['groups'];

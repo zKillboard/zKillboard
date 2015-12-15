@@ -64,12 +64,12 @@ if ($serverName != $baseAddr) {
     $topPods = array();
 
     $top = array();
-    $top[] = json_decode($redis->get('RC:TopChars'), true);
-    $top[] = json_decode($redis->get('RC:TopCorps'), true);
-    $top[] = json_decode($redis->get('RC:TopAllis'), true);
-    $top[] = json_decode($redis->get('RC:TopShips'), true);
-    $top[] = json_decode($redis->get('RC:TopSystems'), true);
-    $top[] = json_decode($redis->get('RC:TopLocations'), true);
+    $top[] = getTop("Top Characters", "characterID");
+    $top[] = getTop("Top Corporations", "corporationID"); 
+    $top[] = getTop("Top Alliances", "allianceID");
+    $top[] = getTop("Top Ships", "shipTypeID");
+    $top[] = getTop("Top Systems", "solarSystemID");
+    $top[] = getTop("Top Locations", "locationID"); 
 
     // get latest kills
     $kills = Kills::getKills(array('cacheTime' => 60, 'limit' => 50));
@@ -100,3 +100,15 @@ if ($serverName != $baseAddr) {
 }
 
 $app->render('index.html', array('topPods' => $topPods, 'topIsk' => $topIsk, 'topPoints' => $topPoints, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => $pageType, 'pager' => true, 'pageTitle' => $pageTitle, 'requestUriPager' => $requestUriPager, 'activePvP' => $activePvP));
+
+function getTop($title, $type) {
+	global $redis;
+	$retVal = [];
+
+	$ids = $redis->zRange("tq:ranks:weekly:$type", 0, 10);
+	foreach ($ids as $id) {
+		$retVal[] = [$type => $id, 'kills' => $redis->zScore("tq:ranks:weekly:$type:shipsDestroyed", $id)];
+	}
+	Info::addInfo($retVal);
+	return ['type' => str_replace("ID", "", $type), 'title' => $title, 'values' => $retVal];
+}

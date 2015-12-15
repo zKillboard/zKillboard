@@ -15,12 +15,6 @@ $p['kills'] = true;
 $redis->setex('RC:Kills5b+', 3600, json_encode(Kills::getKills(array('iskValue' => 5000000000), true, false)));
 $redis->setex('RC:Kills10b+', 3600, json_encode(Kills::getKills(array('iskValue' => 10000000000), true, false)));
 
-$redis->setex('RC:TopChars', 3600, json_encode(Info::doMakeCommon('Top Characters', 'characterID', getStats('characterID'))));
-$redis->setex('RC:TopCorps', 3600, json_encode(Info::doMakeCommon('Top Corporations', 'corporationID', getStats('corporationID'))));
-$redis->setex('RC:TopAllis', 3600, json_encode(Info::doMakeCommon('Top Alliances', 'allianceID', getStats('allianceID'))));
-$redis->setex('RC:TopShips', 3600, json_encode(Info::doMakeCommon('Top Ships', 'shipTypeID', getStats('shipTypeID'))));
-$redis->setex('RC:TopSystems', 3600, json_encode(Info::doMakeCommon('Top Systems', 'solarSystemID', getStats('solarSystemID'))));
-$redis->setex('RC:TopLocations', 3600, json_encode(Info::doMakeCommon('Top Locations', 'locationID', getStats('locationID'))));
 $redis->setex('RC:TopIsk', 3600, json_encode(Stats::getTopIsk(array('pastSeconds' => ($numDays * 86400), 'limit' => 5))));
 
 // Cleanup subdomain stuff
