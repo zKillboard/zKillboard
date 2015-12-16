@@ -13,7 +13,7 @@ $information = $mdb->getCollection("statistics");
 
 Util::out("Alltime ranks - first iteration");
 $types = [];
-$iter = $information->find(['type' => 'allianceID']);
+$iter = $information->find();
 while ($row = $iter->next()) {
 	$type = $row['type'];
 	$id = $row['id'];
