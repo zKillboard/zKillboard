@@ -5,6 +5,7 @@ global $mdb;
 if (!is_numeric($id)) header('Location: /');
 
 $info = $mdb->findDoc("information", ['type' => 'typeID', 'id' => (int) $id, 'cacheTime' => 3600]);
+$info['typeID'] = $info['id'];
 $info['typeName'] = $info['name'];
 $info['description'] = str_replace('<br>', "\n", @$info['description']);
 $info['description'] = strip_tags(@$info['description']);
