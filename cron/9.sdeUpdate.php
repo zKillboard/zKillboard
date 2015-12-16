@@ -39,7 +39,7 @@ function updateLocationID($fields) {
 	$query = ['type' => 'locationID', 'id' => $locationID];
 	if (!$mdb->exists("information", $query)) $mdb->save("information", $query);
 	$mdb->set("information", $query, ['name' => $name]);
-	$redis->hSetAll("tq:locationID:$locationID", ['type' => 'locationID', 'name' => $name, 'id' => $locationID]);
+	$redis->hMSet("tq:locationID:$locationID", ['type' => 'locationID', 'name' => $name, 'id' => $locationID]);
 }
 
 function updateSlots($row) {
