@@ -94,17 +94,24 @@ foreach ($types as $type=>$value)
 }
 
 foreach ($types as $type=>$value) {
-	$multi = $redis->multi();
-	$multi->rename("tq:ranks:weekly:$type:$today", "tq:ranks:weekly:$type");
-	$multi->expire("tq:ranks:weekly:$type", 9000);
-	$multi->rename("tq:ranks:weekly:$type:$today:shipsDestroyed", "tq:ranks:weekly:$type:shipsDestroyed");
-	$multi->expire("tq:ranks:weekly:$type:$today", 9000);
-	$multi->del("tq:ranks:weekly:$type:$today:shipsLost");
-	$multi->del("tq:ranks:weekly:$type:$today:iskDestroyed");
-	$multi->del("tq:ranks:weekly:$type:$today:iskLost");
-	$multi->del("tq:ranks:weekly:$type:$today:pointsDestroyed");
-	$multi->del("tq:ranks:weekly:$type:$today:pointsLost");
-	$multi->exec();
+        $multi = $redis->multi();
+        $multi->del("tq:ranks:weekly:$type");
+        $multi->zUnion("tq:ranks:weekly:$type", ["tq:ranks:weekly:$type:$today"]);
+        $multi->expire("tq:ranks:weekly:$type", 100000);
+        $multi->expire("tq:ranks:weekly:$type:$today", (7 * 86400));
+        moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:shipsDestroyed");
+        moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:shipsLost");
+        moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:iskDestroyed");
+        moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:iskLost");
+        moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:pointsDestroyed");
+        moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:pointsLost");
+        $multi->exec();
+}
+
+function moveAndExpire(&$multi, $today, $key) {
+        $newKey = str_replace(":$today", "", $key);
+        $multi->rename($key, $newKey);
+        $multi->expire($newKey, 3600);
 }
 
 $redis->setex($todaysKey, 9000, true);

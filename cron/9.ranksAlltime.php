@@ -23,11 +23,11 @@ while ($row = $iter->next()) {
 
 	$multi = $redis->multi();
 	zAdd($multi, "$key:shipsDestroyed", @$row['shipsDestroyed'], $id);
-	zAdd($multi, "$key:pointsDestroyed", @$row['shipsLost'], $id);
+	zAdd($multi, "$key:shipsLost", @$row['shipsLost'], $id);
+	zAdd($multi, "$key:pointsDestroyed", @$row['pointsDestroyed'], $id);
+	zAdd($multi, "$key:pointsLost", @$row['pointsLost'], $id);
 	zAdd($multi, "$key:iskDestroyed", @$row['iskDestroyed'], $id);
-	zAdd($multi, "$key:shipsLost", @$row['iskLost'], $id);
-	zAdd($multi, "$key:pointsLost", @$row['pointsDestroyed'], $id);
-	zAdd($multi, "$key:iskLost", @$row['pointsLost'], $id);
+	zAdd($multi, "$key:iskLost", @$row['iskLost'], $id);
 	$multi->exec();
 }
 

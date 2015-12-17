@@ -296,16 +296,16 @@ $statistics['recentOverallRank'] = Util::rankCheck($redis->zRank("tq:ranks:recen
 $statistics['overallRank'] = Util::rankCheck($redis->zRank("tq:ranks:alltime:$statType", $id));
 
 // Get previous rankings 
-$twoWeeks = time() - (14 * 86400);
-$twoWeeksDate = date('Ymd');
-$twoWeeksRank = null;
+$previousTime = time() - (14 * 86400);
+$previousDate = date('Ymd');
+$previousRank = null;
 do {
-	$twoWeeksDate = date('Ymd', $twoWeeks);
-	$twoWeeksRank = Util::rankCheck($redis->zRank("tq:ranks:alltime:$statType:$twoWeeksDate", $id));
-	if ($twoWeeksRank === '-') $twoWeeks += 86400;
-} while ($twoWeeksRank == '-' && $twoWeeks < time());
-$prevRanks = ['overallRank' => Util::rankCheck($twoWeeksRank), 'date' => date('Y-m-d', $twoWeeks)];
-$prevRanks['overallRecentRank'] = Util::rankCheck($redis->zRank("tq:ranks:recent:$statType:$twoWeeksDate", $id));
+	$previousDate = date('Ymd', $previousTime);
+	$previousRank = Util::rankCheck($redis->zRank("tq:ranks:alltime:$statType:$previousDate", $id));
+	if ($previousRank === '-') $previousTime += 86400;
+} while ($previousRank == '-' && $previousTime < time());
+$prevRanks = ['overallRank' => Util::rankCheck($previousRank), 'date' => date('Y-m-d', $previousTime)];
+$prevRanks['overallRecentRank'] = Util::rankCheck($redis->zRank("tq:ranks:recent:$statType:$previousDate", $id));
 $statistics['prevRanks'] = $prevRanks;
 
 $groups = @$statistics['groups'];
