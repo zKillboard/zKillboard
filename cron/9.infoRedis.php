@@ -2,15 +2,15 @@
 
 require_once '../init.php';
 
-if (date('i') != 15) exit();
+$key = date('YmdH');
+if ($redis->get($key) == true) exit();
 
 $information = $mdb->getCollection('information');
 $types = $mdb->getCollection('information')->distinct('type');
 
 foreach ($types as $type) {
-	if ($type == 'warID') {
-		continue;
-	}
+	if ($type == 'warID') continue;
+
 	$typeRows = $information->find(['type' => $type]);
 	if ($debug) Util::out("Adding $type to redis");
 	foreach ($typeRows as $row) {
@@ -23,3 +23,5 @@ foreach ($types as $type) {
 		$multi->exec();
 	}
 }
+
+$redis->setex($key, 3600, true);

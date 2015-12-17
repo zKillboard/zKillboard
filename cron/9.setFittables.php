@@ -2,10 +2,8 @@
 
 require_once '../init.php';
 
-$time = date('Hi');
-if ($time != '1315') {
-    exit();
-}
+$key = date('YmdH');
+if ($redis->get($key) == true) exit();
 
 $json = CrestTools::getJSON('https://public-crest.eveonline.com/inventory/categories/7/');
 
@@ -20,6 +18,8 @@ foreach ($json['groups'] as $group) {
     }
     sleep(1);
 }
+
+$redis->setex($key, 86400, true); 
 
 function getTypeID($href)
 {

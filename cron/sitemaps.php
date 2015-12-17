@@ -2,11 +2,11 @@
 
 require_once '../init.php';
 
-if (date('H:i') != '11:15') {
-    exit();
-}
+$key = "zkb:siteMapsCreated:" . date('Ymd');
+if ($redis->get($key) == true) exit();
 
-mkdir("$baseDir/public/sitemaps/");
+$siteMapsDir = "$baseDir/public/sitemaps/";
+if (!file_exists($siteMapsDir)) mkdir($siteMapsDir);
 $locations = array();
 
 $types = array('character', 'corporation', 'alliance', 'faction');
@@ -23,7 +23,7 @@ foreach ($types as $type) {
         $url = $xml->addChild('url');
         $loc = $url->addChild('loc', "https://$baseAddr/${type}/$id/");
     }
-    file_put_contents("$baseDir/public/sitemaps/${type}s.xml", $xml->asXML());
+    file_put_contents("$siteMapsDir/${type}s.xml", $xml->asXML());
     $locations[] = "https://$baseAddr/sitemaps/${type}s.xml";
 }
 
@@ -34,12 +34,14 @@ foreach ($killIDs as $row) {
     $url = $xml->addChild('url');
     $loc = $url->addChild('loc', "https://$baseAddr/kill/$killID/");
 }
-file_put_contents("$baseDir/public/sitemaps/kills.xml", $xml->asXML());
+file_put_contents("$siteMapsDir/kills.xml", $xml->asXML());
 $locations[] = "https://$baseAddr/sitemaps/kills.xml";
 $xml = new SimpleXmlElement('<?xml version="1.0" encoding="UTF-8"?><sitemapindex xmlns="http://www.google.com/schemas/sitemap/0.84"/>');
 foreach ($locations as $location) {
     $sitemap = $xml->addChild('sitemap');
     $sitemap->addChild('loc', $location);
 }
-file_put_contents("$baseDir/public/sitemaps/sitemaps.xml", $xml->asXML());
+file_put_contents("$siteMapsDir/sitemaps.xml", $xml->asXML());
 file_get_contents("http://www.google.com/webmasters/sitemaps/ping?sitemap=https://$baseAddr/sitemaps/sitemaps.xml");
+
+$redis->setex($key, 86400, true);
