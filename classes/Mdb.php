@@ -14,9 +14,11 @@ class Mdb
      */
     public function getDb($attempt = 0)
     {
+	global $mongoServer, $mongoPort;
+
         try {
             if ($this->mongoClient == null) {
-                $this->mongoClient = new MongoClient();
+                $this->mongoClient = new MongoClient($mongoServer, $mongoPort);
             }
             if ($this->db == null) {
                 $this->db = $this->mongoClient->selectDB('zkillboard');
