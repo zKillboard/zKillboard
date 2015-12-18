@@ -2,6 +2,10 @@
 
 require_once '../init.php';
 
+global $fetchWars;
+
+if ($listenRedisQ == null || $listenRedisQ == false) exit();
+
 // Run once an hour
 $minute = (int) date('i');
 if ($minute != 0) {
