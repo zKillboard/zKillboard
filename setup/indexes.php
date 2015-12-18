@@ -382,15 +382,12 @@ echo "Creating index : 'refID' => 1, with sparse = 0 and unique = 1 ... ";
 $payments->ensureIndex(array('refID' => 1), array("sparse" => 0, "unique" => 1));
 echo "Done\n";
 
-// ranksProgress
-echo "\nCreating collection ranksProgress ... ";
-$ranksProgress = $db->createCollection("ranksProgress");
+// prices
+echo "\nCreating collection prices ... ";
+$prices = $db->createCollection("prices");
 echo "Done\n";
-echo "Creating index : 'type' => 1, 'id' => 1, 'date' => 1, with sparse = 0 and unique = 0 ... ";
-$ranksProgress->ensureIndex(array('type' => 1, 'id' => 1, 'date' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-echo "Creating index : 'date' => 1, with sparse = 0 and unique = 0 ... ";
-$ranksProgress->ensureIndex(array('date' => 1), array("sparse" => 0, "unique" => 0));
+echo "Creating index : 'typeID' => 1, with sparse = 0 and unique = 0 ... ";
+$prices->ensureIndex(array('typeID' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // rawmails
