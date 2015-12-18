@@ -18,7 +18,7 @@ class Mdb
 
         try {
             if ($this->mongoClient == null) {
-                $this->mongoClient = new MongoClient($mongoServer, $mongoPort);
+                $this->mongoClient = new MongoClient("mongodb://$mongoServer:$mongoPort");
             }
             if ($this->db == null) {
                 $this->db = $this->mongoClient->selectDB('zkillboard');
