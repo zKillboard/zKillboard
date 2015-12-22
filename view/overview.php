@@ -305,7 +305,7 @@ do {
 	if ($previousRank === '-') $previousTime += 86400;
 } while ($previousRank == '-' && $previousTime < time());
 $prevRanks = ['overallRank' => Util::rankCheck($previousRank), 'date' => date('Y-m-d', $previousTime)];
-$prevRanks['overallRecentRank'] = Util::rankCheck($redis->zRank("tq:ranks:recent:$statType:$previousDate", $id));
+$prevRanks['recentOverallRank'] = Util::rankCheck($redis->zRank("tq:ranks:recent:$statType:$previousDate", $id));
 $statistics['prevRanks'] = $prevRanks;
 
 $groups = @$statistics['groups'];
