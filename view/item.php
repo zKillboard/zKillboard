@@ -22,6 +22,7 @@ $info['attributes'] = array();
 $market = $mdb->findDoc('prices', ['typeID' => $id]);
 unset($market['_id']);
 unset($market['typeID']);
+if ($market == null) $market = [];
 krsort($market);
 $market = array_slice($market, 0, 30);
 $info['market'] = $market;
