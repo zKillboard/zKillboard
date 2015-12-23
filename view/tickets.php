@@ -1,5 +1,8 @@
 <?php
 
+$app->render('error.html', ['message' => "Tickets are temporarily disabled, please email squizzc@gmail.com for support in the meantime. Thanks! -- Squizz"]);
+exit();
+
 $message = array();
 
 if ($_POST) {

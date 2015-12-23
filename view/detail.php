@@ -80,7 +80,6 @@ if ($details == null) {
     $extra['dnatext'] = Fitting::DNA($killdata['items'], $killdata['victim']['shipTypeID']);
     $extra['edkrawmail'] = 'deprecated - use CREST';
     $extra['zkbrawmail'] = 'deprecated - use CREST';
-    $extra['reports'] = Db::queryField('SELECT count(*) as cnt FROM zz_tickets WHERE killID = :killid', 'cnt', array(':killid' => $id), 0);
     $extra['slotCounts'] = Info::getSlotCounts($killdata['victim']['shipTypeID']);
     $extra['commentID'] = $id;
     $extra['crest'] = $mdb->findDoc('crestmails', ['killID' => $id, 'processed' => true]);
