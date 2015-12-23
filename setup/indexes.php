@@ -30,6 +30,9 @@ echo "Done\n";
 echo "Creating index : 'battleID' => 1, with sparse = 0 and unique = 1 ... ";
 $battles->ensureIndex(array('battleID' => 1), array("sparse" => 0, "unique" => 1));
 echo "Done\n";
+echo "Creating index : 'solarSystemID' => 1, 'dttm' => 1, 'options' => 1, with sparse = 0 and unique = 0 ... ";
+$battles->ensureIndex(array('solarSystemID' => 1, 'dttm' => 1, 'options' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
 
 // crestmails
 echo "\nCreating collection crestmails ... ";
