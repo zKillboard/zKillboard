@@ -3,6 +3,7 @@
 global $mdb;
 
 if (!is_numeric($id)) header('Location: /');
+$id = (int) $id;
 
 $info = $mdb->findDoc("information", ['type' => 'typeID', 'id' => (int) $id, 'cacheTime' => 3600]);
 $info['typeID'] = $info['id'];
@@ -17,7 +18,13 @@ $hasKills = $cursor->hasNext();
 
 $info['attributes'] = array();
 
-$info['market'] = Db::query('select * from zz_item_price_lookup where typeID = :typeID order by priceDate desc limit 30', array(':typeID' => $id));
+//$info['market'] = Db::query('select * from zz_item_price_lookup where typeID = :typeID order by priceDate desc limit 30', array(':typeID' => $id));
+$market = $mdb->findDoc('prices', ['typeID' => $id]);
+unset($market['_id']);
+unset($market['typeID']);
+krsort($market);
+$market = array_slice($market, 0, 30);
+$info['market'] = $market;
 
 $kills = $mdb->find('itemmails', ['typeID' => (int) $id], ['killID' => -1], 50);
 $victims = [];
