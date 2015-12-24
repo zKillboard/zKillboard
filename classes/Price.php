@@ -9,14 +9,14 @@ class Price
 		if ($kmDate == null) $kmDate = date('Y-m-d');
 
 		$price = static::getFixedPrice($typeID);
-		if ($price != null) return $price;
+		if ($price !== null) return $price;
 		$price = static::getCalculatedPrice($typeID, $kmDate);
-		if ($price != null) return $price;
+		if ($price !== null) return $price;
 
 		// Have we fetched prices for this typeID today?
 		$today = date('Ymd', time() - 3600); // Back one hour because of CREST cache
 		$fetchedKey = "tq:priceFetched:$typeID:$today";
-		if ($fetch == true )
+		if ($fetch === true )
 		{
 			if ($redis->get($fetchedKey) != true) static::getCrestPrices($typeID);
 			$redis->setex($fetchedKey, 86400, true);
@@ -61,7 +61,7 @@ class Price
 		return $avgPrice;
 	}
 
-	private static function getFixedPrice($typeID)
+	protected static function getFixedPrice($typeID)
 	{
 		// Some typeID's have hardcoded prices
 		switch ($typeID)
@@ -118,7 +118,7 @@ class Price
 		return null;
 	}
 
-	private static function getCalculatedPrice($typeID, $date)
+	protected static function getCalculatedPrice($typeID, $date)
 	{
 		switch ($typeID)
 		{
@@ -135,7 +135,7 @@ class Price
 		return null;
 	}
 
-	private static function getCrestPrices($typeID)
+	protected static function getCrestPrices($typeID)
 	{
 		global $mdb;
 
