@@ -98,6 +98,8 @@ while (!Util::exitNow()) {
         $victim = createInvolved($mail['victim']);
         $victim['isVictim'] = true;
         $kill['vGroupID'] = $victim['groupID'];
+	$victimPoints = Points::getPoints($victim['groupID']);
+	if ($victimPoints === 0) Util::out("WARNING: groupID does not have points assigned: " . $victim['groupID']);
 
         $involved = array();
         $involved[] = $victim;
