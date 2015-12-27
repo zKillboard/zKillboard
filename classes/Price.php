@@ -16,7 +16,7 @@ class Price
 		// Have we fetched prices for this typeID today?
 		$today = date('Ymd', time() - 3600); // Back one hour because of CREST cache
 		$fetchedKey = "tq:priceFetched:$typeID:$today";
-		if ($fetch === true )
+		if ($fetch === true)
 		{
 			if ($redis->get($fetchedKey) != true) static::getCrestPrices($typeID);
 			$redis->setex($fetchedKey, 86400, true);
@@ -44,6 +44,7 @@ class Price
 			$useTime = $useTime - 86400;
 			$iterations++;
 		} while (sizeof($priceList) < 34 && $iterations < sizeof($marketHistory));
+		if (sizeof($priceList) < 24) $priceList = $marketHistory;
 
 		asort($priceList);
 		if (sizeof($priceList) == 34) {
@@ -140,9 +141,13 @@ class Price
 		global $mdb;
 
 		$marketHistory = $mdb->findDoc("prices", ['typeID' => $typeID]);
+		if ($marketHistory === null)
+		{
+			$marketHistory = ['typeID' => $typeID];
+			$mdb->save("prices", $marketHistory);
+		}
 
 		$name = Info::getInfoField('typeID', $typeID, 'name');
-		Log::log("Fetching prices for $typeID - $name");
 		$url = "https://public-crest.eveonline.com/market/10000002/types/$typeID/history/";
 		$raw = Util::getData($url, 0);
 		$json = json_decode($raw, true);
