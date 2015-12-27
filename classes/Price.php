@@ -147,7 +147,6 @@ class Price
 			$mdb->save("prices", $marketHistory);
 		}
 
-		$name = Info::getInfoField('typeID', $typeID, 'name');
 		$url = "https://public-crest.eveonline.com/market/10000002/types/$typeID/history/";
 		$raw = Util::getData($url, 0);
 		$json = json_decode($raw, true);

@@ -16,6 +16,7 @@ class Points
             906 => array('Combat Recon Ship', 350),
 	    1534 => array("Command Destroyers", 250),
             540 => array('Command Ship', 450),
+	    1282 => array('Compression Array', 10),
             365 => array('Control Tower', 250),
             471 => array('Corporate Hangar Array', 50),
             830 => array('Covert Ops', 80),
