@@ -14,7 +14,7 @@ class Price
 		if ($price !== null) return $price;
 
 		// Have we fetched prices for this typeID today?
-		$today = date('Ymd', time() - 3600); // Back one hour because of CREST cache
+		$today = date('Ymd', time() - 7200); // Back one hour because of CREST cache
 		$fetchedKey = "tq:priceFetched:$typeID:$today";
 		if ($fetch === true)
 		{
@@ -23,7 +23,7 @@ class Price
 		}
 
 		// Have we already determined the price for this item at this date?
-		$date = date('Y-m-d', strtotime($kmDate) - 3600); // Back one hour because of CREST cache
+		$date = date('Y-m-d', strtotime($kmDate) - 7200); // Back one hour because of CREST cache
 		$priceKey = "tq:price:$typeID:$date";
 		$price = $redis->get($priceKey);
 		if ($price != null) return $price;
