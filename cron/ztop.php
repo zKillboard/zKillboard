@@ -8,7 +8,8 @@ $priorKillLog = 0;
 
 $deltaArray = [];
 
-while (true) {
+$iterations = 0;
+while ($iterations++ <= 1200) {
     ob_start();
     $infoArray = [];
 
