@@ -83,7 +83,7 @@ class Price
 				return 120000000000; // 120b
 			case 2836: // Adrestia
 			case 33675: // Chameleon
-			case 35871: // Fiend
+			case 35781: // Fiend
 				return 150000000000; // 150b
 			case 9860: // Polaris
 			case 11019: // Cockroach
