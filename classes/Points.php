@@ -58,7 +58,7 @@ class Points
             417 => array('Mobile Missile Sentry', 10),
             426 => array('Mobile Projectile Sentry', 10),
             438 => array('Mobile Reactor', 10),
-	    1275 => array('Mobile Scan Inhibitor'),
+	    1275 => array('Mobile Scan Inhibitor', 10),
 	    1247 => array('Mobile Siphon Unit', 10),
             1250 => array('Mobile Tractor Unit', 10),
             416 => array('Moon Mining', 10),
