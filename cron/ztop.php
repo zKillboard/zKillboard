@@ -75,7 +75,7 @@ while ($iterations++ <= 1200) {
             echo "$count $name\n";
         }
     }
-    $output = ob_get_contents();
+    $output = ob_get_clean();
     file_put_contents("${baseDir}/public/ztop.txt", $output);
     sleep(3);
 }

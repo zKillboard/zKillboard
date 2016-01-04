@@ -6,10 +6,10 @@ test "$now" != "0000" && exit # Not midnight? exit now
 rotate () {
 # Deletes old log file
 if [ -f $1 ] ; then
-  CNT=5
+  CNT=2
   let P_CNT=CNT-1
-  if [ -f $1.5 ] ; then
-    rm $1.5
+  if [ -f $1.2 ] ; then
+    rm $1.2
   fi
    
   # Renames logs .1 trough .4
