@@ -14,7 +14,7 @@ Util::out("New SDE detected, importing now");
 getCSV("https://www.fuzzwork.co.uk/dump/latest/dgmTypeAttributes.csv.bz2", "updateSlots");
 getCSV("https://www.fuzzwork.co.uk/dump/latest/invNames.csv.bz2", "updateLocationID");
 
-$redis->setex("tqSDE:MD5", (86400 * 7), $sdeMD5);
+$redis->set("tqSDE:MD5", $sdeMD5);
 
 
 function getCSV($url, $method) {

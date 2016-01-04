@@ -4,7 +4,8 @@ require_once '../init.php';
 
 global $redis;
 
-if (date('i') % 15 != 0) exit();
+$key = "zkb:everyFiften";
+if ($redis->get($key) === true) exit();
 
 $p = array();
 $numDays = 7;
@@ -30,3 +31,5 @@ function getStats($column)
 }
 
 $redis->keys('*'); // Helps purge expired ttl's
+
+$redis->setex($key, 54000, true);
