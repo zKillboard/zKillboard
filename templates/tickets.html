@@ -24,25 +24,12 @@
 			{% else %}
 			<h3>Your Tickets</h3>
 			<table class="table table-condensed table-hover">
-				<thead>
-					<tr>
-					<th class="span7"></th>
-					<th class="span5"></th>
-					<th class="span1"></th>
-					<th class="span3"></th>
-					</tr>
-				</thead>
 				<tbody>
-					{% for data in tickets %}
-					<tr onclick="window.location='/tickets/view/{{ data.id }}/'">
-					<td><strong>{{ data.ticket|striptags|raw }}</strong></td>
-					<td>
-						{% for tag in data.tags %}
-							<span class="label label-warning">{{ tag }}</span>
-						{% endfor %}
-					</td>
-					<td>{% if data.status %}<span class="label label-success pull-right">Open{% else %}<span class="label label-important pull-right">Closed{% endif %}</span></td>
-					<td><strong>{{ data.datePosted }}</strong></td>
+					{% for ticket in tickets %}
+					<tr onclick="window.location='/tickets/view/{{ ticket._id }}/'">
+					  <td>{{ ticket.killTime }}</td>
+					  <td>{% if ticket.status %}<span class="label label-success pull-right">Open{% else %}<span class="label label-important pull-right">Closed{% endif %}</span></td>
+                                          <td><a href='/tickets/view/{{ ticket._id }}/'>Ticket {{ ticket._id }}</a></td>
 					</tr>
 					{% endfor %}
 				</tbody>
@@ -72,8 +59,8 @@ Please register and login to create a ticket, or use the GitHub link in the top 
 					Also, please only use tags appropriate for your ticket.</p>
 	
 					<form name="tickets" method="post" action="/tickets/">
-						<label>Tags (Seperate Tags with comma)</label>
-						<input type="text" autocomplete="off" data-provide="typeahead" name="tags" placeholder="Tags" class="form-control tagManager" data-original-title=""/>
+						<label>Email: (Optional - only used to notify you of responses to your ticket.)</label>
+						<input type="text" autocomplete="off" data-provide="typeahead" name="email" placeholder="Email" class="form-control" data-original-title=""/>
 						<div class="form-group">
 							<textarea id="ticket" name="ticket" type="text" required placeholder="Ticket" class="form-control" rows="12" style="color: black"></textarea>
 						</div>

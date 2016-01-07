@@ -311,7 +311,7 @@ class Info
                         $element['cachedUntilTime'] = $value;
                         break;
                     case 'dttm':
-                        $dttm = strtotime($value);
+                        $dttm = is_integer($value) ? $value : strtotime($value);
                         $element['ISO8601'] = date('c', $dttm);
                         $element['killTime'] = date('Y-m-d H:i', $dttm);
                         $element['MonthDayYear'] = date('F j, Y', $dttm);
