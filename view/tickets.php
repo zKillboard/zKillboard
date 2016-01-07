@@ -7,6 +7,7 @@ $message = array();
 
 if ($_POST) {
 	$email = Util::getPost('email');
+	$subject = Util::getPost('subject');
 	$ticket = Util::getPost('ticket');
 
 	$info = User::getUserInfo();
@@ -14,14 +15,12 @@ if ($_POST) {
 	$name = $info['username'];
 
 	if ($charID > 0 && isset($ticket)) {
-		$insert = ['content' => $ticket, 'dttm' => time(), 'parentID' => null, 'email' => $email, 'characterID' => $charID, 'status' => 1];
+		$insert = ['subject' => $subject, 'content' => $ticket, 'dttm' => time(), 'parentID' => null, 'email' => $email, 'characterID' => $charID, 'status' => 1];
 		$mdb->insert("tickets", $insert);
 
 		$id = $insert['_id']; 
 		Log::irc("|g|New ticket from $name:|n| https://$baseAddr/moderator/tickets/$id/");
-		$subject = 'zKillboard Ticket';
 
-		$message = "$name, you can find your ticket here, we will reply to your ticket asap. https://$baseAddr/tickets/view/$id/";
 		$app->redirect("/tickets/view/$id/");
 		exit();
 	} else {
@@ -29,7 +28,12 @@ if ($_POST) {
 	}
 }
 
-$tickets = $mdb->find("tickets", ['$and' => [['characterID' => User::getUserID()], ['parentID' => null]]], ['dttm' => -1]);
+$info = User::getUserInfo();
+if ($info['moderator'] == true) {
+	$tickets = $mdb->find("tickets", ['parentID' => null], ['status' => -1, 'dttm' => -1]);
+} else {
+	$tickets = $mdb->find("tickets", ['$and' => [['characterID' => User::getUserID()], ['parentID' => null]]], ['dttm' => -1]);
+}
 Info::addInfo($tickets);
 
 $userInfo = User::getUserInfo();

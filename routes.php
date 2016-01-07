@@ -99,12 +99,6 @@ $app->map('/account(/:req)(/:reqid)/', function ($req = null, $reqid = null) use
     include 'view/account.php';
 })->via('GET', 'POST');
 
-// Moderator
-$app->map('/moderator(/:req)(/:id)(/page/:page)/', function ($req = null, $id = null, $page = 1) use ($app) {
-    global $cookie_name, $cookie_time;
-    include 'view/moderator.php';
-})->via('GET', 'POST');
-
 // EveInfo
 $app->get('/item/:id/', function ($id) use ($app) {
     global $oracleURL;

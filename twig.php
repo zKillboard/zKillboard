@@ -83,11 +83,12 @@ $twig->addGlobal('igbbottomad', Google::ad($bottomCaPub, $bottomAdSlot, $adWidth
 $twig->addGlobal('analytics', Google::analytics($analyticsID, $analyticsName));
 $disqus &= UserConfig::get('showDisqus', true);
 $twig->addGlobal('disqusLoad', $disqus);
-$noAdPages = array('/account/', '/moderator/', '/ticket', '/register/', '/information/', '/login');
+$noAdPages = array('/account/', '/ticket', '/information/');
 foreach ($noAdPages as $noAdPage) {
 	$showAds &= !Util::startsWith($uri, $noAdPage);
-	$showAds &= $userShowAds;
 }
+$showAds &= $userShowAds;
+
 $twig->addglobal('showAnalytics', $showAnalytics);
 if ($disqus) {
 	$twig->addGlobal('disqusShortName', $disqusShortName);
@@ -108,7 +109,7 @@ if ($banner) {
 	//$twig->addGlobal("headerImage", $banner);
 }
 
-$twig->addGlobal('showAds', $userShowAds);
+$twig->addGlobal('showAds', $showAds);
 $_SERVER['SERVER_NAME'] = 'zkillboard.com';
 //Subdomains::getSubdomainParameters($_SERVER['SERVER_NAME']);
 

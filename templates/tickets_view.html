@@ -4,16 +4,11 @@
 {% block title %}{% include 'components/title.html' %}{% endblock %}
 
 {% block content %}
-<div class="navbar navbar-default">
-	<ul class="nav navbar-nav">
-		<li class="{{ isActive('tickets', pageview) }}"><a href="/tickets/">Tickets</a></li>
-		{% if sessionusername %}<li><a data-toggle="modal" data-target="#newIssue" href="#">New Issue</a></li>{% endif %}
-	</ul>
-</div>
 
 {% if message %} <h1>{{ message.message }}</h1> {% endif %}
 
 {% set imageSize = 64 %}
+<h3><a href='/tickets/'><span class="glyphicon glyphicon-circle-arrow-left"></span></a> | {{ ticket.subject }}</h3>
 <table class="table table-striped">
   <tbody>
     {% for field in replies %}
@@ -37,6 +32,19 @@
 	</div>
 </form>
 {% endif %}
+
+{% if user.moderator == true %}
+<form name="statusform" method="post" action=".">
+  {% if ticket.status != 0 %}
+  <input id="status" name="status" value="0" type="hidden"/>
+  <button type="submit" class="btn btn-large btn-warning">Close Ticket</button>
+  {% else %}
+  <input id="status" name="status" value="1" type="hidden">
+  <button type="submit" class="btn btn-large btn-primary">Open Ticket</button>
+  {% endif %}
+</form>
+{% endif %}
+
 {% endblock %}
 
 {% block robots %}

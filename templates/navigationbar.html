@@ -120,9 +120,6 @@
 				<li class="dropdown hidden-xs">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-info"></i> <b class="caret"></b></a>
 					<ul class="dropdown-menu">
-						<li class="dropdown-header">Support</li>
-						<li><a href="/tickets/">Tickets</a></li>
-						<li class="divider"></li>
 						<li class="dropdown-header">Information</li>
 						<li><a href="/information/about/">About</a></li>
 						<li><a href="https://github.com/zKillboard/zKillboard/wiki" target="_blank">API</a></li>
@@ -137,10 +134,7 @@
 						{% if sessionusername %}
 							<li class="dropdown-header">{{ sessionusername }}</li>
 							<li><a href="/account/">Account</a></li>
-							<!--<li><a href="/account/domains/">Domains</a></li>-->
-							{% if sessionmoderator or sessionadmin %}
-								<li><a href="/moderator/">Moderation</a></li>
-							{% endif %}
+							<li><a href="/tickets/">Tickets</a></li>
 							<li class="divider hidden-xs"></li>
 							<li><a href="/logout/">Logout</a></li>
 						{% else %}

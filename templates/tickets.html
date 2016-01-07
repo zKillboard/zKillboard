@@ -22,14 +22,13 @@
 			{% if tickets|length == 0 %}
 				<em>You do not have any tickets...</em>
 			{% else %}
-			<h3>Your Tickets</h3>
+			<h3>Tickets</h3>
 			<table class="table table-condensed table-hover">
 				<tbody>
 					{% for ticket in tickets %}
 					<tr onclick="window.location='/tickets/view/{{ ticket._id }}/'">
-					  <td>{{ ticket.killTime }}</td>
-					  <td>{% if ticket.status %}<span class="label label-success pull-right">Open{% else %}<span class="label label-important pull-right">Closed{% endif %}</span></td>
-                                          <td><a href='/tickets/view/{{ ticket._id }}/'>Ticket {{ ticket._id }}</a></td>
+					  <td class="col-lg-2">{{ ticket.killTime }}&nbsp;&nbsp;&nbsp;{% if ticket.status %}<span class="label label-success">Open{% else %}<span class="label label-important">Closed{% endif %}</span></td>
+                                          <td class="pull-left"><a href='/tickets/view/{{ ticket._id }}/'>{{ ticket.subject }}</a></td>
 					</tr>
 					{% endfor %}
 				</tbody>
@@ -60,9 +59,11 @@ Please register and login to create a ticket, or use the GitHub link in the top 
 	
 					<form name="tickets" method="post" action="/tickets/">
 						<label>Email: (Optional - only used to notify you of responses to your ticket.)</label>
-						<input type="text" autocomplete="off" data-provide="typeahead" name="email" placeholder="Email" class="form-control" data-original-title=""/>
+						<input type="text" data-provide="typeahead" name="email" placeholder="Email" class="form-control" data-original-title=""/><br/>
+						<label>Subject</label>
+						    <input type="text" autocomplete="off" data-provide="typeahead" name="subject" placeholder="subject" class="form-control" data-original-title=""/>
 						<div class="form-group">
-							<textarea id="ticket" name="ticket" type="text" required placeholder="Ticket" class="form-control" rows="12" style="color: black"></textarea>
+							<textarea id="ticket" autocomplete="off" name="ticket" type="text" required placeholder="Ticket" class="form-control" rows="12" style="color: black"></textarea>
 						</div>
 						<div class="form-group">
 							<button type="submit" class="btn btn-primary">Post Ticket</button>
