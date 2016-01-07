@@ -197,6 +197,9 @@ echo "Done\n";
 echo "Creating index : 'locationID' => 1, with sparse = 1 and unique = 0 ... ";
 $killmails->ensureIndex(array('locationID' => 1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
+echo "Creating index : 'zkb.points' => 1, with sparse = 0 and unique = 0 ... ";
+$killmails->ensureIndex(array('zkb.points' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
 
 // oneWeek
 echo "\nCreating collection oneWeek ... ";
@@ -511,6 +514,23 @@ $storage = $db->createCollection("storage");
 echo "Done\n";
 echo "Creating index : 'locker' => 1, with sparse = 0 and unique = 1 ... ";
 $storage->ensureIndex(array('locker' => 1), array("sparse" => 0, "unique" => 1));
+echo "Done\n";
+
+// tickets
+echo "\nCreating collection tickets ... ";
+$tickets = $db->createCollection("tickets");
+echo "Done\n";
+echo "Creating index : 'characterID' => 1, with sparse = 0 and unique = 0 ... ";
+$tickets->ensureIndex(array('characterID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'dttm' => 1, with sparse = 0 and unique = 0 ... ";
+$tickets->ensureIndex(array('dttm' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'dttm' => 1, 'characterID' => 1, with sparse = 0 and unique = 0 ... ";
+$tickets->ensureIndex(array('dttm' => 1, 'characterID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'parentID' => 1, 'dttm' => 1, with sparse = 0 and unique = 0 ... ";
+$tickets->ensureIndex(array('parentID' => 1, 'dttm' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // warmails
