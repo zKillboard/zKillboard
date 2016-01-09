@@ -9,7 +9,7 @@ if ($ticket == null or sizeof($ticket) == 0) {
 	$message = array('status' => 'error', 'message' => 'Ticket does not exist.');
 } elseif ($ticket['status'] == 0) {
 	$message = array('status' => 'error', 'message' => 'Ticket has been closed, you cannot post, only view it');
-} elseif ($ticket['characterID'] != User::getUserID() && @$info['moderator'] == 0 && @$info['admin'] == 0) {
+} elseif ($ticket['characterID'] != User::getUserID() && @$info['moderator'] != true) {
 	$app->notFound();
 }
 
@@ -17,7 +17,7 @@ if ($_POST) {
 	$reply = Util::getPost('reply');
 	$status = Util::getPost('status');
 
-	if ($info['moderator'] == true && $status != null) {
+	if (@$info['moderator'] == true && $status != null) {
 		$mdb->getCollection("tickets")->update(['_id' => new MongoID($id)], ['$set' => ['status' => $status]]);
 		if ($status == 0) $app->redirect('/tickets/');
 		else $app->redirect('.');
@@ -32,7 +32,7 @@ if ($_POST) {
 		$mdb->getCollection("tickets")->update(['_id' => new MongoID($id)], ['$set' => ['dttmUpdate' => time()]]);
 		$mdb->getCollection("tickets")->update(['_id' => new MongoID($id)], ['$inc' => ['replies' => 1]]);
 		if (!$moderator) {
-			Log::irc("|g|Ticket response from $name|n|: $fullAddr/moderator/tickets/$id/");
+			Log::irc("|g|Ticket response from $name|n|: $fullAddr/tickets/view/$id/");
 		}
 		if ($moderator && isset($ticket['email']) && strlen($ticket['email']) > 0) {
 			Email::send($ticket['email'], "zKillboard Ticket Response", "You have received a response to a ticket you submitted. To view the response, please click $fullAddr/tickets/view/$id/");

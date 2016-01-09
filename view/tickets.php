@@ -19,7 +19,7 @@ if ($_POST) {
 		$mdb->insert("tickets", $insert);
 
 		$id = $insert['_id']; 
-		Log::irc("|g|New ticket from $name:|n| https://$baseAddr/moderator/tickets/$id/");
+		Log::irc("|g|New ticket from $name:|n| https://$baseAddr//tickets/view/$id/");
 
 		$app->redirect("/tickets/view/$id/");
 		exit();
@@ -29,8 +29,10 @@ if ($_POST) {
 }
 
 $info = User::getUserInfo();
-if ($info['moderator'] == true) {
-	$tickets = $mdb->find("tickets", ['parentID' => null], ['status' => -1, 'dttm' => -1]);
+if (@$info['moderator'] == true) {
+	$open_tickets = $mdb->find("tickets", ['parentID' => null, 'status' => 1], ['dttm' => -1]);
+	$closed_tickets = $mdb->find("tickets", ['parentID' => null, 'status' => ['$ne' => 1]], ['dttm' => -1]);
+	$tickets = array_merge($open_tickets, $closed_tickets);
 } else {
 	$tickets = $mdb->find("tickets", ['$and' => [['characterID' => User::getUserID()], ['parentID' => null]]], ['dttm' => -1]);
 }

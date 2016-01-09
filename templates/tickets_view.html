@@ -13,7 +13,7 @@
   <tbody>
     {% for field in replies %}
     <tr>
-      <td class="col-lg-2">{% include 'components/image_char.html' %}<br/><strong>{{ field.characterName }}</strong><br>{{ field.killTime }}<br/>{% if field.moderator %}<i class="label label-info">Moderator</i>{% endif %}</strong></td>
+      <td class="col-lg-2">{% include 'components/image_char.html' %}<br/><strong><a href='/character/{{ field.characterID}}/'>{{ field.characterName }}</a></strong><br>{{ field.killTime }}<br/>{% if field.moderator %}<i class="label label-info">Moderator</i>{% endif %}</strong></td>
       <td class="col-lg-10">{{ field.content|raw }}</td>
    </tr>
    {% endfor %}
