@@ -11,6 +11,7 @@ $maxTime = 295000;
 $queueStats = new RedisQueue('queueStats');
 
 do {
+    if ($redis->llen("queueServer") > 100) exit();
     $row = $queueStats->pop();
     if ($row !== null) {
         $id = $row['id'];
