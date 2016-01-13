@@ -2,6 +2,9 @@
 
 require_once '../init.php';
 
+global $beSocial;
+if ($beSocial != true) exit();
+
 $queueSocial = new RedisQueue('queueSocial');
 while (!Util::exitNow()) {
     $killID = $queueSocial->pop();

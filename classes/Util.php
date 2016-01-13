@@ -424,4 +424,11 @@ class Util
     {
 	return $rank === false || $rank === null ? '-' : (1 + $rank);
     }
+
+    public static function getQueryCount()
+    {
+	global $mdb;
+
+	return $mdb->getQueryCount();
+    }
 }

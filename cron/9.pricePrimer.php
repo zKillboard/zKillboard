@@ -13,7 +13,6 @@ if (!isset($crestPrices['items'])) exit();
 foreach ($crestPrices['items'] as $item) {
 	$typeID = $item['type']['id'];
 	$price = Price::getItemPrice($typeID, $date, true);
-	echo "$typeID $price\n";
 
 	$marketHistory = $mdb->findDoc("prices", ['typeID' => $typeID]);
 	if ($marketHistory === null)

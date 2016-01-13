@@ -102,7 +102,7 @@ $twig->addGlobal('accountBalance', $accountBalance);
 $twig->addGlobal('adFreeMonthCost', $adFreeMonthCost);
 
 // Display a banner?
-$banner = false; // Db::queryField('select banner from zz_subdomains where (subdomain = :server or alias = :server)', 'banner', array(':server' => $_SERVER['SERVER_NAME']), 60);
+$banner = false;
 if ($banner) {
 	$banner = str_replace('http://i.imgur.com/', 'https://i.imgur.com/', $banner);
 	$banner = str_replace('http://imgur.com/', 'https://imgur.com/', $banner);
@@ -121,7 +121,7 @@ $twig->addGlobal('style', UserConfig::get('style', $style));
 $twig->addExtension(new UserGlobals());
 
 $twig->addFunction(new Twig_SimpleFunction('pageTimer', 'Util::pageTimer'));
-$twig->addFunction(new Twig_SimpleFunction('queryCount', 'Db::getQueryCount'));
+$twig->addFunction(new Twig_SimpleFunction('queryCount', 'Util::getQueryCount'));
 $twig->addFunction(new Twig_SimpleFunction('isActive', 'Util::isActive'));
 $twig->addFunction(new Twig_SimpleFunction('pluralize', 'Util::pluralize'));
 $twig->addFunction(new Twig_SimpleFunction('formatIsk', 'Util::formatIsk'));

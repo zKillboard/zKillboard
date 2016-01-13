@@ -21,6 +21,9 @@ $tqApiChars = new RedisTimeQueue('tqApiChars');
 $timer = new Timer();
 $requestNum = 0;
 
+$numApis = $tqApis->size();
+if ($i >= ($numApis / 100) + 1) exit();
+
 while ($timer->stop() <= 58000) {
     $id = $tqApis->next();
     if ($id !== null) {

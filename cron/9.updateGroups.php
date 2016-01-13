@@ -48,6 +48,7 @@ do {
 } while ($next != null);
 
 $mdb->insertUpdate('storage', ['locker' => 'groupsPopulated'], ['contents' => true]);
+$redis->set("tq:itemsPopulated", true);
 if ($newGroups > 0) {
     Log::irc("Added $newGroups new groupIDs");
 }
