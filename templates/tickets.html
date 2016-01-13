@@ -28,7 +28,8 @@
 					{% for ticket in tickets %}
 					<tr onclick="window.location='/tickets/view/{{ ticket._id }}/'">
 					  <td class="col-lg-2">{{ ticket.killTime }}&nbsp;&nbsp;&nbsp;{% if ticket.status %}<span class="label label-success">Open{% else %}<span class="label label-important">Closed{% endif %}</span></td>
-                                          <td class="pull-left"><a href='/tickets/view/{{ ticket._id }}/'>{{ ticket.subject }}</a></td>
+					  <td class="col-lg-2">{{ ticket.characterName }}</td>
+                                          <td class="pull-left" style='width: 100%;'><a href='/tickets/view/{{ ticket._id }}/'>{{ ticket.subject }}</a></td>
 					</tr>
 					{% endfor %}
 				</tbody>
