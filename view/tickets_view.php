@@ -17,14 +17,14 @@ if ($_POST) {
 	$reply = Util::getPost('reply');
 	$status = Util::getPost('status');
 
-	if (@$info['moderator'] == true && $status != null) {
+	if (@$info['moderator'] == true && $status !== null) {
 		$mdb->getCollection("tickets")->update(['_id' => new MongoID($id)], ['$set' => ['status' => $status]]);
 		if ($status == 0) $app->redirect('/tickets/');
 		else $app->redirect('.');
 		exit();
 	}
 
-	if ($reply && $ticket['status'] != 0) {
+	if ($reply !== null && $ticket['status'] != 0) {
 		$charID = User::getUserId();
 		$name = $info['username'];
 		$moderator = @$info['moderator'] == true;
