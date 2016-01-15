@@ -18,6 +18,13 @@ class RedisTimeQueue
 	}
     }
 
+    public function size()
+    {
+	global $redis;
+
+        return $redis->zCard($this->queueName);
+    }
+
     public function add($value, $deltaSeconds = 0)
     {
         global $redis;

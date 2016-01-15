@@ -2,6 +2,12 @@
 
 require_once "../init.php";
 
+if ($redis->get("tq:itemsPopulated") != true)
+{
+        Util::out("Waiting for items to be populated...");
+        exit();
+}
+
 $redisMD5 = $redis->get("tqSDE:MD5");
 if ($redisMD5 != null && date('i') != 0) exit();
 

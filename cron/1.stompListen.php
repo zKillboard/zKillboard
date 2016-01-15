@@ -2,6 +2,9 @@
 
 require_once '../init.php';
 
+global $stompListen;
+if ($stompListsen != true) exit();
+
 $topics[] = '/topic/kills';
 
 try {

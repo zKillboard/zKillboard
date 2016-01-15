@@ -2,6 +2,17 @@
 
 require_once '../init.php';
 
+if ($redis->get("tq:itemsPopulated") != true)
+{
+        Util::out("Waiting for all items to be populated...");
+        exit();
+}
+if ($redis->get("tqSDE:MD5") != true)
+{
+        Util::out("Waiting for the SDE to be populated");
+        //exit();
+}
+
 $timer = new Timer();
 $crestmails = $mdb->getCollection('crestmails');
 $killmails = $mdb->getCollection('killmails');

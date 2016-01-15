@@ -2,6 +2,10 @@
 
 require_once '../init.php';
 
+global $redisQServer;
+
+if ($redisQServer == null) exit();
+
 $queueRedisQ = new RedisQueue('queueRedisQ');
 
 $timer = new Timer();

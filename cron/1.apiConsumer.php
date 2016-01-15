@@ -18,6 +18,9 @@ require_once '../init.php';
 $timer = new Timer();
 $tqApiChars = new RedisTimeQueue('tqApiChars', 3600);
 
+$numApis = $tqApiChars->size();
+if ($i >= ($numApis / 100) + 1) exit();
+
 $count = 0;
 while ($timer->stop() <= 59000) {
     $row = $tqApiChars->next();

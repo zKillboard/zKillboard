@@ -9,18 +9,7 @@ if ($redis->get($todaysKey) == true) exit();
 $statClasses = ['ships', 'isk', 'points'];
 $statTypes = ['Destroyed', 'Lost'];
 
-$now = time();
-$then = $now - (7 * 86400);
-$ninetyDayKillID = null;
-do {   
-        $result = $mdb->getCollection('killmails')->find(['dttm' => new MongoDate($then)], ['killID' => 1])->sort(['killID' => 1])->limit(1);
-        if ($row = $result->next()) {
-                $ninetyDayKillID = (int) $row['killID'];
-        } else {
-                $then += 1;
-        }
-        if ($then > $now) exit();
-} while ($ninetyDayKillID === null);
+$ninetyDayKillID = $mdb->findField("oneWeek", "killID", [], ['killID' => 1]);
 
 $statistics = $mdb->getCollection("statistics");
 
