@@ -25,9 +25,11 @@ if ($redis->get($redisKey) != true)
 
 $redis->setex($redisKey, 86400, true);
 
+if ($redis->llen('queueStats') > 100) exit();
 while ($id = $queueTopAlltime->pop()) {
 	$row = $mdb->findDoc('statistics', ['_id' => $id]);
 	calcTop($row);
+	if ($redis->llen('queueStats') > 100) exit();
 }
 
 function calcTop($row)
