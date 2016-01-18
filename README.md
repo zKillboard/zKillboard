@@ -1,3 +1,7 @@
+# WARNING
+
+zKillboard code base is being restructured for easy installs, there are no instructions yet, as the restructure isn't finished. This also means that any instructions you see below probably don't work. You've been warned!
+
 ## zKillboard
 zKillboard is a killboard created for EVE-Online, for use on zkillboard.com, but can also be used for single entities.
 
