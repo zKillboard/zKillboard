@@ -10,6 +10,7 @@ $maxTime = 295000;
 
 $queueStats = new RedisQueue('queueStats');
 
+$noRowCount = 0;
 do {
     if ($redis->llen("queueServer") > 100) exit();
     $row = $queueStats->pop();
@@ -17,6 +18,9 @@ do {
         $id = $row['id'];
         $type = $row['type'];
         calcStats($row);
+    } else {
+	$noRowCount++;
+	if ($noRowCount >= 5) exit();
     }
 } while ($timer->stop() <= $maxTime);
 $status = 0;

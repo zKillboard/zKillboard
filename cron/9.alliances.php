@@ -19,7 +19,7 @@ while ($timer->stop() <= 55000) {
     sleep(1);
     $id = (int) $queueAllis->next(false);
     if ($id == null) {
-        continue;
+	exit();
     }
     $alliance = $mdb->findDoc('information', ['type' => 'allianceID', 'id' => $id]);
     $id = $alliance['id'];

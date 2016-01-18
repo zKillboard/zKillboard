@@ -20,7 +20,7 @@ while ($timer->stop() < 55000) {
     sleep(1);
     $id = $queueCorps->next(false);
     if ($id == null) {
-        continue;
+	exit();
     }
     $row = $mdb->findDoc('information', ['type' => 'corporationID', 'id' => (int) $id]);
 

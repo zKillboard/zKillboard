@@ -2,13 +2,13 @@
 
 require_once "../init.php";
 
+if (date('i') != 45) exit();
+
 if ($redis->get("tq:itemsPopulated") != true)
 {
         Util::out("Waiting for items to be populated...");
         exit();
 }
-
-if (date('i') != 45) exit();
 
 $assign = ['capacity', 'name', 'portionSize', 'mass', 'volume', 'description', 'radius', 'published'];
 $rows = $mdb->find("information", ['type' => 'typeID']);

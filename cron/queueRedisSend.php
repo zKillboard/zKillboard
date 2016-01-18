@@ -4,7 +4,11 @@ require_once '../init.php';
 
 global $redisQServer;
 
-if ($redisQServer == null) exit();
+if ($redisQServer == null) 
+{
+	$redis->del("queueRedisQ");
+	exit();
+}
 
 $queueRedisQ = new RedisQueue('queueRedisQ');
 

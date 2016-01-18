@@ -21,7 +21,7 @@ $tqApiChars = new RedisTimeQueue('tqApiChars', 3600);
 $numApis = $tqApiChars->size();
 if ($i >= ($numApis / 100) + 1) exit();
 
-$count = 0;
+$noApiCount = 0;
 while ($timer->stop() <= 59000) {
     $row = $tqApiChars->next();
     if ($row !== null) {
@@ -149,6 +149,10 @@ while ($timer->stop() <= 59000) {
             }
             Util::out("$killsAdded kills added by $name");
         }
+    } else {
+	$noApiCount++;
+	if ($noApiCount >= 5) exit();
     }
+
     sleep(1);
 }

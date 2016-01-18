@@ -3,7 +3,7 @@
 require_once '../init.php';
 
 global $stompListen;
-if ($stompListsen != true) exit();
+if ($stompListen != true) exit();
 
 $topics[] = '/topic/kills';
 

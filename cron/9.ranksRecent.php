@@ -1,5 +1,4 @@
 <?php
-exit();
 
 require_once "../init.php";
 
@@ -13,16 +12,12 @@ $statTypes = ['Destroyed', 'Lost'];
 $now = time();
 $now = $now - ($now % 60);
 $then = $now - (90 * 86400);
-$ninetyDayKillID = null;
-do {   
-        $result = $mdb->getCollection('killmails')->find(['dttm' => new MongoDate($then)], ['killID' => 1])->sort(['killID' => 1])->limit(1);
-        if ($row = $result->next()) {
-                $ninetyDayKillID = (int) $row['killID'];
-        } else {
-                $then += 1;
-        }
-        if ($then > $now) exit();
-} while ($ninetyDayKillID === null);
+$ninetyDayKillID = $mdb->findField("killmails", 'killID', ['dttm' => ['$gte' => new MongoDate($then)]], ['killID' => 1]);
+if ($ninetyDayKillID == null)
+{
+	$redis->setex($todaysKey, 87000, true);
+	exit();
+}
 
 $information = $mdb->getCollection("statistics");
 

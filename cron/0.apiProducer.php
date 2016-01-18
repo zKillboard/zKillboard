@@ -24,6 +24,7 @@ $requestNum = 0;
 $numApis = $tqApis->size();
 if ($i >= ($numApis / 100) + 1) exit();
 
+$noApiCount = 0;
 while ($timer->stop() <= 58000) {
     $id = $tqApis->next();
     if ($id !== null) {
@@ -100,6 +101,9 @@ while ($timer->stop() <= 58000) {
 		$charID = key($scores);
 		$mdb->set('apis', $row, ['userID' => (int) $charID]);
 	}
+    } else {
+	$noApiCount++;
+	if ($noApiCount >= 5) exit();
     }
     sleep(1);
 }

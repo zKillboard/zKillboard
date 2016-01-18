@@ -18,8 +18,7 @@ while ($timer->stop() < 59000) {
     }
 
     if (sizeof($ids) == 0) {
-	sleep(1);
-	continue;
+	exit();
     }
 
     $stringIDs = implode(',', $ids);

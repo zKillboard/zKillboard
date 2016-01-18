@@ -3,7 +3,11 @@
 require_once '../init.php';
 
 global $beSocial;
-if ($beSocial != true) exit();
+if ($beSocial != true) 
+{
+	$redis->del("queueSocial");
+	exit();
+}
 
 $queueSocial = new RedisQueue('queueSocial');
 while (!Util::exitNow()) {
