@@ -35,6 +35,9 @@ color: black;
 .item_dropped_row {
 	background-color: #001600;
 }
+.item_dropped_row .price {
+	color: white;
+}
 .item_dropped {
 	color: white;
 }
