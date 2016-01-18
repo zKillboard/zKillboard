@@ -2,6 +2,10 @@
 
 require_once "../init.php";
 
+global $primePrices;
+
+if ($primePrices != true) exit();
+
 $date = date('Ymd', time() - 7200);
 $yesterday = date('Y-m-d', time() - 7200 - 86400);
 $key = "tq:pricesChecked:$date";

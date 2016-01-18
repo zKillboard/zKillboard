@@ -1,5 +1,9 @@
 <?php
 
+$characters = [];
+$corporations = [];
+$alliances = [];
+
 // Listen to all killmails?
 $listenRedisQ = false;
 
@@ -98,3 +102,6 @@ $analyticsName = "";
 $disqusSSO = "";
 $adFreeMonthCost = 0;
 $stompListen = false;
+
+$primePrices = false;
+

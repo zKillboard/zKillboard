@@ -9,7 +9,7 @@ if ($redis->get($todaysKey) == true) exit();
 $statClasses = ['ships', 'isk', 'points'];
 $statTypes = ['Destroyed', 'Lost'];
 
-$ninetyDayKillID = $mdb->findField("oneWeek", "killID", [], ['killID' => 1]);
+$minKillID = $mdb->findField("oneWeek", "killID", [], ['killID' => 1]);
 
 $statistics = $mdb->getCollection("statistics");
 
@@ -23,15 +23,15 @@ while ($row = $iter->next()) {
 	if ($type == 'corporationID' && $id <= 1999999) continue;
 	if ($type == 'shipTypeID' && Info::getGroupID($id) == 29) continue;
 
-	$killID = getLatestKillID($type, $id, $ninetyDayKillID);
-	if ($killID < $ninetyDayKillID) continue;
+	$killID = getLatestKillID($type, $id, $minKillID);
+	if ($killID < $minKillID) continue;
 
 	$types[$type] = true;
 	$key = "tq:ranks:weekly:$type:$today";
 
-	$weeklyKills = getWeekly($row['type'], $row['id'], false, $ninetyDayKillID); 
+	$weeklyKills = getWeekly($row['type'], $row['id'], false, $minKillID); 
 	if ($weeklyKills['killIDCount'] == 0) continue;
-	$weeklyLosses = getWeekly($row['type'], $row['id'], true, $ninetyDayKillID); 
+	$weeklyLosses = getWeekly($row['type'], $row['id'], true, $minKillID); 
 
 	$multi = $redis->multi();
 	zAdd($multi, "$key:shipsDestroyed", $weeklyKills['killIDCount'], $id);
@@ -116,27 +116,27 @@ function rankCheck($max, $rank) {
 	return $rank === false ? $max : ($rank + 1);
 }
 
-function getWeekly($type, $id, $isVictim, $ninetyDayKillID) {
+function getWeekly($type, $id, $isVictim, $minKillID) {
 	global $mdb;
 
 	// build the query
 	$query = [$type => $id, 'isVictim' => $isVictim];
 	$query = MongoFilter::buildQuery($query);
 	// set the proper sequence values
-	$query = ['$and' => [['killID' => ['$gte' => $ninetyDayKillID]], $query]];
+	$query = ['$and' => [['killID' => ['$gte' => $minKillID]], $query]];
 
 	$result = $mdb->group('killmails', [], $query, 'killID', ['zkb.points', 'zkb.totalValue']);
 	return sizeof($result) ? $result[0] : ['killIDCount' => 0, 'zkb_pointsSum' => 0, 'zkb_totalValueSum' => 0];
 }
 
-function getLatestKillID($type, $id, $ninetyDayKillID) {
+function getLatestKillID($type, $id, $minKillID) {
 	global $mdb;
 
 	// build the query
 	$query = [$type => $id, 'isVictim' => false];
 	$query = MongoFilter::buildQuery($query);
 	// set the proper sequence values
-	$query = ['$and' => [['killID' => ['$gte' => $ninetyDayKillID]], $query]];
+	$query = ['$and' => [['killID' => ['$gte' => $minKillID]], $query]];
 
 	$killmail = $mdb->findDoc("killmails", $query);
 	if ($killmail == null) return 0;
