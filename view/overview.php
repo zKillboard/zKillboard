@@ -262,18 +262,7 @@ if ($filter != '') {
 
     $extra['supers'] = array();
     if ($pageType == 'supers' && $hasSupers) {
-        $data = array();
-        $parameters = ["{$key}ID" => (int) $id, 'groupID' => 30, 'isVictim' => false, 'pastSeconds' => (86400 * 90), 'nolimit' => true];
-        $data['titans']['data'] = Stats::getTop('characterID', $parameters);
-        $data['titans']['title'] = 'Titans';
-
-        $parameters = ["{$key}ID" => (int) $id, 'groupID' => 659, 'isVictim' => false, 'pastSeconds' => (86400 * 90), 'nolimit' => true];
-        $data['moms']['data'] = Stats::getTop('characterID', $parameters);
-        $data['moms']['title'] = 'Supercarriers';
-
-        Info::addInfo($data);
-        $extra['supers'] = $data;
-        $extra['hasSupers'] = sizeof($data['titans']['data']) || sizeof($data['moms']['data']);
+	Stats::getSupers($extra, $parameters, $key, $id);
     }
 }
 
