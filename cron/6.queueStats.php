@@ -13,12 +13,10 @@ $queueStats = new RedisQueue('queueStats');
 $noRowCount = 0;
 do {
     if ($redis->llen("queueServer") > 100) exit();
+    if ($redis->llen("queueProcess") > 10) exit();
     $row = $queueStats->pop();
-    if ($row !== null) {
-        $id = $row['id'];
-        $type = $row['type'];
-        calcStats($row);
-    } else {
+    if ($row !== null) calcStats($row);
+    else {
 	$noRowCount++;
 	if ($noRowCount >= 5) exit();
     }

@@ -16,7 +16,7 @@ $statistics = $mdb->getCollection("statistics");
 Util::out("weekly time ranks - first iteration");
 $types = [];
 $iter = $statistics->find();
-while ($row = $iter->next()) {
+foreach ($iter as $row) {
 	$type = $row['type'];
 	$id = $row['id'];
 

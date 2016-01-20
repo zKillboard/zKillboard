@@ -18,7 +18,6 @@ foreach ($crest as $row) {
 		continue;
 	}
 	$count = 0;
-	Util::out("Resetting $killID");
 
 	$mdb->set('crestmails', ['killID' => $killID], ['processed' => false]);
 	sleep(1);

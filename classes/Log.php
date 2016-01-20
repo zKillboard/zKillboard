@@ -26,8 +26,7 @@ class Log
 	public static function log($text)
 	{
 		global $logfile;
-		if (!file_exists($logfile) && !is_writable(dirname($logfile))) return; // Can't create the file
-		if (is_writable($logfile)) error_log(date("Ymd H:i:s") . " $text \n", 3, $logfile);
+		error_log(date("Y-m-d H:i:s") . " > $text \n", 3, $logfile);
 	}
 
 	/*
@@ -41,7 +40,6 @@ class Log
 
 		if (!isset($ircLogFile) || $ircLogFile == "") return;
 		$text = self::addIRCColors($text);
-		if (!is_writable($ircLogFile) && !is_writable(dirname($ircLogFile))) return;
 		error_log("\n${from}$text\n", 3, $ircLogFile);
 	}
 
@@ -54,7 +52,6 @@ class Log
 
 		if (!isset($ircAdminLogFile) || $ircAdminLogFile == "") return;
 		$text = self::addIRCColors($text);
-		if (!is_writable($ircAdminLogFile) && !is_writable(dirname($ircAdminLogFile))) return; // Can't create the file
 		error_log("\n${from}$text\n", 3, $ircAdminLogFile);
 	}
 

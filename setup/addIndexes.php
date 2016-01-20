@@ -265,9 +265,6 @@ echo "Done\n";
 echo "Creating index : 'awox' => 1, with sparse = 0 and unique = 0 ... ";
 $oneWeek->ensureIndex(array('awox' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
-echo "Creating index : 'dttm' => 1, with sparse = 0 and unique = 0 ... ";
-$oneWeek->ensureIndex(array('dttm' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
 echo "Creating index : 'involved.allianceID' => 1, 'involved.characterID' => 1, with sparse = 0 and unique = 0 ... ";
 $oneWeek->ensureIndex(array('involved.allianceID' => 1, 'involved.characterID' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
@@ -375,6 +372,9 @@ $oneWeek->ensureIndex(array('involved.shipTypeID' => 1, 'involved.groupID' => 1)
 echo "Done\n";
 echo "Creating index : 'locationID' => 1, with sparse = 0 and unique = 0 ... ";
 $oneWeek->ensureIndex(array('locationID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'dttm' => 1, with sparse = 0 and unique = 0 ... ";
+$oneWeek->ensureIndex(array('dttm' => 1), array("sparse" => 0, "unique" => 0, "expireAfterSeconds" => 604800));
 echo "Done\n";
 
 // payments

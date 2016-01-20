@@ -92,7 +92,7 @@ function saveFitting(id) {
 		$('#modalMessage').modal('show');
 	
 		var request = $.ajax({
-			url: "https://zkillboard.com/ccpsavefit/" + id + "/",
+			url: "/ccpsavefit/" + id + "/",
 			type: "GET",			
 			dataType: "text"
 		});

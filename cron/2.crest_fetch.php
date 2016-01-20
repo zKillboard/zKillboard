@@ -2,26 +2,23 @@
 
 require_once '../init.php';
 
-global $baseAddr;
+global $baseAddr, $baseDir;
 
 $crestmails = $mdb->getCollection('crestmails');
 $rawmails = $mdb->getCollection('rawmails');
 $queueProcess = new RedisQueue('queueProcess');
-$queueShare = new RedisQueue('queueShare');
+$queueShare = file_exists("$baseDir/work/queueShare.php") ? new RedisQueue('queueShare') : null;
 $killsLastHour = new RedisTtlCounter('killsLastHour');
 
 $counter = 0;
 $timer = new Timer();
-while (!Util::exitNow() && $timer->stop() < 115000) {
+while ($timer->stop() < 59000) {
 	$unprocessed = $crestmails->find(array('processed' => false))->sort(['killID' => -1])->limit(10);
 
 	if (!$unprocessed->hasNext()) {
 		sleep(1);
 	}
 	foreach ($unprocessed as $crestmail) {
-		if (Util::exitNow()) {
-			break;
-		}
 		$id = $crestmail['killID'];
 		$hash = $crestmail['hash'];
 
@@ -78,7 +75,7 @@ while (!Util::exitNow() && $timer->stop() < 115000) {
 			$queueProcess->push($killID);
 			++$counter;
 
-			$queueShare->push($killID);
+			if ($queueShare != null) $queueShare->push($killID);
 		} else {
 			$crestmails->update($crestmail, array('$set' => array('processed' => false)));
 		}

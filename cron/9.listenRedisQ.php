@@ -48,9 +48,9 @@ function checkEntities($entities)
         $hasID = false;
         foreach ($entities as $entity)
         {
-                foreach ($characters as $character) $hasID |= hasID($entity, 'character', $character);
-                foreach ($corporations as $corporation) $hasID |= hasID($entity, 'corporation', $corporation);
-                foreach ($alliances as $alliance) $hasID |= hasID($entity, 'alliance', $alliance);
+                if ($characters != null) foreach ($characters as $character) $hasID |= hasID($entity, 'character', $character);
+                if ($corporations != null) foreach ($corporations as $corporation) $hasID |= hasID($entity, 'corporation', $corporation);
+                if ($alliances != null) foreach ($alliances as $alliance) $hasID |= hasID($entity, 'alliance', $alliance);
         }
         return $hasID;
 }

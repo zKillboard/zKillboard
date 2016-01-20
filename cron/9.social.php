@@ -10,7 +10,8 @@ if ($beSocial != true)
 }
 
 $queueSocial = new RedisQueue('queueSocial');
-while (!Util::exitNow()) {
+$timer = new Timer();
+while ($timer->stop() < 59000) {
     $killID = $queueSocial->pop();
     if ($killID != null) {
         beSocial($killID);

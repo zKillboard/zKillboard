@@ -2,24 +2,27 @@
 
 require_once '../init.php';
 
+global $queueSocial, $redisQAuthUser;
+
 $queueInfo = new RedisQueue('queueInfo');
-$queueSocial = new RedisQueue('queueSocial');
+$queueSocial = $beSocial == true ? new RedisQueue('queueSocial') : null;
 $queueStats = new RedisQueue('queueStats');
-$queueRedisQ = new RedisQueue('queueRedisQ');
+$queueRedisQ = $redisQAuthUser != null ? new RedisQueue('queueRedisQ') : null;
 $killmails = $mdb->getCollection('killmails');
 $rawmails = $mdb->getCollection('rawmails');
 $information = $mdb->getCollection('information');
 $statArray = ['characterID', 'corporationID', 'allianceID', 'factionID', 'shipTypeID', 'groupID'];
 
-while (!Util::exitNow()) {
+$timer = new Timer();
+while ($timer->stop() < 59000) {
     $killID = $queueInfo->pop();
 
     if ($killID !== null) {
         updateInfo($killID);
         updateStatsQueue($killID);
 
-        $queueSocial->push($killID);
-        $queueRedisQ->push($killID);
+        if ($queueSocial != null) $queueSocial->push($killID);
+        if ($queueRedisQ != null) $queueRedisQ->push($killID);
     }
 }
 

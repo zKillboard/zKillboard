@@ -15,17 +15,18 @@ class Price
 
 		// Have we fetched prices for this typeID today?
 		$today = date('Ymd', time() - 7200); // Back one hour because of CREST cache
-		$fetchedKey = "tq:priceFetched:$typeID:$today";
+		$fetchedKey = "tq:pricesFetched:$today";
 		if ($fetch === true)
 		{
-			if ($redis->get($fetchedKey) != true) static::getCrestPrices($typeID);
-			$redis->setex($fetchedKey, 86400, true);
+			if ($redis->hGet($fetchedKey, $typeID) != true) static::getCrestPrices($typeID);
+			$redis->hSet($fetchedKey, $typeID, true);
+			$redis->expire($fetchedKey, 86400);
 		}
 
 		// Have we already determined the price for this item at this date?
 		$date = date('Y-m-d', strtotime($kmDate) - 7200); // Back one hour because of CREST cache
-		$priceKey = "tq:price:$typeID:$date";
-		$price = $redis->get($priceKey);
+		$priceKey = "tq:prices:$date";
+		$price = $redis->hGet($priceKey, $typeID);
 		if ($price != null) return $price;
 
 		$marketHistory = $mdb->findDoc("prices", ['typeID' => $typeID]);
@@ -58,7 +59,8 @@ class Price
 		foreach ($priceList as $price) $total += $price;
 		$avgPrice = round($total / sizeof($priceList), 2);
 
-		$redis->setex($priceKey, 86400, $avgPrice);
+		$redis->hSet($priceKey, $typeID, $avgPrice);
+		$redis->expire($priceKey, 86400);
 		return $avgPrice;
 	}
 
@@ -138,7 +140,7 @@ class Price
 
 	protected static function getCrestPrices($typeID)
 	{
-		global $mdb;
+		global $mdb, $debug;
 
 		$marketHistory = $mdb->findDoc("prices", ['typeID' => $typeID]);
 		if ($marketHistory === null)
@@ -147,6 +149,7 @@ class Price
 			$mdb->save("prices", $marketHistory);
 		}
 
+Log::log("Fetching price for typeID $typeID");
 		$url = "https://public-crest.eveonline.com/market/10000002/types/$typeID/history/";
 		$raw = Util::getData($url, 0);
 		$json = json_decode($raw, true);

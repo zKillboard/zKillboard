@@ -14,7 +14,7 @@ $information = $mdb->getCollection("statistics");
 Util::out("Alltime ranks - first iteration");
 $types = [];
 $iter = $information->find();
-while ($row = $iter->next()) {
+foreach ($iter as $row) {
 	$type = $row['type'];
 	$id = $row['id'];
 

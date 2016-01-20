@@ -8,6 +8,8 @@ mkdir -p logs
 
 ./rotate.sh
 
+touch logs/zkb.log
+
 for each in $(ls *.php | grep -v nolock); do
 	touch locks/$each.lock
 	{

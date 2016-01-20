@@ -2,21 +2,24 @@
 
 require_once "../init.php";
 
-$fetched = $redis->get("zkb:zkbFeed");
-if ($fetched == true) exit();
-
 // Build the feeds from the config
 global $characters, $corporations, $alliances;
 
-foreach ($characters as $character) doFetch('character', $character);
-foreach ($corporations as $corporation) doFetch('corporation', $corporation);
-foreach ($alliances as $alliance) doFetch('alliance', $alliance);
+if ($characters != null) foreach ($characters as $character) doFetch('character', $character);
+if ($corporations != null) foreach ($corporations as $corporation) doFetch('corporation', $corporation);
+if ($alliances != null) foreach ($alliances as $alliance) doFetch('alliance', $alliance);
 
 function doFetch($type, $id)
 {
-	global $redis;
+	global $redis, $debug;
 
-		$lastFetchedID = (int) $redis->get("zkb:lastFetchedID:$type:id");
+	$key = "zkb:zkbFeed:$type:$id";
+	$fetched = $redis->get($key);
+	if ($fetched == true) return;
+
+	if ($debug) Util::out("Fetching $type $id");
+
+	$lastFetchedID = (int) $redis->get("zkb:lastFetchedID:$type:$id");
 	do {
 		$url = "https://zkillboard.com/api/{$type}ID/$id/orderDirection/asc/afterKillID/$lastFetchedID/no-items/no-attackers/";
 
@@ -31,10 +34,10 @@ function doFetch($type, $id)
 		}
 		$newKills = sizeof($json);
 	} while ($newKills > 0); 
-	$redis->set("zkb:lastFetchedID:$type:id", $lastFetchedID);
+	$redis->set("zkb:lastFetchedID:$type:$id", $lastFetchedID);
+	$redis->setex($key, 3601, true);
 }
 
-$redis->setex("zkb:zkbFeed", 3601, true);
 
 function saveKill($killID, $hash)
 {

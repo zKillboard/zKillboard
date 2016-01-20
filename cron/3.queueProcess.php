@@ -18,7 +18,7 @@ $storage = $mdb->getCollection('storage');
 $counter = 0;
 $timer = new Timer();
 
-while (!Util::exitNow()) {
+while ($timer->stop() < 59000) {
     $killID = $queueProcess->pop();
     if ($killID !== null) {
         $raw = $mdb->findDoc('rawmails', ['killID' => $killID]);
@@ -152,12 +152,6 @@ while (!Util::exitNow()) {
 	$redis->incr("zkb:totalKills");
 
         ++$counter;
-        if (Util::exitNow()) {
-            break;
-        }
-    }
-    if ($timer->stop() > 110000) {
-        exit();
     }
 }
 if ($debug && $counter > 0) {
