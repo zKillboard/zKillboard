@@ -100,7 +100,7 @@ foreach ($types as $type=>$value) {
 function moveAndExpire(&$multi, $today, $key) {
         $newKey = str_replace(":$today", "", $key);
         $multi->rename($key, $newKey);
-        $multi->expire($newKey, 3600);
+        $multi->expire($newKey, 9000);
 }
 
 $redis->setex($todaysKey, 9000, true);
