@@ -32,8 +32,6 @@ function doSupers($row)
 		$mdb->set("statistics", ['type' => $type, 'id' => $id], ['hasSupers' => false, 'supers' => []]);
 	} else
 	{
-echo "$type $id\n";
-		$result = [];
 		$supers = Stats::getSupers($type, $id);
 		$mdb->set("statistics", ['type' => $type, 'id' => $id], ['hasSupers' => true, 'supers' => $supers]);
 	}
