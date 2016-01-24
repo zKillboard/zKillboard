@@ -247,25 +247,6 @@ if (false && $pageType == 'wars' && $extra['hasWars']) {
     $extra['wars'][] = War::getNamedWars('Closed Wars - Defending', "select * from zz_wars where defender = $warID and timeFinished is not null order by timeFinished desc");
 }
 
-$filter = '';
-switch ($key) {
-    case 'corporation':
-    case 'alliance':
-    case 'faction':
-        $filter = "{$key}ID = :id";
-}
-if ($filter != '') {
-    $query = ["{$key}ID" => (int) $id, 'isVictim' => false, 'groupID' => [659, 30], 'pastSeconds' => (90 * 86400)];
-    $query = MongoFilter::buildQuery($query);
-    $hasSupers = $mdb->exists('killmails', $query);
-    $extra['hasSupers'] = $hasSupers;
-
-    $extra['supers'] = array();
-    if ($pageType == 'supers' && $hasSupers) {
-	Stats::getSupers($extra, $parameters, $key, $id);
-    }
-}
-
 if ($key == 'system') {
     $statType = 'solarSystemID';
 } elseif ($key == 'ship') {
@@ -274,6 +255,12 @@ if ($key == 'system') {
     $statType = "{$key}ID";
 }
 $statistics = $mdb->findDoc('statistics', ['type' => $statType, 'id' => (int) $id]);
+
+if ($key == 'corporation' || $key == 'alliance' || $key == 'faction')
+{
+    $extra['hasSupers'] = @$statistics['hasSupers'];
+    $extra['supers'] = @$statistics['supers'];
+}
 
 $statistics['shipsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:shipsDestroyed", $id));
 $statistics['shipsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:shipsLost", $id));

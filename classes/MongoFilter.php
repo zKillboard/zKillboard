@@ -2,7 +2,7 @@
 
 class MongoFilter
 {
-    public static function getKills($parameters)
+    public static function getKills($parameters, $buildQuery = true)
     {
         global $mdb;
 
@@ -20,14 +20,14 @@ class MongoFilter
         $sortKey = isset($parameters['orderBy']) ? $parameters['orderBy'] : 'killID';
         $page = isset($parameters['page']) ? ($parameters['page'] == 0 ? 0 : $parameters['page'] - 1) : 0;
 
-        $hashKey = 'MongoFilter::getKills:'.serialize($parameters).":$limit:$page:$sortKey:$sortDirection";
+        $hashKey = 'MongoFilter::getKills:'.serialize($parameters).":$limit:$page:$sortKey:$sortDirection:$buildQuery";
         $result = RedisCache::get($hashKey);
         if ($result != null) {
             return $result;
         }
 
         // Build the query parameters
-        $query = self::buildQuery($parameters);
+        $query = $buildQuery ? self::buildQuery($parameters) : $parameters;
         if ($query === null) {
             return;
         }
@@ -121,7 +121,8 @@ class MongoFilter
                     $and[] = ['dttm' => ['$lte' => new MongoDate($time + (3600 * $exHours))]];
                     break;
                 case 'pastSeconds':
-            $value = min($value, 604800);
+            	    $value = min($value, (90 * 86400));
+		    $value = max(0, $value);
                     $and[] = ['dttm' => ['$gte' => new MongoDate(time() - $value)]];
                     break;
                 case 'beforeKillID':

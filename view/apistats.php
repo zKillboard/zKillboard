@@ -11,7 +11,7 @@ try {
     $array['info'] = $mdb->findDoc('information', ['type' => $type, 'id' => (int) $id]);
     unset($array['info']['_id']);
 
-    Stats::getSupers($array, $parameters, $type, $id);
+    //Stats::getSupers($array, $type, $id);
 
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET');

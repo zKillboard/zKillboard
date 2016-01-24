@@ -32,15 +32,11 @@ class Stats
 
 		$hashKey = "Stats::getTop:$groupByColumn:".serialize($parameters);
 		$result = RedisCache::get($hashKey);
-		if ($result != null) {
-			return $result;
-		}
+		//if ($result != null) return $result;
 
-		if (isset($parameters['pastSeconds'])) {
+		if (isset($parameters['pastSeconds']) && $parameters['pastSeconds'] <= 604800) {
 			$killmails = $mdb->getCollection('oneWeek');
-			if ($parameters['pastSeconds'] >= 604800) {
-				unset($parameters['pastSeconds']);
-			}
+			unset($parameters['pastSeconds']);
 		} else {
 			$killmails = $mdb->getCollection('killmails');
 		}
@@ -214,19 +210,18 @@ class Stats
 		return $activePvP;
 	}
 
-	public static function getSupers(&$extra, $parameters, $key, $id)
+	public static function getSupers($key, $id)
 	{
 		$data = array();
-		$parameters = ["{$key}" => (int) $id, 'groupID' => 30, 'isVictim' => false, 'pastSeconds' => (86400 * 90), 'nolimit' => true];
+		$parameters = [$key => (int) $id, 'groupID' => 30, 'isVictim' => false, 'pastSeconds' => (86400 * 90), 'nolimit' => true];
 		$data['titans']['data'] = Stats::getTop('characterID', $parameters);
 		$data['titans']['title'] = 'Titans';
 
-		$parameters = ["{$key}" => (int) $id, 'groupID' => 659, 'isVictim' => false, 'pastSeconds' => (86400 * 90), 'nolimit' => true];
+		$parameters = [$key => (int) $id, 'groupID' => 659, 'isVictim' => false, 'pastSeconds' => (86400 * 90), 'nolimit' => true];
 		$data['supercarriers']['data'] = Stats::getTop('characterID', $parameters);
 		$data['supercarriers']['title'] = 'Supercarriers';
 
 		Info::addInfo($data);
-		$extra['supers'] = $data;
-		$extra['hasSupers'] = sizeof(@$data['titans']['data']) || sizeof(@$data['moms']['data']);
+		return $data;
 	}
 }
