@@ -20,7 +20,7 @@ switch ($type) {
         $kills = Kills::getKills(array('groupID' => array(547, 485, 513, 902, 941, 30, 659, 883), 'limit' => $limit, 'cacheTime' => 300, 'losses' => true, 'page' => $page));
     break;
     case 'awox':
-        $kills = Kills::getKills(['awox' => true]);
+        $kills = Kills::getKills(['awox' => true, 'page' => $page]);
     break;
     case 't1':
         $kills = Kills::getKills(array('groupID' => array(419, 27, 29, 547, 26, 420, 25, 28, 941, 463, 237, 31), 'limit' => $limit, 'cacheTime' => 300, 'losses' => true, 'page' => $page));
