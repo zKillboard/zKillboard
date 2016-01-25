@@ -131,6 +131,8 @@
 		<center><em><small>Last 7 days...<br/></small></em></center>
 	{% endif %}
   </div>
+{% elseif pageType == 'trophies' %}
+    {% include 'components/trophies.html' %}
 {% elseif pageType == 'api' %}
     {% include 'components/corp_list.html' %}
 {% elseif pageType == 'stats' %}

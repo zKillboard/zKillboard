@@ -1,0 +1,20 @@
+<div>
+{% if extra.trophies %}
+  <h3>Trophies <small>{{ extra.trophies.misc }}</small></h3>
+  {% set count = 0 %}
+  {% for category, conditions in extra.trophies.trophies %}
+    <fieldset class='col-lg-6'><legend>{{ category }}</legend>
+	<table class="table table-condensed table-striped">
+        {% for condition, isMet in conditions %}
+	    <tr>
+	    <td style='width: 2em;'>{% if isMet == true %}<span class="green">Completed</span>{% else %} {% endif %}</td>
+            <td>{{ condition }}</td>
+            </tr>
+        {% endfor %}
+	</table>
+    </fieldset>
+    {% set count = count + 1 %}
+    {% if count is divisibleby(2) %}<div class="clearfix"></div>{% endif %}
+  {% endfor %}
+{% endif %}
+</div>

@@ -22,7 +22,7 @@ if (strlen("$id") > 11) {
     $app->redirect('/');
 }
 
-$validPageTypes = array('overview', 'kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'top');
+$validPageTypes = array('overview', 'kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'top', 'trophies');
 if ($key == 'alliance') {
     $validPageTypes[] = 'api';
     $validPageTypes[] = 'corpstats';
@@ -260,6 +260,11 @@ if ($key == 'corporation' || $key == 'alliance' || $key == 'faction')
 {
     $extra['hasSupers'] = @$statistics['hasSupers'];
     $extra['supers'] = @$statistics['supers'];
+}
+
+if ($key == 'character' && $pageType == 'trophies')
+{
+	$extra['trophies'] = Trophies::getTrophies($id);
 }
 
 $statistics['shipsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:shipsDestroyed", $id));
