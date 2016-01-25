@@ -8,6 +8,7 @@ if ($app->request()->isPost()) {
     $search = $app->request()->post('query');
 }
 
+if (!(isset($entityType))) $entityType = null;
 $search = strtolower($search);
 $low = "[$search\x00";
         
@@ -17,8 +18,10 @@ $retVal = [];
 $types = ['typeID:flag', 'regionID', 'solarSystemID', 'allianceID', 'allianceID:flag', 'corporationID', 'corporationID:flag', 'characterID', 'typeID'];
 $timer = new Timer();
 foreach ($types as $type) {
+	if ($entityType != null && $entityType != $type) continue;
+
         $result = $redis->zRangeByLex("search:$type", $low, "+", 0, 9);
-        
+
         $next = [];
 	$searchType = $type;
 	$type = str_replace(":flag", "", $type);
