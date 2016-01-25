@@ -36,7 +36,7 @@ while ($timer->stop() <= 55000) {
     $update = [];
     $update['lastApiUpdate'] = $mdb->now();
     $update['corpCount'] = (int) $alliCrest['corporationsCount'];
-    $update['executorCorpID'] = (int) $alliCrest['executorCorporation']['id'];
+    $update['executorCorpID'] = (int) @$alliCrest['executorCorporation']['id'];
     addCorp($update['executorCorpID']);
     $memberCount = 0;
     $update['deleted'] = $alliCrest['deleted'];
