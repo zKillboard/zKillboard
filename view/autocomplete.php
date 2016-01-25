@@ -42,8 +42,8 @@ foreach ($types as $type) {
 			$regionName = Info::getInfoField('regionID', $regionID, 'name');
 			$name = "$name ($regionName)";
 		}
-		if (strtolower($name) === $search) $exactMatch[] = ['id' => $id, 'name' => $name, 'type' => str_replace("ID", "", $searchType), 'image' => $image];
-		else $partialMatch[] = ['id' => $id, 'name' => $name, 'type' => str_replace("ID", "", $searchType), 'image' => $image];
+		if (strtolower($name) === $search) $exactMatch[] = ['id' => (int) $id, 'name' => $name, 'type' => str_replace("ID", "", $searchType), 'image' => $image];
+		else $partialMatch[] = ['id' => (int) $id, 'name' => $name, 'type' => str_replace("ID", "", $searchType), 'image' => $image];
 	}
 }   
 
