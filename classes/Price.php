@@ -69,6 +69,8 @@ class Price
 		// Some typeID's have hardcoded prices
 		switch ($typeID)
 		{
+			case 12478: // damn Khumaak and people thinking fake killmail isk value means something
+				return 0.01;
 			case 2834: // Utu
 			case 3516: // Malice
 			case 11375: // Freki
