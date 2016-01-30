@@ -1,14 +1,27 @@
 <div>
 {% if extra.trophies %}
-  <h3>Trophies <small>{{ extra.trophies.misc }}</small></h3>
+   {% set trophies = extra.trophies %}
+  <fieldset class='col-lg-4'><legend>Statistics</legend>
+    <table class='table table-condensed'>
+      <tr><th>Achieved</th><th>Total</th><th>Pct.</th><th>Level Avg</th></tr>
+      <tr>
+        <td>{{ trophies.trophyCount }}</td>
+        <td>{{ trophies.maxTrophyCount }}</td>
+        <td>{{ trophies.completedPct }}%</td>
+	<td><img style='' src='/img/level/level{{ trophies.levelAvg }}.gif'></td>
+    </tr>
+    </table>
+  </fieldset>
+  <div class="clearfix"></div>
   {% set count = 0 %}
   {% for category, conditions in extra.trophies.trophies %}
     <fieldset class='col-lg-6'><legend>{{ category }}</legend>
 	<table class="table table-condensed table-striped">
-        {% for condition, isMet in conditions %}
+	    <tr><th>Trophy</th><th><span class='pull-right'>Level</span></th></tr>
+        {% for condition, value in conditions %}
 	    <tr>
-	    <td style='width: 2em;'>{% if isMet == true %}<span class="green">Completed</span>{% else %} {% endif %}</td>
-            <td>{{ condition }}</td>
+            <td style='width: 100%';><span class='{% if value.met > 0%}green{%endif%}'>{{ condition }}{% if value.link %} <a href='{{value.link}}'><span class="glyphicon glyphicon-arrow-right small"></span></a>{% endif %}</span></td>
+            <td style='width: 0.5em;'><span class='pull-right'><img style='' src='/img/level/level{{ value.level }}.gif' title='{% if value.noNext %}Hardcoded level (for now){% else %}At: {{ value.value }} {% if value.level < 5 %}Next Level: {{ value.next }} {% endif %}{% endif %}'></span></td>
             </tr>
         {% endfor %}
 	</table>

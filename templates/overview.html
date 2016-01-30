@@ -31,6 +31,9 @@
 		<li class="{{ isActive('Kills', pageType) }}"><a href="/{{ key }}/{{ id }}/kills/{{YWMurl}}">Kills</a></li>
 		<li class="{{ isActive('Solo', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/solo/{{YWMurl}}">Solo</a></li>
 		<li class="{{ isActive('Losses', pageType) }}"><a href="/{{ key }}/{{ id }}/losses/{{YWMurl}}">Losses</a></li>
+        {% if key == 'character' %}
+		<li class="{{ isActive('Trophies', pageType) }}"><a href="/{{ key }}/{{ id }}/trophies/">Trophies</a></li>
+	{% endif %}
 	{% if key == "ship" %}
 		<li class="{{ isActive('Description', pageType) }}"><a href="/item/{{ id }}/">Description</a></li>
 	{% endif %}
