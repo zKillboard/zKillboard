@@ -32,12 +32,9 @@ class Trophies
 		$type = 'characterID';
 
 		$stats = $mdb->findDoc("statistics", ['type' => $type, 'id' => $charID]);
-		$trophies = $mdb->findDoc("trophies", ['id' => $charID]);
 		$trophies = [];
 		$maxTrophyCount = 0;
 		$trophyCount = 0;
-		$levelAvg = null;
-		$levelCount = 0;
 
 		foreach (static::$conditions as $condition)
 		{
@@ -82,9 +79,6 @@ class Trophies
 			$count = $mdb->count("information", ['groupID' => $groupID]);
 			if ($count == 0) continue;
 
-			$kkey = "groupDestroyed:$groupID";
-			$lkey = "groupLost:$groupID";
-
 			$groupName = $row['name']; //Info::getInfoField('groupID', $groupID, 'name');
 			$a = in_array(substr(strtolower($groupName), 0, 1), ['a', 'e', 'i', 'o', 'u']) ? "an" : "a";
 			$values = @$stats['groups'][$groupID];
@@ -96,8 +90,6 @@ class Trophies
 			$trophyCount += @$values['shipsLost'] > 0;
 			$maxTrophyCount += 2;
 		}
-
-		$shipClasses = $mdb->getCollection("information")->count(['type' => 'groupID', 'categoryID' => 6]);
 
 		$level = 0;
 		$total = 1;
