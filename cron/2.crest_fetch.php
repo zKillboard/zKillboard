@@ -46,6 +46,11 @@ while ($timer->stop() < 59000) {
 				$crestmails->update($crestmail, array('$set' => array('processed' => null, 'error' => 'Error 415, 500, or null')));
 				continue;
 		}
+		if (!isset($killmail['killID'])) {
+			$crestmails->update($crestmail, array('$set' => array('processed' => false)));
+			continue;
+		}
+
 		if (is_integer($killmail)) Util::out("after $id $killmail");
 		if (is_integer($killmail)) var_dump($killmail);
 
