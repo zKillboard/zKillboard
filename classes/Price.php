@@ -1,4 +1,4 @@
-<?php
+i<?php
 
 class Price
 {
@@ -151,10 +151,8 @@ class Price
 			$mdb->save("prices", $marketHistory);
 		}
 
-Log::log("Fetching price for typeID $typeID");
 		$url = "https://public-crest.eveonline.com/market/10000002/types/$typeID/history/";
-		$raw = Util::getData($url, 0);
-		$json = json_decode($raw, true);
+		$json = CrestTools::getJSON($url);
 
 		if (is_array($json["items"])) foreach ($json["items"] as $row)
 		{
