@@ -280,7 +280,7 @@ function isSolo($row)
     if ($row['attackerCount'] > $numNPC + 1) {
         return false;
     }
-    
+
     // make sure the victim isn't a pod, shuttle, or noobship
     $vGroupID = $row['vGroupID'];
 
