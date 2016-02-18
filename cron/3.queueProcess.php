@@ -265,10 +265,22 @@ function isSolo($row)
 {
     $notSolo = [29, 31, 237];
 
-    if ($row['attackerCount'] > 1) {
+    $numNPC = 0;
+    foreach ($row['involved'] as $key => $involved) {
+        if (!isset($involved['corporationID'])) {
+            $numNPC = $numNPC + 1;
+        } else {
+            if ($involved['corporationID'] < 1999999) {
+                $numNPC = $numNPC + 1;
+            }
+        }
+    }
+    
+    // Special case where all but one attackers are NPCs, e.g. fights at fw plexes and belts.
+    if ($row['attackerCount'] > $numNPC + 1) {
         return false;
     }
-
+    
     // make sure the victim isn't a pod, shuttle, or noobship
     $vGroupID = $row['vGroupID'];
 
