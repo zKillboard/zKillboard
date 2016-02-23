@@ -17,8 +17,7 @@ if ($i == 30) {
 }
 
 while ($timer->stop() < 55000) {
-    sleep(1);
-    $id = $queueCorps->next(false);
+    $id = $queueCorps->next();
     if ($id == null) {
 	exit();
     }
