@@ -8,7 +8,7 @@ $data['titans']['data'] = Stats::getTop('characterID', $parameters);
 $data['titans']['title'] = 'Titans';
 
 $parameters = ['groupID' => 659, 'isVictim' => false, 'pastSeconds' => (86400 * 90), 'nolimit' => true];
-$data['moms']['data'] = Stats::getTop('characterID', $parameters);
-$data['moms']['title'] = 'Supercarriers';
+$data['supercarriers']['data'] = Stats::getTop('characterID', $parameters);
+$data['supercarriers']['title'] = 'Supercarriers';
 
 $app->render('intel.html', array('data' => $data));
