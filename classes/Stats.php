@@ -93,7 +93,7 @@ class Stats
 		if (!$debug) {
 			MongoCursor::$timeout = -1;
 		}
-		$result = $killmails->aggregateCursor($pipeline);
+		$result = $killmails->aggregateCursor($pipeline, [ "cursor" => [ "batchSize" => 999999 ] ]);
 		$result = iterator_to_array($result);
 
 		$time = $timer->stop();
