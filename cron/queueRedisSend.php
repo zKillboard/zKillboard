@@ -27,5 +27,9 @@ while ($timer->stop() <= 59000) {
 
     $package = ['killID' => $killID, 'killmail' => $rawmail, 'zkb' => $zkb];
 
-    RedisQ\Action::queue($redisQServer, $redisQAuthUser, $redisQAuthPass, $package);
+    $result = RedisQ\Action::queue($redisQServer, $redisQAuthUser, $redisQAuthPass, $package);
+    if (@$result['success'] != true) {
+	$queueRedisQ->push($killID);
+	sleep(1);
+    }
 }
