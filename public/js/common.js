@@ -53,6 +53,7 @@ $(document).ready(function() {
 	
 	//add the autocomplete search thing
 	$('#searchbox').zz_search( function(data, event) { window.location = '/' + data.type + '/' + data.id + '/'; event.preventDefault(); } );
+	$('#searchbox').focus();
 	
 	//and for the tracker entity lookup
 	$('#addentitybox').zz_search( function(data) { 
