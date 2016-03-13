@@ -71,6 +71,8 @@ $twig->addGlobal('image_ship', $imageServer.'Render/');
 $twig->addGlobal('tqStatus', $redis->get('tqStatus'));
 $twig->addGlobal('tqCount', $redis->get('tqCount'));
 
+$twig->addGlobal('crestStatus', $redis->get('tq:crestStatus'));
+
 $twig->addGlobal('siteurl', $baseAddr);
 $twig->addGlobal('fullsiteurl', $fullAddr);
 $twig->addGlobal('requesturi', $_SERVER['REQUEST_URI']);

@@ -11,6 +11,9 @@ class CrestTools
     {
         global $baseAddr;
 
+	$crestSuccess = new RedisTtlCounter('ttlc:CrestSuccess', 300);
+	$crestFailure = new RedisTtlCounter('ttlc:CrestFailure', 300);
+
         $numTries = 0;
         $httpCode = null;
         do {
@@ -23,8 +26,10 @@ class CrestTools
             $body = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if ($httpCode == 200) {
+		$crestSuccess->add(uniqid());
                 return $body;
             }
+	    $crestFailure->add(uniqid());
             if ($httpCode == 403) {
                 return 403;
             }
