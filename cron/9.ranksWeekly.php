@@ -54,6 +54,8 @@ foreach ($types as $type=>$value)
 	$it = NULL;
 	while($arr_matches = $redis->zScan($indexKey, $it)) {
 		foreach($arr_matches as $id => $score) {
+			$redis->get('no timeout please'); // prevent redis timeouts
+
 			$shipsDestroyed = $redis->zScore("$key:shipsDestroyed", $id); 
 			$shipsDestroyedRank = rankCheck($max, $redis->zRevRank("$key:shipsDestroyed", $id));
 			$shipsLost = $redis->zScore("$key:shipsLost", $id); 
