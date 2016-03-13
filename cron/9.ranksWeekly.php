@@ -11,36 +11,40 @@ $statTypes = ['Destroyed', 'Lost'];
 
 $minKillID = $mdb->findField("oneWeek", "killID", [], ['killID' => 1]);
 
+$typeLocation = ['characterID' => 'involved.characterID', 'corporationID' => 'involved.characterID', 'allianceID' => 'involved.allianceID', 'factionID' => 'involved.factionID', 'groupID' => 'involved.groupID', 'solarSystemID' => 'system.solarSystemID', 'locationID' => 'locationID', 'regionID' => 'system.regionID', 'shipTypeID' => 'involved.shipTypeID'];
 $statistics = $mdb->getCollection("statistics");
 
 Util::out("weekly time ranks - first iteration");
-$types = [];
-$iter = $statistics->find();
-foreach ($iter as $row) {
-	$type = $row['type'];
-	$id = $row['id'];
+$types = $mdb->getCollection("statistics")->distinct("type");
+foreach ($types as $type) {
 
-	if ($type == 'corporationID' && $id <= 1999999) continue;
-	if ($type == 'shipTypeID' && Info::getGroupID($id) == 29) continue;
+	$dbLocation = $typeLocation[$type];
+	if ($dbLocation == null) exit("unknown location for $type\n");
+	$ids = $mdb->getCollection("oneWeek")->distinct("involved.$type");
+	foreach ($ids as $id) {
+		if ($type == 'corporationID' && $id <= 1999999) continue;
+		if ($type == 'shipTypeID' && Info::getGroupID($id) == 29) continue;
 
-	$killID = getLatestKillID($type, $id, $minKillID);
-	if ($killID < $minKillID) continue;
+		//$killID = getLatestKillID($type, $id, $minKillID);
+		//if ($killID < $minKillID) continue;
 
-	$types[$type] = true;
-	$key = "tq:ranks:weekly:$type:$today";
+		$types[$type] = true;
+		$key = "tq:ranks:weekly:$type:$today";
 
-	$weeklyKills = getWeekly($row['type'], $row['id'], false, $minKillID); 
-	if ($weeklyKills['killIDCount'] == 0) continue;
-	$weeklyLosses = getWeekly($row['type'], $row['id'], true, $minKillID); 
+		$row = $mdb->findDoc("statistics", ['type' => $type, 'id' => $id]);
+		$weeklyKills = getWeekly($row['type'], $row['id'], false, $minKillID); 
+		if ($weeklyKills['killIDCount'] == 0) continue;
+		$weeklyLosses = getWeekly($row['type'], $row['id'], true, $minKillID); 
 
-	$multi = $redis->multi();
-	zAdd($multi, "$key:shipsDestroyed", $weeklyKills['killIDCount'], $id);
-	zAdd($multi, "$key:pointsDestroyed", $weeklyKills['zkb_pointsSum'], $id);
-	zAdd($multi, "$key:iskDestroyed", $weeklyKills['zkb_totalValueSum'], $id);
-	zAdd($multi, "$key:shipsLost", $weeklyLosses['killIDCount'], $id);
-	zAdd($multi, "$key:pointsLost", $weeklyLosses['zkb_pointsSum'], $id);
-	zAdd($multi, "$key:iskLost", $weeklyLosses['zkb_totalValueSum'], $id);
-	$multi->exec();
+		$multi = $redis->multi();
+		zAdd($multi, "$key:shipsDestroyed", $weeklyKills['killIDCount'], $id);
+		zAdd($multi, "$key:pointsDestroyed", $weeklyKills['zkb_pointsSum'], $id);
+		zAdd($multi, "$key:iskDestroyed", $weeklyKills['zkb_totalValueSum'], $id);
+		zAdd($multi, "$key:shipsLost", $weeklyLosses['killIDCount'], $id);
+		zAdd($multi, "$key:pointsLost", $weeklyLosses['zkb_pointsSum'], $id);
+		zAdd($multi, "$key:iskLost", $weeklyLosses['zkb_totalValueSum'], $id);
+		$multi->exec();
+	}
 }
 
 Util::out("weekly time ranks - second iteration");
@@ -54,6 +58,7 @@ foreach ($types as $type=>$value)
 	$it = NULL;
 	while($arr_matches = $redis->zScan($indexKey, $it)) {
 		foreach($arr_matches as $id => $score) {
+			$redis->get('foo'); // Keeps the connection alive
 			$shipsDestroyed = $redis->zScore("$key:shipsDestroyed", $id); 
 			$shipsDestroyedRank = rankCheck($max, $redis->zRevRank("$key:shipsDestroyed", $id));
 			$shipsLost = $redis->zScore("$key:shipsLost", $id); 
@@ -83,24 +88,24 @@ foreach ($types as $type=>$value)
 }
 
 foreach ($types as $type=>$value) {
-        $multi = $redis->multi();
-        $multi->del("tq:ranks:weekly:$type");
-        $multi->zUnion("tq:ranks:weekly:$type", ["tq:ranks:weekly:$type:$today"]);
-        $multi->expire("tq:ranks:weekly:$type", 100000);
-        $multi->expire("tq:ranks:weekly:$type:$today", (7 * 86400));
-        moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:shipsDestroyed");
-        moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:shipsLost");
-        moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:iskDestroyed");
-        moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:iskLost");
-        moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:pointsDestroyed");
-        moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:pointsLost");
-        $multi->exec();
+	$multi = $redis->multi();
+	$multi->del("tq:ranks:weekly:$type");
+	$multi->zUnion("tq:ranks:weekly:$type", ["tq:ranks:weekly:$type:$today"]);
+	$multi->expire("tq:ranks:weekly:$type", 100000);
+	$multi->expire("tq:ranks:weekly:$type:$today", (7 * 86400));
+	moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:shipsDestroyed");
+	moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:shipsLost");
+	moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:iskDestroyed");
+	moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:iskLost");
+	moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:pointsDestroyed");
+	moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:pointsLost");
+	$multi->exec();
 }
 
 function moveAndExpire(&$multi, $today, $key) {
-        $newKey = str_replace(":$today", "", $key);
-        $multi->rename($key, $newKey);
-        $multi->expire($newKey, 9000);
+	$newKey = str_replace(":$today", "", $key);
+	$multi->rename($key, $newKey);
+	$multi->expire($newKey, 9000);
 }
 
 $redis->setex($todaysKey, 9000, true);
