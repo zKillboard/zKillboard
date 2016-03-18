@@ -49,6 +49,11 @@ while ($iterations++ <= 1200) {
     $crestFailure = new RedisTtlCounter('ttlc:CrestFailure', 300);
     addInfo('Failed CREST calls in last 5 minutes', $crestFailure->count());
 
+    addInfo('', 0);
+    $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
+    addInfo('Successful XML calls in last 5 minutes', $xmlSuccess->count());
+    $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
+    addInfo('Failed XML calls in last 5 minutes', $xmlFailure->count());
 
     $info = $redis->info();
     $mem = $info['used_memory_human'];

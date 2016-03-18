@@ -17,6 +17,8 @@ require_once '../init.php';
 
 $timer = new Timer();
 $tqApiChars = new RedisTimeQueue('tqApiChars', 3600);
+$xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
+$xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
 
 $numApis = $tqApiChars->size();
 if ($i >= ($numApis / 100) + 1) exit();
@@ -59,14 +61,16 @@ while ($timer->stop() <= 59000) {
 
         try {
             $result = $pheal->KillMails($params);
+	    $xmlSuccess->add(uniqid());
         } catch (Exception $ex) {
+	    $xmlFailure->add(uniqid());
             $errorCode = $ex->getCode();
             if ($errorCode == 904) {
                 Util::out("(apiConsumer) 904'ed...");
                 exit();
             }
             if ($errorCode == 28) {
-                Util::out('(apiConsumer) API Server timeout');
+                //Util::out('(apiConsumer) API Server timeout');
                 exit();
             }
             $tqApiChars->remove($row);

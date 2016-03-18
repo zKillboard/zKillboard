@@ -17,6 +17,8 @@ $apis = $mdb->getCollection('apis');
 $information = $mdb->getCollection('information');
 $tqApis = new RedisTimeQueue('tqApis', 9600);
 $tqApiChars = new RedisTimeQueue('tqApiChars');
+$xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
+$xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
 
 $timer = new Timer();
 $requestNum = 0;
@@ -46,7 +48,9 @@ while ($timer->stop() <= 58000) {
 		$mdb->set('apis', $row, ['lastApiUpdate' => $mdb->now()]);
 		$apiKeyInfo = $pheal->ApiKeyInfo();
 		if ($errorCode != 0) $mdb->set('apis', $row, ['errorCode' => 0]);
+		$xmlSuccess->add(uniqid());
 	} catch (Exception $ex) {
+		$xmlFailure->add(uniqid());
 		$tqApis->remove($id); // Problem with api the key, remove it from rotation
 		$errorCode = (int) $ex->getCode();
 		if ($errorCode == 904) {
@@ -54,7 +58,7 @@ while ($timer->stop() <= 58000) {
 			exit();
 		}
 		if ($errorCode == 28) {
-			Util::out('(apiProducer) API Server timeout');
+			//Util::out('(apiProducer) API Server timeout');
 			exit();
 		}
 		if ($errorCode != 221 && $debug) {

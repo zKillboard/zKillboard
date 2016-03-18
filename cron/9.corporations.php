@@ -5,6 +5,9 @@ require_once '../init.php';
 $counter = 0;
 $information = $mdb->getCollection('information');
 $timer = new Timer();
+$xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
+$xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
+
 
 $queueCorps = new RedisTimeQueue('tqCorporations', 86400);
 
@@ -28,6 +31,7 @@ while ($timer->stop() < 55000) {
         $id = (int) $row['id'];
         $raw = @file_get_contents("https://api.eveonline.com/corp/CorporationSheet.xml.aspx?corporationID=$id");
         if ($raw != '') {
+	    $xmlSuccess->add(uniqid());
             ++$counter;
             $xml = @simplexml_load_string($raw);
             if ($xml != null) {
@@ -50,7 +54,7 @@ while ($timer->stop() < 55000) {
                     }
                 }
             }
-        }
+        } else $xmlFailure->add(uniqid());
     }
     $updates['lastApiUpdate'] = new MongoDate(time());
     $mdb->insertUpdate('information', ['type' => 'corporationID', 'id' => (int) $row['id']], $updates);

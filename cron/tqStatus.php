@@ -29,4 +29,13 @@ $crestFailure = new RedisTtlCounter('ttlc:CrestFailure', 300);
 $count = $crestFailure->count();
 $remaining = number_format($mdb->count('crestmails', ['processed' => false]), 0);
 $message = $count > 100 ? "Issues accessing CREST - Killmails may not post - $count failures in last 5 minutes - backlog of $remaining killmails" : null;
+
+$xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
+$xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
+$s = $xmlSuccess->count();
+$f = $xmlFailure->count();
+if ($message == null && $xmlFailure->count() > (10 * $xmlSuccess->count())) {
+	$message = "Issues accessing Killmail XML API - Killmails won't populate from API at this time - $s Successful / $f Failed calls in last 5 minutes";
+}
+
 $redis->setex("tq:crestStatus", 300, $message);

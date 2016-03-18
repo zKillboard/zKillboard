@@ -16,19 +16,23 @@ foreach ($walletApis as $api) {
 	$vCode = $api['vCode'];
 	$charID = $api['charID'];
 
-	$pheal = Util::getPheal($keyID, $vCode, true);
-	$arr = array('characterID' => $charID, 'rowCount' => 1000);
+	try {
+		$pheal = Util::getPheal($keyID, $vCode, true);
+		$arr = array('characterID' => $charID, 'rowCount' => 1000);
 
-	if ($type == 'char') {
-		$q = $pheal->charScope->WalletJournal($arr);
-	} elseif ($type == 'corp') {
-		$q = $pheal->corpScope->WalletJournal($arr);
-	} else {
-		continue;
-	}
+		if ($type == 'char') {
+			$q = $pheal->charScope->WalletJournal($arr);
+		} elseif ($type == 'corp') {
+			$q = $pheal->corpScope->WalletJournal($arr);
+		} else {
+			continue;
+		}
 
-	if (count($q->transactions)) {
-		insertRecords($charID, $q->transactions);
+		if (count($q->transactions)) {
+			insertRecords($charID, $q->transactions);
+		}
+	} catch (Exception $ex) {
+		Util::out("Failed to fetch Wallet API: " . $ex->getMessage());
 	}
 }
 

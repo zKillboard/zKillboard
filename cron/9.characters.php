@@ -7,6 +7,8 @@ $information = $mdb->getCollection('information');
 $queueCharacters = new RedisTimeQueue('tqCharacters', 86400);
 $timer = new Timer();
 $counter = 0;
+$xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
+$xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
 
 while ($timer->stop() < 59000) {
     $ids = [];
@@ -23,10 +25,12 @@ while ($timer->stop() < 59000) {
 
     $stringIDs = implode(',', $ids);
     $href = "https://api.eveonline.com/eve/CharacterAffiliation.xml.aspx?ids=$stringIDs";
-    $raw = file_get_contents($href);
+    $raw = @file_get_contents($href);
     if ($raw == '') {
+	$xmlFailure->add(uniqid());
         exit();
     }
+    $xmlSuccess->add(uniqid());
     $xml = @simplexml_load_string($raw);
 
     foreach ($xml->result->rowset->row as $info) {
