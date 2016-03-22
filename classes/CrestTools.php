@@ -13,6 +13,7 @@ class CrestTools
 
 	$crestSuccess = new RedisTtlCounter('ttlc:CrestSuccess', 300);
 	$crestFailure = new RedisTtlCounter('ttlc:CrestFailure', 300);
+	$errorCodes = [403, 404, 415, 500];
 
         $numTries = 0;
         $httpCode = null;
@@ -30,15 +31,9 @@ class CrestTools
                 return $body;
             }
 	    $crestFailure->add(uniqid());
-            if ($httpCode == 403) {
-                return 403;
-            }
-            if ($httpCode == 500) {
-                return 500;
-            }
-            if ($httpCode == 415) {
-                return 415;
-            }
+
+	    if (in_array($httpCode, $errorCodes)) return $httpCode;
+
             ++$numTries;
             sleep(1);
         } while ($httpCode != 200 && $numTries <= 3);
