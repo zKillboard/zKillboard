@@ -40,7 +40,7 @@ while ($timer->stop() <= 59000) {
 		}
 
 		$stomp->ack($frame->headers['message-id']);
-	}
+	} else break;
 }
 if ($stompCount > 0) {
 	Util::out("New kills from STOMP: $stompCount");
