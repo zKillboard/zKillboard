@@ -32,7 +32,7 @@ while ($timer->stop() < 59000) {
             continue;
         }
 
-        $date = substr($mail['killTime'], 0, 10);
+        $date = substr($mail['killTime'], 0, 16);
         $date = str_replace('.', '-', $date);
         $today = date('Y-m-d');
         $kill['dttm'] = new MongoDate(strtotime(str_replace('.', '-', $mail['killTime']).' UTC'));
