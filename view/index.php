@@ -60,7 +60,7 @@ if ($serverName != $baseAddr) {
     $pageType = 'subdomain';
 } else {
     $topPoints = array();
-    $topIsk = Stats::getTopIsk(array('cacheTime' => (15 * 60), 'pastSeconds' => (7 * 86400), 'limit' => 5));
+    $topIsk = json_decode($redis->get("RC:TopIsk"), true);
     $topPods = array();
 
     $top = array();
