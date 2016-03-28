@@ -27,7 +27,7 @@ class Price
 		$date = date('Y-m-d', strtotime($kmDate) - 7200); // Back one hour because of CREST cache
 		$priceKey = "tq:prices:$date";
 		$price = $redis->hGet($priceKey, $typeID);
-		//if ($price != null) return $price;
+		if ($price != null) return $price;
 
 		$marketHistory = $mdb->findDoc("prices", ['typeID' => $typeID]);
 		unset($marketHistory['_id']);
