@@ -27,7 +27,7 @@ class Price
 		$date = date('Y-m-d', strtotime($kmDate) - 7200); // Back one hour because of CREST cache
 		$priceKey = "tq:prices:$date";
 		$price = $redis->hGet($priceKey, $typeID);
-		if ($price != null) return $price;
+		//if ($price != null) return $price;
 
 		$marketHistory = $mdb->findDoc("prices", ['typeID' => $typeID]);
 		unset($marketHistory['_id']);
@@ -52,6 +52,8 @@ class Price
 			// remove 2 endpoints from each end, helps fight against wild prices from market speculation and scams
 			$priceList = array_splice($priceList, 2, 32);
 			$priceList = array_splice($priceList, 0, 30);
+		} else if (sizeof($priceList) > 6) {
+			$priceList = array_splice($priceList, 0, sizeof($priceList) - 2);
 		}
 		if (sizeof($priceList) == 0) $priceList[] = 0.01;
 
