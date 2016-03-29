@@ -25,6 +25,7 @@ class Mdb
             }
 
             ++$this->queryCount;
+	    MongoCursor::$timeout = -1;
 
             return $this->db;
         } catch (Exception $ex) {
