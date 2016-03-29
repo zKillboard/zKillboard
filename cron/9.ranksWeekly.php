@@ -10,28 +10,30 @@ $statClasses = ['ships', 'isk', 'points'];
 $statTypes = ['Destroyed', 'Lost'];
 
 $minKillID = $mdb->findField("oneWeek", "killID", [], ['killID' => 1]);
-
-$statistics = $mdb->getCollection("statistics");
+$completed = [];
 
 Util::out("weekly time ranks - first iteration");
 $types = [];
-$iter = $statistics->find();
+$iter = $mdb->getCollection("oneWeek")->find();
 foreach ($iter as $row) {
-	$type = $row['type'];
-	$id = $row['id'];
+	$involved = $row['involved'];
+	foreach ($involved as $entity) {
+	foreach ($entity as $type=>$id) {
+
+	if (strpos($type, "ID") === false) continue;
 
 	if ($type == 'corporationID' && $id <= 1999999) continue;
 	if ($type == 'shipTypeID' && Info::getGroupID($id) == 29) continue;
 
-	$killID = getLatestKillID($type, $id, $minKillID);
-	if ($killID < $minKillID) continue;
+	if (isset($completed["$type:$id"])) continue;
+	$completed["$type:$id"] = true;
 
 	$types[$type] = true;
 	$key = "tq:ranks:weekly:$type:$today";
 
-	$weeklyKills = getWeekly($row['type'], $row['id'], false, $minKillID); 
+	$weeklyKills = getWeekly($type, $id, false, $minKillID); 
 	if ($weeklyKills['killIDCount'] == 0) continue;
-	$weeklyLosses = getWeekly($row['type'], $row['id'], true, $minKillID); 
+	$weeklyLosses = getWeekly($type, $id, true, $minKillID); 
 
 	$multi = $redis->multi();
 	zAdd($multi, "$key:shipsDestroyed", $weeklyKills['killIDCount'], $id);
@@ -42,6 +44,9 @@ foreach ($iter as $row) {
 	zAdd($multi, "$key:iskLost", $weeklyLosses['zkb_totalValueSum'], $id);
 	$multi->exec();
 }
+}
+}
+$completed = []; // clear the array and free memory
 
 Util::out("weekly time ranks - second iteration");
 foreach ($types as $type=>$value)
