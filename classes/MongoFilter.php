@@ -175,6 +175,9 @@ class MongoFilter
 		case 'locationID':
                     $and[] = ['locationID' => $filter];
                     break;	
+		case 'categoryID':
+			$and[] = ['categoryID' => $filter];
+			break;
                 case 'allianceID':
                 case 'characterID':
                 case 'corporationID':
