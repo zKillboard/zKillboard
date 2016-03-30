@@ -85,6 +85,7 @@ foreach ($types as $type=>$value)
 			$score = ceil($avg / $adjuster);
 
 			$redis->zAdd("tq:ranks:weekly:$type:$today", $score, $id);
+			$redis->expire("tq:ranks:weekly:$type:$today", 9000);
 		}
 	}
 }
@@ -94,7 +95,7 @@ foreach ($types as $type=>$value) {
         $multi->del("tq:ranks:weekly:$type");
         $multi->zUnion("tq:ranks:weekly:$type", ["tq:ranks:weekly:$type:$today"]);
         $multi->expire("tq:ranks:weekly:$type", 9000);
-        $multi->expire("tq:ranks:weekly:$type:$today", (7 * 86400));
+        $multi->expire("tq:ranks:weekly:$type:$today", 9000);
         moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:shipsDestroyed");
         moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:shipsLost");
         moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:iskDestroyed");
