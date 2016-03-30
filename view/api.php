@@ -25,7 +25,6 @@ try {
         }
         $array[] = $result;
     }
-    $app->etag(md5(serialize($return)));
     $app->expires('+1 hour');
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET');

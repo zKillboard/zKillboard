@@ -29,7 +29,6 @@ foreach ($kills as $kill) {
         'victimFactionName' => (isset($killdata['victim']['factionName']) ? isset($killdata['victim']['factionName']) : null),
         'dna' => Fitting::DNA($killdata['items'], $killdata['victim']['shipTypeID']), );
 }
-$app->etag(md5(serialize($dna)));
 $app->expires('+1 hour');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
