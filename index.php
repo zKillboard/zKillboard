@@ -1,5 +1,8 @@
 <?php
 
+// We can ignore Disqus
+if (@$_SERVER['HTTP_USER_AGENT'] == "Disqus/1.0") die("");
+
 // Include Init
 require_once 'init.php';
 
