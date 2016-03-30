@@ -105,6 +105,7 @@ class Mdb
     public function set($collection, $key, $value, $multi = false)
     {
         $key = isset($key['_id']) ? ['_id' => $key['_id']] : $key;
+	if ($key === null) throw new Exception("Invalid key");
 
         return $this->getCollection($collection)->update($key, ['$set' => $value], ['multiple' => $multi]);
     }
