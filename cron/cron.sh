@@ -16,3 +16,9 @@ for each in $(ls *.php | grep -v nolock); do
 		flock -x -w 55 locks/$each.lock php5 $each >> logs/$each.log 2>&1
 	} &
 done
+
+for each in $(ls *.php | grep nolock); do
+	{
+		php5 $each >> logs/$each.log 2>&1
+	} &
+done

@@ -1,29 +1,43 @@
 <?php
 
+for ($i = 0; $i < 30; ++$i) {
+	$pid = pcntl_fork();
+	if ($pid == -1) {
+		exit();
+	}
+	if ($pid == 0) {
+		break;
+	}
+}
+
 require_once '../init.php';
 $agents = [];
 $qServer = new RedisQueue('queueServer');
 
 $timer = new Timer();
-while ($timer->stop() <= 59000) {
-    $row = $qServer->pop();
-    if($row === null) exit();
+while ($timer->stop() <= 90000) {
+	$row = $qServer->pop();
+	if($row === null) {
+		sleep(1);
+		continue;
+	}
 
-    $agent = strtolower(@$row['HTTP_USER_AGENT']);
-    if (!isBot($agent)) {
-	    if (isset($row['REQUEST_URI'])) {
-		    $uri = $row['REQUEST_URI'];
-		    $key = "cache:$uri";
-		    if (Util::startsWith($uri, '/kill/') || $uri == '/') {
-			    if (!$redis->exists($key)) {
-				    $contents = @file_get_contents("http://zkillboard.com{$uri}");
-				    if ($contents != '') {
-					    $redis->setex($key, 300, $contents);
-				    }
-			    }
-		    }
-	    }
-    }
+	$uri = @$row['REQUEST_URI'];
+	$key = "cache:$uri";
+	if ($redis->exists($key)) continue;
+
+	//Util::out("cacher $uri");
+
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_URL, "http://localhost{$uri}");
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_USERAGENT, "Load Fetcher for https://$baseAddr");
+	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
+	$contents = curl_exec($ch);
+	$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+	if ($httpCode == 200) $redis->setex($key, 300, $contents);
+	else $redis->setex($key, 300, "reject");
 }
 
 function isBot($agent)

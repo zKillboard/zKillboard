@@ -3,16 +3,22 @@
 // We can ignore Disqus
 if (@$_SERVER['HTTP_USER_AGENT'] == "Disqus/1.0") die("");
 
-// Include Init
-require_once 'init.php';
+// Check to ensure we have a trailing slash, helps with caching
+$uri = @$_SERVER['REQUEST_URI'];
+if (substr($uri, -1) != '/') {
+	header("Location: $uri/");
+	exit();
+}
 
 // http requests should already be prevented, but use this just in case
 // also prevents sessions from being created without ssl
 if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] != 'https') {
-    $uri = @$_SERVER['REQUEST_URI'];
-    header("Location: https://zkillboard.com$uri");
-    die();
+	header("Location: https://zkillboard.com$uri");
+	die();
 }
+
+// Include Init
+require_once 'init.php';
 
 $timer = new Timer();
 
@@ -24,26 +30,32 @@ session_set_save_handler(new RedisSessionHandler(), true);
 session_cache_limiter(false);
 session_start();
 
-$visitors = new RedisTtlCounter('ttlc:visitors', 300);
-$visitors->add(IP::get());
-$requests = new RedisTtlCounter('ttlc:requests', 300);
-$requests->add(uniqid());
+$ip = IP::get();
+if ($ip != "127.0.0.1") {
+	$visitors = new RedisTtlCounter('ttlc:visitors', 300);
+	$visitors->add($ip);
+	$requests = new RedisTtlCounter('ttlc:requests', 300);
+	$requests->add(uniqid());
+}
 
 $load = getLoad();
+if ($ip != "127.0.0.1" && $_SERVER['REQUEST_METHOD'] == 'GET' && $load >= $loadTripValue) {
+	$qServer = new RedisQueue('queueServer');
+	$qServer->push($_SERVER);
 
-if ($load >= $loadTripValue) {
-    $uri = @$_SERVER['REQUEST_URI'];
-    if ($uri != '') {
-        $contents = $redis->get("cache:$uri");
-        if ($contents !== false) {
-            echo $contents;
-            exit();
-        }
-
-        $_SERVER['requestDttm'] = $mdb->now();
-        $qServer = new RedisQueue('queueServer');
-        $qServer->push($_SERVER);
-    }
+	$iterations = 0;
+	while ($iterations <= 10) {
+		$contents = $redis->get("cache:$uri");
+		if ($contents !== false) {
+			if ($contents == "reject") header("Location: /");
+			else echo $contents;
+			exit();
+		}
+		$iterations++;
+		usleep($iterations * 100000);
+	}
+	header("Location: .");
+	exit();
 }
 
 // Theme
@@ -64,11 +76,11 @@ $app->run();
 
 function getLoad()
 {
-    $output = array();
-    $result = exec('cat /proc/loadavg', $output);
+	$output = array();
+	$result = exec('cat /proc/loadavg', $output);
 
-    $split = explode(' ', $result);
-    $load = $split[0];
+	$split = explode(' ', $result);
+	$load = $split[0];
 
-    return $load;
+	return $load;
 }
