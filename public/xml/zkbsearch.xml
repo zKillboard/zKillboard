@@ -1,0 +1,8 @@
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">
+<ShortName>zKillboard</ShortName>
+<Description>
+zKillboard.com - Killboard for EVE-Online
+</Description>
+<Image height="16" width="16" type="image/x-icon">https://zkillboard.com/favicon.ico</Image>
+<Url type="text/html" method="get" template="https://zkillboard.com/search/{searchTerms}/"/>
+</OpenSearchDescription>
