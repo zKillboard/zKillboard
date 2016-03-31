@@ -35,4 +35,4 @@ function zkbautoload($class_name)
 $mdb = new Mdb();
 
 $redis = new Redis();
-$redis->connect($redisServer, $redisPort);
+$redis->connect($redisServer, $redisPort, 3600);
