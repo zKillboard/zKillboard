@@ -44,11 +44,11 @@ function calcTop($row)
 	$parameters['kills'] = true;
 
 	$topLists[] = array('type' => 'character', 'data' => Stats::getTop('characterID', $parameters));
-	$topLists[] = array('type' => 'corporation', 'data' => Stats::getTop('corporationID', $parameters, true));
-	$topLists[] = array('type' => 'alliance', 'data' => Stats::getTop('allianceID', $parameters, true));
-	$topLists[] = array('type' => 'faction', 'data' => Stats::getTop('factionID', $parameters, true));
-	$topLists[] = array('type' => 'ship', 'data' => Stats::getTop('shipTypeID', $parameters, true));
-	$topLists[] = array('type' => 'system', 'data' => Stats::getTop('solarSystemID', $parameters, true));
+	$topLists[] = array('type' => 'corporation', 'data' => Stats::getTop('corporationID', $parameters));
+	$topLists[] = array('type' => 'alliance', 'data' => Stats::getTop('allianceID', $parameters));
+	$topLists[] = array('type' => 'faction', 'data' => Stats::getTop('factionID', $parameters));
+	$topLists[] = array('type' => 'ship', 'data' => Stats::getTop('shipTypeID', $parameters));
+	$topLists[] = array('type' => 'system', 'data' => Stats::getTop('solarSystemID', $parameters));
 
 	$mdb->set('statistics', $row, ['topAllTime' => $topLists, 'allTimeSum' => $currentSum]);
 	if ($timer->stop() > 60000) exit();
