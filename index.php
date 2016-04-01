@@ -39,7 +39,9 @@ if ($ip != "127.0.0.1") {
 }
 
 $load = getLoad();
-if ($ip != "127.0.0.1" && $_SERVER['REQUEST_METHOD'] == 'GET' && $load >= $loadTripValue) {
+$isHardened = $redis->get("zkb:isHardened");
+if ($ip != "127.0.0.1" && $_SERVER['REQUEST_METHOD'] == 'GET' && ($isHardened || $load >= $loadTripValue)) {
+	if ($redis->ttl("zkb:isHardened") < 1) $redis->setex("zkb:isHardened", 1800, true);
 	$qServer = new RedisQueue('queueServer');
 	$qServer->push($_SERVER);
 

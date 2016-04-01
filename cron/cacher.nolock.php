@@ -26,8 +26,6 @@ while ($timer->stop() <= 90000) {
 	$key = "cache:$uri";
 	if ($redis->exists($key)) continue;
 
-	//Util::out("cacher $uri");
-
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_URL, "http://localhost{$uri}");
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);

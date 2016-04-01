@@ -13,6 +13,12 @@ while ($iterations++ <= 1200) {
     ob_start();
     $infoArray = [];
 
+    $isHardened = $redis->ttl("zkb:isHardened");
+    if ($isHardened > 0) {
+	addInfo('seconds remaining in Cached/Hardened Mode', $isHardened);
+        addInfo('', 0);
+    }
+
     $queues = $redis->sMembers('queues');
     foreach ($queues as $queue) {
         $redisQueues[$queue] = true;
