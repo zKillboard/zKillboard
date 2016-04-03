@@ -21,17 +21,10 @@
 			{% set lastType = field.type %}
 		{% endif %}
 		<div class="pull-left" style="margin-bottom: 0.5em; width: 390px;"/>
-		{% if field.type == "faction" %}{% include 'components/image_faction.html' %} - {% include 'components/text_faction.html' %}
-		{% elseif field.type == "alliance" %}{% include 'components/image_alli.html' %} - {% include 'components/text_alli.html' %}
-		{% elseif field.type == "corporation" %}{% include 'components/image_corp.html' %} - {% include 'components/text_corp.html' %}
-		{% elseif field.type == "character" %}{% include 'components/image_char.html' %} - {% include 'components/text_char.html' %}
-		{% elseif field.type == "item" %}{% include 'components/image_item.html' %} - {% include 'components/text_item.html' %}
-		{% elseif field.type == "region" %}{% include 'components/image_region.html' %} - <a href="/region/{{ field.regionID}}/">{{ field.regionName }}</a>
-		{% elseif field.type == "system" %}{% include 'components/image_system.html' %} - <a href="/system/{{ field.solarSystemID}}/">{{ field.solarSystemName }}</a>
-		{% endif %}
+			<img src="https://image.eveonline.com/{{ field.image }}"/> <a href="/{{ field.type }}/{{ field.id }}/">{{ field.name }}</a>
 		</div>
 {% endfor %}
 </div>
 {% endif %}
-        
+
 {% endblock %}
