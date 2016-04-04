@@ -8,28 +8,30 @@ $queueTopAlltime = new RedisQueue("queueTopAlltime");
 if ($redis->get($redisKey) != true)
 {
 	$queueTopAlltime->clear();
-	$iter = $mdb->getCollection('statistics')->find([], ['months' => 0, 'groups' => 0]);
+	$iter = $mdb->getCollection('statistics')->find([], ['months' => 0, 'groups' => 0])->sort(['type' => 1, 'id' => 1]);;
 	while ($row = $iter->next()) {
 		if ($row['type'] == 'characterID') continue;
+		if ($row['type'] == 'locationID') continue;
 
 		$allTimeSum = (int) @$row['allTimeSum'];
 		$currentSum = (int) @$row['shipsDestroyed'];
+		if (!isset($row['topAllTime'])) $allTimeSum = 0;
 
 		if ($currentSum == 0) continue;
 		if ($currentSum == $allTimeSum) continue;
-		if (!isset($row['topAllTime']) && ($currentSum - $allTimeSum) < ($allTimeSum * 0.01)) continue;
+		if (($currentSum - $allTimeSum) < ($allTimeSum * 0.01)) continue;
 
 		$queueTopAlltime->push($row['_id']);
 	}
 }
 
 $redis->setex($redisKey, 86400, true);
+$timer = new Timer();
 
-if ($redis->llen('queueStats') > 1000) exit();
 while ($id = $queueTopAlltime->pop()) {
 	$row = $mdb->findDoc('statistics', ['_id' => $id]);
 	calcTop($row);
-	if ($redis->llen('queueStats') > 1000) exit();
+	if ($timer->stop() > 60000) exit();
 }
 
 function calcTop($row)
