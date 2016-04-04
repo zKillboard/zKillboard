@@ -81,6 +81,7 @@ $longQueryMS = 30000;
 
 # The load value that zkb will "harden" if exceeded
 $loadTripValue = 20;
+$laodTripTime = 300;
 
 $beSocial = false;
 
