@@ -19,3 +19,10 @@ if ($kills > 0) {
 }
 
 $redis->set('zkb:totalKills', $count);
+
+$parameters = ['groupID' => 30, 'isVictim' => false, 'pastSeconds' => (86400 * 90), 'nolimit' => true];
+$data['titans']['data'] = Stats::getTop('characterID', $parameters);
+$redis->setex("zkb:titans", 9600, serialize(Stats::getTop('characterID', $parameters)));
+
+$parameters = ['groupID' => 659, 'isVictim' => false, 'pastSeconds' => (86400 * 90), 'nolimit' => true];
+$redis->setex("zkb:supers", 9600, serialize(Stats::getTop('characterID', $parameters)));
