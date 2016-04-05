@@ -8,9 +8,16 @@ class Fitting
         $item = '';
         if (isset($array['low'])) {
             foreach ($array['low'] as $flags) {
+                $cnt = 0;
                 foreach ($flags as $items) {
-                    $item = $items['typeName']."\n";
+                    if ($cnt == 0) {
+                        $item = $items['typeName'];
+                    } else {
+                        $item .= ','.$items['typeName'];
+                    }
+                    ++$cnt;
                 }
+                $item .= "\n";
                 $eft .= $item;
             }
         }
