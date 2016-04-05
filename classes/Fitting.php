@@ -2,114 +2,67 @@
 
 class Fitting
 {
-    public static function EFT($array)
-    {
-        $eft = '';
-        $item = '';
-        if (isset($array['low'])) {
-            foreach ($array['low'] as $flags) {
-                $cnt = 0;
-                foreach ($flags as $items) {
-                    if ($cnt == 0) {
-                        $item = $items['typeName'];
-                    } else {
-                        $item .= ','.$items['typeName'];
-                    }
-                    ++$cnt;
-                }
-                $item .= "\n";
-                $eft .= $item;
-            }
-        }
-        $eft .= "\n";
-        $item = '';
-        if (isset($array['mid'])) {
-            foreach ($array['mid'] as $flags) {
-                $cnt = 0;
-                foreach ($flags as $items) {
-                    if ($cnt == 0) {
-                        $item = $items['typeName'];
-                    } else {
-                        $item .= ','.$items['typeName'];
-                    }
-                    ++$cnt;
-                }
-                $item .= "\n";
-                $eft .= $item;
-            }
-        }
-        $eft .= "\n";
-        $item = '';
-        if (isset($array['high'])) {
-            foreach ($array['high'] as $flags) {
-                $cnt = 0;
-                foreach ($flags as $items) {
-                    if ($cnt == 0) {
-                        $item = $items['typeName'];
-                    } else {
-                        $item .= ','.$items['typeName'];
-                    }
-                    ++$cnt;
-                }
-                $item .= "\n";
-                $eft .= $item;
-            }
-        }
-        $eft .= "\n";
-        $item = '';
-        if (isset($array['rig'])) {
-            foreach ($array['rig'] as $flags) {
-                foreach ($flags as $items) {
-                    $item = $items['typeName']."\n";
-                }
-                $eft .= $item;
-            }
-        }
-        $eft .= "\n";
-        $item = '';
-        if (isset($array['sub'])) {
-            foreach ($array['sub'] as $flags) {
-                foreach ($flags as $items) {
-                    $item = $items['typeName']."\n";
-                }
-                $eft .= $item;
-            }
-        }
-        $eft .= "\n";
-        $item = '';
-        if (isset($array['drone'])) {
-            foreach ($array['drone'] as $flags) {
-                foreach ($flags as $items) {
-                    $item .= $items['typeName'].' x'.$items['qty']."\n";
-                }
-                $eft .= $item;
-            }
-        }
+	static function arrayToEFT($items)
+	{
+		if ($items == null) return "";
+		$text = "";
+		foreach ($items as $flags) {
+			$cnt = 0;
+			foreach ($flags as $i) {
+				if ($cnt == 0) {
+					$line = $i['typeName'];
+				} else {
+					$line .= ','.$i['typeName'];
+				}
+				++$cnt;
+			}
+			$text .= "$line\n";
+		}
+		return "$text\n";
+	}
 
-        return trim($eft);
-    }
+	public static function EFT($array)
+	{
+		$eft = self::arrayToEft(@$array['low']);
+		$eft .= self::arrayToEft(@$array['mid']);
+		$eft .= self::arrayToEft(@$array['high']);
+		$eft .= self::arrayToEft(@$array['rig']);
+		$eft .= self::arrayToEft(@$array['sub']);
 
-    public static function DNA($array = array(), $ship)
-    {
-        $goodspots = array('High Slots', 'SubSystems', 'Rigs', 'Low Slots', 'Mid Slots', 'Drone Bay', 'Fuel Bay');
-        $fitArray = array();
-        $fitString = $ship.':';
+		$item = '';
+		if (isset($array['drone'])) {
+			foreach ($array['drone'] as $flags) {
+				foreach ($flags as $items) {
+					$item .= $items['typeName'].' x'.$items['qty']."\n";
+				}
+				$eft .= $item;
+			}
+		}
 
-        foreach ($array as $item) {
-            if (isset($item['flagName']) && in_array($item['flagName'], $goodspots)) {
-                if (isset($fitArray[$item['typeID']])) {
-                    $fitArray[$item['typeID']]['count'] = $fitArray[$item['typeID']]['count'] + (@$item['quantityDropped'] + @$item['quantityDestroyed']);
-                } else {
-                    $fitArray[$item['typeID']] = array('count' => (@$item['quantityDropped'] + @$item['quantityDestroyed']));
-                }
-            }
-        }
+		return trim($eft);
+	}
 
-        foreach ($fitArray as $key => $item) {
-            $fitString .= "$key;".$item['count'].':';
-        }
-        $fitString .= ':';
+	public static function DNA($array = array(), $ship)
+	{
+		$goodspots = array('High Slots', 'SubSystems', 'Rigs', 'Low Slots', 'Mid Slots', 'Drone Bay', 'Fuel Bay');
+		$fitArray = array();
+		$fitString = $ship.':';
 
-        return $fitString;
-    }
+		foreach ($array as $item) {
+			if (isset($item['flagName']) && in_array($item['flagName'], $goodspots)) {
+				if (isset($fitArray[$item['typeID']])) {
+					$fitArray[$item['typeID']]['count'] = $fitArray[$item['typeID']]['count'] + (@$item['quantityDropped'] + @$item['quantityDestroyed']);
+				} else {
+					$fitArray[$item['typeID']] = array('count' => (@$item['quantityDropped'] + @$item['quantityDestroyed']));
+				}
+			}
+		}
+
+		foreach ($fitArray as $key => $item) {
+			$fitString .= "$key;".$item['count'].':';
+		}
+		$fitString .= ':';
+
+		return $fitString;
+	}
 }
