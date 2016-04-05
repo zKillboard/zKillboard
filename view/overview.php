@@ -115,6 +115,7 @@ $topKills = array();
 if ($pageType == 'top' || $pageType == 'topalltime') {
     $topParameters = $parameters; // array("limit" => 10, "kills" => true, "$columnName" => $id);
     $topParameters['limit'] = 10;
+    $topParameters['cacheTime'] = 86400;
 
     if ($pageType == 'topalltime' && $key != 'character') {
         $useType = $key;

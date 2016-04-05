@@ -102,7 +102,7 @@ class Stats
 		}
 
 		Info::addInfo($result);
-		RedisCache::set($hashKey, $result, 3600);
+		RedisCache::set($hashKey, $result, isset($parameters['cacheTime']) ? $parameters['cacheTime'] : 3600);
 
 		return $result;
 	}
