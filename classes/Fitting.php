@@ -2,10 +2,11 @@
 
 class Fitting
 {
-	static function arrayToEFT($items)
+	private static function arrayToEFT($items)
 	{
 		if ($items == null) return "";
 		$text = "";
+		$line = "";
 		foreach ($items as $flags) {
 			$cnt = 0;
 			foreach ($flags as $i) {
