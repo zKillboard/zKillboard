@@ -48,7 +48,7 @@ foreach ($entities as $entity) {
 			break;
 	}
 
-	if (!$isShip) $redis->zAdd("search:$type", 0, strtolower($name) . "\x00$id");
+	if (!$isShip) $redis->zAdd("search:$type", 0, trim(strtolower($name)) . "\x00$id");
 	if (strlen($flag) > 0) $redis->zAdd("search:$type:flag", 0, strtolower("$flag\x00$id"));
 }
 
