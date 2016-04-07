@@ -38,7 +38,7 @@ if ($ip != "127.0.0.1") {
 	$requests->add(uniqid());
 }
 
-$load = getLoad();
+$load = Load::getLoad();
 $isHardened = $redis->get("zkb:isHardened");
 if ($ip != "127.0.0.1" && $_SERVER['REQUEST_METHOD'] == 'GET' && ($isHardened || $load >= $loadTripValue)) {
 	if ($redis->ttl("zkb:isHardened") < 1) $redis->setex("zkb:isHardened", $loadTripTime, true);
@@ -75,14 +75,3 @@ include 'twig.php';
 
 // Run the thing!
 $app->run();
-
-function getLoad()
-{
-	$output = array();
-	$result = exec('cat /proc/loadavg', $output);
-
-	$split = explode(' ', $result);
-	$load = $split[0];
-
-	return $load;
-}

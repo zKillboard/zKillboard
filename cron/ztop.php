@@ -80,7 +80,7 @@ while ($iterations++ <= 1200) {
     }
 
     $cpu = exec("top -d 0.5 -b -n2 | grep \"Cpu(s)\"| tail -n 1 | awk '{print $2 + $4}'");
-    echo exec('date') . " CPU: $cpu% Load: ".getLoad()."  Memory: ${memUsed}G/${memTotal}G  Redis: $mem  TokuDB: ${storageSize}G / ${dataSize}G\n";
+    echo exec('date') . " CPU: $cpu% Load: " . Load::getLoad() . "  Memory: ${memUsed}G/${memTotal}G  Redis: $mem  TokuDB: ${storageSize}G / ${dataSize}G\n";
     echo "\n";
     foreach ($infoArray as $i) {
         foreach ($i as $name => $count) {
@@ -111,17 +111,6 @@ function addInfo($text, $number)
     }
     $dtext = $delta == 0 ? '' : "($delta)";
     $infoArray[] = ["$text $dtext" => number_format($number, 0)];
-}
-
-function getLoad()
-{
-    $output = array();
-    $result = exec('cat /proc/loadavg', $output);
-
-    $split = explode(' ', $result);
-    $load = $split[0];
-
-    return $load;
 }
 
 function getSystemMemInfo()
