@@ -24,8 +24,12 @@ class CrestSSO
 				exit();
 			}
 		}
-
-		$url = "https://login.eveonline.com/oauth/authorize/?response_type=code&redirect_uri=https://zkillboard.com/ccpcallback/&client_id=$ccpClientID&scope=publicData+characterFittingsWrite&state=redirect:$referrer";
+		
+		$scopes = "publicData";
+		if(isset($_GET['scopes']) && count($_GET['scopes']) > 0) {
+			$scopes .= "+".implode("+", $_GET['scopes']);
+		}
+		$url = "https://login.eveonline.com/oauth/authorize/?response_type=code&redirect_uri=https://zkillboard.com/ccpcallback/&client_id=$ccpClientID&scope=$scopes&state=redirect:$referrer";
 		$app->redirect($url, 302);
 		exit();
 	}
