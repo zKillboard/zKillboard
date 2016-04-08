@@ -93,6 +93,9 @@ class CrestSSO
 		if (!isset($response->CharacterID)) {
 			auth_error('No character ID returned');
 		}
+		if (strpos(@$response->Scopes, "characterFittingsWrite") === false || strpos(@$response->Scopes, "publicData") === false) {
+			auth_error('Expected both publicData characterFittingsWrite scopes but did not get them.');
+		}
 		// Lookup the character details in the DB.
 		$userdetails = $mdb->findDoc('information', ['type' => 'characterID', 'id' => (int) $response->CharacterID, 'cacheTime' => 0]);
 		if (!isset($userdetails['name'])) {
