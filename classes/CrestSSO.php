@@ -75,6 +75,7 @@ class CrestSSO
 		$response = json_decode($result);
 		$access_token = $response->access_token;
 		$refresh_token = $response->refresh_token;
+		$scopes = $response->Scopes;
 		$ch = curl_init();
 		// Get the Character details from SSO
 		$header = 'Authorization: Bearer '.$access_token;
@@ -93,8 +94,8 @@ class CrestSSO
 		if (!isset($response->CharacterID)) {
 			auth_error('No character ID returned');
 		}
-		if (strpos(@$response->Scopes, "characterFittingsWrite") === false || strpos(@$response->Scopes, "publicData") === false) {
-			auth_error('Expected both publicData characterFittingsWrite scopes but did not get them.');
+		if (strpos(@$response->Scopes, "publicData") === false) {
+			auth_error('Expected at least publicData scope but did not get it.');
 		}
 		// Lookup the character details in the DB.
 		$userdetails = $mdb->findDoc('information', ['type' => 'characterID', 'id' => (int) $response->CharacterID, 'cacheTime' => 0]);
@@ -105,6 +106,7 @@ class CrestSSO
 		$key = "login:" . $response->CharacterID . ":" . session_id();
 		$redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);
 		$redis->setex("$key:accessToken", 1000, $access_token);
+		$redis->setex("$key:scopes", (86400 * 14), $access_token);
 
 		$_SESSION['characterID'] = $response->CharacterID;
 		$_SESSION['characterName'] = $response->CharacterName;
