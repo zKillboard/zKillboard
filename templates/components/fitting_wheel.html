@@ -117,7 +117,7 @@
 {% if (characterID > 0) and ("characterFittingsWrite" in scopes) %}
 <br/><span><small><a class="green" href='#' onClick="saveFitting({{ extra.crest.killID }}); return false;">Import Fit</a></small></span>
 {% else %}
-<br/><span><small><a class="green" href='#' onClick="alert('Please login first.'); return false;">Import Fit</a></small></span>
+<br/><span><small><a class="green" href='#' onClick="alert('Please login and allow zKillboard to write fittings.'); return false;">Import Fit</a></small></span>
 {% endif %}
 {% elseif killdata.victim.killID > 0 %}<span class="green"><small>API Verified</small></span>{% endif %}
 </div>
