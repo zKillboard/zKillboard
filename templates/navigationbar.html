@@ -138,7 +138,10 @@
 							<li class="divider hidden-xs"></li>
 							<li><a href="/logout/">Logout</a></li>
 						{% else %}
-							<li><a href='/ccplogin/'><img src='/img/ssologin.png'/></a></li>
+							<form action="/ccplogin/" id="loginform">
+								<label class="checkbox"><input type="checkbox" name="scopes[]" value="characterFittingsWrite" checked>Allow zKillboard to write Fittings</label>
+								<input type="image" src="/img/ssologin.png">
+							</form>
 						{% endif %}
 					</ul>
 				</li>
