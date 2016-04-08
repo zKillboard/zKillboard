@@ -14,10 +14,14 @@ $ssoCharacterID = @$_SESSION['characterID'];
 if ($ssoCharacterID != null) {
 	$key = "login:" . $ssoCharacterID . ":" . session_id();
 	$refreshToken = $redis->get("$key:refreshToken");
+	$scopes = $redis->get("$key:scopes");
 	if ($refreshToken != null) {
 		$twig->addGlobal('characterID', (int) $ssoCharacterID);
 	} else {
 		unset($_SESSION['characterID']);
+	}
+	if($scopes != null) {
+		$twig->addGlobal('scopes', explode(" ", $scopes));
 	}
 } else {
 		$twig->addGlobal('characterID', 0);
