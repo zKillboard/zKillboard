@@ -79,7 +79,6 @@ class CrestSSO
 		$response = json_decode($result);
 		$access_token = $response->access_token;
 		$refresh_token = $response->refresh_token;
-		$scopes = $response->Scopes;
 		$ch = curl_init();
 		// Get the Character details from SSO
 		$header = 'Authorization: Bearer '.$access_token;
@@ -110,7 +109,7 @@ class CrestSSO
 		$key = "login:" . $response->CharacterID . ":" . session_id();
 		$redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);
 		$redis->setex("$key:accessToken", 1000, $access_token);
-		$redis->setex("$key:scopes", (86400 * 14), $access_token);
+		$redis->setex("$key:scopes", (86400 * 14), @$response->Scopes);
 
 		$_SESSION['characterID'] = $response->CharacterID;
 		$_SESSION['characterName'] = $response->CharacterName;
