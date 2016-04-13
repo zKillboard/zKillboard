@@ -40,8 +40,6 @@ class Detail
 
     public static function eftarray($md5, $items, $victimID = 0)
     {
-	global $mdb;
-
         // EFT / Fitting Wheel
         $eftarray['high'] = array(); // high
         $eftarray['mid'] = array(); // mid
@@ -72,7 +70,7 @@ class Detail
                 $itm['flagName'] = 'Low Slots';
             }
             if ($itm['flag'] == 89) {
-		$slot = $mdb->findField("information", "implantSlot", ['type' => 'typeID', 'id' => (int) $itm['typeID']]);
+		$slot = Info::getInfoField('typeID', $itm['typeID'], 'implantSlot');
                 if ($slot <= 5 && $slot >= 1) {
                     $itm['flagName'] = 'High Slots';
                     $itm['flag'] = 27 + ($slot - 1);
