@@ -18,7 +18,7 @@ class Stats
 		}
 
 		$result = Kills::getKills($parameters);
-		RedisCache::set($hashKey, $result, 300);
+		RedisCache::set($hashKey, $result, 3600);
 
 		return $result;
 	}
@@ -26,13 +26,15 @@ class Stats
 	/**
 	 * @param string $groupByColumn
 	 */
-	public static function getTop($groupByColumn, $parameters = array())
+	public static function getTop($groupByColumn, $parameters = array(), $cacheOverride = false)
 	{
 		global $mdb, $debug, $longQueryMS;
 
 		$hashKey = "Stats::getTop:$groupByColumn:".serialize($parameters);
 		$result = RedisCache::get($hashKey);
-		if ($result != null) return $result;
+		if ($cacheOverride == false && $result != null) {
+			return $result;
+		}
 
 		if (isset($parameters['pastSeconds']) && $parameters['pastSeconds'] <= 604800) {
 			$killmails = $mdb->getCollection('oneWeek');
@@ -181,6 +183,11 @@ class Stats
 	public static function getActivePvpStats($parameters)
 	{
 		global $mdb;
+		
+		$key = "stats:activepvp:" . serialize($parameters);
+		$activePvp = RedisCache::get($key);
+		if ($activePvp != null) return $activePvp;
+
 		$types = ['characterID', 'corporationID', 'allianceID', 'shipTypeID', 'solarSystemID', 'regionID'];
 		$activePvP = [];
 		foreach ($types as $type) {
@@ -207,6 +214,7 @@ class Stats
 			$activePvP['kills'] = ['type' => 'Total Kills', 'count' => $killCount];
 		}
 
+		RedisCache::set($key, $activePvp, 3600);
 		return $activePvP;
 	}
 
