@@ -50,9 +50,16 @@ function updateLocationID($fields) {
 function updateSlots($row) {
 	global $redis, $mdb;
 
-	$typeID = $row['TYPEID'];
-	$value = max($row['VALUEINT'], $row['VALUEFLOAT']);
-	switch($row['ATTRIBUTEID']) {
+	$r = [];
+	foreach ($row as $k=>$v)
+	{
+		$r[strtolower($k)] = $v;
+	}
+	$row = $r;
+
+	$typeID = $row['typeid'];
+	$value = max(@$row['valueint'], @$row['valuefloat']);
+	switch($row['attributeid']) {
 		case 12:
 			$mdb->set("information", ['type' => 'typeID', 'id' => (int) $typeID], ['lowSlotCount' => (int) $value]);
 			$mdb->getCollection("information")->update(['type' => 'typeID', 'id' => (int) $typeID], ['$unset' => ['lowSlotCounts' => 1]]);
