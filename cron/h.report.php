@@ -2,10 +2,8 @@
 
 require_once '../init.php';
 
-$minute = (int) date('i');
-if ($minute != 0) {
-    exit();
-}
+$key = date('YmdH');
+if ($redis->get($key) == 1) exit();
 
 $mdb = new Mdb();
 
@@ -26,3 +24,5 @@ $redis->setex("zkb:titans", 9600, serialize(Stats::getTop('characterID', $parame
 
 $parameters = ['groupID' => 659, 'isVictim' => false, 'pastSeconds' => (86400 * 90), 'nolimit' => true];
 $redis->setex("zkb:supers", 9600, serialize(Stats::getTop('characterID', $parameters)));
+
+$redis->setex($key, 3600, 1);
