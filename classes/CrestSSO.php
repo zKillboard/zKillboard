@@ -123,12 +123,13 @@ class CrestSSO
 		exit();
 	}
 
-	public static function getAccessToken() {
+	public static function getAccessToken($charID = null, $sessionID = null) {
 		global $app, $redis, $ccpClientID, $ccpSecret;
 
-		$charID = @$_SESSION['characterID'];
+		if ($charID == null) $charID = @$_SESSION['characterID'];
+		if ($sessionID == null) $sessionID = session_id();
 
-		$key = "login:" . $charID . ":" . session_id();
+		$key = "login:$charID:$sessionID";
 		$accessToken = $redis->get("$key:accessToken");
 
 		if ($accessToken != null) return $accessToken;
