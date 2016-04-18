@@ -39,6 +39,9 @@ function getCSV($url, $method) {
 function updateLocationID($fields) {
 	global $mdb, $redis;
 
+if (!isset($fields['ITEMNAME'])) return;
+foreach ($fields as $k=>$v) echo "$k=>$v\n";
+print_r($fields); die();
 	$locationID = (int) $fields['ITEMID'];
 	$name = $fields['ITEMNAME'];
 	$name = str_replace('"', '', $name);
@@ -95,8 +98,9 @@ function parseCSV(&$csv, $function) {
 		$fields = nextRow($csv);
 		if (sizeof($fields) > 0) {
 			$next = [];
-			for ($i = 0; $i < $fieldCount; $i++) {
-				$next[$fieldNames[$i]] = @$fields[$i];
+			foreach ($fieldNames as $i=>$key)
+			{
+				$next[strtoupper($key)] = @$fields[$i];
 			}
 			$function($next);
 		}
