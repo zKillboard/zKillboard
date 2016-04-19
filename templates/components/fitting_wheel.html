@@ -113,7 +113,7 @@
         {% include 'components/image_ship.html' %}
 </div>
 {% endif %}
-{% if extra.crest %}<span><small><a class="green" target="_blank" href="https://public-crest.eveonline.com/killmails/{{ extra.crest.killID }}/{{ extra.crest.hash }}/">CREST Verified</a></small></span>
+{% if extra.crest %}<span><small><a class="green" target="_blank" href="{{ crestServer }}/killmails/{{ extra.crest.killID }}/{{ extra.crest.hash }}/">CREST Verified</a></small></span>
 {% if (characterID > 0) and ("characterFittingsWrite" in scopes) %}
 <br/><span><small><a class="green" href='#' onClick="saveFitting({{ extra.crest.killID }}); return false;">Import Fit</a></small></span>
 {% else %}

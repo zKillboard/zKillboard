@@ -67,7 +67,7 @@ while ($timer->stop() < 59000) {
             $constellation = $mdb->findDoc('information', ['type' => 'constellationID', 'id' => $constID]);
             $regionID = (int) $constellation['regionID'];
             if (!$mdb->exists('information', ['type' => 'regionID', 'id' => $regionID])) {
-                $regionURL = "https://public-crest.eveonline.com/regions/$regionID/";
+                $regionURL = "$crestServer/regions/$regionID/";
                 $crestRegion = CrestTools::getJSON($regionURL);
                 if ($crestRegion == '') {
                     exit();

@@ -17,7 +17,7 @@ if ($page == 0) {
     $page = 1;
 }
 
-$next = "https://public-crest.eveonline.com/wars/?page=$page";
+$next = "$crestServer/wars/?page=$page";
 do {
     $wars = CrestTools::getJSON($next);
     if ($wars == null) {

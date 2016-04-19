@@ -58,7 +58,7 @@ function addToStatsQueue($type, $id, $sequence)
 
 function updateInfo($killID)
 {
-    global $mdb, $debug;
+    global $mdb, $debug, $crestServer;
 
     $killmail = $mdb->findDoc('rawmails', ['killID' => $killID]);
     $system = $killmail['solarSystem'];
@@ -96,7 +96,7 @@ function updateInfo($killID)
         $regionID = (int) $constellation['regionID'];
 
         if (!$mdb->exists('information', ['type' => 'regionID', 'id' => $regionID])) {
-            $regionURL = "https://public-crest.eveonline.com/regions/$regionID/";
+            $regionURL = "$crestServer/regions/$regionID/";
             $crestRegion = CrestTools::getJSON($regionURL);
             if ($crestRegion == '') {
                 exit();

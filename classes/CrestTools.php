@@ -44,7 +44,7 @@ class CrestTools
 
     public static function fetch($id, $hash = null)
     {
-        global $mdb;
+        global $mdb, $crestServer;
 
         // Do we already have this mail?
         $mail = $mdb->findDoc('rawmails', ['killID' => (int) $id]);
@@ -56,7 +56,7 @@ class CrestTools
         if ($hash == null) {
             throw new Exception('rawmail not on record, must provide a hash');
         }
-        $url = "https://public-crest.eveonline.com/killmails/$id/$hash/";
+        $url = "$crestServer/killmails/$id/$hash/";
 
         return self::getJSON($url);
     }

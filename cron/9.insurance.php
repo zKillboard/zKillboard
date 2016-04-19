@@ -5,7 +5,7 @@ require_once "../init.php";
 $date = (int) date('Ymd', time() - 7200);
 if ($redis->get("zkb:insuranceFetched:$date") == true) exit();
 
-$json = CrestTools::curlFetch("https://public-crest.eveonline.com/insuranceprices/");
+$json = CrestTools::curlFetch("$crestServer/insuranceprices/");
 $insurance = json_decode($json, true);
 $items = isset($insurance['items']) ? $insurance['items'] : [];
 foreach ($items as $item) {

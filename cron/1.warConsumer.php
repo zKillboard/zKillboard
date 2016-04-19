@@ -36,7 +36,7 @@ while ($timer->stop() < 58000) {
         }
     }
 
-    $href = "https://public-crest.eveonline.com/wars/$id/";
+    $href = "$crestServer/wars/$id/";
     $war = CrestTools::getJSON($href);
 
     if (!isset($warRow['agrShipsKilled']) || !isset($warRow['dfdShipsKilled'])) {

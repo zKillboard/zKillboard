@@ -144,7 +144,7 @@ class Price
 
 	protected static function getCrestPrices($typeID)
 	{
-		global $mdb, $debug;
+		global $mdb, $debug, $crestServer;
 
 		$marketHistory = $mdb->findDoc("prices", ['typeID' => $typeID]);
 		if ($marketHistory === null)
@@ -153,7 +153,7 @@ class Price
 			$mdb->save("prices", $marketHistory);
 		}
 
-		$url = "https://public-crest.eveonline.com/market/10000002/types/$typeID/history/";
+		$url = "$crestServer/market/10000002/types/$typeID/history/";
 		$json = CrestTools::getJSON($url);
 
 		if (is_array($json["items"])) foreach ($json["items"] as $row)

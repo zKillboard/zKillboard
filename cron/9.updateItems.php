@@ -16,7 +16,7 @@ foreach ($rows as $row) {
 	$typeID = (int) $row['id'];
 	$lastCrestUpdate = @$row['lastCrestUpdate'];
 	if ($lastCrestUpdate != null && $lastCrestUpdate->sec > (time() - 86400)) continue;
-	$crest = CrestTools::getJSON("https://public-crest.eveonline.com/types/$typeID/");
+	$crest = CrestTools::getJSON("$crestServer/types/$typeID/");
 
 	foreach ($assign as $key) {
 		if (isset($crest[$key])) $row[$key] = $crest[$key];

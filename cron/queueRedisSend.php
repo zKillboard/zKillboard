@@ -22,7 +22,7 @@ while ($timer->stop() <= 59000) {
     $rawmail = $mdb->findDoc('rawmails', ['killID' => $killID]);
     $zkb = $mdb->findField('killmails', 'zkb', ['killID' => $killID]);
 
-    $zkb['href'] = "https://public-crest.eveonline.com/killmails/$killID/".$zkb['hash'].'/';
+    $zkb['href'] = "$crestServer/killmails/$killID/".$zkb['hash'].'/';
     unset($rawmail['_id']);
 
     $package = ['killID' => $killID, 'killmail' => $rawmail, 'zkb' => $zkb];

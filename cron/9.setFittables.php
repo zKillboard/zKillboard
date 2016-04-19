@@ -11,7 +11,7 @@ if ($redis->get("tq:itemsPopulated") != true)
 $key = date('YmdH');
 if ($redis->get($key) == true) exit();
 
-$json = CrestTools::getJSON('https://public-crest.eveonline.com/inventory/categories/7/');
+$json = CrestTools::getJSON("$crestServer/inventory/categories/7/");
 
 foreach ($json['groups'] as $group) {
     $href = $group['href'];

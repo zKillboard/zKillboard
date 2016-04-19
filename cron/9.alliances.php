@@ -27,7 +27,7 @@ while ($timer->stop() <= 55000) {
 
     $currentInfo = $mdb->findDoc('information', ['type' => 'alliance', 'id' => $id]);
 
-    $alliCrest = CrestTools::getJSON("https://public-crest.eveonline.com/alliances/$id/");
+    $alliCrest = CrestTools::getJSON("$crestServer/alliances/$id/");
     if ($alliCrest == null || !isset($alliCrest['name'])) {
         $mdb->set('information', ['type' => 'alliance', 'id' => $id], ['lastApiUpdate' => $mdb->now()]);
         continue;

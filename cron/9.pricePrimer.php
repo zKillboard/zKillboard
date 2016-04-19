@@ -11,7 +11,7 @@ $yesterday = date('Y-m-d', time() - 7200 - 86400);
 $key = "tq:pricesChecked:$date";
 if ($redis->get($key) == true) exit();
 
-$crestPrices = CrestTools::getJson("https://public-crest.eveonline.com/market/prices/");
+$crestPrices = CrestTools::getJson("$crestServer/market/prices/");
 if (!isset($crestPrices['items'])) exit();
 
 foreach ($crestPrices['items'] as $item) {

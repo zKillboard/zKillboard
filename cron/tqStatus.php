@@ -2,7 +2,7 @@
 
 require_once '../init.php';
 
-$root = CrestTools::getJSON('https://public-crest.eveonline.com/');
+$root = CrestTools::getJSON($crestServer);
 
 if ($root == 0) {
 	$serverStatus = 'UNKNOWN';

@@ -7,7 +7,7 @@ if ($groupsPopulated === true && date('H') % 12 != 0 && date('i') != 25) {
     exit;
 }
 
-$groups = CrestTools::getJSON('https://public-crest.eveonline.com/inventory/groups/');
+$groups = CrestTools::getJSON("$crestServer/inventory/groups/");
 $newGroups = 0;
 $newItems = 0;
 
