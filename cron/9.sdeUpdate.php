@@ -82,7 +82,6 @@ function nextRow(&$csv) {
 
 function parseCSV(&$csv, $function) {
 	$fieldNames = nextRow($csv);
-	$fieldCount = sizeof($fieldNames);
 
 	while (strlen($csv) > 0) {
 		$fields = nextRow($csv);
@@ -92,7 +91,7 @@ function parseCSV(&$csv, $function) {
 			{
 				$key = strtolower(trim($key));
 				$value = trim($fields[$i]);
-				$next[$key] = @$fields[$i];
+				$next[$key] = $value;
 			}
 			$function($next);
 		}
