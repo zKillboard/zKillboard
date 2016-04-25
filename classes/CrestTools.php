@@ -24,6 +24,7 @@ class CrestTools
             curl_setopt($ch, CURLOPT_USERAGENT, "Crest Fetcher for https://$baseAddr");
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
             curl_setopt($ch, CURLOPT_TIMEOUT, 30); //timeout in seconds
+	    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
             $body = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if ($httpCode == 200) {
