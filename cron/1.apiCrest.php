@@ -18,8 +18,12 @@ foreach ($apis as $row)
 		if ($error == 'invalid_grant')
 		{
 			$mdb->remove("apisCrest", $row);
-			continue;
 		}
+		else
+		{
+			Util::out("CREST xml unhandled error: " . $error . " - " . $accessToken['error_description']);
+		}
+		continue;
 	}
 	if ($accessToken == null) { Util::out("null access token on $charID $refreshToken"); continue; }
 	$killsAdded = 0;
