@@ -12,8 +12,17 @@ foreach ($apis as $row)
 	$charID = $row['characterID'];
 	$refreshToken = $row['refreshToken'];
 	$accessToken = CrestSSO::getAccessToken($charID, "", $refreshToken);
+	if (is_array($accessToken))
+	{
+		$error = $accessToken['error'];
+		if ($error == 'invalid_grant')
+		{
+			$mdb->remove("apisCrest", $row);
+			continue;
+		}
+	}
+	if ($accessToken == null) { Util::out("null access token on $charID $refreshToken"); continue; }
 	$killsAdded = 0;
-	
 
 	\Pheal\Core\Config::getInstance()->http_method = 'curl';
 	\Pheal\Core\Config::getInstance()->http_user_agent = "API Fetcher for https://$baseAddr";
@@ -109,11 +118,7 @@ foreach ($apis as $row)
 
 	// If we got new kills tell the log about it
 	if ($killsAdded > 0) {
-		if ($type == 'Corporation') {
-			$name = 'corp '.@$corpInfo['name'];
-		} else {
-			$name = 'char '.@$info['name'];
-		}
+		$name = 'char '.@$info['name'];
 		while (strlen("$killsAdded") < 3) {
 			$killsAdded = ' '.$killsAdded;
 		}

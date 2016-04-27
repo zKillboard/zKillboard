@@ -165,36 +165,37 @@ class CrestSSO
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 		$result = curl_exec($ch);
 		$result = json_decode($result, true);
-		$accessToken = $result['access_token'];
-		$redis->setex("$key:accessToken", 1000, $accessToken);
+		$accessToken = @$result['access_token'];
+		if ($accessToken != null) $redis->setex("$key:accessToken", 1000, $accessToken);
+		else return $result;
 
 		return $accessToken;
 	}
 
 	public static function crestGet($url) {
 		global $ccpClientID, $ccpSecret;
-	
+
 		$accessToken = CrestSSO::getAccessToken();
 		$authHeader = "Authorization: Bearer $accessToken";
 
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, "$url?access_token=$accessToken");
-                curl_setopt($ch, CURLOPT_USERAGENT, CrestSSO::$userAgent);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array($authHeader));
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-                $result = curl_exec($ch);
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, "$url?access_token=$accessToken");
+		curl_setopt($ch, CURLOPT_USERAGENT, CrestSSO::$userAgent);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array($authHeader));
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+		$result = curl_exec($ch);
 		curl_close($ch);
 		$json = json_decode($result, true);
 		return $json;
 	}
 
-        public static function crestPost($url, $fields) {
-                global $ccpClientID, $ccpSecret;
+	public static function crestPost($url, $fields) {
+		global $ccpClientID, $ccpSecret;
 
 		$accessToken = CrestSSO::getAccessToken();
-                $authHeader = "Authorization: Bearer $accessToken";
+		$authHeader = "Authorization: Bearer $accessToken";
 		$data = json_encode($fields);
 
 		$ch = curl_init();
