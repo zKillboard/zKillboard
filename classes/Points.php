@@ -31,6 +31,8 @@ class Points
 	    1273 => array('Encounter Surveillance System', 10),
             543 => array('Exhumer', 20),
 	    1283 => array('Expedition Frigate', 70),
+	    549 => array('Fighter Drone', 50),
+	    1538 => array('Force Auxiliary Group', 3000),
             833 => array('Force Recon Ship', 350),
             513 => array('Freighter', 100),
             25 => array('Frigate', 50),
