@@ -113,7 +113,7 @@ class CrestSSO
 		$scopes = explode(" ", @$response->Scopes);
 		if (in_array("characterKillsRead", $scopes))
 		{
-			$mdb->save("apisCrest", ['characterID' => $response->CharacterID, 'refreshToken' => $refresh_token]);
+			$mdb->save("apisCrest", ['characterID' => $response->CharacterID, 'refreshToken' => $refresh_token, 'lastFetch' => 0]);
 		}
 
 		$_SESSION['characterID'] = $response->CharacterID;

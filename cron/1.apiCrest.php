@@ -2,16 +2,13 @@
 
 require_once "../init.php";
 
-$apis = $mdb->find("apisCrest");
+$apis = $mdb->find("apisCrest", ['lastFetch' => ['$lt' => (time() - 3600)]]);
 
 $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
 $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
 
 foreach ($apis as $row)
 {
-	$lastFetch = (int) @$row['lastFetch'];
-	if ((time() - $lastFetch) < 3600) continue;
-
 	$charID = $row['characterID'];
 	$refreshToken = $row['refreshToken'];
 	$accessToken = CrestSSO::getAccessToken($charID, "", $refreshToken);

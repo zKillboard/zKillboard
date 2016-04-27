@@ -23,6 +23,17 @@ echo "Creating index : 'errorCode' => 1, with sparse = 1 and unique = 0 ... ";
 $apis->ensureIndex(array('errorCode' => 1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
 
+// apisCrest
+echo "\nCreating collection apisCrest ... ";
+$apisCrest = $db->createCollection("apisCrest");
+echo "Done\n";
+echo "Creating index : 'lastFetch' => 1, with sparse = 0 and unique = 0 ... ";
+$apisCrest->ensureIndex(array('lastFetch' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'characterID' => 1, with sparse = 0 and unique = 0 ... ";
+$apisCrest->ensureIndex(array('characterID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+
 // battles
 echo "\nCreating collection battles ... ";
 $battles = $db->createCollection("battles");
@@ -111,6 +122,14 @@ $information->ensureIndex(array('type' => 1, 'mutual' => 1, 'timeStarted' => -1)
 echo "Done\n";
 echo "Creating index : 'type' => 1, 'timeStarted' => -1, with sparse = 1 and unique = 0 ... ";
 $information->ensureIndex(array('type' => 1, 'timeStarted' => -1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+
+// insurance
+echo "\nCreating collection insurance ... ";
+$insurance = $db->createCollection("insurance");
+echo "Done\n";
+echo "Creating index : 'typeID' => 1, 'date' => 1, with sparse = 0 and unique = 1 ... ";
+$insurance->ensureIndex(array('typeID' => 1, 'date' => 1), array("sparse" => 0, "unique" => 1));
 echo "Done\n";
 
 // itemmails
@@ -534,6 +553,11 @@ $tickets->ensureIndex(array('dttm' => 1, 'characterID' => 1), array("sparse" => 
 echo "Done\n";
 echo "Creating index : 'parentID' => 1, 'dttm' => 1, with sparse = 0 and unique = 0 ... ";
 $tickets->ensureIndex(array('parentID' => 1, 'dttm' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+
+// users
+echo "\nCreating collection users ... ";
+$users = $db->createCollection("users");
 echo "Done\n";
 
 // warmails
