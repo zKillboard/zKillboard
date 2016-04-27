@@ -110,6 +110,11 @@ class CrestSSO
 		$redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);
 		$redis->setex("$key:accessToken", 1000, $access_token);
 		$redis->setex("$key:scopes", (86400 * 14), @$response->Scopes);
+		$scopes = explode(" ", @$response->Scopes);
+		if (in_array("characterKillsRead", $scopes))
+		{
+			$mdb->save("apisCrest", ['characterID' => $response->CharacterID, 'refreshToken' => $refresh_token]);
+		}
 
 		$_SESSION['characterID'] = $response->CharacterID;
 		$_SESSION['characterName'] = $response->CharacterName;
@@ -123,7 +128,7 @@ class CrestSSO
 		exit();
 	}
 
-	public static function getAccessToken($charID = null, $sessionID = null) {
+	public static function getAccessToken($charID = null, $sessionID = null, $refreshToken = null) {
 		global $app, $redis, $ccpClientID, $ccpSecret;
 
 		if ($charID == null) $charID = @$_SESSION['characterID'];
@@ -134,7 +139,7 @@ class CrestSSO
 
 		if ($accessToken != null) return $accessToken;
 
-		$refreshToken = $redis->get("$key:refreshToken");
+		if ($refreshToken == null) $refreshToken = $redis->get("$key:refreshToken");
 		if ($charID  == null || $refreshToken == null) {
 			$app->redirect("/ccplogin/", 302);
 			exit();
