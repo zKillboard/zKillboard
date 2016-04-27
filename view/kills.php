@@ -50,7 +50,7 @@ switch ($type) {
         $kills = Kills::getKills(array('losses' => true, 'solo' => true, 'limit' => $limit, '!shipTypeID' => 670, '!groupID' => array(237, 31), 'cacheTime' => 3600, 'page' => $page));
     break;
     case 'capitals':
-        $kills = Kills::getKills(array('groupID' => array(547, 485), 'limit' => $limit, 'cacheTime' => 300, 'losses' => true, 'page' => $page));
+        $kills = Kills::getKills(array('groupID' => array(547, 485, 1538), 'limit' => $limit, 'cacheTime' => 300, 'losses' => true, 'page' => $page));
     break;
     case 'freighters':
         $kills = Kills::getKills(array('groupID' => array(513, 902, 941), 'limit' => $limit, 'cacheTime' => 300, 'losses' => true, 'page' => $page));
