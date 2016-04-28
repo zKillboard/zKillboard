@@ -26,3 +26,7 @@ $parameters = ['groupID' => 659, 'isVictim' => false, 'pastSeconds' => (86400 * 
 $redis->setex("zkb:supers", 9600, serialize(Stats::getTop('characterID', $parameters)));
 
 $redis->setex($key, 3600, 1);
+
+// Cleanup old tickets > 3 months old
+$time = time() - (86400 * 90);
+$mdb->getCollection("tickets")->remove(['dttm' => ['$lte' => $time]]);
