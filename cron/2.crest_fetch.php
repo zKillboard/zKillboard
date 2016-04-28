@@ -108,6 +108,8 @@ function validKill(&$kill)
 
 		if (@$attacker['shipType']['id'] == 34495) return true; // Drifters
 		if (@$attacker['corporation']['id'] == 1000125) return true; // Drifters
+
+		if (@$attacker['shipType']['id'] == 37468) return true; // Serpentis Dreadnought
 	}
 
 	return false;
