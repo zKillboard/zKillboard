@@ -81,6 +81,8 @@ function nextRow(&$csv) {
 }
 
 function parseCSV(&$csv, $function) {
+	global $redis;
+
 	$fieldNames = nextRow($csv);
 
 	while (strlen($csv) > 0) {
@@ -94,6 +96,7 @@ function parseCSV(&$csv, $function) {
 				$next[$key] = $value;
 			}
 			$function($next);
+			$redis->get('-'); // Keep redis alive
 		}
 	}
 }
