@@ -219,6 +219,9 @@ echo "Done\n";
 echo "Creating index : 'zkb.points' => 1, with sparse = 0 and unique = 0 ... ";
 $killmails->ensureIndex(array('zkb.points' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
+echo "Creating index : 'npc' => 1, with sparse = 0 and unique = 0 ... ";
+$killmails->ensureIndex(array('npc' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
 
 // oneWeek
 echo "\nCreating collection oneWeek ... ";
