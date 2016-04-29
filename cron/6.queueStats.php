@@ -13,7 +13,7 @@ $queueStats = new RedisQueue('queueStats');
 $noRowCount = 0;
 do {
     if ($redis->llen("queueServer") > 100) exit();
-    if ($redis->llen("queueProcess") > 10) exit();
+    if ($redis->llen("queueProcess") > 100) exit();
     $row = $queueStats->pop();
     if ($row !== null) calcStats($row);
     else {
@@ -51,7 +51,7 @@ function calcStats($row)
         }
 
         // build the query
-        $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim];
+        $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'npc' => false];
         $query = MongoFilter::buildQuery($query);
         // set the proper sequence values
         $query = ['$and' => [['sequence' => ['$gt' => $oldSequence]], ['sequence' => ['$lte' => $newSequence]], $query]];

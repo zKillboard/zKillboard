@@ -7,7 +7,6 @@ global $baseAddr, $baseDir;
 $crestmails = $mdb->getCollection('crestmails');
 $rawmails = $mdb->getCollection('rawmails');
 $queueProcess = new RedisQueue('queueProcess');
-$queueShare = file_exists("$baseDir/work/queueShare.php") ? new RedisQueue('queueShare') : null;
 $killsLastHour = new RedisTtlCounter('killsLastHour');
 
 $counter = 0;
@@ -66,21 +65,12 @@ while ($timer->stop() < 59000) {
 			$rawmails->save($killmail);
 		}
 
-		if (!validKill($killmail)) {
-			$crestmail['npcOnly'] = true;
-			$crestmail['processed'] = true;
-			$crestmails->save($crestmail);
-			continue;
-		}
-
 		$killID = @$killmail['killID'];
 		if ($killID != 0) {
 			$crestmail['processed'] = true;
 			$crestmails->save($crestmail);
 			$queueProcess->push($killID);
 			++$counter;
-
-			if ($queueShare != null) $queueShare->push($killID);
 		} else {
 			$crestmails->update($crestmail, array('$set' => array('processed' => false)));
 		}

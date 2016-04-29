@@ -31,6 +31,7 @@ function updateStatsQueue($killID)
     global $killmails, $statArray, $queueStats;
 
     $kill = $killmails->findOne(['killID' => $killID]);
+    if ($kill['npc'] == true) return;
     $involved = $kill['involved'];
     $sequence = $kill['sequence'];
 

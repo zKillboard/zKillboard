@@ -20,7 +20,9 @@ while ($timer->stop() <= 59000) {
     }
 
     $rawmail = $mdb->findDoc('rawmails', ['killID' => $killID]);
-    $zkb = $mdb->findField('killmails', 'zkb', ['killID' => $killID]);
+    $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
+    if ($killmail['npc'] == true) continue;
+    $zkb = $killmail['zkb'];
 
     $zkb['href'] = "$crestServer/killmails/$killID/".$zkb['hash'].'/';
     unset($rawmail['_id']);

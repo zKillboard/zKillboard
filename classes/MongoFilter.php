@@ -201,6 +201,9 @@ class MongoFilter
                 case 'solo':
                     $and[] = ['solo' => true];
                     break;
+                case 'npc':
+                    $and[] = ['npc' => $value];
+                    break;
                 case 'startTime':
                     $time = strtotime($value);
                     $and[] = ['dttm' => ['$gte' => new MongoDate($time)]];
