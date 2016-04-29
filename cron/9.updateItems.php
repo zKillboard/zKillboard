@@ -11,6 +11,8 @@ if ($redis->get("tq:itemsPopulated") != true)
 }
 
 $assign = ['capacity', 'name', 'portionSize', 'mass', 'volume', 'description', 'radius', 'published'];
+$attrs = ['lowSlots', 'medSlots', 'hiSlots', 'rigSlots'];
+
 $rows = $mdb->find("information", ['type' => 'typeID']);
 foreach ($rows as $row) {
 	$typeID = (int) $row['id'];
@@ -21,6 +23,22 @@ foreach ($rows as $row) {
 	foreach ($assign as $key) {
 		if (isset($crest[$key])) $row[$key] = $crest[$key];
 	}
+
+        unset($row['lowSlotCount']);
+        unset($row['midSlotCount']);
+        unset($row['highSlotCount']);
+        unset($row['rigSlotCount']);
+        // Dogma
+        if (isset($crest['dogma']['attributes'])) {
+                foreach ($crest['dogma']['attributes'] as $attribute) {
+                        $name = $attribute['attribute']['name'];
+                        $value = $attribute['value'];
+                        if (in_array($name, $attrs)) {
+                                $row[$name] = $value;
+                        }
+                }
+        }
+
 	$row['lastCrestUpdate'] = $mdb->now();
 	$mdb->save("information", $row);
 }

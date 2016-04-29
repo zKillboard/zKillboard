@@ -17,7 +17,6 @@ if ($sdeMD5 == $redisMD5) exit();
 
 Util::out("New SDE detected, importing now");
 
-getCSV("https://www.fuzzwork.co.uk/dump/latest/dgmTypeAttributes.csv.bz2", "updateSlots");
 getCSV("https://www.fuzzwork.co.uk/dump/latest/invNames.csv.bz2", "updateLocationID");
 
 $redis->set("tqSDE:MD5", $sdeMD5);
@@ -45,31 +44,6 @@ function updateLocationID($fields) {
 	$query = ['type' => 'locationID', 'id' => $locationID];
 	if (!$mdb->exists("information", $query)) $mdb->save("information", $query);
 	$mdb->set("information", $query, ['name' => $name]);
-}
-
-function updateSlots($row) {
-	global $redis, $mdb;
-
-	$typeID = $row['typeid'];
-	$value = max(@$row['valueint'], @$row['valuefloat']);
-	switch($row['attributeid']) {
-		case 12:
-			$mdb->set("information", ['type' => 'typeID', 'id' => (int) $typeID], ['lowSlotCount' => (int) $value]);
-			$mdb->getCollection("information")->update(['type' => 'typeID', 'id' => (int) $typeID], ['$unset' => ['lowSlotCounts' => 1]]);
-			break;
-		case 13:
-			$mdb->set("information", ['type' => 'typeID', 'id' => (int) $typeID], ['midSlotCount' => (int) $value]);
-			break;
-		case 14:
-			$mdb->set("information", ['type' => 'typeID', 'id' => (int) $typeID], ['highSlotCount' => (int) $value]);
-			break;
-		case 1137:
-			$mdb->set("information", ['type' => 'typeID', 'id' => (int) $typeID], ['rigSlotCount' => (int) $value]);
-			break;
-		case 331:
-			$mdb->set("information", ['type' => 'typeID', 'id' => (int) $typeID], ['implantSlot' => (int) $value]);
-			break;
-	}
 }
 
 function nextRow(&$csv) {

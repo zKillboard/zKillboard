@@ -549,7 +549,7 @@ class Info
 	{
 		global $mdb;
 
-		$slotArray = $mdb->findDoc("information", ['type' => 'typeID', 'id' => (int) $shipTypeID, 'cacheTime' => 300], [], ['lowSlotCount', 'midSlotCount', 'highSlotCount', 'rigSlotCount']);
+		$slotArray = $mdb->findDoc("information", ['type' => 'typeID', 'id' => (int) $shipTypeID, 'cacheTime' => 300], [], ['lowSlots', 'medSlots', 'hiSlots', 'rigSlots']);
 
 		return $slotArray;
 	}

@@ -12,7 +12,7 @@
 	{% endif %}
 </div>
 
-{% set slotCount = (fitting.high | length > extra.slotCounts.highSlotCount ) ? fitting.high | length : extra.slotCounts.highSlotCount %}
+{% set slotCount = (fitting.high | length > extra.slotCounts.hiSlots ) ? fitting.high | length : extra.slotCounts.hiSlots %}
 {% set slotCount = min(8, max(0, slotCount)) %}
 {% if killdata.victim.groupID == 29 %}{% set slotCount = 5 %}{% endif %}
 <div id="highx" style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;">
@@ -27,7 +27,7 @@
 <div id="high7" style="position:absolute; left:270px; top:45px; width:32px; height:32px;">{% set field = fitting.high.33.0.0 %}{% include 'components/image_item.html' %}</div>
 <div id="high8" style="position:absolute; left:295px; top:64px; width:32px; height:32px;">{% set field = fitting.high.34.0.0 %}{% include 'components/image_item.html' %}</div>
 
-{% set slotCount = (fitting.mid | length > extra.slotCounts.midSlotCount ) ? fitting.mid | length : extra.slotCounts.midSlotCount %}
+{% set slotCount = (fitting.mid | length > extra.slotCounts.medSlots ) ? fitting.mid | length : extra.slotCounts.medSlots %}
 {% set slotCount = min(8, max(0, slotCount)) %}
 <div id="midx" style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;">
 	<img src="//{{ siteurl }}/img/panel/{{ slotCount }}m.png" alt="" style="border:0px;" />
@@ -41,7 +41,7 @@
 <div id="mid7" style="position:absolute; left:100px; top:328px; width:32px; height:32px;">{% set field =fitting.mid.25.0.0 %}{% include 'components/image_item.html' %}</div>
 <div id="mid8" style="position:absolute; left:133px; top:342px; width:32px; height:32px;">{% set field =fitting.mid.26.0.0 %}{% include 'components/image_item.html' %}</div>
 
-{% set slotCount = (fitting.low | length > extra.slotCounts.lowSlotCount ) ? fitting.low | length : extra.slotCounts.lowSlotCount %}
+{% set slotCount = (fitting.low | length > extra.slotCounts.lowSlots ) ? fitting.low | length : extra.slotCounts.lowSlots %}
 {% set slotCount = min(8, max(0, slotCount)) %}
 {% if killdata.victim.groupID == 29 %}{% set slotCount = 5 %}{% endif %}
 <div id="lowx" style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;">
@@ -56,7 +56,7 @@
 <div id="low7" style="position:absolute; left:268px; top:324px; width:32px; height:32px;">{% set field = fitting.low.17.0.0 %}{% include 'components/image_item.html' %}</div>
 <div id="low8" style="position:absolute; left:234px; top:338px; width:32px; height:32px;">{% set field = fitting.low.18.0.0 %}{% include 'components/image_item.html' %}</div>
 
-{% set slotCount = (fitting.rig | length > extra.slotCounts.rigSlotCount ) ? fitting.rig | length : extra.slotCounts.rigSlotCount %}
+{% set slotCount = (fitting.rig | length > extra.slotCounts.rigSlots ) ? fitting.rig | length : extra.slotCounts.rigSlots %}
 <div id="rigxx" style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;">
 	<img src="//{{ siteurl }}/img/panel/{{ slotCount }}r.png" alt="" style="border:0px;" />
 </div>
