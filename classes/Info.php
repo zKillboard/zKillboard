@@ -595,9 +595,12 @@ class Info
 			$json = json_decode($raw, true);
 			foreach ($json as $row) {
 				unset($row['complete']);
-				$itemID = $row['itemid'];
+				$itemID = (int) $row['itemid'];
 				$multi->hSet($key, $itemID, 1);
 				foreach ($row as $k=>$v) if ($v !== null) $redis->hSet("tqItemID:$itemID", $k, $v);
+				if (!$mdb->exists("information", ['type' => 'locationID', 'id' => $itemID])) {
+					$mdb->save("information", ['type' => 'locationID', 'id' => $itemID, 'name' => $row['itemname']]);
+				}
 			}
 			$multi->exec();
 		}
