@@ -15,7 +15,7 @@ class Info
 			return self::$infoFieldCache[$key];
 		}
 
-		$data = $redis->hGet("tq:$type:$id", $field);
+		$data = $redis->hGet("tqCache:$type:$id", $field);
 		if ($data == null) {
 			$data = $mdb->findField('information', "$field", ['type' => $type, 'id' => (int) $id, 'cacheTime' => 300]);
 		}
@@ -488,6 +488,7 @@ class Info
 			'151' => 'Material Bay',
 			'154' => 'Quafe Bay',
 			'155' => 'Fleet Hangar',
+			'158' => 'Fighter Bay',
 			);
 
 	/**
