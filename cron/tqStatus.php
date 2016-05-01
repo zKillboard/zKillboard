@@ -3,6 +3,8 @@
 require_once '../init.php';
 
 $root = CrestTools::getJSON($crestServer);
+$version = @$root['serverVersion'];
+if ($version != null) $redis->set("tqServerVersion", $version);
 
 if ($root == 0) {
 	$serverStatus = 'UNKNOWN';
