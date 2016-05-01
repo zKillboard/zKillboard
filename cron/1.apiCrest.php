@@ -6,10 +6,13 @@ $apis = $mdb->find("apisCrest", ['lastFetch' => ['$lt' => (time() - 3600)]]);
 
 $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
 $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
+$chars = [];
 
 foreach ($apis as $row)
 {
 	$charID = $row['characterID'];
+	if (in_array($charID, $chars)) continue;
+	$chars[] = $charID;
 	$refreshToken = $row['refreshToken'];
 	$accessToken = CrestSSO::getAccessToken($charID, "", $refreshToken);
 	if (is_array($accessToken))
@@ -45,7 +48,7 @@ foreach ($apis as $row)
 	try {
 		$result = $pheal->KillMails($params);
 		$xmlSuccess->add(uniqid());
-		$mdb->set("apisCrest", $row, ['lastFetch' => time()]);
+		$v = $mdb->set("apisCrest", ['characterID' => $charID], ['lastFetch' => time()], true);
 	} catch (Exception $ex) {
 		$xmlFailure->add(uniqid());
 		$errorCode = $ex->getCode();
@@ -54,9 +57,13 @@ foreach ($apis as $row)
 			exit();
 		}
 		if ($errorCode == 28) {
-			//Util::out('(apiConsumer) API Server timeout');
 			exit();
 		}
+		if ($errorCode == 201) {
+			$mdb->remove("apisCrest", $row);
+			continue;
+		}
+		Util::out("Unknown error for CREST xml api - $charID - " . $ex->getMessage());
 		sleep(3);
 		continue;
 	}
