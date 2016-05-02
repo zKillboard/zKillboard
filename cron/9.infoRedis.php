@@ -12,7 +12,6 @@ foreach ($types as $type) {
 	if ($type == 'warID') continue;
 
 	$typeRows = $information->find(['type' => $type]);
-	Util::out("Adding $type to redis");
 	foreach ($typeRows as $row) {
 		unset($row['_id']);
 		$id = $row['id'];
