@@ -389,8 +389,8 @@ class Related
     {
 	global $redis;
 
-        $aSize = (int) $redis->hGet("tq:typeID:" . @$a['shipTypeID'], "mass");
-        $bSize = (int) $redis->hGet("tq:typeID:" . @$b['shipTypeID'], "mass"); 
+        $aSize = (int) $redis->hGet("tqCache:typeID:" . @$a['shipTypeID'], "mass");
+        $bSize = (int) $redis->hGet("tqCache:typeID:" . @$b['shipTypeID'], "mass"); 
 
         return $aSize < $bSize;
     }
