@@ -222,6 +222,24 @@ echo "Done\n";
 echo "Creating index : 'npc' => 1, with sparse = 0 and unique = 0 ... ";
 $killmails->ensureIndex(array('npc' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
+echo "Creating index : 'involved.characterID' => 1, 'npc' => 1, 'sequence' => 1, 'involved.isVictim' => 1, with sparse = 0 and unique = 0 ... ";
+$killmails->ensureIndex(array('involved.characterID' => 1, 'npc' => 1, 'sequence' => 1, 'involved.isVictim' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'involved.corporationID' => 1, 'npc' => 1, 'sequence' => 1, 'involved.isVictim' => 1, with sparse = 0 and unique = 0 ... ";
+$killmails->ensureIndex(array('involved.corporationID' => 1, 'npc' => 1, 'sequence' => 1, 'involved.isVictim' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'involved.allianceID' => 1, 'npc' => 1, 'sequence' => 1, 'involved.isVictim' => 1, with sparse = 1 and unique = 0 ... ";
+$killmails->ensureIndex(array('involved.allianceID' => 1, 'npc' => 1, 'sequence' => 1, 'involved.isVictim' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'involved.factionID' => 1, 'npc' => 1, 'sequence' => 1, 'involved.isVictim' => 1, with sparse = 1 and unique = 0 ... ";
+$killmails->ensureIndex(array('involved.factionID' => 1, 'npc' => 1, 'sequence' => 1, 'involved.isVictim' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'involved.shipTypeID' => 1, 'npc' => 1, 'sequence' => 1, 'involved.isVictim' => 1, with sparse = 1 and unique = 0 ... ";
+$killmails->ensureIndex(array('involved.shipTypeID' => 1, 'npc' => 1, 'sequence' => 1, 'involved.isVictim' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'involved.groupID' => 1, 'npc' => 1, 'sequence' => 1, 'involved.isVictim' => 1, with sparse = 1 and unique = 0 ... ";
+$killmails->ensureIndex(array('involved.groupID' => 1, 'npc' => 1, 'sequence' => 1, 'involved.isVictim' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
 
 // oneWeek
 echo "\nCreating collection oneWeek ... ";
