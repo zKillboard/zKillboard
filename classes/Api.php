@@ -5,7 +5,13 @@ class Api
     public static function addKey($keyID, $vCode, $label = null)
     {
         global $mdb;
+
         $keyID = (int) $keyID;
+	if ($keyID == 0) return 'Invalid keyID';
+
+	$before = $vCode;
+	$vCode = preg_replace( '/[^a-z0-9]/i', "", (string) $vCode);
+	if ($before != $vCode) return 'Invalid vCode';
 
         $userID = User::getUserID();
         if ($userID == null) {
