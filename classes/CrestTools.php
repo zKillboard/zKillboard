@@ -47,18 +47,7 @@ class CrestTools
     {
         global $mdb, $crestServer;
 
-        // Do we already have this mail?
-        $mail = $mdb->findDoc('rawmails', ['killID' => (int) $id]);
-        if ($mail != null) {
-            return $mail;
-        }
-
-        // Nope, don't have it, go fetch
-        if ($hash == null) {
-            throw new Exception('rawmail not on record, must provide a hash');
-        }
         $url = "$crestServer/killmails/$id/$hash/";
-
         return self::getJSON($url);
     }
 }
