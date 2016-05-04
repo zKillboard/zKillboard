@@ -13,6 +13,7 @@ class Points
             883 => array('Capital Industrial Ship', 1000),
             29 => array('Capsule', 5),
             547 => array('Carrier', 3000),
+	    1657 = array('Citadel', 10000);
             906 => array('Combat Recon Ship', 350),
 	    1534 => array("Command Destroyers", 250),
             540 => array('Command Ship', 450),
