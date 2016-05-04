@@ -10,7 +10,7 @@ $chars = [];
 $timer = new Timer();
 
 while ($timer->stop() < 58000) {
-	$apis = $mdb->find("apisCrest", ['lastFetch' => ['$lt' => (time() - 3600)]]);
+	$apis = $mdb->find("apisCrest", ['lastFetch' => ['$lt' => (time() - 1800)]]);
 	if (sizeof($apis) == 0) exit();
 	foreach ($apis as $row)
 	{
