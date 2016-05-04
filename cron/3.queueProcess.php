@@ -144,7 +144,7 @@ while ($timer->stop() < 59000) {
 			$killmails->save($kill);
 		}
 		$oneWeekExists = $mdb->exists('oneWeek', ['killID' => $killID]);
-		if (!$oneWeekExists) {
+		if (!$oneWeekExists && $kill['npc'] == false) {
 			$mdb->getCollection('oneWeek')->save($kill);
 		}
 
