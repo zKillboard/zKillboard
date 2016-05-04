@@ -5,12 +5,6 @@ class Points
 	public static function getPoints($typeID) {
 		$mass = Info::getInfoField('typeID', $typeID, 'mass');
 		return floor(log($mass));
-		$power = 1;
-		while ($mass >= 2) {
-			$power ++;
-			$mass = floor($mass / 2);
-		}
-		return floor(log(pow(2, $power)));
 	}
 
 	public static function getPointValues()
