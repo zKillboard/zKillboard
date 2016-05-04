@@ -28,7 +28,7 @@ while ($timer->stop() < 58000) {
 			}
 			else
 			{
-				Util::out("CREST xml unhandled error: " . $error . " - " . $accessToken['error_description']);
+				Util::out("SSO xml unhandled error: " . $error . " - " . $accessToken['error_description']);
 			}
 			continue;
 		}
@@ -67,7 +67,7 @@ while ($timer->stop() < 58000) {
 				$mdb->remove("apisCrest", $row);
 				continue;
 			}
-			Util::out("Unknown error for CREST xml api - $charID - " . $ex->getMessage());
+			Util::out("Unknown error for SSO xml api - $charID - " . $ex->getMessage());
 			sleep(3);
 			continue;
 		}
@@ -137,7 +137,7 @@ while ($timer->stop() < 58000) {
 			while (strlen("$killsAdded") < 3) {
 				$killsAdded = ' '.$killsAdded;
 			}
-			Util::out("$killsAdded kills added by $name (CREST)");
+			Util::out("$killsAdded kills added by $name (SSO)");
 		}
 	}
 	sleep(1);
