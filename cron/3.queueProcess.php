@@ -103,8 +103,6 @@ while ($timer->stop() < 59000) {
 		$victim['isVictim'] = true;
 		$kill['vGroupID'] = $victim['groupID'];
 		$kill['categoryID'] = (int) Info::getInfoField('groupID', $victim['groupID'], 'categoryID');
-		$victimPoints = Points::getPoints($victim['groupID']);
-		if ($victimPoints === 0) Util::out("WARNING: groupID does not have points assigned: " . $victim['groupID']);
 
 		$involved = array();
 		$involved[] = $victim;
