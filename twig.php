@@ -99,7 +99,7 @@ $twig->addGlobal('igbbottomad', Google::ad($bottomCaPub, $bottomAdSlot, $adWidth
 $twig->addGlobal('analytics', Google::analytics($analyticsID, $analyticsName));
 $disqus &= UserConfig::get('showDisqus', true);
 $twig->addGlobal('disqusLoad', $disqus);
-$noAdPages = array('/account/', '/ticket', '/information/');
+$noAdPages = array('/account/', '/ticket', '/information/', '/post/');
 foreach ($noAdPages as $noAdPage) {
 	$showAds &= !Util::startsWith($uri, $noAdPage);
 }
