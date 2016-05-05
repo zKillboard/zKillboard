@@ -21,11 +21,6 @@ while ($timer->stop() < 59000) {
 		$id = $crestmail['killID'];
 		$hash = $crestmail['hash'];
 
-		if ($mdb->exists('killmails', ['killID' => $id])) {
-			$crestmails->update($crestmail, array('$set' => array('processed' => true)));
-			continue;
-		}
-
 		$killmail = CrestTools::fetch($id, $hash);
 		if (is_integer($killmail)) Util::out("$id $killmail");
 		// The following if statements used to be a switch statement, but for some reason it didn't always process correctly
@@ -47,6 +42,14 @@ while ($timer->stop() < 59000) {
 		}
 		if (!isset($killmail['killID'])) {
 			$crestmails->update($crestmail, array('$set' => array('processed' => false)));
+			continue;
+		}
+
+		if ($mdb->exists('killmails', ['killID' => $id])) {
+			unset($crestmail['error']);
+			unset($crestmail['errorCode']);
+			$crestmail['processed'] = true;
+			$crestmails->save($crestmail);
 			continue;
 		}
 
