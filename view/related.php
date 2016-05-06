@@ -1,6 +1,6 @@
 <?php
 
-global $baseDir, $mdb;
+global $baseDir, $mdb, $redis;
 
 $systemID = (int) $system;
 $relatedTime = (int) $time;
@@ -59,24 +59,36 @@ if (((int) $exHours) < 1 || ((int) $exHours > 12)) {
 	$exHours = 1;
 }
 
-$key = md5("br:$systemID:$relatedTime:$exHours:".json_encode($json_options) . (isset($battleID) ? ":$battleID" : ""));
-$mc = RedisCache::get($key);
-if ($mc == null) {
-	$parameters = array('solarSystemID' => $systemID, 'relatedTime' => $relatedTime, 'exHours' => $exHours, 'nolimit' => true);
-	$kills = Kills::getKills($parameters);
-	$summary = Related::buildSummary($kills, $json_options);
-	$mc = array('summary' => $summary, 'systemName' => $systemName, 'regionName' => $regionName, 'time' => $time, 'exHours' => $exHours, 'solarSystemID' => $systemID, 'relatedTime' => $relatedTime, 'options' => json_encode($json_options));
-
-	if (isset($battleID) && $battleID > 0) {
-		$teamA = $summary['teamA']['totals'];
-		$teamB = $summary['teamB']['totals'];
-		unset($teamA['groupIDs']);
-		unset($teamB['groupIDs']);
-		$mdb->set("battles", ['battleID' => $battleID], ['teamA' => $teamA]);
-		$mdb->set("battles", ['battleID' => $battleID], ['teamB' => $teamB]);
+$timer = new Timer();
+$pushed = false;
+$queueRelated = new RedisQueue("queueRelated");
+$key = "br:" . md5("brq:$systemID:$relatedTime:$exHours:".json_encode($json_options) . (isset($battleID) ? ":$battleID" : ""));
+$summary = null;
+while (true)
+{
+	$summary = $redis->get($key);
+	if ($summary != null) break;
+	if ($pushed == false) 
+	{
+		$parameters = array('solarSystemID' => $systemID, 'relatedTime' => $relatedTime, 'exHours' => $exHours, 'nolimit' => true, 'options' => $json_options, 'key' => $key);
+		$serial = serialize($parameters);
+		$queueRelated->push($serial);
+		$pushed = true;
 	}
+	usleep(100000);
+	if ($timer->stop() > 10000000) { $app->redirect('.'); exit(); }
+}
 
-	RedisCache::set($key, $mc, 300);
+$summary = unserialize($summary);
+$mc = array('summary' => $summary, 'systemName' => $systemName, 'regionName' => $regionName, 'time' => $time, 'exHours' => $exHours, 'solarSystemID' => $systemID, 'relatedTime' => $relatedTime, 'options' => json_encode($json_options));
+
+if (isset($battleID) && $battleID > 0) {
+	$teamA = $summary['teamA']['totals'];
+	$teamB = $summary['teamB']['totals'];
+	unset($teamA['groupIDs']);
+	unset($teamB['groupIDs']);
+	$mdb->set("battles", ['battleID' => $battleID], ['teamA' => $teamA]);
+	$mdb->set("battles", ['battleID' => $battleID], ['teamB' => $teamB]);
 }
 
 $app->render('related.html', $mc);
