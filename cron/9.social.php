@@ -92,7 +92,7 @@ function beSocial($killID)
     }
     $mdb->getCollection('killmails')->update(['killID' => $killID], ['$unset' => ['social' => true]]);
 
-    Log::irc("$message");
+    //Log::irc("$message");
     $message = Log::stripIRCColors($message);
 
     $message .= ' #tweetfleet #eveonline';

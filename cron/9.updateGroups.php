@@ -47,12 +47,6 @@ do {
 
 $mdb->insertUpdate('storage', ['locker' => 'groupsPopulated'], ['contents' => true]);
 $redis->set("tq:itemsPopulated", true);
-if ($newGroups > 0) {
-	Log::irc("Added $newGroups new groupIDs");
-}
-if ($newItems > 0) {
-	Log::irc("Added $newItems new typeIDs");
-}
 
 $redis->set("tqGroups:serverVersion", $serverVersion);
 
