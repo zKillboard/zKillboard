@@ -45,10 +45,10 @@ if ($_POST) {
             if ($balance >= $amount) {
                 $dttm = UserConfig::get('adFreeUntil', null);
                 $now = $dttm == null ? ' now() ' : "'$dttm'";
-                $newDTTM = Db::queryField("select date_add($now, interval $months month) as dttm", 'dttm', array(), 0);
+                //$newDTTM = Db::queryField("select date_add($now, interval $months month) as dttm", 'dttm', array(), 0);
                 //Db::execute('update zz_account_balance set balance = balance - :amount where userID = :userID', array(':userID' => $userID, ':amount' => $amount));
                 //Db::execute('insert into zz_account_history (userID, purchase, amount) values (:userID, :purchase, :amount)', array(':userID' => $userID, ':purchase' => $purchase, ':amount' => $amount));
-                UserConfig::set('adFreeUntil', $newDTTM);
+                //UserConfig::set('adFreeUntil', $newDTTM);
 
                 $twig->addGlobal('accountBalance', User::getBalance($userID));
                 $error = "Funds have been applied for $months month".($months == 1 ? '' : 's').", you are now ad free until $newDTTM";
@@ -185,6 +185,7 @@ if ($apiChars != null) {
 $corps = array();
 $allis = array();
 foreach ($domainChars as $domainChar) {
+continue;
     if (@$domainChar['isCEO']) {
         $subdomain = modifyTicker($domainChar['corpTicker']).".$baseAddr";
         if (isset($bannerUpdates[$subdomain])) {
