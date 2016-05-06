@@ -75,6 +75,10 @@ while (true)
 		$queueRelated->push($serial);
 		$pushed = true;
 	}
+	// See if we have a backup in place while the main one is being re-calculated?
+	$summary = $redis->get("backup:$key");
+	if ($summary != null) break;
+	
 	usleep(100000);
 	if ($timer->stop() > 10000000) { $app->redirect('.'); exit(); }
 }
