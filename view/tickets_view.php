@@ -31,9 +31,7 @@ if ($_POST) {
 		$mdb->insert("tickets", ['parentID' => $id, 'content' => $reply, 'characterID' => $charID, 'dttm' => time(), 'moderator' => $moderator]);
 		$mdb->getCollection("tickets")->update(['_id' => new MongoID($id)], ['$set' => ['dttmUpdate' => time()]]);
 		$mdb->getCollection("tickets")->update(['_id' => new MongoID($id)], ['$inc' => ['replies' => 1]]);
-		if (!$moderator) {
-			Log::irc("|g|Ticket response from $name|n|: $fullAddr/tickets/view/$id/");
-		}
+
 		if ($moderator && isset($ticket['email']) && strlen($ticket['email']) > 0) {
 			Email::send($ticket['email'], "zKillboard Ticket Response", "You have received a response to a ticket you submitted. To view the response, please click $fullAddr/tickets/view/$id/");
 		}

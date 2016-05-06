@@ -19,7 +19,6 @@ if ($_POST) {
 		$mdb->insert("tickets", $insert);
 
 		$id = $insert['_id']; 
-		Log::irc("|g|New ticket from $name:|n| https://$baseAddr//tickets/view/$id/");
 
 		$app->redirect("/tickets/view/$id/");
 		exit();
