@@ -7,7 +7,6 @@ class Price
 		global $mdb, $redis;
 		$typeID = (int) $typeID;
 		if ($kmDate == null) $kmDate = date('Y-m-d H:m');
-if ($typeID == 35833) Log::log("$typeID $kmDate");
 
 		$price = static::getFixedPrice($typeID);
 		if ($price !== null) return $price;
