@@ -60,6 +60,7 @@ if (((int) $exHours) < 1 || ((int) $exHours > 12)) {
 }
 
 $timer = new Timer();
+$sleeps = 0;
 $pushed = false;
 $queueRelated = new RedisQueue("queueRelated");
 $key = "br:" . md5("brq:$systemID:$relatedTime:$exHours:".json_encode($json_options) . (isset($battleID) ? ":$battleID" : ""));
@@ -80,7 +81,8 @@ while (true)
 	if ($summary != null) break;
 	
 	usleep(100000);
-	if ($timer->stop() > 10000000) { $app->redirect('.'); exit(); }
+	$sleeps++;
+	if ($sleeps > 10) { $app->render('related_wait.html', ['showAds' => false]); exit(); }
 }
 
 $summary = unserialize($summary);
