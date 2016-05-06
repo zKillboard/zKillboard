@@ -105,6 +105,7 @@ class CrestSSO
 		if (!isset($userdetails['name'])) {
 			if ($userdetails == null) $mdb->save('information', ['type' => 'characterID', 'id' => (int) $response->CharacterID, 'name' => $response->CharacterName]);
 		}
+		Log::log("Logged in: " . (isset($userdetails['name']) ? $userdetails['name'] : $response->CharacterID));
 
 		$key = "login:" . $response->CharacterID . ":" . session_id();
 		$redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);
