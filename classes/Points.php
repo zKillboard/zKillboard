@@ -14,6 +14,7 @@ class Points
 
 	public static function getKillPoints($kill, $price)
 	{
+		if (!isset($kill['involved']['0']['shipTypeID'])) return 1;
 		$vicpoints = self::getPoints($kill['involved']['0']['shipTypeID']);
 		$vicpoints += $price / 10000000;
 		$maxpoints = round($vicpoints * 1.2);
