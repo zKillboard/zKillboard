@@ -6,8 +6,6 @@ $sID = $_GET['sID'];
 $dttm = $_GET['dttm'];
 $options = $_GET['options'];
 
-echo "Battle report changes happening, sorry for the bother -- Squizz<br/><br/>";
-
 $battleID = $mdb->findField("battles", "battleID", ['$and' => [['solarSystemID' => $sID], ['dttm' => $dttm], ['options' => $options]]], ['battleID' => -1]);
 while ($battleID === null) {
 	$battleID = $mdb->findField("battles", "battleID", [], ['battleID' => -1]);
