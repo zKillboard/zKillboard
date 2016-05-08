@@ -35,6 +35,13 @@ class RedisTimeQueue
         }
     }
 
+    public function isMember($value)
+    {
+	global $redis;
+
+	return (null != $redis->zScore($this->queueName, $value));
+    }
+
     public function remove($value)
     {
         global $redis;
