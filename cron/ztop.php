@@ -44,6 +44,10 @@ while ($iterations++ <= 1200) {
     addInfo('Valid Apis', $redis->zCard('tqApis'));
 
     addInfo('', 0);
+    $nonApiR = new RedisTtlCounter('ttlc:nonApiRequests', 300);
+    addInfo('non-API requests in last 5 minutes', $nonApiR->count());
+    $apiR = new RedisTtlCounter('ttlc:apiRequests', 300);
+    addInfo('API requests in last 5 minutes', $apiR->count());
     $visitors = new RedisTtlCounter('ttlc:visitors', 300);
     addInfo('Unique IPs in last 5 minutes', $visitors->count());
     $requests = new RedisTtlCounter('ttlc:requests', 300);
