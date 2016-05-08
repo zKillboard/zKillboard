@@ -39,7 +39,8 @@ class RedisTimeQueue
     {
 	global $redis;
 
-	return (null != $redis->zScore($this->queueName, $value));
+	$value = serialize($value);
+	return (null !== $redis->zScore($this->queueName, $value));
     }
 
     public function remove($value)
