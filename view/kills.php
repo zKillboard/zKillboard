@@ -11,10 +11,10 @@ if ($page > $maxPage && $type != '') {
 
 switch ($type) {
     case '5b':
-        $kills = Kills::getKills(['iskValue' => 5000000000]);
+        $kills = Kills::getKills(['iskValue' => 5000000000, 'page' => $page, 'cacheTime' => 60]);
     break;
     case '10b':
-        $kills = Kills::getKills(['iskValue' => 10000000000]);
+        $kills = Kills::getKills(['iskValue' => 10000000000, 'page' => $page, 'cacheTime' => 60]);
     break;
     case 'bigkills':
         $kills = Kills::getKills(array('groupID' => array(547, 485, 513, 902, 941, 30, 659, 883), 'limit' => $limit, 'cacheTime' => 300, 'losses' => true, 'page' => $page));
