@@ -59,7 +59,6 @@ if (((int) $exHours) < 1 || ((int) $exHours > 12)) {
 	$exHours = 1;
 }
 
-$timer = new Timer();
 $sleeps = 0;
 $pushed = false;
 $queueRelated = new RedisQueue("queueRelated");
@@ -82,7 +81,7 @@ while (true)
 	
 	usleep(100000);
 	$sleeps++;
-	if ($sleeps > 10) { $app->render('related_wait.html', ['showAds' => false]); exit(); }
+	if ($sleeps > 30) { $app->render('related_wait.html', ['showAds' => false]); exit(); }
 }
 
 $summary = unserialize($summary);
