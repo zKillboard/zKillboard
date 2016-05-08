@@ -9,9 +9,9 @@ $chars = [];
 
 $timer = new Timer();
 
-while ($timer->stop() < 58000) {
+while ($timer->stop() < 60000) {
 	$apis = $mdb->find("apisCrest", ['lastFetch' => ['$lt' => (time() - 1800)]]);
-	if (sizeof($apis) == 0) exit();
+	if (sizeof($apis) == 0) sleep(1);
 	foreach ($apis as $row)
 	{
 		$charID = $row['characterID'];
