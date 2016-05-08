@@ -17,5 +17,5 @@ while ($timer->stop() < 65000)
 
 	$serial = serialize($summary);
 	$redis->setex($parameters['key'], 1500, $serial);
-	$redis->setex("backup:" . $parameters['key'], 3000, $serial);
+	$redis->setex("backup:" . $parameters['key'], 1600, $serial);
 }
