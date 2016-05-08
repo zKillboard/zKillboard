@@ -29,7 +29,10 @@ class Api
             return 'We already have this API in our database.';
         }
 
-        $mdb->save('apis', ['keyID' => $keyID, 'vCode' => $vCode, 'label' => $label, 'lastApiUpdate' => new MongoDate(2), 'userID' => $userID]);
+	$row = ['keyID' => $keyID, 'vCode' => $vCode, 'label' => $label, 'lastApiUpdate' => new MongoDate(2), 'userID' => $userID];
+        $mdb->save('apis', $row);
+	$tqApis = new RedisTimeQueue('tqApis', 9600);
+	$tqApis->add($row['_id']);
 
         return 'Success, your API has been added.';
     }
