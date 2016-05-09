@@ -2,6 +2,11 @@
 
 require_once "../init.php";
 
+$time = time();
+$time = $time - ($time % 300);
+$key = "key:$time";
+if ($redis->get($key) == 1) exit();
+
 $battles = $redis->sMembers("battleBuckets");
 $battleSize = (@$battleSize == 0 ? 200 : $battleSize);
 $days7 = 7 * 86400;
@@ -23,7 +28,8 @@ foreach ($bigBattles as $bigBattle) {
 	$systemID = $ex[2];
 	$time = $ex[1];
 	if (!$redis->sIsMember("battlesAnnounced", $bigBattle)) {
-		Util::out("Battle detected - https://zkillboard.com/related/$systemID/$time/");
 		$redis->sAdd("battlesAnnounced", $bigBattle);
 	}
 }
+
+$redis->setex($key, 3600, 1);
