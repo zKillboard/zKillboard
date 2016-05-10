@@ -31,7 +31,8 @@ while ($timer->stop() <= 58000) {
     $id = $tqApis->next();
     if ($id !== null) {
 	$row = $mdb->findDoc('apis', ['_id' => $id]);
-        $keyID = $row['keyID'];
+        $keyID = (int) $row['keyID'];
+	if ($keyID <= 0) continue;
         $vCode = $row['vCode'];
         $userID = $row['userID'];
 	$errorCode = (int) @$row['errorCode'];
@@ -57,14 +58,13 @@ while ($timer->stop() <= 58000) {
 			Util::out("(apiProducer) 904'ed");
 			exit();
 		}
-		if ($errorCode == 28) {
-			//Util::out('(apiProducer) API Server timeout');
+		if ($errorCode == 28) { // ccp server is timing out, give up for now
 			exit();
 		}
 		if ($errorCode != 221 && $debug) {
 			Util::out("(apiProducer) Error Validating $keyID: ".$ex->getCode().' '.$ex->getMessage());
 		}
-		$apis->update(['keyID' => $keyID, 'vCode' => $vCode], ['$set' => ['errorCode' => $errorCode]]);
+		$apis->update(['keyID' => $keyID, 'vCode' => $vCode], ['$set' => ['errorCode' => $errorCode]], true);
 		sleep(3);
 		continue;
 	}

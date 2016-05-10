@@ -28,6 +28,9 @@ while ($timer->stop() <= 59000) {
     $row = $tqApiChars->next();
     if ($row !== null) {
         $charID = $row['characterID'];
+	if ($charID <= 0) {
+		$tqApiChars->remove($row);
+	}
         $keyID = $row['keyID'];
         $vCode = $row['vCode'];
         $type = $row['type'];
@@ -69,8 +72,7 @@ while ($timer->stop() <= 59000) {
                 Util::out("(apiConsumer) 904'ed...");
                 exit();
             }
-            if ($errorCode == 28) {
-                //Util::out('(apiConsumer) API Server timeout');
+            if ($errorCode == 28) { // ccp server is timing out, give up for now
                 exit();
             }
             $tqApiChars->remove($row);
