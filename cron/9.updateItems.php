@@ -10,7 +10,7 @@ if ($redis->get("tq:itemsPopulated") != true)
         exit();
 }
 
-$assign = ['capacity', 'name', 'portionSize', 'mass', 'volume', 'description', 'radius', 'published'];
+$assign = ['capacity', 'name', 'portionSize', 'mass', 'volume', 'description', 'radius', 'published', 'techLevel'];
 $attrs = ['lowSlots', 'medSlots', 'hiSlots', 'rigSlots'];
 
 $rows = $mdb->find("information", ['type' => 'typeID']);
