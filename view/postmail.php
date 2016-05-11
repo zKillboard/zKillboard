@@ -12,7 +12,7 @@ if ($_POST) {
 	// Apikey stuff
 	if ($keyid || $vcode) {
 		$ip = IP::get();
-		Log::log("$ip $keyid $vcode");
+		Log::log("New API: $ip $keyid " . substr($vcode, 0, 5) . "...");
 		$error = Api::addKey($keyid, $vcode);
 	}
 
