@@ -103,6 +103,9 @@
 			<td style="width: 100%;" valign="top">{% include 'components/victim_info.html' %}</td>
 		<tr>
 	</table>
+	{% if killdata.victim.groupID == 1657 %}
+	<i><small>If you see Render Not Found it is because CCP hasn't rendered the <a href='https://image.eveonline.com/Render/{{ killdata.victim.shipTypeID }}_256.png' target='_new'>image on their server</a> yet.</small></i>
+	{% endif %}
 	<div class="row visible-xs" style="padding: 0px;">
 		<div class="col-lg-5" style="padding: 0px;">{% include 'components/fitting_wheel.html' %}</div>
 		<div class="col-lg-5" style="padding: 0px;">{% include 'components/victim_info.html' %}</div>
