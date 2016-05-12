@@ -10,7 +10,7 @@ class Info
 	public static function getInfoField($type, $id, $field)
 	{
 		global $mdb, $redis;
-		$key = "$type . $id . $field";
+		$key = $type . ':' . $id . ':' . $field;
 		if (isset(self::$infoFieldCache[$key])) {
 			return self::$infoFieldCache[$key];
 		}
