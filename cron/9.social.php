@@ -106,6 +106,6 @@ function beSocial($killID)
         $return = Twit::sendMessage($message);
         $twit = "https://twitter.com/{$twitterName}/status/".$return->id;
         Log::irc("Message was also tweeted: |g|$twit");
-	$redis->del("zkb:everyFiften");
+	$redis->del("zkb:everyFifteen");
     }
 }

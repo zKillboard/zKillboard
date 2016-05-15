@@ -4,7 +4,7 @@ require_once '../init.php';
 
 global $redis;
 
-$key = "zkb:everyFiften";
+$key = "zkb:everyFifteen";
 if ($redis->get($key) === true) exit();
 
 $p = array();
