@@ -92,7 +92,6 @@ function beSocial($killID)
     }
     $mdb->getCollection('killmails')->update(['killID' => $killID], ['$unset' => ['social' => true]]);
 
-    //Log::irc("$message");
     $message = Log::stripIRCColors($message);
 
     $message .= ' #tweetfleet #eveonline';
@@ -105,7 +104,5 @@ function beSocial($killID)
     if ($tweetIt && strlen($message) <= 120) {
         $return = Twit::sendMessage($message);
         $twit = "https://twitter.com/{$twitterName}/status/".$return->id;
-        Log::irc("Message was also tweeted: |g|$twit");
-	$redis->del("zkb:everyFifteen");
     }
 }
