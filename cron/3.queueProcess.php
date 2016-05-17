@@ -232,7 +232,6 @@ function processItem($item, $dttm, $isCargo = false, $parentContainerFlag = -1)
 
 function isAwox($row)
 {
-	$isAwox = false;
 	$victim = $row['involved'][0];
 	$vGroupID = $row['vGroupID'];
 	if (isset($victim['corporationID']) && $vGroupID != 29) {
@@ -259,12 +258,12 @@ function isAwox($row)
 				if ($invCorpID <= 1999999) {
 					continue;
 				}
-				$isAwox |= $vicCorpID == $invCorpID;
+				if ($vicCorpID == $invCorpID) return true;
 			}
 		}
 	}
 
-	return $isAwox;
+	return false;
 }
 
 function isSolo($row)
