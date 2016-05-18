@@ -16,6 +16,7 @@ class Points
 			$sum += (int) Info::getInfoField('typeID', $typeID, $attr);
 		}
 		$points = ceil($sum / log($sum));
+		if ($groupID == 963) $points = $points * 3; // Strategic Cruisers
 
 		return max(1, $points);
 	}
