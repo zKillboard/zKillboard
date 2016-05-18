@@ -20,7 +20,12 @@ do {
 		if ($exists == 0) {
 			++$newGroups;
 		}
-		$mdb->insertUpdate('information', ['type' => 'groupID', 'id' => $groupID], ['name' => $name, 'lastCrestUpdate' => $mdb->now(-86400)]);
+
+                $types = CrestTools::getJSON($href);
+                $categoryID = getGroupID($types['category']['href']);
+                if (!isset($types['name'])) exit(); // Data not there, something is wrong, come back later
+
+                $mdb->insertUpdate('information', ['type' => 'groupID', 'id' => $groupID], ['name' => $name, 'categoryID' => $categoryID, 'lastCrestUpdate' => $mdb->now(-86400)]);
 
 		$types = CrestTools::getJSON($href);
 		if (@$types['types'] != null) {
