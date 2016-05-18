@@ -103,6 +103,5 @@ function beSocial($killID)
     }
     if ($tweetIt && strlen($message) <= 120) {
         $return = Twit::sendMessage($message);
-        $twit = "https://twitter.com/{$twitterName}/status/".$return->id;
     }
 }
