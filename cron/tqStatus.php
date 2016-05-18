@@ -9,12 +9,7 @@ if ($version != null) $redis->set("tqServerVersion", $version);
 if ($root == 0) {
 	$serverStatus = 'UNKNOWN';
 } else {
-	$serverStatus = @$root['serviceStatus']['eve'];
-	if ($serverStatus == null) {
-		$serverStatus = 'OFFLINE';
-	} else {
-		$serverStatus = strtoupper($serverStatus);
-	}
+	$serverStatus = isset($root['serviceStatus']['eve']) ? strtoupper($root['serviceStatus']['eve']) : 'OFFLINE';
 }
 $loggedIn = (int) @$root['userCounts']['eve'];
 
