@@ -3,21 +3,29 @@
 class Points
 {
 	public static function getPoints($typeID) {
-		$mass = Info::getInfoField('typeID', $typeID, 'mass');
-		return floor(log($mass));
-	}
+		$groupID = Info::getInfoField('typeID', $typeID, 'groupID');
+		if ($groupID == 29) return 1;
+		$categoryID = Info::getInfoField('groupID', $groupID, 'categoryID');
+		if ($categoryID != 6) return 1;
 
-	public static function getPointValues()
-	{
-		return [];
+		$name = Info::getInfoField('typeID', $typeID, 'name');
+
+		$dogma = ['hp', 'armorHP', 'shieldCapacity'];
+		$sum = 0;
+		foreach ($dogma as $attr) {
+			$sum += (int) Info::getInfoField('typeID', $typeID, $attr);
+		}
+		$points = ceil($sum / log($sum));
+
+		return max(1, $points);
 	}
 
 	public static function getKillPoints($kill, $price)
 	{
 		if (!isset($kill['involved']['0']['shipTypeID'])) return 1;
 		$vicpoints = self::getPoints($kill['involved']['0']['shipTypeID']);
-		$vicpoints += $price / 10000000;
-		$maxpoints = round($vicpoints * 1.2);
+		$vicpoints += floor(log($price / 10000000));
+		$maxpoints = round($vicpoints);
 
 		$invpoints = 0;
 		foreach ($kill['involved'] as $key => $inv) {
@@ -28,16 +36,19 @@ class Points
 		}
 
 		if (($vicpoints + $invpoints) == 0) {
-			return 0;
+			return 1;
 		}
-		$gankfactor = $vicpoints / ($vicpoints + $invpoints);
-		$points = ceil($vicpoints * ($gankfactor / 0.75));
+		$gankfactor = ($vicpoints / ($vicpoints + $invpoints)) / $kill['attackerCount'];
+		$points = ceil($vicpoints * $gankfactor);
 
-		if ($points > $maxpoints) {
-			$points = $maxpoints;
-		}
-		$points = $points / (sizeof($kill['involved']) - 1);
+		$points = max(1, ceil($points / $kill['attackerCount']));
+		$points = ceil($points / max(1, log($points)));
 
-		return (int) max(1, round($points, 0)); // a kill is always worth at least one point
+		return max(1, $points); // a kill is always worth at least one point
+	}
+
+	public static function getPointValues()
+	{
+		return [];
 	}
 }
