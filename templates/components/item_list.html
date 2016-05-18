@@ -1,5 +1,5 @@
-<h3>Item(s) <small>Dropped / Destroyed</small></h3>
-<table class="table table-condensed item_list">
+<h3>Item(s) <small>Dropped / Destroyed <small><i>You can now sort this table - it isn't quite right just yet though</i></small></h3>
+<table class="table table-condensed item_list item-table">
 	<thead>
 	<tr class="titles">
 		<th class="hidden-xs">&nbsp;</th>
@@ -15,12 +15,17 @@
 	{% endfor %}
 	<tr>
 		{% if killdata.victim.characterID >= 2100000000 and killdata.victim.characterID <= 2999999999 %}
-		<th colspan="6"><h5>Dropsuit</h5></th>
+		<td colspan="4"><h5>Dropsuit</h5></td>
+<td class="hidden"></td>
+<td class="hidden"></td>
+<td class="hidden"></td>
 		{% else %}
-		<th colspan="6"><h5>Ship</h5></th>
+		<td colspan="4"><h5>Ship</h5></td>
+<td class="hidden"></td>
+<td class="hidden"></td>
+<td class="hidden"></td>
 		{% endif %}
 	</tr>
-	<tr>
 	{% set imageSize = 32 %}
 	<tr class="hidden-xs">
 	{% set field = killdata.victim %}
@@ -31,15 +36,21 @@
 	</tr>
 	<tr class="item_dropped_row hidden-xs">
 		<td colspan="2"><h5>Total Dropped:</h5></td>
-		<td colspan="4" style="text-align: right;"><div class="pull-right" style="width: 100%;"><h5 class="item_dropped" rel="tooltip" title="&#36;{{ extra.droppedprice.usd|number_format(2, '.', ',') }} / {{ extra.droppedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.droppedprice.gbp|number_format(2, '.', ',') }}">{{ extra.droppedisk|number_format(2, '.', ',')}}</h5></div></td>
+		<td colspan="2" style="text-align: right;"><div class="pull-right" style="width: 100%;"><h5 class="item_dropped" rel="tooltip" title="&#36;{{ extra.droppedprice.usd|number_format(2, '.', ',') }} / {{ extra.droppedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.droppedprice.gbp|number_format(2, '.', ',') }}">{{ extra.droppedisk|number_format(2, '.', ',')}}</h5></div></td>
+<td class="hidden"></td>
+<td class="hidden"></td>
 	</tr>
 	<tr class="hidden-xs">
 		<td colspan="2"><h5>Total Destroyed:</h5></td>
-		<td colspan="4" style="text-align: right;"><div class="pull-right" style="width: 100%;"><h5 class="item_destroyed" rel="tooltip" title="&#36;{{ extra.destroyedprice.usd|number_format(2, '.', ',') }} / {{ extra.destroyedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.destroyedprice.gbp|number_format(2, '.', ',') }}">{{ extra.lostisk|number_format(2, '.', ',')}}</h5></div></td>
+		<td colspan="2" style="text-align: right;"><div class="pull-right" style="width: 100%;"><h5 class="item_destroyed" rel="tooltip" title="&#36;{{ extra.destroyedprice.usd|number_format(2, '.', ',') }} / {{ extra.destroyedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.destroyedprice.gbp|number_format(2, '.', ',') }}">{{ extra.lostisk|number_format(2, '.', ',')}}</h5></div></td>
+<td class="hidden"></td>
+<td class="hidden"></td>
 	</tr>
 	<tr class="hidden-xs">
 		<td colspan="2"><h5>Grand Total:</h5></td>
-		<td colspan="4" style="text-align: right;" class="totalprice"><div class="pull-right" style="width: 100%;"><h5 rel="tooltip" title="&#36;{{ extra.totalprice.usd|number_format(2, '.', ',') }} / {{ extra.totalprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.totalprice.gbp|number_format(2, '.', ',') }}">{{ (extra.lostisk + extra.droppedisk)|number_format(2, '.', ',')}}</h5></div></td>
+		<td colspan="2" style="text-align: right;" class="totalprice"><div class="pull-right" style="width: 100%;"><h5 rel="tooltip" title="&#36;{{ extra.totalprice.usd|number_format(2, '.', ',') }} / {{ extra.totalprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.totalprice.gbp|number_format(2, '.', ',') }}">{{ (extra.lostisk + extra.droppedisk)|number_format(2, '.', ',')}}</h5></div></td>
+<td class="hidden"></td>
+<td class="hidden"></td>
 	</tr>
 	</tbody>
 </table>
