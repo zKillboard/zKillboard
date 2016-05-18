@@ -234,6 +234,7 @@ function isAwox($row)
 {
 	$victim = $row['involved'][0];
 	$vGroupID = $row['vGroupID'];
+	if ($vGroupID == 237 || $vGroupID == 29) return false;
 	if (isset($victim['corporationID']) && $vGroupID != 29) {
 		$vicCorpID = $victim['corporationID'];
 		if ($vicCorpID > 0) {
