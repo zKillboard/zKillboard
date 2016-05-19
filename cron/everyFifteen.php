@@ -8,7 +8,6 @@ $time = time();
 $time = $time - ($time % 900);
 $key = "zkb:everyFifteen:$time";
 if ($redis->get($key) == true) exit();
-Util::out("running every fifteen");
 
 $p = array();
 $numDays = 7;
