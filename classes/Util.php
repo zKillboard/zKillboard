@@ -441,4 +441,27 @@ class Util
 
 		return $mdb->getQueryCount();
 	}
+
+	public static function get3dDistance($position, $locationID)
+	{
+		global $redis;
+
+		$x = $position['x'];
+		$y = $position['y'];
+		$z = $position['z'];
+
+		$row = $redis->hGetAll("tqItemID:$locationID");
+		if ($row === null) return 0;
+		$distance = sqrt(pow($row['x'] - $x, 2) + pow($row['y'] - $y, 2) + pow($row['z'] - $z, 2));
+
+		return $distance;
+	}
+
+	public static function getAuDistance($position, $locationID)
+	{
+		$distance = self::get3dDistance($position, $locationID);
+
+		$au = round($distance / (149597870700), 2);
+		return $au;
+	}
 }
