@@ -10,11 +10,14 @@ $chars = [];
 $timer = new Timer();
 
 while ($timer->stop() < 60000) {
-	$apis = $mdb->find("apisCrest", ['lastFetch' => ['$lt' => (time() - 1800)]]);
+	$t = new Timer();
+	$apis = $mdb->find("apisCrest", ['lastFetch' => ['$lt' => (time() - 1800)]], ['lastFetch' => 1], 1);
+	$tt = $t->stop();
 	if (sizeof($apis) == 0) sleep(1);
 	foreach ($apis as $row)
 	{
 		$charID = $row['characterID'];
+		$lastFetch = $row['lastFetch'];
 		if (in_array($charID, $chars)) continue;
 		$chars[] = $charID;
 		$refreshToken = $row['refreshToken'];
