@@ -116,7 +116,7 @@ while ($timer->stop() < 59000) {
 		$kill['involved'] = $involved;
 		$kill['awox'] = isAwox($kill);
 		$kill['solo'] = isSolo($kill);
-		$kill['npc'] = isNPC($raw);
+		$kill['npc'] = isNPC($kill);
 
 		$items = $mail['victim']['items'];
 		$i = array();
@@ -267,27 +267,33 @@ function isAwox($row)
 	return false;
 }
 
-function isSolo($row)
-{
-	$notSolo = [29, 31, 237];
+function isSolo($killmail) {
+        // Rookie ships, shuttles, and capsules are not considered as solo
+        $victimGroupID = $killmail['vGroupID'];
+        if (in_array($victimGroupID, [29, 31, 237])) return false;
 
-	if ($row['attackerCount'] > 1) {
-		return false;
-	}
+        // Only ships can be solo'ed
+        $categoryID = Info::getInfoField('groupID', $victimGroupID, 'categoryID');
+        if ($categoryID != 6) return false;
 
-	// make sure the victim isn't a pod, shuttle, or noobship
-	$vGroupID = $row['vGroupID'];
-
-	return !in_array($vGroupID, $notSolo);
+        $numPlayers = 0;
+        $involved = $killmail['involved'];
+        array_shift($involved);
+        foreach ($involved as $attacker) {
+                if (@$attacker['characterID'] > 3999999) $numPlayers++;
+                if ($numPlayers > 1) return false;
+        }
+        // Ensure that at least 1 player is on the kill so as not to count losses against NPC's
+        return $numPlayers == 1;
 }
 
-function isNPC(&$kill)
+function isNPC(&$killmail)
 {
-	foreach ($kill['attackers'] as $attacker)
-	{
-		if (@$attacker['character']['id'] > 0) return false;
-		if (@$attacker['corporation']['id'] > 1999999) return false;
-		if (@$attacker['alliance']['id'] > 0) return false;
+	$involved = $killmail['involved'];
+	array_shift($involved);
+
+	foreach ($involved as $attacker) {
+		if (@$attacker['characterID'] > 3999999) return false;
 	}
 
 	return true;
