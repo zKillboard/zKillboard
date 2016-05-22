@@ -489,6 +489,11 @@ class Info
 			'154' => 'Quafe Bay',
 			'155' => 'Fleet Hangar',
 			'158' => 'Fighter Bay',
+			'159' => 'Fighter Tube 0',
+			'160' => 'Fighter Tube 1',
+			'161' => 'Fighter Tube 2',
+			'162' => 'Fighter Tube 3',
+			'163' => 'Fighter Tube 4',
 			);
 
 	/**
