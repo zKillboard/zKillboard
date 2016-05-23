@@ -489,11 +489,7 @@ class Info
 			'154' => 'Quafe Bay',
 			'155' => 'Fleet Hangar',
 			'158' => 'Fighter Bay',
-			'159' => 'Fighter Tube 0',
-			'160' => 'Fighter Tube 1',
-			'161' => 'Fighter Tube 2',
-			'162' => 'Fighter Tube 3',
-			'163' => 'Fighter Tube 4',
+			'159' => 'Fighter Tubes',
 			);
 
 	/**
@@ -506,6 +502,7 @@ class Info
 			12 => array(27, 34), // Highs
 			13 => array(19, 26), // Mids
 			11 => array(11, 18), // Lows
+			159 => array(159, 163), // Fighter Tubes
 			2663 => array(92, 98), // Rigs
 			3772 => array(125, 132), // Subs
 			);
