@@ -104,3 +104,9 @@ function saveFitting(id) {
 }
 
 $('body').on('touchstart.dropdown', '.dropdown-menu', function (e) { e.stopPropagation(); });
+
+function hideSortStuff(doHide)
+{
+	if (doHide) $(".hide-when-sorted").hide();
+	else $(".hide-when-sorted").show();
+}
