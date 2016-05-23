@@ -1,86 +1,87 @@
 <?php
 
+/*for ($i = 0; $i < 15; ++$i) {
+    $pid = pcntl_fork();
+    if ($pid == -1) {
+        exit();
+    }
+    if ($pid == 0) {
+        break;
+    }
+}
+if ($pid != 0) {
+    exit();
+}*/
+
 require_once '../init.php';
 
 $timer = new Timer();
-$queueWars = new RedisTimeQueue('tqWars', 9600);
+$queueWars = new RedisQueue('queueWars');
 
-$minute = date('i');
-if ($minute == 30) {
-    $allWars = $mdb->getCollection('information')->find(['type' => 'warID'], ['id' => 1]);
-    foreach ($allWars as $war) {
-        if (@$war['finished'] == 1) {
-            $queueWars->remove($war['id']);
-        } else {
-            $queueWars->add($war['id']);
-        }
-    }
+if ($queueWars->size() == 0) {
+	$wars = $mdb->getCollection('information')->find(['type' => 'warID'])->sort(['id' => -1]);
+	foreach ($wars as $war) {
+		$timeFinished = @$war['timeFinished'];
+		if ($timeFinished != null) {
+			$threeDays = date('Y-m-d', (time() - (86400 * 3)));
+			$warFinished = substr($timeFinished, 0, 10);
+
+			if ($warFinished < $threeDays) continue;
+		}
+		$queueWars->push($war['id']);
+	}
 }
 
 $added = 0;
-while ($timer->stop() < 58000) {
-    sleep(1);
-    $id = $queueWars->next();
-    if ($id == null) {
-        exit();
-    }
-    $warRow = $mdb->findDoc('information', ['type' => 'warID', 'id' => $id]);
+while ($timer->stop() < 59000) {
+	sleep(1);
+	$id = $queueWars->pop();
+	if ($id == null) {
+		exit();
+	}
+	$warRow = $mdb->findDoc('information', ['type' => 'warID', 'id' => $id]);
 
-    if (@$warRow['timeFinished'] != null) {
-        $threeDays = date('Y-m-d', (time() - (86400 * 3)));
+	$href = "$crestServer/wars/$id/";
+	$war = CrestTools::getJSON($href);
 
-        $warFinished = substr($warRow['timeFinished'], 0, 10);
-        if ($warFinished <= $threeDays) {
-            $mdb->set('information', ['type' => 'warID', 'id' => $id], ['finished' => true]);
-            continue;
-        }
-    }
+	$war['lastCrestUpdate'] = $mdb->now();
+	$war['id'] = $id;
+	$war['finished'] = false;
+	$mdb->insertUpdate('information', ['type' => 'warID', 'id' => $id], $war);
 
-    $href = "$crestServer/wars/$id/";
-    $war = CrestTools::getJSON($href);
+	$prevKills = @$warRow['agrShipsKilled'] + @$warRow['dfdShipsKilled'];
+	$currKills = $war['aggressor']['shipsKilled'] + $war['defender']['shipsKilled'];
 
-    if (!isset($warRow['agrShipsKilled']) || !isset($warRow['dfdShipsKilled'])) {
-        continue;
-    }
+	// Don't fetch killmail api for wars with no kill count change
+	if ($prevKills != $currKills) {
+		$kmHref = $war['killmails'];
+		$page = floor($mdb->count('warmails', ['warID' => $id]) / 2000);
+		if ($page == 0) {
+			$page = 1;
+		} elseif ($page > 1) {
+			$kmHref .= "?page=$page";
+		}
+		while ($kmHref != null) {
+			$killmails = CrestTools::getJSON($kmHref);
 
-    $war['lastCrestUpdate'] = $mdb->now();
-    $war['id'] = $id;
-    $war['finished'] = false;
-    $mdb->insertUpdate('information', ['type' => 'warID', 'id' => $id], $war);
+			foreach ($killmails['items'] as $kill) {
+				$href = $kill['href'];
+				$exploded = explode('/', $href);
+				$killID = (int) $exploded[4];
+				$hash = $exploded[5];
 
-    $prevKills = @$warRow['agrShipsKilled'] + @$warRow['dfdShipsKilled'];
-    $currKills = $war['aggressor']['shipsKilled'] + $war['defender']['shipsKilled'];
-
-    // Don't fetch killmail api for wars with no kill count change
-    if ($prevKills != $currKills) {
-        $kmHref = $war['killmails'];
-        $page = floor($mdb->count('warmails', ['warID' => $id]) / 2000);
-        if ($page == 0) {
-            $page = 1;
-        } elseif ($page > 1) {
-            $kmHref .= "?page=$page";
-        }
-        while ($kmHref != null) {
-            $killmails = CrestTools::getJSON($kmHref);
-
-            foreach ($killmails['items'] as $kill) {
-                $href = $kill['href'];
-                $exploded = explode('/', $href);
-                $killID = (int) $exploded[4];
-                $hash = $exploded[5];
-
-                $mdb->insertUpdate('warmails', ['warID' => $id, 'killID' => $killID]);
-                if (!$mdb->exists('crestmails',  ['killID' => $killID, 'hash' => $hash])) {
-                    $mdb->insert('crestmails', ['killID' => (int) $killID, 'hash' => $hash], ['processed' => false]);
-                    Util::out("New WARmail $killID");
-                }
-            }
-            $next = @$killmails['next']['href'];
-            if ($next != $kmHref) {
-                $kmHref = $next;
-            } else {
-                $kmHref = null;
-            }
-        }
-    }
+				$mdb->insertUpdate('warmails', ['warID' => $id, 'killID' => $killID]);
+				if (!$mdb->exists('crestmails',  ['killID' => $killID, 'hash' => $hash])) {
+					$mdb->insert('crestmails', ['killID' => (int) $killID, 'hash' => $hash, 'processed' => false, 'source' => 'war', 'added' => Mdb::now()]);
+					Util::out("New WARmail $killID");
+				}
+			}
+			$next = @$killmails['next']['href'];
+			if ($next != $kmHref) {
+				$kmHref = $next;
+			} else {
+				$kmHref = null;
+			}
+		}
+	}
 }

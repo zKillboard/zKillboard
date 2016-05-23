@@ -6,11 +6,8 @@ global $fetchWars;
 
 if ($fetchWars == null || $fetchWars == false) exit();
 
-// Run once an hour
-$minute = (int) date('i');
-if ($minute != 0) {
-    exit();
-}
+$key = "tqFetchWars";
+if ($redis->get($key) == true) exit();
 
 $page = ceil($mdb->count('information', ['type' => 'warID']) / 2000);
 if ($page == 0) {
@@ -32,3 +29,5 @@ do {
     }
     sleep(5);
 } while ($next != null);
+
+$redis->setex($key, 3600, true);
