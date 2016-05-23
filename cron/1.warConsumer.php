@@ -1,18 +1,5 @@
 <?php
 
-/*for ($i = 0; $i < 15; ++$i) {
-    $pid = pcntl_fork();
-    if ($pid == -1) {
-        exit();
-    }
-    if ($pid == 0) {
-        break;
-    }
-}
-if ($pid != 0) {
-    exit();
-}*/
-
 require_once '../init.php';
 
 $timer = new Timer();
