@@ -37,4 +37,11 @@ class RedisQueue
 
 		$redis->del($this->queueName);
 	}
+
+	public function size()
+	{
+		global $redis;
+
+		return $redis->lLen($this->queueName);
+	}
 }
