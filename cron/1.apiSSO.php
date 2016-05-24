@@ -116,7 +116,7 @@ while ($timer->stop() < 60000) {
 			$exists = $mdb->exists('crestmails', $killInsert);
 			if (!$exists) {
 				try {
-					$mdb->getCollection('crestmails')->save(['killID' => (int) $killID, 'hash' => $hash, 'processed' => false, 'source' => 'api', 'added' => $mdb->now()]);
+					$mdb->getCollection('crestmails')->save(['killID' => (int) $killID, 'hash' => $hash, 'processed' => false, 'source' => 'sso', 'added' => $mdb->now()]);
 					++$killsAdded;
 				} catch (MongoDuplicateKeyException $ex) {
 					// ignore it *sigh*
