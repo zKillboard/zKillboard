@@ -116,6 +116,7 @@ function getTop($title, $type) {
 	$retVal = [];
 
 	$ids = $redis->zRange("tq:ranks:weekly:$type", 0, 10);
+	if (sizeof($ids) == 0) return [];
 	foreach ($ids as $id) {
 		$retVal[] = [$type => $id, 'kills' => $redis->zScore("tq:ranks:weekly:$type:shipsDestroyed", $id)];
 	}
