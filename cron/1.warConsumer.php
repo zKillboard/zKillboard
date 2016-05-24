@@ -31,6 +31,12 @@ while ($timer->stop() < 59000) {
 	$href = "$crestServer/wars/$id/";
 	$war = CrestTools::getJSON($href);
 
+	if (!is_array($war)) {
+		// Some type of error occurred, come back later
+		$ququeWars->push($id);
+		exit();
+	}
+
 	$war['lastCrestUpdate'] = $mdb->now();
 	$war['id'] = $id;
 	$war['finished'] = false;
