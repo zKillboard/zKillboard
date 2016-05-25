@@ -33,7 +33,7 @@ while ($timer->stop() < 59000) {
 
 	if (!is_array($war)) {
 		// Some type of error occurred, come back later
-		$ququeWars->push($id);
+		$queueWars->push($id);
 		exit();
 	}
 
