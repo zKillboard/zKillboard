@@ -17,7 +17,7 @@ $timer = new Timer();
 while ($timer->stop() < 59000) {
     $killID = $queueInfo->pop();
 
-    if ($killID !== null) {
+    if ($killID != null) {
         updateInfo($killID);
         updateStatsQueue($killID);
 
