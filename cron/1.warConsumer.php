@@ -57,16 +57,18 @@ while ($timer->stop() < 59000) {
 		while ($kmHref != null) {
 			$killmails = CrestTools::getJSON($kmHref);
 
-			foreach ($killmails['items'] as $kill) {
-				$href = $kill['href'];
-				$exploded = explode('/', $href);
-				$killID = (int) $exploded[4];
-				$hash = $exploded[5];
+			if (is_array($killmails['items'])) {
+				foreach ($killmails['items'] as $kill) {
+					$href = $kill['href'];
+					$exploded = explode('/', $href);
+					$killID = (int) $exploded[4];
+					$hash = $exploded[5];
 
-				$mdb->insertUpdate('warmails', ['warID' => $id, 'killID' => $killID]);
-				if (!$mdb->exists('crestmails',  ['killID' => $killID, 'hash' => $hash])) {
-					$mdb->insert('crestmails', ['killID' => (int) $killID, 'hash' => $hash, 'processed' => false, 'source' => 'war', 'added' => Mdb::now()]);
-					Util::out("New WARmail $killID");
+					$mdb->insertUpdate('warmails', ['warID' => $id, 'killID' => $killID]);
+					if (!$mdb->exists('crestmails',  ['killID' => $killID, 'hash' => $hash])) {
+						$mdb->insert('crestmails', ['killID' => (int) $killID, 'hash' => $hash, 'processed' => false, 'source' => 'war', 'added' => Mdb::now()]);
+						Util::out("New WARmail $killID");
+					}
 				}
 			}
 			$next = @$killmails['next']['href'];
