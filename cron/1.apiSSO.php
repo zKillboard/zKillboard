@@ -16,6 +16,9 @@ while ($timer->stop() < 60000) {
 	if (sizeof($apis) == 0) sleep(1);
 	foreach ($apis as $row)
 	{
+		if (!isset($row['characterID'])) {
+			$mdb->remove("apisCrest", $row);
+		}
 		$charID = $row['characterID'];
 		$lastFetch = $row['lastFetch'];
 		if (in_array($charID, $chars)) continue;
