@@ -6,6 +6,8 @@ if (@$_SERVER['HTTP_USER_AGENT'] == "Disqus/1.0") die("");
 // Check to ensure we have a trailing slash, helps with caching
 $uri = @$_SERVER['REQUEST_URI'];
 if (substr($uri, -1) != '/') {
+	header('Access-Control-Allow-Origin: *');
+	header('Access-Control-Allow-Methods: GET');
 	header("Location: $uri/");
 	exit();
 }
