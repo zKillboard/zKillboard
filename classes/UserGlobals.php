@@ -84,7 +84,7 @@ class UserGlobals extends Twig_Extension
 
 	private function addTracker($array, $id, $name)
 	{
-		if ($id == 0) return;
+		if ($id == 0) return $array;
 		if ($array == null) $array = [];
 
 		$addIt = true;
