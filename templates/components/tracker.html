@@ -1,4 +1,4 @@
-{% if extra.canTrack and skipTracker != "yes" %}
+{% if extra.canTrack and skipTracker != "yes" and sessionusername %}
 	{% if extra.isTracked %}
 		&nbsp; <a href='/account/tracker/{{ key }}/{{ id }}/remove/'><i class="fa fa-minus" rel="tooltip" title="Remove from Tracker" style='color: gray';></i></a>
 	{% else %}

@@ -46,10 +46,10 @@
 						<li><a href="/kills/dust_vehicles/">Vehicles</a></li>
 					</ul>
 				</li>
-				{% if tracker_character or tracker_corporation or tracker_alliance or tracker_faction or tracker_ship or tracker_item or tracker_system or tracker_region %}
 				<li class="dropdown">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Tracker <b class="caret"></b></a>
 					<ul class="dropdown-menu">
+						{% if sessionusername %}
 						{% if tracker_character %}
 						<li class="dropdown-header">Characters</li>
 						{% for data in tracker_character %}
@@ -74,9 +74,11 @@
 						<li><a href="/faction/{{ data.id }}/">{{ data.name }}</a></li>
 						{% endfor %}
 						{% endif %}
+						{% else %}
+						<li>Please log in first.</li>
+						{% endif %}
 					</ul>
 				</li>
-				{% endif %}
 				<li class="hidden-xs hidden-sm"><a href="/post/">Post</a></li>
 				<li class="hidden-xs hidden-sm hidden-md"><a href="https://github.com/zKillboard/zKillboard">GitHub</a></li>
 				<!-- <li><a href="https://map.zkillboard.com/" target="_blank">Map</a></li> -->
