@@ -51,13 +51,13 @@
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Tracker <b class="caret"></b></a>
 					<ul class="dropdown-menu">
 						{% if tracker_character %}
-						<li class="dropdown-header">Pilots</li>
+						<li class="dropdown-header">Characters</li>
 						{% for data in tracker_character %}
 						<li><a href="/character/{{ data.id }}/">{{ data.name }}</a></li>
 						{% endfor %}
 						{% endif %}
 						{% if tracker_corporation %}
-						<li class="dropdown-header">Corps</li>
+						<li class="dropdown-header">Corporations</li>
 						{% for data in tracker_corporation %}
 						<li><a href="/corporation/{{ data.id }}/">{{ data.name }}</a></li>
 						{% endfor %}
@@ -72,30 +72,6 @@
 						<li class="dropdown-header">Factions</li>
 						{% for data in tracker_faction %}
 						<li><a href="/faction/{{ data.id }}/">{{ data.name }}</a></li>
-						{% endfor %}
-						{% endif %}
-						{% if tracker_ship %}
-						<li class="dropdown-header">Ships</li>
-						{% for data in tracker_ship %}
-						<li><a href="/ship/{{ data.id }}/">{{ data.name }}</a></li>
-						{% endfor %}
-						{% endif %}
-						{% if tracker_item %}
-						<li class="dropdown-header">Ships</li>
-						{% for data in tracker_item %}
-						<li><a href="/ship/{{ data.id }}/">{{ data.name }}</a></li>
-						{% endfor %}
-						{% endif %}
-						{% if tracker_system %}
-						<li class="dropdown-header">Systems</li>
-						{% for data in tracker_system %}
-						<li><a href="/system/{{ data.id }}/">{{ data.name }}</a></li>
-						{% endfor %}
-						{% endif %}
-						{% if tracker_region %}
-						<li class="dropdown-header">Regions</li>
-						{% for data in tracker_region %}
-						<li><a href="/region/{{ data.id }}/">{{ data.name }}</a></li>
 						{% endfor %}
 						{% endif %}
 					</ul>

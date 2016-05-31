@@ -93,37 +93,6 @@ if ($_POST) {
         UserConfig::set('timeago', $timeago);
     }
 
-    $deleteentityid = Util::getPost('deleteentityid');
-    $deleteentitytype = Util::getPost('deleteentitytype');
-    // Tracker
-    if (isset($deleteentityid) && isset($deleteentitytype)) {
-        $q = UserConfig::get('tracker_'.$deleteentitytype);
-        foreach ($q as $k => $ent) {
-            if ($ent['id'] == $deleteentityid) {
-                unset($q[$k]);
-                $error = $ent['name'].' has been removed';
-            }
-        }
-        UserConfig::set('tracker_'.$deleteentitytype, $q);
-    }
-
-    $entity = Util::getPost('entity');
-    $entitymetadata = Util::getPost('entitymetadata');
-    // Tracker
-    if ((isset($entity) && $entity != null) && (isset($entitymetadata) && $entitymetadata != null)) {
-        $entitymetadata = json_decode("$entitymetadata", true);
-        $entities = UserConfig::get('tracker_'.$entitymetadata['type']);
-        $entity = array('id' => $entitymetadata['id'], 'name' => $entitymetadata['name']);
-
-        if (empty($entities) || !in_array($entity, $entities)) {
-            $entities[] = $entity;
-            UserConfig::set('tracker_'.$entitymetadata['type'], $entities);
-            $error = "{$entitymetadata['name']} has been added to your tracking list";
-        } else {
-            $error = "{$entitymetadata['name']} is already being tracked";
-        }
-    }
-
     $ddcombine = Util::getPost('ddcombine');
     if (isset($ddcombine)) {
         UserConfig::set('ddcombine', $ddcombine);

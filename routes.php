@@ -93,6 +93,10 @@ $app->get('/logout/', function () use ($app) {
     include 'view/logout.php';
 });
 
+$app->get('/account/tracker/:type/:id/:action/', function ($type, $id, $action) use ($app) {
+    include 'view/account_tracker.php';
+});
+
 // Account
 $app->map('/account(/:req)(/:reqid)/', function ($req = null, $reqid = null) use ($app) {
     global $cookie_name, $cookie_time;

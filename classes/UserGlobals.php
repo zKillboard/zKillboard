@@ -46,10 +46,16 @@ class UserGlobals extends Twig_Extension
 		}
 	}
 
-	private function addTrackers(&$result, $userID)
+	public function addTrackers(&$result, $userID)
 	{
 		global $mdb;
 
+		// First, load up the current trackers
+		$this->parseTrackers($result, 'character');
+		$this->parseTrackers($result, 'corporation');
+		$this->parseTrackers($result, 'alliance');
+
+		// Second, add the character, corp, and alliance for the current account
 		$info = $mdb->findDoc("information", ['type' => 'characterID', 'id' => $userID, 'cacheTime' => 300]);
 		$charName = Info::getInfoField('characterID', $userID, 'name');
 		$corpID = (int) @$info['corporationID'];
@@ -60,6 +66,20 @@ class UserGlobals extends Twig_Extension
 		$result['tracker_character'] = $this->addTracker(@$result['tracker_character'], $userID, $charName);
 		$result['tracker_corporation'] = $this->addTracker(@$result['tracker_corporation'], $corpID, $corpName);
 		$result['tracker_alliance'] = $this->addTracker(@$result['tracker_alliance'], $alliID, $alliName);
+	}
+
+	private function parseTrackers(&$result, $type)
+	{
+		$array = @$result['tracker_' . $type];
+		if ($array == null) return;
+		$parsed = [];
+		foreach ($array as $id)
+		{
+			$id = (int) $id;
+			$name = Info::getInfoField($type . "ID", $id, "name");
+			$parsed[] = ['id' => $id, 'name' => $name];
+		}
+		$result['tracker_' . $type] = $parsed;
 	}
 
 	private function addTracker($array, $id, $name)

@@ -216,51 +216,60 @@ if (in_array($key, array('character', 'corporation'))) {
     }
 }
 
+$extra = array();
+$tracked = false;
+if (User::isLoggedIn()) {
+	$trackers = [];
+	$t = UserConfig::get("tracker_$type", []);
+	$tracked = in_array((int) $id, $t);
+}
+$extra['isTracked'] = $tracked;
+$extra['canTrack'] = in_array($type, ['character', 'corporation', 'alliance']);
+
 $cnt = 0;
 $cnid = 0;
 $stats = array();
 $totalcount = ceil(count($detail['stats']) / 4);
 if ($detail['stats'] != null) {
-    foreach ($detail['stats'] as $q) {
-        if ($cnt == $totalcount) {
-            ++$cnid;
-            $cnt = 0;
-        }
-        $stats[$cnid][] = $q;
-        ++$cnt;
-    }
+	foreach ($detail['stats'] as $q) {
+		if ($cnt == $totalcount) {
+			++$cnid;
+			$cnt = 0;
+		}
+		$stats[$cnid][] = $q;
+		++$cnt;
+	}
 }
 if ($mixedKills) {
-    $kills = Kills::mergeKillArrays($mixed, array(), $limit, $columnName, $id);
+	$kills = Kills::mergeKillArrays($mixed, array(), $limit, $columnName, $id);
 }
 
 $prevID = null;
 $nextID = null;
 
 $warID = (int) $id;
-$extra = array();
 $extra['hasWars'] = false; //Db::queryField("select count(distinct warID) count from zz_wars where aggressor = $warID or defender = $warID", "count");
 $extra['wars'] = array();
 if (false && $pageType == 'wars' && $extra['hasWars']) {
-    $extra['wars'][] = War::getNamedWars('Active Wars - Aggressor', "select * from zz_wars where aggressor = $warID and timeFinished is null order by timeStarted desc");
-    $extra['wars'][] = War::getNamedWars('Active Wars - Defending', "select * from zz_wars where defender = $warID and timeFinished is null order by timeStarted desc");
-    $extra['wars'][] = War::getNamedWars('Closed Wars - Aggressor', "select * from zz_wars where aggressor = $warID and timeFinished is not null order by timeFinished desc");
-    $extra['wars'][] = War::getNamedWars('Closed Wars - Defending', "select * from zz_wars where defender = $warID and timeFinished is not null order by timeFinished desc");
+	$extra['wars'][] = War::getNamedWars('Active Wars - Aggressor', "select * from zz_wars where aggressor = $warID and timeFinished is null order by timeStarted desc");
+	$extra['wars'][] = War::getNamedWars('Active Wars - Defending', "select * from zz_wars where defender = $warID and timeFinished is null order by timeStarted desc");
+	$extra['wars'][] = War::getNamedWars('Closed Wars - Aggressor', "select * from zz_wars where aggressor = $warID and timeFinished is not null order by timeFinished desc");
+	$extra['wars'][] = War::getNamedWars('Closed Wars - Defending', "select * from zz_wars where defender = $warID and timeFinished is not null order by timeFinished desc");
 }
 
 if ($key == 'system') {
-    $statType = 'solarSystemID';
+	$statType = 'solarSystemID';
 } elseif ($key == 'ship') {
-    $statType = 'shipTypeID';
+	$statType = 'shipTypeID';
 } else {
-    $statType = "{$key}ID";
+	$statType = "{$key}ID";
 }
 $statistics = $mdb->findDoc('statistics', ['type' => $statType, 'id' => (int) $id]);
 
 if ($key == 'corporation' || $key == 'alliance' || $key == 'faction')
 {
-    $extra['hasSupers'] = @$statistics['hasSupers'];
-    $extra['supers'] = @$statistics['supers'];
+	$extra['hasSupers'] = @$statistics['hasSupers'];
+	$extra['supers'] = @$statistics['supers'];
 }
 
 if ($key == 'character' && $pageType == 'trophies')
@@ -292,27 +301,27 @@ $statistics['prevRanks'] = $prevRanks;
 
 $groups = @$statistics['groups'];
 if (is_array($groups) and sizeof($groups) > 0) {
-    Info::addInfo($groups);
-    $g = [];
-    foreach ($groups as $group) {
-        @$g[$group['groupName']] = $group;
-    }
-    ksort($g);
+	Info::addInfo($groups);
+	$g = [];
+	foreach ($groups as $group) {
+		@$g[$group['groupName']] = $group;
+	}
+	ksort($g);
 
-    // Divide the stats into 4 columns...
-    $chunkSize = ceil(sizeof($g) / 4);
-    $statistics['groups'] = array_chunk($g, $chunkSize);
+	// Divide the stats into 4 columns...
+	$chunkSize = ceil(sizeof($g) / 4);
+	$statistics['groups'] = array_chunk($g, $chunkSize);
 } else {
-    $statistics['groups'] = null;
+	$statistics['groups'] = null;
 }
 
 $months = @$statistics['months'];
 // Ensure the months are sorted in descending order
 if (is_array($months) && sizeof($months) > 0) {
-    krsort($months);
-    $statistics['months'] = array_values($months);
+	krsort($months);
+	$statistics['months'] = array_values($months);
 } else {
-    $statistics['months'] = null;
+	$statistics['months'] = null;
 }
 
 // Collect active PVP stats
