@@ -7,54 +7,66 @@ class Info
 	 */
 	static $infoFieldCache;
 
-	public static function getInfoField($type, $id, $field)
+	public static function getRedisKey($type, $id)
 	{
-		global $mdb, $redis;
-		$key = $type . ':' . $id . ':' . $field;
-		if (isset(self::$infoFieldCache[$key])) {
-			return self::$infoFieldCache[$key];
-		}
-
-		$data = $redis->hGet("tqCache:$type:$id", $field);
-		if ($data == null) {
-			$data = $mdb->findField('information', "$field", ['type' => $type, 'id' => (int) $id, 'cacheTime' => 300]);
-		}
-		self::$infoFieldCache[$key] = $data;
-		return $data;
+		return "RC::$type:$id";
 	}
 
-	public static function getInfo($type, $id)
+	public static function loadIntoRedis($type, $id)
 	{
 		global $mdb, $redis;
 
-		$data = $redis->hGetAll("tq:$type:$id");
-		if ($data == null) {
-			$data = $mdb->findDoc('information', ['type' => $type, 'id' => (int) $id, 'cacheTime' => 300]);
+		$redisKey = self::getRedisKey($type, $id);
+		$searchType = ($type == 'shipTypeID' ? 'typeID' : $type);
+		$data = $mdb->findDoc("information", ['type' => $searchType, 'id' => (int) $id]);
+		if ($data === null) {
+			echo "$searchType $id $redisKey";
+			return false;
 		}
+
+		unset($data['_id']);
 
 		$data[$type] = (int) $id;
 		$data[str_replace('ID', 'Name', $type)] = isset($data['name']) ? $data['name'] : "$type $id";
 		switch ($type) {
 			case 'solarSystemID':
 				$data['security'] = @$data['secStatus'];
-				$data['sunTypeID'] = 3802;
-				break;
+				$data['sunTypeID'] = 3802; 
+				break;  
 			case 'characterID':
 				$data['isCEO'] = $mdb->exists('information', ['type' => 'corporationID', 'id' => (int) @$data['corporationID'], 'ceoID' => (int) $id]);
 				$data['isExecutorCEO'] = $mdb->exists('information', ['type' => 'allianceID', 'id' => (int) @$data['allianceID'], 'executorCorpID' => (int) (int) @$data['corporationID']]);
-				break;
+				break;  
 			case 'corporationID':
 				$data['cticker'] = @$data['ticker'];
-				break;
+				break;  
 			case 'shipTypeID':
 				$data['shipTypeName'] = self::getInfoField('typeID', $id, 'name');
-				break;
+				break;  
 			case 'allianceID':
 				$data['aticker'] = @$data['ticker'];
-				break;
-		}
+				break;  
+		} 
 
-		return $data;
+		$redis->hMSet($redisKey, $data);
+		$redis->expire($redisKey, 3600);
+		return true;
+	}
+
+	public static function getInfoField($type, $id, $field)
+	{
+		$data = self::getInfo($type, $id);
+		return @$data[$field];
+	}
+
+	public static function getInfo($type, $id)
+	{
+		global $redis;
+
+		$redisKey = self::getRedisKey($type, $id);
+		if (!$redis->exists($redisKey)) self::loadIntoRedis($type, $id);
+
+		return $redis->hGetAll($redisKey);
 	}
 
 	public static function getInfoDetails($type, $id)
