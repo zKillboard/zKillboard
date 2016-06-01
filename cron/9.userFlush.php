@@ -2,7 +2,7 @@
 
 require_once "../init.php";
 
-$today = date('Ymd');
+$today = date('YmdH');
 $todaysKey = "RC:userFlush:$today";
 if ($redis->get($todaysKey) == true) exit();
 
@@ -17,4 +17,4 @@ foreach ($keys as $key)
 	$userSettings['userID'] = $key;
 	$mdb->save("users", $userSettings);
 }
-$redis->setex($todaysKey, 86400, true);
+$redis->setex($todaysKey, 3600, true);
