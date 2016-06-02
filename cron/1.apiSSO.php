@@ -1,6 +1,6 @@
 <?php
 
-for ($i = 0; $i < 2; ++$i) {
+for ($i = 0; $i < 5; ++$i) {
     $pid = pcntl_fork();
     if ($pid == -1) {
         exit();
@@ -23,7 +23,7 @@ while ($timer->stop() < 60000) {
 	$apis = $mdb->find("apisCrest", ['lastFetch' => ['$lt' => (time() - 1800)]], ['lastFetch' => 1], 1000);
 
 	$tt = $t->stop();
-	if (sizeof($apis) == 0) sleep(1);
+	if (sizeof($apis) == 0) exit();
 	foreach ($apis as $row)
 	{
 		if (!isset($row['characterID'])) {
