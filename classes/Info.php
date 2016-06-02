@@ -9,7 +9,7 @@ class Info
 
 	public static function getRedisKey($type, $id)
 	{
-		return "RC::$type:$id";
+		return "info::$type:$id";
 	}
 
 	public static function loadIntoRedis($type, $id)
@@ -20,8 +20,7 @@ class Info
 		$searchType = ($type == 'shipTypeID' ? 'typeID' : $type);
 		$data = $mdb->findDoc("information", ['type' => $searchType, 'id' => (int) $id]);
 		if ($data === null) {
-			echo "$searchType $id $redisKey";
-			return false;
+			return null;
 		}
 
 		unset($data['_id']);
@@ -48,9 +47,12 @@ class Info
 				break;  
 		} 
 
-		$redis->hMSet($redisKey, $data);
-		$redis->expire($redisKey, 3600);
-		return true;
+		$multi = $redis->multi();
+		$multi->hMSet($redisKey, $data);
+		$multi->expire($redisKey, 3600);
+		$multi->exec();
+
+		return $data;
 	}
 
 	public static function getInfoField($type, $id, $field)
@@ -64,9 +66,8 @@ class Info
 		global $redis;
 
 		$redisKey = self::getRedisKey($type, $id);
-		if (!$redis->exists($redisKey)) self::loadIntoRedis($type, $id);
-
-		return $redis->hGetAll($redisKey);
+		$data = $redis->hGetAll($redisKey);
+		return ($data == null ? self::loadIntoRedis($type, $id) : $data);
 	}
 
 	public static function getInfoDetails($type, $id)
