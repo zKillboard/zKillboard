@@ -385,12 +385,23 @@ class Related
         }
     }
 
+    public static $masses = [];
+
+    public static function getMass($typeID)
+    {
+	if (!isset(self::$masses[$typeID])) {
+		$mass = (int) Info::getInfoField('typeID', $typeID, 'mass');
+		self::$masses[$typeID] = $mass;
+	}
+	return self::$masses[$typeID];
+    }
+
     public static function compareShips($a, $b)
     {
 	global $redis;
 
-        $aSize = (int) $redis->hGet("tqCache:typeID:" . @$a['shipTypeID'], "mass");
-        $bSize = (int) $redis->hGet("tqCache:typeID:" . @$b['shipTypeID'], "mass"); 
+	$aSize = self::getMass(@$a['shipTypeID']);
+	$bSize = self::getMass(@$b['shipTypeID']);
 
         return $aSize < $bSize;
     }
