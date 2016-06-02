@@ -164,11 +164,12 @@ class CrestSSO
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-		$result = curl_exec($ch);
-		$result = json_decode($result, true);
+		$raw = curl_exec($ch);
+		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		$result = json_decode($raw, true);
 		$accessToken = @$result['access_token'];
 		if ($accessToken != null) $redis->setex("$key:accessToken", 1000, $accessToken);
-		else return $result;
+		else return $httpCode;
 
 		return $accessToken;
 	}
