@@ -135,7 +135,7 @@ class CrestSSO
 		if ($charID == null) $charID = @$_SESSION['characterID'];
 		if ($sessionID == null) $sessionID = session_id();
 
-		$key = "login:$charID:$sessionID";
+		$key = "login:$charID:$sessionID:$refreshToken";
 		$accessToken = $redis->get("$key:accessToken");
 
 		if ($accessToken != null) return $accessToken;
@@ -168,8 +168,11 @@ class CrestSSO
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		$result = json_decode($raw, true);
 		$accessToken = @$result['access_token'];
-		if ($accessToken != null) $redis->setex("$key:accessToken", 1000, $accessToken);
-		else return $httpCode;
+		if ($accessToken != null) {
+			$redis->setex("$key:accessToken", 1000, $accessToken);
+		} else {
+			return $httpCode;
+		}
 
 		return $accessToken;
 	}
