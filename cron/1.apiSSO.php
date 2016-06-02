@@ -1,7 +1,16 @@
 <?php
 
-require_once "../init.php";
+for ($i = 0; $i < 2; ++$i) {
+    $pid = pcntl_fork();
+    if ($pid == -1) {
+        exit();
+    }
+    if ($pid == 0) {
+        break;
+    }
+}
 
+require_once "../init.php";
 
 $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
 $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
@@ -11,7 +20,8 @@ $timer = new Timer();
 
 while ($timer->stop() < 60000) {
 	$t = new Timer();
-	$apis = $mdb->find("apisCrest", ['lastFetch' => ['$lt' => (time() - 1800)]], ['lastFetch' => 1], 1);
+	$apis = $mdb->find("apisCrest", ['lastFetch' => ['$lt' => (time() - 1800)]], ['lastFetch' => 1], 1000);
+
 	$tt = $t->stop();
 	if (sizeof($apis) == 0) sleep(1);
 	foreach ($apis as $row)
@@ -20,6 +30,11 @@ while ($timer->stop() < 60000) {
 			$mdb->remove("apisCrest", $row);
 		}
 		$charID = $row['characterID'];
+
+		$redisKey = "canRun:sso:$charID";
+		$locked = $redis->set($redisKey, true, Array('nx', 'ex' => 30));
+		if ($locked === false) continue;
+
 		$lastFetch = $row['lastFetch'];
 		if (in_array($charID, $chars)) continue;
 		$chars[] = $charID;
@@ -36,6 +51,9 @@ while ($timer->stop() < 60000) {
 			{
 				Util::out("SSO xml unhandled error: " . $error . " - " . $accessToken['error_description']);
 			}
+			continue;
+		} else if ($accessToken === 403) {
+			$mdb->remove("apisCrest", $row);
 			continue;
 		}
 		if ($accessToken == null) { Util::out("null access token on $charID $refreshToken"); continue; }
