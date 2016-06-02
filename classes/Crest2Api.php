@@ -29,13 +29,13 @@ class Crest2Api
         $victim = array();
         $victim['shipTypeID'] = (int) $pvictim['shipType']['id'];
         $victim['characterID'] = (int) @$pvictim['character']['id'];
-        $victim['characterName'] = (string) @$pvictim['character']['name'];
+        $victim['characterName'] = (string) Info::getInfoField('characterID', @$pvictim['character']['id'], 'name');
         $victim['corporationID'] = (int) $pvictim['corporation']['id'];
-        $victim['corporationName'] = (string) @$pvictim['corporation']['name'];
+        $victim['corporationName'] = (string) Info::getInfoField('corporationID', @$pvictim['corporation']['id'], 'name');
         $victim['allianceID'] = (int) @$pvictim['alliance']['id'];
-        $victim['allianceName'] = (string) @$pvictim['alliance']['name'];
+        $victim['allianceName'] = (string) Info::getInfoField('allianceID', @$pvictim['alliance']['id'], 'name');
         $victim['factionID'] = (int) @$pvictim['faction']['id'];
-        $victim['factionName'] = (string) @$pvictim['faction']['name'];
+        $victim['factionName'] = (string) Info::getInfoField('factionID', @$pvictim['faction']['id'], 'name');
         $victim['damageTaken'] = (int) @$pvictim['damageTaken'];
 
         return $victim;
@@ -47,13 +47,13 @@ class Crest2Api
         foreach ($attackers as $attacker) {
             $aggressor = array();
             $aggressor['characterID'] = (int) @$attacker['character']['id'];
-            $aggressor['characterName'] = (string) @$attacker['character']['name'];
+            $aggressor['characterName'] = (string) Info::getInfoField('characterID', @$attacker['character']['id'], 'name');
             $aggressor['corporationID'] = (int) @$attacker['corporation']['id'];
-            $aggressor['corporationName'] = (string) @$attacker['corporation']['name'];
+            $aggressor['corporationName'] = (string) Info::getInfoField('corporationID', @$attacker['corporation']['id'], 'name');
             $aggressor['allianceID'] = (int) @$attacker['alliance']['id'];
-            $aggressor['allianceName'] = (string) @$attacker['alliance']['name'];
+            $aggressor['allianceName'] = (string) Info::getInfoField('allianceID', @$attacker['alliance']['id'], 'name');
             $aggressor['factionID'] = (int) @$attacker['faction']['id'];
-            $aggressor['factionName'] = (string) @$attacker['faction']['name'];
+            $aggressor['factionName'] = (string) @Info::getInfoField('factionID', @$attacker['faction']['id'], 'name'); 
             $aggressor['securityStatus'] = $attacker['securityStatus'];
             $aggressor['damageDone'] = (int) @$attacker['damageDone'];
             $aggressor['finalBlow'] = (int) @$attacker['finalBlow'];
