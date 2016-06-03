@@ -43,20 +43,25 @@ while ($timer->stop() < 60000) {
 		if (is_array($accessToken))
 		{
 			$error = $accessToken['error'];
-			if ($error == 'invalid_grant')
+			if ($error == 'invalid_grant' || $error == 'invalid_token')
 			{
 				$mdb->remove("apisCrest", $row);
 			}
 			else
 			{
+				Util::out(print_r($accessToken, true));
 				Util::out("SSO xml unhandled error: " . $error . " - " . $accessToken['error_description']);
 			}
 			continue;
-		} else if ($accessToken === 403) {
-			$mdb->remove("apisCrest", $row);
+		} else if ($accessToken === 403 || $accessToken === 400) {
+			$mdb->set("apisCrest", $row, ['lastFetch' => time()]);
+			//Util::out("$charID gave a $accessToken on accessToken fetch");
 			continue;
 		}
-		if ($accessToken == null) { Util::out("null access token on $charID $refreshToken"); continue; }
+		if ($accessToken == null) { 
+			Util::out("null access token on $charID $refreshToken");
+			continue;
+		}
 		$killsAdded = 0;
 
 		\Pheal\Core\Config::getInstance()->http_method = 'curl';
@@ -91,7 +96,7 @@ while ($timer->stop() < 60000) {
 				$mdb->remove("apisCrest", $row);
 				continue;
 			}
-			Util::out("Unknown error for SSO xml api - $charID - " . $ex->getMessage());
+			Util::out("Unknown error for SSO xml api - $charID - " . $ex->getMessage() . " charID: $charID accessToken $accessToken");
 			sleep(3);
 			continue;
 		}
