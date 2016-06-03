@@ -154,7 +154,7 @@ class CrestSSO
 		foreach ($fields as $arrKey => $value) {
 			$fields_string .= $arrKey.'='.$value.'&';
 		}
-		rtrim($fields_string, '&');
+		$fields_string = rtrim($fields_string, '&');
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_USERAGENT, CrestSSO::$userAgent);
