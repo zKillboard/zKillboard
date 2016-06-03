@@ -46,26 +46,6 @@ if ($ip != "127.0.0.1") {
 }
 
 $load = Load::getLoad();
-$isHardened = $redis->get("zkb:isHardened");
-if ($ip != "127.0.0.1" && $_SERVER['REQUEST_METHOD'] == 'GET' && ($isHardened || $load >= $loadTripValue)) {
-	if ($redis->ttl("zkb:isHardened") < 1) $redis->setex("zkb:isHardened", $loadTripTime, true);
-	$qServer = new RedisQueue('queueServer');
-	$qServer->push($_SERVER);
-
-	$iterations = 0;
-	while ($iterations <= 10) {
-		$contents = $redis->get("cache:$uri");
-		if ($contents !== false) {
-			if ($contents == "reject") header("Location: /");
-			else echo $contents;
-			exit();
-		}
-		$iterations++;
-		usleep($iterations * 100000);
-	}
-	header("Location: .");
-	exit();
-}
 
 // Theme
 $theme = UserConfig::get('theme', 'cyborg');
