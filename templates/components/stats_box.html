@@ -66,6 +66,35 @@
                         {% endif %}
 			</th>
 	</tr>
+	{% if extra.dangerRatio is defined %}
+	<tr>
+		<table style='width: 100%; opacity: 0.50;'>
+		<tr>
+			<td style='width: 50%; padding: 3px;' colspan='2'>
+			<div class="progress" style='width: 100%; margin-bottom: 0px;'>
+				{% set ratio = extra.dangerRatio %}
+				{% set iRatio = 100 - ratio %}
+  				<div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="{{ ratio }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ ratio }}%; background-color: #A90707;">{% if ratio > 10%}{{ ratio }}%{% endif %}</div>
+  				<div class="progress-bar" role="progressbar" aria-valuenow="{{ iRatio }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ iRatio }}%; background-color: #007800;">{% if iRatio > 10 %}{{ iRatio}}%{% endif %}</div>
+			</div>
+				<span class='red'>Dangerous</span>
+				<span class='pull-right green'>Snuggly</span>
+			</td>
+			<td style='width: 50%; padding: 3px;' colspan='2'>
+                        <div class="progress" style='width: 100%; margin-bottom: 0px;'>
+                                {% set ratio = extra.gangFactor %}
+                                {% set iRatio = 100 - ratio %}
+                                <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="{{ ratio }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ ratio }}%;  background-color: #A90707;">{% if ratio > 10%}{{ ratio }}%{% endif %}</div>
+                                <div class="progress-bar" role="progressbar" aria-valuenow="{{ iRatio }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ iRatio }}%; background-color: #007800;">{% if iRatio > 10 %}{{ iRatio}}%{% endif %}</div>
+                        </div>
+                                <span class='red'>Gangs</span>
+                                <span class='pull-right green'>Solo</span>
+                        </td>
+			</td>
+		</tr>
+		</table>
+	</tr>
+	{% endif %}
 	</tbody>
 </table>
 {% endif %}

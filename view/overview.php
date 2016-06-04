@@ -212,7 +212,7 @@ if (in_array($key, array('character', 'corporation'))) {
         $apiVerified = $apiVerifiedSet->getTime((int) @$detail['corporationID']);
     }
     if ($apiVerified != null) {
-        $nextApiCheck = date('H:i', $apiVerified + 3600);
+        $nextApiCheck = date('H:i', $apiVerified);
     }
 }
 
@@ -265,6 +265,22 @@ if ($key == 'system') {
 	$statType = "{$key}ID";
 }
 $statistics = $mdb->findDoc('statistics', ['type' => $statType, 'id' => (int) $id]);
+
+if (@$statistics["shipsLost"] > 0) {
+	$destroyed = @$statistics['shipsDestroyed']  + @$statistics['pointsDestroyed'];
+	$lost = @$statistics['shipsLost'] + @$statistics['pointsLost'];
+	if ($destroyed > 0 && $lost > 0) {
+		$ratio = floor(($destroyed / ($lost + $destroyed)) * 100);
+		$extra['dangerRatio'] = $ratio;
+		$extra['dangerRatioI'] = 100 - $ratio;
+	}
+}
+if (@$statistics["shipsDestroyed"] > 0) {
+	$gangFactor = floor(@$statistics['pointsDestroyed'] / @$statistics['shipsDestroyed'] * 10 / 2);
+	$gangFactor = max(0, min(100, 100 - $gangFactor));
+	$extra['gangFactor'] = $gangFactor;
+}
+
 
 if ($key == 'corporation' || $key == 'alliance' || $key == 'faction')
 {
