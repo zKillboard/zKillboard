@@ -134,6 +134,7 @@ class CrestSSO
 
 		if ($charID == null) $charID = @$_SESSION['characterID'];
 		if ($sessionID == null) $sessionID = session_id();
+		if ($refreshToken == null) $refreshToken = $redis->get("login:$charID:$sessionID:refreshToken");
 
 		$key = "login:$charID:$sessionID:$refreshToken";
 		$accessToken = $redis->get("$key:accessToken");
