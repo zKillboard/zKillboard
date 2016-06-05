@@ -7,13 +7,9 @@ global $redis;
 $key = date('YmdH');
 if ($redis->get($key) == true) exit();
 
-if (date('H') == 10) {
-	// Purge, just in case of name changes and what not
-	$keys = $redis->keys("search:*");
-	foreach ($keys as $key) $redis->del($key);
-}
-
 $entities = $mdb->getCollection('information')->find();
+
+$toMove = [];
 
 foreach ($entities as $entity) {
 	$type = $entity['type'];
@@ -48,8 +44,22 @@ foreach ($entities as $entity) {
 			break;
 	}
 
-	if (!$isShip) $redis->zAdd("search:$type", 0, trim(strtolower($name)) . "\x00$id");
-	if (strlen($flag) > 0) $redis->zAdd("search:$type:flag", 0, strtolower("$flag\x00$id"));
+	if (!$isShip) {
+		$setKey = "s:search:$type";
+		$toMove[$setKey] = true;
+		$redis->zAdd($setKey, 0, trim(strtolower($name)) . "\x00$id");
+	}
+	if (strlen($flag) > 0) {
+		$setKey = "s:search:$type:flag";
+		$toMove[$setKey] = true;
+		$redis->zAdd($setKey, 0, strtolower("$flag\x00$id"));
+	}
+}
+
+foreach ($toMove as $setKey => $set) {
+	$newName = substr($setKey, 2);
+	echo "$setKey $newName\n";
+	$redis->rename($setKey, substr($setKey, 2));
 }
 
 $redis->setex($key, 3600, true);
