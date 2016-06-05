@@ -272,7 +272,6 @@ if (@$statistics["shipsLost"] > 0) {
 	if ($destroyed > 0 && $lost > 0) {
 		$ratio = floor(($destroyed / ($lost + $destroyed)) * 100);
 		$extra['dangerRatio'] = $ratio;
-		$extra['dangerRatioI'] = 100 - $ratio;
 	}
 }
 if (@$statistics["shipsDestroyed"] > 0) {
