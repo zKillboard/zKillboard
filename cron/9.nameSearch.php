@@ -58,7 +58,6 @@ foreach ($entities as $entity) {
 
 foreach ($toMove as $setKey => $set) {
 	$newName = substr($setKey, 2);
-	echo "$setKey $newName\n";
 	$redis->rename($setKey, substr($setKey, 2));
 }
 
