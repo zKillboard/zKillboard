@@ -37,96 +37,107 @@ class CrestSSO
 	public static function callback()
 	{
 		global $mdb, $app, $redis, $ccpClientID, $ccpSecret;
+		try {
 
-		$charID = @$_SESSION['characterID'];
-		$hash = @$_SESSION['characterHash'];
+			$charID = @$_SESSION['characterID'];
+			$hash = @$_SESSION['characterHash'];
 
-		if ($charID != null && $hash != null) {
-			$value = $redis->get("login:$charID:$hash");
-			if ($value == true) {
-				$app->redirect('/', 302);
-				exit();
+			if ($charID != null && $hash != null) {
+				$value = $redis->get("login:$charID:$hash");
+				if ($value == true) {
+					$app->redirect('/', 302);
+					exit();
+				}
 			}
-		}
 
-		$url = 'https://login.eveonline.com/oauth/token';
-		$verify_url = 'https://login.eveonline.com/oauth/verify';
-		$header = 'Authorization: Basic '.base64_encode($ccpClientID.':'.$ccpSecret);
-		$fields_string = '';
-		$fields = array(
-				'grant_type' => 'authorization_code',
-				'code' => $_GET['code'],
-			       );
-		foreach ($fields as $key => $value) {
-			$fields_string .= $key.'='.$value.'&';
-		}
-		rtrim($fields_string, '&');
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_USERAGENT, CrestSSO::$userAgent);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array($header));
-		curl_setopt($ch, CURLOPT_POST, count($fields));
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-		$result = curl_exec($ch);
+			$url = 'https://login.eveonline.com/oauth/token';
+			$verify_url = 'https://login.eveonline.com/oauth/verify';
+			$header = 'Authorization: Basic '.base64_encode($ccpClientID.':'.$ccpSecret);
+			$fields_string = '';
+			$fields = array(
+					'grant_type' => 'authorization_code',
+					'code' => $_GET['code'],
+				       );
+			foreach ($fields as $key => $value) {
+				$fields_string .= $key.'='.$value.'&';
+			}
+			rtrim($fields_string, '&');
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $url);
+			curl_setopt($ch, CURLOPT_USERAGENT, CrestSSO::$userAgent);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array($header));
+			curl_setopt($ch, CURLOPT_POST, count($fields));
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+			$result = curl_exec($ch);
 
-		if ($result === false) {
-			auth_error(curl_error($ch));
-		}
-		curl_close($ch);
-		$response = json_decode($result);
-		$access_token = $response->access_token;
-		$refresh_token = $response->refresh_token;
-		$ch = curl_init();
-		// Get the Character details from SSO
-		$header = 'Authorization: Bearer '.$access_token;
-		curl_setopt($ch, CURLOPT_URL, $verify_url);
-		curl_setopt($ch, CURLOPT_USERAGENT, CrestSSO::$userAgent);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array($header));
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-		$result = curl_exec($ch);
-		if ($result === false) {
-			auth_error(curl_error($ch));
-		}
-		curl_close($ch);
-		$response = json_decode($result);
-		if (!isset($response->CharacterID)) {
-			auth_error('No character ID returned');
-		}
-		if (strpos(@$response->Scopes, "publicData") === false) {
-			auth_error('Expected at least publicData scope but did not get it.');
-		}
-		// Lookup the character details in the DB.
-		$userdetails = $mdb->findDoc('information', ['type' => 'characterID', 'id' => (int) $response->CharacterID, 'cacheTime' => 0]);
-		if (!isset($userdetails['name'])) {
-			if ($userdetails == null) $mdb->save('information', ['type' => 'characterID', 'id' => (int) $response->CharacterID, 'name' => $response->CharacterName]);
-		}
-		Log::log("Logged in: " . (isset($userdetails['name']) ? $userdetails['name'] : $response->CharacterID));
+			if ($result === false) {
+				auth_error(curl_error($ch));
+			}
+			curl_close($ch);
+			$response = json_decode($result);
+			$access_token = $response->access_token;
+			$refresh_token = $response->refresh_token;
+			$ch = curl_init();
+			// Get the Character details from SSO
+			$header = 'Authorization: Bearer '.$access_token;
+			curl_setopt($ch, CURLOPT_URL, $verify_url);
+			curl_setopt($ch, CURLOPT_USERAGENT, CrestSSO::$userAgent);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array($header));
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+			$result = curl_exec($ch);
+			if ($result === false) {
+				auth_error(curl_error($ch));
+			}
+			curl_close($ch);
+			$response = json_decode($result);
+			if (!isset($response->CharacterID)) {
+				auth_error('No character ID returned');
+			}
+			if (strpos(@$response->Scopes, "publicData") === false) {
+				auth_error('Expected at least publicData scope but did not get it.');
+			}
+			// Lookup the character details in the DB.
+			$userdetails = $mdb->findDoc('information', ['type' => 'characterID', 'id' => (int) $response->CharacterID, 'cacheTime' => 0]);
+			if (!isset($userdetails['name'])) {
+				if ($userdetails == null) $mdb->save('information', ['type' => 'characterID', 'id' => (int) $response->CharacterID, 'name' => $response->CharacterName]);
+			}
+			Log::log("Logged in: " . (isset($userdetails['name']) ? $userdetails['name'] : $response->CharacterID));
 
-		$key = "login:" . $response->CharacterID . ":" . session_id();
-		$redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);
-		$redis->setex("$key:accessToken", 1000, $access_token);
-		$redis->setex("$key:scopes", (86400 * 14), @$response->Scopes);
-		$scopes = explode(" ", @$response->Scopes);
-		if (in_array("characterKillsRead", $scopes))
-		{
-			$mdb->save("apisCrest", ['characterID' => $response->CharacterID, 'refreshToken' => $refresh_token, 'lastFetch' => 0]);
+			$key = "login:" . $response->CharacterID . ":" . session_id();
+			$redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);
+			$redis->setex("$key:accessToken", 1000, $access_token);
+			$redis->setex("$key:scopes", (86400 * 14), @$response->Scopes);
+			$scopes = explode(" ", @$response->Scopes);
+			if (in_array("characterKillsRead", $scopes))
+			{
+				$mdb->save("apisCrest", ['characterID' => $response->CharacterID, 'refreshToken' => $refresh_token, 'lastFetch' => 0]);
+			}
+
+			$_SESSION['characterID'] = $response->CharacterID;
+			$_SESSION['characterName'] = $response->CharacterName;
+			session_write_close();
+
+			$redirect = @$_GET['state'];
+			if ($redirect == '') $redirect = '/';
+			else if (substr($redirect, 0, 9) == 'redirect:') $redirect = '/';
+			if ($redirect == '/') {
+				$sessID = session_id();
+				$forward = $redis->get("forward:$sessID");
+				$redis->del("forward:$sessID");
+				if ($forward !== null) $redirect = $forward;
+			}
+			header('Location: ' . $redirect, 302);
+
+			exit();
+		} catch (Exception $ex) {
+			echo "Something odd happened with the callback from CCP's SSO!";
+			print_r($ex, true);
 		}
-
-		$_SESSION['characterID'] = $response->CharacterID;
-		$_SESSION['characterName'] = $response->CharacterName;
-		session_write_close();
-
-		$redirect = @$_GET['state'];
-		if ($redirect == '') $redirect = '/';
-		else if (substr($redirect, 0, 9) == 'redirect:') $redirect = '/';
-		header('Location: ' . $redirect, 302);
-
-		exit();
 	}
 
 	public static function getAccessToken($charID = null, $sessionID = null, $refreshToken = null) {
