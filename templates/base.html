@@ -211,5 +211,15 @@
                 </div>
         </div>
 </div>
+{% set message = getMessage() %}
+{% if message %}
+{{ message }}
+<script type="text/javascript">
+$(document).ready(function() {
+	$("#modalMessageBody").html("{{ message }}");
+	$("#modalMessage").modal('show');
+});
+</script>
+{% endif %}
 	</body>
 </html>

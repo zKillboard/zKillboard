@@ -2,102 +2,124 @@
 
 class User
 {
-    public static function setLogin($username, $password, $autoLogin)
-    {
-        return true;
-    }
+	public static function setLogin($username, $password, $autoLogin)
+	{
+		return true;
+	}
 
-    public static function checkLogin($username, $password)
-    {
-        return false;
-    }
+	public static function checkLogin($username, $password)
+	{
+		return false;
+	}
 
-    public static function checkLoginHashed($userID)
-    {
-	return null;
-    }
+	public static function checkLoginHashed($userID)
+	{
+		return null;
+	}
 
-    public static function autoLogin()
-    {
-        return false;
-    }
+	public static function autoLogin()
+	{
+		return false;
+	}
 
-    public static function isLoggedIn()
-    {
-	
-	return (int) @$_SESSION['characterID'] != null;
-    }
+	public static function isLoggedIn()
+	{
 
-    /**
-     * @return array|null
-     */
-    public static function getUserInfo()
-    {
-	global $redis, $mdb;
-	$id = self::getUserID();
-        $info = $redis->hGetAll("user:$id");
-	$info['username'] = $mdb->findField('information', 'name', ['type' => 'characterID', 'id' => (int) $id, 'cacheTime' => 300]);
-	return $info;
-    }
+		return (int) @$_SESSION['characterID'] != null;
+	}
 
-    /**
-     * @return int
-     */
-    public static function getUserID()
-    {
-         return (int) @$_SESSION['characterID'];
-    }
+	/**
+	 * @return array|null
+	 */
+	public static function getUserInfo()
+	{
+		global $redis, $mdb;
+		$id = self::getUserID();
+		$info = $redis->hGetAll("user:$id");
+		$info['username'] = $mdb->findField('information', 'name', ['type' => 'characterID', 'id' => (int) $id, 'cacheTime' => 300]);
+		return $info;
+	}
 
-    /**
-     * @return bool
-     */
-    public static function isModerator()
-    {
-	global $redis;
-	$id = self::getUserID();
-	return $redis->hGet("user:$id", "moderator") == 'true';
-    }
+	/**
+	 * @return int
+	 */
+	public static function getUserID()
+	{
+		return (int) @$_SESSION['characterID'];
+	}
 
-    /**
-     * @return bool
-     */
-    public static function isAdmin()
-    {
-	return false;
-    }
+	/**
+	 * @return bool
+	 */
+	public static function isModerator()
+	{
+		global $redis;
+		$id = self::getUserID();
+		return $redis->hGet("user:$id", "moderator") == 'true';
+	}
 
-    /**
-     * @param int $userID
-     *
-     * @return string
-     */
-    public static function getUsername($userID)
-    {
-        return null;
-    }
+	/**
+	 * @return bool
+	 */
+	public static function isAdmin()
+	{
+		return false;
+	}
 
-    /**
-     * @param int $userID
-     *
-     * @return array|null
-     */
-    public static function getSessions($userID)
-    {
-        return null; 
-    }
+	/**
+	 * @param int $userID
+	 *
+	 * @return string
+	 */
+	public static function getUsername($userID)
+	{
+		return null;
+	}
 
-    public static function getBalance($userID)
-    {
-	return 0;
-    }
+	/**
+	 * @param int $userID
+	 *
+	 * @return array|null
+	 */
+	public static function getSessions($userID)
+	{
+		return null; 
+	}
 
-    public static function getPaymentHistory($userID)
-    {
-        return [];
-    }
+	public static function getBalance($userID)
+	{
+		return 0;
+	}
 
-    public static function getUserTrackerData()
-    {
-	return [];
-    }
+	public static function getPaymentHistory($userID)
+	{
+		return [];
+	}
+
+	public static function getUserTrackerData()
+	{
+		return [];
+	}
+
+	public static function sendMessage($message, $userID = null)
+	{
+		global $redis;
+
+		if ($userID == null) $userID = User::getUserID();
+
+		$redisKey = "message:$userID";
+		$redis->rpush($redisKey, $message);
+		$redis->expire($redisKey, 3600);
+	}
+
+	public static function getMessage($userID = null)
+	{
+		global $redis;
+
+		if ($userID == null) $userID = User::getUserID();
+
+		$redisKey = "message:$userID";
+		$message = $redis->lpop($redisKey);
+		return $message;
+	}
 }
