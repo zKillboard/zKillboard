@@ -69,8 +69,8 @@ while ($iterations++ <= 1200) {
     $mem = $info['used_memory_human'];
 
     $stats = $mdb->getDb()->command(['dbstats' => 1]);
-    $dataSize = number_format($stats['dataSize'] / (1024 * 1024 * 1024), 2);
-    $storageSize = number_format($stats['storageSize'] / (1024 * 1024 * 1024), 2);
+    $dataSize = number_format(($stats['dataSize'] + $stats['indexSize']) / (1024 * 1024 * 1024), 2);
+    $storageSize = number_format(($stats['storageSize'] + $stats['indexStorageSize'])/ (1024 * 1024 * 1024), 2);
 
     $memory = getSystemMemInfo();
     $memTotal = number_format($memory['MemTotal'] / (1024 * 1024), 2);
