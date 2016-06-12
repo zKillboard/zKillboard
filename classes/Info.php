@@ -620,18 +620,26 @@ class Info
 			}
 			$multi->exec();
 		}
-		$distances = [];
+		$minDistance = null;
+		$returnID = null;
 		$itemIDs = $redis->hGetAll($key);
 		foreach ($itemIDs as $itemID=>$v) {
 			$row = $redis->hGetAll("tqItemID:$itemID");
 
 			$distance = sqrt(pow($row['x'] - $x, 2) + pow($row['y'] - $y, 2) + pow($row['z'] - $z, 2));
-			$distances[$itemID] = $distance;
-		}
-		asort($distances);
-		reset($distances);
-		$itemID = key($distances);
 
-		return $itemID;
+			if($minDistance === null) {
+				// Initialize with the first value we find
+				$minDistance = $distance;
+				$returnID = $itemID;
+			}
+			elseif($distance <= $minDistance) {
+				// Overwrite with the lowest distance we found so far
+				$minDistance = $distance;
+				$returnID = $itemID;
+			}
+		}
+
+		return $returnID;
 	}
 }
