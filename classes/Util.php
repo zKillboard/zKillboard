@@ -452,6 +452,9 @@ class Util
 
 		$row = $redis->hGetAll("tqItemID:$locationID");
 		if ($row === null) return 0;
+		if (!isset($row['x'])) return 0;
+		if (!isset($row['y'])) return 0;
+		if (!isset($row['z'])) return 0;
 		$distance = sqrt(pow($row['x'] - $x, 2) + pow($row['y'] - $y, 2) + pow($row['z'] - $z, 2));
 
 		return $distance;
