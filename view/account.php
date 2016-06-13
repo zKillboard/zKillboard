@@ -8,7 +8,7 @@ if (!User::isLoggedIn()) {
 }
 
 $userID = User::getUserID();
-$key = 'me';
+$key = 'sitesettings';
 $error = '';
 
 $bannerUpdates = array();

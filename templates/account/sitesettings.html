@@ -1,9 +1,6 @@
 <div class="row">
 	<div class="col-lg-6">
-		<h3>Skin / Theme</h3>
-		<div class="well">
-			<h4>Skin</h4>
-			<div class="row">
+		<h3>Theme</h3>
 				<form class="form-horizontal" name="styles" method="post" action="/account/sitesettings/">
 					<div class="form-group col-lg-3">
 						<select name="style" class="form-control input-sm">
@@ -15,16 +12,13 @@
 						</select>
 					</div>
 					<div class="form-group col-lg-2">
-						<input type="submit" class="btn btn-primary btn-sm" value="Set skin">
+					&nbsp;	<input type="submit" class="btn btn-primary btn-sm" value="Set">
 					</div>
 				</form>
-			</div>
-		</div>
-	</div>
+				<p>Site's default is 'cyborg'</p>
 
-	<div class="col-lg-6">
+		<div class="clearfix"></div>
 		<h3>Show Disqus</h3>
-		<div class="well">
 			<form class="form-horizontal" name="turnonofftimestamps" method="post" action="/account/sitesettings/">
 				<div class="form-group col-lg-3">
 					<select name="showDisqus" class="form-control input-sm">
@@ -36,7 +30,7 @@
 					</select>
 				</div>
 				<div class="form-group col-lg-2">
-					<input type="submit" class="btn btn-primary btn-sm" value="Set">
+				&nbsp;	<input type="submit" class="btn btn-primary btn-sm" value="Set">
 				</div>
 			</form>
 			<p>If on, display Disqus.  If off, don't display it.</p>
