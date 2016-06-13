@@ -127,6 +127,7 @@ $data['stylesAvailable'] = Util::availableStyles();
 $data['currentStyle'] = UserConfig::get('style');
 
 $data['apiKeys'] = Api::getKeys($userID);
+$data['apiSsoKeys'] = Api::getSsoKeys($userID);
 $data['apiChars'] = Api::getCharacters($userID);
 $charKeys = Api::getCharacterKeys($userID);
 $charKeys = Info::addInfo($charKeys);

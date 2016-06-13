@@ -40,17 +40,21 @@ class Api
     public static function deleteKey($keyID)
     {
         global $mdb;
-        $keyID = (int) $keyID;
 
-        $userID = (int) user::getUserID();
+        $userID = (int) User::getUserID();
         if ($userID == null) {
             return 'You do not have access to remove any keys.';
         }
 
-        $result = $mdb->remove('apis', ['keyID' => $keyID, 'userID' => $userID]);
+        $result = $mdb->remove('apis', ['keyID' => (int) $keyID, 'userID' => $userID]);
         if ($result['n'] > 0) {
-            $mdb->remove('apiCharacters', ['keyID' => $keyID]);
+            $mdb->remove('apiCharacters', ['keyID' => (int) $keyID]);
         }
+	try {
+		$mdb->remove('apisCrest', ['_id' => new MongoID("$keyID"), 'characterID' => $userID]);
+	} catch (Exception $ex) {
+		// Just ignore it
+	}
 
         return "$keyID has been deleted";
     }
@@ -72,6 +76,20 @@ class Api
 
         return $retVal;
     }
+
+    public static function getSsoKeys($userID = 0)
+    {
+	global $mdb;
+
+	$retVal = [];
+	$result = $mdb->find("apisCrest", ['characterID' => $userID]);
+	foreach ($result as $row) {
+		$row['lastValidation'] = date('Y/m/d H:i', $row['lastFetch']);
+		$retVal[] = $row;
+	}
+	return $retVal;
+    }
+
 
     public static function getCharacterKeys($userID)
     {
