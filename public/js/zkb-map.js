@@ -3678,6 +3678,7 @@ function ColourGradient() {
                         if (typeof _this.debug === "function") {
                             _this.debug("did not receive server activity for the last " + delta + "ms");
                         }
+console.log('websocket closed (heartbeat)');
                         return _this.ws.close();
                     }
                 });
@@ -4565,9 +4566,7 @@ TWEEN.Interpolation = {
             systemId = kill.killmail.solarSystem.id;
             solarSystem = this.displayedSolarSystems[systemId];
             if (!solarSystem) {
-console.log('no solarSystem');
-console.log(kill);
-                return;
+		return this.addToKillLog(kill);
             }
             currentPing = this.solarSystemPings[systemId] || {};
             if (!currentPing.glow) {
@@ -4641,14 +4640,19 @@ console.log(kill);
             try {
                 this.client = new WebSocket(this.options.killFeedWebsocket);
                 return this.client.onmessage = function(event) {
-                    var kill;
-                    kill = JSON.parse(event.data);
-                    if (_this.killsReceivedFilter[kill.killID]) {
-                        return;
-                    }
-                    _this.killsReceivedFilter[kill.killID] = true;
-		    var o = _this.ping(kill);
-                    return o;
+		    try {
+                    	var kill;
+                    	kill = JSON.parse(event.data);
+                    	if (_this.killsReceivedFilter[kill.killID]) {
+                    	    return;
+                    	}
+                    	_this.killsReceivedFilter[kill.killID] = true;
+		    	var o = _this.ping(kill);
+                    	return o;
+		    } catch (error) { 
+			console.error(error);
+			return;
+		    }
                 };
             } catch (_error) {
                 e = _error;
@@ -4657,6 +4661,7 @@ console.log(kill);
         };
         ZKBMap.prototype.infoPopupLocation = function(systemId) {
             var css, position, projected, scaleX, scaleY;
+	try {
             position = this.displayedSolarSystems[systemId].position.clone();
             projected = this.projector.projectVector(position, this.camera);
             scaleX = (projected.x + 1) / 2;
@@ -4665,6 +4670,11 @@ console.log(kill);
                 top: this.options.container.innerHeight() * scaleY,
                 left: this.options.container.innerWidth() * scaleX
             };
+	} catch (error) { 
+
+		console.log('position error - moving on');
+		return css = { top: 100000, left: 10000};
+		}
         };
         return ZKBMap;
     })();
