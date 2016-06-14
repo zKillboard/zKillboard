@@ -39,5 +39,4 @@ if ($message == null && $xmlFailure->count() > (10 * $xmlSuccess->count())) {
 	$message = "Issues accessing Killmail XML API - Killmails won't populate from API at this time - $s Successful / $f Failed calls in last 5 minutes";
 }
 
-if ($message == '') $message = 'FYI - there is currently an issue with CREST causing some killmails to have errors and zKillboard cannot pull them.';
 $redis->setex("tq:crestStatus", 300, $message);

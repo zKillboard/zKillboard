@@ -5,6 +5,14 @@
 
 {% block content %}
 <div style="width: 100%; height: 100%; position: fixed; left: 0px; top: 50px; bottom: 0; background-color: black;" id="map-container"></div>
+<span style="position: fixed; right: 125px; top: 0px; z-index: 10" id='notfullscreen'>
+<a href="#" onClick="$('#map-container').css('top', '50px'); $('#notfullscreen').hide(); $('#fullscreen').show(); console.log('!fs done'); return false;"><span style='color: gray;' class="glyphicon glyphicon-remove-circle"></span></a>
+</span>
+
+<span style="position: fixed; right: 125px; top: 55px; z-index: 10" id='fullscreen'>
+<a href="#" onClick="$('#map-container').css('top', 0); $('#notfullscreen').show(); $('#fullscreen').hide(); console.log('fs done'); return false;"><span style='color: gray;' class="glyphicon glyphicon-fullscreen"></span></a>
+</span>
+
 {% endblock %}
 
 {% block script %}
@@ -13,7 +21,8 @@
     <script src="/js/zkb-map.js"></script>
     <script>
         $(document).ready(function() {
-      map = $('#map-container').ZKBMap({
+        $('#notfullscreen').hide();
+        map = $('#map-container').ZKBMap({
         colorSteps: 20,
         killFlareSize: 85,
         killFlareDuration: 1000,

@@ -3,7 +3,7 @@
 $data = array();
 
 $data['map'] = array(
-    'Realtime Map' => 'https://map.zkillboard.com',
+    'Realtime Map' => 'https://zkillboard.com/map/',
     );
 
 $data['kills'] = array(
