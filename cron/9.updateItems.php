@@ -15,7 +15,7 @@ $hour24 = $mdb->now(-86400);
 $rows = $mdb->find("information", ['type' => 'typeID', 'lastCrestUpdate' => ['$lt' => $hour24]]);
 foreach ($rows as $row) {
 	$typeID = (int) $row['id'];
-	$crest = CrestTools::getJSON("$crestServer/types/$typeID/");
+	$crest = CrestTools::getJSON("$crestServer/inventory/types/$typeID/");
 
 	foreach ($assign as $key) {
 		if (isset($crest[$key])) $row[$key] = $crest[$key];

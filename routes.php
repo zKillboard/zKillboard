@@ -13,6 +13,11 @@ $app->get('/kills.html/', function ($page = 'about') use ($app) {
 die("<script type='text/javascript'>location.reload();</script>");
 });
 
+// Map
+$app->get('/map/', function() use ($app) {
+        $app->render('map.html', ['showAds' => false]);
+});
+
 //  Information about zKillboard
 $app->get('/information/(:page/)', function ($page) use ($app) {
     include 'view/information.php';

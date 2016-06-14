@@ -37,7 +37,7 @@ while ($timer->stop() < 59000) {
 				continue;
 		}
 		if (in_array($killmail, [415, 500, '', null])) {
-				$crestmails->update($crestmail, array('$set' => array('processed' => null, 'error' => 'Error 415, 500, or null')));
+				$crestmails->update($crestmail, array('$set' => array('errorCode' => $killmail, 'processed' => null, 'error' => 'Error 415, 500, or null')));
 				continue;
 		}
 		if (!isset($killmail['killID'])) {

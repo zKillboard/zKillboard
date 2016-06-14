@@ -9,9 +9,9 @@ if ($version != null) $redis->set("tqServerVersion", $version);
 if ($root == 0) {
 	$serverStatus = 'UNKNOWN';
 } else {
-	$serverStatus = isset($root['serviceStatus']['eve']) ? strtoupper($root['serviceStatus']['eve']) : 'OFFLINE';
+	$serverStatus = isset($root['serviceStatus']) ? strtoupper($root['serviceStatus']) : 'OFFLINE';
 }
-$loggedIn = (int) @$root['userCounts']['eve'];
+$loggedIn = (int) @$root['userCount'];
 
 if ($loggedIn == 0) {
 	$loggedIn = $serverStatus;
@@ -39,4 +39,5 @@ if ($message == null && $xmlFailure->count() > (10 * $xmlSuccess->count())) {
 	$message = "Issues accessing Killmail XML API - Killmails won't populate from API at this time - $s Successful / $f Failed calls in last 5 minutes";
 }
 
+if ($message == '') $message = 'FYI - there is currently an issue with CREST causing some killmails to have errors and zKillboard cannot pull them.';
 $redis->setex("tq:crestStatus", 300, $message);

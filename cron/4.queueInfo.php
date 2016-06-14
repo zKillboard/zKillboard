@@ -156,7 +156,7 @@ function updateEntity($killID, $entity)
         $name = $entity[$type]['name'];
 
         // Look for the current entry
-        $query = ['type' => $type.'ID', 'id' => $id, 'killID' => ['$gte' => $killID]];
+        $query = ['type' => $type.'ID', 'id' => $id]; //, 'killID' => ['$gte' => $killID]];
         if ($mdb->exists('information', $query)) {
             continue;
         }

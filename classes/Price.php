@@ -155,7 +155,7 @@ class Price
 			$mdb->save("prices", $marketHistory);
 		}
 
-		$url = "$crestServer/market/10000002/types/$typeID/history/";
+		$url = "$crestServer/market/10000002/history/?type=$crestServer/inventory/types/$typeID/"
 		$json = CrestTools::getJSON($url);
 
 		if (is_array($json["items"])) foreach ($json["items"] as $row)
