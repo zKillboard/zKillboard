@@ -4596,9 +4596,9 @@ TWEEN.Interpolation = {
         };
         ZKBMap.prototype.addToKillLog = function(kill) {
             var infoPopupDom, killDom, _ref, _this = this;
-            if (kill.allianceID === '0') {
-                delete kill.allianceID;
-            }
+	    if (kill.killmail.victim.character == null) {
+		kill.killmail.victim.character = { id: 1 };
+	    }
             killDom = $(killTemplate(kill));
             infoPopupDom = $(infoPopupTemplate({
                 src: this.options.infoPopupTextureUrl,
@@ -4638,7 +4638,7 @@ TWEEN.Interpolation = {
         ZKBMap.prototype.listenToKillFeed = function() {
             var e, _this = this;
             try {
-                this.client = new WebSocket(this.options.killFeedWebsocket);
+                this.client = new ReconnectingWebSocket(this.options.killFeedWebsocket);
                 return this.client.onmessage = function(event) {
 		    try {
                     	var kill;
