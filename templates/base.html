@@ -89,7 +89,7 @@
 
 			<div class="container nobackground">
 				{% if crestStatus %}
-					<div class="alert alert-danger" style="font-weight: bold"><center>{{ crestStatus }}<br/><br/>For complete server status visit <a href='https://zkillboard.com/ztop.html'>https://zkillboard.com/ztop.html</a></center></div>
+					<div class="alert alert-danger" style="font-weight: bold"><center>{{ crestStatus|raw }}</center></div>
 				{% endif %}
 
 
