@@ -1,6 +1,6 @@
 <?php
 
-for ($i = 0; $i < 5; ++$i) {
+for ($i = 0; $i < 6; ++$i) {
     $pid = pcntl_fork();
     if ($pid == -1) {
         exit();
@@ -8,6 +8,9 @@ for ($i = 0; $i < 5; ++$i) {
     if ($pid == 0) {
         break;
     }
+}
+if ($pid != 0) {
+    exit();
 }
 
 require_once "../init.php";
@@ -106,6 +109,7 @@ while ($timer->stop() < 60000) {
 		$newMaxKillID = 0;
 		foreach ($result->kills as $kill) {
 			$killID = (int) $kill->killID;
+			Killmail::xmlSave($killID, $kill);
 
 			$newMaxKillID = (int) max($newMaxKillID, $killID);
 

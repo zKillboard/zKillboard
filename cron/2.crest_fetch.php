@@ -21,7 +21,8 @@ while ($timer->stop() < 59000) {
 		$id = $crestmail['killID'];
 		$hash = $crestmail['hash'];
 
-		$killmail = CrestTools::fetch($id, $hash);
+		$killmail = $mdb->findDoc("rawmails", ['killID' => (int) $id]);
+		if ($killmail === null) $killmail = CrestTools::fetch($id, $hash);
 		if (is_integer($killmail)) Util::out("$id $killmail");
 		// The following if statements used to be a switch statement, but for some reason it didn't always process correctly
 		if ($killmail == 403) {
