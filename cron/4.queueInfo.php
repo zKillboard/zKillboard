@@ -5,6 +5,7 @@ require_once '../init.php';
 global $queueSocial, $redisQAuthUser;
 
 $queueInfo = new RedisQueue('queueInfo');
+$queueCleanup = new RedisQueue('queueCleanup');
 $queueSocial = $beSocial == true ? new RedisQueue('queueSocial') : null;
 $queueStats = new RedisQueue('queueStats');
 $queueRedisQ = $redisQAuthUser != null ? new RedisQueue('queueRedisQ') : null;
@@ -23,6 +24,7 @@ while ($timer->stop() < 59000) {
 
         if ($queueSocial != null) $queueSocial->push($killID);
         if ($queueRedisQ != null) $queueRedisQ->push($killID);
+	$queueCleanup->push($killID);
     }
 }
 
