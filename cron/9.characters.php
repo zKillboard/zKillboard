@@ -36,6 +36,10 @@ while ($timer->stop() < 59000) {
     foreach ($xml->result->rowset->row as $info) {
         $id = (int) $info['characterID'];
         $row = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $id]);
+	if ($row === null) {
+		sleep(1);
+		continue;
+	}
 
         if (isset($info['characterName'])) {
             ++$counter;
