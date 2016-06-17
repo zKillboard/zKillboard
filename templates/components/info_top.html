@@ -48,7 +48,7 @@
 			</td>
             </tr>
 			{% endif %}
-			{% if detail.ceoID and detail.ceoName %}
+			{% if detail.ceoID > 1 and detail.ceoName %}
 			<tr>
 				<th class="span2">CEO:</th>
 				<td itemprop="ceo">{% include 'components/text_char.html' %}</td>
@@ -124,7 +124,7 @@
 				<td itemprop="region"><a href="/region/{{detail.regionID}}/">{{ detail.regionName }}</a></td>
 			</tr>
             {% endif %}
-	    	{% if detail.memberCount is defined and detail.memberCount > 0 %}
+	    	{% if detail.memberCount is defined and detail.memberCount >= 0 %}
 			<tr>
 				<th>Members:</th>
 				<td itemprop="members">{% if detail.memberCount == 0 %}(Closed){% else %}{{ detail.memberCount | number_format(0) }}{% endif %}</td>
