@@ -8,11 +8,13 @@ class CrestFittings {
 		$victim = $killmail['victim'];
 		header('Content-Type: application/json');
 		$export = [];
-		$export['name'] = @$victim['character']['name'] . "'s " . $victim['shipType']['name'];
+		$charName = Info::getInfoField('characterID', (int) @$victim['character']['id'], 'name') . "'s ";
+		$shipName = Info::getInfoField('shipTypeID', $victim['shipType']['id'], 'name');
+		$export['name'] = "$charName's $shipName";
 		$export['description'] = "Imported from https://zkillboard.com/kill/$killID/";
 		$export['ship'] = ['id' => $victim['shipType']['id']];
 		$export['ship']['name'] = Info::getInfoField('typeID', $victim['shipType']['id'], 'name');
-		$export['ship']['href'] = "$crestServer/types/" . $victim['shipType']['id'] . "/";
+		$export['ship']['href'] = "$crestServer/inventory/types/" . $victim['shipType']['id'] . "/";
 
 		$items = $victim['items'];
 		$export['items'] = [];
@@ -24,7 +26,7 @@ class CrestFittings {
 			$nextItem['quantity'] = @$item['quantityDropped'] + @$item['quantityDestroyed'];
 			$nextItem['type']['id'] = $item['itemType']['id'];
 			$nextItem['type']['name'] = Info::getInfoField('typeID', $item['itemType']['id'], 'name');
-			$nextItem['type']['href'] = "$crestServer/types/" . $item['itemType']['id'] . "/";
+			$nextItem['type']['href'] = "$crestServer/inventory/types/" . $item['itemType']['id'] . "/";
 			$export['items'][] = $nextItem;
 		}
 		if (sizeof($export['items']) == 0) return ['message' => 'Cannot save this fit, no hardware.'];
