@@ -109,7 +109,6 @@ while ($timer->stop() < 60000) {
 		$newMaxKillID = 0;
 		foreach ($result->kills as $kill) {
 			$killID = (int) $kill->killID;
-			Killmail::xmlSave($killID, $kill);
 
 			$newMaxKillID = (int) max($newMaxKillID, $killID);
 

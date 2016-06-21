@@ -45,45 +45,9 @@ class Killmail
 			}
 		}
 		$mdb->remove("killmails", ['killID' => $killID]);
+		$mdb->remove("rawmails", ['killID' => $killID]);
 		$mdb->remove("oneWeek", ['killID' => $killID]);
 		$mdb->set("crestmails", ['killID' => $killID], ['processed' => false]);
 		$redis->del("CacheKill:$killID:overview");
 	}
-
-	public static function xmlSave($killID, $kill)
-	{
-		global $mdb;
-
-		$r = $mdb->findDOc("rawmails", ['killID' => $killID]);
-		if ($r !== null) return;
-		$x = $mdb->findDoc("xmlmails", ['killID' => $killID]);
-		if ($x == null) {
-			$json = json_encode($kill->toArray());
-                        $killmail = json_decode($json, true);
-                        $killmail['killID'] = (int) $killID;
-
-			$x = ['killID' => $killID, 'data' => $killmail];
-			$mdb->save("xmlmails", $x);
-		}
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
