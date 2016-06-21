@@ -504,10 +504,12 @@ class Info
 			'151' => 'Material Bay',
 			'154' => 'Quafe Bay',
 			'155' => 'Fleet Hangar',
+			'156' => 'Hidden Modifiers',
 			'158' => 'Fighter Bay',
 			'159' => 'Fighter Tubes',
 			'164' => 'Structure Service Slots',
 			'172' => 'Structure Fuel',
+			'64' => 'Unlocked item, can be moved',
 			);
 
 	/**
@@ -554,7 +556,6 @@ class Info
 			return 'Corporate  Hangar';
 		}
 		if ($flagGroup == 0) {
-Log::log("unknown flagID $flag");
 			return;
 		}
 
