@@ -472,7 +472,9 @@ class Info
 			'11' => 'Low Slots',
 			'2663' => 'Rigs',
 			'3772' => 'SubSystems',
-			'87' => 'Drone Bay',);
+			'87' => 'Drone Bay',
+			'164' => 'Structure Service Slots'
+		);
 
 	/**
 	 * [$effectToSlot description].
@@ -503,6 +505,7 @@ class Info
 			'155' => 'Fleet Hangar',
 			'158' => 'Fighter Bay',
 			'159' => 'Fighter Tubes',
+			'164' => 'Structure Service Slots'
 			);
 
 	/**
@@ -516,6 +519,7 @@ class Info
 			13 => array(19, 26), // Mids
 			11 => array(11, 18), // Lows
 			159 => array(159, 163), // Fighter Tubes
+			164 => array(164, 171), // Structure services
 			2663 => array(92, 98), // Rigs
 			3772 => array(125, 132), // Subs
 			);
