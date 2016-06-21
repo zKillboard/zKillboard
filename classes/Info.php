@@ -473,7 +473,8 @@ class Info
 			'2663' => 'Rigs',
 			'3772' => 'SubSystems',
 			'87' => 'Drone Bay',
-			'164' => 'Structure Service Slots'
+			'164' => 'Structure Service Slots',
+			'172' => 'Structure Fuel'
 		);
 
 	/**
@@ -505,7 +506,8 @@ class Info
 			'155' => 'Fleet Hangar',
 			'158' => 'Fighter Bay',
 			'159' => 'Fighter Tubes',
-			'164' => 'Structure Service Slots'
+			'164' => 'Structure Service Slots',
+			'172' => 'Structure Fuel',
 			);
 
 	/**
@@ -552,6 +554,7 @@ class Info
 			return 'Corporate  Hangar';
 		}
 		if ($flagGroup == 0) {
+Log::log("unknown flagID $flag");
 			return;
 		}
 
