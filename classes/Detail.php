@@ -58,6 +58,7 @@ class Detail
                 $itm['flagName'] = Info::getInfoField('groupID', Info::getGroupID($itm['typeID']), 'name');
             } elseif (!isset($itm['flagName'])) {
                 $itm['flagName'] = Info::getFlagName($itm['flag']);
+		if ($itm['flagName'] == null || $itm['flagName'] == '') Log::log("Unknown flag " . $itm['flag']);
             }
 
             if ($itm['flagName'] == 'Infantry Modules') {
