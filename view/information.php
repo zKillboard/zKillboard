@@ -16,7 +16,7 @@ $output = $parsedown->text($markdown);
 
 if ($page == 'payments') {
     global $adFreeMonthCost;
-    $output = str_replace('{cost}', $adFreeMonthCost, $output);
+    $output = str_replace('{cost}', number_format($adFreeMonthCost, 0), $output);
 }
 
 // Load the information page html, which is just the bare minimum to load base.html and whatnot, and then spit out the markdown output!

@@ -93,7 +93,10 @@ class User
 
 	public static function getPaymentHistory($userID)
 	{
-		return [];
+		global $mdb;
+
+		$history = $mdb->find("payments", ['ownerID1' => "$userID"], ['date' => -1]);
+		return $history;
 	}
 
 	public static function getUserTrackerData()
@@ -109,7 +112,7 @@ class User
 
 		$redisKey = "message:$userID";
 		$redis->rpush($redisKey, $message);
-		$redis->expire($redisKey, 3600);
+		$redis->expire($redisKey, 86400 * 30);
 	}
 
 	public static function getMessage($userID = null)

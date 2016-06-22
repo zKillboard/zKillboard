@@ -2,7 +2,8 @@
 
 require_once '../init.php';
 
-if (date('i') != 0) exit();
+$redisKey = "zkb:walletCheck";
+if ($redis->get($redisKey) == true) exit();
 
 global $walletApis, $mdb;
 
@@ -37,6 +38,7 @@ foreach ($walletApis as $api) {
 }
 
 applyBalances();
+$redis->setex($redisKey, 1800, true);
 
 function applyBalances()
 {
@@ -56,21 +58,25 @@ function applyBalances()
 		$date = $row['date'];
 		$time = strtotime($date);
 		$amount = $row['amount'];
-		$months = $amount / $adFreeMonthCost;
+		$months = floor($amount / $adFreeMonthCost);
 		$bonusMonths = floor($months / 6);
 		$months += $bonusMonths;
 
 		if ($row['refTypeID'] == 10) { // Character donation
-			$charID = $row['ownerID1'];
-			$adFreeUntil = (int) $redis->hGet("user:$charID", "adFreeUntil");
-			$adFreeUntil = 0;
-			if ($adFreeUntil < time()) $adFreeUntil = time();
-			$adFreeUntil += (86400 * 30 * $months);
-			echo "$charID $amount $months $adFreeUntil " . date('Y-m-d', $adFreeUntil) . "\n";
-			$redis->hSet("user:$charID", "adFreeUntil", $adFreeUntil);
+			if ($amount >= $adFreeMonthCost) {
+				$charID = $row['ownerID1'];
+				$adFreeUntil = (int) $redis->hGet("user:$charID", "adFreeUntil");
+				if ($adFreeUntil < time()) $adFreeUntil = time();
+
+				$adFreeUntil += (86400 * 30 * $months);
+				$charName = Info::getInfoField('characterID', $charID, 'name');
+				$amount = number_format($amount, 0);
+				Util::out("$charID $charName $amount $months $adFreeUntil " . date('Y-m-d', $adFreeUntil));
+				User::sendMessage("Thank you for your payment. $months months of ad free time has been given to $charName", $charID);
+				$redis->hSet("user:$charID", "adFreeUntil", $adFreeUntil);
+				$mdb->set("payments", $row, ['months' => "$months months"]);
+			}
 			$mdb->set("payments", $row, ['paymentApplied' => 1]);
-		} else {
-			//print_r($row);
 		}
 	}
 }

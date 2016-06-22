@@ -22,6 +22,9 @@
 {% include 'components/kill_list.html' %}
 </div>
 <div class="col-sm-2 pull-left" style="padding: 0px;">
+	{% if showAds %}
+		<span id='adnag'><center><a href='/information/payments'>Remove Ads?</a></center></br/></span>
+	{% endif %}
         <center><a href="https://www.youtube.com/watch?v=MaL-66nHN9c" target="_new">#Broadcast4Reps</a><br/></center>
 	{% include 'components/activePvP.html' %}
 	{% set isEmbedded = true %}
