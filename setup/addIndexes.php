@@ -123,6 +123,9 @@ echo "Done\n";
 echo "Creating index : 'type' => 1, 'timeStarted' => -1, with sparse = 1 and unique = 0 ... ";
 $information->ensureIndex(array('type' => 1, 'timeStarted' => -1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
+echo "Creating index : 'type' => 1, 'lastCrestUpdate' => 1, with sparse = 0 and unique = 0 ... ";
+$information->ensureIndex(array('type' => 1, 'lastCrestUpdate' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
 
 // insurance
 echo "\nCreating collection insurance ... ";
@@ -239,6 +242,9 @@ $killmails->ensureIndex(array('involved.shipTypeID' => 1, 'npc' => 1, 'sequence'
 echo "Done\n";
 echo "Creating index : 'involved.groupID' => 1, 'npc' => 1, 'sequence' => 1, 'involved.isVictim' => 1, with sparse = 1 and unique = 0 ... ";
 $killmails->ensureIndex(array('involved.groupID' => 1, 'npc' => 1, 'sequence' => 1, 'involved.isVictim' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'dttm' => 1, 'killID' => -1, with sparse = 0 and unique = 0 ... ";
+$killmails->ensureIndex(array('dttm' => 1, 'killID' => -1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // oneWeek
@@ -549,6 +555,9 @@ $statistics->ensureIndex(array('type' => 1, 'recentOverallScore' => 1), array("s
 echo "Done\n";
 echo "Creating index : 'type' => 1, 'recentOverallRank' => 1, with sparse = 1 and unique = 0 ... ";
 $statistics->ensureIndex(array('type' => 1, 'recentOverallRank' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'shipsDestroyed' => 1, with sparse = 0 and unique = 0 ... ";
+$statistics->ensureIndex(array('shipsDestroyed' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // storage
