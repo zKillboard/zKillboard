@@ -118,6 +118,8 @@ class CrestSSO
 				$mdb->save("apisCrest", ['characterID' => $response->CharacterID, 'refreshToken' => $refresh_token, 'lastFetch' => 0]);
 				$sso = new RedisTimeQueue("tqApiSSO", 2100);
 				$sso->add($response->CharacterID);
+				$queueCharacters = new RedisTimeQueue('tqCharacters', 86400);
+				$queueCharacters->add($response->CharacterID);
 			}
 
 			$_SESSION['characterID'] = $response->CharacterID;
