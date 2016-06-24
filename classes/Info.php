@@ -498,6 +498,7 @@ class Info
 			'136' => 'Mineral Hold',
 			'137' => 'Salvage Hold',
 			'138' => 'Specialized Ship Hold',
+			'143' => 'Specialized Ammo Hold',
 			'90' => 'Ship Hangar',
 			'148' => 'Command Center Hold',
 			'149' => 'Planetary Commodities Hold',
