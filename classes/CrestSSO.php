@@ -116,6 +116,8 @@ class CrestSSO
 			if (in_array("characterKillsRead", $scopes))
 			{
 				$mdb->save("apisCrest", ['characterID' => $response->CharacterID, 'refreshToken' => $refresh_token, 'lastFetch' => 0]);
+				$sso = new RedisTimeQueue("tqApiSSO", 2100);
+				$sso->add($response->CharacterID);
 			}
 
 			$_SESSION['characterID'] = $response->CharacterID;
@@ -143,19 +145,19 @@ class CrestSSO
 	public static function getAccessToken($charID = null, $sessionID = null, $refreshToken = null) {
 		global $app, $redis, $ccpClientID, $ccpSecret;
 
-		if ($charID == null) $charID = @$_SESSION['characterID'];
-		if ($sessionID == null) $sessionID = session_id();
-		if ($refreshToken == null) $refreshToken = $redis->get("login:$charID:$sessionID:refreshToken");
+		if ($charID === null) $charID = @$_SESSION['characterID'];
+		if ($sessionID === null) $sessionID = session_id();
+		if ($refreshToken === null) $refreshToken = $redis->get("login:$charID:$sessionID:refreshToken");
 
 		$key = "login:$charID:$sessionID:$refreshToken";
 		$accessToken = $redis->get("$key:accessToken");
 
-		if ($accessToken != null) return $accessToken;
+		//if ($accessToken != null) return $accessToken;
 
 		if ($refreshToken == null) $refreshToken = $redis->get("$key:refreshToken");
 		if ($charID  == null || $refreshToken == null) {
-			$app->redirect("/ccplogin/", 302);
-			exit();
+			Util::out("No refreshToken for $charID with key $key");
+			return $app !== null ? $app->redirect("/ccplogin/", 302) : null;
 		}
 		$redis->setex("$key:refreshToken", (86400 * 14), $refreshToken); // Reset the timer on the refreshToken
 		$fields = array('grant_type' => 'refresh_token','refresh_token' => $refreshToken);
@@ -183,6 +185,7 @@ class CrestSSO
 		if ($accessToken != null) {
 			$redis->setex("$key:accessToken", 1000, $accessToken);
 		} else {
+			if (isset($result['error'])) return $result;
 			return $httpCode;
 		}
 

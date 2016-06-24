@@ -1,19 +1,28 @@
 <?php
 
+$pid = 1;
 for ($i = 0; $i < 6; ++$i) {
-    $pid = pcntl_fork();
-    if ($pid == -1) {
-        exit();
-    }
-    if ($pid == 0) {
-        break;
-    }
-}
-if ($pid != 0) {
-    exit();
+	$pid = pcntl_fork();
+	if ($pid == -1) {
+		exit();
+	}
+	if ($pid == 0) {
+		break;
+	}
 }
 
 require_once "../init.php";
+
+$sso = new RedisTimeQueue("tqApiSSO", 3600);
+
+if ($pid != 0) {
+	$apis = $mdb->find("apisCrest");
+	foreach ($apis as $row) {
+		if (!isset($row['errorCode'])) 
+			$sso->add($row['characterID']);
+	}
+	exit();
+}
 
 $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
 $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
@@ -22,33 +31,25 @@ $chars = [];
 $timer = new Timer();
 
 while ($timer->stop() < 60000) {
-	$t = new Timer();
-	$apis = $mdb->find("apisCrest", ['lastFetch' => ['$lt' => (time() - 1800)]], ['lastFetch' => 1], 1000);
-
-	$tt = $t->stop();
-	if (sizeof($apis) == 0) exit();
-	foreach ($apis as $row)
-	{
-		if (!isset($row['characterID'])) {
-			$mdb->remove("apisCrest", $row);
+	$charID = (int) $sso->next();
+	if ($charID > 0) {
+		$row = $mdb->findDoc("apisCrest", ['characterID' => (int) $charID, 'errorCode' => ['$exists' => false]], ['lastFetch' => 1]);
+		if ($row === null) {
+			$sso->remove($charID); 
+			continue;
 		}
-		$charID = $row['characterID'];
 
-		$redisKey = "canRun:sso:$charID";
-		$locked = $redis->set($redisKey, true, Array('nx', 'ex' => 30));
-		if ($locked === false) continue;
-
-		$lastFetch = $row['lastFetch'];
-		if (in_array($charID, $chars)) continue;
-		$chars[] = $charID;
+		$mdb->set("apisCrest", $row, ['lastFetch' => time()]);
 		$refreshToken = $row['refreshToken'];
 		$accessToken = CrestSSO::getAccessToken($charID, "", $refreshToken);
+
 		if (is_array($accessToken))
 		{
 			$error = $accessToken['error'];
 			if ($error == 'invalid_grant' || $error == 'invalid_token')
 			{
 				$mdb->remove("apisCrest", $row);
+				$sso->remove($charID);
 			}
 			else
 			{
@@ -57,8 +58,8 @@ while ($timer->stop() < 60000) {
 			}
 			continue;
 		} else if ($accessToken === 403 || $accessToken === 400) {
-			$mdb->set("apisCrest", $row, ['lastFetch' => time()]);
-			//Util::out("$charID gave a $accessToken on accessToken fetch");
+			$mdb->set("apisCrest", $row, ['errorCode' => $accessToken]);
+			$sso->remove($charID);
 			continue;
 		}
 		if ($accessToken == null) { 
@@ -84,18 +85,19 @@ while ($timer->stop() < 60000) {
 		try {
 			$result = $pheal->KillMails($params);
 			$xmlSuccess->add(uniqid());
-			$v = $mdb->set("apisCrest", ['characterID' => $charID], ['lastFetch' => time()], true);
 		} catch (Exception $ex) {
 			$xmlFailure->add(uniqid());
 			$errorCode = $ex->getCode();
+			$sso->remove($charID);
 			if ($errorCode == 904) {
 				Util::out("(apiConsumer) 904'ed...");
 				exit();
 			}
 			if ($errorCode == 28) {
-				exit();
+				continue;
 			}
 			if ($errorCode == 201) {
+				Util::out("errorcode 201 deleting $charID");
 				$mdb->remove("apisCrest", $row);
 				continue;
 			}
@@ -171,6 +173,5 @@ while ($timer->stop() < 60000) {
 			}
 			Util::out("$killsAdded kills added by $name (SSO)");
 		}
-	}
-	sleep(1);
+	} 
 }

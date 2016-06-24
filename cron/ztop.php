@@ -40,7 +40,9 @@ while ($iterations++ <= 1200) {
     addInfo('', 0);
     addInfo('Api KillLogs to check', $redis->zCount('tqApiChars', 0, time()));
     addInfo("Api KeyInfos to check", $redis->zCount('tqApis', 0, time()));
+    addInfo("Api SSO to check", $redis->zCount('tqApiSSO', 0, time()));
     addInfo('Char/Corp Apis', $redis->zCard('tqApiChars'));
+    addInfo('Valid SSO Apis', $redis->zCard('tqApiSSO'));
     addInfo('Valid Apis', $redis->zCard('tqApis'));
 
     addInfo('', 0);
