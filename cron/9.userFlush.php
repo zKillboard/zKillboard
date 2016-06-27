@@ -2,9 +2,8 @@
 
 require_once "../init.php";
 
-$today = date('YmdH');
-$todaysKey = "RC:userFlush:$today";
-if ($redis->get($todaysKey) == true) exit();
+$redisKey = "zkb:userFlush";
+if ($redis->get($redisKey) == true) exit();
 
 Util::out("Flushing user preferences to disk.");
 
@@ -17,4 +16,4 @@ foreach ($keys as $key)
 	$userSettings['userID'] = $key;
 	$mdb->save("users", $userSettings);
 }
-$redis->setex($todaysKey, 3600, true);
+$redis->setex($redisKey, 3600, true);
