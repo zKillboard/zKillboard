@@ -1,6 +1,6 @@
 <?php
 
-for ($i = 0; $i < 30; ++$i) {
+for ($i = 0; $i < 10; ++$i) {
     $pid = pcntl_fork();
     if ($pid == -1) {
         exit();
@@ -15,7 +15,7 @@ require_once '../init.php';
 
 $apis = $mdb->getCollection('apis');
 $information = $mdb->getCollection('information');
-$tqApis = new RedisTimeQueue('tqApis', 9600);
+$tqApis = new RedisTimeQueue('tqApis', 86400);
 $tqApiChars = new RedisTimeQueue('tqApiChars');
 $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
 $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);

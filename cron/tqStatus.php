@@ -40,3 +40,7 @@ if ($message == null && $xmlFailure->count() > (10 * $xmlSuccess->count())) {
 }
 
 $redis->setex("tq:crestStatus", 300, $message);
+
+// Set the top kill for api requests to use
+$topKillID = $mdb->findField('killmails', 'killID', [], ['killID' => -1]);
+$redis->setex("zkb:topKillID", 86400, $topKillID);

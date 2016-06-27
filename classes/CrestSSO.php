@@ -154,7 +154,7 @@ class CrestSSO
 		$key = "login:$charID:$sessionID:$refreshToken";
 		$accessToken = $redis->get("$key:accessToken");
 
-		//if ($accessToken != null) return $accessToken;
+		if ($accessToken != null) return $accessToken;
 
 		if ($refreshToken == null) $refreshToken = $redis->get("$key:refreshToken");
 		if ($charID  == null || $refreshToken == null) {

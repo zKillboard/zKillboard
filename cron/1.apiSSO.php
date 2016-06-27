@@ -1,7 +1,7 @@
 <?php
 
 $pid = 1;
-for ($i = 0; $i < 6; ++$i) {
+for ($i = 0; $i < 2; ++$i) {
 	$pid = pcntl_fork();
 	if ($pid == -1) {
 		exit();
@@ -13,15 +13,14 @@ for ($i = 0; $i < 6; ++$i) {
 
 require_once "../init.php";
 
+$topKillID = (int) $redis->get("zkb:topKillID");
 $sso = new RedisTimeQueue("tqApiSSO", 3600);
 
 if ($pid != 0) {
 	$apis = $mdb->find("apisCrest");
 	foreach ($apis as $row) {
-		if (!isset($row['errorCode'])) 
-			$sso->add($row['characterID']);
+		$sso->add($row['characterID']);
 	}
-	exit();
 }
 
 $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
@@ -33,7 +32,7 @@ $timer = new Timer();
 while ($timer->stop() < 60000) {
 	$charID = (int) $sso->next();
 	if ($charID > 0) {
-		$row = $mdb->findDoc("apisCrest", ['characterID' => (int) $charID, 'errorCode' => ['$exists' => false]], ['lastFetch' => 1]);
+		$row = $mdb->findDoc("apisCrest", ['characterID' => (int) $charID], ['lastFetch' => 1]);
 		if ($row === null) {
 			$sso->remove($charID); 
 			continue;
@@ -42,6 +41,7 @@ while ($timer->stop() < 60000) {
 		$mdb->set("apisCrest", $row, ['lastFetch' => time()]);
 		$refreshToken = $row['refreshToken'];
 		$accessToken = CrestSSO::getAccessToken($charID, "", $refreshToken);
+
 
 		if (is_array($accessToken))
 		{
@@ -58,6 +58,7 @@ while ($timer->stop() < 60000) {
 			}
 			continue;
 		} else if ($accessToken === 403 || $accessToken === 400) {
+			Util::out("403 $charID $refreshToken");
 			$mdb->set("apisCrest", $row, ['errorCode' => $accessToken]);
 			$sso->remove($charID);
 			continue;
@@ -85,6 +86,8 @@ while ($timer->stop() < 60000) {
 		try {
 			$result = $pheal->KillMails($params);
 			$xmlSuccess->add(uniqid());
+			$mdb->removeField("apisCrest", $row, "errorCode");
+			$mdb->removeField("apisCrest", $row, "error");
 		} catch (Exception $ex) {
 			$xmlFailure->add(uniqid());
 			$errorCode = $ex->getCode();
@@ -156,6 +159,10 @@ while ($timer->stop() < 60000) {
 			if (!$exists && $debug) {
 				Util::out("Added $killID from API");
 			}
+		}
+
+		if ($newMaxKillID < ($topKillID - 1000000)) {
+			$sso->setTime($charID, time() + rand(72000, 86400));
 		}
 
 		// helpful info for output if needed

@@ -19,6 +19,7 @@ $timer = new Timer();
 $tqApiChars = new RedisTimeQueue('tqApiChars', 3600);
 $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
 $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
+$topKillID = (int) $redis->get("zkb:topKillID");
 
 $numApis = $tqApiChars->size();
 if ($i >= ($numApis / 100) + 1) exit();
@@ -139,7 +140,7 @@ while ($timer->stop() <= 59000) {
 
         $apiVerifiedSet = new RedisTtlSortedSet('ttlss:apiVerified', 86400);
         $apiVerifiedSet->add(time(), ($type == 'Corporation' ? @$info['corporationID'] : $charID));
-        if ($newMaxKillID == 0) {
+        if ($newMaxKillID < ($topKillID - 1000000)) {
             $tqApiChars->setTime($row, time() + rand(72000, 86400));
         }
 
