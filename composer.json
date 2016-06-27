@@ -4,14 +4,18 @@
 		"3rdpartyeve/perry": "1.*",
 		"phpmailer/phpmailer": "*",
 		"dg/twitter-php": "*",
-		"ircmaxell/password-compat": "*",
 		"cvweiss/zlibrary" : "*",
 		"slim/slim": "2.*",
 		"slim/views": "0.1.*",
 		"twig/twig": "1.*",
-		"erusev/parsedown": "dev-master",
-		"zkillboard/redisq": "master-dev"
+		"erusev/parsedown": "1.*",
+		"zkillboard/redisq": "*"
 	},
 	"minimum-stability": "stable",
-	"prefer-stable": true
+	"prefer-stable": true,
+	"autoload": {
+        	"psr-4": {
+          	  	"": "classes/"
+		}
+	}
 }
