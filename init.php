@@ -2,9 +2,9 @@
 
 date_default_timezone_set('UTC');
 
-// Ensure PHP 5.4 or higher
-if (version_compare(phpversion(), '5.4.1', '<')) {
-    die('PHP 5.4 or higher is required');
+// Ensure PHP 5.5 or higher
+if (version_compare(phpversion(), '5.5', '<')) {
+    die('PHP 5.5 or higher is required');
 }
 
 // config load
