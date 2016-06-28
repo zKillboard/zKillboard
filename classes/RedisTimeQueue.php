@@ -72,11 +72,7 @@ class RedisTimeQueue
                 try {
                         $array = $redis->zRangeByScore($this->queueName, 0, time(), ['limit' => [0, 1]]);
 			$next = sizeof($array) > 0 ? array_pop($array) : null;
-
-			if ($next !== null) {
-                        	$redis->zAdd($this->queueName, time() + $this->deltaSeconds, $next);
-                        	$value = unserialize($next);
-			}
+			$value = $next === null ? null : $this->verify($next);
                 } finally {
                         sem_release($sem);
                 }
@@ -84,4 +80,18 @@ class RedisTimeQueue
 		sleep($doBlock ? 1 : 0);
 		return $doBlock ? $this->next(false) : $value;
         }
+
+	private function verify($next)
+	{
+		global $redis;
+
+		$value = unserialize($next);
+		if ($next !== "b:0;" && $value !== false) {
+			$redis->zAdd($this->queueName, time() + $this->deltaSeconds, $next);
+			return $value;
+		} else {
+			$this->zRem($this->queueName, $next);
+			return null;
+		}
+	}
 }
