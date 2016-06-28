@@ -11,11 +11,14 @@
 		"erusev/parsedown": "1.*",
 		"zkillboard/redisq": "*"
 	},
-	"minimum-stability": "stable",
-	"prefer-stable": true,
 	"autoload": {
         	"psr-4": {
           	  	"": "classes/"
 		}
-	}
+	},
+	"config" : {
+		"optimize-autoloader" : true
+	},
+	"minimum-stability": "stable",
+	"prefer-stable": true
 }
