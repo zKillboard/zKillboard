@@ -90,7 +90,7 @@ class RedisTimeQueue
 			$redis->zAdd($this->queueName, time() + $this->deltaSeconds, $next);
 			return $value;
 		} else {
-			$this->zRem($this->queueName, $next);
+			$redis->zRem($this->queueName, $next);
 			return null;
 		}
 	}
