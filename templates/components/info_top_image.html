@@ -5,7 +5,9 @@
 		{% include 'components/image_ship.html' %}
 	{% endif %}
 	{% if detail.characterID and key == 'character' %}
-		{% include 'components/image_char.html' %}
+		<center>
+		{% include 'components/image_char.html' %}<br/><small><small><i><a href='#' onClick="$('#largeImage').modal(); return false;">Enlarge</a></small></small></i>
+		</center>
 	{% endif %}
 	{% if detail.corporationID and key == 'corporation' %}
 		{% include 'components/image_corp.html' %}

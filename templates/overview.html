@@ -217,3 +217,16 @@
 		}
 	</script>
 {% endblock %}
+
+{% block modal %}
+        {% if detail.characterID and key == 'character' %}
+<div class="modal fade" id="largeImage">
+                <div class="modal-dialog">
+                        <div class="modal-content"><center>
+{% set imageSize = 512 %}
+{% set field = detail %}
+		<h3>{{ detail.name }}</h3>
+                {% include 'components/image_char.html' %}</center><br/><br/>
+</div></div></div>
+        {% endif %}
+{% endblock %}
