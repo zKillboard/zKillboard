@@ -1,0 +1,53 @@
+<div class="row">
+{% set showImage = true %}
+{% for list in extra.allranks %}
+	{% set loopIndex = 0 %}
+	{% if (loop.index -1) is divisibleby(3) %}
+	<div class="col-lg-12">
+	{% endif %}
+	<div class="col-lg-4" style="margin: 0px; padding-left: 1em;">
+		<table class="table table-condensed table-striped table-hover table-bordered">
+			<caption><strong>{{ list.title }}</strong></caption>
+			<thead>
+				<tr>
+					<th>Rank</th>
+					<th style="width: 100%;">{{ list.type|capitalize }}</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for field in list.data %}
+				{% set loopIndex = loopIndex + 1 %}
+				<tr>   
+					<td style="text-align: center; vertical-align: middle;">{{ field.rank }}</td>
+					<td>
+						{% if list.type == "alliance" %}{% include 'components/text_alli.html' %}
+						{% elseif list.type == "corporation" %}{% include 'components/text_corp.html' %}
+						{% elseif list.type == "character" %}{% include 'components/text_char.html' %}
+						{% elseif list.type == "weapon" %}{% include 'components/text_item.html' %}
+						{% elseif list.type == "ship" %}{% include 'components/text_ship.html' %}
+						{% elseif list.type == "group" %}{% include 'components/text_shipclass.html' %}
+						{% elseif list.type == "faction" %}{% include 'components/text_faction.html' %}
+						{% elseif list.type == "system" %}{% include 'components/text_system.html' %}
+						{% elseif list.type == "region" %}{% include 'components/text_region.html' %}
+						{% elseif list.type == "location" %}{% include 'components/text_location.html' %}
+						{% else %} {{ list.type }}
+						{% endif %}
+					</td>
+				</tr>
+				{% endfor %}
+				{% for i in 0..10 %}
+				{% set loopIndex = loopIndex + 1 %}
+				{% if loopIndex <= 10 %}
+				<tr><td>&nbsp;</td><td>
+				{% if showImage %}<div style="height: 32px"/>{% endif %}
+				&nbsp;</td><td>&nbsp;</td></tr>
+				{% endif %}
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+	{% if loop.index is divisibleby(3) %}
+	</div>
+	{% endif %}
+{% endfor %}
+</div>

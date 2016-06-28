@@ -22,7 +22,7 @@ if (strlen("$id") > 11) {
     $app->redirect('/');
 }
 
-$validPageTypes = array('overview', 'kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'top', 'trophies');
+$validPageTypes = array('overview', 'kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'top', 'trophies', 'ranks');
 if ($key == 'alliance') {
     $validPageTypes[] = 'api';
     $validPageTypes[] = 'corpstats';
@@ -292,6 +292,13 @@ if ($key == 'character' && $pageType == 'trophies')
 	$extra['trophies'] = Trophies::getTrophies($id);
 }
 
+if ($pageType == 'ranks') {
+	$alltimeRanks = getNearbyRanks($key, "tq:ranks:alltime:$statType", $id, "Alltime Rank", $statType);
+	$day90Ranks = getNearbyRanks($key, "tq:ranks:recent:$statType", $id, "90 Day Rank", $statType);
+	$day7Ranks = getNearbyRanks($key, "tq:ranks:weekly:$statType", $id, "7 Day Rank", $statType);
+	$extra['allranks'] = ['7day' => $day7Ranks, '90Day' => $day90Ranks, 'alltime' => $alltimeRanks];
+}
+
 $statistics['shipsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:shipsDestroyed", $id));
 $statistics['shipsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:shipsLost", $id));
 $statistics['iskDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:iskDestroyed", $id));
@@ -347,3 +354,28 @@ $hasPager = in_array($pageType, ['overview', 'kills', 'losses', 'solo']);
 $renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => $apiVerified, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP);
 
 $app->render('overview.html', $renderParams);
+
+function getNearbyRanks($key, $rankKeyName, $id, $title, $statType)
+{
+        global $redis;
+
+        $array = [];
+        $rank = $redis->zrank($rankKeyName, $id);
+        if ($rank !== false) {
+                $start = max($rank - 5, 0);
+                $end = max($rank + 5, 10);
+                $nearRanks = $redis->zrange($rankKeyName, $start, $end);
+                foreach ($nearRanks as $row) {
+                        $a = [];
+                        $a["rank"] = $redis->zrank($rankKeyName, $row) + 1;
+                        $a[$statType] = $row;
+                        $a['score'] = $redis->zscore($rankKeyName, $row);
+                        $array['data'][] = $a;
+                }
+                Info::addInfo($array);
+                $title = $title . " #" . number_format($rank + 1, 0);
+        }
+        $array['title'] = $title;
+        $array['type'] = $key ;
+        return $array;
+}

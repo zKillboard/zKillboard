@@ -44,6 +44,7 @@
 			<li class="{{ isActive('topalltime', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/topalltime/">All Time Top</a></li>
 		</ul>
 	</li>
+	<li class="{{ isActive('stats', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/ranks/">Ranks</a></li>
 	<li class="{{ isActive('stats', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/stats/">Stats</a></li>
 	{% if extra.hasSupers > 0 %}
 	<li class="{{ isActive('supers', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/supers/">Supers</a></li>
@@ -142,6 +143,8 @@
     {% include 'components/summary.html' %}
     <div class="clearfix"></div>
     {% include 'components/history.html' %}
+{% elseif pageType == 'ranks' %}
+    {% include 'components/rank_list.html' %}
 {% elseif pageType == 'top' %}
 	{% set showImage = true %}
 	<div class="row centered"><input style="background: transparent; color: white; border: 0px; width:60px; height:35px;" type="text" name="datepicker" class="datepicker" value="{{ month }}/{{ year }}">&nbsp;<i class="fa fa-calendar-o"></i></div>
