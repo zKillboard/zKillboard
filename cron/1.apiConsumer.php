@@ -81,9 +81,6 @@ while ($timer->stop() <= 59000) {
             continue;
         }
 
-        $nextCheck = $result->cached_until_unixtime;
-        $tqApiChars->setTime($row, $nextCheck);
-
         $newMaxKillID = 0;
         foreach ($result->kills as $kill) {
             $killID = (int) $kill->killID;
