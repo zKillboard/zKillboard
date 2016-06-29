@@ -24,7 +24,7 @@ class RemoteApi
 			$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			$error = curl_error($ch);
 			$response = ['url' => $url, 'content' => $result, 'httpCode' => $httpCode, 'error' => $error];
-			RedisCache::set("url:$url", $response, 3600);
+			RedisCache::set("url:$url", $response, $cacheTime);
 		}
 		return $response;
 	}

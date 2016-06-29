@@ -117,6 +117,7 @@ function getHash($killmail)
 
 	$attackers = $killmail->rowset->row;
 	$first = null;
+	$attacker = null;
 	foreach ($attackers as $att) {
 		$first = $first == null ? $att : $first;
 		if ($att['finalBlow'] != 0) {
