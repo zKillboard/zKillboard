@@ -13,7 +13,7 @@ $newItems = 0;
 do {
 	foreach ($groups['items'] as $group) {
 		$href = $group['href'];
-		$groupID = (int) getGroupID($href);
+		$groupID = $group['id'];
 		$name = $group['name'];
 
 		$exists = $mdb->count('information', ['type' => 'groupID', 'id' => $groupID]);
@@ -23,14 +23,14 @@ do {
 
                 $types = CrestTools::getJSON($href);
                 $categoryID = getGroupID($types['category']['href']);
-                if (!isset($types['name'])) exit(); // Data not there, something is wrong, come back later
+                if (!isset($types['name'])) exit("failure\n"); // Data not there, something is wrong, come back later
 
                 $mdb->insertUpdate('information', ['type' => 'groupID', 'id' => $groupID], ['name' => $name, 'categoryID' => $categoryID, 'lastCrestUpdate' => $mdb->now(-86400)]);
 
 		$types = CrestTools::getJSON($href);
 		if (@$types['types'] != null) {
 			foreach ($types['types'] as $type) {
-				$typeID = (int) getTypeID($type['href']);
+				$typeID = $type['id']; 
 				$name = $type['name'];
 
 				$exists = $mdb->count('information', ['type' => 'typeID', 'id' => $typeID]);
