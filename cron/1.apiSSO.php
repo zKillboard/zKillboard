@@ -109,13 +109,10 @@ while ($timer->stop() < 60000) {
 			continue;
 		}
 
-		$nextCheck = $result->cached_until_unixtime;
-
-		$newMaxKillID = 0;
+		$kmCount = 0;
 		foreach ($result->kills as $kill) {
 			$killID = (int) $kill->killID;
-
-			$newMaxKillID = (int) max($newMaxKillID, $killID);
+			$kmCount++;
 
 			$json = json_encode($kill->toArray());
 			$killmail = json_decode($json, true);
@@ -161,8 +158,8 @@ while ($timer->stop() < 60000) {
 			}
 		}
 
-		if ($newMaxKillID < ($topKillID - 1000000)) {
-			$sso->setTime($charID, time() + rand(72000, 86400));
+		if ($kmCount == 0) {
+			$sso->setTime($charID, time() + rand(3600, 14400));
 		}
 
 		// helpful info for output if needed

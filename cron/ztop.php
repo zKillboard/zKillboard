@@ -38,12 +38,13 @@ while ($iterations++ <= 1200) {
     addInfo('Top killID', $mdb->findField('killmails', 'killID', [], ['killID' => -1]));
 
     addInfo('', 0);
-    addInfo('Api KillLogs to check', $redis->zCount('tqApiChars', 0, time()));
-    addInfo("Api KeyInfos to check", $redis->zCount('tqApis', 0, time()));
-    addInfo("Api SSO to check", $redis->zCount('tqApiSSO', 0, time()));
-    addInfo('Char/Corp Apis', $redis->zCard('tqApiChars'));
-    addInfo('Valid SSO Apis', $redis->zCard('tqApiSSO'));
-    addInfo('Valid Apis', $redis->zCard('tqApis'));
+    addInfo("Api KeyInfos to check", $redis->zCount('zkb:apis', 0, time()));
+    addInfo('Char KillLogs to check', $redis->zCount('zkb:chars', 0, time()));
+    addInfo('Corp KillLogs to check', $redis->zCount('zkb:corps', 0, time()));
+    addInfo("SSO KillLogs to check", $redis->zCount('tqApiSSO', 0, time()));
+    addInfo('Char Apis', $redis->zCard('zkb:chars'));
+    addInfo('Corp Apis', $redis->zCard('zkb:corps'));
+    addInfo('SSO Apis', $redis->zCard('tqApiSSO'));
 
     addInfo('', 0);
     $nonApiR = new RedisTtlCounter('ttlc:nonApiRequests', 300);

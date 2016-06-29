@@ -31,8 +31,6 @@ class Api
 
 	$row = ['keyID' => $keyID, 'vCode' => $vCode, 'label' => $label, 'lastApiUpdate' => new MongoDate(2), 'userID' => $userID];
         $mdb->save('apis', $row);
-	$tqApis = new RedisTimeQueue('tqApis', 9600);
-	$tqApis->add($row['_id']);
 
         return 'Success, your API has been added.';
     }
