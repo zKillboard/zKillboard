@@ -68,7 +68,7 @@ class Api
         $result = $mdb->find('apis', ['userID' => $userID]);
 	$retVal = [];
 	foreach ($result as $row) {
-		$row['lastValidation'] = date('Y/m/d H:i', $row['lastApiUpdate']->sec);
+		$row['lastFetched'] = date('Y/m/d H:i', $row['lastFetched']);
 		$retVal[] = $row;
 	}
 
@@ -93,33 +93,9 @@ class Api
     {
         global $mdb, $redis;
 
-    	$apiVerifiedSet = new RedisTtlSortedSet('ttlss:apiVerified', 86400);
-        $characterIDs = $redis->hGetAll("userID:api:$userID");
-	if ($characterIDs == null) $characterIDs = [];
-
-        $charIDs = [];
-        foreach ($characterIDs as $charID => $value) {
-	    $raw = $redis->get("userID:api:$userID:$charID");
-            $row = unserialize($raw);
-            if (!isset($charIDs["$charID"])) {
-                $charIDs["$charID"] = [];
-            }
-            $charIDs["$charID"]['characterID'] = $charID;
-            if ($row['time'] > @$charIDs["$charID"]['time']) {
-                $charIDs["$charID"]['time'] = $row['time'];
-	    }
-	    $charIDs["$charID"]['lastChecked'] = date('Y-m-d H:i', (int) @$charIDs["$charID"]['time']);
-	    $charIDs["$charID"]['keyID'] = $row['keyID'];
-	    $charIDs["$charID"]['keyType'] = @$row['type'];
-	    $charIDs["$charID"]['corporationID'] = $mdb->findField('information', 'corporationID', ['cacheTime' => 3600, 'type' => 'characterID', 'id' => $charID]);
-	    $apiVerified = $apiVerifiedSet->getTime((int) $charID);
-	    if ($apiVerified != null) {
-		    $charIDs["$charID"]['cachedUntilTime'] = date('Y-m-d H:i', $apiVerified + 3600);
-	    }
-	}
-	Info::addInfo($charIDs);
-
-	return $charIDs;
+	$characterIDs = $mdb->find("apiCharacters", ['characterID' => $userID], ['keyID' => 1]);
+	Info::addInfo($characterIDs);
+	return $characterIDs;
     }
 
     /**

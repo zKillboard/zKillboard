@@ -145,11 +145,9 @@ class Info
 		foreach ($corpList as $corp) {
 			$corp['corporationName'] = $corp['name'];
 			$corp['corporationID'] = $corp['id'];
-			$apiVerifiedSet = new RedisTtlSortedSet('ttlss:apiVerified', 86400);
-			$count = $apiVerifiedSet->getTime((int) $corp['corporationID']);
-
-			if ($count) {
-				$corp['cachedUntilTime'] = date('Y-m-d H:i', $count);
+			$doc = $mdb->findDoc("apiCorporation", ['corporationID' => (int) $corp['id']], ['lastFetched' => -1]);
+			if ($doc !== null) {
+				$corp['cachedUntilTime'] = date('Y-m-d H:i', $doc['lastFetched']);
 				$corp['apiVerified'] = 1;
 			}
 			self::addInfo($corp);

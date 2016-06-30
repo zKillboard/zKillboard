@@ -65,6 +65,7 @@ function processCharApi($mdb, $apiServer, $type, $row) {
 	$keyID = $row['keyID'];
 	$vCode = $row['vCode'];
 	$killmails = fetchKillmails($apiServer, $type, $charID, $keyID, $vCode);
+	$hasKillmails = sizeof($killmails) > 0;
 	$added = processKillmails($mdb, $killmails);
 	$name = $type == 'char' ? Info::getInfoField('characterID', $charID, 'name')  : Info::getInfoField('corporationID', $corpID, 'name');
 	if ($added) {
@@ -73,6 +74,7 @@ function processCharApi($mdb, $apiServer, $type, $row) {
 		}
 		Util::out("$added kills added by $type $name");
 	}
+	return $hasKillmails;
 }
 
 function fetchKillmails($apiServer, $type, $charID, $keyID, $vCode)
@@ -82,9 +84,9 @@ function fetchKillmails($apiServer, $type, $charID, $keyID, $vCode)
 	$content = $response['content'];
 	$xml = simplexml_load_string($content);
 
-	$rows = @$xml->result->rowset->row;
+	$rows = isset($xml->result->rowset->row) ? $xml->result->rowset->row : [];
 	$killmails = [];
-	if ($rows != null) foreach ($rows as $c=>$row) {
+	foreach ($rows as $c=>$row) {
 		$killmails[] = $row;
 	}
 	return $killmails;

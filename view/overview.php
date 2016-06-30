@@ -206,13 +206,11 @@ if ($pageType == 'stats' && in_array($key, $onlyHistory)) {
 $apiVerified = false;
 $nextApiCheck = null;
 if (in_array($key, array('character', 'corporation'))) {
-    $apiVerifiedSet = new RedisTtlSortedSet('ttlss:apiVerified', 86400);
-    $apiVerified = $apiVerifiedSet->getTime((int) $id);
-    if ($apiVerified == null) {
-        $apiVerified = $apiVerifiedSet->getTime((int) @$detail['corporationID']);
-    }
-    if ($apiVerified != null) {
-        $nextApiCheck = date('H:i', $apiVerified);
+    $collection = "api" . ucfirst($key);
+    $doc = $mdb->findDoc($collection, ["{$key}ID" => (int) $id], ['lastFetched' => -1]);
+    if ($doc !== null) {
+	$apiVerified = true;
+	$nextApiCheck = date('H:i', $doc['lastFetched']);
     }
 }
 

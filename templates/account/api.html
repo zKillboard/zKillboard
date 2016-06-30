@@ -12,7 +12,7 @@
 		<tr>
 			<td>{{ data.label }}</td>
 			<td>{{ data.keyID }}</td>
-			<td>{{ data.lastValidation }}</td>
+			<td>{{ data.lastFetched }}</td>
 			<td style="text-align: right;">
 				<form name="deleteapi" method="post" action="/account/api/">
 					<input id="deletekeyid" name="deletekeyid" type="hidden" value="{{ data.keyID }}">

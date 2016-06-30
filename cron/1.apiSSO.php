@@ -13,6 +13,7 @@ for ($i = 0; $i < 2; ++$i) {
 
 require_once "../init.php";
 
+$minute = date('Hi');
 $topKillID = (int) $redis->get("zkb:topKillID");
 $sso = new RedisTimeQueue("tqApiSSO", 3600);
 
@@ -27,9 +28,7 @@ $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
 $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
 $chars = [];
 
-$timer = new Timer();
-
-while ($timer->stop() < 60000) {
+while ($minute == date('Hi')) {
 	$charID = (int) $sso->next();
 	if ($charID > 0) {
 		$row = $mdb->findDoc("apisCrest", ['characterID' => (int) $charID], ['lastFetch' => 1]);
@@ -159,7 +158,7 @@ while ($timer->stop() < 60000) {
 		}
 
 		if ($kmCount == 0) {
-			$sso->setTime($charID, time() + rand(3600, 14400));
+			//$sso->setTime($charID, time() + rand(3600, 14400));
 		}
 
 		// helpful info for output if needed
