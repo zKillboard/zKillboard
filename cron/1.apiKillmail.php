@@ -43,11 +43,24 @@ while ($minute == date('Hi')) {
 			processCharApi($mdb, $apiServer, $type, $api);
 			$mdb->set($collection, $api, ['lastFetched' => time()]);
 			updateApiRow($mdb, $collection, $api, 0);
+			extendApiTime($mdb, $timeQueue, $api, $type);
 		} catch (Exception $ex) {
 			updateApiRow($mdb, $collection, $api, $ex->getCode());
 			$mdb->remove($collection, $api);
 		}
 		sleep(1);
+	}
+}
+
+function extendApiTime($mdb, $timeQueue, $api, $type)
+{
+	global $redis; 
+	$topKillID = $redis->get("zkb:topKillID");
+	$id = $type == 'char' ? $api['characterID'] : $api['corporationID'];
+	$field = $type == 'char' ? 'characterID' : 'corporationID';
+	$query = ["involved.$field" => $id, 'killID' => ['$gte' => ($topKillID - 1000000)]];
+	if (!$mdb->exists("killmails", $query)) {
+		$timeQueue->setTime($id, time() + rand(14400, 28800));
 	}
 }
 
