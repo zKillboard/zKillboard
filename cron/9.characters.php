@@ -25,6 +25,7 @@ while ($timer->stop() < 59000) {
 
     $stringIDs = implode(',', $ids);
     $href = "https://api.eveonline.com/eve/CharacterAffiliation.xml.aspx?ids=$stringIDs";
+    file_get_contents("https://evewho.com/add.php?id=$stringIDs");
     $raw = @file_get_contents($href);
     if ($raw == '') {
 	$xmlFailure->add(uniqid());
