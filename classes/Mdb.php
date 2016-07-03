@@ -14,7 +14,7 @@ class Mdb
 	 */
 	public function getDb($attempt = 0)
 	{
-		global $mongoServer, $mongoPort;
+		global $mongoServer, $mongoPort, $debug;
 
 		try {
 			if ($this->mongoClient == null) {
@@ -25,7 +25,7 @@ class Mdb
 			}
 
 			++$this->queryCount;
-			MongoCursor::$timeout = -1;
+			if (!$debug) MongoCursor::$timeout = -1;
 
 			return $this->db;
 		} catch (Exception $ex) {
@@ -62,7 +62,7 @@ class Mdb
 	   Delta is in seconds
 	   To go back one hour call now(-3600)
 	 */
-	public function now($delta = 0)
+	public static function now($delta = 0)
 	{
 		return new MongoDate(time() + $delta);
 	}
