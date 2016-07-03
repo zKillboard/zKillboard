@@ -1,7 +1,7 @@
 <?php
 
 $pid = 1;
-$max = 50;
+$max = 40;
 $threadNum = 0;
 for ($i = 0; $i < $max; ++$i) {
         $pid = pcntl_fork();
@@ -16,7 +16,7 @@ for ($i = 0; $i < $max; ++$i) {
 
 require_once '../init.php';
 
-$collection = $threadNum > floor($max * 0.8) ? "Corporation" : "Character";
+$collection = $threadNum < 5 ? "Corporation" : "Character";
 $type = substr(strtolower($collection), 0, 4);
 $field = strtolower($collection) . "ID";
 $collection = "api" . $collection;
@@ -24,7 +24,7 @@ $collection = "api" . $collection;
 $minute = date('Hi');
 $timeQueue = new RedisTimeQueue("zkb:{$type}s", 3600);
 
-if ($threadNum == 0 || $threadNum == $max) {
+if ($threadNum == 0 || $threadNum == 5) {
 	$ids = $mdb->getCollection($collection)->distinct($field);
 	foreach ($ids as $id) {
 		$timeQueue->add($id);
@@ -43,7 +43,7 @@ while ($minute == date('Hi')) {
 			processCharApi($mdb, $apiServer, $type, $api);
 			$mdb->set($collection, $api, ['lastFetched' => time()]);
 			updateApiRow($mdb, $collection, $api, 0);
-			extendApiTime($mdb, $timeQueue, $api, $type);
+			//extendApiTime($mdb, $timeQueue, $api, $type);
 		} catch (Exception $ex) {
 			updateApiRow($mdb, $collection, $api, $ex->getCode());
 			$mdb->remove($collection, $api);
