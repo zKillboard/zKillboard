@@ -155,7 +155,7 @@ function updateEntity($killID, $entity)
         }
 
         $id = $entity[$type]['id'];
-        $name = $entity[$type]['name'];
+        $name = @$entity[$type]['name'];
 
         // Look for the current entry
         $query = ['type' => $type.'ID', 'id' => $id]; //, 'killID' => ['$gte' => $killID]];
