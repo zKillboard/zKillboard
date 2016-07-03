@@ -210,7 +210,7 @@ if (in_array($key, array('character', 'corporation'))) {
     $doc = $mdb->findDoc($collection, ["{$key}ID" => (int) $id], ['lastFetched' => -1]);
     if ($doc !== null) {
 	$apiVerified = true;
-	$nextApiCheck = date('H:i', $doc['lastFetched']);
+	$nextApiCheck = date('H:i', @$doc['lastFetched']);
     }
 }
 
