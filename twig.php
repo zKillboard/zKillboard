@@ -126,8 +126,7 @@ if ($banner) {
 }
 
 $twig->addGlobal('showAds', $showAds);
-$_SERVER['SERVER_NAME'] = 'zkillboard.com';
-//Subdomains::getSubdomainParameters($_SERVER['SERVER_NAME']);
+$_SERVER['SERVER_NAME'] = $baseAddr;
 
 $twig->addGlobal('KillboardName', (isset($killboardName) ? $killboardName : 'zKillboard'));
 
