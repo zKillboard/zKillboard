@@ -28,7 +28,6 @@ if ($ssoCharacterID != null) {
 }
 
 // Theme
-$viewtheme = null;
 $accountBalance = 0;
 $userShowAds = true;
 if ($ssoCharacterID > 0) {

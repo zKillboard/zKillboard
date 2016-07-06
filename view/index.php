@@ -1,6 +1,6 @@
 <?php
 
-global $mdb, $redis, $baseAddr, $fullAddr;
+global $mdb, $redis;
 
 $page = 1;
 $pageTitle = '';
