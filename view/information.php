@@ -2,6 +2,7 @@
 
 global $baseDir, $redis;
 
+$page = preg_replace('[^\W]', "", $page);
 $path = $baseDir."/information/$page.md";
 if (!is_file($path)) {
     $app->redirect('/');
