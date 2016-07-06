@@ -1,5 +1,8 @@
 <?php
 
+use cvweiss\redistools\RedisCache;
+use cvweiss\redistools\RedisTtlCounter;
+
 class Util
 {
 	public static function getCrest($url)

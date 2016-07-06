@@ -1,5 +1,7 @@
 <?php
 
+use cvweiss\redistools\RedisCache;
+
 class Stats
 {
 	public static function getTopIsk($parameters = array(), $allTime = false)

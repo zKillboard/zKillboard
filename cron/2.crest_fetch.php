@@ -1,5 +1,8 @@
 <?php
 
+use cvweiss\redistools\RedisQueue;
+use cvweiss\redistools\RedisTtlCounter;
+
 require_once '../init.php';
 
 global $baseAddr, $baseDir;

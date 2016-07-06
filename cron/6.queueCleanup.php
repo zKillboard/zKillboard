@@ -1,5 +1,7 @@
 <?php
 
+use cvweiss\redistools\RedisQueue;
+
 include_once "../init.php";
 
 $queueCleanup = new RedisQueue("queueCleanup");

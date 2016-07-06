@@ -1,5 +1,7 @@
 <?php
 
+use cvweiss\redistools\RedisCache;
+
 // Interface for zkillboard's MongoDB
 class Mdb
 {

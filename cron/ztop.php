@@ -1,6 +1,8 @@
 #!/usr/bin/php5
 <?php
 
+use cvweiss\redistools\RedisTtlCounter;
+
 require_once '../init.php';
 
 $redisQueues = [];

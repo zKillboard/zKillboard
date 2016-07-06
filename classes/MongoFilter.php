@@ -1,5 +1,7 @@
 <?php
 
+use cvweiss\redistools\RedisCache;
+
 class MongoFilter
 {
     public static function getKills($parameters, $buildQuery = true)

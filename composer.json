@@ -2,6 +2,7 @@
 	"require": {
 		"3rdpartyeve/phealng": "1.*",
 		"3rdpartyeve/perry": "1.*",
+                "cvweiss/redistools": "v0.*",
 		"phpmailer/phpmailer": "*",
 		"dg/twitter-php": "*",
 		"cvweiss/zlibrary" : "*",

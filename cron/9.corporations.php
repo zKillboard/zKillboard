@@ -1,5 +1,8 @@
 <?php
 
+use cvweiss\redistools\RedisTimeQueue;
+use cvweiss\redistools\RedisTtlCounter;
+
 require_once '../init.php';
 
 $counter = 0;

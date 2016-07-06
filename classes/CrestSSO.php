@@ -1,5 +1,7 @@
 <?php
 
+use cvweiss\redistools\RedisTimeQueue;
+
 // Borrowed very heavily from FuzzySteve <3 https://github.com/fuzzysteve/eve-sso-auth/
 class CrestSSO
 {

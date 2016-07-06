@@ -1,5 +1,7 @@
 <?php
 
+use cvweiss\redistools\RedisTtlCounter;
+
 class UserGlobals extends Twig_Extension
 {
 	public function getName()

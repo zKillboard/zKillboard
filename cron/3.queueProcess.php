@@ -1,5 +1,7 @@
 <?php
 
+use cvweiss\redistools\RedisQueue;
+
 require_once '../init.php';
 
 if ($redis->get("tq:itemsPopulated") != true)

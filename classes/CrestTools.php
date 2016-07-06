@@ -1,5 +1,7 @@
 <?php
 
+use cvweiss\redistools\RedisTtlCounter;
+
 class CrestTools
 {
     public static function getJSON($url)

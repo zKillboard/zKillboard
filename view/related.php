@@ -1,5 +1,7 @@
 <?php
 
+use cvweiss\redistools\RedisQueue;
+
 global $baseDir, $mdb, $redis;
 
 $systemID = (int) $system;

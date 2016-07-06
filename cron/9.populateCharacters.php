@@ -1,5 +1,7 @@
 <?php
 
+use cvweiss\redistools\RedisTimeQueue;
+
 require_once '../init.php';
 
 $redisKey = "zkb:populateCharacters";

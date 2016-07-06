@@ -1,5 +1,7 @@
 <?php
 
+use cvweiss\redistools\RedisTtlCounter;
+
 require_once '../init.php';
 
 $root = CrestTools::getJSON($crestServer);

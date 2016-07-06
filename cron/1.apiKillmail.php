@@ -1,5 +1,7 @@
 <?php
 
+use cvweiss\redistools\RedisTimeQueue;
+
 $pid = 1;
 $max = 40;
 $threadNum = 0;

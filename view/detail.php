@@ -1,5 +1,7 @@
 <?php
 
+use cvweiss\redistools\RedisCache;
+
 global $mdb;
 
 $involved = array();

@@ -1,5 +1,9 @@
 <?php
 
+use cvweiss\redistools\RedisTimeQueue;
+use cvweiss\redistools\RedisTtlCounter;
+use cvweiss\redistools\RedisTtlSortedSet;
+
 $pid = 1;
 for ($i = 0; $i < 2; ++$i) {
 	$pid = pcntl_fork();

@@ -1,5 +1,7 @@
 <?php
 
+use cvweiss\redistools\RedisCache;
+
 /**
  * General stuff for getting kills and manipulating them.
  */

@@ -1,5 +1,7 @@
 <?php
 
+use cvweiss\redistools\RedisTtlCounter;
+
 class KillmailParser
 {
     public static function extendApiTime($mdb, $timeQueue, $api, $type)
