@@ -28,7 +28,6 @@ if ($ssoCharacterID != null) {
 }
 
 // Theme
-$viewtheme = null;
 $accountBalance = 0;
 $userShowAds = true;
 if ($ssoCharacterID > 0) {
@@ -126,8 +125,7 @@ if ($banner) {
 }
 
 $twig->addGlobal('showAds', $showAds);
-$_SERVER['SERVER_NAME'] = 'zkillboard.com';
-//Subdomains::getSubdomainParameters($_SERVER['SERVER_NAME']);
+$_SERVER['SERVER_NAME'] = $baseAddr;
 
 $twig->addGlobal('KillboardName', (isset($killboardName) ? $killboardName : 'zKillboard'));
 
