@@ -21,4 +21,4 @@ if ($page == 'payments') {
 }
 
 // Load the information page html, which is just the bare minimum to load base.html and whatnot, and then spit out the markdown output!
-$app->render('information.html', array('data' => $output));
+$app->render('information.html', array('data' => $output, 'pageTitle' => ucfirst($page)));
