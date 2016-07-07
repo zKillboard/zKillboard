@@ -12,7 +12,8 @@ class KillmailParser
         $field = $type == 'char' ? 'characterID' : 'corporationID';
         $query = ["involved.$field" => $id, 'killID' => ['$gte' => ($topKillID - 1000000)]];
         if (!$mdb->exists("killmails", $query)) {
-            $timeQueue->setTime($id, time() + rand(14400, 28800));
+            $time = time() + rand(43200, 86400);
+            $timeQueue->setTime($id, $time);
         }
     }
 

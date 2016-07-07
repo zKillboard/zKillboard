@@ -3,7 +3,7 @@
 use cvweiss\redistools\RedisTimeQueue;
 
 $pid = 1;
-$max = 40;
+$max = 30;
 $threadNum = 0;
 for ($i = 0; $i < $max; ++$i) {
         $pid = pcntl_fork();
@@ -26,7 +26,7 @@ $collection = "api" . $collection;
 $minute = date('Hi');
 $timeQueue = new RedisTimeQueue("zkb:{$type}s", 3600);
 
-if ($threadNum == 0 || $threadNum == 5) {
+if (date('i') % 15 == 0 && ($threadNum == 4 || $threadNum == 5)) {
     $ids = $mdb->getCollection($collection)->distinct($field);
     foreach ($ids as $id) {
         $timeQueue->add($id);
@@ -45,7 +45,7 @@ while ($minute == date('Hi')) {
             KillmailParser::processCharApi($mdb, $apiServer, $type, $api);
             $mdb->set($collection, $api, ['lastFetched' => time()]);
             KillmailParser::updateApiRow($mdb, $collection, $api, 0);
-            //extendApiTime($mdb, $timeQueue, $api, $type);
+            KillmailParser::extendApiTime($mdb, $timeQueue, $api, $type);
         } catch (Exception $ex) {
             KillmailParser::updateApiRow($mdb, $collection, $api, $ex->getCode());
             $mdb->remove($collection, $api);
