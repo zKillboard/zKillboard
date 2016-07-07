@@ -6,6 +6,10 @@ if (!is_numeric($id)) header('Location: /');
 $id = (int) $id;
 
 $info = $mdb->findDoc("information", ['type' => 'typeID', 'id' => (int) $id, 'cacheTime' => 3600]);
+if ($info == null) {
+    $app->render('404.html', ['message' => 'Item not found']);
+    return;
+}
 $info['typeID'] = $info['id'];
 $info['typeName'] = $info['name'];
 $info['description'] = str_replace('<br>', "\n", @$info['description']);
