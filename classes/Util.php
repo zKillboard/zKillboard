@@ -258,9 +258,9 @@ class Util
 
 	public static function pageTimer()
 	{
-		global $timer;
+		global $pageLoadMS;
 
-		return $timer->stop();
+                return (microtime(true) - $pageLoadMS) * 1000;
 	}
 
 	public static function isActive($pageType, $currentPage, $retValue = 'active')

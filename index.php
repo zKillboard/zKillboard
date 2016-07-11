@@ -3,6 +3,8 @@
 use cvweiss\redistools\RedisSessionHandler;
 use cvweiss\redistools\RedisTtlCounter;
 
+$pageLoadMS = microtime(true);
+
 // We can ignore Disqus
 if (@$_SERVER['HTTP_USER_AGENT'] == "Disqus/1.0") die("");
 
