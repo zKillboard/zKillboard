@@ -41,14 +41,13 @@ class Detail
     public static function eftarray($md5, $items, $victimID = 0)
     {
         // EFT / Fitting Wheel
+        $eftarray = array();
         $eftarray['high'] = array(); // high
         $eftarray['mid'] = array(); // mid
         $eftarray['low'] = array(); // low
         $eftarray['rig'] = array(); // rig
         $eftarray['drone'] = array(); // drone
         $eftarray['sub'] = array(); // sub
-        $eftammo['high'] = array(); // high ammo
-        $eftammo['mid'] = array(); // mid ammo
 
         foreach ($items as $itm) {
             if (!isset($itm['inContainer'])) {

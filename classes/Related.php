@@ -229,7 +229,7 @@ class Related
             'red' => [],
             'blue' => []
         ];
-        foreach ($entities as $entityId => $entity) {
+        foreach ($entities as $entity) {
             $affiliationId = self::determineAffiliationId($entity);
             if (is_null($affiliationId)) {
                 continue;
@@ -398,7 +398,6 @@ class Related
 
     public static function compareShips($a, $b)
     {
-	global $redis;
 
 	$aSize = self::getMass(@$a['shipTypeID']);
 	$bSize = self::getMass(@$b['shipTypeID']);

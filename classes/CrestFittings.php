@@ -51,7 +51,7 @@ class CrestFittings {
 			);
 
 	public static function isFit($flag) {
-		foreach (self::$infernoFlags as $key=>$range) {
+		foreach (self::$infernoFlags as $range) {
 			if ($flag >= $range[0] && $flag <= $range[1]) return true;
 		}
 		return false;

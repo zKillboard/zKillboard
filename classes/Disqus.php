@@ -4,7 +4,7 @@ class Disqus
 {
     public static function init()
     {
-        global $disqusSecretKey, $disqusPublicKey, $theme, $fullAddr;
+        global $disqusSecretKey, $disqusPublicKey, $fullAddr;
 
         $userInfo = User::getUserInfo();
         $userID = $userInfo['id'];

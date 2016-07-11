@@ -91,7 +91,7 @@ class Api
 
     public static function getCharacterKeys($userID)
     {
-        global $mdb, $redis;
+        global $mdb;
 
 	$characterIDs = $mdb->find("apiCharacters", ['characterID' => $userID], ['keyID' => 1]);
 	Info::addInfo($characterIDs);

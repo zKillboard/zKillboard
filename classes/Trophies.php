@@ -101,9 +101,9 @@ class Trophies
 
 		$total = 0;
 		$count = 0;
-		foreach ($trophies['trophies'] as $cat=>$more) 
+		foreach ($trophies['trophies'] as $more) 
 		{
-			foreach ($more as $trophy=>$condition)
+			foreach ($more as $condition)
 			{
 				$total += @$condition['level'];
 			$count++;

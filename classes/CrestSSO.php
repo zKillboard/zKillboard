@@ -10,7 +10,7 @@ class CrestSSO
 	// Redirect user to CREST login
 	public static function login()
 	{
-		global $app, $redis, $ccpClientID, $ccpCallback;
+		global $app, $redis, $ccpClientID;
 		// https://sisilogin.testeveonline.com/ https://login.eveonline.com/
 
 		$referrer = @$_SERVER['HTTP_REFERER'] ;
@@ -197,8 +197,6 @@ class CrestSSO
 	}
 
 	public static function crestGet($url) {
-		global $ccpClientID, $ccpSecret;
-
 		$accessToken = CrestSSO::getAccessToken();
 		$authHeader = "Authorization: Bearer $accessToken";
 
@@ -216,8 +214,6 @@ class CrestSSO
 	}
 
 	public static function crestPost($url, $fields) {
-		global $ccpClientID, $ccpSecret;
-
 		$accessToken = CrestSSO::getAccessToken();
 		$authHeader = "Authorization: Bearer $accessToken";
 		$data = json_encode($fields);
