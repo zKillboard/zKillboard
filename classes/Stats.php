@@ -6,8 +6,6 @@ class Stats
 {
 	public static function getTopIsk($parameters = array(), $allTime = false)
 	{
-		global $mdb;
-
 		if (!isset($parameters['limit'])) {
 			$parameters['limit'] = 5;
 		}
@@ -30,7 +28,7 @@ class Stats
 	 */
 	public static function getTop($groupByColumn, $parameters = array(), $cacheOverride = false)
 	{
-		global $mdb, $debug, $longQueryMS;
+		global $mdb, $longQueryMS;
 
 		$hashKey = "Stats::getTop:$groupByColumn:".serialize($parameters);
 		$result = RedisCache::get($hashKey);
@@ -111,7 +109,7 @@ class Stats
 
 	public static function getDistinctCount($groupByColumn, $parameters = [])
 	{
-		global $mdb, $debug, $longQueryMS;
+		global $mdb, $longQueryMS;
 
 		$hashKey = "distinctCount::$groupByColumn:".serialize($parameters);
 		$result = RedisCache::get($hashKey);
@@ -202,6 +200,8 @@ class Stats
 				$type = ucfirst($type);
 			}
 			$type = $type.'s';
+			
+			$row = array();
 			$row['type'] = $type;
 			$row['count'] = $result;
 			$activePvP[strtolower($type)] = $row;

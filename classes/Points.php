@@ -8,8 +8,6 @@ class Points
 		$categoryID = Info::getInfoField('groupID', $groupID, 'categoryID');
 		if ($categoryID != 6) return 1;
 
-		$name = Info::getInfoField('typeID', $typeID, 'name');
-
 		$dogma = ['hp', 'armorHP', 'shieldCapacity'];
 		$sum = 0;
 		foreach ($dogma as $attr) {
@@ -26,7 +24,6 @@ class Points
 		if (!isset($kill['involved']['0']['shipTypeID'])) return 1;
 		$vicpoints = self::getPoints($kill['involved']['0']['shipTypeID']);
 		$vicpoints += floor(log($price / 10000000));
-		$maxpoints = round($vicpoints);
 
 		$invpoints = 0;
 		foreach ($kill['involved'] as $key => $inv) {

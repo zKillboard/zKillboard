@@ -66,8 +66,6 @@ class MongoFilter
 
     public static function buildQuery(&$parameters, $useElemMatch = true)
     {
-        global $mdb;
-
         $elemMatch = [];
         $and = [];
 

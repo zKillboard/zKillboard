@@ -215,6 +215,7 @@ class Mdb
 	 */
 	public function findField($collection, $field, $query = [], $sort = [])
 	{
+	    $includes = array();
 		$includes[$field] = 1;
 		$result = $this->findDoc($collection, $query, $sort, $includes);
 

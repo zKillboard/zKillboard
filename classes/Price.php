@@ -146,7 +146,7 @@ class Price
 
 	protected static function getCrestPrices($typeID)
 	{
-		global $mdb, $debug, $crestServer;
+		global $mdb, $crestServer;
 
 		$marketHistory = $mdb->findDoc("prices", ['typeID' => $typeID]);
 		if ($marketHistory === null)

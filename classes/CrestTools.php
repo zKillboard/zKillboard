@@ -47,7 +47,7 @@ class CrestTools
 
     public static function fetch($id, $hash = null)
     {
-        global $mdb, $crestServer;
+        global $crestServer;
 
         $url = "$crestServer/killmails/$id/$hash/";
         return self::getJSON($url);
