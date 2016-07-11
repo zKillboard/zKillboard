@@ -64,6 +64,8 @@ if ($details == null) {
 		$extra['involved'] = $involved;
 		$extra['allinvolved'] = $allinvolved;
 	}
+        $insDate = (int) str_replace("-", "", substr($killdata['info']['dttm'], 0, 10));
+        $extra['insurance'] = $mdb->findDoc("insurance", ['typeID' => (int) $killdata['victim']['shipTypeID'], 'date' => $insDate]);
 
 	$extra['location'] = @$killdata['info']['location']['itemName'];
 	if (isset($rawmail['victim']['position'])) {

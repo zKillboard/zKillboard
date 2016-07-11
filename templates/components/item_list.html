@@ -55,3 +55,17 @@
 	</tbody>
 </table>
 
+{% if extra.insurance.Basic.payout > 0 %}
+<div class="col-lg-4">
+<h4>Insurance <small>Possible payouts</small></h4>
+<table class="table table-condensed" style="text-align: right">
+    <tr><th style="text-align: right">Type</th><th style="text-align: right">Cost</th><th style="text-align: right">Value</th></tr>
+    <tr><td>Basic</td><td>{{ extra.insurance.Basic.cost|number_format(2) }}</td><td>{{ extra.insurance.Basic.payout|number_format(2) }}</td></tr>
+    <tr><td>Standard</td><td>{{ extra.insurance.Standard.cost|number_format(2) }}</td><td>{{ extra.insurance.Standard.payout|number_format(2) }}</td></tr>
+    <tr><td>Bronze</td><td>{{ extra.insurance.Bronze.cost|number_format(2) }}</td><td>{{ extra.insurance.Bronze.payout|number_format(2) }}</td></tr>
+    <tr><td>Silver</td><td>{{ extra.insurance.Silver.cost|number_format(2) }}</td><td>{{ extra.insurance.Silver.payout|number_format(2) }}</td></tr>
+    <tr><td>Gold</td><td>{{ extra.insurance.Gold.cost|number_format(2) }}</td><td>{{ extra.insurance.Gold.payout|number_format(2) }}</td></tr>
+    <tr><td>Platinum</td><td>{{ extra.insurance.Platinum.cost|number_format(2) }}</td><td>{{ extra.insurance.Platinum.payout|number_format(2) }}</td></tr>
+</table>
+</div>
+{% endif %}
