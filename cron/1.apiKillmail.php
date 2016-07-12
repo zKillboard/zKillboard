@@ -6,14 +6,14 @@ $pid = 1;
 $max = 30;
 $threadNum = 0;
 for ($i = 0; $i < $max; ++$i) {
-        $pid = pcntl_fork();
-        if ($pid == -1) {
-                exit();
-        }
-        if ($pid == 0) {
-                break;
-        }
-        $threadNum++;
+    $pid = pcntl_fork();
+    if ($pid == -1) {
+        exit();
+    }
+    if ($pid == 0) {
+        break;
+    }
+    $threadNum++;
 }
 
 require_once '../init.php';

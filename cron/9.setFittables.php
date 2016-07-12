@@ -4,8 +4,8 @@ require_once '../init.php';
 
 if ($redis->get("tq:itemsPopulated") != true)
 {
-        Util::out("Waiting for items to be populated...");
-        exit();
+    Util::out("Waiting for items to be populated...");
+    exit();
 }
 
 $key = date('YmdH');

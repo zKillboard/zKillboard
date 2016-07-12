@@ -3,7 +3,7 @@
 global $redis;
 
 $imageMap = ['typeID' => 'Type/%1$d_32.png', 'characterID' => 'Character/%1$d_32.jpg', 'corporationID' => 'Corporation/%1$d_32.png', 'allianceID' => 'Alliance/%1$d_32.png', 'factionID' => 'Alliance/%1$d_32.png'];
-    
+
 if ($app->request()->isPost()) {
     $search = $app->request()->post('query');
 }

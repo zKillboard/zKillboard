@@ -15,21 +15,21 @@ $crestPrices = CrestTools::getJson("$crestServer/market/prices/");
 if (!isset($crestPrices['items'])) exit();
 
 foreach ($crestPrices['items'] as $item) {
-	$typeID = $item['type']['id'];
-	$price = Price::getItemPrice($typeID, $date, true);
+    $typeID = $item['type']['id'];
+    $price = Price::getItemPrice($typeID, $date, true);
 
-	$marketHistory = $mdb->findDoc("prices", ['typeID' => $typeID]);
-	if ($marketHistory === null)
-	{
-		$marketHistory = ['typeID' => $typeID];
-		$mdb->save("prices", $marketHistory);
-	}
+    $marketHistory = $mdb->findDoc("prices", ['typeID' => $typeID]);
+    if ($marketHistory === null)
+    {
+        $marketHistory = ['typeID' => $typeID];
+        $mdb->save("prices", $marketHistory);
+    }
 
-	if (!isset($marketHistory[$yesterday]) && isset($item['averagePrice']))
-	{
-		$avgPrice = $item['averagePrice'];
-		$mdb->set("prices", ['typeID' => $typeID], [$yesterday => $avgPrice]);
-	}
+    if (!isset($marketHistory[$yesterday]) && isset($item['averagePrice']))
+    {
+        $avgPrice = $item['averagePrice'];
+        $mdb->set("prices", ['typeID' => $typeID], [$yesterday => $avgPrice]);
+    }
 
 }
 

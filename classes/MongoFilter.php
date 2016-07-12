@@ -121,8 +121,8 @@ class MongoFilter
                     $and[] = ['dttm' => ['$lte' => new MongoDate($time + (3600 * $exHours))]];
                     break;
                 case 'pastSeconds':
-            	    $value = min($value, (90 * 86400));
-		    $value = max(0, $value);
+                    $value = min($value, (90 * 86400));
+                    $value = max(0, $value);
                     $and[] = ['dttm' => ['$gte' => new MongoDate(time() - $value)]];
                     break;
                 case 'beforeKillID':
@@ -172,12 +172,12 @@ class MongoFilter
                         $and[] = ['involved.finalBlow' => true];
                     }
                     break;
-		case 'locationID':
+                case 'locationID':
                     $and[] = ['locationID' => $filter];
                     break;	
-		case 'categoryID':
-			$and[] = ['categoryID' => $filter];
-			break;
+                case 'categoryID':
+                    $and[] = ['categoryID' => $filter];
+                    break;
                 case 'allianceID':
                 case 'characterID':
                 case 'corporationID':

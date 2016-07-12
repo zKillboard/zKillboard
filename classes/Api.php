@@ -7,11 +7,11 @@ class Api
         global $mdb;
 
         $keyID = (int) $keyID;
-	if ($keyID == 0) return 'Invalid keyID';
+        if ($keyID == 0) return 'Invalid keyID';
 
-	$before = $vCode;
-	$vCode = preg_replace( '/[^a-z0-9]/i', "", (string) $vCode);
-	if ($before != $vCode) return 'Invalid vCode';
+        $before = $vCode;
+        $vCode = preg_replace( '/[^a-z0-9]/i', "", (string) $vCode);
+        if ($before != $vCode) return 'Invalid vCode';
 
         $userID = User::getUserID();
         if ($userID == null) {
@@ -29,7 +29,7 @@ class Api
             return 'We already have this API in our database.';
         }
 
-	$row = ['keyID' => $keyID, 'vCode' => $vCode, 'label' => $label, 'lastApiUpdate' => new MongoDate(2), 'userID' => $userID];
+        $row = ['keyID' => $keyID, 'vCode' => $vCode, 'label' => $label, 'lastApiUpdate' => new MongoDate(2), 'userID' => $userID];
         $mdb->save('apis', $row);
 
         return 'Success, your API has been added.';
@@ -48,11 +48,11 @@ class Api
         if ($result['n'] > 0) {
             $mdb->remove('apiCharacters', ['keyID' => (int) $keyID]);
         }
-	try {
-		$mdb->remove('apisCrest', ['_id' => new MongoID("$keyID"), 'characterID' => $userID]);
-	} catch (Exception $ex) {
-		// Just ignore it
-	}
+        try {
+            $mdb->remove('apisCrest', ['_id' => new MongoID("$keyID"), 'characterID' => $userID]);
+        } catch (Exception $ex) {
+            // Just ignore it
+        }
 
         return "$keyID has been deleted";
     }
@@ -66,26 +66,26 @@ class Api
         }
 
         $result = $mdb->find('apis', ['userID' => $userID]);
-	$retVal = [];
-	foreach ($result as $row) {
-		$row['lastFetched'] = date('Y/m/d H:i', $row['lastFetched']);
-		$retVal[] = $row;
-	}
+        $retVal = [];
+        foreach ($result as $row) {
+            $row['lastFetched'] = date('Y/m/d H:i', $row['lastFetched']);
+            $retVal[] = $row;
+        }
 
         return $retVal;
     }
 
     public static function getSsoKeys($userID = 0)
     {
-	global $mdb;
+        global $mdb;
 
-	$retVal = [];
-	$result = $mdb->find("apisCrest", ['characterID' => $userID]);
-	foreach ($result as $row) {
-		$row['lastValidation'] = date('Y/m/d H:i', $row['lastFetch']);
-		$retVal[] = $row;
-	}
-	return $retVal;
+        $retVal = [];
+        $result = $mdb->find("apisCrest", ['characterID' => $userID]);
+        foreach ($result as $row) {
+            $row['lastValidation'] = date('Y/m/d H:i', $row['lastFetch']);
+            $retVal[] = $row;
+        }
+        return $retVal;
     }
 
 
@@ -93,9 +93,9 @@ class Api
     {
         global $mdb;
 
-	$characterIDs = $mdb->find("apiCharacters", ['characterID' => $userID], ['keyID' => 1]);
-	Info::addInfo($characterIDs);
-	return $characterIDs;
+        $characterIDs = $mdb->find("apiCharacters", ['characterID' => $userID], ['keyID' => 1]);
+        Info::addInfo($characterIDs);
+        return $characterIDs;
     }
 
     /**
@@ -109,10 +109,10 @@ class Api
      */
     public static function getCharacters($userID)
     {
-	    $result = self::getCharacterKeys($userID);
-	    Info::addInfo($result);
+        $result = self::getCharacterKeys($userID);
+        Info::addInfo($result);
 
-	    return $result;
+        return $result;
     }
 
     /**
@@ -126,6 +126,6 @@ class Api
      */
     public static function hasBits($accessMask)
     {
-	    return ((int) ($accessMask & 256) > 0);
+        return ((int) ($accessMask & 256) > 0);
     }
 }

@@ -25,7 +25,7 @@ if ($i == 30) {
 while ($timer->stop() < 55000) {
     $id = $queueCorps->next();
     if ($id == null) {
-	exit();
+        exit();
     }
     $row = $mdb->findDoc('information', ['type' => 'corporationID', 'id' => (int) $id]);
 
@@ -34,7 +34,7 @@ while ($timer->stop() < 55000) {
         $id = (int) $row['id'];
         $raw = @file_get_contents("https://api.eveonline.com/corp/CorporationSheet.xml.aspx?corporationID=$id");
         if ($raw != '') {
-	    $xmlSuccess->add(uniqid());
+            $xmlSuccess->add(uniqid());
             ++$counter;
             $xml = @simplexml_load_string($raw);
             if ($xml != null) {

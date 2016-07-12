@@ -13,10 +13,10 @@ class Disqus
         $characterID = (isset($userInfo['characterID']) ? $userInfo['characterID'] : null);
 
         $data = array(
-            'id' => $userID,
-            'username' => $username,
-            'email' => $email,
-        );
+                'id' => $userID,
+                'username' => $username,
+                'email' => $email,
+                );
 
         if ($characterID) {
             $data['avatar'] = "https://image.eveonline.com/Character/{$characterID}_32.jpg";
@@ -42,6 +42,6 @@ class Disqus
         $js .= "		};\n";
         $js .= '	};';
 
-        return $js;
-    }
+    return $js;
+}
 }

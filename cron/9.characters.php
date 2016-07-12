@@ -23,7 +23,7 @@ while ($timer->stop() < 59000) {
     }
 
     if (sizeof($ids) == 0) {
-	exit();
+        exit();
     }
 
     $stringIDs = implode(',', $ids);
@@ -31,7 +31,7 @@ while ($timer->stop() < 59000) {
     file_get_contents("https://evewho.com/add.php?id=$stringIDs");
     $raw = @file_get_contents($href);
     if ($raw == '') {
-	$xmlFailure->add(uniqid());
+        $xmlFailure->add(uniqid());
         exit();
     }
     $xmlSuccess->add(uniqid());
@@ -40,14 +40,14 @@ while ($timer->stop() < 59000) {
     foreach ($xml->result->rowset->row as $info) {
         $id = (int) $info['characterID'];
         $row = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $id]);
-	if ($row === null) {
-		sleep(1);
-		continue;
-	}
+        if ($row === null) {
+            sleep(1);
+            continue;
+        }
 
         if (isset($info['characterName'])) {
             ++$counter;
-	    //if (!isset($row['name'])) continue;
+            //if (!isset($row['name'])) continue;
             if ((string) @$row['name'] != (string) $info['characterName']) {
                 $mdb->set('information', $row, ['name' => (string) $info['characterName']]);
             }

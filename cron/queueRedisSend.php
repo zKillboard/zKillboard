@@ -8,8 +8,8 @@ global $redisQServer;
 
 if ($redisQServer == null) 
 {
-	$redis->del("queueRedisQ");
-	exit();
+    $redis->del("queueRedisQ");
+    exit();
 }
 
 $queueRedisQ = new RedisQueue('queueRedisQ');
@@ -32,7 +32,7 @@ while ($timer->stop() <= 59000) {
 
     $result = RedisQ\Action::queue($redisQServer, $redisQAuthUser, $redisQAuthPass, $package);
     if (@$result['success'] != true) {
-	$queueRedisQ->push($killID);
-	sleep(1);
+        $queueRedisQ->push($killID);
+        sleep(1);
     }
 }

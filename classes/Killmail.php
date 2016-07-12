@@ -2,52 +2,52 @@
 
 class Killmail
 {
-	// https://forums.eveonline.com/default.aspx?g=posts&m=4900335#post4900335
-	public static function getCrestHash($killID, $killmail)
-	{
-		$victim = $killmail['victim'];
-		$victimID = $victim['characterID'] == 0 ? 'None' : $victim['characterID'];
+    // https://forums.eveonline.com/default.aspx?g=posts&m=4900335#post4900335
+    public static function getCrestHash($killID, $killmail)
+    {
+        $victim = $killmail['victim'];
+        $victimID = $victim['characterID'] == 0 ? 'None' : $victim['characterID'];
 
-		$attackers = $killmail['attackers'];
-		$attacker = null;
-		if ($attackers != null) {
-			foreach ($attackers as $att) {
-				if ($att['finalBlow'] != 0) {
-					$attacker = $att;
-				}
-			}
-		}
-		if ($attacker == null) {
-			$attacker = $attackers[0];
-		}
-		$attackerID = $attacker['characterID'] == 0 ? 'None' : $attacker['characterID'];
+        $attackers = $killmail['attackers'];
+        $attacker = null;
+        if ($attackers != null) {
+            foreach ($attackers as $att) {
+                if ($att['finalBlow'] != 0) {
+                    $attacker = $att;
+                }
+            }
+        }
+        if ($attacker == null) {
+            $attacker = $attackers[0];
+        }
+        $attackerID = $attacker['characterID'] == 0 ? 'None' : $attacker['characterID'];
 
-		$shipTypeID = $victim['shipTypeID'];
+        $shipTypeID = $victim['shipTypeID'];
 
-		$dttm = (strtotime($killmail['killTime']) * 10000000) + 116444736000000000;
+        $dttm = (strtotime($killmail['killTime']) * 10000000) + 116444736000000000;
 
-		$string = "$victimID$attackerID$shipTypeID$dttm";
+        $string = "$victimID$attackerID$shipTypeID$dttm";
 
-		$sha = sha1($string);
+        $sha = sha1($string);
 
-		return $sha;
-	}
+        return $sha;
+    }
 
-	public static function deleteKillmail($killID)
-	{
-		global $mdb, $redis;
+    public static function deleteKillmail($killID)
+    {
+        global $mdb, $redis;
 
-		$killmail = $mdb->findDoc("killmails", ['killID' => $killID]);
+        $killmail = $mdb->findDoc("killmails", ['killID' => $killID]);
 
-		foreach ($killmail['involved'] as $involved) {
-			foreach ($involved as $type=>$id) {
-				$mdb->remove("statistics", ['type' => $type, 'id' => (int) $id]);
-			}
-		}
-		$mdb->remove("killmails", ['killID' => $killID]);
-		$mdb->remove("rawmails", ['killID' => $killID]);
-		$mdb->remove("oneWeek", ['killID' => $killID]);
-		$mdb->set("crestmails", ['killID' => $killID], ['processed' => false]);
-		$redis->del("CacheKill:$killID:overview");
-	}
+        foreach ($killmail['involved'] as $involved) {
+            foreach ($involved as $type=>$id) {
+                $mdb->remove("statistics", ['type' => $type, 'id' => (int) $id]);
+            }
+        }
+        $mdb->remove("killmails", ['killID' => $killID]);
+        $mdb->remove("rawmails", ['killID' => $killID]);
+        $mdb->remove("oneWeek", ['killID' => $killID]);
+        $mdb->set("crestmails", ['killID' => $killID], ['processed' => false]);
+        $redis->del("CacheKill:$killID:overview");
+    }
 }

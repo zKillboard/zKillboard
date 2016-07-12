@@ -19,8 +19,8 @@ do {
     $row = $queueStats->pop();
     if ($row !== null) calcStats($row);
     else {
-	$noRowCount++;
-	if ($noRowCount >= 5) exit();
+        $noRowCount++;
+        if ($noRowCount >= 5) exit();
     }
 } while ($timer->stop() <= $maxTime);
 $status = 0;

@@ -3,8 +3,8 @@
 try {
     $queryString = $_SERVER['QUERY_STRING'];
     if ($queryString != '') {
-	header('HTTP/1.0 403 Forbidden - Do not include a query string to evade cache');
-	exit();
+        header('HTTP/1.0 403 Forbidden - Do not include a query string to evade cache');
+        exit();
     }
 
     $parameters = Util::convertUriToParameters();

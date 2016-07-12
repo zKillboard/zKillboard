@@ -17,7 +17,7 @@ while ($iterations++ <= 1200) {
 
     $isHardened = $redis->ttl("zkb:isHardened");
     if ($isHardened > 0) {
-	addInfo('seconds remaining in Cached/Hardened Mode', $isHardened);
+        addInfo('seconds remaining in Cached/Hardened Mode', $isHardened);
         addInfo('', 0);
     }
 

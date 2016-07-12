@@ -18,9 +18,6 @@ class Feed
 
         $userAgent = @$_SERVER['HTTP_USER_AGENT'];
 
-        if ($debug) {
-            Log::log('API Fetch: '.$_SERVER['REQUEST_URI'].' ('.$ip.' / '.$userAgent.')');
-        }
         if (isset($parameters['limit']) && $parameters['limit'] > 200) {
             $parameters['limit'] = 200;
         }

@@ -193,11 +193,11 @@ class Related
 
         $retValue = array();
         foreach ($team as $entity) {
-	    $name = $redis->hGet("tq:allianceID:$entity", "name");
-	    if ($name == null) $name = $redis->hGet("tq:corporationID:$entity", "name");
-	    if ($name == null) $name = $mdb->findField('information', 'name', ['cacheTime' => 3600, 'id' => ((int) $entity)]);
-	    if ($name == null) $name = "Entity $entity";
-	    $retValue[$entity] = $name;
+            $name = $redis->hGet("tq:allianceID:$entity", "name");
+            if ($name == null) $name = $redis->hGet("tq:corporationID:$entity", "name");
+            if ($name == null) $name = $mdb->findField('information', 'name', ['cacheTime' => 3600, 'id' => ((int) $entity)]);
+            if ($name == null) $name = "Entity $entity";
+            $retValue[$entity] = $name;
         }
 
         return $retValue;
@@ -228,7 +228,7 @@ class Related
         $teams = [
             'red' => [],
             'blue' => []
-        ];
+                ];
         foreach ($entities as $entity) {
             $affiliationId = self::determineAffiliationId($entity);
             if (is_null($affiliationId)) {
@@ -389,18 +389,18 @@ class Related
 
     public static function getMass($typeID)
     {
-	if (!isset(self::$masses[$typeID])) {
-		$mass = (int) Info::getInfoField('typeID', $typeID, 'mass');
-		self::$masses[$typeID] = $mass;
-	}
-	return self::$masses[$typeID];
+        if (!isset(self::$masses[$typeID])) {
+            $mass = (int) Info::getInfoField('typeID', $typeID, 'mass');
+            self::$masses[$typeID] = $mass;
+        }
+        return self::$masses[$typeID];
     }
 
     public static function compareShips($a, $b)
     {
 
-	$aSize = self::getMass(@$a['shipTypeID']);
-	$bSize = self::getMass(@$b['shipTypeID']);
+        $aSize = self::getMass(@$a['shipTypeID']);
+        $bSize = self::getMass(@$b['shipTypeID']);
 
         return $aSize < $bSize;
     }

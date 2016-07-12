@@ -13,9 +13,9 @@ class CrestTools
     {
         global $baseAddr;
 
-	$crestSuccess = new RedisTtlCounter('ttlc:CrestSuccess', 300);
-	$crestFailure = new RedisTtlCounter('ttlc:CrestFailure', 300);
-	$errorCodes = [403, 404, 415, 500];
+        $crestSuccess = new RedisTtlCounter('ttlc:CrestSuccess', 300);
+        $crestFailure = new RedisTtlCounter('ttlc:CrestFailure', 300);
+        $errorCodes = [403, 404, 415, 500];
 
         $numTries = 0;
         $httpCode = null;
@@ -26,16 +26,16 @@ class CrestTools
             curl_setopt($ch, CURLOPT_USERAGENT, "Crest Fetcher for https://$baseAddr");
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
             curl_setopt($ch, CURLOPT_TIMEOUT, 30); //timeout in seconds
-	    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
             $body = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if ($httpCode == 200) {
-		$crestSuccess->add(uniqid());
+                $crestSuccess->add(uniqid());
                 return $body;
             }
-	    $crestFailure->add(uniqid());
+            $crestFailure->add(uniqid());
 
-	    if (in_array($httpCode, $errorCodes)) return $httpCode;
+            if (in_array($httpCode, $errorCodes)) return $httpCode;
 
             ++$numTries;
             sleep(1);

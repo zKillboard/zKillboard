@@ -12,7 +12,7 @@ $queueCharacters = new RedisTimeQueue('tqCharacters', 86400);
 
 $characters = $information->find(['type' => 'characterID']);
 foreach ($characters as $char) {
-	$queueCharacters->add($char['id']);
+    $queueCharacters->add($char['id']);
 }
 
 $redis->setex($redisKey, 3600, true);

@@ -57,7 +57,7 @@ class Detail
                 $itm['flagName'] = Info::getInfoField('groupID', Info::getGroupID($itm['typeID']), 'name');
             } elseif (!isset($itm['flagName'])) {
                 $itm['flagName'] = Info::getFlagName($itm['flag']);
-		if ($itm['flagName'] == null || $itm['flagName'] == '') Log::log("Unknown flag " . $itm['flag']);
+                if ($itm['flagName'] == null || $itm['flagName'] == '') Log::log("Unknown flag " . $itm['flag']);
             }
 
             if ($itm['flagName'] == 'Infantry Modules') {
@@ -70,7 +70,7 @@ class Detail
                 $itm['flagName'] = 'Low Slots';
             }
             if ($itm['flag'] == 89) {
-		$slot = Info::getInfoField('typeID', $itm['typeID'], 'implantSlot');
+                $slot = Info::getInfoField('typeID', $itm['typeID'], 'implantSlot');
                 if ($slot <= 5 && $slot >= 1) {
                     $itm['flagName'] = 'High Slots';
                     $itm['flag'] = 27 + ($slot - 1);
@@ -102,7 +102,7 @@ class Detail
                     $i = 0;
                     while ($i < $repeats) {
                         if ($itm['flagName'] == 'High Slots') {
-                            high:
+high:
                             if (isset($eftarray['high'][$itm['flag']])) {
                                 $itm['flag'] = $itm['flag'] + 1;
                                 goto high;
@@ -110,7 +110,7 @@ class Detail
                             $eftarray['high'][$itm['flag']][] = array('typeName' => $itm['typeName'], 'typeID' => $itm['typeID']);
                         }
                         if ($itm['flagName'] == 'Mid Slots') {
-                            mid:
+mid:
                             if (isset($eftarray['mid'][$itm['flag']])) {
                                 $itm['flag'] = $itm['flag'] + 1;
                                 goto mid;
@@ -118,7 +118,7 @@ class Detail
                             $eftarray['mid'][$itm['flag']][] = array('typeName' => $itm['typeName'], 'typeID' => $itm['typeID']);
                         }
                         if ($itm['flagName'] == 'Low Slots') {
-                            low:
+low:
                             if (isset($eftarray['low'][$itm['flag']])) {
                                 $itm['flag'] = $itm['flag'] + 1;
                                 goto low;
@@ -126,7 +126,7 @@ class Detail
                             $eftarray['low'][$itm['flag']][] = array('typeName' => $itm['typeName'], 'typeID' => $itm['typeID']);
                         }
                         if ($itm['flagName'] == 'Rigs') {
-                            rigs:
+rigs:
                             if (isset($eftarray['rig'][$itm['flag']])) {
                                 $itm['flag'] = $itm['flag'] + 1;
                                 goto rigs;
@@ -134,7 +134,7 @@ class Detail
                             $eftarray['rig'][$itm['flag']][] = array('typeName' => $itm['typeName'], 'typeID' => $itm['typeID']);
                         }
                         if ($itm['flagName'] == 'SubSystems') {
-                            subs:
+subs:
                             if (isset($eftarray['sub'][$itm['flag']])) {
                                 $itm['flag'] = $itm['flag'] + 1;
                                 goto subs;
@@ -226,7 +226,7 @@ class Detail
     public static function fullCombinedItems($md5, $items)
     {
         // Create the new item array with combined items and whatnot
-                $itemList = array();
+        $itemList = array();
         foreach ($items as $itm) {
             if ($itm['fittable'] != 1) {
                 continue;

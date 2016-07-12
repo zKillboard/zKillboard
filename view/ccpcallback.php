@@ -2,10 +2,10 @@
 
 function auth_error($error)
 {
-	global $app;
+    global $app;
 
-	$app->render("error.html", ['message' => $error]);
-	exit();
+    $app->render("error.html", ['message' => $error]);
+    exit();
 }
 
 CrestSSO::callback();

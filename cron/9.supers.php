@@ -13,26 +13,26 @@ $redis->setex($key, 86400, true);
 
 function doSuperResult($result)
 {
-	foreach ($result as $row) doSupers($row);
+    foreach ($result as $row) doSupers($row);
 }
 
 function doSupers($row)
 {
-	global $mdb; 
+    global $mdb; 
 
-	$type = $row['type'];
-	$id = (int) $row['id'];
+    $type = $row['type'];
+    $id = (int) $row['id'];
 
-	$query = [$type => (int) $id, 'isVictim' => false, 'groupID' => [659, 30], 'pastSeconds' => (90 * 86400)];
-	$query = MongoFilter::buildQuery($query);
-	$hasSupers = $mdb->exists('killmails', $query);
+    $query = [$type => (int) $id, 'isVictim' => false, 'groupID' => [659, 30], 'pastSeconds' => (90 * 86400)];
+    $query = MongoFilter::buildQuery($query);
+    $hasSupers = $mdb->exists('killmails', $query);
 
-	if ($hasSupers == false)
-	{
-		$mdb->set("statistics", ['type' => $type, 'id' => $id], ['hasSupers' => false, 'supers' => []]);
-	} else
-	{
-		$supers = Stats::getSupers($type, $id);
-		$mdb->set("statistics", ['type' => $type, 'id' => $id], ['hasSupers' => true, 'supers' => $supers]);
-	}
+    if ($hasSupers == false)
+    {
+        $mdb->set("statistics", ['type' => $type, 'id' => $id], ['hasSupers' => false, 'supers' => []]);
+    } else
+    {
+        $supers = Stats::getSupers($type, $id);
+        $mdb->set("statistics", ['type' => $type, 'id' => $id], ['hasSupers' => true, 'supers' => $supers]);
+    }
 }

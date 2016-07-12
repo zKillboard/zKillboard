@@ -11,17 +11,17 @@ if (@$_SERVER['HTTP_USER_AGENT'] == "Disqus/1.0") die("");
 // Check to ensure we have a trailing slash, helps with caching
 $uri = @$_SERVER['REQUEST_URI'];
 if (substr($uri, -1) != '/') {
-	header('Access-Control-Allow-Origin: *');
-	header('Access-Control-Allow-Methods: GET');
-	header("Location: $uri/");
-	exit();
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET');
+    header("Location: $uri/");
+    exit();
 }
 
 // http requests should already be prevented, but use this just in case
 // also prevents sessions from being created without ssl
 if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] != 'https') {
-	header("Location: https://zkillboard.com$uri");
-	die();
+    header("Location: https://zkillboard.com$uri");
+    die();
 }
 
 // Include Init
@@ -44,10 +44,10 @@ else $nonApiR->add(uniqid());
 
 $ip = IP::get();
 if ($ip != "127.0.0.1") {
-	$visitors = new RedisTtlCounter('ttlc:visitors', 300);
-	$visitors->add($ip);
-	$requests = new RedisTtlCounter('ttlc:requests', 300);
-	$requests->add(uniqid());
+    $visitors = new RedisTtlCounter('ttlc:visitors', 300);
+    $visitors->add($ip);
+    $requests = new RedisTtlCounter('ttlc:requests', 300);
+    $requests->add(uniqid());
 }
 
 $load = Load::getLoad();

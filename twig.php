@@ -12,27 +12,27 @@ $twig = $app->view()->getEnvironment();
 // Check SSO values
 $ssoCharacterID = @$_SESSION['characterID'];
 if ($ssoCharacterID != null) {
-	$key = "login:" . $ssoCharacterID . ":" . session_id();
-	$refreshToken = $redis->get("$key:refreshToken");
-	$scopes = $redis->get("$key:scopes");
-	if ($refreshToken != null) {
-		$twig->addGlobal('characterID', (int) $ssoCharacterID);
-	} else {
-		unset($_SESSION['characterID']);
-	}
-	if($scopes != null) {
-		$twig->addGlobal('scopes', explode(" ", $scopes));
-	}
+    $key = "login:" . $ssoCharacterID . ":" . session_id();
+    $refreshToken = $redis->get("$key:refreshToken");
+    $scopes = $redis->get("$key:scopes");
+    if ($refreshToken != null) {
+        $twig->addGlobal('characterID', (int) $ssoCharacterID);
+    } else {
+        unset($_SESSION['characterID']);
+    }
+    if($scopes != null) {
+        $twig->addGlobal('scopes', explode(" ", $scopes));
+    }
 } else {
-		$twig->addGlobal('characterID', 0);
+    $twig->addGlobal('characterID', 0);
 }
 
 // Theme
 $accountBalance = 0;
 $userShowAds = true;
 if ($ssoCharacterID > 0) {
-	$adFreeUntil = (int) $redis->hGet("user:$ssoCharacterID", "adFreeUntil");
-	$userShowAds = ($adFreeUntil < time());
+    $adFreeUntil = (int) $redis->hGet("user:$ssoCharacterID", "adFreeUntil");
+    $userShowAds = ($adFreeUntil < time());
 }
 
 $uri = $_SERVER['REQUEST_URI'];
@@ -40,23 +40,23 @@ $explode = explode('/', $uri);
 $expager = explode('/', $uri);
 
 foreach ($expager as $key => $ex) {
-	if (in_array($ex, array('page'))) {
-		unset($expager[$key]);
-		unset($expager[$key + 1]);
-	}
+    if (in_array($ex, array('page'))) {
+        unset($expager[$key]);
+        unset($expager[$key + 1]);
+    }
 }
 
 foreach ($explode as $key => $ex) {
-	if (in_array($ex, array('year', 'month', 'page'))) {
-		// find the key for the page array
-		unset($explode[$key]);
-		unset($explode[$key + 1]);
-	}
+    if (in_array($ex, array('year', 'month', 'page'))) {
+        // find the key for the page array
+        unset($explode[$key]);
+        unset($explode[$key + 1]);
+    }
 }
 
 $requestUri = implode('/', $expager);
 if (sizeof($requestUri) == 0 || substr($requestUri, -1) != '/') {
-	$requestUri .= '/';
+    $requestUri .= '/';
 }
 $twig->addGlobal('requestUriPager', $requestUri);
 $actualURI = implode('/', $explode);
@@ -64,10 +64,10 @@ $twig->addGlobal('actualURI', $actualURI);
 
 $uriParams = [];
 try {
-	$uriParams = Util::convertUriToParameters();
+    $uriParams = Util::convertUriToParameters();
 } catch (Exception $ex) {
-	header("HTTP/ 400 " . $ex->getMessage());
-	die();
+    header("HTTP/ 400 " . $ex->getMessage());
+    die();
 }
 $uriParams = Util::convertUriToParameters();
 
@@ -100,16 +100,16 @@ $disqus &= UserConfig::get('showDisqus', true);
 $twig->addGlobal('disqusLoad', $disqus);
 $noAdPages = array('/account/', '/ticket', '/information/', '/post/');
 foreach ($noAdPages as $noAdPage) {
-	$showAds &= !Util::startsWith($uri, $noAdPage);
+    $showAds &= !Util::startsWith($uri, $noAdPage);
 }
 $showAds &= $userShowAds;
 
 $twig->addglobal('showAnalytics', $showAnalytics);
 if ($disqus) {
-	$twig->addGlobal('disqusShortName', $disqusShortName);
+    $twig->addGlobal('disqusShortName', $disqusShortName);
 }
 if ($disqusSSO) {
-	$twig->addglobal('disqusSSO', Disqus::init());
+    $twig->addglobal('disqusSSO', Disqus::init());
 }
 
 // User's account balance
@@ -119,9 +119,9 @@ $twig->addGlobal('adFreeMonthCost', $adFreeMonthCost);
 // Display a banner?
 $banner = false;
 if ($banner) {
-	$banner = str_replace('http://i.imgur.com/', 'https://i.imgur.com/', $banner);
-	$banner = str_replace('http://imgur.com/', 'https://imgur.com/', $banner);
-	//$twig->addGlobal("headerImage", $banner);
+    $banner = str_replace('http://i.imgur.com/', 'https://i.imgur.com/', $banner);
+    $banner = str_replace('http://imgur.com/', 'https://imgur.com/', $banner);
+    //$twig->addGlobal("headerImage", $banner);
 }
 
 $twig->addGlobal('showAds', $showAds);
@@ -150,6 +150,6 @@ $twig->addFunction(new Twig_SimpleFunction('getMessage', 'User::getMessage'));
 // IGB
 $igb = false;
 if (stristr(@$_SERVER['HTTP_USER_AGENT'], 'EVE-IGB')) {
-	$igb = true;
+    $igb = true;
 }
 $twig->addGlobal('eveigb', $igb);

@@ -10,12 +10,12 @@ $id = $input[1];
 $pageType = @$input[2];
 
 if ((int) $id == 0) {
-	$searchKey = $key;
-	if ($key == "system") $searchKey = "solarSystem";
-	$id = $mdb->findField("information", "id", ['type' => "${searchKey}ID", 'name' => $id]);
-	if ($id > 0) $app->redirect("/$key/$id/");
-	else $app->redirect("/");
-	die();
+    $searchKey = $key;
+    if ($key == "system") $searchKey = "solarSystem";
+    $id = $mdb->findField("information", "id", ['type' => "${searchKey}ID", 'name' => $id]);
+    if ($id > 0) $app->redirect("/$key/$id/");
+    else $app->redirect("/");
+    die();
 }
 
 if (strlen("$id") > 11) {
@@ -43,7 +43,7 @@ $map = array(
         'region' => array('column' => 'region', 'mixed' => true),
         'group' => array('column' => 'group', 'mixed' => true),
         'ship' => array('column' => 'shipType', 'mixed' => true),
-	'location' => array('column' => 'item', 'mixed' => true),
+        'location' => array('column' => 'item', 'mixed' => true),
         );
 if (!array_key_exists($key, $map)) {
     $app->notFound();
@@ -209,17 +209,17 @@ if (in_array($key, array('character', 'corporation'))) {
     $collection = "api" . ucfirst($key);
     $doc = $mdb->findDoc($collection, ["{$key}ID" => (int) $id], ['lastFetched' => -1]);
     if ($doc !== null) {
-	$apiVerified = true;
-	$nextApiCheck = date('H:i', @$doc['lastFetched']);
+        $apiVerified = true;
+        $nextApiCheck = date('H:i', @$doc['lastFetched']);
     }
 }
 
 $extra = array();
 $tracked = false;
 if (User::isLoggedIn()) {
-	$trackers = [];
-	$t = UserConfig::get("tracker_$type", []);
-	$tracked = in_array((int) $id, $t);
+    $trackers = [];
+    $t = UserConfig::get("tracker_$type", []);
+    $tracked = in_array((int) $id, $t);
 }
 $extra['isTracked'] = $tracked;
 $extra['canTrack'] = in_array($type, ['character', 'corporation', 'alliance']);
@@ -229,17 +229,17 @@ $cnid = 0;
 $stats = array();
 $totalcount = ceil(count($detail['stats']) / 4);
 if ($detail['stats'] != null) {
-	foreach ($detail['stats'] as $q) {
-		if ($cnt == $totalcount) {
-			++$cnid;
-			$cnt = 0;
-		}
-		$stats[$cnid][] = $q;
-		++$cnt;
-	}
+    foreach ($detail['stats'] as $q) {
+        if ($cnt == $totalcount) {
+            ++$cnid;
+            $cnt = 0;
+        }
+        $stats[$cnid][] = $q;
+        ++$cnt;
+    }
 }
 if ($mixedKills) {
-	$kills = Kills::mergeKillArrays($mixed, array(), $limit, $columnName, $id);
+    $kills = Kills::mergeKillArrays($mixed, array(), $limit, $columnName, $id);
 }
 
 $prevID = null;
@@ -249,52 +249,52 @@ $warID = (int) $id;
 $extra['hasWars'] = false; //Db::queryField("select count(distinct warID) count from zz_wars where aggressor = $warID or defender = $warID", "count");
 $extra['wars'] = array();
 if (false && $pageType == 'wars' && $extra['hasWars']) {
-	$extra['wars'][] = War::getNamedWars('Active Wars - Aggressor', "select * from zz_wars where aggressor = $warID and timeFinished is null order by timeStarted desc");
-	$extra['wars'][] = War::getNamedWars('Active Wars - Defending', "select * from zz_wars where defender = $warID and timeFinished is null order by timeStarted desc");
-	$extra['wars'][] = War::getNamedWars('Closed Wars - Aggressor', "select * from zz_wars where aggressor = $warID and timeFinished is not null order by timeFinished desc");
-	$extra['wars'][] = War::getNamedWars('Closed Wars - Defending', "select * from zz_wars where defender = $warID and timeFinished is not null order by timeFinished desc");
+    $extra['wars'][] = War::getNamedWars('Active Wars - Aggressor', "select * from zz_wars where aggressor = $warID and timeFinished is null order by timeStarted desc");
+    $extra['wars'][] = War::getNamedWars('Active Wars - Defending', "select * from zz_wars where defender = $warID and timeFinished is null order by timeStarted desc");
+    $extra['wars'][] = War::getNamedWars('Closed Wars - Aggressor', "select * from zz_wars where aggressor = $warID and timeFinished is not null order by timeFinished desc");
+    $extra['wars'][] = War::getNamedWars('Closed Wars - Defending', "select * from zz_wars where defender = $warID and timeFinished is not null order by timeFinished desc");
 }
 
 if ($key == 'system') {
-	$statType = 'solarSystemID';
+    $statType = 'solarSystemID';
 } elseif ($key == 'ship') {
-	$statType = 'shipTypeID';
+    $statType = 'shipTypeID';
 } else {
-	$statType = "{$key}ID";
+    $statType = "{$key}ID";
 }
 $statistics = $mdb->findDoc('statistics', ['type' => $statType, 'id' => (int) $id]);
 
 if (@$statistics["shipsLost"] > 0) {
-	$destroyed = @$statistics['shipsDestroyed']  + @$statistics['pointsDestroyed'];
-	$lost = @$statistics['shipsLost'] + @$statistics['pointsLost'];
-	if ($destroyed > 0 && $lost > 0) {
-		$ratio = floor(($destroyed / ($lost + $destroyed)) * 100);
-		$extra['dangerRatio'] = $ratio;
-	}
+    $destroyed = @$statistics['shipsDestroyed']  + @$statistics['pointsDestroyed'];
+    $lost = @$statistics['shipsLost'] + @$statistics['pointsLost'];
+    if ($destroyed > 0 && $lost > 0) {
+        $ratio = floor(($destroyed / ($lost + $destroyed)) * 100);
+        $extra['dangerRatio'] = $ratio;
+    }
 }
 if (@$statistics["shipsDestroyed"] > 0) {
-	$gangFactor = floor(@$statistics['pointsDestroyed'] / @$statistics['shipsDestroyed'] * 10 / 2);
-	$gangFactor = max(0, min(100, 100 - $gangFactor));
-	$extra['gangFactor'] = $gangFactor;
+    $gangFactor = floor(@$statistics['pointsDestroyed'] / @$statistics['shipsDestroyed'] * 10 / 2);
+    $gangFactor = max(0, min(100, 100 - $gangFactor));
+    $extra['gangFactor'] = $gangFactor;
 }
 
 
 if ($key == 'corporation' || $key == 'alliance' || $key == 'faction')
 {
-	$extra['hasSupers'] = @$statistics['hasSupers'];
-	$extra['supers'] = @$statistics['supers'];
+    $extra['hasSupers'] = @$statistics['hasSupers'];
+    $extra['supers'] = @$statistics['supers'];
 }
 
 if ($key == 'character' && $pageType == 'trophies')
 {
-	$extra['trophies'] = Trophies::getTrophies($id);
+    $extra['trophies'] = Trophies::getTrophies($id);
 }
 
 if ($pageType == 'ranks') {
-	$alltimeRanks = getNearbyRanks($key, "tq:ranks:alltime:$statType", $id, "Alltime Rank", $statType);
-	$day90Ranks = getNearbyRanks($key, "tq:ranks:recent:$statType", $id, "90 Day Rank", $statType);
-	$day7Ranks = getNearbyRanks($key, "tq:ranks:weekly:$statType", $id, "7 Day Rank", $statType);
-	$extra['allranks'] = ['7day' => $day7Ranks, '90Day' => $day90Ranks, 'alltime' => $alltimeRanks];
+    $alltimeRanks = getNearbyRanks($key, "tq:ranks:alltime:$statType", $id, "Alltime Rank", $statType);
+    $day90Ranks = getNearbyRanks($key, "tq:ranks:recent:$statType", $id, "90 Day Rank", $statType);
+    $day7Ranks = getNearbyRanks($key, "tq:ranks:weekly:$statType", $id, "7 Day Rank", $statType);
+    $extra['allranks'] = ['7day' => $day7Ranks, '90Day' => $day90Ranks, 'alltime' => $alltimeRanks];
 }
 
 $statistics['shipsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:shipsDestroyed", $id));
@@ -311,9 +311,9 @@ $previousTime = time() - (14 * 86400);
 $previousDate = date('Ymd');
 $previousRank = null;
 do {
-	$previousDate = date('Ymd', $previousTime);
-	$previousRank = Util::rankCheck($redis->zRank("tq:ranks:alltime:$statType:$previousDate", $id));
-	if ($previousRank === '-') $previousTime += 86400;
+    $previousDate = date('Ymd', $previousTime);
+    $previousRank = Util::rankCheck($redis->zRank("tq:ranks:alltime:$statType:$previousDate", $id));
+    if ($previousRank === '-') $previousTime += 86400;
 } while ($previousRank == '-' && $previousTime < time());
 $prevRanks = ['overallRank' => Util::rankCheck($previousRank), 'date' => date('Y-m-d', $previousTime)];
 $prevRanks['recentOverallRank'] = Util::rankCheck($redis->zRank("tq:ranks:recent:$statType:$previousDate", $id));
@@ -321,27 +321,27 @@ $statistics['prevRanks'] = $prevRanks;
 
 $groups = @$statistics['groups'];
 if (is_array($groups) and sizeof($groups) > 0) {
-	Info::addInfo($groups);
-	$g = [];
-	foreach ($groups as $group) {
-		@$g[$group['groupName']] = $group;
-	}
-	ksort($g);
+    Info::addInfo($groups);
+    $g = [];
+    foreach ($groups as $group) {
+        @$g[$group['groupName']] = $group;
+    }
+    ksort($g);
 
-	// Divide the stats into 4 columns...
-	$chunkSize = ceil(sizeof($g) / 4);
-	$statistics['groups'] = array_chunk($g, $chunkSize);
+    // Divide the stats into 4 columns...
+    $chunkSize = ceil(sizeof($g) / 4);
+    $statistics['groups'] = array_chunk($g, $chunkSize);
 } else {
-	$statistics['groups'] = null;
+    $statistics['groups'] = null;
 }
 
 $months = @$statistics['months'];
 // Ensure the months are sorted in descending order
 if (is_array($months) && sizeof($months) > 0) {
-	krsort($months);
-	$statistics['months'] = array_values($months);
+    krsort($months);
+    $statistics['months'] = array_values($months);
 } else {
-	$statistics['months'] = null;
+    $statistics['months'] = null;
 }
 
 // Collect active PVP stats
@@ -355,25 +355,25 @@ $app->render('overview.html', $renderParams);
 
 function getNearbyRanks($key, $rankKeyName, $id, $title, $statType)
 {
-        global $redis;
+    global $redis;
 
-        $array = [];
-        $rank = $redis->zrank($rankKeyName, $id);
-        if ($rank !== false) {
-                $start = max($rank - 5, 0);
-                $end = max($rank + 5, 10);
-                $nearRanks = $redis->zrange($rankKeyName, $start, $end);
-                foreach ($nearRanks as $row) {
-                        $a = [];
-                        $a["rank"] = $redis->zrank($rankKeyName, $row) + 1;
-                        $a[$statType] = $row;
-                        $a['score'] = $redis->zscore($rankKeyName, $row);
-                        $array['data'][] = $a;
-                }
-                Info::addInfo($array);
-                $title = $title . " #" . number_format($rank + 1, 0);
+    $array = [];
+    $rank = $redis->zrank($rankKeyName, $id);
+    if ($rank !== false) {
+        $start = max($rank - 5, 0);
+        $end = max($rank + 5, 10);
+        $nearRanks = $redis->zrange($rankKeyName, $start, $end);
+        foreach ($nearRanks as $row) {
+            $a = [];
+            $a["rank"] = $redis->zrank($rankKeyName, $row) + 1;
+            $a[$statType] = $row;
+            $a['score'] = $redis->zscore($rankKeyName, $row);
+            $array['data'][] = $a;
         }
-        $array['title'] = $title;
-        $array['type'] = $key ;
-        return $array;
+        Info::addInfo($array);
+        $title = $title . " #" . number_format($rank + 1, 0);
+    }
+    $array['title'] = $title;
+    $array['type'] = $key ;
+    return $array;
 }
