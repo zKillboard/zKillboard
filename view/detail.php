@@ -66,6 +66,11 @@ if ($details == null) {
 	}
         $insDate = (int) str_replace("-", "", substr($killdata['info']['dttm'], 0, 10));
         $extra['insurance'] = $mdb->findDoc("insurance", ['typeID' => (int) $killdata['victim']['shipTypeID'], 'date' => $insDate]);
+        if (isset($extra['insurance']["Platinum"]["payout"])) {
+            // No insurance is 40% of platinum
+            // http://wiki.eveuniversity.org/Insuring_your_ship
+            $extra['insurance']["None"] = ["cost" => 0, "payout" => floor(0.4 * $extra['insurance']["Platinum"]["payout"])];
+        }
 
 	$extra['location'] = @$killdata['info']['location']['itemName'];
 	if (isset($rawmail['victim']['position'])) {
