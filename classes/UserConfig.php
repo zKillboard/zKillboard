@@ -8,7 +8,10 @@ class UserConfig
 
         $id = User::getUserID();
         $value = $redis->hGet("user:$id", $key);
-        if ($value == null) return $defaultValue;
+        if ($value == null) {
+            return $defaultValue;
+        }
+
         return json_decode($value, true);
     }
 
@@ -40,10 +43,12 @@ class UserConfig
 
         if (is_null($value) || (is_string($value) && strlen(trim($value)) == 0)) {
             $redis->hDel("user:$id", $key);
+
             return true;
         }
 
         $redis->hSet("user:$id", $key, json_encode($value));
+
         return true;
     }
 }

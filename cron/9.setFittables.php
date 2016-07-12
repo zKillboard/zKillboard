@@ -2,14 +2,15 @@
 
 require_once '../init.php';
 
-if ($redis->get("tq:itemsPopulated") != true)
-{
-    Util::out("Waiting for items to be populated...");
+if ($redis->get('tq:itemsPopulated') != true) {
+    Util::out('Waiting for items to be populated...');
     exit();
 }
 
 $key = date('YmdH');
-if ($redis->get($key) == true) exit();
+if ($redis->get($key) == true) {
+    exit();
+}
 
 $json = CrestTools::getJSON("$crestServer/inventory/categories/7/");
 
@@ -25,7 +26,7 @@ foreach ($json['groups'] as $group) {
     sleep(1);
 }
 
-$redis->setex($key, 86400, true); 
+$redis->setex($key, 86400, true);
 
 function getTypeID($href)
 {

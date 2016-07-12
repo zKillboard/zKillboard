@@ -37,17 +37,17 @@ class Killmail
     {
         global $mdb, $redis;
 
-        $killmail = $mdb->findDoc("killmails", ['killID' => $killID]);
+        $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
 
         foreach ($killmail['involved'] as $involved) {
-            foreach ($involved as $type=>$id) {
-                $mdb->remove("statistics", ['type' => $type, 'id' => (int) $id]);
+            foreach ($involved as $type => $id) {
+                $mdb->remove('statistics', ['type' => $type, 'id' => (int) $id]);
             }
         }
-        $mdb->remove("killmails", ['killID' => $killID]);
-        $mdb->remove("rawmails", ['killID' => $killID]);
-        $mdb->remove("oneWeek", ['killID' => $killID]);
-        $mdb->set("crestmails", ['killID' => $killID], ['processed' => false]);
+        $mdb->remove('killmails', ['killID' => $killID]);
+        $mdb->remove('rawmails', ['killID' => $killID]);
+        $mdb->remove('oneWeek', ['killID' => $killID]);
+        $mdb->set('crestmails', ['killID' => $killID], ['processed' => false]);
         $redis->del("CacheKill:$killID:overview");
     }
 }

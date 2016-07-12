@@ -1,4 +1,5 @@
 <?php
+
 require_once '../init.php';
 $dbName = 'zkillboard';
 $m = new MongoClient();
@@ -32,7 +33,7 @@ foreach ($collections as $colName => $collection) {
         }
         $sparse = @$index['sparse'] == true ? 1 : 0;
         $unique = @$index['unique'] == true ? 1 : 0;
-	$expireAfterSeconds = @$index['expireAfterSeconds'] > 0 ? $index['expireAfterSeconds'] : null;
+        $expireAfterSeconds = @$index['expireAfterSeconds'] > 0 ? $index['expireAfterSeconds'] : null;
         $indexFields = '';
         $first = true;
         foreach ($fields as $field => $value) {
@@ -42,7 +43,7 @@ foreach ($collections as $colName => $collection) {
             $first = false;
             $indexFields .= "'$field' => $value";
         }
-	$expires = $expireAfterSeconds != null ? ", \"expireAfterSeconds\" => $expireAfterSeconds" : "";
+        $expires = $expireAfterSeconds != null ? ", \"expireAfterSeconds\" => $expireAfterSeconds" : '';
         echo "echo \"Creating index : $indexFields, with sparse = $sparse and unique = $unique ... \";\n";
         echo "\$${colName}->ensureIndex(array($indexFields), array(\"sparse\" => $sparse, \"unique\" => $unique${expires}));\n";
         echo "echo \"Done\\n\";\n";

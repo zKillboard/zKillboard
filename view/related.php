@@ -63,15 +63,15 @@ if (((int) $exHours) < 1 || ((int) $exHours > 12)) {
 
 $sleeps = 0;
 $pushed = false;
-$queueRelated = new RedisQueue("queueRelated");
-$key = "br:" . md5("brq:$systemID:$relatedTime:$exHours:".json_encode($json_options) . (isset($battleID) ? ":$battleID" : ""));
+$queueRelated = new RedisQueue('queueRelated');
+$key = 'br:'.md5("brq:$systemID:$relatedTime:$exHours:".json_encode($json_options).(isset($battleID) ? ":$battleID" : ''));
 $summary = null;
-while (true)
-{
+while (true) {
     $summary = $redis->get($key);
-    if ($summary != null) break;
-    if ($pushed == false) 
-    {
+    if ($summary != null) {
+        break;
+    }
+    if ($pushed == false) {
         $parameters = array('solarSystemID' => $systemID, 'relatedTime' => $relatedTime, 'exHours' => $exHours, 'nolimit' => true, 'options' => $json_options, 'key' => $key);
         $serial = serialize($parameters);
         $queueRelated->push($serial);
@@ -79,11 +79,16 @@ while (true)
     }
     // See if we have a backup in place while the main one is being re-calculated?
     $summary = $redis->get("backup:$key");
-    if ($summary != null) break;
+    if ($summary != null) {
+        break;
+    }
 
     usleep(100000);
-    $sleeps++;
-    if ($sleeps > 30) { $app->render('related_wait.html', ['showAds' => false]); exit(); }
+    ++$sleeps;
+    if ($sleeps > 30) {
+        $app->render('related_wait.html', ['showAds' => false]);
+        exit();
+    }
 }
 
 $summary = unserialize($summary);
@@ -94,8 +99,8 @@ if (isset($battleID) && $battleID > 0) {
     $teamB = $summary['teamB']['totals'];
     unset($teamA['groupIDs']);
     unset($teamB['groupIDs']);
-    $mdb->set("battles", ['battleID' => $battleID], ['teamA' => $teamA]);
-    $mdb->set("battles", ['battleID' => $battleID], ['teamB' => $teamB]);
+    $mdb->set('battles', ['battleID' => $battleID], ['teamA' => $teamA]);
+    $mdb->set('battles', ['battleID' => $battleID], ['teamB' => $teamB]);
 }
 
 $app->render('related.html', $mc);

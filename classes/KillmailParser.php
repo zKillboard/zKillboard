@@ -6,12 +6,12 @@ class KillmailParser
 {
     public static function extendApiTime($mdb, $timeQueue, $api, $type)
     {
-        global $redis; 
-        $topKillID = $redis->get("zkb:topKillID");
+        global $redis;
+        $topKillID = $redis->get('zkb:topKillID');
         $id = $type == 'char' ? $api['characterID'] : $api['corporationID'];
         $field = $type == 'char' ? 'characterID' : 'corporationID';
         $query = ["involved.$field" => $id, 'killID' => ['$gte' => ($topKillID - 1000000)]];
-        if (!$mdb->exists("killmails", $query)) {
+        if (!$mdb->exists('killmails', $query)) {
             $time = time() + rand(43200, 86400);
             $timeQueue->setTime($id, $time);
         }
@@ -25,7 +25,8 @@ class KillmailParser
         $mdb->set($collection, $api, ['errorCode' => (int) $errorCode, 'lastFetched' => time()]);
     }
 
-    public static function processCharApi($mdb, $apiServer, $type, $row) {
+    public static function processCharApi($mdb, $apiServer, $type, $row)
+    {
         $charID = $row['characterID'];
         $corpID = $row['corporationID'];
         $keyID = $row['keyID'];
@@ -36,10 +37,11 @@ class KillmailParser
         $name = $type == 'char' ? Info::getInfoField('characterID', $charID, 'name')  : Info::getInfoField('corporationID', $corpID, 'name');
         if ($added) {
             while (strlen("$added") < 3) {
-                $added = " " . $added;
+                $added = ' '.$added;
             }
             Util::out("$added kills added by $type $name");
         }
+
         return $hasKillmails;
     }
 
@@ -52,9 +54,10 @@ class KillmailParser
 
         $rows = isset($xml->result->rowset->row) ? $xml->result->rowset->row : [];
         $killmails = [];
-        foreach ($rows as $c=>$row) {
+        foreach ($rows as $c => $row) {
             $killmails[] = $row;
         }
+
         return $killmails;
     }
 
@@ -66,15 +69,18 @@ class KillmailParser
             $hash = self::getHash($killmail);
             $added += self::addKillmail($mdb, $killID, $hash);
         }
+
         return $added;
     }
 
     public static function addKillmail($mdb, $killID, $hash)
     {
-        if ($mdb->count("crestmails", ['killID' => $killID, 'hash' => $hash]) == 0) {
-            $mdb->insert("crestmails", ['killID' => $killID, 'hash' => $hash, 'source' => 'api', 'processed' => false, 'added' => $mdb->now()]);
+        if ($mdb->count('crestmails', ['killID' => $killID, 'hash' => $hash]) == 0) {
+            $mdb->insert('crestmails', ['killID' => $killID, 'hash' => $hash, 'source' => 'api', 'processed' => false, 'added' => $mdb->now()]);
+
             return 1;
         }
+
         return 0;
     }
 

@@ -4,9 +4,8 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
-if ($redis->get("tq:itemsPopulated") != true)
-{
-    Util::out("Waiting for all items to be populated...");
+if ($redis->get('tq:itemsPopulated') != true) {
+    Util::out('Waiting for all items to be populated...');
     exit();
 }
 
@@ -30,11 +29,13 @@ while ($timer->stop() < 59000) {
         $kill['killID'] = $killID;
 
         $crestmail = $crestmails->findOne(['killID' => $killID, 'processed' => true]);
-        if ($crestmail == null) continue;
+        if ($crestmail == null) {
+            continue;
+        }
 
         $date = substr($mail['killTime'], 0, 16);
         $date = str_replace('.', '-', $date);
-        $battleBucket = substr($date, 0, 13) . "*00";
+        $battleBucket = substr($date, 0, 13).'*00';
 
         $kill['dttm'] = new MongoDate(strtotime(str_replace('.', '-', $mail['killTime']).' UTC'));
 
@@ -133,7 +134,9 @@ while ($timer->stop() < 59000) {
         if (isset($mail['war']['id']) && $mail['war']['id'] != 0) {
             $kill['warID'] = (int) $mail['war']['id'];
         }
-        if (isset($kill['locationID'])) $zkb['locationID'] = $kill['locationID'];
+        if (isset($kill['locationID'])) {
+            $zkb['locationID'] = $kill['locationID'];
+        }
 
         $zkb['hash'] = $crestmail['hash'];
         $zkb['totalValue'] = (double) $totalValue;
@@ -150,14 +153,13 @@ while ($timer->stop() < 59000) {
         }
 
         $queueInfo->push($killID);
-        $redis->incr("zkb:totalKills");
-        $battleBucket = "battleBucket:$battleBucket:" . $solarSystem['solarSystemID'];
+        $redis->incr('zkb:totalKills');
+        $battleBucket = "battleBucket:$battleBucket:".$solarSystem['solarSystemID'];
         $multi = $redis->multi();
         $multi->sAdd($battleBucket, $killID);
         $multi->expire($battleBucket, (86400 * 7));
-        $multi->sAdd("battleBuckets", $battleBucket);
+        $multi->sAdd('battleBuckets', $battleBucket);
         $multi->exec();
-
 
         ++$counter;
     }
@@ -211,7 +213,7 @@ function processItem($item, $dttm, $isCargo = false, $parentContainerFlag = -1)
     global $mdb;
 
     $typeID = $item['itemType']['id'];
-    $itemName = $mdb->findField("information", 'name', ['type' => 'typeID', 'id' => (int) $typeID]);
+    $itemName = $mdb->findField('information', 'name', ['type' => 'typeID', 'id' => (int) $typeID]);
     if ($itemName == null) {
         $itemName = "TypeID $typeID";
     }
@@ -229,14 +231,16 @@ function processItem($item, $dttm, $isCargo = false, $parentContainerFlag = -1)
         $price = $price / 100;
     }
 
-    return ($price * (@$item['quantityDropped'] + @$item['quantityDestroyed']));
+    return $price * (@$item['quantityDropped'] + @$item['quantityDestroyed']);
 }
 
 function isAwox($row)
 {
     $victim = $row['involved'][0];
     $vGroupID = $row['vGroupID'];
-    if ($vGroupID == 237 || $vGroupID == 29) return false;
+    if ($vGroupID == 237 || $vGroupID == 29) {
+        return false;
+    }
     if (isset($victim['corporationID']) && $vGroupID != 29) {
         $vicCorpID = $victim['corporationID'];
         if ($vicCorpID > 0) {
@@ -261,7 +265,9 @@ function isAwox($row)
                 if ($invCorpID <= 1999999) {
                     continue;
                 }
-                if ($vicCorpID == $invCorpID) return true;
+                if ($vicCorpID == $invCorpID) {
+                    return true;
+                }
             }
         }
     }
@@ -269,21 +275,30 @@ function isAwox($row)
     return false;
 }
 
-function isSolo($killmail) {
+function isSolo($killmail)
+{
     // Rookie ships, shuttles, and capsules are not considered as solo
     $victimGroupID = $killmail['vGroupID'];
-    if (in_array($victimGroupID, [29, 31, 237])) return false;
+    if (in_array($victimGroupID, [29, 31, 237])) {
+        return false;
+    }
 
     // Only ships can be solo'ed
     $categoryID = Info::getInfoField('groupID', $victimGroupID, 'categoryID');
-    if ($categoryID != 6) return false;
+    if ($categoryID != 6) {
+        return false;
+    }
 
     $numPlayers = 0;
     $involved = $killmail['involved'];
     array_shift($involved);
     foreach ($involved as $attacker) {
-        if (@$attacker['characterID'] > 3999999) $numPlayers++;
-        if ($numPlayers > 1) return false;
+        if (@$attacker['characterID'] > 3999999) {
+            ++$numPlayers;
+        }
+        if ($numPlayers > 1) {
+            return false;
+        }
     }
     // Ensure that at least 1 player is on the kill so as not to count losses against NPC's
     return $numPlayers == 1;
@@ -295,7 +310,9 @@ function isNPC(&$killmail)
     array_shift($involved);
 
     foreach ($involved as $attacker) {
-        if (@$attacker['characterID'] > 3999999) return false;
+        if (@$attacker['characterID'] > 3999999) {
+            return false;
+        }
     }
 
     return true;

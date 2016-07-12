@@ -11,7 +11,6 @@ $timer = new Timer();
 $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
 $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
 
-
 $queueCorps = new RedisTimeQueue('tqCorporations', 86400);
 
 $i = date('i');
@@ -57,7 +56,9 @@ while ($timer->stop() < 55000) {
                     }
                 }
             }
-        } else $xmlFailure->add(uniqid());
+        } else {
+            $xmlFailure->add(uniqid());
+        }
     }
     $updates['lastApiUpdate'] = new MongoDate(time());
     $mdb->insertUpdate('information', ['type' => 'corporationID', 'id' => (int) $row['id']], $updates);

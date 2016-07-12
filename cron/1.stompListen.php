@@ -3,14 +3,16 @@
 require_once '../init.php';
 
 global $stompListen;
-if ($stompListen != true) exit();
+if ($stompListen != true) {
+    exit();
+}
 
 $topics[] = '/topic/kills';
 
 try {
     $stomp = new Stomp($stompServer, $stompUser, $stompPassword);
 } catch (Exception $ex) {
-    Util::out("Stomp error: " . $ex->getMessage());
+    Util::out('Stomp error: '.$ex->getMessage());
     exit();
 }
 
@@ -40,7 +42,9 @@ while ($timer->stop() <= 59000) {
         }
 
         $stomp->ack($frame->headers['message-id']);
-    } else break;
+    } else {
+        break;
+    }
 }
 if ($stompCount > 0) {
     Util::out("New kills from STOMP: $stompCount");

@@ -2,11 +2,15 @@
 
 require_once '../init.php';
 
-$key = "zkb:siteMapsCreated:" . date('Ymd');
-if ($redis->get($key) == true) exit();
+$key = 'zkb:siteMapsCreated:'.date('Ymd');
+if ($redis->get($key) == true) {
+    exit();
+}
 
 $siteMapsDir = "$baseDir/public/sitemaps/";
-if (!file_exists($siteMapsDir)) mkdir($siteMapsDir);
+if (!file_exists($siteMapsDir)) {
+    mkdir($siteMapsDir);
+}
 $locations = array();
 
 $types = array('character', 'corporation', 'alliance', 'faction');

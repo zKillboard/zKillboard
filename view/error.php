@@ -30,7 +30,7 @@ $url = $_SERVER['REQUEST_URI'];
 $ip = IP::get();
 
 try {
-    $mdb->save("errors", ['code' => $code, 'message' => $message, 'file' => $file, 'line' => $line, 'stack' => $trace, 'hash' => $codeHash, 'ip' => $ip, 'date' => $date, 'url' => $url]);
+    $mdb->save('errors', ['code' => $code, 'message' => $message, 'file' => $file, 'line' => $line, 'stack' => $trace, 'hash' => $codeHash, 'ip' => $ip, 'date' => $date, 'url' => $url]);
     $app->render('error.html', array('code' => $codeHash, 'message' => $message, 'error' => $html));
 } catch (Exception $ex) {
     $html = '<html>';

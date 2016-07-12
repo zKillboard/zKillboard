@@ -13,15 +13,15 @@ for ($i = 0; $i < $max; ++$i) {
     if ($pid == 0) {
         break;
     }
-    $threadNum++;
+    ++$threadNum;
 }
 
 require_once '../init.php';
 
-$collection = $threadNum < 5 ? "Corporation" : "Character";
+$collection = $threadNum < 5 ? 'Corporation' : 'Character';
 $type = substr(strtolower($collection), 0, 4);
-$field = strtolower($collection) . "ID";
-$collection = "api" . $collection;
+$field = strtolower($collection).'ID';
+$collection = 'api'.$collection;
 
 $minute = date('Hi');
 $timeQueue = new RedisTimeQueue("zkb:{$type}s", 3600);

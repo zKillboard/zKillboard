@@ -4,10 +4,14 @@ require_once '../init.php';
 
 global $fetchWars;
 
-if ($fetchWars == null || $fetchWars == false) exit();
+if ($fetchWars == null || $fetchWars == false) {
+    exit();
+}
 
-$key = "tqFetchWars";
-if ($redis->get($key) == true) exit();
+$key = 'tqFetchWars';
+if ($redis->get($key) == true) {
+    exit();
+}
 
 $page = ceil($mdb->count('information', ['type' => 'warID']) / 2000);
 if ($page == 0) {

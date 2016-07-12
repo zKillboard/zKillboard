@@ -7,11 +7,15 @@ class Api
         global $mdb;
 
         $keyID = (int) $keyID;
-        if ($keyID == 0) return 'Invalid keyID';
+        if ($keyID == 0) {
+            return 'Invalid keyID';
+        }
 
         $before = $vCode;
-        $vCode = preg_replace( '/[^a-z0-9]/i', "", (string) $vCode);
-        if ($before != $vCode) return 'Invalid vCode';
+        $vCode = preg_replace('/[^a-z0-9]/i', '', (string) $vCode);
+        if ($before != $vCode) {
+            return 'Invalid vCode';
+        }
 
         $userID = User::getUserID();
         if ($userID == null) {
@@ -80,21 +84,22 @@ class Api
         global $mdb;
 
         $retVal = [];
-        $result = $mdb->find("apisCrest", ['characterID' => $userID]);
+        $result = $mdb->find('apisCrest', ['characterID' => $userID]);
         foreach ($result as $row) {
             $row['lastValidation'] = date('Y/m/d H:i', $row['lastFetch']);
             $retVal[] = $row;
         }
+
         return $retVal;
     }
-
 
     public static function getCharacterKeys($userID)
     {
         global $mdb;
 
-        $characterIDs = $mdb->find("apiCharacters", ['characterID' => $userID], ['keyID' => 1]);
+        $characterIDs = $mdb->find('apiCharacters', ['characterID' => $userID], ['keyID' => 1]);
         Info::addInfo($characterIDs);
+
         return $characterIDs;
     }
 
@@ -126,6 +131,6 @@ class Api
      */
     public static function hasBits($accessMask)
     {
-        return ((int) ($accessMask & 256) > 0);
+        return (int) ($accessMask & 256) > 0;
     }
 }

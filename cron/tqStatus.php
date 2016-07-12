@@ -6,7 +6,9 @@ require_once '../init.php';
 
 $root = CrestTools::getJSON($crestServer);
 $version = @$root['serverVersion'];
-if ($version != null) $redis->set("tqServerVersion", $version);
+if ($version != null) {
+    $redis->set('tqServerVersion', $version);
+}
 
 if ($root == 0) {
     $serverStatus = 'UNKNOWN';
@@ -41,8 +43,8 @@ if ($message == null && $xmlFailure->count() > (10 * $xmlSuccess->count())) {
     $message = "Issues accessing Killmail XML API - Killmails won't populate from API at this time - $s Successful / $f Failed calls in last 5 minutes";
 }
 
-$redis->setex("tq:crestStatus", 300, $message);
+$redis->setex('tq:crestStatus', 300, $message);
 
 // Set the top kill for api requests to use
 $topKillID = $mdb->findField('killmails', 'killID', [], ['killID' => -1]);
-$redis->setex("zkb:topKillID", 86400, $topKillID);
+$redis->setex('zkb:topKillID', 86400, $topKillID);

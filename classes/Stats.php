@@ -38,7 +38,9 @@ class Stats
 
         if (isset($parameters['pastSeconds']) && $parameters['pastSeconds'] <= 604800) {
             $killmails = $mdb->getCollection('oneWeek');
-            if ($parameters['pastSeconds'] == 604800) unset($parameters['pastSeconds']);
+            if ($parameters['pastSeconds'] == 604800) {
+                unset($parameters['pastSeconds']);
+            }
         } else {
             $killmails = $mdb->getCollection('killmails');
         }
@@ -51,9 +53,11 @@ class Stats
 
         if ($groupByColumn == 'solarSystemID' || $groupByColumn == 'regionID') {
             $keyField = "system.$groupByColumn";
-        } else if ($groupByColumn != 'locationID') {
+        } elseif ($groupByColumn != 'locationID') {
             $keyField = "involved.$groupByColumn";
-        } else $keyField = $groupByColumn;
+        } else {
+            $keyField = $groupByColumn;
+        }
 
         $id = $type = null;
         if ($groupByColumn != 'solarSystemID' && $groupByColumn != 'regionID' && $groupByColumn != 'locationID') {
@@ -92,7 +96,7 @@ class Stats
         }
         $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
 
-        $result = $killmails->aggregateCursor($pipeline, [ "cursor" => [ "batchSize" => 999999 ] ]);
+        $result = $killmails->aggregateCursor($pipeline, ['cursor' => ['batchSize' => 999999]]);
         $result->timeout(-1);
         $result = iterator_to_array($result);
 
@@ -180,9 +184,11 @@ class Stats
     {
         global $mdb;
 
-        $key = "stats:activepvp:" . serialize($parameters);
+        $key = 'stats:activepvp:'.serialize($parameters);
         $activePvp = RedisCache::get($key);
-        if ($activePvp != null) return $activePvp;
+        if ($activePvp != null) {
+            return $activePvp;
+        }
 
         $types = ['characterID', 'corporationID', 'allianceID', 'shipTypeID', 'solarSystemID', 'regionID'];
         $activePvP = [];
@@ -213,6 +219,7 @@ class Stats
         }
 
         RedisCache::set($key, $activePvp, 3600);
+
         return $activePvP;
     }
 
@@ -220,14 +227,15 @@ class Stats
     {
         $data = array();
         $parameters = [$key => (int) $id, 'groupID' => 30, 'isVictim' => false, 'pastSeconds' => (86400 * 90), 'nolimit' => true];
-        $data['titans']['data'] = Stats::getTop('characterID', $parameters);
+        $data['titans']['data'] = self::getTop('characterID', $parameters);
         $data['titans']['title'] = 'Titans';
 
         $parameters = [$key => (int) $id, 'groupID' => 659, 'isVictim' => false, 'pastSeconds' => (86400 * 90), 'nolimit' => true];
-        $data['supercarriers']['data'] = Stats::getTop('characterID', $parameters);
+        $data['supercarriers']['data'] = self::getTop('characterID', $parameters);
         $data['supercarriers']['title'] = 'Supercarriers';
 
         Info::addInfo($data);
+
         return $data;
     }
 }

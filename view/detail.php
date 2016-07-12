@@ -23,7 +23,7 @@ $details = RedisCache::get($killKey);
 if ($details == null) {
     // Create the details on this kill
     $killdata = Kills::getKillDetails($id);
-    $rawmail = $mdb->findDoc("rawmails", ['killID' => $id, 'cacheTime' => 120]);
+    $rawmail = $mdb->findDoc('rawmails', ['killID' => $id, 'cacheTime' => 120]);
 
     // create the dropdown involved array
     $allinvolved = $killdata['involved'];
@@ -64,12 +64,12 @@ if ($details == null) {
         $extra['involved'] = $involved;
         $extra['allinvolved'] = $allinvolved;
     }
-    $insDate = (int) str_replace("-", "", substr($killdata['info']['dttm'], 0, 10));
-    $extra['insurance'] = $mdb->findDoc("insurance", ['typeID' => (int) $killdata['victim']['shipTypeID'], 'date' => $insDate]);
-    if (isset($extra['insurance']["Platinum"]["payout"])) {
+    $insDate = (int) str_replace('-', '', substr($killdata['info']['dttm'], 0, 10));
+    $extra['insurance'] = $mdb->findDoc('insurance', ['typeID' => (int) $killdata['victim']['shipTypeID'], 'date' => $insDate]);
+    if (isset($extra['insurance']['Platinum']['payout'])) {
         // No insurance is 40% of platinum
         // http://wiki.eveuniversity.org/Insuring_your_ship
-        $extra['insurance']["None"] = ["cost" => 0, "payout" => floor(0.4 * $extra['insurance']["Platinum"]["payout"])];
+        $extra['insurance']['None'] = ['cost' => 0, 'payout' => floor(0.4 * $extra['insurance']['Platinum']['payout'])];
     }
 
     $extra['location'] = @$killdata['info']['location']['itemName'];
@@ -78,7 +78,7 @@ if ($details == null) {
         $locationID = $killdata['info']['location']['itemID'];
         $auDistance = Util::getAuDistance($position, $locationID);
         if ($auDistance > 0.01) {
-            $extra['locationDistance'] = '(' . $auDistance . 'au)';
+            $extra['locationDistance'] = '('.$auDistance.'au)';
         }
     }
     $extra['totalisk'] = $killdata['info']['zkb']['totalValue'];

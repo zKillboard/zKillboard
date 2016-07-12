@@ -1,10 +1,9 @@
 <?php
 
-require_once "../init.php";
+require_once '../init.php';
 
-if ($redis->get("tq:itemsPopulated") != true)
-{
-    Util::out("Waiting for items to be populated...");
+if ($redis->get('tq:itemsPopulated') != true) {
+    Util::out('Waiting for items to be populated...');
     exit();
 }
 
@@ -12,13 +11,15 @@ $assign = ['capacity', 'name', 'portionSize', 'mass', 'volume', 'description', '
 $attrs = ['lowSlots', 'medSlots', 'hiSlots', 'rigSlots', 'techLevel', 'shieldCapacity', 'armorHP', 'hp'];
 
 $hour24 = $mdb->now(-86400);
-$rows = $mdb->find("information", ['type' => 'typeID', 'lastCrestUpdate' => ['$lt' => $hour24]]);
+$rows = $mdb->find('information', ['type' => 'typeID', 'lastCrestUpdate' => ['$lt' => $hour24]]);
 foreach ($rows as $row) {
     $typeID = (int) $row['id'];
     $crest = CrestTools::getJSON("$crestServer/inventory/types/$typeID/");
 
     foreach ($assign as $key) {
-        if (isset($crest[$key])) $row[$key] = $crest[$key];
+        if (isset($crest[$key])) {
+            $row[$key] = $crest[$key];
+        }
     }
 
     // Dogma
@@ -33,5 +34,5 @@ foreach ($rows as $row) {
     }
 
     $row['lastCrestUpdate'] = $mdb->now();
-    $mdb->save("information", $row);
+    $mdb->save('information', $row);
 }

@@ -5,7 +5,9 @@ require_once '../init.php';
 global $redis;
 
 $key = date('YmdH');
-if ($redis->get($key) == true) exit();
+if ($redis->get($key) == true) {
+    exit();
+}
 
 $entities = $mdb->getCollection('information')->find();
 
@@ -18,7 +20,9 @@ foreach ($entities as $entity) {
     if ($name == '') {
         continue;
     }
-    if (strpos($name, "!") !== false) continue;
+    if (strpos($name, '!') !== false) {
+        continue;
+    }
 
     $isShip = false;
     $flag = '';
@@ -33,8 +37,12 @@ foreach ($entities as $entity) {
             $flag = @$entity['ticker'];
             break;
         case 'typeID':
-            if ($mdb->exists('killmails', ['involved.shipTypeID' => $id])) 	$flag = strtolower($name);
-            if (@$entity['published'] != true && $flag == '') continue;
+            if ($mdb->exists('killmails', ['involved.shipTypeID' => $id])) {
+                $flag = strtolower($name);
+            }
+            if (@$entity['published'] != true && $flag == '') {
+                continue;
+            }
             $isShip = $flag != '';
             break;
         case 'solarSystemID':
@@ -47,7 +55,7 @@ foreach ($entities as $entity) {
     if (!$isShip) {
         $setKey = "s:search:$type";
         $toMove[$setKey] = true;
-        $redis->zAdd($setKey, 0, trim(strtolower($name)) . "\x00$id");
+        $redis->zAdd($setKey, 0, trim(strtolower($name))."\x00$id");
     }
     if (strlen($flag) > 0) {
         $setKey = "s:search:$type:flag";

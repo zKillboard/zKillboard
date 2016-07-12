@@ -57,7 +57,9 @@ class Detail
                 $itm['flagName'] = Info::getInfoField('groupID', Info::getGroupID($itm['typeID']), 'name');
             } elseif (!isset($itm['flagName'])) {
                 $itm['flagName'] = Info::getFlagName($itm['flag']);
-                if ($itm['flagName'] == null || $itm['flagName'] == '') Log::log("Unknown flag " . $itm['flag']);
+                if ($itm['flagName'] == null || $itm['flagName'] == '') {
+                    Log::log('Unknown flag '.$itm['flag']);
+                }
             }
 
             if ($itm['flagName'] == 'Infantry Modules') {
@@ -102,7 +104,7 @@ class Detail
                     $i = 0;
                     while ($i < $repeats) {
                         if ($itm['flagName'] == 'High Slots') {
-high:
+                            high:
                             if (isset($eftarray['high'][$itm['flag']])) {
                                 $itm['flag'] = $itm['flag'] + 1;
                                 goto high;
@@ -110,7 +112,7 @@ high:
                             $eftarray['high'][$itm['flag']][] = array('typeName' => $itm['typeName'], 'typeID' => $itm['typeID']);
                         }
                         if ($itm['flagName'] == 'Mid Slots') {
-mid:
+                            mid:
                             if (isset($eftarray['mid'][$itm['flag']])) {
                                 $itm['flag'] = $itm['flag'] + 1;
                                 goto mid;
@@ -118,7 +120,7 @@ mid:
                             $eftarray['mid'][$itm['flag']][] = array('typeName' => $itm['typeName'], 'typeID' => $itm['typeID']);
                         }
                         if ($itm['flagName'] == 'Low Slots') {
-low:
+                            low:
                             if (isset($eftarray['low'][$itm['flag']])) {
                                 $itm['flag'] = $itm['flag'] + 1;
                                 goto low;
@@ -126,7 +128,7 @@ low:
                             $eftarray['low'][$itm['flag']][] = array('typeName' => $itm['typeName'], 'typeID' => $itm['typeID']);
                         }
                         if ($itm['flagName'] == 'Rigs') {
-rigs:
+                            rigs:
                             if (isset($eftarray['rig'][$itm['flag']])) {
                                 $itm['flag'] = $itm['flag'] + 1;
                                 goto rigs;
@@ -134,7 +136,7 @@ rigs:
                             $eftarray['rig'][$itm['flag']][] = array('typeName' => $itm['typeName'], 'typeID' => $itm['typeID']);
                         }
                         if ($itm['flagName'] == 'SubSystems') {
-subs:
+                            subs:
                             if (isset($eftarray['sub'][$itm['flag']])) {
                                 $itm['flag'] = $itm['flag'] + 1;
                                 goto subs;

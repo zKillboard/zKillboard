@@ -2,8 +2,10 @@
 
 require_once '../init.php';
 
-$redisKey = "zkb:walletCheck";
-if ($redis->get($redisKey) == true) exit();
+$redisKey = 'zkb:walletCheck';
+if ($redis->get($redisKey) == true) {
+    exit();
+}
 
 global $walletApis, $mdb;
 
@@ -33,7 +35,7 @@ foreach ($walletApis as $api) {
             insertRecords($charID, $q->transactions);
         }
     } catch (Exception $ex) {
-        Util::out("Failed to fetch Wallet API: " . $ex->getMessage());
+        Util::out('Failed to fetch Wallet API: '.$ex->getMessage());
     }
 }
 
@@ -45,11 +47,13 @@ function applyBalances()
     global $walletCharacterID, $baseAddr, $mdb, $adFreeMonthCost, $redis;
 
     // First, set any new records to paymentApplied = 0
-    $mdb->set("payments", ['paymentApplied' => ['$ne' => 1]], ['paymentApplied' => 0], true);
+    $mdb->set('payments', ['paymentApplied' => ['$ne' => 1]], ['paymentApplied' => 0], true);
 
     // And then iterate through un-applied payments
-    $toBeApplied = $mdb->find("payments", ['paymentApplied' => 0]); 
-    if ($toBeApplied == null) $toBeApplied = [];
+    $toBeApplied = $mdb->find('payments', ['paymentApplied' => 0]);
+    if ($toBeApplied == null) {
+        $toBeApplied = [];
+    }
     foreach ($toBeApplied as $row) {
         if ($row['ownerID2'] != $walletCharacterID) {
             continue;
@@ -65,18 +69,20 @@ function applyBalances()
         if ($row['refTypeID'] == 10) { // Character donation
             if ($amount >= $adFreeMonthCost) {
                 $charID = $row['ownerID1'];
-                $adFreeUntil = (int) $redis->hGet("user:$charID", "adFreeUntil");
-                if ($adFreeUntil < time()) $adFreeUntil = time();
+                $adFreeUntil = (int) $redis->hGet("user:$charID", 'adFreeUntil');
+                if ($adFreeUntil < time()) {
+                    $adFreeUntil = time();
+                }
 
                 $adFreeUntil += (86400 * 30 * $months);
                 $charName = Info::getInfoField('characterID', $charID, 'name');
                 $amount = number_format($amount, 0);
-                Util::out("$charID $charName $amount $months $adFreeUntil " . date('Y-m-d', $adFreeUntil));
+                Util::out("$charID $charName $amount $months $adFreeUntil ".date('Y-m-d', $adFreeUntil));
                 User::sendMessage("Thank you for your payment. $months months of ad free time has been given to $charName", $charID);
-                $redis->hSet("user:$charID", "adFreeUntil", $adFreeUntil);
-                $mdb->set("payments", $row, ['months' => "$months months"]);
+                $redis->hSet("user:$charID", 'adFreeUntil', $adFreeUntil);
+                $mdb->set('payments', $row, ['months' => "$months months"]);
             }
-            $mdb->set("payments", $row, ['paymentApplied' => 1]);
+            $mdb->set('payments', $row, ['paymentApplied' => 1]);
         }
     }
 }
@@ -86,8 +92,12 @@ function insertRecords($charID, $records)
     global $mdb;
 
     foreach ($records as $record) {
-        if ($record['amount'] < 0) continue;
-        if ($mdb->count("payments", ['refID' => $record['refID']]) > 0) continue;
-        $mdb->save("payments", $record);
+        if ($record['amount'] < 0) {
+            continue;
+        }
+        if ($mdb->count('payments', ['refID' => $record['refID']]) > 0) {
+            continue;
+        }
+        $mdb->save('payments', $record);
     }
 }

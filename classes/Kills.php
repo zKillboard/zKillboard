@@ -117,7 +117,7 @@ class Kills
         if (isset($rawmail['victim']['position'])) {
             $location = [];
             $location['itemID'] = (int) $killmail['locationID'];
-            $location['itemName'] = $mdb->findField("information", "name", ['cacheTime' => 3600, 'type' => 'locationID', 'id' => (int) $killmail['locationID']]);
+            $location['itemName'] = $mdb->findField('information', 'name', ['cacheTime' => 3600, 'type' => 'locationID', 'id' => (int) $killmail['locationID']]);
             $killmail['location'] = $location;
         }
 

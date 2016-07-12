@@ -42,7 +42,7 @@ $debug = false;
 
 // Twig
 $twigDebug = false;
-$twigCache = $baseDir . "/cache/templates/";
+$twigCache = $baseDir.'/cache/templates/';
 
 // Logfile
 $logfile = $baseDir.'/cron/logs/zkb.log';
@@ -66,9 +66,9 @@ $style = 'cyborg';
 # CREST SSO
 # Only necessary if you absolutey need people to log into the site
 # Setup and configuration is up to you.
-$ccpCallback = "";
-$ccpClientID = "";
-$ccpSecret = "";
+$ccpCallback = '';
+$ccpClientID = '';
+$ccpSecret = '';
 
 # Modify the following settings at your own risk, they are not currently supported for private installs
 $beSocial = false;
@@ -94,16 +94,15 @@ $config = array(
     'cookies.secret_key' => $cookie_secret,
     );
 
-$topCaPub = "";
-$topAdSlot = "";
-$bottomCaPub = "";
-$bottomAdSlot = "";
+$topCaPub = '';
+$topAdSlot = '';
+$bottomCaPub = '';
+$bottomAdSlot = '';
 
-$analyticsID = "";
-$analyticsName = "";
-$disqusSSO = "";
+$analyticsID = '';
+$analyticsName = '';
+$disqusSSO = '';
 $adFreeMonthCost = 0;
 $stompListen = false;
 
 $primePrices = false;
-

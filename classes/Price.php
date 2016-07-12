@@ -6,19 +6,26 @@ class Price
     {
         global $mdb, $redis;
         $typeID = (int) $typeID;
-        if ($kmDate == null) $kmDate = date('Y-m-d H:m');
+        if ($kmDate == null) {
+            $kmDate = date('Y-m-d H:m');
+        }
 
         $price = static::getFixedPrice($typeID);
-        if ($price !== null) return $price;
+        if ($price !== null) {
+            return $price;
+        }
         $price = static::getCalculatedPrice($typeID, $kmDate);
-        if ($price !== null) return $price;
+        if ($price !== null) {
+            return $price;
+        }
 
         // Have we fetched prices for this typeID today?
         $today = date('Ymd', time() - 7200); // Back one hour because of CREST cache
         $fetchedKey = "tq:pricesFetched:$today";
-        if ($fetch === true)
-        {
-            if ($redis->hGet($fetchedKey, $typeID) != true) static::getCrestPrices($typeID);
+        if ($fetch === true) {
+            if ($redis->hGet($fetchedKey, $typeID) != true) {
+                static::getCrestPrices($typeID);
+            }
             $redis->hSet($fetchedKey, $typeID, true);
             $redis->expire($fetchedKey, 86400);
         }
@@ -27,12 +34,16 @@ class Price
         $date = date('Y-m-d', strtotime($kmDate) - 7200); // Back one hour because of CREST cache
         $priceKey = "tq:prices:$date";
         $price = $redis->hGet($priceKey, $typeID);
-        if ($price != null) return $price;
+        if ($price != null) {
+            return $price;
+        }
 
-        $marketHistory = $mdb->findDoc("prices", ['typeID' => $typeID]);
+        $marketHistory = $mdb->findDoc('prices', ['typeID' => $typeID]);
         unset($marketHistory['_id']);
         unset($marketHistory['typeID']);
-        if ($marketHistory == null) $marketHistory = [];
+        if ($marketHistory == null) {
+            $marketHistory = [];
+        }
         krsort($marketHistory);
 
         $useTime = strtotime($date);
@@ -41,36 +52,44 @@ class Price
         do {
             $useDate = date('Y-m-d', $useTime);
             $price = @$marketHistory[$useDate];
-            if ($price != null) $priceList[] = $price;
+            if ($price != null) {
+                $priceList[] = $price;
+            }
             $useTime = $useTime - 86400;
-            $iterations++;
+            ++$iterations;
         } while (sizeof($priceList) < 34 && $iterations < sizeof($marketHistory));
-        if (sizeof($priceList) < 24) $priceList = $marketHistory;
+        if (sizeof($priceList) < 24) {
+            $priceList = $marketHistory;
+        }
 
         asort($priceList);
         if (sizeof($priceList) == 34) {
             // remove 2 endpoints from each end, helps fight against wild prices from market speculation and scams
             $priceList = array_splice($priceList, 2, 32);
             $priceList = array_splice($priceList, 0, 30);
-        } else if (sizeof($priceList) > 6) {
+        } elseif (sizeof($priceList) > 6) {
             $priceList = array_splice($priceList, 0, sizeof($priceList) - 2);
         }
-        if (sizeof($priceList) == 0) $priceList[] = 0.01;
+        if (sizeof($priceList) == 0) {
+            $priceList[] = 0.01;
+        }
 
         $total = 0;
-        foreach ($priceList as $price) $total += $price;
+        foreach ($priceList as $price) {
+            $total += $price;
+        }
         $avgPrice = round($total / sizeof($priceList), 2);
 
         $redis->hSet($priceKey, $typeID, $avgPrice);
         $redis->expire($priceKey, 86400);
+
         return $avgPrice;
     }
 
     protected static function getFixedPrice($typeID)
     {
         // Some typeID's have hardcoded prices
-        switch ($typeID)
-        {
+        switch ($typeID) {
             case 35834:
                 return 300000000000; // 300b Keepstar, not likely to end up on market at this price
             case 12478: // damn Khumaak and people thinking fake killmail isk value means something
@@ -114,8 +133,7 @@ class Price
 
         // Some groupIDs have hardcoded prices
         $groupID = Info::getGroupID($typeID);
-        switch ($groupID)
-        {
+        switch ($groupID) {
             case 30: // Titans
                 return 100000000000; // 100b
             case 659: // Supercarriers
@@ -124,13 +142,12 @@ class Price
                 return 10000; // 10k
         }
 
-        return null;
+        return;
     }
 
     protected static function getCalculatedPrice($typeID, $date)
     {
-        switch ($typeID)
-        {
+        switch ($typeID) {
             case 2233: // Gantry
                 $gantry = self::getItemPrice(3962, $date, true);
                 $nodes = self::getItemPrice(2867, $date, true);
@@ -141,29 +158,32 @@ class Price
 
                 return $total;
         }
-        return null;
+
+        return;
     }
 
     protected static function getCrestPrices($typeID)
     {
         global $mdb, $crestServer;
 
-        $marketHistory = $mdb->findDoc("prices", ['typeID' => $typeID]);
-        if ($marketHistory === null)
-        {
+        $marketHistory = $mdb->findDoc('prices', ['typeID' => $typeID]);
+        if ($marketHistory === null) {
             $marketHistory = ['typeID' => $typeID];
-            $mdb->save("prices", $marketHistory);
+            $mdb->save('prices', $marketHistory);
         }
 
         $url = "$crestServer/market/10000002/history/?type=$crestServer/inventory/types/$typeID/";
         $json = CrestTools::getJSON($url);
 
-        if (is_array($json["items"])) foreach ($json["items"] as $row)
-        {
-            $avgPrice = $row['avgPrice'];
-            $date = substr($row['date'], 0, 10);
-            if (isset($marketHistory[$date])) continue;
-            $mdb->set("prices", ['typeID' => $typeID], [$date => $avgPrice]);
+        if (is_array($json['items'])) {
+            foreach ($json['items'] as $row) {
+                $avgPrice = $row['avgPrice'];
+                $date = substr($row['date'], 0, 10);
+                if (isset($marketHistory[$date])) {
+                    continue;
+                }
+                $mdb->set('prices', ['typeID' => $typeID], [$date => $avgPrice]);
+            }
         }
     }
 }

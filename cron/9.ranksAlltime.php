@@ -1,17 +1,19 @@
 <?php
 
-require_once "../init.php";
+require_once '../init.php';
 
 $today = date('Ymd', time() - (3600 * 4));
 $todaysKey = "RC:alltimeRanksCalculated:$today";
-if ($redis->get($todaysKey) == true) exit();
+if ($redis->get($todaysKey) == true) {
+    exit();
+}
 
 $statClasses = ['ships', 'isk', 'points'];
 $statTypes = ['Destroyed', 'Lost'];
 
-$information = $mdb->getCollection("statistics");
+$information = $mdb->getCollection('statistics');
 
-Util::out("Alltime ranks - first iteration");
+Util::out('Alltime ranks - first iteration');
 $types = [];
 $iter = $information->find();
 foreach ($iter as $row) {
@@ -31,33 +33,34 @@ foreach ($iter as $row) {
     $multi->exec();
 }
 
-Util::out("Alltime ranks - second iteration");
-foreach ($types as $type=>$value)
-{
+Util::out('Alltime ranks - second iteration');
+foreach ($types as $type => $value) {
     $key = "tq:ranks:alltime:$type:$today";
     $indexKey = "$key:shipsDestroyed";
     $max = $redis->zCard($indexKey);
     $redis->del("tq:ranks:alltime:$type:$today");
 
-    $it = NULL;
-    while($arr_matches = $redis->zScan($indexKey, $it)) {
-        foreach($arr_matches as $id => $score) {
-            $shipsDestroyed = $redis->zScore("$key:shipsDestroyed", $id); 
+    $it = null;
+    while ($arr_matches = $redis->zScan($indexKey, $it)) {
+        foreach ($arr_matches as $id => $score) {
+            $shipsDestroyed = $redis->zScore("$key:shipsDestroyed", $id);
             $shipsDestroyedRank = rankCheck($max, $redis->zRevRank("$key:shipsDestroyed", $id));
-            $shipsLost = $redis->zScore("$key:shipsLost", $id); 
+            $shipsLost = $redis->zScore("$key:shipsLost", $id);
             $shipsLostRank = rankCheck($max, $redis->zRevRank("$key:shipsLost", $id));
             $shipsEff = ($shipsDestroyed / ($shipsDestroyed + $shipsLost));
 
-            $iskDestroyed = $redis->zScore("$key:iskDestroyed", $id); 
-            if ($iskDestroyed == 0) continue;
+            $iskDestroyed = $redis->zScore("$key:iskDestroyed", $id);
+            if ($iskDestroyed == 0) {
+                continue;
+            }
             $iskDestroyedRank = rankCheck($max, $redis->zRevRank("$key:iskDestroyed", $id));
-            $iskLost = $redis->zScore("$key:iskLost", $id); 
+            $iskLost = $redis->zScore("$key:iskLost", $id);
             $iskLostRank = rankCheck($max, $redis->zRevRank("$key:iskLost", $id));
             $iskEff = ($iskDestroyed / ($iskDestroyed + $iskLost));
 
-            $pointsDestroyed = $redis->zScore("$key:pointsDestroyed", $id); 
+            $pointsDestroyed = $redis->zScore("$key:pointsDestroyed", $id);
             $pointsDestroyedRank = rankCheck($max, $redis->zRevRank("$key:pointsDestroyed", $id));
-            $pointsLost = $redis->zScore("$key:pointsLost", $id); 
+            $pointsLost = $redis->zScore("$key:pointsLost", $id);
             $pointsLostRank = rankCheck($max, $redis->zRevRank("$key:pointsLost", $id));
             $pointsEff = ($pointsDestroyed / ($pointsDestroyed + $pointsLost));
 
@@ -70,7 +73,7 @@ foreach ($types as $type=>$value)
     }
 }
 
-foreach ($types as $type=>$value) {
+foreach ($types as $type => $value) {
     $multi = $redis->multi();
     $multi->zUnion("tq:ranks:alltime:$type", ["tq:ranks:alltime:$type:$today"]);
     $multi->expire("tq:ranks:alltime:$type", 100000);
@@ -85,20 +88,23 @@ foreach ($types as $type=>$value) {
 }
 
 $redis->setex($todaysKey, 87000, true);
-Util::out("Alltime rankings complete");
+Util::out('Alltime rankings complete');
 
-function zAdd(&$multi, $key, $value, $id) {
+function zAdd(&$multi, $key, $value, $id)
+{
     $value = max(1, (int) $value);
     $multi->zAdd($key, $value, $id);
     $multi->expire($key, 100000);
 }
 
-function moveAndExpire(&$multi, $today, $key) {
-    $newKey = str_replace(":$today", "", $key);
+function moveAndExpire(&$multi, $today, $key)
+{
+    $newKey = str_replace(":$today", '', $key);
     $multi->rename($key, $newKey);
     $multi->expire($newKey, 100000);
 }
 
-function rankCheck($max, $rank) {
+function rankCheck($max, $rank)
+{
     return $rank === false ? $max : ($rank + 1);
 }

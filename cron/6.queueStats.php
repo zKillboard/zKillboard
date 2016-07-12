@@ -14,13 +14,20 @@ $queueStats = new RedisQueue('queueStats');
 
 $noRowCount = 0;
 do {
-    if ($redis->llen("queueServer") > 100) exit();
-    if ($redis->llen("queueProcess") > 100) exit();
+    if ($redis->llen('queueServer') > 100) {
+        exit();
+    }
+    if ($redis->llen('queueProcess') > 100) {
+        exit();
+    }
     $row = $queueStats->pop();
-    if ($row !== null) calcStats($row);
-    else {
-        $noRowCount++;
-        if ($noRowCount >= 5) exit();
+    if ($row !== null) {
+        calcStats($row);
+    } else {
+        ++$noRowCount;
+        if ($noRowCount >= 5) {
+            exit();
+        }
     }
 } while ($timer->stop() <= $maxTime);
 $status = 0;
@@ -90,11 +97,17 @@ function mergeAllTime(&$stats, $result, $isVictim)
 
     $row = $result[0];
     $dl = ($isVictim ? 'Lost' : 'Destroyed');
-    if (!isset($stats["ships$dl"])) $stats["ships$dl"] = 0;
+    if (!isset($stats["ships$dl"])) {
+        $stats["ships$dl"] = 0;
+    }
     $stats["ships$dl"] += $row['killIDCount'];
-    if (!isset($stats["points$dl"])) $stats["points$dl"] = 0;
+    if (!isset($stats["points$dl"])) {
+        $stats["points$dl"] = 0;
+    }
     $stats["points$dl"] += $row['zkb_pointsSum'];
-    if (!isset($stats["isk$dl"])) $stats["isk$dl"] = 0;
+    if (!isset($stats["isk$dl"])) {
+        $stats["isk$dl"] = 0;
+    }
     $stats["isk$dl"] += (int) $row['zkb_totalValueSum'];
 }
 

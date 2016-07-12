@@ -1,10 +1,12 @@
 <?php
 
-require_once "../init.php";
+require_once '../init.php';
 
 $today = date('Ymd');
 $todaysKey = "RC:recentRanksCalculated:$today";
-if ($redis->get($todaysKey) == true) exit();
+if ($redis->get($todaysKey) == true) {
+    exit();
+}
 
 $statClasses = ['ships', 'isk', 'points'];
 $statTypes = ['Destroyed', 'Lost'];
@@ -12,16 +14,15 @@ $statTypes = ['Destroyed', 'Lost'];
 $now = time();
 $now = $now - ($now % 60);
 $then = $now - (90 * 86400);
-$ninetyDayKillID = $mdb->findField("killmails", 'killID', ['dttm' => ['$gte' => new MongoDate($then)]], ['killID' => 1]);
-if ($ninetyDayKillID == null)
-{
+$ninetyDayKillID = $mdb->findField('killmails', 'killID', ['dttm' => ['$gte' => new MongoDate($then)]], ['killID' => 1]);
+if ($ninetyDayKillID == null) {
     $redis->setex($todaysKey, 87000, true);
     exit();
 }
 
-$information = $mdb->getCollection("statistics");
+$information = $mdb->getCollection('statistics');
 
-Util::out("recent time ranks - first iteration");
+Util::out('recent time ranks - first iteration');
 $types = [];
 $iter = $information->find();
 foreach ($iter as $row) {
@@ -29,13 +30,15 @@ foreach ($iter as $row) {
     $id = $row['id'];
 
     $killID = getLatestKillID($type, $id, $ninetyDayKillID);
-    if ($killID < $ninetyDayKillID) continue;
+    if ($killID < $ninetyDayKillID) {
+        continue;
+    }
 
     $types[$type] = true;
     $key = "tq:ranks:recent:$type:$today";
 
-    $recentKills = getRecent($row['type'], $row['id'], false, $ninetyDayKillID); 
-    $recentLosses = getRecent($row['type'], $row['id'], true, $ninetyDayKillID); 
+    $recentKills = getRecent($row['type'], $row['id'], false, $ninetyDayKillID);
+    $recentLosses = getRecent($row['type'], $row['id'], true, $ninetyDayKillID);
 
     $multi = $redis->multi();
     zAdd($multi, "$key:shipsDestroyed", $recentKills['killIDCount'], $id);
@@ -47,33 +50,34 @@ foreach ($iter as $row) {
     $multi->exec();
 }
 
-Util::out("recent time ranks - second iteration");
-foreach ($types as $type=>$value)
-{
+Util::out('recent time ranks - second iteration');
+foreach ($types as $type => $value) {
     $key = "tq:ranks:recent:$type:$today";
     $indexKey = "$key:shipsDestroyed";
     $max = $redis->zCard($indexKey);
     $redis->del("tq:ranks:recent:$type:$today");
 
-    $it = NULL;
-    while($arr_matches = $redis->zScan($indexKey, $it)) {
-        foreach($arr_matches as $id => $score) {
-            $shipsDestroyed = $redis->zScore("$key:shipsDestroyed", $id); 
+    $it = null;
+    while ($arr_matches = $redis->zScan($indexKey, $it)) {
+        foreach ($arr_matches as $id => $score) {
+            $shipsDestroyed = $redis->zScore("$key:shipsDestroyed", $id);
             $shipsDestroyedRank = rankCheck($max, $redis->zRevRank("$key:shipsDestroyed", $id));
-            $shipsLost = $redis->zScore("$key:shipsLost", $id); 
+            $shipsLost = $redis->zScore("$key:shipsLost", $id);
             $shipsLostRank = rankCheck($max, $redis->zRevRank("$key:shipsLost", $id));
             $shipsEff = ($shipsDestroyed / ($shipsDestroyed + $shipsLost));
 
-            $iskDestroyed = $redis->zScore("$key:iskDestroyed", $id); 
-            if ($iskDestroyed == 0) continue;
+            $iskDestroyed = $redis->zScore("$key:iskDestroyed", $id);
+            if ($iskDestroyed == 0) {
+                continue;
+            }
             $iskDestroyedRank = rankCheck($max, $redis->zRevRank("$key:iskDestroyed", $id));
-            $iskLost = $redis->zScore("$key:iskLost", $id); 
+            $iskLost = $redis->zScore("$key:iskLost", $id);
             $iskLostRank = rankCheck($max, $redis->zRevRank("$key:iskLost", $id));
             $iskEff = ($iskDestroyed / ($iskDestroyed + $iskLost));
 
-            $pointsDestroyed = $redis->zScore("$key:pointsDestroyed", $id); 
+            $pointsDestroyed = $redis->zScore("$key:pointsDestroyed", $id);
             $pointsDestroyedRank = rankCheck($max, $redis->zRevRank("$key:pointsDestroyed", $id));
-            $pointsLost = $redis->zScore("$key:pointsLost", $id); 
+            $pointsLost = $redis->zScore("$key:pointsLost", $id);
             $pointsLostRank = rankCheck($max, $redis->zRevRank("$key:pointsLost", $id));
             $pointsEff = ($pointsDestroyed / ($pointsDestroyed + $pointsLost));
 
@@ -86,7 +90,7 @@ foreach ($types as $type=>$value)
     }
 }
 
-foreach ($types as $type=>$value) {
+foreach ($types as $type => $value) {
     $multi = $redis->multi();
     $multi->del("tq:ranks:recent:$type");
     $multi->zUnion("tq:ranks:recent:$type", ["tq:ranks:recent:$type:$today"]);
@@ -102,25 +106,29 @@ foreach ($types as $type=>$value) {
 }
 
 $redis->setex($todaysKey, 87000, true);
-Util::out("Recent rankings complete");
+Util::out('Recent rankings complete');
 
-function zAdd(&$multi, $key, $value, $id) {
+function zAdd(&$multi, $key, $value, $id)
+{
     $value = max(1, (int) $value);
     $multi->zAdd($key, $value, $id);
     $multi->expire($key, 100000);
 }
 
-function moveAndExpire(&$multi, $today, $key) {
-    $newKey = str_replace(":$today", "", $key);
+function moveAndExpire(&$multi, $today, $key)
+{
+    $newKey = str_replace(":$today", '', $key);
     $multi->rename($key, $newKey);
     $multi->expire($newKey, 100000);
 }
 
-function rankCheck($max, $rank) {
+function rankCheck($max, $rank)
+{
     return $rank === false ? $max : ($rank + 1);
 }
 
-function getRecent($type, $id, $isVictim, $ninetyDayKillID) {
+function getRecent($type, $id, $isVictim, $ninetyDayKillID)
+{
     global $mdb;
 
     // build the query
@@ -130,10 +138,12 @@ function getRecent($type, $id, $isVictim, $ninetyDayKillID) {
     $query = ['$and' => [['killID' => ['$gte' => $ninetyDayKillID]], $query]];
 
     $result = $mdb->group('killmails', [], $query, 'killID', ['zkb.points', 'zkb.totalValue']);
+
     return sizeof($result) ? $result[0] : ['killIDCount' => 0, 'zkb_pointsSum' => 0, 'zkb_totalValueSum' => 0];
 }
 
-function getLatestKillID($type, $id, $ninetyDayKillID) {
+function getLatestKillID($type, $id, $ninetyDayKillID)
+{
     global $mdb;
 
     // build the query
@@ -142,7 +152,10 @@ function getLatestKillID($type, $id, $ninetyDayKillID) {
     // set the proper sequence values
     $query = ['$and' => [['killID' => ['$gte' => $ninetyDayKillID]], $query]];
 
-    $killmail = $mdb->findDoc("killmails", $query);
-    if ($killmail == null) return 0;
+    $killmail = $mdb->findDoc('killmails', $query);
+    if ($killmail == null) {
+        return 0;
+    }
+
     return $killmail['killID'];
 }

@@ -15,7 +15,7 @@ while ($iterations++ <= 1200) {
     ob_start();
     $infoArray = [];
 
-    $isHardened = $redis->ttl("zkb:isHardened");
+    $isHardened = $redis->ttl('zkb:isHardened');
     if ($isHardened > 0) {
         addInfo('seconds remaining in Cached/Hardened Mode', $isHardened);
         addInfo('', 0);
@@ -40,10 +40,10 @@ while ($iterations++ <= 1200) {
     addInfo('Top killID', $mdb->findField('killmails', 'killID', [], ['killID' => -1]));
 
     addInfo('', 0);
-    addInfo("Api KeyInfos to check", $redis->zCount('zkb:apis', 0, time()));
+    addInfo('Api KeyInfos to check', $redis->zCount('zkb:apis', 0, time()));
     addInfo('Char KillLogs to check', $redis->zCount('zkb:chars', 0, time()));
     addInfo('Corp KillLogs to check', $redis->zCount('zkb:corps', 0, time()));
-    addInfo("SSO KillLogs to check", $redis->zCount('tqApiSSO', 0, time()));
+    addInfo('SSO KillLogs to check', $redis->zCount('tqApiSSO', 0, time()));
     addInfo('Char Apis', $redis->zCard('zkb:chars'));
     addInfo('Corp Apis', $redis->zCard('zkb:corps'));
     addInfo('SSO Apis', $redis->zCard('tqApiSSO'));
@@ -75,7 +75,7 @@ while ($iterations++ <= 1200) {
 
     $stats = $mdb->getDb()->command(['dbstats' => 1]);
     $dataSize = number_format(($stats['dataSize'] + $stats['indexSize']) / (1024 * 1024 * 1024), 2);
-    $storageSize = number_format(($stats['storageSize'] + $stats['indexStorageSize'])/ (1024 * 1024 * 1024), 2);
+    $storageSize = number_format(($stats['storageSize'] + $stats['indexStorageSize']) / (1024 * 1024 * 1024), 2);
 
     $memory = getSystemMemInfo();
     $memTotal = number_format($memory['MemTotal'] / (1024 * 1024), 2);
@@ -89,7 +89,7 @@ while ($iterations++ <= 1200) {
     }
 
     $cpu = exec("top -d 0.5 -b -n2 | grep \"Cpu(s)\"| tail -n 1 | awk '{print $2 + $4}'");
-    echo exec('date') . " CPU: $cpu% Load: " . Load::getLoad() . "  Memory: ${memUsed}G/${memTotal}G  Redis: $mem  TokuDB: ${storageSize}G / ${dataSize}G\n";
+    echo exec('date')." CPU: $cpu% Load: ".Load::getLoad()."  Memory: ${memUsed}G/${memTotal}G  Redis: $mem  TokuDB: ${storageSize}G / ${dataSize}G\n";
     echo "\n";
     foreach ($infoArray as $i) {
         foreach ($i as $name => $count) {

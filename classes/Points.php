@@ -2,11 +2,16 @@
 
 class Points
 {
-    public static function getPoints($typeID) {
+    public static function getPoints($typeID)
+    {
         $groupID = Info::getInfoField('typeID', $typeID, 'groupID');
-        if ($groupID == 29) return 1;
+        if ($groupID == 29) {
+            return 1;
+        }
         $categoryID = Info::getInfoField('groupID', $groupID, 'categoryID');
-        if ($categoryID != 6) return 1;
+        if ($categoryID != 6) {
+            return 1;
+        }
 
         $dogma = ['hp', 'armorHP', 'shieldCapacity'];
         $sum = 0;
@@ -14,14 +19,18 @@ class Points
             $sum += (int) Info::getInfoField('typeID', $typeID, $attr);
         }
         $points = ceil($sum / log($sum));
-        if ($groupID == 963) $points = $points * 3; // Strategic Cruisers
+        if ($groupID == 963) {
+            $points = $points * 3;
+        } // Strategic Cruisers
 
         return max(1, $points);
     }
 
     public static function getKillPoints($kill, $price)
     {
-        if (!isset($kill['involved']['0']['shipTypeID'])) return 1;
+        if (!isset($kill['involved']['0']['shipTypeID'])) {
+            return 1;
+        }
         $vicpoints = self::getPoints($kill['involved']['0']['shipTypeID']);
         $vicpoints += floor(log($price / 10000000));
 

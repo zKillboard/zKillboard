@@ -6,9 +6,8 @@ require_once '../init.php';
 
 global $redisQServer;
 
-if ($redisQServer == null) 
-{
-    $redis->del("queueRedisQ");
+if ($redisQServer == null) {
+    $redis->del('queueRedisQ');
     exit();
 }
 

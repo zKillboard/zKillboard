@@ -6,7 +6,9 @@ use cvweiss\redistools\RedisTtlCounter;
 $pageLoadMS = microtime(true);
 
 // We can ignore Disqus
-if (@$_SERVER['HTTP_USER_AGENT'] == "Disqus/1.0") die("");
+if (@$_SERVER['HTTP_USER_AGENT'] == 'Disqus/1.0') {
+    die('');
+}
 
 // Check to ensure we have a trailing slash, helps with caching
 $uri = @$_SERVER['REQUEST_URI'];
@@ -39,11 +41,14 @@ session_start();
 
 $nonApiR = new RedisTtlCounter('ttlc:nonApiRequests', 300);
 $apiR = new RedisTtlCounter('ttlc:apiRequests', 300);
-if (substr($uri, 0, 5) == '/api/') $apiR->add(uniqid());
-else $nonApiR->add(uniqid());
+if (substr($uri, 0, 5) == '/api/') {
+    $apiR->add(uniqid());
+} else {
+    $nonApiR->add(uniqid());
+}
 
 $ip = IP::get();
-if ($ip != "127.0.0.1") {
+if ($ip != '127.0.0.1') {
     $visitors = new RedisTtlCounter('ttlc:visitors', 300);
     $visitors->add($ip);
     $requests = new RedisTtlCounter('ttlc:requests', 300);

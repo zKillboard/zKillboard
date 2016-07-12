@@ -8,7 +8,9 @@ if ($app->request()->isPost()) {
     $search = $app->request()->post('query');
 }
 
-if (!(isset($entityType))) $entityType = null;
+if (!(isset($entityType))) {
+    $entityType = null;
+}
 
 $result = zkbSearch::getResults($search, $entityType);
 

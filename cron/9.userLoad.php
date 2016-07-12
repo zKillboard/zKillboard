@@ -1,13 +1,15 @@
 <?php
 
-require_once "../init.php";
+require_once '../init.php';
 
-$key = "zkb:userSettingsLoaded";
-if ($redis->get($key) == true) exit();
+$key = 'zkb:userSettingsLoaded';
+if ($redis->get($key) == true) {
+    exit();
+}
 
-Util::out("Loading user settings");
+Util::out('Loading user settings');
 
-$users = $mdb->find("users");
+$users = $mdb->find('users');
 foreach ($users as $user) {
     $key = $user['userID'];
     unset($user['userID']);

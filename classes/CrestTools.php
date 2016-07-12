@@ -31,11 +31,14 @@ class CrestTools
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if ($httpCode == 200) {
                 $crestSuccess->add(uniqid());
+
                 return $body;
             }
             $crestFailure->add(uniqid());
 
-            if (in_array($httpCode, $errorCodes)) return $httpCode;
+            if (in_array($httpCode, $errorCodes)) {
+                return $httpCode;
+            }
 
             ++$numTries;
             sleep(1);
@@ -50,6 +53,7 @@ class CrestTools
         global $crestServer;
 
         $url = "$crestServer/killmails/$id/$hash/";
+
         return self::getJSON($url);
     }
 }

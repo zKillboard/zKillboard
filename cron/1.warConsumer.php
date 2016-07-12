@@ -15,7 +15,9 @@ if ($queueWars->size() == 0) {
             $threeDays = date('Y-m-d', (time() - (86400 * 3)));
             $warFinished = substr($timeFinished, 0, 10);
 
-            if ($warFinished < $threeDays) continue;
+            if ($warFinished < $threeDays) {
+                continue;
+            }
         }
         $queueWars->push($war['id']);
     }

@@ -42,6 +42,6 @@ class Disqus
         $js .= "		};\n";
         $js .= '	};';
 
-    return $js;
-}
+        return $js;
+    }
 }

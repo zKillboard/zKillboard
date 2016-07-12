@@ -5,7 +5,9 @@ require_once '../init.php';
 global $redis;
 
 $key = 'zkb:setup:v1';
-if ($redis->get($key) == true) exit();
+if ($redis->get($key) == true) {
+    exit();
+}
 
 $multi = $redis->multi();
 $multi->hmSet('tqMap:wh:31000007', ['class' => 1]);
@@ -2506,7 +2508,6 @@ $multi->hmSet('tqMap:wh:31002501', ['class' => 5, 'effectID' => 30670, 'effectNa
 $multi->hmSet('tqMap:wh:31002502', ['class' => 6, 'effectID' => 30670, 'effectName' => 'Cataclysmic Variable']);
 $multi->hmSet('tqMap:wh:31002503', ['class' => 5]);
 $multi->hmSet('tqMap:wh:31002504', ['class' => 5]);
-
 
 $multi->set($key, true);
 $multi->exec();

@@ -2,12 +2,15 @@
 
 global $mdb;
 
-if (!is_numeric($id)) header('Location: /');
+if (!is_numeric($id)) {
+    header('Location: /');
+}
 $id = (int) $id;
 
-$info = $mdb->findDoc("information", ['type' => 'typeID', 'id' => (int) $id, 'cacheTime' => 3600]);
+$info = $mdb->findDoc('information', ['type' => 'typeID', 'id' => (int) $id, 'cacheTime' => 3600]);
 if ($info == null) {
     $app->render('404.html', ['message' => 'Item not found']);
+
     return;
 }
 $info['typeID'] = $info['id'];
@@ -26,7 +29,9 @@ $info['attributes'] = array();
 $market = $mdb->findDoc('prices', ['typeID' => $id]);
 unset($market['_id']);
 unset($market['typeID']);
-if ($market == null) $market = [];
+if ($market == null) {
+    $market = [];
+}
 krsort($market);
 $market = array_slice($market, 0, 30);
 $info['market'] = $market;

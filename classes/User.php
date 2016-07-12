@@ -14,7 +14,7 @@ class User
 
     public static function checkLoginHashed($userID)
     {
-        return null;
+        return;
     }
 
     public static function autoLogin()
@@ -24,7 +24,6 @@ class User
 
     public static function isLoggedIn()
     {
-
         return (int) @$_SESSION['characterID'] != null;
     }
 
@@ -37,6 +36,7 @@ class User
         $id = self::getUserID();
         $info = $redis->hGetAll("user:$id");
         $info['username'] = $mdb->findField('information', 'name', ['type' => 'characterID', 'id' => (int) $id, 'cacheTime' => 300]);
+
         return $info;
     }
 
@@ -55,7 +55,8 @@ class User
     {
         global $redis;
         $id = self::getUserID();
-        return $redis->hGet("user:$id", "moderator") == 'true';
+
+        return $redis->hGet("user:$id", 'moderator') == 'true';
     }
 
     /**
@@ -73,7 +74,7 @@ class User
      */
     public static function getUsername($userID)
     {
-        return null;
+        return;
     }
 
     /**
@@ -83,7 +84,7 @@ class User
      */
     public static function getSessions($userID)
     {
-        return null; 
+        return;
     }
 
     public static function getBalance($userID)
@@ -95,7 +96,8 @@ class User
     {
         global $mdb;
 
-        $history = $mdb->find("payments", ['ownerID1' => "$userID"], ['date' => -1]);
+        $history = $mdb->find('payments', ['ownerID1' => "$userID"], ['date' => -1]);
+
         return $history;
     }
 
@@ -108,7 +110,9 @@ class User
     {
         global $redis;
 
-        if ($userID == null) $userID = User::getUserID();
+        if ($userID == null) {
+            $userID = self::getUserID();
+        }
 
         $redisKey = "message:$userID";
         $redis->rpush($redisKey, $message);
@@ -119,10 +123,13 @@ class User
     {
         global $redis;
 
-        if ($userID == null) $userID = User::getUserID();
+        if ($userID == null) {
+            $userID = self::getUserID();
+        }
 
         $redisKey = "message:$userID";
         $message = $redis->lpop($redisKey);
+
         return $message;
     }
 }

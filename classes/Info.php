@@ -3,9 +3,9 @@
 class Info
 {
     /**
-     * @var array  Used for static caching of getInfoField results
+     * @var array Used for static caching of getInfoField results
      */
-    static $infoFieldCache;
+    public static $infoFieldCache;
 
     public static function getRedisKey($type, $id)
     {
@@ -18,9 +18,9 @@ class Info
 
         $redisKey = self::getRedisKey($type, $id);
         $searchType = ($type == 'shipTypeID' ? 'typeID' : $type);
-        $data = $mdb->findDoc("information", ['type' => $searchType, 'id' => (int) $id]);
+        $data = $mdb->findDoc('information', ['type' => $searchType, 'id' => (int) $id]);
         if ($data === null) {
-            return null;
+            return;
         }
 
         unset($data['_id']);
@@ -30,22 +30,22 @@ class Info
         switch ($type) {
             case 'solarSystemID':
                 $data['security'] = @$data['secStatus'];
-                $data['sunTypeID'] = 3802; 
-                break;  
+                $data['sunTypeID'] = 3802;
+                break;
             case 'characterID':
                 $data['isCEO'] = $mdb->exists('information', ['type' => 'corporationID', 'id' => (int) @$data['corporationID'], 'ceoID' => (int) $id]);
                 $data['isExecutorCEO'] = $mdb->exists('information', ['type' => 'allianceID', 'id' => (int) @$data['allianceID'], 'executorCorpID' => (int) (int) @$data['corporationID']]);
-                break;  
+                break;
             case 'corporationID':
                 $data['cticker'] = @$data['ticker'];
-                break;  
+                break;
             case 'shipTypeID':
                 $data['shipTypeName'] = self::getInfoField('typeID', $id, 'name');
-                break;  
+                break;
             case 'allianceID':
                 $data['aticker'] = @$data['ticker'];
-                break;  
-        } 
+                break;
+        }
 
         $multi = $redis->multi();
         $multi->hMSet($redisKey, $data);
@@ -58,6 +58,7 @@ class Info
     public static function getInfoField($type, $id, $field)
     {
         $data = self::getInfo($type, $id);
+
         return @$data[$field];
     }
 
@@ -67,7 +68,8 @@ class Info
 
         $redisKey = self::getRedisKey($type, $id);
         $data = $redis->hGetAll($redisKey);
-        return ($data == null ? self::loadIntoRedis($type, $id) : $data);
+
+        return $data == null ? self::loadIntoRedis($type, $id) : $data;
     }
 
     public static function getInfoDetails($type, $id)
@@ -145,7 +147,7 @@ class Info
         foreach ($corpList as $corp) {
             $corp['corporationName'] = $corp['name'];
             $corp['corporationID'] = $corp['id'];
-            $doc = $mdb->findDoc("apiCorporation", ['corporationID' => (int) $corp['id']], ['lastFetched' => -1]);
+            $doc = $mdb->findDoc('apiCorporation', ['corporationID' => (int) $corp['id']], ['lastFetched' => -1]);
             if ($doc !== null) {
                 $corp['cachedUntilTime'] = date('Y-m-d H:i', $doc['lastFetched']);
                 $corp['apiVerified'] = 1;
@@ -289,7 +291,7 @@ class Info
      */
     public static function getGroupID($id)
     {
-        return Info::getInfoField('typeID', $id, 'groupID');
+        return self::getInfoField('typeID', $id, 'groupID');
     }
 
     /**
@@ -472,7 +474,7 @@ class Info
             '3772' => 'SubSystems',
             '87' => 'Drone Bay',
             '164' => 'Structure Service Slots',
-            '172' => 'Structure Fuel'
+            '172' => 'Structure Fuel',
             );
 
     /**
@@ -572,7 +574,7 @@ class Info
     {
         global $mdb;
 
-        $slotArray = $mdb->findDoc("information", ['type' => 'typeID', 'id' => (int) $shipTypeID, 'cacheTime' => 300], [], ['lowSlots', 'medSlots', 'hiSlots', 'rigSlots']);
+        $slotArray = $mdb->findDoc('information', ['type' => 'typeID', 'id' => (int) $shipTypeID, 'cacheTime' => 300], [], ['lowSlots', 'medSlots', 'hiSlots', 'rigSlots']);
 
         return $slotArray;
     }
@@ -604,7 +606,8 @@ class Info
         return $retArray;
     }
 
-    public static function getLocationID($solarSystemID, $position) {
+    public static function getLocationID($solarSystemID, $position)
+    {
         global $redis, $mdb;
 
         $x = $position['x'];
@@ -620,9 +623,13 @@ class Info
                 unset($row['complete']);
                 $itemID = (int) $row['itemid'];
                 $multi->hSet($key, $itemID, 1);
-                foreach ($row as $k=>$v) if ($v !== null) $redis->hSet("tqItemID:$itemID", $k, $v);
-                if (!$mdb->exists("information", ['type' => 'locationID', 'id' => $itemID])) {
-                    $mdb->save("information", ['type' => 'locationID', 'id' => $itemID, 'name' => $row['itemname']]);
+                foreach ($row as $k => $v) {
+                    if ($v !== null) {
+                        $redis->hSet("tqItemID:$itemID", $k, $v);
+                    }
+                }
+                if (!$mdb->exists('information', ['type' => 'locationID', 'id' => $itemID])) {
+                    $mdb->save('information', ['type' => 'locationID', 'id' => $itemID, 'name' => $row['itemname']]);
                 }
             }
             $multi->exec();
@@ -630,17 +637,16 @@ class Info
         $minDistance = null;
         $returnID = null;
         $itemIDs = $redis->hGetAll($key);
-        foreach ($itemIDs as $itemID=>$v) {
+        foreach ($itemIDs as $itemID => $v) {
             $row = $redis->hGetAll("tqItemID:$itemID");
 
             $distance = sqrt(pow($row['x'] - $x, 2) + pow($row['y'] - $y, 2) + pow($row['z'] - $z, 2));
 
-            if($minDistance === null) {
+            if ($minDistance === null) {
                 // Initialize with the first value we find
                 $minDistance = $distance;
                 $returnID = $itemID;
-            }
-            elseif($distance <= $minDistance) {
+            } elseif ($distance <= $minDistance) {
                 // Overwrite with the lowest distance we found so far
                 $minDistance = $distance;
                 $returnID = $itemID;

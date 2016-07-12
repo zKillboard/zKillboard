@@ -18,7 +18,9 @@ class Crest2Api
         $killmail['victim'] = self::getVictim($crestmail['victim']);
         $killmail['attackers'] = self::getAttackers($crestmail['attackers']);
         $killmail['items'] = self::getItems($crestmail['victim']['items']);
-        if (isset($crestmail['victim']['position'])) $killmail['position'] = $crestmail['victim']['position'];
+        if (isset($crestmail['victim']['position'])) {
+            $killmail['position'] = $crestmail['victim']['position'];
+        }
         $killmail['zkb'] = $kill['zkb'];
 
         return $killmail;
@@ -53,7 +55,7 @@ class Crest2Api
             $aggressor['allianceID'] = (int) @$attacker['alliance']['id'];
             $aggressor['allianceName'] = (string) Info::getInfoField('allianceID', @$attacker['alliance']['id'], 'name');
             $aggressor['factionID'] = (int) @$attacker['faction']['id'];
-            $aggressor['factionName'] = (string) @Info::getInfoField('factionID', @$attacker['faction']['id'], 'name'); 
+            $aggressor['factionName'] = (string) @Info::getInfoField('factionID', @$attacker['faction']['id'], 'name');
             $aggressor['securityStatus'] = $attacker['securityStatus'];
             $aggressor['damageDone'] = (int) @$attacker['damageDone'];
             $aggressor['finalBlow'] = (int) @$attacker['finalBlow'];

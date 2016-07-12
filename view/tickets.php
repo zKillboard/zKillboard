@@ -16,9 +16,9 @@ if ($_POST) {
 
     if ($charID > 0 && isset($ticket)) {
         $insert = ['subject' => $subject, 'content' => $ticket, 'dttm' => time(), 'parentID' => null, 'email' => $email, 'characterID' => $charID, 'status' => 1];
-        $mdb->insert("tickets", $insert);
+        $mdb->insert('tickets', $insert);
 
-        $id = $insert['_id']; 
+        $id = $insert['_id'];
 
         $app->redirect("/tickets/view/$id/");
         exit();
@@ -29,11 +29,11 @@ if ($_POST) {
 
 $info = User::getUserInfo();
 if (@$info['moderator'] == true) {
-    $open_tickets = $mdb->find("tickets", ['parentID' => null, 'status' => 1], ['dttm' => -1]);
-    $closed_tickets = $mdb->find("tickets", ['parentID' => null, 'status' => ['$ne' => 1]], ['dttm' => -1]);
+    $open_tickets = $mdb->find('tickets', ['parentID' => null, 'status' => 1], ['dttm' => -1]);
+    $closed_tickets = $mdb->find('tickets', ['parentID' => null, 'status' => ['$ne' => 1]], ['dttm' => -1]);
     $tickets = array_merge($open_tickets, $closed_tickets);
 } else {
-    $tickets = $mdb->find("tickets", ['$and' => [['characterID' => User::getUserID()], ['parentID' => null]]], ['dttm' => -1]);
+    $tickets = $mdb->find('tickets', ['$and' => [['characterID' => User::getUserID()], ['parentID' => null]]], ['dttm' => -1]);
 }
 Info::addInfo($tickets);
 

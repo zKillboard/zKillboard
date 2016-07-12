@@ -193,10 +193,16 @@ class Related
 
         $retValue = array();
         foreach ($team as $entity) {
-            $name = $redis->hGet("tq:allianceID:$entity", "name");
-            if ($name == null) $name = $redis->hGet("tq:corporationID:$entity", "name");
-            if ($name == null) $name = $mdb->findField('information', 'name', ['cacheTime' => 3600, 'id' => ((int) $entity)]);
-            if ($name == null) $name = "Entity $entity";
+            $name = $redis->hGet("tq:allianceID:$entity", 'name');
+            if ($name == null) {
+                $name = $redis->hGet("tq:corporationID:$entity", 'name');
+            }
+            if ($name == null) {
+                $name = $mdb->findField('information', 'name', ['cacheTime' => 3600, 'id' => ((int) $entity)]);
+            }
+            if ($name == null) {
+                $name = "Entity $entity";
+            }
             $retValue[$entity] = $name;
         }
 
@@ -204,9 +210,10 @@ class Related
     }
 
     /**
-     * Take all involved parties from the kills and divide them into 2 groups based on who shot who
+     * Take all involved parties from the kills and divide them into 2 groups based on who shot who.
      *
      * @param array $kills
+     *
      * @return array
      */
     private static function createTeams($kills)
@@ -214,7 +221,7 @@ class Related
         $score = [];
         $entities = [];
         foreach ($kills as $kill) {
-            $victim   = $kill['victim'];
+            $victim = $kill['victim'];
             $entities[self::determineEntityId($victim)] = $victim;
 
             foreach ($kill['involved'] as $involved) {
@@ -227,7 +234,7 @@ class Related
         // Calculate who hates who
         $teams = [
             'red' => [],
-            'blue' => []
+            'blue' => [],
                 ];
         foreach ($entities as $entity) {
             $affiliationId = self::determineAffiliationId($entity);
@@ -256,36 +263,38 @@ class Related
 
     /**
      * Returns the Id of the most broad affiliation of the given entity.
-     * This can be a corporationID or allianceID
+     * This can be a corporationID or allianceID.
      *
      * @param array $entity
+     *
      * @return null|int
      */
     private static function determineAffiliationId($entity)
     {
-        foreach (array('allianceID','corporationID') as $possibleId) {
+        foreach (array('allianceID', 'corporationID') as $possibleId) {
             if (isset($entity[$possibleId])) {
                 return $entity[$possibleId];
             }
         }
-        return null;
+
+        return;
     }
 
     /**
      * Return the most specific identifier for an entity.
-     * This can be characterID, corporationID or allianceID
+     * This can be characterID, corporationID or allianceID.
      *
      * @param array $entity
-     * @return null
      */
     private static function determineEntityId($entity)
     {
-        foreach (array('characterID','corporationID','allianceID') as $possibleId) {
+        foreach (array('characterID', 'corporationID', 'allianceID') as $possibleId) {
             if (isset($entity[$possibleId])) {
                 return $entity[$possibleId];
             }
         }
-        return null;
+
+        return;
     }
 
     /**
@@ -337,7 +346,7 @@ class Related
                     }
 
                     $score[$victimId][$involvedId] += 5;
-                    $score[$involvedId][$victimId] =& $score[$victimId][$involvedId];
+                    $score[$involvedId][$victimId] = &$score[$victimId][$involvedId];
                 }
             }
         }
@@ -350,6 +359,7 @@ class Related
      * @param array $entity
      * @param array $scoreList
      * @param array $team
+     *
      * @return int
      */
     private static function calcScore($entity, $scoreList, $team)
@@ -358,9 +368,10 @@ class Related
         foreach ($team as $memberEntity) {
             foreach (array('characterID', 'corporationID', 'allianceID') as $typeId) {
                 foreach (array('characterID', 'corporationID', 'allianceID') as $typeId2) {
-
                     if (isset($entity[$typeId]) && isset($memberEntity[$typeId2])) {
-                        if ($entity[$typeId] == $memberEntity[$typeId2]) return -50;
+                        if ($entity[$typeId] == $memberEntity[$typeId2]) {
+                            return -50;
+                        }
 
                         // If we have beef, apply the score
                         if (isset($scoreList[$entity[$typeId]][$memberEntity[$typeId2]])) {
@@ -370,6 +381,7 @@ class Related
                 }
             }
         }
+
         return $score;
     }
 
@@ -393,12 +405,12 @@ class Related
             $mass = (int) Info::getInfoField('typeID', $typeID, 'mass');
             self::$masses[$typeID] = $mass;
         }
+
         return self::$masses[$typeID];
     }
 
     public static function compareShips($a, $b)
     {
-
         $aSize = self::getMass(@$a['shipTypeID']);
         $bSize = self::getMass(@$b['shipTypeID']);
 
@@ -410,6 +422,7 @@ class Related
      * There really must be a more elegant way to do this shit.
      *
      * @param array $entities
+     *
      * @return array
      */
     private static function sortEntitiesByLargestGroup($entities)
@@ -420,7 +433,6 @@ class Related
             $groupId = self::determineAffiliationId($entity);
             if (!isset($sortArray[self::determineAffiliationId($entity)])) {
                 $sortArray[$groupId] = 1;
-
             } else {
                 $sortArray[$groupId] += 1;
             }

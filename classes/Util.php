@@ -59,8 +59,6 @@ class Util
             throw $ex;
         }
 
-
-
         return $pheal;
     }
 
@@ -81,7 +79,7 @@ class Util
     {
         $length = strlen($needle);
 
-        return (substr($haystack, 0, $length) === $needle);
+        return substr($haystack, 0, $length) === $needle;
     }
 
     public static function endsWith($haystack, $needle)
@@ -433,7 +431,7 @@ class Util
         return ['cerulean', 'cyborg', 'default', 'journal', 'readable', 'simplex', 'slate', 'spacelab', 'united'];
     }
 
-    public static function rankCheck($rank) 
+    public static function rankCheck($rank)
     {
         return $rank === false || $rank === null ? '-' : (1 + $rank);
     }
@@ -454,10 +452,18 @@ class Util
         $z = $position['z'];
 
         $row = $redis->hGetAll("tqItemID:$locationID");
-        if ($row === null) return 0;
-        if (!isset($row['x'])) return 0;
-        if (!isset($row['y'])) return 0;
-        if (!isset($row['z'])) return 0;
+        if ($row === null) {
+            return 0;
+        }
+        if (!isset($row['x'])) {
+            return 0;
+        }
+        if (!isset($row['y'])) {
+            return 0;
+        }
+        if (!isset($row['z'])) {
+            return 0;
+        }
         $distance = sqrt(pow($row['x'] - $x, 2) + pow($row['y'] - $y, 2) + pow($row['z'] - $z, 2));
 
         return $distance;
@@ -468,6 +474,7 @@ class Util
         $distance = self::get3dDistance($position, $locationID);
 
         $au = round($distance / (149597870700), 2);
+
         return $au;
     }
 }

@@ -7,7 +7,9 @@ global $redis;
 $time = time();
 $time = $time - ($time % 900);
 $key = "zkb:everyFifteen:$time";
-if ($redis->get($key) == true) exit();
+if ($redis->get($key) == true) {
+    exit();
+}
 
 $p = array();
 $numDays = 7;

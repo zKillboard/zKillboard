@@ -14,7 +14,7 @@ $app->get('/kills.html/', function ($page = 'about') use ($app) {
         });
 
 // Map
-$app->get('/map/', function() use ($app) {
+$app->get('/map/', function () use ($app) {
         $app->render('map.html', ['showAds' => false]);
         });
 
@@ -173,13 +173,13 @@ $app->get('/wars/', function () use ($app) {
         });
 
 // CREST
-$app->get('/ccplogin/', function() use ($app) {
+$app->get('/ccplogin/', function () use ($app) {
         include 'view/ccplogin.php';
         });
-$app->get('/ccpcallback/', function() use ($app) {
+$app->get('/ccpcallback/', function () use ($app) {
         include 'view/ccpcallback.php';
         });
-$app->get('/ccpsavefit/:killID/', function($killID) use ($app) {
+$app->get('/ccpsavefit/:killID/', function ($killID) use ($app) {
         include 'view/ccpsavefit.php';
         });
 

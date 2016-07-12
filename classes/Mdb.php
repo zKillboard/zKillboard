@@ -27,7 +27,9 @@ class Mdb
             }
 
             ++$this->queryCount;
-            if (!$debug) MongoCursor::$timeout = -1;
+            if (!$debug) {
+                MongoCursor::$timeout = -1;
+            }
 
             return $this->db;
         } catch (Exception $ex) {
@@ -90,8 +92,9 @@ class Mdb
     public function insert($collection, $values)
     {
         $sem = sem_get(3173);
-        try {  
+        try {
             sem_acquire($sem);
+
             return $this->getCollection($collection)->insert($values);
         } finally {
             sem_release($sem);
@@ -101,8 +104,9 @@ class Mdb
     public function save($collection, $document)
     {
         $sem = sem_get(3173);
-        try {  
+        try {
             sem_acquire($sem);
+
             return $this->getCollection($collection)->save($document);
         } finally {
             sem_release($sem);
@@ -114,8 +118,9 @@ class Mdb
         $key = isset($key['_id']) ? ['_id' => $key['_id']] : $key;
 
         $sem = sem_get(3173);
-        try {  
+        try {
             sem_acquire($sem);
+
             return $this->getCollection($collection)->update($key, ['$unset' => [$value => 1]]);
         } finally {
             sem_release($sem);
@@ -125,11 +130,14 @@ class Mdb
     public function set($collection, $key, $value, $multi = false)
     {
         $key = isset($key['_id']) ? ['_id' => $key['_id']] : $key;
-        if ($key === null) throw new Exception("Invalid key");
+        if ($key === null) {
+            throw new Exception('Invalid key');
+        }
 
         $sem = sem_get(3173);
         try {
             sem_acquire($sem);
+
             return $this->getCollection($collection)->update($key, ['$set' => $value], ['multiple' => $multi]);
         } finally {
             sem_release($sem);
@@ -143,6 +151,7 @@ class Mdb
         $sem = sem_get(3173);
         try {
             sem_acquire($sem);
+
             return $this->getCollection($collection)->remove($key);
         } finally {
             sem_release($sem);
@@ -229,8 +238,9 @@ class Mdb
     public function insertUpdate($collection, $keys, $values = [])
     {
         $sem = sem_get(3173);
-        try {  
+        try {
             sem_acquire($sem);
+
             return $this->getCollection($collection)->findAndModify($keys, (sizeof($values) ? ['$set' => $values] : $keys), $this->emptyArray, ['upsert' => true]);
         } finally {
             sem_release($sem);

@@ -1,9 +1,11 @@
 <?php
 
-require_once "../init.php";
+require_once '../init.php';
 
 $date = (int) date('Ymd', time() - 7200);
-if ($redis->get("zkb:insuranceFetched:$date") == true) exit();
+if ($redis->get("zkb:insuranceFetched:$date") == true) {
+    exit();
+}
 
 $json = CrestTools::curlFetch("$crestServer/insuranceprices/");
 $insurance = json_decode($json, true);
@@ -14,6 +16,6 @@ foreach ($items as $item) {
     foreach ($item['insurance'] as $i) {
         $insert[$i['level']] = ['cost' => round($i['cost']), 'payout' => round($i['payout'])];
     }
-    $mdb->insertUpdate("insurance", ['typeID' => $typeID, 'date' => $date], $insert);
+    $mdb->insertUpdate('insurance', ['typeID' => $typeID, 'date' => $date], $insert);
 }
 $redis->setex("zkb:insuranceFetched:$date", 86400, true);

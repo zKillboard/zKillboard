@@ -2,8 +2,10 @@
 
 require_once '../init.php';
 
-$serverVersion = $redis->get("tqServerVersion");
-if ($redis->get("tqGroups:serverVersion") == $serverVersion) exit();
+$serverVersion = $redis->get('tqServerVersion');
+if ($redis->get('tqGroups:serverVersion') == $serverVersion) {
+    exit();
+}
 Util::out("Update Groups and Items: $serverVersion");
 
 $groups = CrestTools::getJSON("$crestServer/inventory/groups/");
@@ -23,14 +25,16 @@ do {
 
         $types = CrestTools::getJSON($href);
         $categoryID = getGroupID($types['category']['href']);
-        if (!isset($types['name'])) exit("failure\n"); // Data not there, something is wrong, come back later
+        if (!isset($types['name'])) {
+            exit("failure\n");
+        } // Data not there, something is wrong, come back later
 
         $mdb->insertUpdate('information', ['type' => 'groupID', 'id' => $groupID], ['name' => $name, 'categoryID' => $categoryID, 'lastCrestUpdate' => $mdb->now(-86400)]);
 
         $types = CrestTools::getJSON($href);
         if (@$types['types'] != null) {
             foreach ($types['types'] as $type) {
-                $typeID = $type['id']; 
+                $typeID = $type['id'];
                 $name = $type['name'];
 
                 $exists = $mdb->count('information', ['type' => 'typeID', 'id' => $typeID]);
@@ -38,7 +42,6 @@ do {
                     Util::out("Discovered item: $name");
                     ++$newItems;
                 }
-
 
                 $mdb->insertUpdate('information', ['type' => 'typeID', 'id' => $typeID], ['name' => $name, 'groupID' => $groupID, 'lastCrestUpdate' => new MongoDate(1)]);
             }
@@ -51,9 +54,9 @@ do {
 } while ($next != null);
 
 $mdb->insertUpdate('storage', ['locker' => 'groupsPopulated'], ['contents' => true]);
-$redis->set("tq:itemsPopulated", true);
+$redis->set('tq:itemsPopulated', true);
 
-$redis->set("tqGroups:serverVersion", $serverVersion);
+$redis->set('tqGroups:serverVersion', $serverVersion);
 
 function getTypeID($href)
 {

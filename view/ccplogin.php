@@ -9,4 +9,3 @@ if ($uri != '') {
 }
 
 CrestSSO::login();
-

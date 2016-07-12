@@ -12,7 +12,7 @@ $twig = $app->view()->getEnvironment();
 // Check SSO values
 $ssoCharacterID = @$_SESSION['characterID'];
 if ($ssoCharacterID != null) {
-    $key = "login:" . $ssoCharacterID . ":" . session_id();
+    $key = 'login:'.$ssoCharacterID.':'.session_id();
     $refreshToken = $redis->get("$key:refreshToken");
     $scopes = $redis->get("$key:scopes");
     if ($refreshToken != null) {
@@ -20,8 +20,8 @@ if ($ssoCharacterID != null) {
     } else {
         unset($_SESSION['characterID']);
     }
-    if($scopes != null) {
-        $twig->addGlobal('scopes', explode(" ", $scopes));
+    if ($scopes != null) {
+        $twig->addGlobal('scopes', explode(' ', $scopes));
     }
 } else {
     $twig->addGlobal('characterID', 0);
@@ -31,7 +31,7 @@ if ($ssoCharacterID != null) {
 $accountBalance = 0;
 $userShowAds = true;
 if ($ssoCharacterID > 0) {
-    $adFreeUntil = (int) $redis->hGet("user:$ssoCharacterID", "adFreeUntil");
+    $adFreeUntil = (int) $redis->hGet("user:$ssoCharacterID", 'adFreeUntil');
     $userShowAds = ($adFreeUntil < time());
 }
 
@@ -66,7 +66,7 @@ $uriParams = [];
 try {
     $uriParams = Util::convertUriToParameters();
 } catch (Exception $ex) {
-    header("HTTP/ 400 " . $ex->getMessage());
+    header('HTTP/ 400 '.$ex->getMessage());
     die();
 }
 $uriParams = Util::convertUriToParameters();

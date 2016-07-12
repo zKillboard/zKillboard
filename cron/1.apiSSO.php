@@ -15,14 +15,14 @@ for ($i = 0; $i < 2; ++$i) {
     }
 }
 
-require_once "../init.php";
+require_once '../init.php';
 
 $minute = date('Hi');
-$topKillID = (int) $redis->get("zkb:topKillID");
-$sso = new RedisTimeQueue("tqApiSSO", 3600);
+$topKillID = (int) $redis->get('zkb:topKillID');
+$sso = new RedisTimeQueue('tqApiSSO', 3600);
 
 if ($pid != 0) {
-    $apis = $mdb->find("apisCrest");
+    $apis = $mdb->find('apisCrest');
     foreach ($apis as $row) {
         $sso->add($row['characterID']);
     }
@@ -35,38 +35,33 @@ $chars = [];
 while ($minute == date('Hi')) {
     $charID = (int) $sso->next();
     if ($charID > 0) {
-        $row = $mdb->findDoc("apisCrest", ['characterID' => (int) $charID], ['lastFetch' => 1]);
+        $row = $mdb->findDoc('apisCrest', ['characterID' => (int) $charID], ['lastFetch' => 1]);
         if ($row === null) {
-            $sso->remove($charID); 
-            continue;
-        }
-
-        $mdb->set("apisCrest", $row, ['lastFetch' => time()]);
-        $refreshToken = $row['refreshToken'];
-        $accessToken = CrestSSO::getAccessToken($charID, "", $refreshToken);
-
-
-        if (is_array($accessToken))
-        {
-            $error = $accessToken['error'];
-            if ($error == 'invalid_grant' || $error == 'invalid_token')
-            {
-                $mdb->remove("apisCrest", $row);
-                $sso->remove($charID);
-            }
-            else
-            {
-                Util::out(print_r($accessToken, true));
-                Util::out("SSO xml unhandled error: " . $error . " - " . $accessToken['error_description']);
-            }
-            continue;
-        } else if ($accessToken === 403 || $accessToken === 400) {
-            Util::out("403 $charID $refreshToken");
-            $mdb->set("apisCrest", $row, ['errorCode' => $accessToken]);
             $sso->remove($charID);
             continue;
         }
-        if ($accessToken == null) { 
+
+        $mdb->set('apisCrest', $row, ['lastFetch' => time()]);
+        $refreshToken = $row['refreshToken'];
+        $accessToken = CrestSSO::getAccessToken($charID, '', $refreshToken);
+
+        if (is_array($accessToken)) {
+            $error = $accessToken['error'];
+            if ($error == 'invalid_grant' || $error == 'invalid_token') {
+                $mdb->remove('apisCrest', $row);
+                $sso->remove($charID);
+            } else {
+                Util::out(print_r($accessToken, true));
+                Util::out('SSO xml unhandled error: '.$error.' - '.$accessToken['error_description']);
+            }
+            continue;
+        } elseif ($accessToken === 403 || $accessToken === 400) {
+            Util::out("403 $charID $refreshToken");
+            $mdb->set('apisCrest', $row, ['errorCode' => $accessToken]);
+            $sso->remove($charID);
+            continue;
+        }
+        if ($accessToken == null) {
             Util::out("null access token on $charID $refreshToken");
             continue;
         }
@@ -89,8 +84,8 @@ while ($minute == date('Hi')) {
         try {
             $result = $pheal->KillMails($params);
             $xmlSuccess->add(uniqid());
-            $mdb->removeField("apisCrest", $row, "errorCode");
-            $mdb->removeField("apisCrest", $row, "error");
+            $mdb->removeField('apisCrest', $row, 'errorCode');
+            $mdb->removeField('apisCrest', $row, 'error');
         } catch (Exception $ex) {
             $xmlFailure->add(uniqid());
             $errorCode = $ex->getCode();
@@ -104,10 +99,10 @@ while ($minute == date('Hi')) {
             }
             if ($errorCode == 201) {
                 Util::out("errorcode 201 deleting $charID");
-                $mdb->remove("apisCrest", $row);
+                $mdb->remove('apisCrest', $row);
                 continue;
             }
-            Util::out("Unknown error for SSO xml api - $charID - " . $ex->getMessage() . " charID: $charID accessToken $accessToken");
+            Util::out("Unknown error for SSO xml api - $charID - ".$ex->getMessage()." charID: $charID accessToken $accessToken");
             sleep(3);
             continue;
         }
@@ -115,7 +110,7 @@ while ($minute == date('Hi')) {
         $kmCount = 0;
         foreach ($result->kills as $kill) {
             $killID = (int) $kill->killID;
-            $kmCount++;
+            ++$kmCount;
 
             $json = json_encode($kill->toArray());
             $killmail = json_decode($json, true);
@@ -127,7 +122,7 @@ while ($minute == date('Hi')) {
             $attackers = $killmail['attackers'];
             $attacker = null;
             if ($attackers != null) {
-                foreach ($attackers as $att) {  
+                foreach ($attackers as $att) {
                     if ($att['finalBlow'] != 0) {
                         $attacker = $att;
                     }
@@ -180,5 +175,5 @@ while ($minute == date('Hi')) {
             }
             Util::out("$killsAdded kills added by $name (SSO)");
         }
-    } 
+    }
 }

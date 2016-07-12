@@ -2,9 +2,13 @@
 
 global $redis;
 
-if (!in_array($pageType, array('recent', 'alltime', 'weekly'))) $app->notFound();
+if (!in_array($pageType, array('recent', 'alltime', 'weekly'))) {
+    $app->notFound();
+}
 
-if (!in_array($subType, array('killers', 'losers'))) $app->notFound();
+if (!in_array($subType, array('killers', 'losers'))) {
+    $app->notFound();
+}
 
 $pageTitle = $pageType == 'recent' ? 'Ranks - Recent (Past 90 Days)' : 'Alltime Ranks';
 $tableTitle = $pageType == 'recent' ? 'Recent Rank' : 'Alltime Rank';
@@ -13,8 +17,11 @@ $types = array('pilot' => 'characterID', 'corp' => 'corporationID', 'alli' => 'a
 $names = array('character' => 'Characters', 'corp' => 'Corporations', 'alli' => 'Alliances', 'faction' => 'Factions');
 $ranks = array();
 foreach ($types as $type => $column) {
-    if ($subType == 'killers') $r = $redis->zRange("tq:ranks:$pageType:$column", 0, 9);
-    else $r = $redis->zRevRange("tq:ranks:$pageType:$column", 0, 9);
+    if ($subType == 'killers') {
+        $r = $redis->zRange("tq:ranks:$pageType:$column", 0, 9);
+    } else {
+        $r = $redis->zRevRange("tq:ranks:$pageType:$column", 0, 9);
+    }
     $result = [];
     foreach ($r as $row) {
         $id = $row;
@@ -40,7 +47,6 @@ foreach ($types as $type => $column) {
         $row['pointsEff'] = ($row['pointsDestroyed'] / ($row['pointsDestroyed'] + $row['pointsLost'])) * 100;
 
         $result[] = $row;
-
     }
     if ($type == 'pilot') {
         $type = 'character';

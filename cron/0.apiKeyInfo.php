@@ -20,10 +20,12 @@ $minute = date('Hi');
 $zkbApis = new RedisTimeQueue('zkb:apis', 14400);
 
 if ($pid > 0) {
-    $apis = $mdb->find("apis");
+    $apis = $mdb->find('apis');
     foreach ($apis as $api) {
         $errorCode = (int) @$api['errorCode'];
-        if (in_array($errorCode, [106, 203, 220, 222, 404])) continue;
+        if (in_array($errorCode, [106, 203, 220, 222, 404])) {
+            continue;
+        }
 
         $_id = (string) $api['_id'];
         $zkbApis->add($_id);
@@ -31,7 +33,7 @@ if ($pid > 0) {
 }
 
 while ($minute == date('Hi') && ($_id = $zkbApis->next()) !== null) {
-    $api = $mdb->findDoc("apis", ['_id' => new MongoID($_id)]);
+    $api = $mdb->findDoc('apis', ['_id' => new MongoID($_id)]);
     if ($api === null) {
         $zkbApis->remove($_id);
     } else {
@@ -40,7 +42,8 @@ while ($minute == date('Hi') && ($_id = $zkbApis->next()) !== null) {
     }
 }
 
-function processApi($api, $apiServer, $mdb) {
+function processApi($api, $apiServer, $mdb)
+{
     $keyID = $api['keyID'];
     $vCode = $api['vCode'];
     $url = "$apiServer/account/APIKeyInfo.xml.aspx?keyID=$keyID&vCode=$vCode";
@@ -66,21 +69,23 @@ function updateErrorCode($mdb, $api, $errorCode)
     $ttlName = $errorCode == 0 ? 'ttlc:XmlSuccess' : 'ttlc:XmlFailure';
     $ttlCounter = new RedisTtlCounter($ttlName, 300);
     $ttlCounter->add(uniqid());
-    $mdb->set("apis", $api, ['errorCode' => (int) $errorCode, 'lastFetched' => time()]);
+    $mdb->set('apis', $api, ['errorCode' => (int) $errorCode, 'lastFetched' => time()]);
 }
 
 function processKeyInfo($mdb, $keyID, $vCode, $xml)
 {
     // Ensure this is a Killmail API
     $accessMask = (int) (string) $xml->result->key['accessMask'];
-    if (!($accessMask & 256)) return;
+    if (!($accessMask & 256)) {
+        return;
+    }
 
     // Get the type of API key we are working with here
     $type = $xml->result->key['type'];
     $type = $type == 'Account' ? 'Character' : $type;
 
     $rows = $xml->result->key->rowset->row;
-    foreach ($rows as $c=>$row) {
+    foreach ($rows as $c => $row) {
         $charID = (int) (string) $row['characterID'];
         $corpID = (int) (string) $row['corporationID'];
         addToDb($mdb, $type, $charID, $corpID, $keyID, $vCode);
@@ -96,5 +101,4 @@ function addToDb($mdb, $type, $charID, $corpID, $keyID, $vCode)
     if ($mdb->count("api$type", $array) == 0) {
         $mdb->insert("api$type", $array);
     }
-
 }

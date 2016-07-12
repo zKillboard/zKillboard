@@ -52,7 +52,9 @@ class MongoFilter
         if ($page > 0) {
             $cursor->skip($page * $limit);
         }
-        if (!isset($parameters['nolimit'])) $cursor->limit($limit);
+        if (!isset($parameters['nolimit'])) {
+            $cursor->limit($limit);
+        }
 
         $result = array();
         foreach ($cursor as $row) {
@@ -174,7 +176,7 @@ class MongoFilter
                     break;
                 case 'locationID':
                     $and[] = ['locationID' => $filter];
-                    break;	
+                    break;
                 case 'categoryID':
                     $and[] = ['categoryID' => $filter];
                     break;

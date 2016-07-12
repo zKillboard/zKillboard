@@ -24,8 +24,12 @@ while ($timer->stop() < 59000) {
         updateInfo($killID);
         updateStatsQueue($killID);
 
-        if ($queueSocial != null) $queueSocial->push($killID);
-        if ($queueRedisQ != null) $queueRedisQ->push($killID);
+        if ($queueSocial != null) {
+            $queueSocial->push($killID);
+        }
+        if ($queueRedisQ != null) {
+            $queueRedisQ->push($killID);
+        }
         $queueCleanup->push($killID);
     }
 }
@@ -35,14 +39,18 @@ function updateStatsQueue($killID)
     global $killmails, $statArray, $queueStats;
 
     $kill = $killmails->findOne(['killID' => $killID]);
-    if ($kill['npc'] == true) return;
+    if ($kill['npc'] == true) {
+        return;
+    }
     $involved = $kill['involved'];
     $sequence = $kill['sequence'];
 
     // solar system
     addToStatsQueue('solarSystemID', $kill['system']['solarSystemID'], $sequence);
     addToStatsQueue('regionID', $kill['system']['regionID'], $sequence);
-    if (isset($kill['locationID'])) addToStatsQueue('locationID', $kill['locationID'], $sequence);
+    if (isset($kill['locationID'])) {
+        addToStatsQueue('locationID', $kill['locationID'], $sequence);
+    }
 
     foreach ($involved as $inv) {
         foreach ($statArray as $stat) {

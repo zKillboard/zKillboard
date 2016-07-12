@@ -6,22 +6,33 @@ require_once '../init.php';
 
 $date = date('Ymd');
 $redisKey = "tq:topAllTime:$date";
-$queueTopAlltime = new RedisQueue("queueTopAlltime");
-if ($redis->get($redisKey) != true)
-{
+$queueTopAlltime = new RedisQueue('queueTopAlltime');
+if ($redis->get($redisKey) != true) {
     $queueTopAlltime->clear();
-    $iter = $mdb->getCollection('statistics')->find([], ['months' => 0, 'groups' => 0])->sort(['type' => 1, 'id' => 1]);;
+    $iter = $mdb->getCollection('statistics')->find([], ['months' => 0, 'groups' => 0])->sort(['type' => 1, 'id' => 1]);
     while ($row = $iter->next()) {
-        if ($row['type'] == 'characterID') continue;
-        if ($row['type'] == 'locationID') continue;
+        if ($row['type'] == 'characterID') {
+            continue;
+        }
+        if ($row['type'] == 'locationID') {
+            continue;
+        }
 
         $allTimeSum = (int) @$row['allTimeSum'];
         $currentSum = (int) @$row['shipsDestroyed'];
-        if (!isset($row['topAllTime'])) $allTimeSum = 0;
+        if (!isset($row['topAllTime'])) {
+            $allTimeSum = 0;
+        }
 
-        if ($currentSum == 0) continue;
-        if ($currentSum == $allTimeSum) continue;
-        if (($currentSum - $allTimeSum) < ($allTimeSum * 0.01)) continue;
+        if ($currentSum == 0) {
+            continue;
+        }
+        if ($currentSum == $allTimeSum) {
+            continue;
+        }
+        if (($currentSum - $allTimeSum) < ($allTimeSum * 0.01)) {
+            continue;
+        }
 
         $queueTopAlltime->push($row['_id']);
     }
@@ -33,7 +44,9 @@ $timer = new Timer();
 while ($id = $queueTopAlltime->pop()) {
     $row = $mdb->findDoc('statistics', ['_id' => $id]);
     calcTop($row);
-    if ($timer->stop() > 60000) exit();
+    if ($timer->stop() > 60000) {
+        exit();
+    }
 }
 
 function calcTop($row)
@@ -55,5 +68,7 @@ function calcTop($row)
     $topLists[] = array('type' => 'system', 'data' => Stats::getTop('solarSystemID', $parameters));
 
     $mdb->set('statistics', $row, ['topAllTime' => $topLists, 'allTimeSum' => $currentSum]);
-    if ($timer->stop() > 60000) exit();
+    if ($timer->stop() > 60000) {
+        exit();
+    }
 }
