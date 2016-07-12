@@ -18,7 +18,7 @@ while ($timer->stop() < 59000) {
 	$unprocessed = $crestmails->find(array('processed' => false))->sort(['killID' => -1])->limit(10);
 
 	if (!$unprocessed->hasNext()) {
-		sleep(1);
+                usleep(100000);
 	}
 	foreach ($unprocessed as $crestmail) {
 		$id = $crestmail['killID'];
