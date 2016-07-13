@@ -48,8 +48,6 @@ if ($_POST) {
                     // Has the kill been processed?
                     $exists = $mdb->exists('killmails', ['killID' => $killID]);
                     if ($exists) {
-                        $ip = IP::get();
-                        Log::log("New CRESTmail $killID");
                         $app->redirect("/kill/$killID/");
                         exit();
                     }
