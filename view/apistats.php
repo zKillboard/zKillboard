@@ -1,9 +1,9 @@
 <?php
 
-global $mdb;
+global $mdb, $uriParams;
 
 try {
-    $parameters = Util::convertUriToParameters();
+    $parameters = $uriParams;
 
     $array = $mdb->findDoc('statistics', ['type' => $type, 'id' => (int) $id]);
     unset($array['_id']);

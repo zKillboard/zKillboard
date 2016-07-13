@@ -69,7 +69,6 @@ try {
     header('HTTP/ 400 '.$ex->getMessage());
     die();
 }
-$uriParams = Util::convertUriToParameters();
 
 $twig->addGlobal('year', (isset($uriParams['year']) ? $uriParams['year'] : date('Y')));
 $twig->addGlobal('month', (isset($uriParams['month']) ? $uriParams['month'] : date('m')));

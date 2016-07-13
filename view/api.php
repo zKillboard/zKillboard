@@ -1,5 +1,7 @@
 <?php
 
+global $uriParams;
+
 try {
     $queryString = $_SERVER['QUERY_STRING'];
     if ($queryString != '') {
@@ -7,9 +9,7 @@ try {
         exit();
     }
 
-    $parameters = Util::convertUriToParameters();
-
-    $return = Feed::getKills($parameters);
+    $return = Feed::getKills($uriParams);
 
     $array = array();
     foreach ($return as $json) {
@@ -46,5 +46,8 @@ try {
     }
 } catch (Exception $ex) {
     header('HTTP/1.0 503 Server error.');
+    header('Content-Type: application/json');
+    $error = ['error' => $ex->getMessage()];
+    echo json_encode($error);
     die();
 }

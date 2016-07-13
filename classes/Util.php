@@ -162,8 +162,7 @@ class Util
                         }
                         $exploded = explode(',', $value);
                         if (sizeof($exploded) > 10) {
-                            header('HTTP/1.0 400 Client requesting too many parameters.');
-                            die();
+                            throw new Exception("Client requesting too many parameters.");
                         }
                         $ints = [];
                         foreach ($exploded as $ex) {
