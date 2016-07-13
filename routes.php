@@ -118,10 +118,6 @@ $app->get('/comments/', function () use ($app) {
         $app->render('/comments.html');
         });
 
-$app->get('/api/dna(/:flags+)/', function ($flags = null) use ($app) {
-        include 'view/apidna.php';
-        });
-
 $app->get('/api/stats/:type/:id/', function ($type, $id) use ($app) {
         include 'view/apistats.php';
         });
