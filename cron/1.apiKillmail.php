@@ -3,7 +3,7 @@
 use cvweiss\redistools\RedisTimeQueue;
 
 $pid = 1;
-$max = 30;
+$max = 20;
 $threadNum = 0;
 for ($i = 0; $i < $max; ++$i) {
     $pid = pcntl_fork();
