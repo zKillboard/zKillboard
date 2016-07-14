@@ -43,5 +43,13 @@ function beSocial($killID)
     $message = strlen($message) > 120 ? str_replace(' worth ', ': ', $message) : $message;
     $message = strlen($message) > 120 ? str_replace(' was destroyed!', '', $message) : $message;
 
-    return strlen($message) <= 120 ? Twit::sendMessage($message) : false;
+    return strlen($message) <= 120 ? sendMessage($message) : false;
+}
+
+function sendMessage($message)
+{
+    global $consumerKey, $consumerSecret, $accessToken, $accessTokenSecret;
+    $twitter = new Twitter($consumerKey, $consumerSecret, $accessToken, $accessTokenSecret);
+
+    return $twitter->send($message);
 }
