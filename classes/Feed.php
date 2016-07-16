@@ -14,9 +14,6 @@ class Feed
     public static function getKills($parameters = array())
     {
         global $debug;
-        $ip = IP::get();
-
-        $userAgent = @$_SERVER['HTTP_USER_AGENT'];
 
         if (isset($parameters['limit']) && $parameters['limit'] > 200) {
             $parameters['limit'] = 200;
