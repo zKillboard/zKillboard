@@ -3,8 +3,8 @@ $(document).ready(function() {
 
     // Check to see if the user has ads enabled
     if ( $("iframe").length == 0 ) {
-        $("#adsensetop, #adsensebottom").html("<center><img src='/img/wreck.png'> <a href='/information/payments/'>Remove Ads?</a> <img src='/img/wreck.png'></center></br/>");
-        $("#adnag").hide();
+        //$("#adsensetop, #adsensebottom").html("<center><img src='/img/wreck.png'> <a href='/information/payments/'>Remove Ads?</a> <img src='/img/wreck.png'></center></br/>");
+        //$("#adnag").hide();
     }
 
     if ($("[rel=tooltip]").length) {
@@ -98,15 +98,15 @@ function saveFitting(id) {
     $('#modalMessage').modal('show');
 
     var request = $.ajax({
-        url: "/ccpsavefit/" + id + "/",
-        type: "GET",			
-        dataType: "text"
-    });
+url: "/ccpsavefit/" + id + "/",
+type: "GET",			
+dataType: "text"
+});
 
-    request.done(function(msg) {
+request.done(function(msg) {
         $('#modalMessageBody').html(msg);
         $('#modalMessage').modal('show');
-    });
+        });
 }
 
 $('body').on('touchstart.dropdown', '.dropdown-menu', function (e) { e.stopPropagation(); });
