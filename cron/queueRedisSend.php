@@ -12,6 +12,7 @@ if ($redisQServer == null) {
 }
 
 $queueRedisQ = new RedisQueue('queueRedisQ');
+$queueCleanup = new RedisQueue('queueCleanup');
 
 $timer = new Timer();
 while ($timer->stop() <= 59000) {
@@ -33,5 +34,7 @@ while ($timer->stop() <= 59000) {
     if (@$result['success'] != true) {
         $queueRedisQ->push($killID);
         sleep(1);
+    } else {
+        $queueCleanup->push($killID);
     }
 }
