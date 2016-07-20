@@ -88,7 +88,7 @@ $(document).ready(function() {
     });
 
       // setup websocket with callbacks
-    var ws = new WebSocket('wss://zkillboard.com:2096/');
+    var ws = new ReconnectingWebSocket('wss://zkillboard.com:2096/');
     ws.onopen = function() {
         //wslog('CONNECT');
     };
