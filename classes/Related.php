@@ -8,7 +8,7 @@ class Related
     {
         $involvedEntities = array();
         foreach ($kills as $killID => $kill) {
-            self::addAllInvolved($involvedEntities, $killID);
+            self::addAllInvolved($involvedEntities, $killID, $kill);
         }
 
         list($redTeam, $blueTeam) = self::createTeams($kills);
@@ -62,11 +62,8 @@ class Related
         return $retValue;
     }
 
-    private static function addAllInvolved(&$entities, $killID)
+    private static function addAllInvolved(&$entities, $killID, $kill)
     {
-        global $mdb;
-        $kill = $mdb->findDoc('killmails', ['cacheTime' => 3600, 'killID' => $killID]);
-
         self::$killstorage[$killID] = $kill;
 
         $victim = $kill['involved'][0];
@@ -189,20 +186,12 @@ class Related
 
     private static function addInfo(&$team)
     {
-        global $mdb, $redis;
-
         $retValue = array();
         foreach ($team as $entity) {
-            $name = $redis->hGet("tq:allianceID:$entity", 'name');
-            if ($name == null) {
-                $name = $redis->hGet("tq:corporationID:$entity", 'name');
-            }
-            if ($name == null) {
-                $name = $mdb->findField('information', 'name', ['cacheTime' => 3600, 'id' => ((int) $entity)]);
-            }
-            if ($name == null) {
-                $name = "Entity $entity";
-            }
+            if (isset($retValue[$entity])) continue;
+            $name = Info::getInfoField('allianceID', $entity, 'name');
+            if ($name === null) $name = Info::getInfoField('corporationID', $entity, 'name');
+            if ($name === null) $name = "Entity $entity";
             $retValue[$entity] = $name;
         }
 
