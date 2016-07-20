@@ -94,11 +94,16 @@ function processKeyInfo($mdb, $keyID, $vCode, $xml)
 
 function addToDb($mdb, $type, $charID, $corpID, $keyID, $vCode)
 {
+    global $redis;
+
     // Cleanup old associated keys just in case
     $mdb->remove("api$type", ['characterID' => $charID, 'corporationID' => ['$ne' => $corpID]]);
 
     $array = ['characterID' => $charID, 'corporationID' => $corpID, 'keyID' => $keyID, 'vCode' => $vCode];
     if ($mdb->count("api$type", $array) == 0) {
         $mdb->insert("api$type", $array);
+        $redisType = substr(strtolower($type), 0, 4);
+        $r = new RedisTimeQueue("zkb:{$redisType}s", 3600);
+        $r->add($redisType == 'char' ? $charID : $corpID);
     }
 }
