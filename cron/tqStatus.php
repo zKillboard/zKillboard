@@ -25,6 +25,9 @@ if ($loggedIn == 0) {
 
 $redis->set('tqStatus', $serverStatus);
 $redis->set('tqCount', $loggedIn);
+$killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
+$killCount = number_format($killsLastHour->count(), 0);
+$redis->publish("public", json_encode(['action' => 'tqStatus', 'tqStatus' => $serverStatus, 'tqCount' => $loggedIn, 'kills' => $killCount]));
 
 $crestFailure = new RedisTtlCounter('ttlc:CrestFailure', 300);
 $count = $crestFailure->count();

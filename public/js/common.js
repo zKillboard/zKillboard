@@ -86,7 +86,37 @@ $(document).ready(function() {
         console.log(event);
         setTimeout(sentCrestUrl, 1);
     });
+
+      // setup websocket with callbacks
+    var ws = new WebSocket('wss://zkillboard.com:2096/');
+    ws.onopen = function() {
+        //wslog('CONNECT');
+    };
+    ws.onclose = function() {
+        //wslog('DISCONNECT');
+    };
+    ws.onmessage = function(event) {
+        wslog(event.data);
+    };
+
 });
+
+function wslog(msg)
+{
+    if (msg == 'ping' || msg == 'pong') return;
+    json = JSON.parse(msg);
+    if (json.action == 'tqStatus') {
+        tqStatus = json.tqStatus;
+        tqCount = json.tqCount;
+        if (tqStatus == 'OFFLINE') {
+            html = '<span class="red">TQ ' + tqCount + "</span>";
+        } else {
+            html = '<span class="green">TQ ' + tqCount + "</span>";
+        }
+        $("#tqStatus").html(html);
+        $("#lasthour").text(json.kills);
+    }
+}
 
 function updateKillsLastHour() {
     $("#lasthour").load("/killslasthour/");
