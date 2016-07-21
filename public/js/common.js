@@ -115,7 +115,7 @@ function wslog(msg)
     } else if (json.action == 'reload') {
         location.reload();
     } else if (json.action == 'bigkill') {
-        toastr8.info({title: json.title, message: json.message, imgURI: json.image, timeOut: 0, extendedTimeout: 0});
+        toastr8.github({title: json.title, message: json.message, imgURI: json.image, timeOut: 0, extendedTimeout: 0, iconClass: ""});
     }
 }
 
