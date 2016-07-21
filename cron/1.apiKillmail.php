@@ -49,6 +49,7 @@ while ($minute == date('Hi')) {
         } catch (Exception $ex) {
             KillmailParser::updateApiRow($mdb, $collection, $api, $ex->getCode());
             $mdb->remove($collection, $api);
+            $timeQueue->remove($id);
         }
         sleep(1);
     }
