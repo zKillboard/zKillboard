@@ -16,7 +16,7 @@ while ($beSocial && $minute == date('Hi')) {
 
 function beSocial($killID)
 {
-    global $mdb, $fullAddr, $twitterName;
+    global $mdb, $redis, $fullAddr, $twitterName;
 
     $twitMin = 15000000000;
     $kill = $mdb->findDoc('killmails', ['killID' => $killID]);
@@ -43,6 +43,13 @@ function beSocial($killID)
     $message = strlen($message) > 120 ? str_replace(' worth ', ': ', $message) : $message;
     $message = strlen($message) > 120 ? str_replace(' was destroyed!', '', $message) : $message;
 
+    $redisMessage = [
+        'action' => 'bigkill',
+        'title' => $name . $victimInfo['shipName'],
+        'message' => Util::formatIsk($totalPrice)." ISK<br/><a href='$url'>$url</a>",
+        'image' => $imageServer . "/Render/" . $victimInfo['shipTypeID'] . "_128.png"
+            ];
+    $redis->publish("public", json_encode($redisMessage, JSON_UNESCAPED_SLASHES));
     return strlen($message) <= 120 ? sendMessage($message) : false;
 }
 

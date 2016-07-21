@@ -89,12 +89,8 @@ $(document).ready(function() {
 
       // setup websocket with callbacks
     var ws = new ReconnectingWebSocket('wss://zkillboard.com:2096/');
-    ws.onopen = function() {
-        //wslog('CONNECT');
-    };
-    ws.onclose = function() {
-        //wslog('DISCONNECT');
-    };
+    ws.onopen = function() { };
+    ws.onclose = function() { };
     ws.onmessage = function(event) {
         wslog(event.data);
     };
@@ -105,6 +101,7 @@ function wslog(msg)
 {
     if (msg == 'ping' || msg == 'pong') return;
     json = JSON.parse(msg);
+    console.log(json);
     if (json.action == 'tqStatus') {
         tqStatus = json.tqStatus;
         tqCount = json.tqCount;
@@ -115,6 +112,10 @@ function wslog(msg)
         }
         $("#tqStatus").html(html);
         $("#lasthour").text(json.kills);
+    } else if (json.action == 'reload') {
+        location.reload();
+    } else if (json.action == 'bigkill') {
+        toastr8.info({title: json.title, message: json.message, imgURI: json.image, timeOut: 0, extendedTimeout: 0});
     }
 }
 
