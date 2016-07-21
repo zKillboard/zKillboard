@@ -16,7 +16,7 @@ while ($beSocial && $minute == date('Hi')) {
 
 function beSocial($killID)
 {
-    global $mdb, $redis, $fullAddr, $twitterName;
+    global $mdb, $redis, $fullAddr, $twitterName, $imageServer;
 
     $twitMin = 15000000000;
     $kill = $mdb->findDoc('killmails', ['killID' => $killID]);
