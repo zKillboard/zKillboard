@@ -20,5 +20,10 @@ require 'vendor/autoload.php';
 
 $mdb = new Mdb();
 
-$redis = new Redis();
-$redis->connect($redisServer, $redisPort, 3600);
+try {
+    $redis = new Redis();
+    $redis->connect($redisServer, $redisPort, 3600);
+    $redis->ping();
+} catch (Exception $ex) {
+    die($ex->getMessage());
+}
