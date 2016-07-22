@@ -72,7 +72,7 @@ class Api
         $result = $mdb->find('apis', ['userID' => $userID]);
         $retVal = [];
         foreach ($result as $row) {
-            $row['lastFetched'] = date('Y/m/d H:i', $row['lastFetched']);
+            $row['lastFetched'] = date('Y/m/d H:i', isset($row['lastFetched']) ? $row['lastFetched'] : 0);
             $retVal[] = $row;
         }
 
