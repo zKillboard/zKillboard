@@ -1,6 +1,4 @@
 $(document).ready(function() {
-    //setTimeout(updateKillsLastHour, 60000);
-
     // Check to see if the user has ads enabled
     if ( $("iframe").length == 0 ) {
         //$("#adsensetop, #adsensebottom").html("<center><img src='/img/wreck.png'> <a href='/information/payments/'>Remove Ads?</a> <img src='/img/wreck.png'></center></br/>");
@@ -88,9 +86,7 @@ $(document).ready(function() {
     });
 
       // setup websocket with callbacks
-    var ws = new ReconnectingWebSocket('wss://zkillboard.com:2096/');
-    ws.onopen = function() { };
-    ws.onclose = function() { };
+    var ws = new ReconnectingWebSocket('wss://zkillboard.com:2096/', '', {maxReconnectAttempts: 15});
     ws.onmessage = function(event) {
         wslog(event.data);
     };
@@ -113,15 +109,10 @@ function wslog(msg)
         $("#tqStatus").html(html);
         $("#lasthour").text(json.kills);
     } else if (json.action == 'reload') {
-        location.reload();
+        setTimeout("location.reload();", (Math.random() * 60000));
     } else if (json.action == 'bigkill') {
-        toastr8.github({title: json.title, message: json.message, imgURI: json.image, timeOut: 0, extendedTimeout: 0, iconClass: ""});
+        toastr8.github({title: json.title, message: json.message, imgURI: json.image, timeOut: 0, extendedTimeout: 0, iconClass: "none"});
     }
-}
-
-function updateKillsLastHour() {
-    $("#lasthour").load("/killslasthour/");
-    setTimeout(updateKillsLastHour, 60000);
 }
 
 function saveFitting(id) {
