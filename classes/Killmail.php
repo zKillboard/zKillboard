@@ -44,10 +44,11 @@ class Killmail
                 $mdb->remove('statistics', ['type' => $type, 'id' => (int) $id]);
             }
         }
-        $mdb->remove('killmails', ['killID' => $killID]);
-        $mdb->remove('rawmails', ['killID' => $killID]);
-        $mdb->remove('oneWeek', ['killID' => $killID]);
-        $mdb->set('crestmails', ['killID' => $killID], ['processed' => false]);
+        $p = ['killID' => $killID];
+        $mdb->remove('killmails', $p);
+        $mdb->remove('rawmails', $p);
+        $mdb->remove('oneWeek', $p);
+        $mdb->set('crestmails', $p, ['processed' => false]);
         $redis->del("CacheKill:$killID:overview");
     }
 }
