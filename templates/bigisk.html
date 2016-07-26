@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% set pageTitle = 'Top Losses by Ship' %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+<h4>Biggest Isk Kills by Ship</h4>
+{% include 'components/big_top_list.html' %}
+{% endblock %}

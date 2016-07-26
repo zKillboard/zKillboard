@@ -7,7 +7,7 @@ require_once '../init.php';
 
 $counter = 0;
 $information = $mdb->getCollection('information');
-$timer = new Timer();
+$minutely = date('Hi');
 $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
 $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
 
@@ -21,7 +21,7 @@ if ($i == 30) {
     }
 }
 
-while ($timer->stop() < 55000) {
+while ($minutely == date('Hi')) {
     $id = $queueCorps->next();
     if ($id == null) {
         exit();
@@ -45,6 +45,7 @@ while ($timer->stop() < 55000) {
                     $updates['ceoID'] = $ceoID;
                     $updates['memberCount'] = (int) $corpInfo->memberCount;
                     $updates['allianceID'] = (int) $corpInfo->allianceID;
+                    $updates['factionID'] = (int) @$corpInfo->factionID;
                     if (!isset($row['name'])) {
                         $updates['name'] = (string) $corpInfo->corporationName;
                     }

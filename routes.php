@@ -61,6 +61,11 @@ $app->get('/brsave/', function () use ($app) {
         include 'view/brsave.php';
         });
 
+// View Battle Report
+$app->get('/bigisk/', function () use ($app) {
+        include 'view/bigisk.php';
+        });
+
 // View top
 $app->get('/top/lasthour/', function () use ($app) {
         include 'view/lasthour.php';
