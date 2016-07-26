@@ -1,6 +1,7 @@
 <?php
 
 use cvweiss\redistools\RedisTimeQueue;
+use cvweiss\redistools\RedisTtlCounter;
 
 // Borrowed very heavily from FuzzySteve <3 https://github.com/fuzzysteve/eve-sso-auth/
 class CrestSSO
@@ -41,6 +42,10 @@ class CrestSSO
     public static function callback()
     {
         global $mdb, $app, $redis, $ccpClientID, $ccpSecret;
+
+        $authSuccess = new RedisTtlCounter('ttlc:AuthSuccess', 300);
+        $authFailure = new RedisTtlCounter('ttlc:AuthFailure', 300);
+
         try {
             $charID = @$_SESSION['characterID'];
             $hash = @$_SESSION['characterHash'];
@@ -145,17 +150,21 @@ class CrestSSO
                 }
             }
             header('Location: '.$redirect, 302);
-
+            $authSuccess->add(uniqid());
             exit();
         } catch (Exception $ex) {
             echo "Something odd happened with the callback from CCP's SSO!";
             print_r($ex, true);
+            $authFailure->add(uniqid());
         }
     }
 
     public static function getAccessToken($charID = null, $sessionID = null, $refreshToken = null)
     {
         global $app, $redis, $ccpClientID, $ccpSecret;
+
+        $authSuccess = new RedisTtlCounter('ttlc:AuthSuccess', 300);
+        $authFailure = new RedisTtlCounter('ttlc:AuthFailure', 300);
 
         if ($charID === null) {
             $charID = @$_SESSION['characterID'];
@@ -212,9 +221,11 @@ class CrestSSO
                 return $result;
             }
 
+            $authFailure->add(uniqid());
             return $httpCode;
         }
 
+        $authSuccess->add(uniqid());
         return $accessToken;
     }
 

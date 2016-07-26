@@ -70,6 +70,12 @@ while ($iterations++ <= 1200) {
     $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
     addInfo('Failed XML calls in last 5 minutes', $xmlFailure->count());
 
+    addInfo('', 0);
+    $authSuccess = new RedisTtlCounter('ttlc:AuthSuccess', 300);
+    addInfo('Successful Auth calls in last 5 minutes', $authSuccess->count());
+    $authFailure = new RedisTtlCounter('ttlc:AuthFailure', 300);
+    addInfo('Failed Auth calls in last 5 minutes', $authFailure->count());
+
     $info = $redis->info();
     $mem = $info['used_memory_human'];
 

@@ -5,7 +5,7 @@ use cvweiss\redistools\RedisTtlCounter;
 use cvweiss\redistools\RedisTtlSortedSet;
 
 $pid = 1;
-for ($i = 0; $i < 2; ++$i) {
+for ($i = 0; $i < 1; ++$i) {
     $pid = pcntl_fork();
     if ($pid == -1) {
         exit();
@@ -32,6 +32,7 @@ $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
 $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
 $chars = [];
 
+$secondly = null;
 while ($minute == date('Hi')) {
     $charID = (int) $sso->next();
     if ($charID > 0) {
@@ -40,6 +41,8 @@ while ($minute == date('Hi')) {
             $sso->remove($charID);
             continue;
         }
+        while (date('His') == $secondly) usleep(100);
+        $secondly = date('His');
 
         $mdb->set('apisCrest', $row, ['lastFetch' => time()]);
         $refreshToken = $row['refreshToken'];
@@ -56,9 +59,8 @@ while ($minute == date('Hi')) {
             }
             continue;
         } elseif ($accessToken === 403 || $accessToken === 400) {
-            Util::out("403 $charID $refreshToken");
+            Util::out("http code $accessToken for $charID when attempting to get access token from refresh token");
             $mdb->set('apisCrest', $row, ['errorCode' => $accessToken]);
-            $sso->remove($charID);
             continue;
         }
         if ($accessToken == null) {
