@@ -25,5 +25,14 @@ try {
     $redis->connect($redisServer, $redisPort, 3600);
     $redis->ping();
 } catch (Exception $ex) {
-    die($ex->getMessage());
+    echo "
+    <html>
+    <head>
+    <meta http-equiv='refresh' content='10'>
+    </head>
+    <body>
+    <h3>Redis is currently loading... please wait a few moments</h3>
+    </body>
+    </html>";
+    die();
 }
