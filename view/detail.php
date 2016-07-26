@@ -83,7 +83,7 @@ if ($details == null) {
     }
     $extra['totalisk'] = $killdata['info']['zkb']['totalValue'];
     $extra['droppedisk'] = droppedIsk(md5($id), $killdata['items']);
-    $extra['shipprice'] = Price::getItemPrice($killdata['victim']['shipTypeID'], date('Ymd', strtotime($killdata['info']['dttm'])));
+    $extra['shipprice'] = Price::getItemPrice($killdata['victim']['shipTypeID'], date('Y-m-d H:i', strtotime($killdata['info']['dttm'])));
     $extra['lostisk'] = $extra['shipprice'] + destroyedIsk(md5($id), $killdata['items']);
     $extra['fittedisk'] = fittedIsk(md5($id), $killdata['items']);
     $extra['relatedtime'] = date('YmdH00', strtotime($killdata['info']['dttm']));
@@ -162,7 +162,7 @@ function usdeurgbp($totalprice)
     $usd = 17;
     $eur = 13;
     $gbp = 10;
-    $plex = Price::getItemPrice('29668', date('Ymd'));
+    $plex = Price::getItemPrice('29668', date('Y-m-d H:i'));
     $usdval = $plex / $usd;
     $eurval = $plex / $eur;
     $gbpval = $plex / $gbp;
