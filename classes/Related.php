@@ -6,6 +6,7 @@ class Related
 
     public static function buildSummary(&$kills, $options)
     {
+        $timer = new Timer();
         $involvedEntities = array();
         foreach ($kills as $killID => $kill) {
             self::addAllInvolved($involvedEntities, $killID, $kill);
@@ -102,16 +103,18 @@ class Related
             if (is_array($attackers)) {
                 foreach ($attackers as $entry) {
                     $add = false;
-                    if (in_array(@$entry['allianceID'], $team)) {
+                    if (@$entry['allianceID'] != 0 && in_array(@$entry['allianceID'], $team)) {
                         $add = true;
                     }
-                    if (in_array(@$entry['corporationID'], $team)) {
+                    if (@$entry['corporationID'] != 0 && in_array(@$entry['corporationID'], $team)) {
                         $add = true;
                     }
 
                     if ($add) {
                         $key = @$entry['characterID'].':'.@$entry['corporationID'].':'.@$entry['allianceID'].':'.@$entry['shipTypeID'];
+                        if (!isset($entry['shipName'])) {
                         $entry['shipName'] = Info::getInfoField('typeID', @$entry['shipTypeID'], 'name');
+                        }
                         if (!in_array($key, $involved)) {
                             $involved[$key] = $entry;
                         }
@@ -158,11 +161,11 @@ class Related
         $groupIDs = array();
         $totalShips = 0;
         foreach ($killIDs as $killID) {
-            $kill = Kills::getKillDetails($killID);
-            $info = $kill['info'];
+            //print_r(self::$killstorage[$killID]); die();
+            $kill = self::$killstorage[$killID];
             $victim = $kill['victim'];
-            $totalPrice += $info['zkb']['totalValue'];
-            $totalPoints += $info['zkb']['points'];
+            $totalPrice += $kill['zkb']['totalValue'];
+            $totalPoints += $kill['zkb']['points'];
             $groupID = $victim['groupID'];
             if (!isset($groupIDs[$groupID])) {
                 $groupIDs[$groupID] = array();
@@ -172,11 +175,11 @@ class Related
             }
             $groupIDs[$groupID]['groupID'] = $groupID;
             ++$groupIDs[$groupID]['count'];
-            $groupIDs[$groupID]['isk'] += $info['zkb']['totalValue'];
-            $groupIDs[$groupID]['points'] += $info['zkb']['points'];
+            $groupIDs[$groupID]['isk'] += $kill['zkb']['totalValue'];
+            $groupIDs[$groupID]['points'] += $kill['zkb']['points'];
             ++$totalShips;
         }
-        Info::addInfo($groupIDs);
+        //Info::addInfo($groupIDs);
 
         return array(
                 'total_price' => $totalPrice, 'groupIDs' => $groupIDs, 'totalShips' => $totalShips,

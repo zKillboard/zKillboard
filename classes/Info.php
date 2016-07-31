@@ -357,31 +357,51 @@ class Info
                         }
                         break;
                     case 'executorCorpID':
-                        $element['executorCorpName'] = self::getInfoField('corporationID', $value, 'name');
+                        if (!isset($element['executorCorpName'])) {
+                            $element['executorCorpName'] = self::getInfoField('corporationID', $value, 'name');
+                        }
                         break;
                     case 'ceoID':
-                        $element['ceoName'] = self::getInfoField('characterID', $value, 'name');
+                        if (!isset($element['ceoName'])) {
+                            $element['ceoName'] = self::getInfoField('characterID', $value, 'name');
+                        }
                         break;
                     case 'characterID':
-                        $element['characterName'] = self::getInfoField('characterID', $value, 'name');
+                        if (!isset($element['characterName'])) {
+                            $element['characterName'] = self::getInfoField('characterID', $value, 'name');
+                        }
                         break;
                     case 'corporationID':
-                        $element['corporationName'] = self::getInfoField('corporationID', $value, 'name');
+                        if (!isset($element['corporationName'])) {
+                            $element['corporationName'] = self::getInfoField('corporationID', $value, 'name');
+                        }
                         break;
                     case 'allianceID':
-                        $element['allianceName'] = self::getInfoField('allianceID', $value, 'name');
+                        if (!isset($element['allianceName'])) {
+                            $element['allianceName'] = self::getInfoField('allianceID', $value, 'name');
+                        }
                         break;
                     case 'factionID':
-                        $element['factionName'] = self::getInfoField('factionID', $value, 'name');
+                        if (!isset($element['factionName'])) {
+                            $element['factionName'] = self::getInfoField('factionID', $value, 'name');
+                        }
                         break;
                     case 'weaponTypeID':
-                        $element['weaponTypeName'] = self::getInfoField('typeID', $value, 'name');
+                        if (!isset($element['weaponTypeName'])) {
+                            $element['weaponTypeName'] = self::getInfoField('typeID', $value, 'name');
+                        }
                         break;
                     case 'locationID':
                     case 'itemID':
-                        $element['itemName'] = self::getInfoField('itemID', $value, 'name');
-                        $element['locationName'] = $element['itemName'];
-                        $element['typeID'] = self::getInfoField('itemID', $value, 'typeID');
+                        if (!isset($element['itemName'])) {
+                            $element['itemName'] = self::getInfoField('itemID', $value, 'name');
+                        }
+                        if (!isset($element['locationName'])) {
+                            $element['locationName'] = $element['itemName'];
+                        }
+                        if (!isset($element['typeID'])) {
+                            $element['typeID'] = self::getInfoField('itemID', $value, 'typeID');
+                        }
                         break;
                     case 'typeID':
                         if (!isset($element['typeName'])) {
@@ -394,34 +414,42 @@ class Info
                         if (!isset($element['groupName'])) {
                             $element['groupName'] = self::getInfoField('groupID', $groupID, 'name');
                         }
-                        $element['fittable'] = (int) $mdb->findField('information', 'fittable', ['cacheTime' => 3600, 'type' => 'typeID', 'id' => (int) $value]);
+                        if (!isset($element['fittable'])) {
+                            $element['fittable'] = (int) $mdb->findField('information', 'fittable', ['cacheTime' => 3600, 'type' => 'typeID', 'id' => (int) $value]);
+                        }
                         break;
                     case 'solarSystemID':
-                        $info = self::getInfo('solarSystemID', $value);
-                        if (sizeof($info)) {
-                            $element['solarSystemName'] = $info['solarSystemName'];
-                            $element['sunTypeID'] = $info['sunTypeID'];
-                            $securityLevel = number_format($info['security'], 1);
-                            if ($securityLevel == 0 && $info['security'] > 0) {
-                                $securityLevel = 0.1;
-                            }
-                            $element['solarSystemSecurity'] = $securityLevel;
-                            $element['systemColorCode'] = self::getSystemColorCode($securityLevel);
-                            $regionInfo = self::getRegionInfoFromSystemID($value);
-                            $element['regionID'] = $regionInfo['regionID'];
-                            $element['regionName'] = $regionInfo['regionName'];
-                            $wspaceInfo = self::getWormholeSystemInfo($value);
-                            if ($wspaceInfo) {
-                                $element['systemClass'] = $wspaceInfo['class'];
-                                $element['systemEffect'] = isset($wspaceInfo['effectName']) ? $wspaceInfo['effectName'] : null;
+                        if (!isset($element['sunTypeID'])) {
+                            $info = self::getInfo('solarSystemID', $value);
+                            if (sizeof($info)) {
+                                $element['solarSystemName'] = $info['solarSystemName'];
+                                $element['sunTypeID'] = $info['sunTypeID'];
+                                $securityLevel = number_format($info['security'], 1);
+                                if ($securityLevel == 0 && $info['security'] > 0) {
+                                    $securityLevel = 0.1;
+                                }
+                                $element['solarSystemSecurity'] = $securityLevel;
+                                $element['systemColorCode'] = self::getSystemColorCode($securityLevel);
+                                $regionInfo = self::getRegionInfoFromSystemID($value);
+                                $element['regionID'] = $regionInfo['regionID'];
+                                $element['regionName'] = $regionInfo['regionName'];
+                                $wspaceInfo = self::getWormholeSystemInfo($value);
+                                if ($wspaceInfo) {
+                                    $element['systemClass'] = $wspaceInfo['class'];
+                                    $element['systemEffect'] = isset($wspaceInfo['effectName']) ? $wspaceInfo['effectName'] : null;
+                                }
                             }
                         }
                         break;
                     case 'regionID':
-                        $element['regionName'] = self::getInfoField('regionID', $value, 'name');
+                        if (!isset($element['regionName'])) {
+                            $element['regionName'] = self::getInfoField('regionID', $value, 'name');
+                        }
                         break;
                     case 'flag':
-                        $element['flagName'] = self::getFlagName($value);
+                        if (!isset($element['flagName'])) {
+                            $element['flagName'] = self::getFlagName($value);
+                        }
                         break;
                 }
             }

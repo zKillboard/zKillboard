@@ -7,9 +7,11 @@ require_once '../init.php';
 $queueRelated = new RedisQueue('queueRelated');
 $timer = new Timer();
 
-while ($timer->stop() < 65000) {
+$minutely = date('Hi');
+while ($minutely == date('Hi')) {
     $serial = $queueRelated->pop();
     if ($serial == null) {
+        sleep(1);
         continue;
     }
     $parameters = unserialize($serial);
@@ -21,6 +23,6 @@ while ($timer->stop() < 65000) {
     $summary = Related::buildSummary($kills, $parameters['options']);
 
     $serial = serialize($summary);
-    $redis->setex($parameters['key'], 1500, $serial);
-    $redis->setex('backup:'.$parameters['key'], 3000, $serial);
+    $redis->setex($parameters['key'], 300, $serial);
+    $redis->setex('backup:'.$parameters['key'], 400, $serial);
 }

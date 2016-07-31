@@ -19,7 +19,7 @@ class Kills
     {
         global $mdb;
 
-        $hashKey = 'Kills::getKills:'.serialize($parameters);
+        $hashKey = 'Kills::getKills:'.md5(serialize($parameters));
         $result = RedisCache::get($hashKey);
         if ($result != null) {
             return $result;
@@ -36,13 +36,14 @@ class Kills
             $killHashKey = "killDetail:$killID";
             $killmail = RedisCache::get($killHashKey);
             if ($killmail == null) {
-                $killmail = $mdb->findDoc('killmails', ['killID' => $killID, 'cacheTime' => 3600]);
+                $killmail = $mdb->findDoc('killmails', ['killID' => $killID, 'cacheTime' => 86400]);
                 Info::addInfo($killmail);
                 $killmail['victim'] = $killmail['involved'][0];
                 $killmail['victim']['killID'] = $killID;
                 foreach ($killmail['involved'] as $inv) {
                     if (@$inv['finalBlow'] === true) {
                         $killmail['finalBlow'] = $inv;
+                        break;
                     }
                 }
                 $killmail['finalBlow']['killID'] = $killID;
@@ -52,7 +53,7 @@ class Kills
             }
             $details[$killID] = $killmail;
         }
-        RedisCache::set($hashKey, $details, 60);
+        RedisCache::set($hashKey, $details, 300);
 
         return $details;
     }
@@ -90,7 +91,12 @@ class Kills
      */
     public static function getKillDetails($killID)
     {
-        global $mdb;
+        global $mdb, $redis;
+
+        $key = "zkb:detail:$killID";
+        $stored = RedisCache::get($key);
+        if ($stored != null) return $stored;
+
         $killmail = $mdb->findDoc('killmails', ['cacheTime' => 3600, 'killID' => (int) $killID]);
         $rawmail = $mdb->findDoc('rawmails', ['cacheTime' => 3600, 'killID' => (int) $killID]);
         $damage = (int) $rawmail['victim']['damageTaken'];
@@ -135,7 +141,9 @@ class Kills
         }
         unset($items);
 
-        return array('info' => $killmail, 'victim' => $victim, 'involved' => $infoInvolved, 'items' => $infoItems);
+        $stored = array('info' => $killmail, 'victim' => $victim, 'involved' => $infoInvolved, 'items' => $infoItems);
+        RedisCache::set($key, $stored, 3600);
+        return $stored;
     }
 
     public static function getItems(&$rawmail, &$killmail)
