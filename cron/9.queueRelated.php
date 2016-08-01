@@ -23,6 +23,6 @@ while ($minutely == date('Hi')) {
     $summary = Related::buildSummary($kills, $parameters['options']);
 
     $serial = serialize($summary);
-    $redis->setex($parameters['key'], 300, $serial);
-    $redis->setex('backup:'.$parameters['key'], 400, $serial);
+    $redis->setex($parameters['key'], 900, $serial);
+    $redis->setex('backup:'.$parameters['key'], 1800, $serial);
 }
