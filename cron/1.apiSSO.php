@@ -5,7 +5,7 @@ use cvweiss\redistools\RedisTtlCounter;
 use cvweiss\redistools\RedisTtlSortedSet;
 
 $pid = 1;
-for ($i = 0; $i < 1; ++$i) {
+for ($i = 0; $i < 3; ++$i) {
     $pid = pcntl_fork();
     if ($pid == -1) {
         exit();
