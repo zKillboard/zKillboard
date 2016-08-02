@@ -161,7 +161,6 @@ class Related
         $groupIDs = array();
         $totalShips = 0;
         foreach ($killIDs as $killID) {
-            //print_r(self::$killstorage[$killID]); die();
             $kill = self::$killstorage[$killID];
             $victim = $kill['victim'];
             $totalPrice += $kill['zkb']['totalValue'];
@@ -179,7 +178,7 @@ class Related
             $groupIDs[$groupID]['points'] += $kill['zkb']['points'];
             ++$totalShips;
         }
-        //Info::addInfo($groupIDs);
+        Info::addInfo($groupIDs);
 
         return array(
                 'total_price' => $totalPrice, 'groupIDs' => $groupIDs, 'totalShips' => $totalShips,
