@@ -138,7 +138,7 @@ function wslog(msg)
     } else if (json.action == 'reload') {
         setTimeout("location.reload();", (Math.random() * 60000));
     } else if (json.action == 'bigkill') {
-        toastr8.github({title: json.title, message: json.message, imgURI: json.image, timeOut: 0, extendedTimeout: 0, iconClass: "none"});
+        notificationMethod(json);
     }
 }
 
