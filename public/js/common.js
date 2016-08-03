@@ -93,6 +93,33 @@ $(document).ready(function() {
 
 });
 
+var notificationMethod = toastr8Notify;
+if("Notification" in window) {
+    if (Notification.permission === "granted") {
+        notificationMethod = htmlNotify;
+    } else if(Notification.permission !== 'denied') {
+        Notification.requestPermission(function (permission) {
+            if (permission === "granted") {
+                notificationMethod = htmlNotify;
+            }
+        });
+    }
+}
+
+function toastr8Notify (data) {
+    toastr8.github({title: data.title, message: data.iskStr + "<br><a href='" + data.url + "'>" + data.url + "</a>", imgURI: data.image, timeOut: 0, extendedTimeout: 0, iconClass: "none"});
+};
+
+function htmlNotify (data) {
+    var notfi = new Notification(data.title, {
+        body: data.iskStr,
+        icon: data.image
+    });
+    notif.onclick = function () {
+        location = data.url;
+    };
+}
+
 function wslog(msg)
 {
     if (msg == 'ping' || msg == 'pong') return;
@@ -120,15 +147,15 @@ function saveFitting(id) {
     $('#modalMessage').modal('show');
 
     var request = $.ajax({
-url: "/ccpsavefit/" + id + "/",
-type: "GET",			
-dataType: "text"
-});
+        url: "/ccpsavefit/" + id + "/",
+        type: "GET",
+        dataType: "text"
+    });
 
-request.done(function(msg) {
+    request.done(function(msg) {
         $('#modalMessageBody').html(msg);
         $('#modalMessage').modal('show');
-        });
+    });
 }
 
 $('body').on('touchstart.dropdown', '.dropdown-menu', function (e) { e.stopPropagation(); });
