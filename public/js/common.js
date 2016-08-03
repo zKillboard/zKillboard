@@ -111,12 +111,12 @@ function toastr8Notify (data) {
 };
 
 function htmlNotify (data) {
-    var notfi = new Notification(data.title, {
+    var notif = new Notification(data.title, {
         body: data.iskStr,
         icon: data.image
     });
     notif.onclick = function () {
-        location = data.url;
+        window.location = data.url;
     };
 }
 
