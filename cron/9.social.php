@@ -46,7 +46,8 @@ function beSocial($killID)
     $redisMessage = [
         'action' => 'bigkill',
         'title' => "$name " . $victimInfo['shipName'],
-        'message' => Util::formatIsk($totalPrice)." ISK<br/><a href='$url'>$url</a>",
+        'iskStr' => Util::formatIsk($totalPrice)." ISK",
+        'url' => $url,
         'image' => $imageServer . "/Render/" . $victimInfo['shipTypeID'] . "_128.png"
             ];
     $redis->publish("public", json_encode($redisMessage, JSON_UNESCAPED_SLASHES));
