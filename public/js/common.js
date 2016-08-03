@@ -113,7 +113,8 @@ function toastr8Notify (data) {
 function htmlNotify (data) {
     var notif = new Notification(data.title, {
         body: data.iskStr,
-        icon: data.image
+        icon: data.image,
+        tag: data.url
     });
     notif.onclick = function () {
         window.location = data.url;
