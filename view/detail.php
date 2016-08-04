@@ -128,6 +128,8 @@ if ($details == null) {
     Info::addInfo($relatedShip);
     $killdata['victim']['related'] = $relatedShip;
 
+    $extra['isExploit'] = in_array($id, [55403284]);
+
     $details = array('pageview' => $pageview, 'killdata' => $killdata, 'extra' => $extra, 'message' => $message, 'flags' => Info::$effectToSlot, 'topDamage' => $topDamage, 'finalBlow' => $finalBlow, 'url' => $url);
     RedisCache::set($killKey, $details, 3600);
 }
