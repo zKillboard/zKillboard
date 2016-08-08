@@ -96,7 +96,7 @@ $(document).ready(function() {
 function htmlNotify (data) 
 {
     if("Notification" in window) {
-        if (Notification.permission === 'denied' && Notification.permission !== "granted") {
+        if (Notification.permission !== 'denied' && Notification.permission !== "granted") {
             Notification.requestPermission(function (permission) {
                 if (permission === 'granted') htmlNotify(data);
             });
