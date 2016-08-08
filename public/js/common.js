@@ -107,7 +107,8 @@ if("Notification" in window) {
 }
 
 function toastr8Notify (data) {
-    toastr8.github({title: data.title, message: data.iskStr + "<br><a href='" + data.url + "'>" + data.url + "</a>", imgURI: data.image, timeOut: 0, extendedTimeout: 0, iconClass: "none"});
+    // Removed toastr8, if user doesn't want browser notification they don't want toastr notifications either
+    //toastr8.github({title: data.title, message: data.iskStr + "<br><a href='" + data.url + "'>" + data.url + "</a>", imgURI: data.image, timeOut: 0, extendedTimeout: 0, iconClass: "none"});
 };
 
 function htmlNotify (data) {
