@@ -17,8 +17,8 @@ $(document).ready(function() {
     $("abbr.timeago").timeago();
     $(".alert").alert()
 
-        // Javascript to enable link to tab
-        var url = document.location.toString();
+    // Javascript to enable link to tab
+    var url = document.location.toString();
     if (url.match('#')) {
         $('.nav-pills a[href=#'+url.split('#')[1]+']').tab('show') ;
     }
@@ -82,7 +82,7 @@ $(document).ready(function() {
 
     $("#killmailurl").bind('paste', function(event) {
         console.log(event);
-        setTimeout(sentCrestUrl, 1);
+        setTimeout(sendCrestUrl, 1);
     });
 
       // setup websocket with callbacks
@@ -93,33 +93,26 @@ $(document).ready(function() {
 
 });
 
-var notificationMethod = toastr8Notify;
-if("Notification" in window) {
-    if (Notification.permission === "granted") {
-        notificationMethod = htmlNotify;
-    } else if(Notification.permission !== 'denied') {
-        Notification.requestPermission(function (permission) {
-            if (permission === "granted") {
-                notificationMethod = htmlNotify;
-            }
-        });
+function htmlNotify (data) 
+{
+    if("Notification" in window) {
+        if (Notification.permission === 'denied' && Notification.permission !== "granted") {
+            Notification.requestPermission(function (permission) {
+                if (permission === 'granted') htmlNotify(data);
+            });
+            return;
+        }
+        if (Notification.permission === 'granted') {
+            var notif = new Notification(data.title, {
+                body: data.iskStr,
+                icon: data.image,
+                tag: data.url
+            });
+            notif.onclick = function () {
+                window.location = data.url;
+            };
+        }
     }
-}
-
-function toastr8Notify (data) {
-    // Removed toastr8, if user doesn't want browser notification they don't want toastr notifications either
-    //toastr8.github({title: data.title, message: data.iskStr + "<br><a href='" + data.url + "'>" + data.url + "</a>", imgURI: data.image, timeOut: 0, extendedTimeout: 0, iconClass: "none"});
-};
-
-function htmlNotify (data) {
-    var notif = new Notification(data.title, {
-        body: data.iskStr,
-        icon: data.image,
-        tag: data.url
-    });
-    notif.onclick = function () {
-        window.location = data.url;
-    };
 }
 
 function wslog(msg)
@@ -138,9 +131,9 @@ function wslog(msg)
         $("#tqStatus").html(html);
         $("#lasthour").text(json.kills);
     } else if (json.action == 'reload') {
-        setTimeout("location.reload();", (Math.random() * 60000));
+        setTimeout("location.reload();", (Math.random() * 300000));
     } else if (json.action == 'bigkill') {
-        notificationMethod(json);
+        htmlNotify(json);
     }
 }
 
@@ -168,7 +161,7 @@ function hideSortStuff(doHide)
     else $(".hide-when-sorted").show();
 }
 
-function sentCrestUrl() {
+function sendCrestUrl() {
     str = $("#killmailurl").val();
     strSplit = str.split("/");
     killID = strSplit[4];

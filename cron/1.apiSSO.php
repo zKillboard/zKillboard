@@ -104,7 +104,7 @@ while ($minute == date('Hi')) {
                 $mdb->remove('apisCrest', $row);
                 continue;
             }
-            Util::out("Unknown error for SSO xml api - $charID - ".$ex->getMessage()." charID: $charID accessToken $accessToken");
+            Util::out("Unknown error for SSO xml api - $charID - " . $ex->getMessage());
             sleep(3);
             continue;
         }
