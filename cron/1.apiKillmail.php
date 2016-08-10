@@ -41,6 +41,12 @@ while ($minute == date('Hi')) {
             $timeQueue->remove($id);
             continue;
         }
+        $count = $mdb->count("apis", ['keyID' => $api['keyID']]);
+        if ($count == 0) {
+            $mdb->remove($collection, $api);
+            $timeQueue->remove($id);
+            continue;
+        }
         try {
             KillmailParser::processCharApi($mdb, $apiServer, $type, $api);
             $mdb->set($collection, $api, ['lastFetched' => time()]);
