@@ -66,14 +66,8 @@
 			</li>
 			<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Export <b class="caret"></b></a>
 				<ul class="dropdown-menu">
-					{% if eveigb == true %}
-					<li><a data-toggle="modal" onclick="CCPEVE.showFitting('{{ extra.dnatext}}');" href="#">DNA</a></li>
-					{% else %}
 					<li><a data-toggle="modal" data-target="#DNA" href="#">DNA</a></li>
-					{% endif %}
-					{% if extra.crest %}
 					<li><a target="_blank" href="{{ crestServer }}/killmails/{{ extra.crest.killID }}/{{ extra.crest.hash }}/">CREST Link</a></li>
-					{% endif %}
 					<li><a data-toggle="modal" data-target="#ingamelink" href="#">In Game Link</a></li>
 					<li><a data-toggle="modal" data-target="#EFT" href="#">EFT</a></li>
 					<li><a data-toggle="modal" data-target="#rawMailEDK" href="#">Killmail (EDK)</a></li>
@@ -209,7 +203,6 @@
 	</div>
 </div>
 
-{% if eveigb != true %}
 <div class="modal fade" id="DNA">
 	<div class="modal-dialog">
 		<div class="modal-content">
@@ -229,7 +222,7 @@
 		</div>
 	</div>
 </div>
-{% endif %}
+
 <div class="modal fade" id="EFT">
 	<div class="modal-dialog">
 		<div class="modal-content">

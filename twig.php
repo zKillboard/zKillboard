@@ -145,10 +145,3 @@ $twig->addFunction(new Twig_SimpleFunction('chart', 'Chart::addChart'));
 $twig->addFunction(new Twig_SimpleFunction('getMonth', 'Util::getMonth'));
 $twig->addFunction(new Twig_SimpleFunction('getLongMonth', 'Util::getLongMonth'));
 $twig->addFunction(new Twig_SimpleFunction('getMessage', 'User::getMessage'));
-
-// IGB
-$igb = false;
-if (stristr(@$_SERVER['HTTP_USER_AGENT'], 'EVE-IGB')) {
-    $igb = true;
-}
-$twig->addGlobal('eveigb', $igb);
