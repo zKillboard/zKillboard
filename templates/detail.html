@@ -70,8 +70,6 @@
 					<li><a target="_blank" href="{{ crestServer }}/killmails/{{ extra.crest.killID }}/{{ extra.crest.hash }}/">CREST Link</a></li>
 					<li><a data-toggle="modal" data-target="#ingamelink" href="#">In Game Link</a></li>
 					<li><a data-toggle="modal" data-target="#EFT" href="#">EFT</a></li>
-					<li><a data-toggle="modal" data-target="#rawMailEDK" href="#">Killmail (EDK)</a></li>
-					<li><a data-toggle="modal" data-target="#rawMailzKB" href="#">Killmail (zKB)</a></li>
 				</ul>
 			</li>
 			<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Social <b class="caret"></b></i></a>
@@ -237,46 +235,6 @@
 					</div>
 					<div class="form-group">
 						<a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
-</div>
-
-<div class="modal fade" id="rawMailEDK">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h4 class="modal-title">Killmail</h4>
-			</div>
-			<div class="modal-body">
-				<form name="myform" class="form">
-					<div class="form-group">
-						<textarea onClick="this.select();" class="fitting col-md-12" rows="15" id="eft" name="eft">{{ extra.edkrawmail }}</textarea>
-					</div>
-					<div class="form-group">	
-						<a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
-</div>
-
-<div class="modal fade" id="rawMailzKB">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h4 class="modal-title">Killmail</h4>
-			</div>
-			<div class="modal-body">
-				<form name="myform" class="form">
-					<div class="form-group">
-						<textarea onClick="this.select();" class="fitting col-md-12" rows="15" id="eft" name="eft">{{ extra.zkbrawmail }}</textarea>
-					</div>
-					<div class="form-group">
-						<a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>	
 					</div>
 				</form>
 			</div>
