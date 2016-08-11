@@ -74,6 +74,7 @@
 					{% if extra.crest %}
 					<li><a target="_blank" href="{{ crestServer }}/killmails/{{ extra.crest.killID }}/{{ extra.crest.hash }}/">CREST Link</a></li>
 					{% endif %}
+					<li><a data-toggle="modal" data-target="#ingamelink" href="#">In Game Link</a></li>
 					<li><a data-toggle="modal" data-target="#EFT" href="#">EFT</a></li>
 					<li><a data-toggle="modal" data-target="#rawMailEDK" href="#">Killmail (EDK)</a></li>
 					<li><a data-toggle="modal" data-target="#rawMailzKB" href="#">Killmail (zKB)</a></li>
@@ -288,6 +289,27 @@
 			</div>
 		</div>
 	</div>
+</div>
+
+<div class="modal fade" id="ingamelink">
+        <div class="modal-dialog">
+                <div class="modal-content">
+                        <div class="modal-header">
+                                <h4 class="modal-title">Killmail - In Game Link</h4>
+                        </div>
+                        <div class="modal-body">
+                                <form name="myform" class="form">
+                                        <p>Must copy to in game notepad to create the link in game, then you can drag and copy that elsewhere.</p>
+                                        <div class="form-group">
+<textarea onClick="this.select();" class="fitting col-md-12" rows="5"><url=killReport:{{ extra.crest.killID }}:{{ extra.crest.hash }}>Kill: {{ killdata.victim.characterName }}'s {{ killdata.victim.shipName }}</url></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                                <a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>
+                                        </div>
+                                </form>
+                        </div>
+                </div>
+        </div>
 </div>
 {% endblock %}
 
