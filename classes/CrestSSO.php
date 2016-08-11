@@ -30,11 +30,16 @@ class CrestSSO
             }
         }
 
+        $factory = new \RandomLib\Factory;
+        $generator = $factory->getGenerator(new \SecurityLib\Strength(\SecurityLib\Strength::MEDIUM));
+        $state = $generator->generateString(128, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        $_SESSION['oauth2State'] = $state;
+
         $scopes = 'publicData';
         if (isset($_GET['scopes']) && count($_GET['scopes']) > 0) {
             $scopes .= '+'.implode('+', $_GET['scopes']);
         }
-        $url = "https://login.eveonline.com/oauth/authorize/?response_type=code&redirect_uri=https://zkillboard.com/ccpcallback/&client_id=$ccpClientID&scope=$scopes&state=redirect:$referrer";
+        $url = "https://login.eveonline.com/oauth/authorize/?response_type=code&redirect_uri=https://zkillboard.com/ccpcallback/&client_id=$ccpClientID&scope=$scopes&state=$state";
         $app->redirect($url, 302);
         exit();
     }
@@ -56,6 +61,12 @@ class CrestSSO
                     $app->redirect('/', 302);
                     exit();
                 }
+            }
+
+            $state = str_replace("/", "", $_GET['state']);
+            $sessionState = @$_SESSION['oauth2State'];
+            if ($state !== $sessionState) {
+                die("Invalid oAuth2State state detected - Aborting to prevent possible hijacking attempt.");
             }
 
             $url = 'https://login.eveonline.com/oauth/token';
@@ -135,19 +146,12 @@ class CrestSSO
             $_SESSION['characterName'] = $response->CharacterName;
             session_write_close();
 
-            $redirect = @$_GET['state'];
-            if ($redirect == '') {
-                $redirect = '/';
-            } elseif (substr($redirect, 0, 9) == 'redirect:') {
-                $redirect = '/';
-            }
-            if ($redirect == '/') {
-                $sessID = session_id();
-                $forward = $redis->get("forward:$sessID");
-                $redis->del("forward:$sessID");
-                if ($forward !== null) {
-                    $redirect = $forward;
-                }
+            $redirect = '/';
+            $sessID = session_id();
+            $forward = $redis->get("forward:$sessID");
+            $redis->del("forward:$sessID");
+            if ($forward !== null) {
+                $redirect = $forward;
             }
             header('Location: '.$redirect, 302);
             $authSuccess->add(uniqid());

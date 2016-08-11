@@ -10,7 +10,8 @@
 		"slim/views": "0.1.*",
 		"twig/twig": "1.*",
 		"erusev/parsedown": "1.*",
-		"zkillboard/redisq": "*"
+		"zkillboard/redisq": "*",
+		"ircmaxell/random-lib": "^1.1"
 	},
 	"autoload": {
         	"psr-4": {
