@@ -8,7 +8,7 @@ class UserConfig
 
         $id = User::getUserID();
         $value = $redis->hGet("user:$id", $key);
-        if ($value == null) {
+        if ($value === false) {
             return $defaultValue;
         }
 

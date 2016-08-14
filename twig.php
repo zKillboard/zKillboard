@@ -95,7 +95,7 @@ $twig->addGlobal('mobilebottomad', Google::ad($bottomCaPub, $bottomAdSlot, $adWi
 $twig->addGlobal('igbtopad', Google::ad($topCaPub, $topAdSlot, $adWidth = 728, $adHeight = 90));
 $twig->addGlobal('igbbottomad', Google::ad($bottomCaPub, $bottomAdSlot, $adWidth = 728, $adHeight = 90));
 $twig->addGlobal('analytics', Google::analytics($analyticsID, $analyticsName));
-$disqus &= UserConfig::get('showDisqus', true);
+$disqus = "true" === UserConfig::get('showDisqus', "true");
 $twig->addGlobal('disqusLoad', $disqus);
 $noAdPages = array('/account/', '/ticket', '/information/', '/post/');
 foreach ($noAdPages as $noAdPage) {

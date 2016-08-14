@@ -50,6 +50,13 @@ if ($_POST) {
         $app->redirect($_SERVER['REQUEST_URI']);
     }
 
+    // Disqus
+    $showDisqus = Util::getPost('showDisqus');
+    if (isset($showDisqus)) {
+        UserConfig::set('showDisqus', $showDisqus);
+        $app->redirect($_SERVER['REQUEST_URI']);
+    }
+
     $timeago = Util::getPost('timeago');
     if (isset($timeago)) {
         UserConfig::set('timeago', $timeago);
@@ -63,6 +70,7 @@ if ($_POST) {
     $ddmonthyear = Util::getPost('ddmonthyear');
     if (isset($ddmonthyear)) {
         UserConfig::set('ddmonthyear', $ddmonthyear);
+
     }
 
     $subdomain = Util::getPost('subdomain');
