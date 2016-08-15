@@ -3,7 +3,7 @@
 use cvweiss\redistools\RedisTimeQueue;
 
 $pid = 1;
-$max = 20;
+$max = 25;
 $threadNum = 0;
 for ($i = 0; $i < $max; ++$i) {
     $pid = pcntl_fork();
@@ -48,10 +48,12 @@ while ($minute == date('Hi')) {
             continue;
         }
         try {
-            KillmailParser::processCharApi($mdb, $apiServer, $type, $api);
+            $result = KillmailParser::processCharApi($mdb, $apiServer, $type, $api);
+            $cachedUntil = $result['cachedUntil'];
+            $cachedTime = strtotime($cachedUntil);
             $mdb->set($collection, $api, ['lastFetched' => time()]);
             KillmailParser::updateApiRow($mdb, $collection, $api, 0);
-            KillmailParser::extendApiTime($mdb, $timeQueue, $api, $type);
+            KillmailParser::extendApiTime($mdb, $timeQueue, $api, $type, $cachedTime);
         } catch (Exception $ex) {
             KillmailParser::updateApiRow($mdb, $collection, $api, $ex->getCode());
             $mdb->remove($collection, $api);

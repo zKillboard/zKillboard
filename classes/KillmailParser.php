@@ -4,7 +4,7 @@ use cvweiss\redistools\RedisTtlCounter;
 
 class KillmailParser
 {
-    public static function extendApiTime($mdb, $timeQueue, $api, $type)
+    public static function extendApiTime($mdb, $timeQueue, $api, $type, $cachedTime)
     {
         global $redis;
         $topKillID = $redis->get('zkb:topKillID');
@@ -14,6 +14,8 @@ class KillmailParser
         if (!$mdb->exists('killmails', $query)) {
             $time = time() + rand(43200, 86400);
             $timeQueue->setTime($id, $time);
+        } else {
+            $timeQueue->setTime($id, $cachedTime + 1);
         }
     }
 
@@ -31,7 +33,8 @@ class KillmailParser
         $corpID = $row['corporationID'];
         $keyID = $row['keyID'];
         $vCode = $row['vCode'];
-        $killmails = self::fetchKillmails($apiServer, $type, $charID, $keyID, $vCode);
+        $result = self::fetchKillmails($apiServer, $type, $charID, $keyID, $vCode);
+        $killmails = $result['killmails'];
         $hasKillmails = sizeof($killmails) > 0;
         $added = self::processKillmails($mdb, $killmails);
         $name = $type == 'char' ? Info::getInfoField('characterID', $charID, 'name')  : Info::getInfoField('corporationID', $corpID, 'name');
@@ -42,7 +45,7 @@ class KillmailParser
             Util::out("$added kills added by $type $name");
         }
 
-        return $hasKillmails;
+        return ['hasKillmails' => $hasKillmails, 'cachedUntil' => $result['cachedUntil']];
     }
 
     public static function fetchKillmails($apiServer, $type, $charID, $keyID, $vCode)
@@ -51,6 +54,7 @@ class KillmailParser
         $response = RemoteApi::getData($url);
         $content = $response['content'];
         $xml = simplexml_load_string($content);
+        $cachedUntil = $xml->cachedUntil;
 
         $rows = isset($xml->result->rowset->row) ? $xml->result->rowset->row : [];
         $killmails = [];
@@ -58,7 +62,7 @@ class KillmailParser
             $killmails[] = $row;
         }
 
-        return $killmails;
+        return ['killmails' => $killmails, 'cachedUntil' => (string) $cachedUntil];
     }
 
     public static function processKillmails($mdb, $killmails)
