@@ -30,21 +30,21 @@ while ($timer->stop() <= 59000) {
         $killdata = json_decode($frame->body, true);
         $killID = (int) $killdata['killID'];
 
-        if ($killID == 0) {
-            continue;
-        }
-        $hash = $hash = Killmail::getCrestHash($killID, $killdata);
-        $killdata['killID'] = (int) $killID;
+        if ($killID >= 0 && sizeof(@$killdata['attackers']) > 0 ) {
+            $hash = Killmail::getCrestHash($killID, $killdata);
+            $killdata['killID'] = (int) $killID;
 
-        if (!$mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash])) {
-            ++$stompCount;
-            $i = $mdb->getCollection('crestmails')->insert(['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => 'stomp', 'added' => $mdb->now()]);
-        }
+            if (!$mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash])) {
+                ++$stompCount;
+                $i = $mdb->getCollection('crestmails')->insert(['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => 'stomp', 'added' => $mdb->now()]);
+            }
 
-        $stomp->ack($frame->headers['message-id']);
+            $stomp->ack($frame->headers['message-id']);
+        }
     } else {
         break;
     }
+    sleep(1);
 }
 if ($stompCount > 0) {
     Util::out("New kills from STOMP: $stompCount");
