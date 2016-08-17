@@ -102,12 +102,12 @@ function addToDb($mdb, $type, $charID, $corpID, $keyID, $vCode)
 
         $array = ['characterID' => $charID, 'corporationID' => $corpID, 'keyID' => $keyID, 'vCode' => $vCode];
         if ($mdb->count("api$type", $array) == 0) {
-            $mdb->insert("api$type", $array);
             $redisType = substr(strtolower($type), 0, 4);
             $r = new RedisTimeQueue("zkb:{$redisType}s", 3600);
             $r->add($redisType == 'char' ? $charID : $corpID);
+            $mdb->insert("api$type", $array);
         }
     } catch (Exception $ex) {
-        Log::log("Error inserting record: " . $ex->getMessage());
+        Util::out("Error inserting record: (api$type) " . $ex->getMessage() . "\n" . print_r($array, true));
     }
 }
