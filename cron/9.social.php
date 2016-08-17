@@ -18,7 +18,7 @@ function beSocial($killID)
 {
     global $mdb, $redis, $fullAddr, $twitterName, $imageServer;
 
-    $twitMin = 15000000000;
+    $twitMin = 10000000000;
     $kill = $mdb->findDoc('killmails', ['killID' => $killID]);
 
     $hours24 = time() - 86400;
