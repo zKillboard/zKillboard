@@ -159,6 +159,11 @@ while ($timer->stop() < 59000) {
         $multi->sAdd($battleBucket, $killID);
         $multi->expire($battleBucket, (86400 * 7));
         $multi->sAdd('battleBuckets', $battleBucket);
+        $time = $kill['dttm']->sec;
+        $time = $time - ($time % 86400);
+        $date = date('Ymd', $time);
+        $multi->hSet("zkb:day:$date", $killID, $zkb['hash']);
+        $multi->sadd("zkb:days", $date);
         $multi->exec();
 
         ++$counter;

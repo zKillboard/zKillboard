@@ -116,6 +116,12 @@ class MongoFilter
                     $and[] = ['dttm' => ['$gte' => new MongoDate($start)]];
                     $and[] = ['dttm' => ['$lt' => new MongoDate($end)]];
                     break;
+                case 'date':
+                    $time = strtotime($value);
+                    $time = $time - ($time % 86400);
+                    $and[] = ['dttm' => ['$gte' => new MongoDate($time)]];
+                    $and[] = ['dttm' => ['$lt' => new MongoDate($time + 86400)]];
+                    break;
                 case 'relatedTime':
                     $time = strtotime($value);
                     $exHours = isset($parameters['exHours']) ? (int) $parameters['exHours'] : 1;
