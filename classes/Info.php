@@ -634,6 +634,8 @@ class Info
         return $retArray;
     }
 
+    public static $itemIDs = [];
+
     public static function getLocationID($solarSystemID, $position)
     {
         global $redis, $mdb;
@@ -642,32 +644,19 @@ class Info
         $y = $position['y'];
         $z = $position['z'];
 
-        $key = "tqMap:$solarSystemID";
-        if (!$redis->exists($key)) {
-            $multi = $redis->multi();
+        $systemLocations = $mdb->findDoc("locations", ['id' => $solarSystemID]);
+        if ($systemLocations == null) {
+            Log::log("Fetching fuzz map for system $solarSystemID");
             $raw = file_get_contents("https://www.fuzzwork.co.uk/api/mapdata.php?solarsystemid=$solarSystemID&format=json");
-            $json = json_decode($raw, true);
-            foreach ($json as $row) {
-                unset($row['complete']);
-                $itemID = (int) $row['itemid'];
-                $multi->hSet($key, $itemID, 1);
-                foreach ($row as $k => $v) {
-                    if ($v !== null) {
-                        $redis->hSet("tqItemID:$itemID", $k, $v);
-                    }
-                }
-                if (!$mdb->exists('information', ['type' => 'locationID', 'id' => $itemID])) {
-                    $mdb->save('information', ['type' => 'locationID', 'id' => $itemID, 'name' => $row['itemname']]);
-                }
-            }
-            $multi->exec();
+            $systemLocations = json_decode($raw, true);
+            $save = ['id' => $solarSystemID, 'locations' => $systemLocations];
+            $mdb->save("locations", $save);
+            $systemLocations = $save;
         }
         $minDistance = null;
         $returnID = null;
-        $itemIDs = $redis->hGetAll($key);
-        foreach ($itemIDs as $itemID => $v) {
-            $row = $redis->hGetAll("tqItemID:$itemID");
-
+        foreach ($systemLocations['locations'] as $row) { //$itemIDs as $itemID => $v) {
+            $itemID = $row['itemid'];
             $distance = sqrt(pow($row['x'] - $x, 2) + pow($row['y'] - $y, 2) + pow($row['z'] - $z, 2));
 
             if ($minDistance === null) {
@@ -682,5 +671,6 @@ class Info
         }
 
         return $returnID;
+die();
     }
 }
