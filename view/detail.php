@@ -73,7 +73,7 @@ if ($details == null) {
     }
 
     $extra['location'] = @$killdata['info']['location']['itemName'];
-    if (isset($rawmail['victim']['position'])) {
+    if (isset($rawmail['victim']['position']) && isset($killdata['info']['location']['itemID'])) {
         $position = $rawmail['victim']['position'];
         $locationID = $killdata['info']['location']['itemID'];
         $auDistance = Util::getAuDistance($position, $locationID);

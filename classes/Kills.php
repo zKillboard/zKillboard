@@ -120,7 +120,7 @@ class Kills
         $attackerCount = sizeof($rawmailInv);
         $killmail['number_involved'] = $attackerCount;
 
-        if (isset($rawmail['victim']['position'])) {
+        if (isset($rawmail['victim']['position']) && isset($killmail['locationID'])) {
             $location = [];
             $location['itemID'] = (int) $killmail['locationID'];
             $location['itemName'] = $mdb->findField('information', 'name', ['cacheTime' => 3600, 'type' => 'locationID', 'id' => (int) $killmail['locationID']]);
