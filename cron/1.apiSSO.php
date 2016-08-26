@@ -5,7 +5,9 @@ use cvweiss\redistools\RedisTtlCounter;
 use cvweiss\redistools\RedisTtlSortedSet;
 
 $pid = 1;
-for ($i = 0; $i < 3; ++$i) {
+$max = 3;
+$threadNum = 0;
+for ($i = 0; $i < $max; ++$i) {
     $pid = pcntl_fork();
     if ($pid == -1) {
         exit();
@@ -13,6 +15,7 @@ for ($i = 0; $i < 3; ++$i) {
     if ($pid == 0) {
         break;
     }
+    $threadNum++;
 }
 
 require_once '../init.php';
@@ -21,7 +24,7 @@ $minute = date('Hi');
 $topKillID = (int) $redis->get('zkb:topKillID');
 $sso = new RedisTimeQueue('tqApiSSO', 3600);
 
-if ($pid != 0) {
+if ($threadNum == $max && date('i') % 15 == 0 && $sso->size() == 0) {
     $apis = $mdb->find('apisCrest');
     foreach ($apis as $row) {
         $sso->add($row['characterID']);
@@ -94,7 +97,7 @@ while ($minute == date('Hi')) {
             $sso->remove($charID);
             if ($errorCode == 904) {
                 Util::out("(apiConsumer) 904'ed...");
-                exit();
+                return;
             }
             if ($errorCode == 28) {
                 continue;

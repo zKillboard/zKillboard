@@ -4,7 +4,9 @@ use cvweiss\redistools\RedisTimeQueue;
 use cvweiss\redistools\RedisTtlCounter;
 
 $pid = 1;
-for ($i = 0; $i < 30; ++$i) {
+$threadNum = 0;
+$max = 30;
+for ($i = 0; $i < $max; ++$i) {
     $pid = pcntl_fork();
     if ($pid == -1) {
         exit();
@@ -12,6 +14,7 @@ for ($i = 0; $i < 30; ++$i) {
     if ($pid == 0) {
         break;
     }
+    $threadNum++;
 }
 
 require_once '../init.php';
@@ -19,7 +22,7 @@ require_once '../init.php';
 $minute = date('Hi');
 $zkbApis = new RedisTimeQueue('zkb:apis', 14400);
 
-if ($pid > 0) {
+if ($threadNum == $max and date('i') == 15) {
     $apis = $mdb->find('apis');
     foreach ($apis as $api) {
         $errorCode = (int) @$api['errorCode'];
@@ -108,6 +111,6 @@ function addToDb($mdb, $type, $charID, $corpID, $keyID, $vCode)
             $mdb->insert("api$type", $array);
         }
     } catch (Exception $ex) {
-        Util::out("Error inserting record: (api$type) " . $ex->getMessage() . "\n" . print_r($array, true));
+        //Util::out("Error inserting record: (api$type) " . $ex->getMessage() . "\n" . print_r($array, true));
     }
 }
