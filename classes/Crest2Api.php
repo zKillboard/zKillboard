@@ -56,7 +56,7 @@ class Crest2Api
             $aggressor['allianceName'] = (string) Info::getInfoField('allianceID', @$attacker['alliance']['id'], 'name');
             $aggressor['factionID'] = (int) @$attacker['faction']['id'];
             $aggressor['factionName'] = (string) @Info::getInfoField('factionID', @$attacker['faction']['id'], 'name');
-            $aggressor['securityStatus'] = $attacker['securityStatus'];
+            $aggressor['securityStatus'] = @$attacker['securityStatus'];
             $aggressor['damageDone'] = (int) @$attacker['damageDone'];
             $aggressor['finalBlow'] = (int) @$attacker['finalBlow'];
             $aggressor['weaponTypeID'] = (int) @$attacker['weaponType']['id'];
