@@ -178,9 +178,6 @@ function updateEntity($killID, $entity)
             $row['killID'] = 0;
         }
         if ($row != null && $killID <= $row['killID']) {
-            echo "continuing..\n";
-        }
-        if ($row != null && $killID <= $row['killID']) {
             continue;
         }
 
