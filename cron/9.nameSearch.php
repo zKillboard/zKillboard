@@ -4,12 +4,13 @@ require_once '../init.php';
 
 global $redis;
 
-$key = date('YmdH');
+$key = "autocomplete:" . date('YmdH');
 if ($redis->get($key) == true) {
     exit();
 }
 
-$entities = $mdb->getCollection('information')->find();
+$entities = $mdb->getCollection('information')->find()->sort(['type' => 1]);
+$entities->timeout(0);
 
 $toMove = [];
 
