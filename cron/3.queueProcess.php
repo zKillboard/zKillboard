@@ -4,11 +4,6 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
-if ($redis->get('tq:itemsPopulated') != true) {
-    Util::out('Waiting for all items to be populated...');
-    exit();
-}
-
 $timer = new Timer();
 $crestmails = $mdb->getCollection('crestmails');
 $killmails = $mdb->getCollection('killmails');
