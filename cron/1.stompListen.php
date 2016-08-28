@@ -25,6 +25,7 @@ $stompCount = 0;
 $timer = new Timer();
 
 while ($timer->stop() <= 59000) {
+    sleep(1);
     $frame = $stomp->readFrame();
     if (!empty($frame)) {
         $killdata = json_decode($frame->body, true);
@@ -44,7 +45,6 @@ while ($timer->stop() <= 59000) {
     } else {
         break;
     }
-    sleep(1);
 }
 if ($stompCount > 0) {
     Util::out("New kills from STOMP: $stompCount");
