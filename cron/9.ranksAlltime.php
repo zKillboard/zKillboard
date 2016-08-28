@@ -16,6 +16,7 @@ $information = $mdb->getCollection('statistics');
 Util::out('Alltime ranks - first iteration');
 $types = [];
 $iter = $information->find();
+$iter->timeout(0);
 foreach ($iter as $row) {
     $type = $row['type'];
     $id = $row['id'];

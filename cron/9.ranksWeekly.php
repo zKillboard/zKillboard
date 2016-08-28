@@ -16,7 +16,7 @@ $completed = [];
 
 Util::out('weekly time ranks - first iteration');
 $types = [];
-$iter = $mdb->getCollection('oneWeek')->find();
+$iter = $mdb->find("oneWeek");
 foreach ($iter as $row) {
     $involved = $row['involved'];
     foreach ($involved as $entity) {
@@ -149,25 +149,7 @@ function getWeekly($type, $id, $isVictim, $minKillID)
     // set the proper sequence values
     $query = ['$and' => [['killID' => ['$gte' => $minKillID]], $query]];
 
-    $result = $mdb->group('killmails', [], $query, 'killID', ['zkb.points', 'zkb.totalValue']);
+    $result = $mdb->group('oneWeek', [], $query, 'killID', ['zkb.points', 'zkb.totalValue']);
 
     return sizeof($result) ? $result[0] : ['killIDCount' => 0, 'zkb_pointsSum' => 0, 'zkb_totalValueSum' => 0];
-}
-
-function getLatestKillID($type, $id, $minKillID)
-{
-    global $mdb;
-
-    // build the query
-    $query = [$type => $id, 'isVictim' => false];
-    $query = MongoFilter::buildQuery($query);
-    // set the proper sequence values
-    $query = ['$and' => [['killID' => ['$gte' => $minKillID]], $query]];
-
-    $killmail = $mdb->findDoc('killmails', $query);
-    if ($killmail == null) {
-        return 0;
-    }
-
-    return $killmail['killID'];
 }
