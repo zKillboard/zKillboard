@@ -19,12 +19,6 @@ class Kills
     {
         global $mdb;
 
-        $hashKey = 'Kills::getKills:'.md5(serialize($parameters));
-        $result = RedisCache::get($hashKey);
-        if ($result != null) {
-            return $result;
-        }
-
         $kills = MongoFilter::getKills($parameters);
 
         if ($includeKillDetails == false) {
@@ -53,7 +47,6 @@ class Kills
             }
             $details[$killID] = $killmail;
         }
-        RedisCache::set($hashKey, $details, 300);
 
         return $details;
     }
