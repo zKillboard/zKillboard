@@ -9,7 +9,7 @@ $minute = date('Hi');
 
 while ($beSocial && $minute == date('Hi')) {
     $killID = $queueSocial->pop();
-    if ($killID != null) {
+    if ($killID > 0 ) {
         beSocial($killID);
     }
 }
@@ -24,6 +24,7 @@ function beSocial($killID)
     $hours24 = time() - 86400;
     $victimInfo = $kill['involved'][0];
     $totalPrice = $kill['zkb']['totalValue'];
+    if ($kill['vGroupID'] == 902) $twitMin += 5000000000;
     $noTweet = $kill['dttm']->sec < $hours24 || $victimInfo == null || $totalPrice < $twitMin;
     if ($noTweet) {
         return;
@@ -56,8 +57,12 @@ function beSocial($killID)
 
 function sendMessage($message)
 {
-    global $consumerKey, $consumerSecret, $accessToken, $accessTokenSecret;
-    $twitter = new Twitter($consumerKey, $consumerSecret, $accessToken, $accessTokenSecret);
+    try {
+        global $consumerKey, $consumerSecret, $accessToken, $accessTokenSecret;
+        $twitter = new Twitter($consumerKey, $consumerSecret, $accessToken, $accessTokenSecret);
 
-    return $twitter->send($message);
+        return $twitter->send($message);
+    } catch (Exception $ex) {
+        // just ignore it
+    }
 }
