@@ -61,7 +61,7 @@ if (false) { //$serverName != $baseAddr || $userID == 1633218082) {
 } else {
 
     $topPoints = array();
-    $topIsk = json_decode($redis->get('RC:TopIsk'), true);
+    $topIsk = json_decode($redis->get('zkb:TopIsk'), true);
     $topPods = array();
 
     $top = array();

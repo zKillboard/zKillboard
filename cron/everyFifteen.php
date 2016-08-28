@@ -17,10 +17,7 @@ $p['limit'] = 10;
 $p['pastSeconds'] = $numDays * 86400;
 $p['kills'] = true;
 
-$redis->setex('RC:Kills5b+', 3600, json_encode(Kills::getKills(array('iskValue' => 5000000000), true, false)));
-$redis->setex('RC:Kills10b+', 3600, json_encode(Kills::getKills(array('iskValue' => 10000000000), true, false)));
-
-$redis->setex('RC:TopIsk', 3600, json_encode(Stats::getTopIsk(array('pastSeconds' => ($numDays * 86400), 'categoryID' => 6, 'limit' => 5))));
+$redis->set('zkb:TopIsk', json_encode(Stats::getTopIsk(array('pastSeconds' => ($numDays * 86400), 'categoryID' => 6, 'limit' => 5))));
 
 function getStats($column)
 {
