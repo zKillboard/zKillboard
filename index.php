@@ -6,12 +6,18 @@ use cvweiss\redistools\RedisTtlCounter;
 $pageLoadMS = microtime(true);
 
 // We can ignore Disqus
+$agent = @$_SERVER['HTTP_USER_AGENT'];
 if (@$_SERVER['HTTP_USER_AGENT'] == 'Disqus/1.0') {
     die('');
 }
+$isBot = strpos(strtolower($agent), "bot") !== false;
 
 // Check to ensure we have a trailing slash, helps with caching
 $uri = @$_SERVER['REQUEST_URI'];
+if ($uri == "/kill/-1/") {
+    echo file_get_contents("/var/www/zkillboard.com/special/keepstar.html");
+    exit();
+}
 if (substr($uri, -1) != '/') {
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET');
@@ -54,8 +60,6 @@ if ($ip != '127.0.0.1') {
     $requests = new RedisTtlCounter('ttlc:requests', 300);
     $requests->add(uniqid());
 }
-
-$load = Load::getLoad();
 
 // Theme
 $theme = UserConfig::get('theme', 'cyborg');
