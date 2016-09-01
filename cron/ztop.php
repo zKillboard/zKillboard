@@ -49,28 +49,16 @@ while ($iterations++ <= 1200) {
     addInfo('SSO Apis', $redis->zCard('tqApiSSO'));
 
     addInfo('', 0);
-    $nonApiR = new RedisTtlCounter('ttlc:nonApiRequests', 300);
-    addInfo('non-API requests in last 5 minutes', $nonApiR->count());
-    $apiR = new RedisTtlCounter('ttlc:apiRequests', 300);
-    addInfo('API requests in last 5 minutes', $apiR->count());
-    $visitors = new RedisTtlCounter('ttlc:visitors', 300);
-    addInfo('Unique IPs in last 5 minutes', $visitors->count());
-    $requests = new RedisTtlCounter('ttlc:requests', 300);
-    addInfo('Requests in last 5 minutes', $requests->count());
-
-    addInfo('', 0);
     $crestSuccess = new RedisTtlCounter('ttlc:CrestSuccess', 300);
     addInfo('Successful CREST calls in last 5 minutes', $crestSuccess->count());
     $crestFailure = new RedisTtlCounter('ttlc:CrestFailure', 300);
     addInfo('Failed CREST calls in last 5 minutes', $crestFailure->count());
 
-    addInfo('', 0);
     $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
     addInfo('Successful XML calls in last 5 minutes', $xmlSuccess->count());
     $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
     addInfo('Failed XML calls in last 5 minutes', $xmlFailure->count());
 
-    addInfo('', 0);
     $authSuccess = new RedisTtlCounter('ttlc:AuthSuccess', 300);
     addInfo('Successful Auth calls in last 5 minutes', $authSuccess->count());
     $authFailure = new RedisTtlCounter('ttlc:AuthFailure', 300);

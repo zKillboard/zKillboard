@@ -45,22 +45,6 @@ session_set_save_handler(new RedisSessionHandler(), true);
 session_cache_limiter(false);
 session_start();
 
-$nonApiR = new RedisTtlCounter('ttlc:nonApiRequests', 300);
-$apiR = new RedisTtlCounter('ttlc:apiRequests', 300);
-if (substr($uri, 0, 5) == '/api/') {
-    $apiR->add(uniqid());
-} else {
-    $nonApiR->add(uniqid());
-}
-
-$ip = IP::get();
-if ($ip != '127.0.0.1') {
-    $visitors = new RedisTtlCounter('ttlc:visitors', 300);
-    $visitors->add($ip);
-    $requests = new RedisTtlCounter('ttlc:requests', 300);
-    $requests->add(uniqid());
-}
-
 // Theme
 $theme = UserConfig::get('theme', 'cyborg');
 $app->config(array('templates.path' => $baseDir.'templates/'));
