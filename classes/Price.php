@@ -94,6 +94,8 @@ class Price
                 return 300000000000; // 300b Keepstar, not likely to end up on market at this price
             case 12478: // damn Khumaak and people thinking fake killmail isk value means something
                 return 0.01;
+            case 42124:
+                return 33000000000; // Vehement, a faction dread with no market for some reason
             case 2834: // Utu
             case 3516: // Malice
             case 11375: // Freki
