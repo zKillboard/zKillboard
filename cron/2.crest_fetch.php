@@ -32,7 +32,7 @@ while ($timer->stop() < 59000) {
             Util::out("$id $killmail");
         }
         // The following if statements used to be a switch statement, but for some reason it didn't always process correctly
-        if ($killmail == 403) {
+        if ($killmail == 403 || $killmail == 404) {
             $mdb->getCollection('crestmails')->remove(['_id' => $crestmail['_id']]);
             continue;
         }
