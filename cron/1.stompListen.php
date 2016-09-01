@@ -23,28 +23,33 @@ foreach ($topics as $topic) {
 
 $stompCount = 0;
 $timer = new Timer();
+$minute = date('Hi');
 
-while ($timer->stop() <= 59000) {
-    sleep(1);
+while ($minute == date('Hi')) {
     $frame = $stomp->readFrame();
     if (!empty($frame)) {
         $killdata = json_decode($frame->body, true);
         $killID = (int) $killdata['killID'];
 
         if ($killID >= 0 && sizeof(@$killdata['attackers']) > 0 ) {
-            $hash = Killmail::getCrestHash($killID, $killdata);
-            $killdata['killID'] = (int) $killID;
+            $hash = @$killdata['crestHash'];
+            if ($hash == null) $hash = Killmail::getCrestHash($killID, $killdata);
+            if ($hash != null) {
+                $killdata['killID'] = (int) $killID;
 
-            if (!$mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash])) {
-                ++$stompCount;
-                $i = $mdb->getCollection('crestmails')->insert(['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => 'stomp', 'added' => $mdb->now()]);
+                if (!$mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash])) {
+                    ++$stompCount;
+                    $i = $mdb->getCollection('crestmails')->insert(['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => 'stomp', 'added' => $mdb->now()]);
+                }
+
+                $stomp->ack($frame->headers['message-id']);
             }
-
-            $stomp->ack($frame->headers['message-id']);
+            continue;
         }
     } else {
         break;
     }
+    sleep(1);
 }
 if ($stompCount > 0) {
     Util::out("New kills from STOMP: $stompCount");
