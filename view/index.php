@@ -11,7 +11,7 @@ $serverName = $_SERVER['SERVER_NAME'];
 $kills = [];
 $activePvP = [];
 
-$userID = User::getUserID();
+//$userID = User::getUserID();
 if (false) { //$serverName != $baseAddr || $userID == 1633218082) {
     try {
         $numDays = 7;
