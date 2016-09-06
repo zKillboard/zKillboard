@@ -22,7 +22,7 @@ require_once '../init.php';
 $minute = date('Hi');
 $zkbApis = new RedisTimeQueue('zkb:apis', 14400);
 
-if ($threadNum == $max and date('i') == 15) {
+if ($threadNum == $max - 1 && ($zkbApis->size() == 0 || date('i') == 15)) {
     $apis = $mdb->find('apis');
     foreach ($apis as $api) {
         $errorCode = (int) @$api['errorCode'];
