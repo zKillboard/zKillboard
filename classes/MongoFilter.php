@@ -131,6 +131,7 @@ class MongoFilter
                 case 'pastSeconds':
                     $value = min($value, (90 * 86400));
                     $value = max(0, $value);
+                    if ($value % 3600 != 0) throw new Exception("pastSeconds must be in increments of 3600 - use redisq if you want up to the second killmails https://github.com/zKillboard/RedisQ");
                     $and[] = ['dttm' => ['$gte' => new MongoDate(time() - $value)]];
                     break;
                 case 'beforeKillID':
