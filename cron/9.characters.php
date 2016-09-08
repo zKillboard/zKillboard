@@ -15,7 +15,7 @@ $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
 
 while ($timer->stop() < 59000) {
     $ids = [];
-    for ($i = 0; $i < 100; ++$i) {
+    for ($i = 0; $i < 50; ++$i) {
         $id = $queueCharacters->next(false);
         if ($id != null) {
             $ids[] = $id;
