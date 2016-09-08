@@ -35,7 +35,10 @@ function beSocial($killID)
     $url = "$fullAddr/kill/$killID/";
     $message = $victimInfo['shipName'].' worth '.Util::formatIsk($totalPrice)." ISK was destroyed! $url";
 
-    $name = isset($victimInfo['characterName']) ? $victimInfo['characterName'] : isset($victimInfo['allianceName']) ? $victimInfo['allianceName'] : $victimInfo['corporationName'];
+    $name = "";
+    if (strlen(@$victimInfo['characterName']) > 0) $name = $victimInfo['characterName'];
+    if (strlen(@$victimInfo['allianceName']) > 0) $name = $victimInfo['allianceName'];
+    else $name = $victimInfo['corporationName'];
     $name = Util::endsWith($name, 's') ? $name."'" : $name."'s";
     $message = "$name $message #tweetfleet #eveonline";
 
