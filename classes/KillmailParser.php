@@ -54,7 +54,7 @@ class KillmailParser
         $response = RemoteApi::getData($url);
         $content = $response['content'];
         $xml = simplexml_load_string($content);
-        $cachedUntil = $xml->cachedUntil;
+        $cachedUntil = @$xml->cachedUntil;
 
         $rows = isset($xml->result->rowset->row) ? $xml->result->rowset->row : [];
         $killmails = [];
