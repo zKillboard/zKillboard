@@ -1,10 +1,12 @@
 <?php
 
+use cvweiss\redistools\RedisTimeQueue;
+
 class Api
 {
     public static function addKey($keyID, $vCode, $label = null)
     {
-        global $mdb;
+        global $mdb, $redis;
 
         $keyID = (int) $keyID;
         if ($keyID == 0) {
@@ -35,6 +37,10 @@ class Api
 
         $row = ['keyID' => $keyID, 'vCode' => $vCode, 'label' => $label, 'lastApiUpdate' => new MongoDate(2), 'userID' => $userID];
         $mdb->save('apis', $row);
+        $id = $row['_id'];
+
+        $zkbApis = new RedisTimeQueue('zkb:apis', 14400);
+        $zkbApis->add($id);
 
         return 'Success, your API has been added.';
     }
