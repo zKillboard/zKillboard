@@ -14,18 +14,15 @@ $statTypes = ['Destroyed', 'Lost'];
 $now = time();
 $now = $now - ($now % 60);
 $then = $now - (90 * 86400);
-$ninetyDayKillID = $mdb->findField('killmails', 'killID', ['dttm' => ['$gte' => new MongoDate($then)]], ['killID' => 1]);
-if ($ninetyDayKillID == null) {
+$ninetyDayKillID = $mdb->findField('killmails', 'killID', ['dttm' => ['$gte' => new MongoDate($then)], 'killID' => ['$gte' => 0]], ['killID' => 1]);
+if ($ninetyDayKillID === null) {
     $redis->setex($todaysKey, 87000, true);
     exit();
 }
 
-$information = $mdb->getCollection('statistics');
-
 Util::out('recent time ranks - first iteration');
 $types = [];
-$iter = $information->find();
-$iter->timeout(0);
+$iter = $mdb->find("statistics", [], [], null, ['type' => 1, 'id' => 1]);
 foreach ($iter as $row) {
     $type = $row['type'];
     $id = $row['id'];
@@ -38,8 +35,8 @@ foreach ($iter as $row) {
     $types[$type] = true;
     $key = "tq:ranks:recent:$type:$today";
 
-    $recentKills = getRecent($row['type'], $row['id'], false, $ninetyDayKillID);
-    $recentLosses = getRecent($row['type'], $row['id'], true, $ninetyDayKillID);
+    $recentKills = getRecent($type, $id, false, $ninetyDayKillID);
+    $recentLosses = getRecent($type, $id, true, $ninetyDayKillID);
 
     $multi = $redis->multi();
     zAdd($multi, "$key:shipsDestroyed", $recentKills['killIDCount'], $id);
