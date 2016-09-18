@@ -19,20 +19,9 @@ if ($redis->get($redisKey) != true) {
         }
 
         $allTimeSum = (int) @$row['allTimeSum'];
-        $currentSum = (int) @$row['shipsDestroyed'];
-        if (!isset($row['topAllTime'])) {
-            $allTimeSum = 0;
-        }
-
-        if ($currentSum == 0) {
-            continue;
-        }
-        if ($currentSum == $allTimeSum) {
-            continue;
-        }
-        if (($currentSum - $allTimeSum) < ($allTimeSum * 0.01)) {
-            continue;
-        }
+        $shipsDestroyed = (int) @$row['shipsDestroyed'];
+        $nextTopRecalc = floor($allTimeSum * 1.01);
+        if ($shipsDestroyed == 0 || $shipsDestroyed < $nextTopRecalc) continue;
 
         $queueTopAlltime->push($row['_id']);
     }

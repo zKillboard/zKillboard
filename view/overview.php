@@ -115,6 +115,7 @@ if ($pageType != 'solo' || $key == 'faction') {
 $solo = Kills::mergeKillArrays($soloKills, array(), $limit, $columnName, $id);
 
 $validAllTimePages = array('character', 'corporation', 'alliance', 'faction');
+$nextTopRecalc = 0;
 $topLists = array();
 $topKills = array();
 if ($pageType == 'top' || $pageType == 'topalltime') {
@@ -129,7 +130,10 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
         } elseif ($useType == 'system') {
             $useType = 'solarSystem';
         }
+
         $topLists = $mdb->findField('statistics', 'topAllTime', ['type' => "{$useType}ID", 'id' => (int) $id]);
+        $nextTopRecalc = $mdb->findField('statistics', 'allTimeSum', ['type' => "{$useType}ID", 'id' => (int) $id]);
+        $nextTopRecalc = floor($nextTopRecalc * 1.01);
     } else {
         if ($pageType != 'topalltime') {
             if (!isset($topParameters['year'])) {
@@ -353,7 +357,7 @@ $activePvP = Stats::getActivePvpStats($parameters);
 
 $hasPager = in_array($pageType, ['overview', 'kills', 'losses', 'solo']);
 
-$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => $apiVerified, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP);
+$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => $apiVerified, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc);
 
 $app->render('overview.html', $renderParams);
 

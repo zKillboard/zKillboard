@@ -56,3 +56,6 @@
 	{% endif %}
 {% endfor %}
 </div>
+{% if nextTopRecalc > 0 %}
+<h4>Next Top Recalc at {{ nextTopRecalc|number_format(0) }} kills.</h4>
+{% endif %}
