@@ -442,35 +442,27 @@ class Util
         return $mdb->getQueryCount();
     }
 
-    public static function get3dDistance($position, $locationID)
+    public static function get3dDistance($position, $locationID, $solarSystemID = 0)
     {
-        global $redis;
+        global $redis, $mdb;
 
         $x = $position['x'];
         $y = $position['y'];
         $z = $position['z'];
 
-        $row = $redis->hGetAll("tqItemID:$locationID");
-        if ($row === null) {
-            return 0;
+        $row = $mdb->findDoc("locations", ['id' => $solarSystemID]);
+        if ($row == null) $row = [];
+        foreach ($row['locations'] as $location) {
+            if ($location['itemid'] != $locationID) continue;
+            return sqrt(pow($location['x'] - $x, 2) + pow($location['y'] - $y, 2) + pow($location['z'] - $z, 2));
         }
-        if (!isset($row['x'])) {
-            return 0;
-        }
-        if (!isset($row['y'])) {
-            return 0;
-        }
-        if (!isset($row['z'])) {
-            return 0;
-        }
-        $distance = sqrt(pow($row['x'] - $x, 2) + pow($row['y'] - $y, 2) + pow($row['z'] - $z, 2));
 
-        return $distance;
+        return 0;
     }
 
-    public static function getAuDistance($position, $locationID)
+    public static function getAuDistance($position, $locationID, $solarSystemID = 0)
     {
-        $distance = self::get3dDistance($position, $locationID);
+        $distance = self::get3dDistance($position, $locationID, $solarSystemID);
 
         $au = round($distance / (149597870700), 2);
 
