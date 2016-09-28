@@ -76,7 +76,7 @@ if ($details == null) {
     if (isset($rawmail['victim']['position']) && isset($killdata['info']['location']['itemID'])) {
         $position = $rawmail['victim']['position'];
         $locationID = $killdata['info']['location']['itemID'];
-        $auDistance = Util::getAuDistance($position, $locationID);
+        $auDistance = Util::getAuDistance($position, $locationID, $killdata['info']['system']['solarSystemID']);
         if ($auDistance > 0.01) {
             $extra['locationDistance'] = '('.$auDistance.'au)';
         }
