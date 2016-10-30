@@ -167,6 +167,7 @@ class Util
                         $ints = [];
                         foreach ($exploded as $ex) {
                             if (is_numeric($ex)) $ints[] = (int) $ex;
+                            else $ints[] = (string) $ex;
                         }
                         if (sizeof($ints) == 0) {
                             throw new Exception("Client requesting too few parameters.");
