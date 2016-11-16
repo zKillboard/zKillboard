@@ -18,7 +18,7 @@ class Stats
         }
 
         $result = Kills::getKills($parameters);
-        RedisCache::set($hashKey, $result, 3600);
+        RedisCache::set($hashKey, $result, 900);
 
         return $result;
     }
@@ -106,7 +106,7 @@ class Stats
         }
 
         Info::addInfo($result);
-        RedisCache::set($hashKey, $result, isset($parameters['cacheTime']) ? $parameters['cacheTime'] : 3600);
+        RedisCache::set($hashKey, $result, isset($parameters['cacheTime']) ? $parameters['cacheTime'] : 900);
 
         return $result;
     }
@@ -124,7 +124,7 @@ class Stats
         if ($parameters == []) {
             $type = ($groupByColumn == 'solarSystemID' || $groupByColumn == 'regionID') ? "system.$groupByColumn" : "involved.$groupByColumn";
             $result = $mdb->getCollection('oneWeek')->distinct($type);
-            RedisCache::set($hashKey, sizeof($result), 3600);
+            RedisCache::set($hashKey, sizeof($result), 900);
 
             return sizeof($result);
         }
@@ -174,7 +174,7 @@ class Stats
 
         $retValue = sizeof($result) == 0 ? 0 : $result[0]['value'];
 
-        RedisCache::set($hashKey, $retValue, 3600);
+        RedisCache::set($hashKey, $retValue, 900);
 
         return $retValue;
     }
@@ -218,7 +218,7 @@ class Stats
             $activePvP['kills'] = ['type' => 'Total Kills', 'count' => $killCount];
         }
 
-        RedisCache::set($key, $activePvp, 3600);
+        RedisCache::set($key, $activePvp, 900);
 
         return $activePvP;
     }
