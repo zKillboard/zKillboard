@@ -18,6 +18,7 @@ for ($i = 0; $i < $max; ++$i) {
 
 require_once '../init.php';
 
+if ($redis->llen("queueProcess") > 100) exit();
 $collection = $threadNum < 5 ? 'Corporation' : 'Character';
 $type = substr(strtolower($collection), 0, 4);
 $field = strtolower($collection).'ID';
@@ -26,7 +27,7 @@ $collection = 'api'.$collection;
 $minute = date('Hi');
 $timeQueue = new RedisTimeQueue("zkb:{$type}s", 3600);
 
-if (date('i') % 15 == 0 && ($threadNum == 4 || $threadNum == 5) && $timeQueue->size() == 0) {
+if (date('i') == 41 && ($threadNum == 4 || $threadNum == 5)) {
     $ids = $mdb->getCollection($collection)->distinct($field);
     foreach ($ids as $id) {
         $timeQueue->add($id);

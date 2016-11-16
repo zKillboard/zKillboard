@@ -4,6 +4,7 @@ require_once '../init.php';
 
 global $redis;
 
+if ($redis->llen("queueProcess") > 100) exit();
 $key = "autocomplete:" . date('YmdH');
 if ($redis->get($key) == true) {
     exit();

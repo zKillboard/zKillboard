@@ -4,6 +4,7 @@ use cvweiss\redistools\RedisQueue;
 
 include_once '../init.php';
 
+if ($redis->llen("queueProcess") > 100) exit();
 $queueCleanup = new RedisQueue('queueCleanup');
 
 $timer = new Timer();

@@ -20,11 +20,12 @@ for ($i = 0; $i < $max; ++$i) {
 
 require_once '../init.php';
 
+if ($redis->llen("queueProcess") > 100) exit();
 $minute = date('Hi');
 $topKillID = (int) $redis->get('zkb:topKillID');
 $sso = new RedisTimeQueue('tqApiSSO', 3600);
 
-if ($threadNum == $max && date('i') % 15 == 0 && $sso->size() == 0) {
+if ($threadNum == ($max - 1) && date('i') == 15) {
     $apis = $mdb->find('apisCrest');
     foreach ($apis as $row) {
         $sso->add($row['characterID']);
@@ -162,7 +163,7 @@ while ($minute == date('Hi')) {
         }
 
         if ($kmCount == 0) {
-            //$sso->setTime($charID, time() + rand(3600, 14400));
+            $sso->setTime($charID, time() + rand(3600, 14400));
         }
 
         // helpful info for output if needed
