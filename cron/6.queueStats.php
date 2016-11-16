@@ -10,6 +10,7 @@ $inProgress = [];
 $maxChildren = 10;
 $maxTime = 295000;
 
+if ($redis->llen("queueProcess") > 100) exit();
 $queueStats = new RedisQueue('queueStats');
 
 $noRowCount = 0;
