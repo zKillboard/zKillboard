@@ -88,13 +88,10 @@ $twig->addGlobal('crestServer', $crestServer);
 $twig->addGlobal('siteurl', $baseAddr);
 $twig->addGlobal('fullsiteurl', $fullAddr);
 $twig->addGlobal('requesturi', $_SERVER['REQUEST_URI']);
-$twig->addGlobal('topad', Google::ad($topCaPub, $topAdSlot, $adWidth = 728, $adHeight = 90));
-$twig->addGlobal('bottomad', Google::ad($bottomCaPub, $bottomAdSlot, $adWidth = 728, $adHeight = 90));
-$twig->addGlobal('mobiletopad', Google::ad($topCaPub, $topAdSlot, $adWidth = 320, $adHeight = 50));
-$twig->addGlobal('mobilebottomad', Google::ad($bottomCaPub, $bottomAdSlot, $adWidth = 320, $adHeight = 50));
-$twig->addGlobal('igbtopad', Google::ad($topCaPub, $topAdSlot, $adWidth = 728, $adHeight = 90));
-$twig->addGlobal('igbbottomad', Google::ad($bottomCaPub, $bottomAdSlot, $adWidth = 728, $adHeight = 90));
+
+$twig->addGlobal("advertisement", Google::getAd());
 $twig->addGlobal('analytics', Google::analytics($analyticsID, $analyticsName));
+
 $disqus = "true" === UserConfig::get('showDisqus', "true");
 $twig->addGlobal('disqusLoad', $disqus);
 $noAdPages = array('/account/', '/ticket', '/information/', '/post/');

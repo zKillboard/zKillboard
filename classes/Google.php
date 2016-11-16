@@ -18,7 +18,7 @@ class Google
         return $html;
     }
 
-    public static function ad($caPub, $adSlot, $adWidth = 728, $adHeight = 90)
+    public static function getAd()
     {
         global $dataAdClient, $dataAdSlot;
 
