@@ -20,11 +20,19 @@ class Google
 
     public static function ad($caPub, $adSlot, $adWidth = 728, $adHeight = 90)
     {
+        global $dataAdClient, $dataAdSlot;
+
         return '
+<!-- test -->
 <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<ins class="adsbygoogle" style="display:block" data-ad-client="'.$caPub.'" data-ad-slot="'.$adSlot.'" data-ad-format="auto"></ins>
+<!-- zkb Responsive Ad -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="' . $dataAdClient . '"
+     data-ad-slot="' . $dataAdSlot . '"
+     data-ad-format="auto"></ins>
 <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
+(adsbygoogle = window.adsbygoogle || []).push({});
 </script>
         ';
     }
