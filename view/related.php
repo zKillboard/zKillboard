@@ -4,6 +4,12 @@ use cvweiss\redistools\RedisQueue;
 
 global $baseDir, $mdb, $redis;
 
+if ($redis->llen("queueProcess") > 10) {
+        exit();
+        $app->render('related_wait.html', ['showAds' => false]);
+        exit();
+}
+
 $systemID = (int) $system;
 $relatedTime = (int) $time;
 
