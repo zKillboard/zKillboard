@@ -91,7 +91,7 @@ while (true) {
 
     usleep(100000);
     ++$sleeps;
-    if ($sleeps > 30) {
+    if ($sleeps > 5) {
         $app->render('related_wait.html', ['showAds' => false]);
         exit();
     }
