@@ -163,7 +163,7 @@ while ($minute == date('Hi')) {
         }
 
         if ($kmCount == 0) {
-            $sso->setTime($charID, time() + rand(3600, 14400));
+            $sso->setTime($charID, time() + rand(10800, 14400));
         }
 
         // helpful info for output if needed
