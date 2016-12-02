@@ -40,7 +40,8 @@ function beSocial($killID)
     if (strlen(@$victimInfo['allianceName']) > 0) $name = $victimInfo['allianceName'];
     else $name = $victimInfo['corporationName'];
     $name = Util::endsWith($name, 's') ? $name."'" : $name."'s";
-    $message = "$name $message #tweetfleet #eveonline";
+    $newMessage = "$name $message #tweetfleet #eveonline";
+    if (strlen($newMessage) <= 140) $message = $newMessage;
 
     $mdb->getCollection('killmails')->update(['killID' => $killID], ['$unset' => ['social' => true]]);
 
@@ -66,6 +67,7 @@ function sendMessage($message)
 
         return $twitter->send($message);
     } catch (Exception $ex) {
+        print_r($ex);
         // just ignore it
     }
 }
