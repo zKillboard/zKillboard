@@ -181,5 +181,10 @@ while ($minute == date('Hi')) {
             }
             Util::out("$killsAdded kills added by $name (SSO)");
         }
+        $count = $mdb->count("apisCrest", ['characterID' => $row['characterID']]);
+        if ($count > 3) {
+            // Every login generates a new row, we don't need to keep that many
+            $mdb->remove("apisCrest", $row);
+        }
     }
 }
