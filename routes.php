@@ -123,6 +123,14 @@ $app->get('/comments/', function () use ($app) {
         $app->render('/comments.html');
         });
 
+$app->get('/api/related/:system/:time/', function ($system, $time) use ($app) {
+        $mc = RelatedReport::generateReport($system, $time, "[]");
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET');
+        $app->contentType('application/json; charset=utf-8');
+        echo json_encode($mc, JSON_PRETTY_PRINT);
+        });
+
 $app->get('/api/history/:date/', function ($date) use ($app) {
         include 'view/apihistory.php';
         });
