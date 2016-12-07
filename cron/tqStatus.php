@@ -46,8 +46,15 @@ if ($message == null && $xmlFailure->count() > (10 * $xmlSuccess->count())) {
     $message = "Issues accessing Killmail XML API - Killmails won't populate from API at this time - $s Successful / $f Failed calls in last 5 minutes";
 }
 
+$behind = $redis->llen("queueProcess") + $mdb->count('crestmails', ['processed' => false]);
+if ($behind > 100 && $message == null) {
+    $behind = number_format($behind);
+    $message = "Busy server - currently behind on processing $behind killmails";
+}
+
 $redis->setex('tq:crestStatus', 300, $message);
 
 // Set the top kill for api requests to use
 $topKillID = $mdb->findField('killmails', 'killID', [], ['killID' => -1]);
 $redis->setex('zkb:topKillID', 86400, $topKillID);
+
