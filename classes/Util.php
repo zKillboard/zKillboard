@@ -166,6 +166,7 @@ class Util
                         }
                         $ints = [];
                         foreach ($exploded as $ex) {
+                            if ("$ex" != (string) (int) $ex) throw new Exception("$ex is not an integer");
                             if (is_numeric($ex)) $ints[] = (int) $ex;
                             else $ints[] = (string) $ex;
                         }
