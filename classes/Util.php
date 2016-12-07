@@ -202,6 +202,9 @@ class Util
                     if ($time < 0) {
                         throw new Exception("$value is not a valid time format");
                     }
+                    if (($time % 3600) != 0) {
+                        throw new Exception("startTime and endTime must end with 00");
+                    }
                     $parameters[$key] = $value;
                     break;
                 case 'limit':
