@@ -45,7 +45,6 @@ while ($timer->stop() < 59000) {
 
         $date = substr($mail['killTime'], 0, 16);
         $date = str_replace('.', '-', $date);
-        $battleBucket = substr($date, 0, 13).'*00';
 
         $kill['dttm'] = new MongoDate(strtotime(str_replace('.', '-', $mail['killTime']).' UTC'));
 
@@ -164,11 +163,7 @@ while ($timer->stop() < 59000) {
 
         $queueInfo->push($killID);
         $redis->incr('zkb:totalKills');
-        $battleBucket = "battleBucket:$battleBucket:".$solarSystem['solarSystemID'];
         $multi = $redis->multi();
-        $multi->sAdd($battleBucket, $killID);
-        $multi->expire($battleBucket, (86400 * 7));
-        $multi->sAdd('battleBuckets', $battleBucket);
         $time = $kill['dttm']->sec;
         $time = $time - ($time % 86400);
         $date = date('Ymd', $time);

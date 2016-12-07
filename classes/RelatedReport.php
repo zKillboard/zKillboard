@@ -4,12 +4,12 @@ use cvweiss\redistools\RedisQueue;
 
 class RelatedReport {
 
-    public static function generateReport($system, $time, $options, $app = null)
+    public static function generateReport($system, $time, $options, $battleID = null, $app = null)
     {
         global $mdb, $redis;
 
         if ($redis->llen("queueProcess") > 10) {
-            if ($app === null) return [];
+            $app->redirect('/');
             exit();
         }
 
@@ -73,7 +73,7 @@ class RelatedReport {
         $sleeps = 0;
         $pushed = false;
         $queueRelated = new RedisQueue('queueRelated');
-        $key = 'br:'.md5("brq:$systemID:$relatedTime:$exHours:".json_encode($json_options).(isset($battleID) ? ":$battleID" : ''));
+        $key = 'br:'.md5("brq:$systemID:$relatedTime:$exHours:".json_encode($json_options).($battleID != null ? ":$battleID" : ''));
         $summary = null;
         while (true) {
             $summary = $redis->get($key);
@@ -104,7 +104,7 @@ class RelatedReport {
         $summary = unserialize($summary);
         $mc = array('summary' => $summary, 'systemName' => $systemName, 'regionName' => $regionName, 'time' => $time, 'exHours' => $exHours, 'solarSystemID' => $systemID, 'relatedTime' => $relatedTime, 'options' => json_encode($json_options));
 
-        if (isset($battleID) && $battleID > 0) {
+        if ($battleID > 0) {
             $teamA = $summary['teamA']['totals'];
             $teamB = $summary['teamB']['totals'];
             unset($teamA['groupIDs']);

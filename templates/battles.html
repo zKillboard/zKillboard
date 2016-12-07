@@ -4,25 +4,6 @@
 {% block title %}{% include 'components/title.html' %}{% endblock %}
 
 {% block content %}
-<h2>Recent battles with at least {{ battleSize }} kills. (beta)</h2>
-<table class="table">
-<tr>
-    <th>System</th>
-    <th>Time</th>
-    <th>Kills</th>
-    <th>Link</th>
-</tr>
-{% for battle in recent %}
-<tr>
-    <td>{{ battle.system }}</td>
-    <td>{{ battle.time }}</td>
-    <td>{{ battle.kills }}</td>
-    <td><a href={{ battle.link }}>{{ battle.link }}</a></td>
-</tr>
-{% endfor %}
-</table>
-
-
 <h2>
 Saved Battle Reports Listing
 </h2>
