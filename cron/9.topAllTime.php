@@ -4,6 +4,8 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
+if ($redis->llen("queueProcess") > 100) exit();
+
 $date = date('Ymd');
 $redisKey = "tq:topAllTime:$date";
 $queueTopAlltime = new RedisQueue('queueTopAlltime');

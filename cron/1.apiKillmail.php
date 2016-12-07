@@ -18,7 +18,7 @@ for ($i = 0; $i < $max; ++$i) {
 
 require_once '../init.php';
 
-if ($redis->llen("queueProcess") > 100) exit();
+//if ($redis->llen("queueProcess") > 100) exit();
 $collection = $threadNum < 5 ? 'Corporation' : 'Character';
 $type = substr(strtolower($collection), 0, 4);
 $field = strtolower($collection).'ID';

@@ -19,7 +19,7 @@ for ($i = 0; $i < $max; ++$i) {
 
 require_once '../init.php';
 
-if ($redis->llen("queueProcess") > 100) exit();
+//if ($redis->llen("queueProcess") > 100) exit();
 $minute = date('Hi');
 $zkbApis = new RedisTimeQueue('zkb:apis', 14400);
 

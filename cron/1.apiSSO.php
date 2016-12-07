@@ -5,7 +5,7 @@ use cvweiss\redistools\RedisTtlCounter;
 use cvweiss\redistools\RedisTtlSortedSet;
 
 $pid = 1;
-$max = 3;
+$max = 6;
 $threadNum = 0;
 for ($i = 0; $i < $max; ++$i) {
     $pid = pcntl_fork();
@@ -20,7 +20,7 @@ for ($i = 0; $i < $max; ++$i) {
 
 require_once '../init.php';
 
-if ($redis->llen("queueProcess") > 100) exit();
+//if ($redis->llen("queueProcess") > 100) exit();
 $minute = date('Hi');
 $topKillID = (int) $redis->get('zkb:topKillID');
 $sso = new RedisTimeQueue('tqApiSSO', 3600);
