@@ -15,7 +15,7 @@ $isBot = strpos(strtolower($agent), "bot") !== false;
 // Check to ensure we have a trailing slash, helps with caching
 $uri = @$_SERVER['REQUEST_URI'];
 if ($uri == "/kill/-1/") {
-    echo file_get_contents("/var/www/zkillboard.com/special/keepstar.html");
+    header("Location: /keepstar1.html");
     exit();
 }
 if (substr($uri, -1) != '/') {
