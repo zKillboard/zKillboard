@@ -1,11 +1,16 @@
 <?php
 
-global $uriParams;
+global $uriParams, $redis;
 
 try {
     $queryString = $_SERVER['QUERY_STRING'];
     if ($queryString != '') {
         header('HTTP/1.0 403 Forbidden - Do not include a query string to evade cache');
+        exit();
+    }
+
+    if ($redis->get('zkb:allowApi') === 'no') {
+        header('HTTP/1.1 503 Server load high, try again later');
         exit();
     }
 

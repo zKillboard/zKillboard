@@ -58,3 +58,7 @@ $redis->setex('tq:crestStatus', 300, $message);
 $topKillID = $mdb->findField('killmails', 'killID', [], ['killID' => -1]);
 $redis->setex('zkb:topKillID', 86400, $topKillID);
 
+$load = sys_getloadavg();
+if ($load[0] > 10) {
+    $redis->setex('zkb:allowAPI', 300, "no");
+}
