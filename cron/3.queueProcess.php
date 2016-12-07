@@ -1,8 +1,23 @@
 <?php
 
+$pid = 1;
+$max = 5;
+$threadNum = 0;
+for ($i = 0; $i < $max; ++$i) {
+    $pid = pcntl_fork();
+    if ($pid == -1) {
+        exit();
+    }
+    if ($pid == 0) {
+        break;
+    }
+    ++$threadNum;
+}
+
 use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
+
 
 $timer = new Timer();
 $crestmails = $mdb->getCollection('crestmails');
