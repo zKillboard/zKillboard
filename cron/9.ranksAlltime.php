@@ -3,10 +3,30 @@
 require_once '../init.php';
 
 $today = date('Ymd', time() - (3600 * 4));
-$todaysKey = "RC:alltimeRanksCalculated:$today";
-if ($redis->get($todaysKey) == true) {
-    exit();
+
+//$types = array_values($mdb->getCollection("information")->distinct("type"));
+$types = [        "allianceID",
+        "characterID",
+        "constellationID",
+        "corporationID",
+        "factionID",
+        "groupID",
+        "locationID",
+        "regionID",
+        "solarSystemID"];
+
+$types[] = 'exit';
+$type = null;
+$todaysKey = null;
+foreach ($types as $type) {
+    $todaysKey = "RC:alltimeRanksCalculated:$type:$today";
+    if ($redis->get($todaysKey) == true) continue;
+    break;
 }
+if ($type == 'exit') exit();
+Util::out("Calculating alltime ranks for $type");
+$types = [];
+
 
 $statClasses = ['ships', 'isk', 'points'];
 $statTypes = ['Destroyed', 'Lost'];
@@ -14,12 +34,12 @@ $statTypes = ['Destroyed', 'Lost'];
 $information = $mdb->getCollection('statistics');
 
 Util::out('Alltime ranks - first iteration');
-$types = [];
-$iter = $information->find();
+$iter = $information->find(['type' => $type]);
 $iter->timeout(0);
 foreach ($iter as $row) {
-    $type = $row['type'];
     $id = $row['id'];
+
+    if (@$row['shipsDestroyed'] < 10) continue;
 
     $types[$type] = true;
     $key = "tq:ranks:alltime:$type:$today";
@@ -77,7 +97,6 @@ foreach ($types as $type => $value) {
 foreach ($types as $type => $value) {
     $multi = $redis->multi();
     $multi->zUnion("tq:ranks:alltime:$type", ["tq:ranks:alltime:$type:$today"]);
-    $multi->expire("tq:ranks:alltime:$type", 100000);
     $multi->expire("tq:ranks:alltime:$type:$today", (7 * 86400));
     moveAndExpire($multi, $today, "tq:ranks:alltime:$type:$today:shipsDestroyed");
     moveAndExpire($multi, $today, "tq:ranks:alltime:$type:$today:shipsLost");
