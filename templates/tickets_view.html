@@ -8,7 +8,7 @@
 {% if message %} <h1>{{ message.message }}</h1> {% endif %}
 
 {% set imageSize = 64 %}
-<h3><a href='/tickets/'><span class="glyphicon glyphicon-circle-arrow-left"></span></a> | {{ ticket.subject }}</h3>
+<h3><a href='/account/tickets/'><span class="glyphicon glyphicon-circle-arrow-left"></span></a> | {{ ticket.subject }}</h3>
 <table class="table table-striped">
   <tbody>
     {% for field in replies %}
@@ -23,7 +23,7 @@
 {% if ticket.status == 1 %}
 <hr>
 <h4>Reply</h4>
-<form name="tickets" method="post" action="/tickets/view/{{ page }}/">
+<form name="tickets" method="post" action="/account/tickets/view/{{ page }}/">
 	<div class="form-group">
 		<textarea id="reply" name="reply" type="text" required placeholder="Reply Here" rows="12" class="form-control" style="color: black"></textarea>
 	</div>

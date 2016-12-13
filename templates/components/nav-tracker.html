@@ -1,0 +1,45 @@
+{% if sessionusername %}
+<script type="text/javascript">
+$("#char-loggedout").remove();
+$("#username").text("{{ sessionusername }}");
+$("#char-image").attr("src", "https://image.eveonline.com/Character/{{ characterID }}_32.jpg");
+$("#trackeradd").attr("onclick", "");
+
+var showAds = {{ showAds }};
+if (showAds == 0) {
+    $("#adsensetop").hide(1200);
+    $("#adsensebottom").remove();
+}
+console.log("nav loaded");
+</script>
+{% if tracker_character %}
+<li class="dropdown-header">Characters</li>
+{% for data in tracker_character %}
+<li><a href="/character/{{ data.id }}/">{{ data.name }}</a></li>
+{% endfor %}
+{% endif %}
+{% if tracker_corporation %}
+<li class="dropdown-header">Corporations</li>
+{% for data in tracker_corporation %}
+<li><a href="/corporation/{{ data.id }}/">{{ data.name }}</a></li>
+{% endfor %}
+{% endif %}
+{% if tracker_alliance %}
+<li class="dropdown-header">Alliances</li>
+{% for data in tracker_alliance %}
+<li><a href="/alliance/{{ data.id }}/">{{ data.name }}</a></li>
+{% endfor %}
+{% endif %}
+{% if tracker_faction %}
+<li class="dropdown-header">Factions</li>
+{% for data in tracker_faction %}
+<li><a href="/faction/{{ data.id }}/">{{ data.name }}</a></li>
+{% endfor %}
+
+{% endif %}
+{% else %}
+<script type="text/javascript">
+$("#char-loggedin").remove();
+</script>
+<li>Please log in first.</li>
+{% endif %}

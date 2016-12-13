@@ -24,11 +24,11 @@ $app->get('/information/(:page/)', function ($page) use ($app) {
         });
 
 // Tickets
-$app->map('/tickets/', function () use ($app) {
+$app->map('/account/tickets/', function () use ($app) {
         include 'view/tickets.php';
         })->via('GET', 'POST');
 
-$app->map('/tickets/view/:id/', function ($id) use ($app) {
+$app->map('/account/tickets/view/:id/', function ($id) use ($app) {
         include 'view/tickets_view.php';
         })->via('GET', 'POST');
 
@@ -78,9 +78,9 @@ $app->get('/top(/:type)(/:page)(/:time+)/', function ($type = 'weekly', $page = 
         });
 
 // Raw Kill Detail
-$app->get('/raw/:id/', function ($id) use ($app) {
+/*$app->get('/raw/:id/', function ($id) use ($app) {
         include 'view/raw.php';
-        });
+        });*/
 
 // Kill Detail View
 $app->get('/detail/:id(/:pageview)/', function ($id, $pageview = 'overview') use ($app) {
@@ -91,14 +91,8 @@ $app->get('/kill/:id(/:pageview)/', function ($id, $pageview = 'overview') use (
         include 'view/detail.php';
         })->via('GET', 'POST');
 
-// Sitemap
-$app->get('/sitemap/', function () use ($app) {
-        global $cookie_name, $cookie_time, $baseAddr;
-        include 'view/sitemap.php';
-        });
-
 // Logout
-$app->get('/logout/', function () use ($app) {
+$app->get('/account/logout/', function () use ($app) {
         global $cookie_name, $cookie_time, $baseAddr;
         include 'view/logout.php';
         });
@@ -194,6 +188,10 @@ $app->get('/ccpcallback/', function () use ($app) {
         });
 $app->get('/ccpsavefit/:killID/', function ($killID) use ($app) {
         include 'view/ccpsavefit.php';
+        });
+
+$app->get('/navbar/', function () use ($app) {
+        include 'view/navbar.php';
         });
 
 // The Overview stuff

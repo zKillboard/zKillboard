@@ -6,6 +6,7 @@ Disallow: *stats*
 Disallow: *top*
 Disallow: *trophies*
 Disallow: /kill/-*
+Disallow: /navbar/
 sitemap: https://zkillboard.com/sitemaps/sitemaps.xml
 
 

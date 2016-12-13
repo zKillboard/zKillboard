@@ -11,7 +11,7 @@ $twig = $app->view()->getEnvironment();
 
 // Check SSO values
 $ssoCharacterID = @$_SESSION['characterID'];
-if ($ssoCharacterID != null) {
+if ($ssoCharacterID > 0) {
     $key = 'login:'.$ssoCharacterID.':'.session_id();
     $refreshToken = $redis->get("$key:refreshToken");
     $scopes = $redis->get("$key:scopes");

@@ -33,7 +33,11 @@ class User
     public static function getUserInfo()
     {
         global $redis, $mdb;
+
         $id = self::getUserID();
+        if ($id == 0) return [];
+
+
         $info = $redis->hGetAll("user:$id");
         $info['username'] = $mdb->findField('information', 'name', ['type' => 'characterID', 'id' => (int) $id, 'cacheTime' => 300]);
 

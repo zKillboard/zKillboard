@@ -2,11 +2,6 @@
 	{% if extra.isTracked %}
 		&nbsp; <a href='/account/tracker/{{ key }}/{{ id }}/remove/'><i class="fa fa-minus" rel="tooltip" title="Remove from Tracker" style='color: gray';></i></a>
 	{% else %}
-		{% if sessionusername %}
-		&nbsp; <a href='/account/tracker/{{ key }}/{{ id }}/add/'><i class="fa fa-plus" rel="tooltip" title="Add to Tracker" style='color: gray;'></i></a>
-		{% else %}
-		&nbsp; <a href='#'><i class="fa fa-plus" rel="tooltip" title="Add to Tracker" style='color: gray;' onclick="alert('Please log in first.');"></i></a>
-
-		{% endif %}
+	<!---	&nbsp; <a id='trackeradd' href='/account/tracker/{{ key }}/{{ id }}/add/'><i class="fa fa-plus" rel="tooltip" title="Add to Tracker" style='color: gray;'  onclick="alert('Please log in first.'); return false;"></i></a>-->
 	{% endif %}
 {% endif %}

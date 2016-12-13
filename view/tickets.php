@@ -20,7 +20,7 @@ if ($_POST) {
 
         $id = $insert['_id'];
 
-        $app->redirect("/tickets/view/$id/");
+        $app->redirect("/account/tickets/view/$id/");
         exit();
     } else {
         $message = array('type' => 'error', 'message' => 'Ticket was not posted, there was an error');

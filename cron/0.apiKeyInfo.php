@@ -28,7 +28,7 @@ if ($threadNum == $max - 1 && ($zkbApis->size() == 0 || date('i') == 15)) {
     foreach ($apis as $api) {
         $errorCode = (int) @$api['errorCode'];
         if (in_array($errorCode, [106, 203, 220, 222, 404])) {
-            continue;
+            //continue;
         }
 
         $_id = (string) $api['_id'];
@@ -56,14 +56,19 @@ function processApi($api, $apiServer, $mdb)
     $content = $response['content'];
     $httpCode = $response['httpCode'];
     $xml = simplexml_load_string($content);
+    $errorCode = (string) @$xml->error['code'];
 
     switch ($httpCode) {
         case 200:
             processKeyInfo($mdb, $keyID, $vCode, $xml);
             updateErrorCode($mdb, $api, 0);
             break;
+        case 403:
+            Util::out("Removing $keyID $httpCode / $errorCode");
+            $mdb->remove("apis", $api);
+            break;
         default:
-            $errorCode = (string) @$xml->error['code'];
+            Util::out("$httpCode / $errorCode received when checking API $keyID");
             updateErrorCode($mdb, $api, $errorCode);
     }
 }

@@ -13,7 +13,7 @@ $types = [        "allianceID",
         "groupID",
         "locationID",
         "regionID",
-        "solarSystemID"];
+        "solarSystemID", "shipTypeID"];
 
 $types[] = 'exit';
 $type = null;
@@ -33,7 +33,7 @@ $statTypes = ['Destroyed', 'Lost'];
 
 $information = $mdb->getCollection('statistics');
 
-Util::out('Alltime ranks - first iteration');
+Util::out("Alltime ranks - first iteration $type");
 $iter = $information->find(['type' => $type]);
 $iter->timeout(0);
 foreach ($iter as $row) {
@@ -54,7 +54,7 @@ foreach ($iter as $row) {
     $multi->exec();
 }
 
-Util::out('Alltime ranks - second iteration');
+Util::out("Alltime ranks - second iteration $type");
 foreach ($types as $type => $value) {
     $key = "tq:ranks:alltime:$type:$today";
     $indexKey = "$key:shipsDestroyed";
@@ -108,7 +108,7 @@ foreach ($types as $type => $value) {
 }
 
 $redis->setex($todaysKey, 87000, true);
-Util::out('Alltime rankings complete');
+Util::out("Alltime rankings complete $type");
 
 function zAdd(&$multi, $key, $value, $id)
 {

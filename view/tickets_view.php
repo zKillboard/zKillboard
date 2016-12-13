@@ -20,7 +20,7 @@ if ($_POST) {
     if (@$info['moderator'] == true && $status !== null) {
         $mdb->getCollection('tickets')->update(['_id' => new MongoID($id)], ['$set' => ['status' => $status]]);
         if ($status == 0) {
-            $app->redirect('/tickets/');
+            $app->redirect('/account/tickets/');
         } else {
             $app->redirect('.');
         }
@@ -36,7 +36,7 @@ if ($_POST) {
         $mdb->getCollection('tickets')->update(['_id' => new MongoID($id)], ['$inc' => ['replies' => 1]]);
 
         if ($moderator && isset($ticket['email']) && strlen($ticket['email']) > 0) {
-            Email::send($ticket['email'], 'zKillboard Ticket Response', "You have received a response to a ticket you submitted. To view the response, please click $fullAddr/tickets/view/$id/");
+            Email::send($ticket['email'], 'zKillboard Ticket Response', "You have received a response to a ticket you submitted. To view the response, please click $fullAddr/account/tickets/view/$id/");
         }
         $app->redirect('.');
         exit();

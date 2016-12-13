@@ -83,7 +83,7 @@
 		<div class="content">
 
 			<!-- The navbar -->
-			<div class="container" style="mgin: 0px; padding: 0px;">
+			<div class="container" id='navibar' style="mgin: 0px; padding: 0px;">
 				{% include "navigationbar.html" %}
 			</div>
 
@@ -157,6 +157,10 @@
 		{% endif %}
 
 		<script type="text/javascript">
+                        $(document).ready(function() {
+                            $('#tracker-dropdown').load('/navbar/');
+                        });
+
 			var characterID = {{ characterID }};
 			var datepicker = $('.datepicker').datepicker({
 				format: "mm/yyyy",

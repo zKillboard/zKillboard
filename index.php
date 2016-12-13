@@ -43,17 +43,30 @@ $app = new \Slim\Slim($config);
 // Session
 session_set_save_handler(new RedisSessionHandler(), true);
 session_cache_limiter(false);
-session_start();
-
-$nonApiR = new RedisTtlCounter('ttlc:nonApiRequests', 300);
-$apiR = new RedisTtlCounter('ttlc:apiRequests', 300);
-if (substr($uri, 0, 5) == '/api/') {
-    $apiR->add(uniqid());
-} else {
-    $nonApiR->add(uniqid());
+if ($uri == '/navbar/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp') {
+    session_start();
 }
 
 $ip = IP::get();
+
+// Must rate limit now apparently
+$isApiRequest = substr($uri, 0, 5) == "/api/";
+if ($isApiRequest) {
+    if ($redis->get("ip::$ip") == "boop") {
+        header('HTTP/1.1 400 Slow down.');
+        exit();
+    }
+    $redis->setex("ip::$ip", 1, "boop");
+}
+
+if ($isApiRequest) {
+    $apiR = new RedisTtlCounter('ttlc:apiRequests', 300);
+    $apiR->add(uniqid());
+} else if ($uri == '/navbar/') {
+    $nonApiR = new RedisTtlCounter('ttlc:nonApiRequests', 300);
+    $nonApiR->add(uniqid());
+}
+
 if ($ip != '127.0.0.1') {
     $visitors = new RedisTtlCounter('ttlc:visitors', 300);
     $visitors->add($ip);
