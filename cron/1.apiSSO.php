@@ -92,6 +92,7 @@ while ($minute == date('Hi')) {
             $xmlSuccess->add(uniqid());
             $mdb->removeField('apisCrest', $row, 'errorCode');
             $mdb->removeField('apisCrest', $row, 'error');
+            $redis->setex("ssoFetched::$charID", 3600, "1");
         } catch (Exception $ex) {
             $xmlFailure->add(uniqid());
             $errorCode = $ex->getCode();
