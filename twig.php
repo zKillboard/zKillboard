@@ -66,6 +66,12 @@ $uriParams = [];
 try {
     $uriParams = Util::convertUriToParameters();
 } catch (Exception $ex) {
+    if ($isApiRequest) {
+        // Let this get cached with a 200 to prevent repeated attempts
+        $result = ['error' => $ex->getMessage()];
+        echo json_encode($error);
+        exit();
+    }
     header('HTTP/ 400 '.$ex->getMessage());
     die();
 }
