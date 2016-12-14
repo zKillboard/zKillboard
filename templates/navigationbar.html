@@ -108,8 +108,8 @@
 				<li class="dropdown hidden-xs">
 					<a href="#" class="dropdown-toggle hidden-xs" data-toggle="dropdown">
                                         {% if characterID > 0 %}
-                                            <img id='char-image' src="https://image.eveonline.com/Character/{{ characterID }}_32.jpg" style='padding: 0px; margin: 0px; margin-top: -8px;'/>
-                                        {% else %}<img id='char-image' src="https://image.eveonline.com/Character/1_32.jpg" style='padding: 0px; margin: 0px; margin-top: -8px;'/>
+                                            <img id='char-image' src="{{ image_character }}{{ characterID }}_32.jpg" style='padding: 0px; margin: 0px; margin-top: -8px;'/>
+                                        {% else %}<img id='char-image' src="{{ image_character}}1_32.jpg" style='padding: 0px; margin: 0px; margin-top: -8px;'/>
                                         {% endif %}
                                         <span class="caret"></span></a>
 					<a href="#" class="dropdown-toggle hidden-lg hidden-md hidden-sm" data-toggle="dropdown">Account <span class="caret"></span></a>

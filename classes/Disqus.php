@@ -4,7 +4,7 @@ class Disqus
 {
     public static function init()
     {
-        global $disqusSecretKey, $disqusPublicKey, $fullAddr;
+        global $disqusSecretKey, $disqusPublicKey, $fullAddr, $imageServer;
 
         $userInfo = User::getUserInfo();
         $userID = $userInfo['id'];
@@ -19,7 +19,7 @@ class Disqus
                 );
 
         if ($characterID) {
-            $data['avatar'] = "https://image.eveonline.com/Character/{$characterID}_32.jpg";
+            $data['avatar'] = $imageServer . "Character/{$characterID}_32.jpg";
             $data['url'] = "{$fullAddr}/character/{$characterID}/";
         }
 

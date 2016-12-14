@@ -21,7 +21,7 @@
 			{% set lastType = field.type %}
 		{% endif %}
 		<div class="pull-left" style="margin-bottom: 0.5em; width: 390px;"/>
-			<img src="https://image.eveonline.com/{{ field.image }}"/> <a href="/{{ field.type }}/{{ field.id }}/">{{ field.name }}</a>
+			<img src="{{ image_server}}{{ field.image }}"/> <a href="/{{ field.type }}/{{ field.id }}/">{{ field.name }}</a>
 		</div>
 {% endfor %}
 </div>

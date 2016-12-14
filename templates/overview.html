@@ -192,17 +192,17 @@
 	<meta name="twitter:description" content="{{ description }}">
 	<meta name="og:description" content="{{ description }}">
 {% if key == "character" %}
-		<meta name="twitter:image" content="https://image.eveonline.com/{{ key }}/{{ id }}_128.jpg">
-        <meta name="og:image" content="https://image.eveonline.com/{{ key }}/{{ id }}_128.jpg">
+	<meta name="twitter:image" content="{{ image_server }}{{ key }}/{{ id }}_128.jpg">
+        <meta name="og:image" content="{{ image_server}}{{ key }}/{{ id }}_128.jpg">
 {% elseif key == "system" %}
-		<meta name="twitter:image" content="https://image.eveonline.com/Type/8_64.png">
-        <meta name="og:image" content="https://image.eveonline.com/Type/8_64.png">
+	<meta name="twitter:image" content="{{ image_server }}Type/8_64.png">
+        <meta name="og:image" content="{{ image_server}}Type/8_64.png">
 {% elseif key == "region" %}
-		<meta name="twitter:image" content="{{ fullsiteurl }}/img/region_64.png">
+	<meta name="twitter:image" content="{{ fullsiteurl }}/img/region_64.png">
         <meta name="og:image" content="{{ fullsiteurl }}/img/region_64.png">
 {% else %}
-		<meta name="twitter:image" content="https://image.eveonline.com/{{ key }}/{{ id }}_128.png">
-        <meta name="og:image" content="https://image.eveonline.com/{{ key }}/{{ id }}_128.png">
+	<meta name="twitter:image" content="{{ image_server }}{{ key }}/{{ id }}_128.png">
+        <meta name="og:image" content="{{ image_server }}{{ key }}/{{ id }}_128.png">
 {% endif %}
 {% endblock %}
 

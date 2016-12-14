@@ -73,6 +73,7 @@ try {
 $twig->addGlobal('year', (isset($uriParams['year']) ? $uriParams['year'] : date('Y')));
 $twig->addGlobal('month', (isset($uriParams['month']) ? $uriParams['month'] : date('m')));
 // Twig globals
+$twig->addGlobal('image_server', $imageServer);
 $twig->addGlobal('image_character', $imageServer.'Character/');
 $twig->addGlobal('image_corporation', $imageServer.'Corporation/');
 $twig->addGlobal('image_alliance', $imageServer.'Alliance/');
