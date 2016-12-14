@@ -25,6 +25,7 @@ try {
     $redis->connect($redisServer, $redisPort, 3600);
     $redis->ping();
 } catch (Exception $ex) {
+    header('HTTP/1.0 503 Server error.');
     echo "
     <html>
     <head>
