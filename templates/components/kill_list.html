@@ -46,7 +46,7 @@
             {{ kill.dttm.sec|date('H:i') }}
           {% endif %}
           {% if disqusLoad %}
-            <small><a href="/kill/{{ kill.killID }}/#comments" data-disqus-identifier="{{ kill.killID }}" rel="tooltip" title="Comments"></a></small>
+            <small><a href="/kill/{{ kill.killID }}/#comments" data-disqus-identifier="{{ kill.killID }}" rel="tooltip" title="Comments" id="disqus_count"></a></small>
           {% endif %}
           <br/><a href="/kill/{{ kill.killID }}/">{{ formatIsk(kill.zkb.totalValue) }}</a>
         </td>
