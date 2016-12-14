@@ -44,6 +44,8 @@ $app = new \Slim\Slim($config);
 session_set_save_handler(new RedisSessionHandler(), true);
 session_cache_limiter(false);
 if ($uri == '/navbar/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp') {
+    ini_set('session.gc_maxlifetime', $cookie_time);
+    session_set_cookie_params($cookie_time);
     session_start();
 }
 

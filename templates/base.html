@@ -100,9 +100,10 @@
 
 				<!-- Top ad -->
 				{% if showAds != false %}
-					<div class="centered" id="adsensetop" style="margin-bottom: 5px;">
+					<div class="centered" id="adsensetop">
 						{{ advertisement|raw }}
 					</div>
+                                        <br/>
 				{% endif %}
 
 				<!-- The text header -->
@@ -114,8 +115,8 @@
 
 				<!-- Bottom ad -->
 				{% if showAds != false %}
-					<br/><hr/><br/>
-					<div class="centered" id="adsensebottom" style="margin-bottom: 5px;">
+					<div class="centered" id="adsensebottom">
+					    <br/><hr/><br/>
 						{{ advertisement|raw }}
 					</div>
 				{% endif %}

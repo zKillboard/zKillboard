@@ -4,6 +4,8 @@ $("#char-loggedout").remove();
 $("#username").text("{{ sessionusername }}");
 $("#char-image").attr("src", "https://image.eveonline.com/Character/{{ characterID }}_32.jpg");
 $("#trackeradd").attr("onclick", "");
+$("#lasthour").text("{{ killsLastHour | number_format(0)}}");
+$("#tqStatus").html("{% if tqStatus == 'OFFLINE'%}<span class='red'>TQ {{ tqCount }}</span>{% else %} <span class='green'>TQ {{ tqCount }}</span>{% endif %}");
 
 var showAds = {{ showAds }};
 if (showAds == 0) {
@@ -37,9 +39,14 @@ console.log("nav loaded");
 {% endfor %}
 
 {% endif %}
+
 {% else %}
+
 <script type="text/javascript">
 $("#char-loggedin").remove();
+$("#lasthour").text("{{ killsLastHour | number_format(0)}}");
+$("#tqStatus").html("{% if tqStatus == 'OFFLINE'%}<span class='red'>TQ {{ tqCount }}</span>{% else %} <span class='green'>TQ {{ tqCount }}</span>{% endif %}");
 </script>
 <li>Please log in first.</li>
+
 {% endif %}
