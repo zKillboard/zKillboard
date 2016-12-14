@@ -55,13 +55,9 @@
 			{% set version = "latest" %}
 		{% endif %}
 
-		{% if style == "default" %}
-			<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
-		{% else %}
-			<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/{{ version }}/{{ style }}/bootstrap.min.css">
-		{% endif %}
+		<link id="mainstyle" rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/{{ version }}/{{ style }}/bootstrap.min.css">
 
-		<link rel="stylesheet" href="//{{ siteurl }}/css/style-edits/{{ style }}-main.css">
+		<link rel="stylesheet" href="//{{ siteurl }}/css/style-edits/{{ style }}-main.css" id="nextstyle">
 		<link rel="stylesheet" href="//{{ siteurl }}/css/datepicker.css">
 		<link rel="stylesheet" href="//{{ siteurl }}/css/main.css">
 		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.min.css">
