@@ -9,10 +9,6 @@ $app->get('/(page/:page/)', function ($page = 1) use ($app) {
         include 'view/index.php';
         });
 
-$app->get('/kills.html/', function ($page = 'about') use ($app) {
-        die("<script type='text/javascript'>location.reload();</script>");
-        });
-
 // Map
 $app->get('/map/', function () use ($app) {
         $app->render('map.html', ['showAds' => false]);
@@ -83,10 +79,6 @@ $app->get('/top(/:type)(/:page)(/:time+)/', function ($type = 'weekly', $page = 
         });*/
 
 // Kill Detail View
-$app->get('/detail/:id(/:pageview)/', function ($id, $pageview = 'overview') use ($app) {
-        $app->redirect("/kill/$id/", 301); // Permanent redirect
-        die();
-        });
 $app->get('/kill/:id(/:pageview)/', function ($id, $pageview = 'overview') use ($app) {
         include 'view/detail.php';
         })->via('GET', 'POST');
