@@ -13,10 +13,10 @@
        updateTextBlock();
     });
     function updateTextBlock() {
-      $.get("/ztop.txt", function( data ) {
-        $("#textblock").text(data);
         setTimeout("updateTextBlock();", 3000);
-      });
+        $.get("/ztop.txt", function( data ) {
+            $("#textblock").text(data);
+        });
     }
   </script>
 </html>
