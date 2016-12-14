@@ -54,11 +54,16 @@ $ip = IP::get();
 // Must rate limit now apparently
 $isApiRequest = substr($uri, 0, 5) == "/api/";
 if ($isApiRequest) {
-    if ($redis->get("ip::$ip") == "boop") {
+    $ipKey = "ip:$ip:" . time();
+    $multi = $redis->multi();
+    $multi->incr($ipKey, 1);
+    $multi->expire($ipKey, 3);
+    $multi->exec();
+
+    if ($redis->get($ipKey) > 3) {
         header('HTTP/1.1 400 Slow down.');
         exit();
     }
-    $redis->setex("ip::$ip", 1, "boop");
 }
 
 if ($isApiRequest) {
