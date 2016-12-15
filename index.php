@@ -10,14 +10,14 @@ $agent = @$_SERVER['HTTP_USER_AGENT'];
 if (@$_SERVER['HTTP_USER_AGENT'] == 'Disqus/1.0') {
     die('');
 }
-$isBot = strpos(strtolower($agent), "bot") !== false;
+//$isBot = strpos(strtolower($agent), "bot") !== false;
 
-// Check to ensure we have a trailing slash, helps with caching
 $uri = @$_SERVER['REQUEST_URI'];
 if ($uri == "/kill/-1/") {
     header("Location: /keepstar1.html");
     exit();
 }
+// Check to ensure we have a trailing slash, helps with caching
 if (substr($uri, -1) != '/') {
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET');
@@ -35,6 +35,19 @@ if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROT
 // Include Init
 require_once 'init.php';
 
+$fetchKey = "fetch:$uri";
+$body = $redis->get($fetchKey);
+if ($body !== false) {
+    $cached = new RedisTtlCounter('ttlc:cached', 300);
+    $cached->add(uniqid());
+    $ttl = $redis->ttl($fetchKey);
+    header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + $ttl));
+    header("Cache-Control: public, max-age=$ttl");
+    header("X-Cache: HIT");
+    echo $body;
+    exit();
+}
+
 $timer = new Timer();
 
 // Starting Slim Framework
@@ -42,7 +55,7 @@ $app = new \Slim\Slim($config);
 
 // Session
 session_set_save_handler(new RedisSessionHandler(), true);
-session_cache_limiter(false);
+session_cache_limiter('');
 if ($uri == '/navbar/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp') {
     ini_set('session.gc_maxlifetime', $cookie_time);
     session_set_cookie_params($cookie_time);
@@ -72,7 +85,7 @@ if ($isApiRequest) {
 } else if ($uri == '/navbar/') {
     $nonApiR = new RedisTtlCounter('ttlc:nonApiRequests', 300);
     $nonApiR->add(uniqid());
-}
+} else $redis->rpush("fetchSet", $uri);
 
 if ($ip != '127.0.0.1') {
     $visitors = new RedisTtlCounter('ttlc:visitors', 300);

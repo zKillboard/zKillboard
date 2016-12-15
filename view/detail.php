@@ -139,7 +139,7 @@ if ($details == null) {
     $extra['isExploit'] = in_array($id, [55403284]);
 
     $details = array('pageview' => $pageview, 'killdata' => $killdata, 'extra' => $extra, 'message' => $message, 'flags' => Info::$effectToSlot, 'topDamage' => $topDamage, 'finalBlow' => $finalBlow, 'url' => $url);
-    RedisCache::set($killKey, $details, 3600);
+     RedisCache::set($killKey, $details, 60);
 }
 
 $app->render('detail.html', $details);

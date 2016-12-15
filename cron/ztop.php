@@ -49,8 +49,10 @@ while ($iterations++ <= 1200) {
     addInfo('SSO Apis', $redis->zCard('tqApiSSO'));
 
     addInfo('', 0);
+    $cached = new RedisTtlCounter('ttlc:cached', 300);
+    addInfo('Cached requests in last 5 minutes', $cached->count());
     $nonApiR = new RedisTtlCounter('ttlc:nonApiRequests', 300);
-    addInfo('non-API requests in last 5 minutes', $nonApiR->count());
+    addInfo('User requests in last 5 minutes', $nonApiR->count());
     $apiR = new RedisTtlCounter('ttlc:apiRequests', 300);
     addInfo('API requests in last 5 minutes', $apiR->count());
     $visitors = new RedisTtlCounter('ttlc:visitors', 300);
