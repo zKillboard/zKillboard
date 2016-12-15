@@ -129,7 +129,7 @@ class CrestSSO
             }
             global $ip;
             $agent = @$_SERVER['HTTP_USER_AGENT'];
-            Log::log("$ip Logged in: " . (isset($userdetails['name']) ? $userdetails['name'] : $response->CharacterID) . " ($agent)");
+            Log::log("Logged in: " . (isset($userdetails['name']) ? $userdetails['name'] : $response->CharacterID));
 
             $key = 'login:'.$response->CharacterID.':'.session_id();
             $redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);
