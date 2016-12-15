@@ -75,9 +75,13 @@ $app->get('/top(/:type)(/:page)(/:time+)/', function ($type = 'weekly', $page = 
 
 // Raw Kill Detail
 /*$app->get('/raw/:id/', function ($id) use ($app) {
-        include 'view/raw.php';
-        });*/
+  include 'view/raw.php';
+  });*/
 
+$app->get('/detail/:id(/:pageview)/', function ($id, $pageview = 'overview') use ($app) {
+        echo "Looks like the website that sent you here has been ignoring the redirect for 18 months.<br/>Please tell them to fix it.<br/><br/>In the meantime you can click <a href='/kill/$id/'>here</a> to get to the kill you're looking for...";
+        exit();
+        })->via('GET', 'POST');
 // Kill Detail View
 $app->get('/kill/:id(/:pageview)/', function ($id, $pageview = 'overview') use ($app) {
         include 'view/detail.php';
