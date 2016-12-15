@@ -69,7 +69,7 @@ try {
     if ($isApiRequest) {
         // Let this get cached with a 200 to prevent repeated attempts
         $result = ['error' => $ex->getMessage()];
-        echo json_encode($error);
+        echo json_encode($result);
         exit();
     }
     header('HTTP/ 400 '.$ex->getMessage());
