@@ -4,6 +4,14 @@ use cvweiss\redistools\RedisCache;
 
 global $mdb;
 
+if ($pageview == 'overview') {
+    $app->redirect("/kill/$id/", 301);
+    exit();
+}
+if ($pageview == '') {
+    $pageview = 'overview';
+}
+
 $involved = array();
 $message = '';
 
