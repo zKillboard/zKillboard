@@ -83,7 +83,7 @@ $app->get('/detail/:id(/:pageview)/', function ($id, $pageview = 'overview') use
         exit();
         })->via('GET', 'POST');
 // Kill Detail View
-$app->get('/kill/:id(/:pageview)/', function ($id, $pageview = 'overview') use ($app) {
+$app->get('/kill/:id(/:pageview)/', function ($id, $pageview = '') use ($app) {
         include 'view/detail.php';
         })->via('GET', 'POST');
 
