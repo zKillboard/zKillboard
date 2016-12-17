@@ -4,21 +4,12 @@
 {% for item in items %}
 	{% if item.flagName == flagName %}
 	{% if headerDisplayed == false %}
-	{% if killdata.victim.characterID >= 2100000000 and killdata.victim.characterID <= 2999999999 %}
-		<tr class="hide-when-sorted">
-			<td colspan="4"><h5>Suit Fittings</h5></td>
-<td class="hidden"></td>
-<td class="hidden"></td>
-<td class="hidden"></td>
-		</tr>
-	{% else %}
 		<tr class="hide-when-sorted">
 			<th colspan="4"><h5>{{ flagName }}</h5></th>
 <td class="hidden"></td>
 <td class="hidden"></td>
 <td class="hidden"></td>
 		</tr>
-	{% endif %}
 	{% set headerDisplayed = true %}
 	{% endif %}
 	{% set droppedRow = item.quantityDropped > 0 ? 'item_dropped_row' : '' %}

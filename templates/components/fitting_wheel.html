@@ -4,12 +4,7 @@
 {% set placement = "top" %}
 <div id="Fitting_Panel" style="position: relative; height:398px; width:398px; z-index: 3">
 <div id="mask" style="position:absolute; left: 0px; top: 0 px; width:398px; height:398px; z-index:-1;">
-	{% if killdata.victim.characterID >= 2100000000 and killdata.victim.characterID <= 2999999999 %}
-	<img style="position:absolute; left: 0px; top: 0px;  height:398px; width:398px; border:0px" src='//{{ siteurl }}/img/panel/dustwheel.png' alt='' />
-
-	{% else %}
 	<img style="position:absolute; left: 0px; top: 0px;  height:398px; width:398px; border:0px" src='//{{ siteurl }}/img/panel/tyrannis.png' alt='' />
-	{% endif %}
 </div>
 
 {% set slotCount = (fitting.high | length > extra.slotCounts.hiSlots ) ? fitting.high | length : extra.slotCounts.hiSlots %}
@@ -102,11 +97,6 @@
 <div id="low7l" style="position:absolute; left:251px; top:300px; width:24px; height:24px;">{% set field = fitting.low.17.0.1 %}{% include 'components/image_item.html' %}</div>
 <div id="low8l" style="position:absolute; left:225px; top:310px; width:24px; height:24px;">{% set field = fitting.low.18.0.1 %}{% include 'components/image_item.html' %}</div>
 
-{% if killdata.victim.characterID >= 2100000000 and killdata.victim.characterID <= 2999999999 %}
-<div id="bigship" style="position:absolute; left:72px; top:71px; width:256px; height:256px; z-index:-2;">
-	<div id="ship"><img src="//{{ siteurl }}/img/dust514.png"/></div>
-</div>
-{% else %}
 <div id="bigship" style='position:absolute; left:72px; top:71px; width:256px; height:256px; z-index:-2;'>
     {% if extra.isExploit %}
         <img src="/img/exploit_256.png" height="256" width="256" class="eveimage img-rounded" alt="{{field.shipName}}"/>
@@ -116,7 +106,6 @@
         {% include 'components/image_ship.html' %}
     {% endif %}
 </div>
-{% endif %}
 {% if extra.crest %}<span><small><a class="green" target="_blank" href="{{ crestServer }}/killmails/{{ extra.crest.killID }}/{{ extra.crest.hash }}/">CREST Verified</a></small></span>
 {% if (characterID > 0) and ("characterFittingsWrite" in scopes) %}
 <br/><span><small><a class="green" href='#' onClick="saveFitting({{ extra.crest.killID }}); return false;">Import Fit</a></small></span>

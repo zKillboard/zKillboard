@@ -14,17 +14,10 @@
 		{% include 'components/flag_list.html' %}
 	{% endfor %}
 	<tr class="hide-when-sorted">
-		{% if killdata.victim.characterID >= 2100000000 and killdata.victim.characterID <= 2999999999 %}
-		<td colspan="4"><h5>Dropsuit</h5></td>
-		<td class="hidden"></td>
-		<td class="hidden"></td>
-		<td class="hidden"></td>
-		{% else %}
 		<td colspan="4"><h5>Ship</h5></td>
 		<td class="hidden"></td>
 		<td class="hidden"></td>
 		<td class="hidden"></td>
-		{% endif %}
 	</tr>
 	{% set imageSize = 32 %}
 	<tr class="hidden-xs">

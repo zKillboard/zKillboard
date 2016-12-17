@@ -53,9 +53,7 @@ class Detail
             if (!isset($itm['inContainer'])) {
                 $itm['inContainer'] = 0;
             }
-            if ($victimID >= 2100000000 && $victimID <= 2999999999) {
-                $itm['flagName'] = Info::getInfoField('groupID', Info::getGroupID($itm['typeID']), 'name');
-            } elseif (!isset($itm['flagName'])) {
+            if (!isset($itm['flagName'])) {
                 $itm['flagName'] = Info::getFlagName($itm['flag']);
                 if ($itm['flagName'] == null || $itm['flagName'] == '') {
                     Log::log('Unknown flag '.$itm['flag']);
