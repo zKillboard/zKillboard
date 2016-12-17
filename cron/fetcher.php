@@ -17,7 +17,9 @@ while ($minutely == date('Hi')) {
             if (preg_match($cacheRule, $uri) == true) {
                 $redisKey = "fetch:$uri";
                 $countKey = "fetch:$uri:count";
+                $fetchKey = "fetch:$uri:fetched";
                 if ($redis->get($redisKey) != null) continue;
+                if ($redis->get($fetchKey) != null) continue;
 
                 $multi = $redis->multi();
                 $multi->setnx($countKey, 0);
@@ -34,7 +36,9 @@ while ($minutely == date('Hi')) {
                     if ($code == 200) {
                         $redis->setex($redisKey, $ttl, $result['body']);
                         //Util::out("$ttl $uri");
-                    }
+                    } else Util::out("Error $code for $uri");
+                    $redis->setex($fetchKey, 30, $code);
+                    $redis->lrem("fetchSet", $uri, 0);
                 }
             }
         }
@@ -50,7 +54,7 @@ function getData($url)
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_USERAGENT, "Crest Fetcher for https://$baseAddr");
+    curl_setopt($ch, CURLOPT_USERAGENT, "Cache Fetcher for https://$baseAddr");
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30); //timeout in seconds
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
