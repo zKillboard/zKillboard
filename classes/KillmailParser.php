@@ -32,12 +32,6 @@ class KillmailParser
         global $redis;
 
         $charID = $row['characterID'];
-
-        // Don't fetch XML if we are fetching SSO too for a character
-        if ($type == "char" && $redis->get("ssoFetched::$charID") == "1") {
-            return ['hasKillmails' => 0, 'cachedUntil' => date('Y-m-d H:i:s', time() + 3600)];
-        }
-
         $corpID = $row['corporationID'];
         $keyID = $row['keyID'];
         $vCode = $row['vCode'];

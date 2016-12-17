@@ -3,7 +3,7 @@
 use cvweiss\redistools\RedisTimeQueue;
 
 $pid = 1;
-$max = 25;
+$max = 15;
 $threadNum = 0;
 for ($i = 0; $i < $max; ++$i) {
     $pid = pcntl_fork();
@@ -37,6 +37,10 @@ if (date('i') == 41 && ($threadNum == 4 || $threadNum == 5)) {
 while ($minute == date('Hi')) {
     $id = (int) $timeQueue->next();
     if ($id > 0) {
+        if ($redis->get("ssoFetched::$id") === "1") {
+            continue;
+        }
+
         $api = $mdb->findDoc($collection, [$field => $id], ['lastFetched' => 1]);
         if ($api === null) {
             $timeQueue->remove($id);
