@@ -34,6 +34,7 @@ showAdd = showAdd && ($("#tracker-remove-alliance-{{data.id}}").removeClass("hid
 {% endfor %}
 
 if (showAdd) $("#tracker-add").removeClass("hidden");
+$("#cansavefit").removeClass("hidden");
 
 {% set message = getMessage() %}
 {% if message %}
@@ -78,6 +79,8 @@ $("#char-loggedin").remove();
 $("#lasthour").text("{{ killsLastHour | number_format(0)}}");
 $("#tqStatus").html("{% if tqStatus == 'OFFLINE'%}<span class='red'>TQ {{ tqCount }}</span>{% else %} <span class='green'>TQ {{ tqCount }}</span>{% endif %}");
 $("#tracker-none").removeClass("hidden");
+$("#savefit").remove();
+$("#nosavefit").removeClass("hidden");
 </script>
 <li>Please log in first.</li>
 

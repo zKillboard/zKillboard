@@ -107,11 +107,8 @@
     {% endif %}
 </div>
 {% if extra.crest %}<span><small><a class="green" target="_blank" href="{{ crestServer }}/killmails/{{ extra.crest.killID }}/{{ extra.crest.hash }}/">CREST Verified</a></small></span>
-{% if (characterID > 0) and ("characterFittingsWrite" in scopes) %}
-<br/><span><small><a class="green" href='#' onClick="saveFitting({{ extra.crest.killID }}); return false;">Import Fit</a></small></span>
-{% else %}
-<br/><span><small><a class="green" href='#' onClick="alert('Please login and allow zKillboard to write fittings.'); return false;">Import Fit</a></small></span>
-{% endif %}
+<span id='cansavefit' class='hidden'><br/><small><a class="green" href='#' onClick="saveFitting({{ extra.crest.killID }}); return false;" rel="nofollow">Import Fit</a></small></span>
+<span id='nosavefit' class='hidden'><br/><small><a class="green" href='#' onClick="alert('Please login and allow zKillboard to write fittings.'); return false;">Import Fit</a></small></span>
 {% elseif killdata.victim.killID > 0 %}<span class="green"><small>API Verified</small></span>{% endif %}
 </div>
 
