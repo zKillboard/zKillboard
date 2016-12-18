@@ -72,6 +72,8 @@ try {
         echo json_encode($result);
         exit();
     }
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET');
     header('HTTP/ 400 '.$ex->getMessage());
     die();
 }
