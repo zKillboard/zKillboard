@@ -170,6 +170,13 @@ class Util
                             if (is_numeric($ex)) $ints[] = (int) $ex;
                             else $ints[] = (string) $ex;
                         }
+                        if (sizeof($ints) > 1) {
+                            asort($ints);
+                            if (implode(",", $ints) . " " . $value) {
+                                throw new Exception("multiple IDs must be in sequential order (sorry, but some people were abusing the ordering to avoid the cache)");
+                            }
+                        }
+                        
                         if (sizeof($ints) == 0) {
                             throw new Exception("Client requesting too few parameters.");
                         }
