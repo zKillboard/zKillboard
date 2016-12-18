@@ -35,6 +35,14 @@ showAdd = showAdd && ($("#tracker-remove-alliance-{{data.id}}").removeClass("hid
 
 if (showAdd) $("#tracker-add").removeClass("hidden");
 
+{% set message = getMessage() %}
+{% if message %}
+$(document).ready(function() {
+        $("#modalMessageBody").html("{{ message }}");
+        $("#modalMessage").modal('show');
+});
+{% endif %}
+
 console.log("nav loaded");
 </script>
 {% if tracker_character %}
