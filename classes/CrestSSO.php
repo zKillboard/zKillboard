@@ -127,8 +127,7 @@ class CrestSSO
                     $mdb->save('information', ['type' => 'characterID', 'id' => (int) $response->CharacterID, 'name' => $response->CharacterName]);
                 }
             }
-            global $ip;
-            $agent = @$_SERVER['HTTP_USER_AGENT'];
+
             Log::log("Logged in: " . (isset($userdetails['name']) ? $userdetails['name'] : $response->CharacterID));
 
             $key = 'login:'.$response->CharacterID.':'.session_id();
