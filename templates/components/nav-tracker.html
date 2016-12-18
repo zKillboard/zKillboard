@@ -3,7 +3,6 @@
 $("#char-loggedout").remove();
 $("#username").text("{{ sessionusername }}");
 $("#char-image").attr("src", "{{ image_character }}{{ characterID }}_32.jpg");
-$("#trackeradd").attr("onclick", "");
 $("#lasthour").text("{{ killsLastHour | number_format(0)}}");
 $("#tqStatus").html("{% if tqStatus == 'OFFLINE'%}<span class='red'>TQ {{ tqCount }}</span>{% else %} <span class='green'>TQ {{ tqCount }}</span>{% endif %}");
 
@@ -22,6 +21,19 @@ $("#adsensebottom").remove();
 $("#mainstyle").attr("href", "https://netdna.bootstrapcdn.com/bootswatch/latest/{{ style }}/bootstrap.min.css");
 $("#nextstyle").attr("href", "/css/style-edits/{{ style }}-main.css");
 {% endif %}
+
+var showAdd = true;
+{% for data in tracker_character %}
+showAdd = showAdd && ($("#tracker-remove-character-{{data.id}}").removeClass("hidden").length == 0);
+{% endfor %}
+{% for data in tracker_corporation %}
+showAdd = showAdd && ($("#tracker-remove-corporation-{{data.id}}").removeClass("hidden").length == 0);
+{% endfor %}
+{% for data in tracker_alliance %}
+showAdd = showAdd && ($("#tracker-remove-alliance-{{data.id}}").removeClass("hidden").length == 0);
+{% endfor %}
+
+if (showAdd) $("#tracker-add").removeClass("hidden");
 
 console.log("nav loaded");
 </script>
@@ -57,6 +69,7 @@ console.log("nav loaded");
 $("#char-loggedin").remove();
 $("#lasthour").text("{{ killsLastHour | number_format(0)}}");
 $("#tqStatus").html("{% if tqStatus == 'OFFLINE'%}<span class='red'>TQ {{ tqCount }}</span>{% else %} <span class='green'>TQ {{ tqCount }}</span>{% endif %}");
+$("#tracker-none").removeClass("hidden");
 </script>
 <li>Please log in first.</li>
 
