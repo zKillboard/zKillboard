@@ -36,7 +36,7 @@ while ($minutely == date('Hi')) {
                     if ($code == 200) {
                         $redis->setex($redisKey, $ttl, $result['body']);
                         //Util::out("$ttl $uri");
-                    } else if ($code > 299) Util::out("Error $code for $uri");
+                    } //else if ($code > 299) Util::out("Error $code for $uri");
                     $redis->setex($fetchKey, 30, $code);
                     $redis->lrem("fetchSet", $uri, 0);
                 }
