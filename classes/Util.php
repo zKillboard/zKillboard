@@ -172,7 +172,7 @@ class Util
                         }
                         if (sizeof($ints) > 1) {
                             asort($ints);
-                            if (implode(",", $ints) . " " . $value) {
+                            if (implode(",", $ints) != $value) {
                                 throw new Exception("multiple IDs must be in sequential order (sorry, but some people were abusing the ordering to avoid the cache)");
                             }
                         }
