@@ -49,7 +49,7 @@ if ($message == null && $xmlFailure->count() > (10 * $xmlSuccess->count())) {
 $behind = $redis->llen("queueProcess") + $mdb->count('crestmails', ['processed' => false]);
 if ($behind > 100 && $message == null) {
     $behind = number_format($behind);
-    $message = "Busy server - currently behind on processing $behind killmails";
+    //$message = "Busy server - currently behind on processing $behind killmails";
 }
 
 $redis->setex('tq:crestStatus', 300, $message);
