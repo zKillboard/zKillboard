@@ -26,7 +26,6 @@ $kills = Kills::getKills(array('cacheTime' => 60, 'limit' => 50));
 // Collect active PVP stats
 $activePvP = json_decode($redis->get('RC:activePvp'));
 
-header("Cache-Control: public, max-age=300");
 $app->render('index.html', array('topPods' => $topPods, 'topIsk' => $topIsk, 'topPoints' => $topPoints, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => $pageType, 'pager' => true, 'pageTitle' => $pageTitle, 'requestUriPager' => $requestUriPager, 'activePvP' => $activePvP));
 
 function getTop($title, $type)
