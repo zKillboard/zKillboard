@@ -11,46 +11,58 @@ while ($minutely == date('Hi')) {
         continue;
     }
 
+    $killsAdded = 0;
     $scopes = $row['scopes'];
+    $maxKillID = isset($row['maxKillID']) ? $row['maxKillID'] : 0;
+    $minKillID = 999999999999;
+
     if (in_array('esi-killmails.read_killmails.v1', $scopes)) {
         $refreshToken = $row['refreshToken'];
         $charID = $row['characterID'];
+        $fullStop = false;
+
         $accessToken = CrestSSO::getAccessToken($charID, null, $refreshToken);
+        if (!isset($accessToken['error'])) {
+            $headers = [];
+            $headers[] = 'Content-Type: application/json';
+            $headers[] = 'Authorization: Bearer ' . $accessToken;
 
-        $headers = [];
-        $headers[] = 'Content-Type: application/json';
-        $headers[] = 'Authorization: Bearer ' . $accessToken;
 
-        $minKillID = 999999999999;
-        $maxKillID = isset($row['maxKillID']) ? $row['maxKillID'] : 0;
+            do {
+                $url = "https://esi.tech.ccp.is/latest/characters/$charID/killmails/recent/";
+                $fields = ['max_count' => 50, 'datasource' => 'tranquility'];
+                if ($minKillID !== 999999999999) $fields['max_kill_id'] = $minKillID;
 
-        $killsAdded = 0;
-        do {
-            $url = "https://esi.tech.ccp.is/latest/characters/$charID/killmails/recent/";
-            $fields = ['max_count' => 50, 'datasource' => 'tranquility'];
-            if ($minKillID !== 999999999999) $fields['max_kill_id'] = $minKillID;
+                $raw = doCall($url, $fields, $accessToken);
+                $json = json_decode($raw, true);
 
-            $raw = doCall($url, $fields, $accessToken);
-            $json = json_decode($raw, true);
-            foreach ($json as $kill) {
-                $killID = $kill['killmail_id'];
-                $hash = $kill['killmail_hash'];
-                $minKillID = min($minKillID, $killID);
-                $maxKillID = max($maxKillID, $killID);
+                foreach ($json as $kill) {
+                    if (!isset($kill['killmail_id'])) {
+                        $fullStop = true;
+                        break;
+                    }
+                    $killID = $kill['killmail_id'];
+                    $hash = $kill['killmail_hash'];
+                    $minKillID = min($minKillID, $killID);
+                    $maxKillID = max($maxKillID, $killID);
 
-                $exists = $mdb->exists('crestmails', ['killID' => $killID]);
-                if (!$exists) {
-                    try {
-                        $mdb->getCollection('crestmails')->save(['killID' => (int) $killID, 'hash' => $hash, 'processed' => false, 'source' => 'esi', 'added' => $mdb->now()]);
-                        $killsAdded++;
-                    } catch (MongoDuplicateKeyException $ex) {
-                        // ignore it *sigh*
+                    $exists = $mdb->exists('crestmails', ['killID' => $killID]);
+                    if (!$exists) {
+                        try {
+                            $mdb->getCollection('crestmails')->save(['killID' => (int) $killID, 'hash' => $hash, 'processed' => false, 'source' => 'esi', 'added' => $mdb->now()]);
+                            $killsAdded++;
+                        } catch (MongoDuplicateKeyException $ex) {
+                            // ignore it *sigh*
+                        }
                     }
                 }
-            }
-        } while (sizeof($json) > 0);
+            } while (sizeof($json) > 0 && $fullStop == false && $maxKillID < $minKillID);
+        }
+        $mdb->set("apisESI", $row, ['lastFetch' => $mdb->now(), 'maxKillID' => $maxKillID]);
     }
-    $mdb->set("apisESI", $row, ['lastFetch' => $mdb->now(), 'maxKillID' => $maxKillID]);
+    else {
+        $mdb->remove("apisESI", $row);
+    }
     if ($killsAdded > 0) {
         $name = Info::getInfoField('characterID', $charID, 'name');
         if ($name === null) $name = $charID;
