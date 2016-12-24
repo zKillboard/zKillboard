@@ -1,5 +1,19 @@
 <?php
 
+$pid = 1;
+$max = 6;
+$threadNum = 0;
+for ($i = 0; $i < $max; ++$i) {
+    $pid = pcntl_fork();
+    if ($pid == -1) {
+        exit();
+    }
+    if ($pid == 0) {
+        break;
+    }
+    $threadNum++;
+}
+
 use cvweiss\redistools\RedisQueue;
 use cvweiss\redistools\RedisTtlCounter;
 
@@ -11,15 +25,24 @@ $crestmails = $mdb->getCollection('crestmails');
 $rawmails = $mdb->getCollection('rawmails');
 $queueProcess = new RedisQueue('queueProcess');
 $killsLastHour = new RedisTtlCounter('killsLastHour');
+$killqueue = new RedisQueue('queueKills2Pull');
 
 $counter = 0;
 $timer = new Timer();
 while ($timer->stop() < 59000) {
-    $unprocessed = $crestmails->find(array('processed' => false))->sort(['killID' => -1])->limit(10);
-
-    if (!$unprocessed->hasNext()) {
-        usleep(100000);
+    $killID = $killqueue->pop();
+    if ($killID === null) {
+        if ($pid > 0) {
+            $unprocessed = $crestmails->find(array('processed' => false))->sort(['killID' => -1]);
+            foreach ($unprocessed as $row) {
+                $killqueue->push($row['killID']);
+            }
+        }
+        continue;
     }
+
+    $unprocessed = $mdb->find("crestmails", ['killID' => $killID]);
+
     foreach ($unprocessed as $crestmail) {
         $id = $crestmail['killID'];
         $hash = $crestmail['hash'];
