@@ -174,6 +174,8 @@ while ($minute == date('Hi')) {
         $apiVerifiedSet = new RedisTtlSortedSet('ttlss:apiVerified', 86400);
         $apiVerifiedSet->add(time(), $charID);
 
+        $redis->setex("apiVerified:$charID", 86400, time());
+
         // If we got new kills tell the log about it
         if ($killsAdded > 0) {
             $name = 'char '.@$info['name'];

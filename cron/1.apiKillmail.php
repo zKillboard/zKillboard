@@ -59,6 +59,7 @@ while ($minute == date('Hi')) {
             $mdb->set($collection, $api, ['lastFetched' => time()]);
             KillmailParser::updateApiRow($mdb, $collection, $api, 0);
             KillmailParser::extendApiTime($mdb, $timeQueue, $api, $type, $cachedTime);
+            $redis->setex("apiVerified:$id", 86400, time());
         } catch (Exception $ex) {
             KillmailParser::updateApiRow($mdb, $collection, $api, $ex->getCode());
             $mdb->remove($collection, $api);

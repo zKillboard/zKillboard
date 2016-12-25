@@ -212,9 +212,13 @@ if ($pageType == 'stats' && in_array($key, $onlyHistory)) {
 }
 
 // Figure out if the character or corporation has any API keys in the database
-$apiVerified = false;
 $nextApiCheck = null;
-if (in_array($key, array('character', 'corporation'))) {
+$apiVerified = $redis->get("apiVerified:$id");
+if ($apiVerified !== false) {
+    $nextApiCheck = date('H:i', $apiVerified);
+    $apiVerified = true;
+}
+else if (in_array($key, array('character', 'corporation'))) {
     $collection = 'api'.ucfirst($key);
     $doc = $mdb->findDoc($collection, ["{$key}ID" => (int) $id], ['lastFetched' => -1]);
     if ($doc !== null) {

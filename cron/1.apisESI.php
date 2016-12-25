@@ -56,9 +56,10 @@ while ($minutely == date('Hi')) {
                         }
                     }
                 }
-            } while (sizeof($json) > 0 && $fullStop == false && $maxKillID < $minKillID);
+            } while (sizeof($json) > 0 && $fullStop == false); // && $maxKillID < $minKillID);
         }
         $mdb->set("apisESI", $row, ['lastFetch' => $mdb->now(), 'maxKillID' => $maxKillID]);
+        $redis->setex("apiVerified:$charID", 86400, time());
     }
     else {
         $mdb->remove("apisESI", $row);
