@@ -36,7 +36,7 @@ while ($minutely == date('Hi')) {
 function pullEsiKills($charID, $esi) {
     global $redis, $mdb;
     $sso = new RedisTimeQueue('tqApiSSO', 3600);
-    $row = $mdb->findDoc("apisESI", ['characterID' => $charID]);
+    $row = $mdb->findDoc("apisESI", ['characterID' => $charID], ['lastFetch' => 1]);
     if ($row === null) {
         $esi->remove($charID);
         return;
