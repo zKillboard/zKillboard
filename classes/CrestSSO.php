@@ -139,13 +139,8 @@ class CrestSSO
             $queueCharacters = new RedisTimeQueue('tqCharacters', 86400);
             $queueCharacters->add($response->CharacterID);
 
-            if (in_array('characterKillsRead', $scopes)) {
-                $mdb->save('apisCrest', ['characterID' => $response->CharacterID, 'refreshToken' => $refresh_token, 'lastFetch' => 0]);
-                /*$sso = new RedisTimeQueue('tqApiSSO', 2100);
-                  $sso->add($response->CharacterID);*/
-            }
+            $mdb->save('apisESI', ['characterID' => $response->CharacterID, 'refreshToken' => $refresh_token, 'lastFetch' => 0, "scopes" => $scopes]);
             if (in_array('esi-killmails.read_killmails.v1', $scopes)) {
-                $mdb->save('apisESI', ['characterID' => $response->CharacterID, 'refreshToken' => $refresh_token, 'lastFetch' => 0, "scopes" => $scopes]);
                 $esi = new RedisTimeQueue('tqApiESI', 3600);
                 $esi->add($response->CharacterID);
             }
