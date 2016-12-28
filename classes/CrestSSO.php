@@ -129,6 +129,7 @@ class CrestSSO
             }
 
             Log::log("Logged in: " . (isset($userdetails['name']) ? $userdetails['name'] : $response->CharacterID));
+            ZLog::add("Logged in: " . (isset($userdetails['name']) ? $userdetails['name'] : $response->CharacterID), $response->CharacterID);
 
             $key = 'login:'.$response->CharacterID.':'.session_id();
             $redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);

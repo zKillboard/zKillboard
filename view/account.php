@@ -109,6 +109,7 @@ $data['ddmonthyear'] = UserConfig::get('ddmonthyear');
 $data['useSummaryAccordion'] = UserConfig::get('useSummaryAccordion', true);
 $data['sessions'] = User::getSessions($userID);
 $data['history'] = User::getPaymentHistory($userID);
+$data['log'] = ZLog::get($userID);
 
 $apiChars = Api::getCharacters($userID);
 $domainChars = array();

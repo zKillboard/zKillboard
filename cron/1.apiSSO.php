@@ -183,6 +183,7 @@ while ($minute == date('Hi')) {
                 $killsAdded = ' '.$killsAdded;
             }
             Util::out("$killsAdded kills added by $name (SSO)");
+            ZLog::add("$killsAdded kills added by char $name (SSO)", $charID);
         }
         $count = $mdb->count("apisCrest", ['characterID' => $row['characterID']]);
         if ($count > 3) {

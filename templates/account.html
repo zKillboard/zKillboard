@@ -20,6 +20,7 @@
 			<ul class="nav navbar-nav">
 				<li class="{{ isActive('sitesettings', key) }}"><a href="/account/sitesettings/">Site Settings</a></li>
 				<li class="{{ isActive('api', key) }}"><a href="/account/api/">API</a></li>
+				<li class="{{ isActive('api', key) }}"><a href="/account/log/">Log</a></li>
 				{% if adFreeMonthCost > 0 %}
 				<li class="{{ isActive('payments', key) }}"><a href="/account/payments/">Payments</a></li>
 				{% endif %}
@@ -29,6 +30,8 @@
 
 	{% if key == 'me' %}
 		{% include 'account/me.html' %}
+	{% elseif key == 'log' %}
+		{% include 'account/log.html' %}
 	{% elseif key == 'changepassword' %}
 		{% include 'account/changepassword.html' %}
 	{% elseif key == 'changeemail' %}

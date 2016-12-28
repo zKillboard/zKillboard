@@ -45,6 +45,7 @@ class KillmailParser
                 $added = ' '.$added;
             }
             Util::out("$added kills added by $type $name (XML)");
+            ZLog::add("$added kills added by $type $name (XML)", $charID);
         }
 
         return ['hasKillmails' => $hasKillmails, 'cachedUntil' => $result['cachedUntil']];
