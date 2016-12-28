@@ -44,7 +44,7 @@ class KillmailParser
             while (strlen("$added") < 3) {
                 $added = ' '.$added;
             }
-            Util::out("$added kills added by $type $name");
+            Util::out("$added kills added by $type $name (XML)");
         }
 
         return ['hasKillmails' => $hasKillmails, 'cachedUntil' => $result['cachedUntil']];
