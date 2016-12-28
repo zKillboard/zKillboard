@@ -152,26 +152,32 @@ while ($timer->stop() < 59000) {
         $zkb['points'] = (int) Points::getKillPoints($kill, $zkb['totalValue']);
         $kill['zkb'] = $zkb;
 
-        $exists = $killmails->count(['killID' => $killID]);
-        if ($exists == 0) {
-            $killmails->save($kill);
-        }
-        $oneWeekExists = $mdb->exists('oneWeek', ['killID' => $killID]);
-        if (!$oneWeekExists && $kill['npc'] == false) {
-            $mdb->getCollection('oneWeek')->save($kill);
-        }
+        $sem = sem_get(3174);
+        try {
+            sem_acquire($sem);
+            $exists = $killmails->count(['killID' => $killID]);
+            if ($exists == 0) {
+                $killmails->save($kill);
+            }
+            $oneWeekExists = $mdb->exists('oneWeek', ['killID' => $killID]);
+            if (!$oneWeekExists && $kill['npc'] == false) {
+                $mdb->getCollection('oneWeek')->save($kill);
+            }
 
-        $queueInfo->push($killID);
-        $redis->incr('zkb:totalKills');
-        $multi = $redis->multi();
-        $time = $kill['dttm']->sec;
-        $time = $time - ($time % 86400);
-        $date = date('Ymd', $time);
-        $multi->hSet("zkb:day:$date", $killID, $zkb['hash']);
-        $multi->sadd("zkb:days", $date);
-        $multi->exec();
+            $queueInfo->push($killID);
+            $redis->incr('zkb:totalKills');
+            $multi = $redis->multi();
+            $time = $kill['dttm']->sec;
+            $time = $time - ($time % 86400);
+            $date = date('Ymd', $time);
+            $multi->hSet("zkb:day:$date", $killID, $zkb['hash']);
+            $multi->sadd("zkb:days", $date);
+            $multi->exec();
 
-        ++$counter;
+            ++$counter;
+        } finally {
+            sem_release($sem);
+        }
     }
 }
 if ($debug && $counter > 0) {
