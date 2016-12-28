@@ -59,7 +59,7 @@ class Api
             $mdb->remove('apiCharacters', ['keyID' => (int) $keyID]);
         }
         try {
-            $mdb->remove('apisCrest', ['_id' => new MongoID("$keyID"), 'characterID' => $userID]);
+            $mdb->remove('apisESI', ['_id' => new MongoID("$keyID"), 'characterID' => $userID]);
         } catch (Exception $ex) {
             // Just ignore it
         }
@@ -90,9 +90,11 @@ class Api
         global $mdb;
 
         $retVal = [];
-        $result = $mdb->find('apisCrest', ['characterID' => $userID]);
+        $result = $mdb->find('apisESI', ['characterID' => $userID]);
         foreach ($result as $row) {
-            $row['lastValidation'] = date('Y/m/d H:i', $row['lastFetch']);
+            $lastFetch = $row['lastFetch'];
+            $sec = @$lastFetch->sec;
+            $row['lastValidation'] = date('Y/m/d H:i', $sec);
             $retVal[] = $row;
         }
 
