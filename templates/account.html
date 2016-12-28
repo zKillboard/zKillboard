@@ -20,7 +20,7 @@
 			<ul class="nav navbar-nav">
 				<li class="{{ isActive('sitesettings', key) }}"><a href="/account/sitesettings/">Site Settings</a></li>
 				<li class="{{ isActive('api', key) }}"><a href="/account/api/">API</a></li>
-				<li class="{{ isActive('api', key) }}"><a href="/account/log/">Log</a></li>
+				<li class="{{ isActive('log', key) }}"><a href="/account/log/">Log</a></li>
 				{% if adFreeMonthCost > 0 %}
 				<li class="{{ isActive('payments', key) }}"><a href="/account/payments/">Payments</a></li>
 				{% endif %}

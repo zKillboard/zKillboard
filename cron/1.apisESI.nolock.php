@@ -86,7 +86,6 @@ function pullEsiKills($charID, $esi) {
                     $killID = $kill['killmail_id'];
                     $hash = $kill['killmail_hash'];
                     $minKillID = min($minKillID, $killID);
-                    //$maxKillID = max($maxKillID, $killID);
 
                     $exists = $mdb->exists('crestmails', ['killID' => $killID]);
                     if (!$exists) {
