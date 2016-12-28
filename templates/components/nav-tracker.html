@@ -81,6 +81,19 @@ $("#tqStatus").html("{% if tqStatus == 'OFFLINE'%}<span class='red'>TQ {{ tqCoun
 $("#tracker-none").removeClass("hidden");
 $("#savefit").remove();
 $("#nosavefit").removeClass("hidden");
+
+$(document).ready(function() {
+    var foo = 'zkbLoginMsg';
+    if ($(window).width() > 800 && localStorage) {
+        if (!localStorage.getItem(foo)) {
+            $("#modalMessageBody").html("Login to retrieve your character's entire killmail history from Dec. 2007 to today.");
+            $("#modalMessage").modal('show');
+            localStorage.setItem(foo, true);
+        }
+    }
+});
+
+
 </script>
 <li>Please log in first.</li>
 

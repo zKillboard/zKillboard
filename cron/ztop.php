@@ -44,9 +44,11 @@ while ($iterations++ <= 1200) {
     addInfo('Char KillLogs to check', $redis->zCount('zkb:chars', 0, time()));
     addInfo('Corp KillLogs to check', $redis->zCount('zkb:corps', 0, time()));
     addInfo('SSO KillLogs to check', $redis->zCount('tqApiSSO', 0, time()));
+    addInfo('ESI KillLogs to check', $redis->zCount('tqApiESI', 0, time()));
     addInfo('Char Apis', $redis->zCard('zkb:chars'));
     addInfo('Corp Apis', $redis->zCard('zkb:corps'));
     addInfo('SSO Apis', $redis->zCard('tqApiSSO'));
+    addInfo('ESI Apis', $redis->zCard('tqApiESI'));
 
     addInfo('', 0);
     $cached = new RedisTtlCounter('ttlc:cached', 300);

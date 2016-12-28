@@ -56,7 +56,8 @@ while ($minute == date('Hi')) {
             $result = KillmailParser::processCharApi($mdb, $apiServer, $type, $api);
             $cachedUntil = $result['cachedUntil'];
             $cachedTime = strtotime($cachedUntil);
-            $mdb->set($collection, $api, ['lastFetched' => time()]);
+            $mdb->set($collection, $api, ['lastFetched' => time(), 'type' => $type]);
+            $mdb->set("apis", ['keyID' => $api['keyID']], ['type' => $type]);
             KillmailParser::updateApiRow($mdb, $collection, $api, 0);
             KillmailParser::extendApiTime($mdb, $timeQueue, $api, $type, $cachedTime);
             $redis->setex("apiVerified:$id", 86400, time());

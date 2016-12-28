@@ -146,6 +146,8 @@ class CrestSSO
             }
             if (in_array('esi-killmails.read_killmails.v1', $scopes)) {
                 $mdb->save('apisESI', ['characterID' => $response->CharacterID, 'refreshToken' => $refresh_token, 'lastFetch' => 0, "scopes" => $scopes]);
+                $esi = new RedisTimeQueue('tqApiESI', 3600);
+                $esi->add($response->CharacterID);
             }
 
             $_SESSION['characterID'] = $response->CharacterID;
@@ -177,7 +179,7 @@ class CrestSSO
         $authFailure = new RedisTtlCounter('ttlc:AuthFailure', 300);
 
         if ($charID === null) {
-            $charID = @$_SESSION['characterID'];
+            $charID = User::getUserID();
         }
         if ($sessionID === null) {
             $sessionID = session_id();
