@@ -3,6 +3,7 @@
 require_once "../init.php";
 
 use cvweiss\redistools\RedisTimeQueue;
+use cvweiss\redistools\RedisTtlCounter;
 
 $charID = @$argv[1];
 $esi = new RedisTimeQueue('tqApiESI', 3600);
@@ -120,6 +121,9 @@ function pullEsiKills($charID, $esi) {
 
 function doCall($url, $fields, $accessToken, $callType = 'GET')
 {
+    $esiSuccess = new RedisTtlCounter('ttlc:esiSuccess', 300);
+    $esiFailure = new RedisTtlCounter('ttlc:esiFailure', 300);
+
     $callType = strtoupper($callType);
     $headers = ['Authorization: Bearer ' . $accessToken];
 
@@ -147,9 +151,11 @@ function doCall($url, $fields, $accessToken, $callType = 'GET')
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     $result = curl_exec($ch);
     if (curl_errno($ch) !== 0) {
+        $esiFailure->add(uniqid());
         Util::out("request error " . curl_errno($ch));
         throw new \Exception(curl_error($ch), curl_errno($ch));
     }
+    $esiSuccess->add(uniqid());
     return $result;
 }
 
