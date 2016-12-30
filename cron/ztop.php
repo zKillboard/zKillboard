@@ -39,16 +39,15 @@ while ($iterations++ <= 1200) {
     addInfo('Total Kills', $redis->get('zkb:totalKills'));
     addInfo('Top killID', $mdb->findField('killmails', 'killID', [], ['killID' => -1]));
 
-    addInfo('', 0);
-    addInfo('Api KeyInfos to check', $redis->zCount('zkb:apis', 0, time()));
-    addInfo('Char KillLogs to check', $redis->zCount('zkb:chars', 0, time()));
-    addInfo('Corp KillLogs to check', $redis->zCount('zkb:corps', 0, time()));
-    addInfo('SSO KillLogs to check', $redis->zCount('tqApiSSO', 0, time()));
-    addInfo('ESI KillLogs to check', $redis->zCount('tqApiESI', 0, time()));
-    addInfo('Char Apis', $redis->zCard('zkb:chars'));
-    addInfo('Corp Apis', $redis->zCard('zkb:corps'));
-    addInfo('SSO Apis', $redis->zCard('tqApiSSO'));
-    addInfo('ESI Apis', $redis->zCard('tqApiESI'));
+    addInfo('Api KeyInfos to check', $redis->zCount('zkb:apis', 0, time()), false);
+    addInfo('Char KillLogs to check', $redis->zCount('zkb:chars', 0, time()), false);
+    addInfo('Corp KillLogs to check', $redis->zCount('zkb:corps', 0, time()), false);
+    addInfo('SSO KillLogs to check', $redis->zCount('tqApiSSO', 0, time()), false);
+    addInfo('ESI KillLogs to check', $redis->zCount('tqApiESI', 0, time()), false);
+    addInfo('Char Apis', $redis->zCard('zkb:chars'), false);
+    addInfo('Corp Apis', $redis->zCard('zkb:corps'), false);
+    addInfo('SSO Apis', $redis->zCard('tqApiSSO'), false);
+    addInfo('ESI Apis', $redis->zCard('tqApiESI'), false);
 
     addInfo('', 0);
     $cached = new RedisTtlCounter('ttlc:cached', 300);
@@ -62,23 +61,27 @@ while ($iterations++ <= 1200) {
     $requests = new RedisTtlCounter('ttlc:requests', 300);
     addInfo('Requests in last 5 minutes', $requests->count());
 
-    addInfo('', 0);
+    addInfo('', 0, false);
+    addInfo('', 0, false);
     $crestSuccess = new RedisTtlCounter('ttlc:CrestSuccess', 300);
-    addInfo('Successful CREST calls in last 5 minutes', $crestSuccess->count());
+    addInfo('Successful CREST calls in last 5 minutes', $crestSuccess->count(), false);
     $crestFailure = new RedisTtlCounter('ttlc:CrestFailure', 300);
-    addInfo('Failed CREST calls in last 5 minutes', $crestFailure->count());
+    addInfo('Failed CREST calls in last 5 minutes', $crestFailure->count(), false);
 
-    addInfo('', 0);
     $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
-    addInfo('Successful XML calls in last 5 minutes', $xmlSuccess->count());
+    addInfo('Successful XML calls in last 5 minutes', $xmlSuccess->count(), false);
     $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
-    addInfo('Failed XML calls in last 5 minutes', $xmlFailure->count());
+    addInfo('Failed XML calls in last 5 minutes', $xmlFailure->count(), false);
 
-    addInfo('', 0);
     $authSuccess = new RedisTtlCounter('ttlc:AuthSuccess', 300);
-    addInfo('Successful Auth calls in last 5 minutes', $authSuccess->count());
+    addInfo('Successful Auth calls in last 5 minutes', $authSuccess->count(), false);
     $authFailure = new RedisTtlCounter('ttlc:AuthFailure', 300);
-    addInfo('Failed Auth calls in last 5 minutes', $authFailure->count());
+    addInfo('Failed Auth calls in last 5 minutes', $authFailure->count(), false);
+
+    $esiSuccess = new RedisTtlCounter('ttlc:esiSuccess', 300);
+    addInfo('Successful ESI calls in last 5 minutes', $esiSuccess->count(), false);
+    $esiFailure = new RedisTtlCounter('ttlc:esiFailure', 300);
+    addInfo('Failed ESI calls in last 5 minutes', $esiFailure->count(), false);
 
     $info = $redis->info();
     $mem = $info['used_memory_human'];
@@ -99,26 +102,37 @@ while ($iterations++ <= 1200) {
     }
 
     $cpu = exec("top -d 0.5 -b -n2 | grep \"Cpu(s)\"| tail -n 1 | awk '{print $2 + $4}'");
-    echo exec('date')." CPU: $cpu% Load: ".Load::getLoad()."  Memory: ${memUsed}G/${memTotal}G  Redis: $mem  TokuDB: ${storageSize}G / ${dataSize}G\n";
-    echo "\n";
+    $output = [];
+    $output[] = exec('date')." CPU: $cpu% Load: ".Load::getLoad()."  Memory: ${memUsed}G/${memTotal}G  Redis: $mem  TokuDB: ${storageSize}G / ${dataSize}G\n";
+
+    $leftCount = 1;
+    $rightCount = 1;
+    $line = "                                                                                                               ";
+    $line = str_repeat(" ", 80);
     foreach ($infoArray as $i) {
-        foreach ($i as $name => $count) {
-            if (trim($name) == '') {
-                echo "\n";
-                continue;
-            }
-            while (strlen($count) < (20 + $maxLen)) {
-                $count = ' '.$count;
-            }
-            echo "$count $name\n";
+        $num = trim($i['num']);
+        $text = trim($i['text']);
+        $lr = $i['lr'];
+        $start = $lr == true ? 15 : 70;
+        $leftCount = $lr == true ? $leftCount + 1 : $leftCount;
+        $rightCount = $lr == false ? $rightCount + 1 : $rightCount;
+
+        $lineIndex = $lr == true ? $leftCount : $rightCount;
+        $nextLine = isset($output[$lineIndex]) ? $output[$lineIndex] : $line;
+
+        if (strlen($text) != '') {
+            $nextLine = substr_replace($nextLine, $num, ($start - strlen($num)), strlen($num));
+            $nextLine = substr_replace($nextLine, $text, $start + 2, strlen($text));
         }
+        $output[$lineIndex] = $nextLine;
     }
+    foreach($output as $line) echo "$line\n";
     $output = ob_get_clean();
     file_put_contents("${baseDir}/public/ztop.txt", $output);
     sleep(3);
 }
 
-function addInfo($text, $number)
+function addInfo($text, $number, $left = true)
 {
     global $infoArray, $deltaArray;
     $prevNumber = (int) @$deltaArray[$text];
@@ -129,7 +143,7 @@ function addInfo($text, $number)
         $delta = "+$delta";
     }
     $dtext = $delta == 0 ? '' : "($delta)";
-    $infoArray[] = ["$text $dtext" => number_format($number, 0)];
+    $infoArray[] = ['text' => "$text $dtext", 'num' => number_format($number, 0), 'lr' => $left];
 }
 
 function getSystemMemInfo()
