@@ -67,7 +67,7 @@ function getTop($title, $type)
         return [];
     }
     foreach ($ids as $id) {
-        $retVal[] = [$type => $id, 'kills' => $redis->zScore("tq:ranks:weekly:$type:shipsDestroyed", $id)];
+        $retVal[] = [$type => $id, 'kills' => $redis->zScore("tq:ranks:weekly:$type:shipsDestroyed", $id), 'score' => $redis->zScore("tq:ranks:weekly:$type", $id)];
     }
     Info::addInfo($retVal);
     $retVal = ['type' => str_replace('ID', '', $type), 'title' => $title, 'values' => $retVal];
