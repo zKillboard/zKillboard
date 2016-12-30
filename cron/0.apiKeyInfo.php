@@ -63,6 +63,7 @@ function processApi($api, $apiServer, $mdb)
             processKeyInfo($mdb, $keyID, $vCode, $xml);
             updateErrorCode($mdb, $api, 0);
             break;
+        case 400:
         case 403:
             Util::out("Removing $keyID $httpCode / $errorCode");
             $mdb->remove("apis", $api);
