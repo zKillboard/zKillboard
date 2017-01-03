@@ -22,6 +22,7 @@ if (date('i') == 22 || $esi->size() == 0) {
     }
 }
 
+$usleep = max(50000, min(1000000, floor((1 / ($esi->size() / 3600)) * 700000)));
 $redirect = str_replace("/cron/", "/cron/logs/", __FILE__) . ".log";
 $minutely = date('Hi');
 while ($minutely == date('Hi')) {
@@ -31,7 +32,7 @@ while ($minutely == date('Hi')) {
         continue;
     }
     exec("cd " . __DIR__ . " ; php " . __FILE__ . " $charID >>$redirect 2>>$redirect &");
-    usleep(100000);
+    usleep($usleep);
 }
 
 function pullEsiKills($charID, $esi) {
@@ -61,7 +62,8 @@ function pullEsiKills($charID, $esi) {
                     $mdb->remove("apisESI", $row);
                     break;
                 default:
-                    Util::out("Unknown ESI error:\n" . print_r($accessToken, true));
+                    Util::out("Unknown ESI error $charID :\n" . print_r($accessToken, true));
+                    $esi->setTime($charID, time() + 60);
             }
             return;
         }
@@ -70,9 +72,9 @@ function pullEsiKills($charID, $esi) {
             $headers[] = 'Content-Type: application/json';
             $headers[] = 'Authorization: Bearer ' . $accessToken;
 
-
             do {
-                $url = "https://esi.tech.ccp.is/latest/characters/$charID/killmails/recent/";
+                if ($maxKillID != 0) usleep(100000);
+                $url = "https://esi.tech.ccp.is/v1/characters/$charID/killmails/recent/";
                 $fields = ['max_count' => 50, 'datasource' => 'tranquility'];
                 if ($minKillID !== 999999999999) $fields['max_kill_id'] = $minKillID;
 
@@ -87,6 +89,7 @@ function pullEsiKills($charID, $esi) {
                     $killID = $kill['killmail_id'];
                     $hash = $kill['killmail_hash'];
                     $minKillID = min($minKillID, $killID);
+                    $maxKillID = max($maxKillID, $killID);
 
                     $exists = $mdb->exists('crestmails', ['killID' => $killID]);
                     if (!$exists) {
@@ -100,7 +103,8 @@ function pullEsiKills($charID, $esi) {
                 }
             } while (sizeof($json) > 0 && $fullStop == false && $prevMaxKillID < $minKillID);
         }
-        $mdb->set("apisESI", $row, ['lastFetch' => $mdb->now(), 'maxKillID' => $maxKillID]);
+        $mdb->set("apisESI", $row, ['lastFetch' => $mdb->now()]);
+        $mdb->set("apisESI", ['characterID' => $charID], ['maxKillID' => $maxKillID], true);
         $mdb->remove("apisCrest", ['characterID' => $charID]);
         $mdb->remove("apis", ['type' => 'char', 'userID' => $charID]);
         $sso->remove($charID);
@@ -121,9 +125,6 @@ function pullEsiKills($charID, $esi) {
 
 function doCall($url, $fields, $accessToken, $callType = 'GET')
 {
-    $esiSuccess = new RedisTtlCounter('ttlc:esiSuccess', 300);
-    $esiFailure = new RedisTtlCounter('ttlc:esiFailure', 300);
-
     $callType = strtoupper($callType);
     $headers = ['Authorization: Bearer ' . $accessToken];
 
@@ -150,11 +151,12 @@ function doCall($url, $fields, $accessToken, $callType = 'GET')
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $callType);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     $result = curl_exec($ch);
-    if (curl_errno($ch) !== 0) {
+    if (curl_errno($ch) !== 0 || strpos($result, '"error"') !== false) {
+        $esiFailure = new RedisTtlCounter('ttlc:esiFailure', 300);
         $esiFailure->add(uniqid());
-        Util::out("request error " . curl_errno($ch));
-        throw new \Exception(curl_error($ch), curl_errno($ch));
+        return "[]";
     }
+    $esiSuccess = new RedisTtlCounter('ttlc:esiSuccess', 300);
     $esiSuccess->add(uniqid());
     return $result;
 }
