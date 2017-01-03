@@ -12,7 +12,7 @@
 <div class="navbar navbar-default">
 	<ul class="nav navbar-nav">
 		<li class="{{ isActive('tickets', pageview) }}"><a href="/account/tickets/">Tickets</a></li>
-		{% if sessionusername %}<li><a data-toggle="modal" data-target="#newIssue" href="#">New Issue</a></li>{% endif %}
+		{% if sessionusername %}<li><a data-toggle="modal" data-target="#newTicket" href="#">New Ticket</a></li>{% endif %}
 	</ul>
 </div>
 
@@ -46,17 +46,15 @@ Please login to view your tickets or create a ticket.
 {% endblock %}
 
 {% block modal %}
-	<div class="modal fade" id="newIssue">
+	<div class="modal fade" id="newTicket">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-					<h4>New Issue</h4>
+					<h4>New Ticket</h4>
 				</div>
 				<div class="modal-body">
-					<p>The ticket will be sent using your account name, and a copy will be sent to your accounts email.<br>
-					Also, please only use tags appropriate for your ticket.</p>
-	
+                                        <div class="alert alert-danger"><center>Click <i class="glyphicon glyphicon-arrow-right"></i> <a href='https://www.reddit.com/r/Eve/comments/4m8jgm/zkillboard_does_not_automatically_get_all/' target='_blank'>zKillboard does not automatically get all killmails.</a> <i class="glyphicon glyphicon-arrow-left"></i> Click</center><br/>If you post here about a missing killmail, I'll call you an idiot and close your ticket.</div>
 					<form name="tickets" method="post" action="/account/tickets/">
 						<label>Email: (Optional - only used to notify you of responses to your ticket.)</label>
 						<input type="text" data-provide="typeahead" name="email" placeholder="Email" class="form-control" data-original-title=""/><br/>
@@ -65,6 +63,11 @@ Please login to view your tickets or create a ticket.
 						<div class="form-group">
 							<textarea id="ticket" autocomplete="off" name="ticket" type="text" required placeholder="Ticket" class="form-control" rows="12" style="color: black"></textarea>
 						</div>
+                                                <div class='checkbox'>
+                                                        <label>
+							<input type='checkbox' id="idiotbox" name="idiotbox" required class="m-control"> I am not being an idiot (see above)
+                                                        </label>
+                                                </div>
 						<div class="form-group">
 							<button type="submit" class="btn btn-primary">Post Ticket</button>
 						</div>
@@ -93,7 +96,7 @@ $(".modal-newissue").css("margin-left", "-400px");
 $(".modal-newissue").css("show");
 $('#ticket').wysihtml5({"font-styles": true, "emphasis": true, "lists": true, "html": false, "link": true, "image": true, "color": false});
 jQuery(".tagManager").tagsManager({
-	//prefilled: ["New Issue"],
+	//prefilled: ["New Ticket"],
 	preventSubmitOnEnter: true,
 	typeahead: true,
 	typeaheadAjaxSource: null,
