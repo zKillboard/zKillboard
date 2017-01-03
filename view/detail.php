@@ -11,6 +11,10 @@ if ($pageview == 'overview') {
 if ($pageview == '') {
     $pageview = 'overview';
 }
+if ($pageview != 'overview' && $pageview != 'involved') {
+    header("Location: /");
+    exit();
+}
 
 $involved = array();
 $message = '';
