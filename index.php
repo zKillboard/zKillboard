@@ -17,11 +17,6 @@ if ($uri == "/kill/-1/") {
     header("Location: /keepstar1.html");
     exit();
 }
-$q = strpos($uri, '?');
-if ($q !== false) {
-    header("Location: " . substr($uri, 0, $q));
-    exit();
-}
 // Check to ensure we have a trailing slash, helps with caching
 if (substr($uri, -1) != '/') {
     header('Access-Control-Allow-Origin: *');

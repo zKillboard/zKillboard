@@ -63,7 +63,7 @@ class CrestSSO
                 }
             }
 
-            $state = str_replace("/", "", $_GET['state']);
+            $state = str_replace("/", "", @$_GET['state']);
             $sessionState = @$_SESSION['oauth2State'];
             if ($state !== $sessionState) {
                 die("Invalid oAuth2State state detected - Aborting to prevent possible hijacking attempt.");
@@ -161,6 +161,7 @@ class CrestSSO
             $authSuccess->add(uniqid());
             exit();
         } catch (Exception $ex) {
+print_r($ex); die();
             echo "Something odd happened with the callback from CCP's SSO!";
             print_r($ex, true);
             $authFailure->add(uniqid());
