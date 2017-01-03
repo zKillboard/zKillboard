@@ -17,6 +17,11 @@ if ($uri == "/kill/-1/") {
     header("Location: /keepstar1.html");
     exit();
 }
+$q = strpos($uri, '?');
+if ($q !== false) {
+    header("Location: " . substr($uri, 0, $q));
+    exit();
+}
 // Check to ensure we have a trailing slash, helps with caching
 if (substr($uri, -1) != '/') {
     header('Access-Control-Allow-Origin: *');
@@ -40,7 +45,7 @@ $body = $redis->get($fetchKey);
 if ($body !== false) {
     $cached = new RedisTtlCounter('ttlc:cached', 300);
     $cached->add(uniqid());
-    $ttl = $redis->ttl($fetchKey);
+    $ttl = 300; //$redis->ttl($fetchKey);
     header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + $ttl));
     header("Cache-Control: public, max-age=$ttl");
     header("X-Cache: HIT");
@@ -85,7 +90,10 @@ if ($isApiRequest) {
 } else if ($uri == '/navbar/') {
     $nonApiR = new RedisTtlCounter('ttlc:nonApiRequests', 300);
     $nonApiR->add(uniqid());
-} else $redis->rpush("fetchSet", $uri);
+} else if ($uri != '/autocomplete/') {
+    //$redis->rpush("fetchSet", $uri);
+    $redis->zincrby("fetchSetSorted", 1, $uri);
+}
 
 if ($ip != '127.0.0.1') {
     $visitors = new RedisTtlCounter('ttlc:visitors', 300);

@@ -3,7 +3,7 @@
 require_once "../init.php";
 
 $bases = ['character', 'corporation', 'alliance', 'system', 'group', 'ship', 'faction', 'location', 'br', 'related', 'item', 'kills', 'war'];
-$cacheRules = ['/^\/$/' => 120, "/^\/kill\/.*/" => 3600];
+$cacheRules = ['/^\/$/' => 300, "/^\/kill\/.*/" => 3600];
 foreach ($bases as $base) {
     $rule = "/^\/$base\/.*/";
     $cacheRules[$rule] = 900;;
@@ -11,34 +11,41 @@ foreach ($bases as $base) {
 
 $minutely = date('Hi');
 while ($minutely == date('Hi')) {
-    $uri = $redis->lpop("fetchSet");
-    if ($uri !== false) {
-        foreach ($cacheRules as $cacheRule => $ttl) {
-            if (preg_match($cacheRule, $uri) == true) {
-                $redisKey = "fetch:$uri";
-                $countKey = "fetch:$uri:count";
-                $fetchKey = "fetch:$uri:fetched";
-                if ($redis->get($redisKey) != null) continue;
-                if ($redis->get($fetchKey) != null) continue;
+    $next = $redis->zRange("fetchSetSorted", -1, -1, true);
 
-                $multi = $redis->multi();
-                $multi->setnx($countKey, 0);
-                $multi->expire($countKey, 60);
-                $multi->incr($countKey);
-                $multi->exec();
+    if ($next !== false && sizeof($next) > 0) {
+        $uri = array_keys($next);
+        $uri = $uri[0];
+        $score = array_values($next);
+        $score = $score[0];
+        $redis->zRem("fetchSetSorted", $uri);
 
-                $count = $redis->get($countKey);
-                if ($count >= 3) {
+        $redisKey = "fetch:$uri";
+        $fetchKey = "fetch:$uri:fetched";
+        $countKey = "fetch:$uri:count";
+        if ($redis->get($fetchKey) != null) continue;
+        if ($redis->get($redisKey) != null) continue;
+
+        $multi = $redis->multi();
+        $multi->setnx($countKey, 0);
+        $multi->expire($countKey, 60);
+        $multi->incr($countKey, $score);
+        $multi->exec();
+
+        $count = $redis->get($countKey);
+        if ($count >= 5) {
+            foreach ($cacheRules as $cacheRule => $ttl) {
+                if (preg_match($cacheRule, $uri) == true) {
+
                     $url = "https://zkillboard.com" . $uri;
 
                     $result = getData($url, 0);
                     $code = $result['httpCode'];
                     if ($code == 200) {
                         $redis->setex($redisKey, $ttl, $result['body']);
-                        //Util::out("$ttl $uri");
                     } //else if ($code > 299) Util::out("Error $code for $uri");
                     $redis->setex($fetchKey, 30, $code);
-                    $redis->lrem("fetchSet", $uri, 0);
+                    $redis->zRem("fetchSetSorted", $uri);
                 }
             }
         }

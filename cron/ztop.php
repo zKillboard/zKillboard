@@ -62,6 +62,9 @@ while ($iterations++ <= 1200) {
     addInfo('Requests in last 5 minutes', $requests->count());
 
     addInfo('', 0, false);
+    addInfo("Fetch Queue Size (list)", $redis->llen('fetchSet'), false);    
+    addInfo("Fetch Queue Size (set)", $redis->zcard('fetchSetSorted'), false);    
+
     addInfo('', 0, false);
     $crestSuccess = new RedisTtlCounter('ttlc:CrestSuccess', 300);
     addInfo('Successful CREST calls in last 5 minutes', $crestSuccess->count(), false);
