@@ -40,7 +40,7 @@ $body = $redis->get($fetchKey);
 if ($body !== false) {
     $cached = new RedisTtlCounter('ttlc:cached', 300);
     $cached->add(uniqid());
-    $ttl = 300; //$redis->ttl($fetchKey);
+    $ttl = $redis->ttl($fetchKey);
     header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + $ttl));
     header("Cache-Control: public, max-age=$ttl");
     header("X-Cache: HIT");
@@ -86,7 +86,6 @@ if ($isApiRequest) {
     $nonApiR = new RedisTtlCounter('ttlc:nonApiRequests', 300);
     $nonApiR->add(uniqid());
 } else if ($uri != '/autocomplete/') {
-    //$redis->rpush("fetchSet", $uri);
     $redis->zincrby("fetchSetSorted", 1, $uri);
 }
 
