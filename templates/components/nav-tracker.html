@@ -83,7 +83,8 @@ $("#savefit").remove();
 $("#nosavefit").removeClass("hidden");
 
 $(document).ready(function() {
-    var foo = 'zkbLoginMsg';
+    var date = new Date();
+    var foo = 'zkbLoginMsg' + date.getUTCFullYear() + '' + (date.getUTCMonth() + 1) + '' + date.getUTCDate();
     if ($(window).width() > 800 && localStorage) {
         if (!localStorage.getItem(foo)) {
             $("#modalMessageBody").html("Login to retrieve your character's entire killmail history from Dec. 2007 to today.");
