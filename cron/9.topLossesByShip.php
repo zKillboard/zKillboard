@@ -17,7 +17,6 @@ foreach ($types as $type) {
     $kill = array_shift($result);
     $array[$kill['zkb']['totalValue']] = $kill;
     $killID = $kill['killID'];
-    Util::out($type['name'] . ' ' . $kill['zkb']['totalValue'] . " $killID");
 }
 
 krsort($array);
