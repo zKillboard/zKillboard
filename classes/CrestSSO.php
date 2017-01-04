@@ -66,7 +66,8 @@ class CrestSSO
             $state = str_replace("/", "", @$_GET['state']);
             $sessionState = @$_SESSION['oauth2State'];
             if ($state !== $sessionState) {
-                die("Invalid oAuth2State state detected - Aborting to prevent possible hijacking attempt.");
+                $app->render("error.html", ['message' => "Something went wrong with the login from CCP's end, sorry, can you please try logging in again?"]);
+                exit();
             }
 
             $url = 'https://login.eveonline.com/oauth/token';
@@ -96,9 +97,15 @@ class CrestSSO
                 auth_error(curl_error($ch));
             }
             curl_close($ch);
-            $response = json_decode($result);
-            $access_token = $response->access_token;
-            $refresh_token = $response->refresh_token;
+            $response = json_decode($result, true);
+
+            if (isset($response['error'])) {
+                $app->render("error.html", ['message' => "Something went wrong with the login from CCP's end, sorry, can you please try logging in again?"]);
+                exit();
+            }
+
+            $access_token = $response['access_token'];
+            $refresh_token = $response['refresh_token'];
             $ch = curl_init();
             // Get the Character details from SSO
             $header = 'Authorization: Bearer '.$access_token;
@@ -161,10 +168,10 @@ class CrestSSO
             $authSuccess->add(uniqid());
             exit();
         } catch (Exception $ex) {
-print_r($ex); die();
-            echo "Something odd happened with the callback from CCP's SSO!";
-            print_r($ex, true);
+            $app->render("error.html", ['message' => "An unexpected error has happened, it has been logged and will be checked into. Please try to log in again."]);
+            Log::log(print_r($ex, true));
             $authFailure->add(uniqid());
+            exit();
         }
     }
 
