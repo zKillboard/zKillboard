@@ -33,7 +33,7 @@ function beSocial($killID)
     Info::addInfo($victimInfo);
 
     $url = "$fullAddr/kill/$killID/";
-    $message = $victimInfo['shipName'].' worth '.Util::formatIsk($totalPrice)." ISK was destroyed! $url";
+    $message = $victimInfo['shipName'].' worth '.Util::formatIsk($totalPrice)." ISK was destroyed! $killID $url";
 
     $name = "";
     if (strlen(@$victimInfo['characterName']) > 0) $name = $victimInfo['characterName'];
