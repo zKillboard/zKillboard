@@ -8,7 +8,7 @@ class RelatedReport {
     {
         global $mdb, $redis;
 
-        if ($redis->llen("queueProcess") > 10) {
+        if ($redis->llen("queueRelated") > 1000) {
             $app->redirect('/');
             exit();
         }
