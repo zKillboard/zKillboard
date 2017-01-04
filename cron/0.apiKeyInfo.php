@@ -27,10 +27,6 @@ if ($threadNum == $max - 1 && ($zkbApis->size() == 0 || date('i') == 15)) {
     $apis = $mdb->find('apis');
     foreach ($apis as $api) {
         $errorCode = (int) @$api['errorCode'];
-        if (in_array($errorCode, [106, 203, 220, 222, 404])) {
-            //continue;
-        }
-
         $_id = (string) $api['_id'];
         $zkbApis->add($_id);
     }
@@ -71,6 +67,13 @@ function processApi($api, $apiServer, $mdb)
         default:
             Util::out("$httpCode / $errorCode received when checking API $keyID");
             updateErrorCode($mdb, $api, $errorCode);
+    }
+
+    switch ($errorCode) {
+        case 522:
+            Util::out("Removing $keyID $httpCode / $errorCode");
+            $mdb->remove("apis", $api);
+            break;
     }
 }
 
