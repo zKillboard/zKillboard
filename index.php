@@ -35,19 +35,6 @@ if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROT
 // Include Init
 require_once 'init.php';
 
-$fetchKey = "fetch:$uri";
-$body = $redis->get($fetchKey);
-if ($body !== false) {
-    $cached = new RedisTtlCounter('ttlc:cached', 300);
-    $cached->add(uniqid());
-    $ttl = $redis->ttl($fetchKey);
-    header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + $ttl));
-    header("Cache-Control: public, max-age=$ttl");
-    header("X-Cache: HIT");
-    echo $body;
-    exit();
-}
-
 $timer = new Timer();
 
 // Starting Slim Framework
@@ -56,11 +43,9 @@ $app = new \Slim\Slim($config);
 // Session
 session_set_save_handler(new RedisSessionHandler(), true);
 session_cache_limiter('');
-if ($uri == '/navbar/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp') {
-    ini_set('session.gc_maxlifetime', $cookie_time);
-    session_set_cookie_params($cookie_time);
-    session_start();
-}
+ini_set('session.gc_maxlifetime', $cookie_time);
+session_set_cookie_params($cookie_time);
+session_start();
 
 $ip = IP::get();
 

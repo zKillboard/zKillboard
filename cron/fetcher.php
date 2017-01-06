@@ -3,7 +3,7 @@
 require_once "../init.php";
 
 $bases = ['character', 'corporation', 'alliance', 'system', 'group', 'ship', 'faction', 'location', 'br', 'related', 'item', 'kills', 'war'];
-$cacheRules = ['/^\/$/' => 300, "/^\/kill\/.*/" => 3600];
+$cacheRules = ['/^\/$/' => 60, "/^\/kill\/.*/" => 3600];
 foreach ($bases as $base) {
     $rule = "/^\/$base\/.*/";
     $cacheRules[$rule] = 900;;
@@ -42,13 +42,17 @@ while ($minutely == date('Hi')) {
                     $result = getData($url, 0);
                     $code = $result['httpCode'];
                     if ($code == 200) {
-                        $redis->setex($redisKey, $ttl, $result['body']);
-                    } //else if ($code > 299) Util::out("Error $code for $uri");
-                    $redis->setex($fetchKey, 30, $code);
-                    $redis->zRem("fetchSetSorted", $uri);
+                        //$redis->setex($redisKey, $ttl, $result['body']);
+                        $redis->setex($fetchKey, 30, $code);
+                        @mkdir("$baseDir/public/cache${uri}", 0777, true);
+                        $file = "$baseDir/public/cache${uri}index.html";
+                        $redis->zadd("fetchSetCleanup", time() + $ttl, $uri);
+                        file_put_contents("$baseDir/public/cache${uri}index.html", $result['body']);
+                    }
                 }
             }
         }
+        $redis->zRem("fetchSetSorted", $uri);
     } else {
         usleep(100000);
     }
