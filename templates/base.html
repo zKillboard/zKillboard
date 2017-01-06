@@ -74,6 +74,10 @@
 			vertical-align: middle !important;
 			}
 		</style>
+                <script type="text/javascript">
+                    var characterID = {{ characterID }};
+                    var navbar = {% if characterID > 0%}false{% else %}true{% endif %};
+                </script>
 	</head>
 	<body>
 		<div class="content">
@@ -155,10 +159,9 @@
 
 		<script type="text/javascript">
                         $(document).ready(function() {
-                            $('#tracker-dropdown').load('/navbar/');
+                            if (navbar) $('#tracker-dropdown').load('/navbar/');
                         });
 
-			var characterID = {{ characterID }};
 			var datepicker = $('.datepicker').datepicker({
 				format: "mm/yyyy",
 				viewMode: 1,

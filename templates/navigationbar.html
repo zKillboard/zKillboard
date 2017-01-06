@@ -121,6 +121,7 @@
 							<li class="divider hidden-xs"></li>
 							<li><a href="/account/logout/">Logout</a></li>
                                                 </ul>
+                                                {% if characterID == 0 %}
 					        <ul class="dropdown-menu" id='char-loggedout'>
 							<form action="/ccplogin/" id="loginform">
 								<label class="checkbox"><input type="checkbox" name="scopes[]" value="characterFittingsWrite" checked>Allow zKillboard to write Fittings</label>
@@ -128,6 +129,7 @@
 								<input type="image" src="/img/ssologin.png">
 							</form>
                                                 </ul>
+                                                {% endif %}
 				</li>
 			</ul>
 		</div>
