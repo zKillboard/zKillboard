@@ -48,6 +48,9 @@ function beSocial($killID)
     $message = strlen($message) > 120 ? str_replace(' worth ', ': ', $message) : $message;
     $message = strlen($message) > 120 ? str_replace(' was destroyed!', '', $message) : $message;
 
+    $redis->zincrby("fetchSetSorted", 1000, "/kill/$killID/");
+    sleep(5);
+
     $redisMessage = [
         'action' => 'bigkill',
         'title' => "$name " . $victimInfo['shipName'],
