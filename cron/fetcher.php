@@ -2,24 +2,19 @@
 
 require_once "../init.php";
 
-$bases = ['character', 'corporation', 'alliance', 'system', 'group', 'ship', 'faction', 'location', 'br', 'related', 'item', 'kills', 'war'];
+$bases = ['character', 'corporation', 'alliance', 'system', 'group', 'ship', 'faction', 'location', 'br', 'related', 'item', 'kills', 'war', 'map'];
 $cacheRules = ['/^\/$/' => 60, "/^\/kill\/.*/" => 3600];
 foreach ($bases as $base) {
     $rule = "/^\/$base\/.*/";
     $cacheRules[$rule] = 900;;
 }
 
+$timer = new Timer();
 $minutely = date('Hi');
 while ($minutely == date('Hi')) {
     $next = $redis->zRange("fetchSetSorted", -1, -1, true);
 
-    if ($next !== false && sizeof($next) > 0) {
-        $uri = array_keys($next);
-        $uri = $uri[0];
-        $score = array_values($next);
-        $score = $score[0];
-        $redis->zRem("fetchSetSorted", $uri);
-
+    foreach ($next as $uri=>$score) {
         $redisKey = "fetch:$uri";
         $fetchKey = "fetch:$uri:fetched";
         $countKey = "fetch:$uri:count";
@@ -53,9 +48,8 @@ while ($minutely == date('Hi')) {
             }
         }
         $redis->zRem("fetchSetSorted", $uri);
-    } else {
-        usleep(100000);
     }
+    if (sizeof($next) == 0) sleep(1);
 }
 
 function getData($url)
