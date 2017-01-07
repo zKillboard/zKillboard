@@ -12,6 +12,7 @@ if ($charID !== null) {
     exit();
 }
 
+$esiFailure = new RedisTtlCounter('ttlc:esiFailure', 300);
 
 if (date('i') == 22 || $esi->size() == 0) {
     Util::out("Loading esi's");
@@ -26,6 +27,7 @@ $usleep = max(50000, min(1000000, floor((1 / ($esi->size() / 3600)) * 700000)));
 $redirect = str_replace("/cron/", "/cron/logs/", __FILE__) . ".log";
 $minutely = date('Hi');
 while ($minutely == date('Hi')) {
+    if ($esiFailure->count() > 100) sleep(1);
     $charID = (int) $esi->next();
     if ($charID == 0) {
         sleep(1);
@@ -80,6 +82,11 @@ function pullEsiKills($charID, $esi) {
 
                 $raw = doCall($url, $fields, $accessToken);
                 $json = json_decode($raw, true);
+
+                if (isset($json['error'])) {
+                    $esi->setTime($charID, time() + 300);
+                    return;
+                }
 
                 foreach ($json as $kill) {
                     if (!isset($kill['killmail_id'])) {
@@ -151,10 +158,11 @@ function doCall($url, $fields, $accessToken, $callType = 'GET')
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $callType);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     $result = curl_exec($ch);
-    if (curl_errno($ch) !== 0 || strpos($result, '"error"') !== false) {
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    if ($httpCode != 200) {
         $esiFailure = new RedisTtlCounter('ttlc:esiFailure', 300);
         $esiFailure->add(uniqid());
-        return "[]";
+        return "{\"error\": true, \"httpCode\": $httpCode}";
     }
     $esiSuccess = new RedisTtlCounter('ttlc:esiSuccess', 300);
     $esiSuccess->add(uniqid());
