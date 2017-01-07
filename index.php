@@ -17,6 +17,11 @@ if ($uri == "/kill/-1/") {
     header("Location: /keepstar1.html");
     exit();
 }
+// Some killboards and bots are idiots
+if (strpos($uri, "_detail") !== false) {
+    header('HTTP/1.1 404 This is not an EDK killboard.');
+    exit();
+}
 // Check to ensure we have a trailing slash, helps with caching
 if (substr($uri, -1) != '/') {
     header('Access-Control-Allow-Origin: *');
