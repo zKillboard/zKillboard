@@ -110,6 +110,8 @@ function htmlNotify (data)
             });
             notif.onclick = function () {
                 window.location = data.url;
+                window.focus();
+                notif.close();
             };
         }
     }
