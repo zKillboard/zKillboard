@@ -17,7 +17,7 @@ switch ($type) {
         $kills = Kills::getKills(['iskValue' => 10000000000, 'page' => $page, 'cacheTime' => 60]);
         break;
     case 'bigkills':
-        $kills = Kills::getKills(array('groupID' => array(547, 485, 1538, 513, 902, 941, 30, 659, 883), 'limit' => $limit, 'cacheTime' => 300, 'losses' => true, 'page' => $page));
+        $kills = Kills::getKills(array('groupID' => array(547, 485, 1538, 513, 902, 30, 659, 883), 'limit' => $limit, 'cacheTime' => 300, 'losses' => true, 'page' => $page));
         break;
     case 'citadels':
         $kills = Kills::getKills(array('groupID' => array(1657, 1404), 'limit' => $limit, 'cacheTime' => 300, 'losses' => true, 'page' => $page));
@@ -60,12 +60,6 @@ switch ($type) {
         break;
     case 'supers':
         $kills = Kills::getKills(array('groupID' => array(30, 659), 'limit' => $limit, 'cacheTime' => 300, 'losses' => true, 'page' => $page));
-        break;
-    case 'dust':
-        $kills = Kills::getKills(array('groupID' => array(351064, 351210), 'limit' => $limit, 'cacheTime' => 300, 'losses' => true, 'page' => $page));
-        break;
-    case 'dust_vehicles':
-        $kills = Kills::getKills(array('groupID' => '351210', 'limit' => $limit, 'cacheTime' => 300, 'losses' => true, 'page' => $page));
         break;
     case 'lowsec':
         $kills = Kills::getKills(array('lowsec' => true, 'page' => $page));
