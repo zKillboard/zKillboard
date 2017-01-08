@@ -45,13 +45,6 @@ $timer = new Timer();
 // Starting Slim Framework
 $app = new \Slim\Slim($config);
 
-// Session
-session_set_save_handler(new RedisSessionHandler(), true);
-session_cache_limiter('');
-ini_set('session.gc_maxlifetime', $cookie_time);
-session_set_cookie_params($cookie_time);
-session_start();
-
 $ip = IP::get();
 
 // Must rate limit now apparently
@@ -67,6 +60,13 @@ if ($isApiRequest) {
         header('HTTP/1.1 400 Slow down.');
         exit();
     }
+} else if ($uri == '/navbar/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp') {
+    // Session
+    session_set_save_handler(new RedisSessionHandler(), true);
+    session_cache_limiter('');
+    ini_set('session.gc_maxlifetime', $cookie_time);
+    session_set_cookie_params($cookie_time);
+    session_start();
 }
 
 if ($isApiRequest) {
@@ -75,8 +75,6 @@ if ($isApiRequest) {
 } else if ($uri == '/navbar/') {
     $nonApiR = new RedisTtlCounter('ttlc:nonApiRequests', 300);
     $nonApiR->add(uniqid());
-} else if ($uri != '/autocomplete/') {
-    $redis->zincrby("fetchSetSorted", 1, $uri);
 }
 
 if ($ip != '127.0.0.1') {
