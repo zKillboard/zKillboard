@@ -95,22 +95,28 @@ while ($timer->stop() < 59000) {
         unset($killmail['zkb']);
         unset($killmail['_id']);
 
-        if (!$mdb->exists('rawmails', ['killID' => (int) $id])) {
-            $killsLastHour->add($id);
-            if ($killmail == null) {
-                Util::out("saving null killmail? id is $id");
+        $sem = sem_get(3175);
+        try {
+            sem_acquire($sem);
+            if (!$mdb->exists('rawmails', ['killID' => (int) $id])) {
+                $killsLastHour->add($id);
+                if ($killmail == null) {
+                    Util::out("saving null killmail? id is $id");
+                }
+                $rawmails->save($killmail);
             }
-            $rawmails->save($killmail);
-        }
 
-        $killID = @$killmail['killID'];
-        if ($killID != 0) {
-            $crestmail['processed'] = true;
-            $crestmails->save($crestmail);
-            $queueProcess->push($killID);
-            ++$counter;
-        } else {
-            $crestmails->update($crestmail, array('$set' => array('processed' => false)));
+            $killID = @$killmail['killID'];
+            if ($killID != 0) {
+                $crestmail['processed'] = true;
+                $crestmails->save($crestmail);
+                $queueProcess->push($killID);
+                ++$counter;
+            } else {
+                $crestmails->update($crestmail, array('$set' => array('processed' => false)));
+            }
+        } finally {
+            sem_release($sem);
         }
     }
 }
