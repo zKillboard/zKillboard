@@ -5,13 +5,6 @@ use cvweiss\redistools\RedisTtlCounter;
 
 $pageLoadMS = microtime(true);
 
-// We can ignore Disqus
-$agent = @$_SERVER['HTTP_USER_AGENT'];
-if (@$_SERVER['HTTP_USER_AGENT'] == 'Disqus/1.0') {
-    die('');
-}
-//$isBot = strpos(strtolower($agent), "bot") !== false;
-
 $uri = @$_SERVER['REQUEST_URI'];
 if ($uri == "/kill/-1/") {
     header("Location: /keepstar1.html");
