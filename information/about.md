@@ -5,7 +5,7 @@ zKillboard is a collaborative effort by many people, see our GitHub repository f
 ## Contacts
 
 - Please read the [FAQ](/information/faq/) before contacting anyone with your questions.
-- Please use our [Ticket System](/tickets/) to contact zKillboard devs with any questions.
+- Please use our [Ticket System](/account/tickets/) to contact zKillboard devs with any questions.
 
 
 - Squizz Caphinator
