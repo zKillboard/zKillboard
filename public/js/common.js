@@ -109,6 +109,8 @@ function htmlNotify (data)
                 tag: data.url
             });
             notif.onclick = function () {
+                notif.close();
+                window.focus();
                 window.location = data.url;
             };
         }
