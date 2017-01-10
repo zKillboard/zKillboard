@@ -37,7 +37,7 @@ while ($iterations++ <= 1200) {
     $killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
     addInfo('Kills last hour', $killsLastHour->count());
     addInfo('Total Kills', $redis->get('zkb:totalKills'));
-    addInfo('Top killID', $mdb->findField('killmails', 'killID', [], ['killID' => -1]));
+    addInfo('Top killID', $mdb->findField('killmails', 'killID', ['cacheTime' => 60], ['killID' => -1]));
 
     addInfo('', 0);
     $nonApiR = new RedisTtlCounter('ttlc:nonApiRequests', 300);
