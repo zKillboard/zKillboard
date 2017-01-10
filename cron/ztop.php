@@ -40,10 +40,12 @@ while ($iterations++ <= 1200) {
     addInfo('Top killID', $mdb->findField('killmails', 'killID', [], ['killID' => -1]));
 
     addInfo('', 0);
-    $cached = new RedisTtlCounter('ttlc:cached', 300);
-    addInfo('Cached requests in last 5 minutes', $cached->count());
     $nonApiR = new RedisTtlCounter('ttlc:nonApiRequests', 300);
     addInfo('User requests in last 5 minutes', $nonApiR->count());
+    $uniqueUsers = new RedisTtlCounter('ttlc:unique_visitors', 300);
+    addInfo("Unique user IP's in last 5 minutes", $uniqueUsers->count());
+
+    addInfo('', 0);
     $apiR = new RedisTtlCounter('ttlc:apiRequests', 300);
     addInfo('API requests in last 5 minutes', $apiR->count());
     $visitors = new RedisTtlCounter('ttlc:visitors', 300);
