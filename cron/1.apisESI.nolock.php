@@ -39,6 +39,9 @@ while ($minutely == date('Hi')) {
 
 function pullEsiKills($charID, $esi) {
     global $redis, $mdb;
+
+    $maxSiteKillID = $mdb->findField('killmails', 'killID', ['cacheTime' => 60], ['killID' => -1]);
+
     $sso = new RedisTimeQueue('tqApiSSO', 3600);
     $row = $mdb->findDoc("apisESI", ['characterID' => $charID], ['lastFetch' => 1]);
     if ($row === null) {
@@ -116,6 +119,9 @@ function pullEsiKills($charID, $esi) {
         $mdb->remove("apis", ['type' => 'char', 'userID' => $charID]);
         $sso->remove($charID);
         $redis->setex("apiVerified:$charID", 86400, time());
+
+        // Check active chars once an hour, check inactive chars every 12 hours
+        $esi->setTime($charID, time() + (3600 * ($maxKillID > ($maxSiteKillID - 1000000) ? 1 : 12)));
     }
     else {
         $mdb->remove("apisESI", $row);
