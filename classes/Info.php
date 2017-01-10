@@ -68,11 +68,11 @@ class Info
         global $redis;
 
         $redisKey = self::getRedisKey($type, $id);
-        $data = @$infoFieldCache[$redisKey];
+        $data = @self::$infoFieldCache[$redisKey];
         if ($data == null) {
             $data = $redis->hGetAll($redisKey);
             if ($data == null) $data = self::loadIntoRedis($type, $id);
-            $infoFieldCache[$redisKey] = $data;
+            self::$infoFieldCache[$redisKey] = $data;
         }
 
         return $data;
