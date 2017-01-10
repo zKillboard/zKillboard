@@ -57,7 +57,7 @@
 
 			//create our throttled search
 			this.data['throttle'] = setTimeout($.proxy(function() {
-				$.ajax('/autocomplete/', { 'data' : { 'query' : this.data['element'].val() }, 'type' : 'post', 'dataType' : 'json', 'success' : $.proxy(function(result) {
+				$.ajax('/autocomplete/' + this.data['element'].val() + '/', {'type' : 'get', 'dataType' : 'json', 'success' : $.proxy(function(result) {
 					//empty the dropdown and append the new data
 					this.data['menu'].empty().append($.map(result, $.proxy(function(item, index) {
 						return $('<li><a href="/' + item.type + '/' + item.id + '/">' + ((item.image != '') ? '<img src="https://image.eveonline.com/' + item.image + '" width="32" height="32" alt=" ">' : '') + item.name.replace(RegExp('(' + this.data['element'].val() + ')', "gi"), function($1, match){ return '<strong>' + match + '</strong>'; } ) + '<span><small>' + item.type + '</small></span></a></li>').attr('data-value', JSON.stringify(item));
