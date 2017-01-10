@@ -68,14 +68,14 @@ if ($isApiRequest) {
 } else if ($uri == '/navbar/') {
     $nonApiR = new RedisTtlCounter('ttlc:nonApiRequests', 300);
     $nonApiR->add(uniqid());
+    $uvisitors = new RedisTtlCounter('ttlc:unique_visitors', 300);
+    $uvisitors->add($ip);
 }
 
-if ($ip != '127.0.0.1') {
-    $visitors = new RedisTtlCounter('ttlc:visitors', 300);
-    $visitors->add($ip);
-    $requests = new RedisTtlCounter('ttlc:requests', 300);
-    $requests->add(uniqid());
-}
+$visitors = new RedisTtlCounter('ttlc:visitors', 300);
+$visitors->add($ip);
+$requests = new RedisTtlCounter('ttlc:requests', 300);
+$requests->add(uniqid());
 
 // Theme
 $theme = UserConfig::get('theme', 'cyborg');
