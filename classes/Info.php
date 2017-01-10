@@ -5,7 +5,7 @@ class Info
     /**
      * @var array Used for static caching of getInfoField results
      */
-    public static $infoFieldCache;
+    public static $infoFieldCache = [];
 
     public static function getRedisKey($type, $id)
     {
@@ -16,11 +16,12 @@ class Info
     {
         global $mdb, $redis;
 
+        if ($id == null) return;
         $redisKey = self::getRedisKey($type, $id);
         $searchType = ($type == 'shipTypeID' ? 'typeID' : $type);
         $data = $mdb->findDoc('information', ['type' => $searchType, 'id' => (int) $id]);
         if ($data === null) {
-            return;
+            return [];
         }
 
         unset($data['_id']);
@@ -49,7 +50,7 @@ class Info
 
         $multi = $redis->multi();
         $multi->hMSet($redisKey, $data);
-        $multi->expire($redisKey, 3600);
+        $multi->expire($redisKey, 86400);
         $multi->exec();
 
         return $data;
@@ -67,9 +68,14 @@ class Info
         global $redis;
 
         $redisKey = self::getRedisKey($type, $id);
-        $data = $redis->hGetAll($redisKey);
+        $data = @$infoFieldCache[$redisKey];
+        if ($data == null) {
+            $data = $redis->hGetAll($redisKey);
+            if ($data == null) $data = self::loadIntoRedis($type, $id);
+            $infoFieldCache[$redisKey] = $data;
+        }
 
-        return $data == null ? self::loadIntoRedis($type, $id) : $data;
+        return $data;
     }
 
     public static function getInfoDetails($type, $id)
@@ -671,6 +677,6 @@ class Info
         }
 
         return $returnID;
-die();
+        die();
+        }
     }
-}
