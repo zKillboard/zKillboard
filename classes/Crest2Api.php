@@ -1,10 +1,16 @@
 <?php
 
+use cvweiss\redistools\RedisCache;
+
 class Crest2Api
 {
     public static function convert($killID)
     {
-        global $mdb;
+        global $mdb, $redis;
+
+        $key = "crest2api:$killID";
+        $killmail = RedisCache::get($key);
+        if ($killmail != null) return $killmail;
 
         $crestmail = $mdb->findDoc('rawmails', ['killID' => $killID]);
         $kill = $mdb->findDoc('killmails', ['killID' => $killID]);
@@ -22,6 +28,8 @@ class Crest2Api
             $killmail['position'] = $crestmail['victim']['position'];
         }
         $killmail['zkb'] = $kill['zkb'];
+
+        RedisCache::set($key, $killmail, 3600);
 
         return $killmail;
     }
