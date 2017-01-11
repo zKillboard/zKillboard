@@ -1,5 +1,7 @@
 <?php
 
+use cvweiss\redistools\RedisCache;
+
 class Price
 {
     public static function getItemPrice($typeID, $kmDate, $fetch = false)
@@ -185,6 +187,21 @@ class Price
                     continue;
                 }
                 $mdb->set('prices', ['typeID' => $typeID], [$date => $avgPrice]);
+            }
+        }
+        if (sizeof($json['items']) == 0) {
+            $key = "zkb:market:" . date('H');
+            $market = RedisCache::get($key);
+            if ($market == null) {
+                $market = CrestTools::getJSON("$crestServer/market/prices/");
+                RedisCache::set($key, $market, 3600);
+            }
+            $date = date('Y-m-d');
+            foreach ($market['items'] as $item) {
+                if ($item['type']['id'] == $typeID) {
+                    $price = @$item['adjustedPrice'];
+                    if ($price > 0) $mdb->set('prices', ['typeID' => $typeID], [$date => $price]);
+                }
             }
         }
     }
