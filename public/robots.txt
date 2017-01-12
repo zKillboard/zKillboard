@@ -1,13 +1,13 @@
 User-agent: *
 Disallow: /api/*
 Disallow: */page/*
-Disallow: *related*
 Disallow: *stats*
 Disallow: *top*
 Disallow: *trophies*
-Disallow: /kill/-*
 Disallow: /detail*
 Disallow: /navbar/
+Disallow: /br/*
+Disallow: /related/*
 sitemap: https://zkillboard.com/sitemaps/sitemaps.xml
 
 
