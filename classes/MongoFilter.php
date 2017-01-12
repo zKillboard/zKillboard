@@ -237,6 +237,7 @@ class MongoFilter
                     break;
                 case 'nullsec':
                     $and[] = ['system.security' => ['$lt' => 0.05]];
+                    $and[] = ['system.regionID' => ['$lt' => 11000001]]; 
                     break;
                 case 'afterSequence':
                     $and[] = ['sequence' => ['$gt' => $value]];
