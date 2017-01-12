@@ -183,6 +183,9 @@ class Util
                         $parameters[$key] = $ints;
                     }
                     break;
+                case 'finalblow-only':
+                    $parameters[$key] = true;
+                    break;
                 case 'page':
                     $value = (int) $value;
                     if ($value < 1) {
