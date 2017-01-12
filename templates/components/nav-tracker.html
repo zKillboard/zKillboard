@@ -81,6 +81,7 @@ $("#tqStatus").html("{% if tqStatus == 'OFFLINE'%}<span class='red'>TQ {{ tqCoun
 $("#tracker-none").removeClass("hidden");
 $("#savefit").remove();
 $("#nosavefit").removeClass("hidden");
+$("#char-image").attr("src", "{{ image_character }}1_32.jpg");
 
 $(document).ready(function() {
     var date = new Date();
