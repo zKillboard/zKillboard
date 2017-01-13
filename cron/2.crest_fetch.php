@@ -29,15 +29,26 @@ $killqueue = new RedisQueue('queueKills2Pull');
 
 $counter = 0;
 $timer = new Timer();
-while ($timer->stop() < 59000) {
+$minutely = date('Hi');
+
+if ($pid > 0) {
+    while ($minutely == date('Hi')) {
+        $unprocessed = $crestmails->find(array('processed' => false))->sort(['killID' => -1]);
+        foreach ($unprocessed as $row) {
+            $killID = $row['killID'];
+            $key = "zkb:processing:$killID";
+            if ($redis->set($key, "processing", ['nx', 'ex' => 30]) === false) continue;
+
+            $killqueue->push($killID);
+        }
+        if ($redis->llen('queueKills2Pull') > ($max * 2)) $redis->sort('queueKills2Pull', ['sort' => 'desc', 'out' => 'queueKills2Pull']);
+        sleep(1);
+    }
+}
+
+while ($minutely == date('Hi')) {
     $killID = $killqueue->pop();
     if ($killID === null) {
-        if ($pid > 0) {
-            $unprocessed = $crestmails->find(array('processed' => false))->sort(['killID' => -1]);
-            foreach ($unprocessed as $row) {
-                $killqueue->push($row['killID']);
-            }
-        }
         continue;
     }
 
