@@ -17,11 +17,11 @@ class Trophies
         ['type' => 'General', 'name' => 'Get a kill in low sec', 'filter' => ['characterID' => '?', 'isVictim' => false, 'lowsec' => true], 'rank' => 5, 'link' => '../kills/lowsec'],
         ['type' => 'General', 'name' => 'Get a kill in null sec', 'filter' => ['characterID' => '?', 'isVictim' => false, 'nullsec' => true], 'rank' => 25, 'link' => '../kills/nullsec/'],
         ['type' => 'General', 'name' => 'Get a kill in w-space', 'filter' => ['characterID' => '?', 'isVictim' => false, 'w-space' => true], 'rank' => 125, 'link' => '../kills/w-space/'],
-        ['type' => 'Special', 'name' => 'Participate in a tournament', 'filter' => ['regionID' => 10000004, 'characterID' => '?'], 'rank' => 5000],
-        ['type' => 'Special', 'name' => 'Ganktastic: Kill 50 Freighters', 'statGroup' => ['groupID' => 513, 'field' => 'shipsDestroyed', 'value' => 50], 'rank' => 625],
+        ['type' => 'Special', 'name' => 'Participate in a tournament', 'filter' => ['regionID' => 10000004, 'characterID' => '?'], 'rank' => 5000, 'link' => '../regionID/10000004'],
+        ['type' => 'Special', 'name' => 'Ganktastic Bonus: Freighters must die', 'statGroup' => ['groupID' => 513, 'field' => 'shipsDestroyed', 'value' => 1], 'rank' => 625, 'link' => '../reset/group/513/losses/'],
 
-        ['type' => 'Special', 'name' => 'Backstab Special', 'filter' => ['characterID' => '?', 'isVictim' => false, 'awox' => true], 'rank' => 25, 'link' => '../awox/kills/'],
-        ['type' => 'Special', 'name' => 'My Back Hurts', 'filter' => ['characterID' => '?', 'isVictim' => true, 'awox' => true], 'rank' => 25, 'link' => '../awox/losses/'],
+        ['type' => 'Special', 'name' => 'Backstab Special: You awoxed!', 'filter' => ['characterID' => '?', 'isVictim' => false, 'awox' => true], 'rank' => 25, 'link' => '../awox/kills/'],
+        ['type' => 'Special', 'name' => 'My Back Hurts: Got awoxed!', 'filter' => ['characterID' => '?', 'isVictim' => true, 'awox' => true], 'rank' => 25, 'link' => '../awox/losses/'],
         ];
 
     public static function getTrophies($charID)
@@ -33,11 +33,11 @@ class Trophies
 
         $stats = $mdb->findDoc('statistics', ['type' => $type, 'id' => $charID]);
         $trophies = [];
-        $maxTrophyCount = 0;
-        $trophyCount = 0;
+        $maxLevelCount = 0;
+        $levelCount = 0;
 
         foreach (static::$conditions as $condition) {
-            ++$maxTrophyCount;
+            $maxLevelCount += 5;
             if (isset($condition['filter'])) {
                 $filter = $condition['filter'];
                 if (isset($filter['characterID'])) {
@@ -49,21 +49,21 @@ class Trophies
                     $part2 = MongoFilter::buildQuery($part2);
                     $query = ['$and' => [$query, $part2]];
                 }
-                $exists = $mdb->exists('killmails', $query);
-                $rank = $exists ? $condition['rank'] : 0;
-                $trophyCount += static::addTrophy($trophies, $condition, $exists, $rank, true);
+                $count = $mdb->count('killmails', $query);
+                $levelCount += static::addTrophy($trophies, $condition, $count > 0, $count);
+
             }
             if (isset($condition['stats'])) {
                 $field = $condition['stats']['field'];
                 $value = $condition['stats']['value'];
                 $met = @$stats[$field] >= $value;
-                $trophyCount += static::addTrophy($trophies, $condition, $met, (int) @$stats[$field]);
+                $levelCount += static::addTrophy($trophies, $condition, $met, (int) @$stats[$field]);
             }
             if (isset($condition['statGroup'])) {
                 $group = @$stats['groups'][$condition['statGroup']['groupID']];
                 $field = $condition['statGroup']['field'];
                 $value = $condition['statGroup']['value'];
-                $trophyCount += static::addTrophy($trophies, $condition, @$group[$field] >= $value, @$group[$field]);
+                $levelCount += static::addTrophy($trophies, $condition, @$group[$field] >= $value, @$group[$field]);
             }
         }
 
@@ -79,16 +79,17 @@ class Trophies
                 continue;
             }
 
-            $groupName = $row['name']; //Info::getInfoField('groupID', $groupID, 'name');
+            $groupName = $row['name'];
             $a = in_array(substr(strtolower($groupName), 0, 1), ['a', 'e', 'i', 'o', 'u']) ? 'an' : 'a';
             $values = @$stats['groups'][$groupID];
             $level = static::getLevel(@$values['shipsDestroyed']);
+            $levelCount += $level;
             $trophies['trophies']['Killed']["Kill $a $groupName"] = ['met' => (@$values['shipsDestroyed'] > 0), 'level' => $level, 'value' => (int) @$values['shipsDestroyed'], 'next' => static::getNext(@$values['shipsDestroyed']), 'link' => "/character/$charID/kills/reset/group/$groupID/losses/"];
-            $trophyCount += @$values['shipsDestroyed'] > 0;
+            $levelCount += @$values['shipsDestroyed'] > 0;
             $level = static::getLevel(@$values['shipsLost']);
+            $levelCount += $level;
             $trophies['trophies']['Lost']["Lose $a $groupName"] = ['met' => (@$values['shipsLost'] > 0), 'level' => $level, 'value' => (int) @$values['shipsLost'], 'next' => static::getNext(@$values['shipsLost']), 'link' => "/character/$charID/losses/group/$groupID/"];
-            $trophyCount += @$values['shipsLost'] > 0;
-            $maxTrophyCount += 2;
+            $maxLevelCount += 10;
         }
 
         $level = 0;
@@ -96,8 +97,8 @@ class Trophies
         do {
             $total = $total * 2;
             ++$level;
-        } while ($total < $trophyCount);
-        $completed = number_format(($trophyCount / $maxTrophyCount) * 100, 0);
+        } while ($total < $levelCount);
+        $completed = number_format(($levelCount / $maxLevelCount) * 100, 0);
 
         $total = 0;
         $count = 0;
@@ -109,13 +110,12 @@ class Trophies
         }
         $levelAvg = floor($total / ($count * 5) * 10);
 
-        $trophies['level'] = $level;
+        $trophies['level'] = self::getLevel($levelCount);
         $trophies['levelAvg'] = $levelAvg;
-        $trophies['trophyCount'] = $trophyCount;
-        $trophies['maxTrophyCount'] = $maxTrophyCount;
+        $trophies['levelCount'] = $levelCount;
+        $trophies['maxLevelCount'] = $maxLevelCount;
         $trophies['nextLevel'] = pow(2, $level);
         $trophies['completedPct'] = $completed;
-        $trophies['misc'] = "Level $level / $trophyCount of $maxTrophyCount trophies / $completed% complete.";
 
         return $trophies;
     }

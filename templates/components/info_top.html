@@ -130,6 +130,12 @@
 				<td itemprop="members">{% if detail.memberCount == 0 %}(Closed){% else %}{{ detail.memberCount | number_format(0) }}{% endif %}</td>
 			</tr>
             {% endif %}
+                {% if statistics.trophies.levels %}
+			<tr>
+				<th>Trophies:</th>
+				<td itemprop="trophies"><a href='/character/{{ detail.characterID }}/trophies/'>{{ statistics.trophies.levels }} / {{statistics.trophies.max}} <img src='https://zkillboard.com/img/level/level{{ (statistics.trophies.levels / 100)|round(0,"floor")|number_format(0) }}.gif'/></a></td>
+			</tr>
+                {% endif %}
 		</tbody>
         </table>
 		{% endif %}

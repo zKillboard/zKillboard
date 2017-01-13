@@ -78,6 +78,7 @@ function calcStats($row)
 
     // Update the sequence
     $stats['sequence'] = $newSequence;
+    if ($type == 'characterID') $stats['calcTrophies'] = true;
     // save it
     $mdb->getCollection('statistics')->save($stats);
 
