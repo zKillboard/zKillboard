@@ -37,7 +37,7 @@ if ($pid > 0) {
         foreach ($unprocessed as $row) {
             $killID = $row['killID'];
             $key = "zkb:processing:$killID";
-            if ($redis->set($key, "processing", ['nx', 'ex' => 30]) === false) continue;
+            if ($redis->set($key, "processing", ['nx', 'ex' => 86400]) === false) continue;
 
             $killqueue->push($killID);
         }
@@ -57,6 +57,9 @@ while ($minutely == date('Hi')) {
     foreach ($unprocessed as $crestmail) {
         $id = $crestmail['killID'];
         $hash = $crestmail['hash'];
+
+        $key = "zkb:processing:$id";
+        $redis->expire($key, 60);
 
         $killmail = $mdb->findDoc('rawmails', ['killID' => (int) $id]);
         if ($killmail === null) {
