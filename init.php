@@ -28,8 +28,8 @@ do {
     $attempts++;
     try {
         $redis = new Redis();
-        $redis->connect($redisServer, $redisPort, 3600);
-        $redis->ping();
+        $redis->pconnect($redisServer, $redisPort, 3600);
+        $redis->clearLastError();
         $loaded = true;
     } catch (Exception $exx) {
         $loaded = false;

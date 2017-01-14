@@ -182,3 +182,69 @@ ul.autocomplete span { position: absolute; top: 10px; right: 5px; }
 #loginform {
 	padding: 0px 10px;
 }
+
+.ttooltip, .arrow:after {
+  background: black;
+  border: 2px solid white;
+}
+
+.X {
+    position: relative;
+    left: 200px;
+    cursor: pointer;
+    text-align: right;
+    margin-bottom: 5px;
+}
+.ttooltip {
+  opacity: 0;
+  width: 250px;
+  display: inline-block;
+  position: absolute;
+  padding: 10px 20px;
+  color: white;
+  border-radius: 10px;
+  margin-top: 20px;
+  font: bold 14px "Helvetica Neue", Sans-Serif;
+  font-stretch: condensed;
+  text-decoration: none;
+  box-shadow: 0 0 7px black;
+}
+.arrow {
+  width: 70px;
+  height: 16px;
+  overflow: hidden;
+  position: absolute;
+  left: 50%;
+  margin-left: -35px;
+  bottom: -16px;
+}
+.arrow:after {
+  content: "";
+  position: absolute;
+  left: 20px;
+  top: -20px;
+  width: 25px;
+  height: 25px;
+  -webkit-box-shadow: 6px 5px 9px -9px black,
+                      5px 6px 9px -9px black;
+  -moz-box-shadow: 6px 5px 9px -9px black,
+                   5px 6px 9px -9px black;
+  box-shadow: 6px 5px 9px -9px black,
+              5px 6px 9px -9px black;
+  -webkit-transform: rotate(45deg);
+  -moz-transform:    rotate(45deg);
+  -ms-transform:     rotate(45deg);
+  -o-transform:      rotate(45deg);
+}
+.ttooltip.active {
+  opacity: 1;
+  margin-top: 5px;
+  -webkit-transition: all 0.2s ease;
+  -moz-transition:    all 0.2s ease;
+  -ms-transition:     all 0.2s ease;
+  -o-transition:      all 0.2s ease;
+}
+.ttooltip.out {
+  opacity: 0;
+  margin-top: -20px;
+}

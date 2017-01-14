@@ -38,10 +38,20 @@ $("#cansavefit").removeClass("hidden");
 
 {% set message = getMessage() %}
 {% if message %}
-$(document).ready(function() {
-        $("#modalMessageBody").html("{{ message }}");
-        $("#modalMessage").modal('show');
-});
+
+    addToolTip($("#usermenu"), "{{ message }}");
+
+{% else %}
+
+if ($(window).width() > 800 && localStorage) {
+    if (!localStorage.getItem('tracker-tip')) {
+        localStorage.setItem('tracker-tip', true);
+        addToolTip($("#tracker-menu"), "Click the Tracker dropdown to see your character, corporation, and alliance if you're in one.");
+    } else if ($("#track-entity").length == 1 && !localStorage.getItem('tracker-entity-tip')) {
+        localStorage.setItem('tracker-entity-tip', true);
+        addToolTip($("#track-entity"), "Click the <i class='fa fa-plus' style='color: green;'></i> or <i class='fa fa-minus' style='color: red';></i> next to the name to add or remove from your Tracker's dropdown.");
+    }
+}
 {% endif %}
 
 console.log("nav loaded");
@@ -88,8 +98,7 @@ $(document).ready(function() {
     var foo = 'zkbLoginMsg' + date.getUTCFullYear() + '' + (date.getUTCMonth() + 1) + '' + date.getUTCDate();
     if ($(window).width() > 800 && localStorage) {
         if (!localStorage.getItem(foo)) {
-            $("#modalMessageBody").html("Login to retrieve your character's entire killmail history from Dec. 2007 to today.");
-            $("#modalMessage").modal('show');
+            addToolTip($("#usermenu"), "<a href='#' onClick='$(\"#ssologinimage\").click(); return false'>Login</a> to retrieve your character's entire killmail history from Dec. 2007 to today.");
             localStorage.setItem(foo, true);
         }
     }

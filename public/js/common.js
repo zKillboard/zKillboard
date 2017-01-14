@@ -172,3 +172,16 @@ function sendCrestUrl() {
     url = a.join('');
     $.get(url);
 }
+
+function addToolTip(el, msg) {
+    $('#tipmsg').html(msg);
+    var tt = $('#ttooltip').first();
+
+    var pos = el.offset();
+
+    tt.css({
+        position: 'absolute',
+        top: pos.top + 45,
+        left: pos.left - 200
+    }).addClass('active').removeClass('hidden');
+}

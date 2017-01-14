@@ -42,7 +42,7 @@
 						<li><a href="/kills/supers/">Supers</a></li>
 					</ul>
 				</li>
-				<li class="dropdown">
+				<li class="dropdown" id="tracker-menu">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Tracker <b class="caret"></b></a>
 					<ul class="dropdown-menu" id='tracker-dropdown'>
 						{% if sessionusername %}
@@ -103,7 +103,7 @@
 						<li><a href="/information/payments/">Payments</a></li>
 					</ul>
 				</li>
-				<li class="dropdown hidden-xs">
+				<li id='usermenu' class="dropdown hidden-xs">
 					<a href="#" class="dropdown-toggle hidden-xs" data-toggle="dropdown">
                                         {% if characterID > 0 %}
                                             <img id='char-image' src="{{ image_character }}{{ characterID }}_32.jpg" style='height: 32px; width: 32px; padding: 0px; margin: 0px; margin-top: -8px;'/>
@@ -126,7 +126,7 @@
 							<form action="/ccplogin/" id="loginform">
 								<label class="checkbox"><input type="checkbox" name="scopes[]" value="characterFittingsWrite" checked>Allow zKillboard to write Fittings</label>
 								<label class="checkbox"><input type="checkbox" name="scopes[]" value="esi-killmails.read_killmails.v1" checked>Allow zKillboard to read your Kills</label>
-								<input type="image" src="/img/ssologin.png">
+								<input id='ssologinimage' type="image" src="/img/ssologin.png">
 							</form>
                                                 </ul>
                                                 {% endif %}
