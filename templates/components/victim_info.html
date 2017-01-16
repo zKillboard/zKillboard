@@ -61,7 +61,7 @@
         {% endif %}
 	<tr>
 		<th>Time:</th>
-		<td class="info_kill_dttm">{{ killdata.info.dttm }}</td>
+		<td class="info_kill_dttm">{{ killdata.info.dttm|date('Y-m-d H:i') }}</td>
 	</tr>
 	<tr>
 		<th>Points:</th>
