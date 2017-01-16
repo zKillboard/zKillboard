@@ -1,0 +1,21 @@
+<script type="text/javascript">
+$("#char-loggedin").remove();
+$("#tracker-none").removeClass("hidden");
+$("#savefit").remove();
+$("#nosavefit").removeClass("hidden");
+$("#char-image").attr("src", "/img/1_32.jpg");
+
+$(document).ready(function() {
+    var date = new Date();
+    var foo = 'zkbLoginMsg' + date.getUTCFullYear() + '' + (date.getUTCMonth() + 1) + '' + date.getUTCDate();
+    if ($(window).width() > 800 && localStorage) {
+        if (!localStorage.getItem(foo)) {
+            addToolTip($("#usermenu"), "<a href='#' onClick='$(\"#ssologinimage\").click(); return false'>Login</a> to retrieve your character's entire killmail history from Dec. 2007 to today.");
+            localStorage.setItem(foo, true);
+        }
+    }
+});
+
+
+</script>
+<li>Please log in first.</li>
