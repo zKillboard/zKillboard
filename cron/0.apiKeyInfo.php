@@ -56,7 +56,7 @@ function processApi($api, $apiServer, $mdb)
 
     switch ($httpCode) {
         case 200:
-            processKeyInfo($mdb, $keyID, $vCode, $xml);
+            processKeyInfo($mdb, $api, $keyID, $vCode, $xml);
             updateErrorCode($mdb, $api, 0);
             break;
         case 400:
@@ -85,11 +85,12 @@ function updateErrorCode($mdb, $api, $errorCode)
     $mdb->set('apis', $api, ['errorCode' => (int) $errorCode, 'lastFetched' => time()]);
 }
 
-function processKeyInfo($mdb, $keyID, $vCode, $xml)
+function processKeyInfo($mdb, $api, $keyID, $vCode, $xml)
 {
     // Ensure this is a Killmail API
     $accessMask = (int) (string) $xml->result->key['accessMask'];
     if (!($accessMask & 256)) {
+        $mdb->remove("apis", $api);
         return;
     }
 
