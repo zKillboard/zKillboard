@@ -177,6 +177,7 @@ while ($minute == date('Hi')) {
         $apiVerifiedSet->add(time(), $charID);
 
         $redis->setex("apiVerified:$charID", 86400, time());
+        $mdb->remove("apis", ['type' => 'char', 'userID' => $charID]);
 
         // If we got new kills tell the log about it
         if ($killsAdded > 0) {
