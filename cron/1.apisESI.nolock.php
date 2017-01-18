@@ -73,7 +73,6 @@ function pullEsiKills($charID, $esi) {
     $headers[] = 'Authorization: Bearer ' . $accessToken;
 
     do {
-        //if ($maxKillID != 0) usleep(100000);
         $url = "https://esi.tech.ccp.is/v1/characters/$charID/killmails/recent/";
         $fields = ['max_count' => 50, 'datasource' => 'tranquility'];
         if ($minKillID !== 999999999999) $fields['max_kill_id'] = $minKillID;
