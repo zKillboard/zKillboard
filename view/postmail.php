@@ -52,16 +52,14 @@ if ($_POST) {
                         exit();
                     }
                     $crest = $mdb->findDoc('crestmails', ['killID' => $killID, 'hash' => $hash]);
-                    if (@$crest['errorCode'] !== null) {
+                    if ($crest === null) {
+                        $error = "Our processing queue deleted your submission. Was it even a valid killmail?";
+                    } else if (@$crest['errorCode'] !== null) {
                         $error = "CCP's CREST server threw an errorCode ".$crest['errorCode'].' for your killmail. We cannot retrieve the information to post your killmail at this time until CCP fixes this error.';
                     } elseif ($crest['processed'] === null) {
                         Log::log("$killID $hash failing, will keep trying");
                         $mdb->set('crestmails', ['killID' => $killID, 'hash' => $hash], ['processed' => false]);
                         $error = '';
-                        //$error = "There is an error with the killmail at the CREST endpoint (aka it is CCP's fault). We'll let CCP know. Your kill has still been submitted and we'll process it as soon as the error has been fixed. Thank you.";
-                    }
-                    if (@$crest['npcOnly']) {
-                        $error = 'This is an NPC kill and therefore has not been processed';
                     }
 
                     if ($error == '') {
