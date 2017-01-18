@@ -253,9 +253,9 @@ class CrestSSO
         return $accessToken;
     }
 
-    public static function crestGet($url)
+    public static function crestGet($url, $accessToken = null)
     {
-        $accessToken = self::getAccessToken();
+        $accessToken = $accessToken == null ? self::getAccessToken() : $accessToken;
         $authHeader = "Authorization: Bearer $accessToken";
 
         $ch = curl_init();
@@ -272,9 +272,9 @@ class CrestSSO
         return $json;
     }
 
-    public static function crestPost($url, $fields)
+    public static function crestPost($url, $fields, $accessToken = null)
     {
-        $accessToken = self::getAccessToken();
+        $accessToken = $accessToken == null ? self::getAccessToken() : $accessToken;
         $authHeader = "Authorization: Bearer $accessToken";
         $data = json_encode($fields);
 

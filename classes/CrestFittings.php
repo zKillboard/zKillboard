@@ -2,13 +2,22 @@
 
 class CrestFittings
 {
-    public static function saveFitting($killID)
+    public static function saveFitting($killID, $charID = 0)
     {
         global $mdb, $crestServer;
 
+        $charID = $charID == 0 ? User::getUserID() : $charID;
+        $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => 'characterFittingsWrite']);
+        if ($row == null) {
+            return ['message' => 'You have not given zkillboard permission to save fits to your account.'];
+        }
+        $accessToken = CrestSSO::getAccessToken($charID, 'none', $row['refreshToken']);
+
         $killmail = $mdb->findDoc('rawmails', ['killID' => (int) $killID]);
         $victim = $killmail['victim'];
+
         header('Content-Type: application/json');
+
         $export = [];
         $charName = Info::getInfoField('characterID', (int) @$victim['character']['id'], 'name')."'s ";
         $shipName = Info::getInfoField('shipTypeID', $victim['shipType']['id'], 'name');
@@ -37,12 +46,12 @@ class CrestFittings
             return ['message' => 'Cannot save this fit, no hardware.'];
         }
 
-        $decode = CrestSSO::crestGet('https://crest-tq.eveonline.com/decode/');
+        $decode = CrestSSO::crestGet('https://crest-tq.eveonline.com/decode/', $accessToken);
         if (isset($decode['message'])) {
             return $decode;
         }
-        $character = CrestSSO::crestGet($decode['character']['href']);
-        $result = CrestSSO::crestPost($character['fittings']['href'], $export);
+        $character = CrestSSO::crestGet($decode['character']['href'], $accessToken);
+        $result = CrestSSO::crestPost($character['fittings']['href'], $export, $accessToken);
         if ($result['httpCode'] == 201) {
             return ['message' => "Fit successfully saved to your character's fittings."];
         }
