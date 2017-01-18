@@ -107,15 +107,19 @@ class Util
         return number_format($value, $numDecimals).self::$formatIskIndexes[$iskIndex];
     }
 
-    public static function convertUriToParameters($additionalParameters = array(), $addExtraParameters = true)
+    public static function convertUriToParameters()
     {
         $parameters = array();
         $uri = $_SERVER['REQUEST_URI'];
         $split = explode('/', $uri);
+        array_shift($split);
         $currentIndex = 0;
+        $splitCount = count($split);
         foreach ($split as $key) {
-            $value = $currentIndex + 1 < count($split) ? $split[$currentIndex + 1] : null;
+            $value = $currentIndex + 1 < $splitCount ? $split[$currentIndex + 1] : null;
             switch ($key) {
+                case 'api':
+                case 'api-only':
                 case 'kills':
                 case 'losses':
                 case 'w-space':
@@ -129,6 +133,10 @@ class Util
                 case 'awox':
                 case 'no-attackers':
                 case 'no-items':
+                case 'asc':
+                case 'desc':
+                case 'json':
+                case 'combined':
                     $parameters[$key] = true;
                     break;
                 case 'character':
@@ -245,23 +253,20 @@ class Util
                 case 'nolimit':
                     // This can and should be ignored since its a parameter that will remove limits for battle eeports
                     break;
+                case 'year':
+                    $value = (int) $value;
+                    if ($value < 2007) throw new Exception("$value is not a valid entry for $key");
+                    if ($value > date('Y')) throw new Exception("$value is not a valid entry for $key");
+                    $parameters[$key] = $value;
+                    break;
+                case 'month':
+                    $value = (int) $value;
+                    if ($value < 1 || $value > 12) throw new Exception("$value is not a valid entry for $key");
+                    $parameters[$key] = $value;
+                    break;
                 default:
-                    if ($addExtraParameters == true) {
-                        if (is_numeric($value) && $value < 0) {
-                            continue;
-                        } //throw new Exception("$value is not a valid entry for $key");
-                        if ($key != '' && $value != '') {
-                            $parameters[$key] = $value;
-                        }
-                    }
-
-                    // Add more parameters to the $parameters array
-                    if (!empty($additionalParameters)) {
-                        foreach ($additionalParameters as $extra) {
-                            if ($extra == $key) {
-                                $parameters[$key] = $value;
-                            }
-                        }
+                    if ($key != $value && $key != '' && $value != '') {
+                        $parameters[$key] = $value;
                     }
                     break;
             }

@@ -1,6 +1,6 @@
 <?php
 
-global $mdb, $redis, $uriParams;
+global $mdb, $redis;
 
 $key = $input[0];
 if (!isset($input[1])) {
@@ -70,7 +70,7 @@ if ($id <= 0) {
     $app->notFound();
 }
 
-$parameters = $uriParams;
+$parameters = Util::convertUriToParameters();
 @$page = max(1, $parameters['page']);
 global $loadGroupShips; // Can't think of another way to do this just yet
 $loadGroupShips = $key == 'group';

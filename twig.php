@@ -62,22 +62,6 @@ $twig->addGlobal('requestUriPager', $requestUri);
 $actualURI = implode('/', $explode);
 $twig->addGlobal('actualURI', $actualURI);
 
-$uriParams = [];
-try {
-    $uriParams = Util::convertUriToParameters();
-} catch (Exception $ex) {
-    if ($isApiRequest) {
-        // Let this get cached with a 200 to prevent repeated attempts
-        $result = ['error' => $ex->getMessage()];
-        echo json_encode($result);
-        exit();
-    }
-    header('Access-Control-Allow-Origin: *');
-    header('Access-Control-Allow-Methods: GET');
-    header('HTTP/ 400 '.$ex->getMessage());
-    die();
-}
-
 $twig->addGlobal('year', (isset($uriParams['year']) ? $uriParams['year'] : date('Y')));
 $twig->addGlobal('month', (isset($uriParams['month']) ? $uriParams['month'] : date('m')));
 // Twig globals
