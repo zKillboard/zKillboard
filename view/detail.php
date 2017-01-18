@@ -1,7 +1,5 @@
 <?php
 
-use cvweiss\redistools\RedisCache;
-
 global $mdb;
 
 if ($pageview == 'overview') {
@@ -30,121 +28,116 @@ if (!$exists) {
     return $app->render('404.html', array('message' => "KillID $id does not exist."), 404);
 }
 
-$killKey = "CacheKill:$id:$pageview";
-$details = RedisCache::get($killKey);
-if ($details == null) {
-    // Create the details on this kill
-    $killdata = Kills::getKillDetails($id);
-    $rawmail = $mdb->findDoc('rawmails', ['killID' => $id, 'cacheTime' => 120]);
+// Create the details on this kill
+$killdata = Kills::getKillDetails($id);
+$rawmail = $mdb->findDoc('rawmails', ['killID' => $id, 'cacheTime' => 120]);
 
-    // create the dropdown involved array
-    $allinvolved = $killdata['involved'];
-    $cnt = 0;
-    while ($cnt < 10) {
-        if (isset($allinvolved[$cnt])) {
-            $involved[] = $allinvolved[$cnt];
-            unset($allinvolved[$cnt]);
-        }
-        ++$cnt;
-        continue;
+// create the dropdown involved array
+$allinvolved = $killdata['involved'];
+$cnt = 0;
+while ($cnt < 10) {
+    if (isset($allinvolved[$cnt])) {
+        $involved[] = $allinvolved[$cnt];
+        unset($allinvolved[$cnt]);
     }
-    $topDamage = $finalBlow = null;
-    $first = null;
-    if (sizeof($killdata['involved']) > 1) {
-        foreach ($killdata['involved'] as $inv) {
-            if ($first == null) {
-                $first = $inv;
-            }
-            if (@$inv['finalBlow'] == 1) {
-                $finalBlow = $inv;
-            }
-            if ($topDamage == null && @$inv['characterID'] != 0) {
-                $topDamage = $inv;
-            }
-        }
-        // If only NPC's are on the mail give them credit for top damage...
-        if ($topDamage == null) {
-            $topDamage = $first;
-        }
-    }
-
-    $extra = array();
-    // And now give all the arrays and whatnots to twig..
-    if ($pageview == 'overview') {
-        $extra['items'] = Detail::combineditems(md5($id), $killdata['items']);
-        $extra['invAll'] = involvedCorpsAndAllis(md5($id), $killdata['involved']);
-        $extra['involved'] = $involved;
-        $extra['allinvolved'] = $allinvolved;
-    }
-    $insDate = (int) str_replace('-', '', substr($killdata['info']['dttm'], 0, 10));
-    $extra['insurance'] = $mdb->findDoc('insurance', ['typeID' => (int) $killdata['victim']['shipTypeID'], 'date' => $insDate]);
-    if (isset($extra['insurance']['Platinum']['payout'])) {
-        // No insurance is 40% of platinum
-        // http://wiki.eveuniversity.org/Insuring_your_ship
-        $extra['insurance']['None'] = ['cost' => 0, 'payout' => floor(0.4 * $extra['insurance']['Platinum']['payout'])];
-    }
-
-    $extra['location'] = @$killdata['info']['location']['itemName'];
-    if (isset($rawmail['victim']['position']) && isset($killdata['info']['location']['itemID'])) {
-        $position = $rawmail['victim']['position'];
-        $locationID = $killdata['info']['location']['itemID'];
-        $auDistance = Util::getAuDistance($position, $locationID, $killdata['info']['system']['solarSystemID']);
-        if ($auDistance > 0.01) {
-            $extra['locationDistance'] = '('.$auDistance.'au)';
-        }
-    }
-    $extra['totalisk'] = $killdata['info']['zkb']['totalValue'];
-    $extra['droppedisk'] = droppedIsk(md5($id), $killdata['items']);
-    $extra['shipprice'] = Price::getItemPrice($killdata['victim']['shipTypeID'], date('Y-m-d H:i', strtotime($killdata['info']['dttm'])));
-    $extra['lostisk'] = $extra['shipprice'] + destroyedIsk(md5($id), $killdata['items']);
-    $extra['fittedisk'] = fittedIsk(md5($id), $killdata['items']);
-    $extra['relatedtime'] = date('YmdH00', strtotime($killdata['info']['dttm']));
-    $extra['fittingwheel'] = Detail::eftarray(md5($id), $killdata['items'], @$killdata['victim']['characterID']);
-    $extra['involvedships'] = involvedships($killdata['involved']);
-    $extra['involvedshipscount'] = count($extra['involvedships']);
-    $extra['totalprice'] = usdeurgbp($killdata['info']['zkb']['totalValue']);
-    $extra['destroyedprice'] = usdeurgbp($extra['lostisk']);
-    $extra['droppedprice'] = usdeurgbp($extra['droppedisk']);
-    $extra['fittedprice'] = usdeurgbp($extra['fittedisk']);
-    $extra['efttext'] = Fitting::EFT($extra['fittingwheel']);
-    $extra['dnatext'] = Fitting::DNA($killdata['items'], $killdata['victim']['shipTypeID']);
-    $extra['edkrawmail'] = 'deprecated - use CREST';
-    $extra['zkbrawmail'] = 'deprecated - use CREST';
-    $extra['slotCounts'] = Info::getSlotCounts($killdata['victim']['shipTypeID']);
-    $extra['commentID'] = $id;
-    $extra['crest'] = $mdb->findDoc('crestmails', ['killID' => $id, 'processed' => true]);
-    $extra['prevKillID'] = $mdb->findField('killmails', 'killID', ['cacheTime' => 300, 'killID' => ['$lt' => $id]], ['killID' => -1]);
-    $extra['nextKillID'] = $mdb->findField('killmails', 'killID', ['cacheTime' => 300, 'killID' => ['$gt' => $id]], ['killID' => 1]);
-    $extra['warInfo'] = War::getKillIDWarInfo($id);
-    //$extra["insertTime"] = Db::queryField("select insertTime from zz_killmails where killID = :killID", "insertTime", array(":killID" => $id), 300);
-
-    $systemID = $killdata['info']['system']['solarSystemID'];
-    $data = Info::getWormholeSystemInfo($systemID);
-    $extra['wormhole'] = $data;
-
-    $url = 'https://'.$_SERVER['SERVER_NAME']."/detail/$id/";
-
-    if ($killdata['victim']['groupID'] == 29) {
-        $query = ['$and' => [['involved.characterID' => (int) $killdata['victim']['characterID']], ['killID' => ['$gte' => ($id - 200)]], ['killID' => ['$lt' => $id]], ['vGroupID' => ['$ne' => 29]]]];
-        $relatedKill = $mdb->findDoc('killmails', $query);
-        if ($relatedKill) {
-            $relatedShip = ['killID' => $relatedKill['killID'], 'shipTypeID' => $relatedKill['involved'][0]['shipTypeID']];
-        }
-    } else {
-        $query = ['$and' => [['involved.characterID' => (int) @$killdata['victim']['characterID']], ['killID' => ['$lte' => ($id + 200)]], ['killID' => ['$gt' => $id]], ['vGroupID' => 29]]];
-        $relatedKill = $mdb->findDoc('killmails', $query);
-        if ($relatedKill) {
-            $relatedShip = ['killID' => $relatedKill['killID'], 'shipTypeID' => $relatedKill['involved'][0]['shipTypeID']];
-        }
-    }
-    Info::addInfo($relatedShip);
-    $killdata['victim']['related'] = $relatedShip;
-
-    $extra['isExploit'] = in_array($id, [55403284]);
-
-    $details = array('pageview' => $pageview, 'killdata' => $killdata, 'extra' => $extra, 'message' => $message, 'flags' => Info::$effectToSlot, 'topDamage' => $topDamage, 'finalBlow' => $finalBlow, 'url' => $url);
-     RedisCache::set($killKey, $details, 60);
+    ++$cnt;
+    continue;
 }
+$topDamage = $finalBlow = null;
+$first = null;
+if (sizeof($killdata['involved']) > 1) {
+    foreach ($killdata['involved'] as $inv) {
+        if ($first == null) {
+            $first = $inv;
+        }
+        if (@$inv['finalBlow'] == 1) {
+            $finalBlow = $inv;
+        }
+        if ($topDamage == null && @$inv['characterID'] != 0) {
+            $topDamage = $inv;
+        }
+    }
+    // If only NPC's are on the mail give them credit for top damage...
+    if ($topDamage == null) {
+        $topDamage = $first;
+    }
+}
+
+$extra = array();
+// And now give all the arrays and whatnots to twig..
+if ($pageview == 'overview') {
+    $extra['items'] = Detail::combineditems(md5($id), $killdata['items']);
+    $extra['invAll'] = involvedCorpsAndAllis(md5($id), $killdata['involved']);
+    $extra['involved'] = $involved;
+    $extra['allinvolved'] = $allinvolved;
+}
+$insDate = (int) str_replace('-', '', substr($killdata['info']['dttm'], 0, 10));
+$extra['insurance'] = $mdb->findDoc('insurance', ['typeID' => (int) $killdata['victim']['shipTypeID'], 'date' => $insDate]);
+if (isset($extra['insurance']['Platinum']['payout'])) {
+    // No insurance is 40% of platinum
+    // http://wiki.eveuniversity.org/Insuring_your_ship
+    $extra['insurance']['None'] = ['cost' => 0, 'payout' => floor(0.4 * $extra['insurance']['Platinum']['payout'])];
+}
+
+$extra['location'] = @$killdata['info']['location']['itemName'];
+if (isset($rawmail['victim']['position']) && isset($killdata['info']['location']['itemID'])) {
+    $position = $rawmail['victim']['position'];
+    $locationID = $killdata['info']['location']['itemID'];
+    $auDistance = Util::getAuDistance($position, $locationID, $killdata['info']['system']['solarSystemID']);
+    if ($auDistance > 0.01) {
+        $extra['locationDistance'] = '('.$auDistance.'au)';
+    }
+}
+$extra['totalisk'] = $killdata['info']['zkb']['totalValue'];
+$extra['droppedisk'] = droppedIsk(md5($id), $killdata['items']);
+$extra['shipprice'] = Price::getItemPrice($killdata['victim']['shipTypeID'], date('Y-m-d H:i', strtotime($killdata['info']['dttm'])));
+$extra['lostisk'] = $extra['shipprice'] + destroyedIsk(md5($id), $killdata['items']);
+$extra['fittedisk'] = fittedIsk(md5($id), $killdata['items']);
+$extra['relatedtime'] = date('YmdH00', strtotime($killdata['info']['dttm']));
+$extra['fittingwheel'] = Detail::eftarray(md5($id), $killdata['items'], @$killdata['victim']['characterID']);
+$extra['involvedships'] = involvedships($killdata['involved']);
+$extra['involvedshipscount'] = count($extra['involvedships']);
+$extra['totalprice'] = usdeurgbp($killdata['info']['zkb']['totalValue']);
+$extra['destroyedprice'] = usdeurgbp($extra['lostisk']);
+$extra['droppedprice'] = usdeurgbp($extra['droppedisk']);
+$extra['fittedprice'] = usdeurgbp($extra['fittedisk']);
+$extra['efttext'] = Fitting::EFT($extra['fittingwheel']);
+$extra['dnatext'] = Fitting::DNA($killdata['items'], $killdata['victim']['shipTypeID']);
+$extra['edkrawmail'] = 'deprecated - use CREST';
+$extra['zkbrawmail'] = 'deprecated - use CREST';
+$extra['slotCounts'] = Info::getSlotCounts($killdata['victim']['shipTypeID']);
+$extra['commentID'] = $id;
+$extra['crest'] = $mdb->findDoc('crestmails', ['killID' => $id, 'processed' => true]);
+$extra['prevKillID'] = $mdb->findField('killmails', 'killID', ['cacheTime' => 300, 'killID' => ['$lt' => $id]], ['killID' => -1]);
+$extra['nextKillID'] = $mdb->findField('killmails', 'killID', ['cacheTime' => 300, 'killID' => ['$gt' => $id]], ['killID' => 1]);
+$extra['warInfo'] = War::getKillIDWarInfo($id);
+//$extra["insertTime"] = Db::queryField("select insertTime from zz_killmails where killID = :killID", "insertTime", array(":killID" => $id), 300);
+
+$systemID = $killdata['info']['system']['solarSystemID'];
+$data = Info::getWormholeSystemInfo($systemID);
+$extra['wormhole'] = $data;
+
+$url = 'https://'.$_SERVER['SERVER_NAME']."/detail/$id/";
+
+if ($killdata['victim']['groupID'] == 29) {
+    $query = ['$and' => [['involved.characterID' => (int) $killdata['victim']['characterID']], ['killID' => ['$gte' => ($id - 200)]], ['killID' => ['$lt' => $id]], ['vGroupID' => ['$ne' => 29]]]];
+    $relatedKill = $mdb->findDoc('killmails', $query);
+    if ($relatedKill) {
+        $relatedShip = ['killID' => $relatedKill['killID'], 'shipTypeID' => $relatedKill['involved'][0]['shipTypeID']];
+    }
+} else {
+    $query = ['$and' => [['involved.characterID' => (int) @$killdata['victim']['characterID']], ['killID' => ['$lte' => ($id + 200)]], ['killID' => ['$gt' => $id]], ['vGroupID' => 29]]];
+    $relatedKill = $mdb->findDoc('killmails', $query);
+    if ($relatedKill) {
+        $relatedShip = ['killID' => $relatedKill['killID'], 'shipTypeID' => $relatedKill['involved'][0]['shipTypeID']];
+    }
+}
+Info::addInfo($relatedShip);
+$killdata['victim']['related'] = $relatedShip;
+
+$extra['isExploit'] = in_array($id, [55403284]);
+
+$details = array('pageview' => $pageview, 'killdata' => $killdata, 'extra' => $extra, 'message' => $message, 'flags' => Info::$effectToSlot, 'topDamage' => $topDamage, 'finalBlow' => $finalBlow, 'url' => $url);
 
 $app->render('detail.html', $details);
 
