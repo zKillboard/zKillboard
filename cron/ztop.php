@@ -10,8 +10,8 @@ $priorKillLog = 0;
 
 $deltaArray = [];
 
-$iterations = 0;
-while ($iterations++ <= 1200) {
+$hour = date('H');
+while ($hour == date('H')) {
     ob_start();
     $infoArray = [];
 
