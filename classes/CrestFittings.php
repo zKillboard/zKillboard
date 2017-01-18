@@ -53,6 +53,7 @@ class CrestFittings
         $character = CrestSSO::crestGet($decode['character']['href'], $accessToken);
         $result = CrestSSO::crestPost($character['fittings']['href'], $export, $accessToken);
         if ($result['httpCode'] == 201) {
+            $mdb->set("scopes", $row, ['lastFetch' => $mdb->now()]);
             return ['message' => "Fit successfully saved to your character's fittings."];
         }
 
