@@ -37,10 +37,6 @@ if (date('i') == 41 && ($threadNum == 4 || $threadNum == 5)) {
 while ($minute == date('Hi')) {
     $id = (int) $timeQueue->next();
     if ($id > 0) {
-        if ($redis->get("ssoFetched::$id") === "1") {
-            continue;
-        }
-
         $api = $mdb->findDoc($collection, [$field => $id], ['lastFetched' => 1]);
         if ($api === null) {
             $timeQueue->remove($id);
@@ -63,8 +59,7 @@ while ($minute == date('Hi')) {
             $redis->setex("apiVerified:$id", 86400, time());
         } catch (Exception $ex) {
             KillmailParser::updateApiRow($mdb, $collection, $api, $ex->getCode());
-            $mdb->remove($collection, $api);
-            $timeQueue->remove($id);
+            $timeQueue->setTime($id, time() + 300);
         }
         sleep(1);
     }
