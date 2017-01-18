@@ -29,9 +29,6 @@ echo "Done\n";
 echo "\nCreating collection apis ... ";
 $apis = $db->createCollection("apis");
 echo "Done\n";
-echo "Creating index : 'keyID' => 1, 'vCode' => 1, with sparse = 0 and unique = 0 ... ";
-$apis->ensureIndex(array('keyID' => 1, 'vCode' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
 echo "Creating index : 'lastApiUpdate' => 1, with sparse = 0 and unique = 0 ... ";
 $apis->ensureIndex(array('lastApiUpdate' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
@@ -44,6 +41,9 @@ echo "Done\n";
 echo "Creating index : 'errorCode' => 1, with sparse = 1 and unique = 0 ... ";
 $apis->ensureIndex(array('errorCode' => 1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
+echo "Creating index : 'keyID' => 1, 'vCode' => 1, with sparse = 0 and unique = 1 ... ";
+$apis->ensureIndex(array('keyID' => 1, 'vCode' => 1), array("sparse" => 0, "unique" => 1));
+echo "Done\n";
 
 // apisCrest
 echo "\nCreating collection apisCrest ... ";
@@ -54,17 +54,6 @@ $apisCrest->ensureIndex(array('lastFetch' => 1), array("sparse" => 0, "unique" =
 echo "Done\n";
 echo "Creating index : 'characterID' => 1, with sparse = 0 and unique = 0 ... ";
 $apisCrest->ensureIndex(array('characterID' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-
-// apisESI
-echo "\nCreating collection apisESI ... ";
-$apisESI = $db->createCollection("apisESI");
-echo "Done\n";
-echo "Creating index : 'characterID' => 1, with sparse = 0 and unique = 0 ... ";
-$apisESI->ensureIndex(array('characterID' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-echo "Creating index : 'lastFetch' => 1, with sparse = 0 and unique = 0 ... ";
-$apisESI->ensureIndex(array('lastFetch' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // battles
@@ -494,6 +483,17 @@ echo "Creating index : 'killID' => 1, with sparse = 0 and unique = 1 ... ";
 $rawmails->ensureIndex(array('killID' => 1), array("sparse" => 0, "unique" => 1));
 echo "Done\n";
 
+// scopes
+echo "\nCreating collection scopes ... ";
+$scopes = $db->createCollection("scopes");
+echo "Done\n";
+echo "Creating index : 'characterID' => 1, 'scope' => 1, with sparse = 0 and unique = 1 ... ";
+$scopes->ensureIndex(array('characterID' => 1, 'scope' => 1), array("sparse" => 0, "unique" => 1));
+echo "Done\n";
+echo "Creating index : 'characterID' => 1, with sparse = 0 and unique = 0 ... ";
+$scopes->ensureIndex(array('characterID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+
 // statistics
 echo "\nCreating collection statistics ... ";
 $statistics = $db->createCollection("statistics");
@@ -599,6 +599,9 @@ $statistics->ensureIndex(array('type' => 1, 'recentOverallRank' => 1), array("sp
 echo "Done\n";
 echo "Creating index : 'shipsDestroyed' => 1, with sparse = 0 and unique = 0 ... ";
 $statistics->ensureIndex(array('shipsDestroyed' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'calcTrophies' => 1, with sparse = 1 and unique = 0 ... ";
+$statistics->ensureIndex(array('calcTrophies' => 1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
 
 // storage

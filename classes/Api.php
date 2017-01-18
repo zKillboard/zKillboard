@@ -58,11 +58,6 @@ class Api
         if ($result['n'] > 0) {
             $mdb->remove('apiCharacters', ['keyID' => (int) $keyID]);
         }
-        try {
-            $mdb->remove('apisESI', ['_id' => new MongoID("$keyID"), 'characterID' => $userID]);
-        } catch (Exception $ex) {
-            // Just ignore it
-        }
 
         return "$keyID has been deleted";
     }
@@ -87,18 +82,7 @@ class Api
 
     public static function getSsoKeys($userID = 0)
     {
-        global $mdb;
-
-        $retVal = [];
-        $result = $mdb->find('apisESI', ['characterID' => $userID]);
-        foreach ($result as $row) {
-            $lastFetch = $row['lastFetch'];
-            $sec = @$lastFetch->sec;
-            $row['lastValidation'] = date('Y/m/d H:i', $sec);
-            $retVal[] = $row;
-        }
-
-        return $retVal;
+        return [];
     }
 
     public static function getCharacterKeys($userID)
