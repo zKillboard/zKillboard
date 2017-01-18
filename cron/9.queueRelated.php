@@ -5,10 +5,9 @@ use cvweiss\redistools\RedisQueue;
 require_once '../init.php';
 
 $queueRelated = new RedisQueue('queueRelated');
-$timer = new Timer();
 
-$minutely = date('Hi');
-while ($minutely == date('Hi')) {
+$minute = date('Hi');
+while ($minute == date('Hi')) {
     $serial = $queueRelated->pop();
     if ($serial == null) {
         sleep(1);

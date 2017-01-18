@@ -5,7 +5,6 @@ use cvweiss\redistools\RedisQueue;
 require_once '../init.php';
 
 if ($redis->llen("queueProcess") > 100) exit();
-$timer = new Timer();
 $queueWars = new RedisQueue('queueWars');
 
 if ($queueWars->size() == 0) {
@@ -25,7 +24,8 @@ if ($queueWars->size() == 0) {
 }
 
 $added = 0;
-while ($timer->stop() < 59000) {
+$minute = date('Hi');
+while ($minute == date('Hi')) {
     sleep(1);
     $id = $queueWars->pop();
     if ($id == null) {

@@ -15,8 +15,8 @@ $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, 'http://redisq.zkillboard.com/listen.php');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
-$timer = new Timer();
-while ($timer->stop() < 58000) {
+$minute = date('Hi');
+while ($minute == date('Hi')) {
     $raw = curl_exec($ch);
     $json = json_decode($raw, true);
     if (!isset($json['package'])) {

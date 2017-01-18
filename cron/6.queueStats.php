@@ -4,7 +4,7 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
-$timer = new Timer();
+$minute = date('Hi');
 $children = [];
 $inProgress = [];
 $maxChildren = 10;
@@ -30,7 +30,7 @@ do {
             exit();
         }
     }
-} while ($timer->stop() <= $maxTime);
+} while ($minute == date('Hi'));
 $status = 0;
 
 function calcStats($row)

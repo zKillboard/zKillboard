@@ -6,7 +6,6 @@ require_once '../init.php';
 
 $mdb = new Mdb();
 $old = $mdb->now(3600 * 3); // 8 hours
-$timer = new Timer();
 $queueAllis = new RedisTimeQueue('tqAlliances', 9600);
 
 $i = date('i');
@@ -17,7 +16,8 @@ if ($i == 45) {
     }
 }
 
-while ($timer->stop() <= 55000) {
+$minute = date('Hi');
+while ($minute == date('Hi')) {
     sleep(1);
     $id = (int) $queueAllis->next(false);
     if ($id == null) {

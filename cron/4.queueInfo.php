@@ -15,8 +15,8 @@ $rawmails = $mdb->getCollection('rawmails');
 $information = $mdb->getCollection('information');
 $statArray = ['characterID', 'corporationID', 'allianceID', 'factionID', 'shipTypeID', 'groupID'];
 
-$timer = new Timer();
-while ($timer->stop() < 59000) {
+$minute = date('Hi');
+while ($minute == date('Hi')) {
     $killID = $queueInfo->pop();
 
     if ($killID != null) {

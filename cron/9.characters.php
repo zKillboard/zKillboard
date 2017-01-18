@@ -8,12 +8,12 @@ require_once '../init.php';
 $counter = 0;
 $information = $mdb->getCollection('information');
 $queueCharacters = new RedisTimeQueue('tqCharacters', 86400);
-$timer = new Timer();
 $counter = 0;
 $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
 $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
 
-while ($timer->stop() < 59000) {
+$minute = date('Hi');
+while ($minute == date('Hi')) {
     $ids = [];
     for ($i = 0; $i < 50; ++$i) {
         $id = $queueCharacters->next(false);

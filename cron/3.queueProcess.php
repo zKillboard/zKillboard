@@ -19,7 +19,6 @@ use cvweiss\redistools\RedisQueue;
 require_once '../init.php';
 
 
-$timer = new Timer();
 $crestmails = $mdb->getCollection('crestmails');
 $killmails = $mdb->getCollection('killmails');
 $queueInfo = new RedisQueue('queueInfo');
@@ -27,9 +26,9 @@ $queueProcess = new RedisQueue('queueProcess');
 $storage = $mdb->getCollection('storage');
 
 $counter = 0;
-$timer = new Timer();
+$minute = date('Hi');
 
-while ($timer->stop() < 59000) {
+while ($minute == date('Hi')) {
     $killID = $queueProcess->pop();
     if ($killID !== null) {
         $raw = $mdb->findDoc('rawmails', ['killID' => $killID]);

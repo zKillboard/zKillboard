@@ -7,8 +7,8 @@ include_once '../init.php';
 if ($redis->llen("queueProcess") > 100) exit();
 $queueCleanup = new RedisQueue('queueCleanup');
 
-$timer = new Timer();
-while ($timer->stop() < 58000) {
+$minute = date('Hi');
+while ($minute == date('Hi')) {
     $killID = $queueCleanup->pop();
     if ($killID === null) {
         exit();

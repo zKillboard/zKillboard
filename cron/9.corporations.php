@@ -7,7 +7,7 @@ require_once '../init.php';
 
 $counter = 0;
 $information = $mdb->getCollection('information');
-$minutely = date('Hi');
+$minute = date('Hi');
 $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
 $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
 
@@ -21,7 +21,7 @@ if ($i == 30) {
     }
 }
 
-while ($minutely == date('Hi')) {
+while ($minute == date('Hi')) {
     $id = $queueCorps->next();
     if ($id == null) {
         exit();

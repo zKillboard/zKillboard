@@ -25,8 +25,8 @@ if (date('i') == 22 || $esi->size() == 0) {
 
 $usleep = max(50000, min(1000000, floor((1 / ($esi->size() / 3600)) * 700000)));
 $redirect = str_replace("/cron/", "/cron/logs/", __FILE__) . ".log";
-$minutely = date('Hi');
-while ($minutely == date('Hi')) {
+$minute = date('Hi');
+while ($minute == date('Hi')) {
     if ($esiFailure->count() > 100) sleep(1);
     $charID = (int) $esi->next();
     if ($charID == 0) {

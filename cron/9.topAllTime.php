@@ -30,21 +30,18 @@ if ($redis->get($redisKey) != true) {
 }
 
 $redis->setex($redisKey, 86400, true);
-$timer = new Timer();
 
+$minute = date('Hi');
 while ($id = $queueTopAlltime->pop()) {
     $row = $mdb->findDoc('statistics', ['_id' => $id]);
     calcTop($row);
-    if ($timer->stop() > 60000) {
-        exit();
-    }
+    if ($minute != date('Hi')) exit();
 }
 
 function calcTop($row)
 {
     global $mdb;
 
-    $timer = new Timer();
     $currentSum = (int) @$row['shipsDestroyed'];
 
     $parameters = [$row['type'] => $row['id']];
@@ -59,7 +56,4 @@ function calcTop($row)
     $topLists[] = array('type' => 'system', 'data' => Stats::getTop('solarSystemID', $parameters));
 
     $mdb->set('statistics', $row, ['topAllTime' => $topLists, 'allTimeSum' => $currentSum]);
-    if ($timer->stop() > 60000) {
-        exit();
-    }
 }

@@ -28,11 +28,10 @@ $killsLastHour = new RedisTtlCounter('killsLastHour');
 $killqueue = new RedisQueue('queueKills2Pull');
 
 $counter = 0;
-$timer = new Timer();
-$minutely = date('Hi');
+$minute = date('Hi');
 
 if ($pid > 0) {
-    while ($minutely == date('Hi')) {
+    while ($minute == date('Hi')) {
         $unprocessed = $crestmails->find(array('processed' => false))->sort(['killID' => -1]);
         foreach ($unprocessed as $row) {
             $killID = $row['killID'];
@@ -46,7 +45,7 @@ if ($pid > 0) {
     }
 }
 
-while ($minutely == date('Hi')) {
+while ($minute == date('Hi')) {
     $killID = $killqueue->pop();
     if ($killID === null) {
         continue;
