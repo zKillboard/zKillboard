@@ -16,25 +16,22 @@ $esiFailure = new RedisTtlCounter('ttlc:esiFailure', 300);
 
 if (date('i') == 22 || $esi->size() == 0) {
     Util::out("Loading esi's");
-    $esis = $mdb->find("apisESI");
+    $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_killmails.v1']);
     foreach ($esis as $row) {
         $charID = $row['characterID'];
         $esi->add($charID);
     }
 }
 
+$esiCalls = new RedisTtlCounter('ttlc:esiCalls', 10);
 $usleep = max(50000, min(1000000, floor((1 / ($esi->size() / 3600)) * 700000)));
 $redirect = str_replace("/cron/", "/cron/logs/", __FILE__) . ".log";
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    if ($esiFailure->count() > 100) sleep(1);
     $charID = (int) $esi->next();
-    if ($charID == 0) {
-        sleep(1);
-        continue;
-    }
-    exec("cd " . __DIR__ . " ; php " . __FILE__ . " $charID >>$redirect 2>>$redirect &");
-    usleep($usleep);
+    if ($charID > 0) exec("cd " . __DIR__ . " ; php " . __FILE__ . " $charID >>$redirect 2>>$redirect &");
+
+    usleep($esiCalls->count() < 350 && $esiFailure->count() < 100 ? $usleep : 1000000);
 }
 
 function pullEsiKills($charID, $esi) {
@@ -42,90 +39,83 @@ function pullEsiKills($charID, $esi) {
 
     $maxSiteKillID = $mdb->findField('killmails', 'killID', ['cacheTime' => 60], ['killID' => -1]);
 
-    $sso = new RedisTimeQueue('tqApiSSO', 3600);
-    $row = $mdb->findDoc("apisESI", ['characterID' => $charID], ['lastFetch' => 1]);
+    $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => 'esi-killmails.read_killmails.v1']);
     if ($row === null) {
         $esi->remove($charID);
+        $redis->del("apiVerified:$charID");
         return;
     }
 
     $killsAdded = 0;
-    $scopes = $row['scopes'];
     $prevMaxKillID = isset($row['maxKillID']) ? $row['maxKillID'] : 0;
     $maxKillID = 0;
     $minKillID = 999999999999;
 
-    if (in_array('esi-killmails.read_killmails.v1', $scopes)) {
-        $refreshToken = $row['refreshToken'];
-        $charID = $row['characterID'];
-        $fullStop = false;
+    $refreshToken = $row['refreshToken'];
+    $fullStop = false;
 
-        $accessToken = CrestSSO::getAccessToken($charID, null, $refreshToken);
-        if (isset($accessToken['error'])) {
-            switch ($accessToken['error']) {
-                case "invalid_grant":
-                    $mdb->remove("apisESI", $row);
-                    break;
-                default:
-                    Util::out("Unknown ESI error $charID :\n" . print_r($accessToken, true));
-                    $esi->setTime($charID, time() + 60);
-            }
+    $accessToken = CrestSSO::getAccessToken($charID, null, $refreshToken);
+    if (isset($accessToken['error'])) {
+        switch ($accessToken['error']) {
+            case "invalid_grant":
+                $mdb->remove("scopes", $row);
+                $redis->del("apiVerified:$charID");
+                break;
+            default:
+                Util::out("Unknown ESI error $charID :\n" . print_r($accessToken, true));
+                $esi->setTime($charID, time() + 60);
+        }
+        return;
+    }
+
+    $headers = [];
+    $headers[] = 'Content-Type: application/json';
+    $headers[] = 'Authorization: Bearer ' . $accessToken;
+
+    do {
+        //if ($maxKillID != 0) usleep(100000);
+        $url = "https://esi.tech.ccp.is/v1/characters/$charID/killmails/recent/";
+        $fields = ['max_count' => 50, 'datasource' => 'tranquility'];
+        if ($minKillID !== 999999999999) $fields['max_kill_id'] = $minKillID;
+
+        $raw = doCall($url, $fields, $accessToken);
+        $json = json_decode($raw, true);
+
+        if (isset($json['error'])) {
+            $esi->setTime($charID, time() + 300);
             return;
         }
-        if (!isset($accessToken['error'])) {
-            $headers = [];
-            $headers[] = 'Content-Type: application/json';
-            $headers[] = 'Authorization: Bearer ' . $accessToken;
 
-            do {
-                if ($maxKillID != 0) usleep(100000);
-                $url = "https://esi.tech.ccp.is/v1/characters/$charID/killmails/recent/";
-                $fields = ['max_count' => 50, 'datasource' => 'tranquility'];
-                if ($minKillID !== 999999999999) $fields['max_kill_id'] = $minKillID;
+        foreach ($json as $kill) {
+            if (!isset($kill['killmail_id'])) {
+                $fullStop = true;
+                break;
+            }
+            $killID = $kill['killmail_id'];
+            $hash = $kill['killmail_hash'];
+            $minKillID = min($minKillID, $killID);
+            $maxKillID = max($maxKillID, $killID);
 
-                $raw = doCall($url, $fields, $accessToken);
-                $json = json_decode($raw, true);
-
-                if (isset($json['error'])) {
-                    $esi->setTime($charID, time() + 300);
-                    return;
+            $exists = $mdb->exists('crestmails', ['killID' => $killID]);
+            if (!$exists) {
+                try {
+                    $mdb->getCollection('crestmails')->save(['killID' => (int) $killID, 'hash' => $hash, 'processed' => false, 'source' => 'esi', 'added' => $mdb->now()]);
+                    $killsAdded++;
+                } catch (MongoDuplicateKeyException $ex) {
+                    // ignore it *sigh*
                 }
-
-                foreach ($json as $kill) {
-                    if (!isset($kill['killmail_id'])) {
-                        $fullStop = true;
-                        break;
-                    }
-                    $killID = $kill['killmail_id'];
-                    $hash = $kill['killmail_hash'];
-                    $minKillID = min($minKillID, $killID);
-                    $maxKillID = max($maxKillID, $killID);
-
-                    $exists = $mdb->exists('crestmails', ['killID' => $killID]);
-                    if (!$exists) {
-                        try {
-                            $mdb->getCollection('crestmails')->save(['killID' => (int) $killID, 'hash' => $hash, 'processed' => false, 'source' => 'esi', 'added' => $mdb->now()]);
-                            $killsAdded++;
-                        } catch (MongoDuplicateKeyException $ex) {
-                            // ignore it *sigh*
-                        }
-                    }
-                }
-            } while (sizeof($json) > 0 && $fullStop == false && $prevMaxKillID < $minKillID);
+            }
         }
-        $mdb->set("apisESI", $row, ['lastFetch' => $mdb->now()]);
-        $mdb->set("apisESI", ['characterID' => $charID], ['maxKillID' => $maxKillID], true);
-        $mdb->remove("apisCrest", ['characterID' => $charID]);
-        $mdb->remove("apis", ['type' => 'char', 'userID' => $charID]);
-        $sso->remove($charID);
-        $redis->setex("apiVerified:$charID", 86400, time());
+    } while (sizeof($json) > 0 && $fullStop == false && $prevMaxKillID < $minKillID);
 
-        // Check active chars once an hour, check inactive chars every 12 hours
-        $esi->setTime($charID, time() + (3600 * ($maxKillID > ($maxSiteKillID - 1000000) ? 1 : 12)));
-    }
-    else {
-        $mdb->remove("apisESI", $row);
-    }
+    $mdb->set("scopes", $row, ['maxKillID' => $maxKillID, 'lastFetch' => $mdb->now()]);
+    $mdb->remove("apisCrest", ['characterID' => $charID]);
+    $mdb->remove("apis", ['type' => 'char', 'userID' => $charID]);
+    $redis->setex("apiVerified:$charID", 86400, time());
+
+    // Check active chars once an hour, check inactive chars every 16-20 hours
+    $esi->setTime($charID, time() + (3600 * ($maxKillID > ($maxSiteKillID - 1000000) ? 1 : rand(16,20))));
+
     if ($killsAdded > 0) {
         $name = Info::getInfoField('characterID', $charID, 'name');
         if ($name === null) $name = $charID;
@@ -138,6 +128,10 @@ function pullEsiKills($charID, $esi) {
 
 function doCall($url, $fields, $accessToken, $callType = 'GET')
 {
+    $esiCalls = new RedisTtlCounter('ttlc:esiCalls', 10);
+    while ($esiCalls->count() > 400) sleep(1);
+    $esiCalls->add(uniqid());
+
     $callType = strtoupper($callType);
     $headers = ['Authorization: Bearer ' . $accessToken];
 

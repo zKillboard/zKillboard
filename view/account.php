@@ -7,7 +7,7 @@ if (!User::isLoggedIn()) {
     die();
 }
 
-$userID = User::getUserID();
+$userID = (int) User::getUserID();
 $key = 'sitesettings';
 $error = '';
 
@@ -32,8 +32,9 @@ if ($_POST) {
     $deletekeyid = Util::getPost('deletekeyid');
     $deleteentity = Util::getPost('deleteentity');
     // Delete an apikey
-    if (isset($deletekeyid) && !isset($deleteentity)) {
-        $error = Api::deleteKey($deletekeyid);
+    if (isset($deletekeyid)) {
+        $mdb->remove("scopes", ['characterID' => $userID, '_id' => new MongoID($deletekeyid)]);
+        $error = "The scope has been removed";
     }
 
     // Theme
@@ -98,6 +99,8 @@ $data['currentStyle'] = UserConfig::get('style');
 
 $data['apiKeys'] = Api::getKeys($userID);
 $data['apiSsoKeys'] = Api::getSsoKeys($userID);
+$data['apiScopes'] = $mdb->find("scopes", ['characterID' => (int) $userID], ['scope' => 1]);
+
 $data['apiChars'] = Api::getCharacters($userID);
 $charKeys = Api::getCharacterKeys($userID);
 $charKeys = Info::addInfo($charKeys);

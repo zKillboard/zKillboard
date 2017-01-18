@@ -127,33 +127,41 @@ class CrestSSO
             if (strpos(@$response->Scopes, 'publicData') === false) {
                 auth_error('Expected at least publicData scope but did not get it.');
             }
+            $charID = (int) $response->CharacterID;
+            $scopes = split(' ', (string) @$response->Scopes);
+            foreach ($scopes as $scope) {
+                if ($scope == "publicData") continue;
+                if ($mdb->count("scopes", ['characterID' => $charID, 'scope' => $scope]) == 0) {
+                    $mdb->save("scopes", ['characterID' => $charID, 'scope' => $scope, 'refreshToken' => $refresh_token]);
+                } 
+            }
+
             // Lookup the character details in the DB.
-            $userdetails = $mdb->findDoc('information', ['type' => 'characterID', 'id' => (int) $response->CharacterID, 'cacheTime' => 0]);
+            $userdetails = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $charID]);
             if (!isset($userdetails['name'])) {
                 if ($userdetails == null) {
-                    $mdb->save('information', ['type' => 'characterID', 'id' => (int) $response->CharacterID, 'name' => $response->CharacterName]);
+                    $mdb->save('information', ['type' => 'characterID', 'id' => $charID, 'name' => $response->CharacterName]);
                 }
             }
 
-            Log::log("Logged in: " . (isset($userdetails['name']) ? $userdetails['name'] : $response->CharacterID));
-            ZLog::add("Logged in: " . (isset($userdetails['name']) ? $userdetails['name'] : $response->CharacterID), $response->CharacterID);
+            Log::log("Logged in: " . (isset($userdetails['name']) ? $userdetails['name'] : $charID));
+            ZLog::add("Logged in: " . (isset($userdetails['name']) ? $userdetails['name'] : $charID), $charID);
 
-            $key = 'login:'.$response->CharacterID.':'.session_id();
+            $key = "login:$charID:" . session_id();
             $redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);
             $redis->setex("$key:accessToken", 1000, $access_token);
             $redis->setex("$key:scopes", (86400 * 14), @$response->Scopes);
             $scopes = explode(' ', @$response->Scopes);
 
             $queueCharacters = new RedisTimeQueue('tqCharacters', 86400);
-            $queueCharacters->add($response->CharacterID);
+            $queueCharacters->add($charID);
 
-            $mdb->save('apisESI', ['characterID' => $response->CharacterID, 'refreshToken' => $refresh_token, 'lastFetch' => 0, "scopes" => $scopes]);
             if (in_array('esi-killmails.read_killmails.v1', $scopes)) {
                 $esi = new RedisTimeQueue('tqApiESI', 3600);
-                $esi->add($response->CharacterID);
+                $esi->add($charID);
             }
 
-            $_SESSION['characterID'] = $response->CharacterID;
+            $_SESSION['characterID'] = $charID;
             $_SESSION['characterName'] = $response->CharacterName;
             session_write_close();
 
