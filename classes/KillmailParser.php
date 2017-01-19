@@ -59,8 +59,12 @@ class KillmailParser
         $xml = simplexml_load_string($content);
         $cachedUntil = @$xml->cachedUntil;
 
-        $rows = isset($xml->result->rowset->row) ? $xml->result->rowset->row : null;
-        if ($rows === null) throw new Exception("Invalid xml returned - no rowset for killmails");
+        $rows = isset($xml->result->rowset->row) ? $xml->result->rowset->row : [];
+        /*if ($rows === null) {
+            print_r($content);
+            exit();
+            throw new Exception("Invalid xml returned - no rowset for killmails");
+        }*/
         $killmails = [];
         foreach ($rows as $c => $row) {
             $killmails[] = $row;
