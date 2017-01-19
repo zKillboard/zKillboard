@@ -77,7 +77,7 @@ function pullEsiKills($charID, $esi) {
         $fields = ['max_count' => 50, 'datasource' => 'tranquility'];
         if ($minKillID !== 999999999999) $fields['max_kill_id'] = $minKillID;
 
-        $raw = doCall($url, $fields, $accessToken);
+        $raw = ESI::curl($url, $fields, $accessToken);
         $json = json_decode($raw, true);
 
         if (isset($json['error'])) {
@@ -123,57 +123,4 @@ function pullEsiKills($charID, $esi) {
         ZLog::add("$killsAdded kills added by char $name (ESI)", $charID);
         if ($killsAdded >= 10) User::sendMessage("$killsAdded kills added for char $name", $charID);
     }
-}
-
-function doCall($url, $fields, $accessToken, $callType = 'GET')
-{
-    $esiCalls = new RedisTtlCounter('ttlc:esiCalls', 10);
-    while ($esiCalls->count() > 400) sleep(1);
-    $esiCalls->add(uniqid());
-
-    $callType = strtoupper($callType);
-    $headers = ['Authorization: Bearer ' . $accessToken];
-
-    $fieldsString = buildParams($fields);
-    $url = $callType != 'GET' ? $url : $url . "?" . $fieldsString;
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_USERAGENT, "curl fetcher for zkillboard.com");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-    switch ($callType) {
-        case 'DELETE':
-        case 'PUT':
-        case 'POST_JSON':
-            $headers[] = "Content-Type: application/json";
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(empty($fields) ? (object) NULL : $fields, JSON_UNESCAPED_SLASHES));
-            $callType = $callType == 'POST_JSON' ? 'POST' : $callType;
-            break;
-        case 'POST':
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $fieldsString);
-            break;
-    }
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $callType);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    $result = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    if ($httpCode != 200) {
-        $esiFailure = new RedisTtlCounter('ttlc:esiFailure', 300);
-        $esiFailure->add(uniqid());
-        return "{\"error\": true, \"httpCode\": $httpCode}";
-    }
-    $esiSuccess = new RedisTtlCounter('ttlc:esiSuccess', 300);
-    $esiSuccess->add(uniqid());
-    return $result;
-}
-
-function buildParams($fields)
-{
-    $string = "";
-    foreach ($fields as $field=>$value) {
-        $string .= $string == "" ? "" : "&";
-        $string .= "$field=" . rawurlencode($value);
-    }
-    return $string;
 }
