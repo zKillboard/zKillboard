@@ -48,6 +48,7 @@ class Detail
         $eftarray['rig'] = array(); // rig
         $eftarray['drone'] = array(); // drone
         $eftarray['sub'] = array(); // sub
+        $subSlot = 125;
 
         foreach ($items as $itm) {
             if (!isset($itm['inContainer'])) {
@@ -95,7 +96,7 @@ class Detail
 
             $key = $itm['typeName'].'|'.$itm['flagName'];
             if (isset($itm['flagName'])) {
-                if ($itm['flagName'] == 'SubSystems' || $itm['flagName'] == 'Rigs' || ($itm['fittable'] && $itm['inContainer'] == 0)) {
+                if ($itm['flagName'] == 'Structure Service Slots' || $itm['flagName'] == 'SubSystems' || $itm['flagName'] == 'Rigs' || ($itm['fittable'] && $itm['inContainer'] == 0)) {
                     // not ammo or whatever
 
                     $repeats = @$itm['quantityDropped'] + @$itm['quantityDestroyed'];
@@ -133,11 +134,15 @@ class Detail
                             }
                             $eftarray['rig'][$itm['flag']][] = array('typeName' => $itm['typeName'], 'typeID' => $itm['typeID']);
                         }
-                        if ($itm['flagName'] == 'SubSystems') {
+                        if ($itm['flagName'] == 'SubSystems' || $itm['flagName'] == 'Structure Service Slots') {
                             subs:
                             if (isset($eftarray['sub'][$itm['flag']])) {
                                 $itm['flag'] = $itm['flag'] + 1;
                                 goto subs;
+                            }
+                            if ($itm['flagName'] == 'Structure Service Slots') {
+                                $itm['flag'] = $subSlot;
+                                $subSlot++;
                             }
                             $eftarray['sub'][$itm['flag']][] = array('typeName' => $itm['typeName'], 'typeID' => $itm['typeID']);
                         }
@@ -349,7 +354,7 @@ class Detail
     public static function fittedIsk($md5, $items)
     {
         $fittedIsk = 0;
-        $flags = array('High Slots', 'Mid Slots', 'Low Slots', 'SubSystems', 'Rigs', 'Drone Bay', 'Fuel Bay');
+        $flags = array('High Slots', 'Mid Slots', 'Low Slots', 'SubSystems', 'Rigs', 'Drone Bay', 'Fuel Bay', 'Structure Service Slots');
         foreach ($items as $item) {
             if (isset($item['flagName']) && in_array($item['flagName'], $flags)) {
                 $qty = isset($item['quantityDropped']) ? $item['quantityDropped'] : 0;
