@@ -98,6 +98,12 @@ function processKeyInfo($mdb, $api, $keyID, $vCode, $xml)
     $type = $xml->result->key['type'];
     $type = $type == 'Account' ? 'Character' : $type;
 
+    if ($type == 'Character' && date('m') == '02') { // Feb. 1st, time to go
+        Util::out("Removing Character API $keyID");
+        $mdb->remove("apis", $api);
+        return;
+    }
+
     $rows = $xml->result->key->rowset->row;
     foreach ($rows as $c => $row) {
         $charID = (int) (string) $row['characterID'];

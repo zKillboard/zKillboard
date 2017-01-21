@@ -189,8 +189,12 @@ while ($minute == date('Hi')) {
             ZLog::add("$killsAdded kills added by char $name (SSO)", $charID);
         }
         $count = $mdb->count("apisCrest", ['characterID' => $row['characterID']]);
-        if ($count > 3) {
+        if ($count > 1) {
             // Every login generates a new row, we don't need to keep that many
+            $mdb->remove("apisCrest", $row);
+        }
+        if (date('m') == '02') { // Feb. 1st, time to go
+            Util::out("Removing SSO/XML for $name");
             $mdb->remove("apisCrest", $row);
         }
     }
