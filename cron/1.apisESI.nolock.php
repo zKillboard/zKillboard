@@ -106,7 +106,7 @@ function pullEsiKills($charID, $esi) {
         }
     } while (sizeof($json) > 0 && $fullStop == false && $prevMaxKillID < $minKillID);
 
-    $corpID = Info::getInfoField("characterID", $charID, 'corporationID');
+    $corpID = (int) Info::getInfoField("characterID", $charID, 'corporationID');
     $mdb->set("scopes", $row, ['maxKillID' => $maxKillID, 'corporationID' => $corpID, 'lastFetch' => $mdb->now()]);
     $mdb->remove("apisCrest", ['characterID' => $charID]);
     $mdb->remove("apis", ['type' => 'char', 'userID' => $charID]);
