@@ -19,7 +19,7 @@ $types[] = 'exit';
 $type = null;
 $todaysKey = null;
 foreach ($types as $type) {
-    $todaysKey = "RC:alltimeRanksCalculated:$type:$today";
+    $todaysKey = "zkb:alltimeRanksCalculated:$type:$today";
     if ($redis->get($todaysKey) == true) continue;
     break;
 }

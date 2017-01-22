@@ -3,7 +3,7 @@
 require_once '../init.php';
 
 $today = date('Ymd');
-$todaysKey = "RC:recentRanksCalculated:$today";
+$todaysKey = "zkb:recentRanksCalculated:$today";
 if ($redis->get($todaysKey) == true) {
     exit();
 }

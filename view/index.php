@@ -32,7 +32,7 @@ function getTop($title, $type)
 {
     global $redis;
 
-    $key = "RC:Cache:$title:$type";
+    $key = "zkb:Cache:$title:$type";
     $retVal = json_decode($redis->get($key));
     if ($retVal != null) {
         return $retVal;

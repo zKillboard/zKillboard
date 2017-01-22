@@ -59,7 +59,7 @@ function getTop($title, $type)
 {
     global $redis;
 
-    $key = "RC:Cache:$title:$type";
+    $key = "zkb:Cache:$title:$type";
     $retVal = [];
 
     $ids = $redis->zRange("tq:ranks:weekly:$type", 0, 10);
