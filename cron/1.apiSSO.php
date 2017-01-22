@@ -173,10 +173,6 @@ while ($minute == date('Hi')) {
         $info = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $charID], [], ['name' => 1, 'corporationID' => 1]);
         $corpInfo = $mdb->findDoc('information', ['type' => 'corporationID', 'id' => @$info['corporationID']], [], ['name' => 1]);
 
-        $apiVerifiedSet = new RedisTtlSortedSet('ttlss:apiVerified', 86400);
-        $apiVerifiedSet->add(time(), $charID);
-
-        $redis->setex("apiVerified:$charID", 86400, time());
         $mdb->remove("apis", ['type' => 'char', 'userID' => $charID]);
 
         // If we got new kills tell the log about it
