@@ -17,6 +17,7 @@ $statArray = ['characterID', 'corporationID', 'allianceID', 'factionID', 'shipTy
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
+    if ($redis->llen('queueInfo') > 10) $redis->sort('queueInfo', ['sort' => 'desc', 'out' => 'queueInfo']);
     $killID = $queueInfo->pop();
 
     if ($killID != null) {
@@ -29,6 +30,7 @@ while ($minute == date('Hi')) {
         if ($queueRedisQ != null) {
             $queueRedisQ->push($killID);
         }
+        $mdb->set("killmails", ['killID' => (int) $killID], ['processed' => true]);
     }
 }
 

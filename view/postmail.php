@@ -46,8 +46,14 @@ if ($_POST) {
                 do {
                     $error = '';
                     // Has the kill been processed?
-                    $exists = $mdb->exists('killmails', ['killID' => $killID]);
-                    if ($exists) {
+                    $kill = $mdb->findDoc('killmails', ['killID' => $killID]);
+                    if ($kill != null) {
+                        $loops = 0;
+                        while (@$kill['processed'] != true && $loops < 100) {
+                            $loops++;
+                            usleep(100000);
+                            $kill = $mdb->findDoc('killmails', ['killID' => $killID]);
+                        } 
                         $app->redirect("/kill/$killID/");
                         exit();
                     }
