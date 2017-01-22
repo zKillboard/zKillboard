@@ -15,7 +15,6 @@ if ($charID !== null) {
 $esiFailure = new RedisTtlCounter('ttlc:esiFailure', 300);
 
 if (date('i') == 22 || $esi->size() == 0) {
-    Util::out("Loading esi's");
     $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_killmails.v1']);
     foreach ($esis as $row) {
         $charID = $row['characterID'];
