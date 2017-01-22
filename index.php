@@ -53,7 +53,7 @@ if ($isApiRequest) {
         header('HTTP/1.1 400 Slow down.');
         exit();
     }
-} else if ($uri == '/navbar/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp') {
+} else if (substr($uri, 0, 11) == '/crestmail/' || $uri == '/navbar/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp') {
     // Session
     session_set_save_handler(new RedisSessionHandler(), true);
     session_cache_limiter('');
