@@ -49,7 +49,7 @@ foreach ($types as $type) {
 }
 $totalKills = $mdb->count('oneWeek');
 $activePvP[] = ['type' => 'Total Kills', 'count' => "$totalKills"];
-$redis->set('RC:activePvp', json_encode($activePvP));
+$redis->set('zkb:activePvp', json_encode($activePvP));
 
 // Some cleanup
 $redis->keys('*'); // Helps purge expired ttl's
