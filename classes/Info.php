@@ -381,10 +381,16 @@ class Info
                         if (!isset($element['corporationName'])) {
                             $element['corporationName'] = self::getInfoField('corporationID', $value, 'name');
                         }
+                        if (!isset($element['cticker'])) {
+                            $element['cticker'] = self::getInfoField('corporationID', $value, 'ticker');
+                        }
                         break;
                     case 'allianceID':
                         if (!isset($element['allianceName'])) {
                             $element['allianceName'] = self::getInfoField('allianceID', $value, 'name');
+                        }
+                        if (!isset($element['aticker'])) {
+                            $element['aticker'] = self::getInfoField('allianceID', $value, 'ticker');
                         }
                         break;
                     case 'factionID':
