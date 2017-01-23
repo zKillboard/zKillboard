@@ -161,11 +161,11 @@ echo "Done\n";
 echo "\nCreating collection itemmails ... ";
 $itemmails = $db->createCollection("itemmails");
 echo "Done\n";
-echo "Creating index : 'dttm' => 1, with sparse = 0 and unique = 0 ... ";
-$itemmails->ensureIndex(array('dttm' => 1), array("sparse" => 0, "unique" => 0, "expireAfterSeconds" => 2419200));
+echo "Creating index : 'killID' => -1, with sparse = 0 and unique = 0 ... ";
+$itemmails->ensureIndex(array('killID' => -1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
-echo "Creating index : 'typeID' => 1, 'killID' => -1, with sparse = 0 and unique = 0 ... ";
-$itemmails->ensureIndex(array('typeID' => 1, 'killID' => -1), array("sparse" => 0, "unique" => 0));
+echo "Creating index : 'killID' => 1, 'typeID' => 1, with sparse = 0 and unique = 0 ... ";
+$itemmails->ensureIndex(array('killID' => 1, 'typeID' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // killmails
@@ -492,6 +492,9 @@ $scopes->ensureIndex(array('characterID' => 1, 'scope' => 1), array("sparse" => 
 echo "Done\n";
 echo "Creating index : 'characterID' => 1, with sparse = 0 and unique = 0 ... ";
 $scopes->ensureIndex(array('characterID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'corporationID' => 1, 'scope' => 1, with sparse = 1 and unique = 0 ... ";
+$scopes->ensureIndex(array('corporationID' => 1, 'scope' => 1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
 
 // statistics
