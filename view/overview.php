@@ -218,14 +218,6 @@ if ($apiVerified !== false) {
     $nextApiCheck = date('H:i', $apiVerified);
     $apiVerified = true;
 }
-else if (in_array($key, array('character', 'corporation'))) {
-    $collection = 'api'.ucfirst($key);
-    $doc = $mdb->findDoc($collection, ["{$key}ID" => (int) $id], ['lastFetched' => -1]);
-    if ($doc !== null) {
-        $apiVerified = true;
-        $nextApiCheck = date('H:i', @$doc['lastFetched']);
-    }
-}
 
 $extra = array();
 $tracked = false;
