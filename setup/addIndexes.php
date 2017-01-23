@@ -164,8 +164,11 @@ echo "Done\n";
 echo "Creating index : 'killID' => -1, with sparse = 0 and unique = 0 ... ";
 $itemmails->ensureIndex(array('killID' => -1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
-echo "Creating index : 'killID' => 1, 'typeID' => 1, with sparse = 0 and unique = 0 ... ";
-$itemmails->ensureIndex(array('killID' => 1, 'typeID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Creating index : 'killID' => -1, 'typeID' => 1, with sparse = 0 and unique = 0 ... ";
+$itemmails->ensureIndex(array('killID' => -1, 'typeID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'typeID' => 1, with sparse = 0 and unique = 0 ... ";
+$itemmails->ensureIndex(array('typeID' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // killmails
