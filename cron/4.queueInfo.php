@@ -134,23 +134,8 @@ function updateInfo($killID)
 
 function updateItems($killID, $killTime, $items)
 {
-    global $mdb;
-
-    $time = strtotime(str_replace('.', '-', $killTime).' UTC');
-    if ($time < (time() - 2419200)) {
-        return;
-    }
-
-    $dttm = new MongoDate($time);
-    foreach ($items as $item) {
-        $typeID = (int) $item['itemType']['id'];
-        if (!$mdb->exists('itemmails', ['killID' => $killID, 'typeID' => $typeID])) {
-            $mdb->insert('itemmails', ['killID' => $killID, 'typeID' => $typeID, 'dttm' => $dttm]);
-        }
-        if (isset($items['items'])) {
-            updateItems($killID, $killTime, $items['items']);
-        }
-    }
+    $itemQueue = new RedisQueue('queueItemIndex');
+    $itemQueue->push($killID);
 }
 
 function updateEntity($killID, $entity)
