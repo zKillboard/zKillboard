@@ -97,9 +97,6 @@ $twig->addglobal('showAnalytics', $showAnalytics);
 if ($disqus) {
     $twig->addGlobal('disqusShortName', $disqusShortName);
 }
-if ($disqusSSO) {
-    $twig->addglobal('disqusSSO', Disqus::init());
-}
 
 // User's account balance
 $twig->addGlobal('accountBalance', $accountBalance);
