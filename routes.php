@@ -190,6 +190,10 @@ $app->get('/navbar/', function () use ($app) {
         include 'view/navbar.php';
         });
 
+$app->get('/ztop/', function () use ($app) {
+        $app->render("ztop.html", ['showAds' => false]);
+        });
+
 // The Overview stuff
 $app->get('/:input+/', function ($input) use ($app) {
         include 'view/overview.php';
