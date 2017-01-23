@@ -41,8 +41,8 @@ foreach ($set as $item) {
     if (@$item['published'] == false) continue;
     if (@$item['marketable'] == false) continue;
     $typeID = $item['id'];
-    $t = new Timer();
     $price = Price::getItemPrice($typeID, $date, true);
+Util::out("$typeID $price");
 }
 
-$redis->set($key, true);
+$redis->setex($key, 86400, true);
