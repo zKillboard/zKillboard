@@ -39,7 +39,19 @@ class Points
             if ($key == 0) {
                 continue;
             }
-            $invpoints += isset($inv['shipTypeID']) ? self::getPoints($inv['shipTypeID']) : 1;
+            if (!isset($inv['shipTypeID'])) return 1;
+            $typeID = $inv['shipTypeID'];
+
+            $groupID = Info::getInfoField('typeID', $typeID, 'groupID');
+            if ($groupID == 29) {
+                return 1;
+            }
+            $categoryID = Info::getInfoField('groupID', $groupID, 'categoryID');
+            if ($categoryID != 6) {
+                return 1;
+            }
+
+            $invpoints += self::getPoints($typeID);
         }
 
         if (($vicpoints + $invpoints) == 0) {
