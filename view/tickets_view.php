@@ -35,9 +35,8 @@ if ($_POST) {
         $mdb->getCollection('tickets')->update(['_id' => new MongoID($id)], ['$set' => ['dttmUpdate' => time()]]);
         $mdb->getCollection('tickets')->update(['_id' => new MongoID($id)], ['$inc' => ['replies' => 1]]);
 
-        if ($moderator && isset($ticket['email']) && strlen($ticket['email']) > 0) {
-            Email::send($ticket['email'], 'zKillboard Ticket Response', "You have received a response to a ticket you submitted. To view the response, please click $fullAddr/account/tickets/view/$id/");
-        }
+        $mdb->insert("evemails", ['sent' => false, 'subject' =>  'zKillboard Ticket Response', 'body' => "You have received a response to a ticket you submitted. To view the response, please click <a href='$fullAddr/account/tickets/view/$id/'>here</a>.", 'recipients' => [['recipient_id' => $ticket['characterID'], 'recipient_type' => 'character']]]);
+
         $app->redirect('.');
         exit();
     } else {

@@ -37,10 +37,11 @@ class ESI {
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         $result = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($httpCode != 200) {
+        if ($httpCode != 200 && $httpCode != 201) {
             $esiFailure = new RedisTtlCounter('ttlc:esiFailure', 300);
             $esiFailure->add(uniqid());
-            return "{\"error\": true, \"httpCode\": $httpCode}";
+            $retValue = ['error' => true, 'httpCode' => $httpCode, 'content' => $result];
+            return json_encode($retValue);
         }
         $esiSuccess = new RedisTtlCounter('ttlc:esiSuccess', 300);
         $esiSuccess->add(uniqid());

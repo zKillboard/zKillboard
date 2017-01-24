@@ -56,8 +56,6 @@ Please login to view your tickets or create a ticket.
 				<div class="modal-body">
                                         <div class="alert alert-danger"><center>Click <i class="glyphicon glyphicon-arrow-right"></i> <a href='https://www.reddit.com/r/Eve/comments/4m8jgm/zkillboard_does_not_automatically_get_all/' target='_blank'>zKillboard does not automatically get all killmails.</a> <i class="glyphicon glyphicon-arrow-left"></i> Click</center><br/>If you post here about a missing killmail, I'll call you an idiot and close your ticket.</div>
 					<form name="tickets" method="post" action="/account/tickets/">
-						<label>Email: (Optional - only used to notify you of responses to your ticket.)</label>
-						<input type="text" data-provide="typeahead" name="email" placeholder="Email" class="form-control" data-original-title=""/><br/>
 						<label>Subject</label>
 						    <input type="text" autocomplete="off" data-provide="typeahead" name="subject" placeholder="subject" class="form-control" data-original-title=""/>
 						<div class="form-group">
@@ -68,6 +66,7 @@ Please login to view your tickets or create a ticket.
 							<input type='checkbox' id="idiotbox" name="idiotbox" required class="m-control"> I am not being an idiot (see above)
                                                         </label>
                                                 </div>
+						<label>Response notifications are sent to your character's evemail.</label>
 						<div class="form-group">
 							<button type="submit" class="btn btn-primary">Post Ticket</button>
 						</div>
