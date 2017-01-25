@@ -12,8 +12,6 @@ if ($charID !== null) {
     exit();
 }
 
-$esiFailure = new RedisTtlCounter('ttlc:esiFailure', 300);
-
 if (date('i') == 22 || $esi->size() == 0) {
     $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_killmails.v1']);
     foreach ($esis as $row) {
@@ -23,6 +21,8 @@ if (date('i') == 22 || $esi->size() == 0) {
 }
 
 $esiCalls = new RedisTtlCounter('ttlc:esiCalls', 10);
+$esiFailure = new RedisTtlCounter('ttlc:esiFailure', 300);
+
 $usleep = max(50000, min(1000000, floor((1 / ($esi->size() / 3600)) * 700000)));
 $redirect = str_replace("/cron/", "/cron/logs/", __FILE__) . ".log";
 $minute = date('Hi');
