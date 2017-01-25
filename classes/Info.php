@@ -158,7 +158,7 @@ class Info
                 $corp['cachedUntilTime'] = date('Y-m-d H:i', $doc['lastFetched']);
                 $corp['apiVerified'] = 1;
             } else {
-                $count = $mdb->count("scopes", ['corporationID' => (int) $corp['id'], 'cacheTime' => 300]);
+                $count = $mdb->count("scopes", ['corporationID' => (int) $corp['id']]);
                 if ($corp['memberCount'] > 0) {
                     $corp['apiPercentage'] = number_format($count / $corp['memberCount'] * 100, 0);
                 }
