@@ -5,14 +5,14 @@ use cvweiss\redistools\RedisTtlCounter;
 
 class ESI {
 
-    public static function curl($url, $fields, $accessToken, $callType = 'GET')
+    public static function curl($url, $fields = [], $accessToken = null, $callType = 'GET')
     {
         $esiCalls = new RedisTtlCounter('ttlc:esiCalls', 10);
         while ($esiCalls->count() > 400) sleep(1);
         $esiCalls->add(uniqid());
 
         $callType = strtoupper($callType);
-        $headers = ['Authorization: Bearer ' . $accessToken];
+        $headers = $accessToken == null ? [] : ['Authorization: Bearer ' . $accessToken];
 
         $url = $callType != 'GET' ? $url : $url . "?" . self::buildParams($fields);
         $ch = curl_init();
