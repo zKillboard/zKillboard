@@ -110,6 +110,6 @@ class UserGlobals extends Twig_Extension
 
     private static function sortIt($a, $b)
     {
-        return $a['name'] > $b['name'];
+        return strtolower($a['name']) > strtolower($b['name']);
     }
 }
