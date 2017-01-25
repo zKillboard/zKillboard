@@ -1,7 +1,7 @@
 @media (min-width: 768px) {
 	body {
 		background-color: #060606;
-		background-image: url("/img/bg_cyborg_blueish.jpg");
+		/*background-image: url("/img/bg_cyborg_blueish.jpg");*/
 		-webkit-background-size: cover;
 		-moz-background-size: cover;
 		-o-background-size: cover;
