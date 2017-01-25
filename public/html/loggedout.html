@@ -10,7 +10,7 @@ $(document).ready(function() {
     var foo = 'zkbLoginMsg' + date.getUTCFullYear() + '' + (date.getUTCMonth() + 1) + '' + date.getUTCDate();
     if ($(window).width() > 800 && localStorage) {
         if (!localStorage.getItem(foo)) {
-            addToolTip($("#usermenu"), "<a href='#' onClick='$(\"#ssologinimage\").click(); return false'>Login</a> to retrieve your character's entire killmail history from Dec. 2007 to today.");
+            $("#char-loggedout").show();
             localStorage.setItem(foo, true);
         }
     }
