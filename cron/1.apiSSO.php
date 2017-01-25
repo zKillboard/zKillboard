@@ -32,7 +32,7 @@ if ($threadNum == ($max - 1) && date('i') == 15) {
     }
 }
 
-$usleep = max(50000, min(1000000, floor((1 / ($sso->size() + 1 / 3600)) * 700000))) * $max;
+$usleep = max(50000, min(1000000, floor((1 / (($sso->size() + 1) / 3600)) * 700000))) * $max;
 
 $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
 $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
