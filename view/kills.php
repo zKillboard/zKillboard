@@ -1,7 +1,7 @@
 <?php
 
 $limit = 50;
-$maxPage = 100;
+$maxPage = 20;
 if ($page > $maxPage && $type == '') {
     $app->redirect("/kills/page/$maxPage/");
 }
