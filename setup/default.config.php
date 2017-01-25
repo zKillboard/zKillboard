@@ -80,12 +80,6 @@ $generateSiteMaps = false;
 # The number of ms when a query is considered to be running a long time
 $longQueryMS = 30000;
 
-# The load value that zkb will "harden" if exceeded
-$loadTripValue = 20;
-$laodTripTime = 300;
-
-$beSocial = false;
-
 // Slim config
 $config = array(
     'mode' => 'production',
