@@ -85,6 +85,9 @@ $twig->addGlobal('requesturi', $_SERVER['REQUEST_URI']);
 $twig->addGlobal("advertisement", Google::getAd());
 $twig->addGlobal('analytics', Google::analytics($analyticsID, $analyticsName));
 
+$twig->addGlobal('entityType', 'none');
+$twig->addGlobal('entityID' , 0);
+
 $disqus = "true" === UserConfig::get('showDisqus', "true");
 $twig->addGlobal('disqusLoad', $disqus);
 $noAdPages = array('/account/', '/ticket', '/information/', '/post/');

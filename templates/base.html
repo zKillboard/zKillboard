@@ -77,6 +77,8 @@
                 <script type="text/javascript">
                     var characterID = {{ characterID }};
                     var navbar = true; 
+                    var entityType = '{{ entityType }}';
+                    var entityID = '{{ entityID }}';
                 </script>
 	</head>
 	<body>
@@ -137,7 +139,7 @@
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js"></script>
 		<script type="text/javascript" src="//{{ siteurl }}/js/bootstrap-datepicker.js"></script>
 		<script type="text/javascript" src="//{{ siteurl }}/js/search.js"></script>
-		<script type="text/javascript" src="//{{ siteurl }}/js/common.js?a=2"></script>
+		<script type="text/javascript" src="//{{ siteurl }}/js/common.js"></script>
 		<script type="text/javascript" src="//{{ siteurl }}/js/sclock1.js"></script>
                 <script type="text/javascript" src="/js/reconnecting-websocket.js"></script>
 		{% if disqusLoad %}
