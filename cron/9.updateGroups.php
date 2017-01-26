@@ -29,7 +29,7 @@ do {
             exit("failure\n");
         } // Data not there, something is wrong, come back later
 
-        $mdb->insertUpdate('information', ['type' => 'groupID', 'id' => $groupID], ['name' => $name, 'categoryID' => $categoryID, 'lastCrestUpdate' => $mdb->now(-86400)]);
+        $mdb->insertUpdate('information', ['type' => 'groupID', 'id' => $groupID], ['name' => $name, 'categoryID' => (int) $categoryID, 'lastCrestUpdate' => $mdb->now(-86400)]);
 
         $types = CrestTools::getJSON($href);
         if (@$types['types'] != null) {
