@@ -65,7 +65,7 @@ function processApi($api, $apiServer, $mdb)
             $mdb->remove("apis", $api);
             break;
         default:
-            Util::out("$httpCode / $errorCode received when checking API $keyID");
+            //Util::out("$httpCode / $errorCode received when checking API $keyID");
             updateErrorCode($mdb, $api, $errorCode);
     }
 
