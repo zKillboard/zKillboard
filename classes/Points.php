@@ -47,7 +47,7 @@ class Points
                 return 1;
             }
             $categoryID = Info::getInfoField('groupID', $groupID, 'categoryID');
-            if ($categoryID != 6) {
+            if ($categoryID == 65 || $categoryID == 23) {
                 return 1;
             }
 
