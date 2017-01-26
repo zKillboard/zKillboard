@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 now=$(date +%H%M)
 test "$now" != "0000" && exit # Not midnight? exit now
