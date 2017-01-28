@@ -21,7 +21,7 @@ require_once '../init.php';
 
 //if ($redis->llen("queueProcess") > 100) exit();
 $minute = date('Hi');
-$zkbApis = new RedisTimeQueue('zkb:apis', 14400);
+$zkbApis = new RedisTimeQueue('zkb:apis', 86400);
 
 if ($threadNum == $max - 1 && ($zkbApis->size() == 0 || date('i') == 15)) {
     $apis = $mdb->find('apis');
@@ -51,8 +51,12 @@ function processApi($api, $apiServer, $mdb)
     $response = RemoteApi::getData($url);
     $content = $response['content'];
     $httpCode = $response['httpCode'];
-    $xml = simplexml_load_string($content);
-    $errorCode = (string) @$xml->error['code'];
+    $xml = @simplexml_load_string($content);
+    if ($xml === false) {
+        $httpCode = 500;
+        $errorCode = 500;
+    }
+    else $errorCode = (string) @$xml->error['code'];
 
     switch ($httpCode) {
         case 200:

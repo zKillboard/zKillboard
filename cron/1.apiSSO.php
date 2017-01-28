@@ -23,7 +23,7 @@ require_once '../init.php';
 //if ($redis->llen("queueProcess") > 100) exit();
 $minute = date('Hi');
 $topKillID = (int) $redis->get('zkb:topKillID');
-$sso = new RedisTimeQueue('tqApiSSO', 3600);
+$sso = new RedisTimeQueue('tqApiSSO', 14400);
 
 if ($threadNum == ($max - 1) && date('i') == 15) {
     $apis = $mdb->find('apisCrest');
@@ -94,7 +94,6 @@ while ($minute == date('Hi')) {
             $xmlSuccess->add(uniqid());
             $mdb->removeField('apisCrest', $row, 'errorCode');
             $mdb->removeField('apisCrest', $row, 'error');
-            $redis->setex("ssoFetched::$charID", 3600, "1");
         } catch (Exception $ex) {
             $xmlFailure->add(uniqid());
             $errorCode = $ex->getCode();

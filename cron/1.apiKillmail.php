@@ -3,7 +3,7 @@
 use cvweiss\redistools\RedisTimeQueue;
 
 $pid = 1;
-$max = 15;
+$max = 25;
 $threadNum = 0;
 for ($i = 0; $i < $max; ++$i) {
     $pid = pcntl_fork();
@@ -25,7 +25,7 @@ $field = strtolower($collection).'ID';
 $collection = 'api'.$collection;
 
 $minute = date('Hi');
-$timeQueue = new RedisTimeQueue("zkb:{$type}s", 3600);
+$timeQueue = new RedisTimeQueue("zkb:{$type}s", 14400);
 
 if (date('i') == 41 && ($threadNum == 4 || $threadNum == 5)) {
     $ids = $mdb->getCollection($collection)->distinct($field);
