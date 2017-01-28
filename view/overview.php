@@ -186,7 +186,7 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
     if ($key != 'location') {
         $topLists[] = Info::doMakeCommon('Top Locations', 'locationID', Stats::getTop('locationID', $p));
     }
-    $p['limit'] = 5;
+    $p['limit'] = 6;
     $topKills = Stats::getTopIsk($p);
 }
 
