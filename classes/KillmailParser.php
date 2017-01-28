@@ -11,12 +11,12 @@ class KillmailParser
         $id = $type == 'char' ? $api['characterID'] : $api['corporationID'];
         $field = $type == 'char' ? 'characterID' : 'corporationID';
         $query = ["involved.$field" => $id, 'killID' => ['$gte' => ($topKillID - 1000000)]];
-        if (!$mdb->exists('killmails', $query)) {
+        /*if (!$mdb->exists('killmails', $query)) {
             $time = time() + rand(43200, 86400);
             $timeQueue->setTime($id, $time);
         } else {
             $timeQueue->setTime($id, $cachedTime + 1);
-        }
+        }*/
     }
 
     public static function updateApiRow($mdb, $collection, $api, $errorCode)
@@ -56,15 +56,13 @@ class KillmailParser
         $url = "$apiServer/$type/KillMails.xml.aspx?characterID=$charID&keyID=$keyID&vCode=$vCode";
         $response = RemoteApi::getData($url);
         $content = $response['content'];
-        $xml = simplexml_load_string($content);
+        $xml = @simplexml_load_string($content);
+        if ($xml === false) {
+            throw new Exception("Invalid XML", 500);
+        }
         $cachedUntil = @$xml->cachedUntil;
 
         $rows = isset($xml->result->rowset->row) ? $xml->result->rowset->row : [];
-        /*if ($rows === null) {
-            print_r($content);
-            exit();
-            throw new Exception("Invalid xml returned - no rowset for killmails");
-        }*/
         $killmails = [];
         foreach ($rows as $c => $row) {
             $killmails[] = $row;
