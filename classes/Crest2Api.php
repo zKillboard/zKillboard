@@ -29,7 +29,7 @@ class Crest2Api
         }
         $killmail['zkb'] = $kill['zkb'];
 
-        RedisCache::set($key, $killmail, 3600);
+        RedisCache::set($key, $killmail, 300);
 
         return $killmail;
     }
