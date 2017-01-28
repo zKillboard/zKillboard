@@ -1,27 +1,27 @@
 {% if topSet | length %}
-<div class="container"> 
+<div class="container" style='width: 100%'>
 {% if topSet.title %}
-<h4 style="text-align: center;">{{ topSet.title }}</h4>
+<center><h4>{{ topSet.title }}</h4></center>
 {% else %}
-<h4 style="text-align: center;">{{ topTitle }}</h4>
+<center><h4>{{ topTitle }}</h4></center>
 {% endif %}
 <div class="clearfix"></div>
 <div class="clearfix"></div>
-{% set imageSize = 64 %}
+{% set imageSize = 128 %}
 {% set shipNameLength = 32 %}
 {% for data in topSet %}
-  <div class="col-sm-2 pull-left" style="text-align: center; height: 160px;">
+  <div class="pull-left" style="width: 20%; text-align: center; height: 200px;">
 		{% set field = data.victim %}
 		{% set shipImageLinkOverride = data.killID %}
 		{% set shipNameLength = 20 %}
 		<span class="hidden-xs">{% include 'components/text_ship.html' %}<br/></span>
 		{% include 'components/image_ship.html' %}<br/>
+		<h6>{{ formatIsk(data.zkb.totalValue) }} ISK</h6>
 		<span class="hidden-xs">{% if field.characterName|length > 0 %}
 		  {% include 'components/text_char.html' %} </td>
 		{% else %}
 		  {% include 'components/text_corp.html' %} </td>
 		{% endif %}<br/></span>
-		<h6>{{ formatIsk(data.zkb.totalValue) }} ISK</h6>
 	  <br/>
   </div>
 {% endfor %}
