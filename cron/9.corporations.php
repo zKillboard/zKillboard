@@ -29,11 +29,11 @@ $count = 0;
 while ($minute == date('Hi') && ($id = $queueCorps->next()))
 {
     $url = "https://api.eveonline.com/corp/CorporationSheet.xml.aspx?corporationID=$id";
-    $client->getAsync($url)->then(function($response) use ($redis, $mdb, $id, $queueCorps, &$count) {
+    $client->getAsync($url)->then(function($response) use ($mdb, $id, $queueCorps, &$count) {
             $count--;
             $raw = (string) $response->getBody();
-            updateCorp($mdb, $redis, $id, $raw, $queueCorps);
-            }, function($response) use ($queueCorps, $id, &$count) {
+            updateCorp($mdb, $id, $raw, $queueCorps);
+            }, function($connectionException) use ($queueCorps, $id, &$count) {   
             $count--;
             $queueCorps->setTime($id, time() + 300);
             });
@@ -46,7 +46,7 @@ while ($minute == date('Hi') && ($id = $queueCorps->next()))
 }
 $curl->execute();
 
-function updateCorp($mdb, $redis, $id, $raw, $queueCorps) {
+function updateCorp($mdb, $id, $raw, $queueCorps) {
     try {
         $xml = simplexml_load_string($raw);
         if ($xml === false) {
