@@ -1,78 +1,88 @@
 <?php
 
-use cvweiss\redistools\RedisTimeQueue;
-use cvweiss\redistools\RedisTtlCounter;
-
 require_once '../init.php';
 
-$counter = 0;
+libxml_use_internal_errors(false);
+
+$curl = new \GuzzleHttp\Handler\CurlMultiHandler();
+$handler = \GuzzleHttp\HandlerStack::create($curl);
+$client = new \GuzzleHttp\Client(['connect_timeout' => 10, 'timeout' => 10, 'handler' => $handler]);
+
 $information = $mdb->getCollection('information');
-$queueCharacters = new RedisTimeQueue('tqCharacters', 86400);
-$counter = 0;
-$xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
-$xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
+$queueChars = new \cvweiss\redistools\RedisTimeQueue('tqCharacters', 86400 * 3);
+
+$query = ['type' => 'characterID'];
+if (date ('i') != 30) {
+    $query['lastApiUpdate'] = ['$exists' => false];
+}
+$chars = $information->find($query)->sort(['lastApiUpdate' => 1]);
+foreach ($chars as $char) {
+    if ($char['id'] === (string) $char['id'] || $char['id'] <= 599999) {
+        $mdb->remove("information", $char);
+        continue;
+    }
+    $queueChars->add($char['id']);
+    $queueChars->setTime($char['id'], (int) @$char['lastApiUpdate']->sec);
+}
 
 $minute = date('Hi');
-while ($minute == date('Hi')) {
-    $ids = [];
-    for ($i = 0; $i < 50; ++$i) {
-        $id = $queueCharacters->next(false);
-        if ($id != null) {
-            $ids[] = $id;
-        }
-    }
+$count = 0;
+while ($minute == date('Hi') && ($id = $queueChars->next()))
+{
+    $queueChars->setTime($id, time() + 300);
 
-    if (sizeof($ids) == 0) {
-        exit();
-    }
+    $url = "https://api.eveonline.com/eve/CharacterInfo.xml.aspx?&characterId=$id";
+    $client->getAsync($url)->then(function($response) use ($mdb, $id, $queueChars, &$count) {
+            $count--;
+            $raw = (string) $response->getBody();
+            updateChar($mdb, $id, $raw, $queueChars);
+            }, function($connectionException) use ($queueChars, $id, &$count) {   
+            $count--;
+            $queueChars->setTime($id, time() + 300);
+            });
 
-    $stringIDs = implode(',', $ids);
-    $href = "https://api.eveonline.com/eve/CharacterAffiliation.xml.aspx?ids=$stringIDs";
-    //file_get_contents("https://evewho.com/add.php?id=$stringIDs");
-    $raw = @file_get_contents($href);
-    if ($raw == '') {
-        $xmlFailure->add(uniqid());
-        exit();
-    }
-    $xmlSuccess->add(uniqid());
-    $xml = @simplexml_load_string($raw);
+    $count++;
+    do {
+        $curl->tick();
+    } while ($count > 30) ;
+    usleep(50000);
+}
+$curl->execute();
 
-    foreach ($xml->result->rowset->row as $info) {
-        $id = (int) $info['characterID'];
-        $row = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $id]);
-        if ($row === null) {
-            sleep(1);
-            continue;
+function updateChar($mdb, $id, $raw, $queueChars) {
+    try {
+        $xml = simplexml_load_string($raw);
+        if ($xml === false) {
+            $queueChars->setTime($id, time() + 300);
         }
 
-        if (isset($info['characterName'])) {
-            ++$counter;
-            //if (!isset($row['name'])) continue;
-            if ((string) @$row['name'] != (string) $info['characterName']) {
-                $mdb->set('information', $row, ['name' => (string) $info['characterName']]);
-            }
-            if (@$row['corporationID'] != (int) @$info['corporationID']) {
-                $mdb->set('information', $row, ['corporationID' => (int) @$info['corporationID']]);
-            }
-            if (!$mdb->exists('information', ['type' => 'corporationID', 'id' => (int) $info['corporationID']])) {
-                $mdb->insert('information', ['type' => 'corporationID', 'id' => (int) $info['corporationID'], 'name' => (string) $info['corporationName']]);
-            }
+        $charInfo = $xml->result;
 
-            if (@$row['allianceID'] != (int) $info['allianceID']) {
-                $mdb->set('information', $row, ['allianceID' => (int) @$info['allianceID']]);
-            }
-            if ($info['allianceID'] != 0 && !$mdb->exists('information', ['type' => 'allianceID', 'id' => (int) $info['allianceID']])) {
-                $mdb->insert('information', ['type' => 'allianceID', 'id' => (int) $info['allianceID'], 'name' => (string) $info['allianceName']]);
-            }
+        $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => (int) $id]);
+        $corpID = (int) $charInfo->corporationID;
 
-            if (@$row['factionID'] != (int) $info['factionID']) {
-                $mdb->set('information', $row, ['factionID' => (int) @$info['factionID']]);
-            }
-            if ($info['factionID'] != 0 && !$mdb->exists('information', ['type' => 'factionID', 'id' => (int) $info['factionID']])) {
-                $mdb->insert('information', ['type' => 'factionID', 'id' => (int) $info['factionID'], 'name' => (string) $info['factionName']]);
-            }
+        $updates = [];
+        compareAttributes($updates, "name", @$row['name'], (string) $charInfo->characterName);
+        compareAttributes($updates, "corporationID", @$row['corporationID'], (int) $charInfo->corporationID);
+        compareAttributes($updates, "allianceID", @$row['allianceID'], (int) $charInfo->allianceID);
+        compareAttributes($updates, "factionID", @$row['factionID'], (int) $charInfo->factionID);
+        compareAttributes($updates, "secStatus", @$row['secStatus'], (double) $charInfo->securityStatus);
+
+        $corpExists = $mdb->count('information', ['type' => 'corporationID', 'id' => $corpID]);
+        if ($corpExists == 0) {
+            $mdb->insertUpdate('information', ['type' => 'characterID', 'id' => $corpID]);
         }
-        $mdb->set('information', $row, ['lastApiUpdate' => new MongoDate(time())]);
+
+        $updates['lastApiUpdate'] = new MongoDate(time());
+        $mdb->set("information", ['type' => 'characterID', 'id' => (int) $id], $updates);
+    } catch (Exception $ex) {
+        print_r($ex);
+        $queueChars->setTime($id, time() + 300);
     }
-    sleep(1);
+}
+
+function compareAttributes(&$updates, $key, $oAttr, $nAttr) {
+    if ($oAttr !== $nAttr) {
+        $updates[$key] = $nAttr;
+    }
 }

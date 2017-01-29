@@ -22,6 +22,7 @@ foreach ($corps as $corp) {
         continue;
     }
     $queueCorps->add($corp['id']);
+    $queueCorps->setTime($corp['id'], (int) @$corp['lastApiUpdate']->sec);
 }
 
 $minute = date('Hi');
