@@ -8,13 +8,14 @@
 <div class="clearfix"></div>
 <div class="clearfix"></div>
 {% set imageSize = 128 %}
+{% set resizeImage = 96 %}
 {% set shipNameLength = 32 %}
 {% for data in topSet %}
   <div class="col-lg-2 pull-left" style="wdth: 20%; text-align: center; height: 200px;">
 		{% set field = data.victim %}
 		{% set shipImageLinkOverride = data.killID %}
 		{% set shipNameLength = 20 %}
-		<span class="hidden-xs">{% include 'components/text_ship.html' %}<br/></span>
+		<span class="hidden-xs" style='width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>{% include 'components/text_ship.html' %}</span><br/>
 		{% include 'components/image_ship.html' %}<br/>
 		<h6>{{ formatIsk(data.zkb.totalValue) }} ISK</h6>
 		<span class="hidden-xs">{% if field.characterName|length > 0 %}
