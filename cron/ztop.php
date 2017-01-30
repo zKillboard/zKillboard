@@ -36,8 +36,10 @@ while ($hour == date('H')) {
     addInfo('Kills remaining to be fetched.', $mdb->count('crestmails', ['processed' => false]));
     $killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
     addInfo('Kills added last hour', $killsLastHour->count());
-    addInfo('Total Kills', $redis->get('zkb:totalKills'));
-    addInfo('Top killID', $mdb->findField('killmails', 'killID', ['cacheTime' => 60], ['killID' => -1]));
+    $totalKills = $redis->get('zkb:totalKills');
+    $topKillID = $mdb->findField('killmails', 'killID', ['cacheTime' => 60], ['killID' => -1]);
+    addInfo('Total Kills (' . number_format(($totalKills / $topKillID) * 100, 1) . '%)', $totalKills);
+    addInfo('Top killID', $topKillID);
 
     addInfo('', 0);
     $nonApiR = new RedisTtlCounter('ttlc:nonApiRequests', 300);
@@ -57,33 +59,28 @@ while ($hour == date('H')) {
     addInfo('Successful CREST calls in last 5 minutes', $crestSuccess->count(), false);
     $crestFailure = new RedisTtlCounter('ttlc:CrestFailure', 300);
     addInfo('Failed CREST calls in last 5 minutes', $crestFailure->count(), false);
-
-    addInfo('', 0, false);
-    addInfo('Api KeyInfos to check', $redis->zCount('zkb:apis', 0, time()), false);
-    addInfo('Char KillLogs to check', $redis->zCount('zkb:chars', 0, time()), false);
-    addInfo('Corp KillLogs to check', $redis->zCount('zkb:corps', 0, time()), false);
-    addInfo('Char Apis', $redis->zCard('zkb:chars'), false);
-    addInfo('Corp Apis', $redis->zCard('zkb:corps'), false);
+    $esiSuccess = new RedisTtlCounter('ttlc:esiSuccess', 300);
+    addInfo('Successful ESI calls in last 5 minutes', $esiSuccess->count(), false);
+    $esiFailure = new RedisTtlCounter('ttlc:esiFailure', 300);
+    addInfo('Failed ESI calls in last 5 minutes', $esiFailure->count(), false);
+    $authSuccess = new RedisTtlCounter('ttlc:AuthSuccess', 300);
+    addInfo('Successful SSO calls in last 5 minutes', $authSuccess->count(), false);
+    $authFailure = new RedisTtlCounter('ttlc:AuthFailure', 300);
+    addInfo('Failed SSO calls in last 5 minutes', $authFailure->count(), false);
     $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
     addInfo('Successful XML calls in last 5 minutes', $xmlSuccess->count(), false);
     $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
     addInfo('Failed XML calls in last 5 minutes', $xmlFailure->count(), false);
 
     addInfo('', 0, false);
-    addInfo('SSO KillLogs to check', $redis->zCount('tqApiSSO', 0, time()), false);
-    addInfo('Distinct Character XML/SSO RefreshTokens', $redis->zCard('tqApiSSO'), false);
-    $authSuccess = new RedisTtlCounter('ttlc:AuthSuccess', 300);
-    addInfo('Successful Auth calls in last 5 minutes', $authSuccess->count(), false);
-    $authFailure = new RedisTtlCounter('ttlc:AuthFailure', 300);
-    addInfo('Failed Auth calls in last 5 minutes', $authFailure->count(), false);
+    addInfo('XML Api KeyInfos to check', $redis->zCount('zkb:apis', 0, time()), false);
+    addInfo('XML Api Total', $redis->zCard("zkb:apis"), false);
+    addInfo('XML Corp KillLogs to check', $redis->zCount('zkb:corps', 0, time()), false);
+    addInfo('XML Corp Api Total', $redis->zCard('zkb:corps'), false);
 
     addInfo('', 0, false);
-    addInfo('ESI KillLogs to check', $redis->zCount('tqApiESI', 0, time()), false);
+    addInfo('Character ESI KillLogs to check', $redis->zCount('tqApiESI', 0, time()), false);
     addInfo('Distinct Character ESI/SSO RefreshTokens', $redis->zCard('tqApiESI'), false);
-    $esiSuccess = new RedisTtlCounter('ttlc:esiSuccess', 300);
-    addInfo('Successful ESI calls in last 5 minutes', $esiSuccess->count(), false);
-    $esiFailure = new RedisTtlCounter('ttlc:esiFailure', 300);
-    addInfo('Failed ESI calls in last 5 minutes', $esiFailure->count(), false);
 
     $info = $redis->info();
     $mem = $info['used_memory_human'];

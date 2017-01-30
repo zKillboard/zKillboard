@@ -11,7 +11,7 @@ $mdb->remove("information", ['id' => 1, 'type' => $type]);
 Entities::populateList($mdb, $redis, $listName, $type);
 
 $uri = "${apiServer}eve/CharacterInfo.xml.aspx?&characterId={id}";
-Entities::iterateList($mdb, $redis, $listName, $type, $uri, "updateChar", 5);
+Entities::iterateList($mdb, $redis, $listName, $type, $uri, "updateChar", 10);
 
 function updateChar($mdb, $id, $raw) {
     try {
