@@ -2,24 +2,9 @@
 
 use cvweiss\redistools\RedisTimeQueue;
 
-$pid = 1;
-$max = 25;
-$threadNum = 0;
-for ($i = 0; $i < $max; ++$i) {
-    $pid = pcntl_fork();
-    if ($pid == -1) {
-        exit();
-    }
-    if ($pid == 0) {
-        break;
-    }
-    ++$threadNum;
-}
-
 require_once '../init.php';
 
-//if ($redis->llen("queueProcess") > 100) exit();
-$collection = $threadNum < 5 ? 'Corporation' : 'Character';
+$collection = 'Corporation';
 $type = substr(strtolower($collection), 0, 4);
 $field = strtolower($collection).'ID';
 $collection = 'api'.$collection;
@@ -27,7 +12,7 @@ $collection = 'api'.$collection;
 $minute = date('Hi');
 $timeQueue = new RedisTimeQueue("zkb:{$type}s", 14400);
 
-if (date('i') == 41 && ($threadNum == 4 || $threadNum == 5)) {
+if (date('i') == 41) {
     $ids = $mdb->getCollection($collection)->distinct($field);
     foreach ($ids as $id) {
         $timeQueue->add($id);
