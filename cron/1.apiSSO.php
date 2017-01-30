@@ -4,20 +4,6 @@ use cvweiss\redistools\RedisTimeQueue;
 use cvweiss\redistools\RedisTtlCounter;
 use cvweiss\redistools\RedisTtlSortedSet;
 
-$pid = 1;
-$max = 10;
-$threadNum = 0;
-for ($i = 0; $i < $max; ++$i) {
-    $pid = pcntl_fork();
-    if ($pid == -1) {
-        exit();
-    }
-    if ($pid == 0) {
-        break;
-    }
-    $threadNum++;
-}
-
 require_once '../init.php';
 
 //if ($redis->llen("queueProcess") > 100) exit();
@@ -25,14 +11,14 @@ $minute = date('Hi');
 $topKillID = (int) $redis->get('zkb:topKillID');
 $sso = new RedisTimeQueue('tqApiSSO', 14400);
 
-if ($threadNum == ($max - 1) && date('i') == 15) {
+if (date('i') == 15) {
     $apis = $mdb->find('apisCrest');
     foreach ($apis as $row) {
         $sso->add($row['characterID']);
     }
 }
 
-$usleep = max(50000, min(1000000, floor((1 / (($sso->size() + 1) / 3600)) * 700000))) * $max;
+$usleep = 50000;
 
 $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
 $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
@@ -175,8 +161,8 @@ while ($minute == date('Hi')) {
         $mdb->remove("apis", ['type' => 'char', 'userID' => $charID]);
 
         // If we got new kills tell the log about it
+        $name = 'char '.@$info['name'];
         if ($killsAdded > 0) {
-            $name = 'char '.@$info['name'];
             while (strlen("$killsAdded") < 3) {
                 $killsAdded = ' '.$killsAdded;
             }
@@ -188,9 +174,7 @@ while ($minute == date('Hi')) {
             // Every login generates a new row, we don't need to keep that many
             $mdb->remove("apisCrest", $row);
         }
-        if (date('m') == '02') { // Feb. 1st, time to go
-            Util::out("Removing SSO/XML for $name");
-            $mdb->remove("apisCrest", $row);
-        }
+        $mdb->remove("apisCrest", $row);
+        $sso->remove($charID);
     }
 }

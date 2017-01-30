@@ -9,9 +9,6 @@
 		<div class="row"><div class="alert alert-success">{{ message }}</div></div>
 	{% endif %}
 {% endfor %}
-{% if not sessionusername %}
-	<div class="raw"><div class="alrt alert-succss"><h4>Log in and allow zKillboard to fetch your killmails for you. Just click the dropdown at the top right and use CCP's secure SSO to login.<h4></div></div>
-{% endif %}
 <div class="row">
         <div class="col-lg-6">
                 <div class="row">
@@ -36,6 +33,7 @@
 	<div class="col-lg-5">
 		<h3>API Key Post</h3>
 		<div class="well">
+                        <div class="alert alert-danger">Corporation APIs ONLY.<br/>Submitted Character APIs will result in immediate deletion.<br/>Please read: <a href='https://www.reddit.com/r/Eve/comments/5orwcx/announcing_the_impending_removal_of_all_character/' target='_blank'>No more Character APIs</a></div>
 			<p>Post an API Key, to let the API automatically import kills for you!</p>
 			<p>To quickly create an API key, go to <a href="https://community.eveonline.com/support/api-key/CreatePredefined?accessMask=256" target="_blank">https://community.eveonline.com</a><br>(We only require KillLog, but feel free to tick off more.)
 			<form class="form-horizontal" name="addapi" method="post" action="/post/">

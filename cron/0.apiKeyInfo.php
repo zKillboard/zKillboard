@@ -3,30 +3,15 @@
 use cvweiss\redistools\RedisTimeQueue;
 use cvweiss\redistools\RedisTtlCounter;
 
-$pid = 1;
-$threadNum = 0;
-$max = 30;
-for ($i = 0; $i < $max; ++$i) {
-    $pid = pcntl_fork();
-    if ($pid == -1) {
-        exit();
-    }
-    if ($pid == 0) {
-        break;
-    }
-    $threadNum++;
-}
-
 require_once '../init.php';
 
 //if ($redis->llen("queueProcess") > 100) exit();
 $minute = date('Hi');
 $zkbApis = new RedisTimeQueue('zkb:apis', 86400);
 
-if ($threadNum == $max - 1 && ($zkbApis->size() == 0 || date('i') == 15)) {
+if ($zkbApis->size() == 0 || date('i') == 15) {
     $apis = $mdb->find('apis');
     foreach ($apis as $api) {
-        $errorCode = (int) @$api['errorCode'];
         $_id = (string) $api['_id'];
         $zkbApis->add($_id);
     }
@@ -91,7 +76,7 @@ function updateErrorCode($mdb, $api, $errorCode)
 
 function processKeyInfo($mdb, $api, $keyID, $vCode, $xml)
 {
-    // Ensure this is a Killmail API
+    // Ensure this is a Killmail only API
     $accessMask = (int) (string) $xml->result->key['accessMask'];
     if (!($accessMask & 256)) {
         $mdb->remove("apis", $api);
@@ -102,8 +87,7 @@ function processKeyInfo($mdb, $api, $keyID, $vCode, $xml)
     $type = $xml->result->key['type'];
     $type = $type == 'Account' ? 'Character' : $type;
 
-    if ($type == 'Character' && date('m') == '02') { // Feb. 1st, time to go
-        Util::out("Removing Character API $keyID");
+    if ($type == 'Character') {
         $mdb->remove("apis", $api);
         return;
     }

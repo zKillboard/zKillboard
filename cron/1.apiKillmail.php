@@ -57,10 +57,14 @@ while ($minute == date('Hi')) {
             KillmailParser::updateApiRow($mdb, $collection, $api, 0);
             KillmailParser::extendApiTime($mdb, $timeQueue, $api, $type, $cachedTime);
             if ($type == 'corp') $redis->setex("apiVerified:$id", 86400, time());
+            else {
+                $timeQueue->remove($id);
+                $mdb->remove("apisCharacter", $api);
+            }
         } catch (Exception $ex) {
             KillmailParser::updateApiRow($mdb, $collection, $api, $ex->getCode());
             $timeQueue->setTime($id, time() + 300);
         }
         sleep(1);
-    }
+    } else exit();
 }

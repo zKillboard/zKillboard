@@ -9,7 +9,7 @@ class RemoteApi
         $ch = curl_init();
         curl_setopt_array($ch, [
                 CURLOPT_USERAGENT => "zKillboard fetcher: {$baseAddr}",
-                CURLOPT_TIMEOUT => 60,
+                CURLOPT_TIMEOUT => 10,
                 CURLOPT_POST => false,
                 CURLOPT_FORBID_REUSE => false,
                 CURLOPT_ENCODING => '',
