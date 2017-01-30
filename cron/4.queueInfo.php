@@ -150,6 +150,7 @@ function updateEntity($killID, $entity)
         }
 
         $id = $entity[$type]['id'];
+        if ($id <= 1) continue;
         $name = @$entity[$type]['name'];
 
         // Look for the current entry
