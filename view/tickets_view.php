@@ -35,7 +35,9 @@ if ($_POST) {
         $mdb->getCollection('tickets')->update(['_id' => new MongoID($id)], ['$set' => ['dttmUpdate' => time()]]);
         $mdb->getCollection('tickets')->update(['_id' => new MongoID($id)], ['$inc' => ['replies' => 1]]);
 
-        $mdb->insert("evemails", ['sent' => false, 'subject' =>  'zKillboard Ticket Response', 'body' => "You have received a response to a ticket you submitted. To view the response, please click <a href='$fullAddr/account/tickets/view/$id/'>here</a>.", 'recipients' => [['recipient_id' => $ticket['characterID'], 'recipient_type' => 'character']]]);
+        if ($info['moderator'] == true) {
+            $mdb->insert("evemails", ['sent' => false, 'subject' =>  'zKillboard Ticket Response', 'body' => "You have received a response to a ticket you submitted. To view the response, please click <a href='$fullAddr/account/tickets/view/$id/'>here</a>.", 'recipients' => [['recipient_id' => $ticket['characterID'], 'recipient_type' => 'character']]]);
+        }
 
         $app->redirect('.');
         exit();
