@@ -1,19 +1,5 @@
 <?php
 
-$pid = 1;
-$max = 6;
-$threadNum = 0;
-for ($i = 0; $i < $max; ++$i) {
-    $pid = pcntl_fork();
-    if ($pid == -1) {
-        exit();
-    }
-    if ($pid == 0) {
-        break;
-    }
-    $threadNum++;
-}
-
 use cvweiss\redistools\RedisQueue;
 use cvweiss\redistools\RedisTtlCounter;
 
@@ -23,155 +9,77 @@ global $baseAddr, $baseDir;
 
 $crestmails = $mdb->getCollection('crestmails');
 $rawmails = $mdb->getCollection('rawmails');
-$queueProcess = new RedisQueue('queueProcess');
 $killsLastHour = new RedisTtlCounter('killsLastHour');
 $killqueue = new RedisQueue('queueKills2Pull');
 
 $counter = 0;
 $minute = date('Hi');
 
-if ($pid > 0) {
-    while ($minute == date('Hi')) {
-        $unprocessed = $crestmails->find(array('processed' => false))->sort(['killID' => -1]);
-        foreach ($unprocessed as $row) {
-            $killID = $row['killID'];
-            $key = "zkb:processing:$killID";
-            if ($redis->set($key, "processing", ['nx', 'ex' => 86400]) === false) continue;
+// Prepare curl, handler, and guzzler
+$curl = new \GuzzleHttp\Handler\CurlMultiHandler();
+$handler = \GuzzleHttp\HandlerStack::create($curl);
+$client = new \GuzzleHttp\Client(['connect_timeout' => 10, 'timeout' => 10, 'handler' => $handler]);
 
-            $killqueue->push($killID);
-        }
-        if ($redis->llen('queueKills2Pull') > ($max * 2)) $redis->sort('queueKills2Pull', ['sort' => 'desc', 'out' => 'queueKills2Pull']);
-        sleep(1);
-    }
-}
+$mdb->set("crestmails", ['processed' => ['$ne' => true]], ['processed' => false]);
 
+$minute = date('Hi');
+$count = 0;
+$maxConcurrent = 10;
 while ($minute == date('Hi')) {
-    $killID = $killqueue->pop();
-    if ($killID === null) {
-        continue;
+    $row = $mdb->findDoc("crestmails", ['processed' => false], ['killID' => -1]);
+    if ($row != null) {
+        $count++;
+        $killID = (int) $row['killID'];
+        $hash = $row['hash'];
+        $url = "$crestServer/killmails/$killID/$hash/";
+
+        $mdb->set("crestmails", $row, ['processed' => 'fetching']);
+        $client->getAsync($url)->then(
+            function($response) use ($mdb, $row, &$count) {
+                $count--;
+                handleFulfilled($mdb, $row, json_decode($response->getBody(), true));
+            },
+            function($connectionException) use ($mdb, $row, &$count) {
+                $count--;
+                handleRejected($mdb, $row, $connectionException->getCode());
+            });
     }
-
-    $unprocessed = $mdb->find("crestmails", ['killID' => $killID]);
-
-    foreach ($unprocessed as $crestmail) {
-        $id = $crestmail['killID'];
-        $hash = $crestmail['hash'];
-
-        $key = "zkb:processing:$id";
-        $redis->expire($key, 60);
-
-        $killmail = $mdb->findDoc('rawmails', ['killID' => (int) $id]);
-        if ($killmail === null) {
-            $killmail = CrestTools::fetch($id, $hash);
-        }
-        if (is_integer($killmail)) {
-            Util::out("$id $killmail");
-        }
-        // The following if statements used to be a switch statement, but for some reason it didn't always process correctly
-        if ($killmail == 403 || $killmail == 404) {
-            $mdb->getCollection('crestmails')->remove(['_id' => $crestmail['_id']]);
-            continue;
-        }
-        if ($killmail == 503) {
-            $crestmails->update($crestmail, array('$set' => array('processed' => false, 'errorCode' => $killmail)));
-            continue;
-        }
-        if ($killmail == 0) {
-            $crestmails->update($crestmail, array('$set' => array('processed' => false)));
-            continue;
-        }
-        if (in_array($killmail, [415, 500, '', null])) {
-            $crestmails->update($crestmail, array('$set' => array('errorCode' => $killmail, 'processed' => null, 'error' => 'Error 415, 500, or null')));
-            continue;
-        }
-        if (!isset($killmail['killID'])) {
-            $crestmails->update($crestmail, array('$set' => array('processed' => false)));
-            continue;
-        }
-
-        if ($mdb->exists('killmails', ['killID' => $id])) {
-            unset($crestmail['error']);
-            unset($crestmail['errorCode']);
-            $crestmail['processed'] = true;
-            $crestmails->save($crestmail);
-            continue;
-        }
-
-        if (is_integer($killmail)) {
-            Util::out("after $id $killmail");
-        }
-        if (is_integer($killmail)) {
-            var_dump($killmail);
-        }
-
-        unset($crestmail['npcOnly']);
-        unset($killmail['zkb']);
-        unset($killmail['_id']);
-
-        $sem = sem_get(3175);
-        try {
-            sem_acquire($sem);
-            if (!$mdb->exists('rawmails', ['killID' => (int) $id])) {
-                $killsLastHour->add($id);
-                if ($killmail == null) {
-                    Util::out("saving null killmail? id is $id");
-                }
-                $rawmails->save($killmail);
-            }
-
-            $killID = @$killmail['killID'];
-            if ($killID != 0) {
-                $crestmail['processed'] = true;
-                $crestmails->save($crestmail);
-                $queueProcess->push($killID);
-                ++$counter;
-            } else {
-                $crestmails->update($crestmail, array('$set' => array('processed' => false)));
-            }
-        } finally {
-            sem_release($sem);
-        }
-    }
+    do {
+        $curl->tick();
+    } while ($count >= $maxConcurrent && $minute == date('Hi')) ;
+    usleep(50000);
 }
-if ($debug && $counter > 0) {
-    Util::out('Added '.number_format($counter, 0).' Kills.');
-}
+$curl->execute();
 
-function validKill(&$kill)
+
+function handleFulfilled($mdb, $row, $rawKillmail)
 {
-    // Show all pod kills
-    $victimShipID = $kill['victim']['shipType']['id'];
-    if ($victimShipID == 670 || $victimShipID == 33328) {
-        return true;
+    $queueProcess = new RedisQueue('queueProcess');
+    $killsLastHour = new RedisTtlCounter('killsLastHour');
+
+    $killID = (int) $row['killID'];
+    if (!$mdb->exists("rawmails", ['killID' => $killID])) {
+        $mdb->save("rawmails", $rawKillmail);
     }
 
-    foreach ($kill['attackers'] as $attacker) {
-        if (@$attacker['character']['id'] > 0) {
-            return true;
-        }
-        if (@$attacker['corporation']['id'] > 1999999) {
-            return true;
-        }
-        if (@$attacker['alliance']['id'] > 0) {
-            return true;
-        }
+    $queueProcess->push($killID);
+    $mdb->set("crestmails", $row, ['processed' => true]);
+    $killsLastHour->add($killID);
+}
 
-        $attackerGroupID = Info::getGroupID(@$attacker['shipType']['id']);
-        if ($attackerGroupID == 365 || $attackerGroupID == 99) {
-            return true;
-        } // Tower or Sentry gun
-
-        if (@$attacker['shipType']['id'] == 34495) {
-            return true;
-        } // Drifters
-        if (@$attacker['corporation']['id'] == 1000125) {
-            return true;
-        } // Drifters
-
-        if (@$attacker['shipType']['id'] == 37468) {
-            return true;
-        } // Serpentis Dreadnought
+function handleRejected($mdb, $row, $code)
+{
+    switch ($code) {
+        case 0: // Timeout
+        case 503: // Server error
+            $mdb->set("crestmails", $row, ['processed' => false]);
+            break;
+        case 403: // Not authorized
+        case 404: // Doesn't exist
+            $mdb->remove("crestmails", $row);
+            break;
+        default:
+            Util::out($row['killID'] . " crest fetch has error code $code");
+            $mdb->set("crestmails", $row, ['processed' => 'error', 'errorCode' => $code]);
     }
-
-    return false;
 }
