@@ -76,9 +76,14 @@
 			</tr>
             {% endif %}
             {% if detail.secStatus %}
+                {% set calcStatus = detail.secStatus %}
+                {% if calcStatus > 5 %}{% set calcStatus = 5 %}{% elseif calcStatus < -5 %}{% set calcStatus = -5 %}{% endif %}
+                {% set calcStatus = (calcStatus / 5) + 0.8 %}
+                {% if calcStatus > 1 %}{% set calcStatus = 1 %}{% endif %}
+                {% set color = secStatusColor(calcStatus) %}
                         <tr>   
                                 <th>Sec. Status:</th>
-                                <td itemprop="faction">{{ detail.secStatus|number_format(2) }}</td>
+                                <td itemprop="sec_status" style='color: {{ color }}'>{{ detail.secStatus|number_format(2) }}</td>
                         </tr>
             {% endif %}
             {% if detail.shipName %}
