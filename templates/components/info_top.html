@@ -75,6 +75,12 @@
 				<td itemprop="faction">{% include 'components/text_faction.html' %}</td>
 			</tr>
             {% endif %}
+            {% if detail.secStatus %}
+                        <tr>   
+                                <th>Sec. Status:</th>
+                                <td itemprop="faction">{{ detail.secStatus|number_format(2) }}</td>
+                        </tr>
+            {% endif %}
             {% if detail.shipName %}
 			<tr>
 				<th>Ship:</th>
