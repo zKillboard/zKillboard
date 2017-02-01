@@ -153,7 +153,6 @@ class Info
         foreach ($corpList as $corp) {
             $corp['corporationName'] = $corp['name'];
             $corp['corporationID'] = $corp['id'];
-            $doc = $mdb->findDoc('apiCorporation', ['corporationID' => (int) $corp['id']], ['lastFetched' => -1]);
             $apiVerified = $redis->get("apiVerified:" . $corp['id']);
             if ($apiVerified) {
                 $corp['cachedUntilTime'] = date('Y-m-d H:i', $apiVerified);

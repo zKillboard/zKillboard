@@ -19,25 +19,13 @@ class Api
             return 'Invalid vCode';
         }
 
-        $userID = User::getUserID();
-        if ($userID == null) {
-            $userID = 0;
-        }
-
         $exists = $mdb->exists('apis', ['keyID' => $keyID, 'vCode' => $vCode]);
         if ($exists) {
-            if ($userID > 0) {
-                $mdb->set('apis', ['keyID' => $keyID, 'vCode' => $vCode], ['userID' => $userID]);
-
-                return 'We have assigned this API key to your account.';
-            }
-
-            return 'We already have this API in our database.';
+            return 'We already have this API.';
         }
 
-        $row = ['keyID' => $keyID, 'vCode' => $vCode, 'label' => $label, 'lastApiUpdate' => new MongoDate(2), 'userID' => $userID];
+        $row = ['keyID' => $keyID, 'vCode' => $vCode];
         $mdb->save('apis', $row);
-        $id = $row['_id'];
 
         $redis->lpush("zkb:apis", $keyID);
 

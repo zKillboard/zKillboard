@@ -90,10 +90,8 @@ function handleKillFulfilled(&$guzzler, &$params, &$content)
     $corpName = $params['corpName'];
 
     $xml = @simplexml_load_string($content);
-    $cachedUntil = @$xml->cachedUntil;
 
     $rows = isset($xml->result->rowset->row) ? $xml->result->rowset->row : [];
-    $killmails = [];
     $added = 0;
     foreach ($rows as $c => $killmail) {
         $killID = (int) $killmail['killID'];
@@ -127,6 +125,7 @@ function handleKillRejected(&$guzzler, &$params, $code)
 
 function handleInfoRejected(&$guzzler, &$params, $code)
 {
+    $mdb = $params['mdb'];
     $row = $params['row'];
     $redis = $params['redis'];
 
