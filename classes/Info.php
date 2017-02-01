@@ -145,7 +145,7 @@ class Info
      */
     public static function getCorps($allianceID)
     {
-        global $mdb;
+        global $mdb, $redis;
 
         $corpList = $mdb->find('information', ['type' => 'corporationID', 'memberCount' => ['$gt' => 0], 'allianceID' => (int) $allianceID], ['name' => 1]);
 
@@ -154,8 +154,9 @@ class Info
             $corp['corporationName'] = $corp['name'];
             $corp['corporationID'] = $corp['id'];
             $doc = $mdb->findDoc('apiCorporation', ['corporationID' => (int) $corp['id']], ['lastFetched' => -1]);
-            if ($doc !== null) {
-                $corp['cachedUntilTime'] = date('Y-m-d H:i', $doc['lastFetched']);
+            $apiVerified = $redis->get("apiVerified:" . $corp['id']);
+            if ($apiVerified) {
+                $corp['cachedUntilTime'] = date('Y-m-d H:i', $apiVerified);
                 $corp['apiVerified'] = 1;
             } else {
                 $count = $mdb->count("scopes", ['corporationID' => (int) $corp['id']]);

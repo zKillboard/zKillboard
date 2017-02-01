@@ -62,3 +62,7 @@ $load = sys_getloadavg();
 if ($load[0] > 10) {
     $redis->setex('zkb:allowAPI', 300, "no");
 }
+
+$redis->set("zkb:totalChars", $mdb->count("information", ['type' => 'characterID']));
+$redis->set("zkb:totalCorps", $mdb->count("information", ['type' => 'corporationID']));
+$redis->set("zkb:totalAllis", $mdb->count("information", ['type' => 'allianceID']));

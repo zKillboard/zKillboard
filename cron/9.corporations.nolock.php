@@ -11,7 +11,7 @@ $mdb->remove("information", ['id' => 1, 'type' => $type]);
 Entities::populateList($mdb, $redis, $listName, $type);
 
 $uri = "${apiServer}corp/CorporationSheet.xml.aspx?corporationID={id}";
-Entities::iterateList($mdb, $redis, $listName, $type, $uri, "updateCorp", 3);
+Entities::iterateList($mdb, $redis, $listName, $type, $uri, "updateCorp", 10);
 
 function updateCorp($mdb, $id, $raw) {
     try {

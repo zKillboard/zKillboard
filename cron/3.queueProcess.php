@@ -1,6 +1,6 @@
 <?php
 
-$pid = 1;
+/*$pid = 1;
 $max = 5;
 $threadNum = 0;
 for ($i = 0; $i < $max; ++$i) {
@@ -12,7 +12,7 @@ for ($i = 0; $i < $max; ++$i) {
         break;
     }
     ++$threadNum;
-}
+}*/
 
 use cvweiss\redistools\RedisQueue;
 

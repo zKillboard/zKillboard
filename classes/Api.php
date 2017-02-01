@@ -39,8 +39,7 @@ class Api
         $mdb->save('apis', $row);
         $id = $row['_id'];
 
-        $zkbApis = new RedisTimeQueue('zkb:apis', 14400);
-        $zkbApis->add($id);
+        $redis->lpush("zkb:apis", $keyID);
 
         return 'Success, your API has been added.';
     }

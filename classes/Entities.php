@@ -27,7 +27,7 @@ class Entities
         // Prepare curl, handler, and guzzler
         $curl = new \GuzzleHttp\Handler\CurlMultiHandler();
         $handler = \GuzzleHttp\HandlerStack::create($curl);
-        $client = new \GuzzleHttp\Client(['connect_timeout' => 10, 'timeout' => 30, 'handler' => $handler]);
+        $client = new \GuzzleHttp\Client(['connect_timeout' => 10, 'timeout' => 30, 'handler' => $handler, 'User-Agent' => 'zkillboard.com']);
 
         $minute = date('Hi');
         $count = 0;
@@ -46,7 +46,7 @@ class Entities
             do {
                 $curl->tick();
             } while ($count >= $maxConcurrent) ;
-            usleep(50000);
+            usleep(100000);
         }
         $curl->execute();
     }

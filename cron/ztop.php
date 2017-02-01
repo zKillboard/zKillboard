@@ -73,14 +73,21 @@ while ($hour == date('H')) {
     addInfo('Failed XML calls in last 5 minutes', $xmlFailure->count(), false);
 
     addInfo('', 0, false);
-    addInfo('XML Api KeyInfos to check', $redis->zCount('zkb:apis', 0, time()), false);
-    addInfo('XML Api Total', $redis->zCard("zkb:apis"), false);
-    addInfo('XML Corp KillLogs to check', $redis->zCount('zkb:corps', 0, time()), false);
-    addInfo('XML Corp Api Total', $redis->zCard('zkb:corps'), false);
+    addInfo('XML - Corp APIs to check', $redis->llen("zkb:apis"), false);
+    addInfo('XML - Corp APIs total', $mdb->count("apis"), false);
 
     addInfo('', 0, false);
     addInfo('Character ESI KillLogs to check', $redis->zCount('tqApiESI', 0, time()), false);
     addInfo('Distinct Character ESI/SSO RefreshTokens', $redis->zCard('tqApiESI'), false);
+
+    addInfo('', 0, false);
+    addInfo('Characters to check', $redis->llen("tqCharacters"), false);
+    addInfo('Total Characters', $redis->get("zkb:totalChars"), false);
+    addInfo('Corporations to check', $redis->llen("tqCorporations"), false);
+    addInfo('Total Corporations', $redis->get("zkb:totalCorps"), false);
+    addInfo('Alliances to check', $redis->llen("tqAlliances"), false);
+    addInfo('Total Alliances', $redis->get("zkb:totalAllis"), false);
+
 
     $info = $redis->info();
     $mem = $info['used_memory_human'];

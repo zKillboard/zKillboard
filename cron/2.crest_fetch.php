@@ -18,7 +18,7 @@ $minute = date('Hi');
 // Prepare curl, handler, and guzzler
 $curl = new \GuzzleHttp\Handler\CurlMultiHandler();
 $handler = \GuzzleHttp\HandlerStack::create($curl);
-$client = new \GuzzleHttp\Client(['connect_timeout' => 10, 'timeout' => 10, 'handler' => $handler]);
+$client = new \GuzzleHttp\Client(['connect_timeout' => 10, 'timeout' => 10, 'handler' => $handler, 'User-Agent' => 'zkillboard.com']);
 
 $mdb->set("crestmails", ['processed' => ['$ne' => true]], ['processed' => false]);
 
@@ -56,6 +56,7 @@ function handleFulfilled($mdb, $row, $rawKillmail)
 {
     $queueProcess = new RedisQueue('queueProcess');
     $killsLastHour = new RedisTtlCounter('killsLastHour');
+    $crestSuccess = new RedisTtlCounter('ttlc:CrestSuccess', 300);
 
     $killID = (int) $row['killID'];
     if (!$mdb->exists("rawmails", ['killID' => $killID])) {
@@ -65,6 +66,7 @@ function handleFulfilled($mdb, $row, $rawKillmail)
     $queueProcess->push($killID);
     $mdb->set("crestmails", $row, ['processed' => true]);
     $killsLastHour->add($killID);
+    $crestSuccess->add(uniqid());
 }
 
 function handleRejected($mdb, $row, $code)
@@ -82,4 +84,6 @@ function handleRejected($mdb, $row, $code)
             Util::out($row['killID'] . " crest fetch has error code $code");
             $mdb->set("crestmails", $row, ['processed' => 'error', 'errorCode' => $code]);
     }
+    $crestFailure = new RedisTtlCounter('ttlc:CrestFailure', 300);
+    $crestFailure->add(uniqid());
 }

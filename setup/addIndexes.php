@@ -3,28 +3,6 @@ require_once "../init.php";
 $m = new MongoClient();
 $db = $m->selectDB("zkillboard");
 
-// apiCharacter
-echo "\nCreating collection apiCharacter ... ";
-$apiCharacter = $db->createCollection("apiCharacter");
-echo "Done\n";
-echo "Creating index : 'characterID' => 1, 'keyID' => 1, with sparse = 0 and unique = 1 ... ";
-$apiCharacter->ensureIndex(array('characterID' => 1, 'keyID' => 1), array("sparse" => 0, "unique" => 1));
-echo "Done\n";
-echo "Creating index : 'characterID' => 1, 'lastFetched' => 1, with sparse = 0 and unique = 0 ... ";
-$apiCharacter->ensureIndex(array('characterID' => 1, 'lastFetched' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-
-// apiCorporation
-echo "\nCreating collection apiCorporation ... ";
-$apiCorporation = $db->createCollection("apiCorporation");
-echo "Done\n";
-echo "Creating index : 'corporationID' => 1, 'keyID' => 1, with sparse = 0 and unique = 1 ... ";
-$apiCorporation->ensureIndex(array('corporationID' => 1, 'keyID' => 1), array("sparse" => 0, "unique" => 1));
-echo "Done\n";
-echo "Creating index : 'corporationID' => 1, 'lastFetched' => 1, with sparse = 0 and unique = 0 ... ";
-$apiCorporation->ensureIndex(array('corporationID' => 1, 'lastFetched' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-
 // apis
 echo "\nCreating collection apis ... ";
 $apis = $db->createCollection("apis");
@@ -43,17 +21,6 @@ $apis->ensureIndex(array('errorCode' => 1), array("sparse" => 1, "unique" => 0))
 echo "Done\n";
 echo "Creating index : 'keyID' => 1, 'vCode' => 1, with sparse = 0 and unique = 1 ... ";
 $apis->ensureIndex(array('keyID' => 1, 'vCode' => 1), array("sparse" => 0, "unique" => 1));
-echo "Done\n";
-
-// apisCrest
-echo "\nCreating collection apisCrest ... ";
-$apisCrest = $db->createCollection("apisCrest");
-echo "Done\n";
-echo "Creating index : 'lastFetch' => 1, with sparse = 0 and unique = 0 ... ";
-$apisCrest->ensureIndex(array('lastFetch' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-echo "Creating index : 'characterID' => 1, with sparse = 0 and unique = 0 ... ";
-$apisCrest->ensureIndex(array('characterID' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // battles
@@ -94,6 +61,11 @@ $crestmails->ensureIndex(array('hash' => 1), array("sparse" => 0, "unique" => 0)
 echo "Done\n";
 echo "Creating index : 'added' => -1, with sparse = 0 and unique = 0 ... ";
 $crestmails->ensureIndex(array('added' => -1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+
+// evemails
+echo "\nCreating collection evemails ... ";
+$evemails = $db->createCollection("evemails");
 echo "Done\n";
 
 // information
@@ -161,14 +133,14 @@ echo "Done\n";
 echo "\nCreating collection itemmails ... ";
 $itemmails = $db->createCollection("itemmails");
 echo "Done\n";
+echo "Creating index : 'typeID' => 1, with sparse = 0 and unique = 0 ... ";
+$itemmails->ensureIndex(array('typeID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
 echo "Creating index : 'killID' => -1, with sparse = 0 and unique = 0 ... ";
 $itemmails->ensureIndex(array('killID' => -1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
-echo "Creating index : 'killID' => -1, 'typeID' => 1, with sparse = 0 and unique = 0 ... ";
-$itemmails->ensureIndex(array('killID' => -1, 'typeID' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-echo "Creating index : 'typeID' => 1, with sparse = 0 and unique = 0 ... ";
-$itemmails->ensureIndex(array('typeID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Creating index : 'typeID' => 1, 'killID' => -1, with sparse = 0 and unique = 1 ... ";
+$itemmails->ensureIndex(array('typeID' => 1, 'killID' => -1), array("sparse" => 0, "unique" => 1));
 echo "Done\n";
 
 // killmails
