@@ -51,7 +51,7 @@ class Entities
         $curl->execute();
     }
 
-    function handleRejection($code, $mdb, $redis, $listName, $type, $id) {
+    public static function handleRejection($code, $mdb, $redis, $listName, $type, $id) {
         $xmlFailure = new \cvweiss\redistools\RedisTtlCounter('ttlc:XmlFailure', 300);
         $xmlFailure->add(uniqid());
         switch ($code) {
