@@ -79,6 +79,7 @@ function processKeyInfo($mdb, $api, $keyID, $vCode, $xml)
     // Ensure this is a Killmail only API
     $accessMask = (int) (string) $xml->result->key['accessMask'];
     if (!($accessMask & 256)) {
+        Util::out("Removing keyID $keyID - does not have a mask of 256");
         $mdb->remove("apis", $api);
         return;
     }
@@ -88,6 +89,7 @@ function processKeyInfo($mdb, $api, $keyID, $vCode, $xml)
     $type = $type == 'Account' ? 'Character' : $type;
 
     if ($type == 'Character') {
+        Util::out("Removing keyID $keyID - not a corporation key");
         $mdb->remove("apis", $api);
         return;
     }
