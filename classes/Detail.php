@@ -38,7 +38,7 @@ class Detail
         return array('usd' => $totalprice / $usdval, 'eur' => $totalprice / $eurval, 'gbp' => $totalprice / $gbpval);
     }
 
-    public static function eftarray($md5, $items, $victimID = 0)
+    public static function eftarray($items)
     {
         // EFT / Fitting Wheel
         $eftarray = array();

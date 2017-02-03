@@ -432,7 +432,8 @@ class Info
                             $element['groupName'] = self::getInfoField('groupID', $groupID, 'name');
                         }
                         if (!isset($element['fittable'])) {
-                            $element['fittable'] = (int) $mdb->findField('information', 'fittable', ['cacheTime' => 3600, 'type' => 'typeID', 'id' => (int) $value]);
+                            $categoryID = self::getInfoField('groupID', $element['groupID'], 'categoryID');
+                            $element['fittable'] = $categoryID == 7; // 7 - Fittable
                         }
                         break;
                     case 'solarSystemID':
