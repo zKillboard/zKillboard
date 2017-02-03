@@ -42,15 +42,15 @@ function handleInfoFulfilled(&$guzzler, &$params, &$content)
 
     if (!isset($xml->result->key['accessMask'])) {
         // Something went wrong
-        $redis->rpush("zkb:apis", $row['keyID']);
+        //$redis->rpush("zkb:apis", $row['keyID']);
         xmlLog(false);
         return;
     }
 
     $accessMask = (int) (string) $xml->result->key['accessMask'];
     if (!($accessMask & 256)) {
-        Util::out("Removing keyID " . $row['keyID'] . " - does not have a mask of 256");
-        //$mdb->remove("apis", $row);
+        Util::out("Removing keyID " . $row['keyID'] . " - does not have a mask of 256\n" . print_r($xml->result, true));
+        $mdb->remove("apis", $row);
         return;
     }
 
@@ -74,7 +74,7 @@ function handleInfoFulfilled(&$guzzler, &$params, &$content)
 
         $mdb->set("apis", $row, ['userID' => $charID]);
         $url = "$apiServer/corp/KillMails.xml.aspx?characterID=$charID&keyID=$keyID&vCode=$vCode";
-        $params = ['mdb' => $mdb, 'redis' => $redis, 'corpID' => $corpID, 'corpName' => $corpName, 'keyID' => $keyID];
+        $params = ['mdb' => $mdb, 'redis' => $redis, 'corpID' => $corpID, 'corpName' => $corpName, 'charID' => $charID, 'keyID' => $keyID, 'row' => $row];
         $guzzler->call($url, "handleKillFulfilled", "handleKillRejected", $params);
     }
 
@@ -88,6 +88,8 @@ function handleKillFulfilled(&$guzzler, &$params, &$content)
     $redis = $params['redis'];
     $corpID = $params['corpID'];
     $corpName = $params['corpName'];
+    $charID = $params['charID'];
+    $charName = Info::getInfoField("characterID", $charID, 'name');
 
     $xml = @simplexml_load_string($content);
 
@@ -99,23 +101,34 @@ function handleKillFulfilled(&$guzzler, &$params, &$content)
         $added += addKillmail($mdb, $killID, $hash);
     }
     
+    if ($redis->get("apiVerified:$corpID") == null) {
+        ZLog::add("$corpName ($charName) is now XML/API Verified", $charID);
+    }
     if ($added) {
         while (strlen("$added") < 3) $added = " $added";
-        Util::out("$added by corp $corpName");
+        ZLog::add("$added kills added by corp $corpName (XML)", $charID);
     }
     $redis->setex("apiVerified:$corpID", 86400, time());
     xmlLog(true);
 }
 
-function handleKillRejected(&$guzzler, &$params, $code)
+function handleKillRejected(&$guzzler, &$params, &$connectionException)
 {
+    $code = (int) $connectionException->getCode();
+    $mdb = $params['mdb'];
     $redis = $params['redis'];
     $keyID = $params['keyID'];
+    $row = $params['row'];
+    $corpID = $params['corpID'];
 
     switch ($code) {
         case 0: // timeout
         case 503: // server error
-            $redis->rPush("zkb:apis", $keyID);
+            //$redis->rPush("zkb:apis", $keyID);
+            break;
+        case 403:
+            $redis->del("apiVerified:$corpID");
+            $mdb->remove("apis", $row);
             break;
         default:
             Util::out("/corp/KillMail fetch failed for $keyID with http code $code");
@@ -123,8 +136,9 @@ function handleKillRejected(&$guzzler, &$params, $code)
     xmlLog(false);
 }
 
-function handleInfoRejected(&$guzzler, &$params, $code)
+function handleInfoRejected(&$guzzler, &$params, &$connectionException)
 {
+    $code = (int) $connectionException->getCode();
     $mdb = $params['mdb'];
     $row = $params['row'];
     $redis = $params['redis'];
@@ -132,7 +146,7 @@ function handleInfoRejected(&$guzzler, &$params, $code)
     $keyID = $row['keyID'];
     switch ($code) {
         case 0: // timeout
-            $redis->rPush("zkb:apis", $keyID);
+            //$redis->rpush("zkb:apis", $keyID);
             break;
         case 403: // Invalid key
             $mdb->remove("apis", $row);

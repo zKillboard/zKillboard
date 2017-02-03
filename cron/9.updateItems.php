@@ -11,7 +11,7 @@ $assign = ['capacity', 'name', 'portionSize', 'mass', 'volume', 'description', '
 $attrs = ['lowSlots', 'medSlots', 'hiSlots', 'rigSlots', 'techLevel', 'shieldCapacity', 'armorHP', 'hp'];
 
 $hour24 = $mdb->now(-86400);
-$rows = $mdb->find('information', ['type' => 'typeID', 'lastCrestUpdate' => ['$lt' => $hour24]]);
+$rows = $mdb->find('information', ['type' => 'typeID', 'lastApiUpdate' => ['$lt' => $hour24]]);
 foreach ($rows as $row) {
     $typeID = (int) $row['id'];
     $crest = CrestTools::getJSON("$crestServer/inventory/types/$typeID/");
@@ -33,6 +33,6 @@ foreach ($rows as $row) {
         }
     }
 
-    $row['lastCrestUpdate'] = $mdb->now();
+    $row['lastApiUpdate'] = $mdb->now();
     $mdb->save('information', $row);
 }

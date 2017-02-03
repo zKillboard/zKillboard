@@ -1,19 +1,5 @@
 <?php
 
-/*$pid = 1;
-$max = 5;
-$threadNum = 0;
-for ($i = 0; $i < $max; ++$i) {
-    $pid = pcntl_fork();
-    if ($pid == -1) {
-        exit();
-    }
-    if ($pid == 0) {
-        break;
-    }
-    ++$threadNum;
-}*/
-
 use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
@@ -31,6 +17,7 @@ $minute = date('Hi');
 while ($minute == date('Hi')) {
     $killID = $queueProcess->pop();
     if ($killID !== null) {
+        $killID = (int) $killID;
         $raw = $mdb->findDoc('rawmails', ['killID' => $killID]);
         $mail = $raw;
 
@@ -39,6 +26,7 @@ while ($minute == date('Hi')) {
 
         $crestmail = $crestmails->findOne(['killID' => $killID, 'processed' => true]);
         if ($crestmail == null) {
+            Util::out("Could not find crestmail for $killID");
             continue;
         }
 
@@ -195,7 +183,7 @@ function createInvolved($data)
         }
     }
     if (isset($array['shipTypeID']) && Info::getGroupID($array['shipTypeID']) == -1) {
-        $mdb->getCollection('information')->update(['type' => 'group'], ['$set' => ['lastCrestUpdate' => new MongoDate(1)]]);
+        $mdb->getCollection('information')->update(['type' => 'group'], ['$set' => ['lastApiUpdate' => new MongoDate(1)]]);
         Util::out('Bailing on processing a kill, unable to find groupID for '.$array['shipTypeID']);
         exit();
     }

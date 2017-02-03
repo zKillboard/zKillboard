@@ -81,11 +81,8 @@ while ($hour == date('H')) {
     addInfo('Distinct Character ESI/SSO RefreshTokens', $redis->zCard('tqApiESI'), false);
 
     addInfo('', 0, false);
-    addInfo('Characters to check', $redis->llen("tqCharacters"), false);
     addInfo('Total Characters', $redis->get("zkb:totalChars"), false);
-    addInfo('Corporations to check', $redis->llen("tqCorporations"), false);
     addInfo('Total Corporations', $redis->get("zkb:totalCorps"), false);
-    addInfo('Alliances to check', $redis->llen("tqAlliances"), false);
     addInfo('Total Alliances', $redis->get("zkb:totalAllis"), false);
 
 

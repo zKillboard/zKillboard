@@ -13,7 +13,7 @@ class Guzzler
     {
         $this->curl = new \GuzzleHttp\Handler\CurlMultiHandler();
         $this->handler = \GuzzleHttp\HandlerStack::create($this->curl);
-        $this->client = new \GuzzleHttp\Client(['connect_timeout' => 10, 'timeout' => 30, 'handler' => $this->handler, 'User-Agent' => 'zkillboard.com']);
+        $this->client = new \GuzzleHttp\Client(['connect_timeout' => 10, 'timeout' => 60, 'handler' => $this->handler, 'User-Agent' => 'zkillboard.com']);
         $this->maxConcurrent = max($maxConcurrent, 1);
         $this->usleep = max((int) $usleep, min(1000000, (int) $usleep));
     }
@@ -31,7 +31,7 @@ class Guzzler
     {
         $ms = microtime();
         $this->curl->execute();
-        return max(1, microtime() - $ms);
+        return max(0, microtime() - $ms);
     }
 
     public function inc()
@@ -55,10 +55,11 @@ class Guzzler
             },
             function($connectionException) use (&$guzzler, &$rejected, &$params) {
                 $guzzler->dec();
-                $rejected($guzzler, $params, $connectionException->getCode());
+                $rejected($guzzler, $params, $connectionException);
             });
         $this->inc();
         $ms = $this->tick();
-        usleep(min(1000000, max(1, $this->usleep - $ms)));
+        $sleep = min(1000000, max(1, $this->usleep - $ms));
+        usleep($sleep);
     }
 }

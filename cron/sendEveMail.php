@@ -2,23 +2,39 @@
 
 require_once "../init.php";
 
-$mail = $mdb->findDoc("evemails", ['sent' => false]);
+//$mdb->set("evemails", ['error' => ['$ne' => null]], ['sent' => false], ['multi' => true]);
 
-if ($mail == null) exit();
+$minute = date('Hi');
+while ($minute == date('Hi')) {
+    $mail = $mdb->findDoc("evemails", ['sent' => false], ['_id' => -1]);
 
-$refreshToken = $mdb->findField("scopes", "refreshToken", ['characterID' => $evemailCharID, 'scope' => 'esi-mail.send_mail.v1']);
-$accessToken = CrestSSO::getAccessToken($evemailCharID, null, $refreshToken);
+    if ($mail != null) {
+        $refreshToken = $mdb->findField("scopes", "refreshToken", ['characterID' => $evemailCharID, 'scope' => 'esi-mail.send_mail.v1']);
+        $accessToken = CrestSSO::getAccessToken($evemailCharID, null, $refreshToken);
 
-$name = Info::getInfoField('characterID', (int) $mail['recipients'][0]['recipient_id'], 'name');
+        if ($accessToken == null) {
+            Util::out("evemails to send, cannot obtain accessToken");
+            return;
+        }
 
-Util::out("Sending evemail to $name");
+        $name = Info::getInfoField('characterID', (int) $mail['recipients'][0]['recipient_id'], 'name');
 
-$mail['approved_cost'] = 10000;
-$url = "$esiServer/v1/characters/$evemailCharID/mail/";
-$response = ESI::curl($url, $mail, $accessToken, 'POST_JSON');
-$json = json_decode($response, true);
+        Util::out("Sending evemail to $name");
 
-$mail['sent'] = isset($json['error']) ? 'error' : true;
-$mail['error'] = isset($json['error']) ? $response : null;
+        $mail['approved_cost'] = 10000;
+        $url = "$esiServer/v1/characters/$evemailCharID/mail/";
+        $response = ESI::curl($url, $mail, $accessToken, 'POST_JSON');
+        $json = json_decode($response, true);
 
-$mdb->save("evemails", $mail);
+        $mail['sent'] = isset($json['error']) ? 'error' : true;
+        $mail['error'] = isset($json['error']) ? $response : null;
+
+        $mdb->save("evemails", $mail);
+
+        if (isset($json['error'])) {
+            Util::out("Error sending evemail: " . print_r($json, true));
+            return;
+        }
+    }
+    sleep(13);
+}

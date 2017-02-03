@@ -42,7 +42,6 @@ foreach ($set as $item) {
     if (@$item['marketable'] == false) continue;
     $typeID = $item['id'];
     $price = Price::getItemPrice($typeID, $date, true);
-Util::out("$typeID $price");
 }
 
 $redis->setex($key, 86400, true);

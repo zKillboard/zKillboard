@@ -42,7 +42,7 @@ while ($minute == date('Hi')) {
         exit();
     }
 
-    $war['lastCrestUpdate'] = $mdb->now();
+    $war['lastApiUpdate'] = $mdb->now();
     $war['id'] = $id;
     $war['finished'] = false;
     $mdb->insertUpdate('information', ['type' => 'warID', 'id' => $id], $war);

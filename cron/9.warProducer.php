@@ -28,7 +28,7 @@ do {
     foreach ($wars['items'] as $war) {
         $warID = (int) $war['id'];
         if (!$mdb->exists('information', ['type' => 'warID', 'id' => $warID])) {
-            $mdb->save('information', ['type' => 'warID', 'id' => $warID, 'lastCrestUpdate' => new MongoDate(2)]);
+            $mdb->save('information', ['type' => 'warID', 'id' => $warID, 'lastApiUpdate' => new MongoDate(2)]);
         }
     }
     sleep(5);

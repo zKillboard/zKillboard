@@ -33,6 +33,9 @@ if ($_POST) {
     $deleteentity = Util::getPost('deleteentity');
     // Delete an apikey
     if (isset($deletekeyid)) {
+        $row = $mdb->find("scopes", ['characterID' => $userID, '_id' => new MongoID($deletekeyid)]);
+        if (@$row['scope'] == 'characterKillsRead') $redis->del("apiVerified:" . @$row['characterID']);
+        if (@$row['scope'] == 'corporationKillsRead') $redis->del("apiVerified:" . @$row['corporationID']);
         $mdb->remove("scopes", ['characterID' => $userID, '_id' => new MongoID($deletekeyid)]);
         $error = "The scope has been removed";
     }

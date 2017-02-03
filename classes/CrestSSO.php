@@ -36,8 +36,13 @@ class CrestSSO
         $_SESSION['oauth2State'] = $state;
 
         $scopes = 'publicData';
-        if (isset($_GET['scopes']) && count($_GET['scopes']) > 0) {
-            $scopes .= '+'.implode('+', $_GET['scopes']);
+        $requestedScopes = isset($_GET['scopes']) ? $_GET['scopes'] : [];
+        if (in_array('esi-killmails.read_killmails.v1', $requestedScopes)) {
+            $requestedScopes[] = 'corporationKillsRead';
+        }
+
+        if (count($requestedScopes) > 0) {
+            $scopes .= '+'.implode('+', $requestedScopes);
         }
         $url = "https://login.eveonline.com/oauth/authorize/?response_type=code&redirect_uri=https://zkillboard.com/ccpcallback/&client_id=$ccpClientID&scope=$scopes&state=$state";
         $app->redirect($url, 302);
@@ -144,17 +149,13 @@ class CrestSSO
                 }
             }
 
-            Log::log("Logged in: " . (isset($userdetails['name']) ? $userdetails['name'] : $charID));
-            ZLog::add("Logged in: " . (isset($userdetails['name']) ? $userdetails['name'] : $charID), $charID);
+            ZLog::add("Logged in: " . (isset($userdetails['name']) ? $userdetails['name'] : $charID), $charID, true);
 
             $key = "login:$charID:" . session_id();
             $redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);
             $redis->setex("$key:accessToken", 1000, $access_token);
             $redis->setex("$key:scopes", (86400 * 14), @$response->Scopes);
             $scopes = explode(' ', @$response->Scopes);
-
-            $queueCharacters = new RedisTimeQueue('tqCharacters', 86400);
-            $queueCharacters->add($charID);
 
             if (in_array('esi-killmails.read_killmails.v1', $scopes)) {
                 $esi = new RedisTimeQueue('tqApiESI', 3600);

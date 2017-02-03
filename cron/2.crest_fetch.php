@@ -10,7 +10,6 @@ global $baseAddr, $baseDir;
 $crestmails = $mdb->getCollection('crestmails');
 $rawmails = $mdb->getCollection('rawmails');
 $killsLastHour = new RedisTtlCounter('killsLastHour');
-$killqueue = new RedisQueue('queueKills2Pull');
 
 $counter = 0;
 $minute = date('Hi');
@@ -20,6 +19,7 @@ $curl = new \GuzzleHttp\Handler\CurlMultiHandler();
 $handler = \GuzzleHttp\HandlerStack::create($curl);
 $client = new \GuzzleHttp\Client(['connect_timeout' => 10, 'timeout' => 10, 'handler' => $handler, 'User-Agent' => 'zkillboard.com']);
 
+$mdb->set("crestmails", ['processed' => ['$exists' => false]], ['processed' => false], ['multi' => true]);
 $mdb->set("crestmails", ['processed' => ['$ne' => true]], ['processed' => false]);
 
 $minute = date('Hi');
@@ -63,8 +63,8 @@ function handleFulfilled($mdb, $row, $rawKillmail)
         $mdb->save("rawmails", $rawKillmail);
     }
 
-    $queueProcess->push($killID);
     $mdb->set("crestmails", $row, ['processed' => true]);
+    $queueProcess->push($killID);
     $killsLastHour->add($killID);
     $crestSuccess->add(uniqid());
 }

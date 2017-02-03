@@ -101,9 +101,6 @@ class Stats
         $result = iterator_to_array($result);
 
         $time = $timer->stop();
-        if ($time > $longQueryMS) {
-            Log::log("Aggregate Long query (${time}ms): $hashKey");
-        }
 
         Info::addInfo($result);
         RedisCache::set($hashKey, $result, isset($parameters['cacheTime']) ? $parameters['cacheTime'] : 900);

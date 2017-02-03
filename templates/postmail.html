@@ -33,28 +33,27 @@
 	<div class="col-lg-5">
 		<h3>API Key Post</h3>
 		<div class="well">
-                        <div class="alert alert-danger">Corporation APIs ONLY.<br/>Submitted Character APIs will result in immediate deletion.<br/>Please read: <a href='https://www.reddit.com/r/Eve/comments/5orwcx/announcing_the_impending_removal_of_all_character/' target='_blank'>No more Character APIs</a></div>
-			<p>Post an API Key, to let the API automatically import kills for you!</p>
-			<p>To quickly create an API key, go to <a href="https://community.eveonline.com/support/api-key/CreatePredefined?accessMask=256" target="_blank">https://community.eveonline.com</a><br>(We only require KillLog, but feel free to tick off more.)
-			<form class="form-horizontal" name="addapi" method="post" action="/post/">
+                        <div class="alert alert-danger">
+                            <center><strong><a href='https://www.reddit.com/r/Eve/comments/5rn7mp/announcing_the_phase_out_of_all_xml_api_keys_on/' target='_blank'>No more API keys!</a><br/><strong></center>
+                        </div>
+			<form class="form-horizontal" name="addapi" method="post" action="/post/" onSubmit="return false;">
 				<div class="form-group">
 					<label for="keyid" class="form-label col-lg-2">KeyID:</label>
 					<div class="col-lg-4">
-						<input type="text" id="keyid" name="keyid" required placeholder="Key ID" class="form-control">
+						<input type="text" id="keyid" name="keyid" required placeholder="DISABLED" class="form-control">
 					</div>
 				</div>
 				<div class="form-group">
 					<label for="vcode" class="form-label col-lg-2">vCode:</label>
 					<div class="col-lg-8">
-						<input type="text" id="vcode" name="vcode" required placeholder="Verification Code" class="form-control">
+						<input type="text" id="vcode" name="vcode" required placeholder="DISABLED" class="form-control">
 					</div>
 				</div>
 				<div class="form-group">
 					<div class="col-lg-2 col-lg-offset-2">
-						<input type="submit" class="btn btn-primary" class="Post API key">
+						<input type="submit" class="btn btn-primary" class="Post API key" onClick="alert('No more API keys. This has been disabled, please read the No more API keys link. Thank you!'); return false;">
 					</div>
 				</div>
-				<p>If you're logged in you can view your API keys <a href="/account/api/">here</a>.</p>
 			</form>
 		</div>
 	</div>
