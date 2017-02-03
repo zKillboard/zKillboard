@@ -129,6 +129,8 @@ class Mdb
 
     public function set($collection, $key, $value, $multi = false)
     {
+        if ($key == null) throw new InvalidArgumentException("key is null");
+        
         $key = isset($key['_id']) ? ['_id' => $key['_id']] : $key;
         if ($key === null) {
             throw new Exception('Invalid key');
@@ -146,6 +148,8 @@ class Mdb
 
     public function remove($collection, $key)
     {
+        if ($key == null) throw new InvalidArgumentException("key is null");
+        
         $key = isset($key['_id']) ? ['_id' => $key['_id']] : $key;
 
         $sem = sem_get(3173);
