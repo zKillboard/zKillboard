@@ -51,7 +51,7 @@ function handleInfoFulfilled(&$guzzler, &$params, &$content)
 
     $accessMask = (int) (string) $xml->result->key['accessMask'];
     if (!($accessMask & 256)) {
-        Util::out("Removing keyID " . $row['keyID'] . " - does not have a mask of 256\n" . print_r($xml->result, true));
+        Util::out("Removing keyID " . $row['keyID'] . " - does not have a mask of 256\n");
         $mdb->remove("apis", $row);
         return;
     }
@@ -74,7 +74,7 @@ function handleInfoFulfilled(&$guzzler, &$params, &$content)
         $keyID = $row['keyID'];
         $vCode = $row['vCode'];
 
-        $mdb->set("apis", $row, ['userID' => $charID]);
+        $mdb->set("apis", $row, ['userID' => $charID, 'corporationID' => $corpID]);
         $url = "$apiServer/corp/KillMails.xml.aspx?characterID=$charID&keyID=$keyID&vCode=$vCode";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'corpID' => $corpID, 'corpName' => $corpName, 'charID' => $charID, 'keyID' => $keyID, 'row' => $row];
         $guzzler->call($url, "handleKillFulfilled", "handleKillRejected", $params);

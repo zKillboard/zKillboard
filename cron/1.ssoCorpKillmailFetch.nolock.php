@@ -54,7 +54,7 @@ function handleKillFulfilled(&$guzzler, &$params, &$content)
     }
     $redis->setex("apiVerified:$corpID", 86400, time());
     $mdb->set("scopes", $row, ['charcterID' => $charID, 'corporationID' => $corpID]);
-    $mdb->remove("apis", ['corporationID' => $corpID]);
+    if ($corpID != null) $mdb->remove("apis", ['corporationID' => $corpID]);
     xmlLog(true);
 }
 
