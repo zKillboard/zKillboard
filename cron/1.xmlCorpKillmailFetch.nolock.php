@@ -20,13 +20,15 @@ while ($minute == date('Hi')) {
     $keyID = (int) $redis->lpop("zkb:apis");
     if ($keyID > 0) {
         $row = $mdb->findDoc("apis", ['keyID' => $keyID]);
-        $keyID = $row['keyID'];
-        $vCode = $row['vCode'];
-        $url = "$apiServer/account/APIKeyInfo.xml.aspx?keyID=$keyID&vCode=$vCode";
-        $mdb->set("apis", $row, ['lastApiUpdate' => new MongoDate(time())]);
+        if ($row != null) {
+            $keyID = $row['keyID'];
+            $vCode = $row['vCode'];
+            $url = "$apiServer/account/APIKeyInfo.xml.aspx?keyID=$keyID&vCode=$vCode";
+            $mdb->set("apis", $row, ['lastApiUpdate' => new MongoDate(time())]);
 
-        $params = ['row' => $row, 'mdb' => $mdb, 'redis' => $redis];
-        $guzzler->call($url, "handleInfoFulfilled", "handleInfoRejected", $params);
+            $params = ['row' => $row, 'mdb' => $mdb, 'redis' => $redis];
+            $guzzler->call($url, "handleInfoFulfilled", "handleInfoRejected", $params);
+        }
     }
 }
 $guzzler->finish();
@@ -100,7 +102,7 @@ function handleKillFulfilled(&$guzzler, &$params, &$content)
         $hash = getHash($killmail);
         $added += addKillmail($mdb, $killID, $hash);
     }
-    
+
     if ($redis->get("apiVerified:$corpID") == null) {
         ZLog::add("$corpName ($charName) is now XML/API Verified", $charID);
     }
