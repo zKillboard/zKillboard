@@ -124,16 +124,11 @@
 			{% endif %}
 			<!--<div><small>Kill Added: {{ extra.insertTime }}</small></div>-->
 		</div>
-{% if disqusLoad and killdata.info.killID == -123 %}
+{% if disqusLoad %}
 	{% set disqusID = extra.commentID %}
 	<a name="comments"></a>
         {% include 'components/disqus.html' %}
 {% endif %}
-<br/><hr/><br/><center><strong>Comments temporarily disabled<br/>until Disqus stops showing</br>horrible ads.</strong></center>
-<div>
-<hr/>
-<img src="https://imageserver.eveonline.com/Character/1_64.jpg" align="left" style='padding-right: 0.5em;'> Baited on a free can of cancerous comments
-</div>
 </div>
 
 
