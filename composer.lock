@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "211e8c8274f224fe4f8a81100fa56b63",
+    "content-hash": "c1a4901ac122ba347bd69b7634ebbb36",
     "packages": [
         {
             "name": "3rdpartyeve/phealng",
@@ -56,16 +56,16 @@
         },
         {
             "name": "cvweiss/redistools",
-            "version": "v0.0.1",
+            "version": "v0.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/cvweiss/redistools.git",
-                "reference": "a4f00aa6cbbe2736fe253cfc5a2470b838d09c13"
+                "reference": "59047975e52b15b7c5c9c0bb532d99ebda1f14e3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cvweiss/redistools/zipball/a4f00aa6cbbe2736fe253cfc5a2470b838d09c13",
-                "reference": "a4f00aa6cbbe2736fe253cfc5a2470b838d09c13",
+                "url": "https://api.github.com/repos/cvweiss/redistools/zipball/59047975e52b15b7c5c9c0bb532d99ebda1f14e3",
+                "reference": "59047975e52b15b7c5c9c0bb532d99ebda1f14e3",
                 "shasum": ""
             },
             "type": "library",
@@ -84,7 +84,7 @@
                     "email": "cvweiss@gmail.com"
                 }
             ],
-            "time": "2016-07-06T12:30:16+00:00"
+            "time": "2017-02-04T01:37:33+00:00"
         },
         {
             "name": "cvweiss/zcache",

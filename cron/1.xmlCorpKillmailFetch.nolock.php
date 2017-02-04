@@ -5,10 +5,11 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once '../init.php';
 
-if ($redis->llen("zkb:apis") == 0) {
-    $rows = $mdb->find("apis", [], ['keyID' => 1]);
+$xmlCorps = new RedisTimeQueue("zkb:xmlCorps", 1900);
+if (date('i') == 5 || $xmlCorps->size() == 0) {
+    $rows = $mdb->find("apis");
     foreach ($rows as $row) {
-        $redis->lpush("zkb:apis", $row['keyID']);
+        $xmlCorps->add((string) $row['_id']);
     }
 }
 
@@ -17,19 +18,20 @@ $minute = date('Hi');
 $count = 0;
 $maxConcurrent = 10;
 while ($minute == date('Hi')) {
-    $keyID = (int) $redis->lpop("zkb:apis");
-    if ($keyID > 0) {
-        $row = $mdb->findDoc("apis", ['keyID' => $keyID]);
-        if ($row != null) {
-            $keyID = $row['keyID'];
-            $vCode = $row['vCode'];
-            $url = "$apiServer/account/APIKeyInfo.xml.aspx?keyID=$keyID&vCode=$vCode";
-            $mdb->set("apis", $row, ['lastApiUpdate' => new MongoDate(time())]);
+    $id = $xmlCorps->next();
+    $row = $mdb->findDoc("apis", ['_id' => new MongoId($id)]);
+    if ($row != null) {
+        $keyID = $row['keyID'];
+        $vCode = $row['vCode'];
+        $url = "$apiServer/account/APIKeyInfo.xml.aspx?keyID=$keyID&vCode=$vCode";
 
-            $params = ['row' => $row, 'mdb' => $mdb, 'redis' => $redis];
-            $guzzler->call($url, "handleInfoFulfilled", "handleInfoRejected", $params);
-        }
+        $params = ['row' => $row, 'mdb' => $mdb, 'redis' => $redis, 'xmlCorps' => $xmlCorps];
+        $guzzler->call($url, "handleInfoFulfilled", "handleInfoRejected", $params);
+    } else {
+        $xmlCorps->remove($id);
+        usleep(250000);
     }
+    $guzzler->tick();
 }
 $guzzler->finish();
 
@@ -39,6 +41,7 @@ function handleInfoFulfilled(&$guzzler, &$params, &$content)
     $mdb = $params['mdb'];
     $redis = $params['redis'];
     $row = $params['row'];
+    $xmlCorps = $params['xmlCorps'];
 
     $xml = @simplexml_load_string($content);
 
@@ -66,6 +69,8 @@ function handleInfoFulfilled(&$guzzler, &$params, &$content)
         return;
     }
 
+    $charID = null;
+    $corpID = null;
     $rows = $xml->result->key->rowset->row;
     foreach ($rows as $c => $entity) {
         $charID = (int) $entity['characterID'];
@@ -74,11 +79,11 @@ function handleInfoFulfilled(&$guzzler, &$params, &$content)
         $keyID = $row['keyID'];
         $vCode = $row['vCode'];
 
-        $mdb->set("apis", $row, ['userID' => $charID, 'corporationID' => $corpID]);
         $url = "$apiServer/corp/KillMails.xml.aspx?characterID=$charID&keyID=$keyID&vCode=$vCode";
-        $params = ['mdb' => $mdb, 'redis' => $redis, 'corpID' => $corpID, 'corpName' => $corpName, 'charID' => $charID, 'keyID' => $keyID, 'row' => $row];
+        $params = ['mdb' => $mdb, 'redis' => $redis, 'corpID' => $corpID, 'corpName' => $corpName, 'charID' => $charID, 'keyID' => $keyID, 'row' => $row, 'xmlCorps' => $xmlCorps];
         $guzzler->call($url, "handleKillFulfilled", "handleKillRejected", $params);
     }
+    $mdb->set("apis", $row, ['userID' => $charID, 'corporationID' => $corpID, 'lastApiUpdate' => $mdb->now()]);
 
     $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
     $xmlSuccess->add(uniqid());
@@ -122,9 +127,11 @@ function handleKillRejected(&$guzzler, &$params, &$connectionException)
     $keyID = $params['keyID'];
     $row = $params['row'];
     $corpID = $params['corpID'];
+    $xmlCorps = $params['xmlCorps'];
 
     switch ($code) {
         case 0: // timeout
+        case 200: // timeout, server too slow sending full response
         case 503: // server error
             //$redis->rPush("zkb:apis", $keyID);
             break;
@@ -136,6 +143,7 @@ function handleKillRejected(&$guzzler, &$params, &$connectionException)
             Util::out("/corp/KillMail fetch failed for $keyID with http code $code");
     }
     xmlLog(false);
+    $xmlCorps->setTime($row['_id'], time() + 60);
 }
 
 function handleInfoRejected(&$guzzler, &$params, &$connectionException)
@@ -144,11 +152,13 @@ function handleInfoRejected(&$guzzler, &$params, &$connectionException)
     $mdb = $params['mdb'];
     $row = $params['row'];
     $redis = $params['redis'];
+    $xmlCorps = $params['xmlCorps'];
 
     $keyID = $row['keyID'];
     switch ($code) {
         case 0: // timeout
-            //$redis->rpush("zkb:apis", $keyID);
+        case 200: // timeout, server too slow sending full response
+        case 503: // Server error
             break;
         case 403: // Invalid key
             $mdb->remove("apis", $row);
@@ -157,6 +167,7 @@ function handleInfoRejected(&$guzzler, &$params, &$connectionException)
             Util::out("ApiKeyInfo fetch failed for $keyID with code $code");
     }
     xmlLog(false);
+    $xmlCorps->setTime($row['_id'], time() + 60);
 }
 
 function xmlLog($success)

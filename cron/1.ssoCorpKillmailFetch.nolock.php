@@ -5,23 +5,32 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once '../init.php';
 
+$ssoCorps = new RedisTimeQueue("zkb:ssoCorps", 1900);
+
+if (date('i') == 5 || $ssoCorps->size() == 0) {
+    populate($mdb, $ssoCorps, "scopes", ['scope' => 'corporationKillsRead']);
+}
+populate($mdb, $ssoCorps, "scopes", ['scope' => 'corporationKillsRead', 'lastApiUpdate' => ['$exists' => false]]);
+
 $guzzler = new Guzzler();
 $minute = date('Hi');
 $count = 0;
 $maxConcurrent = 10;
 while ($minute == date('Hi')) {
-    $row = $mdb->findDoc("scopes", ['scope' => 'corporationKillsRead'], ['lastApiUpdate' => 1]);
-    if ($row != null && @$row['lastApiUpdate']->sec < (time() - 1800)) {
-        $mdb->set("scopes", $row, ['lastApiUpdate' => $mdb->now()]);
+    $id = $ssoCorps->next();
+    $row = $mdb->findDoc("scopes", ['_id' => new MongoId($id)]);
+    if ($row != null) {
         $charID = $row['characterID'];
         $accessToken = CrestSSO::getAccessToken($charID, null, $row['refreshToken']);
 
         $url = "$apiServer/corp/KillMails.xml.aspx?characterID=$charID&accessToken=$accessToken&accessType=corporation";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
         $guzzler->call($url, "handleKillFulfilled", "handleKillRejected", $params);
+    } else {
+        $ssoCorps->remove($id);
+        usleep(250000);
     }
     $guzzler->tick();
-    usleep(250000);
 }
 $guzzler->finish();
 
@@ -53,7 +62,7 @@ function handleKillFulfilled(&$guzzler, &$params, &$content)
         ZLog::add("$added kills added by corp $corpName (SSO)", $charID);
     }
     $redis->setex("apiVerified:$corpID", 86400, time());
-    $mdb->set("scopes", $row, ['charcterID' => $charID, 'corporationID' => $corpID]);
+    $mdb->set("scopes", $row, ['charcterID' => $charID, 'corporationID' => $corpID, 'lastApiUpdate' => $mdb->now()]);
     if ($corpID != null) $mdb->remove("apis", ['corporationID' => $corpID]);
     xmlLog(true);
 }
@@ -69,6 +78,7 @@ function handleKillRejected(&$guzzler, &$params, &$connectionException)
 
     switch ($code) {
         case 0: // timeout
+        case 200: // timeout, server took too long to send full response
         case 503: // server error
             // Ignore for now
             break;
@@ -122,4 +132,12 @@ function getHash($killmail)
     $hash = sha1($string);
 
     return $hash;
+}
+
+function populate($mdb, $rtq, $collection, $query)
+{
+    $rows = $mdb->find($collection, $query);
+    foreach ($rows as $row) {
+        $rtq->add((string) $row['_id']);
+    }
 }

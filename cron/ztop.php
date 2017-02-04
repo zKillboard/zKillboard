@@ -2,6 +2,7 @@
 <?php
 
 use cvweiss\redistools\RedisTtlCounter;
+use cvweiss\redistools\RedisTimeQueue;
 
 require_once '../init.php';
 
@@ -72,13 +73,16 @@ while ($hour == date('H')) {
     $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
     addInfo('Failed XML calls in last 5 minutes', $xmlFailure->count(), false);
 
+    $xmlCorps = new RedisTimeQueue("zkb:xmlCorps", 1900);
+    $esiChars = new RedisTimeQueue("tqApiESI", 3600);
+    $ssoCorps = new RedisTimeQueue("zkb:ssoCorps", 1900);
     addInfo('', 0, false);
-    addInfo('XML - Corp APIs to check', $redis->llen("zkb:apis"), false);
-    addInfo('XML - Corp APIs total', $mdb->count("apis"), false);
-
-    addInfo('', 0, false);
-    addInfo('Character ESI KillLogs to check', $redis->zCount('tqApiESI', 0, time()), false);
-    addInfo('Distinct Character ESI/SSO RefreshTokens', $redis->zCard('tqApiESI'), false);
+    addInfo('Corporation XML/API to check', $xmlCorps->pending(), false);
+    addInfo('Corporation XML/API total', $xmlCorps->size(), false);
+    addInfo('Character ESI/SSO KillLogs to check', $esiChars->pending(), false);
+    addInfo('Character ESI/SSO RefreshTokens', $esiChars->size(), false);
+    addInfo('Corporation XML/SSO to check', $ssoCorps->pending(), false);
+    addInfo('Corporation XML/SSO RefreshTokens', $ssoCorps->size(), false);
 
     addInfo('', 0, false);
     addInfo('Total Characters', $redis->get("zkb:totalChars"), false);

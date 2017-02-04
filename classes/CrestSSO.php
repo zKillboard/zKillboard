@@ -136,9 +136,20 @@ class CrestSSO
             $scopes = split(' ', (string) @$response->Scopes);
             foreach ($scopes as $scope) {
                 if ($scope == "publicData") continue;
+                $row = ['characterID' => $charID, 'scope' => $scope, 'refreshToken' => $refresh_token];
                 if ($mdb->count("scopes", ['characterID' => $charID, 'scope' => $scope]) == 0) {
-                    $mdb->save("scopes", ['characterID' => $charID, 'scope' => $scope, 'refreshToken' => $refresh_token]);
+                    $mdb->save("scopes", $row);
                 } 
+                switch ($scope) {
+                    case 'esi-killmails.read_killmails.v1':
+                        $esi = new RedisTimeQueue('tqApiESI', 3600);
+                        $esi->add($charID);
+                        break;
+                    case 'corporationKillsRead':
+                        $ssoCorps = new RedisTimeQueue("zkb:ssoCorps", 1900);
+                        if (isset($row['_id'])) $ssoCorps->add(@$row['_id']);
+                        break; 
+                }
             }
 
             // Lookup the character details in the DB.
@@ -156,11 +167,6 @@ class CrestSSO
             $redis->setex("$key:accessToken", 1000, $access_token);
             $redis->setex("$key:scopes", (86400 * 14), @$response->Scopes);
             $scopes = explode(' ', @$response->Scopes);
-
-            if (in_array('esi-killmails.read_killmails.v1', $scopes)) {
-                $esi = new RedisTimeQueue('tqApiESI', 3600);
-                $esi->add($charID);
-            }
 
             $_SESSION['characterID'] = $charID;
             $_SESSION['characterName'] = $response->CharacterName;
