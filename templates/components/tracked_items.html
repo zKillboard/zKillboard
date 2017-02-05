@@ -1,0 +1,17 @@
+<div>
+<table class="table table-condensed table-striped table-hover" id="tracked_items" style='margin-bottom: 0px; padding-bottom: 0px;'>
+{% for item in trackedItems %}
+  <tr>
+    <td colspan='2'>
+      <center><strong><a href='/item/{{ item.typeID }}/'>{{ item.name }} - {{ shortNum(item.price) }}</a></strong></center>
+    </td>
+  </tr>
+  <tr>
+    <td class='green' style='width: 50%; text-align: right;'>{{ item.dropped|number_format(0) }} - {{ shortNum(item.dV )}}</td>
+    <td class='red' style='text-align: right;'>{{ item.destroyed|number_format(0) }} - {{ shortNum(item.lV) }}</td>
+  </tr>
+{% endfor %}
+</table>
+<!-- <center><small>(last 24 hours)</small></center> -->
+<center><small>(beta - just implemented)</small></center>
+</div>

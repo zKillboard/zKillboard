@@ -66,3 +66,17 @@ if ($load[0] > 10) {
 $redis->set("zkb:totalChars", $mdb->count("information", ['type' => 'characterID']));
 $redis->set("zkb:totalCorps", $mdb->count("information", ['type' => 'corporationID']));
 $redis->set("zkb:totalAllis", $mdb->count("information", ['type' => 'allianceID']));
+
+$items = [29668, 40520];
+$date = date('Ymd');
+$arr = [];
+foreach ($items as $item) {
+    $d =  new RedisTtlCounter("ttlc:item:$item:dropped", 86400 * 7);
+    $dSize = $d->count();
+    $l = new RedisTtlCounter("ttlc:item:$item:destroyed", 86400 * 7);
+    $lSize = $l->count();
+    $name = $item == 29668 ? "PLEX" : Info::getInfoField("typeID", $item, "name");
+    $price = Price::getItemPrice($item, $date, true);
+    $arr[] = ['typeID' => $item, 'name' => $name, 'price' => $price, 'dropped' => $dSize, 'destroyed' => $lSize, 'dV' => ($dSize * $price), 'lV' => ($lSize * $price)];
+}
+$redis->set("zkb:ttlc:items:index", json_encode($arr));

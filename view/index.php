@@ -6,7 +6,6 @@ $page = 1;
 $pageTitle = '';
 $pageType = 'index';
 $requestUriPager = '';
-$serverName = $_SERVER['SERVER_NAME'];
 
 $topPoints = array();
 $topIsk = json_decode($redis->get('zkb:TopIsk'), true);
@@ -20,13 +19,15 @@ $top[] = getTop('Top Ships', 'shipTypeID');
 $top[] = getTop('Top Systems', 'solarSystemID');
 $top[] = getTop('Top Locations', 'locationID');
 
+$trackedItems = json_decode($redis->get("zkb:ttlc:items:index"), true);
+
 // get latest kills
 $kills = Kills::getKills(array('cacheTime' => 60, 'limit' => 50));
 
 // Collect active PVP stats
 $activePvP = json_decode($redis->get('zkb:activePvp'));
 
-$app->render('index.html', array('topPods' => $topPods, 'topIsk' => $topIsk, 'topPoints' => $topPoints, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => $pageType, 'pager' => true, 'pageTitle' => $pageTitle, 'requestUriPager' => $requestUriPager, 'activePvP' => $activePvP, 'entityID' => '*'));
+$app->render('index.html', array('topPods' => $topPods, 'topIsk' => $topIsk, 'topPoints' => $topPoints, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => $pageType, 'pager' => true, 'pageTitle' => $pageTitle, 'requestUriPager' => $requestUriPager, 'activePvP' => $activePvP, 'entityID' => '*', 'trackedItems' => $trackedItems));
 
 function getTop($title, $type)
 {
