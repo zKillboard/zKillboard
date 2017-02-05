@@ -20,6 +20,7 @@ $("#adsensebottom").remove();
 {% if style != 'cyborg' %}
 $("#mainstyle").attr("href", "https://netdna.bootstrapcdn.com/bootswatch/latest/{{ style }}/bootstrap.min.css");
 $("#nextstyle").attr("href", "/css/style-edits/{{ style }}-main.css");
+$(".zkblogo").hide();
 {% endif %}
 
 var showAdd = true;
