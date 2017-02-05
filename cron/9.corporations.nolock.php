@@ -62,8 +62,7 @@ function updateCorp(&$guzzler, &$params, &$content)
     // Does the CEO exist in our info table?
     $ceoExists = $mdb->count('information', ['type' => 'characterID', 'id' => $ceoID]);
     if ($ceoExists == 0) {
-        $ceoName = (string) $corpInfo->ceoName;
-        $mdb->insertUpdate('information', ['type' => 'characterID', 'id' => $ceoID], ['name' => $ceoName, 'corporationID' => $id]);
+        $mdb->insertUpdate('information', ['type' => 'characterID', 'id' => $ceoID], []);
     }
 
     if (sizeof($updates)) {
