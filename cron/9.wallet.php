@@ -36,6 +36,7 @@ foreach ($walletApis as $api) {
         }
     } catch (Exception $ex) {
         Util::out('Failed to fetch Wallet API: '.$ex->getMessage());
+        return;
     }
 }
 
