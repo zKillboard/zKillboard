@@ -145,10 +145,6 @@ class CrestSSO
                         $esi = new RedisTimeQueue('tqApiESI', 3600);
                         $esi->add($charID);
                         break;
-                    case 'corporationKillsRead':
-                        $ssoCorps = new RedisTimeQueue("zkb:ssoCorps", 1900);
-                        if (isset($row['_id'])) $ssoCorps->add(@$row['_id']);
-                        break; 
                 }
             }
 
