@@ -1,6 +1,7 @@
 <?php
 
 use cvweiss\redistools\RedisQueue;
+use cvweiss\redistools\RedisTtlCounter;
 
 require_once '../init.php';
 
@@ -19,6 +20,7 @@ while ($minute == date('Hi')) {
     if ($killID !== null) {
         $killID = (int) $killID;
         $raw = $mdb->findDoc('rawmails', ['killID' => $killID]);
+
         $mail = $raw;
 
         $kill = array();
@@ -215,8 +217,8 @@ function processItem($item, $dttm, $isCargo = false, $parentContainerFlag = -1)
 {
     global $mdb;
 
-    $typeID = $item['itemType']['id'];
-    $itemName = $mdb->findField('information', 'name', ['type' => 'typeID', 'id' => (int) $typeID]);
+    $typeID = (int) $item['itemType']['id'];
+    $itemName = $mdb->findField('information', 'name', ['type' => 'typeID', 'id' => $typeID]);
     if ($itemName == null) {
         $itemName = "TypeID $typeID";
     }
@@ -234,7 +236,29 @@ function processItem($item, $dttm, $isCargo = false, $parentContainerFlag = -1)
         $price = $price / 100;
     }
 
+    trackItem($typeID, (int) @$item['quantityDropped'], (int) @$item['quantityDestroyed']);
+
     return $price * (@$item['quantityDropped'] + @$item['quantityDestroyed']);
+}
+
+function trackItem($typeID, $dropped, $destroyed)
+{
+    switch ($typeID) {
+        case 29668:
+        case 40520:
+            $d = new RedisTtlCounter("ttlc:item:$typeID:dropped", 86400 * 7);
+            $l = new RedisTtlCounter("ttlc:item:$typeID:destroyed", 86400 * 7);
+            trackItemLoop($d, $dropped);
+            trackItemLoop($l, $destroyed);
+            break;
+    }
+}
+
+function trackItemLoop($ttlc, $j)
+{
+    for ($i = 0; $i < $j; $i++) {
+        $ttlc->add(uniqid("", true));
+    }
 }
 
 function isAwox($row)

@@ -64,6 +64,8 @@ if ($_POST) {
                         Log::log("$killID $hash failing, will keep trying");
                         $mdb->set('crestmails', ['killID' => $killID, 'hash' => $hash], ['processed' => false]);
                         $error = '';
+                    } elseif (isset($crest['delayed'])) {
+                        $error = "This viewing of this killmail is delayed until " . $crest['delayed']->sec;
                     }
 
                     if ($error == '') {

@@ -5,34 +5,46 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once '../init.php';
 
-$ssoCorps = new RedisTimeQueue("zkb:ssoCorps", 1900);
+$waitTime = 1900;
+$ssoCorps = new RedisTimeQueue("zkb:ssoCorps", $waitTime);
 
-if (date('i') == 5 || $ssoCorps->size() == 0) {
-    populate($mdb, $ssoCorps, "scopes", ['scope' => 'corporationKillsRead']);
+$count = $mdb->count("scopes", ['scope' => 'corporationKillsRead']);
+if (date('i') == 5 || ($ssoCorps->size() < ($count * 0.9))) {
+    populate($mdb, $ssoCorps, $waitTime, "scopes", ['scope' => 'corporationKillsRead']);
 }
-populate($mdb, $ssoCorps, "scopes", ['scope' => 'corporationKillsRead', 'lastApiUpdate' => ['$exists' => false]]);
 
 $guzzler = new Guzzler();
 $minute = date('Hi');
 $count = 0;
 $maxConcurrent = 10;
 while ($minute == date('Hi')) {
-    $id = $ssoCorps->next();
-    $row = $mdb->findDoc("scopes", ['_id' => new MongoId($id)]);
+    //$id = $ssoCorps->next();
+    $row = findNext($mdb, $ssoCorps, ['scope' => 'corporationKillsRead']); //$mdb->findDoc("scopes", ['_id' => new MongoId($id)]);
     if ($row != null) {
-        $charID = $row['characterID'];
+        $charID = (int) $row['characterID'];
         $accessToken = CrestSSO::getAccessToken($charID, null, $row['refreshToken']);
 
         $url = "$apiServer/corp/KillMails.xml.aspx?characterID=$charID&accessToken=$accessToken&accessType=corporation";
-        $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
+        $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row, 'ssoCorps' => $ssoCorps];
         $guzzler->call($url, "handleKillFulfilled", "handleKillRejected", $params);
-    } else {
-        $ssoCorps->remove($id);
-        usleep(250000);
     }
+    //usleep(250000);
     $guzzler->tick();
 }
 $guzzler->finish();
+
+function findNext($mdb, $ttlc, $query)
+{
+    $row = $mdb->findDoc("scopes", ['scope' => 'corporationKillsRead', 'corporationID' => ['$exists' => false]]);
+    if ($row != null) {
+        $mdb->set("scopes", $row, ['corporationID' => 0]);
+    } else { 
+        $corpID = (int) $ttlc->next();
+        $row = $mdb->findDoc("scopes", ['scope' => 'corporationKillsRead', 'corporationID' => $corpID], ['lastApiUpdate' => 1]);
+        if ($row === null) $ttlc->remove($corpID);
+    }
+    return $row;
+}
 
 function handleKillFulfilled(&$guzzler, &$params, &$content)
 {
@@ -41,8 +53,9 @@ function handleKillFulfilled(&$guzzler, &$params, &$content)
     $row = $params['row'];
     $charID = $row['characterID'];
     $charName = Info::getInfoField('characterID', $charID, 'name');
-    $corpID = Info::getInfoField('characterID', $charID, 'corporationID');
+    $corpID = (int) Info::getInfoField('characterID', $charID, 'corporationID');
     $corpName = Info::getInfoField('corporationID', $corpID, 'name');
+    $ssoCorps = $params['ssoCorps'];
 
     $xml = @simplexml_load_string($content);
 
@@ -62,8 +75,11 @@ function handleKillFulfilled(&$guzzler, &$params, &$content)
         ZLog::add("$added kills added by corp $corpName (SSO)", $charID);
     }
     $redis->setex("apiVerified:$corpID", 86400, time());
-    $mdb->set("scopes", $row, ['charcterID' => $charID, 'corporationID' => $corpID, 'lastApiUpdate' => $mdb->now()]);
-    if ($corpID != null) $mdb->remove("apis", ['corporationID' => $corpID]);
+    $mdb->set("scopes", $row, ['characterID' => $charID, 'corporationID' => $corpID, 'lastApiUpdate' => $mdb->now()]);
+    if ($corpID != null) {
+        $mdb->remove("apis", ['corporationID' => $corpID]);
+        $ssoCorps->add($corpID);
+    }
     xmlLog(true);
 }
 
@@ -74,7 +90,7 @@ function handleKillRejected(&$guzzler, &$params, &$connectionException)
     $redis = $params['redis'];
     $row = $params['row'];
     $charID = $row['characterID'];
-    $corpID = Info::getInfoField('characterID', $charID, 'corporationID');
+    $corpID = (int) Info::getInfoField('characterID', $charID, 'corporationID');
 
     switch ($code) {
         case 0: // timeout
@@ -134,10 +150,15 @@ function getHash($killmail)
     return $hash;
 }
 
-function populate($mdb, $rtq, $collection, $query)
+function populate($mdb, $rtq, $waitTime, $collection, $query)
 {
     $rows = $mdb->find($collection, $query);
     foreach ($rows as $row) {
-        $rtq->add((string) $row['_id']);
+        $corpID = @$row['corporationID'];
+        if ($corpID > 0) {
+            $time = (int) @$row['lastApiUpdate']->sec;
+            $rtq->add($corpID);
+            $rtq->setTime($corpID, $time + $waitTime);
+        }
     }
 }

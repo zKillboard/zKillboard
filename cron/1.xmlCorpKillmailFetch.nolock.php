@@ -6,6 +6,10 @@ use cvweiss\redistools\RedisTtlCounter;
 require_once '../init.php';
 
 $xmlCorps = new RedisTimeQueue("zkb:xmlCorps", 1900);
+
+$size = $mdb->count("apis");
+if ($xmlCorps->size() < ($size * .9) || $xmlCorps->size() > ($size * 1.1)) $redis->del("zkb:xmlCorps");
+
 if (date('i') == 5 || $xmlCorps->size() == 0) {
     $rows = $mdb->find("apis");
     foreach ($rows as $row) {

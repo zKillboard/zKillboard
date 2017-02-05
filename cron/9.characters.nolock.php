@@ -2,27 +2,34 @@
 
 require_once '../init.php';
 
+$xmlFailure = new \cvweiss\redistools\RedisTtlCounter('ttlc:XmlFailure', 300);
 $guzzler = new Guzzler(20, 50000);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $row = $mdb->findDoc("information", ['type' => 'characterID'], ['lastApiUpdate' => 1]);
-    $mdb->set("information", $row, ['lastApiUpdate' => new MongoDate(time())]);
+    $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now()]);
 
     $url = "${apiServer}eve/CharacterInfo.xml.aspx?&characterId=" . $row['id'];
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
     $guzzler->call($url, "updateChar", "failChar", $params);
+    if ($xmlFailure->count() > 200) sleep(1);
 }      
 $guzzler->finish();
 
 function failChar(&$guzzler, &$params, &$connectionException)
 {
-    $code = $connectionException->getCode();
-    $id = $params['row']['id'];
+    $mdb = $params['mdb'];
     $redis = $params['redis'];
+    $code = $connectionException->getCode();
+    $row = $params['row'];
+    $id = $row['id'];
+
     switch ($code) {
         case 0: // timeout
-            //$redis->rpush("tqCharacters", $id);
+        case 503: // server error
+        case 200: // timeout...
+            $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(86400 * -2)]);
             break;
         default:
             Util::out("/eve/CharacterInfo failed for $id with code $code");
