@@ -79,7 +79,7 @@ function pullEsiKills($charID, $esi) {
         $raw = ESI::curl($url, $fields, $accessToken);
         $json = json_decode($raw, true);
 
-        if (isset($json['error'])) {
+        if (isset($json['error']) || !is_array($json)) {
             $esi->setTime($charID, time() + 300);
             return;
         }
