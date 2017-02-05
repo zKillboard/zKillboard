@@ -14,6 +14,7 @@ if (date('i') == 5 || $xmlCorps->size() == 0) {
     $rows = $mdb->find("apis");
     foreach ($rows as $row) {
         $xmlCorps->add((string) $row['_id']);
+        $xmlCorps->setTime((string) $row['_id'], (int) @$row['lastApiUpdate']->sec);
     }
 }
 
@@ -29,7 +30,7 @@ while ($minute == date('Hi')) {
         $vCode = $row['vCode'];
         $url = "$apiServer/account/APIKeyInfo.xml.aspx?keyID=$keyID&vCode=$vCode";
 
-        $params = ['row' => $row, 'mdb' => $mdb, 'redis' => $redis, 'xmlCorps' => $xmlCorps];
+        $params = ['row' => $row, 'mdb' => $mdb, 'redis' => $redis];
         $guzzler->call($url, "handleInfoFulfilled", "handleInfoRejected", $params);
     } else {
         $xmlCorps->remove($id);
@@ -45,7 +46,6 @@ function handleInfoFulfilled(&$guzzler, &$params, &$content)
     $mdb = $params['mdb'];
     $redis = $params['redis'];
     $row = $params['row'];
-    $xmlCorps = $params['xmlCorps'];
 
     $xml = @simplexml_load_string($content);
 
@@ -84,7 +84,7 @@ function handleInfoFulfilled(&$guzzler, &$params, &$content)
         $vCode = $row['vCode'];
 
         $url = "$apiServer/corp/KillMails.xml.aspx?characterID=$charID&keyID=$keyID&vCode=$vCode";
-        $params = ['mdb' => $mdb, 'redis' => $redis, 'corpID' => $corpID, 'corpName' => $corpName, 'charID' => $charID, 'keyID' => $keyID, 'row' => $row, 'xmlCorps' => $xmlCorps];
+        $params = ['mdb' => $mdb, 'redis' => $redis, 'corpID' => $corpID, 'corpName' => $corpName, 'charID' => $charID, 'keyID' => $keyID, 'row' => $row];
         $guzzler->call($url, "handleKillFulfilled", "handleKillRejected", $params);
     }
     $mdb->set("apis", $row, ['userID' => $charID, 'corporationID' => $corpID, 'lastApiUpdate' => $mdb->now()]);
@@ -130,8 +130,8 @@ function handleKillRejected(&$guzzler, &$params, &$connectionException)
     $redis = $params['redis'];
     $keyID = $params['keyID'];
     $row = $params['row'];
-    $corpID = $params['corpID'];
-    $xmlCorps = $params['xmlCorps'];
+    $corpID = (int) $params['corpID'];
+    $corpName = Info::getInfoField("corporationID", $corpID, 'name');
 
     switch ($code) {
         case 0: // timeout
@@ -140,14 +140,13 @@ function handleKillRejected(&$guzzler, &$params, &$connectionException)
             //$redis->rPush("zkb:apis", $keyID);
             break;
         case 403:
-            $redis->del("apiVerified:$corpID");
+            Util::out("$corpName, key $keyID, 403'ed - removing");
             $mdb->remove("apis", $row);
             break;
         default:
             Util::out("/corp/KillMail fetch failed for $keyID with http code $code");
     }
     xmlLog(false);
-    $xmlCorps->setTime($row['_id'], time() + 60);
 }
 
 function handleInfoRejected(&$guzzler, &$params, &$connectionException)
@@ -156,7 +155,6 @@ function handleInfoRejected(&$guzzler, &$params, &$connectionException)
     $mdb = $params['mdb'];
     $row = $params['row'];
     $redis = $params['redis'];
-    $xmlCorps = $params['xmlCorps'];
 
     $keyID = $row['keyID'];
     switch ($code) {
@@ -171,7 +169,6 @@ function handleInfoRejected(&$guzzler, &$params, &$connectionException)
             Util::out("ApiKeyInfo fetch failed for $keyID with code $code");
     }
     xmlLog(false);
-    $xmlCorps->setTime($row['_id'], time() + 60);
 }
 
 function xmlLog($success)
