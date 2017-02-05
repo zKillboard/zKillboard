@@ -162,7 +162,6 @@ class CrestSSO
             $redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);
             $redis->setex("$key:accessToken", 1000, $access_token);
             $redis->setex("$key:scopes", (86400 * 14), @$response->Scopes);
-            $scopes = explode(' ', @$response->Scopes);
 
             $_SESSION['characterID'] = $charID;
             $_SESSION['characterName'] = $response->CharacterName;

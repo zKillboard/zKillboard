@@ -18,8 +18,7 @@ $minute = date('Hi');
 $count = 0;
 $maxConcurrent = 10;
 while ($minute == date('Hi')) {
-    //$id = $ssoCorps->next();
-    $row = findNext($mdb, $ssoCorps, ['scope' => 'corporationKillsRead']); //$mdb->findDoc("scopes", ['_id' => new MongoId($id)]);
+    $row = findNext($mdb, $ssoCorps);
     if ($row != null) {
         $charID = (int) $row['characterID'];
         $accessToken = CrestSSO::getAccessToken($charID, null, $row['refreshToken']);
@@ -28,12 +27,12 @@ while ($minute == date('Hi')) {
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row, 'ssoCorps' => $ssoCorps];
         $guzzler->call($url, "handleKillFulfilled", "handleKillRejected", $params);
     }
-    //usleep(250000);
+    usleep(250000);
     $guzzler->tick();
 }
 $guzzler->finish();
 
-function findNext($mdb, $ttlc, $query)
+function findNext($mdb, $ttlc)
 {
     $row = $mdb->findDoc("scopes", ['scope' => 'corporationKillsRead', 'corporationID' => ['$exists' => false]]);
     if ($row != null) {

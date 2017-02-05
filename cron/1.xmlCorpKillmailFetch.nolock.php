@@ -154,7 +154,6 @@ function handleInfoRejected(&$guzzler, &$params, &$connectionException)
     $code = (int) $connectionException->getCode();
     $mdb = $params['mdb'];
     $row = $params['row'];
-    $redis = $params['redis'];
 
     $keyID = $row['keyID'];
     switch ($code) {

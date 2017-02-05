@@ -20,7 +20,6 @@ $guzzler->finish();
 function failCorp(&$guzzler, &$params, &$connectionException)
 {
     $mdb = $params['mdb'];
-    $redis = $params['redis'];
     $code = $connectionException->getCode();
     $row = $params['row'];
     $id = $row['id'];
