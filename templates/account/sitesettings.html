@@ -6,7 +6,7 @@
 						<select name="style" class="form-control input-sm">
 						{% for style in data.stylesAvailable %}
 							{% set selected = "" %}
-							{% if style == data.currentStyle %}{% set selected = "selected"%}{% endif %}
+							{% if style == data.currentStyle or (data.currentStyle == "" and style == "cyborg") %}{% set selected = "selected"%}{% endif %}
 							<option value="{{ style }}" {{ selected }}>{{ style }}</option>
 						{% endfor %}
 						</select>
@@ -22,10 +22,10 @@
 			<form class="form-horizontal" method="post" action="/account/sitesettings/">
 				<div class="form-group col-lg-3">
 					<select name="showDisqus" class="form-control input-sm">
-						{% if "true" == data.showDisqus %}{% set selected = "selected"%}{% endif %}
+						{% if 1 == data.showDisqus %}{% set selected = "selected"%}{% endif %}
 						<option value="true" {{ selected }}>On</option>
 						{% set selected = "" %}
-						{% if "false" == data.showDisqus %}{% set selected = "selected"%}{% endif %}
+						{% if 0 == data.showDisqus %}{% set selected = "selected"%}{% endif %}
 						<option value="false" {{ selected }}>Off</option>
 					</select>
 				</div>

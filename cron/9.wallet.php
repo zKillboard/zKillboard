@@ -47,7 +47,6 @@ function applyBalances()
 {
     global $walletCharacterID, $baseAddr, $mdb, $adFreeMonthCost, $redis;
 
-    $flushNeeded = false;
     // First, set any new records to paymentApplied = 0
     $mdb->set('payments', ['paymentApplied' => ['$ne' => 1]], ['paymentApplied' => 0], true);
 
@@ -70,8 +69,13 @@ function applyBalances()
 
         if ($row['refTypeID'] == 10) { // Character donation
             if ($amount >= $adFreeMonthCost) {
-                $charID = $row['ownerID1'];
-                $adFreeUntil = (int) $redis->hGet("user:$charID", 'adFreeUntil');
+                $charID = (int) $row['ownerID1'];
+                $userInfo = $mdb->findDoc("users", ['userID' => "user:$charID"]);
+                if ($userInfo == null) {
+                    $userInfo = ['userID' => "user:$charID"];
+                    $mdb->insert("users", $userInfo);
+                }
+                $adFreeUntil = (int) @$userInfo['adFreeUntil'];
                 if ($adFreeUntil < time()) {
                     $adFreeUntil = time();
                 }
@@ -79,18 +83,16 @@ function applyBalances()
                 $adFreeUntil += (86400 * 30 * $months);
                 $charName = Info::getInfoField('characterID', $charID, 'name');
                 $amount = number_format($amount, 0);
-                $redis->hSet("user:$charID", 'adFreeUntil', $adFreeUntil);
+                $mdb->set("users", $userInfo, ['adFreeUntil' => $adFreeUntil]);
                 $mdb->set('payments', $row, ['months' => "$months months"]);
 
-                Util::out("$charID $charName $amount $months $adFreeUntil ".date('Y-m-d', $adFreeUntil));
+                ZLog::add("$months month" . ($months == 1 ? "" : "s")  . " of ad free time has been given to $charName", $charID);
                 User::sendMessage("Thank you for your payment. $months month" . ($months == 1 ? "" : "s")  . " of ad free time has been given to $charName", $charID);
                 EveMail::send($charID, "ISK Received", "Thank you for your payment. $months months of ad free time has been given to $charName");
-                $flushNeeded = true;
             }
             $mdb->set('payments', $row, ['paymentApplied' => 1]);
         }
     }
-    if ($flushNeeded) $redis->del("zkb:userFlush");
 }
 
 function insertRecords($charID, $records)

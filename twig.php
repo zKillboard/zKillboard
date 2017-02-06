@@ -31,7 +31,8 @@ if ($ssoCharacterID > 0) {
 $accountBalance = 0;
 $userShowAds = true;
 if ($ssoCharacterID > 0) {
-    $adFreeUntil = (int) $redis->hGet("user:$ssoCharacterID", 'adFreeUntil');
+    $info = User::getUserInfo();
+    $adFreeUntil = (int) @$info['adFreeUntil']; 
     $userShowAds = ($adFreeUntil < time());
 }
 
