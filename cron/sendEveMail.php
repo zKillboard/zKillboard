@@ -25,7 +25,7 @@ while ($minute == date('Hi')) {
             continue;
         }
     
-        ZLog::add(("Sending evemail to $name", $charID); 
+        ZLog::add("Sending evemail to $name", $charID); 
 
         $mail['approved_cost'] = 10000;
         $url = "$esiServer/v1/characters/$evemailCharID/mail/";
