@@ -37,9 +37,9 @@ class User
         $id = self::getUserID();
         if ($id == 0) return [];
 
-
-        $info = $redis->hGetAll("user:$id");
-        $info['username'] = $mdb->findField('information', 'name', ['type' => 'characterID', 'id' => (int) $id, 'cacheTime' => 300]);
+        $i = $mdb->findDoc("users", ['userID' => "user:$id"]);
+        $i['username'] = Info::getInfoField('characterID', $id, 'name');
+        return $i;
 
         return $info;
     }
@@ -57,10 +57,8 @@ class User
      */
     public static function isModerator()
     {
-        global $redis;
-        $id = self::getUserID();
-
-        return $redis->hGet("user:$id", 'moderator') == 'true';
+        $info = self::getUserInfo();
+        return @$info['moderator'];
     }
 
     /**
