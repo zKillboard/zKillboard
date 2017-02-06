@@ -2,7 +2,16 @@
 
 require_once "../init.php";
 
-//$mdb->set("evemails", ['error' => ['$ne' => null]], ['sent' => false], ['multi' => true]);
+/*$em = $mdb->find('evemails');
+foreach ($em as $mail) {
+    if (isset($mail['error'])) {
+        $error = json_decode($mail['error'], true);
+        $code = $error['httpCode'];
+        if ($code == 0 || $code == 502) {
+            $mdb->set("evemails", $mail, ['sent' => false]);
+        }
+    }
+}*/
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
@@ -19,6 +28,12 @@ while ($minute == date('Hi')) {
 
         $name = Info::getInfoField('characterID', (int) $mail['recipients'][0]['recipient_id'], 'name');
 
+        if ($redis->get("zkb:evemail:". $mail['recipients'][0]['recipient_id']) == "sent") {
+            $mail['sent'] = 'spam-prevention';
+            $mail['error'] = null;
+            $mdb->save("evemails", $mail);
+            continue;
+        }
         Util::out("Sending evemail to $name");
 
         $mail['approved_cost'] = 10000;
@@ -32,9 +47,11 @@ while ($minute == date('Hi')) {
         $mdb->save("evemails", $mail);
 
         if (isset($json['error'])) {
-            Util::out("Error sending evemail: " . print_r($json, true));
-            return;
+            Util::out("Failed sending evemail to $name, http code: " . @$json['httpCode']);
+        } else {
+            $redis->setex("zkb:evemail:". $mail['recipients'][0]['recipient_id'], 7200, "sent");
         }
+        sleep(12);
     }
-    sleep(13);
+    sleep(1);
 }

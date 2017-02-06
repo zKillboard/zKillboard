@@ -102,10 +102,9 @@
 
 				<!-- Top ad -->
 				{% if showAds != false %}
-					<div class="centered" id="adsensetop">
+					<div class="centered hidden-xs" id="adsensetop">
 						{{ advertisement|raw }}
 					</div>
-                                        <hr/>
 				{% endif %}
 
 				<!-- The text header -->
@@ -117,7 +116,7 @@
 
 				<!-- Bottom ad -->
 				{% if showAds != false %}
-					<div class="centered" id="adsensebottom">
+					<div class="centered hidden-xs" id="adsensebottom">
 					    <br/><hr/><br/>
 						{{ advertisement|raw }}
 					</div>
