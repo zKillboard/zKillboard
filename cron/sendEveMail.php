@@ -2,17 +2,6 @@
 
 require_once "../init.php";
 
-/*$em = $mdb->find('evemails');
-foreach ($em as $mail) {
-    if (isset($mail['error'])) {
-        $error = json_decode($mail['error'], true);
-        $code = $error['httpCode'];
-        if ($code == 0 || $code == 502) {
-            $mdb->set("evemails", $mail, ['sent' => false]);
-        }
-    }
-}*/
-
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $mail = $mdb->findDoc("evemails", ['sent' => false], ['_id' => -1]);
@@ -26,15 +15,17 @@ while ($minute == date('Hi')) {
             return;
         }
 
-        $name = Info::getInfoField('characterID', (int) $mail['recipients'][0]['recipient_id'], 'name');
+        $charID = (int) $mail['recipients'][0]['recipient_id'];
+        $name = Info::getInfoField('characterID', $charID, 'name');
 
-        if ($redis->get("zkb:evemail:". $mail['recipients'][0]['recipient_id']) == "sent") {
+        if ($redis->get("zkb:evemail:$charID" ) == "sent") {
             $mail['sent'] = 'spam-prevention';
             $mail['error'] = null;
             $mdb->save("evemails", $mail);
             continue;
         }
-        Util::out("Sending evemail to $name");
+    
+        ZLog::add(("Sending evemail to $name", $charID); 
 
         $mail['approved_cost'] = 10000;
         $url = "$esiServer/v1/characters/$evemailCharID/mail/";
@@ -47,9 +38,9 @@ while ($minute == date('Hi')) {
         $mdb->save("evemails", $mail);
 
         if (isset($json['error'])) {
-            Util::out("Failed sending evemail to $name, http code: " . @$json['httpCode']);
+            ZLog::add("Failed sending evemail to $name, http code: " . @$json['httpCode'], $charID);
         } else {
-            $redis->setex("zkb:evemail:". $mail['recipients'][0]['recipient_id'], 7200, "sent");
+            $redis->setex("zkb:evemail:$charID", 7200, "sent");
         }
         sleep(12);
     }
