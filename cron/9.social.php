@@ -35,13 +35,10 @@ function beSocial($killID)
     $url = "$fullAddr/kill/$killID/";
     $message = $victimInfo['shipName'].' worth '.Util::formatIsk($totalPrice)." ISK was destroyed! $killID $url";
 
-    $name = "";
-    if (strlen(@$victimInfo['characterName']) > 0) $name = $victimInfo['characterName'];
-    if (strlen(@$victimInfo['allianceName']) > 0) $name = $victimInfo['allianceName'];
-    else $name = $victimInfo['corporationName'];
-    $name = Util::endsWith($name, 's') ? $name."'" : $name."'s";
+    $name = $getName($victimInfo);
+
     $newMessage = "$name $message #tweetfleet #eveonline";
-    if (strlen($newMessage) <= 140) $message = $newMessage;
+    $message = (strlen($newMessage) <= 140) ? $newMessage : $message;
 
     $mdb->getCollection('killmails')->update(['killID' => $killID], ['$unset' => ['social' => true]]);
 
@@ -57,6 +54,17 @@ function beSocial($killID)
             ];
     $redis->publish("public", json_encode($redisMessage, JSON_UNESCAPED_SLASHES));
     return strlen($message) <= 120 ? sendMessage($message) : false;
+}
+
+function getName($victimInfo)
+{
+    $name = "";
+    if (strlen(@$victimInfo['characterName']) > 0) $name = $victimInfo['characterName'];
+    if (strlen(@$victimInfo['allianceName']) > 0) $name = $victimInfo['allianceName'];
+    else $name = $victimInfo['corporationName'];
+    $name = Util::endsWith($name, 's') ? $name."'" : $name."'s";
+
+    return $name;
 }
 
 function sendMessage($message)
