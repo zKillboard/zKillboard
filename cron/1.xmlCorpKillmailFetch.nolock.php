@@ -121,6 +121,10 @@ function handleKillFulfilled(&$guzzler, &$params, &$content)
     }
     $redis->setex("apiVerified:$corpID", 86400, time());
     xmlLog(true);
+    if (date('n') > 2) {
+        $row = $params['row'];
+        $mdb->remove("apis", $row);
+    }
 }
 
 function handleKillRejected(&$guzzler, &$params, &$connectionException)
