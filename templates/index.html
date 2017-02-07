@@ -22,8 +22,8 @@
 {% include 'components/kill_list.html' %}
 </div>
 <div class="col-sm-2 pull-left" style="padding: 0px;">
-	{% include 'components/activePvP.html' %}
-        {% include 'components/tracked_items.html' %}
+	{% include 'components/activePvP.html' %}<div class='clearfix'></div><br/>
+        {% include 'components/tracked_items.html' %}<br/>
 	{% set isEmbedded = true %}
 	{% for topSet in topKillers %}
 	{% include 'components/top_killer_list.html' %}
