@@ -29,7 +29,7 @@ if ($redis->get($redisKey) != true) {
     }
 }
 
-$redis->setex($redisKey, 86400, true);
+$redis->setex($redisKey, 82800, true);
 
 $minute = date('Hi');
 while ($id = $queueTopAlltime->pop()) {
