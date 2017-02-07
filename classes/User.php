@@ -40,8 +40,6 @@ class User
         $i = $mdb->findDoc("users", ['userID' => "user:$id"]);
         $i['username'] = Info::getInfoField('characterID', $id, 'name');
         return $i;
-
-        return $info;
     }
 
     /**

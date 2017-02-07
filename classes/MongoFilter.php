@@ -8,13 +8,7 @@ class MongoFilter
     {
         global $mdb;
 
-        $limit = isset($parameters['limit']) ? (int) $parameters['limit']  : 50;
-        if ($limit > 200) {
-            $limit = 200;
-        }
-        if ($limit < 1) {
-            $limit = 1;
-        }
+        $limit = max(1, min(200, isset($parameters['limit']) ? (int) $parameters['limit']  : 50));
         $sortDirection = isset($parameters['orderDirection']) ? ($parameters['orderDirection'] == 'asc' ? 1 : -1)  : -1;
         if (isset($parameters['startTime'])) {
             $sortDirection = 'asc';
@@ -30,9 +24,6 @@ class MongoFilter
 
         // Build the query parameters
         $query = $buildQuery ? self::buildQuery($parameters) : $parameters;
-        if ($query === null) {
-            return;
-        }
 
         // Start the query
         $killmails = $mdb->getCollection('killmails');
@@ -41,28 +32,36 @@ class MongoFilter
         // Apply the sort order
         $cursor->sort([$sortKey => $sortDirection]);
 
-        // Apply the limit
-        $limit = isset($parameters['limit']) ? (int) $parameters['limit']  : 50;
-        if ($limit > 200) {
-            $limit = 200;
-        }
-        if ($limit < 1) {
-            $limit = 1;
-        }
+        self::applyPage($cursor, $page, $limit);
+        self::applyLimit($cursor, $parameters, $limit);
+
+        $result = self::getResult($cursor);
+
+        RedisCache::set($hashKey, $result, 30);
+
+        return $result;
+    }
+
+    private static function applyPage(&$cursor, $page, $limit)
+    {
         if ($page > 0) {
             $cursor->skip($page * $limit);
         }
+    }
+
+    private static function applyLimit(&$cursor, $parameters, $limit)
+    {
         if (!isset($parameters['nolimit'])) {
             $cursor->limit($limit);
         }
+    }
 
+    private static function getResult(&$cursor)
+    {
         $result = array();
         foreach ($cursor as $row) {
             $result[] = $row;
         }
-
-        RedisCache::set($hashKey, $result, 30);
-
         return $result;
     }
 
