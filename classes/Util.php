@@ -89,9 +89,9 @@ class Util
 
     private static $formatIskIndexes = array('', 'k', 'm', 'b', 't', 'tt', 'ttt');
 
-    public static function formatIsk($value)
+    public static function formatIsk($value, $int = false)
     {
-        $numDecimals = (((int) $value) == $value) && $value < 10000 ? 0 : 2;
+        $numDecimals = ($int || (((int) $value) == $value) && $value < 10000) ? 0 : 2;
         if ($value == 0) {
             return number_format(0, $numDecimals);
         }

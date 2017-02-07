@@ -27,7 +27,7 @@ $kills = Kills::getKills(array('cacheTime' => 60, 'limit' => 50));
 // Collect active PVP stats
 $activePvP = json_decode($redis->get('zkb:activePvp'));
 
-$app->render('index.html', array('topPods' => $topPods, 'topIsk' => $topIsk, 'topPoints' => $topPoints, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => $pageType, 'pager' => true, 'pageTitle' => $pageTitle, 'requestUriPager' => $requestUriPager, 'activePvP' => $activePvP, 'entityID' => '*', 'trackedItems' => $trackedItems));
+$app->render('index.html', array('topPods' => $topPods, 'topIsk' => $topIsk, 'topPoints' => $topPoints, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => $pageType, 'pager' => true, 'pageTitle' => $pageTitle, 'requestUriPager' => $requestUriPager, 'activePvP' => $activePvP, 'entityID' => '*', 'trackedItems' => $trackedItems, 'topDonators' => json_decode($redis->get("zkb:topDonators"), true)));
 
 function getTop($title, $type)
 {

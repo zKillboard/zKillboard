@@ -41,6 +41,14 @@ foreach ($walletApis as $api) {
 }
 
 applyBalances();
+
+$rows = $mdb->find("payments", ['isk' => ['$exists' => false]]);
+foreach ($rows as $row) {
+    $date = $row['date'];
+    $time = strtotime("$date UTC");
+    $mdb->set("payments", $row, ['isk' => (double) $row['amount'], 'characterID' => (int) $row['ownerID1'], 'dttm' => new MongoDate($time)]);
+}
+
 $redis->setex($redisKey, 1800, true);
 
 function applyBalances()

@@ -7,7 +7,11 @@
 	{% if detail.characterID and key == 'character' %}
 		<center>
 		{% include 'components/image_char.html' %}<br/><small><small><i><a href='#' onClick="$('#largeImage').modal(); return false;">Enlarge</a></small></small></i><br/>
-                {% if gold %}<a href='/information/payments/'><img src='/img/golden-wreck.png' rel="tooltip" title="Thank you!"></a>{% endif %}
+                {% if gold > 0 %}
+                {% for i in 1..gold%}
+                <a href='/information/payments/'><img src='/img/golden-wreck.png' rel="tooltip" title="Thank you!"></a>
+                {% endfor %}
+                {% endif %}
 		</center>
 	{% endif %}
 	{% if detail.corporationID and key == 'corporation' %}

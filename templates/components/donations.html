@@ -1,0 +1,26 @@
+{% set first = true %}
+{% if topDonators | length %}
+<div class="pull-left" style="width: 100%; padding: 0px; margin: 0px;">
+  <center><h5>Biggest Golden Wrecks</h5></center>
+  <table class="table table-condensed topBoxes col-lg-2" style="padding: 0px; margin: 0px; width: 100%;">
+  {% for data in topDonators %}
+    {% set field = data %}
+    {% if first %}
+      <tr>
+        {% set imageSize = 64 %}
+        {% set field = data %}
+          <td>{% include 'components/image_char.html' %}</td>
+          <td align='middle' valign='middle'><a href='/information/payments/'><img src='/img/golden-wreck.png'></a></td>
+      </tr>
+      {% set first = false %}
+    {% endif %}
+    <tr>
+          <td>{% include 'components/text_char.html' %}</td>
+        <td style="text-align: right;" title="Score: {{ data.score|number_format(0) }}" rel="tooltip">{{ shortNum(data.iskSum, true) }}</td>
+    </tr>
+  {% endfor %}
+</table>
+</div>
+<center><i>Last 7 days - Thank you!</i></center>
+<div class="clearfix"></div>
+{% endif %}
