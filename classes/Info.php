@@ -437,7 +437,7 @@ class Info
                         }
                         break;
                     case 'solarSystemID':
-                        if (!isset($element['sunTypeID'])) {
+                        if (!isset($element['solarSystemSecurity'])) {
                             $info = self::getInfo('solarSystemID', $value);
                             if (sizeof($info)) {
                                 $element['solarSystemName'] = $info['solarSystemName'];

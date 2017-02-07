@@ -75,7 +75,7 @@
 				<td itemprop="faction">{% include 'components/text_faction.html' %}</td>
 			</tr>
             {% endif %}
-            {% if detail.secStatus %}
+            {% if detail.secStatus and not detail.solarSystemName %}
                 {% set calcStatus = detail.secStatus %}
                 {% if calcStatus > 5 %}{% set calcStatus = 5 %}{% elseif calcStatus < -5 %}{% set calcStatus = -5 %}{% endif %}
                 {% set calcStatus = (calcStatus / 5) + 0.8 %}
