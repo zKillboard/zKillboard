@@ -36,7 +36,7 @@ class UserConfig
         $id = User::getUserID();
         $info = $mdb->findDoc("users", ['userID' => "user:$id"]);
         if ($info == null) {
-            $mdb->insert("users", ['userID' => "user:$id"]);
+            $mdb->insert("users", ['userID' => "user:$id", 'characterID' => (int) $id]);
         }
         $mdb->set("users", ['userID' => "user:$id"], [$key => json_encode($value)]);
 

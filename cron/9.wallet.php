@@ -72,7 +72,7 @@ function applyBalances()
                 $charID = (int) $row['ownerID1'];
                 $userInfo = $mdb->findDoc("users", ['userID' => "user:$charID"]);
                 if ($userInfo == null) {
-                    $userInfo = ['userID' => "user:$charID"];
+                    $userInfo = ['userID' => "user:$charID", 'characterID' => $charID];
                     $mdb->insert("users", $userInfo);
                 }
                 $adFreeUntil = (int) @$userInfo['adFreeUntil'];
