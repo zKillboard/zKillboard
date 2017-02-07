@@ -33,17 +33,9 @@ function beSocial($killID)
     Info::addInfo($victimInfo);
 
     $url = "$fullAddr/kill/$killID/";
-    $message = $victimInfo['shipName'].' worth '.Util::formatIsk($totalPrice)." ISK was destroyed! $killID $url";
-
-    $name = $getName($victimInfo);
-
-    $newMessage = "$name $message #tweetfleet #eveonline";
-    $message = (strlen($newMessage) <= 140) ? $newMessage : $message;
-
-    $mdb->getCollection('killmails')->update(['killID' => $killID], ['$unset' => ['social' => true]]);
-
-    $message = strlen($message) > 120 ? str_replace(' worth ', ': ', $message) : $message;
-    $message = strlen($message) > 120 ? str_replace(' was destroyed!', '', $message) : $message;
+    $message = $victimInfo['shipName'].' worth '.Util::formatIsk($totalPrice)." ISK was destroyed! $url";
+    $name = getName($victimInfo);
+    $message = adjustMessage($message);
 
     $redisMessage = [
         'action' => 'bigkill',
@@ -53,7 +45,18 @@ function beSocial($killID)
         'image' => $imageServer . "/Render/" . $victimInfo['shipTypeID'] . "_128.png"
             ];
     $redis->publish("public", json_encode($redisMessage, JSON_UNESCAPED_SLASHES));
-    return strlen($message) <= 120 ? sendMessage($message) : false;
+    sendMessage($message);
+}
+
+function adjustMessage($message)
+{
+    $newMessage = "$name $message #tweetfleet #eveonline";
+    $message = (strlen($newMessage) <= 140) ? $newMessage : $message;
+
+    $message = strlen($message) > 120 ? str_replace(' worth ', ': ', $message) : $message;
+    $message = strlen($message) > 120 ? str_replace(' was destroyed!', '', $message) : $message;
+
+    return $message;
 }
 
 function getName($victimInfo)
@@ -75,7 +78,6 @@ function sendMessage($message)
 
         return $twitter->send($message);
     } catch (Exception $ex) {
-        print_r($ex);
-        // just ignore it
+        Util::out("Failed sending tweet: " . $ex->getMessage());
     }
 }
