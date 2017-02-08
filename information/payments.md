@@ -12,7 +12,7 @@
 
 To make a payment:
 
-- Send ISK to <a href="/character/93382481/">zKillboard</a> in increments of <string>{cost}</stong> ISK, e.g., 5000000 (5m), 30000000 (30m), 60000000 (60m).
+- Send ISK to the character <a href="/character/93382481/">zKillboard</a> (not the corp) in increments of <string>{cost}</stong> ISK, e.g., 5000000 (5m), 30000000 (30m), 60000000 (60m).
 - Your payment will be detected within 30-60 minutes (api willing) and applied to the account of the character that sent the ISK.
 - The golden wreck icon <img src="/img/golden-wreck.png" rel="tooptip" tooltip="This icon will show under your character"> icon will show under your character on your overview page.
 - Thank you!
