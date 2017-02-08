@@ -35,7 +35,7 @@ function beSocial($killID)
     $url = "$fullAddr/kill/$killID/";
     $message = $victimInfo['shipName'].' worth '.Util::formatIsk($totalPrice)." ISK was destroyed! $url";
     $name = getName($victimInfo);
-    $message = adjustMessage($message);
+    $message = adjustMessage($name, $message);
 
     $redisMessage = [
         'action' => 'bigkill',
@@ -48,7 +48,7 @@ function beSocial($killID)
     sendMessage($message);
 }
 
-function adjustMessage($message)
+function adjustMessage($name, $message)
 {
     $newMessage = "$name $message #tweetfleet #eveonline";
     $message = (strlen($newMessage) <= 140) ? $newMessage : $message;
