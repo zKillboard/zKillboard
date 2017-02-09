@@ -96,23 +96,27 @@ $(document).ready(function() {
 function htmlNotify (data) 
 {
     if("Notification" in window) {
-        if (Notification.permission !== 'denied' && Notification.permission !== "granted") {
-            Notification.requestPermission(function (permission) {
-                if (permission === 'granted') htmlNotify(data);
-            });
-            return;
-        }
-        if (Notification.permission === 'granted') {
-            var notif = new Notification(data.title, {
-                body: data.iskStr,
-                icon: data.image,
-                tag: data.url
-            });
-            notif.onclick = function () {
-                notif.close();
-                window.focus();
-                window.location = data.url;
-            };
+        switch(Notification.permission) {
+            case 'granted':
+                var notif = new Notification(data.title, {
+                    body: data.iskStr,
+                    icon: data.image,
+                    tag: data.url
+                });
+                notif.onclick = function (event) {
+                    event.preventDefault();
+                    notif.close();
+                    window.open(data.url, '_blank');
+                };
+                break;
+            case 'denied':
+                break;
+            default:
+                Notification.requestPermission(function (permission) {
+                    if (permission === 'granted') htmlNotify(data);
+                });
+                return;
+                break;
         }
     }
 }
