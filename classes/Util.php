@@ -248,7 +248,7 @@ class Util
                 case 'beforeKillID':
                 case 'afterKillID':
                 case 'killID':
-                    if ($key != 'killID') self::checkEntityRequirement($checkEntityRequirement, "Please provide an entity filter first.");
+                    if ($key != 'killID') self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     if (!is_numeric($value)) {
                         throw new Exception("$value is not a valid entry for $key");
                     }
@@ -264,14 +264,14 @@ class Util
                     // This can and should be ignored since its a parameter that will remove limits for battle eeports
                     break;
                 case 'year':
-                    self::checkEntityRequirement($checkEntityRequirement, "Please provide an entity filter first.");
+                    self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $value = (int) $value;
                     if ($value < 2007) throw new Exception("$value is not a valid entry for $key");
                     if ($value > date('Y')) throw new Exception("$value is not a valid entry for $key");
                     $parameters[$key] = $value;
                     break;
                 case 'month':
-                    self::checkEntityRequirement($checkEntityRequirement, "Please provide an entity filter first.");
+                    self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $value = (int) $value;
                     if ($value < 1 || $value > 12) throw new Exception("$value is not a valid entry for $key");
                     $parameters[$key] = $value;
