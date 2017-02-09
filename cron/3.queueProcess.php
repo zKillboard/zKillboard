@@ -5,6 +5,12 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once '../init.php';
 
+$dateToday = date('Y-m-d');
+$dateYesterday = date('Y-m-d', time() - 86400);
+$redis->expire("zkb:loot:green:$dateToday", 86400);
+$redis->expire("zkb:loot:red:$dateToday", 86400);
+$redis->expire("zkb:loot:green:$dateYesterday", 86400);
+$redis->expire("zkb:loot:red:$dateYesterday", 86400);
 
 $crestmails = $mdb->getCollection('crestmails');
 $killmails = $mdb->getCollection('killmails');
@@ -125,7 +131,7 @@ while ($minute == date('Hi')) {
         $droppedValue = 0;
 
         $totalValue = processItems($mail['victim']['items'], $date);
-        $totalValue += Price::getItemPrice($mail['victim']['shipType']['id'], $date, true);
+        $totalValue += Price::getItemPrice($mail['victim']['shipType']['id'], $date);
 
         $zkb = array();
 
@@ -227,7 +233,7 @@ function processItem($item, $dttm, $isCargo = false, $parentContainerFlag = -1)
         $price = 0.01;
     } // Golden pod implant can't be destroyed
     else {
-        $price = Price::getItemPrice($typeID, $dttm, true);
+        $price = Price::getItemPrice($typeID, $dttm);
     }
     if ($isCargo && strpos($itemName, 'Blueprint') !== false) {
         $item['singleton'] = 2;
@@ -236,13 +242,16 @@ function processItem($item, $dttm, $isCargo = false, $parentContainerFlag = -1)
         $price = $price / 100;
     }
 
-    trackItem($typeID, (int) @$item['quantityDropped'], (int) @$item['quantityDestroyed']);
+    trackItem($typeID, (int) @$item['quantityDropped'], (int) @$item['quantityDestroyed'], $price, $dttm, $item['flag']);
 
     return $price * (@$item['quantityDropped'] + @$item['quantityDestroyed']);
 }
 
-function trackItem($typeID, $dropped, $destroyed)
+function trackItem($typeID, $dropped, $destroyed, $price, $dttm, $flag)
 {
+    global $redis, $dateToday, $dateYesterday;
+    $dttm = substr($dttm, 0, 10);
+
     switch ($typeID) {
         case 29668:
         case 40520:
@@ -251,6 +260,12 @@ function trackItem($typeID, $dropped, $destroyed)
             trackItemLoop($d, $dropped);
             trackItemLoop($l, $destroyed);
             break;
+    }
+    if ($flag != 2663 && $flag != 3772 && $flag != 89) {
+        if ($dttm == $dateToday || $dttm == $dateYesterday) {
+            $redis->incrBy("zkb:loot:green:$dttm", ($price * $dropped));
+            $redis->incrBy("zkb:loot:red:$dttm", ($price * $destroyed));
+        }
     }
 }
 

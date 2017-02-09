@@ -67,9 +67,18 @@ $redis->set("zkb:totalChars", $mdb->count("information", ['type' => 'characterID
 $redis->set("zkb:totalCorps", $mdb->count("information", ['type' => 'corporationID']));
 $redis->set("zkb:totalAllis", $mdb->count("information", ['type' => 'allianceID']));
 
+$arr = [];
+$greenTotal = 0;
+$redTotal = 0;
+for ($i = 0; $i < 7; $i++) {
+    $green = "zkb:loot:green:" . date('Y-m-d', time() - ($i * 86400));
+    $red = "zkb:loot:red:" . date('Y-m-d', time() - ($i * 86400));
+    $greenTotal += $redis->get($green);
+    $redTotal += $redis->get($red);
+}
+$arr[] = ['typeID' => 0, 'name' => 'Loot Fairy', 'dV' => $greenTotal, 'lV' => $redTotal];
 $items = [29668, 40520];
 $date = date('Ymd');
-$arr = [];
 foreach ($items as $item) {
     $d =  new RedisTtlCounter("ttlc:item:$item:dropped", 86400 * 7);
     $dSize = $d->count();
