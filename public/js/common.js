@@ -108,6 +108,7 @@ function htmlNotify (data)
                 icon: data.image,
                 tag: data.url
             });
+            setTimeout(function() { notif.close() }, 20000);
             notif.onclick = function () {
                 notif.close();
                 window.focus();
