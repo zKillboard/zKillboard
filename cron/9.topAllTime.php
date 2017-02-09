@@ -4,12 +4,10 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
-if ($redis->llen("queueProcess") > 100) exit();
-
 $date = date('Ymd');
 $redisKey = "tq:topAllTime:$date";
 $queueTopAlltime = new RedisQueue('queueTopAlltime');
-if ($redis->get($redisKey) != true) {
+if ($redis->get($redisKey) != true || true) {
     $queueTopAlltime->clear();
     $iter = $mdb->getCollection('statistics')->find([], ['months' => 0, 'groups' => 0])->sort(['type' => 1, 'id' => 1]);
     while ($row = $iter->next()) {
@@ -23,24 +21,26 @@ if ($redis->get($redisKey) != true) {
         $allTimeSum = (int) @$row['allTimeSum'];
         $shipsDestroyed = (int) @$row['shipsDestroyed'];
         $nextTopRecalc = floor($allTimeSum * 1.01);
-        if ($shipsDestroyed == 0 || $shipsDestroyed < $nextTopRecalc) continue;
+        if ($shipsDestroyed <=  100 || $shipsDestroyed < $nextTopRecalc) continue;
 
         $queueTopAlltime->push($row['_id']);
     }
 }
 
-$redis->setex($redisKey, 82800, true);
+$redis->setex($redisKey, 64800, true);
 
 $minute = date('Hi');
 while ($id = $queueTopAlltime->pop()) {
     $row = $mdb->findDoc('statistics', ['_id' => $id]);
     calcTop($row);
-    if ($minute != date('Hi')) exit();
+    //if ($minute != date('Hi')) exit();
 }
 
 function calcTop($row)
 {
     global $mdb;
+
+    if ($row['id'] == 0 || $row['type'] == null) return;
 
     $currentSum = (int) @$row['shipsDestroyed'];
 
