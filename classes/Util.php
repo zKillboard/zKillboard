@@ -110,6 +110,9 @@ class Util
     public static function convertUriToParameters()
     {
         $parameters = array();
+        $entityRequiredSatisfied = false;
+
+
         $uri = $_SERVER['REQUEST_URI'];
         $split = explode('/', $uri);
         array_shift($split);
@@ -118,6 +121,9 @@ class Util
         foreach ($split as $key) {
             $value = $currentIndex + 1 < $splitCount ? $split[$currentIndex + 1] : null;
             switch ($key) {
+                case 'combined':
+                    throw new Exception("$key is not a value API filter");
+                    break;
                 case 'api':
                 case 'api-only':
                 case 'kills':
@@ -136,7 +142,6 @@ class Util
                 case 'asc':
                 case 'desc':
                 case 'json':
-                case 'combined':
                     $parameters[$key] = true;
                     break;
                 case 'character':
@@ -184,14 +189,16 @@ class Util
                                 throw new Exception("multiple IDs must be in sequential order (sorry, but some people were abusing the ordering to avoid the cache)");
                             }
                         }
-                        
+
                         if (sizeof($ints) == 0) {
                             throw new Exception("Client requesting too few parameters.");
                         }
                         $parameters[$key] = $ints;
+                        $entityRequiredSatisfied = true;
                     }
                     break;
                 case 'finalblow-only':
+                    self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $parameters[$key] = true;
                     break;
                 case 'page':
@@ -209,6 +216,7 @@ class Util
                     $parameters[$key] = $value;
                     break;
                 case 'pastSeconds':
+                    self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $value = (int) $value;
                     if (($value / 86400) > 7) {
                         throw new Exception('pastSeconds is limited to a max of 7 days');
@@ -217,6 +225,7 @@ class Util
                     break;
                 case 'startTime':
                 case 'endTime':
+                    self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $time = strtotime($value);
                     if ($time < 0) {
                         throw new Exception("$value is not a valid time format");
@@ -239,6 +248,7 @@ class Util
                 case 'beforeKillID':
                 case 'afterKillID':
                 case 'killID':
+                    if ($key != 'killID') self::checkEntityRequirement($checkEntityRequirement, "Please provide an entity filter first.");
                     if (!is_numeric($value)) {
                         throw new Exception("$value is not a valid entry for $key");
                     }
@@ -254,12 +264,14 @@ class Util
                     // This can and should be ignored since its a parameter that will remove limits for battle eeports
                     break;
                 case 'year':
+                    self::checkEntityRequirement($checkEntityRequirement, "Please provide an entity filter first.");
                     $value = (int) $value;
                     if ($value < 2007) throw new Exception("$value is not a valid entry for $key");
                     if ($value > date('Y')) throw new Exception("$value is not a valid entry for $key");
                     $parameters[$key] = $value;
                     break;
                 case 'month':
+                    self::checkEntityRequirement($checkEntityRequirement, "Please provide an entity filter first.");
                     $value = (int) $value;
                     if ($value < 1 || $value > 12) throw new Exception("$value is not a valid entry for $key");
                     $parameters[$key] = $value;
@@ -274,6 +286,13 @@ class Util
         }
 
         return $parameters;
+    }
+
+    private static function checkEntityRequirement($entityRequiredSatisfied, $message)
+    {
+        if ($entityRequiredSatisfied == false) {
+            throw new Exception($message);
+        }
     }
 
     public static function pageTimer()
