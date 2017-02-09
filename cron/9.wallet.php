@@ -25,14 +25,15 @@ foreach ($walletApis as $api) {
 
         if ($type == 'char') {
             $q = $pheal->charScope->WalletJournal($arr);
+            insertRecords($charID, $q->transactions);
         } elseif ($type == 'corp') {
             $q = $pheal->corpScope->WalletJournal($arr);
+            insertRecords($charID, $q->entries);
         } else {
             continue;
         }
 
         if (count($q->transactions)) {
-            insertRecords($charID, $q->transactions);
         }
     } catch (Exception $ex) {
         Util::out('Failed to fetch Wallet API: '.$ex->getMessage());
@@ -64,7 +65,7 @@ function applyBalances()
         $toBeApplied = [];
     }
     foreach ($toBeApplied as $row) {
-        if ($row['ownerID2'] != $walletCharacterID) {
+        if ($row['ownerID2'] != $walletCharacterID && $row['ownerID2'] != 98207592) {
             continue;
         }
 
