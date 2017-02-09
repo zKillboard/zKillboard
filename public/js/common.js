@@ -101,12 +101,13 @@ function htmlNotify (data)
                 var notif = new Notification(data.title, {
                     body: data.iskStr,
                     icon: data.image,
-                    tag: data.url
+                    tag: data.url,
+                    data: data
                 });
                 notif.onclick = function (event) {
                     event.preventDefault();
+                    window.open(this.data.url, '_blank');
                     notif.close();
-                    window.open(data.url, '_blank');
                 };
                 break;
             case 'denied':
