@@ -4,7 +4,10 @@ $app->notFound(function () use ($app) {
         $app->redirect('..', 302);
         });
 
-// Default route
+$app->get('/google/', function() use ($app) {
+        $app->render("google.html");
+    });
+
 $app->get('/(page/:page/)', function ($page = 1) use ($app) {
         include 'view/index.php';
         });
@@ -118,6 +121,10 @@ $app->get('/api/related/:system/:time/', function ($system, $time) use ($app) {
         header('Access-Control-Allow-Methods: GET');
         $app->contentType('application/json; charset=utf-8');
         echo json_encode($mc, JSON_PRETTY_PRINT);
+        });
+
+$app->get('/api/kills/:type(/page/:page)/', function ($type, $page = 0) use ($app) {
+        include 'view/api-kills.php';
         });
 
 $app->get('/api/history/:date/', function ($date) use ($app) {
