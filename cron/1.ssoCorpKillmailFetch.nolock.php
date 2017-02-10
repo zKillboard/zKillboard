@@ -21,7 +21,9 @@ while ($minute == date('Hi')) {
     $row = findNext($mdb, $ssoCorps);
     if ($row != null) {
         $charID = (int) $row['characterID'];
+        $refreshToken = $row['refreshToken'];
         $accessToken = CrestSSO::getAccessToken($charID, null, $row['refreshToken']);
+        if (checkToken($mdb, $row, $accessToken, $charID, $refreshToken) == false) continue;
 
         $url = "$apiServer/corp/KillMails.xml.aspx?characterID=$charID&accessToken=$accessToken&accessType=corporation";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row, 'ssoCorps' => $ssoCorps];
@@ -31,6 +33,16 @@ while ($minute == date('Hi')) {
     $guzzler->tick();
 }
 $guzzler->finish();
+
+function checkToken($mdb, $row, $accessToken, $charID, $refreshToken)
+{
+    if (@$accessToken['error'] == 'invalid_grant') {
+        $mdb->remove("scopes", $row);
+        Util::out("$charID corporationKillsRead removed. No longer valid");
+        return false;
+    }
+    return true;
+}
 
 function findNext($mdb, $ttlc)
 {
