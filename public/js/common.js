@@ -81,7 +81,7 @@ $(document).ready(function() {
     }
 
     $("#killmailurl").bind('paste', function(event) {
-        console.log(event);
+        //console.log(event);
         setTimeout(sendCrestUrl, 1);
     });
 
@@ -91,6 +91,16 @@ $(document).ready(function() {
         wslog(event.data);
     };
 
+    $(".killListRow").on('click', function(event) {
+        if (event.which == 2) return false;
+        console.log($(this).attr('killID'));
+        //onclick="if (event.which == 2) return false; window.location='/kill/{{kill.killID}}/'"
+        window.location = '/kill/' + $(this).attr('killID') + '/';
+        //doLoad('/kill/' + $(this).attr('killID') + '/');
+        return false;
+    });
+    //$("a[href='/']").on('click', function(event) { doLoad($(this).attr('href')); return false; } );
+    //addPartials();
 });
 
 function htmlNotify (data) 
@@ -186,3 +196,38 @@ function addToolTip(el, msg) {
         left: pos.left - 200
     }).addClass('active').removeClass('hidden');
 }
+
+function loadPartial(url) {
+    setTimeout("doLoad('" + url + "');", 1);
+    return false;
+}
+
+function addPartials() {
+    //var partials = ['kill', 'character', 'corporation', 'alliance', 'faction', 'system', 'region', 'group', 'ship', 'location'];
+    var partials = ['kill', 'faction', 'system', 'region', 'group', 'ship', 'location'];
+    for (partial of partials) {
+        $(".pagecontent a[href^='/" + partial + "/']").on('click', function(event) { doLoad($(this).attr('href')); return false; } );
+    }
+}
+
+function toTheTop() {
+    window.scrollTo(0, 0);
+    NProgress.done();
+    addPartials();
+}
+
+function doLoad(url) {
+    //console.log("Loading: " + url);
+    var pathname = window.location.pathname;
+    var state = { 'href' : pathname };
+    NProgress.start();
+    $(".pagecontent").load('/partial' + url, null, toTheTop);
+    $("#adsensetop").load('/google/');
+    $("#adsensebottom").load('/google/');
+    history.pushState(state, null, url);
+}
+
+// Revert to a previously saved state
+window.addEventListener('popstate', function(event) {
+    window.location = window.location;
+});

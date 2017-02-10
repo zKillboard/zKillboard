@@ -38,7 +38,7 @@
       {% set field = kill.victim %}
       {% set lossDisplay = '' %}
       {% if (kill.displayAsLoss == true and key != 'system' and key != 'region') or pageType == 'losses' %}{% set lossDisplay = ' error' %}{% elseif pageType == 'overview' or pageType == 'kills' or pageType == 'solo' or kill.displayAsKill == true %}{% set lossDisplay = ' winwin' %}{% endif %}
-      <tr class="killListRow{{lossDisplay}}" onclick="if (event.which == 2) return false; window.location='/kill/{{kill.killID}}/'">
+      <tr class="killListRow{{lossDisplay}}" killID='{{ kill.killID }}' lick="if (event.which == 2) return false; window.location='/kill/{{kill.killID}}/'">
         <td>
           {% if timeago == "true" %}
             <abbr class="timeago" title="{{ kill.ISO8601 }}">{{ kill.ISO8601}}</abbr>
