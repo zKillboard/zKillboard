@@ -23,6 +23,7 @@
 {% endblock %}
 
 {% block content %}
+{% include 'components/partial_title.html' %}
 <div class="navbar navbar-default hidden-xs">
 	<div class="navbar-header">
 		<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
@@ -264,32 +265,6 @@
 </div>
 {% endblock %}
 
-{% block style %}
-<link rel="stylesheet" href="//{{ siteurl }}/css/bootstrap-wysihtml5.css">
-{% endblock %}
-{% block script %}
-<script type="text/javascript" src="//{{ siteurl }}/js/wysihtml5-0.3.0.js"></script>
-<script type="text/javascript" src="//{{ siteurl }}/js/bootstrap-wysihtml5.js"></script>
-<script type="text/javascript" src="//{{ siteurl }}/js/bootstrap-tagmanager.js"></script>
-<script type="text/javascript">
-$(".modal-newissue").css("width", "800px");
-$(".modal-newissue").css("margin-left", "-400px");
-$(".modal-newissue").css("show");
-$('#ticket').wysihtml5({"font-styles": true, "emphasis": true, "lists": true, "html": false, "link": true, "image": true, "color": false});
-jQuery(".tagManager").tagsManager({
-	prefilled: ["New Issue"],
-	preventSubmitOnEnter: true,
-	typeahead: true,
-	typeaheadAjaxSource: null,
-	typeaheadSource: ["API", "Bugs", "Fake Kill", "Suggestion", "Question", "General", "Unban", "Harassment"],
-    blinkBGColor_1: '#FFFF9C',
-    blinkBGColor_2: '#CDE69C',
-	maxTags: 7,
-	backspace: [8]
-});
-</script>
-<script type="text/javascript" src="//{{ siteurl }}/js/rankstablesort.js"></script>
-{% endblock %}
 {% block opengraph %}
 	<meta name="twitter:title" content="{{ pageTitle }}">
 	<meta name="twitter:image" content="{{ image_ship}}{{ killdata.victim.shipTypeID }}_64.png">

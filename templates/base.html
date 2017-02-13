@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% if not partial %}<!DOCTYPE html>
 <html prefix="og: http://ogp.me/ns#" lang="en" class="no-js">
 	<head>
 		<meta charset="utf-8">
@@ -60,6 +60,7 @@
 		<link rel="stylesheet" href="//{{ siteurl }}/css/style-edits/{{ style }}-main.css" id="nextstyle">
 		<link rel="stylesheet" href="//{{ siteurl }}/css/datepicker.css">
 		<link rel="stylesheet" href="//{{ siteurl }}/css/main.css">
+		<link rel="stylesheet" href="//{{ siteurl }}/css/nprogress.css">
 		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.min.css">
 
 		{% block style %}
@@ -107,10 +108,12 @@
 					</div>
 				{% endif %}
 
+                                <span class='pagecontent'>{% endif %}
 				<!-- The text header -->
 				{% block header %}{% endblock %}
 				<!-- The actual site content-->
 				{% block content %}Default content{% endblock %}
+                                {% if not partial %}</span>
 
 				<div class="clearfix"></div>
 
@@ -140,7 +143,10 @@
 		<script type="text/javascript" src="//{{ siteurl }}/js/search.js"></script>
 		<script type="text/javascript" src="//{{ siteurl }}/js/common.js"></script>
 		<script type="text/javascript" src="//{{ siteurl }}/js/sclock1.js"></script>
+		<script type="text/javascript" src="//{{ siteurl }}/js/nprogress.js"></script>
                 <script type="text/javascript" src="/js/reconnecting-websocket.js"></script>
+                <script type="text/javascript" src="//{{ siteurl }}/js/rankstablesort.js"></script>
+
 		{% if disqusLoad %}
 			<script type="text/javascript">
 				var disqus_shortname = '{{ disqusShortName }}';
@@ -215,3 +221,4 @@
 </div>
 </body>
 </html>
+{% endif %}

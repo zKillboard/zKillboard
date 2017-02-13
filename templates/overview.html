@@ -11,6 +11,7 @@
 {% set canonical = fullsiteurl ~ "/" ~  key ~ "/" ~ id ~ "/" %}
 
 {% block content %}
+{% include 'components/partial_title.html' %}
 {% include 'components/info_top.html' %}
 
 <div class="navbar navbar-default">

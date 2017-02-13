@@ -91,14 +91,7 @@ $(document).ready(function() {
         wslog(event.data);
     };
 
-    $(".killListRow").on('click', function(event) {
-        if (event.which == 2) return false;
-        console.log($(this).attr('killID'));
-        //onclick="if (event.which == 2) return false; window.location='/kill/{{kill.killID}}/'"
-        window.location = '/kill/' + $(this).attr('killID') + '/';
-        //doLoad('/kill/' + $(this).attr('killID') + '/');
-        return false;
-    });
+    addKillListClicks();
     //$("a[href='/']").on('click', function(event) { doLoad($(this).attr('href')); return false; } );
     //addPartials();
 });
@@ -210,10 +203,11 @@ function addPartials() {
     }
 }
 
-function toTheTop() {
+function loadCompleted() {
     window.scrollTo(0, 0);
     NProgress.done();
     addPartials();
+    addKillListClicks();
 }
 
 function doLoad(url) {
@@ -221,7 +215,7 @@ function doLoad(url) {
     var pathname = window.location.pathname;
     var state = { 'href' : pathname };
     NProgress.start();
-    $(".pagecontent").load('/partial' + url, null, toTheTop);
+    $(".pagecontent").load('/partial' + url, null, loadCompleted);
     $("#adsensetop").load('/google/');
     $("#adsensebottom").load('/google/');
     history.pushState(state, null, url);
@@ -231,3 +225,15 @@ function doLoad(url) {
 window.addEventListener('popstate', function(event) {
     window.location = window.location;
 });
+
+function addKillListClicks()
+{
+    $(".killListRow").on('click', function(event) {
+        if (event.which == 2) return false;
+        console.log($(this).attr('killID'));
+        //onclick="if (event.which == 2) return false; window.location='/kill/{{kill.killID}}/'"
+        //window.location = '/kill/' + $(this).attr('killID') + '/';
+        doLoad('/kill/' + $(this).attr('killID') + '/');
+        return false;
+    });
+}

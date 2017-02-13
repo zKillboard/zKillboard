@@ -62,6 +62,7 @@ if (sizeof($requestUri) == 0 || substr($requestUri, -1) != '/') {
 $twig->addGlobal('requestUriPager', $requestUri);
 $actualURI = implode('/', $explode);
 $twig->addGlobal('actualURI', $actualURI);
+$twig->addGlobal('partial', ("/partial/" === substr($uri, 0, 9)));
 
 $twig->addGlobal('year', (isset($uriParams['year']) ? $uriParams['year'] : date('Y')));
 $twig->addGlobal('month', (isset($uriParams['month']) ? $uriParams['month'] : date('m')));

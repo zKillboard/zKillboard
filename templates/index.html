@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block content %}
+{% include 'components/partial_title.html' %}
 {% if pageType == 'war' %}
 	{% include 'components/war.html' %}
 {% endif %}

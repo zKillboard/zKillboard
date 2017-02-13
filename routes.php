@@ -11,6 +11,9 @@ $app->get('/google/', function() use ($app) {
 $app->get('/(page/:page/)', function ($page = 1) use ($app) {
         include 'view/index.php';
         });
+$app->get('/partial/(page/:page/)', function ($page = 1) use ($app) {
+        include 'view/index.php';
+        });
 
 // Map
 $app->get('/map/', function () use ($app) {
@@ -85,6 +88,9 @@ $app->get('/detail/:id(/:pageview)/', function ($id, $pageview = 'overview') use
         $app->redirect("/kill/$id/", 302);
         });
 // Kill Detail View
+$app->get('/partial/kill/:id(/:pageview)/', function ($id, $pageview = '') use ($app) {
+        include 'view/detail.php';
+        });
 $app->get('/kill/:id(/:pageview)/', function ($id, $pageview = '') use ($app) {
         include 'view/detail.php';
         });
@@ -201,6 +207,9 @@ $app->get('/ztop/', function () use ($app) {
         });
 
 // The Overview stuff
+$app->get('/partial/:input+/', function ($input) use ($app) {
+        include 'view/overview.php';
+        });
 $app->get('/:input+/', function ($input) use ($app) {
         include 'view/overview.php';
         });
