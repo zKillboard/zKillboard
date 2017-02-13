@@ -44,10 +44,11 @@ class Guzzler
         $this->concurrent--;
     }
 
-    public function call($url, $fulfilled, $rejected, $params)
+    public function call($url, $fulfilled, $rejected, $params, $headers = [], $callType = 'GET')
     {
         $guzzler = $this;
-        $this->client->getAsync($url)->then(
+        $request = new \GuzzleHttp\Psr7\Request($callType, $url, $headers);
+        $this->client->sendAsync($request)->then(
             function($response) use (&$guzzler, $fulfilled, $rejected, &$params) {
                 $guzzler->dec();
                 $content = (string) $response->getBody();
