@@ -1,8 +1,7 @@
 $(document).ready(function() {
     // Check to see if the user has ads enabled
     if ( $("iframe").length == 0 ) {
-        //$("#adsensetop, #adsensebottom").html("<center><img src='/img/wreck.png'> <a href='/information/payments/'>Remove Ads?</a> <img src='/img/wreck.png'></center></br/>");
-        //$("#adnag").hide();
+        //$("#adsensetop, #adsensebottom").html("<hr/><center>Blocking ads? That's fine, ads suck anyway. <a href='/information/payments'>Block them with ISK and get a golden wreck too.</a></center><hr/>");
     }
 
     if ($("[rel=tooltip]").length) {
@@ -236,4 +235,12 @@ function addKillListClicks()
         doLoad('/kill/' + $(this).attr('killID') + '/');
         return false;
     });
+}
+
+function doSponsor(url)
+{
+console.log(url);
+    $('#modalMessageBody').load(url);
+    $('#modalTitle').text('Sponsor this killmail');
+    $('#modalMessage').modal()
 }

@@ -89,5 +89,11 @@
 		<th>Total:</th>
 		<td><strong class="item_dropped">{{ (extra.droppedisk + extra.lostisk)|number_format(2, '.', ',') }} ISK</strong></td>
 	</tr>
+        {% if extra.sponsoredIsk %}
+        <tr>
+            <th>Sponsored:</th>
+            <td>{{ extra.sponsoredIsk|number_format(0) }} ISK (alltime)</td>
+        </tr>
+        {% endif %}
 </table>
 </div>

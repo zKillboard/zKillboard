@@ -106,6 +106,7 @@
         {% include 'components/image_ship.html' %}
     {% endif %}
 </div>
+<span id='sponsor' class='pull-right' style='width: 2em; cursor: pointer;'><b rel="tooltip" class="glyphicon glyphicon-bullhorn" style='color: green;' data-original-title="Sponsor this Killmail" onClick="doSponsor('/sponsor/query/{{ extra.crest.killID }}/');"></b></span>
 {% if extra.crest %}<span><small><a class="green" target="_blank" href="{{ crestServer }}/killmails/{{ extra.crest.killID }}/{{ extra.crest.hash }}/">CREST Verified</a></small></span>
 <span id='cansavefit' class='hidden'><br/><small><a class="green" href='#' onClick="saveFitting({{ extra.crest.killID }}); return false;" rel="nofollow">Import Fit</a></small></span>
 <span id='nosavefit' class='hidden'><br/><small><a class="green" href='#' onClick="alert('Please login and allow zKillboard to write fittings.'); return false;">Import Fit</a></small></span>

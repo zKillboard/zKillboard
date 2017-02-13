@@ -93,3 +93,15 @@ $redis->set("zkb:ttlc:items:index", json_encode($arr));
 $i = Mdb::group("payments", ['characterID'], ['refTypeID' => '10', 'dttm' => ['$gte' => $mdb->now(86400 * -7)]], [], 'isk', ['iskSum' => -1, 'dttm' => -1], 10);
 Info::addInfo($i);
 $redis->set("zkb:topDonators", json_encode($i));
+
+$result = Mdb::group("sponsored", ['killID'], ['entryTime' => ['$gte' => $mdb->now(86400 * -7)]], [], 'isk', ['iskSum' => -1], 6);
+$sponsored = [];
+foreach ($result as $kill) {
+    $killmail = $mdb->findDoc("killmails", ['killID' => $kill['killID']]);
+    Info::addInfo($killmail);
+    $killmail['victim'] = $killmail['involved'][0];
+    $killmail['zkb']['totalValue'] = $kill['iskSum'];
+
+    $sponsored[$kill['killID']] = $killmail;
+}
+$redis->set("zkb:sponsored", json_encode($sponsored));

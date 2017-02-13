@@ -62,6 +62,7 @@
 		<link rel="stylesheet" href="//{{ siteurl }}/css/main.css">
 		<link rel="stylesheet" href="//{{ siteurl }}/css/nprogress.css">
 		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.min.css">
+		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.2/css/bootstrap-slider.min.css">
 
 		{% block style %}
 		{% endblock %}
@@ -139,6 +140,7 @@
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.1.0/jquery.timeago.min.js"></script>
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min.js"></script>
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.2/bootstrap-slider.min.js"></script>
 		<script type="text/javascript" src="//{{ siteurl }}/js/bootstrap-datepicker.js"></script>
 		<script type="text/javascript" src="//{{ siteurl }}/js/search.js"></script>
 		<script type="text/javascript" src="//{{ siteurl }}/js/common.js"></script>
@@ -197,7 +199,7 @@
         <div class="modal-dialog">
                 <div class="modal-content">
                         <div class="modal-header">
-                                <h4 class="modal-title">Message</h4>
+                                <h4 id='modalTitle' class="modal-title">Message</h4>
                         </div>
                         <div class="modal-body">
                                 <form name="myform" class="form">

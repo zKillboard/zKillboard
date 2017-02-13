@@ -56,6 +56,9 @@ echo "Done\n";
 echo "Creating index : 'added' => -1, with sparse = 0 and unique = 0 ... ";
 $crestmails->ensureIndex(array('added' => -1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
+echo "Creating index : 'delayed' => 1, with sparse = 1 and unique = 0 ... ";
+$crestmails->ensureIndex(array('delayed' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
 
 // evemails
 echo "\nCreating collection evemails ... ";
@@ -460,6 +463,20 @@ echo "Creating index : 'scope' => 1, 'lastApiUpdate' => 1, with sparse = 0 and u
 $scopes->ensureIndex(array('scope' => 1, 'lastApiUpdate' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
+// sponsored
+echo "\nCreating collection sponsored ... ";
+$sponsored = $db->createCollection("sponsored");
+echo "Done\n";
+echo "Creating index : 'killID' => 1, 'isk' => 1, with sparse = 0 and unique = 0 ... ";
+$sponsored->ensureIndex(array('killID' => 1, 'isk' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'killID' => 1, with sparse = 0 and unique = 0 ... ";
+$sponsored->ensureIndex(array('killID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'entryTime' => 1, with sparse = 0 and unique = 0 ... ";
+$sponsored->ensureIndex(array('entryTime' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+
 // statistics
 echo "\nCreating collection statistics ... ";
 $statistics = $db->createCollection("statistics");
@@ -598,6 +615,12 @@ echo "Done\n";
 // users
 echo "\nCreating collection users ... ";
 $users = $db->createCollection("users");
+echo "Done\n";
+echo "Creating index : 'userID' => 1, with sparse = 0 and unique = 0 ... ";
+$users->ensureIndex(array('userID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'characterID' => 1, with sparse = 0 and unique = 1 ... ";
+$users->ensureIndex(array('characterID' => 1), array("sparse" => 0, "unique" => 1));
 echo "Done\n";
 
 // warmails

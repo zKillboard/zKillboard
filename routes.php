@@ -34,6 +34,11 @@ $app->map('/account/tickets/view/:id/', function ($id) use ($app) {
         include 'view/tickets_view.php';
         })->via('GET', 'POST');
 
+// Sponsored killmails
+$app->get('/kills/sponsored/', function () use ($app) {
+        include 'view/sponsored.php';
+        });
+
 // View kills
 $app->get('/kills/page/:page/', function ($page = 1) use ($app) {
         $type = null;
@@ -204,6 +209,13 @@ $app->get('/navbar/', function () use ($app) {
 
 $app->get('/ztop/', function () use ($app) {
         $app->render("ztop.html", ['showAds' => false]);
+        });
+
+$app->get('/sponsor/:type/:killID/(:value/)', function ($type, $killID, $value = 0) use ($app) {
+        include 'view/sponsor.php';
+        });
+$app->get('/kills/sponsored/', function () use ($app) {
+        include 'view/sponsored.php';
         });
 
 // The Overview stuff

@@ -1,0 +1,26 @@
+<div>
+<hr/>
+{% if type == 'query' %}
+<center>
+Balance: {{ iskA }} ISK<hr/>
+{% set initValue = (iskA / 5000000)|round(0, 'floor') * 5000000 %}
+<b style='color: green'>Sponsor <span id='sliderValue'>{{ initValue }}</span> ISK</b><br/>
+<input id="slider" data-slider-id='sponsor-slider' type="text" data-slider-min="0" data-slider-max="{{ iskA }}" data-slider-step="5" data-slider-value="{{ initValue }}"/> <span style='left-margin: 0.5em'>
+<br/><br/><input type='submit' class="btn btn-primary" value='Sponsor' onClick="doSponsor('/sponsor/sponsor/{{ killID }}/' + $('#slider').attr('value') + '/'); return false;">
+</center>
+<script>
+
+function showChange(event)
+{
+    $("#sliderValue").text(event.value.newValue);
+}
+
+$("#slider").slider().bind('change', null, showChange);
+
+</script>
+{% else %}
+{{ response }}
+{% endif %}
+<hr/>
+<center><a href='/kills/sponsored/'>List of all Sponsored Killmails</a></center>
+</div>

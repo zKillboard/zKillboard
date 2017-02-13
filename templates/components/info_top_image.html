@@ -12,6 +12,7 @@
                 <a href='/information/payments/'><img src='/img/golden-wreck.png' rel="tooltip" title="Thank you!"></a>
                 {% endfor %}
                 {% endif %}
+                {% if extra.hasSponsored %}<b rel="tooltip" class="glyphicon glyphicon-bullhorn" style='color: green;' data-original-title="Sponsored at least one Killmail"></b>{% endif %}
 		</center>
 	{% endif %}
 	{% if detail.corporationID and key == 'corporation' %}

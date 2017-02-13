@@ -111,6 +111,12 @@ $extra['crest'] = $mdb->findDoc('crestmails', ['killID' => $id, 'processed' => t
 $extra['prevKillID'] = $mdb->findField('killmails', 'killID', ['cacheTime' => 300, 'killID' => ['$lt' => $id]], ['killID' => -1]);
 $extra['nextKillID'] = $mdb->findField('killmails', 'killID', ['cacheTime' => 300, 'killID' => ['$gt' => $id]], ['killID' => 1]);
 $extra['warInfo'] = War::getKillIDWarInfo($id);
+$sponsored = Mdb::group("sponsored", ['killID'], ['killID' => $id], [], 'isk', ['iskSum' => -1], 1);
+if (sizeof($sponsored)) {
+    $sponsored = array_shift($sponsored);
+    $isk = $sponsored['iskSum'];
+    $extra['sponsoredIsk'] = $isk;
+}
 //$extra["insertTime"] = Db::queryField("select insertTime from zz_killmails where killID = :killID", "insertTime", array(":killID" => $id), 300);
 
 $systemID = $killdata['info']['system']['solarSystemID'];
