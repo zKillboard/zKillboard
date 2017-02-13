@@ -365,7 +365,7 @@ if ($type == 'character') {
     }
     $isk = Mdb::group("payments", ['characterID'], ['characterID' => (int) $id], [], 'isk', ['iskSum' => -1], 6);
     if (sizeof($isk)) {
-        $extra['hasMonocle'] = @$isk[0]['iskSum'] >= 10000000000;
+        $extra['hasMonocle'] = @$isk[0]['iskSum'] >= 1000000000;
     }
 }
 
