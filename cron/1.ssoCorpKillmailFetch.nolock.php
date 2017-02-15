@@ -5,7 +5,7 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once '../init.php';
 
-$waitTime = 1900;
+$waitTime = 3600;
 $ssoCorps = new RedisTimeQueue("zkb:ssoCorps", $waitTime);
 
 $count = $mdb->count("scopes", ['scope' => 'corporationKillsRead']);
@@ -13,7 +13,7 @@ if (date('i') == 5 || ($ssoCorps->size() < ($count * 0.9))) {
     populate($mdb, $ssoCorps, $waitTime, "scopes", ['scope' => 'corporationKillsRead']);
 }
 
-$guzzler = new Guzzler();
+$guzzler = new Guzzler(10, 25000);
 $minute = date('Hi');
 $count = 0;
 $maxConcurrent = 10;
@@ -29,7 +29,6 @@ while ($minute == date('Hi')) {
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row, 'ssoCorps' => $ssoCorps];
         $guzzler->call($url, "handleKillFulfilled", "handleKillRejected", $params);
     }
-    usleep(250000);
     $guzzler->tick();
 }
 $guzzler->finish();

@@ -5,7 +5,7 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once '../init.php';
 
-$xmlCorps = new RedisTimeQueue("zkb:xmlCorps", 1900);
+$xmlCorps = new RedisTimeQueue("zkb:xmlCorps", 3600);
 
 $size = $mdb->count("apis");
 if ($size == 0) exit();
@@ -17,7 +17,7 @@ if (date('i') == 5 || $xmlCorps->size() == 0) {
     }
 }
 
-$guzzler = new Guzzler();
+$guzzler = new Guzzler(10, 25000);
 $minute = date('Hi');
 $count = 0;
 $maxConcurrent = 10;
@@ -33,7 +33,6 @@ while ($minute == date('Hi')) {
         $guzzler->call($url, "handleInfoFulfilled", "handleInfoRejected", $params);
     } else {
         $xmlCorps->remove($id);
-        usleep(250000);
     }
     $guzzler->tick();
 }

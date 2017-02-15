@@ -73,9 +73,9 @@ while ($hour == date('H')) {
     $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
     addInfo('Failed XML calls in last 5 minutes', $xmlFailure->count(), false);
 
-    $xmlCorps = new RedisTimeQueue("zkb:xmlCorps", 1900);
+    $xmlCorps = new RedisTimeQueue("zkb:xmlCorps", 3600);
     $esiChars = new RedisTimeQueue("tqApiESI", 3600);
-    $ssoCorps = new RedisTimeQueue("zkb:ssoCorps", 1900);
+    $ssoCorps = new RedisTimeQueue("zkb:ssoCorps", 3600);
     addInfo('', 0, false);
     addInfo('Corporation XML/API to check', $xmlCorps->pending(), false);
     addInfo('Corporation XML/API total', $xmlCorps->size(), false);
