@@ -103,11 +103,7 @@
 				{% endif %}
 
 				<!-- Top ad -->
-				{% if showAds != false %}
-					<div class="centered" id="adsensetop">
-						{{ advertisement|raw }}
-					</div>
-				{% endif %}
+				<div class="centered" id="adsensetop"></div>
 
                                 <span class='pagecontent'>{% endif %}
 				<!-- The text header -->
@@ -119,12 +115,7 @@
 				<div class="clearfix"></div>
 
 				<!-- Bottom ad -->
-				{% if showAds != false %}
-					<div class="centered" id="adsensebottom">
-					    <br/><hr/><br/>
-						{{ advertisement|raw }}
-					</div>
-				{% endif %}
+				<div class="centered" id="adsensebottom"></div>
 
 				<!-- Footer -->
 				<div class="hidden-xs">{% include "footer.html" %}</div>

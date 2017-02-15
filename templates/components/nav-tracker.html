@@ -12,9 +12,9 @@ $("[id='disqus_count']").hide();
 
 {% endif %}
 
-{% if showAds == 0 %}
-$("#adsensetop").remove();
-$("#adsensebottom").remove();
+{% if showAds != 0 %}
+$("#adsensetop").load('/google/');
+$("#adsensebottom").load('/google/');
 {% endif %}
 
 {% if style != 'cyborg' %}
