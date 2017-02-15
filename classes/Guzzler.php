@@ -15,7 +15,7 @@ class Guzzler
         $this->handler = \GuzzleHttp\HandlerStack::create($this->curl);
         $this->client = new \GuzzleHttp\Client(['connect_timeout' => 10, 'timeout' => 60, 'handler' => $this->handler, 'User-Agent' => 'zkillboard.com']);
         $this->maxConcurrent = max($maxConcurrent, 1);
-        $this->usleep = max((int) $usleep, min(1000000, (int) $usleep));
+        $this->usleep = max(0, min(1000000, (int) $usleep));
     }
 
     public function tick()
@@ -24,7 +24,7 @@ class Guzzler
         do {
             $this->curl->tick();
         } while ($this->concurrent >= $this->maxConcurrent);
-        return max(1, microtime() - $ms);
+        return max(0, microtime() - $ms);
     }
 
     public function finish()
@@ -44,10 +44,13 @@ class Guzzler
         $this->concurrent--;
     }
 
-    public function call($url, $fulfilled, $rejected, $params, $headers = [], $callType = 'GET')
+    public function call($uri, $fulfilled, $rejected, $params, $setup = [], $callType = 'GET')
     {
+        $this->verifyCallable($fulfilled);
+        $this->verifyCallable($rejected);
+
         $guzzler = $this;
-        $request = new \GuzzleHttp\Psr7\Request($callType, $url, $headers);
+        $request = new \GuzzleHttp\Psr7\Request($callType, $uri, $setup);
         $this->client->sendAsync($request)->then(
             function($response) use (&$guzzler, $fulfilled, $rejected, &$params) {
                 $guzzler->dec();
@@ -60,7 +63,14 @@ class Guzzler
             });
         $this->inc();
         $ms = $this->tick();
-        $sleep = min(1000000, max(1, $this->usleep - $ms));
+        $sleep = min(1000000, max(0, $this->usleep - $ms));
         usleep($sleep);
+    }
+
+    public function verifyCallable($callable)
+    {
+        if (!is_callable($callable)) {
+            throw new InvalidArgumentException(print_r($callable, true) . " is not a callable function");
+        }
     }
 }
