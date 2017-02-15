@@ -40,10 +40,15 @@ if ($count > 100 && $remaining > 100) {
 
 $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
 $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
-$s = $xmlSuccess->count();
-$f = $xmlFailure->count();
+$crestSuccess = new RedisTtlCounter('ttlc:CrestSuccess', 300);
+$crestFailure = new RedisTtlCounter('ttlc:CrestFailure', 300);
+$esiSuccess = new RedisTtlCounter('ttlc:esiSuccess', 300);
+$esiFailure = new RedisTtlCounter('ttlc:esiFailure', 300);
+
+$s = $xmlSuccess->count() + $crestSuccess->count() + $esiSuccess->count();
+$f = $xmlFailure->count() + $crestFailure->count() + $esiFailure->count();
 if ($message == null && $xmlFailure->count() > (10 * $xmlSuccess->count())) {
-    $message = "Issues accessing Killmail XML API - Killmails won't populate from API at this time - $s Successful / $f Failed calls in last 5 minutes";
+    $message = "Various issues with the APIs - cannot pull killmails at this time.";
 }
 
 $behind = $redis->llen("queueProcess") + $mdb->count('crestmails', ['processed' => false]);
