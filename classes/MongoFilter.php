@@ -210,7 +210,7 @@ class MongoFilter
                     $and[] = ['solo' => true];
                     break;
                 case 'npc':
-                    $and[] = ['npc' => $value];
+                    $and[] = ['npc' => (bool) $value];
                     break;
                 case 'startTime':
                     $time = strtotime($value);

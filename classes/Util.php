@@ -197,6 +197,12 @@ class Util
                         $entityRequiredSatisfied = true;
                     }
                     break;
+                case 'npc':
+                    if ($value != '0' && $value != '1') {
+                        throw new Exception("Only values of 0 or 1 allowed with the $key filter");
+                    }
+                    $parameters[$key] = $value;
+                    break;
                 case 'finalblow-only':
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $parameters[$key] = true;
