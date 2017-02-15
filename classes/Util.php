@@ -233,6 +233,9 @@ class Util
                 case 'endTime':
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $time = strtotime($value);
+                    if (strpos($uri, "region") !== false) {
+                        throw new Exception("Cannot use startTime/endTime with this entity, use the /api/history/ or RedisQ intead");
+                    }
                     if ($time < 0) {
                         throw new Exception("$value is not a valid time format");
                     }
