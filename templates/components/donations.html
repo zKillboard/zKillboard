@@ -16,7 +16,7 @@
     {% endif %}
     <tr>
           <td>{% include 'components/text_char.html' %}</td>
-        <td style="text-align: right;" title="Score: {{ data.score|number_format(0) }}" rel="tooltip">{{ shortNum(data.iskSum, true) }}</td>
+        <td style="text-align: right;" title="{{ data.iskSum }} ISK" rel="tooltip">{{ shortNum(data.iskSum) }}</td>
     </tr>
   {% endfor %}
 </table>
