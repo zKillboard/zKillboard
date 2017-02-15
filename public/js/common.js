@@ -70,11 +70,6 @@ $(document).ready(function() {
         e.preventDefault();
     });
 
-    // auto show comments tab on detail page
-    if(window.location.hash.match(/comment/)) {
-        $('a[href="#comment"]').tab('show');
-    }
-
     if (top !== self) {
         $("#iframed").modal('show');
     }
@@ -84,15 +79,21 @@ $(document).ready(function() {
         setTimeout(sendCrestUrl, 1);
     });
 
-      // setup websocket with callbacks
+    // setup websocket with callbacks
     var ws = new ReconnectingWebSocket('wss://zkillboard.com:2096/', '', {maxReconnectAttempts: 15});
     ws.onmessage = function(event) {
         wslog(event.data);
     };
 
     addKillListClicks();
-    //$("a[href='/']").on('click', function(event) { doLoad($(this).attr('href')); return false; } );
-    //addPartials();
+    /*var pathname = $(location).attr('pathname');
+    console.log(pathname.substr(0,9));
+    if (pathname != '/map/' && pathname.substr(0, 9) != '/account/') {
+        $("a[href='/']").on('click', function(event) { doLoad($(this).attr('href')); return false; } );
+        addPartials();
+        console.log($(location).attr('pathname'));
+    }*/
+    setTimeout('window.location = window.location', 3600000);
 });
 
 function htmlNotify (data) 
@@ -195,9 +196,10 @@ function loadPartial(url) {
 }
 
 function addPartials() {
-    //var partials = ['kill', 'character', 'corporation', 'alliance', 'faction', 'system', 'region', 'group', 'ship', 'location'];
-    var partials = ['kill', 'faction', 'system', 'region', 'group', 'ship', 'location'];
+    //var partials = ['kill', 'faction', 'system', 'region', 'group', 'ship', 'location'];
+    var partials = ['kill', 'character', 'corporation', 'alliance', 'faction', 'system', 'region', 'group', 'ship', 'location'];
     for (partial of partials) {
+        console.log("Adding partial for " + partial);
         $(".pagecontent a[href^='/" + partial + "/']").on('click', function(event) { doLoad($(this).attr('href')); return false; } );
     }
 }
@@ -207,6 +209,7 @@ function loadCompleted() {
     NProgress.done();
     addPartials();
     addKillListClicks();
+    $('#tracker-dropdown').load('/navbar/');
 }
 
 function doLoad(url) {

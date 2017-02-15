@@ -8,6 +8,7 @@ Disallow: /detail*
 Disallow: /navbar/
 Disallow: /br/*
 Disallow: /related/*
+Disallow: /partial/*
 sitemap: https://zkillboard.com/sitemaps/sitemaps.xml
 
 
