@@ -59,8 +59,8 @@
 	</ul>
 	<ul class="nav navbar-nav pull-right hidden-xs">
 	{% if key == "character" %}
-		<li class="hidden-md hidden-sm"><a href="http://eveboard.com/pilot/{{ pageName }}/" target="_blank">EVE-Board</a></li>
-		<li class="hidden-md hidden-sm"><a href="http://eve-search.com/search/author/{{ pageName|url_encode }}/" target="_blank">EVE-Search</a></li>
+		<!-- <li class="hidden-md hidden-sm"><a href="http://eveboard.com/pilot/{{ pageName }}/" target="_blank">EVE-Board</a></li> -->
+		<!-- <li class="hidden-md hidden-sm"><a href="http://eve-search.com/search/author/{{ pageName|url_encode }}/" target="_blank">EVE-Search</a></li>-->
 		<li class="hidden-md hidden-sm"><a href="https://gate.eveonline.com/Profile/{{ pageName }}/" target="_blank">EVE-Gate</a></li>
 		<li class="hidden-md hidden-sm"><a href="http://evewho.com/pilot/{{ pageName|url_encode }}/" target="_blank">EVEWho</a></li>
 		<li class="hidden-md hidden-sm"><a href="http://eve-hunt.net/huntid/{{id}}" target="_blank">EVE-Hunt</a></li>
@@ -82,7 +82,7 @@
 	{% elseif key == "region" %}
 		<li><a href="http://evemaps.dotlan.net/region/{{ pageName|url_encode }}/" target="_blank">DOTLAN</a></li>
 	{% elseif key == "ship" %}
-		<li><a href="http://o.smium.org/search?q=%40ship+{{ pageName|url_encode }}" target="_blank">Osmium</a></li>
+		<!--<li><a href="http://o.smium.org/search?q=%40ship+{{ pageName|url_encode }}" target="_blank">Osmium</a></li>-->
 	{% endif %}
 		{% if nextID %}
 		<li class="hidden-xs"><a href="/{{ key }}/{{ nextID }}/">&gt;</a></li>
