@@ -7,6 +7,9 @@ class CrestFittings
         global $mdb, $crestServer;
 
         $charID = $charID == 0 ? User::getUserID() : $charID;
+        if ($charID == 0) {
+            return ['message' => 'You should probably try logging into zKillboard first.'];
+        }
         $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => 'characterFittingsWrite']);
         if ($row == null) {
             return ['message' => 'You have not given zkillboard permission to save fits to your account.'];

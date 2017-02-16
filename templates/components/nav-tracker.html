@@ -15,6 +15,9 @@ $("[id='disqus_count']").hide();
 {% if showAds != 0 %}
 $("#adsensetop").load('/google/');
 $("#adsensebottom").load('/google/');
+{% else %}
+$("#adsensetop").remove();
+$("#adsensebottom").remove();
 {% endif %}
 
 {% if style != 'cyborg' %}
@@ -35,7 +38,6 @@ showAdd = showAdd && ($("#tracker-remove-alliance-{{data.id}}").removeClass("hid
 {% endfor %}
 
 if (showAdd) $("#tracker-add").removeClass("hidden");
-$("#cansavefit").removeClass("hidden");
 
 {% set message = getMessage() %}
 {% if message %}
