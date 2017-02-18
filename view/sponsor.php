@@ -32,14 +32,14 @@ switch ($type) {
         break;
     case "sponsor":
         $formatted = number_format($value, 0);
-        $timeValue = floor(($value / 5000000) * (86400 * 30));
+        $timeValue = abs(floor(($value / 5000000) * (86400 * 30)));
 
         if ($userID == 0) {
             $response = "You aren't even logged in!";
         } else if ($value == 0) {
             $response = "0 ISK? Come on...";
-        } else if (($iskAvailable - $value) < -50000) {
-            $response = "Not enough ISK, you requested $value but only have $iskAvailable available.";
+        } else if (($iskAvailable - abs($value)) < -50000) {
+            $response = "Not enough ISK, you requested to apply " . abs($value) . " ISK but only have $iskAvailable available.";
         } else {
             $mdb->insert("sponsored", ['characterID' => User::getUserID(), 'isk' => $value, 'killID' => $killID, 'entryTime' => $mdb->now()]);
             $mdb->set("users", ['userID' => "user:$userID"], ['adFreeUntil' => ($adFreeUntil - $timeValue)]);
