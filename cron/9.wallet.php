@@ -2,43 +2,49 @@
 
 require_once '../init.php';
 
-$redisKey = 'zkb:walletCheck';
-if ($redis->get($redisKey) == true) {
-    exit();
-}
-
 global $walletApis, $mdb;
 
 if (!is_array($walletApis)) {
     return;
 }
 
-foreach ($walletApis as $api) {
-    $type = $api['type'];
-    $keyID = $api['keyID'];
-    $vCode = $api['vCode'];
-    $charID = $api['charID'];
+$redisKey = 'zkb:walletCheck';
+if ($redis->get($redisKey) != true) {
+    Util::out("Fetching payments...");
+    $cacheUntil = 0;
+    foreach ($walletApis as $api) {
+        $type = $api['type'];
+        $keyID = $api['keyID'];
+        $vCode = $api['vCode'];
+        $charID = $api['charID'];
 
-    try {
-        $pheal = Util::getPheal($keyID, $vCode, true);
-        $arr = array('characterID' => $charID, 'rowCount' => 1000);
+        try {
+            $pheal = Util::getPheal($keyID, $vCode, true);
+            $arr = array('characterID' => $charID, 'rowCount' => 1000);
 
-        if ($type == 'char') {
-            $q = $pheal->charScope->WalletJournal($arr);
-            insertRecords($charID, $q->transactions);
-        } elseif ($type == 'corp') {
-            $q = $pheal->corpScope->WalletJournal($arr);
-            insertRecords($charID, $q->entries);
-        } else {
-            continue;
+            if ($type == 'char') {
+                $q = $pheal->charScope->WalletJournal($arr);
+                $cacheUntil = max($q->cached_until_unixtime, $cacheUntil);
+                insertRecords($charID, $q->transactions);
+            } elseif ($type == 'corp') {
+                $q = $pheal->corpScope->WalletJournal($arr);
+                $cacheUntil = max($q->cached_until_unixtime, $cacheUntil);
+                insertRecords($charID, $q->entries);
+            } else {
+                continue;
+            }
+
+            if (count($q->transactions)) {
+            }
+        } catch (Exception $ex) {
+            Util::out('Failed to fetch Wallet API: '.$ex->getMessage());
+            return;
         }
-
-        if (count($q->transactions)) {
-        }
-    } catch (Exception $ex) {
-        Util::out('Failed to fetch Wallet API: '.$ex->getMessage());
-        return;
     }
+    
+    $next = $cacheUntil - time() + 1;
+    Util::out("Next payment fetch in $next seconds");
+    $redis->setex($redisKey, $next, true);
 }
 
 applyBalances();
@@ -50,7 +56,6 @@ foreach ($rows as $row) {
     $mdb->set("payments", $row, ['isk' => (double) $row['amount'], 'characterID' => (int) $row['ownerID1'], 'dttm' => new MongoDate($time)]);
 }
 
-$redis->setex($redisKey, 1800, true);
 
 function applyBalances()
 {
