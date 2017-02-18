@@ -12,7 +12,7 @@ if (!(isset($entityType))) {
     $entityType = null;
 }
 
-$result = zkbSearch::getResults(trim($search), $entityType);
+$result = zkbSearch::getResults(ltrim($search), $entityType);
 
 // Declare out json return type
 $app->contentType('application/json; charset=utf-8');
