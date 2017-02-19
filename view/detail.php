@@ -115,7 +115,7 @@ $sponsored = Mdb::group("sponsored", ['killID'], ['killID' => $id], [], 'isk', [
 if (sizeof($sponsored)) {
     $sponsored = array_shift($sponsored);
     $isk = $sponsored['iskSum'];
-    $extra['sponsoredIsk'] = $isk;
+    if ($isk > 0) $extra['sponsoredIsk'] = $isk;
 }
 //$extra["insertTime"] = Db::queryField("select insertTime from zz_killmails where killID = :killID", "insertTime", array(":killID" => $id), 300);
 

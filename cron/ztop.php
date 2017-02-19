@@ -89,6 +89,13 @@ while ($hour == date('H')) {
     addInfo('Total Corporations', $redis->get("zkb:totalCorps"), false);
     addInfo('Total Alliances', $redis->get("zkb:totalAllis"), false);
 
+    addInfo('', 0, false);
+    $sponsored = Mdb::group("sponsored", [], ['entryTime' => ['$gte' => $mdb->now(86400 * -7)]], [], 'isk', ['iskSum' => -1]);
+    $sponsored = array_shift($sponsored);
+    $sponsored = Util::formatIsk($sponsored['iskSum']);
+    $balance = Util::formatIsk((double) $mdb->findField("payments", "balance", ['refTypeID' => "10"], ['_id' => -1]));
+    addInfo('Sponsored Killmails (inflated)', $sponsored, false, false);
+    addInfo('Wallet Balance', $balance, false, false);
 
     $info = $redis->info();
     $mem = $info['used_memory_human'];
@@ -139,10 +146,10 @@ while ($hour == date('H')) {
     sleep(3);
 }
 
-function addInfo($text, $number, $left = true)
+function addInfo($text, $number, $left = true, $format = true)
 {
     global $infoArray, $deltaArray;
-    $prevNumber = (int) @$deltaArray[$text];
+    $prevNumber = (double) @$deltaArray[$text];
     $delta = $number - $prevNumber;
     $deltaArray[$text] = $number;
 
@@ -150,7 +157,8 @@ function addInfo($text, $number, $left = true)
         $delta = "+$delta";
     }
     $dtext = $delta == 0 ? '' : "($delta)";
-    $infoArray[] = ['text' => "$text $dtext", 'num' => number_format($number, 0), 'lr' => $left];
+    $num = $format ? number_format($number, 0) : $number;
+    $infoArray[] = ['text' => "$text $dtext", 'num' => $num, 'lr' => $left];
 }
 
 function getSystemMemInfo()

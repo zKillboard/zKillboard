@@ -369,6 +369,24 @@ if ($type == 'character') {
     }
 }
 
+// Sponsored killmails
+if ($pageType == 'overview' || $pageType == 'losses') {
+    $sponsoredKey = "victim.${type}ID";
+    $result = Mdb::group("sponsored", ['killID'], [$sponsoredKey => (int) $id, 'entryTime' => ['$gte' => $mdb->now(86400 * -7)]], [], 'isk', ['iskSum' => -1], 6);
+    $sponsored = [];
+    foreach ($result as $kill) {
+        if ($kill['iskSum'] <= 0) continue;
+        $killmail = $mdb->findDoc("killmails", ['killID' => $kill['killID']]);
+        Info::addInfo($killmail);
+        $killmail['victim'] = $killmail['involved'][0];
+        $killmail['zkb']['totalValue'] = $kill['iskSum'];
+
+        $sponsored[$kill['killID']] = $killmail;
+    }
+    $extra['sponsoredMails'] = $sponsored;
+}
+
+
 $renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => $apiVerified, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold);
 
 $app->render('overview.html', $renderParams);
