@@ -82,9 +82,9 @@ if (substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' ||
 }
 
 $request = $isApiRequest ? new RedisTtlCounter('ttlc:apiRequests', 300) : new RedisTtlCounter('ttlc:nonApiRequests', 300);
-$request->add(uniqid());
+if ($isApiRequest || $uri == '/navbar/') $request->add(uniqid());
 $uvisitors = new RedisTtlCounter('ttlc:unique_visitors', 300);
-$uvisitors->add($ip);
+if ($uri == '/navbar/') $uvisitors->add($ip);
 
 $visitors = new RedisTtlCounter('ttlc:visitors', 300);
 $visitors->add($ip);
