@@ -168,24 +168,13 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
     $p['pastSeconds'] = $numDays * 86400;
     $p['kills'] = $pageType != 'losses';
 
-    if ($key != 'character') {
-        $topLists[] = Info::doMakeCommon('Top Characters', 'characterID', Stats::getTop('characterID', $p));
-        if ($key != 'corporation') {
-            $topLists[] = Info::doMakeCommon('Top Corporations', 'corporationID', Stats::getTop('corporationID', $p));
-            if ($key != 'alliance') {
-                $topLists[] = Info::doMakeCommon('Top Alliances', 'allianceID', Stats::getTop('allianceID', $p));
-            }
-        }
-    }
-    if ($key != 'ship') {
-        $topLists[] = Info::doMakeCommon('Top Ships', 'shipTypeID', Stats::getTop('shipTypeID', $p));
-    }
-    if ($key != 'system' && $key != 'location') {
-        $topLists[] = Info::doMakeCommon('Top Systems', 'solarSystemID', Stats::getTop('solarSystemID', $p));
-    }
-    if ($key != 'location') {
-        $topLists[] = Info::doMakeCommon('Top Locations', 'locationID', Stats::getTop('locationID', $p));
-    }
+    $topLists[] = Info::doMakeCommon('Top Characters', 'characterID', Stats::getTop('characterID', $p));
+    $topLists[] = Info::doMakeCommon('Top Corporations', 'corporationID', Stats::getTop('corporationID', $p));
+    $topLists[] = Info::doMakeCommon('Top Alliances', 'allianceID', Stats::getTop('allianceID', $p));
+    $topLists[] = Info::doMakeCommon('Top Ships', 'shipTypeID', Stats::getTop('shipTypeID', $p));
+    $topLists[] = Info::doMakeCommon('Top Systems', 'solarSystemID', Stats::getTop('solarSystemID', $p));
+    $topLists[] = Info::doMakeCommon('Top Locations', 'locationID', Stats::getTop('locationID', $p));
+
     $p['limit'] = 6;
     $p['categoryID'] = 6;
     $topKills = Stats::getTopIsk($p);

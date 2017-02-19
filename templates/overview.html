@@ -123,17 +123,19 @@
 	{% set isEmbedded = true %}
 {% endif %}
     {% set topSet = topKills %}
+    {% set topTitle = 'Most Valuable Kills - Last 7 Days' %}
+    {% include 'components/big_top_list.html' %}
+    {% set topTitle = 'Sponsored Killmails - Last 7 Days' %}
+    {% set topSet = extra.sponsoredMails %}
     {% include 'components/big_top_list.html' %}
     {% include 'components/kill_list.html' %}
   </div>
   <div class="col-lg-2 pull-left" style="padding: 0px;">
 	{% include 'components/activePvP.html' %}
-	{% if topSet|length %}
         	{% for topSet in topLists %}
         		{% include 'components/top_killer_list.html' %}
         	{% endfor %}
 		<center><em><small>Last 7 days...<br/></small></em></center>
-	{% endif %}
   </div>
 {% elseif pageType == 'trophies' %}
     {% include 'components/trophies.html' %}
