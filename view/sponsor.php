@@ -40,6 +40,8 @@ switch ($type) {
             $response = "0 ISK? Come on...";
         } else if (($iskAvailable - abs($value)) < -50000) {
             $response = "Not enough ISK, you requested to apply " . abs($value) . " ISK but only have $iskAvailable available.";
+        } else if ($value % 1000000 != 0) {
+            $response = "Please sponsor in increments of 1,000,000 ISK. Yea, yea, I know, 420 and 69 are cool, but don't be cheap.";
         } else {
             $mdb->insert("sponsored", ['characterID' => User::getUserID(), 'isk' => $value, 'killID' => $killID, 'entryTime' => $mdb->now()]);
             $mdb->set("users", ['userID' => "user:$userID"], ['adFreeUntil' => ($adFreeUntil - $timeValue)]);
