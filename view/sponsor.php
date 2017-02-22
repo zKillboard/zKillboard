@@ -9,10 +9,7 @@ $userID = User::getUserID();
 $charName = Info::getInfoField('characterID', $userID, 'name');
 $user = $mdb->findDoc("users", ['userID' => "user:$userID"]);
 $adFreeUntil = (int) @$user['adFreeUntil'];
-$iskAvailable = floor(max(0, ($adFreeUntil - time()) / (86400 * 30)) * 5000000 * .95);
-if ($userID == 1633218082) {
-    $iskAvailable = 100000000;
-}
+$iskAvailable = floor(max(0, ($adFreeUntil - time()) / (86400 * 30)) * 5000000);
 
 $response = "";
 $valueF = "";
