@@ -132,10 +132,12 @@
   </div>
   <div class="col-lg-2 pull-left" style="padding: 0px;">
 	{% include 'components/activePvP.html' %}
+            {% if topLists|length %}
         	{% for topSet in topLists %}
         		{% include 'components/top_killer_list.html' %}
         	{% endfor %}
-		<center><em><small>Last 7 days...<br/></small></em></center>
+		<!--<center><em><small>Last 7 days...<br/></small></em></center>-->
+            {% endif %}
   </div>
 {% elseif pageType == 'trophies' %}
     {% include 'components/trophies.html' %}
