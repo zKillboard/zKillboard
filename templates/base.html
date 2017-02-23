@@ -92,8 +92,8 @@
 			</div>
 
 			<div class="container nobackground">
-				{% if crestStatus and actualURI == '/' %}
-					<div class="alert alert-danger" style="font-weight: bold"><center>{{ crestStatus|raw }}</center></div>
+				{% if apiStatus and actualURI == '/' %}
+					<div class="alert alert-danger" style="font-weight: bold"><center>{{ apiStatus|raw }}</center></div>
 				{% endif %}
 
 
