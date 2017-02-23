@@ -6,7 +6,7 @@
 Balance: {{ iskA }} ISK<hr/>
 {% set initValue = (iskA / 5000000)|round(0, 'floor') * 5000000 %}
 <b class="green">Sponsor <span id='sliderValue'>{{ initValue }}</span> ISK</b><br/>
-<input id="slider" data-slider-id='sponsor-slider' type="text" data-slider-min="{{ iskA * -1 }}" data-slider-max="{{ iskA }}" data-slider-step="1000000" data-slider-value="{{ initValue }}"/> <span style='left-margin: 0.5em'>
+<input id="slider" data-slider-id='sponsor-slider' type="text" data-slider-min="{{ iskA * -1 }}" data-slider-max="{{ iskA }}" data-slider-step="1" data-slider-value="{{ initValue }}"/> <span style='left-margin: 0.5em'>
 <br/><small><small><i>slide left for negative values</i></small></small>
 <br/><br/><input type='submit' class="btn btn-primary" value='Sponsor' onClick="doSponsor('/sponsor/sponsor/{{ killID }}/' + $('#slider').attr('value') + '/'); return false;">
 </center>
