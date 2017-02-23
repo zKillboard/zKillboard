@@ -45,16 +45,10 @@ $crestFailure = new RedisTtlCounter('ttlc:CrestFailure', 300);
 $esiSuccess = new RedisTtlCounter('ttlc:esiSuccess', 300);
 $esiFailure = new RedisTtlCounter('ttlc:esiFailure', 300);
 
-$s = $xmlSuccess->count() + $crestSuccess->count() + $esiSuccess->count();
-$f = $xmlFailure->count() + $crestFailure->count() + $esiFailure->count();
-if ($message == null && $xmlFailure->count() > (10 * $xmlSuccess->count())) {
-    $message = "Various issues with the APIs - cannot pull killmails at this time.";
-}
-
-$behind = $redis->llen("queueProcess") + $mdb->count('crestmails', ['processed' => false]);
-if ($behind > 100 && $message == null) {
-    $behind = number_format($behind);
-    //$message = "Busy server - currently behind on processing $behind killmails";
+if ($esiFailure->count() > $esiSuccess->count()) {
+    $message = "Issues with CCP's ESI API - some killmails may be delayed.";
+} elseif ($crestFailure->count() > $crestSuccess->count()) {
+    $message = "Issues with CCP's CREST API - some killmails may be delayed.";
 }
 
 $redis->setex('tq:crestStatus', 300, $message);
