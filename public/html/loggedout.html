@@ -7,15 +7,14 @@ $("#adsensetop").load('/google/');
 $("#adsensebottom").load('/google/');
 
 $(document).ready(function() {
-    /*var date = new Date();
-    var foo = 'zkbLoginMsg' + date.getUTCFullYear() + '' + (date.getUTCMonth() + 1) + '' + date.getUTCDate();
-    if ($(window).width() > 800 && localStorage) {
-        if (!localStorage.getItem(foo)) {
-            $("#char-loggedout").show();
-            localStorage.setItem(foo, true);
-        }
-    }*/
-});
+    setTimeout("adCheck()", 5000);
+        });
+
+function adCheck() {
+    if ( $("iframe").length == 0 ) {
+        $("#adsensetop, #adsensebottom").html("<center>Blocking ads? That's fine, ads suck anyway. <a href='/information/payments/'>Block them with ISK and get a golden wreck too.</a></center><hr/>");
+    }
+}
 
 
 </script>

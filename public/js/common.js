@@ -1,8 +1,5 @@
 $(document).ready(function() {
-    // Check to see if the user has ads enabled
-    if ( $("iframe").length == 0 ) {
-        //$("#adsensetop, #adsensebottom").html("<hr/><center>Blocking ads? That's fine, ads suck anyway. <a href='/information/payments'>Block them with ISK and get a golden wreck too.</a></center><hr/>");
-    }
+    //$('body').on('touchstart.dropdown', '.dropdown-menu', function (e) { e.stopPropagation(); });
 
     if ($("[rel=tooltip]").length) {
         $("[rel=tooltip]").tooltip({
@@ -11,71 +8,22 @@ $(document).ready(function() {
         });
     }
 
-    //
-    $('.dropdown-toggle').dropdown();
-    $("abbr.timeago").timeago();
-    $(".alert").alert()
-
-    // Javascript to enable link to tab
-    var url = document.location.toString();
-    if (url.match('#')) {
-        $('.nav-pills a[href=#'+url.split('#')[1]+']').tab('show') ;
-    }
-
-    // Change hash for page-reload
-    $('.nav-pills a').on('shown', function (e) {
-        window.location.hash = e.target.hash;
-    })
-
-    // hide #back-top first
-    $("#back-top").hide();
-
-    // fade in #back-top
-    $(function () {
-        $(window).scroll(function () {
-            if ($(this).scrollTop() > 500) {
-                $('#back-top').fadeIn();
-            } else {
-                $('#back-top').fadeOut();
-            }
-        });
-
-        // scroll body to 0px on click
-        $('#back-top a').click(function () {
-            $('body,html').animate({
-                scrollTop: 0
-            }, 100);
-            return false;
-        });
-    });
-
-    //add the autocomplete search thing
+    // add the autocomplete search thing
     $('#searchbox').zz_search( function(data, event) { window.location = '/' + data.type + '/' + data.id + '/'; event.preventDefault(); } );
-
-    //and for the tracker entity lookup
-    $('#addentitybox').zz_search( function(data) { 
-        $('#addentity input[name="entitymetadata"]').val(JSON.stringify(data));
-        $('#addentity input[name="addentitybox"]').val(data.name);
-        $('#addentity').submit();
-    });
 
     // prevent firing of window.location in table rows if a link is clicked directly
     $('.killListRow a').click(function(e) {
         e.stopPropagation();
     });
 
-    $('a.openMenu').click(function(e){
-        $('.content').toggleClass('opened');
-        $('.mobileNav').toggleClass('opened');
-        e.preventDefault();
-    });
-
+    // See if we are embedded in an iframe on another website perhaps?
     if (top !== self) {
         $("#iframed").modal('show');
     }
 
+    // Send that CREST URL to the parser, allows the website to parse the killmail so that
+    // it is ready for the user when they click submit
     $("#killmailurl").bind('paste', function(event) {
-        //console.log(event);
         setTimeout(sendCrestUrl, 1);
     });
 
@@ -93,7 +41,7 @@ $(document).ready(function() {
         addPartials();
         console.log($(location).attr('pathname'));
     }*/
-    setTimeout('window.location = window.location', 3600000);
+    //setTimeout('window.location = window.location', 3600000);
 });
 
 function htmlNotify (data) 
@@ -159,7 +107,6 @@ function saveFitting(id) {
     });
 }
 
-$('body').on('touchstart.dropdown', '.dropdown-menu', function (e) { e.stopPropagation(); });
 
 function hideSortStuff(doHide)
 {
@@ -207,7 +154,7 @@ function addPartials() {
 function loadCompleted() {
     window.scrollTo(0, 0);
     NProgress.done();
-    addPartials();
+    //addPartials();
     addKillListClicks();
     $('#tracker-dropdown').load('/navbar/');
 }
@@ -218,8 +165,8 @@ function doLoad(url) {
     var state = { 'href' : pathname };
     NProgress.start();
     $(".pagecontent").load('/partial' + url, null, loadCompleted);
-    $("#adsensetop").load('/google/');
-    $("#adsensebottom").load('/google/');
+    //$("#adsensetop").load('/google/');
+    //$("#adsensebottom").load('/google/');
     history.pushState(state, null, url);
 }
 
@@ -234,8 +181,8 @@ function addKillListClicks()
         if (event.which == 2) return false;
         console.log($(this).attr('killID'));
         //onclick="if (event.which == 2) return false; window.location='/kill/{{kill.killID}}/'"
-        //window.location = '/kill/' + $(this).attr('killID') + '/';
-        doLoad('/kill/' + $(this).attr('killID') + '/');
+        window.location = '/kill/' + $(this).attr('killID') + '/';
+        //doLoad('/kill/' + $(this).attr('killID') + '/');
         return false;
     });
 }
