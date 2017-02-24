@@ -27,9 +27,7 @@ foreach ($rows as $row) {
         foreach ($crest['dogma']['attributes'] as $attribute) {
             $name = $attribute['attribute']['name'];
             $value = $attribute['value'];
-            if (in_array($name, $attrs)) {
-                $row[$name] = $value;
-            }
+            $row[$name] = $value;
         }
     }
 
