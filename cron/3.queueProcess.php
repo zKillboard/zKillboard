@@ -144,7 +144,7 @@ while ($minute == date('Hi')) {
 
         $zkb['hash'] = $crestmail['hash'];
         $zkb['totalValue'] = (double) $totalValue;
-        $zkb['points'] = (int) Points::getKillPoints($kill, $zkb['totalValue']);
+        $zkb['points'] = (int) Points::getKillPoints($killID);
         $kill['zkb'] = $zkb;
 
         $exists = $killmails->count(['killID' => $killID]);

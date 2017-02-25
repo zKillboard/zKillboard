@@ -2,72 +2,54 @@
 
 class Points
 {
-    public static function getPoints($typeID)
+
+    public static function getKillPoints($killID)
     {
-        $groupID = Info::getInfoField('typeID', $typeID, 'groupID');
-        if ($groupID == 29) {
-            return 1;
+        global $mdb;
+
+        $killmail = $mdb->findDoc("rawmails", ['killID' => $killID]);
+        $victim = $killmail['victim'];
+        $shipTypeID = $victim['shipType']['id'];
+        $items = $victim['items'];
+        $shipInfo = Info::getInfo('typeID', $shipTypeID);
+
+        $dangerFactor = 0;
+        $basePoints =  pow(5, @$shipInfo['rigSize']);
+        $points = $basePoints;
+        foreach ((array) $items as $item) {
+            $itemInfo = Info::getInfo('typeID', $item['itemType']['id']);
+            if (!@$itemInfo['fittable']) continue;
+
+            $flagName = Info::getFlagName($item['flag']);
+            $typeID = $item['itemType']['id'];
+            $qty = @$item['quantityDestroyed'] + @$item['quantityDropped'];
+            $i = Info::getInfo('typeID', $typeID);
+            $meta = 1 + floor(@$i['metaLevel'] / 2);
+            $dangerFactor += isset($itemInfo['heatDamage']) * $qty * $meta; // offensive/defensive modules overloading are good for pvp
+            $dangerFactor += $itemInfo['groupID'] == 645 * $qty * $meta; // drone damange multipliers
+            $dangerFactor -= $itemInfo['groupID'] == 54 * $qty * $meta; // Mining ships don't earn as many points
         }
-        $categoryID = Info::getInfoField('groupID', $groupID, 'categoryID');
-        if ($categoryID != 6) {
-            return 1;
+        $points += $dangerFactor;
+        $points *= max(0.01, min(1, $dangerFactor / 4));
+
+        // Divide by number of ships on killmail
+        $involvedCount = max(1, sizeof($killmail['attackers']));
+        $points = ceil($points / $involvedCount);
+
+        // Apply a bonus/penalty from -20% to 20% depending on average size of attacking ships
+        // For example: Smaller ships blowing up bigger ships get a bonus
+        // or bigger ships blowing up smaller ships get a penalty
+        $size = 0;
+        foreach ((array) $killmail['attackers'] as $attacker) {
+            $shipTypeID = @$attacker['shipType']['id'];
+            $aInfo = Info::getInfo('typeID', $shipTypeID);
+            $size += pow(5, @$aInfo['rigSize']);
         }
+        $avg = max(1, $size / $involvedCount);
+        $modifier = min(1.2, max(0.8, $basePoints / $avg));
+        $points = ceil($points * $modifier);
 
-        $dogma = ['hp', 'armorHP', 'shieldCapacity'];
-        $sum = 0;
-        foreach ($dogma as $attr) {
-            $sum += (int) Info::getInfoField('typeID', $typeID, $attr);
-        }
-        $points = ceil($sum / log($sum));
-        if ($groupID == 963) {
-            $points = $points * 3;
-        } // Strategic Cruisers
-
-        return max(1, $points);
-    }
-
-    public static function getKillPoints($kill, $price)
-    {
-        if (!isset($kill['involved']['0']['shipTypeID'])) {
-            return 1;
-        }
-        $vicpoints = self::getPoints($kill['involved']['0']['shipTypeID']);
-        $vicpoints += floor(log($price / 10000000));
-
-        $invpoints = 0;
-        foreach ($kill['involved'] as $key => $inv) {
-            if ($key == 0) {
-                continue;
-            }
-            if (!isset($inv['shipTypeID'])) return 1;
-            $typeID = $inv['shipTypeID'];
-
-            $groupID = Info::getInfoField('typeID', $typeID, 'groupID');
-            if ($groupID == 29) {
-                return 1;
-            }
-            $categoryID = Info::getInfoField('groupID', $groupID, 'categoryID');
-            if ($categoryID == 65 || $categoryID == 23) {
-                return 1;
-            }
-
-            $invpoints += self::getPoints($typeID);
-        }
-
-        if (($vicpoints + $invpoints) == 0) {
-            return 1;
-        }
-        $gankfactor = ($vicpoints / ($vicpoints + $invpoints)) / $kill['attackerCount'];
-        $points = ceil($vicpoints * $gankfactor);
-
-        $points = max(1, ceil($points / $kill['attackerCount']));
-        $points = ceil($points / max(1, log($points)));
-
-        return max(1, $points); // a kill is always worth at least one point
-    }
-
-    public static function getPointValues()
-    {
-        return [];
+        //echo "$killID " . $shipInfo['name'] . " $points\n";
+        return $points;
     }
 }
