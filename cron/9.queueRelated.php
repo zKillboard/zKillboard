@@ -13,13 +13,18 @@ while ($minute == date('Hi')) {
         sleep(1);
         continue;
     }
+    if ($redis->get("zkb:reinforced") == true) {
+        continue;
+    }
     $parameters = unserialize($serial);
     $current = $redis->get($parameters['key']);
     if ($redis->get($parameters['key']) !== false) {
         continue;
     }
     $kills = Kills::getKills($parameters);
-    $summary = Related::buildSummary($kills, $parameters['options']);
+    if ($parameters['solarSystemID'] == 30000142) {
+        $summary = [];
+    } else  $summary = Related::buildSummary($kills, $parameters['options']);
 
     $serial = serialize($summary);
     $redis->setex($parameters['key'], 200, $serial);

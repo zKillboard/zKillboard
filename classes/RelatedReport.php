@@ -8,6 +8,10 @@ class RelatedReport {
     {
         global $mdb, $redis;
 
+        if ($redis->get("zkb:reinforced") == true) {
+            $app->render('related_reinforced.html', ['showAds' => false]);
+            exit();
+        }
         if ($redis->llen("queueRelated") > 1000) {
             $app->redirect('/');
             exit();

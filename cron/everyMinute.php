@@ -4,6 +4,18 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once "../init.php";
 
+$load = Load::getLoad();
+$redisLoad = (int) $redis->get("zkb:load");
+if ($load >= 10 && $redisLoad < 20) {
+    $redis->incrBy("zkb:load", 1);
+    $redisLoad++;
+} 
+if ($redisLoad > 0 && $load < 10) {
+    $redis->incrBy("zkb:load", -1);
+    $redisLoad--;
+}
+$redis->set("zkb:reinforced", ($redisLoad >= 10));
+
 // Set the top kill for api requests to use
 $topKillID = $mdb->findField('killmails', 'killID', [], ['killID' => -1]);
 $redis->setex('zkb:topKillID', 86400, $topKillID);

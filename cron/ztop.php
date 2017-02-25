@@ -97,6 +97,10 @@ while ($hour == date('H')) {
     addInfo('Sponsored Killmails (inflated)', $sponsored, false, false);
     addInfo('Wallet Balance', $balance, false, false);
 
+    addInfo('', 0, true);
+    addInfo('Load Counter', $redis->get("zkb:load"));
+    addinfo("Reinforced Mode", $redis->get("zkb:reinforced"));
+
     $info = $redis->info();
     $mem = $info['used_memory_human'];
 
