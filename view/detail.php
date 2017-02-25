@@ -88,6 +88,7 @@ if (isset($rawmail['victim']['position']) && isset($killdata['info']['location']
         $extra['locationDistance'] = '('.$auDistance.'au)';
     }
 }
+$extra['npcOnly'] = @$killdata['info']['npc'];
 $extra['totalisk'] = $killdata['info']['zkb']['totalValue'];
 $extra['droppedisk'] = droppedIsk(md5($id), $killdata['items']);
 $extra['shipprice'] = Price::getItemPrice($killdata['victim']['shipTypeID'], date('Y-m-d H:i', strtotime($killdata['info']['dttm'])));
