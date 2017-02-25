@@ -77,14 +77,16 @@ function handleKillFulfilled(&$guzzler, &$params, &$content)
         $added += addKillmail($mdb, $killID, $hash);
     }
 
-    if ($redis->get("apiVerified:$corpID") == null) {
-        ZLog::add("$corpName ($charName) is now SSO/API Verified", $charID);
+    if ($corpID > 1999999) {
+        if ($redis->get("apiVerified:$corpID") == null) {
+            ZLog::add("$corpName ($charName) is now SSO/API Verified", $charID);
+        }
+        $redis->setex("apiVerified:$corpID", 86400, time());
+        if ($added) {
+            while (strlen("$added") < 3) $added = " $added";
+            ZLog::add("$added kills added by corp $corpName (SSO)", $charID);
+        }
     }
-    if ($added) {
-        while (strlen("$added") < 3) $added = " $added";
-        ZLog::add("$added kills added by corp $corpName (SSO)", $charID);
-    }
-    $redis->setex("apiVerified:$corpID", 86400, time());
     $mdb->set("scopes", $row, ['characterID' => $charID, 'corporationID' => $corpID, 'lastApiUpdate' => $mdb->now()]);
     if ($corpID != null) {
         $mdb->remove("apis", ['corporationID' => $corpID]);
