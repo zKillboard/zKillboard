@@ -297,4 +297,13 @@ class CrestSSO
 
         return $json;
     }
+
+    public static function getAccessTokenCallback(&$guzzler, $refreshToken, $success, $fail, &$params)
+    {
+        global $ccpClientID, $ccpSecret;
+
+        $headers = ['Authorization' =>'Basic ' . base64_encode($ccpClientID . ':' . $ccpSecret)];
+        $url = 'https://login.eveonline.com/oauth/token?grant_type=refresh_token&refresh_token=' . $refreshToken;
+        $guzzler->call($url, $success, $fail, $params, $headers, 'POST');
+    }
 }
