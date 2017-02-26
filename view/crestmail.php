@@ -13,3 +13,4 @@ if ($killID > 0 && strlen($hash) == 40) {
         ZLog::add("  1 kills added by $name (POST)", $userID);
     }
 }
+header('HTTP/1.1 204 No Content');
