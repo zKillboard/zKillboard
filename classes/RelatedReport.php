@@ -9,11 +9,13 @@ class RelatedReport {
         global $mdb, $redis;
 
         if ($redis->get("zkb:reinforced") == true) {
+            header('HTTP/1.1 202 Request being processed');
             $app->render('related_reinforced.html', ['showAds' => false]);
             exit();
         }
         if ($redis->llen("queueRelated") > 1000) {
-            $app->redirect('/');
+            header('HTTP/1.1 202 Request being processed');
+            $app->render('related_notnow.html', ['showAds' => false]);
             exit();
         }
 
