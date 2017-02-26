@@ -22,9 +22,7 @@ while ($minute == date('Hi')) {
         continue;
     }
     $kills = Kills::getKills($parameters);
-    if ($parameters['solarSystemID'] == 30000142) {
-        $summary = [];
-    } else  $summary = Related::buildSummary($kills, $parameters['options']);
+    $summary = Related::buildSummary($kills, $parameters['options']);
 
     $serial = serialize($summary);
     $redis->setex($parameters['key'], 200, $serial);
