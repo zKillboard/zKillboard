@@ -8,6 +8,7 @@ $guzzler = new Guzzler(20, 50000);
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $row = $mdb->findDoc("information", ['type' => 'corporationID'], ['lastApiUpdate' => 1]);
+    if ($row === null) exit(); 
     $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now()]);
 
     $url = "${apiServer}corp/CorporationSheet.xml.aspx?corporationID=" . $row['id'];
