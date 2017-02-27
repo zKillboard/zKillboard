@@ -52,6 +52,6 @@ class Points
         $modifier = min(1.2, max(0.8, $basePoints / $avg));
         $points = ceil($points * $modifier);
 
-        return $points;
+        return max(1, $points);
     }
 }
