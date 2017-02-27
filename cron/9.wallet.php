@@ -19,7 +19,7 @@ if ($redis->get($redisKey) != true) {
         $charID = $api['charID'];
 
         try {
-            $pheal = Util::getPheal($keyID, $vCode, true);
+            $pheal = getPheal($keyID, $vCode);
             $arr = array('characterID' => $charID, 'rowCount' => 1000);
 
             if ($type == 'char') {
@@ -122,4 +122,22 @@ function insertRecords($charID, $records)
         }
         $mdb->save('payments', $record);
     }
+}
+
+function getPheal($keyID = null, $vCode = null)
+{
+    global $apiServer, $baseAddr;
+
+    \Pheal\Core\Config::getInstance()->http_method = 'curl';
+    \Pheal\Core\Config::getInstance()->http_user_agent = "API Fetcher for http://$baseAddr";
+    \Pheal\Core\Config::getInstance()->http_post = false;
+    \Pheal\Core\Config::getInstance()->http_keepalive = true; // default 15 seconds
+    \Pheal\Core\Config::getInstance()->http_keepalive = 10; // KeepAliveTimeout in seconds
+    \Pheal\Core\Config::getInstance()->http_timeout = 30;
+    \Pheal\Core\Config::getInstance()->api_customkeys = true;
+    \Pheal\Core\Config::getInstance()->api_base = $apiServer;
+
+    $pheal = new \Pheal\Pheal($keyID, $vCode);
+
+    return $pheal;
 }

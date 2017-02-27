@@ -27,7 +27,7 @@ class MongoFilter
 
         // Start the query
         $killmails = $mdb->getCollection('killmails');
-        $cursor = $killmails->find($query, ['_id' => 0, 'killID' => 1])->timeout(-1);
+        $cursor = $killmails->find($query, ['_id' => 0, 'killID' => 1])->timeout(3600000);
 
         // Apply the sort order
         $cursor->sort([$sortKey => $sortDirection]);

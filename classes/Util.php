@@ -12,56 +12,6 @@ class Util
         return \Perry\Perry::fromUrl($url);
     }
 
-    /**
-     * @param int    $keyID
-     * @param string $vCode
-     */
-    public static function getPheal($keyID = null, $vCode = null, $overRide = false)
-    {
-        if ($overRide == false) {
-            return;
-        }
-        global $apiServer, $baseAddr, $ipsAvailable;
-
-        if (!$overRide) {
-            if (php_sapi_name() == 'cli') {
-                exit();
-            }
-
-            return; // Web requests shouldn't be hitting the API...
-        }
-
-        \Pheal\Core\Config::getInstance()->http_method = 'curl';
-        \Pheal\Core\Config::getInstance()->http_user_agent = "API Fetcher for http://$baseAddr";
-        if (!empty($ipsAvailable)) {
-            $max = count($ipsAvailable) - 1;
-            $ipID = mt_rand(0, $max);
-            \Pheal\Core\Config::getInstance()->http_interface_ip = $ipsAvailable[$ipID];
-        }
-        \Pheal\Core\Config::getInstance()->http_post = false;
-        \Pheal\Core\Config::getInstance()->http_keepalive = true; // default 15 seconds
-        \Pheal\Core\Config::getInstance()->http_keepalive = 10; // KeepAliveTimeout in seconds
-        \Pheal\Core\Config::getInstance()->http_timeout = 30;
-        \Pheal\Core\Config::getInstance()->api_customkeys = true;
-        \Pheal\Core\Config::getInstance()->api_base = $apiServer;
-
-        try {
-            if ($keyID !== null && $vCode !== null) {
-                $pheal = new \Pheal\Pheal($keyID, $vCode);
-            } else {
-                $pheal = new \Pheal\Pheal();
-            }
-            $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
-            $xmlSuccess->add(uniqid());
-        } catch (Exception $ex) {
-            $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
-            $xmlFailure->add(uniqid());
-            throw $ex;
-        }
-
-        return $pheal;
-    }
-
     public static function pluralize($string)
     {
         if (!self::endsWith($string, 's')) {
@@ -112,17 +62,29 @@ class Util
         $parameters = array();
         $entityRequiredSatisfied = false;
 
-
         $uri = $_SERVER['REQUEST_URI'];
         $split = explode('/', $uri);
+
+        // Remove the first and last keys since they are always empty
         array_shift($split);
-        $currentIndex = 0;
-        $splitCount = count($split);
-        foreach ($split as $key) {
-            $value = $currentIndex + 1 < $splitCount ? $split[$currentIndex + 1] : null;
+        if (sizeof($split) > 1) unset($split[count($split) - 1]);
+
+        while (sizeof($split)) {
+            $key = array_shift($split);
             switch ($key) {
-                case 'combined':
-                    throw new Exception("$key is not a value API filter");
+                case '':
+                    throw new Exception("What are you doing?");
+                    break;
+                case 'reset':
+                case 'top':
+                case 'topalltime':
+                case 'stats':
+                case 'ranks':
+                case 'trophies':
+                case 'wars':
+                case 'supers':
+                case 'corpstats':
+                    // These parameters can be safely ignored
                     break;
                 case 'api':
                 case 'api-only':
@@ -164,6 +126,8 @@ class Util
                 case 'regionID':
                 case 'location':
                 case 'locationID':
+                case 'warID':
+                    $value = array_shift($split);
                     if ($value != null) {
                         if (strpos($key, 'ID') === false) {
                             $key = $key.'ID';
@@ -198,6 +162,7 @@ class Util
                     }
                     break;
                 case 'npc':
+                    $value = array_shift($split);
                     if ($value != '0' && $value != '1') {
                         throw new Exception("Only values of 0 or 1 allowed with the $key filter");
                     }
@@ -208,6 +173,7 @@ class Util
                     $parameters[$key] = true;
                     break;
                 case 'page':
+                    $value = array_shift($split);
                     $value = (int) $value;
                     if ($value < 1) {
                         $value = 1;
@@ -215,6 +181,7 @@ class Util
                     $parameters[$key] = (int) $value;
                     break;
                 case 'orderDirection':
+                    $value = array_shift($split);
                     if (!($value == 'asc' || $value == 'desc')) {
                         throw new Exception('Invalid orderDirection!  Allowed: asc, desc');
                     }
@@ -223,6 +190,7 @@ class Util
                     break;
                 case 'pastSeconds':
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
+                    $value = array_shift($split);
                     $value = (int) $value;
                     if (($value / 86400) > 7) {
                         throw new Exception('pastSeconds is limited to a max of 7 days');
@@ -232,6 +200,7 @@ class Util
                 case 'startTime':
                 case 'endTime':
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
+                    $value = array_shift($split);
                     $time = strtotime($value);
                     if (strpos($uri, "region") !== false) {
                         throw new Exception("Cannot use startTime/endTime with this entity, use the /api/history/ or RedisQ intead");
@@ -245,6 +214,7 @@ class Util
                     $parameters[$key] = $value;
                     break;
                 case 'limit':
+                    $value = array_shift($split);
                     $value = (int) $value;
                     if ($value < 200) {
                         $parameters['limit'] = $value;
@@ -258,14 +228,16 @@ class Util
                 case 'afterKillID':
                 case 'killID':
                     if ($key != 'killID') self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
+                    $value = array_shift($split);
                     if (!is_numeric($value)) {
                         throw new Exception("$value is not a valid entry for $key");
                     }
                     $parameters[$key] = (int) $value;
                     break;
                 case 'iskValue':
-                    if (!is_numeric($value)) {
-                        throw new Exception("$value is not a valid entry for $key");
+                    $value = (int) array_shift($split);
+                    if ($value == 0 || $value % 5000000000 != 0) {
+                        throw new Exception("$value is not a valid multiple of 5b ISK");
                     }
                     $parameters[$key] = (int) $value;
                     break;
@@ -274,6 +246,7 @@ class Util
                     break;
                 case 'year':
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
+                    $value = array_shift($split);
                     $value = (int) $value;
                     if ($value < 2007) throw new Exception("$value is not a valid entry for $key");
                     if ($value > date('Y')) throw new Exception("$value is not a valid entry for $key");
@@ -281,17 +254,15 @@ class Util
                     break;
                 case 'month':
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
+                    $value = array_shift($split);
                     $value = (int) $value;
                     if ($value < 1 || $value > 12) throw new Exception("$value is not a valid entry for $key");
                     $parameters[$key] = $value;
                     break;
                 default:
-                    if ($key != $value && $key != '' && $value != '') {
-                        $parameters[$key] = $value;
-                    }
-                    break;
+                    header("Location: ..");
+                    exit();
             }
-            ++$currentIndex;
         }
 
         return $parameters;
@@ -519,4 +490,4 @@ class Util
 
         return $au;
     }
-}
+    }

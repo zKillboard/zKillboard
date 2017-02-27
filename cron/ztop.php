@@ -1,6 +1,16 @@
 #!/usr/bin/php5
 <?php
 
+set_error_handler(function($errno, $errstr, $errfile, $errline, array $errcontext) {
+    // error was suppressed with the @-operator
+    if (0 === error_reporting()) {
+        return false;
+    }
+
+    throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+});
+
+
 use cvweiss\redistools\RedisTtlCounter;
 use cvweiss\redistools\RedisTimeQueue;
 
@@ -99,7 +109,7 @@ while ($hour == date('H')) {
 
     addInfo('', 0, true);
     addInfo('Load Counter', $redis->get("zkb:load"));
-    addinfo("Reinforced Mode", $redis->get("zkb:reinforced"));
+    addinfo("Reinforced Mode", (int) $redis->get("zkb:reinforced"));
 
     $info = $redis->info();
     $mem = $info['used_memory_human'];

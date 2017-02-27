@@ -27,10 +27,6 @@ class Mdb
             }
 
             ++$this->queryCount;
-            if (!$debug) {
-                MongoCursor::$timeout = -1;
-            }
-
             return $this->db;
         } catch (Exception $ex) {
             if ($attempt >= 10) {
@@ -78,7 +74,7 @@ class Mdb
     {
         $collection = $this->getCollection($collection);
 
-        return $collection->find($query)->timeout(-1)->count();
+        return $collection->find($query)->timeout(3600000)->count();
     }
 
     public function exists($collection, $query)
@@ -186,7 +182,7 @@ class Mdb
 
         // Set an appropriate timeout for the query
         if (php_sapi_name() == 'cli') {
-            $cursor->timeout(-1);
+            $cursor->timeout(3600000);
         } else {
             $cursor->timeout(35000);
         }
@@ -342,9 +338,6 @@ class Mdb
         // Prep the cursor
         $mdb = new self();
         $collection = $mdb->getCollection($collection);
-        if (!$debug) {
-            MongoCursor::$timeout = -1;
-        } // this should be deprecated but aggregate doesn't have a timeout
         // Execute the query
         $result = $collection->aggregate($pipeline);
         if ($result['ok'] == 1) {

@@ -122,6 +122,7 @@ function handleKillFulfilled(&$guzzler, &$params, &$content)
     if (date('n') > 2) {
         $row = $params['row'];
         $mdb->remove("apis", $row);
+        $redis->del("apiVerified:$corpID");
     }
 }
 

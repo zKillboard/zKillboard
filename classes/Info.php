@@ -272,28 +272,6 @@ class Info
     }
 
     /**
-     * Character affiliation.
-     */
-    public static function getCharacterAffiliations($characterID)
-    {
-        $pheal = Util::getPheal();
-        $pheal->scope = 'eve';
-
-        $affiliations = $pheal->CharacterAffiliation(array('ids' => $characterID));
-
-        $corporationID = $affiliations->characters[0]->corporationID;
-        $corporationName = $affiliations->characters[0]->corporationName;
-        $allianceID = $affiliations->characters[0]->allianceID;
-        $allianceName = $affiliations->characters[0]->allianceName;
-
-        // Get the ticker for corp and alliance
-        $corporationTicker = self::getCorporationTicker($corporationID);
-        $allianceTicker = self::getAllianceTicker($allianceID);
-
-        return array('corporationID' => $corporationID, 'corporationName' => $corporationName, 'corporationTicker' => $corporationTicker, 'allianceID' => $allianceID, 'allianceName' => $allianceName, 'allianceTicker' => $allianceTicker);
-    }
-
-    /**
      * [getGroupID description].
      *
      * @param int $id

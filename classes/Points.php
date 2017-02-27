@@ -20,13 +20,17 @@ class Points
             $itemInfo = Info::getInfo('typeID', $item['itemType']['id']);
             if (!@$itemInfo['fittable']) continue;
 
-            $typeID = $item['itemType']['id'];
-            $qty = @$item['quantityDestroyed'] + @$item['quantityDropped'];
-            $i = Info::getInfo('typeID', $typeID);
-            $meta = 1 + floor(@$i['metaLevel'] / 2);
-            $dangerFactor += isset($itemInfo['heatDamage']) * $qty * $meta; // offensive/defensive modules overloading are good for pvp
-            $dangerFactor += ($itemInfo['groupID'] == 645) * $qty * $meta; // drone damange multipliers
-            $dangerFactor -= ($itemInfo['groupID'] == 54) * $qty * $meta; // Mining ships don't earn as many points
+            $flagName = Info::getFlagName($item['flag']); 
+            if (($flagName == "Low Slots" || $flagName == "Mid Slots" || $flagName == "High Slots" || $flagName == 'SubSystems') 
+                /*|| ($killID < 23970577 && $item['flag'] == 0)*/ ) {
+                $typeID = $item['itemType']['id'];
+                $qty = @$item['quantityDestroyed'] + @$item['quantityDropped'];
+                $i = Info::getInfo('typeID', $typeID);
+                $meta = 1 + floor(@$i['metaLevel'] / 2);
+                $dangerFactor += isset($itemInfo['heatDamage']) * $qty * $meta; // offensive/defensive modules overloading are good for pvp
+                $dangerFactor += ($itemInfo['groupID'] == 645) * $qty * $meta; // drone damange multipliers
+                $dangerFactor -= ($itemInfo['groupID'] == 54) * $qty * $meta; // Mining ships don't earn as many points
+            }
         }
         $points += $dangerFactor;
         $points *= max(0.01, min(1, $dangerFactor / 4));

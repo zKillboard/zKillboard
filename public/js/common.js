@@ -160,6 +160,7 @@ function loadCompleted() {
 }
 
 function doLoad(url) {
+    return;
     //console.log("Loading: " + url);
     var pathname = window.location.pathname;
     var state = { 'href' : pathname };
@@ -172,7 +173,7 @@ function doLoad(url) {
 
 // Revert to a previously saved state
 window.addEventListener('popstate', function(event) {
-    window.location = window.location;
+    //window.location = window.location;
 });
 
 function addKillListClicks()
@@ -189,7 +190,6 @@ function addKillListClicks()
 
 function doSponsor(url)
 {
-console.log(url);
     $('#modalMessageBody').load(url);
     $('#modalTitle').text('Sponsor this killmail');
     $('#modalMessage').modal()
