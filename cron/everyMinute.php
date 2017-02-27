@@ -14,7 +14,7 @@ if ($redisLoad > 0 && $load < 15) {
     $redis->incrBy("zkb:load", -1);
     $redisLoad--;
 }
-$redis->set("zkb:reinforced", ($redisLoad >= 15));
+$redis->set("zkb:reinforced", ($redisLoad >= 15 && $allowReinforced));
 
 // Set the top kill for api requests to use
 $topKillID = $mdb->findField('killmails', 'killID', [], ['killID' => -1]);
