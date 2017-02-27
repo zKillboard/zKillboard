@@ -87,7 +87,6 @@ class Util
                     // These parameters can be safely ignored
                     break;
                 case 'api':
-                case 'api-only':
                 case 'kills':
                 case 'losses':
                 case 'w-space':
@@ -128,6 +127,7 @@ class Util
                 case 'locationID':
                 case 'warID':
                     $value = array_shift($split);
+                    $intValue = (int) $value;
                     if ($value != null) {
                         if (strpos($key, 'ID') === false) {
                             $key = $key.'ID';
@@ -260,6 +260,9 @@ class Util
                     $parameters[$key] = $value;
                     break;
                 default:
+                    if (substr($uri, 0, 5) == "/api/") {
+                        throw new Exception("$key is an invalid parameter");
+                    }
                     header("Location: ..");
                     exit();
             }

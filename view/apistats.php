@@ -6,7 +6,9 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 
 try {
+    $bid = $id;
     $id = (int) $id;
+    if ("$bid" != "$id") throw new Exception("$bid is not a valid parameter");
 
     $array = $mdb->findDoc('statistics', ['type' => $type, 'id' => $id]);
     unset($array['_id']);
