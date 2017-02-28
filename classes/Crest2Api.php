@@ -28,6 +28,7 @@ class Crest2Api
             $killmail['position'] = $crestmail['victim']['position'];
         }
         $killmail['zkb'] = $kill['zkb'];
+        $killmail['zkb']['npc'] = @$kill['npc'];
 
         RedisCache::set($key, $killmail, 300);
 
