@@ -31,6 +31,23 @@ Remember, every PVP killmail has two sides, the victim and the aggressors. Victi
 
 ***
 
+#####I don't like the points that are given on a particular kill, can you fix it to appease me?
+
+No. Points are very, very arbitrary. Calculating them in a fashion that keeps everyone happy is impossible.
+
+In short, this is how points are calculated:
+
+* Size of victim ship
+* Meta level of items fitted that have offensive/defensive capabilities to determine danger level of victim.
+* Meta level of Miners fitted to reduce points.
+* Number involved on killmail
+* Average size of attacking ships. Killing a bigger ship gets up to a 20% bonus, a smaller ship up to a 20% penalty.
+* A kill is always worth at least 1 point.
+
+Any attempts at point discussion will likely result in a link to this FAQ.
+
+***
+
 #####I have given you my XML API or logged in with SSO, what are you doing with this information?
 
 zKillboard will only read the killmails portions of the XML API and SSO, if provided with the proper permissions. Submission of the XML API to zKillboard is determined as having given permission, regardless of the source/person submitting the API. zKillboard will only read killmails from the SSO & CREST login only if the "Allow zKillboard to read your Kills" is checked when logging in.
