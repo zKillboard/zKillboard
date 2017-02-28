@@ -50,7 +50,7 @@ class Points
         }
         $avg = max(1, $size / $involvedCount);
         $modifier = min(1.2, max(0.8, $basePoints / $avg));
-        $points = ceil($points * $modifier);
+        $points = (int) ceil($points * $modifier);
 
         return max(1, $points);
     }
