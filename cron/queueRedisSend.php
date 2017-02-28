@@ -26,6 +26,7 @@ while (date('Hi') == $minute) {
     $rawmail = $mdb->findDoc('rawmails', ['killID' => $killID]);
     $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
     $zkb = $killmail['zkb'];
+    $zkb['npc'] = @$killmail['npc'];
 
     $zkb['href'] = "$crestServer/killmails/$killID/".$zkb['hash'].'/';
     unset($rawmail['_id']);
