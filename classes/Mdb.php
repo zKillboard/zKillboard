@@ -80,7 +80,7 @@ class Mdb
     public function exists($collection, $query)
     {
         $collection = $this->getCollection($collection);
-        $cursor = $collection->find($query);
+        $cursor = $collection->find($query)->timeout(3600000);
 
         return $cursor->hasNext();
     }
