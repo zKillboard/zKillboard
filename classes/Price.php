@@ -92,6 +92,7 @@ class Price
     {
         // Some typeID's have hardcoded prices
         switch ($typeID) {
+            case 42126:
             case 35834:
                 return 300000000000; // 300b Keepstar, not likely to end up on market at this price
             case 12478: // damn Khumaak and people thinking fake killmail isk value means something
@@ -111,6 +112,7 @@ class Price
                 return 100000000000; // 100b
             case 33397: // Chremoas
             case 35779: // Imp
+            case 42125:
                 return 120000000000; // 120b
             case 2836: // Adrestia
             case 33675: // Chameleon
