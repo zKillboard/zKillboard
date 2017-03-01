@@ -83,12 +83,9 @@ while ($hour == date('H')) {
     $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
     addInfo('Failed XML calls in last 5 minutes', $xmlFailure->count(), false);
 
-    $xmlCorps = new RedisTimeQueue("zkb:xmlCorps", 3600);
     $esiChars = new RedisTimeQueue("tqApiESI", 3600);
     $ssoCorps = new RedisTimeQueue("zkb:ssoCorps", 3600);
     addInfo('', 0, false);
-    addInfo('Corporation XML/API to check', $xmlCorps->pending(), false);
-    addInfo('Corporation XML/API total', $xmlCorps->size(), false);
     addInfo('Character ESI/SSO KillLogs to check', $esiChars->pending(), false);
     addInfo('Character ESI/SSO RefreshTokens', $esiChars->size(), false);
     addInfo('Corporation XML/SSO to check', $ssoCorps->pending(), false);
