@@ -12,6 +12,8 @@ $maxTime = 295000;
 
 if ($redis->llen("queueProcess") > 100) exit();
 $queueStats = new RedisQueue('queueStats');
+MongoCursor::$timeout = -1;
+
 
 $noRowCount = 0;
 do {
@@ -39,6 +41,7 @@ function calcStats($row)
 
     $type = $row['type'];
     $id = $row['id'];
+    if ($id == 0) return;
     $newSequence = $row['sequence'];
 
     $key = ['type' => $type, 'id' => $id];
