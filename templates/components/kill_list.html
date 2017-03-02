@@ -39,7 +39,7 @@
       {% set lossDisplay = '' %}
       {% if (kill.displayAsLoss == true and key != 'system' and key != 'region') or pageType == 'losses' %}{% set lossDisplay = ' error' %}{% elseif pageType == 'overview' or pageType == 'kills' or pageType == 'solo' or kill.displayAsKill == true %}{% set lossDisplay = ' winwin' %}{% endif %}
       <tr class="killListRow{{lossDisplay}}" killID='{{ kill.killID }}' lick="if (event.which == 2) return false; window.location='/kill/{{kill.killID}}/'">
-        <td>
+        <td style='width: 55px;'>
           {{ kill.dttm.sec|date('H:i') }}
           <br/><a href="/kill/{{ kill.killID }}/">{{ formatIsk(kill.zkb.totalValue) }}</a>
         </td>
@@ -47,7 +47,7 @@
           {% include 'components/image_ship.html' %}
         </td>
         <td>
-          <a href="/system/{{ kill.system.solarSystemID }}/">{{ kill.system.solarSystemName }}</a> <span style="color: {{ kill.system.systemColorCode }}">{{ "%1.1f"|format(kill.system.solarSystemSecurity) }}</span><br/>
+          <div style='width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;'><span style="color: {{ kill.system.systemColorCode }}">{{ "%1.1f"|format(kill.system.solarSystemSecurity) }}</span> <a href="/system/{{ kill.system.solarSystemID }}/">{{ kill.system.solarSystemName }}</a></div>
           <a href="/region/{{ kill.system.regionID }}/">{{ kill.system.regionName }}</a>
         </td>
         <td class="hidden-xs" style="text-align: center; vertical-align: middle; width: 64px;">
