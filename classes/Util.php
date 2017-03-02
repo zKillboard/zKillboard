@@ -73,7 +73,7 @@ class Util
             $key = array_shift($split);
             switch ($key) {
                 case '':
-                    throw new Exception("What are you doing?");
+                    throw new Exception("Please remove the double slash // from the call");
                     break;
                 case 'reset':
                 case 'top':
@@ -226,6 +226,8 @@ class Util
                     break;
                 case 'beforeKillID':
                 case 'afterKillID':
+                    throw new Exception("$key has been temporarily disabled - please use page, RedisQ, or the history endpoint instead.");
+                    break;
                 case 'killID':
                     if ($key != 'killID') self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $value = array_shift($split);
