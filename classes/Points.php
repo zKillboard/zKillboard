@@ -37,7 +37,7 @@ class Points
 
         // Divide by number of ships on killmail
         $involvedCount = max(1, sizeof($killmail['attackers']));
-        $points = ceil($points / $involvedCount);
+        $points = $points / $involvedCount;
 
         // Apply a bonus/penalty from -20% to 20% depending on average size of attacking ships
         // For example: Smaller ships blowing up bigger ships get a bonus
