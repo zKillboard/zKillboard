@@ -46,7 +46,7 @@ function calcStats($row)
 
     $key = ['type' => $type, 'id' => $id];
     $stats = $mdb->findDoc('statistics', $key);
-    if ($stats === null) {
+    if ($stats === null || isset($stats['reset'])) {
         $stats = [];
         $stats['type'] = $type;
         $stats['id'] = $id;
