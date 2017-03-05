@@ -61,6 +61,17 @@ function calcStats($row, $maxSequence)
 
         $months = $mdb->group('killmails', ['year' => 'dttm', 'month' => 'dttm'], $query, 'killID', ['zkb.points', 'zkb.totalValue'], ['year' => 1, 'month' => 1]);
         mergeMonths($stats, $months, $isVictim);
+
+        if ($type == 'characterID' || $type == 'corporationID' || $type == 'allianceID') {
+            $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'npc' => false, 'solo' => true];
+            $query = MongoFilter::buildQuery($query);
+            $key = "solo" . ($isVictim ? "Losses" : "Kills");
+            if (isset($stats[$key])) {
+                $query = ['$and' => [['sequence' => ['$gt' => $oldSequence]], ['sequence' => ['$lte' => $newSequence]], $query]];
+            }
+            $count = $mdb->count('killmails', $query);
+            $stats[$key] = isset($stats[$key]) ? $stats[$key] + $count : $count;
+        }
     }
 
     // Update the sequence

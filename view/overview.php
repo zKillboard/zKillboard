@@ -267,7 +267,11 @@ if (@$statistics['shipsLost'] > 0) {
         $extra['dangerRatio'] = $ratio;
     }
 }
-if (@$statistics['shipsDestroyed'] > 0) {
+if (@$statistics['soloKills'] > 0 && @$statistics['shipsDestroyed'] > 0) {
+    $gangFactor = 100 - floor(100 * ($statistics['soloKills'] / $statistics['shipsDestroyed']));
+    $extra['gangFactor'] = $gangFactor;
+}
+else if (@$statistics['shipsDestroyed'] > 0) {
     $gangFactor = floor(@$statistics['pointsDestroyed'] / @$statistics['shipsDestroyed'] * 10 / 2);
     $gangFactor = max(0, min(100, 100 - $gangFactor));
     $extra['gangFactor'] = $gangFactor;

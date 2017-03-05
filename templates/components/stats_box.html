@@ -88,7 +88,7 @@
                                 <div class="progress-bar" role="progressbar" aria-valuenow="{{ iRatio }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ iRatio }}%; background-color: #007800;">{% if iRatio > 10 %}{{ iRatio}}%{% endif %}</div>
                         </div>
                                 <span class='red'>Gangs</span>
-                                <span class='pull-right green'>Solo</span>
+                                <span class='pull-right green'> {% if statistics.soloKills %}{{ statistics.soloKills|number_format(0) }} {% endif %}Solo</span>
                         </td>
 			</td>
 		</tr>
