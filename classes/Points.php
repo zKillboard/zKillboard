@@ -36,8 +36,9 @@ class Points
         $points *= max(0.01, min(1, $dangerFactor / 4));
 
         // Divide by number of ships on killmail
-        $involvedCount = max(1, sizeof($killmail['attackers']));
-        $points = $points / $involvedCount;
+        $numAttackers = sizeof($killmail['attackers']);
+        $involvedPenalty = max(1, $numAttackers * max(1, $numAttackers / 2));
+        $points = $points / $involvedPenalty;
 
         // Apply a bonus/penalty from -20% to 20% depending on average size of attacking ships
         // For example: Smaller ships blowing up bigger ships get a bonus
@@ -46,11 +47,11 @@ class Points
         foreach ((array) $killmail['attackers'] as $attacker) {
             $shipTypeID = @$attacker['shipType']['id'];
             $aInfo = Info::getInfo('typeID', $shipTypeID);
-            $size += pow(5, @$aInfo['rigSize']);
+            $size += pow(5, (($aInfo['groupID'] != 29) ? @$aInfo['rigSize'] : @$shipInfo['rigSize'] + 1));
         }
-        $avg = max(1, $size / $involvedCount);
-        $modifier = min(1.2, max(0.8, $basePoints / $avg));
-        $points = (int) ceil($points * $modifier);
+        $avg = max(1, $size / $numAttackers);
+        $modifier = min(1.2, max(0.5, $basePoints / $avg));
+        $points = (int) floor($points * $modifier);
 
         return max(1, $points);
     }

@@ -40,8 +40,8 @@ In short, this is how points are calculated:
 * Size of victim ship
 * Meta level of items fitted that have offensive/defensive capabilities to determine danger level of victim.
 * Meta level of Miners fitted to reduce points.
-* Number involved on killmail
-* Average size of attacking ships. Killing a bigger ship gets up to a 20% bonus, a smaller ship up to a 20% penalty.
+* Number involved on killmail, the larger the gang the bigger the penalty.
+* Average size of attacking ships. Killing a bigger ship gets up to a 20% bonus, a smaller ship up to a 50% penalty.
 * A kill is always worth at least 1 point.
 
 Any attempts at point discussion will likely result in a link to this FAQ.
