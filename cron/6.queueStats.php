@@ -4,38 +4,18 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
-$minute = date('Hi');
-$children = [];
-$inProgress = [];
-$maxChildren = 10;
-$maxTime = 295000;
-
-if ($redis->llen("queueProcess") > 100) exit();
-$queueStats = new RedisQueue('queueStats');
 MongoCursor::$timeout = -1;
+$queueStats = new RedisQueue('queueStats');
+$maxSequence = $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);
 
-
-$noRowCount = 0;
-do {
-    if ($redis->llen('queueServer') > 100) {
-        exit();
-    }
-    if ($redis->llen('queueProcess') > 100) {
-        exit();
-    }
+$minute = date('Hi');
+while ($minute == date('Hi')) {
     $row = $queueStats->pop();
-    if ($row !== null) {
-        calcStats($row);
-    } else {
-        ++$noRowCount;
-        if ($noRowCount >= 5) {
-            exit();
-        }
-    }
-} while ($minute == date('Hi'));
-$status = 0;
+    if ($row == null) return;
+    calcStats($row, $maxSequence);
+}
 
-function calcStats($row)
+function calcStats($row, $maxSequence)
 {
     global $mdb, $debug;
 
@@ -47,9 +27,13 @@ function calcStats($row)
     $key = ['type' => $type, 'id' => $id];
     $stats = $mdb->findDoc('statistics', $key);
     if ($stats === null || isset($stats['reset'])) {
+        $id_ = isset($stats['_id']) ? $stats['_id'] : null;
         $stats = [];
         $stats['type'] = $type;
         $stats['id'] = $id;
+        if ($id_ !== null) {
+            $stats['_id'] = $id_;
+        }
     }
 
     $oldSequence = (int) @$stats['sequence'];

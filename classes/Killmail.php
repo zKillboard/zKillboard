@@ -41,7 +41,7 @@ class Killmail
 
         foreach ($killmail['involved'] as $involved) {
             foreach ($involved as $type => $id) {
-                $mdb->remove('statistics', ['type' => $type, 'id' => (int) $id]);
+                $mdb->set('statistics', ['type' => $type, 'id' => (int) $id], ['reset' => true]);
             }
         }
         $p = ['killID' => $killID];
