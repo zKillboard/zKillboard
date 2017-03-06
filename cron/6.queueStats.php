@@ -19,7 +19,6 @@ while ($minute == date('Hi')) {
     }
     if ($row == null) return;
     calcStats($row, $maxSequence);
-return;
 }
 
 function calcStats($row, $maxSequence)
