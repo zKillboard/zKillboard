@@ -11,8 +11,15 @@ $maxSequence = $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $row = $queueStats->pop();
+    if ($row == null) {
+        $resetRow = $mdb->findDoc("statistics", ['reset' => true]);
+        if ($resetRow != null) {
+            $row = ['type' => $resetRow['type'], 'id' => $resetRow['id'], 'sequence' => $maxSequence];
+        }
+    }
     if ($row == null) return;
     calcStats($row, $maxSequence);
+return;
 }
 
 function calcStats($row, $maxSequence)
@@ -62,16 +69,14 @@ function calcStats($row, $maxSequence)
         $months = $mdb->group('killmails', ['year' => 'dttm', 'month' => 'dttm'], $query, 'killID', ['zkb.points', 'zkb.totalValue'], ['year' => 1, 'month' => 1]);
         mergeMonths($stats, $months, $isVictim);
 
-        if ($type == 'characterID' || $type == 'corporationID' || $type == 'allianceID') {
-            $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'npc' => false, 'solo' => true];
-            $query = MongoFilter::buildQuery($query);
-            $key = "solo" . ($isVictim ? "Losses" : "Kills");
-            if (isset($stats[$key])) {
-                $query = ['$and' => [['sequence' => ['$gt' => $oldSequence]], ['sequence' => ['$lte' => $newSequence]], $query]];
-            }
-            $count = $mdb->count('killmails', $query);
-            $stats[$key] = isset($stats[$key]) ? $stats[$key] + $count : $count;
+        $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'npc' => false, 'solo' => true];
+        $query = MongoFilter::buildQuery($query);
+        $key = "solo" . ($isVictim ? "Losses" : "Kills");
+        if (isset($stats[$key])) {
+            $query = ['$and' => [['sequence' => ['$gt' => $oldSequence]], ['sequence' => ['$lte' => $newSequence]], $query]];
         }
+        $count = $mdb->count('killmails', $query);
+        $stats[$key] = isset($stats[$key]) ? $stats[$key] + $count : $count;
     }
 
     // Update the sequence
