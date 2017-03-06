@@ -75,7 +75,6 @@ class Util
                 case '':
                     throw new Exception("Please remove the double slash // from the call");
                     break;
-                case 'reset':
                 case 'top':
                 case 'topalltime':
                 case 'stats':
@@ -86,6 +85,7 @@ class Util
                 case 'corpstats':
                     // These parameters can be safely ignored
                     break;
+                case 'reset':
                 case 'api':
                 case 'kills':
                 case 'losses':
