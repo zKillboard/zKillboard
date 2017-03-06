@@ -4,19 +4,16 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
+if ($redis->llen('queueStats') >= 1000) exit();
+
 $date = date('Ymd');
 $redisKey = "tq:topAllTime:$date";
 $queueTopAlltime = new RedisQueue('queueTopAlltime');
-if ($redis->get($redisKey) != true || true) {
+if ($redis->get($redisKey) != true) {
     $queueTopAlltime->clear();
     $iter = $mdb->getCollection('statistics')->find([], ['months' => 0, 'groups' => 0])->sort(['type' => 1, 'id' => 1]);
     while ($row = $iter->next()) {
-        if ($row['type'] == 'characterID') {
-            continue;
-        }
-        if ($row['type'] == 'locationID') {
-            continue;
-        }
+        if ($row['type'] == 'characterID' || $row['type'] == 'locationID') continue;
 
         $allTimeSum = (int) @$row['allTimeSum'];
         $shipsDestroyed = (int) @$row['shipsDestroyed'];
@@ -33,7 +30,7 @@ $minute = date('Hi');
 while ($id = $queueTopAlltime->pop()) {
     $row = $mdb->findDoc('statistics', ['_id' => $id]);
     calcTop($row);
-    //if ($minute != date('Hi')) exit();
+    if ($minute != date('Hi')) exit();
 }
 
 function calcTop($row)
