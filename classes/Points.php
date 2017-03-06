@@ -22,7 +22,7 @@ class Points
 
             $flagName = Info::getFlagName($item['flag']); 
             if (($flagName == "Low Slots" || $flagName == "Mid Slots" || $flagName == "High Slots" || $flagName == 'SubSystems') 
-                /*|| ($killID < 23970577 && $item['flag'] == 0)*/ ) {
+                || ($killID < 23970577 && $item['flag'] == 0) ) {
                 $typeID = $item['itemType']['id'];
                 $qty = @$item['quantityDestroyed'] + @$item['quantityDropped'];
                 $i = Info::getInfo('typeID', $typeID);
