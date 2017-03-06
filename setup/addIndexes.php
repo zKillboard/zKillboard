@@ -3,20 +3,6 @@ require_once "../init.php";
 $m = new MongoClient();
 $db = $m->selectDB("zkillboard");
 
-// apis
-echo "\nCreating collection apis ... ";
-$apis = $db->createCollection("apis");
-echo "Done\n";
-echo "Creating index : 'lastApiUpdate' => 1, with sparse = 0 and unique = 0 ... ";
-$apis->ensureIndex(array('lastApiUpdate' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-echo "Creating index : 'keyID' => 1, with sparse = 0 and unique = 0 ... ";
-$apis->ensureIndex(array('keyID' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-echo "Creating index : 'keyID' => 1, 'vCode' => 1, with sparse = 0 and unique = 1 ... ";
-$apis->ensureIndex(array('keyID' => 1, 'vCode' => 1), array("sparse" => 0, "unique" => 1));
-echo "Done\n";
-
 // battles
 echo "\nCreating collection battles ... ";
 $battles = $db->createCollection("battles");
@@ -476,6 +462,36 @@ echo "Done\n";
 echo "Creating index : 'entryTime' => 1, with sparse = 0 and unique = 0 ... ";
 $sponsored->ensureIndex(array('entryTime' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
+echo "Creating index : 'victim' => 1, with sparse = 0 and unique = 0 ... ";
+$sponsored->ensureIndex(array('victim' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'victim.characterID' => 1, with sparse = 0 and unique = 0 ... ";
+$sponsored->ensureIndex(array('victim.characterID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'victim.corporationID' => 1, with sparse = 0 and unique = 0 ... ";
+$sponsored->ensureIndex(array('victim.corporationID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'victim.allianceID' => 1, with sparse = 0 and unique = 0 ... ";
+$sponsored->ensureIndex(array('victim.allianceID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'victim.factionID' => 1, with sparse = 0 and unique = 0 ... ";
+$sponsored->ensureIndex(array('victim.factionID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'victim.shipTypeID' => 1, with sparse = 0 and unique = 0 ... ";
+$sponsored->ensureIndex(array('victim.shipTypeID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'victim.groupID' => 1, with sparse = 0 and unique = 0 ... ";
+$sponsored->ensureIndex(array('victim.groupID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'victim.solarSystemID' => 1, with sparse = 0 and unique = 0 ... ";
+$sponsored->ensureIndex(array('victim.solarSystemID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'victim.regionID' => 1, with sparse = 0 and unique = 0 ... ";
+$sponsored->ensureIndex(array('victim.regionID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'victim.locationID' => 1, with sparse = 0 and unique = 0 ... ";
+$sponsored->ensureIndex(array('victim.locationID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
 
 // statistics
 echo "\nCreating collection statistics ... ";
@@ -585,6 +601,9 @@ $statistics->ensureIndex(array('shipsDestroyed' => 1), array("sparse" => 0, "uni
 echo "Done\n";
 echo "Creating index : 'calcTrophies' => 1, with sparse = 1 and unique = 0 ... ";
 $statistics->ensureIndex(array('calcTrophies' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'reset' => 1, with sparse = 1 and unique = 0 ... ";
+$statistics->ensureIndex(array('reset' => 1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
 
 // storage
