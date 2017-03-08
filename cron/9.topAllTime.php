@@ -7,7 +7,7 @@ require_once '../init.php';
 if ($redis->llen('queueStats') >= 1000) exit();
 
 $date = date('Ymd');
-$redisKey = "tq:topAllTime:$date";
+$redisKey = "tq:topAllTime";
 $queueTopAlltime = new RedisQueue('queueTopAlltime');
 if ($redis->get($redisKey) != true) {
     $queueTopAlltime->clear();
@@ -22,9 +22,8 @@ if ($redis->get($redisKey) != true) {
 
         $queueTopAlltime->push($row['_id']);
     }
+    $redis->setex($redisKey, 64800, true);
 }
-
-$redis->setex($redisKey, 64800, true);
 
 $minute = date('Hi');
 while ($id = $queueTopAlltime->pop()) {

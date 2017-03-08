@@ -11,15 +11,20 @@ $maxSequence = $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $row = $queueStats->pop();
-    if ($row == null) {
-        $resetRow = $mdb->findDoc("statistics", ['reset' => true]);
-        if ($resetRow != null) {
-            $row = ['type' => $resetRow['type'], 'id' => $resetRow['id'], 'sequence' => $maxSequence];
-        }
-    }
-    if ($row == null) return;
+    if ($row == null) break;
     calcStats($row, $maxSequence);
 }
+
+while ($minute == date('Hi')) {
+    $row = null;
+    $resetRow = $mdb->findDoc("statistics", ['reset' => true]);
+    if ($resetRow != null) {
+        $row = ['type' => $resetRow['type'], 'id' => $resetRow['id'], 'sequence' => $maxSequence];
+    }
+    if ($row == null) break;
+    calcStats($row, $maxSequence);
+}
+
 
 function calcStats($row, $maxSequence)
 {
@@ -34,11 +39,13 @@ function calcStats($row, $maxSequence)
     $stats = $mdb->findDoc('statistics', $key);
     if ($stats === null || isset($stats['reset'])) {
         $id_ = isset($stats['_id']) ? $stats['_id'] : null;
+        $topAllTime = isset($stats['topAllTime']) ? $stats['topAllTime'] : null;
         $stats = [];
         $stats['type'] = $type;
         $stats['id'] = $id;
         if ($id_ !== null) {
             $stats['_id'] = $id_;
+            $stats['topAllTime'] = $topAllTime;
         }
     }
 
