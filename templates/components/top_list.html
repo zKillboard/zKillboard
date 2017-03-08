@@ -1,3 +1,4 @@
+{% if topLists|length > 0 %}
 <div class="row">
 {% for list in topLists %}
 	{% set loopIndex = 0 %}
@@ -56,6 +57,6 @@
 	{% endif %}
 {% endfor %}
 </div>
-{% if nextTopRecalc > 0 %}
-<h4>Next Top Recalc at {{ nextTopRecalc|number_format(0) }} kills.</h4>
+{% else %}
+<h4>Nothing here? Checking <a href='/ztop/'>zTop's</a> queueTopAlltime, the lists may be pending calculation.</h4>
 {% endif %}
