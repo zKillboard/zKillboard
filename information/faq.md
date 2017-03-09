@@ -48,6 +48,18 @@ Any attempts at point discussion will likely result in a link to this FAQ.
 
 ***
 
+#####How do you value blueprint copies?
+
+The information provided in the killmail does not give the reserach or material values of the blueprints, nor does it give how many runs the BPC has, therefore, it is impossible to appraise it. zKillboard has to make an assumption here (which I hate doing) and values all BPC's at 1% of the value of the BPO.
+
+***
+
+#####Why are blueprints in a container always copies, those were originals in the killmail I got!
+
+There is a longstanding bug in killmails that always show a blueprint as an original when it is inside of a container, wrapped, etc. Therefore, rather than value the blueprint at the full BPO value and created some crazy prices on killmails, zKillboard errs on the side of caution and makes all container'ed blueprints as BPCs and prices them accordingly.
+
+***
+
 #####I have given you my XML API or logged in with SSO, what are you doing with this information?
 
 zKillboard will only read the killmails portions of the XML API and SSO, if provided with the proper permissions. Submission of the XML API to zKillboard is determined as having given permission, regardless of the source/person submitting the API. zKillboard will only read killmails from the SSO & CREST login only if the "Allow zKillboard to read your Kills" is checked when logging in.
