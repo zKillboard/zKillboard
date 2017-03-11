@@ -126,6 +126,9 @@ $app->get('/comments/', function () use ($app) {
         $app->render('/comments.html');
         });
 
+$app->get('/api/supers/', function () use ($app) {
+        include 'view/intel.php';
+        });
 $app->get('/api/related/:system/:time/', function ($system, $time) use ($app) {
         $mc = RelatedReport::generateReport($system, $time, "[]");
         header('Access-Control-Allow-Origin: *');
@@ -175,6 +178,9 @@ $app->map('/autocomplete/:search/', function ($search) use ($app) {
         })->via('GET');
 
 // Intel
+$app->get('/api/supers/', function () use ($app) {
+        include 'view/intel.php';
+        });
 $app->get('/intel/supers/', function () use ($app) {
         include 'view/intel.php';
         });
