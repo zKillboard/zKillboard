@@ -349,6 +349,9 @@ function isNPC(&$killmail)
         if (@$attacker['characterID'] > 3999999) {
             return false;
         }
+        if (@$attacker['corporationID'] > 1999999) {
+            return false;
+        }
     }
 
     return true;
