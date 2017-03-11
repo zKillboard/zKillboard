@@ -50,7 +50,7 @@ class Info
 
         $multi = $redis->multi();
         $multi->hMSet($redisKey, $data);
-        $multi->expire($redisKey, 86400);
+        $multi->expire($redisKey, 7200);
         $multi->exec();
 
         return $data;

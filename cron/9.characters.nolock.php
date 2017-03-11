@@ -3,12 +3,20 @@
 require_once '../init.php';
 
 $xmlFailure = new \cvweiss\redistools\RedisTtlCounter('ttlc:XmlFailure', 300);
-$guzzler = new Guzzler(20, 50000);
+$guzzler = new Guzzler(30, 1);
+
+if ($redis->llen("zkb:char:pool") == 0) {
+    $rows = $mdb->find("information", ['type' => 'characterID'], ['lastApiUpdate' => 1], 10000);
+    foreach ($rows as $row) {
+        $redis->rPush("zkb:char:pool", $row['id']);
+    }
+}
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    $row = $mdb->findDoc("information", ['type' => 'characterID'], ['lastApiUpdate' => 1]);
-    if ($row === null) exit(); 
+    $id = $redis->lPop("zkb:char:pool");
+    if ($id == null) exit();
+    $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => (int) $id]);
     $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now()]);
 
     $url = "${apiServer}eve/CharacterInfo.xml.aspx?&characterId=" . $row['id'];
