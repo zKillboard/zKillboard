@@ -2,6 +2,11 @@
 
 global $mdb, $fullAddr;
 
+if (User::isLoggedIn() == false) {
+    $app->redirect('/');
+    return;
+}
+
 $message = array();
 $info = User::getUserInfo();
 $ticket = $mdb->findDoc('tickets', ['_id' => new MongoId($id), 'parentID' => null]);

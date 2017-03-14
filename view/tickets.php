@@ -5,6 +5,11 @@ global $baseAddr;
 
 $message = array();
 
+if (User::isLoggedIn() == false) {
+    $app->redirect('/');
+    return;
+}
+
 if ($_POST) {
     $email = Util::getPost('email');
     $subject = Util::getPost('subject');
