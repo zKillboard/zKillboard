@@ -82,6 +82,7 @@ class Info
     {
         global $mdb;
 
+        if ($type == 'itemID') $type = 'locationID';
         $data = self::getInfo($type, $id);
         self::addInfo($data);
 
