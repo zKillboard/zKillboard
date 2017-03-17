@@ -2,12 +2,12 @@
 <table class="table table-condensed table-striped table-hover">
 {% for related in list %}
     {% set class='' %}
-    {% set onClick = 'return false;' %}
+    {% set onClick = '' %}
     {% set shipImageLinkOverride = 0 %}
     {% if related.destroyed > 0 %}
 		{% set class='error' %}
 		{% autoescape false %}
-		{% set onClick = "if (event.which == 2) { window.open(/kill/' ~ related.destroyed ~ '/); return false; }" %}
+		{% set onClick = "console.log(event.which); if (event.which == 1) { window.location = \"/kill/" ~ related.destroyed ~ "/\"; return false; }" %}
 		{% set shipImageLinkOverride = related.destroyed %}
 		{% endautoescape %}
     {% endif %}
