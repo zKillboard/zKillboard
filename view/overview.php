@@ -204,6 +204,10 @@ if ($pageType == 'stats' && in_array($key, $onlyHistory)) {
 // Figure out if the character or corporation has any API keys in the database
 $nextApiCheck = null;
 $apiVerified = $redis->get("apiVerified:$id");
+if ($apiVerified === false && $type == 'character') {
+    $corpID = Info::getInfoField('characterID', $id, 'corporationID');
+    $apiVerified = $redis->get("apiVerified:$corpID");
+}
 if ($apiVerified !== false) {
     $nextApiCheck = date('H:i', $apiVerified);
     $apiVerified = true;
