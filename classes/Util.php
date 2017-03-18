@@ -238,7 +238,7 @@ class Util
                     break;
                 case 'iskValue':
                     $value = (int) array_shift($split);
-                    if ($value == 0 || $value % 5000000000 != 0) {
+                    if ($value == 0 || $value % 500000000 != 0) {
                         throw new Exception("$value is not a valid multiple of 5b ISK");
                     }
                     $parameters[$key] = (int) $value;
