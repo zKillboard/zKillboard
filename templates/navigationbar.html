@@ -17,7 +17,7 @@
 		</div>
 		<div class="collapse navbar-collapse navbar-main">
 			<ul class="nav navbar-nav">
-				<li class="dropdown">
+				<li class="dropdown hidden-xs hidden-sm">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu <b class="caret"></b></a>
 					<ul class="dropdown-menu">
 						<li><a href="/kills/sponsored/">Sponsored</a></li>
@@ -42,7 +42,7 @@
 						<li><a href="/kills/supers/">Supers</a></li>
 					</ul>
 				</li>
-				<li class="dropdown" id="tracker-menu">
+				<li class="dropdown hidden-xs hidden-sm" id="tracker-menu">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Tracker <b class="caret"></b></a>
 					<ul class="dropdown-menu" id='tracker-dropdown'>
 						{% if sessionusername %}
@@ -86,14 +86,14 @@
 				<li class="hidden-xs hidden-sm"><a href="/top/lasthour/" rel="tooltip" title="Kills added this hour" id="lasthour">&nbsp;</a></li>
 				<li class="hidden-xs hidden-sm"><a href="#" rel="tooltip" title="Tranquility Status" onClick="return false;"><span id="tqStatus">&nbsp;</span></a></li>
 				<li class="hidden-xs hidden-sm"><a href="#" onclick="return false;" rel="tooltip" title="Eve Time"><div id="my_clock"></div></a></li>
-				<li>
+				<li class="dropdown">
 					<form name="search" id="search" class="navbar-form navbar-right" action="/search/" method="post">
 						<div class="form-group">
 							<input type="text" class="form-control" placeholder="Search" autocomplete="off" id="searchbox" name="searchbox" tabindex="1">
 						</div>
 					</form>
 				</li>
-				<li class="dropdown visible-lg">
+				<li class="dropdown visible-lg hidden-xs hidden-sm">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><strong>?</strong> <b class="caret"></b></a>
 					<ul class="dropdown-menu">
 						<li class="dropdown-header">Information</li>
@@ -105,7 +105,7 @@
 						<li><a href="/information/payments/">Payments</a></li>
 					</ul>
 				</li>
-				<li id='usermenu' class="dropdown hidden-xs">
+				<li id='usermenu' class="dropdown">
 					<a href="#" class="dropdown-toggle hidden-xs" data-toggle="dropdown">
                                         {% if characterID > 0 %}
                                             <img id='char-image' src="{{ image_character }}{{ characterID }}_32.jpg" style='height: 32px; width: 32px; padding: 0px; margin: 0px; margin-top: -8px;'/>
