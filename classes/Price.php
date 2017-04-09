@@ -112,7 +112,8 @@ class Price
                 return 100000000000; // 100b
             case 33397: // Chremoas
             case 35779: // Imp
-            case 42125:
+            case 42125: // Vendetta
+            case 42246: // Caedes
                 return 120000000000; // 120b
             case 2836: // Adrestia
             case 33675: // Chameleon
