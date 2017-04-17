@@ -10,6 +10,7 @@ Disallow: /br/*
 Disallow: /related/*
 Disallow: /partial/*
 sitemap: https://zkillboard.com/sitemaps/sitemaps.xml
+Crawl-delay: 1
 
 
 # too many repeated hits, too quick
