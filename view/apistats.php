@@ -7,7 +7,9 @@ header('Access-Control-Allow-Methods: GET');
 
 try {
     $bid = $id;
+    $oID = $id;
     $id = (int) $id;
+    if ("$id" != "$oID") throw new Exception("$oID is not a valid parameter");
     if ("$bid" != "$id") throw new Exception("$bid is not a valid parameter");
 
     $array = $mdb->findDoc('statistics', ['type' => $type, 'id' => $id]);
