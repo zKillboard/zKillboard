@@ -42,13 +42,18 @@ $timer = new Timer();
 $app = new \Slim\Slim($config);
 
 $ip = IP::get();
+$ipE = explode(',', $ip);
+$ip = $ipE[0];
 
 // Must rate limit now apparently
-$ipKey = "ip:$ip:" . time();
-$multi = $redis->multi();
-$multi->incr($ipKey, 1);
-$multi->expire($ipKey, 3);
-$multi->exec();
+if (!in_array($ip, $whiteList)) { 
+    $ipttl = new RedisTtlCounter("floodcheck:$ip", 300);
+    $ipttl->add(uniqid());
+    if ($ipttl->count() > 1200) {
+        header('HTTP/1.1 429 Too many requests.');
+        die("<html><head><meta http-equiv='refresh' content='1'></head><body>Rate limited.</body></html>");
+    }
+}
 
 $limit = $isApiRequest ? 10 : 3;
 $noLimits = ['/navbar/', '/post/', '/autocomplete/'];
