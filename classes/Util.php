@@ -64,6 +64,7 @@ class Util
 
         $uri = $_SERVER['REQUEST_URI'];
         $split = explode('/', $uri);
+        $splitSize = sizeof($split);
 
         // Remove the first and last keys since they are always empty
         array_shift($split);
@@ -229,7 +230,6 @@ class Util
                     throw new Exception("$key has been temporarily disabled - please use page, RedisQ, or the history endpoint instead.");
                     break;
                 case 'killID':
-                    if ($key != 'killID') self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $value = array_shift($split);
                     if (!is_numeric($value)) {
                         throw new Exception("$value is not a valid entry for $key");
