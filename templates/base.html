@@ -212,6 +212,25 @@
                 </div>
         </div>
 </div>
+<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.css" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.js"></script>
+<script>
+window.addEventListener("load", function(){
+window.cookieconsent.initialise({
+  "palette": {
+    "popup": {
+      "background": "#216942",
+      "text": "#b2d192"
+    },
+    "button": {
+      "background": "transparent",
+      "text": "#afed71",
+      "border": "#afed71"
+    }
+  },
+  "showLink": false
+})});
+</script>
 </body>
 </html>
 {% endif %}
