@@ -233,7 +233,7 @@ function processItem($item, $dttm, $isCargo = false, $parentContainerFlag = -1)
         $item['singleton'] = 2;
     }
     if ($item['singleton'] == 2) {
-        $price = $price / 100;
+        $price = 0.01;
     }
 
     trackItem($typeID, (int) @$item['quantityDropped'], (int) @$item['quantityDestroyed'], $price, $dttm, $item['flag']);
