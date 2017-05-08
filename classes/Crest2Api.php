@@ -8,7 +8,7 @@ class Crest2Api
     {
         global $mdb, $redis;
 
-        $key = "crest2api:$killID";
+        $key = "RC:crest2api:$killID";
         $killmail = RedisCache::get($key);
         if ($killmail != null) return $killmail;
 
@@ -91,8 +91,8 @@ class Crest2Api
             $i['qtyDropped'] = (int) @$item['quantityDropped'];
             $i['qtyDestroyed'] = (int) @$item['quantityDestroyed'];
             $i['singleton'] = (int) @$item['singleton'];
-            if (isset($item->items)) {
-                $i['items'] = self::getItems($item->items);
+            if (isset($item['items'])) {
+                $i['items'] = self::getItems($item['items']);
             }
             $retArray[] = $i;
         }
