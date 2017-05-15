@@ -247,8 +247,8 @@ function trackItem($typeID, $dropped, $destroyed, $price, $dttm, $flag)
     $dttm = substr($dttm, 0, 10);
 
     switch ($typeID) {
-        case 29668:
         case 40520:
+        case 44992:
             $d = new RedisTtlCounter("ttlc:item:$typeID:dropped", 86400 * 7);
             $l = new RedisTtlCounter("ttlc:item:$typeID:destroyed", 86400 * 7);
             trackItemLoop($d, $dropped);

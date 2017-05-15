@@ -34,14 +34,14 @@ for ($i = 0; $i < 7; $i++) {
     $redTotal += $redis->get($red);
 }
 $arr[] = ['typeID' => 0, 'name' => 'Loot Fairy', 'dV' => $greenTotal, 'lV' => $redTotal];
-$items = [29668, 40520];
+$items = [40520, 44992];
 $date = date('Ymd');
 foreach ($items as $item) {
     $d =  new RedisTtlCounter("ttlc:item:$item:dropped", 86400 * 7);
     $dSize = $d->count();
     $l = new RedisTtlCounter("ttlc:item:$item:destroyed", 86400 * 7);
     $lSize = $l->count();
-    $name = $item == 29668 ? "PLEX" : Info::getInfoField("typeID", $item, "name");
+    $name = Info::getInfoField("typeID", $item, "name");
     $price = Price::getItemPrice($item, $date, true);
     $arr[] = ['typeID' => $item, 'name' => $name, 'price' => $price, 'dropped' => $dSize, 'destroyed' => $lSize, 'dV' => ($dSize * $price), 'lV' => ($lSize * $price)];
 }
