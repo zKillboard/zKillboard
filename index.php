@@ -59,7 +59,7 @@ $limit = $isApiRequest ? 10 : 3;
 $noLimits = ['/navbar/', '/post/', '/autocomplete/'];
 $noLimit = false;
 foreach ($noLimits as $noLimit) $noLimit |= (substr($uri, 0, strlen($noLimit)) === $noLimit);
-$count = $redis->get($ipKey);
+$count = $redis->get($ip);
 if ($noLimit === false  && $count >= $limit) {
     header('HTTP/1.1 429 Too many requests.');
     die("<html><head><meta http-equiv='refresh' content='1'></head><body>Rate limited.</body></html>");
