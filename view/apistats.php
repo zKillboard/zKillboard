@@ -15,7 +15,7 @@ try {
     $array = $mdb->findDoc('statistics', ['type' => $type, 'id' => $id]);
     unset($array['_id']);
 
-    $array['activepvp'] = Stats::getActivePvpStats([$type => [$id]]);
+    $array['activepvp'] = (object) Stats::getActivePvpStats([$type => [$id]]);
     $array['info'] = $mdb->findDoc('information', ['type' => $type, 'id' => $id]);
     unset($array['info']['_id']);
 
