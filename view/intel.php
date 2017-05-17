@@ -8,7 +8,7 @@ $data['titans']['title'] = 'Titans';
 $data['supercarriers']['data'] = unserialize($redis->get('zkb:supers'));
 $data['supercarriers']['title'] = 'Supercarriers';
 
-if ($uri == '/intel/supers') {
+if ($uri == '/intel/supers/') {
     $app->render('intel.html', array('data' => $data));
 } else {
     header('Access-Control-Allow-Origin: *');
