@@ -176,7 +176,7 @@ function usdeurgbp($totalprice)
     $usd = 17;
     $eur = 13;
     $gbp = 10;
-    $plex = Price::getItemPrice('29668', date('Y-m-d H:i'));
+    $plex = 500 * Price::getItemPrice(44992, date('Y-m-d H:i'));
     $usdval = $plex / $usd;
     $eurval = $plex / $eur;
     $gbpval = $plex / $gbp;

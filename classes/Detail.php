@@ -30,7 +30,7 @@ class Detail
         $usd = 17;
         $eur = 13;
         $gbp = 10;
-        $plex = Price::getItemPrice('29668', date('Ymd'));
+        $plex = 500 * Price::getItemPrice(44992, date('Ymd'));
         $usdval = $plex / $usd;
         $eurval = $plex / $eur;
         $gbpval = $plex / $gbp;
