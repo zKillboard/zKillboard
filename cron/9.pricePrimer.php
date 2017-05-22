@@ -30,9 +30,9 @@ foreach ($crestPrices['items'] as $item) {
         $mdb->save('prices', $marketHistory);
     }
 
-    if (!isset($marketHistory[$yesterday]) && isset($item['averagePrice'])) {
-        $avgPrice = $item['averagePrice'];
-        $mdb->set('prices', ['typeID' => $typeID], [$yesterday => $avgPrice]);
+    $price = isset($item['averagePrice']) ? $item['averagePrice'] : (isset($item['adjustedPrice']) ? $item['adjustedPrice'] : 0);
+    if (!isset($marketHistory[$yesterday]) && $price > 0) {
+        $mdb->set('prices', ['typeID' => $typeID], [$yesterday => $price]);
     }
 }
 
