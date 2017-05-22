@@ -165,6 +165,9 @@ class Kills
                 if ($inContainer && strpos(Info::getInfoField('typeID', $typeID, 'name'), 'Blueprint')) {
                     $item['singleton'] = 2;
                 }
+                if ($item['singleton'] == 2) {
+                    $item['price'] = 0.01;
+                }
                 unset($item['_stringValue']);
                 $itemArray[] = $item;
                 $subItems = isset($item['items']) ? $item['items'] : null;
