@@ -64,6 +64,8 @@ function htmlNotify (data)
                 notif.close();
                 window.focus();
                 window.location = data.url;
+                window.focus();
+                notif.close();
             };
         }
     }
