@@ -668,6 +668,5 @@ class Info
         }
 
         return $returnID;
-        die();
         }
     }
