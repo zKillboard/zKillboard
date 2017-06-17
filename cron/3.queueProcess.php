@@ -235,6 +235,9 @@ function processItem($item, $dttm, $isCargo = false, $parentContainerFlag = -1)
     if ($item['singleton'] == 2) {
         $price = 0.01;
     }
+    if (strpos($itemName, " SKIN ") !== false) {
+        $price = 0.01;
+    }
 
     trackItem($typeID, (int) @$item['quantityDropped'], (int) @$item['quantityDestroyed'], $price, $dttm, $item['flag']);
 
