@@ -15,7 +15,7 @@
 {% endif %}
 
 <div class="row" style="margin: 0px; padding: 0px;">
-	<div class="col-lg-6" style="margin: 0px; padding: 0px;">
+	<div class="col-lg-6 pull-left" style="margin: 0px; padding: 0px;">
 		<table style="margin: 0px; padding: 0px; background-color: transparent;" class="table table-condensed">
 		{% if detail.groupShips %}
                         <tr>   
@@ -23,9 +23,9 @@
                                 <td itemprop="class"><a href="/group/{{ detail.groupID }}/">{{ detail.groupName }}</a></td>
                         </tr>
 		{% endif %}
-		<tr><td {% if detail.groupShips %}colspan='2' {% endif %} style="{{ not detail.groupShips ? 'width: 130px; ' : ''}}border-top: none;">
+		<tr><td {% if detail.groupShips %}colspan='2' {% endif %} style="{{ not detail.groupShips ? 'width: 130px; ' : ''}}border-top: none; margin: 0px; padding: 0px;">
 		{% include 'components/info_top_image.html' %}
-		</td><td style="border-top: none;">
+		</td><td style="border-top: none; margin: 0px; padding: 0px;">
 		<div itemscope class="pull-left">
 		{% if not detail.groupShips %}
 	        <table class="table table-condensed">
@@ -153,7 +153,7 @@
 	</div>
 	</td></tr></table>
 	</div>
-	<div class="col-lg-6 pull-right">
+	<div class="col-lg-6 pull-right" style='padding: 0px; margin: 0px;'>
 		{% include 'components/stats_box.html' %}
 	</div>
 </div>
