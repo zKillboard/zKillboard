@@ -2,19 +2,22 @@
 
 require_once '../init.php';
 
-$xmlFailure = new \cvweiss\redistools\RedisTtlCounter('ttlc:XmlFailure', 300);
-$guzzler = new Guzzler(20, 50000);
+$failure = new \cvweiss\redistools\RedisTtlCounter('ttlc:esiFailure', 300);
+$guzzler = new Guzzler();
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $row = $mdb->findDoc("information", ['type' => 'corporationID'], ['lastApiUpdate' => 1]);
-    if ($row === null) exit(); 
+    if ($row === null) break;
+
+    $id = $row['id'];
+    if ((time() - @$row['lastApiUpdate']->sec) < 86400) break;
     $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now()]);
 
-    $url = "${apiServer}corp/CorporationSheet.xml.aspx?corporationID=" . $row['id'];
+    $url = "https://esi.tech.ccp.is/latest/corporations/$id/";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
     $guzzler->call($url, "updateCorp", "failCorp", $params);
-    if ($xmlFailure->count() > 200) sleep(1);
+    if ($failure->count() > 200) sleep(1);
 }
 $guzzler->finish();
 
@@ -32,10 +35,10 @@ function failCorp(&$guzzler, &$params, &$connectionException)
             $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(86400 * -2)]);
             break;
         default:
-            Util::out("/corp/CorporationSheet failed for $id with code $code");
+            Util::out("/v3/corporation/ failed for $id with code $code");
     }
-    $xmllog = new \cvweiss\redistools\RedisTtlCounter('ttlc:XmlFailure', 300);
-    $xmllog->add(uniqid());
+    $failure = new \cvweiss\redistools\RedisTtlCounter('ttlc:esiFailure', 300);
+    $failure->add(uniqid());
 }
 
 function updateCorp(&$guzzler, &$params, &$content)
@@ -43,21 +46,17 @@ function updateCorp(&$guzzler, &$params, &$content)
     $mdb = $params['mdb'];
     $row = $params['row'];
 
-    $xml = @simplexml_load_string($content);
-    $corpInfo = @$xml->result;
-    if (!isset($corpInfo->corporationName)) {
-        return;
-    }
+    $json = json_decode($content, true);
 
-    $ceoID = (int) $corpInfo->ceoID;
+    $ceoID = (int) $json['ceo_id'];
 
     $updates = [];
-    compareAttributes($updates, "name", @$row['name'], (string) $corpInfo->corporationName);
-    compareAttributes($updates, "ticker", @$row['ticker'], (string) $corpInfo->ticker);
+    compareAttributes($updates, "name", @$row['name'], (string) $json['corporation_name']);
+    compareAttributes($updates, "ticker", @$row['ticker'], (string) $json['ticker']);
     compareAttributes($updates, "ceoID", @$row['ceoID'], $ceoID);
-    compareAttributes($updates, "memberCount", @$row['memberCount'], (int) $corpInfo->memberCount);
-    compareAttributes($updates, "allianceID", @$row['allianceID'], (int) $corpInfo->allianceID);
-    compareAttributes($updates, "factionID", @$row['factionID'], (int) $corpInfo->factionID);
+    compareAttributes($updates, "memberCount", @$row['memberCount'], (int) $json['member_count']);
+    compareAttributes($updates, "allianceID", @$row['allianceID'], (int) @$json['alliance_id']); 
+    compareAttributes($updates, "factionID", @$row['factionID'], (int) @$json['faction_id']);
 
     // Does the CEO exist in our info table?
     $ceoExists = $mdb->count('information', ['type' => 'characterID', 'id' => $ceoID]);
@@ -68,8 +67,8 @@ function updateCorp(&$guzzler, &$params, &$content)
     if (sizeof($updates)) {
         $mdb->set("information", $row, $updates);
     }
-    $xmlSuccess = new \cvweiss\redistools\RedisTtlCounter('ttlc:XmlSuccess', 300);
-    $xmlSuccess->add(uniqid());
+    $success = new \cvweiss\redistools\RedisTtlCounter('ttlc:esiSuccess', 300);
+    $success->add(uniqid());
 }
 
 function compareAttributes(&$updates, $key, $oAttr, $nAttr) {
