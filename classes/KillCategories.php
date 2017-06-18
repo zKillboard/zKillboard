@@ -64,6 +64,9 @@ class KillCategories
             case 'freighters':
                 $kills = Kills::getKills(array('groupID' => array(513, 902, 941), 'limit' => $limit, 'cacheTime' => 300, 'losses' => true, 'page' => $page));
                 break;
+            case 'rorquals':
+                $kills = Kills::getKills(array('groupID' => array(883), 'limit' => $limit, 'cacheTime' => 300, 'losses' => true, 'page' => $page));
+                break;
             case 'supers':
                 $kills = Kills::getKills(array('groupID' => array(30, 659), 'limit' => $limit, 'cacheTime' => 300, 'losses' => true, 'page' => $page));
                 break;
