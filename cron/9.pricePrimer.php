@@ -36,10 +36,10 @@ foreach ($crestPrices['items'] as $item) {
     }
 }
 
-$set = $mdb->find("information", ['type' => 'typeID']);
+$set = $mdb->find("information", ['type' => 'typeID'], ['id' => 1]);
 foreach ($set as $item) {
     if (@$item['published'] == false) continue;
-    if (@$item['marketable'] == false) continue;
+    //if (@$item['marketable'] == false) continue;
     $typeID = $item['id'];
     $price = Price::getItemPrice($typeID, $date, true);
 }
