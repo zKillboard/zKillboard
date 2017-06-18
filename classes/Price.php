@@ -8,6 +8,10 @@ class Price
     {
         global $mdb, $redis;
         $typeID = (int) $typeID;
+
+        $itemName = Info::getInfoField("typeID", $typeID, "name");
+        if (strpos($itemName, " SKIN ") !== false) return 0.01;
+
         if ($kmDate == null) {
             $kmDate = date('Y-m-d H:m');
         }
@@ -48,6 +52,7 @@ class Price
         }
         krsort($marketHistory);
 
+        $maxSize = 34;
         $useTime = strtotime($date);
         $iterations = 0;
         $priceList = [];
@@ -59,16 +64,16 @@ class Price
             }
             $useTime = $useTime - 86400;
             ++$iterations;
-        } while (sizeof($priceList) < 34 && $iterations < sizeof($marketHistory));
+        } while (sizeof($priceList) < $maxSize && $iterations < sizeof($marketHistory));
         if (sizeof($priceList) < 24) {
             $priceList = $marketHistory;
         }
 
         asort($priceList);
-        if (sizeof($priceList) == 34) {
+        if (sizeof($priceList) == $maxSize) {
             // remove 2 endpoints from each end, helps fight against wild prices from market speculation and scams
-            $priceList = array_splice($priceList, 2, 32);
-            $priceList = array_splice($priceList, 0, 30);
+            $priceList = array_splice($priceList, 2, $maxSize - 2);
+            $priceList = array_splice($priceList, 0, $maxSize - 4);
         } elseif (sizeof($priceList) > 6) {
             $priceList = array_splice($priceList, 0, sizeof($priceList) - 2);
         }
@@ -95,8 +100,9 @@ class Price
             case 42126:
             case 35834:
                 return 300000000000; // 300b Keepstar, not likely to end up on market at this price
-            case 12478: // damn Khumaak and people thinking fake killmail isk value means something
-                return 0.01;
+            case 12478: // Khumaak
+            case 34559: // Conflux Element
+                return 0.01; // Items that get market manipulated and abused will go here
             case 42124:
                 return 33000000000; // Vehement, a faction dread with no market for some reason
             case 2834: // Utu
