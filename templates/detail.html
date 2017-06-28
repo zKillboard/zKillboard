@@ -128,6 +128,9 @@
         {% if extra.npcOnly %}
         <br/><div class="alert alert-info">This is an NPC Only killmail.<br/>It is not counted in statistics.</div>
         {% endif %}
+        {% if killdata.info.solo %}
+        <br/><div class="alert alert-success"><center>Solo Killmail</center></div>
+        {% endif %}
 {% if disqusLoad %}
 	{% set disqusID = extra.commentID %}
 	<a name="comments"></a>
