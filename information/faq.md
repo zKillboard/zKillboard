@@ -48,9 +48,9 @@ Any attempts at point discussion will likely result in a link to this FAQ.
 
 ***
 
-#####How do you value blueprint copies?
+#####How do you value blueprint copies or skin prices?
 
-The information provided in the killmail does not give the research or material values of the blueprints, nor does it give how many runs the BPC has, therefore, it is impossible to appraise it. zKillboard has to make an assumption here (which I hate doing) and values all BPC's at 1% of the value of the BPO.
+Blueprints copies and skin prices have been extremely volatile and are difficult to calculate the proper price. Because of this difficulty, it is better to err on the side of low value and all blueprint copies and skins are given a price of 0.01 ISK.
 
 ***
 
