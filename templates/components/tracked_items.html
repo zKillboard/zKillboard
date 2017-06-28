@@ -3,12 +3,12 @@
 {% for item in trackedItems %}
   <tr>
     <td colspan='2'>
-      <center><strong><a href='/item/{{ item.typeID }}/' {% if item.typeID == 0 %}onClick='return false;'{% endif %}>{{ item.name }}{% if item.price %} - {{ shortNum(item.price) }}{% endif %}</a></strong></center>
+      <center><strong><a href='/item/{{ item.typeID }}/' {% if item.typeID == 0 %}onClick='return false;'{% endif %}>{{ item.name }}{% if item.price %} {{ shortNum(item.price) }}{% endif %}</a></strong></center>
     </td>
   </tr>
   <tr>
-    <td class='green' style='width: 50%; text-align: right;'>{% if item.dropped %}{{ item.dropped|number_format(0) }} - {% endif %}{{ shortNum(item.dV )}}</td>
-    <td class='red' style='text-align: right;'>{% if item.destroyed %}{{ item.destroyed|number_format(0) }} - {% endif %}{{ shortNum(item.lV) }}</td>
+    <td class='green' style='width: 50%; text-align: right;'>{% if item.dropped %}{{ shortNum(item.dropped) }} {% endif %}{{ shortNum(item.dV )}}</td>
+    <td class='red' style='text-align: right;'>{% if item.destroyed %}{{ shortNum(item.destroyed) }} {% endif %}{{ shortNum(item.lV) }}</td>
   </tr>
 {% endfor %}
 </table>
