@@ -57,7 +57,7 @@
             {% include 'components/image_corp.html' %}
           {% endif %}
         </td>
-        <td class="victim" style="text-align: left; vertical-align: top;">
+        <td class="victim" style="text-align: left; vertical-align: top; max-width: 290px;">
           <a href="/character/{{ kill.victim.characterID }}/">{{ kill.victim.characterName }}</a> ({{ kill.victim.shipName }})<br />
           <a href="/corporation/{{ kill.victim.corporationID }}/">{% if kill.victim.allianceName|length > 0 %}[{{ kill.victim.cticker }}]{% else %}{{ kill.victim.corporationName }}{% endif %}</a>
           {% if kill.victim.allianceID != 0 %}
@@ -72,7 +72,7 @@
             {% include 'components/image_corp.html' %}
           {% endif %}
         </td>
-        <td class="finalBlow hidden-xs" style="vertical-align: top;">
+        <td class="finalBlow hidden-xs" style="text-align: left; vertical-align: top; max-width: 290px;">
           <a href="/character/{{ kill.finalBlow.characterID }}/">{{ kill.finalBlow.characterName }}</a>
           {% if field.characterID == 0 %}
 		{% set shipImageLinkOverride = 0 %}
