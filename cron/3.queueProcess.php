@@ -130,9 +130,12 @@ while ($minute == date('Hi')) {
         $destroyedValue = 0;
         $droppedValue = 0;
 
+        $shipValue = Price::getItemPrice($mail['victim']['shipType']['id'], $date);
+        $fittedValue = getFittedValue($mail['victim']['items'], $date);
+        $fittedValue += $shipValue;
         $totalValue = processItems($mail['victim']['items'], $date);
-        $totalValue += Price::getItemPrice($mail['victim']['shipType']['id'], $date);
-
+        $totalValue += $shipValue;
+        
         $zkb = array();
 
         if (isset($mail['war']['id']) && $mail['war']['id'] != 0) {
@@ -143,7 +146,8 @@ while ($minute == date('Hi')) {
         }
 
         $zkb['hash'] = $crestmail['hash'];
-        $zkb['totalValue'] = (double) $totalValue;
+        $zkb['fittedValue'] = round((double) $fittedValue, 2);
+        $zkb['totalValue'] = round((double) $totalValue, 2);
         $zkb['points'] = (int) Points::getKillPoints($killID);
         $kill['zkb'] = $zkb;
 
@@ -197,6 +201,17 @@ function createInvolved($data)
     }
 
     return $array;
+}
+
+function getFittedValue($items, $dttm)
+{
+    $fittedValue = 0;
+    foreach ($items as $item) {
+        $infernoFlag = Info::getFlagLocation($item['flag']);
+        $add = ($infernoFlag != 0) || in_array($item['flag'], [87, 89, 93, 155, 158, 159, 172, 2663, 3772]);
+        if ($add) $fittedValue += processItem($item, $dttm, false, 0);
+    }
+    return $fittedValue;
 }
 
 function processItems($items, $dttm, $isCargo = false, $parentFlag = 0)

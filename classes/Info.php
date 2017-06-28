@@ -554,6 +554,19 @@ class Info
             3772 => array(125, 132), // Subs
             );
 
+    public static function getFlagLocation($flag)
+    {
+        // Assuming Inferno Flags
+        foreach (self::$infernoFlags as $infernoFlagGroup => $array) {
+            $low = $array[0];
+            $high = $array[1];
+            if ($flag >= $low && $flag <= $high) {
+                return $infernoFlagGroup;
+            }
+        }
+        return 0;
+    }
+
     /**
      * [getFlagName description].
      *
