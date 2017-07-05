@@ -535,6 +535,8 @@ class Info
             '159' => 'Fighter Tubes',
             '164' => 'Structure Service Slots',
             '172' => 'Structure Fuel',
+            '173' => 'Deliveries',
+            '174' => 'Crate Loot',
             '64' => 'Unlocked item, can be moved',
             );
 
