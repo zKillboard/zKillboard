@@ -12,7 +12,7 @@ foreach ($types as $type) {
     $categoryID = Info::getInfoField('groupID', $type['groupID'], 'categoryID');
     if ($categoryID != 6) continue;
     $p = ['isVictim' => true, 'shipTypeID' => $type['id'], 'cacheTime' => 0];
-    $result = Stats::getTopIsk($p);
+    $result = Stats::getTopIsk($p, true, true);
     if (sizeof($result) == 0) continue;
     $kill = array_shift($result);
     $array[$kill['zkb']['totalValue']] = $kill;

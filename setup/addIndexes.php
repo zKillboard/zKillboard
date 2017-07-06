@@ -217,6 +217,9 @@ echo "Done\n";
 echo "Creating index : 'dttm' => 1, 'killID' => -1, with sparse = 0 and unique = 0 ... ";
 $killmails->ensureIndex(array('dttm' => 1, 'killID' => -1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
+echo "Creating index : 'zkb.fittedValue' => -1, with sparse = 0 and unique = 0 ... ";
+$killmails->ensureIndex(array('zkb.fittedValue' => -1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
 
 // locations
 echo "\nCreating collection locations ... ";

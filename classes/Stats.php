@@ -4,12 +4,13 @@ use cvweiss\redistools\RedisCache;
 
 class Stats
 {
-    public static function getTopIsk($parameters = array(), $allTime = false)
+    public static function getTopIsk($parameters = array(), $allTime = false, $fittedValue = false)
     {
         if (!isset($parameters['limit'])) {
             $parameters['limit'] = 5;
         }
-        $parameters['orderBy'] = 'zkb.totalValue';
+        if ($fittedValue) $parameters['orderBy'] = 'zkb.fittedValue';
+        else $parameters['orderBy'] = 'zkb.totalValue';
 
         $hashKey = 'getTopIsk:'.serialize($parameters);
         $result = RedisCache::get($hashKey);
