@@ -87,6 +87,27 @@ function calcStats($row, $maxSequence)
 
     // Update the sequence
     $stats['sequence'] = $newSequence;
+
+    if (@$stats['shipsLost'] > 0) {
+        $destroyed = @$stats['shipsDestroyed']  + @$stats['pointsDestroyed'];
+        $lost = @$stats['shipsLost'] + @$stats['pointsLost'];
+        if ($destroyed > 0 && $lost > 0) {
+            $ratio = floor(($destroyed / ($lost + $destroyed)) * 100);
+            $stats['dangerRatio'] = $ratio;
+        }
+    }
+
+    if (@$stats['soloKills'] > 0 && @$stats['shipsDestroyed'] > 0) {
+        $gangFactor = 100 - floor(100 * ($stats['soloKills'] / $stats['shipsDestroyed']));
+        $stats['gangRatio'] = $gangFactor;
+    }
+    else if (@$stats['shipsDestroyed'] > 0) {
+        $gangFactor = floor(@$stats['pointsDestroyed'] / @$stats['shipsDestroyed'] * 10 / 2);
+        $gangFactor = max(0, min(100, 100 - $gangFactor));
+        $stats['gangRatio'] = $gangFactor;
+    }
+    unset($stats['gangFactor']);
+
     if ($type == 'characterID') $stats['calcTrophies'] = true;
     // save it
     $mdb->getCollection('statistics')->save($stats);
