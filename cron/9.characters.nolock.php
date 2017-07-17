@@ -3,7 +3,8 @@
 require_once '../init.php';
 
 $failure = new \cvweiss\redistools\RedisTtlCounter('ttlc:esiFailure', 300);
-$guzzler = new Guzzler(30, 1);
+$guzzler = new Guzzler(10, 1);
+$maxKillID = $mdb->findField("killmails", "killID", [], ['killID' => -1]);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
@@ -16,11 +17,19 @@ while ($minute == date('Hi')) {
 
     $id = $redis->lpop("zkb:char:pool");
     $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => (int) $id]);
+    $skip = (int) @$row['skip'];
+    $lastKillID = $mdb->findField("killmails", "killID", ['involved.characterID' => (int) $id], ['killID' => -1]);
+
     if ((time() - @$row['lastApiUpdate']->sec) < 86400) {
         if ($redis->llen("zkb:char:pool") == 0) break;
         continue;
     }
-    $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now()] );
+    // Update active characters daily and inactive characters weekly
+    if ($lastKillID < ($maxKillID - 1000000) && $skip < 7) {
+        $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(), 'skip' => ($skip + 1)] );
+        continue;
+    }
+    $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(), 'skip' => 0] );
 
     $url = "https://esi.tech.ccp.is/v4/characters/$id/";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
