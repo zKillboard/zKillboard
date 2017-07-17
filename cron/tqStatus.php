@@ -32,5 +32,10 @@ function apiStatus($prevMessage, $success, $fail, $notification)
 
     $success = new RedisTtlCounter($success, 300);
     $fail = new RedisTtlCounter($fail, 300);
-    return ($success->count() >= $fail->count()) ? null : $notification;
+    $sCount = $success->count();
+    $fCount = $fail->count();
+    $total = $sCount + $fCount;
+    if ($total == 0) return null;
+    if ($fCount / $total >= .9) return $notification;
+    return null;
 }
