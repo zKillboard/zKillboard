@@ -106,7 +106,6 @@ function calcStats($row, $maxSequence)
         $gangFactor = max(0, min(100, 100 - $gangFactor));
         $stats['gangRatio'] = $gangFactor;
     }
-    unset($stats['gangFactor']);
 
     if ($type == 'characterID') $stats['calcTrophies'] = true;
     // save it
