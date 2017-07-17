@@ -112,8 +112,8 @@ function pullEsiKills($charID, $esi) {
     $mdb->remove("apis", ['type' => 'char', 'userID' => $charID]);
     $redis->setex("apiVerified:$charID", 86400, time());
 
-    // Check active chars once an hour, check inactive chars every 16-20 hours
-    $esi->setTime($charID, time() + (3600 * ($maxKillID > ($maxSiteKillID - 1000000) ? 1 : rand(16,20))));
+    // Check active chars once an hour, check inactive chars less often
+    $esi->setTime($charID, time() + (3600 * ($maxKillID > ($maxSiteKillID - 1000000) ? 1 : rand(24,48))));
 
     if ($killsAdded > 0) {
         $name = Info::getInfoField('characterID', $charID, 'name');
