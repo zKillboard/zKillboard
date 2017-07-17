@@ -142,6 +142,8 @@ class Price
             case 11938: // Armageddon Imperial Issue
             case 26842: // Tempest Tribal Issue
                 return 750000000000; // 750b
+            case 37275: // Standup XL-Set Extinction Level Weapons Suite II
+                return 575000000000; // Based off ME/TE 10/10 production, has no current market values
         }
 
         // Some groupIDs have hardcoded prices
