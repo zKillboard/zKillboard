@@ -537,6 +537,7 @@ class Info
             '172' => 'Structure Fuel',
             '173' => 'Deliveries',
             '174' => 'Crate Loot',
+            '177' => 'Subsystem Hold',
             '64' => 'Unlocked item, can be moved',
             );
 
