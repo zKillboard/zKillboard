@@ -13,8 +13,6 @@ if ($redis->get($redisKey) != true) {
     $queueTopAlltime->clear();
     $iter = $mdb->getCollection('statistics')->find([], ['months' => 0, 'groups' => 0])->sort(['type' => 1, 'id' => 1]);
     while ($row = $iter->next()) {
-        if ($row['type'] == 'characterID' || $row['type'] == 'locationID') continue;
-
         $allTimeSum = (int) @$row['allTimeSum'];
         $shipsDestroyed = (int) @$row['shipsDestroyed'];
         $nextTopRecalc = floor($allTimeSum * 1.01);
@@ -51,5 +49,7 @@ function calcTop($row)
     $topLists[] = array('type' => 'ship', 'data' => Stats::getTop('shipTypeID', $parameters));
     $topLists[] = array('type' => 'system', 'data' => Stats::getTop('solarSystemID', $parameters));
 
-    $mdb->set('statistics', $row, ['topAllTime' => $topLists, 'allTimeSum' => $currentSum]);
+    $nextTopRecalc = floor($currentSum * 1.01);
+
+    $mdb->set('statistics', $row, ['topAllTime' => $topLists, 'allTimeSum' => $currentSum, 'nextTopRecalc' => $nextTopRecalc]);
 }
