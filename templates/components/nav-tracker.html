@@ -13,8 +13,10 @@ $("[id='disqus_count']").hide();
 {% endif %}
 
 {% if showAds != 0 %}
-$("#adsensetop").load('/google/');
-$("#adsensebottom").load('/google/');
+if (showAds != 0 ) {
+    $("#adsensetop").load('/google/');
+    $("#adsensebottom").load('/google/');
+}
 {% else %}
 $("#adsensetop").remove();
 $("#adsensebottom").remove();

@@ -3,8 +3,10 @@ $("#char-loggedin").remove();
 $("#tracker-none").removeClass("hidden");
 $("#char-image").attr("src", "/img/1_32.jpg");
 
-$("#adsensetop").load('/google/');
-$("#adsensebottom").load('/google/');
+if (showAds != 0) {
+    $("#adsensetop").load('/google/');
+    $("#adsensebottom").load('/google/');
+}
 
 $(document).ready(function() {
     setTimeout("adCheck()", 5000);
