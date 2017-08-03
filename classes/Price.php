@@ -125,6 +125,8 @@ class Price
             case 33675: // Chameleon
             case 35781: // Fiend
                 return 150000000000; // 150b
+            case 42245: // Rabisu
+                return 200000000000; // 200b
             case 9860: // Polaris
             case 11019: // Cockroach
                 return 1000000000000; // 1 trillion, rare dev ships
