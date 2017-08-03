@@ -35,7 +35,7 @@ function apiStatus($prevMessage, $success, $fail, $notification)
     $sCount = $success->count();
     $fCount = $fail->count();
     $total = $sCount + $fCount;
-    if ($total == 0) return null;
+    if ($total < 100) return null;
     if ($fCount / $total >= .9) return $notification;
     return null;
 }
