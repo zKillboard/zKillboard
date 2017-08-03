@@ -43,7 +43,7 @@ function checkToken($mdb, $row, $accessToken, $charID, $refreshToken)
     return true;
 }
 
-function findNext($mdb, $ttlc)
+function findNext(&$mdb, &$ttlc)
 {
     $row = $mdb->findDoc("scopes", ['scope' => 'corporationKillsRead', 'corporationID' => ['$exists' => false]]);
     if ($row != null) {
@@ -87,11 +87,7 @@ function handleKillFulfilled(&$guzzler, &$params, &$content)
             ZLog::add("$added kills added by corp $corpName (SSO)", $charID);
         }
     }
-    $mdb->set("scopes", $row, ['characterID' => $charID, 'corporationID' => $corpID, 'lastApiUpdate' => $mdb->now()]);
-    if ($corpID != null) {
-        $mdb->remove("apis", ['corporationID' => $corpID]);
-        $ssoCorps->add($corpID);
-    }
+    $mdb->set("scopes", $row, ['failCount' => 0, 'characterID' => $charID, 'corporationID' => $corpID, 'lastApiUpdate' => $mdb->now()]);
     xmlLog(true);
 }
 
@@ -111,12 +107,18 @@ function handleKillRejected(&$guzzler, &$params, &$connectionException)
             // Ignore for now
             break;
         case 403:
-            $mdb->remove("scopes", $row);
+            $failCount = @$row['failCount'] + 1;
+            if ($failCount >= 3) {
+                //Util::out("failCount of $failCount for $charID / $corpID " . print_r($connectionException->getMessage(), true));
+                $mdb->remove("scopes", $row);
+            } else {
+                $mdb->set("scopes", $row, ['failCount' => $failCount]);
+            }
             break;
         default:
             Util::out("/corp/KillMail fetch failed for $charID with http code $code");
     }
-    xmlLog(false);
+    //xmlLog(false);
 }
 
 function xmlLog($success)
