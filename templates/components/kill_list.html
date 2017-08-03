@@ -50,7 +50,7 @@
           <div style='width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;'><span style="color: {{ kill.system.systemColorCode }}">{{ "%1.1f"|format(kill.system.solarSystemSecurity) }}</span> <a href="/system/{{ kill.system.solarSystemID }}/">{{ kill.system.solarSystemName }}</a></div>
           <a href="/region/{{ kill.system.regionID }}/">{{ kill.system.regionName }}</a>
         </td>
-        <td class="hidden-xs" style="text-align: center; vertical-align: middle; width: 64px;">
+        <td class="hidden-xs" style="text-align: center; vertical-align: middle; max-width: 64px;">
           {% if kill.victim.allianceID != 0 %}
             {% include 'components/image_alli.html' %}
           {% else %}
@@ -59,13 +59,14 @@
         </td>
         <td class="victim" style="text-align: left; vertical-align: top; max-width: 290px;">
           <a href="/character/{{ kill.victim.characterID }}/">{{ kill.victim.characterName }}</a> ({{ kill.victim.shipName }})<br />
-          <a href="/corporation/{{ kill.victim.corporationID }}/">{% if kill.victim.allianceName|length > 0 %}[{{ kill.victim.cticker }}]{% else %}{{ kill.victim.corporationName }}{% endif %}</a>
           {% if kill.victim.allianceID != 0 %}
-            / <a href="/alliance/{{ kill.victim.allianceID }}/">{{ kill.victim.allianceName }}</a>
+            <a href="/alliance/{{ kill.victim.allianceID }}/">{{ kill.victim.allianceName }}</a>
+          {% else %}
+            <a href="/corporation/{{ kill.victim.corporationID }}/">{{ kill.victim.corporationName }}</a>
           {% endif %}
         </td>
         {% set field = kill.finalBlow %}
-        <td class="hidden-xs" style="text-align: center; vertical-align: middle; width: 64px;">
+        <td class="hidden-xs" style="text-align: center; vertical-align: middle; max-width: 64px;">
           {% if kill.finalBlow.allianceID != 0 %}
             {% include 'components/image_alli.html' %}
           {% else %}
@@ -79,9 +80,10 @@
                 {% include 'components/text_ship.html' %}
           {% endif %}
           ({{ kill.attackerCount }})<br />
-          <a href="/corporation/{{ kill.finalBlow.corporationID }}/">{% if kill.finalBlow.allianceName|length > 0 %}[{{ kill.finalBlow.cticker }}]{% else %}{{ kill.finalBlow.corporationName }}{% endif %}</a>
           {% if kill.finalBlow.allianceID != 0 %}
-            / <a href="/alliance/{{ kill.finalBlow.allianceID }}/">{{ kill.finalBlow.allianceName }}</a>
+            <a href="/alliance/{{ kill.finalBlow.allianceID }}/">{{ kill.finalBlow.allianceName }}</a>
+          {% else %}
+            <a href="/corporation/{{ kill.finalBlow.corporationID }}/">{{ kill.finalBlow.corporationName }}</a>
           {% endif %}
           {% if kill.finalBlow.factionID == 500021 %}
             <a href="/faction/{{ kill.finalBlow.factionID }}/">Unknown</a>
