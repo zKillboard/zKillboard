@@ -16,7 +16,7 @@ if ($redis->get($redisKey) != true) {
         $allTimeSum = (int) @$row['allTimeSum'];
         $shipsDestroyed = (int) @$row['shipsDestroyed'];
         $nextTopRecalc = floor($allTimeSum * 1.01);
-        if ($shipsDestroyed <=  100 || $shipsDestroyed < $nextTopRecalc) continue;
+        if ($shipsDestroyed <=  100) continue;
 
         $queueTopAlltime->push($row['_id']);
     }
