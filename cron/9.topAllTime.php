@@ -9,14 +9,13 @@ if ($redis->llen('queueStats') >= 1000) exit();
 $date = date('Ymd');
 $redisKey = "tq:topAllTime";
 $queueTopAlltime = new RedisQueue('queueTopAlltime');
-if ($redis->get($redisKey) != true) {
-    $queueTopAlltime->clear();
+if ($redis->get($redisKey) != true && $queueTopAlltime->size() == 0) {
     $iter = $mdb->getCollection('statistics')->find([], ['months' => 0, 'groups' => 0])->sort(['type' => 1, 'id' => 1]);
     while ($row = $iter->next()) {
         $allTimeSum = (int) @$row['allTimeSum'];
         $shipsDestroyed = (int) @$row['shipsDestroyed'];
         $nextTopRecalc = floor($allTimeSum * 1.01);
-        if ($shipsDestroyed <=  100) continue;
+        if ($shipsDestroyed <=  100 || $shipsDestroyed < $nextTopRecalc) continue;
 
         $queueTopAlltime->push($row['_id']);
     }
