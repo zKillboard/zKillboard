@@ -21,6 +21,24 @@ try {
 
     //Stats::getSupers($array, $type, $id);
 
+    $p = [$type => [$id]];
+    $numDays = 7;
+    $p['limit'] = 10;
+    $p['pastSeconds'] = $numDays * 86400;
+    $p['kills'] = true;
+
+    $topLists[] = Info::doMakeCommon('Top Characters', 'characterID', Stats::getTop('characterID', $p));
+    $topLists[] = Info::doMakeCommon('Top Corporations', 'corporationID', Stats::getTop('corporationID', $p));
+    $topLists[] = Info::doMakeCommon('Top Alliances', 'allianceID', Stats::getTop('allianceID', $p));
+    $topLists[] = Info::doMakeCommon('Top Ships', 'shipTypeID', Stats::getTop('shipTypeID', $p));
+    $topLists[] = Info::doMakeCommon('Top Systems', 'solarSystemID', Stats::getTop('solarSystemID', $p));
+    $topLists[] = Info::doMakeCommon('Top Locations', 'locationID', Stats::getTop('locationID', $p));
+
+    $p['limit'] = 6;
+    $p['categoryID'] = 6;
+    $array['topLists'] = $topLists;
+    $array['topIskKillIDs'] = array_keys(Stats::getTopIsk($p));
+
     if (isset($_GET['callback']) && Util::isValidCallback($_GET['callback'])) {
         $app->contentType('application/javascript; charset=utf-8');
         header('X-JSONP: true');
