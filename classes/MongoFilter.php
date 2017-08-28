@@ -244,6 +244,9 @@ class MongoFilter
                 case 'beforeSequence':
                     $and[] = ['sequence' => ['$lt' => $value]];
                     break;
+                case 'involvedLimit':
+                    $and[] = ['$where' => 'this.attackers.length < ' . $value];
+                    break;
             }
         }
 
