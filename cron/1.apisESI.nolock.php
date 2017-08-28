@@ -26,7 +26,7 @@ $esiFailure = new RedisTtlCounter('ttlc:esiFailure', 300);
 $usleep = max(50000, min(1000000, floor((1 / (($esi->size() + 1) / 3600)) * 700000)));
 $redirect = str_replace("/cron/", "/cron/logs/", __FILE__) . ".log";
 $minute = date('Hi');
-while ($minute == date('Hi')) {
+while ($minute == date('Hi') && $esiFailure->count() < 300) {
     $charID = (int) $esi->next();
     if ($charID > 0) exec("cd " . __DIR__ . " ; php " . __FILE__ . " $charID >>$redirect 2>>$redirect &");
 
