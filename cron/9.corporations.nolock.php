@@ -6,7 +6,7 @@ $failure = new \cvweiss\redistools\RedisTtlCounter('ttlc:esiFailure', 300);
 $guzzler = new Guzzler();
 
 $minute = date('Hi');
-while ($minute == date('Hi')) {
+while ($minute == date('Hi') && $failure->count() < 300) {
     $row = $mdb->findDoc("information", ['type' => 'corporationID'], ['lastApiUpdate' => 1]);
     if ($row === null) break;
 
@@ -14,7 +14,7 @@ while ($minute == date('Hi')) {
     if ((time() - @$row['lastApiUpdate']->sec) < 86400) break;
     $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now()]);
 
-    $url = "https://esi.tech.ccp.is/latest/corporations/$id/";
+    $url = "https://esi.tech.ccp.is/v3/corporations/$id/";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
     $guzzler->call($url, "updateCorp", "failCorp", $params);
     if ($failure->count() > 200) sleep(1);
@@ -30,6 +30,8 @@ function failCorp(&$guzzler, &$params, &$connectionException)
 
     switch ($code) {
         case 0: // timeout
+        case 500:
+        case 502: // ccp broke something
         case 503: // server error
         case 200: // timeout...
             $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(86400 * -2)]);
