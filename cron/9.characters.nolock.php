@@ -7,7 +7,7 @@ $guzzler = new Guzzler(10, 1);
 $maxKillID = $mdb->findField("killmails", "killID", [], ['killID' => -1]);
 
 $minute = date('Hi');
-while ($minute == date('Hi')) {
+while ($minute == date('Hi') && $failure->count() < 300) {
     if ($redis->llen("zkb:char:pool") == 0) {
         $rows = $mdb->find("information", ['type' => 'characterID'], ['lastApiUpdate' => 1], 1000);
         foreach ($rows as $row) {
@@ -48,12 +48,14 @@ function failChar(&$guzzler, &$params, &$connectionException)
 
     switch ($code) {
         case 0: // timeout
+        case 500:
+        case 502: // ccp broke something...
         case 503: // server error
         case 200: // timeout...
             $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(86400 * -2)]);
             break;
         default:
-            Util::out("/eve/CharacterInfo failed for $id with code $code");
+            Util::out("/v4/characters/ failed for $id with code $code");
     }
     $xmllog = new \cvweiss\redistools\RedisTtlCounter('ttlc:esiFailure', 300);
     $xmllog->add(uniqid());
