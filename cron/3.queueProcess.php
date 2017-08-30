@@ -7,6 +7,7 @@ require_once '../init.php';
 
 $dateToday = date('Y-m-d');
 $dateYesterday = date('Y-m-d', time() - 86400);
+$date7Days = time() - (86400 * 7);
 $redis->expire("zkb:loot:green:$dateToday", 86400);
 $redis->expire("zkb:loot:red:$dateToday", 86400);
 $redis->expire("zkb:loot:green:$dateYesterday", 86400);
@@ -156,7 +157,7 @@ while ($minute == date('Hi')) {
             $killmails->save($kill);
         }
         $oneWeekExists = $mdb->exists('oneWeek', ['killID' => $killID]);
-        if (!$oneWeekExists && $kill['npc'] == false) {
+        if (!$oneWeekExists && $kill['npc'] == false && $kill['dttm']->sec >= $date7Days) {
             $mdb->getCollection('oneWeek')->save($kill);
         }
 
