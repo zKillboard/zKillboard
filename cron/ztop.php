@@ -84,10 +84,13 @@ while ($hour == date('H')) {
     addInfo('Failed XML calls in last 5 minutes', $xmlFailure->count(), false);
 
     $esiChars = new RedisTimeQueue("tqApiESI", 3600);
+    $esiCorps = new RedisTimeQueue("tqCorpApiESI", 3600);
     $ssoCorps = new RedisTimeQueue("zkb:ssoCorps", 3600);
     addInfo('', 0, false);
     addInfo('Character ESI/SSO KillLogs to check', $esiChars->pending(), false);
     addInfo('Character ESI/SSO RefreshTokens', $esiChars->size(), false);
+    addInfo('Corporation ESI/SSO KillLogs to check', $esiCorps->pending(), false);
+    addInfo('Corporation ESI/SSO RefreshTokens', $esiCorps->size(), false);
     addInfo('Corporation XML/SSO to check', $ssoCorps->pending(), false);
     addInfo('Corporation XML/SSO RefreshTokens', $ssoCorps->size(), false);
 
