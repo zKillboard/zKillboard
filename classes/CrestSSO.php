@@ -38,7 +38,6 @@ class CrestSSO
         $scopes = 'publicData';
         $requestedScopes = isset($_GET['scopes']) ? $_GET['scopes'] : [];
         if (in_array('esi-killmails.read_killmails.v1', $requestedScopes)) {
-            $requestedScopes[] = 'corporationKillsRead';
             $requestedScopes[] = 'esi-killmails.read_corporation_killmails.v1';
         }
 
