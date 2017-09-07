@@ -79,9 +79,8 @@ function handleKillFulfilled(&$guzzler, &$params, &$content)
 
     if ($corpID > 1999999) {
         if ($redis->get("apiVerified:$corpID") == null) {
-            ZLog::add("$corpName ($charName) is now SSO/API Verified", $charID);
+            //ZLog::add("$corpName ($charName) is now SSO/API Verified", $charID);
         }
-        $redis->setex("apiVerified:$corpID", 86400, time());
         if ($added) {
             while (strlen("$added") < 3) $added = " $added";
             ZLog::add("$added kills added by corp $corpName (SSO)", $charID);
