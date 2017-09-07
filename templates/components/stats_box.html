@@ -99,5 +99,6 @@
 </table>
 {% endif %}
 {% if extra.statsRecalced > 100000 %}
-<h6>* Some statistics are being recalculated: <a href='/ztop/'>{{ extra.statsRecalced|number_format(0) }} records remaining</a></h6>
+<br/>
+<div class='alert alert-danger'>* Some statistics are being recalculated: <a href='/ztop/'>{{ extra.statsRecalced|number_format(0) }} records remaining</a></div>
 {% endif %}
