@@ -123,7 +123,7 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
     $topParameters['limit'] = 10;
     $topParameters['cacheTime'] = 86400;
 
-    if ($pageType == 'topalltime' && $key != 'character') {
+    if ($pageType == 'topalltime') {
         $useType = $key;
         if ($useType == 'ship') {
             $useType = 'shipType';
