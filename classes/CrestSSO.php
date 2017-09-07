@@ -145,6 +145,10 @@ class CrestSSO
                         $esi = new RedisTimeQueue('tqApiESI', 3600);
                         $esi->add($charID);
                         break;
+                    case 'esi-killmails.read_corporation_killmails.v1':
+                        $esi = new RedisTimeQueue('tqCorpApiESI', 3600);
+                        $esi->add($charID);
+                        break;
                 }
             }
 
