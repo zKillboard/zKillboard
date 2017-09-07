@@ -6,7 +6,7 @@ class ZLog
     {
         global $mdb;
 
-        $mdb->save("zlog", ['message' => $message, 'characterID' => $charID, 'entryTime' => new MongoDate()]);
+        if ($charID > 0) $mdb->save("zlog", ['message' => $message, 'characterID' => $charID, 'entryTime' => new MongoDate()]);
         if ($useLogLog) Log::log($message);
         else Util::out($message);
     }
