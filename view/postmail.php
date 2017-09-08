@@ -19,6 +19,7 @@ if ($_POST) {
         // Looks like http://public-crest.eveonline.com/killmails/30290604/787fb3714062f1700560d4a83ce32c67640b1797/
         $exploded = explode('/', $killmailurl);
 
+        if (count($exploded) == 8) array_shift($exploded);
         if (count($exploded) != 7) {
             $error = 'Invalid killmail link.';
         } else {
