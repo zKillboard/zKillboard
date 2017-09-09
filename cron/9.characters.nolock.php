@@ -54,6 +54,9 @@ function failChar(&$guzzler, &$params, &$connectionException)
         case 200: // timeout...
             $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(86400 * -2)]);
             break;
+        case 404:
+            $mdb->set("information", $row, ['allianceID' => 0, 'corporationID' => 1000001, 'factionID' => 0,  'secStatus' => 0]);
+            break;
         default:
             Util::out("/v4/characters/ failed for $id with code $code");
     }
