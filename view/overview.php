@@ -133,7 +133,7 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
 
         $topLists = $mdb->findField('statistics', 'topAllTime', ['type' => "{$useType}ID", 'id' => (int) $id]);
         $nextTopRecalc = $mdb->findField('statistics', 'allTimeSum', ['type' => "{$useType}ID", 'id' => (int) $id]);
-        $nextTopRecalc = floor($nextTopRecalc * 1.01);
+        $nextTopRecalc = floor($nextTopRecalc * 1.01) + 1;
     } else {
         if ($pageType != 'topalltime') {
             if (!isset($topParameters['year'])) {

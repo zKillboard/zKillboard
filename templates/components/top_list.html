@@ -1,5 +1,8 @@
 {% if topLists|length > 0 %}
 <div class="row">
+{% if nextTopRecalc %}
+<div class='col-lg-12'>Next all time top lists recalculation will happen shortly after {{ nextTopRecalc|number_format(0) }} kills has been reached.<br/><hr/></div>
+{% endif %}
 {% for list in topLists %}
 	{% set loopIndex = 0 %}
 	{% if (loop.index -1) is divisibleby(3) %}
