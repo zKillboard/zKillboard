@@ -37,6 +37,8 @@ class Stats
             return $result;
         }
 
+        if (!isset($parameters['limit'])) $parameters['limit'] = 10;
+
         if (isset($parameters['pastSeconds']) && $parameters['pastSeconds'] <= 604800) {
             $killmails = $mdb->getCollection('oneWeek');
             if ($parameters['pastSeconds'] == 604800) {
@@ -93,7 +95,7 @@ class Stats
         $pipeline[] = ['$group' => ['_id' => '$_id.'.$groupByColumn, 'kills' => ['$sum' => 1]]];
         $pipeline[] = ['$sort' => ['kills' => -1]];
         if (!isset($parameters['nolimit'])) {
-            $pipeline[] = ['$limit' => 10];
+            $pipeline[] = ['$limit' => $parameters['limit']];
         }
         $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
 
