@@ -24,11 +24,19 @@ while ($minute == date('Hi') && $failure->count() < 300) {
         if ($redis->llen("zkb:char:pool") == 0) break;
         continue;
     }
+
+    // Don't update characters in Doomheim (aka deleted)
+    if (@$row['corporationID'] == 1000001) {
+        $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(), 'allianceID' => 0, 'factionID' => 0,  'secStatus' => 0]);
+        continue;
+    }
+
     // Update active characters daily and inactive characters weekly
     if ($lastKillID < ($maxKillID - 1000000) && $skip < 7) {
         $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(), 'skip' => ($skip + 1)] );
         continue;
     }
+
     $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(), 'skip' => 0] );
 
     $url = "https://esi.tech.ccp.is/v4/characters/$id/";
@@ -55,6 +63,7 @@ function failChar(&$guzzler, &$params, &$connectionException)
             $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(86400 * -2)]);
             break;
         case 404:
+        case 410:
             $mdb->set("information", $row, ['allianceID' => 0, 'corporationID' => 1000001, 'factionID' => 0,  'secStatus' => 0]);
             break;
         default:
