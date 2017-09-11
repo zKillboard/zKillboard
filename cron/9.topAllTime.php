@@ -14,10 +14,13 @@ if ($redis->get($redisKey) != true && $queueTopAlltime->size() == 0) {
     while ($row = $iter->next()) {
         $allTimeSum = (int) @$row['allTimeSum'];
         $shipsDestroyed = (int) @$row['shipsDestroyed'];
-        $nextTopRecalc = floor($allTimeSum * 1.01);
-        if ($shipsDestroyed <=  100 || $shipsDestroyed < $nextTopRecalc) continue;
+        $nextTopRecalc = floor($allTimeSum * 1.01) + 1;
 
-        $queueTopAlltime->push($row['_id']);
+        $doCalc = false;
+        //$doCalc |= $shipsDestroyed >= 10000;
+        $doCalc |= $shipsDestroyed >= 10 && $shipsDestroyed >= $nextTopRecalc;
+
+        if ($doCalc) $queueTopAlltime->push($row['_id']);
     }
     $redis->setex($redisKey, 14400, true);
 }
@@ -40,6 +43,7 @@ function calcTop($row)
     $parameters = [$row['type'] => $row['id']];
     $parameters['limit'] = 100;
     $parameters['kills'] = true;
+    $parameters['npc'] = false;
 
     $topLists[] = array('type' => 'character', 'data' => Stats::getTop('characterID', $parameters));
     $topLists[] = array('type' => 'corporation', 'data' => Stats::getTop('corporationID', $parameters));
