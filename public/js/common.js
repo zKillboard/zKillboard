@@ -117,6 +117,7 @@ function hideSortStuff(doHide)
 function sendCrestUrl() {
     str = $("#killmailurl").val();
     strSplit = str.split("/");
+    if (strSplit.length == 8) strSplit.shift();
     killID = strSplit[4];
     hash = strSplit[5];
     a = ['/crestmail/', killID, '/', hash, '/'];
