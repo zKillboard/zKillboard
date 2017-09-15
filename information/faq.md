@@ -20,7 +20,7 @@ zKillboard does not get all killmails automatically. They must be provided by va
 
 In short there are many sources for a killmail:
 
-* CREST submission
+* API (ESI) submission
 * War killmail (victim and final blow have a Concord sanctioned war with each other)
 * API given by victim
 * API given by final blow character
@@ -62,7 +62,7 @@ There is a longstanding bug in killmails that always show a blueprint as an orig
 
 #####I have given you my XML API or logged in with SSO, what are you doing with this information?
 
-zKillboard will only read the killmails portions of the XML API and SSO, if provided with the proper permissions. Submission of the XML API to zKillboard is determined as having given permission, regardless of the source/person submitting the API. zKillboard will only read killmails from the SSO & CREST login only if the "Allow zKillboard to read your Kills" is checked when logging in.
+zKillboard will only read the killmails portions of the XML API and SSO, if provided with the proper permissions. Submission of the XML API to zKillboard is determined as having given permission, regardless of the source/person submitting the API. zKillboard will only read killmails from the SSO login only if the "Allow zKillboard to read your Kills" is checked when logging in.
 
 XML APIs that give more explicit permissons than just access to KillMails will still be used for only reading KillMails. All other portions of the XML API are ignored and remain unused.
 
@@ -98,4 +98,4 @@ There is a page within your account for that, please visit https://zkillboard.co
 Also, CCP provides the following pages to help manage APIs:
 
 * XML API: https://community.eveonline.com/support/api-key/
-* CREST's SSO API: https://community.eveonline.com/support/third-party-applications/
+* SSO API: https://community.eveonline.com/support/third-party-applications/
