@@ -60,7 +60,7 @@ if ($_POST) {
                     if ($crest === null) {
                         $error = "Our processing queue deleted your submission. Was it even a valid killmail?";
                     } else if (@$crest['errorCode'] !== null) {
-                        $error = "CCP's CREST server threw an errorCode ".$crest['errorCode'].' for your killmail. We cannot retrieve the information to post your killmail at this time until CCP fixes this error.';
+                        $error = "CCP's ESI server threw an errorCode ".$crest['errorCode'].' for your killmail. We cannot retrieve the information to post your killmail at this time until CCP fixes this error.';
                     } elseif ($crest['processed'] === null) {
                         Log::log("$killID $hash failing, will keep trying");
                         $mdb->set('crestmails', ['killID' => $killID, 'hash' => $hash], ['processed' => false]);
