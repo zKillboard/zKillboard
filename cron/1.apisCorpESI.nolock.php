@@ -13,7 +13,7 @@ if ($charID !== null) {
     exit();
 }
 
-if (date('i') == 37 || $esi->size() == 0) {
+if (date('i') == 49 || $esi->size() == 0) {
     $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_corporation_killmails.v1']);
     foreach ($esis as $row) {
         $charID = $row['characterID'];
@@ -91,8 +91,8 @@ function pullEsiKills($charID, $esi) {
             $httpCode = (int) @$json['httpCode'];
             if ($httpCode == 403) {
                 $mdb->remove("scopes", $row);
+                $esi->remove($charID);
             } else Util::out("$url httpCode $httpCode");
-            $esi->remove($charID);
             return;
         }
 
@@ -130,7 +130,7 @@ function pullEsiKills($charID, $esi) {
     $redis->setex("apiVerified:$corpID", 86400, time());
 
     // Check active chars once an hour, check inactive chars less often
-    $esi->setTime($charID, time() + (3600 * ($maxKillID > ($maxSiteKillID - 1000000) ? 1 : rand(24,48))));
+    $esi->setTime($charID, time() + (3600 * ($maxKillID > ($maxSiteKillID - 1000000) ? 1 : rand(20,24))));
 
     if ($killsAdded > 0) {
         $name = Info::getInfoField('characterID', $charID, 'name');
