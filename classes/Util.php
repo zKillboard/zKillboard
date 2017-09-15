@@ -70,6 +70,9 @@ class Util
         array_shift($split);
         if (sizeof($split) > 1) unset($split[count($split) - 1]);
 
+        $multi = false;
+        $paginated = false;
+
         while (sizeof($split)) {
             $key = array_shift($split);
             switch ($key) {
@@ -142,6 +145,7 @@ class Util
                         if (sizeof($exploded) > 10) {
                             throw new Exception("Client requesting too many parameters.");
                         }
+                        $multi = sizeof($exploded) > 1;
                         $ints = [];
                         foreach ($exploded as $ex) {
                             if ("$ex" != (string) (int) $ex) throw new Exception("$ex is not an integer");
@@ -180,6 +184,7 @@ class Util
                         $value = 1;
                     }
                     $parameters[$key] = (int) $value;
+                    $paginated = true;
                     break;
                 case 'orderDirection':
                     $value = array_shift($split);
@@ -269,6 +274,8 @@ class Util
                     exit();
             }
         }
+
+        if ($multi && $paginated) throw new Exception("Combining multiple IDs with pagination is no longer supported");
 
         return $parameters;
     }
