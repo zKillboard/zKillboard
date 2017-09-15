@@ -24,8 +24,7 @@ while ($minute == date('Hi')) {
         exit();
     }
     $alliance = $mdb->findDoc('information', ['type' => 'allianceID', 'id' => $id]);
-    $id = $alliance['id'];
-    $name = $alliance['name'];
+    $name = (string) @$alliance['name'];
 
     $currentInfo = $mdb->findDoc('information', ['type' => 'alliance', 'id' => $id]);
 
