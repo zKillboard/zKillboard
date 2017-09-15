@@ -91,8 +91,6 @@ while ($hour == date('H')) {
     addInfo('Character ESI/SSO RefreshTokens', $esiChars->size(), false);
     addInfo('Corporation ESI/SSO KillLogs to check', $esiCorps->pending(), false);
     addInfo('Corporation ESI/SSO RefreshTokens', $esiCorps->size(), false);
-    addInfo('Corporation XML/SSO to check', $ssoCorps->pending(), false);
-    addInfo('Corporation XML/SSO RefreshTokens', $ssoCorps->size(), false);
 
     addInfo('', 0, false);
     addInfo('Total Characters', $redis->get("zkb:totalChars"), false);
