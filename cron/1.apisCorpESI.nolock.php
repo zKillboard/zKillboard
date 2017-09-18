@@ -29,7 +29,12 @@ $redirect = str_replace("/cron/", "/cron/logs/", __FILE__) . ".log";
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $charID = (int) $esi->next();
-    if ($charID > 0) exec("cd " . __DIR__ . " ; php " . __FILE__ . " $charID >>$redirect 2>>$redirect &");
+    if ($charID > 0) {
+        $corpID = (int) Info::getInfoField("characterID", $charID, 'corporationID');
+        $alliID = (int) Info::getInfoField("corporationID", $corpID, 'allianceID');
+        if (in_array($corpID, $ignoreEntities) || in_array($alliID, $ignoreEntities)) continue;
+        exec("cd " . __DIR__ . " ; php " . __FILE__ . " $charID >>$redirect 2>>$redirect &");
+    }
 
     usleep($esiCalls->count() < 350 && $esiFailure->count() < 50 && $charID > 0 ? $usleep : 1000000);
 }
