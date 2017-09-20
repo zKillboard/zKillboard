@@ -87,10 +87,10 @@ while ($hour == date('H')) {
     $esiCorps = new RedisTimeQueue("tqCorpApiESI", 3600);
     $ssoCorps = new RedisTimeQueue("zkb:ssoCorps", 3600);
     addInfo('', 0, false);
-    addInfo('Character ESI/SSO KillLogs to check', $esiChars->pending(), false);
-    addInfo('Character ESI/SSO RefreshTokens', $esiChars->size(), false);
-    addInfo('Corporation ESI/SSO KillLogs to check', $esiCorps->pending(), false);
-    addInfo('Corporation ESI/SSO RefreshTokens', $esiCorps->size(), false);
+    addInfo('Character KillLogs to check', $esiChars->pending(), false);
+    addInfo('Character RefreshTokens', $esiChars->size(), false);
+    addInfo('Corporation KillLogs to check', $esiCorps->pending(), false);
+    addInfo('Corporation RefreshTokens', $esiCorps->size(), false);
 
     addInfo('', 0, false);
     addInfo('Total Characters', $redis->get("zkb:totalChars"), false);
