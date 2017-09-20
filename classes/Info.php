@@ -148,7 +148,7 @@ class Info
     {
         global $mdb, $redis;
 
-        $corpList = $mdb->find('information', ['type' => 'corporationID', 'memberCount' => ['$gt' => 0], 'allianceID' => (int) $allianceID], ['name' => 1]);
+        $corpList = $mdb->find('information', ['type' => 'corporationID', 'allianceID' => (int) $allianceID], ['name' => 1]);
 
         $retList = array();
         foreach ($corpList as $corp) {
