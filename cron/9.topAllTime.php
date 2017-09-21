@@ -4,6 +4,7 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
+if ($redis->llen('queueStats') >= 100000) $redis->del('queueTopAlltime');
 if ($redis->llen('queueStats') >= 1000) exit();
 
 $date = date('Ymd');
