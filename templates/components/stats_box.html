@@ -100,5 +100,5 @@
 {% endif %}
 {% if extra.statsRecalced > 100000 %}
 <br/>
-<div class='alert alert-danger'>* Statistics are a little behind atm: <a href='/ztop/'>{{ extra.statsRecalced|number_format(0) }} records remaining</a></div>
+<div class='alert alert-danger'>* Statistics are a little behind atm: <a href='/ztop/'>{{ extra.statsRecalced|number_format(0) }} records remaining</a><br><small><i>This is usually because a lot of kills got added recently...</i></small></div>
 {% endif %}
