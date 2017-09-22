@@ -13,6 +13,7 @@ foreach ($cursor as $row) {
     $time = $time - ($time % 86400);
     $date = date('Ymd', $time);
     $killID = $row['killID'];
+    if ($killID <= 0) continue;
     $hash = $row['zkb']['hash'];
 
     $redis->hset("zkb:day:$date", $killID, $hash);
