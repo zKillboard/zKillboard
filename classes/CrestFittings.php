@@ -16,7 +16,7 @@ class CrestFittings
         }
         $accessToken = CrestSSO::getAccessToken($charID, 'none', $row['refreshToken']);
 
-        $killmail = $mdb->findDoc('rawmails', ['killID' => (int) $killID]);
+        $killmail = CrestTools::getCrestMail($killID);
         $victim = $killmail['victim'];
 
         header('Content-Type: application/json');

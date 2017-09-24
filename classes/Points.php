@@ -7,7 +7,7 @@ class Points
     {
         global $mdb;
 
-        $killmail = $mdb->findDoc("rawmails", ['killID' => $killID]);
+        $killmail = CrestTools::getCrestMail($killID);
         $victim = $killmail['victim'];
         $shipTypeID = $victim['shipType']['id'];
         $items = $victim['items'];

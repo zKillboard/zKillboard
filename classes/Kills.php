@@ -91,7 +91,9 @@ class Kills
         if ($stored != null) return $stored;
 
         $killmail = $mdb->findDoc('killmails', ['cacheTime' => 3600, 'killID' => (int) $killID]);
-        $rawmail = $mdb->findDoc('rawmails', ['cacheTime' => 3600, 'killID' => (int) $killID]);
+
+        $rawmail = CrestTools::getCrestMail($killID);
+
         $damage = (int) $rawmail['victim']['damageTaken'];
         $killmail['damage'] = $damage;
 

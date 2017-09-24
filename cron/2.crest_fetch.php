@@ -32,6 +32,7 @@ while ($minute == date('Hi')) {
         $killID = (int) $row['killID'];
         $hash = $row['hash'];
         $url = "$crestServer/killmails/$killID/$hash/";
+        $redis->rpush("esi2Fetch", "$killID:$hash");
 
         $mdb->set("crestmails", $row, ['processed' => 'fetching']);
         $client->getAsync($url)->then(

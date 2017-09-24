@@ -26,78 +26,39 @@ while ($minute == date('Hi')) {
     $killID = $queueProcess->pop();
     if ($killID !== null) {
         $killID = (int) $killID;
-        $raw = $mdb->findDoc('rawmails', ['killID' => $killID]);
-
-        $mail = $raw;
+        do {
+            $mail = $mdb->findDoc('esimails', ['killmail_id' => $killID]);
+            if ($mail == null) usleep(100000);
+        } while ($mail == null);
 
         $kill = array();
         $kill['killID'] = $killID;
 
         $crestmail = $crestmails->findOne(['killID' => $killID, 'processed' => true]);
         if ($crestmail == null) {
+            $queueProcess->push($killID);
             Util::out("Could not find crestmail for $killID");
+            usleep(10000);
             continue;
         }
 
-        $date = substr($mail['killTime'], 0, 16);
+        $date = substr($mail['killmail_time'], 0, 19);
         $date = str_replace('.', '-', $date);
 
-        $kill['dttm'] = new MongoDate(strtotime(str_replace('.', '-', $mail['killTime']).' UTC'));
+        $kill['dttm'] = new MongoDate(strtotime($date . " UTC"));
 
-        $system = $mdb->findDoc('information', ['type' => 'solarSystemID', 'id' => (int) $mail['solarSystem']['id']]);
-        if ($system == null) {
-            // system doesn't exist in our database yet
-            $crestSystem = CrestTools::getJSON($mail['solarSystem']['href']);
-            $name = $mail['solarSystem']['name'];
-            if ($crestSystem == '') {
-                exit("no system \o/ $killID $id".$system['href']);
-            }
 
-            $ex = explode('/', $crestSystem['constellation']['href']);
-            $constID = (int) $ex[4];
-            if (!$mdb->exists('information', ['type' => 'constellationID', 'id' => $constID])) {
-                $crestConst = CrestTools::getJSON($crestSystem['constellation']['href']);
-                if ($crestConst == '') {
-                    exit();
-                }
-                $constName = $crestConst['name'];
+        $systemID = (int) $mail['solar_system_id'];
+        $system = Info::getInfo('solarSystemID', $systemID);
 
-                $regionURL = $crestConst['region']['href'];
-                $ex = explode('/', $regionURL);
-                $regionID = (int) $ex[4];
-
-                $mdb->insertUpdate('information', ['type' => 'constellationID', 'id' => $constID], ['name' => $constName, 'regionID' => $regionID]);
-                if ($debug) {
-                    Util::out("Added constellation: $constName");
-                }
-            }
-            $constellation = $mdb->findDoc('information', ['type' => 'constellationID', 'id' => $constID]);
-            $regionID = (int) $constellation['regionID'];
-            if (!$mdb->exists('information', ['type' => 'regionID', 'id' => $regionID])) {
-                $regionURL = "$crestServer/regions/$regionID/";
-                $crestRegion = CrestTools::getJSON($regionURL);
-                if ($crestRegion == '') {
-                    exit();
-                }
-
-                $regionName = $crestRegion['name'];
-                $mdb->insertUpdate('information', ['type' => 'regionID', 'id' => $regionID], ['name' => $regionName]);
-                if ($debug) {
-                    Util::out("Added region: $regionName");
-                }
-            }
-            $mdb->insertUpdate('information', ['type' => 'solarSystemID', 'id' => (int) $mail['solarSystem']['id']], ['name' => $name, 'regionID' => $regionID, 'secStatus' => ((double) $crestSystem['securityStatus']), 'secClass' => $crestSystem['securityClass']]);
-            Util::out("Added system: $name");
-
-            $system = $mdb->findDoc('information', ['type' => 'solarSystemID', 'id' => (int) $mail['solarSystem']['id']]);
-        }
         $solarSystem = array();
-        $solarSystem['solarSystemID'] = (int) $mail['solarSystem']['id'];
+        $solarSystem['solarSystemID'] = $systemID;
         $solarSystem['security'] = (double) $system['secStatus'];
+        $solarSystem['constellationID'] = (int) $system['constellationID'];
         $solarSystem['regionID'] = (int) $system['regionID'];
         $kill['system'] = $solarSystem;
-        if (isset($raw['victim']['position'])) {
-            $locationID = Info::getLocationID($mail['solarSystem']['id'], $raw['victim']['position']);
+        if (isset($mail['victim']['position'])) {
+            $locationID = Info::getLocationID($systemID, $mail['victim']['position']);
             $kill['locationID'] = (int) $locationID;
         }
 
@@ -107,7 +68,7 @@ while ($minute == date('Hi')) {
         }
         $kill['sequence'] = $sequence + 1;
 
-        $kill['attackerCount'] = (int) $mail['attackerCount'];
+        $kill['attackerCount'] = sizeof($mail['attackers']);
         $victim = createInvolved($mail['victim']);
         $victim['isVictim'] = true;
         $kill['vGroupID'] = $victim['groupID'];
@@ -131,16 +92,16 @@ while ($minute == date('Hi')) {
         $destroyedValue = 0;
         $droppedValue = 0;
 
-        $shipValue = Price::getItemPrice($mail['victim']['shipType']['id'], $date);
+        $shipValue = Price::getItemPrice($mail['victim']['ship_type_id'], $date);
         $fittedValue = getFittedValue($mail['victim']['items'], $date);
         $fittedValue += $shipValue;
         $totalValue = processItems($mail['victim']['items'], $date);
         $totalValue += $shipValue;
-        
+
         $zkb = array();
 
-        if (isset($mail['war']['id']) && $mail['war']['id'] != 0) {
-            $kill['warID'] = (int) $mail['war']['id'];
+        if (isset($mail['war_id']) && $mail['war_id'] != 0) {
+            $kill['warID'] = (int) $mail['war_id'];
         }
         if (isset($kill['locationID'])) {
             $zkb['locationID'] = $kill['locationID'];
@@ -181,23 +142,22 @@ if ($debug && $counter > 0) {
 function createInvolved($data)
 {
     global $mdb;
-    $dataArray = array('character', 'corporation', 'alliance', 'faction', 'shipType');
+
+    $dataArray = array('character', 'corporation', 'alliance', 'faction');
     $array = array();
+    if (isset($data['ship_type_id'])) {
+        $array['shipTypeID'] = $data['ship_type_id'];
+    }
 
     foreach ($dataArray as $index) {
-        if (isset($data[$index]['id']) && $data[$index]['id'] != 0) {
-            $array["${index}ID"] = (int) $data[$index]['id'];
+        if (isset($data[$index . '_id']) && $data[$index . '_id'] != 0) {
+            $array["${index}ID"] = (int) $data[$index . '_id'];
         }
-    }
-    if (isset($array['shipTypeID']) && Info::getGroupID($array['shipTypeID']) == -1) {
-        $mdb->getCollection('information')->update(['type' => 'group'], ['$set' => ['lastApiUpdate' => new MongoDate(1)]]);
-        Util::out('Bailing on processing a kill, unable to find groupID for '.$array['shipTypeID']);
-        exit();
     }
     if (isset($array['shipTypeID'])) {
         $array['groupID'] = (int) Info::getGroupID($array['shipTypeID']);
     }
-    if (isset($data['finalBlow']) && $data['finalBlow'] == true) {
+    if (isset($data['final_blow']) && $data['final_blow'] == true) {
         $array['finalBlow'] = true;
     }
 
@@ -233,7 +193,7 @@ function processItem($item, $dttm, $isCargo = false, $parentContainerFlag = -1)
 {
     global $mdb;
 
-    $typeID = (int) $item['itemType']['id'];
+    $typeID = (int) $item['item_type_id'];
     $itemName = $mdb->findField('information', 'name', ['type' => 'typeID', 'id' => $typeID]);
     if ($itemName == null) {
         $itemName = "TypeID $typeID";
@@ -255,9 +215,9 @@ function processItem($item, $dttm, $isCargo = false, $parentContainerFlag = -1)
         $price = 0.01;
     }
 
-    trackItem($typeID, (int) @$item['quantityDropped'], (int) @$item['quantityDestroyed'], $price, $dttm, $item['flag']);
+    trackItem($typeID, (int) @$item['quantity_dropped'], (int) @$item['quantity_destroyed'], $price, $dttm, $item['flag']);
 
-    return $price * (@$item['quantityDropped'] + @$item['quantityDestroyed']);
+    return $price * (@$item['quantity_dropped'] + @$item['quantity_destroyed']);
 }
 
 function trackItem($typeID, $dropped, $destroyed, $price, $dttm, $flag)

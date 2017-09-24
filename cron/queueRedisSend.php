@@ -22,7 +22,7 @@ while (date('Hi') == $minute) {
         continue;
     }
 
-    $rawmail = $mdb->findDoc('rawmails', ['killID' => $killID]);
+    $rawmail = CrestTools::getCrestMail($killID);
     $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
     $zkb = $killmail['zkb'];
     $zkb['npc'] = @$killmail['npc'];

@@ -12,7 +12,7 @@ class Crest2Api
         $killmail = RedisCache::get($key);
         if ($killmail != null) return $killmail;
 
-        $crestmail = $mdb->findDoc('rawmails', ['killID' => $killID]);
+        $crestmail = CrestTools::getCrestMail($killID);
         $kill = $mdb->findDoc('killmails', ['killID' => $killID]);
 
         $killmail = array();
