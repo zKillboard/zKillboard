@@ -4,6 +4,10 @@ $app->notFound(function () use ($app) {
         $app->redirect('..', 302);
         });
 
+$app->get('/faq/', function() use ($app) {
+        $app->redirect("/information/faq/", 302);
+    });
+
 $app->get('/google/', function() use ($app) {
         $app->render("google.html");
     });
