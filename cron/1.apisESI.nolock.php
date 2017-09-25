@@ -119,7 +119,7 @@ function pullEsiKills($charID, $esi) {
         $name = Info::getInfoField('characterID', $charID, 'name');
         if ($name === null) $name = $charID;
         while (strlen("$killsAdded") < 3) $killsAdded = " " . $killsAdded;
-        ZLog::add("$killsAdded kills added by char $name (ESI)", $charID);
+        ZLog::add("$killsAdded kills added by char $name", $charID);
         if ($killsAdded >= 10) User::sendMessage("$killsAdded kills added for char $name", $charID);
     }
 }
