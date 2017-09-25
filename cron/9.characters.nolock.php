@@ -1,43 +1,22 @@
 <?php
 
+use cvweiss\redistools\RedisTimeQueue;
+
 require_once '../init.php';
 
 $failure = new \cvweiss\redistools\RedisTtlCounter('ttlc:esiFailure', 300);
-$guzzler = new Guzzler(10, 1);
-$maxKillID = $mdb->findField("killmails", "killID", [], ['killID' => -1]);
+$guzzler = new Guzzler(20, 1);
+$chars = new RedisTimeQueue("zkb:characterID", 86400);
 
 $minute = date('Hi');
 while ($minute == date('Hi') && $failure->count() < 300) {
-    if ($redis->llen("zkb:char:pool") == 0) {
-        $rows = $mdb->find("information", ['type' => 'characterID'], ['lastApiUpdate' => 1], 1000);
-        foreach ($rows as $row) {
-            $redis->rPush("zkb:char:pool", $row['id']);
-        }
-    }
-
-    $id = $redis->lpop("zkb:char:pool");
-    $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => (int) $id]);
-    $skip = (int) @$row['skip'];
-    $lastKillID = $mdb->findField("killmails", "killID", ['involved.characterID' => (int) $id], ['killID' => -1]);
-
-    if ((time() - @$row['lastApiUpdate']->sec) < 86400) {
-        if ($redis->llen("zkb:char:pool") == 0) break;
+    $id = (int) $chars->next();
+    if ($id == 0) {
+        usleep(100000);
         continue;
     }
-
-    // Don't update characters in Doomheim (aka deleted)
-    if (@$row['corporationID'] == 1000001) {
-        $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(), 'allianceID' => 0, 'factionID' => 0,  'secStatus' => 0]);
-        continue;
-    }
-
-    // Update active characters daily and inactive characters weekly
-    if ($lastKillID < ($maxKillID - 1000000) && $skip < 7) {
-        $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(), 'skip' => ($skip + 1)] );
-        continue;
-    }
-
-    $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(), 'skip' => 0] );
+    $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => $id]);
+    if (@$row['corporationID'] == 1000001) continue;
 
     $url = "https://esi.tech.ccp.is/v4/characters/$id/";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];

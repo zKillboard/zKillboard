@@ -2,17 +2,20 @@
 
 require_once '../init.php';
 
+use cvweiss\redistools\RedisTimeQueue;
+
 $failure = new \cvweiss\redistools\RedisTtlCounter('ttlc:esiFailure', 300);
 $guzzler = new Guzzler();
+$corps = new RedisTimeQueue("zkb:corporationID", 86400);
 
 $minute = date('Hi');
 while ($minute == date('Hi') && $failure->count() < 300) {
-    $row = $mdb->findDoc("information", ['type' => 'corporationID'], ['lastApiUpdate' => 1]);
-    if ($row === null) break;
-
-    $id = $row['id'];
-    if ((time() - @$row['lastApiUpdate']->sec) < 86400) break;
-    $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now()]);
+    $id = (int) $corps->next();
+    if ($id == 0) {
+        usleep(100000);
+        continue;
+    }
+    $row = $mdb->findDoc("information", ['type' => 'corporationID', 'id' => $id]);
 
     $url = "https://esi.tech.ccp.is/v3/corporations/$id/";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];

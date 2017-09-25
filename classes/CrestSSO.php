@@ -159,6 +159,8 @@ class CrestSSO
                     $mdb->save('information', ['type' => 'characterID', 'id' => $charID, 'name' => $response->CharacterName]);
                 }
             }
+            $rtq = new RedisTimeQueue("zkb:characterID", 86400);
+            $rtq->add($charID, -1);
 
             ZLog::add("Logged in: " . (isset($userdetails['name']) ? $userdetails['name'] : $charID), $charID, true);
 

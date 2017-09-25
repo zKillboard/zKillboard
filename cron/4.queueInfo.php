@@ -1,5 +1,6 @@
 <?php
 
+use cvweiss\redistools\RedisTimeQueue;
 use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
@@ -100,6 +101,8 @@ function updateEntity($killID, $entity)
         $row = ['type' => $type, 'id' => $id, 'name' => $name]; 
 
         $mdb->insert('information', $row);
+        $rtq = new RedisTimeQueue("zkb:$type", 86400);
+        $rtq->add($id, -1);
         Util::out("Added $type: $name");
     }
 }
