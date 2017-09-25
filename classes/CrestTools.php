@@ -62,29 +62,7 @@ class CrestTools
         global $redis, $mdb;
         $killID = (int) $killID;
 
-        $rawmail = $redis->get("zkb:crestmail:$killID");
-        if ($rawmail != null) {
-            $rawmail = json_decode($rawmail, true);
-        } else {
-            $sem = sem_get(3974);
-            try {
-                sem_acquire($sem);
-
-                $db = new SQLite3("/home/kmstorage/sqlite/crest_killmails.sqlite", SQLITE3_OPEN_READONLY);
-                $statement = $db->prepare('SELECT * from killmails where killID = :id');
-                $statement->bindValue(':id', $killID);
-                $result = $statement->execute();
-                $row = $result->fetchArray();
-                $rawmail = null;
-            } finally {
-                sem_release($sem);
-            }
-            if ($row != null) {
-                $rawmail = json_decode($row['mail'], true);
-            }
-            else $rawmail = $mdb->findDoc('rawmails', ['killID' => (int) $killID]);
-            if ($rawmail != null && sizeof($rawmail) > 0 ) $redis->setex("zkb:crestmail:$killID", 1800, json_encode($rawmail));
-        }
+        $rawmail = $mdb->findDoc('rawmails', ['killID' => $killID, 'cacheTime' => 300]);
         return $rawmail;
     }
 }

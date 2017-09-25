@@ -10,9 +10,6 @@ $queueInfo = new RedisQueue('queueInfo');
 $queueSocial = $beSocial == true ? new RedisQueue('queueSocial') : null;
 $queueStats = new RedisQueue('queueStats');
 $queueRedisQ = $redisQAuthUser != null ? new RedisQueue('queueRedisQ') : null;
-$killmails = $mdb->getCollection('killmails');
-$rawmails = $mdb->getCollection('rawmails');
-$information = $mdb->getCollection('information');
 $statArray = ['characterID', 'corporationID', 'allianceID', 'factionID', 'shipTypeID', 'groupID'];
 
 $minute = date('Hi');
@@ -36,9 +33,9 @@ while ($minute == date('Hi')) {
 
 function updateStatsQueue($killID)
 {
-    global $killmails, $statArray, $queueStats;
+    global $mdb, $statArray, $queueStats;
 
-    $kill = $killmails->findOne(['killID' => $killID]);
+    $kill = $mdb->findDoc('killmails', ['killID' => $killID, 'cacheTime' => 3600]);
     if ($kill['npc'] == true) {
         return;
     }
@@ -73,66 +70,15 @@ function updateInfo($killID)
 {
     global $mdb, $debug, $crestServer;
 
-    $killmail = $mdb->findDoc('rawmails', ['killID' => $killID]);
-    $system = $killmail['solarSystem'];
-    $id = (int) $system['id'];
-    if ($id == 0) {
-        return;
-    }
-    if ($mdb->count('information', ['type' => 'solarSystemID', 'id' => $id]) == 0) {
-        // system doesn't exist in our database yet
-        $name = $system['name'];
-        $crestSystem = CrestTools::getJSON($system['href']);
-        if ($crestSystem == '') {
-            exit("no system \o/ $killID $id".$system['href']);
-        }
+    $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
 
-        $ex = explode('/', $crestSystem['constellation']['href']);
-        $constID = (int) $ex[4];
-        if (!$mdb->exists('information', ['type' => 'constellationID', 'id' => $constID])) {
-            $crestConst = CrestTools::getJSON($crestSystem['constellation']['href']);
-            if ($crestConst == '') {
-                exit();
-            }
-            $constName = $crestConst['name'];
-
-            $regionURL = $crestConst['region']['href'];
-            $ex = explode('/', $regionURL);
-            $regionID = (int) $ex[4];
-
-            $mdb->insertUpdate('information', ['type' => 'constellationID', 'id' => $constID], ['name' => $constName, 'regionID' => $regionID]);
-            if ($debug) {
-                Util::out("Added constellation: $constName");
-            }
-        }
-        $constellation = $mdb->findDoc('information', ['type' => 'constellationID', 'id' => $constID]);
-        $regionID = (int) $constellation['regionID'];
-
-        if (!$mdb->exists('information', ['type' => 'regionID', 'id' => $regionID])) {
-            $regionURL = "$crestServer/regions/$regionID/";
-            $crestRegion = CrestTools::getJSON($regionURL);
-            if ($crestRegion == '') {
-                exit();
-            }
-
-            $regionName = $crestRegion['name'];
-            $mdb->insertUpdate('information', ['type' => 'regionID', 'id' => $regionID], ['name' => $regionName]);
-            if ($debug) {
-                Util::out("Added region: $regionName");
-            }
-        }
-        $mdb->insertUpdate('information', ['type' => 'solarSystemID', 'id' => $id], ['name' => $name, 'regionID' => $regionID, 'secStatus' => ((double) $crestSystem['securityStatus']), 'secClass' => $crestSystem['securityClass']]);
-        Util::out("Added system: $name");
-    }
-
-    updateItems($killID, $killmail['killTime'], @$killmail['victim']['items']);
-    updateEntity($killID, $killmail['victim']);
-    foreach ($killmail['attackers'] as $entity) {
+    foreach ($killmail['involved'] as $entity) {
         updateEntity($killID, $entity);
     }
+    updateItems($killID);
 }
 
-function updateItems($killID, $killTime, $items)
+function updateItems($killID)
 {
     $itemQueue = new RedisQueue('queueItemIndex');
     $itemQueue->push($killID);
@@ -140,46 +86,20 @@ function updateItems($killID, $killTime, $items)
 
 function updateEntity($killID, $entity)
 {
-    global $information, $mdb, $debug;
-    $types = ['character', 'corporation', 'alliance', 'faction'];
+    global $mdb, $debug;
+    $types = ['characterID', 'corporationID', 'allianceID', 'factionID'];
 
-    for ($index = 0; $index < 4; ++$index) {
-        $type = $types[$index];
-        if (!isset($entity[$type]['id'])) {
-            continue;
-        }
+    foreach ($types as $type) {
+        $id = (int) @$entity[$type];
+        if ($id < 1) continue;
 
-        $id = $entity[$type]['id'];
-        if ($id <= 1) continue;
-        $name = @$entity[$type]['name'];
+        $info = $mdb->findDoc("information", ['type' => $type, 'id' => $id]);
+        if ($info != null) continue;
 
-        // Look for the current entry
-        $query = ['type' => $type.'ID', 'id' => $id]; //, 'killID' => ['$gte' => $killID]];
-        if ($mdb->exists('information', $query)) {
-            continue;
-        }
-        unset($query['killID']);
-        $row = $mdb->findDoc('information', $query);
+        $name = "$type $id";
+        $row = ['type' => $type, 'id' => $id, 'name' => $name]; 
 
-        $new = ($row == null);
-        if (!isset($row['killID'])) {
-            $row['killID'] = 0;
-        }
-        if ($row != null && $killID <= $row['killID']) {
-            continue;
-        }
-
-        $updates = [];
-        $updates['name'] = $name;
-        $updates['killID'] = $killID;
-
-        for ($subIndex = $index + 1; $subIndex < 4; ++$subIndex) {
-            $subType = $types[$subIndex];
-            $updates["${subType}ID"] = (int) @$entity[$subType]['id'];
-        }
-        $mdb->insertUpdate('information', $query, $updates);
-        if ($new && $debug) {
-            Util::out("Added $type: $name");
-        }
+        $mdb->insert('information', $row);
+        Util::out("Added $type: $name");
     }
 }

@@ -10,7 +10,7 @@ $minute = date('Hi');
 while ($minute == date('Hi')) {
     $killID = (int) $itemQueue->pop();
     if ($killID > 0) {
-        $killmail = $mdb->findDoc("rawmails", ['killID' => $killID]);
+        $killmail = $mdb->findDoc("esimails", ['killmail_id' => $killID]);
         updateItems($killID, $killmail['victim']['items']);
     } else exit();
 }
@@ -19,7 +19,7 @@ function updateItems($killID, $items, $inContainer = false) {
     global $mdb;
 
     foreach ($items as $item) {
-        $typeID = (int) $item['itemType']['id'];
+        $typeID = (int) $item['item_type_id'];
         if ($typeID == 0) continue;
 
         $name = Info::getInfoField('typeID', $typeID, 'name');

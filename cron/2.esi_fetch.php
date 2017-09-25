@@ -9,10 +9,12 @@ $guzzler = new Guzzler(25, 10);
 $rows = $mdb->getCollection("crestmails")->find();
 $esimails = $mdb->getCollection("esimails");
 
+$redis->sort("esi2Fetch", ['sort' => 'desc']);
+
 $count = 0;
 $minute = date("Hi");
 while ($minute == date("Hi")) {
-    while ($redis->llen("esi2Fetch") > 0) {
+    while ($redis->llen("esi2Fetch") > 0 && $minute == date("Hi")) {
         $raw = $redis->lpop("esi2Fetch");
         $row = split(":", $raw);
         $killID = $row[0];
@@ -30,7 +32,6 @@ while ($minute == date("Hi")) {
     $guzzler->tick();
 }
 $guzzler->finish();
-Util::out("esi fetched $count");
 
 function fail($guzzler, $params, $ex) {
     $raw = $params['raw'];
@@ -47,8 +48,8 @@ function success(&$guzzler, &$params, &$content) {
     $doc = json_decode($content, true);
     $esimails->insert($doc);
 
-//$queueProcess = new RedisQueue('queueProcess');
-//    $queueProcess->push($params['killID']);
+    $queueProcess = new RedisQueue('queueProcess');
+    $queueProcess->push($params['killID']);
 
     $sucFail = new RedisTtlCounter('ttlc:EsiSuccess', 300);
     $sucFail->add(uniqid());

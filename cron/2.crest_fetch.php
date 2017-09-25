@@ -32,7 +32,6 @@ while ($minute == date('Hi')) {
         $killID = (int) $row['killID'];
         $hash = $row['hash'];
         $url = "$crestServer/killmails/$killID/$hash/";
-        $redis->rpush("esi2Fetch", "$killID:$hash");
 
         $mdb->set("crestmails", $row, ['processed' => 'fetching']);
         $client->getAsync($url)->then(
@@ -55,17 +54,20 @@ $curl->execute();
 
 function handleFulfilled($mdb, $row, $rawKillmail)
 {
+    global $redis;
+
     $queueProcess = new RedisQueue('queueProcess');
     $killsLastHour = new RedisTtlCounter('killsLastHour');
     $crestSuccess = new RedisTtlCounter('ttlc:CrestSuccess', 300);
 
     $killID = (int) $row['killID'];
+    $hash = $row['hash'];
     if (!$mdb->exists("rawmails", ['killID' => $killID])) {
         $mdb->save("rawmails", $rawKillmail);
     }
 
+    $redis->rpush("esi2Fetch", "$killID:$hash");
     $mdb->set("crestmails", $row, ['processed' => true]);
-    $queueProcess->push($killID);
     $killsLastHour->add($killID);
     $crestSuccess->add(uniqid());
 }

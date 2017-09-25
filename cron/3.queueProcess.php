@@ -26,10 +26,12 @@ while ($minute == date('Hi')) {
     $killID = $queueProcess->pop();
     if ($killID !== null) {
         $killID = (int) $killID;
-        do {
-            $mail = $mdb->findDoc('esimails', ['killmail_id' => $killID]);
-            if ($mail == null) usleep(100000);
-        } while ($mail == null);
+
+        $mail = $mdb->findDoc('esimails', ['killmail_id' => $killID]);
+        if ($mail == null) {
+            $queueProcess->push($killID);
+            continue;
+        }
 
         $kill = array();
         $kill['killID'] = $killID;
@@ -37,7 +39,6 @@ while ($minute == date('Hi')) {
         $crestmail = $crestmails->findOne(['killID' => $killID, 'processed' => true]);
         if ($crestmail == null) {
             $queueProcess->push($killID);
-            Util::out("Could not find crestmail for $killID");
             usleep(10000);
             continue;
         }
@@ -133,7 +134,7 @@ while ($minute == date('Hi')) {
         $multi->exec();
 
         ++$counter;
-    }
+    } else usleep(50000);
 }
 if ($debug && $counter > 0) {
     Util::out('Processed '.number_format($counter, 0).' Kills.');
