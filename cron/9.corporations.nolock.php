@@ -10,7 +10,9 @@ $corps = new RedisTimeQueue("zkb:corporationID", 86400);
 
 $minute = date('Hi');
 while ($minute == date('Hi') && $failure->count() < 300) {
+    if ($redis->get("tqStatus") == "OFFLINE") break;
     $id = (int) $corps->next();
+    if ($id <= 0) break;
     if ($id > 0) {
         $row = $mdb->findDoc("information", ['type' => 'corporationID', 'id' => $id]);
 

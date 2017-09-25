@@ -5,17 +5,19 @@ use cvweiss\redistools\RedisTimeQueue;
 require_once '../init.php';
 
 $failure = new \cvweiss\redistools\RedisTtlCounter('ttlc:esiFailure', 300);
-$guzzler = new Guzzler(30, 1);
+$guzzler = new Guzzler(10, 1);
 $chars = new RedisTimeQueue("zkb:characterID", 86400);
 $maxKillID = $mdb->findField("killmails", "killID", [], ['killID' => -1]) - 5000000;
 
 $dayMod10 = date("j") % 10;
 $minute = date('Hi');
 while ($minute == date('Hi') && $failure->count() < 300) {
+    if ($redis->get("tqStatus") == "OFFLINE") break;
     $id = (int) $chars->next();
+    if ($id <= 0) sleep(1);
     if ($id > 0) {
         $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => $id]);
-        if (@$row['corporationID'] == 1000001) continue;
+        //if (@$row['corporationID'] == 1000001) continue;
         if (isset($row['corporationID'])) {
             $charMaxKillID = $mdb->findField("killmails", "killID", ['involved.characterID' => $id], ['killID' => -1]);
             if ($maxKillID > $charMaxKillID && ($id % 10 != $dayMod10)) continue;

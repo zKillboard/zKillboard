@@ -26,6 +26,7 @@ $minute = date('Hi');
 $count = 0;
 $maxConcurrent = 10;
 while ($minute == date('Hi')) {
+    if ($redis->get("tqStatus") == "OFFLINE") break;
     $row = $mdb->findDoc("crestmails", ['processed' => false], ['killID' => -1]);
     if ($row != null) {
         $count++;
