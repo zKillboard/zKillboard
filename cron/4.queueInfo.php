@@ -102,7 +102,6 @@ function updateEntity($killID, $entity)
 
         $mdb->insert('information', $row);
         $rtq = new RedisTimeQueue("zkb:$type", 86400);
-        $rtq->add($id, -1);
-        Util::out("Added $type: $name");
+        $rtq->add($id);
     }
 }

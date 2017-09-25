@@ -18,6 +18,6 @@ function populateEntity($mdb, $type) {
     $result = $mdb->getCollection("information")->find(['type' => $type]);
 
     foreach ($result as $row) {
-        $rtq->add($row['id']);
+        $rtq->add($row['id'], 1);
     }
 }

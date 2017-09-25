@@ -5,23 +5,27 @@ use cvweiss\redistools\RedisTimeQueue;
 require_once '../init.php';
 
 $failure = new \cvweiss\redistools\RedisTtlCounter('ttlc:esiFailure', 300);
-$guzzler = new Guzzler(20, 1);
+$guzzler = new Guzzler(30, 1);
 $chars = new RedisTimeQueue("zkb:characterID", 86400);
+$maxKillID = $mdb->findField("killmails", "killID", [], ['killID' => -1]) - 5000000;
 
+$dayMod10 = date("j") % 10;
 $minute = date('Hi');
 while ($minute == date('Hi') && $failure->count() < 300) {
     $id = (int) $chars->next();
-    if ($id == 0) {
-        usleep(100000);
-        continue;
-    }
-    $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => $id]);
-    if (@$row['corporationID'] == 1000001) continue;
+    if ($id > 0) {
+        $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => $id]);
+        if (@$row['corporationID'] == 1000001) continue;
+        if (isset($row['corporationID'])) {
+            $charMaxKillID = $mdb->findField("killmails", "killID", ['involved.characterID' => $id], ['killID' => -1]);
+            if ($maxKillID > $charMaxKillID && ($id % 10 != $dayMod10)) continue;
+        }
 
-    $url = "https://esi.tech.ccp.is/v4/characters/$id/";
-    $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
-    $guzzler->call($url, "updateChar", "failChar", $params);
-    if ($failure->count() > 200) sleep(1);
+        $url = "https://esi.tech.ccp.is/v4/characters/$id/";
+        $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
+        $guzzler->call($url, "updateChar", "failChar", $params);
+        if ($failure->count() > 200) sleep(1);
+    }
 }      
 $guzzler->finish();
 
@@ -54,6 +58,7 @@ function failChar(&$guzzler, &$params, &$connectionException)
 
 function updateChar(&$guzzler, &$params, &$content)
 {
+    $redis = $params['redis'];
     $mdb = $params['mdb'];
     $row = $params['row'];
     $json = json_decode($content, true);
@@ -75,6 +80,7 @@ function updateChar(&$guzzler, &$params, &$content)
 
     if (sizeof($updates) > 0) {
         $mdb->set("information", $row, $updates);
+        $redis->del(Info::getRedisKey('characterID', $id));
     }
     $success = new \cvweiss\redistools\RedisTtlCounter('ttlc:esiSuccess', 300);
     $success->add(uniqid());

@@ -20,9 +20,9 @@ $redis->set("zkb:reinforced", ($redisLoad >= 15 && $allowReinforced));
 $topKillID = $mdb->findField('killmails', 'killID', [], ['killID' => -1]);
 $redis->setex('zkb:topKillID', 86400, $topKillID);
 
-$redis->set("zkb:totalChars", $mdb->count("information", ['type' => 'characterID']));
-$redis->set("zkb:totalCorps", $mdb->count("information", ['type' => 'corporationID']));
-$redis->set("zkb:totalAllis", $mdb->count("information", ['type' => 'allianceID']));
+$redis->set("zkb:totalChars", $redis->zcard("zkb:characterID"));
+$redis->set("zkb:totalCorps", $redis->zcard("zkb:corporationID"));
+$redis->set("zkb:totalAllis", $redis->zcard("zkb:allianceID"));
 
 $arr = [];
 $greenTotal = 0;

@@ -11,16 +11,14 @@ $corps = new RedisTimeQueue("zkb:corporationID", 86400);
 $minute = date('Hi');
 while ($minute == date('Hi') && $failure->count() < 300) {
     $id = (int) $corps->next();
-    if ($id == 0) {
-        usleep(100000);
-        continue;
-    }
-    $row = $mdb->findDoc("information", ['type' => 'corporationID', 'id' => $id]);
+    if ($id > 0) {
+        $row = $mdb->findDoc("information", ['type' => 'corporationID', 'id' => $id]);
 
-    $url = "https://esi.tech.ccp.is/v3/corporations/$id/";
-    $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
-    $guzzler->call($url, "updateCorp", "failCorp", $params);
-    if ($failure->count() > 200) sleep(1);
+        $url = "https://esi.tech.ccp.is/v3/corporations/$id/";
+        $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
+        $guzzler->call($url, "updateCorp", "failCorp", $params);
+        if ($failure->count() > 200) sleep(1);
+    }
 }
 $guzzler->finish();
 
@@ -48,6 +46,7 @@ function failCorp(&$guzzler, &$params, &$connectionException)
 
 function updateCorp(&$guzzler, &$params, &$content)
 {
+    $redis = $params['redis'];
     $mdb = $params['mdb'];
     $row = $params['row'];
 
@@ -71,6 +70,7 @@ function updateCorp(&$guzzler, &$params, &$content)
 
     if (sizeof($updates)) {
         $mdb->set("information", $row, $updates);
+        $redis->del(Info::getRedisKey('corporationID', $row['id']));
     }
     $success = new \cvweiss\redistools\RedisTtlCounter('ttlc:esiSuccess', 300);
     $success->add(uniqid());

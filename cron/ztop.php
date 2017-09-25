@@ -93,9 +93,9 @@ while ($hour == date('H')) {
     addInfo('Corporation RefreshTokens', $esiCorps->size(), false);
 
     addInfo('', 0, false);
-    addInfo('Total Characters', $redis->get("zkb:totalChars"), false);
-    addInfo('Total Corporations', $redis->get("zkb:totalCorps"), false);
-    addInfo('Total Alliances', $redis->get("zkb:totalAllis"), false);
+    addInfo('Total Characters', $redis->zcard("zkb:characterID"), false);
+    addInfo('Total Corporations', $redis->zcard("zkb:corporationID"), false);
+    addInfo('Total Alliances', $redis->zcard("zkb:allianceID"), false);
 
     addInfo('', 0, false);
     $sponsored = Mdb::group("sponsored", [], ['entryTime' => ['$gte' => $mdb->now(86400 * -7)]], [], 'isk', ['iskSum' => -1]);
