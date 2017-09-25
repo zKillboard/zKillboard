@@ -5,7 +5,7 @@ use cvweiss\redistools\RedisQueue;
 require_once '../init.php';
 
 if ($redis->llen('queueStats') >= 100000) $redis->del('queueTopAlltime');
-if ($redis->llen('queueStats') >= 1000) exit();
+if ($redis->llen('queueStats') >= 10000) exit();
 
 $date = date('Ymd');
 $redisKey = "tq:topAllTime";
@@ -23,7 +23,7 @@ if ($redis->get($redisKey) != true && $queueTopAlltime->size() == 0) {
 
         if ($doCalc) $queueTopAlltime->push($row['_id']);
     }
-    $redis->setex($redisKey, 14400, true);
+    $redis->setex($redisKey, 28800, true);
 }
 
 $minute = date('Hi');
