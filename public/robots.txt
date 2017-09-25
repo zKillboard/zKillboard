@@ -27,3 +27,12 @@ Disallow: /
 
 User-agent: CCBot
 Disallow: /
+
+User-agent: MegaIndex
+Disallow: /
+
+User-agent: GrapeshotCrawler
+Disallow: /
+
+User-agent: NTbot
+Disallow: /
