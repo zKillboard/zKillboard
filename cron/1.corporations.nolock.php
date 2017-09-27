@@ -17,14 +17,14 @@ if (date('i') == 22 || $esi->size() == 0) {
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    if ($redis->get("tqStatus") == "OFFLINE") break;
+    if ($redis->get("tqStatus") != "ONLINE") break;
     $charID = (int) $esi->next();
     if ($charID > 0) {
         $corpID = Info::getInfoField('characterID', $charID, 'corporationID');
         $alliID = Info::getInfoField('characterID', $charID, 'allianceID');
         if (in_array($corpID, $ignoreEntities) || in_array($alliID, $ignoreEntities)) continue;
 
-        $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => "esi-killmails.read_corporation_killmails.v1"]);
+        $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['lastFetch' => 1]);
         if ($row != null) {
             $params = ['row' => $row, 'esi' => $esi];
             $refreshToken = $row['refreshToken'];
@@ -98,15 +98,20 @@ function success($guzzler, $params, $content)
 
         $corpID = (int) Info::getInfoField("characterID", $charID, 'corporationID');
         $mdb->set("scopes", $row, ['maxKillID' => $maxKillID, 'corporationID' => $corpID, 'lastFetch' => $mdb->now()]);
+
+        $name = Info::getInfoField('characterID', $charID, 'name');
+        $corpName = Info::getInfoField('corporationID', $corpID, 'name');
+        $corpVerified = $redis->get("apiVerified:$corpID") != null;
+        if (!$corpVerified) {
+            ZLog::add("$corpName ($name) is now verified.", $charID);
+        }
         $redis->setex("apiVerified:$corpID", 86400, time());
 
         if ($newKills > 0) {
-            $name = Info::getInfoField('characterID', $charID, 'name');
-            $corpName = Info::getInfoField('corporationID', $corpID, 'name');
             if ($name === null) $name = $charID;
             while (strlen("$newKills") < 3) $newKills = " " . $newKills;
-            ZLog::add("$newKills kills added by corp $corpName", 0); //$charID);
-            //if ($newKills >= 10) User::sendMessage("$newKills kills added for char $name", $charID);
+            ZLog::add("$newKills kills added by corp $corpName", $charID);
+            if ($newKills >= 10) User::sendMessage("$newKills kills added for corp $corpName", $charID);
         }
     }
 }
@@ -138,8 +143,13 @@ function fail($guzzer, $params, $ex)
 
     switch ($code) {
         case 403: // No permission
+        case 404:
             $mdb->remove("scopes", $row);
             $esi->remove($charID);
+            break;
+        case 500:
+        case 502: // Server error, try again in 5 minutes
+            $esi->setTime($charID, time() + 300);
             break;
         default:
             echo "killmail: " . $ex->getMessage() . "\n";
@@ -150,6 +160,27 @@ function fail($guzzer, $params, $ex)
 
 function accessTokenFail(&$guzzler, &$params, $ex)
 {
-    echo "token: " . $ex->getMessage() . "\n";
+    global $mdb;
+
+    $row = $params['row'];
+    $esi = $params['esi'];
+    $charID = $row['characterID'];
+    $code = $ex->getCode();
+
+    switch ($code) {
+        case 400:
+        case 403: // No permission
+        case 404:
+            $mdb->remove("scopes", $row);
+            $esi->remove($charID);
+            break;
+        case 500:
+        case 502: // Server error, try again in 5 minutes
+            $esi->setTime($charID, time() + 300);
+            break;
+        default:
+            echo "token: " . $ex->getMessage() . "\n";
+    }
+
     Status::addStatus('sso', false);
 }

@@ -13,13 +13,15 @@ if ($version != null) {
 $minute = date('Hi');
 if ($minute >= 1100 && $minute <= 1105) {
     $redis->set('tqStatus', 'OFFLINE'); // Just in case the result is cached on their end as online
-}
-$serverStatus = $root == 0 ? 'UNKNOWN' : (isset($root['serviceStatus']) ? strtoupper($root['serviceStatus']) : 'OFFLINE');
-$loggedIn = (int) @$root['userCount'];
-$loggedIn = $loggedIn == 0 ? $serverStatus : number_format($loggedIn, 0);
+    $redis->set('tqCount', 0);
+} else {
+    $serverStatus = $root == 0 ? 'UNKNOWN' : (isset($root['serviceStatus']) ? strtoupper($root['serviceStatus']) : 'OFFLINE');
+    $loggedIn = (int) @$root['userCount'];
+    $loggedIn = $loggedIn == 0 ? $serverStatus : number_format($loggedIn, 0);
 
-$redis->set('tqStatus', $serverStatus);
-$redis->set('tqCount', $loggedIn);
+    $redis->set('tqStatus', $serverStatus);
+    $redis->set('tqCount', $loggedIn);
+}
 $killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
 $killCount = number_format($killsLastHour->count(), 0);
 $redis->publish("public", json_encode(['action' => 'tqStatus', 'tqStatus' => $serverStatus, 'tqCount' => $loggedIn, 'kills' => $killCount]));

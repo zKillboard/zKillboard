@@ -17,12 +17,12 @@ if (date('i') == 22 || $esi->size() == 0) {
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    if ($redis->get("tqStatus") == "OFFLINE") break;
+    if ($redis->get("tqStatus") != "ONLINE") break;
     $charID = (int) $esi->next();
     if ($charID > 0) {
-        $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => "esi-killmails.read_killmails.v1"]);
+        $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => "esi-killmails.read_killmails.v1"], ['lastFetch' => 1]);
         if ($row != null) {
-            $params = ['row' => $row];
+            $params = ['row' => $row, 'esi' => $esi];
             $refreshToken = $row['refreshToken'];
 
             CrestSSO::getAccessTokenCallback($guzzler, $refreshToken, "accessTokenDone", "accessTokenFail", $params);
@@ -130,12 +130,52 @@ function addMail($killID, $hash)
 
 function fail($guzzer, $params, $ex) 
 {
+    global $mdb;
+
+    $row = $params['row'];
+    $esi = $params['esi'];
+    $charID = $row['characterID'];
+    $code = $ex->getCode();
+
+    switch ($code) {
+        case 400:
+        case 403: // No permission
+            $mdb->remove("scopes", $row);
+            $esi->remove($charID);
+            break;
+        case 500:
+        case 502: // Server error, try again in 5 minutes
+            $esi->setTime($charID, time() + 300);
+            break;
+        default:
+            echo "token: " . $ex->getMessage() . "\n";
+    }
+
     Status::addStatus('esi', false);
-    echo "killmail: " . $ex->getMessage() . "\n";
 }
 
 function accessTokenFail(&$guzzler, &$params, $ex)
 {
+    global $mdb;
+
+    $row = $params['row'];
+    $esi = $params['esi'];
+    $charID = $row['characterID'];
+    $code = $ex->getCode();
+
+    switch ($code) {
+        case 400:
+        case 403: // No permission
+            $mdb->remove("scopes", $row);
+            $esi->remove($charID);
+            break;
+        case 500:
+        case 502: // Server error, try again in 5 minutes
+            $esi->setTime($charID, time() + 300);
+            break;
+        default:
+            echo "token: " . $ex->getMessage() . "\n";
+    }
+
     Status::addStatus('sso', false);
-    echo "token: " . $ex->getMessage() . "\n";
 }

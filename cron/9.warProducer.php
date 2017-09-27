@@ -20,6 +20,7 @@ if ($page == 0) {
 
 $next = "$crestServer/wars/?page=$page";
 do {
+    if ($redis->get("tqStatus") != "ONLINE") exit();
     $wars = CrestTools::getJSON($next);
     if ($wars == null) {
         exit();

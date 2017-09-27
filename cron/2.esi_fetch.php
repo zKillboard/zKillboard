@@ -15,7 +15,7 @@ $count = 0;
 $minute = date("Hi");
 while ($minute == date("Hi") && Status::getStatus('esi', false) < 100) {
     while ($redis->llen("esi2Fetch") > 0 && $minute == date("Hi")) {
-        if ($redis->get("tqStatus") == "OFFLINE") break;
+        if ($redis->get("tqStatus") != "ONLINE") break;
         $raw = $redis->lpop("esi2Fetch");
         $row = split(":", $raw);
         $killID = $row[0];

@@ -8,6 +8,7 @@ if ($redis->llen("queueProcess") > 100) exit();
 $queueWars = new RedisQueue('queueWars');
 
 if ($queueWars->size() == 0) {
+    if ($redis->get("tqStatus") != "ONLINE") exit();
     $wars = $mdb->getCollection('information')->find(['type' => 'warID'])->sort(['id' => -1]);
     foreach ($wars as $war) {
         $timeFinished = @$war['timeFinished'];
@@ -26,6 +27,7 @@ if ($queueWars->size() == 0) {
 $added = 0;
 $minute = date('Hi');
 while ($minute == date('Hi')) {
+    if ($redis->get("tqStatus") != "ONLINE") break;
     sleep(1);
     $id = $queueWars->pop();
     if ($id == null) {

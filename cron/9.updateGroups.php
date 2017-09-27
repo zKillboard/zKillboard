@@ -8,12 +8,14 @@ if ($redis->get('tqGroups:serverVersion') == $serverVersion) {
 }
 Util::out("Update Groups and Items: $serverVersion");
 
+if ($redis->get("tqStatus") != "ONLINE") exit();
 $groups = CrestTools::getJSON("$crestServer/inventory/groups/");
 $newGroups = 0;
 $newItems = 0;
 
 do {
     foreach ($groups['items'] as $group) {
+        if ($redis->get("tqStatus") != "ONLINE") exit();
         $href = $group['href'];
         $groupID = $group['id'];
         $name = $group['name'];
