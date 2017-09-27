@@ -72,6 +72,7 @@ class Util
 
         $multi = false;
         $paginated = false;
+        $legalLargePagination = false;
 
         while (sizeof($split)) {
             $key = array_shift($split);
@@ -136,6 +137,8 @@ class Util
                         if (strpos($key, 'ID') === false) {
                             $key = $key.'ID';
                         }
+                        $legalLargePagination = ($key == 'characterID' || $key == 'corporationID' || $key == 'allianceID');
+$lastID = $key;
                         if ($key == 'systemID') {
                             $key = 'solarSystemID';
                         } elseif ($key == 'shipID') {
@@ -273,6 +276,9 @@ class Util
         }
 
         if ($multi && $paginated) throw new Exception("Combining multiple IDs with pagination is no longer supported");
+        if ($paginated && !$legalLargePagination && $parameters['page'] > 10) {
+            throw new Exception("Pages over 10 only supported for characters, corporations, and alliances");
+        }
 
         return $parameters;
     }
