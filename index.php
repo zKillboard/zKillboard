@@ -54,6 +54,10 @@ if (!in_array($ip, $whiteList)) {
         die("<html><head><meta http-equiv='refresh' content='1'></head><body>Rate limited.</body></html>");
     }
 }
+if (in_array($ip, $blackList)) {
+    header('HTTP/1.1 403 Blacklisted');
+    die();
+}
 
 $limit = $isApiRequest ? 10 : 3;
 $noLimits = ['/navbar/', '/post/', '/autocomplete/'];
@@ -67,12 +71,32 @@ if ($noLimit === false  && $count >= $limit) {
 
 // Some anti-scraping code, far from perfect though
 $badBots = ['mechanize', 'python', 'java'];
+$userAgent = strtolower(@$_SERVER['HTTP_USER_AGENT']);
 if (!$isApiRequest) {
-    $userAgent = strtolower(@$_SERVER['HTTP_USER_AGENT']);
     foreach ($badBots as $badBot) {
         if ($userAgent == "" || $userAgent == "-" || strpos($userAgent, $badBot) !== false) {
             header('HTTP/1.1 403 Not authorized.');
             die("APIs are useful, skill up and use that instead.");
+        }
+    }
+}
+
+// Scrape Checker
+$ipKey = "ip::$ip";
+if (!$isApiRequest && !(substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp' || substr($uri, 0, 5) == '/auto')) {
+    $redis->incr($ipKey, ($uri == '/navbar/' ? -1 : 1));
+    $redis->expire($ipKey, 300);
+    $count = $redis->get($ipKey);
+    if ($count > 40) {
+        $host = gethostbyaddr($ip);
+        $host2 = gethostbyname($host);
+        $isValidBot = false;
+        foreach ($validBots as $bot) {
+            $isValidBot |= strpos($host, $bot) !== false;
+        }
+        if ($ip != $host2 || !$isValidBot) {
+            header('HTTP/1.1 403 Not authorized.');
+            die("Scraping discouraged. APIs are useful, skill up and use that instead.");
         }
     }
 }
@@ -108,6 +132,8 @@ include 'routes.php';
 
 // Load twig stuff
 include 'twig.php';
+
+include 'analyticsLoad.php';
 
 // Run the thing!
 $app->run();

@@ -59,7 +59,6 @@ function handleFulfilled($mdb, $row, $rawKillmail)
 
     $queueProcess = new RedisQueue('queueProcess');
     $killsLastHour = new RedisTtlCounter('killsLastHour');
-    $crestSuccess = new RedisTtlCounter('ttlc:CrestSuccess', 300);
 
     $killID = (int) $row['killID'];
     $hash = $row['hash'];
@@ -70,7 +69,7 @@ function handleFulfilled($mdb, $row, $rawKillmail)
     $redis->rpush("esi2Fetch", "$killID:$hash");
     $mdb->set("crestmails", $row, ['processed' => true]);
     $killsLastHour->add($killID);
-    $crestSuccess->add(uniqid());
+    Status::addStatus('crest', true);
 }
 
 function handleRejected($mdb, $row, $code)
@@ -88,6 +87,5 @@ function handleRejected($mdb, $row, $code)
             Util::out($row['killID'] . " crest fetch has error code $code");
             $mdb->set("crestmails", $row, ['processed' => 'error', 'errorCode' => $code]);
     }
-    $crestFailure = new RedisTtlCounter('ttlc:CrestFailure', 300);
-    $crestFailure->add(uniqid());
+    Status::addStatus('crest', false);
 }

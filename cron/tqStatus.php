@@ -10,6 +10,10 @@ if ($version != null) {
     $redis->set('tqServerVersion', $version);
 }
 
+$minute = date('Hi');
+if ($minute >= 1100 && $minute <= 1105) {
+    $redis->set('tqStatus', 'OFFLINE'); // Just in case the result is cached on their end as online
+}
 $serverStatus = $root == 0 ? 'UNKNOWN' : (isset($root['serviceStatus']) ? strtoupper($root['serviceStatus']) : 'OFFLINE');
 $loggedIn = (int) @$root['userCount'];
 $loggedIn = $loggedIn == 0 ? $serverStatus : number_format($loggedIn, 0);

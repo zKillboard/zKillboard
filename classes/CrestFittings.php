@@ -16,19 +16,19 @@ class CrestFittings
         }
         $accessToken = CrestSSO::getAccessToken($charID, 'none', $row['refreshToken']);
 
-        $killmail = CrestTools::getCrestMail($killID);
+        $killmail = $mdb->findDoc('esimails', ['killmail_id' => (int) $killID]);
         $victim = $killmail['victim'];
 
         header('Content-Type: application/json');
 
         $export = [];
-        $charName = Info::getInfoField('characterID', (int) @$victim['character']['id'], 'name')."'s ";
-        $shipName = Info::getInfoField('shipTypeID', $victim['shipType']['id'], 'name');
+        $charName = Info::getInfoField('characterID', (int) @$victim['character_id'], 'name')."'s ";
+        $shipName = Info::getInfoField('shipTypeID', $victim['ship_type_id'], 'name');
         $export['name'] = "$charName's $shipName";
         $export['description'] = "Imported from https://zkillboard.com/kill/$killID/";
-        $export['ship'] = ['id' => $victim['shipType']['id']];
-        $export['ship']['name'] = Info::getInfoField('typeID', $victim['shipType']['id'], 'name');
-        $export['ship']['href'] = "$crestServer/inventory/types/".$victim['shipType']['id'].'/';
+        $export['ship'] = ['id' => $victim['ship_type_id']];
+        $export['ship']['name'] = Info::getInfoField('typeID', $victim['ship_type_id'], 'name');
+        $export['ship']['href'] = "$crestServer/inventory/types/".$victim['ship_type_id'].'/';
 
         $items = $victim['items'];
         $export['items'] = [];
@@ -39,10 +39,10 @@ class CrestFittings
             }
             $nextItem = [];
             $nextItem['flag'] = $flag;
-            $nextItem['quantity'] = @$item['quantityDropped'] + @$item['quantityDestroyed'];
-            $nextItem['type']['id'] = $item['itemType']['id'];
-            $nextItem['type']['name'] = Info::getInfoField('typeID', $item['itemType']['id'], 'name');
-            $nextItem['type']['href'] = "$crestServer/inventory/types/".$item['itemType']['id'].'/';
+            $nextItem['quantity'] = @$item['quantity_dropped'] + @$item['quantity_destroyed'];
+            $nextItem['type']['id'] = $item['item_type_id'];
+            $nextItem['type']['name'] = Info::getInfoField('typeID', $item['item_type_id'], 'name');
+            $nextItem['type']['href'] = "$crestServer/inventory/types/".$item['item_type_id'].'/';
             $export['items'][] = $nextItem;
         }
         if (sizeof($export['items']) == 0) {

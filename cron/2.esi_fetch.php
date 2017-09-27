@@ -5,8 +5,6 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once "../init.php";
 
-$failure = new \cvweiss\redistools\RedisTtlCounter('ttlc:esiFailure', 300);
-
 $guzzler = new Guzzler(25, 10);
 $rows = $mdb->getCollection("crestmails")->find();
 $esimails = $mdb->getCollection("esimails");
@@ -15,7 +13,7 @@ $redis->sort("esi2Fetch", ['sort' => 'desc']);
 
 $count = 0;
 $minute = date("Hi");
-while ($minute == date("Hi") && $failure->count() < 100) {
+while ($minute == date("Hi") && Status::getStatus('esi', false) < 100) {
     while ($redis->llen("esi2Fetch") > 0 && $minute == date("Hi")) {
         if ($redis->get("tqStatus") == "OFFLINE") break;
         $raw = $redis->lpop("esi2Fetch");
@@ -31,7 +29,7 @@ while ($minute == date("Hi") && $failure->count() < 100) {
         $guzzler->tick();
         $count++;
     }
-    usleep(100000);
+    usleep(10000);
     $guzzler->tick();
 }
 $guzzler->finish();
@@ -42,8 +40,7 @@ function fail($guzzler, $params, $ex) {
 
     Util::out("esi fetch failure: ($raw) " . $ex->getMessage());
     $redis->rpush("esi2Fetch", $raw);
-    $sucFail = new RedisTtlCounter('ttlc:esiFailure', 300);
-    $sucFail->add(uniqid());
+    Status::addStatus('esi', false);
 }
 
 function success(&$guzzler, &$params, &$content) {
@@ -54,6 +51,5 @@ function success(&$guzzler, &$params, &$content) {
     $queueProcess = new RedisQueue('queueProcess');
     $queueProcess->push($params['killID']);
 
-    $sucFail = new RedisTtlCounter('ttlc:esiSuccess', 300);
-    $sucFail->add(uniqid());
+    Status::addStatus('esi', true);
 }

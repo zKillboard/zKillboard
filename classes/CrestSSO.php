@@ -1,7 +1,6 @@
 <?php
 
 use cvweiss\redistools\RedisTimeQueue;
-use cvweiss\redistools\RedisTtlCounter;
 
 // Borrowed very heavily from FuzzySteve <3 https://github.com/fuzzysteve/eve-sso-auth/
 class CrestSSO
@@ -52,9 +51,6 @@ class CrestSSO
     public static function callback()
     {
         global $mdb, $app, $redis, $ccpClientID, $ccpSecret;
-
-        $authSuccess = new RedisTtlCounter('ttlc:AuthSuccess', 300);
-        $authFailure = new RedisTtlCounter('ttlc:AuthFailure', 300);
 
         try {
             $charID = @$_SESSION['characterID'];
@@ -181,12 +177,12 @@ class CrestSSO
                 $redirect = $forward;
             }
             header('Location: '.$redirect, 302);
-            $authSuccess->add(uniqid());
+            Status::addStatus('sso', true);
             exit();
         } catch (Exception $ex) {
             $app->render("error.html", ['message' => "An unexpected error has happened, it has been logged and will be checked into. Please try to log in again."]);
             Log::log(print_r($ex, true));
-            $authFailure->add(uniqid());
+            Status::addStatus('sso', false);
             exit();
         }
     }
@@ -194,9 +190,6 @@ class CrestSSO
     public static function getAccessToken($charID = null, $sessionID = null, $refreshToken = null)
     {
         global $app, $redis, $ccpClientID, $ccpSecret;
-
-        $authSuccess = new RedisTtlCounter('ttlc:AuthSuccess', 300);
-        $authFailure = new RedisTtlCounter('ttlc:AuthFailure', 300);
 
         if ($charID === null) {
             $charID = User::getUserID();
@@ -253,11 +246,11 @@ class CrestSSO
                 return $result;
             }
 
-            $authFailure->add(uniqid());
+            Status::addStatus('sso', false);
             return $httpCode;
         }
 
-        $authSuccess->add(uniqid());
+        Status::addStatus('sso', true);
         return $accessToken;
     }
 

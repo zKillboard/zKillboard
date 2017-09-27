@@ -7,9 +7,9 @@ class Points
     {
         global $mdb;
 
-        $killmail = CrestTools::getCrestMail($killID);
+        $killmail = $mdb->findDoc("esimails", ['killmail_id' => (int) $killID]);
         $victim = $killmail['victim'];
-        $shipTypeID = $victim['shipType']['id'];
+        $shipTypeID = $victim['ship_type_id'];
         $items = $victim['items'];
         $shipInfo = Info::getInfo('typeID', $shipTypeID);
 
@@ -17,14 +17,14 @@ class Points
         $basePoints =  pow(5, @$shipInfo['rigSize']);
         $points = $basePoints;
         foreach ((array) $items as $item) {
-            $itemInfo = Info::getInfo('typeID', $item['itemType']['id']);
+            $itemInfo = Info::getInfo('typeID', $item['item_type_id']);
             if (!@$itemInfo['fittable']) continue;
 
             $flagName = Info::getFlagName($item['flag']); 
             if (($flagName == "Low Slots" || $flagName == "Mid Slots" || $flagName == "High Slots" || $flagName == 'SubSystems') 
                 || ($killID < 23970577 && $item['flag'] == 0) ) {
-                $typeID = $item['itemType']['id'];
-                $qty = @$item['quantityDestroyed'] + @$item['quantityDropped'];
+                $typeID = $item['item_type_id'];
+                $qty = @$item['quantity_destroyed'] + @$item['quantity_dropped'];
                 $i = Info::getInfo('typeID', $typeID);
                 $meta = 1 + floor(@$i['metaLevel'] / 2);
                 $dangerFactor += isset($itemInfo['heatDamage']) * $qty * $meta; // offensive/defensive modules overloading are good for pvp
@@ -40,14 +40,14 @@ class Points
         $involvedPenalty = max(1, $numAttackers * max(1, $numAttackers / 2));
         $points = $points / $involvedPenalty;
 
-        // Apply a bonus/penalty from -20% to 20% depending on average size of attacking ships
+        // Apply a bonus/penalty from -50% to 20% depending on average size of attacking ships
         // For example: Smaller ships blowing up bigger ships get a bonus
         // or bigger ships blowing up smaller ships get a penalty
         $size = 0;
         foreach ((array) $killmail['attackers'] as $attacker) {
-            $shipTypeID = @$attacker['shipType']['id'];
+            $shipTypeID = @$attacker['ship_type_id'];
             $aInfo = Info::getInfo('typeID', $shipTypeID);
-            $size += pow(5, (($aInfo['groupID'] != 29) ? @$aInfo['rigSize'] : @$shipInfo['rigSize'] + 1));
+            $size += pow(5, ((@$aInfo['groupID'] != 29) ? @$aInfo['rigSize'] : @$shipInfo['rigSize'] + 1));
         }
         $avg = max(1, $size / $numAttackers);
         $modifier = min(1.2, max(0.5, $basePoints / $avg));

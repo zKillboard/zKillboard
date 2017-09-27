@@ -4,12 +4,11 @@ require_once '../init.php';
 
 use cvweiss\redistools\RedisTimeQueue;
 
-$failure = new \cvweiss\redistools\RedisTtlCounter('ttlc:esiFailure', 300);
 $guzzler = new Guzzler();
 $corps = new RedisTimeQueue("zkb:corporationID", 86400);
 
 $minute = date('Hi');
-while ($minute == date('Hi') && $failure->count() < 300) {
+while ($minute == date('Hi') && Status::getStatus('esi', false) < 300) {
     if ($redis->get("tqStatus") == "OFFLINE") break;
     $id = (int) $corps->next();
     if ($id <= 0) break;
@@ -19,8 +18,9 @@ while ($minute == date('Hi') && $failure->count() < 300) {
         $url = "https://esi.tech.ccp.is/v3/corporations/$id/";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
         $guzzler->call($url, "updateCorp", "failCorp", $params);
-        if ($failure->count() > 200) sleep(1);
+        if (Status::getStatus('esi', false) > 200) sleep(1);
     }
+    $guzzler->tick();
 }
 $guzzler->finish();
 
@@ -42,8 +42,7 @@ function failCorp(&$guzzler, &$params, &$connectionException)
         default:
             Util::out("/v3/corporation/ failed for $id with code $code");
     }
-    $failure = new \cvweiss\redistools\RedisTtlCounter('ttlc:esiFailure', 300);
-    $failure->add(uniqid());
+    Status::addStatus('esi', false);
 }
 
 function updateCorp(&$guzzler, &$params, &$content)
@@ -74,8 +73,7 @@ function updateCorp(&$guzzler, &$params, &$content)
         $mdb->set("information", $row, $updates);
         $redis->del(Info::getRedisKey('corporationID', $row['id']));
     }
-    $success = new \cvweiss\redistools\RedisTtlCounter('ttlc:esiSuccess', 300);
-    $success->add(uniqid());
+    Status::addStatus('esi', true);
 }
 
 function compareAttributes(&$updates, $key, $oAttr, $nAttr) {

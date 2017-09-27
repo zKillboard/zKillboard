@@ -13,7 +13,7 @@ class Guzzler
     {
         $this->curl = new \GuzzleHttp\Handler\CurlMultiHandler();
         $this->handler = \GuzzleHttp\HandlerStack::create($this->curl);
-        $this->client = new \GuzzleHttp\Client(['connect_timeout' => 10, 'timeout' => 60, 'handler' => $this->handler, 'headers' => ['User-Agent' => 'zkillboard.com']]);
+        $this->client = new \GuzzleHttp\Client(['curl' => [CURLOPT_FRESH_CONNECT => false], 'connect_timeout' => 10, 'timeout' => 60, 'handler' => $this->handler, 'headers' => ['User-Agent' => 'zkillboard.com']]);
         $this->maxConcurrent = max($maxConcurrent, 1);
         $this->usleep = max(0, min(1000000, (int) $usleep));
     }
@@ -32,6 +32,11 @@ class Guzzler
         $ms = microtime();
         $this->curl->execute();
         return max(0, microtime() - $ms);
+    }
+
+    public function count()
+    {
+        return $this->concurrent;
     }
 
     public function inc()

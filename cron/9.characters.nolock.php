@@ -4,30 +4,30 @@ use cvweiss\redistools\RedisTimeQueue;
 
 require_once '../init.php';
 
-$failure = new \cvweiss\redistools\RedisTtlCounter('ttlc:esiFailure', 300);
 $guzzler = new Guzzler(10, 1);
 $chars = new RedisTimeQueue("zkb:characterID", 86400);
 $maxKillID = $mdb->findField("killmails", "killID", [], ['killID' => -1]) - 5000000;
 
 $dayMod10 = date("j") % 10;
 $minute = date('Hi');
-while ($minute == date('Hi') && $failure->count() < 300) {
+while ($minute == date('Hi') && Status::getStatus('esi', false) < 300) {
     if ($redis->get("tqStatus") == "OFFLINE") break;
     $id = (int) $chars->next();
-    if ($id <= 0) sleep(1);
     if ($id > 0) {
         $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => $id]);
-        //if (@$row['corporationID'] == 1000001) continue;
-        if (isset($row['corporationID'])) {
+        if (strpos(@$row['name'], 'characterID') === false && isset($row['corporationID'])) {
             $charMaxKillID = $mdb->findField("killmails", "killID", ['involved.characterID' => $id], ['killID' => -1]);
-            if ($maxKillID > $charMaxKillID && ($id % 10 != $dayMod10)) continue;
+            if ($maxKillID > $charMaxKillID && ($id % 10 != $dayMod10)) {
+                continue;
+            }
         }
 
         $url = "https://esi.tech.ccp.is/v4/characters/$id/";
-        $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
+        $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row, 'rtq' => $chars];
         $guzzler->call($url, "updateChar", "failChar", $params);
-        if ($failure->count() > 200) sleep(1);
+        if (Status::getStatus('esi', false) > 200) sleep(1);
     }
+    $guzzler->tick();
 }      
 $guzzler->finish();
 
@@ -38,6 +38,8 @@ function failChar(&$guzzler, &$params, &$connectionException)
     $code = $connectionException->getCode();
     $row = $params['row'];
     $id = $row['id'];
+    $rtq = $params['rtq'];
+    Util::out("char failed $id $code");
 
     switch ($code) {
         case 0: // timeout
@@ -45,17 +47,17 @@ function failChar(&$guzzler, &$params, &$connectionException)
         case 502: // ccp broke something...
         case 503: // server error
         case 200: // timeout...
-            $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(86400 * -2)]);
+            $rtq->setTime($id, (time() - 86400) + rand(3600, 7200));
+            //$mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(86400 * -2)]);
             break;
-        case 404:
+        /*case 404:
         case 410:
             $mdb->set("information", $row, ['allianceID' => 0, 'corporationID' => 1000001, 'factionID' => 0,  'secStatus' => 0]);
-            break;
+            break;*/
         default:
             Util::out("/v4/characters/ failed for $id with code $code");
     }
-    $xmllog = new \cvweiss\redistools\RedisTtlCounter('ttlc:esiFailure', 300);
-    $xmllog->add(uniqid());
+    Status::addStatus('esi', false);
 }
 
 function updateChar(&$guzzler, &$params, &$content)
@@ -71,21 +73,22 @@ function updateChar(&$guzzler, &$params, &$content)
     $updates = [];
     compareAttributes($updates, "name", @$row['name'], (string) $json['name']);
     compareAttributes($updates, "corporationID", @$row['corporationID'], $corpID);
-    compareAttributes($updates, "allianceID", @$row['allianceID'], (int) @$json['alliance_id']);
+    compareAttributes($updates, "allianceID", @$row['allianceID'], (int) Info::getInfoField("corporationID", $corpID, 'allianceID'));
     compareAttributes($updates, "factionID", @$row['factionID'], 0);
     compareAttributes($updates, "secStatus", @$row['secStatus'], (double) $json['security_status']);
 
     $corpExists = $mdb->count('information', ['type' => 'corporationID', 'id' => $corpID]);
     if ($corpExists == 0) {
         $mdb->insertUpdate('information', ['type' => 'corporationID', 'id' => $corpID]);
+        $corps = new RedisTimeQueue("zkb:corporationID", 86400);
+        $corps->add($corpID);
     }
 
     if (sizeof($updates) > 0) {
         $mdb->set("information", $row, $updates);
         $redis->del(Info::getRedisKey('characterID', $id));
     }
-    $success = new \cvweiss\redistools\RedisTtlCounter('ttlc:esiSuccess', 300);
-    $success->add(uniqid());
+    Status::addStatus('esi', true);
 }
 
 function compareAttributes(&$updates, $key, $oAttr, $nAttr) {

@@ -66,22 +66,14 @@ while ($hour == date('H')) {
     $requests = new RedisTtlCounter('ttlc:requests', 300);
     addInfo('Requests in last 5 minutes', $requests->count());
 
-    $crestSuccess = new RedisTtlCounter('ttlc:CrestSuccess', 300);
-    addInfo('Successful CREST calls in last 5 minutes', $crestSuccess->count(), false);
-    $crestFailure = new RedisTtlCounter('ttlc:CrestFailure', 300);
-    addInfo('Failed CREST calls in last 5 minutes', $crestFailure->count(), false);
-    $esiSuccess = new RedisTtlCounter('ttlc:esiSuccess', 300);
-    addInfo('Successful ESI calls in last 5 minutes', $esiSuccess->count(), false);
-    $esiFailure = new RedisTtlCounter('ttlc:esiFailure', 300);
-    addInfo('Failed ESI calls in last 5 minutes', $esiFailure->count(), false);
-    $authSuccess = new RedisTtlCounter('ttlc:AuthSuccess', 300);
-    addInfo('Successful SSO calls in last 5 minutes', $authSuccess->count(), false);
-    $authFailure = new RedisTtlCounter('ttlc:AuthFailure', 300);
-    addInfo('Failed SSO calls in last 5 minutes', $authFailure->count(), false);
-    $xmlSuccess = new RedisTtlCounter('ttlc:XmlSuccess', 300);
-    addInfo('Successful XML calls in last 5 minutes', $xmlSuccess->count(), false);
-    $xmlFailure = new RedisTtlCounter('ttlc:XmlFailure', 300);
-    addInfo('Failed XML calls in last 5 minutes', $xmlFailure->count(), false);
+    addInfo('Successful CREST calls in last 5 minutes', Status::getStatus('crest', true), false);
+    addInfo('Failed CREST calls in last 5 minutes', Status::getStatus('crest', false), false);
+    addInfo('Successful ESI calls in last 5 minutes', Status::getStatus('esi', true), false);
+    addInfo('Failed ESI calls in last 5 minutes', Status::getStatus('esi', false), false);
+    addInfo('Successful SSO calls in last 5 minutes', Status::getStatus('sso', true), false);
+    addInfo('Failed SSO calls in last 5 minutes', Status::getStatus('sso', false), false);
+    addInfo('Successful XML calls in last 5 minutes', Status::getStatus('xml', true), false);
+    addInfo('Failed XML calls in last 5 minutes', Status::getStatus('xml', false), false);
 
     $esiChars = new RedisTimeQueue("tqApiESI", 3600);
     $esiCorps = new RedisTimeQueue("tqCorpApiESI", 3600);

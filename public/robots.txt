@@ -28,11 +28,20 @@ Disallow: /
 User-agent: CCBot
 Disallow: /
 
-User-agent: MegaIndex
+User-agent: MegaIndex.ru
 Disallow: /
 
-User-agent: GrapeshotCrawler
+User-agent: megaindex.com
+Disallow: /
+
+User-agent: grapeshot
 Disallow: /
 
 User-agent: NTbot
+Disallow: /
+
+User-agent: magpie-crawler
+Disallow: /
+
+User-agent: sogou spider
 Disallow: /

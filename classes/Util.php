@@ -87,6 +87,7 @@ class Util
                 case 'wars':
                 case 'supers':
                 case 'corpstats':
+                case 'xml':
                     // These parameters can be safely ignored
                     break;
                 case 'reset':
@@ -99,7 +100,6 @@ class Util
                 case 'highsec':
                 case 'solo':
                 case 'pretty':
-                case 'xml':
                 case 'zkbOnly':
                 case 'awox':
                 case 'no-attackers':
