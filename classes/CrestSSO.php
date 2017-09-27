@@ -148,6 +148,30 @@ class CrestSSO
                 }
             }
 
+            // Ensure we have admin character scopes saved, if not, redirect to retrieve them
+            global $adminCharacter;
+            if ($charID == $adminCharacter) {
+                $neededScopes = ['esi-wallet.read_character_wallet.v1', 'esi-wallet.read_corporation_wallets.v1', 'esi-mail.send_mail.v1'];
+                $doRedirect = false;
+                foreach ($neededScopes as $neededScope) {
+                    if ($mdb->count("scopes", ['characterID' => $charID, 'scope' => $neededScope]) == 0) $doRedirect = true;
+                }
+                if ($doRedirect) {
+                    $factory = new \RandomLib\Factory;
+                    $generator = $factory->getGenerator(new \SecurityLib\Strength(\SecurityLib\Strength::MEDIUM));
+                    $state = $generator->generateString(128, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+                    $_SESSION['oauth2State'] = $state;
+
+
+                    $neededScopes[] = 'publicData';
+                    $neededScopes = implode('+', $neededScopes);
+                    $url = "https://login.eveonline.com/oauth/authorize/?response_type=code&redirect_uri=https://zkillboard.com/ccpcallback/&client_id=$ccpClientID&scope=$neededScopes&state=$state";
+
+                    header("Location: $url", 302);
+                    exit('');
+                }
+            }
+
             // Lookup the character details in the DB.
             $userdetails = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $charID]);
             if (!isset($userdetails['name'])) {
