@@ -32,13 +32,20 @@ class User
      */
     public static function getUserInfo()
     {
-        global $redis, $mdb;
+        global $redis, $mdb, $adminCharacter;
 
         $id = self::getUserID();
         if ($id == 0) return [];
 
         $i = $mdb->findDoc("users", ['userID' => "user:$id"]);
         $i['username'] = Info::getInfoField('characterID', $id, 'name');
+
+        if ($adminCharacter == $id) {
+            $i['moderator'] = true;
+            $i['admin'] = true;
+        }
+
+
         return $i;
     }
 
