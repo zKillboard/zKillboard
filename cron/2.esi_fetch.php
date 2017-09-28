@@ -5,51 +5,56 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once "../init.php";
 
-$guzzler = new Guzzler(25, 10);
+$guzzler = new Guzzler(25, 100);
 $rows = $mdb->getCollection("crestmails")->find();
 $esimails = $mdb->getCollection("esimails");
 
 $redis->sort("esi2Fetch", ['sort' => 'desc']);
 
-$count = 0;
+$mdb->set("crestmails", ['processed' => ['$exists' => false]], ['processed' => false], ['multi' => true]);
+$mdb->set("crestmails", ['processed' => ['$ne' => true]], ['processed' => false]);
+
 $minute = date("Hi");
-while ($minute == date("Hi") && Status::getStatus('esi', false) < 100) {
-    while ($redis->llen("esi2Fetch") > 0 && $minute == date("Hi")) {
-        if ($redis->get("tqStatus") != "ONLINE") break;
-        $raw = $redis->lpop("esi2Fetch");
-        $row = split(":", $raw);
-        $killID = $row[0];
+while ($minute == date("Hi")) {
+    if ($redis->get("tqStatus") != "ONLINE") break;
 
-        $hash = $row[1];
-        if (strlen($hash) == 0) continue;
+    $row = $mdb->findDoc("crestmails", ['processed' => false], ['killID' => -1]);
+    if ($row != null) {
+        $killID = $row['killID'];
+        $hash = $row['hash'];
+
+        $mdb->set("crestmails", $row, ['processed' => 'fetching']);
+
         $url = "https://esi.tech.ccp.is/v1/killmails/$killID/$hash/";
-        $params = ['row' => $row, 'mdb' => $mdb, 'redis' => $redis, 'killID' => $killID, 'esimails' => $esimails, 'raw' => $raw];
+        $params = ['row' => $row, 'mdb' => $mdb, 'redis' => $redis, 'killID' => $killID, 'esimails' => $esimails];
         $guzzler->call($url, "success", "fail", $params);
-
-        $guzzler->tick();
-        $count++;
     }
-    usleep(10000);
     $guzzler->tick();
 }
 $guzzler->finish();
 
 function fail($guzzler, $params, $ex) {
-    $raw = $params['raw'];
+    $row = $params['row'];
     $redis = $params['redis'];
 
     Util::out("esi fetch failure: ($raw) " . $ex->getMessage());
-    $redis->rpush("esi2Fetch", $raw);
     Status::addStatus('esi', false);
 }
 
 function success(&$guzzler, &$params, &$content) {
+    $mdb = $params['mdb'];
+    $row = $params['row'];
+
     $esimails = $params['esimails'];
     $doc = json_decode($content, true);
     $esimails->insert($doc);
 
+    $mdb->set("crestmails", $row, ['processed' => true]);
+
     $queueProcess = new RedisQueue('queueProcess');
     $queueProcess->push($params['killID']);
+    $killsLastHour = new RedisTtlCounter('killsLastHour');
+    $killsLastHour->add($row['killID']);
 
     Status::addStatus('esi', true);
 }

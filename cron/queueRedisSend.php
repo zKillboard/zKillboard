@@ -22,12 +22,12 @@ while (date('Hi') == $minute) {
         continue;
     }
 
-    $rawmail = CrestTools::getCrestMail($killID);
+    $rawmail = $mdb->findDoc("esimails", ['killmail_id' => $killID]); // CrestTools::getCrestMail($killID);
     $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
     $zkb = $killmail['zkb'];
     $zkb['npc'] = @$killmail['npc'];
 
-    $zkb['href'] = "$crestServer/killmails/$killID/".$zkb['hash'].'/';
+    $zkb['href'] = "$esiServer/v1/killmails/$killID/".$zkb['hash'].'/';
     unset($rawmail['_id']);
 
     $package = ['killID' => $killID, 'killmail' => $rawmail, 'zkb' => $zkb];

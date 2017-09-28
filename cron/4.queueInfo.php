@@ -69,7 +69,7 @@ function addToStatsQueue($type, $id, $sequence)
 
 function updateInfo($killID)
 {
-    global $mdb, $debug, $crestServer;
+    global $mdb, $debug;
 
     $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
 

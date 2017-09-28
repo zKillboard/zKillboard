@@ -55,9 +55,9 @@ class Fitting
         foreach ($array as $item) {
             if (isset($item['flagName']) && in_array($item['flagName'], $goodspots)) {
                 if (isset($fitArray[$item['typeID']])) {
-                    $fitArray[$item['typeID']]['count'] = $fitArray[$item['typeID']]['count'] + (@$item['quantityDropped'] + @$item['quantityDestroyed']);
+                    $fitArray[$item['typeID']]['count'] = $fitArray[$item['typeID']]['count'] + (@$item['quantity_dropped'] + @$item['quantity_destroyed']);
                 } else {
-                    $fitArray[$item['typeID']] = array('count' => (@$item['quantityDropped'] + @$item['quantityDestroyed']));
+                    $fitArray[$item['typeID']] = array('count' => (@$item['quantity_dropped'] + @$item['quantity_destroyed']));
                 }
             }
         }

@@ -187,7 +187,7 @@ function usdeurgbp($totalprice)
 function buildItemKey($itm)
 {
     $key = $itm['typeName'].($itm['singleton'] == 2 ? ' (Copy)' : '');
-    $key .= '|'.($itm['quantityDropped'] > 0 ? 'dropped' : 'destroyed');
+    $key .= '|'.($itm['quantity_dropped'] > 0 ? 'dropped' : 'destroyed');
     if (!isset($itm['flagName'])) {
         $itm['flagName'] = Info::getFlagName($itm['flag']);
     }
@@ -263,7 +263,7 @@ function destroyedIsk($md5, $items)
 {
     $itemisk = 0;
     foreach ($items as $item) {
-        $itemisk += $item['price'] * (@$item['singleton'] ? @$item['quantityDestroyed'] / 100 : @$item['quantityDestroyed']);
+        $itemisk += $item['price'] * (@$item['singleton'] ? @$item['quantity_destroyed'] / 100 : @$item['quantity_destroyed']);
     }
 
     return $itemisk;
@@ -272,7 +272,7 @@ function droppedIsk($md5, $items)
 {
     $itemisk = 0;
     foreach ($items as $item) {
-        $itemisk += $item['price'] * (@$item['singleton'] ? @$item['quantityDropped'] / 100 : @$item['quantityDropped']);
+        $itemisk += $item['price'] * (@$item['singleton'] ? @$item['quantity_dropped'] / 100 : @$item['quantity_dropped']);
     }
 
     return $itemisk;
@@ -284,8 +284,8 @@ function fittedIsk($md5, $items)
     $flags = array('High Slots', 'Mid Slots', 'Low Slots', 'SubSystems', 'Rigs', 'Drone Bay', 'Fuel Bay');
     foreach ($items as $item) {
         if (isset($item['flagName']) && in_array($item['flagName'], $flags)) {
-            $qty = isset($item['quantityDropped']) ? $item['quantityDropped'] : 0;
-            $qty += isset($item['quantityDestroyed']) ? $item['quantityDestroyed'] : 0;
+            $qty = isset($item['quantity_dropped']) ? $item['quantity_dropped'] : 0;
+            $qty += isset($item['quantity_destroyed']) ? $item['quantity_destroyed'] : 0;
             $fittedIsk = $fittedIsk + ($item['price'] * $qty);
         }
     }

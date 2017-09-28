@@ -99,7 +99,7 @@ class Detail
                 if ($itm['flagName'] == 'Structure Service Slots' || $itm['flagName'] == 'SubSystems' || $itm['flagName'] == 'Rigs' || ($itm['fittable'] && $itm['inContainer'] == 0)) {
                     // not ammo or whatever
 
-                    $repeats = @$itm['quantityDropped'] + @$itm['quantityDestroyed'];
+                    $repeats = @$itm['quantity_dropped'] + @$itm['quantity_destroyed'];
                     $i = 0;
                     while ($i < $repeats) {
                         if ($itm['flagName'] == 'High Slots') {
@@ -150,7 +150,7 @@ class Detail
                     }
                 } else {
                     if ($itm['flagName'] == 'Drone Bay') {
-                        $eftarray['drone'][$itm['flag']][] = array('typeName' => $itm['typeName'], 'typeID' => $itm['typeID'], 'qty' => @$itm['quantityDropped'] + @$itm['quantityDestroyed']);
+                        $eftarray['drone'][$itm['flag']][] = array('typeName' => $itm['typeName'], 'typeID' => $itm['typeID'], 'qty' => @$itm['quantity_dropped'] + @$itm['quantity_destroyed']);
                     }
                 }
             }
@@ -204,23 +204,23 @@ class Detail
             for ($i = 0; $i <= 1; ++$i) {
                 $mItem = $itm;
                 if ($i == 0) {
-                    @$mItem['quantityDropped'] = 0;
+                    @$mItem['quantity_dropped'] = 0;
                 }
                 if ($i == 1) {
-                    @$mItem['quantityDestroyed'] = 0;
+                    @$mItem['quantity_destroyed'] = 0;
                 }
-                if (@$mItem['quantityDropped'] == 0 && @$mItem['quantityDestroyed'] == 0) {
+                if (@$mItem['quantity_dropped'] == 0 && @$mItem['quantity_destroyed'] == 0) {
                     continue;
                 }
                 $key = static::buildItemKey($mItem);
 
                 if (!isset($itemList[$key])) {
                     $itemList[$key] = $mItem;
-                    $itemList[$key]['price'] = $mItem['price'] * ($mItem['quantityDropped'] + $mItem['quantityDestroyed']);
+                    $itemList[$key]['price'] = $mItem['price'] * ($mItem['quantity_dropped'] + $mItem['quantity_destroyed']);
                 } else {
-                    $itemList[$key]['quantityDropped'] += @$mItem['quantityDropped'];
-                    $itemList[$key]['quantityDestroyed'] += @$mItem['quantityDestroyed'];
-                    $itemList[$key]['price'] += $mItem['price'] * (@$mItem['quantityDropped'] + @$mItem['quantityDestroyed']);
+                    $itemList[$key]['quantity_dropped'] += @$mItem['quantity_dropped'];
+                    $itemList[$key]['quantity_destroyed'] += @$mItem['quantity_destroyed'];
+                    $itemList[$key]['price'] += $mItem['price'] * (@$mItem['quantity_dropped'] + @$mItem['quantity_destroyed']);
                 }
             }
         }
@@ -247,20 +247,20 @@ class Detail
             }
 
             $mItem = $itm;
-            if ($mItem['quantityDropped'] == 0 && $mItem['quantityDestroyed'] == 0) {
+            if ($mItem['quantity_dropped'] == 0 && $mItem['quantity_destroyed'] == 0) {
                 continue;
             }
             $key = $itm['typeID'];
 
             if (!isset($itemList[$key])) {
                 $itemList[$key] = $mItem;
-                $itemList[$key]['price'] = $mItem['price'] * ($mItem['quantityDropped'] + $mItem['quantityDestroyed']);
+                $itemList[$key]['price'] = $mItem['price'] * ($mItem['quantity_dropped'] + $mItem['quantity_destroyed']);
             } else {
-                $itemList[$key]['quantityDropped'] += $mItem['quantityDropped'];
+                $itemList[$key]['quantity_dropped'] += $mItem['quantity_dropped'];
             }
-            $itemList[$key]['quantityDropped'] += $mItem['quantityDestroyed'];
-            $mItem['quantityDestroyed'] = 0;
-            $itemList[$key]['price'] += $mItem['price'] * ($mItem['quantityDropped'] + $mItem['quantityDestroyed']);
+            $itemList[$key]['quantity_dropped'] += $mItem['quantity_destroyed'];
+            $mItem['quantity_destroyed'] = 0;
+            $itemList[$key]['price'] += $mItem['price'] * ($mItem['quantity_dropped'] + $mItem['quantity_destroyed']);
         }
 
         return $itemList;
@@ -269,7 +269,7 @@ class Detail
     public static function buildItemKey($itm)
     {
         $key = $itm['typeName'].($itm['singleton'] == 2 ? ' (Copy)' : '');
-        $key .= '|'.($itm['quantityDropped'] > 0 ? 'dropped' : 'destroyed');
+        $key .= '|'.($itm['quantity_dropped'] > 0 ? 'dropped' : 'destroyed');
         if (!isset($itm['flagName'])) {
             $itm['flagName'] = Info::getFlagName($itm['flag']);
         }
@@ -345,7 +345,7 @@ class Detail
     {
         $droppedisk = 0;
         foreach ($items as $dropped) {
-            $droppedisk += $dropped['price'] * ($dropped['singleton'] ? $dropped['quantityDropped'] / 100 : $dropped['quantityDropped']);
+            $droppedisk += $dropped['price'] * ($dropped['singleton'] ? $dropped['quantity_dropped'] / 100 : $dropped['quantity_dropped']);
         }
 
         return $droppedisk;
@@ -357,8 +357,8 @@ class Detail
         $flags = array('High Slots', 'Mid Slots', 'Low Slots', 'SubSystems', 'Rigs', 'Drone Bay', 'Fuel Bay', 'Structure Service Slots');
         foreach ($items as $item) {
             if (isset($item['flagName']) && in_array($item['flagName'], $flags)) {
-                $qty = isset($item['quantityDropped']) ? $item['quantityDropped'] : 0;
-                $qty += isset($item['quantityDestroyed']) ? $item['quantityDestroyed'] : 0;
+                $qty = isset($item['quantity_dropped']) ? $item['quantity_dropped'] : 0;
+                $qty += isset($item['quantity_destroyed']) ? $item['quantity_destroyed'] : 0;
                 $fittedIsk = $fittedIsk + ($item['price'] * $qty);
             }
         }

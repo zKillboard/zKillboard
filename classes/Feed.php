@@ -42,6 +42,8 @@ class Feed
      */
     public static function getJSON($kills, $parameters)
     {
+        global $mdb;
+
         if ($kills == null) {
             return array();
         }
@@ -49,12 +51,12 @@ class Feed
 
         foreach ($kills as $kill) {
             $killID = $kill['killID'];
-            $json = Crest2Api::convert($killID);
+            $json = $mdb->findDoc("esimails", ['killmail_id' => $killID]);
+            $kill = $mdb->findDoc("killmails", ['killID' => $killID]);
+            $json['zkb'] = $kill['zkb'];
+            unset($json['_id']);
             if (array_key_exists('no-items', $parameters)) {
-                unset($json['items']);
-            }
-            if (isset($json['_stringValue'])) {
-                unset($json['_stringValue']);
+                unset($json['victim']['items']);
             }
             if (array_key_exists('finalblow-only', $parameters)) {
                 $involved = count($json['attackers']);
@@ -65,7 +67,7 @@ class Feed
                 $data = $json['attackers'];
                 unset($json['attackers']);
                 foreach ($data as $attacker) {
-                    if ($attacker['finalBlow'] == '1') {
+                    if ($attacker['final_blow'] == '1') {
                         $json['attackers'][] = $attacker;
                     }
                 }

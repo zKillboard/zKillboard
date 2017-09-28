@@ -86,15 +86,15 @@ class Kills
     {
         global $mdb, $redis;
 
-        $key = "zkb:detail:$killID";
+        $key = "zkb::detail:$killID";
         $stored = RedisCache::get($key);
         if ($stored != null) return $stored;
 
         $killmail = $mdb->findDoc('killmails', ['cacheTime' => 3600, 'killID' => (int) $killID]);
 
-        $rawmail = CrestTools::getCrestMail($killID);
+        $esimail = $mdb->findDoc("esimails", ['killmail_id' => $killID]);
 
-        $damage = (int) $rawmail['victim']['damageTaken'];
+        $damage = (int) $esimail['victim']['damage_taken'];
         $killmail['damage'] = $damage;
 
         $killmail['dttm'] = date('Y-m-d G:i', $killmail['dttm']->sec);
@@ -106,16 +106,16 @@ class Kills
         $involved = $killmail['involved'];
         array_shift($involved); // remove the victim
 
-        $items = self::getItems($rawmail, $killmail);
+        $items = self::getItems($esimail, $killmail);
 
         $infoInvolved = array();
         $infoItems = array();
 
-        $rawmailInv = $rawmail['attackers'];
-        $attackerCount = sizeof($rawmailInv);
+        $esimailInv = $esimail['attackers'];
+        $attackerCount = sizeof($esimailInv);
         $killmail['number_involved'] = $attackerCount;
 
-        if (isset($rawmail['victim']['position']) && isset($killmail['locationID'])) {
+        if (isset($esimail['victim']['position']) && isset($killmail['locationID'])) {
             $location = [];
             $location['itemID'] = (int) $killmail['locationID'];
             $location['itemName'] = $mdb->findField('information', 'name', ['cacheTime' => 3600, 'type' => 'locationID', 'id' => (int) $killmail['locationID']]);
@@ -123,10 +123,10 @@ class Kills
         }
 
         for ($index = 0; $index < $attackerCount; ++$index) {
-            $rawI = $rawmailInv[$index];
+            $rawI = $esimailInv[$index];
             $i = $involved[$index];
-            $i['damage'] = $rawI['damageDone'];
-            $i['weaponTypeID'] = @$rawI['weaponType']['id'];
+            $i['damage'] = $rawI['damage_done'];
+            $i['weaponTypeID'] = @$rawI['weapon_type_id'];
             $infoInvolved[] = Info::addInfo($i);
         }
 
@@ -141,11 +141,11 @@ class Kills
         return $stored;
     }
 
-    public static function getItems(&$rawmail, &$killmail)
+    public static function getItems(&$esimail, &$killmail)
     {
         $killTime = $killmail['killTime'];
         $items = array();
-        self::addItems($items, $rawmail['victim']['items'], $killTime);
+        self::addItems($items, $esimail['victim']['items'], $killTime);
 
         return $items;
     }
@@ -157,7 +157,7 @@ class Kills
         }
         if (is_array($items)) {
             foreach ($items as $item) {
-                $typeID = $item['itemType']['id'];
+                $typeID = $item['item_type_id'];
                 $item['typeID'] = $typeID;
                 $item['price'] = Price::getItemPrice($typeID, $killTime);
                 $item['inContainer'] = $inContainer;

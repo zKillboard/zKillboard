@@ -56,13 +56,4 @@ class CrestTools
 
         return self::getJSON($url);
     }
-
-    public static function getCrestMail($killID)
-    {
-        global $redis, $mdb;
-        $killID = (int) $killID;
-
-        $rawmail = $mdb->findDoc('rawmails', ['killID' => $killID, 'cacheTime' => 300]);
-        return $rawmail;
-    }
 }
