@@ -46,9 +46,20 @@ echo "Creating index : 'delayed' => 1, with sparse = 1 and unique = 0 ... ";
 $crestmails->ensureIndex(array('delayed' => 1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
 
+// esimails
+echo "\nCreating collection esimails ... ";
+$esimails = $db->createCollection("esimails");
+echo "Done\n";
+echo "Creating index : 'killmail_id' => 1, with sparse = 0 and unique = 1 ... ";
+$esimails->ensureIndex(array('killmail_id' => 1), array("sparse" => 0, "unique" => 1));
+echo "Done\n";
+
 // evemails
 echo "\nCreating collection evemails ... ";
 $evemails = $db->createCollection("evemails");
+echo "Done\n";
+echo "Creating index : 'sent' => 1, with sparse = 0 and unique = 0 ... ";
+$evemails->ensureIndex(array('sent' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // information
@@ -93,6 +104,9 @@ $information->ensureIndex(array('type' => 1, 'timeStarted' => -1), array("sparse
 echo "Done\n";
 echo "Creating index : 'type' => 1, 'lastApiUpdate' => 1, with sparse = 0 and unique = 0 ... ";
 $information->ensureIndex(array('type' => 1, 'lastApiUpdate' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'lastUpdated' => 1, with sparse = 1 and unique = 0 ... ";
+$information->ensureIndex(array('type' => 1, 'lastUpdated' => 1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
 
 // insurance
@@ -219,6 +233,9 @@ $killmails->ensureIndex(array('dttm' => 1, 'killID' => -1), array("sparse" => 0,
 echo "Done\n";
 echo "Creating index : 'zkb.fittedValue' => -1, with sparse = 0 and unique = 0 ... ";
 $killmails->ensureIndex(array('zkb.fittedValue' => -1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'structure' => 1, with sparse = 0 and unique = 0 ... ";
+$killmails->ensureIndex(array('structure' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // locations
@@ -427,14 +444,6 @@ echo "Creating index : 'typeID' => 1, with sparse = 0 and unique = 0 ... ";
 $prices->ensureIndex(array('typeID' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
-// rawmails
-echo "\nCreating collection rawmails ... ";
-$rawmails = $db->createCollection("rawmails");
-echo "Done\n";
-echo "Creating index : 'killID' => 1, with sparse = 0 and unique = 1 ... ";
-$rawmails->ensureIndex(array('killID' => 1), array("sparse" => 0, "unique" => 1));
-echo "Done\n";
-
 // scopes
 echo "\nCreating collection scopes ... ";
 $scopes = $db->createCollection("scopes");
@@ -607,14 +616,6 @@ $statistics->ensureIndex(array('calcTrophies' => 1), array("sparse" => 1, "uniqu
 echo "Done\n";
 echo "Creating index : 'reset' => 1, with sparse = 1 and unique = 0 ... ";
 $statistics->ensureIndex(array('reset' => 1), array("sparse" => 1, "unique" => 0));
-echo "Done\n";
-
-// storage
-echo "\nCreating collection storage ... ";
-$storage = $db->createCollection("storage");
-echo "Done\n";
-echo "Creating index : 'locker' => 1, with sparse = 0 and unique = 1 ... ";
-$storage->ensureIndex(array('locker' => 1), array("sparse" => 0, "unique" => 1));
 echo "Done\n";
 
 // tickets
