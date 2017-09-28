@@ -39,7 +39,6 @@ function failChar(&$guzzler, &$params, &$connectionException)
     $row = $params['row'];
     $id = $row['id'];
     $rtq = $params['rtq'];
-    Util::out("char failed $id $code");
 
     switch ($code) {
         case 0: // timeout
@@ -48,12 +47,7 @@ function failChar(&$guzzler, &$params, &$connectionException)
         case 503: // server error
         case 200: // timeout...
             $rtq->setTime($id, (time() - 86400) + rand(3600, 7200));
-            //$mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(86400 * -2)]);
             break;
-        /*case 404:
-        case 410:
-            $mdb->set("information", $row, ['allianceID' => 0, 'corporationID' => 1000001, 'factionID' => 0,  'secStatus' => 0]);
-            break;*/
         default:
             Util::out("/v4/characters/ failed for $id with code $code");
     }
