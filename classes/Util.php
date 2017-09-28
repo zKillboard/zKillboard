@@ -138,7 +138,6 @@ class Util
                             $key = $key.'ID';
                         }
                         $legalLargePagination = ($key == 'characterID' || $key == 'corporationID' || $key == 'allianceID');
-$lastID = $key;
                         if ($key == 'systemID') {
                             $key = 'solarSystemID';
                         } elseif ($key == 'shipID') {
