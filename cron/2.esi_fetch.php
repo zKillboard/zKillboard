@@ -11,8 +11,8 @@ $esimails = $mdb->getCollection("esimails");
 
 $redis->sort("esi2Fetch", ['sort' => 'desc']);
 
-$mdb->set("crestmails", ['processed' => ['$exists' => false]], ['processed' => false], ['multi' => true]);
-$mdb->set("crestmails", ['processed' => ['$ne' => true]], ['processed' => false]);
+$mdb->set("crestmails", ['processed' => ['$exists' => false]], ['processed' => false], true);
+$mdb->set("crestmails", ['processed' => ['$ne' => true]], ['processed' => false], true);
 
 $minute = date("Hi");
 while ($minute == date("Hi")) {
@@ -34,11 +34,18 @@ while ($minute == date("Hi")) {
 $guzzler->finish();
 
 function fail($guzzler, $params, $ex) {
+    $mdb = $params['mdb'];
     $row = $params['row'];
-    $redis = $params['redis'];
 
-    Util::out("esi fetch failure: ($raw) " . $ex->getMessage());
-    Status::addStatus('esi', false);
+    $code = $ex->getCode();
+    switch ($code) {
+        case 404:
+        case 422:
+            $mdb->remove("crestmails", $row);
+            break;
+        default:
+            Util::out("esi fetch failure ($code): " . $ex->getMessage());
+    }
 }
 
 function success(&$guzzler, &$params, &$content) {
@@ -55,6 +62,4 @@ function success(&$guzzler, &$params, &$content) {
     $queueProcess->push($params['killID']);
     $killsLastHour = new RedisTtlCounter('killsLastHour');
     $killsLastHour->add($row['killID']);
-
-    Status::addStatus('esi', true);
 }

@@ -49,20 +49,26 @@ class Guzzler
         $this->concurrent--;
     }
 
-    public function call($uri, $fulfilled, $rejected, $params, $setup = [], $callType = 'GET', $body = null)
+    public function call($uri, $fulfilled, $rejected, $params = [], $setup = [], $callType = 'GET', $body = null)
     {
         $this->verifyCallable($fulfilled);
         $this->verifyCallable($rejected);
+        $params['uri'] = $uri;
+        $params['callType'] = $callType;
+
+        $statusType = self::getType($uri);
 
         $guzzler = $this;
         $request = new \GuzzleHttp\Psr7\Request($callType, $uri, $setup, $body);
         $this->client->sendAsync($request)->then(
-            function($response) use (&$guzzler, $fulfilled, $rejected, &$params) {
+            function($response) use (&$guzzler, $fulfilled, $rejected, &$params, $statusType) {
+                Status::addStatus($statusType, true);
                 $guzzler->dec();
                 $content = (string) $response->getBody();
                 $fulfilled($guzzler, $params, $content);
             },
-            function($connectionException) use (&$guzzler, &$rejected, &$params) {
+            function($connectionException) use (&$guzzler, &$rejected, &$params, $statusType) {
+                Status::addStatus($statusType, false);
                 $guzzler->dec();
                 $rejected($guzzler, $params, $connectionException);
             });
@@ -77,5 +83,15 @@ class Guzzler
         if (!is_callable($callable)) {
             throw new InvalidArgumentException(print_r($callable, true) . " is not a callable function");
         }
+    }
+
+    protected function getType($uri)
+    {
+        if (strpos($uri, 'esi.tech') !== false) return 'esi';
+        if (strpos($uri, 'crest-tq') !== false) return 'crest';
+        if (strpos($uri, 'login') !== false) return 'sso';
+        if (strpos($uri, 'api.eve') !== false) return 'xml';
+        Log::log("Unknown type for $uri");
+        return 'unknown';
     }
 }

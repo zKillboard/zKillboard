@@ -51,7 +51,6 @@ function failChar(&$guzzler, &$params, &$connectionException)
         default:
             Util::out("/v4/characters/ failed for $id with code $code");
     }
-    Status::addStatus('esi', false);
 }
 
 function updateChar(&$guzzler, &$params, &$content)
@@ -82,7 +81,6 @@ function updateChar(&$guzzler, &$params, &$content)
         $mdb->set("information", $row, $updates);
         $redis->del(Info::getRedisKey('characterID', $id));
     }
-    Status::addStatus('esi', true);
 }
 
 function compareAttributes(&$updates, $key, $oAttr, $nAttr) {

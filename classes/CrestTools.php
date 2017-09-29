@@ -13,8 +13,6 @@ class CrestTools
     {
         global $baseAddr;
 
-        $crestSuccess = new RedisTtlCounter('ttlc:CrestSuccess', 300);
-        $crestFailure = new RedisTtlCounter('ttlc:CrestFailure', 300);
         $errorCodes = [403, 404, 415, 500];
 
         $numTries = 0;
@@ -30,19 +28,20 @@ class CrestTools
             $body = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if ($httpCode == 200) {
-                $crestSuccess->add(uniqid());
-
+                Status::addStatus('crest', true);
                 return $body;
             }
-            $crestFailure->add(uniqid());
+Log::log("curlFetch error ($httpCode) $url");
 
             if (in_array($httpCode, $errorCodes)) {
+                Status::addStatus('crest', false);
                 return $httpCode;
             }
 
             ++$numTries;
             sleep(1);
         } while ($httpCode != 200 && $numTries <= 3);
+        Status::addStatus('crest', false);
         Log::log("Gave up on $url");
 
         return $httpCode;

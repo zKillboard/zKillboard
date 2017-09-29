@@ -42,7 +42,6 @@ function failCorp(&$guzzler, &$params, &$connectionException)
         default:
             Util::out("/v3/corporation/ failed for $id with code $code");
     }
-    Status::addStatus('esi', false);
 }
 
 function updateCorp(&$guzzler, &$params, &$content)
@@ -73,7 +72,6 @@ function updateCorp(&$guzzler, &$params, &$content)
         $mdb->set("information", $row, $updates);
         $redis->del(Info::getRedisKey('corporationID', $row['id']));
     }
-    Status::addStatus('esi', true);
 }
 
 function compareAttributes(&$updates, $key, $oAttr, $nAttr) {

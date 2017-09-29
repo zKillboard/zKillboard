@@ -28,17 +28,14 @@ while ($minute == date('Hi')) {
         $killID = (int) $killID;
 
         $mail = $mdb->findDoc('esimails', ['killmail_id' => $killID]);
-        if ($mail == null) {
-            $queueProcess->push($killID);
-            continue;
-        }
+        if ($mail == null) continue;
 
         $kill = array();
         $kill['killID'] = $killID;
 
         $crestmail = $crestmails->findOne(['killID' => $killID, 'processed' => true]);
         if ($crestmail == null) {
-            $queueProcess->push($killID);
+            $mdb->set("crestmails", ['killID' => $killID, 'processed' => 'fetching'], ['processed' => false]);
             usleep(10000);
             continue;
         }

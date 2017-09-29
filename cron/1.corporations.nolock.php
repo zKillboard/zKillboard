@@ -43,7 +43,6 @@ function accessTokenDone(&$guzzler, &$params, $content)
 {
     global $ccpClientID, $ccpSecret;
 
-    Status::addStatus('sso', true);
     $response = json_decode($content, true);
     $accessToken = $response['access_token'];
     $params['content'] = $content;
@@ -67,8 +66,6 @@ function accessTokenDone(&$guzzler, &$params, $content)
 function success($guzzler, $params, $content) 
 {
     global $mdb, $redis;
-
-    Status::addStatus('esi', true);
 
     $newKills = (int) @$params['newKills'];
     $maxKillID = (int) @$params['maxKillID'];
@@ -154,8 +151,6 @@ function fail($guzzer, $params, $ex)
         default:
             echo "killmail: " . $ex->getMessage() . "\n";
     }
-
-    Status::addStatus('esi', false);
 }
 
 function accessTokenFail(&$guzzler, &$params, $ex)
@@ -181,6 +176,4 @@ function accessTokenFail(&$guzzler, &$params, $ex)
         default:
             echo "token: " . $ex->getMessage() . "\n";
     }
-
-    Status::addStatus('sso', false);
 }
