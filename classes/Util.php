@@ -88,7 +88,6 @@ class Util
                 case 'wars':
                 case 'supers':
                 case 'corpstats':
-                case 'xml':
                     // These parameters can be safely ignored
                     break;
                 case 'reset':
@@ -265,6 +264,8 @@ class Util
                     if ($value < 1 || $value > 12) throw new Exception("$value is not a valid entry for $key");
                     $parameters[$key] = $value;
                     break;
+                case 'xml':
+                    throw new Exception("xml formatting has been deprecated and is no longer supported");
                 default:
                     if (substr($uri, 0, 5) == "/api/") {
                         throw new Exception("$key is an invalid parameter");
