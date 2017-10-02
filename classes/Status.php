@@ -20,4 +20,37 @@ class Status
         return $rtc->count();
     }
 
+
+    public static function check($apiType, $exitIfOffline = true, $exitIfFailure = true)
+    {
+        global $redis;
+
+        $apiType = strtolower($apiType);
+        $rtcs = new RedisTtlCounter("ttlc:{$apiType}Success", 300);
+        $rtcf = new RedisTtlCounter("ttlc:{$apiType}Failure", 300);
+
+        $fail = false;
+        $fail |= $rtcf->count() >= 100 && $exitIfFailure;
+        $fail |+ $redis->get("tqStatus") != "ONLINE" && $exitIfOffline;
+
+        if ($fail) exit();
+    }
+
+    public static function checkStatus($guzzler, $apiType, $exitIfOffline = true, $exitIfFailure = true)
+    {  
+        global $redis;
+
+        $apiType = strtolower($apiType);
+        $rtcs = new RedisTtlCounter("ttlc:{$apiType}Success", 300);
+        $rtcf = new RedisTtlCounter("ttlc:{$apiType}Failure", 300);
+
+        $fail = false;
+        $fail |= $rtcf->count() >= 100 && $exitIfFailure;
+        $fail |+ $redis->get("tqStatus") != "ONLINE" && $exitIfOffline;
+
+        if ($fail) {
+            $guzzler->finish();
+            exit();
+        }
+    }
 }

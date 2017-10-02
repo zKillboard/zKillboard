@@ -54,6 +54,9 @@ class Feed
             $json = $mdb->findDoc("esimails", ['killmail_id' => $killID]);
             $kill = $mdb->findDoc("killmails", ['killID' => $killID]);
             $json['zkb'] = $kill['zkb'];
+            $json['zkb']['npc'] = $kill['npc'];
+            $json['zkb']['solo'] = $kill['solo'];
+            $json['zkb']['awox'] = $kill['awox'];
             unset($json['_id']);
             if (array_key_exists('no-items', $parameters)) {
                 unset($json['victim']['items']);

@@ -11,7 +11,7 @@ $maxKillID = $mdb->findField("killmails", "killID", [], ['killID' => -1]) - 5000
 $dayMod10 = date("j") % 10;
 $minute = date('Hi');
 while ($minute == date('Hi') && Status::getStatus('esi', false) < 300) {
-    if ($redis->get("tqStatus") != "ONLINE") break;
+    Status::checkStatus($guzzler, 'esi');
     $id = (int) $chars->next();
     if ($id > 0) {
         $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => $id]);

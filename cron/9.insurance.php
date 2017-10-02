@@ -7,7 +7,7 @@ if ($redis->get("zkb:insuranceFetched:$date") == true) {
     exit();
 }
 
-if ($redis->get("tqStatus") != "ONLINE") exit();
+Status::check('crest');
 
 $json = CrestTools::curlFetch("$crestServer/insuranceprices/");
 $insurance = json_decode($json, true);

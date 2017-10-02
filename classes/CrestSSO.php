@@ -215,6 +215,9 @@ class CrestSSO
     {
         global $app, $redis, $ccpClientID, $ccpSecret;
 
+        Status::check('sso');
+
+
         if ($charID === null) {
             $charID = User::getUserID();
         }
@@ -326,7 +329,7 @@ class CrestSSO
         global $ccpClientID, $ccpSecret;
 
         $headers = ['Authorization' =>'Basic ' . base64_encode($ccpClientID . ':' . $ccpSecret)];
-        $url = 'https://login.eveonline.com/oauth/token?grant_type=refresh_token&refresh_token=' . $refreshToken;
+        $url = 'https://login.eveonline.com/oauth/token?grant_type=refresh_token&refresh_token=' . urlencode($refreshToken);
         $guzzler->call($url, $success, $fail, $params, $headers, 'POST');
     }
 }

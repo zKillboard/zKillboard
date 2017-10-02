@@ -17,7 +17,7 @@ if (date('i') == 22 || $esi->size() == 0) {
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    if ($redis->get("tqStatus") != "ONLINE") break;
+    Status::checkStatus($guzzler, 'esi');
     $charID = (int) $esi->next();
     if ($charID > 0) {
         $corpID = Info::getInfoField('characterID', $charID, 'corporationID');
@@ -146,6 +146,7 @@ function fail($guzzer, $params, $ex)
             break;
         case 500:
         case 502: // Server error, try again in 5 minutes
+        case 503:
             $esi->setTime($charID, time() + 300);
             break;
         default:

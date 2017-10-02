@@ -62,14 +62,14 @@ class Guzzler
         $request = new \GuzzleHttp\Psr7\Request($callType, $uri, $setup, $body);
         $this->client->sendAsync($request)->then(
             function($response) use (&$guzzler, $fulfilled, $rejected, &$params, $statusType) {
-                Status::addStatus($statusType, true);
                 $guzzler->dec();
                 $content = (string) $response->getBody();
+                Status::addStatus($statusType, true);
                 $fulfilled($guzzler, $params, $content);
             },
             function($connectionException) use (&$guzzler, &$rejected, &$params, $statusType) {
-                Status::addStatus($statusType, false);
                 $guzzler->dec();
+                Status::addStatus($statusType, false);
                 $rejected($guzzler, $params, $connectionException);
             });
         $this->inc();

@@ -4,7 +4,6 @@ require_once "../init.php";
 
 $serverVersion = $redis->get("tqServerVersion");
 $loadedVersion = $redis->get("zkb:tqServerVersion");
-$universseLoaded = $redis->get("zkb:universeLoaded");
 if ($serverVersion == $loadedVersion) exit();
 
 $redis->set("zkb:universeLoaded", "false");

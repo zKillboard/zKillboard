@@ -15,14 +15,14 @@ if ($redis->get($key) == true) {
     exit();
 }
 
-if ($redis->get("tqStatus") != "ONLINE") exit();
+Status::check('crest');
 $crestPrices = CrestTools::getJson("$crestServer/market/prices/");
 if (!isset($crestPrices['items'])) {
     exit();
 }
 
 foreach ($crestPrices['items'] as $item) {
-    if ($redis->get("tqStatus") != "ONLINE") exit();
+    Status::check('crest');
     $typeID = $item['type']['id'];
     $price = Price::getItemPrice($typeID, $date, true);
 

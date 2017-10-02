@@ -9,7 +9,7 @@ $corps = new RedisTimeQueue("zkb:corporationID", 86400);
 
 $minute = date('Hi');
 while ($minute == date('Hi') && Status::getStatus('esi', false) < 300) {
-    if ($redis->get("tqStatus") != "ONLINE") break;
+    Status::checkStatus($guzzler, 'esi');
     $id = (int) $corps->next();
     if ($id <= 0) break;
     if ($id > 0) {

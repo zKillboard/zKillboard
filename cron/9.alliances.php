@@ -18,7 +18,7 @@ if ($i == 45) {
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    if ($redis->get("tqStatus") != "ONLINE") break;
+    Status::check('crest');
     sleep(1);
     $id = (int) $queueAllis->next(false);
     if ($id == null) {

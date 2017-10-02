@@ -8,7 +8,7 @@ if (!is_array($walletApis)) {
     return;
 }
 
-if ($redis->get("tqStatus") != "ONLINE") exit();
+Status::check('xml');
 $redisKey = 'zkb:walletCheck';
 if ($redis->get($redisKey) != true) {
     Util::out("Fetching payments...");

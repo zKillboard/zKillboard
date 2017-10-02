@@ -16,7 +16,7 @@ $mdb->set("crestmails", ['processed' => ['$ne' => true]], ['processed' => false]
 
 $minute = date("Hi");
 while ($minute == date("Hi")) {
-    if ($redis->get("tqStatus") != "ONLINE") break;
+    Status::check('esi');
 
     $row = $mdb->findDoc("crestmails", ['processed' => false], ['killID' => -1]);
     if ($row != null) {
@@ -56,7 +56,11 @@ function success(&$guzzler, &$params, &$content) {
     $doc = json_decode($content, true);
     $esimails->insert($doc);
 
+    try {
     $mdb->set("crestmails", $row, ['processed' => true]);
+    } catch (Exception $ex) {
+        // argh
+    }
 
     $queueProcess = new RedisQueue('queueProcess');
     $queueProcess->push($params['killID']);
