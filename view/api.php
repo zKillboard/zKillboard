@@ -37,10 +37,7 @@ try {
     }
     $app->expires('+1 hour');
 
-    if (isset($parameters['xml'])) {
-        $app->contentType('text/xml; charset=utf-8');
-        echo XmlWrapper::xmlOut($array, $parameters);
-    } elseif (isset($_GET['callback']) && Util::isValidCallback($_GET['callback'])) {
+    if (isset($_GET['callback']) && Util::isValidCallback($_GET['callback'])) {
         $app->contentType('application/javascript; charset=utf-8');
         header('X-JSONP: true');
         echo $_GET['callback'].'('.json_encode($array).')';

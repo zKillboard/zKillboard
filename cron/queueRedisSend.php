@@ -26,6 +26,8 @@ while (date('Hi') == $minute) {
     $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
     $zkb = $killmail['zkb'];
     $zkb['npc'] = @$killmail['npc'];
+    $zkb['solo'] = @$killmail['solo'];
+    $zkb['awox'] = @$killmail['awox'];
 
     $zkb['href'] = "$esiServer/v1/killmails/$killID/".$zkb['hash'].'/';
     unset($rawmail['_id']);
