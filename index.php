@@ -83,7 +83,7 @@ if (!$isApiRequest) {
 
 // Scrape Checker
 $ipKey = "ip::$ip";
-if (!$isApiRequest && !(substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp' || substr($uri, 0, 5) == '/auto')) {
+if (!$isApiRequest && !(substr($uri, 0, 9) == '/related/' || substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp' || substr($uri, 0, 5) == '/auto')) {
     $redis->incr($ipKey, ($uri == '/navbar/' ? -1 : 1));
     $redis->expire($ipKey, 300);
     $count = $redis->get($ipKey);
