@@ -5,7 +5,7 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once "../init.php";
 
-$guzzler = new Guzzler(25, 100);
+$guzzler = new Guzzler(25, 10);
 $rows = $mdb->getCollection("crestmails")->find();
 $esimails = $mdb->getCollection("esimails");
 
@@ -54,13 +54,13 @@ function success(&$guzzler, &$params, &$content) {
 
     $esimails = $params['esimails'];
     $doc = json_decode($content, true);
-    $esimails->insert($doc);
 
     try {
-    $mdb->set("crestmails", $row, ['processed' => true]);
+        $esimails->insert($doc);
     } catch (Exception $ex) {
         // argh
     }
+    $mdb->set("crestmails", $row, ['processed' => true]);
 
     $queueProcess = new RedisQueue('queueProcess');
     $queueProcess->push($params['killID']);
