@@ -8,6 +8,7 @@ class Guzzler
     private $concurrent = 0;
     private $maxConcurrent;
     private $usleep;
+    private $lastHeaders = [];
 
     public function __construct($maxConcurrent = 10, $usleep = 100000)
     {
@@ -65,11 +66,13 @@ class Guzzler
                 $guzzler->dec();
                 $content = (string) $response->getBody();
                 Status::addStatus($statusType, true);
+                $this->lastHeaders = $response->getHeaders();
                 $fulfilled($guzzler, $params, $content);
             },
             function($connectionException) use (&$guzzler, &$rejected, &$params, $statusType) {
                 $guzzler->dec();
                 Status::addStatus($statusType, false);
+                $params['content'] = (string) $connectionException->getResponse()->getBody();
                 $rejected($guzzler, $params, $connectionException);
             });
         $this->inc();
@@ -93,5 +96,10 @@ class Guzzler
         if (strpos($uri, 'api.eve') !== false) return 'xml';
         Log::log("Unknown type for $uri");
         return 'unknown';
+    }
+
+    public function getLastHeaders()
+    {
+        return $this->lastHeaders;
     }
 }
