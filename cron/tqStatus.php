@@ -29,22 +29,20 @@ $killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
 $killCount = number_format($killsLastHour->count(), 0);
 $redis->publish("public", json_encode(['action' => 'tqStatus', 'tqStatus' => $serverStatus, 'tqCount' => $loggedIn, 'kills' => $killCount]));
 
-$message = apiStatus(null, 'ttlc:esiSuccess', 'ttlc:esiFailure', "Issues with CCP's ESI API - some killmails may be delayed.");
-$message = apiStatus($message, 'ttlc:CrestSuccess', 'ttlc:CrestFailure', "Issues with CCP's CREST API - some killmails may be delayed.");
-$message = apiStatus($message, 'ttlc:XmlSuccess', 'ttlc:XmlFailure', "Issues with CCP's XML API - some killmails may be delayed.");
-$message = apiStatus($message, 'ttlc:AuthSuccess', 'ttlc:AuthFailure', "Issues with CCP's SSO API - some killmails may be delayed.");
+$message = apiStatus(null, 'esi', "Issues with CCP's ESI API - some killmails may be delayed.");
+$message = apiStatus($message, 'crest', "Issues with CCP's CREST API - some killmails may be delayed.");
+$message = apiStatus($message, 'xml', "Issues with CCP's XML API - some killmails may be delayed.");
+$message = apiStatus($message, 'sso', "Issues with CCP's SSO API - some killmails may be delayed.");
 $redis->setex('tq:apiStatus', 300, $message);
 
-function apiStatus($prevMessage, $success, $fail, $notification)
+function apiStatus($prevMessage, $apiType, $notification)
 {
     if ($prevMessage != null) return $prevMessage;
 
-    $success = new RedisTtlCounter($success, 300);
-    $fail = new RedisTtlCounter($fail, 300);
-    $sCount = $success->count();
-    $fCount = $fail->count();
+    $sCount = Status::getStatus($apiType, true);
+    $fCount = Status::getStatus($apiType, false);
     $total = $sCount + $fCount;
     if ($total < 100) return null;
-    if ($fCount / $total >= .9) return $notification;
+    if ($fCount / $total >= .5) return $notification;
     return null;
 }
