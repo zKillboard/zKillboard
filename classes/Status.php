@@ -36,7 +36,7 @@ class Status
         if ($fail) exit();
     }
 
-    public static function checkStatus($guzzler, $apiType, $exitIfOffline = true, $exitIfFailure = true)
+    public static function checkStatus($guzzler = null, $apiType = '', $exitIfOffline = true, $exitIfFailure = true)
     {  
         global $redis;
 
@@ -49,7 +49,7 @@ class Status
         $fail |+ $redis->get("tqStatus") != "ONLINE" && $exitIfOffline;
 
         if ($fail) {
-            $guzzler->finish();
+            $guzzle = $guzzler == null ? null : $guzzler->finish();
             exit();
         }
     }
