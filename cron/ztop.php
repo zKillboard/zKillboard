@@ -46,7 +46,9 @@ while ($hour == date('H')) {
 
     addInfo('Kills remaining to be fetched.', $mdb->count('crestmails', ['processed' => false]));
     $killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
-    addInfo('Kills added last hour', $killsLastHour->count());
+    $kCount = $killsLastHour->count();
+    addInfo('Kills added last hour', $kCount);
+    $redis->publish("public", json_encode(['action' => 'lastHour', 'kills' => number_format($kCount)]));
     $totalKills = $redis->get('zkb:totalKills');
     $topKillID = $mdb->findField('killmails', 'killID', ['cacheTime' => 60], ['killID' => -1]);
     addInfo('Total Kills (' . number_format(($totalKills / $topKillID) * 100, 1) . '%)', $totalKills);

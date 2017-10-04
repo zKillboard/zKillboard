@@ -88,6 +88,10 @@ function wslog(msg)
         setTimeout("location.reload();", (Math.random() * 300000));
     } else if (json.action == 'bigkill') {
         htmlNotify(json);
+    } else if (json.action == 'lastHour') {
+        $("#lasthour").text(json.kills);
+    } else {
+        console.log("Unknown action: " + json.action);
     }
 }
 
