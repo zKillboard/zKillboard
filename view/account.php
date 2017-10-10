@@ -20,73 +20,35 @@ if (isset($req)) {
 
 global $twig, $adFreeMonthCost, $baseAddr;
 if ($_POST) {
-    $keyid = Util::getPost('keyid');
-    $vcode = Util::getPost('vcode');
-    $label = Util::getPost('label');
-
-    // Apikey stuff
-    if (isset($keyid) || isset($vcode)) {
-        $error = Api::addKey($keyid, $vcode, $label);
-    }
-
     $deletekeyid = Util::getPost('deletekeyid');
     $deleteentity = Util::getPost('deleteentity');
     // Delete an apikey
     if (isset($deletekeyid)) {
-        $row = $mdb->find("scopes", ['characterID' => $userID, '_id' => new MongoID($deletekeyid)]);
-        if (@$row['scope'] == 'characterKillsRead') $redis->del("apiVerified:" . @$row['characterID']);
-        if (@$row['scope'] == 'corporationKillsRead') $redis->del("apiVerified:" . @$row['corporationID']);
-        $mdb->remove("scopes", ['characterID' => $userID, '_id' => new MongoID($deletekeyid)]);
-        $error = "The scope has been removed";
-    }
-
-    // Theme
-    $theme = Util::getPost('theme');
-    if (isset($theme)) {
-        UserConfig::set('theme', $theme);
-        $app->redirect($_SERVER['REQUEST_URI']);
+        $i = $mdb->remove("scopes", ['characterID' => $userID, '_id' => new MongoID($deletekeyid)]);
+        if (isset($i['n']) && $i['n'] > 0) $error = "The scope has been removed. Please give up to 24 hours for caches to remove the API verified checkmark on the overview page.";
+        else $error = "We did nothing. Were you supposed to attempt that?";
+        User::sendMessage($error);
     }
 
     // Style
     $style = Util::getPost('style');
     if (isset($style)) {
         UserConfig::set('style', $style);
-        $app->redirect($_SERVER['REQUEST_URI']);
+        User::sendMessage("Your theme was updated to $style");
     }
 
     // Disqus
     $showDisqus = Util::getPost('showDisqus');
     if (isset($showDisqus)) {
         UserConfig::set('showDisqus', $showDisqus);
-        $app->redirect($_SERVER['REQUEST_URI']);
+        User::sendMessage("Your Disqus setting was updated to " . ($showDisqus != "true" ? "not show." : "show."));
     }
 
-    $timeago = Util::getPost('timeago');
-    if (isset($timeago)) {
-        UserConfig::set('timeago', $timeago);
-    }
+    $defaultLoginPage = Util::getPost('defaultLoginPage');
+    
 
-    $ddcombine = Util::getPost('ddcombine');
-    if (isset($ddcombine)) {
-        UserConfig::set('ddcombine', $ddcombine);
-    }
-
-    $ddmonthyear = Util::getPost('ddmonthyear');
-    if (isset($ddmonthyear)) {
-        UserConfig::set('ddmonthyear', $ddmonthyear);
-
-    }
-
-    $subdomain = Util::getPost('subdomain');
-    if ($subdomain != null) {
-        $banner = Util::getPost('banner');
-        $alias = Util::getPost('alias');
-        $bannerUpdates = array("$subdomain" => $banner);
-        if (strlen($alias) == 0 || (strlen($alias) >= 6 && strlen($alias) <= 64)) {
-            $aliasUpdates = array("$subdomain" => $alias);
-        }
-        // table is updated if user is ceo/executor in code thta loads this information below
-    }
+    $app->redirect($_SERVER['REQUEST_URI']);
+    exit();
 }
 
 $data['entities'] = User::getUserTrackerData();
