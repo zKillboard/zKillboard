@@ -6,7 +6,7 @@ global $baseAddr;
 $message = array();
 
 if (User::isLoggedIn() == false) {
-    $app->redirect('/');
+    $app->redirect('/ccplogin', 302);
     return;
 }
 
