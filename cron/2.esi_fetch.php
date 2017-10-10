@@ -43,6 +43,8 @@ function fail($guzzler, $params, $ex) {
         case 422:
             $mdb->remove("crestmails", $row);
             break;
+        case 502: // Do nothing, the server messed up and we'll try again in a minute
+            break;
         default:
             Util::out("esi fetch failure ($code): " . $ex->getMessage());
     }
