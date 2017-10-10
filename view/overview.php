@@ -206,14 +206,12 @@ if ($pageType == 'stats' && in_array($key, $onlyHistory)) {
 // Figure out if the character or corporation has any API keys in the database
 $nextApiCheck = null;
 $apiVerified = $redis->get("apiVerified:$id");
-if ($apiVerified === false && $type == 'character') {
-    $corpID = Info::getInfoField('characterID', $id, 'corporationID');
-    $apiVerified = $redis->get("apiVerified:$corpID");
-}
 if ($apiVerified !== false) {
     $nextApiCheck = date('H:i', $apiVerified);
     $apiVerified = true;
 }
+$corpID = Info::getInfoField('characterID', $id, 'corporationID');
+$apiCorpVerified = $redis->get("apiVerified:$corpID");
 
 $extra = array();
 $tracked = false;
@@ -388,7 +386,7 @@ if ($pageType == 'overview' || $pageType == 'losses') {
 $extra['statsRecalced'] = $redis->llen('queueStats');
 
 
-$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => $apiVerified, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold);
+$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => $apiVerified, 'apiCorpVerified' => $apiCorpVerified, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold);
 
 $app->render('overview.html', $renderParams);
 
