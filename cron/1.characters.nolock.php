@@ -4,10 +4,8 @@ use cvweiss\redistools\RedisTimeQueue;
 
 require_once "../init.php";
 
-$guzzler = new Guzzler(20, 1);
-
 $esi = new RedisTimeQueue('tqApiESI', 3600);
-if (date('i') == 22 || $esi->size() == 0) {
+if (date('i') == 22 || $esi->size() < 100) {
     $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_killmails.v1']);
     foreach ($esis as $row) {
         $charID = $row['characterID'];
@@ -15,10 +13,15 @@ if (date('i') == 22 || $esi->size() == 0) {
     }
 }
 
+if ($esi->size() == 0) exit();
+$perSecond = max(ceil($esi->size() / 3600) - 3, 1);
+$sleepTime = min(10000, max(100, floor(10000 / $perSecond)));
+$guzzler = new Guzzler($perSecond, $sleepTime);
+
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     Status::checkStatus($guzzler, 'esi');
-    $charID = (int) $esi->next();
+    $charID = (int) $esi->next(false);
     if ($charID > 0) {
         $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => "esi-killmails.read_killmails.v1"], ['lastFetch' => 1]);
         if ($row != null) {
@@ -48,7 +51,7 @@ function accessTokenDone(&$guzzler, &$params, $content)
     $headers[] = 'Content-Type: application/json';
 
     $charID = $row['characterID'];
-    $fields = ['datasource' => 'tranquility', 'token' => $accessToken];
+    $fields = ['token' => $accessToken];
     if (isset($params['max_kill_id'])) {
         $fields['max_kill_id'] = $params['max_kill_id'];
     }
@@ -89,7 +92,9 @@ function success($guzzler, $params, $content)
         $charID = $row['characterID'];
 
         $corpID = (int) Info::getInfoField("characterID", $charID, 'corporationID');
-        $mdb->set("scopes", $row, ['maxKillID' => $maxKillID, 'corporationID' => $corpID, 'lastFetch' => $mdb->now()]);
+        $successes = (int) @$row['successes'];
+        $successes++;
+        $mdb->set("scopes", $row, ['maxKillID' => $maxKillID, 'corporationID' => $corpID, 'lastFetch' => $mdb->now(), 'errorCount' => 0, 'successes' => $successes]);
         $redis->setex("apiVerified:$charID", 86400, time());
 
         // Check active chars once an hour, check inactive chars less often
@@ -132,21 +137,19 @@ function fail($guzzer, $params, $ex)
     $row = $params['row'];
     $esi = $params['esi'];
     $charID = $row['characterID'];
+    $name = Info::getInfoField("characterID", $charID, "name");
     $code = $ex->getCode();
 
     switch ($code) {
-        case 400:
-        case 403: // No permission
-            $mdb->remove("scopes", $row);
-            $esi->remove($charID);
-            break;
+        case 400: // Server timed out during SSO authentication
+        case 403: // Server decided to throw a 403 during SSO authentication when that throws a 502...
         case 500:
         case 502: // Server error, try again in 5 minutes
         case 503:
             $esi->setTime($charID, time() + 300);
             break;
         default:
-            echo "token: " . $ex->getMessage() . "\n";
+            echo "killmail: " . $ex->getMessage() . "\nkillmail content: " . $params['content'] . "\n";
     }
 }
 
