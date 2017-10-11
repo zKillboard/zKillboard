@@ -55,9 +55,9 @@ function typeHistorySuccess($guzzler, $params, $content)
     $type = json_decode($content, true);
     $typeID = (int) $params['typeID'];
     $row = $mdb->findDoc("prices", ['typeID' => $typeID]);
-    foreach ($type as $row) {
-        $avgPrice = $row['average'];
-        $date = $row['date'];
+    foreach ($type as $r) {
+        $avgPrice = $r['average'];
+        $date = $r['date'];
         $row[$date] = $avgPrice;
     }
     $row['typeID'] = $typeID;
@@ -73,6 +73,4 @@ function typeHistorySuccess($guzzler, $params, $content)
 function fail($guzzler, $params, $error)
 {
     echo "Fail " . $params['uri'] . "\n";
-    $guzzler->finish();
-    exit();
 }
