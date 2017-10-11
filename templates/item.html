@@ -41,7 +41,7 @@
 <h5>zKillboard Price: {{ info.price|number_format(2) }} ISK</h5>
 {% set field = info.market %}
 {% include 'components/market.html' %}
-<i>Information pulled from CCP's Market <a href='{{ crestServer }}/market/10000002/history/?type={{ crestServer }}/inventory/types/{{ info.typeID }}/' target='_blank'>CREST API</a>.</i>
+<i>Information pulled from CCP's Market <a href='https://esi.tech.ccp.is/v1/markets/10000002/history/?type_id={{ info.typeID }}' target='_blank'>ESI API</a>.</i>
 </div>
 
 {% endblock %}
