@@ -50,7 +50,7 @@ while ($hour == date('H')) {
     addInfo('Kills added last hour', $kCount);
     $redis->publish("public", json_encode(['action' => 'lastHour', 'kills' => number_format($kCount)]));
     $totalKills = $redis->get('zkb:totalKills');
-    $topKillID = $mdb->findField('killmails', 'killID', ['cacheTime' => 60], ['killID' => -1]);
+    $topKillID = max(1, $mdb->findField('killmails', 'killID', ['cacheTime' => 60], ['killID' => -1]));
     addInfo('Total Kills (' . number_format(($totalKills / $topKillID) * 100, 1) . '%)', $totalKills);
     addInfo('Top killID', $topKillID);
 
