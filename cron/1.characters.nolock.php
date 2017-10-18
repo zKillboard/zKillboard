@@ -6,14 +6,12 @@ require_once "../init.php";
 
 if ($redis->get("zkb:reinforced") == true) exit();
 $esi = new RedisTimeQueue('tqApiESI', 3600);
-$esiSkipped = new RedisTimeQueue('tqApiESI-skipped', 3600);
 if (date('i') == 22 || $esi->size() < 100) {
     $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_killmails.v1']);
     foreach ($esis as $row) {
         $charID = $row['characterID'];
         $esi->add($charID);
     }
-    Util::out("Skipped " . $esiSkipped->size() . " characters in the last hour");
 }
 if ($esi->size() == 0) exit();
 
@@ -27,16 +25,6 @@ while ($minute == date('Hi')) {
     if ($charID > 0) {
         $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => "esi-killmails.read_killmails.v1"], ['lastFetch' => 1]);
         if ($row != null) {
-            // Check to see if char's corp has an api, if they do, skip them unless the char hasn't been fetched before (look at maxKillID)
-            $corpID = Info::getInfoField("characterID", $charID, "corporationID");
-            $hasCorp = $mdb->count("scopes", ['corporationID' => $corpID, 'scope' => "esi-killmails.read_corporation_killmails.v1"]);
-            /*if ($hasCorp > 0 && $corpID > 0 && isset($row['maxKillID'])) {
-                //$corpName = Info::getInfoField("corporationID", $corpID, "name");
-                //Util::out("Skipping $charID for $corpName");
-                $esiSkipped->add($charID);
-                continue;
-            }*/
-
             $params = ['row' => $row, 'esi' => $esi];
             $refreshToken = $row['refreshToken'];
 
