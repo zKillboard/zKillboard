@@ -192,6 +192,11 @@ function accessTokenFail(&$guzzler, &$params, $ex)
         $esi->remove($charID);
         return;
     }
+    if (strpos("<h2>403 - Forbidden: Access is denied.</h2>", $params['content']) !== false) {
+        $mdb->remove("scopes", $row);
+        $esi->remove($charID);
+        return;
+    }
 
     switch ($code) {
         case 500:
