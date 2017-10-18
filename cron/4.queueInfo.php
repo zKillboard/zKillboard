@@ -8,6 +8,7 @@ require_once '../init.php';
 global $queueSocial, $redisQAuthUser;
 
 $queueInfo = new RedisQueue('queueInfo');
+$queueApiCheck = new RedisQueue('queueApiCheck');
 $queueSocial = $beSocial == true ? new RedisQueue('queueSocial') : null;
 $queueStats = new RedisQueue('queueStats');
 $queueRedisQ = $redisQAuthUser != null ? new RedisQueue('queueRedisQ') : null;
@@ -28,6 +29,7 @@ while ($minute == date('Hi')) {
         if ($queueRedisQ != null) {
             $queueRedisQ->push($killID);
         }
+        $queueApiCheck->push($killID);
         $mdb->set("killmails", ['killID' => (int) $killID], ['processed' => true]);
     }
 }

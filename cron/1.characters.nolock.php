@@ -17,7 +17,7 @@ if (date('i') == 22 || $esi->size() < 100) {
 }
 if ($esi->size() == 0) exit();
 
-$guzzler = new Guzzler(20, 1000);
+$guzzler = new Guzzler(40, 1000);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
@@ -120,7 +120,7 @@ function success($guzzler, $params, $content)
         } else {
             $killmail = $mdb->findDoc("killmails", ['killID' => $maxKillID]);
             $maxKillTime = @$killmail['dttm']->sec;
-            if ($maxKillTime > time() - 7200) {
+            if ($maxKillTime > time() - 7200 || $redis->get("recentKillmailActivity:$charID") == "true") {
                 // They got a kill in the last 2 hours, check them again in 2 minutes
                 $esi->setTime($charID, time() + 125);
             }
