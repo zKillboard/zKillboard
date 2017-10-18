@@ -5,5 +5,5 @@
 {% if field.characterID is not defined and field.ceoID is defined and field.ceoName is defined %}
 	<a href="/character/{{ field.ceoID }}/">{{ field.ceoName }}</a>
 {% else %}
-	<a href="/character/{{ field.characterID }}/">{{ field.characterName }}</a>
+	<a href="/character/{{ field.characterID }}/{{ entitySubpage }}">{{ field.characterName }}</a>
 {% endif %}

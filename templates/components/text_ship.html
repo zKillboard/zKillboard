@@ -6,5 +6,5 @@
 {% if shipImageLinkOverride > 0 %}
 	<a href="/kill/{{shipImageLinkOverride}}/" rel="tooltip" title="Detail for {{shipImageLinkOverride}}">{{ field.shipName }}</a>
 {% else %}
-	<a href="/ship/{{ field.shipTypeID }}/">{{ field.shipName }}</a>
+	<a href="/ship/{{ field.shipTypeID }}/{{ entitySubpage }}">{{ field.shipName }}</a>
 {% endif %}

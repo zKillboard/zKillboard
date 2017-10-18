@@ -3,5 +3,5 @@
         {% include 'components/image_faction.html' %}
 {% endif %}
 {% if field.factionID != 0 %}
-<a href="/faction/{{field.factionID}}/">{{ field.factionName }}</a>
+<a href="/faction/{{field.factionID}}/{{ entitySubpage }}">{{ field.factionName }}</a>
 {% endif %}

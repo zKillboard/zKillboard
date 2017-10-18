@@ -397,8 +397,8 @@ function getNearbyRanks($key, $rankKeyName, $id, $title, $statType)
     $array = [];
     $rank = $redis->zrank($rankKeyName, $id);
     if ($rank !== false) {
-        $start = max($rank - 5, 0);
-        $end = max($rank + 5, 10);
+        $start = max($rank - 25, 0);
+        $end = max($rank + 25, 50);
         $nearRanks = $redis->zrange($rankKeyName, $start, $end);
         foreach ($nearRanks as $row) {
             $a = [];

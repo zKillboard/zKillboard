@@ -6,6 +6,6 @@
 {% if field.executorCorpID and field.executorCorpName %}
 	<a href="/corporation/{{ field.executorCorpID }}/">{{ field.executorCorpName }}</a>
 {% else %}
-	<a href="/corporation/{{ field.corporationID }}/">{{ field.corporationName }}</a>
+	<a href="/corporation/{{ field.corporationID }}/{{ entitySubpage }}">{{ field.corporationName }}</a>
 {% endif %}
 {% set shortLength = 30%}
