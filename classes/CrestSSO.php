@@ -197,8 +197,17 @@ class CrestSSO
             $sessID = session_id();
             $forward = $redis->get("forward:$sessID");
             $redis->del("forward:$sessID");
-            if ($forward !== null) {
+            $loginPage = UserConfig::get('loginPage', 'character');
+            if ($loginPage == 'previous' && $forward !== null) {
                 $redirect = $forward;
+            } else {
+                $corpID = Info::getInfoField("characterID", $charID, "corporationID");
+                $alliID = Info::getInfoField("characterID", $charID, "allianceID");
+                if ($loginPage == "main") $redirect = "/";
+                elseif ($loginPage == 'character') $redirect = "/character/$charID/";
+                elseif ($loginPage == 'corporation' && $corpID > 0) $redirect = "/corporation/$corpID/";
+                elseif ($loginPage == 'alliance' && $alliID > 0) $redirect = "/alliance/$alliID/";
+                else $redirect = "/";
             }
             header('Location: '.$redirect, 302);
             Status::addStatus('sso', true);

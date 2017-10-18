@@ -1,5 +1,28 @@
 <div class="row">
 	<div class="col-lg-6">
+                <h3>Login Screen</h3>
+                                <form class="form-horizontal" name="loginscreen" method="post" action="/account/sitesettings/">
+                                        <div class="form-group col-lg-3">
+                                                <select name="loginPage" class="form-control input-sm"> prevPage
+							{% set selected = "" %}
+							{% if data.loginPage == "main" %}{% set selected = "selected"%}{% endif %}
+                                                        <option value="main" {{ selected }}>Main Page</option>
+							{% set selected = "" %}
+							{% if data.loginPage == "character" %}{% set selected = "selected"%}{% endif %}
+                                                        <option value="character" {{ selected }}>Character</option>
+							{% set selected = "" %}
+							{% if data.loginPage == "corporation" %}{% set selected = "selected"%}{% endif %}
+                                                        <option value="corporation" {{ selected }}>Corporation</option>
+							{% set selected = "" %}
+							{% if data.loginPage == "alliance" %}{% set selected = "selected"%}{% endif %}
+                                                        <option value="alliance" {{ selected }}>Alliance</option>
+                                                </select>
+                                        </div>
+                                        <div class="form-group col-lg-2">
+                                        &nbsp;  <input type="submit" class="btn btn-primary btn-sm" value="Set">
+                                        </div>
+                                </form>
+                <div class="clearfix"></div>
 		<h3>Theme</h3>
 				<form class="form-horizontal" name="styles" method="post" action="/account/sitesettings/">
 					<div class="form-group col-lg-3">

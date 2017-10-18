@@ -44,8 +44,11 @@ if ($_POST) {
         User::sendMessage("Your Disqus setting was updated to " . ($showDisqus != "true" ? "not show." : "show."));
     }
 
-    $defaultLoginPage = Util::getPost('defaultLoginPage');
-    
+    $loginPage = Util::getPost('loginPage');
+    if (isset($loginPage)) {
+        UserConfig::set('loginPage', $loginPage);
+        User::sendMessage("Your default login page is now the $loginPage page");
+    }
 
     $app->redirect($_SERVER['REQUEST_URI']);
     exit();
@@ -61,6 +64,7 @@ $data['currentTheme'] = $theme;
 // Style
 $data['stylesAvailable'] = Util::availableStyles();
 $data['currentStyle'] = UserConfig::get('style');
+$data['loginPage'] = UserConfig::get('loginPage', 'character');
 
 $data['apiKeys'] = Api::getKeys($userID);
 $data['apiSsoKeys'] = Api::getSsoKeys($userID);
