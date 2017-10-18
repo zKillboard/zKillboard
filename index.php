@@ -8,6 +8,12 @@ $pageLoadMS = microtime(true);
 $uri = @$_SERVER['REQUEST_URI'];
 $isApiRequest = substr($uri, 0, 5) == "/api/";
 
+
+/*if (substr($uri, 0, 12) == "/api/killID/") {
+    header("HTTP/1.1 400 Disabling /api/killID/ because of abuse.");
+    die();
+}*/
+
 if ($uri == "/kill/-1/") {
     header("Location: /keepstar1.html");
     exit();
@@ -60,7 +66,7 @@ if (in_array($ip, $blackList)) {
 }
 
 $limit = $isApiRequest ? 10 : 3;
-$noLimits = ['/navbar/', '/post/', '/autocomplete/'];
+$noLimits = ['/navbar/', '/post/', '/autocomplete/', '/crestmail/'];
 $noLimit = false;
 foreach ($noLimits as $noLimit) $noLimit |= (substr($uri, 0, strlen($noLimit)) === $noLimit);
 $count = $redis->get($ip);
