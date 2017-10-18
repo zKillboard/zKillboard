@@ -30,12 +30,12 @@ while ($minute == date('Hi')) {
             // Check to see if char's corp has an api, if they do, skip them unless the char hasn't been fetched before (look at maxKillID)
             $corpID = Info::getInfoField("characterID", $charID, "corporationID");
             $hasCorp = $mdb->count("scopes", ['corporationID' => $corpID, 'scope' => "esi-killmails.read_corporation_killmails.v1"]);
-            if ($hasCorp > 0 && $corpID > 0 && isset($row['maxKillID'])) {
+            /*if ($hasCorp > 0 && $corpID > 0 && isset($row['maxKillID'])) {
                 //$corpName = Info::getInfoField("corporationID", $corpID, "name");
                 //Util::out("Skipping $charID for $corpName");
                 $esiSkipped->add($charID);
                 continue;
-            }
+            }*/
 
             $params = ['row' => $row, 'esi' => $esi];
             $refreshToken = $row['refreshToken'];
@@ -112,13 +112,21 @@ function success($guzzler, $params, $content)
 
         // Check active chars once an hour, check inactive chars less often
         $esi = new RedisTimeQueue('tqApiESI', 3600);
-        if ($maxKillID > ($redis->get('zkb:topKillID') - 1000000)) {
-            $numHours = rand(3, 4);
+        $name = Info::getInfoField('characterID', $charID, 'name');
+        $topKillID = $redis->get('zkb:topKillID');
+        if ($maxKillID < ($topKillID - 1000000)) {
+            $numHours = min(23, ceil(($topKillID - $maxKillID) / 1000000) + 1);
             $esi->setTime($charID, time() + (3600 * $numHours));
+        } else {
+            $killmail = $mdb->findDoc("killmails", ['killID' => $maxKillID]);
+            $maxKillTime = @$killmail['dttm']->sec;
+            if ($maxKillTime > time() - 7200) {
+                // They got a kill in the last 2 hours, check them again in 2 minutes
+                $esi->setTime($charID, time() + 125);
+            }
         }
 
         if ($newKills > 0) {
-            $name = Info::getInfoField('characterID', $charID, 'name');
             if ($name === null) $name = $charID;
             while (strlen("$newKills") < 3) $newKills = " " . $newKills;
             ZLog::add("$newKills kills added by char $name", $charID);
