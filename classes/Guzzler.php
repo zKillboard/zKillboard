@@ -72,7 +72,8 @@ class Guzzler
             function($connectionException) use (&$guzzler, &$rejected, &$params, $statusType) {
                 $guzzler->dec();
                 Status::addStatus($statusType, false);
-                $params['content'] = (string) $connectionException->getResponse()->getBody();
+                $params['content'] = method_exists($connectionException->getResponse(), "getBody") ? (string) $connectionException->getResponse()->getBody() : "";
+                $code = $connectionException->getCode();
                 $rejected($guzzler, $params, $connectionException);
             });
         $this->inc();
