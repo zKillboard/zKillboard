@@ -26,6 +26,9 @@
 {% include 'components/kill_list.html' %}
 </div>
 <div class="col-sm-2 pull-left" style="padding: 0px;">
+        {% if reinforced == "true" %}
+        <div class="alert alert-danger"><center><a href='/ztop/'>REINFORCED MODE</a></center></div><br/>
+        {% endif %}
         <center><a href='/top/lasthour/'>Current Activity</a></center>
 	{% include 'components/activePvP.html' %}<div class='clearfix'></div><br/>
         {% include 'components/tracked_items.html' %}<br/>

@@ -13,8 +13,8 @@ try {
         exit();
     }
 
-    if ($redis->get('zkb:allowApi') === 'no') {
-        header('HTTP/1.1 503 Server load high, try again later');
+    if ($redis->get("zkb:reinforced") == true) {
+        header('HTTP/1.1 503 Reinforced mode, please try again later');
         exit();
     }
 

@@ -89,6 +89,7 @@ $twig->addGlobal('analytics', Google::analytics($analyticsID, $analyticsName));
 
 $twig->addGlobal('entityType', 'none');
 $twig->addGlobal('entityID' , 0);
+$twig->addGlobal('reinforced', $redis->get("zkb:reinforced") == true ? "true" : "false");
 
 $disqus = "true" === UserConfig::get('showDisqus', "true");
 $twig->addGlobal('disqusLoad', $disqus);

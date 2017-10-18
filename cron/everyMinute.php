@@ -10,7 +10,10 @@ if ($load >= 15 && $redisLoad < 20) {
     $redis->incrBy("zkb:load", 1);
     $redisLoad++;
 } 
-if ($redisLoad > 0 && $load < 15) {
+if ($redis->get("zkb:reinforced") == true && $load >= 13) {
+    // Do nothing, maintain reinforced
+}
+else if ($redisLoad > 0 && $load < 15) {
     $redis->incrBy("zkb:load", -1);
     $redisLoad--;
 }
