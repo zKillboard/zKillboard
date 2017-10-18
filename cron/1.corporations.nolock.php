@@ -192,11 +192,6 @@ function accessTokenFail(&$guzzler, &$params, $ex)
         $esi->remove($charID);
         return;
     }
-    if (strpos("<h2>403 - Forbidden: Access is denied.</h2>", $params['content']) !== false) {
-        $mdb->remove("scopes", $row);
-        $esi->remove($charID);
-        return;
-    }
 
     switch ($code) {
         case 500:
@@ -205,5 +200,6 @@ function accessTokenFail(&$guzzler, &$params, $ex)
             break;
         default:
             Util::out("corp token: $charID " . $ex->getMessage() . "\n" . $params['content']);
+            $esi->setTime($charID, time() + rand(3601, 7200));
     }
 }
