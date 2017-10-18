@@ -4,6 +4,7 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
+if ($redis->get("zkb:reinforced") == true) exit();
 MongoCursor::$timeout = -1;
 $queueStats = new RedisQueue('queueStats');
 $maxSequence = $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);

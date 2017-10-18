@@ -35,9 +35,9 @@ if ($redis->get($redisKey) != true) {
                 continue;
             }
 
-            if (count($q->transactions)) {
-            }
+            Status::addStatus('xml', true);
         } catch (Exception $ex) {
+            Status::addStatus('xml', false);
             Util::out('Failed to fetch Wallet API: '.$ex->getMessage());
             return;
         }

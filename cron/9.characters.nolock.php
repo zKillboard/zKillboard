@@ -4,22 +4,22 @@ use cvweiss\redistools\RedisTimeQueue;
 
 require_once '../init.php';
 
+if ($redis->get("zkb:reinforced") == true) exit();
 $guzzler = new Guzzler(10, 1);
 $chars = new RedisTimeQueue("zkb:characterID", 86400);
 $maxKillID = $mdb->findField("killmails", "killID", [], ['killID' => -1]) - 5000000;
 
-$dayMod10 = date("j") % 10;
+$mod = 3;
+$dayMod = date("j") % $mod;
 $minute = date('Hi');
-while ($minute == date('Hi') && Status::getStatus('esi', false) < 300) {
+while ($minute == date('Hi')) {
     Status::checkStatus($guzzler, 'esi');
     $id = (int) $chars->next();
     if ($id > 0) {
         $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => $id]);
         if (strpos(@$row['name'], 'characterID') === false && isset($row['corporationID'])) {
-            $charMaxKillID = $mdb->findField("killmails", "killID", ['involved.characterID' => $id], ['killID' => -1]);
-            if ($maxKillID > $charMaxKillID && ($id % 10 != $dayMod10)) {
-                continue;
-            }
+            $charMaxKillID = (int) $mdb->findField("killmails", "killID", ['involved.characterID' => $id], ['killID' => -1]);
+            if ($maxKillID > $charMaxKillID && ($id % $mod != $dayMod)) continue;
         }
 
         $url = "https://esi.tech.ccp.is/v4/characters/$id/";
@@ -77,8 +77,9 @@ function updateChar(&$guzzler, &$params, &$content)
         $corps->add($corpID);
     }
 
-    if (sizeof($updates) > 0) {
-        $mdb->set("information", $row, $updates);
+    $updates['lastApiUpdate'] = $mdb->now();
+    $mdb->set("information", $row, $updates);
+    if (sizeof($updates) > 1) {
         $redis->del(Info::getRedisKey('characterID', $id));
     }
 }

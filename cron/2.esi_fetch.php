@@ -16,8 +16,6 @@ $mdb->set("crestmails", ['processed' => ['$ne' => true]], ['processed' => false]
 
 $minute = date("Hi");
 while ($minute == date("Hi")) {
-    Status::check('esi');
-
     $row = $mdb->findDoc("crestmails", ['processed' => false], ['killID' => -1]);
     if ($row != null) {
         $killID = $row['killID'];
@@ -29,7 +27,7 @@ while ($minute == date("Hi")) {
         $params = ['row' => $row, 'mdb' => $mdb, 'redis' => $redis, 'killID' => $killID, 'esimails' => $esimails];
         $guzzler->call($url, "success", "fail", $params);
     }
-    $guzzler->tick();
+    else $guzzler->tick();
 }
 $guzzler->finish();
 

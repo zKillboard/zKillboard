@@ -24,7 +24,9 @@ function beSocial($killID)
     $hours24 = time() - 86400;
     $victimInfo = $kill['involved'][0];
     $totalPrice = $kill['zkb']['totalValue'];
-    if ($kill['vGroupID'] == 902) $twitMin += 5000000000;
+    if ($kill['vGroupID'] == 902) $twitMin += 5000000000; // Jump Freighters, 15b
+    if ($kill['vGroupID'] == 1657) $twitMin += 5000000000; // Citadels, 15b
+    if ($kill['vGroupID'] == 883) $twitMin += 5000000000; // Rorquals, 15b
     $noTweet = $kill['dttm']->sec < $hours24 || $victimInfo == null || $totalPrice < $twitMin;
     if ($noTweet) {
         return;

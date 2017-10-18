@@ -4,10 +4,11 @@ use cvweiss\redistools\RedisTimeQueue;
 
 require_once "../init.php";
 
-$guzzler = new Guzzler(5, 1);
+if ($redis->get("zkb:reinforced") == true) exit();
+$guzzler = new Guzzler(30, 1000);
 
-$esi = new RedisTimeQueue('tqCorpApiESI', 3600);
-if (date('i') == 22 || $esi->size() == 0) {
+$esi = new RedisTimeQueue('tqCorpApiESI', 3601);
+if (date('i') == 22 || $esi->size() < 100) {
     $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_corporation_killmails.v1']);
     foreach ($esis as $row) {
         $charID = $row['characterID'];
@@ -17,10 +18,11 @@ if (date('i') == 22 || $esi->size() == 0) {
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
+    Status::checkStatus($guzzler, 'sso');
     Status::checkStatus($guzzler, 'esi');
     $charID = (int) $esi->next();
-    if ($charID > 0) {
-        $corpID = Info::getInfoField('characterID', $charID, 'corporationID');
+    $corpID = Info::getInfoField('characterID', $charID, 'corporationID');
+    if ($charID > 0 && $corpID > 0) {
         $alliID = Info::getInfoField('characterID', $charID, 'allianceID');
         if (in_array($corpID, $ignoreEntities) || in_array($alliID, $ignoreEntities)) continue;
 
@@ -53,7 +55,7 @@ function accessTokenDone(&$guzzler, &$params, $content)
 
     $charID = $row['characterID'];
     $corpID = Info::getInfoField("characterID", $charID, 'corporationID');
-    $fields = ['datasource' => 'tranquility', 'token' => $accessToken];
+    $fields = ['token' => $accessToken];
     if (isset($params['max_kill_id'])) {
         $fields['max_kill_id'] = $params['max_kill_id'];
     }
@@ -72,6 +74,7 @@ function success($guzzler, $params, $content)
     $row = $params['row'];
     $prevMaxKillID = (int) @$row['maxKillID'];
     $minKillID = isset($params['max_kill_id']) ? $params['max_kill_id'] : 9999999999;
+    $esi = $params['esi'];
 
     $kills = json_decode($content, true);
     foreach ($kills as $kill) {
@@ -94,15 +97,15 @@ function success($guzzler, $params, $content)
         $charID = $row['characterID'];
 
         $corpID = (int) Info::getInfoField("characterID", $charID, 'corporationID');
-        $mdb->set("scopes", $row, ['maxKillID' => $maxKillID, 'corporationID' => $corpID, 'lastFetch' => $mdb->now()]);
+        $successes = 1 + ((int) @$row['successes']);
+        $mdb->set("scopes", $row, ['maxKillID' => $maxKillID, 'corporationID' => $corpID, 'lastFetch' => $mdb->now(), 'successes' => $successes]);
 
         $name = Info::getInfoField('characterID', $charID, 'name');
         $corpName = Info::getInfoField('corporationID', $corpID, 'name');
-        $corpVerified = $redis->get("apiVerified:$corpID") != null;
-        if (!$corpVerified) {
-            ZLog::add("$corpName ($name) is now verified.", $charID);
-        }
-        $redis->setex("apiVerified:$corpID", 86400, time());
+        $verifiedKey = "apiVerified:$corpID";
+        $corpVerified = $redis->get($verifiedKey);
+        if ($corpVerified === false) ZLog::add("$corpName ($name) is now verified.", $charID);
+        $redis->setex($verifiedKey, 86400, time());
 
         if ($newKills > 0) {
             if ($name === null) $name = $charID;
@@ -110,6 +113,10 @@ function success($guzzler, $params, $content)
             ZLog::add("$newKills kills added by corp $corpName", $charID);
             if ($newKills >= 10) User::sendMessage("$newKills kills added for corp $corpName", $charID);
         }
+        $headers = $guzzler->getLastHeaders();
+        $expires = $headers['Expires'];
+        $time = strtotime($expires[0]);
+        if ($expires > time()) $esi->setTime($charID, $time + 10);
     }
 }
 
@@ -138,19 +145,33 @@ function fail($guzzer, $params, $ex)
     $charID = $row['characterID'];
     $code = $ex->getCode();
 
+    $json = json_decode($params['content'], true);
+    $code = isset($json['sso_status']) ? $json['sso_status'] : $code;
+
+    if (@$json['error'] == 'invalid_grant' || @$json['error'] == "Character does not have required role(s)") {
+        $mdb->remove("scopes", $row);
+        $esi->remove($charID);
+        return;
+    }
+    if (@$json['error'] == "Character is not in the corporation") {
+        $mdb->removeField("scopes", $row, "corporationID");
+        $mdb->removeField("information", ['type' => 'characterID', 'id' => $charID], "corporationID");
+        $chars = new RedisTimeQueue("zkb:characterID", 86400);
+        $chars->setTime($charID, 0);
+        $esi->setTime($charID, time() - 3550);
+        return;
+    }
+
     switch ($code) {
-        case 403: // No permission
-        case 404:
-            $mdb->remove("scopes", $row);
-            $esi->remove($charID);
-            break;
+        case 403:
+        case 420:
         case 500:
         case 502: // Server error, try again in 5 minutes
         case 503:
             $esi->setTime($charID, time() + 300);
             break;
         default:
-            echo "killmail: " . $ex->getMessage() . "\n";
+            Util::out("corp killmail: " . $ex->getMessage() . "\n" . $params['content']);
     }
 }
 
@@ -163,18 +184,21 @@ function accessTokenFail(&$guzzler, &$params, $ex)
     $charID = $row['characterID'];
     $code = $ex->getCode();
 
+    $json = json_decode($params['content'], true);
+    $code = isset($json['sso_status']) ? $json['sso_status'] : $code;
+
+    if (@$json['error'] == 'invalid_grant') {
+        $mdb->remove("scopes", $row);
+        $esi->remove($charID);
+        return;
+    }
+
     switch ($code) {
-        case 400:
-        case 403: // No permission
-        case 404:
-            $mdb->remove("scopes", $row);
-            $esi->remove($charID);
-            break;
         case 500:
         case 502: // Server error, try again in 5 minutes
             $esi->setTime($charID, time() + 300);
             break;
         default:
-            echo "token: " . $ex->getMessage() . "\n";
+            Util::out("corp token: $charID " . $ex->getMessage() . "\n" . $params['content']);
     }
 }
