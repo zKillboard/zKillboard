@@ -139,6 +139,12 @@ class CrestSSO
                 switch ($scope) {
                     case 'esi-killmails.read_killmails.v1':
                         $esi = new RedisTimeQueue('tqApiESI', 3600);
+                        // // Do this first, prevents race condition if charID already exists
+                        // If a user logs in, check their api for killmails right away
+                        $esi->setTime($charID, 0);
+
+                        // If we didn't already have their api, this will add it and it will be
+                        // checked right away as well
                         $esi->add($charID);
                         break;
                     case 'esi-killmails.read_corporation_killmails.v1':
