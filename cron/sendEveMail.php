@@ -40,7 +40,7 @@ while ($minute == date('Hi')) {
         if (isset($json['error'])) {
             ZLog::add("Failed sending evemail to $name, http code: " . @$json['httpCode'], $charID);
         } else {
-            $redis->setex("zkb:evemail:$charID", 7200, "sent");
+            $redis->setex("zkb:evemail:$charID", 1800, "sent");
         }
         sleep(12);
     }
