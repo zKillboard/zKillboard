@@ -23,6 +23,7 @@ $deltaArray = [];
 
 $hour = date('H');
 while ($hour == date('H')) {
+    $curSecond = (int) date('s');
     ob_start();
     $infoArray = [];
 
@@ -149,7 +150,7 @@ while ($hour == date('H')) {
     foreach($output as $line) echo "$line\n";
     $output = ob_get_clean();
     file_put_contents("${baseDir}/public/ztop.txt", $output);
-    sleep(3);
+    while ($curSecond == date('s')) usleep(100000);
 }
 
 function addInfo($text, $number, $left = true, $format = true)
