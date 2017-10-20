@@ -125,6 +125,7 @@ while ($hour == date('H')) {
     $cpu = exec("top -d 0.5 -b -n2 | grep \"Cpu(s)\"| tail -n 1 | awk '{print $2 + $4}'");
     $output = [];
     $output[] = exec('date')." CPU: $cpu% Load: ".Load::getLoad()."  Memory: ${memUsed}G/${memTotal}G  Redis: $mem  TokuDB: ${storageSize}G / ${dataSize}G\n";
+    $redis->setex("zkb:memused", 300, $memUsed);
 
     $leftCount = 1;
     $rightCount = 1;
