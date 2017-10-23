@@ -15,42 +15,52 @@ if (date('i') == 22 || $esi->size() < 100) {
 }
 if ($esi->size() == 0) exit();
 
-$guzzler = new Guzzler(40, 1000);
+$guzzler = new Guzzler(20, 1000);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    Status::checkStatus($guzzler, 'sso');
     Status::checkStatus($guzzler, 'esi');
+    Status::checkStatus($guzzler, 'sso');
+    Status::throttle('sso', 20);
     $charID = (int) $esi->next(false);
     if ($charID > 0) {
         $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => "esi-killmails.read_killmails.v1"], ['lastFetch' => 1]);
         if ($row != null) {
             $params = ['row' => $row, 'esi' => $esi];
             $refreshToken = $row['refreshToken'];
+            $content = $redis->get("auth:$charID:$refreshToken");
+            if ($content !== false) {
+                accessTokenDone($guzzler, $params, $content, false);
+                continue;
+            }
 
             CrestSSO::getAccessTokenCallback($guzzler, $refreshToken, "accessTokenDone", "accessTokenFail", $params);
         } else {
             $esi->remove($charID);
         }
-    }
-    $guzzler->tick();
+    } else $guzzler->tick();
 }
 $guzzler->finish();
 
 
-function accessTokenDone(&$guzzler, &$params, $content)
+function accessTokenDone(&$guzzler, &$params, $content, $cacheIt = true)
 {
-    global $ccpClientID, $ccpSecret;
+    global $ccpClientID, $ccpSecret, $redis;
+
+    $row = $params['row'];
+    $charID = $row['characterID'];
+    $refreshToken = $row['refreshToken'];
+    if ($cacheIt == true) {
+        $redis->setex("auth:$charID:$refreshToken", 1100, $content);
+    }
 
     $response = json_decode($content, true);
     $accessToken = $response['access_token'];
     $params['content'] = $content;
-    $row = $params['row'];
 
     $headers = [];
     $headers[] = 'Content-Type: application/json';
 
-    $charID = $row['characterID'];
     $fields = ['token' => $accessToken];
     if (isset($params['max_kill_id'])) {
         $fields['max_kill_id'] = $params['max_kill_id'];
@@ -106,9 +116,7 @@ function success($guzzler, $params, $content)
             $numHours = min(23, ceil(($topKillID - $maxKillID) / 1000000) + 1);
             $esi->setTime($charID, time() + (3600 * $numHours));
         } else {
-            $killmail = $mdb->findDoc("killmails", ['killID' => $maxKillID]);
-            $maxKillTime = @$killmail['dttm']->sec;
-            if ($maxKillTime > time() - 7200 || $redis->get("recentKillmailActivity:$charID") == "true") {
+            if ($redis->get("recentKillmailActivity:$charID") == "true") {
                 // They got a kill in the last 2 hours, check them again in 2 minutes
                 $esi->setTime($charID, time() + 125);
             }
@@ -157,12 +165,13 @@ function fail($guzzer, $params, $ex)
         case 500:
         case 502: // Server error, try again in 5 minutes
         case 503:
-            $esi->setTime($charID, time() + 300);
+            $esi->setTime($charID, time() + 30);
             break;
-        default:
         case 403: // Server decided to throw a 403 during SSO authentication when that throws a 502...
+        default:
             echo "killmail char $charID: " . $ex->getMessage() . "\nkillmail content: " . $params['content'] . "\n";
     }
+    sleep(1);
 }
 
 function accessTokenFail(&$guzzler, &$params, $ex)
@@ -175,13 +184,14 @@ function accessTokenFail(&$guzzler, &$params, $ex)
     $code = $ex->getCode();
 
     $json = json_decode($params['content'], true);
-    if (@$json['error'] == 'invalid_grant') {
+    if (@$json['error'] == 'invalid_grant' || @$json['error'] == 'invalid_token') {
         $mdb->remove("scopes", $row);
         $esi->remove($charID);
         return;
     }
 
     switch ($code) {
+        case 403: // A 403 without an invalid_grant isn't valid
         case 500:
         case 502: // Server error, try again in 5 minutes
             $esi->setTime($charID, time() + 300);
@@ -189,5 +199,5 @@ function accessTokenFail(&$guzzler, &$params, $ex)
         default:
             Util::out("char token: $charID " . $ex->getMessage() . "\n\n" . $params['content']);
     }
-    $esi->setTime($charID, time() + rand(1, 7200));
+    sleep(1);
 }

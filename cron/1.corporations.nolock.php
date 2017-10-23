@@ -5,7 +5,7 @@ use cvweiss\redistools\RedisTimeQueue;
 require_once "../init.php";
 
 if ($redis->get("zkb:reinforced") == true) exit();
-$guzzler = new Guzzler(30, 1000);
+$guzzler = new Guzzler(20, 1000);
 
 $esi = new RedisTimeQueue('tqCorpApiESI', 3601);
 if (date('i') == 22 || $esi->size() < 100) {
@@ -18,8 +18,9 @@ if (date('i') == 22 || $esi->size() < 100) {
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    Status::checkStatus($guzzler, 'sso');
     Status::checkStatus($guzzler, 'esi');
+    Status::checkStatus($guzzler, 'sso');
+    Status::throttle('sso', 20);
     $charID = (int) $esi->next();
     $corpID = Info::getInfoField('characterID', $charID, 'corporationID');
     if ($charID > 0 && $corpID > 0) {
@@ -148,7 +149,7 @@ function fail($guzzer, $params, $ex)
     $json = json_decode($params['content'], true);
     $code = isset($json['sso_status']) ? $json['sso_status'] : $code;
 
-    if (@$json['error'] == 'invalid_grant' || @$json['error'] == "Character does not have required role(s)") {
+    if (@$json['error'] == 'invalid_grant' || @$json['error'] == "Character does not have required role(s)" || @$json['error'] == 'invalid_token') {
         $mdb->remove("scopes", $row);
         $esi->remove($charID);
         return;
@@ -194,12 +195,13 @@ function accessTokenFail(&$guzzler, &$params, $ex)
     }
 
     switch ($code) {
+        case 403: // A 403 without an invalid_grant is invalid
         case 500:
         case 502: // Server error, try again in 5 minutes
             $esi->setTime($charID, time() + 300);
             break;
         default:
             Util::out("corp token: $charID " . $ex->getMessage() . "\n" . $params['content']);
-            $esi->setTime($charID, time() + rand(3601, 7200));
     }
+    sleep(1);
 }
