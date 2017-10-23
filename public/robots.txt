@@ -45,3 +45,6 @@ Disallow: /
 
 User-agent: sogou spider
 Disallow: /
+
+User-agent: Getintent Crawler 
+Disallow: /
