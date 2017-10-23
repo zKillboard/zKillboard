@@ -85,6 +85,9 @@ if (!$isApiRequest) {
             die("APIs are useful, skill up and use that instead.");
         }
     }
+} else if ($isApiRequest && strlen(trim($userAgent)) <= 3) {
+    header('HTTP/1.1 403 Please provide proper user agent identification.');
+    exit();
 }
 
 // Scrape Checker
