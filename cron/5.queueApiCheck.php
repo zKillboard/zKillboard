@@ -16,17 +16,17 @@ while ($minute == date('Hi')) {
         $killmail = $mdb->findDoc("killmails", ['killID' => $killID]);
 
         // Only do this fo rrecent killmails
-        if ($killmail['dttm']->sec < (time() - 7200)) continue;
+        if ($killmail['dttm']->sec < (time() - 3600)) continue;
 
         $involved = $killmail['involved'];
         foreach ($involved as $entity) {
             $charID = @$entity['characterID'];
 
             $lastChecked = $redis->get("apiVerified:$charID");
-            $redis->setex("recentKillmailActivity:$charID", 7200, "true");
+            $redis->setex("recentKillmailActivity:$charID", 3600, "true");
 
-            if ($lastChecked > 0 && time() - $lastChecked > 120 && !in_array($charID, $bumped)) {
-                $esi->setTime($charID, 0);
+            if ($lastChecked > 0 && (time() - $lastChecked) > 120 && !in_array($charID, $bumped)) {
+                $esi->setTime($charID, 1);
                 $bumped[] = $charID;
             }
         }
