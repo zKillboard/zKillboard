@@ -27,7 +27,7 @@ while ($minute == date('Hi')) {
         $guzzler->call($url, "updateChar", "failChar", $params);
         if (Status::getStatus('esi', false) > 200) sleep(1);
     }
-    $guzzler->tick();
+    else $guzzler->tick();
 }      
 $guzzler->finish();
 
