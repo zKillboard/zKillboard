@@ -9,7 +9,7 @@ $guzzler = new Guzzler();
 $corps = new RedisTimeQueue("zkb:corporationID", 86400);
 
 $minute = date('Hi');
-while ($minute == date('Hi') && Status::getStatus('esi', false) < 300) {
+while ($minute == date('Hi')) {
     Status::checkStatus($guzzler, 'esi');
     $id = (int) $corps->next();
     if ($id <= 0) break;
@@ -19,9 +19,7 @@ while ($minute == date('Hi') && Status::getStatus('esi', false) < 300) {
         $url = "https://esi.tech.ccp.is/v3/corporations/$id/";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
         $guzzler->call($url, "updateCorp", "failCorp", $params);
-        if (Status::getStatus('esi', false) > 200) sleep(1);
-    }
-    $guzzler->tick();
+    } else $guzzler->tick();
 }
 $guzzler->finish();
 
