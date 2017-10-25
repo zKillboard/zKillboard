@@ -5,6 +5,7 @@ use cvweiss\redistools\RedisTimeQueue;
 require_once "../init.php";
 
 if ($redis->get("zkb:reinforced") == true) exit();
+
 $esi = new RedisTimeQueue('tqApiESI', 3600);
 if (date('i') == 22 || $esi->size() < 100) {
     $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_killmails.v1']);
@@ -185,7 +186,7 @@ function accessTokenFail(&$guzzler, &$params, $ex)
 
     $json = json_decode($params['content'], true);
     if (@$json['error'] == 'invalid_grant' || @$json['error'] == 'invalid_token') {
-        $mdb->remove("scopes", $row);
+        $mdb->remove("scopes", ['characterID' => $charID]);
         $esi->remove($charID);
         return;
     }
