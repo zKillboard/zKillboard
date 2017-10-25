@@ -29,6 +29,9 @@
         {% if reinforced == "true" %}
         <div class="alert alert-danger"><center><a href='/ztop/'>REINFORCED MODE</a></center></div><br/>
         {% endif %}
+        {% if universeUpdating == "true" %}
+        <div class="alert alert-success"><center><a href='/ztop/'>Universe is Updating</a></center></div><br/>
+        {% endif %}
         <center><a href='/top/lasthour/'>Current Activity</a></center>
 	{% include 'components/activePvP.html' %}<div class='clearfix'></div><br/>
         {% include 'components/tracked_items.html' %}<br/>
