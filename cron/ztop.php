@@ -21,6 +21,7 @@ $priorKillLog = 0;
 
 $deltaArray = [];
 
+$lastKillCountSent = null;
 $hour = date('H');
 while ($hour == date('H')) {
     $curSecond = (int) date('s');
@@ -49,7 +50,10 @@ while ($hour == date('H')) {
     $killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
     $kCount = $killsLastHour->count();
     addInfo('Kills added last hour', $kCount);
-    $redis->publish("public", json_encode(['action' => 'lastHour', 'kills' => number_format($kCount)]));
+    if ($kCount != $lastKillCountSent) {
+        $redis->publish("public", json_encode(['action' => 'lastHour', 'kills' => number_format($kCount)]));
+        $lastKillCountSent = $kCount;
+    }
     $totalKills = $redis->get('zkb:totalKills');
     $topKillID = max(1, $mdb->findField('killmails', 'killID', ['cacheTime' => 60], ['killID' => -1]));
     addInfo('Total Kills (' . number_format(($totalKills / $topKillID) * 100, 1) . '%)', $totalKills);
