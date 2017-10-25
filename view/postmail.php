@@ -1,6 +1,6 @@
 <?php
 
-global $mdb;
+global $mdb, $redis;
 
 $error = '';
 
@@ -67,6 +67,8 @@ if ($_POST) {
                         $error = '';
                     } elseif (isset($crest['delayed'])) {
                         $error = "This viewing of this killmail is delayed until " . $crest['delayed']->sec;
+                    } elseif ($redis->get("zkb:universeLoaded") == "false") {
+                        $error = "The universe is currently being updated. Your killmail will be processed later.";
                     }
 
                     if ($error == '') {
