@@ -23,6 +23,7 @@ $counter = 0;
 $minute = date('Hi');
 
 while ($minute == date('Hi')) {
+    if ($redis->get("zkb:universeLoaded") != "true") break;
     $killID = $queueProcess->pop();
     if ($killID !== null) {
         $killID = (int) $killID;
