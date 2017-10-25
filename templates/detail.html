@@ -127,11 +127,12 @@
         {% if killdata.info.solo %}
         <br/><div class="alert alert-success"><center>Solo Killmail</center></div>
         {% endif %}
-{% if disqusLoad %}
+{% if false and disqusLoad %}
 	{% set disqusID = extra.commentID %}
 	<a name="comments"></a>
         {% include 'components/disqus.html' %}
 {% endif %}
+<div class="centered"><hr/><a href='https://www.reddit.com/r/Eve/comments/78kho5/zkill_no_more_disqus/' target='_blank'>No more Disqus</a></div>
 </div>
 
 
