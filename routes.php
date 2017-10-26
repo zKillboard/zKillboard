@@ -228,6 +228,10 @@ $app->get('/kills/sponsored/', function () use ($app) {
         include 'view/sponsored.php';
         });
 
+$app->get('/comment/:pageID/:commentID/up/', function ($pageID, $commentID) use ($app) {
+        include 'view/comments-up.php';
+        });
+
 // The Overview stuff
 $app->get('/partial/:input+/', function ($input) use ($app) {
         include 'view/overview.php';

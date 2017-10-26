@@ -132,6 +132,8 @@
 	<a name="comments"></a>
         {% include 'components/disqus.html' %}
 {% endif %}
+<hr/>
+<div id="commentblock"></div>
 <div class="centered"><hr/><a href='https://www.reddit.com/r/Eve/comments/78kho5/zkill_no_more_disqus/' target='_blank'>No more Disqus</a></div>
 </div>
 
@@ -282,4 +284,17 @@
 	<meta name="og:description" content="{{ killdata.victim.characterName }} ({{ killdata.victim.corporationName}}) lost their {{ killdata.victim.shipName }} in {{ killdata.info.system.solarSystemName }} ({{ killdata.info.system.regionName }}). Final Blow by {{ finalBlow.characterName }} ({{ finalBlow.corporationName }}) flying in a {{ finalBlow.shipName }}. Total Value: {{ (extra.droppedisk + extra.lostisk)|number_format(2, '.', ',')}} ISK">
 {% endif %}
 	<meta name="og:image" content="{{ image_ship}}{{ killdata.victim.shipTypeID }}_128.png">
+{% endblock %}
+
+{% block script %}
+<script>
+$(document).ready(function() {
+    loadComments(1);
+});
+
+
+function loadComments(interval) {
+    $("#commentblock").load('/comment/kill-{{ killdata.info.killID }}/-1/up/');
+}
+</script>
 {% endblock %}
