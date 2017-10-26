@@ -9,7 +9,11 @@ $app->get('/faq/', function() use ($app) {
     });
 
 $app->get('/google/', function() use ($app) {
-        $app->render("google.html");
+        $mobile = false;
+        include "view/google.php";
+    });
+$app->get('/google/:mobile/', function($mobile) use ($app) {
+        include "view/google.php";
     });
 
 $app->get('/(page/:page/)', function ($page = 1) use ($app) {

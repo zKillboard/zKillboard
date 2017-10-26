@@ -14,8 +14,10 @@ $("[id='disqus_count']").hide();
 
 {% if showAds != 0 %}
 if (showAds != 0 ) {
-    $("#adsensetop").load('/google/');
-    $("#adsensebottom").load('/google/');
+    $("#adsensetop").load('/google/false/');
+    $("#adsensebottom").load('/google/false/');
+    $("#adsensetop-mobile").load('/google/true/');
+    $("#adsensebottom-mobile").load('/google/true/');
 }
 {% else %}
 $("#adsensetop").remove();

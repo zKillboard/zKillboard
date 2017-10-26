@@ -36,4 +36,17 @@ class Google
 </script>
         ';
     }
+
+    public static function getMobileAd()
+    {
+        return '<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- zkb Mobile Ads -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:320px;height:100px"
+     data-ad-client="' . $dataAdClient . '"
+     data-ad-slot="' . $dataMobileAdSlot . '"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>';
+    }
 }
