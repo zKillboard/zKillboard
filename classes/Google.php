@@ -39,6 +39,8 @@ class Google
 
     public static function getMobileAd()
     {
+        global $dataAdClient, $dataMobileAdSlot;
+
         return '<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 <!-- zkb Mobile Ads -->
 <ins class="adsbygoogle"
