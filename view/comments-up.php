@@ -1,10 +1,8 @@
 <?php
 
-if (!User::isLoggedIn()) {
-//    die("Nope, you have to be <a href='/ccplogin/'>logged in</a> to have this sort of fun.");
-}
-
 global $mdb, $ip, $redis;
+
+if ($redis->get("validUser:$ip") !== "true") return;
 
 $key = "comment:$pageID";
 if ($commentID >= 0 && $commentID < count(Comments::$defaultComments)) {

@@ -130,10 +130,6 @@ $app->get('/item/:id/', function ($id) use ($app) {
         include 'view/item.php';
         });
 
-$app->get('/comments/', function () use ($app) {
-        $app->render('/comments.html');
-        });
-
 $app->get('/api/supers/', function () use ($app) {
         include 'view/intel.php';
         });
