@@ -4,7 +4,7 @@ use cvweiss\redistools\RedisCache;
 
 class Price
 {
-    public static function getItemPrice($typeID, $kmDate, $fetch = false)
+    public static function getItemPrice($typeID, $kmDate, $fetch = false, $recalc = false)
     {
         global $mdb, $redis;
         $typeID = (int) $typeID;
@@ -40,7 +40,7 @@ class Price
         $date = date('Y-m-d', strtotime($kmDate) - 7200); // Back one hour because of CREST cache
         $priceKey = "tq:prices:$date";
         $price = $redis->hGet($priceKey, $typeID);
-        if ($price != null) {
+        if ($price != null && $recalc == false) {
             return $price;
         }
 
