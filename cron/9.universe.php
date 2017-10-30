@@ -4,7 +4,10 @@ require_once "../init.php";
 
 $serverVersion = $redis->get("tqServerVersion");
 $loadedVersion = $redis->get("zkb:tqServerVersion");
-if ($serverVersion == $loadedVersion) exit();
+if ($serverVersion == $loadedVersion) {
+    $redis->set("zkb:universeLoaded", "true");
+    exit();
+}
 
 $redis->set("zkb:universeLoaded", "false");
 $guzzler = new Guzzler(25, 10);
