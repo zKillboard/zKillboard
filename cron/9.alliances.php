@@ -56,6 +56,7 @@ while ($minute == date('Hi')) {
     $update['memberCount'] = $memberCount;
     $update['ticker'] = $alliCrest['shortName'];
     $update['name'] = $alliCrest['name'];
+    $update['factionID'] = 0;
 
     $mdb->insertUpdate('information', ['type' => 'allianceID', 'id' => $id], $update);
 }
