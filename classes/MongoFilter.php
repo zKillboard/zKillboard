@@ -22,11 +22,17 @@ class MongoFilter
             return $result;
         }
 
+        $collection = 'killmails';
+        if (isset($parameters['pastSeconds']) && $parameters['pastSeconds'] <= 608400) {
+            $collection = 'oneWeek';
+            if ($parameters['pastSeconds'] == 608400) unset($parameters['pastSeconds']);
+        }
+
         // Build the query parameters
         $query = $buildQuery ? self::buildQuery($parameters) : $parameters;
 
         // Start the query
-        $killmails = $mdb->getCollection('killmails');
+        $killmails = $mdb->getCollection($collection);
         $cursor = $killmails->find($query, ['_id' => 0, 'killID' => 1])->timeout(3600000);
 
         // Apply the sort order
