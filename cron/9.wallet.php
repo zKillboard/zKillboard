@@ -11,7 +11,6 @@ if (!is_array($walletApis)) {
 Status::check('xml');
 $redisKey = 'zkb:walletCheck';
 if ($redis->get($redisKey) != true) {
-    Util::out("Fetching payments...");
     $cacheUntil = 0;
     foreach ($walletApis as $api) {
         $type = $api['type'];
@@ -44,7 +43,6 @@ if ($redis->get($redisKey) != true) {
     }
     
     $next = $cacheUntil - time() + 1;
-    Util::out("Next payment fetch in $next seconds");
     $redis->setex($redisKey, $next, true);
 }
 
