@@ -42,6 +42,11 @@ if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROT
 // Include Init
 require_once 'init.php';
 
+if ($redis->get("zkb:memused") > 115) {
+    header('HTTP/1.1 202 API temporarily disabled because of resource limitations');
+    exit();
+}
+
 $timer = new Timer();
 
 // Starting Slim Framework
@@ -66,7 +71,7 @@ if (in_array($ip, $blackList)) {
 }
 
 $limit = $isApiRequest ? 10 : 3;
-$noLimits = ['/navbar/', '/post/', '/autocomplete/', '/crestmail/'];
+$noLimits = ['/navbar/', '/post/', '/autocomplete/', '/crestmail/', '/comment/'];
 $noLimit = false;
 foreach ($noLimits as $noLimit) $noLimit |= (substr($uri, 0, strlen($noLimit)) === $noLimit);
 $count = $redis->get($ip);
@@ -92,7 +97,7 @@ if (!$isApiRequest) {
 
 // Scrape Checker
 $ipKey = "ip::$ip";
-if (!$isApiRequest && !(substr($uri, 0, 9) == '/related/' || substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp' || substr($uri, 0, 5) == '/auto')) {
+if (!$isApiRequest && !(substr($uri, 0, 9) == '/related/' || substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp' || substr($uri, 0, 5) == '/auto' || substr($uri, 0, 9) == "/comment/")) {
     $redis->incr($ipKey, ($uri == '/navbar/' ? -1 : 1));
     $redis->expire($ipKey, 300);
     $count = $redis->get($ipKey);
