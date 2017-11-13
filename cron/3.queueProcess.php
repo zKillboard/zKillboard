@@ -92,9 +92,9 @@ while ($minute == date('Hi')) {
         $droppedValue = 0;
 
         $shipValue = Price::getItemPrice($mail['victim']['ship_type_id'], $date);
-        $fittedValue = getFittedValue($mail['victim']['items'], $date);
+        $fittedValue = getFittedValue($killID, $mail['victim']['items'], $date);
         $fittedValue += $shipValue;
-        $totalValue = processItems($mail['victim']['items'], $date);
+        $totalValue = processItems($killID, $mail['victim']['items'], $date);
         $totalValue += $shipValue;
 
         $zkb = array();
@@ -163,32 +163,32 @@ function createInvolved($data)
     return $array;
 }
 
-function getFittedValue($items, $dttm)
+function getFittedValue($killID, $items, $dttm)
 {
     $fittedValue = 0;
     foreach ($items as $item) {
         $infernoFlag = Info::getFlagLocation($item['flag']);
         $add = ($infernoFlag != 0) || in_array($item['flag'], [87, 89, 93, 155, 158, 159, 172, 2663, 3772]);
-        if ($add) $fittedValue += processItem($item, $dttm, false, 0);
+        if ($add) $fittedValue += processItem($killID, $item, $dttm, false, 0);
     }
     return $fittedValue;
 }
 
-function processItems($items, $dttm, $isCargo = false, $parentFlag = 0)
+function processItems($killID, $items, $dttm, $isCargo = false, $parentFlag = 0)
 {
     $totalCost = 0;
     foreach ($items as $item) {
-        $totalCost += processItem($item, $dttm, $isCargo, $parentFlag);
+        $totalCost += processItem($killID, $item, $dttm, $isCargo, $parentFlag);
         if (@is_array($item['items'])) {
             $itemContainerFlag = $item['flag'];
-            $totalCost += processItems($item['items'], $dttm, true, $itemContainerFlag);
+            $totalCost += processItems($killID, $item['items'], $dttm, true, $itemContainerFlag);
         }
     }
 
     return $totalCost;
 }
 
-function processItem($item, $dttm, $isCargo = false, $parentContainerFlag = -1)
+function processItem($killID, $item, $dttm, $isCargo = false, $parentContainerFlag = -1)
 {
     global $mdb;
 
@@ -204,7 +204,7 @@ function processItem($item, $dttm, $isCargo = false, $parentContainerFlag = -1)
     else {
         $price = Price::getItemPrice($typeID, $dttm);
     }
-    if ($isCargo && strpos($itemName, 'Blueprint') !== false) {
+    if ($killID < 21112472 && $isCargo && strpos($itemName, 'Blueprint') !== false) {
         $item['singleton'] = 2;
     }
     if ($item['singleton'] == 2) {

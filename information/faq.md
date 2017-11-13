@@ -60,15 +60,11 @@ Blueprint copies and skin prices have been extremely volatile and are difficult 
 
 ***
 
-#####Why are blueprints in a container always copies, those were originals in the killmail I got!
-
-There is a longstanding bug in killmails that always show a blueprint as an original when it is inside of a container, wrapped, etc. Therefore, rather than value the blueprint at the full BPO value and created some crazy prices on killmails, zKillboard errs on the side of caution and marks all container&#39;ed blueprints as BPCs and prices them accordingly.
-
-***
-
 #####I have given authorized you to retrieve my killmails, what are you doing with this information?
 
 Read the killmails. That is all. That is really about all zKillboard can do with the killmail endpoints.
+
+***
 
 #####I have given authorized you to save ship fittings, what are you doing with this information?
 

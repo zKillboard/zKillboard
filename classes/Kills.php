@@ -145,12 +145,12 @@ class Kills
     {
         $killTime = $killmail['killTime'];
         $items = array();
-        self::addItems($items, $esimail['victim']['items'], $killTime);
+        self::addItems($killmail['killID'], $items, $esimail['victim']['items'], $killTime);
 
         return $items;
     }
 
-    public static function addItems(&$itemArray, $items, $killTime, $inContainer = 0, $parentFlag = 0)
+    public static function addItems($killID, &$itemArray, $items, $killTime, $inContainer = 0, $parentFlag = 0)
     {
         if ($items == null) {
             return;
@@ -164,7 +164,7 @@ class Kills
                 if ($inContainer) {
                     $item['flag'] = $parentFlag;
                 }
-                if ($inContainer && strpos(Info::getInfoField('typeID', $typeID, 'name'), 'Blueprint')) {
+                if ($killID < 21112472 && $inContainer && strpos(Info::getInfoField('typeID', $typeID, 'name'), 'Blueprint')) {
                     $item['singleton'] = 2;
                 }
                 if ($item['singleton'] == 2) {
@@ -175,7 +175,7 @@ class Kills
                 $subItems = isset($item['items']) ? $item['items'] : null;
                 unset($item['items']);
                 if ($subItems != null) {
-                    self::addItems($itemArray, $subItems, $killTime, 1, $item['flag']);
+                    self::addItems($killID, $itemArray, $subItems, $killTime, 1, $item['flag']);
                 }
             }
         }
