@@ -21,13 +21,19 @@ while ($minute == date('Hi')) {
         $involved = $killmail['involved'];
         foreach ($involved as $entity) {
             $charID = @$entity['characterID'];
+            $corpID = Info::getInfoField("characterID", $charID, "corporationID");
 
             $lastChecked = $redis->get("apiVerified:$charID");
             $redis->setex("recentKillmailActivity:$charID", 3600, "true");
+            $redis->setex("recentKillmailActivity:$corpID", 3600, "true");
 
-            if ($lastChecked > 0 && (time() - $lastChecked) > 120 && !in_array($charID, $bumped)) {
+            if ($lastChecked > 0 && (time() - $lastChecked) > 300 && !in_array($charID, $bumped)) {
                 $esi->setTime($charID, 1);
                 $bumped[] = $charID;
+            }
+            if ($lastChecked > 0 && (time() - $lastChecked) > 300 && !in_array($corpID, $bumped)) {
+                $esi->setTime($corpID, 1);
+                $bumped[] = $corpID;
             }
         }
     } else sleep(1);

@@ -114,10 +114,12 @@ function success($guzzler, $params, $content)
             ZLog::add("$newKills kills added by corp $corpName", $charID);
             if ($newKills >= 10) User::sendMessage("$newKills kills added for corp $corpName", $charID);
         }
-        $headers = $guzzler->getLastHeaders();
-        $expires = $headers['Expires'];
-        $time = strtotime($expires[0]);
-        if ($expires > time()) $esi->setTime($charID, $time + 10);
+        if ($redis->get("recentKillmailActivity:$corpID") == "true") {
+            $headers = $guzzler->getLastHeaders();
+            $expires = $headers['Expires'];
+            $time = strtotime($expires[0]);
+            if ($expires > time()) $esi->setTime($charID, $time + 10);
+        }
     }
 }
 
