@@ -29,8 +29,8 @@ while ($minute == date('Hi')) {
 
         $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['lastFetch' => 1]);
         if ($row != null) {
-            $params = ['row' => $row, 'esi' => $esi];
             $refreshToken = $row['refreshToken'];
+            $params = ['row' => $row, 'esi' => $esi, 'tokenTime' => time(), 'refreshToken' => $refreshToken];
 
             CrestSSO::getAccessTokenCallback($guzzler, $refreshToken, "accessTokenDone", "accessTokenFail", $params);
         } else {
@@ -93,7 +93,12 @@ function success($guzzler, $params, $content)
         $params['max_kill_id'] = $minKillID;
         $params['maxKillID'] = $maxKillID;
 
-        accessTokenDone($guzzler, $params, $params['content']);
+        if ((time() - $params['tokenTime']) > 600) {
+            $params['tokenTime'] = time();
+            CrestSSO::getAccessTokenCallback($guzzler, $row['refreshToken'], "accessTokenDone", "accessTokenFail", $params);
+        } else {
+            accessTokenDone($guzzler, $params, $params['content']);
+        }
     } else {
         $charID = $row['characterID'];
 
