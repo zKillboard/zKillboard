@@ -32,7 +32,7 @@ try {
         if (isset($parameters['zkbOnly']) && $parameters['zkbOnly'] == true) {
             if (is_array($result)) {
                 foreach ($result as $key => $value) {
-                    if ($key != 'killID' && $key != 'zkb') {
+                    if ($key != 'killID' && $key != 'zkb' && $key != "killmail_id") {
                         unset($result[$key]);
                     }
                 }
