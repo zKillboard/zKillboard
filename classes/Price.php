@@ -124,9 +124,12 @@ class Price
             case 2836: // Adrestia
             case 33675: // Chameleon
             case 35781: // Fiend
+            case 45530: // Virtuoso
                 return 150000000000; // 150b
             case 42245: // Rabisu
                 return 200000000000; // 200b
+            case 45531: // Victor
+                return 230000000000;
             case 9860: // Polaris
             case 11019: // Cockroach
                 return 1000000000000; // 1 trillion, rare dev ships
