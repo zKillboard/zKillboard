@@ -114,6 +114,7 @@ class Price
             case 32788: // Cambion
             case 32790: // Etana
             case 32209: // Mimir
+            case 11942: // Silver Magnate
             case 33673: // Whiptail
                 return 100000000000; // 100b
             case 33397: // Chremoas
@@ -135,7 +136,6 @@ class Price
                 return 1000000000000; // 1 trillion, rare dev ships
                 // Rare cruisers
             case 11940: // Gold Magnate
-            case 11942: // Silver Magnate
             case 635: // Opux Luxury Yacht
             case 11011: // Guardian-Vexor
             case 25560: // Opux Dragoon Yacht
