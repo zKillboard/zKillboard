@@ -195,7 +195,7 @@ function accessTokenFail(&$guzzler, &$params, $ex)
     $json = json_decode($params['content'], true);
     $code = isset($json['sso_status']) ? $json['sso_status'] : $code;
 
-    if (@$json['error'] == 'invalid_grant') {
+    if (@$json['error'] == 'invalid_grant' || @$json['error'] == 'invalid_token') {
         $mdb->remove("scopes", $row);
         $esi->remove($charID);
         return;
