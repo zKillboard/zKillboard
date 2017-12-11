@@ -26,6 +26,7 @@ while ($minute == date('Hi')) {
     if ($charID > 0 && $corpID > 0) {
         $alliID = Info::getInfoField('characterID', $charID, 'allianceID');
         if (in_array($corpID, $ignoreEntities) || in_array($alliID, $ignoreEntities)) continue;
+        $ignoreEntities[] = $corpID;
 
         $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['lastFetch' => 1]);
         if ($row != null) {
