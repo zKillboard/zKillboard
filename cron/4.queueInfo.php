@@ -99,11 +99,21 @@ function updateEntity($killID, $entity)
         $info = $mdb->findDoc("information", ['type' => $type, 'id' => $id]);
         if ($info != null) continue;
 
-        $name = "$type $id";
-        $row = ['type' => $type, 'id' => $id, 'name' => $name]; 
+        $defaultName = "$type $id";
+        $row = ['type' => $type, 'id' => $id, 'name' => $defaultName]; 
 
         $mdb->insert('information', $row);
         $rtq = new RedisTimeQueue("zkb:$type", 86400);
         $rtq->add($id);
+
+        $iterations = 0;
+        do {
+            $info = $mdb->findDoc("information", ['type' => $type, 'id' => $id]);
+            $name = @$info['name'];
+            if ($name == $defaultName) {
+                sleep(1);
+                $iterations++;
+            }
+        } while ($name == $defaultName && $iterations <= 20);
     }
 }
