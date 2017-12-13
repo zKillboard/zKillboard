@@ -177,7 +177,8 @@ function fail($guzzer, $params, $ex)
         case 500:
         case 502: // Server error, try again in 5 minutes
         case 503:
-            $esi->setTime($charID, time() + 300);
+        case "": // typically a curl timeout error
+            $esi->setTime($charID, time() + 30);
             break;
         default:
             Util::out("corp killmail: " . $ex->getMessage() . "\n" . $params['content']);
@@ -206,10 +207,11 @@ function accessTokenFail(&$guzzler, &$params, $ex)
         case 403: // A 403 without an invalid_grant is invalid
         case 500:
         case 502: // Server error, try again in 5 minutes
-            $esi->setTime($charID, time() + 300);
+        case "": // typically a curl timeout error
+            $esi->setTime($charID, time() + 30);
             break;
         default:
-            Util::out("corp token: $charID " . $ex->getMessage() . "\n" . $params['content']);
+            Util::out("corp token: $charID " . $ex->getMessage() . "\n" . $params['content'] . "\n" . "code $code");
     }
     sleep(1);
 }
