@@ -169,6 +169,7 @@ function fail($guzzer, $params, $ex)
         case 500:
         case 502: // Server error, try again in 5 minutes
         case 503:
+        case "": // typically a curl timeout error
             $esi->setTime($charID, time() + 30);
             break;
         case 403: // Server decided to throw a 403 during SSO authentication when that throws a 502...
@@ -198,7 +199,8 @@ function accessTokenFail(&$guzzler, &$params, $ex)
         case 403: // A 403 without an invalid_grant isn't valid
         case 500:
         case 502: // Server error, try again in 5 minutes
-            $esi->setTime($charID, time() + 300);
+        case "": // typically a curl timeout error
+            $esi->setTime($charID, time() + 30);
             break;
         default:
             Util::out("char token: $charID " . $ex->getMessage() . "\n\n" . $params['content']);
