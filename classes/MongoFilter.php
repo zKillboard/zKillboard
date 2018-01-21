@@ -119,7 +119,7 @@ class MongoFilter
                     $first = self::getFirstKillID($year, $month);
                     $last = self::getFirstKillID(($month == 12 ? $year + 1 : $year), ($momth == 12 ? 1 : $month + 1));
                     $and[] = ['killID' => ['$gte' => (int) $first]];
-                    if ($year != date('Y') &&  $and[] = ['killID' => ['$lt' => (int) $last]];
+                    if ($year != date('Y') && $month != date('m')) $and[] = ['killID' => ['$lt' => (int) $last]];
                     break;
                 case 'date':
                     $time = strtotime($value);
