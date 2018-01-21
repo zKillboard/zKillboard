@@ -104,6 +104,9 @@ function success($guzzler, $params, $content)
         $charID = $row['characterID'];
 
         $corpID = (int) Info::getInfoField("characterID", $charID, 'corporationID');
+        $esiCount = new RedisTimeQueue('tqCorpApiESICount', 86400);
+        $esiCount->add($corpID);
+        
         $successes = 1 + ((int) @$row['successes']);
         $mdb->set("scopes", $row, ['maxKillID' => $maxKillID, 'corporationID' => $corpID, 'lastFetch' => $mdb->now(), 'successes' => $successes]);
 
