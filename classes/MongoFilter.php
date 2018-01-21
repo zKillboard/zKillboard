@@ -73,6 +73,8 @@ class MongoFilter
 
     public static function buildQuery(&$parameters, $useElemMatch = true)
     {
+        global $redis;
+
         $elemMatch = [];
         $and = [];
 
@@ -104,22 +106,20 @@ class MongoFilter
                 case 'orderDirection':
                     break;
                 case 'year':
-                    $start = strtotime("$value-01-01");
-                    $end = strtotime("$value-12-31 23:59:59");
-                    $and[] = ['dttm' => ['$gte' => new MongoDate($start)]];
-                    $and[] = ['dttm' => ['$lt' => new MongoDate($end)]];
+                    /*if (!isset($parameters['month'])) {
+                        $start = strtotime("$value-01-01");
+                        $end = strtotime("$value-12-31 23:59:59");
+                        $and[] = ['dttm' => ['$gte' => new MongoDate($start)]];
+                        $and[] = ['dttm' => ['$lt' => new MongoDate($end)]];
+                    }*/
                     break;
                 case 'month':
-                    $year = $parameters['year'];
-                    $start = strtotime("$year-$value-01 00:00:00");
-                    $nextMonth = (int) $value + 1;
-                    if ($nextMonth == 13) {
-                        $nextMonth = 1;
-                        ++$year;
-                    }
-                    $end = strtotime("$year-$nextMonth-01 00:00:00");
-                    $and[] = ['dttm' => ['$gte' => new MongoDate($start)]];
-                    $and[] = ['dttm' => ['$lt' => new MongoDate($end)]];
+                    $year = isset($parameters['year']) ? $parameters['year'] : date('Y');
+                    $month = $value;
+                    $first = self::getFirstKillID($year, $month);
+                    $last = self::getFirstKillID(($month == 12 ? $year + 1 : $year), ($momth == 12 ? 1 : $month + 1));
+                    $and[] = ['killID' => ['$gte' => (int) $first]];
+                    if ($year != date('Y') &&  $and[] = ['killID' => ['$lt' => (int) $last]];
                     break;
                 case 'date':
                     $time = strtotime($value);
@@ -267,5 +267,15 @@ class MongoFilter
         }
 
         return $query;
+    }
+
+    public static function getFirstKillID($year, $month)
+    {
+        if (strlen("$month") < 2) $month = "0$month";
+        $key = "zkb:day:${year}${month}01";
+        $set = $redis->hgetall($key);
+        reset($set);
+        $killID = (int) key($set);
+        return $killID;
     }
 }
