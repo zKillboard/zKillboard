@@ -117,7 +117,7 @@ class MongoFilter
                     $year = isset($parameters['year']) ? $parameters['year'] : date('Y');
                     $month = $value;
                     $first = self::getFirstKillID($year, $month);
-                    $last = self::getFirstKillID(($month == 12 ? $year + 1 : $year), ($momth == 12 ? 1 : $month + 1));
+                    $last = self::getFirstKillID(($month == 12 ? $year + 1 : $year), ($month == 12 ? 1 : $month + 1));
                     $and[] = ['killID' => ['$gte' => (int) $first]];
                     if ($year != date('Y') && $month != date('m')) $and[] = ['killID' => ['$lt' => (int) $last]];
                     break;
@@ -271,8 +271,10 @@ class MongoFilter
 
     public static function getFirstKillID($year, $month)
     {
+        global $redis;
+
         if (strlen("$month") < 2) $month = "0$month";
-        $key = "zkb:day:${year}${month}01";
+        $key = "zkb:day:{$year}{$month}01";
         $set = $redis->hgetall($key);
         reset($set);
         $killID = (int) key($set);
