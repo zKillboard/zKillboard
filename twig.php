@@ -64,8 +64,6 @@ $actualURI = implode('/', $explode);
 $twig->addGlobal('actualURI', $actualURI);
 $twig->addGlobal('partial', ("/partial/" === substr($uri, 0, 9)));
 
-$twig->addGlobal('year', (isset($uriParams['year']) ? $uriParams['year'] : date('Y')));
-$twig->addGlobal('month', (isset($uriParams['month']) ? $uriParams['month'] : date('m')));
 // Twig globals
 $twig->addGlobal('image_server', $imageServer);
 $twig->addGlobal('image_character', $imageServer.'Character/');
