@@ -116,10 +116,11 @@ class MongoFilter
                 case 'month':
                     $year = isset($parameters['year']) ? $parameters['year'] : date('Y');
                     $month = $value;
+                    if (strlen($month) < 2) $month = "0$month";
                     $first = self::getFirstKillID($year, $month);
                     $last = self::getFirstKillID(($month == 12 ? $year + 1 : $year), ($month == 12 ? 1 : $month + 1));
                     $and[] = ['killID' => ['$gte' => (int) $first]];
-                    if ($year != date('Y') && $month != date('m')) $and[] = ['killID' => ['$lt' => (int) $last]];
+                    if ("$year$month" != date('Ym')) $and[] = ['killID' => ['$lt' => (int) $last]];
                     break;
                 case 'date':
                     $time = strtotime($value);
