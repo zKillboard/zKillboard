@@ -122,6 +122,7 @@ if (substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' ||
     ini_set('session.gc_maxlifetime', $cookie_time);
     session_set_cookie_params($cookie_time);
     session_start();
+    setcookie(session_name(), session_id(), time() + $cookie_time, '/');
 }
 
 $request = $isApiRequest ? new RedisTtlCounter('ttlc:apiRequests', 300) : new RedisTtlCounter('ttlc:nonApiRequests', 300);
