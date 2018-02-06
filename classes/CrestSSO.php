@@ -189,6 +189,7 @@ class CrestSSO
             $rtq->add($charID, -1);
 
             ZLog::add("Logged in: " . (isset($userdetails['name']) ? $userdetails['name'] : $charID), $charID, true);
+            unset($_SESSION['oauth2State']);
 
             $key = "login:$charID:" . session_id();
             $redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);
