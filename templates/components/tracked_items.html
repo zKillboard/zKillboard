@@ -7,8 +7,8 @@
     </td>
   </tr>
   <tr>
-    <td class='green' style='width: 50%; text-align: right;'>{% if item.dropped %}{{ shortNum(item.dropped) }}<br/>{% endif %}{{ shortNum(item.dV )}}</td>
-    <td class='red' style='text-align: right;'>{% if item.destroyed %}{{ shortNum(item.destroyed) }}<br/>{% endif %}{{ shortNum(item.lV) }}</td>
+    <td class='green' style='width: 50%; text-align: center;'>{% if item.dropped %}{{ shortNum(item.dropped) }}<br/>{% endif %}{{ shortNum(item.dV )}}</td>
+    <td class='red' style='text-align: center;'>{% if item.destroyed %}{{ shortNum(item.destroyed) }}<br/>{% endif %}{{ shortNum(item.lV) }}</td>
   </tr>
 {% endfor %}
 </table>
