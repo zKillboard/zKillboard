@@ -313,7 +313,7 @@ function isSolo($killmail)
         if ($numPlayers > 1) {
             return false;
         }
-        $shipTypeID = $attacker['shipTypeID'];
+        $shipTypeID = @$attacker['shipTypeID'];
         $groupID = Info::getInfoField('shipTypeID', $shipTypeID, 'groupID');
         $catID = Info::getInfoField('groupID', $groupID, 'categoryID');
         if ($catID == 65) return false; // If a citadel is on the killmail, its not solo
