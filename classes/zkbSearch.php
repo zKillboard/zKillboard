@@ -29,7 +29,8 @@ class zkbSearch
                     continue;
                 }
                 $id = $split[1];
-                $name = Info::getInfoField($type, $id, 'name');
+                $info = Info::getInfo($type, $id);
+                $name = $info['name'];
                 $image = isset(self::$imageMap[$type]) ? self::$imageMap[$type] : '';
                 $image = sprintf($image, $id);
                 if ($searchType == 'typeID:flag') {
@@ -49,6 +50,12 @@ class zkbSearch
                 }
                 if ($searchType == 'solarSystemID') {
                     $searchType = 'system';
+                }
+                if ($searchType == 'alliance' || $searchType == 'allianceID' || $searchType == 'corporation' || $searchType == 'corporationID') {
+                    if (@$info['memberCount'] == 0) $name = "$name (Closed)";
+                }
+                if ($searchType == 'character' || $searchType == 'characterID') {
+                    if (@$info['corporationID'] == 1000001) $name = "$name (recycled)";
                 }
                 if ($searchType == 'system') {
                     $regionID = Info::getInfoField('solarSystemID', $id, 'regionID');
