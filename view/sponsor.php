@@ -1,6 +1,6 @@
 <?php
 
-global $mdb;
+global $mdb, $adminCharacter;
 
 $killID = (int) $killID;
 $value = (int) $value;
@@ -10,6 +10,7 @@ $charName = Info::getInfoField('characterID', $userID, 'name');
 $user = $mdb->findDoc("users", ['userID' => "user:$userID"]);
 $adFreeUntil = (int) @$user['adFreeUntil'];
 $iskAvailable = floor(max(0, ($adFreeUntil - time()) / (86400 * 30)) * 5000000);
+if ($userID > 0 && $userID == $adminCharacter) $iskAvailable = 1000000000;
 
 $response = "";
 $valueF = "";
