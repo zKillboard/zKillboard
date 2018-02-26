@@ -4,6 +4,9 @@ $app->notFound(function () use ($app) {
         $app->redirect('..', 302);
         });
 
+$app->get('/information/', function() use ($app) {
+        $app->redirect("/information/about/", 302);
+    });
 $app->get('/faq/', function() use ($app) {
         $app->redirect("/information/faq/", 302);
     });
