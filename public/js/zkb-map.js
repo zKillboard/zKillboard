@@ -4374,7 +4374,7 @@ TWEEN.Interpolation = {
             }
             return -1;
         };
-    killTemplate = Handlebars.compile("<div class='zkb-map-kill' id='zkb-map-kill-{{killID}}' data-solar-system='{{solarSystemID}}' >\n  <a href='//zkillboard.com/kill/{{killID}}/' target='_blank'>\n    <img src='https://image.eveonline.com/Type/{{killmail.victim.shipType.id}}_64.png'>\n  </a>\n  <a href='//zkillboard.com/character/{{killmail.victim.character.id}}/' target='_blank'>\n    <img src='https://image.eveonline.com/Character/{{killmail.victim.character.id}}_64.jpg'>\n  </a>\n  <a href='//zkillboard.com/corporation/{{killmail.victim.corporation.id}}/' target='_blank'>\n    <img src='https://image.eveonline.com/Corporation/{{killmail.victim.corporation.id}}_64.png'>\n  </a>\n  {{#if killmail.victim.alliance }}\n    <a href='//zkillboard.com/alliance/{{killmail.victim.alliance.id}}/' target='_blank'>\n      <img src='https://image.eveonline.com/Alliance/{{killmail.victim.alliance.id}}_64.png'>\n    </a>\n  {{/if}}\n</div>");
+    killTemplate = Handlebars.compile("<div class='zkb-map-kill' id='zkb-map-kill-{{killID}}' data-solar-system='{{solarSystemID}}' >\n    <a href='//zkillboard.com/kill/{{killID}}/' target='_blank'>\n        <img src='https://image.eveonline.com/Type/{{killmail.victim.ship_type_id}}_64.png'>\n    </a>\n        {{#if killmail.victim.character_id }}\n    <a href='//zkillboard.com/character/{{killmail.victim.character_id}}/' target='_blank'>\n        <img src='https://image.eveonline.com/Character/{{killmail.victim.character_id}}_64.jpg'>\n    </a>\n    {{/if}}\n        <a href='//zkillboard.com/corporation/{{killmail.victim.corporation_id}}/' target='_blank'>\n        <img src='https://image.eveonline.com/Corporation/{{killmail.victim.corporation_id}}_64.png'>\n    </a>\n    {{#if killmail.victim.alliance_id }}\n    <a href='//zkillboard.com/alliance/{{killmail.victim.alliance_id}}/' target='_blank'>\n        <img src='https://image.eveonline.com/Alliance/{{killmail.victim.alliance_id}}_64.png'>\n    </a>\n    {{/if}}\n</div>");
     regionSelectorTemplate = Handlebars.compile("<div class='zkb-map-region-selector'>\n  <ul>\n    {{#each groups}}\n      <li data-name='{{this.name}}'>{{this.name}}</li>\n    {{/each}}\n  </ul>\n</div>");
     infoPopupTemplate = Handlebars.compile("<div class='zkb-map-info-popup'>\n  <div class='zkb-map-info-popup-text'>\n    {{name}}\n    <br>\n    {{value}}\n  </div>\n  <img src='{{src}}'></img>\n</div>");
     asIsk = function(value) {
@@ -4563,7 +4563,7 @@ TWEEN.Interpolation = {
         };
         ZKBMap.prototype.ping = function(kill) {
             var currentPing, fade, flare, maxFlare, minFlare, solarSystem, systemId, _ref, _this = this;
-            systemId = kill.killmail.solarSystem.id;
+            systemId = kill.killmail.solar_system_id;
             solarSystem = this.displayedSolarSystems[systemId];
             if (!solarSystem) {
 		return this.addToKillLog(kill);
@@ -4602,7 +4602,7 @@ TWEEN.Interpolation = {
             killDom = $(killTemplate(kill));
             infoPopupDom = $(infoPopupTemplate({
                 src: this.options.infoPopupTextureUrl,
-                name: (_ref = this.allSolarSystems[kill.killmail.solarSystem.id]) != null ? _ref.name : void 0,
+                name: (_ref = this.allSolarSystems[kill.killmail.solar_system_id]) != null ? _ref.name : void 0,
                 involved: kill.killmail.involved,
                 value: asIsk(kill.zkb.totalValue)
             }));
