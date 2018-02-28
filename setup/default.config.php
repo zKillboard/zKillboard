@@ -3,6 +3,8 @@
 $characters = [];
 $corporations = [];
 $alliances = [];
+$whiteList = [];
+$blackList = [];
 
 // Listen to all killmails?
 $listenRedisQ = false;
