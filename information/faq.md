@@ -60,7 +60,7 @@ Blueprint copies and skin prices have been extremely volatile and are difficult 
 
 ***
 
-#####I have given authorized you to retrieve my killmails, what are you doing with this information?
+#####I have authorized zKillboard to retrieve my killmails, what are you doing with this information?
 
 Read the killmails. That is all. That is really about all zKillboard can do with the killmail endpoints.
 
