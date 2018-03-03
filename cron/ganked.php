@@ -1,0 +1,49 @@
+<?php
+
+require_once "../init.php";
+
+use cvweiss\redistools\RedisCache;
+
+/*$ganked = $mdb->find("killmails", ['ganked' => true]);
+foreach ($ganked as $g) {
+    $mdb->removeField("killmails", ['killID' => $g['killID']], 'ganked');
+}
+exit();*/
+
+$kills = $mdb->find("killmails", ['involved.corporationID' => 1000125], ['sequence' => -1], 500);
+//$kills = $mdb->find("killmails", ['killID' => 68410258]);
+$added = [];
+
+foreach ($kills as $kill) {
+    if ($kill['killID'] < 68300000) continue;
+    $involved = $kill['involved'];
+    $victim = $involved[0];
+    $likelyVictims = $mdb->find("killmails", ['involved.characterID' => $victim['characterID'], 'killID' => ['$lt' => $kill['killID']]], ['dttm' => -1], 5);
+    foreach ($likelyVictims as $lvictim) {
+        //echo $kill['killID']  . " => " . $lvictim['killID'] . "\n";
+        if (in_array($lvictim['killID'], $added) === true) continue;
+        if (@$lvictim['involved'][0]['groupID'] == 29) continue;
+
+        if (@$lvictim['warID'] > 0 || @$lvictim['ganked'] == true || ($kill['killID'] - $lvictim['killID']) > 200 || $lvictim['awox'] == true) continue;
+        $concorded = false;
+        foreach ($lvictim['involved'] as $i) {
+            if (@$i['corporationID'] == 1000125) {
+                $concorded = true;
+            }
+        }
+        $raw = $mdb->findDoc("esimails", ['killmail_id' => $lvictim['killID']]);
+        $valid = false;
+        foreach ($raw['attackers'] as $a) {
+            if (@$a['character_id'] == $victim['characterID'] && $a['damage_done'] >= 0) {
+                $valid = true;
+            }
+        }
+        if (sizeof($lvictim['involved']) > 5 && $lvictim['zkb']['totalValue'] >= 25000000 && $concorded == false && $valid == true) {
+            $added[] = $lvictim['killID'];
+            $mdb->set("killmails", ['killID' => $lvictim['killID']], ['ganked' => true]);
+            Util::out("Marking " . $lvictim['killID'] . " as ganked.");
+            RedisCache::delete("killDetail:" . $lvictim['killID']);
+            RedisCache::delete( "zkb::detail:" . $lvictim['killID']);
+        }
+    }
+}

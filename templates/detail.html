@@ -127,6 +127,9 @@
         {% if killdata.info.solo %}
         <br/><div class="alert alert-success"><center>Solo Killmail</center></div>
         {% endif %}
+        {% if killdata.info.ganked %}
+        <br/><div class="alert alert-danger"><center>GANKED</center></div>
+        {% endif %}
 {% if false and disqusLoad %}
 	{% set disqusID = extra.commentID %}
 	<a name="comments"></a>

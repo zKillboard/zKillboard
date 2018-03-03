@@ -43,7 +43,7 @@ class Kills
                 $killmail['finalBlow']['killID'] = $killID;
                 unset($killmail['_id']);
 
-                RedisCache::set($killHashKey, $killmail, 300);
+                RedisCache::set($killHashKey, $killmail, 60);
             }
             $details[$killID] = $killmail;
         }
@@ -137,7 +137,7 @@ class Kills
         unset($items);
 
         $stored = array('info' => $killmail, 'victim' => $victim, 'involved' => $infoInvolved, 'items' => $infoItems);
-        RedisCache::set($key, $stored, 3600);
+        RedisCache::set($key, $stored, 60);
         return $stored;
     }
 

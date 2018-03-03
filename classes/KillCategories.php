@@ -82,6 +82,9 @@ class KillCategories
             case 'w-space':
                 $kills = Kills::getKills(array('w-space' => true, 'page' => $page));
                 break;
+            case 'ganked':
+                $kills = Kills::getKills(array('ganked' => true, 'page' => $page));
+                break;
             default:
                 $kills = Kills::getKills(array('combined' => true, 'page' => $page));
                 break;

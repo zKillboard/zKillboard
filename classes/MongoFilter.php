@@ -230,6 +230,9 @@ class MongoFilter
                 case 'orderBy':
                     // handled by sort, can be ignored
                     break;
+                case 'ganked':
+                    $and[] = ['ganked' => true];
+                    break;
                 case 'w-space':
                     $and[] = ['system.regionID' => ['$gte' => 11000001]];
                     $and[] = ['system.regionID' => ['$lte' => 11000033]];
