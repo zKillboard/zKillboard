@@ -16,6 +16,7 @@ $added = [];
 
 foreach ($kills as $kill) {
     if ($kill['killID'] < 68300000) continue;
+    $systemID = $kill['system']['solarSystemID'];
     $involved = $kill['involved'];
     $victim = $involved[0];
     $likelyVictims = $mdb->find("killmails", ['involved.characterID' => $victim['characterID'], 'killID' => ['$lt' => $kill['killID']]], ['dttm' => -1], 5);
@@ -23,6 +24,7 @@ foreach ($kills as $kill) {
         //echo $kill['killID']  . " => " . $lvictim['killID'] . "\n";
         if (in_array($lvictim['killID'], $added) === true) continue;
         if (@$lvictim['involved'][0]['groupID'] == 29) continue;
+        if ($systemID != $lvictim['system']['solarSystemID']) continue;
 
         if (@$lvictim['warID'] > 0 || @$lvictim['ganked'] == true || ($kill['killID'] - $lvictim['killID']) > 200 || $lvictim['awox'] == true) continue;
         $concorded = false;
