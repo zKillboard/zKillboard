@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "c1a4901ac122ba347bd69b7634ebbb36",
+    "content-hash": "be3be2a467eb5e4d82e1eb1f0dd7c496",
     "packages": [
         {
             "name": "3rdpartyeve/phealng",
@@ -56,16 +56,16 @@
         },
         {
             "name": "cvweiss/redistools",
-            "version": "v0.0.3",
+            "version": "v0.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/cvweiss/redistools.git",
-                "reference": "59047975e52b15b7c5c9c0bb532d99ebda1f14e3"
+                "reference": "f8985b5c7a30a92dcee5fed44d79333f3c0d3b38"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cvweiss/redistools/zipball/59047975e52b15b7c5c9c0bb532d99ebda1f14e3",
-                "reference": "59047975e52b15b7c5c9c0bb532d99ebda1f14e3",
+                "url": "https://api.github.com/repos/cvweiss/redistools/zipball/f8985b5c7a30a92dcee5fed44d79333f3c0d3b38",
+                "reference": "f8985b5c7a30a92dcee5fed44d79333f3c0d3b38",
                 "shasum": ""
             },
             "type": "library",
@@ -84,20 +84,20 @@
                     "email": "cvweiss@gmail.com"
                 }
             ],
-            "time": "2017-02-04T01:37:33+00:00"
+            "time": "2018-03-03T15:53:37+00:00"
         },
         {
             "name": "cvweiss/zcache",
-            "version": "v0.1.3",
+            "version": "v0.1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/cvweiss/zcache.git",
-                "reference": "c502ab29aa72a7be2b342ca731a692f4560cd3e4"
+                "reference": "1ca8a0007ad335d18357e15d8b7e10695ad165fc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cvweiss/zcache/zipball/c502ab29aa72a7be2b342ca731a692f4560cd3e4",
-                "reference": "c502ab29aa72a7be2b342ca731a692f4560cd3e4",
+                "url": "https://api.github.com/repos/cvweiss/zcache/zipball/1ca8a0007ad335d18357e15d8b7e10695ad165fc",
+                "reference": "1ca8a0007ad335d18357e15d8b7e10695ad165fc",
                 "shasum": ""
             },
             "type": "library",
@@ -108,7 +108,7 @@
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "GNU Affero General Public License"
+                "Unlicense"
             ],
             "authors": [
                 {
@@ -117,20 +117,20 @@
                 }
             ],
             "description": "Library of classes to simplify caching",
-            "time": "2014-05-15T19:36:29+00:00"
+            "time": "2018-03-03T16:38:02+00:00"
         },
         {
             "name": "cvweiss/zlibrary",
-            "version": "v0.3.2",
+            "version": "v0.3.4.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/cvweiss/zlibrary.git",
-                "reference": "999dd5c09ee9ecb3c7ebc17334d945b55b76ce28"
+                "reference": "e5cf24ee2d91bd5bfd6642f19a887009c63e2b39"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cvweiss/zlibrary/zipball/999dd5c09ee9ecb3c7ebc17334d945b55b76ce28",
-                "reference": "999dd5c09ee9ecb3c7ebc17334d945b55b76ce28",
+                "url": "https://api.github.com/repos/cvweiss/zlibrary/zipball/e5cf24ee2d91bd5bfd6642f19a887009c63e2b39",
+                "reference": "e5cf24ee2d91bd5bfd6642f19a887009c63e2b39",
                 "shasum": ""
             },
             "require": {
@@ -144,7 +144,7 @@
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "GNU Affero General Public License"
+                "Unlicense"
             ],
             "authors": [
                 {
@@ -153,7 +153,7 @@
                 }
             ],
             "description": "Library of classes to simplify various tasks",
-            "time": "2014-05-13T14:04:08+00:00"
+            "time": "2018-03-03T16:31:19+00:00"
         },
         {
             "name": "dg/twitter-php",
@@ -199,20 +199,23 @@
         },
         {
             "name": "erusev/parsedown",
-            "version": "1.6.3",
+            "version": "1.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/erusev/parsedown.git",
-                "reference": "728952b90a333b5c6f77f06ea9422b94b585878d"
+                "reference": "6678d59be48c4be64eaca6ce70bea48a09488cc2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/erusev/parsedown/zipball/728952b90a333b5c6f77f06ea9422b94b585878d",
-                "reference": "728952b90a333b5c6f77f06ea9422b94b585878d",
+                "url": "https://api.github.com/repos/erusev/parsedown/zipball/6678d59be48c4be64eaca6ce70bea48a09488cc2",
+                "reference": "6678d59be48c4be64eaca6ce70bea48a09488cc2",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^4.8.35"
             },
             "type": "library",
             "autoload": {
@@ -237,7 +240,7 @@
                 "markdown",
                 "parser"
             ],
-            "time": "2017-05-14T14:47:48+00:00"
+            "time": "2018-02-28T11:41:37+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -673,16 +676,16 @@
         },
         {
             "name": "twig/twig",
-            "version": "v1.35.0",
+            "version": "v1.35.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "daa657073e55b0a78cce8fdd22682fddecc6385f"
+                "reference": "9c24f2cd39dc1906b76879e099970b7e53724601"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/daa657073e55b0a78cce8fdd22682fddecc6385f",
-                "reference": "daa657073e55b0a78cce8fdd22682fddecc6385f",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/9c24f2cd39dc1906b76879e099970b7e53724601",
+                "reference": "9c24f2cd39dc1906b76879e099970b7e53724601",
                 "shasum": ""
             },
             "require": {
@@ -734,7 +737,7 @@
             "keywords": [
                 "templating"
             ],
-            "time": "2017-09-27T18:06:46+00:00"
+            "time": "2018-03-03T16:21:29+00:00"
         },
         {
             "name": "zkillboard/redisq",

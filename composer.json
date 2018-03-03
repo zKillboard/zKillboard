@@ -1,6 +1,6 @@
 {
 	"require": {
-                "cvweiss/redistools": "v0.0.3",
+                "cvweiss/redistools": "v0.0.4",
 		"dg/twitter-php": "*",
 		"cvweiss/zlibrary" : "*",
 		"slim/slim": "2.*",
