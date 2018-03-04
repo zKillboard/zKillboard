@@ -96,7 +96,7 @@ $(document).ready(function()
                 { "sType" : "string" },
                 { "sType" : "string" },
                 { "sType" : "numeric-comma" },
-                { "sType" : "numeric-comma" }
+                { "sType" : "numeric-comma", "asSorting": [ "desc", "asc" ] }
                 ]
                 } );
         } 
