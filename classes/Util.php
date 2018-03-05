@@ -107,6 +107,7 @@ class Util
                 case 'asc':
                 case 'desc':
                 case 'json':
+                case 'ganked':
                     $parameters[$key] = true;
                     break;
                 case 'character':
