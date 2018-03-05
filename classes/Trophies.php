@@ -18,6 +18,7 @@ class Trophies
         ['type' => 'General', 'name' => 'Get a kill in null sec', 'filter' => ['characterID' => '?', 'isVictim' => false, 'nullsec' => true], 'rank' => 25, 'link' => '../kills/nullsec/'],
         ['type' => 'General', 'name' => 'Get a kill in w-space', 'filter' => ['characterID' => '?', 'isVictim' => false, 'w-space' => true], 'rank' => 125, 'link' => '../kills/w-space/'],
         ['type' => 'Special', 'name' => 'Participate in a tournament', 'filter' => ['regionID' => 10000004, 'characterID' => '?'], 'rank' => 5000, 'link' => '../regionID/10000004'],
+        ['type' => 'Special', 'name' => 'GANKED: suicide inspired killmail', 'filter' => ['characterID' => '?', 'isVictim' => false, 'ganked' => true], 'rank' => 25, 'link' => '../ganked/'],
         ['type' => 'Special', 'name' => 'Ganktastic Bonus: Freighters must die', 'statGroup' => ['groupID' => 513, 'field' => 'shipsDestroyed', 'value' => 1], 'rank' => 625, 'link' => '../reset/group/513/losses/'],
 
         ['type' => 'Special', 'name' => 'Backstab Special: You awoxed!', 'filter' => ['characterID' => '?', 'isVictim' => false, 'awox' => true], 'rank' => 25, 'link' => '../awox/kills/'],
