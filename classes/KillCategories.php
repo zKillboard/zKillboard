@@ -26,7 +26,7 @@ class KillCategories
                 $kills = Kills::getKills(array('groupID' => array(547, 485, 1538, 513, 902, 30, 659, 883), 'limit' => $limit, 'cacheTime' => 300, 'losses' => true, 'page' => $page));
                 break;
             case 'citadels':
-                $kills = Kills::getKills(array('groupID' => array(1657, 1404), 'limit' => $limit, 'cacheTime' => 300, 'losses' => true, 'page' => $page));
+                $kills = Kills::getKills(array('groupID' => array(1657, 1404, 1406), 'limit' => $limit, 'cacheTime' => 300, 'losses' => true, 'page' => $page));
                 break;
             case 'awox':
                 $kills = Kills::getKills(['awox' => true, 'page' => $page]);
