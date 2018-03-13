@@ -34,8 +34,15 @@
 		//get the position of the input so we can correctly offset the search window
 		get_position: function() {
 			var pos = $.extend({}, this.data['element'].offset(), { height: this.data['element'][0].offsetHeight });
-			return { top: (pos.top + pos.height), left: pos.left - 90 };
-		}, 
+            var searchOffsetX;
+            var searchOffsetY = pos.top + pos.height;
+            if (window.matchMedia('only screen and (max-width: 767px)').matches) {
+                searchOffsetX = 0;
+            } else {
+                searchOffsetX = pos.left - 90;
+            }
+            return { top: searchOffsetY, left: searchOffsetX };
+		},
 				
 		//move the selection around
 		move_prev: function(event) { event.preventDefault(); this.data['menu'].find('.active').removeClass('active').prev().addClass('active'); if ( this.data['menu'].find('.active').length == 0) { this.data['menu'].find('li').last().addClass('active'); } },
