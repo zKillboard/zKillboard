@@ -41,21 +41,5 @@
 				<p>Site's default is 'cyborg'</p>
 
 		<div class="clearfix"></div>
-		<h3>Show Disqus</h3>
-			<form class="form-horizontal" method="post" action="/account/sitesettings/">
-				<div class="form-group col-lg-3">
-					<select name="showDisqus" class="form-control input-sm">
-						{% if 'true' == data.showDisqus %}{% set selected = "selected"%}{% endif %}
-						<option value="true" {{ selected }}>On</option>
-						{% set selected = "" %}
-						{% if 'true' != data.showDisqus %}{% set selected = "selected"%}{% endif %}
-						<option value="false" {{ selected }}>Off</option>
-					</select>
-				</div>
-				<div class="form-group col-lg-2">
-				&nbsp;	<input type="submit" class="btn btn-primary btn-sm" value="Set">
-				</div>
-			</form>
-			<p>If on, display Disqus.  If off, don't display it.</p>
 	</div>
 </div>
