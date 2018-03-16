@@ -22,7 +22,7 @@ while ($minute == date('Hi')) {
             if ($maxKillID > $charMaxKillID && ($id % $mod != $dayMod)) continue;
         }
 
-        $url = "https://esi.tech.ccp.is/v4/characters/$id/";
+        $url = "$esiServer/v4/characters/$id/";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row, 'rtq' => $chars];
         $guzzler->call($url, "updateChar", "failChar", $params);
         if (Status::getStatus('esi', false) > 200) sleep(1);

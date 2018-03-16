@@ -23,7 +23,7 @@ while ($minute == date("Hi")) {
 
         $mdb->set("crestmails", $row, ['processed' => 'fetching']);
 
-        $url = "https://esi.tech.ccp.is/v1/killmails/$killID/$hash/";
+        $url = "$esiServer/v1/killmails/$killID/$hash/";
         $params = ['row' => $row, 'mdb' => $mdb, 'redis' => $redis, 'killID' => $killID, 'esimails' => $esimails];
         $guzzler->call($url, "success", "fail", $params);
     }

@@ -16,7 +16,7 @@ while ($minute == date('Hi')) {
     if ($id > 0) {
         $row = $mdb->findDoc("information", ['type' => 'corporationID', 'id' => $id]);
 
-        $url = "https://esi.tech.ccp.is/v3/corporations/$id/";
+        $url = "$esiServer/v3/corporations/$id/";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
         $guzzler->call($url, "updateCorp", "failCorp", $params);
     } else $guzzler->tick();

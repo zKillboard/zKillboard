@@ -12,7 +12,7 @@ if ($redis->get($key) == "true") exit();
 
 Status::check('esi');
 $guzzler = new Guzzler(10, 10);
-$guzzler->call("https://esi.tech.ccp.is/latest/markets/prices/", "success", "fail");
+$guzzler->call("$esiServer/v1/markets/prices/", "success", "fail");
 $guzzler->finish();
 
 $redis->setex($key, 86400, "true");

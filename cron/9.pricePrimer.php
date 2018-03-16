@@ -13,22 +13,24 @@ if ($redis->get($key) == "true") exit();
 
 Status::check('esi');
 $guzzler = new Guzzler(10, 10);
-$guzzler->call("https://esi.tech.ccp.is/v1/markets/groups/", "groupsSuccess", "fail");
+$guzzler->call("$esiServer/v1/markets/groups/", "groupsSuccess", "fail");
 $guzzler->finish();
 
 $redis->setex($key, 86400, "true");
 
 function groupsSuccess($guzzler, $params, $content)
 {
+    global $esiServer;
+
     $groups = json_decode($content, true);
     foreach ($groups as $groupID) {
-        $guzzler->call("https://esi.tech.ccp.is/v1/markets/groups/$groupID/", "groupSuccess", "fail");
+        $guzzler->call("$esiServer/v1/markets/groups/$groupID/", "groupSuccess", "fail");
     }  
 }
 
 function groupSuccess($guzzler, $params, $content)
 {
-    global $redis;
+    global $redis, $esiServer;
 
     $group = json_decode($content, true);
     $marketGroupID = $group['market_group_id'];
@@ -44,7 +46,7 @@ function groupSuccess($guzzler, $params, $content)
         if ($typeInfo['published'] != true) continue;
         if ($redis->hget($key, $typeID) == true) continue;
 
-        $guzzler->call("https://esi.tech.ccp.is/v1/markets/10000002/history/?type_id=$typeID", "typeHistorySuccess", "fail", ['typeID' => $typeID]);
+        $guzzler->call("$esiServer/v1/markets/10000002/history/?type_id=$typeID", "typeHistorySuccess", "fail", ['typeID' => $typeID]);
     }
 }
 

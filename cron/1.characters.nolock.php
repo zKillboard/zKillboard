@@ -46,7 +46,7 @@ $guzzler->finish();
 
 function accessTokenDone(&$guzzler, &$params, $content, $cacheIt = true)
 {
-    global $ccpClientID, $ccpSecret, $redis;
+    global $ccpClientID, $ccpSecret, $redis, $esiServer;
 
     $row = $params['row'];
     $charID = $row['characterID'];
@@ -67,7 +67,7 @@ function accessTokenDone(&$guzzler, &$params, $content, $cacheIt = true)
         $fields['max_kill_id'] = $params['max_kill_id'];
     }
     $fields = ESI::buildparams($fields);
-    $url = "https://esi.tech.ccp.is/v1/characters/$charID/killmails/recent/?$fields";
+    $url = "$esiServer/v1/characters/$charID/killmails/recent/?$fields";
 
     $guzzler->call($url, "success", "fail", $params, $headers, 'GET');
 }

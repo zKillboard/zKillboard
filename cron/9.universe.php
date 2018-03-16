@@ -12,9 +12,9 @@ if ($serverVersion == $loadedVersion) {
 $redis->set("zkb:universeLoaded", "false");
 $guzzler = new Guzzler(25, 10);
 
-$guzzler->call("https://esi.tech.ccp.is/v1/universe/categories/", "categoriesSuccess", "fail");
+$guzzler->call("$esiServer/v1/universe/categories/", "categoriesSuccess", "fail");
 $guzzler->finish();
-$guzzler->call("https://esi.tech.ccp.is/v1/universe/regions/", "regionsSuccess", "fail");
+$guzzler->call("$esiServer/v1/universe/regions/", "regionsSuccess", "fail");
 $guzzler->finish();
 
 $redis->set("zkb:tqServerVersion", $serverVersion);
@@ -28,16 +28,18 @@ function fail($guzzler, $params, $error)
 
 function categoriesSuccess($guzzler, $params, $content)
 {
+    global $esiServer;
+
     $cats = json_decode($content, true);
 
     foreach ($cats as $cat) {
-        $guzzler->call("https://esi.tech.ccp.is/v1/universe/categories/$cat/", "categorySuccess", "fail");
+        $guzzler->call("$esiServer/v1/universe/categories/$cat/", "categorySuccess", "fail");
     }
 }
 
 function categorySuccess($guzzler, $params, $content)
 {
-    global $mdb;
+    global $mdb, $esiServer;
 
     $cat = json_decode($content, true);
     $id = $cat['category_id'];
@@ -48,13 +50,13 @@ function categorySuccess($guzzler, $params, $content)
     $mdb->insertUpdate("information", ['type' => 'categoryID', 'id' => $id], ['name' => $name]);
 
     foreach ($groups as $group) {
-        $guzzler->call("https://esi.tech.ccp.is/v1/universe/groups/$group/", "groupSuccess", "fail");
+        $guzzler->call("$esiServer/v1/universe/groups/$group/", "groupSuccess", "fail");
     }
 }
 
 function groupSuccess($guzzler, $params, $content)
 {
-    global $mdb;
+    global $mdb, $esiServer;
 
     $group = json_decode($content, true);
     $id = $group['group_id'];
@@ -64,7 +66,7 @@ function groupSuccess($guzzler, $params, $content)
     $mdb->insertUpdate("information", ['type' => 'groupID', 'id' => $id], ['name' => $name]);
 
     foreach ($group['types'] as $type) {
-        $guzzler->call("https://esi.tech.ccp.is/v2/universe/types/$type/", "typeSuccess", "fail", ['categoryID' => $group['category_id']]);
+        $guzzler->call("$esiServer/v2/universe/types/$type/", "typeSuccess", "fail", ['categoryID' => $group['category_id']]);
     }
 }
 
@@ -89,16 +91,18 @@ function typeSuccess($guzzler, $params, $content)
 
 function regionsSuccess($guzzler, $params, $content)
 {
+    global $esiServer;
+
     $regions = json_decode($content, true);
 
     foreach ($regions as $regionID) {
-        $guzzler->call("https://esi.tech.ccp.is/v1/universe/regions/$regionID/", "regionSuccess", "fail");
+        $guzzler->call("$esiServer/v1/universe/regions/$regionID/", "regionSuccess", "fail");
     }
 }
 
 function regionSuccess($guzzler, $params, $content)
 {
-    global $mdb;
+    global $mdb, $esiServer;
 
     $region = json_decode($content, true);
     $name = $region['name'];
@@ -109,13 +113,13 @@ function regionSuccess($guzzler, $params, $content)
     $mdb->insertUpdate("information", ['type' => 'regionID', 'id' => $regionID], ['name' => $name]);
 
     foreach ($constellations as $constellation) {
-        $guzzler->call("https://esi.tech.ccp.is/v1/universe/constellations/$constellation/", "constellationSuccess", "fail");
+        $guzzler->call("$esiServer/v1/universe/constellations/$constellation/", "constellationSuccess", "fail");
     }
 }
 
 function constellationSuccess($guzzler, $params, $content)
 {
-    global $mdb;
+    global $mdb, $esiServer;
 
     $const = json_decode($content, true);
     $constID = (int) $const['constellation_id'];
@@ -127,7 +131,7 @@ function constellationSuccess($guzzler, $params, $content)
     $mdb->insertUpdate("information", ['type' => 'constellationID', 'id' => $constID], ['name' => $name, 'regionID' => $regionID]);
 
     foreach ($systems as $system) {
-        $guzzler->call("https://esi.tech.ccp.is/v3/universe/systems/$system/", "systemSuccess", "fail", ['regionID' => $regionID]);
+        $guzzler->call("$esiServer/v3/universe/systems/$system/", "systemSuccess", "fail", ['regionID' => $regionID]);
     }
 }
 
