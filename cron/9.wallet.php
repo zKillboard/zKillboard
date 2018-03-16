@@ -2,51 +2,18 @@
 
 require_once '../init.php';
 
-global $walletApis, $mdb;
-
-if (!is_array($walletApis)) {
-    return;
-}
-
-Status::check('xml');
+Status::check('esi');
 $redisKey = 'zkb:walletCheck';
 if ($redis->get($redisKey) != true) {
-    $cacheUntil = 0;
-    foreach ($walletApis as $api) {
-        $type = $api['type'];
-        $keyID = $api['keyID'];
-        $vCode = $api['vCode'];
-        $charID = $api['charID'];
-
-        try {
-            $pheal = getPheal($keyID, $vCode);
-            $arr = array('characterID' => $charID, 'rowCount' => 1000);
-
-            if ($type == 'char') {
-                $q = $pheal->charScope->WalletJournal($arr);
-                $cacheUntil = max($q->cached_until_unixtime, $cacheUntil);
-                insertRecords($charID, $q->transactions);
-            } elseif ($type == 'corp') {
-                $q = $pheal->corpScope->WalletJournal($arr);
-                $cacheUntil = max($q->cached_until_unixtime, $cacheUntil);
-                insertRecords($charID, $q->entries);
-            } else {
-                continue;
-            }
-
-            Status::addStatus('xml', true);
-        } catch (Exception $ex) {
-            Status::addStatus('xml', false);
-            Util::out('Failed to fetch Wallet API: '.$ex->getMessage());
-            return;
-        }
+    $guzzler = new Guzzler();
+    $scope = $mdb->findDoc("scopes", ['characterID' => $adminCharacter, 'scope' => 'esi-wallet.read_character_wallet.v1']);
+    if (isset($scope['refreshToken'])) {
+        $refreshToken = $scope['refreshToken'];
+        $params = ['redis' => $redis];
+        CrestSSO::getAccessTokenCallback($guzzler, $refreshToken, "accessTokenDone", "fail", $params);
+        $guzzler->finish();
     }
-    
-    $next = $cacheUntil - time() + 1;
-    $redis->setex($redisKey, $next, true);
 }
-
-applyBalances();
 
 $rows = $mdb->find("payments", ['isk' => ['$exists' => false]]);
 foreach ($rows as $row) {
@@ -55,21 +22,51 @@ foreach ($rows as $row) {
     $mdb->set("payments", $row, ['isk' => (double) $row['amount'], 'characterID' => (int) $row['ownerID1'], 'dttm' => new MongoDate($time)]);
 }
 
+function accessTokenDone(&$guzzler, &$params, $content)
+{
+    global $esiServer, $adminCharacter;
+    $response = json_decode($content, true);
+    $accessToken = $response['access_token'];
+    $url = "$esiServer/characters/$adminCharacter/wallet/journal/";
+
+    $params['content'] = $content;
+    $headers = ['Content-Type: application/json'];
+
+    $fields = ['token' => $accessToken];
+    $fields = ESI::buildparams($fields);
+    $url = "$esiServer/v3/characters/$adminCharacter/wallet/journal/?$fields";
+
+    $guzzler->call($url, "success", "fail", $params, $headers, 'GET');
+}
+
+function success(&$guzzler, &$params, $content)
+{
+    $response = json_decode($content, true);
+    insertRecords($response);
+    applyBalances();
+    $redis = $params['redis'];
+    $redis->setex("zkb:walletCheck", 3600, "true");
+}
+
+function fail(&$guzzler, &$params, $ex)
+{
+    print_r($ex);
+}
 
 function applyBalances()
 {
-    global $walletCharacterID, $baseAddr, $mdb, $adFreeMonthCost, $redis;
+    global $adminCharacter, $baseAddr, $mdb, $adFreeMonthCost, $redis;
 
     // First, set any new records to paymentApplied = 0
     $mdb->set('payments', ['paymentApplied' => ['$ne' => 1]], ['paymentApplied' => 0], true);
 
     // And then iterate through un-applied payments
-    $toBeApplied = $mdb->find('payments', ['paymentApplied' => 0]);
+    $toBeApplied = $mdb->find('payments', ['paymentApplied' => 0], ['date' => -1]);
     if ($toBeApplied == null) {
         $toBeApplied = [];
     }
     foreach ($toBeApplied as $row) {
-        if ($row['ownerID2'] != $walletCharacterID && $row['ownerID2'] != 98207592) {
+        if ($row['ownerID2'] != $adminCharacter && $row['ownerID2'] != 98207592) {
             continue;
         }
 
@@ -108,7 +105,7 @@ function applyBalances()
     }
 }
 
-function insertRecords($charID, $records)
+function insertRecords($records)
 {
     global $mdb;
 
@@ -116,27 +113,15 @@ function insertRecords($charID, $records)
         if ($record['amount'] < 0) {
             continue;
         }
-        if ($mdb->count('payments', ['refID' => $record['refID']]) > 0) {
+        if ($mdb->count('payments', ['refID' => (string) $record['ref_id']]) > 0) {
             continue;
         }
+        $record['refID'] = (string) $record['ref_id'];
+        $record['esi'] = true;
+        $record['refTypeID'] = $record['ref_type'] == 'player_donation' ? 10 : 0;
+        $record['ownerID1'] = $record['first_party_id'];
+        $record['ownerID2'] = $record['second_party_id'];
+
         $mdb->save('payments', $record);
     }
-}
-
-function getPheal($keyID = null, $vCode = null)
-{
-    global $apiServer, $baseAddr;
-
-    \Pheal\Core\Config::getInstance()->http_method = 'curl';
-    \Pheal\Core\Config::getInstance()->http_user_agent = "API Fetcher for http://$baseAddr";
-    \Pheal\Core\Config::getInstance()->http_post = false;
-    \Pheal\Core\Config::getInstance()->http_keepalive = true; // default 15 seconds
-    \Pheal\Core\Config::getInstance()->http_keepalive = 10; // KeepAliveTimeout in seconds
-    \Pheal\Core\Config::getInstance()->http_timeout = 30;
-    \Pheal\Core\Config::getInstance()->api_customkeys = true;
-    \Pheal\Core\Config::getInstance()->api_base = $apiServer;
-
-    $pheal = new \Pheal\Pheal($keyID, $vCode);
-
-    return $pheal;
 }
