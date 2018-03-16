@@ -169,6 +169,7 @@ function fail($guzzer, $params, $ex)
         case 500:
         case 502: // Server error, try again in 5 minutes
         case 503:
+        case 504: // gateway timeout
         case "": // typically a curl timeout error
             $esi->setTime($charID, time() + 30);
             break;

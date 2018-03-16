@@ -35,6 +35,7 @@ function failCorp(&$guzzler, &$params, &$connectionException)
         case 500:
         case 502: // ccp broke something
         case 503: // server error
+        case 504: // gateway timeout
         case 200: // timeout...
             $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(86400 * -2)]);
             break;

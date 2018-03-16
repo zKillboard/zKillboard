@@ -45,6 +45,7 @@ function failChar(&$guzzler, &$params, &$connectionException)
         case 500:
         case 502: // ccp broke something...
         case 503: // server error
+        case 504: // gateway timeout
         case 200: // timeout...
             $rtq->setTime($id, (time() - 86400) + rand(3600, 7200));
             break;
