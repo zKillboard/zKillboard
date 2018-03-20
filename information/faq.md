@@ -19,7 +19,7 @@ Remember, every PVP killmail has two sides, the victim and the aggressors. Victi
 
 ***
 
-#####How do I authorize zKillboard to retrieve my killmails?
+#####How do I authorize zKillboard to retrieve my killmails via API?
 
 It&#39;s easy! Log in using the dropdown menu in the top right where you can see the empty character icon (unless you&#39;re already logged in of course).
 
