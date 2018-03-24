@@ -178,7 +178,7 @@ class Price
                 return $total;
         }
 
-        $groupID = Info::getGroupID($itemID);
+        $groupID = Info::getGroupID($typeID);
         switch ($groupID) {
             case 1652: // Light Fighters
                 $itemPrice = self::getItemPrice($typeID, $date, true);
