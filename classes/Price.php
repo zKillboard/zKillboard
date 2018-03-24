@@ -175,7 +175,22 @@ class Price
                 $mainframes = self::getItemPrice(2876, $date, true);
                 $cores = self::getItemPrice(2872, $date, true);
                 $total = $gantry + (($nodes + $modules + $mainframes + $cores) * 8);
+                return $total;
+        }
 
+        $groupID = Info::getGroupID($itemID);
+        switch ($groupID) {
+            case 1652: // Light Fighters
+                $itemPrice = self::getItemPrice($typeID, $date, true);
+                $total = $itemPrice * 9;
+                return $total;
+            case 1653: // Heavy Fighters
+                $itemPrice = self::getItemPrice($typeID, $date, true);
+                $total = $itemPrice * 6;
+                return $total;
+            case 1537: // Support Fighters
+                $itemPrice = self::getItemPrice($typeID, $date, true);
+                $total = $itemPrice * 3;
                 return $total;
         }
 
