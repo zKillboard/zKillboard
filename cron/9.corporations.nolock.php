@@ -16,7 +16,7 @@ while ($minute == date('Hi')) {
     if ($id > 0) {
         $row = $mdb->findDoc("information", ['type' => 'corporationID', 'id' => $id]);
 
-        $url = "$esiServer/v3/corporations/$id/";
+        $url = "$esiServer/v4/corporations/$id/";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
         $guzzler->call($url, "updateCorp", "failCorp", $params);
     } else $guzzler->tick();
@@ -40,7 +40,7 @@ function failCorp(&$guzzler, &$params, &$connectionException)
             $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(86400 * -2)]);
             break;
         default:
-            Util::out("/v3/corporation/ failed for $id with code $code");
+            Util::out("/v4/corporation/ failed for $id with code $code");
     }
 }
 
@@ -55,7 +55,7 @@ function updateCorp(&$guzzler, &$params, &$content)
     $ceoID = (int) $json['ceo_id'];
 
     $updates = [];
-    compareAttributes($updates, "name", @$row['name'], (string) $json['corporation_name']);
+    compareAttributes($updates, "name", @$row['name'], (string) $json['name']);
     compareAttributes($updates, "ticker", @$row['ticker'], (string) $json['ticker']);
     compareAttributes($updates, "ceoID", @$row['ceoID'], $ceoID);
     compareAttributes($updates, "memberCount", @$row['memberCount'], (int) $json['member_count']);
