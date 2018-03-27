@@ -67,6 +67,8 @@ class Guzzler
                 $content = (string) $response->getBody();
                 Status::addStatus($statusType, true);
                 $this->lastHeaders = $response->getHeaders();
+                if (isset($this->lastHeaders['Warning'])) Util::out("Warning: " . $params['uri'] . " " . $this->lastHeaders['Warning'][0]);
+
                 $fulfilled($guzzler, $params, $content);
             },
             function($connectionException) use (&$guzzler, &$rejected, &$params, $statusType) {
