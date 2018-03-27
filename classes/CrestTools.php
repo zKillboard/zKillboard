@@ -31,10 +31,10 @@ class CrestTools
                 Status::addStatus('crest', true);
                 return $body;
             }
-Log::log("curlFetch error ($httpCode) $url");
+            //Log::log("curlFetch error ($httpCode) $url");
+            Status::addStatus('crest', false);
 
             if (in_array($httpCode, $errorCodes)) {
-                Status::addStatus('crest', false);
                 return $httpCode;
             }
 
@@ -42,7 +42,7 @@ Log::log("curlFetch error ($httpCode) $url");
             sleep(1);
         } while ($httpCode != 200 && $numTries <= 3);
         Status::addStatus('crest', false);
-        Log::log("Gave up on $url");
+        //Log::log("Gave up on $url");
 
         return $httpCode;
     }

@@ -10,6 +10,7 @@ if ($redis->llen('queueProcess') >= 25) {
     exit();
 }
 
+Status::check('esi');
 $count = 0;
 $crest = $mdb->getCollection('crestmails')->find()->sort(['added' => -1]);
 foreach ($crest as $row) {

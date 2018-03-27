@@ -36,19 +36,21 @@ for ($i = 0; $i < 7; $i++) {
     $greenTotal += $redis->get($green);
     $redTotal += $redis->get($red);
 }
-$arr[] = ['typeID' => 0, 'name' => 'Loot Fairy', 'dV' => $greenTotal, 'lV' => $redTotal];
-$items = [40520, 44992];
-$date = date('Ymd');
-foreach ($items as $item) {
-    $d =  new RedisTtlCounter("ttlc:item:$item:dropped", 86400 * 7);
-    $dSize = $d->count();
-    $l = new RedisTtlCounter("ttlc:item:$item:destroyed", 86400 * 7);
-    $lSize = $l->count();
-    $name = Info::getInfoField("typeID", $item, "name");
-    $price = Price::getItemPrice($item, $date, true);
-    $arr[] = ['typeID' => $item, 'name' => $name, 'price' => $price, 'dropped' => $dSize, 'destroyed' => $lSize, 'dV' => ($dSize * $price), 'lV' => ($lSize * $price)];
+if ($redis->get("tqCountInt") >= 1000) {
+    $arr[] = ['typeID' => 0, 'name' => 'Loot Fairy', 'dV' => $greenTotal, 'lV' => $redTotal];
+    $items = [40520, 44992];
+    $date = date('Ymd');
+    foreach ($items as $item) {
+        $d =  new RedisTtlCounter("ttlc:item:$item:dropped", 86400 * 7);
+        $dSize = $d->count();
+        $l = new RedisTtlCounter("ttlc:item:$item:destroyed", 86400 * 7);
+        $lSize = $l->count();
+        $name = Info::getInfoField("typeID", $item, "name");
+        $price = Price::getItemPrice($item, $date, true);
+        $arr[] = ['typeID' => $item, 'name' => $name, 'price' => $price, 'dropped' => $dSize, 'destroyed' => $lSize, 'dV' => ($dSize * $price), 'lV' => ($lSize * $price)];
+    }
+    $redis->set("zkb:ttlc:items:index", json_encode($arr));
 }
-$redis->set("zkb:ttlc:items:index", json_encode($arr));
 
 $i = Mdb::group("payments", ['characterID'], ['refTypeID' => '10', 'dttm' => ['$gte' => $mdb->now(86400 * -7)]], [], 'isk', ['iskSum' => -1, 'dttm' => -1], 10);
 Info::addInfo($i);

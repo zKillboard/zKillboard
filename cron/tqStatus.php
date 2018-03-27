@@ -20,6 +20,7 @@ if ($minute >= 1100 && $minute <= 1105) {
 
     $serverStatus = $root == 0 ? 'UNKNOWN' : (isset($root['serviceStatus']) ? strtoupper($root['serviceStatus']) : 'OFFLINE');
     $loggedIn = (int) @$root['userCount'];
+    $redis->set('tqCountInt', $loggedIn);
     $loggedIn = $loggedIn == 0 ? $serverStatus : number_format($loggedIn, 0);
 
     $redis->set('tqStatus', $serverStatus);

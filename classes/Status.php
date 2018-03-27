@@ -32,7 +32,7 @@ class Status
         $fail = false;
         $fail |= $rtcf->count() >= 100 && $exitIfFailure;
         $fail |= $redis->get("tqStatus") != "ONLINE" && $exitIfOffline;
-        $fail |= $redis->get("tqCount") < 1000;
+        $fail |= $redis->get("tqCountInt") < 1000;
 
         if ($fail) exit();
     }
@@ -48,7 +48,7 @@ class Status
         $fail = false;
         $fail |= $rtcf->count() >= 100 && $exitIfFailure;
         $fail |= $redis->get("tqStatus") != "ONLINE" && $exitIfOffline;
-        $fail |= $redis->get("tqCount") < 1000;
+        $fail |= $redis->get("tqCountInt") < 1000;
 
         if ($fail) {
             $guzzle = $guzzler == null ? null : $guzzler->finish();
