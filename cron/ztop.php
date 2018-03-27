@@ -79,8 +79,6 @@ while ($hour == date('H')) {
     addInfo('Failed ESI calls in last 5 minutes', Status::getStatus('esi', false), false);
     addInfo('Successful SSO calls in last 5 minutes', Status::getStatus('sso', true), false);
     addInfo('Failed SSO calls in last 5 minutes', Status::getStatus('sso', false), false);
-    addInfo('Successful XML calls in last 5 minutes', Status::getStatus('xml', true), false);
-    addInfo('Failed XML calls in last 5 minutes', Status::getStatus('xml', false), false);
 
     $esiChars = new RedisTimeQueue("tqApiESI", 3600);
     $esiCorps = new RedisTimeQueue("tqCorpApiESI", 3600);
@@ -88,9 +86,9 @@ while ($hour == date('H')) {
     $ssoCorps = new RedisTimeQueue("zkb:ssoCorps", 3600);
     addInfo('', 0, false);
     addInfo('Character KillLogs to check', $esiChars->pending(), false);
-    addInfo('Character RefreshTokens', $esiChars->size(), false);
+    addInfo('Unique Character RefreshTokens', $esiChars->size(), false);
     addInfo('Corporation KillLogs to check', $esiCorps->pending(), false);
-    addInfo('Corporation RefreshTokens', $esiCorpCount->size(), false);
+    addInfo('Unique Corporation RefreshTokens', $esiCorpCount->size(), false);
 
     addInfo('', 0, false);
     addInfo('Total Characters', $redis->zcard("zkb:characterID"), false);
@@ -101,13 +99,13 @@ while ($hour == date('H')) {
     $sponsored = Mdb::group("sponsored", [], ['entryTime' => ['$gte' => $mdb->now(86400 * -7)]], [], 'isk', ['iskSum' => -1]);
     $sponsored = array_shift($sponsored);
     $sponsored = Util::formatIsk($sponsored['iskSum']);
-    $balance = Util::formatIsk((double) $mdb->findField("payments", "balance", ['refTypeID' => "10"], ['_id' => -1]));
+    $balance = Util::formatIsk((double) $mdb->findField("payments", "balance", ['ref_type' => 'player_donation'], ['_id' => -1]));
     addInfo('Sponsored Killmails (inflated)', $sponsored, false, false);
     addInfo('Wallet Balance', $balance, false, false);
 
-    addInfo('', 0, true);
-    addInfo('Load Counter', $redis->get("zkb:load"));
-    addinfo("Reinforced Mode", (int) $redis->get("zkb:reinforced"));
+    addInfo('', 0, false);
+    addInfo('Load Counter', $redis->get("zkb:load"), false);
+    addinfo("Reinforced Mode", (int) $redis->get("zkb:reinforced"), false);
 
     $info = $redis->info();
     $mem = $info['used_memory_human'];
