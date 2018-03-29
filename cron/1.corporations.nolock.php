@@ -125,7 +125,7 @@ function success($guzzler, $params, $content)
         }
         if ($redis->get("recentKillmailActivity:$corpID") == "true") {
             $headers = $guzzler->getLastHeaders();
-            $expires = $headers['Expires'];
+            $expires = $headers['expires'];
             $time = strtotime($expires[0]);
             if ($expires > time()) $esi->setTime($charID, $time + 10);
         }

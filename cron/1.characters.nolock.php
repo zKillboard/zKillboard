@@ -120,7 +120,7 @@ function success($guzzler, $params, $content)
             if ($redis->get("recentKillmailActivity:$charID") == "true") {
                 // They got a kill in the last 2 hours, check them again as soon as their cache has expired
                 $headers = $guzzler->getLastHeaders();
-                $expires = $headers['Expires'];
+                $expires = $headers['expires'];
                 $time = strtotime($expires[0]);
                 if ($expires > time()) $esi->setTime($charID, $time + 10);
             }
