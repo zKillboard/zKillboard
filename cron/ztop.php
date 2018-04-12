@@ -107,6 +107,14 @@ while ($hour == date('H')) {
     addInfo('Load Counter', $redis->get("zkb:load"), false);
     addinfo("Reinforced Mode", (int) $redis->get("zkb:reinforced"), false);
 
+    addInfo('', 0, false);
+    addInfo('Success AWS A-B', Status::getStatus('abtest-s', true), false);
+    addInfo('Fail AWS A-B', Status::getStatus('abtest-s', false), false);
+    $abt = Status::getStatus('abtest', true);
+    $abn = Status::getStatus('abtest', false);
+    addInfo('% calls to AWS', number_format(($abt / ($abt + $abn)) * 100), false);
+
+
     $info = $redis->info();
     $mem = $info['used_memory_human'];
 
