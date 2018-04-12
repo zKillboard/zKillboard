@@ -23,7 +23,7 @@ while ($minute == date('Hi')) {
     Status::throttle('sso', 20);
     $charID = (int) $esi->next();
     $corpID = Info::getInfoField('characterID', $charID, 'corporationID');
-    if ($charID > 0 && $corpID > 0) {
+    if ($charID > 0 && $corpID > 1999999) {
         $alliID = Info::getInfoField('characterID', $charID, 'allianceID');
         if (in_array($corpID, $ignoreEntities) || in_array($alliID, $ignoreEntities)) continue;
         $ignoreEntities[] = $corpID;
