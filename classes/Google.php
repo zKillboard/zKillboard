@@ -23,7 +23,6 @@ class Google
         global $dataAdClient, $dataAdSlot;
 
         return '
-<!-- test -->
 <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 <!-- zkb Responsive Ad -->
 <ins class="adsbygoogle"
@@ -34,6 +33,7 @@ class Google
 <script>
 (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
+<hr/>
         ';
     }
 
