@@ -278,7 +278,7 @@ class Util
 
         if ($multi && $paginated) throw new Exception("Combining multiple IDs with pagination is no longer supported");
         if ($paginated && !$legalLargePagination && $parameters['page'] > 10) {
-            throw new Exception("Pages over 10 only supported for characters, corporations, and alliances");
+            //throw new Exception("Pages over 10 only supported for characters, corporations, and alliances");
         }
 
         return $parameters;
