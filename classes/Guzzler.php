@@ -66,16 +66,23 @@ class Guzzler
                 $guzzler->dec();
                 $content = (string) $response->getBody();
                 Status::addStatus($statusType, true);
-                $this->lastHeaders = $response->getHeaders();
-                if (isset($this->lastHeaders['Warning'])) Util::out("Warning: " . $params['uri'] . " " . $this->lastHeaders['Warning'][0]);
+                $this->lastHeaders = array_change_key_case($response->getHeaders());
+                Status::addStatus('abtest', (isset($this->lastHeaders['x-esi-ab-test'])));
+                if (isset($this->lastHeaders['x-esi-ab-test'])) Status::addStatus('abtest-s', true);
+                //if (isset($this->lastHeaders['x-esi-ab-test'])) Util::out("voluntold " . $params['uri']);
+                if (isset($this->lastHeaders['warning'])) Util::out("Warning: " . $params['uri'] . " " . $this->lastHeaders['Warning'][0]);
 
                 $fulfilled($guzzler, $params, $content);
             },
             function($connectionException) use (&$guzzler, &$rejected, &$params, $statusType) {
                 $guzzler->dec();
                 Status::addStatus($statusType, false);
+                $response = $connectionException->getResponse();
+                $this->lastHeaders = $response == null ? [] : array_change_key_case($response->getHeaders());
+                if (isset($this->lastHeaders['x-esi-ab-test'])) Status::addStatus('abtest-s', false);
                 $params['content'] = method_exists($connectionException->getResponse(), "getBody") ? (string) $connectionException->getResponse()->getBody() : "";
                 $code = $connectionException->getCode();
+                //Util::out("$code " . $params['uri'] . "\n" . $params['content']);
                 $rejected($guzzler, $params, $connectionException);
             });
         $this->inc();
