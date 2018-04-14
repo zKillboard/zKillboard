@@ -16,47 +16,45 @@ if ($i == 45) {
     }
 }
 
+$guzzler = new Guzzler(2);
+
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    Status::check('crest');
-    sleep(1);
-    $id = (int) $queueAllis->next(false);
-    if ($id == null) {
-        exit();
-    }
+    Status::check('esi');
+    $id = (int) $queueAllis->next();
+    if ($id == null) break;
+
     $alliance = $mdb->findDoc('information', ['type' => 'allianceID', 'id' => $id]);
     $name = (string) @$alliance['name'];
 
-    $currentInfo = $mdb->findDoc('information', ['type' => 'alliance', 'id' => $id]);
+    $guzzler->call("$esiServer/v3/alliances/$id/", "success", "fail", ['id' => $id]);
+}
+$guzzler->finish();
 
-    $alliCrest = CrestTools::getJSON("$crestServer/alliances/$id/");
-    if ($alliCrest == null || !isset($alliCrest['name'])) {
-        $mdb->set('information', ['type' => 'alliance', 'id' => $id], ['lastApiUpdate' => $mdb->now()]);
-        continue;
-    }
+function success(&$guzzler, &$params, $content) 
+{
+    global $mdb, $esiServer;
+
+    $alliCrest = json_decode($content, true);
+
+    $id = $params['id'];
+    $currentInfo = $mdb->findDoc('information', ['type' => 'allianceID', 'id' => $id]);
 
     $update = [];
     $update['lastApiUpdate'] = $mdb->now();
-    $update['corpCount'] = (int) $alliCrest['corporationsCount'];
-    $update['executorCorpID'] = (int) @$alliCrest['executorCorporation']['id'];
+    $update['executorCorpID'] = (int) $alliCrest['executor_corporation_id'];
     addCorp($update['executorCorpID']);
-    $memberCount = 0;
-    $update['deleted'] = $alliCrest['deleted'];
 
-    $mdb->set('information', ['type' => 'corporationID', 'allianceID' => $id], ['allianceID' => 0]);
-    if ($alliCrest['corporations']) {
-        foreach ($alliCrest['corporations'] as $corp) {
-            $corpID = (int) $corp['id'];
-            addCorp($corpID);
-            $infoCorp = $mdb->findDoc('information', ['type' => 'corporationID', 'id' => $corpID]);
-            $memberCount += ((int) @$infoCorp['memberCount']);
-            $mdb->set('information', ['type' => 'corporationID', 'id' => $corpID], ['allianceID' => $id]);
-        }
+    $memberCount = 0;
+    $corps = $mdb->find("information", ['type' => 'corporationID', 'allianceID' => $id]);
+    $update['corpCount'] = sizeof($corps);
+    foreach ($corps as $corp) {
+        $memberCount += @$corp['memberCount'];
     }
     $update['memberCount'] = $memberCount;
-    $update['ticker'] = $alliCrest['shortName'];
+    $update['ticker'] = $alliCrest['ticker'];
     $update['name'] = $alliCrest['name'];
-    $update['factionID'] = 0;
+    $update['factionID'] = (int) @$alliCrest['faction_id'];
 
     $mdb->insertUpdate('information', ['type' => 'allianceID', 'id' => $id], $update);
 }
@@ -70,4 +68,9 @@ function addCorp($id)
     if ($infoCorp == null) {
         $mdb->insertUpdate('information', $query);
     }
+}
+
+function fail($guzzler, $params, $ex)
+{
+    print_r($ex);
 }
