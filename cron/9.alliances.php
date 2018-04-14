@@ -42,7 +42,7 @@ function success(&$guzzler, &$params, $content)
 
     $update = [];
     $update['lastApiUpdate'] = $mdb->now();
-    $update['executorCorpID'] = (int) $alliCrest['executor_corporation_id'];
+    $update['executorCorpID'] = (int) @$alliCrest['executor_corporation_id'];
     addCorp($update['executorCorpID']);
 
     $memberCount = 0;
