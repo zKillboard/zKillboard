@@ -70,7 +70,7 @@ class Guzzler
                 Status::addStatus('abtest', (isset($this->lastHeaders['x-esi-ab-test'])));
                 if (isset($this->lastHeaders['x-esi-ab-test'])) Status::addStatus('abtest-s', true);
                 //if (isset($this->lastHeaders['x-esi-ab-test'])) Util::out("voluntold " . $params['uri']);
-                if (isset($this->lastHeaders['warning'])) Util::out("Warning: " . $params['uri'] . " " . $this->lastHeaders['Warning'][0]);
+                if (isset($this->lastHeaders['warning'])) Util::out("Warning: " . $params['uri'] . " " . $this->lastHeaders['warning'][0]);
 
                 $fulfilled($guzzler, $params, $content);
             },
