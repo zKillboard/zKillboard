@@ -16,7 +16,7 @@ if (date('i') == 22 || $esi->size() < 100) {
 }
 if ($esi->size() == 0) exit();
 
-$guzzler = new Guzzler(20, 1000);
+$guzzler = new Guzzler($esiCharKillmails, 1000);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {

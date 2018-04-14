@@ -102,3 +102,7 @@ $adFreeMonthCost = 0;
 $stompListen = false;
 
 $primePrices = false;
+
+# ESI "Threads"
+$esiCharKillmails = 30;
+$esiCorpKillmails = 10;
