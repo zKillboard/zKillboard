@@ -9,7 +9,6 @@ if ($serverVersion == $loadedVersion) {
     exit();
 }
 
-$redis->set("zkb:universeLoaded", "false");
 $guzzler = new Guzzler(25, 10);
 
 $guzzler->call("$esiServer/v1/universe/categories/", "categoriesSuccess", "fail");
@@ -66,7 +65,7 @@ function groupSuccess($guzzler, $params, $content)
     $mdb->insertUpdate("information", ['type' => 'groupID', 'id' => $id], ['name' => $name]);
 
     foreach ($group['types'] as $type) {
-        $guzzler->call("$esiServer/v2/universe/types/$type/", "typeSuccess", "fail", ['categoryID' => $group['category_id']]);
+        $guzzler->call("$esiServer/v3/universe/types/$type/", "typeSuccess", "fail", ['categoryID' => $group['category_id']]);
     }
 }
 
