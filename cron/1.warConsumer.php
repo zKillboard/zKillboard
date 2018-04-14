@@ -87,6 +87,7 @@ function killmailSuccess(&$guzzler, &$params, &$content)
         }
     }
     if (sizeof($killmails) > 1999) {
+        $page = $params['page'];
         $page++;
         $params['page'] = $page;
         $baseKmHref = $params['baseKmHref'];
