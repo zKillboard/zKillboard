@@ -98,7 +98,7 @@ class Guzzler
         }
     }
 
-    protected function getType($uri)
+    public function getType($uri)
     {
         if (strpos($uri, 'esi.evetech') !== false) return 'esi';
         if (strpos($uri, 'esi.tech') !== false) return 'esi';

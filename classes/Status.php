@@ -7,6 +7,7 @@ class Status
     public static function addStatus($apiType, $success, $seconds = 300)
     {
         $apiType = strtolower($apiType);
+//if ($apiType == 'crest') throw new Exception('what, where?');
         $status = $success == true ? "Success" : "Failure";
         $rtc = new RedisTtlCounter("ttlc:{$apiType}{$status}", $seconds);
         $rtc->add(uniqid());

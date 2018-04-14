@@ -13,6 +13,9 @@ class CrestTools
     {
         global $baseAddr;
 
+        $guzzler = new Guzzler();
+        $type = $guzzler->getType($url);
+
         $errorCodes = [403, 404, 415, 500];
 
         $numTries = 0;
@@ -28,11 +31,11 @@ class CrestTools
             $body = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if ($httpCode == 200) {
-                Status::addStatus('crest', true);
+                Status::addStatus($type, true);
                 return $body;
             }
             //Log::log("curlFetch error ($httpCode) $url");
-            Status::addStatus('crest', false);
+            Status::addStatus($type, false);
 
             if (in_array($httpCode, $errorCodes)) {
                 return $httpCode;
@@ -41,18 +44,9 @@ class CrestTools
             ++$numTries;
             sleep(1);
         } while ($httpCode != 200 && $numTries <= 3);
-        Status::addStatus('crest', false);
+        Status::addStatus($type, false);
         //Log::log("Gave up on $url");
 
         return $httpCode;
-    }
-
-    public static function fetch($id, $hash = null)
-    {
-        global $crestServer;
-
-        $url = "$crestServer/killmails/$id/$hash/";
-
-        return self::getJSON($url);
     }
 }
