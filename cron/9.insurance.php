@@ -7,17 +7,30 @@ if ($redis->get("zkb:insuranceFetched:$date") == true) {
     exit();
 }
 
-Status::check('crest');
+Status::check('esi');
 
-$json = CrestTools::curlFetch("$crestServer/insuranceprices/");
-$insurance = json_decode($json, true);
-$items = isset($insurance['items']) ? $insurance['items'] : [];
-foreach ($items as $item) {
-    $typeID = $item['type']['id'];
-    $insert = ['typeID' => $typeID, 'date' => $date];
-    foreach ($item['insurance'] as $i) {
-        $insert[$i['level']] = ['cost' => round($i['cost']), 'payout' => round($i['payout'])];
-    }
-    $mdb->insertUpdate('insurance', ['typeID' => $typeID, 'date' => $date], $insert);
-}
+$guzzler = new Guzzler();
+$guzzler->call("$esiServer/v1/insurance/prices/", "success", "fail", ['date' => $date]);
+$guzzler->finish();
+
 $redis->setex("zkb:insuranceFetched:$date", 86400, true);
+
+function success($guzzler, $params, $content)
+{
+    global $mdb;
+
+    $json = json_decode($content, true);
+    foreach ($json as $row) {
+        $typeID = $row['type_id'];
+        $insert = ['typeID' => $typeID, 'date' => $params['date']];
+        foreach ($row['levels'] as $i) {
+            $insert[$i['name']] = ['cost' => round($i['cost']), 'payout' => round($i['payout'])];
+        }
+        $mdb->insertUpdate('insurance', ['typeID' => $typeID, 'date' => $params['date']], $insert);
+    }
+}
+
+function fail($guzzler, $params, $ex)
+{
+
+}
