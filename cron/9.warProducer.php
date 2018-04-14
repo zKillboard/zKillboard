@@ -13,26 +13,34 @@ if ($redis->get($key) == true) {
     exit();
 }
 
-$page = ceil($mdb->count('information', ['type' => 'warID']) / 2000);
-if ($page == 0) {
-    $page = 1;
-}
+$page = 1;
 
-$next = "$crestServer/wars/?page=$page";
-do {
-    Status::check('crest');
-    $wars = CrestTools::getJSON($next);
-    if ($wars == null) {
-        exit();
-    }
-    $next = @$wars['next']['href'];
-    foreach ($wars['items'] as $war) {
-        $warID = (int) $war['id'];
-        if (!$mdb->exists('information', ['type' => 'warID', 'id' => $warID])) {
-            $mdb->save('information', ['type' => 'warID', 'id' => $warID, 'lastApiUpdate' => new MongoDate(2)]);
-        }
-    }
-    sleep(5);
-} while ($next != null);
+$guzzler = new Guzzler();
+$guzzler->call("$esiServer/v1/wars/", "success", "fail");
+$guzzler->finish();
 
 $redis->setex($key, 3600, true);
+
+function success(&$guzzler, &$params, $content)
+{
+    global $mdb, $esiServer;
+
+    $maxWarID = 9999999999;
+    $warsAdded = false;
+    $wars = json_decode($content, true);
+    foreach ($wars as $warID) {
+        if (!$mdb->exists('information', ['type' => 'warID', 'id' => (int) $warID])) {
+            $mdb->save('information', ['type' => 'warID', 'id' => $warID, 'lastApiUpdate' => new MongoDate(2)]);
+            $warsAdded = true;
+        }
+        $maxWarID = min($maxWarID, $warID);
+    }
+    if ($warsAdded && sizeof($wars) > 0) {
+        $guzzler->call("$esiServer/v1/wars/?max_war_id=$maxWarID", "success", "fail", $params);
+    }
+}
+
+function fail(&$guzzler, &$params, $content)
+{
+
+}

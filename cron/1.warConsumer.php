@@ -8,7 +8,6 @@ if ($redis->llen("queueProcess") > 100) exit();
 $queueWars = new RedisQueue('queueWars');
 
 if ($queueWars->size() == 0) {
-    Status::check('crest');
     $wars = $mdb->getCollection('information')->find(['type' => 'warID'])->sort(['id' => -1]);
     foreach ($wars as $war) {
         $timeFinished = @$war['timeFinished'];
@@ -24,25 +23,29 @@ if ($queueWars->size() == 0) {
     }
 }
 
-$added = 0;
+$guzzler = new Guzzler(10);
+
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    Status::check('crest');
-    sleep(1);
+    Status::check('esi');
     $id = $queueWars->pop();
     if ($id == null) {
-        exit();
+        exit("null\n");
     }
     $warRow = $mdb->findDoc('information', ['type' => 'warID', 'id' => $id]);
+    $params = ['warRow' => $warRow];
+    $url = "$esiServer/v1/wars/$id/";
+    $guzzler->call($url, "success", "fail", $params, [], 'GET');
+}
+$guzzler->finish();
 
-    $href = "$crestServer/wars/$id/";
-    $war = CrestTools::getJSON($href);
+function success(&$guzzler, &$params, &$content)
+{
+    global $mdb, $esiServer;
 
-    if (!is_array($war)) {
-        // Some type of error occurred, come back later
-        $queueWars->push($id);
-        exit();
-    }
+    $war = json_decode($content, true);
+    $warRow = $params['warRow'];
+    $id = $params['warRow']['id'];
 
     $war['lastApiUpdate'] = $mdb->now();
     $war['id'] = $id;
@@ -50,40 +53,48 @@ while ($minute == date('Hi')) {
     $mdb->insertUpdate('information', ['type' => 'warID', 'id' => $id], $war);
 
     $prevKills = @$warRow['agrShipsKilled'] + @$warRow['dfdShipsKilled'];
-    $currKills = $war['aggressor']['shipsKilled'] + $war['defender']['shipsKilled'];
+    $currKills = $war['aggressor']['ships_killed'] + $war['defender']['ships_killed'];
+
+    $mdb->set("information", $war, ['agrShipsKilled' => (int) $war['aggressor']['ships_killed'], 'dfdShipsKilled' => (int) $war['defender']['ships_killed']]);
 
     // Don't fetch killmail api for wars with no kill count change
-    if ($prevKills != $currKills) {
-        $kmHref = $war['killmails'];
+    if ($prevKills != $currKills || true) {
+        $baseKmHref = "$esiServer/v1/wars/$id/killmails/";
         $page = floor($mdb->count('warmails', ['warID' => $id]) / 2000);
-        if ($page == 0) {
-            $page = 1;
-        } elseif ($page > 1) {
-            $kmHref .= "?page=$page";
-        }
-        while ($kmHref != null) {
-            $killmails = CrestTools::getJSON($kmHref);
+        if ($page == 0) $page = 1;
+        $params['baseKmHref'] = $baseKmHref;
+        $params['page'] = $page;
+        $guzzler->call("$baseKmHref?page=$page", "killmailSuccess", "fail", $params, [], 'GET');
+    }
+}
 
-            if (is_array($killmails['items'])) {
-                foreach ($killmails['items'] as $kill) {
-                    $href = $kill['href'];
-                    $exploded = explode('/', $href);
-                    $killID = (int) $exploded[4];
-                    $hash = $exploded[5];
+function killmailSuccess(&$guzzler, &$params, &$content)
+{
+    global $mdb;
 
-                    $mdb->insertUpdate('warmails', ['warID' => $id, 'killID' => $killID]);
-                    if (!$mdb->exists('crestmails',  ['killID' => $killID, 'hash' => $hash])) {
-                        $mdb->insert('crestmails', ['killID' => (int) $killID, 'hash' => $hash, 'processed' => false, 'source' => 'war', 'added' => Mdb::now()]);
-                        Util::out("New WARmail $killID");
-                    }
-                }
-            }
-            $next = @$killmails['next']['href'];
-            if ($next != $kmHref) {
-                $kmHref = $next;
-            } else {
-                $kmHref = null;
-            }
+    $killmails = json_decode($content, true);
+    $warRow = $params['warRow'];
+    $id = $warRow['id'];
+
+    foreach ($killmails as $kill) {
+        $killID = (int) $kill['killmail_id'];
+        $hash = $kill['killmail_hash'];
+
+        $mdb->insertUpdate('warmails', ['warID' => $id, 'killID' => $killID]);
+        if (!$mdb->exists('crestmails',  ['killID' => $killID, 'hash' => $hash])) {
+            $mdb->insert('crestmails', ['killID' => (int) $killID, 'hash' => $hash, 'processed' => false, 'source' => 'war', 'added' => Mdb::now()]);
+            Util::out("New WARmail $killID");
         }
     }
+    if (sizeof($killmails) > 1999) {
+        $page++;
+        $params['page'] = $page;
+        $baseKmHref = $params['baseKmHref'];
+        $guzzler->call("$baseKmHref?page=$page", "killmailSuccess", "fail", $params, [], 'GET');
+    }
+}
+
+function fail($guzzler, $params, $exception)
+{
+
 }
