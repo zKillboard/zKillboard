@@ -73,8 +73,6 @@ while ($hour == date('H')) {
     $requests = new RedisTtlCounter('ttlc:requests', 300);
     addInfo('Requests in last 5 minutes', $requests->count());
 
-    addInfo('Successful CREST calls in last 5 minutes', Status::getStatus('crest', true), false);
-    addInfo('Failed CREST calls in last 5 minutes', Status::getStatus('crest', false), false);
     addInfo('Successful ESI calls in last 5 minutes', Status::getStatus('esi', true), false);
     addInfo('Failed ESI calls in last 5 minutes', Status::getStatus('esi', false), false);
     addInfo('Successful SSO calls in last 5 minutes', Status::getStatus('sso', true), false);
