@@ -46,7 +46,7 @@ if ($redis->get("tqCountInt") >= 1000) {
         $l = new RedisTtlCounter("ttlc:item:$item:destroyed", 86400 * 7);
         $lSize = $l->count();
         $name = Info::getInfoField("typeID", $item, "name");
-        $price = Price::getItemPrice($item, $date, true);
+        $price = Price::getItemPrice($item, $date);
         $arr[] = ['typeID' => $item, 'name' => $name, 'price' => $price, 'dropped' => $dSize, 'destroyed' => $lSize, 'dV' => ($dSize * $price), 'lV' => ($lSize * $price)];
     }
     $redis->set("zkb:ttlc:items:index", json_encode($arr));

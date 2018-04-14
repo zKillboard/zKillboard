@@ -184,7 +184,7 @@ class Price
 
     protected static function getCrestPrices($typeID)
     {
-        global $mdb, $crestServer;
+        global $mdb, $esiServer;
 
         $marketHistory = $mdb->findDoc('prices', ['typeID' => $typeID]);
         if ($marketHistory === null) {
@@ -192,28 +192,26 @@ class Price
             $mdb->save('prices', $marketHistory);
         }
 
-        $url = "$crestServer/market/10000002/history/?type=$crestServer/inventory/types/$typeID/";
+        $url = "$esiServer/v1/markets/10000002/history/?type_id=$typeID";
         $json = CrestTools::getJSON($url);
 
-        if (is_array($json['items'])) {
-            foreach ($json['items'] as $row) {
-                $avgPrice = $row['avgPrice'];
-                $date = substr($row['date'], 0, 10);
-                if (isset($marketHistory[$date])) {
-                    continue;
-                }
-                $mdb->set('prices', ['typeID' => $typeID], [$date => $avgPrice]);
+        foreach ($json as $row) {
+            $avgPrice = $row['average'];
+            $date = substr($row['date'], 0, 10);
+            if (isset($marketHistory[$date])) {
+                continue;
             }
+            $mdb->set('prices', ['typeID' => $typeID], [$date => $avgPrice]);
         }
-        if (sizeof($json['items']) == 0) {
+        if (sizeof($json) == 0) {
             $key = "zkb:market:" . date('H');
             $market = RedisCache::get($key);
             if ($market == null) {
-                $market = CrestTools::getJSON("$crestServer/market/prices/");
+                $market = CrestTools::getJSON("$esiServer/v1/markets/prices/");
                 RedisCache::set($key, $market, 3600);
             }
             $date = date('Y-m-d');
-            foreach ($market['items'] as $item) {
+            foreach ($market as $item) {
                 if ($item['type']['id'] == $typeID) {
                     $price = @$item['adjustedPrice'];
                     if ($price > 0) $mdb->set('prices', ['typeID' => $typeID], [$date => $price]);
