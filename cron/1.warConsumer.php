@@ -29,9 +29,7 @@ $minute = date('Hi');
 while ($minute == date('Hi')) {
     Status::check('esi');
     $id = $queueWars->pop();
-    if ($id == null) {
-        exit("null\n");
-    }
+    if ($id == null) break;
     $warRow = $mdb->findDoc('information', ['type' => 'warID', 'id' => $id]);
     $params = ['warRow' => $warRow];
     $url = "$esiServer/v1/wars/$id/";
