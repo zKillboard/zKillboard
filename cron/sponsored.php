@@ -14,7 +14,7 @@ foreach ($mails as $mail) {
     $victim['solarSystemID'] = $killmail['system']['solarSystemID'];
     $victim['regionID'] = $killmail['system']['regionID'];
     $victim['itemID'] = @$killmail['zkb']['locationID'];
-    if ($mdb->count("sponsored", ['victim.characterID' => $victim['characterID']]) == 0) {
+    if ($mail['isk'] >= 5000000 && $mdb->count("sponsored", ['victim.characterID' => $victim['characterID']]) == 0) {
         $kill = "https://zkillboard.com/kill/" . $mail['killID'] . "/";
         EveMail::send($victim['characterID'], "Someone loves you!", "Someone has just sponsored one of your killmails on zKillboard:<br/><a href=\"$kill\">$kill</a><br/><br/>Cheers!");
     }
