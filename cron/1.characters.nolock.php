@@ -23,9 +23,9 @@ while ($minute == date('Hi')) {
     Status::checkStatus($guzzler, 'esi');
     Status::checkStatus($guzzler, 'sso');
     Status::throttle('sso', 20);
-    $charID = (int) $esi->next(false);
-    if ($charID > 0) {
-        $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => "esi-killmails.read_killmails.v1"], ['lastFetch' => 1]);
+    $charID = $esi->next(false);
+    if ($charID) {
+        $row = $mdb->findDoc("scopes", ['characterID' => (int) $charID, 'scope' => "esi-killmails.read_killmails.v1"], ['lastFetch' => 1]);
         if ($row != null) {
             $params = ['row' => $row, 'esi' => $esi];
             $refreshToken = $row['refreshToken'];
