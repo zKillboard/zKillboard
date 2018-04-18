@@ -40,7 +40,7 @@ function failCorp(&$guzzler, &$params, &$connectionException)
             $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(86400 * -2)]);
             break;
         default:
-            Util::out("/v4/corporation/ failed for $id with code $code");
+            Util::out("/v4/corporations/ failed for $id with code $code");
     }
 }
 
