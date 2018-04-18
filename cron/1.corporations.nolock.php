@@ -24,14 +24,14 @@ while ($minute == date('Hi')) {
     Status::checkStatus($guzzler, 'esi');
     Status::checkStatus($guzzler, 'sso');
     Status::throttle('sso', 20);
-    $charID = (int) $esi->next();
-    $corpID = Info::getInfoField('characterID', $charID, 'corporationID');
-    if ($charID > 0 && $corpID > 1999999) {
-        $alliID = Info::getInfoField('characterID', $charID, 'allianceID');
+    $charID = $esi->next();
+    $corpID = Info::getInfoField('characterID', (int) $charID, 'corporationID');
+    if ($charID && $corpID > 1999999) {
+        $alliID = Info::getInfoField('characterID', (int) $charID, 'allianceID');
         if (in_array($corpID, $ignoreEntities) || in_array($alliID, $ignoreEntities)) continue;
         $ignoreEntities[] = $corpID;
 
-        $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['lastFetch' => 1]);
+        $row = $mdb->findDoc("scopes", ['characterID' => (int) $charID, 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['lastFetch' => 1]);
         if ($row != null) {
             $refreshToken = $row['refreshToken'];
             $params = ['row' => $row, 'esi' => $esi, 'tokenTime' => time(), 'refreshToken' => $refreshToken];
