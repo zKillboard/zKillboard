@@ -4,6 +4,8 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
+if ($redis->get("zkb:reinforced") == true) exit();
+
 if ($redis->llen("queueProcess") > 100) exit();
 $queueWars = new RedisQueue('queueWars');
 
@@ -48,6 +50,8 @@ function success(&$guzzler, &$params, &$content)
     $war['lastApiUpdate'] = $mdb->now();
     $war['id'] = $id;
     $war['finished'] = false;
+    if (!isset($war['aggressor']['id'])) $war['aggressor']['id'] = isset($war['aggressor']['alliance_id']) ? $war['aggressor']['alliance_id'] : $war['aggressor']['corporation_id'];
+    if (!isset($war['defender']['id'])) $war['defender']['id'] = isset($war['defender']['alliance_id']) ? $war['defender']['alliance_id'] : $war['defender']['corporation_id'];
     $mdb->insertUpdate('information', ['type' => 'warID', 'id' => $id], $war);
 
     $prevKills = @$warRow['agrShipsKilled'] + @$warRow['dfdShipsKilled'];

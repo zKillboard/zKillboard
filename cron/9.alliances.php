@@ -4,6 +4,8 @@ use cvweiss\redistools\RedisTimeQueue;
 
 require_once '../init.php';
 
+if ($redis->get("zkb:reinforced") == true) exit();
+
 $mdb = new Mdb();
 $old = $mdb->now(3600 * 3); // 8 hours
 $queueAllis = new RedisTimeQueue('tqAlliances', 9600);
