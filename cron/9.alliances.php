@@ -72,5 +72,16 @@ function addCorp($id)
 
 function fail($guzzler, $params, $ex)
 {
-    print_r($ex);
+    $code = $ex->getCode();
+    switch ($code) {
+        case 400:
+        case 420:
+        case 500:
+        case 502:
+        case 503:
+            // Ignore
+            break;
+        default:
+            print_r($ex);
+    }
 }
