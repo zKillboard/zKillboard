@@ -222,6 +222,7 @@ class Util
                     $parameters[$key] = $value;
                     break;
                 case 'limit':
+                    throw new Exception("Due to abuse of the limit parameter to avoid caches the ability to modify limit has been revoked for all users");
                     $value = array_shift($split);
                     $value = (int) $value;
                     if ($value > 200 || $value < 1) {
