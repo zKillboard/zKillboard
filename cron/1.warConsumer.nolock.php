@@ -10,22 +10,13 @@ if ($redis->llen("queueProcess") > 100) exit();
 $queueWars = new RedisQueue('queueWars');
 
 if ($queueWars->size() == 0) {
-    $wars = $mdb->getCollection('information')->find(['type' => 'warID'])->sort(['id' => -1]);
+    $wars = $mdb->getCollection('information')->find(['type' => 'warID', 'finished' => false])->sort(['id' => 1]);
     foreach ($wars as $war) {
-        $timeFinished = @$war['timeFinished'];
-        if ($timeFinished != null) {
-            $threeDays = date('Y-m-d', (time() - (86400 * 3)));
-            $warFinished = substr($timeFinished, 0, 10);
-
-            if ($warFinished < $threeDays) {
-                continue;
-            }
-        }
         $queueWars->push($war['id']);
     }
 }
 
-$guzzler = new Guzzler(10);
+$guzzler = new Guzzler(40);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
@@ -52,6 +43,16 @@ function success(&$guzzler, &$params, &$content)
     $war['finished'] = false;
     if (!isset($war['aggressor']['id'])) $war['aggressor']['id'] = isset($war['aggressor']['alliance_id']) ? $war['aggressor']['alliance_id'] : $war['aggressor']['corporation_id'];
     if (!isset($war['defender']['id'])) $war['defender']['id'] = isset($war['defender']['alliance_id']) ? $war['defender']['alliance_id'] : $war['defender']['corporation_id'];
+    if (!isset($war['aggressor']['name'])) {
+        $corpName = isset($war['aggressor']['corporation_id']) ? Info::getInfoField("corporationID", $war['aggressor']['corporation_id'], "name") : "";
+        $alliName = isset($war['aggressor']['alliance_id']) ? Info::getInfoField("allianceID", $war['aggressor']['alliance_id'], "name") : "";
+        $war['aggressor']['name'] = $alliName != "" ? $alliName : $corpName;
+    }
+    if (!isset($war['defender']['name'])) {
+        $corpName = isset($war['defender']['corporation_id']) ? Info::getInfoField("corporationID", $war['defender']['corporation_id'], "name") : "";
+        $alliName = isset($war['defender']['alliance_id']) ? Info::getInfoField("allianceID", $war['defender']['alliance_id'], "name") : "";
+        $war['defender']['name'] = $alliName != "" ? $alliName : $corpName;
+    }
     $mdb->insertUpdate('information', ['type' => 'warID', 'id' => $id], $war);
 
     $prevKills = @$warRow['agrShipsKilled'] + @$warRow['dfdShipsKilled'];
@@ -60,7 +61,7 @@ function success(&$guzzler, &$params, &$content)
     $mdb->set("information", $war, ['agrShipsKilled' => (int) $war['aggressor']['ships_killed'], 'dfdShipsKilled' => (int) $war['defender']['ships_killed']]);
 
     // Don't fetch killmail api for wars with no kill count change
-    if ($prevKills != $currKills || true) {
+    if ($prevKills != $currKills) {
         $baseKmHref = "$esiServer/v1/wars/$id/killmails/";
         $page = floor($mdb->count('warmails', ['warID' => $id]) / 2000);
         if ($page == 0) $page = 1;

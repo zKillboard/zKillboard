@@ -41,13 +41,13 @@ class War
         }
 
         $warInfo['warID'] = $warID;
-        $agr = $warInfo['aggressor']['id'];
+        $agr = isset($warInfo['aggressor']['alliance_id']) ? $warInfo['aggressor']['alliance_id'] : (isset($warInfo['aggressor']['corporation_id']) ? $warInfo['aggressor']['corporation_id'] : $warInfo['aggressor']['id']);
         $agrIsAlliance = self::isAlliance($agr);
         $agrName = $agrIsAlliance ? Info::getInfoField('allianceID', $agr, 'name') : Info::getInfoField('corporationID', $agr, 'name');
         $warInfo['agrName'] = $agrName;
         $warInfo['agrLink'] = ($agrIsAlliance ? '/alliance/' : '/corporation/')."$agr/";
 
-        $dfd = $warInfo['defender']['id'];
+        $dfd = isset($warInfo['defender']['alliance_id']) ? $warInfo['defender']['alliance_id'] : (isset($warInfo['defender']['corporation_id']) ? $warInfo['defender']['corporation_id'] : $warInfo['defender']['id']);
         $dfdIsAlliance = self::isAlliance($dfd);
         $dfdName = $dfdIsAlliance ? Info::getInfoField('allianceID', $dfd, 'name') : Info::getInfoField('corporationID', $dfd, 'name');
         $warInfo['dfdName'] = $dfdName;
