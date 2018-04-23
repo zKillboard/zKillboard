@@ -10,13 +10,15 @@ if ($redis->llen("queueProcess") > 100) exit();
 $queueWars = new RedisQueue('queueWars');
 
 if ($queueWars->size() == 0) {
-    $wars = $mdb->getCollection('information')->find(['type' => 'warID', 'finished' => false])->sort(['id' => 1]);
-    foreach ($wars as $war) {
-        $queueWars->push($war['id']);
+    if ($redis->get("zkb:iterateWars") == false) {
+        $wars = $mdb->getCollection('information')->find(['type' => 'warID', 'finished' => false])->sort(['id' => -1]);
+        foreach ($wars as $war) {
+            $queueWars->push($war['id']);
+        }
     }
 }
 
-$guzzler = new Guzzler(40);
+$guzzler = new Guzzler(10);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
@@ -30,6 +32,10 @@ while ($minute == date('Hi')) {
 }
 $guzzler->finish();
 
+if ($queueWars->size() == 0) {
+    $redis->set("zkb:iterateWars", 3600, true);
+}
+
 function success(&$guzzler, &$params, &$content)
 {
     global $mdb, $esiServer;
@@ -40,7 +46,6 @@ function success(&$guzzler, &$params, &$content)
 
     $war['lastApiUpdate'] = $mdb->now();
     $war['id'] = $id;
-    $war['finished'] = false;
     if (!isset($war['aggressor']['id'])) $war['aggressor']['id'] = isset($war['aggressor']['alliance_id']) ? $war['aggressor']['alliance_id'] : $war['aggressor']['corporation_id'];
     if (!isset($war['defender']['id'])) $war['defender']['id'] = isset($war['defender']['alliance_id']) ? $war['defender']['alliance_id'] : $war['defender']['corporation_id'];
     if (!isset($war['aggressor']['name'])) {
