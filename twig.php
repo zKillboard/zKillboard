@@ -90,8 +90,6 @@ $twig->addGlobal('entityID' , 0);
 $twig->addGlobal('reinforced', $redis->get("zkb:reinforced") == true ? "true" : "false");
 $twig->addGlobal("universeUpdating", $redis->get("zkb:universeLoaded") == "false"? "true" : "false");
 
-$disqus = "true" === UserConfig::get('showDisqus', "true");
-$twig->addGlobal('disqusLoad', $disqus);
 $noAdPages = array('/account/', '/ticket', '/information/', '/post/');
 foreach ($noAdPages as $noAdPage) {
     $showAds &= !Util::startsWith($uri, $noAdPage);
@@ -99,9 +97,6 @@ foreach ($noAdPages as $noAdPage) {
 $showAds &= $userShowAds;
 
 $twig->addglobal('showAnalytics', $showAnalytics);
-if ($disqus) {
-    $twig->addGlobal('disqusShortName', $disqusShortName);
-}
 
 // User's account balance
 $twig->addGlobal('accountBalance', $accountBalance);

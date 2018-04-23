@@ -143,18 +143,6 @@
                 <script type="text/javascript" src="/js/reconnecting-websocket.js"></script>
                 <script type="text/javascript" src="//{{ siteurl }}/js/rankstablesort.js"></script>
 
-		{% if disqusLoad %}
-			<script type="text/javascript">
-				var disqus_shortname = '{{ disqusShortName }}';
-				(function () {
-				var s = document.createElement('script'); s.async = true;
-				s.type = 'text/javascript';
-				s.src = '//' + disqus_shortname + '.disqus.com/count.js';
-				(document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
-				}());
-			</script>
-		{% endif %}
-
 		<script type="text/javascript">
                         $(document).ready(function() {
                             if (navbar) $('#tracker-dropdown').load('/navbar/');

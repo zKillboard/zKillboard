@@ -55,12 +55,6 @@ $cookie_ssl = false;
 $cookie_time = (86400 * 14);
 $cookie_secret = 'zkb-~auto-secret~';
 
-// Disqus
-$disqus = false;
-$disqusShortName = '';
-$disqusSecretKey = '';
-$disqusPublicKey = '';
-
 // Theme / Style and Name
 $killboardName = 'zKillboard';
 $style = 'cyborg';
