@@ -1,5 +1,9 @@
 <?php
 
+use Kevinrob\GuzzleCache\CacheMiddleware;
+use Kevinrob\GuzzleCache\Storage\Psr6CacheStorage;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+
 class Guzzler
 {
     private $curl;
@@ -12,8 +16,15 @@ class Guzzler
 
     public function __construct($maxConcurrent = 10, $usleep = 100000)
     {
+        global $apiCacheLocation;
+
         $this->curl = new \GuzzleHttp\Handler\CurlMultiHandler();
         $this->handler = \GuzzleHttp\HandlerStack::create($this->curl);
+
+        $cache_strategy_class = '\Kevinrob\GuzzleCache\Strategy\PrivateCacheStrategy';
+        $cache_storage = new Psr6CacheStorage(new FilesystemAdapter('', 0, $apiCacheLocation));
+        $this->handler->push(new CacheMiddleware(new $cache_strategy_class ($cache_storage)), 'cache');
+
         $this->client = new \GuzzleHttp\Client(['curl' => [CURLOPT_FRESH_CONNECT => false], 'connect_timeout' => 10, 'timeout' => 60, 'handler' => $this->handler, 'headers' => ['User-Agent' => 'zkillboard.com']]);
         $this->maxConcurrent = max($maxConcurrent, 1);
         $this->usleep = max(0, min(1000000, (int) $usleep));
