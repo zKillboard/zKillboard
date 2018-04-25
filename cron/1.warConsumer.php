@@ -10,15 +10,13 @@ if ($redis->llen("queueProcess") > 100) exit();
 $queueWars = new RedisQueue('queueWars');
 
 if ($queueWars->size() == 0) {
-    if ($redis->get("zkb:iterateWars") == false) {
-        $wars = $mdb->getCollection('information')->find(['type' => 'warID', 'finished' => false])->sort(['id' => -1]);
-        foreach ($wars as $war) {
-            $queueWars->push($war['id']);
-        }
+    $wars = $mdb->getCollection('information')->find(['type' => 'warID', 'finished' => false])->sort(['id' => -1]);
+    foreach ($wars as $war) {
+        $queueWars->push($war['id']);
     }
 }
 
-$guzzler = new Guzzler(10);
+$guzzler = new Guzzler(1);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
@@ -31,10 +29,6 @@ while ($minute == date('Hi')) {
     $guzzler->call($url, "success", "fail", $params, [], 'GET');
 }
 $guzzler->finish();
-
-if ($queueWars->size() == 0) {
-    $redis->set("zkb:iterateWars", 3600, true);
-}
 
 function success(&$guzzler, &$params, &$content)
 {
