@@ -33,7 +33,3 @@ $time = time() - (86400 * 90);
 $mdb->getCollection('tickets')->remove(['dttm' => ['$lte' => $time]]);
 
 $redis->setex($key, 3600, 1);
-
-// Prune the api file cache
-$fileCache = new Symfony\Component\Cache\Adapter\FilesystemAdapter('', 0, $apiCacheLocation);
-$fileCache->prune();

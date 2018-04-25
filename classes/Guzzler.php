@@ -3,6 +3,7 @@
 use Kevinrob\GuzzleCache\CacheMiddleware;
 use Kevinrob\GuzzleCache\Storage\Psr6CacheStorage;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Cache\Adapter\RedisAdapter;
 
 class Guzzler
 {
@@ -16,13 +17,13 @@ class Guzzler
 
     public function __construct($maxConcurrent = 10, $usleep = 100000)
     {
-        global $apiCacheLocation;
+        global $redis;
 
         $this->curl = new \GuzzleHttp\Handler\CurlMultiHandler();
         $this->handler = \GuzzleHttp\HandlerStack::create($this->curl);
 
         $cache_strategy_class = '\Kevinrob\GuzzleCache\Strategy\PrivateCacheStrategy';
-        $cache_storage = new Psr6CacheStorage(new FilesystemAdapter('', 0, $apiCacheLocation));
+        $cache_storage = new Psr6CacheStorage(new RedisAdapter($redis, 'apiCache', 86400));
         $this->handler->push(new CacheMiddleware(new $cache_strategy_class ($cache_storage)), 'cache');
 
         $this->client = new \GuzzleHttp\Client(['curl' => [CURLOPT_FRESH_CONNECT => false], 'connect_timeout' => 10, 'timeout' => 60, 'handler' => $this->handler, 'headers' => ['User-Agent' => 'zkillboard.com']]);
