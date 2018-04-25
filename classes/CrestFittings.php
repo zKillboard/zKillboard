@@ -58,6 +58,7 @@ class CrestFittings
         if ($result['httpCode'] == 201) {
             $mdb->set("scopes", $row, ['lastFetch' => $mdb->now()]);
             return ['message' => "Fit successfully saved to your character's fittings."];
+            Log::log("someone actually saved a fit, wow");
         }
 
         return $result;
