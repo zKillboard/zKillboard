@@ -9,7 +9,10 @@ if ($primePrices != true) exit();
 $date = date('Ymd', time() - 7200);
 $yesterday = date('Y-m-d', time() - 7200 - 86400);
 $key = "tq:pricesChecked:$date";
-if ($redis->get($key) == "true") exit();
+
+// Market region history endpoint is refreshed at 11:05 daily
+// We'll wait a few minutes then start pulling
+if ($redis->get($key) == "true" || date('Hi') < 1115) exit();
 
 Status::check('esi');
 $guzzler = new Guzzler(10, 10);
