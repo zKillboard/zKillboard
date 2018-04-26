@@ -56,11 +56,12 @@ function accessTokenDone(&$guzzler, &$params, $content)
     $row = $params['row'];
 
     $headers = [];
-    $headers[] = 'Content-Type: application/json';
+    $headers['Content-Type'] = 'application/json';
+    $headers['Authorization'] = "Bearer $accessToken";
 
     $charID = $row['characterID'];
     $corpID = Info::getInfoField("characterID", $charID, 'corporationID');
-    $fields = ['token' => $accessToken];
+    $fields = [];
     if (isset($params['max_kill_id'])) {
         $fields['max_kill_id'] = $params['max_kill_id'];
     }

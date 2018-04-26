@@ -60,9 +60,10 @@ function accessTokenDone(&$guzzler, &$params, $content, $cacheIt = true)
     $params['content'] = $content;
 
     $headers = [];
-    $headers[] = 'Content-Type: application/json';
+    $headers['Content-Type'] ='application/json';
+    $headers['Authorization'] = "Bearer $accessToken";
 
-    $fields = ['token' => $accessToken];
+    $fields = [];
     if (isset($params['max_kill_id'])) {
         $fields['max_kill_id'] = $params['max_kill_id'];
     }
