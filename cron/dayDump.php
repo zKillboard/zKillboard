@@ -20,4 +20,5 @@ foreach ($cursor as $row) {
     $redis->sadd("zkb:days", $date);
 }
 
-$redis->set($key, "true");
+// Refresh the history endpoint every few days
+$redis->setex($key, (86400 * 4), "true");
