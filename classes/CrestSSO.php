@@ -134,7 +134,9 @@ class CrestSSO
                 if ($scope == "publicData") continue;
                 $row = ['characterID' => $charID, 'scope' => $scope, 'refreshToken' => $refresh_token];
                 if ($mdb->count("scopes", ['characterID' => $charID, 'scope' => $scope]) == 0) {
-                    $mdb->save("scopes", $row);
+                    try {
+                        $mdb->save("scopes", $row);
+                    } catch (Exception $ex) {}
                 } 
                 switch ($scope) {
                     case 'esi-killmails.read_killmails.v1':
