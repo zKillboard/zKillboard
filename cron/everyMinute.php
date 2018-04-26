@@ -52,7 +52,7 @@ if ($redis->get("tqCountInt") >= 1000) {
     $redis->set("zkb:ttlc:items:index", json_encode($arr));
 }
 
-$i = Mdb::group("payments", ['characterID'], ['refTypeID' => '10', 'dttm' => ['$gte' => $mdb->now(86400 * -7)]], [], 'isk', ['iskSum' => -1, 'dttm' => -1], 10);
+$i = Mdb::group("payments", ['characterID'], ['ref_type' => 'player_donation', 'dttm' => ['$gte' => $mdb->now(86400 * -7)]], [], 'isk', ['iskSum' => -1, 'dttm' => -1], 10);
 Info::addInfo($i);
 $redis->set("zkb:topDonators", json_encode($i));
 
