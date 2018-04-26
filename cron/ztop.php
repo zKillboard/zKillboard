@@ -109,7 +109,7 @@ while ($hour == date('H')) {
     addInfo('Fail AWS A-B', Status::getStatus('abtest-s', false), false);
     $abt = Status::getStatus('abtest', true);
     $abn = Status::getStatus('abtest', false);
-    addInfo('% calls to AWS', number_format(($abt / ($abt + $abn)) * 100), false);
+    addInfo('% calls to AWS', ($abt + $abn == 0 ? 0 : number_format(($abt / ($abt + $abn)) * 100)), false);
 
 
     $info = $redis->info();
