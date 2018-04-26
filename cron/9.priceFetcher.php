@@ -21,6 +21,8 @@ function success($guzzler, $params, $content)
 {
     global $mdb; 
 
+    if ($content == "") return;
+
     $date = date('Y-m-d');
     $json = json_decode($content, true);
     foreach ($json as $segment) {

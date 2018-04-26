@@ -16,7 +16,7 @@ if ($queueWars->size() == 0) {
     }
 }
 
-$guzzler = new Guzzler(1);
+$guzzler = new Guzzler(1, 100000, 3600);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
@@ -33,6 +33,8 @@ $guzzler->finish();
 function success(&$guzzler, &$params, &$content)
 {
     global $mdb, $esiServer;
+
+    if ($content == "") return;
 
     $war = json_decode($content, true);
     $warRow = $params['warRow'];
@@ -74,7 +76,7 @@ function killmailSuccess(&$guzzler, &$params, &$content)
 {
     global $mdb;
 
-    $killmails = json_decode($content, true);
+    $killmails = $content == "" ? [] : json_decode($content, true);
     $warRow = $params['warRow'];
     $id = $warRow['id'];
 

@@ -49,6 +49,8 @@ function fail($guzzler, $params, $ex) {
 }
 
 function success(&$guzzler, &$params, &$content) {
+    if ($content == "") return;
+
     $mdb = $params['mdb'];
     $row = $params['row'];
 

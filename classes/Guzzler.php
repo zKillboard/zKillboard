@@ -1,10 +1,5 @@
 <?php
 
-use Kevinrob\GuzzleCache\CacheMiddleware;
-use Kevinrob\GuzzleCache\Storage\Psr6CacheStorage;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-use Symfony\Component\Cache\Adapter\RedisAdapter;
-
 class Guzzler
 {
     private $curl;
@@ -21,11 +16,6 @@ class Guzzler
 
         $this->curl = new \GuzzleHttp\Handler\CurlMultiHandler();
         $this->handler = \GuzzleHttp\HandlerStack::create($this->curl);
-
-        $cache_strategy_class = '\Kevinrob\GuzzleCache\Strategy\PrivateCacheStrategy';
-        $cache_storage = new Psr6CacheStorage(new RedisAdapter($redis, 'apiCache', 86400));
-        $this->handler->push(new CacheMiddleware(new $cache_strategy_class ($cache_storage)), 'cache');
-
         $this->client = new \GuzzleHttp\Client(['curl' => [CURLOPT_FRESH_CONNECT => false], 'connect_timeout' => 10, 'timeout' => 60, 'handler' => $this->handler, 'headers' => ['User-Agent' => 'zkillboard.com']]);
         $this->maxConcurrent = max($maxConcurrent, 1);
         $this->usleep = max(0, min(1000000, (int) $usleep));
@@ -64,25 +54,32 @@ class Guzzler
 
     public function call($uri, $fulfilled, $rejected, $params = [], $setup = [], $callType = 'GET', $body = null)
     {
+        global $redis;
+
         $this->verifyCallable($fulfilled);
         $this->verifyCallable($rejected);
         $params['uri'] = $uri;
-        $params['callType'] = $callType;
+        $params['callType'] = strtoupper($callType);
 
         $statusType = self::getType($uri);
+
+        $etag = $redis->get("apiCache:$uri");
+        if ($etag && $params['callType'] == 'GET') $setup['If-None-Match'] = $etag;
 
         $guzzler = $this;
         $request = new \GuzzleHttp\Psr7\Request($callType, $uri, $setup, $body);
         $this->client->sendAsync($request)->then(
             function($response) use (&$guzzler, $fulfilled, $rejected, &$params, $statusType) {
+                global $redis;
+
                 $guzzler->dec();
                 $content = (string) $response->getBody();
                 Status::addStatus($statusType, true);
                 $this->lastHeaders = array_change_key_case($response->getHeaders());
                 Status::addStatus('abtest', (isset($this->lastHeaders['x-esi-ab-test'])));
                 if (isset($this->lastHeaders['x-esi-ab-test'])) Status::addStatus('abtest-s', true);
-                //if (isset($this->lastHeaders['x-esi-ab-test'])) Util::out("voluntold " . $params['uri']);
                 if (isset($this->lastHeaders['warning'])) Util::out("Warning: " . $params['uri'] . " " . $this->lastHeaders['warning'][0]);
+                if (isset($this->lastHeaders['etag'])) $redis->setex("apiCache:" . $params['uri'], 86000, $this->lastHeaders['etag'][0]);
 
                 $fulfilled($guzzler, $params, $content);
             },
@@ -94,7 +91,7 @@ class Guzzler
                 if (isset($this->lastHeaders['x-esi-ab-test'])) Status::addStatus('abtest-s', false);
                 $params['content'] = method_exists($connectionException->getResponse(), "getBody") ? (string) $connectionException->getResponse()->getBody() : "";
                 $code = $connectionException->getCode();
-                //Util::out("$code " . $params['uri'] . "\n" . $params['content']);
+
                 $rejected($guzzler, $params, $connectionException);
             });
         $this->inc();

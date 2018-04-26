@@ -46,6 +46,8 @@ function failCorp(&$guzzler, &$params, &$connectionException)
 
 function updateCorp(&$guzzler, &$params, &$content)
 {
+    if ($content == "") return;
+
     $redis = $params['redis'];
     $mdb = $params['mdb'];
     $row = $params['row'];

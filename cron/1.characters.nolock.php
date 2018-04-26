@@ -83,7 +83,7 @@ function success($guzzler, $params, $content)
     $prevMaxKillID = (int) @$row['maxKillID'];
     $minKillID = isset($params['max_kill_id']) ? $params['max_kill_id'] : 9999999999;
 
-    $kills = json_decode($content, true);
+    $kills = $content == "" ? [] : json_decode($content, true);
     foreach ($kills as $kill) {
         $killID = $kill['killmail_id'];
         $hash = $kill['killmail_hash'];

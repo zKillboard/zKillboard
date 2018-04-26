@@ -19,6 +19,8 @@ function success($guzzler, $params, $content)
 {
     global $mdb;
 
+    if ($content == "") return;
+
     $json = json_decode($content, true);
     foreach ($json as $row) {
         $typeID = $row['type_id'];

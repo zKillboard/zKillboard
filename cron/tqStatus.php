@@ -31,6 +31,8 @@ function success($guzzler, $params, $content)
 {
     global $redis;
 
+    if ($content == "") return;
+
     $root = json_decode($content, true);
     $version = $root['server_version'];
     if ($version != null) {

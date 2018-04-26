@@ -27,7 +27,7 @@ function success(&$guzzler, &$params, $content)
 
     $maxWarID = 9999999999;
     $warsAdded = false;
-    $wars = json_decode($content, true);
+    $wars = $content == "" ? [] : json_decode($content, true);
     foreach ($wars as $warID) {
         if (!$mdb->exists('information', ['type' => 'warID', 'id' => (int) $warID])) {
             $mdb->save('information', ['type' => 'warID', 'id' => $warID, 'lastApiUpdate' => new MongoDate(2)]);

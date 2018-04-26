@@ -25,6 +25,7 @@ foreach ($rows as $row) {
 function accessTokenDone(&$guzzler, &$params, $content)
 {
     global $esiServer, $adminCharacter;
+
     $response = json_decode($content, true);
     $accessToken = $response['access_token'];
     $url = "$esiServer/characters/$adminCharacter/wallet/journal/";
@@ -41,6 +42,8 @@ function accessTokenDone(&$guzzler, &$params, $content)
 
 function success(&$guzzler, &$params, $content)
 {
+    if ($content == "") return;
+
     $response = json_decode($content, true);
     insertRecords($response);
     applyBalances();

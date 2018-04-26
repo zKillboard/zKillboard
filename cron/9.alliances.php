@@ -37,6 +37,8 @@ function success(&$guzzler, &$params, $content)
 {
     global $mdb, $esiServer;
 
+    if ($content == "") return;
+
     $alliCrest = json_decode($content, true);
 
     $id = $params['id'];

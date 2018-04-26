@@ -56,6 +56,8 @@ function failChar(&$guzzler, &$params, &$connectionException)
 
 function updateChar(&$guzzler, &$params, &$content)
 {
+    if ($content == "") return;
+
     $redis = $params['redis'];
     $mdb = $params['mdb'];
     $row = $params['row'];
