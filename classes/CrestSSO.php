@@ -129,6 +129,7 @@ class CrestSSO
                 auth_error('Expected at least publicData scope but did not get it.');
             }
             $charID = (int) $response->CharacterID;
+            $charName = isset($response->CharacterName) ? (string) $response->CharacterName : $charID;
             $scopes = split(' ', (string) @$response->Scopes);
             foreach ($scopes as $scope) {
                 if ($scope == "publicData") continue;
@@ -190,7 +191,7 @@ class CrestSSO
             $rtq = new RedisTimeQueue("zkb:characterID", 86400);
             $rtq->add($charID, -1);
 
-            ZLog::add("Logged in: " . (isset($userdetails['name']) ? $userdetails['name'] : $charID), $charID, true);
+            ZLog::add("Logged in: $charName", $charID, true);
             unset($_SESSION['oauth2State']);
 
             $key = "login:$charID:" . session_id();
