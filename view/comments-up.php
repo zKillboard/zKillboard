@@ -2,10 +2,8 @@
 
 global $mdb, $ip, $redis;
 
-if ($redis->get("validUser:$ip") !== "true") return;
-
 $key = "comment:$pageID";
-if ($commentID >= 0 && $commentID < count(Comments::$defaultComments)) {
+if ($commentID >= 0 && $commentID < count(Comments::$defaultComments) && $redis->get("validUser:$ip") == "true") {
     $comment = $mdb->findDoc("comments", ['pageID' => $pageID, 'commentID' => $commentID]);
     if ($comment == null) {
         $comment = ['pageID' => $pageID, 'commentID' => $commentID, 'dttm' => $mdb->now(), 'upvotes' => 0, 'comment' => Comments::$defaultComments[$commentID]];
