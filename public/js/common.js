@@ -62,8 +62,7 @@ function htmlNotify (data)
             setTimeout(function() { notif.close() }, 20000);
             notif.onclick = function () {
                 notif.close();
-                window.focus();
-                window.location = data.url;
+                window.open(data.url).focus();
             };
         }
     }
