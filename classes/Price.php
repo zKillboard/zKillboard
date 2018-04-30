@@ -117,7 +117,6 @@ class Price
             case 11942: // Silver Magnate
             case 33673: // Whiptail
                 return 100000000000; // 100b
-            case 33397: // Chremoas
             case 35779: // Imp
             case 42125: // Vendetta
             case 42246: // Caedes
@@ -127,6 +126,7 @@ class Price
             case 35781: // Fiend
             case 45530: // Virtuoso
                 return 150000000000; // 150b
+            case 33397: // Chremoas
             case 42245: // Rabisu
                 return 200000000000; // 200b
             case 45531: // Victor
