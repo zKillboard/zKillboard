@@ -9,7 +9,7 @@ if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->llen("queueProcess") > 100) exit();
 $queueWars = new RedisQueue('queueWars');
 
-if ($queueWars->size() == 0) {
+if ($queueWars->size() == 0 && $redis->get("zkb:iterateWars") != "true") {
     $wars = $mdb->getCollection('information')->find(['type' => 'warID', 'finished' => false])->sort(['id' => -1]);
     foreach ($wars as $war) {
         $aMemberCount = isset($war['aggressor']['corporation_id']) ? Info::getInfoField("corporationID", $war['aggressor']['corporation_id'], "memberCount") : Info::getInfoField("allianceID", $war['aggressor']['alliance_id'], "memberCount");
@@ -34,6 +34,10 @@ while ($minute == date('Hi')) {
     $guzzler->call($url, "success", "fail", $params, [], 'GET');
 }
 $guzzler->finish();
+
+if ($queueWars->size() == 0 && $redis->get("zkb:iterateWars") != "true") {
+    $redis->setex("zkb:iterateWars", 3600, "true");
+}
 
 function success(&$guzzler, &$params, &$content)
 {
