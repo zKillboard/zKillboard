@@ -12,13 +12,12 @@ if ($redisQServer == null) {
 }
 
 $queueRedisQ = new RedisQueue('queueRedisQ');
-$highKillID = $mdb->findDoc("killmails", [], ['killID' => -1]);
-$maxKillID = $highKillID['killID'] - 1000000;
 
 $minute = date('Hi');
 while (date('Hi') == $minute) {
     $killID = $queueRedisQ->pop();
-    if ($killID == null || $killID < $maxKillID ) {
+    if ($killID == null) {
+        sleep(1);
         continue;
     }
 
