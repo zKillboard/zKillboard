@@ -7,6 +7,7 @@ require_once "../init.php";
 
 $queueApiCheck = new RedisQueue('queueApiCheck');
 $esi = new RedisTimeQueue('tqApiESI', 3600);
+$esiCorp = new RedisTimeQueue('tqCorpApiESI', 3600);
 
 $bumped = [];
 $minute = date('Hi');
@@ -15,7 +16,7 @@ while ($minute == date('Hi')) {
     if ($killID > 0) {
         $killmail = $mdb->findDoc("killmails", ['killID' => $killID]);
 
-        // Only do this fo rrecent killmails
+        // Only do this for recent killmails
         if ($killmail['dttm']->sec < (time() - 3600)) continue;
 
         $involved = $killmail['involved'];
@@ -28,11 +29,11 @@ while ($minute == date('Hi')) {
             $redis->setex("recentKillmailActivity:$corpID", 3600, "true");
 
             if ($lastChecked > 0 && (time() - $lastChecked) > 300 && !in_array($charID, $bumped)) {
-                $esi->setTime($charID, 1);
+                if ($esi->isMember($charID)) $esi->setTime($charID, 1);
                 $bumped[] = $charID;
             }
             if ($lastChecked > 0 && (time() - $lastChecked) > 300 && !in_array($corpID, $bumped)) {
-                $esi->setTime($corpID, 1);
+                if ($esiCorp->isMember($corpID)) $esiCorp->setTime($corpID, 1);
                 $bumped[] = $corpID;
             }
         }
