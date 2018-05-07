@@ -31,11 +31,11 @@ function accessTokenDone(&$guzzler, &$params, $content)
     $url = "$esiServer/characters/$adminCharacter/wallet/journal/";
 
     $params['content'] = $content;
-    $headers = ['Content-Type: application/json'];
+    $headers = [];
+    $headers['Content-Type'] = 'application/json';
+    $headers['Authorization'] = "Bearer $accessToken";
 
-    $fields = ['token' => $accessToken];
-    $fields = ESI::buildparams($fields);
-    $url = "$esiServer/v3/characters/$adminCharacter/wallet/journal/?$fields";
+    $url = "$esiServer/v4/characters/$adminCharacter/wallet/journal/";
 
     $guzzler->call($url, "success", "fail", $params, $headers, 'GET');
 }
@@ -116,10 +116,10 @@ function insertRecords($records)
         if ($record['amount'] < 0) {
             continue;
         }
-        if ($mdb->count('payments', ['refID' => (string) $record['ref_id']]) > 0) {
+        if ($mdb->count('payments', ['refID' => (string) $record['id']]) > 0) {
             continue;
         }
-        $record['refID'] = (string) $record['ref_id'];
+        $record['refID'] = (string) $record['id'];
         $record['esi'] = true;
         $record['refTypeID'] = $record['ref_type'] == 'player_donation' ? 10 : 0;
         $record['ownerID1'] = $record['first_party_id'];
