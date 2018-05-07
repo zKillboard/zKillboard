@@ -76,10 +76,10 @@ class Guzzler
                 $content = (string) $response->getBody();
                 Status::addStatus($statusType, true);
                 $this->lastHeaders = array_change_key_case($response->getHeaders());
-                Status::addStatus('abtest', (isset($this->lastHeaders['x-esi-ab-test'])));
-                if (isset($this->lastHeaders['x-esi-ab-test'])) Status::addStatus('abtest-s', true);
                 if (isset($this->lastHeaders['warning'])) Util::out("Warning: " . $params['uri'] . " " . $this->lastHeaders['warning'][0]);
-                if (isset($this->lastHeaders['etag'])) $redis->setex("apiCache:" . $params['uri'], 86000, $this->lastHeaders['etag'][0]);
+                if (isset($this->lastHeaders['etag'])) $redis->setex("apiCache:" . $params['uri'], (86400 * 7), $this->lastHeaders['etag'][0]);
+                $code = $response->getStatusCode();
+                Status::addStatus("cached304", ($response->getStatusCode() == 304));
 
                 $fulfilled($guzzler, $params, $content);
             },
@@ -88,7 +88,6 @@ class Guzzler
                 Status::addStatus($statusType, false);
                 $response = $connectionException->getResponse();
                 $this->lastHeaders = $response == null ? [] : array_change_key_case($response->getHeaders());
-                if (isset($this->lastHeaders['x-esi-ab-test'])) Status::addStatus('abtest-s', false);
                 $params['content'] = method_exists($connectionException->getResponse(), "getBody") ? (string) $connectionException->getResponse()->getBody() : "";
                 $code = $connectionException->getCode();
 

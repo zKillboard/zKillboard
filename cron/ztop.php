@@ -101,16 +101,12 @@ while ($hour == date('H')) {
     addInfo('Wallet Balance', $balance, false, false);
 
     addInfo('', 0, false);
-    addInfo('Load Counter', $redis->get("zkb:load"), false);
-    addinfo("Reinforced Mode", (int) $redis->get("zkb:reinforced"), false);
+    addInfo('Outbound API Requests Cached', Status::getStatus('cached304', true), false);
+    addInfo('Outbound API Requests Not Cached', Status::getStatus('cached304', false), false);
 
     addInfo('', 0, false);
-    addInfo('Success AWS A-B', Status::getStatus('abtest-s', true), false);
-    addInfo('Fail AWS A-B', Status::getStatus('abtest-s', false), false);
-    $abt = Status::getStatus('abtest', true);
-    $abn = Status::getStatus('abtest', false);
-    addInfo('% calls to AWS', ($abt + $abn == 0 ? 0 : number_format(($abt / ($abt + $abn)) * 100)), false);
-
+    addInfo('Load Counter', $redis->get("zkb:load"), false);
+    addinfo("Reinforced Mode", (int) $redis->get("zkb:reinforced"), false);
 
     $info = $redis->info();
     $mem = $info['used_memory_human'];
