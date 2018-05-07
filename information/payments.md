@@ -31,6 +31,9 @@ To make a payment:
 - Killmail sponsorships expire after 7 days.
 - Multiple sponsorships on the same killmail each have their own 7 day expiration.
 - An alltime sponsorship total is kept for individual killmails and can be viewed on the page of that killmail.
-
+</span>
+<span class='pull-left'>
+<h4>How to sponsor a killmail:</h4>
+<img src='/img/how2sponsor.png' />
 </span>
 
