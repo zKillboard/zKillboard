@@ -12,16 +12,16 @@ $queueWars = new RedisQueue('queueWars');
 if ($queueWars->size() == 0 && $redis->get("zkb:iterateWars") != "true") {
     $wars = $mdb->getCollection('information')->find(['type' => 'warID', 'finished' => false])->sort(['id' => -1]);
     foreach ($wars as $war) {
-        $aMemberCount = isset($war['aggressor']['corporation_id']) ? Info::getInfoField("corporationID", $war['aggressor']['corporation_id'], "memberCount") : Info::getInfoField("allianceID", $war['aggressor']['alliance_id'], "memberCount");
+/*        $aMemberCount = isset($war['aggressor']['corporation_id']) ? Info::getInfoField("corporationID", $war['aggressor']['corporation_id'], "memberCount") : Info::getInfoField("allianceID", $war['aggressor']['alliance_id'], "memberCount");
         $dMemberCount = isset($war['defender']['corporation_id']) ? Info::getInfoField("corporationID", $war['defender']['corporation_id'], "memberCount") : Info::getInfoField("allianceID", $war['defender']['alliance_id'], "memberCount");
         if ($aMemberCount == 0 || $dMemberCount == 0) {
             continue;
-        }
+        }*/
         $queueWars->push($war['id']);
     }
 }
 
-$guzzler = new Guzzler(1, 100000, 3600);
+$guzzler = new Guzzler();
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
