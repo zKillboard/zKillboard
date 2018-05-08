@@ -77,18 +77,21 @@ class Guzzler
                 Status::addStatus($statusType, true);
                 $this->lastHeaders = array_change_key_case($response->getHeaders());
                 if (isset($this->lastHeaders['warning'])) Util::out("Warning: " . $params['uri'] . " " . $this->lastHeaders['warning'][0]);
-                if (isset($this->lastHeaders['etag'])) $redis->hset("zkb:etags", $params['uri'], $this->lastHeaders['etag'][0]);
+                if (isset($this->lastHeaders['etag']) && strlen($content) > 0) $redis->hset("zkb:etags", $params['uri'], $this->lastHeaders['etag'][0]);
                 Status::addStatus("cached304", ($response->getStatusCode() == 304));
 
                 $fulfilled($guzzler, $params, $content);
             },
             function($connectionException) use (&$guzzler, &$rejected, &$params, $statusType) {
+                global $redis;
+
                 $guzzler->dec();
                 Status::addStatus($statusType, false);
                 $response = $connectionException->getResponse();
                 $this->lastHeaders = $response == null ? [] : array_change_key_case($response->getHeaders());
                 $params['content'] = method_exists($connectionException->getResponse(), "getBody") ? (string) $connectionException->getResponse()->getBody() : "";
                 $code = $connectionException->getCode();
+                $redis->hdel("zkb:etags", $params['uri']);
 
                 $rejected($guzzler, $params, $connectionException);
             });
