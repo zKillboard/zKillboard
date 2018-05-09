@@ -6,6 +6,6 @@ class Comments
     public static $defaultComments = ['DUNKED', 'another one', 'nothing of value was lost', 
                                         'memed', 'baited on a free ____', 'it would have lived if it were a shield super', 'RMT', 'wrong rigs', 'WTF?',
                                         '🎺 ', 'meh', 'already replaced',
-                                        'loot fairy said no', 'press F to pay respects',
+                                        'loot fairy said no', 'press F to pay respects', '(Ingame)',
                                     ];
 }
