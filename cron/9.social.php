@@ -53,10 +53,10 @@ function beSocial($killID)
 function adjustMessage($name, $message)
 {
     $newMessage = "$name $message #tweetfleet #eveonline";
-    $message = (strlen($newMessage) <= 140) ? $newMessage : $message;
+    $message = (strlen($newMessage) <= 260) ? $newMessage : $message;
 
-    $message = strlen($message) > 120 ? str_replace(' worth ', ': ', $message) : $message;
-    $message = strlen($message) > 120 ? str_replace(' was destroyed!', '', $message) : $message;
+    $message = strlen($message) > 260 ? str_replace(' worth ', ': ', $message) : $message;
+    $message = strlen($message) > 260 ? str_replace(' was destroyed!', '', $message) : $message;
 
     return $message;
 }
