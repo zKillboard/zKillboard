@@ -54,17 +54,18 @@ class Guzzler
 
     public function call($uri, $fulfilled, $rejected, $params = [], $setup = [], $callType = 'GET', $body = null)
     {
-        global $redis;
+        global $redis, $debug;
 
         $this->verifyCallable($fulfilled);
         $this->verifyCallable($rejected);
         $params['uri'] = $uri;
         $params['callType'] = strtoupper($callType);
+if ($debug) Log::log("$callType $uri");
 
         $statusType = self::getType($uri);
 
         $etag = $redis->hget("zkb:etags", $uri);
-        if ($etag && $params['callType'] == 'GET') $setup['If-None-Match'] = $etag;
+        //if ($etag && $params['callType'] == 'GET') $setup['If-None-Match'] = $etag;
 
         $guzzler = $this;
         $request = new \GuzzleHttp\Psr7\Request($callType, $uri, $setup, $body);
@@ -77,7 +78,7 @@ class Guzzler
                 Status::addStatus($statusType, true);
                 $this->lastHeaders = array_change_key_case($response->getHeaders());
                 if (isset($this->lastHeaders['warning'])) Util::out("Warning: " . $params['uri'] . " " . $this->lastHeaders['warning'][0]);
-                if (isset($this->lastHeaders['etag']) && strlen($content) > 0) $redis->hset("zkb:etags", $params['uri'], $this->lastHeaders['etag'][0]);
+                //if (isset($this->lastHeaders['etag']) && strlen($content) > 0) $redis->hset("zkb:etags", $params['uri'], $this->lastHeaders['etag'][0]);
                 Status::addStatus("cached304", ($response->getStatusCode() == 304));
 
                 $fulfilled($guzzler, $params, $content);
@@ -115,6 +116,7 @@ class Guzzler
         if (strpos($uri, 'crest-tq') !== false) return 'crest';
         if (strpos($uri, 'login') !== false) return 'sso';
         if (strpos($uri, 'api.eve') !== false) return 'xml';
+        if (strpos($uri, 'evewho') !== false) return 'evewho';
         Log::log("Unknown type for $uri");
         return 'unknown';
     }
