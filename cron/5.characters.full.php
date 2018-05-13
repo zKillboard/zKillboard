@@ -6,40 +6,23 @@ require_once "../init.php";
 
 if ($redis->get("zkb:reinforced") == true) exit();
 
-$esi = new RedisTimeQueue('tqApiESI', 3600);
-if (date('i') == 22 || $esi->size() < 100) {
-    $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_killmails.v1']);
-    foreach ($esis as $row) {
-        $charID = $row['characterID'];
-        $esi->add($charID);
-    }
-}
-if ($esi->size() == 0) exit();
+$guzzler = new Guzzler(10);
 
-$guzzler = new Guzzler($esiCharKillmails, 1000);
+//$mdb->removeField("scopes", ['iterated' => 'in progress'], "iterated");
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     Status::checkStatus($guzzler, 'esi');
     Status::checkStatus($guzzler, 'sso');
     Status::throttle('sso', 20);
-    $charID = $esi->next(false);
-    if ($charID) {
-        $row = $mdb->findDoc("scopes", ['characterID' => (int) $charID, 'scope' => "esi-killmails.read_killmails.v1"], ['lastFetch' => 1]);
-        if ($row != null) {
-            $params = ['row' => $row, 'esi' => $esi];
-            $refreshToken = $row['refreshToken'];
-            $content = $redis->get("auth:$charID:$refreshToken");
-            if ($content !== false) {
-                accessTokenDone($guzzler, $params, $content, false);
-                continue;
-            }
+    $row = $mdb->findDoc("scopes", ['scope' => "esi-killmails.read_killmails.v1", 'iterated' => ['$exists' => false]], ['_id' => -1]);
+    if ($row == null) break;
 
-            CrestSSO::getAccessTokenCallback($guzzler, $refreshToken, "accessTokenDone", "accessTokenFail", $params);
-        } else {
-            $esi->remove($charID);
-        }
-    } else $guzzler->tick();
+    $params = ['row' => $row];
+    $mdb->set("scopes", $row, ['iterated' => 'in progress']);
+    $refreshToken = $row['refreshToken'];
+    CrestSSO::getAccessTokenCallback($guzzler, $refreshToken, "accessTokenDone", "accessTokenFail", $params);
+    $guzzler->tick();
 }
 $guzzler->finish();
 
@@ -69,7 +52,6 @@ function accessTokenDone(&$guzzler, &$params, $content, $cacheIt = true)
     }
     $fields = ESI::buildparams($fields);
     $url = "$esiServer/v1/characters/$charID/killmails/recent/?$fields";
-
     $guzzler->call($url, "success", "fail", $params, $headers, 'GET');
 }
 
@@ -94,36 +76,28 @@ function success($guzzler, $params, $content)
         $newKills += addMail($killID, $hash);
     }
 
-    $charID = $row['characterID'];
-    $corpID = (int) Info::getInfoField("characterID", $charID, 'corporationID');
-    $successes = (int) @$row['successes'];
-    $successes++;
-    $mdb->set("scopes", $row, ['maxKillID' => $maxKillID, 'corporationID' => $corpID, 'lastFetch' => $mdb->now(), 'errorCount' => 0, 'successes' => $successes]);
-    $mdb->set("scopes", ['characterID' => $charID], ['corporationID' => $corpID]);
-    $redis->setex("apiVerified:$charID", 86400, time());
+    if (sizeof($kills)) {
+        $params['newKills'] = $newKills;
+        $params['max_kill_id'] = $minKillID;
+        $params['maxKillID'] = $maxKillID;
 
-    // Check active chars once an hour, check inactive chars less often
-    $esi = new RedisTimeQueue('tqApiESI', 3600);
-    $name = Info::getInfoField('characterID', $charID, 'name');
-    $topKillID = $redis->get('zkb:topKillID');
-    if ($maxKillID < ($topKillID - 1000000)) {
-        $numHours = min(23, ceil(($topKillID - $maxKillID) / 1000000) + 1);
-        $esi->setTime($charID, time() + (3600 * $numHours));
+        accessTokenDone($guzzler, $params, $params['content']);
     } else {
-        if ($redis->get("recentKillmailActivity:$charID") == "true") {
-            // They got a kill in the last 2 hours, check them again as soon as their cache has expired
-            $headers = $guzzler->getLastHeaders();
-            $expires = $headers['expires'];
-            $time = strtotime($expires[0]);
-            if ($expires > time()) $esi->setTime($charID, $time + 10);
-        }
-    }
+        $charID = $row['characterID'];
 
-    if ($newKills > 0) {
-        if ($name === null) $name = $charID;
-        while (strlen("$newKills") < 3) $newKills = " " . $newKills;
-        ZLog::add("$newKills kills added by char $name", $charID);
-        if ($newKills >= 10) User::sendMessage("$newKills kills added for char $name", $charID);
+        $corpID = (int) Info::getInfoField("characterID", $charID, 'corporationID');
+        $successes = (int) @$row['successes'];
+        $successes++;
+        $mdb->set("scopes", $row, ['iterated' => true, 'maxKillID' => $maxKillID, 'corporationID' => $corpID, 'lastFetch' => $mdb->now(), 'errorCount' => 0, 'successes' => $successes]);
+        $mdb->set("scopes", ['characterID' => $charID], ['corporationID' => $corpID]);
+
+        if ($newKills > 0) {
+            $name = Info::getInfoField('characterID', $charID, 'name');
+            if ($name === null) $name = $charID;
+            while (strlen("$newKills") < 3) $newKills = " " . $newKills;
+            ZLog::add("Iterated: $newKills kills added by char $name", $charID);
+            if ($newKills >= 10) User::sendMessage("$newKills kills added for char $name", $charID);
+        }
     }
 }
 
@@ -148,7 +122,6 @@ function fail($guzzer, $params, $ex)
     global $mdb;
 
     $row = $params['row'];
-    $esi = $params['esi'];
     $charID = $row['characterID'];
     $code = $ex->getCode();
 
@@ -163,7 +136,6 @@ function fail($guzzer, $params, $ex)
         case 503:
         case 504: // gateway timeout
         case "": // typically a curl timeout error
-            $esi->setTime($charID, time() + 30);
             break;
         case 403: // Server decided to throw a 403 during SSO authentication when that throws a 502...
         default:

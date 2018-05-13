@@ -33,7 +33,7 @@ while ($minute == date('Hi')) {
                 $bumped[] = $charID;
             }
             if ($lastChecked > 0 && (time() - $lastChecked) > 300 && !in_array($corpID, $bumped)) {
-                if ($esiCorp->isMember($corpID)) $esiCorp->setTime($corpID, 1);
+                if ($esiCorp->isMember($charID)) $esiCorp->setTime($charID, 1);
                 $bumped[] = $corpID;
             }
         }
