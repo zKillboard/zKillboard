@@ -5,7 +5,7 @@ use cvweiss\redistools\RedisTimeQueue;
 require_once '../init.php';
 
 if ($redis->get("zkb:reinforced") == true) exit();
-$guzzler = new Guzzler(10, 1);
+$guzzler = new Guzzler(15);
 $chars = new RedisTimeQueue("zkb:characterID", 86400);
 $maxKillID = $mdb->findField("killmails", "killID", [], ['killID' => -1]) - 5000000;
 
@@ -25,9 +25,11 @@ while ($minute == date('Hi')) {
         $url = "$esiServer/v4/characters/$id/";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row, 'rtq' => $chars];
         $guzzler->call($url, "updateChar", "failChar", $params);
+        $guzzler->call("https://evewho.com/add.php?id=$id", "ew_ignore", "ew_ignore");
         if (Status::getStatus('esi', false) > 200) sleep(1);
     }
-    else $guzzler->tick();
+    $guzzler->tick();
+    if ($id == 0) sleep(1);
 }      
 $guzzler->finish();
 
@@ -91,4 +93,9 @@ function compareAttributes(&$updates, $key, $oAttr, $nAttr) {
     if ($oAttr !== $nAttr) {
         $updates[$key] = $nAttr;
     }
+}
+
+function ew_ignore($guzzler, $params, $content)
+{
+    if (strlen($content) > 0) Util::out($content);
 }
