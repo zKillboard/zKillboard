@@ -2,7 +2,7 @@
 <hr/>
 
 <span class="pull-left" style="width: 130px;"><center>
-<a href="/character/93382481/"><img src="https://image.eveonline.com/Character/93382481_128.jpg" alt="zKillboard" style="width: 128px; height: 128px"></a>
+<a href="/character/93382481/"><img src="https://imageserver.eveonline.com/Character/93382481_128.jpg" alt="zKillboard" style="width: 128px; height: 128px"></a>
 <br/>
 <img src="/img/golden-wreck.png" rel="tooptip" tooltip="This icon will show under your character">
 </center>
