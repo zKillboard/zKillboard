@@ -126,9 +126,14 @@ while ($hour == date('H')) {
         }
     }
 
-    $cpu = exec("top -d 0.5 -b -n2 | grep \"Cpu(s)\"| tail -n 1 | awk '{print $2 + $4}'");
+    $cpu = str_pad(exec("top -d 0.5 -b -n2 | grep \"Cpu(s)\"| tail -n 1 | awk '{print $2 + $4}'"), 5, " ", STR_PAD_LEFT);
     $output = [];
-    $output[] = exec('date')." CPU: $cpu% Load: ".Load::getLoad()."  Memory: ${memUsed}G/${memTotal}G  Redis: $mem  TokuDB: ${storageSize}G / ${dataSize}G\n";
+    $load = str_pad(Load::getLoad(), 5, " ", STR_PAD_LEFT);
+    $memUsed = str_pad($memUsed, 5, " ", STR_PAD_LEFT);
+    $memTotal = str_pad($memTotal, 5, " ", STR_PAD_LEFT);
+    $storageSize = str_pad($storageSize, 5, " ", STR_PAD_LEFT);
+    $dataSize = str_pad($dataSize, 5, " ", STR_PAD_LEFT);
+    $output[] = exec('date')." CPU: $cpu% Load: $load  Memory: ${memUsed}G/${memTotal}G  Redis: $mem  TokuDB: ${storageSize}G/${dataSize}G\n";
     $redis->setex("zkb:memused", 300, $memUsed);
 
     $leftCount = 1;
