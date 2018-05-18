@@ -8,7 +8,7 @@ if ($redis->get("zkb:reinforced") == true) exit();
 
 $guzzler = new Guzzler(10);
 
-//$mdb->removeField("scopes", ['iterated' => 'in progress'], "iterated");
+$mdb->removeField("scopes", ['iterated' => 'in progress'], "iterated");
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {

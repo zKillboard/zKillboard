@@ -60,12 +60,14 @@ class Guzzler
         $this->verifyCallable($rejected);
         $params['uri'] = $uri;
         $params['callType'] = strtoupper($callType);
-if ($debug) Log::log("$callType $uri");
 
         $statusType = self::getType($uri);
 
-        $etag = $redis->hget("zkb:etags", $uri);
-        //if ($etag && $params['callType'] == 'GET') $setup['If-None-Match'] = $etag;
+        if (@$setup['etag'] == true && $params['callType'] == 'GET') {
+            $etag = $redis->get("zkb:etags:$uri");
+            if ($etag != "") $setup['If-None-Match'] = $etag;
+            unset($setup['etag']);
+        }
 
         $guzzler = $this;
         $request = new \GuzzleHttp\Psr7\Request($callType, $uri, $setup, $body);
@@ -78,7 +80,7 @@ if ($debug) Log::log("$callType $uri");
                 Status::addStatus($statusType, true);
                 $this->lastHeaders = array_change_key_case($response->getHeaders());
                 if (isset($this->lastHeaders['warning'])) Util::out("Warning: " . $params['uri'] . " " . $this->lastHeaders['warning'][0]);
-                //if (isset($this->lastHeaders['etag']) && strlen($content) > 0) $redis->hset("zkb:etags", $params['uri'], $this->lastHeaders['etag'][0]);
+                if (isset($this->lastHeaders['etag']) && strlen($content) > 0) $redis->setex("zkb:etags:" . $params['uri'], 604800, $this->lastHeaders['etag'][0]);
                 Status::addStatus("cached304", ($response->getStatusCode() == 304));
 
                 $fulfilled($guzzler, $params, $content);
@@ -92,14 +94,12 @@ if ($debug) Log::log("$callType $uri");
                 $this->lastHeaders = $response == null ? [] : array_change_key_case($response->getHeaders());
                 $params['content'] = method_exists($connectionException->getResponse(), "getBody") ? (string) $connectionException->getResponse()->getBody() : "";
                 $code = $connectionException->getCode();
-                $redis->hdel("zkb:etags", $params['uri']);
+                $redis->del("zkb:etags:" . $params['uri']);
 
                 $rejected($guzzler, $params, $connectionException);
             });
         $this->inc();
-        $ms = $this->tick();
-        $sleep = min(1000000, max(0, $this->usleep - $ms));
-        usleep($sleep);
+        while ($this->concurrent >= $this->maxConcurrent) $this->tick();
     }
 
     public function verifyCallable($callable)

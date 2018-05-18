@@ -8,9 +8,9 @@ global $debug;
 $debug = false;
 
 if ($redis->get("zkb:reinforced") == true) exit();
-$guzzler = new Guzzler($esiCorpKillmails, 1000);
+$guzzler = new Guzzler($esiCorpKillmails, 500);
 
-$esi = new RedisTimeQueue('tqCorpApiESI', 3601);
+$esi = new RedisTimeQueue('tqCorpApiESI', 3600);
 if (date('i') == 22 || $esi->size() < 100) {
     $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_corporation_killmails.v1']);
     foreach ($esis as $row) {
@@ -30,7 +30,7 @@ $minute = date('Hi');
 while ($minute == date('Hi')) {
     Status::checkStatus($guzzler, 'esi');
     Status::checkStatus($guzzler, 'sso');
-    Status::throttle('sso', 20);
+    Status::throttle('sso', 40);
     $charID = $esi->next();
     $corpID = Info::getInfoField('characterID', (int) $charID, 'corporationID');
     if ($charID && $corpID > 1999999) {
@@ -73,16 +73,12 @@ function accessTokenDone(&$guzzler, &$params, $content)
     $headers = [];
     $headers['Content-Type'] = 'application/json';
     $headers['Authorization'] = "Bearer $accessToken";
+    $headers['etag'] = true;
 
     $charID = $row['characterID'];
     $corpID = Info::getInfoField("characterID", $charID, 'corporationID');
-    $fields = [];
-    if (isset($params['max_kill_id'])) {
-        $fields['max_kill_id'] = $params['max_kill_id'];
-    }
-    $fields = ESI::buildparams($fields);
-    if (strlen($fields)) $fields = "?$fields";
-    $url = "$esiServer/v1/corporations/$corpID/killmails/recent/$fields";
+
+    $url = "$esiServer/v1/corporations/$corpID/killmails/recent/";
     $guzzler->call($url, "success", "fail", $params, $headers, 'GET');
 }
 
@@ -94,7 +90,6 @@ function success($guzzler, $params, $content)
     $maxKillID = (int) @$params['maxKillID'];
     $row = $params['row'];
     $prevMaxKillID = $mdb->findField("scopes", "maxKillID", ['corporationID' => (int) $row['corporationID'], 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['maxKillID' => -1]);
-    $minKillID = isset($params['max_kill_id']) ? $params['max_kill_id'] : 9999999999;
     $esi = $params['esi'];
 
     $kills = $content == "" ? [] : json_decode($content, true);
@@ -102,7 +97,6 @@ function success($guzzler, $params, $content)
         $killID = $kill['killmail_id'];
         $hash = $kill['killmail_hash'];
 
-        $minKillID = min($killID, $minKillID);
         $maxKillID = max($killID, $maxKillID);
 
         $newKills += addMail($killID, $hash);

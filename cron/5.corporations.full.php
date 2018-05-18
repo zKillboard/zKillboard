@@ -8,6 +8,8 @@ global $debug;
 
 if ($redis->get("zkb:reinforced") == true) exit();
 
+$mdb->removeField("scopes", ['iterated' => 'in progress'], "iterated");
+
 $guzzler = new Guzzler(10);
 
 $minute = date('Hi');
@@ -16,7 +18,7 @@ while ($minute == date('Hi')) {
     Status::checkStatus($guzzler, 'sso');
     Status::throttle('sso', 20);
 
-    $row = $mdb->findDoc("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'iterated' => ['$exists' => false], 'corporationID' => ['$gt' => 1999999]], ['_id' => -1]);
+    $row = $mdb->findDoc("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'iterated' => ['$exists' => false], 'corporationID' => ['$gt' => 1999999], 'successes' => ['$gt' => 0]], ['_id' => -1]);
     if ($row == null) break;
 
     $charID = $row['characterID'];
@@ -105,7 +107,7 @@ function success($guzzler, $params, $content)
             if ($name === null) $name = $charID;
             while (strlen("$newKills") < 3) $newKills = " " . $newKills;
             Util::out("Iterated: $newKills kills added by corp $corpName");
-            //if ($newKills >= 10) User::sendMessage("$newKills kills added for corp $corpName", $charID);
+            if ($newKills >= 10) User::sendMessage("$newKills kills added for corp $corpName", $charID);
         }
     }
 }
@@ -128,44 +130,6 @@ function addMail($killID, $hash)
 
 function fail($guzzer, $params, $ex) 
 {
-    global $mdb, $redis;
-
-    $row = $params['row'];
-    $charID = $row['characterID'];
-    Util::out("$charID " . $ex->getMessage());
-    sleep(1);
-
-    $code = $ex->getCode();
-
-    $json = json_decode($params['content'], true);
-    $code = isset($json['sso_status']) ? $json['sso_status'] : $code;
-    $corpID = Info::getInfoField('characterID', (int) $charID, 'corporationID');
-    $redis->del("zkb:corpInProgress:$corpID");
-
-    if (@$json['error'] == 'invalid_grant' || @$json['error'] == "Character does not have required role(s)" || @$json['error'] == 'invalid_token') {
-        $mdb->remove("scopes", $row);
-        return;
-    }
-    if (@$json['error'] == "Character is not in the corporation") {
-        $mdb->removeField("scopes", $row, "corporationID");
-        $mdb->removeField("information", ['type' => 'characterID', 'id' => $charID], "corporationID");
-        $chars = new RedisTimeQueue("zkb:characterID", 86400);
-        $chars->setTime($charID, 0);
-        return;
-    }
-
-    switch ($code) {
-        case 403:
-        case 420:
-        case 500:
-        case 502: // Server error, try again in 5 minutes
-        case 503: // gateway timeout
-        case 504:
-        case "": // typically a curl timeout error
-            break;
-        default:
-            Util::out("corp killmail: " . $ex->getMessage() . "\n" . $params['content']);
-    }
 }
 
 function accessTokenFail(&$guzzler, &$params, $ex)

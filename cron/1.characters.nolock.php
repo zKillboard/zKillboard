@@ -16,13 +16,13 @@ if (date('i') == 22 || $esi->size() < 100) {
 }
 if ($esi->size() == 0) exit();
 
-$guzzler = new Guzzler($esiCharKillmails, 1000);
+$guzzler = new Guzzler($esiCharKillmails, 500);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     Status::checkStatus($guzzler, 'esi');
     Status::checkStatus($guzzler, 'sso');
-    Status::throttle('sso', 20);
+    Status::throttle('sso', 40);
     $charID = $esi->next(false);
     if ($charID) {
         $row = $mdb->findDoc("scopes", ['characterID' => (int) $charID, 'scope' => "esi-killmails.read_killmails.v1"], ['lastFetch' => 1]);
@@ -62,14 +62,9 @@ function accessTokenDone(&$guzzler, &$params, $content, $cacheIt = true)
     $headers = [];
     $headers['Content-Type'] ='application/json';
     $headers['Authorization'] = "Bearer $accessToken";
+    $headers['etag'] = true;
 
-    $fields = [];
-    if (isset($params['max_kill_id'])) {
-        $fields['max_kill_id'] = $params['max_kill_id'];
-    }
-    $fields = ESI::buildparams($fields);
-    $url = "$esiServer/v1/characters/$charID/killmails/recent/?$fields";
-
+    $url = "$esiServer/v1/characters/$charID/killmails/recent/";
     $guzzler->call($url, "success", "fail", $params, $headers, 'GET');
 }
 
@@ -81,14 +76,12 @@ function success($guzzler, $params, $content)
     $maxKillID = (int) @$params['maxKillID'];
     $row = $params['row'];
     $prevMaxKillID = (int) @$row['maxKillID'];
-    $minKillID = isset($params['max_kill_id']) ? $params['max_kill_id'] : 9999999999;
 
     $kills = $content == "" ? [] : json_decode($content, true);
     foreach ($kills as $kill) {
         $killID = $kill['killmail_id'];
         $hash = $kill['killmail_hash'];
 
-        $minKillID = min($killID, $minKillID);
         $maxKillID = max($killID, $maxKillID);
 
         $newKills += addMail($killID, $hash);
@@ -98,7 +91,10 @@ function success($guzzler, $params, $content)
     $corpID = (int) Info::getInfoField("characterID", $charID, 'corporationID');
     $successes = (int) @$row['successes'];
     $successes++;
-    $mdb->set("scopes", $row, ['maxKillID' => $maxKillID, 'corporationID' => $corpID, 'lastFetch' => $mdb->now(), 'errorCount' => 0, 'successes' => $successes]);
+
+    $modifiers = ['maxKillID' => $maxKillID, 'corporationID' => $corpID, 'lastFetch' => $mdb->now(), 'errorCount' => 0, 'successes' => $successes];
+    if (!isset($row['added'])) $modifiers['added'] = time(); // Start recording when we first tracked the scope
+    $mdb->set("scopes", $row, $modifiers); 
     $mdb->set("scopes", ['characterID' => $charID], ['corporationID' => $corpID]);
     $redis->setex("apiVerified:$charID", 86400, time());
 

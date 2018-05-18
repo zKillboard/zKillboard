@@ -18,7 +18,7 @@ while ($minute == date('Hi')) {
 
         $url = "$esiServer/v4/corporations/$id/";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
-        $guzzler->call($url, "updateCorp", "failCorp", $params);
+        $guzzler->call($url, "updateCorp", "failCorp", $params, ['etag' => true]);
     } else $guzzler->tick();
 }
 $guzzler->finish();

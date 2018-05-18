@@ -29,7 +29,7 @@ while ($minute == date('Hi')) {
     $alliance = $mdb->findDoc('information', ['type' => 'allianceID', 'id' => $id]);
     $name = (string) @$alliance['name'];
 
-    $guzzler->call("$esiServer/v3/alliances/$id/", "success", "fail", ['id' => $id]);
+    $guzzler->call("$esiServer/v3/alliances/$id/", "success", "fail", ['id' => $id], ['etag' => true]);
 }
 $guzzler->finish();
 

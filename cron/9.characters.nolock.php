@@ -24,8 +24,8 @@ while ($minute == date('Hi')) {
 
         $url = "$esiServer/v4/characters/$id/";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row, 'rtq' => $chars];
-        $guzzler->call($url, "updateChar", "failChar", $params);
-        $guzzler->call("https://evewho.com/add.php?id=$id", "ew_ignore", "ew_ignore");
+        $guzzler->call($url, "updateChar", "failChar", $params, ['etag' => true]);
+        //$guzzler->call("https://evewho.com/add.php?id=$id", "ew_ignore", "ew_ignore", [], ['etag' => true]);
         if (Status::getStatus('esi', false) > 200) sleep(1);
     }
     $guzzler->tick();
