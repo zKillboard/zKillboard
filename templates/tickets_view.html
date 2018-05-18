@@ -8,7 +8,7 @@
 {% if message %} <h1>{{ message.message }}</h1> {% endif %}
 
 {% set imageSize = 64 %}
-<h3><a href='/account/tickets/'><span class="glyphicon glyphicon-circle-arrow-left"></span></a> | {{ ticket.subject }}</h3>
+<h3><a href='/account/tickets/'><span class="glyphicon glyphicon-circle-arrow-left"></span></a> | {% if ticket.subject == "" %}<i>No subject specified</i>{% else %}{{ ticket.subject }}{% endif %}</h3>
 <table class="table table-striped">
   <tbody>
     {% for field in replies %}

@@ -29,7 +29,7 @@
 					<tr onclick="window.location='/account/tickets/view/{{ ticket._id }}/'">
 					  <td class="col-lg-2">{{ ticket.killTime }}&nbsp;&nbsp;&nbsp;{% if ticket.status %}<span class="label label-success">Open{% else %}<span class="label label-important">Closed{% endif %}</span></td>
 					  <td class="col-lg-2">{{ ticket.characterName }}</td>
-                                          <td class="pull-left" style='width: 100%;'><a href='/account/tickets/view/{{ ticket._id }}/'>{{ ticket.subject }}</a></td>
+                                          <td class="pull-left" style='width: 100%;'><a href='/account/tickets/view/{{ ticket._id }}/'>{% if ticket.subject == "" %}<i>No subject specified</i>{% else %}{{ ticket.subject }}{% endif %}</a></td>
 					</tr>
 					{% endfor %}
 				</tbody>
