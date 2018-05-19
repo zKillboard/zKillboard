@@ -4,13 +4,13 @@ class CrestFittings
 {
     public static function saveFitting($killID, $charID = 0)
     {
-        global $mdb, $crestServer;
+        global $mdb, $esiServer;
 
         $charID = $charID == 0 ? User::getUserID() : $charID;
         if ($charID == 0) {
             return ['message' => 'You should probably try logging into zKillboard first.'];
         }
-        $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => 'characterFittingsWrite']);
+        $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => 'esi-fittings.write_fittings.v1']);
         if ($row == null) {
             return ['message' => 'You have not given zkillboard permission to save fits to your account.'];
         }
@@ -22,13 +22,11 @@ class CrestFittings
         header('Content-Type: application/json');
 
         $export = [];
-        $charName = Info::getInfoField('characterID', (int) @$victim['character_id'], 'name')."'s ";
+        $charName = Info::getInfoField('characterID', (int) @$victim['character_id'], 'name');
         $shipName = Info::getInfoField('shipTypeID', $victim['ship_type_id'], 'name');
         $export['name'] = "$charName's $shipName";
         $export['description'] = "Imported from https://zkillboard.com/kill/$killID/";
-        $export['ship'] = ['id' => $victim['ship_type_id']];
-        $export['ship']['name'] = Info::getInfoField('typeID', $victim['ship_type_id'], 'name');
-        $export['ship']['href'] = "$crestServer/inventory/types/".$victim['ship_type_id'].'/';
+        $export['ship_type_id'] = $victim['ship_type_id'];
 
         $items = $victim['items'];
         $export['items'] = [];
@@ -37,28 +35,24 @@ class CrestFittings
             if (!self::isFit($flag)) {
                 continue;
             }
+
             $nextItem = [];
-            $nextItem['flag'] = $flag;
+            $nextItem ['flag'] = $flag;
             $nextItem['quantity'] = @$item['quantity_dropped'] + @$item['quantity_destroyed'];
-            $nextItem['type']['id'] = $item['item_type_id'];
-            $nextItem['type']['name'] = Info::getInfoField('typeID', $item['item_type_id'], 'name');
-            $nextItem['type']['href'] = "$crestServer/inventory/types/".$item['item_type_id'].'/';
+            $nextItem['type_id'] = $item['item_type_id'];
+
             $export['items'][] = $nextItem;
         }
         if (sizeof($export['items']) == 0) {
             return ['message' => 'Cannot save this fit, no hardware.'];
         }
 
-        $decode = CrestSSO::crestGet('https://crest-tq.eveonline.com/decode/', $accessToken);
-        if (isset($decode['message'])) {
-            return $decode;
-        }
-        $character = CrestSSO::crestGet($decode['character']['href'], $accessToken);
-        $result = CrestSSO::crestPost($character['fittings']['href'], $export, $accessToken);
+        $result = CrestSSO::crestPost($esiServer . "/v1/characters/$charID/fittings/", $export, $accessToken);
         if ($result['httpCode'] == 201) {
             $mdb->set("scopes", $row, ['lastFetch' => $mdb->now()]);
+            $charName = Info::getInfoField('characterID', (int) $charID, "name");
+            Log::log("$charName saved fitting from " . $export['name']);
             return ['message' => "Fit successfully saved to your character's fittings."];
-            Log::log("someone actually saved a fit, wow");
         }
 
         return $result;
