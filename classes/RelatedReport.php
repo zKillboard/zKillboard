@@ -8,6 +8,11 @@ class RelatedReport {
     {
         global $mdb, $redis;
 
+        if ($time % 100 != 0 && $app != null) {
+            $app->redirect("/related/$system/" . substr($time, 0, strlen("$time") - 2) . "00/");
+            exit();
+        } else { throw new \InvalidArgumentException("Minutes must be 00"); }
+
         if ($redis->get("zkb:reinforced") == true) {
             header('HTTP/1.1 202 Request being processed');
             $app->render('related_reinforced.html', ['showAds' => false]);
