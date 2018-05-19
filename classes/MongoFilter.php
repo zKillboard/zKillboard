@@ -132,7 +132,7 @@ class MongoFilter
                     $time = strtotime($value);
                     $exHours = isset($parameters['exHours']) ? (int) $parameters['exHours'] : 1;
                     $and[] = ['dttm' => ['$gte' => new MongoDate($time - (3600 * $exHours))]];
-                    $and[] = ['dttm' => ['$lte' => new MongoDate($time + (3600 * $exHours))]];
+                    $and[] = ['dttm' => ['$lte' => new MongoDate($time + (7200 * $exHours))]];
                     break;
                 case 'pastSeconds':
                     $value = min($value, (90 * 86400));
