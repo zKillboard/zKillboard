@@ -28,4 +28,4 @@
                 {% set total = (total + price) %}
 	{% endif %}
 {% endfor %}
-{% if total > 0 and items|length > 1 %}<tr class="hide-when-sorted"><td colspan='4' style='text-align: right'><small>Total: {{ total|number_format(2) }}</small></td></tr>{% endif %}
+{% if total > 0 and items|length > 1 %}<tr class="hide-when-sorted"><td colspan='4' style='text-align: right'><small>Total: {{ total|number_format(2) }}</small></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td></tr>{% endif %}
