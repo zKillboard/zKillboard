@@ -86,18 +86,14 @@ function success($guzzler, $params, $content)
 {
     global $mdb, $redis;
 
-    $newKills = (int) @$params['newKills'];
-    $maxKillID = (int) @$params['maxKillID'];
     $row = $params['row'];
-    $prevMaxKillID = $mdb->findField("scopes", "maxKillID", ['corporationID' => (int) $row['corporationID'], 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['maxKillID' => -1]);
     $esi = $params['esi'];
 
+    $newKills = 0;
     $kills = $content == "" ? [] : json_decode($content, true);
     foreach ($kills as $kill) {
         $killID = $kill['killmail_id'];
         $hash = $kill['killmail_hash'];
-
-        $maxKillID = max($killID, $maxKillID);
 
         $newKills += addMail($killID, $hash);
     }
@@ -106,11 +102,9 @@ function success($guzzler, $params, $content)
     $corpID = (int) Info::getInfoField("characterID", $charID, 'corporationID');
 
     $successes = 1 + ((int) @$row['successes']);
-    $mdb->set("scopes", $row, ['corporationID' => $corpID, 'lastFetch' => $mdb->now(), 'successes' => $successes]);
-    if ($maxKillID > 0) {
-        // Set the other corp keys to the same so they don't do an unnecessary full scan
-        $mdb->set("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'corporationID' => $corpID], ['maxKillID' => $maxKillID], true);
-    }
+    $modifiers = ['corporationID' => $corpID, 'lastFetch' => $mdb->now(), 'successes' => $successes];
+    if ($content != "" && sizeof($kills) > 0) $modifiers['last_has_data'] = $mdb->now();
+    $mdb->set("scopes", $row, $modifiers);
 
     $name = Info::getInfoField('characterID', $charID, 'name');
     $corpName = Info::getInfoField('corporationID', $corpID, 'name');
@@ -127,10 +121,7 @@ function success($guzzler, $params, $content)
         if ($newKills >= 10) User::sendMessage("$newKills kills added for corp $corpName", $charID);
     }
     if ($redis->get("recentKillmailActivity:$corpID") == "true") {
-        $headers = $guzzler->getLastHeaders();
-        $expires = $headers['expires'];
-        $time = strtotime($expires[0]);
-        if ($expires > time()) $esi->setTime($charID, $time + 10);
+        $esi->setTime($charID, time() + 310);
     }
 }
 

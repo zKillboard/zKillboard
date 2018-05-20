@@ -72,17 +72,14 @@ function success($guzzler, $params, $content)
 {
     global $mdb, $redis;
 
-    $newKills = (int) @$params['newKills'];
-    $maxKillID = (int) @$params['maxKillID'];
     $row = $params['row'];
-    $prevMaxKillID = (int) @$row['maxKillID'];
+    $esi = $params['esi'];
 
+    $newKills = 0;
     $kills = $content == "" ? [] : json_decode($content, true);
     foreach ($kills as $kill) {
         $killID = $kill['killmail_id'];
         $hash = $kill['killmail_hash'];
-
-        $maxKillID = max($killID, $maxKillID);
 
         $newKills += addMail($killID, $hash);
     }
@@ -92,30 +89,18 @@ function success($guzzler, $params, $content)
     $successes = (int) @$row['successes'];
     $successes++;
 
-    $modifiers = ['maxKillID' => $maxKillID, 'corporationID' => $corpID, 'lastFetch' => $mdb->now(), 'errorCount' => 0, 'successes' => $successes];
-    if (!isset($row['added'])) $modifiers['added'] = time(); // Start recording when we first tracked the scope
+    $modifiers = ['corporationID' => $corpID, 'lastFetch' => $mdb->now(), 'errorCount' => 0, 'successes' => $successes];
+    if ($content != "" && sizeof($kills) > 0) $modifiers['last_has_data'] = $mdb->now();
     $mdb->set("scopes", $row, $modifiers); 
-    $mdb->set("scopes", ['characterID' => $charID], ['corporationID' => $corpID]);
     $redis->setex("apiVerified:$charID", 86400, time());
 
     // Check active chars once an hour, check inactive chars less often
-    $esi = new RedisTimeQueue('tqApiESI', 3600);
-    $name = Info::getInfoField('characterID', $charID, 'name');
-    $topKillID = $redis->get('zkb:topKillID');
-    if ($maxKillID < ($topKillID - 1000000)) {
-        $numHours = min(23, ceil(($topKillID - $maxKillID) / 1000000) + 1);
-        $esi->setTime($charID, time() + (3600 * $numHours));
-    } else {
-        if ($redis->get("recentKillmailActivity:$charID") == "true") {
-            // They got a kill in the last 2 hours, check them again as soon as their cache has expired
-            $headers = $guzzler->getLastHeaders();
-            $expires = $headers['expires'];
-            $time = strtotime($expires[0]);
-            if ($expires > time()) $esi->setTime($charID, $time + 10);
-        }
+    if ($redis->get("recentKillmailActivity:$charID") == "true") {
+        $esi->setTime($charID, time() + 310);
     }
 
     if ($newKills > 0) {
+        $name = Info::getInfoField('characterID', $charID, 'name');
         if ($name === null) $name = $charID;
         while (strlen("$newKills") < 3) $newKills = " " . $newKills;
         ZLog::add("$newKills kills added by char $name", $charID);
