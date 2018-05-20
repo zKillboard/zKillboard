@@ -36,6 +36,14 @@ $app->get('/information/(:page/)', function ($page) use ($app) {
         include 'view/information.php';
         });
 
+$app->get('/account/favorites/', function() use ($app) {
+        include 'view/favorites.php';
+        });
+$app->post('/account/favorite/:killID/:action/', function($killID, $action) use ($app) {
+        include 'view/favorite_modify.php';
+        });
+
+
 // Tickets
 $app->map('/account/tickets/', function () use ($app) {
         include 'view/tickets.php';

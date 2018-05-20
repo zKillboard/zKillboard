@@ -17,13 +17,18 @@ class Kills
      */
     public static function getKills($parameters = array(), $allTime = true, $includeKillDetails = true)
     {
-        global $mdb;
-
         $kills = MongoFilter::getKills($parameters);
 
         if ($includeKillDetails == false) {
             return $kills;
         }
+        return Kills::getDetails($kills);
+    }   
+
+    public static function getDetails($kills)
+    {
+        global $mdb;
+
         $details = [];
         foreach ($kills as $kill) {
             $killID = (int) $kill['killID'];

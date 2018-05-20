@@ -28,6 +28,7 @@ class UserGlobals extends Twig_Extension
             $this->addGlobal($result, 'sessionmoderator', (bool) @$u['moderator']);
 
             $this->addTrackers($result, $userID);
+            $this->addFavorites($result, $userID);
         }
 
         $killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
@@ -67,6 +68,16 @@ class UserGlobals extends Twig_Extension
         $result['tracker_character'] = $this->addTracker(@$result['tracker_character'], $userID, $charName);
         $result['tracker_corporation'] = $this->addTracker(@$result['tracker_corporation'], $corpID, $corpName);
         $result['tracker_alliance'] = $this->addTracker(@$result['tracker_alliance'], $alliID, $alliName);
+    }
+
+    public function addFavorites(&$result, $userID)
+    {
+        global $mdb;
+
+        $favs = $mdb->find("favorites", ['characterID' => (int) $userID]);
+        $favorites = [];
+        foreach ($favs as $fav) $favorites[] = $fav['killID'];
+        $result['favorites'] = $favorites;
     }
 
     private function parseTrackers(&$result, $type)

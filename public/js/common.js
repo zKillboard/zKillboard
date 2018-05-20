@@ -198,3 +198,16 @@ function doSponsor(url)
     $('#modalTitle').text('Sponsor this killmail');
     $('#modalMessage').modal()
 }
+
+function doFavorite(killID) {
+    var color = $("#fav-star-killmail").css("color");
+    var action = (color == "rgb(128, 128, 128)") ? "save" : "remove";
+    var url = '/account/favorite/' + killID + '/' + action + '/';
+    $.post(url, function( data ) {
+        result = JSON.parse(data); console.log(result);
+        $("#fav-star-killmail").css("color", result.color);
+        $('#modalTitle').text('Favorites');
+        $('#modalMessageBody').text(result.message);
+        $('#modalMessage').modal()
+    });
+}

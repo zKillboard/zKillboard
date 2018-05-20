@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% set pageTitle = 'Favorites' %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+<h3>Favorites</h3>
+{% set killList = kills %}
+{% include 'components/kill_list.html' %}
+
+<hr/>
+<i>To add favorites, go to a killmail and click the star. Same thing to remove the killmail from your favorites.</i>
+{% endblock %}

@@ -6,12 +6,6 @@ $("#char-image").attr("src", "{{ image_character }}{{ characterID }}_32.jpg");
 $("#lasthour").text("{{ killsLastHour | number_format(0)}}");
 $("#tqStatus").html("{% if tqStatus == 'OFFLINE'%}<span class='red'>TQ {{ tqCount }}</span>{% else %} <span class='green'>TQ {{ tqCount }}</span>{% endif %}");
 
-{% if not disqusLoad %}
-$("#disqus_thread").hide();
-$("[id='disqus_count']").hide();
-
-{% endif %}
-
 {% if showAds != 0 %}
 if (showAds != 0 ) {
     $("#adsensetop").load('/google/false/');
@@ -39,6 +33,10 @@ showAdd = showAdd && ($("#tracker-remove-corporation-{{data.id}}").removeClass("
 {% endfor %}
 {% for data in tracker_alliance %}
 showAdd = showAdd && ($("#tracker-remove-alliance-{{data.id}}").removeClass("hidden").length == 0);
+{% endfor %}
+
+{% for killID in favorites %}
+$(".fav-star-" + {{ killID }}).css("color", "#FDBC2C");
 {% endfor %}
 
 if (showAdd) $("#tracker-add").removeClass("hidden");
