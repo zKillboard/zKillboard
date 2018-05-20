@@ -10,7 +10,7 @@ if (!User::isLoggedIn()) {
 }
 $userID = (int) User::getUserID();
 
-$key =  ['characterID' => $userID, 'killID' => $killID];
+$key =  ['characterID' => $userID, 'killID' => (int) $killID];
     $mdb->remove("favorites", $key);
 if ($action) {
     $mdb->insert("favorites", $key);
