@@ -3,14 +3,14 @@
     <tbody>
         <tr>
            <th>Ship Class</th>
-           <th style="text-align: right">Lost</th>
+           <th style="text-align: right">Lost / Fielded</th>
            <th style="text-align: right">Points</th>
            <th style="text-align: right">ISK</th>
         </tr>
         {% for stats in groupIDs %}
         <tr>
             <td>{{ stats.groupName }}</td>
-            <td style="text-align: right"><strong class="text-success">{{ stats.count|number_format(0) }}</strong></td>
+            <td style="text-align: right"><strong class="text-success">{{ stats.count|number_format(0) }} / {{ stats.fielded|length }}</strong></td>
             <td style="text-align: right"><strong class="text-success">{{ stats.points|number_format(0) }}</strong></td>
             <td style="text-align: right"><strong class="text-success">{{ stats.isk|number_format(2) }}</strong></td>
         </tr>

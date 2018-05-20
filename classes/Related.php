@@ -171,12 +171,27 @@ class Related
                 $groupIDs[$groupID]['count'] = 0;
                 $groupIDs[$groupID]['isk'] = 0;
                 $groupIDs[$groupID]['points'] = 0;
+                $groupIDs[$groupID]['fielded'] = [];
             }
             $groupIDs[$groupID]['groupID'] = $groupID;
             ++$groupIDs[$groupID]['count'];
             $groupIDs[$groupID]['isk'] += $kill['zkb']['totalValue'];
             $groupIDs[$groupID]['points'] += $kill['zkb']['points'];
             ++$totalShips;
+            foreach ($kill['involved'] as $involved) {
+                $charID = @$involved['characterID'];
+                $groupID = @$involved['groupID'];
+                if ($charID == 0 || $groupID == 0) continue;
+                if (!isset($groupIDs[$groupID])) {
+                    $groupIDs[$groupID] = array();
+                    $groupIDs[$groupID]['groupID'] = $groupID;
+                    $groupIDs[$groupID]['count'] = 0;
+                    $groupIDs[$groupID]['isk'] = 0;
+                    $groupIDs[$groupID]['points'] = 0;
+                    $groupIDs[$groupID]['fielded'] = [];
+                }
+                $groupIDs[$groupID]['fielded']["$charID:$groupID"] = true;
+            }
         }
         Info::addInfo($groupIDs);
 
@@ -226,7 +241,7 @@ class Related
         $teams = [
             'red' => [],
             'blue' => [],
-                ];
+            ];
         foreach ($entities as $entity) {
             $affiliationId = self::determineAffiliationId($entity);
             if (is_null($affiliationId)) {
