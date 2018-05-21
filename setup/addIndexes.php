@@ -14,6 +14,14 @@ echo "Creating index : 'solarSystemID' => 1, 'dttm' => 1, 'options' => 1, with s
 $battles->ensureIndex(array('solarSystemID' => 1, 'dttm' => 1, 'options' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
+// comments
+echo "\nCreating collection comments ... ";
+$comments = $db->createCollection("comments");
+echo "Done\n";
+echo "Creating index : 'pageID' => 1, with sparse = 0 and unique = 0 ... ";
+$comments->ensureIndex(array('pageID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+
 // crestmails
 echo "\nCreating collection crestmails ... ";
 $crestmails = $db->createCollection("crestmails");
@@ -62,6 +70,14 @@ echo "Creating index : 'sent' => 1, with sparse = 0 and unique = 0 ... ";
 $evemails->ensureIndex(array('sent' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
+// favorites
+echo "\nCreating collection favorites ... ";
+$favorites = $db->createCollection("favorites");
+echo "Done\n";
+echo "Creating index : 'characterID' => 1, 'killID' => 1, with sparse = 0 and unique = 1 ... ";
+$favorites->ensureIndex(array('characterID' => 1, 'killID' => 1), array("sparse" => 0, "unique" => 1));
+echo "Done\n";
+
 // information
 echo "\nCreating collection information ... ";
 $information = $db->createCollection("information");
@@ -107,6 +123,12 @@ $information->ensureIndex(array('type' => 1, 'lastApiUpdate' => 1), array("spars
 echo "Done\n";
 echo "Creating index : 'type' => 1, 'lastUpdated' => 1, with sparse = 1 and unique = 0 ... ";
 $information->ensureIndex(array('type' => 1, 'lastUpdated' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'finished' => 1, with sparse = 1 and unique = 0 ... ";
+$information->ensureIndex(array('type' => 1, 'finished' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'warID' => 1, 'started' => -1, with sparse = 1 and unique = 0 ... ";
+$information->ensureIndex(array('warID' => 1, 'started' => -1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
 
 // insurance
@@ -237,6 +259,9 @@ echo "Done\n";
 echo "Creating index : 'structure' => 1, with sparse = 0 and unique = 0 ... ";
 $killmails->ensureIndex(array('structure' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
+echo "Creating index : 'ganked' => 1, with sparse = 1 and unique = 0 ... ";
+$killmails->ensureIndex(array('ganked' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
 
 // locations
 echo "\nCreating collection locations ... ";
@@ -315,9 +340,6 @@ $oneWeek->ensureIndex(array('dttm' => 1), array("sparse" => 0, "unique" => 0, "e
 echo "Done\n";
 echo "Creating index : 'involved.allianceID' => 1, 'involved.characterID' => 1, with sparse = 0 and unique = 0 ... ";
 $oneWeek->ensureIndex(array('involved.allianceID' => 1, 'involved.characterID' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-echo "Creating index : 'involved.allianceID' => 1, 'involved.corporationID' => 1, with sparse = 0 and unique = 0 ... ";
-$oneWeek->ensureIndex(array('involved.allianceID' => 1, 'involved.corporationID' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 echo "Creating index : 'involved.corporationID' => 1, 'involved.characterID' => 1, with sparse = 0 and unique = 0 ... ";
 $oneWeek->ensureIndex(array('involved.corporationID' => 1, 'involved.characterID' => 1), array("sparse" => 0, "unique" => 0));
@@ -423,6 +445,24 @@ $oneWeek->ensureIndex(array('locationID' => 1), array("sparse" => 0, "unique" =>
 echo "Done\n";
 echo "Creating index : 'categoryID' => 1, with sparse = 0 and unique = 0 ... ";
 $oneWeek->ensureIndex(array('categoryID' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'categoryID' => 1, 'npc' => 1, with sparse = 0 and unique = 0 ... ";
+$oneWeek->ensureIndex(array('categoryID' => 1, 'npc' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'npc' => 1, 'categoryID' => 1, 'zkb.totalValue' => 1, with sparse = 0 and unique = 0 ... ";
+$oneWeek->ensureIndex(array('npc' => 1, 'categoryID' => 1, 'zkb.totalValue' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'npc' => 1, 'categoryID' => 1, 'involved.characterID' => 1, 'zkb.totalValue' => 1, with sparse = 0 and unique = 0 ... ";
+$oneWeek->ensureIndex(array('npc' => 1, 'categoryID' => 1, 'involved.characterID' => 1, 'zkb.totalValue' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'npc' => 1, 'categoryID' => 1, 'involved.corporationID' => 1, 'zkb.totalValue' => 1, with sparse = 0 and unique = 0 ... ";
+$oneWeek->ensureIndex(array('npc' => 1, 'categoryID' => 1, 'involved.corporationID' => 1, 'zkb.totalValue' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'npc' => 1, 'categoryID' => 1, 'involved.allianceID' => 1, 'zkb.totalValue' => 1, with sparse = 0 and unique = 0 ... ";
+$oneWeek->ensureIndex(array('npc' => 1, 'categoryID' => 1, 'involved.allianceID' => 1, 'zkb.totalValue' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'npc' => 1, 'categoryID' => 1, 'involved.shipTypeID' => 1, 'zkb.totalValue' => 1, with sparse = 0 and unique = 0 ... ";
+$oneWeek->ensureIndex(array('npc' => 1, 'categoryID' => 1, 'involved.shipTypeID' => 1, 'zkb.totalValue' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // payments
