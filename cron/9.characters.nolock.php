@@ -43,8 +43,10 @@ function failChar(&$guzzler, &$params, &$connectionException)
     $rtq = $params['rtq'];
 
     switch ($code) {
-        case 0: // timeout
         case 500:
+            // Do nothing, something wrong with the character on CCPs end
+            break;
+        case 0: // timeout
         case 502: // ccp broke something...
         case 503: // server error
         case 504: // gateway timeout
