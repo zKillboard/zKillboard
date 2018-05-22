@@ -14,7 +14,6 @@ $minute = date('Hi');
 while ($minute == date('Hi')) {
     Status::checkStatus($guzzler, 'esi');
     Status::checkStatus($guzzler, 'sso');
-    Status::throttle('sso', 20);
     $row = $mdb->findDoc("scopes", ['scope' => "esi-killmails.read_killmails.v1", 'iterated' => ['$exists' => false]], ['_id' => -1]);
     if ($row == null) break;
 

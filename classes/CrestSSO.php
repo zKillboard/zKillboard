@@ -347,6 +347,7 @@ class CrestSSO
     {
         global $ccpClientID, $ccpSecret;
 
+        Status::throttle('sso');
         $headers = ['Authorization' =>'Basic ' . base64_encode($ccpClientID . ':' . $ccpSecret), "Content-Type" => "application/json"];
         $url = 'https://login.eveonline.com/oauth/token';
         $guzzler->call($url, $success, $fail, $params, $headers, 'POST', json_encode(['grant_type' => 'refresh_token', 'refresh_token' => $refreshToken]));

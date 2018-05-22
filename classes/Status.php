@@ -57,15 +57,20 @@ class Status
         }
     }
 
-    public static function throttle($apiType, $perSecond, $seconds = 300)
+    public static function throttle($apiType)
     {
-        $rtcs = new RedisTtlCounter("ttlc:{$apiType}Success", $seconds);
-        $rtce = new RedisTtlCounter("ttlc:{$apiType}Failure", $seconds);
-        $perSecond--;
-        do {
-            $sum = $rtcs->count() + $rtce->count();
-            $wait = $sum > ($perSecond * $seconds);
-            if ($wait) sleep(1);
-        } while ($wait);
+        global $redis, $ssoThrottle;
+
+        while (true) {
+            $now = date('His');
+            $key = "throttle:$apiType:$now";
+            $current = (int) $redis->get($key);
+            if ($current <= $ssoThrottle) {
+                $redis->incr($key);
+                $redis->expire($key, 3);
+                return;
+            }
+            usleep(100000);
+        }
     }
 }

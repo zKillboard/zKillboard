@@ -30,7 +30,6 @@ $minute = date('Hi');
 while ($minute == date('Hi')) {
     Status::checkStatus($guzzler, 'esi');
     Status::checkStatus($guzzler, 'sso');
-    Status::throttle('sso', 40);
     $charID = $esi->next();
     $corpID = Info::getInfoField('characterID', (int) $charID, 'corporationID');
     if ($charID && $corpID > 1999999) {
@@ -57,6 +56,7 @@ while ($minute == date('Hi')) {
         }
     }
     $guzzler->tick();
+    if ($charID == 0) usleep(100000);
 }
 $guzzler->finish();
 
@@ -103,6 +103,7 @@ function success($guzzler, $params, $content)
 
     $successes = 1 + ((int) @$row['successes']);
     $modifiers = ['corporationID' => $corpID, 'lastFetch' => $mdb->now(), 'successes' => $successes];
+    if (!isset($row['added'])) $modifiers['added'] = $mdb->now();
     if ($content != "" && sizeof($kills) > 0) $modifiers['last_has_data'] = $mdb->now();
     $mdb->set("scopes", $row, $modifiers);
 
@@ -120,9 +121,18 @@ function success($guzzler, $params, $content)
         ZLog::add("$newKills kills added by corp $corpName", $charID);
         if ($newKills >= 10) User::sendMessage("$newKills kills added for corp $corpName", $charID);
     }
+    $headers = $guzzler->getLastHeaders();
     if ($redis->get("recentKillmailActivity:$corpID") == "true") {
-        $esi->setTime($charID, time() + 310);
+        $headers = $guzzler->getLastHeaders();
+        $expires = $headers['expires'][0];
+        $time = strtotime($expires);
+        $esi->setTime($charID, $time + 2);
     }
+    $h = [];
+    foreach ($headers as $key => $value) {
+        $h[$key] = $value[0];
+    }
+    //Log::log(print_r($h, true));
 }
 
 function addMail($killID, $hash) 

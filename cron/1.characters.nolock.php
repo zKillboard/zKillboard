@@ -22,7 +22,6 @@ $minute = date('Hi');
 while ($minute == date('Hi')) {
     Status::checkStatus($guzzler, 'esi');
     Status::checkStatus($guzzler, 'sso');
-    Status::throttle('sso', 40);
     $charID = $esi->next(false);
     if ($charID) {
         $row = $mdb->findDoc("scopes", ['characterID' => (int) $charID, 'scope' => "esi-killmails.read_killmails.v1"], ['lastFetch' => 1]);
@@ -39,7 +38,10 @@ while ($minute == date('Hi')) {
         } else {
             $esi->remove($charID);
         }
-    } else $guzzler->tick();
+    } else {
+        $guzzler->tick();
+        usleep(100000);
+    }
 }
 $guzzler->finish();
 
@@ -84,17 +86,40 @@ function success($guzzler, $params, $content)
         $newKills += addMail($killID, $hash);
     }
 
-    $charID = $row['characterID'];
+    $charID = (int) $row['characterID'];
     $corpID = (int) Info::getInfoField("characterID", $charID, 'corporationID');
     $successes = (int) @$row['successes'];
     $successes++;
 
     $modifiers = ['corporationID' => $corpID, 'lastFetch' => $mdb->now(), 'errorCount' => 0, 'successes' => $successes];
+    if (!isset($row['added']->sec)) $modifiers['added'] = $mdb->now();
     if ($content != "" && sizeof($kills) > 0) $modifiers['last_has_data'] = $mdb->now();
     $mdb->set("scopes", $row, $modifiers); 
     $redis->setex("apiVerified:$charID", 86400, time());
 
     // Check active chars once an hour, check inactive chars less often
+    $mKillID = (int) $mdb->findField("killmails", "killID", ['involved.characterID' => $charID], ['killID' => -1]);
+    if ($newKills == 0 && $mKillID < ($redis->get("zkb:topKillID") - 5000000)) {
+        $esi->setTime($charID, time() + (rand(18, 23) * 3600));
+
+        // Remove scope if they've never had a kill and it has been 30 days since they've added the scope
+        if ($mKillID == 0 && isset($row['added']->sec) && $row['added']->sec < (time() - (30 * 86400))) {
+            $esi->remove($charID);
+            $mdb->remove("scopes", $row);
+            $redis->del("apiVerified:$charID");
+            Util::out("Removed char killmail scope for $charID after 1 month for never having had a kill or loss.");
+        }
+
+        // Remove scope if they haven't been involved on a killmail in 6 months
+        if (isset($row['added']->sec) && $row['added']->sec < (time() - (6 * 30 * 86400))) {
+            $esi->remove($charID);
+            $mdb->remove("scopes", $row);
+            $redis->del("apiVerified:$charID");
+            Util::out("Removed char killmail scope for $charID after 6 months of not being involved on a killmail.");
+        }
+        return;
+    }
+    // Check recently active characters every 5 minutes
     if ($redis->get("recentKillmailActivity:$charID") == "true") {
         $esi->setTime($charID, time() + 310);
     }
