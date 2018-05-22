@@ -26,7 +26,7 @@ while ($minute == date('Hi')) {
     if ($charID && $corpID > 1999999) {
         $refreshToken = $row['refreshToken'];
         $row['corporationID'] = $corpID;
-        $params = ['row' => $row, 'tokenTime' => time(), 'refreshToken' => $refreshToken];
+        $params = ['row' => $row, 'tokenTime' => time(), 'refreshToken' => $refreshToken, 'page' => 1];
         $mdb->set("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'corporationID' => $corpID], ['iterated' => 'in progress'], true);
 
         CrestSSO::getAccessTokenCallback($guzzler, $refreshToken, "accessTokenDone", "accessTokenFail", $params);
@@ -52,12 +52,13 @@ function accessTokenDone(&$guzzler, &$params, $content)
     $charID = $row['characterID'];
     $corpID = Info::getInfoField("characterID", $charID, 'corporationID');
     $fields = [];
-    if (isset($params['max_kill_id'])) {
-        $fields['max_kill_id'] = $params['max_kill_id'];
+    if (isset($params['page'])) {
+        $fields['page'] = $params['page'];
     }
     $fields = ESI::buildparams($fields);
     if (strlen($fields)) $fields = "?$fields";
     $url = "$esiServer/v1/corporations/$corpID/killmails/recent/$fields";
+echo "$url\n";
     $guzzler->call($url, "success", "fail", $params, $headers, 'GET');
 }
 
@@ -86,6 +87,7 @@ function success($guzzler, $params, $content)
         $params['newKills'] = $newKills;
         $params['max_kill_id'] = $minKillID;
         $params['maxKillID'] = $maxKillID;
+        $params['page'] = $params['page'] + 1;
 
         if ((time() - $params['tokenTime']) > 600) {
             $params['tokenTime'] = time();

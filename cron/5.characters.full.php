@@ -6,7 +6,7 @@ require_once "../init.php";
 
 if ($redis->get("zkb:reinforced") == true) exit();
 
-$guzzler = new Guzzler(10);
+$guzzler = new Guzzler(1);
 
 $mdb->removeField("scopes", ['iterated' => 'in progress'], "iterated");
 
@@ -18,7 +18,7 @@ while ($minute == date('Hi')) {
     $row = $mdb->findDoc("scopes", ['scope' => "esi-killmails.read_killmails.v1", 'iterated' => ['$exists' => false]], ['_id' => -1]);
     if ($row == null) break;
 
-    $params = ['row' => $row];
+    $params = ['row' => $row, 'page' => 1];
     $mdb->set("scopes", $row, ['iterated' => 'in progress']);
     $refreshToken = $row['refreshToken'];
     CrestSSO::getAccessTokenCallback($guzzler, $refreshToken, "accessTokenDone", "accessTokenFail", $params);
@@ -47,8 +47,8 @@ function accessTokenDone(&$guzzler, &$params, $content, $cacheIt = true)
     $headers['Authorization'] = "Bearer $accessToken";
 
     $fields = [];
-    if (isset($params['max_kill_id'])) {
-        $fields['max_kill_id'] = $params['max_kill_id'];
+    if (isset($params['page'])) {
+        $fields['page'] = $params['page'];
     }
     $fields = ESI::buildparams($fields);
     $url = "$esiServer/v1/characters/$charID/killmails/recent/?$fields";
@@ -80,6 +80,7 @@ function success($guzzler, $params, $content)
         $params['newKills'] = $newKills;
         $params['max_kill_id'] = $minKillID;
         $params['maxKillID'] = $maxKillID;
+        $params['page'] = $params['page'] + 1;
 
         accessTokenDone($guzzler, $params, $params['content']);
     } else {
