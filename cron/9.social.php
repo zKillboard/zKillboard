@@ -11,7 +11,7 @@ while ($beSocial && $minute == date('Hi')) {
     $killID = $queueSocial->pop();
     if ($killID > 0 ) {
         beSocial($killID);
-    }
+    } else sleep(1);
 }
 
 function beSocial($killID)

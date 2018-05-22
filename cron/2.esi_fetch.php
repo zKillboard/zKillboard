@@ -27,7 +27,10 @@ while ($minute == date("Hi")) {
         $params = ['row' => $row, 'mdb' => $mdb, 'redis' => $redis, 'killID' => $killID, 'esimails' => $esimails];
         $guzzler->call($url, "success", "fail", $params);
     }
-    else $guzzler->tick();
+    else {
+        $guzzler->tick();
+        usleep(100000);
+    }
 }
 $guzzler->finish();
 
