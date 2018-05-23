@@ -89,7 +89,7 @@ Please also read and understand Section 230 of the Communications Decency Act: h
 
 <strong>What about the GDPR?</strong><br/>
 
-zKillboard does not contain any personally identifiable information. On the off chance you made a character with your real name and you want it changed, you must work with CCP by creating a ticket with your request. If/when CCP complies with your request, the API will reflect the change (not immediately) and zKillboard will pick up the name change and mofiy it within the database accordingly.
+zKillboard does not contain any personally identifiable information. On the off chance you made a character with your real name and you want it changed, you must work with CCP by creating a ticket with your request. If/when CCP complies with your request, the API will reflect the change (not immediately) and zKillboard will pick up the name change and modify it within the database accordingly.
 
 ***
 
