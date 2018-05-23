@@ -46,6 +46,9 @@ class Points
         $size = 0;
         foreach ((array) $killmail['attackers'] as $attacker) {
             $shipTypeID = @$attacker['ship_type_id'];
+            $categoryID = Info::getInfoField("typeID", $shipTypeID, "categoryID");
+            if ($categoryID == 65) return 1; // Structure on your mail, only 1 point
+
             $aInfo = Info::getInfo('typeID', $shipTypeID);
             $size += pow(5, ((@$aInfo['groupID'] != 29) ? @$aInfo['rigSize'] : @$shipInfo['rigSize'] + 1));
         }
