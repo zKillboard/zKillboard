@@ -139,7 +139,7 @@ function fail($guzzer, $params, $ex)
             break;
         case 403: // Server decided to throw a 403 during SSO authentication when that throws a 502...
         default:
-            echo "killmail char $charID: " . $ex->getMessage() . "\nkillmail content: " . $params['content'] . "\n";
+            Util::out("killmail char $charID: " . $ex->getMessage() . "\nkillmail content: " . $params['content']);
     }
     sleep(1);
 }

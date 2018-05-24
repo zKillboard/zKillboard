@@ -77,5 +77,5 @@ function typeHistorySuccess($guzzler, $params, $content)
 
 function fail($guzzler, $params, $error)
 {
-    echo "Fail " . $params['uri'] . "\n";
+    Util::out("Fail " . $params['uri']);
 }

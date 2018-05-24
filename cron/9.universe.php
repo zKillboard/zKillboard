@@ -22,7 +22,7 @@ $redis->set("zkb:universeLoaded", "true");
 function fail($guzzler, $params, $error) 
 {
     $uri = $params['uri'];
-    echo "Failure! $uri\n";
+    Util::out("Failure! $uri");
 }
 
 function categoriesSuccess($guzzler, $params, $content)
