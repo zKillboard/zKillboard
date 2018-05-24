@@ -57,7 +57,6 @@ function accessTokenDone(&$guzzler, &$params, $content)
     $fields = ESI::buildparams($fields);
     if (strlen($fields)) $fields = "?$fields";
     $url = "$esiServer/v1/corporations/$corpID/killmails/recent/$fields";
-echo "$url\n";
     $guzzler->call($url, "success", "fail", $params, $headers, 'GET');
 }
 
