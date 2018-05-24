@@ -83,6 +83,7 @@ function fail($guzzler, $params, $ex)
         case 500:
         case 502:
         case 503:
+        case 504:
             // Ignore
             break;
         default:

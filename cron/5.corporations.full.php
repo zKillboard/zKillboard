@@ -154,6 +154,7 @@ function accessTokenFail(&$guzzler, &$params, $ex)
         case 403: // A 403 without an invalid_grant is invalid
         case 500:
         case 502: // Server error, try again in 5 minutes
+        case 504:
         case "": // typically a curl timeout error
             $esi->setTime($charID, time() + 30);
             break;
