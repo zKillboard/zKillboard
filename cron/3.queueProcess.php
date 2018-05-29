@@ -52,9 +52,9 @@ while ($minute == date('Hi')) {
 
         $solarSystem = array();
         $solarSystem['solarSystemID'] = $systemID;
-        $solarSystem['security'] = (double) $system['secStatus'];
-        $solarSystem['constellationID'] = (int) $system['constellationID'];
-        $solarSystem['regionID'] = (int) $system['regionID'];
+        $solarSystem['security'] = (double) @$system['secStatus'];
+        $solarSystem['constellationID'] = (int) @$system['constellationID'];
+        $solarSystem['regionID'] = (int) @$system['regionID'];
         $kill['system'] = $solarSystem;
         if (isset($mail['victim']['position'])) {
             $locationID = Info::getLocationID($systemID, $mail['victim']['position']);
