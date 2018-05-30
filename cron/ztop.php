@@ -78,6 +78,10 @@ while ($hour == date('H')) {
     addInfo('Successful SSO calls in last 5 minutes', Status::getStatus('sso', true), false);
     addInfo('Failed SSO calls in last 5 minutes', Status::getStatus('sso', false), false);
 
+    addInfo('', 0, false);
+    addInfo('ESI Requests Cached', Status::getStatus('cached304', true), false);
+    addInfo('ESI Requests Not Cached', Status::getStatus('cached304', false), false);
+
     $esiChars = new RedisTimeQueue("tqApiESI", 3600);
     $esiCorps = new RedisTimeQueue("tqCorpApiESI", 3600);
     $ssoCorps = new RedisTimeQueue("zkb:ssoCorps", 3600);
@@ -99,10 +103,6 @@ while ($hour == date('H')) {
     $balance = Util::formatIsk((double) $mdb->findField("payments", "balance", ['ref_type' => 'player_donation'], ['_id' => -1]));
     addInfo('Sponsored Killmails (inflated)', $sponsored, false, false);
     addInfo('Wallet Balance', $balance, false, false);
-
-    addInfo('', 0, false);
-    addInfo('Outbound ESI Requests Cached', Status::getStatus('cached304', true), false);
-    addInfo('Outbound ESI Requests Not Cached', Status::getStatus('cached304', false), false);
 
     addInfo('', 0, false);
     addInfo('Load Counter', $redis->get("zkb:load"), false);
