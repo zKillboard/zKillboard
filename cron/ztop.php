@@ -101,8 +101,8 @@ while ($hour == date('H')) {
     addInfo('Wallet Balance', $balance, false, false);
 
     addInfo('', 0, false);
-    addInfo('Outbound API Requests Cached', Status::getStatus('cached304', true), false);
-    addInfo('Outbound API Requests Not Cached', Status::getStatus('cached304', false), false);
+    addInfo('Outbound ESI Requests Cached', Status::getStatus('cached304', true), false);
+    addInfo('Outbound ESI Requests Not Cached', Status::getStatus('cached304', false), false);
 
     addInfo('', 0, false);
     addInfo('Load Counter', $redis->get("zkb:load"), false);

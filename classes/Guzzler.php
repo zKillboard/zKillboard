@@ -61,8 +61,11 @@ class Guzzler
         $params['uri'] = $uri;
         $params['callType'] = strtoupper($callType);
 
+        while ($redis->get("zkb:errors") >= 95) sleep(1);
+
         $statusType = self::getType($uri);
 
+        $etag = null;
         if (@$setup['etag'] == true && $params['callType'] == 'GET') {
             $etag = $redis->get("zkb:etags:$uri");
             if ($etag != "") $setup['If-None-Match'] = $etag;
@@ -72,7 +75,7 @@ class Guzzler
         $guzzler = $this;
         $request = new \GuzzleHttp\Psr7\Request($callType, $uri, $setup, $body);
         $this->client->sendAsync($request)->then(
-            function($response) use (&$guzzler, $fulfilled, $rejected, &$params, $statusType) {
+            function($response) use (&$guzzler, $fulfilled, $rejected, &$params, $statusType, $etag) {
                 global $redis;
 
                 $guzzler->dec();
@@ -81,7 +84,8 @@ class Guzzler
                 $this->lastHeaders = array_change_key_case($response->getHeaders());
                 if (isset($this->lastHeaders['warning'])) Util::out("Warning: " . $params['uri'] . " " . $this->lastHeaders['warning'][0]);
                 if (isset($this->lastHeaders['etag']) && strlen($content) > 0) $redis->setex("zkb:etags:" . $params['uri'], 604800, $this->lastHeaders['etag'][0]);
-                Status::addStatus("cached304", ($response->getStatusCode() == 304));
+                if ($etag !== null) Status::addStatus("cached304", ($response->getStatusCode() == 304));
+                $this->setEsiErrorCount();
 
                 $fulfilled($guzzler, $params, $content);
             },
@@ -95,6 +99,7 @@ class Guzzler
                 $params['content'] = method_exists($connectionException->getResponse(), "getBody") ? (string) $connectionException->getResponse()->getBody() : "";
                 $code = $connectionException->getCode();
                 $redis->del("zkb:etags:" . $params['uri']);
+                $this->setEsiErrorCount();
 
                 $rejected($guzzler, $params, $connectionException);
             });
@@ -124,5 +129,17 @@ class Guzzler
     public function getLastHeaders()
     {
         return $this->lastHeaders;
+    }
+
+    public function setEsiErrorCount()
+    {
+        global $redis;
+
+        $headers = $this->getLastHeaders();
+        if (!isset($headers['x-esi-error-limit-reset'])) return;
+
+        $errorRemain = $headers['x-esi-error-limit-remain'][0];
+        $errorReset = $headers['x-esi-error-limit-reset'][0];
+        $redis->setex("zkb:errors", $errorReset, (100 - $errorRemain));
     }
 }
