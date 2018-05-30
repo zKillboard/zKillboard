@@ -7,7 +7,6 @@ require_once '../init.php';
 if ($redis->llen('queueStats') >= 100000) $redis->del('queueTopAlltime');
 if ($redis->llen('queueStats') >= 10000) exit();
 if ($redis->get("zkb:reinforced") == true) exit();
-if ($mdb->findDoc("statistics", ['reset' => true]) != null) exit();
 
 $date = date('Ymd');
 $redisKey = "tq:topAllTime";
