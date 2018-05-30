@@ -79,7 +79,9 @@ class MongoFilter
         $and = [];
 
         foreach ($parameters as $key => $value) {
-            if (is_array($value)) {
+            if (is_array($value) && !isset($value[0])) {
+                $filter = $value;
+            } else if (is_array($value)) {
                 $filter = ['$in' => $value];
             } else {
                 $filter = $value;
