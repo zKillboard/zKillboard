@@ -13,7 +13,6 @@ $mod = 3;
 $dayMod = date("j") % $mod;
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    Status::checkStatus($guzzler, 'esi');
     $id = (int) $chars->next();
     if ($id > 0) {
         $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => $id]);

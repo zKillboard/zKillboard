@@ -4,9 +4,6 @@ use cvweiss\redistools\RedisTimeQueue;
 
 require_once "../init.php";
 
-global $debug;
-$debug = false;
-
 if ($redis->get("zkb:reinforced") == true) exit();
 $guzzler = new Guzzler($esiCorpKillmails, 500);
 
@@ -28,7 +25,6 @@ $redis->set("tqCorpApiESICount", $unique);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    Status::checkStatus($guzzler, 'esi');
     Status::checkStatus($guzzler, 'sso');
     $charID = $esi->next();
     $corpID = Info::getInfoField('characterID', (int) $charID, 'corporationID');
@@ -54,6 +50,12 @@ while ($minute == date('Hi')) {
         } else {
             $esi->remove($charID);
         }
+    }
+    if ($charID && $corpID > 0 && $corpID <= 1999999) {
+        // NPC Corp, lets not keep the scope
+        // $mdb->remove("scopes", $row);
+        // Note: I debated on this for a few weeks, keep the scope, hope they switch to another corp as director
+        // and then verify that corp... but in the end that just doesn't feel right to me. So we'll remove them.
     }
     $guzzler->tick();
     if ($charID == 0) usleep(100000);

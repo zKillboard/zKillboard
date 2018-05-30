@@ -10,7 +10,6 @@ $corps = new RedisTimeQueue("zkb:corporationID", 86400);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    Status::checkStatus($guzzler, 'esi');
     $id = (int) $corps->next();
     if ($id <= 0) break;
     if ($id > 0) {
