@@ -46,11 +46,9 @@ function setRow($redis, $queueStats, $row, $active)
         if ($redis->setnx($key, "true") === false) {
             $queueStats->push($row);
             $count++;
-            Util::out("  Skipping $key");
             if ($count > $queueStats->size()) exit("count too high");
             return false;
         }
-        Util::out("processing $key");
         return true;
     } else {
         $redis->del($key);
