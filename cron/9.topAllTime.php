@@ -7,6 +7,7 @@ require_once '../init.php';
 if ($redis->llen('queueStats') >= 100000) $redis->del('queueTopAlltime');
 if ($redis->llen('queueStats') >= 10000) exit();
 if ($redis->get("zkb:reinforced") == true) exit();
+if ($mdb->findDoc("statistics", ['reset' => true]) != null) exit();
 
 $date = date('Ymd');
 $redisKey = "tq:topAllTime";
@@ -45,7 +46,6 @@ function calcTop($row)
     $parameters = [$row['type'] => $row['id']];
     $parameters['limit'] = 100;
     $parameters['kills'] = true;
-    $parameters['npc'] = false;
 
     $topLists[] = array('type' => 'character', 'data' => Stats::getTop('characterID', $parameters));
     $topLists[] = array('type' => 'corporation', 'data' => Stats::getTop('corporationID', $parameters));
