@@ -1,6 +1,6 @@
 <?php
 
-$kills = KillCategories::getKills($type, $page);
+$kills = KillCategories::getKills($type, $page, true);
 
 $killIDs = [];
 foreach ($kills as $id=>$kill) {

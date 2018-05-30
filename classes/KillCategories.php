@@ -4,10 +4,11 @@
 class KillCategories
 {
 
-    public static function getKills($type, $page)
+    public static function getKills($type, $page, $isApi = false)
     {
         $limit = 50;
-        $maxPage = 20;
+        if (!$isApi) $maxPage = 20;
+        else $maxPage = 1000;
         if ($page > $maxPage && $type == '') {
             return [];
         }
@@ -84,6 +85,9 @@ class KillCategories
                 break;
             case 'ganked':
                 $kills = Kills::getKills(array('ganked' => true, 'page' => $page));
+                break;
+            case 'abyssal':
+                $kills = Kills::getKills(['solarSystemID' => ['$gte' => 32000000], 'page' => $page]);
                 break;
             default:
                 $kills = Kills::getKills(array('combined' => true, 'page' => $page));
