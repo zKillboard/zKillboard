@@ -13,7 +13,11 @@ $minute = date('Hi');
 while ($minute == date('Hi')) {
     $row = $queueStats->pop();
     if ($row == null) break;
-    calcStats($row, $maxSequence);
+    $doIt = setRow($redis, $queueStats, $row, true);
+    if ($doIt) {
+        calcStats($row, $maxSequence);
+        setRow($redis, $queueStats, $row, false);
+    }
 }
 
 while ($minute == date('Hi')) {
@@ -23,7 +27,34 @@ while ($minute == date('Hi')) {
         $row = ['type' => $resetRow['type'], 'id' => $resetRow['id'], 'sequence' => $maxSequence];
     }
     if ($row == null) break;
-    calcStats($row, $maxSequence);
+    $doIt = setRow($redis, $queueStats, $row, true);
+    if ($doIt) {
+        calcStats($row, $maxSequence);
+        setRow($redis, $queueStats, $row, false);
+    }
+}
+
+$count = 0;
+function setRow($redis, $queueStats, $row, $active)
+{
+    global $count;
+
+    $type = $row['type'];
+    $id = $row['id'];
+    $key = "zkb:statActive:$type:$id";
+    if ($active) {
+        if ($redis->setnx($key, "true") === false) {
+            $queueStats->push($row);
+            $count++;
+            Util::out("  Skipping $key");
+            if ($count > $queueStats->size()) exit("count too high");
+            return false;
+        }
+        Util::out("processing $key");
+        return true;
+    } else {
+        $redis->del($key);
+    }
 }
 
 
@@ -63,6 +94,7 @@ function calcStats($row, $maxSequence)
 
         // build the query
         $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'npc' => false];
+        if ($isVictim == false) unset($query['npc']); // Allows NPCs to count their kills
         $query = MongoFilter::buildQuery($query);
         // set the proper sequence values
         $query = ['$and' => [['sequence' => ['$gt' => $oldSequence]], ['sequence' => ['$lte' => $newSequence]], $query]];
@@ -77,6 +109,7 @@ function calcStats($row, $maxSequence)
         mergeMonths($stats, $months, $isVictim);
 
         $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'npc' => false, 'solo' => true];
+        if ($isVictim == false) unset($query['npc']); // Allows NPCs to count their kills
         $query = MongoFilter::buildQuery($query);
         $key = "solo" . ($isVictim ? "Losses" : "Kills");
         if (isset($stats[$key])) {

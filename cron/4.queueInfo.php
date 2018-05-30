@@ -39,9 +39,6 @@ function updateStatsQueue($killID)
     global $mdb, $statArray, $queueStats;
 
     $kill = $mdb->findDoc('killmails', ['killID' => $killID, 'cacheTime' => 3600]);
-    if ($kill['npc'] == true) {
-        return;
-    }
     $involved = $kill['involved'];
     $sequence = $kill['sequence'];
 
