@@ -22,8 +22,6 @@ $redis->publish("public", json_encode(['action' => 'tqStatus', 'tqStatus' => $se
 
 $message = "";
 $message = apiStatus(null, 'esi', "Issues with CCP's ESI API - some killmails may be delayed.");
-$message = apiStatus($message, 'crest', "Issues with CCP's CREST API - some killmails may be delayed.");
-$message = apiStatus($message, 'xml', "Issues with CCP's XML API - some killmails may be delayed.");
 $message = apiStatus($message, 'sso', "Issues with CCP's SSO API - some killmails may be delayed.");
 $redis->setex('tq:apiStatus', 300, $message);
 
