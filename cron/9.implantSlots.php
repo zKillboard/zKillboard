@@ -10,6 +10,7 @@ if ($redis->get($redisKey) == true) {
 
 $md5 = file_get_contents('http://sde.zzeve.com/installed.md5');
 if ($redis->get($redisKeyMd5) != $md5) {
+    Util::out("Updating implant slots from http://sde.zzeve.com/dgmTypeAttributes.json");
     $href = 'http://sde.zzeve.com/dgmTypeAttributes.json';
     $raw = file_get_contents($href);
     $json = json_decode($raw, true);
