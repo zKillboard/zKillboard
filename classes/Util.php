@@ -490,7 +490,7 @@ class Util
         $z = $position['z'];
 
         $row = $mdb->findDoc("locations", ['id' => $solarSystemID]);
-        if ($row == null) $row = [];
+        if ($row == null || !isset($row['locations'])) return 0;
         foreach ($row['locations'] as $location) {
             if ($location['itemid'] != $locationID) continue;
             return sqrt(pow($location['x'] - $x, 2) + pow($location['y'] - $y, 2) + pow($location['z'] - $z, 2));
