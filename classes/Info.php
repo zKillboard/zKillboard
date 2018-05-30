@@ -658,6 +658,7 @@ class Info
         $y = $position['y'];
         $z = $position['z'];
 
+        if ($solarSystemID > 32000000 && $solarSystemID <= 32999999) return null;
         $systemLocations = $mdb->findDoc("locations", ['id' => $solarSystemID]);
         if ($systemLocations == null) {
             Log::log("Fetching fuzz map for system $solarSystemID");
