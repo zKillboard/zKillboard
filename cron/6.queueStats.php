@@ -13,13 +13,10 @@ $minute = date('Hi');
 while ($minute == date('Hi')) {
     $row = $queueStats->pop();
     if ($row == null) break;
-    $doIt = setRow($redis, $queueStats, $row, true);
-    if ($doIt) {
-        calcStats($row, $maxSequence);
-        setRow($redis, $queueStats, $row, false);
-    }
+    calcStats($row, $maxSequence);
 }
 
+// Look for rows that were reset and get those done
 while ($minute == date('Hi')) {
     $row = null;
     $resetRow = $mdb->findDoc("statistics", ['reset' => true]);
@@ -27,34 +24,8 @@ while ($minute == date('Hi')) {
         $row = ['type' => $resetRow['type'], 'id' => $resetRow['id'], 'sequence' => $maxSequence];
     }
     if ($row == null) break;
-    $doIt = setRow($redis, $queueStats, $row, true);
-    if ($doIt) {
-        calcStats($row, $maxSequence);
-        setRow($redis, $queueStats, $row, false);
-    }
+    calcStats($row, $maxSequence);
 }
-
-$count = 0;
-function setRow($redis, $queueStats, $row, $active)
-{
-    global $count;
-
-    $type = $row['type'];
-    $id = $row['id'];
-    $key = "zkb:statActive:$type:$id";
-    if ($active) {
-        if ($redis->setnx($key, "true") === false) {
-            $queueStats->push($row);
-            $count++;
-            if ($count > $queueStats->size()) exit("count too high");
-            return false;
-        }
-        return true;
-    } else {
-        $redis->del($key);
-    }
-}
-
 
 function calcStats($row, $maxSequence)
 {
