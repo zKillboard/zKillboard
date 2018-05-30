@@ -15,6 +15,7 @@ $queueTopAlltime = new RedisQueue('queueTopAlltime');
 if ($redis->get($redisKey) != true && $queueTopAlltime->size() == 0) {
     $iter = $mdb->getCollection('statistics')->find([], ['months' => 0, 'groups' => 0])->sort(['type' => 1, 'id' => 1]);
     while ($row = $iter->next()) {
+        if (@$row['reset'] == true) continue;
         $allTimeSum = (int) @$row['allTimeSum'];
         $shipsDestroyed = (int) @$row['shipsDestroyed'];
         $nextTopRecalc = floor($allTimeSum * 1.01) + 1;
