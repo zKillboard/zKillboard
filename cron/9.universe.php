@@ -130,7 +130,7 @@ function constellationSuccess($guzzler, $params, $content)
     $mdb->insertUpdate("information", ['type' => 'constellationID', 'id' => $constID], ['name' => $name, 'regionID' => $regionID]);
 
     foreach ($systems as $system) {
-        $guzzler->call("$esiServer/v3/universe/systems/$system/", "systemSuccess", "fail", ['regionID' => $regionID]);
+        $guzzler->call("$esiServer/v4/universe/systems/$system/", "systemSuccess", "fail", ['regionID' => $regionID]);
     }
 }
 
