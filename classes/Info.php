@@ -411,7 +411,7 @@ class Info
                             $element['groupName'] = self::getInfoField('groupID', $groupID, 'name');
                         }
                         if (!isset($element['fittable'])) {
-                            $categoryID = self::getInfoField('groupID', $element['groupID'], 'categoryID');
+                            $categoryID = isset($element['categoryID']) ? $element['categoryID'] : self::getInfoField('groupID', $element['groupID'], 'categoryID');
                             $element['fittable'] = $categoryID == 7; // 7 - Fittable
                         }
                         break;
