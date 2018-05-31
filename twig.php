@@ -71,6 +71,7 @@ $twig->addGlobal('image_corporation', $imageServer.'Corporation/');
 $twig->addGlobal('image_alliance', $imageServer.'Alliance/');
 $twig->addGlobal('image_item', $imageServer.'Type/');
 $twig->addGlobal('image_ship', $imageServer.'Render/');
+$twig->addGlobal('esiServer', $esiServer);
 
 $twig->addGlobal('tqStatus', $redis->get('tqStatus'));
 $twig->addGlobal('tqCount', $redis->get('tqCount'));
