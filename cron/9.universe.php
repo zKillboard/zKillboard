@@ -49,7 +49,7 @@ function categorySuccess($guzzler, $params, $content)
     $mdb->insertUpdate("information", ['type' => 'categoryID', 'id' => $id], ['name' => $name]);
 
     foreach ($groups as $group) {
-        $guzzler->call("$esiServer/v1/universe/groups/$group/", "groupSuccess", "fail");
+        $guzzler->call("$esiServer/v1/universe/groups/$group/", "groupSuccess", "fail", ['categoryID' => $id]);
     }
 }
 
@@ -62,7 +62,7 @@ function groupSuccess($guzzler, $params, $content)
     $name = $group['name'];
     Util::out("Group $name $id");
 
-    $mdb->insertUpdate("information", ['type' => 'groupID', 'id' => $id], ['name' => $name]);
+    $mdb->insertUpdate("information", ['type' => 'groupID', 'id' => $id], ['name' => $name, 'categoryID' => $params['categoryID']]);
 
     foreach ($group['types'] as $type) {
         $guzzler->call("$esiServer/v3/universe/types/$type/", "typeSuccess", "fail", ['categoryID' => $group['category_id']]);
