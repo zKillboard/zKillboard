@@ -109,7 +109,7 @@
             {% if detail.solarSystemName %}
 			<tr>
 				<th>System:</th>
-				<td itemprop="systemname"><a href='/system/{{ detail.solarSystemID }}/'>{{ detail.solarSystemName }}</a></td>
+				<td itemprop="systemname"><a href='/system/{{ detail.solarSystemID }}/' class="{% if field.solarSystemID >= 32000000 and field.solarSystemID  < 33000000 %}triglavian{% endif %}">{{ detail.solarSystemName }}</a></td>
 			</tr>
             {% endif %}
             {% if detail.solarSystemSecurity %}
@@ -133,7 +133,7 @@
             {% if detail.regionName %}
 			<tr>
 				<th>Region:</th>
-				<td itemprop="region"><a href="/region/{{detail.regionID}}/">{{ detail.regionName }}</a></td>
+				<td itemprop="region"><a href="/region/{{detail.regionID}}/" class="{% if detail.regionID >= 12000001 and detail.regionID < 13000000 %}triglavian{% endif %}">{{ detail.regionName }}</a></td>
 			</tr>
             {% endif %}
 	    	{% if detail.memberCount is defined and detail.memberCount >= 0 %}

@@ -47,8 +47,8 @@
           {% include 'components/image_ship.html' %}
         </td>
         <td>
-          <div style='width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;'><span style="color: {{ kill.system.systemColorCode }}">{{ "%1.1f"|format(kill.system.solarSystemSecurity) }}</span> <a href="/system/{{ kill.system.solarSystemID }}/">{{ kill.system.solarSystemName }}</a></div>
-          <a href="/region/{{ kill.system.regionID }}/">{{ kill.system.regionName }}</a>
+          <div style='width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;'><span style="color: {{ kill.system.systemColorCode }}">{{ "%1.1f"|format(kill.system.solarSystemSecurity) }}</span> <a href="/system/{{ kill.system.solarSystemID }}/" class="{% if kill.system.solarSystemID >= 32000000 and kill.system.solarSystemID  < 33000000 %}triglavian{% endif %}">{{ kill.system.solarSystemName }}</a></div>
+          <a href="/region/{{ kill.system.regionID }}/" class="{% if kill.system.regionID >= 12000001 and kill.system.regionID < 13000000 %}triglavian{% endif %}">{{ kill.system.regionName }}</a>
         </td>
         <td class="hidden-xs" style="text-align: center; vertical-align: middle; max-width: 64px;">
           {% if kill.victim.allianceID != 0 %}
