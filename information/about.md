@@ -16,18 +16,3 @@ zKillboard is a collaborative effort by many people, see our GitHub repository f
 ## 3rd Parties
 
 Information from 3rd party sites, are owned by the 3rd party site, and are made available to us (and possibly others) via APIs. If you want access to the same information for your site, you need to contact the owner of the 3rd party.
-
-#### Un-ordered list of 3rd parties used:
-- EVEWho
-- EVE-Board
-- EVE-Search
-- EVE-Gate
-- DOTLAN
-- EVE Skunk
-- Osmium
-- EVEFit
-- EVE-Online
-- EVEEye
-- Wormhol.es (via wh.pasta.gg)
-
-Social images by http://www.pinkmoustache.net/
