@@ -10,13 +10,9 @@ if ($redis->llen("queueProcess") > 100) exit();
 $queueWars = new RedisQueue('queueWars');
 
 if ($queueWars->size() == 0 && $redis->get("zkb:iterateWars") != "true") {
-    $wars = $mdb->getCollection('information')->find(['type' => 'warID', 'finished' => false]);
+    $wars = $mdb->getCollection('information')->find(['type' => 'warID']);
     foreach ($wars as $war) {
-/*        $aMemberCount = isset($war['aggressor']['corporation_id']) ? Info::getInfoField("corporationID", $war['aggressor']['corporation_id'], "memberCount") : Info::getInfoField("allianceID", $war['aggressor']['alliance_id'], "memberCount");
-        $dMemberCount = isset($war['defender']['corporation_id']) ? Info::getInfoField("corporationID", $war['defender']['corporation_id'], "memberCount") : Info::getInfoField("allianceID", $war['defender']['alliance_id'], "memberCount");
-        if ($aMemberCount == 0 || $dMemberCount == 0) {
-            continue;
-        }*/
+        if (@$war['finished'] == true) continue;
         $queueWars->push($war['id']);
     }
 }
