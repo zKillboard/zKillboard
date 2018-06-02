@@ -89,6 +89,9 @@ class KillCategories
             case 'abyssal':
                 $kills = Kills::getKills(['solarSystemID' => ['$gte' => 32000000], 'page' => $page]);
                 break;
+            case 'abyssal1b':
+                $kills = Kills::getKills(['solarSystemID' => ['$gte' => 32000000], 'page' => $page, 'iskValue' => 1000000000]);
+                break;
             default:
                 $kills = Kills::getKills(array('combined' => true, 'page' => $page));
                 break;
