@@ -9,9 +9,9 @@ if ($minute >= 1100 && $minute <= 1105) {
     $redis->set('tqStatus', 'OFFLINE'); // Just in case the result is cached on their end as online
     $redis->set('tqCount', 0);
 } else {
-    $guzzler = new Guzzler();
-    $guzzler->call("$esiServer/v1/status/", "success", "fail");
-    $guzzler->finish();
+    // Not using Guzzle to prevent tq status conflicts and deadlock
+    $root = file_get_contents("$esiServer/v1/status/");
+    success($root);
 }
 
 $serverStatus = $redis->get("tqStatus");
@@ -20,16 +20,16 @@ $killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
 $killCount = number_format($killsLastHour->count(), 0);
 $redis->publish("public", json_encode(['action' => 'tqStatus', 'tqStatus' => $serverStatus, 'tqCount' => $loggedIn, 'kills' => $killCount]));
 
-$message = "";
-$message = apiStatus(null, 'esi', "Issues with CCP's ESI API - some killmails may be delayed.");
+$message = null;
+$message = apiStatus($message, 'esi', "Issues with CCP's ESI API - some killmails may be delayed.");
 $message = apiStatus($message, 'sso', "Issues with CCP's SSO API - some killmails may be delayed.");
 $redis->setex('tq:apiStatus', 300, $message);
 
-function success($guzzler, $params, $content)
+function success($content)
 {
     global $redis;
 
-    if ($content == "") return;
+    if ($content == "") return fail();
 
     $root = json_decode($content, true);
     $version = $root['server_version'];
@@ -47,7 +47,7 @@ function success($guzzler, $params, $content)
     $redis->set('tqCount', $loggedIn);
 }
 
-function fail($guzzler, $params, $ex)
+function fail()
 {
     global $redis;
 
