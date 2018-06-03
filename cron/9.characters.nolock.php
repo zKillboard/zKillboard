@@ -24,8 +24,6 @@ while ($minute == date('Hi')) {
         $url = "$esiServer/v4/characters/$id/";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row, 'rtq' => $chars];
         $guzzler->call($url, "updateChar", "failChar", $params, ['etag' => true]);
-        //$guzzler->call("https://evewho.com/add.php?id=$id", "ew_ignore", "ew_ignore", [], ['etag' => true]);
-        if (Status::getStatus('esi', false) > 200) sleep(1);
     }
     $guzzler->tick();
     if ($id == 0) sleep(1);
@@ -52,6 +50,9 @@ function failChar(&$guzzler, &$params, &$connectionException)
         case 200: // timeout...
             $rtq->setTime($id, (time() - 86400) + rand(3600, 7200));
             break;
+        case 420:
+            $guzzler->finish();
+            exit();
         default:
             Util::out("/v4/characters/ failed for $id with code $code");
     }

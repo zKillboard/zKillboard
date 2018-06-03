@@ -41,6 +41,9 @@ function failCorp(&$guzzler, &$params, &$connectionException)
         case 200: // timeout...
             $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(86400 * -2)]);
             break;
+        case 420:
+            $guzzler->finish();
+            exit();
         default:
             Util::out("/v4/corporations/ failed for $id with code $code");
     }
