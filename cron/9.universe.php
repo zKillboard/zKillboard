@@ -104,8 +104,8 @@ function regionSuccess($guzzler, $params, $content)
     global $mdb, $esiServer;
 
     $region = json_decode($content, true);
-    $name = $region['name'];
     $regionID = (int) $region['region_id'];
+    $name = ($regionID >= 12000000 && $regionID < 13000000) ? Info::getMangledSystemName($regionID, $regionID)  : $region['name'];
     $constellations = $region['constellations'];
     Util::out("Region: $name");
 
@@ -122,7 +122,7 @@ function constellationSuccess($guzzler, $params, $content)
 
     $const = json_decode($content, true);
     $constID = (int) $const['constellation_id'];
-    $name = $const['name'];
+    $name = ($constID >= 22000000 && $constID < 23000000) ? Info::getMangledSystemName($constID, 0) : $const['name'];
     $regionID = $const['region_id'];
     $systems = $const['systems'];
     Util::out("Constellation: $name");
@@ -142,7 +142,7 @@ function systemSuccess($guzzler, $params, $content)
     $constID = $system['constellation_id'];
     $regionID = $params['regionID'];
     $id = $system['system_id'];
-    $name = $system['name'];
+    $name = ($id >= 32000000 && $id < 33000000) ? Info::getMangledSystemName($id, 0) : $system['name'];
     Util::out("System $name $id");
     
     $mdb->insertUpdate("information", ['type' => 'solarSystemID', 'id' => $id], ['name' => $name, 'secClass' => @$system['security_class'], 'secStatus' => $system['security_status']]);

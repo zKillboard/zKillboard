@@ -687,4 +687,45 @@ class Info
 
         return $returnID;
         }
+
+        static $DEV_NAMES = [
+            'Andre',
+            'Ben',
+            'Bergthor',
+            'Bergur',
+            'Carl',
+            'Chance',
+            'Chris',
+            'Euan',
+            'Freyr',
+            'Georg',
+            'Hafsteinn',
+            'Hinrik',
+            'Hooper',
+            'Huni',
+            'Javier',
+            'Jonathan',
+            'Kasper',
+            'Kristinn',
+            'Mark',
+            'Norbert',
+            'Olafur',
+            'Scott',
+            'Sergey',
+            'Skuli',
+            'Steve',
+            'Steven',
+            'Svanhvit',
+            'Tormod',
+            'Willem'];
+
+
+        public static function getMangledSystemName($solarSystemID, $charID)
+        {
+            mt_srand($solarSystemID + $charID);
+            $i = mt_rand(0, sizeof(self::$DEV_NAMES) - 1);
+            $name = self::$DEV_NAMES[$i];
+            return str_rot13($name);
+        }
+
     }
