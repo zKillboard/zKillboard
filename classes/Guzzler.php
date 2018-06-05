@@ -61,7 +61,7 @@ class Guzzler
         $params['uri'] = $uri;
         $params['callType'] = strtoupper($callType);
 
-        while ($redis->get("zkb:errors") >= 95) sleep(1);
+        while ($redis->get("zkb:errors") >= 95 || $redis->get("tqCountInt") < 100) sleep(1);
 
         $statusType = self::getType($uri);
 
