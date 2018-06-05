@@ -117,7 +117,7 @@ while ($minute == date('Hi')) {
             $killmails->save($kill);
         }
         $oneWeekExists = $mdb->exists('oneWeek', ['killID' => $killID]);
-        if (!$oneWeekExists && $kill['npc'] == false && $kill['dttm']->sec >= $date7Days && $kill['categoryID'] == 6) {
+        if (!$oneWeekExists && $kill['dttm']->sec >= $date7Days && $kill['categoryID'] == 6) {
             $mdb->getCollection('oneWeek')->save($kill);
         }
 
