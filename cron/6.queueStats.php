@@ -22,6 +22,11 @@ while ($minute == date('Hi')) {
     $resetRow = $mdb->findDoc("statistics", ['reset' => true]);
     if ($resetRow != null) {
         $row = ['type' => $resetRow['type'], 'id' => $resetRow['id'], 'sequence' => $maxSequence];
+
+        // Keep TopAllTime sums if they have already been calculated
+        if (isset($resetRow['topAllTime'])) $row['topAllTime'] = $resetRow['topAllTime'];
+        if (isset($resetRow['allTimeSum'])) $row['allTimeSum'] = $resetRow['allTimeSum'];
+        if (isset($resetRow['nextTopRecalc'])) $row['nextTopRecalc'] = $resetRow['nextTopRecalc'];
     }
     if ($row == null) break;
     calcStats($row, $maxSequence);
