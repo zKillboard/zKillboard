@@ -10,7 +10,7 @@ if ($minute >= 1100 && $minute <= 1105) {
     $redis->set('tqCount', 0);
 } else {
     // Not using Guzzle to prevent tq status conflicts and deadlock
-    $root = file_get_contents("$esiServer/v1/status/");
+    $root = @file_get_contents("$esiServer/v1/status/");
     success($root);
 }
 
