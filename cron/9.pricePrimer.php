@@ -14,7 +14,6 @@ $key = "tq:pricesChecked:$date";
 // We'll wait a few minutes then start pulling
 if ($redis->get($key) == "true" || date('Hi') < 1115) exit();
 
-Status::check('esi');
 $guzzler = new Guzzler(10, 10);
 $guzzler->call("$esiServer/v1/markets/groups/", "groupsSuccess", "fail");
 $guzzler->finish();
@@ -27,7 +26,7 @@ function groupsSuccess($guzzler, $params, $content)
 
     $groups = json_decode($content, true);
     foreach ($groups as $groupID) {
-        $guzzler->call("$esiServer/v1/markets/groups/$groupID/", "groupSuccess", "fail");
+        $guzzler->call("$esiServer/v1/markets/groups/$groupID/", "groupSuccess", "fail", ['groupID' => $groupID]);
     }  
 }
 
@@ -49,7 +48,7 @@ function groupSuccess($guzzler, $params, $content)
         if ($typeInfo['published'] != true) continue;
         if ($redis->hget($key, $typeID) == true) continue;
 
-        $guzzler->call("$esiServer/v1/markets/10000002/history/?type_id=$typeID", "typeHistorySuccess", "fail", ['typeID' => $typeID]);
+        $guzzler->call("$esiServer/v1/markets/10000002/history/?type_id=$typeID", "typeHistorySuccess", "fail", ['typeID' => $typeID], ['eetag' => true]);
     }
 }
 
@@ -77,5 +76,11 @@ function typeHistorySuccess($guzzler, $params, $content)
 
 function fail($guzzler, $params, $error)
 {
+    global $esiServer;
+
     Util::out("Fail " . $params['uri']);
+    $groupID = (int) @$params['groupID'];
+    $typeID = (int) @$params['typeID'];
+    if ($groupID > 0)  $guzzler->call("$esiServer/v1/markets/groups/$groupID/", "groupSuccess", "fail", ['groupID' => $groupID]);
+    if ($typeID > 0) $guzzler->call("$esiServer/v1/markets/10000002/history/?type_id=$typeID", "typeHistorySuccess", "fail", ['typeID' => $typeID], ['eetag' => true]);
 }
