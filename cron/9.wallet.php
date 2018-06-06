@@ -2,7 +2,6 @@
 
 require_once '../init.php';
 
-Status::check('esi');
 $redisKey = 'zkb:walletCheck';
 if ($redis->get($redisKey) != true) {
     $guzzler = new Guzzler();

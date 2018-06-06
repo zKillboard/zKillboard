@@ -7,8 +7,6 @@ if ($redis->get("zkb:insuranceFetched:$date") == true) {
     exit();
 }
 
-Status::check('esi');
-
 $guzzler = new Guzzler();
 $guzzler->call("$esiServer/v1/insurance/prices/", "success", "fail", ['date' => $date]);
 $guzzler->finish();

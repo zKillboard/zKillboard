@@ -25,7 +25,6 @@ $redis->set("tqCorpApiESICount", $unique);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    Status::checkStatus($guzzler, 'sso');
     $charID = $esi->next();
     $corpID = Info::getInfoField('characterID', (int) $charID, 'corporationID');
     if ($charID && $corpID > 1999999) {

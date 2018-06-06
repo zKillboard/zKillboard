@@ -10,7 +10,6 @@ $date = date('Ymd', time() - 7200);
 $key = "tq:pricesFetched:$date";
 if ($redis->get($key) == "true") exit();
 
-Status::check('esi');
 $guzzler = new Guzzler(10, 10);
 $guzzler->call("$esiServer/v1/markets/prices/", "success", "fail");
 $guzzler->finish();

@@ -14,8 +14,6 @@ $guzzler = new Guzzler(10);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    Status::checkStatus($guzzler, 'sso');
-
     $row = $mdb->findDoc("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'iterated' => ['$exists' => false], 'corporationID' => ['$gt' => 1999999], 'successes' => ['$gt' => 0]], ['_id' => -1]);
     if ($row == null) break;
 

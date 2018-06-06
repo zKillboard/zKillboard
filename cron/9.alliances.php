@@ -22,7 +22,6 @@ $guzzler = new Guzzler(2);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    Status::check('esi');
     $id = (int) $queueAllis->next();
     if ($id == null) break;
 

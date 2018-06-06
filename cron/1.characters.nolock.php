@@ -20,7 +20,6 @@ $guzzler = new Guzzler($esiCharKillmails, 500);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    Status::checkStatus($guzzler, 'sso');
     $charID = $esi->next(false);
     if ($charID) {
         $row = $mdb->findDoc("scopes", ['characterID' => (int) $charID, 'scope' => "esi-killmails.read_killmails.v1"], ['lastFetch' => 1]);
