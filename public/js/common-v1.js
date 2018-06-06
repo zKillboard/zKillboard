@@ -1,3 +1,4 @@
+var ws;
 $(document).ready(function() {
     //$('body').on('touchstart.dropdown', '.dropdown-menu', function (e) { e.stopPropagation(); });
 
@@ -28,10 +29,13 @@ $(document).ready(function() {
     });
 
     // setup websocket with callbacks
-    var ws = new ReconnectingWebSocket('wss://zkillboard.com:2096/', '', {maxReconnectAttempts: 15});
+    ws = new ReconnectingWebSocket('wss://zkillboard.com:2096/', '', {maxReconnectAttempts: 15});
     ws.onmessage = function(event) {
         wslog(event.data);
     };
+    ws.onopen = function(event) {
+        ws.send(JSON.stringify({'action':'sub','channel':'public'}));
+    }
 
     addKillListClicks();
     /*var pathname = $(location).attr('pathname');
@@ -89,9 +93,18 @@ function wslog(msg)
         htmlNotify(json);
     } else if (json.action == 'lastHour') {
         $("#lasthour").text(json.kills);
+    } else if (json.action == 'audio') {
+        audio(json.uri);
     } else {
         console.log("Unknown action: " + json.action);
     }
+}
+
+function audio(uri)
+{
+    var audio = new Audio(uri);
+    audio.volume = 0.1;
+    audio.play();
 }
 
 function saveFitting(id) {
