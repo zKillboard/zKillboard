@@ -22,10 +22,7 @@
     </tr>
   </thead>
   <tbody>
-    {% set currentDate = (kill.dttm.sec|date('M d, Y')) %}
-    {% for kill in killList if kill.killID > 0 %}
         {% include 'components/kill_list_row.html' %}
-    {% endfor %}
   </tbody>
 </table>
 {% include 'components/pager.html' %}

@@ -1,8 +1,8 @@
 {% set txtLength = 60 %}
-
+{% for kill in killList if kill.killID > 0 %}
       {% set shipImageLinkOverride = kill.killID %}
       {% set date = (kill.dttm.sec|date('M d, Y')) %}
-      {% if currentDate != date and skipdate != true %}
+      {% if currentDate != date %}
         {% set currentDate = (kill.dttm.sec|date('M d, Y')) %}
         <tr>
           <th class="no-stripe" colspan="7"><strong><em>{{ date }}</em></strong></th>
@@ -69,3 +69,4 @@
 	  {% endif %}
         </td>
       </tr>
+{% endfor %}
