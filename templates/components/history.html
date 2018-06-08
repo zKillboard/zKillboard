@@ -30,7 +30,7 @@
 		<td><span class="pull-right red">{{ month.shipsLost | number_format(0) }}</span></td>	
 		<td><span class="pull-right red">{{ month.pointsLost | number_format(0) }}</span></td>	
 		<td><span class="pull-right red">{{ formatIsk(month.iskLost) }}</span></td>	
-		<td><span class="pull-right">{{ (month.iskDestroyed == 0 ? 0 : (month.iskDestroyed / (month.iskDestroyed + month.iskLost) * 100)) | round(2) }}%</span></td>
+		<td><span class="pull-right">{{ (month.iskDestroyed == 0 ? '0.0' : (month.iskDestroyed / (month.iskDestroyed + month.iskLost) * 100)) | number_format(1) }}%</span></td>
 		<td><span class="pull-right"><a href="/{{ key }}/{{ id }}/top/year/{{ month.year }}/month/{{ month.month }}/">{{ month.month }} / {{ month.year }}</a></span></td>
 	<tr>
 {% endfor %}
