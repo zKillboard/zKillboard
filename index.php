@@ -97,7 +97,7 @@ if (!$isApiRequest) {
 
 // Scrape Checker
 $ipKey = "ip::$ip";
-if (!$isApiRequest && !(substr($uri, 0, 9) == '/related/' || substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp' || substr($uri, 0, 5) == '/auto' || substr($uri, 0, 9) == "/comment/")) {
+/*if (!$isApiRequest && !(substr($uri, 0, 9) == '/related/' || substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp' || substr($uri, 0, 5) == '/auto' || substr($uri, 0, 9) == "/comment/" || substr($uri, 0, 13) == '/killlistrow/')) {
     $redis->incr($ipKey, ($uri == '/navbar/' ? -1 : 1));
     $redis->expire($ipKey, 300);
     $count = $redis->get($ipKey);
@@ -113,7 +113,7 @@ if (!$isApiRequest && !(substr($uri, 0, 9) == '/related/' || substr($uri, 0, 9) 
             die("Scraping discouraged. APIs are useful, skill up and use that instead.");
         }
     }
-}
+}*/
 
 if (substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || $uri == '/navbar/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp') {
     // Session
