@@ -163,7 +163,6 @@ function fail($guzzer, $params, $ex)
         default:
             Util::out("killmail char $charID: " . $ex->getMessage() . "\nkillmail content: " . $params['content']);
     }
-    sleep(1);
 }
 
 function accessTokenFail(&$guzzler, &$params, $ex)
@@ -192,5 +191,4 @@ function accessTokenFail(&$guzzler, &$params, $ex)
         default:
             Util::out("char token: $charID " . $ex->getMessage() . "\n\n" . $params['content']);
     }
-    sleep(1);
 }

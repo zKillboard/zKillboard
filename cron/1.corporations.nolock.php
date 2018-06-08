@@ -223,5 +223,4 @@ function accessTokenFail(&$guzzler, &$params, $ex)
         default:
             Util::out("corp token: $charID " . $ex->getMessage() . "\n" . $params['content'] . "\n" . "code $code");
     }
-    sleep(1);
 }
