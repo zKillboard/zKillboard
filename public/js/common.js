@@ -34,7 +34,7 @@ $(document).ready(function() {
         wslog(event.data);
     };
     ws.onopen = function(event) {
-        ws.send(JSON.stringify({'action':'sub','channel':'public'}));
+        pubsub('public');
     }
 
     addKillListClicks();
@@ -74,27 +74,39 @@ function htmlNotify (data)
 
 function wslog(msg)
 {
-    if (msg == 'ping' || msg == 'pong') return;
+    if (msg === 'ping' || msg === 'pong') return;
     json = JSON.parse(msg);
-    console.log(json);
-    if (json.action == 'tqStatus') {
+    if (json.action === 'tqStatus') {
         tqStatus = json.tqStatus;
         tqCount = json.tqCount;
-        if (tqStatus == 'OFFLINE') {
+        if (tqStatus === 'OFFLINE' || tqStatus === 'UNKNOWN') {
             html = '<span class="red">TQ ' + tqCount + "</span>";
         } else {
             html = '<span class="green">TQ ' + tqCount + "</span>";
         }
         $("#tqStatus").html(html);
         $("#lasthour").text(json.kills);
-    } else if (json.action == 'reload') {
+    } else if (json.action === 'reload') {
         setTimeout("location.reload();", (Math.random() * 300000));
-    } else if (json.action == 'bigkill') {
+    } else if (json.action === 'bigkill') {
         htmlNotify(json);
-    } else if (json.action == 'lastHour') {
+    } else if (json.action === 'lastHour') {
         $("#lasthour").text(json.kills);
-    } else if (json.action == 'audio') {
+    } else if (json.action === 'audio') {
         audio(json.uri);
+    } else if (json.action === 'littlekill') {
+        // Add the killmail to the kill list
+        $.get("/killlistrow/" + json.killID + "/" + entityType + "/" + entityID + "/", function(data) { 
+            $("#killlist tbody tr:first").before(data).on('click', function(event) {
+                if (event.which === 2) return false;
+                window.location = '/kill/' + $(this).attr('killID') + '/';
+                return false;
+            });
+            // Keep the page from growing too much...
+            while ($("#killlist tbody tr").length > 100) $("#killlist tbody tr:last").remove();
+            // Tell the user what's going on and not to expect sequential killmails
+            if ($("#livefeednotif").length == 0) $("#killlist thead tr").after("<tr><td id='livefeednotif' colspan='7'><strong><em>Live feed - killmails may be out of order.</em></strong></td></tr>");
+        });
     } else {
         console.log("Unknown action: " + json.action);
     }
@@ -133,7 +145,7 @@ function hideSortStuff(doHide)
 function sendCrestUrl() {
     str = $("#killmailurl").val();
     strSplit = str.split("/");
-    if (strSplit.length == 8) strSplit.shift();
+    if (strSplit.length === 8) strSplit.shift();
     killID = strSplit[4];
     hash = strSplit[5];
     a = ['/crestmail/', killID, '/', hash, '/'];
@@ -196,11 +208,9 @@ window.addEventListener('popstate', function(event) {
 function addKillListClicks()
 {
     $(".killListRow").on('click', function(event) {
-        if (event.which == 2) return false;
+        if (event.which === 2) return false;
         console.log($(this).attr('killID'));
-        //onclick="if (event.which == 2) return false; window.location='/kill/{{kill.killID}}/'"
         window.location = '/kill/' + $(this).attr('killID') + '/';
-        //doLoad('/kill/' + $(this).attr('killID') + '/');
         return false;
     });
 }
@@ -214,7 +224,7 @@ function doSponsor(url)
 
 function doFavorite(killID) {
     var color = $("#fav-star-killmail").css("color");
-    var action = (color == "rgb(128, 128, 128)") ? "save" : "remove";
+    var action = (color === "rgb(128, 128, 128)") ? "save" : "remove";
     var url = '/account/favorite/' + killID + '/' + action + '/';
     $.post(url, function( data ) {
         result = JSON.parse(data); console.log(result);
@@ -223,4 +233,14 @@ function doFavorite(killID) {
         $('#modalMessageBody').text(result.message);
         $('#modalMessage').modal()
     });
+}
+
+function pubsub(channel)
+{
+    try {
+        ws.send(JSON.stringify({'action':'sub', 'channel': channel}));
+        console.log("subscribing to " + channel);
+    } catch (e) {
+        setTimeout("pubsub('" + channel + "');", 1000);
+    }
 }

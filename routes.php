@@ -243,6 +243,13 @@ $app->get('/comment/:pageID/:commentID/up/', function ($pageID, $commentID) use 
         include 'view/comments-up.php';
         });
 
+$app->get('/killlistrow/:killID/:entityType/:entityID/', function ($killID, $entityType, $entityID) use ($app) {
+        include 'view/killlistrow.php';
+    });
+$app->get('/killlistrow/:killID/', function ($killID) use ($app) {
+        include 'view/killlistrow.php';
+    });
+
 // The Overview stuff
 $app->get('/partial/:input+/', function ($input) use ($app) {
         include 'view/overview.php';

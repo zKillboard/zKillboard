@@ -82,6 +82,7 @@
                     var navbar = true; 
                     var entityType = '{{ entityType }}';
                     var entityID = '{{ entityID }}';
+                    var entityPage = '{{ pageType }}';
                 </script>
 	</head>
 	<body>
@@ -137,7 +138,7 @@
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.2/bootstrap-slider.min.js"></script>
 		<script type="text/javascript" src="//{{ siteurl }}/js/bootstrap-datepicker.js"></script>
 		<script type="text/javascript" src="//{{ siteurl }}/js/search.js"></script>
-		<script type="text/javascript" src="//{{ siteurl }}/js/common-v1.js"></script>
+		<script type="text/javascript" src="//{{ siteurl }}/js/common.js"></script>
 		<script type="text/javascript" src="//{{ siteurl }}/js/sclock1.js"></script>
 		<script type="text/javascript" src="//{{ siteurl }}/js/nprogress.js"></script>
                 <script type="text/javascript" src="/js/reconnecting-websocket.js"></script>
@@ -146,6 +147,9 @@
 		<script type="text/javascript">
                         $(document).ready(function() {
                             if (navbar) $('#tracker-dropdown').load('/navbar/');
+                            var channel = entityType + ":" + entityID;
+                            if (entityPage != 'index' && entityPage != 'overview') channel = channel + ":" + entityPage;
+                            pubsub(channel);
                         });
 
 			var datepicker = $('.datepicker').datepicker({
