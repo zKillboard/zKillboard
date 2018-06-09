@@ -269,3 +269,12 @@ td.centered {
 .triglavian {
     font-family: 'Triglavian';
 }
+
+.stat-range {
+    border-bottom: solid 2px transparent;
+    cursor: pointer;
+}
+.stat-active {
+    border-bottom: solid 2px #efefef;
+    color: #FCFDFD;
+}

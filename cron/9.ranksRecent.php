@@ -14,9 +14,8 @@ $statTypes = ['Destroyed', 'Lost'];
 $now = time();
 $now = $now - ($now % 60);
 $then = $now - (90 * 86400);
-$ninetyDayKillID = $mdb->findField('killmails', 'killID', ['dttm' => ['$gte' => new MongoDate($then)], 'killID' => ['$gte' => 0]], ['killID' => 1]);
-if ($ninetyDayKillID === null) {
-    $redis->setex($todaysKey, 87000, true);
+$ninetyDayKillID = (int) $redis->get("zkb:90dayKillID");
+if ($ninetyDayKillID < 1) {
     exit();
 }
 
@@ -108,7 +107,7 @@ Util::out('Recent rankings complete');
 
 function zAdd(&$multi, $key, $value, $id)
 {
-    $value = max(1, (int) $value);
+    $value = max(0, (int) $value);
     $multi->zAdd($key, $value, $id);
     $multi->expire($key, 100000);
 }

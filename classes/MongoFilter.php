@@ -48,6 +48,37 @@ class MongoFilter
         return $result;
     }
 
+    public static function getCount($parameters, $buildQuery = true)
+    {
+        global $mdb;
+
+        $hashKey = 'MongoFilter::getCount:'.serialize($parameters).":$buildQuery";
+        $result = RedisCache::get($hashKey);
+        if ($result != null) {
+            return $result;
+        }
+
+        $collection = 'killmails';
+        if (isset($parameters['pastSeconds']) && $parameters['pastSeconds'] <= 608400) {
+            $collection = 'oneWeek';
+            if ($parameters['pastSeconds'] == 608400) unset($parameters['pastSeconds']);
+        } else if (isset($parameters['pastSeconds']) && $parameters['pastSeconds'] <= 7776000) {
+            $collection = 'ninetyDays';
+            if ($parameters['pastSeconds'] == 7776000) unset($parameters['pastSeconds']);
+        }
+
+        // Build the query parameters
+        $query = $buildQuery ? self::buildQuery($parameters) : $parameters;
+
+        // Start the query
+        $killmails = $mdb->getCollection($collection);
+        $result = $killmails->count($query);
+
+        RedisCache::set($hashKey, $result, 3600);
+
+        return $result;
+    }
+
     private static function applyPage(&$cursor, $page, $limit)
     {
         if ($page > 0) {

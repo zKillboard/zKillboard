@@ -129,7 +129,7 @@ Util::out('Weekly rankings complete');
 
 function zAdd(&$multi, $key, $value, $id)
 {
-    $value = max(1, (int) $value);
+    $value = max(0, (int) $value);
     $multi->zAdd($key, $value, $id);
     $multi->expire($key, 9000);
 }

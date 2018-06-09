@@ -33,3 +33,13 @@ $time = time() - (86400 * 90);
 $mdb->getCollection('tickets')->remove(['dttm' => ['$lte' => $time]]);
 
 $redis->setex($key, 3600, 1);
+
+$now = time();
+$now = $now - ($now % 60);
+$then = $now - (90 * 86400);
+$killID = $mdb->findField('killmails', 'killID', ['dttm' => ['$gte' => new MongoDate($then)], 'killID' => ['$gte' => 0]], ['killID' => 1]);
+$redis->setex("zkb:90dayKillID", 86400, $killID);
+
+$then = $now - (7 * 86400);
+$kllID = $mdb->findField('killmails', 'killID', ['dttm' => ['$gte' => new MongoDate($then)], 'killID' => ['$gte' => 0]], ['killID' => 1]);
+$redis->setex("zkb:7dayKillID", 86400, $killID);

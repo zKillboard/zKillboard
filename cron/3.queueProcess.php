@@ -120,6 +120,10 @@ while ($minute == date('Hi')) {
         if (!$oneWeekExists && $kill['dttm']->sec >= $date7Days && $kill['categoryID'] == 6) {
             $mdb->getCollection('oneWeek')->save($kill);
         }
+        $ninetyDayExists = $mdb->exists('ninetyDays', ['killID' => $killID]);
+        if (!$ninetyDayExists) {
+            $mdb->getCollection('ninetyDays')->save($kill);
+        }
 
         $queueInfo->push($killID);
         $redis->incr('zkb:totalKills');

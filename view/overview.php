@@ -263,24 +263,6 @@ if ($key == 'system') {
 }
 $statistics = $mdb->findDoc('statistics', ['type' => $statType, 'id' => (int) $id]);
 
-if (@$statistics['shipsLost'] > 0) {
-    $destroyed = @$statistics['shipsDestroyed']  + @$statistics['pointsDestroyed'];
-    $lost = @$statistics['shipsLost'] + @$statistics['pointsLost'];
-    if ($destroyed > 0 && $lost > 0) {
-        $ratio = floor(($destroyed / ($lost + $destroyed)) * 100);
-        $extra['dangerRatio'] = $ratio;
-    }
-}
-if (@$statistics['soloKills'] > 0 && @$statistics['shipsDestroyed'] > 0) {
-    $gangFactor = 100 - floor(100 * ($statistics['soloKills'] / $statistics['shipsDestroyed']));
-    $extra['gangFactor'] = $gangFactor;
-}
-else if (@$statistics['shipsDestroyed'] > 0) {
-    $gangFactor = floor(@$statistics['pointsDestroyed'] / @$statistics['shipsDestroyed'] * 10 / 2);
-    $gangFactor = max(0, min(100, 100 - $gangFactor));
-    $extra['gangFactor'] = $gangFactor;
-}
-
 if ($key == 'corporation' || $key == 'alliance' || $key == 'faction') {
     $extra['hasSupers'] = @$statistics['hasSupers'];
     $extra['supers'] = @$statistics['supers'];
@@ -303,8 +285,90 @@ $statistics['iskDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:all
 $statistics['iskLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:iskLost", $id));
 $statistics['pointsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:pointsDestroyed", $id));
 $statistics['pointsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:pointsLost", $id));
-$statistics['recentOverallRank'] = Util::rankCheck($redis->zRank("tq:ranks:recent:$statType", $id));
 $statistics['overallRank'] = Util::rankCheck($redis->zRank("tq:ranks:alltime:$statType", $id));
+
+if (@$statistics['shipsLost'] > 0) {
+    $destroyed = @$statistics['shipsDestroyed']  + @$statistics['pointsDestroyed'];
+    $lost = @$statistics['shipsLost'] + @$statistics['pointsLost'];
+    if ($destroyed > 0 && $lost > 0) {
+        $ratio = floor(($destroyed / ($lost + $destroyed)) * 100);
+        $extra['dangerRatio'] = $ratio;
+    }
+}
+if (@$statistics['soloKills'] > 0 && @$statistics['shipsDestroyed'] > 0) {
+    $gangFactor = 100 - floor(100 * ($statistics['soloKills'] / $statistics['shipsDestroyed']));
+    $extra['gangFactor'] = $gangFactor;
+}
+else if (@$statistics['shipsDestroyed'] > 0) {
+    $gangFactor = floor(@$statistics['pointsDestroyed'] / @$statistics['shipsDestroyed'] * 10 / 2);
+    $gangFactor = max(0, min(100, 100 - $gangFactor));
+    $extra['gangFactor'] = $gangFactor;
+}
+
+$statistics['recentShipsDestroyed'] = $redis->zScore("tq:ranks:recent:$statType:shipsDestroyed", $id);
+$statistics['recentShipsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:shipsDestroyed", $id));
+$statistics['recentShipsLost'] = (int) $redis->zScore("tq:ranks:recent:$statType:shipsLost", $id);
+$statistics['recentShipsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:shipsLost", $id));
+$statistics['recentIskDestroyed'] = $redis->zScore("tq:ranks:recent:$statType:iskDestroyed", $id);
+$statistics['recentIskDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:iskDestroyed", $id));
+$statistics['recentIskLost'] = $redis->zScore("tq:ranks:recent:$statType:iskLost", $id);
+$statistics['recentIskLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:iskLost", $id));
+$statistics['recentPointsDestroyed'] = $redis->zScore("tq:ranks:recent:$statType:pointsDestroyed", $id);
+$statistics['recentPointsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:pointsDestroyed", $id));
+$statistics['recentPointsLost'] = $redis->zScore("tq:ranks:recent:$statType:pointsLost", $id);
+$statistics['recentPointsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:pointsLost", $id));
+$statistics['recentOverallRank'] = Util::rankCheck($redis->zRank("tq:ranks:recent:$statType", $id));
+
+if (@$statistics['recentShipsLost'] > 0) {
+    $destroyed = @$statistics['recentShipsDestroyed'] + @$statistics['recentPointsDestroyed'];
+    $lost = @$statistics['recentShipsLost'] + @$statistics['recentPointsLost'];
+    if ($destroyed > 0 && $lost > 0) {
+        $ratio = floor(($destroyed / ($lost + $destroyed)) * 100);
+        $extra['recentDangerRatio'] = $ratio;
+    }
+}
+
+$recentSoloKills = MongoFilter::getCount(['isVictim' => false, "${type}ID" => (int) $id, 'solo' => true, 'pastSeconds' => 7776000]);
+if ($recentSoloKills > 0 && $statistics['recentShipsDestroyed'] > 0) {
+    $gangFactor = 100 - floor(100 * ($recentSoloKills / ($recentSoloKills + $statistics['recentShipsDestroyed'])));
+    $extra['recentGangFactor'] = $gangFactor;
+}
+else if (@$statistics['shipsDestroyed'] > 0) {
+    $extra['recentGangFactor'] = 100;
+}
+$statistics['recentSoloKills'] = $recentSoloKills;
+
+$statistics['weeklyShipsDestroyed'] = $redis->zScore("tq:ranks:weekly:$statType:shipsDestroyed", $id);
+$statistics['weeklyShipsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:shipsDestroyed", $id));
+$statistics['weeklyShipsLost'] = (int) $redis->zScore("tq:ranks:weekly:$statType:shipsLost", $id);
+$statistics['weeklyShipsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:shipsLost", $id));
+$statistics['weeklyIskDestroyed'] = $redis->zScore("tq:ranks:weekly:$statType:iskDestroyed", $id);
+$statistics['weeklyIskDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:iskDestroyed", $id));
+$statistics['weeklyIskLost'] = $redis->zScore("tq:ranks:weekly:$statType:iskLost", $id);
+$statistics['weeklyIskLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:iskLost", $id));
+$statistics['weeklyPointsDestroyed'] = $redis->zScore("tq:ranks:weekly:$statType:pointsDestroyed", $id);
+$statistics['weeklyPointsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:pointsDestroyed", $id));
+$statistics['weeklyPointsLost'] = $redis->zScore("tq:ranks:weekly:$statType:pointsLost", $id);
+$statistics['weeklyPointsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:pointsLost", $id));
+$statistics['weeklyOverallRank'] = Util::rankCheck($redis->zRank("tq:ranks:weekly:$statType", $id));
+
+if (@$statistics['weeklyShipsLost'] > 1) {
+    $destroyed = @$statistics['weeklyShipsDestroyed']  + @$statistics['weeklyPointsDestroyed'];
+    $lost = @$statistics['weeklyShipsLost'] + @$statistics['weeklyPointsLost'];
+    if ($destroyed > 0 && $lost > 0) {
+        $ratio = floor(($destroyed / ($lost + $destroyed)) * 100);
+        $extra['weeklyDangerRatio'] = $ratio;
+    }
+}
+$weeklySoloKills = MongoFilter::getCount(['isVictim' => false, "${type}ID" => (int) $id, 'solo' => true, 'pastSeconds' => 604800]);
+if ($weeklySoloKills > 0 && $statistics['weeklyShipsDestroyed'] > 0) {
+    $gangFactor = 100 - floor(100 * ($weeklySoloKills / ($weeklySoloKills + $statistics['weeklyShipsDestroyed'])));
+    $extra['weeklyGangFactor'] = $gangFactor;
+}
+else if ( $statistics['weeklyShipsDestroyed'] > 0) {
+    $extra['weeklyGangFactor'] = 100;
+}
+$statistics['weeklySoloKills'] = $weeklySoloKills;
 
 // Get previous rankings 
 $previousTime = time() - (14 * 86400);
