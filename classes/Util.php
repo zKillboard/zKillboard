@@ -102,6 +102,7 @@ class Util
                 case 'pretty':
                 case 'zkbOnly':
                 case 'awox':
+                case 'abyssal':
                 case 'no-attackers':
                 case 'no-items':
                 case 'asc':

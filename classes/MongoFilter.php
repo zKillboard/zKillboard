@@ -249,6 +249,10 @@ class MongoFilter
                 case 'solo':
                     $and[] = ['solo' => true];
                     break;
+                case 'abyssal':
+                    $and[] = ['system.regionID' => ['$gte' => 12000000]];
+                    $and[] = ['system.regionID' => ['$lt' => 13000000]];
+                    break;
                 case 'npc':
                     $and[] = ['npc' => (bool) $value];
                     break;
