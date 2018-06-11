@@ -197,7 +197,8 @@ class Mdb
         $result = iterator_to_array($cursor);
         $time = $timer->stop();
         if ($time > $longQueryMS) {
-            Log::log("Long query (${time}ms): $serialized");
+            global $uri;
+            Log::log("Long query (${time}ms): $serialized $uri");
         }
 
         if ($cacheTime > 0 && sizeof($result) > 0) {
