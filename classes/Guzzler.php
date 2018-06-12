@@ -61,8 +61,10 @@ class Guzzler
         $params['uri'] = $uri;
         $params['callType'] = strtoupper($callType);
 
+        while ($this->concurrent >= $this->maxConcurrent) $this->tick();
+
         $wait = 0;
-        while ($redis->get("zkb:errors") >= 95 || $redis->get("tqCountInt") < 100 && $wait < 60) {
+        while (($redis->get("zkb:errors") >= 95 || $redis->get("tqCountInt") < 100) && $wait < 60) {
             $wait++;
             $this->tick();
             sleep(1);
@@ -110,7 +112,6 @@ class Guzzler
                 $rejected($guzzler, $params, $connectionException);
             });
         $this->inc();
-        while ($this->concurrent >= $this->maxConcurrent) $this->tick();
     }
 
     public function verifyCallable($callable)
