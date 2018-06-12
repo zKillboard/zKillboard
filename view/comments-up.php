@@ -3,6 +3,7 @@
 global $mdb, $ip, $redis;
 
 $key = "comment:$pageID";
+$publish = false;
 if ($commentID >= 0 && $commentID < count(Comments::$defaultComments) && $redis->get("validUser:$ip") == "true") {
     $comment = $mdb->findDoc("comments", ['pageID' => $pageID, 'commentID' => $commentID]);
     if ($comment == null) {
@@ -12,6 +13,7 @@ if ($commentID >= 0 && $commentID < count(Comments::$defaultComments) && $redis-
 
     $mdb->save("comments", $comment);
     $redis->del($key);
+    $publish = true;
 }
 
 $comments = $redis->get($key);
@@ -32,4 +34,7 @@ if ($comments !== false) {
     $redis->setex($key, 60, json_encode($comments));
 }
 
-$app->render("components/commentblock.html", ['comments' => $comments]);
+global $twig;
+$out = $twig->render("components/commentblock.html", ['comments' => $comments]);
+if ($publish) $redis->publish("comment:$pageID", json_encode(['action' => 'comment', 'html' => $out]));
+echo $out;

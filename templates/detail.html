@@ -285,6 +285,7 @@
 <script>
 $(document).ready(function() {
     loadComments(1);
+    pubsub('comment:kill-{{ killdata.info.killID }}');
 });
 
 

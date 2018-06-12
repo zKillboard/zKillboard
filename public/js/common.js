@@ -94,6 +94,8 @@ function wslog(msg)
         $("#lasthour").text(json.kills);
     } else if (json.action === 'audio') {
         audio(json.uri);
+    } else if (json.action === 'comment') {
+        $("#commentblock").html(json.html);
     } else if (json.action === 'littlekill') {
         // Add the killmail to the kill list
         $.get("/killlistrow/" + json.killID + "/" + entityType + "/" + entityID + "/", function(data) { 
