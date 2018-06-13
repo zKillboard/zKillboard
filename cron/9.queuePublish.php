@@ -19,9 +19,11 @@ function publish($killID)
     global $mdb, $redis, $imageServer;
 
     $kill = $mdb->findDoc('killmails', ['killID' => $killID]);
-    unset($kill['_id']);
-    unset($kill['sequence']);
-    $redis->publish("killstream", json_encode($kill, true));
+    $raw  = $mdb->findDoc('esimails', ['killmail_id' => $killID]);
+    unset($raw['_id']);
+    unset($raw['sequence']);
+    $raw['zkb'] = $kill['zkb'];
+    $redis->publish("killstream", json_encode($raw));
 
     $hours24 = time() - 86400;
     if ($kill['dttm']->sec < $hours24) return;
