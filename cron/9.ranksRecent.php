@@ -70,13 +70,13 @@ foreach ($types as $type => $value) {
             $iskDestroyedRank = rankCheck($max, $redis->zRevRank("$key:iskDestroyed", $id));
             $iskLost = $redis->zScore("$key:iskLost", $id);
             $iskLostRank = rankCheck($max, $redis->zRevRank("$key:iskLost", $id));
-            $iskEff = ($iskDestroyed / ($iskDestroyed + $iskLost));
+            $iskEff = ($iskDestroyed + $iskLost) == 0 ? 0 : ($iskDestroyed / ($iskDestroyed + $iskLost));
 
             $pointsDestroyed = $redis->zScore("$key:pointsDestroyed", $id);
             $pointsDestroyedRank = rankCheck($max, $redis->zRevRank("$key:pointsDestroyed", $id));
             $pointsLost = $redis->zScore("$key:pointsLost", $id);
             $pointsLostRank = rankCheck($max, $redis->zRevRank("$key:pointsLost", $id));
-            $pointsEff = ($pointsDestroyed / ($pointsDestroyed + $pointsLost));
+            $pointsEff = ($pointsDestroyed + $pointsLost) == 0 ? 0 : ($pointsDestroyed / ($pointsDestroyed + $pointsLost));
 
             $avg = ceil(($shipsDestroyedRank + $iskDestroyedRank + $pointsDestroyedRank) / 3);
             $adjuster = (1 + $shipsEff + $iskEff + $pointsEff) / 4;
@@ -110,7 +110,7 @@ function moveAndExpire(&$multi, $today, $key)
     $multi->expire($newKey, 9000);
 }
 
-$redis->setex($hourKey, 9000, true);
+$redis->setex($hourKey, 86400, true);
 Util::out('Recent rankings complete');
 
 function zAdd(&$multi, $key, $value, $id)
