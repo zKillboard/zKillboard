@@ -16,14 +16,20 @@ while ($minute == date('Hi')) {
 
 function publish($killID)
 {
-    global $mdb, $redis, $imageServer;
+    global $mdb, $redis, $imageServer, $esiServer;
 
     $kill = $mdb->findDoc('killmails', ['killID' => $killID]);
     $raw  = $mdb->findDoc('esimails', ['killmail_id' => $killID]);
     unset($raw['_id']);
-    unset($raw['sequence']);
-    $raw['zkb'] = $kill['zkb'];
-    $redis->publish("killstream", json_encode($raw));
+
+    $zkb = $kill['zkb'];
+    $zkb['npc'] = @$kill['npc'];
+    $zkb['solo'] = @$kill['solo'];
+    $zkb['awox'] = @$kill['awox'];
+    $zkb['esi'] = "$esiServer/latest/killmails/$killID/".$zkb['hash'].'/';
+    $zkb['url'] = "https://zkillboard/kill/$killID/";
+    $raw['zkb'] = $zkb;
+    $redis->publish("killstream", json_encode($raw, true));
 
     $hours24 = time() - 86400;
     if ($kill['dttm']->sec < $hours24) return;
