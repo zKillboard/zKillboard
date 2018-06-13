@@ -106,7 +106,6 @@ class Guzzler
                 $this->lastHeaders = $response == null ? [] : array_change_key_case($response->getHeaders());
                 $params['content'] = method_exists($connectionException->getResponse(), "getBody") ? (string) $connectionException->getResponse()->getBody() : "";
                 $code = $connectionException->getCode();
-                $redis->del("zkb:etags:" . $params['uri']);
                 $this->setEsiErrorCount();
 
                 $rejected($guzzler, $params, $connectionException);
