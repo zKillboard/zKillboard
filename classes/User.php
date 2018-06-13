@@ -103,7 +103,7 @@ class User
     {
         global $mdb;
 
-        $history = $mdb->find('payments', ['ownerID1' => "$userID"], ['date' => -1]);
+        $history = $mdb->find('payments', ['ownerID1' => (int) $userID], ['date' => -1]);
 
         return $history;
     }
