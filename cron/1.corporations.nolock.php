@@ -41,7 +41,7 @@ while ($minute == date('Hi')) {
         if ($row != null) {
             $refreshToken = $row['refreshToken'];
             $row['corporationID'] = $corpID;
-            $params = ['row' => $row, 'esi' => $esi, 'tokenTime' => time(), 'refreshToken' => $refreshToken];
+            $params = ['row' => $row, 'esi' => $esi, 'tokenTime' => time(), 'refreshToken' => $refreshToken, 'corpID' => $corpID];
 
             $redis->setex("zkb:corpInProgress:$corpID", 3600, "true");
             $redis->setex("zkb:recentCorpCheck:$corpID", 300, "true");
@@ -77,7 +77,7 @@ function accessTokenDone(&$guzzler, &$params, $content)
     $headers['etag'] = true;
 
     $charID = $row['characterID'];
-    $corpID = Info::getInfoField("characterID", $charID, 'corporationID');
+    $corpID = $params['corpID'];
 
     $url = "$esiServer/v1/corporations/$corpID/killmails/recent/";
     $guzzler->call($url, "success", "fail", $params, $headers, 'GET');
@@ -100,7 +100,7 @@ function success($guzzler, $params, $content)
     }
 
     $charID = $row['characterID'];
-    $corpID = (int) Info::getInfoField("characterID", $charID, 'corporationID');
+    $corpID = $params['corpID'];
 
     $successes = 1 + ((int) @$row['successes']);
     $modifiers = ['corporationID' => $corpID, 'lastFetch' => $mdb->now(), 'successes' => $successes];
@@ -110,6 +110,7 @@ function success($guzzler, $params, $content)
 
     $name = Info::getInfoField('characterID', $charID, 'name');
     $corpName = Info::getInfoField('corporationID', $corpID, 'name');
+    if ($corpName == "") $corpName = "Corporation $corpID";
     $verifiedKey = "apiVerified:$corpID";
     $corpVerified = $redis->get($verifiedKey);
     if ($corpVerified === false) ZLog::add("$corpName ($name) is now verified.", $charID);
