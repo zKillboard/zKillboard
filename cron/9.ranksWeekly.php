@@ -2,21 +2,20 @@
 
 require_once '../init.php';
 
-$today = date('YmdH');
-$todaysKey = "zkb:weeklyRanksCalculated:$today";
-if ($redis->get($todaysKey) == true) {
+$today = date('Ymd');
+$hourKey = "zkb:weeklyRanksCalculated:" . date('YmdH');
+if ($redis->get($hourKey) == true) {
     exit();
 }
 
 $statClasses = ['ships', 'isk', 'points'];
 $statTypes = ['Destroyed', 'Lost'];
 
-$minKillID = $mdb->findField('oneWeek', 'killID', [], ['killID' => 1]);
 $completed = [];
 
 Util::out('weekly time ranks - first iteration');
 $types = [];
-$iter = $mdb->find("oneWeek");
+$iter = $mdb->getCollection("oneWeek")->find();
 foreach ($iter as $row) {
     $involved = $row['involved'];
     foreach ($involved as $entity) {
@@ -25,26 +24,15 @@ foreach ($iter as $row) {
                 continue;
             }
 
-            if ($type == 'corporationID' && $id <= 1999999) {
-                continue;
-            }
-            if ($type == 'shipTypeID' && Info::getGroupID($id) == 29) {
-                continue;
-            }
-
-            if (isset($completed["$type:$id"])) {
-                continue;
-            }
+            if (isset($completed["$type:$id"])) continue;
             $completed["$type:$id"] = true;
 
             $types[$type] = true;
             $key = "tq:ranks:weekly:$type:$today";
 
-            $weeklyKills = getWeekly($type, $id, false, $minKillID);
-            if ($weeklyKills['killIDCount'] == 0) {
-                continue;
-            }
-            $weeklyLosses = getWeekly($type, $id, true, $minKillID);
+            $weeklyKills = getWeekly($type, $id, false);
+            $weeklyLosses = getWeekly($type, $id, true);
+            if ($weeklyKills + $weeklyLosses == 0) continue;
 
             $multi = $redis->multi();
             zAdd($multi, "$key:shipsDestroyed", $weeklyKills['killIDCount'], $id);
@@ -75,12 +63,10 @@ foreach ($types as $type => $value) {
             $shipsDestroyedRank = rankCheck($max, $redis->zRevRank("$key:shipsDestroyed", $id));
             $shipsLost = $redis->zScore("$key:shipsLost", $id);
             $shipsLostRank = rankCheck($max, $redis->zRevRank("$key:shipsLost", $id));
+            if ($shipsDestroyed + $shipsLost == 0) continue;
             $shipsEff = ($shipsDestroyed / ($shipsDestroyed + $shipsLost));
 
             $iskDestroyed = $redis->zScore("$key:iskDestroyed", $id);
-            if ($iskDestroyed == 0) {
-                continue;
-            }
             $iskDestroyedRank = rankCheck($max, $redis->zRevRank("$key:iskDestroyed", $id));
             $iskLost = $redis->zScore("$key:iskLost", $id);
             $iskLostRank = rankCheck($max, $redis->zRevRank("$key:iskLost", $id));
@@ -107,7 +93,7 @@ foreach ($types as $type => $value) {
     $multi->del("tq:ranks:weekly:$type");
     $multi->zUnion("tq:ranks:weekly:$type", ["tq:ranks:weekly:$type:$today"]);
     $multi->expire("tq:ranks:weekly:$type", 9000);
-    $multi->expire("tq:ranks:weekly:$type:$today", 9000);
+    $multi->expire("tq:ranks:weekly:$type:$today", (7 * 86400));
     moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:shipsDestroyed");
     moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:shipsLost");
     moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:iskDestroyed");
@@ -124,7 +110,7 @@ function moveAndExpire(&$multi, $today, $key)
     $multi->expire($newKey, 9000);
 }
 
-$redis->setex($todaysKey, 9000, true);
+$redis->setex($hourKey, 9000, true);
 Util::out('Weekly rankings complete');
 
 function zAdd(&$multi, $key, $value, $id)
@@ -139,17 +125,15 @@ function rankCheck($max, $rank)
     return $rank === false ? $max : ($rank + 1);
 }
 
-function getWeekly($type, $id, $isVictim, $minKillID)
+function getWeekly($type, $id, $isVictim)
 {
     global $mdb;
 
     // build the query
     $query = [$type => $id, 'isVictim' => $isVictim];
+    if ($isVictim == true) $query['npc'] = false;
     $query = MongoFilter::buildQuery($query);
-    // set the proper sequence values
-    $query = ['$and' => [['killID' => ['$gte' => $minKillID]], $query]];
 
     $result = $mdb->group('oneWeek', [], $query, 'killID', ['zkb.points', 'zkb.totalValue']);
-
     return sizeof($result) ? $result[0] : ['killIDCount' => 0, 'zkb_pointsSum' => 0, 'zkb_totalValueSum' => 0];
 }
