@@ -17,8 +17,8 @@ class Guzzler
         $this->curl = new \GuzzleHttp\Handler\CurlMultiHandler();
         $this->handler = \GuzzleHttp\HandlerStack::create($this->curl);
         $this->client = new \GuzzleHttp\Client(['curl' => [CURLOPT_FRESH_CONNECT => false], 'connect_timeout' => 10, 'timeout' => 60, 'handler' => $this->handler, 'headers' => ['User-Agent' => 'zkillboard.com']]);
-        $this->maxConcurrent = max($maxConcurrent, 1);
-        $this->usleep = max(0, min(1000000, (int) $usleep));
+        $this->maxConcurrent = ($redis->get("zkb:420prone") == "true") ? 1 : $maxConcurrent;
+        //$this->usleep = 100000; //max(0, min(1000000, (int) $usleep));
     }
 
     public function tick()
@@ -63,13 +63,10 @@ class Guzzler
 
         while ($this->concurrent >= $this->maxConcurrent) $this->tick();
 
-        $wait = 0;
-        while (($redis->get("zkb:errors") >= 95 || $redis->get("tqCountInt") < 100) && $wait < 60) {
-            $wait++;
+        while ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") {
             $this->tick();
             sleep(1);
         }
-        if ($wait >= 60) return;
 
         $statusType = self::getType($uri);
 
@@ -93,7 +90,6 @@ class Guzzler
                 if (isset($this->lastHeaders['warning'])) Util::out("Warning: " . $params['uri'] . " " . $this->lastHeaders['warning'][0]);
                 if (isset($this->lastHeaders['etag']) && strlen($content) > 0) $redis->setex("zkb:etags:" . $params['uri'], 604800, $this->lastHeaders['etag'][0]);
                 if ($etag !== null) Status::addStatus("cached304", ($response->getStatusCode() == 304));
-                $this->setEsiErrorCount();
 
                 $fulfilled($guzzler, $params, $content);
             },
@@ -106,7 +102,8 @@ class Guzzler
                 $this->lastHeaders = $response == null ? [] : array_change_key_case($response->getHeaders());
                 $params['content'] = method_exists($connectionException->getResponse(), "getBody") ? (string) $connectionException->getResponse()->getBody() : "";
                 $code = $connectionException->getCode();
-                $this->setEsiErrorCount();
+                $sleep = $this->setEsiErrorCount();
+                sleep(1);
 
                 $rejected($guzzler, $params, $connectionException);
             });
@@ -144,8 +141,14 @@ class Guzzler
         $headers = $this->getLastHeaders();
         if (!isset($headers['x-esi-error-limit-reset'])) return;
 
-        $errorRemain = $headers['x-esi-error-limit-remain'][0];
-        $errorReset = $headers['x-esi-error-limit-reset'][0];
-        $redis->setex("zkb:errors", $errorReset, (100 - $errorRemain));
+        $errorCount = $headers['x-esi-error-limit-remain'][0];
+        $errorReset = max(1, (int) $headers['x-esi-error-limit-reset'][0]) + 1;
+        if ($errorCount == 0) {
+            $i = $redis->set("zkb:420ed", "true", ['nx', 'ex' => $errorReset]);
+            if ($i === true) {
+                Log::log("420'ed for $errorReset seconds");
+                $redis->setex("zkb:420prone", 300, "true");
+            }
+        }
     }
 }
