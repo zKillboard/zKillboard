@@ -16,9 +16,9 @@ $key =  ['characterID' => $userID, 'killID' => (int) $killID];
 if ($action) {
     $mdb->insert("favorites", $key);
     echo json_encode(['color' => '#FDBC2C', 'message' => "Killmail has been added to your bookmarks."]);
-    Log::log("$name has favorited $killID");
+    ZLog::log("$name has favorited $killID - https://zkillboard.com/kill/$killID/", $userID, true);
 } else {
     $mdb->remove("favorites", $key);
     echo json_encode(['color' => 'rgb(128, 128, 128)', 'message' => "Killmail has been removed from your bookmarks."]);
-    Log::log("$name has unfavorited $killID");
+    ZLog::log("$name has unfavorited $killID - https://zkillboard.com/kill/$killID/", $userID, true);
 }

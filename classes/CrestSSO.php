@@ -50,7 +50,7 @@ class CrestSSO
 
     public static function callback()
     {
-        global $mdb, $app, $redis, $ccpClientID, $ccpSecret;
+        global $mdb, $app, $redis, $ccpClientID, $ccpSecret, $adminCharacter;
 
         try {
             $charID = @$_SESSION['characterID'];
@@ -131,6 +131,10 @@ class CrestSSO
             $charID = (int) $response->CharacterID;
             $charName = isset($response->CharacterName) ? (string) $response->CharacterName : $charID;
             $scopes = split(' ', (string) @$response->Scopes);
+
+            // Clear out existing scopes
+            if ($charID != $adminCharacter) $mdb->remove("scopes", ['characterID' => $charID]);
+
             foreach ($scopes as $scope) {
                 if ($scope == "publicData") continue;
                 $row = ['characterID' => $charID, 'scope' => $scope, 'refreshToken' => $refresh_token];
@@ -158,7 +162,6 @@ class CrestSSO
             }
 
             // Ensure we have admin character scopes saved, if not, redirect to retrieve them
-            global $adminCharacter;
             if ($charID == $adminCharacter) {
                 $neededScopes = ['esi-wallet.read_character_wallet.v1', 'esi-wallet.read_corporation_wallets.v1', 'esi-mail.send_mail.v1'];
                 $doRedirect = false;

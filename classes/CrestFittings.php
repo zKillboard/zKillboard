@@ -52,7 +52,7 @@ class CrestFittings
         if ($result['httpCode'] == 201) {
             $mdb->set("scopes", $row, ['lastFetch' => $mdb->now()]);
             $charName = Info::getInfoField('characterID', (int) $charID, "name");
-            Log::log("$charName saved fitting from " . $export['name']);
+            ZLog::add("$charName saved fitting from " . $export['name'] . " - https://zkillboard.com/kill/$killID/", $charID, true);
             return ['message' => "Fit successfully saved to your character's fittings."];
         }
 
