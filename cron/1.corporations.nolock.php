@@ -28,9 +28,6 @@ while ($minute == date('Hi')) {
     $charID = $esi->next();
     $corpID = Info::getInfoField('characterID', (int) $charID, 'corporationID');
     if ($charID && $corpID > 1999999) {
-        $alliID = Info::getInfoField('characterID', (int) $charID, 'allianceID');
-        if (in_array($corpID, $ignoreEntities) || in_array($alliID, $ignoreEntities)) continue;
-        $ignoreEntities[] = $corpID;
         if ($redis->get("zkb:corpInProgress:$corpID") == "true" || $redis->get("zkb:recentCorpCheck:$corpID") == "true") {
             $esi->setTime($charID, time() + 60);
             continue;
@@ -49,12 +46,6 @@ while ($minute == date('Hi')) {
         } else {
             $esi->remove($charID);
         }
-    }
-    if ($charID && $corpID > 0 && $corpID <= 1999999) {
-        // NPC Corp, lets not keep the scope
-        // $mdb->remove("scopes", $row);
-        // Note: I debated on this for a few weeks, keep the scope, hope they switch to another corp as director
-        // and then verify that corp... but in the end that just doesn't feel right to me. So we'll remove them.
     }
     if ($charID == 0) {
         $guzzler->tick();
