@@ -9,15 +9,13 @@ if ($redis->get("zkb:420prone") == "true") exit();
 
 $guzzler = new Guzzler();
 
-$mdb->removeField("scopes", ['iterated' => 'in progress'], "iterated");
-
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $row = $mdb->findDoc("scopes", ['scope' => "esi-killmails.read_killmails.v1", 'iterated' => false], ['_id' => -1]);
     if ($row == null) break;
 
     $name = Info::getInfoField("characterID", $row['characterID'], 'name');
-    Util::out("Iterating char $name");
+    //Util::out("Iterating char $name");
     $params = ['row' => $row, 'page' => 1];
     $mdb->set("scopes", $row, ['iterated' => 'in progress']);
     $refreshToken = $row['refreshToken'];
@@ -121,27 +119,7 @@ function fail($guzzer, $params, $ex)
 {
     global $mdb;
 
-    $row = $params['row'];
-    $charID = $row['characterID'];
-    $code = $ex->getCode();
-
-    $json = json_decode($params['content'], true);
-    $code = isset($json['sso_status']) ? $json['sso_status'] : $code;
-
-    switch ($code) {
-        case 400: // Server timed out during SSO authentication
-        case 420:
-        case 500:
-        case 502: // Server error, try again in 5 minutes
-        case 503:
-        case 504: // gateway timeout
-        case "": // typically a curl timeout error
-            break;
-        case 403: // Server decided to throw a 403 during SSO authentication when that throws a 502...
-        default:
-            Util::out("killmail char $charID: " . $ex->getMessage() . "\nkillmail content: " . $params['content']);
-    }
-    sleep(1);
+    $mdb->removeField("scopes", $params['row'], "iterated");
 }
 
 function accessTokenFail(&$guzzler, &$params, $ex)
@@ -149,14 +127,12 @@ function accessTokenFail(&$guzzler, &$params, $ex)
     global $mdb;
 
     $row = $params['row'];
-    $esi = $params['esi'];
     $charID = $row['characterID'];
     $code = $ex->getCode();
 
     $json = json_decode($params['content'], true);
     if (@$json['error'] == 'invalid_grant' || @$json['error'] == 'invalid_token') {
         $mdb->remove("scopes", ['characterID' => $charID]);
-        $esi->remove($charID);
         return;
     }
 
@@ -165,7 +141,6 @@ function accessTokenFail(&$guzzler, &$params, $ex)
         case 500:
         case 502: // Server error, try again in 5 minutes
         case "": // typically a curl timeout error
-            $esi->setTime($charID, time() + 30);
             break;
         default:
             Util::out("char token: $charID " . $ex->getMessage() . "\n\n" . $params['content']);

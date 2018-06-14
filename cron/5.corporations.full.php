@@ -9,8 +9,6 @@ global $debug;
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:420prone") == "true") exit();
 
-$mdb->removeField("scopes", ['iterated' => 'in progress'], "iterated");
-
 $guzzler = new Guzzler();
 
 $minute = date('Hi');
@@ -21,7 +19,7 @@ while ($minute == date('Hi')) {
     $charID = $row['characterID'];
     $corpID = $row['corporationID'];
     $corpName = Info::getInfoField('corporationID', $corpID, 'name');
-    Util::out("Iterating corp $corpName");
+    //Util::out("Iterating corp $corpName");
     if ($charID && $corpID > 1999999) {
         $refreshToken = $row['refreshToken'];
         $row['corporationID'] = $corpID;
@@ -109,7 +107,7 @@ function success($guzzler, $params, $content)
         if ($newKills > 0) {
             if ($name === null) $name = $charID;
             while (strlen("$newKills") < 3) $newKills = " " . $newKills;
-            Util::out("Iterated: $newKills kills added by corp $corpName");
+            ZLog::add("Iterated: $newKills kills added by corp $corpName", $charID);
             if ($newKills >= 10) User::sendMessage("$newKills kills added for corp $corpName", $charID);
         }
     }
@@ -133,8 +131,9 @@ function addMail($killID, $hash)
 
 function fail($guzzer, $params, $ex) 
 {
-    $esi = new RedisTimeQueue('tqCorpApiESI', 3600);
-    $esi->setTime($params['row']['characterID'], 1);
+    global $mdb;
+
+    $mdb->removeField("scopes", $params['row'], "iterated");
 }
 
 function accessTokenFail(&$guzzler, &$params, $ex)
@@ -142,7 +141,6 @@ function accessTokenFail(&$guzzler, &$params, $ex)
     global $mdb;
 
     $row = $params['row'];
-    $esi = $params['esi'];
     $charID = $row['characterID'];
     $code = $ex->getCode();
 
@@ -151,7 +149,6 @@ function accessTokenFail(&$guzzler, &$params, $ex)
 
     if (@$json['error'] == 'invalid_grant' || @$json['error'] == 'invalid_token') {
         $mdb->remove("scopes", $row);
-        $esi->remove($charID);
         return;
     }
 
@@ -161,7 +158,6 @@ function accessTokenFail(&$guzzler, &$params, $ex)
         case 502: // Server error, try again in 5 minutes
         case 504:
         case "": // typically a curl timeout error
-            $esi->setTime($charID, time() + 30);
             break;
         default:
             Util::out("corp token: $charID " . $ex->getMessage() . "\n" . $params['content'] . "\n" . "code $code");
