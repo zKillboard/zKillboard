@@ -83,7 +83,7 @@ foreach ($types as $type => $value) {
             $score = ceil($avg / $adjuster);
 
             $redis->zAdd("tq:ranks:recent:$type:$today", $score, $id);
-            $redis->expire("tq:ranks:recent:$type:$today", 9000);
+            $redis->expire("tq:ranks:recent:$type:$today", 86400);
         }
     }
 }
@@ -92,7 +92,7 @@ foreach ($types as $type => $value) {
     $multi = $redis->multi();
     $multi->del("tq:ranks:recent:$type");
     $multi->zUnion("tq:ranks:recent:$type", ["tq:ranks:recent:$type:$today"]);
-    $multi->expire("tq:ranks:recent:$type", 9000);
+    $multi->expire("tq:ranks:recent:$type", 86400);
     $multi->expire("tq:ranks:recent:$type:$today", (7 * 86400));
     moveAndExpire($multi, $today, "tq:ranks:recent:$type:$today:shipsDestroyed");
     moveAndExpire($multi, $today, "tq:ranks:recent:$type:$today:shipsLost");
@@ -107,7 +107,7 @@ function moveAndExpire(&$multi, $today, $key)
 {
     $newKey = str_replace(":$today", '', $key);
     $multi->rename($key, $newKey);
-    $multi->expire($newKey, 9000);
+    $multi->expire($newKey, 86400);
 }
 
 $redis->setex($hourKey, 86400, true);
@@ -117,7 +117,7 @@ function zAdd(&$multi, $key, $value, $id)
 {
     $value = max(0, (int) $value);
     $multi->zAdd($key, $value, $id);
-    $multi->expire($key, 9000);
+    $multi->expire($key, 86400);
 }
 
 function rankCheck($max, $rank)

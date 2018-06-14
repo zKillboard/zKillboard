@@ -110,7 +110,7 @@ function moveAndExpire(&$multi, $today, $key)
     $multi->expire($newKey, 9000);
 }
 
-$redis->setex($hourKey, 9000, true);
+$redis->setex($hourKey, 3600, true);
 Util::out('Weekly rankings complete');
 
 function zAdd(&$multi, $key, $value, $id)
@@ -130,8 +130,7 @@ function getWeekly($type, $id, $isVictim)
     global $mdb;
 
     // build the query
-    $query = [$type => $id, 'isVictim' => $isVictim];
-    if ($isVictim == true) $query['npc'] = false;
+    $query = [$type => $id, 'isVictim' => $isVictim, 'npc' => false];
     $query = MongoFilter::buildQuery($query);
 
     $result = $mdb->group('oneWeek', [], $query, 'killID', ['zkb.points', 'zkb.totalValue']);
