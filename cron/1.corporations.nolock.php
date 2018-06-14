@@ -5,7 +5,7 @@ use cvweiss\redistools\RedisTimeQueue;
 require_once "../init.php";
 
 if ($redis->get("zkb:reinforced") == true) exit();
-$guzzler = new Guzzler($esiCorpKillmails, 500);
+$guzzler = new Guzzler($esiCorpKillmails, 25);
 
 $esi = new RedisTimeQueue('tqCorpApiESI', 3600);
 if (date('i') == 22 || $esi->size() < 100) {
@@ -56,8 +56,10 @@ while ($minute == date('Hi')) {
         // Note: I debated on this for a few weeks, keep the scope, hope they switch to another corp as director
         // and then verify that corp... but in the end that just doesn't feel right to me. So we'll remove them.
     }
-    $guzzler->tick();
-    if ($charID == 0) usleep(100000);
+    if ($charID == 0) {
+        $guzzler->tick();
+        sleep(1);
+    }
 }
 $guzzler->finish();
 
@@ -105,6 +107,7 @@ function success($guzzler, $params, $content)
     $successes = 1 + ((int) @$row['successes']);
     $modifiers = ['corporationID' => $corpID, 'lastFetch' => $mdb->now(), 'successes' => $successes];
     if (!isset($row['added'])) $modifiers['added'] = $mdb->now();
+    if (!isset($row['iterated'])) $modifiers['iterated'] = false;
     if ($content != "" && sizeof($kills) > 0) $modifiers['last_has_data'] = $mdb->now();
     $mdb->set("scopes", $row, $modifiers);
 
@@ -113,7 +116,9 @@ function success($guzzler, $params, $content)
     if ($corpName == "") $corpName = "Corporation $corpID";
     $verifiedKey = "apiVerified:$corpID";
     $corpVerified = $redis->get($verifiedKey);
-    if ($corpVerified === false) ZLog::add("$corpName ($name) is now verified.", $charID);
+    if ($corpVerified === false) {
+        ZLog::add("$corpName ($name) is now verified.", $charID);
+    }
     $redis->setex($verifiedKey, 86400, time());
     $redis->del("zkb:corpInProgress:$corpID");
 
@@ -165,7 +170,6 @@ function fail($guzzer, $params, $ex)
     $json = json_decode($params['content'], true);
     $code = isset($json['sso_status']) ? $json['sso_status'] : $code;
     $corpID = Info::getInfoField('characterID', (int) $charID, 'corporationID');
-    $redis->del("zkb:corpInProgress:$corpID");
 
     if (@$json['error'] == 'invalid_grant' || @$json['error'] == "Character does not have required role(s)" || @$json['error'] == 'invalid_token') {
         $mdb->remove("scopes", $row);
@@ -173,11 +177,9 @@ function fail($guzzer, $params, $ex)
         return;
     }
     if (@$json['error'] == "Character is not in the corporation") {
-        $mdb->removeField("scopes", $row, "corporationID");
-        $mdb->removeField("information", ['type' => 'characterID', 'id' => $charID], "corporationID");
         $chars = new RedisTimeQueue("zkb:characterID", 86400);
-        $chars->setTime($charID, 0);
-        $esi->setTime($charID, time() - 3550);
+        if ($chars->isMember($charID) == false) $chars->add($charID);
+        else $chars->setTime($charID, 0);
         return;
     }
 

@@ -5,6 +5,7 @@ use cvweiss\redistools\RedisTimeQueue;
 require_once '../init.php';
 
 if ($redis->get("zkb:reinforced") == true) exit();
+if ($redis->get("zkb:420prone") == "true") exit();
 $guzzler = new Guzzler(15);
 $chars = new RedisTimeQueue("zkb:characterID", 86400);
 $maxKillID = $mdb->findField("killmails", "killID", [], ['killID' => -1]) - 5000000;
@@ -14,19 +15,21 @@ $dayMod = date("j") % $mod;
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $id = (int) $chars->next();
-    if ($id > 0) {
+    if ($id > 1) {
         $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => $id]);
-        if (strpos(@$row['name'], 'characterID') === false && isset($row['corporationID'])) {
+        /*if (strpos(@$row['name'], 'characterID') === false && isset($row['corporationID'])) {
             $charMaxKillID = (int) $mdb->findField("killmails", "killID", ['involved.characterID' => $id], ['killID' => -1]);
             if ($maxKillID > $charMaxKillID && ($id % $mod != $dayMod)) continue;
-        }
+        }*/
 
         $url = "$esiServer/v4/characters/$id/";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row, 'rtq' => $chars];
-        $guzzler->call($url, "updateChar", "failChar", $params, ['etag' => true]);
+        $guzzler->call($url, "updateChar", "failChar", $params);
     }
-    $guzzler->tick();
-    if ($id == 0) sleep(1);
+    if ($id == 0) {
+        $guzzler->tick();
+        sleep(1);
+    }
 }      
 $guzzler->finish();
 
@@ -67,7 +70,7 @@ function updateChar(&$guzzler, &$params, &$content)
     $row = $params['row'];
     $json = json_decode($content, true);
 
-    $id = $row['id'];
+    $id = (int) $row['id'];
     $corpID = (int) $json['corporation_id'];
 
     $updates = [];
@@ -89,6 +92,8 @@ function updateChar(&$guzzler, &$params, &$content)
     if (sizeof($updates) > 1) {
         $redis->del(Info::getRedisKey('characterID', $id));
     }
+    // Make sure the scopes have the right corporationID for this character
+    $mdb->set("scopes", ['characterID' => $id], ['corporationID' => $corpID], true);
 }
 
 function compareAttributes(&$updates, $key, $oAttr, $nAttr) {

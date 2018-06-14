@@ -5,21 +5,23 @@ use cvweiss\redistools\RedisTimeQueue;
 require_once "../init.php";
 
 if ($redis->get("zkb:reinforced") == true) exit();
+if ($redis->get("zkb:420prone") == "true") exit();
 
-$guzzler = new Guzzler(1);
+$guzzler = new Guzzler();
 
 $mdb->removeField("scopes", ['iterated' => 'in progress'], "iterated");
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    $row = $mdb->findDoc("scopes", ['scope' => "esi-killmails.read_killmails.v1", 'iterated' => ['$exists' => false]], ['_id' => -1]);
+    $row = $mdb->findDoc("scopes", ['scope' => "esi-killmails.read_killmails.v1", 'iterated' => false], ['_id' => -1]);
     if ($row == null) break;
 
+    $name = Info::getInfoField("characterID", $row['characterID'], 'name');
+    Util::out("Iterating char $name");
     $params = ['row' => $row, 'page' => 1];
     $mdb->set("scopes", $row, ['iterated' => 'in progress']);
     $refreshToken = $row['refreshToken'];
     CrestSSO::getAccessTokenCallback($guzzler, $refreshToken, "accessTokenDone", "accessTokenFail", $params);
-    $guzzler->tick();
 }
 $guzzler->finish();
 

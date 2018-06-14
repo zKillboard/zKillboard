@@ -5,6 +5,7 @@ use cvweiss\redistools\RedisTimeQueue;
 require_once '../init.php';
 
 if ($redis->get("zkb:reinforced") == true) exit();
+if ($redis->get("zkb:420prone") == "true") exit();
 
 $mdb = new Mdb();
 $old = $mdb->now(3600 * 3); // 8 hours

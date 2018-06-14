@@ -5,6 +5,7 @@ require_once '../init.php';
 global $primePrices;
 
 if ($primePrices != true) exit();
+if ($redis->get("zkb:420prone") == "true") exit();
 
 $date = date('Ymd', time() - 7200);
 $yesterday = date('Y-m-d', time() - 7200 - 86400);

@@ -2,6 +2,8 @@
 
 require_once '../init.php';
 
+if ($redis->get("zkb:420prone") == "true") exit();
+
 $redisKey = 'zkb:walletCheck';
 if ($redis->get($redisKey) != true) {
     $guzzler = new Guzzler();
@@ -52,7 +54,7 @@ function success(&$guzzler, &$params, $content)
 
 function fail(&$guzzler, &$params, $ex)
 {
-    print_r($ex);
+    Util::out("Failed making wallet call: " . $ex->getCode() . " " . $ex->getMessage());
 }
 
 function applyBalances()

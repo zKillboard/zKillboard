@@ -5,6 +5,7 @@ use cvweiss\redistools\RedisQueue;
 require_once '../init.php';
 
 if ($redis->get("zkb:reinforced") == true) exit();
+if ($redis->get("zkb:420prone") == "true") exit();
 
 if ($redis->llen("queueProcess") > 100) exit();
 $queueWars = new RedisQueue('queueWars');

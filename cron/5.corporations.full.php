@@ -7,18 +7,21 @@ require_once "../init.php";
 global $debug;
 
 if ($redis->get("zkb:reinforced") == true) exit();
+if ($redis->get("zkb:420prone") == "true") exit();
 
 $mdb->removeField("scopes", ['iterated' => 'in progress'], "iterated");
 
-$guzzler = new Guzzler(10);
+$guzzler = new Guzzler();
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    $row = $mdb->findDoc("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'iterated' => ['$exists' => false], 'corporationID' => ['$gt' => 1999999], 'successes' => ['$gt' => 0]], ['_id' => -1]);
+    $row = $mdb->findDoc("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'iterated' => false, 'corporationID' => ['$gt' => 1999999], 'successes' => ['$gt' => 0]], ['_id' => -1]);
     if ($row == null) break;
 
     $charID = $row['characterID'];
-    $corpID = (int) Info::getInfoField('characterID', (int) $charID, 'corporationID');
+    $corpID = $row['corporationID'];
+    $corpName = Info::getInfoField('corporationID', $corpID, 'name');
+    Util::out("Iterating corp $corpName");
     if ($charID && $corpID > 1999999) {
         $refreshToken = $row['refreshToken'];
         $row['corporationID'] = $corpID;
@@ -27,7 +30,10 @@ while ($minute == date('Hi')) {
 
         CrestSSO::getAccessTokenCallback($guzzler, $refreshToken, "accessTokenDone", "accessTokenFail", $params);
     }
-    $guzzler->tick();
+    if ($charID == 0) {
+        $guzzler->tick();
+        sleep(1);
+    }
 }
 $guzzler->finish();
 
@@ -127,6 +133,8 @@ function addMail($killID, $hash)
 
 function fail($guzzer, $params, $ex) 
 {
+    $esi = new RedisTimeQueue('tqCorpApiESI', 3600);
+    $esi->setTime($params['row']['characterID'], 1);
 }
 
 function accessTokenFail(&$guzzler, &$params, $ex)

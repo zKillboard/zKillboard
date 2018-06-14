@@ -9,6 +9,7 @@ if ($primePrices != true) exit();
 $date = date('Ymd', time() - 7200);
 $key = "tq:pricesFetched:$date";
 if ($redis->get($key) == "true") exit();
+if ($redis->get("zkb:420prone") == "true") exit();
 
 $guzzler = new Guzzler(10, 10);
 $guzzler->call("$esiServer/v1/markets/prices/", "success", "fail");

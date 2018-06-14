@@ -16,7 +16,7 @@ $mdb->set("crestmails", ['processed' => ['$ne' => true]], ['processed' => false]
 
 $minute = date("Hi");
 while ($minute == date("Hi")) {
-    $row = $mdb->findDoc("crestmails", ['processed' => false], ['killID' => -1]);
+    $row = $mdb->findDoc("crestmails", ['processed' => false], ['killID' => 1]);
     if ($row != null) {
         $killID = $row['killID'];
         $hash = $row['hash'];
@@ -44,7 +44,11 @@ function fail($guzzler, $params, $ex) {
         case 422:
             $mdb->remove("crestmails", $row);
             break;
+        case 0:
+        case 420:
+        case 500:
         case 502: // Do nothing, the server messed up and we'll try again in a minute
+        case 503:
         case 504:
             break;
         default:

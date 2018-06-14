@@ -6,6 +6,7 @@ $date = (int) date('Ymd', time() - 7200);
 if ($redis->get("zkb:insuranceFetched:$date") == true) {
     exit();
 }
+if ($redis->get("zkb:420prone") == "true") exit();
 
 $guzzler = new Guzzler();
 $guzzler->call("$esiServer/v1/insurance/prices/", "success", "fail", ['date' => $date]);

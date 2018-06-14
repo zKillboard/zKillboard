@@ -16,12 +16,12 @@ if (date('i') == 22 || $esi->size() < 100) {
 }
 if ($esi->size() == 0) exit();
 
-$guzzler = new Guzzler($esiCharKillmails, 500);
+$guzzler = new Guzzler($esiCharKillmails, 25);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $charID = $esi->next(false);
-    if ($charID) {
+    if ($charID > 0) {
         $row = $mdb->findDoc("scopes", ['characterID' => (int) $charID, 'scope' => "esi-killmails.read_killmails.v1"], ['lastFetch' => 1]);
         if ($row != null) {
             $params = ['row' => $row, 'esi' => $esi];
@@ -38,7 +38,7 @@ while ($minute == date('Hi')) {
         }
     } else {
         $guzzler->tick();
-        usleep(100000);
+        sleep(1);
     }
 }
 $guzzler->finish();
@@ -89,8 +89,9 @@ function success($guzzler, $params, $content)
     $successes = (int) @$row['successes'];
     $successes++;
 
-    $modifiers = ['corporationID' => $corpID, 'lastFetch' => $mdb->now(), 'errorCount' => 0, 'successes' => $successes];
+    $modifiers = ['lastFetch' => $mdb->now(), 'errorCount' => 0, 'successes' => $successes];
     if (!isset($row['added']->sec)) $modifiers['added'] = $mdb->now();
+    if (!isset($row['iterated'])) $modifiers['iterated'] = false;
     if ($content != "" && sizeof($kills) > 0) $modifiers['last_has_data'] = $mdb->now();
     $mdb->set("scopes", $row, $modifiers); 
     $redis->setex("apiVerified:$charID", 86400, time());
@@ -176,7 +177,8 @@ function accessTokenFail(&$guzzler, &$params, $ex)
 
     $json = json_decode($params['content'], true);
     if (@$json['error'] == 'invalid_grant' || @$json['error'] == 'invalid_token') {
-        $mdb->remove("scopes", ['characterID' => $charID]);
+        Util::out("Removing invalid refresh token for $charID");
+        $mdb->remove("scopes", ['characterID' => (int) $charID]);
         $esi->remove($charID);
         return;
     }

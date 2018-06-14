@@ -7,6 +7,7 @@ global $fetchWars;
 if ($fetchWars == null || $fetchWars == false) {
     exit();
 }
+if ($redis->get("zkb:420prone") == "true") exit();
 
 $key = 'tqFetchWars';
 if ($redis->get($key) == true) {
