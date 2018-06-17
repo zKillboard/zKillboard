@@ -27,7 +27,7 @@ function publish($killID)
     $zkb['solo'] = @$kill['solo'];
     $zkb['awox'] = @$kill['awox'];
     $zkb['esi'] = "$esiServer/latest/killmails/$killID/".$zkb['hash'].'/';
-    $zkb['url'] = "https://zkillboard/kill/$killID/";
+    $zkb['url'] = "https://zkillboard.com/kill/$killID/";
     $raw['zkb'] = $zkb;
     $redis->publish("killstream", json_encode($raw, true));
 
