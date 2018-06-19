@@ -27,7 +27,7 @@ class Price
 
         // Have we fetched prices for this typeID today?
         $today = date('Ymd', time() - 7200); // Back one hour because of CREST cache
-        $fetchedKey = "tq:pricesFetched:$today";
+        $fetchedKey = "RC:tq:pricesFetched:$today";
         if ($fetch === true) {
             if ($redis->hGet($fetchedKey, $typeID) != true) {
                 static::getCrestPrices($typeID);
@@ -41,7 +41,7 @@ class Price
         $priceKey = "tq:prices:$date";
         $price = $redis->hGet($priceKey, $typeID);
         if ($price != null && $recalc == false) {
-            return $price;
+            //return $price;
         }
 
         $marketHistory = $mdb->findDoc('prices', ['typeID' => $typeID]);
