@@ -25,7 +25,7 @@ class CrestFittings
         $export = [];
         $charName = Info::getInfoField('characterID', (int) @$victim['character_id'], 'name');
         $shipName = Info::getInfoField('shipTypeID', $victim['ship_type_id'], 'name');
-        $export['name'] = "$charName's $shipName";
+        $export['name'] = $charName == "" ? "$shipName" : "$charName's $shipName";
         $export['description'] = "Imported from https://zkillboard.com/kill/$killID/";
         $export['ship_type_id'] = $victim['ship_type_id'];
 
