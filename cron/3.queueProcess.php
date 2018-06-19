@@ -127,14 +127,6 @@ while ($minute == date('Hi')) {
 
         $queueInfo->push($killID);
         $redis->incr('zkb:totalKills');
-        $multi = $redis->multi();
-        $time = $kill['dttm']->sec;
-        $time = $time - ($time % 86400);
-        $date = date('Ymd', $time);
-        $multi->hSet("zkb:day:$date", $killID, $zkb['hash']);
-        $multi->sadd("zkb:days", $date);
-        $multi->exec();
-
         ++$counter;
     } else usleep(50000);
 }

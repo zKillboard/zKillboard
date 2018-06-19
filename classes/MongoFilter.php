@@ -314,11 +314,6 @@ class MongoFilter
     {
         global $redis;
 
-        if (strlen("$month") < 2) $month = "0$month";
-        $key = "zkb:day:{$year}{$month}01";
-        $set = $redis->hgetall($key);
-        reset($set);
-        $killID = (int) key($set);
-        return $killID;
+        return (int) $redis->get("zkb:firstkillid:{$year}{$month}01");
     }
 }
