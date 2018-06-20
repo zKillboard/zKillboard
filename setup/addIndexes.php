@@ -54,6 +54,14 @@ echo "Creating index : 'delayed' => 1, with sparse = 1 and unique = 0 ... ";
 $crestmails->ensureIndex(array('delayed' => 1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
 
+// daydump
+echo "\nCreating collection daydump ... ";
+$daydump = $db->createCollection("daydump");
+echo "Done\n";
+echo "Creating index : 'day' => 1, with sparse = 0 and unique = 0 ... ";
+$daydump->ensureIndex(array('day' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+
 // esimails
 echo "\nCreating collection esimails ... ";
 $esimails = $db->createCollection("esimails");
@@ -612,6 +620,9 @@ $scopes->ensureIndex(array('corporationID' => 1, 'scope' => 1), array("sparse" =
 echo "Done\n";
 echo "Creating index : 'scope' => 1, 'lastApiUpdate' => 1, with sparse = 0 and unique = 0 ... ";
 $scopes->ensureIndex(array('scope' => 1, 'lastApiUpdate' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'iterated' => 1, with sparse = 1 and unique = 0 ... ";
+$scopes->ensureIndex(array('iterated' => 1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
 
 // sponsored
