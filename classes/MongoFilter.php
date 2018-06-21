@@ -314,6 +314,7 @@ class MongoFilter
     {
         global $redis;
 
+        if (strlen("$month") < 2) $month = "0$month";
         return (int) $redis->get("zkb:firstkillid:{$year}{$month}01");
     }
 }
