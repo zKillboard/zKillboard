@@ -19,7 +19,6 @@ while ($minute == date('Hi')) {
     $charID = $row['characterID'];
     $corpID = $row['corporationID'];
     $corpName = Info::getInfoField('corporationID', $corpID, 'name');
-    //Util::out("Iterating corp $corpName");
     if ($charID && $corpID > 1999999) {
         $refreshToken = $row['refreshToken'];
         $row['corporationID'] = $corpID;

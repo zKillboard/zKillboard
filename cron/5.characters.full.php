@@ -15,7 +15,6 @@ while ($minute == date('Hi')) {
     if ($row == null) break;
 
     $name = Info::getInfoField("characterID", $row['characterID'], 'name');
-    //Util::out("Iterating char $name");
     $params = ['row' => $row, 'page' => 1];
     $mdb->set("scopes", $row, ['iterated' => 'in progress']);
     $refreshToken = $row['refreshToken'];
