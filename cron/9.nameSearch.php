@@ -2,7 +2,7 @@
 
 require_once '../init.php';
 
-global $redis;
+global $mdb, $redis;
 
 if ($redis->llen("queueProcess") > 100) exit();
 $key = "autocomplete:" . date('YmdH');
@@ -58,11 +58,13 @@ foreach ($entities as $entity) {
         $setKey = "s:search:$type";
         $toMove[$setKey] = true;
         $redis->zAdd($setKey, 0, trim(strtolower($name))."\x00$id");
+        $mdb->insertUpdate("search", ['type' => $type, 'name' => strtolower($name)], ['id' => $id, 'dttm' => $mdb->now()]);
     }
     if (strlen($flag) > 0) {
         $setKey = "s:search:$type:flag";
         $toMove[$setKey] = true;
         $redis->zAdd($setKey, 0, strtolower("$flag\x00$id"));
+        $mdb->insertUpdate("search", ['type' => $type . ":flag", 'name' => strtolower($flag)], ['id' => $id, 'dttm' => $mdb->now()]);
     }
 }
 
@@ -71,4 +73,4 @@ foreach ($toMove as $setKey => $set) {
     $redis->rename($setKey, substr($setKey, 2));
 }
 
-$redis->setex($key, 3600, true);
+$redis->setex($key, 7200, true);

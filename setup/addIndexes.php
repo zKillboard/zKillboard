@@ -625,6 +625,17 @@ echo "Creating index : 'iterated' => 1, with sparse = 1 and unique = 0 ... ";
 $scopes->ensureIndex(array('iterated' => 1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
 
+// search
+echo "\nCreating collection search ... ";
+$search = $db->createCollection("search");
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'name' => 1, with sparse = 0 and unique = 0 ... ";
+$search->ensureIndex(array('type' => 1, 'name' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'dttm' => 1, with sparse = 0 and unique = 0 ... ";
+$search->ensureIndex(array('dttm' => 1), array("sparse" => 0, "unique" => 0, "expireAfterSeconds" => 86400));
+echo "Done\n";
+
 // sponsored
 echo "\nCreating collection sponsored ... ";
 $sponsored = $db->createCollection("sponsored");

@@ -6,9 +6,11 @@ class zkbSearch
 
     public static function getResults($search, $entityType = null)
     {
-        global $redis;
+        global $redis, $mdb;
 
         $search = strtolower($search);
+        $regex = (substr($search, 0, 2) == "r:" && strlen($search) > 2) ? substr($search, 2) : null;
+        $search = (substr($search, 0, 2) == "r:" && strlen($search) > 2) ? substr($search, 2) : $search;
         $low = "[$search\x00";
 
         $exactMatch = [];
@@ -18,14 +20,23 @@ class zkbSearch
             if ($entityType != null && $entityType != $type) {
                 continue;
             }
+            if ((sizeof($exactMatch) + sizeof($partialMatch)) >= 15) continue;
 
             $result = $redis->zRangeByLex("search:$type", $low, '+', 0, 9);
+            if (sizeof($result) < 10 && $regex != null && sizeof($partialMatch) < 14) {
+                $matches = $mdb->find("search", ['type' => $type, 'name' => ['$regex' => $regex]]);
+                while (sizeof($result) < 10 && sizeof($matches) > 0) {
+                    $next = array_shift($matches);
+                    $add = $next['name'] . "\x00" . $next['id'];
+                    if (!in_array($add, $result)) $result[] = $add . "\x00regex";
+                }
+            }
 
             $searchType = $type;
             $type = str_replace(':flag', '', $type);
             foreach ($result as $row) {
                 $split = explode("\x00", $row);
-                if (substr($split[0], 0, strlen($search)) != $search) {
+                if (sizeof($split) == 2 && substr($split[0], 0, strlen($search)) != $search) {
                     continue;
                 }
                 $id = $split[1];
