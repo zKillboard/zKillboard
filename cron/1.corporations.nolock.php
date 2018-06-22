@@ -20,21 +20,22 @@ if (date('i') == 22 || $esi->size() < 100) {
     }
 }
 
-$unique = sizeof($mdb->getCollection("scopes")->distinct("corporationID", ['scope' => 'esi-killmails.read_corporation_killmails.v1']));
+$mdb->set("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'lastFetch' => ['$exists' => false]], ['lastFetch' => 0], true);
+$unique = sizeof($mdb->getCollection("scopes")->distinct("corporationID", ['scope' => 'esi-killmails.read_corporation_killmails.v1', 'iterated' => true]));
 $redis->set("tqCorpApiESICount", $unique);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    $charID = $esi->next();
-    $corpID = Info::getInfoField('characterID', (int) $charID, 'corporationID');
-    if ($charID && $corpID > 1999999) {
+    $charID = (int) $esi->next();
+    $corpID = (int) Info::getInfoField('characterID', $charID, 'corporationID');
+    if ($charID > 1 && $corpID > 1999999) {
         if ($redis->get("zkb:corpInProgress:$corpID") == "true" || $redis->get("zkb:recentCorpCheck:$corpID") == "true") {
             $esi->setTime($charID, time() + 60);
             continue;
         } 
 
-        $row = $mdb->findDoc("scopes", ['corporationID' => (int) $corpID, 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['characterID' => 1]);
-        if ($row == null) $row = $mdb->findDoc("scopes", ['characterID' => (int) $charID, 'scope' => "esi-killmails.read_corporation_killmails.v1"]);
+        $row = $mdb->findDoc("scopes", ['corporationID' => $corpID, 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['lastFetch' => 1]);
+        if ($row == null) $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => "esi-killmails.read_corporation_killmails.v1"]);
         if ($row != null) {
             $refreshToken = $row['refreshToken'];
             $row['corporationID'] = $corpID;
@@ -46,6 +47,10 @@ while ($minute == date('Hi')) {
         } else {
             $esi->remove($charID);
         }
+    }
+    if (($charID <= 1) || ($corpID > 1 && $corpID > 0 && $corpID < 1999999)) {
+        $mdb->remove("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'characterID' => $charID]);
+        $esi->remove($charID);
     }
     if ($charID == 0) {
         $guzzler->tick();
