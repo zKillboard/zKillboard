@@ -146,7 +146,7 @@
 {% elseif pageType == 'top' %}
 	<div class="row centered"><input style="background: transparent; color: white; border: 0px; width:60px; height:35px;" type="text" name="datepicker" class="datepicker" value="{{ month }}/{{ year }}">&nbsp;<i class="fa fa-calendar-o"></i><br/><a href='./solo/'>Solo Version (beta)</a></div><hr/>
     {% set topSet = topKills %}
-    {% set topTitle = 'Most Valuable Kills' %}
+    {% set topTitle = 'Most Valuable Kills - Month Selected' %}
 	{% set isEmbedded = true %}
     {% include 'components/big_top_list.html' %}
     <hr/>
@@ -155,7 +155,7 @@
 {% elseif pageType == 'topalltime' %}
 	<h4>Top All Time</h4>
     {% set topSet = topKills %}
-    {% set topTitle = 'Most Valuable Kills' %}
+    {% set topTitle = 'Most Valuable Kills - All Time' %}
 	{% set isEmbedded = true %}
     {% include 'components/big_top_list.html' %}
     <hr/>
