@@ -17,10 +17,10 @@ while ($minute == date('Hi')) {
     $id = (int) $chars->next();
     if ($id > 1) {
         $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => $id]);
-        /*if (strpos(@$row['name'], 'characterID') === false && isset($row['corporationID'])) {
+        if (strpos(@$row['name'], 'characterID') === false && isset($row['corporationID'])) {
             $charMaxKillID = (int) $mdb->findField("killmails", "killID", ['involved.characterID' => $id], ['killID' => -1]);
             if ($maxKillID > $charMaxKillID && ($id % $mod != $dayMod)) continue;
-        }*/
+        }
 
         $url = "$esiServer/v4/characters/$id/";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row, 'rtq' => $chars];
