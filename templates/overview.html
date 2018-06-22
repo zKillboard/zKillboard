@@ -144,12 +144,22 @@
 {% elseif pageType == 'ranks' %}
     {% include 'components/rank_list.html' %}
 {% elseif pageType == 'top' %}
-	{% set showImage = true %}
 	<div class="row centered"><input style="background: transparent; color: white; border: 0px; width:60px; height:35px;" type="text" name="datepicker" class="datepicker" value="{{ month }}/{{ year }}">&nbsp;<i class="fa fa-calendar-o"></i><br/><a href='./solo/'>Solo Version (beta)</a></div><hr/>
+    {% set topSet = topKills %}
+    {% set topTitle = 'Most Valuable Kills' %}
+	{% set isEmbedded = true %}
+    {% include 'components/big_top_list.html' %}
+    <hr/>
+	{% set showImage = true %}
 	{% include 'components/top_list.html' %}
 {% elseif pageType == 'topalltime' %}
-	{% set showImage = true %}
 	<h4>Top All Time</h4>
+    {% set topSet = topKills %}
+    {% set topTitle = 'Most Valuable Kills' %}
+	{% set isEmbedded = true %}
+    {% include 'components/big_top_list.html' %}
+    <hr/>
+	{% set showImage = true %}
 	{% include 'components/top_list.html' %}
 {% elseif pageType == 'corpstats' %}
 	{% include 'components/corpstats.html' %}

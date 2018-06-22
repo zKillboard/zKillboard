@@ -54,7 +54,12 @@ function calcTop($row)
     $topLists[] = array('type' => 'ship', 'data' => Stats::getTop('shipTypeID', $parameters));
     $topLists[] = array('type' => 'system', 'data' => Stats::getTop('solarSystemID', $parameters));
 
+    $p = $parameters;
+    $p['limit'] = 6;
+    $p['categoryID'] = 6;
+    $topKills = Stats::getTopIsk($p);
+
     $nextTopRecalc = floor($currentSum * 1.01);
 
-    $mdb->set('statistics', $row, ['topAllTime' => $topLists, 'allTimeSum' => $currentSum, 'nextTopRecalc' => $nextTopRecalc]);
+    $mdb->set('statistics', $row, ['topAllTime' => $topLists, 'topIskKills' => $topKills, 'allTimeSum' => $currentSum, 'nextTopRecalc' => $nextTopRecalc]);
 }

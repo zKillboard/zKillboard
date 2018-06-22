@@ -120,7 +120,7 @@ $nextTopRecalc = 0;
 $topLists = array();
 $topKills = array();
 if ($pageType == 'top' || $pageType == 'topalltime') {
-    $topParameters = $parameters; // array("limit" => 10, "kills" => true, "$columnName" => $id);
+    $topParameters = $parameters; 
     $topParameters['limit'] = 100;
     $topParameters['npc'] = false;
     $topParameters['cacheTime'] = 86400;
@@ -134,6 +134,7 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
         }
 
         $topLists = $mdb->findField('statistics', 'topAllTime', ['type' => "{$useType}ID", 'id' => (int) $id]);
+        $topKills = $mdb->findField('statistics', 'topIskKills', ['type' => "{$useType}ID", 'id' => (int) $id]);
         $nextTopRecalc = $mdb->findField('statistics', 'allTimeSum', ['type' => "{$useType}ID", 'id' => (int) $id]);
         $nextTopRecalc = floor($nextTopRecalc * 1.01) + 1;
     } else {
@@ -162,6 +163,10 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
             $topLists[] = array('name' => 'Top Faction Corporations', 'type' => 'corporation', 'data' => Stats::getTop('corporationID', $topParameters));
             $topLists[] = array('name' => 'Top Faction Alliances', 'type' => 'alliance', 'data' => Stats::getTop('allianceID', $topParameters));
         }
+        $p = $topParameters;
+        $p['limit'] = 6;
+        $p['categoryID'] = 6;
+        $topKills = Stats::getTopIsk($p);
     }
 } else {
     $p = $parameters;
