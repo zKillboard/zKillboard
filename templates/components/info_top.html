@@ -109,13 +109,7 @@
             {% if detail.solarSystemName %}
 			<tr>
 				<th>System:</th>
-				<td itemprop="systemname"><a href='/system/{{ detail.solarSystemID }}/' class="{% if field.solarSystemID >= 32000000 and field.solarSystemID  < 33000000 %}triglavian{% endif %}">{{ detail.solarSystemName }}</a></td>
-			</tr>
-            {% endif %}
-            {% if detail.solarSystemSecurity %}
-			<tr>
-				<th>Security:</th>
-				<td itemprop="security"><font color="{{ detail.systemColorCode}}">{{ detail.solarSystemSecurity|number_format(1) }}</font></td>
+				<td itemprop="systemname"><a href='/system/{{ detail.solarSystemID }}/' class="{% if field.solarSystemID >= 32000000 and field.solarSystemID  < 33000000 %}triglavian{% endif %}">{{ detail.solarSystemName }}</a> (<font color="{{ detail.systemColorCode}}">{{ detail.solarSystemSecurity|number_format(1) }}</font>)</td>
 			</tr>
             {% endif %}
 			{% if detail.systemClass %}
@@ -130,6 +124,12 @@
 				<td itemprop="effect">{{ detail.systemEffect }}</td>
 			</tr>
 			{% endif %}
+            {% if detail.constellationName %}
+			<tr>
+				<th>Constellation:</th>
+				<td itemprop="constellation"><a href="/constellation/{{detail.constellationID}}/">{{ detail.constellationName }}</a></td>
+			</tr>
+            {% endif %}
             {% if detail.regionName %}
 			<tr>
 				<th>Region:</th>

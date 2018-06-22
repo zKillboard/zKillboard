@@ -240,6 +240,7 @@ class MongoFilter
                     }
                     break;
                 case 'regionID':
+                case 'constellationID':
                 case 'solarSystemID':
                     $and[] = ['system.'.$key => $filter];
                     break;

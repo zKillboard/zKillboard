@@ -437,6 +437,10 @@ class Info
                                 }
                             }
                         }
+                        if (!isset($element['constellationID'])) {
+                            $element['constellationID'] = Info::getInfoField('solarSystemID', $value, 'constellationID');
+                        }
+                        $element['constellationName'] = Info::getInfoField('constellationID', $element['constellationID'], 'name');
                         break;
                     case 'regionID':
                         if (!isset($element['regionName'])) {

@@ -45,6 +45,7 @@ $map = array(
         'alliance' => array('column' => 'alliance', 'mixed' => true),
         'faction' => array('column' => 'faction', 'mixed' => true),
         'system' => array('column' => 'solarSystem', 'mixed' => true),
+        'constellation' => array('column' => 'constellation', 'mixed' => true),
         'region' => array('column' => 'region', 'mixed' => true),
         'group' => array('column' => 'group', 'mixed' => true),
         'ship' => array('column' => 'shipType', 'mixed' => true),

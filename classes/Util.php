@@ -127,6 +127,8 @@ class Util
                 case 'system':
                 case 'solarSystemID':
                 case 'systemID':
+                case 'constellation':
+                case 'constellationID':
                 case 'region':
                 case 'regionID':
                 case 'location':
@@ -233,7 +235,7 @@ class Util
                     break;
                 case 'beforeKillID':
                 case 'afterKillID':
-                    throw new Exception("$key has been temporarily disabled - please use page, RedisQ, or the history endpoint instead.");
+                    throw new Exception("$key has been permanently disabled - please use page, RedisQ, the websocket, or the history endpoint instead.");
                     break;
                 case 'killID':
                     $value = array_shift($split);

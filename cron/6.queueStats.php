@@ -62,7 +62,7 @@ function calcStats($row, $maxSequence)
 
     for ($i = 0; $i <= 1; ++$i) {
         $isVictim = ($i == 0);
-        if (($type == 'locationID' || $type == 'regionID' || $type == 'solarSystemID') && $isVictim == true) {
+        if (($type == 'locationID' || $type == 'regionID' || $type == 'constellationID' || $type == 'solarSystemID') && $isVictim == true) {
             continue;
         }
 
