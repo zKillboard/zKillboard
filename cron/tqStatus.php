@@ -8,6 +8,7 @@ $minute = date('Hi');
 if ($minute >= 1100 && $minute <= 1105) {
     $redis->set('tqStatus', 'OFFLINE'); // Just in case the result is cached on their end as online
     $redis->set('tqCount', 0);
+    $redis->set('tqCountInt', 0);
 } else {
     // Not using Guzzle to prevent tq status conflicts and deadlock
     $root = @file_get_contents("$esiServer/v1/status/");
