@@ -105,7 +105,7 @@ function wslog(msg)
                 return false;
             });
             // Keep the page from growing too much...
-            while ($("#killlist tbody tr").length > 100) $("#killlist tbody tr:last").remove();
+            while ($("#killlist tbody tr").length > 50) $("#killlist tbody tr:last").remove();
             // Tell the user what's going on and not to expect sequential killmails
             if ($("#livefeednotif").length == 0) $("#killlist thead tr").after("<tr><td id='livefeednotif' colspan='7'><strong><em>Live feed - killmails may be out of order.</em></strong></td></tr>");
         });
