@@ -27,7 +27,7 @@ if (strpos($uri, "_detail") !== false) {
 if (substr($uri, -1) != '/' && strpos($uri, 'ccpcallback') === false) {
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET');
-    if ($isApiRequest) header("HTTP/1.1 400 Fix your code to include the trailing slash '/'");
+    if ($isApiRequest) header("HTTP/1.1 200 Missing trailing slash");
     else header("Location: $uri/", true, 301);
     exit();
 }
@@ -71,7 +71,7 @@ if (in_array($ip, $blackList)) {
 }
 
 $limit = $isApiRequest ? 10 : 3;
-$noLimits = ['/navbar/', '/post/', '/autocomplete/', '/crestmail/', '/comment/'];
+$noLimits = ['/navbar/', '/post/', '/autocomplete/', '/crestmail/', '/comment/', '/killlistrow/'];
 $noLimit = false;
 foreach ($noLimits as $noLimit) $noLimit |= (substr($uri, 0, strlen($noLimit)) === $noLimit);
 $count = $redis->get($ip);
@@ -86,12 +86,12 @@ $userAgent = strtolower(@$_SERVER['HTTP_USER_AGENT']);
 if (!$isApiRequest) {
     foreach ($badBots as $badBot) {
         if ($userAgent == "" || $userAgent == "-" || strpos($userAgent, $badBot) !== false) {
-            header('HTTP/1.1 403 Not authorized.');
+            header('HTTP/1.1 400 Not authorized');
             die("APIs are useful, skill up and use that instead.");
         }
     }
 } else if ($isApiRequest && strlen(trim($userAgent)) <= 3) {
-    header('HTTP/1.1 403 Please provide proper user agent identification.');
+    header('HTTP/1.1 400 Please provide proper user agent identification.');
     exit();
 }
 
