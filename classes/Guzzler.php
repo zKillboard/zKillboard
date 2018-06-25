@@ -7,10 +7,9 @@ class Guzzler
     private $client;
     private $concurrent = 0;
     private $maxConcurrent;
-    private $usleep;
     private $lastHeaders = [];
 
-    public function __construct($maxConcurrent = 10, $usleep = 100000)
+    public function __construct($maxConcurrent = 10)
     {
         global $redis;
 
@@ -18,7 +17,6 @@ class Guzzler
         $this->handler = \GuzzleHttp\HandlerStack::create($this->curl);
         $this->client = new \GuzzleHttp\Client(['curl' => [CURLOPT_FRESH_CONNECT => false], 'connect_timeout' => 10, 'timeout' => 60, 'handler' => $this->handler, 'headers' => ['User-Agent' => 'zkillboard.com']]);
         $this->maxConcurrent = ($redis->get("zkb:420prone") == "true") ? 1 : $maxConcurrent;
-        //$this->usleep = 100000; //max(0, min(1000000, (int) $usleep));
     }
 
     public function tick()
