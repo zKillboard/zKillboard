@@ -48,3 +48,9 @@ Disallow: /
 
 User-agent: Getintent Crawler 
 Disallow: /
+
+User-agent: YandexBot
+Disallow: /
+
+User-agent: Yandex
+Disallow: /
