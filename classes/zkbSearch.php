@@ -20,11 +20,10 @@ class zkbSearch
             if ($entityType != null && $entityType != $type) {
                 continue;
             }
-            if ((sizeof($exactMatch) + sizeof($partialMatch)) >= 15) continue;
 
             $result = $redis->zRangeByLex("search:$type", $low, '+', 0, 9);
             if (sizeof($result) < 10 && $regex != null && sizeof($partialMatch) < 14) {
-                $matches = $mdb->find("search", ['type' => $type, 'name' => ['$regex' => $regex]]);
+                $matches = $mdb->find("search", ['type' => $type, 'name' => ['$regex' => $regex], 'cacheTime' => 3600], [], 20);
                 while (sizeof($result) < 10 && sizeof($matches) > 0) {
                     $next = array_shift($matches);
                     $add = $next['name'] . "\x00" . $next['id'];
