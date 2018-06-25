@@ -7,6 +7,7 @@ require_once "../init.php";
 if ($redis->get("zkb:reinforced") == true) exit();
 
 $esi = new RedisTimeQueue('tqApiESI', 3600);
+$esiCorp = new RedisTimeQueue('tqCorpApiESI', 3600);
 if (date('i') == 22 || $esi->size() < 100) {
     $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_killmails.v1']);
     foreach ($esis as $row) {
@@ -18,12 +19,36 @@ if ($esi->size() == 0) exit();
 
 $guzzler = new Guzzler($esiCharKillmails, 25);
 
+$noCorp = $mdb->find("scopes", ['scope' => "esi-killmails.read_killmails.v1", 'corporationID' => ['$exists' => false]]);
+$chars = new RedisTimeQueue("zkb:characterID", 86400);
+foreach ($noCorp as $row) {
+    $charID = $row['characterID'];
+    $corpID = (int) Info::getInfoField("characterID", $charID, "corporationID");
+    if ($corpID > 0) $mdb->set("scopes", $row, ['corporationID' => $corpID]);
+    else {
+        $chars->add($charID);
+        $chars->setTime($charID, 0);
+    }
+    $esi->add($charID);
+}
+
+$bumped = [];
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $charID = $esi->next(false);
     if ($charID > 0) {
         $row = $mdb->findDoc("scopes", ['characterID' => (int) $charID, 'scope' => "esi-killmails.read_killmails.v1"], ['lastFetch' => 1]);
         if ($row != null) {
+            $corpID = (int) @$row['corporationID'];
+            if (@$row['iterated'] == true && $redis->get("apiVerified:$corpID") != null && $redis->ttl("apiVerified:$charID") > 7200 ) {
+                $lastChecked = $redis->get("apiVerified:$corpID");
+                if ($lastChecked > 0 && (time() - $lastChecked) > 300 && !in_array($corpID, $bumped)) {
+                    $esiCorp->setTime($corpID, 1);
+                    $bumped[] = $corpID;
+                }
+                continue;
+            }
+
             $params = ['row' => $row, 'esi' => $esi];
             $refreshToken = $row['refreshToken'];
             $content = $redis->get("auth:$charID:$refreshToken");
@@ -115,9 +140,10 @@ function success($guzzler, $params, $content)
 
     if ($newKills > 0) {
         $name = Info::getInfoField('characterID', $charID, 'name');
+        $corpName = Info::getInfoField('corporationID', $corpID, 'name');
         if ($name === null) $name = $charID;
         while (strlen("$newKills") < 3) $newKills = " " . $newKills;
-        ZLog::add("$newKills kills added by char $name", $charID);
+        ZLog::add("$newKills kills added by char $name / $corpName", $charID);
         if ($newKills >= 10) User::sendMessage("$newKills kills added for char $name", $charID);
     }
 }

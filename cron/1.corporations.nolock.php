@@ -5,54 +5,49 @@ use cvweiss\redistools\RedisTimeQueue;
 require_once "../init.php";
 
 if ($redis->get("zkb:reinforced") == true) exit();
-$guzzler = new Guzzler($esiCorpKillmails, 25);
+$guzzler = new Guzzler($esiCorpKillmails);
 
 $esi = new RedisTimeQueue('tqCorpApiESI', 3600);
 if (date('i') == 22 || $esi->size() < 100) {
     $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_corporation_killmails.v1']);
     foreach ($esis as $row) {
-        if (!isset($row['characterID'])) {
-            $mdb->remove("scopes", $row);
-            continue;
-        }
-        $charID = $row['characterID'];
-        $esi->add($charID);
+        if (@$row['characterID'] > 1 && @$row['corporationID'] > 1999999) $esi->add($row['corporationID']);
     }
 }
 
+$noCorp = $mdb->find("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'corporationID' => ['$exists' => false]]);
+$chars = new RedisTimeQueue("zkb:characterID", 86400);
+foreach ($noCorp as $row) {
+    $charID = $row['characterID'];
+    $corpID = (int) Info::getInfoField("characterID", $charID, "corporationID");
+    if ($corpID > 0) $mdb->set("scopes", $row, ['corporationID' => $corpID]);
+    else {
+        $chars->add($charID);
+        $chars->setTime($charID, 0);
+    }
+    if ($corpID > 1999999) $esi->add($corpID);
+}
+
+
 $mdb->set("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'lastFetch' => ['$exists' => false]], ['lastFetch' => 0], true);
 $unique = sizeof($mdb->getCollection("scopes")->distinct("corporationID", ['scope' => 'esi-killmails.read_corporation_killmails.v1', 'iterated' => true]));
+$uqique = $esi->size();
 $redis->set("tqCorpApiESICount", $unique);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    $charID = (int) $esi->next();
-    $corpID = (int) Info::getInfoField('characterID', $charID, 'corporationID');
-    if ($charID > 1 && $corpID > 1999999) {
-        if ($redis->get("zkb:corpInProgress:$corpID") == "true" || $redis->get("zkb:recentCorpCheck:$corpID") == "true") {
-            $esi->setTime($charID, time() + 60);
-            continue;
-        } 
-
-        $row = $mdb->findDoc("scopes", ['corporationID' => $corpID, 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['lastFetch' => 1]);
-        if ($row == null) $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => "esi-killmails.read_corporation_killmails.v1"]);
+    $corpID = (int) $esi->next();
+    if ($corpID > 0) {
+        $row = $mdb->findDoc("scopes", ['corporationID' => $corpID, 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['lastFetch' => 0]);
         if ($row != null) {
             $refreshToken = $row['refreshToken'];
-            $row['corporationID'] = $corpID;
             $params = ['row' => $row, 'esi' => $esi, 'tokenTime' => time(), 'refreshToken' => $refreshToken, 'corpID' => $corpID];
 
-            $redis->setex("zkb:corpInProgress:$corpID", 3600, "true");
-            $redis->setex("zkb:recentCorpCheck:$corpID", 300, "true");
             CrestSSO::getAccessTokenCallback($guzzler, $refreshToken, "accessTokenDone", "accessTokenFail", $params);
         } else {
-            $esi->remove($charID);
+            $esi->remove($corpID);
         }
-    }
-    if (($charID <= 1) || ($corpID > 1 && $corpID > 0 && $corpID < 1999999)) {
-        $mdb->remove("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'characterID' => $charID]);
-        $esi->remove($charID);
-    }
-    if ($charID == 0) {
+    } else {
         $guzzler->tick();
         sleep(1);
     }
