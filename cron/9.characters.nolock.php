@@ -10,6 +10,16 @@ $guzzler = new Guzzler(15);
 $chars = new RedisTimeQueue("zkb:characterID", 86400);
 $maxKillID = $mdb->findField("killmails", "killID", [], ['killID' => -1]) - 5000000;
 
+$noCorp = $mdb->find("information", ['type' => 'characterID', 'corporationID' => ['$exists' => false]]);
+foreach ($noCorp as $row) {
+    $charID = $row['id'];
+    if ($charID > 1) {
+        $chars->add($charID);
+        $chars->setTime($charID, 0);
+    }
+}
+
+
 $mod = 3;
 $dayMod = date("j") % $mod;
 $minute = date('Hi');
@@ -17,14 +27,14 @@ while ($minute == date('Hi')) {
     $id = (int) $chars->next();
     if ($id > 1) {
         $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => $id]);
-        if (strpos(@$row['name'], 'characterID') === false && isset($row['corporationID'])) {
+        /*if (strpos(@$row['name'], 'characterID') === false && isset($row['corporationID'])) {
             $charMaxKillID = (int) $mdb->findField("killmails", "killID", ['involved.characterID' => $id], ['killID' => -1]);
             if ($maxKillID > $charMaxKillID && ($id % $mod != $dayMod)) continue;
-        }
+        }*/
 
         $url = "$esiServer/v4/characters/$id/";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row, 'rtq' => $chars];
-        $guzzler->call($url, "updateChar", "failChar", $params);
+        $guzzler->call($url, "updateChar", "failChar", $params, ['etag' => true]);
     }
     if ($id == 0) {
         $guzzler->tick();
