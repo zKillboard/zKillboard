@@ -4,14 +4,7 @@ require_once "../init.php";
 
 use cvweiss\redistools\RedisCache;
 
-/*$ganked = $mdb->find("killmails", ['ganked' => true]);
-foreach ($ganked as $g) {
-    $mdb->removeField("killmails", ['killID' => $g['killID']], 'ganked');
-}
-exit();*/
-
 $kills = $mdb->find("killmails", ['involved.corporationID' => 1000125], ['sequence' => -1], 500);
-//$kills = $mdb->find("killmails", ['killID' => 68410258]);
 $added = [];
 
 foreach ($kills as $kill) {
@@ -19,7 +12,7 @@ foreach ($kills as $kill) {
     $systemID = $kill['system']['solarSystemID'];
     $involved = $kill['involved'];
     $victim = $involved[0];
-    $likelyVictims = $mdb->find("killmails", ['involved.characterID' => $victim['characterID'], 'killID' => ['$lt' => $kill['killID']]], ['dttm' => -1], 5);
+    $likelyVictims = $mdb->find("killmails", ['involved.characterID' => $victim['characterID'], 'killID' => ['$lt' => $kill['killID']]], ['killID' => -1], 5);
     foreach ($likelyVictims as $lvictim) {
         //echo $kill['killID']  . " => " . $lvictim['killID'] . "\n";
         if (in_array($lvictim['killID'], $added) === true) continue;
