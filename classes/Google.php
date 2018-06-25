@@ -23,7 +23,7 @@ class Google
         global $dataAdClient, $dataAdSlot;
 
         return '
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<hr/><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 <!-- zkb Responsive Ad -->
 <ins class="adsbygoogle"
      style="display:block"
@@ -35,20 +35,5 @@ class Google
 </script>
 <hr/>
         ';
-    }
-
-    public static function getMobileAd()
-    {
-        global $dataAdClient, $dataMobileAdSlot;
-
-        return '<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- zkb Mobile Ads -->
-<ins class="adsbygoogle"
-     style="display:inline-block;width:320px;height:100px"
-     data-ad-client="' . $dataAdClient . '"
-     data-ad-slot="' . $dataMobileAdSlot . '"></ins>
-<script>
-(adsbygoogle = window.adsbygoogle || []).push({});
-</script>';
     }
 }

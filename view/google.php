@@ -1,3 +1,3 @@
 <?php
 
-echo ($mobile == 'true' ? Google::getMobileAd() : Google::getAd());
+echo Google::getAd();

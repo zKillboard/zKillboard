@@ -8,10 +8,8 @@ $("#tqStatus").html("{% if tqStatus == 'OFFLINE'%}<span class='red'>TQ {{ tqCoun
 
 {% if showAds != 0 %}
 if (showAds != 0 ) {
-    $("#adsensetop").load('/google/false/');
-    $("#adsensebottom").load('/google/false/');
-    $("#adsensetop-mobile").load('/google/true/');
-    $("#adsensebottom-mobile").load('/google/true/');
+    $("#adsensetop").load('/google/');
+    $("#adsensebottom").load('/google/');
 }
 {% else %}
 $("#adsensetop").remove();
