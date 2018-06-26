@@ -105,10 +105,9 @@
 				{% endif %}
 
 				<!-- Top ad -->
-				<div class="centered hidden-xs" id="adsensetop"></div>
-				<div class="centered visible-xs" id="adsensetop-mobile"></div>
+				<div class="centered" id="adsensetop"></div>
 
-                                <span class='pagecontent'>{% endif %}
+                <span class='pagecontent'>{% endif %}
 				<!-- The text header -->
 				{% block header %}{% endblock %}
 				<!-- The actual site content-->
@@ -118,8 +117,7 @@
 				<div class="clearfix"></div>
 
 				<!-- Bottom ad -->
-				<div class="centered hidden-xs" id="adsensebottom"></div>
-				<div class="centered visible-xs" id="adsensebottom-mobile"></div>
+				<div class="centered" id="adsensebottom"></div>
 
 				<!-- Footer -->
 				<div class="hidden-xs">{% include "footer.html" %}</div>
@@ -207,7 +205,7 @@
                 </div>
         </div>
 </div>
-<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.css" />
+<!--<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.css" />
 <script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.js"></script>
 <script>
 window.addEventListener("load", function(){
@@ -226,6 +224,7 @@ window.cookieconsent.initialise({
   "showLink": false
 })});
 </script>
+-->
 </body>
 </html>
 {% endif %}
