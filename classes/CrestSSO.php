@@ -130,6 +130,7 @@ class CrestSSO
             }
             $charID = (int) $response->CharacterID;
             $charName = isset($response->CharacterName) ? (string) $response->CharacterName : $charID;
+            $corpID = Info::getInfoField("characterID", $charID, "corporationID");
             $scopes = split(' ', (string) @$response->Scopes);
 
             // Clear out existing scopes
@@ -156,7 +157,7 @@ class CrestSSO
                         break;
                     case 'esi-killmails.read_corporation_killmails.v1':
                         $esi = new RedisTimeQueue('tqCorpApiESI', 3600);
-                        $esi->add($charID);
+                        if ($corpID > 1999999) $esi->add($corpID);
                         break;
                 }
             }
