@@ -4,13 +4,14 @@ Disallow: */page/*
 Disallow: *stats*
 Disallow: *top*
 Disallow: *trophies*
+Disallow: *ranks*
 Disallow: /detail*
 Disallow: /navbar/
 Disallow: /br/*
 Disallow: /related/*
 Disallow: /partial/*
 sitemap: https://zkillboard.com/sitemaps/sitemaps.xml
-Crawl-delay: 1
+#Crawl-delay: 1
 
 
 # too many repeated hits, too quick
