@@ -24,16 +24,16 @@
 
 {% block content %}
 {% include 'components/partial_title.html' %}
-<div class="navbar navbar-default hidden-xs">
-	<div class="navbar-header">
+<div class="navbar navbar-default">
+	<div class="navbar-header hidden-xs">
 		<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
 			<span class="icon-bar"></span>
 			<span class="icon-bar"></span>
 			<span class="icon-bar"></span>
 		</button>
 	</div>
-	<div class="collapse navbar-collapse navbar-sub">
-		<ul class="nav navbar-nav">
+	<div id="details-menu" class="collapse navbar-collapse navbar-sub">
+		<ul class="nav navbar-nav hidden-xs">
 			{% if extra.prevKillID %}
 			<li class="hidden-xs"><a href="/kill/{{ extra.prevKillID }}/">&lt;</a></li>
 			<li class="{{ isActive('overview', pageview) }}"><a href="/kill/{{ killdata.info.killID }}/">Overview</a></li>
@@ -44,7 +44,7 @@
 			{% if killdata.info.killID < 0 %}
 			<li><a data-toggle="modal" data-target="#report" href="#">Report ({{ extra.reports }})</a></li>
 			{% endif %}
-			<li class="dropdown">
+			<li class="dropdown hidden-xs">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown">External <b class="caret"></b></i></a>
 				<ul class="dropdown-menu">
 					<li class="dropdown-header">DOTLAN</li>
@@ -57,7 +57,8 @@
 					<li><a href="http://evewho.com/pilot/{{ topDamage.characterName|url_encode }}" target="_blank">{{ topDamage.characterName }}</a></li>
 				</ul>
 			</li>
-			<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Export <b class="caret"></b></a>
+			<li class="dropdown hidden-xs">
+				<a href="#" class="dropdown-toggle" data-toggle="dropdown">Export <b class="caret"></b></a>
 				<ul class="dropdown-menu">
                                         <li><a href='#' onClick="saveFitting({{ extra.crest.killID }}); return false;" rel="nofollow">Import Fit via ESI</a></li>
 					<li><a data-toggle="modal" data-target="#DNA" href="#">DNA</a></li>
@@ -66,7 +67,8 @@
 					<li><a data-toggle="modal" data-target="#EFT" href="#">EFT</a></li>
 				</ul>
 			</li>
-			<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Social <b class="caret"></b></i></a>
+			<li class="dropdown hidden-xs">
+				<a href="#" class="dropdown-toggle" data-toggle="dropdown">Social <b class="caret"></b></i></a>
 				<ul class="dropdown-menu">
 					<li><a href="https://www.facebook.com/sharer/sharer.php?u={{url}}" target="_blank"><img src="//{{ siteurl }}/img/social/fb_1.png"> Facebook</a></li>
 					<li><a href="https://twitter.com/intent/tweet?text={{ pageTitle|url_encode }}&url={{url}}" target="_blank"><img src="//{{ siteurl }}/img/social/twitter_1.png"> Twitter</a></li>
@@ -213,7 +215,7 @@
 					<div class="form-group">
 						<textarea onClick="this.select();" class="fitting col-md-12" rows="2" id="dna" name="dna">{{ extra.dnatext }}</textarea>
 					</div>
-					<div class="form-group">			
+					<div class="form-group">
 						<a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>
 					</div>
 				</form>

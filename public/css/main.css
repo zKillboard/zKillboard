@@ -278,3 +278,23 @@ td.centered {
     border-bottom: solid 2px #efefef;
     color: #FCFDFD;
 }
+
+@media (max-width: 767px) {
+  #details-menu .navbar-nav {
+    float: left;
+    margin: 0;
+  }
+  #details-menu .navbar-nav>li {
+    float: left;
+  }
+  #details-menu.navbar-collapse.collapse {
+    display: block !important;
+    height: auto !important;
+    padding-bottom: 0;
+    overflow: visible !important;
+  }
+  #Fitting_Panel {
+    zoom: 0.75;
+    margin: auto;
+  }
+}
