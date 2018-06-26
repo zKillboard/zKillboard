@@ -93,7 +93,7 @@ $app->get('/bigisk/', function () use ($app) {
         });
 
 // View top
-$app->get('/top/lasthour/', function () use ($app) {
+$app->get('/top/lasthour/:type/', function ($type) use ($app) {
         include 'view/lasthour.php';
         });
 $app->get('/ranks/:pageType/:subType/', function ($pageType, $subType) use ($app) {

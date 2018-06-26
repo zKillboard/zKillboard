@@ -6,15 +6,32 @@
 {% block content %}
 {% set showImage = true %}
 
-<h4>Top Killers in the Last Hour as of {{ time }}</h4>
-{% set topLists = topKillers %}
+<div class="navbar navbar-default">
+    <div class="container">
+        <div class="collapse navbar-collapse navbar-main">
+            <ul class="nav navbar-nav">
+                {% for typeO in types %}
+                    <li class="{{ isActive(typeO, type) }}"><a href="/top/lasthour/{{ typeO }}/">{{ typeO }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% for type, list in allLists %}
+<a name="{{ type }}"></a><br/>
+<h4>{{ type|capitalize }}: Top Killers in the Last Hour as of {{ time }}</h4>
+{% set topLists = list.topKillers %}
 {% include 'components/top_list.html' %}
 
 <hr/>
-<h4>Top Losers in the Last Hour as of {{ time }}</h4>
+<h4>{{ type|capitalize }}: Top Losers in the Last Hour as of {{ time }}</h4>
 
-{% set topLists = topLosers %}
+{% set topLists = list.topLosers %}
 {% include 'components/top_list.html' %}
+<div class="clear"></div>
+<hr/>
+{% endfor %}
 
 
 {% endblock %}
