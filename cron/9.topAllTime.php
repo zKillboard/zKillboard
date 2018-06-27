@@ -8,11 +8,10 @@ if ($redis->llen('queueStats') >= 100000) $redis->del('queueTopAlltime');
 if ($redis->llen('queueStats') >= 10000) exit();
 if ($redis->get("zkb:reinforced") == true) exit();
 
-$date = date('Ymd');
 $redisKey = "tq:topAllTime";
 $queueTopAlltime = new RedisQueue('queueTopAlltime');
 if ($redis->get($redisKey) != true && $queueTopAlltime->size() == 0) {
-    $iter = $mdb->getCollection('statistics')->find([], ['months' => 0, 'groups' => 0])->sort(['type' => 1, 'id' => 1]);
+    $iter = $mdb->getCollection('statistics')->find()->sort(['type' => 1]);
     while ($row = $iter->next()) {
         if (@$row['reset'] == true) continue;
         $allTimeSum = (int) @$row['allTimeSum'];
@@ -20,7 +19,6 @@ if ($redis->get($redisKey) != true && $queueTopAlltime->size() == 0) {
         $nextTopRecalc = floor($allTimeSum * 1.01) + 1;
 
         $doCalc = false;
-        //$doCalc |= $shipsDestroyed >= 10000;
         $doCalc |= $shipsDestroyed >= 10 && $shipsDestroyed >= $nextTopRecalc;
 
         if ($doCalc) $queueTopAlltime->push($row['_id']);
