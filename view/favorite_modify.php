@@ -12,13 +12,13 @@ $userID = (int) User::getUserID();
 $name = Info::getInfoField("characterID", $userID, "name");
 
 $key =  ['characterID' => $userID, 'killID' => (int) $killID];
-    $mdb->remove("favorites", $key);
+$mdb->remove("favorites", $key);
 if ($action) {
     $mdb->insert("favorites", $key);
     echo json_encode(['color' => '#FDBC2C', 'message' => "Killmail has been added to your bookmarks."]);
-    ZLog::log("$name has favorited $killID - https://zkillboard.com/kill/$killID/", $userID, true);
+    ZLog::add("$name has favorited $killID - https://zkillboard.com/kill/$killID/", $userID, true);
 } else {
     $mdb->remove("favorites", $key);
     echo json_encode(['color' => 'rgb(128, 128, 128)', 'message' => "Killmail has been removed from your bookmarks."]);
-    ZLog::log("$name has unfavorited $killID - https://zkillboard.com/kill/$killID/", $userID, true);
+    ZLog::add("$name has unfavorited $killID - https://zkillboard.com/kill/$killID/", $userID, true);
 }
