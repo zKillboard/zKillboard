@@ -40,7 +40,7 @@ function updateStatsQueue($killID)
 {
     global $mdb, $statArray, $queueStats;
 
-    $kill = $mdb->findDoc('killmails', ['killID' => $killID, 'cacheTime' => 3600]);
+    $kill = $mdb->findDoc('killmails', ['killID' => $killID]);
     $involved = $kill['involved'];
     $sequence = $kill['sequence'];
 

@@ -55,7 +55,7 @@ while ($hour == date('H')) {
         $lastKillCountSent = $kCount;
     }
     $totalKills = $redis->get('zkb:totalKills');
-    $topKillID = max(1, $mdb->findField('killmails', 'killID', ['cacheTime' => 60], ['killID' => -1]));
+    $topKillID = max(1, $mdb->findField('killmails', 'killID', [], ['killID' => -1]));
     addInfo('Total Kills (' . number_format(($totalKills / $topKillID) * 100, 1) . '%)', $totalKills);
     addInfo('Top killID', $topKillID);
 
