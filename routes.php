@@ -164,6 +164,10 @@ $app->get('/api/stats/:type/:id/', function ($type, $id) use ($app) {
         include 'view/apistats.php';
         });
 
+$app->get('/api/prices/:id/', function ($id) use ($app) {
+        include 'view/apiprices.php';
+        });
+
 $app->get('/api/:input+', function ($input) use ($app) {
         include 'view/api.php';
         });
