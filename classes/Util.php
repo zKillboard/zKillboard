@@ -192,6 +192,7 @@ class Util
                     $paginated = true;
                     break;
                 case 'orderDirection':
+                    throw new Exception("orderDirection is no longer supported - sort it yourself :)");
                     $value = array_shift($split);
                     if (!($value == 'asc' || $value == 'desc')) {
                         throw new Exception('Invalid orderDirection!  Allowed: asc, desc');
