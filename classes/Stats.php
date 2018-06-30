@@ -185,6 +185,7 @@ class Stats
     {
         global $mdb;
 
+        $parameters['npc'] = false;
         $key = 'stats:activepvp:'.serialize($parameters);
         $activePvp = RedisCache::get($key);
         if ($activePvp != null) {
