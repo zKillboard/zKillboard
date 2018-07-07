@@ -1,6 +1,6 @@
 <?php
 
-global $redis;
+global $redis, $ip;
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
@@ -55,7 +55,14 @@ try {
         }
     }
 } catch (Exception $ex) {
-    //header('HTTP/1.0 503 Server error.');
+    $redis->incr("IP:errorCount:$ip");
+    $redis->expire("IP:errorCount:$ip", 300);
+    $count = $redis->get("IP:errorCount:$ip");
+    if ($count > 40) {
+        Log::log("Banning $ip");
+        $redis->setex("IP:ban:$ip", 300, "true");
+    }
+
     header('Content-Type: application/json');
     $error = ['error' => $ex->getMessage()];
     echo json_encode($error);
