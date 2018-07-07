@@ -61,6 +61,7 @@ class Util
     {
         $parameters = array();
         $entityRequiredSatisfied = false;
+        $entityType = null;
 
         $uri = $_SERVER['REQUEST_URI'];
         $split = explode('/', $uri);
@@ -72,6 +73,7 @@ class Util
 
         $multi = false;
         $paginated = false;
+        $startEndTiminated = false;
         $legalLargePagination = false;
 
         while (sizeof($split)) {
@@ -138,6 +140,8 @@ class Util
                     $intValue = (int) $value;
                     if ($value != null) {
                         if (strpos($key, 'ID') === false) {
+                            global $isApiRequest;
+                            if ($isApiRequest) throw new Exception("$key is invalid for API calls, please use ${key}ID");
                             $key = $key.'ID';
                         }
                         $legalLargePagination = ($key == 'characterID' || $key == 'corporationID' || $key == 'allianceID');
@@ -147,8 +151,8 @@ class Util
                             $key = 'shipTypeID';
                         }
                         $exploded = explode(',', $value);
-                        if (sizeof($exploded) > 10) {
-                            throw new Exception("Client requesting too many parameters.");
+                        if (sizeof($exploded) > 1) {
+                            throw new Exception("Due to exccessive abuse, multiple values separated by commas are no longer supported");
                         }
                         $multi = sizeof($exploded) > 1;
                         $ints = [];
@@ -169,6 +173,7 @@ class Util
                         }
                         $parameters[$key] = $ints;
                         $entityRequiredSatisfied = true;
+                        $entityType = $value;
                     }
                     break;
                 case 'npc':
@@ -183,10 +188,12 @@ class Util
                     $parameters[$key] = true;
                     break;
                 case 'page':
+                    self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
+                    //if ($startEndTiminated == true) throw new Exception("Cannot mix page and (startTime or endTime)");
                     $value = array_shift($split);
                     $value = (int) $value;
                     if ($value < 1) {
-                        $value = 1;
+                        throw new Exception("page value <= 1 not allowed");
                     }
                     $parameters[$key] = (int) $value;
                     $paginated = true;
@@ -212,6 +219,7 @@ class Util
                 case 'startTime':
                 case 'endTime':
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
+                    //if ($paginated == true) throw new Exception("Cannot mix page and (startTime or endTime)");
                     $value = array_shift($split);
                     $time = strtotime($value);
                     if (strpos($uri, "region") !== false) {
@@ -224,6 +232,7 @@ class Util
                         throw new Exception("startTime and endTime must end with 00");
                     }
                     $parameters[$key] = $value;
+                    $startEndTiminated = true;
                     break;
                 case 'limit':
                     throw new Exception("Due to abuse of the limit parameter to avoid caches the ability to modify limit has been revoked for all users");
@@ -511,4 +520,4 @@ class Util
 
         return $au;
     }
-    }
+}

@@ -105,6 +105,10 @@ class Stats
         $result = iterator_to_array($result);
 
         $time = $timer->stop();
+        if ($time > $longQueryMS) {
+            global $uri;
+            Log::log("getTop Long query (${time}ms): $hashKey $uri");
+        }
 
         Info::addInfo($result);
         RedisCache::set($hashKey, $result, isset($parameters['cacheTime']) ? $parameters['cacheTime'] : 900);
