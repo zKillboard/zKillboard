@@ -2,14 +2,16 @@
 
 require_once "../init.php";
 
-$characters = $mdb->find("statistics", ['calcTrophies' => true], [], 10000, ['id' => 1]);
+if (date('i') != 33) exit(); // Only do calcs once an hour
 
-$minute = date('Hi');
-foreach ($characters as $char) {
-    if ($minute != date('Hi')) break;
-    $charID = (int) $char['id'];
+while (true) {
+    $row = $mdb->findDoc("statistics", ['calcTrophies' => true]);
+    if ($row == null) break;
+    $charID = $row['id'];
     $trophies = Trophies::getTrophies($charID);
 
     $t = ['levels' => $trophies['levelCount'], 'max' => $trophies['maxLevelCount']];
-    $mdb->set("statistics", ['type' => 'characterID', 'id' => $charID], ['trophies' => $t, 'calcTrophies' => false]);
+    $mdb->set("statistics", $row, ['trophies' => $t]);
+    $mdb->removeField("statistics", $row, 'calcTrophies');
 }
+

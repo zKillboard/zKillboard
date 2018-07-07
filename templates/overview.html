@@ -14,6 +14,13 @@
 {% include 'components/partial_title.html' %}
 {% include 'components/info_top.html' %}
 
+{% if entityType == 'corporation' and apiVerified == false and detail.memberCount > 50 and entityID > 1999999 %}
+<br/>
+<div class='alert alert-danger'>This corporation is <u>not</u> API Verified and therefore may be causing some killmails to go missing.<br/>
+If this is your corporation, ask your CEO or a director to log into zKillboard to API verify your corporation.<br/>
+<small><i>This message is shown for corporations with more than 50 members that are not API verified.</i></small>
+</div>
+{% endif %}
 <div class="navbar navbar-default">
 	<div class="navbar-header">
     	<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-sub">

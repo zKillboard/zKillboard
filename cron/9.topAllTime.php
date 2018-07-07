@@ -10,8 +10,8 @@ if ($redis->get("zkb:reinforced") == true) exit();
 
 $redisKey = "tq:topAllTime";
 $queueTopAlltime = new RedisQueue('queueTopAlltime');
-if ($redis->get($redisKey) != true && $queueTopAlltime->size() == 0) {
-    $iter = $mdb->getCollection('statistics')->find()->sort(['type' => 1]);
+if ($redis->get($redisKey) != "true" && $queueTopAlltime->size() == 0) {
+    $iter = $mdb->getCollection('statistics')->find(['shipsDestroyed' => ['$gte' => 10]])->sort(['shipsDestroyed' => 1]);;
     while ($row = $iter->next()) {
         if (@$row['reset'] == true) continue;
         $allTimeSum = (int) @$row['allTimeSum'];
@@ -19,11 +19,12 @@ if ($redis->get($redisKey) != true && $queueTopAlltime->size() == 0) {
         $nextTopRecalc = floor($allTimeSum * 1.01) + 1;
 
         $doCalc = false;
+        $doCalc |= $shipsDestroyed >= 10 && !isset($row['topIskKills']);
         $doCalc |= $shipsDestroyed >= 10 && $shipsDestroyed >= $nextTopRecalc;
 
         if ($doCalc) $queueTopAlltime->push($row['_id']);
     }
-    $redis->setex($redisKey, 28800, true);
+    $redis->setex($redisKey, 28800, "true");
 }
 
 $minute = date('Hi');
