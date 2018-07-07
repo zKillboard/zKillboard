@@ -11,6 +11,10 @@ $app->get('/faq/', function() use ($app) {
         $app->redirect("/information/faq/", 302);
     });
 
+$app->get('/challenge/', function() use ($app) {
+        include "view/challenge.php";
+    });
+
 $app->get('/google/', function() use ($app) {
         $mobile = false;
         include "view/google.php";

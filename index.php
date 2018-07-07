@@ -56,6 +56,11 @@ $ip = IP::get();
 $ipE = explode(',', $ip);
 $ip = $ipE[0];
 
+if ($redis->get("IP:ban:$ip") == "true") {
+    header('HTTP/1.1 403 IP has been temporarily banned due to excessive errors');
+    return;
+}
+
 // Must rate limit now apparently
 if (!in_array($ip, $whiteList)) { 
     $ipttl = new RedisTtlCounter("floodcheck:$ip", 300);
@@ -70,7 +75,7 @@ if (in_array($ip, $blackList)) {
     die();
 }
 
-$limit = $isApiRequest ? 10 : 3;
+$limit = 10; 
 $noLimits = ['/navbar/', '/post/', '/autocomplete/', '/crestmail/', '/comment/', '/killlistrow/'];
 $noLimit = false;
 foreach ($noLimits as $noLimit) $noLimit |= (substr($uri, 0, strlen($noLimit)) === $noLimit);
@@ -97,11 +102,11 @@ if (!$isApiRequest) {
 
 // Scrape Checker
 $ipKey = "ip::$ip";
-/*if (!$isApiRequest && !(substr($uri, 0, 9) == '/related/' || substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp' || substr($uri, 0, 5) == '/auto' || substr($uri, 0, 9) == "/comment/" || substr($uri, 0, 13) == '/killlistrow/')) {
+if (false && !$isApiRequest && !(substr($uri, 0, 9) == '/related/' || substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp' || substr($uri, 0, 5) == '/auto' || substr($uri, 0, 9) == "/comment/" || substr($uri, 0, 13) == '/killlistrow/' || substr($uri, 0, 11) == "/challenge/")) {
     $redis->incr($ipKey, ($uri == '/navbar/' ? -1 : 1));
     $redis->expire($ipKey, 300);
     $count = $redis->get($ipKey);
-    if ($count > 40) {
+    if (!in_array($ip, $whiteList) && $count > 40) {
         $host = gethostbyaddr($ip);
         $host2 = gethostbyname($host);
         $isValidBot = false;
@@ -109,11 +114,12 @@ $ipKey = "ip::$ip";
             $isValidBot |= strpos($host, $bot) !== false;
         }
         if ($ip != $host2 || !$isValidBot) {
-            header('HTTP/1.1 403 Not authorized.');
-            die("Scraping discouraged. APIs are useful, skill up and use that instead.");
+            $redis->setex("ip::redirect::$ip", 300, $uri);
+            header("Location: /challenge/");
+            return;
         }
     }
-}*/
+}
 
 if (substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || $uri == '/navbar/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp') {
     // Session
