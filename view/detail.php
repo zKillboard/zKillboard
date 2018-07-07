@@ -17,7 +17,13 @@ if ($pageview != 'overview' && $pageview != 'involved') {
 $involved = array();
 $message = '';
 
+$oID = $id;
 $id = (int) $id;
+if ("$oID" !== "$id") {
+    Log::log("$redirecting oID to $id");
+    $app->redirect("/kill/$id/", 302);
+    exit();
+}
 
 while ($mdb->count('queueInfo', ['killID' => $id])) {
     sleep(1);
