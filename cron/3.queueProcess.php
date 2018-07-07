@@ -45,7 +45,9 @@ while ($minute == date('Hi')) {
         $date = str_replace('.', '-', $date);
 
         $kill['dttm'] = new MongoDate(strtotime($date . " UTC"));
-
+        $time = $kill['dttm']->sec;
+        $time = $time - ($time % 60);
+        $kill['unixtime'] = $time;
 
         $systemID = (int) $mail['solar_system_id'];
         $system = Info::getInfo('solarSystemID', $systemID);
