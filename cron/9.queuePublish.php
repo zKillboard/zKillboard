@@ -47,6 +47,7 @@ function publish($killID)
     $channels["constellation:" . $kill['system']['constellationID']] = true;
     $channels["region:" . $kill['system']['regionID']] = true;
     $channels["location:" . $kill['zkb']['locationID']] = true;
+    if ($zkb['totalValue'] >= 10000000000) $channels['total_value:10b+'] = true;
     $channels = array_keys($channels);
 
     $victimInfo = $kill['involved'][0];
