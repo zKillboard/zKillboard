@@ -4,6 +4,8 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
+$queueProcess = new RedisQueue('queueProcess');
+if ($redis->llen("queueProcess") > 25) exit();
 $queueRelated = new RedisQueue('queueRelated');
 
 $minute = date('Hi');

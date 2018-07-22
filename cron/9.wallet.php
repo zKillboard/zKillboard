@@ -102,7 +102,7 @@ function applyBalances()
 
                 ZLog::add("$months month" . ($months == 1 ? "" : "s")  . " of ad free time has been given to $charName from $amount ISK.", $charID);
                 User::sendMessage("Thank you for your payment of $amount ISK. $months month" . ($months == 1 ? "" : "s")  . " of ad free time has been given to $charName", $charID);
-                EveMail::send($charID, "ISK Received", "Thank you for your payment of $amount ISK. $months months of ad free time has been given to $charName");
+                EveMail::send($charID, "ISK Received", "Thank you for your payment of $amount ISK. $months months of ad free time has been given to $charName.\n\n<a href=\"https://zkillboard.com/character/$charID/\">Your zKillboard character page.</a>");
             }
             $mdb->set('payments', $row, ['paymentApplied' => 1]);
         }

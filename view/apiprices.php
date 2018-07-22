@@ -7,6 +7,7 @@ header('Access-Control-Allow-Methods: GET');
 
 $row = $mdb->findDoc("prices", ['typeID' => (int) $id]);
 unset($row['_id']);
+$row['currentPrice'] = Price::getItemPrice((int) $id, null);
 
 if (isset($_GET['callback']) && Util::isValidCallback($_GET['callback'])) {
     $app->contentType('application/javascript; charset=utf-8');

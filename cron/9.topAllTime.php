@@ -45,6 +45,7 @@ function calcTop($row)
     $parameters = [$row['type'] => $row['id']];
     $parameters['limit'] = 100;
     $parameters['kills'] = true;
+    $parameters['iskValue'] = 25000000;
 
     $topLists[] = array('type' => 'character', 'data' => Stats::getTop('characterID', $parameters));
     $topLists[] = array('type' => 'corporation', 'data' => Stats::getTop('corporationID', $parameters));

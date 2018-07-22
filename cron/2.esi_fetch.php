@@ -6,10 +6,7 @@ use cvweiss\redistools\RedisTtlCounter;
 require_once "../init.php";
 
 $guzzler = new Guzzler(25, 10);
-$rows = $mdb->getCollection("crestmails")->find();
 $esimails = $mdb->getCollection("esimails");
-
-$redis->sort("esi2Fetch", ['sort' => 'desc']);
 
 $mdb->set("crestmails", ['processed' => ['$exists' => false]], ['processed' => false], true);
 $mdb->set("crestmails", ['processed' => ['$ne' => true]], ['processed' => false], true);
@@ -40,13 +37,15 @@ function fail($guzzler, $params, $ex) {
 
     $code = $ex->getCode();
     switch ($code) {
+        case 500:
+            //Util::out("esi fetch failure ($code): " . $ex->getMessage() . "\n" . print_r($guzzler->getLastHeaders(), true));
+            break;
         case 404:
         case 422:
             $mdb->remove("crestmails", $row);
             break;
         case 0:
         case 420:
-        case 500:
         case 502: // Do nothing, the server messed up and we'll try again in a minute
         case 503:
         case 504:

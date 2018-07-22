@@ -21,7 +21,7 @@ $killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
 $killCount = number_format($killsLastHour->count(), 0);
 $redis->publish("public", json_encode(['action' => 'tqStatus', 'tqStatus' => $serverStatus, 'tqCount' => $loggedIn, 'kills' => $killCount]));
 
-$message = null;
+$message = "";
 $message = apiStatus($message, 'esi', "Issues with CCP's ESI API - some killmails may be delayed.");
 $message = apiStatus($message, 'sso', "Issues with CCP's SSO API - some killmails may be delayed.");
 $redis->setex('tq:apiStatus', 300, $message);

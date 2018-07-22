@@ -61,22 +61,13 @@ if ($redis->get("IP:ban:$ip") == "true") {
     return;
 }
 
-// Must rate limit now apparently
-if (!in_array($ip, $whiteList)) { 
-    $ipttl = new RedisTtlCounter("floodcheck:$ip", 300);
-    $ipttl->add(uniqid());
-    if ($ipttl->count() > 1200) {
-        header('HTTP/1.1 429 Too many requests.');
-        die("<html><head><meta http-equiv='refresh' content='1'></head><body>Rate limited.</body></html>");
-    }
-}
 if (in_array($ip, $blackList)) {
     header('HTTP/1.1 403 Blacklisted');
     die();
 }
 
 $limit = 10; 
-$noLimits = ['/navbar/', '/post/', '/autocomplete/', '/crestmail/', '/comment/', '/killlistrow/'];
+$noLimits = ['/post/', '/autocomplete/', '/crestmail/', '/comment/', '/killlistrow/', '/comment/', '/related/', '/sponsor', '/crestmail', '/account/', '/logout', '/ccp', '/auto', '/killlistrow/', '/challenge/'];
 $noLimit = false;
 foreach ($noLimits as $noLimit) $noLimit |= (substr($uri, 0, strlen($noLimit)) === $noLimit);
 $count = $redis->get($ip);
@@ -85,24 +76,9 @@ if ($noLimit === false  && $count >= $limit) {
     die("<html><head><meta http-equiv='refresh' content='1'></head><body>Rate limited.</body></html>");
 }
 
-// Some anti-scraping code, far from perfect though
-$badBots = ['mechanize', 'python', 'java'];
-$userAgent = strtolower(@$_SERVER['HTTP_USER_AGENT']);
-if (!$isApiRequest) {
-    foreach ($badBots as $badBot) {
-        if ($userAgent == "" || $userAgent == "-" || strpos($userAgent, $badBot) !== false) {
-            header('HTTP/1.1 400 Not authorized');
-            die("APIs are useful, skill up and use that instead.");
-        }
-    }
-} else if ($isApiRequest && strlen(trim($userAgent)) <= 3) {
-    header('HTTP/1.1 400 Please provide proper user agent identification.');
-    exit();
-}
-
 // Scrape Checker
 $ipKey = "ip::$ip";
-if (false && !$isApiRequest && !(substr($uri, 0, 9) == '/related/' || substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp' || substr($uri, 0, 5) == '/auto' || substr($uri, 0, 9) == "/comment/" || substr($uri, 0, 13) == '/killlistrow/' || substr($uri, 0, 11) == "/challenge/")) {
+if (false && !$isApiRequest && !$noLimit) {
     $redis->incr($ipKey, ($uri == '/navbar/' ? -1 : 1));
     $redis->expire($ipKey, 300);
     $count = $redis->get($ipKey);

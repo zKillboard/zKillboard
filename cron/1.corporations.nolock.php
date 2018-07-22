@@ -5,6 +5,8 @@ use cvweiss\redistools\RedisTimeQueue;
 require_once "../init.php";
 
 if ($redis->get("zkb:reinforced") == true) exit();
+if ($redis->llen("queueProcess") > 100) exit();
+
 $guzzler = new Guzzler($esiCorpKillmails);
 
 $esi = new RedisTimeQueue('tqCorpApiESI', 3600);

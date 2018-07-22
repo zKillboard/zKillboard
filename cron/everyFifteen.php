@@ -17,7 +17,7 @@ $p['limit'] = 10;
 $p['pastSeconds'] = $numDays * 86400;
 $p['kills'] = true;
 
-$redis->set('zkb:TopIsk', json_encode(Stats::getTopIsk(array('pastSeconds' => ($numDays * 86400), 'limit' => 6, 'categoryID' => 6))));
+$redis->set('zkb:TopIsk', json_encode(Stats::getTopIsk(array('pastSeconds' => ($numDays * 86400), 'limit' => 6/*, 'categoryID' => 6*/))));
 
 getTop('Top Characters', 'characterID');
 getTop('Top Corporations', 'corporationID');
@@ -62,11 +62,13 @@ function getTop($title, $type)
     $key = "zkb:Cache:$title:$type";
     $retVal = [];
 
-    $ids = $redis->zRange("tq:ranks:weekly:$type", 0, 10);
+    $ids = $redis->zRange("tq:ranks:weekly:$type", 0, 20);
     if (sizeof($ids) == 0) {
         return [];
     }
     foreach ($ids as $id) {
+        if (sizeof($retVal) >= 10) break;
+        if ($type == "corporationID" && $id <= 1999999) continue;
         $retVal[] = [$type => $id, 'kills' => $redis->zScore("tq:ranks:weekly:$type:shipsDestroyed", $id), 'score' => $redis->zScore("tq:ranks:weekly:$type", $id)];
     }
     Info::addInfo($retVal);

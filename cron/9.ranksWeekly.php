@@ -70,12 +70,14 @@ foreach ($types as $type => $value) {
             $iskDestroyedRank = rankCheck($max, $redis->zRevRank("$key:iskDestroyed", $id));
             $iskLost = $redis->zScore("$key:iskLost", $id);
             $iskLostRank = rankCheck($max, $redis->zRevRank("$key:iskLost", $id));
+            if (($iskDestroyed + $iskLost) == 0) continue;
             $iskEff = ($iskDestroyed / ($iskDestroyed + $iskLost));
 
             $pointsDestroyed = $redis->zScore("$key:pointsDestroyed", $id);
             $pointsDestroyedRank = rankCheck($max, $redis->zRevRank("$key:pointsDestroyed", $id));
             $pointsLost = $redis->zScore("$key:pointsLost", $id);
             $pointsLostRank = rankCheck($max, $redis->zRevRank("$key:pointsLost", $id));
+            if (($pointsDestroyed + $pointsLost) == 0) continue;
             $pointsEff = ($pointsDestroyed / ($pointsDestroyed + $pointsLost));
 
             $avg = ceil(($shipsDestroyedRank + $iskDestroyedRank + $pointsDestroyedRank) / 3);

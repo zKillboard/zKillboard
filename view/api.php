@@ -24,6 +24,13 @@ try {
     }
 
     $parameters = Util::convertUriToParameters();
+    global $uri;
+    if (strpos($uri, "/stats/") !== false) {
+        throw new Exception("This is not the stats endpoint, refer to the documentation and build your URL properly.");
+    }
+    if (strpos($uri, "json") !== false) {
+        throw new Exception("No need to refer to json, refer to the documentation and build your URL properly.");
+    }
     $return = Feed::getKills($parameters);
 
     $array = array();

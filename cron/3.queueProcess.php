@@ -47,7 +47,6 @@ while ($minute == date('Hi')) {
         $kill['dttm'] = new MongoDate(strtotime($date . " UTC"));
         $time = $kill['dttm']->sec;
         $time = $time - ($time % 60);
-        $kill['unixtime'] = $time;
 
         $systemID = (int) $mail['solar_system_id'];
         $system = Info::getInfo('solarSystemID', $systemID);
@@ -119,7 +118,7 @@ while ($minute == date('Hi')) {
             $killmails->save($kill);
         }
         $oneWeekExists = $mdb->exists('oneWeek', ['killID' => $killID]);
-        if (!$oneWeekExists && $kill['dttm']->sec >= $date7Days && $kill['categoryID'] == 6) {
+        if (!$oneWeekExists && $kill['dttm']->sec >= $date7Days) {
             $mdb->getCollection('oneWeek')->save($kill);
         }
         $ninetyDayExists = $mdb->exists('ninetyDays', ['killID' => $killID]);
@@ -166,7 +165,7 @@ function getFittedValue($killID, $items, $dttm)
     $fittedValue = 0;
     foreach ($items as $item) {
         $infernoFlag = Info::getFlagLocation($item['flag']);
-        $add = ($infernoFlag != 0) || in_array($item['flag'], [87, 89, 93, 155, 158, 159, 172, 2663, 3772]);
+        $add = /*($infernoFlag != 0) ||*/ in_array($item['flag'], [11, 12, 13, 87, 89, 93, 158, 159, 172, 2663, 3772]);
         if ($add) $fittedValue += processItem($killID, $item, $dttm, false, 0);
     }
     return $fittedValue;

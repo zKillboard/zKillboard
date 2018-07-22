@@ -20,7 +20,7 @@ $message = '';
 $oID = $id;
 $id = (int) $id;
 if ("$oID" !== "$id") {
-    Log::log("$redirecting oID to $id");
+    Log::log("redirecting $oID to $id");
     $app->redirect("/kill/$id/", 302);
     exit();
 }

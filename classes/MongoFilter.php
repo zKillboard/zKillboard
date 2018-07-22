@@ -10,9 +10,6 @@ class MongoFilter
 
         $limit = max(1, min(200, isset($parameters['limit']) ? (int) $parameters['limit']  : 50));
         $sortDirection = isset($parameters['orderDirection']) ? ($parameters['orderDirection'] == 'asc' ? 1 : -1)  : -1;
-        if (isset($parameters['startTime'])) {
-            $sortDirection = 'asc';
-        }
         $sortKey = isset($parameters['orderBy']) ? $parameters['orderBy'] : 'killID';
         $page = isset($parameters['page']) ? ($parameters['page'] == 0 ? 0 : $parameters['page'] - 1) : 0;
 
@@ -137,14 +134,7 @@ class MongoFilter
                 case 'asc':
                 case 'desc':
                 case 'orderDirection':
-                    break;
-                case 'year':
-                    /*if (!isset($parameters['month'])) {
-                        $start = strtotime("$value-01-01");
-                        $end = strtotime("$value-12-31 23:59:59");
-                        $and[] = ['dttm' => ['$gte' => new MongoDate($start)]];
-                        $and[] = ['dttm' => ['$lt' => new MongoDate($end)]];
-                    }*/
+                case 'year': // handled in month
                     break;
                 case 'month':
                     $year = isset($parameters['year']) ? $parameters['year'] : date('Y');
@@ -170,7 +160,7 @@ class MongoFilter
                 case 'pastSeconds':
                     $value = min($value, (90 * 86400));
                     $value = max(0, $value);
-                    if ($value % 3600 != 0) throw new Exception("pastSeconds must be in increments of 3600 - use redisq if you want up to the second killmails https://github.com/zKillboard/RedisQ");
+                    if ($value % 3600 != 0) throw new Exception("pastSeconds must be in increments of 3600 - use redisq or the websocket if you want up to the second killmails https://github.com/zKillboard/zKillboard/wiki");
                     $and[] = ['dttm' => ['$gte' => new MongoDate(time() - $value)]];
                     break;
                 case 'beforeKillID':
@@ -311,11 +301,23 @@ class MongoFilter
         return $query;
     }
 
-    public static function getFirstKillID($year, $month)
+    public static function getFirstKillID($year, $month, $day = 1)
     {
         global $redis;
 
         if (strlen("$month") < 2) $month = "0$month";
-        return (int) $redis->get("zkb:firstkillid:{$year}{$month}01");
+        if (strlen("$day") < 2) $day = "0$day";
+        return (int) $redis->get("zkb:firstkillid:{$year}{$month}{$day}");
+    }
+
+    public static function getFirstKillIDTime($time)
+    {
+        global $mdb;
+
+        $time = $time - ($time % 60);
+        $iter = $mdb->getCollection("killmails")->find(['dttm' => ['$gte' => new MongoDate($time)]])->sort(['killID' => 1])->limit(1);
+        $row = $iter->next();
+        if (!isset($row['killID'])) throw new Exception("invalid time $time");
+        return $row['killID'];
     }
 }
