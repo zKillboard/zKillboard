@@ -6,7 +6,7 @@ require_once '../init.php';
 
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:420prone") == "true") exit();
-$guzzler = new Guzzler(15);
+$guzzler = new Guzzler();
 $chars = new RedisTimeQueue("zkb:characterID", 86400);
 $maxKillID = $mdb->findField("killmails", "killID", [], ['killID' => -1]) - 5000000;
 
