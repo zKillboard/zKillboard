@@ -96,13 +96,14 @@ function applyBalances()
 
                 $adFreeUntil += (86400 * 30 * $months);
                 $charName = Info::getInfoField('characterID', $charID, 'name');
+                $shortAmount = Util::formatIsk($amount, true);
                 $amount = number_format($amount, 0);
                 $mdb->set("users", $userInfo, ['adFreeUntil' => $adFreeUntil]);
                 $mdb->set('payments', $row, ['months' => "$months months"]);
 
                 ZLog::add("$months month" . ($months == 1 ? "" : "s")  . " of ad free time has been given to $charName from $amount ISK.", $charID);
                 User::sendMessage("Thank you for your payment of $amount ISK. $months month" . ($months == 1 ? "" : "s")  . " of ad free time has been given to $charName", $charID);
-                EveMail::send($charID, "ISK Received", "Thank you for your payment of $amount ISK. $months months of ad free time has been given to $charName.\n\n<a href=\"https://zkillboard.com/character/$charID/\">Your zKillboard character page.</a>");
+                EveMail::send($charID, "$shortAmount ISK Received", "Thank you for your payment of $amount ISK. $months months of ad free time has been given to $charName.\n\n<a href=\"https://zkillboard.com/character/$charID/\">Your zKillboard character page.</a>");
             }
             $mdb->set('payments', $row, ['paymentApplied' => 1]);
         }
