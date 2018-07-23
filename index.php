@@ -28,7 +28,7 @@ if (substr($uri, -1) != '/' && strpos($uri, 'ccpcallback') === false) {
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET');
     if ($isApiRequest) header("HTTP/1.1 200 Missing trailing slash");
-    else header("Location: $uri/", true, 301);
+    else header("Location: $uri/", true, 302);
     exit();
 }
 
@@ -69,7 +69,7 @@ if (in_array($ip, $blackList)) {
 $limit = 10; 
 $noLimits = ['/post/', '/autocomplete/', '/crestmail/', '/comment/', '/killlistrow/', '/comment/', '/related/', '/sponsor', '/crestmail', '/account/', '/logout', '/ccp', '/auto', '/killlistrow/', '/challenge/'];
 $noLimit = false;
-foreach ($noLimits as $noLimit) $noLimit |= (substr($uri, 0, strlen($noLimit)) === $noLimit);
+foreach ($noLimits as $noLimitTxt) $noLimit |= (substr($uri, 0, strlen($noLimitTxt)) === $noLimitTxt);
 $count = $redis->get($ip);
 if ($noLimit === false  && $count >= $limit) {
     header('HTTP/1.1 429 Too many requests.');
@@ -78,7 +78,7 @@ if ($noLimit === false  && $count >= $limit) {
 
 // Scrape Checker
 $ipKey = "ip::$ip";
-if (false && !$isApiRequest && !$noLimit) {
+if (!$isApiRequest && !$noLimit && $redis->get("ip::challenge_safe::$ip") != "true") {
     $redis->incr($ipKey, ($uri == '/navbar/' ? -1 : 1));
     $redis->expire($ipKey, 300);
     $count = $redis->get($ipKey);
@@ -90,8 +90,9 @@ if (false && !$isApiRequest && !$noLimit) {
             $isValidBot |= strpos($host, $bot) !== false;
         }
         if ($ip != $host2 || !$isValidBot) {
+            if ($redis->get("ip::redirect::$ip") == false) Log::log("Challenging $ip $uri");
             $redis->setex("ip::redirect::$ip", 300, $uri);
-            header("Location: /challenge/");
+            header("Location: /challenge/", true, 302);
             return;
         }
     }
