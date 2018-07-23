@@ -1,7 +1,7 @@
 {% if topLists|length > 0 %}
 <div class="row">
 {% if nextTopRecalc %}
-<div class='col-lg-12'>Next all time top lists recalculation will happen shortly after {{ nextTopRecalc|number_format(0) }} kills has been reached.<br/><small><i>Only kills worth 25m isk or more are considered in top all time statistic.</i></small><br/><hr/></div>
+<div class='col-lg-12'>Next all time top lists recalculation will happen shortly after {{ nextTopRecalc|number_format(0) }} kills has been reached.<br/><br/><hr/></div>
 {% endif %}
 {% set tableCount = 0 %}
 {% for list in topLists %}

@@ -18,6 +18,7 @@ if ($redis->get($redisKey) != "true" && $queueTopAlltime->size() == 0) {
         $shipsDestroyed = (int) @$row['shipsDestroyed'];
         $nextTopRecalc = floor($allTimeSum * 1.01) + 1;
 
+$nextTopRecalc = 1;
         $doCalc = false;
         $doCalc |= $shipsDestroyed >= 10 && !isset($row['topIskKills']);
         $doCalc |= $shipsDestroyed >= 10 && $shipsDestroyed >= $nextTopRecalc;
@@ -45,7 +46,6 @@ function calcTop($row)
     $parameters = [$row['type'] => $row['id']];
     $parameters['limit'] = 100;
     $parameters['kills'] = true;
-    $parameters['iskValue'] = 25000000;
 
     $topLists[] = array('type' => 'character', 'data' => Stats::getTop('characterID', $parameters));
     $topLists[] = array('type' => 'corporation', 'data' => Stats::getTop('corporationID', $parameters));
