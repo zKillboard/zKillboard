@@ -55,3 +55,12 @@ Disallow: /
 
 User-agent: Yandex
 Disallow: /
+
+User-agent: dotbot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: SemrushBot-SA
+Disallow: /
