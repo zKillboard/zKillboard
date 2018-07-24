@@ -43,5 +43,5 @@ function success(&$guzzler, &$params, $content)
 
 function fail(&$guzzler, &$params, $content)
 {
-
+    exit("error fetching wars\n");
 }

@@ -4,12 +4,14 @@ use cvweiss\redistools\RedisTimeQueue;
 
 require_once '../init.php';
 
+if ($redis->get("zkb:universeLoaded") != "true") exit("Universe not yet loaded...\n");
+
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:420prone") == "true") exit();
 
 $mdb = new Mdb();
 $old = $mdb->now(3600 * 3); // 8 hours
-$queueAllis = new RedisTimeQueue('tqAlliances', 9600);
+$queueAllis = new RedisTimeQueue('zkb:allianceID', 9600);
 
 $i = date('i');
 if ($i == 45) {

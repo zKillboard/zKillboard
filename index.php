@@ -78,6 +78,10 @@ if ($noLimit === false  && $count >= $limit) {
 
 // Scrape Checker
 $ipKey = "ip::$ip";
+if ($redis->get("ip::redirect::$ip") != null) {
+    header("Location: /challenge/", true, 302);
+    return;
+}
 if (!$isApiRequest && !$noLimit && $redis->get("ip::challenge_safe::$ip") != "true") {
     $redis->incr($ipKey, ($uri == '/navbar/' ? -1 : 1));
     $redis->expire($ipKey, 300);
@@ -90,8 +94,8 @@ if (!$isApiRequest && !$noLimit && $redis->get("ip::challenge_safe::$ip") != "tr
             $isValidBot |= strpos($host, $bot) !== false;
         }
         if ($ip != $host2 || !$isValidBot) {
-            if ($redis->get("ip::redirect::$ip") == false) Log::log("Challenging $ip $uri");
-            $redis->setex("ip::redirect::$ip", 300, $uri);
+            if ($redis->get("ip::redirect::$ip") == false) Log::log("Challenging $ip $host2 $uri");
+            $redis->setex("ip::redirect::$ip", 900, $uri);
             header("Location: /challenge/", true, 302);
             return;
         }

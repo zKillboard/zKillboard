@@ -5,16 +5,16 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once "../init.php";
 
-$guzzler = new Guzzler(25, 10);
+$guzzler = new Guzzler(50);
 $esimails = $mdb->getCollection("esimails");
 
-$mdb->set("crestmails", ['processed' => ['$exists' => false]], ['processed' => false], true);
-$mdb->set("crestmails", ['processed' => ['$ne' => true]], ['processed' => false], true);
+$mdb->set("crestmails", ['processed' => 'fetching'], ['processed' => false], true);
 
+$count = 0;
 $minute = date("Hi");
 while ($minute == date("Hi")) {
-    $row = $mdb->findDoc("crestmails", ['processed' => false], ['killID' => 1]);
-    if ($row != null) {
+    $rows = $mdb->find("crestmails", ['processed' => false], ['killID' => -1], 10);
+    foreach ($rows as $row) {
         $killID = $row['killID'];
         $hash = $row['hash'];
 
@@ -23,10 +23,11 @@ while ($minute == date("Hi")) {
         $url = "$esiServer/v1/killmails/$killID/$hash/";
         $params = ['row' => $row, 'mdb' => $mdb, 'redis' => $redis, 'killID' => $killID, 'esimails' => $esimails];
         $guzzler->call($url, "success", "fail", $params);
+        $count++;
     }
-    else {
+    if (sizeof($rows) == 0) {
         $guzzler->tick();
-        usleep(100000);
+        sleep(1);
     }
 }
 $guzzler->finish();
@@ -69,10 +70,5 @@ function success(&$guzzler, &$params, &$content) {
     } catch (Exception $ex) {
         // argh
     }
-    $mdb->set("crestmails", $row, ['processed' => true]);
-
-    $queueProcess = new RedisQueue('queueProcess');
-    $queueProcess->push($params['killID']);
-    $killsLastHour = new RedisTtlCounter('killsLastHour');
-    $killsLastHour->add($row['killID']);
+    $mdb->set("crestmails", $row, ['processed' => 'fetched']);
 }

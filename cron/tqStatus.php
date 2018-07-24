@@ -21,9 +21,10 @@ $killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
 $killCount = number_format($killsLastHour->count(), 0);
 $redis->publish("public", json_encode(['action' => 'tqStatus', 'tqStatus' => $serverStatus, 'tqCount' => $loggedIn, 'kills' => $killCount]));
 
-$message = "";
+$message = ($redis->get("tqCountInt") == 0) ? "<a href='https://status.esiknife.space/' target='_blank'>We seem to be having an issue accessing the ESI API, nothing can be done at this time.</a>" : "";
 $message = apiStatus($message, 'esi', "Issues with CCP's ESI API - some killmails may be delayed.");
 $message = apiStatus($message, 'sso', "Issues with CCP's SSO API - some killmails may be delayed.");
+if ($message == "" && $redis->llen("queueRelated") > 500) $message = "<a href='/ztop/'>Server is experiencing higher than normal load, your happy and pleasurable user experience has been ganked.</a>";
 $redis->setex('tq:apiStatus', 300, $message);
 
 function success($content)

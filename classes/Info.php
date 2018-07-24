@@ -248,7 +248,7 @@ class Info
 
         $data = $mdb->findDoc('information', ['cacheTime' => 3600, 'type' => 'regionID', 'id' => $regionID]);
         $data['regionID'] = $regionID;
-        $data['regionName'] = $data['name'];
+        $data['regionName'] = isset($data['name']) ? $data['name'] : $regionID;
 
         return $data;
     }

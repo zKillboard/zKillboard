@@ -58,12 +58,17 @@ class Guzzler
         $this->verifyCallable($rejected);
         $params['uri'] = $uri;
         $params['callType'] = strtoupper($callType);
+        $params['fulfilled'] = $fulfilled;
+        $params['rejected'] = $rejected;
 
         while ($this->concurrent >= $this->maxConcurrent) $this->tick();
 
+        $iterations = 0;
         while ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") {
             $this->tick();
             sleep(1);
+            $iterations++;
+            if ($iterations > 60) return;
         }
 
         $statusType = self::getType($uri);

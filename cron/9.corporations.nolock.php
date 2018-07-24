@@ -4,6 +4,8 @@ require_once '../init.php';
 
 use cvweiss\redistools\RedisTimeQueue;
 
+if ($redis->get("zkb:universeLoaded") != "true") exit("Universe not yet loaded...\n");
+
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:420prone") == "true") exit();
 $guzzler = new Guzzler();

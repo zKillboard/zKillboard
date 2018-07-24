@@ -4,8 +4,6 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
-$queueProcess = new RedisQueue('queueProcess');
-if ($redis->llen("queueProcess") > 25) exit();
 $queueRelated = new RedisQueue('queueRelated');
 
 $minute = date('Hi');
@@ -23,6 +21,11 @@ while ($minute == date('Hi')) {
     if ($redis->get($parameters['key']) !== false) {
         continue;
     }
+
+    if ($redis->llen("queueRelated") > 100 && (sizeof($parameters['options']['A']) > 0 || sizeof($parameters['options']['B']) > 0)) {
+        continue;
+    }
+
     $kills = Kills::getKills($parameters);
     $summary = Related::buildSummary($kills, $parameters['options']);
 

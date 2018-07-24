@@ -4,16 +4,15 @@ require_once "../init.php";
 
 $serverVersion = $redis->get("tqServerVersion");
 $loadedVersion = $redis->get("zkb:tqServerVersion");
-if ($serverVersion == $loadedVersion) {
-    $redis->set("zkb:universeLoaded", "true");
+if ($serverVersion != "" && $serverVersion == $loadedVersion && $redis->get("zkb:universeLoaded") == true) {
     exit();
 }
 
 $guzzler = new Guzzler(25, 10);
 
-$guzzler->call("$esiServer/v1/universe/categories/", "categoriesSuccess", "fail");
-$guzzler->finish();
 $guzzler->call("$esiServer/v1/universe/regions/", "regionsSuccess", "fail");
+$guzzler->finish();
+$guzzler->call("$esiServer/v1/universe/categories/", "categoriesSuccess", "fail");
 $guzzler->finish();
 
 $redis->set("zkb:tqServerVersion", $serverVersion);
@@ -23,6 +22,7 @@ function fail($guzzler, $params, $error)
 {
     $uri = $params['uri'];
     Util::out("Failure! $uri");
+    $guzzler->call($uri, $params['fulfilled'], $params['rejected']);
 }
 
 function categoriesSuccess($guzzler, $params, $content)
@@ -130,7 +130,7 @@ function constellationSuccess($guzzler, $params, $content)
     $mdb->insertUpdate("information", ['type' => 'constellationID', 'id' => $constID], ['name' => $name, 'regionID' => $regionID]);
 
     foreach ($systems as $system) {
-        $guzzler->call("$esiServer/v4/universe/systems/$system/", "systemSuccess", "fail", ['regionID' => $regionID]);
+        $guzzler->call("$esiServer/v4/universe/systems/$system/", "systemSuccess", "fail", ['regionID' => $regionID, 'constellationID' => $constID]);
     }
 }
 
@@ -145,5 +145,5 @@ function systemSuccess($guzzler, $params, $content)
     $name = ($id >= 32000000 && $id < 33000000) ? Info::getMangledSystemName($id, 0) : $system['name'];
     Util::out("System $name $id");
     
-    $mdb->insertUpdate("information", ['type' => 'solarSystemID', 'id' => $id], ['name' => $name, 'secClass' => @$system['security_class'], 'secStatus' => $system['security_status']]);
+    $mdb->insertUpdate("information", ['type' => 'solarSystemID', 'id' => $id], ['name' => $name, 'secClass' => @$system['security_class'], 'secStatus' => $system['security_status'], 'regionID' => $params['regionID'], 'constellationID' => $params['constellationID']]);
 }

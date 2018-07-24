@@ -5,6 +5,8 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once '../init.php';
 
+if ($redis->get("zkb:universeLoaded") != "true") exit("Universe not yet loaded...\n");
+
 $dateToday = date('Y-m-d');
 $dateYesterday = date('Y-m-d', time() - 86400);
 $date7Days = time() - (86400 * 7);
@@ -16,7 +18,6 @@ $redis->expire("zkb:loot:red:$dateYesterday", 86400);
 $crestmails = $mdb->getCollection('crestmails');
 $killmails = $mdb->getCollection('killmails');
 $queueInfo = new RedisQueue('queueInfo');
-$queueProcess = new RedisQueue('queueProcess');
 $storage = $mdb->getCollection('storage');
 
 $counter = 0;
@@ -24,22 +25,13 @@ $minute = date('Hi');
 
 while ($minute == date('Hi')) {
     if ($redis->get("zkb:universeLoaded") != "true") break;
-    $killID = $queueProcess->pop();
-    if ($killID !== null) {
-        $killID = (int) $killID;
-
+    $row = $mdb->findDoc('crestmails', ['processed' => 'fetched'], ['killID' => -1]);
+    if ($row != null) {
+        $killID = (int) $row['killID'];
         $mail = $mdb->findDoc('esimails', ['killmail_id' => $killID]);
-        if ($mail == null) continue;
 
         $kill = array();
         $kill['killID'] = $killID;
-
-        $crestmail = $crestmails->findOne(['killID' => $killID, 'processed' => true]);
-        if ($crestmail == null) {
-            $mdb->set("crestmails", ['killID' => $killID, 'processed' => 'fetching'], ['processed' => false]);
-            usleep(10000);
-            continue;
-        }
 
         $date = substr($mail['killmail_time'], 0, 19);
         $date = str_replace('.', '-', $date);
@@ -107,7 +99,7 @@ while ($minute == date('Hi')) {
             $zkb['locationID'] = $kill['locationID'];
         }
 
-        $zkb['hash'] = $crestmail['hash'];
+        $zkb['hash'] = $row['hash'];
         $zkb['fittedValue'] = round((double) $fittedValue, 2);
         $zkb['totalValue'] = round((double) $totalValue, 2);
         $zkb['points'] = (int) Points::getKillPoints($killID);
@@ -129,10 +121,11 @@ while ($minute == date('Hi')) {
         $queueInfo->push($killID);
         $redis->incr('zkb:totalKills');
         ++$counter;
+
+        $killsLastHour = new RedisTtlCounter('killsLastHour');
+        $killsLastHour->add($row['killID']);
+        $mdb->set('crestmails', $row, ['processed' => true]);
     } else usleep(50000);
-}
-if ($debug && $counter > 0) {
-    Util::out('Processed '.number_format($counter, 0).' Kills.');
 }
 
 function createInvolved($data)

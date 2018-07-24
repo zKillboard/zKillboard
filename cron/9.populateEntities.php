@@ -4,8 +4,12 @@ use cvweiss\redistools\RedisTimeQueue;
 
 require_once "../init.php";
 
+if ($redis->get("zkb:universeLoaded") != "true") exit("Universe not yet loaded...\n");
+
 $key = "zkb:populateEntities";
 if ($redis->get($key) == "true") exit();
+
+MongoCursor::$timeout = -1;
 
 populateEntity($mdb, "characterID");
 populateEntity($mdb, "corporationID");
