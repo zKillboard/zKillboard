@@ -7,9 +7,12 @@ require_once '../init.php';
 $queuePublish = new RedisQueue('queuePublish');
 $minute = date('Hi');
 
+$topKillID = max(1, $mdb->findField('killmails', 'killID', [], ['killID' => -1]));
+
 while ($minute == date('Hi')) {
     $killID = (int) $queuePublish->pop();
     if ($killID > 0 ) {
+        if ($redis->get("tobefetched") > 1000 && $killID < ($topKillID - 10000)) continue;
         publish($killID);
     } else sleep(1);
 }

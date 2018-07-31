@@ -5,7 +5,7 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once "../init.php";
 
-$guzzler = new Guzzler(50);
+$guzzler = new Guzzler(30);
 $esimails = $mdb->getCollection("esimails");
 
 $mdb->set("crestmails", ['processed' => 'fetching'], ['processed' => false], true);
@@ -17,6 +17,13 @@ while ($minute == date("Hi")) {
     foreach ($rows as $row) {
         $killID = $row['killID'];
         $hash = $row['hash'];
+
+        if ($mdb->count("esimails", ['killmail_id' => $killID]) > 0) {
+            $redis->zadd("tobeparsed", $killID, $killID);
+            $mdb->set("crestmails", $row, ['processed' => 'fetched']);
+            continue;
+        }
+        if ($redis->zcard("tobeparsed") > 100000) usleep(100000);
 
         $mdb->set("crestmails", $row, ['processed' => 'fetching']);
 
@@ -57,6 +64,8 @@ function fail($guzzler, $params, $ex) {
 }
 
 function success(&$guzzler, &$params, &$content) {
+    global $redis;
+
     if ($content == "") return;
 
     $mdb = $params['mdb'];
@@ -71,4 +80,7 @@ function success(&$guzzler, &$params, &$content) {
         // argh
     }
     $mdb->set("crestmails", $row, ['processed' => 'fetched']);
+    $killID = $doc['killmail_id'];
+    $params['redis']->zadd("tobeparsed", $killID, $killID);
+    if ($redis->get("tobefetched") > 0) $redis->incr("tobefetched", -1);
 }

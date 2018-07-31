@@ -26,12 +26,12 @@ $guzzler = new Guzzler(2);
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $id = (int) $queueAllis->next();
-    if ($id == null) break;
-
-    $alliance = $mdb->findDoc('information', ['type' => 'allianceID', 'id' => $id]);
-    $name = (string) @$alliance['name'];
-
-    $guzzler->call("$esiServer/v3/alliances/$id/", "success", "fail", ['id' => $id], ['etag' => true]);
+    if ($id > 0) {
+        $guzzler->call("$esiServer/v3/alliances/$id/", "success", "fail", ['id' => $id], ['etag' => true]);
+    } else {
+        $guzzler->tick();
+        sleep(1);
+    }
 }
 $guzzler->finish();
 
@@ -89,6 +89,6 @@ function fail($guzzler, $params, $ex)
             // Ignore
             break;
         default:
-            print_r($ex);
+            Util::out($ex->getCode() . " " . $ex->getMessage());
     }
 }

@@ -412,7 +412,7 @@ class Info
                         }
                         if (!isset($element['fittable'])) {
                             $categoryID = isset($element['categoryID']) ? $element['categoryID'] : self::getInfoField('groupID', $element['groupID'], 'categoryID');
-                            $element['fittable'] = $categoryID == 7; // 7 - Fittable
+                            $element['fittable'] = ($categoryID == 7); // 7 - Fittable
                         }
                         break;
                     case 'solarSystemID':
@@ -618,9 +618,12 @@ class Info
      */
     public static function getSlotCounts($shipTypeID)
     {
-        global $mdb;
-
-        $slotArray = $mdb->findDoc('information', ['type' => 'typeID', 'id' => (int) $shipTypeID, 'cacheTime' => 300], [], ['lowSlots', 'medSlots', 'hiSlots', 'rigSlots']);
+        $slotArray = [
+            'lowSlots' => Info::getDogma($shipTypeID, 12),
+            'medSlots' => Info::getDogma($shipTypeID, 13),
+            'hiSlots' => Info::getDogma($shipTypeID, 14),
+            'rigSlots' => Info::getDogma($shipTypeID, 1137)
+                ];
 
         return $slotArray;
     }
@@ -650,6 +653,26 @@ class Info
         }
 
         return $retArray;
+    }
+
+    public static function getDogma($typeID, $attr_id)
+    {  
+        global $mdb, $redis;
+
+        $p = $redis->get("zkb:dogma:$typeID:$attr_id");
+        if ($p == "null") return null;
+        if ($p != null) return (int) $p;
+
+        $r = $mdb->find("information", ['type' => 'typeID', 'id' => $typeID], [], null, ['dogma_attributes' => [ '$elemMatch' => [ 'attribute_id' => $attr_id ] ]]);
+        foreach ($r as $row ) {
+            if (!isset($row['dogma_attributes'])) break;
+            $row = $row['dogma_attributes'][0];
+            $p = $row['value'];
+            $redis->setex("zkb:dogma:$typeID:$attr_id", 3600, ($p == null ? "null" : $p));
+            return $p;
+        }
+        $redis->setex("zkb:dogma:$typeID", 3600, "null");
+        return null;
     }
 
     public static $itemIDs = [];

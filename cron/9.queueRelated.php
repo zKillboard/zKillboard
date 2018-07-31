@@ -4,16 +4,17 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
-$queueRelated = new RedisQueue('queueRelated');
-
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    $serial = $queueRelated->pop();
-    if ($serial == null) {
+    if ($redis->get("zkb:reinforced") == true) break;
+
+    $key = $redis->spop("queueRelatedSet");
+    if ($key == null) {
         sleep(1);
         continue;
     }
-    if ($redis->get("zkb:reinforced") == true) {
+    $serial = $redis->get("$key:params");
+    if ($serial == null) {
         continue;
     }
     $parameters = unserialize($serial);
@@ -22,14 +23,13 @@ while ($minute == date('Hi')) {
         continue;
     }
 
-    if ($redis->llen("queueRelated") > 100 && (sizeof($parameters['options']['A']) > 0 || sizeof($parameters['options']['B']) > 0)) {
-        continue;
-    }
-
+    if ($redis->get($parameters['key']) != null) continue;
     $kills = Kills::getKills($parameters);
     $summary = Related::buildSummary($kills, $parameters['options']);
 
     $serial = serialize($summary);
-    $redis->setex($parameters['key'], 200, $serial);
+    $redis->setex($parameters['key'], 900, $serial);
     $redis->setex('backup:'.$parameters['key'], 3600, $serial);
+    $redis->srem('queueRelatedSet', $key);
+    $redis->del("$key:params");
 }

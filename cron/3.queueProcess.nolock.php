@@ -1,15 +1,26 @@
 <?php
 
+$opid = getmypid();
+$children = [];
+$children[] = pcntl_fork();
+$children[] = pcntl_fork();
+$children[] = pcntl_fork();
+$children[] = pcntl_fork();
+$pid = getmypid();
+
+
 use cvweiss\redistools\RedisQueue;
 use cvweiss\redistools\RedisTtlCounter;
 
 require_once '../init.php';
 
 if ($redis->get("zkb:universeLoaded") != "true") exit("Universe not yet loaded...\n");
+$fittedArray = [11, 12, 13, 87, 89, 93, 158, 159, 172, 2663, 3772];
 
 $dateToday = date('Y-m-d');
 $dateYesterday = date('Y-m-d', time() - 86400);
 $date7Days = time() - (86400 * 7);
+$date90Days = time() - (86400 * 90);
 $redis->expire("zkb:loot:green:$dateToday", 86400);
 $redis->expire("zkb:loot:red:$dateToday", 86400);
 $redis->expire("zkb:loot:green:$dateYesterday", 86400);
@@ -25,7 +36,23 @@ $minute = date('Hi');
 
 while ($minute == date('Hi')) {
     if ($redis->get("zkb:universeLoaded") != "true") break;
-    $row = $mdb->findDoc('crestmails', ['processed' => 'fetched'], ['killID' => -1]);
+    while ($redis->llen("queueInfo") > 100) usleep(100000);
+    $row = null;
+    $sem = sem_get(3175);
+    try {
+        sem_acquire($sem);
+        $killID = $redis->zrevrange("tobeparsed", 0, 0);
+        if ($killID != null) {
+            $killID = (int) $killID[0];
+            $redis->zrem("tobeparsed", $killID);
+
+            $row = $mdb->findDoc('crestmails', ['killID' => $killID]);
+        }
+
+        if ($row != null) $mdb->set('crestmails', $row, ['processed' => 'processing']);
+    } finally {
+        sem_release($sem);
+    }
     if ($row != null) {
         $killID = (int) $row['killID'];
         $mail = $mdb->findDoc('esimails', ['killmail_id' => $killID]);
@@ -37,8 +64,6 @@ while ($minute == date('Hi')) {
         $date = str_replace('.', '-', $date);
 
         $kill['dttm'] = new MongoDate(strtotime($date . " UTC"));
-        $time = $kill['dttm']->sec;
-        $time = $time - ($time % 60);
 
         $systemID = (int) $mail['solar_system_id'];
         $system = Info::getInfo('solarSystemID', $systemID);
@@ -54,11 +79,8 @@ while ($minute == date('Hi')) {
             $kill['locationID'] = (int) $locationID;
         }
 
-        $sequence = $mdb->findField('killmails', 'sequence', ['sequence' => ['$ne' => null]], ['sequence' => -1]);
-        if ($sequence == null) {
-            $sequence = 0;
-        }
-        $kill['sequence'] = $sequence + 1;
+        $sequence = Util::getSequence($mdb, $redis);
+        $kill['sequence'] = $sequence;
 
         $kill['attackerCount'] = sizeof($mail['attackers']);
         $victim = createInvolved($mail['victim']);
@@ -75,9 +97,9 @@ while ($minute == date('Hi')) {
             $involved[] = $att;
         }
         $kill['involved'] = $involved;
-        $kill['awox'] = isAwox($kill);
-        $kill['solo'] = isSolo($kill);
         $kill['npc'] = isNPC($kill);
+        $kill['awox'] = ($kill['npc'] == true) ? false : isAwox($kill);
+        $kill['solo'] = ($kill['npc'] == true) ? false : isSolo($kill);
 
         $items = $mail['victim']['items'];
         $i = array();
@@ -102,21 +124,12 @@ while ($minute == date('Hi')) {
         $zkb['hash'] = $row['hash'];
         $zkb['fittedValue'] = round((double) $fittedValue, 2);
         $zkb['totalValue'] = round((double) $totalValue, 2);
-        $zkb['points'] = (int) Points::getKillPoints($killID);
+        $zkb['points'] = ($kill['npc'] == true) ? 0 : (int) Points::getKillPoints($killID);
         $kill['zkb'] = $zkb;
 
-        $exists = $killmails->count(['killID' => $killID]);
-        if ($exists == 0) {
-            $killmails->save($kill);
-        }
-        $oneWeekExists = $mdb->exists('oneWeek', ['killID' => $killID]);
-        if (!$oneWeekExists && $kill['dttm']->sec >= $date7Days) {
-            $mdb->getCollection('oneWeek')->save($kill);
-        }
-        $ninetyDayExists = $mdb->exists('ninetyDays', ['killID' => $killID]);
-        if (!$ninetyDayExists) {
-            $mdb->getCollection('ninetyDays')->save($kill);
-        }
+        saveMail($mdb, 'killmails', $kill);
+        if ($kill['dttm']->sec >= $date7Days) saveMail($mdb, 'oneWeek', $kill);
+        if ($kill['dttm']->sec >= $date90Days) saveMail($mdb, 'ninetyDays', $kill);
 
         $queueInfo->push($killID);
         $redis->incr('zkb:totalKills');
@@ -126,6 +139,22 @@ while ($minute == date('Hi')) {
         $killsLastHour->add($row['killID']);
         $mdb->set('crestmails', $row, ['processed' => true]);
     } else usleep(50000);
+}
+
+function saveMail($mdb, $collection, $kill)
+{
+    $error = false; 
+    do {
+        try {
+            if ($mdb->exists($collection, ['killID' => $kill['killID']])) return;
+            $mdb->getCollection($collection)->save($kill);
+            $error = false; 
+        } catch (Exception $ex) {
+            if ($ex->getCode() != 16759) throw $ex;
+            $error = true;
+            usleep(100000);
+        }
+    } while ($error == true);
 }
 
 function createInvolved($data)
@@ -155,10 +184,12 @@ function createInvolved($data)
 
 function getFittedValue($killID, $items, $dttm)
 {
+    global $fittedArray;
+
     $fittedValue = 0;
     foreach ($items as $item) {
         $infernoFlag = Info::getFlagLocation($item['flag']);
-        $add = /*($infernoFlag != 0) ||*/ in_array($item['flag'], [11, 12, 13, 87, 89, 93, 158, 159, 172, 2663, 3772]);
+        $add = in_array($item['flag'], $fittedArray);
         if ($add) $fittedValue += processItem($killID, $item, $dttm, false, 0);
     }
     return $fittedValue;
@@ -183,24 +214,16 @@ function processItem($killID, $item, $dttm, $isCargo = false, $parentContainerFl
     global $mdb;
 
     $typeID = (int) $item['item_type_id'];
-    $itemName = $mdb->findField('information', 'name', ['type' => 'typeID', 'id' => $typeID]);
-    if ($itemName == null) {
-        $itemName = "TypeID $typeID";
-    }
 
-    if ($typeID == 33329 && $item['flag'] == 89) {
-        $price = 0.01;
-    } // Golden pod implant can't be destroyed
-    else {
-        $price = Price::getItemPrice($typeID, $dttm);
-    }
-    if ($killID < 21112472 && $isCargo && strpos($itemName, 'Blueprint') !== false) {
-        $item['singleton'] = 2;
+    if ($typeID == 33329 && $item['flag'] == 89) $price = 0.01; // Golden pod implant can't be destroyed
+    else $price = Price::getItemPrice($typeID, $dttm);
+
+    if ($killID < 21112472 && $isCargo) {
+        $itemName = Info::getInfoField("typeID", $typeID, "name");
+        if ($itemName == null) $itemName = "TypeID $typeID";
+        if (strpos($itemName, 'Blueprint') !== false) $item['singleton'] = 2;
     }
     if ($item['singleton'] == 2) {
-        $price = 0.01;
-    }
-    if (strpos($itemName, " SKIN ") !== false) {
         $price = 0.01;
     }
 
@@ -321,7 +344,7 @@ function isNPC(&$killmail)
         if (@$attacker['characterID'] > 3999999) {
             return false;
         }
-        if (@$attacker['corporationID'] > 1999999) {
+        if (@$attacker['characterID'] != 0 && @$attacker['corporationID'] > 1999999) {
             return false;
         }
     }

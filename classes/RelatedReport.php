@@ -82,21 +82,17 @@ class RelatedReport {
         }
 
         $sleeps = 0;
-        $pushed = false;
-        $queueRelated = new RedisQueue('queueRelated');
         $key = 'br:'.md5("brq:$systemID:$relatedTime:$exHours:".json_encode($json_options).($battleID != null ? ":$battleID" : ''));
         $summary = null;
         while (true) {
             $summary = $redis->get($key);
-            if ($summary != null) {
-                break;
-            }
-            if ($pushed == false) {
-                $parameters = array('solarSystemID' => $systemID, 'relatedTime' => $relatedTime, 'exHours' => $exHours, 'nolimit' => true, 'options' => $json_options, 'key' => $key);
-                $serial = serialize($parameters);
-                $queueRelated->push($serial);
-                $pushed = true;
-            }
+            if ($summary != null) break;
+
+            $parameters = array('solarSystemID' => $systemID, 'relatedTime' => $relatedTime, 'exHours' => $exHours, 'nolimit' => true, 'options' => $json_options, 'key' => $key);
+            $serial = serialize($parameters);
+            $redis->sadd('queueRelatedSet', $key);
+            $redis->setex("$key:params", 3600, $serial);
+
             // See if we have a backup in place while the main one is being re-calculated?
             $summary = $redis->get("backup:$key");
             if ($summary != null) {

@@ -14,16 +14,16 @@ $corps = new RedisTimeQueue("zkb:corporationID", 86400);
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $id = (int) $corps->next();
-    if ($id <= 0) break;
     if ($id > 0) {
         $row = $mdb->findDoc("information", ['type' => 'corporationID', 'id' => $id]);
 
         $url = "$esiServer/v4/corporations/$id/";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
-        $guzzler->call($url, "updateCorp", "failCorp", $params, ['etag' => true]);
+        $a = isset($row['lastApiUpdate'])? ['etag' => true] : [];
+        $guzzler->call($url, "updateCorp", "failCorp", $params, $a);
     } else {
         $guzzler->tick();
-        usleep(100000);
+        sleep(1);
     }
 }
 $guzzler->finish();
@@ -64,7 +64,7 @@ function updateCorp(&$guzzler, &$params, &$content)
 
     $ceoID = (int) $json['ceo_id'];
 
-    $updates = [];
+    $updates = ['lastApiUpdate' => $mdb->now()];
     compareAttributes($updates, "name", @$row['name'], (string) $json['name']);
     compareAttributes($updates, "ticker", @$row['ticker'], (string) $json['ticker']);
     compareAttributes($updates, "ceoID", @$row['ceoID'], $ceoID);

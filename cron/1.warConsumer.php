@@ -24,7 +24,7 @@ while ($minute == date('Hi')) {
     $id = $queueWars->pop();
     if ($id == null) break;
     $warRow = $mdb->findDoc('information', ['type' => 'warID', 'id' => $id]);
-    $params = ['warRow' => $warRow];
+    $params = ['warRow' => $warRow, 'redis' => $redis];
     $url = "$esiServer/v1/wars/$id/";
     $guzzler->call($url, "success", "fail", $params, ['etag' => true], 'GET');
 }

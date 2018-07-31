@@ -5,7 +5,6 @@ use cvweiss\redistools\RedisTimeQueue;
 require_once "../init.php";
 
 if ($redis->get("zkb:reinforced") == true) exit();
-if ($redis->llen("queueProcess") > 100) exit();
 
 $esi = new RedisTimeQueue('tqApiESI', 3600);
 $esiCorp = new RedisTimeQueue('tqCorpApiESI', 3600);
@@ -20,19 +19,6 @@ if ($esi->size() == 0) exit();
 
 $guzzler = new Guzzler($esiCharKillmails, 25);
 
-$noCorp = $mdb->find("scopes", ['scope' => "esi-killmails.read_killmails.v1", 'corporationID' => ['$exists' => false]]);
-$chars = new RedisTimeQueue("zkb:characterID", 86400);
-foreach ($noCorp as $row) {
-    $charID = $row['characterID'];
-    $corpID = (int) Info::getInfoField("characterID", $charID, "corporationID");
-    if ($corpID > 0) $mdb->set("scopes", $row, ['corporationID' => $corpID]);
-    else {
-        $chars->add($charID);
-        $chars->setTime($charID, 0);
-    }
-    $esi->add($charID);
-}
-
 $bumped = [];
 $minute = date('Hi');
 while ($minute == date('Hi')) {
@@ -40,7 +26,11 @@ while ($minute == date('Hi')) {
     if ($charID > 0) {
         $row = $mdb->findDoc("scopes", ['characterID' => (int) $charID, 'scope' => "esi-killmails.read_killmails.v1"], ['lastFetch' => 1]);
         if ($row != null) {
-            $corpID = (int) @$row['corporationID'];
+            $corpID = (int) Info::getInfoField("characterID", $charID, "corporationID");
+            $row['corporationID'] = $corpID;
+            if ($corpID !== @$row['corporationID']) {
+                $mdb->set("scopes", $row, ['corporationID' => $corpID]);
+            }
             if (@$row['iterated'] == true && $redis->get("apiVerified:$corpID") != null && $redis->ttl("apiVerified:$charID") > 7200 ) {
                 $lastChecked = $redis->get("apiVerified:$corpID");
                 if ($lastChecked > 0 && (time() - $lastChecked) > 300 && !in_array($corpID, $bumped)) {
@@ -111,11 +101,9 @@ function success($guzzler, $params, $content)
     }
 
     $charID = (int) $row['characterID'];
-    $corpID = (int) Info::getInfoField("characterID", $charID, 'corporationID');
-    $successes = (int) @$row['successes'];
-    $successes++;
+    $corpID = (int) $row['corporationID'];
 
-    $modifiers = ['lastFetch' => $mdb->now(), 'errorCount' => 0, 'successes' => $successes];
+    $modifiers = ['lastFetch' => $mdb->now(), 'errorCount' => 0];
     if (!isset($row['added']->sec)) $modifiers['added'] = $mdb->now();
     if (!isset($row['iterated'])) $modifiers['iterated'] = false;
     if ($content != "" && sizeof($kills) > 0) $modifiers['last_has_data'] = $mdb->now();
@@ -124,13 +112,13 @@ function success($guzzler, $params, $content)
 
     $mKillID = (int) $mdb->findField("killmails", "killID", ['involved.characterID' => $charID], ['killID' => -1]);
     if ($newKills == 0 && $mKillID < ($redis->get("zkb:topKillID") - 3000000) && @$row['iterated'] == true && isset($row['added']->sec)) {
-        if ($row['added']->sec < (time() - (30 * 86400)) && $mKillID < ($redis->get("zkb:topKillID") - 10000000)) {
+        /*if ($row['added']->sec < (time() - (30 * 86400)) && $mKillID < ($redis->get("zkb:topKillID") - 10000000)) {
             $esi->remove($charID);
             $mdb->remove("scopes", $row);
             $redis->del("apiVerified:$charID");
             Util::out("Removed char killmail scope for $charID for inactivity");
             return;
-        }
+        }*/
         // Otherwise check them roughly once a day
         $esi->setTime($charID, time() + (rand(18, 23) * 3600));
     }
@@ -151,7 +139,7 @@ function success($guzzler, $params, $content)
 
 function addMail($killID, $hash) 
 {
-    global $mdb;
+    global $mdb, $redis;
 
     $exists = $mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash]);
     if (!$exists) {

@@ -66,8 +66,7 @@ try {
     $redis->expire("IP:errorCount:$ip", 300);
     $count = $redis->get("IP:errorCount:$ip");
     if ($count > 40) {
-        Log::log("Banning $ip");
-        $redis->setex("IP:ban:$ip", 300, "true");
+        if ($redis->set("IP:ban:$ip", "true", ['nx', 'ex' => 3600]) === true) Log::log("Banning $ip");
     }
 
     header('Content-Type: application/json');

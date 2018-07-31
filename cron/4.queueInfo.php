@@ -1,5 +1,9 @@
 <?php
 
+pcntl_fork();
+pcntl_fork();
+pcntl_fork();
+
 use cvweiss\redistools\RedisTimeQueue;
 use cvweiss\redistools\RedisQueue;
 
@@ -10,30 +14,26 @@ global $queueSocial, $redisQAuthUser;
 $queueInfo = new RedisQueue('queueInfo');
 $queuePublish = new RedisQueue('queuePublish');
 $queueApiCheck = new RedisQueue('queueApiCheck');
-$queueSocial = $beSocial == true ? new RedisQueue('queueSocial') : null;
+$queueSocial = new RedisQueue('queueSocial');
 $queueStats = new RedisQueue('queueStats');
-$queueRedisQ = $redisQAuthUser != null ? new RedisQueue('queueRedisQ') : null;
+$queueRedisQ = new RedisQueue('queueRedisQ');
 $statArray = ['characterID', 'corporationID', 'allianceID', 'factionID', 'shipTypeID', 'groupID'];
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    if ($redis->llen('queueInfo') > 10) $redis->sort('queueInfo', ['sort' => 'desc', 'out' => 'queueInfo']);
     $killID = $queueInfo->pop();
 
     if ($killID != null) {
         updateInfo($killID);
         updateStatsQueue($killID);
 
-        if ($queueSocial != null) {
-            $queueSocial->push($killID);
-        }
-        if ($queueRedisQ != null) {
-            $queueRedisQ->push($killID);
-        }
+        $queueSocial->push($killID);
+        $queueRedisQ->push($killID);
         $queueApiCheck->push($killID);
         $queuePublish->push($killID);
-        $mdb->set("killmails", ['killID' => (int) $killID], ['processed' => true]);
-    }
+
+        $mdb->set("killmails", ['killID' => $killID], ['processed' => true]);
+    } else sleep(1);
 }
 
 function updateStatsQueue($killID)
@@ -63,10 +63,9 @@ function updateStatsQueue($killID)
 
 function addToStatsQueue($type, $id, $sequence)
 {
-    global $queueStats, $mdb;
+    global $queueStats, $mdb, $redis;
 
-    $arr = ['type' => $type, 'id' => $id, 'sequence' => $sequence];
-    $queueStats->push($arr);
+    $redis->sadd("queueStatsSet", "$type:$id");
 }
 
 function updateInfo($killID)
@@ -89,8 +88,8 @@ function updateItems($killID)
 
 function updateEntity($killID, $entity)
 {
-    global $mdb, $debug;
-    $types = ['characterID', 'corporationID', 'allianceID', 'factionID'];
+    global $mdb, $debug, $redis;
+    $types = ['characterID', 'corporationID', 'allianceID'];
 
     foreach ($types as $type) {
         $id = (int) @$entity[$type];
@@ -100,11 +99,13 @@ function updateEntity($killID, $entity)
         if ($info != null) continue;
 
         $defaultName = "$type $id";
-        $row = ['type' => $type, 'id' => $id, 'name' => $defaultName]; 
+        $row = ['type' => $type, 'id' => $id];
 
-        $mdb->insert('information', $row);
+        $mdb->insertUpdate('information', $row, ['name' => $defaultName]);
         $rtq = new RedisTimeQueue("zkb:$type", 86400);
         $rtq->add($id);
+
+        if ($killID < ($redis->get('zkb:topKillID') - 10000)) continue;
 
         $iterations = 0;
         do {

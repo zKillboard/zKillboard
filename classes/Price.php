@@ -9,11 +9,11 @@ class Price
         global $mdb, $redis;
         $typeID = (int) $typeID;
 
-        $itemName = Info::getInfoField("typeID", $typeID, "name");
-        if (strpos($itemName, " SKIN ") !== false) return 0.01;
+        $categoryID = Info::getInfoField("typeID", $typeID, "categoryID");
+        if ($categoryID == 91) return 0.01; // Skins are worth nothing
 
         if ($kmDate == null) {
-            $kmDate = date('Y-m-d H:m');
+            $kmDate = date('Y-m-d H:i');
         }
 
         $price = static::getFixedPrice($typeID);
@@ -41,7 +41,7 @@ class Price
         $priceKey = "tq:prices:$date";
         $price = $redis->hGet($priceKey, $typeID);
         if ($price != null && $recalc == false) {
-            //return $price;
+            return $price;
         }
 
         $marketHistory = $mdb->findDoc('prices', ['typeID' => $typeID]);

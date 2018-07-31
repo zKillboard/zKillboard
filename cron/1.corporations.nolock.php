@@ -39,7 +39,7 @@ $minute = date('Hi');
 while ($minute == date('Hi')) {
     $corpID = (int) $esi->next();
     if ($corpID > 0) {
-        $row = $mdb->findDoc("scopes", ['corporationID' => $corpID, 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['lastFetch' => 0]);
+        $row = $mdb->findDoc("scopes", ['corporationID' => $corpID, 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['lastFetch' => 1]);
         if ($row != null) {
             $refreshToken = $row['refreshToken'];
             $params = ['row' => $row, 'esi' => $esi, 'tokenTime' => time(), 'refreshToken' => $refreshToken, 'corpID' => $corpID];
@@ -143,7 +143,7 @@ function success($guzzler, $params, $content)
 
 function addMail($killID, $hash) 
 {
-    global $mdb;
+    global $mdb, $redis;
 
     $exists = $mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash]);
     if (!$exists) {

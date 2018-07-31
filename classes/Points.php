@@ -12,22 +12,24 @@ class Points
         $shipTypeID = $victim['ship_type_id'];
         $items = $victim['items'];
         $shipInfo = Info::getInfo('typeID', $shipTypeID);
+        $shipInfo['rigSize'] = self::getRigSize($shipTypeID);
 
         $dangerFactor = 0;
         $basePoints =  pow(5, @$shipInfo['rigSize']);
         $points = $basePoints;
         foreach ((array) $items as $item) {
             $itemInfo = Info::getInfo('typeID', $item['item_type_id']);
-            if (!@$itemInfo['fittable']) continue;
+            if (@$itemInfo['categoryID'] != 7) continue;
 
             $flagName = Info::getFlagName($item['flag']); 
-            if (($flagName == "Low Slots" || $flagName == "Mid Slots" || $flagName == "High Slots" || $flagName == 'SubSystems') 
-                || ($killID < 23970577 && $item['flag'] == 0) ) {
+            if (($flagName == "Low Slots" || $flagName == "Mid Slots" || $flagName == "High Slots" || $flagName == 'SubSystems') || ($killID < 23970577 && $item['flag'] == 0) ) {
                 $typeID = $item['item_type_id'];
                 $qty = @$item['quantity_destroyed'] + @$item['quantity_dropped'];
                 $i = Info::getInfo('typeID', $typeID);
-                $meta = 1 + floor(@$i['metaLevel'] / 2);
-                $dangerFactor += isset($itemInfo['heatDamage']) * $qty * $meta; // offensive/defensive modules overloading are good for pvp
+                $metaLevel = Info::getDogma($typeID, 633);
+                $meta = 1 + floor($metaLevel / 2);
+                $heatDamage = Info::getDogma($typeID, 1210);
+                $dangerFactor += ((bool) $heatDamage) * $qty * $meta; // offensive/defensive modules overloading are good for pvp
                 $dangerFactor += ($itemInfo['groupID'] == 645) * $qty * $meta; // drone damange multipliers
                 $dangerFactor -= ($itemInfo['groupID'] == 54) * $qty * $meta; // Mining ships don't earn as many points
             }
@@ -44,18 +46,41 @@ class Points
         // For example: Smaller ships blowing up bigger ships get a bonus
         // or bigger ships blowing up smaller ships get a penalty
         $size = 0;
+        $hasChar = false;
         foreach ((array) $killmail['attackers'] as $attacker) {
+            $hasChar |= @$attacker['character_id'] > 0;
             $shipTypeID = @$attacker['ship_type_id'];
             $categoryID = Info::getInfoField("typeID", $shipTypeID, "categoryID");
             if ($categoryID == 65) return 1; // Structure on your mail, only 1 point
 
             $aInfo = Info::getInfo('typeID', $shipTypeID);
+            $aInfo['rigSize'] = self::getRigSize($shipTypeID);
             $size += pow(5, ((@$aInfo['groupID'] != 29) ? @$aInfo['rigSize'] : @$shipInfo['rigSize'] + 1));
         }
+        if ($hasChar == false) return 0;
         $avg = max(1, $size / $numAttackers);
         $modifier = min(1.2, max(0.5, $basePoints / $avg));
         $points = (int) floor($points * $modifier);
 
         return max(1, $points);
+    }
+
+    private static function getRigSize($typeID)
+    {
+        global $mdb, $redis;
+
+        $p = $redis->get("zkb:rigSize:$typeID");
+        if ($p != null) return (int) $p;
+
+        $r = $mdb->find("information", ['type' => 'typeID', 'id' => $typeID], [], null, ['dogma_attributes' => [ '$elemMatch' => [ 'attribute_id' => 1547 ] ]]);
+        foreach ($r as $row ) {
+            if (!isset($row['dogma_attributes'])) break;
+            $row = $row['dogma_attributes'][0];
+            $p = max(1, $row['value']);
+            $redis->setex("zkb:rigSize:$typeID", 3600, $p);
+            return $p;
+        }
+        $redis->setex("zkb:rigSize:$typeID", 3600, 1);
+        return 1;
     }
 }

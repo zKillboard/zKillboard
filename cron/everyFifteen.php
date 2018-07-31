@@ -55,6 +55,8 @@ $redis->set('zkb:activePvp', json_encode($activePvP));
 $redis->keys('*'); // Helps purge expired ttl's
 $redis->setex($key, 900, true);
 
+$redis->set("tobefetched", $mdb->count("crestmails", ['processed' => false]));
+
 function getTop($title, $type)
 {
     global $redis;

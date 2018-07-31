@@ -4,8 +4,8 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
-if ($redis->llen('queueStats') >= 100000) $redis->del('queueTopAlltime');
-if ($redis->llen('queueStats') >= 10000) exit();
+if ($redis->get("tobefetched") > 1000) exit();
+
 if ($redis->get("zkb:reinforced") == true) exit();
 
 $redisKey = "tq:topAllTime";
@@ -18,7 +18,6 @@ if ($redis->get($redisKey) != "true" && $queueTopAlltime->size() == 0) {
         $shipsDestroyed = (int) @$row['shipsDestroyed'];
         $nextTopRecalc = floor($allTimeSum * 1.01) + 1;
 
-$nextTopRecalc = 1;
         $doCalc = false;
         $doCalc |= $shipsDestroyed >= 10 && !isset($row['topIskKills']);
         $doCalc |= $shipsDestroyed >= 10 && $shipsDestroyed >= $nextTopRecalc;

@@ -41,15 +41,20 @@ while ($hour == date('H')) {
     ksort($redisQueues);
 
     foreach ($redisQueues as $queue => $v) {
-        addInfo($queue, $redis->lLen($queue));
+        if ($queue == 'queueStats') addInfo('queueStats', $redis->scard('queueStatsSet'));
+        else if ($queue == 'queueRelated') addInfo('queueRelated', $redis->scard('queueRelatedSet'));
+        else addInfo($queue, $redis->lLen($queue));
     }
 
     addInfo('', 0);
 
-    addInfo('Kills remaining to be fetched.', $mdb->count('crestmails', ['processed' => false]));
+    if (((int) $redis->get("tobefetched")) > 100000) addInfo('Kills remaining to be fetched. *', $redis->get("tobefetched"));
+    else addInfo('Kills remaining to be fetched.', $mdb->count("crestmails", ['processed' => false]));
+
+    addInfo('Kills remaining to be parsed.', $redis->zcard("tobeparsed"));
     $killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
     $kCount = $killsLastHour->count();
-    addInfo('Kills added last hour', $kCount);
+    addInfo('Kills parsed last hour', $kCount);
     if ($kCount != $lastKillCountSent) {
         $redis->publish("public", json_encode(['action' => 'lastHour', 'kills' => number_format($kCount)]));
         $lastKillCountSent = $kCount;
@@ -83,7 +88,7 @@ while ($hour == date('H')) {
     addInfo('ESI Requests Not Cached', Status::getStatus('cached304', false), false);
 
     $esiChars = new RedisTimeQueue("tqApiESI", 3600);
-    $esiCorps = new RedisTimeQueue("tqCorpApiESI", 3600);
+    $esiCorps = new RedisTimeQueue("tqCorpApiESI", 300);
     $ssoCorps = new RedisTimeQueue("zkb:ssoCorps", 3600);
     addInfo('', 0, false);
     addInfo('Character KillLogs to check', $esiChars->pending(), false);
@@ -91,10 +96,13 @@ while ($hour == date('H')) {
     addInfo('Corporation KillLogs to check', $esiCorps->pending(), false);
     addInfo('Unique Corporation RefreshTokens', $redis->get('tqCorpApiESICount'), false);
 
+    $rtq = new RedisTimeQueue("zkb:characterID", 86400);
     addInfo('', 0, false);
-    addInfo('Total Characters', $redis->zcard("zkb:characterID"), false);
-    addInfo('Total Corporations', $redis->zcard("zkb:corporationID"), false);
-    addInfo('Total Alliances', $redis->zcard("zkb:allianceID"), false);
+    addInfo('Total Characters', $rtq->size(), false);
+    $rtq = new RedisTimeQueue("zkb:corporationID", 86400);
+    addInfo('Total Corporations', $rtq->size(), false);
+    $rtq = new RedisTimeQueue("zkb:allianceID", 86400);
+    addInfo('Total Alliances', $rtq->size(), false);
 
     addInfo('', 0, false);
     $sponsored = Mdb::group("sponsored", [], ['entryTime' => ['$gte' => $mdb->now(86400 * -7)]], [], 'isk', ['iskSum' => -1]);

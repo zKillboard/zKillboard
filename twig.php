@@ -90,6 +90,7 @@ $twig->addGlobal('entityType', 'none');
 $twig->addGlobal('entityID' , 0);
 $twig->addGlobal('reinforced', $redis->get("zkb:reinforced") == true ? "true" : "false");
 $twig->addGlobal("universeUpdating", $redis->get("zkb:universeLoaded") == "false"? "true" : "false");
+$twig->addGlobal("tobefetched", $redis->get("tobefetched"));
 
 $noAdPages = array('/account/', '/ticket', '/information/', '/post/');
 foreach ($noAdPages as $noAdPage) {

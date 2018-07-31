@@ -49,7 +49,7 @@ $map = array(
         'region' => array('column' => 'region', 'mixed' => true),
         'group' => array('column' => 'group', 'mixed' => true),
         'ship' => array('column' => 'shipType', 'mixed' => true),
-        'location' => array('column' => 'item', 'mixed' => true),
+        'location' => array('column' => 'location', 'mixed' => true),
         );
 if (!array_key_exists($key, $map)) {
     $app->notFound();

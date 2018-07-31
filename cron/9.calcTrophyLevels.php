@@ -2,6 +2,8 @@
 
 require_once "../init.php";
 
+if ($redis->get("tobefetched") > 1000) exit();
+
 if (date('i') != 33) exit(); // Only do calcs once an hour
 
 while (true) {

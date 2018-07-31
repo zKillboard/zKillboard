@@ -2,6 +2,8 @@
 
 require_once '../init.php';
 
+MongoCursor::$timeout = -1;
+
 $today = date('Ymd');
 $hourKey = "zkb:weeklyRanksCalculated:" . date('YmdH');
 if ($redis->get($hourKey) == true) {

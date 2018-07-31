@@ -1,35 +1,43 @@
 <?php
 
+pcntl_fork();
+pcntl_fork();
+pcntl_fork();
+
 use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
+if ($redis->scard("queueStatsSet") > 500000 || $redis->get("tobefetched") < 1000) $redis->del("zkb:statsStop");
+if ($redis->get("zkb:statsStop") == "true") exit();
+
 if ($redis->get("zkb:reinforced") == true) exit();
 MongoCursor::$timeout = -1;
 $queueStats = new RedisQueue('queueStats');
-$maxSequence = $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    $row = $queueStats->pop();
-    if ($row == null) break;
-    calcStats($row, $maxSequence);
-}
-
-// Look for rows that were reset and get those done
-while ($minute == date('Hi')) {
-    $row = null;
-    $resetRow = $mdb->findDoc("statistics", ['reset' => true]);
-    if ($resetRow != null) {
-        $row = ['type' => $resetRow['type'], 'id' => $resetRow['id'], 'sequence' => $maxSequence];
-
-        // Keep TopAllTime sums if they have already been calculated
-        if (isset($resetRow['topAllTime'])) $row['topAllTime'] = $resetRow['topAllTime'];
-        if (isset($resetRow['allTimeSum'])) $row['allTimeSum'] = $resetRow['allTimeSum'];
-        if (isset($resetRow['nextTopRecalc'])) $row['nextTopRecalc'] = $resetRow['nextTopRecalc'];
+    $raw = $redis->spop("queueStatsSet");
+    if ($raw == null) { $redis->setex("zkb:statsStop", 43200, "true"); break; }
+    $arr = split(":", $raw);
+    $maxSequence = $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);
+    $type = $arr[0];
+    if ($type == "itemID") continue;
+    $id = (int) $arr[1];
+    $row = ['type' => $type, 'id' => $id, 'sequence' => $maxSequence];
+    $key = $row['type'] . ":" . $row['id'];
+    if ($redis->set("zkb:stats:$key", "true", ['nx', 'ex' => 9600]) === true) {
+        try {
+            calcStats($row, $maxSequence);
+        } catch (Exception $ex) {
+            throw $ex;
+        } finally {
+            $redis->del("zkb:stats:$key");
+        }
+    } else {
+        $redis->sadd("queueStatsSet", $raw);
+        usleep(10000);
     }
-    if ($row == null) break;
-    calcStats($row, $maxSequence);
 }
 
 function calcStats($row, $maxSequence)
@@ -59,6 +67,7 @@ function calcStats($row, $maxSequence)
     if ($newSequence <= $oldSequence) {
         return;
     }
+    $newSequence = max($newSequence, $maxSequence);
 
     for ($i = 0; $i <= 1; ++$i) {
         $isVictim = ($i == 0);
@@ -118,14 +127,6 @@ function calcStats($row, $maxSequence)
     if ($type == 'characterID') $stats['calcTrophies'] = true;
     // save it
     $mdb->getCollection('statistics')->save($stats);
-
-    $r = $mdb->getDb()->command(['getLastError' => 1]);
-    if ($r['ok'] != 1) {
-        die('stats update failure');
-    }
-    if ($debug) {
-        Util::out("Stats completed for: $type $id $newSequence");
-    }
 }
 
 function mergeAllTime(&$stats, $result, $isVictim)

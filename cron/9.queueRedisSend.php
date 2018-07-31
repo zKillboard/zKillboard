@@ -6,6 +6,8 @@ require_once '../init.php';
 
 global $redisQServer;
 
+$topKillID = max(1, $mdb->findField('killmails', 'killID', [], ['killID' => -1]));
+
 if ($redisQServer == null) {
     $redis->del('queueRedisQ');
     exit();
@@ -20,6 +22,7 @@ while (date('Hi') == $minute) {
         sleep(1);
         continue;
     }
+    if ($redis->get("tobefetched") > 1000 && $killID < ($topKillID - 10000)) continue;
 
     $rawmail = $mdb->findDoc("esimails", ['killmail_id' => $killID]);
     $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
