@@ -130,13 +130,16 @@ class Price
                 return 150000000000; // 150b
             case 33397: // Chremoas
             case 42245: // Rabisu
+            case 45649: // Komodo
                 return 200000000000; // 200b
             case 45531: // Victor
                 return 230000000000;
             case 9860: // Polaris
             case 11019: // Cockroach
                 return 1000000000000; // 1 trillion, rare dev ships
-                // Rare cruisers
+            case 42241: // Molok
+                return 350000000000; // 350b 
+            // Rare cruisers
             case 11940: // Gold Magnate
             case 635: // Opux Luxury Yacht
             case 11011: // Guardian-Vexor

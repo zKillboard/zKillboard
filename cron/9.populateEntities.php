@@ -11,7 +11,7 @@ if ($redis->get($key) == "true") exit();
 
 MongoCursor::$timeout = -1;
 
-populateEntity($mdb, "characterID");
+//populateEntity($mdb, "characterID");
 populateEntity($mdb, "corporationID");
 populateEntity($mdb, "allianceID");
 
@@ -20,7 +20,7 @@ $redis->setex($key, 3600, "true");
 function populateEntity($mdb, $type) {
     Util::out("Populating $type");
     $rtq = new RedisTimeQueue("zkb:$type", 86400);
-    $result = $mdb->getCollection("information")->find(['type' => $type]);
+    $result = $mdb->getCollection("information")->find(['type' => $type])->sort(['_id' => -1]);
 
     foreach ($result as $row) {
         if ($rtq->isMember($row['id']) == false) $rtq->add($row['id']);

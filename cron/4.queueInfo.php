@@ -93,14 +93,12 @@ function updateEntity($killID, $entity)
 
     foreach ($types as $type) {
         $id = (int) @$entity[$type];
-        if ($id < 1) continue;
+        if ($id <= 1) continue;
 
-        $info = $mdb->findDoc("information", ['type' => $type, 'id' => $id]);
-        if ($info != null) continue;
+        $row = ['type' => $type, 'id' => $id];
+        if ($mdb->count("information", $row) > 0) continue;
 
         $defaultName = "$type $id";
-        $row = ['type' => $type, 'id' => $id];
-
         $mdb->insertUpdate('information', $row, ['name' => $defaultName]);
         $rtq = new RedisTimeQueue("zkb:$type", 86400);
         $rtq->add($id);

@@ -35,7 +35,7 @@ class Kills
             $killHashKey = "killDetail:$killID";
             $killmail = RedisCache::get($killHashKey);
             if ($killmail == null) {
-                $killmail = $mdb->findDoc('killmails', ['killID' => $killID, 'cacheTime' => 7200]);
+                $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
                 Info::addInfo($killmail);
                 $killmail['victim'] = $killmail['involved'][0];
                 $killmail['victim']['killID'] = $killID;

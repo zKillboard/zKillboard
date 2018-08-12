@@ -8,7 +8,7 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
-if ($redis->scard("queueStatsSet") > 500000 || $redis->get("tobefetched") < 1000) $redis->del("zkb:statsStop");
+if ($redis->get("tobefetched") < 1000) $redis->del("zkb:statsStop");
 if ($redis->get("zkb:statsStop") == "true") exit();
 
 if ($redis->get("zkb:reinforced") == true) exit();
@@ -18,7 +18,7 @@ $queueStats = new RedisQueue('queueStats');
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $raw = $redis->spop("queueStatsSet");
-    if ($raw == null) { $redis->setex("zkb:statsStop", 43200, "true"); break; }
+    if ($raw == null) break;
     $arr = split(":", $raw);
     $maxSequence = $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);
     $type = $arr[0];

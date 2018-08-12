@@ -2,13 +2,7 @@
 
 require_once '../init.php';
 
-if (date('i') % 5 != 0) {
-    exit();
-}
-
-if ($redis->llen('queueProcess') >= 25) {
-    exit();
-}
+if (date('i') % 5 != 0) exit();
 
 Status::check('esi');
 $count = 0;

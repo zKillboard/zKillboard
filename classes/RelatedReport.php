@@ -13,19 +13,20 @@ class RelatedReport {
             exit();
         } else if ($time % 100 != 0 && $app == null) { throw new \InvalidArgumentException("Minutes must be 00"); }
 
+        $systemID = (int) $system;
+        $relatedTime = (int) $time;
+        $unixTime = strtotime($relatedTime);
+
         if ($redis->get("zkb:reinforced") == true) {
             header('HTTP/1.1 202 Request being processed');
             $app->render('related_reinforced.html', ['showAds' => false]);
             exit();
         }
-        if ($redis->llen("queueRelated") > 1000) {
+        if ($redis->llen("queueRelated") > 25) {
             header('HTTP/1.1 202 Request being processed');
-            $app->render('related_notnow.html', ['showAds' => false]);
+            $app->render('related_notnow.html', ['showAds' => false, 'solarSystemID' => $systemID, 'unixtime' => $unixTime]);
             exit();
         }
-
-        $systemID = (int) $system;
-        $relatedTime = (int) $time;
 
         $json_options = json_decode($options, true);
         if (!isset($json_options['A'])) {
@@ -73,7 +74,6 @@ class RelatedReport {
         $systemName = $systemInfo['name'];
         $regionInfo = $mdb->findDoc('information', ['cacheTime' => 3600, 'type' => 'regionID', 'id' => $systemInfo['regionID']]);
         $regionName = $regionInfo['name'];
-        $unixTime = strtotime($relatedTime);
         $time = date('Y-m-d H:i', $unixTime);
 
         $exHours = 1;

@@ -19,9 +19,10 @@ while ($minute == date('Hi')) {
     }
     $parameters = unserialize($serial);
     $current = $redis->get($parameters['key']);
-    if ($redis->get($parameters['key']) !== false) {
-        continue;
-    }
+    if ($redis->get($parameters['key']) !== false) continue;
+
+    if ($redis->scard("queueRelatedSet") > 10 && (sizeof($parameters['options']['A']) > 0 || sizeof($parameters['options']['B']) > 0)) { Util::out("skipping related"); continue; }
+    if ($redis->scard("queueRelatedSet") > 20) continue;
 
     if ($redis->get($parameters['key']) != null) continue;
     $kills = Kills::getKills($parameters);

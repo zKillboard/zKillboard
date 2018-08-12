@@ -671,7 +671,7 @@ class Info
             $redis->setex("zkb:dogma:$typeID:$attr_id", 3600, ($p == null ? "null" : $p));
             return $p;
         }
-        $redis->setex("zkb:dogma:$typeID", 3600, "null");
+        $redis->setex("zkb:dogma:$typeID:$attr_id", 3600, "null");
         return null;
     }
 

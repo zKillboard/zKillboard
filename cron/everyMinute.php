@@ -68,3 +68,7 @@ foreach ($result as $kill) {
     $sponsored[$kill['killID']] = $killmail;
 }
 $redis->set("zkb:sponsored", json_encode($sponsored));
+
+// set guzzler etag hash to expire
+$redis->expire("zkb:etags:" . date('m:d'), 86400);
+$redis->del("zkb:etags:" . date('m:d', time() - 86400));

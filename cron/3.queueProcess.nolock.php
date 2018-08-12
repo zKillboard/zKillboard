@@ -1,13 +1,9 @@
 <?php
 
-$opid = getmypid();
-$children = [];
-$children[] = pcntl_fork();
-$children[] = pcntl_fork();
-$children[] = pcntl_fork();
-$children[] = pcntl_fork();
-$pid = getmypid();
-
+pcntl_fork();
+pcntl_fork();
+pcntl_fork();
+pcntl_fork();
 
 use cvweiss\redistools\RedisQueue;
 use cvweiss\redistools\RedisTtlCounter;
@@ -36,7 +32,7 @@ $minute = date('Hi');
 
 while ($minute == date('Hi')) {
     if ($redis->get("zkb:universeLoaded") != "true") break;
-    while ($redis->llen("queueInfo") > 100) usleep(100000);
+    if ($redis->llen("queueInfo") > 100) sleep(1);
     $row = null;
     $sem = sem_get(3175);
     try {
@@ -124,7 +120,7 @@ while ($minute == date('Hi')) {
         $zkb['hash'] = $row['hash'];
         $zkb['fittedValue'] = round((double) $fittedValue, 2);
         $zkb['totalValue'] = round((double) $totalValue, 2);
-        $zkb['points'] = ($kill['npc'] == true) ? 0 : (int) Points::getKillPoints($killID);
+        $zkb['points'] = ($kill['npc'] == true) ? 1 : (int) Points::getKillPoints($killID);
         $kill['zkb'] = $zkb;
 
         saveMail($mdb, 'killmails', $kill);
@@ -149,6 +145,9 @@ function saveMail($mdb, $collection, $kill)
             if ($mdb->exists($collection, ['killID' => $kill['killID']])) return;
             $mdb->getCollection($collection)->save($kill);
             $error = false; 
+        } catch (MongoDuplicateKeyException $ex) {
+            return;
+            // Ignore it...
         } catch (Exception $ex) {
             if ($ex->getCode() != 16759) throw $ex;
             $error = true;
@@ -344,7 +343,7 @@ function isNPC(&$killmail)
         if (@$attacker['characterID'] > 3999999) {
             return false;
         }
-        if (@$attacker['characterID'] != 0 && @$attacker['corporationID'] > 1999999) {
+        if (@$attacker['corporationID'] > 1999999) {
             return false;
         }
     }

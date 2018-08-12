@@ -12,7 +12,8 @@ class Points
         $shipTypeID = $victim['ship_type_id'];
         $items = $victim['items'];
         $shipInfo = Info::getInfo('typeID', $shipTypeID);
-        $shipInfo['rigSize'] = self::getRigSize($shipTypeID);
+        $rigSize = self::getRigSize($shipTypeID);;
+        $shipInfo['rigSize'] = $rigSize;
 
         $dangerFactor = 0;
         $basePoints =  pow(5, @$shipInfo['rigSize']);
@@ -25,10 +26,9 @@ class Points
             if (($flagName == "Low Slots" || $flagName == "Mid Slots" || $flagName == "High Slots" || $flagName == 'SubSystems') || ($killID < 23970577 && $item['flag'] == 0) ) {
                 $typeID = $item['item_type_id'];
                 $qty = @$item['quantity_destroyed'] + @$item['quantity_dropped'];
-                $i = Info::getInfo('typeID', $typeID);
                 $metaLevel = Info::getDogma($typeID, 633);
                 $meta = 1 + floor($metaLevel / 2);
-                $heatDamage = Info::getDogma($typeID, 1210);
+                $heatDamage = Info::getDogma($typeID, 1211);
                 $dangerFactor += ((bool) $heatDamage) * $qty * $meta; // offensive/defensive modules overloading are good for pvp
                 $dangerFactor += ($itemInfo['groupID'] == 645) * $qty * $meta; // drone damange multipliers
                 $dangerFactor -= ($itemInfo['groupID'] == 54) * $qty * $meta; // Mining ships don't earn as many points
@@ -57,7 +57,7 @@ class Points
             $aInfo['rigSize'] = self::getRigSize($shipTypeID);
             $size += pow(5, ((@$aInfo['groupID'] != 29) ? @$aInfo['rigSize'] : @$shipInfo['rigSize'] + 1));
         }
-        if ($hasChar == false) return 0;
+        if ($hasChar == false) return 1;
         $avg = max(1, $size / $numAttackers);
         $modifier = min(1.2, max(0.5, $basePoints / $avg));
         $points = (int) floor($points * $modifier);
@@ -69,8 +69,12 @@ class Points
     {
         global $mdb, $redis;
 
+        $groupID = Info::getInfoField("typeID", $typeID, "groupID");
+        if ($groupID == 963) return 2;
+
         $p = $redis->get("zkb:rigSize:$typeID");
         if ($p != null) return (int) $p;
+
 
         $r = $mdb->find("information", ['type' => 'typeID', 'id' => $typeID], [], null, ['dogma_attributes' => [ '$elemMatch' => [ 'attribute_id' => 1547 ] ]]);
         foreach ($r as $row ) {

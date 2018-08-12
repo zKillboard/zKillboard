@@ -5,8 +5,8 @@ use cvweiss\redistools\RedisQueue;
 require_once '../init.php';
 
 if ($redis->get("tobefetched") > 1000) exit();
-
 if ($redis->get("zkb:reinforced") == true) exit();
+if ($redis->scard("queueStatsSet") > 1000) exit();
 
 $redisKey = "tq:topAllTime";
 $queueTopAlltime = new RedisQueue('queueTopAlltime');

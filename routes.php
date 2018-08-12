@@ -119,7 +119,7 @@ $app->get('/detail/:id(/:pageview)/', function ($id, $pageview = 'overview') use
 $app->get('/partial/kill/:id(/:pageview)/', function ($id, $pageview = '') use ($app) {
         include 'view/detail.php';
         });
-$app->get('/kill/:id(/:pageview)/', function ($id, $pageview = '') use ($app) {
+$app->get('/kill/:id/', function ($id, $pageview = '') use ($app) {
         include 'view/detail.php';
         });
 

@@ -75,7 +75,7 @@ class Guzzler
 
         $etag = null;
         if (@$setup['etag'] == true && $params['callType'] == 'GET') {
-            $etag = $redis->get("zkb:etags:$uri");
+            $etag = $redis->hget("zkb:etags:" . date('m:d'), $uri);
             if ($etag != "") $setup['If-None-Match'] = $etag;
             unset($setup['etag']);
         }
@@ -91,7 +91,7 @@ class Guzzler
                 Status::addStatus($statusType, true);
                 $this->lastHeaders = array_change_key_case($response->getHeaders());
                 if (isset($this->lastHeaders['warning'])) Util::out("Warning: " . $params['uri'] . " " . $this->lastHeaders['warning'][0]);
-                if (isset($this->lastHeaders['etag']) && strlen($content) > 0 && $etag !== null) $redis->setex("zkb:etags:" . $params['uri'], 7200, $this->lastHeaders['etag'][0]);
+                if (isset($this->lastHeaders['etag']) && strlen($content) > 0 && $etag !== null) $redis->hset("zkb:etags:" . date('m:d'), $params['uri'], $this->lastHeaders['etag'][0]);
                 if ($etag !== null) Status::addStatus("cached304", ($response->getStatusCode() == 304));
 
                 $fulfilled($guzzler, $params, $content);
