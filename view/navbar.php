@@ -9,4 +9,17 @@ if (!User::isLoggedIn()) {
     exit();
 }
 
+$ug = new UserGlobals();
+$arr = $ug->getGlobals();
+$etag = md5(serialize($arr));
+$etag = 'W/"' . $etag . '"';
+header("ETag: $etag");
+header("Cache-Control: private");
+
+if ($etag == @$_SERVER['HTTP_IF_NONE_MATCH']) {
+    header("HTTP/1.1 304 Not Modified"); 
+    exit();
+}
+
+
 $app->render('components/nav-tracker.html');

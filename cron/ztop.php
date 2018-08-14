@@ -55,8 +55,10 @@ while ($hour == date('H')) {
     $killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
     $kCount = $killsLastHour->count();
     addInfo('Kills parsed last hour', $kCount);
-    if ($kCount != $lastKillCountSent) {
-        $redis->publish("public", json_encode(['action' => 'lastHour', 'kills' => number_format($kCount)]));
+    if ($kCount != $lastKillCountSent || (time() % 5 == 0)) {
+        $serverStatus = $redis->get('tqStatus');
+        $loggedIn = $redis->get('tqCount');
+        $redis->publish("public", json_encode(['action' => 'tqStatus', 'tqStatus' => $serverStatus, 'tqCount' => $loggedIn, 'kills' => $kCount]));
         $lastKillCountSent = $kCount;
     }
     $totalKills = $redis->get('zkb:totalKills');

@@ -30,10 +30,6 @@ class UserGlobals extends Twig_Extension
             $this->addTrackers($result, $userID);
             $this->addFavorites($result, $userID);
         }
-
-        $killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
-        $this->addGlobal($result, 'killsLastHour', $killsLastHour->count(), 0);
-
         return $result;
     }
 

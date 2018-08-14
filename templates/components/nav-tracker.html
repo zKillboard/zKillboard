@@ -3,8 +3,8 @@
 $("#char-loggedout").remove();
 $("#username").text("{{ sessionusername }}");
 $("#char-image").attr("src", "{{ image_character }}{{ characterID }}_32.jpg");
-$("#lasthour").text("{{ killsLastHour | number_format(0)}}");
-$("#tqStatus").html("{% if tqStatus == 'OFFLINE'%}<span class='red'>TQ {{ tqCount }}</span>{% else %} <span class='green'>TQ {{ tqCount }}</span>{% endif %}");
+//$("#lasthour").text("{{ killsLastHour | number_format(0)}}");
+//$("#tqStatus").html("{% if tqStatus == 'OFFLINE'%}<span class='red'>TQ {{ tqCount }}</span>{% else %} <span class='green'>TQ {{ tqCount }}</span>{% endif %}");
 
 {% if showAds != 0 %}
 if (showAds != 0 ) {
