@@ -19,6 +19,8 @@ while ($minute == date('Hi')) {
     $params = ['row' => $row, 'page' => 1];
     $mdb->set("scopes", $row, ['iterated' => 'in progress']);
     $refreshToken = $row['refreshToken'];
+
+    Util::out("Iterating char $name");
     CrestSSO::getAccessTokenCallback($guzzler, $refreshToken, "accessTokenDone", "accessTokenFail", $params);
 }
 $guzzler->finish();

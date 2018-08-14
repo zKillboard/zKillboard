@@ -1,6 +1,7 @@
 <?php
 
-pcntl_fork();
+$pid = pcntl_fork();
+$master = ($pid != 0);
 pcntl_fork();
 pcntl_fork();
 
@@ -33,7 +34,8 @@ while ($minute == date('Hi')) {
         $queuePublish->push($killID);
 
         $mdb->set("killmails", ['killID' => $killID], ['processed' => true]);
-    } else sleep(1);
+    } else if (!$master) break;
+    else sleep(1);
 }
 
 function updateStatsQueue($killID)

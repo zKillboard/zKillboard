@@ -1,6 +1,7 @@
 <?php
 
-pcntl_fork();
+$pid = pcntl_fork();
+$master = ($pid != 0);
 pcntl_fork();
 pcntl_fork();
 pcntl_fork();
@@ -134,7 +135,8 @@ while ($minute == date('Hi')) {
         $killsLastHour = new RedisTtlCounter('killsLastHour');
         $killsLastHour->add($row['killID']);
         $mdb->set('crestmails', $row, ['processed' => true]);
-    } else usleep(50000);
+    } else if (!$master) break;
+    else usleep(50000);
 }
 
 function saveMail($mdb, $collection, $kill)

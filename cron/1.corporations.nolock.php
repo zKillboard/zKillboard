@@ -178,7 +178,7 @@ function fail($guzzer, $params, $ex)
     if (@$json['error'] == "Character is not in the corporation") {
         $chars = new RedisTimeQueue("zkb:characterID", 86400);
         if ($chars->isMember($charID) == false) $chars->add($charID);
-        else $chars->setTime($charID, 0);
+        $chars->setTime($charID, 1);
         return;
     }
 

@@ -6,17 +6,14 @@ require_once '../init.php';
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
+    usleep(100000);
     if ($redis->get("zkb:reinforced") == true) break;
 
     $key = $redis->spop("queueRelatedSet");
-    if ($key == null) {
-        sleep(1);
-        continue;
-    }
+    if ($key == null) continue;
     $serial = $redis->get("$key:params");
-    if ($serial == null) {
-        continue;
-    }
+    if ($serial == null) continue;
+
     $parameters = unserialize($serial);
     $current = $redis->get($parameters['key']);
     if ($redis->get($parameters['key']) !== false) continue;
