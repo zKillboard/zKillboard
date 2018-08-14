@@ -25,6 +25,7 @@ while ($minute == date('Hi')) {
         $params = ['row' => $row, 'tokenTime' => time(), 'refreshToken' => $refreshToken, 'page' => 1];
         $mdb->set("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'corporationID' => $corpID], ['iterated' => 'in progress'], true);
 
+        Util::out("Iterating corp $corpName");
         CrestSSO::getAccessTokenCallback($guzzler, $refreshToken, "accessTokenDone", "accessTokenFail", $params);
     }
     if ($charID == 0) {
