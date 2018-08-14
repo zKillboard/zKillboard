@@ -34,9 +34,9 @@
    	         <tr>
                 <th>Character:</th>
 				<td itemprop="name">{% include 'components/text_char.html' %} {% if key == "character" and apiVerified > 0 and apiCorpVerified != true %}<b rel="tooltip" title="API Verified{% if nextApiCheck != '' %}{{ '\n'|raw }}Last checked at {{ nextApiCheck }}{% endif %}" class="fa fa-check" style="color:#00FF00"></b>{% endif %}
+                {% if extra.recentkills %} &nbsp;<i class="fa fa-bolt green" title='Recently Active.' rel='tooltip'></i>{% endif %}
 				{% include 'components/tracker.html' %}
 				{% set skipTracker = 'yes' %}
-                                {% if extra.recentkills %} <i class="fa fa-star"></i>{% endif %}
 				</td>
             </tr>
             {% endif %}
