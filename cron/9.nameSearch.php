@@ -72,4 +72,4 @@ foreach ($toMove as $setKey => $set) {
     $redis->rename($setKey, substr($setKey, 2));
 }
 
-$redis->setex($key, 7200, true);
+$redis->setex($key, 64800, true);
