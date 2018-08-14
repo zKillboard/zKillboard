@@ -96,7 +96,7 @@ class Guzzler
 
                 $fulfilled($guzzler, $params, $content);
             },
-            function($connectionException) use (&$guzzler, &$rejected, &$params, $statusType) {
+            function($connectionException) use (&$guzzler, &$fulfilled, &$rejected, &$params, $statusType, $uri, $setup, $callType, $body) {
                 global $redis;
 
                 $guzzler->dec();
@@ -108,7 +108,14 @@ class Guzzler
                 $sleep = $this->setEsiErrorCount();
                 sleep(1);
 
-                $rejected($guzzler, $params, $connectionException);
+                if (($code == 0 || $code >= 500) && @$params['retryCount'] <= 3) {
+                    $params['retryCount'] = @$params['retryCount'] + 1;
+                    //Util::out("guzzler retrying $uri ($code) " . $params['retryCount']);
+                    $this->call($uri, $fulfilled, $rejected, $params, $setup, $callType, $body);
+                } else {
+                    //Log::log($params['uri'] . " $code" . ($params['content'] != '' ? "\n" . $params['content'] : ''));
+                    $rejected($guzzler, $params, $connectionException);
+                }
             });
         $this->inc();
     }
