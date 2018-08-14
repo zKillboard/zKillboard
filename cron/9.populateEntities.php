@@ -11,7 +11,7 @@ if ($redis->get($key) == "true") exit();
 
 MongoCursor::$timeout = -1;
 
-//populateEntity($mdb, "characterID");
+populateEntity($mdb, "characterID");
 populateEntity($mdb, "corporationID");
 populateEntity($mdb, "allianceID");
 
