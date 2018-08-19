@@ -27,7 +27,7 @@ class Stats
     /**
      * @param string $groupByColumn
      */
-    public static function getTop($groupByColumn, $parameters = array(), $cacheOverride = false)
+    public static function getTop($groupByColumn, $parameters = array(), $cacheOverride = false, $addInfo = true)
     {
         global $mdb, $longQueryMS;
 
@@ -110,7 +110,7 @@ class Stats
             Log::log("getTop Long query (${time}ms): $hashKey $uri");
         }
 
-        Info::addInfo($result);
+        if ($addInfo) Info::addInfo($result);
         RedisCache::set($hashKey, $result, isset($parameters['cacheTime']) ? $parameters['cacheTime'] : 900);
 
         return $result;

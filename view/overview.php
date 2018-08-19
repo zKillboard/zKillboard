@@ -134,9 +134,11 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
         }
 
         $topLists = $mdb->findField('statistics', 'topAllTime', ['type' => "{$useType}ID", 'id' => (int) $id]);
-        $topKills = $mdb->findField('statistics', 'topIskKills', ['type' => "{$useType}ID", 'id' => (int) $id]);
-        $nextTopRecalc = $mdb->findField('statistics', 'allTimeSum', ['type' => "{$useType}ID", 'id' => (int) $id]);
-        $nextTopRecalc = floor($nextTopRecalc * 1.01) + 1;
+        Info::addInfo($topLists);
+        $topKills = null; //$mdb->findField('statistics', 'topIskKills', ['type' => "{$useType}ID", 'id' => (int) $id]);
+        $topKills = []; //Kills::getDetails($topKills);
+        $nextTopRecalc = (int) $mdb->findField('statistics', 'nextTopRecalc', ['type' => "{$useType}ID", 'id' => (int) $id]);
+        $nextTopRecalc = $nextTopRecalc + 1;
     } else {
         if ($pageType != 'topalltime') {
             if (!isset($topParameters['year'])) {

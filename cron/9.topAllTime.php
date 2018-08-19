@@ -38,17 +38,18 @@ function calcTop($row)
     $parameters['limit'] = 100;
     $parameters['kills'] = true;
 
-    $topLists[] = array('type' => 'character', 'data' => Stats::getTop('characterID', $parameters));
-    $topLists[] = array('type' => 'corporation', 'data' => Stats::getTop('corporationID', $parameters));
-    $topLists[] = array('type' => 'alliance', 'data' => Stats::getTop('allianceID', $parameters));
-    $topLists[] = array('type' => 'faction', 'data' => Stats::getTop('factionID', $parameters));
-    $topLists[] = array('type' => 'ship', 'data' => Stats::getTop('shipTypeID', $parameters));
-    $topLists[] = array('type' => 'system', 'data' => Stats::getTop('solarSystemID', $parameters));
+    $topLists[] = array('type' => 'character', 'data' => Stats::getTop('characterID', $parameters, true, false));
+    $topLists[] = array('type' => 'corporation', 'data' => Stats::getTop('corporationID', $parameters, true, false));
+    $topLists[] = array('type' => 'alliance', 'data' => Stats::getTop('allianceID', $parameters, true, false));
+    $topLists[] = array('type' => 'faction', 'data' => Stats::getTop('factionID', $parameters, true, false));
+    $topLists[] = array('type' => 'ship', 'data' => Stats::getTop('shipTypeID', $parameters, true, false));
+    $topLists[] = array('type' => 'system', 'data' => Stats::getTop('solarSystemID', $parameters, true, false));
 
     $p = $parameters;
     $p['limit'] = 6;
     $p['categoryID'] = 6;
     $topKills = Stats::getTopIsk($p);
+    $topKills = array_keys($topKills);
 
     $nextTopRecalc = ceil($currentSum * 1.01);
 
