@@ -22,7 +22,7 @@ function publish($killID)
     global $mdb, $redis, $imageServer, $esiServer;
 
     $kill = $mdb->findDoc('killmails', ['killID' => $killID]);
-    $raw  = $mdb->findDoc('esimails', ['killmail_id' => $killID]);
+    $raw = Kills::getEsiKill($killID);
     unset($raw['_id']);
 
     $zkb = $kill['zkb'];

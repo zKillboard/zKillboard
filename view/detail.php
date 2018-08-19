@@ -36,7 +36,7 @@ if (!$exists) {
 
 // Create the details on this kill
 $killdata = Kills::getKillDetails($id);
-$rawmail = $mdb->findDoc('esimails', ['killmail_id' => $id, 'cacheTime' => 120]);
+$rawmail = Kills::getEsiKill($id);
 
 // create the dropdown involved array
 $allinvolved = $killdata['involved'];

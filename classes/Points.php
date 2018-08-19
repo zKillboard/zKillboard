@@ -7,7 +7,7 @@ class Points
     {
         global $mdb;
 
-        $killmail = $mdb->findDoc("esimails", ['killmail_id' => (int) $killID]);
+        $killmail = Kills::getEsiKill($killID);
         $victim = $killmail['victim'];
         $shipTypeID = $victim['ship_type_id'];
         $items = $victim['items'];

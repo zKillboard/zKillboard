@@ -26,7 +26,7 @@ foreach ($kills as $kill) {
                 $concorded = true;
             }
         }
-        $raw = $mdb->findDoc("esimails", ['killmail_id' => $lvictim['killID']]);
+        $raw = Kills::getEsiKill($lvictim['killID']);
         $valid = false;
         foreach ($raw['attackers'] as $a) {
             if (@$a['character_id'] == $victim['characterID'] && $a['damage_done'] >= 0) {

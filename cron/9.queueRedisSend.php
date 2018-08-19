@@ -24,7 +24,7 @@ while (date('Hi') == $minute) {
     }
     if ($redis->get("tobefetched") > 1000 && $killID < ($topKillID - 10000)) continue;
 
-    $rawmail = $mdb->findDoc("esimails", ['killmail_id' => $killID]);
+    $rawmail = Kills::getEsiKill($killID);
     $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
     $zkb = $killmail['zkb'];
     $zkb['npc'] = @$killmail['npc'];

@@ -17,7 +17,7 @@ class CrestFittings
         }
         $accessToken = CrestSSO::getAccessToken($charID, 'none', $row['refreshToken']);
 
-        $killmail = $mdb->findDoc('esimails', ['killmail_id' => (int) $killID]);
+        $killmail = Kills::getEsiKill($killID);
         $victim = $killmail['victim'];
 
         header('Content-Type: application/json');

@@ -18,7 +18,8 @@ while ($minute == date("Hi")) {
         $killID = $row['killID'];
         $hash = $row['hash'];
 
-        if ($mdb->count("esimails", ['killmail_id' => $killID]) > 0) {
+        $raw = Kills::getEsiKill($killID);
+        if ($raw != null) {
             $mdb->set("crestmails", $row, ['processed' => 'fetched']);
             $redis->zadd("tobeparsed", $killID, $killID);
             continue;

@@ -51,7 +51,7 @@ class Feed
 
         foreach ($kills as $kill) {
             $killID = $kill['killID'];
-            $json = $mdb->findDoc("esimails", ['killmail_id' => $killID]);
+            $json = Kills::getEsiKill($killID);
             $kill = $mdb->findDoc("killmails", ['killID' => $killID]);
             $json['zkb'] = $kill['zkb'];
             $json['zkb']['npc'] = $kill['npc'];

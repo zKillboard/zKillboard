@@ -80,6 +80,31 @@ class Kills
         return $array1;
     }
 
+    private static $sqldb = null;
+    public static function getSqlite()
+    {
+        if (self::$sqldb == null) {
+            self::$sqldb = new SQLite3("/home/kmstorage/sqlite/esi_killmails.sqlite");
+            self::$sqldb->busyTimeout(30000);
+        }
+        return self::$sqldb;
+    }
+
+    public static function getEsiKill($killID)
+    {
+        global $mdb;
+
+        $killID = (int) $killID;
+        $esimail = $mdb->findDoc("esimails", ['killmail_id' => $killID]);
+        if ($esimail == null) {
+            $db = self::getSqlite();
+            $results = $db->query("SELECT mail FROM killmails where killmail_id = $killID");
+            $row = $results->fetchArray(SQLITE3_ASSOC);
+            $esimail = json_decode(@$row['mail'], true);
+        }
+        return $esimail;
+    }
+
     /**
      * Gets details for a kill.
      *
@@ -95,9 +120,9 @@ class Kills
         $stored = RedisCache::get($key);
         if ($stored != null) return $stored;
 
-        $killmail = $mdb->findDoc('killmails', ['cacheTime' => 3600, 'killID' => (int) $killID]);
+        $killmail = $mdb->findDoc('killmails', ['killID' => (int) $killID]);
 
-        $esimail = $mdb->findDoc("esimails", ['killmail_id' => $killID]);
+        $esimail = Kills::getEsiKill($killID);
 
         $damage = (int) $esimail['victim']['damage_taken'];
         $killmail['damage'] = $damage;

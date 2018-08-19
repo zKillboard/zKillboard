@@ -1,9 +1,10 @@
 <?php
 
-$pid = pcntl_fork();
+$master = true;
+/*$pid = pcntl_fork();
 $master = ($pid != 0);
 pcntl_fork();
-pcntl_fork();
+pcntl_fork();*/
 
 use cvweiss\redistools\RedisTimeQueue;
 use cvweiss\redistools\RedisQueue;

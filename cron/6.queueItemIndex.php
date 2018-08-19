@@ -10,7 +10,7 @@ $minute = date('Hi');
 while ($minute == date('Hi')) {
     $killID = (int) $itemQueue->pop();
     if ($killID > 0) {
-        $killmail = $mdb->findDoc("esimails", ['killmail_id' => $killID]);
+        $killmail = Kills::getEsiKill($killID);
         updateItems($killID, $killmail['victim']['items']);
     } else exit();
 }

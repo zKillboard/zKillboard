@@ -1,10 +1,11 @@
 <?php
 
-$pid = pcntl_fork();
+$master = true;
+/*$pid = pcntl_fork();
 $master = ($pid != 0);
 pcntl_fork();
 pcntl_fork();
-pcntl_fork();
+pcntl_fork();*/
 
 use cvweiss\redistools\RedisQueue;
 use cvweiss\redistools\RedisTtlCounter;
@@ -52,7 +53,7 @@ while ($minute == date('Hi')) {
     }
     if ($row != null) {
         $killID = (int) $row['killID'];
-        $mail = $mdb->findDoc('esimails', ['killmail_id' => $killID]);
+        $mail = Kills::getEsiKill($killID);
 
         $kill = array();
         $kill['killID'] = $killID;
