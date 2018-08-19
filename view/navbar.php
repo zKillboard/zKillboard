@@ -11,7 +11,7 @@ if (!User::isLoggedIn()) {
 
 $ug = new UserGlobals();
 $arr = $ug->getGlobals();
-$etag = md5(serialize($arr));
+$etag = md5(serialize($arr) . date('YmdH'));
 $etag = 'W/"' . $etag . '"';
 header("ETag: $etag");
 header("Cache-Control: private");
