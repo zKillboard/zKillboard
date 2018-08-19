@@ -57,13 +57,13 @@ foreach ($entities as $entity) {
         $setKey = "s:search:$type";
         $toMove[$setKey] = true;
         $redis->zAdd($setKey, 0, trim(strtolower($name))."\x00$id");
-        $mdb->insertUpdate("search", ['type' => $type, 'name' => strtolower($name)], ['id' => $id, 'dttm' => $mdb->now()]);
+        //$mdb->insertUpdate("search", ['type' => $type, 'name' => strtolower($name)], ['id' => $id, 'dttm' => $mdb->now()]);
     }
     if (strlen($flag) > 0) {
         $setKey = "s:search:$type:flag";
         $toMove[$setKey] = true;
         $redis->zAdd($setKey, 0, strtolower("$flag\x00$id"));
-        $mdb->insertUpdate("search", ['type' => $type . ":flag", 'name' => strtolower($flag)], ['id' => $id, 'dttm' => $mdb->now()]);
+        //$mdb->insertUpdate("search", ['type' => $type . ":flag", 'name' => strtolower($flag)], ['id' => $id, 'dttm' => $mdb->now()]);
     }
 }
 
