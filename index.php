@@ -9,11 +9,6 @@ $uri = @$_SERVER['REQUEST_URI'];
 $isApiRequest = substr($uri, 0, 5) == "/api/";
 
 
-/*if (substr($uri, 0, 12) == "/api/killID/") {
-    header("HTTP/1.1 400 Disabling /api/killID/ because of abuse.");
-    die();
-}*/
-
 if ($uri == "/kill/-1/") {
     header("Location: /keepstar1.html");
     exit();
@@ -57,7 +52,7 @@ $ipE = explode(',', $ip);
 $ip = $ipE[0];
 
 if ($redis->get("IP:ban:$ip") == "true") {
-    header('HTTP/1.1 403 IP has been temporarily banned due to excessive errors');
+    header('HTTP/1.1 403 IP has been temporarily banned due to excessive errors or failure to pass challenge.');
     return;
 }
 
@@ -79,6 +74,13 @@ if ($noLimit === false  && $count >= $limit) {
 // Scrape Checker
 $ipKey = "ip::$ip";
 if ($redis->get("ip::redirect::$ip") != null) {
+    $redis->incr("ip::redirect::$ip:challenges");
+    $redis->expire("ip::redirect::$ip:challenges", 3600);
+    if ($redis->get("ip::redirect::$ip:challenges" > 10)) {
+        Log::log("Banning $ip for failing to pass challenges");
+        $redis->setex("IP:ban:$ip", 9600, "true");
+        return;
+    }
     header("Location: /challenge/", true, 302);
     return;
 }
