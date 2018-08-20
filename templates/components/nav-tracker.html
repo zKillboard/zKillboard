@@ -42,22 +42,22 @@ if (showAdd) $("#tracker-add").removeClass("hidden");
 {% set message = getMessage() %}
 {% if message %}
 
-    addToolTip($("#usermenu"), "{{ message }}");
+    //addToolTip($("#usermenu"), "{{ message }}");
 
 {% else %}
 
-if ($(window).width() > 800 && localStorage) {
+/*if ($(window).width() > 800 && localStorage) {
     if (!localStorage.getItem('tracker-tip')) {
         localStorage.setItem('tracker-tip', true);
         addToolTip($("#tracker-menu"), "Click the Tracker dropdown to see your character, corporation, and alliance if you're in one.");
     } else if ($("#track-entity").length == 1 && !localStorage.getItem('tracker-entity-tip')) {
         localStorage.setItem('tracker-entity-tip', true);
         addToolTip($("#track-entity"), "Click the <i class='fa fa-plus' style='color: green;'></i> or <i class='fa fa-minus' style='color: red';></i> next to the name to add or remove from your Tracker's dropdown.");
-    } else if ($("#sponsor").length == 1 && characterID == '1633218082' && !localStorage.getItem('tracker-sponsor-tip')) {
+    } else if ($("#sponsor").length == 1 && !localStorage.getItem('tracker-sponsor-tip')) {
         localStorage.setItem('tracker-sponsor-tip', true);
         addToolTip($("#sponsor"), "Click the <i class='glyphicon glyphicon-bullhorn' style='color: green;'></i> to throw ISK away and sponsor a killmail!");
     }
-}
+}*/
 {% endif %}
 
 console.log("nav loaded");
