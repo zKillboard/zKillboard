@@ -58,7 +58,7 @@ while ($hour == date('H')) {
     if ($kCount != $lastKillCountSent || (time() % 5 == 0)) {
         $serverStatus = $redis->get('tqStatus');
         $loggedIn = $redis->get('tqCount');
-        $redis->publish("public", json_encode(['action' => 'tqStatus', 'tqStatus' => $serverStatus, 'tqCount' => $loggedIn, 'kills' => $kCount]));
+        $redis->publish("public", json_encode(['action' => 'tqStatus', 'tqStatus' => $serverStatus, 'tqCount' => $loggedIn, 'kills' => number_format($kCount, 0)]));
         $lastKillCountSent = $kCount;
     }
     $totalKills = $redis->get('zkb:totalKills');
