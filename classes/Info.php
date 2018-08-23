@@ -393,7 +393,7 @@ class Info
                             $element['itemName'] = self::getInfoField('itemID', $value, 'name');
                         }
                         if (!isset($element['locationName'])) {
-                            $element['locationName'] = $element['itemName'];
+                            $element['locationName'] = self::getInfoField('locationID', $value, 'name');
                         }
                         if (!isset($element['typeID'])) {
                             $element['typeID'] = self::getInfoField('itemID', $value, 'typeID');
