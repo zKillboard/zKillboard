@@ -2,8 +2,7 @@
 
 require_once "../init.php";
 
-$key = "zkb:esi2sqlite";
-if ($redis->get($key) == "true") exit();
+if (date('Hi') != "1100") exit();
 
 // initialize
 $db = new SQLite3("/home/kmstorage/sqlite/esi_killmails.sqlite");
@@ -43,5 +42,3 @@ while ($iter->hasNext()) {
 }
 $db->exec("commit");
 $db->close();
-
-$redis->setex($key, 3600, "true");
