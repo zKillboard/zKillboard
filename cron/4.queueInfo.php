@@ -33,6 +33,7 @@ while ($minute == date('Hi')) {
         $queueRedisQ->push($killID);
         $queueApiCheck->push($killID);
         $queuePublish->push($killID);
+        $redis->sadd("padhash_ids", $killID);
 
         $mdb->set("killmails", ['killID' => $killID], ['processed' => true]);
     } else if (!$master) break;
@@ -99,7 +100,11 @@ function updateEntity($killID, $entity)
         if ($id <= 1) continue;
 
         $row = ['type' => $type, 'id' => $id];
-        if ($mdb->count("information", $row) > 0) continue;
+        if ($mdb->count("information", $row) > 0) {
+            $rtq = new RedisTimeQueue("zkb:$type", 86400);
+            $rtq->add($id);
+            return;
+        }
 
         $defaultName = "$type $id";
         $mdb->insertUpdate('information', $row, ['name' => $defaultName]);

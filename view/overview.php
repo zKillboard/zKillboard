@@ -115,6 +115,14 @@ if ($pageType != 'solo' || $key == 'faction') {
 //$soloPages = ceil($soloCount / $limit);
 $solo = Kills::mergeKillArrays($soloKills, array(), $limit, $columnName, $id);
 
+$padSum = 0;
+// PadSum?
+if ($key == 'character') {
+    $result = Mdb::group("padhash", ['characterID'], ['characterID' => (int) $id, 'count' => ['$gte' => 5]], [], ['count']);
+    $padSum = (int) @$result[0]['countSum'];
+}
+
+
 $validAllTimePages = array('character', 'corporation', 'alliance', 'faction');
 $nextTopRecalc = 0;
 $topLists = array();
@@ -220,6 +228,7 @@ $corpID = Info::getInfoField('characterID', $id, 'corporationID');
 $apiCorpVerified = $redis->get("apiVerified:$corpID");
 
 $extra = array();
+$extra['padSum'] = $padSum;
 $tracked = false;
 if (User::isLoggedIn()) {
     $trackers = [];
