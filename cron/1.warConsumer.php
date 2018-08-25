@@ -90,7 +90,7 @@ function killmailSuccess(&$guzzler, &$params, &$content)
 
         $mdb->insertUpdate('warmails', ['warID' => $id, 'killID' => $killID]);
         if (!$mdb->exists('crestmails',  ['killID' => $killID, 'hash' => $hash])) {
-            $mdb->insert('crestmails', ['killID' => (int) $killID, 'hash' => $hash, 'processed' => false, 'source' => 'war', 'added' => Mdb::now()]);
+            $mdb->insert('crestmails', ['killID' => (int) $killID, 'hash' => $hash, 'processed' => false]);
             Util::out("New WARmail $killID");
         }
     }

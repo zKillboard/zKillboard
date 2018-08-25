@@ -13,7 +13,7 @@ $mdb->set("crestmails", ['processed' => 'fetching'], ['processed' => false], tru
 $count = 0;
 $minute = date("Hi");
 while ($minute == date("Hi")) {
-    $rows = $mdb->find("crestmails", ['processed' => false], ['killID' => -1], 10);
+    $rows = $mdb->find("crestmails", ['processed' => false], [], 10);
     foreach ($rows as $row) {
         $killID = $row['killID'];
         $hash = $row['hash'];

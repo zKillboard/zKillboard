@@ -8,7 +8,7 @@ if ($killID > 0 && strlen($hash) == 40) {
         $name = $userID > 0 ? Info::getInfoField('characterID', (int) $userID, 'name') : "?";
 
         try { 
-            $mdb->insert('crestmails', ['killID' => (int) $killID, 'hash' => $hash, 'added' => $mdb->now(), 'processed' => false]);
+            $mdb->insert('crestmails', ['killID' => (int) $killID, 'hash' => $hash, 'processed' => false]);
             ZLog::add("  1 kills added by $name (POST)", $userID, true);
         } catch (Exception $ex) {
             // ignore it

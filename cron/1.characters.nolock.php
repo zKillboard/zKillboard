@@ -112,13 +112,13 @@ function success($guzzler, $params, $content)
 
     $mKillID = (int) $mdb->findField("killmails", "killID", ['involved.characterID' => $charID], ['killID' => -1]);
     if ($newKills == 0 && $mKillID < ($redis->get("zkb:topKillID") - 3000000) && @$row['iterated'] == true && isset($row['added']->sec)) {
-        /*if ($row['added']->sec < (time() - (30 * 86400)) && $mKillID < ($redis->get("zkb:topKillID") - 10000000)) {
+        if ($row['added']->sec < (time() - (30 * 86400)) && $mKillID < ($redis->get("zkb:topKillID") - 10000000)) {
             $esi->remove($charID);
             $mdb->remove("scopes", $row);
             $redis->del("apiVerified:$charID");
             Util::out("Removed char killmail scope for $charID for inactivity");
             return;
-        }*/
+        }
         // Otherwise check them roughly once a day
         $esi->setTime($charID, time() + (rand(18, 23) * 3600));
     }
@@ -144,7 +144,7 @@ function addMail($killID, $hash)
     $exists = $mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash]);
     if (!$exists) {
         try {
-            $mdb->getCollection('crestmails')->save(['killID' => (int) $killID, 'hash' => $hash, 'processed' => false, 'source' => 'esi', 'added' => $mdb->now()]);
+            $mdb->getCollection('crestmails')->save(['killID' => (int) $killID, 'hash' => $hash, 'processed' => false]);
             return 1;
         } catch (MongoDuplicateKeyException $ex) {
             // ignore it *sigh*
