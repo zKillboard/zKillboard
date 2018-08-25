@@ -2,6 +2,8 @@
 
 require_once '../init.php';
 
+use cvweiss\redistools\RedisTimeQueue;
+
 global $mdb, $redis;
 
 $key = "autocomplete:" . date('YmdH');
@@ -13,6 +15,10 @@ $entities = $mdb->getCollection('information')->find()->sort(['type' => 1]);
 $entities->timeout(0);
 
 $toMove = [];
+
+$charsRTQ = new RedisTimeQueue("zkb:characterID", 86400);
+$corpsRTQ = new RedisTimeQueue("zkb:corporationID", 86400);
+$allisRTQ = new RedisTimeQueue("zkb:allianceID", 86400);
 
 foreach ($entities as $entity) {
     $type = $entity['type'];
@@ -31,10 +37,15 @@ foreach ($entities as $entity) {
         case 'locationID':
         case 'warID':
             continue;
+        case 'characterID':
+            $charsRTQ->add($id);
+            break;
         case 'corporationID':
+            $corpsRTQ->add($id);
             $flag = @$entity['ticker'];
             break;
         case 'allianceID':
+            $allisRTQ->add($id);
             $flag = @$entity['ticker'];
             break;
         case 'typeID':
@@ -72,4 +83,4 @@ foreach ($toMove as $setKey => $set) {
     $redis->rename($setKey, substr($setKey, 2));
 }
 
-$redis->setex($key, 64800, true);
+$redis->setex($key, 3600, true);
