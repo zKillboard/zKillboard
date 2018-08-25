@@ -41,6 +41,11 @@ function accessTokenDone(&$guzzler, &$params, $content)
     global $ccpClientID, $ccpSecret, $esiServer;
 
     $response = json_decode($content, true);
+    if (!isset($response['access_token'])) {
+        Util::out("Missing access token...");
+        sleep(1);
+        return;
+    }
     $accessToken = $response['access_token'];
     $params['content'] = $content;
     $row = $params['row'];
@@ -120,7 +125,7 @@ function addMail($killID, $hash)
     $exists = $mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash]);
     if (!$exists) {
         try {
-            $mdb->getCollection('crestmails')->save(['killID' => (int) $killID, 'hash' => $hash, 'processed' => false, 'source' => 'esi', 'added' => $mdb->now()]);
+            $mdb->getCollection('crestmails')->save(['killID' => (int) $killID, 'hash' => $hash, 'processed' => false]);
             return 1;
         } catch (MongoDuplicateKeyException $ex) {
             // ignore it *sigh*
