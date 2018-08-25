@@ -44,9 +44,8 @@ function groupSuccess($guzzler, $params, $content)
 
     foreach ($types as $typeID) {
         $typeInfo = Info::getInfo("typeID", $typeID);
-        $name = strtolower($typeInfo['name']);
 
-        if ($typeInfo['published'] != true) continue;
+        if (@$typeInfo['published'] != true) continue;
         if ($redis->hget($key, $typeID) == true) continue;
 
         $guzzler->call("$esiServer/v1/markets/10000002/history/?type_id=$typeID", "typeHistorySuccess", "fail", ['typeID' => $typeID], ['eetag' => true]);
