@@ -132,6 +132,7 @@ If this is your corporation, ask your CEO or a director to log into zKillboard t
     {% include 'components/kill_list.html' %}
   </div>
   <div class="col-lg-2 pull-left" style="padding: 0px;">
+    {% include 'components/activity.html' %}
 	{% include 'components/activePvP.html' %}
             {% if topLists|length %}
         	{% for topSet in topLists %}

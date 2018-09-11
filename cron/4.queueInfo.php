@@ -36,8 +36,37 @@ while ($minute == date('Hi')) {
         $redis->sadd("padhash_ids", $killID);
 
         $mdb->set("killmails", ['killID' => $killID], ['processed' => true]);
+        addActivity($killID);
     } else if (!$master) break;
     else sleep(1);
+}
+
+function addActivity($killID)
+{
+    global $mdb;
+
+    $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
+    $dttm = $killmail['dttm'];
+    $day = (int) date('w', $dttm->sec);
+    $hour = (int) date('H', $dttm->sec);
+    foreach ($killmail['involved'] as $i) {
+        foreach ($i as $entity=>$id) {
+            if (!in_array($entity, ['characterID', 'corporationID', 'allianceID'])) continue;
+            if ($entity == 'corporationID' && $id <= 1999999) continue;
+            addActivityRow($id, $day, $hour, $killmail['killID'], $dttm);
+        }
+    }
+}
+
+function addActivityRow($id, $day, $hour, $killID, $dttm)
+{
+    global $mdb;
+
+    try {
+        $mdb->insert("activity", ['id' => $id, 'day' => $day, 'hour' => $hour, 'killID' => $killID, 'dttm' => $dttm]);
+    } catch (Exception $ex) {
+        // probably a dupe, ignore it
+    }
 }
 
 function updateStatsQueue($killID)

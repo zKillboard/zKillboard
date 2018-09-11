@@ -196,6 +196,19 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
     $topKills = Stats::getTopIsk($p);
 }
 
+$activity = ['max' => 0];
+if ($pageType == 'overview' && in_array($key, ['character', 'corporation', 'alliance'])) {
+    $raw = $redis->hget("zkb:activity", $id);
+    if ($raw != null) $activity = unserialize($raw);
+    else for ($day = 0; $day <= 6; $day++ ) {
+        for ($hour = 0; $hour <= 23; $hour++) {
+            $count = $mdb->count("activity", ['id' => (int) $id, 'day' => $day, 'hour' => $hour]);
+            if ($count > 0) $activity[$day][$hour] = $count;
+            $activity['max'] = max($activity['max'], $count);
+        }
+    }
+}
+
 $corpList = array();
 if ($pageType == 'api') {
     $corpList = Info::getCorps($id);
@@ -229,6 +242,7 @@ $apiCorpVerified = $redis->get("apiVerified:$corpID");
 
 $extra = array();
 $extra['padSum'] = $padSum;
+$extra['activity'] = $activity;
 $tracked = false;
 if (User::isLoggedIn()) {
     $trackers = [];
