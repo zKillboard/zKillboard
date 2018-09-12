@@ -2,16 +2,16 @@
     <center><h5>Activity (last 90 days)</h5></center>
     {% spaceless %}
     <div style="line-height: 0px;">
-    {% set steps = (extra.activity.max / 8)|round(0, 'floor') %}
+    {% set steps = (extra.activity.max / 5)|round(0, 'floor') %}
     {% if steps < 1 %}{% set steps = 1 %}{% endif %}
     {% for day in 0..6 %}
         {% for hour in 0..23 %}
             {% set level = 0 %}
             {% if extra.activity[day][hour] > 0 %}
                 {% set level = (extra.activity[day][hour] / steps)|round(0, 'ceil') %}
-                {% if level > 8 %}{% set level = 8 %}{% endif %}
+                {% if level > 5 %}{% set level = 5 %}{% endif %}
             {% endif %}
-            <span style='width: 8px; height: 8px; background-color: rgb({{ (level * 32) - 1}}, 0, 0); display: inline-block; margin: 0px; padding: 0px;' rel="tooltip" title="{{ extra.activity[day][hour] }}"></span>
+            <span style='width: 8px; height: 8px; background-color: hsla(0, 92%, {{ level * 10 }}%, 1); display: inline-block; margin: 0px; padding: 0px;' rel="tooltip" title="{{ extra.activity[day][hour] }}"></span>
         {% endfor %}
         <br style='margin: 0px; padding:0px;'/>
     {% endfor %}
