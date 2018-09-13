@@ -28,6 +28,7 @@ function success($guzzler, $params, $content)
     foreach ($json as $segment) {
         $typeID = $segment['type_id'];
         $price = isset($segment['average_price']) ? $segment['average_price'] : $segment['adjusted_price'];
+        if ($price < 0.01) continue;
         $row = $mdb->findDoc("prices", ['typeID' => $typeID]);
         if (isset($row[$date])) continue;
         $row[$date] = $price;
