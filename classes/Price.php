@@ -65,9 +65,6 @@ class Price
             $useTime = $useTime - 86400;
             ++$iterations;
         } while (sizeof($priceList) < $maxSize && $iterations < sizeof($marketHistory));
-        if (sizeof($priceList) < 24) {
-            $priceList = $marketHistory;
-        }
 
         asort($priceList);
         if (sizeof($priceList) == $maxSize) {
@@ -87,6 +84,9 @@ class Price
         }
         $avgPrice = round($total / sizeof($priceList), 2);
 
+        // Don't have a decent price? Let's try to build it!
+        if ($avgPrice <= 0.01) $avgPrice = Build::getItemPrice($typeID, $kmDate, true);
+
         $redis->hSet($priceKey, $typeID, $avgPrice);
         $redis->expire($priceKey, 86400);
 
@@ -97,9 +97,6 @@ class Price
     {
         // Some typeID's have hardcoded prices
         switch ($typeID) {
-            case 42126:
-            case 35834:
-                return 300000000000; // 300b Keepstar, not likely to end up on market at this price
             case 12478: // Khumaak
             case 34559: // Conflux Element
                 return 0.01; // Items that get market manipulated and abused will go here
@@ -152,8 +149,6 @@ class Price
             case 11938: // Armageddon Imperial Issue
             case 26842: // Tempest Tribal Issue
                 return 750000000000; // 750b
-            case 37275: // Standup XL-Set Extinction Level Weapons Suite II
-                return 575000000000; // Based off ME/TE 10/10 production, has no current market values
         }
 
         // Some groupIDs have hardcoded prices
@@ -170,7 +165,7 @@ class Price
         return;
     }
 
-    protected static function getCalculatedPrice($typeID, $date)
+    public static function getCalculatedPrice($typeID, $date)
     {
         switch ($typeID) {
             case 2233: // Gantry
@@ -187,7 +182,7 @@ class Price
         return;
     }
 
-    protected static function getCrestPrices($typeID)
+    public static function getCrestPrices($typeID)
     {
         global $mdb, $esiServer;
 
@@ -217,7 +212,7 @@ class Price
             }
             $date = date('Y-m-d');
             foreach ($market as $item) {
-                if ($item['type']['id'] == $typeID) {
+                if (@$item['type']['id'] == $typeID) {
                     $price = @$item['adjustedPrice'];
                     if ($price > 0) $mdb->set('prices', ['typeID' => $typeID], [$date => $price]);
                 }
