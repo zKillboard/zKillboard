@@ -340,7 +340,8 @@ function isSolo($killmail)
 function isNPC(&$killmail)
 {
     $involved = $killmail['involved'];
-    array_shift($involved);
+    $victim = array_shift($involved);
+    if (!isset($victim['characterID']) && $victim['corporationID'] > 1 && $victim['corporationID'] < 1999999) return true;
 
     foreach ($involved as $attacker) {
         if (@$attacker['characterID'] > 3999999) {
