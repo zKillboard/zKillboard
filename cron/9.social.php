@@ -66,7 +66,7 @@ function getName($victimInfo)
     $name = "";
     if (strlen(@$victimInfo['characterName']) > 0) $name = $victimInfo['characterName'];
     if (strlen(@$victimInfo['allianceName']) > 0) $name = $victimInfo['allianceName'];
-    else if ($victimInfo['corporationID'] > 1999999) $name = $victimInfo['corporationName'];
+    else if ($victimInfo['corporationID'] > 1999999 || $name == "") $name = $victimInfo['corporationName'];
     $name = Util::endsWith($name, 's') ? $name."'" : $name."'s";
 
     return $name;
