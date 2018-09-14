@@ -21,21 +21,8 @@ class Build
 
         $today = date('Y-m-d', time() - 7200);
         $price = self::getBuildPrice($redis, $typeID, $kmDate);
-        if ($price === null) {
-            if ($redis->get("zkb:prices:$typeID:$today") != "true") {
-                // Fetch latest prices...
-                $price = Price::getCrestPrices($typeID);
-                $redis->setex("zkb:prices:$typeID:$today", 86400, "true");
-            }
-            $row = $mdb->findDoc("prices", ['typeID' => $typeID]);
-            unset($row['typeID']);
-            unset($row['_id']);
-            ksort($row);
-            $price = (sizeof($row)) > 0 ? array_pop($row) : 0;
-        }
-        if ($price == 0) $price = 0.01;
+        if ($price === null) return 0.01;
         $redis->setex("zkb:built:$typeID:$kmDate", 86400, $price);
-        //$mdb->set("prices", ['typeID' => $typeID], ["$today" => $price]);
 
         return $price;
     }

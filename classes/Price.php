@@ -102,8 +102,6 @@ class Price
                 return 0.01; // Items that get market manipulated and abused will go here
             case 44265: // Victory Firework
                 return 0.01; // Items that drop from sites will go here
-            case 42124:
-                return 33000000000; // Vehement, a faction dread with no market for some reason
             case 2834: // Utu
             case 3516: // Malice
             case 11375: // Freki
@@ -213,7 +211,7 @@ class Price
             $date = date('Y-m-d');
             foreach ($market as $item) {
                 if (@$item['type']['id'] == $typeID) {
-                    $price = @$item['adjustedPrice'];
+                    $price = @$item['average_price'];
                     if ($price > 0) $mdb->set('prices', ['typeID' => $typeID], [$date => $price]);
                 }
             }
