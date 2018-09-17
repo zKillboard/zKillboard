@@ -23,6 +23,10 @@ function beSocial($killID)
 
     $hours24 = time() - 86400;
     $victimInfo = $kill['involved'][0];
+
+    // Don't announce NPC Sotiyos
+    if ($victimInfo['corporationID'] < 1999999 && @$victimInfo['characterID'] == 0) return;
+
     $totalPrice = $kill['zkb']['totalValue'];
     if ($kill['vGroupID'] == 902) $twitMin += 5000000000; // Jump Freighters, 15b
     if (in_array($kill['vGroupID'], [1657, 1404, 1406])) $twitMin = 25000000000; // Citadels, Eng. Complexes, and Refineries, 25b
