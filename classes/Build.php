@@ -19,7 +19,6 @@ class Build
         $price = $redis->get("zkb:built:$typeID:$kmDate");
         if ($price > 0) return $price;
 
-        $today = date('Y-m-d', time() - 7200);
         $price = self::getBuildPrice($redis, $typeID, $kmDate);
         if ($price === null) return 0.01;
         $redis->setex("zkb:built:$typeID:$kmDate", 86400, $price);
