@@ -52,7 +52,7 @@ $ipE = explode(',', $ip);
 $ip = $ipE[0];
 
 if ($redis->get("IP:ban:$ip") == "true") {
-    header('HTTP/1.1 403 IP has been temporarily banned due to excessive errors or failure to pass challenge.');
+    header("Location: https://www.youtube.com/watch?v=FXPKJUE86d0", true, 302);
     return;
 }
 
@@ -62,7 +62,7 @@ if (in_array($ip, $blackList)) {
 }
 
 $limit = 10; 
-$noLimits = ['/post/', '/autocomplete/', '/crestmail/', '/comment/', '/killlistrow/', '/comment/', '/related/', '/sponsor', '/crestmail', '/account/', '/logout', '/ccp', '/auto', '/killlistrow/', '/challenge/'];
+$noLimits = ['/cache/', '/post/', '/autocomplete/', '/crestmail/', '/comment/', '/killlistrow/', '/comment/', '/related/', '/sponsor', '/crestmail', '/account/', '/logout', '/ccp', '/auto', '/killlistrow/', '/challenge/'];
 $noLimit = false;
 foreach ($noLimits as $noLimitTxt) $noLimit |= (substr($uri, 0, strlen($noLimitTxt)) === $noLimitTxt);
 $count = $redis->get($ip);
@@ -76,7 +76,8 @@ $ipKey = "ip::$ip";
 if ($redis->get("ip::redirect::$ip") != null) {
     $redis->incr("ip::redirect::$ip:challenges");
     $redis->expire("ip::redirect::$ip:challenges", 3600);
-    if ($redis->get("ip::redirect::$ip:challenges" > 10)) {
+    if ($redis->get("ip::redirect::$ip:challenges") > 10) {
+        header("Location: https://www.youtube.com/watch?v=FXPKJUE86d0", true, 302);
         Log::log("Banning $ip for failing to pass challenges");
         $redis->setex("IP:ban:$ip", 9600, "true");
         return;
