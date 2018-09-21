@@ -23,6 +23,8 @@ $redis->set("zkb:reinforced", ($redisLoad >= 15 && $allowReinforced));
 $topKillID = $mdb->findField('killmails', 'killID', [], ['killID' => -1]);
 $redis->setex('zkb:topKillID', 86400, $topKillID);
 
+$redis->set('zkb:TopIsk', json_encode(Stats::getTopIsk(array('pastSeconds' => (7 * 86400), 'limit' => 6, 'npc' => false))));
+
 $redis->set("zkb:totalChars", $redis->zcard("zkb:characterID"));
 $redis->set("zkb:totalCorps", $redis->zcard("zkb:corporationID"));
 $redis->set("zkb:totalAllis", $redis->zcard("zkb:allianceID"));

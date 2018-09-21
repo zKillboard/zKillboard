@@ -17,8 +17,6 @@ $p['limit'] = 10;
 $p['pastSeconds'] = $numDays * 86400;
 $p['kills'] = true;
 
-$redis->set('zkb:TopIsk', json_encode(Stats::getTopIsk(array('pastSeconds' => ($numDays * 86400), 'limit' => 6/*, 'categoryID' => 6*/))));
-
 getTop('Top Characters', 'characterID');
 getTop('Top Corporations', 'corporationID');
 getTop('Top Alliances', 'allianceID');
