@@ -207,6 +207,7 @@ if ($pageType == 'overview' && in_array($key, ['character', 'corporation', 'alli
             $activity['max'] = max($activity['max'], $count);
         }
     }
+    $activity['days'] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 }
 
 $corpList = array();
