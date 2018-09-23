@@ -320,10 +320,12 @@ $statistics['overallRank'] = Util::rankCheck($redis->zRank("tq:ranks:alltime:$st
 if (@$statistics['shipsLost'] > 0) {
     $destroyed = @$statistics['shipsDestroyed']  + @$statistics['pointsDestroyed'];
     $lost = @$statistics['shipsLost'] + @$statistics['pointsLost'];
-    if ($destroyed > 0 && $lost > 0) {
+    if ($destroyed > 0 || $lost > 0) {
         $ratio = floor(($destroyed / ($lost + $destroyed)) * 100);
         $extra['dangerRatio'] = $ratio;
     }
+} else if (@$statistics['shipsDestroyed'] > 0) {
+    $extra['dangerRatio'] = 100;
 }
 if (@$statistics['soloKills'] > 0 && @$statistics['shipsDestroyed'] > 0) {
     $gangFactor = 100 - floor(100 * ($statistics['soloKills'] / $statistics['shipsDestroyed']));
@@ -349,10 +351,10 @@ $statistics['recentPointsLost'] = $redis->zScore("tq:ranks:recent:$statType:poin
 $statistics['recentPointsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:pointsLost", $id));
 $statistics['recentOverallRank'] = Util::rankCheck($redis->zRank("tq:ranks:recent:$statType", $id));
 
-if (@$statistics['recentShipsLost'] > 0) {
+if (@$statistics['recentShipsLost'] > 0 || @$statistics['recentShipsDestroyed'] > 0) {
     $destroyed = @$statistics['recentShipsDestroyed'] + @$statistics['recentPointsDestroyed'];
     $lost = @$statistics['recentShipsLost'] + @$statistics['recentPointsLost'];
-    if ($destroyed > 0 && $lost > 0) {
+    if ($destroyed > 0 || $lost > 0) {
         $ratio = floor(($destroyed / ($lost + $destroyed)) * 100);
         $extra['recentDangerRatio'] = $ratio;
     }
@@ -382,10 +384,10 @@ $statistics['weeklyPointsLost'] = $redis->zScore("tq:ranks:weekly:$statType:poin
 $statistics['weeklyPointsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:pointsLost", $id));
 $statistics['weeklyOverallRank'] = Util::rankCheck($redis->zRank("tq:ranks:weekly:$statType", $id));
 
-if (@$statistics['weeklyShipsLost'] > 1) {
+if (@$statistics['weeklyShipsLost'] > 0 || @$statistics['weeklyShipsDestroyed'] > 0) {
     $destroyed = @$statistics['weeklyShipsDestroyed']  + @$statistics['weeklyPointsDestroyed'];
     $lost = @$statistics['weeklyShipsLost'] + @$statistics['weeklyPointsLost'];
-    if ($destroyed > 0 && $lost > 0) {
+    if ($destroyed > 0 || $lost > 0) {
         $ratio = floor(($destroyed / ($lost + $destroyed)) * 100);
         $extra['weeklyDangerRatio'] = $ratio;
     }
