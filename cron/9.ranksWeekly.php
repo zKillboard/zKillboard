@@ -134,7 +134,7 @@ function getWeekly($type, $id, $isVictim)
     global $mdb;
 
     // build the query
-    $query = [$type => $id, 'isVictim' => $isVictim, 'npc' => false];
+    $query = [$type => $id, 'isVictim' => $isVictim, 'npc' => false, 'categoryID' => 6];
     $query = MongoFilter::buildQuery($query);
 
     $result = $mdb->group('oneWeek', [], $query, 'killID', ['zkb.points', 'zkb.totalValue']);
