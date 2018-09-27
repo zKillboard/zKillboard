@@ -52,7 +52,7 @@ $ipE = explode(',', $ip);
 $ip = $ipE[0];
 
 if ($redis->get("IP:ban:$ip") == "true") {
-    header("Location: https://www.youtube.com/watch?v=FXPKJUE86d0", true, 302);
+    header("Location: /html/banned.html", true, 302);
     return;
 }
 
@@ -77,8 +77,8 @@ if ($redis->get("ip::redirect::$ip") != null) {
     $redis->incr("ip::redirect::$ip:challenges");
     $redis->expire("ip::redirect::$ip:challenges", 3600);
     if ($redis->get("ip::redirect::$ip:challenges") > 10) {
-        header("Location: https://www.youtube.com/watch?v=FXPKJUE86d0", true, 302);
-        Log::log("Banning $ip for failing to pass challenges");
+        header("Location: /html/banned.html", true, 302);
+        Log::log("Banning $ip for failing to pass challenges. User Agent: " . @$_SERVER['HTTP_USER_AGENT']);
         $redis->setex("IP:ban:$ip", 9600, "true");
         return;
     }
