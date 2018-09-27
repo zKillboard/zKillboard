@@ -1,10 +1,14 @@
 <?php
 
+use cvweiss\redistools\RedisTtlCounter;
+
 global $mdb, $ip, $redis;
 
+$votes = new RedisTtlCounter("ttlc:votes:$ip", 300);
 $key = "comment:$pageID";
 $publish = false;
-if ($commentID >= 0 && $commentID < count(Comments::$defaultComments) && $redis->get("validUser:$ip") == "true") {
+if ($commentID >= 0 && $commentID < count(Comments::$defaultComments) && $redis->get("validUser:$ip") == "true" && $votes->count() < 1500) {
+    $votes->add(uniqid());
     $comment = $mdb->findDoc("comments", ['pageID' => $pageID, 'commentID' => $commentID]);
     if ($comment == null) {
         $comment = ['pageID' => $pageID, 'commentID' => $commentID, 'dttm' => $mdb->now(), 'upvotes' => 0, 'comment' => Comments::$defaultComments[$commentID]];
@@ -14,6 +18,9 @@ if ($commentID >= 0 && $commentID < count(Comments::$defaultComments) && $redis-
     $mdb->save("comments", $comment);
     $redis->del($key);
     $publish = true;
+} else if ($votes->count() >= 1500) {
+    Log::log("Banning $ip for excessive comments");
+    $redis->setex("IP:ban:$ip", 900, "true");
 }
 
 $comments = $redis->get($key);
