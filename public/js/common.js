@@ -98,7 +98,7 @@ function wslog(msg)
         $("#commentblock").html(json.html);
     } else if (json.action === 'littlekill') {
         // Add the killmail to the kill list
-        $.get("/killlistrow/" + json.killID + "/" + entityType + "/" + entityID + "/", function(data) { 
+        $.get("/cache/1hour/killlistrow/" + json.killID + "/", function(data) { 
             $("#killlist tbody tr:first").before(data).on('click', function(event) {
                 if (event.which === 2) return false;
                 window.location = '/kill/' + $(this).attr('killID') + '/';

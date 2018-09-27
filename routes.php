@@ -15,12 +15,17 @@ $app->get('/challenge/', function() use ($app) {
         include "view/challenge.php";
     });
 
-$app->get('/google/', function() use ($app) {
+$app->get('/cache/1hour/google/', function() use ($app) {
         $mobile = false;
         include "view/google.php";
     });
-$app->get('/google/:mobile/', function($mobile) use ($app) {
-        include "view/google.php";
+$app->get('/google/', function() use ($app) {
+        $app->redirect('/cache/1hour/google/', 302);
+        return;
+    });
+$app->get('/google/:mobile/', function() use ($app) {
+        $app->redirect('/cache/1hour/google/', 302);
+        return;
     });
 
 $app->get('/(page/:page/)', function ($page = 1) use ($app) {
@@ -251,11 +256,14 @@ $app->get('/comment/:pageID/:commentID/up/', function ($pageID, $commentID) use 
         include 'view/comments-up.php';
         });
 
-$app->get('/killlistrow/:killID/:entityType/:entityID/', function ($killID, $entityType, $entityID) use ($app) {
+$app->get('/cache/1hour/killlistrow/:killID/', function ($killID) use ($app) {
         include 'view/killlistrow.php';
     });
+$app->get('/killlistrow/:killID/:entityType/:entityID/', function ($killID, $entityType, $entityID) use ($app) {
+        $app->redirect("/cache/1hour/killlistrow/$killID/", 302);
+    });
 $app->get('/killlistrow/:killID/', function ($killID) use ($app) {
-        include 'view/killlistrow.php';
+        $app->redirect("/cache/1hour/killlistrow/$killID/", 302);
     });
 
 // The Overview stuff
