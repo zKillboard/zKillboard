@@ -15,14 +15,14 @@ class Feed
     {
         global $debug;
 
-        if (isset($parameters['limit']) && $parameters['limit'] > 200) {
-            $parameters['limit'] = 200;
+        if (isset($parameters['limit']) && $parameters['limit'] > 1000) {
+            $parameters['limit'] = 1000;
         }
         if (isset($parameters['page'])) {
-            $parameters['limit'] = 200;
+            $parameters['limit'] = 1000;
         }
         if (!isset($parameters['limit'])) {
-            $parameters['limit'] = 200;
+            $parameters['limit'] = 1000;
         }
 
         $kills = Kills::getKills($parameters, true, false);

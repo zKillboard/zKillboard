@@ -36,7 +36,7 @@ try {
     $array = array();
     foreach ($return as $json) {
         $result = json_decode($json, true);
-        if (isset($parameters['zkbOnly']) && $parameters['zkbOnly'] == true) {
+        if (true || (isset($parameters['zkbOnly']) && $parameters['zkbOnly'] == true)) {
             if (is_array($result)) {
                 foreach ($result as $key => $value) {
                     if ($key != 'killID' && $key != 'zkb' && $key != "killmail_id") {
