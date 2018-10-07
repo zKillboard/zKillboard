@@ -118,6 +118,8 @@ class Price
             case 42125: // Vendetta
             case 42246: // Caedes
                 return 120000000000; // 120b
+            case 48636: // Hydra
+                return 140000000000; // 150b
             case 2836: // Adrestia
             case 33675: // Chameleon
             case 35781: // Fiend
@@ -128,6 +130,8 @@ class Price
             case 45649: // Komodo
                 return 200000000000; // 200b
             case 45531: // Victor
+                return 230000000000;
+            case 48635: // Tiamat
                 return 230000000000;
             case 9860: // Polaris
             case 11019: // Cockroach
