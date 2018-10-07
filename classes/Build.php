@@ -33,6 +33,7 @@ class Build
 
         $price = 0;
         foreach ($bp['reqs'] as $reqTypeID => $qty) {
+            if ($typeID == $reqTypeID) continue;
             $p = Price::getItemPrice($reqTypeID, $kmDate);
             $p = $p * $qty;
             $price += $p;
