@@ -7,15 +7,6 @@
 	{% if detail.characterID and key == 'character' %}
 		<center>
 		{% include 'components/image_char.html' %}<br/><small><small><i><a href='#' onClick="$('#largeImage').modal(); return false;">Enlarge</a></small></small></i><br/>
-                {% if extra.hasMonocle %}
-                    <img src='/img/monocled.png' rel="tooltip" data-original-title='Big Money! Has sent at least 1b ISK to zKillboard.' style='width: 18px; height: 16px;'>
-                {% endif %}
-                {% if gold > 0 %}
-                {% for i in 1..gold%}
-                <a href='/information/payments/'><img src='/img/golden-wreck.png' rel="tooltip" title="Thank you!"></a>
-                {% endfor %}
-                {% endif %}
-                {% if extra.hasSponsored %}<b rel="tooltip" class="glyphicon glyphicon-bullhorn" style='color: green;' data-original-title="Sponsored at least one Killmail"></b>{% endif %}
 		</center>
 	{% endif %}
 	{% if detail.corporationID and key == 'corporation' %}
