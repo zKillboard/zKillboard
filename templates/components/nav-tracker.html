@@ -8,13 +8,23 @@ $("#char-image").attr("src", "{{ image_character }}{{ characterID }}_32.jpg");
 
 {% if showAds != 0 %}
 if (showAds != 0 ) {
-    $("#adsensetop").load('/google/');
-    $("#adsensebottom").load('/google/');
+    $("#adsensetop").load('/cache/1hour/google/');
+    $("#adsensebottom").load('/cache/1hour/google/');
 }
 {% else %}
 $("#adsensetop").remove();
 $("#adsensebottom").remove();
 {% endif %}
+
+$(document).ready(function() {
+    setTimeout("adCheck()", 5000);
+        });
+
+function adCheck() {
+    if (showAds && $("iframe").length == 0 ) {
+        $("#adsensetop, #adsensebottom").html("<center><h3>Would you kindly unblock ads?</h3><br/><a href='/information/payments/'>Or block them with ISK and get a golden wreck too.</a></center><hr/>");
+    }
+}
 
 {% if style != 'cyborg' %}
 $("#mainstyle").attr("href", "https://netdna.bootstrapcdn.com/bootswatch/latest/{{ style }}/bootstrap.min.css");
@@ -104,7 +114,7 @@ $(document).ready(function() {
     var foo = 'zkbLoginMsg' + date.getUTCFullYear() + '' + (date.getUTCMonth() + 1) + '' + date.getUTCDate();
     if ($(window).width() > 800 && localStorage) {
         if (!localStorage.getItem(foo)) {
-            addToolTip($("#usermenu"), "<a href='#' onClick='$(\"#ssologinimage\").click(); return false'>Login</a> to retrieve your character's entire killmail history from Dec. 2007 to today.");
+            addToolTip($("#usermenu"), "<a href='#' onClick='$(\"#ssologinimage\").click(); return false'>Login</a> to retrieve your character's recent killmail history.");
             localStorage.setItem(foo, true);
         }
     }

@@ -1,20 +1,10 @@
-User-agent: Mediapartners-Google
-User-agent: Googlebot
-User-agent: AdsBot-Googlebot
-User-agent: Bingbot
-Disallow: /api/*
-Disallow: */page/*
-Disallow: *stats*
-Disallow: *top*
-Disallow: *trophies*
-Disallow: *ranks*
-Disallow: /detail*
+User-agent: *
+Disallow: /api/
 Disallow: /navbar/
-Disallow: /br/*
-Disallow: /related/*
-Disallow: /partial/*
-Crawl-delay: 1
+Disallow: /br/
+Disallow: /related/
+Disallow: /partial/
 sitemap: https://zkillboard.com/sitemaps/sitemaps.xml
 
-User-agent: *
+User-agent: PiplBot
 Disallow: /

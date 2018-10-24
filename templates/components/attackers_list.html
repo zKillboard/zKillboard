@@ -51,6 +51,9 @@
 					<br/>
 					{% include 'components/text_corp.html' %}<br/>
 					{% include 'components/text_alli.html' %}
+                    {% if field.corporationID == 0 and field.allianceID == 0  and field.factionID != 0 %}
+                        {% include 'components/text_faction.html' %}
+                    {% endif %}
 				</div>
 				{% set shortLength = 30 %}
 			</td>

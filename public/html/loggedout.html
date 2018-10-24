@@ -14,7 +14,7 @@ $(document).ready(function() {
 
 function adCheck() {
     if (showAds && $("iframe").length == 0 ) {
-        $("#adsensetop, #adsensebottom").html("<center>Blocking ads? That's fine, ads suck anyway. <a href='/information/payments/'>Block them with ISK and get a golden wreck too.</a></center><hr/>");
+        $("#adsensetop, #adsensebottom").html("<center><h3>Would you kindly unblock ads?</h3><br/><a href='/information/payments/'>Or block them with ISK and get a golden wreck too.</a></center><hr/>");
     }
 }
 
@@ -22,7 +22,7 @@ var date = new Date();
 var foo = 'zkbLoginMsg' + date.getUTCFullYear() + '' + (date.getUTCMonth() + 1) + '' + date.getUTCDate();
 if ($(window).width() > 800 && localStorage) {
     if (!localStorage.getItem(foo)) {
-        $("#usermenu-dropdown").click();
+        //$("#usermenu-dropdown").click();
         localStorage.setItem(foo, true);
     }
 }
