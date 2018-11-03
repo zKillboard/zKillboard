@@ -99,7 +99,7 @@ function wslog(msg)
     } else if (json.action === 'littlekill') {
         // Add the killmail to the kill list
         $.get("/cache/1hour/killlistrow/" + json.killID + "/", function(data) { 
-            $("#killlist tbody tr:first").before(data).on('click', function(event) {
+            $(data).insertBefore("#killlist tbody tr:first").on('click', function(event) {
                 if (event.which === 2) return false;
                 window.location = '/kill/' + $(this).attr('killID') + '/';
                 return false;
