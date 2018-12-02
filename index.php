@@ -19,7 +19,7 @@ if (strpos($uri, "_detail") !== false) {
     exit();
 }
 // Check to ensure we have a trailing slash, helps with caching
-if (substr($uri, -1) != '/' && strpos($uri, 'ccpcallback') === false) {
+if (substr($uri, -1) != '/' && strpos($uri, 'ccpcallback') === false && strpos($uri, 'brsave') === false) {
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET');
     if ($isApiRequest) header("HTTP/1.1 200 Missing trailing slash");
