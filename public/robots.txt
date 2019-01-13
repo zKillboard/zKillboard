@@ -8,3 +8,6 @@ sitemap: https://zkillboard.com/sitemaps/sitemaps.xml
 
 User-agent: PiplBot
 Disallow: /
+
+User-agent: Yandex
+Disallow: /
