@@ -9,6 +9,7 @@ $array = [];
 
 $types = $mdb->find("information", ['type' => 'typeID']);
 foreach ($types as $type) {
+    if (!isset($type['groupID'])) continue;
     $categoryID = Info::getInfoField('groupID', $type['groupID'], 'categoryID');
     if ($categoryID != 6) continue;
     $p = ['isVictim' => true, 'shipTypeID' => $type['id'], 'cacheTime' => 0];
