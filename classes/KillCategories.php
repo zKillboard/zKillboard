@@ -86,6 +86,9 @@ class KillCategories
             case 'ganked':
                 $kills = Kills::getKills(array('ganked' => true, 'page' => $page));
                 break;
+            case 'abyssalpvp':
+                $kills = Kills::getKills(['solarSystemID' => ['$gte' => 32000000], 'npc' => false, 'page' => $page]);
+                break;
             case 'abyssal':
                 $kills = Kills::getKills(['solarSystemID' => ['$gte' => 32000000], 'page' => $page]);
                 break;
