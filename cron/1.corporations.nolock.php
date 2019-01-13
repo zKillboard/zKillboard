@@ -124,10 +124,10 @@ function success($guzzler, $params, $content)
     $mKillID = (int) $mdb->findField("killmails", "killID", ['involved.corporationID' => $corpID], ['killID' => -1]);
     if ($newKills == 0 && $mKillID < ($redis->get("zkb:topKillID") - 10000000) && @$row['iterated'] == true && isset($row['added']->sec)) {
         if ($row['added']->sec < (time() - (180 * 86400)) && $mKillID < ($redis->get("zkb:topKillID") - 30000000)) {
-            //$esi->remove($charID);
-            //$mdb->remove("scopes", $row);
-            //$redis->del("apiVerified:$charID");
-            Util::out("(dry run) Removed corp killmail scope for $corpID / $corpName for inactivity ($mKillID)");
+            $esi->remove($charID);
+            $mdb->remove("scopes", $row);
+            $redis->del("apiVerified:$charID");
+            Util::out("Removed corp killmail scope for $corpID / $corpName for inactivity ($mKillID)");
             return;
         }
     }
