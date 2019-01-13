@@ -26,7 +26,7 @@ class Price
         }
 
         // Have we fetched prices for this typeID today?
-        $today = date('Ymd', time() - 7200); // Back one hour because of CREST cache
+        $today = date('Ymd', time() - 3601); // Back one hour because of CREST cache
         $fetchedKey = "RC:tq:pricesFetched:$today";
         if ($fetch === true) {
             if ($redis->hGet($fetchedKey, $typeID) != true) {
@@ -37,14 +37,15 @@ class Price
         }
 
         // Have we already determined the price for this item at this date?
-        $date = date('Y-m-d', strtotime($kmDate) - 7200); // Back one hour because of CREST cache
+        $date = date('Y-m-d', strtotime($kmDate) - 3601); // Back one hour because of CREST cache
         $priceKey = "tq:prices:$date";
         $price = $redis->hGet($priceKey, $typeID);
         if ($price != null && $recalc == false) {
-            return $price;
+            //return $price;
         }
 
         $marketHistory = $mdb->findDoc('prices', ['typeID' => $typeID]);
+        $mHistory = $marketHistory;
         unset($marketHistory['_id']);
         unset($marketHistory['typeID']);
         if ($marketHistory == null) {
@@ -83,9 +84,11 @@ class Price
             $total += $price;
         }
         $avgPrice = round($total / sizeof($priceList), 2);
-
+        
         // Don't have a decent price? Let's try to build it!
-        if ($avgPrice <= 0.01) $avgPrice = Build::getItemPrice($typeID, $kmDate, true);
+        if ($avgPrice <= 0.01) $avgPrice = Build::getItemPrice($typeID, $date, true);
+        $datePrice = isset($mHistory[$date]) ? $mHistory[$date] : 0;
+        if ($datePrice > 0 && $datePrice < $avgPrice) $avgPrice = $datePrice;
 
         $redis->hSet($priceKey, $typeID, $avgPrice);
         $redis->expire($priceKey, 86400);
