@@ -131,7 +131,9 @@
                         {% endif %}
             </th>
     </tr>
-
+{% set shipEff = (statistics.weeklyShipsDestroyed + statistics.weeklyShipsLost) == 0 ? 100 : (statistics.weeklyShipsDestroyed / (statistics.weeklyShipsDestroyed + statistics.weeklyShipsLost)) * 100 %}
+{% set pointsEff = (statistics.weeklyPointsDestroyed + statistics.weeklyPointsLost) == 0 ? 100 : (statistics.weeklyPointsDestroyed / (statistics.weeklyPointsDestroyed + statistics.weeklyPointsLost)) * 100 %}
+{% set iskEff = (statistics.weeklyIskDestroyed + statistics.weeklyIskLost) == 0 ? 100 : (statistics.weeklyIskDestroyed / (statistics.weeklyIskDestroyed + statistics.weeklyIskLost)) * 100 %}
     <tr class="weekly-ranks collapse">
         <th style="text-align: right">Ships</th>
         <td class="green" style="text-align: right" class="green-text">{{ statistics.weeklyShipsDestroyed | number_format(0) }}</td>
