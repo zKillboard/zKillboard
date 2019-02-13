@@ -85,9 +85,9 @@ function updateCorp(&$guzzler, &$params, &$content)
 
     if (isset($json['alliance_id'])) {
         $queueAllis = new RedisTimeQueue('zkb:allianceID', 9600);
-        if (!$queueAllis->isMember($json['alliance_id'])) {
+        $row = ['type' => 'allianceID', 'id' => (int) $json['alliance_id']];
+        if (!$queueAllis->isMember($json['alliance_id']) || $mdb->count("information", $row) == 0) {
             Util::out("Corporation adding new alliance " . $json['alliance_id']);
-            $row = ['type' => 'allianceID', 'id' => $json['alliance_id']];
             $defaultName = "allianceID " . $json['alliance_id'];
             $mdb->insertUpdate('information', $row, ['name' => $defaultName]);
             $queueAllis->add($json['alliance_id']);
