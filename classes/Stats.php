@@ -99,10 +99,8 @@ class Stats
         }
         $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
 
-        $result = $killmails->aggregateCursor($pipeline, ['cursor' => ['batchSize' => 999999]]);
-        $result->timeout(3600000);
-        MongoCursor::$timeout = -1; // this is annoying
-        $result = iterator_to_array($result);
+        $rr = $killmails->aggregate($pipeline);
+	$result = $rr['result'];
 
         $time = $timer->stop();
         if ($time > $longQueryMS) {
