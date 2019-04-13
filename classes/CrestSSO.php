@@ -52,6 +52,7 @@ class CrestSSO
     {
         global $mdb, $app, $redis, $ccpClientID, $ccpSecret, $adminCharacter;
 
+        Status::throttle('sso');
         try {
             $charID = @$_SESSION['characterID'];
             $hash = @$_SESSION['characterHash'];

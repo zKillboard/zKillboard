@@ -65,7 +65,7 @@ class Status
             $now = date('His');
             $key = "throttle:$apiType:$now";
             $current = (int) $redis->get($key);
-            if ($current <= $ssoThrottle) {
+            if ($current < $ssoThrottle) {
                 $redis->incr($key);
                 $redis->expire($key, 3);
                 return;
