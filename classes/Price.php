@@ -146,6 +146,7 @@ class Price
             case 635: // Opux Luxury Yacht
             case 11011: // Guardian-Vexor
             case 25560: // Opux Dragoon Yacht
+            case 33395: // Moracha
                 return 500000000000; // 500b
                 // Rare battleships
             case 13202: // Megathron Federate Issue

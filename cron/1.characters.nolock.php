@@ -39,6 +39,8 @@ while ($minute == date('Hi')) {
                 }
                 continue;
             }
+            // Give corporation checks priority
+            if ($esiCorp->pending() > 15) usleep(100000);
 
             $params = ['row' => $row, 'esi' => $esi];
             $refreshToken = $row['refreshToken'];
