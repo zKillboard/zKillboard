@@ -40,7 +40,7 @@ while ($minute == date('Hi')) {
                 continue;
             }
             // Give corporation checks priority
-            if ($esiCorp->pending() > 15) usleep(100000);
+            if ($esiCorp->pending() > $ssoThrottle) usleep(ceil(1000000 / max(1, $ssoThrottle)));
 
             $params = ['row' => $row, 'esi' => $esi];
             $refreshToken = $row['refreshToken'];
