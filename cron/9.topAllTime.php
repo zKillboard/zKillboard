@@ -10,7 +10,7 @@ if ($redis->scard("queueStatsSet") > 1000) exit();
 
 MongoCursor::$timeout = -1;
 $minute = date('Hi');
-$redisKey = "tq:topAllTime";
+$redisKey = "tq:topAllTime:" . date('Ymd');
 $queueTopAlltime = new RedisQueue('queueTopAlltime');
 if ($redis->get($redisKey) === false) {
     $redis->del('queueTopAlltime');
@@ -21,7 +21,7 @@ if ($redis->get($redisKey) != "true" && $queueTopAlltime->size() == 0) {
         if (@$row['reset'] == true) continue;
         $queueTopAlltime->push($row['_id']);
     }
-    $redis->setex($redisKey, 3600, "true");
+    $redis->setex($redisKey, 86400, "true");
 }
 
 while ($minute == date('Hi') && ($id = $queueTopAlltime->pop())) {
