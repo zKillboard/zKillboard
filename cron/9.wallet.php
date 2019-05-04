@@ -36,7 +36,7 @@ function accessTokenDone(&$guzzler, &$params, $content)
     $headers['Content-Type'] = 'application/json';
     $headers['Authorization'] = "Bearer $accessToken";
 
-    $url = "$esiServer/v4/characters/$adminCharacter/wallet/journal/";
+    $url = "$esiServer/v6/characters/$adminCharacter/wallet/journal/";
 
     $guzzler->call($url, "success", "fail", $params, $headers, 'GET');
 }
