@@ -66,23 +66,23 @@ If this is your corporation, ask your CEO or a director to log into zKillboard t
 	</ul>
 	<ul class="nav navbar-nav pull-right hidden-xs">
 	{% if key == "character" %}
-		<!-- <li class="hidden-md hidden-sm"><a href="http://eveboard.com/pilot/{{ pageName }}/" target="_blank">EVE-Board</a></li> -->
-		<!-- <li class="hidden-md hidden-sm"><a href="http://eve-search.com/search/author/{{ pageName|url_encode }}/" target="_blank">EVE-Search</a></li>-->
-		<li class="hidden-md hidden-sm"><a href="http://evewho.com/pilot/{{ pageName|url_encode }}/" target="_blank">EVEWho</a></li>
+		<!-- <li class="hidden-md hidden-sm"><a href="https://eveboard.com/pilot/{{ pageName }}/" target="_blank">EVE-Board</a></li> -->
+		<!-- <li class="hidden-md hidden-sm"><a href="https://eve-search.com/search/author/{{ pageName|url_encode }}/" target="_blank">EVE-Search</a></li>-->
+		<li class="hidden-md hidden-sm"><a href="https://evewho.com/pilot/{{ pageName|url_encode }}/" target="_blank">EVEWho</a></li>
 	{% elseif key == "corporation" %}
-		<li class="hidden-md hidden-sm"><a href="http://evemaps.dotlan.net/corp/{{ pageName|url_encode }}/" target="_blank">DOTLAN</a></li>
-		<li class="hidden-md hidden-sm"><a href="http://evewho.com/corp/{{ pageName|url_encode }}/" target="_blank">EVEWho</a></li>
+		<li class="hidden-md hidden-sm"><a href="https://evemaps.dotlan.net/corp/{{ pageName|url_encode }}/" target="_blank">DOTLAN</a></li>
+		<li class="hidden-md hidden-sm"><a href="https://evewho.com/corp/{{ pageName|url_encode }}/" target="_blank">EVEWho</a></li>
 	{% elseif key == "alliance" %}
-		<!-- <li class="hidden-md hidden-sm"><a href="http://www.eveskunk.com/?allianceID={{ id }}" target="_blank">EVE Skunk</a></li> -->
-		<li class="hidden-md hidden-sm"><a href="http://evemaps.dotlan.net/alliance/{{ pageName|url_encode }}/" target="_blank">DOTLAN</a></li>
-		<li class="hidden-md hidden-sm"><a href="http://evewho.com/alli/{{ pageName|url_encode }}/" target="_blank">EVEWho</a></li>
+		<!-- <li class="hidden-md hidden-sm"><a href="https://www.eveskunk.com/?allianceID={{ id }}" target="_blank">EVE Skunk</a></li> -->
+		<li class="hidden-md hidden-sm"><a href="https://evemaps.dotlan.net/alliance/{{ pageName|url_encode }}/" target="_blank">DOTLAN</a></li>
+		<li class="hidden-md hidden-sm"><a href="https://evewho.com/alli/{{ pageName|url_encode }}/" target="_blank">EVEWho</a></li>
 	{% elseif key == "system" %}
-		<li><a href="http://evemaps.dotlan.net/system/{{ pageName|url_encode }}/" target="_blank">DOTLAN</a></li>
+		<li><a href="https://evemaps.dotlan.net/system/{{ pageName|url_encode }}/" target="_blank">DOTLAN</a></li>
 		{% if detail.regionID >= 11000001 and detail.regionID <= 11000033 %}
-			<li><a href="http://wh.pizza.moe/{{ pageName|url_encode }}" target="_blank">Wormhol.es</a></li>
+			<li><a href="https://wh.pizza.moe/{{ pageName|url_encode }}" target="_blank">Wormhol.es</a></li>
 		{% endif %}
 	{% elseif key == "region" %}
-		<li><a href="http://evemaps.dotlan.net/region/{{ pageName|url_encode }}/" target="_blank">DOTLAN</a></li>
+		<li><a href="https://evemaps.dotlan.net/region/{{ pageName|url_encode }}/" target="_blank">DOTLAN</a></li>
 	{% elseif key == "ship" %}
 	{% endif %}
 		{% if nextID %}

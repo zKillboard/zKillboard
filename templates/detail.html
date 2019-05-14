@@ -48,13 +48,13 @@
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown">External <b class="caret"></b></i></a>
 				<ul class="dropdown-menu">
 					<li class="dropdown-header">DOTLAN</li>
-					<li><a href="http://evemaps.dotlan.net/system/{{ killdata.info.system.solarSystemName|url_encode }}" target="_blank">{{ killdata.info.system.solarSystemName }}</a></li>
-					<li><a href="http://evemaps.dotlan.net/region/{{ killdata.info.system.regionName|url_encode }}" target="_blank">{{ killdata.info.system.regionName }}</a></li>
+					<li><a href="https://evemaps.dotlan.net/system/{{ killdata.info.system.solarSystemName|url_encode }}" target="_blank">{{ killdata.info.system.solarSystemName }}</a></li>
+					<li><a href="https://evemaps.dotlan.net/region/{{ killdata.info.system.regionName|url_encode }}" target="_blank">{{ killdata.info.system.regionName }}</a></li>
 					<li class="divider"></li>
 					<li class="dropdown-header">EVEWho Char Info</li>
-					<li><a href="http://evewho.com/pilot/{{ killdata.victim.characterName|url_encode }}" target="_blank">{{ killdata.victim.characterName }}</a></li>
-					<li><a href="http://evewho.com/pilot/{{ finalBlow.characterName|url_encode }}" target="_blank">{{ finalBlow.characterName }}</a></li>
-					<li><a href="http://evewho.com/pilot/{{ topDamage.characterName|url_encode }}" target="_blank">{{ topDamage.characterName }}</a></li>
+					<li><a href="https://evewho.com/pilot/{{ killdata.victim.characterName|url_encode }}" target="_blank">{{ killdata.victim.characterName }}</a></li>
+					<li><a href="https://evewho.com/pilot/{{ finalBlow.characterName|url_encode }}" target="_blank">{{ finalBlow.characterName }}</a></li>
+					<li><a href="https://evewho.com/pilot/{{ topDamage.characterName|url_encode }}" target="_blank">{{ topDamage.characterName }}</a></li>
 				</ul>
 			</li>
 			<li class="dropdown hidden-xs">
@@ -73,7 +73,7 @@
 					<li><a href="https://www.facebook.com/sharer/sharer.php?u={{url}}" target="_blank"><img src="//{{ siteurl }}/img/social/fb_1.png"> Facebook</a></li>
 					<li><a href="https://twitter.com/intent/tweet?text={{ pageTitle|url_encode }}&url={{url}}" target="_blank"><img src="//{{ siteurl }}/img/social/twitter_1.png"> Twitter</a></li>
 					<li><a href="https://plus.google.com/share?url={{url}}" target="_blank"><img src="//{{ siteurl }}/img/social/google_plus.png"> Google+</a></li>
-					<li><a href="http://www.reddit.com/submit?url={{url}}&title={{ pageTitle|url_encode }}" target="_blank"><img src="//{{ siteurl }}/img/social/reddit.png"> Reddit</a></li>
+					<li><a href="https://www.reddit.com/submit?url={{url}}&title={{ pageTitle|url_encode }}" target="_blank"><img src="//{{ siteurl }}/img/social/reddit.png"> Reddit</a></li>
 				</ul>
 			</li>
 			<li><a href="/related/{{ killdata.info.system.solarSystemID }}/{{ extra.relatedtime }}/">Related</a></li>
