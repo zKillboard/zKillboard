@@ -65,7 +65,8 @@ function publish($killID)
         'corporation_id' => (int) @$victimInfo['corporationID'],
         'alliance_id' => (int)  @$victimInfo['allianceID'],
         'ship_type_id' => (int) $victimInfo['shipTypeID'],
-        'url' => "https://zkillboard.com/kill/$killID/"
+        'url' => "https://zkillboard.com/kill/$killID/",
+        'hash' => $zkb['hash'],
             ];
     $msg = json_encode($redisMessage, JSON_UNESCAPED_SLASHES);
     foreach ($channels as $channel) {
