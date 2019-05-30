@@ -27,7 +27,7 @@ $minute = date('Hi');
 while ($minute == date('Hi')) {
     $id = (int) $queueAllis->next();
     if ($id > 0) {
-        $guzzler->call("$esiServer/v3/alliances/$id/", "success", "fail", ['id' => $id], ['etag' => true]);
+        $guzzler->call("$esiServer/v3/alliances/$id/", "success", "fail", ['id' => $id]);
     } else {
         $guzzler->tick();
         sleep(1);
