@@ -74,13 +74,13 @@ class Mdb
     {
         $collection = $this->getCollection($collection);
 
-        return $collection->find($query)->timeout(3600000)->count();
+        return $collection->find($query)->count();
     }
 
     public function exists($collection, $query)
     {
         $collection = $this->getCollection($collection);
-        $cursor = $collection->find($query)->timeout(3600000);
+        $cursor = $collection->find($query);
 
         return $cursor->hasNext();
     }
@@ -179,13 +179,6 @@ class Mdb
         $timer = new Timer();
         $collection = $this->getCollection($collection);
         $cursor = $collection->find($query, $includes);
-
-        // Set an appropriate timeout for the query
-        if (php_sapi_name() == 'cli') {
-            $cursor->timeout(3600000);
-        } else {
-            $cursor->timeout(35000);
-        }
 
         // Set the sort and limit...
         if (sizeof($sort)) {

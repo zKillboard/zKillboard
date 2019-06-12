@@ -31,7 +31,8 @@ $message = ($redis->get("tqCountInt") == 0) ? "<a href='https://status.esiknife.
 $message = apiStatus($message, 'esi', "Issues with CCP's ESI API - some killmails may be delayed.");
 $message = apiStatus($message, 'sso', "Issues with CCP's SSO API - some killmails may be delayed.");
 if ($message == "" && $redis->llen("queueRelated") > 500) $message = "<a href='/ztop/'>Server is experiencing higher than normal load, your happy and pleasurable user experience has been ganked.</a>";
-$redis->setex('tq:apiStatus', 300, $message);
+if ($message == null) $redis->del('tq:apiStatus');
+else $redis->setex('tq:apiStatus', 300, $message);
 
 function success($content)
 {

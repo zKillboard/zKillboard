@@ -11,7 +11,8 @@ class zkbSearch
         $search = strtolower($search);
         $regex = (substr($search, 0, 2) == "r:" && strlen($search) > 2) ? substr($search, 2) : null;
         $search = (substr($search, 0, 2) == "r:" && strlen($search) > 2) ? substr($search, 2) : $search;
-        $low = "[$search\x00";
+        //$low = "[$search\x00";
+        $low = $search;
 
         $exactMatch = [];
         $partialMatch = [];
@@ -21,15 +22,12 @@ class zkbSearch
                 continue;
             }
 
-            $result = $redis->zRangeByLex("search:$type", $low, '+', 0, 9);
-            if (sizeof($result) < 10 && $regex != null && sizeof($partialMatch) < 14) {
-                $matches = $mdb->find("search", ['type' => $type, 'name' => ['$regex' => $regex], 'cacheTime' => 3600], [], 20);
-                while (sizeof($result) < 10 && sizeof($matches) > 0) {
-                    $next = array_shift($matches);
-                    $add = $next['name'] . "\x00" . $next['id'];
-                    if (!in_array($add, $result)) $result[] = $add . "\x00regex";
-                }
-            }
+            $sub = $low;
+            do {
+                $result = unserialize($redis->hget("search:$type", $sub));
+                if ($result == null) $result = [];
+                if (sizeof($result) == 0) $sub = substr($sub, 0, strlen($sub) - 1);
+            } while (sizeof($result) == 0 && strlen($sub) > 0);
 
             $searchType = $type;
             $type = str_replace(':flag', '', $type);

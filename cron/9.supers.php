@@ -7,6 +7,8 @@ if ($redis->get($key) == true) {
     exit();
 }
 
+MongoCursor::$timeout = -1;
+
 doSuperResult($mdb->find('information', ['type' => 'factionID']));
 doSuperResult($mdb->find('information', ['type' => 'allianceID']));
 doSuperResult($mdb->find('information', ['type' => 'corporationID']));
