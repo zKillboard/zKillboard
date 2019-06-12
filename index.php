@@ -68,6 +68,8 @@ if (in_array($ip, $blackList)) {
     header('HTTP/1.1 403 Blacklisted');
     die();
 }
+header('X-Frame-Options: DENY');
+header("Content-Security-Policy: frame-ancestors 'none'");
 
 $limit = 10; 
 $noLimits = ['/cache/', '/post/', '/autocomplete/', '/crestmail/', '/comment/', '/killlistrow/', '/comment/', '/related/', '/sponsor', '/crestmail', '/account/', '/logout', '/ccp', '/auto', '/killlistrow/', '/challenge/'];
