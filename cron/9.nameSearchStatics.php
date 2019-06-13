@@ -6,7 +6,7 @@ use cvweiss\redistools\RedisTimeQueue;
 
 global $mdb, $redis;
 
-$key = "zkb:autocomplete";
+$key = "zkb:autocomplete:statics";
 if ($redis->get($key) == "true") {
     exit();
 }
@@ -17,9 +17,12 @@ $corpsRTQ = new RedisTimeQueue("zkb:corporationID", 86400);
 $allisRTQ = new RedisTimeQueue("zkb:allianceID", 86400);
 
 $types = [
-    "allianceID",
-    "corporationID",
-    "characterID",
+    "factionID",
+    "regionID",
+    "solarSystemID",
+    "locationID",
+    "typeID",
+    "groupID",
 ];
 
 foreach ($types as $type) {
@@ -91,7 +94,7 @@ foreach ($types as $type) {
     }
 }
 
-$redis->setex($key, 10800, "true");
+$redis->setex($key, 86400, "true");
 
 function addSearch($setKey, $name, $id)
 {

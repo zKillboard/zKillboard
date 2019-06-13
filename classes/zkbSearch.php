@@ -2,7 +2,7 @@
 
 class zkbSearch
 {
-    public static $imageMap = ['typeID' => 'Type/%1$d_32.png', 'groupID' => 'Type/1_32.png', 'characterID' => 'Character/%1$d_32.jpg', 'corporationID' => 'Corporation/%1$d_32.png', 'allianceID' => 'Alliance/%1$d_32.png', 'factionID' => 'Alliance/%1$d_32.png', 'solarSystemID' => 'Type/3802_32.png', 'regionID' => 'Type/3_32.png'];
+    public static $imageMap = ['typeID' => 'Type/%1$d_32.png', 'groupID' => 'Type/1_32.png', 'characterID' => 'Character/%1$d_32.jpg', 'corporationID' => 'Corporation/%1$d_32.png', 'allianceID' => 'Alliance/%1$d_32.png', 'factionID' => 'Alliance/%1$d_32.png', 'solarSystemID' => 'Type/3802_32.png', 'regionID' => 'Type/3_32.png', 'locationID' => 'Type/1_32.png'];
 
     public static function getResults($search, $entityType = null)
     {
@@ -16,7 +16,7 @@ class zkbSearch
 
         $exactMatch = [];
         $partialMatch = [];
-        $types = ['typeID:flag', 'regionID', 'solarSystemID', 'allianceID', 'allianceID:flag', 'corporationID', 'corporationID:flag', 'characterID', 'typeID', 'groupID'];
+        $types = ['typeID:flag', 'regionID', 'solarSystemID', 'allianceID', 'allianceID:flag', 'corporationID', 'corporationID:flag', 'characterID', 'typeID', 'groupID', 'locationID'];
         foreach ($types as $type) {
             if ($entityType != null && $entityType != $type) {
                 continue;
