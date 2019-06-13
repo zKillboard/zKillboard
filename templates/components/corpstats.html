@@ -28,7 +28,7 @@
 			<td style="text-align: right">{{ corp.losses | number_format(0) }}</td>
 			<td style="text-align: right">{{ corp.lossesIsk | number_format(0) }}</td>
 			<td style="text-align: right">{{ corp.lossesPoints | number_format(0) }}</td>
-			<td style="text-align: right">{{ corp.effeciency | number_format(0) }}%</td>
+			<td style="text-align: right">{{ corp.effeciency | number_format(1) }}%</td>
 		</tr>
 	{% endfor %}
 	</tbody>
