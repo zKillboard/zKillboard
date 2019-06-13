@@ -43,6 +43,7 @@ switch ($type) {
         } */else {
             $mdb->insert("sponsored", ['characterID' => User::getUserID(), 'isk' => $value, 'killID' => $killID, 'entryTime' => $mdb->now()]);
             $mdb->set("users", ['userID' => "user:$userID"], ['adFreeUntil' => ($adFreeUntil - $timeValue)]);
+            $mdb->set("killmails", ['killID' => $killID], ['sponsored' => true]);
             ZLog::add("$charName sponsored $formatted ISK for kill $killID", $userID, true);
             $response = "Thank you! You have sponsored $formatted ISK for this kill! Please give the front page up to 2 minutes and entity pages up to 10 minutes to reflect your kill sponsorship. Please remember sponsorships will expire after 7 days.";
         }      
