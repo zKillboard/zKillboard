@@ -3,6 +3,20 @@ require_once "../init.php";
 $m = new MongoClient();
 $db = $m->selectDB("zkillboard");
 
+// activity
+echo "\nCreating collection activity ... ";
+$activity = $db->createCollection("activity");
+echo "Done\n";
+echo "Creating index : 'id' => 1, 'day' => 1, 'hour' => 1, 'killID' => 1, with sparse = 0 and unique = 1 ... ";
+$activity->ensureIndex(array('id' => 1, 'day' => 1, 'hour' => 1, 'killID' => 1), array("sparse" => 0, "unique" => 1));
+echo "Done\n";
+echo "Creating index : 'id' => 1, 'day' => 1, 'hour' => 1, with sparse = 0 and unique = 0 ... ";
+$activity->ensureIndex(array('id' => 1, 'day' => 1, 'hour' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'dttm' => 1, with sparse = 0 and unique = 0 ... ";
+$activity->ensureIndex(array('dttm' => 1), array("sparse" => 0, "unique" => 0, "expireAfterSeconds" => 7776000));
+echo "Done\n";
+
 // battles
 echo "\nCreating collection battles ... ";
 $battles = $db->createCollection("battles");
@@ -32,26 +46,8 @@ echo "Done\n";
 echo "Creating index : 'killID' => 1, 'hash' => 1, with sparse = 0 and unique = 1 ... ";
 $crestmails->ensureIndex(array('killID' => 1, 'hash' => 1), array("sparse" => 0, "unique" => 1));
 echo "Done\n";
-echo "Creating index : 'npcOnly' => 1, with sparse = 1 and unique = 0 ... ";
-$crestmails->ensureIndex(array('npcOnly' => 1), array("sparse" => 1, "unique" => 0));
-echo "Done\n";
-echo "Creating index : 'errorCode' => 1, with sparse = 1 and unique = 0 ... ";
-$crestmails->ensureIndex(array('errorCode' => 1), array("sparse" => 1, "unique" => 0));
-echo "Done\n";
 echo "Creating index : 'processed' => 1, with sparse = 0 and unique = 0 ... ";
 $crestmails->ensureIndex(array('processed' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-echo "Creating index : 'processed' => 1, 'killID' => -1, with sparse = 0 and unique = 0 ... ";
-$crestmails->ensureIndex(array('processed' => 1, 'killID' => -1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-echo "Creating index : 'hash' => 1, with sparse = 0 and unique = 0 ... ";
-$crestmails->ensureIndex(array('hash' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-echo "Creating index : 'added' => -1, with sparse = 0 and unique = 0 ... ";
-$crestmails->ensureIndex(array('added' => -1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-echo "Creating index : 'delayed' => 1, with sparse = 1 and unique = 0 ... ";
-$crestmails->ensureIndex(array('delayed' => 1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
 
 // daydump
@@ -168,9 +164,6 @@ echo "Done\n";
 echo "Creating index : 'killID' => 1, with sparse = 0 and unique = 1 ... ";
 $killmails->ensureIndex(array('killID' => 1), array("sparse" => 0, "unique" => 1));
 echo "Done\n";
-echo "Creating index : 'attackerCount' => 1, 'killID' => 1, with sparse = 0 and unique = 0 ... ";
-$killmails->ensureIndex(array('attackerCount' => 1, 'killID' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
 echo "Creating index : 'dttm' => 1, 'killID' => 1, with sparse = 0 and unique = 0 ... ";
 $killmails->ensureIndex(array('dttm' => 1, 'killID' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
@@ -264,11 +257,14 @@ echo "Done\n";
 echo "Creating index : 'zkb.fittedValue' => -1, with sparse = 0 and unique = 0 ... ";
 $killmails->ensureIndex(array('zkb.fittedValue' => -1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
-echo "Creating index : 'structure' => 1, with sparse = 0 and unique = 0 ... ";
-$killmails->ensureIndex(array('structure' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
 echo "Creating index : 'ganked' => 1, with sparse = 1 and unique = 0 ... ";
 $killmails->ensureIndex(array('ganked' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'campaigns' => 1, with sparse = 1 and unique = 0 ... ";
+$killmails->ensureIndex(array('campaigns' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'sponsored' => 1, with sparse = 1 and unique = 0 ... ";
+$killmails->ensureIndex(array('sponsored' => 1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
 
 // locations
@@ -586,6 +582,17 @@ echo "Creating index : 'npc' => 1, 'categoryID' => 1, 'involved.shipTypeID' => 1
 $oneWeek->ensureIndex(array('npc' => 1, 'categoryID' => 1, 'involved.shipTypeID' => 1, 'zkb.totalValue' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
+// padhash
+echo "\nCreating collection padhash ... ";
+$padhash = $db->createCollection("padhash");
+echo "Done\n";
+echo "Creating index : 'characterID' => 1, 'hash' => 1, with sparse = 0 and unique = 1 ... ";
+$padhash->ensureIndex(array('characterID' => 1, 'hash' => 1), array("sparse" => 0, "unique" => 1));
+echo "Done\n";
+echo "Creating index : 'characterID' => 1, 'count' => 1, with sparse = 0 and unique = 0 ... ";
+$padhash->ensureIndex(array('characterID' => 1, 'count' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+
 // payments
 echo "\nCreating collection payments ... ";
 $payments = $db->createCollection("payments");
@@ -623,6 +630,9 @@ $scopes->ensureIndex(array('scope' => 1, 'lastApiUpdate' => 1), array("sparse" =
 echo "Done\n";
 echo "Creating index : 'iterated' => 1, with sparse = 1 and unique = 0 ... ";
 $scopes->ensureIndex(array('iterated' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'corporationID' => 1, 'scope' => 1, 'lastFetch' => 1, with sparse = 0 and unique = 0 ... ";
+$scopes->ensureIndex(array('corporationID' => 1, 'scope' => 1, 'lastFetch' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // search
@@ -791,6 +801,9 @@ $statistics->ensureIndex(array('calcTrophies' => 1), array("sparse" => 1, "uniqu
 echo "Done\n";
 echo "Creating index : 'reset' => 1, with sparse = 1 and unique = 0 ... ";
 $statistics->ensureIndex(array('reset' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'calcAlltime' => 1, with sparse = 1 and unique = 0 ... ";
+$statistics->ensureIndex(array('calcAlltime' => 1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
 
 // tickets
