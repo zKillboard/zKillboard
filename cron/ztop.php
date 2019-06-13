@@ -80,6 +80,9 @@ while ($hour == date('H')) {
     $requests = new RedisTtlCounter('ttlc:requests', 300);
     addInfo('Requests in last 5 minutes', $requests->count());
 
+    addInfo('', 0);
+    addInfo('Listening Websockets', (int) $redis->get('zkb:websocketCount'));
+
     addInfo('Successful ESI calls in last 5 minutes', Status::getStatus('esi', true), false);
     addInfo('Failed ESI calls in last 5 minutes', Status::getStatus('esi', false), false);
     addInfo('Successful SSO calls in last 5 minutes', Status::getStatus('sso', true), false);
