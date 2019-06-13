@@ -5,7 +5,7 @@
 
 {% block content %}
 
-<h2><small>Battle Report: </small>{{ systemName }} ({{ regionName }}) / {{ time }} <small><a href='https://br.inyour.space/?s={{ solarSystemID }}&b={{ unixtime}}&e=90' target='_blank'><i>br.inyour.space</i></a></small></h2>
+<h2><small>Battle Report: </small>{{ systemName }} ({{ regionName }}) / {{ time }} <small><a href='https://br.inyour.space/?s={{ solarSystemID }}&b={{ unixtime}}&e=90' target='_blank'><i>br.inyour.space</i></a> / <a href='https://br.evetools.org/related/{{ solarSystemID }}/{{ unixtime}}/' target='_blank'><i>br.evetools.org</i></a></small></h2>
 
 {% set teamATotal = summary.teamA.totals.total_price %}
 {% set teamBTotal = summary.teamB.totals.total_price %}
