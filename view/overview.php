@@ -456,10 +456,7 @@ if ($type == 'character') {
     if ($mdb->find("sponsored", ['characterID' => (int) $id])) {
         $extra['hasSponsored'] = true;
     }
-    $isk = Mdb::group("payments", ['characterID'], ['characterID' => (int) $id], [], 'isk', ['iskSum' => -1], 6);
-    if (sizeof($isk)) {
-        $extra['hasMonocle'] = @$isk[0]['iskSum'] >= 1000000000;
-    }
+    if (@$user['monocle'] == true) $extra['hasMonocle'] = true;
 }
 
 // Sponsored killmails
