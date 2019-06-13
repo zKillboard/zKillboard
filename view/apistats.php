@@ -1,6 +1,6 @@
 <?php
 
-global $mdb;
+global $mdb, $redis;
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
@@ -38,6 +38,19 @@ try {
     //$p['categoryID'] = 6;
     $array['topLists'] = $topLists;
     $array['topIskKillIDs'] = array_keys(Stats::getTopIsk($p));
+
+    $activity = ['max' => 0];
+    $raw = $redis->hget("zkb:activity", $id);
+    if ($raw != null) $activity = unserialize($raw);
+    else for ($day = 0; $day <= 6; $day++ ) {
+        for ($hour = 0; $hour <= 23; $hour++) {
+            $count = $mdb->count("activity", ['id' => (int) $id, 'day' => $day, 'hour' => $hour]);
+            if ($count > 0) $activity[$day][$hour] = $count;
+            $activity['max'] = max($activity['max'], $count);
+        }
+    }
+    $activity['days'] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    if ($activity['max'] > 0) $array['activity'] = $activity;
 
     if (isset($_GET['callback']) && Util::isValidCallback($_GET['callback'])) {
         $app->contentType('application/javascript; charset=utf-8');
