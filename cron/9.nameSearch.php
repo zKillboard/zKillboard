@@ -27,11 +27,13 @@ foreach ($types as $type) {
     $toMove = [];
 
     $entities = $mdb->getCollection('information')->find(['type' => $type]);
+    $tickers = [];
 
     $values = [];
     foreach ($entities as $entity) {
         $id = $entity['id'];
         $name = @strtolower(trim($entity['name']));
+        if (isset($entity['ticker'])) $tickers[$id] = $entity['ticker'];
         if ($name != '') $values[$name] = $id;
     }
     ksort($values);
@@ -48,11 +50,11 @@ foreach ($types as $type) {
                 break;
             case 'corporationID':
                 $corpsRTQ->add($id);
-                $flag = @$entity['ticker'];
+                $flag = $tickers[$id];
                 break;
             case 'allianceID':
                 $allisRTQ->add($id);
-                $flag = @$entity['ticker'];
+                $flag = $tickers[$id];
                 break;
             case 'typeID':
                 if ($mdb->exists('killmails', ['involved.shipTypeID' => $id])) {
@@ -97,6 +99,7 @@ function addSearch($setKey, $name, $id)
 {
     global $redis;
 
+    $name = strtolower($name);
     $len = min(strlen($name), 99);
     for ($i = $len; $i > 0; $i--) {
         $sub = substr($name, 0, $i);
