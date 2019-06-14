@@ -197,8 +197,6 @@ function doLoad(url) {
     var state = { 'href' : pathname };
     NProgress.start();
     $(".pagecontent").load('/partial' + url, null, loadCompleted);
-    //$("#adsensetop").load('/google/');
-    //$("#adsensebottom").load('/google/');
     history.pushState(state, null, url);
 }
 
@@ -246,3 +244,15 @@ function pubsub(channel)
         setTimeout("pubsub('" + channel + "');", 1000);
     }
 }
+
+function curday()
+{
+    today = new Date();
+    var dd = today.getDate();
+    var mm = today.getMonth()+1; //As January is 0.
+    var yyyy = today.getFullYear();
+
+    if(dd<10) dd='0'+dd;
+    if(mm<10) mm='0'+mm;
+    return (yyyy+mm+dd);
+};

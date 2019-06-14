@@ -7,22 +7,27 @@ $("#char-image").attr("src", "{{ image_character }}{{ characterID }}_32.jpg");
 //$("#tqStatus").html("{% if tqStatus == 'OFFLINE'%}<span class='red'>TQ {{ tqCount }}</span>{% else %} <span class='green'>TQ {{ tqCount }}</span>{% endif %}");
 
 {% if showAds != 0 %}
-if (showAds != 0 ) {
-    $("#adsensetop").load('/cache/1hour/google/');
-    $("#adsensebottom").load('/cache/1hour/google/');
-}
+    if (showAds != 0 ) {
+        $("#adsensetop").load('/cache/1hour/google/');
+        $("#adsensebottom").load('/cache/1hour/google/');
+        $(document).ready(function() { setTimeout("adCheck()", 5000); });
+
+     }
 {% else %}
-$("#adsensetop").remove();
-$("#adsensebottom").remove();
+    //$("#adsensetop").remove();
+    //$("#adsensebottom").remove();
 {% endif %}
 
-$(document).ready(function() {
-    setTimeout("adCheck()", 5000);
-        });
-
 function adCheck() {
-    if (showAds && $("iframe").length == 0 ) {
-        $("#adsensetop, #adsensebottom").html("<center><h3>Would you kindly unblock ads?</h3><br/><a href='/information/payments/'>Or block them with ISK and get a golden wreck too.</a></center><hr/>");
+    if (showAds != 0 && $("iframe").length == 0 ) {
+        $("#adsensetop, #adsensebottom").html("<center><strong>Would you kindly unblock ads?</strong><br/><a href='/information/payments/'>Or block them with ISK and get a golden wreck too.</a></center>");
+        var today = curday();
+        if (!localStorage.getItem('adblocker-nag-' + today)) {
+            console.log('nagnag');
+            localStorage.setItem('adblocker-nag-' + today, true);
+            $('#modalMessageBody').html('<h2>Would you kindly unblock ads?</h2><p>zKillboard only shows 2 advertisements from Google Adsnse and the ads are designed to be non-intrusive of your viewing experience. Please support zKillboard by disabling your adblocker.</p><p><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p>');
+            $('#modalMessage').modal('show');
+        }
     }
 }
 

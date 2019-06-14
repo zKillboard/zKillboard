@@ -97,6 +97,7 @@ foreach ($noAdPages as $noAdPage) {
     $showAds &= !Util::startsWith($uri, $noAdPage);
 }
 $showAds &= $userShowAds;
+if ($ssoCharacterID == 93382481) $showAds = false;
 
 $twig->addglobal('showAnalytics', $showAnalytics);
 
