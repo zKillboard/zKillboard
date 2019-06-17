@@ -166,7 +166,8 @@ $app->get('/api/kills/:type(/page/:page)/', function ($type, $page = 0) use ($ap
         });
 
 $app->get('/api/history/:date/', function ($date) use ($app) {
-        include 'view/apihistory.php';
+        header("Location: /api/history/$date.json", 302);
+        return;
         });
 
 $app->get('/api/stats/:type/:id/', function ($type, $id) use ($app) {

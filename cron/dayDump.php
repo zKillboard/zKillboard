@@ -21,7 +21,11 @@ foreach ($cursor as $row) {
     if ($killID <= 0 || $hash == "") continue;
 
     if ($curDay != $date) {
-        if ($curDayRow != null && $changed > 0) $mdb->save("daydump", $curDayRow);
+        if ($curDayRow != null && $changed > 0) {
+            $mdb->save("daydump", $curDayRow);
+            unset($curDayRow['_id']);
+            file_put_contents("./public/api/history/$date.json", json_encode($curDayRow));
+        }
         if ($changed > 0) Util::out("Populating dayDump $curDay ($changed)");
         $curDayRow = null;
         $changed = 0;
@@ -40,5 +44,7 @@ foreach ($cursor as $row) {
     }
 }
 if ($curDayRow != null) $mdb->save("daydump", $curDayRow);
+            unset($curDayRow['_id']);
+file_put_contents("./public/api/history/$date.json", json_encode($curDayRow));
 
 $redis->setex($key, 86400, "true");
