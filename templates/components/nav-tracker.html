@@ -25,7 +25,7 @@ function adCheck() {
         if (!localStorage.getItem('adblocker-nag-' + today)) {
             console.log('nagnag');
             localStorage.setItem('adblocker-nag-' + today, true);
-            $('#modalMessageBody').html('<h2>Would you kindly unblock ads?</h2><p>zKillboard only shows 2 advertisements from Google Adsnse and the ads are designed to be non-intrusive of your viewing experience. Please support zKillboard by disabling your adblocker.</p><p><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p>');
+            $('#modalMessageBody').html('<h2>Would you kindly unblock ads?</h2><p>zKillboard only shows 2 advertisements from Google Adsense and the ads are designed to be non-intrusive of your viewing experience. Please support zKillboard by disabling your adblocker.</p><p><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p>');
             $('#modalMessage').modal('show');
         }
     }
