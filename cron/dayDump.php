@@ -8,6 +8,8 @@ if ($redis->get($key) == "true") exit();
 
 Util::out("Populating dayDumps");
 
+$totals = [];
+$count = 0;
 $changed = 0;
 $curDay = null;
 $curDayRow = null;
@@ -27,11 +29,15 @@ foreach ($cursor as $row) {
             file_put_contents("./public/api/history/$date.json", json_encode($curDayRow));
         }
         if ($changed > 0) Util::out("Populating dayDump $curDay ($changed)");
+        $totals[$date] = $count;
         $curDayRow = null;
         $changed = 0;
+        $count = 0;
         $redis->set("zkb:firstkillid:$date", $killID);
     }
     $curDay = $date;
+    $count++;
+
     if ($curDayRow == null) {
         $curDayRow = $mdb->findDoc("daydump", ['day' => $date]);
         if ($curDayRow == null) $curDayRow = ['day' => $date];
@@ -44,7 +50,8 @@ foreach ($cursor as $row) {
     }
 }
 if ($curDayRow != null) $mdb->save("daydump", $curDayRow);
-            unset($curDayRow['_id']);
+unset($curDayRow['_id']);
 file_put_contents("./public/api/history/$date.json", json_encode($curDayRow));
+file_put_contents("./public/api/history/totals.json", json_encode($totals));
 
 $redis->setex($key, 86400, "true");
