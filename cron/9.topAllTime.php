@@ -4,28 +4,18 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
-if ($redis->get("tobefetched") > 1000) exit();
+/*if ($redis->get("tobefetched") > 1000) exit();
 if ($redis->get("zkb:reinforced") == true) exit();
-if ($redis->scard("queueStatsSet") > 1000) exit();
+if ($redis->scard("queueStatsSet") > 1000) exit();*/
 
 MongoCursor::$timeout = -1;
-$minute = date('Hi');
-$redisKey = "tq:topAllTime:" . date('Ymd');
-$queueTopAlltime = new RedisQueue('queueTopAlltime');
-if ($redis->get($redisKey) === false) {
-    $redis->del('queueTopAlltime');
-}
-if ($redis->get($redisKey) != "true" && $queueTopAlltime->size() == 0) {
-    $iter = $mdb->getCollection('statistics')->find(['calcAlltime' => true])->sort(['shipsDestroyed' => 1]);
-    while ($row = $iter->next()) {
-        if (@$row['reset'] == true) continue;
-        $queueTopAlltime->push($row['_id']);
-    }
-    $redis->setex($redisKey, 86400, "true");
-}
 
-while ($minute == date('Hi') && ($id = $queueTopAlltime->pop())) {
-    $row = $mdb->findDoc('statistics', ['_id' => $id]);
+$minute = date('Hi');
+$rows = $mdb->find('statistics', ['calcAlltime' => true], ['shipsDestroyed' => 1], 1000);
+while ($minute == date('Hi')) {
+    if (sizeof($rows) == 0) break;
+    $row = array_shift($rows);
+    if ($row == null) exit();
     calcTop($row);
 }
 

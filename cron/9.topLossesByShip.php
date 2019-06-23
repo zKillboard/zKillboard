@@ -5,6 +5,8 @@ require_once "../init.php";
 $key = "zkb:topShipsByLossCalc";
 if ($redis->get($key) == true && $redis->get("zkb:topKillsByShip") != null) exit();
 
+MongoCursor::$timeout = -1;
+
 $array = [];
 
 $types = $mdb->find("information", ['type' => 'typeID']);
