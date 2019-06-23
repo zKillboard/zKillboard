@@ -256,3 +256,16 @@ function curday()
     if(mm<10) mm='0'+mm;
     return (yyyy+mm+dd);
 };
+
+function adBlockCheck() {
+    if (showAds != 0 && $("iframe").length == 0 ) {
+        console.log("Ads are blocked :(");
+        $("#adsensetop, #adsensebottom").html("<center><strong>Would you kindly unblock ads?</strong><br/><a href='/information/payments/'>Or block them with ISK and get a golden wreck too.</a></center>");
+        var today = curday();
+        if (!localStorage.getItem('adblocker-nag-' + today)) {
+            localStorage.setItem('adblocker-nag-' + today, true);
+            $('#modalMessageBody').html('<h2>Would you kindly unblock ads?</h2><p>zKillboard only shows 2 advertisements from Google Adsense and the ads are designed to be non-intrusive of your viewing experience. Please support zKillboard by disabling your adblocker.</p><p><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p>');
+            $('#modalMessage').modal('show');
+        }
+    }
+}

@@ -78,6 +78,7 @@
 		</style>
                 <script type="text/javascript">
                     var showAds = {{ showAds == false ? 0 : 1 }};
+                    var adblocked = true;
                     var characterID = {{ characterID }};
                     var navbar = true; 
                     var entityType = '{{ entityType }}';
@@ -225,6 +226,7 @@ window.cookieconsent.initialise({
 })});
 </script>
 -->
+		<script type="text/javascript" src="//{{ siteurl }}/js/ads.js"></script>
 </body>
 </html>
 {% endif %}
