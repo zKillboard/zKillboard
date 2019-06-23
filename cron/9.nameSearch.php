@@ -34,11 +34,11 @@ foreach ($types as $type) {
         $id = $entity['id'];
         $name = @strtolower(trim($entity['name']));
         if (isset($entity['ticker'])) $tickers[$id] = $entity['ticker'];
-        if ($name != '') $values[$name] = $id;
+        if ($name != '') $values[$id] = $name;
     }
-    ksort($values);
+    asort($values);
 
-    foreach ($values as $name => $id) {
+    foreach ($values as $id => $name) {
         $isShip = false;
         $flag = '';
         switch ($type) {

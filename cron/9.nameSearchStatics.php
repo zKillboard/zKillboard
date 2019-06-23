@@ -20,9 +20,9 @@ $types = [
     "factionID",
     "regionID",
     "solarSystemID",
-    "locationID",
     "typeID",
     "groupID",
+    "locationID",
 ];
 
 foreach ($types as $type) {
@@ -35,11 +35,11 @@ foreach ($types as $type) {
     foreach ($entities as $entity) {
         $id = $entity['id'];
         $name = @strtolower(trim($entity['name']));
-        if ($name != '') $values[$name] = $id;
+        if ($name != '') $values[$id] = $name;
     }
-    ksort($values);
+    asort($values);
 
-    foreach ($values as $name => $id) {
+    foreach ($values as $id => $name) {
         $isShip = false;
         $flag = '';
         switch ($type) {
@@ -58,7 +58,7 @@ foreach ($types as $type) {
                 $flag = @$entity['ticker'];
                 break;
             case 'typeID':
-                if ($mdb->exists('killmails', ['involved.shipTypeID' => $id])) {
+                if ($mdb->exists('killmails', ['involved.shipTypeID' => (int) $id])) {
                     $flag = strtolower($name);
                 }
                 if (@$entity['published'] != true && $flag == '') {
@@ -67,8 +67,8 @@ foreach ($types as $type) {
                 $isShip = $flag != '';
                 break;
             case 'solarSystemID':
-                $regionID = Info::getInfoField('solarSystemID', $id, 'regionID');
-                $regionName = Info::getInfoField('regionID', $regionID, 'name');
+                $regionID = Info::getInfoField('solarSystemID', (int) $id, 'regionID');
+                $regionName = Info::getInfoField('regionID', (int) $regionID, 'name');
                 $name = "$name ($regionName)";
                 break;
         }
