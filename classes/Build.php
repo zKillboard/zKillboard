@@ -65,7 +65,7 @@ class Build
         $redis->setex($rKey, 86400, "true");
     }
 
-    protected static function getBlueprint($redis, $typeID)
+    public static function getBlueprint($redis, $typeID)
     {
         $rKey = "redis:build_qty:check" . date('Ymd');
         if ($redis->get($rKey) != "true") {
@@ -85,7 +85,7 @@ class Build
         if ($raw == null) return null;
         $bp = unserialize($raw);
         $bp['reqs'] = unserialize($redis->get("zkb:build:" . $bp['typeID']));
-        
+
         return $bp;
     }
 }
