@@ -19,7 +19,7 @@ $redis->setex($key, 86400, "true");
 
 function success($guzzler, $params, $content)
 {
-    global $mdb; 
+    global $mdb, $redis;
 
     if ($content == "") return;
 
@@ -27,7 +27,9 @@ function success($guzzler, $params, $content)
     $json = json_decode($content, true);
     foreach ($json as $segment) {
         $typeID = $segment['type_id'];
-        $price = isset($segment['average_price']) ? $segment['average_price'] : $segment['adjusted_price'];
+        $blueprint = Build::getBlueprint($redis, $typeID);
+        $buildable = ($blueprint != null && $blueprint['reqs'] != null);
+        $price = isset($segment['average_price']) ? $segment['average_price'] : ($buildable ? 0.0 : $segment['adjusted_price']);
         if ($price < 0.01) continue;
         $row = $mdb->findDoc("prices", ['typeID' => $typeID]);
         if (isset($row[$date])) continue;
