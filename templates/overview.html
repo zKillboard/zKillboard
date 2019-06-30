@@ -14,13 +14,6 @@
 {% include 'components/partial_title.html' %}
 {% include 'components/info_top.html' %}
 
-{% if entityType == 'corporation' and apiVerified == false and detail.memberCount > 50 and entityID > 1999999 %}
-<br/>
-<div class='alert alert-danger'>This corporation is <u>not</u> API Verified and therefore may be causing some killmails to go missing.<br/>
-If this is your corporation, ask your CEO or a director to log into zKillboard to API verify your corporation.<br/>
-<small><i>This message is shown for corporations with more than 50 members that are not API verified.</i></small>
-</div>
-{% endif %}
 <div class="navbar navbar-default">
 	<div class="navbar-header">
     	<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-sub">
@@ -59,21 +52,14 @@ If this is your corporation, ask your CEO or a director to log into zKillboard t
 	{% if extra.hasWars > 0 %}
 	<li class="{{ isActive('wars', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/wars/">Wars</a></li>
 	{% endif %}
-	{% if key == "alliance" %}
-		<li class="{{ isActive('Corpstats', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/corpstats/">Corp Stats</a></li>
-		<li class="{{ isActive('api', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/api/">API</a></li>
-	{% endif %}
 	</ul>
 	<ul class="nav navbar-nav pull-right hidden-xs">
 	{% if key == "character" %}
-		<!-- <li class="hidden-md hidden-sm"><a href="https://eveboard.com/pilot/{{ pageName }}/" target="_blank">EVE-Board</a></li> -->
-		<!-- <li class="hidden-md hidden-sm"><a href="https://eve-search.com/search/author/{{ pageName|url_encode }}/" target="_blank">EVE-Search</a></li>-->
 		<li class="hidden-md hidden-sm"><a href="https://evewho.com/pilot/{{ pageName|url_encode }}/" target="_blank">EVEWho</a></li>
 	{% elseif key == "corporation" %}
 		<li class="hidden-md hidden-sm"><a href="https://evemaps.dotlan.net/corp/{{ pageName|url_encode }}/" target="_blank">DOTLAN</a></li>
 		<li class="hidden-md hidden-sm"><a href="https://evewho.com/corp/{{ pageName|url_encode }}/" target="_blank">EVEWho</a></li>
 	{% elseif key == "alliance" %}
-		<!-- <li class="hidden-md hidden-sm"><a href="https://www.eveskunk.com/?allianceID={{ id }}" target="_blank">EVE Skunk</a></li> -->
 		<li class="hidden-md hidden-sm"><a href="https://evemaps.dotlan.net/alliance/{{ pageName|url_encode }}/" target="_blank">DOTLAN</a></li>
 		<li class="hidden-md hidden-sm"><a href="https://evewho.com/alli/{{ pageName|url_encode }}/" target="_blank">EVEWho</a></li>
 	{% elseif key == "system" %}
@@ -83,7 +69,6 @@ If this is your corporation, ask your CEO or a director to log into zKillboard t
 		{% endif %}
 	{% elseif key == "region" %}
 		<li><a href="https://evemaps.dotlan.net/region/{{ pageName|url_encode }}/" target="_blank">DOTLAN</a></li>
-	{% elseif key == "ship" %}
 	{% endif %}
 		{% if nextID %}
 		<li class="hidden-xs"><a href="/{{ key }}/{{ nextID }}/">&gt;</a></li>

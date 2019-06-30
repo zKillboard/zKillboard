@@ -155,16 +155,6 @@ class Info
         foreach ($corpList as $corp) {
             $corp['corporationName'] = $corp['name'];
             $corp['corporationID'] = $corp['id'];
-            $apiVerified = $redis->get("apiVerified:" . $corp['id']);
-            if ($apiVerified) {
-                $corp['cachedUntilTime'] = date('Y-m-d H:i', $apiVerified);
-                $corp['apiVerified'] = 1;
-            } else {
-                $count = $mdb->count("scopes", ['corporationID' => (int) $corp['id']]);
-                if ($corp['memberCount'] > 0) {
-                    $corp['apiPercentage'] = number_format($count / $corp['memberCount'] * 100, 0);
-                }
-            }
             self::addInfo($corp);
             $retList[] = $corp;
         }
