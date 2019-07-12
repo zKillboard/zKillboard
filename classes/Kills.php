@@ -27,13 +27,17 @@ class Kills
 
     public static function getDetails($kills)
     {
-        global $mdb;
+        global $mdb, $redis;
 
         $details = [];
         foreach ($kills as $kill) {
             $killID = (int) $kill['killID'];
             $killHashKey = "killDetail:$killID";
-            $killmail = RedisCache::get($killHashKey);
+
+            $killmail = null;
+            $raw = $redis->get("killmail_cache:$killID");
+            if ($raw != null) $killmail = unserialize($raw);
+
             if ($killmail == null) {
                 $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
                 Info::addInfo($killmail);
@@ -48,7 +52,7 @@ class Kills
                 $killmail['finalBlow']['killID'] = $killID;
                 unset($killmail['_id']);
 
-                RedisCache::set($killHashKey, $killmail, 60);
+                $redis->setex("killmail_cache:$killID", 900, serialize($killmail));
             }
             $details[$killID] = $killmail;
         }

@@ -48,11 +48,7 @@ class Info
                 break;
         }
 
-/*print_r($data); die();
-        $multi = $redis->multi();
-        $multi->hMSet($redisKey, $data);
-        $multi->expire($redisKey, 7200);
-        $multi->exec();*/
+        $redis->setex($redisKey, 900, serialize($data));
 
         return $data;
     }
@@ -71,7 +67,8 @@ class Info
         $redisKey = self::getRedisKey($type, $id);
         $data = @self::$infoFieldCache[$redisKey];
         if ($data == null) {
-            $data = $redis->hGetAll($redisKey);
+            $raw = $redis->get($redisKey);
+            if ($raw != null) $data = unserialize($raw);
             if ($data == null) $data = self::loadIntoRedis($type, $id);
             self::$infoFieldCache[$redisKey] = $data;
         }
