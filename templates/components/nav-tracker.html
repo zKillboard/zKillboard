@@ -8,7 +8,7 @@ $("#char-image").attr("src", "{{ image_character }}{{ characterID }}_32.jpg");
 
 {% if showAds != 0 %}
     if (showAds != 0 ) {
-        $("#adsensetop").load('/cache/1hour/google/', function() { adBlockCheck(); });
+        $("#adsensetop").load('/cache/1hour/google/', function() { setTimeout('adBlockCheck();', 5000); });
         $("#adsensebottom").load('/cache/1hour/google/');
 
      }
