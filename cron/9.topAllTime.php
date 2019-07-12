@@ -4,20 +4,25 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
-/*if ($redis->get("tobefetched") > 1000) exit();
+if ($redis->get("tobefetched") > 1000) exit();
 if ($redis->get("zkb:reinforced") == true) exit();
-if ($redis->scard("queueStatsSet") > 1000) exit();*/
+if ($redis->scard("queueStatsSet") > 1000) exit();
+
+$key = "zkb:topalltime";
+if ($redis->get($key) == "true") exit();
 
 MongoCursor::$timeout = -1;
 
 $minute = date('Hi');
-$rows = $mdb->find('statistics', ['calcAlltime' => true], ['shipsDestroyed' => 1], 1000);
+$rows = $mdb->find('statistics', ['calcAlltime' => true], ['shipsDestroyed' => 1]);
 while ($minute == date('Hi')) {
     if (sizeof($rows) == 0) break;
     $row = array_shift($rows);
     if ($row == null) exit();
     calcTop($row);
 }
+
+if (sizeof($rows) == 0) $redis->setex($key, 80000, "true");
 
 function calcTop($row)
 {
