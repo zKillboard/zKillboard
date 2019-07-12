@@ -29,7 +29,7 @@ foreach ($cursor as $row) {
             file_put_contents("./public/api/history/$date.json", json_encode($curDayRow));
         }
         if ($changed > 0) Util::out("Populating dayDump $curDay ($changed)");
-        $totals[$date] = $count;
+        if ($count > 0) $totals[$date] = $count;
         $curDayRow = null;
         $changed = 0;
         $count = 0;
