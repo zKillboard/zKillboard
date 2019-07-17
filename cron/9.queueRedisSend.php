@@ -41,4 +41,5 @@ while (date('Hi') == $minute) {
         $queueRedisQ->push($killID);
         sleep(1);
     }
+    sleep(1);
 }
