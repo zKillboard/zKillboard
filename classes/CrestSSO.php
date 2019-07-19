@@ -239,7 +239,7 @@ class CrestSSO
     {
         global $app, $redis, $ccpClientID, $ccpSecret;
 
-        Status::check('sso');
+        Status::check('sso', true, false);
 
 
         if ($charID === null) {

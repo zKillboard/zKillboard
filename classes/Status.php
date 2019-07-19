@@ -35,7 +35,7 @@ class Status
         $fail |= $redis->get("tqStatus") != "ONLINE" && $exitIfOffline;
         $fail |= $redis->get("tqCountInt") < 1000;
 
-        if ($fail) exit();
+        if ($fail & $exitIfFailure) exit();
     }
 
     public static function checkStatus($guzzler = null, $apiType = '', $exitIfOffline = true, $exitIfFailure = true, $seconds = 300)
