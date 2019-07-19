@@ -31,7 +31,7 @@ function calcTop($row)
     if ($row['id'] == 0 || $row['type'] == null) return;
 
     $currentSum = (int) @$row['shipsDestroyed'];
-    Util::out("TopAllTime: " . $row['type'] . ' ' . $row['id'] . ' - ' . $currentSum);
+    //Util::out("TopAllTime: " . $row['type'] . ' ' . $row['id'] . ' - ' . $currentSum);
 
     $parameters = [$row['type'] => $row['id']];
     $parameters['limit'] = 100;
