@@ -1,5 +1,6 @@
 {% if pageType == 'overview' and extra.activity.max > 0 %}
     <center><h5>Activity (last 90 days)</h5></center>
+    <a href="#" data-toggle="modal" data-target="#heatmap">
     {% spaceless %}
     <div style="line-height: 0px;">
     {% set steps = (extra.activity.max / 5)|round(0, 'floor') %}
@@ -11,12 +12,12 @@
                 {% set level = (extra.activity[day][hour] / steps)|round(0, 'ceil') %}
                 {% if level > 5 %}{% set level = 5 %}{% endif %}
             {% endif %}
-            <span style='width: 8px; height: 8px; background-color: hsla(0, 92%, {{ level * 10 }}%, 1); display: inline-block; margin: 0px; padding: 0px;' {% if extra.activity[day][hour] > 0 %}rel="tooltip" title="{{ extra.activity.days[day] }}:{{ hour }} {{ extra.activity[day][hour] }}"{% endif %}></span>
+            <span style='width: 8px; height: 8px; background-color: hsla(0, 92%, {{ level * 10 }}%, 1); display: inline-block; margin: 0px; padding: 0px;'></span>
         {% endfor %}
         <br style='margin: 0px; padding:0px;'/>
     {% endfor %}
     </div>
     {% endspaceless %}
-    <center><small><small>Grouped by day Sun-Sat, and hour 00-23.</small></small></center>
+    <center><small><small><i>Click to enlarge</i></small></small></center>
+    </a>
 {% endif %}
-

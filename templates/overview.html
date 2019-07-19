@@ -231,4 +231,42 @@
                 {% include 'components/image_char.html' %}</center><br/><br/>
 </div></div></div>
         {% endif %}
+
+
+{% if pageType == 'overview' and extra.activity.max > 0 %}
+<div class="modal fade" id="heatmap">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+    <h4 class="modal-title">Activity Heatmap</h4>
+</div>
+{% set steps = (extra.activity.max / 5)|round(0, 'floor') %}
+    {% if steps < 1 %}{% set steps = 1 %}{% endif %}
+
+
+<table>
+        <tr>
+            <td></td>
+            {% for hour in 0..23 %}<td><center>{{ hour }}</center></td>{% endfor %}
+        </tr>
+ {% set days = [ 'S', 'M', 'T', 'W', 'R', 'F', 'S' ] %}
+        {% for day in 0..6 %}
+            <tr>
+  <td style='width: 24px; height: 24px;'><center>{{ days[day] }}</center></td>
+                    {% for hour in 0..23 %}
+                    {% set level = 0 %}
+                    {% if extra.activity[day][hour] > 0 %}
+                        {% set level = (extra.activity[day][hour] / steps)|round(0, 'ceil') %}
+                        {% if level > 5 %}{% set level = 5 %}{% endif %}
+                    {% endif %}
+                        <td><center><span style='color: white; width: 24px; height: 24px; background-color: hsla(0, 92%, {{ level * 10 }}%, 1); display: inline-block; margin: 0px; padding: 0px;'>{{ extra.activity[day][hour] }}</span></center></td>
+                    {% endfor %}
+            </tr>
+ {% endfor %}
+    </table>
+     <p>Each block represents an hour of the day for each day of the week. The number indicates how many kills were achieved in that hour over the last 90 days. The redder the block the more kills. A black, empty box indicates 0 kills.</p>
+            </div>
+        </div>
+</div>
+{% endif %}
 {% endblock %}
