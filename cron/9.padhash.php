@@ -5,7 +5,7 @@ require_once "../init.php";
 $minute = date('Hi');
 while ($minute == date('Hi') && ($killID = (int) $redis->spop("padhash_ids"))) {
     $killmail = $mdb->findDoc("killmails", ['killID' => $killID]);
-    $hash = doPadHash($killID, $killmail);
+    doPadHash($killID, $killmail);
 }
 
 // https://forums.eveonline.com/default.aspx?g=posts&m=4900335#post4900335
@@ -30,10 +30,11 @@ function doPadHash($killID, $killmail)
     $dttm = $killmail['dttm']->sec;
     $dttm = $dttm - ($dttm % 86400);
 
-    $string = "$victimID:$attackerID:$shipTypeID:$dttm";
-    $sha = sha1($string);
+    $aString = "$victimID:$attackerID:$shipTypeID:$dttm";
+    $aSha = sha1($aString);
+    $mdb->getCollection("padhash")->update(['characterID' => $attackerID, 'isVictim' => false, 'hash' => $aSha], ['$inc' => ['count' => 1]], ['upsert' => true]);
 
-    $mdb->getCollection("padhash")->update(['characterID' => $attackerID, 'hash' => $sha], ['$inc' => ['count' => 1]], ['upsert' => true]);
-
-    return $sha;
+    $vString = "$attackerID:$victimID:$shipTypeID:$dttm";
+    $vSha = sha1($vString);
+    $mdb->getCollection("padhash")->update(['characterID' => $victimID, 'isVictim' => true, 'hash' => $vSha], ['$inc' => ['count' => 1]], ['upsert' => true]);
 }

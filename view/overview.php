@@ -117,7 +117,7 @@ $solo = Kills::mergeKillArrays($soloKills, array(), $limit, $columnName, $id);
 $padSum = 0;
 // PadSum?
 if ($key == 'character') {
-    $result = Mdb::group("padhash", ['characterID'], ['characterID' => (int) $id, 'count' => ['$gte' => 5]], [], ['count']);
+    $result = Mdb::group("padhash", ['characterID'], ['characterID' => (int) $id, 'isVictim' => false, 'count' => ['$gte' => 5]], [], ['count']);
     $padSum = (int) @$result[0]['countSum'];
 }
 
