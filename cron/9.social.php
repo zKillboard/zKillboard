@@ -40,7 +40,11 @@ function beSocial($killID)
 
     $url = "$fullAddr/kill/$killID/";
     $message = $victimInfo['shipName'].' worth '.Util::formatIsk($totalPrice)." ISK was destroyed! $url";
-    $name = getName($victimInfo);
+    $attempts = 0;
+    do {
+        $name = getName($victimInfo);
+        if ($name == "") sleep(1);
+    } while ($name == "" && $attempts < 10);
     $message = adjustMessage($name, $message);
 
     $redisMessage = [
@@ -49,7 +53,7 @@ function beSocial($killID)
         'iskStr' => Util::formatIsk($totalPrice)." ISK",
         'url' => $url,
         'image' => $imageServer . "/Render/" . $victimInfo['shipTypeID'] . "_128.png"
-            ];
+    ];
     $redis->publish("public", json_encode($redisMessage, JSON_UNESCAPED_SLASHES));
     sendMessage($message);
 }
