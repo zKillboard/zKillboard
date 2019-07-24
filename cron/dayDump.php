@@ -18,18 +18,18 @@ foreach ($cursor as $row) {
     $time = $row['dttm']->sec;
     $time = $time - ($time % 86400);
     $date = date('Ymd', $time);
-    $killID = $row['killID'];
+    $killID = (int) $row['killID'];
     $hash = trim($row['zkb']['hash']);
     if ($killID <= 0 || $hash == "") continue;
 
     if ($curDay != $date) {
         if ($curDayRow != null && $changed > 0) {
-            $mdb->save("daydump", $curDayRow);
+            //$mdb->save("daydump", $curDayRow);
             unset($curDayRow['_id']);
-            file_put_contents("./public/api/history/$date.json", json_encode($curDayRow));
+            file_put_contents("./public/api/history/$curDay.json", json_encode($curDayRow));
         }
         if ($changed > 0) Util::out("Populating dayDump $curDay ($changed)");
-        if ($count > 0) $totals[$date] = $count;
+        if ($count > 0) $totals[$curDay] = $count;
         $curDayRow = null;
         $changed = 0;
         $count = 0;
