@@ -586,11 +586,11 @@ echo "Done\n";
 echo "\nCreating collection padhash ... ";
 $padhash = $db->createCollection("padhash");
 echo "Done\n";
-echo "Creating index : 'characterID' => 1, 'hash' => 1, with sparse = 0 and unique = 1 ... ";
-$padhash->ensureIndex(array('characterID' => 1, 'hash' => 1), array("sparse" => 0, "unique" => 1));
+echo "Creating index : 'characterID' => 1, 'isVictim' => 1, 'hash' => 1, with sparse = 0 and unique = 1 ... ";
+$padhash->ensureIndex(array('characterID' => 1, 'isVictim' => 1, 'hash' => 1), array("sparse" => 0, "unique" => 1));
 echo "Done\n";
-echo "Creating index : 'characterID' => 1, 'count' => 1, with sparse = 0 and unique = 0 ... ";
-$padhash->ensureIndex(array('characterID' => 1, 'count' => 1), array("sparse" => 0, "unique" => 0));
+echo "Creating index : 'characterID' => 1, 'isVictim' => 1, 'count' => 1, with sparse = 0 and unique = 0 ... ";
+$padhash->ensureIndex(array('characterID' => 1, 'isVictim' => 1, 'count' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // payments
@@ -804,6 +804,9 @@ $statistics->ensureIndex(array('reset' => 1), array("sparse" => 1, "unique" => 0
 echo "Done\n";
 echo "Creating index : 'calcAlltime' => 1, with sparse = 1 and unique = 0 ... ";
 $statistics->ensureIndex(array('calcAlltime' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'calcAlltime' => 1, 'shipsDestroyed' => 1, with sparse = 1 and unique = 0 ... ";
+$statistics->ensureIndex(array('calcAlltime' => 1, 'shipsDestroyed' => 1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
 
 // tickets
