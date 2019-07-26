@@ -16,7 +16,7 @@ class Price
             $kmDate = date('Y-m-d H:i');
         }
 
-        $price = static::getFixedPrice($typeID);
+        $price = static::getFixedPrice($typeID, $kmDate);
         if ($price !== null) {
             return $price;
         }
@@ -96,7 +96,7 @@ class Price
         return $avgPrice;
     }
 
-    protected static function getFixedPrice($typeID)
+    protected static function getFixedPrice($typeID, $date)
     {
         // Some typeID's have hardcoded prices
         switch ($typeID) {
@@ -140,7 +140,8 @@ class Price
             case 11019: // Cockroach
                 return 1000000000000; // 1 trillion, rare dev ships
             case 42241: // Molok
-                return 350000000000; // 350b 
+                if ($date <= "2019-07-01") return 350000000000; // 350b 
+                return 650000000000;
             // Rare cruisers
             case 11940: // Gold Magnate
             case 635: // Opux Luxury Yacht
