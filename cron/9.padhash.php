@@ -14,8 +14,12 @@ function doPadHash($killID, $killmail)
     global $mdb;
 
     $victim = array_shift($killmail['involved']);
-    $victimID = @$victim['characterID'] == 0 ? 'None' : $victim['characterID'];
-    $shipTypeID = $victim['shipTypeID'];
+    $victimID = (int) @$victim['characterID'] == 0 ? 'None' : $victim['characterID'];
+    if ($victimID == 0) return;
+    $shipTypeID = (int) $victim['shipTypeID'];
+    if ($shipTypeID == 0) return;
+    $categoryID = (int) Info::getInfoField('groupID', $victim['groupID'], 'categoryID');
+    if ($categoryID != 6) return; // Only ships, ignore POS modules, etc.
 
     $attackers = $killmail['involved'];
     while ($next = array_shift($attackers)) {
@@ -24,7 +28,7 @@ function doPadHash($killID, $killmail)
         break;
     }
     if ($attacker == null) $attacker = $attackers[0];
-    $attackerID = @$attacker['characterID'];
+    $attackerID = (int) @$attacker['characterID'];
     if ($attackerID == 0) return;
 
     $dttm = $killmail['dttm']->sec;
