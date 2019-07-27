@@ -236,10 +236,11 @@
 {% if pageType == 'overview' and extra.activity.max > 0 %}
 <div class="modal fade" id="heatmap">
 <div class="modal-dialog">
-<div class="modal-content">
+<div class="modal-content" style='width: 650px;'>
 <div class="modal-header">
     <h4 class="modal-title">Activity Heatmap</h4>
 </div>
+<div style='margin-right: 1em; padding: 1em;'>
 {% set steps = (extra.activity.max / 5)|round(0, 'floor') %}
     {% if steps < 1 %}{% set steps = 1 %}{% endif %}
 
@@ -267,6 +268,7 @@
      <p>Each block represents an hour of the day for each day of the week. The number indicates how many kills were achieved in that hour over the last 90 days. The redder the block the more kills. A black, empty box indicates 0 kills.</p>
             </div>
         </div>
+</div>
 </div>
 {% endif %}
 {% endblock %}
