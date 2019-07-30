@@ -16,6 +16,11 @@ class Price
             $kmDate = date('Y-m-d H:i');
         }
 
+        if ($categoryID == 66) { // "Build" all rigs
+            $price = Build::getItemPrice($typeID, $kmDate, true, true);
+            if ($price > 0.01) return $price;
+        }
+
         $price = static::getFixedPrice($typeID, $kmDate);
         if ($price !== null) {
             return $price;
