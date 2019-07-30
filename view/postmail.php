@@ -5,14 +5,7 @@ global $mdb, $redis;
 $error = '';
 
 if ($_POST) {
-    $keyid = Util::getPost('keyid');
-    $vcode = Util::getPost('vcode');
     $killmailurl = Util::getPost('killmailurl');
-
-    // Apikey stuff
-    if ($keyid || $vcode) {
-        $error = "API Keys are no longer supported";
-    }
 
     if ($killmailurl) {
         $timer = new Timer();
