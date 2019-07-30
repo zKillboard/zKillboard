@@ -2,6 +2,7 @@
 $("#char-loggedin").remove();
 $("#tracker-none").removeClass("hidden");
 $("#char-image").attr("src", "/img/1_32.jpg");
+$("#loginforapi").show();
 
 if (showAds != 0) {
     $("#adsensetop").load('/cache/1hour/google/', function() { setTimeout('adBlockCheck();', 5000); });

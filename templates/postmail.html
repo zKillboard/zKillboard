@@ -30,13 +30,14 @@
         <hr/>
 	</div>
 
-	<div class="col-lg-5">
-		<h3>API Key Post</h3>
+	<div class="col-lg-5" id='loginforapi' style='display: none;'>
+		<h3>Login for API Driven Killmails</h3>
 		<div class="well">
-                        <div class="alert alert-danger">
-                            <center><strong><a href='https://www.reddit.com/r/Eve/comments/5rn7mp/announcing_the_phase_out_of_all_xml_api_keys_on/' target='_blank'>No more API keys!</a><br/><strong></center>
-                        </div>
-                        Log in using Eve Online's SSO or post your killmail using ESI.
+            <form action="/ccplogin/" id="loginform">
+                <label class="checkbox"><input type="checkbox" name="scopes[]" value="esi-fittings.write_fittings.v1" checked>Allow zKillboard to save Fittings</label>
+                <label class="checkbox"><input type="checkbox" name="scopes[]" value="esi-killmails.read_killmails.v1" checked>Allow zKillboard to fetch killmails</label>
+                <input id='ssologinimage' type="image" src="/img/ssologin.png">
+            </form>
 		</div>
 	</div>
 </div>

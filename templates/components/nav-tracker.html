@@ -1,6 +1,7 @@
 {% if sessionusername %}
 <script type="text/javascript">
 $("#char-loggedout").remove();
+$("#loginforapi").remove();
 $("#username").text("{{ sessionusername }}");
 $("#char-image").attr("src", "{{ image_character }}{{ characterID }}_32.jpg");
 //$("#lasthour").text("{{ killsLastHour | number_format(0)}}");
