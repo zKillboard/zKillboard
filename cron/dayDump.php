@@ -9,49 +9,30 @@ if ($redis->get($key) == "true") exit();
 Util::out("Populating dayDumps");
 
 $totals = [];
-$count = 0;
-$changed = 0;
-$curDay = null;
-$curDayRow = null;
+$hashes = [];
+$curDate = "";
+
 $cursor = $mdb->getCollection("killmails")->find([], ['dttm' => 1, 'killID' => 1, 'zkb.hash' => 1, '_id' => 0])->sort(['killID' => 1]);
 foreach ($cursor as $row) {
     $time = $row['dttm']->sec;
     $time = $time - ($time % 86400);
     $date = date('Ymd', $time);
+    if ($date != $curDate) {
+        $curDate = $date;
+        echo "$date\n";
+    }
+
     $killID = (int) $row['killID'];
     $hash = trim($row['zkb']['hash']);
-    if ($killID <= 0 || $hash == "") continue;
-
-    if ($curDay != $date) {
-        if ($curDayRow != null && $changed > 0) {
-            //$mdb->save("daydump", $curDayRow);
-            unset($curDayRow['_id']);
-            file_put_contents("./public/api/history/$curDay.json", json_encode($curDayRow));
-        }
-        if ($changed > 0) Util::out("Populating dayDump $curDay ($changed)");
-        if ($count > 0) $totals[$curDay] = $count;
-        $curDayRow = null;
-        $changed = 0;
-        $count = 0;
-        $redis->set("zkb:firstkillid:$date", $killID);
-    }
-    $curDay = $date;
-    $count++;
-
-    if ($curDayRow == null) {
-        $curDayRow = $mdb->findDoc("daydump", ['day' => $date]);
-        if ($curDayRow == null) $curDayRow = ['day' => $date];
-    }
-
-    if (isset($curDayRow[$killID])) continue;
-    if (@$curDayRow[$killID] != $hash) {
-        $curDayRow[$killID] = $hash;
-        $changed ++;
-    }
+    if ($killID < 0 || $hash == "") { echo "Skipping $killID ($hash)\n"; continue; }
+ 
+    $hashes[$date][$killID] = $hash;
 }
-if ($curDayRow != null) $mdb->save("daydump", $curDayRow);
-unset($curDayRow['_id']);
-file_put_contents("./public/api/history/$date.json", json_encode($curDayRow));
+
+foreach ($hashes as $date => $dayHashes) {
+    file_put_contents("./public/api/history/$date.json", json_encode($dayHashes)); 
+    $totals[$date] = count($dayHashes);
+}
 file_put_contents("./public/api/history/totals.json", json_encode($totals));
 
 $redis->setex($key, 86400, "true");
