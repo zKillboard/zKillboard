@@ -99,12 +99,6 @@
 					<div class="alert alert-danger" style="font-weight: bold"><center>{{ apiStatus|raw }}</center></div>
 				{% endif %}
 
-
-				<!-- Account balance information -->
-				{% if accountBalance >= adFreeMonthCost and accountBalance > 0 %}
-					<div class="alert alert-success" style="font-weight: bold"><center><a href='/account/payments'>You have an account balance of {{ accountBalance|number_format(2) }} ISK.  Click here to do something with it!</a></center></div>
-				{% endif %}
-
 				<!-- Top ad -->
 				<div class="centered" id="adsensetop" style='height: 135px;'></div>
 
