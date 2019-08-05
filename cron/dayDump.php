@@ -31,6 +31,7 @@ foreach ($cursor as $row) {
 
 foreach ($hashes as $date => $dayHashes) {
     file_put_contents("./public/api/history/$date.json", json_encode($dayHashes)); 
+    $redis->set("zkb:firstkillid:$date", min(array_keys($dayHashes)));
     $totals[$date] = count($dayHashes);
 }
 file_put_contents("./public/api/history/totals.json", json_encode($totals));
