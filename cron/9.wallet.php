@@ -15,6 +15,8 @@ if ($redis->get($redisKey) != true) {
         $guzzler->finish();
     }
 }
+$guzzler->finish();
+$redis->del("zkb:monocled");
 
 $rows = $mdb->find("payments", ['isk' => ['$exists' => false]]);
 foreach ($rows as $row) {
@@ -104,20 +106,9 @@ function applyBalances()
                 ZLog::add("$months month" . ($months == 1 ? "" : "s")  . " of ad free time has been given to $charName from $amount ISK.", $charID);
                 User::sendMessage("Thank you for your payment of $amount ISK. $months month" . ($months == 1 ? "" : "s")  . " of ad free time has been given to $charName", $charID);
                 EveMail::send($charID, "$shortAmount ISK Received", "Thank you for your payment of $amount ISK. $months months of ad free time has been given to $charName.\n\n<a href=\"https://zkillboard.com/character/$charID/\">Your zKillboard character page.</a>");
-
-                $result = Mdb::group("payments", ['characterID'], ['characterID' => (int) $charID], [], 'isk', ['iskSum' => -1], 6);
-                $isk = @$result[0]['iskSum'];
-                if ($isk >= 1000000000) {
-                    $userInfo = $mdb->findDoc("users", ['userID' => "user:$charID"]);
-                    if (@$userInfo['monocle'] == false) {
-                        $mdb->set("users", ['characterID' => (int) $charID], ['monocle' => true]);
-                        ZLog::add("User $charName ($charID) has just been given the monocle!", $charID);
-                        EveMail::send($charID, "Monocle!", "You have given at least 1000000000 ISK to zKillboard! In appreciation of your deep pockets a monocle will show up very soon on your character's zKillboard page. Thank you! \n\n<a href=\"https://zkillboard.com/character/$charID/\">Your zKillboard character page.</a>");
-                    }
-                }
             }
-            $mdb->set('payments', $row, ['paymentApplied' => 1]);
         }
+        $mdb->set('payments', $row, ['paymentApplied' => 1]);
     }
 }
 
