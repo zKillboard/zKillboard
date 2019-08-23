@@ -417,8 +417,15 @@ class Related
 
     public static function compareShips($a, $b)
     {
-        $aSize = self::getMass(@$a['shipTypeID']);
-        $bSize = self::getMass(@$b['shipTypeID']);
+        $aTypeID = @$a['shipTypeID'];
+        $bTypeID = @$b['shipTypeID'];
+        
+        $aSize = self::getMass($aTypeID);
+        $bSize = self::getMass($bTypeID);
+        
+        if ($aSize == $bSize) {
+            return $aTypeID < $bTypeID;
+        }
 
         return $aSize < $bSize;
     }
