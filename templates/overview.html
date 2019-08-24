@@ -65,7 +65,6 @@
 	{% elseif key == "system" %}
 		<li><a href="https://evemaps.dotlan.net/system/{{ pageName|url_encode }}/" target="_blank">DOTLAN</a></li>
 		{% if detail.regionID >= 11000001 and detail.regionID <= 11000033 %}
-			<li><a href="https://wh.pizza.moe/{{ pageName|url_encode }}" target="_blank">Wormhol.es</a></li>
 		{% endif %}
 	{% elseif key == "region" %}
 		<li><a href="https://evemaps.dotlan.net/region/{{ pageName|url_encode }}/" target="_blank">DOTLAN</a></li>
