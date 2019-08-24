@@ -13,6 +13,8 @@ function doPadHash($killID, $killmail)
 {
     global $mdb;
 
+    if ($killmail['npc'] == true) return;
+
     $victim = array_shift($killmail['involved']);
     $victimID = (int) @$victim['characterID'] == 0 ? 'None' : $victim['characterID'];
     if ($victimID == 0) return;
@@ -31,11 +33,13 @@ function doPadHash($killID, $killmail)
     $attackerID = (int) @$attacker['characterID'];
     if ($attackerID == 0) return;
 
+
     $dttm = $killmail['dttm']->sec;
     $dttm = $dttm - ($dttm % 86400);
 
     $aString = "$victimID:$attackerID:$shipTypeID:$dttm";
     $aSha = sha1($aString);
+    $mdb->set("killmails", $killmail, ['padhash' => $aSha]);
     $mdb->getCollection("padhash")->update(['characterID' => $attackerID, 'isVictim' => false, 'hash' => $aSha], ['$inc' => ['count' => 1]], ['upsert' => true]);
 
     $vString = "$attackerID:$victimID:$shipTypeID:$dttm";
