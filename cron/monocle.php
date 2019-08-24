@@ -11,7 +11,7 @@ foreach ($iter as $id) {
         $result = Mdb::group("payments", ['characterID'], ['characterID' => (int) $id], [], 'isk', ['iskSum' => -1], 6);
         $isk = $result[0]['iskSum'];
         if ($isk >= 1000000000) {
-            Util::out($id monocled $isk");
+            Util::out("$id monocled $isk");
             $mdb->set("users", ['characterID' => (int) $id], ['monocle' => true]);
 
             EveMail::send($id, "Monocle!", "You have given at least 1000000000 ISK to zKillboard! In appreciation of your deep pockets a monocle will show up very soon on your character's zKillboard page. Thank you! \n\n<a href=\"https://zkillboard.com/character/$id/\">Your zKillboard character page.</a>");
