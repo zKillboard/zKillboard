@@ -55,13 +55,13 @@
 	</ul>
 	<ul class="nav navbar-nav pull-right hidden-xs">
 	{% if key == "character" %}
-		<li class="hidden-md hidden-sm"><a href="https://evewho.com/pilot/{{ pageName|url_encode }}/" target="_blank">EVEWho</a></li>
+		<li class="hidden-md hidden-sm"><a href="https://evewho.com/character/{{ id }}" target="_blank">EVEWho</a></li>
 	{% elseif key == "corporation" %}
 		<li class="hidden-md hidden-sm"><a href="https://evemaps.dotlan.net/corp/{{ pageName|url_encode }}/" target="_blank">DOTLAN</a></li>
-		<li class="hidden-md hidden-sm"><a href="https://evewho.com/corp/{{ pageName|url_encode }}/" target="_blank">EVEWho</a></li>
+		<li class="hidden-md hidden-sm"><a href="https://evewho.com/corporation/{{ id }}" target="_blank">EVEWho</a></li>
 	{% elseif key == "alliance" %}
 		<li class="hidden-md hidden-sm"><a href="https://evemaps.dotlan.net/alliance/{{ pageName|url_encode }}/" target="_blank">DOTLAN</a></li>
-		<li class="hidden-md hidden-sm"><a href="https://evewho.com/alli/{{ pageName|url_encode }}/" target="_blank">EVEWho</a></li>
+		<li class="hidden-md hidden-sm"><a href="https://evewho.com/alliance/{{ id }}" target="_blank">EVEWho</a></li>
 	{% elseif key == "system" %}
 		<li><a href="https://evemaps.dotlan.net/system/{{ pageName|url_encode }}/" target="_blank">DOTLAN</a></li>
 		{% if detail.regionID >= 11000001 and detail.regionID <= 11000033 %}
