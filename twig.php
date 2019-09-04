@@ -96,6 +96,9 @@ $noAdPages = array('/account/', '/ticket', '/information/', '/post/');
 foreach ($noAdPages as $noAdPage) {
     $showAds &= !Util::startsWith($uri, $noAdPage);
 }
+foreach ($adfreeURIS as $adfreeURI) {
+    $showAds &= !Util::startsWith($uri, $adfreeURI);
+}
 $showAds &= $userShowAds;
 if ($ssoCharacterID == 93382481) $showAds = false;
 
