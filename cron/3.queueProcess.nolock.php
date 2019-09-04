@@ -44,7 +44,8 @@ while ($minute == date('Hi')) {
             $killID = (int) $killID[0];
             $redis->zrem("tobeparsed", $killID);
 
-            $row = $mdb->findDoc('crestmails', ['killID' => $killID]);
+            $row = $mdb->findDoc('crestmails', ['killID' => $killID, 'processed' => false]);
+            if ($row == null) $row = $mdb->findDoc('crestmails', ['killID' => $killID]);
         }
 
         if ($row != null) $mdb->set('crestmails', $row, ['processed' => 'processing']);
