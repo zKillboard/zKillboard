@@ -13,10 +13,9 @@ if ($redis->get($redisKey) != true) {
         $params = ['redis' => $redis];
         CrestSSO::getAccessTokenCallback($guzzler, $refreshToken, "accessTokenDone", "fail", $params);
         $guzzler->finish();
+        $redis->del("zkb:monocled");
     }
 }
-$guzzler->finish();
-$redis->del("zkb:monocled");
 
 $rows = $mdb->find("payments", ['isk' => ['$exists' => false]]);
 foreach ($rows as $row) {
