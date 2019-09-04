@@ -40,6 +40,11 @@ class CrestSSO
             $requestedScopes[] = 'esi-killmails.read_corporation_killmails.v1';
         }
 
+        if (in_array('esi-universe.read_structures.v1', $requestedScopes)) {
+            $requestedScopes[] = 'esi-universe.read_structures.v1';
+            $requestedScopes[] = 'esi-corporations.read_structures.v1';
+        }
+
         if (count($requestedScopes) > 0) {
             $scopes .= '+'.implode('+', $requestedScopes);
         }

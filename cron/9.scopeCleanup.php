@@ -9,7 +9,7 @@ foreach ($rows as $row) {
     $charID = $row['characterID'];
     $kmRow = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => 'esi-killmails.read_killmails.v1']);
     if ($kmRow == null) {
-        Util::out("Removing fitting scope for $charID which has no killmail scope.");
+        Util::out("Removing scope " . $row['scope'] . " for $charID which has no killmail scope.");
         $mdb->remove("scopes", $row);
     }
 }
