@@ -45,6 +45,19 @@ if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROT
 // Include Init
 require_once 'init.php';
 
+$ip = IP::get();
+
+$agent = @$_SERVER['HTTP_USER_AGENT'];
+if (strpos($agent, "Chrome/") > 0 && strpos($agent, "Mobile") > 0 && strpos($agent, "; wv)") > 0) {
+    $where = strpos($agent, "; wv)");
+    if ($uri == '/navbar/') {
+        //echo "<script>var invertValue = 0; function changeInvert() { invertValue = 1 - invertValue; $('html').css('filter', 'invert(' + invertValue + ')'); }; setInterval(changeInvert, 1);</script>";
+        echo "<script>$('*').html('');</script>";
+        Log::log("webview $ip $uri $where $agent");
+        exit();
+    }
+}
+
 if ($redis->get("zkb:memused") > 115) {
     header('HTTP/1.1 202 API temporarily disabled because of resource limitations');
     exit();
@@ -55,7 +68,6 @@ $timer = new Timer();
 // Starting Slim Framework
 $app = new \Slim\Slim($config);
 
-$ip = IP::get();
 $ipE = explode(',', $ip);
 $ip = $ipE[0];
 
