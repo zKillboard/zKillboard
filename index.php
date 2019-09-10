@@ -46,17 +46,7 @@ if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROT
 require_once 'init.php';
 
 $ip = IP::get();
-
 $agent = @$_SERVER['HTTP_USER_AGENT'];
-if (strpos($agent, "Chrome/") > 0 && strpos($agent, "Mobile") > 0 && strpos($agent, "; wv)") > 0) {
-    $where = strpos($agent, "; wv)");
-    if ($uri == '/navbar/') {
-        //echo "<script>var invertValue = 0; function changeInvert() { invertValue = 1 - invertValue; $('html').css('filter', 'invert(' + invertValue + ')'); }; setInterval(changeInvert, 1);</script>";
-        echo "<script>$('*').html('');</script>";
-        Log::log("webview $ip $uri $where $agent");
-        exit();
-    }
-}
 
 if ($redis->get("zkb:memused") > 115) {
     header('HTTP/1.1 202 API temporarily disabled because of resource limitations');
@@ -83,15 +73,29 @@ if (in_array($ip, $blackList)) {
 header('X-Frame-Options: DENY');
 header("Content-Security-Policy: frame-ancestors 'none'");
 
-$limit = 10; 
+$limit = 10;
+if (substr($uri, 0, 5) == "/api/") $limit = 1;
 $noLimits = ['/cache/', '/post/', '/autocomplete/', '/crestmail/', '/comment/', '/killlistrow/', '/comment/', '/related/', '/sponsor', '/crestmail', '/account/', '/logout', '/ccp', '/auto', '/killlistrow/', '/challenge/'];
 $noLimit = false;
 foreach ($noLimits as $noLimitTxt) $noLimit |= (substr($uri, 0, strlen($noLimitTxt)) === $noLimitTxt);
-$count = $redis->get($ip);
-if ($noLimit === false  && $count >= $limit) {
+
+$rateLimitKey = "ratelimit:" . $ip . ":" . time();
+$sem = sem_get(3173);
+sem_acquire($sem);
+$count = (int) $redis->get($rateLimitKey);
+
+//$nlt = ($noLimit ? "no limit" : "limited");
+//if ($ip == "2a01:7e00::f03c:91ff:fe28:f395") Log::log($rateLimitKey . " ($nlt) $count $limit");
+if ($noLimit == false && $count >= $limit) {
+    //Log::log("$ip $uri $count>=$limit Rate limited $agent");
     header('HTTP/1.1 429 Too many requests.');
-    die("<html><head><meta http-equiv='refresh' content='1'></head><body>Rate limited.</body></html>");
+    sem_release($sem);
+    die("<html><head><meta http-equiv='refresh' content='1'></head><body>Rate limited - because of abuse all IPs are restricted to 1 request per second now. I don't care if it wasn't you - I won't make any exceptions.</body></html>");
+} else if ($noLimit !== false) {
+    $redis->incr($rateLimitKey, 1);
+    $redis->expire($rateLimitKey, 1);
 }
+sem_release($sem);
 
 // Scrape Checker
 $ipKey = "ip::$ip";
