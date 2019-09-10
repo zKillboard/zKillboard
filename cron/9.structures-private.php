@@ -9,6 +9,9 @@ foreach ($scopes as $scope) {
     if (@$scope['lastChecked'] > (time() - 86400)) continue;
     if (!isset($scope['corporationID'])) continue;
 
+    $corpID = $scope['corporationID'];
+    if ($mdb->count("scopes", ['corporationID' => $corpID, 'scope' => 'esi-universe.read_structures.v1']) == 0) continue;
+
     $params = ['mdb' => $mdb, 'row' => $scope];
     CrestSSO::getAccessTokenCallback($guzzler, $scope['refreshToken'], "accessTokenDone", "accessTokenFail", $params);
 }

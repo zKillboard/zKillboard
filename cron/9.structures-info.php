@@ -3,18 +3,18 @@
 require_once "../init.php";
 
 
-$guzzler = new Guzzler(10);
+$guzzler = new Guzzler(3);
 
 $rows = $mdb->find("structures", [], ['lastChecked' => -1]);
 $time = date('Hi');
 while (date('Hi') == $time && sizeof($rows) > 0) {
     $row = array_pop($rows);
-    if ($row['lastChecked'] >= (time() - 86400)) break;
+    //if ($row['lastChecked'] >= (time() - 86400)) break;
 
     $structID = $row['structure_id'];
     $scope = null;
     if (isset($row['corpID'])) { 
-        $scopes = $mdb->find("scopes", ['scope' => 'esi-universe.read_structures.v1', 'corporation_id' => $row['corpID']]);
+        $scopes = $mdb->find("scopes", ['scope' => 'esi-universe.read_structures.v1', 'corporationID' => $row['corpID']]);
         if (sizeof($scopes)) $scope = $scopes[array_rand($scopes)];
         else continue; // TODO - Maybe check for alliance members?
     }
@@ -50,7 +50,14 @@ function accessTokenDone($guzzler, $params, $content) {
 }
 
 function accessTokenFail($guzzler, $params, $ex) {
-    echo "failed...\n";
+    $code = $ex->getCode();
+    $row = $params['row'];
+    $mdb = $params['mdb'];
+
+    if ($row['public'] == false) {
+        $mdb->remove("structures", $params['row']);
+    }
+    else echo "failed. $code ..\n";
 }
 
 
@@ -60,7 +67,6 @@ function success($guzzler, $params, $content) {
 
     if ($content == "") {
         $mdb->set("structures", $row, ['lastChecked' => time()]);
-echo "Etagged\n";
         return;
     }
 
@@ -81,15 +87,13 @@ function fail($guzzer, $params, $ex) {
     $mdb = $params['mdb'];
 
     switch ($code) {
+        case 400:
         case 403:
         case 404:
             // Did this die or is private now?
-            echo "Wanting to remove: " . print_r($row, true) . " \n";
             $mdb->remove("structures", $row);
             break;
         default:
-            print_r($ex);
-            $guzzler->finish();
-            die();
+            echo "struct code $code\n";
     }
 }
