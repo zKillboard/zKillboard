@@ -35,7 +35,6 @@ $validPageTypes[] = 'top';
 $validPageTypes[] = 'topalltime';
 
 if (!in_array($pageType, $validPageTypes)) {
-    if ($pageType != "") return $app->redirect('..');
     $pageType = 'overview';
 }
 
