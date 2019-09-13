@@ -39,7 +39,16 @@ function accessTokenDone($guzzler, $params, $content) {
 }
 
 function accessTokenFail($guzzler, $params, $ex) {
-    echo "access token failed...\n";
+    $mdb = $params['mdb'];
+    $code = $ex->getCode();
+    
+    switch ($code) {
+        case 400:
+            $mdb->remove("scopes", $params['row']);
+            break;
+        default:
+        echo "$code access token failed...\n";
+    }
 }
 
 function success($guzzler, $params, $content) {
