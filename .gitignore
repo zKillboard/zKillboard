@@ -6,4 +6,4 @@ public/sitemaps/
 vendor/
 work
 public/ztop.txt
-public/api/history/*.json
+public/api/
