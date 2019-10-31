@@ -4,18 +4,12 @@ $("#char-loggedout").remove();
 $("#loginforapi").remove();
 $("#username").text("{{ sessionusername }}");
 $("#char-image").attr("src", "{{ image_character }}{{ characterID }}_32.jpg");
-//$("#lasthour").text("{{ killsLastHour | number_format(0)}}");
-//$("#tqStatus").html("{% if tqStatus == 'OFFLINE'%}<span class='red'>TQ {{ tqCount }}</span>{% else %} <span class='green'>TQ {{ tqCount }}</span>{% endif %}");
 
 {% if showAds != 0 %}
-    if (showAds != 0 ) {
-        $("#adsensetop").load('/cache/1hour/google/', function() { setTimeout('adBlockCheck();', 5000); });
-        $("#adsensebottom").load('/cache/1hour/google/');
-
-     }
+    $("#adsensetop").load('/cache/1hour/google/', function() { setTimeout('adBlockCheck();', 5000); });
+    $("#adsensebottom").load('/cache/1hour/google/');
 {% else %}
-    //$("#adsensetop").remove();
-    //$("#adsensebottom").remove();
+//    $("#adsensetop, #adsensebottom").html('<a target="_new" href="https://brave.com/zki349"><img src="//zkillboard.com/img/brave_switch.png" alt="Switch to the Brave Browser"></a>');
 {% endif %}
 
 {% if style != 'cyborg' %}
@@ -40,27 +34,6 @@ $(".fav-star-" + {{ killID }}).css("color", "#FDBC2C");
 {% endfor %}
 
 if (showAdd) $("#tracker-add").removeClass("hidden");
-
-{% set message = getMessage() %}
-{% if message %}
-
-    //addToolTip($("#usermenu"), "{{ message }}");
-
-{% else %}
-
-/*if ($(window).width() > 800 && localStorage) {
-    if (!localStorage.getItem('tracker-tip')) {
-        localStorage.setItem('tracker-tip', true);
-        addToolTip($("#tracker-menu"), "Click the Tracker dropdown to see your character, corporation, and alliance if you're in one.");
-    } else if ($("#track-entity").length == 1 && !localStorage.getItem('tracker-entity-tip')) {
-        localStorage.setItem('tracker-entity-tip', true);
-        addToolTip($("#track-entity"), "Click the <i class='fa fa-plus' style='color: green;'></i> or <i class='fa fa-minus' style='color: red';></i> next to the name to add or remove from your Tracker's dropdown.");
-    } else if ($("#sponsor").length == 1 && !localStorage.getItem('tracker-sponsor-tip')) {
-        localStorage.setItem('tracker-sponsor-tip', true);
-        addToolTip($("#sponsor"), "Click the <i class='glyphicon glyphicon-bullhorn' style='color: green;'></i> to throw ISK away and sponsor a killmail!");
-    }
-}*/
-{% endif %}
 
 console.log("nav loaded");
 </script>

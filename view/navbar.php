@@ -17,8 +17,8 @@ header("ETag: $etag");
 header("Cache-Control: private");
 
 if ($etag == @$_SERVER['HTTP_IF_NONE_MATCH']) {
-    header("HTTP/1.1 304 Not Modified"); 
-    exit();
+//    header("HTTP/1.1 304 Not Modified"); 
+ //   exit();
 }
 
 

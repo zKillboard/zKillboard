@@ -1,4 +1,6 @@
-# Payments
+# ISK Payments & Donations
+<hr/>
+<p><a target="_new" href="https://www.patreon.com/zkillboard"><img src="/img/patreon_lg.jpg"></a></p><p><a target="_new" href="https://brave.com/zki349"><img src="//zkillboard.com/img/brave_switch.png" alt="Switch to the Brave Browser"></a></p>
 <hr/>
 
 <span class="pull-left" style="width: 130px;"><center>
