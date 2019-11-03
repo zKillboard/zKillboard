@@ -110,6 +110,16 @@ class Price
                 return 0.01; // Items that get market manipulated and abused will go here
             case 44265: // Victory Firework
                 return 0.01; // Items that drop from sites will go here
+
+            // Items that have been determined to be obnoxiously market
+            // manipulated will go here
+            case 34558:
+            case 34556:
+            case 34560:
+            case 36902:
+            case 34559:
+            case 34557:
+                return 0.01;
             case 2834: // Utu
             case 3516: // Malice
             case 11375: // Freki
