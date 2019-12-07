@@ -66,11 +66,11 @@ $twig->addGlobal('partial', ("/partial/" === substr($uri, 0, 9)));
 
 // Twig globals
 $twig->addGlobal('image_server', $imageServer);
-$twig->addGlobal('image_character', $imageServer.'Character/');
-$twig->addGlobal('image_corporation', $imageServer.'Corporation/');
-$twig->addGlobal('image_alliance', $imageServer.'Alliance/');
-$twig->addGlobal('image_item', $imageServer.'Type/');
-$twig->addGlobal('image_ship', $imageServer.'Render/');
+$twig->addGlobal('image_character', 'https://images.evetech.net/characters/');
+$twig->addGlobal('image_corporation','https://images.evetech.net/corporations/');
+$twig->addGlobal('image_alliance', 'https://images.evetech.net/alliances/');
+$twig->addGlobal('image_item', 'https://images.evetech.net/types/');
+$twig->addGlobal('image_ship', 'https://images.evetech.net/types/');
 $twig->addGlobal('esiServer', $esiServer);
 
 $twig->addGlobal('tqStatus', $redis->get('tqStatus'));
