@@ -13,12 +13,12 @@ touch logs/zkb.log
 for each in $(ls *.php | grep -v nolock); do
 	touch locks/$each.lock
 	{
-		flock -x -w 55 locks/$each.lock php5 $each >> logs/$each.log 2>&1
+		flock -x -w 55 locks/$each.lock php $each >> logs/$each.log 2>&1
 	} &
 done
 
 for each in $(ls *.php | grep nolock); do
 	{
-		php5 $each >> logs/$each.log 2>&1
+		php $each >> logs/$each.log 2>&1
 	} &
 done

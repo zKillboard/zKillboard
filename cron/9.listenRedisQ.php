@@ -5,14 +5,8 @@ require_once '../init.php';
 // If you want your zkillboard to listen to RedisQ, add the following line to config.php
 // $listenRedisQ = true;
 
-global $listenRedisQ;
-
-if ($listenRedisQ == null || $listenRedisQ == false) {
-    exit();
-}
-
 $ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, 'http://redisq.zkillboard.com/listen.php');
+curl_setopt($ch, CURLOPT_URL, 'https://redisq.zkillboard.com/listen.php');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
 $minute = date('Hi');
@@ -28,9 +22,6 @@ while ($minute == date('Hi')) {
     }
 
     $killID = $killmail['killID'];
-    if (checkFilter($killmail['killmail']) == false) {
-        continue;
-    }
 
     $hash = $killmail['zkb']['hash'];
     if (!$mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash])) {
@@ -44,7 +35,7 @@ function checkFilter($killmail)
 {
     global $characters, $corporations, $alliances;
 
-    if (sizeof($characters) == 0 && sizeof($corporations) == 0 && sizeof($alliances) == 0) {
+    if (@sizeof($characters) == 0 && @sizeof($corporations) == 0 && @sizeof($alliances) == 0) {
         return true;
     }
 

@@ -21,18 +21,18 @@ class Guzzler
 
     public function tick()
     {
-        $ms = microtime();
+        $ms = (int) microtime();
         do {
             $this->curl->tick();
         } while ($this->concurrent >= $this->maxConcurrent);
-        return max(0, microtime() - $ms);
+        return max(0, ((int) microtime()) - $ms);
     }
 
     public function finish()
     {
-        $ms = microtime();
+        $ms = (int) microtime();
         $this->curl->execute();
-        return max(0, microtime() - $ms);
+        return max(0, ((int) microtime()) - $ms);
     }
 
     public function count()
