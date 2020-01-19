@@ -179,7 +179,7 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
         $p['limit'] = 6;
         $topKills = Stats::getTopIsk($p);
     }
-} else {
+} else if ($page < 2) {
     $p = $parameters;
     $numDays = 7;
     $p['limit'] = 10;
