@@ -3,7 +3,7 @@
 $("#char-loggedout").remove();
 $("#loginforapi").remove();
 $("#username").text("{{ sessionusername }}");
-$("#char-image").attr("src", "{{ image_character }}{{ characterID }}_32.jpg");
+$("#char-image").attr("src", "{{ image_character }}{{ characterID }}/portrait?size=32");
 
 {% if showAds != 0 %}
     $("#adsensetop").load('/cache/1hour/google/', function() { setTimeout('adBlockCheck();', 5000); });
@@ -72,7 +72,7 @@ $("#tqStatus").html("{% if tqStatus == 'OFFLINE'%}<span class='red'>TQ {{ tqCoun
 $("#tracker-none").removeClass("hidden");
 $("#savefit").remove();
 $("#nosavefit").removeClass("hidden");
-$("#char-image").attr("src", "{{ image_character }}1_32.jpg");
+$("#char-image").attr("src", "{{ image_character }}1/portrait?size=32");
 
 $(document).ready(function() {
     var date = new Date();
