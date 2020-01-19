@@ -272,7 +272,7 @@ class Mdb
         $group['_id'] = $ids;
 
         // If no counts or sums are given, assume a count based on the keys for the $group
-        if (sizeof($count) == 0 && sizeof($sum) == 0) {
+        if (@sizeof($count) == 0 && @sizeof($sum) == 0) {
             $group['count'] = ['$sum' => 1];
         }
 
@@ -333,7 +333,7 @@ class Mdb
         $mdb = new self();
         $collection = $mdb->getCollection($collection);
         // Execute the query
-        $result = $collection->aggregate($pipeline);
+        $result = $collection->aggregate($pipeline, ['cursor' => ['batch_size' => 1000]]);
         if ($result['ok'] == 1) {
             return $result['result'];
         }

@@ -2,7 +2,7 @@
 
 require_once '../init.php';
 
-MongoCursor::$timeout = -1;
+//MongoCursor::$timeout = -1;
 
 $today = date('Ymd', time() - (3600 * 4));
 

@@ -131,8 +131,8 @@ while ($hour == date('H')) {
     $storageSize = number_format(($stats['storageSize'] + @$stats['indexStorageSize']) / (1024 * 1024 * 1024), 2);
 
     $memory = getSystemMemInfo();
-    $memTotal = number_format($memory['MemTotal'] / (1024 * 1024), 2);
-    $memUsed = number_format(($memory['MemTotal'] - $memory['MemFree'] - $memory['Cached']) / (1024 * 1024), 2);
+    $memTotal = number_format((int) $memory['MemTotal'] / (1024 * 1024), 2);
+    $memUsed = number_format(((int) $memory['MemTotal'] - (int) $memory['MemFree'] - (int) $memory['Cached']) / (1024 * 1024), 2);
 
     $maxLen = 0;
     foreach ($infoArray as $i) {
