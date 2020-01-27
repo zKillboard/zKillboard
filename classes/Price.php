@@ -159,6 +159,8 @@ class Price
                 return 650000000000;
             // Rare cruisers
             case 11940: // Gold Magnate
+		    if ($date <= "2020-01-25") return 500000000; // 500b
+		    return 3400000000000;	// 3.2t
             case 635: // Opux Luxury Yacht
             case 11011: // Guardian-Vexor
             case 25560: // Opux Dragoon Yacht
@@ -207,6 +209,7 @@ class Price
     public static function getCrestPrices($typeID)
     {
         global $mdb, $esiServer;
+	ZLog::add("Fetching price for $typeID", 0);
 
         $marketHistory = $mdb->findDoc('prices', ['typeID' => $typeID]);
         if ($marketHistory === null) {
