@@ -148,7 +148,7 @@ while ($hour == date('H')) {
     $memTotal = str_pad($memTotal, 5, " ", STR_PAD_LEFT);
     $storageSize = str_pad($storageSize, 5, " ", STR_PAD_LEFT);
     $dataSize = str_pad($dataSize, 5, " ", STR_PAD_LEFT);
-    $output[] = exec('date')." CPU: $cpu% Load: $load  Memory: ${memUsed}G/${memTotal}G  Redis: $mem  TokuDB: ${storageSize}G/${dataSize}G\n";
+    $output[] = exec('date')." CPU: $cpu% Load: $load  Memory: ${memUsed}G/${memTotal}G  Redis: $mem  MongoDB: ${storageSize}G/${dataSize}G\n";
     $redis->setex("zkb:memused", 300, $memUsed);
 
     $leftCount = 1;
@@ -182,7 +182,7 @@ function addInfo($text, $number, $left = true, $format = true)
 {
     global $infoArray, $deltaArray;
     $prevNumber = (double) @$deltaArray[$text];
-    $delta = $number - $prevNumber;
+    $delta = (double) $number - $prevNumber;
     $deltaArray[$text] = $number;
 
     if ($delta > 0) {

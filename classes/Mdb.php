@@ -20,7 +20,7 @@ class Mdb
 
         try {
             if ($this->mongoClient == null) {
-                $this->mongoClient = new MongoClient("mongodb://$mongoServer:$mongoPort");
+                $this->mongoClient = new MongoClient("mongodb://$mongoServer:$mongoPort", ['connectTimeoutMS' => 7200000, 'socketTimeoutMS' => 7200000]);
             }
             if ($this->db == null) {
                 $this->db = $this->mongoClient->selectDB('zkillboard');
@@ -333,7 +333,7 @@ class Mdb
         $mdb = new self();
         $collection = $mdb->getCollection($collection);
         // Execute the query
-        $result = $collection->aggregate($pipeline, ['cursor' => ['batch_size' => 1000]]);
+        $result = $collection->aggregate($pipeline, ['cursor' => ['batch_size' => 1000], 'allowDiskUse' => true]);
         if ($result['ok'] == 1) {
             return $result['result'];
         }

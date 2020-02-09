@@ -99,7 +99,7 @@ class Stats
         }
         $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
 
-        $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000]]);
+        $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true]);
 	$result = $rr['result'];
 
         $time = $timer->stop();
@@ -166,7 +166,7 @@ class Stats
         $pipeline[] = ['$group' => ['_id' => '$'.$type, 'foo' => ['$sum' => 1]]];
         $pipeline[] = ['$group' => ['_id' => 'total', 'value' => ['$sum' => 1]]];
 
-        $result = $mdb->getCollection('oneWeek')->aggregateCursor($pipeline, ['cursor' => ['batchSize' => 1000]]);
+        $result = $mdb->getCollection('oneWeek')->aggregateCursor($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true]);
         MongoCursor::$timeout = -1;
         $result = iterator_to_array($result);
 

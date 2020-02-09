@@ -61,7 +61,7 @@ $app = new \Slim\Slim($config);
 $ipE = explode(',', $ip);
 $ip = $ipE[0];
 
-if ($redis->get("IP:ban:$ip") == "true") {
+if (false && $redis->get("IP:ban:$ip") == "true") {
     header("Location: /html/banned.html", true, 302);
     return;
 }
@@ -99,7 +99,7 @@ sem_release($sem);
 
 // Scrape Checker
 $ipKey = "ip::$ip";
-if ($redis->get("ip::redirect::$ip") != null) {
+if (false && $redis->get("ip::redirect::$ip") != null) {
     $redis->incr("ip::redirect::$ip:challenges");
     $redis->expire("ip::redirect::$ip:challenges", 3600);
     if ($redis->get("ip::redirect::$ip:challenges") > 10) {
@@ -111,7 +111,7 @@ if ($redis->get("ip::redirect::$ip") != null) {
     header("Location: /challenge/", true, 302);
     return;
 }
-if (!$isApiRequest && !$noLimit && $redis->get("ip::challenge_safe::$ip") != "true") {
+if (false && !$isApiRequest && !$noLimit && $redis->get("ip::challenge_safe::$ip") != "true") {
     $redis->incr($ipKey, ($uri == '/navbar/' ? -1 : 1));
     $redis->expire($ipKey, 300);
     $count = $redis->get($ipKey);

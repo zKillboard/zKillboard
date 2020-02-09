@@ -100,7 +100,7 @@ class Kills
 
         $killID = (int) $killID;
         $esimail = $mdb->findDoc("esimails", ['killmail_id' => $killID]);
-        if ($esimail == null) {
+        if ($esimail == null && false) {
             $db = self::getSqlite();
             $results = $db->query("SELECT mail FROM killmails where killmail_id = $killID");
             $row = $results->fetchArray(SQLITE3_ASSOC);

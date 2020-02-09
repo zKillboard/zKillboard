@@ -60,7 +60,6 @@ if (sizeof($requestUri) == 0 || substr($requestUri, -1) != '/') {
     $requestUri .= '/';
 }
 $twig->addGlobal('requestUriPager', $requestUri);
-$actualURI = implode('/', $explode);
 $twig->addGlobal('actualURI', $actualURI);
 $twig->addGlobal('partial', ("/partial/" === substr($uri, 0, 9)));
 
@@ -92,7 +91,7 @@ $twig->addGlobal('reinforced', $redis->get("zkb:reinforced") == true ? "true" : 
 $twig->addGlobal("universeUpdating", $redis->get("zkb:universeLoaded") == "false"? "true" : "false");
 $twig->addGlobal("tobefetched", $redis->get("tobefetched"));
 
-$noAdPages = array('/account/', '/ticket', '/information/', '/post/');
+$noAdPages = array('/account/', '/ticket', '/information/', '/post/', '/ccp');
 foreach ($noAdPages as $noAdPage) {
     $showAds &= !Util::startsWith($uri, $noAdPage);
 }

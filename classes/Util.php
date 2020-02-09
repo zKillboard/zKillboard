@@ -484,7 +484,7 @@ class Util
 
     public static function rankCheck($rank)
     {
-        return $rank === false || $rank === null ? '-' : (1 + $rank);
+        return $rank === false || $rank === null ? '-' : (1 + (int) $rank);
     }
 
     public static function getQueryCount()

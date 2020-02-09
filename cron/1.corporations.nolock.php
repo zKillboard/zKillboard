@@ -148,10 +148,11 @@ function addMail($killID, $hash)
     $exists = $mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash]);
     if (!$exists) {
         try {
-            $mdb->getCollection('crestmails')->save(['killID' => (int) $killID, 'hash' => $hash, 'processed' => false]);
+            //$mdb->getCollection('crestmails')->insert(['killID' => (int) $killID, 'hash' => $hash, 'processed' => false]);
+            $mdb->save('crestmails', ['killID' => $killID, 'hash' => $hash, 'processed' => false]);
             return 1;
-        } catch (MongoDuplicateKeyException $ex) {
-            // ignore it *sigh*
+        } catch (Exception $ex) {
+            if ($ex->getCode() != 11000) echo "$killID $hash : " . $ex->getCode() . " " . $ex->getMessage() . "\n";
         }
     }
     return 0;
@@ -191,7 +192,7 @@ function fail($guzzer, $params, $ex)
         case 504:
         case "": // typically a curl timeout error
             $esi->setTime($charID, time() + 30);
-            break;
+            //            break;
         default:
             Util::out("corp killmail: " . $ex->getMessage() . "\n" . $params['content']);
     }
@@ -221,7 +222,7 @@ function accessTokenFail(&$guzzler, &$params, $ex)
         case 502: // Server error, try again in 5 minutes
         case "": // typically a curl timeout error
             $esi->setTime($charID, time() + 30);
-            break;
+            //            break;
         default:
             Util::out("corp token: $charID " . $ex->getMessage() . "\n" . $params['content'] . "\n" . "code $code");
     }
