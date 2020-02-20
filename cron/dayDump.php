@@ -19,7 +19,7 @@ foreach ($cursor as $row) {
     $date = date('Ymd', $time);
     if ($date != $curDate) {
         $curDate = $date;
-        echo "$date\n";
+        Util::out("Day dumping $date");
     }
 
     $killID = (int) $row['killID'];
