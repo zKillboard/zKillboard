@@ -12,14 +12,14 @@ $guzzler = new Guzzler();
 $chars = new RedisTimeQueue("zkb:characterID", 86400);
 $maxKillID = $mdb->findField("killmails", "killID", [], ['killID' => -1]) - 5000000;
 
-/*$noCorp = $mdb->find("information", ['type' => 'characterID', 'corporationID' => ['$exists' => false]]);
+$noCorp = $mdb->find("information", ['type' => 'characterID', 'corporationID' => ['$exists' => false]]);
 foreach ($noCorp as $row) {
     $charID = $row['id'];
     if ($charID > 1) {
         $chars->add($charID);
         $chars->setTime($charID, 0);
     }
-}*/
+}
 
 
 $mod = 3;
