@@ -25,30 +25,12 @@ return '
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 <!-- zkb Responsive Ad -->
 <ins class="adsbygoogle"
-     style="display:inline-block;min-width:400px;max-width:970px;width:100%;height:90px"
-     data-ad-client="ca-pub-7481220870937701"
-     data-ad-slot="2897013058"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
+     style="display:inline-block;width:728px;height:90px"
+     data-ad-client="' . $dataAdClient . '"
+     data-ad-slot="' . $dataAdSlot . '"></ins>
 <script>
      (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
-
-
 ';
-        return '
-<center>
-<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- zkb Responsive Ad -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="' . $dataAdClient . '"
-     data-ad-slot="' . $dataAdSlot . '"
-     data-ad-format="auto"></ins>
-<script>
-(adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-</center>
-        ';
     }
 }
