@@ -72,7 +72,6 @@
 				<ul class="dropdown-menu">
 					<li><a href="https://www.facebook.com/sharer/sharer.php?u={{url}}" target="_blank"><img src="//{{ siteurl }}/img/social/fb_1.png"> Facebook</a></li>
 					<li><a href="https://twitter.com/intent/tweet?text={{ pageTitle|url_encode }}&url={{url}}" target="_blank"><img src="//{{ siteurl }}/img/social/twitter_1.png"> Twitter</a></li>
-					<li><a href="https://plus.google.com/share?url={{url}}" target="_blank"><img src="//{{ siteurl }}/img/social/google_plus.png"> Google+</a></li>
 					<li><a href="https://www.reddit.com/submit?url={{url}}&title={{ pageTitle|url_encode }}" target="_blank"><img src="//{{ siteurl }}/img/social/reddit.png"> Reddit</a></li>
 				</ul>
 			</li>
@@ -269,7 +268,7 @@
 
 {% block opengraph %}
 	<meta name="twitter:title" content="{{ pageTitle }}">
-    <meta name="twitter:image" content="https://images.evetech.net/types/{{ killdata.victim.shipTypeID }}/render?size=64">
+    <meta name="twitter:image" content="https://images.evetech.net/types/{{ killdata.victim.shipTypeID }}/render">
 	<meta name="twitter:card" content="summary">
 	<meta name="og:title" content="{{ pageTitle }}">
 	<meta name="og:url" content="{{ fullsiteurl }}/kill/{{ killdata.info.killID }}/">
@@ -280,7 +279,7 @@
 	<meta name="twitter:description" content="{{ killdata.victim.characterName }} ({{ killdata.victim.corporationName}}) lost their {{ killdata.victim.shipName }} in {{ killdata.info.system.solarSystemName }} ({{ killdata.info.system.regionName }}). Final Blow by {{ finalBlow.characterName }} ({{ finalBlow.corporationName }}) flying in a {{ finalBlow.shipName }}. Total Value: {{ (extra.droppedisk + extra.lostisk)|number_format(2, '.', ',')}} ISK">
 	<meta name="og:description" content="{{ killdata.victim.characterName }} ({{ killdata.victim.corporationName}}) lost their {{ killdata.victim.shipName }} in {{ killdata.info.system.solarSystemName }} ({{ killdata.info.system.regionName }}). Final Blow by {{ finalBlow.characterName }} ({{ finalBlow.corporationName }}) flying in a {{ finalBlow.shipName }}. Total Value: {{ (extra.droppedisk + extra.lostisk)|number_format(2, '.', ',')}} ISK">
 {% endif %}
-	<meta name="og:image" content="https://images.evetech.net/types/{{ killdata.victim.shipTypeID }}/render?size=128">
+	<meta name="og:image" content="https://images.evetech.net/types/{{ killdata.victim.shipTypeID }}/render">
 {% endblock %}
 
 {% block script %}
