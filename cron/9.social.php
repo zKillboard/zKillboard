@@ -52,7 +52,7 @@ function beSocial($killID)
         'title' => "$name " . $victimInfo['shipName'],
         'iskStr' => Util::formatIsk($totalPrice)." ISK",
         'url' => $url,
-        'image' => $imageServer . "/Render/" . $victimInfo['shipTypeID'] . "_128.png"
+        'image' => $imageServer . "types/" . $victimInfo['shipTypeID'] . "/render?size=128"
     ];
     $redis->publish("public", json_encode($redisMessage, JSON_UNESCAPED_SLASHES));
     sendMessage($message);

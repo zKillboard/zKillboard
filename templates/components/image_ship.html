@@ -11,6 +11,6 @@
 	{% endif %}
 	{% set source = ( actualSize > 64 ? image_ship : image_item ) %}
 	<a href="{{ url }}" rel="tooltip" title="{{ title }}" class="{{ isPullLeft ? "pull-left " : "" }}">
-		<img src="{{ source }}{{ field.shipTypeID }}/icon?size={{imageSize}}" style='height: {{actualSize}}px; width: {{actualSize}}px;' class="{{ isDelayed ? "delayed " : "" }}{{ isPullLeft ? "pull-left " : "" }}eveimage img-rounded" alt="{{field.shipName}}"/>
+		<img src="{{ source }}{{ field.shipTypeID }}/render?size={{imageSize}}" style='height: {{actualSize}}px; width: {{actualSize}}px;' class="{{ isDelayed ? "delayed " : "" }}{{ isPullLeft ? "pull-left " : "" }}eveimage img-rounded" alt="{{field.shipName}}"/>
 	</a>
 {% endif %}

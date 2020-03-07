@@ -193,17 +193,23 @@
 	<meta name="twitter:description" content="{{ description }}">
 	<meta name="og:description" content="{{ description }}">
 {% if key == "character" %}
-	<meta name="twitter:image" content="{{ image_server }}{{ key }}/{{ id }}_128.jpg">
-        <meta name="og:image" content="{{ image_server}}{{ key }}/{{ id }}_128.jpg">
+	<meta name="twitter:image" content="{{ image_server }}{{ key }}s/{{ id }}/portrait?size=128">
+        <meta name="og:image" content="{{ image_server}}{{ key }}s/{{ id }}/portrait?size=128">
+{% elseif key == "corporation" or key == "alliance" %}
+	<meta name="twitter:image" content="{{ image_server }}{{ key }}s/{{ id }}/logo?size=128">
+        <meta name="og:image" content="{{ image_server}}{{ key }}s/{{ id }}/logo?size=128">
 {% elseif key == "system" %}
-	<meta name="twitter:image" content="{{ image_server }}Type/8_64.png">
-        <meta name="og:image" content="{{ image_server}}Type/8_64.png">
+	<meta name="twitter:image" content="{{ image_server }}types/8/render?size=64">
+        <meta name="og:image" content="{{ image_server}}types/8/render?size=64">
+{% elseif key == "ship" %}
+	<meta name="twitter:image" content="{{ image_server }}types/{{ id }}/render?size=64">
+        <meta name="og:image" content="{{ image_server}}types/{{ id }}/render?size=64">
 {% elseif key == "region" %}
 	<meta name="twitter:image" content="{{ fullsiteurl }}/img/region_64.png">
         <meta name="og:image" content="{{ fullsiteurl }}/img/region_64.png">
 {% else %}
-	<meta name="twitter:image" content="{{ image_server }}{{ key }}/{{ id }}_128.png">
-        <meta name="og:image" content="{{ image_server }}{{ key }}/{{ id }}_128.png">
+	<meta name="twitter:image" content="{{ image_server }}{{ key }}s/{{ id }}/render?size=128">
+        <meta name="og:image" content="{{ image_server }}{{ key }}s/{{ id }}/render?size=128">
 {% endif %}
 {% endblock %}
 
