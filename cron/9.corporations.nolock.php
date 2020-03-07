@@ -60,6 +60,7 @@ function updateCorp(&$guzzler, &$params, &$content)
     $mdb = $params['mdb'];
     $row = $params['row'];
 
+    $content = str_replace('\u', '', $content);
     $json = json_decode($content, true);
 
     $ceoID = (int) $json['ceo_id'];

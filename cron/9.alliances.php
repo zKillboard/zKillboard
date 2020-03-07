@@ -14,7 +14,7 @@ $old = $mdb->now(3600 * 3); // 8 hours
 $queueAllis = new RedisTimeQueue('zkb:allianceID', 9600);
 
 $i = date('i');
-if ($i == 45) {
+if ($i == 45 || $queueAllis->size() < 100 ) {
     $allis = $mdb->find('information', ['type' => 'allianceID']);
     foreach ($allis as $alli) {
         $queueAllis->add($alli['id']);
@@ -41,6 +41,7 @@ function success(&$guzzler, &$params, $content)
 
     if ($content == "") return;
 
+    $content = str_replace('\u', '', $content);
     $alliCrest = json_decode($content, true);
 
     $id = $params['id'];

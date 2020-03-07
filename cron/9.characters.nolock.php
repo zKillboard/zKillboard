@@ -81,6 +81,7 @@ function updateChar(&$guzzler, &$params, &$content)
     $redis = $params['redis'];
     $mdb = $params['mdb'];
     $row = $params['row'];
+    $content = str_replace('\u', '', $content);
     $json = json_decode($content, true);
 
     $id = (int) $row['id'];
