@@ -56,11 +56,12 @@ foreach ($explode as $key => $ex) {
 }
 
 $requestUri = implode('/', $expager);
-if (sizeof($requestUri) == 0 || substr($requestUri, -1) != '/') {
+if (strlen($requestUri) == 0 || substr($requestUri, -1) != '/') {
     $requestUri .= '/';
 }
 $twig->addGlobal('requestUriPager', $requestUri);
-$twig->addGlobal('actualURI', $actualURI);
+//$twig->addGlobal('actualURI', $actualURI);
+$twig->addGlobal('actualURI', $requestUri);
 $twig->addGlobal('partial', ("/partial/" === substr($uri, 0, 9)));
 
 // Twig globals
