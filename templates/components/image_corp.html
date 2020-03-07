@@ -3,7 +3,11 @@
 <img src="{{ image_corporation}}1/logo?size={{imageSize}}" style='height: {{actualSize}}px; width: {{actualSize}}px;'  class="eveimage img-rounded"/>
 {% else %}
 <a href="/corporation/{{ field.corporationID }}/" rel="tooltip" title="{{ field.corporationName }}">
+{% if field.corporationID == 1000274 or field.corporationID == 1000288 %}
+    <img src="https://images.evetech.net/corporations/1/logo?size={{imageSize}}" style='height: {{actualSize}}px; width: {{actualSize}}px;' class="eveimage img-rounded" alt="{{ field.corporationName}}"/>
+{% else %}
     <img src="{{ image_corporation}}{{ field.corporationID }}/logo?size={{imageSize}}" style='height: {{actualSize}}px; width: {{actualSize}}px;' class="eveimage img-rounded" alt="{{ field.corporationName}}"/>
+{% endif %}
 </a>
 {% endif %}
 
