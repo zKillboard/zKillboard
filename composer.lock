@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "94cb7bb5b9252040f784636b7ca0729d",
+    "content-hash": "ce53b023e50907eac1a4af22e8a8594c",
     "packages": [
         {
             "name": "alcaeus/mongo-php-adapter",
@@ -175,19 +175,29 @@
         },
         {
             "name": "dg/twitter-php",
-            "version": "v3.5",
+            "version": "v4.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dg/twitter-php.git",
-                "reference": "8c3ba6862ac7a300d3836aabfd4688b4d63049f0"
+                "reference": "5ef6a383aae1932bf1494fd37d26bd87093c01ba"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dg/twitter-php/zipball/8c3ba6862ac7a300d3836aabfd4688b4d63049f0",
-                "reference": "8c3ba6862ac7a300d3836aabfd4688b4d63049f0",
+                "url": "https://api.github.com/repos/dg/twitter-php/zipball/5ef6a383aae1932bf1494fd37d26bd87093c01ba",
+                "reference": "5ef6a383aae1932bf1494fd37d26bd87093c01ba",
                 "shasum": ""
             },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "php": ">=7.1"
+            },
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "4.0-dev"
+                }
+            },
             "autoload": {
                 "classmap": [
                     "src/"
@@ -200,7 +210,7 @@
             "authors": [
                 {
                     "name": "David Grudl",
-                    "homepage": "http://davidgrudl.com"
+                    "homepage": "https://davidgrudl.com"
                 }
             ],
             "description": "Small and easy Twitter library for PHP",
@@ -209,23 +219,24 @@
                 "oauth",
                 "twitter"
             ],
-            "time": "2014-12-31T10:29:19+00:00"
+            "time": "2020-01-21T09:14:16+00:00"
         },
         {
             "name": "erusev/parsedown",
-            "version": "1.7.0",
+            "version": "1.7.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/erusev/parsedown.git",
-                "reference": "6678d59be48c4be64eaca6ce70bea48a09488cc2"
+                "reference": "cb17b6477dfff935958ba01325f2e8a2bfa6dab3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/erusev/parsedown/zipball/6678d59be48c4be64eaca6ce70bea48a09488cc2",
-                "reference": "6678d59be48c4be64eaca6ce70bea48a09488cc2",
+                "url": "https://api.github.com/repos/erusev/parsedown/zipball/cb17b6477dfff935958ba01325f2e8a2bfa6dab3",
+                "reference": "cb17b6477dfff935958ba01325f2e8a2bfa6dab3",
                 "shasum": ""
             },
             "require": {
+                "ext-mbstring": "*",
                 "php": ">=5.3.0"
             },
             "require-dev": {
@@ -254,7 +265,7 @@
                 "markdown",
                 "parser"
             ],
-            "time": "2018-02-28T11:41:37+00:00"
+            "time": "2019-12-30T22:54:17+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -607,6 +618,42 @@
             "time": "2017-10-27T19:42:57+00:00"
         },
         {
+            "name": "patreon/patreon",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Patreon/patreon-php.git",
+                "reference": "206575a16ce9a447b79b2367e1d4991ce76202d2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Patreon/patreon-php/zipball/206575a16ce9a447b79b2367e1d4991ce76202d2",
+                "reference": "206575a16ce9a447b79b2367e1d4991ce76202d2",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Patreon\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Patreon",
+                    "email": "platform-team@patreon.com"
+                }
+            ],
+            "description": "Interact with the Patreon API via OAuth.",
+            "time": "2019-08-21T20:25:53+00:00"
+        },
+        {
             "name": "psr/http-message",
             "version": "1.0.1",
             "source": {
@@ -798,16 +845,16 @@
         },
         {
             "name": "symfony/polyfill-ctype",
-            "version": "v1.13.1",
+            "version": "v1.14.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-ctype.git",
-                "reference": "f8f0b461be3385e56d6de3dbb5a0df24c0c275e3"
+                "reference": "fbdeaec0df06cf3d51c93de80c7eb76e271f5a38"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/f8f0b461be3385e56d6de3dbb5a0df24c0c275e3",
-                "reference": "f8f0b461be3385e56d6de3dbb5a0df24c0c275e3",
+                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/fbdeaec0df06cf3d51c93de80c7eb76e271f5a38",
+                "reference": "fbdeaec0df06cf3d51c93de80c7eb76e271f5a38",
                 "shasum": ""
             },
             "require": {
@@ -819,7 +866,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.13-dev"
+                    "dev-master": "1.14-dev"
                 }
             },
             "autoload": {
@@ -852,20 +899,20 @@
                 "polyfill",
                 "portable"
             ],
-            "time": "2019-11-27T13:56:44+00:00"
+            "time": "2020-01-13T11:15:53+00:00"
         },
         {
             "name": "twig/twig",
-            "version": "v1.42.4",
+            "version": "v1.42.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "e587180584c3d2d6cb864a0454e777bb6dcb6152"
+                "reference": "87b2ea9d8f6fd014d0621ca089bb1b3769ea3f8e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/e587180584c3d2d6cb864a0454e777bb6dcb6152",
-                "reference": "e587180584c3d2d6cb864a0454e777bb6dcb6152",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/87b2ea9d8f6fd014d0621ca089bb1b3769ea3f8e",
+                "reference": "87b2ea9d8f6fd014d0621ca089bb1b3769ea3f8e",
                 "shasum": ""
             },
             "require": {
@@ -874,8 +921,7 @@
             },
             "require-dev": {
                 "psr/container": "^1.0",
-                "symfony/debug": "^3.4|^4.2",
-                "symfony/phpunit-bridge": "^4.4@dev|^5.0"
+                "symfony/phpunit-bridge": "^4.4|^5.0"
             },
             "type": "library",
             "extra": {
@@ -904,7 +950,6 @@
                 },
                 {
                     "name": "Twig Team",
-                    "homepage": "https://twig.symfony.com/contributors",
                     "role": "Contributors"
                 },
                 {
@@ -918,7 +963,7 @@
             "keywords": [
                 "templating"
             ],
-            "time": "2019-11-11T16:49:32+00:00"
+            "time": "2020-02-11T05:59:23+00:00"
         },
         {
             "name": "zkillboard/redisq",
