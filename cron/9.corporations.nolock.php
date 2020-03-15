@@ -74,7 +74,9 @@ function updateCorp(&$guzzler, &$params, &$content)
     $ceoID = (int) $json['ceo_id'];
 
     $updates = ['lastApiUpdate' => $mdb->now()];
-    compareAttributes($updates, "name", @$row['name'], (string) $json['name']);
+    if (@$row['obscene'] == true) {
+        compareAttributes($updates, "name", @$row['name'], "Corporation " . $row['id']);
+    } else compareAttributes($updates, "name", @$row['name'], (string) $json['name']);
     compareAttributes($updates, "ticker", @$row['ticker'], (string) $json['ticker']);
     compareAttributes($updates, "ceoID", @$row['ceoID'], $ceoID);
     compareAttributes($updates, "memberCount", @$row['memberCount'], (int) $json['member_count']);

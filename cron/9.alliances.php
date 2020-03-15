@@ -60,7 +60,9 @@ function success(&$guzzler, &$params, $content)
     }
     $update['memberCount'] = $memberCount;
     $update['ticker'] = $alliCrest['ticker'];
-    $update['name'] = $alliCrest['name'];
+    if (@$currentInfo['obscene'] == true) {
+        $update['name'] = "Alliance " . $id;
+    } else $update['name'] = $alliCrest['name'];
     $update['factionID'] = (int) @$alliCrest['faction_id'];
 
     $mdb->insertUpdate('information', ['type' => 'allianceID', 'id' => $id], $update);
