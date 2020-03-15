@@ -19,7 +19,7 @@ while ($minute == date('Hi')) {
 
         $url = "$esiServer/v4/corporations/$id/";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
-        $a = isset($row['lastApiUpdate'])? ['etag' => true] : [];
+        $a = (isset($row['lastApiUpdate']) && $row['name'] != '') ? ['etag' => true] : [];
         $guzzler->call($url, "updateCorp", "failCorp", $params, $a);
     } else {
         $guzzler->tick();
@@ -60,8 +60,16 @@ function updateCorp(&$guzzler, &$params, &$content)
     $mdb = $params['mdb'];
     $row = $params['row'];
 
-    $content = str_replace('\u', '', $content);
+    $content = Util::eliminateBetween($content, '"description"', '"faction_id"');
+    $content = Util::eliminateBetween($content, '"description"', '"home_station_id"');
+    $content = Util::eliminateBetween($content, '"description"', '"member_count"');
+    $content = Util::eliminateBetween($content, '"description"', '"name"');
+    
     $json = json_decode($content, true);
+    if (json_last_error() != 0) {
+        Util::out("Character $id JSON issue: " . json_last_error() . " " . json_last_error_msg());
+        return;
+    }
 
     $ceoID = (int) $json['ceo_id'];
 

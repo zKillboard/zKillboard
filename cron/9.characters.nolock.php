@@ -12,16 +12,6 @@ $guzzler = new Guzzler();
 $chars = new RedisTimeQueue("zkb:characterID", 86400);
 $maxKillID = $mdb->findField("killmails", "killID", [], ['killID' => -1]) - 5000000;
 
-$noCorp = $mdb->find("information", ['type' => 'characterID', 'corporationID' => ['$exists' => false]]);
-foreach ($noCorp as $row) {
-    $charID = $row['id'];
-    if ($charID > 1) {
-        $chars->add($charID);
-        $chars->setTime($charID, 0);
-    }
-}
-
-
 $mod = 3;
 $dayMod = date("j") % $mod;
 $minute = date('Hi');
@@ -36,7 +26,7 @@ while ($minute == date('Hi')) {
 
         $url = "$esiServer/v4/characters/$id/";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row, 'rtq' => $chars];
-        $a = isset($row['lastApiUpdate'])? ['etag' => true] : [];
+        $a = (isset($row['lastApiUpdate']) && $row['name'] != '')? ['etag' => true] : [];
         $guzzler->call($url, "updateChar", "failChar", $params, $a);
     }
     if ($id == 0) {
@@ -81,10 +71,17 @@ function updateChar(&$guzzler, &$params, &$content)
     $redis = $params['redis'];
     $mdb = $params['mdb'];
     $row = $params['row'];
-    $content = str_replace('\u', '', $content);
-    $json = json_decode($content, true);
-
     $id = (int) $row['id'];
+
+    $content = Util::eliminateBetween($content, '"description"', '"faction_id"');
+    $content = Util::eliminateBetween($content, '"description"', '"gender"');
+
+    $json = json_decode($content, true);
+    if (json_last_error() != 0) {
+        Util::out("Character $id JSON issue: " . json_last_error() . " " . json_last_error_msg());
+        return;
+    }
+
     $corpID = (int) $json['corporation_id'];
 
     $updates = [];

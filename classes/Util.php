@@ -546,5 +546,14 @@ class Util
             }
         }
     }
+    public static function eliminateBetween($base, $delim1, $delim2) {
+        $split1 = explode($delim1, $base);
+        $split2 = explode($delim2, $base);
 
+        if (sizeof($split1) == 2 && sizeof($split2) == 2) {
+            return $split1[0] . $delim2 . $split2[1];
+        } else {
+            return $base;
+        }
+    }
 }

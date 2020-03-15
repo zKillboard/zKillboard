@@ -4,7 +4,6 @@ use cvweiss\redistools\RedisTimeQueue;
 
 require_once "../init.php";
 
-if (date('i') % 5 != 0) exit();
 
 populate('allianceID');
 populate('corporationID');
@@ -14,9 +13,11 @@ function populate($type) {
     global $mdb;
 
     $queue = new RedisTimeQueue('zkb:' . $type, 9600);
-    $rows = $mdb->find('information', ['type' => $type]);
-    foreach ($rows as $row) {
-        if ($row['id'] == 0) continue;
+    $rows = $mdb->getCollection("information")->find(['type' => $type]);
+    while (($row = $rows->next())) {
+        if ($row['id'] <= 1) continue;
+        //if (@$row['name'] == "") echo "$type " . $row['id'] . " empty name\n";
+        if (@$row['name'] == "") $queue->remove($row['id']); // Go for immediate update
         $queue->add($row['id']);
     }
 }
