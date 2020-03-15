@@ -25,9 +25,11 @@ return '
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 <!-- zkb Responsive Ad -->
 <ins class="adsbygoogle"
-     style="display:inline-block;width:728px;height:90px"
+     style="display:block"
      data-ad-client="' . $dataAdClient . '"
-     data-ad-slot="' . $dataAdSlot . '"></ins>
+     data-ad-slot="' . $dataAdSlot . '"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
 <script>
      (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
