@@ -100,6 +100,7 @@ foreach ($adfreeURIS as $adfreeURI) {
     $showAds &= !Util::startsWith($uri, $adfreeURI);
 }
 $showAds &= $userShowAds;
+if ($mdb->count("patreon", ['character_id' => $ssoCharacterID]) > 0) $showAds = false;
 if ($ssoCharacterID == 93382481) $showAds = false;
 
 $twig->addglobal('showAnalytics', $showAnalytics);

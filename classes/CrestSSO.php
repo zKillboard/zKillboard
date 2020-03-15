@@ -223,7 +223,8 @@ class CrestSSO
             } else {
                 $corpID = Info::getInfoField("characterID", $charID, "corporationID");
                 $alliID = Info::getInfoField("characterID", $charID, "allianceID");
-                if ($loginPage == "main") $redirect = "/";
+                if (@$_SESSION['patreon'] == true) $redirect = '/cache/bypass/login/patreon/';
+                elseif ($loginPage == "main") $redirect = "/";
                 elseif ($loginPage == 'character') $redirect = "/character/$charID/";
                 elseif ($loginPage == 'corporation' && $corpID > 0) $redirect = "/corporation/$corpID/";
                 elseif ($loginPage == 'alliance' && $alliID > 0) $redirect = "/alliance/$alliID/";

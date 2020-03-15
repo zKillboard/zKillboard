@@ -238,6 +238,14 @@ $app->get('/ccpsavefit/:killID/', function ($killID) use ($app) {
         include 'view/ccpsavefit.php';
         });
 
+// Patreon
+$app->get('/cache/bypass/login/patreon/', function () use ($app) {
+        include 'view/patreonlogin.php';
+        });
+$app->get('/cache/bypass/login/patreonauth/', function () use ($app) {
+        include 'view/patreonauth.php';
+        });
+
 $app->get('/navbar/', function () use ($app) {
         include 'view/navbar.php';
         });
