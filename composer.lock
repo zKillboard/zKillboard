@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ce53b023e50907eac1a4af22e8a8594c",
+    "content-hash": "37478e34c3c52742603d25ad9d6001d3",
     "packages": [
         {
             "name": "alcaeus/mongo-php-adapter",
@@ -175,29 +175,23 @@
         },
         {
             "name": "dg/twitter-php",
-            "version": "v4.1.1",
+            "version": "v3.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dg/twitter-php.git",
-                "reference": "5ef6a383aae1932bf1494fd37d26bd87093c01ba"
+                "reference": "d9370c9759138200a77ca86abcb0c5ddfe857c68"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dg/twitter-php/zipball/5ef6a383aae1932bf1494fd37d26bd87093c01ba",
-                "reference": "5ef6a383aae1932bf1494fd37d26bd87093c01ba",
+                "url": "https://api.github.com/repos/dg/twitter-php/zipball/d9370c9759138200a77ca86abcb0c5ddfe857c68",
+                "reference": "d9370c9759138200a77ca86abcb0c5ddfe857c68",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
-                "ext-json": "*",
-                "php": ">=7.1"
+                "php": ">=5.4.0"
             },
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "4.0-dev"
-                }
-            },
             "autoload": {
                 "classmap": [
                     "src/"
@@ -219,7 +213,7 @@
                 "oauth",
                 "twitter"
             ],
-            "time": "2020-01-21T09:14:16+00:00"
+            "time": "2019-02-08T16:20:01+00:00"
         },
         {
             "name": "erusev/parsedown",
