@@ -59,10 +59,15 @@ function success(&$guzzler, &$params, $content)
         $memberCount += @$corp['memberCount'];
     }
     $update['memberCount'] = $memberCount;
-    $update['ticker'] = $alliCrest['ticker'];
     if (@$currentInfo['obscene'] == true) {
         $update['name'] = "Alliance " . $id;
-    } else $update['name'] = $alliCrest['name'];
+        $update['ticker'] = (string) $id;
+        $update['obscene_name'] = $alliCrest['name'];
+        $update['obscene_ticker'] = $alliCrest['ticker'];
+    } else {
+        $update['name'] = $alliCrest['name'];
+        $update['ticker'] = $alliCrest['ticker'];
+    }
     $update['factionID'] = (int) @$alliCrest['faction_id'];
 
     $mdb->insertUpdate('information', ['type' => 'allianceID', 'id' => $id], $update);

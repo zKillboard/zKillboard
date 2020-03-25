@@ -87,6 +87,7 @@ function updateChar(&$guzzler, &$params, &$content)
     $updates = [];
     if (@$row['obscene'] == true) {
         compareAttributes($updates, "name", @$row['name'], "Character " . $row['id']);
+        compareAttributes($updates, "obscene_name", @$row['name'], (string) $json['name']);
     } else compareAttributes($updates, "name", @$row['name'], (string) $json['name']);
     compareAttributes($updates, "corporationID", @$row['corporationID'], $corpID);
     compareAttributes($updates, "allianceID", @$row['allianceID'], (int) Info::getInfoField("corporationID", $corpID, 'allianceID'));

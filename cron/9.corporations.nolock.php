@@ -66,18 +66,18 @@ function updateCorp(&$guzzler, &$params, &$content)
     $content = Util::eliminateBetween($content, '"description"', '"name"');
     
     $json = json_decode($content, true);
-    if (json_last_error() != 0) {
-        Util::out("Character $id JSON issue: " . json_last_error() . " " . json_last_error_msg());
-        return;
-    }
-
     $ceoID = (int) $json['ceo_id'];
 
     $updates = ['lastApiUpdate' => $mdb->now()];
     if (@$row['obscene'] == true) {
         compareAttributes($updates, "name", @$row['name'], "Corporation " . $row['id']);
-    } else compareAttributes($updates, "name", @$row['name'], (string) $json['name']);
-    compareAttributes($updates, "ticker", @$row['ticker'], (string) $json['ticker']);
+        compareAttributes($updates, "ticker", @$row['ticker'], (string) $row['id']);
+        compareAttributes($updates, "obscene_name", @$row['name'], $json['name']);
+        compareAttributes($updates, "obscene_ticker", @$row['ticker'], (string) $json['ticker']);
+    } else {
+        compareAttributes($updates, "name", @$row['name'], (string) $json['name']);
+        compareAttributes($updates, "ticker", @$row['ticker'], (string) $json['ticker']);
+    }
     compareAttributes($updates, "ceoID", @$row['ceoID'], $ceoID);
     compareAttributes($updates, "memberCount", @$row['memberCount'], (int) $json['member_count']);
     compareAttributes($updates, "allianceID", @$row['allianceID'], (int) @$json['alliance_id']); 
