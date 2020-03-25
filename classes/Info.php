@@ -492,6 +492,7 @@ class Info
             '87' => 'Drone Bay',
             '164' => 'Structure Service Slots',
             '172' => 'Structure Fuel',
+            '179' => 'Frigate Bay',
             );
 
     /**
@@ -532,6 +533,7 @@ class Info
             '176' => 'Booster Bay',
             '177' => 'Subsystem Hold',
             '64' => 'Unlocked item, can be moved',
+            '179' => 'Frigate Bay',
             );
 
     /**
@@ -548,6 +550,7 @@ class Info
             164 => array(164, 171), // Structure services
             2663 => array(92, 98), // Rigs
             3772 => array(125, 132), // Subs
+            179 => array(179, 179), // Frigate bay
             );
 
     public static function getFlagLocation($flag)
