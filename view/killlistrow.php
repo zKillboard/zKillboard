@@ -1,6 +1,6 @@
 <?php
 
-global $mdb;
+global $mdb, $redis;
 
 $map = array(
         'corporation' => array('column' => 'corporation', 'mixed' => true),
@@ -13,6 +13,8 @@ $map = array(
         'ship' => array('column' => 'shipType', 'mixed' => true),
         'location' => array('column' => 'item', 'mixed' => true),
         );
+
+if ($redis->get("zkb:killlistrow:" . $killID) != "true") return;
 
 $kills = Kills::getKills(['killID' => $killID]);
 if (isset($entityID) && $entityID > 0) {

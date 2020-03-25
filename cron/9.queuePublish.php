@@ -72,4 +72,5 @@ function publish($killID)
     foreach ($channels as $channel) {
         $redis->publish($channel, $msg);
     }
+    $redis->setex("zkb:killlistrow:" . $killID, 60, "true");
 }
