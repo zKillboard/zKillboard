@@ -8,9 +8,9 @@ while (true) {
     $ips = [];
     for ($i = 0; $i <= 6; ++$i) {
         $ts = floor((time() - ($i * 60)) / 60);
-        addAll($agents, $redis->hGetAll("analytics:agent:$ts"));
-        addAll($uris, $redis->hGetAll("analytics:uri:$ts"));
-        addAll($ips, $redis->hGetAll("analytics:ip:$ts"));
+        @addAll($agents, $redis->hGetAll("analytics:agent:$ts"));
+        @addAll($uris, $redis->hGetAll("analytics:uri:$ts"));
+        @addAll($ips, $redis->hGetAll("analytics:ip:$ts"));
     }
     system('clear');
     show10($ips);
