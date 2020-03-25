@@ -80,7 +80,7 @@ class Util
             $key = array_shift($split);
             switch ($key) {
                 case '':
-                    throw new Exception("Please remove the double slash // from the call");
+		    die("Please remove the double slash // from the call");
                     break;
                 case 'top':
                 case 'topalltime':
@@ -141,7 +141,7 @@ class Util
                     if ($value != null) {
                         if (strpos($key, 'ID') === false) {
                             global $isApiRequest;
-                            if ($isApiRequest) throw new Exception("$key is invalid for API calls, please use ${key}ID");
+                            if ($isApiRequest) die("$key is invalid for API calls, please use ${key}ID");
                             $key = $key.'ID';
                         }
                         $legalLargePagination = ($key == 'characterID' || $key == 'corporationID' || $key == 'allianceID');
@@ -152,24 +152,24 @@ class Util
                         }
                         $exploded = explode(',', $value);
                         if (sizeof($exploded) > 1) {
-                            throw new Exception("Due to exccessive abuse, multiple values separated by commas are no longer supported");
+                            die("Due to exccessive abuse, multiple values separated by commas are no longer supported");
                         }
                         $multi = sizeof($exploded) > 1;
                         $ints = [];
                         foreach ($exploded as $ex) {
-                            if ("$ex" != (string) (int) $ex) throw new Exception("$ex is not an integer");
+                            if ("$ex" != (string) (int) $ex) die("$ex is not an integer");
                             if (is_numeric($ex)) $ints[] = (int) $ex;
                             else $ints[] = (string) $ex;
                         }
                         if (sizeof($ints) > 1) {
                             asort($ints);
                             if (implode(",", $ints) != $value) {
-                                throw new Exception("multiple IDs must be in sequential order (sorry, but some people were abusing the ordering to avoid the cache)");
+                                die("multiple IDs must be in sequential order (sorry, but some people were abusing the ordering to avoid the cache)");
                             }
                         }
 
                         if (sizeof($ints) == 0) {
-                            throw new Exception("Client requesting too few parameters.");
+                            die("Client requesting too few parameters.");
                         }
                         $parameters[$key] = $ints;
                         $entityRequiredSatisfied = true;
@@ -179,7 +179,7 @@ class Util
                 case 'npc':
                     $value = array_shift($split);
                     if ($value != '0' && $value != '1') {
-                        throw new Exception("Only values of 0 or 1 allowed with the $key filter");
+                        die("Only values of 0 or 1 allowed with the $key filter");
                     }
                     $parameters[$key] = $value;
                     break;
@@ -193,71 +193,56 @@ class Util
                     $value = array_shift($split);
                     $value = (int) $value;
                     if ($value < 1) {
-                        throw new Exception("page value <= 1 not allowed");
+			die("page value <= 1 not allowed");
                     }
                     $parameters[$key] = (int) $value;
                     $paginated = true;
                     break;
                 case 'orderDirection':
-                    throw new Exception("orderDirection is no longer supported - sort it yourself :)");
-                    $value = array_shift($split);
-                    if (!($value == 'asc' || $value == 'desc')) {
-                        throw new Exception('Invalid orderDirection!  Allowed: asc, desc');
-                    }
-                    $parameters[$key] = 'desc';
-                    $parameters[$key] = $value;
-                    break;
+                    die("orderDirection is no longer supported - sort it yourself :)");
                 case 'pastSeconds':
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $value = array_shift($split);
                     $value = (int) $value;
                     if (($value / 86400) > 7) {
-                        throw new Exception('pastSeconds is limited to a max of 7 days');
+                        die('pastSeconds is limited to a max of 7 days');
                     }
                     $parameters[$key] = (int) $value;
                     break;
                 case 'startTime':
                 case 'endTime':
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
-                    //if ($paginated == true) throw new Exception("Cannot mix page and (startTime or endTime)");
                     $value = array_shift($split);
                     $time = strtotime($value);
                     if (strpos($uri, "region") !== false) {
-                        throw new Exception("Cannot use startTime/endTime with this entity, use the /api/history/ or RedisQ intead");
+                        die("Cannot use startTime/endTime with this entity, use the /api/history/ or RedisQ intead");
                     }
                     if ($time < 0) {
-                        throw new Exception("$value is not a valid time format");
+			die("$value is not a valid time format");
                     }
                     if (($time % 3600) != 0) {
-                        throw new Exception("startTime and endTime must end with 00");
+                        die("startTime and endTime must end with 00");
                     }
                     $parameters[$key] = $value;
                     $startEndTiminated = true;
                     break;
                 case 'limit':
-                    throw new Exception("Due to abuse of the limit parameter to avoid caches the ability to modify limit has been revoked for all users");
-                    $value = array_shift($split);
-                    $value = (int) $value;
-                    if ($value > 200 || $value < 1) {
-                        throw new Exception("Invalid limit provided.");
-                    }
-                    $parameters['limit'] = $value;
-                    break;
+                    die("Due to abuse of the limit parameter to avoid caches the ability to modify limit has been revoked for all users");
                 case 'beforeKillID':
                 case 'afterKillID':
-                    throw new Exception("$key has been permanently disabled - please use page, RedisQ, the websocket, or the history endpoint instead.");
+		    die("$key has been permanently disabled - please use page, RedisQ, the websocket, or the history endpoint instead.");
                     break;
                 case 'killID':
                     $value = array_shift($split);
                     if (!is_numeric($value)) {
-                        throw new Exception("$value is not a valid entry for $key");
+			die("$value is not a valid entry for $key");
                     }
                     $parameters[$key] = (int) $value;
                     break;
                 case 'iskValue':
                     $value = (int) array_shift($split);
                     if ($value == 0 || $value % 500000000 != 0) {
-                        throw new Exception("$value is not a valid multiple of 5b ISK");
+			die("$value is not a valid multiple of 5b ISK");
                     }
                     $parameters[$key] = (int) $value;
                     break;
@@ -268,29 +253,29 @@ class Util
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $value = array_shift($split);
                     $value = (int) $value;
-                    if ($value < 2007) throw new Exception("$value is not a valid entry for $key");
-                    if ($value > date('Y')) throw new Exception("$value is not a valid entry for $key");
+		    if ($value < 2007) die("$value is not a valid entry for $key");
+		    if ($value > date('Y')) die("$value is not a valid entry for $key");
                     $parameters[$key] = $value;
                     break;
                 case 'month':
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $value = array_shift($split);
                     $value = (int) $value;
-                    if ($value < 1 || $value > 12) throw new Exception("$value is not a valid entry for $key");
+		    if ($value < 1 || $value > 12) die("$value is not a valid entry for $key");
                     $parameters[$key] = $value;
                     break;
                 case 'xml':
-                    throw new Exception("xml formatting has been deprecated and is no longer supported");
+		    die("xml formatting has been deprecated and is no longer supported");
                 default:
                     if (substr($uri, 0, 5) == "/api/") {
-                        throw new Exception("$key is an invalid parameter");
+			die("$key is an invalid parameter");
                     }
                     header("Location: ..");
                     exit();
             }
         }
 
-        if ($multi && $paginated) throw new Exception("Combining multiple IDs with pagination is no longer supported");
+        if ($multi && $paginated) die("Combining multiple IDs with pagination is no longer supported");
         if ($paginated && !$legalLargePagination && $parameters['page'] > 10) {
             //throw new Exception("Pages over 10 only supported for characters, corporations, and alliances");
         }
