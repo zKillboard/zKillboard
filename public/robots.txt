@@ -11,3 +11,9 @@ Disallow: /
 
 User-agent: Yandex
 Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
