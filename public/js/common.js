@@ -87,7 +87,8 @@ function wslog(msg)
         $("#tqStatus").html(html);
         $("#lasthour").text(json.kills);
     } else if (json.action === 'reload') {
-        setTimeout("location.reload();", (Math.random() * 300000));
+        console.log('Reload imminent in the next 5 minutes');
+        setTimeout("location.reload();", Math.floor(1 + (Math.random() * 500000)));
     } else if (json.action === 'bigkill') {
         htmlNotify(json);
     } else if (json.action === 'lastHour') {
@@ -97,8 +98,16 @@ function wslog(msg)
     } else if (json.action === 'comment') {
         $("#commentblock").html(json.html);
     } else if (json.action === 'littlekill') {
+        var killID = json.killID;
+        setTimeout(function() { loadLittleMail(killID); }, Math.floor(1 + (Math.random() * 10000)));
+    } else {
+        console.log("Unknown action: " + json.action);
+    }
+}
+
+function loadLittleMail(killID) {
         // Add the killmail to the kill list
-        $.get("/cache/1hour/killlistrow/" + json.killID + "/", function(data) { 
+        $.get("/cache/1hour/killlistrow/" + killID + "/", function(data) {
             $(data).insertBefore("#killlist tbody tr:first").on('click', function(event) {
                 if (event.which === 2) return false;
                 window.location = '/kill/' + $(this).attr('killID') + '/';
@@ -109,9 +118,6 @@ function wslog(msg)
             // Tell the user what's going on and not to expect sequential killmails
             if ($("#livefeednotif").length == 0) $("#killlist thead tr").after("<tr><td id='livefeednotif' colspan='7'><strong><em>Live feed - killmails may be out of order.</em></strong></td></tr>");
         });
-    } else {
-        console.log("Unknown action: " + json.action);
-    }
 }
 
 function audio(uri)
