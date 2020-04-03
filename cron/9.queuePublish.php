@@ -69,8 +69,9 @@ function publish($killID)
         'hash' => $zkb['hash'],
             ];
     $msg = json_encode($redisMessage, JSON_UNESCAPED_SLASHES);
+    $redis->setex("zkb:killlistrow:" . $killID, 60, "true");
+    @file_get_contents("https://zkillboard.com/cache/1hour/killlistrow/$killID/");
     foreach ($channels as $channel) {
         $redis->publish($channel, $msg);
     }
-    $redis->setex("zkb:killlistrow:" . $killID, 60, "true");
 }
