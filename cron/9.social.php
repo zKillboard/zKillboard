@@ -16,7 +16,7 @@ while ($beSocial && $minute == date('Hi')) {
 
 function beSocial($killID)
 {
-    global $mdb, $redis, $fullAddr, $twitterName, $imageServer;
+    global $mdb, $redis, $fullAddr, $twitterName, $imageServer, $queueSocial;
 
     $twitMin = 10000000000;
     $kill = $mdb->findDoc('killmails', ['killID' => $killID]);
@@ -45,6 +45,11 @@ function beSocial($killID)
         $name = getName($victimInfo);
         if ($name == "") sleep(1);
     } while ($name == "" && $attempts < 10);
+    if ($name == "") {
+        sleep(1);
+        $queueSocial->push($killID);
+        return;
+    }
     $message = adjustMessage($name, $message);
 
     $redisMessage = [
