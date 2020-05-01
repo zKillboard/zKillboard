@@ -55,7 +55,7 @@ Please login to view your tickets or create a ticket.
 				</div>
 				<div class="modal-body">
                                         <div class="alert alert-danger"><center>Click <i class="glyphicon glyphicon-arrow-right"></i> <a href='https://www.reddit.com/r/Eve/comments/4m8jgm/zkillboard_does_not_automatically_get_all/' target='_blank'>zKillboard does not automatically get all killmails.</a> <i class="glyphicon glyphicon-arrow-left"></i> Click<br/>If you post here about a missing killmail, I'll call you an idiot and close your ticket.<br/><br/>FAQ <i class="glyphicon glyphicon-arrow-right"></i> <a href='https://zkillboard.com/information/faq/' target='_blank'>https://zkillboard.com/information/faq/</a> <i class="glyphicon glyphicon-arrow-left"></i> FAQ<br/>zkillboard does not delete killmails or remove characters, corporations, etc.</center></div>
-					<form name="tickets" method="post" action="/account/tickets/">
+					<form id="frmNewTicket" name="tickets" method="post" action="/account/tickets/">
 						<label>Subject</label>
 						    <input type="text" autocomplete="off" data-provide="typeahead" name="subject" placeholder="zkillboard does not delete killmails or remove characters, corporations, etc." class="form-control" data-original-title=""/>
 						<div class="form-group">
@@ -73,7 +73,7 @@ Please login to view your tickets or create a ticket.
                                                 </div>
 						<label>Response notifications are sent to your character's evemail.</label>
 						<div class="form-group">
-							<button type="submit" class="btn btn-primary">Post Ticket</button>
+							<button type="submit" class="btn btn-primary" id="btnPostTicket">Post Ticket</button>
 						</div>
 					</form>
 				</div>
@@ -99,6 +99,7 @@ $(".modal-newissue").css("width", "800px");
 $(".modal-newissue").css("margin-left", "-400px");
 $(".modal-newissue").css("show");
 $('#ticket').wysihtml5({"font-styles": true, "emphasis": true, "lists": true, "html": false, "link": true, "image": true, "color": false});
+$("#frmNewTicket").on('submit', function() { $("#btnPostTicket").html("Posting...").prop("disabled", true); return true; });
 jQuery(".tagManager").tagsManager({
 	//prefilled: ["New Ticket"],
 	preventSubmitOnEnter: true,

@@ -20,7 +20,7 @@ if ($_POST) {
     $name = $info['username'];
 
     if ($charID > 0 && isset($ticket)) {
-        $insert = ['subject' => $subject, 'content' => $ticket, 'dttm' => time(), 'parentID' => null, 'email' => $email, 'characterID' => $charID, 'status' => 1];
+        $insert = ['subject' => $subject, 'content' => $ticket, 'dttm' => time(), 'parentID' => null, 'email' => $email, 'characterID' => $charID, 'status' => 1, '_id' => new MongoID()];
         $mdb->insert('tickets', $insert);
 
         $id = $insert['_id'];
