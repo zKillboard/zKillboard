@@ -4,6 +4,8 @@ Disallow: /navbar/
 Disallow: /br/
 Disallow: /related/
 Disallow: /partial/
+Disallow: /comment/
+Disallow: */reset/*
 sitemap: https://zkillboard.com/sitemaps/sitemaps.xml
 
 User-agent: PiplBot
