@@ -29,7 +29,9 @@ function success($guzzler, $params, $content)
         $typeID = $segment['type_id'];
         $blueprint = Build::getBlueprint($redis, $typeID);
         $buildable = ($blueprint != null && $blueprint['reqs'] != null);
-        $price = isset($segment['average_price']) ? $segment['average_price'] : ($buildable ? 0.0 : $segment['adjusted_price']);
+        $adjPrice = (double) @$segment['adjusted_price'];
+        $avgPrice = (double) @$segment['average_price'];
+        $price = max($adjPrice, $avgPrice);
         if ($price < 0.01) continue;
         $row = $mdb->findDoc("prices", ['typeID' => $typeID]);
         if (isset($row[$date])) continue;
