@@ -2,7 +2,7 @@
 
 class zkbSearch
 {
-    public static $imageMap = ['typeID' => 'Type/%1$d_32.png', 'groupID' => 'Type/1_32.png', 'characterID' => 'Character/%1$d_32.jpg', 'corporationID' => 'Corporation/%1$d_32.png', 'allianceID' => 'Alliance/%1$d_32.png', 'factionID' => 'Alliance/%1$d_32.png', 'solarSystemID' => 'Type/3802_32.png', 'regionID' => 'Type/3_32.png', 'locationID' => 'Type/1_32.png'];
+    public static $imageMap = ['typeID' => 'types/%1$d/icon?size=32', 'groupID' => 'types/1/icon?size=32.png', 'characterID' => 'characters/%1$d/portrait?size=32', 'corporationID' => 'corporations/%1$d/logo?size=32', 'allianceID' => 'alliances/%1$d/logo?size=32', 'factionID' => 'alliances/%1$d/logo?size=32', 'solarSystemID' => 'types/3802/icon?size=32', 'regionID' => 'types/3/icon?size=32', 'locationID' => 'types/1/icon?size=32'];
 
     public static function getResults($search, $entityType = null)
     {
