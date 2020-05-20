@@ -131,7 +131,10 @@ if (false && !$isApiRequest && !$noLimit && $redis->get("ip::challenge_safe::$ip
     }
 }
 
-setcookie(session_name(), session_id(), time() + $cookie_time, '/', '.zkillboard.com', true, true);
+if (substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || $uri == '/navbar/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp') {
+    session_start();
+    setcookie(session_name(), session_id(), time() + $cookie_time, '/', '.zkillboard.com', true, true);
+}
 
 $request = $isApiRequest ? new RedisTtlCounter('ttlc:apiRequests', 300) : new RedisTtlCounter('ttlc:nonApiRequests', 300);
 if ($isApiRequest || $uri == '/navbar/') $request->add(uniqid());
