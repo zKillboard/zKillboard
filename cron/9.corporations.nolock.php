@@ -8,7 +8,7 @@ if ($redis->get("zkb:universeLoaded") != "true") exit("Universe not yet loaded..
 
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:420prone") == "true") exit();
-$guzzler = new Guzzler();
+$guzzler = new Guzzler(5);
 $corps = new RedisTimeQueue("zkb:corporationID", 86400);
 
 $minute = date('Hi');
@@ -68,7 +68,8 @@ function updateCorp(&$guzzler, &$params, &$content)
     $json = json_decode($content, true);
     $ceoID = (int) $json['ceo_id'];
 
-    $updates = ['lastApiUpdate' => $mdb->now()];
+    $updates = $json;
+    $updates['lastApiUpdate'] =  $mdb->now();
     if (@$row['obscene'] == true) {
         compareAttributes($updates, "name", @$row['name'], "Corporation " . $row['id']);
         compareAttributes($updates, "ticker", @$row['ticker'], (string) $row['id']);

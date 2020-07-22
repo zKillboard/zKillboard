@@ -17,11 +17,12 @@ if (date('i') == 22 || $esi->size() < 100) {
 }
 if ($esi->size() == 0) exit();
 
-$guzzler = new Guzzler($esiCharKillmails, 25);
+$guzzler = new Guzzler($esiCharKillmails, 5);
 
 $bumped = [];
 $minute = date('Hi');
 while ($minute == date('Hi')) {
+    //if ($esiCorp->pending() > 100) sleep(2);
     $charID = $esi->next(false);
     if ($charID > 0) {
         $row = $mdb->findDoc("scopes", ['characterID' => (int) $charID, 'scope' => "esi-killmails.read_killmails.v1"], ['lastFetch' => 1]);
@@ -176,6 +177,7 @@ function fail($guzzer, $params, $ex)
         case 503:
         case 504: // gateway timeout
         case "": // typically a curl timeout error
+            //Util::out("killmail char $charID: " . $ex->getMessage() . "\nkillmail content: " . $params['content']);
             $esi->setTime($charID, time() + 30);
             break;
         case 403: // Server decided to throw a 403 during SSO authentication when that throws a 502...

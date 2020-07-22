@@ -6,7 +6,7 @@ require_once "../init.php";
 
 if ($redis->get("zkb:reinforced") == true) exit();
 
-$guzzler = new Guzzler($esiCorpKillmails);
+$guzzler = new Guzzler($esiCorpKillmails, 5);
 
 $esi = new RedisTimeQueue('tqCorpApiESI', 3600);
 if (date('i') == 22 || $esi->size() < 100) {
@@ -31,9 +31,6 @@ foreach ($noCorp as $row) {
 
 
 $mdb->set("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'lastFetch' => ['$exists' => false]], ['lastFetch' => 0], true);
-$unique = sizeof($mdb->getCollection("scopes")->distinct("corporationID", ['scope' => 'esi-killmails.read_corporation_killmails.v1', 'iterated' => true]));
-$uqique = $esi->size();
-$redis->set("tqCorpApiESICount", $unique);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
@@ -166,12 +163,14 @@ function fail($guzzer, $params, $ex)
     $esi = $params['esi'];
     $charID = $row['characterID'];
     $code = $ex->getCode();
+echo "corp fail $code\n";
 
     $json = json_decode($params['content'], true);
     $code = isset($json['sso_status']) ? $json['sso_status'] : $code;
     $corpID = Info::getInfoField('characterID', (int) $charID, 'corporationID');
 
-    if (@$json['error'] == 'invalid_grant' || @$json['error'] == "Character does not have required role(s)" || @$json['error'] == 'invalid_token') {
+    if ($code == 403 || @$json['error'] == 'invalid_grant' || @$json['error'] == "Character does not have required role(s)" || @$json['error'] == 'invalid_token') {
+        echo "removing errored row\n";
         $mdb->remove("scopes", $row);
         $esi->remove($charID);
         return;
@@ -185,14 +184,19 @@ function fail($guzzer, $params, $ex)
 
     switch ($code) {
         case 403:
+                $mdb->remove("scopes", $row);
+                $esi->remove($charID);
+                Util::out("403'd removed");
+            break;
         case 420:
         case 500:
         case 502: // Server error, try again in 5 minutes
         case 503: // gateway timeout
         case 504:
         case "": // typically a curl timeout error
+            //Util::out("corp killmail: " . $ex->getMessage() . "\n" . $params['content']);
             $esi->setTime($charID, time() + 30);
-            //            break;
+            break;
         default:
             Util::out("corp killmail: " . $ex->getMessage() . "\n" . $params['content']);
     }
@@ -218,6 +222,9 @@ function accessTokenFail(&$guzzler, &$params, $ex)
 
     switch ($code) {
         case 403: // A 403 without an invalid_grant is invalid
+            $mdb->remove("scopes", $row);
+            Util::out("403'd removed");
+            break;
         case 500:
         case 502: // Server error, try again in 5 minutes
         case "": // typically a curl timeout error

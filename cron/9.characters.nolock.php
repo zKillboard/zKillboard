@@ -8,7 +8,7 @@ if ($redis->get("zkb:universeLoaded") != "true") exit("Universe not yet loaded..
 
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:420prone") == "true") exit();
-$guzzler = new Guzzler();
+$guzzler = new Guzzler(5);
 $chars = new RedisTimeQueue("zkb:characterID", 86400);
 $maxKillID = $mdb->findField("killmails", "killID", [], ['killID' => -1]) - 5000000;
 
@@ -84,7 +84,7 @@ function updateChar(&$guzzler, &$params, &$content)
 
     $corpID = (int) $json['corporation_id'];
 
-    $updates = [];
+    $updates = $json;
     if (@$row['obscene'] == true) {
         compareAttributes($updates, "name", @$row['name'], "Character " . $row['id']);
         compareAttributes($updates, "obscene_name", @$row['name'], (string) $json['name']);

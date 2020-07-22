@@ -1,6 +1,7 @@
 <?php
 
 require_once '../init.php';
+exit();
 
 // Build the feeds from the config
 global $characters, $corporations, $alliances;

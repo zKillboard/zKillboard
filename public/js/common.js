@@ -45,7 +45,6 @@ $(document).ready(function() {
         addPartials();
         console.log($(location).attr('pathname'));
     }*/
-    //setTimeout('window.location = window.location', 3600000);
 });
 
 function htmlNotify (data) 

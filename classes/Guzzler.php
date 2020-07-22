@@ -108,9 +108,10 @@ class Guzzler
                 $sleep = $this->setEsiErrorCount();
                 sleep(1);
 
-                if (($code == 0 || $code >= 500) && @$params['retryCount'] <= 3) {
+                Util::out("$code $uri");
+                if (($code == 0 || $code >= 501) && @$params['retryCount'] <= 3) {
                     $params['retryCount'] = @$params['retryCount'] + 1;
-                    //Util::out("guzzler retrying $uri ($code) " . $params['retryCount']);
+                    //if (@$params['retryCount'] > 2) Util::out("guzzler retrying $uri (http error $code) retry number " . $params['retryCount']);
                     $this->call($uri, $fulfilled, $rejected, $params, $setup, $callType, $body);
                 } else {
                     //Log::log($params['uri'] . " $code" . ($params['content'] != '' ? "\n" . $params['content'] : ''));

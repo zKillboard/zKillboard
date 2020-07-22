@@ -10,8 +10,7 @@ if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:420prone") == "true") exit();
 
 $mdb = new Mdb();
-$old = $mdb->now(3600 * 3); // 8 hours
-$queueAllis = new RedisTimeQueue('zkb:allianceID', 9600);
+$queueAllis = new RedisTimeQueue('zkb:allianceID', (3600 * 8));
 
 $i = date('i');
 if ($i == 45 || $queueAllis->size() < 100 ) {
@@ -27,11 +26,15 @@ $minute = date('Hi');
 while ($minute == date('Hi')) {
     $id = (int) $queueAllis->next();
     if ($id > 0) {
-        $guzzler->call("$esiServer/v3/alliances/$id/", "success", "fail", ['id' => $id]);
-    } else {
-        $guzzler->tick();
-        sleep(1);
+        $guzzler->call("$esiServer/v4/alliances/$id/", "success", "fail", ['id' => $id]);
+        while ($guzzler->count() > 0) {
+            $guzzler->tick();
+            sleep(1);
+        }
+        sleep(10);
     }
+    else sleep(1);
+    $guzzler->tick();
 }
 $guzzler->finish();
 
@@ -39,15 +42,15 @@ function success(&$guzzler, &$params, $content)
 {
     global $mdb, $esiServer;
 
+    $id = $params['id'];
     if ($content == "") return;
 
     $content = str_replace('\u', '', $content);
     $alliCrest = json_decode($content, true);
 
-    $id = $params['id'];
     $currentInfo = $mdb->findDoc('information', ['type' => 'allianceID', 'id' => $id]);
 
-    $update = [];
+    $update = $alliCrest;
     $update['lastApiUpdate'] = $mdb->now();
     $update['executorCorpID'] = (int) @$alliCrest['executor_corporation_id'];
     addCorp($update['executorCorpID']);
@@ -90,7 +93,6 @@ function fail($guzzler, $params, $ex)
     switch ($code) {
         case 400:
         case 420:
-        case 500:
         case 502:
         case 503:
         case 504:

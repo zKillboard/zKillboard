@@ -46,7 +46,7 @@ function categorySuccess($guzzler, $params, $content)
     $groups = $cat['groups'];
     Util::out("Category $name $id");
 
-    $mdb->insertUpdate("information", ['type' => 'categoryID', 'id' => $id], ['name' => $name]);
+    $mdb->insertUpdate("information", ['type' => 'categoryID', 'id' => $id], $cat);
 
     foreach ($groups as $group) {
         $guzzler->call("$esiServer/v1/universe/groups/$group/", "groupSuccess", "fail", ['categoryID' => $id]);
@@ -62,7 +62,9 @@ function groupSuccess($guzzler, $params, $content)
     $name = $group['name'];
     Util::out("Group $name $id");
 
-    $mdb->insertUpdate("information", ['type' => 'groupID', 'id' => $id], ['name' => $name, 'categoryID' => $params['categoryID']]);
+    $update = $group;
+    $update['categoryID'] = $params['categoryID'];
+    $mdb->insertUpdate("information", ['type' => 'groupID', 'id' => $id], $update);
 
     foreach ($group['types'] as $type) {
         $guzzler->call("$esiServer/v3/universe/types/$type/", "typeSuccess", "fail", ['categoryID' => $group['category_id']]);
@@ -80,9 +82,6 @@ function typeSuccess($guzzler, $params, $content)
     $type['groupID'] = $type['group_id'];
     $type['categoryID'] = $params['categoryID'];
     $type['portionSize'] = @$params['portion_size'];
-    unset($type['group_id']);
-    unset($type['type_id']);
-    unset($type['portion_size']);
     Util::out("Type $name $id");
 
     $mdb->insertUpdate("information", ['type' => 'typeID', 'id' => $id], $type);
@@ -109,7 +108,7 @@ function regionSuccess($guzzler, $params, $content)
     $constellations = $region['constellations'];
     Util::out("Region: $name");
 
-    $mdb->insertUpdate("information", ['type' => 'regionID', 'id' => $regionID], ['name' => $name]);
+    $mdb->insertUpdate("information", ['type' => 'regionID', 'id' => $regionID], $region);
 
     foreach ($constellations as $constellation) {
         $guzzler->call("$esiServer/v1/universe/constellations/$constellation/", "constellationSuccess", "fail");
@@ -127,7 +126,9 @@ function constellationSuccess($guzzler, $params, $content)
     $systems = $const['systems'];
     Util::out("Constellation: $name");
 
-    $mdb->insertUpdate("information", ['type' => 'constellationID', 'id' => $constID], ['name' => $name, 'regionID' => $regionID]);
+    $update = $const;
+    $update['regionID'] = $regionID;
+    $mdb->insertUpdate("information", ['type' => 'constellationID', 'id' => $constID], $update);
 
     foreach ($systems as $system) {
         $guzzler->call("$esiServer/v4/universe/systems/$system/", "systemSuccess", "fail", ['regionID' => $regionID, 'constellationID' => $constID]);
@@ -145,5 +146,6 @@ function systemSuccess($guzzler, $params, $content)
     $name = ($id >= 32000000 && $id < 33000000) ? Info::getMangledSystemName($id, 0) : $system['name'];
     Util::out("System $name $id");
     
-    $mdb->insertUpdate("information", ['type' => 'solarSystemID', 'id' => $id], ['name' => $name, 'secClass' => @$system['security_class'], 'secStatus' => $system['security_status'], 'regionID' => $params['regionID'], 'constellationID' => $params['constellationID']]);
+    $update = array_merge($system, ['name' => $name, 'secClass' => @$system['security_class'], 'secStatus' => $system['security_status'], 'regionID' => $params['regionID'], 'constellationID' => $params['constellationID']]);
+    $mdb->insertUpdate("information", ['type' => 'solarSystemID', 'id' => $id], $update);
 }

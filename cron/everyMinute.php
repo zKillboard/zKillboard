@@ -74,3 +74,6 @@ $redis->set("zkb:sponsored", json_encode($sponsored));
 // set guzzler etag hash to expire
 $redis->expire("zkb:etags:" . date('m:d'), 86400);
 $redis->del("zkb:etags:" . date('m:d', time() - 86400));
+
+$unique = sizeof($mdb->getCollection("scopes")->distinct("corporationID", ['scope' => 'esi-killmails.read_corporation_killmails.v1', 'iterated' => true]));
+$redis->set("tqCorpApiESICount", $unique);

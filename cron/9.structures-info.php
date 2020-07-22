@@ -1,5 +1,4 @@
 <?php
-exit();
 
 require_once "../init.php";
 
@@ -55,10 +54,8 @@ function accessTokenFail($guzzler, $params, $ex) {
     $row = $params['row'];
     $mdb = $params['mdb'];
 
-    if ($row['public'] == false) {
-        $mdb->remove("structures", $params['row']);
-    }
-    else echo "failed. $code ..\n";
+    $mdb->remove("structures", $params['row']);
+    Util::out("failed. $code ... removed\n");
 }
 
 
@@ -78,7 +75,7 @@ function success($guzzler, $params, $content) {
     $row['hasMatch'] = true;
 
     $mdb->save("structures", $row);
-    Util::out("Added " . $row['name']);
+    //Util::out("Added " . $row['name']);
 }
 
 function fail($guzzer, $params, $ex) {
@@ -93,6 +90,7 @@ function fail($guzzer, $params, $ex) {
         case 404:
             // Did this die or is private now?
             $mdb->remove("structures", $row);
+            Util::out("403'd removed");
             break;
         default:
             echo "struct code $code\n";

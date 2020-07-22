@@ -61,7 +61,7 @@ $app = new \Slim\Slim($config);
 $ipE = explode(',', $ip);
 $ip = $ipE[0];
 
-if (false && $redis->get("IP:ban:$ip") == "true") {
+if ($redis->get("IP:ban:$ip") == "true") {
     header("Location: /html/banned.html", true, 302);
     return;
 }
@@ -131,9 +131,8 @@ if (false && !$isApiRequest && !$noLimit && $redis->get("ip::challenge_safe::$ip
     }
 }
 
-if (substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || $uri == '/navbar/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp') {
+if (substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || $uri == '/navbar/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp' || substr($uri, 0, 20) == "/cache/bypass/login/") {
     session_start();
-    setcookie(session_name(), session_id(), time() + $cookie_time, '/', '.zkillboard.com', true, true);
 }
 
 $request = $isApiRequest ? new RedisTtlCounter('ttlc:apiRequests', 300) : new RedisTtlCounter('ttlc:nonApiRequests', 300);

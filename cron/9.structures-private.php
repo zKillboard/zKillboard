@@ -4,8 +4,10 @@ require_once "../init.php";
 
 $guzzler = new Guzzler(1);
 
+$minute = date('Hi');
 $scopes = $mdb->find("scopes", ['scope' => 'esi-corporations.read_structures.v1']);
 foreach ($scopes as $scope) {
+    if ($minute != date('Hi')) break;
     if (@$scope['lastChecked'] > (time() - 86400)) continue;
     if (!isset($scope['corporationID'])) continue;
 
@@ -44,7 +46,9 @@ function accessTokenFail($guzzler, $params, $ex) {
     
     switch ($code) {
         case 400:
+        case 403:
             $mdb->remove("scopes", $params['row']);
+            Util::out("403'd removed");
             break;
         default:
         echo "$code access token failed...\n";
@@ -83,6 +87,7 @@ function fail($guzzler, $params, $ex) {
         case 403:
         case 404:
             $mdb->remove("scopes", $row); // They don't have the proper role... 
+            Util::out("403'd removed");
             break;
         default:
             echo "failed $code\n";

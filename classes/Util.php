@@ -59,6 +59,7 @@ class Util
 
     public static function convertUriToParameters()
     {
+        global $isApiRequest;
         $parameters = array();
         $entityRequiredSatisfied = false;
         $entityType = null;
@@ -80,7 +81,7 @@ class Util
             $key = array_shift($split);
             switch ($key) {
                 case '':
-		    die("Please remove the double slash // from the call");
+                    die("Please remove the double slash // from the call");
                     break;
                 case 'top':
                 case 'topalltime':
@@ -193,7 +194,7 @@ class Util
                     $value = array_shift($split);
                     $value = (int) $value;
                     if ($value < 1) {
-			die("page value <= 1 not allowed");
+                        die("page value <= 1 not allowed");
                     }
                     $parameters[$key] = (int) $value;
                     $paginated = true;
@@ -211,6 +212,7 @@ class Util
                     break;
                 case 'startTime':
                 case 'endTime':
+                    if ($isApiRequest) die("startTime/endTime no longer supported in api because of abuse");
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $value = array_shift($split);
                     $time = strtotime($value);
@@ -218,7 +220,7 @@ class Util
                         die("Cannot use startTime/endTime with this entity, use the /api/history/ or RedisQ intead");
                     }
                     if ($time < 0) {
-			die("$value is not a valid time format");
+                        die("$value is not a valid time format");
                     }
                     if (($time % 3600) != 0) {
                         die("startTime and endTime must end with 00");
@@ -230,19 +232,19 @@ class Util
                     die("Due to abuse of the limit parameter to avoid caches the ability to modify limit has been revoked for all users");
                 case 'beforeKillID':
                 case 'afterKillID':
-		    die("$key has been permanently disabled - please use page, RedisQ, the websocket, or the history endpoint instead.");
+                    die("$key has been permanently disabled - please use page, RedisQ, the websocket, or the history endpoint instead.");
                     break;
                 case 'killID':
                     $value = array_shift($split);
                     if (!is_numeric($value)) {
-			die("$value is not a valid entry for $key");
+                        die("$value is not a valid entry for $key");
                     }
                     $parameters[$key] = (int) $value;
                     break;
                 case 'iskValue':
                     $value = (int) array_shift($split);
                     if ($value == 0 || $value % 500000000 != 0) {
-			die("$value is not a valid multiple of 5b ISK");
+                        die("$value is not a valid multiple of 5b ISK");
                     }
                     $parameters[$key] = (int) $value;
                     break;
@@ -253,22 +255,22 @@ class Util
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $value = array_shift($split);
                     $value = (int) $value;
-		    if ($value < 2007) die("$value is not a valid entry for $key");
-		    if ($value > date('Y')) die("$value is not a valid entry for $key");
+                    if ($value < 2007) die("$value is not a valid entry for $key");
+                    if ($value > date('Y')) die("$value is not a valid entry for $key");
                     $parameters[$key] = $value;
                     break;
                 case 'month':
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $value = array_shift($split);
                     $value = (int) $value;
-		    if ($value < 1 || $value > 12) die("$value is not a valid entry for $key");
+                    if ($value < 1 || $value > 12) die("$value is not a valid entry for $key");
                     $parameters[$key] = $value;
                     break;
                 case 'xml':
-		    die("xml formatting has been deprecated and is no longer supported");
+                    die("xml formatting has been deprecated and is no longer supported");
                 default:
                     if (substr($uri, 0, 5) == "/api/") {
-			die("$key is an invalid parameter");
+                        die("$key is an invalid parameter");
                     }
                     header("Location: ..");
                     exit();
@@ -277,7 +279,7 @@ class Util
 
         if ($multi && $paginated) die("Combining multiple IDs with pagination is no longer supported");
         if ($paginated && !$legalLargePagination && $parameters['page'] > 10) {
-            //throw new Exception("Pages over 10 only supported for characters, corporations, and alliances");
+            throw new Exception("Pages over 10 only supported for characters, corporations, and alliances");
         }
 
         return $parameters;

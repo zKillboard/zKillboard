@@ -1,4 +1,5 @@
 <?php
+exit();
 
 use cvweiss\redistools\RedisTimeQueue;
 
