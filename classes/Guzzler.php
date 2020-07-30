@@ -91,7 +91,7 @@ class Guzzler
                 Status::addStatus($statusType, true);
                 $this->lastHeaders = array_change_key_case($response->getHeaders());
                 if (isset($this->lastHeaders['warning'])) Util::out("Warning: " . $params['uri'] . " " . $this->lastHeaders['warning'][0]);
-                if (isset($this->lastHeaders['etag']) && strlen($content) > 0 && $etag !== null) Etag::set($params['uri'], $this->lastHeaders['etag'][0]); //$redis->hset("zkb:etags:" . date('m:d'), $params['uri'], $this->lastHeaders['etag'][0]);
+                //if (isset($this->lastHeaders['etag']) && strlen($content) > 0 && $etag !== null) Etag::set($params['uri'], $this->lastHeaders['etag'][0]); //$redis->hset("zkb:etags:" . date('m:d'), $params['uri'], $this->lastHeaders['etag'][0]);
                 if ($etag !== null) Status::addStatus("cached304", ($response->getStatusCode() == 304));
 
                 $fulfilled($guzzler, $params, $content);
