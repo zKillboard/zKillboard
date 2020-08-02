@@ -196,7 +196,7 @@ function accessTokenFail(&$guzzler, &$params, $ex)
     $code = $ex->getCode();
 
     $json = json_decode($params['content'], true);
-    if (@$json['error'] == 'invalid_grant' || @$json['error'] == 'invalid_token') {
+    if (@$json['error'] == 'invalid_grant' || @$json['error'] == 'invalid_token' || $code == 403) {
         Util::out("Removing invalid refresh token for $charID");
         $mdb->remove("scopes", ['characterID' => (int) $charID]);
         $esi->remove($charID);
