@@ -12,13 +12,16 @@ $key = "zkb:topalltime";
 if ($redis->get($key) == "true") exit();
 
 MongoCursor::$timeout = -1;
+$minute = date("Hi");
 
-$rows = $mdb->find('statistics', ['calcAlltime' => true], ['shipsDestroyed' => 1]);
-foreach ($rows as $row) {
-    calcTop($row);
-}
+do {
+    $rows = $mdb->find('statistics', ['calcAlltime' => true], ['shipsDestroyed' => 1], 100);
+    foreach ($rows as $row) {
+        calcTop($row);
+    }
+} while (sizeof($rows) > 0 && $minute == date("Hi")); 
 
-$redis->setex($key, 3600, "true");
+if (sizeof($rows) == 0) $redis->setex($key, 3600, "true");
 
 function calcTop($row)
 {
@@ -42,7 +45,7 @@ function calcTop($row)
 
     $p = $parameters;
     $p['limit'] = 6;
-    $p['categoryID'] = 6;
+    //$p['categoryID'] = 6;
     $topKills = Stats::getTopIsk($p);
     $topKills = array_keys($topKills);
 
