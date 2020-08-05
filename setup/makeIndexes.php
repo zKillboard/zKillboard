@@ -18,7 +18,9 @@ require_once \"../init.php\";
 foreach ($collections as $colName => $collection) {
     echo "// $colName\n";
     echo "echo \"\\nCreating collection $colName ... \";\n";
-    echo "\$$colName = \$db->createCollection(\"{$colName}\");\n";
+    echo "\$db->createCollection(\"{$colName}\");\n";
+    echo "\$collection = \"{$colName}\";\n";
+    echo "\$$colName = \$db->\$collection;\n";
     echo "echo \"Done\\n\";\n";
     $indexes = $collection->getIndexInfo();
     ksort($indexes);

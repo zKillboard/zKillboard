@@ -58,6 +58,7 @@ while ($minute == date('Hi')) {
 
         $kill = array();
         $kill['killID'] = $killID;
+        $kill['labels'] = [];
 
         $date = substr($mail['killmail_time'], 0, 19);
         $date = str_replace('.', '-', $date);
@@ -82,6 +83,7 @@ while ($minute == date('Hi')) {
         $kill['sequence'] = $sequence;
 
         $kill['attackerCount'] = sizeof($mail['attackers']);
+
         $victim = createInvolved($mail['victim']);
         $victim['isVictim'] = true;
         $kill['vGroupID'] = $victim['groupID'];
@@ -111,6 +113,21 @@ while ($minute == date('Hi')) {
         $totalValue = processItems($killID, $mail['victim']['items'], $date);
         $totalValue += $shipValue;
 
+        addLabel($kill, $kill['attackerCount'] >= 100, '100+');
+        addLabel($kill, $kill['attackerCount'] >= 1000, '1000+');
+        addLabel($kill, $kill['npc'], 'npc');
+        addLabel($kill, $kill['awox'], 'awox');
+        addLabel($kill, $kill['solo'], 'solo');
+        addLabel($kill, $solarSystem['security'] >= 0.45, 'highsec');
+        addLabel($kill, $solarSystem['security'] < 0.45 && $solarSystem['security'] >= 0.05, 'lowsec');
+        addLabel($kill, $solarSystem['security'] < 0.05 && $solarSystem['regionID'] < 11000001, 'nullsec');
+        addLabel($kill, $solarSystem['regionID'] >= 11000000 && $solarSystem['regionID'] < 12000000, 'w-space');
+        addLabel($kill, $solarSystem['regionID'] >= 12000000 && $solarSystem['regionID'] < 13000000, 'abyssal');
+        addLabel($kill, $solarSystem['regionID'] >= 12000000 && $solarSystem['regionID'] < 13000000 && $kill['npc'] == false, 'abyssal-pvp');
+        addLabel($kill,  $totalValue > 10000000000, 'bigisk');
+        addLabel($kill,  $totalValue > 100000000000, 'extremeisk');
+        addLabel($kill,  $totalValue > 1000000000000, 'insaneisk');
+
         $zkb = array();
 
         if (isset($mail['war_id']) && $mail['war_id'] != 0) {
@@ -139,6 +156,11 @@ while ($minute == date('Hi')) {
         $mdb->set('crestmails', $row, ['processed' => true]);
     } else if (!$master) break;
     else usleep(50000);
+}
+
+function addLabel(&$kill, $condition, $label)
+{
+    if ($condition === true) $kill['labels'][] = $label;
 }
 
 function saveMail($mdb, $collection, $kill)
