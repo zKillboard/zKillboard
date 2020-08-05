@@ -31,11 +31,11 @@ class Kills
 
         $details = [];
         foreach ($kills as $kill) {
-            $killID = (int) $kill['killID'];
+            $killID = (isset($kill['killID']) ? (int) $kill['killID'] : (int) $kill);
             $killHashKey = "killDetail:$killID";
 
             $killmail = null;
-            $raw = $redis->get("killmail_cache:$killID");
+            $raw = null; //$redis->get("killmail_cache:$killID");
             if ($raw != null) $killmail = unserialize($raw);
 
             if ($killmail == null) {
@@ -52,7 +52,7 @@ class Kills
                 $killmail['finalBlow']['killID'] = $killID;
                 unset($killmail['_id']);
 
-                $redis->setex("killmail_cache:$killID", 900, serialize($killmail));
+                //$redis->setex("killmail_cache:$killID", 900, serialize($killmail));
             }
             $details[$killID] = $killmail;
         }

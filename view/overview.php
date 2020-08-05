@@ -145,8 +145,8 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
 
         $topLists = $mdb->findField('statistics', 'topAllTime', ['type' => "{$useType}ID", 'id' => (int) $id]);
         Info::addInfo($topLists);
-        $topKills = null; //$mdb->findField('statistics', 'topIskKills', ['type' => "{$useType}ID", 'id' => (int) $id]);
-        $topKills = []; //Kills::getDetails($topKills);
+        $topKills = $mdb->findField('statistics', 'topIskKills', ['type' => "{$useType}ID", 'id' => (int) $id]);
+        $topKills = Kills::getDetails($topKills, true);
         $nextTopRecalc = (int) $mdb->findField('statistics', 'nextTopRecalc', ['type' => "{$useType}ID", 'id' => (int) $id]);
         $nextTopRecalc = $nextTopRecalc + 1;
     } else {
