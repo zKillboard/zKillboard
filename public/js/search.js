@@ -74,7 +74,7 @@
 					this.data['menu'].not(':visible').css(this.get_position()).fadeIn(200);
 					this.data['menu'].find('li').first().addClass('active');
 				}, this)});
-			}, this), 300);
+			}, this), 50);
 		}
 	};
 
