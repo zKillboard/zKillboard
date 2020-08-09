@@ -55,7 +55,6 @@ function accessTokenFail($guzzler, $params, $ex) {
     $mdb = $params['mdb'];
 
     $mdb->remove("structures", $params['row']);
-    Util::out("failed. $code ... removed\n");
 }
 
 
@@ -90,7 +89,6 @@ function fail($guzzer, $params, $ex) {
         case 404:
             // Did this die or is private now?
             $mdb->remove("structures", $row);
-            Util::out("403'd removed");
             break;
         default:
             echo "struct code $code\n";

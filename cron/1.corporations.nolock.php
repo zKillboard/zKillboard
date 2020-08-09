@@ -186,7 +186,6 @@ echo "corp fail $code\n";
         case 403:
                 $mdb->remove("scopes", $row);
                 $esi->remove($charID);
-                Util::out("403'd removed");
             break;
         case 420:
         case 500:
@@ -223,7 +222,6 @@ function accessTokenFail(&$guzzler, &$params, $ex)
     switch ($code) {
         case 403: // A 403 without an invalid_grant is invalid
             $mdb->remove("scopes", $row);
-            Util::out("403'd removed");
             break;
         case 500:
         case 502: // Server error, try again in 5 minutes

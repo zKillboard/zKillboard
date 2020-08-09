@@ -48,7 +48,6 @@ function accessTokenFail($guzzler, $params, $ex) {
         case 400:
         case 403:
             $mdb->remove("scopes", $params['row']);
-            Util::out("403'd removed");
             break;
         default:
         echo "$code access token failed...\n";
@@ -87,7 +86,6 @@ function fail($guzzler, $params, $ex) {
         case 403:
         case 404:
             $mdb->remove("scopes", $row); // They don't have the proper role... 
-            Util::out("403'd removed");
             break;
         default:
             echo "failed $code\n";
