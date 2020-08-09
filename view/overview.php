@@ -85,6 +85,7 @@ try {
         $app->notFound();
     }
 } catch (Exception $ex) {
+    Log::log(print_r($ex, true));
     $app->render('error.html', array('message' => "There was an error fetching information for the $key you specified."));
 
     return;

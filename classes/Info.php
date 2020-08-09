@@ -67,8 +67,14 @@ class Info
         $redisKey = self::getRedisKey($type, $id);
         $data = @self::$infoFieldCache[$redisKey];
         if ($data == null) {
-            $raw = $redis->get($redisKey);
-            if ($raw != null) $data = unserialize($raw);
+            try {
+                $raw = $redis->get($redisKey);
+                if ($raw != null) $data = unserialize($raw);
+            } catch (Exception $ex) { 
+                // some sort of error when trying to unserialize... 
+                $redis->del($redisKey);
+                $data = null;
+            }
             if ($data == null) $data = self::loadIntoRedis($type, $id);
             self::$infoFieldCache[$redisKey] = $data;
         }

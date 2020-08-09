@@ -29,6 +29,8 @@ class Kills
     {
         global $mdb, $redis;
 
+        if ($kills == null) return [];
+
         $details = [];
         foreach ($kills as $kill) {
             $killID = (isset($kill['killID']) ? (int) $kill['killID'] : (int) $kill);
