@@ -275,6 +275,6 @@ function adBlockCheck() {
             $('#modalMessage').modal('show');
         }
     } else if (showAds == 1) {
-        setInterval(function() { $("#adsensetop").load('/cache/1hour/google/'); }, 60000);
+        //setInterval(function() { $("#adsensetop").load('/cache/1hour/google/'); }, 60000);
     }
 }

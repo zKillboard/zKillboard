@@ -22,18 +22,7 @@ class Google
     {
         global $dataAdClient, $dataAdSlot;
 return '
-<div>Advertisement<br/>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- zkb Responsive Ad -->
-<ins class="adsbygoogle"
-     style="display:inline-block;min-width:400px;max-width:970px;width:100%;height:90px"
-     data-ad-client="' . $dataAdClient . '"
-     data-ad-slot="' . $dataAdSlot . '"
-     ></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-</div>
+<div data-fuse="22070413988"></div>
 ';
     }
 }
