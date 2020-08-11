@@ -163,14 +163,12 @@ function fail($guzzer, $params, $ex)
     $esi = $params['esi'];
     $charID = $row['characterID'];
     $code = $ex->getCode();
-echo "corp fail $code\n";
 
     $json = json_decode($params['content'], true);
     $code = isset($json['sso_status']) ? $json['sso_status'] : $code;
     $corpID = Info::getInfoField('characterID', (int) $charID, 'corporationID');
 
     if ($code == 403 || @$json['error'] == 'invalid_grant' || @$json['error'] == "Character does not have required role(s)" || @$json['error'] == 'invalid_token') {
-        echo "removing errored row\n";
         $mdb->remove("scopes", $row);
         $esi->remove($charID);
         return;
