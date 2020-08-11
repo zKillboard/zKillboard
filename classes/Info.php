@@ -72,7 +72,6 @@ class Info
                 if ($raw != null) $data = unserialize($raw);
             } catch (Exception $ex) { 
                 // some sort of error when trying to unserialize... 
-                $redis->del($redisKey);
                 $data = null;
             }
             if ($data == null) $data = self::loadIntoRedis($type, $id);
@@ -240,9 +239,15 @@ class Info
 
         $regionID = (int) $mdb->findField('information', 'regionID', ['cacheTime' => 3600, 'type' => 'solarSystemID', 'id' => (int) $systemID]);
 
-        $data = $mdb->findDoc('information', ['cacheTime' => 3600, 'type' => 'regionID', 'id' => $regionID]);
+        $data = $mdb->findDoc('information', ['cacheTime' => 3600, 'type' => 'regionID', 'id' => (int) $regionID]);
+        try {
+        if (!is_array($data)) $data = ['solarSystemID' => $systemID, "name" => "System $systemID"];
         $data['regionID'] = $regionID;
         $data['regionName'] = isset($data['name']) ? $data['name'] : $regionID;
+        } catch (Exception $ex) {
+            Log::log("Bad data in Info ~244\n" . print_r($data));
+            throw $ex;
+        }
 
         return $data;
     }

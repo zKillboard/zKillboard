@@ -200,7 +200,7 @@ class Mdb
         }
 
         if ($cacheTime > 0 && sizeof($result) > 0) {
-            RedisCache::set($cacheKey, $result, $cacheTime);
+            //RedisCache::set($cacheKey, $result, $cacheTime);
         }
 
         return $result;
