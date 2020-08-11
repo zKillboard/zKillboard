@@ -146,7 +146,7 @@ $requests = new RedisTtlCounter('ttlc:requests', 300);
 $requests->add(uniqid());
 
 // Theme
-$theme = UserConfig::get('theme', 'cyborg');
+$theme = 'cyborg'; //UserConfig::get('theme', 'cyborg');
 $app->config(array('templates.path' => $baseDir.'templates/'));
 
 // Error handling
