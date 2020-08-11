@@ -54,7 +54,7 @@ foreach ($types as $type) {
                 break;
             case 'allianceID':
                 $allisRTQ->add($id);
-                $flag = $tickers[$id];
+                if (isset($tickers[$id])) $flag = $tickers[$id];
                 break;
             case 'typeID':
                 if ($mdb->exists('killmails', ['involved.shipTypeID' => $id])) {
