@@ -69,6 +69,10 @@ function accessTokenDone(&$guzzler, &$params, $content)
 
     $charID = $row['characterID'];
     $corpID = $params['corpID'];
+    if (((int) $corpID) == 0) {
+        Util::out("bad data\n" . print_r($row, true));
+        return;
+    }
 
     $url = "$esiServer/v1/corporations/$corpID/killmails/recent/";
     $guzzler->call($url, "success", "fail", $params, $headers, 'GET');
