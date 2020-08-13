@@ -5,8 +5,7 @@ $("#char-image").attr("src", "/img/1_32.jpg");
 $("#loginforapi").show();
 
 if (showAds != 0) {
-    $("#adsensetop").load('/cache/1hour/google/', function() { setTimeout('adBlockCheck();', 5000); });
-    $("#adsensebottom").load('/cache/1hour/google/');
+    loadads();
 }
 
 var date = new Date();

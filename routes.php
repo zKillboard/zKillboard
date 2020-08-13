@@ -15,6 +15,10 @@ $app->get('/challenge/', function() use ($app) {
         include "view/challenge.php";
     });
 
+$app->get('/cache/1hour/publift/:type/', function($type) use ($app) {
+        global $publift;
+        echo "<div data-fuse='" . @$publift[$type] . "'></div>";
+    });
 $app->get('/cache/1hour/google/', function() use ($app) {
         $mobile = false;
         include "view/google.php";
@@ -189,6 +193,11 @@ $app->get('/post/', function () use ($app) {
 $app->post('/post/', function () use ($app) {
         include 'view/postmail.php';
         });
+
+// Advanced Search
+$app->map('/asearch/', function ($search = null) use ($app) {
+        include 'view/asearch.php';
+        })->via('GET');
 
 // Search
 $app->map('/search(/:search)/', function ($search = null) use ($app) {

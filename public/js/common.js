@@ -29,7 +29,7 @@ $(document).ready(function() {
     });
 
     // setup websocket with callbacks
-    ws = new ReconnectingWebSocket('wss://zkillboard.com:2096/', '', {maxReconnectAttempts: 15});
+    ws = new ReconnectingWebSocket('wss://zkillboard.com/websocket/', '', {maxReconnectAttempts: 15});
     ws.onmessage = function(event) {
         wslog(event.data);
     };
@@ -261,6 +261,22 @@ function curday()
     if(mm<10) mm='0'+mm;
     return (yyyy+mm+dd);
 };
+
+var adnumber = 0;
+function loadads() {
+    var adblocks = $(".publift");
+    adnumber = adblocks.length;
+    adblocks.each(function() {
+            var elem = $(this);
+            var fuse = elem.attr("fuse");
+            elem.load('/cache/1hour/publift/' + fuse + '/', adblockloaded);
+            } );
+}
+
+function adblockloaded() {
+    adnumber--;
+    if (adnumber <= 0) fusetag.loadSlots();
+}
 
 function adBlockCheck() {
     if (showAds != 0 && $("iframe").length == 0 ) {

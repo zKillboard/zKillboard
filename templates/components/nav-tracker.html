@@ -6,8 +6,7 @@ $("#username").text("{{ sessionusername }}");
 $("#char-image").attr("src", "{{ image_character }}{{ characterID }}/portrait?size=32");
 
 {% if showAds != 0 %}
-    $("#adsensetop").load('/cache/1hour/google/', function() { setTimeout('adBlockCheck();', 5000); });
-    $("#adsensebottom").load('/cache/1hour/google/');
+    loadads();
 {% else %}
 //    $("#adsensetop, #adsensebottom").html('<a target="_new" href="https://brave.com/zki349"><img src="//zkillboard.com/img/brave_switch.png" alt="Switch to the Brave Browser"></a>');
 {% endif %}
