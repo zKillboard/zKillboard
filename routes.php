@@ -198,11 +198,18 @@ $app->post('/post/', function () use ($app) {
 $app->map('/asearch/', function ($search = null) use ($app) {
         include 'view/asearch.php';
         })->via('GET');
+$app->map('/asearchquery/', function ($search = null) use ($app) {
+        include 'view/asearchquery.php';
+        })->via('GET');
 
 // Search
 $app->map('/search(/:search)/', function ($search = null) use ($app) {
         include 'view/search.php';
         })->via('GET', 'POST');
+
+$app->get('/cache/1hour/autocomplete/', function () use ($app) {
+        include 'view/search2020.php';
+        });
 
 // Autocomplete
 $app->map('/autocomplete/', function () use ($app) {

@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% set pageTitle = 'Advanced Search!' %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+<h3>Advanced Search (alpha stage - there will be problems and unfinished things)</h3>
+<p>Please provide feedback <a href='https://old.reddit.com/r/Eve/comments/ib0ukz/zkill_feedback_wanted_advanced_search/' target='_blank'>here.</a></p>
+<hr/>
+<div class="row">
+    <div class="col-md-10">
+        <div class="form-group">
+            <input id='asearch-autocomplete' class="asearch-autocomplete form-control" type="Search" placeholder="Search" aria-label="Search" />
+        </div>
+    </div>
+    <div class="col-md-2">
+        <input type='reset' disabled class='btn'>
+        <input type='submit' value='Save' disabled class='btn'>
+    </div>
+</div>
+<hr/>
+<div class='row centered'>
+    <div class='col-md-6'>
+        <label>Location</label>
+        <div id="location">All systems</div>
+    </div>
+    <div class='col-md-6'>
+        <label>Time Frame</label>
+        <div id="timeframe">Today - 2007-12-05</div>
+    </div>
+</div>
+<hr/>
+<div class='row centered'>
+    {% for group in labels %}
+        <div class='btn-group'>
+            {% for label in group %}
+                <button class='filter-btn btn btn-default'>{{ label }}</button>
+            {% endfor %}
+        </div>
+    {% endfor %}
+</div>
+<hr/>
+<div class='row centered' style='min-height: 100px;'>
+    <div class="col-md-4">
+        <label>Attackers</label>
+        <div id="attackers"></div>
+    </div>
+    <div class='col-md-4'>
+        <label>Either</label>
+        <div id='neutrals'></div>
+    </div>
+    <div id='victim' class="col-md-4">
+        <label>Victim</label>
+        <div id="victims"></div>
+    </div>
+</div>
+<div class="row">
+    <div class='col-md-10'>
+<div id="killmails-result" style='min-height: 500px;'>
+<table class="table table-condensed table-striped table-hover" style="margin-bottom: 0px;" id="killlist">
+  <thead>
+    <tr>
+      <th>Time</th>
+      <th class="hidden-xs" style="width: 50px; text-align: center;">Ship</th>
+      <th class="hidden-xs" style="width:115px;">Place</th>
+      <th class="hidden-xs" style="width: 64px;">&nbsp;</th>
+      <th class="hidden-xs">Victim</th>
+      <th class="hidden-xs" style="width: 64px;">&nbsp;</th>
+      <th class="hidden-xs">Final Blow</th>
+    </tr>
+  </thead>
+  <tbody id="killmails-list">
+  </tbody>
+</table>
+</div>
+    </div>
+    <div class='col-md-2'>
+        Groupings here.
+    </div>
+</div>
+<hr/>
+
+{% endblock %}
+
+{% block script %}
+<link rel="stylesheet" href="/css/asearch.css">
+<script type="text/javascript" src="/js/asearch.js"></script>
+{% endblock %}

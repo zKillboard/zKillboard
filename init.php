@@ -28,7 +28,7 @@ do {
     $attempts++;
     try {
         $redis = new Redis();
-        $redis->pconnect($redisServer, $redisPort, 3600);
+        $redis->connect($redisServer, $redisPort, 3600);
         $redis->clearLastError();
         $loaded = true;
     } catch (Exception $exx) {

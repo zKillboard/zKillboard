@@ -8,7 +8,6 @@ $pageLoadMS = microtime(true);
 $uri = @$_SERVER['REQUEST_URI'];
 $isApiRequest = substr($uri, 0, 5) == "/api/";
 
-
 if ($uri == "/kill/-1/") {
     header("Location: /keepstar1.html");
     exit();
@@ -18,21 +17,26 @@ if (strpos($uri, "_detail") !== false) {
     header('HTTP/1.1 404 This is not an EDK killboard.');
     exit();
 }
-// Check to ensure we have a trailing slash, helps with caching
-if (substr($uri, -1) != '/' && strpos($uri, 'ccpcallback') === false && strpos($uri, 'patreon') === false && strpos($uri, 'brsave') === false && strpos($uri, "ccp") === false && strpos($uri, "related/") === false) {
-    header('Access-Control-Allow-Origin: *');
-    header('Access-Control-Allow-Methods: GET');
-    // Is there q question mark in the URL? cut it off, doesn't belong
-    if (strpos($uri, '?') !== false) {
-        /* Facebook and other media sites like to add tracking to the URL... remove it */
-        $s = explode('?', $uri);
-        $uri = $s[0];
-        header("Location: $uri", true, 302);
+if (strpos($uri, "/asearchquery/") === false && strpos($uri, "/cache/1hour/autocomplete/") === false)  {
+    // Check to ensure we have a trailing slash, helps with caching
+    if (substr($uri, -1) != '/' && strpos($uri, 'ccpcallback') === false && strpos($uri, 'patreon') === false && strpos($uri, 'brsave') === false && strpos($uri, "ccp") === false && strpos($uri, "related/") === false) {
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET');
+        // Is there q question mark in the URL? cut it off, doesn't belong
+        if (strpos($uri, '?') !== false) {
+            /* Facebook and other media sites like to add tracking to the URL... remove it */
+            $s = explode('?', $uri);
+            $uri = $s[0];
+            header("Location: $uri", true, 302);
+            exit();
+        }
+        if ($isApiRequest) header("HTTP/1.1 200 Missing trailing slash");
+        else {
+            die('missing ending /');
+            header("Location: $uri/", true, 302);
+        }
         exit();
     }
-    if ($isApiRequest) header("HTTP/1.1 200 Missing trailing slash");
-    else header("Location: $uri/", true, 302);
-    exit();
 }
 
 // http requests should already be prevented, but use this just in case

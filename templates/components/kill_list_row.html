@@ -4,7 +4,7 @@
       {% set date = (kill.dttm.sec|date('M d, Y')) %}
       {% if currentDate != date %}
         {% set currentDate = (kill.dttm.sec|date('M d, Y')) %}
-        <tr>
+        <tr class='tr-date' date="{{ date }}">
           <th class="no-stripe" colspan="7"><strong><em>{{ date }}</em></strong></th>
         </tr>
       {% endif %}
