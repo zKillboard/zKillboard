@@ -27,7 +27,7 @@ while ($minute == date('Hi')) {
 
     $serial = serialize($summary);
     $redis->setex($parameters['key'], 900, $serial);
-    $redis->setex('backup:'.$parameters['key'], 3600, $serial);
+    $redis->setex('backup:'.$parameters['key'], 60, $serial);
     $redis->srem('queueRelatedSet', $key);
     $redis->del("$key:params");
 }
