@@ -113,6 +113,9 @@ while ($minute == date('Hi')) {
         $totalValue = processItems($killID, $mail['victim']['items'], $date);
         $totalValue += $shipValue;
 
+        addLabel($kill, $kill['attackerCount'] >= 10, '10+');
+        addLabel($kill, $kill['attackerCount'] >= 25, '25+');
+        addLabel($kill, $kill['attackerCount'] >= 50, '50+');
         addLabel($kill, $kill['attackerCount'] >= 100, '100+');
         addLabel($kill, $kill['attackerCount'] >= 1000, '1000+');
         addLabel($kill, $kill['npc'], 'npc');
@@ -124,9 +127,10 @@ while ($minute == date('Hi')) {
         addLabel($kill, $solarSystem['regionID'] >= 11000000 && $solarSystem['regionID'] < 12000000, 'w-space');
         addLabel($kill, $solarSystem['regionID'] >= 12000000 && $solarSystem['regionID'] < 13000000, 'abyssal');
         addLabel($kill, $solarSystem['regionID'] >= 12000000 && $solarSystem['regionID'] < 13000000 && $kill['npc'] == false, 'abyssal-pvp');
-        addLabel($kill,  $totalValue > 10000000000, 'bigisk');
-        addLabel($kill,  $totalValue > 100000000000, 'extremeisk');
-        addLabel($kill,  $totalValue > 1000000000000, 'insaneisk');
+        addLabel($kill,  $totalValue > 1000000000, '1b+');
+        addLabel($kill,  $totalValue > 10000000000, '10b+');
+        addLabel($kill,  $totalValue > 100000000000, '100b+');
+        addLabel($kill,  $totalValue > 1000000000000, '1t+');
 
         $zkb = array();
 
