@@ -1,15 +1,21 @@
 <div class="footer" style="margin-bottom: 1em;">
     <hr/>
-    <div class="pull-left span-3" style="text-align:left">
-        All <a href="/information/legal/">EVE related materials</a> are property of <a href="http://www.ccpgames.com">CCP Games</a><br/>
-        <a href="/information/legal/">CCP Copyright Notice</a><br/>
-	<a href="https://github.com/zKillboard/zKillboard/blob/master/AGPL.md">zKillboard uses the AGPLv3 license.</a>
+    <div class="row">
+        <div class="col-md-4 cenetered">
+            All <a href="/information/legal/">EVE related materials</a> are property of <a href="http://www.ccpgames.com">CCP Games</a><br/>
+        </div>
+        <div class="col-md-4 centered">
+            <a href="/information/payments/">Payments</a> /
+            <a href="https://github.com/zKillboard/zKillboard/wiki" target="_blank">API</a> /
+            <a href="/information/faq/">FAQ</a> /
+            <a href="/information/legal/">Legal</a>
+        </div>
+        <div class="col-md-4 centered">
+            <a href="/information/about/">About</a> / 
+            <a target='_blank' href="https://github.com/zKillboard/zKillboard">Github</a> / 
+            <a href="https://twitter.com/zkillboard" target="blank">Twitter</a><br/>
+            {{ pageTimer()|number_format() }}ms. / {{ queryCount() }}q
+        </div>
     </div>
-    <div class="pull-right span-3" style="text-align:right">
-    <a href="/information/about/">About</a> / <a target='_blank' href="https://github.com/zKillboard/zKillboard">Github</a> / <a target='_blank' href="https://forums.eveonline.com/default.aspx?g=posts&t=172996">Forum Thread</a><br/>
-    <a href="https://twitter.com/zkillboard" target="blank">Twitter</a><br/>
-    {{ pageTimer()|number_format() }}ms. / {{ queryCount() }}q
-    </div>
-    <div class="clearfix"></div>
     <div class="span12 text-center"><small>Brought to you by <a href="https://zkillboard.com/character/1633218082/">Squizz Caphinator</a></small></div>
 </div>

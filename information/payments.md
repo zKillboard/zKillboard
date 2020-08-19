@@ -12,7 +12,6 @@
 
 <span class="pull-left">
 - You can make payments to <a href="/character/93382481/">zKillboard</a> that will remove ads when you are logged in.
-- Even if you run AdBlock (I am ok with that) it is a nice gesture.
 - You can be ad free on zKillboard.com
 - Each month of ad free time costs <strong>{cost}</strong> ISK.
 - Every 6 months you purchase in one lump sum will give you a bonus month!

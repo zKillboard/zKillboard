@@ -40,8 +40,8 @@ $(document).ready(function() {
     addKillListClicks();
 
     // Yup, this will be unpopular
-    $("#searchbox").on('click', annoyAdBlockers);
-    $("#asearch-autocomplete").on('click', annoyAdBlockers);
+    $("#searchbox").focus(annoyAdBlockers);
+    $("#asearch-autocomplete").focus(annoyAdBlockers);
 
     /*var pathname = $(location).attr('pathname');
     console.log(pathname.substr(0,9));
@@ -294,16 +294,17 @@ function adBlockCheck() {
     if (showAds != 0 && typeof fusetag == "undefined") {
         console.log("Ads are blocked :(");
         $("#adsensetop, #adsensebottom").html('<a target="_new" href="https://www.patreon.com/zkillboard"><img src="/img/patreon_lg.jpg"></a>');
-        var today = curday();
+        /*var today = curday();
         if (!localStorage.getItem('adblocker-nag-' + today)) {
             localStorage.setItem('adblocker-nag-' + today, true);
             annoyAdBlockers();
-        }
+        }*/
     }
 }
 
 function annoyAdBlockers() {
     if (showAds != 0 && typeof fusetag == "undefined") {
+            $(this).blur();
             $('#modalMessageBody').html('<h2>Would you kindly unblock ads?</h2><p>zKillboard only shows 2 advertisements and the ads are designed to be non-intrusive of your viewing experience. Please support zKillboard by disabling your adblocker.</p><p><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p><p><a target="_new" href="https://www.patreon.com/zkillboard"><img src="/img/patreon_lg.jpg"></a></p><p><a target="_new" href="https://brave.com/zki349"><img src="//zkillboard.com/img/brave_switch.png" alt="Switch to the Brave Browser"></a></p>');
             $('#modalMessage').modal('show');
 

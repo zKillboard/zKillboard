@@ -202,11 +202,6 @@ $app->map('/asearchquery/', function ($search = null) use ($app) {
         include 'view/asearchquery.php';
         })->via('GET');
 
-// Search
-$app->map('/search(/:search)/', function ($search = null) use ($app) {
-        include 'view/search.php';
-        })->via('GET', 'POST');
-
 $app->get('/cache/1hour/autocomplete/', function () use ($app) {
         include 'view/search2020.php';
         });
@@ -284,17 +279,11 @@ $app->get('/comment/:pageID/:commentID/up/', function ($pageID, $commentID) use 
 $app->get('/cache/1hour/killlistrow/:killID/', function ($killID) use ($app) {
         include 'view/killlistrow.php';
     });
-$app->get('/killlistrow/:killID/:entityType/:entityID/', function ($killID, $entityType, $entityID) use ($app) {
-        $app->redirect("/cache/1hour/killlistrow/$killID/", 302);
-    });
-$app->get('/killlistrow/:killID/', function ($killID) use ($app) {
-        $app->redirect("/cache/1hour/killlistrow/$killID/", 302);
-    });
 
 // The Overview stuff
-$app->get('/partial/:input+/', function ($input) use ($app) {
+/*$app->get('/partial/:input+/', function ($input) use ($app) {
         include 'view/overview.php';
-        });
+        });*/
 $app->get('/:input+/', function ($input) use ($app) {
         include 'view/overview.php';
         });

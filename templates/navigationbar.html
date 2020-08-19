@@ -77,7 +77,7 @@
 					</ul>
 				</li>
 				<li class="hidden-xs hidden-sm"><a href="/post/">Post</a></li>
-				<li class="hidden-xs hidden-sm"><a href="/map/">Map</a></li>
+				<!--<li class="hidden-xs hidden-sm"><a href="/map/">Map</a></li>-->
 				<li class="hidden-xs hidden-sm"><a href="/information/payments/"><img src='/img/golden-wreck.png'></a></li>
                                 <li class="hidden-xs hidden-sm"><a href="/account/favorites/"><span id='favorite' style='width: 1em; cursor: pointer;'><b id='fav-star' class="glyphicon glyphicon-star" style='color: #FDBC2C'></b></span></a></li>
 				{% if statslink %}
@@ -88,30 +88,20 @@
 				<li class="hidden-xs hidden-sm"><a href="/top/lasthour/all/" rel="tooltip" title="Kills added this hour" id="lasthour">&nbsp;</a></li>
 				<li class="hidden-xs hidden-sm"><a href="#" rel="tooltip" title="Tranquility Status" onClick="return false;"><span id="tqStatus">&nbsp;</span></a></li>
 				<li class="hidden-xs hidden-sm hidden-md"><a href="/ztop/" rel="tooltip" title="Eve Time"><div id="my_clock"></div></a></li>
-				<li class="dropdown">
-					<form name="search" id="search" class="navbar-form navbar-right" action="/search/" method="post">
+				<li style='padding-right: 0px; margin-right: 0px;'><a href='/asearch/'><span class="glyphicon glyphicon-search"></span></a></li>
+                <li>    
+					<form name="search" id="search" class="navbar-form navbar-right">
 						<div class="form-group">
 							<input type="text" class="form-control" placeholder="Search" autocomplete="off" id="searchbox" name="searchbox" tabindex="1" style='width: 200px;'>
 						</div>
 					</form>
 				</li>
-				<li class="dropdown visible-lg hidden-xs hidden-sm">
-					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><strong>?</strong> <b class="caret"></b></a>
-					<ul class="dropdown-menu">
-						<li class="dropdown-header">Information</li>
-                                                <li><a href='/ztop/'>zTop - live stats</a></li>
-						<li><a href="/information/about/">About</a></li>
-						<li><a href="https://github.com/zKillboard/zKillboard/wiki" target="_blank">API</a></li>
-						<li><a href="/information/faq/">FAQ</a></li>
-						<li><a href="/information/legal/">Legal</a></li>
-						<li><a href="/information/payments/">Payments</a></li>
-					</ul>
-				</li>
 				<li id='usermenu' class="dropdown">
 					<a href="#" class="dropdown-toggle hidden-xs" data-toggle="dropdown" id='usermenu-dropdown'>
                                         {% if characterID > 0 %}
                                             <img id='char-image' src="{{ image_character }}{{ characterID }}/portrait?size=32" style='height: 32px; width: 32px; padding: 0px; margin: 0px; margin-top: -8px;'/>
-                                        {% else %}<img id='char-image' src="/img/transparent_32.png" style='height: 32px; width: 32px; padding: 0px; margin: 0px; margin-top: -8px;'/>
+                                        {% else %}
+                                            <img id='char-image' src="/img/transparent_32.png" style='height: 32px; width: 32px; padding: 0px; margin: 0px; margin-top: -8px;'/>
                                         {% endif %}
                                         <span class="caret"></span></a>
 					<a href="#" class="dropdown-toggle hidden-lg hidden-md hidden-sm" data-toggle="dropdown">Account <span class="caret"></span></a>

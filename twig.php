@@ -93,6 +93,7 @@ $twig->addGlobal("universeUpdating", $redis->get("zkb:universeLoaded") == "false
 $twig->addGlobal("tobefetched", $redis->get("tobefetched"));
 
 $noAdPages = array('/account/', '/ticket', '/information/', '/post/', '/ccp');
+$showAds = true;
 foreach ($noAdPages as $noAdPage) {
     $showAds &= !Util::startsWith($uri, $noAdPage);
 }
@@ -117,7 +118,7 @@ if ($banner) {
     //$twig->addGlobal("headerImage", $banner);
 }
 
-$twig->addGlobal('showAds', $showAds);
+$twig->addGlobal('showAds', ($showAds ? 1 : 0));
 $_SERVER['SERVER_NAME'] = $baseAddr;
 
 $twig->addGlobal('KillboardName', (isset($killboardName) ? $killboardName : 'zKillboard'));

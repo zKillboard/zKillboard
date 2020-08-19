@@ -5,6 +5,7 @@ $("#loginforapi").remove();
 $("#username").text("{{ sessionusername }}");
 $("#char-image").attr("src", "{{ image_character }}{{ characterID }}/portrait?size=32");
 
+showAds = {{ showAds }} & showAds;
 {% if showAds != 0 %}
     loadads();
 {% else %}
