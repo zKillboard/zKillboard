@@ -9,10 +9,18 @@ $query = buildQuery($query, "neutrals");
 $query = buildQuery($query, "attackers", false);
 $query = buildQuery($query, "victims", true);
 
-$labels = [];
+getLabelGroup("highsec");
 if (isset($_POST['labels'])) {
-    $labels = $_POST['labels'];
-    foreach ($labels as $label) $query[] = ['labels' => $label];
+    $l = $_POST['labels'];
+    $labels = [];
+    foreach ($l as $label) {
+        $group = getLabelGroup($label);
+        if ($group != null) {
+            if (!(isset($labels[$group]))) $labels[$group] = [];
+            $labels[$group][] = $label;
+        }
+    }
+    foreach ($labels as $group => $search) $query[] = ['labels' => ['$in' => $search]];
 }
 
 if (sizeof($query) == 0) $query = [];
@@ -85,3 +93,10 @@ $types = [
     'location_id',
     'constellation_id',
 ]; // war_id is excluded
+
+function getLabelGroup($label) {
+    foreach (AdvancedSearch::$labels as $group => $labels) {
+        if (in_array($label, $labels)) return $group;
+    }
+    return null;
+}
