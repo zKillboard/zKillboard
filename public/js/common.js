@@ -39,10 +39,6 @@ $(document).ready(function() {
 
     addKillListClicks();
 
-    // Yup, this will be unpopular
-    $("#searchbox").focus(annoyAdBlockers);
-    $("#asearch-autocomplete").focus(annoyAdBlockers);
-
     /*var pathname = $(location).attr('pathname');
     console.log(pathname.substr(0,9));
     if (pathname != '/map/' && pathname.substr(0, 9) != '/account/') {
@@ -103,7 +99,7 @@ function wslog(msg)
         $("#commentblock").html(json.html);
     } else if (json.action === 'littlekill') {
         var killID = json.killID;
-        setTimeout(function() { loadLittleMail(killID); }, Math.floor(1 + (Math.random() * 10000)));
+        setTimeout(function() { loadLittleMail(killID); }, Math.floor(1 + (Math.random() * 30000)));
     } else {
         console.log("Unknown action: " + json.action);
     }
@@ -275,7 +271,7 @@ function loadads() {
             var elem = $(this);
             var fuse = elem.attr("fuse");
             elem.load('/cache/1hour/publift/' + fuse + '/', adblockloaded);
-            } );
+    });
 }
 
 function adblockloaded() {
@@ -294,11 +290,11 @@ function adBlockCheck() {
     if (showAds != 0 && typeof fusetag == "undefined") {
         console.log("Ads are blocked :(");
         $("#adsensetop, #adsensebottom").html('<a target="_new" href="https://www.patreon.com/zkillboard"><img src="/img/patreon_lg.jpg"></a>');
-        /*var today = curday();
+        var today = curday();
         if (!localStorage.getItem('adblocker-nag-' + today)) {
             localStorage.setItem('adblocker-nag-' + today, true);
             annoyAdBlockers();
-        }*/
+        }
     }
 }
 

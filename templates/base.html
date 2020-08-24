@@ -35,7 +35,7 @@
 		{% endblock %}
 
 			<meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <script async src="https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js"></script> 
+            <script src="https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js"></script> 
 
 		<title>
 			{% block title %}
@@ -58,9 +58,8 @@
 
 		<link id="mainstyle" rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/{{ version }}/{{ style }}/bootstrap.min.css">
 
-		<link rel="stylesheet" href="//{{ siteurl }}/css/style-edits/{{ style }}-main.css?202008171830" id="nextstyle">
-		<link rel="stylesheet" href="//{{ siteurl }}/css/datepicker.css">
-		<link rel="stylesheet" href="//{{ siteurl }}/css/main.css">
+		<link rel="stylesheet" href="//{{ siteurl }}/css/style-edits/{{ style }}-main.css?v=202008190218" id="nextstyle">
+		<link rel="stylesheet" href="//{{ siteurl }}/css/main.css?v=202008190218">
 		<link rel="stylesheet" href="//{{ siteurl }}/css/nprogress.css">
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
@@ -83,7 +82,6 @@
 		</style>
                 <script type="text/javascript">
                     var showAds = 1;
-                    var adblocked = true;
                     var characterID = {{ characterID }};
                     var navbar = true; 
                     var entityType = '{{ entityType }}';
@@ -92,10 +90,11 @@
                 </script>
 	</head>
 	<body>
+        <noscript><div id="nojsfulloverlay">JavaScript required.</div></noscript>
 		<div class="content">
 
 			<!-- The navbar -->
-			<div class="container" id='navibar' style="mgin: 0px; padding: 0px;">
+			<div class="container" id='navibar' style="padding: 0px;">
 				{% include "navigationbar.html" %}
 			</div>
 
@@ -138,9 +137,8 @@
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js"></script>
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.2/bootstrap-slider.min.js"></script>
 
-
 		<script type="text/javascript" src="//{{ siteurl }}/js/search.js?v=1"></script>
-		<script type="text/javascript" src="//{{ siteurl }}/js/common.js?t=202008181502"></script>
+		<script type="text/javascript" src="//{{ siteurl }}/js/common.js?t=202008181504"></script>
 		<script type="text/javascript" src="//{{ siteurl }}/js/sclock1.js"></script>
 		<script type="text/javascript" src="//{{ siteurl }}/js/nprogress.js"></script>
                 <script type="text/javascript" src="/js/reconnecting-websocket.js"></script>
@@ -210,27 +208,6 @@
                 </div>
         </div>
 </div>
-<!--<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.css" />
-<script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.js"></script>
-<script>
-window.addEventListener("load", function(){
-window.cookieconsent.initialise({
-  "palette": {
-    "popup": {
-      "background": "#216942",
-      "text": "#b2d192"
-    },
-    "button": {
-      "background": "transparent",
-      "text": "#afed71",
-      "border": "#afed71"
-    }
-  },
-  "showLink": false
-})});
-</script>
--->
-		<script type="text/javascript" src="//{{ siteurl }}/js/ads.js"></script>
 </body>
 </html>
 {% endif %}

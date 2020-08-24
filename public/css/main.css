@@ -302,3 +302,16 @@ td.centered {
 .pointer {
     cursor: pointer;
 }
+
+#nojsfulloverlay {
+  color: black;
+  background: white;
+  width:      100%;
+  height:     100%; 
+  z-index:    10;
+  top:        0; 
+  left:       0; 
+  position:   fixed; 
+  text-align: center;
+  padding-top: 1em;
+}
