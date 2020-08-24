@@ -136,6 +136,8 @@ if (false && !$isApiRequest && !$noLimit && $redis->get("ip::challenge_safe::$ip
 }
 
 if (substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || $uri == '/navbar/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp' || substr($uri, 0, 20) == "/cache/bypass/login/") {
+    ini_set('session.gc_maxlifetime', (86400 * 30));
+    ini_set('session.cookie_lifetime', (86400 * 30));
     session_start();
 }
 

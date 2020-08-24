@@ -7,4 +7,5 @@ if ($ssoCharacterID != null && $ssoHash != null) {
 }
 
 session_unset();
+session_regenerate_id();
 $app->redirect('/', 302);
