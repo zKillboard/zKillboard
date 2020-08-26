@@ -13,6 +13,9 @@ $(document).ready(function() {
             }
         }).focus();;
     $(".filter-btn").on('click', toggleFilterBtn);
+    $("#dtstart").on('change', doQuery).datetimepicker({format: 'Y-m-d H:i'});
+    $("#dtend").on('change', doQuery).datetimepicker({format: 'Y-m-d H:i'});
+
     doQuery();
 });
 
@@ -68,7 +71,6 @@ function add(id, suggestion) {
 
 var xhr = undefined;
 function doQuery() {
-    console.log(filters);
     $("#killmails-list").html("");
     if (xhr != undefined) xhr.abort();
     killlistmessage('fetching');
@@ -89,6 +91,7 @@ function getFilters() {
     }
     retVal.labels = [];
     $(".filter-btn.btn-primary").each(function() { retVal.labels.push($(this).html()); });
+    retVal.epoch = { start: $("#dtstart").val(), end: $("#dtend").val()};
     console.log(retVal);
     return retVal;
 }

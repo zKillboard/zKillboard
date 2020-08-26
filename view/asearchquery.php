@@ -9,6 +9,9 @@ $query = buildQuery($query, "neutrals");
 $query = buildQuery($query, "attackers", false);
 $query = buildQuery($query, "victims", true);
 
+$query = parseDate($query, 'start');
+$query = parseDate($query, 'end');
+
 getLabelGroup("highsec");
 if (isset($_POST['labels'])) {
     $l = $_POST['labels'];
@@ -99,4 +102,27 @@ function getLabelGroup($label) {
         if (in_array($label, $labels)) return $group;
     }
     return null;
+}
+
+function parseDate($query, $which) {
+
+    $val = $_POST['epoch'][$which];
+    if ($val == "") return $query;
+
+    $killID = findKillID(strtotime($val), $which);
+    if ($killID != null) $query[] = ['killID' => [($which == 'start' ? '$gte' : '$lte') => $killID]];
+
+    return $query;
+}
+
+function findKillID($unixtime, $which) {
+    global $mdb;
+
+    $starttime = $unixtime;
+    do {
+        $killID = $mdb->findField("killmails", "killID", ['dttm' => new MongoDate($unixtime)], ['killID' => ($which == 'start' ? -1 : 1)]);
+        $unixtime += ($which == 'start' ? 1 : -1);
+        if (abs($starttime - $unixtime) > 3600) break; // only check 1 hour worth of mails
+    } while ($killID == null);
+    return $killID;
 }
