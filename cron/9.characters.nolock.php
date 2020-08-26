@@ -23,7 +23,7 @@ while ($minute == date('Hi')) {
     $id = (int) $chars->next();
     if ($id > 1) {
         $guzzler->tick();
-        usleep(150000);
+        usleep(200000);
         $guzzler->tick();
         $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => $id]);
 

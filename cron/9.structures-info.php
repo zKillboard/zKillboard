@@ -90,6 +90,8 @@ function fail($guzzer, $params, $ex) {
             // Did this die or is private now?
             $mdb->remove("structures", $row);
             break;
+        case 500:
+            // ignore for now
         default:
             echo "struct code $code\n";
     }

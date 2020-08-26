@@ -6,7 +6,7 @@ $redis->setex("validUser:$ip", 300, "true");
 
 if (!User::isLoggedIn()) {
     session_regenerate_id();
-    $app->redirect('/html/loggedout.html?v=1', 302);
+    $app->redirect('/html/loggedout.html?v=4', 302);
     exit();
 }
 

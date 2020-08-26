@@ -289,7 +289,7 @@ function adblockloaded() {
 function adBlockCheck() {
     if (showAds != 0 && typeof fusetag == "undefined") {
         console.log("Ads are blocked :(");
-        $("#adsensetop, #adsensebottom").html('<a target="_new" href="https://www.patreon.com/zkillboard"><img src="/img/patreon_lg.jpg"></a>');
+        $("#adsensetop, #adsensebottom").html('<a target="_new" href="https://zkillboard.com/cache/bypass/login/patreon/"><img src="/img/patreon_lg.jpg"></a>');
         var today = curday();
         if (!localStorage.getItem('adblocker-nag-' + today)) {
             localStorage.setItem('adblocker-nag-' + today, true);

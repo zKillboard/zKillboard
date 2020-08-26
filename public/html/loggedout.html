@@ -8,13 +8,8 @@ if (showAds != 0) {
     loadads();
 }
 
-var date = new Date();
-var foo = 'zkbLoginMsg' + date.getUTCFullYear() + '' + (date.getUTCMonth() + 1) + '' + date.getUTCDate();
-if ($(window).width() > 800 && localStorage) {
-    if (!localStorage.getItem(foo)) {
-        //$("#usermenu-dropdown").click();
-        localStorage.setItem(foo, true);
-    }
+if ($(window).width() >= 800) {
+    $("#usermenu-dropdown").dropdown('toggle')
 }
 
 </script>
