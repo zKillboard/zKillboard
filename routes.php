@@ -194,6 +194,11 @@ $app->post('/post/', function () use ($app) {
         include 'view/postmail.php';
         });
 
+// Search
+$app->map('/search(/:search)/', function ($search = null) use ($app) {  
+        include 'view/search.php';  
+        })->via('GET', 'POST');
+
 // Advanced Search
 $app->map('/asearch/', function ($search = null) use ($app) {
         include 'view/asearch.php';

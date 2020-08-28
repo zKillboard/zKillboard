@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% set pageTitle = 'Search' %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+
+{% if data is empty %}
+    <div class="alert alert-info">No Character/Corp/Alliance by that name could be found! <p>Please search again with the search box at the top</p></div>
+{% endif %}
+
+{% if data %}
+<h2>Results</h2>
+{% set lastType = "" %}
+{% set imageSize = 64 %}
+<div class="container">
+{% for field in data %}
+        {% if field.type != lastType %}
+            <div class="clearfix"></div>
+            <h3>{{ field.type|capitalize }}s</h3>
+            {% set lastType = field.type %}
+        {% endif %}
+        <div class="pull-left" style="margin-bottom: 0.5em; width: 390px;"/>
+            <img src="{{ image_server}}{{ field.image }}"/> <a href="/{{ field.type }}/{{ field.id }}/">{{ field.name }}</a>
+        </div>
+{% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}
