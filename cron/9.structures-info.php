@@ -87,11 +87,10 @@ function fail($guzzer, $params, $ex) {
         case 400:
         case 403:
         case 404:
+        case 500:
             // Did this die or is private now?
             $mdb->remove("structures", $row);
             break;
-        case 500:
-            // ignore for now
         default:
             echo "struct code $code\n";
     }
