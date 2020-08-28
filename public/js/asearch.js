@@ -72,12 +72,22 @@ function add(id, suggestion) {
 }
 
 var xhr = undefined;
+var filtersStringified = undefined;
 function doQuery() {
+    var f = getFilters();
+    var stringified = JSON.stringify(f);
+    console.log(filtersStringified + ' - ' + stringified);
+    if (filtersStringified === stringified) {
+        console.log('they match');
+        return;
+    }
+    filtersStringified = stringified;
+
     $("#killmails-list").html("");
     if (xhr != undefined) xhr.abort();
     killlistmessage('fetching');
     xhr = $.ajax('/asearchquery/', {
-        data: getFilters(),
+        data: f,
         method: 'get',
         error: handleError,
         success: applyQueryResult,
@@ -107,6 +117,7 @@ function applyQueryResult(data, textStatus, jqXHR) {
 }
 
 function handleError(jqXHR, textStatus, errorThrown) {
+    filtersStringified = null;
     console.log('ajax error: ' + errorThrown + ' ' + textStatus);
     killlistmessage(errorThrown + ' ' + textStatus);
 }
@@ -128,10 +139,11 @@ function popEm() {
         $.get("/cache/1hour/killlistrow/" + killID + "/", function(data) {
                 $("#kill-" + killID).replaceWith(data);
                 doDateCleanup();
-                });
+            });
         popEm();
     } else {
         // We're done, now do some cleanup
+        killListAd(true);
     }
 }
 
@@ -178,16 +190,8 @@ function moveOut() {
 }
 
 function doDateCleanup() {
-    $(".tr-date").each(cleanDates);
-}
-
-function cleanDates() {
-    var element = $(this);
-    var date = element.attr('date');
-    var allWithDate= $("[date='" + date + "']");
-    if (allWithDate.length >= 2) {
-        for (var i = 1; i < allWithDate.length; i++) allWithDate[i].remove();
-    }
+    var rows = $("#killmails-list tr.tr-date");
+    for (var i = rows.length - 1; i > 0; i-- ) {  var r = $(rows[i]);  var n = $(rows[i-1]); if (r.attr('date') != '' && r.attr('date') == n.attr('date')) r.remove(); }
 }
 
 function toggleFilterBtn() {

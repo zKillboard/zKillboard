@@ -4,7 +4,6 @@ global $mdb, $redis;
 
 $validSortBy = ['date' => 'killID', 'isk' => 'zkb.totalValue', 'involved' => 'attackerCount'];
 $validSortDir = ['asc' => 1, 'desc' => -1];
-$hasDateFilter = false;
 
 $_POST = $_GET;
 $query = [];
@@ -30,18 +29,19 @@ if (isset($_POST['labels'])) {
     foreach ($labels as $group => $search) $query[] = ['labels' => ['$in' => $search]];
 }
 
-if (sizeof($query) == 0) $query = [];
-else if (sizeof($query) == 1) $query = $query[0];
-else $query = ['$and' => $query];
-
 $sortKey = (isset($validSortBy[$_POST['radios']['sort']['sortBy']]) ? $validSortBy[$_POST['radios']['sort']['sortBy']] : 'killID' );
 $sortBy = (isset($validSortDir[$_POST['radios']['sort']['sortDir']]) ? $validSortDir[$_POST['radios']['sort']['sortDir']] : -1 );
 $sort = [$sortKey => $sortBy];
 $coll = ['killmails'];
-Log::log($sortKey && ($hasDateFilter ? ' t' : ' f'));
-if ($sortKey == 'killID' && $hasDateFilter == false) {
-    //$coll = ['oneWeek', 'ninetyDays', 'killmails'];
+if ($sortKey == 'killID' && $sortBy == -1 && @$query['hasDateFilter'] != true) {
+    $coll = ['oneWeek', 'ninetyDays', 'killmails'];
 }
+unset($query['hasDateFilter']);
+
+if (sizeof($query) == 0) $query = [];
+else if (sizeof($query) == 1) $query = $query[0];
+else $query = ['$and' => $query];
+
 foreach ($coll as $col) {
     //Log::log("\n" . print_r($coll, true) . print_r($query, true) . print_r($sort, true) . "====");
     $result = $mdb->find($col, $query, $sort, 50);
@@ -115,15 +115,13 @@ function getLabelGroup($label) {
 }
 
 function parseDate($query, $which) {
-    global $hasDateFilter; 
-
     $val = $_POST['epoch'][$which];
     if ($val == "") return $query;
 
     $killID = findKillID(strtotime($val), $which);
     if ($killID != null) {
-        $hasDateFilter = true;
         $query[] = ['killID' => [($which == 'start' ? '$gte' : '$lte') => $killID]];
+        $query['hasDateFilter'] = true;
     }
 
     return $query;

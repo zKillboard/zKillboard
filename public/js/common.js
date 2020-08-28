@@ -299,10 +299,10 @@ function adblockloaded() {
     }
 }
 
-function killListAd(doLoatSlots) {
+function killListAd(doLoadSlots) {
     if ($(".adrow").length == 0) {
         var td = $("<td colspan='8' style='width: 100%;'>") ; bottomad.appendTo(td); var tr = $("<tr class='killlistrow adrow'>").append(td).insertBefore("#killlist tbody tr:first");
-        if (doLostSlots === true) fusetag.loadSlots();
+        if (doLoadSlots === true) fusetag.loadSlots();
     }
 }
 
