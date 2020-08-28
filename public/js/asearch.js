@@ -13,6 +13,7 @@ $(document).ready(function() {
             }
         }).focus();;
     $(".filter-btn").on('click', toggleFilterBtn);
+    $(".radio-btn").on('click', toggleRadioBtn);
     $("#dtstart").on('change', doQuery).datetimepicker({format: 'Y-m-d H:i'});
     $("#dtend").on('change', doQuery).datetimepicker({format: 'Y-m-d H:i'});
 
@@ -44,6 +45,7 @@ function addEntity(suggestion) {
 
 var ids = [];
 var filters = {location: [], attackers: [], neutrals: [], victims: []};
+var radios = { sort: { sortBy: 'date', sortDir: 'desc' }};
 
 var html = '<div type=":type" id=":id">:name</div>';
 function getHTML(suggestion) {
@@ -92,6 +94,7 @@ function getFilters() {
     retVal.labels = [];
     $(".filter-btn.btn-primary").each(function() { retVal.labels.push($(this).html()); });
     retVal.epoch = { start: $("#dtstart").val(), end: $("#dtend").val()};
+    retVal.radios = radios;
     console.log(retVal);
     return retVal;
 }
@@ -191,6 +194,19 @@ function toggleFilterBtn() {
     var element = $(this);
     if (element.hasClass('btn-primary')) element.removeClass('btn-primary').blur();
     else element.addClass('btn-primary').blur();
+    doQuery();
+}
+
+function toggleRadioBtn() {
+    var element = $(this);
+    var parent = element.parent();
+    var variable = parent.attr('zkill-var');
+    var key = parent.attr('zkill-key');
+    parent.children().each(function() {
+        $(this).removeClass('btn-primary').addClass('btn-default');
+    });
+    element.removeClass('btn-default').addClass('btn-primary');
+    radios[variable][key] = $(this).text().toLowerCase();
     doQuery();
 }
 

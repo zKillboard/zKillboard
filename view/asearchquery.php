@@ -2,6 +2,10 @@
 
 global $mdb, $redis;
 
+$validSortBy = ['date' => 'killID', 'isk' => 'zkb.totalValue', 'involved' => 'attackerCount'];
+$validSortDir = ['asc' => 1, 'desc' => -1];
+$hasDateFilter = false;
+
 $_POST = $_GET;
 $query = [];
 $query = buildQuery($query, "location");
@@ -29,11 +33,17 @@ if (isset($_POST['labels'])) {
 if (sizeof($query) == 0) $query = [];
 else if (sizeof($query) == 1) $query = $query[0];
 else $query = ['$and' => $query];
-Log::log("final query: " . print_r($query, true));
 
-$sort = ['killID' => -1];
-$coll = ['oneWeek', 'ninetyDays', 'killmails'];
+$sortKey = (isset($validSortBy[$_POST['radios']['sort']['sortBy']]) ? $validSortBy[$_POST['radios']['sort']['sortBy']] : 'killID' );
+$sortBy = (isset($validSortDir[$_POST['radios']['sort']['sortDir']]) ? $validSortDir[$_POST['radios']['sort']['sortDir']] : -1 );
+$sort = [$sortKey => $sortBy];
+$coll = ['killmails'];
+Log::log($sortKey && ($hasDateFilter ? ' t' : ' f'));
+if ($sortKey == 'killID' && $hasDateFilter == false) {
+    //$coll = ['oneWeek', 'ninetyDays', 'killmails'];
+}
 foreach ($coll as $col) {
+    //Log::log("\n" . print_r($coll, true) . print_r($query, true) . print_r($sort, true) . "====");
     $result = $mdb->find($col, $query, $sort, 50);
     if (sizeof($result) >= 50) break;
 }
@@ -105,12 +115,16 @@ function getLabelGroup($label) {
 }
 
 function parseDate($query, $which) {
+    global $hasDateFilter; 
 
     $val = $_POST['epoch'][$which];
     if ($val == "") return $query;
 
     $killID = findKillID(strtotime($val), $which);
-    if ($killID != null) $query[] = ['killID' => [($which == 'start' ? '$gte' : '$lte') => $killID]];
+    if ($killID != null) {
+        $hasDateFilter = true;
+        $query[] = ['killID' => [($which == 'start' ? '$gte' : '$lte') => $killID]];
+    }
 
     return $query;
 }
@@ -118,9 +132,11 @@ function parseDate($query, $which) {
 function findKillID($unixtime, $which) {
     global $mdb;
 
+    if ($which != 'start') $unixtime += 59; // start at the end of the minute
+    else $unixtime = $unixtime - ($unixtime % 60); // start at the beginning of the minute
     $starttime = $unixtime;
     do {
-        $killID = $mdb->findField("killmails", "killID", ['dttm' => new MongoDate($unixtime)], ['killID' => ($which == 'start' ? -1 : 1)]);
+        $killID = $mdb->findField("killmails", "killID", ['dttm' => new MongoDate($unixtime)], ['killID' => ($which == 'start' ? 1 : -1)]);
         $unixtime += ($which == 'start' ? 1 : -1);
         if (abs($starttime - $unixtime) > 3600) break; // only check 1 hour worth of mails
     } while ($killID == null);
