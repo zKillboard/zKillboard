@@ -7,7 +7,7 @@ require_once '../init.php';
 if ($redis->get("zkb:universeLoaded") != "true") exit("Universe not yet loaded...\n");
 
 if ($redis->get("zkb:reinforced") == true) exit();
-if ($redis->get("zkb:420prone") == "true") exit();
+//if ($redis->get("zkb:420prone") == "true") exit();
 
 $mdb = new Mdb();
 $queueAllis = new RedisTimeQueue('zkb:allianceID', (3600 * 8));
@@ -26,15 +26,14 @@ $minute = date('Hi');
 while ($minute == date('Hi')) {
     $id = (int) $queueAllis->next();
     if ($id > 0) {
+        $row = $mdb->findDoc("information", ['type' => 'allianceID', 'id' => $id]);
+
+        if (@$row['lastApiUpdate']->sec  != 0 && @$row['memberCount'] == 0) continue;
+
         $guzzler->call("$esiServer/v4/alliances/$id/", "success", "fail", ['id' => $id]);
-        while ($guzzler->count() > 0) {
-            $guzzler->tick();
-            sleep(1);
-        }
-        sleep(10);
+        $guzzler->finish();
     }
-    else sleep(1);
-    $guzzler->tick();
+    sleep(1);
 }
 $guzzler->finish();
 

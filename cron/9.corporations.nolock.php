@@ -7,10 +7,11 @@ use cvweiss\redistools\RedisTimeQueue;
 if ($redis->get("zkb:universeLoaded") != "true") exit("Universe not yet loaded...\n");
 
 if ($redis->get("zkb:reinforced") == true) exit();
-if ($redis->get("zkb:420prone") == "true") exit();
+//if ($redis->get("zkb:420prone") == "true") exit();
 $guzzler = new Guzzler(5);
 $corps = new RedisTimeQueue("zkb:corporationID", 86400);
 
+$t = null;
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $id = (int) $corps->next();
@@ -21,10 +22,10 @@ while ($minute == date('Hi')) {
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
         $a = (isset($row['lastApiUpdate']) && $row['name'] != '') ? ['etag' => true] : [];
         $guzzler->call($url, "updateCorp", "failCorp", $params, $a);
-    } else {
-        $guzzler->tick();
-        sleep(1);
-    }
+        if ($t != null) usleep(min(100000, 100000 - $t->stop()));
+        $t = new Timer();
+    } else sleep(1);
+    $guzzler->tick();
 }
 $guzzler->finish();
 

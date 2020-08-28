@@ -6,39 +6,47 @@ require_once '../init.php';
 
 if ($redis->get("zkb:universeLoaded") != "true") exit("Universe not yet loaded...\n");
 
-if ($redis->get("zkb:reinforced") == true) exit();
-if ($redis->get("zkb:420prone") == "true") exit();
+//if ($redis->get("zkb:reinforced") == true) exit();
+//if ($redis->get("zkb:420prone") == "true") exit();
 $guzzler = new Guzzler(5);
 $chars = new RedisTimeQueue("zkb:characterID", 86400);
 $maxKillID = $mdb->findField("killmails", "killID", [], ['killID' => -1]) - 5000000;
 
-$oneYear = 365 * 86400; 
+$oneYear = 90 * 86400; 
 $dayOfYear = date("z");
 $dayPrime = $dayOfYear % 73;
 
+$t = null;
 $mod = 3;
 $dayMod = date("j") % $mod;
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $id = (int) $chars->next();
     if ($id > 1) {
-        $guzzler->tick();
-        usleep(200000);
-        $guzzler->tick();
         $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => $id]);
 
         //if (((int) @$row['lastApiUpdate']->sec) != 0) continue;
 
         $killmail = $mdb->findDoc("killmails", ['involved.characterID' => $id], ['killID' => -1]);
         $epoch = ($killmail == null ? 0 : $killmail['dttm']->sec);
+        $diff = time() - $epoch;
 
         // Only update characters that have had a kill in the last year, the rest update only 5 times a year
-        if (((int) @$row['lastApiUpdate']->sec) != 0 && time() - $epoch > $oneYear && $id & 73 != $dayPrime) continue;
+        if ($diff > $oneYear) {
+            if (@$row['lastApiUpdate']->sec != 0) {
+                if ($dayPrime != ($id % 73)) {
+                    continue;
+                }
+            }
+        }
 
         $url = "$esiServer/v4/characters/$id/";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row, 'rtq' => $chars];
         $a = (isset($row['lastApiUpdate']) && $row['name'] != '')? [] /*['etag' => true]*/ : [];
         $guzzler->call($url, "updateChar", "failChar", $params, $a);
+
+        if ($t != null) usleep(min(100000, 100000 - ceil($t->stop())));
+        $t = new Timer();
     }
     if ($id <= 1) {
         $guzzler->tick();
