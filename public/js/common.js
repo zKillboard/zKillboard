@@ -108,15 +108,25 @@ function wslog(msg)
 function loadLittleMail(killID) {
         // Add the killmail to the kill list
         $.get("/cache/1hour/killlistrow/" + killID + "/", function(data) {
-            $(data).insertBefore("#killlist tbody tr:first").on('click', function(event) {
-                if (event.which === 2) return false;
-                window.location = '/kill/' + $(this).attr('killID') + '/';
-                return false;
-            });
+            if (!(showAds != 0 && typeof fusetag == 'undefined')) {
+                var data = $(data);
+                data.on('click', function(event) {
+                    if (event.which === 2) return false;
+                    window.location = '/kill/' + $(this).attr('killID') + '/';
+                    return false;
+                });
+                $("#killlist tbody tr").eq(0).after(data);
+            }
             // Keep the page from growing too much...
             while ($("#killlist tbody tr").length > 50) $("#killlist tbody tr:last").remove();
             // Tell the user what's going on and not to expect sequential killmails
-            if ($("#livefeednotif").length == 0) $("#killlist thead tr").after("<tr><td id='livefeednotif' colspan='7'><strong><em>Live feed - killmails may be out of order.</em></strong></td></tr>");
+            if ($("#livefeednotif").length == 0) {
+                if (showAds != 0 && typeof fusetag == 'undefined')
+                    $("#killlist thead tr").after("<tr><td id='livefeednotif' colspan='7'><strong><em>Live feed disabled when adblockers present.</em></strong></td></tr>");
+                else
+                    $("#killlist thead tr").after("<tr><td id='livefeednotif' colspan='7'><strong><em>Live feed - killmails may be out of order.</em></strong></td></tr>");
+            }
+            killListAd(true);
         });
 }
 
@@ -274,15 +284,25 @@ function loadads() {
     });
 }
 
+var bottomad = null;
 function adblockloaded() {
     adnumber--;
     if (adnumber <= 0) {
         try {
+            bottomad = $("#adsensebottom").detach();
+            killListAd(false);
             fusetag.loadSlots();
             setTimeout(adBlockCheck, 5000);
         } catch (e) {
             adBlockCheck();
         }
+    }
+}
+
+function killListAd(doLoatSlots) {
+    if ($(".adrow").length == 0) {
+        var td = $("<td colspan='8' style='width: 100%;'>") ; bottomad.appendTo(td); var tr = $("<tr class='killlistrow adrow'>").append(td).insertBefore("#killlist tbody tr:first");
+        if (doLostSlots === true) fusetag.loadSlots();
     }
 }
 
