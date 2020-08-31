@@ -290,6 +290,7 @@ function adblockloaded() {
     if (adnumber <= 0) {
         try {
             bottomad = $("#adsensebottom").detach();
+            $("#detailadrow").html(bottomad.html());
             killListAd(false);
             fusetag.loadSlots();
             setTimeout(adBlockCheck, 5000);
