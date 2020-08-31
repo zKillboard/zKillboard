@@ -315,3 +315,7 @@ td.centered {
   text-align: center;
   padding-top: 1em;
 }
+
+.adrow {
+    height: 101px;
+}
