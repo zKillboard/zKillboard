@@ -37,7 +37,7 @@ $(document).ready(function() {
         pubsub('public');
         // If we connected and somehow got completely disconnected - reload the page
         ws.onclose = function(event) {
-            window.location = window.location;
+            //window.location = window.location;
         }
     }
 
@@ -119,7 +119,8 @@ function loadLittleMail(killID) {
                     window.location = '/kill/' + $(this).attr('killID') + '/';
                     return false;
                 });
-                $("#killlist tbody tr").eq(0).after(data);
+                if (showAds == 0) $("#killlist tbody tr").before(data);
+                else $("#killlist tbody tr").eq(0).after(data);
             }
             // Keep the page from growing too much...
             while ($("#killlist tbody tr").length > 50) $("#killlist tbody tr:last").remove();
@@ -130,7 +131,6 @@ function loadLittleMail(killID) {
                 else
                     $("#killlist thead tr").after("<tr><td id='livefeednotif' colspan='7'><strong><em>Live feed - killmails may be out of order.</em></strong></td></tr>");
             }
-            killListAd(true);
         });
 }
 
@@ -305,7 +305,7 @@ function adblockloaded() {
 }
 
 function killListAd(doLoadSlots) {
-    if ($(".adrow").length == 0) {
+    if ($(".adrow").length == 0 && bottomad != null) {
         var td = $("<td colspan='8' style='width: 100%;'>") ; bottomad.appendTo(td); var tr = $("<tr class='killlistrow adrow'>").append(td).insertBefore("#killlist tbody tr:first");
         if (doLoadSlots === true) fusetag.loadSlots();
     }
