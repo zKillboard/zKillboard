@@ -277,7 +277,7 @@ $app->get('/kills/sponsored/', function () use ($app) {
         include 'view/sponsored.php';
         });
 
-$app->get('/comment/:pageID/:commentID/up/', function ($pageID, $commentID) use ($app) {
+$app->get('/cache/bypass/comment/:pageID/:commentID/up/', function ($pageID, $commentID) use ($app) {
         include 'view/comments-up.php';
         });
 
