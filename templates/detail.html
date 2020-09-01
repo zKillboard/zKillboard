@@ -290,7 +290,7 @@ $(document).ready(function() {
 
 
 function loadComments(interval) {
-    $("#commentblock").load('/comment/kill-{{ killdata.info.killID }}/-1/up/');
+    $("#commentblock").load('/cache/bypass/comment/kill-{{ killdata.info.killID }}/-1/up/');
     pubsub('comment:kill-{{ killdata.info.killID }}');
 }
 </script>
