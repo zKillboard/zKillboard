@@ -88,14 +88,16 @@
 				<li class="hidden-xs hidden-sm"><a href="/top/lasthour/all/" rel="tooltip" title="Kills added this hour" id="lasthour">&nbsp;</a></li>
 				<li class="hidden-xs hidden-sm"><a href="#" rel="tooltip" title="Tranquility Status" onClick="return false;"><span id="tqStatus">&nbsp;</span></a></li>
 				<li class="hidden-xs hidden-sm hidden-md"><a href="/ztop/" rel="tooltip" title="Eve Time"><div id="my_clock"></div></a></li>
-				<li style='padding-right: 0px; margin-right: 0px;'><a href='/asearch/'><span class="glyphicon glyphicon-search"></span></a></li>
-                <li>    
-					<form name="search" id="search" class="navbar-form navbar-right">
-						<div class="form-group">
-							<input type="text" class="form-control" placeholder="Search" autocomplete="off" id="searchbox" name="searchbox" tabindex="1" style='width: 200px;'>
-						</div>
-					</form>
-				</li>
+                <li>
+                    <form name="search" id="search" class="navbar-form navbar-right">
+                        <div class="form-group">
+                        <div class='input-group' style='width: 100px;'>
+                            <div class="input-group-addon"><a href='/asearch/'><span class="glyphicon glyphicon-search" style='color: white;'></span></a></div>
+                            <input type="text" class="form-control" placeholder="Search" autocomplete="off" id="searchbox" name="searchbox" tabindex="1" style='width: 200px;'>
+                        </div>
+                        </div>
+                    </form>
+                </li>
 				<li id='usermenu' class="dropdown">
 					<a href="#" class="dropdown-toggle hidden-xs" data-toggle="dropdown" id='usermenu-dropdown'>
                                         {% if characterID > 0 %}

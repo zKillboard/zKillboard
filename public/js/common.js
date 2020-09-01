@@ -35,6 +35,10 @@ $(document).ready(function() {
     };
     ws.onopen = function(event) {
         pubsub('public');
+        // If we connected and somehow got completely disconnected - reload the page
+        ws.onclose = function(event) {
+            window.location = window.location;
+        }
     }
 
     addKillListClicks();
