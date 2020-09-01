@@ -40,6 +40,10 @@ while ($minute == date('Hi')) {
                 }
                 continue;
             }
+
+            $hasRecent = $mdb->exists("ninetyDays", ['involved.characterID' => $charID]);
+            if (!$hasRecent && @$row['lastFetch']->sec != 0 && (($charID % 24) != date('H'))) continue;
+
             // Give corporation checks priority
             if ($esiCorp->pending() > $ssoThrottle) usleep(ceil(1000000 / max(1, $ssoThrottle)));
 
