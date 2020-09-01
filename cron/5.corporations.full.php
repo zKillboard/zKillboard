@@ -136,10 +136,7 @@ function addMail($killID, $hash)
 
 function fail($guzzer, $params, $ex) 
 {
-    global $mdb;
-
-    Util::out("??? not removed");
-    $mdb->removeField("scopes", $params['row'], "iterated");
+    // Something went wrong, we'll just try again later
 }
 
 function accessTokenFail(&$guzzler, &$params, $ex)
