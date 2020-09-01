@@ -25,6 +25,7 @@ while (date('Hi') == $time && sizeof($rows) > 0) {
 
     $params = ['mdb' => $mdb, 'row' => $row, 'id' => $structID];
     CrestSSO::getAccessTokenCallback($guzzler, $scope['refreshToken'], "accessTokenDone", "accessTokenFail", $params);
+    sleep(1);
 }
 $guzzler->finish();
 
