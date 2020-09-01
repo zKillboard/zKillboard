@@ -241,9 +241,9 @@ class Info
 
         $data = $mdb->findDoc('information', ['cacheTime' => 3600, 'type' => 'regionID', 'id' => (int) $regionID]);
         try {
-        if (!is_array($data)) $data = ['solarSystemID' => $systemID, "name" => "System $systemID"];
-        $data['regionID'] = $regionID;
-        $data['regionName'] = isset($data['name']) ? $data['name'] : $regionID;
+            if (!is_array($data)) $data = ['solarSystemID' => $systemID, "name" => "System $systemID"];
+            $data['regionID'] = $regionID;
+            $data['regionName'] = isset($data['name']) ? $data['name'] : $regionID;
         } catch (Exception $ex) {
             Log::log("Bad data in Info ~244\n" . print_r($data));
             throw $ex;
@@ -625,7 +625,7 @@ class Info
             'medSlots' => Info::getDogma($shipTypeID, 13),
             'hiSlots' => Info::getDogma($shipTypeID, 14),
             'rigSlots' => Info::getDogma($shipTypeID, 1137)
-                ];
+        ];
 
         return $slotArray;
     }
@@ -675,6 +675,20 @@ class Info
         }
         $redis->setex("zkb:dogma:$typeID:$attr_id", 3600, "null");
         return null;
+    }
+
+    public static function findKillID($unixtime, $which) {
+        global $mdb;
+
+        if ($which != 'start') $unixtime += 59; // start at the end of the minute
+        else $unixtime = $unixtime - ($unixtime % 60); // start at the beginning of the minute
+        $starttime = $unixtime;
+        do {
+            $killID = $mdb->findField("killmails", "killID", ['dttm' => new MongoDate($unixtime)], ['killID' => ($which == 'start' ? 1 : -1)]);
+            $unixtime += ($which == 'start' ? 1 : -1);
+            if (abs($starttime - $unixtime) > 3600) break; // only check 1 hour worth of mails
+        } while ($killID == null);
+        return $killID;
     }
 
     public static $itemIDs = [];
