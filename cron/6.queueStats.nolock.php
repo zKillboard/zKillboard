@@ -1,7 +1,7 @@
 <?php
 
-pcntl_fork();
-pcntl_fork();
+//pcntl_fork();
+//pcntl_fork();
 
 use cvweiss\redistools\RedisQueue;
 
@@ -17,7 +17,11 @@ $queueStats = new RedisQueue('queueStats');
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $raw = $redis->spop("queueStatsSet");
-    if ($raw == null) break;
+    if ($raw == null) {
+        $resetRow = $mdb->findDoc("statistics", ['reset' => true]);
+        if ($resetRow == null) die("no reset row\n");
+        $raw = $resetRow['type'] . ":" . $resetRow['id'];
+    }
     $arr = split(":", $raw);
     $maxSequence = $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);
     $type = $arr[0];
