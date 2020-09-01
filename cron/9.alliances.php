@@ -10,7 +10,7 @@ if ($redis->get("zkb:reinforced") == true) exit();
 //if ($redis->get("zkb:420prone") == "true") exit();
 
 $mdb = new Mdb();
-$queueAllis = new RedisTimeQueue('zkb:allianceID', (3600 * 8));
+$queueAllis = new RedisTimeQueue('zkb:allianceID', 86400);
 
 $i = date('i');
 if ($i == 45 || $queueAllis->size() < 100 ) {
@@ -32,6 +32,7 @@ while ($minute == date('Hi')) {
 
         $guzzler->call("$esiServer/v4/alliances/$id/", "success", "fail", ['id' => $id]);
         $guzzler->finish();
+        sleep(4);
     }
     sleep(1);
 }

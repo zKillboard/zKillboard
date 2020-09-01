@@ -106,7 +106,7 @@ while ($hour == date('H')) {
     addInfo(' of ' . number_format($rtq->size(), 0) . " characters pending update", $rtq->pending(), false);
     $rtq = new RedisTimeQueue("zkb:corporationID", 86400);
     addInfo(' of ' . number_format($rtq->size(), 0) . " corporations pending update", $rtq->pending(), false);
-    $rtq = new RedisTimeQueue("zkb:allianceID", (3600 * 8));
+    $rtq = new RedisTimeQueue("zkb:allianceID", 86400);
     addInfo(' of ' . number_format($rtq->size(), 0) . " alliances pending update", $rtq->pending(), false);
 
     addInfo('', 0, false);
