@@ -8,7 +8,7 @@ if ($redis->get("zkb:universeLoaded") != "true") exit("Universe not yet loaded..
 
 if ($redis->get("zkb:reinforced") == true) exit();
 //if ($redis->get("zkb:420prone") == "true") exit();
-$guzzler = new Guzzler(5);
+$guzzler = new Guzzler(10);
 $corps = new RedisTimeQueue("zkb:corporationID", 86400);
 
 $dayOfYear = date("z");
@@ -28,10 +28,10 @@ while ($minute == date('Hi')) {
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
         $a = (isset($row['lastApiUpdate']) && $row['name'] != '') ? ['etag' => true] : [];
         $guzzler->call($url, "updateCorp", "failCorp", $params, $a);
-        if ($t != null) usleep(min(100000, 100000 - $t->stop()));
+
+        if ($t != null) $guzzler->sleep(0, 10000 - $t->stop());
         $t = new Timer();
-    } else sleep(1);
-    $guzzler->tick();
+    } else $guzzler->sleep(1);
 }
 $guzzler->finish();
 

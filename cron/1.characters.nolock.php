@@ -22,7 +22,6 @@ $guzzler = new Guzzler($esiCharKillmails, 5);
 $bumped = [];
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    //if ($esiCorp->pending() > 100) sleep(2);
     $charID = $esi->next(false);
     if ($charID > 0) {
         $row = $mdb->findDoc("scopes", ['characterID' => (int) $charID, 'scope' => "esi-killmails.read_killmails.v1"], ['lastFetch' => 1]);
@@ -60,8 +59,7 @@ while ($minute == date('Hi')) {
             $esi->remove($charID);
         }
     } else {
-        $guzzler->tick();
-        sleep(1);
+        $guzzler->sleep(1);
     }
 }
 $guzzler->finish();
@@ -127,7 +125,7 @@ function success($guzzler, $params, $content)
             return;
         }
         // Otherwise check them roughly once a day
-        $esi->setTime($charID, time() + (rand(18, 23) * 3600));
+        $esi->setTime($charID, time() + (rand(24, 30) * 3600));
     }
     // Check recently active characters every 5 minutes
     if ($redis->get("recentKillmailActivity:$charID") == "true") {

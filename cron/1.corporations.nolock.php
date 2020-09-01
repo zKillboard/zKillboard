@@ -46,8 +46,7 @@ while ($minute == date('Hi')) {
             $esi->remove($corpID);
         }
     } else {
-        $guzzler->tick();
-        sleep(1);
+        $guzzler->sleep(1);
     }
 }
 $guzzler->finish();

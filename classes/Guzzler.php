@@ -19,6 +19,17 @@ class Guzzler
         $this->maxConcurrent = ($redis->get("zkb:420prone") == "true") ? 1 : $maxConcurrent;
     }
 
+    public function sleep($seconds = 0, $microseconds = 0)
+    {
+        $time = max(0, ($seconds * 1000000) + $microseconds);
+        $t = new Timer();
+        do {
+            $this->tick();
+            usleep(100);
+            $stop = 1000 * ceil($t->stop());
+        } while ($time >= $stop);
+    }
+
     public function tick()
     {
         $ms = (int) microtime();
@@ -108,9 +119,9 @@ class Guzzler
                 $sleep = $this->setEsiErrorCount();
                 sleep(1);
 
-                if (($code == 0 || $code >= 501) && @$params['retryCount'] <= 3) {
+                if (($code == 0 || $code >= 500) && @$params['retryCount'] <= 3) {
                     $params['retryCount'] = @$params['retryCount'] + 1;
-                    //if (@$params['retryCount'] > 2) Util::out("guzzler retrying $uri (http error $code) retry number " . $params['retryCount']);
+                    if (@$params['retryCount'] > 2) Util::out("guzzler retrying $uri (http error $code) retry number " . $params['retryCount']);
                     $this->call($uri, $fulfilled, $rejected, $params, $setup, $callType, $body);
                 } else {
                     //Log::log($params['uri'] . " $code" . ($params['content'] != '' ? "\n" . $params['content'] : ''));

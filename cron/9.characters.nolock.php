@@ -6,8 +6,8 @@ require_once '../init.php';
 
 if ($redis->get("zkb:universeLoaded") != "true") exit("Universe not yet loaded...\n");
 
-//if ($redis->get("zkb:reinforced") == true) exit();
-//if ($redis->get("zkb:420prone") == "true") exit();
+if ($redis->get("zkb:reinforced") == true) exit();
+if ($redis->get("zkb:420prone") == "true") exit();
 $guzzler = new Guzzler(5);
 $chars = new RedisTimeQueue("zkb:characterID", 86400);
 $maxKillID = $mdb->findField("killmails", "killID", [], ['killID' => -1]) - 5000000;
@@ -36,18 +36,16 @@ while ($minute == date('Hi')) {
             }
         }
 
+        if ($t != null) $guzzler->sleep(0, 100000 - $t->stop());
+        $t = new Timer();
+
         $url = "$esiServer/v4/characters/$id/";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row, 'rtq' => $chars];
         $a = (isset($row['lastApiUpdate']) && $row['name'] != '')? [] /*['etag' => true]*/ : [];
         $guzzler->call($url, "updateChar", "failChar", $params, $a);
 
-        if ($t != null) usleep(min(100000, 100000 - ceil($t->stop())));
-        $t = new Timer();
     }
-    if ($id <= 1) {
-        $guzzler->tick();
-        sleep(1);
-    }
+    else $guzzler->sleep(1);
 }      
 $guzzler->finish();
 

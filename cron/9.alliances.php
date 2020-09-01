@@ -32,9 +32,9 @@ while ($minute == date('Hi')) {
 
         $guzzler->call("$esiServer/v4/alliances/$id/", "success", "fail", ['id' => $id]);
         $guzzler->finish();
-        sleep(4);
+        $guzzler->sleep(4);
     }
-    sleep(1);
+    $guzzler->sleep(1);
 }
 $guzzler->finish();
 
