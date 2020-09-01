@@ -51,6 +51,11 @@ require_once 'init.php';
 
 $ip = IP::get();
 $agent = @$_SERVER['HTTP_USER_AGENT'];
+if (~isApiRequest && $agent == "Mozilla/5.0 (compatible; GoogleDocs; apps-spreadsheets; +http://docs.google.com)") {
+    Log::log('blocking google docs');
+    header('HTTP/1.1 405 Google docs not allowed on non-api endpoints');
+    exit();
+}
 
 if ($redis->get("zkb:memused") > 115) {
     header('HTTP/1.1 202 API temporarily disabled because of resource limitations');

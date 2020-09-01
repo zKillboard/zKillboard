@@ -7,7 +7,7 @@ if (!isset($input[1])) {
     $app->redirect('/');
 }
 $id = $input[1];
-$pageType = @$input[2];
+$pageType = (string) @$input[2];
 
 if ((int) $id == 0) {
     $searchKey = $key;
@@ -27,16 +27,16 @@ if (strlen("$id") > 11) {
     $app->redirect('/');
 }
 
-$validPageTypes = array('overview', 'kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'top', 'trophies', 'ranks');
+$validPageTypes = array('', 'kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime');
 if ($key == 'alliance') {
     //$validPageTypes[] = 'corpstats';
 }
-$validPageTypes[] = 'top';
-$validPageTypes[] = 'topalltime';
 
 if (!in_array($pageType, $validPageTypes)) {
-    $pageType = 'overview';
+    $app->redirect("/$key/$id/");
+    return;
 }
+if ($pageType == '') $pageType = 'overview';
 
 $map = array(
         'corporation' => array('column' => 'corporation', 'mixed' => true),
