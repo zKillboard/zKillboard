@@ -81,13 +81,13 @@ function calcStats($row, $maxSequence)
         // set the proper sequence values
         $query = ['$and' => [['sequence' => ['$gt' => $oldSequence]], ['sequence' => ['$lte' => $newSequence]], $query]];
 
-        $allTime = $mdb->group('killmails', [], $query, 'killID', ['zkb.points', 'zkb.totalValue']);
+        $allTime = $mdb->group('killmails', [], $query, 'killID', ['zkb.points', 'zkb.totalValue', 'attackerCount']);
         mergeAllTime($stats, $allTime, $isVictim);
 
-        $groups = $mdb->group('killmails', 'vGroupID', $query, 'killID', ['zkb.points', 'zkb.totalValue'], ['vGroupID' => 1]);
+        $groups = $mdb->group('killmails', 'vGroupID', $query, 'killID', ['zkb.points', 'zkb.totalValue', 'attackerCount'], ['vGroupID' => 1]);
         mergeGroups($stats, $groups, $isVictim);
 
-        $months = $mdb->group('killmails', ['year' => 'dttm', 'month' => 'dttm'], $query, 'killID', ['zkb.points', 'zkb.totalValue'], ['year' => 1, 'month' => 1]);
+        $months = $mdb->group('killmails', ['year' => 'dttm', 'month' => 'dttm'], $query, 'killID', ['zkb.points', 'zkb.totalValue', 'attackerCount'], ['year' => 1, 'month' => 1]);
         mergeMonths($stats, $months, $isVictim);
 
         $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'npc' => false, 'solo' => true];
@@ -148,7 +148,9 @@ function mergeAllTime(&$stats, $result, $isVictim)
     if (!isset($stats["isk$dl"])) {
         $stats["isk$dl"] = 0;
     }
+    if (!isset($stats["attackers$dl"])) $stats["attackers$dl"] = 0;
     $stats["isk$dl"] += (int) $row['zkb_totalValueSum'];
+    $stats["attackers$dl"] += (int) $row['attackerCountSum'];
 }
 
 function mergeGroups(&$stats, $result, $isVictim)
