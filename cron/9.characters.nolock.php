@@ -25,14 +25,10 @@ while ($minute == date('Hi')) {
     if ($id > 1) {
         $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => $id]);
 
-        //if (((int) @$row['lastApiUpdate']->sec) != 0) continue;
-
-        $killmail = $mdb->findDoc("killmails", ['involved.characterID' => $id], ['killID' => -1]);
-        $epoch = ($killmail == null ? 0 : $killmail['dttm']->sec);
-        $diff = time() - $epoch;
+        $hasRecent = $mdb->exists("ninetyDays", ['involved.characterID' => $id]);
 
         // Only update characters that have had a kill in the last year, the rest update only 5 times a year
-        if ($diff > $oneYear) {
+        if (!$hasRecent) {
             if (@$row['lastApiUpdate']->sec != 0) {
                 if ($dayPrime != ($id % 73)) {
                     continue;

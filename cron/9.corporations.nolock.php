@@ -11,12 +11,18 @@ if ($redis->get("zkb:reinforced") == true) exit();
 $guzzler = new Guzzler(5);
 $corps = new RedisTimeQueue("zkb:corporationID", 86400);
 
+$dayOfYear = date("z");
+$dayPrime = $dayOfYear % 73;
+
 $t = null;
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $id = (int) $corps->next();
     if ($id > 0) {
         $row = $mdb->findDoc("information", ['type' => 'corporationID', 'id' => $id]);
+
+        $hasRecent = $mdb->exists("ninetyDays", ['involved.corporationID' => $id]);
+        if (!$hasRecent && ($id % 73 != $dayPrime) && @$row['lastApiUpdate']->sec) continue;
 
         $url = "$esiServer/v4/corporations/$id/";
         $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
