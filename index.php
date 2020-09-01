@@ -51,8 +51,8 @@ require_once 'init.php';
 
 $ip = IP::get();
 $agent = @$_SERVER['HTTP_USER_AGENT'];
-if (~isApiRequest && $agent == "Mozilla/5.0 (compatible; GoogleDocs; apps-spreadsheets; +http://docs.google.com)") {
-    Log::log('blocking google docs');
+if (!$isApiRequest && $agent == "Mozilla/5.0 (compatible; GoogleDocs; apps-spreadsheets; +http://docs.google.com)") {
+    //Log::log("blocking google docs $uri");
     header('HTTP/1.1 405 Google docs not allowed on non-api endpoints');
     exit();
 }
