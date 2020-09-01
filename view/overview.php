@@ -33,8 +33,7 @@ if ($key == 'alliance') {
 }
 
 if (!in_array($pageType, $validPageTypes)) {
-    $app->redirect("/$key/$id/");
-    return;
+    $pageType = 'overview';
 }
 if ($pageType == '') $pageType = 'overview';
 
