@@ -118,25 +118,11 @@ function parseDate($query, $which) {
     $val = $_POST['epoch'][$which];
     if ($val == "") return $query;
 
-    $killID = findKillID(strtotime($val), $which);
+    $killID = Info::findKillID(strtotime($val), $which);
     if ($killID != null) {
         $query[] = ['killID' => [($which == 'start' ? '$gte' : '$lte') => $killID]];
         $query['hasDateFilter'] = true;
     }
 
     return $query;
-}
-
-function findKillID($unixtime, $which) {
-    global $mdb;
-
-    if ($which != 'start') $unixtime += 59; // start at the end of the minute
-    else $unixtime = $unixtime - ($unixtime % 60); // start at the beginning of the minute
-    $starttime = $unixtime;
-    do {
-        $killID = $mdb->findField("killmails", "killID", ['dttm' => new MongoDate($unixtime)], ['killID' => ($which == 'start' ? 1 : -1)]);
-        $unixtime += ($which == 'start' ? 1 : -1);
-        if (abs($starttime - $unixtime) > 3600) break; // only check 1 hour worth of mails
-    } while ($killID == null);
-    return $killID;
 }
