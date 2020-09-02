@@ -34,7 +34,6 @@ function doGroup($type, $groupID)
     $query = MongoFilter::buildQuery($params);
     $result = $mdb->getCollection('ninetyDays')->distinct('involved.' . $type, $query);
     foreach ($result as $id) {
-        echo "Checking $type $id $groupID\n";
         doSupers($type, $id, $groupID);
     }
 
