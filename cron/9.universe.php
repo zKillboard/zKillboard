@@ -137,7 +137,7 @@ function constellationSuccess($guzzler, $params, $content)
 
 function systemSuccess($guzzler, $params, $content)
 {
-    global $mdb;
+    global $mdb, $esiServer;
 
     $system = json_decode($content, true);
     $constID = $system['constellation_id'];
@@ -148,4 +148,22 @@ function systemSuccess($guzzler, $params, $content)
     
     $update = array_merge($system, ['name' => $name, 'secClass' => @$system['security_class'], 'secStatus' => $system['security_status'], 'regionID' => $params['regionID'], 'constellationID' => $params['constellationID']]);
     $mdb->insertUpdate("information", ['type' => 'solarSystemID', 'id' => $id], $update);
+
+    if (isset($system['star_id'])) $guzzler->call("$esiServer/latest/universe/stars/40222373/", "starSuccess", "fail", ['starID' => $system['star_id']]);
+}
+
+function starSuccess($guzzler, $params, $content)
+{
+    global $mdb; 
+
+    $star = json_decode($content, true);
+    $starID = $params['starID'];
+    $id = (int) $params['starID'];
+    if ($id <= 1) return;
+
+    $star['type'] = 'starID';
+    $star['id'] = $id;
+    Util::out("Star $id");
+
+    $mdb->insertUpdate("information", ['type' => 'starID', $id], $star);
 }
