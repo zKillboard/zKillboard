@@ -29,6 +29,7 @@ if (isset($_POST['labels'])) {
     foreach ($labels as $group => $search) $query[] = ['labels' => ['$in' => $search]];
 }
 
+$page = (isset($_POST['radios']['page']) ? max(1, min(10, (int) @$_POST['radios']['page'])) - 1 : 0);
 $sortKey = (isset($validSortBy[$_POST['radios']['sort']['sortBy']]) ? $validSortBy[$_POST['radios']['sort']['sortBy']] : 'killID' );
 $sortBy = (isset($validSortDir[$_POST['radios']['sort']['sortDir']]) ? $validSortDir[$_POST['radios']['sort']['sortDir']] : -1 );
 $sort = [$sortKey => $sortBy];
@@ -44,7 +45,7 @@ else $query = ['$and' => $query];
 
 foreach ($coll as $col) {
     //Log::log("\n" . print_r($coll, true) . print_r($query, true) . print_r($sort, true) . "====");
-    $result = $mdb->find($col, $query, $sort, 50);
+    $result = iterator_to_array($mdb->getCollection($col)->find($query)->sort($sort)->skip(50 * $page)->limit(50));
     if (sizeof($result) >= 50) break;
 }
 

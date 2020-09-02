@@ -14,10 +14,10 @@ $(document).ready(function() {
         }).focus();;
     $(".filter-btn").on('click', toggleFilterBtn);
     $(".radio-btn").on('click', toggleRadioBtn);
-    $("#dtstart").on('change', doQuery).datetimepicker({format: 'Y-m-d H:i'});
-    $("#dtend").on('change', doQuery).datetimepicker({format: 'Y-m-d H:i'});
+    $("#dtstart").on('change', clickPage1).datetimepicker({format: 'Y-m-d H:i'});
+    $("#dtend").on('change', clickPage1).datetimepicker({format: 'Y-m-d H:i'});
 
-    doQuery();
+    clickPage1();
 });
 
 function addEntity(suggestion) {
@@ -40,7 +40,7 @@ function addEntity(suggestion) {
             add('neutrals', suggestion);
 
     }
-    doQuery();
+    clickPage1();
 }
 
 var ids = [];
@@ -168,7 +168,7 @@ function move(element, arr) {
         delete filters[location][timeid];
         filters[arr[location]][timeid] = data;
         parent.detach().appendTo('#' + arr[location]);
-        doQuery();
+        clickPage1();
     }
 }
 
@@ -186,7 +186,7 @@ function moveOut() {
 
 
     if (location == 'location' && $("#location").html() == "") $("#location").html('All systems');
-    doQuery();
+    clickPage1();
 }
 
 function doDateCleanup() {
@@ -198,7 +198,7 @@ function toggleFilterBtn() {
     var element = $(this);
     if (element.hasClass('btn-primary')) element.removeClass('btn-primary').blur();
     else element.addClass('btn-primary').blur();
-    doQuery();
+    clickPage1();
 }
 
 function toggleRadioBtn() {
@@ -210,8 +210,14 @@ function toggleRadioBtn() {
         $(this).removeClass('btn-primary').addClass('btn-default');
     });
     element.removeClass('btn-default').addClass('btn-primary');
-    radios[variable][key] = $(this).text().toLowerCase();
-    doQuery();
+    if (key != undefined) radios[variable][key] = $(this).text().toLowerCase();
+    else radios[variable] = $(this).text().toLowerCase();
+    if (variable == 'page') doQuery();
+    else clickPage1();
+}
+
+function clickPage1() {
+    $('#page1').click();
 }
 
 // ugh, 2020 and still no good way to do this natively
