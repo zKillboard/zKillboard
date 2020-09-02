@@ -1,7 +1,7 @@
 <div class="" id="commentblock" style='width: 100%;'>
 <table class='table table-condensed'>
 {% for comment in comments %}
-    <tr><td class='green' style='text-align: right;'>{{ comment.upvotes|number_format() }}</td><td>&nbsp; <a href='#' onClick='$("#commentblock").load("/cache/bypass/comment/{{ comment.pageID }}/{{ comment.commentID }}/up/"); return false;'><span class="glyphicon glyphicon-arrow-up"></span></a> {{ comment.comment }}</td></tr>
+    <tr><td class='green' style='text-align: right;'>{{ comment.upvotes|number_format() }}</td><td>&nbsp; <a href='#' onClick="commentUpVote('{{ comment.pageID }}', '{{ comment.commentID }}'); return false;"><span class="glyphicon glyphicon-arrow-up"></span> {{ comment.comment }}</a></td></tr>
 {% endfor %}
 </table>
 </div>

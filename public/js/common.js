@@ -277,6 +277,12 @@ function curday()
     return (yyyy+mm+dd);
 };
 
+function commentUpVote(pageID, commentID) 
+{
+    if (showAds == 0 || typeof fusetag != "undefined") $.ajax("/cache/bypass/comment/" + pageID + "/" + commentID + "/up/");
+    else annoyAdBlockers();
+}
+
 var adnumber = 0;
 function loadads() {
     var adblocks = $(".publift");
