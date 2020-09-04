@@ -144,6 +144,13 @@ if (substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' ||
     ini_set('session.gc_maxlifetime', (86400 * 30));
     ini_set('session.cookie_lifetime', (86400 * 30));
     session_start();
+    if (isset($_SESSION['characterID'])) {
+        $rKey = "SESSIDS:" . $_SESSION['characterID'];
+        $sessionID = session_id();
+        $redis->sadd($rKey, $sessionID);
+        $redis->expire($rKey, 7776000);
+        $redis->setex("SESSID:$sessionID", 7776000, $_SESSION['characterID']);
+    }
 }
 
 $request = $isApiRequest ? new RedisTtlCounter('ttlc:apiRequests', 300) : new RedisTtlCounter('ttlc:nonApiRequests', 300);
