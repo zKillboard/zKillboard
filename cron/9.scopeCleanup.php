@@ -2,14 +2,40 @@
 
 require_once "../init.php";
 
-if (date('i') != 0) exit();
+use cvweiss\redistools\RedisTimeQueue;
 
-$rows = $mdb->find("scopes", ['scope' => 'esi-fittings.write_fittings.v1']);
+if (date('Hi') != 1100) exit();
+
+$threeMonths = time() - (86400 * 90);
+$esiChar = new RedisTimeQueue('tqApiESI', 3600);
+$esiCorp = new RedisTimeQueue('tqCorpApiESI', 3600);
+
+$mdb->set("scopes", ['added' => ['$exists' => false]], ['added' => $mdb->now()], true);
+
+$rows = $mdb->find("scopes", ['scope' => "esi-killmails.read_killmails.v1" ]);
+foreach($rows as $row) {
+    $id = $row['characterID'];
+    $added = $row['added']->sec;
+    if ($id == $adminCharacter) continue; // don't remove admin
+
+    if (($threeMonths - $added) <= 0) continue; // Has recent, move on
+
+    $hasRecent = $mdb->exists("ninetyDays", ['involved.characterID' => $id]);
+    if ($hasRecent) continue;
+
+    // Does not have recent, and the row has been added more than 3 months ago, time to purge it
+    $mdb->remove("scopes", $row);
+    Util::out("Removed $id from scopes");
+}
+
+$rows = $mdb->find("scopes", ['scope' => ['$ne' => "esi-killmails.read_killmails.v1"]]);
 foreach ($rows as $row) {
-    $charID = $row['characterID'];
-    $kmRow = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => 'esi-killmails.read_killmails.v1']);
-    if ($kmRow == null) {
-        Util::out("Removing scope " . $row['scope'] . " for $charID which has no killmail scope.");
+    $id = $row['characterID'];
+    if ($id == $adminCharacter) continue; // don't remove admin
+
+    // Does this character have a killmail scope? If not, remove the scope
+    $hasKmScope = $mdb->exists("scopes", ['characterID' => $id, 'scope' => "esi-killmails.read_killmails.v1"]);
+    if ($hasKmScope === false) {
         $mdb->remove("scopes", $row);
     }
 }
