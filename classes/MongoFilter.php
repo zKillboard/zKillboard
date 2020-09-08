@@ -282,6 +282,11 @@ class MongoFilter
                 case 'beforeSequence':
                     $and[] = ['sequence' => ['$lt' => $value]];
                     break;
+                case 'labels':
+                    $and[] = ['labels' => $value];
+                    break;
+                default:
+                    //Log::log("MongoFilter::buildQuery unkonown label $key");
             }
         }
 

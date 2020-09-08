@@ -269,12 +269,7 @@
 
 	</tbody>
 </table>
-{% if extra.padSum > 100 %}
-Warning: {{ extra.padSum|number_format(0) }} killmails have been detected as possible killboard padding. This may reflect legitimate kills, may not, but now you know.
-{% endif %}
-{% if extra.vPadSum > 100 %}
-Warning: {{ extra.vPadSum|number_format(0) }} losses have been detected as possible killboard padding by another entity. This may reflect legitimate losses, may not, but now you know.
-{% endif %}
+<div><a href='https://old.reddit.com/r/Eve/comments/inqzjz/zkill_the_removal_of_killmail_padding_from/' target='_blank'>ATTENTION: Removal of killmail padding has been applied.</a></div>
 {% endif %}
 {% if tobefetched > 1000 %}
 <div class="well well-sm"><h4>Missing Killmails?</h4>zKillboard is currently <a href='/ztop/'>reparsing <b>ALL</b> killmails</a>, please be patient while this extremely large task is completed. No killmails have been lost, they just need to be reparsed.</div>

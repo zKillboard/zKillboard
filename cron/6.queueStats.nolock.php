@@ -1,7 +1,9 @@
 <?php
 
-//pcntl_fork();
-//pcntl_fork();
+$master = true;
+/*$pid = pcntl_fork();
+$master = ($pid != 0);
+pcntl_fork();*/
 
 use cvweiss\redistools\RedisQueue;
 
@@ -13,15 +15,26 @@ if ($redis->get("zkb:statsStop") == "true") exit();
 if ($redis->get("zkb:reinforced") == true) exit();
 MongoCursor::$timeout = -1;
 $queueStats = new RedisQueue('queueStats');
-
 $minute = date('Hi');
+
+if ($master && $redis->scard("queueStatsSet") < 1000) {
+    // Look for resets in statistics and add them to the queue
+    $cursor = $mdb->getCollection("statistics")->find(['reset' => true]);
+    while ($cursor->hasNext()) {
+        $row = $cursor->next();
+        $raw = $row['type'] . ":" . $row['id'];
+        $redis->sadd("queueStatsSet", $raw);
+    }
+}
+
 while ($minute == date('Hi')) {
     $raw = $redis->spop("queueStatsSet");
     if ($raw == null) {
-        $resetRow = $mdb->findDoc("statistics", ['reset' => true]);
-        if ($resetRow == null) die("no reset row\n");
-        $raw = $resetRow['type'] . ":" . $resetRow['id'];
+        if (!$master) break;
+        sleep(1);
+        continue;
     }
+
     $arr = split(":", $raw);
     $maxSequence = $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);
     $type = $arr[0];
@@ -79,8 +92,8 @@ function calcStats($row, $maxSequence)
         }
 
         // build the query
-        $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'npc' => false];
-        if ($isVictim == false) unset($query['npc']); // Allows NPCs to count their kills
+        $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'labels' => 'pvp'];
+        //if ($isVictim == false) unset($query['label']); // Allows NPCs to count their kills
         $query = MongoFilter::buildQuery($query);
         // set the proper sequence values
         $query = ['$and' => [['sequence' => ['$gt' => $oldSequence]], ['sequence' => ['$lte' => $newSequence]], $query]];
@@ -94,8 +107,8 @@ function calcStats($row, $maxSequence)
         $months = $mdb->group('killmails', ['year' => 'dttm', 'month' => 'dttm'], $query, 'killID', ['zkb.points', 'zkb.totalValue', 'attackerCount'], ['year' => 1, 'month' => 1]);
         mergeMonths($stats, $months, $isVictim);
 
-        $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'npc' => false, 'solo' => true];
-        if ($isVictim == false) unset($query['npc']); // Allows NPCs to count their kills
+        $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'labels' => 'pvp','solo' => true];
+        //if ($isVictim == false) unset($query['label']); // Allows NPCs to count their kills
         $query = MongoFilter::buildQuery($query);
         $key = "solo" . ($isVictim ? "Losses" : "Kills");
         if (isset($stats[$key])) {

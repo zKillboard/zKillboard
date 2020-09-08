@@ -302,6 +302,12 @@ echo "Done\n";
 echo "Creating index : 'labels' => 1, with sparse = 0 and unique = 0 ... ";
 $killmails->ensureIndex(array('labels' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
+echo "Creating index : 'labels' => 1, 'killID' => -1, with sparse = 0 and unique = 0 ... ";
+$killmails->ensureIndex(array('labels' => 1, 'killID' => -1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'padhash' => 1, with sparse = 0 and unique = 0 ... ";
+$killmails->ensureIndex(array('padhash' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
 
 // locations
 echo "\nCreating collection locations ... ";
@@ -432,6 +438,25 @@ $ninetyDays->ensureIndex(array('involved.allianceID' => 1, 'involved.isVictim' =
 echo "Done\n";
 echo "Creating index : 'labels' => 1, with sparse = 0 and unique = 0 ... ";
 $ninetyDays->ensureIndex(array('labels' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'involved.allianceID' => 1, 'involved.groupID' => 1, 'involved.isVictim' => 1, with sparse = 1 and unique = 0 ... ";
+$ninetyDays->ensureIndex(array('involved.allianceID' => 1, 'involved.groupID' => 1, 'involved.isVictim' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'labels' => 1, 'killID' => -1, with sparse = 0 and unique = 0 ... ";
+$ninetyDays->ensureIndex(array('labels' => 1, 'killID' => -1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'involved.corporationID' => 1, 'sequence' => 1, 'involved.isVictim' => 1, with sparse = 0 and unique = 0 ... ";
+$ninetyDays->ensureIndex(array('involved.corporationID' => 1, 'sequence' => 1, 'involved.isVictim' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+
+// ninteDays
+echo "\nCreating collection ninteDays ... ";
+$db->createCollection("ninteDays");
+$collection = "ninteDays";
+$ninteDays = $db->$collection;
+echo "Done\n";
+echo "Creating index : 'labels' => 1, 'killID' => -1, with sparse = 0 and unique = 0 ... ";
+$ninteDays->ensureIndex(array('labels' => 1, 'killID' => -1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // oneWeek
@@ -885,6 +910,12 @@ $statistics->ensureIndex(array('calcAlltime' => 1), array("sparse" => 1, "unique
 echo "Done\n";
 echo "Creating index : 'calcAlltime' => 1, 'shipsDestroyed' => 1, with sparse = 1 and unique = 0 ... ";
 $statistics->ensureIndex(array('calcAlltime' => 1, 'shipsDestroyed' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'hasSupers' => 1, with sparse = 1 and unique = 0 ... ";
+$statistics->ensureIndex(array('hasSupers' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'updatingSupers' => 1, with sparse = 1 and unique = 0 ... ";
+$statistics->ensureIndex(array('updatingSupers' => 1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
 
 // structures

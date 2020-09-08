@@ -1,11 +1,11 @@
 <?php
 
 $master = true;
-/*$pid = pcntl_fork();
+$pid = pcntl_fork();
 $master = ($pid != 0);
 pcntl_fork();
 pcntl_fork();
-pcntl_fork();*/
+pcntl_fork();
 
 use cvweiss\redistools\RedisQueue;
 use cvweiss\redistools\RedisTtlCounter;
@@ -44,7 +44,7 @@ while ($minute == date('Hi')) {
             $killID = (int) $killID[0];
             $redis->zrem("tobeparsed", $killID);
 
-            $row = $mdb->findDoc('crestmails', ['killID' => $killID, 'processed' => false]);
+            $row = $mdb->findDoc('crestmails', ['killID' => $killID, 'processed' => false], ['killID' => -1]);
             if ($row == null) $row = $mdb->findDoc('crestmails', ['killID' => $killID]);
         }
 
@@ -112,13 +112,22 @@ while ($minute == date('Hi')) {
         $fittedValue += $shipValue;
         $totalValue = processItems($killID, $mail['victim']['items'], $date);
         $totalValue += $shipValue;
+    
+        $isPaddedKill = false;
+        $padhash = getPadHash($kill);
+        if ($padhash != null) {
+            $isPaddedKill = ($mdb->count("killmails", ['padhash' => $padhash]) >= 5);
+            $kill['padhash'] = $padhash;
+        }
 
+        addLabel($kill, $isPaddedKill, 'padding');
         addLabel($kill, $kill['attackerCount'] >= 10, '10+');
         addLabel($kill, $kill['attackerCount'] >= 25, '25+');
         addLabel($kill, $kill['attackerCount'] >= 50, '50+');
         addLabel($kill, $kill['attackerCount'] >= 100, '100+');
         addLabel($kill, $kill['attackerCount'] >= 1000, '1000+');
         addLabel($kill, $kill['npc'], 'npc');
+        addLabel($kill, !($kill['npc'] == true || $isPaddedKill), 'pvp');
         addLabel($kill, $kill['awox'], 'awox');
         addLabel($kill, $kill['solo'], 'solo');
         addLabel($kill, $solarSystem['security'] >= 0.45, 'highsec');
@@ -126,7 +135,6 @@ while ($minute == date('Hi')) {
         addLabel($kill, $solarSystem['security'] < 0.05 && $solarSystem['regionID'] < 11000001, 'nullsec');
         addLabel($kill, $solarSystem['regionID'] >= 11000000 && $solarSystem['regionID'] < 12000000, 'w-space');
         addLabel($kill, $solarSystem['regionID'] >= 12000000 && $solarSystem['regionID'] < 13000000, 'abyssal');
-        addLabel($kill, $solarSystem['regionID'] >= 12000000 && $solarSystem['regionID'] < 13000000 && $kill['npc'] == false, 'abyssal-pvp');
         addLabel($kill,  $totalValue > 1000000000, '1b+');
         addLabel($kill,  $totalValue > 10000000000, '10b+');
         addLabel($kill,  $totalValue > 100000000000, '100b+');
@@ -380,4 +388,37 @@ function isNPC(&$killmail)
     }
 
     return true;
+}
+
+// https://forums.eveonline.com/default.aspx?g=posts&m=4900335#post4900335
+function getPadHash($killmail)
+{
+    global $mdb;
+
+    if ($killmail['npc'] == true) return;
+
+    $victim = array_shift($killmail['involved']);
+    $victimID = (int) @$victim['characterID'] == 0 ? 'None' : $victim['characterID'];
+    if ($victimID == 0) return;
+    $shipTypeID = (int) $victim['shipTypeID'];
+    if ($shipTypeID == 0) return;
+    $categoryID = (int) Info::getInfoField('groupID', $victim['groupID'], 'categoryID');
+    if ($categoryID != 6) return; // Only ships, ignore POS modules, etc.
+
+    $attackers = $killmail['involved'];
+    while ($next = array_shift($attackers)) {
+        if (@$next['finalBlow'] == false) continue;
+        $attacker = $next;
+        break;
+    }
+    if ($attacker == null) $attacker = $attackers[0];
+    $attackerID = (int) @$attacker['characterID'];
+
+    $dttm = $killmail['dttm']->sec;
+    $dttm = $dttm - ($dttm % 60);
+
+    $aString = "$victimID:$attackerID:$shipTypeID:$dttm";
+    $aSha = sha1($aString);
+    return $aSha;
+    //$mdb->set("oneWeek", $killmail, ['padhash' => $aSha]);
 }

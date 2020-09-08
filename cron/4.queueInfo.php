@@ -33,7 +33,6 @@ while ($minute == date('Hi')) {
         $queueRedisQ->push($killID);
         $queueApiCheck->push($killID);
         $queuePublish->push($killID);
-        $redis->sadd("padhash_ids", $killID);
 
         $mdb->set("killmails", ['killID' => $killID], ['processed' => true]);
         addActivity($killID);

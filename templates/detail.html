@@ -101,15 +101,19 @@
 </div>
 
 <div class="col-lg-4">
-	        {% if extra.npcOnly %}
+	    {% if extra.npcOnly %}
 		<div class="alert alert-info">This is an NPC Only killmail.<br/>It is not counted in statistics.</div>
 		{% endif %}
+        {% if 'padding' in killdata.info.labels %}
+		    <div class="alert alert-warning"><center>Killboard Padding<br/>It is not counted in statistics.</center></div>
+        {% else %}
 		{% if killdata.info.solo %}
 		<div class="alert alert-success"><center>Solo Killmail</center></div>
 		{% endif %}
 		{% if killdata.info.ganked %}
 		<div class="alert alert-danger"><center>GANKED</center></div>
 		{% endif %}
+        {% endif %}
 		<div class="tab-pane fade in active" id="details">
 			{% if extra.warInfo.dscr %}
 			<div>

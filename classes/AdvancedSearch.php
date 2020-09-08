@@ -10,7 +10,7 @@ class AdvancedSearch
             "solo", "10+", "25+", "50+", "100+", "1000+",
         ],
         'flags' => [
-            "awox", "abyssal-pvp", "npc", 'ganked',
+            "awox", "ganked", "npc", "pvp", 'padding'
         ],
         'isk' => [
             "1b+", "10b+", "100b+", "1t+",
