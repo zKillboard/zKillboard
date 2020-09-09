@@ -73,6 +73,7 @@ function updateCorp(&$guzzler, &$params, &$content)
     $content = Util::eliminateBetween($content, '"description"', '"name"');
     
     $json = json_decode($content, true);
+    if ($json['name'] == "") return; // bad data, ignore it
     $ceoID = (int) $json['ceo_id'];
 
     $updates = $json;

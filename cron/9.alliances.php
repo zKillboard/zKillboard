@@ -47,6 +47,7 @@ function success(&$guzzler, &$params, $content)
 
     $content = str_replace('\u', '', $content);
     $alliCrest = json_decode($content, true);
+    if (@$alliCrest['name'] == "") return; // Something wrong with the data, ignore for now
 
     $currentInfo = $mdb->findDoc('information', ['type' => 'allianceID', 'id' => $id]);
 

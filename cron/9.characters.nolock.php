@@ -91,6 +91,7 @@ function updateChar(&$guzzler, &$params, &$content)
     $content = Util::eliminateBetween($content, '"description"', '"gender"');
 
     $json = json_decode($content, true);
+    if (@$json['name'] == "") return; // bad data, ignore it
     if (json_last_error() != 0) {
         Util::out("Character $id JSON issue: " . json_last_error() . " " . json_last_error_msg());
         return;
