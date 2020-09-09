@@ -119,7 +119,7 @@ function loadLittleMail(killID) {
                     window.location = '/kill/' + $(this).attr('killID') + '/';
                     return false;
                 });
-                if (showAds == 0) $("#killlist tbody tr").before(data);
+                if (showAds == 0) $("#killlist tbody tr").first().before(data);
                 else $("#killlist tbody tr").eq(0).after(data);
             }
             // Keep the page from growing too much...
