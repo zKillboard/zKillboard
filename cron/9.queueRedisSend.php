@@ -30,6 +30,7 @@ while (date('Hi') == $minute) {
     $zkb['npc'] = @$killmail['npc'];
     $zkb['solo'] = @$killmail['solo'];
     $zkb['awox'] = @$killmail['awox'];
+    $zkb['labels'] = @$killmail['labels'];
 
     $zkb['href'] = "$esiServer/v1/killmails/$killID/".$zkb['hash'].'/';
     unset($rawmail['_id']);
