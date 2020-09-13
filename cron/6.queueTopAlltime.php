@@ -17,7 +17,6 @@ $minute = date("Hi");
 $queueTopAllTime = new RedisQueue("queueTopAllTime");
 
 if ($master == true && $queueTopAllTime->size() == 0) {
-echo "getting cursor\n";
     $cursor = $mdb->getCollection("statistics")->find(['calcAlltime' => true]);
     while ($cursor->hasNext()) {
         $row = $cursor->next();
