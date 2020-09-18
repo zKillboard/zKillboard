@@ -3,34 +3,22 @@
 {% set pageTitle = "Map" %}
 {% block title %}{% include 'components/title.html' %}{% endblock %}
 
-{% block content %}
-<div style="width: 100%; height: 100%; position: fixed; left: 0px; top: 50px; bottom: 0; background-color: black;" id="map-container"></div>
-<span style="position: fixed; right: 125px; top: 0px; z-index: 10" id='notfullscreen'>
-<a href="#" onClick="$('#map-container').css('top', '50px'); $('#notfullscreen').hide(); $('#fullscreen').show(); console.log('!fs done'); return false;"><span style='color: gray;' class="glyphicon glyphicon-remove-circle"></span></a>
-</span>
-
-<span style="position: fixed; right: 125px; top: 55px; z-index: 10" id='fullscreen'>
-<a href="#" onClick="$('#map-container').css('top', 0); $('#notfullscreen').show(); $('#fullscreen').hide(); console.log('fs done'); return false;"><span style='color: gray;' class="glyphicon glyphicon-fullscreen"></span></a>
-</span>
-
+{% block style %}
+  <style>
+    #zkb-map-root {
+      height: 70vh;
+      position: relative;
+    }
+  </style>
 {% endblock %}
 
-{% block script %}
-    <link rel="stylesheet" type="text/css" href="/css/zkb-map.min.css">
-    <script src="//cdnjs.cloudflare.com/ajax/libs/three.js/r61/three.min.js"></script>
-    <script src="/js/zkb-map.js"></script>
-    <script>
-        $(document).ready(function() {
-        $('#notfullscreen').hide();
-        map = $('#map-container').ZKBMap({
-        colorSteps: 20,
-        killFlareSize: 85,
-        killFlareDuration: 1000,
-        killFadeDuration: 60000,
-        lowSecColor: '#E6E6E6',
-        highSecColor: '#2A9FD6'
-      });
-      $(window).on('resize', map.calibrateCamera);
-        });
-    </script>
+{% block content %}
+  </span>
+
+  <div id="zkb-map-root">
+    Loading...
+  </div>
+  <script src="//{{ siteurl }}/map/static/js/main.a850410b.js"></script>
+
+  <span>
 {% endblock %}
