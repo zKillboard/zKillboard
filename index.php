@@ -32,7 +32,6 @@ if (strpos($uri, "/asearchquery/") === false && strpos($uri, "/cache/1hour/autoc
         }
         if ($isApiRequest) header("HTTP/1.1 200 Missing trailing slash");
         else {
-            die('missing ending /');
             header("Location: $uri/", true, 302);
         }
         exit();
