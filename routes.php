@@ -40,8 +40,8 @@ $app->get('/partial/(page/:page/)', function ($page = 1) use ($app) {
         });
 
 // Map
-$app->get('/map/', function () use ($app) {
-        $app->render('map.html', ['showAds' => false]);
+$app->get('/map2020/', function () use ($app) {
+        $app->render('map.html');
         });
 
 //  Information about zKillboard
