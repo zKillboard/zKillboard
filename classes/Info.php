@@ -30,8 +30,12 @@ class Info
         $data[str_replace('ID', 'Name', $type)] = isset($data['name']) ? $data['name'] : "$type $id";
         switch ($type) {
             case 'solarSystemID':
+                $starID = (int) @$data['star_id'];
+                $starInfo = Info::getInfo('starID', $starID);
+                if ($starInfo != null) $data['sunTypeID'] = $starInfo['type_id'];
+                if ($starInfo == null || $starInfo['type_id'] == null) $data['sunTypeID'] = 3802;
+
                 $data['security'] = @$data['secStatus'];
-                $data['sunTypeID'] = 3802;
                 break;
             case 'characterID':
                 $data['isCEO'] = $mdb->exists('information', ['type' => 'corporationID', 'id' => (int) @$data['corporationID'], 'ceoID' => (int) $id]);
