@@ -149,7 +149,7 @@ function systemSuccess($guzzler, $params, $content)
     $update = array_merge($system, ['name' => $name, 'secClass' => @$system['security_class'], 'secStatus' => $system['security_status'], 'regionID' => $params['regionID'], 'constellationID' => $params['constellationID']]);
     $mdb->insertUpdate("information", ['type' => 'solarSystemID', 'id' => $id], $update);
 
-    if (isset($system['star_id'])) $guzzler->call("$esiServer/latest/universe/stars/40222373/", "starSuccess", "fail", ['starID' => $system['star_id']]);
+    if (isset($system['star_id'])) $guzzler->call("$esiServer/latest/universe/stars/" . $system['star_id'] . "/", "starSuccess", "fail", ['starID' => $system['star_id']]);
 }
 
 function starSuccess($guzzler, $params, $content)
