@@ -508,6 +508,7 @@ class Info
             '164' => 'Structure Service Slots',
             '172' => 'Structure Fuel',
             '179' => 'Frigate Bay',
+            '180' => 'Core Room',
             );
 
     /**
@@ -549,6 +550,7 @@ class Info
             '177' => 'Subsystem Hold',
             '64' => 'Unlocked item, can be moved',
             '179' => 'Frigate Bay',
+            '180' => 'Core Room',
             );
 
     /**
