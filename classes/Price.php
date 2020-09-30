@@ -151,6 +151,8 @@ class Price
                 return 230000000000;
             case 48635: // Tiamat
                 return 230000000000;
+            case 47512: // 'Moreau' Fortizar
+                return 60000000000; // 60b 
             case 9860: // Polaris
             case 11019: // Cockroach
                 return 1000000000000; // 1 trillion, rare dev ships
