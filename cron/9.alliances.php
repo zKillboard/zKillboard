@@ -6,35 +6,23 @@ require_once '../init.php';
 
 if ($redis->get("zkb:universeLoaded") != "true") exit("Universe not yet loaded...\n");
 
-if ($redis->get("zkb:reinforced") == true) exit();
-//if ($redis->get("zkb:420prone") == "true") exit();
-
 $mdb = new Mdb();
-$queueAllis = new RedisTimeQueue('zkb:allianceID', 86400);
+$guzzler = new Guzzler();
 
-$i = date('i');
-if ($i == 45 || $queueAllis->size() < 100 ) {
-    $allis = $mdb->find('information', ['type' => 'allianceID']);
-    foreach ($allis as $alli) {
-        $queueAllis->add($alli['id']);
-    }
-}
-
-$guzzler = new Guzzler(2);
-
+$currentSecond = "";
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    $id = (int) $queueAllis->next();
-    if ($id > 0) {
-        $row = $mdb->findDoc("information", ['type' => 'allianceID', 'id' => $id]);
-
-        if (@$row['lastApiUpdate']->sec  != 0 && @$row['memberCount'] == 0) continue;
-
-        $guzzler->call("$esiServer/v4/alliances/$id/", "success", "fail", ['id' => $id]);
-        $guzzler->finish();
-        $guzzler->sleep(4);
+    $row = $mdb->findDoc("information", ['type' => 'allianceID', 'id' => ['$gt' => 1]], ['lastApiUpdate' => 1]);
+    if ($row == null) {
+        sleep(1);
+        continue;
     }
-    $guzzler->sleep(1);
+    $id = $row['id'];
+    while ($currentSecond == date('His')) usleep(50);
+    $currentSecond = date('His');
+
+    $guzzler->call("$esiServer/v4/alliances/$id/", "success", "fail", ['id' => $id]);
+    $guzzler->finish();
 }
 $guzzler->finish();
 

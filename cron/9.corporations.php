@@ -6,32 +6,32 @@ use cvweiss\redistools\RedisTimeQueue;
 
 if ($redis->get("zkb:universeLoaded") != "true") exit("Universe not yet loaded...\n");
 
-if ($redis->get("zkb:reinforced") == true) exit();
-//if ($redis->get("zkb:420prone") == "true") exit();
-$guzzler = new Guzzler(10);
-$corps = new RedisTimeQueue("zkb:corporationID", 86400);
+$guzzler = new Guzzler();
 
-$dayOfYear = date("z");
-$dayPrime = $dayOfYear % 73;
 
-$t = null;
+$currentSecond = "";
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    $id = (int) $corps->next();
-    if ($id > 0) {
-        $row = $mdb->findDoc("information", ['type' => 'corporationID', 'id' => $id]);
+    $row = $mdb->findDoc("information", ['type' => 'corporationID', 'id' => ['$gt' => 1]], ['lastApiUpdate' => 1]);
+    if ($row == null) {
+        sleep(1);
+        continue;
+    }
+    $id = $row['id'];
 
-        $hasRecent = $mdb->exists("ninetyDays", ['involved.corporationID' => $id]);
-        if (!$hasRecent && ($id % 73 != $dayPrime) && @$row['lastApiUpdate']->sec) continue;
+    $hasRecent = $mdb->exists("ninetyDays", ['involved.corporationID' => $id]);
+    if (isset($row['lastApiUpdate']) && !$hasRecent)  {
 
-        $url = "$esiServer/v4/corporations/$id/";
-        $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
-        $a = (isset($row['lastApiUpdate']) && $row['name'] != '') ? ['etag' => true] : [];
-        $guzzler->call($url, "updateCorp", "failCorp", $params, $a);
+    }
+    while ($currentSecond == date('His')) usleep(50);
+    $currentSecond = date('His');
 
-        if ($t != null) $guzzler->sleep(0, 10000 - $t->stop());
-        $t = new Timer();
-    } else $guzzler->sleep(1);
+    $url = "$esiServer/v4/corporations/$id/";
+    $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
+    $a = (isset($row['lastApiUpdate']) && $row['name'] != '') ? ['etag' => true] : [];
+    $guzzler->call($url, "updateCorp", "failCorp", $params, $a);
+
+    $guzzler->finish();
 }
 $guzzler->finish();
 
@@ -71,7 +71,7 @@ function updateCorp(&$guzzler, &$params, &$content)
     $content = Util::eliminateBetween($content, '"description"', '"home_station_id"');
     $content = Util::eliminateBetween($content, '"description"', '"member_count"');
     $content = Util::eliminateBetween($content, '"description"', '"name"');
-    
+
     $json = json_decode($content, true);
     if ($json['name'] == "") return; // bad data, ignore it
     $ceoID = (int) $json['ceo_id'];

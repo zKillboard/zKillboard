@@ -197,7 +197,7 @@ class CrestSSO
                 if ($userdetails == null) {
                     $mdb->save('information', ['type' => 'characterID', 'id' => $charID, 'name' => $response->CharacterName]);
                 }
-            }
+            } else $mdb->removeField('information', ['type' => 'characterID', 'id' => $charID], 'lastApiUpdate'); // force an api update
             $rtq = new RedisTimeQueue("zkb:characterID", 86400);
             $rtq->add($charID, -1);
 
