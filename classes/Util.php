@@ -466,7 +466,8 @@ class Util
 
     public static function availableStyles()
     {
-        return ['cerulean', 'cyborg', 'journal', 'readable', 'simplex', 'slate', 'spacelab', 'united'];
+        return ['cyborg'];
+        //return ['cerulean', 'cyborg', 'journal', 'readable', 'simplex', 'slate', 'spacelab', 'united'];
     }
 
     public static function rankCheck($rank)
