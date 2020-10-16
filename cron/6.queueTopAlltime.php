@@ -26,6 +26,7 @@ if ($master == true && $queueTopAllTime->size() == 0) {
 
 while ($queueTopAllTime->size() > 0 && date('Hi') == $minute) {
     $id = $queueTopAllTime->pop();
+    if ($id == null) break;
     $row = $mdb->findDoc("statistics", $id);
     calcTop($row);
 }
