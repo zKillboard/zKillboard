@@ -146,6 +146,15 @@ class Info
         return $systemInfo['security'];
     }
 
+    public static function getSystemByEpoch($solarSystemID, $epoch) {
+        global $mdb;
+
+        $serverVersion = $mdb->findField("versions", "serverVersion", ['epoch' => ['$gte' => $epoch]], ['epoch' => 1]);
+        if ($serverVersion == null) throw Exception("Unknown server version - bailing");
+        $system = $mdb->findDoc("geography", ['type' => 'solarSystemID', 'id' => $solarSystemID, 'serverVersion' => "$serverVersion"]);
+        return $system;
+    }
+
     /**
      * @param int $allianceID
      *
@@ -431,8 +440,6 @@ class Info
                                 $element['solarSystemSecurity'] = $securityLevel;
                                 $element['systemColorCode'] = self::getSystemColorCode($securityLevel);
                                 $regionInfo = self::getRegionInfoFromSystemID($value);
-                                $element['regionID'] = $regionInfo['regionID'];
-                                $element['regionName'] = $regionInfo['regionName'];
                                 $wspaceInfo = self::getWormholeSystemInfo($value);
                                 if ($wspaceInfo) {
                                     $element['systemClass'] = $wspaceInfo['class'];
@@ -443,7 +450,11 @@ class Info
                         if (!isset($element['constellationID'])) {
                             $element['constellationID'] = Info::getInfoField('solarSystemID', $value, 'constellationID');
                         }
+                        if (!isset($element['regionID'])) {
+                            $element['regionID'] = Info::getInfoField('constellationID', $value, 'regionID');
+                        }
                         $element['constellationName'] = Info::getInfoField('constellationID', $element['constellationID'], 'name');
+                        $element['regionID'] = Info::getInfoField('regionID', $element['regionID'], 'name');
                         break;
                     case 'regionID':
                         if (!isset($element['regionName'])) {

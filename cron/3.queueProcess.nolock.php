@@ -7,6 +7,7 @@ pcntl_fork();
 pcntl_fork();
 pcntl_fork();
 
+
 use cvweiss\redistools\RedisQueue;
 use cvweiss\redistools\RedisTtlCounter;
 
@@ -67,6 +68,7 @@ while ($minute == date('Hi')) {
 
         $systemID = (int) $mail['solar_system_id'];
         $system = Info::getInfo('solarSystemID', $systemID);
+        $system = Info::getSystemByEpoch($systemID, $kill['dttm']->sec);
 
         $solarSystem = array();
         $solarSystem['solarSystemID'] = $systemID;

@@ -2,12 +2,15 @@
 
 require_once "../init.php";
 
+if ($redis->get("zkb:noapi") == "true") exit();
 $serverVersion = $redis->get("tqServerVersion");
 $loadedVersion = $redis->get("zkb:tqServerVersion");
 if ($serverVersion != "" && $serverVersion == $loadedVersion && $redis->get("zkb:universeLoaded") == true) {
     exit();
 }
 
+$redis->del("zkb:universeLoaded");
+$redis->del("zkb:tqServerVersion");
 $guzzler = new Guzzler(25, 10);
 
 $guzzler->call("$esiServer/v1/universe/regions/", "regionsSuccess", "fail");
@@ -23,6 +26,7 @@ function fail($guzzler, $params, $error)
     $uri = $params['uri'];
     Util::out("Failure! $uri");
     $guzzler->call($uri, $params['fulfilled'], $params['rejected']);
+    exit();
 }
 
 function categoriesSuccess($guzzler, $params, $content)
@@ -100,7 +104,7 @@ function regionsSuccess($guzzler, $params, $content)
 
 function regionSuccess($guzzler, $params, $content)
 {
-    global $mdb, $esiServer;
+    global $serverVersion, $mdb, $esiServer;
 
     $region = json_decode($content, true);
     $regionID = (int) $region['region_id'];
@@ -109,6 +113,7 @@ function regionSuccess($guzzler, $params, $content)
     Util::out("Region: $name");
 
     $mdb->insertUpdate("information", ['type' => 'regionID', 'id' => $regionID], $region);
+    $mdb->insertUpdate("geography", ['type' => 'regionID', 'id' => $regionID, 'serverVersion' => $serverVersion], $region);
 
     foreach ($constellations as $constellation) {
         $guzzler->call("$esiServer/v1/universe/constellations/$constellation/", "constellationSuccess", "fail");
@@ -117,7 +122,7 @@ function regionSuccess($guzzler, $params, $content)
 
 function constellationSuccess($guzzler, $params, $content)
 {
-    global $mdb, $esiServer;
+    global $mdb, $esiServer, $serverVersion;
 
     $const = json_decode($content, true);
     $constID = (int) $const['constellation_id'];
@@ -129,6 +134,7 @@ function constellationSuccess($guzzler, $params, $content)
     $update = $const;
     $update['regionID'] = $regionID;
     $mdb->insertUpdate("information", ['type' => 'constellationID', 'id' => $constID], $update);
+    $mdb->insertUpdate("geography", ['type' => 'constellationID', 'id' => $constID, 'serverVersion' => $serverVersion], $update);
 
     foreach ($systems as $system) {
         $guzzler->call("$esiServer/v4/universe/systems/$system/", "systemSuccess", "fail", ['regionID' => $regionID, 'constellationID' => $constID]);
@@ -137,7 +143,7 @@ function constellationSuccess($guzzler, $params, $content)
 
 function systemSuccess($guzzler, $params, $content)
 {
-    global $mdb, $esiServer;
+    global $mdb, $esiServer, $serverVersion;
 
     $system = json_decode($content, true);
     $constID = $system['constellation_id'];
@@ -148,13 +154,14 @@ function systemSuccess($guzzler, $params, $content)
     
     $update = array_merge($system, ['name' => $name, 'secClass' => @$system['security_class'], 'secStatus' => $system['security_status'], 'regionID' => $params['regionID'], 'constellationID' => $params['constellationID']]);
     $mdb->insertUpdate("information", ['type' => 'solarSystemID', 'id' => $id], $update);
+    $mdb->insertUpdate("geography", ['type' => 'solarSystemID', 'id' => $id, 'serverVersion' => $serverVersion], $update);
 
     if (isset($system['star_id'])) $guzzler->call("$esiServer/latest/universe/stars/" . $system['star_id'] . "/", "starSuccess", "fail", ['starID' => $system['star_id']]);
 }
 
 function starSuccess($guzzler, $params, $content)
 {
-    global $mdb; 
+    global $mdb, $serverVersion; 
 
     $star = json_decode($content, true);
     $starID = $params['starID'];
@@ -165,5 +172,6 @@ function starSuccess($guzzler, $params, $content)
     $star['id'] = $id;
     Util::out("Star $id");
 
-    $mdb->insertUpdate("information", ['type' => 'starID', $id], $star);
+    $mdb->insertUpdate("information", ['type' => 'starID', 'id' => $id], $star);
+    $mdb->insertUpdate("geography", ['type' => 'starID', 'id' => $id, 'serverVersion' => $serverVersion], $star);
 }

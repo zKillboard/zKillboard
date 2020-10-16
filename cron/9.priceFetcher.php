@@ -4,6 +4,7 @@ require_once '../init.php';
 
 global $primePrices;
 
+if ($redis->get("zkb:noapi") == "true") exit();
 if ($primePrices != true) exit();
 
 $date = date('Ymd', time() - 7200);

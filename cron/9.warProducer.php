@@ -4,6 +4,7 @@ require_once '../init.php';
 
 global $fetchWars;
 
+if ($redis->get("zkb:noapi") == "true") exit();
 if ($fetchWars == null || $fetchWars == false) {
     exit();
 }

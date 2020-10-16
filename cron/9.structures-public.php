@@ -2,6 +2,9 @@
 
 require_once "../init.php";
 
+if ($redis->get("zkb:noapi") == "true") exit();
+if ($redis->get("zkb:reinforced") == true) exit();
+
 if ($redis->get("zkb:structure-fetch") == "true") exit();
 
 $raw = file_get_contents("https://esi.evetech.net/latest/universe/structures/?datasource=tranquility");

@@ -4,6 +4,7 @@ use cvweiss\redistools\RedisTimeQueue;
 
 require_once '../init.php';
 
+if ($redis->get("zkb:noapi") == "true") exit();
 if ($redis->get("zkb:universeLoaded") != "true") exit("Universe not yet loaded...\n");
 
 $removeFields = ['corporationID', 'allianceID', 'factionID', 'secStatus', 'security_status', 'corporation_id', 'alliance_id', 'faction_id', 'title', 'gender', 'race_id', 'birthday', 'ancestry_id', 'bloodline_id'];
@@ -12,6 +13,7 @@ $currentSecond = "";
 $guzzler = new Guzzler(5);
 $minute = date('Hi');
 while ($minute == date('Hi')) {
+    if ($redis->get("zkb:reinforced") == true) break;
     $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => ['$gt' => 1], 'lastApiUpdate' => ['$exists' => true]], ['lastApiUpdate' => 1]);
     if ($row == null) {
         sleep(1);
@@ -37,6 +39,7 @@ while ($minute == date('Hi')) {
     $a = (isset($row['lastApiUpdate']) && $row['name'] != '')? ['etag' => true] : [];
     $guzzler->call($url, "updateChar", "failChar", $params, $a);
     $guzzler->finish();
+    usleep(500000);
 }      
 $guzzler->finish();
 

@@ -2,6 +2,8 @@
 
 require_once "../init.php";
 
+if ($redis->get("zkb:noapi") == "true") exit();
+
 $mails = $mdb->find("evemails", ['sent' => false], ['_id' => 1]);
 if (sizeof($mails)) {
     $refreshToken = $mdb->findField("scopes", "refreshToken", ['characterID' => $evemailCharID, 'scope' => 'esi-mail.send_mail.v1']);

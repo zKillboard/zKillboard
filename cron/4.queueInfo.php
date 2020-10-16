@@ -1,10 +1,10 @@
 <?php
 
 $master = true;
-/*$pid = pcntl_fork();
+$pid = pcntl_fork();
 $master = ($pid != 0);
 pcntl_fork();
-pcntl_fork();*/
+pcntl_fork();
 
 use cvweiss\redistools\RedisTimeQueue;
 use cvweiss\redistools\RedisQueue;
@@ -136,6 +136,7 @@ function updateEntity($killID, $entity)
 
         $defaultName = "$type $id";
         $mdb->insertUpdate('information', $row, ['name' => $defaultName]);
+        if ($type == 'characterID') $mdb->removeField("information", ['type' => 'characterID', 'id' => $id, 'corporationID' => ['$exists' => false]], 'lastApiUpdate');
         $rtq = new RedisTimeQueue("zkb:$type", 86400);
         $rtq->add($id);
 

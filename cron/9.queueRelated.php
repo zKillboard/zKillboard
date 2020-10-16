@@ -10,7 +10,7 @@ while ($minute == date('Hi')) {
     if ($redis->get("zkb:reinforced") == true) break;
 
     $key = $redis->spop("queueRelatedSet");
-    if ($key == null) continue;
+    if ($key == null) { sleep(1); continue; }
     $serial = $redis->get("$key:params");
     if ($serial == null) continue;
 

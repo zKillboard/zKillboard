@@ -4,6 +4,7 @@ require_once '../init.php';
 
 use cvweiss\redistools\RedisTimeQueue;
 
+if ($redis->get("zkb:noapi") == "true") exit();
 if ($redis->get("zkb:universeLoaded") != "true") exit("Universe not yet loaded...\n");
 
 $guzzler = new Guzzler();

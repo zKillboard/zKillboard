@@ -9,6 +9,10 @@ if ($minute >= 1100 && $minute <= 1105) {
     $redis->set('tqStatus', 'OFFLINE'); // Just in case the result is cached on their end as online
     $redis->set('tqCount', 0);
     $redis->set('tqCountInt', 0);
+    $redis->del("zkb:universeLoaded");
+    $redis->del("zkb:tqServerVersion");
+    $redis->setex("zkb:noapi", 110, "true");
+    exit();
 } else {
     // Not using Guzzle to prevent tq status conflicts and deadlock
     for ($i = 0; $i <= 3; $i++) {
@@ -36,7 +40,7 @@ else $redis->setex('tq:apiStatus', 300, $message);
 
 function success($content)
 {
-    global $redis;
+    global $redis, $mdb;
 
     if ($content == "") return fail();
 
@@ -44,6 +48,7 @@ function success($content)
     $version = $root['server_version'];
     if ($version != null) {
         $redis->set('tqServerVersion', $version);
+        $mdb->insertUpdate("versions", ['serverVersion' => $version], ['epoch' => time() + 120]);
     }
 
     $loggedIn = (int) @$root['players'];

@@ -2,6 +2,7 @@
 
 require_once '../init.php';
 
+if ($redis->get("zkb:noapi") == "true") exit();
 if ($redis->get("zkb:420prone") == "true") exit();
 
 $redisKey = 'zkb:walletCheck';
