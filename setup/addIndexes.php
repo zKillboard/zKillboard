@@ -63,6 +63,9 @@ echo "Done\n";
 echo "Creating index : 'processed' => 1, with sparse = 0 and unique = 0 ... ";
 $crestmails->ensureIndex(array('processed' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
+echo "Creating index : 'labeled' => 1, with sparse = 0 and unique = 0 ... ";
+$crestmails->ensureIndex(array('labeled' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
 
 // daydump
 echo "\nCreating collection daydump ... ";
@@ -102,6 +105,16 @@ $favorites = $db->$collection;
 echo "Done\n";
 echo "Creating index : 'characterID' => 1, 'killID' => 1, with sparse = 0 and unique = 1 ... ";
 $favorites->ensureIndex(array('characterID' => 1, 'killID' => 1), array("sparse" => 0, "unique" => 1));
+echo "Done\n";
+
+// geography
+echo "\nCreating collection geography ... ";
+$db->createCollection("geography");
+$collection = "geography";
+$geography = $db->$collection;
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'id' => 1, 'serverVersion' => 1, with sparse = 0 and unique = 0 ... ";
+$geography->ensureIndex(array('type' => 1, 'id' => 1, 'serverVersion' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // information
@@ -160,6 +173,12 @@ $information->ensureIndex(array('warID' => 1, 'started' => -1), array("sparse" =
 echo "Done\n";
 echo "Creating index : 'lastApiUpdate' => 1, with sparse = 0 and unique = 0 ... ";
 $information->ensureIndex(array('lastApiUpdate' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'id' => 1, 'version' => 1, with sparse = 0 and unique = 1 ... ";
+$information->ensureIndex(array('type' => 1, 'id' => 1, 'version' => 1), array("sparse" => 0, "unique" => 1));
+echo "Done\n";
+echo "Creating index : 'serverVersion' => 1, with sparse = 0 and unique = 0 ... ";
+$information->ensureIndex(array('serverVersion' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // insurance
@@ -307,6 +326,19 @@ $killmails->ensureIndex(array('labels' => 1, 'killID' => -1), array("sparse" => 
 echo "Done\n";
 echo "Creating index : 'padhash' => 1, with sparse = 0 and unique = 0 ... ";
 $killmails->ensureIndex(array('padhash' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+
+// labels
+echo "\nCreating collection labels ... ";
+$db->createCollection("labels");
+$collection = "labels";
+$labels = $db->$collection;
+echo "Done\n";
+echo "Creating index : 'labels' => 1, with sparse = 0 and unique = 0 ... ";
+$labels->ensureIndex(array('labels' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'killID' => 1, with sparse = 0 and unique = 1 ... ";
+$labels->ensureIndex(array('killID' => 1), array("sparse" => 0, "unique" => 1));
 echo "Done\n";
 
 // locations
@@ -955,6 +987,19 @@ $users->ensureIndex(array('userID' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 echo "Creating index : 'characterID' => 1, with sparse = 0 and unique = 1 ... ";
 $users->ensureIndex(array('characterID' => 1), array("sparse" => 0, "unique" => 1));
+echo "Done\n";
+
+// versions
+echo "\nCreating collection versions ... ";
+$db->createCollection("versions");
+$collection = "versions";
+$versions = $db->$collection;
+echo "Done\n";
+echo "Creating index : 'serverVersion' => 1, with sparse = 0 and unique = 1 ... ";
+$versions->ensureIndex(array('serverVersion' => 1), array("sparse" => 0, "unique" => 1));
+echo "Done\n";
+echo "Creating index : 'epoch' => 1, with sparse = 0 and unique = 0 ... ";
+$versions->ensureIndex(array('epoch' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // warmails
