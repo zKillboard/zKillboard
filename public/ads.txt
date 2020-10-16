@@ -1,6 +1,6 @@
 # Publift Fuse ads.txt #
-# Updated: 4/5/2020 #
-# Contact: au.am@publift.com #
+# Updated: 09/09/2020 #
+# Contact: support@publift.com #
 
 # Google
 
@@ -173,11 +173,7 @@ freewheel.tv, 623217, RESELLER
 
 # TripleLift
 
-triplelift.com, 8379, Direct, 6c33edb13117fd86
-appnexus.com, 3084, RESELLER
-spotxchange.com, 228454, RESELLER, 7842df1d2fe2db34
-spotx.tv, 228454, RESELLER, 7842df1d2fe2db34
-lkqd.net, 504, RESELLER, 59c49fa9598a0117
+triplelift.com, 3084, Direct, 6c33edb13117fd86
 
 # Mobfox
 
@@ -252,17 +248,49 @@ sonobi.com,71169bd4a5,RESELLER,d1a215d9eb5aee9e
 thebrave.io,195641,RESELLER,5d63663f986f2ace
 
 # Amazon
+
 aps.amazon.com,8b48e249-e9e6-4a52-8b48-396ea93403e8,DIRECT
 pubmatic.com,157150,RESELLER,5d62403b186f2ace
 openx.com,540191398,RESELLER,6a698e2ec38604c6
 rubiconproject.com,18020,RESELLER,0bfd66d529a55807
 appnexus.com,1908,RESELLER,f5ab79cb980f11d1
 adtech.com,12068,RESELLER,e1a5b5b6e3255540
-ad-generation.jp,12474,RESELLER
+ad-generation.jp,12474,RESELLER,7f4ea9029ac04e53
 districtm.io,100962,RESELLER,3fd707be9c4527c3
 appnexus.com,3663,RESELLER,f5ab79cb980f11d1
 rhythmone.com,1654642120,RESELLER,a670c89d4a324e47
 yahoo.com,55029,RESELLER,e1a5b5b6e3255540
+indexexchange.com,192410,RESELLER,50b1c356f2c5c8fc
+
+# Connectad
+
+connectad.io, 152, DIRECT
+pubmatic.com, 156077, RESELLER, 5d62403b186f2ace
+pubmatic.com, 55990, RESELLER, 5d62403b186f2ace
+openx.com, 537145117, RESELLER, 6a698e2ec38604c6
+adform.com, 768, RESELLER
+indexexchange.com, 190906, DIRECT, 50b1c356f2c5c8fc
+appnexus.com, 8738, RESELLER, f5ab79cb980f11d1
+EMXDGT.com, 1138, DIRECT, 1e1d41537f7cad7f
+appnexus.com, 1356, RESELLER, f5ab79cb980f11d1
+google.com, pub-5995202563537249, RESELLER, f08c47fec0942fa0
+sovrn.com, 244287, DIRECT, fafdf38b16bf6b2b
+lijit.com, 244287, DIRECT, fafdf38b16bf6b2b
+lijit.com, 244287-eb, DIRECT, fafdf38b16bf6b2b
+appnexus.com, 1360, RESELLER, f5ab79cb980f11d1
+gumgum.com, 11645, RESELLER, ffdef49475d318a9
+openx.com, 538959099, RESELLER, 6a698e2ec38604c6
+openx.com, 539924617, RESELLER, 6a698e2ec38604c6
+pubmatic.com, 137711, RESELLER, 5d62403b186f2ace
+pubmatic.com, 156212, RESELLER, 5d62403b186f2ace
+pubmatic.com, 156700, RESELLER, 5d62403b186f2ace
+rubiconproject.com, 17960, RESELLER, 0bfd66d529a55807
+yahoo.com, 55248, DIRECT
+rubiconproject.com, 13132, RESELLER, 0bfd66d529a55807
+rubiconproject.com, 17250, RESELLER, 0bfd66d529a55807
+xad.com, 240, RESELLER, 81cbf0a75a5e0e9a
+onetag.com, 5d4e109247a89f6, DIRECT
+advertising.com, 28246, RESELLER
 
 # Playground XYZ
 indexexchange.com, 184665, RESELLER, 50b1c356f2c5c8fc
