@@ -69,6 +69,11 @@ while ($minute == date('Hi')) {
         $systemID = (int) $mail['solar_system_id'];
         $system = Info::getInfo('solarSystemID', $systemID);
         $system = Info::getSystemByEpoch($systemID, $kill['dttm']->sec);
+        if ($system == null) {
+            $redis->zadd("tobeparsed", $killID, $killID);
+            $redis->del("zkb:universeLoaded");
+            throw new Exception("NULL SYSTEM");
+        }
 
         $solarSystem = array();
         $solarSystem['solarSystemID'] = $systemID;
