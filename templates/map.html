@@ -6,7 +6,7 @@
 {% block style %}
   <style>
     #zkb-map-root {
-      height: 70vh;
+      height: 90vh;
       position: relative;
     }
   </style>
@@ -15,10 +15,14 @@
 {% block content %}
   </span>
 
-  <div id="zkb-map-root">
+  <div
+    id="zkb-map-root"
+    data-websocket-url="wss://{{ siteurl }}/websocket/"
+    data-universe-url="//{{ siteurl }}/map/data/universe.json"
+  >
     Loading...
   </div>
-  <script src="//{{ siteurl }}/map/static/js/main.a850410b.js"></script>
+  <script src="//{{ siteurl }}/map/static/js/main.35ddbefe.js"></script>
 
   <span>
 {% endblock %}
