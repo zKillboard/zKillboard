@@ -15,10 +15,14 @@
 {% block content %}
   </span>
 
-  <div id="zkb-map-root">
+  <div
+    id="zkb-map-root"
+    data-websocket-url="wss://{{ siteurl }}/websocket/"
+    data-universe-url="{{ fullsiteurl }}/map/data/universe.json"
+  >
     Loading...
   </div>
-  <script src="//{{ siteurl }}/map/static/js/main.a850410b.js"></script>
+  <script src="{{ fullsiteurl }}/map/static/js/main.47b8d536.js"></script>
 
   <span>
 {% endblock %}
