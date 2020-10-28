@@ -99,7 +99,7 @@ function updateCorp(&$guzzler, &$params, &$content)
 
     if (isset($json['alliance_id'])) {
         $exists = $mdb->exists("information", ['type' => 'allianceID', 'id' => (int) $json['alliance_id']]);
-        if ($exists == false) $mdb->insert("information", ['type' => $type, 'id' => (int) $json['alliance_id'], 'name' => 'allianceID ' . (int) $json['alliance_id']]);
+        if ($exists == false) $mdb->insert("information", ['type' => 'allianceID', 'id' => (int) $json['alliance_id'], 'name' => 'allianceID ' . (int) $json['alliance_id']]);
     }
 }
 
