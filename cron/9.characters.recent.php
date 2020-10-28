@@ -14,32 +14,34 @@ $guzzler = new Guzzler(5);
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     if ($redis->get("zkb:reinforced") == true) break;
-    $row = $mdb->findDoc("information", ['type' => 'characterID', 'id' => ['$gt' => 1], 'lastApiUpdate' => ['$exists' => true]], ['lastApiUpdate' => 1]);
+    $row = $mdb->findDoc("information", ['type' => 'characterID'], ['lastApiUpdate' => 1]);
     if ($row == null) {
-        sleep(1);
+        $guzzler->sleep(1);
         continue;
     }
-    if ($row['lastApiUpdate']->sec > (time() - 86400)) {
-        sleep(1);
+    if (isset($row['lastApiUpdate']) && $row['lastApiUpdate']->sec > (time() - 86400)) {
+        $guzzler->sleep(1);
         continue;
     }
-    while ($currentSecond == date('His')) usleep(50);
     $currentSecond = date('His');
-    $id = $row['id'];
+    $id = (int) $row['id'];
 
-    $hasRecent = $mdb->exists("ninetyDays", ['involved.characterID' => $id]);
-    if (!$hasRecent) {
-        $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(), 'corporationID' => 0, 'allianceID' => 0, 'factionID' => 0]);        
-        foreach ($removeFields as $field) if (isset($row[$field])) $mdb->removeField("information", $row, $field);
-        continue;
-    }
+    if (isset($row['lastApiUpdate'])) {
+        $hasRecent = $mdb->exists("ninetyDays", ['involved.characterID' => $id]);
+        if ($id <= 1 || !$hasRecent) {
+            $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(), 'corporationID' => 0, 'allianceID' => 0, 'factionID' => 0]);        
+            foreach ($removeFields as $field) if (isset($row[$field])) $mdb->removeField("information", $row, $field);
+            continue;
+        }
+    } else Util::out("Updating " . (isset($row['name']) ? $row['name'] : 'character ' . $id));
+    if (isset($row['lastApiUpdate'])) while ($currentSecond == date('His')) $guzzler->sleep(0, 50);
+    //Util::out($row['name'] . " " . $row['id']);
 
     $url = "$esiServer/v4/characters/$id/";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
-    $a = (isset($row['lastApiUpdate']) && $row['name'] != '')? ['etag' => true] : [];
-    $guzzler->call($url, "updateChar", "failChar", $params, $a);
+    //$a = (isset($row['lastApiUpdate']) && $row['name'] != '') ? ['etag' => true] : [];
+    $guzzler->call($url, "updateChar", "failChar", $params, []);
     $guzzler->finish();
-    usleep(500000);
 }      
 $guzzler->finish();
 
@@ -50,6 +52,7 @@ function failChar(&$guzzler, &$params, &$connectionException)
     $code = $connectionException->getCode();
     $row = $params['row'];
     $id = $row['id'];
+    Util::out("ERROR $id");
 
     switch ($code) {
         case 0: // timeout
@@ -58,7 +61,7 @@ function failChar(&$guzzler, &$params, &$connectionException)
         case 503: // server error
         case 504: // gateway timeout
         case 200: // timeout...
-            sleep(1);
+            $guzzler->sleep(1);
             $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(-23 * 3600)]);
             break;
         case 420:
@@ -77,7 +80,7 @@ function updateChar(&$guzzler, &$params, &$content)
     $id = (int) $row['id'];
 
     if ($content == "") {
-         $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now()]);
+        $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now()]);
         return;
     }
 
@@ -85,12 +88,14 @@ function updateChar(&$guzzler, &$params, &$content)
     $content = Util::eliminateBetween($content, '"description"', '"gender"');
 
     $json = json_decode($content, true);
-    if (@$json['name'] == "") return; // bad data, ignore it
+    if (@$json['name'] == "") {
+        $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now()]);
+        return; // bad data, ignore it
+    }
     if (json_last_error() != 0) {
         Util::out("Character $id JSON issue: " . json_last_error() . " " . json_last_error_msg());
         return;
     }
-    //Util::out("Updated character " . $json['name']);
 
     $corpID = (int) $json['corporation_id'];
 

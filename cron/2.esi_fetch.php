@@ -8,10 +8,10 @@ require_once "../init.php";
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:noapi") == "true") exit();
 
-$guzzler = new Guzzler(20);
+$guzzler = new Guzzler(1);
 $esimails = $mdb->getCollection("esimails");
 
-//$mdb->set("crestmails", ['processed' => 'fetching'], ['processed' => false], true);
+$mdb->set("crestmails", ['processed' => 'fetching'], ['processed' => false], true);
 
 $count = 0;
 $minute = date("Hi");
@@ -34,8 +34,7 @@ while ($minute == date("Hi")) {
         $guzzler->finish();
     }
     if (sizeof($rows) == 0) {
-        $guzzler->tick();
-        sleep(1);
+        $guzzler->sleep(1);
     }
 }
 $guzzler->finish();

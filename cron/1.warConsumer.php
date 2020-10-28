@@ -28,6 +28,7 @@ while ($minute == date('Hi')) {
     $params = ['warRow' => $warRow, 'redis' => $redis];
     $url = "$esiServer/v1/wars/$id/";
     $guzzler->call($url, "success", "fail", $params, ['etag' => true], 'GET');
+    $guzzler->sleep(1);
 }
 $guzzler->finish();
 

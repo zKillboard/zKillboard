@@ -15,7 +15,7 @@ class Guzzler
 
         $this->curl = new \GuzzleHttp\Handler\CurlMultiHandler();
         $this->handler = \GuzzleHttp\HandlerStack::create($this->curl);
-        $this->client = new \GuzzleHttp\Client(['curl' => [CURLOPT_FRESH_CONNECT => false], 'connect_timeout' => 30, 'timeout' => 60, 'handler' => $this->handler, 'headers' => ['User-Agent' => 'zkillboard.com']]);
+        $this->client = new \GuzzleHttp\Client(['curl' => [CURLOPT_FRESH_CONNECT => false], 'connect_timeout' => 30, 'timeout' => 30, 'handler' => $this->handler, 'headers' => ['User-Agent' => 'zkillboard.com']]);
         $this->maxConcurrent = ($redis->get("zkb:420prone") == "true") ? 1 : $maxConcurrent;
     }
 
@@ -77,7 +77,7 @@ class Guzzler
         $iterations = 0;
         while ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") {
             $this->tick();
-            sleep(1);
+            $this->sleep(1);
             $iterations++;
             if ($iterations > 60) return;
         }
@@ -91,43 +91,60 @@ class Guzzler
             unset($setup['etag']);
         }
 
+        //while (((int) $redis->get("concurrent")) > 10) $this->sleep(0, 1000);
+        $redis->incr("concurrent");
         $guzzler = $this;
         $request = new \GuzzleHttp\Psr7\Request($callType, $uri, $setup, $body);
         $this->client->sendAsync($request)->then(
-            function($response) use (&$guzzler, $fulfilled, $rejected, &$params, $statusType, $etag) {
+                function($response) use (&$guzzler, $fulfilled, $rejected, &$params, $statusType, $etag) {
                 global $redis;
 
+                try {
                 $guzzler->dec();
+                $redis->decr("concurrent");
                 $content = (string) $response->getBody();
                 Status::addStatus($statusType, true);
                 $this->lastHeaders = array_change_key_case($response->getHeaders());
                 if (isset($this->lastHeaders['warning'])) Util::out("Warning: " . $params['uri'] . " " . $this->lastHeaders['warning'][0]);
-                if (isset($this->lastHeaders['etag']) && strlen($content) > 0 && $etag !== null) Etag::set($params['uri'], $this->lastHeaders['etag'][0]); //$redis->hset("zkb:etags:" . date('m:d'), $params['uri'], $this->lastHeaders['etag'][0]);
+                if (isset($this->lastHeaders['etag']) && strlen($content) > 0 && $etag !== null) Etag::set($params['uri'], $this->lastHeaders['etag'][0]);
                 if ($etag !== null) Status::addStatus("cached304", ($response->getStatusCode() == 304));
 
                 $fulfilled($guzzler, $params, $content);
-            },
-            function($connectionException) use (&$guzzler, &$fulfilled, &$rejected, &$params, $statusType, $uri, $setup, $callType, $body) {
+                } catch (Exception $ex) {
+                Log::log(print_r($ex, true));
+                }
+                },
+                function($connectionException) use (&$guzzler, &$fulfilled, &$rejected, &$params, $statusType, $uri, $setup, $callType, $body) {
                 global $redis;
 
-                $guzzler->dec();
-                Status::addStatus($statusType, false);
-                $response = $connectionException->getResponse();
-                $this->lastHeaders = $response == null ? [] : array_change_key_case($response->getHeaders());
-                $params['content'] = method_exists($connectionException->getResponse(), "getBody") ? (string) $connectionException->getResponse()->getBody() : "";
-                $code = $connectionException->getCode();
-                $sleep = $this->setEsiErrorCount();
-                sleep(1);
+                try {
+                    $guzzler->dec();
+                    $redis->decr("concurrent");
+                    Status::addStatus($statusType, false);
+                    $response = $connectionException->getResponse();
+                    $this->lastHeaders = $response == null ? [] : array_change_key_case($response->getHeaders());
+                    $params['content'] = method_exists($connectionException->getResponse(), "getBody") ? (string) $connectionException->getResponse()->getBody() : "";
+                    $code = $connectionException->getCode();
+                    $sleep = $this->setEsiErrorCount();
+                    sleep(1);
 
-                if (($code == 0 || $code >= 500) && @$params['retryCount'] <= 3) {
-                    $params['retryCount'] = @$params['retryCount'] + 1;
-                    if (@$params['retryCount'] > 2) Util::out("guzzler retrying $uri (http error $code) retry number " . $params['retryCount']);
-                    $this->call($uri, $fulfilled, $rejected, $params, $setup, $callType, $body);
-                } else {
-                    //Log::log($params['uri'] . " $code" . ($params['content'] != '' ? "\n" . $params['content'] : ''));
-                    $rejected($guzzler, $params, $connectionException);
+                    if (($code == 0 || $code >= 500) && @$params['retryCount'] <= 3) {
+                        $params['retryCount'] = @$params['retryCount'] + 1;
+                        //if (@$params['retryCount'] > 2) Util::out("guzzler retrying $uri (http error $code) retry number " . $params['retryCount']);
+$h = $params['content'] . "\n";
+foreach ($this->lastHeaders as $name => $values) {
+   $h = $h . "$name: "  . implode(',', $values) . "\n";
+}
+if (@$params['retryCount'] > 2) Log::log("$uri ($code)\n$h");
+                        $this->call($uri, $fulfilled, $rejected, $params, $setup, $callType, $body);
+                    } else {
+                        //Log::log($params['uri'] . " $code" . ($params['content'] != '' ? "\n" . $params['content'] : ''));
+                        $rejected($guzzler, $params, $connectionException);
+                    }
+                } catch (Exception $ex) {
+                    Log::log(print_r($ex, true));
                 }
-            });
+                });
         $this->inc();
     }
 

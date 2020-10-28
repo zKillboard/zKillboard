@@ -29,7 +29,7 @@ while ($minute == date('Hi')) {
 
     $url = "$esiServer/v4/corporations/$id/";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
-    $a = (isset($row['lastApiUpdate']) && $row['name'] != '') ? ['etag' => true] : [];
+    $a = (isset($row['lastApiUpdate']) && $row['name'] != '') ? [] : [];
     $guzzler->call($url, "updateCorp", "failCorp", $params, $a);
 
     $guzzler->finish();
@@ -50,7 +50,7 @@ function failCorp(&$guzzler, &$params, &$connectionException)
         case 503: // server error
         case 504: // gateway timeout
         case 200: // timeout...
-            $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(86400 * -2)]);
+            //$mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(86400 * -2)]);
             break;
         case 420:
             $guzzler->finish();
@@ -79,19 +79,12 @@ function updateCorp(&$guzzler, &$params, &$content)
 
     $updates = $json;
     $updates['lastApiUpdate'] =  $mdb->now();
-    if (@$row['obscene'] == true) {
-        compareAttributes($updates, "name", @$row['name'], "Corporation " . $row['id']);
-        compareAttributes($updates, "ticker", @$row['ticker'], (string) $row['id']);
-        compareAttributes($updates, "obscene_name", @$row['name'], $json['name']);
-        compareAttributes($updates, "obscene_ticker", @$row['ticker'], (string) $json['ticker']);
-    } else {
-        compareAttributes($updates, "name", @$row['name'], (string) $json['name']);
-        compareAttributes($updates, "ticker", @$row['ticker'], (string) $json['ticker']);
-    }
-    compareAttributes($updates, "ceoID", @$row['ceoID'], $ceoID);
-    compareAttributes($updates, "memberCount", @$row['memberCount'], (int) $json['member_count']);
-    compareAttributes($updates, "allianceID", @$row['allianceID'], (int) @$json['alliance_id']); 
-    compareAttributes($updates, "factionID", @$row['factionID'], (int) @$json['faction_id']);
+    if (isset($json['name']) && $json['name'] != "") $updates['name'] = (string) @$json['name'];
+    if (isset($json['ticker']) && $json['ticker'] != "") $updates['ticker'] = (string) @$json['ticker'];
+    $updates['ceoID'] = (int) @$json['ceo_id'];
+    $updates['memberCount'] = (int) @$json['member_count'];
+    $updates['allianceID'] = (int) @$json['alliance_id'];
+    $updates['factionID'] = (int) @$json['faction_id'];
 
     // Does the CEO exist in our info table?
     $ceoExists = $mdb->count('information', ['type' => 'characterID', 'id' => $ceoID]);
@@ -105,14 +98,8 @@ function updateCorp(&$guzzler, &$params, &$content)
     }
 
     if (isset($json['alliance_id'])) {
-        $queueAllis = new RedisTimeQueue('zkb:allianceID', 9600);
-        $row = ['type' => 'allianceID', 'id' => (int) $json['alliance_id']];
-        if (!$queueAllis->isMember($json['alliance_id']) || $mdb->count("information", $row) == 0) {
-            Util::out("Corporation adding new alliance " . $json['alliance_id']);
-            $defaultName = "allianceID " . $json['alliance_id'];
-            $mdb->insertUpdate('information', $row, ['name' => $defaultName]);
-            $queueAllis->add($json['alliance_id']);
-        }
+        $exists = $mdb->exists("information", ['type' => 'allianceID', 'id' => (int) $json['alliance_id']]);
+        if ($exists == false) $mdb->insert("information", ['type' => $type, 'id' => (int) $json['alliance_id'], 'name' => 'allianceID ' . (int) $json['alliance_id']]);
     }
 }
 

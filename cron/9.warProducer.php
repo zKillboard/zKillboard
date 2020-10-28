@@ -40,6 +40,7 @@ function success(&$guzzler, &$params, $content)
     if ($warsAdded && sizeof($wars) > 0) {
         $guzzler->call("$esiServer/v1/wars/?max_war_id=$maxWarID", "success", "fail", $params);
     }
+    $guzzler->sleep(1);
 }
 
 function fail(&$guzzler, &$params, $content)

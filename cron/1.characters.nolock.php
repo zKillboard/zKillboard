@@ -45,7 +45,7 @@ while ($minute == date('Hi')) {
             if (!$hasRecent && @$row['lastFetch']->sec != 0 && (($charID % 24) != date('H'))) continue;
 
             // Give corporation checks priority
-            if ($esiCorp->pending() > $ssoThrottle) usleep(ceil(1000000 / max(1, $ssoThrottle)));
+            if ($esiCorp->pending() > $ssoThrottle) $guzzler->sleep(0, ceil(1000000 / max(1, $ssoThrottle)));
 
             $params = ['row' => $row, 'esi' => $esi];
             $refreshToken = $row['refreshToken'];
