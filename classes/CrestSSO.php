@@ -213,6 +213,10 @@ class CrestSSO
             $_SESSION['characterName'] = $response->CharacterName;
             session_write_close();
 
+            try {
+                $mdb->insert("rewards", ['character_id' => $charID, 'character_name' => $charName]);
+            } catch (Exception $rewardex) {}
+
             $redirect = '/';
             $sessID = session_id();
             $forward = $redis->get("forward:$sessID");
