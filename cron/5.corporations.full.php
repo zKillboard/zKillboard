@@ -88,7 +88,7 @@ function success($guzzler, $params, $content)
         $newKills += addMail($killID, $hash);
     }
 
-    if (sizeof($kills)) {
+    if (sizeof($kills) >= 1000) {
         $params['newKills'] = $newKills;
         $params['max_kill_id'] = $minKillID;
         $params['maxKillID'] = $maxKillID;
