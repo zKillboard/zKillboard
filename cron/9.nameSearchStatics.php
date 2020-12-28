@@ -45,7 +45,7 @@ foreach ($types as $type) {
         switch ($type) {
             case 'locationID':
             case 'warID':
-                continue;
+                continue 2;
             case 'characterID':
                 $charsRTQ->add($id);
                 break;
@@ -62,7 +62,7 @@ foreach ($types as $type) {
                     $flag = strtolower($name);
                 }
                 if (@$entity['published'] != true && $flag == '') {
-                    continue;
+                    continue 2;
                 }
                 $isShip = $flag != '';
                 break;
