@@ -1,6 +1,7 @@
 {% if sessionusername %}
 <script type="text/javascript">
 $("#char-loggedout").remove();
+$("#contest-logged-in").removeClass('hidden');
 $("#loginforapi").remove();
 $("#username").text("{{ sessionusername }}");
 $("#char-image").attr("src", "{{ image_character }}{{ characterID }}/portrait?size=32");
@@ -8,8 +9,6 @@ $("#char-image").attr("src", "{{ image_character }}{{ characterID }}/portrait?si
 showAds = {{ showAds }} & showAds;
 {% if showAds != 0 %}
     loadads();
-{% else %}
-//    $("#adsensetop, #adsensebottom").html('<a target="_new" href="https://brave.com/zki349"><img src="//zkillboard.com/img/brave_switch.png" alt="Switch to the Brave Browser"></a>');
 {% endif %}
 
 {% if style != 'cyborg' %}

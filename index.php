@@ -77,6 +77,11 @@ if ($redis->get("IP:ban:$ip") == "true") {
     header("Location: /html/banned.html", true, 302);
     return;
 }
+if (strpos($uri, "except") !== false) {
+    $redix->setex("IP:ban:$ip", 9600, "true");
+    header("Location: /html/banned.html", true, 302);
+    return;
+}
 
 if (in_array($ip, $blackList)) {
     header('HTTP/1.1 403 Blacklisted');

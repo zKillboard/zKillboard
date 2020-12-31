@@ -285,7 +285,7 @@ function commentUpVote(pageID, commentID)
 
 var adnumber = 0;
 function loadads() {
-    var adblocks = $(".publift");
+    var adblocks = $(".publift:visible");
     adnumber = adblocks.length;
     adblocks.each(function() {
             var elem = $(this);
@@ -312,7 +312,7 @@ function adblockloaded() {
 
 function killListAd(doLoadSlots) {
     if ($(".adrow").length == 0 && bottomad != null) {
-        var td = $("<td colspan='8' style='width: 100%;'>") ; bottomad.appendTo(td); var tr = $("<tr class='killlistrow adrow'>").append(td).insertBefore("#killlist tbody tr:first");
+        var td = $("<td colspan='8' style='width: 100%;'>") ; bottomad.appendTo(td); var tr = $("<tr class='killlistrow adrow ad-xl-none'>").append(td).insertBefore("#killlist tbody tr:first");
         if (doLoadSlots === true) fusetag.loadSlots();
     }
 }

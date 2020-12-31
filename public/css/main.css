@@ -319,3 +319,29 @@ td.centered {
 .adrow {
     height: 101px;
 }
+
+@media only screen and (max-width: 1579px) {
+.ad-xl-block {
+    display: none !important;
+}
+}
+
+@media only screen and (min-width: 1580px) {
+.left-sticky-ad {
+    position: fixed;
+    top: 50px;
+    left: calc(50% - 785px);
+    width: 180px;
+    max-width: 180px;
+    height: 600px;
+    max-height: 600px;
+    background-color: transparent;
+}
+
+.ad-xl-block {
+    display: block;
+}
+.ad-xl-none {
+    display: none !important;
+}
+}

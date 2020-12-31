@@ -8,7 +8,7 @@ $redis->del("zkb:activity_map");
 $ids = $mdb->getCollection("activity")->distinct("id");
 foreach ($ids as $id) {
     $info = $mdb->findDoc("information", ['id' => $id]);
-    if ($info['type'] == 'characterID') continue;
+    if (@$info['type'] == 'characterID') continue;
     $activity = ['max' => 0];
     for ($day = 0; $day <= 6; $day++ ) {
         for ($hour = 0; $hour <= 23; $hour++) {
