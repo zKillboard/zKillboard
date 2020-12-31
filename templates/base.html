@@ -58,8 +58,8 @@
 
 		<link id="mainstyle" rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/{{ version }}/cyborg/bootstrap.min.css">
 
-		<link rel="stylesheet" href="//{{ siteurl }}/css/style-edits/cyborg-main.css?v=202008190219" id="nextstyle">
-		<link rel="stylesheet" href="//{{ siteurl }}/css/main.css?v=202008190219">
+		<link rel="stylesheet" href="//{{ siteurl }}/css/style-edits/cyborg-main.css?v=202008190220" id="nextstyle">
+		<link rel="stylesheet" href="//{{ siteurl }}/css/main.css?v=202012132047">
 		<link rel="stylesheet" href="//{{ siteurl }}/css/nprogress.css">
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
@@ -116,7 +116,7 @@
 				<div class="clearfix"></div>
 
 				<!-- Bottom ad -->
-				<div class="centered publift" fuse="home_footer" id="adsensebottom"></div>
+				<div class="centered publift ad-xl-none" fuse="home_footer" id="adsensebottom"></div>
 
 				<!-- Footer -->
 				<div class="hidden-xs">{% include "footer.html" %}</div>
@@ -138,7 +138,7 @@
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.2/bootstrap-slider.min.js"></script>
 
 		<script type="text/javascript" src="//{{ siteurl }}/js/search.js?v=1"></script>
-		<script type="text/javascript" src="//{{ siteurl }}/js/common.js?t=202008272315"></script>
+		<script type="text/javascript" src="//{{ siteurl }}/js/common.js?t=202012132047"></script>
 		<script type="text/javascript" src="//{{ siteurl }}/js/sclock1.js"></script>
 		<script type="text/javascript" src="//{{ siteurl }}/js/nprogress.js"></script>
                 <script type="text/javascript" src="/js/reconnecting-websocket.js"></script>
@@ -208,6 +208,26 @@
                 </div>
         </div>
 </div>
+<div class="modal fade" id="login-modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Login to Win!</h4>
+            </div>
+            <div class="modal-body">
+                <p>To celebrate zKillboard's addition to the Eve Online Partnership Program, we are celebrating by giving out several Astero Scope Syndication YC122 SKINs! All you have to do for a chance to win is login! Giveways will happen on Dec. 15, 18, 21, 24, 28, ... until I run out of SKINs.<p>
+                <div>
+                           <form action="/ccplogin/" id="loginform">
+                                <label class="checkbox"><input type="checkbox" name="scopes[]" value="esi-killmails.read_killmails.v1" checked>Fetch killmails?</label>
+                                <label class="checkbox"><input type="checkbox" name="scopes[]" value="esi-fittings.write_fittings.v1" checked>Save Fittings?</label>
+                                <input id='ssologinimage' type="image" src="/img/ssologin.png">
+                            </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="ad-xl-block"><div class="ad-xl-block left-sticky-ad publift" fuse="left-sticky"></div></div>
 </body>
 </html>
 {% endif %}

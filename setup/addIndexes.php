@@ -739,6 +739,16 @@ echo "Creating index : 'typeID' => 1, with sparse = 0 and unique = 1 ... ";
 $prices->ensureIndex(array('typeID' => 1), array("sparse" => 0, "unique" => 1));
 echo "Done\n";
 
+// rewards
+echo "\nCreating collection rewards ... ";
+$db->createCollection("rewards");
+$collection = "rewards";
+$rewards = $db->$collection;
+echo "Done\n";
+echo "Creating index : 'character_id' => 1, with sparse = 0 and unique = 1 ... ";
+$rewards->ensureIndex(array('character_id' => 1), array("sparse" => 0, "unique" => 1));
+echo "Done\n";
+
 // scopes
 echo "\nCreating collection scopes ... ";
 $db->createCollection("scopes");
@@ -948,13 +958,6 @@ $statistics->ensureIndex(array('hasSupers' => 1), array("sparse" => 1, "unique" 
 echo "Done\n";
 echo "Creating index : 'updatingSupers' => 1, with sparse = 1 and unique = 0 ... ";
 $statistics->ensureIndex(array('updatingSupers' => 1), array("sparse" => 1, "unique" => 0));
-echo "Done\n";
-
-// structures
-echo "\nCreating collection structures ... ";
-$db->createCollection("structures");
-$collection = "structures";
-$structures = $db->$collection;
 echo "Done\n";
 
 // tickets
