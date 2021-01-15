@@ -170,11 +170,12 @@ class Price
                 return 500000000000; // 500b
                 // Rare battleships
             case 13202: // Megathron Federate Issue
-            case 26840: // Raven State Issue
             case 11936: // Apocalypse Imperial Issue
             case 11938: // Armageddon Imperial Issue
             case 26842: // Tempest Tribal Issue
                 return 750000000000; // 750b
+            case 26840: // Raven State Issue
+                return 2500000000000;
         }
 
         // Some groupIDs have hardcoded prices
