@@ -128,15 +128,18 @@ while ($minute == date('Hi')) {
         }
 
         addLabel($kill, $isPaddedKill, 'padding');
-        addLabel($kill, $kill['attackerCount'] >= 10, '10+');
-        addLabel($kill, $kill['attackerCount'] >= 25, '25+');
-        addLabel($kill, $kill['attackerCount'] >= 50, '50+');
-        addLabel($kill, $kill['attackerCount'] >= 100, '100+');
-        addLabel($kill, $kill['attackerCount'] >= 1000, '1000+');
+        addLabel($kill, true, "cat:" . $kill['categoryID']); 
+        $countflag = addLabel($kill, $kill['solo'], 'solo');
+        if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 1000, '1000+');
+        if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 100, '100+');
+        if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 50, '50+');
+        if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 25, '25+');
+        if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 10, '10+');
+        if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 5, '5+');
+        if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 2, '2+');
         addLabel($kill, $kill['npc'], 'npc');
         addLabel($kill, !($kill['npc'] == true || $isPaddedKill), 'pvp');
         addLabel($kill, $kill['awox'], 'awox');
-        addLabel($kill, $kill['solo'], 'solo');
         addLabel($kill, $solarSystem['security'] >= 0.45, 'highsec');
         addLabel($kill, $solarSystem['security'] < 0.45 && $solarSystem['security'] >= 0.05, 'lowsec');
         addLabel($kill, $solarSystem['security'] < 0.05 && $solarSystem['regionID'] < 11000001, 'nullsec');
@@ -179,7 +182,11 @@ while ($minute == date('Hi')) {
 
 function addLabel(&$kill, $condition, $label)
 {
-    if ($condition === true) $kill['labels'][] = $label;
+    if ($condition === true) {
+        $kill['labels'][] = $label;
+        return true;
+    }
+    return false;
 }
 
 function saveMail($mdb, $collection, $kill)

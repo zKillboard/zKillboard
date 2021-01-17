@@ -134,14 +134,14 @@ $extra['wormhole'] = $data;
 
 $url = 'https://'.$_SERVER['SERVER_NAME']."/detail/$id/";
 
-if ($killdata['victim']['groupID'] == 29) {
-    $query = ['$and' => [['involved' => [ '$elemMatch' => ['isVictim' => true, 'characterID' => (int) $killdata['victim']['characterID']]]], ['killID' => ['$gte' => ($id - 200)]], ['killID' => ['$lt' => $id]], ['vGroupID' => ['$ne' => 29]]]];
-    $relatedKill = $mdb->findDoc('killmails', $query);
-    if ($relatedKill) {
-        $relatedShip = ['killID' => $relatedKill['killID'], 'shipTypeID' => $relatedKill['involved'][0]['shipTypeID']];
-    }
-} else {
-    $query = ['$and' => [['involved.characterID' => (int) @$killdata['victim']['characterID']], ['killID' => ['$lte' => ($id + 200)]], ['killID' => ['$gt' => $id]], ['vGroupID' => 29]]];
+$relatedShip = null;
+$query = ['$and' => [['involved' => [ '$elemMatch' => ['isVictim' => true, 'characterID' => (int) $killdata['victim']['characterID']]]], ['killID' => ['$gte' => ($id - 200)]], ['killID' => ['$lt' => $id]], ['labels' => 'cat:6'], ['vGroupID' => ['$ne' => 29]]]];
+$relatedKill = $mdb->findDoc('killmails', $query);
+if ($relatedKill) {
+    $relatedShip = ['killID' => $relatedKill['killID'], 'shipTypeID' => $relatedKill['involved'][0]['shipTypeID']];
+}
+if ($relatedShip == null) {
+    $query = ['$and' => [['involved.characterID' => (int) @$killdata['victim']['characterID']], ['killID' => ['$lte' => ($id + 200)]], ['killID' => ['$gt' => $id]], ['labels' => 'cat:6'], ['vGroupID' => 29]]];
     $relatedKill = $mdb->findDoc('killmails', $query);
     if ($relatedKill) {
         $relatedShip = ['killID' => $relatedKill['killID'], 'shipTypeID' => $relatedKill['involved'][0]['shipTypeID']];
