@@ -135,7 +135,7 @@ $extra['wormhole'] = $data;
 $url = 'https://'.$_SERVER['SERVER_NAME']."/detail/$id/";
 
 $relatedShip = null;
-$query = ['$and' => [['involved' => [ '$elemMatch' => ['isVictim' => true, 'characterID' => (int) $killdata['victim']['characterID']]]], ['killID' => ['$gte' => ($id - 200)]], ['killID' => ['$lt' => $id]], ['labels' => 'cat:6'], ['vGroupID' => ['$ne' => 29]]]];
+$query = ['$and' => [['involved' => [ '$elemMatch' => ['isVictim' => true, 'characterID' => (int) @$killdata['victim']['characterID']]]], ['killID' => ['$gte' => ($id - 200)]], ['killID' => ['$lt' => $id]], ['labels' => 'cat:6'], ['vGroupID' => ['$ne' => 29]]]];
 $relatedKill = $mdb->findDoc('killmails', $query);
 if ($relatedKill) {
     $relatedShip = ['killID' => $relatedKill['killID'], 'shipTypeID' => $relatedKill['involved'][0]['shipTypeID']];
