@@ -338,6 +338,17 @@ td.centered {
     background-color: transparent;
 }
 
+.right-sticky-ad {
+    position: fixed;
+    top: 50px;
+    left: calc(50% + 615px);
+    width: 180px;
+    max-width: 180px;
+    height: 600px;
+    max-height: 600px;
+    background-color: transparent;
+}
+
 .ad-xl-block {
     display: block;
 }
