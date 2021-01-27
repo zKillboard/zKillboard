@@ -14,6 +14,12 @@ $query = buildQuery($query, "victims", true);
 
 $query = parseDate($query, 'start');
 $query = parseDate($query, 'end');
+Log::log(print_r($query, true));
+$startTime = (int) @$query['start'];
+$endTime = (int) @$query['end'];
+if ($endTime == 0) $endTime = time();
+unset($query['start']);
+unset($query['end']);
 
 getLabelGroup("highsec");
 if (isset($_POST['labels'])) {
@@ -57,11 +63,26 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 
 $arr = [];
+$arr['kills'] = [];
 foreach ($result as $row) {
     $killID = $row['killID'];
     $redis->setex("zkb:killlistrow:" . $killID, 60, "true");
-    $arr[] = $killID;
+    $arr['kills'][] = $killID;
 }
+$arr['top'] = [];
+Log::log("$endTime - $startTime = " . ($endTime - $startTime));
+if ($endTime - $startTime <= 604800) {
+    Log::log("groups!");
+    $arr['top']['character'] = getTop('characterID', $query);
+    $arr['top']['corporation'] = getTop('corporationID', $query);
+    $arr['top']['alliance'] = getTop('allianceID', $query);
+    $arr['top']['ship'] = getTop('shipTypeID', $query);
+    $arr['top']['group'] = getTop('groupID', $query);
+    $arr['top']['region'] = getTop('regionID', $query);
+    $arr['top']['system'] = getTop('solarSystemID', $query);
+    $arr['top']['location'] = getTop('locationID', $query);
+}
+
 
 echo json_encode($arr, true);
 
@@ -123,7 +144,70 @@ function parseDate($query, $which) {
     if ($killID != null) {
         $query[] = ['killID' => [($which == 'start' ? '$gte' : '$lte') => $killID]];
         $query['hasDateFilter'] = true;
+        $query[$which] = strtotime($val);
     }
 
     return $query;
 }
+
+
+function getTop($groupByColumn, $query, $cacheOverride = false, $addInfo = true)
+{
+    global $mdb, $longQueryMS;
+
+    try {
+    $hashKey = "Stats::getTop:q:$groupByColumn:".serialize($query);
+    $result = null; // RedisCache::get($hashKey);
+    if ($cacheOverride == false && $result != null) {
+        return $result;
+    }
+
+    $killmails = $mdb->getCollection('killmails');
+
+    if ($groupByColumn == 'solarSystemID' || $groupByColumn == 'regionID') {
+        $keyField = "system.$groupByColumn";
+    } elseif ($groupByColumn != 'locationID') {
+        $keyField = "involved.$groupByColumn";
+    } else {
+        $keyField = $groupByColumn;
+    }
+
+    $id = $type = null;
+    if ($groupByColumn != 'solarSystemID' && $groupByColumn != 'regionID' && $groupByColumn != 'locationID') {
+        $type = "involved." . $groupByColumn;
+    }
+
+    $timer = new Timer();
+    $pipeline = [];
+    $pipeline[] = ['$match' => $query];
+    if ($groupByColumn != 'solarSystemID' && $groupByColumn != 'regionID' && $groupByColumn != 'locationID') {
+        $pipeline[] = ['$unwind' => '$involved'];
+    }
+    if ($type != null && $id != null) {
+        //$pipeline[] = ['$match' => [$type => $id, 'involved.isVictim' => false]];
+    }
+    $pipeline[] = ['$match' => ['involved.isVictim' => true]];
+    $pipeline[] = ['$match' => [$keyField => ['$ne' => null]]];
+    //$pipeline[] = ['$match' => $andQuery];
+    $pipeline[] = ['$group' => ['_id' => ['killID' => '$killID', $groupByColumn => '$'.$keyField]]];
+    $pipeline[] = ['$group' => ['_id' => '$_id.'.$groupByColumn, 'kills' => ['$sum' => 1]]];
+    $pipeline[] = ['$sort' => ['kills' => -1]];
+    $pipeline[] = ['$limit' => 100];
+    $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
+
+    $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true]);
+    $result = $rr['result'];
+
+    $time = $timer->stop();
+    if ($time > $longQueryMS) {
+        global $uri;
+        Log::log("getTop Long query (${time}ms): $hashKey $uri");
+    }
+
+    if ($addInfo) Info::addInfo($result);
+    //RedisCache::set($hashKey, $result, isset($parameters['cacheTime']) ? $parameters['cacheTime'] : 900);
+
+    return $result;
+    } catch (Exception $ex) { Log::log(print_r($ex, true)); return []; }
+}
+

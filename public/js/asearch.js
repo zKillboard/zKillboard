@@ -97,10 +97,31 @@ function getFilters() {
 }
 
 function applyQueryResult(data, textStatus, jqXHR) {
+    console.log(this.url);
     $(".killlistmessage").remove();
-    killIDs = data;
-    if (data.length == 0) killlistmessage("no results");
-    else popEm();
+    $("#result-groups").html("");
+    killIDs = data.kills;
+    if (data.kills.length == 0) killlistmessage("no results");
+    else {
+        popEm();
+        if (data.top.length == 0) $("#result-groups").html("Timespan > 7 days.");
+        else {
+            var html = "<p>Listing Victims Only</p>";
+            var keys = Object.keys(data.top);
+            for (i = 0; i < keys.length; i++) {
+                var title = keys[i];
+                var values = data.top[title];
+                console.log(values);
+                html += "<br/><p>Top " + title + "s</p>";
+                for (j = 0; j < values.length; j++) {
+                    console.log(values[j]);
+                    html += values[j][title + 'Name'] + ": " + values[j].kills + "<br/>";
+                }
+            }
+            $("#result-groups").html(html);
+        }
+        
+    }
 }
 
 function handleError(jqXHR, textStatus, errorThrown) {
@@ -111,6 +132,7 @@ function handleError(jqXHR, textStatus, errorThrown) {
 
 function killlistmessage(message) {
     $(".killlistmessage").remove();
+    $("#result-groups").html("");
     var tr = $("<tr>").addClass('killlistmessage');
     var td = $("<td>").attr('colspan', 7).html('<i>' + message + '</i>');
     tr.append(td);
