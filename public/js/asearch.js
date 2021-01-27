@@ -21,11 +21,9 @@ $(document).ready(function() {
 });
 
 function addEntity(suggestion) {
-    if (ids.indexOf(suggestion.data.id) !== -1) return;
-    ids.push(suggestion.data.id);
-
+    console.log("suggestion", suggestion);
     delete suggestion.data.groupBy;
-    if (suggestion.data.type != 'label') suggestion.data.type = suggestion.data.type + 'ID';
+    if (suggestion.data.type != 'label' && suggestion.data.type.indexOf('ID') < 0) suggestion.data.type = suggestion.data.type + 'ID';
     switch (suggestion.data.type) {
         case 'label':
 
@@ -33,21 +31,21 @@ function addEntity(suggestion) {
         case 'systemID':
         case 'constellationID':
         case 'regionID':
+            asfilter.location.push(suggestion.data);
             if ($("#location").html() == 'All systems') $("#location").html("");
             add('location', suggestion);
             break;
         default:
+            asfilter.neutrals.push(suggestion.data);
             add('neutrals', suggestion);
 
     }
     clickPage1();
 }
 
-var ids = [];
-var filters = {location: [], attackers: [], neutrals: [], victims: []};
-var radios = { sort: { sortBy: 'date', sortDir: 'desc' }};
+var radios = { sort: { sortBy: 'date', sortDir: 'desc' }};  // to be depracated
+var asfilter = {location: [], attackers: [], neutrals: [], victims: [], sort: { sortBy: 'date', sortDir: 'desc' }};
 
-var html = '<div type=":type" id=":id">:name</div>';
 function getHTML(suggestion) {
     var left = $("<span>").addClass("glyphicon").addClass("glyphicon-chevron-left").attr('direction', 'left').on('click', moveLeft).css('cursor', 'pointer');
     var right = $("<span>").addClass("glyphicon").addClass("glyphicon-chevron-right").attr('direction', 'right').on('click', moveRight).css('cursor', 'pointer');
@@ -57,7 +55,7 @@ function getHTML(suggestion) {
         .attr("entity-id", suggestion.data.id)
         .attr("entity-type", suggestion.data.type)
         .html(suggestion.data.type.replace('ID', '') + ': ' + suggestion.value);
-    return $("<div>").append(left).append(data).append(right).append(remove).attr('time-id', 'id-' + Date.now()).addClass('filter').addClass('filter-' + suggestion.data.type);
+    return $("<div>").attr('entity-type', suggestion.data.type).attr('entity-id', suggestion.data.id).append(left).append(data).append(right).append(remove).attr('time-id', 'id-' + Date.now()).addClass('filter').addClass('filter-' + suggestion.data.type);
 }
 
 function add(id, suggestion) {
@@ -65,10 +63,6 @@ function add(id, suggestion) {
     var tag = $("#" + id);
 
     tag.append(newhtml);
-
-    var timeid = newhtml.attr('time-id');
-    if (filters[id] == undefined) filters[id] = [];
-    filters[id][timeid] = suggestion.data;
 }
 
 var xhr = undefined;
@@ -76,9 +70,7 @@ var filtersStringified = undefined;
 function doQuery() {
     var f = getFilters();
     var stringified = JSON.stringify(f);
-    console.log(filtersStringified + ' - ' + stringified);
     if (filtersStringified === stringified) {
-        console.log('they match');
         return;
     }
     filtersStringified = stringified;
@@ -96,16 +88,11 @@ function doQuery() {
 }
 
 function getFilters() {
-    var retVal = {};
-    var keys = Object.keys(filters);   
-    for (var i = 0; i < keys.length; i++) {
-        retVal[keys[i]] = Object.values(filters[keys[i]]);
-    }
+    var retVal = asfilter;
     retVal.labels = [];
     $(".filter-btn.btn-primary").each(function() { retVal.labels.push($(this).html()); });
     retVal.epoch = { start: $("#dtstart").val(), end: $("#dtend").val()};
     retVal.radios = radios;
-    console.log(retVal);
     return retVal;
 }
 
@@ -161,12 +148,11 @@ function move(element, arr) {
     var parent = $(element).parent();
     var location = parent.parent().attr('id');
 
-    var timeid = parent.attr('time-id');
-    var data = filters[location][timeid];
+    var data = {type: parent.attr('entity-type'), id: parent.attr('entity-id')};
+    filterCleanup(data);
 
     if (arr[location] != undefined) {
-        delete filters[location][timeid];
-        filters[arr[location]][timeid] = data;
+        asfilter[arr[location]].push(data);
         parent.detach().appendTo('#' + arr[location]);
         clickPage1();
     }
@@ -176,14 +162,10 @@ function moveOut() {
     var parent = $(this).parent();
     var location = parent.parent().attr('id');
 
-    var timeid = parent.attr('time-id');
-    var data = filters[location][timeid];
+    var data = {type: parent.attr('entity-type'), id: parent.attr('entity-id')};
+    filterCleanup(data);
 
-    //ids = ids.splice(ids.indexOf(filters[location][timeid].id));
-    ids = remove(ids, filters[location][timeid].id);
-    delete filters[location][timeid];
     parent.remove();
-
 
     if (location == 'location' && $("#location").html() == "") $("#location").html('All systems');
     clickPage1();
@@ -227,4 +209,22 @@ function remove(arr, value) {
         if (arr[i] !== value) retval.push(arr[i]);
     }
     return retval;
+}
+
+// Remove the element from the asfilter 
+function filterCleanup(data) {
+    var keys = Object.keys(asfilter);
+    for (i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        var value = asfilter[key];
+        if (Array.isArray(value)) {
+            for (j = 0; j < value.length; j++) {
+                if (data.type == value[j].type && data.id == value[j].id) {
+                    value.splice(j, 1);
+                    asfilter[key] = value;
+                    return;
+                }
+            }
+        }
+    }
 }
