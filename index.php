@@ -92,7 +92,7 @@ header("Content-Security-Policy: frame-ancestors 'none'");
 
 $limit = 10;
 if (substr($uri, 0, 5) == "/api/") $limit = 1;
-$noLimits = ['/cache/', '/post/', '/autocomplete/', '/crestmail/', '/comment/', '/killlistrow/', '/comment/', '/related/', '/sponsor', '/crestmail', '/account/', '/logout', '/ccp', '/auto', '/killlistrow/', '/challenge/', '/api/prices/'];
+$noLimits = ['/cache/', '/post/', '/autocomplete/', '/crestmail/', '/comment/', '/killlistrow/', '/comment/', '/related/', '/sponsor', '/crestmail', '/account/', '/logout', '/ccp', '/auto', '/killlistrow/', '/challenge/', '/api/prices/', '/asearchquery/'];
 $noLimit = false;
 foreach ($noLimits as $noLimitTxt) $noLimit |= (substr($uri, 0, strlen($noLimitTxt)) === $noLimitTxt);
 

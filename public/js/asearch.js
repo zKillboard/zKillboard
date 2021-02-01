@@ -1,3 +1,5 @@
+var types = ['character', 'corporation', 'alliance', 'ship', 'group', 'region', 'system', 'location'];
+
 $(document).ready(function() {
     $('.asearch-autocomplete').autocomplete({
            autoSelectFirst: false,
@@ -65,7 +67,7 @@ function add(id, suggestion) {
     tag.append(newhtml);
 }
 
-var xhr = undefined;
+var xhrs = [];
 var filtersStringified = undefined;
 function doQuery() {
     var f = getFilters();
@@ -76,15 +78,54 @@ function doQuery() {
     filtersStringified = stringified;
 
     $("#killmails-list").html("");
-    if (xhr != undefined) xhr.abort();
+    while (xhrs.length > 0) {
+        var xhr = xhrs.pop();
+        xhr.abort();
+    }
+
     killlistmessage('fetching');
+
+    var f1 = {};
+    Object.assign(f1, f);
+    f1.queryType = "kills";
     xhr = $.ajax('/asearchquery/', {
-        data: f,
+        data: f1,
         method: 'get',
         error: handleError,
-        success: applyQueryResult,
+        success: applyKillQueryResult,
         timeout: 30000 // 30 seconds
     });
+    xhrs.push(xhr);
+
+    var f2 = {};
+    Object.assign(f2, f);
+    f2.queryType = "count";
+    console.log(f2);
+    xhr = $.ajax('/asearchquery/', {
+        data: f2,
+        method: 'get',
+        error: handleError,
+        success: applyCountQueryResult,
+        timeout: 30000 // 30 seconds
+    });
+    xhrs.push(xhr);
+
+    var ff = [];
+    for (i = 0; i < types.length; i++) {
+        ff[i] = {};
+        Object.assign(ff[i], f);
+        ff[i].queryType = "groups";
+        ff[i].groupType = types[i];
+        $("#result-groups-" + types[i]).html("");
+        xhr = $.ajax('/asearchquery/', {
+            data: ff[i],
+            method: 'get',
+            error: handleError,
+            success: applyGroupQueryResult,
+            timeout: 30000 // 30 seconds
+        });
+        xhrs.push(xhr);
+    }
 }
 
 function getFilters() {
@@ -96,31 +137,33 @@ function getFilters() {
     return retVal;
 }
 
-function applyQueryResult(data, textStatus, jqXHR) {
-    console.log(this.url);
+function applyKillQueryResult(data, textStatus, jqXHR) {
+    console.log('https://zkillboard.com/' + this.url);
     $(".killlistmessage").remove();
-    $("#result-groups").html("");
     killIDs = data.kills;
     if (data.kills.length == 0) killlistmessage("no results");
-    else {
-        popEm();
-        if (data.top.length == 0) $("#result-groups").html("Timespan > 7 days.");
-        else {
-            var html = "<p>Listing Victims Only</p>";
-            var keys = Object.keys(data.top);
-            for (i = 0; i < keys.length; i++) {
-                var title = keys[i];
-                var values = data.top[title];
-                console.log(values);
-                html += "<br/><p>Top " + title + "s</p>";
-                for (j = 0; j < values.length; j++) {
-                    console.log(values[j]);
-                    html += values[j][title + 'Name'] + ": " + values[j].kills + "<br/>";
-                }
-            }
-            $("#result-groups").html(html);
+    else popEm();
+}
+
+function applyCountQueryResult(data, textStatus, jqXHR) {
+    console.log('https://zkillboard.com/' + this.url);
+    var count = data.count;
+    console.log('colunt' + count);
+    if (count != "") $("#result-groups-count").html("Killmails: " + count);
+    else $("#result-groups-count").html("Timespan > 7 Days");
+}
+
+function applyGroupQueryResult(data, textStatus, jqXHR) {
+    var html = "";
+    var keys = Object.keys(data.top);
+    for (i = 0; i < keys.length; i++) {
+        var title = keys[i];
+        var values = data.top[title];
+        html += "<br/><p>Top " + title + "s</p>";
+        for (j = 0; j < values.length; j++) {
+            html += values[j][title + 'Name'] + ": " + values[j].kills + "<br/>";
         }
-        
+        $("#result-groups-" + title).html(html);
     }
 }
 
@@ -132,7 +175,6 @@ function handleError(jqXHR, textStatus, errorThrown) {
 
 function killlistmessage(message) {
     $(".killlistmessage").remove();
-    $("#result-groups").html("");
     var tr = $("<tr>").addClass('killlistmessage');
     var td = $("<td>").attr('colspan', 7).html('<i>' + message + '</i>');
     tr.append(td);

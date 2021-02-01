@@ -2,11 +2,33 @@
 
 global $mdb, $redis;
 
+$types = [
+    'region_id',
+    'solar_system_id',
+    'item_id',
+    'group_id',
+    'faction_id',
+    'alliance_id',
+    'corporation_id',
+    'character_id',
+    'category_id',
+    'location_id',
+    'constellation_id',
+]; // war_id is excluded
+
 $validSortBy = ['date' => 'killID', 'isk' => 'zkb.totalValue', 'involved' => 'attackerCount'];
 $validSortDir = ['asc' => 1, 'desc' => -1];
 
 $_POST = $_GET;
 $query = [];
+
+$queryType = (string) @$_POST['queryType'];
+if ($queryType == "") $queryType = "kills";
+unset($_POST['queryType']);
+
+$groupType = (string) @$_POST['groupType'];
+unset($_POST['groupType']);
+
 $query = buildQuery($query, "location");
 $query = buildQuery($query, "neutrals");
 $query = buildQuery($query, "attackers", false);
@@ -14,10 +36,10 @@ $query = buildQuery($query, "victims", true);
 
 $query = parseDate($query, 'start');
 $query = parseDate($query, 'end');
-Log::log(print_r($query, true));
 $startTime = (int) @$query['start'];
 $endTime = (int) @$query['end'];
-if ($endTime == 0) $endTime = time();
+if ($startTime > time()) $startTime = time();
+if ($endTime == 0 || $endTime > time()) $endTime = time();
 unset($query['start']);
 unset($query['end']);
 
@@ -49,10 +71,43 @@ if (sizeof($query) == 0) $query = [];
 else if (sizeof($query) == 1) $query = $query[0];
 else $query = ['$and' => $query];
 
-foreach ($coll as $col) {
-    //Log::log("\n" . print_r($coll, true) . print_r($query, true) . print_r($sort, true) . "====");
-    $result = iterator_to_array($mdb->getCollection($col)->find($query)->sort($sort)->skip(50 * $page)->limit(50));
-    if (sizeof($result) >= 50) break;
+
+$arr = [];
+if ($queryType == "kills") {
+    foreach ($coll as $col) {
+        $result = iterator_to_array($mdb->getCollection($col)->find($query)->sort($sort)->skip(50 * $page)->limit(50));
+        if (sizeof($result) >= 50) break;
+    }
+    $arr['kills'] = [];
+    foreach ($result as $row) {
+        $killID = $row['killID'];
+        $redis->setex("zkb:killlistrow:" . $killID, 60, "true");
+        $arr['kills'][] = $killID;
+    }
+} else if ($queryType == 'count') {
+    foreach ($coll as $col) {
+        $result = iterator_to_array($mdb->getCollection($col)->find($query)->sort($sort)->skip(50 * $page)->limit(50));
+        if (sizeof($result) >= 50) break;
+    }
+    if (($endTime - $startTime) <= 604800) { 
+        $arr['count'] = $mdb->getCollection($col)->count($query);
+    } else $arr['count'] = '';
+} else if ($queryType == "groups") {
+    $arr['top'] = [];
+    if (($endTime - $startTime) <= 604800) {
+        
+        if (in_array($groupType . '_id', $types)) {
+            $arr['top'][$groupType] = getTop($groupType . 'ID', $query);
+        }
+        /*$arr['top']['character'] = getTop('characterID', $query);
+        $arr['top']['corporation'] = getTop('corporationID', $query);
+        $arr['top']['alliance'] = getTop('allianceID', $query);
+        $arr['top']['ship'] = getTop('shipTypeID', $query);
+        $arr['top']['group'] = getTop('groupID', $query);
+        $arr['top']['region'] = getTop('regionID', $query);
+        $arr['top']['system'] = getTop('solarSystemID', $query);
+        $arr['top']['location'] = getTop('locationID', $query);*/
+    }
 }
 
 // Declare out json return type
@@ -61,28 +116,6 @@ $app->contentType('application/json; charset=utf-8');
 // CORS headers
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
-
-$arr = [];
-$arr['kills'] = [];
-foreach ($result as $row) {
-    $killID = $row['killID'];
-    $redis->setex("zkb:killlistrow:" . $killID, 60, "true");
-    $arr['kills'][] = $killID;
-}
-$arr['top'] = [];
-Log::log("$endTime - $startTime = " . ($endTime - $startTime));
-if ($endTime - $startTime <= 604800) {
-    Log::log("groups!");
-    $arr['top']['character'] = getTop('characterID', $query);
-    $arr['top']['corporation'] = getTop('corporationID', $query);
-    $arr['top']['alliance'] = getTop('allianceID', $query);
-    $arr['top']['ship'] = getTop('shipTypeID', $query);
-    $arr['top']['group'] = getTop('groupID', $query);
-    $arr['top']['region'] = getTop('regionID', $query);
-    $arr['top']['system'] = getTop('solarSystemID', $query);
-    $arr['top']['location'] = getTop('locationID', $query);
-}
-
 
 echo json_encode($arr, true);
 
@@ -115,19 +148,6 @@ function buildFromArray($key, $isVictim = null) {
     return ['$and' => $ret];
 }
 
-$types = [
-    'region_id',
-    'solar_system_id',
-    'item_id',
-    'group_id',
-    'faction_id',
-    'alliance_id',
-    'corporation_id',
-    'character_id',
-    'category_id',
-    'location_id',
-    'constellation_id',
-]; // war_id is excluded
 
 function getLabelGroup($label) {
     foreach (AdvancedSearch::$labels as $group => $labels) {
@@ -137,10 +157,16 @@ function getLabelGroup($label) {
 }
 
 function parseDate($query, $which) {
-    $val = $_POST['epoch'][$which];
+    $val = (string) @$_POST['epoch'][$which];
     if ($val == "") return $query;
 
-    $killID = Info::findKillID(strtotime($val), $which);
+    $time = strtotime($val);
+    if ($time > time()) {
+        $query[] = ['killID' => 0];
+        return $query;
+    }
+
+    $killID = Info::findKillID($time, $which);
     if ($killID != null) {
         $query[] = ['killID' => [($which == 'start' ? '$gte' : '$lte') => $killID]];
         $query['hasDateFilter'] = true;
