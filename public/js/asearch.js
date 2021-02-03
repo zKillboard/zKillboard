@@ -118,6 +118,7 @@ function doQuery() {
         ff[i].groupType = types[i];
         $("#result-groups-" + types[i]).html("");
         xhr = $.ajax('/asearchquery/', {
+            title: types[i],
             data: ff[i],
             method: 'get',
             error: handleError,
@@ -154,17 +155,7 @@ function applyCountQueryResult(data, textStatus, jqXHR) {
 }
 
 function applyGroupQueryResult(data, textStatus, jqXHR) {
-    var html = "";
-    var keys = Object.keys(data.top);
-    for (i = 0; i < keys.length; i++) {
-        var title = keys[i];
-        var values = data.top[title];
-        html += "<br/><p>Top " + title + "s</p>";
-        for (j = 0; j < values.length; j++) {
-            html += values[j][title + 'Name'] + ": " + values[j].kills + "<br/>";
-        }
-        $("#result-groups-" + title).html(html);
-    }
+    $("#result-groups-" + this.title).html(data);
 }
 
 function handleError(jqXHR, textStatus, errorThrown) {

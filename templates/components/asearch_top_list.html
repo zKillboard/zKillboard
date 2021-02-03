@@ -1,0 +1,59 @@
+{% set first = true %}
+{% set counter = 1 %}
+{% if topSet.values | length %}
+<div class="pull-left" style="width: 100%; padding: 0px; margin: 0px;">
+  <center><h5>{{ topSet.title }}</h5></center>
+  <table class="table table-condensed topBoxes col-lg-2" style="padding: 0px; margin: 0px; width: 100%;">
+  {% for data in topSet.values %}
+    {% set field = data %}
+    {% if first %}
+      <tr>
+        {% set imageSize = 64 %}
+        {% set field = data %}
+        {% if topSet.type == 'character' %}
+          <td>{% include 'components/image_char.html' %}</td>
+        {% elseif topSet.type == 'corporation' %}
+          <td>{% include 'components/image_corp.html' %}</td>
+        {% elseif topSet.type == 'alliance' %}
+          <td>{% include 'components/image_alli.html' %}</td>
+        {% elseif topSet.type == 'solarSystem' %}
+          <td>{% include 'components/image_system.html' %}</td>
+	{% elseif topSet.type == 'shipType' %}
+          <td>{% include 'components/image_ship.html' %}</td>
+	{% elseif topSet.type == 'location' %}
+          <td>{% include 'components/image_item.html' %}</td>
+        {% endif %}
+      </tr>
+      {% set first = false %}
+    {% endif %}
+    {% if counter == 11 %}
+    <tr class="grouping-all-{{ topSet.type }}">
+        <td colspan="3"><center><a href="#" onclick="$('.grouping-{{ topSet.type }}').show(); $('.grouping-all-{{topSet.type}}').hide(); return false;">The Rest (up to 100)</a></center></td>
+    </tr>
+    {% endif %}
+    <tr class="grouping-{{ topSet.type }}{% if counter >= 11 %} collapse{% endif %}">
+        {% if topSet.type == 'character' %}
+          <td>{% include 'components/text_char.html' %}</td>
+        {% elseif topSet.type == 'corporation' %}
+          <td>{% include 'components/text_corp.html' %}</td>
+        {% elseif topSet.type == 'alliance' %}
+          <td>{% include 'components/text_alli.html' %}</td>
+        {% elseif topSet.type == 'solarSystem' %}
+          <td>{% include 'components/text_system.html' %}</td>
+    	{% elseif topSet.type == 'shipType' %}
+          <td>{% include 'components/text_ship.html' %}</td>
+    	{% elseif topSet.type == 'group' %}
+          <td>{% include 'components/text_group.html' %}</td>
+	    {% elseif topSet.type == 'region' %}
+          <td>{% include 'components/text_region.html' %}</td>
+	    {% elseif topSet.type == 'location' %}
+          <td>{% include 'components/text_location.html' %}</td>
+        {% endif %}
+        <td style="text-align: right;" {% if data.score != 0 %}title="Score: {{ data.score|number_format(0) }}" rel="tooltip"{% endif %}>{{ data.kills|number_format(0) }}</td>
+    </tr>
+    {% set counter = counter + 1 %}
+  {% endfor %}
+</table>
+</div>
+<div class="clearfix"></div>
+{% endif %}

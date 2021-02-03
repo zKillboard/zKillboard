@@ -71,9 +71,15 @@ if (sizeof($query) == 0) $query = [];
 else if (sizeof($query) == 1) $query = $query[0];
 else $query = ['$and' => $query];
 
+// Declare out json return type
+
+// CORS headers
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET');
 
 $arr = [];
 if ($queryType == "kills") {
+    $app->contentType('application/json; charset=utf-8');
     foreach ($coll as $col) {
         $result = iterator_to_array($mdb->getCollection($col)->find($query)->sort($sort)->skip(50 * $page)->limit(50));
         if (sizeof($result) >= 50) break;
@@ -85,6 +91,7 @@ if ($queryType == "kills") {
         $arr['kills'][] = $killID;
     }
 } else if ($queryType == 'count') {
+    $app->contentType('application/json; charset=utf-8');
     foreach ($coll as $col) {
         $result = iterator_to_array($mdb->getCollection($col)->find($query)->sort($sort)->skip(50 * $page)->limit(50));
         if (sizeof($result) >= 50) break;
@@ -93,11 +100,12 @@ if ($queryType == "kills") {
         $arr['count'] = $mdb->getCollection($col)->count($query);
     } else $arr['count'] = '';
 } else if ($queryType == "groups") {
+    $app->contentType('text/html; charset=utf-8');
     $arr['top'] = [];
     if (($endTime - $startTime) <= 604800) {
-        
         if (in_array($groupType . '_id', $types)) {
-            $arr['top'][$groupType] = getTop($groupType . 'ID', $query);
+            $res = getTop($groupType . 'ID', $query);
+            $app->render("components/asearch_top_list.html", ['topSet' => ['type' => $groupType, 'title' => 'Top ' . Util::pluralize(ucwords($groupType)), 'values' => $res]]);
         }
         /*$arr['top']['character'] = getTop('characterID', $query);
         $arr['top']['corporation'] = getTop('corporationID', $query);
@@ -108,14 +116,8 @@ if ($queryType == "kills") {
         $arr['top']['system'] = getTop('solarSystemID', $query);
         $arr['top']['location'] = getTop('locationID', $query);*/
     }
+    return;
 }
-
-// Declare out json return type
-$app->contentType('application/json; charset=utf-8');
-
-// CORS headers
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET');
 
 echo json_encode($arr, true);
 
