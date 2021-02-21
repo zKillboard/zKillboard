@@ -90,8 +90,12 @@
 </div>
     </div>
     <div class='col-md-2'>
-        <div>Victims only.</div>
-        <div id='result-groups-count'></div>
+        <div zkill-var='group-agg-type' class='btn-group btn-group-vertical' style='width: 100%'>
+            <div class='radio-btn btn btn-default btn-primary'>All Involved</div>
+            <div class='radio-btn btn btn-default'>Victims Only</div>
+            <div class='radio-btn btn btn-default'>Attackers Only</div>
+        </div>
+        <div><h4 id='result-groups-count'></h4></div>
         <div id='result-groups-character'></div>
         <div id='result-groups-corporation'></div>
         <div id='result-groups-alliance'></div>

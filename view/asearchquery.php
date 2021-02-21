@@ -61,6 +61,11 @@ $page = (isset($_POST['radios']['page']) ? max(1, min(10, (int) @$_POST['radios'
 $sortKey = (isset($validSortBy[$_POST['radios']['sort']['sortBy']]) ? $validSortBy[$_POST['radios']['sort']['sortBy']] : 'killID' );
 $sortBy = (isset($validSortDir[$_POST['radios']['sort']['sortDir']]) ? $validSortDir[$_POST['radios']['sort']['sortDir']] : -1 );
 $sort = [$sortKey => $sortBy];
+
+$groupAggType = (string) @$_POST['radios']['group-agg-type'];
+$victimsOnly = ($groupAggType == "victims only" ? true : ($groupAggType == "attackers only" ? false : null));
+unset($_POST['radios']['group-agg-type']);
+
 $coll = ['killmails'];
 if ($sortKey == 'killID' && $sortBy == -1 && @$query['hasDateFilter'] != true) {
     $coll = ['oneWeek', 'ninetyDays', 'killmails'];
@@ -104,7 +109,7 @@ if ($queryType == "kills") {
     $arr['top'] = [];
     if (($endTime - $startTime) <= 604800) {
         if (in_array($groupType . '_id', $types)) {
-            $res = getTop($groupType . 'ID', $query);
+            $res = getTop($groupType . 'ID', $query, $victimsOnly);
             $app->render("components/asearch_top_list.html", ['topSet' => ['type' => $groupType, 'title' => 'Top ' . Util::pluralize(ucwords($groupType)), 'values' => $res]]);
         }
         /*$arr['top']['character'] = getTop('characterID', $query);
@@ -179,7 +184,7 @@ function parseDate($query, $which) {
 }
 
 
-function getTop($groupByColumn, $query, $cacheOverride = false, $addInfo = true)
+function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $addInfo = true)
 {
     global $mdb, $longQueryMS;
 
@@ -211,10 +216,7 @@ function getTop($groupByColumn, $query, $cacheOverride = false, $addInfo = true)
     if ($groupByColumn != 'solarSystemID' && $groupByColumn != 'regionID' && $groupByColumn != 'locationID') {
         $pipeline[] = ['$unwind' => '$involved'];
     }
-    if ($type != null && $id != null) {
-        //$pipeline[] = ['$match' => [$type => $id, 'involved.isVictim' => false]];
-    }
-    $pipeline[] = ['$match' => ['involved.isVictim' => true]];
+    if ($victimsOnly != null) $pipeline[] = ['$match' => ['involved.isVictim' => (bool) $victimsOnly]];
     $pipeline[] = ['$match' => [$keyField => ['$ne' => null]]];
     //$pipeline[] = ['$match' => $andQuery];
     $pipeline[] = ['$group' => ['_id' => ['killID' => '$killID', $groupByColumn => '$'.$keyField]]];
