@@ -102,8 +102,10 @@ if ($queryType == "kills") {
         if (sizeof($result) >= 50) break;
     }
     if (($endTime - $startTime) <= 604800) { 
-        $arr['count'] = $mdb->getCollection($col)->count($query);
-    } else $arr['count'] = '';
+        $arr = getSums($groupType . 'ID', $query, $victimsOnly);
+        $arr['isk'] = Util::formatIsk($arr['isk']);
+        unset($arr['_id']);
+    } else $arr = ['exceeds' => true];
 } else if ($queryType == "groups") {
     $app->contentType('text/html; charset=utf-8');
     $arr['top'] = [];
@@ -112,14 +114,6 @@ if ($queryType == "kills") {
             $res = getTop($groupType . 'ID', $query, $victimsOnly);
             $app->render("components/asearch_top_list.html", ['topSet' => ['type' => $groupType, 'title' => 'Top ' . Util::pluralize(ucwords($groupType)), 'values' => $res]]);
         }
-        /*$arr['top']['character'] = getTop('characterID', $query);
-        $arr['top']['corporation'] = getTop('corporationID', $query);
-        $arr['top']['alliance'] = getTop('allianceID', $query);
-        $arr['top']['ship'] = getTop('shipTypeID', $query);
-        $arr['top']['group'] = getTop('groupID', $query);
-        $arr['top']['region'] = getTop('regionID', $query);
-        $arr['top']['system'] = getTop('solarSystemID', $query);
-        $arr['top']['location'] = getTop('locationID', $query);*/
     }
     return;
 }
@@ -223,7 +217,7 @@ function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $a
         $pipeline[] = ['$limit' => 100];
         $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
 
-        $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true]);
+        $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'maxTimeMS' => 25000]);
         $result = $rr['result'];
 
         $time = $timer->stop();
@@ -239,3 +233,49 @@ function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $a
     } catch (Exception $ex) { Log::log(print_r($ex, true)); return []; }
 }
 
+function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $addInfo = true)
+{
+    global $mdb, $longQueryMS;
+
+    try {
+        $hashKey = "Stats::getSums:q:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly);
+        $result = null; // RedisCache::get($hashKey);
+        if ($cacheOverride == false && $result != null) {
+            //return $result;
+        }
+
+        $killmails = $mdb->getCollection('killmails');
+
+        if ($groupByColumn == 'solarSystemID' || $groupByColumn == "constellationID" || $groupByColumn == 'regionID') {
+            $keyField = "system.$groupByColumn";
+        } elseif ($groupByColumn != 'locationID') {
+            $keyField = "involved.$groupByColumn";
+        } else {
+            $keyField = $groupByColumn;
+        }
+
+        $id = $type = null;
+        if ($groupByColumn != 'solarSystemID' && $groupByColumn != 'regionID' && $groupByColumn != 'locationID') {
+            $type = "involved." . $groupByColumn;
+        }
+
+        $timer = new Timer();
+        $pipeline = [];
+        $pipeline[] = ['$match' => $query];
+        if ($victimsOnly != null) $pipeline[] = ['$match' => ['involved.isVictim' => (bool) $victimsOnly]];
+        $pipeline[] = ['$group' => ['_id' => 0, 'isk' => ['$sum' => '$zkb.totalValue'], 'kills' => ['$sum' => 1]]];
+
+        $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'maxTimeMS' => 25000]);
+        $result = $rr['result'][0];
+
+        $time = $timer->stop();
+        if ($time > $longQueryMS) {
+            global $uri;
+            Log::log("getTop Long query (${time}ms): $hashKey $uri");
+        }
+
+        return $result;
+
+
+    } catch (Exception $ex) { Log::log(print_r($ex, true)); return []; }
+}

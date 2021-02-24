@@ -148,10 +148,13 @@ function applyKillQueryResult(data, textStatus, jqXHR) {
 
 function applyCountQueryResult(data, textStatus, jqXHR) {
     console.log('https://zkillboard.com/' + this.url);
-    var count = data.count;
-    console.log('colunt' + count);
-    if (count != "") $("#result-groups-count").html("Killmails: " + count);
-    else $("#result-groups-count").html("Timespan > 7 Days");
+    if (data.exceeds == true) {
+        $("#result-groups-count").html("Timespan > 7 Days");
+        return;
+    }
+    var count = data.kills;
+    var isk = data.isk;
+    if (count != "") $("#result-groups-count").html("Killmails: " + count + "<br/>ISK: " + isk);
 }
 
 function applyGroupQueryResult(data, textStatus, jqXHR) {
