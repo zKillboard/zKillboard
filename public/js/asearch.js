@@ -78,6 +78,7 @@ function doQuery() {
     filtersStringified = stringified;
 
     $("#killmails-list").html("");
+    $("#result-groups-count").html("");
     while (xhrs.length > 0) {
         var xhr = xhrs.pop();
         xhr.abort();
@@ -149,7 +150,7 @@ function applyKillQueryResult(data, textStatus, jqXHR) {
 function applyCountQueryResult(data, textStatus, jqXHR) {
     console.log('https://zkillboard.com/' + this.url);
     if (data.exceeds == true) {
-        $("#result-groups-count").html("Timespan > 7 Days");
+        $("#result-groups-count").html("Timespan > 31 Days");
         return;
     }
     var count = data.kills;

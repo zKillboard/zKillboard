@@ -101,7 +101,7 @@ if ($queryType == "kills") {
         $result = iterator_to_array($mdb->getCollection($col)->find($query)->sort($sort)->skip(50 * $page)->limit(50));
         if (sizeof($result) >= 50) break;
     }
-    if (($endTime - $startTime) <= 604800) { 
+    if (($endTime - $startTime) <= (86400 * 31)) { 
         $arr = getSums($groupType . 'ID', $query, $victimsOnly);
         $arr['isk'] = Util::formatIsk($arr['isk']);
         unset($arr['_id']);
@@ -109,7 +109,7 @@ if ($queryType == "kills") {
 } else if ($queryType == "groups") {
     $app->contentType('text/html; charset=utf-8');
     $arr['top'] = [];
-    if (($endTime - $startTime) <= 604800) {
+    if (($endTime - $startTime) <= (86400 * 31)) {
         if (in_array($groupType, $types)) {
             $res = getTop($groupType . 'ID', $query, $victimsOnly);
             $app->render("components/asearch_top_list.html", ['topSet' => ['type' => $groupType, 'title' => 'Top ' . Util::pluralize(ucwords($groupType)), 'values' => $res]]);
