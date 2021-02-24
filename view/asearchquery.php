@@ -182,9 +182,9 @@ function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $a
 
     try {
         $hashKey = "Stats::getTop:q:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly);
-        $result = null; // RedisCache::get($hashKey);
+        $result = RedisCache::get($hashKey);
         if ($cacheOverride == false && $result != null) {
-            //return $result;
+            return $result;
         }
 
         $killmails = $mdb->getCollection('killmails');
@@ -227,7 +227,7 @@ function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $a
         }
 
         if ($addInfo) Info::addInfo($result);
-        //RedisCache::set($hashKey, $result, 300);
+        RedisCache::set($hashKey, $result, 300);
 
         return $result;
     } catch (Exception $ex) { Log::log(print_r($ex, true)); return []; }
@@ -239,9 +239,9 @@ function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $
 
     try {
         $hashKey = "Stats::getSums:q:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly);
-        $result = null; // RedisCache::get($hashKey);
+        $result = RedisCache::get($hashKey);
         if ($cacheOverride == false && $result != null) {
-            //return $result;
+            return $result;
         }
 
         $killmails = $mdb->getCollection('killmails');
@@ -273,6 +273,8 @@ function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $
             global $uri;
             Log::log("getTop Long query (${time}ms): $hashKey $uri");
         }
+
+        RedisCache::set($hashKey, $result, 300);
 
         return $result;
 
