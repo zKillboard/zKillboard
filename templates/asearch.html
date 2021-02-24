@@ -4,8 +4,7 @@
 {% block title %}{% include 'components/title.html' %}{% endblock %}
 
 {% block content %}
-<h3>Advanced Search (alpha stage - there will be problems and unfinished things)</h3>
-<p>Please provide feedback <a href='https://old.reddit.com/r/Eve/comments/ib0ukz/zkill_feedback_wanted_advanced_search/' target='_blank'>here.</a></p>
+<h3>Advanced Search (sort of beta)</h3>
 <hr/>
 <div class="row">
     <div class="col-md-10">
@@ -14,7 +13,7 @@
         </div>
     </div>
     <div class="col-md-2">
-        <input type='reset' disabled class='btn'>
+        <a href='/asearch/' class='btn btn-default'>Reset</a>
         <input type='submit' value='Save' disabled class='btn'>
     </div>
 </div>
@@ -25,7 +24,7 @@
         <div id="location">All systems</div>
     </div>
     <div class='col-md-6'>
-        <label>Time Frame</label>
+        <label>Timespan</label>
         <center><div id="timeframe" class='input-group' ><input id='dtstart' type='search' style='width: 10em;' class='form-control form-line' placeholder='2007-12-05 00:00'><input id='dtend' type='search' style='width: 10em;' class='form-control form-line' placeholder='Now'></div></center>
     </div>
 </div>
@@ -96,13 +95,15 @@
             <div class='radio-btn btn btn-default'>Attackers Only</div>
         </div>
         <div><h4 id='result-groups-count'></h4></div>
+        <div><h4 id='result-groups-isk'><small>ISK: Coming Soon(TM)</small></h4></div>
         <div id='result-groups-character'></div>
         <div id='result-groups-corporation'></div>
         <div id='result-groups-alliance'></div>
         <div id='result-groups-faction'></div>
-        <div id='result-groups-item'></div>
+        <div id='result-groups-shipType'></div>
         <div id='result-groups-group'></div>
-        <div id='result-groups-solar_system'></div>
+        <div id='result-groups-location'></div>
+        <div id='result-groups-solarSystem'></div>
         <div id='result-groups-constellation'></div>
         <div id='result-groups-region'></div>
     </div>

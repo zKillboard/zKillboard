@@ -1,4 +1,4 @@
-var types = ['character', 'corporation', 'alliance', 'ship', 'group', 'region', 'system', 'location'];
+var types = ['character', 'corporation', 'alliance', 'faction', 'shipType', 'group', 'region', 'solarSystem', 'location'];
 
 $(document).ready(function() {
     $('.asearch-autocomplete').autocomplete({

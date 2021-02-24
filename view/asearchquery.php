@@ -1,19 +1,21 @@
 <?php
 
+use cvweiss\redistools\RedisCache;
+
 global $mdb, $redis;
 
 $types = [
-    'region_id',
-    'solar_system_id',
-    'item_id',
-    'group_id',
-    'faction_id',
-    'alliance_id',
-    'corporation_id',
-    'character_id',
-    'category_id',
-    'location_id',
-    'constellation_id',
+    'character',
+    'corporation',
+    'alliance',
+    'group',
+    'region',
+    'solarSystem',
+    'shipType',
+    'faction',
+    'category',
+    'location',
+    'constellation',
 ]; // war_id is excluded
 
 $validSortBy = ['date' => 'killID', 'isk' => 'zkb.totalValue', 'involved' => 'attackerCount'];
@@ -76,17 +78,15 @@ if (sizeof($query) == 0) $query = [];
 else if (sizeof($query) == 1) $query = $query[0];
 else $query = ['$and' => $query];
 
-// Declare out json return type
-
 // CORS headers
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET');
+//header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET,POST');
 
 $arr = [];
 if ($queryType == "kills") {
     $app->contentType('application/json; charset=utf-8');
     foreach ($coll as $col) {
-        $result = iterator_to_array($mdb->getCollection($col)->find($query)->sort($sort)->skip(50 * $page)->limit(50));
+        $result = iterator_to_array($mdb->getCollection($col)->find($query)->sort($sort)->skip(100 * $page)->limit(100));
         if (sizeof($result) >= 50) break;
     }
     $arr['kills'] = [];
@@ -108,7 +108,7 @@ if ($queryType == "kills") {
     $app->contentType('text/html; charset=utf-8');
     $arr['top'] = [];
     if (($endTime - $startTime) <= 604800) {
-        if (in_array($groupType . '_id', $types)) {
+        if (in_array($groupType, $types)) {
             $res = getTop($groupType . 'ID', $query, $victimsOnly);
             $app->render("components/asearch_top_list.html", ['topSet' => ['type' => $groupType, 'title' => 'Top ' . Util::pluralize(ucwords($groupType)), 'values' => $res]]);
         }
@@ -142,8 +142,6 @@ function buildFromArray($key, $isVictim = null) {
         if ($row['type'] == 'systemID') $row['type'] = 'solarSystemID';
         if ($row['type'] == 'shipID') $row['type'] = 'shipTypeID';
 
-        //if (!in_array($row['type'], $types)) continue;
-        //$param = [$row['type'] => (int) $row['id']];
         $param[$row['type']] = (int) $row['id'];
         if ($isVictim === false) $param['kills'] = true;
         else if ($isVictim === true) $param['losses'] = true;
@@ -189,55 +187,55 @@ function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $a
     global $mdb, $longQueryMS;
 
     try {
-    $hashKey = "Stats::getTop:q:$groupByColumn:".serialize($query);
-    $result = null; // RedisCache::get($hashKey);
-    if ($cacheOverride == false && $result != null) {
+        $hashKey = "Stats::getTop:q:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly);
+        $result = null; // RedisCache::get($hashKey);
+        if ($cacheOverride == false && $result != null) {
+            //return $result;
+        }
+
+        $killmails = $mdb->getCollection('killmails');
+
+        if ($groupByColumn == 'solarSystemID' || $groupByColumn == "constellationID" || $groupByColumn == 'regionID') {
+            $keyField = "system.$groupByColumn";
+        } elseif ($groupByColumn != 'locationID') {
+            $keyField = "involved.$groupByColumn";
+        } else {
+            $keyField = $groupByColumn;
+        }
+
+        $id = $type = null;
+        if ($groupByColumn != 'solarSystemID' && $groupByColumn != 'regionID' && $groupByColumn != 'locationID') {
+            $type = "involved." . $groupByColumn;
+        }
+
+        $timer = new Timer();
+        $pipeline = [];
+        $pipeline[] = ['$match' => $query];
+        if ($groupByColumn != 'solarSystemID' && $groupByColumn != 'regionID' && $groupByColumn != 'locationID') {
+            $pipeline[] = ['$unwind' => '$involved'];
+        }
+        if ($victimsOnly != null) $pipeline[] = ['$match' => ['involved.isVictim' => (bool) $victimsOnly]];
+        $pipeline[] = ['$match' => [$keyField => ['$ne' => null]]];
+        //$pipeline[] = ['$match' => $andQuery];
+        $pipeline[] = ['$group' => ['_id' => ['killID' => '$killID', $groupByColumn => '$'.$keyField]]];
+        $pipeline[] = ['$group' => ['_id' => '$_id.'.$groupByColumn, 'kills' => ['$sum' => 1]]];
+        $pipeline[] = ['$sort' => ['kills' => -1]];
+        $pipeline[] = ['$limit' => 100];
+        $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
+
+        $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true]);
+        $result = $rr['result'];
+
+        $time = $timer->stop();
+        if ($time > $longQueryMS) {
+            global $uri;
+            Log::log("getTop Long query (${time}ms): $hashKey $uri");
+        }
+
+        if ($addInfo) Info::addInfo($result);
+        //RedisCache::set($hashKey, $result, 300);
+
         return $result;
-    }
-
-    $killmails = $mdb->getCollection('killmails');
-
-    if ($groupByColumn == 'solarSystemID' || $groupByColumn == 'regionID') {
-        $keyField = "system.$groupByColumn";
-    } elseif ($groupByColumn != 'locationID') {
-        $keyField = "involved.$groupByColumn";
-    } else {
-        $keyField = $groupByColumn;
-    }
-
-    $id = $type = null;
-    if ($groupByColumn != 'solarSystemID' && $groupByColumn != 'regionID' && $groupByColumn != 'locationID') {
-        $type = "involved." . $groupByColumn;
-    }
-
-    $timer = new Timer();
-    $pipeline = [];
-    $pipeline[] = ['$match' => $query];
-    if ($groupByColumn != 'solarSystemID' && $groupByColumn != 'regionID' && $groupByColumn != 'locationID') {
-        $pipeline[] = ['$unwind' => '$involved'];
-    }
-    if ($victimsOnly != null) $pipeline[] = ['$match' => ['involved.isVictim' => (bool) $victimsOnly]];
-    $pipeline[] = ['$match' => [$keyField => ['$ne' => null]]];
-    //$pipeline[] = ['$match' => $andQuery];
-    $pipeline[] = ['$group' => ['_id' => ['killID' => '$killID', $groupByColumn => '$'.$keyField]]];
-    $pipeline[] = ['$group' => ['_id' => '$_id.'.$groupByColumn, 'kills' => ['$sum' => 1]]];
-    $pipeline[] = ['$sort' => ['kills' => -1]];
-    $pipeline[] = ['$limit' => 100];
-    $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
-
-    $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true]);
-    $result = $rr['result'];
-
-    $time = $timer->stop();
-    if ($time > $longQueryMS) {
-        global $uri;
-        Log::log("getTop Long query (${time}ms): $hashKey $uri");
-    }
-
-    if ($addInfo) Info::addInfo($result);
-    //RedisCache::set($hashKey, $result, isset($parameters['cacheTime']) ? $parameters['cacheTime'] : 900);
-
-    return $result;
     } catch (Exception $ex) { Log::log(print_r($ex, true)); return []; }
 }
 

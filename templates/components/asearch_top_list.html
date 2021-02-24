@@ -38,6 +38,8 @@
           <td>{% include 'components/text_corp.html' %}</td>
         {% elseif topSet.type == 'alliance' %}
           <td>{% include 'components/text_alli.html' %}</td>
+        {% elseif topSet.type == 'faction' %}
+          <td>{% include 'components/text_faction.html' %}</td>
         {% elseif topSet.type == 'solarSystem' %}
           <td>{% include 'components/text_system.html' %}</td>
     	{% elseif topSet.type == 'shipType' %}
