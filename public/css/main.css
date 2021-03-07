@@ -320,6 +320,30 @@ td.centered {
     height: 101px;
 }
 
+.bottom-interstitial {
+    display: none !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    -webkit-overflow-scrolling: touch;
+    z-index: 1000;
+}
+.bottom-padding {
+    display: none !important;
+    height: 125px;
+}
+
+@media only screen and (max-width: 767px) {
+.ad-sm-block {
+    display: block !important;
+}
+html,body {
+    height: 100%;
+    margin-bottom: 125px !important;
+}
+}
 @media only screen and (max-width: 1579px) {
 .ad-xl-block {
     display: none !important;
