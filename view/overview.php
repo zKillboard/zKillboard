@@ -323,6 +323,9 @@ if (@$statistics['shipsLost'] > 0) {
 } else if (@$statistics['shipsDestroyed'] > 0) {
     $extra['dangerRatio'] = 100;
 }
+if ($extra['dangerRatio'] !== null && date("md") == "0401") { // Everyone is snuggly on the first day of the fourth month
+    $extra['dangerRatio'] = 0;
+}
 if (@$statistics['soloKills'] > 0 && @$statistics['shipsDestroyed'] > 0) {
     $gangFactor = 100 - floor(100 * ($statistics['soloKills'] / $statistics['shipsDestroyed']));
     $extra['gangFactor'] = $gangFactor;
