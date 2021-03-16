@@ -7,6 +7,6 @@ class Comments
                                         'memed', 'baited on a free ____', 'it would have lived if it were a shield super', 'RMT', 'wrong rigs', 'WTF?',
                                         '🎺 ', 'meh', 'already replaced',
                                         'loot fairy said no', 'press F to pay respects', 'good fight!', 'needs more purple',
-                                        '💩',
+                                        '💩', 'The beacon provides...',
                                     ];
 }
