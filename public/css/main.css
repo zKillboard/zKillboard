@@ -329,6 +329,8 @@ td.centered {
     text-align: center;
     -webkit-overflow-scrolling: touch;
     z-index: 1000;
+    background: black;
+    padding-top: 5px;
 }
 .bottom-padding {
     display: none !important;
