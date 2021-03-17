@@ -238,6 +238,7 @@ function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $
     global $mdb, $longQueryMS;
 
     try {
+        if ($groupByColumn == "ID") return [];
         $hashKey = "Stats::getSums:q:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly);
         $result = RedisCache::get($hashKey);
         if ($cacheOverride == false && $result != null) {
@@ -279,5 +280,5 @@ function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $
         return $result;
 
 
-    } catch (Exception $ex) { Log::log(print_r($ex, true)); return []; }
+    } catch (Exception $ex) { Log::log(print_r($ex, true) . "\n$groupByColumn\n" . print_r($query, true)); return []; }
 }
