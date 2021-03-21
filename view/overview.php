@@ -247,7 +247,7 @@ if (User::isLoggedIn()) {
     $tracked = in_array((int) $id, $t);
 }
 $extra['isTracked'] = $tracked;
-$extra['canTrack'] = in_array($type, ['character', 'corporation', 'alliance']);
+$extra['canTrack'] = true; // in_array($type, ['character', 'corporation', 'alliance']);
 
 $cnt = 0;
 $cnid = 0;

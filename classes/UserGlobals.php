@@ -52,6 +52,12 @@ class UserGlobals extends Twig_Extension
         $this->parseTrackers($result, 'character');
         $this->parseTrackers($result, 'corporation');
         $this->parseTrackers($result, 'alliance');
+        $this->parseTrackers($result, 'faction');
+        $this->parseTrackers($result, 'ship');
+        $this->parseTrackers($result, 'group');
+        $this->parseTrackers($result, 'system');
+        $this->parseTrackers($result, 'constellation');
+        $this->parseTrackers($result, 'region');
 
         // Second, add the character, corp, and alliance for the current account
         $info = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $userID, 'cacheTime' => 300]);
@@ -78,17 +84,18 @@ class UserGlobals extends Twig_Extension
 
     private function parseTrackers(&$result, $type)
     {
-        $array = @$result['tracker_'.$type];
-        if ($array == null) {
-            return;
-        }
+        $array = @$result['tracker_' . $type];
+        if ($array == null) $array = [];
         $parsed = [];
         foreach ($array as $id) {
             $id = (int) $id;
-            $name = Info::getInfoField($type.'ID', $id, 'name');
+            $searchType = $type;
+            if ($searchType == 'ship') $searchType = 'type';
+            if ($searchType == 'system') $searchType = 'solarSystem';
+            $name = Info::getInfoField($searchType . 'ID', $id, 'name');
             $parsed[] = ['id' => $id, 'name' => $name];
         }
-        $result['tracker_'.$type] = $parsed;
+        $result['tracker_' . $type] = $parsed;
     }
 
     private function addTracker($array, $id, $name)

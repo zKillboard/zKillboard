@@ -20,7 +20,9 @@
 		{% if detail.groupShips %}
                         <tr>   
                                 <th class='col-lg-1'>Class:</th>
-                                <td itemprop="class"><a href="/group/{{ detail.groupID }}/">{{ detail.groupName }}</a></td>
+                                <td itemprop="class"><a href="/group/{{ detail.groupID }}/">{{ detail.groupName }}</a>
+				                    {% include 'components/tracker.html' %}
+                                </td>
                         </tr>
 		{% endif %}
 		<tr><td {% if detail.groupShips %}colspan='2' {% endif %} style="{{ not detail.groupShips ? 'width: 130px; ' : ''}}border-top: none; margin: 0px; padding: 0px;">
@@ -36,7 +38,6 @@
 				<td itemprop="name">{% include 'components/text_char.html' %} {% if key == "character" and apiVerified > 0 and apiCorpVerified != true %}<b rel="tooltip" title="API Verified{% if nextApiCheck != '' %}{{ '\n'|raw }}Last checked at {{ nextApiCheck }}{% endif %}" class="fa fa-check" style="color:#00FF00"></b>{% endif %}
                 {% if extra.recentkills %} &nbsp;<i class="fa fa-bolt green" title='Recently Active.' rel='tooltip'></i>{% endif %}
 				{% include 'components/tracker.html' %}
-				{% set skipTracker = 'yes' %}
 				</td>
             </tr>
             {% endif %}
@@ -45,7 +46,6 @@
                 <th>Corporation:</th>
 				<td itemprop="corporation">{% include 'components/text_corp.html' %} {% if detail.cticker %}[{{ detail.cticker }}]{% endif %} {% if key == "corporation" and apiVerified > 0 %}<b rel="tooltip" title="API Verified{% if nextApiCheck != '' %}{{ '\n'|raw }} Last Checked at {{ nextApiCheck }}{% endif %}" class="fa fa-check" style="color:#00FF00"></b>{% elseif apiCorpVerified == true %}<b rel="tooltip" title="Corp API Verified" class="fa fa-check" style="color:#00FF00"></b>{% endif %}
 				{% include 'components/tracker.html' %}
-				{% set skipTracker = 'yes' %}
 			</td>
             </tr>
 			{% endif %}
@@ -60,7 +60,6 @@
 				<th>Alliance:</th>
 				<td itemprop="alliance">{% include 'components/text_alli.html' %} {% if detail.aticker %}&lt;{{ detail.aticker }}&gt;{% endif %}
 				{% include 'components/tracker.html' %}
-				{% set skipTracker = 'yes' %}
 				</td>
 			</tr>
 			{% endif %}
@@ -73,7 +72,9 @@
             {% if detail.factionName %}
 			<tr>
 				<th>Faction:</th>
-				<td itemprop="faction">{% include 'components/text_faction.html' %}</td>
+				<td itemprop="faction">{% include 'components/text_faction.html' %}
+				    {% include 'components/tracker.html' %}
+                </td>
 			</tr>
             {% endif %}
             {% if detail.secStatus and not detail.solarSystemName %}
@@ -90,7 +91,9 @@
             {% if detail.shipName %}
 			<tr>
 				<th>Ship:</th>
-				<td itemprop="ship"><a href="/item/{{ detail.shipTypeID}}/">{{ detail.shipName }}</a></td>
+				<td itemprop="ship"><a href="/item/{{ detail.shipTypeID}}/">{{ detail.shipName }}</a>
+				{% include 'components/tracker.html' %}
+                </td>
 			</tr>
             {% endif %}
             {% if detail.locationID %}
@@ -103,13 +106,16 @@
             {% if detail.groupName and detail.groupName != "#System" %}
                         <tr>   
                                 <th>Class:</th>
-                                <td itemprop="class"><a href="/group/{{ detail.groupID }}/">{{ detail.groupName }}</a></td>
+                                <td itemprop="class"><a href="/group/{{ detail.groupID }}/">{{ detail.groupName }}</a>
+                                </td>
                         </tr>
             {% endif %}
             {% if detail.solarSystemName %}
 			<tr>
 				<th>System:</th>
-				<td itemprop="systemname"><a href='/system/{{ detail.solarSystemID }}/' class="{% if field.solarSystemID >= 32000000 and field.solarSystemID  < 33000000 %}triglavian{% endif %}">{{ detail.solarSystemName }}</a> (<font color="{{ detail.systemColorCode}}">{{ detail.solarSystemSecurity|number_format(1) }}</font>)</td>
+				<td itemprop="systemname"><a href='/system/{{ detail.solarSystemID }}/' class="{% if field.solarSystemID >= 32000000 and field.solarSystemID  < 33000000 %}triglavian{% endif %}">{{ detail.solarSystemName }}</a> (<font color="{{ detail.systemColorCode}}">{{ detail.solarSystemSecurity|number_format(1) }}</font>)
+				{% include 'components/tracker.html' %}
+                </td>
 			</tr>
             {% endif %}
 			{% if detail.systemClass %}
@@ -127,13 +133,17 @@
             {% if detail.constellationName %}
 			<tr>
 				<th>Constellation:</th>
-				<td itemprop="constellation"><a href="/constellation/{{detail.constellationID}}/">{{ detail.constellationName }}</a></td>
+				<td itemprop="constellation"><a href="/constellation/{{detail.constellationID}}/">{{ detail.constellationName }}</a>
+				{% include 'components/tracker.html' %}
+                </td>
 			</tr>
             {% endif %}
             {% if detail.regionName %}
 			<tr>
 				<th>Region:</th>
-				<td itemprop="region"><a href="/region/{{detail.regionID}}/" class="{% if detail.regionID >= 12000001 and detail.regionID < 13000000 %}triglavian{% endif %}">{{ detail.regionName }}</a></td>
+				<td itemprop="region"><a href="/region/{{detail.regionID}}/" class="{% if detail.regionID >= 12000001 and detail.regionID < 13000000 %}triglavian{% endif %}">{{ detail.regionName }}</a>
+				{% include 'components/tracker.html' %}
+                </td>
 			</tr>
             {% endif %}
 	    	{% if detail.memberCount is defined and detail.memberCount >= 0 %}

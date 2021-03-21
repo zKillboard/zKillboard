@@ -27,6 +27,24 @@ showAdd = showAdd && ($("#tracker-remove-corporation-{{data.id}}").removeClass("
 {% for data in tracker_alliance %}
 showAdd = showAdd && ($("#tracker-remove-alliance-{{data.id}}").removeClass("hidden").length == 0);
 {% endfor %}
+{% for data in tracker_faction %}
+showAdd = showAdd && ($("#tracker-remove-faction-{{data.id}}").removeClass("hidden").length == 0);
+{% endfor %}
+{% for data in tracker_ship %}
+showAdd = showAdd && ($("#tracker-remove-ship-{{data.id}}").removeClass("hidden").length == 0);
+{% endfor %}
+{% for data in tracker_group %}
+showAdd = showAdd && ($("#tracker-remove-group-{{data.id}}").removeClass("hidden").length == 0);
+{% endfor %}
+{% for data in tracker_system %}
+showAdd = showAdd && ($("#tracker-remove-system-{{data.id}}").removeClass("hidden").length == 0);
+{% endfor %}
+{% for data in tracker_constellation %}
+showAdd = showAdd && ($("#tracker-remove-constellation-{{data.id}}").removeClass("hidden").length == 0);
+{% endfor %}
+{% for data in tracker_region %}
+showAdd = showAdd && ($("#tracker-remove-region-{{data.id}}").removeClass("hidden").length == 0);
+{% endfor %}
 
 {% for killID in favorites %}
 $(".fav-star-" + {{ killID }}).css("color", "#FDBC2C");
@@ -42,24 +60,62 @@ console.log("nav loaded");
 <li><a href="/character/{{ data.id }}/">{{ data.name }}</a></li>
 {% endfor %}
 {% endif %}
+
 {% if tracker_corporation %}
 <li class="dropdown-header">Corporations</li>
 {% for data in tracker_corporation %}
 <li><a href="/corporation/{{ data.id }}/">{{ data.name }}</a></li>
 {% endfor %}
 {% endif %}
+
 {% if tracker_alliance %}
 <li class="dropdown-header">Alliances</li>
 {% for data in tracker_alliance %}
 <li><a href="/alliance/{{ data.id }}/">{{ data.name }}</a></li>
 {% endfor %}
 {% endif %}
+
 {% if tracker_faction %}
 <li class="dropdown-header">Factions</li>
 {% for data in tracker_faction %}
 <li><a href="/faction/{{ data.id }}/">{{ data.name }}</a></li>
 {% endfor %}
 
+{% endif %}
+
+{% if tracker_ship %}
+<li class="dropdown-header">Ships</li>
+{% for data in tracker_ship %}
+<li><a href="/ship/{{ data.id }}/">{{ data.name }}</a></li>
+{% endfor %}
+{% endif %}
+
+{% if tracker_group %}
+<li class="dropdown-header">Groups</li>
+{% for data in tracker_group %}
+<li><a href="/group/{{ data.id }}/">{{ data.name }}</a></li>
+{% endfor %}
+{% endif %}
+
+{% if tracker_system %}
+<li class="dropdown-header">Systems</li>
+{% for data in tracker_system %}
+<li><a href="/system/{{ data.id }}/">{{ data.name }}</a></li>
+{% endfor %}
+{% endif %}
+
+{% if tracker_constellation %}
+<li class="dropdown-header">Constellations</li>
+{% for data in tracker_constellation %}
+<li><a href="/constellation/{{ data.id }}/">{{ data.name }}</a></li>
+{% endfor %}
+{% endif %}
+
+{% if tracker_region %}
+<li class="dropdown-header">Regions</li>
+{% for data in tracker_region %}
+<li><a href="/region/{{ data.id }}/">{{ data.name }}</a></li>
+{% endfor %}
 {% endif %}
 
 {% else %}

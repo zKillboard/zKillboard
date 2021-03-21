@@ -1,6 +1,7 @@
-{% if extra.canTrack and skipTracker != "yes" %}
-	<span id="tracker-remove-{{key}}-{{id}}" class="hidden">&nbsp; <a href='/account/tracker/{{ key }}/{{ id }}/remove/' rel="nofollow"><i class="fa fa-minus" rel="tooltip" title="Remove from Tracker" style='color: red';></i></a></span>
-	<span id="tracker-add" class="hidden">&nbsp; <a href='/account/tracker/{{ key }}/{{ id }}/add/' rel="nofollow"><i class="fa fa-plus" rel="tooltip" title="Add to Tracker" style='color: green;'></i></a></span>
-        <span id="tracker-none" class="hidden"><a href="#" onclick="alert('Please log in first.'); return false;" rel="nofollow"><i class="fa fa-plus" rel="tooltip" title="Add to Tracker" style='color: gray;'></i></a></span>
-        <span id='track-entity'></span>
+{% if skipTracker != "yes" %}
+    <span id="tracker-remove-{{key}}-{{id}}" class="hidden">&nbsp; <a href='/account/tracker/{{ key }}/{{ id }}/remove/' rel="nofollow"><i class="fa fa-minus" rel="tooltip" title="Remove from Tracker" style='color: red';></i></a></span>
+    <span id="tracker-add" class="hidden">&nbsp; <a href='/account/tracker/{{ key }}/{{ id }}/add/' rel="nofollow"><i class="fa fa-plus" rel="tooltip" title="Add to Tracker" style='color: green;'></i></a></span>
+    <span id="tracker-none" class="hidden"><a href="#" onclick="alert('Please log in first.'); return false;" rel="nofollow"><i class="fa fa-plus" rel="tooltip" title="Add to Tracker" style='color: gray;'></i></a></span>
+    <span id='track-entity'></span>
+{% set skipTracker = 'yes' %}
 {% endif %}
