@@ -127,7 +127,7 @@ function updateEntity($killID, $entity)
         $id = (int) @$entity[$type];
         if ($id <= 1) continue;
 
-        $row = ['type' => $type, 'id' => $id];
+        $row = ['type' => $type, 'id' => (int) $id];
         if ($mdb->count("information", $row) > 0) {
             $rtq = new RedisTimeQueue("zkb:$type", 86400);
             $rtq->add($id);
