@@ -95,7 +95,7 @@ foreach ($types as $type => $value) {
 foreach ($types as $type => $value) {
     $multi = $redis->multi();
     $multi->del("tq:ranks:weekly:$type");
-    $multi->zUnion("tq:ranks:weekly:$type", ["tq:ranks:weekly:$type:$today"]);
+    $multi->zUnionStore("tq:ranks:weekly:$type", ["tq:ranks:weekly:$type:$today"]);
     $multi->expire("tq:ranks:weekly:$type", 9000);
     $multi->expire("tq:ranks:weekly:$type:$today", (7 * 86400));
     moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:shipsDestroyed");
