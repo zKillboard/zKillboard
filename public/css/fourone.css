@@ -1,0 +1,23 @@
+.content {
+    filter: invert(1);
+}
+
+img {
+    filter: invert(1);
+    background-color: #000;
+}
+
+body {
+    background-color:#060606;
+    background-image:url(/img/wallpapers/hellokitty.jpg);
+}
+
+#Fitting_Panel img {
+  all: unset;
+  filter: invert(1);
+}
+
+
+.item_destroyed, .red {
+  color: yellow;
+}

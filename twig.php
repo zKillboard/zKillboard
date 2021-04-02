@@ -111,6 +111,8 @@ $twig->addglobal('showAnalytics', $showAnalytics);
 $twig->addGlobal('accountBalance', $accountBalance);
 $twig->addGlobal('adFreeMonthCost', $adFreeMonthCost);
 
+$twig->addGlobal('date', date("md"));
+
 // Display a banner?
 $banner = false;
 if ($banner) {
