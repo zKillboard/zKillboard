@@ -176,6 +176,8 @@ class Price
                 return 750000000000; // 750b
             case 26840: // Raven State Issue
                 return 2500000000000;
+            case 47514: // 'Horizon' Fortizar
+                return 60000000000; // Too much market bugginess, hardcoding price
         }
 
         // Some groupIDs have hardcoded prices
