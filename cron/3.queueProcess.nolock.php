@@ -239,9 +239,16 @@ function getFittedValue($killID, $items, $dttm)
 
     $fittedValue = 0;
     foreach ($items as $item) {
+        $typeID = (int) $item['item_type_id'];
+        if ($typeID == 0) continue;
+
         $infernoFlag = Info::getFlagLocation($item['flag']);
-        $add = in_array($item['flag'], $fittedArray);
-        if ($add) $fittedValue += processItem($killID, $item, $dttm, false, 0);
+        $add = in_array($infernoFlag, $fittedArray);
+        if ($add) {
+            $qty = ((int) @$item['quantity_dropped'] + (int) @$item['quantity_destroyed']);
+            $price = Price::getItemPrice($typeID, $dttm);
+            $fittedValue += ($qty * $price);
+        }
     }
     return $fittedValue;
 }
