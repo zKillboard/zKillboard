@@ -24,10 +24,16 @@ if ($_POST) {
     $deleteentity = Util::getPost('deleteentity');
     // Delete an apikey
     if (isset($deletekeyid)) {
-        $i = $mdb->remove("scopes", ['characterID' => $userID, '_id' => new MongoID($deletekeyid)]);
-        if (isset($i['n']) && $i['n'] > 0) $error = "The scope has been removed. Please give up to 24 hours for caches to remove the API verified checkmark on the overview page.";
-        else $error = "We did nothing. Were you supposed to attempt that?";
-        User::sendMessage($error);
+        Log::log("Character $userID deleting scope " . $deletekeyid);
+        try {
+            $i = $mdb->remove("scopes", ['characterID' => $userID, 'scope' => $deletekeyid]);
+            if (isset($i['n']) && $i['n'] > 0) $error = "The scope has been removed.";
+            else $error = "We did nothing. Were you supposed to attempt that?";
+            User::sendMessage($error);
+        } catch (Exception $e) {
+            Log::log(print_r($e, true));
+            User::sendMessage("An error occurred and has been logged. Sorry.");
+        }
     }
 
     // Style
