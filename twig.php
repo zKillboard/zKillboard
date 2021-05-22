@@ -72,6 +72,7 @@ $twig->addGlobal('image_alliance', 'https://images.evetech.net/alliances/');
 $twig->addGlobal('image_item', 'https://images.evetech.net/types/');
 $twig->addGlobal('image_ship', 'https://images.evetech.net/types/');
 $twig->addGlobal('esiServer', $esiServer);
+$twig->addGlobal('showTwitch', $showTwitch);
 
 $twig->addGlobal('tqStatus', $redis->get('tqStatus'));
 $twig->addGlobal('tqCount', $redis->get('tqCount'));

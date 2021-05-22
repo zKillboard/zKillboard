@@ -16,11 +16,6 @@ class Price
             $kmDate = date('Y-m-d H:i');
         }
 
-        if ($categoryID == 66) { // "Build" all rigs
-            $price = Build::getItemPrice($typeID, $kmDate, true, true);
-            if ($price > 0.01) return $price;
-        }
-
         $price = static::getFixedPrice($typeID, $kmDate);
         if ($price !== null) {
             return $price;
@@ -28,6 +23,11 @@ class Price
         $price = static::getCalculatedPrice($typeID, $kmDate);
         if ($price !== null) {
             return $price;
+        }
+
+        if ($categoryID == 66) { // "Build" all rigs
+            $price = Build::getItemPrice($typeID, $kmDate, true, true);
+            if ($price > 0.01) return $price;
         }
 
         // Have we fetched prices for this typeID today?

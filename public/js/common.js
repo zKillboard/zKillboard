@@ -103,7 +103,7 @@ function wslog(msg)
         $("#commentblock").html(json.html);
     } else if (json.action === 'littlekill') {
         var killID = json.killID;
-        setTimeout(function() { loadLittleMail(killID); }, Math.floor(1 + (Math.random() * 30000)));
+        setTimeout(function() { loadLittleMail(killID); }, 1);
     } else {
         console.log("Unknown action: " + json.action);
     }
