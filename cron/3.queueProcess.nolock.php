@@ -111,15 +111,16 @@ while ($minute == date('Hi')) {
 
         $items = $mail['victim']['items'];
         $i = array();
-        $destroyedValue = 0;
-        $droppedValue = 0;
+        $destroyedValue = getDValue($killID, $items, $date, false);
+        $droppedValue = getDValue($killID, $items, $date, true);
 
         $shipValue = Price::getItemPrice($mail['victim']['ship_type_id'], $date);
+        $destroyedValue += $shipValue;
         $fittedValue = getFittedValue($killID, $mail['victim']['items'], $date);
         $fittedValue += $shipValue;
         $totalValue = processItems($killID, $mail['victim']['items'], $date);
         $totalValue += $shipValue;
-    
+
         $isPaddedKill = false;
         $padhash = getPadHash($kill);
         if ($padhash != null) {
@@ -161,6 +162,8 @@ while ($minute == date('Hi')) {
 
         $zkb['hash'] = $row['hash'];
         $zkb['fittedValue'] = round((double) $fittedValue, 2);
+        $zkb['droppedValue'] = round((double) $droppedValue, 2);
+        $zkb['destroyedValue'] = round((double) $destroyedValue, 2);
         $zkb['totalValue'] = round((double) $totalValue, 2);
         $zkb['points'] = ($kill['npc'] == true) ? 1 : (int) Points::getKillPoints($killID);
         $kill['zkb'] = $zkb;
@@ -252,6 +255,25 @@ function getFittedValue($killID, $items, $dttm)
     }
     return $fittedValue;
 }
+
+function getDValue($killID, $items, $dttm, $dropped)
+{
+    global $fittedArray;
+
+    $droppedOrDestroyed = 'quantity_' . ($dropped == true ? 'dropped' : 'destroyed');
+
+    $dValue = 0;
+    foreach ($items as $item) {
+        $typeID = (int) $item['item_type_id'];
+        if ($typeID == 0) continue;
+
+        $qty = ((int) @$item[$droppedOrDestroyed]);
+        $price = Price::getItemPrice($typeID, $dttm);
+        $dValue += ($qty * $price);
+    }
+    return $dValue;
+}
+
 
 function processItems($killID, $items, $dttm, $isCargo = false, $parentFlag = 0)
 {
