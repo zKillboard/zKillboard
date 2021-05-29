@@ -9,6 +9,7 @@ $("#char-image").attr("src", "{{ image_character }}{{ characterID }}/portrait?si
 showAds = {{ showAds }} & showAds;
 {% if showAds != 0 %}
     loadads();
+    otherBanners();
 {% endif %}
 
 {% if style != 'cyborg' %}
