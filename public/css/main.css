@@ -382,3 +382,14 @@ html,body {
     display: none !important;
 }
 }
+
+
+.nowrap-parent {
+    width: 250px;
+}
+
+.nowrap {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; // This is where the magic happens    
+}

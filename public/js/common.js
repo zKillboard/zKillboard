@@ -339,9 +339,12 @@ function annoyAdBlockers() {
     }
 }
 
+var now = time();
+var today = now - (now % 86400);
+var week = now - (now % 604800);
 function knowledgeCheck() {
-    var today = curday();
-    if (!localStorage.getItem('knowledgecheck-' + today)) {
+    if (typeof window.obsstudio != 'undefined') return;
+    if (!localStorage.getItem('knowledgecheck-' + week)) {
         likeOMGwhereAREtheKILLMAILS();
     }
 
@@ -356,6 +359,26 @@ function likeOMGwhereAREtheKILLMAILS() {
 function okIgetit() {
     console.log('*sigh*');
     $('#modalMessage').modal('hide');
-    var today = curday();
-    localStorage.setItem('knowledgecheck-' + today, true);
+    localStorage.setItem('knowledgecheck-' + week, true);
+}
+
+function time() {
+    return Math.floor(Date.now() / 1000);
+}
+
+// gtcplex320.jpg  gtcplex728.jpg  merch320.jpg  merch728.jpg
+var banner_links = ['https://store.markeedragon.com/affiliate.php?id=928&redirect=index.php?cat=4', 'https://www.zazzle.com/store/zkillboard/products'];
+var banners_sm = ['/img/banners/gtcplex320.jpg', '/img/banners/merch320.jpg'];
+var banners_lg = ['/img/banners/gtcplex728.jpg?1', '/img/banners/merch728.jpg'];
+function otherBanners() {
+    if (showAds != 1) return;
+    if ($("#adsensetop:visible").length > 0) return;
+
+
+    var minute = new Date().getMinutes();
+    var mod = minute % 2; // number of other banners
+    $('#otherBannerAnchor').attr('href', banner_links[mod]);
+    $('#otherBannerImg').attr('src', banners_lg[mod]);
+    $("#otherBannerDiv").css('display', 'block');
+    setTimeout(otherBanners, Math.min(30000, 1000 * (61 - new Date().getSeconds())));
 }

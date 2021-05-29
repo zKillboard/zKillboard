@@ -30,6 +30,8 @@
 			<meta name="og:description" content="{{ description }}">
 			<meta name="og:image" content="{{ fullsiteurl }}/img/3D.png">
 		{% endblock %}
+        {% block head %}
+        {% endblock %}
 
 		{% block robots %}
 		{% endblock %}
@@ -58,8 +60,8 @@
 
 		<link id="mainstyle" rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/{{ version }}/cyborg/bootstrap.min.css">
 
-		<link rel="stylesheet" href="//{{ siteurl }}/css/style-edits/cyborg-main.css?v=202103162230" id="nextstyle">
-		<link rel="stylesheet" href="//{{ siteurl }}/css/main.css?v=202103071146">
+		<link rel="stylesheet" href="//{{ siteurl }}/css/style-edits/cyborg-main.css?v=202105241355" id="nextstyle">
+		<link rel="stylesheet" href="//{{ siteurl }}/css/main.css?v=202105241355">
 		<link rel="stylesheet" href="//{{ siteurl }}/css/nprogress.css">
         {% if date == "0401" %}
 		<link rel="stylesheet" href="//{{ siteurl }}/css/fourone.css">
@@ -107,7 +109,9 @@
 				{% endif %}
 
 				<!-- Top ad -->
-				<div class="centered publift aad-xl-none" fuse="home_header" id="adsensetop" style='height: 135px;'></div><hr/>
+				<div class="centered publift ad-xl-none" fuse="home_header" id="adsensetop" style='height: 100px; padding-top: 1em;'></div>
+                <div id='otherBannerDiv' class='centered' style='display: none; height: 100px; padding-top: 1em;'><a id='otherBannerAnchor' target='_new'><img id='otherBannerImg' /></a></div>
+                <hr/>
 
                 <span class='pagecontent'>{% endif %}
 				<!-- The text header -->
@@ -145,7 +149,7 @@
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.2/bootstrap-slider.min.js"></script>
 
 		<script type="text/javascript" src="//{{ siteurl }}/js/search.js?v=1"></script>
-		<script type="text/javascript" src="//{{ siteurl }}/js/common.js?t=202105231636"></script>
+		<script type="text/javascript" src="//{{ siteurl }}/js/common.js?t=202105231644"></script>
 		<script type="text/javascript" src="//{{ siteurl }}/js/sclock1.js"></script>
 		<script type="text/javascript" src="//{{ siteurl }}/js/nprogress.js"></script>
                 <script type="text/javascript" src="/js/reconnecting-websocket.js"></script>
