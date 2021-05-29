@@ -27,6 +27,7 @@
 					<td style="text-align: center; vertical-align: middle;">{{ rank }}</td>
                     {% set rank = rank + 1 %}
 					<td>
+                        <div class='nowrap-parent'><div class='nowrap'>
 						{% if list.type == "alliance" %}{% include 'components/text_alli.html' %}
 						{% elseif list.type == "corporation" %}{% include 'components/text_corp.html' %}
 						{% elseif list.type == "character" %}{% include 'components/text_char.html' %}
@@ -39,6 +40,7 @@
 						{% elseif list.type == "location" %}{% include 'components/text_location.html' %}
 						{% else %} {{ list.type }}
 						{% endif %}
+                        </div></div>
 					</td>
 					<td style="text-align: right; vertical-align: middle;">{{ formatIsk(field.kills, isInt) }}</td>
 				</tr>
