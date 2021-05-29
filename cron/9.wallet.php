@@ -79,6 +79,13 @@ function applyBalances()
         $date = $row['date'];
         $time = strtotime($date);
         $amount = $row['amount'];
+
+        $multiplier = (date_format(date_create($date), "N") == 2) ? 2 : 1;
+        if ($multiplier == 2) {
+            Log::log("ISK DOUBLED! \o/");
+            $amount = $multiplier * $amount;
+        }
+
         $months = floor($amount / $adFreeMonthCost);
         $bonusMonths = floor($months / 6);
         $months += $bonusMonths;
