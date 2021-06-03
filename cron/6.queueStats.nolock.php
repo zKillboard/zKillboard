@@ -120,6 +120,7 @@ function calcStats($row, $maxSequence)
 
     // Update the sequence
     $stats['sequence'] = $newSequence;
+    $stats['epoch'] = time();
 
     if (@$stats['shipsLost'] > 0) {
         $destroyed = @$stats['shipsDestroyed']  + @$stats['pointsDestroyed'];
