@@ -16,7 +16,7 @@ while ($beSocial && $minute == date('Hi')) {
 
 function beSocial($killID)
 {
-    global $mdb, $redis, $fullAddr, $twitterName, $imageServer, $queueSocial;
+    global $mdb, $redis, $fullAddr, $twitterName, $imageServer, $queueSocial, $bigKillBotWebhook;
 
     $twitMin = 10000000000;
     $kill = $mdb->findDoc('killmails', ['killID' => $killID]);
@@ -61,6 +61,7 @@ function beSocial($killID)
         'image' => $imageServer . "types/" . $victimInfo['shipTypeID'] . "/render?size=128"
     ];
     $redis->publish("public", json_encode($redisMessage, JSON_UNESCAPED_SLASHES));
+    Discord::hook($bigKillBotWebhook, $url);
     sendMessage($message);
 }
 
