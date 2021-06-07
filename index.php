@@ -105,6 +105,10 @@ $count = (int) $redis->get($rateLimitKey);
 //if ($ip == "2a01:7e00::f03c:91ff:fe28:f395") Log::log($rateLimitKey . " ($nlt) $count $limit");
 if ($noLimit == false && $count >= $limit) {
     //Log::log("$ip $uri $count>=$limit Rate limited $agent");
+    if ($isApiRequest) {
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET');
+    }
     header('HTTP/1.1 429 Too many requests.');
     sem_release($sem);
     die("<html><head><meta http-equiv='refresh' content='1'></head><body>Rate limited - because of abuse all IPs are restricted to 1 request per second now. I don't care if it wasn't you - I won't make any exceptions.</body></html>");
