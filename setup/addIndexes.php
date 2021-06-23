@@ -351,6 +351,16 @@ echo "Creating index : 'id' => 1, with sparse = 0 and unique = 0 ... ";
 $locations->ensureIndex(array('id' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
+// m2
+echo "\nCreating collection m2 ... ";
+$db->createCollection("m2");
+$collection = "m2";
+$m2 = $db->$collection;
+echo "Done\n";
+echo "Creating index : 'characterID' => 1, with sparse = 0 and unique = 1 ... ";
+$m2->ensureIndex(array('characterID' => 1), array("sparse" => 0, "unique" => 1));
+echo "Done\n";
+
 // ninetyDays
 echo "\nCreating collection ninetyDays ... ";
 $db->createCollection("ninetyDays");
@@ -479,16 +489,6 @@ $ninetyDays->ensureIndex(array('labels' => 1, 'killID' => -1), array("sparse" =>
 echo "Done\n";
 echo "Creating index : 'involved.corporationID' => 1, 'sequence' => 1, 'involved.isVictim' => 1, with sparse = 0 and unique = 0 ... ";
 $ninetyDays->ensureIndex(array('involved.corporationID' => 1, 'sequence' => 1, 'involved.isVictim' => 1), array("sparse" => 0, "unique" => 0));
-echo "Done\n";
-
-// ninteDays
-echo "\nCreating collection ninteDays ... ";
-$db->createCollection("ninteDays");
-$collection = "ninteDays";
-$ninteDays = $db->$collection;
-echo "Done\n";
-echo "Creating index : 'labels' => 1, 'killID' => -1, with sparse = 0 and unique = 0 ... ";
-$ninteDays->ensureIndex(array('labels' => 1, 'killID' => -1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // oneWeek
