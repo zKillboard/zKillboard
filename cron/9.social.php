@@ -61,7 +61,7 @@ function beSocial($killID)
         'image' => $imageServer . "types/" . $victimInfo['shipTypeID'] . "/render?size=128"
     ];
     $redis->publish("public", json_encode($redisMessage, JSON_UNESCAPED_SLASHES));
-    Discord::hook($bigKillBotWebhook, $url);
+    Discord::webhook($bigKillBotWebhook, $url);
     sendMessage($message);
 }
 

@@ -13,7 +13,8 @@ $hi = date('hi');
 while ($hi == date('hi')) {
     $killID = (int) $queueDiscord->pop();
     if ($killID > 0) {
-        Discord::webhook($killBotWebhook, "$fullAddr/kill/$killID/");
+        //Discord::webhook($killBotWebhook, "$fullAddr/kill/$killID/");
+        //sleep(2);
     }
     sleep(1);
 }
