@@ -14,6 +14,7 @@ $guzzler = new Guzzler(5);
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     if ($redis->get("zkb:reinforced") == true) break;
+    $mdb->remove("information", ['type' => 'characterID', 'id' => 1]);
     $row = $mdb->findDoc("information", ['type' => 'characterID'], ['lastApiUpdate' => 1]);
     if ($row == null) {
         $guzzler->sleep(1);
