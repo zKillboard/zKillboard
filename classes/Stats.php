@@ -167,7 +167,7 @@ class Stats
         $pipeline[] = ['$group' => ['_id' => 'total', 'value' => ['$sum' => 1]]];
 
         $result = $mdb->getCollection('oneWeek')->aggregateCursor($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true]);
-        MongoCursor::$timeout = -1;
+        //MongoCursor::$timeout = -1;
         $result = iterator_to_array($result);
 
         $time = $timer->stop();
