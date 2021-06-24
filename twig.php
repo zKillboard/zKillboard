@@ -112,6 +112,14 @@ $twig->addglobal('showAnalytics', $showAnalytics);
 $twig->addGlobal('accountBalance', $accountBalance);
 $twig->addGlobal('adFreeMonthCost', $adFreeMonthCost);
 
+// File timestamp
+$timestamp = (int) $redis->get("timestamp");
+if ($timestamp == 0) {
+  $timestamp = time();
+  $redis->set("timestamp", $timestamp);
+}
+$twig->addGlobal("timestamp", $timestamp);
+
 $twig->addGlobal('date', date("md"));
 
 // Display a banner?
