@@ -29,6 +29,7 @@ $(document).ready(function() {
     });
 
     // setup websocket with callbacks
+    if (start_websocket) {
     ws = new ReconnectingWebSocket('wss://' + window.location.hostname + '/websocket/', '', {maxReconnectAttempts: 15});
     ws.onmessage = function(event) {
         wslog(event.data);
@@ -39,6 +40,7 @@ $(document).ready(function() {
         ws.onclose = function(event) {
             //window.location = window.location;
         }
+      }
     }
 
     addKillListClicks();

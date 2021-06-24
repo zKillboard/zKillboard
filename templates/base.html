@@ -37,7 +37,9 @@
 		{% endblock %}
 
 			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			{% if showAds %}
             <script src="https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js"></script> 
+	    		{% endif %}
 
 		<title>
 			{% block title %}
@@ -86,12 +88,13 @@
 			}
 		</style>
                 <script type="text/javascript">
-                    var showAds = 1;
+		    var showAds = {{ showAds }};
                     var characterID = {{ characterID }};
                     var navbar = true; 
                     var entityType = '{{ entityType }}';
                     var entityID = '{{ entityID }}';
                     var entityPage = '{{ pageType }}';
+		    var start_websocket = {{ websocket }};
                 </script>
 	</head>
 	<body>
