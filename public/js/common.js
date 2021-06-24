@@ -29,7 +29,7 @@ $(document).ready(function() {
     });
 
     // setup websocket with callbacks
-    ws = new ReconnectingWebSocket('wss://zkillboard.com/websocket/', '', {maxReconnectAttempts: 15});
+    ws = new ReconnectingWebSocket('wss://' + window.location.hostname + '/websocket/', '', {maxReconnectAttempts: 15});
     ws.onmessage = function(event) {
         wslog(event.data);
     };
