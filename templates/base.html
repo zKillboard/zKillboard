@@ -88,7 +88,7 @@
 			}
 		</style>
                 <script type="text/javascript">
-		    var showAds = {{ showAds }};
+		    var showAds = {{ showAds|default(1) }};
                     var characterID = {{ characterID }};
                     var navbar = true; 
                     var entityType = '{{ entityType }}';
@@ -200,7 +200,7 @@
                 <div class="modal-content">
                         <div class="modal-header">
                                 <span id='modalTitle' class="modal-title">Message</span>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" style="color: red; font-weight: bold;">X</span></button>
+                                <button id='modalCloseButton' type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" style="color: red; font-weight: bold;">X</span></button>
                         </div>
                         <div class="modal-body">
                                 <form name="myform" class="form">
