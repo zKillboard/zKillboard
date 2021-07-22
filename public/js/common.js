@@ -322,7 +322,7 @@ function killListAd(doLoadSlots) {
 function adBlockCheck() {
     if (showAds != 0 && typeof fusetag == "undefined") {
         console.log("Ads are blocked :(");
-        $("#adsensetop, #adsensebottom").html('<a target="_new" href="https://zkillboard.com/cache/bypass/login/patreon/"><img src="/img/patreon_lg.jpg"></a>');
+        //$("#adsensetop, #adsensebottom").html('<a target="_new" href="https://zkillboard.com/cache/bypass/login/patreon/"><img src="/img/patreon_lg.jpg"></a>');
         var today = curday();
         if (!localStorage.getItem('adblocker-nag-' + today)) {
             localStorage.setItem('adblocker-nag-' + today, true);
@@ -333,10 +333,13 @@ function adBlockCheck() {
 
 function annoyAdBlockers() {
     if (showAds != 0 && typeof fusetag == "undefined") {
+        return;
             $(this).blur();
             $('#modalMessageBody').html('<h2>Would you kindly unblock ads?</h2><p>zKillboard only shows 2 advertisements and the ads are designed to be non-intrusive of your viewing experience. Please support zKillboard by disabling your adblocker.</p><p><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p><p><a target="_new" href="https://www.patreon.com/zkillboard"><img src="/img/patreon_lg.jpg"></a></p><p><a target="_new" href="https://brave.com/zki349"><img src="//zkillboard.com/img/brave_switch.png" alt="Switch to the Brave Browser"></a></p>');
-            $('#modalMessage').modal({backdrop: true, keyboard: true, show: true});
-
+            if (!$('#modalMessage').hasClass('in')) {
+                $('#modalCloseButton').show();
+                $('#modalMessage').modal({backdrop: true, keyboard: true, show: true});
+            }
     }
 }
 
@@ -352,6 +355,8 @@ function knowledgeCheck() {
 }
 
 function likeOMGwhereAREtheKILLMAILS() {
+    return;
+    if ($('#modalMessage').hasClass('in')) return;
     $(document).blur();
     $('#modalMessageBody').html('<h4>zKillboard does NOT automatically get all killmails</h4><p>zKillboard does not get all killmails automatically. CCP does not make killmails public. They must be provided by various means.</p><ul><li>Someone manually posts the killmail.</li><li>A character has authorized zKillboard to retrieve their killmails.</li><li>A corporation director or CEO has authorized zKillboard to retrieve their corporation\'s killmails.</li><li>War killmail (victim and final blow have a Concord sanctioned war with each other)</li></ul><p>The killmail API works just like killmails do in game. The victim gets the killmail, and the person with the finalblow gets the killmail. Therefore, for zKillboard to be able to retrieve the killmail via API it must have the character or corporation API submitted for the victim or the person with the final blow. If an NPC gets the final blow, the last character to aggress to the victim will receive the killmail and credit for the final blow.</p><p>Remember, every PVP killmail has two sides, the victim and the aggressors. Victims often don\'t want their killmails to be made public, however, the aggressors do.</p><btn onclick="okIgetit();" class="btn btn-success btn-block">OK</btn>');
     $('#modalCloseButton').hide();
