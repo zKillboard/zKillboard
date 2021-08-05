@@ -38,7 +38,7 @@ while ($minute == date('Hi')) {
     if (isset($row['lastApiUpdate'])) while ($currentSecond == date('His')) $guzzler->sleep(0, 50);
     //Util::out($row['name'] . " " . $row['id']);
 
-    $url = "$esiServer/v4/characters/$id/";
+    $url = "$esiServer/v5/characters/$id/";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
     //$a = (isset($row['lastApiUpdate']) && $row['name'] != '') ? ['etag' => true] : [];
     $guzzler->call($url, "updateChar", "failChar", $params, []);
