@@ -69,7 +69,7 @@ function failChar(&$guzzler, &$params, &$connectionException)
             $guzzler->finish();
             exit();
         default:
-            Util::out("/v4/characters/ failed for $id with code $code");
+            Util::out("/v5/characters/ failed for $id with code $code");
     }
 }
 
