@@ -95,6 +95,19 @@ class Guzzler
         //while (((int) $redis->get("concurrent")) > 10) $this->sleep(0, 1000);
         $redis->incr("concurrent");
         $guzzler = $this;
+
+if ($callType == "POST" && $body != null) {
+$uri = $uri . "?";
+    $p = json_decode($body, true);
+foreach ($p as $k => $v) {
+    $uri .= "$k=$v&";
+}
+$uri =  substr_replace($uri ,"", -1);
+
+    $setup['Content-Type'] = 'application/x-www-form-urlencoded';
+    $body = null;
+}
+
         $request = new \GuzzleHttp\Psr7\Request($callType, $uri, $setup, $body);
         $this->client->sendAsync($request)->then(
                 function($response) use (&$guzzler, $fulfilled, $rejected, &$params, $statusType, $etag) {
