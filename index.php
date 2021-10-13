@@ -60,10 +60,14 @@ if (!$isApiRequest && $agent == "Mozilla/5.0 (compatible; GoogleDocs; apps-sprea
     exit();
 }
 
-if ($redis->get("zkb:memused") > 115) {
-    header('HTTP/1.1 202 API temporarily disabled because of resource limitations');
-    exit();
-}
+try {
+    if ($redis->get("zkb:memused") > 115) {
+        header('HTTP/1.1 202 API temporarily disabled because of resource limitations');
+        exit();
+    }
+} catch (Exception $e) {
+    header('/html/redisloading.html', 302);
+} 
 
 $timer = new Timer();
 
