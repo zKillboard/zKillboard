@@ -182,8 +182,11 @@ $app->get('/api/prices/:id/', function ($id) use ($app) {
         include 'view/apiprices.php';
         });
 
-$app->get('/api/:input+', function ($input) use ($app) {
+$app->get('/api/:type/:id/', function ($input) use ($app) {
         include 'view/api.php';
+        });
+$app->get('/api/:input+', function ($input) use ($app) {
+        include 'view/nextdown.php';
         });
 
 // Post
