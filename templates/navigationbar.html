@@ -95,13 +95,12 @@
                                                 </ul>
                                                 {% if characterID == 0 %}
 					        <ul class="dropdown-menu" id='char-loggedout'>
-							<form action="/ccplogin/" id="loginform">
-								<label class="checkbox"><input type="checkbox" name="scopes[]" value="esi-killmails.read_killmails.v1" checked>Fetch killmails?</label>
-								<label class="checkbox"><input type="checkbox" name="scopes[]" value="esi-fittings.write_fittings.v1" checked>Save Fittings?</label>
-								<input id='ssologinimage' type="image" src="/img/ssologin.png">
-							</form>
-                                                </ul>
-                                                {% endif %}
+							    <form action="/ccpoauth2/" id="loginform">
+								    <input id='ssologinimage' type="image" src="/img/ssologin.png">
+                                <p><small>Will request killmails and save fitting scopes.</small></p>
+							    </form>
+                            </ul>
+                        {% endif %}
 				</li>
 			</ul>
 		</div>

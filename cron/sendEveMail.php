@@ -4,10 +4,12 @@ require_once "../init.php";
 
 if ($redis->get("zkb:noapi") == "true") exit();
 
+$sso = EveOnlineSSO::getSSO();
+
 $mails = $mdb->find("evemails", ['sent' => false], ['_id' => 1]);
 if (sizeof($mails)) {
     $refreshToken = $mdb->findField("scopes", "refreshToken", ['characterID' => $evemailCharID, 'scope' => 'esi-mail.send_mail.v1']);
-    $accessToken = CrestSSO::getAccessToken($evemailCharID, null, $refreshToken);
+    $accessToken = $sso->getAccessToken($refreshToken);
     if ($accessToken == null) {
         Util::out("evemails to send, cannot obtain accessToken");
         return;

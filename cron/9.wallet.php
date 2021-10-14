@@ -2,6 +2,10 @@
 
 require_once '../init.php';
 
+global $esiServer, $adminCharacter;
+
+$sso = EveOnlineSSO::getSSO();
+
 if ($redis->get("zkb:noapi") == "true") exit();
 if ($redis->get("zkb:420prone") == "true") exit();
 
@@ -12,9 +16,12 @@ if ($redis->get($redisKey) != true) {
     if (isset($scope['refreshToken'])) {
         $refreshToken = $scope['refreshToken'];
         $params = ['redis' => $redis];
-        CrestSSO::getAccessTokenCallback($guzzler, $refreshToken, "accessTokenDone", "fail", $params);
-        $guzzler->finish();
-        $redis->del("zkb:monocled");
+        $accessToken = $sso->getAccessToken($refreshToken);
+        $content = $sso->doCall("$esiServer/v6/characters/$adminCharacter/wallet/journal/", [], $accessToken);
+        if ($content != "") {
+            success($params, $content);
+            $redis->del("zkb:monocled");
+        }
     }
 }
 
@@ -25,25 +32,7 @@ foreach ($rows as $row) {
     $mdb->set("payments", $row, ['isk' => (double) $row['amount'], 'characterID' => (int) $row['ownerID1'], 'dttm' => new MongoDate($time)]);
 }
 
-function accessTokenDone(&$guzzler, &$params, $content)
-{
-    global $esiServer, $adminCharacter;
-
-    $response = json_decode($content, true);
-    $accessToken = $response['access_token'];
-    $url = "$esiServer/characters/$adminCharacter/wallet/journal/";
-
-    $params['content'] = $content;
-    $headers = [];
-    $headers['Content-Type'] = 'application/json';
-    $headers['Authorization'] = "Bearer $accessToken";
-
-    $url = "$esiServer/v6/characters/$adminCharacter/wallet/journal/";
-
-    $guzzler->call($url, "success", "fail", $params, $headers, 'GET');
-}
-
-function success(&$guzzler, &$params, $content)
+function success(&$params, $content)
 {
     if ($content == "") return;
 
@@ -52,11 +41,6 @@ function success(&$guzzler, &$params, $content)
     applyBalances();
     $redis = $params['redis'];
     $redis->setex("zkb:walletCheck", 3600, "true");
-}
-
-function fail(&$guzzler, &$params, $ex)
-{
-    Util::out("Failed making wallet call: " . $ex->getCode() . " " . $ex->getMessage());
 }
 
 function applyBalances()

@@ -52,7 +52,6 @@ $(document).ready(function() {
         addPartials();
         console.log($(location).attr('pathname'));
     }*/
-    //knowledgeCheck();
 });
 
 function htmlNotify (data) 
@@ -321,6 +320,7 @@ function killListAd(doLoadSlots) {
 }
 
 function adBlockCheck() {
+    return;
     if (showAds != 0 && typeof fusetag == "undefined") {
         console.log("Ads are blocked :(");
         //$("#adsensetop, #adsensebottom").html('<a target="_new" href="https://zkillboard.com/cache/bypass/login/patreon/"><img src="/img/patreon_lg.jpg"></a>');
@@ -346,33 +346,13 @@ function annoyAdBlockers() {
 var now = time();
 var today = now - (now % 86400);
 var week = now - (now % 604800);
-function knowledgeCheck() {
-return;
-    if (typeof window.obsstudio != 'undefined') return;
-    if (!localStorage.getItem('knowledgecheck-' + week)) {
-        likeOMGwhereAREtheKILLMAILS();
-    }
-
-}
 
 function likeOMGwhereAREtheKILLMAILS() {
     if ($('#modalMessage').hasClass('in')) return;
     $(document).blur();
-    $('#modalMessageBody').html('<h4>zKillboard does NOT automatically get all killmails</h4><p>zKillboard does not get all killmails automatically. CCP does not make killmails public. They must be provided by various means.</p><ul><li>Someone manually posts the killmail.</li><li>A character has authorized zKillboard to retrieve their killmails.</li><li>A corporation director or CEO has authorized zKillboard to retrieve their corporation\'s killmails.</li><li>War killmail (victim and final blow have a Concord sanctioned war with each other)</li></ul><p>The killmail API works just like killmails do in game. The victim gets the killmail, and the person with the finalblow gets the killmail. Therefore, for zKillboard to be able to retrieve the killmail via API it must have the character or corporation API submitted for the victim or the person with the final blow. If an NPC gets the final blow, the last character to aggress to the victim will receive the killmail and credit for the final blow.</p><p>Remember, every PVP killmail has two sides, the victim and the aggressors. Victims often don\'t want their killmails to be made public, however, the aggressors do.</p><btn onclick="okIgetit();" class="btn btn-success btn-block">OK</btn>');
+    $('#modalMessageBody').html('<h4>zKillboard does NOT automatically get all killmails</h4><p>zKillboard does not get all killmails automatically. CCP does not make killmails public. They must be provided by various means.</p><ul><li>Someone manually posts the killmail.</li><li>A character has authorized zKillboard to retrieve their killmails.</li><li>A corporation director or CEO has authorized zKillboard to retrieve their corporation\'s killmails.</li><li>War killmail (victim and final blow have a Concord sanctioned war with each other)</li></ul><p>The killmail API works just like killmails do in game. The victim gets the killmail, and the person with the finalblow gets the killmail. Therefore, for zKillboard to be able to retrieve the killmail via API it must have the character or corporation API submitted for the victim or the person with the final blow. If an NPC gets the final blow, the last character to aggress to the victim will receive the killmail and credit for the final blow.</p><p>Remember, every PVP killmail has two sides, the victim and the aggressors. Victims often don\'t want their killmails to be made public, however, the aggressors do.</p>');
     $('#modalCloseButton').hide();
     $('#modalMessage').modal({backdrop: 'static', keyboard: false, show: true});
-}
-
-function okIgetit() {
-    console.log('*sigh*');
-    $('#modalCloseButton').show();
-    $('#modalMessage').modal('hide');
-    try {
-        localStorage.setItem('knowledgecheck-' + week, true);
-    } catch (e) {
-        console.log(e);
-        alert('Something prevented the site from saving that you acknowledged the popup...');
-    }
 }
 
 function time() {

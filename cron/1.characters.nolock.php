@@ -1,8 +1,13 @@
 <?php
 
+pcntl_fork();
+pcntl_fork();
+
 use cvweiss\redistools\RedisTimeQueue;
 
 require_once "../init.php";
+
+$sso = EveOnlineSSO::getSSO();
 
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:noapi") == "true") exit();
@@ -18,14 +23,12 @@ if (date('i') == 22 || $esi->size() < 100) {
 }
 if ($esi->size() == 0) exit();
 
-$guzzler = new Guzzler($esiCharKillmails, 5);
-
 $bumped = [];
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $charID = $esi->next(false);
     if ($charID > 0) {
-        $row = $mdb->findDoc("scopes", ['characterID' => (int) $charID, 'scope' => "esi-killmails.read_killmails.v1"], ['lastFetch' => 1]);
+        $row = $mdb->findDoc("scopes", ['characterID' => (int) $charID, 'scope' => "esi-killmails.read_killmails.v1", "oauth2" => true], ['lastFetch' => 1]);
         if ($row != null) {
             $corpID = (int) Info::getInfoField("characterID", $charID, "corporationID");
             $row['corporationID'] = $corpID;
@@ -45,52 +48,31 @@ while ($minute == date('Hi')) {
             if (!$hasRecent && @$row['lastFetch']->sec != 0 && (($charID % 24) != date('H'))) continue;
 
             // Give corporation checks priority
-            if ($esiCorp->pending() > $ssoThrottle) $guzzler->sleep(0, ceil(1000000 / max(1, $ssoThrottle)));
+            if ($esiCorp->pending() > $ssoThrottle) sleep(1);
 
             $params = ['row' => $row, 'esi' => $esi];
             $refreshToken = $row['refreshToken'];
-            $content = $redis->get("auth:$charID:$refreshToken");
-            if ($content !== false) {
-                accessTokenDone($guzzler, $params, $content, false);
-                continue;
+            $accessToken = $redis->get("oauth2:$charID:$refreshToken");
+            if ($accessToken == null) {
+                $accessToken = $sso->getAccessToken($refreshToken);
+                if (isset($accessToken['error'])) {
+                    $mdb->remove("scopes", $row);
+                    sleep(1);
+                    continue;
+                }
+                $redis->setex("oauth2:$charID:$refreshToken", 900, $accessToken);
             }
-
-            CrestSSO::getAccessTokenCallback($guzzler, $refreshToken, "accessTokenDone", "accessTokenFail", $params);
+            $killmails = $sso->doCall("$esiServer/v1/characters/$charID/killmails/recent/", [], $accessToken);
+            success(['row' => $row, 'esi' => $esi], $killmails);
         } else {
             $esi->remove($charID);
         }
     } else {
-        $guzzler->sleep(1);
+        sleep(1);
     }
 }
-$guzzler->finish();
 
-
-function accessTokenDone(&$guzzler, &$params, $content, $cacheIt = true)
-{
-    global $ccpClientID, $ccpSecret, $redis, $esiServer;
-
-    $row = $params['row'];
-    $charID = $row['characterID'];
-    $refreshToken = $row['refreshToken'];
-    if ($cacheIt == true) {
-        $redis->setex("auth:$charID:$refreshToken", 1100, $content);
-    }
-
-    $response = json_decode($content, true);
-    $accessToken = $response['access_token'];
-    $params['content'] = $content;
-
-    $headers = [];
-    $headers['Content-Type'] ='application/json';
-    $headers['Authorization'] = "Bearer $accessToken";
-    $headers['etag'] = true;
-
-    $url = "$esiServer/v1/characters/$charID/killmails/recent/";
-    $guzzler->call($url, "success", "fail", $params, $headers, 'GET');
-}
-
-function success($guzzler, $params, $content) 
+function success($params, $content) 
 {
     global $mdb, $redis;
 
@@ -99,6 +81,15 @@ function success($guzzler, $params, $content)
 
     $newKills = 0;
     $kills = $content == "" ? [] : json_decode($content, true);
+    if (!is_array($kills)) {
+        print_r($kills);
+        return;
+    }
+    if (isset($kills['error'])) {
+        // Something went wrong, reset it and try again later
+        $esi->add($row['characterID'], 0);
+        return;
+    }
     foreach ($kills as $kill) {
         $killID = $kill['killmail_id'];
         $hash = $kill['killmail_hash'];
@@ -150,70 +141,11 @@ function addMail($killID, $hash)
     $exists = $mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash]);
     if (!$exists) {
         try {
-	    $mdb->save('crestmails', ['killID' => $killID, 'hash' => $hash, 'processed' => false]);
-            //$mdb->getCollection('crestmails')->save(['killID' => (int) $killID, 'hash' => $hash, 'processed' => false]);
+            $mdb->save('crestmails', ['killID' => $killID, 'hash' => $hash, 'processed' => false]);
             return 1;
         } catch (MongoDuplicateKeyException $ex) {
             // ignore it *sigh*
         }
     }
     return 0;
-}
-
-function fail($guzzer, $params, $ex) 
-{
-    global $mdb;
-
-    $row = $params['row'];
-    $esi = $params['esi'];
-    $charID = $row['characterID'];
-    $code = $ex->getCode();
-
-    $json = json_decode($params['content'], true);
-    $code = isset($json['sso_status']) ? $json['sso_status'] : $code;
-
-    switch ($code) {
-        case 400: // Server timed out during SSO authentication
-        case 420:
-        case 500:
-        case 502: // Server error, try again in 5 minutes
-        case 503:
-        case 504: // gateway timeout
-        case "": // typically a curl timeout error
-            //Util::out("killmail char $charID: " . $ex->getMessage() . "\nkillmail content: " . $params['content']);
-            $esi->setTime($charID, time() + 30);
-            break;
-        case 403: // Server decided to throw a 403 during SSO authentication when that throws a 502...
-        default:
-            Util::out("killmail char $charID: " . $ex->getMessage() . "\nkillmail content: " . $params['content']);
-    }
-}
-
-function accessTokenFail(&$guzzler, &$params, $ex)
-{
-    global $mdb;
-
-    $row = $params['row'];
-    $esi = $params['esi'];
-    $charID = $row['characterID'];
-    $code = $ex->getCode();
-
-    $json = json_decode($params['content'], true);
-    if (@$json['error'] == 'invalid_grant' || @$json['error'] == 'invalid_token' || $code == 403) {
-        Util::out("Removing invalid refresh token for $charID");
-        $mdb->remove("scopes", ['characterID' => (int) $charID]);
-        $esi->remove($charID);
-        return;
-    }
-
-    switch ($code) {
-        case 403: // A 403 without an invalid_grant isn't valid
-        case 500:
-        case 502: // Server error, try again in 5 minutes
-        case "": // typically a curl timeout error
-            $esi->setTime($charID, time() + 30);
-            break;
-        default:
-            Util::out("char token: $charID " . $ex->getMessage() . "\n\n" . $params['content']);
-    }
 }

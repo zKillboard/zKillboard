@@ -254,6 +254,11 @@ $app->get('/ccpsavefit/:killID/', function ($killID) use ($app) {
         include 'view/ccpsavefit.php';
         });
 
+// EVE Online OAUTH2
+$app->get('/ccpoauth2/', function()  use ($app) {
+        include 'view/ccpoauth2.php';
+    });
+
 // Patreon
 $app->get('/cache/bypass/login/patreon/', function () use ($app) {
         include 'view/patreonlogin.php';

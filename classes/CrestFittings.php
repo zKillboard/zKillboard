@@ -11,11 +11,13 @@ class CrestFittings
             return ['message' => 'You should probably try logging into zKillboard first.'];
         }
         if ($redis->get("tqCountInt") < 100) return ['message' => "TQ doesn't appear to be online. Try again later."];
+
         $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => 'esi-fittings.write_fittings.v1']);
         if ($row == null) {
             return ['message' => 'You have not given zkillboard permission to save fits to your account.'];
         }
-        $accessToken = CrestSSO::getAccessToken($charID, 'none', $row['refreshToken']);
+        $sso = EveOnlineSSO::getSSO();
+        $accessToken = $sso->getAccessToken($row['refreshToken']);
 
         $killmail = Kills::getEsiKill($killID);
         $victim = $killmail['victim'];
