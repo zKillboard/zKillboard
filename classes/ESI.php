@@ -1,62 +1,83 @@
 <?php
 
-use cvweiss\redistools\RedisTimeQueue;
-use cvweiss\redistools\RedisTtlCounter;
-
 class ESI {
 
-    public static function curl($url, $fields = [], $accessToken = null, $callType = 'GET')
+    public static function saveFitting($killID, $charID = 0)
     {
-        $esiCalls = new RedisTtlCounter('ttlc:esiCalls', 10);
-        while ($esiCalls->count() > 400) sleep(1);
-        $esiCalls->add(uniqid());
+        global $mdb, $esiServer, $redis;
 
-        $callType = strtoupper($callType);
-        $headers = $accessToken == null ? [] : ['Authorization: Bearer ' . $accessToken];
+        $charID = $charID == 0 ? User::getUserID() : $charID;
+        if ($charID == 0) {
+            return ['message' => 'You should probably try logging into zKillboard first.'];
+        }
+        if ($redis->get("tqCountInt") < 100) return ['message' => "TQ doesn't appear to be online. Try again later."];
 
-        $url = $callType != 'GET' ? $url : $url . "?" . self::buildParams($fields);
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_USERAGENT, "curl fetcher for zkillboard.com");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120); 
-        curl_setopt($ch, CURLOPT_TIMEOUT, 400); //timeout in seconds
-        switch ($callType) {
-            case 'DELETE':
-            case 'PUT':
-            case 'POST_JSON':
-                $headers[] = "Content-Type: application/json";
-                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(empty($fields) ? (object) NULL : $fields, JSON_UNESCAPED_SLASHES));
-                $callType = $callType == 'POST_JSON' ? 'POST' : $callType;
-                break;
-            case 'POST':
-                curl_setopt($ch, CURLOPT_POSTFIELDS, self::buildParams($fields));
-                break;
+        $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => 'esi-fittings.write_fittings.v1']);
+        if ($row == null) {
+            return ['message' => 'You have not given zkillboard permission to save fits to your account.'];
         }
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $callType);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        $result = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($httpCode != 200 && $httpCode != 201) {
-            $esiFailure = new RedisTtlCounter('ttlc:esiFailure', 300);
-            $esiFailure->add(uniqid());
-            $retValue = ['error' => true, 'httpCode' => $httpCode, 'content' => $result];
-            return json_encode($retValue);
+        $sso = EveOnlineSSO::getSSO();
+        $accessToken = $sso->getAccessToken($row['refreshToken']);
+
+        $killmail = Kills::getEsiKill($killID);
+        $victim = $killmail['victim'];
+
+        header('Content-Type: application/json');
+
+        $export = [];
+        $charName = Info::getInfoField('characterID', (int) @$victim['character_id'], 'name');
+        $shipName = Info::getInfoField('shipTypeID', $victim['ship_type_id'], 'name');
+        $export['name'] = $charName == "" ? "$shipName" : "$charName's $shipName";
+        $export['description'] = "Imported from https://zkillboard.com/kill/$killID/";
+        $export['ship_type_id'] = $victim['ship_type_id'];
+
+        $items = $victim['items'];
+        $export['items'] = [];
+        foreach ($items as $item) {
+            $flag = $item['flag'];
+            if (!self::isFit($flag)) {
+                continue;
+            }
+
+            $nextItem = [];
+            $nextItem ['flag'] = $flag;
+            $nextItem['quantity'] = @$item['quantity_dropped'] + @$item['quantity_destroyed'];
+            $nextItem['type_id'] = $item['item_type_id'];
+
+            $export['items'][] = $nextItem;
         }
-        $esiSuccess = new RedisTtlCounter('ttlc:esiSuccess', 300);
-        $esiSuccess->add(uniqid());
-        return $result;
+        if (sizeof($export['items']) == 0) {
+            return ['message' => 'Cannot save this fit, no hardware.'];
+        }
+
+        $sso = EveOnlineSSO::getSSO();
+        $result = $sso->doCall($esiServer . "/v1/characters/$charID/fittings/", $export, $accessToken, 'POST_JSON');
+        if ($result != "") {
+            $json = json_decode($result, true);
+            if (isset($json['fitting_id'])) return ['message' => "Fit successfully saved to your character's fittings."];
+        }
+        return ['message' => "Something went wrong trying to save that fit..."];            
     }
 
-    public static function buildParams($fields)
+    private static $infernoFlags = array(
+            //5 => array(5,5), // Cargo
+            12 => array(27, 34), // Highs
+            13 => array(19, 26), // Mids
+            11 => array(11, 18), // Lows
+            87 => array(87, 87), // Drones
+            //133 => array(133, 133), // Fuel Bay
+            2663 => array(92, 98), // Rigs
+            3772 => array(125, 132), // Subs
+            );
+
+    public static function isFit($flag)
     {
-        $string = "";
-        foreach ($fields as $field=>$value) {
-            $string .= $string == "" ? "" : "&";
-            $string .= "$field=" . rawurlencode($value);
+        foreach (self::$infernoFlags as $range) {
+            if ($flag >= $range[0] && $flag <= $range[1]) {
+                return true;
+            }
         }
-        return $string;
+
+        return false;
     }
 }

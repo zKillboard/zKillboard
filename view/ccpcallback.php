@@ -15,10 +15,23 @@ $scopes = explode(' ', $userInfo['scopes']);
 $refresh_token = $userInfo['refreshToken'];
 $access_token = $userInfo['accessToken'];
 
+// Lookup the character details in the DB.
+$userdetails = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $charID]);
+if (!isset($userdetails['name'])) {
+    if ($userdetails == null) {
+        $mdb->save('information', ['type' => 'characterID', 'id' => $charID, 'name' => $response->CharacterName]);
+    }
+}
+$mdb->removeField('information', ['type' => 'characterID', 'id' => $charID], 'lastApiUpdate'); // force an api update
 $rtq = new RedisTimeQueue("zkb:characterID", 86400);
 $rtq->add($charID, -1);
 
-sleep(2);
+// Wait for the API update
+unset($userdetails['lastApiUpdate']);
+while (!isset($userdetails['lastApiUpdate'])) {
+    usleep(100000); // 1/10th of a second
+    $userdetails = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $charID]);
+}
 $corpID = Info::getInfoField("characterID", $charID, "corporationID");
 
 // Clear out existing scopes
@@ -50,6 +63,20 @@ foreach ($scopes as $scope) {
     }
 }
 
+// Ensure we have admin character scopes saved, if not, redirect to retrieve them
+if ($charID == $adminCharacter) {
+    $neededScopes = ['esi-wallet.read_character_wallet.v1', 'esi-wallet.read_corporation_wallets.v1', 'esi-mail.send_mail.v1'];
+    $doRedirect = false;
+    foreach ($neededScopes as $neededScope) {
+        if ($mdb->count("scopes", ['characterID' => $charID, 'scope' => $neededScope]) == 0) $doRedirect = true;
+    }
+    if ($doRedirect) {
+        $sso = EveOnlineSSO::getSSO($neededScopes);
+        header('Location: ' . $sso->getLoginURL($_SESSION), 302);
+        exit();
+    }
+}
+
 ZLog::add("Logged in: $charName", $charID, true);
 unset($_SESSION['oauth2State']);
 
@@ -60,5 +87,24 @@ $redis->setex("$key:scopes", (86400 * 14), @$userInfo['scopes']);
 
 $_SESSION['characterID'] = $charID;
 $_SESSION['characterName'] = $charName;
+
+// Determine where to redirect the user
+$redirect = '/';
+$sessID = session_id();
+$forward = $redis->get("forward:$sessID");
+$redis->del("forward:$sessID");
+$loginPage = UserConfig::get('loginPage', 'character');
+if ($forward !== null) {
+    $redirect = $forward;
+} else {
+    $corpID = Info::getInfoField("characterID", $charID, "corporationID");
+    $alliID = Info::getInfoField("characterID", $charID, "allianceID");
+    if (@$_SESSION['patreon'] == true) $redirect = '/cache/bypass/login/patreon/';
+    elseif ($loginPage == "main") $redirect = "/";
+    elseif ($loginPage == 'character') $redirect = "/character/$charID/";
+    elseif ($loginPage == 'corporation' && $corpID > 0) $redirect = "/corporation/$corpID/";
+    elseif ($loginPage == 'alliance' && $alliID > 0) $redirect = "/alliance/$alliID/";
+    else $redirect = "/";
+}
 session_write_close();
-header('Location: /', 302);
+header('Location: ' . $redirect, 302);

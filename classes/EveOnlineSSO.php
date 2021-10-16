@@ -2,12 +2,15 @@
 
 class EveOnlineSSO
 {
-    public static function getSSO()
+    private static $defaultScopes = ['esi-killmails.read_killmails.v1', 'esi-killmails.read_corporation_killmails.v1', 'esi-fittings.write_fittings.v1'];
+
+    public static function getSSO($scopes = null)
     {
         global $ccpCallback, $ccpClientID, $ccpSecret;
 
-        $sso = new EveOnlineSSO($ccpClientID, $ccpSecret, $ccpCallback, ['esi-killmails.read_killmails.v1', 'esi-killmails.read_corporation_killmails.v1', 'esi-fittings.write_fittings.v1']);
-        return $sso;
+        if ($scopes === null) $scopes = self::$defaultScopes;
+
+        return new EveOnlineSSO($ccpClientID, $ccpSecret, $ccpCallback, $scopes, "zkillboard.com (Squizz Caphinator)");
     }
 
 
@@ -16,16 +19,18 @@ class EveOnlineSSO
     protected $callbackURL;
     protected $scopes;
     protected $state;
+    protected $userAgent;
 
     protected $loginURL = "https://login.eveonline.com/v2/oauth/authorize";
     protected $tokenURL = "https://login.eveonline.com/v2/oauth/token";
 
-    public function __construct($clientID, $secretKey, $callbackURL, $scopes = [])
+    public function __construct($clientID, $secretKey, $callbackURL, $scopes = [], $userAgent = null)
     {
         $this->clientID = $clientID;
         $this->secretKey = $secretKey;
         $this->callbackURL = $callbackURL;
         $this->scopes = $scopes;
+        $this->userAgent = ($userAgent === null ? $callbackURL : $userAgent);
     }
 
     public function createState()
@@ -156,7 +161,7 @@ class EveOnlineSSO
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_USERAGENT, $this->callbackURL);
+        curl_setopt($ch, CURLOPT_USERAGENT, $this->userAgent);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);

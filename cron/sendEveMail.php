@@ -30,7 +30,7 @@ if (sizeof($mails)) {
 
         $mail['approved_cost'] = 10000;
         $url = "$esiServer/v1/characters/$evemailCharID/mail/";
-        $response = ESI::curl($url, $mail, $accessToken, 'POST_JSON');
+        $response = $sso->doCall($url, $mail, $accessToken, 'POST_JSON');
         $json = json_decode($response, true);
 
         $mail['sent'] = isset($json['error']) ? 'error' : true;
