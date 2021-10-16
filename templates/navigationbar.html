@@ -1,10 +1,3 @@
-{% if headerImage is defined %}
-	<div class="container">
-		<div class="navbar-header topimage">
-			<a href="/"><img src="{{ headerImage }}" alt=""></a>
-		</div>
-	</div>
-{% endif %}
 <div class="navbar navbar-default" style="margin-bottom: 0px;">
 	<div class="container">
 		<div class="navbar-header">
@@ -42,8 +35,10 @@
 						<li><a href="/kills/rorquals/">Rorquals</a></li>
 						<li><a href="/kills/supers/">Supers</a></li>
 						<li class="divider"></li>
+                        <li><a href="/top/lasthour/w-space/">Hourly Stats</a><li>
 						<li><a href="/ranks/recent/killers/">Top 10 Recent</a></li>
 						<li><a href="/ranks/alltime/killers/">Top 10 Alltime</a></li>
+                        <li><a href="/ztop/">zTop</a></li>
 					</ul>
 				</li>
 				<li class="dropdown hidden-xs hidden-sm" id="tracker-menu">
