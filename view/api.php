@@ -1,5 +1,7 @@
 <?php
 
+use cvweiss\redistools\RedisQueue;
+
 global $redis, $ip;
 
 header('Access-Control-Allow-Origin: *');
@@ -23,7 +25,6 @@ try {
         exit();
     }
 
-    $parameters = Util::convertUriToParameters();
     global $uri;
     if (strpos($uri, "/stats/") !== false) {
         throw new Exception("This is not the stats endpoint, refer to the documentation and build your URL properly.");
@@ -31,7 +32,18 @@ try {
     if (strpos($uri, "json") !== false) {
         throw new Exception("No need to refer to json, refer to the documentation and build your URL properly.");
     }
-    $return = Feed::getKills($parameters);
+
+    $parameters = Util::convertUriToParameters();
+    asort($parameters);
+
+    $key = md5(json_encode($parameters));
+    $redis->setex("zkb:api:params:$key", 61, serialize($parameters));
+    $redis->setex("zkb:api:status:$key", 60, "PENDING");
+    $redis->sadd("queueAPI", $key);
+    
+    while ($redis->get("zkb:api:status:$key") == "PENDING") usleep(100000);
+
+    $return = unserialize($redis->get("zkb:api:result:$key"));
 
     $array = array();
     foreach ($return as $json) {

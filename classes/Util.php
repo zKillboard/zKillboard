@@ -106,11 +106,6 @@ class Util
                 case 'zkbOnly':
                 case 'awox':
                 case 'abyssal':
-                case 'no-attackers':
-                case 'no-items':
-                case 'asc':
-                case 'desc':
-                case 'json':
                 case 'ganked':
                     $parameters[$key] = true;
                     break;
@@ -230,6 +225,13 @@ class Util
                     break;
                 case 'limit':
                     die("Due to abuse of the limit parameter to avoid caches the ability to modify limit has been revoked for all users");
+                case 'no-attackers':
+                case 'no-items':
+                case 'asc':
+                case 'desc':
+                case 'json':
+                    die("$key has been permanently disabled.");
+                    break;
                 case 'beforeKillID':
                 case 'afterKillID':
                     die("$key has been permanently disabled - please use page, RedisQ, the websocket, or the history endpoint instead.");
