@@ -99,9 +99,10 @@
 </div>
 
 <div class="col-lg-4">
-	    {% if extra.npcOnly %}
+	<a id='loginsideimage' href='/ccpoauth2/' class='btn btn-block'><img src='/img/ssologin.png' style='width: 100%'></a>
+	{% if extra.npcOnly %}
 		<div class="alert alert-info">This is an NPC Only killmail.<br/>It is not counted in statistics.</div>
-		{% endif %}
+	{% endif %}
         {% if 'padding' in killdata.info.labels %}
 		    <div class="alert alert-warning"><center>Killboard Padding<br/>It is not counted in statistics.</center></div>
         {% else %}
