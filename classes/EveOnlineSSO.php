@@ -126,8 +126,11 @@ class EveOnlineSSO
         $accessToken = $tokenJson['access_token'];
         $decoded = json_decode(base64_decode(str_replace('_', '/', str_replace('-', '+', explode('.', $accessToken)[1]))), true);
 
-        $accessToken = $tokenJson['access_token'];
-        $refreshToken = $tokenJson['refresh_token'];
+        $accessToken = @$tokenJson['access_token'];
+        $refreshToken = @$tokenJson['refresh_token'];
+
+        if (!isset($decoded['scp'])) $decoded['scp'] = 'publicData';
+        if (!is_array($decoded['scp'])) $decoded['scp'] = [$decoded['scp']];
 
         $retValue = [
             'characterID' => str_replace("CHARACTER:EVE:", "", $decoded['sub']),

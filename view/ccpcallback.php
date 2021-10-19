@@ -99,7 +99,10 @@ if ($forward !== null) {
 } else {
     $corpID = Info::getInfoField("characterID", $charID, "corporationID");
     $alliID = Info::getInfoField("characterID", $charID, "allianceID");
-    if (@$_SESSION['patreon'] == true) $redirect = '/cache/bypass/login/patreon/';
+    if (@$_SESSION['patreon'] == true) {
+        unset($_SESSION['patreon']);
+        $redirect = '/cache/bypass/login/patreon/';
+    }
     elseif ($loginPage == "main") $redirect = "/";
     elseif ($loginPage == 'character') $redirect = "/character/$charID/";
     elseif ($loginPage == 'corporation' && $corpID > 0) $redirect = "/corporation/$corpID/";
@@ -107,4 +110,8 @@ if ($forward !== null) {
     else $redirect = "/";
 }
 session_write_close();
+
+if (@$_SESSION['patreon'] == true) $redirect = '/cache/bypass/login/patreon/';
+if ($redirect == '') $redirect = '/';
+
 header('Location: ' . $redirect, 302);

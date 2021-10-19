@@ -259,6 +259,11 @@ $app->get('/ccpoauth2/', function()  use ($app) {
         include 'view/ccpoauth2.php';
     });
 
+// EVE Online OAUTH2
+$app->get('/ccpoauth2-360noscope/', function()  use ($app) {
+        include 'view/ccpoauth2-noscopes.php';
+    });
+
 // Patreon
 $app->get('/cache/bypass/login/patreon/', function () use ($app) {
         include 'view/patreonlogin.php';
