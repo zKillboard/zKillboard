@@ -1,5 +1,7 @@
 <?php
 
+$version = 0;
+
 $characters = [];
 $corporations = [];
 $alliances = [];
