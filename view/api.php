@@ -37,11 +37,15 @@ try {
     asort($parameters);
 
     $key = md5(json_encode($parameters));
-    $redis->setex("zkb:api:params:$key", 61, serialize($parameters));
-    $redis->setex("zkb:api:status:$key", 60, "PENDING");
-    $redis->sadd("queueAPI", $key);
+
+    $return = $redis->get("zkb:api:result:$key");
+    if ($return == null || $return == "") {
+        $redis->setex("zkb:api:params:$key", 61, serialize($parameters));
+        $redis->setex("zkb:api:status:$key", 60, "PENDING");
+        $redis->sadd("queueAPI", $key);
     
-    while ($redis->get("zkb:api:status:$key") == "PENDING") usleep(100000);
+        while ($redis->get("zkb:api:status:$key") == "PENDING") usleep(100000);
+    }
 
     $return = unserialize($redis->get("zkb:api:result:$key"));
 
