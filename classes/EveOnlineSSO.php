@@ -156,6 +156,9 @@ class EveOnlineSSO
 
     public function doCall($url, $fields, $accessToken, $callType = 'GET')
     {
+        $statusType = self::getType($url);
+
+
         $callType = strtoupper($callType);
         $header = $accessToken !== null ? 'Authorization: Bearer ' . $accessToken : 'Authorization: Basic ' . base64_encode($this->clientID . ':' . $this->secretKey);
         $headers = [$header];
@@ -187,9 +190,11 @@ class EveOnlineSSO
         $result = curl_exec($ch);
 
         if (curl_errno($ch) !== 0) {
+            Status::addStatus($statusType, false);
             throw new \Exception(curl_error($ch), curl_errno($ch));
         }
 
+        Status::addStatus($statusType, true);
         return $result;
     }
 
@@ -201,5 +206,15 @@ class EveOnlineSSO
             $string .= "$field=" . rawurlencode($value);
         }
         return $string;
+    }
+
+    public function getType($uri)
+    {
+        if (strpos($uri, 'esi.evetech') !== false) return 'esi';
+        if (strpos($uri, 'esi.tech') !== false) return 'esi';
+        if (strpos($uri, 'login') !== false) return 'sso';
+        if (strpos($uri, 'evewho') !== false) return 'evewho';
+        Log::log("Unknown type for $uri");
+        return 'unknown';
     }
 }
