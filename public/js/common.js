@@ -1,14 +1,5 @@
 var ws;
 $(document).ready(function() {
-    //$('body').on('touchstart.dropdown', '.dropdown-menu', function (e) { e.stopPropagation(); });
-
-    if ($("[rel=tooltip]").length) {
-        $("[rel=tooltip]").tooltip({
-            placement: "bottom",
-            animation: false
-        });
-    }
-
     // add the autocomplete search thing
     $('#searchbox').zz_search( function(data, event) { window.location = '/' + data.type + '/' + data.id + '/'; event.preventDefault(); } );
 
@@ -22,7 +13,7 @@ $(document).ready(function() {
         $("#iframed").modal('show');
     }
 
-    // Send that CREST URL to the parser, allows the website to parse the killmail so that
+    // Send that ESI URL to the parser, allows the website to parse the killmail so that
     // it is ready for the user when they click submit
     $("#killmailurl").bind('paste', function(event) {
         setTimeout(sendCrestUrl, 1);
@@ -177,19 +168,6 @@ function sendCrestUrl() {
     $.get(url);
 }
 
-function addToolTip(el, msg) {
-    $('#tipmsg').html(msg);
-    var tt = $('#ttooltip').first();
-
-    var pos = el.offset();
-
-    tt.css({
-        position: 'absolute',
-        top: pos.top + 45,
-        left: pos.left - 200
-    }).addClass('active').removeClass('hidden');
-}
-
 function loadPartial(url) {
     setTimeout("doLoad('" + url + "');", 1);
     return false;
@@ -282,7 +260,6 @@ function curday()
 function commentUpVote(pageID, commentID) 
 {
     if (showAds == 0 || typeof fusetag != "undefined") $.ajax("/cache/bypass/comment/" + pageID + "/" + commentID + "/up/");
-    else annoyAdBlockers();
 }
 
 var adnumber = 0;
@@ -320,40 +297,22 @@ function killListAd(doLoadSlots) {
 }
 
 function adBlockCheck() {
-    return;
-    if (showAds != 0 && typeof fusetag == "undefined") {
-        console.log("Ads are blocked :(");
-        //$("#adsensetop, #adsensebottom").html('<a target="_new" href="https://zkillboard.com/cache/bypass/login/patreon/"><img src="/img/patreon_lg.jpg"></a>');
-        var today = curday();
-        if (!localStorage.getItem('adblocker-nag-' + today)) {
-            localStorage.setItem('adblocker-nag-' + today, true);
-            annoyAdBlockers();
-        }
-    }
+
+    if (showAds != 0 && typeof fusetag == "undefined") showAdblockedMessage();
+    setTimeout(checkTopAd, 6000);
 }
 
-function annoyAdBlockers() {
-    if (showAds != 0 && typeof fusetag == "undefined") {
-            $(this).blur();
-            $('#modalMessageBody').html('<h2>Would you kindly unblock ads?</h2><p>zKillboard shows minimal advertisements and the ads are designed to be non-intrusive of your viewing experience. Please support zKillboard by disabling your adblocker.</p><p><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p><p><a target="_new" href="https://www.patreon.com/zkillboard"><img src="/img/patreon_lg.jpg"></a></p><p><a target="_new" href="https://brave.com/zki349"><img src="//zkillboard.com/img/brave_switch.png" alt="Switch to the Brave Browser"></a></p>');
-            if (!$('#modalMessage').hasClass('in')) {
-                $('#modalCloseButton').show();
-                $('#modalMessage').modal({backdrop: true, keyboard: true, show: true});
-            }
-    }
+function checkTopAd() {
+    if (showAds != 0 && $("#publifttop").html() == "") setTimeout(showAdblockedMessage, 1);
+}
+
+function showAdblockedMessage() {
+    $("#publifttop").html('<h4>AdBlock Detected! :(</h2><p>Please support zKillboard by disabling your adblocker.<br/><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p>');
 }
 
 var now = time();
 var today = now - (now % 86400);
 var week = now - (now % 604800);
-
-function likeOMGwhereAREtheKILLMAILS() {
-    if ($('#modalMessage').hasClass('in')) return;
-    $(document).blur();
-    $('#modalMessageBody').html('<h4>zKillboard does NOT automatically get all killmails</h4><p>zKillboard does not get all killmails automatically. CCP does not make killmails public. They must be provided by various means.</p><ul><li>Someone manually posts the killmail.</li><li>A character has authorized zKillboard to retrieve their killmails.</li><li>A corporation director or CEO has authorized zKillboard to retrieve their corporation\'s killmails.</li><li>War killmail (victim and final blow have a Concord sanctioned war with each other)</li></ul><p>The killmail API works just like killmails do in game. The victim gets the killmail, and the person with the finalblow gets the killmail. Therefore, for zKillboard to be able to retrieve the killmail via API it must have the character or corporation API submitted for the victim or the person with the final blow. If an NPC gets the final blow, the last character to aggress to the victim will receive the killmail and credit for the final blow.</p><p>Remember, every PVP killmail has two sides, the victim and the aggressors. Victims often don\'t want their killmails to be made public, however, the aggressors do.</p>');
-    $('#modalCloseButton').hide();
-    $('#modalMessage').modal({backdrop: 'static', keyboard: false, show: true});
-}
 
 function time() {
     return Math.floor(Date.now() / 1000);
@@ -376,3 +335,7 @@ function otherBanners() {
     $("#otherBannerDiv").css('display', 'block');
     setTimeout(otherBanners, Math.min(30000, 1000 * (61 - new Date().getSeconds())));
 }
+
+/*
+<h4>zKillboard does NOT automatically get all killmails</h4><p>zKillboard does not get all killmails automatically. CCP does not make killmails public. They must be provided by various means.</p><ul><li>Someone manually posts the killmail.</li><li>A character has authorized zKillboard to retrieve their killmails.</li><li>A corporation director or CEO has authorized zKillboard to retrieve their corporation\'s killmails.</li><li>War killmail (victim and final blow have a Concord sanctioned war with each other)</li></ul><p>The killmail API works just like killmails do in game. The victim gets the killmail, and the person with the finalblow gets the killmail. Therefore, for zKillboard to be able to retrieve the killmail via API it must have the character or corporation API submitted for the victim or the person with the final blow. If an NPC gets the final blow, the last character to aggress to the victim will receive the killmail and credit for the final blow.</p><p>Remember, every PVP killmail has two sides, the victim and the aggressors. Victims often don\'t want their killmails to be made public, however, the aggressors do.</p>
+*/
