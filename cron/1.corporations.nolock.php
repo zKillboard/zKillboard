@@ -75,8 +75,13 @@ function success($params, $content)
 
     $newKills = 0;
     $kills = $content == "" ? [] : json_decode($content, true);
+    if (!is_array($kills)) {
+        print_r($kills);
+        return;
+    }
     if (isset($kills['error'])) {
-        $mdb->remove("scopes", $row);
+        // Something went wrong, reset it and try again later
+        $esi->add($row['characterID'], 0);
         return;
     }
     foreach ($kills as $kill) {
