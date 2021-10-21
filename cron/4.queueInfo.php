@@ -14,7 +14,6 @@ require_once '../init.php';
 global $queueSocial, $redisQAuthUser, $killBotWebhook;
 
 $queueInfo = new RedisQueue('queueInfo');
-$queuePublish = new RedisQueue('queuePublish');
 $queueApiCheck = new RedisQueue('queueApiCheck');
 $queueSocial = new RedisQueue('queueSocial');
 $queueStats = new RedisQueue('queueStats');
@@ -34,7 +33,6 @@ while ($minute == date('Hi')) {
         $queueRedisQ->push($killID);
         $queueDiscord->push($killID);
         $queueApiCheck->push($killID);
-        $queuePublish->push($killID);
 
         $mdb->set("killmails", ['killID' => $killID], ['processed' => true]);
         addActivity($killID);

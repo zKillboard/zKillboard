@@ -14,6 +14,7 @@ if ($redisQServer == null) {
 }
 
 $queueRedisQ = new RedisQueue('queueRedisQ');
+$queuePublish = new RedisQueue('queuePublish');
 
 $minute = date('Hi');
 while (date('Hi') == $minute) {
@@ -42,4 +43,5 @@ while (date('Hi') == $minute) {
         $queueRedisQ->push($killID);
         sleep(1);
     }
+    $queuePublish->push($killID);
 }
