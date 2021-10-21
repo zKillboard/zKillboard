@@ -76,7 +76,7 @@ class Guzzler
 
         $iterations = 0;
         while ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") {
-            Util:out("tqCountInt < 100 or 420ed is true");
+            Util::out("tqCountInt < 100 or 420ed is true");
             $this->tick();
             $this->sleep(1);
             $iterations++;
