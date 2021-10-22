@@ -71,7 +71,7 @@ class Trophies
         $groups = $mdb->find('information', ['type' => 'groupID', 'cacheTime' => 3600], ['name' => 1]);
 
         foreach ($groups as $row) {
-            if (@$row['categoryID'] != 6) {
+            if (@$row['categoryID'] != 6 || @$row['published'] != true) {
                 continue;
             }
             $groupID = (int) $row['id'];
