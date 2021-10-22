@@ -1,6 +1,5 @@
 <?php
 
-pcntl_fork();
 
 use cvweiss\redistools\RedisTimeQueue;
 
