@@ -78,7 +78,6 @@ $twig->addGlobal('tqStatus', $redis->get('tqStatus'));
 $twig->addGlobal('tqCount', $redis->get('tqCount'));
 
 $twig->addGlobal('apiStatus', $redis->get('tq:apiStatus'));
-$twig->addGlobal('crestServer', $crestServer);
 
 $twig->addGlobal('siteurl', $baseAddr);
 $twig->addGlobal('fullsiteurl', $fullAddr);

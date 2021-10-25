@@ -31,7 +31,6 @@ $redisPort = 6379;
 // External Servers
 $apiServer = 'https://api.eveonline.com/';
 $imageServer = 'https://imageserver.eveonline.com/';
-$crestServer = 'https://crest-tq.eveonline.com';
 
 // Base
 $baseFile = __FILE__;
