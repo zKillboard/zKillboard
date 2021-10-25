@@ -48,11 +48,17 @@ while ($minute == date('Hi')) {
             $accessToken = $redis->get("oauth2:$charID:$refreshToken");
             if ($accessToken == null) {
                 $accessToken = $sso->getAccessToken($refreshToken);
-                if (isset($accessToken['error'])) {
+                if (@$accessToken['error'] == "invalid_grant") {
                     $mdb->remove("scopes", $row);
                     sleep(1);
                     continue;
                 }
+                /*if (@$accessToken['error'] != "") {
+                    Log::log(print_r($accessToken, true));
+                    //$mdb->remove("scopes", $row);
+                    sleep(1);
+                    continue;
+                }*/
                 $redis->setex("oauth2:$charID:$refreshToken", 900, $accessToken);
             }
             $killmails = $sso->doCall("$esiServer/v1/corporations/$corpID/killmails/recent/", [], $accessToken);
