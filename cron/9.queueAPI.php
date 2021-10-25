@@ -15,7 +15,11 @@ while ($minute == date('Hi')) {
     $serial = $redis->get("zkb:api:params:$key");
     $parameters = unserialize($serial);
 
-    $result = Feed::getKills($parameters);
+    try {
+        $result = Feed::getKills($parameters);
+    } catch (Exception $e) {
+        $result = ['error' => $e->getMessage()];
+    }
 
     $redis->setex("zkb:api:result:$key", 3600, serialize($result));
     $redis->del("zkb:api:status:$key");
