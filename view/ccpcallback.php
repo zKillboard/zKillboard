@@ -124,6 +124,11 @@ try {
     header('Location: ' . $redirect, 302);
 
 } catch (Exception $e) {
-    Log::log(print_r($e, true));
-    return $app->render('error.html', ['message' => $e->getMessage()], 503);
+    if ($e->getMessage() == "Invalid state returned - possible hijacking attempt") {
+        if ($_SESSION['characterID'] > 0) $app->redirect('/', 302);
+        else $app->render('error.html', ['message' => "Please try logging in again, but don't double/triple click this time. CCP's login form isn't very good at handling multiple clicks... "], 503);
+    } else {
+        Log::log(print_r($e, true));
+        return $app->render('error.html', ['message' => $e->getMessage()], 503);
+    }
 }
