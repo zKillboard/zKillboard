@@ -33,17 +33,29 @@
         <div class="alert alert-success"><center><a href='/ztop/'>Universe is Updating</a></center></div><br/>
         {% endif %}
     <div>
-    <div style='background-color: black;' class='col-12'> 
-        <a id='loginsideimage' href='/ccpoauth2/' class='btn btn-block collapse'><img src='/img/ssologin.png' style='width: 100%'></a>
-        <a href='https://discord.gg/sV2kkwg8UD' target='_new' class='btn bn-success btn-block' style='background-color: #6E85D2; color: white;'>Discord</a>
-        <a href='/cache/bypass/login/patreon/' class='btn bn-success btn-block' style='background-color: #FC3400; color: white;'>Patreon</a>
-        {% if showTwitch == true %}
-            <a href='https://twitch.tv/zkillofficial' target='_new' class='btn bn-success btn-block' style='background-color: #6441A4; color: white;'>Twitch</a>
-        {% endif %}
-        <a href='https://www.zazzle.com/store/zkillboard/products' target='_new' class='btn bn-success btn-block' style='background-color: #0098FF; color: white;'>Merchandise</a>
-        <a href='http://store.markeedragon.com/affiliate.php?id=928&redirect=index.php?cat=4' target='_new' class='btn bn-success btn-block' style='background-color: #223800; color: white;'>GTC &amp; Plex<br/>Promo "zkill" 3% Off</a>
-    </div>
-    <!---<div  id='contest' class='' style='width: 100%; background-color: black;"><a onclick="$('#login-modal').modal(); return false;" href="#"><h3>Login to Win!</h3><p>Astero Scope Syndication YC122 SKIN</p><p><img style='width: 175px;' src="/img/astero.png"></a></p><p><a style="cursor: pointer;" onclick="$('#login-modal').modal(); return false;">Click for more details.</a></p><p id='contest-logged-in' class='hidden alert alert-info'>You are logged in and therefore already entered, if you win you will receive an evemail!</p><hr/></div>-->
+        <center>
+            <div style='background-color: black;' class='col-12'> 
+                <a id='loginsideimage' href='/ccpoauth2/' class='btn btn-block collapse'><img src='/img/ssologin.png' style='width: 100%'></a>
+                <div  id='contest' class='d-none' style='width: 100%; background-color: black;'>
+                    <h3>Login to Win!</h3>
+                    <p>Various Scope Syndication YC122 SKINs</p>
+                    <p>
+                        <a onclick="$('#login-modal').modal(); return false;" href="#">
+                            <img style='width: 175px;' src="/img/astero.png">
+                        </a>
+                    </p>
+                    <small><i>If you are already logged in then you have been entered into the contest just by viewing this page.<br/>Winners selected on Mondays.</i></small>
+                </div>
+                <hr/>
+                <a href='https://discord.gg/sV2kkwg8UD' target='_new' class='btn bn-success btn-block' style='background-color: #6E85D2; color: white;'>Discord</a>
+                <a href='/cache/bypass/login/patreon/' class='btn bn-success btn-block' style='background-color: #FC3400; color: white;'>Patreon</a>
+                {% if showTwitch == true %}
+                    <a href='https://twitch.tv/zkillofficial' target='_new' class='btn bn-success btn-block' style='background-color: #6441A4; color: white;'>Twitch</a>
+                {% endif %}
+                <a href='https://www.zazzle.com/store/zkillboard/products' target='_new' class='btn bn-success btn-block' style='background-color: #0098FF; color: white;'>Merchandise</a>
+                <a href='http://store.markeedragon.com/affiliate.php?id=928&redirect=index.php?cat=4' target='_new' class='btn bn-success btn-block' style='background-color: #223800; color: white;'>GTC &amp; Plex<br/>Promo "zkill" 3% Off</a>
+            </div>
+        </center>
     <hr/>
     <center>
         <div class="pull-left" style='width: 33%'><figure><a href='https://evewho.com' target='_blank'><img src="https://image.eveonline.com/Character/1_64.jpg" style="height: 16px; width: 16px;"><figcaption>EveWho</figcaption></a></figure></div>
@@ -64,6 +76,8 @@
 	{% include 'components/donations.html' %}
 </div>
 </div>
+
+<div class="brd"></div>
 
 {% endblock %}
 

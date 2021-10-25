@@ -4,114 +4,126 @@ use cvweiss\redistools\RedisTimeQueue;
 
 global $mdb, $redis, $adminCharacter;
 
-$sso = EveOnlineSSO::getSSO();
-$code = filter_input(INPUT_GET, 'code');
-$state = filter_input(INPUT_GET, 'state');
-$userInfo = $sso->handleCallback($code, $state, $_SESSION);
+try {
+    $scopeCount = 0;
 
-$charID = (int) $userInfo['characterID'];
-$charName = $userInfo['characterName'];
-$scopes = explode(' ', $userInfo['scopes']);
-$refresh_token = $userInfo['refreshToken'];
-$access_token = $userInfo['accessToken'];
+    $sso = EveOnlineSSO::getSSO();
+    $code = filter_input(INPUT_GET, 'code');
+    $state = filter_input(INPUT_GET, 'state');
+    $userInfo = $sso->handleCallback($code, $state, $_SESSION);
 
-// Lookup the character details in the DB.
-$userdetails = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $charID]);
-if (!isset($userdetails['name'])) {
-    if ($userdetails == null) {
-        $mdb->save('information', ['type' => 'characterID', 'id' => $charID, 'name' => $response->CharacterName]);
-    }
-}
-$mdb->removeField('information', ['type' => 'characterID', 'id' => $charID], 'lastApiUpdate'); // force an api update
-$rtq = new RedisTimeQueue("zkb:characterID", 86400);
-$rtq->add($charID, -1);
+    $charID = (int) $userInfo['characterID'];
+    $charName = $userInfo['characterName'];
+    $scopes = explode(' ', $userInfo['scopes']);
+    $refresh_token = $userInfo['refreshToken'];
+    $access_token = $userInfo['accessToken'];
 
-// Wait for the API update
-unset($userdetails['lastApiUpdate']);
-while (!isset($userdetails['lastApiUpdate'])) {
-    usleep(100000); // 1/10th of a second
+    // Lookup the character details in the DB.
     $userdetails = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $charID]);
-}
-$corpID = Info::getInfoField("characterID", $charID, "corporationID");
-
-// Clear out existing scopes
-if ($charID != $adminCharacter) $mdb->remove("scopes", ['characterID' => $charID]);
-
-foreach ($scopes as $scope) {
-    if ($scope == "publicData") continue;
-    $row = ['characterID' => $charID, 'scope' => $scope, 'refreshToken' => $refresh_token, 'oauth2' => true];
-    if ($mdb->count("scopes", ['characterID' => $charID, 'scope' => $scope]) == 0) {
-        try {
-            $mdb->save("scopes", $row);
-        } catch (Exception $ex) {}
+    if (!isset($userdetails['name'])) {
+        if ($userdetails == null) {
+            $mdb->save('information', ['type' => 'characterID', 'id' => $charID, 'name' => "character_id $charID"]);
+        }
     }
-    switch ($scope) {
-        case 'esi-killmails.read_killmails.v1':
-            $esi = new RedisTimeQueue('tqApiESI', 3600);
-            // // Do this first, prevents race condition if charID already exists
-            // If a user logs in, check their api for killmails right away
-            $esi->setTime($charID, 0);
+    $mdb->removeField('information', ['type' => 'characterID', 'id' => $charID], 'lastApiUpdate'); // force an api update
+    $rtq = new RedisTimeQueue("zkb:characterID", 86400);
+    $rtq->add($charID, -1);
 
-            // If we didn't already have their api, this will add it and it will be
-            // checked right away as well
-            $esi->add($charID);
-            break;
-        case 'esi-killmails.read_corporation_killmails.v1':
-            $esi = new RedisTimeQueue('tqCorpApiESI', 3600);
-            if ($corpID > 1999999) $esi->add($corpID);
-            break;
+    // Wait for the API update
+    unset($userdetails['lastApiUpdate']);
+    while (!isset($userdetails['lastApiUpdate'])) {
+        usleep(100000); // 1/10th of a second
+        $userdetails = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $charID]);
     }
-}
-
-// Ensure we have admin character scopes saved, if not, redirect to retrieve them
-if ($charID == $adminCharacter) {
-    $neededScopes = ['esi-wallet.read_character_wallet.v1', 'esi-wallet.read_corporation_wallets.v1', 'esi-mail.send_mail.v1'];
-    $doRedirect = false;
-    foreach ($neededScopes as $neededScope) {
-        if ($mdb->count("scopes", ['characterID' => $charID, 'scope' => $neededScope]) == 0) $doRedirect = true;
-    }
-    if ($doRedirect) {
-        $sso = EveOnlineSSO::getSSO($neededScopes);
-        header('Location: ' . $sso->getLoginURL($_SESSION), 302);
-        exit();
-    }
-}
-
-ZLog::add("Logged in: $charName", $charID, true);
-unset($_SESSION['oauth2State']);
-
-$key = "login:$charID:" . session_id();
-$redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);
-$redis->setex("$key:accessToken", 1000, $access_token);
-$redis->setex("$key:scopes", (86400 * 14), @$userInfo['scopes']);
-
-$_SESSION['characterID'] = $charID;
-$_SESSION['characterName'] = $charName;
-
-// Determine where to redirect the user
-$redirect = '/';
-$sessID = session_id();
-$forward = $redis->get("forward:$sessID");
-$redis->del("forward:$sessID");
-$loginPage = UserConfig::get('loginPage', 'character');
-if ($forward !== null) {
-    $redirect = $forward;
-} else {
     $corpID = Info::getInfoField("characterID", $charID, "corporationID");
-    $alliID = Info::getInfoField("characterID", $charID, "allianceID");
-    if (@$_SESSION['patreon'] == true) {
-        unset($_SESSION['patreon']);
-        $redirect = '/cache/bypass/login/patreon/';
+
+    // Clear out existing scopes
+    if ($charID != $adminCharacter) $mdb->remove("scopes", ['characterID' => $charID]);
+
+    foreach ($scopes as $scope) {
+        if ($scope == "publicData") continue;
+        $row = ['characterID' => $charID, 'scope' => $scope, 'refreshToken' => $refresh_token, 'oauth2' => true];
+        if ($mdb->count("scopes", ['characterID' => $charID, 'scope' => $scope]) == 0) {
+            try {
+                $mdb->save("scopes", $row);
+                $scopeCount++;
+            } catch (Exception $ex) {}
+        }
+        switch ($scope) {
+            case 'esi-killmails.read_killmails.v1':
+                $esi = new RedisTimeQueue('tqApiESI', 3600);
+                $esi->remove($charID);
+                $esi->add($charID);
+                break;
+            case 'esi-killmails.read_corporation_killmails.v1':
+                $esi = new RedisTimeQueue('tqCorpApiESI', 3600);
+                $esi->remove($corpID);
+                if ($corpID > 1999999) $esi->add($corpID);
+                break;
+        }
     }
-    elseif ($loginPage == "main") $redirect = "/";
-    elseif ($loginPage == 'character') $redirect = "/character/$charID/";
-    elseif ($loginPage == 'corporation' && $corpID > 0) $redirect = "/corporation/$corpID/";
-    elseif ($loginPage == 'alliance' && $alliID > 0) $redirect = "/alliance/$alliID/";
-    else $redirect = "/";
+
+    // Ensure we have admin character scopes saved, if not, redirect to retrieve them
+    if ($charID == $adminCharacter) {
+        $neededScopes = ['esi-wallet.read_character_wallet.v1', 'esi-wallet.read_corporation_wallets.v1', 'esi-mail.send_mail.v1'];
+        $doRedirect = false;
+        foreach ($neededScopes as $neededScope) {
+            if ($mdb->count("scopes", ['characterID' => $charID, 'scope' => $neededScope]) == 0) $doRedirect = true;
+        }
+        if ($doRedirect) {
+            $sso = EveOnlineSSO::getSSO($neededScopes);
+            header('Location: ' . $sso->getLoginURL($_SESSION), 302);
+            exit();
+        }
+    }
+
+    ZLog::add("Logged in: $charName ($charID)", $charID, true);
+    if ($scopeCount == 0) Log::log("$charName ($charID) omitted scopes.");
+    unset($_SESSION['oauth2State']);
+
+    $key = "login:$charID:" . session_id();
+    $redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);
+    $redis->setex("$key:accessToken", 1000, $access_token);
+    $redis->setex("$key:scopes", (86400 * 14), @$userInfo['scopes']);
+
+    $_SESSION['characterID'] = $charID;
+    $_SESSION['characterName'] = $charName;
+
+    try {
+        $mdb->insert("rewards", ['character_id' => $charID, 'character_name' => $charName]);
+    } catch (Exception $ex) {
+        // ignore, they might have already logged in
+    }
+
+    // Determine where to redirect the user
+    $redirect = '/';
+    $sessID = session_id();
+    $forward = $redis->get("forward:$sessID");
+    $redis->del("forward:$sessID");
+    $loginPage = UserConfig::get('loginPage', 'character');
+    if ($forward !== null) {
+        $redirect = $forward;
+    } else {
+        $corpID = Info::getInfoField("characterID", $charID, "corporationID");
+        $alliID = Info::getInfoField("characterID", $charID, "allianceID");
+        if (@$_SESSION['patreon'] == true) {
+            unset($_SESSION['patreon']);
+            $redirect = '/cache/bypass/login/patreon/';
+        }
+        elseif ($loginPage == "main") $redirect = "/";
+        elseif ($loginPage == 'character') $redirect = "/character/$charID/";
+        elseif ($loginPage == 'corporation' && $corpID > 0) $redirect = "/corporation/$corpID/";
+        elseif ($loginPage == 'alliance' && $alliID > 0) $redirect = "/alliance/$alliID/";
+        else $redirect = "/";
+    }
+    session_write_close();
+
+    if (@$_SESSION['patreon'] == true) $redirect = '/cache/bypass/login/patreon/';
+    if ($redirect == '') $redirect = '/';
+
+    header('Location: ' . $redirect, 302);
+
+} catch (Exception $e) {
+    Log::log(print_r($e, true));
+    return $app->render('error.html', ['message' => $e->getMessage()], 503);
 }
-session_write_close();
-
-if (@$_SESSION['patreon'] == true) $redirect = '/cache/bypass/login/patreon/';
-if ($redirect == '') $redirect = '/';
-
-header('Location: ' . $redirect, 302);
