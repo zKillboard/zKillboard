@@ -278,9 +278,9 @@ function adblockloaded() {
     adnumber--;
     if (adnumber <= 0) {
         try {
-            bottomad = $("#adsensebottom").detach();
-            $("#detailadrow").html(bottomad.html());
-            killListAd(false);
+            //bottomad = $("#adsensebottom").detach();
+            //$("#detailadrow").html(bottomad.html());
+            //killListAd(false);
             fusetag.loadSlots();
             setTimeout(adBlockCheck, 5000);
         } catch (e) {
