@@ -46,7 +46,7 @@
 	</li>
 	<li class="{{ isActive('ranks', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/ranks/">Ranks</a></li>
 	<li class="{{ isActive('stats', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/stats/">Stats</a></li>
-	{% if extra.hasSupers > 0 %}
+	{% if extra.hasSupers %}
 	<li class="{{ isActive('supers', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/supers/">Supers</a></li>
 	{% endif %}
 	{% if extra.hasWars > 0 %}
@@ -116,7 +116,7 @@
     {% include 'components/kill_list.html' %}
   </div>
   <div class="col-lg-2 pull-left" style="padding: 0px;">
-    <a id='loginsideimage' href='/ccpoauth2/' class='btn btn-block collapse'><img src='/img/ssologin.png' style='width: 100%'></a>
+    <center><div style='max-width: 180px;'><a id='loginsideimage' href='/ccpoauth2/' class='btn btn-block collapse'><img src='/img/ssologin.png' style='width: 100%; max-width: 100%;'></a></div></center>
     {% include 'components/activity.html' %}
 	{% include 'components/activePvP.html' %}
             {% if topLists|length %}

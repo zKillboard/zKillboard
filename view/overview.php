@@ -291,7 +291,10 @@ $statistics = $mdb->findDoc('statistics', ['type' => $statType, 'id' => (int) $i
 
 if ($key == 'corporation' || $key == 'alliance' || $key == 'faction') {
     $extra['hasSupers'] = @$statistics['hasSupers'];
-    $extra['supers'] = @$statistics['supers'];
+    if ($pageType == 'supers') {
+        $extra['supers'] = @$statistics['supers'];
+        Info::addInfo($extra['supers']);
+    }
 }
 
 if ($key == 'character' && $pageType == 'trophies') {

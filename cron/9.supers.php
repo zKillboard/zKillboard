@@ -55,7 +55,10 @@ function doSupers($type, $id, $groupID, $name)
     $agg = [];
     $parameters = [$type => (int) $id, 'groupID' => $groupID, 'kills' => true];
     $result = $mdb->find("ninetyDays", MongoFilter::buildQuery($parameters));
-    if (sizeof($result) == 0) return;
+    if (sizeof($result) == 0) {
+        $mdb->set('statistics', ['type' => $type, 'id' => $id], ['hasSupers' => false, 'supers.' . strtolower($name) => [], 'updatingSupers' => false]);
+        return;
+    }
     foreach ($result as $killmail) {
         $involved = $killmail['involved'];
         foreach ($involved as $inv)
@@ -68,9 +71,14 @@ function doSupers($type, $id, $groupID, $name)
             $agg[$charID]['kills']++;
         }
     }
+    usort($agg, "killCountSort");
     $data['data'] = $agg;
 
     if (sizeof($result) > 0) {
-        $mdb->set('statistics', ['type' => $type, 'id' => $id], ['hasSupers' => true, 'supers.' . $name => $data, 'updatingSupers' => false]);
+        $mdb->set('statistics', ['type' => $type, 'id' => $id], ['hasSupers' => true, 'supers.' . strtolower($name) => $data, 'updatingSupers' => false]);
     }
+}
+
+function killCountSort($a, $b) {
+    return $b['kills'] - $a['kills'];
 }
