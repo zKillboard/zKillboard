@@ -104,7 +104,6 @@ class Util
                 case 'solo':
                 case 'pretty':
                 case 'zkbOnly':
-                case 'awox':
                 case 'abyssal':
                 case 'ganked':
                     $parameters[$key] = true;
@@ -173,6 +172,7 @@ class Util
                     }
                     break;
                 case 'npc':
+                case 'awox':
                     $value = array_shift($split);
                     if ($value != '0' && $value != '1') {
                         die("Only values of 0 or 1 allowed with the $key filter");

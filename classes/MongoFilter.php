@@ -235,7 +235,7 @@ class MongoFilter
                     $and[] = ['system.'.$key => $filter];
                     break;
                 case 'awox':
-                    $and[] = ['awox' => true];
+                    $and[] = ['awox' => (bool) $value];
                     break;
                 case 'solo':
                     $and[] = ['solo' => true];
