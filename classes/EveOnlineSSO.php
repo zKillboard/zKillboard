@@ -154,7 +154,7 @@ class EveOnlineSSO
         return $accessJson['access_token'];
     }
 
-    public function doCall($url, $fields, $accessToken, $callType = 'GET')
+    public function doCall($url, $fields = [], $accessToken = null, $callType = 'GET')
     {
         $statusType = self::getType($url);
 
@@ -163,7 +163,7 @@ class EveOnlineSSO
         $header = $accessToken !== null ? 'Authorization: Bearer ' . $accessToken : 'Authorization: Basic ' . base64_encode($this->clientID . ':' . $this->secretKey);
         $headers = [$header];
 
-        $url = $callType != 'GET' ? $url : $url . "?" . $this->buildParams($fields);
+        $url = $callType != 'GET' ? $url : $url . $this->buildParams($fields);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -200,7 +200,8 @@ class EveOnlineSSO
 
     protected function buildParams($fields)
     {
-        $string = "";
+        if ($fields == null || sizeof($fields) == 0) return "";
+        $string = "?";
         foreach ($fields as $field=>$value) {
             $string .= $string == "" ? "" : "&";
             $string .= "$field=" . rawurlencode($value);

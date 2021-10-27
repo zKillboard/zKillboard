@@ -546,4 +546,22 @@ class Util
             return $base;
         }
     }
+
+    public static function sendEveMail($characterID, $subject, $message)
+    {
+        global $mdb;
+
+        $mdb->insert("evemails", ['sent' => false, 'subject' =>  $subject, 'body' => $message, 'recipients' => [['recipient_id' => $characterID, 'recipient_type' => 'character']]]);
+    }
+
+    public static function getLoad()
+    {
+        $output = array();
+        $result = exec('cat /proc/loadavg', $output);
+
+        $split = explode(' ', $result);
+        $load = $split[0];
+
+        return $load;
+    }
 }

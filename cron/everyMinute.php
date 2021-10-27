@@ -4,7 +4,7 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once "../init.php";
 
-$load = Load::getLoad();
+$load = Util::getLoad();
 $redisLoad = (int) $redis->get("zkb:load");
 if ($load >= 15 && $redisLoad < 20) {
     $redis->incrBy("zkb:load", 1);
@@ -72,10 +72,6 @@ foreach ($result as $kill) {
     $sponsored[$kill['killID']] = $killmail;
 }
 $redis->set("zkb:sponsored", json_encode($sponsored));
-
-// set guzzler etag hash to expire
-$redis->expire("zkb:etags:" . date('m:d'), 86400);
-$redis->del("zkb:etags:" . date('m:d', time() - 86400));
 
 $unique = sizeof($mdb->getCollection("scopes")->distinct("corporationID", ['scope' => 'esi-killmails.read_corporation_killmails.v1', 'iterated' => true]));
 $redis->set("tqCorpApiESICount", $unique);

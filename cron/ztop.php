@@ -143,7 +143,7 @@ while ($hour == date('H')) {
 
     $cpu = str_pad(exec("top -d 0.5 -b -n2 | grep \"Cpu(s)\"| tail -n 1 | awk '{print $2 + $4}'"), 5, " ", STR_PAD_LEFT);
     $output = [];
-    $load = str_pad(Load::getLoad(), 5, " ", STR_PAD_LEFT);
+    $load = str_pad(Util::getLoad(), 5, " ", STR_PAD_LEFT);
     $memUsed = str_pad($memUsed, 5, " ", STR_PAD_LEFT);
     $memTotal = str_pad($memTotal, 5, " ", STR_PAD_LEFT);
     $storageSize = str_pad($storageSize, 5, " ", STR_PAD_LEFT);
@@ -206,4 +206,16 @@ function getSystemMemInfo()
     }
 
     return $meminfo;
+}
+
+
+function getLoad()
+{
+    $output = array();
+    $result = exec('cat /proc/loadavg', $output);
+
+    $split = explode(' ', $result);
+    $load = $split[0];
+
+    return $load;
 }

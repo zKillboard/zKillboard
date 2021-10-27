@@ -3,7 +3,7 @@
 global $mdb;
 
 if (!User::isLoggedIn()) {
-    $app->redirect('/ccplogin', 302);
+    $app->redirect('/ccpoauth2/', 302);
     die();
 }
 
@@ -60,8 +60,6 @@ if ($_POST) {
     exit();
 }
 
-$data['entities'] = User::getUserTrackerData();
-
 // Theme
 $theme = UserConfig::get('theme', 'zkillboard');
 $data['themesAvailable'] = [];
@@ -70,46 +68,11 @@ $data['currentTheme'] = $theme;
 // Style
 $data['stylesAvailable'] = Util::availableStyles();
 $data['currentStyle'] = UserConfig::get('style');
+
+
 $data['loginPage'] = UserConfig::get('loginPage', 'character');
-
-$data['apiKeys'] = Api::getKeys($userID);
-$data['apiSsoKeys'] = Api::getSsoKeys($userID);
 $data['apiScopes'] = $mdb->find("scopes", ['characterID' => (int) $userID], ['scope' => 1]);
-
-$data['apiChars'] = Api::getCharacters($userID);
-$charKeys = Api::getCharacterKeys($userID);
-$charKeys = Info::addInfo($charKeys);
-$data['apiCharKeys'] = $charKeys;
-$data['userInfo'] = User::getUserInfo();
-$data['timeago'] = UserConfig::get('timeago');
-$data['ddcombine'] = UserConfig::get('ddcombine');
-$data['ddmonthyear'] = UserConfig::get('ddmonthyear');
-$data['useSummaryAccordion'] = UserConfig::get('useSummaryAccordion', true);
-$data['sessions'] = User::getSessions($userID);
 $data['history'] = User::getPaymentHistory($userID);
 $data['log'] = ZLog::get($userID);
 
-$apiChars = Api::getCharacters($userID);
-$domainChars = array();
-if ($apiChars != null) {
-    foreach ($apiChars as $apiChar) {
-        $char = Info::getInfoDetails('characterID', $apiChar['characterID']);
-        $char['corpTicker'] = modifyTicker($mdb->findField('information', 'ticker', ['type' => 'corporationID', 'id' => (int) @$char['corporationID']]));
-        $char['alliTicker'] = modifyTicker($mdb->findField('information', 'ticker', ['type' => 'corporationID', 'id' => (int) @$char['allianceID']]));
-
-        $domainChars[] = $char;
-    }
-}
-
-$data['showDisqus'] = UserConfig::get('showDisqus', true);
-
 $app->render('account.html', array('data' => $data, 'message' => $error, 'key' => $key, 'reqid' => $reqid));
-
-function modifyTicker($ticker)
-{
-    $ticker = str_replace(' ', '_', $ticker);
-    $ticker = preg_replace('/^\./', 'dot.', $ticker);
-    $ticker = preg_replace('/\.$/', '.dot', $ticker);
-
-    return strtolower($ticker);
-}

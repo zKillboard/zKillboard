@@ -27,7 +27,7 @@ while ($minute == date('Hi')) {
     $warRow = $mdb->findDoc('information', ['type' => 'warID', 'id' => $id]);
     $params = ['warRow' => $warRow, 'redis' => $redis];
     $url = "$esiServer/v1/wars/$id/";
-    $guzzler->call($url, "success", "fail", $params, ['etag' => true], 'GET');
+    $guzzler->call($url, "success", "fail", $params, [], 'GET');
     $guzzler->sleep(1);
 }
 $guzzler->finish();

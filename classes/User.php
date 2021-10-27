@@ -2,26 +2,6 @@
 
 class User
 {
-    public static function setLogin($username, $password, $autoLogin)
-    {
-        return true;
-    }
-
-    public static function checkLogin($username, $password)
-    {
-        return false;
-    }
-
-    public static function checkLoginHashed($userID)
-    {
-        return;
-    }
-
-    public static function autoLogin()
-    {
-        return false;
-    }
-
     public static function isLoggedIn()
     {
         return (int) @$_SESSION['characterID'] != null;
@@ -71,27 +51,9 @@ class User
      */
     public static function isAdmin()
     {
-        return false;
-    }
+        global $adminCharacter;
 
-    /**
-     * @param int $userID
-     *
-     * @return string
-     */
-    public static function getUsername($userID)
-    {
-        return;
-    }
-
-    /**
-     * @param int $userID
-     *
-     * @return array|null
-     */
-    public static function getSessions($userID)
-    {
-        return;
+        return (((int) @$_SESSION['characterID']) == $adminCharacter);
     }
 
     public static function getBalance($userID)
@@ -106,11 +68,6 @@ class User
         $history = $mdb->find('payments', ['ownerID1' => (int) $userID], ['date' => -1]);
 
         return $history;
-    }
-
-    public static function getUserTrackerData()
-    {
-        return [];
     }
 
     public static function sendMessage($message, $userID = null)

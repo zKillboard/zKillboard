@@ -214,7 +214,6 @@ class Price
     public static function getCrestPrices($typeID)
     {
         global $mdb, $esiServer;
-	ZLog::add("Fetching price for $typeID", 0);
 
         $marketHistory = $mdb->findDoc('prices', ['typeID' => $typeID]);
         if ($marketHistory === null) {
@@ -223,7 +222,8 @@ class Price
         }
 
         $url = "$esiServer/v1/markets/10000002/history/?type_id=$typeID";
-        $json = CrestTools::getJSON($url);
+        $sso = EveOnlineSSO::getSSO();
+        $json = json_decode($sso->doCall($url), true);
 
         foreach ($json as $row) {
             $avgPrice = $row['average'];
@@ -237,7 +237,7 @@ class Price
             $key = "zkb:market:" . date('H');
             $market = RedisCache::get($key);
             if ($market == null) {
-                $market = CrestTools::getJSON("$esiServer/v1/markets/prices/");
+                $market = json_decode($sso->doCall("$esiServer/v1/markets/prices/"), true);
                 RedisCache::set($key, $market, 3600);
             }
             $date = date('Y-m-d');

@@ -38,13 +38,11 @@ while ($minute == date('Hi')) {
             foreach ($removeFields as $field) if (isset($row[$field])) $mdb->removeField("information", $row, $field);
             continue;
         }
-    } // else Util::out("Updating " . (isset($row['name']) ? $row['name'] : 'character ' . $id));
+    }
     if (isset($row['lastApiUpdate'])) while ($currentSecond == date('His')) $guzzler->sleep(0, 50);
-    //Util::out($row['name'] . " " . $row['id']);
 
     $url = "$esiServer/v5/characters/$id/";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
-    //$a = (isset($row['lastApiUpdate']) && $row['name'] != '') ? ['etag' => true] : [];
     $guzzler->call($url, "updateChar", "failChar", $params, []);
     $guzzler->finish();
 }      

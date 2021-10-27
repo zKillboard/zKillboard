@@ -41,7 +41,7 @@ if ($_POST) {
         $mdb->getCollection('tickets')->update(['_id' => new MongoID($id)], ['$inc' => ['replies' => 1]]);
 
         if (@$info['moderator'] == true) {
-            EveMail::send($ticket['characterID'], 'zKillboard Ticket Response', "You have received a response to a ticket you submitted. To view the response, please click <a href=\"$fullAddr/account/tickets/view/$id/\">here</a>.");
+            Util::sendsendEveMail($ticket['characterID'], 'zKillboard Ticket Response', "You have received a response to a ticket you submitted. To view the response, please click <a href=\"$fullAddr/account/tickets/view/$id/\">here</a>.");
         }
 
         $app->redirect('.');

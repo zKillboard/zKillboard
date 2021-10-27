@@ -85,13 +85,6 @@ class Guzzler
 
         $statusType = self::getType($uri);
 
-        $etag = null;
-        if (@$setup['etag'] == true && $params['callType'] == 'GET') {
-            $etag = Etag::get($uri); //$redis->hget("zkb:etags:" . date('m:d'), $uri);
-            if ($etag !== false) $setup['If-None-Match'] = $etag;
-            unset($setup['etag']);
-        }
-
         //while (((int) $redis->get("concurrent")) > 10) $this->sleep(0, 1000);
         $redis->incr("concurrent");
         $guzzler = $this;
@@ -110,7 +103,7 @@ $uri =  substr_replace($uri ,"", -1);
 
         $request = new \GuzzleHttp\Psr7\Request($callType, $uri, $setup, $body);
         $this->client->sendAsync($request)->then(
-                function($response) use (&$guzzler, $fulfilled, $rejected, &$params, $statusType, $etag) {
+                function($response) use (&$guzzler, $fulfilled, $rejected, &$params, $statusType) {
                 global $redis;
 
                 try {
@@ -120,8 +113,6 @@ $uri =  substr_replace($uri ,"", -1);
                 Status::addStatus($statusType, true);
                 $this->lastHeaders = array_change_key_case($response->getHeaders());
                 if (isset($this->lastHeaders['warning'])) Util::out("Warning: " . $params['uri'] . " " . $this->lastHeaders['warning'][0]);
-                if (isset($this->lastHeaders['etag']) && strlen($content) > 0 && $etag !== null) Etag::set($params['uri'], $this->lastHeaders['etag'][0]);
-                if ($etag !== null) Status::addStatus("cached304", ($response->getStatusCode() == 304));
 
                 $fulfilled($guzzler, $params, $content);
                 } catch (Exception $ex) {
