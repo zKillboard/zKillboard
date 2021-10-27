@@ -4,7 +4,21 @@ use cvweiss\redistools\RedisTimeQueue;
 
 global $mdb, $redis, $adminCharacter;
 
+$sem = sem_get(3174);
+
 try {
+    // Using the semaphore helps prevent this code from simultaneously handling multiple
+    // logins from the same person because they double/triple clicked the authorize
+    // button on CCP's SSO login page.
+    sem_acquire($sem);
+
+    // Is the user already logged in somehow? If so, redirect them
+    // this should help handle double/triple clicks from ccp's authorization page
+    if (@$_SESSION['characterID'] > 0) {
+        header('Location: /', 302);
+        return;
+    }
+
     $scopeCount = 0;
 
     $sso = EveOnlineSSO::getSSO();
@@ -125,10 +139,12 @@ try {
 
 } catch (Exception $e) {
     if ($e->getMessage() == "Invalid state returned - possible hijacking attempt") {
-        if ($_SESSION['characterID'] > 0) $app->redirect('/', 302);
+        if ($_SESSION['characterID'] > 0) header('Location: /', 302);
         else $app->render('error.html', ['message' => "Please try logging in again, but don't double/triple click this time. CCP's login form isn't very good at handling multiple clicks... "], 503);
     } else {
         Log::log(print_r($e, true));
         return $app->render('error.html', ['message' => $e->getMessage()], 503);
     }
+} finally {
+    sem_release($sem);
 }
