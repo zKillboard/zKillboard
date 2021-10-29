@@ -101,3 +101,5 @@ $primePrices = false;
 # ESI "Threads"
 $esiCharKillmails = 30;
 $esiCorpKillmails = 10;
+
+$discordServer = 'https://discord.gg';

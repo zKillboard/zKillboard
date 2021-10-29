@@ -59,11 +59,11 @@ $app->post('/account/favorite/:killID/:action/', function($killID, $action) use 
 
 // Tickets
 $app->map('/account/tickets/', function () use ($app) {
-        include 'view/tickets.php';
+        $app->redirect('..', 302);
         })->via('GET', 'POST');
 
 $app->map('/account/tickets/view/:id/', function ($id) use ($app) {
-        include 'view/tickets_view.php';
+        $app->redirect('..', 302);
         })->via('GET', 'POST');
 
 // Sponsored killmails
