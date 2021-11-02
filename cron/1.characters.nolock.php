@@ -1,6 +1,7 @@
 <?php
 
 pcntl_fork();
+pcntl_fork();
 
 use cvweiss\redistools\RedisTimeQueue;
 
@@ -12,7 +13,6 @@ if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:noapi") == "true") exit();
 
 $esi = new RedisTimeQueue('tqApiESI', 3600);
-$esiCorp = new RedisTimeQueue('tqCorpApiESI', 3600);
 if (date('i') == 22 || $esi->size() < 100) {
     $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_killmails.v1']);
     foreach ($esis as $row) {
@@ -34,20 +34,9 @@ while ($minute == date('Hi')) {
             if ($corpID !== @$row['corporationID']) {
                 $mdb->set("scopes", $row, ['corporationID' => $corpID]);
             }
-            if (@$row['iterated'] == true && $redis->get("apiVerified:$corpID") != null && $redis->ttl("apiVerified:$charID") > 7200 ) {
-                $lastChecked = $redis->get("apiVerified:$corpID");
-                if ($lastChecked > 0 && (time() - $lastChecked) > 300 && !in_array($corpID, $bumped)) {
-                    $esiCorp->setTime($corpID, 1);
-                    $bumped[] = $corpID;
-                }
-                continue;
-            }
 
             $hasRecent = $mdb->exists("ninetyDays", ['involved.characterID' => $charID]);
             if (!$hasRecent && @$row['lastFetch']->sec != 0 && (($charID % 24) != date('H'))) continue;
-
-            // Give corporation checks priority
-            if ($esiCorp->pending() > $ssoThrottle) sleep(1);
 
             $params = ['row' => $row, 'esi' => $esi];
             $refreshToken = $row['refreshToken'];
@@ -99,7 +88,7 @@ function success($params, $content)
         $killID = $kill['killmail_id'];
         $hash = $kill['killmail_hash'];
 
-        $newKills += addMail($killID, $hash);
+        $newKills += Killmail::addMail($killID, $hash);
     }
 
     $charID = (int) $row['characterID'];
@@ -137,20 +126,4 @@ function success($params, $content)
         ZLog::add("$newKills kills added by char $name / $corpName", $charID);
         if ($newKills >= 10) User::sendMessage("$newKills kills added for char $name", $charID);
     }
-}
-
-function addMail($killID, $hash) 
-{
-    global $mdb, $redis;
-
-    $exists = $mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash]);
-    if (!$exists) {
-        try {
-            $mdb->save('crestmails', ['killID' => $killID, 'hash' => $hash, 'processed' => false]);
-            return 1;
-        } catch (MongoDuplicateKeyException $ex) {
-            // ignore it *sigh*
-        }
-    }
-    return 0;
 }

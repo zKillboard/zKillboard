@@ -19,10 +19,10 @@ while ($minute == date('Hi')) {
         $guzzler->sleep(1);
         continue;
     }
-    if (isset($row['lastApiUpdate']) && $row['lastApiUpdate']->sec > (time() - 86400)) {
+    /*if (isset($row['lastApiUpdate']) && @$row['lastApiUpdate']->sec > (time() - 86400)) {
         $guzzler->sleep(1);
         continue;
-    }
+    }*/
     $currentSecond = date('His');
     $id = (int) $row['id'];
     if ($id == 1) {
@@ -31,15 +31,15 @@ while ($minute == date('Hi')) {
         continue;
     }
 
-    if (isset($row['lastApiUpdate'])) {
+    /*if (isset($row['lastApiUpdate'])) {
         $hasRecent = $mdb->exists("ninetyDays", ['involved.characterID' => $id]);
         if ($id <= 1 || !$hasRecent) {
             $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(), 'corporationID' => 0, 'allianceID' => 0, 'factionID' => 0]);        
             foreach ($removeFields as $field) if (isset($row[$field])) $mdb->removeField("information", $row, $field);
             continue;
         }
-    }
-    if (isset($row['lastApiUpdate'])) while ($currentSecond == date('His')) $guzzler->sleep(0, 50);
+    }*/
+    //if (isset($row['lastApiUpdate'])) while ($currentSecond == date('His')) $guzzler->sleep(0, 50);
 
     $url = "$esiServer/v5/characters/$id/";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];

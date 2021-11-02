@@ -70,9 +70,9 @@ try {
                 $esi->add($charID);
                 break;
             case 'esi-killmails.read_corporation_killmails.v1':
-                $esi = new RedisTimeQueue('tqCorpApiESI', 3600);
-                $esi->remove($corpID);
-                if ($corpID > 1999999) $esi->add($corpID);
+                //$esi = new RedisTimeQueue('tqCorpApiESI', 3600);
+                //$esi->remove($corpID);
+                //if ($corpID > 1999999) $esi->add($corpID);
                 break;
         }
     }

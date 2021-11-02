@@ -8,7 +8,6 @@ if (date('Hi') != 1100) exit();
 
 $threeMonths = time() - (86400 * 90);
 $esiChar = new RedisTimeQueue('tqApiESI', 3600);
-$esiCorp = new RedisTimeQueue('tqCorpApiESI', 3600);
 
 $mdb->set("scopes", ['added' => ['$exists' => false]], ['added' => $mdb->now()], true);
 

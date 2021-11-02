@@ -99,7 +99,7 @@ while ($hour == date('H')) {
     addInfo('Character KillLogs to check', $esiChars->pending(), false);
     addInfo('Unique Character RefreshTokens', $esiChars->size(), false);
     addInfo('Corporation KillLogs to check', $esiCorps->pending(), false);
-    addInfo('Unique Corporation RefreshTokens', $redis->get('tqCorpApiESICount'), false);
+    addInfo('Unique Corporation RefreshTokens', $esiCorps->size(), false);
 
     $rtq = new RedisTimeQueue("zkb:characterID", 86400);
     addInfo('', 0, false);
