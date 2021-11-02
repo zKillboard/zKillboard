@@ -19,16 +19,16 @@ if (sizeof($mails)) {
         $charID = (int) $mail['recipients'][0]['recipient_id'];
         $name = Info::getInfoField('characterID', $charID, 'name');
 
-        if ($redis->get("zkb:evemail:$charID" ) == "sent") {
+        /*if ($redis->get("zkb:evemail:$charID" ) == "sent") {
             $mail['sent'] = false;
             $mail['error'] = null;
             $mdb->save("evemails", $mail);
             continue;
-        }
+        }*/
 
         ZLog::add("Sending evemail to $name", $charID); 
 
-        $mail['approved_cost'] = 10000;
+        $mail['approved_cost'] = 1000000;
         $url = "$esiServer/v1/characters/$evemailCharID/mail/";
         $response = $sso->doCall($url, $mail, $accessToken, 'POST_JSON');
         $json = json_decode($response, true);
