@@ -14,21 +14,15 @@ if ($redis->get("zkb:noapi") == "true") exit();
 $chars = new RedisTimeQueue("zkb:characterID", 86400);
 $esi = new RedisTimeQueue('tqCorpApiESI', 3600);
 
-/*if (date('i') == 22 || $esi->size() < 100) {
-    $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_corporation_killmails.v1']);
-    foreach ($esis as $row) {
-        if (@$row['characterID'] > 1 && @$row['corporationID'] > 1999999) $esi->add($row['corporationID']);
-    }
-}*/
-
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $corpIDRaw = $esi->next();
     $corpID = (int) $corpIDRaw;
     if ($corpID > 0) {
+        if ($redis->get("esi-fetched:$corpID") == "true") continue;
+        
         $row = $mdb->findDoc("scopes", ['corporationID' => $corpID, 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['lastFetch' => 1]);
         if ($row == null) {
-            Util::out("MISSING corp row $corpID");
             $esi->remove($corpIDRaw);
             continue;
         }
@@ -50,6 +44,7 @@ while ($minute == date('Hi')) {
         }
         $killmails = $sso->doCall("$esiServer/v1/corporations/$corpID/killmails/recent/", [], $accessToken);
         success(['corpID' => $corpID, 'row' => $row, 'esi' => $esi], $killmails);
+        $redis->setex("esi-fetched:$corpID", 300, "true");
     } else {
         sleep(1);
     }
@@ -96,19 +91,15 @@ function success($params, $content)
     $verifiedKey = "apiVerified:$corpID";
     $corpVerified = $redis->get($verifiedKey);
     if ($corpVerified === false) {
-        ZLog::add("$corpName ($name) is now verified.", $charID);
+        Util::out("$corpName ($name) is now verified.", $charID);
     }
     $redis->setex($verifiedKey, 86400, time());
-    $redis->del("zkb:corpInProgress:$corpID");
 
     if ($newKills > 0) {
         if ($name === null) $name = $charID;
-        while (strlen("$newKills") < 3) $newKills = " " . $newKills;
-        ZLog::add("$newKills kills added by corp $corpName", $charID);
-        if ($newKills >= 10) User::sendMessage("$newKills kills added for corp $corpName", $charID);
+        $newKills = str_pad($newKills, 3, " ", STR_PAD_LEFT);
+        Util::out("$newKills kills added by corp $corpName");
     }
 
-    if ($redis->get("recentKillmailActivity:$corpID") == "true") {
-        $esi->setTime($corpID, time() + 301);
-    }
+    if ($redis->get("recentKillmailActivity:$corpID") == "true") $esi->setTime($corpID, time() + 301);
 }

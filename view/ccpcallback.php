@@ -51,6 +51,9 @@ try {
     }
     $corpID = Info::getInfoField("characterID", $charID, "corporationID");
 
+    $redis->setex("recentKillmailActivity:char:$charID", 300, "true");
+    $redis->setex("recentKillmailActivity:corp:$corpID", 300, "true");
+
     // Clear out existing scopes
     if ($charID != $adminCharacter) $mdb->remove("scopes", ['characterID' => $charID]);
 

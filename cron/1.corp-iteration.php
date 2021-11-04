@@ -73,7 +73,7 @@ while ($minute == date('Hi')) {
 
     if ($count != -1) {
         $mdb->set("scopes", $row, ['lastFetch' => $mdb->now()]);
-        $redis->setex("zkb:corp:fetch:$corpID", 300, "true");
+        $redis->setex("esi-fetched:$corpID", 300, "true");
         $redis->setex("zkb:corp:iterated:$corpID", 604800, "true");
         
         if ($corpID > 1999999) {

@@ -27,6 +27,8 @@ $minute = date('Hi');
 while ($minute == date('Hi')) {
     $charID = $esi->next(false);
     if ($charID > 0) {
+        if ($redis->get("esi-fetched:$charID") == "true") continue;
+
         $row = $mdb->findDoc("scopes", ['characterID' => (int) $charID, 'scope' => "esi-killmails.read_killmails.v1", "oauth2" => true], ['lastFetch' => 1]);
         if ($row != null) {
             $corpID = (int) Info::getInfoField("characterID", $charID, "corporationID");
@@ -58,6 +60,7 @@ while ($minute == date('Hi')) {
             }
             $killmails = $sso->doCall("$esiServer/v1/characters/$charID/killmails/recent/", [], $accessToken);
             success(['row' => $row, 'esi' => $esi], $killmails);
+            $redis->setex("esi-fetched:$charID", 300, "true");
         } else {
             $esi->remove($charID);
         }
@@ -113,17 +116,15 @@ function success($params, $content)
         // Otherwise check them roughly once a day
         $esi->setTime($charID, time() + (rand(24, 30) * 3600));
     }
-    // Check recently active characters every 5 minutes
-    if ($redis->get("recentKillmailActivity:$charID") == "true") {
-        $esi->setTime($charID, time() + 310);
-    }
 
     if ($newKills > 0) {
         $name = Info::getInfoField('characterID', $charID, 'name');
         $corpName = Info::getInfoField('corporationID', $corpID, 'name');
         if ($name === null) $name = $charID;
-        while (strlen("$newKills") < 3) $newKills = " " . $newKills;
-        ZLog::add("$newKills kills added by char $name / $corpName", $charID);
-        if ($newKills >= 10) User::sendMessage("$newKills kills added for char $name", $charID);
+        $newKills = str_pad($newKills, 3, " ", STR_PAD_LEFT);
+        Util::out("$newKills kills added by char $name / $corpName", $charID);
     }
+
+    // Check recently active characters every 5 minutes
+    if ($redis->get("recentKillmailActivity:$charID") == "true") $esi->setTime($charID, time() + 301);
 }

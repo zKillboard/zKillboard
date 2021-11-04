@@ -14,7 +14,7 @@ if ($ttl < 60) {
 		$rtq = new RedisTimeQueue($rtqName, 3600);
 		while ($rtq->pending() > 10) sleep(1);
 	}
-	$redis->setex("nextBumpPending", 300, "true");
+	$redis->setex("nextBumpPending", 310, "true");
 }
 
 function bump($key, $rtqName) {
@@ -22,14 +22,16 @@ function bump($key, $rtqName) {
 
 	$rtq = new RedisTimeQueue($rtqName, 3600);
 
-	Util::out("Bumping active ids in $rtqName");
-
 	$values = $redis->keys("$key*");
+	$count = 0;
 	foreach ($values as $sID) {
 		$sID = ((int) str_replace($key, "", $sID));
-		if ($rtq->isMember($sID) === true) $rtq->setTime($sID, 1);
+		if ($rtq->isMember($sID) === true && $redis->get("esi-fetched:$sID") != "true") {
+			$rtq->setTime($sID, 1);
+			$count++;
+		}
 	}
-	
+	Util::out("Bumped $count api verified active ids in $rtqName");
 
 	return $rtqName;
 }
