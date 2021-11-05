@@ -1,4 +1,5 @@
 var types = ['character', 'corporation', 'alliance', 'faction', 'shipType', 'group', 'region', 'solarSystem', 'location'];
+var allowChange = true;
 
 $(document).ready(function() {
     $('.asearch-autocomplete').autocomplete({
@@ -14,13 +15,95 @@ $(document).ready(function() {
                 console.log(xhr);
             }
         }).focus();;
+    $(".tfilter").on('click', adjustTime);
     $(".filter-btn").on('click', toggleFilterBtn);
     $(".radio-btn").on('click', toggleRadioBtn);
+
     $("#dtstart").on('change', clickPage1).datetimepicker({format: 'Y-m-d H:i'});
     $("#dtend").on('change', clickPage1).datetimepicker({format: 'Y-m-d H:i'});
 
+    $("#rolling-times").on('click', toggleRollingTime);
+    setInterval(rollTime, 1000);
+
+    adjustTime(null, $("#stats-epoch-week"));
     clickPage1();
 });
+
+function toggleRollingTime(event, enabled) {
+    if (enabled == undefined) {
+        enabled = !($('#rolling-times').hasClass('btn-primary'));
+    }
+
+    $('#rolling-times').blur().removeClass('btn-default').removeClass('btn-primary');
+
+    if (enabled) $('#rolling-times').addClass('btn-primary');
+    else $('#rolling-times').addClass('btn-default');
+}
+
+function rollTime() {
+    var roll = ($('#rolling-times').hasClass('btn-primary'));
+    if (roll == false) return;
+    var currentStartTime = $('#dtstart').val();
+    var currentEndTime = $('#dtend').val();
+    adjustTime(null, $(".tfilter.btn-primary").first());
+
+    if ((currentStartTime != $('#dtstart').val()) || (currentEndTime != $('#dtend').val())) clickPage1();
+}
+
+var lastEpochSelected = null;
+function adjustTime(event, triggerButton) {
+    var element = $(triggerButton == null ? this : triggerButton);
+    var epoch = element.val();
+
+    var date = new Date();
+    var now = Math.floor(date.getTime() / 1000);
+    var startTime = null;
+    var endTime = null;
+
+    var isDisabled = true;
+    var isRolling = true;
+
+    switch(epoch) {
+        case 'week':
+            startTime = now - (86400 * 7);
+            startTime = startTime - (startTime % 900);
+            break;
+        case 'recent':
+            startTime = now - (86400 * 90);
+            startTime = startTime - (startTime % 900);
+            break;
+        case 'alltime':
+            // no changes needed
+            break;
+        case 'current month':
+            startTime = Math.floor(new Date(date.getFullYear(), date.getUTCMonth(), 1, 0, 0, 0).getTime() / 1000) - (date.getTimezoneOffset() * 60);
+            isRolling = false;
+            break;
+        case 'prior month':
+            startTime = Math.floor(new Date(date.getFullYear(), date.getUTCMonth() - 1, 1, 0, 0, 0).getTime() / 1000) - (date.getTimezoneOffset() * 60);
+            endTime = Math.floor(new Date(date.getFullYear(), date.getUTCMonth(), 1, 0, -1, 0).getTime() / 1000) - (date.getTimezoneOffset() * 60);
+            isRolling = false;
+            break;
+        case 'custom':
+            isDisabled = false;
+            isRolling = false;
+    }
+
+    $('#dtstart').prop('disabled', isDisabled).val(getFormattedTime(startTime));
+    $('#dtend').prop('disabled', isDisabled).val(getFormattedTime(endTime));
+    if (isDisabled == false)  $("#dtstart").focus();
+    toggleRollingTime(null, isRolling);
+}
+
+function getFormattedTime(unixtime) {
+    if (unixtime == null) return '';
+    var date = new Date(unixtime * 1000);
+    return date.getUTCFullYear() + '/' + zeroPad(date.getUTCMonth() + 1) + '/' + zeroPad(date.getUTCDate()) + ' ' + zeroPad(date.getUTCHours()) + ':' + zeroPad(date.getUTCMinutes());
+}
+
+function zeroPad(text) {
+    return ('00' + text).slice(-2);
+}
 
 function addEntity(suggestion) {
     console.log("suggestion", suggestion);
@@ -34,7 +117,7 @@ function addEntity(suggestion) {
         case 'constellationID':
         case 'regionID':
             asfilter.location.push(suggestion.data);
-            if ($("#location").html() == 'All systems') $("#location").html("");
+            $("#location").html("");
             add('location', suggestion);
             break;
         default:
@@ -67,10 +150,13 @@ function add(id, suggestion) {
     tag.append(newhtml);
 }
 
+
+
 var xhrs = [];
 var filtersStringified = undefined;
 function doQuery() {
     var f = getFilters();
+    console.log(JSON.stringify(f));
     var stringified = JSON.stringify(f);
     if (filtersStringified === stringified) {
         return;
@@ -101,7 +187,6 @@ function doQuery() {
     var f2 = {};
     Object.assign(f2, f);
     f2.queryType = "count";
-    console.log(f2);
     xhr = $.ajax('/asearchquery/', {
         data: f2,
         method: 'get',
@@ -133,6 +218,7 @@ function doQuery() {
 function getFilters() {
     var retVal = asfilter;
     retVal.labels = [];
+    $(".tfilter.btn-primary").each(function() { retVal.epochbtn = $(this).val(); });
     $(".filter-btn.btn-primary").each(function() { retVal.labels.push($(this).html()); });
     retVal.epoch = { start: $("#dtstart").val(), end: $("#dtend").val()};
     retVal.radios = radios;
@@ -140,15 +226,15 @@ function getFilters() {
 }
 
 function applyKillQueryResult(data, textStatus, jqXHR) {
-    console.log('https://zkillboard.com/' + this.url);
+    console.log('https://zkillboard.com' + this.url);
     $(".killlistmessage").remove();
     killIDs = data.kills;
-    if (data.kills.length == 0) killlistmessage("no results");
+    if (data.kills.length == 0) killlistmessage("no results - expand timespan, adjust pagination, or reduce filters...");
     else popEm();
 }
 
 function applyCountQueryResult(data, textStatus, jqXHR) {
-    console.log('https://zkillboard.com/' + this.url);
+    console.log('https://zkillboard.com' + this.url);
     if (data.exceeds == true) {
         $("#result-groups-count").html("Timespan > 31 Days");
         return;
@@ -258,7 +344,7 @@ function toggleRadioBtn() {
 }
 
 function clickPage1() {
-    $('#page1').click();
+    if (allowChange) $('#page1').click();
 }
 
 // ugh, 2020 and still no good way to do this natively

@@ -25,7 +25,31 @@
     </div>
     <div class='col-md-6'>
         <label>Timespan</label>
-        <center><div id="timeframe" class='input-group' ><input id='dtstart' type='search' style='width: 10em;' class='form-control form-line' placeholder='2007-12-05 00:00'><input id='dtend' type='search' style='width: 10em;' class='form-control form-line' placeholder='Now'></div></center>
+        <center>
+                <div class="btn-group btn-group-sm centered">
+                    <button id="stats-epoch-week" class="tfilter btn btn-primary radio-btn" value="week" radio="epoch" title="Last 7 Days">7</button>
+                    <button id="stats-epoch-recent" class="tfilter btn btn-default radio-btn" value="recent" radio="epoch" title="Last 90 Days">90</button>
+                    <button id="stats-epoch-alltime" class="tfilter btn btn-default radio-btn" value="alltime" radio="epoch" title="Alltime">∞</button>
+                    <button id="stats-epoch-recent" class="tfilter btn btn-default radio-btn" value="prior month" radio="epoch" title="Prior Month">
+                        <i class="glyphicon glyphicon-arrow-left"></i>
+                        <i class="glyphicon glyphicon-calendar"></i>
+                    </button>
+                    <button id="stats-epoch-current-month" class="tfilter btn btn-default radio-btn" value="current month" radio="epoch" title="Current Month">
+                        <i class="glyphicon glyphicon-calendar"></i>
+                    </button>
+                    <button  id="stats-epoch-recent" class="tfilter btn btn-default radio-btn" value="custom" radio="epoch" title="Custom Date Range">?</button>
+                </div>
+                <div class="btn-group btn-group-sm">
+                    <button type='checkbox' checked id="rolling-times" class="btn btn-primary" value="rolling" title="Time will adjust automatically in 15 minute increments.">
+                        <i class="glyphicon glyphicon-arrow-down"></i>
+                    </button>
+                </div>
+            <br/><br/>
+            <div id="timeframe" class='input-group' >
+                <input id='dtstart' type='search' style='width: 10em;' class='form-control form-line' placeholder='2007-12-05 00:00' disabled>
+                <input id='dtend' type='search' style='width: 10em;' class='form-control form-line' placeholder='Now' disabled>
+            </div>
+        </center>
     </div>
 </div>
 <hr/>
@@ -115,5 +139,5 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js" integrity="sha512-AIOTidJAcHBH2G/oZv9viEGXRqDNmfdPVPYOYKGy3fti0xIplnlgMHUGfuNRzC6FkzIo0iIxgFnr9RikFxK+sw==" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.css" integrity="sha512-bYPO5jmStZ9WI2602V2zaivdAnbAhtfzmxnEGh9RwtlI00I9s8ulGe4oBa5XxiC6tCITJH/QG70jswBhbLkxPw==" crossorigin="anonymous" />
 <link rel="stylesheet" href="/css/asearch.css">
-<script type="text/javascript" src="/js/asearch.js?202102011541"></script>
+<script type="text/javascript" src="/js/asearch.js?v={{ version }}"></script>
 {% endblock %}

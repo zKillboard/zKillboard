@@ -4,6 +4,8 @@ use cvweiss\redistools\RedisCache;
 
 global $mdb, $redis;
 
+try {
+
 $types = [
     'character',
     'corporation',
@@ -16,7 +18,7 @@ $types = [
     'category',
     'location',
     'constellation',
-]; // war_id is excluded
+]; // war_id is currently excluded
 
 $validSortBy = ['date' => 'killID', 'isk' => 'zkb.totalValue', 'involved' => 'attackerCount'];
 $validSortDir = ['asc' => 1, 'desc' => -1];
@@ -101,24 +103,26 @@ if ($queryType == "kills") {
         $result = iterator_to_array($mdb->getCollection($col)->find($query)->sort($sort)->skip(50 * $page)->limit(50));
         if (sizeof($result) >= 50) break;
     }
-    if (($endTime - $startTime) <= (86400 * 31)) { 
         $arr = getSums($groupType . 'ID', $query, $victimsOnly);
-        $arr['isk'] = Util::formatIsk($arr['isk']);
+
+        if (isset($arr['isk'])) $arr['isk'] = Util::formatIsk($arr['isk']);
+        if (isset($arr['kills'])) $arr['kills'] = number_format($arr['kills'], 0);
         unset($arr['_id']);
-    } else $arr = ['exceeds' => true];
 } else if ($queryType == "groups") {
     $app->contentType('text/html; charset=utf-8');
     $arr['top'] = [];
-    if (($endTime - $startTime) <= (86400 * 31)) {
         if (in_array($groupType, $types)) {
             $res = getTop($groupType . 'ID', $query, $victimsOnly);
             $app->render("components/asearch_top_list.html", ['topSet' => ['type' => $groupType, 'title' => 'Top ' . Util::pluralize(ucwords($groupType)), 'values' => $res]]);
         }
-    }
     return;
 }
 
 echo json_encode($arr, true);
+
+} catch (Exception $ex) {
+    Log::log(print_r($ex, true));
+}
 
 function buildQuery($queries, $key, $isVictim = null) {
     $query = buildFromArray($key, $isVictim);
@@ -178,14 +182,16 @@ function parseDate($query, $which) {
 
 function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $addInfo = true)
 {
-    global $mdb, $longQueryMS;
+    global $mdb, $longQueryMS, $redis;
 
+    $hashKey = "Stats::getTop:q:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly);
+    while ($redis->get("inprogress:$hashKey") == "true") sleep(1);
     try {
-        $hashKey = "Stats::getTop:q:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly);
         $result = RedisCache::get($hashKey);
         if ($cacheOverride == false && $result != null) {
             return $result;
         }
+        $redis->setex("inprogress:$hashKey", 60, "true");
 
         $killmails = $mdb->getCollection('killmails');
 
@@ -227,19 +233,23 @@ function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $a
         }
 
         if ($addInfo) Info::addInfo($result);
-        RedisCache::set($hashKey, $result, 300);
+        RedisCache::set($hashKey, $result, 900);
 
         return $result;
-    } catch (Exception $ex) { Log::log(print_r($ex, true)); return []; }
+    } catch (Exception $ex) {
+        RedisCache::set($hashKey, [], 900);
+    } finally {
+        $redis->del("inprogress:$hashKey");
+    }
 }
 
 function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $addInfo = true)
 {
     global $mdb, $longQueryMS;
 
+    //if ($groupByColumn == "ID") return [];
+    $hashKey = "Stats::getSums:q:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly);
     try {
-        if ($groupByColumn == "ID") return [];
-        $hashKey = "Stats::getSums:q:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly);
         $result = RedisCache::get($hashKey);
         if ($cacheOverride == false && $result != null) {
             return $result;
@@ -275,10 +285,12 @@ function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $
             Log::log("getTop Long query (${time}ms): $hashKey $uri");
         }
 
-        RedisCache::set($hashKey, $result, 300);
+        RedisCache::set($hashKey, $result, 900);
 
         return $result;
 
 
-    } catch (Exception $ex) { Log::log(print_r($ex, true) . "\n$groupByColumn\n" . print_r($query, true)); return []; }
+    } catch (Exception $ex) {
+        RedisCache::set($hashKey, [], 900);
+    }
 }
