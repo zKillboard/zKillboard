@@ -206,6 +206,9 @@ $app->map('/asearch/', function ($search = null) use ($app) {
 $app->map('/asearchquery/', function ($search = null) use ($app) {
         include 'view/asearchquery.php';
         })->via('GET');
+$app->map('/asearchinfo/', function ($search = null) use ($app) {
+        include 'view/asearchinfo.php';
+        })->via('GET');
 
 $app->get('/cache/1hour/autocomplete/', function () use ($app) {
         include 'view/search2020.php';

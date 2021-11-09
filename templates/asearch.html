@@ -57,7 +57,7 @@
     {% for group in labels %}
         <div class='btn-group'>
             {% for label in group %}
-                <button class='filter-btn btn btn-default btn-sm'>{{ label }}</button>
+                <button class='filter-btn btn btn-default btn-sm' value='label-{{ label }}'>{{ label }}</button>
             {% endfor %}
         </div>
     {% endfor %}
@@ -79,19 +79,25 @@
 </div>
 <div class="row">
     <div id='page' class='col-md-10'>
-        <div zkill-var='sort' zkill-key='sortBy' class='btn-group'><button class='radio-btn btn btn-primary'>Date</button><button class='radio-btn btn btn-default'>ISK</button><button class='radio-btn btn btn-default'>Involved</button></div>
-        <div zkill-var='sort' zkill-key='sortDir' class='btn-group'><button class='radio-btn btn btn-primary'>Desc</button><button class='radio-btn btn btn-default'>Asc</button></div>
+        <div zkill-var='sort' zkill-key='sortBy' class='btn-group'>
+            <button class='radio-btn btn btn-primary' value='sort-date'>Date</button>
+            <button class='radio-btn btn btn-default' value='sort-isk'>ISK</button>
+            <button class='radio-btn btn btn-default' value='sort-involved'>Involved</button>
+        </div>
+        <div zkill-var='sort' zkill-key='sortDir' class='btn-group'>
+            <button class='radio-btn btn btn-primary' value='sort-desc'>Desc</button>
+            <button class='radio-btn btn btn-default' value='sort-asc'>Asc</button></div>
         <div zkill-var='page' class='btn-group pull-right'>
-            <button id='page1' class='radio-btn btn btn-primary'>1</button>
-            <button class='radio-btn btn btn-default'>2</button>
-            <button class='radio-btn btn btn-default'>3</button>
-            <button class='radio-btn btn btn-default'>4</button>
-            <button class='radio-btn btn btn-default'>5</button>
-            <button class='radio-btn btn btn-default'>6</button>
-            <button class='radio-btn btn btn-default'>7</button>
-            <button class='radio-btn btn btn-default'>8</button>
-            <button class='radio-btn btn btn-default'>9</button>
-            <button class='radio-btn btn btn-default'>10</button>
+            <button id='page1' class='radio-btn btn-page btn btn-primary' value='page1'>1</button>
+            <button class='radio-btn btn-page btn btn-default' value='page2'>2</button>
+            <button class='radio-btn btn-page btn btn-default' value='page3'>3</button>
+            <button class='radio-btn btn-page btn btn-default' value='page4'>4</button>
+            <button class='radio-btn btn-page btn btn-default' value='page5'>5</button>
+            <button class='radio-btn btn-page btn btn-default' value='page6'>6</button>
+            <button class='radio-btn btn-page btn btn-default' value='page7'>7</button>
+            <button class='radio-btn btn-page btn btn-default' value='page8'>8</button>
+            <button class='radio-btn btn-page btn btn-default' value='page9'>9</button>
+            <button class='radio-btn btn-page btn btn-default' value='page10'>10</button>
         </div>
         <div class="clearfix"></div><br/>
 <div id="killmails-result" style='min-height: 500px;'>
@@ -114,9 +120,9 @@
     </div>
     <div class='col-md-2'>
         <div zkill-var='group-agg-type' class='btn-group btn-group-vertical' style='width: 100%'>
-            <div class='radio-btn btn btn-default btn-primary'>All Involved</div>
-            <div class='radio-btn btn btn-default'>Victims Only</div>
-            <div class='radio-btn btn btn-default'>Attackers Only</div>
+            <div class='radio-btn btn btn-default btn-primary' value='allinvolved'>All Involved</div>
+            <div class='radio-btn btn btn-default' value='victimsonly'>Victims Only</div>
+            <div class='radio-btn btn btn-default' value='attackersonly'>Attackers Only</div>
         </div>
         <div><h4 id='result-groups-count'></h4></div>
         <div id='result-groups-character'></div>

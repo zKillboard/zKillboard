@@ -1,6 +1,9 @@
 var types = ['character', 'corporation', 'alliance', 'faction', 'shipType', 'group', 'region', 'solarSystem', 'location'];
 var allowChange = true;
 
+var radios = { sort: { sortBy: 'date', sortDir: 'desc' }};  // to be depracated
+var asfilter = {location: [], attackers: [], neutrals: [], victims: [], sort: { sortBy: 'date', sortDir: 'desc' }};
+
 $(document).ready(function() {
     $('.asearch-autocomplete').autocomplete({
            autoSelectFirst: false,
@@ -14,20 +17,39 @@ $(document).ready(function() {
             error: function (xhr) {
                 console.log(xhr);
             }
-        }).focus();;
+        }).focus();
+
+
     $(".tfilter").on('click', adjustTime);
     $(".filter-btn").on('click', toggleFilterBtn);
     $(".radio-btn").on('click', toggleRadioBtn);
 
-    $("#dtstart").on('change', clickPage1).datetimepicker({format: 'Y-m-d H:i'});
-    $("#dtend").on('change', clickPage1).datetimepicker({format: 'Y-m-d H:i'});
-
     $("#rolling-times").on('click', toggleRollingTime);
-    setInterval(rollTime, 1000);
 
-    adjustTime(null, $("#stats-epoch-week"));
-    clickPage1();
+    $("#dtstart").on('change', datepick)
+    $("#dtend").on('change', datepick);
+
+    if (window.location.hash != '') {
+        setFilters();
+    } else {
+        adjustTime(null, $("#stats-epoch-week"));
+    }
+
+    setInterval(rollTime, 1000);
+    $(".btn-page.btn-primary").click();
+
+    window.addEventListener('popstate', function() {
+        setFilters();
+        $(".btn-page.btn-primary").click();
+    });
 });
+
+function datepick() {
+    if (allowChange) {
+        $(this).datetimepicker({format: 'Y-m-d H:i'});
+        clickPage1();
+    }
+}
 
 function toggleRollingTime(event, enabled) {
     if (enabled == undefined) {
@@ -128,9 +150,6 @@ function addEntity(suggestion) {
     clickPage1();
 }
 
-var radios = { sort: { sortBy: 'date', sortDir: 'desc' }};  // to be depracated
-var asfilter = {location: [], attackers: [], neutrals: [], victims: [], sort: { sortBy: 'date', sortDir: 'desc' }};
-
 function getHTML(suggestion) {
     var left = $("<span>").addClass("glyphicon").addClass("glyphicon-chevron-left").attr('direction', 'left').on('click', moveLeft).css('cursor', 'pointer');
     var right = $("<span>").addClass("glyphicon").addClass("glyphicon-chevron-right").attr('direction', 'right').on('click', moveRight).css('cursor', 'pointer');
@@ -150,13 +169,69 @@ function add(id, suggestion) {
     tag.append(newhtml);
 }
 
+function setFilters(hashfilters) {
+    // load up that filter
+    var hash = window.location.hash.substr(1);
+    hashfilters = JSON.parse(decodeURI(hash));
+
+    allowChange = false;
+    // https://zkillboard.com/asearch/#{%22buttons%22:[%22week%22,%22rolling%22,%22sort-date%22,%22Desc%22,%22page1%22,%22All%20Involved%22]}
+
+    $(".btn.btn-primary").removeClass("btn-primary").addClass("btn-default");
+
+    var keys = Object.keys(hashfilters);
+    for (const key in hashfilters) {
+        var value = hashfilters[key];
+        if (key == 'buttons') {
+            for (j = 0; j < value.length; j++) {
+                $("[value='" + value[j] + "']").addClass("btn-primary");
+            }
+        } else {
+            $("#" + key).val(value).attr('value', value);
+        }
+
+    }
+    allowChange = true;
+}
+
+function setHash() {
+    console.log('asfilter', asfilter);
+
+    var buttons = [];
+    $(".btn.btn-primary").each(function() {
+        var elem = $(this);
+        var value = elem.attr('value');
+        if (value == 'prior month' || value =='current month') value='custom';
+        if (value != null && value.length > 0) buttons.push(value);
+    });
+    var filter = {};
+    if (buttons.length > 0) filter.buttons = buttons;
+    if (buttons.indexOf('custom') >= 0 && $("#dtstart").val() != '') filter.dtstart = $("#dtstart").val();
+    if (buttons.indexOf('custom') >= 0 && $("#dtend").val() != '') filter.dtend = $("#dtend").val();
+    filter = setHashAdd(filter, asfilter, 'attackers');
+    filter = setHashAdd(filter, asfilter, 'neutrals');
+    filter = setHashAdd(filter, asfilter, 'victims');
+    filter = setHashAdd(filter, asfilter, 'location');
+    console.log(filter);
+
+    var hash = '';
+    if (Object.keys(filter).length > 0) hash = '#' + JSON.stringify(filter);
+    if ((window.location.pathname + window.location.hash) != (window.location.pathname + hash)) history.pushState("", document.title, window.location.pathname + hash);
+}
+
+function setHashAdd(filter, asfilter, key) {
+    var value = asfilter['key'];
+    if (value != null && value.length == 0) filter[key] = value;
+    return filter;
+}
 
 
 var xhrs = [];
 var filtersStringified = undefined;
 function doQuery() {
+    if (!allowChange) return;
+
     var f = getFilters();
-    console.log(JSON.stringify(f));
     var stringified = JSON.stringify(f);
     if (filtersStringified === stringified) {
         return;
@@ -213,6 +288,8 @@ function doQuery() {
         });
         xhrs.push(xhr);
     }
+
+    //setHash();
 }
 
 function getFilters() {
@@ -235,7 +312,7 @@ function applyKillQueryResult(data, textStatus, jqXHR) {
 
 function applyCountQueryResult(data, textStatus, jqXHR) {
     console.log('https://zkillboard.com' + this.url);
-    if (data.exceeds == true) {
+    if (data == null || data.exceeds == true) {
         $("#result-groups-count").html("Timespan > 31 Days");
         return;
     }

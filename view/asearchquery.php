@@ -116,6 +116,10 @@ if ($queryType == "kills") {
             $app->render("components/asearch_top_list.html", ['topSet' => ['type' => $groupType, 'title' => 'Top ' . Util::pluralize(ucwords($groupType)), 'values' => $res]]);
         }
     return;
+} else {
+    // what is this? ignore it...
+    $arr = [];
+    $app->contentType('application/json; charset=utf-8');
 }
 
 echo json_encode($arr, true);
