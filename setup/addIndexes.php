@@ -715,6 +715,9 @@ echo "Done\n";
 echo "Creating index : 'character_id' => 1, 'expires' => 1, with sparse = 0 and unique = 0 ... ";
 $patreon->ensureIndex(array('character_id' => 1, 'expires' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
+echo "Creating index : 'expires' => 1, with sparse = 0 and unique = 0 ... ";
+$patreon->ensureIndex(array('expires' => 1), array("sparse" => 0, "unique" => 0, "expireAfterSeconds" => 2678400));
+echo "Done\n";
 
 // payments
 echo "\nCreating collection payments ... ";
