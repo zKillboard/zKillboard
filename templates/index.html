@@ -14,10 +14,20 @@
 <div class="row">
 <div class="col-sm-10 pull-left" style="padding-left: 0px;">
 	<div>
-		{% set shipNameLength = 11 %}
-		{% set topTitle = 'Most Valuable Kills - Last 7 Days' %}
-		{% set topSet = topIsk %}
-		{% include 'components/big_top_list.html' %}
+        {% set shipNameLength = 11 %}
+
+        {% set topTitle = 'CCP Sponsored Activity - Last 7 Days' %}
+        {% set topSet = topSpecialLosses %}
+        {% include 'components/big_top_list.html' %}
+
+        {% set topTitle = 'Most Valuable Structures - Last 7 Days' %}
+        {% set topSet = topIskStructures %}
+        {% include 'components/big_top_list.html' %}
+
+        {% set topTitle = 'Most Valuable Ships - Last 7 Days' %}
+        {% set topSet = topIskShips %}
+        {% include 'components/big_top_list.html' %}
+
 		{% set topTitle = 'Sponsored Killmails - Last 7 Days' %}
 		{% set topSet = sponsored %}
 		{% include 'components/big_top_list.html' %}

@@ -8,10 +8,11 @@ $pageType = 'index';
 $requestUriPager = '';
 
 $topPoints = array();
-$topIsk = json_decode($redis->get('zkb:TopIsk'), true);
+$topIsk = json_decode($redis->get('zkb:TopIskShips'), true);
 $topIskShips = json_decode($redis->get('zkb:TopIskShips'), true);
-//$topIskStructures = json_decode($redis->get('zkb:TopIskStructures'), true);
-$topIskStructures = [];
+$topIskStructures = json_decode($redis->get('zkb:TopIskStructures'), true);
+$topSpecialLosses = json_decode($redis->get('zkb:TopSpecialLosses'), true);
+
 $sponsored = json_decode($redis->get('zkb:sponsored'), true);
 $topPods = array();
 
@@ -31,7 +32,7 @@ $kills = Kills::getKills(array('cacheTime' => 60, 'limit' => 50));
 // Collect active PVP stats
 $activePvP = json_decode($redis->get('zkb:activePvp'));
 
-$app->render('index.html', array('topPods' => $topPods, 'topIsk' => $topIsk, 'topIskShips' => $topIskShips, 'topIskStructures' => $topIskStructures, 'topPoints' => $topPoints, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => $pageType, 'pager' => true, 'pageTitle' => $pageTitle, 'requestUriPager' => $requestUriPager, 'activePvP' => $activePvP, 'entityID' => '*', 'trackedItems' => $trackedItems, 'topDonators' => json_decode($redis->get("zkb:topDonators"), true), 'sponsored' => $sponsored));
+$app->render('index.html', array('topPods' => $topPods, 'topIsk' => $topIsk, 'topIskShips' => $topIskShips, 'topIskStructures' => $topIskStructures, 'topPoints' => $topPoints, 'topSpecialLosses' => $topSpecialLosses, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => $pageType, 'pager' => true, 'pageTitle' => $pageTitle, 'requestUriPager' => $requestUriPager, 'activePvP' => $activePvP, 'entityID' => '*', 'trackedItems' => $trackedItems, 'topDonators' => json_decode($redis->get("zkb:topDonators"), true), 'sponsored' => $sponsored));
 
 function getTop($title, $type)
 {

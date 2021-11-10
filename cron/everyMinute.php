@@ -26,6 +26,7 @@ $redis->setex('zkb:topKillID', 86400, $topKillID);
 $redis->set('zkb:TopIsk', json_encode(Stats::getTopIsk(array('pastSeconds' => (7 * 86400), 'limit' => 6, 'npc' => false))));
 $redis->set('zkb:TopIskShips', json_encode(Stats::getTopIsk(array('categoryID' => 6, 'pastSeconds' => (7 * 86400), 'limit' => 6, 'npc' => false))));
 $redis->set('zkb:TopIskStructures', json_encode(Stats::getTopIsk(array('categoryID' => ['$ne' => 6], 'pastSeconds' => (7 * 86400), 'limit' => 6, 'npc' => false))));
+$redis->set('zkb:TopSpecialLosses', json_encode(Stats::getTopIsk(array('regionID' => 10000004, 'pastSeconds' => (7 * 86400), 'limit' => 6, 'npc' => false))));
 
 $redis->set("zkb:totalChars", $redis->zcard("zkb:characterID"));
 $redis->set("zkb:totalCorps", $redis->zcard("zkb:corporationID"));
