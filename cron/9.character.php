@@ -31,15 +31,22 @@ while ($minute == date('Hi')) {
         continue;
     }
 
-    /*if (isset($row['lastApiUpdate'])) {
+    if (isset($row['lastApiUpdate'])) {
         $hasRecent = $mdb->exists("ninetyDays", ['involved.characterID' => $id]);
         if ($id <= 1 || !$hasRecent) {
             $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(), 'corporationID' => 0, 'allianceID' => 0, 'factionID' => 0]);        
             foreach ($removeFields as $field) if (isset($row[$field])) $mdb->removeField("information", $row, $field);
             continue;
         }
-    }*/
+    }
     //if (isset($row['lastApiUpdate'])) while ($currentSecond == date('His')) $guzzler->sleep(0, 50);
+
+    // doomheimed characters now throw 404's....
+    if (@$row['corporationID'] == 1000001 || $id <= 9999999) {
+        $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now()]);
+        continue;
+    }
+
 
     $url = "$esiServer/v5/characters/$id/";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
@@ -55,7 +62,6 @@ function failChar(&$guzzler, &$params, &$connectionException)
     $code = $connectionException->getCode();
     $row = $params['row'];
     $id = $row['id'];
-    Util::out("ERROR $id");
 
     switch ($code) {
         case 0: // timeout
@@ -64,8 +70,13 @@ function failChar(&$guzzler, &$params, &$connectionException)
         case 503: // server error
         case 504: // gateway timeout
         case 200: // timeout...
+            Util::out("ERROR $id");
             $guzzler->sleep(1);
-            $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(-23 * 3600)]);
+            $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(-23 * 3600)]); // try again in an hour
+            break;
+        case 404: // not deleting it...
+            $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(86400 * 14)]);
+            $guzzler->sleep(1);
             break;
         case 420:
             $guzzler->finish();
