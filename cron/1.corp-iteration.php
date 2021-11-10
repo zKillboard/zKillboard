@@ -40,13 +40,6 @@ while ($minute == date('Hi')) {
         continue;
     }
 
-    // has this corpID been checked in the last 5 minutes?
-    $lastRedisCheck = $redis->get("zkb:corp:fetch:$corpID");
-    if ($lastRedisCheck !== false) {
-        $mdb->set("scopes", $row, ['lastFetch' => $mdb->now(-300)]);
-        continue;
-    }
-
     $refreshToken = $row['refreshToken']; 
 
     $refreshToken = $row['refreshToken'];
@@ -69,6 +62,7 @@ while ($minute == date('Hi')) {
         $page++;
         $killmails = $sso->doCall("$esiServer/v1/corporations/$corpID/killmails/recent/?page=$page", [], $accessToken);
         $count = success(['row' => $row], $killmails);
+        sleep(1);
     } while ($count >= 1000 && $iterated !== "true");
 
     if ($count != -1) {
@@ -113,9 +107,7 @@ function success($params, $content)
 
             case "This software has exceeded the error limit for ESI. If you are a user, please contact the maintainer of this software. If you are a developer/maintainer, please make a greater effort in the future to receive valid responses. For tips on how, come have a chat with us in #esi on tweetfleet slack. If you're not on tweetfleet slack yet, you can get an invite here -> https://www.fuzzwork.co.uk/tweetfleet-slack-invites/":
                 // 420'ed
-                $time = time();
-                $time = $time - ($time % 60);
-                sleep($time);
+                $mdb->set("scopes", $row, ['lastFetch' => $mdb->now()]);
                 exit();
             case "Timeout contacting tranquility":
             case "The datasource tranquility is temporarily unavailable":
@@ -140,7 +132,7 @@ function success($params, $content)
 
     if ($newKills > 0) {
         $corpName = Info::getInfoField('corporationID', $corpID, 'name');
-        while (strlen("$newKills") < 3) $newKills = " " . $newKills;
+        $newKills = str_pad($newKills, 3, " ", STR_PAD_LEFT);
         ZLog::add("$newKills kills added by corp $corpName *", $charID);
     }
     return $count;

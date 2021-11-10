@@ -85,18 +85,10 @@ function success($params, $content)
     if ($content != "" && sizeof($kills) > 0) $modifiers['last_has_data'] = $mdb->now();
     $mdb->set("scopes", $row, $modifiers);
 
-    $name = Info::getInfoField('characterID', $charID, 'name');
-    $corpName = Info::getInfoField('corporationID', $corpID, 'name');
-    if ($corpName == "") $corpName = "Corporation $corpID";
-    $verifiedKey = "apiVerified:$corpID";
-    $corpVerified = $redis->get($verifiedKey);
-    if ($corpVerified === false) {
-        Util::out("$corpName ($name) is now verified.", $charID);
-    }
-    $redis->setex($verifiedKey, 86400, time());
-
     if ($newKills > 0) {
-        if ($name === null) $name = $charID;
+        $corpName = Info::getInfoField('corporationID', $corpID, 'name');
+        if ($corpName == "") $corpName = "Corporation $corpID";
+
         $newKills = str_pad($newKills, 3, " ", STR_PAD_LEFT);
         Util::out("$newKills kills added by corp $corpName");
     }
