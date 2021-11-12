@@ -7,16 +7,16 @@
 {% block content %}
 {% include 'components/partial_title.html' %}
 {% if pageType == 'war' %}
-	{% include 'components/war.html' %}
+    {% include 'components/war.html' %}
 {% endif %}
 {% set killListTitle = 'Most recent kills' %}
 {% set killList = kills %}
 <div class="row">
 <div class="col-sm-10 pull-left" style="padding-left: 0px;">
-	<div>
+    <div>
         {% set shipNameLength = 11 %}
 
-        {% set topTitle = 'CCP's Backyard - Last 7 Days' %}
+        {% set topTitle = 'CCP\'s Backyard - Last 7 Days' %}
         {% set topSet = topSpecialLosses %}
         {% include 'components/big_top_list.html' %}
 
@@ -28,12 +28,12 @@
         {% set topSet = topIskShips %}
         {% include 'components/big_top_list.html' %}
 
-		{% set topTitle = 'Sponsored Killmails - Last 7 Days' %}
-		{% set topSet = sponsored %}
-		{% include 'components/big_top_list.html' %}
-	</div>
+        {% set topTitle = 'Sponsored Killmails - Last 7 Days' %}
+        {% set topSet = sponsored %}
+        {% include 'components/big_top_list.html' %}
+    </div>
   <div class="clearfix"></div>
-  <div class="centered publift adrow ad-xl-none" fuse="home_incontent" id="detailadrow" style='height: 100px; padding-top: 1em;'></div>
+  <div class="centered publift adrow ad-xl-none" fuse="home_incontent" id="detailadrow" style='padding-top: 1em;'></div>
 {% include 'components/kill_list.html' %}
 </div>
 <div class="col-sm-2 pull-left" style="padding: 0px;">
@@ -77,14 +77,14 @@
     </div>
     <hr/>
         <center><a href='/top/lasthour/'>Current Activity</a></center>
-	{% include 'components/activePvP.html' %}<div class='clearfix'></div><br/>
+    {% include 'components/activePvP.html' %}<div class='clearfix'></div><br/>
         {% include 'components/tracked_items.html' %}<br/>
-	{% set isEmbedded = true %}
-	{% for topSet in topKillers %}
-	{% include 'components/top_killer_list.html' %}
-	{% endfor %}
+    {% set isEmbedded = true %}
+    {% for topSet in topKillers %}
+    {% include 'components/top_killer_list.html' %}
+    {% endfor %}
 {% if topSet|length %}<br/><center><em><small>7 Day Top Killers<br/><a href='https://www.reddit.com/r/Eve/comments/42hipd/zkillboards_weekly_rankings_explained/' target='_blank'>Rankings Explained</a></em></small></center>{% endif %}
-	{% include 'components/donations.html' %}
+    {% include 'components/donations.html' %}
 </div>
 </div>
 

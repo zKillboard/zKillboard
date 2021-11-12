@@ -317,7 +317,7 @@ td.centered {
 }
 
 .adrow {
-    height: 101px;
+    min-height: 101px;
 }
 
 .bottom-interstitial {

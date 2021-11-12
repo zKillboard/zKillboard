@@ -113,7 +113,7 @@
     {% set topTitle = 'Sponsored Killmails - Last 7 Days' %}
     {% set topSet = extra.sponsoredMails %}
     {% include 'components/big_top_list.html' %}
-    <div class="centered publift adrow ad-xl-none" fuse="home_incontent" id="detailadrow" style='height: 100px; padding-top: 1em;'></div>
+    <div class="centered publift adrow ad-xl-none" fuse="home_incontent" id="detailadrow" style='padding-top: 1em;'></div>
     {% include 'components/kill_list.html' %}
   </div>
   <div class="col-lg-2 pull-left" style="padding: 0px;">
@@ -128,13 +128,13 @@
             {% endif %}
   </div>
 {% elseif pageType == 'trophies' %}
-	<div class="centered publift adrow ad-xl-none" fuse="home_incontent" id="detailadrow" style='height: 100px; padding-top: 1em;'></div>
+	<div class="centered publift adrow ad-xl-none" fuse="home_incontent" id="detailadrow" style='padding-top: 1em;'></div>
     {% include 'components/trophies.html' %}
 {% elseif pageType == 'api' %}
-	<div class="centered publift adrow ad-xl-none" fuse="home_incontent" id="detailadrow" style='height: 100px; padding-top: 1em;'></div>
+	<div class="centered publift adrow ad-xl-none" fuse="home_incontent" id="detailadrow" style='padding-top: 1em;'></div>
     {% include 'components/corp_list.html' %}
 {% elseif pageType == 'stats' %}
-	<div class="centered publift adrow ad-xl-none" fuse="home_incontent" id="detailadrow" style='height: 100px; padding-top: 1em;'></div>
+	<div class="centered publift adrow ad-xl-none" fuse="home_incontent" id="detailadrow" style='padding-top: 1em;'></div>
     {% include 'components/summary.html' %}
     <div class="clearfix"></div>
     {% include 'components/history.html' %}
@@ -151,7 +151,7 @@
 	{% set showImage = true %}
 	{% include 'components/top_list.html' %}
 {% elseif pageType == 'topalltime' %}
-	<div class="centered publift adrow ad-xl-none" fuse="home_incontent" id="detailadrow" style='height: 100px; padding-top: 1em;'></div>
+	<div class="centered publift adrow ad-xl-none" fuse="home_incontent" id="detailadrow" style='padding-top: 1em;'></div>
 	<h4>Top All Time</h4>
     {% set topSet = topKills %}
     {% set topTitle = 'Most Valuable Kills - All Time' %}
@@ -161,10 +161,10 @@
 	{% set showImage = true %}
 	{% include 'components/top_list.html' %}
 {% elseif pageType == 'corpstats' %}
-	<div class="centered publift adrow ad-xl-none" fuse="home_incontent" id="detailadrow" style='height: 100px; padding-top: 1em;'></div>
+	<div class="centered publift adrow ad-xl-none" fuse="home_incontent" id="detailadrow" style='padding-top: 1em;'></div>
 	{% include 'components/corpstats.html' %}
 {% elseif pageType == 'supers' %}
-<div class="centered publift adrow ad-xl-none" fuse="home_incontent" id="detailadrow" style='height: 100px; padding-top: 1em;'></div>
+<div class="centered publift adrow ad-xl-none" fuse="home_incontent" id="detailadrow" style='padding-top: 1em;'></div>
 <h3>Intel - Supers <small>(Last 3 months)</small></h3>
 {% set fieldset = extra.supers.titans %}
 {% include 'components/intel_table.html' %}
