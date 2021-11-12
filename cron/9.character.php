@@ -33,7 +33,7 @@ while ($minute == date('Hi')) {
 
     if (isset($row['lastApiUpdate'])) {
         $hasRecent = $mdb->exists("ninetyDays", ['involved.characterID' => $id]);
-        if ($id <= 1 || !$hasRecent) {
+        if ($id <= 1 || (!$hasRecent && $redis->get("apiVerified:$id") == null)) { // don't clear api verified characters
             $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(), 'corporationID' => 0, 'allianceID' => 0, 'factionID' => 0]);        
             foreach ($removeFields as $field) if (isset($row[$field])) $mdb->removeField("information", $row, $field);
             continue;
