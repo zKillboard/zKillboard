@@ -61,11 +61,11 @@ class UserGlobals extends Twig_Extension
 
         // Second, add the character, corp, and alliance for the current account
         $info = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $userID, 'cacheTime' => 300]);
-        $charName = Info::getInfoField('characterID', $userID, 'name');
+        $charName = Info::getInfoField('characterID', $userID, 'name')  . ' *';
         $corpID = (int) @$info['corporationID'];
-        $corpName = $corpID > 0 ? Info::getInfoField('corporationID', $corpID, 'name') : null;
+        $corpName = $corpID > 0 ? Info::getInfoField('corporationID', $corpID, 'name') . ' *' : null;
         $alliID = (int) @$info['allianceID'];
-        $alliName = $alliID > 0 ? Info::getInfoField('allianceID', $alliID, 'name') : null;
+        $alliName = $alliID > 0 ? Info::getInfoField('allianceID', $alliID, 'name')  . ' *' : null;
 
         $result['tracker_character'] = $this->addTracker(@$result['tracker_character'], $userID, $charName);
         $result['tracker_corporation'] = $this->addTracker(@$result['tracker_corporation'], $corpID, $corpName);
