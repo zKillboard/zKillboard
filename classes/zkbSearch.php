@@ -16,7 +16,7 @@ class zkbSearch
 
         $exactMatch = [];
         $partialMatch = [];
-        $types = ['typeID:flag', 'regionID', 'solarSystemID', 'allianceID', 'allianceID:flag', 'corporationID', 'corporationID:flag', 'characterID', 'typeID', 'groupID', 'locationID'];
+        $types = ['typeID:flag', 'regionID', 'solarSystemID', 'factionID', 'allianceID', 'allianceID:flag', 'corporationID', 'corporationID:flag', 'characterID', 'typeID', 'groupID', 'locationID'];
         foreach ($types as $type) {
             if ($entityType != null && $entityType != $type) {
                 continue;
@@ -43,6 +43,9 @@ class zkbSearch
                 $image = sprintf($image, $id);
                 if ($searchType == 'typeID:flag') {
                     $searchType = 'ship';
+                }
+                if ($searchType == 'factionID') {
+                    $searchType = 'faction';
                 }
                 if ($searchType == 'allianceID:flag') {
                     $searchType = 'alliance';
