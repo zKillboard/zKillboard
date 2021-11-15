@@ -16,7 +16,7 @@ foreach ($mails as $mail) {
     $victim['itemID'] = @$killmail['zkb']['locationID'];
     if ($mail['isk'] >= 5000000 && $mdb->count("sponsored", ['victim.characterID' => $victim['characterID']]) == 0) {
         $kill = "https://zkillboard.com/kill/" . $mail['killID'] . "/";
-        Util::sendEveMail($victim['characterID'], "Someone loves you!", "Someone has just sponsored one of your killmails on zKillboard:<br/><a href=\"$kill\">$kill</a><br/><br/>Cheers!");
+        Util::sendEveMail($victim['characterID'], "Someone loves you!", "Someone has just sponsored one of your killmails on zKillboard:<br/><a href=\"$kill\">$kill</a><br/><br/>Cheers!<br/><br/>- This is an automated message triggered by the sponsor event.<br/><br/>- This message, should, only be received once ever per character the first time one of their loss mails are sponsored.");
     }
     $mdb->set("sponsored", $mail, ['victim' => $victim]);
 }

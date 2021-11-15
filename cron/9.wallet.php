@@ -96,7 +96,7 @@ function applyBalances()
 
                 ZLog::add("$months month" . ($months == 1 ? "" : "s")  . " of ad free time has been given to $charName from $amount ISK.", $charID);
                 User::sendMessage("Thank you for your payment of $amount ISK. $months month" . ($months == 1 ? "" : "s")  . " of ad free time has been given to $charName", $charID);
-                Util::sendEveMail($charID, "$shortAmount ISK Received", "Thank you for your payment of $amount ISK. $months months of ad free time has been given to $charName.\n\n<a href=\"https://zkillboard.com/character/$charID/\">Your zKillboard character page.</a>");
+                Util::sendEveMail($charID, "$shortAmount ISK Received", "Thank you for your payment of $amount ISK. $months months of ad free time has been given to $charName.\n\n<a href=\"https://zkillboard.com/character/$charID/\">Your zKillboard character page.</a><br/><br/>- Tuesday's (UTC) your ISK is automatically doubled.<br/><br/>- This is an automated message triggered by your ISK transfer.");
             }
         }
         $mdb->set('payments', $row, ['paymentApplied' => 1]);
