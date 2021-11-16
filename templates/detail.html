@@ -287,14 +287,13 @@
 
 {% block script %}
 <script>
-$(document).ready(function() {
-    loadComments(1);
-});
-
-
-function loadComments(interval) {
-    $("#commentblock").load('/cache/bypass/comment/kill-{{ killdata.info.killID }}/-1/up/');
-    pubsub('comment:kill-{{ killdata.info.killID }}');
+function prepComments() {
+	if ($ == undefined) setTimeout(prepComments, 500);
+	else {
+    		$("#commentblock").load('/cache/bypass/comment/kill-{{ killdata.info.killID }}/-1/up/');
+    		pubsub('comment:kill-{{ killdata.info.killID }}');
+    	}
 }
+setTimeout(prepComments, 500);
 </script>
 {% endblock %}

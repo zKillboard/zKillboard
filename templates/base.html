@@ -36,10 +36,8 @@
 		{% block robots %}
 		{% endblock %}
 
-			<meta name="viewport" content="width=device-width, initial-scale=1.0">
-			{% if showAds %}
-            <script src="https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js"></script> 
-	    		{% endif %}
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script defer src="https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js"></script> 
 
 		<title>
 			{% block title %}
@@ -82,13 +80,13 @@
 			}
 		</style>
                 <script type="text/javascript">
-		    var showAds = {{ showAds|default(1) }};
-                    var characterID = {{ characterID }};
-                    var navbar = true; 
-                    var entityType = '{{ entityType }}';
-                    var entityID = '{{ entityID }}';
-                    var entityPage = '{{ pageType }}';
-		    var start_websocket = {{ websocket }};
+var showAds = {{ showAds|default(1) }};
+var characterID = {{ characterID }};
+var navbar = true; 
+var entityType = '{{ entityType }}';
+var entityID = '{{ entityID }}';
+var entityPage = '{{ pageType }}';
+var start_websocket = {{ websocket }};
                 </script>
 	</head>
 	<body>
@@ -135,54 +133,21 @@
 			</div>
 		</div>
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.devbridge-autocomplete/1.4.11/jquery.autocomplete.min.js" integrity="sha512-uxCwHf1pRwBJvURAMD/Gg0Kz2F2BymQyXDlTqnayuRyBFE7cisFCh2dSb1HIumZCRHuZikgeqXm8ruUoaxk5tA==" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js" integrity="sha512-T/tUfKSV1bihCnd+MxKD0Hm1uBBroVYBOYSk1knyvQ9VyZJpc/ALb4P0r6ubwVPSGB2GvjeoMAJJImBG12TiaQ==" crossorigin="anonymous"></script>
+        <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+        <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery.devbridge-autocomplete/1.4.11/jquery.autocomplete.min.js" integrity="sha512-uxCwHf1pRwBJvURAMD/Gg0Kz2F2BymQyXDlTqnayuRyBFE7cisFCh2dSb1HIumZCRHuZikgeqXm8ruUoaxk5tA==" crossorigin="anonymous"></script>
+        <script defer src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js" integrity="sha512-T/tUfKSV1bihCnd+MxKD0Hm1uBBroVYBOYSk1knyvQ9VyZJpc/ALb4P0r6ubwVPSGB2GvjeoMAJJImBG12TiaQ==" crossorigin="anonymous"></script>
 
-		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.1.0/jquery.timeago.min.js"></script>
-		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min.js"></script>
-		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js"></script>
-		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.2/bootstrap-slider.min.js"></script>
+		<script defer type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.1.0/jquery.timeago.min.js"></script>
+		<script defer type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min.js"></script>
+		<script defer type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js"></script>
+		<script defer type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.2/bootstrap-slider.min.js"></script>
 
-		<script type="text/javascript" src="//{{ siteurl }}/js/search.js?v={{ version }}"></script>
-		<script type="text/javascript" src="//{{ siteurl }}/js/common.js?v={{ version }}"></script>
-		<script type="text/javascript" src="//{{ siteurl }}/js/sclock1.js"></script>
-		<script type="text/javascript" src="//{{ siteurl }}/js/nprogress.js"></script>
-                <script type="text/javascript" src="/js/reconnecting-websocket.js"></script>
-                <script type="text/javascript" src="//{{ siteurl }}/js/rankstablesort.js"></script>
-
-		<script type="text/javascript">
-                        $(document).ready(function() {
-                            if (navbar) $('#tracker-dropdown').load('/navbar/');
-                            var channel = entityType + ":" + entityID;
-                            if (entityPage != 'index' && entityPage != 'overview') channel = channel + ":" + entityPage;
-                            pubsub(channel);
-                        });
-
-			var datepicker = $('.datepicker').datepicker({
-				format: "mm/yyyy",
-				viewMode: 1,
-				minViewMode: 1,
-				autoclose: true
-			}).on("changeDate", function(ev){
-				console.log(ev);
-				date = new Date(ev.date);
-				var year = date.getFullYear();
-				var month = date.getMonth() +1;
-				location.href = '{{ actualURI }}' + 'year/' + year + '/month/' + month + '/';
-				console.log(month)
-			});
-		</script>
-
-        <script type="text/javascript">
-            $(function() {
-                $(document).keyup(function(e) {
-                    if ($("input:focus, textarea:focus").length === 0 && e.which === 191) {
-                        $("#searchbox").focus();
-                    }
-                });
-            });
-        </script>
+		<script defer type="text/javascript" src="//{{ siteurl }}/js/search.js?v={{ version }}"></script>
+		<script defer type="text/javascript" src="//{{ siteurl }}/js/common.js?v={{ version }}"></script>
+		<script defer type="text/javascript" src="//{{ siteurl }}/js/sclock1.js"></script>
+		<script defer type="text/javascript" src="//{{ siteurl }}/js/nprogress.js"></script>
+		<script defer type="text/javascript" src="/js/reconnecting-websocket.js"></script>
+		<script defer type="text/javascript" src="//{{ siteurl }}/js/rankstablesort.js"></script>
 
 		{% block script %}
 		{% endblock %}

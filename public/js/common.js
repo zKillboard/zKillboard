@@ -1,5 +1,9 @@
 var ws;
+
 $(document).ready(function() {
+    if (navbar) $('#tracker-dropdown').load('/navbar/');
+
+
     // add the autocomplete search thing
     $('#searchbox').zz_search( function(data, event) { window.location = '/' + data.type + '/' + data.id + '/'; event.preventDefault(); } );
 
@@ -19,21 +23,6 @@ $(document).ready(function() {
         setTimeout(sendCrestUrl, 1);
     });
 
-    // setup websocket with callbacks
-    if (start_websocket) {
-    ws = new ReconnectingWebSocket('wss://' + window.location.hostname + '/websocket/', '', {maxReconnectAttempts: 15});
-    ws.onmessage = function(event) {
-        wslog(event.data);
-    };
-    ws.onopen = function(event) {
-        pubsub('public');
-        // If we connected and somehow got completely disconnected - reload the page
-        ws.onclose = function(event) {
-            //window.location = window.location;
-        }
-      }
-    }
-
     addKillListClicks();
 
     /*var pathname = $(location).attr('pathname');
@@ -43,7 +32,54 @@ $(document).ready(function() {
         addPartials();
         console.log($(location).attr('pathname'));
     }*/
+
+    var datepicker = $('.datepicker').datepicker({
+            format: "mm/yyyy",
+            viewMode: 1,
+            minViewMode: 1,
+            autoclose: true
+    }).on("changeDate", function(ev){
+            console.log(ev);
+            date = new Date(ev.date);
+            var year = date.getFullYear();
+            var month = date.getMonth() +1;
+            location.href = '{{ actualURI }}' + 'year/' + year + '/month/' + month + '/';
+            console.log(month)
+    });
+
+    $(document).keyup(function(e) {
+        if ($("input:focus, textarea:focus").length === 0 && e.which === 191) {
+            $("#searchbox").focus();
+        }
+    });
+
+    // setup websocket with callbacks
+    if (start_websocket) startWebSocket();
 });
+
+function startWebSocket() {
+    try {
+        ws = new ReconnectingWebSocket('wss://' + window.location.hostname + '/websocket/', '', {maxReconnectAttempts: 15});
+        ws.onmessage = function(event) {
+                wslog(event.data);
+        };
+        ws.onopen = function(event) {
+            pubsub('public');
+            // If we connected and somehow got completely disconnected - reload the page
+            ws.onclose = function(event) {
+                //window.location = window.location;
+            }
+        }
+
+        var channel = entityType + ":" + entityID;
+        if (entityPage != 'index' && entityPage != 'overview') channel = channel + ":" + entityPage;
+        pubsub(channel);
+
+        console.log('WebSocket connected');
+    } catch (e) {
+        setTimeout(startWebSocket, 100);
+    }
+}
 
 function htmlNotify (data) 
 {
@@ -241,7 +277,7 @@ function pubsub(channel)
         ws.send(JSON.stringify({'action':'sub', 'channel': channel}));
         console.log("subscribing to " + channel);
     } catch (e) {
-        setTimeout("pubsub('" + channel + "');", 1000);
+        setTimeout("pubsub('" + channel + "');", 150);
     }
 }
 
@@ -263,7 +299,15 @@ function commentUpVote(pageID, commentID)
 }
 
 var adnumber = 0;
+var adfailcount = 0;
 function loadads() {
+    if (typeof fusetag == 'undefined') {
+        adfailcount++;
+        if (adfailcount <= 5) return setTimeout(loadads, 1000);
+
+        console.log('ads appear to be blocked');
+        return showAdblockedMessage();
+    }
     var adblocks = $(".publift:visible");
     adnumber = adblocks.length;
     adblocks.each(function() {
@@ -277,33 +321,8 @@ var bottomad = null;
 function adblockloaded() {
     adnumber--;
     if (adnumber <= 0) {
-        try {
-            //bottomad = $("#adsensebottom").detach();
-            //$("#detailadrow").html(bottomad.html());
-            //killListAd(false);
-            fusetag.loadSlots();
-            setTimeout(adBlockCheck, 5000);
-        } catch (e) {
-            adBlockCheck();
-        }
+        fusetag.loadSlots();
     }
-}
-
-function killListAd(doLoadSlots) {
-    if ($(".adrow").length == 0 && bottomad != null) {
-        var td = $("<td colspan='8' style='width: 100%;'>") ; bottomad.appendTo(td); var tr = $("<tr class='killlistrow adrow ad-xl-none'>").append(td).insertBefore("#killlist tbody tr:first");
-        if (doLoadSlots === true) fusetag.loadSlots();
-    }
-}
-
-function adBlockCheck() {
-
-    if (showAds != 0 && typeof fusetag == "undefined") showAdblockedMessage();
-    setTimeout(checkTopAd, 6000);
-}
-
-function checkTopAd() {
-    if (showAds != 0 && $("#publifttop").html() == "") setTimeout(showAdblockedMessage, 1);
 }
 
 function showAdblockedMessage() {

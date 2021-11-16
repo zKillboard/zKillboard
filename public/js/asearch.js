@@ -26,7 +26,7 @@ $(document).ready(function() {
 
     $("#rolling-times").on('click', toggleRollingTime);
 
-    $("#dtstart").on('change', datepick)
+    $("#dtstart").on('change', datepick);
     $("#dtend").on('change', datepick);
 
     if (window.location.hash != '') {
@@ -350,9 +350,6 @@ function popEm() {
                 doDateCleanup();
             });
         popEm();
-    } else {
-        // We're done, now do some cleanup
-        killListAd(true);
     }
 }
 
