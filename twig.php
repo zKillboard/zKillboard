@@ -94,7 +94,7 @@ $twig->addGlobal("universeUpdating", $redis->get("zkb:universeLoaded") == "false
 $twig->addGlobal("tobefetched", $redis->get("tobefetched"));
 $twig->addGlobal("tobeStatsCount", $redis->scard("queueStatsSet"));
 
-$noAdPages = array('/account/', '/ticket', '/information/', '/post/', '/ccp');
+$noAdPages = array('/account/', '/information/', '/post/', '/ccp', '/ztop/');
 global $showAds, $websocket;
 foreach ($noAdPages as $noAdPage) {
     $showAds &= !Util::startsWith($uri, $noAdPage);
@@ -132,6 +132,7 @@ if ($banner) {
 
 $twig->addGlobal('showAds', ($showAds ? 1 : 0));
 $twig->addGlobal('websocket', ($websocket ? 1 : 0));
+$twig->addGlobal('currentTime', date('YmdHi'));
 $_SERVER['SERVER_NAME'] = $baseAddr;
 
 $twig->addGlobal('KillboardName', (isset($killboardName) ? $killboardName : 'zKillboard'));

@@ -221,11 +221,12 @@
 {% endblock %}
 
 {% block script %}
-	<script type="text/javascript" src="//{{ siteurl }}/js/tablesorter/jquery.tablesorter.min.js"></script>
+	<script defer type="text/javascript" src="//{{ siteurl }}/js/tablesorter/jquery.tablesorter.min.js"></script>
 	<script type="text/javascript">
-		$(document).ready(function() {
-			$("#corpstats").tablesorter({textExtraction: removeCommas});
-		}); 
+		function prepPage() {
+			if ($ === undefined) return setTimeout(prepPage, 500);
+			else $("#corpstats").tablesorter({textExtraction: removeCommas});
+		}
 		function removeCommas(val) {
 			return val.innerHTML.replace(',', '', 'g');
 		}

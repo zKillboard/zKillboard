@@ -42,9 +42,10 @@ $(document).ready(function() {
             console.log(ev);
             date = new Date(ev.date);
             var year = date.getFullYear();
-            var month = date.getMonth() +1;
-            location.href = '{{ actualURI }}' + 'year/' + year + '/month/' + month + '/';
-            console.log(month)
+            var month = date.getMonth() + 1;
+            var newHREF = actualURI + 'year/' + year + '/month/' + month + '/';
+            console.log(newHREF);
+            location.href = newHREF;
     });
 
     $(document).keyup(function(e) {
