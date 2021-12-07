@@ -539,7 +539,7 @@ class Info
             '0' => 'Corporate  Hangar', // Yes, two spaces, flag 0 is wierd and should be 4
             '89' => 'Implants',
             '133' => 'Fuel Bay',
-            '134' => 'Ore Hold',
+            '134' => 'Mining Hold',
             '136' => 'Mineral Hold',
             '137' => 'Salvage Hold',
             '138' => 'Specialized Ship Hold',
