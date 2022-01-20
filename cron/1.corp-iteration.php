@@ -20,12 +20,16 @@ while ($minute == date('Hi')) {
         $corpID = (int) Info::getInfoField("characterID", $charID, "corporationID");
         if ($corpID > 0) $mdb->set("scopes", $row, ['corporationID' => $corpID, 'lastFetch' => 0]);
         else {
-            Util::out("Unable to determine corproation for $charID");
+            //Util::out("Unable to determine corproation for $charID");
             $i = $mdb->set("information", ['type' => 'characterID', 'id' => ((int) $charID)], ['lastApiUpdate' => 0]);
             if ($i['nModified'] == 0) {
                 // wtf, char not in database?
-                $mdb->insert("information", ['type' => 'characterID', 'id' => ((int) $charID), 'lastApiUpdate' => 0]);
+                try {
+                    $mdb->insert("information", ['type' => 'characterID', 'id' => ((int) $charID), 'lastApiUpdate' => 0]);
+                } catch (Exception $exx) { }
             }
+            sleep(1);
+            continue;
         }
     }
 
