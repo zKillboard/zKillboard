@@ -136,12 +136,12 @@ class Price
             case 42125: // Vendetta
             case 42246: // Caedes
                 return 120000000000; // 120b
-            case 48636: // Hydra
-                return 140000000000; // 150b
             case 2836: // Adrestia
             case 33675: // Chameleon
             case 35781: // Fiend
             case 45530: // Virtuoso
+            case 48636: // Hydra
+            case 60765: // Raiju
                 return 150000000000; // 150b
             case 33397: // Chremoas
             case 42245: // Rabisu
@@ -150,6 +150,7 @@ class Price
             case 45531: // Victor
                 return 230000000000;
             case 48635: // Tiamat
+            case 60764: // Laelaps
                 return 230000000000;
             case 47512: // 'Moreau' Fortizar
                 return 60000000000; // 60b 
