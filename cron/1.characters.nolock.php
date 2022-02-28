@@ -7,7 +7,7 @@ use cvweiss\redistools\RedisTimeQueue;
 
 require_once "../init.php";
 
-$sso = EveOnlineSSO::getSSO();
+$sso = ZKillSSO::getSSO();
 
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:noapi") == "true") exit();
@@ -42,22 +42,13 @@ while ($minute == date('Hi')) {
 
             $params = ['row' => $row, 'esi' => $esi];
             $refreshToken = $row['refreshToken'];
-            $accessToken = $redis->get("oauth2:$charID:$refreshToken");
-            if ($accessToken == null) {
-                $accessToken = $sso->getAccessToken($refreshToken);
-                if (@$accessToken['error'] == "invalid_grant") {
-                    $mdb->remove("scopes", $row);
-                    sleep(1);
-                    continue;
-                }
-                /*if (@$accessToken['error'] != "") {
-                    Log::log(print_r($accessToken, true));
-                    //$mdb->remove("scopes", $row);
-                    sleep(1);
-                    continue;
-                }*/
-                $redis->setex("oauth2:$charID:$refreshToken", 900, $accessToken);
+            $accessToken = $sso->getAccessToken($refreshToken);
+            if (@$accessToken['error'] == "invalid_grant") {
+                $mdb->remove("scopes", $row);
+                sleep(1);
+                continue;
             }
+
             $killmails = $sso->doCall("$esiServer/v1/characters/$charID/killmails/recent/", [], $accessToken);
             success(['row' => $row, 'esi' => $esi], $killmails);
             $redis->setex("esi-fetched:$charID", 300, "true");

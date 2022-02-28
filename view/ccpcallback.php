@@ -21,7 +21,7 @@ try {
 
     $scopeCount = 0;
 
-    $sso = EveOnlineSSO::getSSO();
+    $sso = ZKillSSO::getSSO();
     $code = filter_input(INPUT_GET, 'code');
     $state = filter_input(INPUT_GET, 'state');
     $userInfo = $sso->handleCallback($code, $state, $_SESSION);
@@ -88,7 +88,7 @@ try {
             if ($mdb->count("scopes", ['characterID' => $charID, 'scope' => $neededScope]) == 0) $doRedirect = true;
         }
         if ($doRedirect) {
-            $sso = EveOnlineSSO::getSSO($neededScopes);
+            $sso = ZKillSSO::getSSO($neededScopes);
             header('Location: ' . $sso->getLoginURL($_SESSION), 302);
             exit();
         }

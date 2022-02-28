@@ -4,7 +4,7 @@ require_once "../init.php";
 
 if ($redis->get("zkb:noapi") == "true") exit();
 
-$sso = EveOnlineSSO::getSSO();
+$sso = ZKillSSO::getSSO();
 
 $mails = $mdb->find("evemails", ['sent' => false], ['_id' => 1]);
 if (sizeof($mails)) {

@@ -16,7 +16,7 @@ class ESI {
         if ($row == null) {
             return ['message' => 'You have not given zkillboard permission to save fits to your account.'];
         }
-        $sso = EveOnlineSSO::getSSO();
+        $sso = ZKillSSO::getSSO();
         $accessToken = $sso->getAccessToken($row['refreshToken']);
 
         $killmail = Kills::getEsiKill($killID);
@@ -50,7 +50,7 @@ class ESI {
             return ['message' => 'Cannot save this fit, no hardware.'];
         }
 
-        $sso = EveOnlineSSO::getSSO();
+        $sso = ZKillSSO::getSSO();
         $result = $sso->doCall($esiServer . "/v1/characters/$charID/fittings/", $export, $accessToken, 'POST_JSON');
         if ($result != "") {
             $json = json_decode($result, true);

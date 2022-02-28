@@ -223,7 +223,7 @@ class Price
         }
 
         $url = "$esiServer/v1/markets/10000002/history/?type_id=$typeID";
-        $sso = EveOnlineSSO::getSSO();
+        $sso = ZKillSSO::getSSO();
         $json = json_decode($sso->doCall($url), true);
 
         foreach ($json as $row) {

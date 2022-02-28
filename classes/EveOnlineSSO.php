@@ -150,8 +150,7 @@ class EveOnlineSSO
         $fields = ['grant_type' => 'refresh_token', 'refresh_token' => $refreshToken];
         $accessString = $this->doCall($this->tokenURL, $fields, null, 'POST', true);
         $accessJson = json_decode($accessString, true);
-        if (!isset($accessJson['access_token'])) return $accessJson; // throw new \Exception("Unexpected value returned from call:\n" . print_r($accessJson, true));
-        return $accessJson['access_token'];
+        return $accessJson;
     }
 
     public function doCall($url, $fields = [], $accessToken = null, $callType = 'GET')

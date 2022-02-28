@@ -4,7 +4,7 @@ require_once '../init.php';
 
 global $esiServer, $adminCharacter;
 
-$sso = EveOnlineSSO::getSSO();
+$sso = ZKillSSO::getSSO();
 
 if ($redis->get("zkb:noapi") == "true") exit();
 if ($redis->get("zkb:420prone") == "true") exit();

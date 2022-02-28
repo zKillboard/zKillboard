@@ -8,7 +8,7 @@ require_once "../init.php";
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:noapi") == "true") exit();
 
-$sso = EveOnlineSSO::getSSO();
+$sso = ZKillSSO::getSSO();
 $esiCorps = new RedisTimeQueue('tqCorpApiESI', 3600);
 
 $minute = date('Hi');
@@ -44,19 +44,13 @@ while ($minute == date('Hi')) {
         continue;
     }
 
-    $refreshToken = $row['refreshToken']; 
-
     $refreshToken = $row['refreshToken'];
-    $accessToken = $redis->get("oauth2:$charID:$refreshToken");
-    if ($accessToken == null) {
-        $accessToken = $sso->getAccessToken($refreshToken);
-        if (is_array($accessToken)) {
-            if ($accessToken['error'] == "invalid_grant") {
-                $mdb->remove("scopes", $row);
-                continue;
-            }
+    $accessToken = $sso->getAccessToken($refreshToken);
+    if (is_array($accessToken)) {
+        if ($accessToken['error'] == "invalid_grant") {
+            $mdb->remove("scopes", $row);
+            continue;
         }
-        $redis->setex("oauth2:$charID:$refreshToken", 900, $accessToken);
     }
 
     $iterated = $redis->get("zkb:corp:iterated:$corpID");
@@ -73,7 +67,7 @@ while ($minute == date('Hi')) {
         $mdb->set("scopes", $row, ['lastFetch' => $mdb->now()]);
         $redis->setex("esi-fetched:$corpID", 300, "true");
         $redis->setex("zkb:corp:iterated:$corpID", 604800, "true");
-        
+
         if ($corpID > 1999999) {
             $esiCorps->add(((int) $corpID));
         }
@@ -117,11 +111,11 @@ function success($params, $content)
             case "The datasource tranquility is temporarily unavailable":
                 return -1;
             case "Undefined 404 response. Original message: Requested page does not exist!":
-                return 0; // not really an error, just ignore it and move on
+                                                            return 0; // not really an error, just ignore it and move on
             default:
-                    Util::out("Unknown error");
-                    print_r($kills);
-                    return 0;
+                                                            Util::out("Unknown error");
+                                                            print_r($kills);
+                                                            return 0;
         }
         // Something went wrong, reset it and try again later
         exit();

@@ -8,5 +8,5 @@ if ($uri != '') {
     $redis->setex("forward:$sessID", 300, $uri);
 }
 
-$sso = EveOnlineSSO::getSSO();
+$sso = ZKillSSO::getSSO();
 $app->redirect($sso->getLoginURL($_SESSION), 302);
