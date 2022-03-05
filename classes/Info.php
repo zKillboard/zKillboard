@@ -540,6 +540,7 @@ class Info
             '89' => 'Implants',
             '133' => 'Fuel Bay',
             '134' => 'Mining Hold',
+            '135' => 'Gas Hold',
             '136' => 'Mineral Hold',
             '137' => 'Salvage Hold',
             '138' => 'Specialized Ship Hold',
