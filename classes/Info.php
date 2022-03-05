@@ -562,6 +562,7 @@ class Info
             '64' => 'Unlocked item, can be moved',
             '179' => 'Frigate Bay',
             '180' => 'Core Room',
+            '181' => 'Ice Hold'
             );
 
     /**
