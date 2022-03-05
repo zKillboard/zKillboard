@@ -7,7 +7,7 @@
 	{% if headerDisplayed == false %}
                 {% set total = 0 %}
 		<tr class="hide-when-sorted">
-			<th colspan="4"><h5>{{ flagName }}</h5></th>
+			<th colspan="4"><h5>{{ flagName }}</h5>{% if flagName == "Frigate Bay" %} <small>Full value of frigate not included in killmail value.</small>{% endif %}</th>
 <td class="hidden"></td>
 <td class="hidden"></td>
 <td class="hidden"></td>

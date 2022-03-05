@@ -296,6 +296,7 @@ function processItem($killID, $item, $dttm, $isCargo = false, $parentContainerFl
     $typeID = (int) $item['item_type_id'];
 
     if ($typeID == 33329 && $item['flag'] == 89) $price = 0.01; // Golden pod implant can't be destroyed
+    else if ($item['flag'] == 179) $price = 0.01; // Ships in frigate bay have no real value for killmail
     else $price = Price::getItemPrice($typeID, $dttm);
 
     if ($killID < 21112472 && $isCargo) {

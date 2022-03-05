@@ -203,7 +203,7 @@ class Kills
                 if ($killID < 21112472 && $inContainer && strpos(Info::getInfoField('typeID', $typeID, 'name'), 'Blueprint')) {
                     $item['singleton'] = 2;
                 }
-                if ($item['singleton'] == 2) {
+                if ($item['singleton'] == 2 || $item['flag'] == 179) { // bpcs and ships in frigate bay have no real value
                     $item['price'] = 0.01;
                 }
                 unset($item['_stringValue']);
