@@ -66,6 +66,7 @@ $sponsored = [];
 foreach ($result as $kill) {
     if ($kill['iskSum'] <= 0) continue;
     $killmail = $mdb->findDoc("killmails", ['killID' => $kill['killID']]);
+    if ($killmail == null) continue;
     Info::addInfo($killmail);
     $killmail['victim'] = $killmail['involved'][0];
     $killmail['zkb']['totalValue'] = $kill['iskSum'];
