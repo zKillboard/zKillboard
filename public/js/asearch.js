@@ -127,7 +127,17 @@ function zeroPad(text) {
     return ('00' + text).slice(-2);
 }
 
-function addEntity(suggestion) {
+function createSuggestion(json, slot) {
+    addEntity({
+        value: json.name,
+        data: {
+            type: json.type,
+            id: json.id
+        }
+    }, slot);
+}
+
+function addEntity(suggestion, slot = 'neutrals') {
     console.log("suggestion", suggestion);
     delete suggestion.data.groupBy;
     if (suggestion.data.type != 'label' && suggestion.data.type.indexOf('ID') < 0) suggestion.data.type = suggestion.data.type + 'ID';
@@ -138,13 +148,14 @@ function addEntity(suggestion) {
         case 'systemID':
         case 'constellationID':
         case 'regionID':
+            asfilter.location.length = 0;
             asfilter.location.push(suggestion.data);
             $("#location").html("");
             add('location', suggestion);
             break;
         default:
-            asfilter.neutrals.push(suggestion.data);
-            add('neutrals', suggestion);
+            asfilter[slot].push(suggestion.data);
+            add(slot, suggestion);
 
     }
     clickPage1();
@@ -173,9 +184,10 @@ function setFilters(hashfilters) {
     // load up that filter
     var hash = window.location.hash.substr(1);
     hashfilters = JSON.parse(decodeURI(hash));
+    console.log('hashfilters:', hashfilters);
 
     allowChange = false;
-    // https://zkillboard.com/asearch/#{%22buttons%22:[%22week%22,%22rolling%22,%22sort-date%22,%22Desc%22,%22page1%22,%22All%20Involved%22]}
+    // https://zkillboard.com/asearch/#{%22buttons%22:[%22alltime%22,%22rolling%22,%22label-5+%22,%22sort-date%22,%22sort-desc%22,%22page1%22,%22allinvolved%22],%22location%22:[{%22type%22:%22systemID%22,%22id%22:30001453}]}
 
     $(".btn.btn-primary").removeClass("btn-primary").addClass("btn-default");
 
@@ -184,12 +196,25 @@ function setFilters(hashfilters) {
         var value = hashfilters[key];
         if (key == 'buttons') {
             for (j = 0; j < value.length; j++) {
-                $("[value='" + value[j] + "']").addClass("btn-primary");
+                $("[value='" + value[j] + "']").click();
             }
-        } else {
-            $("#" + key).val(value).attr('value', value);
-        }
+        } 
 
+        switch (key) {
+            case 'dtstart':
+            case 'dtend':
+                $("#" + key).val(value);
+                break;
+            case 'location':
+            case 'attackers':
+            case 'neutrals':
+            case 'victims':
+                $.ajax({
+                    url: '/asearchinfo/?type=' + value[0].type + '&id=' + value[0].id,
+                    success: function(json) { createSuggestion(json, key); }
+                });
+                break;
+        }
     }
     allowChange = true;
 }
@@ -220,8 +245,12 @@ function setHash() {
 }
 
 function setHashAdd(filter, asfilter, key) {
-    var value = asfilter['key'];
-    if (value != null && value.length == 0) filter[key] = value;
+    var value = asfilter[key];
+    console.log(key, value);
+    if (value != undefined && value.length > 0) {
+        console.log('adding', key);
+        filter[key] = value;
+    }
     return filter;
 }
 
@@ -289,7 +318,7 @@ function doQuery() {
         xhrs.push(xhr);
     }
 
-    //setHash();
+    setHash();
 }
 
 function getFilters() {
