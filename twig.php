@@ -139,6 +139,7 @@ $twig->addGlobal('KillboardName', (isset($killboardName) ? $killboardName : 'zKi
 
 // Set the style used side wide to the user selected one, or the config default
 $twig->addGlobal('style', UserConfig::get('style', $style));
+$twig->addGlobal('trackernotification', UserConfig::get('trackernotification', 'true'));
 
 $twig->addExtension(new UserGlobals());
 

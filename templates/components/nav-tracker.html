@@ -19,32 +19,33 @@ $(".zkblogo").hide();
 {% endif %}
 
 var showAdd = true;
+var tn = ('true' == '{{ trackernotification }}'); // TN = TrackerNotification
 {% for data in tracker_character %}
-showAdd = showAdd && ($("#tracker-remove-character-{{data.id}}").removeClass("hidden").length == 0);
+showAdd = showAdder(showAdd, 'character', {{data.id}}, tn);
 {% endfor %}
 {% for data in tracker_corporation %}
-showAdd = showAdd && ($("#tracker-remove-corporation-{{data.id}}").removeClass("hidden").length == 0);
+showAdd = showAdder(showAdd, 'corporation', {{data.id}}, tn);
 {% endfor %}
 {% for data in tracker_alliance %}
-showAdd = showAdd && ($("#tracker-remove-alliance-{{data.id}}").removeClass("hidden").length == 0);
+showAdd = showAdder(showAdd, 'alliance', {{data.id}}, tn);
 {% endfor %}
 {% for data in tracker_faction %}
-showAdd = showAdd && ($("#tracker-remove-faction-{{data.id}}").removeClass("hidden").length == 0);
+showAdd = showAdder(showAdd, 'faction', {{data.id}}, tn);
 {% endfor %}
 {% for data in tracker_ship %}
-showAdd = showAdd && ($("#tracker-remove-ship-{{data.id}}").removeClass("hidden").length == 0);
+showAdd = showAdder(showAdd, 'ship', {{data.id}}, tn);
 {% endfor %}
 {% for data in tracker_group %}
-showAdd = showAdd && ($("#tracker-remove-group-{{data.id}}").removeClass("hidden").length == 0);
+showAdd = showAdder(showAdd, 'group', {{data.id}}, tn);
 {% endfor %}
 {% for data in tracker_system %}
-showAdd = showAdd && ($("#tracker-remove-system-{{data.id}}").removeClass("hidden").length == 0);
+showAdd = showAdder(showAdd, 'system', {{data.id}}, tn);
 {% endfor %}
 {% for data in tracker_constellation %}
-showAdd = showAdd && ($("#tracker-remove-constellation-{{data.id}}").removeClass("hidden").length == 0);
+showAdd = showAdder(showAdd, 'constellation', {{data.id}}, tn);
 {% endfor %}
 {% for data in tracker_region %}
-showAdd = showAdd && ($("#tracker-remove-region-{{data.id}}").removeClass("hidden").length == 0);
+showAdd = showAdder(showAdd, 'region', {{data.id}}, tn);
 {% endfor %}
 
 {% for killID in favorites %}

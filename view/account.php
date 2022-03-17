@@ -36,18 +36,18 @@ if ($_POST) {
         }
     }
 
+    // Tracker Notification
+    $tn = Util::getPost('trackernotification');
+    if (isset($tn)) {
+        UserConfig::set('trackernotification', $tn);
+        User::sendMessage("Your tracker notification setting was updated to $tn");
+    }
+
     // Style
     $style = Util::getPost('style');
     if (isset($style)) {
         UserConfig::set('style', $style);
         User::sendMessage("Your theme was updated to $style");
-    }
-
-    // Disqus
-    $showDisqus = Util::getPost('showDisqus');
-    if (isset($showDisqus)) {
-        UserConfig::set('showDisqus', $showDisqus);
-        User::sendMessage("Your Disqus setting was updated to " . ($showDisqus != "true" ? "not show." : "show."));
     }
 
     $loginPage = Util::getPost('loginPage');
@@ -68,7 +68,7 @@ $data['currentTheme'] = $theme;
 // Style
 $data['stylesAvailable'] = Util::availableStyles();
 $data['currentStyle'] = UserConfig::get('style');
-
+$data['trackernotification'] = UserConfig::get('trackernotification');
 
 $data['loginPage'] = UserConfig::get('loginPage', 'character');
 $data['apiScopes'] = $mdb->find("scopes", ['characterID' => (int) $userID], ['scope' => 1]);

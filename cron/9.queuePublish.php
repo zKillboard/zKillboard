@@ -19,7 +19,7 @@ while ($minute == date('Hi')) {
 
 function publish($killID)
 {
-    global $mdb, $redis, $imageServer, $esiServer;
+    global $mdb, $redis, $imageServer, $esiServer, $fullAddr;
 
     $kill = $mdb->findDoc('killmails', ['killID' => $killID]);
     $raw = Kills::getEsiKill($killID);
@@ -73,5 +73,19 @@ function publish($killID)
     @file_get_contents("https://zkillboard.com/cache/1hour/killlistrow/$killID/");
     foreach ($channels as $channel) {
         $redis->publish($channel, $msg);
+    }
+
+    $totalPrice = $kill['zkb']['totalValue'];
+    $url = "$fullAddr/kill/$killID/";
+    $redisMessage = [
+        'action' => 'bigkill',
+        'title' => "$name " . $victimInfo['shipName'],
+        'iskStr' => Util::formatIsk($totalPrice)." ISK",
+        'url' => $url,
+        'image' => $imageServer . "types/" . $victimInfo['shipTypeID'] . "/render?size=128"
+    ];
+    $msg = json_encode($redisMessage, JSON_UNESCAPED_SLASHES);
+    foreach ($channels as $channel) {
+        $redis->publish('tracker:' . $channel, $msg);
     }
 }
