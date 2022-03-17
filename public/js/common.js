@@ -6,6 +6,8 @@ $(document).ready(function() {
 
     // add the autocomplete search thing
     $('#searchbox').zz_search( function(data, event) { window.location = '/' + data.type + '/' + data.id + '/'; event.preventDefault(); } );
+    $('#searchbox').on('focus', function() { $("#advancedsearchnavbar").slideDown(); });
+    $('#searchbox').on('blur', function() { $("#advancedsearchnavbar").slideUp(); });
 
     // prevent firing of window.location in table rows if a link is clicked directly
     $('.killListRow a').click(function(e) {
