@@ -75,7 +75,7 @@
 	</tr>
 	{% if extra.fittedisk > 0 %}
 	<tr rel="tooltip" title="&#36;{{ extra.fittedprice.usd|number_format(2, '.', ',') }} / {{ extra.fittedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.fittedprice.gbp|number_format(2, '.', ',') }}">
-		<th>Fitted:</th>
+		<th>Ship+Fit:</th>
 		<td class="item_fitted">{{ extra.fittedisk | number_format(2, '.', ',') }} ISK</td>
 	</tr>
 	{% endif %}
