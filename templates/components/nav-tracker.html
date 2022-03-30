@@ -10,6 +10,8 @@ showAds = {{ showAds }};
 {% if showAds != 0 %}
     loadads();
     otherBanners();
+{% else %}
+    $("#messagedad").remove();
 {% endif %}
 
 {% if style != 'cyborg' %}
