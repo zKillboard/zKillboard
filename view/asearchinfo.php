@@ -9,7 +9,8 @@ try {
 	$id = (int) filter_input(INPUT_GET, 'id');
 
     $info = Info::getInfo($type, $id);
-	$name = $info['name'];
+	$name = @$info['name'];
+    if ($name == "") $name = "$type $id";
 
     if ($type ==  "solarSystemID") $name = "$name (" . Info::getInfoField('regionID', $info['regionID'], "name") . ")";
 
