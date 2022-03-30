@@ -58,6 +58,8 @@ $(document).ready(function() {
 
     // setup websocket with callbacks
     if (start_websocket) startWebSocket();
+
+    setTimeout(function() { $("#messagedad").show(); }, 5500);
 });
 
 function startWebSocket() {
@@ -309,8 +311,9 @@ function loadads() {
         if (adfailcount <= 5) return setTimeout(loadads, 1000);
 
         console.log('ads appear to be blocked');
-        return showAdblockedMessage();
+        return; // showAdblockedMessage();
     }
+    $("#messagedad").remove();
     var adblocks = $(".publift:visible");
     adnumber = adblocks.length;
     adblocks.each(function() {
@@ -329,7 +332,7 @@ function adblockloaded() {
 }
 
 function showAdblockedMessage() {
-    $("#publifttop").html('<h4>AdBlock Detected! :(</h2><p>Please support zKillboard by disabling your adblocker.<br/><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p>');
+    $("#publifttop").html('<h4>AdBlock Detected! :(</h4><p>Please support zKillboard by disabling your adblocker.<br/><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p>');
 }
 
 var now = time();
