@@ -6,7 +6,7 @@ use cvweiss\redistools\RedisCache;
 
 global $gankKillBotWebhook, $fullAddr;
 
-$kills = $mdb->find("killmails", ['involved.corporationID' => 1000125], ['sequence' => -1], 500);
+$kills = $mdb->find("killmails", ['involved.corporationID' => 1000125], ['killID' => -1], 5000);
 $added = [];
 
 foreach ($kills as $kill) {
