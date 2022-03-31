@@ -147,12 +147,8 @@ function buildFromArray($key, $isVictim = null) {
         $param[$row['type']] = (int) $row['id'];
         if ($isVictim === false) $param['kills'] = true;
         else if ($isVictim === true) $param['losses'] = true;
-        //if (sizeof($q) > 0) $ret[] = $q;
     }
     return MongoFilter::buildQuery($param, true);
-    if (sizeof($ret) == 0) return null;
-    if (sizeof($ret) == 1) return $ret[0];
-    return ['$and' => $ret];
 }
 
 
