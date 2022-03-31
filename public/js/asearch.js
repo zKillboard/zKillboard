@@ -101,12 +101,15 @@ function adjustTime(event, triggerButton) {
             // no changes needed
             break;
         case 'current month':
-            startTime = Math.floor(new Date(date.getFullYear(), date.getUTCMonth(), 1, 0, 0, 0).getTime() / 1000) - (date.getTimezoneOffset() * 60);
+            startTime = Math.floor(new Date(date.getFullYear(), date.getUTCMonth(), 1, 0, 0, 0).getTime() / 1000);
+            startTime = startTime - (startTime % 86400);
             isRolling = false;
             break;
         case 'prior month':
-            startTime = Math.floor(new Date(date.getFullYear(), date.getUTCMonth() - 1, 1, 0, 0, 0).getTime() / 1000) - (date.getTimezoneOffset() * 60);
-            endTime = Math.floor(new Date(date.getFullYear(), date.getUTCMonth(), 1, 0, -1, 0).getTime() / 1000) - (date.getTimezoneOffset() * 60);
+            startTime = Math.floor(new Date(date.getFullYear(), date.getUTCMonth() - 1, 1, 0, 0, 0).getTime() / 1000);
+            endTime = Math.floor(new Date(date.getFullYear(), date.getUTCMonth(), 1, 0, -1, 0).getTime() / 1000);
+            startTime = startTime - (startTime % 86400);
+            endTime = endTime - (endTime % 86400) - 60;
             isRolling = false;
             break;
         case 'custom':
