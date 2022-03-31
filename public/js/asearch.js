@@ -35,7 +35,7 @@ $(document).ready(function() {
         adjustTime(null, $("#stats-epoch-week"));
     }
 
-    setInterval(rollTime, 1000);
+    setInterval(rollTime, 5000);
     $(".btn-page.btn-primary").click();
 
     window.addEventListener('popstate', function() {
@@ -52,13 +52,16 @@ function datepick() {
 }
 
 function toggleRollingTime(event, enabled) {
+    console.log('toggle rolling time');
     if (enabled == undefined) {
         enabled = !($('#rolling-times').hasClass('btn-primary'));
     }
 
     $('#rolling-times').blur().removeClass('btn-default').removeClass('btn-primary');
 
-    if (enabled) $('#rolling-times').addClass('btn-primary');
+    if (enabled) {
+        $('#rolling-times').addClass('btn-primary');
+    }
     else $('#rolling-times').addClass('btn-default');
 }
 
@@ -114,7 +117,6 @@ function adjustTime(event, triggerButton) {
     $('#dtstart').prop('disabled', isDisabled).val(getFormattedTime(startTime));
     $('#dtend').prop('disabled', isDisabled).val(getFormattedTime(endTime));
     if (isDisabled == false)  $("#dtstart").focus();
-    toggleRollingTime(null, isRolling);
 }
 
 function getFormattedTime(unixtime) {
@@ -138,7 +140,6 @@ function createSuggestion(json, slot) {
 }
 
 function addEntity(suggestion, slot = 'neutrals') {
-    console.log("suggestion", suggestion);
     delete suggestion.data.groupBy;
     if (suggestion.data.type != 'label' && suggestion.data.type.indexOf('ID') < 0) suggestion.data.type = suggestion.data.type + 'ID';
     switch (suggestion.data.type) {
@@ -184,11 +185,11 @@ function setFilters(hashfilters) {
     // load up that filter
     var hash = window.location.hash.substr(1);
     hashfilters = JSON.parse(decodeURI(hash));
-    console.log('hashfilters:', hashfilters);
 
     allowChange = false;
-    // https://zkillboard.com/asearch/#{%22buttons%22:[%22alltime%22,%22rolling%22,%22label-5+%22,%22sort-date%22,%22sort-desc%22,%22page1%22,%22allinvolved%22],%22location%22:[{%22type%22:%22systemID%22,%22id%22:30001453}]}
 
+    // Reset the search
+    $(".glyphicon-remove").click();
     $(".btn.btn-primary").removeClass("btn-primary").addClass("btn-default");
 
     var keys = Object.keys(hashfilters);
@@ -220,8 +221,6 @@ function setFilters(hashfilters) {
 }
 
 function setHash() {
-    console.log('asfilter', asfilter);
-
     var buttons = [];
     $(".btn.btn-primary").each(function() {
         var elem = $(this);
@@ -237,7 +236,6 @@ function setHash() {
     filter = setHashAdd(filter, asfilter, 'neutrals');
     filter = setHashAdd(filter, asfilter, 'victims');
     filter = setHashAdd(filter, asfilter, 'location');
-    console.log(filter);
 
     var hash = '';
     if (Object.keys(filter).length > 0) hash = '#' + JSON.stringify(filter);
@@ -246,9 +244,7 @@ function setHash() {
 
 function setHashAdd(filter, asfilter, key) {
     var value = asfilter[key];
-    console.log(key, value);
     if (value != undefined && value.length > 0) {
-        console.log('adding', key);
         filter[key] = value;
     }
     return filter;
@@ -332,7 +328,6 @@ function getFilters() {
 }
 
 function applyKillQueryResult(data, textStatus, jqXHR) {
-    console.log('https://zkillboard.com' + this.url);
     $(".killlistmessage").remove();
     killIDs = data.kills;
     if (data.kills.length == 0) killlistmessage("no results - expand timespan, adjust pagination, or reduce filters...");
@@ -340,7 +335,6 @@ function applyKillQueryResult(data, textStatus, jqXHR) {
 }
 
 function applyCountQueryResult(data, textStatus, jqXHR) {
-    console.log('https://zkillboard.com' + this.url);
     if (data == null || data.exceeds == true) {
         $("#result-groups-count").html("Timespan > 31 Days");
         return;
@@ -356,7 +350,6 @@ function applyGroupQueryResult(data, textStatus, jqXHR) {
 
 function handleError(jqXHR, textStatus, errorThrown) {
     filtersStringified = null;
-    console.log('ajax error: ' + errorThrown + ' ' + textStatus);
     killlistmessage(errorThrown + ' ' + textStatus);
 }
 
