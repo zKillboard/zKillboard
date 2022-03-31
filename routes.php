@@ -66,20 +66,6 @@ $app->map('/account/tickets/view/:id/', function ($id) use ($app) {
         $app->redirect('..', 302);
         })->via('GET', 'POST');
 
-// Sponsored killmails
-$app->get('/kills/sponsored/', function () use ($app) {
-        include 'view/sponsored.php';
-        });
-
-// View kills
-$app->get('/kills/page/:page/', function ($page = 1) use ($app) {
-        $type = null;
-        include 'view/kills.php';
-        });
-$app->get('/kills(/:type)(/page/:page)/', function ($type = null, $page = 1) use ($app) {
-        include 'view/kills.php';
-        });
-
 // View related kills
 $app->get('/related/:system/:time/(o/:options/)', function ($system, $time, $options = '') use ($app) {
         include 'view/related.php';
@@ -283,9 +269,11 @@ $app->get('/ztop/', function () use ($app) {
         $app->render("ztop.html", ['showAds' => false]);
         });
 
+// Sponsor killmail adjustments
 $app->get('/sponsor/:type/:killID/(:value/)', function ($type, $killID, $value = 0) use ($app) {
         include 'view/sponsor.php';
         });
+// Sponsored killmails
 $app->get('/kills/sponsored/', function () use ($app) {
         include 'view/sponsored.php';
         });
