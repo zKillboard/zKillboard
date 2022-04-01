@@ -25,6 +25,7 @@ $(document).ready(function() {
     $(".radio-btn").on('click', toggleRadioBtn);
 
     $("#rolling-times").on('click', toggleRollingTime);
+    $("#togglefilters").on('click', toggleFiltersClick);
 
     $("#dtstart").on('change', datepick);
     $("#dtend").on('change', datepick);
@@ -170,6 +171,7 @@ function getHTML(suggestion) {
     var right = $("<span>").addClass("glyphicon").addClass("glyphicon-chevron-right").attr('direction', 'right').on('click', moveRight).css('cursor', 'pointer');
     var remove = $("<span>").addClass("glyphicon").addClass("glyphicon-remove").on('click', moveOut).css('cursor', 'pointer').css('color', 'red');
     var data = $("<span>")
+        .attr("class", "entity")
         .attr("id", suggestion.data.type + ':' + suggestion.data.id)
         .attr("entity-id", suggestion.data.id)
         .attr("entity-type", suggestion.data.type)
@@ -444,6 +446,7 @@ function toggleRadioBtn() {
 
 function clickPage1() {
     if (allowChange) $('#page1').click();
+    toggleFilters();
 }
 
 // ugh, 2020 and still no good way to do this natively
@@ -471,4 +474,32 @@ function filterCleanup(data) {
             }
         }
     }
+}
+
+function toggleFiltersClick() {
+    var element = $(this);
+    var has_primary = element.hasClass('btn-primary');
+
+    if (has_primary) element.removeClass('btn-primary').addClass('btn-default').blur();
+    else element.removeClass('btn-default').addClass('btn-primary').blur();
+    toggleFilters();
+}
+
+// Toggle filters being displayed
+function toggleFilters() {
+    var displayed = $("#togglefilters").hasClass("btn-primary");
+    $(".asearchfilters").toggle(displayed);
+    $(".tr-date").toggle(displayed);
+
+    var filters = [];
+    $(".entity").each(function() { filters.push($(this).html().split(': ')[1]); });
+    filters.push($(".tfilter.btn-primary").attr('title'));
+    $(".filter-btn.btn-primary").each(function () { filters.push($(this).html()); });
+    var sort = $(".sorttype.btn-primary").html() + ' ' + $(".sortorder.btn-primary").html();
+    if (sort != 'Date Desc') filters.push(sort);
+    if ($(".pagenum.btn-primary").html() != '1') filters.push('Page ' + $(".pagenum.btn-primary").html());
+    console.log(filters);
+
+    var title = (displayed ? 'Advanced Search' : filters.join(', '));
+    $("#titlecontent").html(title);
 }
