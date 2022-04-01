@@ -13,7 +13,7 @@ class AdvancedSearch
             "awox", "ganked", "npc", "pvp", 'padding'
         ],
         'isk' => [
-            "1b+", "10b+", "100b+", "1t+",
+            "1b+", "5b+", "10b+", "100b+"
         ]
     ];
 }

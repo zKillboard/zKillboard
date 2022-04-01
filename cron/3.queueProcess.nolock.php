@@ -147,6 +147,7 @@ while ($minute == date('Hi')) {
         addLabel($kill, $solarSystem['regionID'] >= 11000000 && $solarSystem['regionID'] < 12000000, 'w-space');
         addLabel($kill, $solarSystem['regionID'] >= 12000000 && $solarSystem['regionID'] < 13000000, 'abyssal');
         addLabel($kill,  $totalValue > 1000000000, '1b+');
+        addLabel($kill,  $totalValue > 5000000000, '5b+');
         addLabel($kill,  $totalValue > 10000000000, '10b+');
         addLabel($kill,  $totalValue > 100000000000, '100b+');
         addLabel($kill,  $totalValue > 1000000000000, '1t+');
