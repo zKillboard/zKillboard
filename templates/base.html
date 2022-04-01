@@ -57,9 +57,6 @@
 		<link rel="stylesheet" href="//{{ siteurl }}/css/style-edits/cyborg-main.css?v={{ version }}" id="nextstyle">
 		<link rel="stylesheet" href="//{{ siteurl }}/css/main.css?v={{ version }}">
 		<link rel="stylesheet" href="//{{ siteurl }}/css/nprogress.css">
-        {% if date == "0401" %}
-		<link rel="stylesheet" href="//{{ siteurl }}/css/fourone.css">
-        {% endif %}
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css" integrity="sha512-mSYUmp1HYZDFaVKK//63EcZq4iFWFjxSL+Z3T/aCt4IO9Cejm03q3NKKYN6pFQzY0SBOr8h+eCIAZHPXcpZaNw==" crossorigin="anonymous" />
@@ -112,7 +109,7 @@ var actualURI = '{{ actualURI }}';
                 <div id='otherBannerDiv' class='centered' style='display: none; height: 100px; padding-top: 1em;'><a id='otherBannerAnchor' target='_new'><img id='otherBannerImg' /></a></div>
                 <hr/>
 
-                <div class='hidden-lg alert alert-danger'>Optimized for Desktop First...<br/>Try making your window wider or switching to desktop mode.</div>
+                <div class='hidden-lg alert alert-danger optimizeme'>Optimized for Desktop First...<br/>Try making your window wider or switching to desktop mode.</div>
                 <span class='pagecontent'>{% endif %}
 				<!-- The text header -->
 				{% block header %}{% endblock %}
