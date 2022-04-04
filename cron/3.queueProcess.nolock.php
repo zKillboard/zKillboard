@@ -151,6 +151,7 @@ while ($minute == date('Hi')) {
         addLabel($kill,  $totalValue > 10000000000, '10b+');
         addLabel($kill,  $totalValue > 100000000000, '100b+');
         addLabel($kill,  $totalValue > 1000000000000, '1t+');
+        addLabel($kill, isCapital($victim['shipTypeID']), 'capital');
 
         $zkb = array();
 
@@ -465,5 +466,24 @@ function getPadHash($killmail)
     $aString = "$victimID:$attackerID:$shipTypeID:$dttm";
     $aSha = sha1($aString);
     return $aSha;
-    //$mdb->set("oneWeek", $killmail, ['padhash' => $aSha]);
+}
+
+// Determining if a ship is a Capital Ship by the definition of the game's market data,
+// and if that ship falls under "Capital Ships" or not.
+function isCapital($typeID) {
+    global $mdb, $redis;
+
+    $key = "market:isCapital:$typeID";
+    $is = $redis->get($key);
+    if ($is !== false) return (bool) $is;
+
+    $mGroupID = Info::getInfoField("typeID", $typeID, "market_group_id");
+    do {
+        $mGroup = Info::getInfo("marketGroupID", $mGroupID);
+        $mGroupID = (int) @$mGroup['parent_group_id'];
+        if ($mGroupID == 1381) $is = true;
+    } while ($is == false && $mGroupID > 0);
+
+    $redis->setex($key, 86400, "$is");
+    return $is;
 }

@@ -14,6 +14,9 @@ class AdvancedSearch
         ],
         'isk' => [
             "1b+", "5b+", "10b+", "100b+"
+        ],
+        'custom' => [
+            'cat:65', 'capital',
         ]
     ];
 }

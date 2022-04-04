@@ -4,3 +4,12 @@
 .autocomplete-suggestions strong { font-weight: normal; color: white; }
 .autocomplete-group { padding: 2px 5px; text-transform: capitalize; font-weight: bold; }
 .autocomplete-group strong { display: block; border-bottom: 1px solid #fff; }
+
+hr {
+    margin: 0px;
+    margin-top: 1em;
+}
+
+.btn-group {
+    margin-top: 1em;
+}
