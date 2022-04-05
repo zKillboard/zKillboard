@@ -13,3 +13,8 @@ hr {
 .btn-group {
     margin-top: 1em;
 }
+
+.andor, .andor .btn {
+    margin: 0px;
+    padding: 0px;
+}

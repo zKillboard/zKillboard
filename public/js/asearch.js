@@ -334,6 +334,7 @@ function getFilters() {
     retVal.labels = [];
     $(".tfilter.btn-primary").each(function() { retVal.epochbtn = $(this).val(); });
     $(".filter-btn.btn-primary").each(function() { retVal.labels.push($(this).html()); });
+    $(".andor .btn-primary").each(function() { retVal.labels.push($(this).val()); });
     retVal.epoch = { start: $("#dtstart").val(), end: $("#dtend").val()};
     retVal.radios = radios;
     return retVal;
