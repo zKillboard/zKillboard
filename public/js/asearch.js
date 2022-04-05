@@ -189,7 +189,10 @@ function add(id, suggestion) {
 function setFilters(hashfilters) {
     // load up that filter
     var hash = window.location.hash.substr(1);
-    hashfilters = JSON.parse(decodeURI(hash));
+    hash = decodeURI(hash);
+    hashfilters = JSON.parse(hash);
+console.log(hash);
+console.log(hashfilters);
 
     allowChange = false;
 
@@ -215,10 +218,14 @@ function setFilters(hashfilters) {
             case 'attackers':
             case 'neutrals':
             case 'victims':
+                for (var i = 0; i < value.length; i++) {
+                var url = '/asearchinfo/?type=' + value[i].type + '&id=' + value[i].id;
+                console.log(url);
                 $.ajax({
-                    url: '/asearchinfo/?type=' + value[0].type + '&id=' + value[0].id,
+                    url: url,
                     success: function(json) { createSuggestion(json, key); }
                 });
+                }
                 break;
         }
     }
@@ -487,6 +494,7 @@ function toggleFiltersClick() {
 
 // Toggle filters being displayed
 function toggleFilters() {
+    if (allowChange == false) return;
     var displayed = $("#togglefilters").hasClass("btn-primary");
     $(".asearchfilters").toggle(displayed);
     $(".tr-date").toggle(displayed);
