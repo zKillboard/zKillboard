@@ -6,6 +6,7 @@ try {
 	$type = filter_input(INPUT_GET, 'type');
     $otype = $type;
     if ($type == "systemID") $type = "solarSystemID";
+    if ($type == "shipID") $type = "shipTypeID";
 	$id = (int) filter_input(INPUT_GET, 'id');
 
     $info = Info::getInfo($type, $id);
