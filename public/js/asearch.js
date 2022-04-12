@@ -209,6 +209,7 @@ console.log(hashfilters);
             }
         } 
 
+        var promises = [];
         switch (key) {
             case 'dtstart':
             case 'dtend':
@@ -219,16 +220,16 @@ console.log(hashfilters);
             case 'neutrals':
             case 'victims':
                 for (var i = 0; i < value.length; i++) {
-                var url = '/asearchinfo/?type=' + value[i].type + '&id=' + value[i].id;
-                console.log(url);
-                $.ajax({
-                    url: url,
-                    success: function(json) { createSuggestion(json, key); }
-                });
+                    var url = '/asearchinfo/?type=' + value[i].type + '&id=' + value[i].id;
+                    promises.push($.ajax({
+                        url: url,
+                        success: function(json) { createSuggestion(json, key); }
+                    }));
                 }
                 break;
         }
     }
+    Promise.all(promises);
     allowChange = true;
 }
 

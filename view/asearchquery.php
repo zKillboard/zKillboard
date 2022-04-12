@@ -82,6 +82,9 @@ try {
     //header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET,POST');
 
+    // Should prevent cache busting from url manipulation
+    array_multisort($query);
+
     $arr = [];
     if ($queryType == "kills") {
         $app->contentType('application/json; charset=utf-8');
@@ -247,7 +250,6 @@ function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $
 {
     global $mdb, $longQueryMS;
 
-    //if ($groupByColumn == "ID") return [];
     $hashKey = "Stats::getSums:q:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly);
     try {
         $result = RedisCache::get($hashKey);

@@ -7,6 +7,7 @@
 {% endif %}
 {% set pageBase = (pageBase == '' ? '/' : pageBase) %}
 
+{% if showPager != "false" %}
 <div class="pull-right">
 	{% if datepicker == true %}
 	<ul class="pagination pagination-sm">
@@ -35,3 +36,4 @@
 		{% endif %}
 	</ul>
 </div>
+{% endif %}
