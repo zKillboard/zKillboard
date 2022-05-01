@@ -41,7 +41,6 @@ function doGroup($type, $groupID)
         Util::out("$type $id $name (" . $count . " / " . $size .  ")");
         doSupers($type, $id, $groupID, $name);
     }
-
 }
 
 function doSupers($type, $id, $groupID, $name)
@@ -54,27 +53,26 @@ function doSupers($type, $id, $groupID, $name)
 
     $agg = [];
     $parameters = [$type => (int) $id, 'groupID' => $groupID, 'kills' => true];
-    $result = $mdb->find("ninetyDays", MongoFilter::buildQuery($parameters));
-    if (sizeof($result) == 0) {
-        $mdb->set('statistics', ['type' => $type, 'id' => $id], ['hasSupers' => false, 'supers.' . strtolower($name) => [], 'updatingSupers' => false]);
-        return;
-    }
-    foreach ($result as $killmail) {
-        $involved = $killmail['involved'];
-        foreach ($involved as $inv)
-        {
-            if (@$inv['isVictim'] == true) continue;
-            if (@$inv[$type] != $id) continue;
-            if (((int) @$inv['characterID']) == 0) continue;
-            $charID = $inv['characterID'];
-            if (@$agg[$charID] == null) $agg[$charID] = ['characterID' => $charID, 'kills' => 0];
-            $agg[$charID]['kills']++;
-        }
-    }
-    usort($agg, "killCountSort");
-    $data['data'] = $agg;
 
-    if (sizeof($result) > 0) {
+    $result = $mdb->find("ninetyDays", MongoFilter::buildQuery($parameters));
+    try {
+        foreach ($result as $killmail) {
+            $involved = $killmail['involved'];
+            foreach ($involved as $inv)
+            {
+                if (@$inv['isVictim'] == true) continue;
+                if (@$inv[$type] != $id) continue;
+                if (((int) @$inv['characterID']) == 0) continue;
+                if (@$inv['groupID'] != $groupID) continue;
+
+                $charID = $inv['characterID'];
+                if (@$agg[$charID] == null) $agg[$charID] = ['characterID' => $charID, 'kills' => 0];
+                $agg[$charID]['kills']++;
+            }
+        }
+        usort($agg, "killCountSort");
+        $data['data'] = $agg;
+    } finally {
         $mdb->set('statistics', ['type' => $type, 'id' => $id], ['hasSupers' => true, 'supers.' . strtolower($name) => $data, 'updatingSupers' => false]);
     }
 }
