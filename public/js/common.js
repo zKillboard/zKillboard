@@ -347,11 +347,13 @@ function time() {
 var banner_links = ['https://store.markeedragon.com/affiliate.php?id=928&redirect=index.php?cat=4', 'https://www.zazzle.com/store/zkillboard/products'];
 var banners_sm = ['/img/banners/gtcplex320.jpg', '/img/banners/merch320.jpg'];
 var banners_lg = ['/img/banners/gtcplex728.jpg?1', '/img/banners/merch728.jpg'];
+var ob_firstcall = true;
 function otherBanners() {
-    return;
-    if (showAds != 1) return;
-    if ($("#adsensetop:visible").length > 0) return;
-
+    if (ob_firstcall) {
+        ob_firstcall = false;
+        return setTimeout(otherBanners, 6000);
+    }
+    if ($("#messagedad").length == 0) return;
 
     var minute = new Date().getMinutes();
     var mod = minute % 2; // number of other banners
