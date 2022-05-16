@@ -2,7 +2,13 @@
 
 use cvweiss\redistools\RedisCache;
 
-global $mdb, $redis;
+global $mdb, $redis, $uri;
+
+if ($redis->get("zkb_reinforced") == true) $redis->setex("zkb_reinforced_as_extended", 300, "true");
+if ($redis->get("zkb:reinforced") == true || $redis->get("zkb_reinforced_as_extended") == "true") {
+    header('HTTP/1.1 503 Reinforced mode, please try again later'); 
+    exit();
+}
 
 try {
 
@@ -79,11 +85,20 @@ try {
     else $query = ['$and' => $query];
 
     // CORS headers
-    //header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Origin: https://zkillboard.com');
     header('Access-Control-Allow-Methods: GET,POST');
 
     // Should prevent cache busting from url manipulation
     array_multisort($query);
+    $jsoned = json_encode($query, true);
+    $key = "asearch:$queryType:$groupType:" . md5($jsoned);
+
+    $ret = (string) $redis->get($key);
+    if ($ret != "") {
+        $app->contentType('application/json; charset=utf-8');
+        echo $ret;
+        return;
+    }
 
     $arr = [];
     if ($queryType == "kills") {
@@ -123,7 +138,9 @@ try {
         $app->contentType('application/json; charset=utf-8');
     }
 
-    echo json_encode($arr, true);
+    $jsoned = json_encode($arr, true);
+    $redis->setex($key, 300, $jsoned);
+    echo $jsoned;
 
 } catch (Exception $ex) {
     Log::log(print_r($ex, true));
