@@ -91,7 +91,7 @@ try {
     // Should prevent cache busting from url manipulation
     array_multisort($query);
     $jsoned = json_encode($query, true);
-    $key = "asearch:$queryType:$groupType:" . md5($jsoned);
+    $key = "asearch:$queryType:$groupType:$page:" . md5($jsoned);
 
     $ret = (string) $redis->get($key);
     if ($ret != "") {
@@ -105,7 +105,7 @@ try {
         $app->contentType('application/json; charset=utf-8');
         foreach ($coll as $col) {
             $result = iterator_to_array($mdb->getCollection($col)->find($query)->sort($sort)->skip(100 * $page)->limit(100));
-            if (sizeof($result) >= 50) break;
+            if (sizeof($result) >= 100) break;
         }
         $arr['kills'] = [];
         foreach ($result as $row) {
