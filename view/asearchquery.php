@@ -91,7 +91,7 @@ try {
     // Should prevent cache busting from url manipulation
     array_multisort($query);
     $jsoned = json_encode($query, true);
-    $key = "asearch:$queryType:$groupType:$page:" . md5($jsoned);
+    $key = "asearch:$queryType:$groupType:" . ($queryType == "kills" ? "$page:$sortKey:$sortBy:" : "") . md5($jsoned);
 
     $ret = (string) $redis->get($key);
     if ($ret != "") {
