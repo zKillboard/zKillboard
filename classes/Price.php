@@ -153,6 +153,7 @@ class Price
             case 60764: // Laelaps
                 return 230000000000;
             case 47512: // 'Moreau' Fortizar
+            case 45647: // Caiman
                 return 60000000000; // 60b 
             case 9860: // Polaris
             case 11019: // Cockroach
