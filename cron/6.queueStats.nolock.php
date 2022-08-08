@@ -93,7 +93,7 @@ function calcStats($row, $maxSequence)
 
         // build the query
         $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'labels' => 'pvp'];
-        //if ($isVictim == false) unset($query['label']); // Allows NPCs to count their kills
+        if ($isVictim == false) unset($query['labels']); // Allows NPCs to count their kills
         $query = MongoFilter::buildQuery($query);
         // set the proper sequence values
         $query = ['$and' => [['sequence' => ['$gt' => $oldSequence]], ['sequence' => ['$lte' => $newSequence]], $query]];
@@ -108,7 +108,7 @@ function calcStats($row, $maxSequence)
         mergeMonths($stats, $months, $isVictim);
 
         $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'labels' => 'pvp','solo' => true];
-        //if ($isVictim == false) unset($query['label']); // Allows NPCs to count their kills
+        if ($isVictim == false) unset($query['labels']); // Allows NPCs to count their kills
         $query = MongoFilter::buildQuery($query);
         $key = "solo" . ($isVictim ? "Losses" : "Kills");
         if (isset($stats[$key])) {
