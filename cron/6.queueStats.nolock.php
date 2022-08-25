@@ -2,8 +2,7 @@
 
 $master = true;
 /*$pid = pcntl_fork();
-$master = ($pid != 0);
-pcntl_fork();*/
+$master = ($pid != 0);*/
 
 use cvweiss\redistools\RedisQueue;
 
@@ -17,21 +16,26 @@ MongoCursor::$timeout = -1;
 $queueStats = new RedisQueue('queueStats');
 $minute = date('Hi');
 
-if ($master && $redis->scard("queueStatsSet") < 1000) {
+function checkForResets() {
+    global $mdb, $redis;
+
     // Look for resets in statistics and add them to the queue
-    $cursor = $mdb->getCollection("statistics")->find(['reset' => true]);
+    $hasResets = false;
+    $cursor = $mdb->getCollection("statistics")->find(['reset' => true])->limit(500);
     while ($cursor->hasNext()) {
         $row = $cursor->next();
         $raw = $row['type'] . ":" . $row['id'];
         $redis->sadd("queueStatsSet", $raw);
+        $hasResets = true;
     }
+    return $hasResets;
 }
 
 while ($minute == date('Hi')) {
     $raw = $redis->spop("queueStatsSet");
     if ($raw == null) {
         if (!$master) break;
-        sleep(1);
+        if (checkForResets() == false) sleep(1);
         continue;
     }
 
