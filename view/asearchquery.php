@@ -168,9 +168,31 @@ function buildFromArray($key, $isVictim = null, $useOrJoin = false) {
         else if ($isVictim === true) $param['losses'] = true;
         $params[] = MongoFilter::buildQuery($param, true);
     }
-    return [("$" . ($useOrJoin ? 'or' : 'and')) => $params];
+    if ($useOrJoin) return ['$or' => $params];
+    // Otherwise, we need to merge everything
+    $merged = [];
+    foreach ($params as $param) {
+        $merged = array_merge_recursive($merged, $param);
+    }
+    if (isset($merged['involved']['$elemMatch']['isVictim'])) $merged['involved']['$elemMatch']['isVictim'] = $isVictim;
+    return $merged;
 }
 
+function mergeArrayValues($source, $target, $depth = 0) {
+    $keys = array_keys($source);
+    foreach ($keys as $key) {
+Log::log("$key at depth $depth");
+        $value = $source[$key];
+        if (is_array($value) && !isset($target[$key])) {
+            $target[$key] = [];
+Log::log("$key at depth $depth\n" . print_r($source[$key], true) . "\n" . print_r($target[$key], true));
+            //$target[$key] = mergeArrayValue($source[$key], $target[$key]);
+        } else {
+            $target[$key] = $value;
+        }
+    }
+    return $target;
+}
 
 function getLabelGroup($label) {
     foreach (AdvancedSearch::$labels as $group => $labels) {
