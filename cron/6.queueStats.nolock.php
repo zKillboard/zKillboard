@@ -1,8 +1,8 @@
 <?php
 
 $master = true;
-/*$pid = pcntl_fork();
-$master = ($pid != 0);*/
+$pid = pcntl_fork();
+$master = ($pid != 0);
 
 use cvweiss\redistools\RedisQueue;
 

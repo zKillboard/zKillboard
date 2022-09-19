@@ -329,6 +329,24 @@ if (@$statistics['shipsLost'] > 0) {
 if (@$extra['dangerRatio'] !== null && date("md") == "0401") { // Everyone is snuggly on the first day of the fourth month
     $extra['dangerRatio'] = 0;
 }
+if (@$statistics['labels'] && $statistics['id'] == 1633218082) {
+    $invChecks = ['#:1', 'solo', '#:2+', '#:5+', '#:10+', '#:25+', '#:50+', '#:100+', '#:1000+'];
+    $invCounts = [];
+    $invCountsSum = 0;
+    foreach ($invChecks as $invCheck) {
+        if (isset($statistics['labels'][$invCheck]['shipsDestroyed'])) {
+            $invCountsSum += $statistics['labels'][$invCheck]['shipsDestroyed'];
+        }
+    }
+    foreach ($invChecks as $invCheck) {
+        if (isset($statistics['labels'][$invCheck]['shipsDestroyed'])) {
+            $label = str_replace('#:', '', $invCheck);
+            $ratio = ($statistics['labels'][$invCheck]['shipsDestroyed'] / $invCountsSum) * 100;
+            $invCounts[] = ['label' => $label, 'ratio' => $ratio, 'count' => $statistics['labels'][$invCheck]['shipsDestroyed']];
+        }
+    }
+    $extra['involvedLabels'] = $invCounts;
+}
 if (@$statistics['soloKills'] > 0 && @$statistics['shipsDestroyed'] > 0) {
     $gangFactor = 100 - floor(100 * ($statistics['soloKills'] / $statistics['shipsDestroyed']));
     $extra['gangFactor'] = $gangFactor;

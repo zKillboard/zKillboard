@@ -192,6 +192,7 @@
 				<span class='pull-right green'>Snuggly</span>
 			</td>
 			<td style='width: 50%; padding: 3px;' colspan='2'>
+                        {% if not extra.involvedLabels %}
                         <div class="progress" style='width: 100%; margin-bottom: 0px;'>
                                 {% set ratio = extra.gangFactor %}
                                 {% set iRatio = 100 - ratio %}
@@ -200,6 +201,23 @@
                         </div>
                                 <span class='red'>Gangs</span>
                                 <span class='pull-right green'> {% if statistics.soloKills %}{{ statistics.soloKills|number_format(0) }} {% endif %}Solo</span>
+                        {% endif %}
+                        {% if extra.involvedLabels and statistics.shipsDestroyed %}
+                        {% set valuenow = 0 %}
+                        {% set backgroundcolor = '#007800' %}
+                        <div class="progress" style='width: 100%; margin-bottom: 0px'>
+                            {% for label in extra.involvedLabels %}
+                                {% if backgroundcolor == '#A90707' %}
+                                    {% set backgroundcolor = '#007800' %}
+                                {% else %}
+                                    {% set backgroundcolor = '#A90707' %}
+                                {% endif %}
+                                <div class="progress-bar" role="progressbar" aria-valuenow="{{ valuenow }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ label.ratio }}%; background-color: {{ backgroundcolor }};">{{ label.label }} {{ label.ratio|number_format(0) }}%</div>
+                                {% set valuenow = valuenow + label.ratio %}
+                            {% endfor %}
+                        </div>
+                                <span class='pull-right green'> {% if statistics.soloKills %}{{ statistics.soloKills|number_format(0) }} {% endif %}Solo Kills *</span>
+                        {% endif %}
                         </td>
 			</td>
 		</tr>
