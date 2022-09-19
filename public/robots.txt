@@ -7,6 +7,7 @@ Disallow: /partial/
 Disallow: /comment/
 Disallow: */reset/*
 Disallow: */top*
+Disallow: /asearch*
 sitemap: https://zkillboard.com/sitemaps/sitemaps.xml
 
 User-agent: PiplBot

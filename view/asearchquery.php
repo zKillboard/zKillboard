@@ -127,10 +127,19 @@ try {
     } else if ($queryType == "groups") {
         $app->contentType('text/html; charset=utf-8');
         $arr['top'] = [];
+        $rendered = $redis->get("htmlgroup:$key");
+        if ($rendered !== null && trim($rendered) !== "") {
+            echo $rendered;
+            return;
+        }
+        ob_start();
         if (in_array($groupType, $types)) {
             $res = getTop($groupType . 'ID', $query, $victimsOnly);
             $app->render("components/asearch_top_list.html", ['topSet' => ['type' => $groupType, 'title' => 'Top ' . Util::pluralize(ucwords($groupType)), 'values' => $res]]);
         }
+        $rendered = ob_get_clean();
+        echo $rendered;
+        $redis->setex("htmlgroup:$key", 300, $rendered);
         return;
     } else {
         // what is this? ignore it...
