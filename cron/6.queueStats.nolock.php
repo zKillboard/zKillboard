@@ -111,6 +111,9 @@ function calcStats($row, $maxSequence)
         $months = $mdb->group('killmails', ['year' => 'dttm', 'month' => 'dttm'], $query, 'killID', ['zkb.points', 'zkb.totalValue', 'attackerCount'], ['year' => 1, 'month' => 1]);
         mergeMonths($stats, $months, $isVictim);
 
+        $labels = $mdb->group('killmails', ['$unwind', 'labels'], $query, 'killID', ['zkb.points', 'zkb.totalValue', 'attackerCount'], ['labels' => 1]);
+        mergeLabels($stats, $labels, $isVictim);
+
         $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'labels' => 'pvp','solo' => true];
         if ($isVictim == false) unset($query['labels']); // Allows NPCs to count their kills
         $query = MongoFilter::buildQuery($query);
@@ -236,4 +239,26 @@ function mergeMonths(&$stats, $result, $isVictim)
         $months[$yearMonth] = $monthStats;
     }
     $stats['months'] = $months;
+}
+
+function mergeLabels(&$stats, $result, $isVictim) 
+{
+    if (sizeof($result) == 0) return;
+
+    $dl = ($isVictim ? 'Lost' : 'Destroyed');
+    if (!isset($stats['labels'])) $stats['labels'] = [];
+    $labels = $stats['labels'];
+    foreach ($result as $row) {
+        $label = $row['labels'];
+        if (!isset($labels[$label])) $labels[$label] = [];
+        
+        $labelStats = $labels[$label];
+        @$labelStats["ships$dl"] += $row['killIDCount'];
+        @$labelStats["points$dl"] += $row['zkb_pointsSum'];
+        @$labelStats["isk$dl"] += (int) $row['zkb_totalValueSum'];
+
+        $labels[$label] = $labelStats;
+    }
+
+    $stats['labels'] = $labels;
 }

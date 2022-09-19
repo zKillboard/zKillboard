@@ -254,11 +254,19 @@ class Mdb
         if (!is_array($keys)) {
             $keys = [$keys];
         }
+        $unwind = false;
+        if (@$keys[0] == '$unwind') {
+            $unwind = true;
+            array_shift($keys);
+        }
 
         // Start the aggregation pipeline with the query
         $pipeline = [];
         if (sizeof($query)) {
             $pipeline[] = ['$match' => $query];
+        }
+        if ($unwind) {
+            $pipeline[] = ['$unwind' => '$' . $keys[0]];
         }
 
         // Create the group by using the given key(s)

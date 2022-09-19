@@ -7,7 +7,7 @@ class AdvancedSearch
             "highsec", "lowsec", "nullsec", "w-space", "abyssal",
         ],
         'count' => [
-            "solo", "2+", "5+", "10+", "25+", "50+", "100+", "1000+",
+            "solo", "#:1", "#:2+", "#:5+", "#:10+", "#:25+", "#:50+", "#:100+", "#:1000+",
         ],
         'flags' => [
             "awox", "ganked", "npc", "pvp", 'padding'
