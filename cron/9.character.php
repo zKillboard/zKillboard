@@ -39,10 +39,11 @@ while ($minute == date('Hi')) {
             continue;
         }
     }
-    //if (isset($row['lastApiUpdate'])) while ($currentSecond == date('His')) $guzzler->sleep(0, 50);
 
     // doomheimed characters now throw 404's....
-    if (@$row['corporationID'] == 1000001 || $id <= 9999999) {
+    // however, if a human manages to get their character brought back to life and log in with it,
+    // we should be able to fetch that character's information again, so don't skip them
+    if (isset($row['lastApiUpdate']) && (@$row['corporationID'] == 1000001 || $id <= 9999999)) {
         $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now()]);
         continue;
     }
