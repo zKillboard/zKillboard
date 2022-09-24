@@ -48,7 +48,6 @@ function groupSuccess($guzzler, $params, $content)
 
         if (@$typeInfo['published'] != true) continue;
         if ($redis->hget($key, $typeID) == true) continue;
-
         $guzzler->call("$esiServer/v1/markets/10000002/history/?type_id=$typeID", "typeHistorySuccess", "fail", ['typeID' => $typeID], []);
     }
 }
@@ -80,8 +79,9 @@ function fail($guzzler, $params, $error)
     global $esiServer;
 
     Util::out("Fail " . $params['uri']);
-    $groupID = (int) @$params['groupID'];
-    $typeID = (int) @$params['typeID'];
-    if ($groupID > 0)  $guzzler->call("$esiServer/v1/markets/groups/$groupID/", "groupSuccess", "fail", ['groupID' => $groupID]);
-    if ($typeID > 0) $guzzler->call("$esiServer/v1/markets/10000002/history/?type_id=$typeID", "typeHistorySuccess", "fail", ['typeID' => $typeID], []);
+print_r($error);
+    //$groupID = (int) @$params['groupID'];
+    //$typeID = (int) @$params['typeID'];
+    //if ($groupID > 0)  $guzzler->call("$esiServer/v1/markets/groups/$groupID/", "groupSuccess", "fail", ['groupID' => $groupID]);
+    //if ($typeID > 0) $guzzler->call("$esiServer/v1/markets/10000002/history/?type_id=$typeID", "typeHistorySuccess", "fail", ['typeID' => $typeID], []);
 }
