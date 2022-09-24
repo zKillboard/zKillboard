@@ -60,6 +60,8 @@ A solo killmail is defined as a killmail that has 1 non-npc attacker. NPC attack
 
 A killmail that has only 1 involved is not considered solo if it is an npc only killmail, or the victim was flying a Corvette, Shuttle, or Capsule.
 
+***
+
 #####How do you value blueprint copies or skin prices?
 
 Blueprint copies and skin prices have been extremely volatile and are difficult to calculate the proper price. Because of this difficulty, it is better to err on the side of caution. Therefore, all blueprint copies and skins are given a price of 0.01 ISK.
