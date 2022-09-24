@@ -4,7 +4,7 @@ class AdvancedSearch
 {
     static public $labels = [
         'location' => [
-            "highsec", "lowsec", "nullsec", "w-space", "abyssal",
+            "loc:highsec", "loc:lowsec", "loc:nullsec", "loc:w-space", "loc:abyssal",
         ],
         'count' => [
             "solo", "#:1", "#:2+", "#:5+", "#:10+", "#:25+", "#:50+", "#:100+", "#:1000+",
@@ -13,7 +13,7 @@ class AdvancedSearch
             "awox", "ganked", "npc", "pvp", 'padding'
         ],
         'isk' => [
-            "1b+", "5b+", "10b+", "100b+"
+            "isk:1b+", "isk:5b+", "isk:10b+", "isk:100b+"
         ],
         'custom' => [
             'cat:65', 'capital',

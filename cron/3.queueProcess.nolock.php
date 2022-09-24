@@ -142,16 +142,16 @@ while ($minute == date('Hi')) {
         addLabel($kill, $kill['npc'], 'npc');
         addLabel($kill, !($kill['npc'] == true || $isPaddedKill), 'pvp');
         addLabel($kill, $kill['awox'], 'awox');
-        addLabel($kill, $solarSystem['security'] >= 0.45, 'highsec');
-        addLabel($kill, $solarSystem['security'] < 0.45 && $solarSystem['security'] >= 0.05, 'lowsec');
-        addLabel($kill, $solarSystem['security'] < 0.05 && $solarSystem['regionID'] < 11000001, 'nullsec');
-        addLabel($kill, $solarSystem['regionID'] >= 11000000 && $solarSystem['regionID'] < 12000000, 'w-space');
-        addLabel($kill, $solarSystem['regionID'] >= 12000000 && $solarSystem['regionID'] < 13000000, 'abyssal');
-        addLabel($kill,  $totalValue > 1000000000, '1b+');
-        addLabel($kill,  $totalValue > 5000000000, '5b+');
-        addLabel($kill,  $totalValue > 10000000000, '10b+');
-        addLabel($kill,  $totalValue > 100000000000, '100b+');
-        addLabel($kill,  $totalValue > 1000000000000, '1t+');
+        addLabel($kill, $solarSystem['security'] >= 0.45, 'loc:highsec');
+        addLabel($kill, $solarSystem['security'] < 0.45 && $solarSystem['security'] >= 0.05, 'loc:lowsec');
+        addLabel($kill, $solarSystem['security'] < 0.05 && $solarSystem['regionID'] < 11000001, 'loc:nullsec');
+        addLabel($kill, $solarSystem['regionID'] >= 11000000 && $solarSystem['regionID'] < 12000000, 'loc:w-space');
+        addLabel($kill, $solarSystem['regionID'] >= 12000000 && $solarSystem['regionID'] < 13000000, 'loc:abyssal');
+        addLabel($kill,  $totalValue >= 1000000000 && $totalValue < 5000000000, 'isk:1b+');
+        addLabel($kill,  $totalValue >= 5000000000 && $totalValue < 10000000000, 'isk:5b+');
+        addLabel($kill,  $totalValue >= 10000000000 && $totalValue < 100000000000, 'isk:10b+');
+        addLabel($kill,  $totalValue >= 100000000000 && $totalValue < 1000000000000, 'isk:100b+');
+        addLabel($kill,  $totalValue >= 1000000000000, 'isk:1t+');
         addLabel($kill, isCapital($victim['shipTypeID']), 'capital');
 
         $zkb = array();
