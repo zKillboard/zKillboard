@@ -42,9 +42,9 @@ try {
     $buttons = (isset($_POST['labels']) ? $_POST['labels'] : []);
 
     $query = buildQuery($query, "location");
-    $query = buildQuery($query, "neutrals", null, in_array("either-or", $buttons));
-    $query = buildQuery($query, "attackers", false, in_array("attackers-or", $buttons));
-    $query = buildQuery($query, "victims", true, in_array("victims-or", $buttons));
+    $query = buildQuery($query, "neutrals", null, getSelectedFromBase('either', $buttons));
+    $query = buildQuery($query, "attackers", false, getSelectedFromBase('attackers-', $buttons));
+    $query = buildQuery($query, "victims", true, getSelectedFromBase('victims-', $buttons));
 
     $query = parseDate($query, 'start');
     $query = parseDate($query, 'end');
@@ -155,14 +155,14 @@ try {
     Log::log(print_r($ex, true));
 }
 
-function buildQuery($queries, $key, $isVictim = null, $useOrJoin = false) {
-    $query = buildFromArray($key, $isVictim, $useOrJoin);
+function buildQuery($queries, $key, $isVictim = null, $joinType = 'and') {
+    $query = buildFromArray($key, $isVictim, $joinType);
     if ($query != null && sizeof($query) > 0) $queries[] = $query;
     return $queries;
 }
 
 
-function buildFromArray($key, $isVictim = null, $useOrJoin = false) {
+function buildFromArray($key, $isVictim = null, $joinType = 'and') {
     if (!isset($_POST[$key])) return null;
 
     $arr = $_POST[$key];
@@ -177,8 +177,9 @@ function buildFromArray($key, $isVictim = null, $useOrJoin = false) {
         else if ($isVictim === true) $param['losses'] = true;
         $params[] = MongoFilter::buildQuery($param, true);
     }
-    if ($useOrJoin) return ['$or' => $params];
-    // Otherwise, we need to merge everything
+    if ($joinType == 'or') return ['$or' => $params];
+    if ($joinType == 'and') return ['$and' => $params];
+    // Last option is 'mergedand', we need to merge everything
     $merged = [];
     foreach ($params as $param) {
         $merged = array_merge_recursive($merged, $param);
@@ -327,4 +328,11 @@ function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $
     } catch (Exception $ex) {
         RedisCache::set($hashKey, [], 900);
     }
+}
+
+function getSelectedFromBase($base, $buttons) {
+    foreach ($buttons as $button) {
+        if (Util::startsWith($button, $base)) return str_replace($base, '', $button);
+    }
+    return 'and'; // default
 }
