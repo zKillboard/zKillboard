@@ -64,14 +64,16 @@ function publish($killID)
         'character_id' => (int) @$victimInfo['characterID'],
         'corporation_id' => (int) @$victimInfo['corporationID'],
         'alliance_id' => (int)  @$victimInfo['allianceID'],
-        'ship_type_id' => (int) $victimInfo['shipTypeID'],
+        'ship_type_id' => (int) @$victimInfo['shipTypeID'],
+        'group_id' => (int) @$victimInfo['groupID'],
         'url' => "https://zkillboard.com/kill/$killID/",
         'hash' => $zkb['hash'],
             ];
-    $msg = json_encode($redisMessage, JSON_UNESCAPED_SLASHES);
     $redis->setex("zkb:killlistrow:" . $killID, 60, "true");
     @file_get_contents("https://zkillboard.com/cache/1hour/killlistrow/$killID/");
     foreach ($channels as $channel) {
+        $redisMessage['channel'] = $channel;
+        $msg = json_encode($redisMessage, JSON_UNESCAPED_SLASHES);
         $redis->publish($channel, $msg);
     }
 
@@ -84,8 +86,9 @@ function publish($killID)
         'url' => $url,
         'image' => $imageServer . "types/" . $victimInfo['shipTypeID'] . "/render?size=128"
     ];
-    $msg = json_encode($redisMessage, JSON_UNESCAPED_SLASHES);
     foreach ($channels as $channel) {
+        $redisMessage['channel'] = $channel;
+        $msg = json_encode($redisMessage, JSON_UNESCAPED_SLASHES);
         $redis->publish('tracker:' . $channel, $msg);
     }
 }
