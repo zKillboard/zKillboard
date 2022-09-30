@@ -1,4 +1,5 @@
 var ws;
+var adblocked = undefined;
 
 $(document).ready(function() {
     if (navbar) $('#tracker-dropdown').load('/navbar/');
@@ -306,12 +307,25 @@ function commentUpVote(pageID, commentID)
 var adnumber = 0;
 var adfailcount = 0;
 function loadads() {
+    if (detectAdblock) {
+        let detection = detectAdblock();
+        detectAdblock().then((res) => { 
+            adblocked = (res.uBlockOrigin === true || res.adblockPlus === true);
+            console.log('Adblocked?', adblocked);
+            gtag('event', 'adblocked', {'value': adblocked});
+            if (adblocked === true) {
+                return showAdblockedMessage();
+            }
+        });
+    } else {
+        gtag('event', 'adblocked', 'detectAdblock blocked');
+    }
     if (typeof fusetag == 'undefined') {
         adfailcount++;
         if (adfailcount <= 5) return setTimeout(loadads, 1000);
 
         console.log('ads appear to be blocked');
-        return; // showAdblockedMessage();
+        return showAdblockedMessage();
     }
     $("#messagedad").remove();
     var adblocks = $(".publift:visible");
@@ -332,7 +346,7 @@ function adblockloaded() {
 }
 
 function showAdblockedMessage() {
-    $("#publifttop").html('<h4>AdBlock Detected! :(</h4><p>Please support zKillboard by disabling your adblocker.<br/><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p>');
+    if ($("#publifttop").html() == "") $("#publifttop").html('<h4>AdBlocker Detected! :(</h4><p>Please support zKillboard by disabling your adblocker.<br/><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p>');
 }
 
 var now = time();

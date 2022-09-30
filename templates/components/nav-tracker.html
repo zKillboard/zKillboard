@@ -11,6 +11,7 @@ showAds = {{ showAds }};
     loadads();
     otherBanners();
 {% else %}
+    gtag('event', 'adblocked', {'value': 'patron'});
     $("#messagedad").remove();
 {% endif %}
 
