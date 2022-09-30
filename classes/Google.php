@@ -14,6 +14,7 @@ class Google
 
   gtag('config', 'G-FD2835WTF0');
   gtag('send', 'pageview');
+  gtag('send', 'event', 'sanity_check');
 </script>
 ";
     }
