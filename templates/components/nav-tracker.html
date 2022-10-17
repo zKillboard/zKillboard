@@ -11,9 +11,10 @@ showAds = {{ showAds }};
     loadads();
     otherBanners();
 {% else %}
-    gtag('event', 'adblocked', {'value': 'patron'});
+    gtag('event', 'patron');
     $("#messagedad").remove();
 {% endif %}
+gtag('event', 'navbar_loaded');
 
 {% if style != 'cyborg' %}
 $("#mainstyle").attr("href", "https://netdna.bootstrapcdn.com/bootswatch/latest/{{ style }}/bootstrap.min.css");

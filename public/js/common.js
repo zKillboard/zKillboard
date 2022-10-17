@@ -127,7 +127,7 @@ function wslog(msg)
         $("#lasthour").text(json.kills);
     } else if (json.action === 'reload') {
         console.log('Reload imminent in the next 5 minutes');
-        setTimeout("location.reload();", Math.floor(1 + (Math.random() * 500000)));
+        setTimeout("location.reload(true);", Math.floor(1 + (Math.random() * 500000)));
     } else if (json.action === 'bigkill') {
         htmlNotify(json);
     } else if (json.action === 'lastHour') {
@@ -312,7 +312,7 @@ function loadads() {
         detectAdblock().then((res) => { 
             adblocked = (res.uBlockOrigin === true || res.adblockPlus === true);
             console.log('Adblocked?', adblocked);
-            gtag('event', 'adblocked', {'value': adblocked});
+            gtag('event', (adblocked === true ? 'ad_blocked' : 'ad_unblocked'));
             if (adblocked === true) {
                 return showAdblockedMessage();
             }
