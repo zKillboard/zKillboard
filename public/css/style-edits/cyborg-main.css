@@ -1,7 +1,8 @@
 @media (min-width: 768px) {
 	body {
 		background-color: #060606;
-		background-image: url("/img/wallpapers/into_the_abyss.jpg");
+		/*background-image: url("/img/wallpapers/into_the_abyss.jpg");*/
+		background-image: url("/img/starbright_1.png");
 		/*background-image: url("/img/bg_cyborg_blueish.jpg");*/
 		/*background-image: url("/img/secretcyno.jpg");*/
 		-webkit-background-size: cover;
