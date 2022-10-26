@@ -25,6 +25,12 @@ It&#39;s easy! Log in using the dropdown menu in the top right where you can see
 
 ***
 
+#####Is there a killboard for Singularity (Sisi)? What about the Chinese Server?
+
+CCP has removed all killmail API endpoints from Singularity as some people were found attempting to brute force the ships being tested, and lost, by their rivals for alliance tournaments.
+
+The Chinese server has it's own set of APIs for the dedicated Chinese server. This killboard does not try to mix killmails from different servers that are ran in two very different environments with two different playerbases.
+
 #####Can you remove a kill from zKillboard because ____________ ?
 
 Kills are never removed from zKillboard. Once zKillboard has a killmail it is disseminated to about dozen other sources via RedisQ. Removing a killmail will not prevent the fact that it happened. Even if CCP reimbursed your ship and items, the killmail still happened, and it still exists in game too.
