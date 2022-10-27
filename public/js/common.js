@@ -61,6 +61,7 @@ $(document).ready(function() {
     if (start_websocket) startWebSocket();
 
     setTimeout(function() { $("#messagedad").show(); }, 5500);
+    $("img[shipImageError='true']").each(fixShipRender2Icon);
 });
 
 function startWebSocket() {
@@ -385,3 +386,5 @@ function showAdder(showAdd, type, id, doTN) {
     if (doTN) pubsub('tracker:' + type + ':' + id);
     return (showAdd && ($("#tracker-remove-" + type + "-" + id).removeClass("hidden").length == 0));
 }
+
+function fixShipRender2Icon() { $(this).attr('src', $(this).attr('src').replace('render', 'icon')).removeAttr('imageError'); }
