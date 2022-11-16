@@ -46,6 +46,9 @@ function publish($killID)
         $channels['ship:' . (int) @$involved['shipTypeID']] = true;
         $channels['group:' . (int) @$involved['groupID']] = true;
     }
+    foreach ($kill['labels'] as $label) {
+        $channels['label:' . $label] = true;
+    }
     $channels["system:" . $kill['system']['solarSystemID']] = true;
     $channels["constellation:" . $kill['system']['constellationID']] = true;
     $channels["region:" . $kill['system']['regionID']] = true;
