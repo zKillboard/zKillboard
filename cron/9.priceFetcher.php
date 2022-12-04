@@ -36,6 +36,7 @@ function success($guzzler, $params, $content)
         if ($price < 0.01) continue;
         $row = $mdb->findDoc("prices", ['typeID' => $typeID]);
         if (isset($row[$date])) continue;
+        if (!isset($row["typeID"])) $row["typeID"] = $typeID;
         $row[$date] = $price;
         $mdb->save("prices", $row);
     }

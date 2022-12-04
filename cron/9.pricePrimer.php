@@ -1,7 +1,8 @@
 <?php
 
-require_once '../init.php';
+exit(); // temp disabled until market endpoint is fixed by CCP
 
+require_once '../init.php';
 global $primePrices;
 
 if ($redis->get("zkb:noapi") == "true") exit();

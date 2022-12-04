@@ -119,6 +119,7 @@ class Price
             case 36902:
             case 34559:
             case 34557:
+            case 44264:
                 return 0.01;
             case 2834: // Utu
             case 3516: // Malice
@@ -216,6 +217,7 @@ class Price
     public static function getCrestPrices($typeID)
     {
         global $mdb, $esiServer;
+return;
 
         $marketHistory = $mdb->findDoc('prices', ['typeID' => $typeID]);
         if ($marketHistory === null) {
