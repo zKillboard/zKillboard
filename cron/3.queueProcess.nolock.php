@@ -482,7 +482,7 @@ function isCapital($typeID) {
     do {
         $mGroup = Info::getInfo("marketGroupID", $mGroupID);
         $mGroupID = (int) @$mGroup['parent_group_id'];
-        if ($mGroupID == 1381) $is = true;
+        if ($mGroupID == 1381 || $mGroupID == 2288) $is = true;
     } while ($is == false && $mGroupID > 0);
 
     $redis->setex($key, 86400, "$is");
