@@ -32,7 +32,8 @@ function success($guzzler, $params, $content)
         $buildable = ($blueprint != null && $blueprint['reqs'] != null);
         $adjPrice = (double) @$segment['adjusted_price'];
         $avgPrice = (double) @$segment['average_price'];
-        $price = max($adjPrice, $avgPrice);
+        if ($adjPrice > 0 && $avgPrice > 0) $price = min($adjPrice, $avgPrice);
+        else $price = max($adjPrice, $avgPrice);
         if ($price < 0.01) continue;
         $row = $mdb->findDoc("prices", ['typeID' => $typeID]);
         if (isset($row[$date])) continue;
