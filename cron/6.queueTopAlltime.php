@@ -1,9 +1,5 @@
 <?php
 
-$pid = pcntl_fork();
-$master = ($pid == 0);
-pcntl_fork();
-
 use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
@@ -16,7 +12,7 @@ MongoCursor::$timeout = -1;
 $minute = date("Hi");
 $queueTopAllTime = new RedisQueue("queueTopAllTime");
 
-if ($master == true && $queueTopAllTime->size() == 0) {
+if (/*$master == true &&*/ $queueTopAllTime->size() == 0) {
     $cursor = $mdb->getCollection("statistics")->find(['calcAlltime' => true]);
     while ($cursor->hasNext()) {
         $row = $cursor->next();
@@ -46,6 +42,7 @@ function calcTop($row)
     $parameters = [$row['type'] => $row['id']];
     $parameters['limit'] = 100;
     $parameters['kills'] = true;
+    $parameters['labels'] = 'pvp';
 
     $topLists[] = array('type' => 'character', 'data' => Stats::getTop('characterID', $parameters, true, false));
     $topLists[] = array('type' => 'corporation', 'data' => Stats::getTop('corporationID', $parameters, true, false));
