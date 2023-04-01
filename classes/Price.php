@@ -136,6 +136,7 @@ class Price
             case 35779: // Imp
             case 42125: // Vendetta
             case 42246: // Caedes
+            case 74141: // Geri
                 return 120000000000; // 120b
             case 2836: // Adrestia
             case 33675: // Chameleon
