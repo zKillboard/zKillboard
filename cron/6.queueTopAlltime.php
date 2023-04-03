@@ -13,7 +13,7 @@ $minute = date("Hi");
 $queueTopAllTime = new RedisQueue("queueTopAllTime");
 
 if (/*$master == true &&*/ $queueTopAllTime->size() == 0) {
-    $cursor = $mdb->getCollection("statistics")->find(['calcAlltime' => true]);
+    $cursor = $mdb->getCollection("statistics")->find(['calcAlltime' => true])->limit(5000);
     while ($cursor->hasNext()) {
         $row = $cursor->next();
         $queueTopAllTime->push(['type' => $row['type'], 'id' => (int) $row['id']]);
