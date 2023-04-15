@@ -228,16 +228,20 @@ return;
 
         $url = "$esiServer/v1/markets/10000002/history/?type_id=$typeID";
         $sso = ZKillSSO::getSSO();
-        $json = json_decode($sso->doCall($url), true);
+	try {
+        	$json = json_decode($sso->doCall($url), true);
+		foreach ($json as $row) {
+            		$avgPrice = $row['average'];
+            		$date = substr($row['date'], 0, 10);
+            		if (isset($marketHistory[$date])) {
+                		continue;
+            		}
+            	$mdb->set('prices', ['typeID' => $typeID], [$date => $avgPrice]);
+        	}
+	} catch(Exception $e) {
+		$json = NULL;
+	}
 
-        foreach ($json as $row) {
-            $avgPrice = $row['average'];
-            $date = substr($row['date'], 0, 10);
-            if (isset($marketHistory[$date])) {
-                continue;
-            }
-            $mdb->set('prices', ['typeID' => $typeID], [$date => $avgPrice]);
-        }
         if (sizeof($json) == 0) {
             $key = "zkb:market:" . date('H');
             $market = RedisCache::get($key);
