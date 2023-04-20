@@ -4,8 +4,15 @@ $("#tracker-none").removeClass("hidden");
 $("#char-image").attr("src", "/img/1_32.jpg");
 $("#loginforapi").show();
 
-loadads();
-otherBanners();
+$.getScript("https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js").done(function() {
+    console.log("publift loaded");
+    $.getScript("/js/adblockDetector.min.js").done(function() {
+        console.log("ad block detector loaded");
+        loadads();
+        otherBanners();
+    });
+});
+
 $("#loginsideimage").fadeIn();
 gtag('event', 'navbar_loaded');
 

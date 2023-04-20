@@ -8,11 +8,22 @@ $("#char-image").attr("src", "{{ image_character }}{{ characterID }}/portrait?si
 
 showAds = {{ showAds }};
 {% if showAds != 0 %}
-    loadads();
-    otherBanners();
+
+$.getScript("https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js").done(function() {
+    console.log("publift loaded");
+    $.getScript("/js/adblockDetector.min.js").done(function() {
+        console.log("ad block detector loaded");
+        loadads();
+        otherBanners();
+    });
+});
+
+
 {% else %}
+
     gtag('event', 'patron');
     $("#messagedad").remove();
+
 {% endif %}
 gtag('event', 'navbar_loaded');
 

@@ -4,7 +4,6 @@ var adblocked = undefined;
 $(document).ready(function() {
     if (navbar) $('#tracker-dropdown').load('/navbar/');
 
-
     // add the autocomplete search thing
     $('#searchbox').zz_search( function(data, event) { window.location = '/' + data.type + '/' + data.id + '/'; event.preventDefault(); } );
     $('#searchbox').on('focus', function() { $("#advancedsearchnavbar").slideDown(); });
