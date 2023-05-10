@@ -144,6 +144,7 @@ class Price
             case 45530: // Virtuoso
             case 48636: // Hydra
             case 60765: // Raiju
+            case 74316: // Bestla
                 return 150000000000; // 150b
             case 33397: // Chremoas
             case 42245: // Rabisu
@@ -218,7 +219,6 @@ class Price
     public static function getCrestPrices($typeID)
     {
         global $mdb, $esiServer;
-return;
 
         $marketHistory = $mdb->findDoc('prices', ['typeID' => $typeID]);
         if ($marketHistory === null) {
