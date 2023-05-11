@@ -1,0 +1,13 @@
+Killmails in this directory were not generated in a manner in which they are accessible via the API.
+
+Instead, CCP Swift has worked with various members of CCP to regenerate the killmail as closely as possible.
+
+I've also asked for the following criteria in assigning an "official" killmail id:
+- Must be very close to actual time of loss
+- Must have been an NPC loss
+- Must have been to a character that has been deleted
+
+
+The file will need to be loaded, have it's killmail_id set to the proper id, and then saved to esimails.
+Then, a row must be inserted into crestmails: {killID: 107220741, "hash": "CCP VERIFIED", processed: "fetched"} 
+Be sure to use fetched as the status, otherwise zkill code will determine the entry to be invalid and delete it
