@@ -126,8 +126,6 @@ class Price
             case 11375: // Freki
                 return 80000000000; // 80b
             case 3518: // Vangel
-            case 3514: // Revenant
-		return 200000000000; // 200b, based on completed contract prices as of 05/25/2023
             case 32788: // Cambion
             case 32790: // Etana
             case 32209: // Mimir
@@ -135,8 +133,6 @@ class Price
             case 33673: // Whiptail
                 return 100000000000; // 100b
             case 35779: // Imp
-            case 42125: // Vendetta
-		return 200000000000; // 200b, based on completed contract prices as of 05/25/2023
             case 42246: // Caedes
             case 74141: // Geri
                 return 120000000000; // 120b
@@ -150,8 +146,6 @@ class Price
                 return 150000000000; // 150b
             case 33397: // Chremoas
             case 42245: // Rabisu
-            case 45649: // Komodo
-                return 600000000000; // 600b - based on BPC sale and build material cost as of 05/25/2023
             case 45531: // Victor
                 return 230000000000;
             case 48635: // Tiamat
@@ -205,6 +199,12 @@ class Price
 		return 50000000000; // 50b, based on completed contract prices as of 05/25/2023
 	    case 23919: // Aeon
 		return 50000000000; // 50b, based on completed contract prices as of 05/25/2023
+	    case 3514: // Revenant
+		return 200000000000; // 200b, based on completed contract prices as of 05/25/2023
+            case 42125: // Vendetta
+		return 200000000000; // 200b, based on completed contract prices as of 05/25/2023
+            case 45649: // Komodo
+                return 600000000000; // 600b - based on BPC sale and build material cost as of 05/25/2023
         }
 
         // Some groupIDs have hardcoded prices
