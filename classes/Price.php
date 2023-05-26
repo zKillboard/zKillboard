@@ -210,7 +210,7 @@ class Price
         // Some groupIDs have hardcoded prices
         $groupID = Info::getGroupID($typeID);
         switch ($groupID) {
-            case 30: // Titans
+            //case 30: // Titans
                 //return 100000000000; // 100b
             //case 659: // Supercarriers
                 //return 20000000000; // 20b
