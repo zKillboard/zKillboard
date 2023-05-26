@@ -170,7 +170,7 @@ function addEntity(suggestion, slot = 'neutrals') {
 function getHTML(suggestion) {
     suggestion.data.type = suggestion.data.type.replace(/[\W_]+/g, '');
     suggestion.data.id = parseInt(suggestion.data.id);
-    if (suggestion.data.value) suggestion.data.value = suggestion.data.value.replaceAll('<', '').replaceAll('>', '');
+    suggestion.value = suggestion.value.replaceAll('<', '').replaceAll('>', '');
 console.log(suggestion.data.type, suggestion.data.id, suggestion.data.value);
     var left = $("<span>").addClass("glyphicon").addClass("glyphicon-chevron-left").attr('direction', 'left').on('click', moveLeft).css('cursor', 'pointer');
     var right = $("<span>").addClass("glyphicon").addClass("glyphicon-chevron-right").attr('direction', 'right').on('click', moveRight).css('cursor', 'pointer');
