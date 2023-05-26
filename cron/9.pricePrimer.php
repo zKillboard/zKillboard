@@ -1,7 +1,5 @@
 <?php
 
-exit(); // temp disabled until market endpoint is fixed by CCP
-
 require_once '../init.php';
 global $primePrices;
 
