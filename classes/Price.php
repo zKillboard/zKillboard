@@ -104,7 +104,7 @@ class Price
     protected static function getFixedPrice($typeID, $date)
     {
         // Some typeID's have hardcoded prices
-        switch ($typeID) {
+        switch ($typeID) { 
             case 12478: // Khumaak
             case 34559: // Conflux Element
                 return 0.01; // Items that get market manipulated and abused will go here
@@ -127,6 +127,7 @@ class Price
                 return 80000000000; // 80b
             case 3518: // Vangel
             case 3514: // Revenant
+		return 200000000000; // 200b, based on completed contract prices as of 05/25/2023
             case 32788: // Cambion
             case 32790: // Etana
             case 32209: // Mimir
@@ -135,6 +136,7 @@ class Price
                 return 100000000000; // 100b
             case 35779: // Imp
             case 42125: // Vendetta
+		return 200000000000; // 200b, based on completed contract prices as of 05/25/2023
             case 42246: // Caedes
             case 74141: // Geri
                 return 120000000000; // 120b
@@ -149,7 +151,7 @@ class Price
             case 33397: // Chremoas
             case 42245: // Rabisu
             case 45649: // Komodo
-                return 200000000000; // 200b
+                return 600000000000; // 600b - based on BPC sale and build material cost as of 05/25/2023
             case 45531: // Victor
                 return 230000000000;
             case 48635: // Tiamat
@@ -164,6 +166,8 @@ class Price
             case 42241: // Molok
                 if ($date <= "2019-07-01") return 350000000000; // 350b 
                 return 650000000000;
+	    case 42126: // Vanquisher
+		return 625000000000; // 625b, based on recently completed contracts as os 05/25/2023
             // Rare cruisers
             case 11940: // Gold Magnate
 		    if ($date <= "2020-01-25") return 500000000; // 500b
@@ -183,12 +187,30 @@ class Price
                 return 2500000000000;
             case 47514: // 'Horizon' Fortizar
                 return 60000000000; // Too much market bugginess, hardcoding price
+		// Titans
+	    case 671: // Erebus
+		return 150000000000; // 150b, based on completed contract prices as of 05/25/2023
+	    case 3764: // Leviathan
+		return 150000000000; // 150b, based on completed contract prices as of 05/25/2023
+	    case 11567: // Avatar
+		return 150000000000; // 150b, based on completed contract prices as of 05/25/2023
+	    case 23773: // Ragnarok
+		return 150000000000; // 150b, based on completed contract prices as of 05/25/2023
+		// Supers
+	    case 22852: // Hel
+		return 50000000000; // 50b, based on completed contract prices as of 05/25/2023
+	    case 23913: // Nyx
+		return 50000000000; // 50b, based on completed contract prices as of 05/25/2023
+	    case 23917: // Wyvern
+		return 50000000000; // 50b, based on completed contract prices as of 05/25/2023
+	    case 23919: // Aeon
+		return 50000000000; // 50b, based on completed contract prices as of 05/25/2023
         }
 
         // Some groupIDs have hardcoded prices
         $groupID = Info::getGroupID($typeID);
         switch ($groupID) {
-            //case 30: // Titans
+            case 30: // Titans
                 //return 100000000000; // 100b
             //case 659: // Supercarriers
                 //return 20000000000; // 20b
