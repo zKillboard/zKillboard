@@ -18,7 +18,7 @@ $queueApiCheck = new RedisQueue('queueApiCheck');
 $queueSocial = new RedisQueue('queueSocial');
 $queueStats = new RedisQueue('queueStats');
 $queueRedisQ = new RedisQueue('queueRedisQ');
-$queueDiscord = new RedisQueue('queueDiscord');
+//$queueDiscord = new RedisQueue('queueDiscord');
 $statArray = ['characterID', 'corporationID', 'allianceID', 'factionID', 'shipTypeID', 'groupID'];
 
 $minute = date('Hi');
@@ -31,7 +31,7 @@ while ($minute == date('Hi')) {
 
         $queueSocial->push($killID);
         $queueRedisQ->push($killID);
-        $queueDiscord->push($killID);
+        //$queueDiscord->push($killID);
         $queueApiCheck->push($killID);
 
         $mdb->set("killmails", ['killID' => $killID], ['processed' => true]);
