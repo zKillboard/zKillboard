@@ -161,6 +161,8 @@ class Price
             case 9860: // Polaris
             case 11019: // Cockroach
                 return 1000000000000; // 1 trillion, rare dev ships
+            case 42126: // Vanquisher
+                return 650000000000;
             case 42241: // Molok
                 if ($date <= "2019-07-01") return 350000000000; // 350b 
                 return 650000000000;
