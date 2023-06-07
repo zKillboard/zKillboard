@@ -488,10 +488,12 @@ if ($pageType == 'overview' || $pageType == 'losses') {
         if ($kill['iskSum'] <= 0) continue;
         $killmail = $mdb->findDoc("killmails", ['killID' => $kill['killID']]);
         Info::addInfo($killmail);
-        $killmail['victim'] = $killmail['involved'][0];
-        $killmail['zkb']['totalValue'] = $kill['iskSum'];
+        if (isset($killmail['involved']) && isset($killmail['involved'][0])) {
+            $killmail['victim'] = $killmail['involved'][0];
+            $killmail['zkb']['totalValue'] = $kill['iskSum'];
 
-        $sponsored[$kill['killID']] = $killmail;
+            $sponsored[$kill['killID']] = $killmail;
+        }
     }
     $extra['sponsoredMails'] = $sponsored;
 }
