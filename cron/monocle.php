@@ -2,12 +2,12 @@
 
 require_once "../init.php";
 
-if ($redis->get("zkb:monocled") == "true") exit();
+if (date("Hi") != "1200") exit();
 
 $iter = $mdb->getCollection("payments")->distinct("characterID");
 foreach ($iter as $id) {
     $userInfo = $mdb->findDoc("users", ['userID' => "user:$id"]);
-    if (@$userInfo['monocle'] != true) {
+    if ($userInfo != null && @$userInfo['monocle'] != true) {
         $result = Mdb::group("payments", ['characterID'], ['characterID' => (int) $id], [], 'isk', ['iskSum' => -1], 6);
         $isk = $result[0]['iskSum'];
         if ($isk >= 1000000000) {
@@ -19,6 +19,3 @@ foreach ($iter as $id) {
         }   
     }
 }
-
-
-$redis->setex("zkb:monocled", 7200, "true");
