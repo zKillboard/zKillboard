@@ -2,6 +2,7 @@
 
 require_once '../init.php';
 
+exit();
 global $primePrices;
 
 if ($redis->get("zkb:noapi") == "true") exit();
