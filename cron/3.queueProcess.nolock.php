@@ -118,8 +118,7 @@ while ($minute == date('Hi')) {
         $destroyedValue += $shipValue;
         $fittedValue = getFittedValue($killID, $mail['victim']['items'], $date);
         $fittedValue += $shipValue;
-        $totalValue = processItems($killID, $mail['victim']['items'], $date);
-        $totalValue += $shipValue;
+        $totalValue = $destroyedValue + $droppedValue;
 
         $isPaddedKill = false;
         $padhash = getPadHash($kill);
