@@ -57,6 +57,7 @@ class Detail
             if (!isset($itm['flagName'])) {
                 $itm['flagName'] = Info::getFlagName($itm['flag']);
                 if ($itm['flagName'] == null || $itm['flagName'] == '') {
+                    $itm['flagName'] = 'Unknown flag ' . $item['flag';
                     Log::log('Unknown flag '.$itm['flag']);
                 }
             }
