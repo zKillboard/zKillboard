@@ -260,22 +260,15 @@ function getFittedValue($killID, $items, $dttm)
 
 function getDValue($killID, $items, $dttm, $dropped)
 {
-    global $fittedArray;
-
     $droppedOrDestroyed = 'quantity_' . ($dropped == true ? 'dropped' : 'destroyed');
 
     $dValue = 0;
     foreach ($items as $item) {
-        $typeID = (int) $item['item_type_id'];
-        if ($typeID == 0) continue;
-
         $qty = ((int) @$item[$droppedOrDestroyed]);
-        $price = Price::getItemPrice($typeID, $dttm);
-        $dValue += ($qty * $price);
+        if ($qty > 0) $dValue += processItems($killID, [$item], $dttm);
     }
     return $dValue;
 }
-
 
 function processItems($killID, $items, $dttm, $isCargo = false, $parentFlag = 0)
 {
