@@ -187,13 +187,14 @@ class Price
                 return 60000000000; // Too much market bugginess, hardcoding price
         }
 
-        // Some groupIDs have hardcoded prices
+        // Some groupIDs have prices based on their group
         $groupID = Info::getGroupID($typeID);
         switch ($groupID) {
-            //case 30: // Titans
-                //return 100000000000; // 100b
-            //case 659: // Supercarriers
-                //return 20000000000; // 20b
+            case 30: // Titans
+            case 659: // Supercarriers
+                $p = Build::getItemPrice($typeID, $date);
+                if ($p > 1) return $p; 
+                return;
             case 29: // Capsules
                 return 10000; // 10k
         }
