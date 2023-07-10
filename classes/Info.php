@@ -485,27 +485,27 @@ class Info
         $sec = number_format($securityLevel, 1);
         switch ($sec) {
             case 1.0:
-                return '#33F9F9';
+                return '#2c74e0';
             case 0.9:
-                return '#4BF3C3';
+                return '#3a9aeb';
             case 0.8:
-                return '#02F34B';
+                return '#4ecef8';
             case 0.7:
-                return '#00FF00';
+                return '#60d9a3';
             case 0.6:
-                return '#96F933';
+                return '#71e554';
             case 0.5:
-                return '#F5F501';
+                return '#f3fd82';
             case 0.4:
-                return '#E58000';
+                return '#DC6D07';
             case 0.3:
-                return '#F66301';
+                return '#ce440f';
             case 0.2:
-                return '#EB4903';
+                return '#bc1117';
             case 0.1:
-                return '#DC3201';
+                return '#722020';
             default:
-                return '#F30202';
+                return '#8d3264';
         }
     }
 
