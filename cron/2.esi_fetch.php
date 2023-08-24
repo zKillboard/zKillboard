@@ -12,6 +12,7 @@ $guzzler = new Guzzler(1);
 $esimails = $mdb->getCollection("esimails");
 
 $mdb->set("crestmails", ['processed' => 'fetching'], ['processed' => false], true);
+$mdb->set("crestmails", ['processed' => 'processing'], ['processed' => false], true);
 
 $count = 0;
 $minute = date("Hi");
