@@ -12,7 +12,7 @@ MongoCursor::$timeout = -1;
 $minute = date("Hi");
 $queueTopAllTime = new RedisQueue("queueTopAllTime");
 
-if (/*$master == true &&*/ $queueTopAllTime->size() == 0) {
+if (/*$master == true &&*/ $queueTopAllTime->size() == 0 && $mdb->count("statistics", ['reset' => true]) == 0) {
     $cursor = $mdb->getCollection("statistics")->find(['calcAlltime' => true])->limit(5000);
     while ($cursor->hasNext()) {
         $row = $cursor->next();
