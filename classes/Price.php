@@ -232,6 +232,7 @@ class Price
         $url = "$esiServer/v1/markets/10000002/history/?type_id=$typeID";
         $sso = ZKillSSO::getSSO();
         $json = json_decode($sso->doCall($url), true);
+        usleep(250000);
 
         foreach ($json as $row) {
             $avgPrice = $row['average'];

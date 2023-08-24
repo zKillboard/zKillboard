@@ -15,7 +15,7 @@ $key = "tq:pricesChecked:$date";
 // We'll wait a few minutes then start pulling
 if ($redis->get($key) == "true" || date('Hi') < 1115) exit();
 
-$guzzler = new Guzzler(10, 10);
+$guzzler = new Guzzler(1, 1000000);
 $guzzler->call("$esiServer/v1/markets/groups/", "groupsSuccess", "fail");
 $guzzler->finish();
 
