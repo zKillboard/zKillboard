@@ -44,4 +44,5 @@ while (date('Hi') == $minute) {
         sleep(1);
     }
     $queuePublish->push($killID);
+    sleep(1);
 }
