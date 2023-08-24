@@ -110,7 +110,7 @@ try {
         $arr['kills'] = [];
         foreach ($result as $row) {
             $killID = $row['killID'];
-            $redis->setex("zkb:killlistrow:" . $killID, 60, "true");
+            $redis->setex("zkb:killlistrow:" . $killID, 3600, "true");
             $arr['kills'][] = $killID;
         }
     } else if ($queryType == 'count') {
