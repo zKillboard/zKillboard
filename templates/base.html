@@ -37,8 +37,6 @@
 		{% endblock %}
 
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <!--<script defer src="https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js"></script> 
-        <script defer src="/js/adblockDetector.min.js"></script>-->
 
 		<title>
 			{% block title %}
@@ -121,7 +119,7 @@ var actualURI = '{{ actualURI }}';
 				<div class="clearfix"></div>
 
 				<!-- Bottom ad -->
-				<div class="centered publift" fuse="home_footer" id="adsensebottom" style='padding-top: 1em;'></div>
+				<center><div class="centered publift" fuse="home_footer" id="adsensebottom"  style='padding-top: 2em; padding-bottom: 2em; max-height: 250px; max-width: 975px;'></div></center>
 
 				<!-- Footer -->
 				<div class="hidden-xs">{% include "footer.html" %}</div>
