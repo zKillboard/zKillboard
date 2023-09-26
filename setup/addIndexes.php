@@ -66,6 +66,9 @@ echo "Done\n";
 echo "Creating index : 'labeled' => 1, with sparse = 0 and unique = 0 ... ";
 $crestmails->ensureIndex(array('labeled' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
+echo "Creating index : 'code' => 1, with sparse = 1 and unique = 0 ... ";
+$crestmails->ensureIndex(array('code' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
 
 // daydump
 echo "\nCreating collection daydump ... ";
@@ -751,6 +754,9 @@ echo "Done\n";
 echo "Creating index : 'character_id' => 1, with sparse = 0 and unique = 1 ... ";
 $rewards->ensureIndex(array('character_id' => 1), array("sparse" => 0, "unique" => 1));
 echo "Done\n";
+echo "Creating index : 'winner' => 1, with sparse = 0 and unique = 0 ... ";
+$rewards->ensureIndex(array('winner' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
 
 // scopes
 echo "\nCreating collection scopes ... ";
@@ -961,6 +967,9 @@ $statistics->ensureIndex(array('hasSupers' => 1), array("sparse" => 1, "unique" 
 echo "Done\n";
 echo "Creating index : 'updatingSupers' => 1, with sparse = 1 and unique = 0 ... ";
 $statistics->ensureIndex(array('updatingSupers' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'trophies.levels' => 1, with sparse = 1 and unique = 0 ... ";
+$statistics->ensureIndex(array('trophies.levels' => 1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
 
 // tickets
