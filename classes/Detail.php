@@ -58,7 +58,7 @@ class Detail
                 $itm['flagName'] = Info::getFlagName($itm['flag']);
                 if ($itm['flagName'] == null || $itm['flagName'] == '') {
                     $itm['flagName'] = 'Unknown flag ' . $itm['flag'];
-                    Log::log('Unknown flag '.$itm['flag']);
+                    Log::log('Unknown flag '.$itm['flag'] . " : " .  @$_SERVER['REQUEST_URI']);
                 }
             }
 
