@@ -121,6 +121,8 @@ class Price
             case 34557:
             case 44264:
                 return 0.01;
+            case 42243: // Chemosh
+                return 70000000000; 
             case 2834: // Utu
             case 3516: // Malice
             case 11375: // Freki
