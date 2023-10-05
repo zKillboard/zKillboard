@@ -5,11 +5,16 @@ $("#contest-logged-in").removeClass('hidden');
 $("#loginforapi").remove();
 $("#username").text("{{ sessionusername }}");
 $("#char-image").attr("src", "{{ image_character }}{{ characterID }}/portrait?size=32");
-$(".char-image").attr("src", "{{ image_character }}{{ characterID }}/portrait?size=32").on('click', function() { window.location = '/character/' + {{ characterID }} + '/'; });
-$(".corp-image").attr("src", "{{ image_corporation }}{{ corporationID }}/logo?size=32").on('click', function() { window.location = '/corporation/' + {{ corporationID }} + '/'; });
-if ({{ allianceID }} > 0) {
-    $(".alli-image").attr("src", "{{ image_alliance }}{{ allianceID }}/logo?size=32").on('click', function() { window.location = '/alliance/' + {{ allianceID }} + '/'; });
-} else $(".alli-image").remove();
+
+try {
+$(".char-image").attr("src", "{{ image_character }}{{ characterID }}/portrait?size=32").on('click', function() { window.location = '/character/{{ characterID }}/'; });
+$(".corp-image").attr("src", "{{ image_corporation }}{{ corporationID }}/logo?size=32").on('click', function() { window.location = '/corporation/{{ corporationID }}/'; });
+{% if allianceID > 0 %}
+$(".alli-image").attr("src", "{{ image_alliance }}{{ allianceID }}/logo?size=32").on('click', function() { window.location = '/alliance/{{ allianceID }}/'; });
+{% else %}
+$(".alli-image").remove();
+{% endif %}
+} catch (e) { }
 
 $('.clickimage').css('cursor', 'pointer');
 

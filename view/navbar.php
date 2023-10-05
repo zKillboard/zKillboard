@@ -12,7 +12,7 @@ if (!User::isLoggedIn()) {
 
 $ug = new UserGlobals();
 $arr = $ug->getGlobals();
-$etag = md5(serialize($arr) . date('YmdH'));
+$etag = md5(serialize($arr) . date('YmdHmis'));
 $etag = 'W/"' . $etag . '"';
 header("ETag: $etag");
 header("Cache-Control: private");
