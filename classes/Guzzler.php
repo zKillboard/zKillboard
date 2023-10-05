@@ -89,17 +89,22 @@ class Guzzler
         $redis->incr("concurrent");
         $guzzler = $this;
 
-if ($callType == "POST" && $body != null) {
-$uri = $uri . "?";
-    $p = json_decode($body, true);
-foreach ($p as $k => $v) {
-    $uri .= "$k=$v&";
-}
-$uri =  substr_replace($uri ,"", -1);
+        if ($callType == "POST" && $body != null) {
+            $uri = $uri . "?";
+            $p = json_decode($body, true);
+            foreach ($p as $k => $v) {
+                $uri .= "$k=$v&";
+            }
+            $uri =  substr_replace($uri ,"", -1);
 
-    $setup['Content-Type'] = 'application/x-www-form-urlencoded';
-    $body = null;
-}
+            $setup['Content-Type'] = 'application/x-www-form-urlencoded';
+            $body = null;
+        }
+
+        if ($callType == "POST_JSON") {
+            $callType = "POST";
+            $setup['Content-Type'] = 'application/json';
+        }
 
         $request = new \GuzzleHttp\Psr7\Request($callType, $uri, $setup, $body);
         $this->client->sendAsync($request)->then(
@@ -136,11 +141,11 @@ $uri =  substr_replace($uri ,"", -1);
                     if (($code == 0 || $code >= 500) && @$params['retryCount'] <= 3) {
                         $params['retryCount'] = @$params['retryCount'] + 1;
                         //if (@$params['retryCount'] > 2) Util::out("guzzler retrying $uri (http error $code) retry number " . $params['retryCount']);
-$h = $params['content'] . "\n";
-foreach ($this->lastHeaders as $name => $values) {
-   $h = $h . "$name: "  . implode(',', $values) . "\n";
-}
-if (@$params['retryCount'] > 2) Log::log("$uri ($code)\n$h");
+                        $h = $params['content'] . "\n";
+                        foreach ($this->lastHeaders as $name => $values) {
+                            $h = $h . "$name: "  . implode(',', $values) . "\n";
+                        }
+                        if (@$params['retryCount'] > 2) Log::log("$uri ($code)\n$h");
                         $this->call($uri, $fulfilled, $rejected, $params, $setup, $callType, $body);
                     } else {
                         //Log::log($params['uri'] . " $code" . ($params['content'] != '' ? "\n" . $params['content'] : ''));
