@@ -1,5 +1,7 @@
 <?php
 
+$currentTime = date("YmdHi");
+
 // Load Twig globals
 $app->view(new \Slim\Views\Twig());
 
@@ -74,6 +76,10 @@ $twig->addGlobal('image_ship', 'https://images.evetech.net/types/');
 $twig->addGlobal('esiServer', $esiServer);
 $twig->addGlobal('showTwitch', $showTwitch);
 
+if (isset($special) && isset($specialExpires) && $currentTime <= $specialExpires) {
+    $twig->addGlobal('sponsoredMessage', $special);
+}
+
 $twig->addGlobal('tqStatus', $redis->get('tqStatus'));
 $twig->addGlobal('tqCount', $redis->get('tqCount'));
 
@@ -132,7 +138,7 @@ if ($banner) {
 
 $twig->addGlobal('showAds', ($showAds ? 1 : 0));
 $twig->addGlobal('websocket', ($websocket ? 1 : 0));
-$twig->addGlobal('currentTime', date('YmdHi'));
+$twig->addGlobal('currentTime', $currentTime);
 $_SERVER['SERVER_NAME'] = $baseAddr;
 
 $twig->addGlobal('KillboardName', (isset($killboardName) ? $killboardName : 'zKillboard'));

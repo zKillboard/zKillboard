@@ -1,4 +1,5 @@
 {% if pageType == 'overview' and extra.activity.max > 0 %}
+    {{ sponsoredMessage|raw }}
     <center><h5>Activity (last 90 days)</h5></center>
     <a href="#" data-toggle="modal" data-target="#heatmap">
     {% spaceless %}
