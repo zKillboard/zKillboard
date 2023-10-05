@@ -89,6 +89,7 @@ function getName($victimInfo)
 
 function sendMessage($message)
 {
+return;
     try {
         global $consumerKey, $consumerSecret, $accessToken, $accessTokenSecret;
         $twitter = new Twitter($consumerKey, $consumerSecret, $accessToken, $accessTokenSecret);
