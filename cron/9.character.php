@@ -19,10 +19,10 @@ while ($minute == date('Hi')) {
         $guzzler->sleep(1);
         continue;
     }
-    /*if (isset($row['lastApiUpdate']) && @$row['lastApiUpdate']->sec > (time() - 86400)) {
+    if (isset($row['lastApiUpdate']) && @$row['lastApiUpdate']->sec > (time() - (7 * 86400))) {
         $guzzler->sleep(1);
         continue;
-    }*/
+    }
     $currentSecond = date('His');
     $id = (int) $row['id'];
     if ($id == 1) {
@@ -119,9 +119,6 @@ function updateChar(&$guzzler, &$params, &$content)
         compareAttributes($updates, "name", @$row['name'], "Character " . $row['id']);
         compareAttributes($updates, "obscene_name", @$row['name'], (string) $json['name']);
     } else compareAttributes($updates, "name", @$row['name'], (string) $json['name']);
-    compareAttributes($updates, "corporationID", @$row['corporationID'], $corpID);
-    compareAttributes($updates, "allianceID", @$row['allianceID'], (int) Info::getInfoField("corporationID", $corpID, 'allianceID'));
-    compareAttributes($updates, "factionID", @$row['factionID'], 0);
     compareAttributes($updates, "secStatus", @$row['secStatus'], (double) $json['security_status']);
 
     $corpExists = $mdb->count('information', ['type' => 'corporationID', 'id' => $corpID]);
@@ -136,8 +133,6 @@ function updateChar(&$guzzler, &$params, &$content)
     if (sizeof($updates) > 1) {
         $redis->del(Info::getRedisKey('characterID', $id));
     }
-    // Make sure the scopes have the right corporationID for this character
-    $mdb->set("scopes", ['characterID' => $id], ['corporationID' => $corpID], true);
 }
 
 function compareAttributes(&$updates, $key, $oAttr, $nAttr) {
