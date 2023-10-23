@@ -46,7 +46,7 @@ class Price
         $priceKey = "tq:prices:$date";
         $price = $redis->hGet($priceKey, $typeID);
         if ($price != null && $recalc == false) {
-            //return $price;
+            return $price;
         }
 
         $marketHistory = $mdb->findDoc('prices', ['typeID' => $typeID]);
