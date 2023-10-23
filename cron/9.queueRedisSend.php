@@ -41,8 +41,8 @@ while (date('Hi') == $minute) {
     $result = RedisQ\Action::queue($redisQServer, $redisQAuthUser, $redisQAuthPass, $package);
     if (@$result['success'] != true) {
         $queueRedisQ->push($killID);
-        sleep(1);
+    } else {
+        $queuePublish->push($killID);
     }
-    $queuePublish->push($killID);
     sleep(1);
 }
