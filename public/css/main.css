@@ -367,6 +367,18 @@ html,body {
 }
 }
 
+@media only screen and (min-width: 1860px) {
+.left-sticky-ad {
+    left: calc(50% - 905px);
+    width: 300px;
+    max-width: 300px;
+}
+
+.right-sticky-ad {
+    width: 300px;
+    max-width: 300px;
+}
+}
 
 .nowrap-parent {
     width: 250px;
