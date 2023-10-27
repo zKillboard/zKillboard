@@ -13,7 +13,6 @@ if ($info == null) {
 
     return;
 }
-$info['typeID'] = $info['id'];
 $info['typeName'] = $info['name'];
 $info['description'] = str_replace('<br>', "\n", @$info['description']);
 $info['description'] = strip_tags(@$info['description']);
@@ -27,22 +26,25 @@ $info['attributes'] = array();
 
 //$info['market'] = Db::query('select * from zz_item_price_lookup where typeID = :typeID order by priceDate desc limit 30', array(':typeID' => $id));
 $market = $mdb->findDoc('prices', ['typeID' => $id]);
-unset($market['_id']);
-unset($market['typeID']);
 if ($market == null) {
     $market = [];
 }
+unset($market['typeID']);
+unset($market['_id']);
 krsort($market);
 $market = array_slice($market, 0, 30);
 $info['market'] = $market;
 
 $kills = $mdb->find('itemmails', ['typeID' => (int) $id], ['killID' => -1], 50);
+if ($kills == null) $kills = [];
 $victims = [];
 foreach ($kills as $row) {
     $kill = $mdb->findDoc('killmails', ['killID' => $row['killID']]);
-    $victim = $kill['involved'][0];
-    $victim['destroyed'] = $row['killID'];
-    $victims[] = $victim;
+    if ($kill && @$kill['involved']) {
+        $victim = $kill['involved'][0];
+        $victim['destroyed'] = $row['killID'];
+        $victims[] = $victim;
+    }
 }
 Info::addInfo($victims);
 
