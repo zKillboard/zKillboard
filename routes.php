@@ -151,10 +151,6 @@ $app->get('/api/related/:system/:time/', function ($system, $time) use ($app) {
         echo json_encode($mc, JSON_PRETTY_PRINT);
         });
 
-$app->get('/api/kills/:type(/page/:page)/', function ($type, $page = 0) use ($app) {
-        include 'view/api-kills.php';
-        });
-
 $app->get('/api/history/:date/', function ($date) use ($app) {
         header("Location: /api/history/$date.json", 302);
         return;
