@@ -1,16 +1,6 @@
 #!/usr/bin/php5
 <?php
 
-set_error_handler(function($errno, $errstr, $errfile, $errline, array $errcontext) {
-    // error was suppressed with the @-operator
-    if (0 === error_reporting()) {
-        return false;
-    }
-
-    throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
-});
-
-
 use cvweiss\redistools\RedisTtlCounter;
 use cvweiss\redistools\RedisTimeQueue;
 
@@ -61,7 +51,7 @@ while ($hour == date('H')) {
         $redis->publish("public", json_encode(['action' => 'tqStatus', 'tqStatus' => $serverStatus, 'tqCount' => $loggedIn, 'kills' => number_format($kCount, 0)]));
         $lastKillCountSent = $kCount;
     }
-    $totalKills = $redis->get('zkb:totalKills');
+    $totalKills = $mdb->getCollection("killmails")->count();
     $topKillID = max(1, $mdb->findField('killmails', 'killID', [], ['killID' => -1]));
     addInfo('Total Kills (' . number_format(($totalKills / $topKillID) * 100, 1) . '%)', $totalKills);
     addInfo('Top killID', $topKillID);
@@ -87,10 +77,6 @@ while ($hour == date('H')) {
     addInfo('Failed ESI calls in last 5 minutes', Status::getStatus('esi', false), false);
     addInfo('Successful SSO calls in last 5 minutes', Status::getStatus('sso', true), false);
     addInfo('Failed SSO calls in last 5 minutes', Status::getStatus('sso', false), false);
-
-    addInfo('', 0, false);
-    addInfo('ESI Requests Cached', Status::getStatus('cached304', true), false);
-    addInfo('ESI Requests Not Cached', Status::getStatus('cached304', false), false);
 
     $esiChars = new RedisTimeQueue("tqApiESI", 3600);
     $esiCorps = new RedisTimeQueue("tqCorpApiESI", 300);
@@ -181,8 +167,10 @@ while ($hour == date('H')) {
 function addInfo($text, $number, $left = true, $format = true)
 {
     global $infoArray, $deltaArray;
-    $prevNumber = (double) @$deltaArray[$text];
-    $delta = (double) $number - $prevNumber;
+
+
+    $prevNumber = @$deltaArray[$text];
+    $delta = (double) $number - (double) $prevNumber;
     $deltaArray[$text] = $number;
 
     if ($delta > 0) {
@@ -190,6 +178,7 @@ function addInfo($text, $number, $left = true, $format = true)
     }
     $dtext = $delta == 0 ? '' : "($delta)";
     $num = $format ? number_format($number, 0) : $number;
+    if ($text == '') $num = '';
     $infoArray[] = ['text' => "$text $dtext", 'num' => $num, 'lr' => $left];
 }
 
