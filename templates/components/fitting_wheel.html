@@ -4,14 +4,14 @@
 {% set placement = "top" %}
 <div id="Fitting_Panel" style="position: relative; height:398px; width:398px; z-index: 3">
 <div id="mask" style="position:absolute; left: 0px; top: 0 px; width:398px; height:398px; z-index:-1;">
-	<img style="position:absolute; left: 0px; top: 0px;  height:398px; width:398px; border:0px" src='//{{ siteurl }}/img/panel/tyrannis.png' alt='' />
+	<img style="position:absolute; left: 0px; top: 0px;  height:398px; width:398px; border:0px" src='/img/panel/tyrannis.png' alt='' />
 </div>
 
 {% set slotCount = (fitting.high | length > extra.slotCounts.hiSlots ) ? fitting.high | length : extra.slotCounts.hiSlots %}
 {% set slotCount = min(8, max(0, slotCount)) %}
 {% if killdata.victim.groupID == 29 %}{% set slotCount = 5 %}{% endif %}
 <div id="highx" style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;">
-	<img src="//{{ siteurl }}/img/panel/{{ slotCount }}h.png" alt="" style="border:0px;" />
+	<img src="/img/panel/{{ slotCount }}h.png" alt="" style="border:0px;" />
 </div>
 <div id="high1" style="position:absolute; left:73px; top:60px; width:32px; height:32px;">{% set field = fitting.high.27.0.0 %}{% include 'components/image_item.html' %}</div>
 <div id="high2" style="position:absolute; left:102px; top:42px; width:32px; height:32px;">{% set field = fitting.high.28.0.0 %}{% include 'components/image_item.html' %}</div>
@@ -25,7 +25,7 @@
 {% set slotCount = (fitting.mid | length > extra.slotCounts.medSlots ) ? fitting.mid | length : extra.slotCounts.medSlots %}
 {% set slotCount = min(8, max(0, slotCount)) %}
 <div id="midx" style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;">
-	<img src="//{{ siteurl }}/img/panel/{{ slotCount }}m.png" alt="" style="border:0px;" />
+	<img src="/img/panel/{{ slotCount }}m.png" alt="" style="border:0px;" />
 </div>
 <div id="mid1" style="position:absolute; left:26px; top:140px; width:32px; height:32px;">{% set field =fitting.mid.19.0.0 %}{% include 'components/image_item.html' %}</div>
 <div id="mid2" style="position:absolute; left:24px; top:176px; width:32px; height:32px;">{% set field =fitting.mid.20.0.0 %}{% include 'components/image_item.html' %}</div>
@@ -40,7 +40,7 @@
 {% set slotCount = min(8, max(0, slotCount)) %}
 {% if killdata.victim.groupID == 29 %}{% set slotCount = 5 %}{% endif %}
 <div id="lowx" style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;">
-	<img src="//{{ siteurl }}/img/panel/{{ slotCount }}l.png" alt="" style="border:0px;" />
+	<img src="/img/panel/{{ slotCount }}l.png" alt="" style="border:0px;" />
 </div>
 <div id="low1" style="position:absolute; left:344px; top:143px; width:32px; height:32px;">{% set field = fitting.low.11.0.0 %}{% include 'components/image_item.html' %}</div>
 <div id="low2" style="position:absolute; left:350px; top:178px; width:32px; height:32px;">{% set field = fitting.low.12.0.0 %}{% include 'components/image_item.html' %}</div>
@@ -53,7 +53,7 @@
 
 {% set slotCount = (fitting.rig | length > extra.slotCounts.rigSlots ) ? fitting.rig | length : extra.slotCounts.rigSlots %}
 <div id="rigxx" style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;">
-	<img src="//{{ siteurl }}/img/panel/{{ slotCount }}r.png" alt="" style="border:0px;" />
+	<img src="/img/panel/{{ slotCount }}r.png" alt="" style="border:0px;" />
 </div>
 <div id="rig1" style="position:absolute; left:148px; top:259px; width:32px; height:32px;">{% set field = fitting.rig.92.0.0 %}{% include 'components/image_item.html' %}</div>
 <div id="rig2" style="position:absolute; left:185px; top:267px; width:32px; height:32px;">{% set field = fitting.rig.93.0.0 %}{% include 'components/image_item.html' %}</div>
@@ -62,9 +62,9 @@
 {% if fitting.sub | length %}
 <div id="subx" style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;">
     {% if fitting.sub | length == 4 %}
-	<img src="//{{ siteurl }}/img/panel/4s.png" alt="" style="border:0px;" />
+	<img src="/img/panel/4s.png" alt="" style="border:0px;" />
     {% else %}
-	<img src="//{{ siteurl }}/img/panel/5s.png" alt="" style="border:0px;" />
+	<img src="/img/panel/5s.png" alt="" style="border:0px;" />
     {% endif %}
 </div>
 <div id="sub1" style="position:absolute; left:117px; top:131px; width:32px; height:32px;">{% set field = fitting.sub.125.0.0 %}{% include 'components/image_item.html' %}</div>

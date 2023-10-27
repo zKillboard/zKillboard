@@ -19,7 +19,7 @@
 		<meta name="application-name" content="{{ siteurl }}"/>
 		<meta name="msapplication-TileColor" content="#000000"/>
 		<meta name="mobile-web-app-capable" content="yes">
-		<link rel="shortcut icon" sizes="16x16" href="//{{ siteurl }}/favicon.ico" />
+		<link rel="shortcut icon" sizes="16x16" href="/favicon.ico" />
 		{% block opengraph %}
 			<meta name="twitter:title" content="{{ pageTitle }} | {{ siteurl }}">
 			<meta name="twitter:card" content="summary">
@@ -53,9 +53,9 @@
 
 		<link id="mainstyle" rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.1.1/cyborg/bootstrap.min.css">
 
-		<link rel="stylesheet" href="//{{ siteurl }}/css/style-edits/cyborg-main.css?v={{ version }}" id="nextstyle">
-		<link rel="stylesheet" href="//{{ siteurl }}/css/main.css?v={{ version }}">
-		<link rel="stylesheet" href="//{{ siteurl }}/css/nprogress.css">
+		<link rel="stylesheet" href="/css/style-edits/cyborg-main.css?v={{ version }}" id="nextstyle">
+		<link rel="stylesheet" href="/css/main.css?v={{ version }}">
+		<link rel="stylesheet" href="/css/nprogress.css">
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css" integrity="sha512-mSYUmp1HYZDFaVKK//63EcZq4iFWFjxSL+Z3T/aCt4IO9Cejm03q3NKKYN6pFQzY0SBOr8h+eCIAZHPXcpZaNw==" crossorigin="anonymous" />
@@ -140,12 +140,12 @@ var actualURI = '{{ actualURI }}';
 		<script defer type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js"></script>
 		<script defer type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.2/bootstrap-slider.min.js"></script>
 
-		<script defer type="text/javascript" src="//{{ siteurl }}/js/search.js?v={{ version }}"></script>
-		<script defer type="text/javascript" src="//{{ siteurl }}/js/common.js?v={{ version }}"></script>
-		<script defer type="text/javascript" src="//{{ siteurl }}/js/sclock1.js"></script>
-		<script defer type="text/javascript" src="//{{ siteurl }}/js/nprogress.js"></script>
+		<script defer type="text/javascript" src="/js/search.js?v={{ version }}"></script>
+		<script defer type="text/javascript" src="/js/common.js?v={{ version }}"></script>
+		<script defer type="text/javascript" src="/js/sclock1.js"></script>
+		<script defer type="text/javascript" src="/js/nprogress.js"></script>
 		<script defer type="text/javascript" src="/js/reconnecting-websocket.js"></script>
-		<script defer type="text/javascript" src="//{{ siteurl }}/js/rankstablesort.js"></script>
+		<script defer type="text/javascript" src="/js/rankstablesort.js"></script>
 
 		{% block script %}
 		{% endblock %}
