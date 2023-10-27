@@ -43,7 +43,7 @@ while ($minute == date('Hi')) {
             $params = ['row' => $row, 'esi' => $esi];
             $refreshToken = $row['refreshToken'];
             $accessToken = $sso->getAccessToken($refreshToken);
-            if (@$accessToken['error'] == "invalid_grant") {
+            if (is_array($accessToken) && @$accessToken['error'] == "invalid_grant") {
                 $mdb->remove("scopes", $row);
                 sleep(1);
                 continue;

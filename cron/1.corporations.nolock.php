@@ -1,6 +1,7 @@
 <?php
 
-pcntl_fork();
+$master = pcntl_fork();
+$master = ($master > 0);
 
 use cvweiss\redistools\RedisTimeQueue;
 
@@ -13,6 +14,13 @@ if ($redis->get("zkb:noapi") == "true") exit();
 
 $chars = new RedisTimeQueue("zkb:characterID", 86400);
 $esi = new RedisTimeQueue('tqCorpApiESI', 3600);
+
+if ($master && (date("i") == 44 || $esi->size() < 100)) {
+       $corpIDs = $mdb->getCollection("scopes")->distinct("corporationID");
+       foreach ($corpIDs as $corpID) $esi->add($corpID);
+}
+
+
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
@@ -33,7 +41,7 @@ while ($minute == date('Hi')) {
 
         $refreshToken = $row['refreshToken'];
         $accessToken = $sso->getAccessToken($refreshToken);
-        if (@$accessToken['error'] == "invalid_grant") {
+        if (is_array($accessToken) && @$accessToken['error'] == "invalid_grant") {
             $mdb->remove("scopes", $row);
             sleep(1);
             continue;

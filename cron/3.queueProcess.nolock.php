@@ -4,8 +4,6 @@ $master = true;
 $pid = pcntl_fork();
 $master = ($pid != 0);
 pcntl_fork();
-pcntl_fork();
-pcntl_fork();
 
 
 use cvweiss\redistools\RedisQueue;
@@ -37,7 +35,7 @@ while ($minute == date('Hi')) {
     if ($redis->get("zkb:universeLoaded") != "true") break;
     if ($redis->llen("queueInfo") > 100) sleep(1);
     $row = null;
-    $sem = sem_get(3175);
+    $sem = sem_get(3976);
     try {
         sem_acquire($sem);
         $killID = $redis->zrevrange("tobeparsed", 0, 0);
@@ -181,8 +179,9 @@ while ($minute == date('Hi')) {
         $killsLastHour = new RedisTtlCounter('killsLastHour');
         $killsLastHour->add($row['killID']);
         $mdb->set('crestmails', $row, ['processed' => true]);
+	continue;
     } else if (!$master) break;
-    else usleep(50000);
+    sleep(1);
 }
 
 function addLabel(&$kill, $condition, $label)
