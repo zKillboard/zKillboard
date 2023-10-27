@@ -150,7 +150,7 @@ class Info
         global $mdb;
 
         $serverVersion = $mdb->findField("versions", "serverVersion", ['epoch' => ['$gte' => $epoch]], ['epoch' => 1]);
-        if ($serverVersion == null) throw Exception("Unknown server version - bailing");
+        if ($serverVersion == null) throw \Exception("Unknown server version - bailing");
         $system = $mdb->findDoc("geography", ['type' => 'solarSystemID', 'id' => $solarSystemID, 'serverVersion' => "$serverVersion"]);
         return $system;
     }

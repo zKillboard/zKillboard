@@ -25,7 +25,7 @@ class Guzzler
         $t = new Timer();
         do {
             $this->tick();
-            usleep(100);
+            usleep(10000);
             $stop = 1000 * ceil($t->stop());
         } while ($time >= $stop);
     }
@@ -34,6 +34,7 @@ class Guzzler
     {
         $ms = (int) microtime();
         do {
+            usleep(10000);
             $this->curl->tick();
         } while ($this->concurrent >= $this->maxConcurrent);
         return max(0, ((int) microtime()) - $ms);

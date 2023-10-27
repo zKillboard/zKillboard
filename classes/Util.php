@@ -513,7 +513,7 @@ class Util
 
     public static function getSequence($mdb, $redis)
     {
-        $sem = sem_get(3174);
+        $sem = sem_get(3175);
         try {
             sem_acquire($sem);
             do {
@@ -529,6 +529,7 @@ class Util
 
     private static function populate($mdb, $redis) {
         if ($redis->llen("sequence") == 0) {
+		Util::out("populating sequences");
             $sequenceStart = 1+ $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);
             $max = $sequenceStart + 10000;
             for ($i = $sequenceStart; $i <= $max; $i++) {

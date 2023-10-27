@@ -285,7 +285,7 @@ class Mdb
         $group['_id'] = $ids;
 
         // If no counts or sums are given, assume a count based on the keys for the $group
-        if (@sizeof($count) == 0 && @sizeof($sum) == 0) {
+        if (is_array($count) && @sizeof($count) == 0 && is_array($sum) && @sizeof($sum) == 0) {
             $group['count'] = ['$sum' => 1];
         }
 

@@ -185,6 +185,8 @@ class EveOnlineSSO
         }
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $callType);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+	curl_setopt($ch, CURLOPT_FORBID_REUSE, true);
+	curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4 );
 
         $result = curl_exec($ch);
 
@@ -192,6 +194,7 @@ class EveOnlineSSO
             Status::addStatus($statusType, false);
             throw new \Exception(curl_error($ch), curl_errno($ch));
         }
+	curl_close($ch);
 
         Status::addStatus($statusType, true);
         return $result;
