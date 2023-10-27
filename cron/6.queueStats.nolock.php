@@ -1,8 +1,9 @@
 <?php
 
 $master = true;
-$pid = pcntl_fork();
-$master = ($pid != 0);
+//$pid = pcntl_fork();
+//$master = ($pid != 0);
+//pcntl_fork();
 
 use cvweiss\redistools\RedisQueue;
 
@@ -18,6 +19,7 @@ $minute = date('Hi');
 
 function checkForResets() {
     global $mdb, $redis;
+    return false;
 
     // Look for resets in statistics and add them to the queue
     $hasResets = false;
@@ -32,7 +34,7 @@ function checkForResets() {
 }
 
 while ($minute == date('Hi')) {
-    $raw = $redis->spop("queueStatsSet");
+    $raw = $redis->srandmember("queueStatsSet");
     if ($raw == null) {
         if (!$master) break;
         if (checkForResets() == false) sleep(1);
@@ -40,21 +42,26 @@ while ($minute == date('Hi')) {
     }
 
     $arr = split(":", $raw);
-    $maxSequence = $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);
     $type = $arr[0];
     if ($type == "itemID") continue;
+
+    $maxSequence = $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);
     $id = (int) $arr[1];
     $row = ['type' => $type, 'id' => $id, 'sequence' => $maxSequence];
+
     $key = $row['type'] . ":" . $row['id'];
-    if ($redis->set("zkb:stats:$key", "true", ['nx', 'ex' => 9600]) === true) {
+    if ($redis->set("zkb:stats:$key", "true", ['nx', 'ex' => 19200]) === true) {
         try {
-            calcStats($row, $maxSequence);
+            $complete = calcStats($row, $maxSequence);
+	    if ($complete == false) $redis->sadd("queueStatsSet", $raw);
+	    else $redis->srem("queueStatsSet", $raw);
         } catch (Exception $ex) {
             throw $ex;
         } finally {
             $redis->del("zkb:stats:$key");
         }
     } else {
+	Util::out("returning...");
         $redis->sadd("queueStatsSet", $raw);
         usleep(10000);
     }
@@ -66,12 +73,11 @@ function calcStats($row, $maxSequence)
 
     $type = $row['type'];
     $id = $row['id'];
-    if ($id == 0) return;
-    $newSequence = $row['sequence'];
+    if ($id == 0) return true;
 
     $key = ['type' => $type, 'id' => $id];
     $stats = $mdb->findDoc('statistics', $key);
-    if ($stats === null || isset($stats['reset'])) {
+    if ($stats === null || @$stats['reset'] === true) {
         $id_ = isset($stats['_id']) ? $stats['_id'] : null;
         $topAllTime = isset($stats['topAllTime']) ? $stats['topAllTime'] : null;
         $stats = [];
@@ -81,13 +87,18 @@ function calcStats($row, $maxSequence)
             $stats['_id'] = $id_;
             $stats['topAllTime'] = $topAllTime;
         }
+	$row['sequence'] = 0;
     }
+    $stats['reset'] = false;
+    $newSequence = (int) $row['sequence'];
+
+    $delta = 100000;
+    if ($type == "characterID" || $type == "locationID") $delta = $maxSequence;
+    else if ($type == "corporationID" || $type == "allianceID") $delta = 500000;
 
     $oldSequence = (int) @$stats['sequence'];
-    if ($newSequence <= $oldSequence) {
-        return;
-    }
-    $newSequence = max($newSequence, $maxSequence);
+    $newSequence = min($oldSequence + $delta, $maxSequence);
+    //Util::out("$type $id $oldSequence $newSequence");
 
     for ($i = 0; $i <= 1; ++$i) {
         $isVictim = ($i == 0);
@@ -98,6 +109,8 @@ function calcStats($row, $maxSequence)
         // build the query
         $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'labels' => 'pvp'];
         if ($isVictim == false) unset($query['labels']); // Allows NPCs to count their kills
+	if ($type == 'locationID' || $type == 'regionID' || $type == 'constellationID' || $type == 'solarSystemID') unset($query['isVictim']);
+
         $query = MongoFilter::buildQuery($query);
         // set the proper sequence values
         $query = ['$and' => [['sequence' => ['$gt' => $oldSequence]], ['sequence' => ['$lte' => $newSequence]], $query]];
@@ -112,15 +125,14 @@ function calcStats($row, $maxSequence)
         mergeMonths($stats, $months, $isVictim);
 
         $labels = $mdb->group('killmails', ['$unwind', 'labels'], $query, 'killID', ['zkb.points', 'zkb.totalValue', 'attackerCount'], ['labels' => 1]);
-        mergeLabels($stats, $labels, $isVictim);
+	mergeLabels($stats, $labels, $isVictim);
 
         $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'labels' => 'pvp','solo' => true];
         if ($isVictim == false) unset($query['labels']); // Allows NPCs to count their kills
+	if ($type == 'locationID' || $type == 'regionID' || $type == 'constellationID' || $type == 'solarSystemID') unset($query['isVictim']);
         $query = MongoFilter::buildQuery($query);
         $key = "solo" . ($isVictim ? "Losses" : "Kills");
-        if (isset($stats[$key])) {
-            $query = ['$and' => [['sequence' => ['$gt' => $oldSequence]], ['sequence' => ['$lte' => $newSequence]], $query]];
-        }
+        $query = ['$and' => [['sequence' => ['$gt' => $oldSequence]], ['sequence' => ['$lte' => $newSequence]], $query]];
         $count = $mdb->count('killmails', $query);
         $stats[$key] = isset($stats[$key]) ? $stats[$key] + $count : $count;
     }
@@ -152,6 +164,7 @@ function calcStats($row, $maxSequence)
     if (@$stats['shipsDestroyed'] > 10 && @$stats['shipsDestroyed'] > @$stats['nextTopRecalc']) $stats['calcAlltime'] = true;
     // save it
     $mdb->getCollection('statistics')->save($stats);
+    return ($newSequence == $maxSequence);
 }
 
 function mergeAllTime(&$stats, $result, $isVictim)
