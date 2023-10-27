@@ -18,8 +18,14 @@ foreach ($cursor as $row) {
     $time = $time - ($time % 86400);
     $date = date('Ymd', $time);
     if ($date != $curDate) {
+	foreach ($hashes as $wdate => $dayHashes) {
+	    file_put_contents("./public/api/history/$wdate.json", json_encode($dayHashes)); 
+	    $redis->set("zkb:firstkillid:$wdate", min(array_keys($dayHashes)));
+	    $totals[$wdate] = count($dayHashes);
+	}
         $curDate = $date;
         Util::out("Day dumping $date");
+	$hashes = [];
     }
 
     $killID = (int) $row['killID'];
