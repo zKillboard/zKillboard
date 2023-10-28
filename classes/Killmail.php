@@ -6,15 +6,22 @@ class Killmail
     {
         global $mdb, $redis;
 
+        $kmKey = "killmailChecked:$killID:$hash";
+
+        if ($redis->get($kmKey) == "true") return 0;
+
         $exists = $mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash]);
         if (!$exists) {
             try {
                 $mdb->save('crestmails', ['killID' => $killID, 'hash' => $hash, 'processed' => false]);
+                $redis->setex($kmKey, 80000 + rand(1,9600), "true");
                 return 1;
             } catch (Exception $ex) {
                 if ($ex->getCode() != 11000) echo "$killID $hash : " . $ex->getCode() . " " . $ex->getMessage() . "\n";
+                return 0;
             }
         }
+        $redis->setex($kmKey, 80000 + rand(1,9600), "true");
         return 0;
     }
 
