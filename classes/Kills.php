@@ -15,7 +15,7 @@ class Kills
      *
      * @return array
      */
-    public static function getKills($parameters = array(), $allTime = true, $includeKillDetails = true)
+    public static function getKills($parameters = array(), $allTime = true, $includeKillDetails = true, $onlyVicAndFinal = false)
     {
         $kills = MongoFilter::getKills($parameters);
 
@@ -25,7 +25,7 @@ class Kills
         return Kills::getDetails($kills);
     }   
 
-    public static function getDetails($kills)
+    public static function getDetails($kills, $onlyVicAndFinal = false)
     {
         global $mdb, $redis;
 
@@ -34,7 +34,7 @@ class Kills
         $details = [];
         foreach ($kills as $kill) {
             $killID = (isset($kill['killID']) ? (int) $kill['killID'] : (int) $kill);
-            $killHashKey = "killmail_cache:$killID";
+            $killHashKey = "killmail_cache:$killID:$onlyVicAndFinal";
 
             $killmail = null;
             $raw = $redis->get($killHashKey);
@@ -42,7 +42,6 @@ class Kills
 
             if ($killmail == null) {
                 $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
-                Info::addInfo($killmail);
                 $killmail['victim'] = $killmail['involved'][0];
                 $killmail['victim']['killID'] = $killID;
                 foreach ($killmail['involved'] as $inv) {
@@ -52,9 +51,13 @@ class Kills
                     }
                 }
                 $killmail['finalBlow']['killID'] = $killID;
+
+                if ($onlyVicAndFinal) unset($killmail['involved']);
+
+                Info::addInfo($killmail);
                 unset($killmail['_id']);
 
-                $redis->setex($killHashKey, 300 + rand(0, 300), serialize($killmail));
+                $redis->setex($killHashKey, 3600 + rand(0, 3600), serialize($killmail));
             }
             $details[$killID] = $killmail;
         }
