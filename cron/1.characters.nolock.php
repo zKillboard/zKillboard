@@ -27,18 +27,18 @@ $minute = date('Hi');
 while ($minute == date('Hi')) {
     $charID = $esi->next(false);
     if ($charID > 0) {
-        if ($redis->get("esi-fetched:$charID") == "true") continue;
+        if ($redis->get("esi-fetched:$charID") == "true") { usleep(100000); continue; }
 
         $row = $mdb->findDoc("scopes", ['characterID' => (int) $charID, 'scope' => "esi-killmails.read_killmails.v1", "oauth2" => true], ['lastFetch' => 1]);
         if ($row != null) {
             $corpID = (int) Info::getInfoField("characterID", $charID, "corporationID");
             $row['corporationID'] = $corpID;
             if ($corpID !== @$row['corporationID']) {
-                $mdb->set("scopes", $row, ['corporationID' => $corpID]);
+                $mdb->set("scopes", $row, ['corporationID' => $corpID], true);
             }
 
             $hasRecent = $mdb->exists("ninetyDays", ['involved.characterID' => $charID]);
-            if (!$hasRecent && @$row['lastFetch']->sec != 0 && (($charID % 24) != date('H'))) continue;
+            if (!$hasRecent && @$row['lastFetch']->sec != 0 && (($charID % 24) != date('H'))) {usleep(100000); continue; }
 
             $params = ['row' => $row, 'esi' => $esi];
             $refreshToken = $row['refreshToken'];
@@ -55,6 +55,7 @@ while ($minute == date('Hi')) {
         } else {
             $esi->remove($charID);
         }
+        usleep(10000);
     } else {
         sleep(1);
     }

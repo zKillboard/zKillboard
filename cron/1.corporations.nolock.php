@@ -20,8 +20,6 @@ if ($master && (date("i") == 44 || $esi->size() < 100)) {
        foreach ($corpIDs as $corpID) $esi->add($corpID);
 }
 
-
-
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $corpIDRaw = $esi->next();
@@ -50,6 +48,7 @@ while ($minute == date('Hi')) {
         $killmails = $sso->doCall("$esiServer/v1/corporations/$corpID/killmails/recent/", [], $accessToken);
         success(['corpID' => $corpID, 'row' => $row, 'esi' => $esi], $killmails);
         $redis->setex("esi-fetched:$corpID", 300, "true");
+        usleep(100000);
     } else {
         sleep(1);
     }

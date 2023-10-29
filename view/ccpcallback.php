@@ -138,6 +138,7 @@ try {
     if (@$_SESSION['patreon'] == true) $redirect = '/cache/bypass/login/patreon/';
     if ($redirect == '') $redirect = '/';
 
+    $redis->sadd("queueStatsSet", "characterID:$charID"); // encourage stats calc on newly logged in chars
     header('Location: ' . $redirect, 302);
 
 } catch (Exception $e) {
