@@ -1,9 +1,8 @@
 <?php
 
-$master = true;
-//$pid = pcntl_fork();
-//$master = ($pid != 0);
-//pcntl_fork();
+$pid = pcntl_fork();
+$master = ($pid > 0);
+pcntl_fork();
 
 use cvweiss\redistools\RedisQueue;
 
@@ -19,7 +18,6 @@ $minute = date('Hi');
 
 function checkForResets() {
     global $mdb, $redis;
-    return false;
 
     // Look for resets in statistics and add them to the queue
     $hasResets = false;
@@ -36,8 +34,8 @@ function checkForResets() {
 while ($minute == date('Hi')) {
     $raw = $redis->srandmember("queueStatsSet");
     if ($raw == null) {
-        if (!$master) break;
-        if (checkForResets() == false) sleep(1);
+        if ($master) checkForResets();
+        sleep(1);
         continue;
     }
 
@@ -45,24 +43,25 @@ while ($minute == date('Hi')) {
     $type = $arr[0];
     if ($type == "itemID") continue;
 
-    $maxSequence = $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);
     $id = (int) $arr[1];
-    $row = ['type' => $type, 'id' => $id, 'sequence' => $maxSequence];
-
-    $key = $row['type'] . ":" . $row['id'];
-    if ($redis->set("zkb:stats:$key", "true", ['nx', 'ex' => 19200]) === true) {
+    $key = "$type:$id";
+    if ($redis->set("zkb:stats:$key", "true", ['nx', 'ex' => 3600]) === true) {
         try {
-            $complete = calcStats($row, $maxSequence);
-	    if ($complete == false) $redis->sadd("queueStatsSet", $raw);
-	    else $redis->srem("queueStatsSet", $raw);
+            $maxSequence = $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);
+            $row = ['type' => $type, 'id' => $id, 'sequence' => $maxSequence];
+
+            $complete = false;
+            do {
+                $complete = calcStats($row, $maxSequence);
+            } while ($complete == false && $minute == date('Hi'));
+
+            if ($complete) $redis->srem("queueStatsSet", $raw);
         } catch (Exception $ex) {
             throw $ex;
         } finally {
             $redis->del("zkb:stats:$key");
         }
     } else {
-	Util::out("returning...");
-        $redis->sadd("queueStatsSet", $raw);
         usleep(10000);
     }
 }
@@ -77,7 +76,9 @@ function calcStats($row, $maxSequence)
 
     $key = ['type' => $type, 'id' => $id];
     $stats = $mdb->findDoc('statistics', $key);
+    $resetInProgress = false;
     if ($stats === null || @$stats['reset'] === true) {
+        $resetInProgress = true;
         $id_ = isset($stats['_id']) ? $stats['_id'] : null;
         $topAllTime = isset($stats['topAllTime']) ? $stats['topAllTime'] : null;
         $stats = [];
@@ -87,18 +88,34 @@ function calcStats($row, $maxSequence)
             $stats['_id'] = $id_;
             $stats['topAllTime'] = $topAllTime;
         }
-	$row['sequence'] = 0;
+        $row['sequence'] = 0;
     }
     $stats['reset'] = false;
     $newSequence = (int) $row['sequence'];
 
-    $delta = 100000;
-    if ($type == "characterID" || $type == "locationID") $delta = $maxSequence;
-    else if ($type == "corporationID" || $type == "allianceID") $delta = 500000;
+    $delta = 100000; // default for following switch
+    switch ($type) {
+        case "characterID":
+        case "locationID":
+            $delta = $maxSequence;
+            break;
+        case "allianceID":
+        case "corporationID":
+            $delta = 3000000;
+            break;
+        case "shipTypeID":
+        case "groupID":
+        case "constellationID":
+        case "solarSystemID";
+            $delta = 1000000;
+            break;
+        case "factionID":
+        case "regionID":
+            $delta = 100000;
+    }
 
     $oldSequence = (int) @$stats['sequence'];
     $newSequence = min($oldSequence + $delta, $maxSequence);
-    //Util::out("$type $id $oldSequence $newSequence");
 
     for ($i = 0; $i <= 1; ++$i) {
         $isVictim = ($i == 0);
@@ -109,7 +126,7 @@ function calcStats($row, $maxSequence)
         // build the query
         $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'labels' => 'pvp'];
         if ($isVictim == false) unset($query['labels']); // Allows NPCs to count their kills
-	if ($type == 'locationID' || $type == 'regionID' || $type == 'constellationID' || $type == 'solarSystemID') unset($query['isVictim']);
+        if ($type == 'locationID' || $type == 'regionID' || $type == 'constellationID' || $type == 'solarSystemID') unset($query['isVictim']);
 
         $query = MongoFilter::buildQuery($query);
         // set the proper sequence values
@@ -125,11 +142,11 @@ function calcStats($row, $maxSequence)
         mergeMonths($stats, $months, $isVictim);
 
         $labels = $mdb->group('killmails', ['$unwind', 'labels'], $query, 'killID', ['zkb.points', 'zkb.totalValue', 'attackerCount'], ['labels' => 1]);
-	mergeLabels($stats, $labels, $isVictim);
+        mergeLabels($stats, $labels, $isVictim);
 
         $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'labels' => 'pvp','solo' => true];
         if ($isVictim == false) unset($query['labels']); // Allows NPCs to count their kills
-	if ($type == 'locationID' || $type == 'regionID' || $type == 'constellationID' || $type == 'solarSystemID') unset($query['isVictim']);
+        if ($type == 'locationID' || $type == 'regionID' || $type == 'constellationID' || $type == 'solarSystemID') unset($query['isVictim']);
         $query = MongoFilter::buildQuery($query);
         $key = "solo" . ($isVictim ? "Losses" : "Kills");
         $query = ['$and' => [['sequence' => ['$gt' => $oldSequence]], ['sequence' => ['$lte' => $newSequence]], $query]];
@@ -164,6 +181,7 @@ function calcStats($row, $maxSequence)
     if (@$stats['shipsDestroyed'] > 10 && @$stats['shipsDestroyed'] > @$stats['nextTopRecalc']) $stats['calcAlltime'] = true;
     // save it
     $mdb->getCollection('statistics')->save($stats);
+    
     return ($newSequence == $maxSequence);
 }
 
@@ -264,7 +282,7 @@ function mergeLabels(&$stats, $result, $isVictim)
     foreach ($result as $row) {
         $label = $row['labels'];
         if (!isset($labels[$label])) $labels[$label] = [];
-        
+
         $labelStats = $labels[$label];
         @$labelStats["ships$dl"] += $row['killIDCount'];
         @$labelStats["points$dl"] += $row['zkb_pointsSum'];
