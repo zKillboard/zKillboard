@@ -4,6 +4,7 @@ require_once "../init.php";
 
 $key = "zkb:topShipsByLossCalc";
 if ($redis->get($key) == true && $redis->get("zkb:topKillsByShip") != null) exit();
+if ($mdb->findDoc("statistics", ['reset' => true]) !== null) exit();
 
 MongoCursor::$timeout = -1;
 

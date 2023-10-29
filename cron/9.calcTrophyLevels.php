@@ -8,6 +8,8 @@ if (date('Hi') < "1100") exit();
 $key = "zkb:calcedTrophies:" . date("Ymd");
 if ($redis->get("$key") == "true") exit();
 
+if ($mdb->findDoc("statistics", ['reset' => true]) !== null) exit();
+
 $minute = Date('Hi');
 while ($minute == date('Hi')) {
     if ($redis->get("zkb:reinforced") == true) exit();
