@@ -7,9 +7,6 @@ use cvweiss\redistools\RedisTimeQueue;
 global $mdb, $redis;
 
 $key = "zkb:autocomplete";
-if ($redis->get($key) == "true") {
-    exit();
-}
 
 
 $charsRTQ = new RedisTimeQueue("zkb:characterID", 86400);
@@ -23,6 +20,7 @@ $types = [
 ];
 
 foreach ($types as $type) {
+    if ($redis->get("$key:$type") == "true") continue;
     $redis->del("s:search:$type");
     $toMove = [];
 
@@ -91,9 +89,9 @@ foreach ($types as $type) {
         $newName = substr($setKey, 2);
         $redis->rename($setKey, substr($setKey, 2));
     }
+    $redis->setex("$key:$type", 80000, "true");
 }
 
-$redis->setex($key, 10800, "true");
 
 function addSearch($setKey, $name, $id)
 {
