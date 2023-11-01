@@ -18,7 +18,7 @@ class Stats
             return $result;
         }
 
-        $result = Kills::getKills($parameters);
+        $result = Kills::getKills($parameters, true, true, true);
         RedisCache::set($hashKey, $result, 900);
 
         return $result;
