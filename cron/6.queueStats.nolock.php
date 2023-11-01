@@ -72,7 +72,6 @@ function calcStats($row, $maxSequence)
 
     $type = $row['type'];
     $id = $row['id'];
-    if ($id == 0) return true;
 
     $key = ['type' => $type, 'id' => $id];
     $stats = $mdb->findDoc('statistics', $key);
