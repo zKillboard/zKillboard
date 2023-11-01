@@ -62,7 +62,6 @@ function beSocial($killID)
     ];
     $redis->publish("public", json_encode($redisMessage, JSON_UNESCAPED_SLASHES));
     Discord::webhook($bigKillBotWebhook, $url);
-    sendMessage($message);
 }
 
 function adjustMessage($name, $message)
@@ -85,17 +84,4 @@ function getName($victimInfo)
     $name = Util::endsWith($name, 's') ? $name."'" : $name."'s";
 
     return $name;
-}
-
-function sendMessage($message)
-{
-return;
-    try {
-        global $consumerKey, $consumerSecret, $accessToken, $accessTokenSecret;
-        $twitter = new Twitter($consumerKey, $consumerSecret, $accessToken, $accessTokenSecret);
-
-        return $twitter->send($message);
-    } catch (Exception $ex) {
-        Util::out("Failed sending tweet: " . $ex->getMessage());
-    }
 }
