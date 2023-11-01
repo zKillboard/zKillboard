@@ -16,7 +16,7 @@ $map = array(
 
 if ($redis->get("zkb:killlistrow:" . $killID) != "true") return;
 
-$kills = Kills::getKills(['killID' => $killID]);
+$kills = Kills::getKills(['killID' => $killID], true, true, true);
 if (isset($entityID) && $entityID > 0) {
     $type = @$map[$entityType]['column'] . "ID";
     $kills = Kills::mergeKillArrays($kills, array(), 100, $type, $entityID);
