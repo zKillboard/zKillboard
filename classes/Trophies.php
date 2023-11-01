@@ -7,7 +7,7 @@ class Trophies
     // freighter burn 
 
     public static $conditions = [
-        ['type' => 'General', 'name' => 'Get a solo kill', 'filter' => ['characterID' => '?', 'isVictim' => false, 'solo' => true], 'rank' => 2, 'link' => '../solo/kills/'],
+        ['type' => 'General', 'name' => 'Get a solo kill', 'stats' => ['field' => 'soloKills', 'value' => 1], 'rank' => 2, 'link' => '../solo/kills/'],
         ['type' => 'General', 'name' => 'Kill Kill Kill', 'stats' => ['field' => 'shipsDestroyed', 'value' => 1], 'link' => '../kills/'],
         ['type' => 'General', 'name' => 'Didn\'t want that ship anyway (Losses)', 'stats' => ['field' => 'shipsLost', 'value' => 1], 'link' => '../losses/'],
         ['type' => 'Special', 'name' => 'Concordokken! Get concorded', 'filter' => ['isVictim' => false, 'corporationID' => 1000125, 'compare' => true], 'rank' => '1', 'link' => '../losses/reset/corporation/1000125/kills/'],
