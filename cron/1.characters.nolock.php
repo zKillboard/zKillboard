@@ -1,5 +1,6 @@
 <?php
 
+$master = (pcntl_fork() > 0);
 pcntl_fork();
 pcntl_fork();
 
@@ -12,8 +13,9 @@ $sso = ZKillSSO::getSSO();
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:noapi") == "true") exit();
 
+$esiCorps = new RedisTimeQueue('tqCorpApiESI', 3600);
 $esi = new RedisTimeQueue('tqApiESI', 3600);
-if (date('i') == 22 || $esi->size() < 100) {
+if ($master && (date('i') == 22 || $esi->size() < 100)) {
     $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_killmails.v1']);
     foreach ($esis as $row) {
         $charID = $row['characterID'];
@@ -25,6 +27,7 @@ if ($esi->size() == 0) exit();
 $bumped = [];
 $minute = date('Hi');
 while ($minute == date('Hi')) {
+    if ($esiCorps->pending() > 100) sleep(1);
     $charID = $esi->next(false);
     if ($charID > 0) {
         if ($redis->get("esi-fetched:$charID") == "true") { usleep(100000); continue; }

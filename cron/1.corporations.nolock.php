@@ -2,6 +2,7 @@
 
 $master = pcntl_fork();
 $master = ($master > 0);
+pcntl_fork();
 
 use cvweiss\redistools\RedisTimeQueue;
 
