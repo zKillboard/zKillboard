@@ -2,10 +2,11 @@
 
 require_once "../init.php";
 
-if ($redis->get("zkb:map-activity") == "true") exit();
+$date = date("Ymd");
+if ($redis->get("zkb:map-activity:$date") == "true") exit();
 
 $redis->del("zkb:activity_map");
-$ids = $mdb->getCollection("activity")->distinct("id");
+$ids = $mdb->getCollection("ninetyDays")->distinct("involved.characterID");
 foreach ($ids as $id) {
     $info = $mdb->findDoc("information", ['id' => $id]);
     if (@$info['type'] == 'characterID') continue;
@@ -21,4 +22,4 @@ foreach ($ids as $id) {
 }
 
 $redis->rename("zkb:activity_map", "zkb:activity");
-$redis->setex("zkb:map-activity", 5200, "true");
+$redis->setex("zkb:map-activity:$date", 86400, "true");
