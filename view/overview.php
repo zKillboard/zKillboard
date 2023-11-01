@@ -97,9 +97,9 @@ if ($pageName == '???' && !$mdb->exists('information', ['id' => $id])) {
 $columnName = $map[$key]['column'].'ID';
 $mixedKills = $pageType == 'overview' && $map[$key]['mixed'] && UserConfig::get('mixKillsWithLosses', true);
 
-$mixed = $pageType == 'overview' ? Kills::getKills($parameters) : array();
-$kills = $pageType == 'kills'    ? Kills::getKills($parameters) : array();
-$losses = $pageType == 'losses'  ? Kills::getKills($parameters) : array();
+$mixed = $pageType == 'overview' ? Kills::getKills($parameters, true, true, true) : array();
+$kills = $pageType == 'kills'    ? Kills::getKills($parameters, true, true, true) : array();
+$losses = $pageType == 'losses'  ? Kills::getKills($parameters, true, true, true) : array();
 
 if ($pageType != 'solo' || $key == 'faction') {
     $soloKills = array();
@@ -109,7 +109,7 @@ if ($pageType != 'solo' || $key == 'faction') {
     if (!isset($parameters['kills']) || !isset($parameters['losses'])) {
         $soloParams['mixed'] = true;
     }
-    $soloKills = Kills::getKills($soloParams);
+    $soloKills = Kills::getKills($soloParams, true, true, true);
 }
 //$soloPages = ceil($soloCount / $limit);
 $solo = Kills::mergeKillArrays($soloKills, array(), $limit, $columnName, $id);
