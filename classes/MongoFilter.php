@@ -109,8 +109,10 @@ class MongoFilter
         foreach ($parameters as $key => $value) {
             if (is_array($value) && !isset($value[0])) {
                 $filter = $value;
-            } else if (is_array($value)) {
+            } else if (is_array($value) && sizeof($value) > 1) {
                 $filter = ['$in' => $value];
+            } else if (is_array($value) && sizeof($value) == 1) {
+                $filter = $value[0];
             } else {
                 $filter = $value;
             }
