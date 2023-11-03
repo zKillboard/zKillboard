@@ -160,7 +160,8 @@ while ($hour == date('H')) {
     }
     foreach($output as $line) echo "$line\n";
     $output = ob_get_clean();
-    file_put_contents("${baseDir}/public/ztop.txt", $output);
+    file_put_contents("${baseDir}/public/ztop.txt.temp", $output);
+    rename("${baseDir}/public/ztop.txt.temp", "${baseDir}/public/ztop.txt");
     while ($curSecond == date('s')) usleep(100000);
 }
 
