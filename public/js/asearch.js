@@ -194,7 +194,7 @@ function add(id, suggestion) {
 function setFilters(hashfilters) {
     // load up that filter
     var hash = window.location.hash.substr(1);
-    hash = decodeURI(hash).replace('<', '').replace('>', '');
+    hash = decodeURI(hash).replaceAll('<', '').replaceAll('>', '');
     hashfilters = JSON.parse(hash);
 console.log(hash);
 console.log(hashfilters);

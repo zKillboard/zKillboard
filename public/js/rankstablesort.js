@@ -7,12 +7,7 @@ $(document).ready(function()
 
         jQuery.extend( jQuery.fn.dataTableExt.oSort, {
             "numeric-comma-pre": function ( a ) {
-            var a = a.replace( /<.*?>/g, "" );
-            var a = a.replace( /,/, "" );
-            var a = a.replace( /,/, "" );
-            var a = a.replace( /,/, "" );
-            var a = a.replace( /,/, "" );
-            var a = a.replace( /,/, "" );
+            var a = a.replaceAll("<", "").replaceAll(">", "").replaceAll(",", "");
             var before = a;
             var a = a.replace( /TTT/g, "00000000000000000" );
             var a = a.replace( /TT/g, "000000000000000" );
