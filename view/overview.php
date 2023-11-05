@@ -33,7 +33,7 @@ if ($key == 'alliance') {
 }
 
 if (!in_array($pageType, $validPageTypes)) {
-    return $app->redirect("./../", 302);
+    $pageType = 'overview';
 }
 if ($pageType == '') $pageType = 'overview';
 
@@ -132,7 +132,8 @@ $topKills = array();
 if ($pageType == 'top' || $pageType == 'topalltime') {
     $topParameters = $parameters; 
     $topParameters['limit'] = 100;
-    $topParameters['labels'] = 'pvp';
+    //$topParameters['labels'] = 'pvp';
+    $topParameters['npc'] = false;
     $topParameters['cacheTime'] = 86400;
 
     if ($pageType == 'topalltime') {
@@ -185,7 +186,8 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
     $p['limit'] = 10;
     $p['pastSeconds'] = $numDays * 86400;
     $p['kills'] = $pageType != 'losses';
-    $p['labels'] = 'pvp';
+    //$p['labels'] = 'pvp';
+    $p['npc'] = false;
 
     $topLists[] = Info::doMakeCommon('Top Characters', 'characterID', Stats::getTop('characterID', $p));
     $topLists[] = Info::doMakeCommon('Top Corporations', 'corporationID', Stats::getTop('corporationID', $p));

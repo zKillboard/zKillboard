@@ -32,6 +32,7 @@ function calcTop($row)
     global $mdb;
 
     if (@$row['id'] == 0 || @$row['type'] == null) return;
+Util::out("Top All Time calculating: " . $row['type'] . " " . $row['id']);
 
     $currentSum = (int) @$row['shipsDestroyed'];
     //Util::out("TopAllTime: " . $row['type'] . ' ' . $row['id'] . ' - ' . $currentSum);
@@ -39,7 +40,8 @@ function calcTop($row)
     $parameters = [$row['type'] => $row['id']];
     $parameters['limit'] = 100;
     $parameters['kills'] = true;
-    $parameters['labels'] = 'pvp';
+    $parameters['npc'] = false;
+    //$parameters['labels'] = 'pvp';
 
     $topLists[] = array('type' => 'character', 'data' => Stats::getTop('characterID', $parameters, true, false));
     $topLists[] = array('type' => 'corporation', 'data' => Stats::getTop('corporationID', $parameters, true, false));
