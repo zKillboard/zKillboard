@@ -111,12 +111,12 @@
     {% endif %}
 </div>
 <div id="eveworkbench" style="position: absolute; left: 0px; top: 390px; z-index: 5;">
-    <span><a href="https://www.eveworkbench.com/import/killmail/{{ extra.crest.killID }}/{{ extra.crest.hash }}" class="green" target="_blank">Eve Workbench</a></span>
+    <span><a href="https://www.eveworkbench.com/import/killmail/{{ extra.crest.killID }}/{{ extra.crest.hash }}" class="green" target="_blank" rel="noopener noreferrer">Eve Workbench</a></span>
 </div>
 <span id='favorite' class='pull-right' style='width: 2em; cursor: pointer;'><b id='fav-star-killmail' rel="tooltip" class="glyphicon glyphicon-star fav-star-{{ extra.crest.killID }}" style='color: rgb(128, 128, 128)' data-original-title="Favorite this killmail" onClick="doFavorite({{ extra.crest.killID }});"></b></span>
 <span id='sponsor' class='pull-right' style='width: 2em; cursor: pointer;'><b rel="tooltip" class="glyphicon glyphicon-bullhorn" style='color: green;' data-original-title="Sponsor this Killmail" onClick="doSponsor('/sponsor/query/{{ extra.crest.killID }}/');"></b></span>
 <span><small><a class="green" href='#' onClick="saveFitting({{ extra.crest.killID }}); return false;" rel="nofollow">Import Fit via ESI</a></small></span><br/>
-<span><small><a class="green" target="_blank" href="{{ esiServer }}/latest/killmails/{{ extra.crest.killID }}/{{ extra.crest.hash }}/">Verified</a></small></span>
+<span><small><a class="green" target="_blank" rel="noopener noreferrer" href="{{ esiServer }}/latest/killmails/{{ extra.crest.killID }}/{{ extra.crest.hash }}/">Verified</a></small></span>
 </div>
 
 {% set eveImageClass = true %}
