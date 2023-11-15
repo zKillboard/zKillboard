@@ -1,5 +1,7 @@
 <?php
 
+$master = (pcntl_fork() > 0); 
+
 use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
@@ -7,12 +9,13 @@ require_once '../init.php';
 if ($redis->get("tobefetched") > 1000) exit();
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->scard("queueStatsSet") > 1000) exit();
+if ($redis->get("zkb:topAllTimeComplete") == "true") exit();
 
 MongoCursor::$timeout = -1;
 $minute = date("Hi");
 $queueTopAllTime = new RedisQueue("queueTopAllTime");
 
-if ($queueTopAllTime->size() == 0 && $mdb->findDoc("statistics", ['reset' => true]) == null) {
+if ($master == true && $queueTopAllTime->size() == 0 && $mdb->findDoc("statistics", ['reset' => true]) == null) {
     $cursor = $mdb->getCollection("statistics")->find(['calcAlltime' => true])->limit(5000);
     while ($cursor->hasNext()) {
         $row = $cursor->next();
@@ -27,15 +30,25 @@ while ($queueTopAllTime->size() > 0 && date('Hi') == $minute) {
     calcTop($row);
 }
 
+$a = 0;
+while (pcntl_wait($a) > 0) sleep(1);
+if ($master && $mdb->count("statistics", ['calcAllTime' => true]) == 0) {
+    Util::out("Completed topAllTime, next iteration in an hour.");
+    $redis->setex("zkb:topAllTimeComplete", 3600, "true"); 
+}
+exit();
+
 function calcTop($row)
 {
     global $mdb;
 
-    if (@$row['id'] == 0 || @$row['type'] == null) return;
-Util::out("Top All Time calculating: " . $row['type'] . " " . $row['id']);
+    if (@$row['id'] == 0 || @$row['type'] == null) {
+        $mdb->removeField('statistics', $row, 'calcAlltime');
+        return;
+    }
+    Util::out("Top All Time calculating: " . $row['type'] . " " . $row['id']);
 
     $currentSum = (int) @$row['shipsDestroyed'];
-    //Util::out("TopAllTime: " . $row['type'] . ' ' . $row['id'] . ' - ' . $currentSum);
 
     $parameters = [$row['type'] => $row['id']];
     $parameters['limit'] = 100;
