@@ -176,7 +176,6 @@ function calcStats($row, $maxSequence)
         $stats['gangRatio'] = $gangFactor;
     }
 
-    if ($type == 'characterID') $stats['calcTrophies'] = true;
     if (@$stats['shipsDestroyed'] > 10 && @$stats['shipsDestroyed'] > @$stats['nextTopRecalc']) $stats['calcAlltime'] = true;
     // save it
     $mdb->getCollection('statistics')->save($stats);
