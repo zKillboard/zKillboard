@@ -32,7 +32,7 @@ while ($queueTopAllTime->size() > 0 && date('Hi') == $minute) {
 
 $a = 0;
 while (pcntl_wait($a) > 0) sleep(1);
-if ($master && $mdb->count("statistics", ['calcAllTime' => true]) == 0) {
+if ($master && $queueTopAllTime->size() == 0 && $mdb->count("statistics", ['calcAllTime' => true]) == 0) {
     Util::out("Completed topAllTime, next iteration in an hour.");
     $redis->setex("zkb:topAllTimeComplete", 3600, "true"); 
 }
