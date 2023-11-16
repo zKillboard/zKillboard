@@ -387,5 +387,12 @@ html,body {
 .nowrap {
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; // This is where the magic happens    
+    text-overflow: ellipsis;
+}
+
+
+.wrapplease {
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    word-break: break-word;
 }

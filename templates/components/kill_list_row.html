@@ -35,11 +35,11 @@
           {% endif %}
         </td>
         <td class="victim" style="text-align: left; vertical-align: top; max-width: 290px;">
-          <a href="/character/{{ kill.victim.characterID }}/">{{ kill.victim.characterName }}</a> ({{ kill.victim.shipName }})<br />
+          <a class="wrapplease" href="/character/{{ kill.victim.characterID }}/">{{ kill.victim.characterName }}</a> ({{ kill.victim.shipName }})<br />
           {% if kill.victim.allianceID != 0 %}
-            <a href="/alliance/{{ kill.victim.allianceID }}/">{{ kill.victim.allianceName }}</a>
+            <a class="wrapplease" href="/alliance/{{ kill.victim.allianceID }}/">{{ kill.victim.allianceName }}</a>
           {% else %}
-            <a href="/corporation/{{ kill.victim.corporationID }}/">{{ kill.victim.corporationName }}</a>
+            <a class="wrapplease" href="/corporation/{{ kill.victim.corporationID }}/">{{ kill.victim.corporationName }}</a>
           {% endif %}
         </td>
         {% set field = kill.finalBlow %}
@@ -51,7 +51,7 @@
           {% endif %}
         </td>
         <td class="finalBlow hidden-xs finalBlowColumn" style="text-align: left; vertical-align: top; max-width: 290px;">
-          <a href="/character/{{ kill.finalBlow.characterID }}/">{{ kill.finalBlow.characterName }}</a>
+          <a class="wrapplease" href="/character/{{ kill.finalBlow.characterID }}/">{{ kill.finalBlow.characterName }}</a>
           {% if field.characterID == 0 %}
 		{% set shipImageLinkOverride = 0 %}
                 {% include 'components/text_ship.html' %}
@@ -60,9 +60,9 @@
           {% if "padding" in kill.labels %}<a href='/kills/padding/'><small><font class="alert alert-warning" style='padding: 0px; margin: 0px;'>&nbsp;padding&nbsp;</font></small></a> {% else %}{% if kill.ganked == true %}<a href='/kills/ganked/'><small><font class="alert alert-danger" style='padding: 0px; margin: 0px;'>&nbsp;GANKED&nbsp;</font></small></a> {% endif %}{% if kill.solo == true %}<a href='/character/{{ kill.finalBlow.characterID }}/solo/'><small><font class="alert alert-success" style='padding: 0px; margin: 0px;'>&nbsp;SOLO&nbsp;</font></small></a> {% elseif kill.npc == true %} <small><font class="alert alert-info" style='padding: 0px; margin: 0px;'>&nbsp;npc&nbsp;</font></small> {% elseif kill.attackerCount >= 1000 %} <small><font class="alert alert-danger" style='padding: 0px; margin: 0px;'>&nbsp;1000+&nbsp;</font></small> {% elseif kill.attackerCount >= 100 %} <small><font class="alert alert-warning" style='padding: 0px; margin: 0px;'>&nbsp;100+&nbsp;</font></small> {% else %} ({{ kill.attackerCount }}) {% endif %}{% endif %}<br />
 
           {% if kill.finalBlow.allianceID != 0 %}
-            <a href="/alliance/{{ kill.finalBlow.allianceID }}/">{{ kill.finalBlow.allianceName }}</a>
+            <a class="wrapplease" href="/alliance/{{ kill.finalBlow.allianceID }}/">{{ kill.finalBlow.allianceName }}</a>
           {% else %}
-            <a href="/corporation/{{ kill.finalBlow.corporationID }}/">{{ kill.finalBlow.corporationName }}</a>
+            <a class="wrapplease" href="/corporation/{{ kill.finalBlow.corporationID }}/">{{ kill.finalBlow.corporationName }}</a>
           {% endif %}
           {% if kill.finalBlow.factionID == 500021 %}
             <a href="/faction/{{ kill.finalBlow.factionID }}/">Unknown</a>
