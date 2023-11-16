@@ -21,8 +21,7 @@ $dbExplain = false;
 $enableAnalyze = false;
 
 // MongoDB
-$mongoServer = '127.0.0.1';
-$mongoPort = 27017;
+$mongoConnString = "";
 
 // Redis parameters
 $redisServer = '127.0.0.1';

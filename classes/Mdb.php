@@ -16,11 +16,13 @@ class Mdb
      */
     public function getDb($attempt = 0)
     {
-        global $mongoServer, $mongoPort, $debug;
+        global $mongoServer, $mongoPort, $mongoConnString, $debug;
+
 
         try {
             if ($this->mongoClient == null) {
-                $this->mongoClient = new MongoClient("mongodb://$mongoServer:$mongoPort", ['connectTimeoutMS' => 7200000, 'socketTimeoutMS' => 7200000]);
+                if ($mongoConnString == null) $mongoConnString = "mongodb://$mongoServer:$mongoPort";
+                $this->mongoClient = new MongoClient($mongoConnString, ['connectTimeoutMS' => 7200000, 'socketTimeoutMS' => 7200000]);
             }
             if ($this->db == null) {
                 $this->db = $this->mongoClient->selectDB('zkillboard');
