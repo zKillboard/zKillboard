@@ -22,3 +22,34 @@ hr {
 .p-2 {
     padding: 2px;
 }
+
+#attackers, #neutrals, #victims {
+    display: flex;
+    flex-direction: column;
+}
+
+.entity {
+    display: inline-block;
+    width: 70%;
+    text-align: left;
+}
+
+
+.filter-characterID {
+    order: 1;
+}
+.filter-corporationID {
+    order: 2;
+}
+.filter-allianceID {
+    order: 3;
+}
+.filter-factionID {
+    order: 4;
+}
+.filter-shipID {
+    order: 5;
+}
+.filter-groupID {
+    order: 6;
+}

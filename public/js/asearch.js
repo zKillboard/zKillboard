@@ -1,7 +1,7 @@
-var types = ['character', 'corporation', 'alliance', 'faction', 'shipType', 'group', 'region', 'solarSystem', 'location'];
+var types = ['character', 'corporation', 'alliance', 'faction', 'shipType', 'group', 'location', 'solarSystem', 'region'];
 var allowChange = true;
 
-var radios = { sort: { sortBy: 'date', sortDir: 'desc' }};  // to be depracated
+var radios = { sort: { sortBy: 'date', sortDir: 'desc' }};  // to be deprecated
 var asfilter = {location: [], attackers: [], neutrals: [], victims: [], sort: { sortBy: 'date', sortDir: 'desc' }};
 
 $(document).ready(function() {
@@ -172,9 +172,9 @@ function getHTML(suggestion) {
     suggestion.data.id = parseInt(suggestion.data.id);
     suggestion.value = suggestion.value.replaceAll('<', '').replaceAll('>', '');
 console.log(suggestion.data.type, suggestion.data.id, suggestion.data.value);
-    var left = $("<span>").addClass("glyphicon").addClass("glyphicon-chevron-left").attr('direction', 'left').on('click', moveLeft).css('cursor', 'pointer');
-    var right = $("<span>").addClass("glyphicon").addClass("glyphicon-chevron-right").attr('direction', 'right').on('click', moveRight).css('cursor', 'pointer');
-    var remove = $("<span>").addClass("glyphicon").addClass("glyphicon-remove").on('click', moveOut).css('cursor', 'pointer').css('color', 'red');
+    var left = $("<span>").addClass('btn').addClass('btn-sm').addClass("glyphicon").addClass("glyphicon-chevron-left").attr('direction', 'left').on('click', moveLeft);
+    var right = $("<span>").addClass('btn').addClass('btn-sm').addClass("glyphicon").addClass("glyphicon-chevron-right").attr('direction', 'right').on('click', moveRight);
+    var remove = $("<span>").addClass('btn').addClass('btn-sm').addClass("glyphicon").addClass("glyphicon-remove").addClass('alert-danger').on('click', moveOut);
     var data = $("<span>")
         .attr("class", "entity")
         .attr("id", suggestion.data.type + ':' + suggestion.data.id)
