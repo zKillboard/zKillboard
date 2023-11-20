@@ -67,6 +67,7 @@ try {
     }
 } catch (Exception $e) {
     header('/html/redisloading.html', 302);
+    exit();
 } 
 
 $timer = new Timer();
