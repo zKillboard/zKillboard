@@ -40,7 +40,7 @@ $iter = $information->find(['type' => $type]);
 foreach ($iter as $row) {
     $id = $row['id'];
 
-    if (@$row['shipsDestroyed'] < 10) continue;
+    if (@$row['shipsDestroyed'] < 100) continue;
 
     $types[$type] = true;
     $key = "tq:ranks:alltime:$type:$today";
