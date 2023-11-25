@@ -5,6 +5,7 @@ use cvweiss\redistools\RedisQueue;
 require_once '../init.php';
 
 global $redisQServer;
+$ch = null;
 
 $topKillID = max(1, $mdb->findField('killmails', 'killID', [], ['killID' => -1]));
 
@@ -38,11 +39,17 @@ while (date('Hi') == $minute) {
 
     $package = ['killID' => $killID, 'killmail' => $rawmail, 'zkb' => $zkb];
 
-    $result = RedisQ\Action::queue($redisQServer, $redisQAuthUser, $redisQAuthPass, $package);
-    if (@$result['success'] != true) {
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, "$redisQServer/queue.php");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, "pass=$redisQAuthPass&package=" . urlencode(json_encode($package, JSON_UNESCAPED_SLASHES)));
+
+    $result = json_decode(curl_exec($ch), true);
+    if ($result == NULL || @$result['success'] != true) {
         $queueRedisQ->push($killID);
+        sleep(1);
     } else {
         $queuePublish->push($killID);
     }
-    sleep(1);
 }
