@@ -48,4 +48,5 @@ foreach ($kills as $row) {
 }
 Info::addInfo($victims);
 
+$info['typeID'] = $id;
 $app->render('item.html', array('info' => $info, 'hasKills' => $hasKills, 'kills' => $victims));
