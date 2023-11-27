@@ -47,6 +47,7 @@ while (date('Hi') == $minute) {
 
     $result = json_decode(curl_exec($ch), true);
     if ($result == NULL || @$result['success'] != true) {
+        Util::out("Failed to send to redisq: " . $killID);
         $queueRedisQ->push($killID);
         sleep(1);
     } else {
