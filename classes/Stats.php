@@ -90,6 +90,7 @@ class Stats
             //$pipeline[] = ['$match' => [$type => $id, 'involved.isVictim' => false]];
         }
         $pipeline[] = ['$match' => [$keyField => ['$ne' => null]]];
+        $pipeline[] = ['$match' => [$keyField => ['$ne' => 0]]];
         $pipeline[] = ['$match' => $andQuery];
         $pipeline[] = ['$group' => ['_id' => ['killID' => '$killID', $groupByColumn => '$'.$keyField]]];
         $pipeline[] = ['$group' => ['_id' => '$_id.'.$groupByColumn, 'kills' => ['$sum' => 1]]];
