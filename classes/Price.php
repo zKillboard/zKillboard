@@ -147,6 +147,7 @@ class Price
             case 48636: // Hydra
             case 60765: // Raiju
             case 74316: // Bestla
+            case 78414: // Shapash
                 return 150000000000; // 150b
             case 33397: // Chremoas
             case 42245: // Rabisu
@@ -156,6 +157,7 @@ class Price
                 return 230000000000;
             case 48635: // Tiamat
             case 60764: // Laelaps
+            case 77726: // Cybele
                 return 230000000000;
             case 47512: // 'Moreau' Fortizar
             case 45647: // Caiman
