@@ -16,6 +16,7 @@ $topKillers[] = array('type' => 'corporation', 'data' => Stats::getTop('corporat
 $topKillers[] = array('type' => 'alliance', 'data' => Stats::getTop('allianceID', $parameters));
 
 $topKillers[] = array('type' => 'faction', 'data' => Stats::getTop('factionID', $parameters));
+$topKillers[] = array('type' => 'location', 'data' => Stats::getTop('locationID', $parameters));
 $topKillers[] = array('type' => 'system', 'data' => Stats::getTop('solarSystemID', $parameters));
 $topKillers[] = array('type' => 'region', 'data' => Stats::getTop('regionID', $parameters));
 
