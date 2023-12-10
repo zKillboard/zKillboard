@@ -121,5 +121,5 @@ function success($params, $content)
     }
 
     // Check recently active characters every 5 minutes
-    if ($redis->get("recentKillmailActivity:$charID") == "true") $esi->setTime($charID, time() + 301);
+    if ($redis->get("recentKillmailActivity:char:$charID") == "true") $esi->setTime($charID, time() + 301);
 }

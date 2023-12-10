@@ -9,6 +9,8 @@ $queueApiCheck = new RedisQueue('queueApiCheck');
 $esi = new RedisTimeQueue('tqApiESI', 3600); 
 $esiCorp = new RedisTimeQueue('tqCorpApiESI', 3600);
 
+$delta = 9600;
+
 $bumped = [];
 $minute = date('Hi');
 while ($minute == date('Hi')) {
@@ -17,21 +19,18 @@ while ($minute == date('Hi')) {
         $killmail = $mdb->findDoc("killmails", ['killID' => $killID]);
 
         // Only do this for recent killmails
-        if ($killmail['dttm']->sec < (time() - 3600)) continue;
+        if ($killmail['dttm']->sec < (time() - $delta)) continue;
 
         $involved = $killmail['involved'];
         foreach ($involved as $entity) {
             $charID = ((int) @$entity['characterID']);
             $corpID = ((int) @$entity['corporationID']);
 
-            if ($charID > 0) {
-                $redis->setex("recentKillmailActivity:$charID", 3600, "true");
-                $redis->setex("recentKillmailActivity:char:$charID", 3600, "true");
-            }
-            if ($charID > 1999999) {
-                $redis->setex("recentKillmailActivity:$corpID", 3600, "true");
-                $redis->setex("recentKillmailActivity:corp:$corpID", 3600, "true");
-            }
+            $redis->setex("recentKillmailActivity:$charID", $delta, "true");
+            $redis->setex("recentKillmailActivity:$corpID", $delta, "true");
+
+            $redis->setex("recentKillmailActivity:char:$charID", $delta, "true");
+            $redis->setex("recentKillmailActivity:corp:$corpID", $delta, "true");
         }
     } else sleep(1);
 }

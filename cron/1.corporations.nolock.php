@@ -98,5 +98,5 @@ function success($params, $content)
         Util::out("$newKills kills added by corp $corpName");
     }
 
-    if ($redis->get("recentKillmailActivity:$corpID") == "true") $esi->setTime($corpID, time() + 301);
+    if ($redis->get("recentKillmailActivity:corp:$corpID") == "true") $esi->setTime($corpID, time() + 301);
 }
