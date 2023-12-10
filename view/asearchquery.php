@@ -73,7 +73,7 @@ try {
     $sort = [$sortKey => $sortBy];
 
     $groupAggType = (string) @$_POST['radios']['group-agg-type'];
-    $victimsOnly = ($groupAggType == "victims only" ? true : ($groupAggType == "attackers only" ? false : null));
+    $victimsOnly = ($groupAggType == "victims only" ? "true" : ($groupAggType == "attackers only" ? "false" : "null"));
     unset($_POST['radios']['group-agg-type']);
 
     $coll = ['killmails'];
@@ -252,7 +252,7 @@ function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $a
         if ($groupByColumn != 'solarSystemID' && $groupByColumn != 'regionID' && $groupByColumn != 'locationID') {
             $pipeline[] = ['$unwind' => '$involved'];
         }
-        if ($victimsOnly !== null) $pipeline[] = ['$match' => ['involved.isVictim' => (bool) $victimsOnly]];
+        if ($victimsOnly != "null") $pipeline[] = ['$match' => ['involved.isVictim' => (bool) $victimsOnly]];
         $pipeline[] = ['$match' => [$keyField => ['$ne' => null]]];
         //$pipeline[] = ['$match' => $andQuery];
         $pipeline[] = ['$group' => ['_id' => ['killID' => '$killID', $groupByColumn => '$'.$keyField]]];
@@ -310,7 +310,7 @@ function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $
         $timer = new Timer();
         $pipeline = [];
         $pipeline[] = ['$match' => $query];
-        if ($victimsOnly !== null) $pipeline[] = ['$match' => ['involved.isVictim' => (bool) $victimsOnly]];
+        if ($victimsOnly !== "null") $pipeline[] = ['$match' => ['involved.isVictim' => (bool) $victimsOnly]];
         $pipeline[] = ['$group' => ['_id' => 0, 'isk' => ['$sum' => '$zkb.totalValue'], 'kills' => ['$sum' => 1]]];
 
         $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'maxTimeMS' => 25000]);
