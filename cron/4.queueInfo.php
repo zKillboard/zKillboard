@@ -128,19 +128,18 @@ function updateEntity($killID, $entity)
         if ($id <= 1) continue;
 
         $row = ['type' => $type, 'id' => (int) $id];
-        if ($mdb->count("information", $row) > 0) {
-            $rtq = new RedisTimeQueue("zkb:$type", 86400);
-            $rtq->add($id);
-            return;
-        }
 
         $defaultName = "$type $id";
         $mdb->insertUpdate('information', $row, ['name' => $defaultName]);
-        if ($type == 'characterID') $mdb->removeField("information", ['type' => 'characterID', 'id' => $id, 'corporationID' => ['$exists' => false]], 'lastApiUpdate');
+        if ($type == 'characterID' && $redis->get("zkb:24hourUpdate:$id") != "true") {
+            $mdb->removeField("information", ['type' => 'characterID', 'id' => $id, 'corporationID' => ['$exists' => false]], 'lastApiUpdate');
+            $mdb->removeField("information", ['type' => 'characterID', 'id' => $id, 'corporationID' => ['$exists' => false]], 'lastAffUpdate');
+            $redis->setex("zkb:24hourUpdate:$id", 86400, "true");
+        }
         $rtq = new RedisTimeQueue("zkb:$type", 86400);
         $rtq->add($id);
 
-        if ($killID < ($redis->get('zkb:topKillID') - 10000)) continue;
+        if ($killID < ($redis->get('zkb:topKillID') - 100000)) continue;
 
         $iterations = 0;
         do {
