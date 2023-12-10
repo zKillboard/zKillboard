@@ -5,6 +5,8 @@ $pid = pcntl_fork();
 $master = ($pid != 0);
 pcntl_fork();
 pcntl_fork();
+pcntl_fork();
+pcntl_fork();
 
 use cvweiss\redistools\RedisTimeQueue;
 use cvweiss\redistools\RedisQueue;
@@ -130,8 +132,11 @@ function updateEntity($killID, $entity)
         $row = ['type' => $type, 'id' => (int) $id];
 
         $defaultName = "$type $id";
-        $mdb->insertUpdate('information', $row, ['name' => $defaultName]);
-        if ($type == 'characterID' && $redis->get("zkb:24hourUpdate:$id") != "true") {
+        if ($mdb->count('information', $row) == 0) {
+            $insert = $row;
+            $insert['name'] = $defaultName;
+            $mdb->insert('information', $row);
+        } else if ($type == 'characterID' && $redis->get("zkb:24hourUpdate:$id") != "true") {
             $mdb->removeField("information", ['type' => 'characterID', 'id' => $id, 'corporationID' => ['$exists' => false]], 'lastApiUpdate');
             $mdb->removeField("information", ['type' => 'characterID', 'id' => $id, 'corporationID' => ['$exists' => false]], 'lastAffUpdate');
             $redis->setex("zkb:24hourUpdate:$id", 86400, "true");
@@ -146,6 +151,10 @@ function updateEntity($killID, $entity)
             $info = $mdb->findDoc("information", ['type' => $type, 'id' => $id]);
             $name = @$info['name'];
             if ($name == $defaultName) {
+                if ($redis->get("zkb:updatenow:$type:$id") != "true") {
+                    $mdb->removeField("information", ['type' => $type, 'id' => $id], 'lastApiUpdate');
+                    $redis->setex("zkb:updatenow:$type:$id", 300, "true");
+                }
                 sleep(1);
                 $iterations++;
             }
