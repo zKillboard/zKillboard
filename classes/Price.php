@@ -113,6 +113,8 @@ class Price
 
             // Items that have been determined to be obnoxiously market
             // manipulated will go here
+            case 55511:
+                return 30000000;
             case 34558:
             case 34556:
             case 34560:
