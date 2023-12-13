@@ -139,6 +139,12 @@ function wslog(msg)
     } else if (json.action === 'littlekill') {
         var killID = json.killID;
         setTimeout(function() { loadLittleMail(killID); }, 1);
+    } else if (json.action === 'twitch-online') {
+        console.log('twitch user online: ' + json.channel);
+        twitchlive(json.channel);
+    } else if (json.action == 'twitch-offline') {
+        console.log('twitch users offline');
+        twitchoffline();
     } else {
         console.log("Unknown action: " + json.action);
     }
@@ -387,3 +393,31 @@ function showAdder(showAdd, type, id, doTN) {
 }
 
 function fixShipRender2Icon() { $(this).attr('src', $(this).attr('src').replace('render', 'icon')).removeAttr('imageError'); }
+
+function twitchlive(channel) {
+    if ($('#twitch-channel').text() != channel) {
+        $('#twitch-embed').html("");
+        $('#twitch-channel').text(channel);
+        $('#twitch-live').removeClass('hidden');
+        $('#twitchers').removeClass('hidden');
+    }
+}
+
+function twitchoffline() {
+    $("#twitch-embed").html("");
+    $("#twitch-channel").text("");
+    $('#twitchers').addClass('hidden');
+    $("#twitch-live").removeClass('hidden');
+}
+
+function twitchtime() {
+    new Twitch.Embed("twitch-embed", {
+width: '100%',
+height: 500,
+channel: $("#twitch-channel").text(),
+// Only needed if this page is going to be embedded on other websites
+parent: ["embed.example.com", "othersite.example.com"]
+});
+$("#twitch-live").addClass('hidden');
+gtag('event', 'twitch-clicked');
+}

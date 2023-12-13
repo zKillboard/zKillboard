@@ -160,7 +160,29 @@ $("#tracker-none").removeClass("hidden");
 $("#savefit").remove();
 $("#nosavefit").removeClass("hidden");
 $("#char-image").attr("src", "{{ image_character }}1/portrait?size=32");
+$("#loginforapi").show();
+
+$.getScript("https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js").done(function() {
+    console.log("publift loaded");
+    $.getScript("/js/adblockDetector.min.js").done(function() {
+        console.log("ad block detector loaded");
+        loadads();
+        otherBanners();
+    });
+});
+
+$("#loginsideimage").fadeIn();
+gtag('event', 'navbar_loaded');
+
+
+
 </script>
 <li>Please log in first.</li>
 
+{% endif %}
+
+{% if twitchonline %}
+<script>
+twitchlive('{{ twitchonline }}');
+</script>
 {% endif %}

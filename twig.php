@@ -74,7 +74,6 @@ $twig->addGlobal('image_alliance', 'https://images.evetech.net/alliances/');
 $twig->addGlobal('image_item', 'https://images.evetech.net/types/');
 $twig->addGlobal('image_ship', 'https://images.evetech.net/types/');
 $twig->addGlobal('esiServer', $esiServer);
-$twig->addGlobal('showTwitch', $showTwitch);
 
 if (isset($special) && isset($specialExpires) && $currentTime <= $specialExpires) {
     $twig->addGlobal('sponsoredMessage', $special);
@@ -99,6 +98,9 @@ $twig->addGlobal('reinforced', $redis->get("zkb:reinforced") == true ? "true" : 
 $twig->addGlobal("universeUpdating", $redis->get("zkb:universeLoaded") == "false"? "true" : "false");
 $twig->addGlobal("tobefetched", $redis->get("tobefetched"));
 $twig->addGlobal("tobeStatsCount", $redis->scard("queueStatsSet"));
+
+$twig->addGlobal('showTwitch', $showTwitch);
+if ($redis->get("twitch-online")) $twig->addGlobal('twitchonline', $redis->get("twitch-online"));
 
 $noAdPages = array('/account/', '/information/', '/post/', '/ccp', '/ztop/');
 global $showAds, $websocket;

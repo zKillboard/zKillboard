@@ -103,10 +103,17 @@ var actualURI = '{{ actualURI }}';
 				<!-- Top ad -->
                 <div style="max-height: 250px; height: 250px;"><center>
 				    <div class="centered publift" fuse="home_header" id="publifttop" style='padding-top: 1em; max-height: 250px; max-width: 975px;'><div id='messagedad' style='display: none;'><h4>AdBlock Detected! :(</h2><p>Please support zKillboard by disabling your adblocker.<br/><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p></div></div>
+                <br/>
                 </center></div>
 
                 <div id='otherBannerDiv' class='centered' style='display: none; height: 250px; padding-top: 1em;'><a id='otherBannerAnchor' target='_new'><img id='otherBannerImg' /></a></div>
                 <hr/>
+
+                <div id='twitchers' class='hidden'>
+                <center><button id='twitch-live' type='button' class='btn btn-lg btn-primary' onClick="twitchtime();"><span id='twitch-channel'></span> is currently live on Twitch! Click here to watch.</button></center>
+                <center><div id="twitch-embed"></div></center>
+                <br/><br/>
+                </div>
 
                 <div class='hidden-lg alert alert-danger optimizeme'>Optimized for Desktop First...<br/>Try making your window wider or switching to desktop mode.</div>
                 <span class='pagecontent'>{% endif %}
@@ -146,7 +153,7 @@ var actualURI = '{{ actualURI }}';
 		<script defer type="text/javascript" src="/js/nprogress.js"></script>
 		<script defer type="text/javascript" src="/js/reconnecting-websocket.js"></script>
 		<script defer type="text/javascript" src="/js/rankstablesort.js"></script>
-
+        <script defer src="https://embed.twitch.tv/embed/v1.js"></script>
 		{% block script %}
 		{% endblock %}
 
@@ -197,10 +204,6 @@ var actualURI = '{{ actualURI }}';
 </div>
 <div class="ad-xl-block"><div class="ad-xl-block left-sticky-ad publift" fuse="left-sticky"></div></div>
 <div class="ad-xl-block"><div class="ad-xl-block right-sticky-ad publift" fuse="right-sticky"></div></div>
-<!-- Interstitial Ad -->
-<!-- <div class="ad-sm-block bottom-padding"></div>
-<div class="centered publift ad-sm-block bottom-interstitial" fuse="home_footer" id="bottominterstitial"></div>-->
-
 </body>
 </html>
 {% endif %}

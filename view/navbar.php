@@ -5,9 +5,10 @@ global $redis, $ip, $version;
 $redis->setex("validUser:$ip", 300, "true");
 
 if (!User::isLoggedIn()) {
-    session_regenerate_id();
-    $app->redirect('/html/loggedout.html?v=' . $version, 302);
-    exit();
+    //session_regenerate_id();
+    //$app->redirect('/html/loggedout.html?v=' . $version, 302);
+    //exit();
+    //$twig->setGlobal("showAds", true);
 }
 
 $ug = new UserGlobals();
