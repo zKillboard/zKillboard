@@ -102,6 +102,8 @@ $twig->addGlobal("tobeStatsCount", $redis->scard("queueStatsSet"));
 $twig->addGlobal('showTwitch', $showTwitch);
 if ($redis->get("twitch-online")) $twig->addGlobal('twitchonline', $redis->get("twitch-online"));
 
+$twig->addGlobal('referralLink', $referralLink);
+
 $noAdPages = array('/account/', '/information/', '/post/', '/ccp', '/ztop/');
 global $showAds, $websocket;
 foreach ($noAdPages as $noAdPage) {
