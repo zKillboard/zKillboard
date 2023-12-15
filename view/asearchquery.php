@@ -93,7 +93,7 @@ try {
     // Should prevent cache busting from url manipulation
     array_multisort($query);
     $jsoned = json_encode($query, true);
-    $key = "asearch:$queryType:$groupType:" . ($queryType == "kills" ? "$page:$sortKey:$sortBy:" : "") . md5($jsoned);
+    $key = "asearch:$queryType:$groupType:$victimsOnly:" . ($queryType == "kills" ? "$page:$sortKey:$sortBy:" : "") . md5($jsoned);
 
     $ret = (string) $redis->get($key);
     if ($ret != "") {
@@ -225,10 +225,6 @@ function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $a
     $hashKey = "Stats::getTop:q:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly);
     while ($redis->get("inprogress:$hashKey") == "true") sleep(1);
     try {
-        $result = RedisCache::get($hashKey);
-        if ($cacheOverride == false && $result != null) {
-            return $result;
-        }
         $redis->setex("inprogress:$hashKey", 60, "true");
 
         $killmails = $mdb->getCollection('killmails');
@@ -252,7 +248,7 @@ function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $a
         if ($groupByColumn != 'solarSystemID' && $groupByColumn != 'regionID' && $groupByColumn != 'locationID') {
             $pipeline[] = ['$unwind' => '$involved'];
         }
-        if ($victimsOnly != "null") $pipeline[] = ['$match' => ['involved.isVictim' => (bool) $victimsOnly]];
+        if ($victimsOnly != "null") $pipeline[] = ['$match' => ['involved.isVictim' => ($victimsOnly == "true" ? true : false)]];
         $pipeline[] = ['$match' => [$keyField => ['$ne' => null]]];
         //$pipeline[] = ['$match' => $andQuery];
         $pipeline[] = ['$group' => ['_id' => ['killID' => '$killID', $groupByColumn => '$'.$keyField]]];
@@ -271,7 +267,6 @@ function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $a
         }
 
         if ($addInfo) Info::addInfo($result);
-        RedisCache::set($hashKey, $result, 900);
 
         return $result;
     } catch (Exception $ex) {
@@ -310,7 +305,7 @@ function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $
         $timer = new Timer();
         $pipeline = [];
         $pipeline[] = ['$match' => $query];
-        if ($victimsOnly !== "null") $pipeline[] = ['$match' => ['involved.isVictim' => (bool) $victimsOnly]];
+        if ($victimsOnly !== "null") $pipeline[] = ['$match' => ['involved.isVictim' => ($victimsOnly == "true" ? true : false)]];
         $pipeline[] = ['$group' => ['_id' => 0, 'isk' => ['$sum' => '$zkb.totalValue'], 'kills' => ['$sum' => 1]]];
 
         $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'maxTimeMS' => 25000]);
