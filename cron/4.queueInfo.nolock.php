@@ -135,7 +135,7 @@ function updateEntity($killID, $entity)
         if ($mdb->count('information', $row) == 0) {
             $insert = $row;
             $insert['name'] = $defaultName;
-            $mdb->insert('information', $row);
+            try {$mdb->insert('information', $row);} catch (Exception $eex) {} 
         } else if ($type == 'characterID' && $redis->get("zkb:24hourUpdate:$id") != "true") {
             $mdb->removeField("information", ['type' => 'characterID', 'id' => $id, 'corporationID' => ['$exists' => false]], 'lastApiUpdate');
             $mdb->removeField("information", ['type' => 'characterID', 'id' => $id, 'corporationID' => ['$exists' => false]], 'lastAffUpdate');
