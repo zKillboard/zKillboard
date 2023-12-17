@@ -55,7 +55,11 @@
 	</tr>
 	{% if (killdata.info.location.itemName) %}
         <tr>
-		<th>Location:</th>
+        {% if 'au' in extra.locationDistance %}
+            <th>Closest:</th>
+        {% else %}
+    		<th>Location:</th>
+        {% endif %}
 		<td><a href='/location/{{ killdata.info.locationID }}/'>{{ killdata.info.location.itemName }}</a> {{ extra.locationDistance }}</td>
 	</tr>
         {% endif %}
