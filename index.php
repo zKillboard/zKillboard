@@ -19,7 +19,7 @@ if (strpos($uri, "_detail") !== false) {
 }
 if (strpos($uri, "/asearchinfo/") === false && strpos($uri, "/asearchquery/") === false && strpos($uri, "/cache/1hour/autocomplete/") === false)  {
     // Check to ensure we have a trailing slash, helps with caching
-    if (substr($uri, -1) != '/' && strpos($uri, 'ccpcallback') === false && strpos($uri, 'patreon') === false && strpos($uri, 'brsave') === false && strpos($uri, "ccp") === false && strpos($uri, "related/") === false) {
+    if (substr($uri, -1) != '/' && strpos($uri, 'ccpcallback') === false && strpos($uri, 'patreon') === false && strpos($uri, 'brsave') === false && strpos($uri, "ccp") === false && strpos($uri, "related/") === false && strpos($uri, 'twitch') == false) {
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: GET');
         // Is there q question mark in the URL? cut it off, doesn't belong

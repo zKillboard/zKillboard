@@ -11,7 +11,8 @@
             "guzzlehttp/promises": "^1.3",
             "guzzlehttp/guzzle": "^6.",
             "alcaeus/mongo-php-adapter": "^1.2.",
-            "patreon/patreon": "*"
+            "patreon/patreon": "*",
+        "nicklaw5/twitch-api-php": "^7.2"
     },
         "autoload": {
             "psr-4": {

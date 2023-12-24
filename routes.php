@@ -257,6 +257,14 @@ $app->get('/cache/bypass/login/patreonauth/', function () use ($app) {
         include 'view/patreonauth.php';
         });
 
+// Twitch
+$app->get('/cache/bypass/login/twitch/', function () use ($app) {
+        include 'view/twitchlogin.php';
+        });
+$app->get('/cache/bypass/login/twitchauth/', function () use ($app) {
+        include 'view/twitchauth.php';
+        });
+
 $app->get('/navbar/', function () use ($app) {
         include 'view/navbar.php';
         });

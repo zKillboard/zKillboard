@@ -163,6 +163,9 @@
 		{% include 'components/stats_box.html' %}
 	</div>
     <div>
+                {% if extra.isTwitchSubbed %}
+                    <a href='https://twitch.tv/squizzcaphinator' alt='Link to SquizzCaphinator on Twitch' target='_blank'><img src='/img/zStream.png' rel="tooltip" data-original-title='Is subbed to SquizzCaphinator on Twitch!' title='❤️ Is subbed to SquizzCaphinator on Twitch!' style='width: 64px; height: 64px;'></a>
+                {% endif %}
                 {% if extra.hasMonocle %}
                     <img src='/img/monocled.png' rel="tooltip" data-original-title='Big Money! Has sent at least 1b ISK to zKillboard.' style='width: 18px; height: 16px;'>
                 {% endif %}
