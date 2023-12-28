@@ -106,12 +106,6 @@ try {
     $_SESSION['characterID'] = $charID;
     $_SESSION['characterName'] = $charName;
 
-    try {
-        $mdb->insert("rewards", ['character_id' => $charID, 'character_name' => $charName]);
-    } catch (Exception $ex) {
-        // ignore, they might have already logged in
-    }
-
     // Determine where to redirect the user
     $redirect = '/';
     $sessID = session_id();
