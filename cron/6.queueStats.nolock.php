@@ -39,7 +39,7 @@ while ($minute == date('Hi')) {
         continue;
     }
 
-    $arr = split(":", $raw);
+    $arr = explode(":", $raw);
     $type = $arr[0];
     if ($type == "itemID") continue;
 

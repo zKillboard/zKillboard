@@ -97,6 +97,7 @@ while ($hour == date('H')) {
 
     addInfo('', 0, false);
     $sponsored = Mdb::group("sponsored", [], ['entryTime' => ['$gte' => $mdb->now(86400 * -7)]], [], 'isk', ['iskSum' => -1]);
+    if ($sponsored == null) $sponsored = [['iskSum' => 0]];
     $sponsored = array_shift($sponsored);
     $sponsored = Util::formatIsk($sponsored['iskSum']);
     $balance = Util::formatIsk((double) $mdb->findField("payments", "balance", ['ref_type' => 'player_donation'], ['_id' => -1]));

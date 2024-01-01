@@ -36,6 +36,7 @@ while ($minute == date('Hi')) {
     $mdb->set("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'lastFetch' => ['$exists' => false]], ['lastFetch' => 0], true);
     $row = $mdb->findDoc("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'corporationID' => ['$exists' => true]], ['lastFetch' => 1]);
 
+    if ($row == null) break; // nothing here, move on...
     $charID = ((int) $row['characterID']);
     $corpID = ((int) $row['corporationID']);
 

@@ -144,7 +144,7 @@ function updateEntity($killID, $entity)
         $rtq = new RedisTimeQueue("zkb:$type", 86400);
         $rtq->add($id);
 
-        if ($killID < ($redis->get('zkb:topKillID') - 100000)) continue;
+        if ($killID < ((int) $redis->get('zkb:topKillID') - 100000)) continue;
 
         $iterations = 0;
         do {
