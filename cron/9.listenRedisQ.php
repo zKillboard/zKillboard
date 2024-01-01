@@ -5,8 +5,14 @@ require_once '../init.php';
 // If you want your zkillboard to listen to RedisQ, add the following line to config.php
 // $listenRedisQ = true;
 
+if ($listenRedisQ !== true) exit();
+if ($listenRedisQID === null) {
+    Util::out("Please define listenRedisQID in your config.php");
+    exit();
+}
+
 $ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, 'https://redisq.zkillboard.com/listen.php');
+curl_setopt($ch, CURLOPT_URL, "https://redisq.zkillboard.com/listen.php?queueID=$listenRedisQID");
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
 $minute = date('Hi');
