@@ -61,6 +61,8 @@ $(document).ready(function() {
 
     setTimeout(function() { $("#messagedad").show(); }, 5500);
     $("img[shipImageError='true']").each(fixShipRender2Icon);
+
+    if (prepComments) prepComments();
 });
 
 function startWebSocket() {
