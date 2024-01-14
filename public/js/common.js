@@ -398,12 +398,14 @@ function twitchlive(channel) {
     if ($('#twitch-channel').text() != channel) {
         $('#twitch-embed').html("");
         $('#twitch-channel').text(channel);
-        $('#twitch-live').removeClass('hidden');
+        $('#twitch-live').removeClass('hidden').attr('href', 'https://twitch.tv/' + channel.toLowerCase());
         $('#twitchers').removeClass('hidden');
+        if (channel == 'SquizzCaphinator') $('#twitch-channel').addClass('squizz');
     }
 }
 
 function twitchoffline() {
+    $('#twitch-live').removeClass('squizz');
     $("#twitch-embed").html("");
     $("#twitch-channel").text("");
     $('#twitchers').addClass('hidden');
@@ -411,13 +413,11 @@ function twitchoffline() {
 }
 
 function twitchtime() {
-    new Twitch.Embed("twitch-embed", {
-width: '100%',
-height: 500,
-channel: $("#twitch-channel").text(),
-// Only needed if this page is going to be embedded on other websites
-parent: ["embed.example.com", "othersite.example.com"]
-});
-$("#twitch-live").addClass('hidden');
-gtag('event', 'twitch-clicked');
+    /*new Twitch.Embed("twitch-embed", {
+        width: '100%',
+        height: 500,
+        channel: $("#twitch-channel").text(),
+    });
+    $("#twitch-live").addClass('hidden');*/
+    gtag('event', 'twitch-clicked');
 }

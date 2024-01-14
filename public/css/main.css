@@ -396,3 +396,11 @@ html,body {
     white-space: pre-wrap;
     word-break: break-word;
 }
+
+#twitch-live .squizz::before {
+	content: url('https://images.evetech.net/characters/1633218082/portrait?size=128');
+	float: left;
+	height: 128px;
+	margin-right: 1em;
+}
+

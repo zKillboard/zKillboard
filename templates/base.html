@@ -109,10 +109,8 @@ var actualURI = '{{ actualURI }}';
                 <div id='otherBannerDiv' class='centered' style='display: none; height: 250px; padding-top: 1em;'><a id='otherBannerAnchor' target='_new'><img id='otherBannerImg' /></a></div>
                 <hr/>
 
-                <div id='twitchers' class='hidden'>
-                <center><button id='twitch-live' type='button' class='btn btn-lg btn-primary' onClick="twitchtime();"><span id='twitch-channel'></span> is currently live on Twitch! Click here to watch.</button></center>
-                <center><div id="twitch-embed"></div></center>
-                <br/><br/>
+                <div id='twitchers' class='hidden d-xs-none'>
+                <center><a id='twitch-live' type='button' target='_blank' class='btn btn-lg btn-primary' onClick="twitchtime();"><span id='twitch-channel'></span> is currently live on Twitch!<br/><span class='squizz-extra'>Support the zKill Hamsters!<br/>Drops &amp; Giveaways!<br/></span>Click here to watch!</a></center><br/><br/>
                 </div>
 
                 <div class='hidden-lg alert alert-danger optimizeme'>Optimized for Desktop First...<br/>Try making your window wider or switching to desktop mode.</div>
