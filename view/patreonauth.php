@@ -42,7 +42,7 @@ try {
 
         ZLog::add("You have linked Patreon. Thank you!!", $userID);
         User::sendMessage("You have linked Patreon. Thank you!!", $userID);
-        $app->redirect('/');
+        $app->redirect("/account/log/");
     }
 } catch (Exception $ex) {
 throw $ex;
