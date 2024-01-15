@@ -81,7 +81,7 @@ $insDate = (int) str_replace('-', '', substr($killdata['info']['dttm'], 0, 10));
 $extra['insurance'] = $mdb->findDoc('insurance', ['typeID' => (int) $killdata['victim']['shipTypeID'], 'date' => ['$lte' => $insDate]], ['date' => -1]);
 if (isset($extra['insurance']['Platinum']['payout'])) {
     // No insurance is 40% of platinum
-    // http://wiki.eveuniversity.org/Insuring_your_ship
+    // https://wiki.eveuniversity.org/Insurance
     $extra['insurance']['None'] = ['cost' => 0, 'payout' => floor(0.4 * $extra['insurance']['Platinum']['payout'])];
 }
 
