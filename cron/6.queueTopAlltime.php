@@ -17,7 +17,7 @@ $queueTopAllTime = new RedisQueue("queueTopAllTime");
 
 if ($master == true && $redis->get($todaysKey) != "true" && $queueTopAllTime->size() == 0 && $mdb->findDoc("statistics", ['reset' => true]) == null) {
     Util::out("Populating top all time queue");
-    $cursor = $mdb->getCollection("statistics")->find(['calcAlltime' => true])->limit(5000);
+    $cursor = $mdb->getCollection("statistics")->find(['calcAlltime' => true]);
     while ($cursor->hasNext()) {
         $row = $cursor->next();
         $queueTopAllTime->push(['type' => $row['type'], 'id' => (int) $row['id']]);
