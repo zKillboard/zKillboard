@@ -63,6 +63,12 @@ function success(&$guzzler, &$params, $content)
     }
     $update['factionID'] = (int) @$alliCrest['faction_id'];
 
+    $eWarCount = $mdb->count("information", ['type' => 'corporationID', 'allianceID' => $id, 'war_eligible' => true]);
+    $update['war_eligible'] = ($eWarCount > 0);
+
+    $currentWar = $mdb->findDoc("information", ['type' => 'warID', 'finished' => ['$exists' => false], '$or' => [['aggressor.alliance_id'=> $id], ['defender.alliance_id'=> $id]]]);
+    $update['has_wars'] = ($currentWar != null);
+
     $mdb->insertUpdate('information', ['type' => 'allianceID', 'id' => $id], $update);
 }
 

@@ -13,6 +13,7 @@ $guzzler = new Guzzler();
 $currentSecond = "";
 $minute = date('Hi');
 while ($minute == date('Hi')) {
+    $t = new Timer();
     $row = $mdb->findDoc("information", ['type' => 'corporationID', 'id' => ['$gt' => 1]], ['lastApiUpdate' => 1]);
     if ($row == null) {
         sleep(1);
@@ -33,6 +34,7 @@ while ($minute == date('Hi')) {
     $guzzler->call($url, "updateCorp", "failCorp", $params, $a);
 
     $guzzler->finish();
+    $time = $t->stop();
 }
 $guzzler->finish();
 
@@ -67,6 +69,7 @@ function updateCorp(&$guzzler, &$params, &$content)
     $redis = $params['redis'];
     $mdb = $params['mdb'];
     $row = $params['row'];
+    $id = $row['id'];
 
     $content = Util::eliminateBetween($content, '"description"', '"faction_id"');
     $content = Util::eliminateBetween($content, '"description"', '"home_station_id"');
@@ -85,6 +88,10 @@ function updateCorp(&$guzzler, &$params, &$content)
     $updates['memberCount'] = (int) @$json['member_count'];
     $updates['allianceID'] = (int) @$json['alliance_id'];
     $updates['factionID'] = (int) @$json['faction_id'];
+    $updates['war_eligible'] = (isset($json['war_eligible']) ? $json['war_eligible'] : false);
+
+    $currentWar = $mdb->findDoc("information", ['type' => 'warID', 'finished' => ['$exists' => false], '$or' => [['aggressor.corporation_id'=> $id], ['defender.corporation_id'=> $id]]]);
+    $updates['has_wars'] = ($currentWar != null);
 
     // Does the CEO exist in our info table?
     $ceoExists = $mdb->count('information', ['type' => 'characterID', 'id' => $ceoID]);
