@@ -252,8 +252,10 @@ function sortItemTable(column, order) {
             if (isNaN(v2)) v2 = y.getAttribute('data-order');
             if ((order == 1 && v1 > v2) || (order == -1 && v1 < v2)) {
                 rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                t = rows[i];
+                rows[i] = rows[i] + 1;
+                rows[i + 1] = t;
                 haveSwitched = true;
-                break;
             }
         }
     } while (haveSwitched); 
