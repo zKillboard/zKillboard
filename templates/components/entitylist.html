@@ -23,11 +23,11 @@
             {% if entityTitle == "Corporation" %}<td>{% include "components/text_corp.html" %}</td>{% endif %}
 			<td data-order="{{ field.memberCount }}" style="text-align: right">{{ field.memberCount | number_format(0) }}</td>
 			<td data-order="{{ field.shipsDestroyed }}" style="text-align: right" class="green">{{ field.shipsDestroyed | number_format(0)}}</td>
-			<td data-order="{{ field.iskDestroyed }}" style="text-align: right" class="green">{{ field.iskDestroyed | number_format(0)}}</td>
-			<td data-order="{{ field.pointsDestroyed }}" style="text-align: right" class="green">{{ field.pointsDestroyed | number_format(0) }}</td>
+			<td data-order="{{ field.iskDestroyed }}" style="text-align: right" class="green">{{ formatIsk(field.iskDestroyed) }}</td>
+			<td data-order="{{ field.pointsDestroyed }}" style="text-align: right" class="green">{{ formatIsk(field.pointsDestroyed) }}</td>
 			<td data-order="{{ field.shipsLost }}" style="text-align: right" class="red">{{ field.shipsLost| number_format(0) }}</td>
-			<td data-order="{{ field.iskLost }}" style="text-align: right" class="red">{{ field.iskLost | number_format(0) }}</td>
-			<td data-order="{{ field.pointsLost }}" style="text-align: right" class="red">{{ field.pointsLost | number_format(0) }}</td>
+			<td data-order="{{ field.iskLost }}" style="text-align: right" class="red">{{ formatIsk(field.iskLost) }}</td>
+			<td data-order="{{ field.pointsLost }}" style="text-align: right" class="red">{{ formatIsk(field.pointsLost) }}</td>
 		</tr>
 	{% endfor %}
 	</tbody>
