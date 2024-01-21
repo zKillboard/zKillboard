@@ -62,7 +62,10 @@ $(document).ready(function() {
     setTimeout(function() { $("#messagedad").show(); }, 5500);
     $("img[shipImageError='true']").each(fixShipRender2Icon);
 
-    if (prepComments) prepComments();
+    $(".datatable").DataTable();
+
+    // Prep comments, if the page has the function for them
+    if (typeof prepComments === "function") prepComments();
 });
 
 function startWebSocket() {

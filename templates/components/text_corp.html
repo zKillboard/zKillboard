@@ -5,7 +5,9 @@
 {% if shortLength is not defined %}{% set shortLength = 30%}{% endif %}
 {% if field.executorCorpID and field.executorCorpName %}
 	<a class="wrapplease" href="/corporation/{{ field.executorCorpID }}/">{{ field.executorCorpName }}</a>
-{% else %}
+{% elseif field.corporationID != 0 %}
 	<a class="wrapplease" href="/corporation/{{ field.corporationID }}/{{ entitySubpage }}">{{ field.corporationName }}</a>
+{% elseif field.id != 0 %}
+	<a class="wrapplease" href="/corporation/{{ field.id }}/">{{ field.name }}</a>
 {% endif %}
 {% set shortLength = 30%}

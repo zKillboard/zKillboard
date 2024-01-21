@@ -1,0 +1,34 @@
+<table class="table table-hover table-striped datatable" data-order='[ 1, "desc" ]'>
+	<thead>
+        <tr>
+            <th colspan="2"></th>
+            <th colspan="3" style="text-align: center;" class="green">Destroyed</th>
+            <th colspan="3" style="text-align: center;" class="red">Lost</th>
+        </tr>
+		<tr>
+			<th>{{ entityTitle }}</th>
+			<th style="text-align: right">Members</th>
+			<th style="text-align: right" class="green">Kills</th>
+			<th style="text-align: right" class="green">ISK</th>
+			<th style="text-align: right" class="green">Points</th>
+			<th style="text-align: right" class="red">Losses</th>
+			<th style="text-align: right" class="red">ISK</th>
+			<th style="text-align: right" class="red">Points</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for field in entities %}
+		<tr>
+            {% if entityTitle == "Alliance" %}<td>{% include "components/text_alli.html" %}</td>{% endif %}
+            {% if entityTitle == "Corporation" %}<td>{% include "components/text_corp.html" %}</td>{% endif %}
+			<td data-order="{{ field.memberCount }}" style="text-align: right">{{ field.memberCount | number_format(0) }}</td>
+			<td data-order="{{ field.shipsDestroyed }}" style="text-align: right" class="green">{{ field.shipsDestroyed | number_format(0)}}</td>
+			<td data-order="{{ field.iskDestroyed }}" style="text-align: right" class="green">{{ field.iskDestroyed | number_format(0)}}</td>
+			<td data-order="{{ field.pointsDestroyed }}" style="text-align: right" class="green">{{ field.pointsDestroyed | number_format(0) }}</td>
+			<td data-order="{{ field.shipsLost }}" style="text-align: right" class="red">{{ field.shipsLost| number_format(0) }}</td>
+			<td data-order="{{ field.iskLost }}" style="text-align: right" class="red">{{ field.iskLost | number_format(0) }}</td>
+			<td data-order="{{ field.pointsLost }}" style="text-align: right" class="red">{{ field.pointsLost | number_format(0) }}</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>

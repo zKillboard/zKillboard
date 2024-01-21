@@ -4,4 +4,6 @@
 {% endif %}
 {% if field.allianceID != 0 %}
 <a class="wrapplease" href="/alliance/{{ field.allianceID }}/{{ entitySubpage }}">{{ field.allianceName }}</a>
+{% elseif field.id != 0 %}
+<a class="wrapplease" href="/alliance/{{ field.id }}/">{{ field.name }}</a>
 {% endif %}

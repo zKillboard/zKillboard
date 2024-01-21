@@ -221,6 +221,9 @@ $app->get('/crestmail/:killID/:hash/', function ($killID, $hash) use ($app) {
         });
 
 // War!
+$app->get('/war/eligible/', function() use ($app) {
+    include 'view/war_eligible.php';
+});
 $app->get('/war/:warID/', function ($warID) use ($app) {
         include 'view/war.php';
         });
