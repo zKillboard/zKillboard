@@ -166,4 +166,5 @@ $twig->addFunction(new Twig_SimpleFunction('getMonth', 'Util::getMonth'));
 $twig->addFunction(new Twig_SimpleFunction('getLongMonth', 'Util::getLongMonth'));
 $twig->addFunction(new Twig_SimpleFunction('getMessage', 'User::getMessage'));
 $twig->addFunction(new Twig_SimpleFunction('secStatusColor', 'Info::getSystemColorCode'));
+$twig->addFunction(new Twig_SimpleFunction('i', 'Util::counter'));
 $twig->addGlobal('version', $version);

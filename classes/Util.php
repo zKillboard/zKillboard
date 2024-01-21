@@ -565,4 +565,10 @@ class Util
 
         return $load;
     }
+
+    private static $count;
+    public static function counter()
+    {
+        return ++self::$count;
+    }
 }
