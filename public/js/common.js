@@ -151,7 +151,6 @@ function wslog(msg)
         console.log('twitch user online: ' + json.channel);
         twitchlive(json.channel);
     } else if (json.action == 'twitch-offline') {
-        console.log('twitch users offline');
         twitchoffline();
     } else {
         console.log("Unknown action: " + json.action);
@@ -207,11 +206,58 @@ function saveFitting(id) {
 }
 
 
-function hideSortStuff(doHide)
+let sortOrder = 1;
+let sortColumn = 0;
+function doSort(column, doHide)
 {
     if (doHide) $(".hide-when-sorted").hide();
     else $(".hide-when-sorted").show();
+
+    if (column != sortColumn) {
+        if (column >= 2) order = -1;
+        else order = 1;
+    }
+    else order = -1 * sortOrder;
+    if (column == 0) order = 1;
+
+    //if (column == sortColumn && order == sortOrder) return;
+
+    sortItemTable(column, order);
+    sortColumn = column;
+    sortOrder = order;
 }
+
+function sortItemTable(column, order) {
+    console.log(column, order);
+    var table, rows, switching, i, x, y, shouldSwitch;  
+    table = document.getElementById("itemTable");
+    switching = true;
+    haveSwitched = false;
+
+  
+    do {
+        haveSwitched = false;
+        rows = table.rows;
+        for (i = 1; i < (rows.length - 1); i++) {
+            x = rows[i].getElementsByTagName("td")[column];
+            if (x == undefined) x = rows[i].getElementsByTagName("th")[column];
+            y = rows[i + 1].getElementsByTagName("td")[column];
+            if (y == undefined) y = rows[i + 1].getElementsByTagName("th")[column];
+            if (!x || !y) continue;
+            let v1 = x.getAttribute('data-order');
+            v1 = (v1 == null) ? x.innerHTML : parseFloat(v1);
+            if (isNaN(v1)) v1 = x.getAttribute('data-order');
+            let v2 = y.getAttribute('data-order');
+            v2 = (v2 == null) ? y.innerHTML : parseFloat(v2);
+            if (isNaN(v2)) v2 = y.getAttribute('data-order');
+            if ((order == 1 && v1 > v2) || (order == -1 && v1 < v2)) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                haveSwitched = true;
+                break;
+            }
+        }
+    } while (haveSwitched); 
+} 
 
 function sendCrestUrl() {
     str = $("#killmailurl").val();

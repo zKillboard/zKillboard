@@ -7,10 +7,10 @@
 	{% if headerDisplayed == false %}
                 {% set total = 0 %}
 		<tr class="hide-when-sorted">
-			<th colspan="4"><h5>{{ flagName }}</h5>{% if flagName == "Frigate Bay" %} <small>Full value of frigate not included in killmail value.</small>{% endif %}</th>
-<td class="hidden"></td>
-<td class="hidden"></td>
-<td class="hidden"></td>
+			<th data-order="{{ i() }}" colspan="4"><h5>{{ flagName }}</h5>{% if flagName == "Frigate Bay" %} <small>Full value of frigate not included in killmail value.</small>{% endif %}</th>
+<th class="hidden"></th>
+<th class="hidden"></th>
+<th class="hidden"></th>
 		</tr>
 	{% set headerDisplayed = true %}
 	{% endif %}
@@ -19,8 +19,8 @@
     {% set destroyed = item.quantity_destroyed > 0 ? 'item_destroyed' : '' %}
 	<tr class="{{ droppedRow }}">
 		{% set field = item %}
-		<td class="icons hidden-xs"><div align="center">{% include 'components/image_item.html' %}</div></td>
-		<td class="{% if dropped %}{{ dropped }}{% else %}{{ destroyed }}{% endif %}">{% if item.inContainer == 1%}<span class="hide-when-sorted">&mdash; </span>{% endif %}<a href="/item/{{item.typeID}}/">{{ item.typeName }}{% if item.singleton == 2%} (Copy){% endif %}</a></td>
+		<td data-order="{{ i() }}" class="icons hidden-xs"><div align="center">{% include 'components/image_item.html' %}</div></td>
+		<td data-order="{{ item.typeName }}" class="{% if dropped %}{{ dropped }}{% else %}{{ destroyed }}{% endif %}">{% if item.inContainer == 1%}<span class="hide-when-sorted">&mdash; </span>{% endif %}<a href="/item/{{item.typeID}}/">{{ item.typeName }}{% if item.singleton == 2%} (Copy){% endif %}</a></td>
         {% set qty = (item.quantity_dropped + item.quantity_destroyed) %}
 		<td class="{% if dropped %}{{ dropped }}{% else %}{{ destroyed }}{% endif %}" style="text-align: right;" data-order="{{ qty }}">{% if item.quantity_dropped %}{{ item.quantity_dropped|number_format(0) }}{%else%}{{ item.quantity_destroyed|number_format(0) }}{% endif %}</td>
                 {% set price = (item.singleton == 2 ? 0.01 * (item.quantity_dropped + item.quantity_destroyed) : item.price) %}
@@ -29,4 +29,4 @@
                 {% set total = (total + price) %}
 	{% endif %}
 {% endfor %}
-{% if total > 0 and items|length > 1 %}<tr class="hide-when-sorted"><td colspan='4' style='text-align: right'><small>Total: {{ total|number_format(2) }}</small></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td></tr>{% endif %}
+{% if total > 0 and items|length > 1 %}<tr class="hide-when-sorted"><td data-order="{{ i() }}" colspan='4' style='text-align: right'><small>Total: {{ total|number_format(2) }}</small></td><td class="hidden"></td><td class="hidden"></td><td class="hidden"></td></tr>{% endif %}
