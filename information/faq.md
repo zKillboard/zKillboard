@@ -2,7 +2,7 @@
 
 ***
 
-#####zKillboard doesn&#39;t have all my killmails, where are they?
+##### [#](#how) zKillboard doesn&#39;t have all my killmails, where are they?
 
 zKillboard does not get all killmails automatically. CCP does not make killmails public. They must be provided by various means.
 
@@ -20,31 +20,31 @@ Remember, every PVP killmail has two sides, the victim and the aggressors. Victi
 
 ***
 
-#####How do I authorize zKillboard to retrieve my killmails via API?
+##### [#](#authorize) How do I authorize zKillboard to retrieve my killmails via API?
 
 It&#39;s easy! Log in using the dropdown menu in the top right where you can see the empty character icon (unless you&#39;re already logged in of course).
 
 ***
 
-#####Is there a killboard for Singularity (Sisi)? What about the Chinese Server?
+##### [#](#sisi) Is there a killboard for Singularity (Sisi)? What about the Chinese Server?
 
 CCP has removed all killmail API endpoints from Singularity as some people were found attempting to brute force the ships being tested, and lost, by their rivals for alliance tournaments.
 
 The Chinese server has it's own set of APIs for the dedicated Chinese server. This killboard does not try to mix killmails from different servers that are ran in two very different environments with two different playerbases.
 
-#####Can you remove a kill from zKillboard because ____________ ?
+##### [#](#remove) Can you remove a kill from zKillboard because ____________ ?
 
 Kills are never removed from zKillboard. Once zKillboard has a killmail it is disseminated to about dozen other sources via RedisQ. Removing a killmail will not prevent the fact that it happened. Even if CCP reimbursed your ship and items, the killmail still happened, and it still exists in game too.
 
 ***
 
-#####I have NPC killmails on here, I don&#39;t want them here. Can you remove them?
+##### [#](#npc) I have NPC killmails on here, I don&#39;t want them here. Can you remove them?
 
 In the Spring of 2016 zKillboard starting displaying all killmails that it receives including losses to NPC&#39;s. This has been a popular request and supported by many. Killmails aren&#39;t removed from zKillboard. Also, please remember that losses to just NPC&#39;s are not counted against you in your stats.
 
 ***
 
-#####I don&#39;t like the points that are given on a particular kill, can you fix it to appease me?
+##### [#](#points) I don&#39;t like the points that are given on a particular kill, can you fix it to appease me?
 
 No. Points are very, very arbitrary. Calculating them in a fashion that keeps everyone happy is impossible.
 
@@ -61,7 +61,7 @@ Any attempts at point discussion will likely result in a link to this FAQ.
 
 ***
 
-#####What defines a solo killmail? What about if a killmail has only 1 involved but isn't considered solo?
+##### [#](#solo) What defines a solo killmail? What about if a killmail has only 1 involved but isn't considered solo?
 
 A solo killmail is defined as a killmail that has 1 non-npc attacker. NPC attackers are not considered and a solo killmail can have multiple NPC attackers.
 
@@ -69,31 +69,31 @@ A killmail that has only 1 involved is not considered solo if it is an npc only 
 
 ***
 
-#####How do you value blueprint copies or skin prices?
+##### [#](#blueprint) How do you value blueprint copies or skin prices?
 
 Blueprint copies and skin prices have been extremely volatile and are difficult to calculate the proper price. Because of this difficulty, it is better to err on the side of caution. Therefore, all blueprint copies and skins are given a price of 0.01 ISK.
 
 ***
 
-#####I have authorized zKillboard to retrieve my killmails, what are you doing with this information?
+##### [#](#authorized) I have authorized zKillboard to retrieve my killmails, what are you doing with this information?
 
 Read the killmails. That is all. That is really about all zKillboard can do with the killmail endpoints.
 
 ***
 
-#####I have given authorized you to save ship fittings, what are you doing with this information?
+##### [#](#fittings) I have given authorized you to save ship fittings, what are you doing with this information?
 
 zKillboard will write to your character&#39;s ship fittings, if and only if, it has been given permission to do so by having the "Allow zKillboard to write Fittings" checked when logging in and you click a "Save Fitting" link from a killmail page.
 
 ***
 
-#####I don&#39;t want my character/corporation/alliance shown on zKillboard? How do I remove them?
+##### [#](#ohnos) I don&#39;t want my character/corporation/alliance shown on zKillboard? How do I remove them?
 
 All characters, corporations, and alliances will always be displayed. zKillboard will not accept ISK or any form of currency to have entities removed. Yes, offers have been made and all offers get turned down.
 
 ***
 
-#####You are violating my privacy rights! I will sue! What will you do to stop?
+##### [#](#butmyrights) You are violating my privacy rights! I will sue! What will you do to stop?
 
 Nothing. You are throwing threats at a game website where the ships, names, killmails, etc. are all owned by CCP. While this website is not owned or operated by CCP it does derive all of its information from their databases. 
 
@@ -108,7 +108,7 @@ zKillboard does not contain any personally identifiable information. On the off 
 
 ***
 
-#####I don&#39;t like you and I want all my API&#39;s gone! How do I remove them?
+##### [#](#dislike) I don&#39;t like you and I want all my API&#39;s gone! How do I remove them?
 
 There is a page within your account for that, please visit https://zkillboard.com/account/api/ (You must be logged in.)
 

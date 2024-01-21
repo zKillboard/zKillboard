@@ -19,6 +19,7 @@ if ($page == 'payments') {
     global $adFreeMonthCost;
     $output = str_replace('{cost}', number_format($adFreeMonthCost, 0), $output);
 }
+$output = str_replace("href=\"#", "class='hrefit' name=\"", $output);
 
 // Load the information page html, which is just the bare minimum to load base.html and whatnot, and then spit out the markdown output!
 $app->render('information.html', array('data' => $output, 'pageTitle' => ucfirst($page)));

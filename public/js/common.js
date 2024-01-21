@@ -66,6 +66,9 @@ $(document).ready(function() {
 
     // Prep comments, if the page has the function for them
     if (typeof prepComments === "function") prepComments();
+
+    // For named anchors with the hrefit classname, make it a link as well
+    $(".hrefit").each(function() { t = $(this);  t.attr('href', '#' + t.attr('name')); });
 });
 
 function startWebSocket() {
