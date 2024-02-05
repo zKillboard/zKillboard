@@ -10,7 +10,7 @@ require_once "../init.php";
 
 $sso = ZKillSSO::getSSO();
 
-if ($redis->get("zkb:reinforced") == true) exit();
+//if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:noapi") == "true") exit();
 
 $chars = new RedisTimeQueue("zkb:characterID", 86400);

@@ -4,6 +4,8 @@ use cvweiss\redistools\RedisTimeQueue;
 
 require_once "../init.php";
 
+if ($redis->get("zkb:reinforced") == true) exit();
+
 $waitfor = [];
 $waitfor[] = bump("recentKillmailActivity:corp:", "tqCorpApiESI", "corporationID");
 $waitfor[] = bump("recentKillmailActivity:char:", "tqApiESI", "characterID");

@@ -6,6 +6,8 @@ use cvweiss\redistools\RedisTimeQueue;
 
 global $mdb, $redis;
 
+
+
 $key = "zkb:autocomplete";
 
 
@@ -20,6 +22,7 @@ $types = [
 ];
 
 foreach ($types as $type) {
+    if ($redis->get("zkb:reinforced") == true) exit();
     if ($redis->get("$key:$type") == "true") continue;
     $redis->del("s:search:$type");
     $toMove = [];
