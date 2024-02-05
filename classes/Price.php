@@ -123,14 +123,19 @@ class Price
             case 34557:
             case 44264:
                 return 0.01;
+            case 45645: // Loggerhead
+                return 35000000000; // 35b
             case 42243: // Chemosh
                 return 70000000000; 
             case 2834: // Utu
             case 3516: // Malice
             case 11375: // Freki
                 return 80000000000; // 80b
-            case 3518: // Vangel
             case 3514: // Revenant
+		        if ($date <= "2023-12-01") 
+                    return 100000000000; // 100b
+                return 250000000000; // 100b
+            case 3518: // Vangel
             case 32788: // Cambion
             case 32790: // Etana
             case 32209: // Mimir
