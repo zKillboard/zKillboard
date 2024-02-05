@@ -216,7 +216,7 @@
                                 {% set valuenow = valuenow + label.ratio %}
                             {% endfor %}
                         </div>
-                                <span class='pull-right green'> {% if statistics.soloKills %}{{ statistics.soloKills|number_format(0) }} {% endif %}Solo Kills ({{ (100 * (statistics.soloKills / statistics.shipsDestroyed))|number_format(1)}}%) <a href='/information/faq/#solo'>*</a></span>
+                                <span class='pull-right green'> {% if statistics.soloKills %}{{ statistics.soloKills|number_format(0) }} {% endif %}Solo Kills <a href='/information/faq/#solo'>*</a></span>
                         {% endif %}
                         </td>
 			</td>
