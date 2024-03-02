@@ -15,7 +15,7 @@ $(document).ready(function() {
                 $('.asearch-autocomplete').val('');
             },
             error: function (xhr) {
-                console.log(xhr);
+                console.log("ERROR", xhr);
             }
         }).focus();
 
@@ -298,7 +298,7 @@ function doQuery() {
         method: 'get',
         error: handleError,
         success: applyKillQueryResult,
-        timeout: 30000 // 30 seconds
+        timeout: 60000 // 60 seconds
     });
     xhrs.push(xhr);
 
@@ -310,7 +310,7 @@ function doQuery() {
         method: 'get',
         error: handleError,
         success: applyCountQueryResult,
-        timeout: 30000 // 30 seconds
+        timeout: 60000 // 60 seconds
     });
     xhrs.push(xhr);
 
@@ -327,7 +327,7 @@ function doQuery() {
             method: 'get',
             error: handleError,
             success: applyGroupQueryResult,
-            timeout: 30000 // 30 seconds
+            timeout: 60000 // 60 seconds
         });
         xhrs.push(xhr);
     }
@@ -368,8 +368,11 @@ function applyGroupQueryResult(data, textStatus, jqXHR) {
 }
 
 function handleError(jqXHR, textStatus, errorThrown) {
+console.log(jqXHR.status);
     filtersStringified = null;
-    killlistmessage(errorThrown + ' ' + textStatus);
+    if (jqXHR.status == 403) killlistmessage('Server Reinforced - no advanced search as this time.');
+    else if (jqXHR.status == 408) killlistmessage('Query took too long and timed out.');
+    else killlistmessage(errorThrown + ' ' + textStatus);
 }
 
 function killlistmessage(message) {

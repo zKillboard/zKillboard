@@ -4,11 +4,11 @@ use cvweiss\redistools\RedisCache;
 
 global $mdb, $redis, $uri;
 
-MongoCursor::$timeout = 35000;
+MongoCursor::$timeout = 65000;
 
 if ($redis->get("zkb_reinforced") == true) $redis->setex("zkb_reinforced_as_extended", 300, "true");
 if ($redis->get("zkb:reinforced") == true || $redis->get("zkb_reinforced_as_extended") == "true") {
-    header('HTTP/1.1 503 Reinforced mode, please try again later'); 
+    header('HTTP/1.1 403 Reinforced mode, please try again later'); 
     exit();
 }
 
@@ -95,12 +95,27 @@ try {
     $jsoned = json_encode($query, true);
     $key = "asearch:$queryType:$groupType:$victimsOnly:" . ($queryType == "kills" ? "$page:$sortKey:$sortBy:" : "") . md5($jsoned);
 
-    $ret = (string) $redis->get($key);
+    $waits = 0;
+    do {
+        $ret = (string) $redis->get($key);
+        if ($ret == "PROCESSING") { 
+            sleep(1);
+            Log::log("waiting...");
+            $waits++;
+            if ($waits > 60) {
+                header('HTTP/1.1 408 Request timeout'); 
+                return;
+
+            }
+        }
+    } while ($ret == "PROCESSING");
+
     if ($ret != "") {
         $app->contentType('application/json; charset=utf-8');
         echo $ret;
         return;
     }
+    $redis->setex($key, 3600, "PROCESSING");
 
     $arr = [];
     if ($queryType == "kills") {
