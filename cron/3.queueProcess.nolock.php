@@ -13,6 +13,7 @@ require_once '../init.php';
 
 if ($redis->get("zkb:universeLoaded") != "true") exit("Universe not yet loaded...\n");
 $fittedArray = [11, 12, 13, 87, 89, 93, 158, 159, 172, 2663, 3772];
+$atShipIDs = [2836, 74316, 42246, 32788, 33675, 33397, 32790, 35781, 32207, 74141, 35779, 60764, 3516, 32209, 33395, 42245, 60765, 26842, 2834, 3518, 33673];
 
 $dateToday = date('Y-m-d');
 $dateYesterday = date('Y-m-d', time() - 86400);
@@ -97,11 +98,14 @@ while ($minute == date('Hi')) {
         $involved = array();
         $involved[] = $victim;
 
+        $atShip = false;
         foreach ($mail['attackers'] as $attacker) {
             $att = createInvolved($attacker);
             $att['isVictim'] = false;
             $involved[] = $att;
+            $atShip |= in_array($att['shipTypeID'], $atShipIDs);
         }
+        $atShip |= in_array($victim['shipTypeID'], $atShipIDs);
         $kill['involved'] = $involved;
         $kill['npc'] = isNPC($kill);
         $kill['awox'] = ($kill['npc'] == true) ? false : isAwox($kill);
@@ -144,11 +148,11 @@ while ($minute == date('Hi')) {
         addLabel($kill, $solarSystem['security'] < 0.05 && $solarSystem['regionID'] < 11000001, 'loc:nullsec');
         addLabel($kill, $solarSystem['regionID'] >= 11000000 && $solarSystem['regionID'] < 12000000, 'loc:w-space');
         addLabel($kill, $solarSystem['regionID'] >= 12000000 && $solarSystem['regionID'] < 13000000, 'loc:abyssal');
-        addLabel($kill,  $totalValue >= 1000000000 && $totalValue < 5000000000, 'isk:1b+');
-        addLabel($kill,  $totalValue >= 5000000000 && $totalValue < 10000000000, 'isk:5b+');
-        addLabel($kill,  $totalValue >= 10000000000 && $totalValue < 100000000000, 'isk:10b+');
-        addLabel($kill,  $totalValue >= 100000000000 && $totalValue < 1000000000000, 'isk:100b+');
-        addLabel($kill,  $totalValue >= 1000000000000, 'isk:1t+');
+        addLabel($kill, $totalValue >= 1000000000 && $totalValue < 5000000000, 'isk:1b+');
+        addLabel($kill, $totalValue >= 5000000000 && $totalValue < 10000000000, 'isk:5b+');
+        addLabel($kill, $totalValue >= 10000000000 && $totalValue < 100000000000, 'isk:10b+');
+        addLabel($kill, $totalValue >= 100000000000 && $totalValue < 1000000000000, 'isk:100b+');
+        addLabel($kill, $totalValue >= 1000000000000, 'isk:1t+');
         addLabel($kill, isCapital($victim['shipTypeID']), 'capital');
 
         $zkb = array();

@@ -97,6 +97,7 @@ if (isset($rawmail['victim']['position']) && isset($killdata['info']['location']
     }
 }
 $extra['npcOnly'] = @$killdata['info']['npc'];
+$extra['atShip'] = in_array('atShip', @$killdata['info']['labels']);
 $extra['totalisk'] = $killdata['info']['zkb']['totalValue'];
 $extra['droppedisk'] = droppedIsk(md5($id), $killdata['items']);
 $extra['shipprice'] = Price::getItemPrice($killdata['victim']['shipTypeID'], date('Y-m-d H:i', strtotime($killdata['info']['dttm'])));
@@ -126,8 +127,6 @@ if (sizeof($sponsored)) {
     $isk = $sponsored['iskSum'];
     if ($isk > 0) $extra['sponsoredIsk'] = $isk;
 }
-//$extra["insertTime"] = Db::queryField("select insertTime from zz_killmails where killID = :killID", "insertTime", array(":killID" => $id), 300);
-
 $systemID = $killdata['info']['system']['solarSystemID'];
 $data = Info::getWormholeSystemInfo($systemID);
 $extra['wormhole'] = $data;

@@ -57,7 +57,15 @@
                 {% include 'components/text_ship.html' %}
           {% endif %}
 
-          {% if "padding" in kill.labels %}<a href='/kills/padding/'><small><font class="alert alert-warning" style='padding: 0px; margin: 0px;'>&nbsp;padding&nbsp;</font></small></a> {% else %}{% if kill.ganked == true %}<a href='/kills/ganked/'><small><font class="alert alert-danger" style='padding: 0px; margin: 0px;'>&nbsp;GANKED&nbsp;</font></small></a> {% endif %}{% if kill.solo == true %}<a href='/character/{{ kill.finalBlow.characterID }}/solo/'><small><font class="alert alert-success" style='padding: 0px; margin: 0px;'>&nbsp;SOLO&nbsp;</font></small></a> {% elseif kill.npc == true %} <small><font class="alert alert-info" style='padding: 0px; margin: 0px;'>&nbsp;npc&nbsp;</font></small> {% elseif kill.attackerCount >= 1000 %} <small><font class="alert alert-danger" style='padding: 0px; margin: 0px;'>&nbsp;1000+&nbsp;</font></small> {% elseif kill.attackerCount >= 100 %} <small><font class="alert alert-warning" style='padding: 0px; margin: 0px;'>&nbsp;100+&nbsp;</font></small> {% else %} ({{ kill.attackerCount }}) {% endif %}{% endif %}<br />
+        {% if "padding" in kill.labels %}<a href='/kills/padding/'><small><font class="alert alert-warning" style='padding: 0px; margin: 0px;'>&nbsp;padding&nbsp;</font></small></a>
+        {% elseif "atShip" in kill.labels %}<small><font class="alert alert-success" style='padding: 0px; margin: 0px;'>&nbsp;AT Ship&nbsp;</font></small>
+        {% elseif kill.ganked == true %}<a href='/kills/ganked/'><small><font class="alert alert-danger" style='padding: 0px; margin: 0px;'>&nbsp;GANKED&nbsp;</font></small></a>
+        {% elseif kill.solo == true %}<a href='/character/{{ kill.finalBlow.characterID }}/solo/'><small><font class="alert alert-success" style='padding: 0px; margin: 0px;'>&nbsp;SOLO&nbsp;</font></small></a>
+        {% elseif kill.npc == true %} <small><font class="alert alert-info" style='padding: 0px; margin: 0px;'>&nbsp;npc&nbsp;</font></small>
+        {% elseif kill.attackerCount >= 1000 %} <small><font class="alert alert-danger" style='padding: 0px; margin: 0px;'>&nbsp;1000+&nbsp;</font></small> 
+        {% elseif kill.attackerCount >= 100 %} <small><font class="alert alert-warning" style='padding: 0px; margin: 0px;'>&nbsp;100+&nbsp;</font></small> 
+        {% else %} ({{ kill.attackerCount }})
+        {% endif %}<br />
 
           {% if kill.finalBlow.allianceID != 0 %}
             <a class="wrapplease" href="/alliance/{{ kill.finalBlow.allianceID }}/">{{ kill.finalBlow.allianceName }}</a>

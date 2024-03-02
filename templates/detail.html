@@ -100,8 +100,13 @@
 
 <div class="col-lg-4">
 	<a id='loginsideimage' href='/ccpoauth2/' class='btn btn-block collapse'><img src='/img/ssologin.png' style='width: 100%'><br/><br/></a>
+    {{ sponsoredMessage|raw }}
+    <div class='alert alert-info'><center><a href='{{ referralLink }}' alt='1 million SP Referal Link'>1 Million SP Referral Link</a></center></div>
 	{% if extra.npcOnly %}
 		<div class="alert alert-info">This is an NPC Only killmail.<br/>It is not counted in statistics.</div>
+	{% endif %}
+	{% if extra.atShip %}
+		<center><div class="alert alert-success">AT Ship Involved</div></center>
 	{% endif %}
         {% if 'padding' in killdata.info.labels %}
 		    <div class="alert alert-warning"><center>Killboard Padding<br/>It is not counted in statistics.</center></div>
