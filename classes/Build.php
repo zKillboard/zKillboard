@@ -17,7 +17,7 @@ class Build
         } else $kmDate = substr($kmDate, 0, 10);
 
         $price = $redis->get("zkb:built:$typeID:$kmDate");
-        if ($price > 0) return $price;
+        if ($recalc == false && $price > 0) return $price;
 
         $price = self::getBuildPrice($redis, $typeID, $kmDate);
         if ($price === null) return 0.01;
