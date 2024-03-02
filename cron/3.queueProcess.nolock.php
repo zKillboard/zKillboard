@@ -103,7 +103,7 @@ while ($minute == date('Hi')) {
             $att = createInvolved($attacker);
             $att['isVictim'] = false;
             $involved[] = $att;
-            $atShip |= in_array($att['shipTypeID'], $atShipIDs);
+            $atShip |= in_array(((int) @$att['shipTypeID']), $atShipIDs);
         }
         $atShip |= in_array($victim['shipTypeID'], $atShipIDs);
         $kill['involved'] = $involved;
