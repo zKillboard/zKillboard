@@ -146,6 +146,7 @@ try {
         $arr['top'] = [];
         $rendered = $redis->get("htmlgroup:$key");
         if ($rendered !== null && trim($rendered) !== "") {
+            $redis->del($key);
             echo $rendered;
             return;
         }
@@ -157,6 +158,7 @@ try {
         $rendered = ob_get_clean();
         echo $rendered;
         $redis->setex("htmlgroup:$key", 300, $rendered);
+        $redis->del($key);
         return;
     } else {
         // what is this? ignore it...
