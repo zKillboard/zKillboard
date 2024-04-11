@@ -24,7 +24,7 @@ function bump($key, $rtqName, $type) {
 			$count++;
 		}
 	}
-	if ($count > 0) Util::out("Bumped $count api verified active ids in $rtqName");
+	//if ($count > 0) Util::out("Bumped $count api verified active ids in $rtqName");
 
 	return $rtqName;
 }
