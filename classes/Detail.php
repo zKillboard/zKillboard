@@ -25,19 +25,6 @@ class Detail
         return $a['count'] < $b['count'];
     }
 
-    public static function usdeurgbp($totalprice)
-    {
-        $usd = 17;
-        $eur = 13;
-        $gbp = 10;
-        $plex = 500 * Price::getItemPrice(44992, date('Ymd'));
-        $usdval = $plex / $usd;
-        $eurval = $plex / $eur;
-        $gbpval = $plex / $gbp;
-
-        return array('usd' => $totalprice / $usdval, 'eur' => $totalprice / $eurval, 'gbp' => $totalprice / $gbpval);
-    }
-
     public static function eftarray($items)
     {
         // EFT / Fitting Wheel

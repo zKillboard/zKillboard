@@ -318,6 +318,9 @@ $statistics['pointsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:
 $statistics['pointsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:pointsLost", $id));
 $statistics['overallRank'] = Util::rankCheck($redis->zRank("tq:ranks:alltime:$statType", $id));
 
+$statistics['iskDestroyedUsdEurGbp'] = Helper::iskToUsdEurGbp($statistics['iskDestroyed']??0);
+$statistics['iskLostUsdEurGbp'] = Helper::iskToUsdEurGbp($statistics['iskLost']??0);
+
 if (@$statistics['shipsLost'] > 0) {
     $destroyed = @$statistics['shipsDestroyed']  + @$statistics['pointsDestroyed'];
     $lost = @$statistics['shipsLost'] + @$statistics['pointsLost'];
