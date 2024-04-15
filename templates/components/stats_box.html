@@ -54,9 +54,9 @@
 	</tr>
 	<tr class="alltime-ranks">
 		<th class="" style="text-align: right">ISK</th>
-		<td class="green"  style="text-align: right">{{ formatIsk(statistics.iskDestroyed) }}</td>
+		<td class="green"  style="text-align: right" rel="tooltip" title="&#36;{{ statistics.iskDestroyedUsdEurGbp.usd|number_format(2, '.', ',') }} / {{ statistics.iskDestroyedUsdEurGbp.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ statistics.iskDestroyedUsdEurGbp.gbp|number_format(2, '.', ',') }}">{{ formatIsk(statistics.iskDestroyed) }}</td>
 		<td class="green hidden-xs" style="text-align: right">{{ statistics.iskDestroyedRank == 0 ? '-' : statistics.iskDestroyedRank | number_format(0) }}</td>
-		<td class="red" style="text-align: right">{{ formatIsk(statistics.iskLost) }}</td>
+		<td class="red" style="text-align: right" rel="tooltip" title="&#36;{{ statistics.iskLostUsdEurGbp.usd|number_format(2, '.', ',') }} / {{ statistics.iskLostUsdEurGbp.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ statistics.iskLostUsdEurGbp.gbp|number_format(2, '.', ',') }}">{{ formatIsk(statistics.iskLost) }}</td>
 		<td class="red hidden-xs" style="text-align: right">{{ statistics.iskLostRank == 0 ? '-' : statistics.iskLostRank | number_format(0) }}</td>
 		{% set greenred = iskEff >= 50 ? 'green' : 'red' %}
 		<td class="{{greenred}} hidden-xs" style="text-align: right">{{ iskEff | number_format(1) }}</td>

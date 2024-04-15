@@ -107,10 +107,10 @@ $extra['relatedtime'] = date('YmdH00', strtotime($killdata['info']['dttm']));
 $extra['fittingwheel'] = Detail::eftarray($killdata['items']);
 $extra['involvedships'] = involvedships($killdata['involved']);
 $extra['involvedshipscount'] = count($extra['involvedships']);
-$extra['totalprice'] = usdeurgbp($killdata['info']['zkb']['totalValue']);
-$extra['destroyedprice'] = usdeurgbp($extra['lostisk']);
-$extra['droppedprice'] = usdeurgbp($extra['droppedisk']);
-$extra['fittedprice'] = usdeurgbp($extra['fittedisk']);
+$extra['totalprice'] = Util::iskToUsdEurGbp($killdata['info']['zkb']['totalValue']);
+$extra['destroyedprice'] = Util::iskToUsdEurGbp($extra['lostisk']);
+$extra['droppedprice'] = Util::iskToUsdEurGbp($extra['droppedisk']);
+$extra['fittedprice'] = Util::iskToUsdEurGbp($extra['fittedisk']);
 $extra['efttext'] = Fitting::EFT($extra['fittingwheel']);
 $extra['dnatext'] = Fitting::DNA($killdata['items'], $killdata['victim']['shipTypeID']);
 $extra['edkrawmail'] = 'deprecated - use CREST';
@@ -191,19 +191,6 @@ function involvedships($array)
 function sortByOrder($a, $b)
 {
     return $a['count'] < $b['count'];
-}
-
-function usdeurgbp($totalprice)
-{
-    $usd = 17;
-    $eur = 13;
-    $gbp = 10;
-    $plex = 500 * Price::getItemPrice(44992, date('Y-m-d H:i'));
-    $usdval = $plex / $usd;
-    $eurval = $plex / $eur;
-    $gbpval = $plex / $gbp;
-
-    return array('usd' => $totalprice / $usdval, 'eur' => $totalprice / $eurval, 'gbp' => $totalprice / $gbpval);
 }
 
 function buildItemKey($itm)
