@@ -8,3 +8,6 @@ work
 public/ztop.txt
 public/api/
 public/ads.txt
+
+## IntelliJ files
+.idea
