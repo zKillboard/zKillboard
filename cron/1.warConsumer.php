@@ -4,6 +4,10 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
+if ($fetchWars !== true) {
+	$redis->del("queueWars");
+	exit();
+}
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:420prone") == "true") exit();
 if ($redis->get("zkb:noapi") == "true") exit();
