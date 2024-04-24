@@ -51,8 +51,7 @@ function calcTop($row)
     $parameters = [$row['type'] => $row['id']];
     $parameters['limit'] = 100;
     $parameters['kills'] = true;
-    $parameters['npc'] = false;
-    //$parameters['labels'] = 'pvp';
+    $parameters['labels'] = 'pvp';
 
     $topLists[] = array('type' => 'character', 'data' => Stats::getTop('characterID', $parameters, true, false));
     $topLists[] = array('type' => 'corporation', 'data' => Stats::getTop('corporationID', $parameters, true, false));

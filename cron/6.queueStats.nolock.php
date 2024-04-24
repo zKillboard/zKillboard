@@ -33,6 +33,10 @@ function checkForResets() {
 
 while ($minute == date('Hi')) {
     $raw = $redis->srandmember("queueStatsSet");
+    if ($raw == ":") {
+        $redis->srem("queueStatsSet", $raw);
+        $raw = null;
+    }
     if ($raw == null) {
         if ($master) checkForResets();
         sleep(1);
@@ -124,7 +128,7 @@ function calcStats($row, $maxSequence)
 
         // build the query
         $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'labels' => 'pvp'];
-        if ($isVictim == false) unset($query['labels']); // Allows NPCs to count their kills
+        if ($isVictim == false) $query['labels'] = ['$ne' => 'padding']; // Allows NPCs to count their kills
         if ($type == 'locationID' || $type == 'regionID' || $type == 'constellationID' || $type == 'solarSystemID') unset($query['isVictim']);
 
         $query = MongoFilter::buildQuery($query);
