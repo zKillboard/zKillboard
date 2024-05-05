@@ -5,9 +5,8 @@ require_once '../init.php';
 global $fetchWars;
 
 if ($redis->get("zkb:noapi") == "true") exit();
-if ($fetchWars == null || $fetchWars == false) {
-    exit();
-}
+if ($fetchWars !== true) exit();
+
 if ($redis->get("zkb:420prone") == "true") exit();
 
 $key = 'tqFetchWars';
