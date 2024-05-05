@@ -10,8 +10,10 @@ require_once '../init.php';
 
 if ($redis->get("tobefetched") < 1000) $redis->del("zkb:statsStop");
 if ($redis->get("zkb:statsStop") == "true") exit();
-
 if ($redis->get("zkb:reinforced") == true) exit();
+
+if ($master) $mdb->getCollection("statistics")->update(['reset' => false], ['$unset' => ['reset' => true]], ['multiple' => true]);
+
 MongoCursor::$timeout = -1;
 $queueStats = new RedisQueue('queueStats');
 $minute = date('Hi');
@@ -33,7 +35,7 @@ function checkForResets() {
 
 while ($minute == date('Hi')) {
     $raw = $redis->srandmember("queueStatsSet");
-    if ($raw == ":") {
+    if ($raw == ":" || $raw == ":0") {
         $redis->srem("queueStatsSet", $raw);
         $raw = null;
     }
