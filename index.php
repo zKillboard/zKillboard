@@ -125,7 +125,7 @@ sem_release($sem);
 
 // Scrape Checker
 $ipKey = "ip::$ip";
-if (false && $redis->get("ip::redirect::$ip") != null) {
+if ($redis->get("ip::redirect::$ip") != null) {
     $redis->incr("ip::redirect::$ip:challenges");
     $redis->expire("ip::redirect::$ip:challenges", 3600);
     if ($redis->get("ip::redirect::$ip:challenges") > 10) {
@@ -137,7 +137,7 @@ if (false && $redis->get("ip::redirect::$ip") != null) {
     header("Location: /challenge/", true, 302);
     return;
 }
-if (false && !$isApiRequest && !$noLimit && $redis->get("ip::challenge_safe::$ip") != "true") {
+if (!$isApiRequest && !$noLimit && $redis->get("ip::challenge_safe::$ip") != "true") {
     $redis->incr($ipKey, ($uri == '/navbar/' ? -1 : 1));
     $redis->expire($ipKey, 300);
     $count = $redis->get($ipKey);
