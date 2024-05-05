@@ -9,6 +9,7 @@ require_once '../init.php';
 if ($redis->get("tobefetched") > 1000) exit();
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->scard("queueStatsSet") > 1000) exit();
+if ($redis->get("zkb:load") > 14) exit();
 $todaysKey = "zkb:topAllTimeComplete:" . date('Ymd', time() - 36000);
 
 MongoCursor::$timeout = -1;
