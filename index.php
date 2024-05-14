@@ -50,9 +50,12 @@ require_once 'init.php';
 
 $ip = IP::get();
 $agent = @$_SERVER['HTTP_USER_AGENT'];
-if ($agent == "" || strpos($agent, "node-fetch") !== false) {
-    header('HTTP/1.1 403 Blacklisted');
-    die();
+foreach ($badBots as $bot) {
+    if (!$isApiRequest && strpos($agent, $bot) !== false) {
+        //Log::log("blocking agent: $agent");
+        header('HTTP/1.1 403 Blacklisted');
+        die();
+    }
 }
 if (!$isApiRequest && $agent == "Mozilla/5.0 (compatible; GoogleDocs; apps-spreadsheets; +http://docs.google.com)") {
     //Log::log("blocking google docs $uri");
