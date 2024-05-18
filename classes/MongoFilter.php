@@ -20,9 +20,9 @@ class MongoFilter
         }
 
         $collection = 'killmails';
-        if (isset($parameters['pastSeconds']) && $parameters['pastSeconds'] <= 608400) {
+        if (isset($parameters['pastSeconds']) && $parameters['pastSeconds'] <= 604800) {
             $collection = 'oneWeek';
-            if ($parameters['pastSeconds'] == 608400) unset($parameters['pastSeconds']);
+            if ($parameters['pastSeconds'] == 604800) unset($parameters['pastSeconds']);
         }
 
         // Build the query parameters
@@ -56,9 +56,9 @@ class MongoFilter
         }
 
         $collection = 'killmails';
-        if (isset($parameters['pastSeconds']) && $parameters['pastSeconds'] <= 608400) {
+        if (isset($parameters['pastSeconds']) && $parameters['pastSeconds'] <= 604800) {
             $collection = 'oneWeek';
-            if ($parameters['pastSeconds'] == 608400) unset($parameters['pastSeconds']);
+            if ($parameters['pastSeconds'] == 604800) unset($parameters['pastSeconds']);
         } else if (isset($parameters['pastSeconds']) && $parameters['pastSeconds'] <= 7776000) {
             $collection = 'ninetyDays';
             if ($parameters['pastSeconds'] == 7776000) unset($parameters['pastSeconds']);
