@@ -8,7 +8,9 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
-if ($redis->get("tobefetched") < 1000) $redis->del("zkb:statsStop");
+if ($redis->get("tobefetched") < 10) $redis->del("zkb:statsStop");
+if ($redis->get("tobefetched") > 10) exit();
+if ($mdb->findDoc("killmails", ['reset' => true]) != null) exit();
 if ($redis->get("zkb:statsStop") == "true") exit();
 if ($redis->get("zkb:reinforced") == true) exit();
 

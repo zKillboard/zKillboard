@@ -125,8 +125,14 @@ while ($minute == date('Hi')) {
         $isPaddedKill = false;
         $padhash = getPadHash($kill);
         if ($padhash != null) {
-            $isPaddedKill = ($mdb->count("killmails", ['padhash' => $padhash]) >= 5);
             $kill['padhash'] = $padhash;
+            if ($redis->get("zkb:padhash:$padhash") == "true") $isPaddedKill = true;
+            else $isPaddedKill = ($mdb->count("killmails", ['padhash' => $padhash]) >= 3);
+
+            if ($isPaddedKill) {
+                Log::log("Marking $killID as padding");
+                $redis->setex("zkb:padhash:$padhash", 86400, "true");
+            }
         }
 
         addLabel($kill, $isPaddedKill, 'padding');
@@ -141,7 +147,7 @@ while ($minute == date('Hi')) {
         if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 2, '#:2+');
         if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] == 1, '#:1');
         addLabel($kill, $kill['npc'], 'npc');
-        addLabel($kill, !($kill['npc'] == true || $isPaddedKill), 'pvp');
+        addLabel($kill, ($kill['npc'] === false && $isPaddedKill === false), 'pvp');
         addLabel($kill, $kill['awox'], 'awox');
         addLabel($kill, $solarSystem['security'] >= 0.45, 'loc:highsec');
         addLabel($kill, $solarSystem['security'] < 0.45 && $solarSystem['security'] >= 0.05, 'loc:lowsec');
@@ -171,6 +177,7 @@ while ($minute == date('Hi')) {
         $zkb['totalValue'] = round((double) $totalValue, 2);
         $zkb['points'] = ($kill['npc'] == true) ? 1 : (int) Points::getKillPoints($killID);
         $kill['zkb'] = $zkb;
+        if (!$isPaddedKill && !$kill['npc']) $kill['padcheck'] = true;
 
         saveMail($mdb, 'killmails', $kill);
         if ($kill['dttm']->sec >= $date7Days) saveMail($mdb, 'oneWeek', $kill);
@@ -444,8 +451,18 @@ function getPadHash($killmail)
     if ($victimID == 0) return;
     $shipTypeID = (int) $victim['shipTypeID'];
     if ($shipTypeID == 0) return;
+    $groupID = (int) Info::getInfoField('groupID', $victim['groupID'], 'groupID');
     $categoryID = (int) Info::getInfoField('groupID', $victim['groupID'], 'categoryID');
     if ($categoryID != 6) return; // Only ships, ignore POS modules, etc.
+    if ($victimID == "None") return "unpiloted";
+
+    if ($groupID == 31) { // Shuttles
+        $dttm = $killmail['dttm']->sec;
+        $dttm = $dttm - ($dttm % 3600);
+        $locationID = isset($killmail['locationID']) ? $killmail['locationID'] : $killmail['system']['solarSystemID'];
+        
+        return "$victimID:$groupID:$locationID:$dttm";
+    }
 
     $attackers = $killmail['involved'];
     while ($next = array_shift($attackers)) {
@@ -459,9 +476,7 @@ function getPadHash($killmail)
     $dttm = $killmail['dttm']->sec;
     $dttm = $dttm - ($dttm % 60);
 
-    $aString = "$victimID:$attackerID:$shipTypeID:$dttm";
-    $aSha = sha1($aString);
-    return $aSha;
+    return "$victimID:$attackerID:$shipTypeID:$dttm";
 }
 
 // Determining if a ship is a Capital Ship by the definition of the game's market data,
