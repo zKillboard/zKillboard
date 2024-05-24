@@ -2,6 +2,7 @@
 
 require_once "../init.php";
 
+if (date("i") != 15) exit();
 if (toBeFetchedCount($mdb) > 20) exit();
 
 if ($mdb->findDoc("killmails", ['reset' => true]) == null) {
