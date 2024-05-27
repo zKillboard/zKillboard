@@ -132,6 +132,7 @@ class Util
                 case 'locationID':
                 case 'warID':
                     $value = array_shift($split);
+                    if (substr($value, 0, 1) === "0") die("Do not prefix values with 0");
                     $intValue = (int) $value;
                     if ($value != null) {
                         if (strpos($key, 'ID') === false) {
@@ -187,6 +188,7 @@ class Util
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     //if ($startEndTiminated == true) throw new Exception("Cannot mix page and (startTime or endTime)");
                     $value = array_shift($split);
+                    if (substr($value, 0, 1) === "0") die("Do not prefix values with 0");
                     $value = (int) $value;
                     if ($value < 1) {
                         die("page value <= 1 not allowed");
@@ -199,6 +201,7 @@ class Util
                 case 'pastSeconds':
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $value = array_shift($split);
+                    if (substr($value, 0, 1) === "0") die("Do not prefix values with 0");
                     $value = (int) $value;
                     if (($value / 86400) > 7) {
                         die('pastSeconds is limited to a max of 7 days');
@@ -210,6 +213,7 @@ class Util
                     if ($isApiRequest) die("startTime/endTime no longer supported in api because of abuse");
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $value = array_shift($split);
+                    if (substr($value, 0, 1) === "0") die("Do not prefix values with 0");
                     $time = strtotime($value);
                     if (strpos($uri, "region") !== false) {
                         die("Cannot use startTime/endTime with this entity, use the /api/history/ or RedisQ intead");
@@ -238,6 +242,7 @@ class Util
                     break;
                 case 'killID':
                     $value = array_shift($split);
+                    if (substr($value, 0, 1) === "0") die("Do not prefix values with 0");
                     if (!is_numeric($value)) {
                         die("$value is not a valid entry for $key");
                     }
@@ -245,6 +250,7 @@ class Util
                     break;
                 case 'iskValue':
                     $value = (int) array_shift($split);
+                    if (substr($value, 0, 1) === "0") die("Do not prefix values with 0");
                     if ($value == 0 || $value % 500000000 != 0) {
                         die("$value is not a valid multiple of 5b ISK");
                     }
@@ -256,6 +262,7 @@ class Util
                 case 'year':
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $value = array_shift($split);
+                    if (substr($value, 0, 1) === "0") die("Do not prefix values with 0");
                     $value = (int) $value;
                     if ($value < 2007) die("$value is not a valid entry for $key");
                     if ($value > date('Y')) die("$value is not a valid entry for $key");
@@ -264,6 +271,7 @@ class Util
                 case 'month':
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $value = array_shift($split);
+                    if (substr($value, 0, 1) === "0") die("Do not prefix values with 0");
                     $value = (int) $value;
                     if ($value < 1 || $value > 12) die("$value is not a valid entry for $key");
                     $parameters[$key] = $value;

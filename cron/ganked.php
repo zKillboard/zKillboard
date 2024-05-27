@@ -6,6 +6,8 @@ use cvweiss\redistools\RedisCache;
 
 global $gankKillBotWebhook, $fullAddr;
 
+if ($redis->get("zkb:gankcheck") == "true") exit();
+
 $kills = $mdb->find("killmails", ['involved.corporationID' => 1000125], ['killID' => -1], 5000);
 $added = [];
 
@@ -47,3 +49,5 @@ foreach ($kills as $kill) {
         }
     }
 }
+
+$redis->setex("zkb:gankcheck", 900, "true");

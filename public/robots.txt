@@ -8,12 +8,10 @@ Disallow: /comment/
 Disallow: */reset/*
 Disallow: */top*
 Disallow: /asearch*
+Disallow /constellation/*
 sitemap: https://zkillboard.com/sitemaps/sitemaps.xml
 
 User-agent: PiplBot
-Disallow: /
-
-User-agent: Yandex
 Disallow: /
 
 User-agent: Amazonbot
@@ -26,4 +24,19 @@ User-agent: dotbot
 Disallow: /
 
 User-agent: ClaudeBot
+Disallow: /
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: MJ12Bot
+Disallow: /
+
+User-agent: GrapeshotCrawler
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+User-agent: CriteoBot
 Disallow: /

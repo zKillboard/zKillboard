@@ -152,7 +152,7 @@ if (!$isApiRequest && !$noLimit && $redis->get("ip::challenge_safe::$ip") != "tr
             $isValidBot |= strpos($host, $bot) !== false;
         }
         if ($ip != $host2 || !$isValidBot) {
-            if ($redis->get("ip::redirect::$ip") == false) Log::log("Challenging $ip $host $uri");
+            if ($redis->get("ip::redirect::$ip") == false) Log::log("Challenging $ip $agent $host $uri");
             $redis->setex("ip::redirect::$ip", 9600, $uri);
             header("Location: /challenge/", true, 302);
             return;
