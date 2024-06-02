@@ -29,6 +29,7 @@ function publish($killID)
     $zkb['npc'] = @$kill['npc'];
     $zkb['solo'] = @$kill['solo'];
     $zkb['awox'] = @$kill['awox'];
+    $zkb['labels'] = @$kill['labels'];
     $zkb['esi'] = "$esiServer/latest/killmails/$killID/".$zkb['hash'].'/';
     $zkb['url'] = "https://zkillboard.com/kill/$killID/";
     $raw['zkb'] = $zkb;
