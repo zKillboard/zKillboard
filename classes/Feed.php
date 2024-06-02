@@ -57,6 +57,7 @@ class Feed
             $json['zkb']['npc'] = $kill['npc'];
             $json['zkb']['solo'] = $kill['solo'];
             $json['zkb']['awox'] = $kill['awox'];
+            $json['zkb']['labels'] = $kill['labels'];
             unset($json['_id']);
             if (array_key_exists('no-items', $parameters)) {
                 unset($json['victim']['items']);
