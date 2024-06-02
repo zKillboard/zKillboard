@@ -126,7 +126,7 @@ class Price
             case 45645: // Loggerhead
                 return 35000000000; // 35b
             case 42243: // Chemosh
-                return 70000000000; 
+                return 70000000000;  // 70b
             case 2834: // Utu
             case 3516: // Malice
             case 11375: // Freki
@@ -161,7 +161,7 @@ class Price
             case 45649: // Komodo
                 return 200000000000; // 200b
             case 45531: // Victor
-                return 230000000000;
+                return 230000000000; // 230b
             case 48635: // Tiamat
             case 60764: // Laelaps
             case 77726: // Cybele
@@ -191,9 +191,10 @@ class Price
             case 11936: // Apocalypse Imperial Issue
             case 11938: // Armageddon Imperial Issue
             case 26842: // Tempest Tribal Issue
+            case 78576: // Azariel (Angel Titan)
                 return 750000000000; // 750b
             case 26840: // Raven State Issue
-                return 2500000000000;
+                return 2500000000000; // 2.5t
             case 47514: // 'Horizon' Fortizar
                 return 60000000000; // Too much market bugginess, hardcoding price
         }
