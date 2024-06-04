@@ -8,11 +8,12 @@ global $gankKillBotWebhook, $fullAddr;
 
 if ($redis->get("zkb:gankcheck") == "true") exit();
 
-$kills = $mdb->find("killmails", ['involved.corporationID' => 1000125], ['killID' => -1], 5000);
+$concord = $mdb->getCollection("killmails")->find(['involved.corporationID' => 1000125])->sort(['killID' => -1])->limit(50000);
 $added = [];
 
-foreach ($kills as $kill) {
-    if ($kill['killID'] < 68300000) continue;
+while ($concord->hasNext()) {
+    $kill = $concord->next();
+    if ($kill['killID'] < 68300000) break;
     $systemID = $kill['system']['solarSystemID'];
     $involved = $kill['involved'];
     $victim = $involved[0];
