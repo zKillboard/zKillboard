@@ -3,7 +3,11 @@
 {% for item in trackedItems %}
   <tr>
     <td colspan='2'>
-      <center><strong><a href='/item/{{ item.typeID }}/' {% if item.typeID == 0 %}onClick='return false;'{% endif %}>{{ item.name }}{% if item.price %} {{ shortNum(item.price) }}{% endif %}</a></strong></center>
+      {% if item.typeID == 0 %}
+      <center><strong><h5>{{ item.name }}{% if item.price %} {{ shortNum(item.price) }}{% endif %}</h5></strong></center>
+      {% else %}
+      <center><strong><a href='/item/{{ item.typeID }}/'>{{ item.name }}{% if item.price %} {{ shortNum(item.price) }}{% endif %}</a></strong></center>
+      {% endif %}
     </td>
   </tr>
   <tr>
@@ -12,6 +16,5 @@
   </tr>
 {% endfor %}
 </table>
-<!-- <center><small>(last 24 hours)</small></center> -->
 <center><small><i>Last 7 days...</i></small></center>
 </div>
