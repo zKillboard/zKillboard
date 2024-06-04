@@ -52,7 +52,7 @@ while ($minute == date('Hi')) {
     if ($type == "itemID") continue;
 
     $id = (int) $arr[1];
-    $key = "$type:$id";
+    $key = "$type";
     if ($redis->set("zkb:stats:$key", "true", ['nx', 'ex' => 3600]) === true) {
         try {
             $maxSequence = $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);
@@ -70,7 +70,8 @@ while ($minute == date('Hi')) {
             $redis->del("zkb:stats:$key");
         }
     } else {
-        usleep(10000);
+	$redis->sadd("queueStatsSet", $raw);
+	usleep(100000); // 1/10th of a second
     }
 }
 
