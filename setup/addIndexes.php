@@ -189,6 +189,15 @@ echo "Done\n";
 echo "Creating index : 'war_eligible' => 1, 'memberCount' => -1, with sparse = 1 and unique = 0 ... ";
 $information->ensureIndex(array('war_eligible' => 1, 'memberCount' => -1), array("sparse" => 1, "unique" => 0));
 echo "Done\n";
+echo "Creating index : 'type' => 1, 'finished' => 1, 'aggressor.alliance_id' => 1, 'defender.alliance_id' => 1, with sparse = 0 and unique = 0 ... ";
+$information->ensureIndex(array('type' => 1, 'finished' => 1, 'aggressor.alliance_id' => 1, 'defender.alliance_id' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'finished' => 1, 'aggressor.corporation_id' => 1, 'defender.corporation_id' => 1, with sparse = 0 and unique = 0 ... ";
+$information->ensureIndex(array('type' => 1, 'finished' => 1, 'aggressor.corporation_id' => 1, 'defender.corporation_id' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'war_eligible' => 1, 'has_wars' => 1, 'memberCount' => -1, with sparse = 1 and unique = 0 ... ";
+$information->ensureIndex(array('type' => 1, 'war_eligible' => 1, 'has_wars' => 1, 'memberCount' => -1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
 
 // insurance
 echo "\nCreating collection insurance ... ";
@@ -345,6 +354,12 @@ echo "Done\n";
 echo "Creating index : 'system.solarSystemID' => 1, 'sequence' => 1, with sparse = 0 and unique = 0 ... ";
 $killmails->ensureIndex(array('system.solarSystemID' => 1, 'sequence' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
+echo "Creating index : 'zkb.hash' => 1, with sparse = 0 and unique = 0 ... ";
+$killmails->ensureIndex(array('zkb.hash' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'reset' => 1, with sparse = 1 and unique = 0 ... ";
+$killmails->ensureIndex(array('reset' => 1), array("sparse" => 1, "unique" => 0));
+echo "Done\n";
 
 // labels
 echo "\nCreating collection labels ... ";
@@ -497,6 +512,9 @@ $ninetyDays->ensureIndex(array('labels' => 1, 'killID' => -1), array("sparse" =>
 echo "Done\n";
 echo "Creating index : 'involved.corporationID' => 1, 'sequence' => 1, 'involved.isVictim' => 1, with sparse = 0 and unique = 0 ... ";
 $ninetyDays->ensureIndex(array('involved.corporationID' => 1, 'sequence' => 1, 'involved.isVictim' => 1), array("sparse" => 0, "unique" => 0));
+echo "Done\n";
+echo "Creating index : 'padhash' => 1, with sparse = 0 and unique = 0 ... ";
+$ninetyDays->ensureIndex(array('padhash' => 1), array("sparse" => 0, "unique" => 0));
 echo "Done\n";
 
 // oneWeek
