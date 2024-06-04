@@ -7,10 +7,10 @@ require_once '../init.php';
 $queueSocial = new RedisQueue('queueSocial');
 $minute = date('Hi');
 
-while ($beSocial && $minute == date('Hi')) {
+while ($minute == date('Hi')) {
     $killID = $queueSocial->pop();
     if ($killID > 0 ) {
-        beSocial($killID);
+        if ($beSocial === true) beSocial($killID);
     } else sleep(1);
 }
 

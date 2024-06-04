@@ -46,7 +46,7 @@ while ($concord->hasNext()) {
             Util::out("Marking " . $lvictim['killID'] . " as ganked.");
             RedisCache::delete("killDetail:" . $lvictim['killID']);
             RedisCache::delete( "zkb::detail:" . $lvictim['killID']);
-            Discord::webhook($gankKillBotWebhook, "$fullAddr/kill/" . $lvictim['killID'] . "/");
+            if ($beSocial === true) Discord::webhook($gankKillBotWebhook, "$fullAddr/kill/" . $lvictim['killID'] . "/");
         }
     }
 }

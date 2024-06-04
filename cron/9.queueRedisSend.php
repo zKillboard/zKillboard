@@ -24,6 +24,7 @@ while (date('Hi') == $minute) {
         sleep(1);
         continue;
     }
+    if ($beSocial !== true) continue; 
     if ($redis->get("tobefetched") > 1000 && $killID < ($topKillID - 10000)) continue;
 
     $rawmail = Kills::getEsiKill($killID);
