@@ -40,3 +40,6 @@ Disallow: /
 
 User-agent: CriteoBot
 Disallow: /
+
+User-agent: DataForSeoBot
+Disallow: /
