@@ -55,6 +55,7 @@ while ($minute == date('Hi')) {
     $key = "$type";
     if ($redis->set("zkb:stats:$key", "true", ['nx', 'ex' => 3600]) === true) {
         try {
+            $redis->setex("zkb:stats:current:$type:$id", 3600, "true");
             $maxSequence = $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);
             $row = ['type' => $type, 'id' => $id, 'sequence' => $maxSequence];
 
@@ -67,6 +68,7 @@ while ($minute == date('Hi')) {
         } catch (Exception $ex) {
             throw $ex;
         } finally {
+            $redis->del("zkb:stats:current:$type:$id");
             $redis->del("zkb:stats:$key");
         }
     } else {
