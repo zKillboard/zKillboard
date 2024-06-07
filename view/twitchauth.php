@@ -49,7 +49,7 @@ try {
 
                 ZLog::add("You have linked Twitch. Twitch ad free integration has succeeded. Thank you!!", $userID);
                 User::sendMessage("You have linked Twitch. Twitch ad free integration has succeeded. Thank you!!", $userID);
-                $app->redirect("/account/log/");
+                return $app->redirect("/account/log/");
             } else {
                 return $app->render("error.html", ['message' => "You are NOT subbed to SquizzCaphinator on Twitch. Twitch ad free integration has failed."]);
             }
@@ -58,8 +58,6 @@ try {
         }
     }
 } catch (Exception $ex) {
-    Log::log(print_r($ex, true));
-    throw $ex;
-    $app->render("error.html", ['message' => "Something went wrong with the login from Twitch's end, sorry, can you please try logging in again? *"]);
-    exit();
+    Log::log("Error from twitch:\n" . print_r($ex, true));
+    return $app->render("error.html", ['message' => "Something went wrong with the login from Twitch's end, sorry, can you please try logging in again? *"]);
 }
