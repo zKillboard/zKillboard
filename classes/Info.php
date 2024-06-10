@@ -565,6 +565,8 @@ class Info
             '180' => 'Core Room',
             '181' => 'Ice Hold',
             '183' => 'Mobile Depot Bay',
+            '185' => "InfrastructureHangar",
+            '186' => "MoonMaterialBay",
             );
 
     /**
