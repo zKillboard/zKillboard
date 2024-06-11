@@ -2,7 +2,8 @@
 
 require_once "../init.php";
 
-if (!(date("e") == 1 && date("Hi") == 1100)) exit(); // Monday at 1100am UTC
+if (date("j") % 7 != 0) exit(); // 7th, 14th, 21st, 28th
+if (date("Hi") != 1000) exit(); 
 
 $coll = "ninetyDays";
 $iter = $mdb->getCollection($coll)->find(['labels' => 'pvp']);
