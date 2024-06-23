@@ -140,7 +140,6 @@ try {
         if ($_SESSION['characterID'] > 0) header('Location: /', 302);
         else $app->render('error.html', ['message' => "Please try logging in again, but don't double/triple click this time. CCP's login form isn't very good at handling multiple clicks... "], 503);
     } elseif ($e->getMessage() == "Undefined array key \"access_token\"") {
-        Log::log(print_r($e, true));
         return $app->render('error.html', ['message' => "CCP failed to send access token data, please try logging in again."], 503);
     
     } else {
