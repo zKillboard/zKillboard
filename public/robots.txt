@@ -43,3 +43,6 @@ Disallow: /
 
 User-agent: DataForSeoBot
 Disallow: /
+
+User-agent: admantx 
+Disallow: /
