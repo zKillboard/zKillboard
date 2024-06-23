@@ -11,7 +11,7 @@ $waitfor[] = bump("recentKillmailActivity:corp:", "tqCorpApiESI", "corporationID
 $waitfor[] = bump("recentKillmailActivity:char:", "tqApiESI", "characterID");
 
 function bump($key, $rtqName, $type) {
-	global $redis;
+	global $redis, $mdb;
 
 	$rtq = new RedisTimeQueue($rtqName, 3600);
 
@@ -20,11 +20,12 @@ function bump($key, $rtqName, $type) {
 	foreach ($values as $sID) {
 		$sID = ((int) str_replace($key, "", $sID));
 		if ($rtq->isMember($sID) === true && $redis->get("esi-fetched:$sID") !== "true" && $sID > "199999") {
-			$rtq->setTime($sID, 1);
-			$count++;
+            if ($type == "characterID" && ($mdb->findDoc("scopes", ['characterID' => (int) $sID, 'scope' => "esi-killmails.read_killmails.v1", "oauth2" => true], ['lastFetch' => 1]))) {
+                $rtq->setTime($sID, 1);
+            }
+            else if ($type == "corporationID") $rtq->setTime($sID, 1);
 		}
 	}
-	//if ($count > 0) Util::out("Bumped $count api verified active ids in $rtqName");
 
 	return $rtqName;
 }
