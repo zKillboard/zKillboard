@@ -3,6 +3,8 @@
 require_once "../init.php";
 
 if ($redis->get("zkb:noapi") == "true") exit();
+if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit();
+
 $serverVersion = $redis->get("tqServerVersion");
 $loadedVersion = $redis->get("zkb:tqServerVersion");
 if ($serverVersion != "" && $serverVersion == $loadedVersion && $redis->get("zkb:universeLoaded") == true) {

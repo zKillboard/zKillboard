@@ -1,9 +1,8 @@
 <?php
 
-$master = pcntl_fork();
-$master = ($master > 0);
-pcntl_fork();
-pcntl_fork();
+$master = (bool) (pcntl_fork() > 0);
+if (!$master) pcntl_fork();
+if (!$master) pcntl_fork();
 
 use cvweiss\redistools\RedisTimeQueue;
 
@@ -11,7 +10,6 @@ require_once "../init.php";
 
 $sso = ZKillSSO::getSSO();
 
-//if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:noapi") == "true") exit();
 
 $chars = new RedisTimeQueue("zkb:characterID", 86400);

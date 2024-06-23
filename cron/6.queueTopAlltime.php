@@ -1,7 +1,6 @@
 <?php
 
-//$master = (pcntl_fork() > 0); 
-$master = true;
+$master = (pcntl_fork() > 0); 
 
 use cvweiss\redistools\RedisQueue;
 
@@ -31,7 +30,13 @@ while ($queueTopAllTime->size() > 0 && date('Hi') == $minute) {
     $id = $queueTopAllTime->pop();
     if ($id == null) break;
     $row = $mdb->findDoc("statistics", $id);
-    calcTop($row);
+    $key = "zkb:stats:current:top:" . $row['type'] . ":" . $row['id'];
+    try {
+        $redis->setex($key, 7200, "true");
+        calcTop($row);
+    } finally {
+        $redis->del($key);
+    }
 }
 
 $a = 0;

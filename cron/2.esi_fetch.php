@@ -5,8 +5,8 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once "../init.php";
 
-//if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:noapi") == "true") exit();
+if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit();
 
 $guzzler = new Guzzler(1);
 $esimails = $mdb->getCollection("esimails");
@@ -51,8 +51,7 @@ function fail($guzzler, $params, $ex) {
             $mdb->set("crestmails", $row, ['processed' => 'failed', 'code' => $code]);
             break;
         case 422:
-            //$mdb->set("crestmails", $row, ['processed' => 'failed', 'code' => $code]);
-            $mdb->remove("crestmails", $row);
+            $mdb->set("crestmails", $row, ['processed' => 'invalid', 'code' => $code]);
             break;
         case 0:
         case 420:

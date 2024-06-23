@@ -4,7 +4,7 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once '../init.php';
 
-$minute = date('Hi');
+$minute = (int) date('Hi');
 if ($minute >= 1100 && $minute <= 1105) {
     $redis->set('tqStatus', 'OFFLINE'); // Just in case the result is cached on their end as online
     $redis->set('tqCount', 0);
@@ -23,6 +23,14 @@ if ($minute >= 1100 && $minute <= 1105) {
         }
         sleep(5);
     }
+}
+$tqCountInt = (int) $redis->get("tqCountInt");
+if (($minute >= 1054 && $minute <= 1115) || $tqCountInt < 5000) {
+    Util::out("Flagging NO API (TQ Count: $tqCountInt)");
+    $redis->setex("zkb:noapi", 110, "true");
+} else if ($redis->get("zkb:noapi") == "true") {
+    Util::out("Re-enabling API");
+    $redis->del("zkb:noapi");
 }
 
 $serverStatus = $redis->get("tqStatus");

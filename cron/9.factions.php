@@ -3,6 +3,7 @@
 require_once "../init.php";
 
 if ($redis->get("zkb:noapi") == "true") exit();
+if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit();
 
 if (date('Hi') < 1200) exit();
 $rkey = "zkb:factions:" . date('Ymd');

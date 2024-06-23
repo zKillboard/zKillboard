@@ -1,8 +1,9 @@
 <?php
 
-$master = (pcntl_fork() > 0);
-pcntl_fork();
-pcntl_fork();
+$master = (bool) (pcntl_fork() > 0);
+if (!$master) pcntl_fork();
+if (!$master) pcntl_fork();
+if (!$master) pcntl_fork();
 
 use cvweiss\redistools\RedisTimeQueue;
 
@@ -10,12 +11,12 @@ require_once "../init.php";
 
 $sso = ZKillSSO::getSSO();
 
-//if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:noapi") == "true") exit();
 
 $esiCorps = new RedisTimeQueue('tqCorpApiESI', 3600);
 $esi = new RedisTimeQueue('tqApiESI', 3600);
 if ($master && (date('i') == 22 || $esi->size() < 100)) {
+    Log::log("populating tqApiESI: " . $esi->size());
     $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_killmails.v1']);
     foreach ($esis as $row) {
         $charID = $row['characterID'];
@@ -58,7 +59,7 @@ while ($minute == date('Hi')) {
         } else {
             $esi->remove($charID);
         }
-        usleep(10000);
+        usleep(100000);
     } else {
         sleep(1);
     }

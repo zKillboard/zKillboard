@@ -6,6 +6,7 @@ require_once '../init.php';
 
 if ($redis->get("zkb:noapi") == "true") exit();
 if ($redis->get("zkb:universeLoaded") != "true") exit("Universe not yet loaded...\n");
+if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit();
 
 $removeFields = ['corporationID', 'allianceID', 'factionID', 'secStatus', 'security_status', 'corporation_id', 'alliance_id', 'faction_id', 'title', 'gender', 'race_id', 'birthday', 'ancestry_id', 'bloodline_id'];
 
