@@ -69,7 +69,12 @@ if ($id <= 0) {
     $app->notFound();
 }
 
-$parameters = Util::convertUriToParameters();
+try {
+    $parameters = Util::convertUriToParameters();
+} catch (Exception $ex) {
+    $app->render('error.html', array('message' => $ex->getMessage()));
+    return;
+}
 @$page = max(1, $parameters['page']);
 global $loadGroupShips; // Can't think of another way to do this just yet
 $loadGroupShips = $key == 'group';
