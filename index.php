@@ -86,7 +86,7 @@ if ($redis->get("IP:ban:$ip") == "true") {
     return;
 }
 if (strpos($uri, "except") !== false) {
-    $redix->setex("IP:ban:$ip", 9600, "true");
+    $redix->setex("IP:ban:$ip", $banTime, "true");
     header("Location: /html/banned.html", true, 302);
     return;
 }
@@ -134,7 +134,7 @@ if ($redis->get("ip::redirect::$ip") != null) {
     if ($redis->get("ip::redirect::$ip:challenges") > 10) {
         header("Location: /html/banned.html", true, 302);
         Log::log("Banning $ip for failing to pass challenges. User Agent: " . @$_SERVER['HTTP_USER_AGENT']);
-        $redis->setex("IP:ban:$ip", 9600, "true");
+        $redis->setex("IP:ban:$ip", $banTime, "true");
         return;
     }
     header("Location: /challenge/", true, 302);
@@ -145,15 +145,27 @@ if (!$isApiRequest && !$noLimit && $redis->get("ip::challenge_safe::$ip") != "tr
     $redis->expire($ipKey, 300);
     $count = $redis->get($ipKey);
     if (!in_array($ip, $whiteList) && $count > 40) {
-        $host = gethostbyaddr($ip);
+        $host = $redis->get("host:$ip");
+        if ($host == "") {
+            $host = gethostbyaddr($ip);
+            $redis->setex("host:$ip", 86400, $host);
+        }
         $host2 = gethostbyname($host);
         $isValidBot = false;
         foreach ($validBots as $bot) {
             $isValidBot |= strpos($host, $bot) !== false;
         }
+        foreach ($badBots as $bot) {
+            if (strpos($host, $bot) !== false) {
+                //Log::log("blocking host: $host $ip $agent $uri $banTime");
+                header('HTTP/1.1 403 Blacklisted');
+                $redis->setex("IP:ban:$ip", $banTime, "true");
+                die();
+            }
+        }
         if ($ip != $host2 || !$isValidBot) {
             if ($redis->get("ip::redirect::$ip") == false) Log::log("Challenging $ip $agent $host $uri");
-            $redis->setex("ip::redirect::$ip", 9600, $uri);
+            $redis->setex("ip::redirect::$ip", $banTime, $uri);
             header("Location: /challenge/", true, 302);
             return;
         }
