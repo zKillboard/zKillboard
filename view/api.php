@@ -7,12 +7,6 @@ global $redis, $ip;
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 
-if ($redis->get("zkb:memused") > 115) {
-    header('HTTP/1.1 202 API temporarily disabled because of resource limitations');
-    exit(); 
-}
-
-
 try {
     $queryString = $_SERVER['QUERY_STRING'];
     if ($queryString != '') {
