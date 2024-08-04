@@ -519,5 +519,5 @@ function toggleFilters() {
     console.log(filters);
 
     var title = (displayed ? 'Advanced Search' : filters.join(', '));
-    $("#titlecontent").html(title);
+    $("#titlecontent").text(title);
 }
