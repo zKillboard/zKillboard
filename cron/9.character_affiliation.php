@@ -31,19 +31,10 @@ while ($minute == date('Hi')) {
             continue;
         }
 
-        if (isset($row['lastApiUpdate'])) {
-            $hasRecent = $mdb->exists("ninetyDays", ['involved.characterID' => $id]);
-            if ($id <= 1 || (!$hasRecent && $redis->get("apiVerified:$id") == null)) { // don't clear api verified characters
-                $mdb->set("information", $row, ['lastAffUpdate' => $mdb->now(), 'corporationID' => 0, 'allianceID' => 0, 'factionID' => 0]);        
-                foreach ($removeFields as $field) if (isset($row[$field])) $mdb->removeField("information", $row, $field);
-                continue;
-            }
-        }
-
         // doomheimed characters now throw 404's....
         // however, if a human manages to get their character brought back to life and log in with it,
         // we should be able to fetch that character's information again, so don't skip them
-        if (isset($row['lastAffUpdate']) && (@$row['corporationID'] == 1000001 || $id <= 9999999)) {
+        if (isset($row['lastAffUpdate']) && (@$row['corporationID'] == 1000001 || $id <= 999999)) {
             $mdb->set("information", $row, ['lastAffUpdate' => $mdb->now()]);
             continue;
         }

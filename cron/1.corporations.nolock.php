@@ -16,7 +16,7 @@ $chars = new RedisTimeQueue("zkb:characterID", 86400);
 $esi = new RedisTimeQueue('tqCorpApiESI', 900);
 
 if ($master && (date("i") == 44 || $esi->size() < 100)) {
-       $corpIDs = $mdb->getCollection("scopes")->distinct("corporationID");
+       $corpIDs = $mdb->getCollection("scopes")->distinct("corporationID", ['scope' => 'esi-killmails.read_corporation_killmails.v1']);
        foreach ($corpIDs as $corpID) $esi->add($corpID);
 }
 
@@ -29,6 +29,7 @@ while ($minute == date('Hi')) {
         
         $row = $mdb->findDoc("scopes", ['corporationID' => $corpID, 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['lastFetch' => 1]);
         if ($row == null) {
+            Util::out("Removing null row $corpID");
             $esi->remove($corpIDRaw);
             continue;
         }
@@ -40,6 +41,7 @@ while ($minute == date('Hi')) {
         $refreshToken = $row['refreshToken'];
         $accessToken = $sso->getAccessToken($refreshToken);
         if (is_array($accessToken) && @$accessToken['error'] == "invalid_grant") {
+            Util::out("Removing invalid_grant row for corp km scope");
             $mdb->remove("scopes", $row);
             sleep(1);
             continue;

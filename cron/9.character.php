@@ -71,6 +71,7 @@ function failChar(&$guzzler, &$params, &$connectionException)
         case 503: // server error
         case 504: // gateway timeout
         case 200: // timeout...
+        case 400: // who knows what's ccp doing here
             Util::out("ERROR $id");
             $guzzler->sleep(1);
             $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(-23 * 3600)]); // try again in an hour

@@ -23,7 +23,6 @@ function bump($key, $rtqName, $type) {
             if ($type == "characterID" && ($mdb->findDoc("scopes", ['characterID' => (int) $sID, 'scope' => "esi-killmails.read_killmails.v1", "oauth2" => true], ['lastFetch' => 1]))) {
                 $rtq->setTime($sID, 1);
             }
-            else if ($type == "corporationID") $rtq->setTime($sID, 1);
 		}
 	}
 

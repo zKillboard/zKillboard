@@ -100,7 +100,7 @@ function success($params, $content)
                 return -1;
 
             case 'Character is not in the corporation':
-                $mdb->set("information", ['type' => 'characterID', 'id' => ((int) $charID)], ['lastApiUpdate' => 1]);
+                $mdb->set("information", ['type' => 'characterID', 'id' => ((int) $charID)], ['lastApiUpdate' => 1, 'lastAffUpdate' => 1]);
                 sleep(1);
                 return 0; // Try again after the corp has been updated
 

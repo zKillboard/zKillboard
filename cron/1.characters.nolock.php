@@ -41,8 +41,8 @@ while ($minute == date('Hi')) {
                 $mdb->set("scopes", $row, ['corporationID' => $corpID], true);
             }
 
-            $hasRecent = $mdb->exists("ninetyDays", ['involved.characterID' => $charID]);
-            if (!$hasRecent && @$row['lastFetch']->sec != 0 && (($charID % 24) != date('H'))) {usleep(100000); continue; }
+            //$hasRecent = $mdb->exists("ninetyDays", ['involved.characterID' => $charID]);
+            //if (!$hasRecent && @$row['lastFetch']->sec != 0 && (($charID % 24) != date('H'))) {usleep(100000); continue; }
 
             $params = ['row' => $row, 'esi' => $esi];
             $refreshToken = $row['refreshToken'];
