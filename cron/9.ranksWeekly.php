@@ -5,8 +5,10 @@ require_once '../init.php';
 MongoCursor::$timeout = -1;
 
 $today = date('Ymd');
-$hourKey = "zkb:weeklyRanksCalculated:" . date('YmdH');
-if ($redis->get($hourKey) == true) {
+$time = time();
+$timeKey = $time - ($time % 1200);
+$itimeKey = "zkb:weeklyRanksCalculated:$timeKey";
+if ($redis->get($timeKey) == true) {
     exit();
 }
 
@@ -114,7 +116,7 @@ function moveAndExpire(&$multi, $today, $key)
     $multi->expire($newKey, 9000);
 }
 
-$redis->setex($hourKey, 3600, true);
+$redis->setex($timeKey, 900, true);
 Util::out('Weekly rankings complete');
 
 function zAdd(&$multi, $key, $value, $id)
