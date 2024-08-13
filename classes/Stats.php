@@ -29,7 +29,7 @@ class Stats
      */
     public static function getTop($groupByColumn, $parameters = array(), $cacheOverride = false, $addInfo = true)
     {
-        global $mdb, $longQueryMS;
+        global $mdb, $longQueryMS, $thisOne;
 
         $hashKey = "Stats::getTop:$groupByColumn:".serialize($parameters);
         $result = RedisCache::get($hashKey);
@@ -49,9 +49,9 @@ class Stats
         }
 
         $query = MongoFilter::buildQuery($parameters);
-        if (!$mdb->exists('killmails', $query)) {
+        /*if ($mdb->findOne('killmails', $query) === null) {
             return [];
-        }
+        }*/
         $andQuery = MongoFilter::buildQuery($parameters, false);
 
         if ($groupByColumn == 'solarSystemID' || $groupByColumn == 'regionID') {
@@ -100,6 +100,7 @@ class Stats
         }
         $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
 
+if ($thisOne) Log::log(print_r($pipeline, true));
         $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true]);
         $result = $rr['result'];
 
