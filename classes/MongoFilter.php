@@ -319,6 +319,7 @@ class MongoFilter
 
         $first = (int) Info::findKillID(strtotime("$year$month$day 00:00"), 'start');
         if ($first == 0) $first = 999999999999;
+        $redis->setex("zkb:firstkillid:{$year}{$month}{$day}", 300, $first);
         return $first;
     }
 
