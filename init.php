@@ -28,7 +28,7 @@ do {
     $attempts++;
     try {
         $redis = new Redis();
-        $redis->connect($redisServer, $redisPort, 3600);
+        $redis->connect($redisServer, $redisPort, 1, '', 5000);
         $redis->clearLastError();
         $loaded = true;
     } catch (Exception $exx) {
@@ -36,7 +36,7 @@ do {
         $ex = $exx;
         sleep($attempts);
     }
-} while ($cli == true && $loaded == false && $attempts <= 3);
+} while ($cli == true && $loaded == false && $attempts <= 90);
 if ($loaded == false) {
     if ($cli) {
         Util::out("Unable to load Redis: " . $ex->getMessage());
