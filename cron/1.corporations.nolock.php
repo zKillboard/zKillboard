@@ -13,7 +13,7 @@ $sso = ZKillSSO::getSSO();
 if ($redis->get("zkb:noapi") == "true") exit();
 
 $chars = new RedisTimeQueue("zkb:characterID", 86400);
-$esi = new RedisTimeQueue('tqCorpApiESI', 900);
+$esi = new RedisTimeQueue('tqCorpApiESI', 300);
 
 if ($master && (date("i") == 44 || $esi->size() < 100)) {
        $corpIDs = $mdb->getCollection("scopes")->distinct("corporationID", ['scope' => 'esi-killmails.read_corporation_killmails.v1']);
