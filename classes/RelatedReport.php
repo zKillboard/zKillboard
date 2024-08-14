@@ -101,7 +101,7 @@ class RelatedReport {
 
             usleep(100000);
             ++$sleeps;
-            if ($sleeps > 5) {
+            if ($sleeps > 100) {
                 if ($app === null) return [];
                 header('HTTP/1.1 202 Request being processed');
                 $app->render('related_wait.html', ['showAds' => false]);
