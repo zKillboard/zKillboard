@@ -1,5 +1,7 @@
 <?php
 
+pcntl_fork();
+
 require_once "../init.php";
 
 $minute = date('Hi');
@@ -21,6 +23,6 @@ while ($minute == date('Hi')) {
         $result = ['error' => $e->getMessage()];
     }
 
-    $redis->setex("zkb:api:result:$key", 3600, serialize($result));
+    $redis->setex("zkb:api:result:$key", 60, serialize($result));
     $redis->del("zkb:api:status:$key");
 }
