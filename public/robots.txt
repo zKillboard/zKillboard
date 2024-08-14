@@ -1,14 +1,16 @@
 User-agent: *
-Disallow: /api/
+Disallow: /api/*
 Disallow: /navbar/
-Disallow: /br/
-Disallow: /related/
-Disallow: /partial/
-Disallow: /comment/
+Disallow: /br/*
+Disallow: /related/*
+Disallow: /partial/*
+Disallow: /comment/*
 Disallow: */reset/*
 Disallow: */top*
 Disallow: /asearch*
-Disallow /constellation/*
+Disallow: /constellation/*
+Disallow: */page/*
+Disallow: */year/*
 sitemap: https://zkillboard.com/sitemaps/sitemaps.xml
 
 User-agent: PiplBot
