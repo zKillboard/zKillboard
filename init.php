@@ -20,37 +20,43 @@ require 'vendor/autoload.php';
 
 $mdb = new Mdb();
 
-$cli = (php_sapi_name() == "cli");
-$ex = null;
-$loaded = false;
-$attempts = 0;
-do {
-    $attempts++;
-    try {
-        $redis = new Redis();
-        $redis->connect($redisServer, $redisPort, 1, '', 5000);
-        $redis->clearLastError();
-        $loaded = true;
-    } catch (Exception $exx) {
-        $loaded = false;
-        $ex = $exx;
-        sleep($attempts);
+connectRedis();
+
+function connectRedis() {
+    global $redis, $redisServer, $redisPort;
+
+    $cli = (php_sapi_name() == "cli");
+    $ex = null;
+    $loaded = false;
+    $attempts = 0;
+    do {
+        $attempts++;
+        try {
+            $redis = new Redis();
+            $redis->connect($redisServer, $redisPort, 1, '', 5000);
+            $redis->clearLastError();
+            $loaded = true;
+        } catch (Exception $exx) {
+            $loaded = false;
+            $ex = $exx;
+            sleep($attempts);
+        }
+    } while ($cli == true && $loaded == false && $attempts <= 90);
+    if ($loaded == false) {
+        if ($cli) {
+            Util::out("Unable to load Redis: " . $ex->getMessage());
+        } else {
+            header('HTTP/1.0 503 Server error.');
+            echo "
+                <html>
+                <head>
+                <meta http-equiv='refresh' content='10'>
+                </head>
+                <body>
+                <h3>Redis is currently loading... please wait a few moments</h3>
+                </body>
+                </html>";
+        }
+        exit();
     }
-} while ($cli == true && $loaded == false && $attempts <= 90);
-if ($loaded == false) {
-    if ($cli) {
-        Util::out("Unable to load Redis: " . $ex->getMessage());
-    } else {
-        header('HTTP/1.0 503 Server error.');
-        echo "
-            <html>
-            <head>
-            <meta http-equiv='refresh' content='10'>
-            </head>
-            <body>
-            <h3>Redis is currently loading... please wait a few moments</h3>
-            </body>
-            </html>";
-    }
-    exit();
 }

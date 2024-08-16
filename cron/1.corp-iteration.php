@@ -9,7 +9,7 @@ if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:noapi") == "true") exit();
 
 $sso = ZKillSSO::getSSO();
-$esiCorps = new RedisTimeQueue('tqCorpApiESI', 300);
+$esiCorps = new RedisTimeQueue('tqCorpApiESI', $esiCorpKm);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {

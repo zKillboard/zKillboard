@@ -1,7 +1,7 @@
 <?php
 
 $app->notFound(function () use ($app) {
-        $app->redirect('..', 302);
+        $app->redirect('/', 302);
         });
 
 $app->get('/information/', function() use ($app) {
@@ -56,17 +56,9 @@ $app->post('/account/favorite/:killID/:action/', function($killID, $action) use 
         include 'view/favorite_modify.php';
         });
 
-
-// Tickets
-$app->map('/account/tickets/', function () use ($app) {
-        $app->redirect('..', 302);
-        })->via('GET', 'POST');
-
-$app->map('/account/tickets/view/:id/', function ($id) use ($app) {
-        $app->redirect('..', 302);
-        })->via('GET', 'POST');
-
-// View related kills
+$app->get('/related/:system/:time', function ($system, $time) use ($app) {
+        $app->redirect("/related/$system/$time/");
+        });
 $app->get('/related/:system/:time/(o/:options/)', function ($system, $time, $options = '') use ($app) {
         include 'view/related.php';
         });

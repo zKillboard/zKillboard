@@ -57,7 +57,7 @@ class Util
         return number_format($value, $numDecimals).self::$formatIskIndexes[$iskIndex];
     }
 
-    public static function convertUriToParameters()
+    public static function convertUriToParameters($app = null)
     {
         global $isApiRequest;
         $parameters = array();
@@ -246,6 +246,7 @@ class Util
                     if (!is_numeric($value)) {
                         die("$value is not a valid entry for $key");
                     }
+                    if (isset($parameters[$key])) die("duplicate key");
                     $parameters[$key] = (int) $value;
                     break;
                 case 'iskValue':
@@ -282,8 +283,7 @@ class Util
                     if (substr($uri, 0, 5) == "/api/") {
                         die("$key is an invalid parameter");
                     }
-                    header("Location: ..");
-                    exit();
+                    return $app->notFound();
             }
         }
 

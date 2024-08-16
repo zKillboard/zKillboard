@@ -27,15 +27,17 @@ if ($master == true && $redis->get($todaysKey) != "true" && $queueTopAllTime->si
 }
 
 while ($queueTopAllTime->size() > 0 && date('Hi') == $minute) {
+    if (((int) $redis->get("zkb:stats:current:top:count") > 5)) { sleep(1); continue; } 
+
     $id = $queueTopAllTime->pop();
     if ($id == null) break;
     $row = $mdb->findDoc("statistics", $id);
-    $key = "zkb:stats:current:top:" . $row['type'] . ":" . $row['id'];
+    $redis->incr("zkb:stats:current:top:count");
+    $redis->expire("zkb:stats:current:top:count", 3600);
     try {
-        $redis->setex($key, 7200, "true");
         calcTop($row);
     } finally {
-        $redis->del($key);
+        $redis->decr("zkb:stats:current:top:count");
     }
 }
 

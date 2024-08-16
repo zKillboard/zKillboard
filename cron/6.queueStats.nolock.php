@@ -52,7 +52,7 @@ while ($minute == date('Hi')) {
     if ($type == "itemID") continue;
 
     $id = (int) $arr[1];
-    $key = "$type";
+    $key = "$type:$id";
     if ($redis->set("zkb:stats:$key", "true", ['nx', 'ex' => 3600]) === true) {
         try {
             $redis->setex("zkb:stats:current:$type:$id", 3600, "true");
@@ -68,12 +68,13 @@ while ($minute == date('Hi')) {
         } catch (Exception $ex) {
             throw $ex;
         } finally {
+            if ($redis->ping() != 1) connectRedis();
             $redis->del("zkb:stats:current:$type:$id");
             $redis->del("zkb:stats:$key");
         }
     } else {
-	$redis->sadd("queueStatsSet", $raw);
-	usleep(100000); // 1/10th of a second
+        usleep(250000); // 1/4th of a second
+        $redis->sadd("queueStatsSet", $raw);
     }
 }
 
@@ -83,7 +84,6 @@ function calcStats($row, $maxSequence)
 
     $type = $row['type'];
     $id = $row['id'];
-
     $key = ['type' => $type, 'id' => $id];
     $stats = $mdb->findDoc('statistics', $key);
     $resetInProgress = false;
@@ -190,7 +190,7 @@ function calcStats($row, $maxSequence)
     if (@$stats['shipsDestroyed'] > 10 && @$stats['shipsDestroyed'] > @$stats['nextTopRecalc']) $stats['calcAlltime'] = true;
     // save it
     $mdb->getCollection('statistics')->save($stats);
-    
+
     return ($newSequence == $maxSequence);
 }
 
