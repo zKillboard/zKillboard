@@ -433,7 +433,7 @@ class Info
                             if (sizeof($info)) {
                                 $element['solarSystemName'] = $info['solarSystemName'];
                                 $element['sunTypeID'] = $info['sunTypeID'];
-                                $securityLevel = number_format($info['security'], 1);
+                                $securityLevel = isset($element['security']) ? number_format($element['security'], 1) : number_format($info['security'], 1);
                                 if ($securityLevel == 0 && $info['security'] > 0) {
                                     $securityLevel = 0.1;
                                 }
