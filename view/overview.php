@@ -4,7 +4,7 @@ global $mdb, $redis;
 
 $key = $input[0];
 if (!isset($input[1])) {
-    $app->redirect('/');
+    return $app->redirect('/');
 }
 $id = $input[1];
 $pageType = (string) @$input[2];
@@ -15,27 +15,21 @@ if ((int) $id == 0) {
         $searchKey = 'solarSystem';
     }
     $id = $mdb->findField('information', 'id', ['type' => "${searchKey}ID", 'name' => $id]);
-    if ($id > 0) {
-        $app->redirect("/$key/$id/");
-    } else {
-        $app->redirect('/');
-    }
-    die();
+    if ($id > 0) return $app->redirect("/$key/$id/");
+    return $app->notFound();
 }
 
 if (strlen("$id") > 11) {
-    $app->redirect('/');
+    return $app->notFound();
 }
 
-$validPageTypes = array('', 'kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime');
+$validPageTypes = array('kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime');
 if ($key == 'alliance') {
     //$validPageTypes[] = 'corpstats';
 }
 
-if (!in_array($pageType, $validPageTypes)) {
-    $pageType = 'overview';
-}
 if ($pageType == '') $pageType = 'overview';
+else if (!in_array($pageType, $validPageTypes)) $pageType = 'overview';
 
 $map = array(
         'corporation' => array('column' => 'corporation', 'mixed' => true),
@@ -50,31 +44,17 @@ $map = array(
         'location' => array('column' => 'location', 'mixed' => true),
         );
 if (!array_key_exists($key, $map)) {
-    $app->notFound();
+    return $app->notFound();
 }
 
-if (!is_numeric($id)) {
-    $app->redirect('./../');
-    exit();
-    $function = $map[$key]['id'];
-    $id = call_user_func($function, $id);
-    if ($id > 0) {
-        $app->redirect('/'.$key.'/'.$id.'/', 302);
-    } else {
-        $app->notFound();
-    }
-}
-
-if ($id <= 0) {
-    $app->notFound();
-}
+if (!is_numeric($id) || $id <= 0) return $app->notFound();
 
 try {
-    $parameters = Util::convertUriToParameters();
+    $parameters = Util::convertUriToParameters($app);
 } catch (Exception $ex) {
-    $app->render('error.html', array('message' => $ex->getMessage()));
-    return;
+    return $app->notFound();
 }
+
 @$page = max(1, $parameters['page']);
 global $loadGroupShips; // Can't think of another way to do this just yet
 $loadGroupShips = $key == 'group';
@@ -97,7 +77,6 @@ try {
 $pageName = isset($detail[$map[$key]['column'].'Name']) ? $detail[$map[$key]['column'].'Name'] : '???';
 if ($pageName == '???' && !$mdb->exists('information', ['id' => $id])) {
     return $app->render('404.html', array('message' => 'This entity is not in our database.'), 404);
-    die();
 }
 $columnName = $map[$key]['column'].'ID';
 $mixedKills = $pageType == 'overview' && $map[$key]['mixed'] && UserConfig::get('mixKillsWithLosses', true);

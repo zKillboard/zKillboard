@@ -237,17 +237,20 @@ class MongoFilter
                     $and[] = ['system.'.$key => $filter];
                     break;
                 case 'awox':
-                    $and[] = ['awox' => (bool) $value];
+                    if ($value) $and[] = ['labels' => 'awox'];
+                    else $and[] = ['labels' => ['$ne' => 'awox']];
                     break;
                 case 'solo':
-                    $and[] = ['solo' => true];
+                    if ($value) $and[] = ['labels' => 'solo'];
+                    else $and[] = ['labels' => ['$ne' => 'solo']];
                     break;
                 case 'abyssal':
                     $and[] = ['system.regionID' => ['$gte' => 12000000]];
                     $and[] = ['system.regionID' => ['$lt' => 13000000]];
                     break;
                 case 'npc':
-                    $and[] = ['npc' => (bool) $value];
+                    if ($value) $and[] = ['labels' => 'npc'];
+                    else $and[] = ['labels' => ['$ne' => 'npc']];
                     break;
                 case 'startTime':
                     $time = strtotime($value);
@@ -261,7 +264,8 @@ class MongoFilter
                     // handled by sort, can be ignored
                     break;
                 case 'ganked':
-                    $and[] = ['ganked' => true];
+                    if ($value) $and[] = ['labels' => 'ganked'];
+                    else $and[] = ['labels' => ['$ne' => 'ganked']];
                     break;
                 case 'w-space':
                     $and[] = ['system.regionID' => ['$gte' => 11000001]];

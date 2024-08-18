@@ -56,8 +56,7 @@ if ($_POST) {
         User::sendMessage("Your default login page is now the $loginPage page");
     }
 
-    $app->redirect($_SERVER['REQUEST_URI']);
-    exit();
+    return $app->redirect($_SERVER['REQUEST_URI']);
 }
 
 // Theme

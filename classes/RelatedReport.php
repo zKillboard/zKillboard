@@ -9,8 +9,7 @@ class RelatedReport {
         global $mdb, $redis;
 
         if ($time % 100 != 0 && $app != null) {
-            $app->redirect("/related/$system/" . substr($time, 0, strlen("$time") - 2) . "00/");
-            exit();
+            return $app->redirect("/related/$system/" . substr($time, 0, strlen("$time") - 2) . "00/");
         } else if ($time % 100 != 0 && $app == null) { throw new \InvalidArgumentException("Minutes must be 00"); }
 
         $systemID = (int) $system;
@@ -19,13 +18,11 @@ class RelatedReport {
 
         if ($redis->get("zkb:reinforced") == true) {
             header('HTTP/1.1 202 Request being processed');
-            $app->render('related_reinforced.html', ['showAds' => false]);
-            exit();
+            return $app->render('related_reinforced.html', ['showAds' => false]);
         }
         if ($redis->llen("queueRelated") > 25) {
             header('HTTP/1.1 202 Request being processed');
-            $app->render('related_notnow.html', ['showAds' => false, 'solarSystemID' => $systemID, 'unixtime' => $unixTime]);
-            exit();
+            return $app->render('related_notnow.html', ['showAds' => false, 'solarSystemID' => $systemID, 'unixtime' => $unixTime]);
         }
 
         $json_options = json_decode($options, true);
@@ -66,8 +63,7 @@ class RelatedReport {
         if ($redirect) {
             $json = urlencode(json_encode($json_options));
             $url = "/related/$systemID/$relatedTime/o/$json/";
-            $app->redirect($url, 302);
-            die();
+            return $app->redirect($url, 302);
         }
 
         $systemInfo = $mdb->findDoc('information', ['cacheTime' => 3600, 'type' => 'solarSystemID', 'id' => $systemID]);
@@ -104,8 +100,7 @@ class RelatedReport {
             if ($sleeps > 100) {
                 if ($app === null) return [];
                 header('HTTP/1.1 202 Request being processed');
-                $app->render('related_wait.html', ['showAds' => false]);
-                exit();
+                return $app->render('related_wait.html', ['showAds' => false]);
             }
         }
 

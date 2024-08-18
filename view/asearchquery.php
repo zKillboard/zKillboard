@@ -9,7 +9,7 @@ MongoCursor::$timeout = 65000;
 /*if ($redis->get("zkb_reinforced") == true || $redis->get("zkb:load") > 14) $redis->setex("zkb_reinforced_as_extended", 300, "true");
 if ($redis->get("zkb:reinforced") == true || $redis->get("zkb_reinforced_as_extended") == "true") {
     header('HTTP/1.1 403 Reinforced mode, please try again later'); 
-    exit();
+    return;
 }*/
 
 try {

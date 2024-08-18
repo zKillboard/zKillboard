@@ -1,5 +1,7 @@
 {% if sessionusername %}
 <script type="text/javascript">
+$("#lasthour").text("{{ killsLastHour | number_format(0)}}");
+$("#tqStatus").html("{% if tqStatus == 'OFFLINE'%}<span class='red'>TQ {{ tqCount }}</span>{% else %} <span class='green'>TQ {{ tqCount }}</span>{% endif %}");
 $("#char-loggedout").remove();
 $("#contest-logged-in").removeClass('hidden');
 $("#loginforapi").remove();
@@ -154,7 +156,6 @@ console.log("nav loaded");
 
 <script type="text/javascript">
 $("#char-loggedin").remove();
-$("#lasthour").text("{{ killsLastHour | number_format(0)}}");
 $("#tqStatus").html("{% if tqStatus == 'OFFLINE'%}<span class='red'>TQ {{ tqCount }}</span>{% else %} <span class='green'>TQ {{ tqCount }}</span>{% endif %}");
 $("#tracker-none").removeClass("hidden");
 $("#savefit").remove();

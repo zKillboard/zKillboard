@@ -87,7 +87,7 @@ function apiStatus($prevMessage, $apiType, $notification)
     $fCount = Status::getStatus($apiType, false);
     $total = $sCount + $fCount;
     if ($total < 100) return null;
-    if ($fCount >= 100) return $notification;
-    if ($fCount / $total >= .5) return $notification;
+    //if ($fCount >= 100) return $notification;
+    if ($fCount / $total >= .1) return $notification;
     return null;
 }

@@ -22,7 +22,7 @@ class Kills
         if ($includeKillDetails == false) {
             return $kills;
         }
-        return Kills::getDetails($kills);
+        return Kills::getDetails($kills, $onlyVicAndFinal);
     }   
 
     public static function getDetails($kills, $onlyVicAndFinal = false)

@@ -26,10 +26,8 @@ while ($minute == date('Hi')) {
         if ($redis->scard("queueRelatedSet") > 20) continue;
 
         if ($redis->get($parameters['key']) != null) continue;
-        $t = new Timer();
         $kills = Kills::getKills($parameters);
         $summary = Related::buildSummary($kills, $parameters['options']);
-        if ($t->stop() > 5000) Util::out("Related time: " . ((int) $t->stop()) . "ms");
 
         $serial = serialize($summary);
         if ($redis->ping() != 1) connectRedis();

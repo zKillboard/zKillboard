@@ -49,6 +49,7 @@ while ($hour == date('H')) {
         $serverStatus = $redis->get('tqStatus');
         $loggedIn = $redis->get('tqCount');
         $redis->publish("public", json_encode(['action' => 'tqStatus', 'tqStatus' => $serverStatus, 'tqCount' => $loggedIn, 'kills' => number_format($kCount, 0)]));
+        $redis->setex("tqKillCount", 900, $kCount);
         $lastKillCountSent = $kCount;
     }
     $totalKills = $mdb->getCollection("killmails")->count();

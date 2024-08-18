@@ -3,6 +3,8 @@
 use cvweiss\redistools\RedisCache;
 use cvweiss\redistools\RedisTtlCounter;
 
+function dire($msg) { throw new Exception($msg); }
+
 class Util
 {
     public static function getCrest($url)
@@ -57,7 +59,7 @@ class Util
         return number_format($value, $numDecimals).self::$formatIskIndexes[$iskIndex];
     }
 
-    public static function convertUriToParameters($app = null)
+    public static function convertUriToParameters()
     {
         global $isApiRequest;
         $parameters = array();
@@ -81,7 +83,7 @@ class Util
             $key = array_shift($split);
             switch ($key) {
                 case '':
-                    die("Please remove the double slash // from the call");
+                    dire("Please remove the double slash // from the call");
                     break;
                 case 'top':
                 case 'topalltime':
@@ -132,12 +134,12 @@ class Util
                 case 'locationID':
                 case 'warID':
                     $value = array_shift($split);
-                    if (substr($value, 0, 1) === "0") die("Do not prefix values with 0");
+                    if (substr($value, 0, 1) === "0") dire("Do not prefix values with 0");
                     $intValue = (int) $value;
                     if ($value != null) {
                         if (strpos($key, 'ID') === false) {
                             global $isApiRequest;
-                            if ($isApiRequest) die("$key is invalid for API calls, please use ${key}ID");
+                            if ($isApiRequest) dire("$key is invalid for API calls, please use ${key}ID");
                             $key = $key.'ID';
                         }
                         $legalLargePagination = ($key == 'characterID' || $key == 'corporationID' || $key == 'allianceID');
@@ -148,24 +150,24 @@ class Util
                         }
                         $exploded = explode(',', $value);
                         if (sizeof($exploded) > 1) {
-                            die("Due to exccessive abuse, multiple values separated by commas are no longer supported");
+                            dire("Due to exccessive abuse, multiple values separated by commas are no longer supported");
                         }
                         $multi = sizeof($exploded) > 1;
                         $ints = [];
                         foreach ($exploded as $ex) {
-                            if ("$ex" != (string) (int) $ex) die("$ex is not an integer");
+                            if ("$ex" != (string) (int) $ex) dire("$ex is not an integer");
                             if (is_numeric($ex)) $ints[] = (int) $ex;
                             else $ints[] = (string) $ex;
                         }
                         if (sizeof($ints) > 1) {
                             asort($ints);
                             if (implode(",", $ints) != $value) {
-                                die("multiple IDs must be in sequential order (sorry, but some people were abusing the ordering to avoid the cache)");
+                                dire("multiple IDs must be in sequential order (sorry, but some people were abusing the ordering to avoid the cache)");
                             }
                         }
 
                         if (sizeof($ints) == 0) {
-                            die("Client requesting too few parameters.");
+                            dire("Client requesting too few parameters.");
                         }
                         $parameters[$key] = $ints;
                         $entityRequiredSatisfied = true;
@@ -176,7 +178,7 @@ class Util
                 case 'awox':
                     $value = array_shift($split);
                     if ($value != '0' && $value != '1') {
-                        die("Only values of 0 or 1 allowed with the $key filter");
+                        dire("Only values of 0 or 1 allowed with the $key filter");
                     }
                     $parameters[$key] = $value;
                     break;
@@ -186,74 +188,73 @@ class Util
                     break;
                 case 'page':
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
-                    //if ($startEndTiminated == true) throw new Exception("Cannot mix page and (startTime or endTime)");
                     $value = array_shift($split);
-                    if (substr($value, 0, 1) === "0") die("Do not prefix values with 0");
+                    if (substr($value, 0, 1) === "0") dire("Do not prefix values with 0");
                     $value = (int) $value;
                     if ($value < 1) {
-                        die("page value <= 1 not allowed");
+                        dire("page value <= 1 not allowed");
                     }
                     $parameters[$key] = (int) $value;
                     $paginated = true;
                     break;
                 case 'orderDirection':
-                    die("orderDirection is no longer supported - sort it yourself :)");
+                    dire("orderDirection is no longer supported - sort it yourself :)");
                 case 'pastSeconds':
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $value = array_shift($split);
-                    if (substr($value, 0, 1) === "0") die("Do not prefix values with 0");
+                    if (substr($value, 0, 1) === "0") dire("Do not prefix values with 0");
                     $value = (int) $value;
                     if (($value / 86400) > 7) {
-                        die('pastSeconds is limited to a max of 7 days');
+                        dire('pastSeconds is limited to a max of 7 days');
                     }
                     $parameters[$key] = (int) $value;
                     break;
                 case 'startTime':
                 case 'endTime':
-                    if ($isApiRequest) die("startTime/endTime no longer supported in api because of abuse");
+                    if ($isApiRequest) dire("startTime/endTime no longer supported in api because of abuse");
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $value = array_shift($split);
-                    if (substr($value, 0, 1) === "0") die("Do not prefix values with 0");
+                    if (substr($value, 0, 1) === "0") dire("Do not prefix values with 0");
                     $time = strtotime($value);
                     if (strpos($uri, "region") !== false) {
-                        die("Cannot use startTime/endTime with this entity, use the /api/history/ or RedisQ intead");
+                        dire("Cannot use startTime/endTime with this entity, use the /api/history/ or RedisQ intead");
                     }
                     if ($time < 0) {
-                        die("$value is not a valid time format");
+                        dire("$value is not a valid time format");
                     }
                     if (($time % 3600) != 0) {
-                        die("startTime and endTime must end with 00");
+                        dire("startTime and endTime must end with 00");
                     }
                     $parameters[$key] = $value;
                     $startEndTiminated = true;
                     break;
                 case 'limit':
-                    die("Due to abuse of the limit parameter to avoid caches the ability to modify limit has been revoked for all users");
+                    dire("Due to abuse of the limit parameter to avoid caches the ability to modify limit has been revoked for all users");
                 case 'no-attackers':
                 case 'no-items':
                 case 'asc':
                 case 'desc':
                 case 'json':
-                    die("$key has been permanently disabled.");
+                    dire("$key has been permanently disabled.");
                     break;
                 case 'beforeKillID':
                 case 'afterKillID':
-                    die("$key has been permanently disabled - please use page, RedisQ, the websocket, or the history endpoint instead.");
+                    dire("$key has been permanently disabled - please use page, RedisQ, the websocket, or the history endpoint instead.");
                     break;
                 case 'killID':
                     $value = array_shift($split);
-                    if (substr($value, 0, 1) === "0") die("Do not prefix values with 0");
+                    if (substr($value, 0, 1) === "0") dire("Do not prefix values with 0");
                     if (!is_numeric($value)) {
-                        die("$value is not a valid entry for $key");
+                        dire("$value is not a valid entry for $key");
                     }
-                    if (isset($parameters[$key])) die("duplicate key");
+                    if (isset($parameters[$key])) dire("duplicate key");
                     $parameters[$key] = (int) $value;
                     break;
                 case 'iskValue':
                     $value = (int) array_shift($split);
-                    if (substr($value, 0, 1) === "0") die("Do not prefix values with 0");
+                    if (substr($value, 0, 1) === "0") dire("Do not prefix values with 0");
                     if ($value == 0 || $value % 500000000 != 0) {
-                        die("$value is not a valid multiple of 5b ISK");
+                        dire("$value is not a valid multiple of 5b ISK");
                     }
                     $parameters[$key] = (int) $value;
                     break;
@@ -263,31 +264,31 @@ class Util
                 case 'year':
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $value = array_shift($split);
-                    if (substr($value, 0, 1) === "0") die("Do not prefix values with 0");
+                    if (substr($value, 0, 1) === "0") dire("Do not prefix values with 0");
                     $value = (int) $value;
-                    if ($value < 2007) die("$value is not a valid entry for $key");
-                    if ($value > date('Y')) die("$value is not a valid entry for $key");
+                    if ($value < 2007) dire("$value is not a valid entry for $key");
+                    if ($value > date('Y')) dire("$value is not a valid entry for $key");
                     $parameters[$key] = $value;
                     break;
                 case 'month':
                     self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
                     $value = array_shift($split);
-                    if (substr($value, 0, 1) === "0") die("Do not prefix values with 0");
+                    if (substr($value, 0, 1) === "0") dire("Do not prefix values with 0");
                     $value = (int) $value;
-                    if ($value < 1 || $value > 12) die("$value is not a valid entry for $key");
+                    if ($value < 1 || $value > 12) dire("$value is not a valid entry for $key");
                     $parameters[$key] = $value;
                     break;
                 case 'xml':
-                    die("xml formatting has been deprecated and is no longer supported");
+                    dire("xml formatting has been deprecated and is no longer supported");
                 default:
                     if (substr($uri, 0, 5) == "/api/") {
-                        die("$key is an invalid parameter");
+                        dire("$key is an invalid parameter");
                     }
-                    return $app->notFound();
+                    throw new Exception("$key is an invalid parameter");
             }
         }
 
-        if ($multi && $paginated) die("Combining multiple IDs with pagination is no longer supported");
+        if ($multi && $paginated) dire("Combining multiple IDs with pagination is no longer supported");
         if ($paginated && !$legalLargePagination && $parameters['page'] > 10) {
             throw new Exception("Pages over 10 only supported for characters, corporations, and alliances");
         }

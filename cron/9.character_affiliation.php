@@ -69,7 +69,7 @@ function failChar(&$guzzler, &$params, &$connectionException)
         case 503: // server error
         case 504: // gateway timeout
         case 200: // timeout...
-            Util::out("ERROR $id $code");
+        case 400: // ccp up to something again
             $guzzler->sleep(1);
             $mdb->set("information", $row, ['lastAffUpdate' => $mdb->now(-23 * 3600)]); // try again in an hour
             break;
@@ -83,8 +83,9 @@ function failChar(&$guzzler, &$params, &$connectionException)
             $guzzler->finish();
             exit();
         default:
-            Util::out("/v5/characters/ failed for $id with code $code");
+            Util::out("/v5/characters/ affiliation failed for $id with code $code");
     }
+    $guzzler->sleep(1);
 }
 
 function updateChar(&$guzzler, &$params, &$content)

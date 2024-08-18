@@ -1,7 +1,7 @@
 <?php
 
 $app->notFound(function () use ($app) {
-        $app->redirect('/', 302);
+    http_response_code(404);
         });
 
 $app->get('/information/', function() use ($app) {

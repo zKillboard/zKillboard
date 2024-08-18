@@ -89,8 +89,7 @@ try {
         }
         if ($doRedirect) {
             $sso = ZKillSSO::getSSO($neededScopes);
-            header('Location: ' . $sso->getLoginURL($_SESSION), 302);
-            exit();
+            return $app->redirect('Location: ' . $sso->getLoginURL($_SESSION), 302);
         }
     }
 

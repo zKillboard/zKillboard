@@ -3,15 +3,13 @@
 global $mdb;
 
 if ($pageview == 'overview') {
-    $app->redirect("/kill/$id/", 301);
-    exit();
+    return $app->redirect("/kill/$id/", 301);
 }
 if ($pageview == '') {
     $pageview = 'overview';
 }
 if ($pageview != 'overview' && $pageview != 'involved') {
-    header("Location: /");
-    exit();
+    return header("Location: /");
 }
 
 $involved = array();
@@ -21,8 +19,7 @@ $oID = $id;
 $id = (int) $id;
 if ("$oID" !== "$id") {
     Log::log("redirecting $oID to $id");
-    $app->redirect("/kill/$id/", 302);
-    exit();
+    return $app->redirect("/kill/$id/", 302);
 }
 
 while ($mdb->count('queueInfo', ['killID' => $id])) {
