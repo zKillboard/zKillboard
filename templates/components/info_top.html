@@ -88,6 +88,18 @@
                                 <td itemprop="sec_status" style='color: {{ color }}'>{{ detail.secStatus|number_format(2) }}</td>
                         </tr>
             {% endif %}
+            {% if detail.birthday %}
+                        <tr>
+                                <th>Birthday</th>
+                                <th itemprop="birthday">{{ detail.birthday|split('T')|first }}</th>
+                        <tr/>
+            {% endif %}
+            {% if detail.date_founded %}
+                        <tr>
+                                <th>Founded</th>
+                                <th itemprop="founded">{{ detail.date_founded|split('T')|first }}</th>
+                        <tr/>
+            {% endif %}
             {% if detail.shipName %}
 			<tr>
 				<th>Ship:</th>

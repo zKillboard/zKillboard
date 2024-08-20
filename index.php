@@ -73,8 +73,6 @@ try {
     exit();
 } 
 
-$timer = new Timer();
-
 // Starting Slim Framework
 $app = new \Slim\Slim($config);
 
@@ -131,7 +129,7 @@ $ipKey = "ip::$ip";
 if ($redis->get("ip::redirect::$ip") != null) {
     $redis->incr("ip::redirect::$ip:challenges");
     $redis->expire("ip::redirect::$ip:challenges", 3600);
-    if ($redis->get("ip::redirect::$ip:challenges") > 10) {
+    if ($redis->get("ip::redirect::$ip:challenges") > 50) {
         header("Location: /html/banned.html", true, 302);
         Log::log("Banning $ip for failing to pass challenges. User Agent: " . @$_SERVER['HTTP_USER_AGENT']);
         $redis->setex("IP:ban:$ip", $banTime, "true");
@@ -185,10 +183,14 @@ if (substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' ||
     }
 }
 
-$request = $isApiRequest ? new RedisTtlCounter('ttlc:apiRequests', 300) : new RedisTtlCounter('ttlc:nonApiRequests', 300);
-if ($isApiRequest || $uri == '/navbar/') $request->add(uniqid());
-$uvisitors = new RedisTtlCounter('ttlc:unique_visitors', 300);
-if ($uri == '/navbar/') $uvisitors->add($ip);
+if ($isApiRequest || $uri == '/navbar/') {
+    $request = $isApiRequest ? new RedisTtlCounter('ttlc:apiRequests', 300) : new RedisTtlCounter('ttlc:nonApiRequests', 300);
+    $request->add(uniqid());
+    if ($uri == '/navbar/') {
+        $uvisitors = new RedisTtlCounter('ttlc:unique_visitors', 300);
+        $uvisitors->add($ip);
+    }
+}
 
 $visitors = new RedisTtlCounter('ttlc:visitors', 300);
 $visitors->add($ip);
