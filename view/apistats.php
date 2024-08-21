@@ -65,5 +65,4 @@ try {
     header('Content-Type: application/json');
     $error = ['error' => $ex->getMessage()];
     echo json_encode($error);
-    die();
 }

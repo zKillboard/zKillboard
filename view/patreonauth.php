@@ -16,8 +16,7 @@ try {
     $state = str_replace("/", "", @$_GET['state']);
     $sessionState = @$_SESSION['oauth2State'];
     if ($state !== $sessionState) {
-        $app->render("error.html", ['message' => "Something went wrong with security. Please try again."]);
-        exit();
+        return $app->render("error.html", ['message' => "Something went wrong with security. Please try again."]);
     }
 
 
@@ -46,6 +45,5 @@ try {
     }
 } catch (Exception $ex) {
 throw $ex;
-        $app->render("error.html", ['message' => "Something went wrong with the login from Patreon's end, sorry, can you please try logging in again? *"]);
-        exit();
+        return $app->render("error.html", ['message' => "Something went wrong with the login from Patreon's end, sorry, can you please try logging in again? *"]);
 }

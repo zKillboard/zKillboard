@@ -18,4 +18,3 @@ $showBattleOptions = false;
 
 global $baseDir;
 require_once $baseDir.'/view/related.php';
-die();

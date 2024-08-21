@@ -14,8 +14,7 @@ if (count($result) == 1) {
     $first = array_shift($result);  
     $type = str_replace('ID', '', $first['type']);  
     $id = $first['id']; 
-    $app->redirect("/$type/$id/");  
-    die();  
+    return $app->redirect("/$type/$id/");  
 }   
 
 $app->render('search.html', array('data' => $result));

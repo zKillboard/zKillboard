@@ -16,7 +16,7 @@ switch ($page) {
         $parameters['week'] = date('W');
         break;
     default:
-        die('Not supported yet.');
+        return;
 }
 
 $topLists = array();

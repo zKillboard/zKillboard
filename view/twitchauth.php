@@ -17,8 +17,7 @@ try {
     $sessionState = @$_SESSION['oauth2State'];
     $_SESSION['oauth2State'] = '';
     if ($state !== $sessionState) {
-        $app->render("error.html", ['message' => "Something went wrong with security. Please try again."]);
-        exit();
+        return $app->render("error.html", ['message' => "Something went wrong with security. Please try again."]);
     }
     $mdb->remove("twitch", ['character_id' => $userID]);
 

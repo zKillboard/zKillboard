@@ -3,8 +3,7 @@
 global $mdb;
 
 if (!User::isLoggedIn()) {
-    $app->redirect('/ccpoauth2/', 302);
-    die();
+    return $app->redirect('/ccpoauth2/', 302);
 }
 
 $userID = (int) User::getUserID();

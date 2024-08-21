@@ -88,6 +88,7 @@ function startWebSocket() {
         var channel = entityType + ":" + entityID;
         if (entityPage != 'index' && entityPage != 'overview') channel = channel + ":" + entityPage;
         pubsub(channel);
+        pubsub('stats:' + channel);
 
         console.log('WebSocket connected');
     } catch (e) {
@@ -152,6 +153,8 @@ function wslog(msg)
         twitchlive(json.channel);
     } else if (json.action == 'twitch-offline') {
         twitchoffline();
+    } else if (json.action == 'statsbox') {
+        statsboxUpdate(json);
     } else {
         console.log("Unknown action: " + json.action);
     }
@@ -476,4 +479,33 @@ function twitchtime() {
     });
     $("#twitch-live").addClass('hidden');*/
     gtag('event', 'twitch-clicked');
+}
+
+function statsboxUpdate(stats) {
+    $.get('/cache/bypass/statsbox/' + stats.type + '/' + stats.id + '/', setStatsboxValues);
+}
+
+function setStatsboxValues(stats) {
+    Object.keys(stats).forEach((e) => $('#' + e).attr('raw', stats[e]) )
+    $("[format='format-int']").each(function() { t = $(this); doFieldUpdate(t, Number(t.attr('raw') | '').toLocaleString()); });
+    $("[format='format-dec1']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(t.attr('raw')).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits:1} )); });
+    $("[format='format-isk']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(t.attr('raw')))) });
+}
+
+function doFieldUpdate(f, v) {
+    if (f.text() == String(v)) return;
+    f.animate({opacity: 0}, 100, function() {
+        $(this).text(v).animate({opacity: 1}, 100);
+    })
+}
+
+const formatIskIndex = ['', 'k', 'm', 'b', 't', 'tt', 'ttt'];
+function formatISK(value) {
+    if (value < 100000) return value.toLocaleString();
+    let i = 0;
+    while (value > 999.99) {
+        value = value / 1000;
+        i++;
+    }
+    return value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + formatIskIndex [i];
 }

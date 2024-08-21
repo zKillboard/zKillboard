@@ -1,7 +1,7 @@
 {% if statistics.shipsDestroyed or statistics.shipsLost %}
-<table style="margin: 0px; padding: 0px; background-color: transparent;" class="table table-condensed">
+<table id="statsbox" style="margin: 0px; padding: 0px; background-color: transparent;" class="table table-condensed">
 	<tbody>
-    <tr id="teststats">
+    <tr id="teststats" class="hidden">
         <td colspan='8'><center>
             <li class="stat-range stat-active" style="display: inline-block; width: 100px;" onclick='$(".alltime-ranks").show(); $(".recent-ranks").hide(); $(".weekly-ranks").hide(); $(".stat-range").removeClass("stat-active"); $(this).addClass("stat-active");'>Alltime</li>
             <li class="stat-range" style="display: inline-block; width: 100px;" onclick='$(".alltime-ranks").hide(); $(".recent-ranks").show(); $(".weekly-ranks").hide(); $(".stat-range").removeClass("stat-active"); $(this).addClass("stat-active");'>Recent</li>
@@ -23,12 +23,12 @@
 {% set iskEff = (statistics.iskDestroyed + statistics.iskLost) == 0 ? 100 : (statistics.iskDestroyed / (statistics.iskDestroyed + statistics.iskLost)) * 100 %}
 	<tr class="alltime-ranks">
 		<th style="text-align: right">Ships</th>
-		<td class="green" style="text-align: right" class="green-text">{{ statistics.shipsDestroyed | number_format(0) }}</td>
-		<td class="green hidden-xs" style="text-align: right">{{ statistics.shipsDestroyedRank == 0 ? '-' : statistics.shipsDestroyedRank | number_format(0) }}</td>
-		<td class="red" style="text-align: right">{{ statistics.shipsLost | number_format(0) }}</td>
-		<td class="red hidden-xs" style="text-align: right">{{ statistics.shipsLostRank == 0 ? '-' : statistics.shipsLostRank | number_format(0) }}</td>
+		<td id="s-a-sd" format="format-int" class="green" style="text-align: right" class="green-text">{{ statistics.shipsDestroyed | number_format(0) }}</td>
+		<td id="s-a-sd-r" format="format-int" class="green hidden-xs" style="text-align: right">{{ statistics.shipsDestroyedRank == 0 ? '-' : statistics.shipsDestroyedRank | number_format(0) }}</td>
+		<td id="s-a-sl" format="format-int" class="red" style="text-align: right">{{ statistics.shipsLost | number_format(0) }}</td>
+		<td id="s-a-sl-r" format="format-int" class="red hidden-xs" style="text-align: right">{{ statistics.shipsLostRank == 0 ? '-' : statistics.shipsLostRank | number_format(0) }}</td>
 		{% set greenred = shipEff >= 50 ? 'green' : 'red' %}
-		<td class="{{greenred}} hidden-xs" style="text-align: right">{{ shipEff | number_format(1) }}</td>
+		<td id="s-a-s-e" format="format-dec1" class="{{greenred}} hidden-xs" style="text-align: right">{{ shipEff | number_format(1) }}</td>
 		<th style="text-align: right;">
 			<strong>{{ statistics.overallRank == 0 ? '-' : statistics.overallRank|number_format(0) }}</strong>
 			{% if statistics.overallRank < statistics.prevRanks.overallRank and statistics.overallRank != 0 and statistics.prevRanks.overallRank != 0 %}
@@ -44,22 +44,22 @@
 	</tr>
 	<tr class="alltime-ranks">
 		<th style="text-align: right">Points</th>
-		<td class="green" style="text-align: right">{{ statistics.pointsDestroyed | number_format(0) }}</td>
-		<td class="green hidden-xs" style="text-align: right">{{ statistics.pointsDestroyedRank == 0 ? '-' : statistics.pointsDestroyedRank | number_format(0) }}</td>
-		<td class="red" style="text-align: right">{{ statistics.pointsLost | number_format(0) }}</td>
-		<td class="red hidden-xs" style="text-align: right">{{ statistics.pointsLostRank  == 0 ? '-' : statistics.pointsLostRank | number_format(0) }}</td>
+		<td id="s-a-pd" format="format-int" class="green" style="text-align: right">{{ statistics.pointsDestroyed | number_format(0) }}</td>
+		<td id="s-a-pd-r" format="format-int" class="green hidden-xs" style="text-align: right">{{ statistics.pointsDestroyedRank == 0 ? '-' : statistics.pointsDestroyedRank | number_format(0) }}</td>
+		<td id="s-a-pl" format="format-int" class="red" style="text-align: right">{{ statistics.pointsLost | number_format(0) }}</td>
+		<td id="s-a-pl-r" format="format-int" class="red hidden-xs" style="text-align: right">{{ statistics.pointsLostRank  == 0 ? '-' : statistics.pointsLostRank | number_format(0) }}</td>
 		{% set greenred = pointsEff >= 50 ? 'green' : 'red' %}
-		<td class="{{greenred}} hidden-xs" style="text-align: right">{{ pointsEff | number_format(1) }}</td>
+		<td id="s-a-p-e" format="format-dec1" class="{{greenred}} hidden-xs" style="text-align: right">{{ pointsEff | number_format(1) }}</td>
 		<th style="text-align: right"><div class="hidden-xs">Recent Rank</div><div class="visible-xs">Recent</div></th>
 	</tr>
 	<tr class="alltime-ranks">
 		<th class="" style="text-align: right">ISK</th>
-		<td class="green"  style="text-align: right" rel="tooltip" title="&#36;{{ statistics.iskDestroyedUsdEurGbp.usd|number_format(2, '.', ',') }} / {{ statistics.iskDestroyedUsdEurGbp.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ statistics.iskDestroyedUsdEurGbp.gbp|number_format(2, '.', ',') }}">{{ formatIsk(statistics.iskDestroyed) }}</td>
-		<td class="green hidden-xs" style="text-align: right">{{ statistics.iskDestroyedRank == 0 ? '-' : statistics.iskDestroyedRank | number_format(0) }}</td>
-		<td class="red" style="text-align: right" rel="tooltip" title="&#36;{{ statistics.iskLostUsdEurGbp.usd|number_format(2, '.', ',') }} / {{ statistics.iskLostUsdEurGbp.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ statistics.iskLostUsdEurGbp.gbp|number_format(2, '.', ',') }}">{{ formatIsk(statistics.iskLost) }}</td>
-		<td class="red hidden-xs" style="text-align: right">{{ statistics.iskLostRank == 0 ? '-' : statistics.iskLostRank | number_format(0) }}</td>
+		<td id="s-a-id" format="format-isk" class="green"  style="text-align: right" rel="tooltip" title="&#36;{{ statistics.iskDestroyedUsdEurGbp.usd|number_format(2, '.', ',') }} / {{ statistics.iskDestroyedUsdEurGbp.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ statistics.iskDestroyedUsdEurGbp.gbp|number_format(2, '.', ',') }}">{{ formatIsk(statistics.iskDestroyed) }}</td>
+		<td id="s-a-id-r" format="format-int" class="green hidden-xs" style="text-align: right">{{ statistics.iskDestroyedRank == 0 ? '-' : statistics.iskDestroyedRank | number_format(0) }}</td>
+		<td id="s-a-il" format="format-isk" class="red" style="text-align: right" rel="tooltip" title="&#36;{{ statistics.iskLostUsdEurGbp.usd|number_format(2, '.', ',') }} / {{ statistics.iskLostUsdEurGbp.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ statistics.iskLostUsdEurGbp.gbp|number_format(2, '.', ',') }}">{{ formatIsk(statistics.iskLost) }}</td>
+		<td id="s-a-il-r" format="format-int" class="red hidden-xs" style="text-align: right">{{ statistics.iskLostRank == 0 ? '-' : statistics.iskLostRank | number_format(0) }}</td>
 		{% set greenred = iskEff >= 50 ? 'green' : 'red' %}
-		<td class="{{greenred}} hidden-xs" style="text-align: right">{{ iskEff | number_format(1) }}</td>
+		<td id="s-a-i-e" format="format-dec1" class="{{greenred}} hidden-xs" style="text-align: right">{{ iskEff | number_format(1) }}</td>
 		{% set recentOverallRank = ( statistics.recentOverallRank > 0 ? statistics.recentOverallRank | number_format(0) : '-') %}
         	<th class="" style="text-align: right;">
 			<strong>{{ recentOverallRank }}</strong>

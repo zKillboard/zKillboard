@@ -24,8 +24,7 @@ if ($_POST) {
                 $killID = (int) $exploded[4];
                 $exists = $mdb->exists('killmails', ['killID' => $killID]);
                 if ($exists) {
-                    $app->redirect("/kill/$killID/");
-                    exit();
+                    return $app->redirect("/kill/$killID/");
                 }
                 $hash = (string) $exploded[5];
                 $exists = $mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash]);
@@ -47,8 +46,7 @@ if ($_POST) {
                             usleep(100000);
                             $kill = $mdb->findDoc('killmails', ['killID' => $killID]);
                         } 
-                        $app->redirect("/kill/$killID/");
-                        exit();
+                        return $app->redirect("/kill/$killID/");
                     }
                     $crest = $mdb->findDoc('crestmails', ['killID' => $killID, 'hash' => $hash]);
                     if ($crest === null) {
