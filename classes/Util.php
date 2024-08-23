@@ -39,7 +39,7 @@ class Util
         return substr($haystack, -strlen($needle)) === $needle;
     }
 
-    private static $formatIskIndexes = array('', 'k', 'm', 'b', 't', 'tt', 'ttt');
+    private static $formatIskIndexes = array('', 'k', 'm', 'b', 't', 'k t', 'm t', 'b t');
 
     public static function formatIsk($value, $int = false)
     {
@@ -280,6 +280,10 @@ class Util
                     break;
                 case 'xml':
                     dire("xml formatting has been deprecated and is no longer supported");
+                case 'label':
+                    $parameters['labels'] = array_shift($split);
+                    if ($parameters['labels'] == 'all') unset($parameters['labels']);
+                    break;
                 default:
                     if (substr($uri, 0, 5) == "/api/") {
                         dire("$key is an invalid parameter");

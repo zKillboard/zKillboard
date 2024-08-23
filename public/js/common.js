@@ -87,8 +87,9 @@ function startWebSocket() {
 
         var channel = entityType + ":" + entityID;
         if (entityPage != 'index' && entityPage != 'overview') channel = channel + ":" + entityPage;
+        statsboxUpdate({type: entityType + "ID", id: entityID});
         pubsub(channel);
-        pubsub('stats:' + channel);
+        if (entityType != 'none') pubsub('stats:' + channel);
 
         console.log('WebSocket connected');
     } catch (e) {
@@ -147,7 +148,7 @@ function wslog(msg)
         $("#commentblock").html(json.html);
     } else if (json.action === 'littlekill') {
         var killID = json.killID;
-        setTimeout(function() { loadLittleMail(killID); }, 1);
+        setTimeout(function() { loadLittleMail(killID); }, Math.floor(Math.random() * 1000));
     } else if (json.action === 'twitch-online') {
         console.log('twitch user online: ' + json.channel);
         twitchlive(json.channel);
@@ -162,29 +163,52 @@ function wslog(msg)
 
 function loadLittleMail(killID) {
         // Add the killmail to the kill list
-        $.get("/cache/1hour/killlistrow/" + killID + "/", function(data) {
+        $.get("/cache/1hour/killlistrow/" + killID + "/", addLittleKill);
+}
+
+var killdata = undefined;
+function addLittleKill(data) {
             if (!(showAds != 0 && typeof fusetag == 'undefined')) {
                 var data = $(data);
+killdata = $(data);
                 data.on('click', function(event) {
                     if (event.which === 2) return false;
                     window.location = '/kill/' + $(this).attr('killID') + '/';
                     return false;
                 });
-                if (showAds == 0) $("#killlist tbody tr").first().before(data);
-                else $("#killlist tbody tr").eq(0).after(data);
+                /*if (showAds == 0)*/ $("#killlist tbody tr").first().before(data);
+                //else $("#killlist tbody tr").eq(0).after(data);
             }
             // Keep the page from growing too much...
             while ($("#killlist tbody tr").length > 50) $("#killlist tbody tr:last").remove();
             // Tell the user what's going on and not to expect sequential killmails
             if ($("#livefeednotif").length == 0) {
-                if (showAds != 0 && typeof fusetag == 'undefined')
-                    $("#killlist thead tr").after("<tr><td id='livefeednotif' colspan='7'><strong><em>Live feed disabled when adblockers present.</em></strong></td></tr>");
-                else
-                    $("#killlist thead tr").after("<tr><td id='livefeednotif' colspan='7'><strong><em>Live feed - killmails may be out of order.</em></strong></td></tr>");
+                $("#killlist thead tr").after("<tr><td id='livefeednotif' colspan='7'><strong><em>Live feed - killmails may be out of order.</em></strong></td></tr>");
             }
-        });
 }
 
+/* This is currently not used, it is here as a proof of concept */
+function addLittleKillInOrder(data) {
+    let added = false;
+    let lastrow = undefined;
+    let rows = [].reverse.call($("#killmailstobdy tr"));
+    data = $(data);
+    data.hide();
+    let killid = Number(data.attr('killid'));
+    console.log('loading', killid);
+    for (row of rows) {
+        row = $(row);
+        let curKillID = Number(row.attr('killid'));
+        if (isNaN(curKillID)) continue;
+        if (curKillID == killid) return; // we're already displaying this killmail
+        if (curKillID > killid) {  row.after(data); break; }
+        lastrow = row;
+    }
+    lastrow.before(data);
+    setTimeout(() => { data.show('slow');}, 1);
+    
+    while ($("#killmailstobdy tr").length > 50) $("#killmailstobdy tr").last().remove()
+}
 function audio(uri)
 {
     var audio = new Audio(uri);
@@ -499,7 +523,7 @@ function doFieldUpdate(f, v) {
     })
 }
 
-const formatIskIndex = ['', 'k', 'm', 'b', 't', 'tt', 'ttt'];
+const formatIskIndex = ['', 'k', 'm', 'b', 't', 'k t', 'm t', 'b t'];
 function formatISK(value) {
     if (value < 100000) return value.toLocaleString();
     let i = 0;

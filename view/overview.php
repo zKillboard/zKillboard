@@ -9,7 +9,7 @@ if (!isset($input[1])) {
 $id = $input[1];
 $pageType = (string) @$input[2];
 
-if ((int) $id == 0) {
+if ($key != 'label' && (int) $id == 0) {
     $searchKey = $key;
     if ($key == 'system') {
         $searchKey = 'solarSystem';
@@ -42,18 +42,23 @@ $map = array(
         'group' => array('column' => 'group', 'mixed' => true),
         'ship' => array('column' => 'shipType', 'mixed' => true),
         'location' => array('column' => 'location', 'mixed' => true),
+        'label' => array('column' => 'label', 'mixed' => true),
         );
 if (!array_key_exists($key, $map)) {
     return $app->notFound();
 }
 
-if (!is_numeric($id) || $id <= 0) return $app->notFound();
+if ($key != "label" && (!is_numeric($id) || $id <= 0)) {
+    return $app->notFound();
+}
 
 try {
     $parameters = Util::convertUriToParameters($app);
 } catch (Exception $ex) {
     return $app->notFound();
 }
+
+if ($key != "label") $id = (int) $id;
 
 @$page = max(1, $parameters['page']);
 global $loadGroupShips; // Can't think of another way to do this just yet
@@ -66,19 +71,17 @@ try {
     $type = $map[$key]['column'];
     $detail = Info::getInfoDetails("${type}ID", $id);
     if (isset($detail['valid']) && $detail['valid'] == false) {
-        $app->notFound();
+        return $app->notFound();
     }
 } catch (Exception $ex) {
-    Log::log(print_r($ex, true));
-    $app->render('error.html', array('message' => "There was an error fetching information for the $key you specified."));
-
-    return;
+    return $app->render('error.html', array('message' => "There was an error fetching information for the $key you specified."));
 }
+
 $pageName = isset($detail[$map[$key]['column'].'Name']) ? $detail[$map[$key]['column'].'Name'] : '???';
-if ($pageName == '???' && !$mdb->exists('information', ['id' => $id])) {
+if ($key != "label" && ($pageName == '???' && !$mdb->exists('information', ['id' => $id]))) {
     return $app->render('404.html', array('message' => 'This entity is not in our database.'), 404);
 }
-$columnName = $map[$key]['column'].'ID';
+$columnName = ($key == 'labels') ? "labels" : $map[$key]['column'].'ID';
 $mixedKills = $pageType == 'overview' && $map[$key]['mixed'] && UserConfig::get('mixKillsWithLosses', true);
 
 $mixed = $pageType == 'overview' ? Kills::getKills($parameters, true, true, true) : array();
@@ -87,7 +90,6 @@ $losses = $pageType == 'losses'  ? Kills::getKills($parameters, true, true, true
 
 if ($pageType != 'solo' || $key == 'faction') {
     $soloKills = array();
-    //$soloCount = 0;
 } else {
     $soloParams = $parameters;
     if (!isset($parameters['kills']) || !isset($parameters['losses'])) {
@@ -95,7 +97,6 @@ if ($pageType != 'solo' || $key == 'faction') {
     }
     $soloKills = Kills::getKills($soloParams, true, true, true);
 }
-//$soloPages = ceil($soloCount / $limit);
 $solo = Kills::mergeKillArrays($soloKills, array(), $limit, $columnName, $id);
 
 $padSum = 0;
@@ -171,7 +172,7 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
     $p['pastSeconds'] = $numDays * 86400;
     $p['kills'] = $pageType != 'losses';
     //$p['labels'] = 'pvp';
-    $p['npc'] = false;
+    if ($key != "label") $p['npc'] = false;
 
     $topLists[] = Info::doMakeCommon('Top Characters', 'characterID', Stats::getTop('characterID', $p));
     $topLists[] = Info::doMakeCommon('Top Corporations', 'corporationID', Stats::getTop('corporationID', $p));
@@ -210,7 +211,7 @@ if ($pageType == 'corpstats') {
 
 $onlyHistory = array('character', 'corporation', 'alliance');
 if ($pageType == 'stats' && in_array($key, $onlyHistory)) {
-    $months = $mdb->findField('statistics', 'months', ['type' => $key.'ID', 'id' => (int) $id]);
+    $months = $mdb->findField('statistics', 'months', ['type' => $key.'ID', 'id' => $id]);
     if ($months != null) {
         krsort($months);
     }
@@ -270,10 +271,13 @@ if ($key == 'system') {
     $statType = 'solarSystemID';
 } elseif ($key == 'ship') {
     $statType = 'shipTypeID';
+} else if ($key == "label") {
+    $statType = "label";
 } else {
     $statType = "{$key}ID";
+    $id = (int) $id;
 }
-$statistics = $mdb->findDoc('statistics', ['type' => $statType, 'id' => (int) $id]);
+$statistics = $mdb->findDoc('statistics', ['type' => $statType, 'id' => $id]);
 
 if ($key == 'corporation' || $key == 'alliance' || $key == 'faction') {
     $extra['hasSupers'] = @$statistics['hasSupers'];
@@ -500,6 +504,11 @@ $extra['recentkills'] = $type == 'character' && $redis->get("recentKillmailActiv
 global $twig;
 $twig->addGlobal('year', (isset($parameters['year']) ? $parameters['year'] : date('Y')));
 $twig->addGlobal('month', (isset($parameters['month']) ? $parameters['month'] : date('m')));
+
+if ($type == 'label') {
+    $detail = ['label' => $id];
+    $pageName = $id;
+}
 
 $renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold);
 

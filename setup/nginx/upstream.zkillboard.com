@@ -10,13 +10,16 @@ server {
 
 	location ~ \.php$ {
 		try_files $uri =404;
-		fastcgi_pass unix:/var/run/php5-fpm.sock;
+                #include snippets/fastcgi-php.conf;
+                fastcgi_pass unix:/var/run/php/php-fpm.sock;
+
 		fastcgi_index index.php;
 		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
 		fastcgi_read_timeout 90;
 		fastcgi_buffers 256 4k;
 		fastcgi_temp_path /dev/shm/fastcgi/;
 		include fastcgi_params;
+
 	}
 
 	set_real_ip_from 103.21.244.0/22;
@@ -45,6 +48,6 @@ server {
 	#real_ip_header X-Forwarded-For;
 
 	access_log off;
-	log_not_found off; 
-	error_log /var/log/nginx-error.log warn;
+	#log_not_found off; 
+	#error_log /var/log/nginx-error.log warn;
 }

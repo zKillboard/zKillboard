@@ -1,15 +1,26 @@
-proxy_cache_path /db/zkb.proxy/ levels=1:2 keys_zone=zkb:10m max_size=10g inactive=62m use_temp_path=off;
+proxy_cache_path /tmp/nginxproxy/ levels=1:2 keys_zone=zkb:10m max_size=10g inactive=62m use_temp_path=off;
 
 server {
-	server_name zkillboard.com;
-	server_name ~^(.*)\.zkillboard\.com$;
-	listen 80;
 	listen 443 ssl;
-	listen [::]:443 ssl;
+	server_name zkillboard.com:443;
 	include snippets/self-signed.conf;
 	include snippets/ssl-params.conf;
 
 	root        /var/www/zkillboard.com/public/;
+
+	location ~\mraid.js$ {
+		deny all;
+		return 404;
+	}
+
+        location = /websocket/ {
+                proxy_pass http://127.0.0.1:15241;
+                proxy_http_version 1.1;
+                proxy_set_header   Upgrade $http_upgrade;
+                proxy_set_header   Connection "upgrade";
+                proxy_set_header Host $host;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
 
 	location = / {
 		proxy_cache_valid 200 1m;
@@ -17,24 +28,37 @@ server {
 		include "zkb-upstream.conf";
 	}
 
-	location ~ ^/partial/ {
-		proxy_cache_valid 200 1m;
-		expires 1m;
-		include "zkb-upstream.conf";
-	}
-
-	location ~ ^/(information|api|autocomplete|ztop|google)/ {
+	location ~ ^/cache/1hour/ {
 		proxy_cache_valid 200 60m;
+		expires 60m;
 		include "zkb-upstream.conf";
 	}
 
-	location ~ ^/(kill|related|br|kills|character|corporation|alliance|faction|ship|group|system|location|wars|war|map|bigisk|top|item)/ {
+	location ~ ^/comment/kill-.*/-1/up/$ {
+		proxy_cache_valid 200 1s;
+		expires 1s;
+		include "zkb-upstream.conf";
+	}
+
+	location ~ ^/post/ {
+		proxy_cache_valid 200 2m;
+		include "zkb-upstream.conf";
+	}
+
+	location ~ ^/(asearch|asearchinfo|asearchquery|killlistrow|information|api|autocomplete|ztop|google/false|google/true)/ {
+		proxy_cache_valid 200 10m;
+		include "zkb-upstream.conf";
+	}
+
+	location ~ ^/(kill|related|br|kills|character|corporation|alliance|faction|rank|ranks|ship|group|system|location|wars|war|map|bigisk|top|item|search|constellation|region|detail|label)/ {
 		proxy_cache_valid 200 5m;
 		include "zkb-upstream.conf";
 	}
 
 	location / {
 		proxy_pass http://localhost:12345;
+		#include snippets/fastcgi-php.conf;
+		#fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
 	}
 
 	set_real_ip_from 103.21.244.0/22;
@@ -51,14 +75,15 @@ server {
 	set_real_ip_from 190.93.240.0/20;
 	set_real_ip_from 197.234.240.0/22;
 	set_real_ip_from 198.41.128.0/17;
-	set_real_ip_from 199.27.128.0/21;
 	set_real_ip_from 2400:cb00::/32;
-	set_real_ip_from 2606:4700::/32;
+	set_real_ip_from 2607:4700::/32;
 	set_real_ip_from 2803:f800::/32;
+	set_real_ip_from 2804:1508::/32;
 	set_real_ip_from 2405:b500::/32;
 	set_real_ip_from 2405:8100::/32;
+	set_real_ip_from 2c0f:f248::/32;
+	set_real_ip_from 2a06:98c0::/29;
+
 	real_ip_header CF-Connecting-IP;
 
-	#access_log off;
-	#log_not_found off; 
 }

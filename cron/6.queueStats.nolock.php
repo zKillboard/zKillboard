@@ -51,7 +51,7 @@ while ($minute == date('Hi')) {
     $type = $arr[0];
     if ($type == "itemID") continue;
 
-    $id = (int) $arr[1];
+    $id = ($type == 'label') ? $arr[1] : (int) $arr[1];
     $key = "$type:$id";
     if ($redis->set("zkb:stats:$key", "true", ['nx', 'ex' => 3600]) === true) {
         try {
@@ -125,7 +125,11 @@ function calcStats($row, $maxSequence)
             break;
         case "factionID":
         case "regionID":
+        case "label";
             $delta = 100000;
+            break;
+        default:
+            throw new Exception("Unknown type for stats processing: $type");
     }
 
     $oldSequence = (int) @$stats['sequence'];
@@ -133,18 +137,25 @@ function calcStats($row, $maxSequence)
 
     for ($i = 0; $i <= 1; ++$i) {
         $isVictim = ($i == 0);
-        if (($type == 'locationID' || $type == 'regionID' || $type == 'constellationID' || $type == 'solarSystemID') && $isVictim == true) {
+        if (($type == 'label' || $type == 'locationID' || $type == 'regionID' || $type == 'constellationID' || $type == 'solarSystemID') && $isVictim == true) {
             continue;
         }
 
         // build the query
         $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'labels' => 'pvp'];
-        if ($isVictim == false) $query['labels'] = ['$ne' => 'padding']; // Allows NPCs to count their kills
-        if ($type == 'locationID' || $type == 'regionID' || $type == 'constellationID' || $type == 'solarSystemID') unset($query['isVictim']);
+        unset($query['label']);
+
+        if ($type == 'label' && $id == 'all') unset($query['labels']);
+        else if ($type == 'label') $query['labels'] = $id;
+        else if ($isVictim == false) $query['labels'] = ['$ne' => 'padding']; // Allows NPCs to count their kills
+
+        if ($type == 'label' || $type == 'locationID' || $type == 'regionID' || $type == 'constellationID' || $type == 'solarSystemID') unset($query['isVictim']);
 
         $query = MongoFilter::buildQuery($query);
         // set the proper sequence values
-        $query = ['$and' => [['sequence' => ['$gt' => $oldSequence]], ['sequence' => ['$lte' => $newSequence]], $query]];
+        $and = [['sequence' => ['$gt' => $oldSequence]], ['sequence' => ['$lte' => $newSequence]]];
+        if (!($type == 'label' && $id == 'all')) $and[] = $query;
+        $query = ['$and' => $and];
 
         $allTime = $mdb->group('killmails', [], $query, 'killID', ['zkb.points', 'zkb.totalValue', 'attackerCount']);
         mergeAllTime($stats, $allTime, $isVictim);

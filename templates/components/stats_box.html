@@ -1,7 +1,7 @@
 {% if statistics.shipsDestroyed or statistics.shipsLost %}
 <table id="statsbox" style="margin: 0px; padding: 0px; background-color: transparent;" class="table table-condensed">
 	<tbody>
-    <tr id="teststats" class="hidden">
+    <tr id="teststats">
         <td colspan='8'><center>
             <li class="stat-range stat-active" style="display: inline-block; width: 100px;" onclick='$(".alltime-ranks").show(); $(".recent-ranks").hide(); $(".weekly-ranks").hide(); $(".stat-range").removeClass("stat-active"); $(this).addClass("stat-active");'>Alltime</li>
             <li class="stat-range" style="display: inline-block; width: 100px;" onclick='$(".alltime-ranks").hide(); $(".recent-ranks").show(); $(".weekly-ranks").hide(); $(".stat-range").removeClass("stat-active"); $(this).addClass("stat-active");'>Recent</li>

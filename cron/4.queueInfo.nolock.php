@@ -90,6 +90,11 @@ function updateStatsQueue($killID)
             }
         }
     }
+
+    foreach ($kill['labels'] as $label) {
+        addToStatsQueue("label", $label, $sequence);
+    }
+    addToStatsQueue("label", 'all', $sequence);
 }
 
 function addToStatsQueue($type, $id, $sequence)

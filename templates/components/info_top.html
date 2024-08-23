@@ -3,7 +3,8 @@
 {% elseif detail.corporationName %}{% set name = detail.corporationName %}
 {% elseif detail.allianceName %}{% set name = detail.allianceName %}
 {% elseif detail.factionName %}{% set name = detail.factionName %}
-{% elseif pageName %}{% set name = pageName %}{% endif %}
+{% elseif pageName %}{% set name = pageName %}
+{% elseif key == 'label' %}{% set name = id %}{% endif %}
 
 {% if detail.aticker %}{% set ticker = ' <' ~ detail.aticker ~ '>' %}{% endif %}
 {% if detail.cticker %}{% set ticker = ' [' ~ detail.cticker ~ ']' %}{% endif %}
@@ -16,6 +17,9 @@
 
 <div class="row" style="margin: 0px; padding: 0px;">
 	<div class="col-lg-6 pull-left" style="margin: 0px; padding: 0px;">
+        {% if detail.label %}
+            <h2>{{ detail.label }}<small> killmails</small></h2>
+        {% endif %}
 		<table style="margin: 0px; padding: 0px; background-color: transparent;" class="table table-condensed">
 		{% if detail.groupShips %}
                         <tr>   
@@ -91,13 +95,13 @@
             {% if detail.birthday %}
                         <tr>
                                 <th>Birthday</th>
-                                <th itemprop="birthday">{{ detail.birthday|split('T')|first }}</th>
+                                <td itemprop="birthday">{{ detail.birthday|split('T')|first }}</td>
                         <tr/>
             {% endif %}
             {% if detail.date_founded %}
                         <tr>
                                 <th>Founded</th>
-                                <th itemprop="founded">{{ detail.date_founded|split('T')|first }}</th>
+                                <td itemprop="founded">{{ detail.date_founded|split('T')|first }}</td>
                         <tr/>
             {% endif %}
             {% if detail.shipName %}
@@ -130,18 +134,6 @@
                 </td>
 			</tr>
             {% endif %}
-			{% if detail.systemClass %}
-			<tr>
-				<th>Class:</th>
-				<td itemprop="systemclass">{{ detail.systemClass }}</td>
-			</tr>
-			{% endif %}
-			{% if detail.systemEffect %}
-			<tr>
-				<th>Effect:</th>
-				<td itemprop="effect">{{ detail.systemEffect }}</td>
-			</tr>
-			{% endif %}
             {% if detail.constellationName %}
 			<tr>
 				<th>Constellation:</th>
@@ -157,6 +149,24 @@
 				{% include 'components/tracker.html' %}
                 </td>
 			</tr>
+            {% endif %}
+            {% if detail.type == 'solarSystemID' and detail.class %}
+            <tr>
+                <th>Class:</th>
+                <td itemprop="systemclass">{{ detail.class }}</td>
+            </tr>
+            {% endif %}
+            {% if detail.effects %}
+            <tr>
+                <th>Effect:</th>
+                <td itemprop="effect">{{ detail.effects }}</td>
+            </tr>
+            {% endif %}
+            {% if detail.statics %}
+            <tr>
+                <th>Statics:</th>
+                <td itemprop="effect">{{ detail.statics }}</td>
+            </tr>
             {% endif %}
 	    	{% if detail.memberCount is defined and detail.memberCount >= 0 %}
 			<tr>

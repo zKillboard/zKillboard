@@ -250,7 +250,7 @@ class Mdb
 
     public static function group($collection, $keys = [], $query = [], $count = [], $sum = [], $sort = [], $limit = null)
     {
-        global $debug;
+        global $debug, $foobar;
 
         // Turn keys into an array if is isn't already an array
         if (!is_array($keys)) {
@@ -267,6 +267,7 @@ class Mdb
         if (sizeof($query)) {
             $pipeline[] = ['$match' => $query];
         }
+if ($foobar) print_r($pipeline);
         if ($unwind) {
             $pipeline[] = ['$unwind' => '$' . $keys[0]];
         }

@@ -5,7 +5,9 @@ global $mdb, $redis;
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 
-$array = $mdb->findDoc('statistics', ['type' => $type, 'id' => (int) $id]);
+if ($type != 'label') $id = (int) $id;
+
+$array = $mdb->findDoc('statistics', ['type' => $type, 'id' => $id]);
 if ($array == null) return $app->notFound();
 
 if (!isset($epoch)) $epoch = 0;

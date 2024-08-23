@@ -15,7 +15,7 @@
       {% set field = kill.victim %}
       {% set lossDisplay = '' %}
       {% if (kill.displayAsLoss == true and key != 'system' and key != 'region') or pageType == 'losses' %}{% set lossDisplay = ' error' %}{% elseif pageType == 'overview' or pageType == 'kills' or pageType == 'solo' or kill.displayAsKill == true %}{% set lossDisplay = ' winwin' %}{% endif %}
-      <tr class="killListRow{{lossDisplay}}" killID='{{ kill.killID }}' lick="if (event.which == 2) return false; window.location='/kill/{{kill.killID}}/'">
+      <tr id="kill-{{ kill.killID }}" class="killListRow{{lossDisplay}}" killID='{{ kill.killID }}' style="order: {{ kill.killID }};">
         <td style='width: 55px;'>
           {{ kill.dttm.sec|date('H:i') }}
           <br/><a href="/kill/{{ kill.killID }}/">{{ formatIsk(kill.zkb.totalValue) }}</a>
