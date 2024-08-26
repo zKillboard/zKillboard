@@ -104,3 +104,13 @@ pre {
 .alltime-ranks {
     background-color: #060606;
 }
+
+.alert-success {
+	background-color: green;
+	border-color: green;
+}
+
+.alert-info {
+	background-color: purple;
+	border-color: solid 1px purple;
+}

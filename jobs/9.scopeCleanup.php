@@ -4,7 +4,7 @@ require_once "../init.php";
 
 use cvweiss\redistools\RedisTimeQueue;
 
-if (date('Hi') != 1100) exit();
+//if (date('Hi') != 1100) exit();
 
 $threeMonths = time() - (86400 * 90);
 $esiChar = new RedisTimeQueue('tqApiESI', 3600);
@@ -23,9 +23,10 @@ foreach($rows as $row) {
     if ($hasRecent) continue;
 
     // Does not have recent, and the row has been added more than 3 months ago, time to purge it
-    $mdb->remove("scopes", $row);
+    //$mdb->remove("scopes", $row);
     Util::out("Removed $id from scopes");
 }
+exit();
 
 $rows = $mdb->find("scopes", ['scope' => ['$ne' => "esi-killmails.read_killmails.v1"]]);
 foreach ($rows as $row) {

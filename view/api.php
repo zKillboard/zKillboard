@@ -27,7 +27,7 @@ try {
         throw new Exception("No need to refer to json, refer to the documentation and build your URL properly.");
     }
 
-    $parameters = Util::convertUriToParameters();
+    $parameters = Util::convertUriToParameters($_SERVER['REQUEST_URI']);
     asort($parameters);
 
     $key = md5(json_encode($parameters));

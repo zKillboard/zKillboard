@@ -1,6 +1,6 @@
 <?php
 
-global $mdb, $redis;
+global $mdb, $redis, $uri, $t;
 
 $key = $input[0];
 if (!isset($input[1])) {
@@ -53,7 +53,7 @@ if ($key != "label" && (!is_numeric($id) || $id <= 0)) {
 }
 
 try {
-    $parameters = Util::convertUriToParameters($app);
+    $parameters = Util::convertUriToParameters($_SERVER['REQUEST_URI']);
 } catch (Exception $ex) {
     return $app->notFound();
 }
@@ -82,11 +82,11 @@ if ($key != "label" && ($pageName == '???' && !$mdb->exists('information', ['id'
     return $app->render('404.html', array('message' => 'This entity is not in our database.'), 404);
 }
 $columnName = ($key == 'labels') ? "labels" : $map[$key]['column'].'ID';
-$mixedKills = $pageType == 'overview' && $map[$key]['mixed'] && UserConfig::get('mixKillsWithLosses', true);
+$mixedKills = $pageType == 'overview' && $map[$key]['mixed'];
 
-$mixed = $pageType == 'overview' ? Kills::getKills($parameters, true, true, true) : array();
-$kills = $pageType == 'kills'    ? Kills::getKills($parameters, true, true, true) : array();
-$losses = $pageType == 'losses'  ? Kills::getKills($parameters, true, true, true) : array();
+$mixed = $pageType == 'overview' ? Kills::getKills($parameters, true, false, false) : array();
+$kills = $pageType == 'kills'    ? Kills::getKills($parameters, true, false, false) : array();
+$losses = $pageType == 'losses'  ? Kills::getKills($parameters, true, false, false) : array();
 
 if ($pageType != 'solo' || $key == 'faction') {
     $soloKills = array();
@@ -95,7 +95,7 @@ if ($pageType != 'solo' || $key == 'faction') {
     if (!isset($parameters['kills']) || !isset($parameters['losses'])) {
         $soloParams['mixed'] = true;
     }
-    $soloKills = Kills::getKills($soloParams, true, true, true);
+    $soloKills = Kills::getKills($soloParams, true, false, false);
 }
 $solo = Kills::mergeKillArrays($soloKills, array(), $limit, $columnName, $id);
 
@@ -436,7 +436,7 @@ $prevRanks['recentOverallRank'] = Util::rankCheck($redis->zRank("tq:ranks:recent
 $statistics['prevRanks'] = $prevRanks;
 
 $groups = @$statistics['groups'];
-if (is_array($groups) and sizeof($groups) > 0) {
+if ($pageType == "stats" && is_array($groups) and sizeof($groups) > 0) {
     Info::addInfo($groups);
     $g = [];
     foreach ($groups as $group) {
@@ -510,9 +510,30 @@ if ($type == 'label') {
     $pageName = $id;
 }
 
+global $uri;
+$vics = ['characterID' => 'character', 'corporationID' => 'corporation', 'allianceID' => 'alliance', 'shipTypeID' => 'ship', 'groupID' => 'group', 'factionID' => 'faction'];
+$kills = addVics($vics, $kills);
+$losses = addVics($vics, $losses);
+$mixedKills = addVics($vics, $mixedKills);
+$soloKills = addVics($vics, $soloKills);
+
 $renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold);
 
 $app->render('overview.html', $renderParams);
+
+function addVics($vics, $kills = []) {
+    if ($kills === false || $kills === true) $kills = [];
+    foreach ($kills as $kid => $kill) {
+        $vic = [];
+        foreach ($vics as $kkey => $uri) {
+            if (isset($kill['victim'][$kkey])) $vic[] = $kill['victim'][$kkey];
+        }
+        if ($uri == "/alliance/99005338/losses/") Log::log(implode(',', $vic));
+        $kill['vics'] = implode(',', $vic);
+        $kills[$kid] = $kill;
+    }
+    return $kills;
+}
 
 function getNearbyRanks($key, $rankKeyName, $id, $title, $statType)
 {

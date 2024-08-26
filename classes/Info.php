@@ -1,5 +1,7 @@
 <?php
 
+use cvweiss\redistools\RedisCache;
+
 class Info
 {
     /**
@@ -89,6 +91,10 @@ class Info
     {
         global $mdb;
 
+        $key = "info:details:$type:$id";
+        $data = RedisCache::get($key);
+        if ($data != null) return $data;
+
         if ($type == 'itemID') $type = 'locationID';
         $data = self::getInfo($type, $id);
         self::addInfo($data);
@@ -110,6 +116,8 @@ class Info
             }
         }
         $data['overallRank'] = @$stats['overallRank'];
+
+        RedisCache::set($key, $data, 900);
 
         return $data;
     }
@@ -454,7 +462,7 @@ class Info
                             $element['regionID'] = Info::getInfoField('constellationID', $value, 'regionID');
                         }
                         $element['constellationName'] = Info::getInfoField('constellationID', $element['constellationID'], 'name');
-                        $element['regionID'] = Info::getInfoField('regionID', $element['regionID'], 'name');
+                        $element['regionName'] = Info::getInfoField('regionID', $element['regionID'], 'name');
                         break;
                     case 'regionID':
                         if (!isset($element['regionName'])) {

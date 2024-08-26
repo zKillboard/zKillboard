@@ -22,6 +22,7 @@ class Kills
         if ($includeKillDetails == false) {
             return $kills;
         }
+
         return Kills::getDetails($kills, $onlyVicAndFinal);
     }   
 
@@ -34,6 +35,7 @@ class Kills
         $details = [];
         foreach ($kills as $kill) {
             $killID = (isset($kill['killID']) ? (int) $kill['killID'] : (int) $kill);
+            //$redis->setex("zkb:killlistrow:" . $killID, 3660, "true");
             $killHashKey = "killmail_cache:$killID:$onlyVicAndFinal";
 
             $killmail = null;
@@ -57,7 +59,7 @@ class Kills
                 Info::addInfo($killmail);
                 unset($killmail['_id']);
 
-                $redis->setex($killHashKey, 300 + rand(0, 300), serialize($killmail));
+                $redis->setex($killHashKey, 3600, serialize($killmail));
             }
             $details[$killID] = $killmail;
         }

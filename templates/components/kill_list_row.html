@@ -13,10 +13,12 @@
       {% set resizeImage = 40 %}
   
       {% set field = kill.victim %}
-      {% set lossDisplay = '' %}
-      {% if (kill.displayAsLoss == true and key != 'system' and key != 'region') or pageType == 'losses' %}{% set lossDisplay = ' error' %}{% elseif pageType == 'overview' or pageType == 'kills' or pageType == 'solo' or kill.displayAsKill == true %}{% set lossDisplay = ' winwin' %}{% endif %}
-      <tr id="kill-{{ kill.killID }}" class="killListRow{{lossDisplay}}" killID='{{ kill.killID }}' style="order: {{ kill.killID }};">
-        <td style='width: 55px;'>
+      <tr id="kill-{{ kill.killID }}" class="kltbd" killID='{{ kill.killID }}' style="order: {{ kill.killID }};" vics="{{ kill.vics }}">
+        <td style='width: 65px;'>
+          <span class="killlossicon">
+            <span class="glyphicon glyphicon-ok hidden" aria-hidden="true"></span>
+            <span class="glyphicon glyphicon-remove hidden" aria-hidden="true"></span>
+          </span>
           {{ kill.dttm.sec|date('H:i') }}
           <br/><a href="/kill/{{ kill.killID }}/">{{ formatIsk(kill.zkb.totalValue) }}</a>
         </td>
@@ -35,7 +37,9 @@
           {% endif %}
         </td>
         <td class="victim" style="text-align: left; vertical-align: top; max-width: 290px;">
-          <a class="wrapplease" href="/character/{{ kill.victim.characterID }}/">{{ kill.victim.characterName }}</a> ({{ kill.victim.shipName }})<br />
+          {% if kill.victim.characterID %}
+            <a class="wrapplease" href="/character/{{ kill.victim.characterID }}/">{{ kill.victim.characterName }}</a> ({{ kill.victim.shipName }})<br />
+          {% endif %}
           {% if kill.victim.allianceID != 0 %}
             <a class="wrapplease" href="/alliance/{{ kill.victim.allianceID }}/">{{ kill.victim.allianceName }}</a>
           {% else %}
@@ -61,7 +65,7 @@
         {% elseif "atShip" in kill.labels %}<small><font class="alert alert-success" style='padding: 0px; margin: 0px;'>&nbsp;AT Ship&nbsp;</font></small>
         {% elseif kill.ganked == true %}<a href='/kills/ganked/'><small><font class="alert alert-danger" style='padding: 0px; margin: 0px;'>&nbsp;GANKED&nbsp;</font></small></a>
         {% elseif kill.solo == true %}<a href='/character/{{ kill.finalBlow.characterID }}/solo/'><small><font class="alert alert-success" style='padding: 0px; margin: 0px;'>&nbsp;SOLO&nbsp;</font></small></a>
-        {% elseif kill.npc == true %} <small><font class="alert alert-info" style='padding: 0px; margin: 0px;'>&nbsp;npc&nbsp;</font></small>
+        {% elseif kill.npc == true %} <small><font class="alert alert-info" style='padding: 0px; margin: 0px;'>&nbsp;NPC&nbsp;</font></small>
         {% elseif kill.attackerCount >= 1000 %} <small><font class="alert alert-danger" style='padding: 0px; margin: 0px;'>&nbsp;1000+&nbsp;</font></small> 
         {% elseif kill.attackerCount >= 100 %} <small><font class="alert alert-warning" style='padding: 0px; margin: 0px;'>&nbsp;100+&nbsp;</font></small> 
         {% else %} ({{ kill.attackerCount }})

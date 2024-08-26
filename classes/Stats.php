@@ -4,7 +4,7 @@ use cvweiss\redistools\RedisCache;
 
 class Stats
 {
-    public static function getTopIsk($parameters = array(), $allTime = false, $fittedValue = false)
+    public static function getTopIsk($parameters = array(), $allTime = false, $fittedValue = false, $cacheOverride = null)
     {
         if (!isset($parameters['limit'])) {
             $parameters['limit'] = 5;
@@ -13,13 +13,13 @@ class Stats
         else $parameters['orderBy'] = 'zkb.totalValue';
 
         $hashKey = 'getTopIsk:'.serialize($parameters);
-        $result = RedisCache::get($hashKey);
+        $result = ($cacheOverride == null) ? RedisCache::get($hashKey) : null;
         if ($result != null) {
             return $result;
         }
 
         $result = Kills::getKills($parameters, true, true, true);
-        RedisCache::set($hashKey, $result, 900);
+        RedisCache::set($hashKey, $result, (($cacheOverride == null) ? 900 : $cacheOverride));
 
         return $result;
     }
@@ -185,16 +185,15 @@ if ($thisOne) Log::log(print_r($pipeline, true));
     }
 
     // Collect active PVP stats
-    public static function getActivePvpStats($parameters)
+    public static function getActivePvpStats($parameters, $cacheOverride = null)
     {
         global $mdb;
 
-        //$parameters['labels'] = 'pvp';
         $parameters['npc'] = false;
         $key = 'stats:activepvp:'.serialize($parameters);
-        $activePvp = RedisCache::get($key);
-        if ($activePvp != null) {
-            return $activePvp;
+        $activePvP = ($cacheOverride == null) ? RedisCache::get($key) : null;
+        if ($activePvP != null) {
+            return $activePvP;
         }
 
         $types = ['characterID', 'corporationID', 'allianceID', 'shipTypeID', 'solarSystemID', 'regionID'];
@@ -225,7 +224,7 @@ if ($thisOne) Log::log(print_r($pipeline, true));
             $activePvP['kills'] = ['type' => 'Total Kills', 'count' => $killCount];
         }
 
-        RedisCache::set($key, $activePvp, 900);
+        RedisCache::set($key, $activePvP, (($cacheOverride == null) ? 3600 : $cacheOverride));
 
         return $activePvP;
     }

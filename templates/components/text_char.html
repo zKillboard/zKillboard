@@ -4,6 +4,6 @@
 {% endif %}
 {% if field.characterID is not defined and field.ceoID is defined and field.ceoName is defined %}
 	<a class="wrapplease" href="/character/{{ field.ceoID }}/">{{ field.ceoName }}</a>
-{% else %}
+{% elseif field.characterID %}
 	<a class="wrapplease" href="/character/{{ field.characterID }}/{{ entitySubpage }}">{{ field.characterName }}</a>
 {% endif %}

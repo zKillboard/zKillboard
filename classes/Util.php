@@ -59,14 +59,13 @@ class Util
         return number_format($value, $numDecimals).self::$formatIskIndexes[$iskIndex];
     }
 
-    public static function convertUriToParameters()
+    public static function convertUriToParameters($uri)
     {
         global $isApiRequest;
         $parameters = array();
         $entityRequiredSatisfied = false;
         $entityType = null;
 
-        $uri = $_SERVER['REQUEST_URI'];
         $split = explode('/', $uri);
         $splitSize = sizeof($split);
 

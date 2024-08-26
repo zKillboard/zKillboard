@@ -2,6 +2,8 @@
 
 global $mdb, $redis;
 
+//if ($redis->get("zkb:killlistrow:" . $killID) != "true") return;
+
 $map = array(
         'corporation' => array('column' => 'corporation', 'mixed' => true),
         'character' => array('column' => 'character', 'mixed' => true),
@@ -13,13 +15,21 @@ $map = array(
         'ship' => array('column' => 'shipType', 'mixed' => true),
         'location' => array('column' => 'item', 'mixed' => true),
         );
-
-if ($redis->get("zkb:killlistrow:" . $killID) != "true") return;
+$vics = ['characterID' => 'character', 'corporationID' => 'corporation', 'allianceID' => 'alliance', 'shipTypeID' => 'ship', 'groupID' => 'group', 'factionID' => 'faction'];
 
 $kills = Kills::getKills(['killID' => $killID], true, true, true);
 if (isset($entityID) && $entityID > 0) {
     $type = @$map[$entityType]['column'] . "ID";
     $kills = Kills::mergeKillArrays($kills, array(), 100, $type, $entityID);
+}
+
+foreach ($kills as $id => $kill) {
+    $vic = [];
+    foreach ($vics as $key => $uri) {
+        if (isset($kill['victim'][$key])) $vic[] = $kill['victim'][$key];
+    }
+    $kill['vics'] = implode(',', $vic);
+    $kills[$id] = $kill;
 }
 
 $app->render('components/kill_list_row.html', ['killList' => $kills, 'currentDate' => date('M d, Y')]);

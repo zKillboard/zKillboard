@@ -69,6 +69,8 @@ $(document).ready(function() {
 
     // For named anchors with the hrefit classname, make it a link as well
     $(".hrefit").each(function() { t = $(this);  t.attr('href', '#' + t.attr('name')); });
+    $(".fetchme").each(function() { loadKillRow($(this).attr('killID'));  });
+    assignRowColor();
 });
 
 function startWebSocket() {
@@ -87,9 +89,11 @@ function startWebSocket() {
 
         var channel = entityType + ":" + entityID;
         if (entityPage != 'index' && entityPage != 'overview') channel = channel + ":" + entityPage;
-        statsboxUpdate({type: entityType + "ID", id: entityID});
-        pubsub(channel);
-        if (entityType != 'none') pubsub('stats:' + channel);
+        if (entityType != 'none') {
+            statsboxUpdate({type: (entityType == 'label' ? entityType : entityType + "ID"), id: entityID});
+            pubsub(channel);
+            pubsub('stats:' + channel);
+        }
 
         console.log('WebSocket connected');
     } catch (e) {
@@ -162,8 +166,23 @@ function wslog(msg)
 }
 
 function loadLittleMail(killID) {
-        // Add the killmail to the kill list
+        // Add the killmail to the live feed kill list
         $.get("/cache/1hour/killlistrow/" + killID + "/", addLittleKill);
+}
+
+function loadKillRow(killID) {
+        $.get("/cache/1hour/killlistrow/" + killID + "/", function(data) { addKillRow(data, killID); });
+}
+
+function addKillRow(data, id) {
+    $("#kill-" + id).replaceWith(data);
+    fixDateRows();
+    assignRowColor();
+}
+
+function fixDateRows() {
+    let priorDate = undefined;
+$(".tr-date").each( function() { row = $(this); date = row.attr('date'); if (date == priorDate) row.remove(); priorDate = date; }  );
 }
 
 var killdata = undefined;
@@ -185,6 +204,7 @@ killdata = $(data);
             if ($("#livefeednotif").length == 0) {
                 $("#killlist thead tr").after("<tr><td id='livefeednotif' colspan='7'><strong><em>Live feed - killmails may be out of order.</em></strong></td></tr>");
             }
+    assignRowColor();
 }
 
 /* This is currently not used, it is here as a proof of concept */
@@ -532,4 +552,28 @@ function formatISK(value) {
         i++;
     }
     return value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + formatIskIndex [i];
+}
+
+function assignRowColor() {
+    $(".kltbd").each(assignGreenRed);
+}
+
+function assignGreenRed() {
+    // URI split could be done at the global level, but page URI might change so we're keeping it here
+    let urisplit = window.location.pathname.split('/');
+    if (urisplit.length < 4 || urisplit[2] == '') return;
+    let vicid = urisplit[2];
+    
+    let row = $(this).removeClass('kltbd').removeClass('winwin').removeClass('error');
+    let vics = row.attr('vics');
+    if (vics == '') return;
+    vics = vics.split(',');
+
+    for (i=0;i<vics.length;i++) if (vicid == vics[i]) {
+        $("#kill-" + row.attr('killID') + " .glyphicon-remove").removeClass('hidden');
+        return row.addClass('error');
+    }
+
+    $("#kill-" + row.attr('killID') + " .glyphicon-ok").removeClass('hidden');
+    row.addClass('winwin');
 }

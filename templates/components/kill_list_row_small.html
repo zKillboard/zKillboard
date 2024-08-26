@@ -1,0 +1,3 @@
+{% for kill in killList if kill.killID > 0 %}
+      <tr id="kill-{{ kill.killID }}" class="fetchme" killID='{{ kill.killID }}'></tr>
+{% endfor %}
