@@ -94,6 +94,7 @@ function startWebSocket() {
             pubsub(channel);
             pubsub('stats:' + channel);
         }
+        if (window.location.pathname == '/') pubsub('all:*');
 
         console.log('WebSocket connected');
     } catch (e) {
@@ -183,6 +184,16 @@ function addKillRow(data, id) {
 function fixDateRows() {
     let priorDate = undefined;
 $(".tr-date").each( function() { row = $(this); date = row.attr('date'); if (date == priorDate) row.remove(); priorDate = date; }  );
+}
+
+function prepKills(data) {
+    let html = '';
+    for(i = 0; i < data.length; i++) {
+        id = data[i];
+        html = html + "<tr id='kill-" + id + "' class='fetchme' killID='" + id + "'></tr>'";
+    }
+    $("#killmailstobdy").html(html);
+    $(".fetchme").each(function() { loadKillRow($(this).attr('killID'));  });
 }
 
 var killdata = undefined;
@@ -526,7 +537,9 @@ function twitchtime() {
 }
 
 function statsboxUpdate(stats) {
-    $.get('/cache/bypass/statsbox/' + stats.type + '/' + stats.id + '/', setStatsboxValues);
+    if (stats.type == 'systemID') stats.type = 'solarSystemID';
+    else if (stats.type == 'shipID') stats.type = 'shipTypeID';
+    $.get('/cache/bypass/stats/?type=' + stats.type + '&id=' + stats.id, setStatsboxValues);
 }
 
 function setStatsboxValues(stats) {

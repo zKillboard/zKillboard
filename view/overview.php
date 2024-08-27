@@ -84,9 +84,9 @@ if ($key != "label" && ($pageName == '???' && !$mdb->exists('information', ['id'
 $columnName = ($key == 'labels') ? "labels" : $map[$key]['column'].'ID';
 $mixedKills = $pageType == 'overview' && $map[$key]['mixed'];
 
-$mixed = $pageType == 'overview' ? Kills::getKills($parameters, true, false, false) : array();
-$kills = $pageType == 'kills'    ? Kills::getKills($parameters, true, false, false) : array();
-$losses = $pageType == 'losses'  ? Kills::getKills($parameters, true, false, false) : array();
+$mixed = []; //$pageType == 'overview' ? Kills::getKills($parameters, true, false, false) : array();
+$kills = []; //$pageType == 'kills'    ? Kills::getKills($parameters, true, false, false) : array();
+$losses = []; //$pageType == 'losses'  ? Kills::getKills($parameters, true, false, false) : array();
 
 if ($pageType != 'solo' || $key == 'faction') {
     $soloKills = array();
@@ -95,9 +95,9 @@ if ($pageType != 'solo' || $key == 'faction') {
     if (!isset($parameters['kills']) || !isset($parameters['losses'])) {
         $soloParams['mixed'] = true;
     }
-    $soloKills = Kills::getKills($soloParams, true, false, false);
+    $soloKills = []; //Kills::getKills($soloParams, true, false, false);
 }
-$solo = Kills::mergeKillArrays($soloKills, array(), $limit, $columnName, $id);
+$solo = []; //Kills::mergeKillArrays($soloKills, array(), $limit, $columnName, $id);
 
 $padSum = 0;
 $vPadSum = 0;
@@ -251,7 +251,7 @@ if ($detail['stats'] != null) {
     }
 }
 if ($mixedKills) {
-    $kills = Kills::mergeKillArrays($mixed, array(), $limit, $columnName, $id);
+    $kills = []; // Kills::mergeKillArrays($mixed, array(), $limit, $columnName, $id);
 }
 
 $prevID = null;
@@ -516,6 +516,8 @@ $kills = addVics($vics, $kills);
 $losses = addVics($vics, $losses);
 $mixedKills = addVics($vics, $mixedKills);
 $soloKills = addVics($vics, $soloKills);
+
+if ($key == 'label') $kills = [];
 
 $renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold);
 

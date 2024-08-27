@@ -114,3 +114,7 @@ pre {
 	background-color: purple;
 	border-color: solid 1px purple;
 }
+
+html, body {
+    scrollbar-gutter: stable both-edges;
+}

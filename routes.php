@@ -152,12 +152,11 @@ $app->get('/api/stats/:type/:id/', function ($type, $id) use ($app) {
         include 'view/apistats.php';
         });
 
-$app->get('/cache/bypass/statsbox/:type/:id/', function ($type, $id) use ($app) { include 'view/apistatsbox.php'; });
-$app->get('/cache/1hour/statsbox/:type/:id/:epoch/', function ($type, $id, $epoch) use ($app) { include 'view/apistatsbox.php'; });
+$app->get('/cache/bypass/stats/', function () use ($app) { include 'view/ajax/stats.php'; });
+$app->get('/cache/1hour/stats/', function () use ($app) { include 'view/ajax/stats.php'; });
 
-
-$app->get('/cache/bypass/killlist/', function () use ($app) { include 'view/killlist.php'; });
-$app->get('/cache/1hour/killlist/', function () use ($app) { include 'view/killlist.php'; });
+$app->get('/cache/bypass/killlist/', function () use ($app) { include 'view/ajax/killlist.php'; });
+$app->get('/cache/1hour/killlist/', function () use ($app) { include 'view/ajax/killlist.php'; });
 
 $app->get('/api/prices/:id/', function ($id) use ($app) {
         include 'view/apiprices.php';

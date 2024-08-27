@@ -2,10 +2,10 @@
 
 global $mdb, $uri;
 
-if (strpos($uri, "s=") > strpos($uri, "u=")) return $app->notFound();
-$sequence = (int) getP('s');
-$uri = getP('u');
-if (sizeof($_GET) > 0) return $app->notFound();
+$params = URI::validate($app, $uri, ['s' => (strpos($uri, "/bypass/") === false), 'u' => true]);
+
+$sequence = $params['s'];
+$uri = $params['u'];
 
 $split = split('/', $uri);
 $type = @$split[1];
@@ -14,9 +14,12 @@ if ($type != 'label') {
     $type = "${type}ID";
     $id = (int) $id;
 }
+if ($type == 'shipID') $type = 'shipTypeID';
+elseif ($type == 'systemID') $type = 'solarSystemID';
 
+$app->contentType('application/json; charset=utf-8');
 $stats = $mdb->findDoc("statistics", ['type' => $type, 'id' => $id]);
-if ($stats == null) return $app->notFound();
+if ($stats == null) $stats = ['sequence' => 0];
 
 if ($stats['sequence'] != $sequence || strpos($uri, "/bypass/") !== false) {
     $sequence = $stats['sequence'];
@@ -26,11 +29,4 @@ if ($stats['sequence'] != $sequence || strpos($uri, "/bypass/") !== false) {
 $params = Util::convertUriToParameters($uri);
 $kills = Kills::getKills($params, true);
 
-$app->contentType('application/json; charset=utf-8');
 echo json_encode(array_keys($kills));
-
-function getP($key) {
-    $v = @$_GET[$key];
-    unset($_GET[$key]);
-    return $v;
-}

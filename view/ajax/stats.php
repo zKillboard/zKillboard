@@ -1,22 +1,24 @@
 <?php
 
-global $mdb, $redis;
+global $mdb, $redis, $uri;
 
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET');
+$params = URI::validate($app, $uri, ['epoch' => false, 'type' => true, 'id' => true]);
+
+$epoch = (int) @$params['epoch'];
+$type = $params['type'];
+$id = $params['id'];
 
 if ($type != 'label') $id = (int) $id;
 
 $array = $mdb->findDoc('statistics', ['type' => $type, 'id' => $id]);
-if ($array == null) return $app->notFound();
+if ($array == null) $array = ['epoch' => 0];
 
-if (!isset($epoch)) $epoch = 0;
 $sEpoch = $array['epoch'];
-if (((int) $epoch) != $sEpoch) return $app->redirect("/cache/1hour/statsbox/$type/$id/$sEpoch/");
+if (((int) $epoch) != $sEpoch) return $app->redirect("/cache/1hour/stats/?epoch=$sEpoch&type=$type&id=$id");
 
-$array['activepvp'] = (object) Stats::getActivePvpStats([$type => [$id]]);
-$array['info'] = $mdb->findDoc('information', ['type' => $type, 'id' => $id]);
-unset($array['info']['_id']);
+//$array['activepvp'] = (object) Stats::getActivePvpStats([$type => [$id]]);
+//$array['info'] = $mdb->findDoc('information', ['type' => $type, 'id' => $id]);
+//unset($array['info']['_id']);
 
 $ret = [];
 $ret['s-a-sd'] = (int) @$array['shipsDestroyed'];

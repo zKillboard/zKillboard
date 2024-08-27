@@ -1,15 +1,11 @@
 {% set txtLength = 60 %}
 {% include 'components/pager.html' %}
-{% if killList|length == 0 %}
-  <h4>{{ killListTitle }}</h4>
-  <div class="alert"><em>Nothing to display here...</em></div>
-{% else %}
-  <h3 class="pull-left">{{ killListTitle }}</h3>
-  {% set CurrentYear = '' %}
-  {% set CurrentMonth = '' %}
-  {% set CurrentDay = ''%}
-  <div class="clearfix"></div>
-  <table class="table table-condensed table-striped table-hover" style="margin-bottom: 0px;" id="killlist">
+<h3 class="pull-left">{{ killListTitle }}</h3>
+{% set CurrentYear = '' %}
+{% set CurrentMonth = '' %}
+{% set CurrentDay = ''%}
+<div class="clearfix"></div>
+<table class="table table-condensed table-striped table-hover" style="margin-bottom: 0px;" id="killlist">
   <thead>
     <tr>
       <th>Time</th>
@@ -22,8 +18,11 @@
     </tr>
   </thead>
   <tbody id='killmailstobdy'>
+    {% if killList|length == 0 %}
+      <tr><td colspan='7'><i>loading</i></td></tr>
+    {% else %}
         {% include 'components/kill_list_row_small.html' %}
+    {% endif %}
   </tbody>
 </table>
 {% include 'components/pager.html' %}
-{% endif %}

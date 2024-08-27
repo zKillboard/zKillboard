@@ -221,7 +221,8 @@
 
 {% block script %}
 	<script defer type="text/javascript" src="/js/tablesorter/jquery.tablesorter.min.js"></script>
-	<script type="text/javascript">
+	<script defer type="text/javascript" src="/js/overview.js"></script>
+	<script defer type="text/javascript">
 		function prepPage() {
 			if ($ === undefined) return setTimeout(prepPage, 500);
 			else $("#corpstats").tablesorter({textExtraction: removeCommas});
