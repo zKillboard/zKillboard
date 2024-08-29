@@ -79,6 +79,7 @@
 <div class="row">
 {% if pageType == 'overview' or pageType == 'kills' or pageType == 'solo' or pageType == 'losses' %}
   <div class="col-lg-10 pull-left" style="padding-left: 0px;">
+    <div id="topset-isk"></div>
     {% if mixed %}
         {% set killListTitle = 'Recent Activity' %}
     {% else %}
@@ -120,6 +121,14 @@
     <center><div style='max-width: 180px;'><a id='loginsideimage' href='/ccpoauth2/' class='btn btn-block collapse'><img src='/img/ssologin.png' style='width: 100%; max-width: 100%;'></a></div></center>
     {% include 'components/activity.html' %}
 	{% include 'components/activePvP.html' %}
+            <div id="topset-characterID"></div>
+            <div id="topset-corporationID"></div>
+            <div id="topset-allianceID"></div>
+            <div id="topset-factionID"></div>
+            <div id="topset-shipTypeID"></div>
+            <div id="topset-groupID"></div>
+            <div id="topset-solarSystemID"></div>
+            <div id="topset-locationID"></div>
             {% if topLists|length %}
         	{% for topSet in topLists %}
         		{% include 'components/top_killer_list.html' %}
@@ -221,7 +230,7 @@
 
 {% block script %}
 	<script defer type="text/javascript" src="/js/tablesorter/jquery.tablesorter.min.js"></script>
-	<script defer type="text/javascript" src="/js/overview.js"></script>
+	<script defer type="text/javascript" src="/js/overview.js?v={{ version}}"></script>
 	<script defer type="text/javascript">
 		function prepPage() {
 			if ($ === undefined) return setTimeout(prepPage, 500);

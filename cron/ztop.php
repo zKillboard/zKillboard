@@ -59,17 +59,24 @@ while ($hour == date('H')) {
 
     addInfo('', 0);
     $nonApiR = new RedisTtlCounter('ttlc:nonApiRequests', 300);
-    addInfo('User requests in last 5 minutes', $nonApiR->count());
+    addInfo('Visitor page loads in last 5 minutes', $nonApiR->count());
     $uniqueUsers = new RedisTtlCounter('ttlc:unique_visitors', 300);
-    addInfo("Unique user IP's in last 5 minutes", $uniqueUsers->count());
-
-    addInfo('', 0);
+    addInfo("Visitors in last 5 minutes", $uniqueUsers->count());
     $apiR = new RedisTtlCounter('ttlc:apiRequests', 300);
     addInfo('API requests in last 5 minutes', $apiR->count());
-    $visitors = new RedisTtlCounter('ttlc:visitors', 300);
-    addInfo('Unique IPs in last 5 minutes', $visitors->count());
+    //$visitors = new RedisTtlCounter('ttlc:visitors', 300);
+    //addInfo('Unique IPs in last 5 minutes', $visitors->count());
+
+    addInfo('', 0);
     $requests = new RedisTtlCounter('ttlc:requests', 300);
-    addInfo('Requests in last 5 minutes', $requests->count());
+    addInfo('Base Requests', $requests->count());
+    $requests = new RedisTtlCounter('ttlc:bypass', 300);
+    $bypasses = $requests->count();
+    addInfo('Cache Bypass', $bypasses);
+    $requests = new RedisTtlCounter('ttlc:miss', 300);
+    $misses = $requests->count();
+    addInfo('Cache Miss', $misses);
+    addInfo('Cache Hits', ((int) $bypasses - (int) $misses));
 
     addInfo('', 0);
     addInfo('Listening Websockets', (int) $redis->get('zkb:websocketCount'));

@@ -174,15 +174,17 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
     //$p['labels'] = 'pvp';
     if ($key != "label") $p['npc'] = false;
 
+    /*
     $topLists[] = Info::doMakeCommon('Top Characters', 'characterID', Stats::getTop('characterID', $p));
     $topLists[] = Info::doMakeCommon('Top Corporations', 'corporationID', Stats::getTop('corporationID', $p));
     $topLists[] = Info::doMakeCommon('Top Alliances', 'allianceID', Stats::getTop('allianceID', $p));
     $topLists[] = Info::doMakeCommon('Top Ships', 'shipTypeID', Stats::getTop('shipTypeID', $p));
     $topLists[] = Info::doMakeCommon('Top Systems', 'solarSystemID', Stats::getTop('solarSystemID', $p));
     $topLists[] = Info::doMakeCommon('Top Locations', 'locationID', Stats::getTop('locationID', $p));
+    */
 
     $p['limit'] = 6;
-    $topKills = Stats::getTopIsk($p);
+    $topKills = []; // Stats::getTopIsk($p);
 }
 
 $activity = ['max' => 0];
@@ -461,7 +463,8 @@ if (is_array($months) && sizeof($months) > 0) {
 }
 
 // Collect active PVP stats
-$activePvP = Stats::getActivePvpStats($parameters);
+if ($key == "label") $activePvP = [];
+else $activePvP = Stats::getActivePvpStats($parameters);
 
 $hasPager = in_array($pageType, ['overview', 'kills', 'losses', 'solo']);
 

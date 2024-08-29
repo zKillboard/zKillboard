@@ -14,6 +14,7 @@ $currentSecond = "";
 $guzzler = new Guzzler(5);
 $minute = date('Hi');
 while ($minute == date('Hi')) {
+    $t = new Timer();
     if ($redis->get("zkb:reinforced") == true) break;
     $fetch = [];
 
@@ -50,7 +51,7 @@ while ($minute == date('Hi')) {
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
     $guzzler->call($url, "updateChar", "failChar", $params, [], 'POST_JSON', json_encode($fetch, true));
     $guzzler->finish();
-    usleep(100000);
+    while ($t->stop() < 1000) usleep(100000);
 }      
 $guzzler->finish();
 

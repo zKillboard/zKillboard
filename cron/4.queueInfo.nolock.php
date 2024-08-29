@@ -138,10 +138,6 @@ function updateEntity($killID, $entity)
             $insert = $row;
             $insert['name'] = $defaultName;
             try {$mdb->insert('information', $row);} catch (Exception $eex) {} 
-        } else if ($type == 'characterID' && $redis->get("zkb:24hourUpdate:$id") != "true") {
-            $mdb->removeField("information", ['type' => 'characterID', 'id' => $id, 'corporationID' => ['$exists' => false]], 'lastApiUpdate');
-            $mdb->removeField("information", ['type' => 'characterID', 'id' => $id, 'corporationID' => ['$exists' => false]], 'lastAffUpdate');
-            $redis->setex("zkb:24hourUpdate:$id", 86400, "true");
         }
         $rtq = new RedisTimeQueue("zkb:$type", 86400);
         $rtq->add($id);
