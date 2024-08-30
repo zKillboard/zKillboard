@@ -38,6 +38,12 @@ $ret['s-a-s-e'] = eff($ret['s-a-sd'], $ret['s-a-sl']);
 $ret['s-a-i-e'] = eff($ret['s-a-id'], $ret['s-a-il']);
 $ret['s-a-p-e'] = eff($ret['s-a-pd'], $ret['s-a-pl']);
 
+$p = Util::convertUriToParameters("/$type/$id/");
+$q = MongoFilter::buildQuery($p);
+$ret['ksa'] = (int) $mdb->findField("oneWeek", "killID", $q, ['killID' => 1]);
+$ret['kea'] = (int) $mdb->findField("oneWeek", "killID", $q, ['killID' => -1]);
+$ret['epoch'] = $sEpoch;
+
 $array['ret'] = $ret;
 $app->contentType('application/json; charset=utf-8');
 echo json_encode($ret);

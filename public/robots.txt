@@ -1,5 +1,6 @@
 User-agent: bingbot
 User-agent: googlebot
+Disallow: /cache/*
 Disallow: /api/*
 Disallow: /navbar/
 Disallow: /br/*

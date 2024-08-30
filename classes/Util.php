@@ -61,6 +61,11 @@ class Util
 
     public static function convertUriToParameters($uri)
     {
+        $uri = trim($uri);
+        $s = substr($uri, 0, 1);
+        $e = substr($uri, -1);
+        if ($s != '/' || $e != '/') Log::log("Invalid? '$uri'");
+
         global $isApiRequest;
         $parameters = array();
         $entityRequiredSatisfied = false;
@@ -190,9 +195,8 @@ class Util
                     $value = array_shift($split);
                     if (substr($value, 0, 1) === "0") dire("Do not prefix values with 0");
                     $value = (int) $value;
-                    if ($value < 1) {
-                        dire("page value <= 1 not allowed");
-                    }
+                    if ($value < 1) dire("page value <= 1 not allowed");
+                    if ($value > 20) dire("page vale > 20 not allowed");
                     $parameters[$key] = (int) $value;
                     $paginated = true;
                     break;

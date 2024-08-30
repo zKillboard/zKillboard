@@ -6,17 +6,30 @@ function loadOverview() {
     if (typeof $ === 'undefined') return setTimeout(loadOverview, 1);
 
     if ($("#killlist").length > 0) $.get('/cache/bypass/killlist/?u=' + window.location.pathname, prepKills);
-    loadTops();
+}
+
+var overviewStats = undefined;
+function updateStats(stats) {
+    overviewStats = stats;
+    console.log('stats updated');
+    if (topsLoaded === false) loadTops();
 }
 
 var topsLoaded = false;
+var topsLoadedStats = {};
 function loadTops() {
-    setTimeout(loadTops, 60000);
+    if (window.location.pathname.includes('/page/')) return;
 
+    setTimeout(loadTops, 60000);
     let now = new Date();
     if (topsLoaded == true && now.getMinutes() % 15 != 0) return; 
 
-    $("#topset-isk").load("/cache/bypass/statstopisk/?u=" + window.location.pathname);
-    validTopTypes.forEach((t) => $("#topset-" + t).load("/cache/bypass/statstop10/?u=" + window.location.pathname + "&t=" + t));
+    let ksa = overviewStats.ksa;
+    let kea = overviewStats.kea;
+
+    $("#topset-isk").load("/cache/24hour/statstopisk?u=" + window.location.pathname + "&ks=" + ksa + "&ke=" + kea);
+    validTopTypes.forEach((t) => $("#topset-" + t).load("/cache/24hour/statstop10?u=" + window.location.pathname + "&t=" + t + "&ks=" + ksa + "&ke=" + kea));
+
     topsLoaded = true;
+    console.log('tops loaded');
 }

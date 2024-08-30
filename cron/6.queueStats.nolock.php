@@ -3,6 +3,7 @@
 $pid = pcntl_fork();
 $master = ($pid > 0);
 pcntl_fork();
+pcntl_fork();
 
 use cvweiss\redistools\RedisQueue;
 
@@ -23,23 +24,26 @@ $minute = date('Hi');
 function checkForResets() {
     global $mdb, $redis;
 
+    $count = 0;
+
     // Look for resets in statistics and add them to the queue
-    $hasResets = false;
     $cursor = $mdb->getCollection("statistics")->find(['reset' => true])->limit(500);
     while ($cursor->hasNext()) {
         $row = $cursor->next();
         $raw = $row['type'] . ":" . $row['id'];
         $redis->sadd("queueStatsSet", $raw);
+        $count++;
         $hasResets = true;
     }
-    return $hasResets;
+    if ($count > 0) Util::out("Added $count reset records for stats processing");
+    return ($count > 0);
 }
 
 while ($minute == date('Hi')) {
     $raw = $redis->srandmember("queueStatsSet");
     if ($raw == ":" || $raw == ":0") {
         $redis->srem("queueStatsSet", $raw);
-        $raw = null;
+        continue;
     }
     if ($raw == null) {
         if ($master) checkForResets();
@@ -49,9 +53,17 @@ while ($minute == date('Hi')) {
 
     $arr = explode(":", $raw);
     $type = $arr[0];
-    if ($type == "itemID") continue;
+    if ($type == "itemID" || $type == "typeID") {
+        Util::out("Invalid stats request: $raw");        
+        $redis->srem("queueStatsSet", $raw);
+        continue;
+    }
 
-    $id = ($type == 'label') ? $arr[1] : (int) $arr[1];
+    if ($type != 'label') $id = (int) $arr[1];
+    else {
+        array_shift($arr);
+        $id = implode(":", $arr);
+    }
     $key = "$type:$id";
     if ($redis->set("zkb:stats:$key", "true", ['nx', 'ex' => 3600]) === true) {
         try {
@@ -125,15 +137,19 @@ function calcStats($row, $maxSequence)
             break;
         case "factionID":
         case "regionID":
-        case "label";
+            $delta = 100000;
+            break;
+        case "label":
             $delta = 100000;
             break;
         default:
-            throw new Exception("Unknown type for stats processing: $type");
+            throw new Exception("Unknown type for stats processing: '$type'");
     }
 
     $oldSequence = (int) @$stats['sequence'];
     $newSequence = min($oldSequence + $delta, $maxSequence);
+
+    //Util::out("$type $id $oldSequence $newSequence");
 
     for ($i = 0; $i <= 1; ++$i) {
         $isVictim = ($i == 0);
@@ -150,6 +166,7 @@ function calcStats($row, $maxSequence)
         else if ($isVictim == false) $query['labels'] = ['$ne' => 'padding']; // Allows NPCs to count their kills
 
         if ($type == 'label' || $type == 'locationID' || $type == 'regionID' || $type == 'constellationID' || $type == 'solarSystemID') unset($query['isVictim']);
+
 
         $query = MongoFilter::buildQuery($query);
         // set the proper sequence values

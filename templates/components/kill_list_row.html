@@ -20,7 +20,7 @@
             <span class="glyphicon glyphicon-remove hidden" aria-hidden="true"></span>
           </span>
           {{ kill.dttm.sec|date('H:i') }}
-          <br/><a href="/kill/{{ kill.killID }}/">{{ formatIsk(kill.zkb.totalValue) }}</a>
+          <br/><a href="/kill/{{ kill.killID }}/"><span class="pull-right" format='format-isk-once' raw="{{ kill.zkb.totalValue }}">{{ formatIsk(kill.zkb.totalValue) }}</span></a>
         </td>
         <td class="icon hidden-xs" style="text-align: center; vertical-align: middle;">
           {% include 'components/image_ship.html' %}

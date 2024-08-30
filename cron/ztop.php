@@ -67,19 +67,7 @@ while ($hour == date('H')) {
     //$visitors = new RedisTtlCounter('ttlc:visitors', 300);
     //addInfo('Unique IPs in last 5 minutes', $visitors->count());
 
-    addInfo('', 0);
-    $requests = new RedisTtlCounter('ttlc:requests', 300);
-    addInfo('Base Requests', $requests->count());
-    $requests = new RedisTtlCounter('ttlc:bypass', 300);
-    $bypasses = $requests->count();
-    addInfo('Cache Bypass', $bypasses);
-    $requests = new RedisTtlCounter('ttlc:miss', 300);
-    $misses = $requests->count();
-    addInfo('Cache Miss', $misses);
-    addInfo('Cache Hits', ((int) $bypasses - (int) $misses));
-
-    addInfo('', 0);
-    addInfo('Listening Websockets', (int) $redis->get('zkb:websocketCount'));
+    addInfo('websocket connections', (int) $redis->get('zkb:websocketCount'));
 
     addInfo('Successful ESI calls in last 5 minutes', Status::getStatus('esi', true), false);
     addInfo('Failed ESI calls in last 5 minutes', Status::getStatus('esi', false), false);

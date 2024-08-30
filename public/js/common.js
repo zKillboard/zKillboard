@@ -168,11 +168,11 @@ function wslog(msg)
 
 function loadLittleMail(killID) {
         // Add the killmail to the live feed kill list
-        $.get("/cache/1hour/killlistrow/" + killID + "/", addLittleKill);
+        $.get("/cache/24hour/killlistrow/" + killID + "/", addLittleKill);
 }
 
 function loadKillRow(killID) {
-        $.get("/cache/1hour/killlistrow/" + killID + "/", function(data) { addKillRow(data, killID); });
+        $.get("/cache/24hour/killlistrow/" + killID + "/", function(data) { addKillRow(data, killID); });
 }
 
 function addKillRow(data, id) {
@@ -544,9 +544,17 @@ function statsboxUpdate(stats) {
 
 function setStatsboxValues(stats) {
     Object.keys(stats).forEach((e) => $('#' + e).attr('raw', stats[e]) )
+    doFormats();
+    updateStats(stats);
+}
+
+function doFormats() {
     $("[format='format-int']").each(function() { t = $(this); doFieldUpdate(t, Number(t.attr('raw') | '').toLocaleString()); });
     $("[format='format-dec1']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(t.attr('raw')).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits:1} )); });
     $("[format='format-isk']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(t.attr('raw')))) });
+
+    $("[format='format-dec2-once']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(t.attr('raw')).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2} )); t.removeAttr('format'); });
+    $("[format='format-isk-once']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(t.attr('raw')))); t.removeAttr('format'); });
 }
 
 function doFieldUpdate(f, v) {
@@ -557,14 +565,14 @@ function doFieldUpdate(f, v) {
 }
 
 const formatIskIndex = ['', 'k', 'm', 'b', 't', 'k t', 'm t', 'b t'];
-function formatISK(value) {
-    if (value < 100000) return value.toLocaleString();
+function formatISK(value, decimals = 2) {
+    if (value < 10000) return value.toLocaleString();
     let i = 0;
     while (value > 999.99) {
         value = value / 1000;
         i++;
     }
-    return value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + formatIskIndex [i];
+    return value.toLocaleString(undefined, {minimumFractionDigits: decimals, maximumFractionDigits: decimals}) + formatIskIndex [i];
 }
 
 function assignRowColor() {
