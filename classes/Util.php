@@ -606,4 +606,14 @@ class Util
 
         return array('usd' => $totalprice / $usdVal, 'eur' => $totalprice / $eurVal, 'gbp' => $totalprice / $gbpVal);
     }
+
+    public static function statsBoxUpdate($type, $id)
+    {
+        global $redis;
+
+        $message = ['action' => 'statsbox', 'type' => $type, 'id' => $id];
+        $msg = json_encode($message, JSON_UNESCAPED_SLASHES);
+        $typed = str_replace("ID", "", $type);
+        $redis->publish("stats:$typed:$id", $msg);
+    }
 }

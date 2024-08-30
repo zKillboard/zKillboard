@@ -60,7 +60,6 @@ $(document).ready(function() {
     if (start_websocket) startWebSocket();
 
     setTimeout(function() { $("#messagedad").show(); }, 5500);
-    $("img[shipImageError='true']").each(fixShipRender2Icon);
 
     $(".datatable").DataTable();
 
@@ -71,6 +70,7 @@ $(document).ready(function() {
     $(".hrefit").each(function() { t = $(this);  t.attr('href', '#' + t.attr('name')); });
     $(".fetchme").each(function() { loadKillRow($(this).attr('killID'));  });
     assignRowColor();
+    setTimeout(fixCCPsBrokenImages, 1000);
 });
 
 function startWebSocket() {
@@ -198,23 +198,22 @@ function prepKills(data) {
 
 var killdata = undefined;
 function addLittleKill(data) {
-            if (!(showAds != 0 && typeof fusetag == 'undefined')) {
-                var data = $(data);
-killdata = $(data);
-                data.on('click', function(event) {
-                    if (event.which === 2) return false;
-                    window.location = '/kill/' + $(this).attr('killID') + '/';
-                    return false;
+    if (!(showAds != 0 && typeof fusetag == 'undefined')) {
+        var data = $(data);
+        killdata = $(data);
+        data.on('click', function(event) {
+                if (event.which === 2) return false;
+                window.location = '/kill/' + $(this).attr('killID') + '/';
+                return false;
                 });
-                /*if (showAds == 0)*/ $("#killlist tbody tr").first().before(data);
-                //else $("#killlist tbody tr").eq(0).after(data);
-            }
-            // Keep the page from growing too much...
-            while ($("#killlist tbody tr").length > 50) $("#killlist tbody tr:last").remove();
-            // Tell the user what's going on and not to expect sequential killmails
-            if ($("#livefeednotif").length == 0) {
-                $("#killlist thead tr").after("<tr><td id='livefeednotif' colspan='7'><strong><em>Live feed - killmails may be out of order.</em></strong></td></tr>");
-            }
+        $("#killlist tbody tr").first().before(data);
+    }
+    // Keep the page from growing too much...
+    while ($("#killlist tbody tr").length > 50) $("#killlist tbody tr:last").remove();
+    // Tell the user what's going on and not to expect sequential killmails
+    if ($("#livefeednotif").length == 0) {
+        $("#killlist thead tr").after("<tr><td id='livefeednotif' colspan='7'><strong><em>Live feed - killmails may be out of order.</em></strong></td></tr>");
+    }
     assignRowColor();
 }
 
@@ -237,7 +236,7 @@ function addLittleKillInOrder(data) {
     }
     lastrow.before(data);
     setTimeout(() => { data.show('slow');}, 1);
-    
+
     while ($("#killmailstobdy tr").length > 50) $("#killmailstobdy tr").last().remove()
 }
 function audio(uri)
@@ -252,15 +251,15 @@ function saveFitting(id) {
     $('#modalMessage').modal({backdrop: true, keyboard: true, show: true});
 
     var request = $.ajax({
-        url: "/ccpsavefit/" + id + "/",
-        type: "GET",
-        dataType: "text"
-    });
+url: "/ccpsavefit/" + id + "/",
+type: "GET",
+dataType: "text"
+});
 
-    request.done(function(msg) {
+request.done(function(msg) {
         $('#modalMessageBody').html(msg);
         $('#modalMessage').modal({backdrop: true, keyboard: true, show: true});
-    });
+        });
 }
 
 
@@ -292,7 +291,7 @@ function sortItemTable(column, order) {
     switching = true;
     haveSwitched = false;
 
-  
+
     do {
         haveSwitched = false;
         rows = table.rows;
@@ -364,17 +363,17 @@ function doLoad(url) {
 
 // Revert to a previously saved state
 window.addEventListener('popstate', function(event) {
-    //window.location = window.location;
-});
+        //window.location = window.location;
+        });
 
 function addKillListClicks()
 {
     $(".killListRow").on('click', function(event) {
-        if (event.which === 2) return false;
-        console.log($(this).attr('killID'));
-        window.location = '/kill/' + $(this).attr('killID') + '/';
-        return false;
-    });
+            if (event.which === 2) return false;
+            console.log($(this).attr('killID'));
+            window.location = '/kill/' + $(this).attr('killID') + '/';
+            return false;
+            });
 }
 
 function doSponsor(url)
@@ -389,12 +388,12 @@ function doFavorite(killID) {
     var action = (color === "rgb(128, 128, 128)") ? "save" : "remove";
     var url = '/account/favorite/' + killID + '/' + action + '/';
     $.post(url, function( data ) {
-        result = JSON.parse(data); console.log(result);
-        $("#fav-star-killmail").css("color", result.color);
-        $('#modalTitle').text('Favorites');
-        $('#modalMessageBody').text(result.message);
-        $('#modalMessage').modal({backdrop: true, keyboard: true, show: true});
-    });
+            result = JSON.parse(data); console.log(result);
+            $("#fav-star-killmail").css("color", result.color);
+            $('#modalTitle').text('Favorites');
+            $('#modalMessageBody').text(result.message);
+            $('#modalMessage').modal({backdrop: true, keyboard: true, show: true});
+            });
 }
 
 function pubsub(channel)
@@ -430,13 +429,13 @@ function loadads() {
     if (detectAdblock) {
         let detection = detectAdblock();
         detectAdblock().then((res) => { 
-            adblocked = (res.uBlockOrigin === true || res.adblockPlus === true);
-            console.log('Adblocked?', adblocked);
-            gtag('event', (adblocked === true ? 'ad_blocked' : 'ad_unblocked'));
-            if (adblocked === true) {
+                adblocked = (res.uBlockOrigin === true || res.adblockPlus === true);
+                console.log('Adblocked?', adblocked);
+                gtag('event', (adblocked === true ? 'ad_blocked' : 'ad_unblocked'));
+                if (adblocked === true) {
                 return showAdblockedMessage();
-            }
-        });
+                }
+                });
     } else {
         gtag('event', 'adblocked', 'detectAdblock blocked');
     }
@@ -454,7 +453,7 @@ function loadads() {
             var elem = $(this);
             var fuse = elem.attr("fuse");
             elem.load('/cache/1hour/publift/' + fuse + '/', adblockloaded);
-    });
+            });
 }
 
 var bottomad = null;
@@ -467,46 +466,44 @@ function adblockloaded() {
 
 function showAdblockedMessage() {
     if ($("#publifttop").html() == "") $("#publifttop").html('<h4>AdBlocker Detected! :(</h4><p>Please support zKillboard by disabling your adblocker.<br/><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p>');
-}
+            }
 
-var now = time();
-var today = now - (now % 86400);
-var week = now - (now % 604800);
+            var now = time();
+            var today = now - (now % 86400);
+            var week = now - (now % 604800);
 
-function time() {
-    return Math.floor(Date.now() / 1000);
-}
+            function time() {
+            return Math.floor(Date.now() / 1000);
+            }
 
-// gtcplex320.jpg  gtcplex728.jpg  merch320.jpg  merch728.jpg
-var banner_links = ['https://store.markeedragon.com/affiliate.php?id=928&redirect=index.php?cat=4', 'https://www.zazzle.com/store/zkillboard/products'];
-var banners_sm = ['/img/banners/gtcplex320.jpg', '/img/banners/merch320.jpg'];
-var banners_lg = ['/img/banners/gtcplex728.jpg?1', '/img/banners/merch728.jpg'];
-var ob_firstcall = true;
-function otherBanners() {
-    if (ob_firstcall) {
-        ob_firstcall = false;
-        return setTimeout(otherBanners, 6000);
-    }
-    if ($("#messagedad").length == 0) return;
+            // gtcplex320.jpg  gtcplex728.jpg  merch320.jpg  merch728.jpg
+            var banner_links = ['https://store.markeedragon.com/affiliate.php?id=928&redirect=index.php?cat=4', 'https://www.zazzle.com/store/zkillboard/products'];
+            var banners_sm = ['/img/banners/gtcplex320.jpg', '/img/banners/merch320.jpg'];
+            var banners_lg = ['/img/banners/gtcplex728.jpg?1', '/img/banners/merch728.jpg'];
+            var ob_firstcall = true;
+            function otherBanners() {
+            if (ob_firstcall) {
+            ob_firstcall = false;
+            return setTimeout(otherBanners, 6000);
+            }
+            if ($("#messagedad").length == 0) return;
 
-    var minute = new Date().getMinutes();
-    var mod = minute % 2; // number of other banners
-    $('#otherBannerAnchor').attr('href', banner_links[mod]);
-    $('#otherBannerImg').attr('src', banners_lg[mod]);
-    $("#otherBannerDiv").css('display', 'block');
-    setTimeout(otherBanners, Math.min(30000, 1000 * (61 - new Date().getSeconds())));
-}
+            var minute = new Date().getMinutes();
+            var mod = minute % 2; // number of other banners
+            $('#otherBannerAnchor').attr('href', banner_links[mod]);
+            $('#otherBannerImg').attr('src', banners_lg[mod]);
+            $("#otherBannerDiv").css('display', 'block');
+            setTimeout(otherBanners, Math.min(30000, 1000 * (61 - new Date().getSeconds())));
+            }
 
 /*
-<h4>zKillboard does NOT automatically get all killmails</h4><p>zKillboard does not get all killmails automatically. CCP does not make killmails public. They must be provided by various means.</p><ul><li>Someone manually posts the killmail.</li><li>A character has authorized zKillboard to retrieve their killmails.</li><li>A corporation director or CEO has authorized zKillboard to retrieve their corporation\'s killmails.</li><li>War killmail (victim and final blow have a Concord sanctioned war with each other)</li></ul><p>The killmail API works just like killmails do in game. The victim gets the killmail, and the person with the finalblow gets the killmail. Therefore, for zKillboard to be able to retrieve the killmail via API it must have the character or corporation API submitted for the victim or the person with the final blow. If an NPC gets the final blow, the last character to aggress to the victim will receive the killmail and credit for the final blow.</p><p>Remember, every PVP killmail has two sides, the victim and the aggressors. Victims often don\'t want their killmails to be made public, however, the aggressors do.</p>
-*/
+   <h4>zKillboard does NOT automatically get all killmails</h4><p>zKillboard does not get all killmails automatically. CCP does not make killmails public. They must be provided by various means.</p><ul><li>Someone manually posts the killmail.</li><li>A character has authorized zKillboard to retrieve their killmails.</li><li>A corporation director or CEO has authorized zKillboard to retrieve their corporation\'s killmails.</li><li>War killmail (victim and final blow have a Concord sanctioned war with each other)</li></ul><p>The killmail API works just like killmails do in game. The victim gets the killmail, and the person with the finalblow gets the killmail. Therefore, for zKillboard to be able to retrieve the killmail via API it must have the character or corporation API submitted for the victim or the person with the final blow. If an NPC gets the final blow, the last character to aggress to the victim will receive the killmail and credit for the final blow.</p><p>Remember, every PVP killmail has two sides, the victim and the aggressors. Victims often don\'t want their killmails to be made public, however, the aggressors do.</p>
+ */
 
 function showAdder(showAdd, type, id, doTN) {
     if (doTN) pubsub('tracker:' + type + ':' + id);
     return (showAdd && ($("#tracker-remove-" + type + "-" + id).removeClass("hidden").length == 0));
 }
-
-function fixShipRender2Icon() { $(this).attr('src', $(this).attr('src').replace('render', 'icon')).removeAttr('imageError'); }
 
 function twitchlive(channel) {
     if ($('#twitch-channel').text() != channel) {
@@ -528,12 +525,12 @@ function twitchoffline() {
 
 function twitchtime() {
     /*new Twitch.Embed("twitch-embed", {
-        width: '100%',
-        height: 500,
-        channel: $("#twitch-channel").text(),
-    });
-    $("#twitch-live").addClass('hidden');*/
-    gtag('event', 'twitch-clicked');
+width: '100%',
+height: 500,
+channel: $("#twitch-channel").text(),
+});
+$("#twitch-live").addClass('hidden');*/
+gtag('event', 'twitch-clicked');
 }
 
 function statsboxUpdate(stats) {
@@ -544,7 +541,7 @@ function statsboxUpdate(stats) {
 
 function setStatsboxValues(stats) {
     Object.keys(stats).forEach((e) => $('#' + e).attr('raw', stats[e]) )
-    doFormats();
+        doFormats();
     updateStats(stats);
 }
 
@@ -560,8 +557,8 @@ function doFormats() {
 function doFieldUpdate(f, v) {
     if (f.text() == String(v)) return;
     f.animate({opacity: 0}, 100, function() {
-        $(this).text(v).animate({opacity: 1}, 100);
-    })
+            $(this).text(v).animate({opacity: 1}, 100);
+            })
 }
 
 const formatIskIndex = ['', 'k', 'm', 'b', 't', 'k t', 'm t', 'b t'];
@@ -584,7 +581,7 @@ function assignGreenRed() {
     let urisplit = window.location.pathname.split('/');
     if (urisplit.length < 4 || urisplit[2] == '') return;
     let vicid = urisplit[2];
-    
+
     let row = $(this).removeClass('kltbd').removeClass('winwin').removeClass('error');
     let vics = row.attr('vics');
     if (vics == '') return;
@@ -597,4 +594,8 @@ function assignGreenRed() {
 
     $("#kill-" + row.attr('killID') + " .glyphicon-ok").removeClass('hidden');
     row.addClass('winwin');
+}
+
+function fixCCPsBrokenImages() {
+    $("img[shipimageerror='true']").each(function() { let t = $(this);  let src = t.attr('src'); console.log('fixing', src); t.attr('src', src.replace('render', 'icon')).removeAttr('shipimageerror'); });
 }

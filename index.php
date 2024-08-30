@@ -8,168 +8,51 @@ $pageLoadMS = microtime(true);
 $uri = @$_SERVER['REQUEST_URI'];
 $isApiRequest = substr($uri, 0, 5) == "/api/";
 
-if ($uri == "/kill/-1/") {
-    header("Location: /keepstar1.html");
-    exit();
-}
-// Some killboards and bots are idiots
-if (strpos($uri, "_detail") !== false) {
-    header('HTTP/1.1 404 This is not an EDK killboard.');
-    exit();
-}
+if ($uri == "/kill/-1/") return header("Location: /keepstar1.html");
+
 if (strpos($uri, "/asearchinfo/") === false && strpos($uri, "/asearchquery/") === false && strpos($uri, "/cache/") === false)  {
     // Check to ensure we have a trailing slash, helps with caching
     if (substr($uri, -1) != '/' && strpos($uri, 'ccpcallback') === false && strpos($uri, 'patreon') === false && strpos($uri, 'brsave') === false && strpos($uri, "ccp") === false && strpos($uri, "related/") === false && strpos($uri, 'twitch') == false) {
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: GET');
-        // Is there q question mark in the URL? cut it off, doesn't belong
+        // Is there a question mark in the URL? cut it off, doesn't belong
         if (strpos($uri, '?') !== false) {
             /* Facebook and other media sites like to add tracking to the URL... remove it */
             $s = explode('?', $uri);
             $uri = $s[0];
-            header("Location: $uri", true, 302);
-            exit();
+            return header("Location: $uri", true, 302);
         }
-        if ($isApiRequest) header("HTTP/1.1 200 Missing trailing slash");
-        else {
-            header("Location: $uri/", true, 302);
-        }
-        exit();
-    }
-}
 
-// http requests should already be prevented, but use this just in case
-// also prevents sessions from being created without ssl
-if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] != 'https') {
-    header("Location: https://zkillboard.com$uri");
-    die();
+        if ($isApiRequest) return header("HTTP/1.1 200 Missing trailing slash");
+        else return header("Location: $uri/", true, 302);
+    }
 }
 
 // Include Init
 require_once 'init.php';
-
 $ip = IP::get();
-$agent = @$_SERVER['HTTP_USER_AGENT'];
-foreach ($badBots as $bot) {
-    if (!$isApiRequest && strpos($agent, $bot) !== false) {
-        //Log::log("blocking agent: $agent");
-        header('HTTP/1.1 403 Blacklisted');
-        die();
-    }
-}
-if (!$isApiRequest && $agent == "Mozilla/5.0 (compatible; GoogleDocs; apps-spreadsheets; +http://docs.google.com)") {
-    //Log::log("blocking google docs $uri");
-    header('HTTP/1.1 405 Google docs not allowed on non-api endpoints');
-    exit();
-}
-
-try {
-    if ($redis->get("zkb:memused") > 115) {
-        header('HTTP/1.1 202 API temporarily disabled because of resource limitations');
-        exit();
-    }
-} catch (Exception $e) {
-    header('/html/redisloading.html', 302);
-    exit();
-} 
-
-// Starting Slim Framework
-$app = new \Slim\Slim($config);
-
 $ipE = explode(',', $ip);
 $ip = $ipE[0];
 
-if ($redis->get("IP:ban:$ip") == "true") {
-    header("Location: /html/banned.html", true, 302);
-    return;
-}
-if (strpos($uri, "except") !== false) {
-    $redix->setex("IP:ban:$ip", $banTime, "true");
-    header("Location: /html/banned.html", true, 302);
-    return;
+$agent = strtolower(@$_SERVER['HTTP_USER_AGENT']);
+
+if ($redis->get("zkb:badbot:$agent") == true) html403("Bad Robot! Naughty! See robots.txt");
+$goodBot = $isApiRequest ? true : partialInArray($redis, $agent, $validBots);
+$badBot = $goodBot ? false : partialInArray($redis, $agent, $badBots);
+if ($badBot) {
+    $redis->setex("zkb:badbot:$agent", 86400, "true");
+    html403("Bad Robot! Naughty! See robots.txt");
 }
 
-if (in_array($ip, $blackList)) {
-    header('HTTP/1.1 403 Blacklisted');
-    die();
-}
+if ($redis->get("IP:ban:$ip") == "true") return header("Location: /html/banned.html", true, 302);
+if (in_array($ip, $blackList)) return header('HTTP/1.1 403 Blacklisted');
+
+// Starting Slim Framework
+$app = new \Slim\Slim($config);
 header('X-Frame-Options: DENY');
 header("Content-Security-Policy: frame-ancestors 'none'");
 
-$limit = 10;
-if (substr($uri, 0, 5) == "/api/") $limit = 1;
-$noLimits = ['/cache/', '/post/', '/autocomplete/', '/crestmail/', '/comment/', '/killlistrow/', '/comment/', '/related/', '/sponsor', '/crestmail', '/account/', '/logout', '/ccp', '/auto', '/killlistrow/', '/challenge/', '/api/prices/', '/asearchquery/', '/asearchinfo/'];
-$noLimit = false;
-foreach ($noLimits as $noLimitTxt) $noLimit |= (substr($uri, 0, strlen($noLimitTxt)) === $noLimitTxt);
-
-$rateLimitKey = "ratelimit:" . $ip . ":" . time();
-$sem = sem_get(3173);
-sem_acquire($sem);
-$count = (int) $redis->get($rateLimitKey);
-
-//$nlt = ($noLimit ? "no limit" : "limited");
-//if ($ip == "2a01:7e00::f03c:91ff:fe28:f395") Log::log($rateLimitKey . " ($nlt) $count $limit");
-if ($noLimit == false && $count >= $limit) {
-    //Log::log("$ip $uri $count>=$limit Rate limited $agent");
-    if ($isApiRequest) {
-        header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Methods: GET');
-    }
-    header('HTTP/1.1 429 Too many requests.');
-    sem_release($sem);
-    die("<html><head><meta http-equiv='refresh' content='1'></head><body>Rate limited - because of abuse all IPs are restricted to 1 request per second now. I don't care if it wasn't you - I won't make any exceptions.</body></html>");
-} else if ($noLimit !== false) {
-    $redis->incr($rateLimitKey, 1);
-    $redis->expire($rateLimitKey, 1);
-}
-sem_release($sem);
-
-// Scrape Checker
-$ipKey = "ip::$ip";
-if ($redis->get("ip::redirect::$ip") != null) {
-    $redis->incr("ip::redirect::$ip:challenges");
-    $redis->expire("ip::redirect::$ip:challenges", 3600);
-    if ($redis->get("ip::redirect::$ip:challenges") > 50) {
-        header("Location: /html/banned.html", true, 302);
-        Log::log("Banning $ip for failing to pass challenges. User Agent: " . @$_SERVER['HTTP_USER_AGENT']);
-        $redis->setex("IP:ban:$ip", $banTime, "true");
-        return;
-    }
-    header("Location: /challenge/", true, 302);
-    return;
-}
-if (!$isApiRequest && !$noLimit && $redis->get("ip::challenge_safe::$ip") != "true") {
-    $redis->incr($ipKey, ($uri == '/navbar/' ? -1 : 1));
-    $redis->expire($ipKey, 300);
-    $count = $redis->get($ipKey);
-    if (!in_array($ip, $whiteList) && $count > 40) {
-        $host = $redis->get("host:$ip");
-        if ($host == "") {
-            $host = gethostbyaddr($ip);
-            $redis->setex("host:$ip", 86400, $host);
-        }
-        $host2 = gethostbyname($host);
-        $isValidBot = false;
-        foreach ($validBots as $bot) {
-            $isValidBot |= strpos($host, $bot) !== false;
-        }
-        foreach ($badBots as $bot) {
-            if (strpos($host, $bot) !== false) {
-                //Log::log("blocking host: $host $ip $agent $uri $banTime");
-                header('HTTP/1.1 403 Blacklisted');
-                $redis->setex("IP:ban:$ip", $banTime, "true");
-                die();
-            }
-        }
-        if ($ip != $host2 || !$isValidBot) {
-            if ($redis->get("ip::redirect::$ip") == false) Log::log("Challenging $ip $agent $host $uri");
-            $redis->setex("ip::redirect::$ip", $banTime, $uri);
-            header("Location: /challenge/", true, 302);
-            return;
-        }
-    }
-}
-
+// Set up the session if we need it for this uri
 if (substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || $uri == '/navbar/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp' || substr($uri, 0, 20) == "/cache/bypass/login/") {
     ini_set('session.gc_maxlifetime', (86400 * 30));
     ini_set('session.cookie_lifetime', (86400 * 30));
@@ -194,11 +77,9 @@ if ($isApiRequest || $uri == '/navbar/') {
 
 $visitors = new RedisTtlCounter('ttlc:visitors', 300);
 $visitors->add($ip);
-$requests = new RedisTtlCounter('ttlc:requests', 300);
-$requests->add(uniqid());
 
 // Theme
-$theme = 'cyborg'; //UserConfig::get('theme', 'cyborg');
+$theme = 'cyborg';
 $app->config(array('templates.path' => $baseDir.'templates/'));
 
 // Error handling
@@ -210,7 +91,33 @@ include 'routes.php';
 // Load twig stuff
 include 'twig.php';
 
+// Just some local analytics
 include 'analyticsLoad.php';
 
 // Run the thing!
 $app->run();
+
+function contains($needle, $haystack) {
+    if (is_array($needle)) {
+        foreach ($needle as $pin) if (contains($pin, $haystack) !== false) return true;
+        return false;
+    } 
+    return (strpos($haystack, 0, strlen($needle)) !== false);
+}
+
+function partialInArray(&$redis, &$haystack, &$needles) {
+    $ret = $redis->get("zkb:partial:$haystack");
+    if ($ret !== null) {
+        $ret = false;
+        foreach ($needles as $needle) {
+            if (strpos($haystack, $needle) !== false) $ret = true;
+        }
+    }
+    $redis->setex("zkb:partial:$haystack", 9600, "$ret");
+    return (bool) $ret;
+}
+
+function html403($reason) {
+    header("HTTP/1.1 403 $reason");
+    exit();
+}

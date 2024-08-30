@@ -74,11 +74,8 @@ while ($minute == date('Hi')) {
             $complete = false;
             do {
                 $complete = calcStats($row, $maxSequence);
-                $message = ['action' => 'statsbox', 'type' => $type, 'id' => $id];
-                $msg = json_encode($message, JSON_UNESCAPED_SLASHES);
-                $typed = str_replace("ID", "", $type);
-                $redis->publish("stats:$typed:$id", $msg);
             } while ($complete == false && $minute == date('Hi'));
+            Util::statsBoxUpdate($type, $id);
 
             if ($complete) $redis->srem("queueStatsSet", $raw);
         } catch (Exception $ex) {

@@ -43,6 +43,7 @@ $q = MongoFilter::buildQuery($p);
 $ret['ksa'] = (int) $mdb->findField("oneWeek", "killID", $q, ['killID' => 1]);
 $ret['kea'] = (int) $mdb->findField("oneWeek", "killID", $q, ['killID' => -1]);
 $ret['epoch'] = $sEpoch;
+$ret['sequence'] = @$array['sequence'];
 
 $array['ret'] = $ret;
 $app->contentType('application/json; charset=utf-8');

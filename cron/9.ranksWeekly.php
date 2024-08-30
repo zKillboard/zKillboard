@@ -1,5 +1,7 @@
 <?php
 
+use cvweiss\redistools\RedisQueue;
+
 require_once '../init.php';
 
 MongoCursor::$timeout = -1;
@@ -17,6 +19,8 @@ $statTypes = ['Destroyed', 'Lost'];
 
 $completed = [];
 
+$everyone = [];
+
 Util::out('weekly time ranks - first iteration');
 $types = [];
 $iter = $mdb->getCollection("oneWeek")->find();
@@ -30,6 +34,7 @@ foreach ($iter as $row) {
 
             if (isset($completed["$type:$id"])) continue;
             $completed["$type:$id"] = true;
+            $everyone[] = ['type' => $type, 'id' => $id];
 
             $types[$type] = true;
             $key = "tq:ranks:weekly:$type:$today";
@@ -109,15 +114,19 @@ foreach ($types as $type => $value) {
     $multi->exec();
 }
 
+foreach ($everyone as $i => $next) {
+    Util::statsBoxUpdate($next['type'], $next['id']);
+}
+
+$redis->setex($timeKey, 900, true);
+Util::out('Weekly rankings complete');
+
 function moveAndExpire(&$multi, $today, $key)
 {
     $newKey = str_replace(":$today", '', $key);
     $multi->rename($key, $newKey);
     $multi->expire($newKey, 9000);
 }
-
-$redis->setex($timeKey, 900, true);
-Util::out('Weekly rankings complete');
 
 function zAdd(&$multi, $key, $value, $id)
 {

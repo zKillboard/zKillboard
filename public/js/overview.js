@@ -1,18 +1,20 @@
-$(document).ready(loadOverview);
-
 const validTopTypes = ['characterID', 'corporationID', 'allianceID', 'shipTypeID', 'solarSystemID', 'locationID'];
 
-function loadOverview() {
-    if (typeof $ === 'undefined') return setTimeout(loadOverview, 1);
-
-    if ($("#killlist").length > 0) $.get('/cache/bypass/killlist/?u=' + window.location.pathname, prepKills);
-}
-
 var overviewStats = undefined;
+
 function updateStats(stats) {
     overviewStats = stats;
     console.log('stats updated');
     if (topsLoaded === false) loadTops();
+    loadKms();
+}
+
+var kmLoaded = false;
+function loadKms() {
+    if (kmLoaded == true) return;
+
+    if ($("#killlist").length > 0) $.get('/cache/1hour/killlist/?s=' + overviewStats.sequence + '&u=' + window.location.pathname, prepKills);
+    kmLoaded = true;
 }
 
 var topsLoaded = false;
