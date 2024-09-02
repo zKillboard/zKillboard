@@ -168,22 +168,28 @@ function wslog(msg)
 
 function loadLittleMail(killID) {
         // Add the killmail to the live feed kill list
-        $.get("/cache/24hour/killlistrow/" + killID + "/", addLittleKill);
+        $.get("/cache/1hour/killlistrow/" + killID + "/", addLittleKill);
 }
 
 function loadKillRow(killID) {
-        $.get("/cache/24hour/killlistrow/" + killID + "/", function(data) { addKillRow(data, killID); });
+        $.get("/cache/1hour/killlistrow/" + killID + "/", function(data) { addKillRow(data, killID); });
 }
 
 function addKillRow(data, id) {
     $("#kill-" + id).replaceWith(data);
-    fixDateRows();
     assignRowColor();
+    adjustKillmailPresentation();
 }
 
-function fixDateRows() {
+function adjustKillmailPresentation() {
+    // Remove excess killmails
+    while ($(".tr-killmail").length > 50) $(".tr-killmail").last().remove();
+    // Ensure the last row isn't a dangling date row
+    while ($("#killmailstobdy tr").last().hasClass("tr-date")) $("#killmailstobdy tr").last().remove();
+
+    // Check over date rows and only show the first tr-date row for a particular date
     let priorDate = undefined;
-$(".tr-date").each( function() { row = $(this); date = row.attr('date'); if (date == priorDate) row.remove(); priorDate = date; }  );
+    $(".tr-date").each( function() { row = $(this); date = row.attr('date'); if (date == priorDate) row.hide(); else row.show(); priorDate = date; }  );
 }
 
 function prepKills(data) {
@@ -209,12 +215,13 @@ function addLittleKill(data) {
         $("#killlist tbody tr").first().before(data);
     }
     // Keep the page from growing too much...
-    while ($("#killlist tbody tr").length > 50) $("#killlist tbody tr:last").remove();
+    while ($("#killlist tbody tr").length > 100) $("#killlist tbody tr:last").remove();
     // Tell the user what's going on and not to expect sequential killmails
     if ($("#livefeednotif").length == 0) {
         $("#killlist thead tr").after("<tr><td id='livefeednotif' colspan='7'><strong><em>Live feed - killmails may be out of order.</em></strong></td></tr>");
     }
     assignRowColor();
+    adjustKillmailPresentation();
 }
 
 /* This is currently not used, it is here as a proof of concept */

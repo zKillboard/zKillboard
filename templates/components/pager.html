@@ -23,7 +23,7 @@
 			{% endif %}
 	
 			{% set startIndex = page - 3 %}
-			{% set endIndex = page + 3 %}
+			{% set endIndex = min(20, page + 3) %}
 	
 			{% for pageIndex in startIndex..endIndex %}
 				{% if pageIndex == 1 %}
@@ -32,7 +32,9 @@
 					<li class="{{ isActive(pageIndex, page, 'active') }}"><a href="{{ pageBase }}page/{{pageIndex}}/" rel="nofollow">{{ pageIndex }}</a></li>
 				{% endif %}
 			{% endfor %}
+            {% if page < 20 %}
 			<li><a href="{{ pageBase }}page/{{ page + 1 }}/" rel="nofollow next">&raquo;</a></li>
+            {% endif %}
 		{% endif %}
 	</ul>
 </div>

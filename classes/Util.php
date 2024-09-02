@@ -1,12 +1,15 @@
 <?php
 
 use cvweiss\redistools\RedisCache;
+use cvweiss\redistools\RedisQueue;
 use cvweiss\redistools\RedisTtlCounter;
 
 function dire($msg) { throw new Exception($msg); }
 
 class Util
 {
+    private static $queueStatsUpdated = null;
+
     public static function getCrest($url)
     {
         \Perry\Setup::$fetcherOptions = ['connect_timeout' => 15, 'timeout' => 30];
@@ -607,13 +610,8 @@ class Util
         return array('usd' => $totalprice / $usdVal, 'eur' => $totalprice / $eurVal, 'gbp' => $totalprice / $gbpVal);
     }
 
-    public static function statsBoxUpdate($type, $id)
-    {
-        global $redis;
-
-        $message = ['action' => 'statsbox', 'type' => $type, 'id' => $id];
-        $msg = json_encode($message, JSON_UNESCAPED_SLASHES);
-        $typed = str_replace("ID", "", $type);
-        $redis->publish("stats:$typed:$id", $msg);
+    public static function statsBoxUpdate($type, $id) {
+        if (self::$queueStatsUpdated == null) self::$queueStatsUpdated = new RedisQueue('queueStatsUpdated');
+        self::$queueStatsUpdated->push(['type' => $type, 'id' => $id]);
     }
 }
