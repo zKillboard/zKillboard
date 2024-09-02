@@ -74,13 +74,17 @@
 {% set killListTitle = 'Team B Losses' %}
 {% set killList = summary.teamB.kills %}
 {% set isEmbedded = true %}
+{% if killList|length > 0 %}
 {% include 'components/kill_list.html' %}
+{% endif %}
 
 
 {% set killListTitle = 'Team A Losses' %}
 {% set killList = summary.teamA.kills %}
 {% set isEmbedded = true %}
+{% if killList|length > 0 %}
 {% include 'components/kill_list.html' %}
+{% endif %}
 
 {% endif %}
 

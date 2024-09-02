@@ -4,12 +4,12 @@
       {% set sDate =  (kill.dttm.sec|date('Ymd')) %}
       {% set date = (kill.dttm.sec|date('M d, Y')) %}
       {% set currentDate = (kill.dttm.sec|date('M d, Y')) %}
-      <tr class='tr-date tr-date-{{ sDate }} asearhfilter' date="{{ date }}">
+      <tr class='tr-date tr-date-{{ sDate }} dateFormat asearhfilter' date="{{ date }}">
         <th class="no-stripe" colspan="7"><strong><em>{{ date }}</em></strong></th>
       </tr>
   
       {% set imageSize = 64 %}
-      {% set resizeImage = 50 %}
+      {% set resizeImage = 52 %}
   
       {% set field = kill.victim %}
       <tr id="kill-{{ kill.killID }}" class="tr-killmail kltbd" date="{{ kill.dttm.sec }}" killID='{{ kill.killID }}' style="order: {{ kill.killID }};" vics="{{ kill.vics }}">
@@ -18,7 +18,7 @@
             <span class="glyphicon glyphicon-ok hidden" aria-hidden="true"></span>
             <span class="glyphicon glyphicon-remove hidden" aria-hidden="true"></span>
           </span>
-          {{ kill.dttm.sec|date('H:i') }}
+          <span class='pull-right'>{{ kill.dttm.sec|date('H:i') }}</span>
           <br/><a href="/kill/{{ kill.killID }}/"><span class="pull-right" format='format-isk-once' raw="{{ kill.zkb.totalValue }}">{{ formatIsk(kill.zkb.totalValue) }}</span></a>
         </td>
         <td class="icon hidden-xs" style="text-align: center; vertical-align: middle;">

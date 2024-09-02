@@ -181,6 +181,13 @@ function addKillRow(data, id) {
     adjustKillmailPresentation();
 }
 
+var dateFormatter = new Intl.DateTimeFormat(undefined, {
+    weekday: 'long',
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric',
+    timeZone: 'UTC'
+ });
 function adjustKillmailPresentation() {
     // Remove excess killmails
     while ($(".tr-killmail").length > 50) $(".tr-killmail").last().remove();
@@ -190,6 +197,9 @@ function adjustKillmailPresentation() {
     // Check over date rows and only show the first tr-date row for a particular date
     let priorDate = undefined;
     $(".tr-date").each( function() { row = $(this); date = row.attr('date'); if (date == priorDate) row.hide(); else row.show(); priorDate = date; }  );
+    try {
+        $(".dateFormat th").each( function()  { t = $(this); p = t.parent(); t.text(dateFormatter.format(new Date( p.attr('date') ))); p.removeClass("dateFormat"); });
+    } catch (e) { }
 }
 
 function prepKills(data) {
