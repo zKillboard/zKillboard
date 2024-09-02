@@ -50,6 +50,7 @@ function publish($killID)
     foreach ($kill['labels'] as $label) {
         $channels['label:' . $label] = true;
     }
+    $channels['label:all'] = true;
     $channels["system:" . $kill['system']['solarSystemID']] = true;
     $channels["constellation:" . $kill['system']['constellationID']] = true;
     $channels["region:" . $kill['system']['regionID']] = true;

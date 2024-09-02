@@ -36,7 +36,7 @@ if (($minute >= 1054 && $minute <= 1105) || $tqCountInt < 1000) {
 $serverStatus = $redis->get("tqStatus");
 $loggedIn = $redis->get("tqCount");
 $killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
-$killCount = number_format($killsLastHour->count(), 0);
+$killCount = $killsLastHour->count();
 $redis->publish("public", json_encode(['action' => 'tqStatus', 'tqStatus' => $serverStatus, 'tqCount' => $loggedIn, 'kills' => $killCount]));
 
 $message = ($redis->get("tqCountInt") == 0) ? "<a href='https://status.esiknife.space/' target='_blank'>We seem to be having an issue accessing the ESI API, nothing can be done at this time.</a>" : "";
@@ -61,9 +61,7 @@ function success($content)
 
     $loggedIn = (int) @$root['players'];
     $redis->set('tqCountInt', $loggedIn);
-
     $serverStatus = $loggedIn > 100 ? 'ONLINE' : 'OFFLINE';
-    $loggedIn = $loggedIn == 0 ? $serverStatus : number_format($loggedIn, 0);
 
     $redis->set('tqStatus', $serverStatus);
     $redis->set('tqCount', $loggedIn);

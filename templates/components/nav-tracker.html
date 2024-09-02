@@ -1,7 +1,11 @@
 {% if sessionusername %}
 <script type="text/javascript">
-$("#lasthour").text("{{ killsLastHour | number_format(0)}}");
-$("#tqStatus").html("{% if tqStatus == 'OFFLINE'%}<span class='red'>TQ {{ tqCount }}</span>{% else %} <span class='green'>TQ {{ tqCount }}</span>{% endif %}");
+
+updateTqStatus("{{ tqStatus }}", "{{ tqCount }}");
+doFormats();
+$("#lasthour").attr('raw', "{{  killsLastHour }}").attr('format', 'format-int-once');
+doFormats();
+
 $("#char-loggedout").remove();
 $("#contest-logged-in").removeClass('hidden');
 $("#loginforapi").remove();

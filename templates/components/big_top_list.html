@@ -17,7 +17,7 @@
 			{% set shipNameLength = 20 %}
 			<div class="hidden-xs" style='width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;'>{% include 'components/text_ship.html' %}</div>
 			{% include 'components/image_ship.html' %}<br/>
-			<h6>{{ formatIsk(data.zkb.totalValue) }} ISK</h6>
+			<h6 format="format-isk-once-i" raw="{{ data.zkb.totalValue }}">{{ formatIsk(data.zkb.totalValue) }} ISK</h6>
 			<span class="hidden-xs">{% if field.characterName|length > 0 %}
 			  {% include 'components/text_char.html' %} </td>
 			{% else %}

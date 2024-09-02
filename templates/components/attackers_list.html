@@ -58,9 +58,10 @@
 				{% set shortLength = 30 %}
 			</td>
 			<td class="damage" style="vertical-align: middle; text-align: right;">
-					{{ attacker.damage|number_format(0) }}<br/>
+					<span format="format-int-once" raw="{{ attacker.damage}}">{{ attacker.damage|number_format(0) }}</span><br/>
 					{% if attacker.damage > 0 and killdata.victim.damage > 0 %}
-						<small>{{ ((attacker.damage / killdata.victim.damage) * 100)|number_format(1) }}%<small>
+                        {% set percentage = ((attacker.damage / killdata.victim.damage) * 100) %}
+						<small><span class="format-dec1-once" raw="{{ percentage }}">{{ percentage|number_format(1) }}</span>%<small>
 					{% endif %}
 			</td>
 		</tr>

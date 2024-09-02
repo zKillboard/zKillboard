@@ -27,23 +27,23 @@
 		<td data-order="{{ i() }}" class="icons hidden-xs"><div align="center">{% include 'components/image_ship.html' %}</div></td>
 		<td data-order="{{ killdata.victim.shipName }}"><a href="/item/{{killdata.victim.shipTypeID}}/">{{killdata.victim.shipName}}</a></td>
 		<td data-order="1"><div align="right" class="qty">1</div></td>
-		<td class="price" data-order="{{ extra.shipprice }}"><div align="right">{{ extra.shipprice|number_format(2, '.', ',') }}</div></td>
+		<td class="price" data-order="{{ extra.shipprice }}"><div align="right" format="format-dec2-once" raw="{{ extra.shipprice }}">{{ extra.shipprice|number_format(2, '.', ',') }}</div></td>
 	</tr>
 	<tr class="item_dropped_row hide-when-sorted">
 		<td data-order="{{ i() }}" colspan="2"><h5>Total Dropped:</h5></td>
-		<td colspan="2" style="text-align: right;"><div class="pull-right" style="width: 100%;"><h5 class="item_dropped" rel="tooltip" title="&#36;{{ extra.droppedprice.usd|number_format(2, '.', ',') }} / {{ extra.droppedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.droppedprice.gbp|number_format(2, '.', ',') }}">{{ extra.droppedisk|number_format(2, '.', ',')}}</h5></div></td>
+		<td colspan="2" style="text-align: right;"><div class="pull-right" style="width: 100%;"><h5 class="item_dropped" rel="tooltip" title="&#36;{{ extra.droppedprice.usd|number_format(2, '.', ',') }} / {{ extra.droppedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.droppedprice.gbp|number_format(2, '.', ',') }}" format="format-dec2-once" raw="{{ extra.droppedisk }}">{{ extra.droppedisk|number_format(2, '.', ',')}}</h5></div></td>
 <td class="hidden"></td>
 <td class="hidden"></td>
 	</tr>
 	<tr class="hide-when-sorted">
 		<td data-order="{{ i() }}" colspan="2"><h5>Total Destroyed:</h5></td>
-		<td colspan="2" style="text-align: right;"><div class="pull-right" style="width: 100%;"><h5 class="item_destroyed" rel="tooltip" title="&#36;{{ extra.destroyedprice.usd|number_format(2, '.', ',') }} / {{ extra.destroyedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.destroyedprice.gbp|number_format(2, '.', ',') }}">{{ extra.lostisk|number_format(2, '.', ',')}}</h5></div></td>
+		<td colspan="2" style="text-align: right;"><div class="pull-right" style="width: 100%;"><h5 class="item_destroyed" rel="tooltip" title="&#36;{{ extra.destroyedprice.usd|number_format(2, '.', ',') }} / {{ extra.destroyedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.destroyedprice.gbp|number_format(2, '.', ',') }}" format="format-dec2-once" raw="{{ extra.lostisk }}">{{ extra.lostisk|number_format(2, '.', ',')}}</h5></div></td>
 <td class="hidden"></td>
 <td class="hidden"></td>
 	</tr>
 	<tr class="hide-when-sorted">
 		<td data-order="{{ i() }}" colspan="2"><h5>Grand Total:</h5></td>
-		<td colspan="2" style="text-align: right;" class="totalprice"><div class="pull-right" style="width: 100%;"><h5 rel="tooltip" title="&#36;{{ extra.totalprice.usd|number_format(2, '.', ',') }} / {{ extra.totalprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.totalprice.gbp|number_format(2, '.', ',') }}">{{ (extra.lostisk + extra.droppedisk)|number_format(2, '.', ',')}}</h5></div></td>
+		<td colspan="2" style="text-align: right;" class="totalprice"><div class="pull-right" style="width: 100%;"><h5 rel="tooltip" title="&#36;{{ extra.totalprice.usd|number_format(2, '.', ',') }} / {{ extra.totalprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.totalprice.gbp|number_format(2, '.', ',') }}" format="format-dec2-once" raw="{{ (extra.lostisk + extra.droppedisk) }}">{{ (extra.lostisk + extra.droppedisk)|number_format(2, '.', ',')}}</h5></div></td>
 <td class="hidden"></td>
 <td class="hidden"></td>
 	</tr>

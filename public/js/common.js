@@ -70,6 +70,7 @@ $(document).ready(function() {
     $(".hrefit").each(function() { t = $(this);  t.attr('href', '#' + t.attr('name')); });
     $(".fetchme").each(function() { loadKillRow($(this).attr('killID'));  });
     assignRowColor();
+    doFormats();
     setTimeout(fixCCPsBrokenImages, 1000);
 });
 
@@ -131,22 +132,22 @@ function wslog(msg)
     if (msg === 'ping' || msg === 'pong') return;
     json = JSON.parse(msg);
     if (json.action === 'tqStatus') {
-        tqStatus = json.tqStatus;
-        tqCount = json.tqCount;
         if (tqStatus === 'OFFLINE' || tqStatus === 'UNKNOWN') {
-            html = '<span class="red">TQ ' + tqCount + "</span>";
+            html = '<span class="red">TQ <span format="format-int-once" raw="' + tqCount + '></span></span>';
         } else {
-            html = '<span class="green">TQ ' + tqCount + "</span>";
+            html = '<span class="green">TQ <span format="format-int-once" raw="' + tqCount + '></span></span>';
         }
-        $("#tqStatus").html(html);
-        $("#lasthour").text(json.kills);
+        $("#lasthour").attr('raw', json.kills).attr('format', 'format-int-once');
+        doFormats();
     } else if (json.action === 'reload') {
         console.log('Reload imminent in the next 5 minutes');
         setTimeout("location.reload(true);", Math.floor(1 + (Math.random() * 500000)));
     } else if (json.action === 'bigkill') {
         htmlNotify(json);
     } else if (json.action === 'lastHour') {
+console.log('lasthour', json.kills);
         $("#lasthour").text(json.kills);
+        doFormats();
     } else if (json.action === 'audio') {
         audio(json.uri);
     } else if (json.action === 'comment') {
@@ -181,13 +182,8 @@ function addKillRow(data, id) {
     adjustKillmailPresentation();
 }
 
-var dateFormatter = new Intl.DateTimeFormat(undefined, {
-    weekday: 'long',
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric',
-    timeZone: 'UTC'
- });
+var dateFormatter = new Intl.DateTimeFormat(undefined, {dateStyle: 'long', timeZone: 'UTC' });
+var longFormatter = new Intl.DateTimeFormat(undefined, {dateStyle: 'long', timeStyle: 'long', timeZone: 'UTC' });
 function adjustKillmailPresentation() {
     // Remove excess killmails
     while ($(".tr-killmail").length > 50) $(".tr-killmail").last().remove();
@@ -200,6 +196,7 @@ function adjustKillmailPresentation() {
     try {
         $(".dateFormat th").each( function()  { t = $(this); p = t.parent(); t.text(dateFormatter.format(new Date( p.attr('date') ))); p.removeClass("dateFormat"); });
     } catch (e) { }
+    $("[format='format-date-long-once']").each(function() { t = $(this); t.html( longFormatter.format( new Date( Number(t.attr('epoch'))) )); t.removeAttr('format'); });
 }
 
 function prepKills(data) {
@@ -564,18 +561,23 @@ function setStatsboxValues(stats) {
 
 function doFormats() {
     $("[format='format-int']").each(function() { t = $(this); doFieldUpdate(t, Number(t.attr('raw') | '').toLocaleString()); });
+    $("[format='format-int-once']").each(function() { t = $(this); doFieldUpdate(t, Number(t.attr('raw') | '').toLocaleString()); t.removeAttr('format'); });
+
     $("[format='format-dec1']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(t.attr('raw')).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits:1} )); });
     $("[format='format-isk']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(t.attr('raw')))) });
 
     $("[format='format-dec2-once']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(t.attr('raw')).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2} )); t.removeAttr('format'); });
+    $("[format='format-dec2-once-i']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(t.attr('raw')).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2} ) + ' ISK'); t.removeAttr('format'); });
     $("[format='format-isk-once']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(t.attr('raw')))); t.removeAttr('format'); });
+    $("[format='format-isk-once-i']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(t.attr('raw'))) + ' ISK'); t.removeAttr('format'); });
 }
 
 function doFieldUpdate(f, v) {
     if (f.text() == String(v)) return;
-    f.animate({opacity: 0}, 100, function() {
-            $(this).text(v).animate({opacity: 1}, 100);
-            })
+    let o = $(f).attr('no-flash') == undefined ? 0 : 1;
+    f.animate({opacity: o}, 100, function() {
+        $(this).text(v).animate({opacity: 1}, 100);
+    })
 }
 
 const formatIskIndex = ['', 'k', 'm', 'b', 't', 'k t', 'm t', 'b t'];
@@ -615,4 +617,16 @@ function assignGreenRed() {
 
 function fixCCPsBrokenImages() {
     $("img[shipimageerror='true']").each(function() { let t = $(this);  let src = t.attr('src'); console.log('fixing', src); t.attr('src', src.replace('render', 'icon')).removeAttr('shipimageerror'); });
+}
+
+function updateTqStatus(tqStatus, count) { 
+    $("#tqCount").attr('raw', count).attr('format', 'format-int-once');
+    let detail = 'TQ ', clss = 'green';
+
+    if (tqStatus != 'ONLINE') clss = 'red';
+
+    $("#tqStatusDetail").text(detail);
+    $("#tqStatus").removeClass("red").removeClass("green").addClass(clss);
+
+    doFormats();
 }

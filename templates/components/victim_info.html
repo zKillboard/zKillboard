@@ -65,40 +65,42 @@
         {% endif %}
 	<tr>
 		<th>Time:</th>
-		<td class="info_kill_dttm">{{ killdata.info.dttm|date('Y-m-d H:i') }}</td>
+        {% set epoch = (1000 * killdata.info.dttm|date('U')) %}
+		<td class="info_kill_dttm">{{ killdata.info.dttm|date('Y-m-d H:i') }}<br/><span format="format-date-long" epoch="{{ epoch }}"></span>
+        </td>
 	</tr>
     {% if killdata.info.zkb.points > 0 %}
 	<tr>
 		<th>Points:</th>
-		<td>{{ killdata.info.zkb.points | number_format(0) }}</td>
+		<td format="format-int-once" raw="{{ killdata.info.zkb.points }}">{{ killdata.info.zkb.points | number_format(0) }}</td>
 	</tr>
     {% endif %}
 	<tr>
 		<th>Damage:</th>
-		<td>{{ killdata.info.damage|number_format(0) }}</td>
+		<td format="format-int-once" raw="{{ killdata.info.damage }}">{{ killdata.info.damage|number_format(0) }}</td>
 	</tr>
 	{% if extra.fittedisk > 0 %}
 	<tr rel="tooltip" title="&#36;{{ extra.fittedprice.usd|number_format(2, '.', ',') }} / {{ extra.fittedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.fittedprice.gbp|number_format(2, '.', ',') }}">
 		<th>Ship+Fit:</th>
-		<td class="item_fitted">{{ extra.fittedisk | number_format(2, '.', ',') }} ISK</td>
+		<td class="item_fitted" format="format-dec2-once-i" raw="{{ extra.fittedisk }}">{{ extra.fittedisk | number_format(2, '.', ',') }} ISK</td>
 	</tr>
 	{% endif %}
 	<tr class="item_dropped_row" rel="tooltip" title="&#36;{{ extra.droppedprice.usd|number_format(2, '.', ',') }} / {{ extra.droppedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.droppedprice.gbp|number_format(2, '.', ',') }}">
 		<th>Dropped:</th>
-		<td class="item_dropped">{{ extra.droppedisk|number_format(2, '.', ',') }} ISK</td>
+		<td class="item_dropped" format="format-dec2-once-i" raw="{{ extra.droppedisk }}">{{ extra.droppedisk|number_format(2, '.', ',') }} ISK</td>
 	</tr>
 	<tr rel="tooltip" title="&#36;{{ extra.destroyedprice.usd|number_format(2, '.', ',') }} / {{ extra.destroyedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.destroyedprice.gbp|number_format(2, '.', ',') }}">
 		<th>Destroyed:</th>
-		<td class="item_destroyed">{{ extra.lostisk | number_format(2, '.', ',') }} ISK</td>
+		<td class="item_destroyed" format="format-dec2-once-i" raw="{{ extra.lostisk }}">{{ extra.lostisk | number_format(2, '.', ',') }} ISK</td>
 	</tr>
 	<tr rel="tooltip" title="&#36;{{ extra.totalprice.usd|number_format(2, '.', ',') }} / {{ extra.totalprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.totalprice.gbp|number_format(2, '.', ',') }}">
 		<th>Total:</th>
-		<td><strong class="item_dropped">{{ (extra.droppedisk + extra.lostisk)|number_format(2, '.', ',') }} ISK</strong></td>
+		<td><strong class="item_dropped" format="format-dec2-once-i" raw="{{ (extra.droppedisk + extra.lostisk) }}">{{ (extra.droppedisk + extra.lostisk)|number_format(2, '.', ',') }} ISK</strong></td>
 	</tr>
         {% if extra.sponsoredIsk %}
         <tr>
-            <th>Sponsored:</th>
-            <td>{{ extra.sponsoredIsk|number_format(0) }} ISK (alltime)</td>
+            <th>Sponsored:<br/>(alltime)</th>
+            <td format="format-dec2-once-i" raw="{{ extra.sponsoredIsk }}">{{ extra.sponsoredIsk|number_format(0) }} ISK</td>
         </tr>
         {% endif %}
 </table>
