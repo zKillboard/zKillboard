@@ -88,9 +88,11 @@ if (isset($rawmail['victim']['position']) && isset($killdata['info']['location']
     $locationID = $killdata['info']['location']['itemID'];
     $auDistance = Util::getAuDistance($position, $locationID, $killdata['info']['system']['solarSystemID']);
     if ($auDistance > 0.01) {
-        $extra['locationDistance'] = '('.$auDistance.'au)';
+        $extra['locationDistance'] = $auDistance;
+        $extra['locationDistanceType'] = "au";
     } else {
-        $extra['locationDistance'] = '(' . round(Util::get3dDistance($position, $locationID, $killdata['info']['system']['solarSystemID']) / 1000, 2) . "km)";
+        $extra['locationDistance'] = round(Util::get3dDistance($position, $locationID, $killdata['info']['system']['solarSystemID']) / 1000, 3);
+        $extra['locationDistanceType'] = "km";
     }
 }
 $extra['npcOnly'] = @$killdata['info']['npc'];

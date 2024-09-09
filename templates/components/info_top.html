@@ -174,6 +174,24 @@
 				<td itemprop="members">{% if detail.memberCount == 0 %}(Closed){% else %}{{ detail.memberCount | number_format(0) }}{% endif %}</td>
 			</tr>
             {% endif %}
+            <tr><td colspan='2' style='background-color: #000; border: none;'>
+            <div>
+                {% if extra.isTwitchSubbed %}
+                    <a href='https://twitch.tv/squizzcaphinator' alt='Link to SquizzCaphinator on Twitch' target='_blank'><img src='/img/zStream.png' rel="tooltip" data-original-title='subbed to SquizzCaphinator on Twitch!' title='subbed to SquizzCaphinator on Twitch!' style='width: 64px;'></a>
+                {% endif %}
+                {% if extra.hasMonocle %}
+                    <img src='/img/monocled.png' rel="tooltip" data-original-title='Big Money! Has sent at least 1b ISK to zKillboard.' style='padding-right: 0.5em;'>
+                {% endif %}
+                {% if gold > 0 %}
+                    <a href='/information/payments/'><img src='/img/golden-wreck.png' rel="tooltip" title="Thank you!"></a>
+                {% endif %}
+                {% if extra.hasSponsored %}
+                    <b rel="tooltip" class="glyphicon glyphicon-bullhorn" style='color: green;' data-original-title="Sponsored at least one Killmail"></b>
+                {% endif %}
+            </div> 
+            </td>
+          </tr>
+          <tr><td colspan='2' style='height: 0px; background-color: #000; border: none;'><span id="badges"></span></td></tr>
 		</tbody>
         </table>
 		{% endif %}
@@ -184,18 +202,4 @@
 	<div class="col-lg-6 pull-right" style='padding: 0px; margin: 0px;'>
 		{% include 'components/stats_box.html' %}
 	</div>
-    <div>
-                {% if extra.isTwitchSubbed %}
-                    <a href='https://twitch.tv/squizzcaphinator' alt='Link to SquizzCaphinator on Twitch' target='_blank'><img src='/img/zStream.png' rel="tooltip" data-original-title='subbed to SquizzCaphinator on Twitch!' title='subbed to SquizzCaphinator on Twitch!' style='width: 6100x; height: 100px;'></a>
-                {% endif %}
-                {% if extra.hasMonocle %}
-                    <img src='/img/monocled.png' rel="tooltip" data-original-title='Big Money! Has sent at least 1b ISK to zKillboard.' style='width: 18px; height: 16px;'>
-                {% endif %}
-                {% if gold > 0 %}
-                {% for i in 1..gold%}
-                <a href='/information/payments/'><img src='/img/golden-wreck.png' rel="tooltip" title="Thank you!"></a>
-                {% endfor %}
-                {% endif %}
-                {% if extra.hasSponsored %}<b rel="tooltip" class="glyphicon glyphicon-bullhorn" style='color: green;' data-original-title="Sponsored at least one Killmail"></b>{% endif %}
-    </div>
 </div>

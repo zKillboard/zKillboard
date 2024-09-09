@@ -1,6 +1,6 @@
 <?php
 
-$master = (pcntl_fork() > 0); 
+$master = true; // (pcntl_fork() > 0); 
 
 use cvweiss\redistools\RedisQueue;
 
@@ -9,41 +9,19 @@ require_once '../init.php';
 if ($redis->get("tobefetched") > 1000) exit();
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->scard("queueStatsSet") > 1000) exit();
-//if ($redis->get("zkb:load") > 10) exit();
-$todaysKey = "zkb:topAllTimeComplete:" . date('Ymd', time() - 36000);
+if ($mdb->findDoc("statistics", ['reset' => true]) != null) exit();
 
 MongoCursor::$timeout = -1;
-$minute = date("Hi");
-$queueTopAllTime = new RedisQueue("queueTopAllTime");
 
-if ($master == true && $redis->get($todaysKey) != "true" && $queueTopAllTime->size() == 0 && $mdb->findDoc("statistics", ['reset' => true]) == null) {
-    Util::out("Populating top all time queue");
-    $cursor = $mdb->getCollection("statistics")->find(['calcAlltime' => true]);
-    while ($cursor->hasNext()) {
-        $row = $cursor->next();
-        $queueTopAllTime->push(['type' => $row['type'], 'id' => (int) $row['id']]);
-    }
-    $redis->setex($todaysKey, 86400, "true");
-}
+$t = new Timer();
 
-while ($queueTopAllTime->size() > 0 && date('Hi') == $minute) {
-    if (((int) $redis->get("zkb:stats:current:top:count") > 5)) { sleep(1); continue; } 
-
-    $id = $queueTopAllTime->pop();
-    if ($id == null) break;
-    $row = $mdb->findDoc("statistics", $id);
-    $redis->incr("zkb:stats:current:top:count");
-    $redis->expire("zkb:stats:current:top:count", 3600);
-    try {
-        calcTop($row);
-    } finally {
-        $redis->decr("zkb:stats:current:top:count");
-    }
-}
-
-$a = 0;
-while (pcntl_wait($a) > 0) sleep(1);
-exit();
+do {
+    $row = $mdb->findDoc("statistics", ['calcAlltime' => true]);
+    if ($row == null) exit();
+    $redis->set("zkb:calcAlltime", $row['type'] . ":" . $row['id']);
+    calcTop($row);
+    $redis->del("zkb:calcAlltime");
+} while ($t->stop() < 60000);
 
 function calcTop($row)
 {
@@ -53,7 +31,6 @@ function calcTop($row)
         $mdb->removeField('statistics', $row, 'calcAlltime');
         return;
     }
-    Util::out("Top All Time calculating: " . $row['type'] . " " . $row['id']);
 
     $currentSum = (int) @$row['shipsDestroyed'];
 
@@ -71,9 +48,7 @@ function calcTop($row)
 
     $p = $parameters;
     $p['limit'] = 6;
-    //$p['categoryID'] = 6;
-    $topKills = Stats::getTopIsk($p);
-    $topKills = array_keys($topKills);
+    $topKills = array_keys(Stats::getTopIsk($p));
 
     $nextTopRecalc = ceil($currentSum * 1.01);
 

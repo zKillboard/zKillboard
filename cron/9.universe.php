@@ -11,6 +11,7 @@ if ($serverVersion != "" && $serverVersion == $loadedVersion && $redis->get("zkb
     exit();
 }
 
+Util::out("Prepping to load universe");
 $redis->del("zkb:universeLoaded");
 $redis->del("zkb:tqServerVersion");
 $guzzler = new Guzzler(25, 10);

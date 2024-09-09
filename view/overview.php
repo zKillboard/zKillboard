@@ -135,7 +135,7 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
         $topKills = Kills::getDetails($topKills, true);
         $nextTopRecalc = (int) $mdb->findField('statistics', 'nextTopRecalc', ['type' => "{$useType}ID", 'id' => (int) $id]);
         $nextTopRecalc = $nextTopRecalc + 1;
-    } else {
+    } else if ($key != 'label') {
         if ($pageType != 'topalltime') {
             if (!isset($topParameters['year'])) {
                 $topParameters['year'] = date('Y');
@@ -290,7 +290,8 @@ if ($key == 'corporation' || $key == 'alliance' || $key == 'faction') {
 }
 
 if ($key == 'character' && $pageType == 'trophies') {
-    $extra['trophies'] = Trophies::getTrophies($id);
+    /*if (isset($statistics['trophies'])) $extra['trophies'] = $statistics['trophies'];
+    else*/ $extra['trophies'] = Trophies::getTrophies($id);
 }
 
 if ($pageType == 'ranks') {
@@ -479,6 +480,7 @@ if ($type == 'character') {
     }
     if (@$user['monocle'] == true) $extra['hasMonocle'] = true;
     if ($mdb->findDoc("twitch", ['character_id' => (int) $id]) != null) $extra['isTwitchSubbed'] = true;
+    $extra['isTwitchSubbed'] = false;
 }
 
 // Sponsored killmails

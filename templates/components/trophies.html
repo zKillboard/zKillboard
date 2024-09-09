@@ -7,7 +7,7 @@
       <tr>
         <td>{{ trophies.levelCount }} / {{ trophies.maxLevelCount }}</td>
         <td>{{ trophies.completedPct }}%</td>
-	<td><img src='https://zkillboard.com/img/level/level{{ (trophies.levelCount / 100)|round(0,"floor")|number_format(0) }}.gif'/></td>
+	<td><img src='https://zkillboard.com/img/level/level{{ trophies.boxes }}.gif'/></td>
     </tr>
     </table>
   </fieldset>

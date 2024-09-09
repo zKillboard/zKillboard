@@ -268,19 +268,16 @@ class MongoFilter
                     else $and[] = ['labels' => ['$ne' => 'ganked']];
                     break;
                 case 'w-space':
-                    $and[] = ['system.regionID' => ['$gte' => 11000001]];
-                    $and[] = ['system.regionID' => ['$lte' => 11000033]];
+                    $and[] = ['labels' => 'loc:w-space'];
                     break;
                 case 'highsec':
-                    $and[] = ['system.security' => ['$gte' => 0.45]];
+                    $and[] = ['labels' => 'loc:highsec'];
                     break;
                 case 'lowsec':
-                    $and[] = ['system.security' => ['$lt' => 0.45]];
-                    $and[] = ['system.security' => ['$gte' => 0.05]];
+                    $and[] = ['labels' => 'loc:lowsec'];
                     break;
                 case 'nullsec':
-                    $and[] = ['system.security' => ['$lt' => 0.05]];
-                    $and[] = ['system.regionID' => ['$lt' => 11000001]]; 
+                    $and[] = ['labels' => 'loc:nullsec'];
                     break;
                 case 'afterSequence':
                     $and[] = ['sequence' => ['$gt' => $value]];

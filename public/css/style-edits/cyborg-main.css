@@ -18,6 +18,14 @@
        box-shadow: 0 0 5px 5px rgba(6,6,6,0.95);
 }
 
+#killmailstobdy tr {
+	background-color: #111;
+}
+
+#killmailstobdy tr:nth-child(4n) {
+	background-color: black;
+}
+
 .table tbody tr.error td
 {
   background-color: #2F0202;

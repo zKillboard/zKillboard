@@ -10,10 +10,12 @@ if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit(
 
 $removeFields = ['corporationID', 'allianceID', 'factionID', 'secStatus', 'security_status', 'corporation_id', 'alliance_id', 'faction_id', 'title', 'gender', 'race_id', 'birthday', 'ancestry_id', 'bloodline_id'];
 
+
 $currentSecond = "";
 $guzzler = new Guzzler(5);
 $minute = date('Hi');
 while ($minute == date('Hi')) {
+    $mdb->set("information", ['type' => 'characterID', 'corporationID' => ['$exists' => false]], ['corporationID' => 0, 'lastAffUpdate' => 0], true);
     $t = new Timer();
     if ($redis->get("zkb:reinforced") == true) break;
     $fetch = [];

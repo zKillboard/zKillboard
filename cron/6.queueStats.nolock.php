@@ -75,10 +75,14 @@ while ($minute == date('Hi')) {
             do {
                 $complete = calcStats($row, $maxSequence);
             } while ($complete == false && $minute == date('Hi'));
-            Util::statsBoxUpdate($type, $id);
 
-            if ($complete) $redis->srem("queueStatsSet", $raw);
+            if ($complete) {
+                Util::statsBoxUpdate($type, $id);
+                $redis->srem("queueStatsSet", $raw);
+                if ($type == 'characterID') $mdb->set("statistics", ['type' => $type, 'id' => $id], ['calcTrophies' => true]);
+            }
         } catch (Exception $ex) {
+            Log::log(print_r($ex, true));
             throw $ex;
         } finally {
             if ($redis->ping() != 1) connectRedis();

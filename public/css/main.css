@@ -316,10 +316,6 @@ td.centered {
   padding-top: 1em;
 }
 
-.adrow {
-    min-height: 101px;
-}
-
 @media only screen and (max-width: 767px) {
 .ad-sm-block {
     display: block !important;

@@ -19,7 +19,7 @@
 				{% for field in list.data %}
 				{% set loopIndex = loopIndex + 1 %}
 				<tr>   
-					<td style="text-align: center; vertical-align: middle;">{{ field.rank }}</td>
+					<td style="text-align: center; vertical-align: middle;" format="format-int-once" raw="{{ field.rank }}">{{ field.rank }}</td>
 					<td>
 						{% if list.type == "alliance" %}{% include 'components/text_alli.html' %}
 						{% elseif list.type == "corporation" %}{% include 'components/text_corp.html' %}

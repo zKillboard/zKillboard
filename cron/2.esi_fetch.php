@@ -13,6 +13,7 @@ $esimails = $mdb->getCollection("esimails");
 
 $mdb->set("crestmails", ['processed' => 'fetching'], ['processed' => false], true);
 $mdb->set("crestmails", ['processed' => 'processing'], ['processed' => false], true);
+$mdb->set("crestmails", ['processed' => ['$exists' => false]], ['processed' => false], true);
 
 $count = 0;
 $minute = date("Hi");

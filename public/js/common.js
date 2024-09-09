@@ -69,9 +69,11 @@ $(document).ready(function() {
     // For named anchors with the hrefit classname, make it a link as well
     $(".hrefit").each(function() { t = $(this);  t.attr('href', '#' + t.attr('name')); });
     $(".fetchme").each(function() { loadKillRow($(this).attr('killID'));  });
+    setTimeout(fixCCPsBrokenImages, 1000);
+
     assignRowColor();
     doFormats();
-    setTimeout(fixCCPsBrokenImages, 1000);
+    $(document).ajaxComplete(doFormats);
 });
 
 function startWebSocket() {
@@ -145,7 +147,6 @@ function wslog(msg)
     } else if (json.action === 'bigkill') {
         htmlNotify(json);
     } else if (json.action === 'lastHour') {
-console.log('lasthour', json.kills);
         $("#lasthour").text(json.kills);
         doFormats();
     } else if (json.action === 'audio') {
@@ -193,17 +194,17 @@ function adjustKillmailPresentation() {
     // Check over date rows and only show the first tr-date row for a particular date
     let priorDate = undefined;
     $(".tr-date").each( function() { row = $(this); date = row.attr('date'); if (date == priorDate) row.hide(); else row.show(); priorDate = date; }  );
-    try {
-        $(".dateFormat th").each( function()  { t = $(this); p = t.parent(); t.text(dateFormatter.format(new Date( p.attr('date') ))); p.removeClass("dateFormat"); });
-    } catch (e) { }
+    /*
+    $(".dateFormat th").each( function()  { t = $(this); p = t.parent(); t.text(p.attr('date'); p.removeClass("dateFormat"); });
     $("[format='format-date-long-once']").each(function() { t = $(this); t.html( longFormatter.format( new Date( Number(t.attr('epoch'))) )); t.removeAttr('format'); });
+    */
 }
 
 function prepKills(data) {
     let html = '';
     for(i = 0; i < data.length; i++) {
-        id = data[i];
-        html = html + "<tr id='kill-" + id + "' class='fetchme' killID='" + id + "'></tr>'";
+        killID = data[i];
+        html = html + "<tr id='kill-" + killID + "' class='fetchme' killID='" + killID + "'></tr>'";
     }
     $("#killmailstobdy").html(html);
     $(".fetchme").each(function() { loadKillRow($(this).attr('killID'));  });
@@ -214,11 +215,11 @@ function addLittleKill(data) {
     if (!(showAds != 0 && typeof fusetag == 'undefined')) {
         var data = $(data);
         killdata = $(data);
-        data.on('click', function(event) {
+        /*data.on('click', function(event) {
                 if (event.which === 2) return false;
                 window.location = '/kill/' + $(this).attr('killID') + '/';
                 return false;
-                });
+                });*/
         $("#killlist tbody tr").first().before(data);
     }
     // Keep the page from growing too much...
@@ -573,8 +574,9 @@ function doFormats() {
 }
 
 function doFieldUpdate(f, v) {
+    if (f.attr('raw') == '' || f.attr('raw') == undefined) return;
     if (f.text() == String(v)) return;
-    let o = $(f).attr('no-flash') == undefined ? 0 : 1;
+    let o = $(f).attr('flash') == undefined ? 1 : 1;
     f.animate({opacity: o}, 100, function() {
         $(this).text(v).animate({opacity: 1}, 100);
     })

@@ -299,8 +299,8 @@ class Util
         }
 
         if ($multi && $paginated) dire("Combining multiple IDs with pagination is no longer supported");
-        if ($paginated && !$legalLargePagination && $parameters['page'] > 10) {
-            throw new Exception("Pages over 10 only supported for characters, corporations, and alliances");
+        if ($paginated && !$legalLargePagination && $parameters['page'] > 100) {
+            //throw new Exception("Pages over characters, corporations, and alliances");
         }
 
         return $parameters;
@@ -611,6 +611,9 @@ class Util
     }
 
     public static function statsBoxUpdate($type, $id) {
+        global $redis;
+
+        if ($redis->get("r2w:broadcasted:$type:$id") != "true") return;
         if (self::$queueStatsUpdated == null) self::$queueStatsUpdated = new RedisQueue('queueStatsUpdated');
         self::$queueStatsUpdated->push(['type' => $type, 'id' => $id]);
     }

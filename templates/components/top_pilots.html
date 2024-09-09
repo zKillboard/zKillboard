@@ -4,7 +4,7 @@
 {% for pilot in topPilots %}
     <tr><td>
         <a href="/kill/{{ pilot.characterID}}/">{{ pilot.characterName }}</a>
-    </td><td style="text-align: right">
+    </td><td style="text-align: right" format="format-int-once" raw="{{ pilot.kills }}">
     {{ pilot.kills|number_format(0) }}
     </td></tr>
 {% endfor %}

@@ -1,7 +1,7 @@
 <?php
 
-$master = (bool) (pcntl_fork() > 0);
-if (!$master) pcntl_fork();
+$master = true; //(bool) (pcntl_fork() > 0);
+//if (!$master) pcntl_fork();
 
 use cvweiss\redistools\RedisQueue;
 use cvweiss\redistools\RedisTtlCounter;

@@ -42,7 +42,7 @@
 						{% endif %}
                         </div></div>
 					</td>
-					<td style="text-align: right; vertical-align: middle;">{{ formatIsk(field.kills, isInt) }}</td>
+					<td style="text-align: right; vertical-align: middle;" format="format-int-once" raw="{{ field.kills }}">{{ formatIsk(field.kills, isInt) }}</td>
 				</tr>
 				{% endfor %}
                 {% for i in rank..10 %}

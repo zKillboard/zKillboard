@@ -63,10 +63,14 @@
 		<li class="hidden-md hidden-sm"><a href="https://evemaps.dotlan.net/alliance/{{ pageName|url_encode }}/" target="_blank" rel="noopener noreferrer">DOTLAN</a></li>
 		<li class="hidden-md hidden-sm"><a href="https://evewho.com/alliance/{{ id }}" target="_blank" rel="noopener noreferrer">EVEWho</a></li>
 	{% elseif key == "system" %}
+        {% if detail.regionID == 10000070 %}
+		    <li><a href="https://evemetro.com" target="_blank" rel="noopener noreferrer">Eve Metro</a></li>
+        {% endif %}
 		<li><a href="https://evemaps.dotlan.net/system/{{ pageName|url_encode }}/" target="_blank" rel="noopener noreferrer">DOTLAN</a></li>
-		{% if detail.regionID >= 11000001 and detail.regionID <= 11000033 %}
-		{% endif %}
 	{% elseif key == "region" %}
+        {% if id == 10000070 %}
+		    <li><a href="https://evemetro.com" target="_blank" rel="noopener noreferrer">Eve Metro</a></li>
+        {% endif %}
 		<li><a href="https://evemaps.dotlan.net/region/{{ pageName|url_encode }}/" target="_blank" rel="noopener noreferrer">DOTLAN</a></li>
 	{% endif %}
 		{% if nextID %}
@@ -232,6 +236,8 @@
 	<script defer type="text/javascript" src="/js/tablesorter/jquery.tablesorter.min.js"></script>
 	<script defer type="text/javascript" src="/js/overview.js?v={{ version}}"></script>
 	<script defer type="text/javascript">
+        const pageType = '{{ key }}';
+        const pageID = '{{ id }}';
 		function prepPage() {
 			if ($ === undefined) return setTimeout(prepPage, 500);
 			else $("#corpstats").tablesorter({textExtraction: removeCommas});

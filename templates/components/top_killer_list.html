@@ -39,7 +39,7 @@
 	{% elseif topSet.type == 'location' %}
           <td>{% include 'components/text_location.html' %}</td>
         {% endif %}
-        <td style="text-align: right;" {% if data.score != 0 %}title="Score: {{ data.score|number_format(0) }}" rel="tooltip"{% endif %}>{{ data.kills|number_format(0) }}</td>
+        <td style="text-align: right;" {% if data.score != 0 %}title="Score: {{ data.score|number_format(0) }}" rel="tooltip"{% endif %} format="format-int-once" raw="{{ data.kills }}">{{ data.kills|number_format(0) }}</td>
     </tr>
   {% endfor %}
 </table>

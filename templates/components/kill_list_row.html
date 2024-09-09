@@ -1,15 +1,15 @@
 {% set txtLength = 60 %}
 {% for kill in killList if kill.killID > 0 %}
       {% set shipImageLinkOverride = kill.killID %}
-      {% set sDate =  (kill.dttm.sec|date('Ymd')) %}
+      {% set sDate =  (kill.dttm.sec|date('Y-m-d')) %}
       {% set date = (kill.dttm.sec|date('M d, Y')) %}
       {% set currentDate = (kill.dttm.sec|date('M d, Y')) %}
-      <tr class='tr-date tr-date-{{ sDate }} dateFormat asearhfilter' date="{{ date }}">
-        <th class="no-stripe" colspan="7"><strong><em>{{ date }}</em></strong></th>
+      <tr class='tr-date tr-date-{{ sDate }} asearhfilter' date="{{ date }}">
+        <th class="no-stripe" colspan="7"><strong><em>{{ sDate }}</em></strong></th>
       </tr>
   
       {% set imageSize = 64 %}
-      {% set resizeImage = 52 %}
+      {% set resizeImage = 60 %}
   
       {% set field = kill.victim %}
       <tr id="kill-{{ kill.killID }}" class="tr-killmail kltbd" date="{{ kill.dttm.sec }}" killID='{{ kill.killID }}' style="order: {{ kill.killID }};" vics="{{ kill.vics }}">

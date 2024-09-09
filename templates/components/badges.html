@@ -1,0 +1,4 @@
+{% for badge in badges %}
+    <span class="float-left"><a href="{{ badge.url }}" target="_blank" alt="{{ badge.title|escape }}"><img style="height: 64px; width: 64px;" title="{{ badge.title|escape }}" src="{{ badge.image }}"/></a></span>
+{% endfor %}
+<br/>

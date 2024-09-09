@@ -4,7 +4,7 @@ require_once "../init.php";
 
 use cvweiss\redistools\RedisCache;
 
-global $gankKillBotWebhook, $fullAddr;
+global $gankKillBotWebhook;
 
 if ($redis->get("zkb:gankcheck") == "true") exit();
 
@@ -23,7 +23,7 @@ while ($concord->hasNext()) {
         if (@$lvictim['involved'][0]['groupID'] == 29) continue;
         if ($systemID != $lvictim['system']['solarSystemID']) continue;
 
-        if (@$lvictim['warID'] > 0 || @$lvictim['ganked'] == true || ($kill['killID'] - $lvictim['killID']) > 200 || $lvictim['awox'] == true) continue;
+        if ( $lvictim['zkb']['totalValue'] < 1000000 || @$lvictim['warID'] > 0 || @$lvictim['ganked'] == true || ($kill['killID'] - $lvictim['killID']) > 200 || $lvictim['awox'] == true) continue;
         $concorded = false;
         foreach ($lvictim['involved'] as $i) {
             if (@$i['corporationID'] == 1000125) {
@@ -37,18 +37,18 @@ while ($concord->hasNext()) {
                 $valid = true;
             }
         }
-        if (sizeof($lvictim['involved']) > 5 && $lvictim['zkb']['totalValue'] >= 25000000 && $concorded == false && $valid == true) {
+        if ($concorded == false && $valid == true) {
             $added[] = $lvictim['killID'];
             $mdb->set("killmails", ['killID' => $lvictim['killID']], ['ganked' => true]);
             $mdb->getCollection("killmails")->update(['killID' => $lvictim['killID']], ['$addToSet' => ['labels' => 'ganked']]);
             $mdb->getCollection("ninetyDays")->update(['killID' => $lvictim['killID']], ['$addToSet' => ['labels' => 'ganked']]);
-            $mdb->getCollection("oneWeeks")->update(['killID' => $lvictim['killID']], ['$addToSet' => ['labels' => 'ganked']]);
+            $mdb->getCollection("oneWeek")->update(['killID' => $lvictim['killID']], ['$addToSet' => ['labels' => 'ganked']]);
             Util::out("Marking " . $lvictim['killID'] . " as ganked.");
             RedisCache::delete("killDetail:" . $lvictim['killID']);
             RedisCache::delete( "zkb::detail:" . $lvictim['killID']);
-            if ($beSocial === true) Discord::webhook($gankKillBotWebhook, "$fullAddr/kill/" . $lvictim['killID'] . "/");
         }
     }
 }
 
+$mdb->set("statistics", ['type' => 'label', 'id' => 'ganked'], ['reset' => true]);
 $redis->setex("zkb:gankcheck", 900, "true");

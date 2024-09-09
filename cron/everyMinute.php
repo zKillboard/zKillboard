@@ -80,6 +80,7 @@ $redis->set("tqCorpApiESICount", $unique);
 
 $redisMessage = null;
 if ($redis->get("twitch-online") != "") {
+Util::out("foo");
     $redisMessage = ['action' => 'twitch-online', 'channel' => $redis->get("twitch-online")];
 } else {
     $redisMessage = ['action' => 'twitch-offline'];
