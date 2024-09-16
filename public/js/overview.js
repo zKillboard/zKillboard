@@ -36,7 +36,7 @@ function loadTops() {
     let kea = overviewStats.kea;
 
     $("#topset-isk").load("/cache/1hour/statstopisk?u=" + window.location.pathname + "&ks=" + ksa + "&ke=" + kea);
-    validTopTypes.forEach((t) => $("#topset-" + t).load("/cache/24hour/statstop10?u=" + window.location.pathname + "&t=" + t + "&ks=" + ksa + "&ke=" + kea));
+    validTopTypes.forEach((t) => $("#topset-" + t).load("/cache/1hour/statstop10?u=" + window.location.pathname + "&t=" + t + "&ks=" + ksa + "&ke=" + kea));
 
     topsLoaded = true;
     console.log('tops loaded');

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% set pageTitle = 'ScanAlyzer' %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+<h2>&#128924; ScanAlyzer <small>BETA! get information on local or d-scan</small></h2>
+<div class='row'>
+    <div class='col-xs-12 col-lg-2' style='padding-right: 0px;'>
+    <fieldset>
+        <legend><small><span id='clip'><a id='clippy' class='btn btn-sm btn-info' href='#' onclick='return false;'>&#128203; Paste</a></span></small></legend>
+        <textarea rows='25' style='width: 100%' id='scaninput'></textarea>
+    </fieldset>
+    </div>
+    <div class='col-xs-12 col-lg-10' style='padding-left: 5px;'>
+    <fieldset>
+        <legend id='resultslegend'>Results <small id='resultcounts'></small></legend>
+        <div id='status'></div>
+
+        <div style='display: flex;'>
+        <div style='max-width: 75px;'>
+        <div id='upperentities'>
+            <div id='playergroups' class="entitygroup"></div>
+            <div class="clearfix"></div>
+        </div>
+        </div>
+
+        <div style='max-width: 75px;'>
+        <div id='upperentities'>
+            <div id='shipgroups' class="entitygroup"></div>
+            <div class="clearfix"></div>
+            <div id='playergroups' class="entitygroup"></div>
+            <div class="clearfix"></div>
+        </div>
+        </div>
+
+        <div style='width: 100%'>
+
+        <div id='resultssection' style='display: none;'>
+        <div id='pilotentities'>
+            <table id='resultstable' class='table table-sm' style='background-color: #000;'>
+                <thead><tr><th>Name</th><th>Recent Ships</th><th colspan='2'>Member</th><th class='text-right'><span class="green">K</span> / <span class="red">L</span></th><th class='text-right'><span class='red'>&#x26A0;</span> / <span class="green">&#x2764;</span></th><th class='text-right'><i class="glyphicon glyphicon-user"></i><i class="glyphicon glyphicon-user"></i><i class="glyphicon glyphicon-user"></i></th><th class="text-right"><i class="glyphicon glyphicon-user"></i></th></tr></thead>
+                <tbody id='results'></tbody>
+            </table>
+            <div><small><i>- if a character is not listed they have an unknown killmail history<br/>- the number below danger is their snuggly percentage<br/>- the number below Gang % (not solo kills) is the average fleet size</i></small></div>
+        </div>
+        </div>
+        </div>
+    </div>
+    </fieldset>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+    <script defer type='text/javascript' src='/js/scanalyzer.js?v={{ version }}'></script>
+{% endblock %}

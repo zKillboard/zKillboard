@@ -168,3 +168,4 @@ $twig->addFunction(new Twig_SimpleFunction('getMessage', 'User::getMessage'));
 $twig->addFunction(new Twig_SimpleFunction('secStatusColor', 'Info::getSystemColorCode'));
 $twig->addFunction(new Twig_SimpleFunction('i', 'Util::counter'));
 $twig->addGlobal('version', $version);
+$twig->addGlobal('versionTime', time());

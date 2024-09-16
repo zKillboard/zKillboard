@@ -1,8 +1,5 @@
 <?php
 
-$master = true; //(bool) (pcntl_fork() > 0);
-//if (!$master) pcntl_fork();
-
 use cvweiss\redistools\RedisQueue;
 use cvweiss\redistools\RedisTtlCounter;
 
@@ -188,7 +185,8 @@ while ($minute == date('Hi')) {
         $killsLastHour->add($row['killID']);
         $mdb->set('crestmails', $row, ['processed' => true]);
 	continue;
-    } else if (!$master) break;
+
+    }
     sleep(1);
 }
 

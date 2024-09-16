@@ -563,6 +563,7 @@ function setStatsboxValues(stats) {
 function doFormats() {
     $("[format='format-int']").each(function() { t = $(this); doFieldUpdate(t, Number(t.attr('raw') | '').toLocaleString()); });
     $("[format='format-int-once']").each(function() { t = $(this); doFieldUpdate(t, Number(t.attr('raw') | '').toLocaleString()); t.removeAttr('format'); });
+    $("[format='format-pct-once']").each(function() { t = $(this); doFieldUpdate(t, (Number(t.attr('raw') | '') + '%').toLocaleString()); t.removeAttr('format'); });
 
     $("[format='format-dec1']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(t.attr('raw')).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits:1} )); });
     $("[format='format-isk']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(t.attr('raw')))) });
@@ -576,6 +577,7 @@ function doFormats() {
 function doFieldUpdate(f, v) {
     if (f.attr('raw') == '' || f.attr('raw') == undefined) return;
     if (f.text() == String(v)) return;
+    if (v == 'NaN') v = '';
     let o = $(f).attr('flash') == undefined ? 1 : 1;
     f.animate({opacity: o}, 100, function() {
         $(this).text(v).animate({opacity: 1}, 100);

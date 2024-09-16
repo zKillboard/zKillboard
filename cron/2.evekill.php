@@ -2,7 +2,8 @@
 
 require_once "../init.php";
 
-$raw = file_get_contents($eveKillLatest);
+$raw = @file_get_contents($eveKillLatest);
+if ($raw == "") exit(); // eve-kill went down, try again later
 $json = json_decode($raw, true);
 
 foreach (array_keys($json) as $id) {

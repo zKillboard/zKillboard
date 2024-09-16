@@ -1,9 +1,6 @@
 <?php
 
-$master = (bool) (pcntl_fork() > 0);
-if (!$master) pcntl_fork();
-if (!$master) pcntl_fork();
-if (!$master) pcntl_fork();
+$mt = 4; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
 use cvweiss\redistools\RedisTimeQueue;
 use cvweiss\redistools\RedisQueue;
@@ -35,7 +32,7 @@ while ($minute == date('Hi')) {
 
         $mdb->set("killmails", ['killID' => $killID], ['processed' => true]);
         addActivity($killID);
-    } else if (!$master) break;
+    } else if ($mt != 0) break;
     else sleep(1);
 }
 

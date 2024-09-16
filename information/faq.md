@@ -32,6 +32,8 @@ CCP has removed all killmail API endpoints from Singularity as some people were 
 
 The Chinese server has it's own set of APIs for the dedicated Chinese server. This killboard does not try to mix killmails from different servers that are ran in two very different environments with two different playerbases.
 
+***
+
 ##### [#](#remove) Can you remove a kill from zKillboard because ____________ ?
 
 Kills are never removed from zKillboard. Once zKillboard has a killmail it is disseminated to about dozen other sources via RedisQ. Removing a killmail will not prevent the fact that it happened. Even if CCP reimbursed your ship and items, the killmail still happened, and it still exists in game too.
@@ -84,6 +86,12 @@ Read the killmails. That is all. That is really about all zKillboard can do with
 ##### [#](#fittings) I have given authorized you to save ship fittings, what are you doing with this information?
 
 zKillboard will write to your character&#39;s ship fittings, if and only if, it has been given permission to do so by having the "Allow zKillboard to write Fittings" checked when logging in and you click a "Save Fitting" link from a killmail page.
+
+***
+
+##### [#](#namechange) I changed my character's name!  How can I get it updated here?
+
+The API does not always quickly reflect name changes.  If you'd like to see your name changed quickly, simply log in!  If you're already logged in, then please log out first.
 
 ***
 

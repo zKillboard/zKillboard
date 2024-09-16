@@ -1,9 +1,6 @@
 <?php
 
-$pid = pcntl_fork();
-$master = ($pid > 0);
-pcntl_fork();
-pcntl_fork();
+$mt = 8; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit(); $pid = $mt;
 
 use cvweiss\redistools\RedisQueue;
 
@@ -15,7 +12,7 @@ if ($mdb->findDoc("killmails", ['reset' => true]) != null) exit();
 if ($redis->get("zkb:statsStop") == "true") exit();
 if ($redis->get("zkb:reinforced") == true) exit();
 
-if ($master) $mdb->getCollection("statistics")->update(['reset' => false], ['$unset' => ['reset' => true]], ['multiple' => true]);
+if ($mt == 0) $mdb->getCollection("statistics")->update(['reset' => false], ['$unset' => ['reset' => true]], ['multiple' => true]);
 
 MongoCursor::$timeout = -1;
 $queueStats = new RedisQueue('queueStats');
@@ -27,7 +24,7 @@ function checkForResets() {
     $count = 0;
 
     // Look for resets in statistics and add them to the queue
-    $cursor = $mdb->getCollection("statistics")->find(['reset' => true])->limit(500);
+    $cursor = $mdb->getCollection("statistics")->find(['reset' => true])->limit(100);
     while ($cursor->hasNext()) {
         $row = $cursor->next();
         $raw = $row['type'] . ":" . $row['id'];
@@ -39,6 +36,7 @@ function checkForResets() {
     return ($count > 0);
 }
 
+$noStatsCount = 0;
 while ($minute == date('Hi')) {
     $raw = $redis->srandmember("queueStatsSet");
     if ($raw == ":" || $raw == ":0") {
@@ -46,7 +44,7 @@ while ($minute == date('Hi')) {
         continue;
     }
     if ($raw == null) {
-        if ($master) checkForResets();
+        if ($mt == 0) checkForResets();
         sleep(1);
         continue;
     }
@@ -64,17 +62,17 @@ while ($minute == date('Hi')) {
         array_shift($arr);
         $id = implode(":", $arr);
     }
-    $key = "$type:$id";
-    if ($redis->set("zkb:stats:$key", "true", ['nx', 'ex' => 3600]) === true) {
+    $key = "$type";
+    $lockKey = "zkb:stats:$key";
+    if ($redis->set($lockKey, "true", ['nx', 'ex' => 3600]) === true) {
         try {
             $redis->setex("zkb:stats:current:$type:$id", 3600, "true");
             $maxSequence = $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);
             $row = ['type' => $type, 'id' => $id, 'sequence' => $maxSequence];
 
-            $complete = false;
             do {
                 $complete = calcStats($row, $maxSequence);
-            } while ($complete == false && $minute == date('Hi'));
+            } while ($complete == false && date("Hi") == $minute);
 
             if ($complete) {
                 Util::statsBoxUpdate($type, $id);
@@ -87,7 +85,7 @@ while ($minute == date('Hi')) {
         } finally {
             if ($redis->ping() != 1) connectRedis();
             $redis->del("zkb:stats:current:$type:$id");
-            $redis->del("zkb:stats:$key");
+            $redis->del($lockKey);
         }
     } else {
         usleep(250000); // 1/4th of a second
@@ -123,23 +121,19 @@ function calcStats($row, $maxSequence)
     $delta = 100000; // default for following switch
     switch ($type) {
         case "characterID":
-        case "locationID":
-            $delta = $maxSequence;
+            $delta = 1000000;
             break;
+        case "locationID":
         case "allianceID":
         case "corporationID":
-            $delta = 3000000;
-            break;
-        case "shipTypeID":
         case "groupID":
         case "constellationID":
         case "solarSystemID";
             $delta = 1000000;
             break;
+        case "shipTypeID":
         case "factionID":
         case "regionID":
-            $delta = 100000;
-            break;
         case "label":
             $delta = 100000;
             break;
@@ -150,7 +144,7 @@ function calcStats($row, $maxSequence)
     $oldSequence = (int) @$stats['sequence'];
     $newSequence = min($oldSequence + $delta, $maxSequence);
 
-    //Util::out("$type $id $oldSequence $newSequence");
+    //Util::out("next $type $id $oldSequence $newSequence");
 
     for ($i = 0; $i <= 1; ++$i) {
         $isVictim = ($i == 0);
@@ -220,9 +214,31 @@ function calcStats($row, $maxSequence)
         $stats['gangRatio'] = $gangFactor;
     }
 
+    $invChecks = ['solo', '#:2+', '#:5+', '#:10+', '#:25+', '#:50+', '#:100+', '#:1000+'];
+    $invCounts = [];
+    $total = 0;
+    $invCountSolo = 0;
+    $invCountsSum = 0;
+    $invCountsAvgSum = 0;
+    foreach ($invChecks as $invCheck) {
+        if (isset($stats['labels'][$invCheck]['shipsDestroyed'])) {
+            $invCountsSum += $stats['labels'][$invCheck]['shipsDestroyed'];
+            $num = ($invCheck == 'solo' ? 1 : str_replace('+', '', str_replace('#:', '', $invCheck)));
+            $total +=  $stats['labels'][$invCheck]['shipsDestroyed'];
+            if ($invCheck == 'solo') $invCountSolo = $stats['labels'][$invCheck]['shipsDestroyed'];
+            $invCountsAvgSum += ($num * $stats['labels'][$invCheck]['shipsDestroyed']);
+        }
+    }
+    $avg = ($invCountsSum == 0 ? 0 : round($invCountsAvgSum / $invCountsSum, 1));
+    $soloRatio = ($total == 0 ? 0 : round(($invCountSolo / $total) * 100, 1));
+    $stats['avgGangSize'] = $avg;
+    $stats['soloRatio'] = $soloRatio;
+
+
     if (@$stats['shipsDestroyed'] > 10 && @$stats['shipsDestroyed'] > @$stats['nextTopRecalc']) $stats['calcAlltime'] = true;
     // save it
     $mdb->getCollection('statistics')->save($stats);
+
 
     return ($newSequence == $maxSequence);
 }

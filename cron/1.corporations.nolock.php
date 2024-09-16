@@ -1,8 +1,6 @@
 <?php
 
-$master = (bool) (pcntl_fork() > 0);
-if (!$master) pcntl_fork();
-if (!$master) pcntl_fork();
+$mt = 4; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit(); 
 
 use cvweiss\redistools\RedisTimeQueue;
 
@@ -15,7 +13,7 @@ if ($redis->get("zkb:noapi") == "true") exit();
 $chars = new RedisTimeQueue("zkb:characterID", 86400);
 $esi = new RedisTimeQueue('tqCorpApiESI', $esiCorpKm);
 
-if ($master && (date("i") == 44 || $esi->size() < 100)) {
+if ($mt == 0 && (date("i") == 44 || $esi->size() < 100)) {
        $corpIDs = $mdb->getCollection("scopes")->distinct("corporationID", ['scope' => 'esi-killmails.read_corporation_killmails.v1']);
        foreach ($corpIDs as $corpID) $esi->add($corpID);
 }

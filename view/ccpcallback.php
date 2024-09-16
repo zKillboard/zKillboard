@@ -39,6 +39,7 @@ try {
             $mdb->save('information', ['type' => 'characterID', 'id' => $charID, 'name' => "character_id $charID"]);
         }
     }
+    $mdb->set('information', ['id' => (int) $charID], ['name' => $charName, 'namecheck' => true]);
     $mdb->removeField('information', ['type' => 'characterID', 'id' => $charID], 'lastApiUpdate'); // force an api update
     $rtq = new RedisTimeQueue("zkb:characterID", 86400);
     $rtq->add($charID, -1);

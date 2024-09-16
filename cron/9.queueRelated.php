@@ -1,6 +1,6 @@
 <?php
 
-pcntl_fork();
+$mt = 2; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
 use cvweiss\redistools\RedisQueue;
 

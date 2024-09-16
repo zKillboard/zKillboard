@@ -1,7 +1,5 @@
 <?php
 
-$master = true; // (pcntl_fork() > 0); 
-
 use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
@@ -9,7 +7,7 @@ require_once '../init.php';
 if ($redis->get("tobefetched") > 1000) exit();
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->scard("queueStatsSet") > 1000) exit();
-if ($mdb->findDoc("statistics", ['reset' => true]) != null) exit();
+//if ($mdb->findDoc("statistics", ['reset' => true]) != null) exit();
 
 MongoCursor::$timeout = -1;
 

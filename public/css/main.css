@@ -400,3 +400,37 @@ html,body {
 	margin-right: 1em;
 }
 
+.scan-entity {
+    margin: 0.25em;
+}
+
+
+.entitygroup {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+#resultstable th, #resultstable td {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.pilotmemberimage {
+	width: 45px;
+}
+
+.pilotships {
+	width: 210px;
+}
+
+.pilotmember {
+	width: 75px;
+}
+
+#upperentities {
+	padding-right: 0.5em;
+}
+
+#resultslegend {
+    padding-top: 2px;
+}

@@ -1,9 +1,6 @@
 <?php
 
-$master = (bool) (pcntl_fork() > 0);
-if (!$master) pcntl_fork();
-if (!$master) pcntl_fork();
-if (!$master) pcntl_fork();
+$mt = 8; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
 use cvweiss\redistools\RedisTimeQueue;
 
@@ -15,7 +12,7 @@ if ($redis->get("zkb:noapi") == "true") exit();
 
 $esiCorps = new RedisTimeQueue('tqCorpApiESI', 3600);
 $esi = new RedisTimeQueue('tqApiESI', 3600);
-if ($master && (date('i') == 22 || $esi->size() < 100)) {
+if ($mt == 0 && (date('i') == 22 || $esi->size() < 100)) {
     Log::log("populating tqApiESI: " . $esi->size());
     $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_killmails.v1']);
     foreach ($esis as $row) {

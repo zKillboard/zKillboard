@@ -325,7 +325,7 @@ if (@$statistics['shipsLost'] > 0) {
 if (@$extra['dangerRatio'] !== null && date("md") == "0401") { // Everyone is snuggly on the first day of the fourth month
     $extra['dangerRatio'] = 0;
 }
-if (@$statistics['labels'] /*&& $statistics['id'] == 1633218082*/) {
+if (@$statistics['labels']) {
     $invChecks = ['solo', '#:2+', '#:5+', '#:10+', '#:25+', '#:50+', '#:100+', '#:1000+'];
     $invCounts = [];
     $total = 0;

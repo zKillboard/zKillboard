@@ -119,8 +119,12 @@ function updateChar(&$guzzler, &$params, &$content)
     if (@$row['obscene'] == true) {
         compareAttributes($updates, "name", @$row['name'], "Character " . $row['id']);
         compareAttributes($updates, "obscene_name", @$row['name'], (string) $json['name']);
-    } else compareAttributes($updates, "name", @$row['name'], (string) $json['name']);
+    } else if (@$row['name'] == "") {
+        compareAttributes($updates, "name", @$row['name'], (string) $json['name']);
+    }
     compareAttributes($updates, "secStatus", @$row['secStatus'], (double) $json['security_status']);
+
+    if (@$row['name'] != "") unset($updates['name']); // Names will no longer be updated here
 
     $corpExists = $mdb->count('information', ['type' => 'corporationID', 'id' => $corpID]);
     if ($corpExists == 0) {
