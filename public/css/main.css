@@ -93,7 +93,8 @@ width: 160px;
 }
 
 .collapse {
-overflow: hidden !important;
+    overflow: hidden !important;
+    max-height: 100% !important;
 }
 
 .footer {
@@ -323,7 +324,7 @@ td.centered {
 html,body {
     height: 100%;
     margin-bottom: 125px !important;
-    overflow-x: hidden;
+    /*overflow-x: hidden;**//
 }
 }
 @media only screen and (max-width: 1579px) {

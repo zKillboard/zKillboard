@@ -16,11 +16,11 @@
 {% endif %}
 
 <div class="row" style="margin: 0px; padding: 0px;">
-	<div class="col-lg-6 pull-left" style="margin: 0px; padding: 0px;">
+	<div class="col-xs-12 col-md-6 pull-left" style="margin: 0px; padding: 0px;">
         {% if detail.label %}
             <h2>{{ detail.label }}<small> killmails</small></h2>
         {% endif %}
-		<table style="margin: 0px; padding: 0px; background-color: transparent;" class="table table-condensed">
+		<table style="margin: 0px; padding: 0px; background-color: black;" class="table table-condensed">
 		{% if detail.groupShips %}
                         <tr>   
                                 <th class='col-lg-1'>Class:</th>
@@ -199,7 +199,7 @@
 	</td></tr>
     </table>
 	</div>
-	<div class="col-lg-6 pull-right" style='padding: 0px; margin: 0px;'>
+	<div class="col-xs-12 col-md-6 pull-right" style='padding: 0px; margin: 0px;'>
 		{% include 'components/stats_box.html' %}
 	</div>
 </div>

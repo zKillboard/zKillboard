@@ -84,6 +84,9 @@ class Price
             $priceList[] = 0.01;
         }
 
+if ( $typeID == 42124 ) Log::log(print_r($marketHistory, true));
+if ( $typeID == 42124 ) Log::log(print_r($priceList, true));
+
         $total = 0;
         foreach ($priceList as $price) {
             $total += $price;
@@ -125,6 +128,8 @@ class Price
                 return 0.01;
             case 45645: // Loggerhead
                 return 35000000000; // 35b
+            case 42124:
+                return 45000000000; // 45b
             case 42243: // Chemosh
                 return 70000000000;  // 70b
             case 2834: // Utu

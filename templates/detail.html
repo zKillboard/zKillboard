@@ -42,7 +42,7 @@
 			{% if killdata.info.killID < 0 %}
 			<li><a data-toggle="modal" data-target="#report" href="#">Report ({{ extra.reports }})</a></li>
 			{% endif %}
-			<li class="dropdown hidden-xs">
+			<li class="dropdown">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown">External <b class="caret"></b></i></a>
 				<ul class="dropdown-menu">
 					<li class="dropdown-header">DOTLAN</li>
@@ -55,7 +55,7 @@
 					<li><a href="https://evewho.com/pilot/{{ topDamage.characterName|url_encode }}" target="_blank" rel="noopener noreferrer">{{ topDamage.characterName }}</a></li>
 				</ul>
 			</li>
-			<li class="dropdown hidden-xs">
+			<li class="dropdown">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown">Export <b class="caret"></b></a>
 				<ul class="dropdown-menu">
                                         <li><a href='#' onClick="saveFitting({{ extra.crest.killID }}); return false;" rel="nofollow">Import Fit via ESI</a></li>
@@ -65,11 +65,11 @@
 					<li><a data-toggle="modal" data-target="#EFT" href="#">EFT</a></li>
 				</ul>
 			</li>
-			<li class="dropdown hidden-xs">
+			<li class="dropdown">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown">Social <b class="caret"></b></i></a>
 				<ul class="dropdown-menu">
 					<li><a href="https://www.facebook.com/sharer/sharer.php?u={{url}}" target="_blank" rel="noopener noreferrer"><img src="//{{ siteurl }}/img/social/fb_1.png"> Facebook</a></li>
-					<li><a href="https://twitter.com/intent/tweet?text={{ pageTitle|url_encode }}&url={{url}}" target="_blank" rel="noopener noreferrer"><img src="//{{ siteurl }}/img/social/twitter_1.png"> Twitter</a></li>
+					<li><a href="https://x.com/intent/tweet?text={{ pageTitle|url_encode }}&url={{url}}" target="_blank" rel="noopener noreferrer"><img src="//{{ siteurl }}/img/social/twitter_1.png"> X / Twitter</a></li>
 					<li><a href="https://www.reddit.com/submit?url={{url}}&title={{ pageTitle|url_encode }}" target="_blank" rel="noopener noreferrer"><img src="//{{ siteurl }}/img/social/reddit.png"> Reddit</a></li>
 				</ul>
 			</li>
@@ -90,7 +90,8 @@
 		<tr>
 	</table>
 	<div class="row visible-xs" style="padding: 0px;">
-		<div class="col-lg-5" style="padding: 0px;">{% include 'components/fitting_wheel.html' %}</div>
+		<div class="col-lg-5" style="padding: 0px;"  id="fittingwheeldiv">{% include 'components/fitting_wheel.html' %}</div>
+        <br class="d-lg-none" />
 		<div class="col-lg-5" style="padding: 0px;">{% include 'components/victim_info.html' %}</div>
 	</div>
 	<div class="row">
@@ -100,8 +101,8 @@
 
 <div class="col-lg-4">
 	<a id='loginsideimage' href='/ccpoauth2/' class='btn btn-block collapse'><img src='/img/ssologin.png' style='width: 100%'><br/><br/></a>
-    {{ sponsoredMessage|raw }}
-    <div class='alert alert-info'><center><a href='{{ referralLink }}' alt='1 million SP FREE'><img src='https://images.evetech.net/types/40520/icon?size=32' alt='1 million free skill points!'/>1 Million SP FREE</a></center></div>
+    <!-- {{ sponsoredMessage|raw }} -->
+    <!-- <div class='alert alert-info'><center><a href='{{ referralLink }}' alt='1 million SP FREE'><img src='https://images.evetech.net/types/40520/icon?size=32' alt='1 million free skill points!'/>1 Million SP FREE</a></center></div>-->
 	{% if extra.npcOnly %}
 		<div class="alert alert-info">This is an NPC Only killmail.<br/>It is not counted in statistics.</div>
 	{% endif %}

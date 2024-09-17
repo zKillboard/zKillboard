@@ -10,12 +10,16 @@ $lineCount = 0;
 try {
 
     $includes = ['_id' => 0, 'id' => 1, 'ticker' => 1, 'name' => 1, 'corporationID' => 1, 'allianceID' => 1, 'factinoID' => 1, 'secStatus' => 1];
-    $statsIncludes = ['_id' => 0, 'shipsDestroyed' => 1, 'shipsLost' => 1, 'dangerRatio' => 1, 'gangRatio' => 1, 'avgGangSize' => 1];
+    $statsIncludes = ['_id' => 0, 'shipsDestroyed' => 1, 'shipsLost' => 1, 'dangerRatio' => 1, 'gangRatio' => 1, 'avgGangSize' => 1, 'labels.ganked.shipsDestroyed' => 1];
 
     $scan = @$_POST['scan'];
     if (strlen($scan) > 25000) exit();
+Log::log("ScanAlyzer $scan");
+    $scan = str_replace(",", "", $scan);
     $scan = str_replace("\\n", ",", $scan);
     $scan = str_replace("\n", ",", $scan);
+    $scan = str_replace("‘", "'", $scan);
+    $scan = str_replace("’", "'", $scan);
     //$scan = str_replace("\r", ",", $scan);
     //$scan = str_replace("\\t", ",", $scan);
     //$scan = str_replace(" - ", "*,", $scan);
@@ -27,8 +31,10 @@ try {
     $allis = [];
     $ships = [];
     foreach ($scan as $line) {
+        $row = null;
         $line = trim($line);
         $line = str_replace("\\t", ",", $line);
+        $line = str_replace("   ", ",", $line);
         $split = explode(',', $line);
         $entity = trim($split[0]);
 
@@ -39,8 +45,8 @@ try {
         if (is_numeric($entity)) { // Is this a ship?
             $row = $mdb->findDoc("information", ['type' => 'typeID', 'id' => (int) $entity, 'cacheTime' => 3600]);
             if ($row != null) {
-                $isShip = true; // applies to everything really
                 if (((int) $row['categoryID']) == 6) {
+                    $isShip = true;
                     $ship = isset($ships[$entity]) ? $ships[$entity] : ['shipTypeID' => $entity, 'count' => 0];
                     $ship['count']++;
                     $ships[$entity] = $ship;
@@ -50,7 +56,7 @@ try {
         }
 
         if ($isShip) {
-            $entity = $split[1];
+            $entity = @$split[1];
             $split = explode(' - ', $entity);
             $entity = isset($split[1]) ? trim($split[1]) : trim($split[0]);
         }
@@ -60,13 +66,19 @@ try {
             $charparsed[$entity] = true;
 
             $row = $mdb->findDoc("information", ['type' => 'characterID', 'name' => $entity, 'cacheTime' => 3600], [], $includes);
-            if ($row == null) {
-                if ($mdb->count("unknowns", ['name' => $entity]) == 0) $mdb->insert("unknowns", ['type' => 'name', 'name' => $entity]);
-                continue;
-            }
+            if ($row == null) continue;
+
+            $row['labels'] = [];
+
+            // do they have activity in the last 90 days
+            $doc = $mdb->findDoc("ninetyDays", ['involved.characterID' => $row['id']]);
+            if ($doc == null) $row['inactive'] = true;
+
             $totalChars++;
             $stats = $mdb->findDoc("statistics", ['type' => 'characterID', 'id' => $row['id'], 'cacheTime' => 3600], [], $statsIncludes);
             $row['stats'] = ($stats == null ? [] : $stats);
+            $row['stats']['ganked-shipsDestroyed'] = (int) @$stats['labels']['ganked']['shipsDestroyed'];
+            unset($row['stats']['labels']);
 
             $p = ['characterID' => [$row['id']], 'limit' => 5, 'pastSeconds' => 7776000, 'kills' => true, 'cacheTime' => 3600];
             $topShips = Stats::getTop('shipTypeID', $p);

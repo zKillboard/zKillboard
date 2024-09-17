@@ -13,6 +13,28 @@
 	}
 }
 
+
+@media (max-width: 767px) {
+	body {
+        background-color: #000;
+		overflow-x: hidden;		
+	}
+
+	.content {
+		margin-left: 15px;
+	}
+
+	#fittingwheeldiv {
+		aspect-ratio: 1/1;
+	}
+
+	#Fitting_Panel {
+		scale: 1.4;
+		transform-origin: 0 0;
+		left: -85px;
+	}
+}
+
 .nobackground, .navbar {
        background: #000;
        box-shadow: 0 0 5px 5px rgba(6,6,6,0.95);
@@ -123,6 +145,6 @@ pre {
 	border-color: solid 1px purple;
 }
 
-html, body {
+/*html, body {
     scrollbar-gutter: stable both-edges;
-}
+}*/

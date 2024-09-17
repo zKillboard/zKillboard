@@ -1,11 +1,11 @@
 $(document).ready(function() {
-    //$('#scaninput').on('paste', startProcess);
     $('#scaninput').on('blur', startProcess);
 
     if (navigator.clipboard === undefined) $("#clip").hide();
     else $('#clippy').on('click', copypasta);
 
     clearInput();
+    $("#clippy").removeAttr("disabled");
 })
 
 function clearInput() {
@@ -23,6 +23,7 @@ async function copypasta() {
 
 var scanCall = undefined;
 function startProcess() {
+    $("#clippy").attr("disabled", "true");
     $('#resultssection').hide();
     $('#resultcounts').html('');
     $('#playergroups').html('');
@@ -107,8 +108,15 @@ function popChar(ch) {
         ch.stats.dangerRatio = '';
         ch.stats.snuggly = ch.stats.shipsLost > 0 ? 100 : '';
     }
+    if (ch.inactive == true) ch.labels.push('no recent kb activity');
+    if (ch.stats['ganked-shipsDestroyed'] > 10) ch.labels.push('<span class="red">ganker</span>');
 
-    let h = $(`<tr><td>${char}<br/>Sec: <small style='color: ${secColor}' format="format-dec2-once" raw="${ch.secStatus}"></small></td><td class='pilotships'>${ships}</td><td class='pilotmemberimage'>${image}</td><td class="pilotmember">${corp}<br/>${alli}</td><td class="text-right"><span class="pilotkl green" format="format-int-once" raw="${ch.stats.shipsDestroyed}"></span><br/><span class="red" format="format-int-once" raw="${ch.stats.shipsLost}"></span></td><td class="pilotds text-right"><span class="red" format="format-pct-once" raw="${ch.stats.dangerRatio}"></span><br/><span  class="green" format="format-pct-once" raw="${ch.stats.snuggly}"></span></td><td class="text-right"><span format="format-pct-once" raw="${ch.stats.gangRatio}"></span><br/><span format="format-dec2-once" raw="${ch.stats.avgGangSize}"></td><td class='text-right' format="format-pct-once" raw="${ch.stats.soloRatio}"></td></tr>`);
+    let soloColor = '';
+    if (ch.stats.shipsDestroyed > 10 && ch.stats.soloRatio >= 50) soloColor = 'green';
+
+    let notes = typeof ch.labels == 'undefined' ? '' : ch.labels.join(', ');
+
+    let h = $(`<tr><td>${char}<br/>Sec: <small><span style='color: ${secColor}' format="format-dec2-once" raw="${ch.secStatus}"></span> <span>${notes}</span></small></td><td class='pilotships'>${ships}</td><td class='pilotmemberimage'>${image}</td><td class="pilotmember">${corp}<br/>${alli}</td><td class="text-right"><span class="pilotkl green" format="format-int-once" raw="${ch.stats.shipsDestroyed}"></span><br/><span class="red" format="format-int-once" raw="${ch.stats.shipsLost}"></span></td><td class="pilotds text-right"><span class="red" format="format-pct-once" raw="${ch.stats.dangerRatio}"></span><br/><span  class="green" format="format-pct-once" raw="${ch.stats.snuggly}"></span></td><td class="text-right"><span format="format-pct-once" raw="${ch.stats.gangRatio}"></span><br/><span format="format-dec2-once" raw="${ch.stats.avgGangSize}"></td><td class='text-right ${soloColor}' format="format-pct-once" raw="${ch.stats.soloRatio}"></td></tr>`);
     $('#results').append(h);
 }
 
@@ -183,6 +191,7 @@ function showError(a, b, c) {
 
 function showDone() {
     $("#scaninput").removeAttr('disabled');
+    $("#clippy").removeAttr("disabled");
 }
 
 function updateStatus(msg = '') {

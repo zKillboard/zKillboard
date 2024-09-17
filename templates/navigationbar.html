@@ -51,8 +51,9 @@
 				</li>
 				<li class="hidden-xs hidden-sm"><a href="/post/">Post</a></li>
 				<li class="hidden-xs hidden-sm"><a href="https://tmikoss.github.io/zkb-map/" target="_new">Map</a></li>
+                <li class="hidden-xs hidden-sm hidden-md"><a href="/scanalyzer/">&#128924;</a></li>
 				<li class="hidden-xs hidden-sm"><a href="/information/payments/"><img src='/img/golden-wreck.png'></a></li>
-                                <li class="hidden-xs hidden-sm"><a href="/account/favorites/"><span id='favorite' style='width: 1em; cursor: pointer;'><b id='fav-star' class="glyphicon glyphicon-star" style='color: #FDBC2C'></b></span></a></li>
+                <li class="hidden-xs hidden-sm"><a href="/account/favorites/"><span id='favorite' style='width: 1em; cursor: pointer;'><b id='fav-star' class="glyphicon glyphicon-star" style='color: #FDBC2C'></b></span></a></li>
 				{% if statslink %}
 					<li class="hidden-xs hidden-sm"><a href="{{ statslink }}">Stats</a></li>
 				{% endif %}
@@ -82,29 +83,29 @@
 					<a href="#" class="dropdown-toggle hidden-lg hidden-md hidden-sm" data-toggle="dropdown">Account <span class="caret"></span></a>
 					        <ul class="dropdown-menu" id='char-loggedin'>
 							<li id='username' class="dropdown-header">{{ sessionusername }}</li>
-<img class='char-image clickimage' style='margin-left: 12px;'>
-<img class='corp-image clickimage' style='margin-left: 5px;'>
-<img class='alli-image clickimage' stle='margin-left: 5px;'>
-							<li class="divider hidden-xs"></li>
+<img class='char-image clickimage hidden-xs' style='margin-left: 12px;'>
+<img class='corp-image clickimage hidden-xs' style='margin-left: 5px;'>
+<img class='alli-image clickimage hidden-xs' stle='margin-left: 5px;'>
+							<li class="divider"></li>
 							<li><a href="/account/api/">API</a></li>
 							<li><a href="/account/log/">Log</a></li>
 							<li><a href="/account/payments/">Payments</a></li>
 							<li><a href="/account/">Settings</a></li>
-							<li class="divider hidden-xs"></li>
-							<li class="dropdown-header">Support</li>
+							<li class="divider"></li>
+							<li class="dropdown-header hidden-xs">Support</li>
 							<li><a href='{{ discordServer }}' target='_blank' rel="noopener noreferrer">Discord <i class='glyphicon glyphicon-new-window'></i></a></li>
 							<li><a href='/information/faq/'>FAQ</a></li>
-							<li class="divider hidden-xs"></li>
+							<li class="divider"></li>
 							<li><a href="/account/logout/">Logout</a></li>
                                                 </ul>
-                                                {% if characterID == 0 %}
+                            {% if characterID == 0 %}
 					        <ul class="dropdown-menu" id='char-loggedout'>
 							    <form action="/ccpoauth2/" id="loginform">
 								    <input id='ssologinimage' type="image" src="/img/ssologin.png">
                                 <p><small>Will request killmails and save fitting scopes.</small></p>
 							    </form>
                             </ul>
-                        {% endif %}
+                            {% endif %}
 				</li>
 			</ul>
 		</div>

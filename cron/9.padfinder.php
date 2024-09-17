@@ -2,7 +2,7 @@
 
 require_once "../init.php";
 
-if (date("j") % 7 != 0) exit(); // 7th, 14th, 21st, 28th
+if (date("j") % 14 != 0) exit(); // 14th, 28th
 if (date("Hi") != 1000) exit(); 
 
 $coll = "ninetyDays";

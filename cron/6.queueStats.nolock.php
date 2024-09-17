@@ -1,6 +1,6 @@
 <?php
 
-$mt = 8; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit(); $pid = $mt;
+$mt = 12; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit(); $pid = $mt;
 
 use cvweiss\redistools\RedisQueue;
 
@@ -63,7 +63,8 @@ while ($minute == date('Hi')) {
         $id = implode(":", $arr);
     }
     $key = "$type";
-    $lockKey = "zkb:stats:$key";
+    if ($key == 'characterID') $lockKey = "zkb:stats:$key:$id";
+    else $lockKey = "zkb:stats:$key";
     if ($redis->set($lockKey, "true", ['nx', 'ex' => 3600]) === true) {
         try {
             $redis->setex("zkb:stats:current:$type:$id", 3600, "true");
@@ -97,6 +98,8 @@ function calcStats($row, $maxSequence)
 {
     global $mdb, $debug;
 
+$t = new Timer();
+
     $type = $row['type'];
     $id = $row['id'];
     $key = ['type' => $type, 'id' => $id];
@@ -121,7 +124,7 @@ function calcStats($row, $maxSequence)
     $delta = 100000; // default for following switch
     switch ($type) {
         case "characterID":
-            $delta = 1000000;
+            $delta = 10000000;
             break;
         case "locationID":
         case "allianceID":
@@ -158,7 +161,7 @@ function calcStats($row, $maxSequence)
 
         if ($type == 'label' && $id == 'all') unset($query['labels']);
         else if ($type == 'label') $query['labels'] = $id;
-        else if ($isVictim == false) $query['labels'] = ['$ne' => 'padding']; // Allows NPCs to count their kills
+        else if ($isVictim == false) $query['labels'] = 'pvp'; // Allows NPCs to count their kills
 
         if ($type == 'label' || $type == 'locationID' || $type == 'regionID' || $type == 'constellationID' || $type == 'solarSystemID') unset($query['isVictim']);
 
@@ -172,6 +175,7 @@ function calcStats($row, $maxSequence)
         $allTime = $mdb->group('killmails', [], $query, 'killID', ['zkb.points', 'zkb.totalValue', 'attackerCount']);
         mergeAllTime($stats, $allTime, $isVictim);
 
+// group($collection, $keys = [], $query = [], $count = [], $sum = [], $sort = [], $limit = null)
         $groups = $mdb->group('killmails', 'vGroupID', $query, 'killID', ['zkb.points', 'zkb.totalValue', 'attackerCount'], ['vGroupID' => 1]);
         mergeGroups($stats, $groups, $isVictim);
 
@@ -187,6 +191,7 @@ function calcStats($row, $maxSequence)
         $query = MongoFilter::buildQuery($query);
         $key = "solo" . ($isVictim ? "Losses" : "Kills");
         $query = ['$and' => [['sequence' => ['$gt' => $oldSequence]], ['sequence' => ['$lte' => $newSequence]], $query]];
+
         $count = $mdb->count('killmails', $query);
         $stats[$key] = isset($stats[$key]) ? $stats[$key] + $count : $count;
     }

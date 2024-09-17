@@ -132,6 +132,8 @@ $app->get('/item/:id/', function ($id) use ($app) {
         include 'view/item.php';
         });
 
+$app->get('/api/recentactivity/', function () use ($app) { include 'view/api/recentactivity.php'; });
+
 $app->get('/api/supers/', function () use ($app) {
         include 'view/intel.php';
         });

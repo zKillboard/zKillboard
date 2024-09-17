@@ -51,6 +51,13 @@ $badges = [
         'image' => '/img/badges/bushkitty.png',
         'title' => 'Bush Kitty',
     ],
+    [
+        'url' => 'https://www.twitch.tv/anarckos',
+        'query' => ['characterID' => 249261834, 'isVictim' => false],
+        'victim' => true,
+        'image' => '/img/badges/anarckos.png',
+        'title' => 'assimilated by the mothership',
+    ],
 ];
 
 

@@ -21,7 +21,7 @@
           <span class='pull-right'>{{ kill.dttm.sec|date('H:i') }}</span>
           <br/><a href="/kill/{{ kill.killID }}/"><span class="pull-right" format='format-isk-once' raw="{{ kill.zkb.totalValue }}">{{ formatIsk(kill.zkb.totalValue) }}</span></a>
         </td>
-        <td class="icon hidden-xs" style="text-align: center; vertical-align: middle;">
+        <td class="icon" style="text-align: center; vertical-align: middle;">
           {% include 'components/image_ship.html' %}
         </td>
         <td class="location">
