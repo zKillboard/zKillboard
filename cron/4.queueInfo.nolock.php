@@ -41,6 +41,9 @@ function addActivity($killID)
     global $mdb;
 
     $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
+    $catID = Info::getInfoField("groupID", $killmail['vGroupID'], 'categoryID');
+    if ($catID != 6) return;
+
     $dttm = $killmail['dttm'];
     $day = (int) date('w', $dttm->sec);
     $hour = (int) date('H', $dttm->sec);
