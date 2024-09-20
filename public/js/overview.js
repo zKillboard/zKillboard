@@ -2,17 +2,11 @@ const validTopTypes = ['characterID', 'corporationID', 'allianceID', 'shipTypeID
 
 var overviewStats = undefined;
 
-var badgesLoaded = false;
 function updateStats(stats) {
     overviewStats = stats;
     console.log('stats updated');
     if (topsLoaded === false) loadTops();
     loadKms();
-    /*if (pageType == 'character' && badgesLoaded == false) {
-        badgesLoaded = true;   
-        $("#badges").load("https://zkillboard.com/cache/1hour/badges/?s=" + overviewStats.sequence + "&id=" + pageID);
-        console.log('loading badges');
-    }*/
 }
 
 var kmLoaded = false;

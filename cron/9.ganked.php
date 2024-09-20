@@ -50,5 +50,4 @@ while ($concord->hasNext()) {
     }
 }
 
-$mdb->set("statistics", ['type' => 'label', 'id' => 'ganked'], ['reset' => true]);
 $redis->setex("zkb:gankcheck", 900, "true");

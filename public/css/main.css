@@ -121,6 +121,14 @@ ul.autocomplete span { position: absolute; top: 10px; right: 5px; }
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
+
+	#details-menu {
+		padding: 0px;		
+	}
+	
+	#details-menu .nav li a {
+		padding-left: 0px;
+	}
 }
 
 #addentity label { margin-right: 15px; }
@@ -294,10 +302,6 @@ td.centered {
     padding-bottom: 0;
     overflow: visible !important;
   }
-  #Fitting_Panel {
-    zoom: 0.75;
-    margin: auto;
-  }
 }
 
 .pointer {
@@ -403,6 +407,7 @@ html,body {
 
 .scan-entity {
     margin: 0.25em;
+    width: 64px;
 }
 
 
@@ -435,3 +440,61 @@ html,body {
 #resultslegend {
     padding-top: 2px;
 }
+
+/*@media only screen and (min-width: 420px) and (max-width: 997px) {
+	#usermenu * {
+		padding-left: 0px;
+		padding-right: 0px;
+	}
+    .collapse {
+        display: block;
+    }
+
+    .navbar-header {
+        float: left;
+    }
+
+    .navbar-toggle {
+        display: none;
+    }
+
+    .navbar-nav.navbar-left {
+       float: left;
+       margin: 0;
+    }
+
+    .navbar-nav.navbar-right {
+       float: right;
+       margin: 0;
+    }
+    .navbar-nav>li {
+        float: left;
+    }
+    .navbar-nav>li>a {
+        padding-top: 15px;
+        padding-bottom: 15px;
+    }
+
+	.navbar * {
+		margin: 0px;
+	}
+	
+	#search {
+		margin: 0px;
+		padding: 0px;
+		padding-top: 5px;
+		width: 10px;
+		position: relative;
+		left: -240px;
+	}
+}
+
+@media only screen and (max-width: 420px) {
+     .collapse {
+        display: none;
+     }
+
+     .navbar-header {
+        display: block;
+     }
+}*/

@@ -29,7 +29,8 @@
                                 </td>
                         </tr>
 		{% endif %}
-		<tr><td {% if detail.groupShips %}colspan='2' {% endif %} style="{{ not detail.groupShips ? 'width: 130px; ' : ''}}border-top: none; margin: 0px; padding: 0px;">
+        <tr class="visible-xs"><td colspan='2'>{% include 'components/info_top_image.html' %}</td></tr>
+		<tr><td class="hidden-xs" {% if detail.groupShips %}colspan='2' {% endif %} style="{{ not detail.groupShips ? 'width: 130px; ' : ''}}border-top: none; margin: 0px; padding: 0px;">
 		{% include 'components/info_top_image.html' %}
 		</td><td style="border-top: none; margin: 0px; padding: 0px;">
 		<div itemscope class="pull-left">

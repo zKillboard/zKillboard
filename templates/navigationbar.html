@@ -6,7 +6,7 @@
 				<span class="icon-bar"></span>
 				<span class="icon-bar"></span>
 			</button>
-			<a class="navbar-brand" href="/"><img class='zkblogo' src='/img/wreck.png' style='width: 16px; height: 16px;'/> zKillboard</a>
+			<a class="navbar-brand" href="/"><img class='zkblogo' src='/img/wreck.png' style='width: 16px; height: 16px;'/> z<span class="hidden-xs">Killboard</span></a>
 		</div>
 		<div class="collapse navbar-collapse navbar-main">
 			<ul class="nav navbar-nav">
@@ -73,14 +73,13 @@
                     </form>
                 </li>
 				<li id='usermenu' class="dropdown">
-					<a href="#" class="dropdown-toggle hidden-xs" data-toggle="dropdown" id='usermenu-dropdown'>
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown" id='usermenu-dropdown'>
                                         {% if characterID > 0 %}
                                             <img id='char-image' src="{{ image_character }}{{ characterID }}/portrait?size=32" style='height: 32px; width: 32px; padding: 0px; margin: 0px; margin-top: -8px;'/>
                                         {% else %}
                                             <img id='char-image' src="/img/transparent_32.png" style='height: 32px; width: 32px; padding: 0px; margin: 0px; margin-top: -8px;'/>
                                         {% endif %}
                                         <span class="caret"></span></a>
-					<a href="#" class="dropdown-toggle hidden-lg hidden-md hidden-sm" data-toggle="dropdown">Account <span class="caret"></span></a>
 					        <ul class="dropdown-menu" id='char-loggedin'>
 							<li id='username' class="dropdown-header">{{ sessionusername }}</li>
 <img class='char-image clickimage hidden-xs' style='margin-left: 12px;'>

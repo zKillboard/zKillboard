@@ -61,11 +61,11 @@ function getImage(corp, alli) {
     if (alli) {
         let name = getName('alli', alli);
         let img = `<img class="eveimage img-rounded" style='height: 40px;' src='https://images.evetech.net/alliances/${alli}/logo?size=64' title="${name}" />`
-            return `<a href='/alliances/${alli}/'>${img}</a>`
+            return `<a href='/alliance/${alli}/'>${img}</a>`
     }
     let name = getName('corp', corp);
     let img = `<img class="eveimage img-rounded" style='height: 40px;' src='https://images.evetech.net/corporations/${corp}/logo?size=64' title="${name}" />`
-        return `<a href='/corporations/${corp}/'>${img}</a>`
+        return `<a href='/corporation/${corp}/'>${img}</a>`
 }
 
 function getName(type, id) {
@@ -131,8 +131,8 @@ function popUEa(alli) {
     let name = result.allis[alli].name;
     let ticker = result.allis[alli].ticker;
     let img = `<img class="eveimage img-rounded" src='https://images.evetech.net/alliances/${alli}/logo?size=64' title="${name}" />`
-        let link = `<a href='/alliances/${alli}/'>&lt;${ticker}&gt;</a>`
-        let h = $(`<div style='order: -${count}' class='pull-left scan-entity text-center'>${img}<br/>${link}<br/><div class='text-center'>${count}</div></div>`);
+    let link = `<a href='/alliance/${alli}/' class='nowrap'>&lt;${ticker}&gt;</a>`;
+    let h = $(`<div style='order: -${count}' class='pull-left scan-entity text-center'>${img}<br/>${link}<br/><div class='text-center'>${count}</div></div>`);
     $('#playergroups').append(h);
 }
 
@@ -148,7 +148,7 @@ function popUEc(corp) {
     let name = result.corps[corp].name;
     let ticker = result.corps[corp].ticker;
     let img = `<img class="eveimage img-rounded" src='https://images.evetech.net/corporations/${corp}/logo?size=64' title="${name}" />`
-        let link = `<a href='/corporation/${corp}/'>[${ticker}]</a>`
+        let link = `<a href='/corporation/${corp}/' class='nowrap'>[${ticker}]</a>`
         let h = $(`<div style='order: -${count}' class='pull-left scan-entity text-center'>${img}<br/>${link}<br/><div class='text-center'>${count}</div></div>`);
     $('#playergroups').append(h);
 }

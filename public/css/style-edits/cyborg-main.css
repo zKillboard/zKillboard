@@ -23,16 +23,6 @@
 	.content {
 		margin-left: 15px;
 	}
-
-	#fittingwheeldiv {
-		aspect-ratio: 1/1;
-	}
-
-	#Fitting_Panel {
-		scale: 1.4;
-		transform-origin: 0 0;
-		left: -85px;
-	}
 }
 
 .nobackground, .navbar {
