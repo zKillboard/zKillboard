@@ -278,7 +278,7 @@
             <td></td>
             {% for hour in 0..23 %}<td><center>{{ hour }}</center></td>{% endfor %}
         </tr>
- {% set days = [ 'S', 'M', 'T', 'W', 'R', 'F', 'S' ] %}
+ {% set days = [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ] %}
         {% for day in 0..6 %}
             <tr>
   <td style='width: 24px; height: 24px;'><center>{{ days[day] }}</center></td>
