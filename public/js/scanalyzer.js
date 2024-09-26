@@ -63,9 +63,12 @@ function getImage(corp, alli) {
         let img = `<img class="eveimage img-rounded" style='height: 40px;' src='https://images.evetech.net/alliances/${alli}/logo?size=64' title="${name}" />`
             return `<a href='/alliance/${alli}/'>${img}</a>`
     }
-    let name = getName('corp', corp);
-    let img = `<img class="eveimage img-rounded" style='height: 40px;' src='https://images.evetech.net/corporations/${corp}/logo?size=64' title="${name}" />`
+    if (corp) {
+        let name = getName('corp', corp);
+        let img = `<img class="eveimage img-rounded" style='height: 40px;' src='https://images.evetech.net/corporations/${corp}/logo?size=64' title="${name}" />`
         return `<a href='/corporation/${corp}/'>${img}</a>`
+    }
+    return '';
 }
 
 function getName(type, id) {
@@ -91,14 +94,14 @@ function popChar(ch) {
     }
 
     ch.stats.snuggly = 100 - ch.stats.dangerRatio;
-    let char = `<a href='/character/${ch.id}/'>${ch.name}</a>`
-        let corp = getName('corps', ch.corporationID);
+    let char = ch.id > 0 ? `<a href='/character/${ch.id}/'>${ch.name}</a>` : ch.name;
+    let corp = getName('corps', ch.corporationID);
     let alli = getName('allis', ch.allianceID);
     let image = getImage(ch.corporationID, ch.allianceID);
     let secColor = getStatusColor(ch.secStatus);
     if (typeof ch.secStatus == 'undefined') ch.secStatus = 0;
     if (ch.allianceID) mapping['allis'][ch.allianceID] = (mapping['allis'][ch.allianceID] | 0) + 1;
-    else mapping['corps'][ch.corporationID] = (mapping['corps'][ch.corporationID] | 0) + 1;
+    else if (ch.corporationID) mapping['corps'][ch.corporationID] = (mapping['corps'][ch.corporationID] | 0) + 1;
     if (!(ch.stats.shipsDestroyed > 1)) ch.stats.gangRatio = '';
     ch.stats.soloRatio = 100 - ch.stats.gangRatio;
     ch.stats.shipsDestroyed = ch.stats.shipsDestroyed | 0;
@@ -108,7 +111,8 @@ function popChar(ch) {
         ch.stats.dangerRatio = '';
         ch.stats.snuggly = ch.stats.shipsLost > 0 ? 100 : '';
     }
-    if (ch.inactive == true) ch.labels.push('no recent kb activity');
+    if (ch.unknown == true) ch.labels.push('no known kb activity');
+    else if (ch.inactive == true) ch.labels.push('no recent kb activity');
     if (ch.stats['ganked-shipsDestroyed'] > 10) ch.labels.push('<span class="red">ganker</span>');
 
     let soloColor = '';
@@ -116,7 +120,7 @@ function popChar(ch) {
 
     let notes = typeof ch.labels == 'undefined' ? '' : ch.labels.join(', ');
 
-    let h = $(`<tr><td>${char}<br/>Sec: <small><span style='color: ${secColor}' format="format-dec2-once" raw="${ch.secStatus}"></span> <span>${notes}</span></small></td><td class='pilotships'>${ships}</td><td class='pilotmemberimage'>${image}</td><td class="pilotmember">${corp}<br/>${alli}</td><td class="text-right"><span class="pilotkl green" format="format-int-once" raw="${ch.stats.shipsDestroyed}"></span><br/><span class="red" format="format-int-once" raw="${ch.stats.shipsLost}"></span></td><td class="pilotds text-right"><span class="red" format="format-pct-once" raw="${ch.stats.dangerRatio}"></span><br/><span  class="green" format="format-pct-once" raw="${ch.stats.snuggly}"></span></td><td class="text-right"><span format="format-pct-once" raw="${ch.stats.gangRatio}"></span><br/><span format="format-dec2-once" raw="${ch.stats.avgGangSize}"></td><td class='text-right ${soloColor}' format="format-pct-once" raw="${ch.stats.soloRatio}"></td></tr>`);
+    let h = $(`<tr danger="${ch.stats.dangerRatio}"><td>${char}<br/>Sec: <small><span style='color: ${secColor}' format="format-dec2-once" raw="${ch.secStatus}"></span> <span>${notes}</span></small></td><td class='pilotships'>${ships}</td><td class='pilotmemberimage'>${image}</td><td class="pilotmember">${corp}<br/>${alli}</td><td class="text-right"><span class="pilotkl green" format="format-int-once" raw="${ch.stats.shipsDestroyed}"></span><br/><span class="red" format="format-int-once" raw="${ch.stats.shipsLost}"></span></td><td class="pilotds text-right"><span class="red" format="format-pct-once" raw="${ch.stats.dangerRatio}"></span><br/><span  class="green" format="format-pct-once" raw="${ch.stats.snuggly}"></span></td><td class="text-right"><span format="format-pct-once" raw="${ch.stats.gangRatio}"></span><br/><span format="format-dec2-once" raw="${ch.stats.avgGangSize}"></td><td class='text-right ${soloColor}' format="format-pct-once" raw="${ch.stats.soloRatio}"></td></tr>`);
     $('#results').append(h);
 }
 

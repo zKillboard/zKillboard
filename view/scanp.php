@@ -20,9 +20,6 @@ Log::log("ScanAlyzer $scan");
     $scan = str_replace("\n", ",", $scan);
     $scan = str_replace("‘", "'", $scan);
     $scan = str_replace("’", "'", $scan);
-    //$scan = str_replace("\r", ",", $scan);
-    //$scan = str_replace("\\t", ",", $scan);
-    //$scan = str_replace(" - ", "*,", $scan);
     $scan = str_replace('"', "", $scan);
     $scan = explode(',', $scan);
 
@@ -66,7 +63,7 @@ Log::log("ScanAlyzer $scan");
             $charparsed[$entity] = true;
 
             $row = $mdb->findDoc("information", ['type' => 'characterID', 'name' => $entity, 'cacheTime' => 3600], [], $includes);
-            if ($row == null) continue;
+            if ($row == null) $row = ['name' => $entity, 'id' => -1, 'unknown' => true];
 
             $row['labels'] = [];
 

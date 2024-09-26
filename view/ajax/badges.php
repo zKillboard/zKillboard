@@ -58,6 +58,13 @@ $badges = [
         'image' => '/img/badges/anarckos.png',
         'title' => 'assimilated by the mothership',
     ],
+    [
+        'url' => 'https://www.twitch.tv/crashnaps',
+        'query' => ['characterID' => 94479441, 'isVictim' => false],
+        'victim' => true,
+        'image' => '/img/badges/crashnaps.png',
+        'title' => 'good fight!',
+    ],
 ];
 
 
