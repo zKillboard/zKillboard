@@ -124,7 +124,7 @@ while ($minute == date('Hi')) {
             else $isPaddedKill = ($mdb->count("killmails", ['padhash' => $padhash]) >= 3);
 
             if ($isPaddedKill) {
-                Log::log("Marking $killID as padding");
+                //Log::log("Marking $killID as padding");
                 $redis->setex("zkb:padhash:$padhash", 86400, "true");
             }
         }
@@ -171,6 +171,7 @@ while ($minute == date('Hi')) {
         $zkb['totalValue'] = round((double) $totalValue, 2);
         $zkb['points'] = ($kill['npc'] == true) ? 1 : (int) Points::getKillPoints($killID);
         $kill['zkb'] = $zkb;
+        $kill['damage_taken'] = (int) @$mail['damage_taken'];
         if (!$isPaddedKill && !$kill['npc']) $kill['padcheck'] = true;
 
         saveMail($mdb, 'killmails', $kill);

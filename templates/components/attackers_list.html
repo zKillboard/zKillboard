@@ -28,7 +28,11 @@
 				{% set field = attacker %}
 				{% set shortLength = 25 %}
 				<div>
-					{% include 'components/text_char.html' %}<br/>
+                    {% if field.characterID is not defined %}
+					    {% include 'components/text_ship.html' %}<br/>
+                    {% else %}
+					    {% include 'components/text_char.html' %}<br/>
+                    {% endif %}
 					{% include 'components/text_corp.html' %}<br/>
 					{% include 'components/text_alli.html' %}
                     {% if field.factionName %}<br/>{% include 'components/text_faction.html' %}{% endif %}

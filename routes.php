@@ -83,12 +83,16 @@ $app->get('/bigisk/', function () use ($app) {
         include 'view/bigisk.php';
         });
 
+$app->get('/:type/ranks/:kl/:epoch/:page/', function($type, $kl, $epoch, $page) use ($app) {
+        include 'view/typeRanks.php';
+});
+/*$app->get('/cache/bypass/:type/ranks/:kl/:epoch/:page/', function($type, $kl, $epoch, $page) use ($app) {
+        include 'view/typeRanks.php';
+});*/
+
 // View top
 $app->get('/top/lasthour/:type/', function ($type) use ($app) {
         include 'view/lasthour.php';
-        });
-$app->get('/ranks/:pageType/:subType/', function ($pageType, $subType) use ($app) {
-        include 'view/ranks.php';
         });
 $app->get('/top(/:type)(/:page)(/:time+)/', function ($type = 'weekly', $page = null, $time = array()) use ($app) {
         include 'view/top.php';

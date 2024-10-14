@@ -2,13 +2,12 @@
 
 require_once "../init.php";
 
-if (date("Hi") != "1200") exit();
-
-$iter = $mdb->getCollection("payments")->distinct("characterID");
+$iter = $mdb->getCollection("payments")->distinct("characterID", ['monocle_check' => false]);
 foreach ($iter as $id) {
+    $id = (int) $id;
     $userInfo = $mdb->findDoc("users", ['userID' => "user:$id"]);
     if ($userInfo != null && @$userInfo['monocle'] != true) {
-        $result = Mdb::group("payments", ['characterID'], ['characterID' => (int) $id], [], 'isk', ['iskSum' => -1], 6);
+        $result = Mdb::group("payments", ['characterID'], ['characterID' => $id], [], 'isk', ['iskSum' => -1], 6);
         $isk = $result[0]['iskSum'];
         if ($isk >= 1000000000) {
             Util::out("$id monocled $isk");
@@ -18,4 +17,5 @@ foreach ($iter as $id) {
             sleep(1);
         }   
     }
+    $mdb->set("payments", ['characterID' => $id], ['monocle_check' => true], true);
 }

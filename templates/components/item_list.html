@@ -64,4 +64,9 @@
     <tr><td>Platinum</td><td>{{ extra.insurance.Platinum.cost|number_format(2) }}</td><td format="format-int-once" raw="{{ extra.insurance.Platinum.payout }}">{{ extra.insurance.Platinum.payout|number_format(2) }}</td></tr>
 </table>
 </div>
+<div class="d-xs-none d-lg-show col-lg-2">&nbsp;</div>
 {% endif %}
+
+<div class="col-lg-4">
+{{ sponsoredMessage|raw }}
+</div>

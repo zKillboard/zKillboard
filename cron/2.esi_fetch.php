@@ -8,23 +8,22 @@ require_once "../init.php";
 if ($redis->get("zkb:noapi") == "true") exit();
 if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit();
 
-$guzzler = new Guzzler(1);
+$guzzler = new Guzzler(10);
 $esimails = $mdb->getCollection("esimails");
 
 $mdb->set("crestmails", ['processed' => 'fetching'], ['processed' => false], true);
 $mdb->set("crestmails", ['processed' => 'processing'], ['processed' => false], true);
 $mdb->set("crestmails", ['processed' => ['$exists' => false]], ['processed' => false], true);
 
-$count = 0;
 $minute = date("Hi");
 while ($minute == date("Hi")) {
-    $rows = $mdb->find("crestmails", ['processed' => false], [], 10);
+    $rows = $mdb->find("crestmails", ['processed' => false], ['killID' => -1], 10);
     foreach ($rows as $row) {
         $killID = $row['killID'];
         $hash = $row['hash'];
 
         $raw = Kills::getEsiKill($killID);
-        if (false && $raw != null) {
+        if ($raw != null) {
             $mdb->set("crestmails", $row, ['processed' => 'fetched']);
             $redis->zadd("tobeparsed", $killID, $killID);
             continue;
@@ -32,8 +31,6 @@ while ($minute == date("Hi")) {
 
         $mdb->set("crestmails", $row, ['processed' => 'fetching']);
         $guzzler->call("$esiServer/v1/killmails/$killID/$hash/", "success", "fail", ['row' => $row, 'mdb' => $mdb, 'redis' => $redis, 'killID' => $killID, 'esimails' => $esimails]);
-        $count++;
-        $guzzler->finish();
     }
     if (sizeof($rows) == 0) {
         $guzzler->sleep(1);

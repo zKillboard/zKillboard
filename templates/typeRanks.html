@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% set pageTitle = pageTitle ~ ' - ' ~ subType|capitalize %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+
+<br/>
+
+<div class="row">
+<div class="col-xs-12 col-md-5">
+<div class="btn-group btn-group-sm centered">
+    <a id='type-character' class="type-btn btn btn-default" href="/character/ranks/k/alltime/1/">Characters</a>
+    <a id='type-corporation' class="type-btn btn btn-default" href="/corporation/ranks/k/alltime/1/">Corporations</a>
+    <a id='type-alliance' class="type-btn btn btn-default" href="/alliance/ranks/k/alltime/1/">Alliances</a>
+    <a id='type-faction' class="type-btn btn btn-default" href="/faction/ranks/k/alltime/1/">Factions</a>
+    <a id='type-shipType' class="type-btn btn btn-default" href="/shipType/ranks/k/alltime/1/">Ships</a>
+    <a id='type-group' class="type-btn btn btn-default" href="/group/ranks/k/alltime/1/">Groups</a>
+</div>
+</div>
+<div class="col-xs-12 col-md-5 text-center">
+<div class="btn-group btn-group-sm centered">
+    <a id="epoch-weekly" class="epoch-btn btn btn-default">7 Days</a>
+    <a id="epoch-recent" class="epoch-btn btn btn-default">90 Days</a>
+    <a id="epoch-alltime" class="epoch-btn btn btn-default">Alltime</a>
+</div>
+<div class="btn-group btn-group-sm centered">
+    <a id="kl-l" class="kl-btn btn btn-default">Losers</a>
+    <a id="kl-k" class="kl-btn btn btn-default">Killers</a>
+</div>
+<div class="btn-group btn-group-sm centered" disable='disabled'>
+    <a id='group-all' class='group-btn btn btn-default btn-primary disabled'>Non-Solo</a>
+    <a id='group-solo' class='group-btn btn btn-default disabled'>Solo</a>
+</div>
+</div>
+<div class="col-xs-12 col-md-2 text-right">
+<div class="btn-group btn-group-sm centered" disable='disabled'>
+    <a id='page-1' class='page-btn btn btn-default'>&nbsp;</a>
+    <a id='page-2' class='page-btn btn btn-default'>&nbsp;</a>
+    <a id='page-3' class='page-btn btn btn-primary'>&nbsp;</a>
+    <a id='page-4' class='page-btn btn btn-default'>&nbsp;</a>
+    <a id='page-5' class='page-btn btn btn-default'>&nbsp;</a>
+</div>
+</div>
+</div>
+<hr/>
+{% for rankTable in ranks %}
+	{% include 'components/type_rank_table.html' %}
+{% endfor %}
+
+<div class="alert alert-info">Ranks are updated daily...<br/>To search for a particular entity use the searchbox in the navigation bar to find them and then select the Ranks tab on their page.</div>
+{% endblock %}
+
+{% block script %}
+
+<script>
+const ranksType = '{{ type }}';
+const ranksKL = '{{ subType }}';
+const ranksEpoch = '{{ epoch }}';
+const ranksPage = '{{ page }}';
+const ranksGroup = '';
+const ranksHasMore = '{{ hasMore }}';
+</script>
+<script defer type="text/javascript" src="/js/typeranks.js?v={{ currentTime }}"></script>
+{% endblock %}

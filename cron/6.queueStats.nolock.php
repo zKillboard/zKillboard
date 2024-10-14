@@ -7,7 +7,7 @@ use cvweiss\redistools\RedisQueue;
 require_once '../init.php';
 
 if ($redis->get("tobefetched") < 10) $redis->del("zkb:statsStop");
-if ($redis->get("tobefetched") > 10) exit();
+//if ($redis->get("tobefetched") > 10) exit();
 if ($mdb->findDoc("killmails", ['reset' => true]) != null) exit();
 if ($redis->get("zkb:statsStop") == "true") exit();
 if ($redis->get("zkb:reinforced") == true) exit();
@@ -63,7 +63,7 @@ while ($minute == date('Hi')) {
         $id = implode(":", $arr);
     }
     $key = "$type";
-    if ($key == 'characterID') $lockKey = "zkb:stats:$key:$id";
+    if ($key == 'characterID' || $key == 'corporationID') $lockKey = "zkb:stats:$key:$id";
     else $lockKey = "zkb:stats:$key";
     if ($redis->set($lockKey, "true", ['nx', 'ex' => 3600]) === true) {
         try {

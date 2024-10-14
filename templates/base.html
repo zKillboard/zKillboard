@@ -97,18 +97,16 @@ var actualURI = '{{ actualURI }}';
 			</div>
 
 			<div class="container nobackground">
-				{% if apiStatus and actualURI == '/' %}
+				{% if apiStatus %}
 					<div class="alert alert-danger" style="font-weight: bold"><center>{{ apiStatus|raw }}</center></div>
 				{% endif %}
 
 				<!-- Top ad -->
                 <div><center>
-				    <div class="centered publift" fuse="home_header" id="publifttop" style='padding-top: 1em; max-height: 250px; max-width: 975px;'><div id='messagedad' style='display: none;'><h4>AdBlock Detected! :(</h2><p>Please support zKillboard by disabling your adblocker.<br/><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p></div></div>
-                <br/>
+				    <div class="centered publift" fuse="home_header" id="publifttop" style='padding-top: 0.25em; max-height: 250px; max-width: 975px;'></div>
                 </center></div>
 
                 <div id='otherBannerDiv' class='centered' style='display: none; height: 250px; padding-top: 1em;'><a id='otherBannerAnchor' target='_new'><img id='otherBannerImg' /></a></div>
-                <hr/>
 
                 <div id='twitchers' class='hidden d-xs-none'>
                 <center><a id='twitch-live' type='button' target='_blank' class='btn btn-lg btn-primary' onClick="twitchtime();"><span id='twitch-channel'></span> is currently live on Twitch!<br/><span class='squizz-extra'>Support the zKill Hamsters!<br/>USER APPRECIATION STREAM!<br/></span>Click here to watch!</a></center><br/><br/>

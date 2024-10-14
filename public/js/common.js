@@ -57,9 +57,10 @@ $(document).ready(function() {
     });
 
     // setup websocket with callbacks
-    if (start_websocket) startWebSocket();
-
-    setTimeout(function() { $("#messagedad").show(); }, 5500);
+    //if (start_websocket) startWebSocket();
+    if (entityType != 'none') {
+        statsboxUpdate({type: (entityType == 'label' ? entityType : entityType + "ID"), id: entityID});
+    }
 
     $(".datatable").DataTable();
 
@@ -93,7 +94,6 @@ function startWebSocket() {
         var channel = entityType + ":" + entityID;
         if (entityPage != 'index' && entityPage != 'overview') channel = channel + ":" + entityPage;
         if (entityType != 'none') {
-            statsboxUpdate({type: (entityType == 'label' ? entityType : entityType + "ID"), id: entityID});
             pubsub(channel);
             pubsub('stats:' + channel);
         }
@@ -134,13 +134,8 @@ function wslog(msg)
     if (msg === 'ping' || msg === 'pong') return;
     json = JSON.parse(msg);
     if (json.action === 'tqStatus') {
-        if (tqStatus === 'OFFLINE' || tqStatus === 'UNKNOWN') {
-            html = '<span class="red">TQ <span format="format-int-once" raw="' + tqCount + '></span></span>';
-        } else {
-            html = '<span class="green">TQ <span format="format-int-once" raw="' + tqCount + '></span></span>';
-        }
         $("#lasthour").attr('raw', json.kills).attr('format', 'format-int-once');
-        doFormats();
+        updateTqStatus(json.tqStatus, json.tqCount);
     } else if (json.action === 'reload') {
         console.log('Reload imminent in the next 5 minutes');
         setTimeout("location.reload(true);", Math.floor(1 + (Math.random() * 500000)));
@@ -212,16 +207,10 @@ function prepKills(data) {
 
 var killdata = undefined;
 function addLittleKill(data) {
-    if (!(showAds != 0 && typeof fusetag == 'undefined')) {
-        var data = $(data);
-        killdata = $(data);
-        /*data.on('click', function(event) {
-                if (event.which === 2) return false;
-                window.location = '/kill/' + $(this).attr('killID') + '/';
-                return false;
-                });*/
-        $("#killlist tbody tr").first().before(data);
-    }
+    var data = $(data);
+    killdata = $(data);
+    $("#killlist tbody tr").first().before(data);
+
     // Keep the page from growing too much...
     while ($("#killlist tbody tr").length > 100) $("#killlist tbody tr:last").remove();
     // Tell the user what's going on and not to expect sequential killmails
@@ -441,26 +430,6 @@ function commentUpVote(pageID, commentID)
 var adnumber = 0;
 var adfailcount = 0;
 function loadads() {
-    if (detectAdblock) {
-        let detection = detectAdblock();
-        detectAdblock().then((res) => { 
-                adblocked = (res.uBlockOrigin === true || res.adblockPlus === true);
-                console.log('Adblocked?', adblocked);
-                gtag('event', (adblocked === true ? 'ad_blocked' : 'ad_unblocked'));
-                if (adblocked === true) {
-                return showAdblockedMessage();
-                }
-                });
-    } else {
-        gtag('event', 'adblocked', 'detectAdblock blocked');
-    }
-    if (typeof fusetag == 'undefined') {
-        adfailcount++;
-        if (adfailcount <= 5) return setTimeout(loadads, 1000);
-
-        console.log('ads appear to be blocked');
-        return showAdblockedMessage();
-    }
     $("#messagedad").remove();
     var adblocks = $(".publift:visible");
     adnumber = adblocks.length;
@@ -469,6 +438,7 @@ function loadads() {
             var fuse = elem.attr("fuse");
             elem.load('/cache/1hour/publift/' + fuse + '/', adblockloaded);
             });
+    startWebSocket();
 }
 
 var bottomad = null;
@@ -480,36 +450,40 @@ function adblockloaded() {
 }
 
 function showAdblockedMessage() {
-    if ($("#publifttop").html() == "") $("#publifttop").html('<h4>AdBlocker Detected! :(</h4><p>Please support zKillboard by disabling your adblocker.<br/><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p>');
-            }
+    if ($("#publifttop").html() == "") {
+        gtag('event', 'adblocked', 'detectAdblock blocked');
+        $("#publifttop").html('<h4>AdBlocker Detected! :(</h4><p>Please support zKillboard by disabling your adblocker.<br/><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p>');
+        if (ws) ws.close();
+    }
+}
 
-            var now = time();
-            var today = now - (now % 86400);
-            var week = now - (now % 604800);
+var now = time();
+var today = now - (now % 86400);
+var week = now - (now % 604800);
 
-            function time() {
-            return Math.floor(Date.now() / 1000);
-            }
+function time() {
+return Math.floor(Date.now() / 1000);
+}
 
-            // gtcplex320.jpg  gtcplex728.jpg  merch320.jpg  merch728.jpg
-            var banner_links = ['https://store.markeedragon.com/affiliate.php?id=928&redirect=index.php?cat=4', 'https://www.zazzle.com/store/zkillboard/products'];
-            var banners_sm = ['/img/banners/gtcplex320.jpg', '/img/banners/merch320.jpg'];
-            var banners_lg = ['/img/banners/gtcplex728.jpg?1', '/img/banners/merch728.jpg'];
-            var ob_firstcall = true;
-            function otherBanners() {
-            if (ob_firstcall) {
-            ob_firstcall = false;
-            return setTimeout(otherBanners, 6000);
-            }
-            if ($("#messagedad").length == 0) return;
+// gtcplex320.jpg  gtcplex728.jpg  merch320.jpg  merch728.jpg
+var banner_links = ['https://store.markeedragon.com/affiliate.php?id=928&redirect=index.php?cat=4', 'https://www.zazzle.com/store/zkillboard/products'];
+var banners_sm = ['/img/banners/gtcplex320.jpg', '/img/banners/merch320.jpg'];
+var banners_lg = ['/img/banners/gtcplex728.jpg?1', '/img/banners/merch728.jpg'];
+var ob_firstcall = true;
+function otherBanners() {
+if (ob_firstcall) {
+ob_firstcall = false;
+return setTimeout(otherBanners, 6000);
+}
+if ($("#messagedad").length == 0) return;
 
-            var minute = new Date().getMinutes();
-            var mod = minute % 2; // number of other banners
-            $('#otherBannerAnchor').attr('href', banner_links[mod]);
-            $('#otherBannerImg').attr('src', banners_lg[mod]);
-            $("#otherBannerDiv").css('display', 'block');
-            setTimeout(otherBanners, Math.min(30000, 1000 * (61 - new Date().getSeconds())));
-            }
+var minute = new Date().getMinutes();
+var mod = minute % 2; // number of other banners
+$('#otherBannerAnchor').attr('href', banner_links[mod]);
+$('#otherBannerImg').attr('src', banners_lg[mod]);
+$("#otherBannerDiv").css('display', 'block');
+setTimeout(otherBanners, Math.min(30000, 1000 * (61 - new Date().getSeconds())));
+}
 
 /*
    <h4>zKillboard does NOT automatically get all killmails</h4><p>zKillboard does not get all killmails automatically. CCP does not make killmails public. They must be provided by various means.</p><ul><li>Someone manually posts the killmail.</li><li>A character has authorized zKillboard to retrieve their killmails.</li><li>A corporation director or CEO has authorized zKillboard to retrieve their corporation\'s killmails.</li><li>War killmail (victim and final blow have a Concord sanctioned war with each other)</li></ul><p>The killmail API works just like killmails do in game. The victim gets the killmail, and the person with the finalblow gets the killmail. Therefore, for zKillboard to be able to retrieve the killmail via API it must have the character or corporation API submitted for the victim or the person with the final blow. If an NPC gets the final blow, the last character to aggress to the victim will receive the killmail and credit for the final blow.</p><p>Remember, every PVP killmail has two sides, the victim and the aggressors. Victims often don\'t want their killmails to be made public, however, the aggressors do.</p>
@@ -580,8 +554,8 @@ function doFieldUpdate(f, v) {
     if (v == 'NaN') v = '';
     let o = $(f).attr('flash') == undefined ? 1 : 1;
     f.animate({opacity: o}, 100, function() {
-        $(this).text(v).animate({opacity: 1}, 100);
-    })
+            $(this).text(v).animate({opacity: 1}, 100);
+            })
 }
 
 const formatIskIndex = ['', 'k', 'm', 'b', 't', 'k t', 'm t', 'b t'];

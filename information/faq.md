@@ -91,7 +91,7 @@ zKillboard will write to your character&#39;s ship fittings, if and only if, it 
 
 ##### [#](#namechange) I changed my character's name!  How can I get it updated here?
 
-The API does not always quickly reflect name changes.  If you'd like to see your name changed quickly, simply log in!  If you're already logged in, then please log out first.
+The API does not always quickly reflect name changes.  If you'd like to see your name changed quickly, simply log in!  If you're already logged in, then please log out first.  Once you've logged in with the updated character name please allow an hour or two for all caches to clear and reflect the change.
 
 ***
 

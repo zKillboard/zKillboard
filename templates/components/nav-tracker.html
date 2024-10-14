@@ -1,11 +1,6 @@
 {% if sessionusername %}
 <script type="text/javascript">
 
-updateTqStatus("{{ tqStatus }}", "{{ tqCount }}");
-doFormats();
-$("#lasthour").attr('raw', "{{  killsLastHour }}").attr('format', 'format-int-once');
-doFormats();
-
 $("#char-loggedout").remove();
 $("#contest-logged-in").removeClass('hidden');
 $("#loginforapi").remove();
@@ -27,18 +22,10 @@ $('.clickimage').css('cursor', 'pointer');
 showAds = {{ showAds }};
 {% if showAds != 0 %}
 
-$.getScript("https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js").done(function() {
-    console.log("publift loaded");
-    $.getScript("/js/adblockDetector.min.js").done(function() {
-        console.log("ad block detector loaded");
-        loadads();
-        otherBanners();
-    });
-}).fail(function() { otherBanners(); });
-
+$.getScript("https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js").done(loadads).fail(showAdblockedMessage);
 
 {% else %}
-
+    startWebSocket();
     gtag('event', 'patron');
     $("#messagedad").remove();
 
@@ -163,21 +150,13 @@ console.log("nav loaded");
 
 <script type="text/javascript">
 $("#char-loggedin").remove();
-$("#tqStatus").html("{% if tqStatus == 'OFFLINE'%}<span class='red'>TQ {{ tqCount }}</span>{% else %} <span class='green'>TQ {{ tqCount }}</span>{% endif %}");
 $("#tracker-none").removeClass("hidden");
 $("#savefit").remove();
 $("#nosavefit").removeClass("hidden");
 $("#char-image").attr("src", "{{ image_character }}1/portrait?size=32");
 $("#loginforapi").show();
 
-$.getScript("https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js").done(function() {
-    console.log("publift loaded");
-    $.getScript("/js/adblockDetector.min.js").done(function() {
-        console.log("ad block detector loaded");
-        loadads();
-        otherBanners();
-    });
-});
+$.getScript("https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js").done(loadads).fail(showAdblockedMessage);
 
 $("#loginsideimage").fadeIn();
 gtag('event', 'navbar_loaded');

@@ -1,0 +1,80 @@
+<table class="table table-condensed table-striped table-hover rank-table table-bordered" id="rank_table_{{rankTable.name}}">
+	<thead>
+		<tr>
+			<th class="b-none" rowspan="2"></th>
+			<th class="b-none">&nbsp;</th>
+			<th class="lb-bold" colspan="5" style="text-align: center">Ships</th>
+			<th class="lb-bold" colspan="5" style="text-align: center">Points</th>
+			<th class="lb-bold" colspan="5" style="text-align: center">ISK</th>
+		</tr>
+		<tr>
+			<th class="b-none" style="text-align: left">{{ rankTable.type|capitalize }}</td>
+			<th class="lb-bold" >Destroyed</th>
+			<th>Rank</th>
+			<th>Lost</th>
+			<th>Rank</th>
+			<th>%</th>
+			<th class="lb-bold">Destroyed</th>
+			<th>Rank</th>
+			<th>Lost</th>
+			<th>Rank</th>
+			<th>%</th>
+			<th class="lb-bold">Destroyed</th>
+			<th>Rank</th>
+			<th>Lost</th>
+			<th>Rank</th>
+			<th>%</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for row in rankTable.data %}
+	{% set field = row %}
+    {% set imageSize = 32 %}
+		<tr>
+			<td style="width: 35px;"><strong>{{ row.overallRank | number_format(0) }}</strong></td>
+			<td style="text-align: left">
+				{% if rankTable.type == "alliance" %}
+                    {% include 'components/image_alli.html' %}
+                    {% include 'components/text_alli.html' %}
+				{% elseif rankTable.type == "corporation" %}
+                    {% include 'components/image_corp.html' %}
+                    {% include 'components/text_corp.html' %}
+				{% elseif rankTable.type == "character" %}
+                    {% include 'components/image_char.html' %}
+                    {% include 'components/text_char.html' %}
+				{% elseif rankTable.type == "shipType" %}
+                    {% include 'components/image_ship.html' %}
+                    {% include 'components/text_ship.html' %}
+				{% elseif rankTable.type == "group" %}
+                    {% include 'components/text_shipclass.html' %}
+				{% elseif rankTable.type == "faction" %}
+                    {% include 'components/text_faction.html' %}
+				{% elseif rankTable.type == "system" %}
+                    {% include 'components/text_system.html' %}
+				{% elseif rankTable.type == "region" %}
+                    {% include 'components/text_region.html' %}
+				{% else %} {{ rankTable.type }}
+				{% endif %}
+			</td>
+			<td class="green lb-bold">{{ shortNum(row.shipsDestroyed) }}</td>
+			<td class="geen">{{ row.sdRank | number_format(0) }}</td>
+			<td class="red">{{ shortNum(row.shipsLost) }}</td>
+			<td class="rd">{{ row.slRank | number_format(0) }}</td>
+			{% set color = (row.shipEff >= 50 ? 'green' : 'red') %}
+			<td class="{{color}}">{{ row.shipEff | number_format(1) }}</td>
+			<td class="green lb-bold">{{ shortNum(row.pointsDestroyed) }}</td>
+			<td class="geen">{{ row.pdRank | number_format(0) }}</td>
+			<td class="red">{{ shortNum(row.pointsLost) }}</td>
+			<td class="rd">{{ row.plRank | number_format(0) }}</td>
+			{% set color = (row.pointsEff >= 50 ? 'green' : 'red') %}
+			<td class="{{color}}">{{ row.pointsEff | number_format(1) }}
+			<td class="green lb-bold">{{ shortNum(row.iskDestroyed) }}</td>
+			<td class="geen">{{ row.idRank | number_format(0) }}</td>
+			<td class="red">{{ shortNum(row.iskLost) }}</td>
+			<td class="rd">{{ row.ilRank | number_format(0) }}</td>
+			{% set color = (row.iskEff >= 50 ? 'green' : 'red') %}
+			<td class="{{color}}">{{ row.iskEff | number_format(1) }}
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>

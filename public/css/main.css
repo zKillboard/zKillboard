@@ -498,3 +498,11 @@ html,body {
         display: block;
      }
 }*/
+
+.lb-bold {
+    border-left-width: 3px !important;
+}
+
+.b-none {
+    border: none !important;
+}
