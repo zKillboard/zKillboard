@@ -98,8 +98,6 @@ function calcStats($row, $maxSequence)
 {
     global $mdb, $debug;
 
-$t = new Timer();
-
     $type = $row['type'];
     $id = $row['id'];
     $key = ['type' => $type, 'id' => $id];
@@ -145,6 +143,11 @@ $t = new Timer();
     }
 
     $oldSequence = (int) @$stats['sequence'];
+    if ($oldSequence == 0) {
+        $query = [$row['type'] => $row['id']];
+        $query = MongoFilter::buildQuery($query);
+        $oldSequence = (int) $mdb->findField("killmails", "sequence", $query, ['sequence' => 1]);
+    }
     $newSequence = min($oldSequence + $delta, $maxSequence);
 
     //Util::out("next $type $id $oldSequence $newSequence");
@@ -175,7 +178,6 @@ $t = new Timer();
         $allTime = $mdb->group('killmails', [], $query, 'killID', ['zkb.points', 'zkb.totalValue', 'attackerCount']);
         mergeAllTime($stats, $allTime, $isVictim);
 
-// group($collection, $keys = [], $query = [], $count = [], $sum = [], $sort = [], $limit = null)
         $groups = $mdb->group('killmails', 'vGroupID', $query, 'killID', ['zkb.points', 'zkb.totalValue', 'attackerCount'], ['vGroupID' => 1]);
         mergeGroups($stats, $groups, $isVictim);
 

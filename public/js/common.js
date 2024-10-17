@@ -24,6 +24,7 @@ $(document).ready(function() {
     $("#killmailurl").bind('paste', function(event) {
         setTimeout(sendCrestUrl, 1);
     });
+    $('#postExternalMail').on('click', pasteCrestUrl)
 
     addKillListClicks();
 
@@ -52,7 +53,10 @@ $(document).ready(function() {
 
     $(document).keyup(function(e) {
         if ($("input:focus, textarea:focus").length === 0 && e.which === 191) {
-            $("#searchbox").focus();
+            return $("#searchbox").focus();
+        }
+        if ($("input:focus, textarea:focus").length === 0 && e.which === 220) {
+            return window.location = '/asearch/';
         }
     });
 
@@ -271,6 +275,8 @@ let sortOrder = 1;
 let sortColumn = 0;
 function doSort(column, doHide)
 {
+    let count = $(".item_row").length;
+    if (count >= 250 && confirm(`Are you sure? There are ${count} rows to sort! This could result in high cpu usage which could cause your web application to temporarily lock up during the sort and possible increased battery drainage (e.g. phones, tablets, laptops).`) === false) return;
     if (doHide) $(".hide-when-sorted").hide();
     else $(".hide-when-sorted").show();
 
@@ -289,12 +295,10 @@ function doSort(column, doHide)
 }
 
 function sortItemTable(column, order) {
-    console.log(column, order);
     var table, rows, switching, i, x, y, shouldSwitch;  
     table = document.getElementById("itemTable");
     switching = true;
     haveSwitched = false;
-
 
     do {
         haveSwitched = false;
@@ -331,6 +335,28 @@ function sendCrestUrl() {
     a = ['/crestmail/', killID, '/', hash, '/'];
     url = a.join('');
     $.get(url);
+}
+
+function pasteCrestUrl() {
+    setTimeout(pasteCrestUrlAsync, 1);
+    return false;
+}
+async function pasteCrestUrlAsync() {
+    try {
+        let str = await navigator.clipboard.readText();
+        strSplit = str.split('/');
+        if (strSplit.length === 8) strSplit.shift();
+        else return window.location = '/post/';
+
+        $('#externalurl').val(str);
+        $('#externalkmform').submit();
+console.log('submitted');
+
+        return false;
+    } catch (e) {
+console.log(e);
+        //return window.location = '/post/';
+    }
 }
 
 function loadPartial(url) {

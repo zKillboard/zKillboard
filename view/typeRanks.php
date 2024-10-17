@@ -59,9 +59,6 @@ foreach ($r as $row) {
 
     $result[] = $row;
 }
-$row = $result[0];
-Info::addInfo($row);
-Log::log(print_r($row, true));
 $ranks[] = array('type' => $type, 'data' => $result, 'name' => $names[$type]);
 
 Info::addInfo($ranks);

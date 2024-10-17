@@ -23,7 +23,7 @@ class Comments
         '💩',
         'The beacon provides...',
         'I was drunk',
-        'calm down miner',
+        'Calm down MINER',
         'the attackers can go ----',
     ];
 }

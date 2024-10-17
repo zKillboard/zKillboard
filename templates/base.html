@@ -97,7 +97,7 @@ var actualURI = '{{ actualURI }}';
 			</div>
 
 			<div class="container nobackground">
-				{% if apiStatus %}
+				{% if apiStatus and actualURI == '/' %}
 					<div class="alert alert-danger" style="font-weight: bold"><center>{{ apiStatus|raw }}</center></div>
 				{% endif %}
 
@@ -145,7 +145,7 @@ var actualURI = '{{ actualURI }}';
 
 		<script defer type="text/javascript" src="/js/search.js?v={{ version }}"></script>
 		<script defer type="text/javascript" src="/js/common.js?v={{ version }}"></script>
-		<script defer type="text/javascript" src="/js/sclock1.js"></script>
+        <script defer type="text/javascript" src="/js/sclock1.js"></script>
 		<script defer type="text/javascript" src="/js/nprogress.js"></script>
 		<script defer type="text/javascript" src="/js/reconnecting-websocket.js"></script>
         <script defer src="https://embed.twitch.tv/embed/v1.js"></script>
@@ -182,6 +182,7 @@ var actualURI = '{{ actualURI }}';
 </div>
 <div class="ad-xl-block"><div class="ad-xl-block left-sticky-ad publift" fuse="left-sticky"></div></div>
 <div class="ad-xl-block"><div class="ad-xl-block right-sticky-ad publift" fuse="right-sticky"></div></div>
+<form id="externalkmform" method="post" action="/post/" style="display: none;"><input type="text" id="externalurl" name="killmailurl"/></form>
 </body>
 </html>
 {% endif %}

@@ -159,26 +159,20 @@ $app->get('/api/stats/:type/:id/', function ($type, $id) use ($app) {
         });
 
 $app->get('/scanalyzer/', function () use ($app) { include 'view/scanalyzer.php'; });
-$app->get('/cache/bypass/scanalyzer/', function () use ($app) { include 'view/scanalyzer.php'; });
-$app->post('/cache/bypass/scan/', function () use ($app) { include 'view/scanp.php'; });
 
 $app->get('/cache/bypass/stats/', function () use ($app) { include 'view/ajax/stats.php'; });
 $app->get('/cache/1hour/stats/', function () use ($app) { include 'view/ajax/stats.php'; });
 $app->get('/cache/24hour/stats/', function () use ($app) { include 'view/ajax/stats.php'; });
 
-//$app->get('/cache/bypass/killlist/', function () use ($app) { include 'view/ajax/killlist.php'; });
 $app->get('/cache/1hour/killlist/', function () use ($app) { include 'view/ajax/killlist.php'; });
 $app->get('/cache/24hour/killlist/', function () use ($app) { include 'view/ajax/killlist.php'; });
 
-//$app->get('/cache/bypass/statstop10/', function () use ($app) { include 'view/ajax/statstop10.php'; });
 $app->get('/cache/1hour/statstop10/', function () use ($app) { include 'view/ajax/statstop10.php'; });
 $app->get('/cache/24hour/statstop10/', function () use ($app) { include 'view/ajax/statstop10.php'; });
 
-//$app->get('/cache/bypass/statstopisk/', function () use ($app) { include 'view/ajax/statstopisk.php'; });
 $app->get('/cache/1hour/statstopisk/', function () use ($app) { include 'view/ajax/statstopisk.php'; });
 $app->get('/cache/24hour/statstopisk/', function () use ($app) { include 'view/ajax/statstopisk.php'; });
 
-//$app->get('/cache/bypass/badges/', function () use ($app) { include 'view/ajax/badges.php'; });
 $app->get('/cache/1hour/badges/', function () use ($app) { include 'view/ajax/badges.php'; });
 
 $app->get('/api/prices/:id/', function ($id) use ($app) {

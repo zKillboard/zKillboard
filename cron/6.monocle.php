@@ -2,6 +2,7 @@
 
 require_once "../init.php";
 
+$mdb->set("payments", ['monocle_check' => ['$exists' => false]], ['monocle_check' => false], true);
 $iter = $mdb->getCollection("payments")->distinct("characterID", ['monocle_check' => false]);
 foreach ($iter as $id) {
     $id = (int) $id;

@@ -17,7 +17,7 @@
 	{% set droppedRow = item.quantity_dropped > 0 ? 'item_dropped_row' : '' %}
     {% set dropped = item.quantity_dropped > 0 ? 'item_dropped' : '' %}
     {% set destroyed = item.quantity_destroyed > 0 ? 'item_destroyed' : '' %}
-	<tr class="{{ droppedRow }}">
+	<tr class="item_row {{ droppedRow }}">
 		{% set field = item %}
 		<td data-order="{{ i() }}" class="icons hidden-xs"><div align="center">{% include 'components/image_item.html' %}</div></td>
 		<td data-order="{{ item.typeName }}" class="{% if dropped %}{{ dropped }}{% else %}{{ destroyed }}{% endif %}">{% if item.inContainer == 1%}<span class="hide-when-sorted">&mdash; </span>{% endif %}<a href="/item/{{item.typeID}}/">{{ item.typeName }}{% if item.singleton == 2%} (Copy){% endif %}</a></td>
