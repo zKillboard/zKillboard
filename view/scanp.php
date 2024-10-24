@@ -13,8 +13,8 @@ try {
     $statsIncludes = ['_id' => 0, 'shipsDestroyed' => 1, 'shipsLost' => 1, 'dangerRatio' => 1, 'gangRatio' => 1, 'avgGangSize' => 1, 'labels.ganked.shipsDestroyed' => 1];
 
     $scan = @$_POST['scan'];
-    if (strlen($scan) > 25000) exit();
-Log::log("ScanAlyzer $scan");
+    if (strlen($scan) > 50000) exit();
+    Log::log("ScanAlyzer $scan");
     $scan = str_replace(",", "", $scan);
     $scan = str_replace("\\n", ",", $scan);
     $scan = str_replace("\n", ",", $scan);
