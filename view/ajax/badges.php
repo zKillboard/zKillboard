@@ -65,6 +65,13 @@ $badges = [
         'image' => '/img/badges/crashnaps.png',
         'title' => 'good fight!',
     ],
+    [
+        'url' => 'https://www.twitch.tv/chaos1298',
+        'query' => ['characterID' => 2117046766, 'isVictim' => false],
+        'victim' => true,
+        'image' => '/img/badges/chaos1298.png',
+        'title' => 'chaos!',
+    ],
 ];
 
 
