@@ -350,12 +350,12 @@ async function pasteCrestUrlAsync() {
 
         $('#externalurl').val(str);
         $('#externalkmform').submit();
-console.log('submitted');
+        console.log('submitted');
 
         return false;
     } catch (e) {
-console.log(e);
-        //return window.location = '/post/';
+        console.log(e);
+        return window.location = '/post/';
     }
 }
 
