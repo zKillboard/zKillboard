@@ -60,7 +60,7 @@
         {% else %}
     		<th>Location:</th>
         {% endif %}
-		<td><a href='/location/{{ killdata.info.locationID }}/'>{{ killdata.info.location.itemName }}</a> <span>(<span format="format-dec2-once" raw="{{ extra.locationDistance }}" no-flash="true"></span>{{ extra.locationDistanceType }})</span></td>
+		<td><a href='/location/{{ killdata.info.locationID }}/'>{{ killdata.info.location.itemName }}</a> <span>(<span format="format-dec2-once" raw="{{ extra.locationDistance }}"></span>{{ extra.locationDistanceType }})</span></td>
 	</tr>
         {% endif %}
 	<tr>

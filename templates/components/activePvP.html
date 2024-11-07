@@ -6,7 +6,7 @@
 	</center>
 	<table class="table table-condensed topBoxes col-lg-2" style="padding: 0px; margin: 0px; width: 100%;">
 	{% for row in activePvP %}
-		<tr><td>{{ row.type }}</td><td align="right" format="format-int-once" raw="{{ row.count }}" no-flash="true">{{ row.count|number_format(0) }}</td></tr>
+		<tr><td>{{ row.type }}</td><td align="right" format="format-int-once" raw="{{ row.count }}">{{ row.count|number_format(0) }}</td></tr>
 	{% endfor %}
 	</table>
 </div>

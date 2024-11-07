@@ -22,12 +22,12 @@
 {% set iskEff = (statistics.iskDestroyed + statistics.iskLost) == 0 ? 100 : (statistics.iskDestroyed / (statistics.iskDestroyed + statistics.iskLost)) * 100 %}
 	<tr class="alltime-ranks">
 		<th style="text-align: right">Ships</th>
-		<td id="s-a-sd" format="format-int" class="green" style="text-align: right" class="green-text">{{ statistics.shipsDestroyed | number_format(0) }}</td>
+		<td id="s-a-sd" flash format="format-int" class="green" style="text-align: right" class="green-text">{{ statistics.shipsDestroyed | number_format(0) }}</td>
 		<td id="s-a-sd-r" format="format-int" class="green" style="text-align: right">{{ statistics.shipsDestroyedRank == 0 ? '-' : statistics.shipsDestroyedRank | number_format(0) }}</td>
-		<td id="s-a-sl" format="format-int" class="red" style="text-align: right">{{ statistics.shipsLost | number_format(0) }}</td>
-		<td id="s-a-sl-r" format="format-int" class="red" style="text-align: right">{{ statistics.shipsLostRank == 0 ? '-' : statistics.shipsLostRank | number_format(0) }}</td>
+		<td id="s-a-sl" flast format="format-int" class="red" style="text-align: right">{{ statistics.shipsLost | number_format(0) }}</td>
+		<td id="s-a-sl-r" flast format="format-int" class="red" style="text-align: right">{{ statistics.shipsLostRank == 0 ? '-' : statistics.shipsLostRank | number_format(0) }}</td>
 		{% set greenred = shipEff >= 50 ? 'green' : 'red' %}
-		<td id="s-a-s-e" format="format-dec1" class="{{greenred}} " style="text-align: right">{{ shipEff | number_format(1) }}</td>
+		<td id="s-a-s-e" flash format="format-dec1" class="{{greenred}} " style="text-align: right">{{ shipEff | number_format(1) }}</td>
 		<th style="text-align: right;">
 			<strong>{{ statistics.overallRank == 0 ? '-' : statistics.overallRank|number_format(0) }}</strong>
 			{% if statistics.overallRank < statistics.prevRanks.overallRank and statistics.overallRank != 0 and statistics.prevRanks.overallRank != 0 %}
@@ -43,22 +43,22 @@
 	</tr>
 	<tr class="alltime-ranks">
 		<th style="text-align: right">Points</th>
-		<td id="s-a-pd" format="format-int" class="green" style="text-align: right">{{ statistics.pointsDestroyed | number_format(0) }}</td>
-		<td id="s-a-pd-r" format="format-int" class="green " style="text-align: right">{{ statistics.pointsDestroyedRank == 0 ? '-' : statistics.pointsDestroyedRank | number_format(0) }}</td>
-		<td id="s-a-pl" format="format-int" class="red" style="text-align: right">{{ statistics.pointsLost | number_format(0) }}</td>
-		<td id="s-a-pl-r" format="format-int" class="red " style="text-align: right">{{ statistics.pointsLostRank  == 0 ? '-' : statistics.pointsLostRank | number_format(0) }}</td>
+		<td id="s-a-pd" flash format="format-int" class="green" style="text-align: right">{{ statistics.pointsDestroyed | number_format(0) }}</td>
+		<td id="s-a-pd-r" flash format="format-int" class="green " style="text-align: right">{{ statistics.pointsDestroyedRank == 0 ? '-' : statistics.pointsDestroyedRank | number_format(0) }}</td>
+		<td id="s-a-pl" flash format="format-int" class="red" style="text-align: right">{{ statistics.pointsLost | number_format(0) }}</td>
+		<td id="s-a-pl-r" flash format="format-int" class="red " style="text-align: right">{{ statistics.pointsLostRank  == 0 ? '-' : statistics.pointsLostRank | number_format(0) }}</td>
 		{% set greenred = pointsEff >= 50 ? 'green' : 'red' %}
-		<td id="s-a-p-e" format="format-dec1" class="{{greenred}} " style="text-align: right">{{ pointsEff | number_format(1) }}</td>
+		<td id="s-a-p-e" flash format="format-dec1" class="{{greenred}} " style="text-align: right">{{ pointsEff | number_format(1) }}</td>
 		<th style="text-align: right">Recent</th>
 	</tr>
 	<tr class="alltime-ranks">
 		<th class="" style="text-align: right">ISK</th>
-		<td id="s-a-id" format="format-isk" class="green"  style="text-align: right" rel="tooltip" title="&#36;{{ statistics.iskDestroyedUsdEurGbp.usd|number_format(2, '.', ',') }} / {{ statistics.iskDestroyedUsdEurGbp.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ statistics.iskDestroyedUsdEurGbp.gbp|number_format(2, '.', ',') }}">{{ formatIsk(statistics.iskDestroyed) }}</td>
-		<td id="s-a-id-r" format="format-int" class="green " style="text-align: right">{{ statistics.iskDestroyedRank == 0 ? '-' : statistics.iskDestroyedRank | number_format(0) }}</td>
-		<td id="s-a-il" format="format-isk" class="red" style="text-align: right" rel="tooltip" title="&#36;{{ statistics.iskLostUsdEurGbp.usd|number_format(2, '.', ',') }} / {{ statistics.iskLostUsdEurGbp.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ statistics.iskLostUsdEurGbp.gbp|number_format(2, '.', ',') }}">{{ formatIsk(statistics.iskLost) }}</td>
-		<td id="s-a-il-r" format="format-int" class="red " style="text-align: right">{{ statistics.iskLostRank == 0 ? '-' : statistics.iskLostRank | number_format(0) }}</td>
+		<td id="s-a-id" flash format="format-isk" class="green"  style="text-align: right" rel="tooltip" title="&#36;{{ statistics.iskDestroyedUsdEurGbp.usd|number_format(2, '.', ',') }} / {{ statistics.iskDestroyedUsdEurGbp.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ statistics.iskDestroyedUsdEurGbp.gbp|number_format(2, '.', ',') }}">{{ formatIsk(statistics.iskDestroyed) }}</td>
+		<td id="s-a-id-r" flash format="format-int" class="green " style="text-align: right">{{ statistics.iskDestroyedRank == 0 ? '-' : statistics.iskDestroyedRank | number_format(0) }}</td>
+		<td id="s-a-il" flash format="format-isk" class="red" style="text-align: right" rel="tooltip" title="&#36;{{ statistics.iskLostUsdEurGbp.usd|number_format(2, '.', ',') }} / {{ statistics.iskLostUsdEurGbp.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ statistics.iskLostUsdEurGbp.gbp|number_format(2, '.', ',') }}">{{ formatIsk(statistics.iskLost) }}</td>
+		<td id="s-a-il-r" flash format="format-int" class="red " style="text-align: right">{{ statistics.iskLostRank == 0 ? '-' : statistics.iskLostRank | number_format(0) }}</td>
 		{% set greenred = iskEff >= 50 ? 'green' : 'red' %}
-		<td id="s-a-i-e" format="format-dec1" class="{{greenred}} " style="text-align: right">{{ iskEff | number_format(1) }}</td>
+		<td id="s-a-i-e" flash format="format-dec1" class="{{greenred}} " style="text-align: right">{{ iskEff | number_format(1) }}</td>
 		{% set recentOverallRank = ( statistics.recentOverallRank > 0 ? statistics.recentOverallRank | number_format(0) : '-') %}
         	<th class="" style="text-align: right;">
 			<strong>{{ recentOverallRank }}</strong>

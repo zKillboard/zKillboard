@@ -613,8 +613,7 @@ class Util
     public static function statsBoxUpdate($type, $id) {
         global $redis;
 
-        if ($redis->get("r2w:broadcasted:$type:$id") != "true") return;
-        if (self::$queueStatsUpdated == null) self::$queueStatsUpdated = new RedisQueue('queueStatsUpdated');
-        self::$queueStatsUpdated->push(['type' => $type, 'id' => $id]);
+        $s = serialize(['type' => $type, 'id' => $id]);
+        $redis->sadd("queueStatsUpdated", $s);
     }
 }
