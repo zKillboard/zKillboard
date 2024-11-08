@@ -164,6 +164,7 @@ if ( $typeID == 42124 ) Log::log(print_r($priceList, true));
             case 33397: // Chremoas
             case 42245: // Rabisu
             case 45649: // Komodo
+            case 85062: // Sidewinder
                 return 200000000000; // 200b
             case 45531: // Victor
                 return 230000000000; // 230b
@@ -171,12 +172,16 @@ if ( $typeID == 42124 ) Log::log(print_r($priceList, true));
             case 60764: // Laelaps
             case 77726: // Cybele
                 return 230000000000;
+            case 85229: // Cobra
+                return 400000000000;
             case 47512: // 'Moreau' Fortizar
             case 45647: // Caiman
                 return 60000000000; // 60b 
             case 9860: // Polaris
             case 11019: // Cockroach
                 return 1000000000000; // 1 trillion, rare dev ships
+            case 85236: // Python
+                return 1250000000000; // 1.25 trillion
             case 42126: // Vanquisher
                 return 650000000000;
             case 42241: // Molok
