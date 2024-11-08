@@ -29,7 +29,7 @@ foreach ($types as $type) {
     $redis->del("s:search:$type");
     $toMove = [];
 
-    $entities = $mdb->getCollection('information')->find(['type' => $type]);
+    $entities = $mdb->getCollection('information')->find(['type' => $type])->sort(['published' => -1]);
 
     $values = [];
     foreach ($entities as $entity) {
