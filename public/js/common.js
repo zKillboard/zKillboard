@@ -1,6 +1,7 @@
 var ws;
 var adblocked = undefined;
 
+
 $(document).ready(function() {
     if (navbar) $('#tracker-dropdown').load('/navbar/');
 
@@ -51,14 +52,7 @@ $(document).ready(function() {
             location.href = newHREF;
     });
 
-    $(document).keyup(function(e) {
-        if ($("input:focus, textarea:focus").length === 0 && e.which === 191) {
-            return $("#searchbox").focus();
-        }
-        if ($("input:focus, textarea:focus").length === 0 && e.which === 220) {
-            return window.location = '/asearch/';
-        }
-    });
+    $(document).on('keypress', checkForSearchKey);
 
     // setup websocket with callbacks
     //if (start_websocket) startWebSocket();
@@ -80,6 +74,16 @@ $(document).ready(function() {
     doFormats();
     $(document).ajaxComplete(doFormats);
 });
+
+const asciiForwardSlash = '/'.charCodeAt(0);
+const asciiBackSlash = '\\'.charCodeAt(0);
+
+function checkForSearchKey(event) {
+    if ($("input:focus, textarea:focus").length == 0) {
+        if (event.which == asciiForwardSlash) {$("#searchbox").focus(); return false; }
+        if (event.which == asciiBackSlash) return window.location = '/asearch/';
+    }
+}
 
 function startWebSocket() {
     try {
