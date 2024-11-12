@@ -173,7 +173,7 @@ if ( $typeID == 42124 ) Log::log(print_r($priceList, true));
             case 77726: // Cybele
                 return 230000000000;
             case 85229: // Cobra
-                return 400000000000;
+                return 250000000000; // 250b
             case 47512: // 'Moreau' Fortizar
             case 45647: // Caiman
                 return 60000000000; // 60b 
