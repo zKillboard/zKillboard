@@ -35,9 +35,6 @@ class ESI {
         $export['items'] = [];
         foreach ($items as $item) {
             $flag = $item['flag'];
-            if (!self::isFit($flag)) {
-                continue;
-            }
 
             $nextItem = [];
             $nextItem ['flag'] = $flag;
