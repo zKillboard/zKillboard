@@ -21,5 +21,5 @@ function publish($redis, $type, $id) {
     $msg = json_encode(['action' => 'statsbox', 'type' => $type, 'id' => $id], JSON_UNESCAPED_SLASHES);
     $typed = str_replace("ID", "", $type);
     $redis->publish("stats:$typed:$id", $msg);
-    usleep(10000);
+    usleep(5000);
 }
