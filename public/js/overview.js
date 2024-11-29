@@ -35,3 +35,5 @@ function loadTops() {
     topsLoaded = true;
     console.log('tops loaded');
 }
+
+console.log('overview.js loaded');

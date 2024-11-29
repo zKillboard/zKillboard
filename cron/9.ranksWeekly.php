@@ -10,7 +10,7 @@ $today = date('Ymd');
 $time = time();
 $timeKey = $time - ($time % 1200);
 $itimeKey = "zkb:weeklyRanksCalculated:$timeKey";
-if ($redis->get($timeKey) == true) {
+if ($redis->get($itimeKey) == true) {
     exit();
 }
 
@@ -115,10 +115,11 @@ foreach ($types as $type => $value) {
 }
 
 foreach ($everyone as $i => $next) {
-    Util::statsBoxUpdate($next['type'], $next['id']);
+break;
+    if ($redis->get("zkb:overview:$type:$id") === "true") Util::statsBoxUpdate($next['type'], $next['id']);
 }
 
-$redis->setex($timeKey, 900, true);
+$redis->setex($itimeKey, 900, true);
 Util::out('Weekly rankings complete');
 
 function moveAndExpire(&$multi, $today, $key)

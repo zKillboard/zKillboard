@@ -15,6 +15,8 @@ $statTypes = ['Destroyed', 'Lost'];
 
 $completed = [];
 
+$everyone = [];
+
 Util::out('recent time ranks - first iteration');
 $types = [];
 $iter = $mdb->getCollection("ninetyDays")->find();
@@ -28,6 +30,8 @@ foreach ($iter as $row) {
 
             if (isset($completed["$type:$id"])) continue;
             $completed["$type:$id"] = true;
+
+            $everyone[] = ['type' => $type, 'id' => $id];
 
             $types[$type] = true;
             $key = "tq:ranks:recent:$type:$today";
@@ -110,6 +114,11 @@ function moveAndExpire(&$multi, $today, $key)
     $newKey = str_replace(":$today", '', $key);
     $multi->rename($key, $newKey);
     $multi->expire($newKey, 86400);
+}
+
+foreach ($everyone as $i => $next) {
+break;
+    if ($redis->get("zkb:overview:$type:$id") == "true") Util::statsBoxUpdate($next['type'], $next['id']);
 }
 
 $redis->setex($hourKey, 86400, true);

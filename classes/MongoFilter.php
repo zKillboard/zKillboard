@@ -249,8 +249,9 @@ class MongoFilter
                     $and[] = ['system.regionID' => ['$lt' => 13000000]];
                     break;
                 case 'npc':
-                    if ($value) $and[] = ['labels' => 'npc'];
-                    else $and[] = ['labels' => ['$ne' => 'npc']];
+                    //if ($value) $and[] = ['labels' => 'npc'];
+                    //else $and[] = ['labels' => ['$ne' => 'npc']];
+                    $and[] = ['npc' => $value];
                     break;
                 case 'startTime':
                     $time = strtotime($value);

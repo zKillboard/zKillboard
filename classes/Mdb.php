@@ -198,7 +198,7 @@ class Mdb
         $time = $timer->stop();
         if ($time > $longQueryMS) {
             global $uri;
-            Log::log("Long query (${time}ms): $serialized $uri" . ($uri == "" ? print_r(debug_backtrace(), true) : ""));
+            // Log::log("Long query (${time}ms): $serialized $uri" . ($uri == "" ? print_r(debug_backtrace(), true) : ""));
         }
 
         if ($cacheTime > 0 && sizeof($result) > 0) {

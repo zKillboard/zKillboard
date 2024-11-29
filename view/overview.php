@@ -58,6 +58,8 @@ try {
     return $app->notFound();
 }
 
+$redis->setex("zkb:overview:$key:$id", 9600, "true");
+$redis->setex("zkb:overview:${key}ID:$id", 9600, "true");
 if ($key != "label") $id = (int) $id;
 
 @$page = max(1, $parameters['page']);

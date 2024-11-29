@@ -100,7 +100,7 @@ try {
         $ret = (string) $redis->get($key);
         if ($ret == "PROCESSING") { 
             sleep(1);
-            if ($waits > 30) Log::log("waiting... $waits");
+            //if ($waits > 30) Log::log("waiting... $waits");
             $waits++;
             if ($waits > 60) {
                 header('HTTP/1.1 408 Request timeout'); 

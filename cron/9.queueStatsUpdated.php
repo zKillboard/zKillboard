@@ -18,6 +18,7 @@ while ($minute == date("Hi")) {
 if ($all) publish($redis, "label", "all");
 
 function publish($redis, $type, $id) {
+    //if ($redis->get("zkb:overview:$type:$id") != "true") return;
     $msg = json_encode(['action' => 'statsbox', 'type' => $type, 'id' => $id], JSON_UNESCAPED_SLASHES);
     $typed = str_replace("ID", "", $type);
     $redis->publish("stats:$typed:$id", $msg);

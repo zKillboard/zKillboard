@@ -1,10 +1,12 @@
 <?php
 
-$mt = 12; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit(); $pid = $mt;
+$mt = 8; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit(); $pid = $mt;
 
 use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
+
+//if ($mt > 0 && $redis->get("zkb:load") >= 12) exit();
 
 if ($redis->get("tobefetched") < 10) $redis->del("zkb:statsStop");
 //if ($redis->get("tobefetched") > 10) exit();
@@ -24,7 +26,7 @@ function checkForResets() {
     $count = 0;
 
     // Look for resets in statistics and add them to the queue
-    $cursor = $mdb->getCollection("statistics")->find(['reset' => true])->limit(100);
+    $cursor = $mdb->getCollection("statistics")->find(['reset' => true])->sort(['_id' => -1])->limit(10000);
     while ($cursor->hasNext()) {
         $row = $cursor->next();
         $raw = $row['type'] . ":" . $row['id'];
@@ -37,6 +39,7 @@ function checkForResets() {
 }
 
 $noStatsCount = 0;
+if ($mt == 0 && $redis->scard("queueStatsSet") < 5000) checkForResets();
 while ($minute == date('Hi')) {
     $raw = $redis->srandmember("queueStatsSet");
     if ($raw == ":" || $raw == ":0") {
@@ -63,11 +66,11 @@ while ($minute == date('Hi')) {
         $id = implode(":", $arr);
     }
     $key = "$type";
-    if ($key == 'characterID' || $key == 'corporationID') $lockKey = "zkb:stats:$key:$id";
+    if ($key == 'characterID' || $key == 'corporationID' || $key == "allianceID" || $key == "locationID") $lockKey = "zkb:stats:$key:$id";
     else $lockKey = "zkb:stats:$key";
     if ($redis->set($lockKey, "true", ['nx', 'ex' => 3600]) === true) {
         try {
-            $redis->setex("zkb:stats:current:$type:$id", 3600, "true");
+            $redis->setex("zkb:stats:current:$type:$id", 10800, "true");
             $maxSequence = $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);
             $row = ['type' => $type, 'id' => $id, 'sequence' => $maxSequence];
 
@@ -89,7 +92,7 @@ while ($minute == date('Hi')) {
             $redis->del($lockKey);
         }
     } else {
-        usleep(250000); // 1/4th of a second
+        usleep(25000); // 1/4th of a second
         $redis->sadd("queueStatsSet", $raw);
     }
 }
@@ -143,11 +146,6 @@ function calcStats($row, $maxSequence)
     }
 
     $oldSequence = (int) @$stats['sequence'];
-    if ($oldSequence == 0) {
-        $query = [$row['type'] => $row['id']];
-        $query = MongoFilter::buildQuery($query);
-        $oldSequence = (int) $mdb->findField("killmails", "sequence", $query, ['sequence' => 1]);
-    }
     $newSequence = min($oldSequence + $delta, $maxSequence);
 
     //Util::out("next $type $id $oldSequence $newSequence");
@@ -166,10 +164,16 @@ function calcStats($row, $maxSequence)
         else if ($type == 'label') $query['labels'] = $id;
         else if ($isVictim == false) $query['labels'] = 'pvp'; // Allows NPCs to count their kills
 
+        if ($type != 'label') {
+            unset($query['labels']);
+            $query['npc'] = false;
+        }
+
         if ($type == 'label' || $type == 'locationID' || $type == 'regionID' || $type == 'constellationID' || $type == 'solarSystemID') unset($query['isVictim']);
 
 
         $query = MongoFilter::buildQuery($query);
+
         // set the proper sequence values
         $and = [['sequence' => ['$gt' => $oldSequence]], ['sequence' => ['$lte' => $newSequence]]];
         if (!($type == 'label' && $id == 'all')) $and[] = $query;

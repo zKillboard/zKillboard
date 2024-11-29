@@ -106,7 +106,7 @@ class Stats
         $time = $timer->stop();
         if ($time > $longQueryMS) {
             global $uri;
-            Log::log("getTop Long query (${time}ms): $hashKey $uri");
+            // Log::log("getTop Long query (${time}ms): $hashKey $uri");
         }
 
         if ($addInfo) Info::addInfo($result);
@@ -173,7 +173,7 @@ class Stats
 
         $time = $timer->stop();
         if ($time > $longQueryMS) {
-            Log::log("Distinct Long query (${time}ms): $hashKey");
+            // Log::log("Distinct Long query (${time}ms): $hashKey");
         }
 
         $retValue = sizeof($result) == 0 ? 0 : $result[0]['value'];

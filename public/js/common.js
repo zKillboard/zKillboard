@@ -165,6 +165,7 @@ function wslog(msg)
     } else if (json.action == 'twitch-offline') {
         twitchoffline();
     } else if (json.action == 'statsbox') {
+        console.log(json);
         statsboxUpdate(json);
     } else {
         console.log("Unknown action: " + json.action);
@@ -561,6 +562,11 @@ function statsboxUpdate(stats) {
 function setStatsboxValues(stats) {
     Object.keys(stats).forEach((e) => $('#' + e).attr('raw', stats[e]) )
         doFormats();
+    waitForStatsFunctionToLoadBecauseChromeIsBeingDumb(stats);
+}
+
+function waitForStatsFunctionToLoadBecauseChromeIsBeingDumb(stats) {
+    if (typeof updateStats == 'undefined') return setTimeout(function() { waitForStatsFunctionToLoadBecauseChromeIsBeingDumb(stats), 10});
     updateStats(stats);
 }
 
@@ -638,3 +644,5 @@ function updateTqStatus(tqStatus, count) {
 
     doFormats();
 }
+
+console.log('common.js loaded');

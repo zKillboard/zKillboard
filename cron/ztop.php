@@ -32,6 +32,7 @@ while ($hour == date('H')) {
 
     foreach ($redisQueues as $queue => $v) {
         if ($queue == 'queueStats') addInfo('queueStats', $redis->scard('queueStatsSet'));
+        else if ($queue == 'queueStatsUpdated') addInfo('queueStatsUpdated', $redis->scard('queueStatsUpdated'));
         else if ($queue == 'queueRelated') addInfo('queueRelated', $redis->scard('queueRelatedSet'));
         else addInfo($queue, $redis->lLen($queue));
     }
