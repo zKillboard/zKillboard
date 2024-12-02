@@ -51,7 +51,9 @@ $("#tracker-remove-corporation-{{ corporationID }}").remove();
 {% for data in tracker_alliance %}
 showAdd = showAdder(showAdd, 'alliance', {{data.id}}, tn);
 {% endfor %}
-$("#tracker-remove-alliance-{{ allianceID }}").remove();
+
+{% if allianceID > 0 %}$("#tracker-remove-alliance-{{ allianceID }}").remove();{% endif %}
+
 {% for data in tracker_faction %}
 showAdd = showAdder(showAdd, 'faction', {{data.id}}, tn);
 {% endfor %}

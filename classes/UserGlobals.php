@@ -71,7 +71,7 @@ class UserGlobals extends Twig_Extension
         $result['tracker_corporation'] = $this->addTracker(@$result['tracker_corporation'], $corpID, $corpName);
         $this->addGlobal($result, 'corporationID', $corpID, $corpName);
         $result['tracker_alliance'] = $this->addTracker(@$result['tracker_alliance'], $alliID, $alliName);
-        $this->addGlobal($result, 'allianceID', $alliID, $corpName);
+        $this->addGlobal($result, 'allianceID', $alliID, $alliName);
     }
 
     public function addFavorites(&$result, $userID)
