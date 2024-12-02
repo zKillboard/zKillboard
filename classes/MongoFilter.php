@@ -251,7 +251,7 @@ class MongoFilter
                 case 'npc':
                     //if ($value) $and[] = ['labels' => 'npc'];
                     //else $and[] = ['labels' => ['$ne' => 'npc']];
-                    $and[] = ['npc' => $value];
+                    $and[] = ['npc' => (bool) $value];
                     break;
                 case 'startTime':
                     $time = strtotime($value);
