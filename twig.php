@@ -75,7 +75,7 @@ $twig->addGlobal('image_item', 'https://images.evetech.net/types/');
 $twig->addGlobal('image_ship', 'https://images.evetech.net/types/');
 $twig->addGlobal('esiServer', $esiServer);
 
-if (isset($special) && isset($specialExpires) && $currentTime <= $specialExpires) {
+if (@$special != "") {
     $twig->addGlobal('sponsoredMessage', $special);
 }
 
