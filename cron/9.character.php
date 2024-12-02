@@ -124,7 +124,7 @@ function updateChar(&$guzzler, &$params, &$content)
     }
     compareAttributes($updates, "secStatus", @$row['secStatus'], (double) $json['security_status']);
 
-    if (@$row['name'] != "") unset($updates['name']); // Names will no longer be updated here
+    if (@$row['name'] != "" && strpos($updates['name'], " Citizen ") === false) unset($updates['name']); // Names will no longer be updated here
 
     $corpExists = $mdb->count('information', ['type' => 'corporationID', 'id' => $corpID]);
     if ($corpExists == 0) {
