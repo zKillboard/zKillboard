@@ -27,8 +27,8 @@
         <td class="location">
           <div style='width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;'>
               <span style="color: {{ kill.system.systemColorCode }}">
-                  {% if kill.whClass %}
-                      C{{ kill.whClass }}
+                  {% if kill.system.systemClass %}
+                      C{{ kill.system.systemClass }}
                   {% else %}
                       {{ "%1.1f"|format(kill.system.solarSystemSecurity) }}
                   {% endif %}

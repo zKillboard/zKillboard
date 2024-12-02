@@ -29,9 +29,6 @@ foreach ($kills as $id => $kill) {
         if (isset($kill['victim'][$key])) $vic[] = $kill['victim'][$key];
     }
     $kill['vics'] = implode(',', $vic);
-    if ($whInfo = Info::getWormholeSystemInfo(@$kill['system']['solarSystemID'])) {
-        $kill['whClass'] = $whInfo['class'];
-    }
     $kills[$id] = $kill;
 }
 
