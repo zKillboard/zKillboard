@@ -1,4 +1,5 @@
 (function( $ ) {
+    let query_count = 0;
 
 	var zz_search = function(element, callback) {
 		//create our objects and things
@@ -62,9 +63,12 @@
 			//if the saerch string is empty then dont' bother searching
 			if ( this.data['element'].val() == '' ) { this.hide_menu(event); return; }
 
+            let current_query_count = ++query_count;
 			//create our throttled search
 			this.data['throttle'] = setTimeout($.proxy(function() {
 				$.ajax('/autocomplete/' + this.data['element'].val() + '/', {'type' : 'get', 'dataType' : 'json', 'success' : $.proxy(function(result) {
+
+                    if (current_query_count != query_count) return console.log('search aborted after additional input received');
 					//empty the dropdown and append the new data
 					this.data['menu'].empty().append($.map(result, $.proxy(function(item, index) {
 						return $('<li><a href="/' + item.type + '/' + item.id + '/">' + ((item.image != '') ? '<img src="' + item.image + '" width="32" height="32" alt=" ">' : '') + '<p style="max-width: 300px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">' + item.name.replace(RegExp('(' + this.data['element'].val() + ')', "gi"), function($1, match){ return '<strong>' + match + '</strong>'; } ) + '</p><span><small>' + item.type + '</small></span></a></li>').attr('data-value', JSON.stringify(item));
