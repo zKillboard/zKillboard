@@ -4,7 +4,7 @@ require_once '../init.php';
 
 global $redis;
 
-$key = 'zkb:setup:v1';
+$key = 'zkb:setup:v2';
 if ($redis->get($key) == true) {
     exit();
 }
@@ -2509,5 +2509,12 @@ $multi->hmSet('tqMap:wh:31002502', ['class' => 6, 'effectID' => 30670, 'effectNa
 $multi->hmSet('tqMap:wh:31002503', ['class' => 5]);
 $multi->hmSet('tqMap:wh:31002504', ['class' => 5]);
 
-$multi->set($key, true);
+$rows = $mdb->find("information", ['type' => "solarSystemID", "id" => ['$gte' => 31000001]]);
+foreach ($rows as $row) {
+    if (!isset($row['class'])) continue;
+    $multi->hmSet('tqMap:wh:' . $row['id'], ['class' => $row['class']]);
+}
+
+
+$multi->setex($key, 90000, true);
 $multi->exec();
