@@ -157,6 +157,7 @@ class Related
     private static function getStatsKillList($killIDs)
     {
         $totalPrice = 0;
+        $totalDropped = 0;
         $totalPoints = 0;
         $groupIDs = array();
         $totalShips = 0;
@@ -164,6 +165,7 @@ class Related
             $kill = self::$killstorage[$killID];
             $victim = $kill['victim'];
             $totalPrice += $kill['zkb']['totalValue'];
+            $totalDropped += $kill['zkb']['droppedValue'];
             $totalPoints += $kill['zkb']['points'];
             $groupID = $victim['groupID'];
             if (!isset($groupIDs[$groupID])) {
@@ -197,7 +199,7 @@ class Related
 
         return array(
                 'total_price' => $totalPrice, 'groupIDs' => $groupIDs, 'totalShips' => $totalShips,
-                'total_points' => $totalPoints,
+                'total_points' => $totalPoints, 'total_dropped' => $totalDropped
                 );
     }
 
