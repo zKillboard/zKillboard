@@ -83,7 +83,7 @@ $app->get('/bigisk/', function () use ($app) {
         include 'view/bigisk.php';
         });
 
-$app->get('/:type/ranks/:kl/:epoch/:page/', function($type, $kl, $epoch, $page) use ($app) {
+$app->get('/:type/ranks/:kl/:solo/:epoch/:page/', function($type, $kl, $solo, $epoch, $page) use ($app) {
         include 'view/typeRanks.php';
 });
 /*$app->get('/cache/bypass/:type/ranks/:kl/:epoch/:page/', function($type, $kl, $epoch, $page) use ($app) {

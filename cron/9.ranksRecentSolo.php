@@ -1,16 +1,12 @@
 <?php
 
-use cvweiss\redistools\RedisQueue;
-
 require_once '../init.php';
 
 MongoCursor::$timeout = -1;
 
 $today = date('Ymd');
-$time = time();
-$timeKey = $time - ($time % 1200);
-$itimeKey = "zkb:weeklyRanksCalculated:$timeKey";
-if ($redis->get($itimeKey) == true) {
+$hourKey = "zkb:recentRanksSoloCalculated:"  . $today;
+if ($redis->get($hourKey) == true) {
     exit();
 }
 
@@ -21,9 +17,9 @@ $completed = [];
 
 $everyone = [];
 
-Util::out('weekly time ranks - first iteration');
+Util::out('recent time ranks - first iteration');
 $types = [];
-$iter = $mdb->getCollection("oneWeek")->find();
+$iter = $mdb->getCollection("ninetyDays")->find();
 foreach ($iter as $row) {
     $involved = $row['involved'];
     foreach ($involved as $entity) {
@@ -34,34 +30,35 @@ foreach ($iter as $row) {
 
             if (isset($completed["$type:$id"])) continue;
             $completed["$type:$id"] = true;
+
             $everyone[] = ['type' => $type, 'id' => $id];
 
             $types[$type] = true;
-            $key = "tq:ranks:weekly:$type:$today";
+            $key = "tq:ranks:recent:solo:$type:$today";
 
-            $weeklyKills = getWeekly($type, $id, false);
-            $weeklyLosses = getWeekly($type, $id, true);
-            if ($weeklyKills + $weeklyLosses == 0) continue;
+            $recentKills = getRecent($type, $id, false);
+            $recentLosses = getRecent($type, $id, true);
+            if ($recentKills + $recentLosses == 0) continue;
 
             $multi = $redis->multi();
-            zAdd($multi, "$key:shipsDestroyed", $weeklyKills['killIDCount'], $id);
-            zAdd($multi, "$key:pointsDestroyed", $weeklyKills['zkb_pointsSum'], $id);
-            zAdd($multi, "$key:iskDestroyed", $weeklyKills['zkb_totalValueSum'], $id);
-            zAdd($multi, "$key:shipsLost", $weeklyLosses['killIDCount'], $id);
-            zAdd($multi, "$key:pointsLost", $weeklyLosses['zkb_pointsSum'], $id);
-            zAdd($multi, "$key:iskLost", $weeklyLosses['zkb_totalValueSum'], $id);
+            zAdd($multi, "$key:shipsDestroyed", $recentKills['killIDCount'], $id);
+            zAdd($multi, "$key:pointsDestroyed", $recentKills['zkb_pointsSum'], $id);
+            zAdd($multi, "$key:iskDestroyed", $recentKills['zkb_totalValueSum'], $id);
+            zAdd($multi, "$key:shipsLost", $recentLosses['killIDCount'], $id);
+            zAdd($multi, "$key:pointsLost", $recentLosses['zkb_pointsSum'], $id);
+            zAdd($multi, "$key:iskLost", $recentLosses['zkb_totalValueSum'], $id);
             $multi->exec();
         }
     }
 }
 $completed = []; // clear the array and free memory
 
-Util::out('weekly time ranks - second iteration');
+Util::out('recent time ranks - second iteration');
 foreach ($types as $type => $value) {
-    $key = "tq:ranks:weekly:$type:$today";
+    $key = "tq:ranks:recent:solo:$type:$today";
     $indexKey = "$key:shipsDestroyed";
     $max = $redis->zCard($indexKey);
-    $redis->del("tq:ranks:weekly:$type:$today");
+    $redis->del("tq:ranks:recent:solo:$type:$today");
 
     $it = null;
     while ($arr_matches = $redis->zScan($indexKey, $it)) {
@@ -79,61 +76,59 @@ foreach ($types as $type => $value) {
             $iskDestroyedRank = rankCheck($max, $redis->zRevRank("$key:iskDestroyed", $id));
             $iskLost = $redis->zScore("$key:iskLost", $id);
             $iskLostRank = rankCheck($max, $redis->zRevRank("$key:iskLost", $id));
-            if (($iskDestroyed + $iskLost) == 0) continue;
-            $iskEff = ($iskDestroyed / ($iskDestroyed + $iskLost));
+            $iskEff = ($iskDestroyed + $iskLost) == 0 ? 0 : ($iskDestroyed / ($iskDestroyed + $iskLost));
 
             $pointsDestroyed = $redis->zScore("$key:pointsDestroyed", $id);
             $pointsDestroyedRank = rankCheck($max, $redis->zRevRank("$key:pointsDestroyed", $id));
             $pointsLost = $redis->zScore("$key:pointsLost", $id);
             $pointsLostRank = rankCheck($max, $redis->zRevRank("$key:pointsLost", $id));
-            if (($pointsDestroyed + $pointsLost) == 0) continue;
-            $pointsEff = ($pointsDestroyed / ($pointsDestroyed + $pointsLost));
+            $pointsEff = ($pointsDestroyed + $pointsLost) == 0 ? 0 : ($pointsDestroyed / ($pointsDestroyed + $pointsLost));
 
             $avg = ceil(($shipsDestroyedRank + $iskDestroyedRank + $pointsDestroyedRank) / 3);
             $adjuster = (1 + $shipsEff + $iskEff + $pointsEff) / 4;
             $score = ceil($avg / $adjuster);
 
-            $redis->zAdd("tq:ranks:weekly:$type:$today", $score, $id);
-            $redis->expire("tq:ranks:weekly:$type:$today", 9000);
+            $redis->zAdd("tq:ranks:recent:solo:$type:$today", $score, $id);
+            $redis->expire("tq:ranks:recent:solo:$type:$today", 86400);
         }
     }
 }
 
 foreach ($types as $type => $value) {
     $multi = $redis->multi();
-    $multi->del("tq:ranks:weekly:$type");
-    $multi->zUnionStore("tq:ranks:weekly:$type", ["tq:ranks:weekly:$type:$today"]);
-    $multi->expire("tq:ranks:weekly:$type", 9000);
-    $multi->expire("tq:ranks:weekly:$type:$today", (7 * 86400));
-    moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:shipsDestroyed");
-    moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:shipsLost");
-    moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:iskDestroyed");
-    moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:iskLost");
-    moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:pointsDestroyed");
-    moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:pointsLost");
+    $multi->del("tq:ranks:recent:solo:$type");
+    $multi->zUnionStore("tq:ranks:recent:solo:$type", ["tq:ranks:recent:solo:$type:$today"]);
+    $multi->expire("tq:ranks:recent:solo:$type", 86400);
+    $multi->expire("tq:ranks:recent:solo:$type:$today", (7 * 86400));
+    moveAndExpire($multi, $today, "tq:ranks:recent:solo:$type:$today:shipsDestroyed");
+    moveAndExpire($multi, $today, "tq:ranks:recent:solo:$type:$today:shipsLost");
+    moveAndExpire($multi, $today, "tq:ranks:recent:solo:$type:$today:iskDestroyed");
+    moveAndExpire($multi, $today, "tq:ranks:recent:solo:$type:$today:iskLost");
+    moveAndExpire($multi, $today, "tq:ranks:recent:solo:$type:$today:pointsDestroyed");
+    moveAndExpire($multi, $today, "tq:ranks:recent:solo:$type:$today:pointsLost");
     $multi->exec();
 }
-
-foreach ($everyone as $i => $next) {
-break;
-    if ($redis->get("zkb:overview:$type:$id") === "true") Util::statsBoxUpdate($next['type'], $next['id']);
-}
-
-$redis->setex($itimeKey, 1200, true);
-Util::out('Weekly rankings complete');
 
 function moveAndExpire(&$multi, $today, $key)
 {
     $newKey = str_replace(":$today", '', $key);
     $multi->rename($key, $newKey);
-    $multi->expire($newKey, 9000);
+    $multi->expire($newKey, 86400);
 }
+
+foreach ($everyone as $i => $next) {
+break;
+    if ($redis->get("zkb:overview:$type:$id") == "true") Util::statsBoxUpdate($next['type'], $next['id']);
+}
+
+$redis->setex($hourKey, 86400, true);
+Util::out('Recent rankings complete');
 
 function zAdd(&$multi, $key, $value, $id)
 {
     $value = max(0, (int) $value);
     $multi->zAdd($key, $value, $id);
-    $multi->expire($key, 9000);
+    $multi->expire($key, 86400);
 }
 
 function rankCheck($max, $rank)
@@ -141,14 +136,15 @@ function rankCheck($max, $rank)
     return $rank === false ? $max : ($rank + 1);
 }
 
-function getWeekly($type, $id, $isVictim)
+function getRecent($type, $id, $isVictim)
 {
     global $mdb;
 
     // build the query
-    $query = [$type => $id, 'isVictim' => $isVictim, 'npc' => false, 'categoryID' => 6];
+    $query = [$type => $id, 'isVictim' => $isVictim, 'solo' => true];
+    if ($isVictim == true) $query['npc'] = false;
     $query = MongoFilter::buildQuery($query);
 
-    $result = $mdb->group('oneWeek', [], $query, 'killID', ['zkb.points', 'zkb.totalValue']);
+    $result = $mdb->group('ninetyDays', [], $query, 'killID', ['zkb.points', 'zkb.totalValue']);
     return sizeof($result) ? $result[0] : ['killIDCount' => 0, 'zkb_pointsSum' => 0, 'zkb_totalValueSum' => 0];
 }

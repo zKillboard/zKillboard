@@ -9,7 +9,7 @@ MongoCursor::$timeout = -1;
 $today = date('Ymd');
 $time = time();
 $timeKey = $time - ($time % 1200);
-$itimeKey = "zkb:weeklyRanksCalculated:$timeKey";
+$itimeKey = "zkb:weeklyRanksSoloCalculated:$timeKey";
 if ($redis->get($itimeKey) == true) {
     exit();
 }
@@ -21,7 +21,7 @@ $completed = [];
 
 $everyone = [];
 
-Util::out('weekly time ranks - first iteration');
+Util::out('solo weekly time ranks - first iteration');
 $types = [];
 $iter = $mdb->getCollection("oneWeek")->find();
 foreach ($iter as $row) {
@@ -37,7 +37,7 @@ foreach ($iter as $row) {
             $everyone[] = ['type' => $type, 'id' => $id];
 
             $types[$type] = true;
-            $key = "tq:ranks:weekly:$type:$today";
+            $key = "tq:ranks:weekly:solo:$type:$today";
 
             $weeklyKills = getWeekly($type, $id, false);
             $weeklyLosses = getWeekly($type, $id, true);
@@ -56,12 +56,12 @@ foreach ($iter as $row) {
 }
 $completed = []; // clear the array and free memory
 
-Util::out('weekly time ranks - second iteration');
+Util::out('solo weekly time ranks - second iteration');
 foreach ($types as $type => $value) {
-    $key = "tq:ranks:weekly:$type:$today";
+    $key = "tq:ranks:weekly:solo:$type:$today";
     $indexKey = "$key:shipsDestroyed";
     $max = $redis->zCard($indexKey);
-    $redis->del("tq:ranks:weekly:$type:$today");
+    $redis->del("tq:ranks:weekly:solo:$type:$today");
 
     $it = null;
     while ($arr_matches = $redis->zScan($indexKey, $it)) {
@@ -93,34 +93,29 @@ foreach ($types as $type => $value) {
             $adjuster = (1 + $shipsEff + $iskEff + $pointsEff) / 4;
             $score = ceil($avg / $adjuster);
 
-            $redis->zAdd("tq:ranks:weekly:$type:$today", $score, $id);
-            $redis->expire("tq:ranks:weekly:$type:$today", 9000);
+            $redis->zAdd("tq:ranks:weekly:solo:$type:$today", $score, $id);
+            $redis->expire("tq:ranks:weekly:solo:$type:$today", 9000);
         }
     }
 }
 
 foreach ($types as $type => $value) {
     $multi = $redis->multi();
-    $multi->del("tq:ranks:weekly:$type");
-    $multi->zUnionStore("tq:ranks:weekly:$type", ["tq:ranks:weekly:$type:$today"]);
-    $multi->expire("tq:ranks:weekly:$type", 9000);
-    $multi->expire("tq:ranks:weekly:$type:$today", (7 * 86400));
-    moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:shipsDestroyed");
-    moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:shipsLost");
-    moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:iskDestroyed");
-    moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:iskLost");
-    moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:pointsDestroyed");
-    moveAndExpire($multi, $today, "tq:ranks:weekly:$type:$today:pointsLost");
+    $multi->del("tq:ranks:weekly:solo:$type");
+    $multi->zUnionStore("tq:ranks:weekly:solo:$type", ["tq:ranks:weekly:solo:$type:$today"]);
+    $multi->expire("tq:ranks:weekly:solo:$type", 9000);
+    $multi->expire("tq:ranks:weekly:solo:$type:$today", (7 * 86400));
+    moveAndExpire($multi, $today, "tq:ranks:weekly:solo:$type:$today:shipsDestroyed");
+    moveAndExpire($multi, $today, "tq:ranks:weekly:solo:$type:$today:shipsLost");
+    moveAndExpire($multi, $today, "tq:ranks:weekly:solo:$type:$today:iskDestroyed");
+    moveAndExpire($multi, $today, "tq:ranks:weekly:solo:$type:$today:iskLost");
+    moveAndExpire($multi, $today, "tq:ranks:weekly:solo:$type:$today:pointsDestroyed");
+    moveAndExpire($multi, $today, "tq:ranks:weekly:solo:$type:$today:pointsLost");
     $multi->exec();
 }
 
-foreach ($everyone as $i => $next) {
-break;
-    if ($redis->get("zkb:overview:$type:$id") === "true") Util::statsBoxUpdate($next['type'], $next['id']);
-}
-
-$redis->setex($itimeKey, 1200, true);
-Util::out('Weekly rankings complete');
+$redis->setex($itimeKey, 1200, "true");
+Util::out('Solo Weekly rankings complete');
 
 function moveAndExpire(&$multi, $today, $key)
 {
@@ -146,7 +141,7 @@ function getWeekly($type, $id, $isVictim)
     global $mdb;
 
     // build the query
-    $query = [$type => $id, 'isVictim' => $isVictim, 'npc' => false, 'categoryID' => 6];
+    $query = [$type => $id, 'isVictim' => $isVictim, 'npc' => false, 'solo' => true, 'categoryID' => 6];
     $query = MongoFilter::buildQuery($query);
 
     $result = $mdb->group('oneWeek', [], $query, 'killID', ['zkb.points', 'zkb.totalValue']);

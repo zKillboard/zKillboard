@@ -6,10 +6,7 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
-//if ($mt > 0 && $redis->get("zkb:load") >= 12) exit();
-
 if ($redis->get("tobefetched") < 10) $redis->del("zkb:statsStop");
-//if ($redis->get("tobefetched") > 10) exit();
 if ($mdb->findDoc("killmails", ['reset' => true]) != null) exit();
 if ($redis->get("zkb:statsStop") == "true") exit();
 if ($redis->get("zkb:reinforced") == true) exit();
@@ -157,8 +154,7 @@ function calcStats($row, $maxSequence)
         }
 
         // build the query
-        $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim, 'labels' => 'pvp'];
-        unset($query['label']);
+        $query = [$row['type'] => $row['id'], 'isVictim' => $isVictim];
 
         if ($type == 'label' && $id == 'all') unset($query['labels']);
         else if ($type == 'label') $query['labels'] = $id;
@@ -167,10 +163,10 @@ function calcStats($row, $maxSequence)
         if ($type != 'label') {
             unset($query['labels']);
             $query['npc'] = false;
+            $query['labels'] = 'pvp';
         }
 
         if ($type == 'label' || $type == 'locationID' || $type == 'regionID' || $type == 'constellationID' || $type == 'solarSystemID') unset($query['isVictim']);
-
 
         $query = MongoFilter::buildQuery($query);
 
@@ -181,6 +177,11 @@ function calcStats($row, $maxSequence)
 
         $allTime = $mdb->group('killmails', [], $query, 'killID', ['zkb.points', 'zkb.totalValue', 'attackerCount']);
         mergeAllTime($stats, $allTime, $isVictim);
+
+        $soloQuery = $query;
+        $soloQuery['solo'] = true;
+        $soloAllTime = $mdb->group('killmails', [], $soloQuery, 'killID', ['zkb.points', 'zkb.totalValue', 'attackerCount']);
+        mergeAllTime($stats, $soloAllTime, $isVictim, true);
 
         $groups = $mdb->group('killmails', 'vGroupID', $query, 'killID', ['zkb.points', 'zkb.totalValue', 'attackerCount'], ['vGroupID' => 1]);
         mergeGroups($stats, $groups, $isVictim);
@@ -254,7 +255,7 @@ function calcStats($row, $maxSequence)
     return ($newSequence == $maxSequence);
 }
 
-function mergeAllTime(&$stats, $result, $isVictim)
+function mergeAllTime(&$stats, $result, $isVictim, $solo = false)
 {
     if (sizeof($result) == 0) {
         return;
@@ -262,6 +263,9 @@ function mergeAllTime(&$stats, $result, $isVictim)
 
     $row = $result[0];
     $dl = ($isVictim ? 'Lost' : 'Destroyed');
+
+    if ($solo) $dl .= "Solo";
+
     if (!isset($stats["ships$dl"])) {
         $stats["ships$dl"] = 0;
     }
