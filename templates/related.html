@@ -11,6 +11,9 @@
 {% set teamBTotal = summary.teamB.totals.total_price %}
 {% set total = teamATotal + teamBTotal %}
 
+{% set teamATotalDropped = summary.teamA.totals.total_dropped %}
+{% set teamBTotalDropped = summary.teamB.totals.total_dropped %}
+
 {% set teamAPoints = summary.teamA.totals.total_points %}
 {% set teamBPoints = summary.teamB.totals.total_points %}
 
@@ -60,6 +63,10 @@
 	<tr>
 		<td>ISK Lost: <div class="pull-right"><strong>{{ teamATotal | number_format(2)}}</strong></div></td>
 		<td>ISK Lost: <div class="pull-right"><strong>{{ teamBTotal | number_format(2)}}</strong></div></td>
+	</tr>
+	<tr>
+		<td>Loot Dropped: <div class="pull-right"><strong>{{ teamATotalDropped | number_format(2)}}</strong></div></td>
+		<td>Loot Dropped: <div class="pull-right"><strong>{{ teamBTotalDropped | number_format(2)}}</strong></div></td>
 	</tr>
 	<tr>
 		<td>Efficiency: <div class="pull-right"><strong>{{ teamAEff | number_format(1)}} %</strong></div></td>
