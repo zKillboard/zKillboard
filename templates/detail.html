@@ -50,9 +50,9 @@
 					<li><a href="https://evemaps.dotlan.net/region/{{ killdata.info.system.regionName|url_encode }}" target="_blank" rel="noopener noreferrer">{{ killdata.info.system.regionName }}</a></li>
 					<li class="divider"></li>
 					<li class="dropdown-header">EVEWho Char Info</li>
-					<li><a href="https://evewho.com/pilot/{{ killdata.victim.characterName|url_encode }}" target="_blank" rel="noopener noreferrer">{{ killdata.victim.characterName }}</a></li>
-					<li><a href="https://evewho.com/pilot/{{ finalBlow.characterName|url_encode }}" target="_blank" rel="noopener noreferrer">{{ finalBlow.characterName }}</a></li>
-					<li><a href="https://evewho.com/pilot/{{ topDamage.characterName|url_encode }}" target="_blank" rel="noopener noreferrer">{{ topDamage.characterName }}</a></li>
+					<li><a href="https://evewho.com/pilot/{{ killdata.victim.characterID }}" target="_blank" rel="noopener noreferrer">{{ killdata.victim.characterName }}</a></li>
+					<li><a href="https://evewho.com/pilot/{{ finalBlow.characterID }}" target="_blank" rel="noopener noreferrer">{{ finalBlow.characterName }}</a></li>
+					<li><a href="https://evewho.com/pilot/{{ topDamage.characterID }}" target="_blank" rel="noopener noreferrer">{{ topDamage.characterName }}</a></li>
 				</ul>
 			</li>
 			<li class="dropdown">
