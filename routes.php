@@ -138,6 +138,7 @@ $app->get('/item/:id/', function ($id) use ($app) {
 
 
 $app->get('/api/recentactivity/', function () use ($app) { include 'view/api/recentactivity.php'; });
+$app->post('/api/killmail/add/:killID/:hash/', function ($killID, $hash) use ($app) { include 'view/api/killmail-add.php'; });
 
 $app->get('/api/supers/', function () use ($app) {
         include 'view/intel.php';
