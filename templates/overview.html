@@ -52,6 +52,9 @@
 	{% if extra.hasWars > 0 %}
 	<li class="{{ isActive('wars', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/wars/">Wars</a></li>
 	{% endif %}
+	{% if key == "alliance" %}
+		<li class="{{ isActive('corpstats', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/corpstats/">Corporations</a></li>
+    {% endif %}
 	</ul>
 	<ul class="nav navbar-nav pull-right hidden-xs">
 	{% if key == "character" %}

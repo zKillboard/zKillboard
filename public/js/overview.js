@@ -13,7 +13,7 @@ var kmLoaded = false;
 function loadKms() {
     if (kmLoaded == true) return;
 
-    if ($("#killlist").length > 0) $.get('/cache/1hour/killlist/?s=' + overviewStats.sequence + '&u=' + window.location.pathname, prepKills);
+    if ($("#killlist").length > 0) $.get('/cache/bypass/killlist/?u=' + window.location.pathname, prepKills);
     kmLoaded = true;
 }
 
@@ -29,8 +29,8 @@ function loadTops() {
     let ksa = overviewStats.ksa;
     let kea = overviewStats.kea;
 
-    $("#topset-isk").load("/cache/1hour/statstopisk?u=" + window.location.pathname + "&ks=" + ksa + "&ke=" + kea);
-    validTopTypes.forEach((t) => $("#topset-" + t).load("/cache/1hour/statstop10?u=" + window.location.pathname + "&t=" + t + "&ks=" + ksa + "&ke=" + kea));
+    $("#topset-isk").load("/cache/bypass/statstopisk?u=" + window.location.pathname + "&ks=" + ksa + "&ke=" + kea);
+    validTopTypes.forEach((t) => $("#topset-" + t).load("/cache/bypass/statstop10?u=" + window.location.pathname + "&t=" + t + "&ks=" + ksa + "&ke=" + kea));
 
     topsLoaded = true;
     console.log('tops loaded');

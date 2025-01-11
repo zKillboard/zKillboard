@@ -25,7 +25,7 @@ if (strlen("$id") > 11) {
 
 $validPageTypes = array('kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime');
 if ($key == 'alliance') {
-    //$validPageTypes[] = 'corpstats';
+    $validPageTypes[] = 'corpstats';
 }
 
 if ($pageType == '') $pageType = 'overview';

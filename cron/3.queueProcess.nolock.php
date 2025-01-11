@@ -33,18 +33,24 @@ while ($minute == date('Hi')) {
     $sem = sem_get(3976);
     try {
         sem_acquire($sem);
-        $killID = $redis->zrevrange("tobeparsed", 0, 0);
-        if ($killID != null) {
-            $killID = (int) $killID[0];
-            $redis->zrem("tobeparsed", $killID);
 
-            $row = $mdb->findDoc('crestmails', ['killID' => $killID, 'processed' => false], ['killID' => -1]);
-            if ($row == null) $row = $mdb->findDoc('crestmails', ['killID' => $killID]);
+        $row = $mdb->findDoc('crestmails', ['processed' => 'fetched']);
+        if ($row == null) {
+            $killID = $redis->zrevrange("tobeparsed", 0, 0);
+            $killID = (int) @$killID[0];
+            $row = $mdb->findDoc('crestmails', ['killID' => $killID, 'processed' => true]);
+            if ($row != null) {
+                $redis->zrem("tobeparsed", $killID);
+                continue;
+            }
         }
-
         if ($row != null) $mdb->set('crestmails', $row, ['processed' => 'processing']);
     } finally {
         sem_release($sem);
+    }
+    if ($row == null) {
+        usleep(100000);
+        continue;
     }
     if ($row != null) {
         $killID = (int) $row['killID'];
@@ -185,10 +191,8 @@ while ($minute == date('Hi')) {
         $killsLastHour = new RedisTtlCounter('killsLastHour');
         $killsLastHour->add($row['killID']);
         $mdb->set('crestmails', $row, ['processed' => true]);
-	continue;
-
+        $redis->zrem("tobeparsed", $killID);
     }
-    sleep(1);
 }
 
 function addLabel(&$kill, $condition, $label)

@@ -39,7 +39,7 @@ $killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
 $killCount = $killsLastHour->count();
 $redis->publish("public", json_encode(['action' => 'tqStatus', 'tqStatus' => $serverStatus, 'tqCount' => $loggedIn, 'kills' => $killCount]));
 
-$message = ($redis->get("tqCountInt") == 0 || Status::getStatus('esi', false) >= 25) ? "<a href='/ztop/'>We seem to be having an issue accessing the ESI API, nothing can be done at this time.</a>" : "";
+$message = ($redis->get("tqCountInt") == 0 || Status::getStatus('esi', false) >= 100) ? "<a href='/ztop/'>We seem to be having an issue accessing the ESI API, nothing can be done at this time.</a>" : "";
 //$message = "ESI has been extremely slow and or timing out for 3+ weeks now. This is causing a delay in fetching killmails. The problem is with CCP servers, not zKillboard. There is nothing zKillboard can do at this time except hope CCP fixes these problems soon.";
 $message = apiStatus($message, 'esi', "Issues with CCP's ESI API - some killmails may be delayed.");
 $message = apiStatus($message, 'sso', "Issues with CCP's SSO API - some killmails may be delayed.");

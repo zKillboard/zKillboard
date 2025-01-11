@@ -24,7 +24,7 @@ while ($minute == date("Hi")) {
 
         $raw = Kills::getEsiKill($killID);
         if ($raw != null) {
-            $mdb->set("crestmails", $row, ['processed' => 'fetched']);
+            $mdb->set("crestmails", ['killID' => $killID, 'hash' => $hash], ['processed' => 'fetched']);
             $redis->zadd("tobeparsed", $killID, $killID);
             continue;
         }
@@ -74,7 +74,6 @@ function success(&$guzzler, &$params, &$content) {
         return;
     }
 
-
     $esimails = $params['esimails'];
     $doc = json_decode($content, true);
 
@@ -83,7 +82,7 @@ function success(&$guzzler, &$params, &$content) {
     } catch (Exception $ex) {
         // argh
     }
-    $mdb->set("crestmails", $row, ['processed' => 'fetched']);
+    $mdb->set("crestmails", ['killID' => $row['killID'], 'hash' => $row['hash']], ['processed' => 'fetched']);
     $killID = $doc['killmail_id'];
     $params['redis']->zadd("tobeparsed", $killID, $killID);
     if ($redis->get("tobefetched") > 0) $redis->incr("tobefetched", -1);

@@ -136,6 +136,7 @@ $app->get('/item/:id/', function ($id) use ($app) {
         include 'view/item.php';
         });
 
+
 $app->get('/api/recentactivity/', function () use ($app) { include 'view/api/recentactivity.php'; });
 
 $app->get('/api/supers/', function () use ($app) {
@@ -166,12 +167,15 @@ $app->get('/cache/bypass/stats/', function () use ($app) { include 'view/ajax/st
 $app->get('/cache/1hour/stats/', function () use ($app) { include 'view/ajax/stats.php'; });
 $app->get('/cache/24hour/stats/', function () use ($app) { include 'view/ajax/stats.php'; });
 
+$app->get('/cache/bypass/killlist/', function () use ($app) { include 'view/ajax/killlist.php'; });
 $app->get('/cache/1hour/killlist/', function () use ($app) { include 'view/ajax/killlist.php'; });
 $app->get('/cache/24hour/killlist/', function () use ($app) { include 'view/ajax/killlist.php'; });
 
+$app->get('/cache/bypass/statstop10/', function () use ($app) { include 'view/ajax/statstop10.php'; });
 $app->get('/cache/1hour/statstop10/', function () use ($app) { include 'view/ajax/statstop10.php'; });
 $app->get('/cache/24hour/statstop10/', function () use ($app) { include 'view/ajax/statstop10.php'; });
 
+$app->get('/cache/bypass/statstopisk/', function () use ($app) { include 'view/ajax/statstopisk.php'; });
 $app->get('/cache/1hour/statstopisk/', function () use ($app) { include 'view/ajax/statstopisk.php'; });
 $app->get('/cache/24hour/statstopisk/', function () use ($app) { include 'view/ajax/statstopisk.php'; });
 

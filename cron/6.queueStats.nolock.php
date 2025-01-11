@@ -63,7 +63,10 @@ while ($minute == date('Hi')) {
         $id = implode(":", $arr);
     }
     $key = "$type";
-    if ($key == 'characterID' || $key == 'corporationID' || $key == "allianceID" || $key == "locationID") $lockKey = "zkb:stats:$key:$id";
+
+    if ($key == "shipTypeID" && $mt > 2) continue; // limit number of shipTypeID threads
+
+    if ($key == 'characterID' || $key == 'corporationID' || $key == "allianceID" || $key == "locationID" || $key == "shipTypeID") $lockKey = "zkb:stats:$key:$id";
     else $lockKey = "zkb:stats:$key";
     if ($redis->set($lockKey, "true", ['nx', 'ex' => 3600]) === true) {
         try {
@@ -145,7 +148,7 @@ function calcStats($row, $maxSequence)
     $oldSequence = (int) @$stats['sequence'];
     $newSequence = min($oldSequence + $delta, $maxSequence);
 
-    //Util::out("next $type $id $oldSequence $newSequence");
+    //if ($newSequence != $maxSequence && $newSequence % 10000000 == 0) Util::out("next $type $id $oldSequence $newSequence");
 
     for ($i = 0; $i <= 1; ++$i) {
         $isVictim = ($i == 0);
