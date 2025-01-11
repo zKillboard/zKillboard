@@ -236,14 +236,11 @@
 {% endblock %}
 
 {% block script %}
-	<script defer type="text/javascript" src="/js/tablesorter/jquery.tablesorter.min.js"></script>
 	<script defer type="text/javascript" src="/js/overview.js?v={{ version}}"></script>
 	<script defer type="text/javascript">
         const pageType = '{{ key }}';
         const pageID = '{{ id }}';
 		function prepPage() {
-			if ($ === undefined) return setTimeout(prepPage, 500);
-			else $("#corpstats").tablesorter({textExtraction: removeCommas});
 		}
 		function removeCommas(val) {
 			return val.innerHTML.replace(',', '', 'g');
