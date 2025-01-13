@@ -95,6 +95,9 @@ function popChar(ch) {
 
     ch.stats.snuggly = 100 - ch.stats.dangerRatio;
     let char = ch.id > 0 ? `<a href='/character/${ch.id}/'>${ch.name}</a>` : ch.name;
+console.log(ch.secStatus);
+    let secStatus = ch.id > 0 && typeof ch.secStatus != 'undefined' ? ch.secStatus : '? ';
+    let secStatusFormat = secStatus == '?' ? '' : 'format-dec2-once';
     let corp = getName('corps', ch.corporationID);
     let alli = getName('allis', ch.allianceID);
     let image = getImage(ch.corporationID, ch.allianceID);
@@ -120,7 +123,7 @@ function popChar(ch) {
 
     let notes = typeof ch.labels == 'undefined' ? '' : ch.labels.join(', ');
 
-    let h = $(`<tr danger="${ch.stats.dangerRatio}"><td>${char}<br/>Sec: <small><span style='color: ${secColor}' format="format-dec2-once" raw="${ch.secStatus}"></span> <span>${notes}</span></small></td><td class='pilotships'>${ships}</td><td class='pilotmemberimage'>${image}</td><td class="pilotmember">${corp}<br/>${alli}</td><td class="text-right"><span class="pilotkl green" format="format-int-once" raw="${ch.stats.shipsDestroyed}"></span><br/><span class="red" format="format-int-once" raw="${ch.stats.shipsLost}"></span></td><td class="pilotds text-right"><span class="red" format="format-pct-once" raw="${ch.stats.dangerRatio}"></span><br/><span  class="green" format="format-pct-once" raw="${ch.stats.snuggly}"></span></td><td class="text-right"><span format="format-pct-once" raw="${ch.stats.gangRatio}"></span><br/><span format="format-dec2-once" raw="${ch.stats.avgGangSize}"></td><td class='text-right ${soloColor}' format="format-pct-once" raw="${ch.stats.soloRatio}"></td></tr>`);
+    let h = $(`<tr danger="${ch.stats.dangerRatio}"><td>${char}<br/>Sec: <small><span style='color: ${secColor}' format="${secStatusFormat}" raw="${secStatus}"></span>${secStatus}<span>${notes}</span></small></td><td class='pilotships'>${ships}</td><td class='pilotmemberimage'>${image}</td><td class="pilotmember">${corp}<br/>${alli}</td><td class="text-right"><span class="pilotkl green" format="format-int-once" raw="${ch.stats.shipsDestroyed}"></span><br/><span class="red" format="format-int-once" raw="${ch.stats.shipsLost}"></span></td><td class="pilotds text-right"><span class="red" format="format-pct-once" raw="${ch.stats.dangerRatio}"></span><br/><span  class="green" format="format-pct-once" raw="${ch.stats.snuggly}"></span></td><td class="text-right"><span format="format-pct-once" raw="${ch.stats.gangRatio}"></span><br/><span format="format-dec2-once" raw="${ch.stats.avgGangSize}"></td><td class='text-right ${soloColor}' format="format-pct-once" raw="${ch.stats.soloRatio}"></td></tr>`);
     $('#results').append(h);
 }
 
