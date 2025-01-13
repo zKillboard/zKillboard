@@ -28,7 +28,6 @@ if ($mdb->findDoc('killmails', ['killID' => $killID]) == null) {
     do {
         usleep(100000);
         $processed = $mdb->findField("crestmails", "processed", ['killID' => $killID, 'hash' => $hash]);
-Log::log("$killID $hash $processed");
     } while ($processed !== true && in_array($processed, [false, 'fetching', 'fetched', 'processing']) && $timer->stop() <= 28000);
 
     // Did we take too long?
