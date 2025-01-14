@@ -100,6 +100,7 @@ $extra['atShip'] = in_array('atShip', @$killdata['info']['labels']);
 $extra['totalisk'] = $killdata['info']['zkb']['totalValue'];
 $extra['droppedisk'] = droppedIsk(md5($id), $killdata['items']);
 $extra['shipprice'] = Price::getItemPrice($killdata['victim']['shipTypeID'], date('Y-m-d H:i', strtotime($killdata['info']['dttm'])));
+$extra['destroyedisk'] = destroyedIsk(md5($id), $killdata['items']);
 $extra['lostisk'] = $extra['shipprice'] + destroyedIsk(md5($id), $killdata['items']);
 $extra['fittedisk'] = fittedIsk(md5($id), $killdata['items']) + $extra['shipprice'];
 $extra['relatedtime'] = date('YmdH00', strtotime($killdata['info']['dttm'])); 
