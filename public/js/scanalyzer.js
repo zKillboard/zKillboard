@@ -97,7 +97,7 @@ function popChar(ch) {
     let char = ch.id > 0 ? `<a href='/character/${ch.id}/'>${ch.name}</a>` : ch.name;
 console.log(ch.secStatus);
     let secStatus = ch.id > 0 && typeof ch.secStatus != 'undefined' ? ch.secStatus : '? ';
-    let secStatusFormat = secStatus == '?' ? '' : 'format-dec2-once';
+    let secStatusFormat = secStatus == '? ' ? '' : 'format-dec2-once';
     let corp = getName('corps', ch.corporationID);
     let alli = getName('allis', ch.allianceID);
     let image = getImage(ch.corporationID, ch.allianceID);
