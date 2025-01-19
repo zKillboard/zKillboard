@@ -7,19 +7,24 @@ require_once '../init.php';
 if ($redis->get("tobefetched") > 1000) exit();
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->scard("queueStatsSet") > 1000) exit();
-//if ($mdb->findDoc("statistics", ['reset' => true]) != null) exit();
+if ($mdb->findDoc("statistics", ['reset' => true]) != null) exit();
 
 MongoCursor::$timeout = -1;
 
-$t = new Timer();
+$minute = date("Hi");
 
 do {
-    $row = $mdb->findDoc("statistics", ['calcAlltime' => true]);
+    $row = $mdb->findDoc("statistics", ['calcAlltime' => true], ['shipsDestroyed' => 1]);
     if ($row == null) exit();
-    $redis->set("zkb:calcAlltime", $row['type'] . ":" . $row['id']);
-    calcTop($row);
-    $redis->del("zkb:calcAlltime");
-} while ($t->stop() < 60000);
+
+    $key = "zkb:calcAlltime:" . $row['type'] . ":" . $row['id'];
+    try {
+        if ($redis->set($key, "true", ['nx', 'ex' => 80000]) !== true) exit();
+        calcTop($row);
+    } finally {
+        $redis->del($key);
+    }
+} while ($minute == date("Hi"));
 
 function calcTop($row)
 {
@@ -50,6 +55,6 @@ function calcTop($row)
 
     $nextTopRecalc = ceil($currentSum * 1.01);
 
-    $mdb->set('statistics', $row, ['topAllTime' => $topLists, 'topIskKills' => $topKills, 'allTimeSum' => $currentSum, 'nextTopRecalc' => $nextTopRecalc]);
+    $mdb->set('statistics', ['_id' => $row['_id']], ['topAllTime' => $topLists, 'topIskKills' => $topKills, 'allTimeSum' => $currentSum, 'nextTopRecalc' => $nextTopRecalc, 'calcAlltime' => false]);
     $mdb->removeField('statistics', $row, 'calcAlltime');
 }
