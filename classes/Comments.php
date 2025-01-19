@@ -25,5 +25,6 @@ class Comments
         'I was drunk',
         'Calm down MINER',
         'the attackers can go ----',
+        'salty',
     ];
 }
