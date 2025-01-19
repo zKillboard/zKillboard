@@ -115,6 +115,7 @@ function startWebSocket() {
 
 function htmlNotify (data) 
 {
+    if (tn === false) return;
     if("Notification" in window) {
         if (Notification.permission !== 'denied' && Notification.permission !== "granted") {
             Notification.requestPermission(function (permission) {
