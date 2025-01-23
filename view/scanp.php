@@ -14,7 +14,6 @@ try {
 
     $scan = @$_POST['scan'];
     if (strlen($scan) > 50000) exit();
-    Log::log("ScanAlyzer $scan");
     $scan = str_replace(",", "", $scan);
     $scan = str_replace("\\n", ",", $scan);
     $scan = str_replace("\n", ",", $scan);
@@ -22,6 +21,7 @@ try {
     $scan = str_replace("’", "'", $scan);
     $scan = str_replace('"', "", $scan);
     $scan = explode(',', $scan);
+    Log::log("ScanAlyzer: " . sizeof($scan));
 
     $chars = [];
     $corps = [];
