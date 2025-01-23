@@ -66,9 +66,9 @@
                 {% include 'components/text_ship.html' %}
           {% endif %}
 
-        {% if "padding" in kill.labels %}<a href='/kills/padding/'><small><font class="alert alert-warning" style='padding: 0px; margin: 0px;'>&nbsp;padding&nbsp;</font></small></a>
+        {% if "padding" in kill.labels %}<a href='/asearch/#{"buttons":["togglefilters","week","label-padding","sort-date","sort-desc","page1","victimsonly"]}'><small><font class="alert alert-warning" style='padding: 0px; margin: 0px;'>&nbsp;padding&nbsp;</font></small></a>
         {% elseif "atShip" in kill.labels %}<small><font class="alert alert-success" style='padding: 0px; margin: 0px;'>&nbsp;AT Ship&nbsp;</font></small>
-        {% elseif kill.ganked == true %}<a href='/kills/ganked/'><small><font class="alert alert-danger" style='padding: 0px; margin: 0px;'>&nbsp;GANKED&nbsp;</font></small></a>
+        {% elseif kill.ganked == true %}<a href='/asearch/#{"buttons":["togglefilters","week","label-ganked","sort-date","sort-desc","page1","victimsonly"]}'><small><font class="alert alert-danger" style='padding: 0px; margin: 0px;'>&nbsp;GANKED&nbsp;</font></small></a>
         {% elseif kill.solo == true %}<a href='/character/{{ kill.finalBlow.characterID }}/solo/'><small><font class="alert alert-success" style='padding: 0px; margin: 0px;'>&nbsp;SOLO&nbsp;</font></small></a>
         {% elseif kill.npc == true %} <small><font class="alert alert-info" style='padding: 0px; margin: 0px;'>&nbsp;NPC&nbsp;</font></small>
         {% elseif kill.attackerCount >= 1000 %} <small><font class="alert alert-danger" style='padding: 0px; margin: 0px;'>&nbsp;1000+&nbsp;</font></small> 
