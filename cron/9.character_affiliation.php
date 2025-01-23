@@ -50,7 +50,7 @@ while ($minute == date('Hi')) {
     }
 
     $url = "$esiServer/latest/characters/affiliation/";
-    $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
+    $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row, 'chars' => $fetch];
     $guzzler->call($url, "updateChar", "failChar", $params, [], 'POST_JSON', json_encode($fetch, true));
     $guzzler->finish();
     while ($t->stop() < 1000) usleep(100000);
@@ -64,29 +64,31 @@ function failChar(&$guzzler, &$params, &$connectionException)
     $code = $connectionException->getCode();
     $row = $params['row'];
     $id = $row['id'];
+    $chars = $params['chars'];
 
-    switch ($code) {
-        case 0: // timeout
-        case 500:
-        case 502: // ccp broke something...
-        case 503: // server error
-        case 504: // gateway timeout
-        case 200: // timeout...
-        case 400: // ccp up to something again
-            $guzzler->sleep(1);
-            $mdb->set("information", $row, ['lastAffUpdate' => $mdb->now(-23 * 3600)]); // try again in an hour
-            break;
-        case 404: // not deleting it...
-            Util::out("ERROR $id $code");
-            $mdb->set("information", $row, ['lastAffUpdate' => $mdb->now(86400 * 14)]);
-            $guzzler->sleep(1);
-            break;
-        case 420:
-            Util::out("ERROR $id $code");
-            $guzzler->finish();
-            exit();
-        default:
-            Util::out("/v5/characters/ affiliation failed for $id with code $code");
+    foreach ($chars as $char) {
+        $row = ['type' => 'characterID', 'id' => $char];
+        switch ($code) {
+            case 0: // timeout
+            case 500:
+            case 502: // ccp broke something...
+            case 503: // server error
+            case 504: // gateway timeout
+            case 200: // timeout...
+            case 400: // ccp up to something again
+                $mdb->set("information", $row, ['lastAffUpdate' => $mdb->now(rand(-86400, -40000))]);
+                break;
+            case 404: // not deleting it...
+                Util::out("ERROR $id $code");
+                $mdb->set("information", $row, ['lastAffUpdate' => $mdb->now(86400 * rand(14, 28))]);
+                break;
+            case 420:
+                Util::out("ERROR $id $code");
+                $guzzler->finish();
+                exit();
+            default:
+                Util::out("/v5/characters/ affiliation failed for $id with code $code");
+        }
     }
     $guzzler->sleep(1);
 }
