@@ -13,8 +13,9 @@ In short there are many sources for a killmail:
 * A corporation director or CEO has authorized zKillboard to retrieve their corporation&#39;s killmails.
 * War killmail (victim and final blow have a Concord sanctioned war with each other)
 * Monthly Economic Reports may contain additional kill dump information.
+* Any member of a corporation has access to the Neocom -&gt; Social -&gt; Corporation -&gt; Kill Reports interface.
 
-The killmail API works just like killmails do in game. The victim gets the killmail, and the person with the finalblow gets the killmail. Therefore, for zKillboard to be able to retrieve the killmail via API it must have the character or corporation API submitted for the victim or the person with the final blow. If an NPC gets the final blow, the last character to aggress to the victim will receive the killmail and credit for the final blow.
+The killmail API works just like killmails do in game. The victim gets the killmail, and the person with the finalblow gets the killmail. Therefore, for zKillboard to be able to retrieve the killmail via API it must have the character or corporation API submitted for the victim or the person with the final blow. If an NPC gets the final blow, the last character to aggress the victim will receive the killmail and credit for the final blow.
 
 Remember, every PVP killmail has two sides, the victim and the aggressors. Victims often don&#39;t want their killmails to be made public, however, the aggressors do. 
 
