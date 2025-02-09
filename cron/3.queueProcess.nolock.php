@@ -177,7 +177,7 @@ while ($minute == date('Hi')) {
         $zkb['totalValue'] = round((double) $totalValue, 2);
         $zkb['points'] = ($kill['npc'] == true) ? 1 : (int) Points::getKillPoints($killID);
         $kill['zkb'] = $zkb;
-        $kill['damage_taken'] = (int) @$mail['damage_taken'];
+        $kill['damage_taken'] = (int) @$mail['victim']['damage_taken'];
         if (!$isPaddedKill && !$kill['npc']) $kill['padcheck'] = true;
 
         saveMail($mdb, 'killmails', $kill);
