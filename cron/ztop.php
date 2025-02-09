@@ -65,14 +65,12 @@ while ($hour == date('H')) {
     addInfo("Visitors in last 5 minutes", $uniqueUsers->count());
     $apiR = new RedisTtlCounter('ttlc:apiRequests', 300);
     addInfo('API requests in last 5 minutes', $apiR->count());
-    //$visitors = new RedisTtlCounter('ttlc:visitors', 300);
-    //addInfo('Unique IPs in last 5 minutes', $visitors->count());
 
     addInfo('websocket connections', (int) $redis->get('zkb:websocketCount'));
 
     addInfo('Successful ESI calls in last 5 minutes', Status::getStatus('esi', true), false);
     addInfo('Failed ESI calls in last 5 minutes', Status::getStatus('esi', false), false);
-    addInfo('Successful SSO calls in last 5 minutes', Status::getStatus('sso', true), false);
+    addInfo('Successful SSO calls in last 5 minutes', Status::getStatus('esi', true), false);
     addInfo('Failed SSO calls in last 5 minutes', Status::getStatus('sso', false), false);
 
     $esiChars = new RedisTimeQueue("tqApiESI", 3600);
@@ -83,6 +81,11 @@ while ($hour == date('H')) {
     addInfo('Unique Character RefreshTokens', $esiChars->size(), false);
     addInfo('Corporation KillLogs to check', $esiCorps->pending(), false);
     addInfo('Unique Corporation RefreshTokens', $esiCorps->size(), false);
+
+    addInfo('', 0, false);
+    addInfo('access token avg request time in ms.', getRedisAvg('timer:sso', Status::getStatus('esi', true)), false);
+    addInfo('killmail characters avg request time in ms.', getRedisAvg('timer:characters', 1000), false);
+    addInfo('killmail corporations avg request time in ms.', getRedisAvg('timer:corporations', 100), false);
 
     $rtq = new RedisTimeQueue("zkb:characterID", 86400);
     addInfo('', 0, false);
@@ -206,4 +209,14 @@ function getLoad()
     $load = $split[0];
 
     return $load;
+}
+
+function getRedisAvg($list, $maxCount) {
+    global $redis;
+
+    while ($redis->llen($list) > $maxCount) $redis->lpop($list);
+    $list = $redis->lrange($list, 0, -1);
+    $sum = 0; $c = 0;
+    foreach ($list as $l) { $sum += $l; $c++; }
+    return ($c > 0 ? (round($sum / $c, 0)) : 0);
 }

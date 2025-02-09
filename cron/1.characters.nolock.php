@@ -43,15 +43,18 @@ while ($minute == date('Hi')) {
 
             $params = ['row' => $row, 'esi' => $esi];
             $refreshToken = $row['refreshToken'];
+            $timer = new Timer();
             $accessToken = $sso->getAccessToken($refreshToken);
+            $redis->rpush("timer:sso", round($timer->stop(), 0));
             if (is_array($accessToken) && @$accessToken['error'] == "invalid_grant") {
                 $mdb->remove("scopes", $row);
                 //sleep(1);
                 continue;
             }
 
+            $timer = new Timer();
             $killmails = $sso->doCall("$esiServer/v1/characters/$charID/killmails/recent/", [], $accessToken);
-            success(['row' => $row, 'esi' => $esi], $killmails);
+            success(['row' => $row, 'esi' => $esi, 'timer' => $timer], $killmails);
             $redis->setex("esi-fetched:$charID", 300, "true");
         } else {
             $esi->remove($charID);
@@ -68,6 +71,8 @@ function success($params, $content)
 
     $row = $params['row'];
     $esi = $params['esi'];
+    $timer = $params['timer'];
+    $redis->rpush("timer:characters", round($timer->stop(), 0));
 
     $newKills = 0;
     $kills = $content == "" ? [] : json_decode($content, true);

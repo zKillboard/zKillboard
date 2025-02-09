@@ -36,8 +36,10 @@ while ($minute == date('Hi')) {
         $refreshToken = $row['refreshToken'];
         $params = ['row' => $row, 'esi' => $esi, 'tokenTime' => time(), 'refreshToken' => $refreshToken, 'corpID' => $corpID];
 
+        $timer = new Timer();
         $refreshToken = $row['refreshToken'];
         $accessToken = $sso->getAccessToken($refreshToken);
+        $redis->rpush("timer:sso", round($timer->stop(), 0));
         if (is_array($accessToken) && @$accessToken['error'] == "invalid_grant") {
             Util::out("Removing invalid_grant row for corp km scope");
             $mdb->remove("scopes", $row);
@@ -45,8 +47,9 @@ while ($minute == date('Hi')) {
             continue;
         }
 
+        $timer = new Timer();
         $killmails = $sso->doCall("$esiServer/v1/corporations/$corpID/killmails/recent/", [], $accessToken);
-        success(['corpID' => $corpID, 'row' => $row, 'esi' => $esi], $killmails);
+        success(['corpID' => $corpID, 'row' => $row, 'esi' => $esi, 'timer' => $timer], $killmails);
         $redis->setex("esi-fetched:$corpID", 300, "true");
         usleep(100000);
     } else {
@@ -60,6 +63,8 @@ function success($params, $content)
 
     $row = $params['row'];
     $esi = $params['esi'];
+    $timer = $params['timer'];
+    $redis->rpush("timer:corporations", round($timer->stop(), 0));
 
     $newKills = 0;
     $kills = $content == "" ? [] : json_decode($content, true);
