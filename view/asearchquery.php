@@ -144,16 +144,16 @@ try {
     } else if ($queryType == "groups") {
         $app->contentType('text/html; charset=utf-8');
         $arr['top'] = [];
-        $rendered = $redis->get("htmlgroup:$key");
-        if ($rendered !== null && trim($rendered) !== "") {
+        $rendered = null; // $redis->get("htmlgroup:$key");
+        if (false && $rendered !== null && trim($rendered) !== "") {
             $redis->del($key);
             echo $rendered;
             return;
         }
         ob_start();
         if (in_array($groupType, $types)) {
-            $res = getTop($groupType . 'ID', $query, $victimsOnly);
-            $app->render("components/asearch_top_list.html", ['topSet' => ['type' => $groupType, 'title' => 'Top ' . Util::pluralize(ucwords($groupType)), 'values' => $res]]);
+            $res = getTop($groupType . 'ID', $query, $victimsOnly, false, true, $sortKey, $sortBy);
+            $app->render("components/asearch_top_list.html", ['topSet' => ['type' => $groupType, 'title' => 'Top ' . Util::pluralize(ucwords($groupType)), 'values' => $res, 'sortKey' => $sortKey, 'sortBy' => $sortBy]]);
         }
         $rendered = ob_get_clean();
         echo $rendered;
@@ -235,7 +235,7 @@ function parseDate($query, $which) {
 }
 
 
-function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $addInfo = true)
+function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride, $addInfo, $sortKey, $sortBy)
 {
     global $mdb, $longQueryMS, $redis;
 
@@ -267,10 +267,18 @@ function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $a
         }
         if ($victimsOnly != "null") $pipeline[] = ['$match' => ['involved.isVictim' => ($victimsOnly == "true" ? true : false)]];
         $pipeline[] = ['$match' => [$keyField => ['$ne' => null]]];
-        //$pipeline[] = ['$match' => $andQuery];
-        $pipeline[] = ['$group' => ['_id' => ['killID' => '$killID', $groupByColumn => '$'.$keyField]]];
-        $pipeline[] = ['$group' => ['_id' => '$_id.'.$groupByColumn, 'kills' => ['$sum' => 1]]];
-        $pipeline[] = ['$sort' => ['kills' => -1]];
+        $pipeline[] = ['$group' => ['_id' => ['killID' => '$killID', $groupByColumn => '$'.$keyField, 'totalValue' => '$zkb.totalValue', 'involved' => '$attackerCount', 'damage' => '$damage_taken']]];
+
+        if ($sortKey == "damage_taken") {
+            $pipeline[] = ['$group' => ['_id' => '$_id.'. $groupByColumn, 'kills' => ['$sum' => '$_id.damage']]];
+        } else if ($sortKey == "attackerCount") {
+            $pipeline[] = ['$group' => ['_id' => '$_id.'. $groupByColumn, 'kills' => ['$avg' => '$_id.involved']]];
+        } else if ($sortKey == "zkb.totalValue") {
+            $pipeline[] = ['$group' => ['_id' => '$_id.'. $groupByColumn, 'kills' => ['$sum' => '$_id.totalValue']]];
+        } else {
+            $pipeline[] = ['$group' => ['_id' => '$_id.'.$groupByColumn, 'kills' => ['$sum' => 1]]];
+        }
+        $pipeline[] = ['$sort' => ['kills' => $sortBy]];
         $pipeline[] = ['$limit' => 100];
         $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
 
