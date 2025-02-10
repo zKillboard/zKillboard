@@ -208,6 +208,8 @@ if ( $typeID == 42124 ) Log::log(print_r($priceList, true));
                 return 2500000000000; // 2.5t
             case 47514: // 'Horizon' Fortizar
                 return 60000000000; // Too much market bugginess, hardcoding price
+            case 42242: // Dagon
+                return 60000000000; // 60B
         }
 
         // Some groupIDs have prices based on their group
