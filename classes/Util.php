@@ -511,14 +511,30 @@ class Util
         $y = $position['y'];
         $z = $position['z'];
 
+        $celestial = $mdb->findDoc("celestials", ['CelestialID' => $locationID]);
+        $r = (int) @$celestial['Radius'];
+
         $row = $mdb->findDoc("locations", ['id' => $solarSystemID]);
-        if ($row == null || !isset($row['locations'])) return 0;
-        foreach ($row['locations'] as $location) {
-            if ($location['itemid'] != $locationID) continue;
-            return sqrt(pow($location['x'] - $x, 2) + pow($location['y'] - $y, 2) + pow($location['z'] - $z, 2));
+        $lD = 0;
+        if (!($row == null || !isset($row['locations']))) {
+            foreach ($row['locations'] as $location) {
+                if ($location['itemid'] != $locationID) continue;
+                $lD = sqrt(pow($location['x'] - $x, 2) + pow($location['y'] - $y, 2) + pow($location['z'] - $z, 2));
+                $lD = max(0, $lD - $r);
+                if ($lD <= 0) return 0;
+            }
         }
 
-        return 0;
+        $cD = 0;
+        if (@$celestial['WarpX'] !== null) {
+            $d = sqrt(pow($celestial['WarpX'] - $x, 2) + pow($celestial['WarpY'] - $y, 2) + pow($celestial['WarpZ'] - $z, 2));
+            $cD = max(0, $d);
+            if ($cD <= 0) return 0;
+        }
+
+        if ($cD > 0 && $lD > 0) return min($cD, $lD);
+        if ($cD > 0) return $cD;
+        return $lD;
     }
 
     public static function getAuDistance($position, $locationID, $solarSystemID = 0)
