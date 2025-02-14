@@ -9,7 +9,7 @@ class RelatedReport {
         global $mdb, $redis;
 
         if ($time % 100 != 0 && $app != null) {
-            return $app->redirect("/related/$system/" . substr($time, 0, strlen("$time") - 2) . "00/");
+            $app->redirect("/related/$system/" . substr($time, 0, strlen("$time") - 2) . "00/"); exit();
         } else if ($time % 100 != 0 && $app == null) { throw new \InvalidArgumentException("Minutes must be 00"); }
 
         $systemID = (int) $system;
@@ -18,11 +18,13 @@ class RelatedReport {
 
         if ($redis->get("zkb:reinforced") == true) {
             header('HTTP/1.1 202 Request being processed');
-            return $app->render('related_reinforced.html', ['showAds' => false]);
+            $app->render('related_reinforced.html', ['showAds' => false]);
+            exit();
         }
         if ($redis->llen("queueRelated") > 25) {
             header('HTTP/1.1 202 Request being processed');
-            return $app->render('related_notnow.html', ['showAds' => false, 'solarSystemID' => $systemID, 'unixtime' => $unixTime]);
+            $app->render('related_notnow.html', ['showAds' => false, 'solarSystemID' => $systemID, 'unixtime' => $unixTime]);
+            exit();
         }
 
         $json_options = json_decode($options, true);
@@ -63,7 +65,8 @@ class RelatedReport {
         if ($redirect) {
             $json = urlencode(json_encode($json_options));
             $url = "/related/$systemID/$relatedTime/o/$json/";
-            return $app->redirect($url, 302);
+            $app->redirect($url, 302);
+            exit();
         }
 
         $systemInfo = $mdb->findDoc('information', ['cacheTime' => 3600, 'type' => 'solarSystemID', 'id' => $systemID]);
@@ -100,7 +103,8 @@ class RelatedReport {
             if ($sleeps > 100) {
                 if ($app === null) return [];
                 header('HTTP/1.1 202 Request being processed');
-                return $app->render('related_wait.html', ['showAds' => false]);
+                $app->render('related_wait.html', ['showAds' => false]);
+                exit();
             }
         }
 
