@@ -40,6 +40,10 @@ foreach ($iter as $row) {
     $id = $row['id'];
 
     if (@$row['shipsDestroyedSolo'] < 100) continue;
+    if ($type == 'characterID' || $type == 'corporationID' || $type == 'allianceID') {
+        $dqed = $mdb->findField("information", "disqualified", ['type' => $type, 'id' => $id]);
+        if ($dqed === true) continue;
+    }
 
     $types[$type] = true;
     $key = "tq:ranks:alltime:solo:$type:$today";

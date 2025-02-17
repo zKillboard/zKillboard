@@ -144,7 +144,7 @@ try {
     } else if ($queryType == "groups") {
         $app->contentType('text/html; charset=utf-8');
         $arr['top'] = [];
-        $rendered = null; // $redis->get("htmlgroup:$key");
+        $rendered = $redis->get("htmlgroup:$key");
         if (false && $rendered !== null && trim($rendered) !== "") {
             $redis->del($key);
             echo $rendered;
@@ -279,7 +279,7 @@ function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride, $addInfo, 
             $pipeline[] = ['$group' => ['_id' => '$_id.'.$groupByColumn, 'kills' => ['$sum' => 1]]];
         }
         $pipeline[] = ['$sort' => ['kills' => $sortBy]];
-        $pipeline[] = ['$limit' => 100];
+        $pipeline[] = ['$limit' => 150];
         $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
 
         $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'maxTimeMS' => 25000]);
@@ -290,6 +290,8 @@ function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride, $addInfo, 
             global $uri;
             Log::log("getTop Long query (${time}ms): $hashKey $uri");
         }
+
+        $result = Util::removeDQed($result, $groupByColumn, 100);
 
         if ($addInfo) Info::addInfo($result);
 

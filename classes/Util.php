@@ -626,10 +626,26 @@ class Util
         return array('usd' => $totalprice / $usdVal, 'eur' => $totalprice / $eurVal, 'gbp' => $totalprice / $gbpVal);
     }
 
-    public static function statsBoxUpdate($type, $id) {
+    public static function statsBoxUpdate($type, $id) 
+    {
         global $redis;
 
         $s = serialize(['type' => $type, 'id' => $id]);
         $redis->sadd("queueStatsUpdated", $s);
+    }
+
+    public static function removeDQed($result, $groupByColumn, $limit)
+    {
+        global $mdb;
+
+        $res = [];
+        foreach($result as $resrow) {
+            if ($groupByColumn == 'characterID' || $groupByColumn == 'corporationID' || $groupByColumn == 'allianceID') {
+                $dq = $mdb->findField("information", "disqualified", ['type' => $groupByColumn, 'id' => $resrow[$groupByColumn], 'cacheTime' => 86400]);
+                if ($dq !== true) $res[] = $resrow;
+            } else $res[] = $resrow;
+            if (sizeof($res) >= $limit) break;
+        }
+        return $res;
     }
 }

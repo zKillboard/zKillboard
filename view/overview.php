@@ -58,7 +58,7 @@ try {
     return $app->notFound();
 }
 
-$information = $mdb->findDoc('information', ['type' => $key, 'id' => $id]);
+$information = $mdb->findDoc('information', ['type' => "${key}ID", 'id' => (int) $id]);
 $redis->setex("zkb:overview:$key:$id", 9600, "true");
 $redis->setex("zkb:overview:${key}ID:$id", 9600, "true");
 if ($key != "label") $id = (int) $id;
@@ -310,7 +310,7 @@ $statistics['iskDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:all
 $statistics['iskLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:iskLost", $id));
 $statistics['pointsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:pointsDestroyed", $id));
 $statistics['pointsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:pointsLost", $id));
-$statistics['overallRank'] = Util::rankCheck($redis->zRank("tq:ranks:alltime:$statType", $id));
+$statistics['overallRank'] = (int) Util::rankCheck($redis->zRank("tq:ranks:alltime:$statType", $id));
 
 $statistics['iskDestroyedUsdEurGbp'] = Util::iskToUsdEurGbp($statistics['iskDestroyed']??0);
 $statistics['iskLostUsdEurGbp'] = Util::iskToUsdEurGbp($statistics['iskLost']??0);
@@ -373,7 +373,7 @@ $statistics['recentPointsDestroyed'] = $redis->zScore("tq:ranks:recent:$statType
 $statistics['recentPointsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:pointsDestroyed", $id));
 $statistics['recentPointsLost'] = $redis->zScore("tq:ranks:recent:$statType:pointsLost", $id);
 $statistics['recentPointsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:pointsLost", $id));
-$statistics['recentOverallRank'] = Util::rankCheck($redis->zRank("tq:ranks:recent:$statType", $id));
+$statistics['recentOverallRank'] = (int) Util::rankCheck($redis->zRank("tq:ranks:recent:$statType", $id));
 
 if (@$statistics['recentShipsLost'] > 0 || @$statistics['recentShipsDestroyed'] > 0) {
     $destroyed = @$statistics['recentShipsDestroyed'] + @$statistics['recentPointsDestroyed'];
@@ -406,7 +406,7 @@ $statistics['weeklyPointsDestroyed'] = $redis->zScore("tq:ranks:weekly:$statType
 $statistics['weeklyPointsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:pointsDestroyed", $id));
 $statistics['weeklyPointsLost'] = $redis->zScore("tq:ranks:weekly:$statType:pointsLost", $id);
 $statistics['weeklyPointsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:pointsLost", $id));
-$statistics['weeklyOverallRank'] = Util::rankCheck($redis->zRank("tq:ranks:weekly:$statType", $id));
+$statistics['weeklyOverallRank'] = (int) Util::rankCheck($redis->zRank("tq:ranks:weekly:$statType", $id));
 
 if (@$statistics['weeklyShipsLost'] > 0 || @$statistics['weeklyShipsDestroyed'] > 0) {
     $destroyed = @$statistics['weeklyShipsDestroyed']  + @$statistics['weeklyPointsDestroyed'];
@@ -527,7 +527,7 @@ $soloKills = addVics($vics, $soloKills);
 
 if ($key == 'label') $kills = [];
 
-$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'information' => $information);
+$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => ((int) @$information['disqualified']));
 
 $app->render('overview.html', $renderParams);
 

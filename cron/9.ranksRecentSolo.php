@@ -36,6 +36,12 @@ foreach ($iter as $row) {
             $types[$type] = true;
             $key = "tq:ranks:recent:solo:$type:$today";
 
+            if ($type == 'characterID' || $type == 'corporationID' || $type == 'allianceID') {
+                $dqed = $mdb->findField("information", "disqualified", ['type' => $type, 'id' => $id]);
+                if ($dqed === true) continue;
+            }
+
+
             $recentKills = getRecent($type, $id, false);
             $recentLosses = getRecent($type, $id, true);
             if ($recentKills + $recentLosses == 0) continue;

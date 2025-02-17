@@ -35,6 +35,14 @@ function calcTop($row)
         return;
     }
 
+    $dqed = $mdb->findField('information', 'disqualified', ['type' => $row['type'], 'id' => $row['id']]);
+    if ($dqed) {
+        $mdb->set('statistics', ['_id' => $row['_id']], ['topAllTime' => [], 'topIskKills' => [], 'allTimeSum' => 0, 'nextTopRecalc' => 0, 'calcAlltime' => false]);
+        $mdb->removeField('statistics', $row, 'calcAlltime');
+        return;
+    }
+
+
     $currentSum = (int) @$row['shipsDestroyed'];
 
     $parameters = [$row['type'] => $row['id']];

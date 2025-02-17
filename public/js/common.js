@@ -587,8 +587,11 @@ function doFormats() {
 
 function doFieldUpdate(f, v) {
     if (f.attr('raw') == '' || f.attr('raw') == undefined) return;
-    if (f.text() == String(v)) return;
     if (v == 'NaN') v = '';
+    if (v == 0 || v == '0') v = '-';
+
+    if (f.text() == String(v)) return;
+
     let o = $(f).attr('flash') == undefined ? 1 : 0;
     f.animate({opacity: o}, 100, function() {
             $(this).text(v).animate({opacity: 1}, 100);

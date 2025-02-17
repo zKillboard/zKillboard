@@ -38,6 +38,7 @@ class Stats
         }
 
         if (!isset($parameters['limit'])) $parameters['limit'] = 10;
+        $parameters['limit'] = $parameters['limit'] * 5;
 
         if (isset($parameters['pastSeconds']) && $parameters['pastSeconds'] <= 604800) {
             $killmails = $mdb->getCollection('oneWeek');
@@ -49,9 +50,6 @@ class Stats
         }
 
         $query = MongoFilter::buildQuery($parameters);
-        /*if ($mdb->findOne('killmails', $query) === null) {
-            return [];
-        }*/
         $andQuery = MongoFilter::buildQuery($parameters, false);
 
         if ($groupByColumn == 'solarSystemID' || $groupByColumn == 'regionID') {
@@ -108,6 +106,8 @@ class Stats
             global $uri;
             // Log::log("getTop Long query (${time}ms): $hashKey $uri");
         }
+
+        $result = Util::removeDQed($result, $groupByColumn, $parameters['limit'] / 5);
 
         if ($addInfo) Info::addInfo($result);
         RedisCache::set($hashKey, $result, isset($parameters['cacheTime']) ? $parameters['cacheTime'] : 900);
