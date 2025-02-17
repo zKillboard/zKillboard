@@ -31,7 +31,7 @@ while ($minute == date('Hi')) {
 
     $hash = $killmail['zkb']['hash'];
     if (!$mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash])) {
-        $mdb->save('crestmails', ['killID' => $killID, 'hash' => $hash, 'processed' => false]);
+        $mdb->save('crestmails', ['killID' => $killID, 'hash' => $hash, 'processed' => false, 'RedisQ']);
     }
 }
 

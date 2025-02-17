@@ -2,18 +2,19 @@
 
 class Killmail
 {
-    public static function addMail($killID, $hash) 
+    public static function addMail($killID, $hash, $source = 'Killmail::add') 
     {
         global $mdb, $redis;
 
         $kmKey = "killmailChecked:$killID:$hash";
 
         if ($redis->get($kmKey) == "true") return 0;
+        if (strlen($hash) != 40) return (int) Log::log("Invalid Killmail::addMail $killID $hash");
 
         $exists = $mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash]);
         if (!$exists) {
             try {
-                $mdb->save('crestmails', ['killID' => $killID, 'hash' => $hash, 'processed' => false]);
+                $mdb->save('crestmails', ['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => $source]);
                 $redis->setex($kmKey, 80000 + rand(1,9600), "true");
                 return 1;
             } catch (Exception $ex) {

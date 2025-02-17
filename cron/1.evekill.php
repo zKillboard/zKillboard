@@ -9,11 +9,14 @@ $json = json_decode($raw, true);
 $count = 0;
 foreach (array_keys($json) as $id) {
     $hash = $json[$id];
+    $id = (int) $id;
+    if ($id <= 0) continue;
+    if (strlen($hash) != 40) continue;
 
     $row = $mdb->findDoc("crestmails", ['killID' => $id, 'hash' => $hash]);
     if ($row == null) {
         $count++;
-        $mdb->insert("crestmails", ['killID' => $id, 'hash' => $hash, 'processed' => true]);
+        $mdb->insert("crestmails", ['killID' => $id, 'hash' => $hash, 'processed' => false, 'source' => 'eve-kill']);
     }
 }
 if ($count > 0) Util::out("Adding $count kill(s) from evekill");

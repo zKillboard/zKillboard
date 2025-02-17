@@ -21,6 +21,13 @@ while ($minute == date("Hi")) {
     foreach ($rows as $row) {
         $killID = $row['killID'];
         $hash = $row['hash'];
+    
+        if (strlen($hash) != 40) {
+            // Invalid hash, wtf
+            Util::out("removing invalid hash $killID $hash " . @$row['source']);
+            $mdb->remove('crestmails', ['killID' => $killID, 'hash' => $hash]);
+            continue;
+        }
 
         $raw = Kills::getEsiKill($killID);
         if ($raw != null) {

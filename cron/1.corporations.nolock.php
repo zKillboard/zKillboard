@@ -81,7 +81,7 @@ function success($params, $content)
         $killID = $kill['killmail_id'];
         $hash = $kill['killmail_hash'];
 
-        $newKills += Killmail::addMail($killID, $hash);
+        $newKills += Killmail::addMail($killID, $hash, '1.corporation');
     }
 
     $charID = $row['characterID'];

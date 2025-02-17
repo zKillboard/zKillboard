@@ -29,7 +29,7 @@ if ($_POST) {
                 $hash = (string) $exploded[5];
                 $exists = $mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash]);
                 if (!$exists) {
-                    $in = ['killID' => $killID, 'hash' => $hash, 'processed' => false];
+                    $in = ['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => 'postmail.php'];
                     $mdb->getCollection('crestmails')->save($in);
                     $newCrest = true;
                 }

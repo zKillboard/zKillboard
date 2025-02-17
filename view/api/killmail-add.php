@@ -6,6 +6,7 @@ global $mdb, $redis, $ip;
 // Basic verification
 if ((int) $killID <= 0 || strlen($hash) != 40) return invalidRequest("Malformed id or hash");
 $killID = (int) $killID;
+Log::log("api mail add $killID $hash");
 
 // do we trust the poster?
 if (((int) $redis->get("km:post:$ip")) > 5) {
@@ -17,7 +18,7 @@ if (((int) $redis->get("km:post:$ip")) > 5) {
 // do we have the mail?
 if ($mdb->findDoc('killmails', ['killID' => $killID]) == null) {
     try {
-        $mdb->insert("crestmails", ['killID' => $killID, 'hash' => $hash, 'processed' => false]);
+        $mdb->insert("crestmails", ['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => 'killmail-api-add']);
     } catch (Exception $ex) {
         Log::log(print_r($ex, true));
     }
