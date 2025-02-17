@@ -8,5 +8,5 @@ try {
     if (is_array($mc)) $app->render('related.html', $mc);
     else $app->render('related_wait.html', ['showAds' => false]);
 } catch (Exception $ex) {
-    Log::log("Related error: " . is_null($mc) . " " . print_r($mc, true));
+    return $app->render('related_wait.html', ['showAds' => false]);
 }
