@@ -583,12 +583,12 @@ function doFormats() {
     $("[format='format-dec2-once-i']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(t.attr('raw')).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2} ) + ' ISK'); t.removeAttr('format'); });
     $("[format='format-isk-once']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(t.attr('raw')))); t.removeAttr('format'); });
     $("[format='format-isk-once-i']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(t.attr('raw'))) + ' ISK'); t.removeAttr('format'); });
+    $("#statsbox td[raw='-']").text('-');
 }
 
 function doFieldUpdate(f, v) {
-    if (f.attr('raw') == '' || f.attr('raw') == undefined) return;
+    if (f.attr('raw') == '' || f.attr('raw') == '-' || f.attr('raw') == undefined) return;
     if (v == 'NaN') v = '';
-    if (v == 0 || v == '0') v = '-';
 
     if (f.text() == String(v)) return;
 
