@@ -70,7 +70,7 @@ while ($hour == date('H')) {
 
     addInfo('Successful ESI calls in last 5 minutes', Status::getStatus('esi', true), false);
     addInfo('Failed ESI calls in last 5 minutes', Status::getStatus('esi', false), false);
-    addInfo('Successful SSO calls in last 5 minutes', Status::getStatus('esi', true), false);
+    addInfo('Successful SSO calls in last 5 minutes', Status::getStatus('sso', true), false);
     addInfo('Failed SSO calls in last 5 minutes', Status::getStatus('sso', false), false);
 
     $esiChars = new RedisTimeQueue("tqApiESI", 3600);
