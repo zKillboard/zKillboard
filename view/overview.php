@@ -58,7 +58,9 @@ try {
     return $app->notFound();
 }
 
-$information = $mdb->findDoc('information', ['type' => "${key}ID", 'id' => (int) $id]);
+$information = $mdb->findDoc('information', ['type' => "${key}ID", 'id' => (int) $id, 'cacheTime' => 3600]);
+$disqualified = ((int) @$information['disqualified']);
+
 $redis->setex("zkb:overview:$key:$id", 9600, "true");
 $redis->setex("zkb:overview:${key}ID:$id", 9600, "true");
 if ($key != "label") $id = (int) $id;
@@ -115,12 +117,11 @@ if ($key == 'character') {
 
 $validAllTimePages = array('character', 'corporation', 'alliance', 'faction');
 $nextTopRecalc = 0;
-$topLists = array();
-$topKills = array();
-if ($pageType == 'top' || $pageType == 'topalltime') {
+$topLists = [];
+$topKills = [];
+if ($disqualified == 0 && ($pageType == 'top' || $pageType == 'topalltime')) {
     $topParameters = $parameters; 
     $topParameters['limit'] = 100;
-    //$topParameters['labels'] = 'pvp';
     $topParameters['npc'] = false;
     $topParameters['cacheTime'] = 86400;
 
@@ -151,9 +152,9 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
             $topParameters['kills'] = true;
         }
 
-        $topLists[] = array('type' => 'character', 'data' => Stats::getTop('characterID', $topParameters));
-        $topLists[] = array('type' => 'corporation', 'data' => Stats::getTop('corporationID', $topParameters));
-        $topLists[] = array('type' => 'alliance', 'data' => Stats::getTop('allianceID', $topParameters));
+        if ($disqualified == 0) $topLists[] = array('type' => 'character', 'data' => Stats::getTop('characterID', $topParameters));
+        if ($disqualified == 0) $topLists[] = array('type' => 'corporation', 'data' => Stats::getTop('corporationID', $topParameters));
+        if ($disqualified == 0) $topLists[] = array('type' => 'alliance', 'data' => Stats::getTop('allianceID', $topParameters));
         $topLists[] = array('type' => 'ship', 'data' => Stats::getTop('shipTypeID', $topParameters));
         $topLists[] = array('type' => 'system', 'data' => Stats::getTop('solarSystemID', $topParameters));
         $topLists[] = array('type' => 'location', 'data' => Stats::getTop('locationID', $topParameters));
@@ -168,26 +169,6 @@ if ($pageType == 'top' || $pageType == 'topalltime') {
         $p['limit'] = 6;
         $topKills = Stats::getTopIsk($p);
     }
-} else if ($page < 2) {
-    $p = $parameters;
-    $numDays = 7;
-    $p['limit'] = 10;
-    $p['pastSeconds'] = $numDays * 86400;
-    $p['kills'] = $pageType != 'losses';
-    //$p['labels'] = 'pvp';
-    if ($key != "label") $p['npc'] = false;
-
-    /*
-    $topLists[] = Info::doMakeCommon('Top Characters', 'characterID', Stats::getTop('characterID', $p));
-    $topLists[] = Info::doMakeCommon('Top Corporations', 'corporationID', Stats::getTop('corporationID', $p));
-    $topLists[] = Info::doMakeCommon('Top Alliances', 'allianceID', Stats::getTop('allianceID', $p));
-    $topLists[] = Info::doMakeCommon('Top Ships', 'shipTypeID', Stats::getTop('shipTypeID', $p));
-    $topLists[] = Info::doMakeCommon('Top Systems', 'solarSystemID', Stats::getTop('solarSystemID', $p));
-    $topLists[] = Info::doMakeCommon('Top Locations', 'locationID', Stats::getTop('locationID', $p));
-    */
-
-    $p['limit'] = 6;
-    $topKills = []; // Stats::getTopIsk($p);
 }
 
 $activity = ['max' => 0];
@@ -286,15 +267,14 @@ $statistics = $mdb->findDoc('statistics', ['type' => $statType, 'id' => $id]);
 
 if ($key == 'corporation' || $key == 'alliance' || $key == 'faction') {
     $extra['hasSupers'] = @$statistics['hasSupers'];
-    if ($pageType == 'supers') {
+    if ($disqualified == 0 && $pageType == 'supers') {
         $extra['supers'] = @$statistics['supers'];
         Info::addInfo($extra['supers']);
     }
 }
 
-if ($key == 'character' && $pageType == 'trophies') {
-    /*if (isset($statistics['trophies'])) $extra['trophies'] = $statistics['trophies'];
-    else*/ $extra['trophies'] = Trophies::getTrophies($id);
+if ($key == 'character' && $pageType == 'trophies' && $disqualified == 0) {
+    $extra['trophies'] = Trophies::getTrophies($id);
 }
 
 if ($pageType == 'ranks') {
@@ -527,7 +507,7 @@ $soloKills = addVics($vics, $soloKills);
 
 if ($key == 'label') $kills = [];
 
-$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => ((int) @$information['disqualified']));
+$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified);
 
 $app->render('overview.html', $renderParams);
 

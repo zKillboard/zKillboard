@@ -12,6 +12,14 @@ try {
     if ("$id" != "$oID") throw new Exception("$oID is not a valid parameter");
     if ("$bid" != "$id") throw new Exception("$bid is not a valid parameter");
 
+    $information = $mdb->findDoc('information', ['type' => $type, 'id' => (int) $id, 'cacheTime' => 3600]);
+    $disqualified = ((int) @$information['disqualified']);
+    if ($disqualified != 0) {
+        $app->contentType('application/json; charset=utf-8');
+        echo json_encode(['error' => 'entity is disqualified']);
+        return;
+    }
+
     $array = $mdb->findDoc('statistics', ['type' => $type, 'id' => $id]);
     unset($array['_id']);
     unset($array['trophies']);
@@ -36,7 +44,6 @@ try {
     $topLists[] = Info::doMakeCommon('Top Locations', 'locationID', Stats::getTop('locationID', $p));
 
     $p['limit'] = 6;
-    //$p['categoryID'] = 6;
     $array['topLists'] = $topLists;
     $array['topIskKillIDs'] = array_keys(Stats::getTopIsk($p));
 

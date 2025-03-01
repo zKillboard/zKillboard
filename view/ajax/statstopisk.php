@@ -19,8 +19,18 @@ $kea = getKillID($uri, $q, -1, $epoch);
 
 if ($bypass || "$ks" != "$ksa" || "$ke" != "$kea") return $app->redirect("/cache/1hour/statstopisk/?u=$uri&ks=$ksa&ke=$kea");
 
+$disqualified = 0;
+foreach ($p as $type => $val) {
+    if ($type == 'characterID' || $type == 'corporationID' || $type == 'allianceID') {
+        foreach ($val as $id) {
+            $information = $mdb->findDoc('information', ['type' => $type, 'id' => (int) $id, 'cacheTime' => 3600]);
+            $disqualified += ((int) @$information['disqualified']);
+        }        
+    }
+}
+
 $ret = [];
-if ($ksa > 0 && strpos($uri, "/page/") === false) {
+if ($ksa > 0 && strpos($uri, "/page/") === false && $disqualified == 0) {
     $p['limit'] = 10;
     $p['pastSeconds'] = 604800;
     $p['kills'] = (strpos($uri, "/losses/") === false);
