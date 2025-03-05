@@ -46,13 +46,13 @@ while (date('Hi') == $minute) {
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, "pass=$redisQAuthPass&package=" . urlencode(json_encode($package, JSON_UNESCAPED_SLASHES)));
 
-    $result = json_decode(curl_exec($ch), true);
+   $result = json_decode(curl_exec($ch), true);
     if ($result == NULL || @$result['success'] != true) {
-        Util::out("Failed to send to redisq: " . $killID);
+        Util::out("Failed to send to redisq: " . $killID . " ($result)");
         $queueRedisQ->push($killID);
-        sleep(1);
+        sleep(3);
     } else {
         $queuePublish->push($killID);
     }
-    //sleep(1);
+    sleep(1);
 }
