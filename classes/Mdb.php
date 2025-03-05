@@ -111,7 +111,7 @@ class Mdb
         }
     }
 
-    public function removeField($collection, $key, $value)
+    public function removeField($collection, $key, $value, $multi = false)
     {
         $key = isset($key['_id']) ? ['_id' => $key['_id']] : $key;
 
@@ -119,7 +119,7 @@ class Mdb
         try {
             sem_acquire($sem);
 
-            return $this->getCollection($collection)->update($key, ['$unset' => [$value => 1]]);
+            return $this->getCollection($collection)->update($key, ['$unset' => [$value => 1]], ['multiple' => $multi]);
         } finally {
             sem_release($sem);
         }
