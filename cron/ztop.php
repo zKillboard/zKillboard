@@ -25,6 +25,7 @@ while ($hour == date('H')) {
     }
 
     $queues = $redis->sMembers('queues');
+    $queues[] = "queueRelatedSet";
     foreach ($queues as $queue) {
         $redisQueues[$queue] = true;
     }
@@ -33,7 +34,7 @@ while ($hour == date('H')) {
     foreach ($redisQueues as $queue => $v) {
         if ($queue == 'queueStats') addInfo('queueStats', $redis->scard('queueStatsSet'));
         else if ($queue == 'queueStatsUpdated') addInfo('queueStatsUpdated', $redis->scard('queueStatsUpdated'));
-        else if ($queue == 'queueRelated') addInfo('queueRelated', $redis->scard('queueRelatedSet'));
+        else if ($queue == 'queueRelatedSet') addInfo('queueRelated', $redis->scard('queueRelatedSet'));
         else addInfo($queue, $redis->lLen($queue));
     }
 
