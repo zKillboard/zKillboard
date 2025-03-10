@@ -199,7 +199,8 @@ class Related
 
         return array(
                 'total_price' => $totalPrice, 'groupIDs' => $groupIDs, 'totalShips' => $totalShips,
-                'total_points' => $totalPoints, 'total_dropped' => $totalDropped
+                'total_points' => $totalPoints, 'total_dropped' => $totalDropped,
+                'total_price_conv' => Util::iskToUsdEurGbp($totalPrice), 'total_dropped_conv' => Util::iskToUsdEurGbp($totalDropped)
                 );
     }
 
