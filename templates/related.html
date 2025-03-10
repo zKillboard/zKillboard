@@ -9,10 +9,14 @@
 
 {% set teamATotal = summary.teamA.totals.total_price %}
 {% set teamBTotal = summary.teamB.totals.total_price %}
+{% set teamATotalConv = summary.teamA.totals.total_price_conv  %}
+{% set teamBTotalConv = summary.teamB.totals.total_price_conv  %}
 {% set total = teamATotal + teamBTotal %}
 
 {% set teamATotalDropped = summary.teamA.totals.total_dropped %}
 {% set teamBTotalDropped = summary.teamB.totals.total_dropped %}
+{% set teamADroppedConv = summary.teamA.totals.total_dropped_conv  %}
+{% set teamBDroppedConv = summary.teamB.totals.total_dropped_conv  %}
 
 {% set teamAPoints = summary.teamA.totals.total_points %}
 {% set teamBPoints = summary.teamB.totals.total_points %}
@@ -61,12 +65,12 @@
 		<td>Points Lost: <div class="pull-right"><strong>{{ teamBPoints | number_format(0)}}</strong></div></td>
 	</tr>
 	<tr>
-		<td>ISK Lost: <div class="pull-right"><strong>{{ teamATotal | number_format(2)}}</strong></div></td>
-		<td>ISK Lost: <div class="pull-right"><strong>{{ teamBTotal | number_format(2)}}</strong></div></td>
+		<td rel="tooltip" title="&#36;{{ teamATotalConv.usd|number_format(2, '.', ',') }} / {{ teamATotalConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamATotalConv.gbp|number_format(2, '.', ',') }}">ISK Lost: <div class="pull-right"><strong>{{ teamATotal | number_format(2)}}</strong></div></td>
+		<td rel="tooltip" title="&#36;{{ teamBTotalConv.usd|number_format(2, '.', ',') }} / {{ teamBTotalConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamBTotalConv.gbp|number_format(2, '.', ',') }}">ISK Lost: <div class="pull-right"><strong>{{ teamBTotal | number_format(2)}}</strong></div></td>
 	</tr>
 	<tr>
-		<td>Loot Dropped: <div class="pull-right"><strong>{{ teamATotalDropped | number_format(2)}}</strong></div></td>
-		<td>Loot Dropped: <div class="pull-right"><strong>{{ teamBTotalDropped | number_format(2)}}</strong></div></td>
+		<td rel="tooltip" title="&#36;{{ teamADroppedConv.usd|number_format(2, '.', ',') }} / {{ teamADroppedConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamADroppedConv.gbp|number_format(2, '.', ',') }}">Loot Dropped: <div class="pull-right"><strong>{{ teamATotalDropped | number_format(2)}}</strong></div></td>
+		<td rel="tooltip" title="&#36;{{ teamBDroppedConv.usd|number_format(2, '.', ',') }} / {{ teamBDroppedConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamBDroppedConv.gbp|number_format(2, '.', ',') }}">Loot Dropped: <div class="pull-right"><strong>{{ teamBTotalDropped | number_format(2)}}</strong></div></td>
 	</tr>
 	<tr>
 		<td>Efficiency: <div class="pull-right"><strong>{{ teamAEff | number_format(1)}} %</strong></div></td>
