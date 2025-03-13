@@ -79,13 +79,13 @@
 		<th>Damage:</th>
 		<td format="format-int-once" raw="{{ killdata.info.damage }}">{{ killdata.info.damage|number_format(0) }}</td>
 	</tr>
-    <tr rel="tooltip" title="&#36;{{ extra.destroyedisk.usd|number_format(2, '.', ',') }} / {{ extra.destroyedisk.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.destroyedisk.gbp|number_format(2, '.', ',') }}">
+    <tr rel="tooltip" title="&#36;{{ extra.destroyedprice.usd|number_format(2, '.', ',') }} / {{ extra.destroyedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.destroyedprice.gbp|number_format(2, '.', ',') }}">
         <th>Destroyed:</th>
         <td class="item_destroyed"><span format="format-dec2-once-i" raw="{{ extra.destroyedisk }}">{{ extra.destroyedisk | number_format(2, '.', ',') }} ISK</span><span style='color: white;'></td>
     </tr>
-	<tr rel="tooltip" title="&#36;{{ extra.destroyedprice.usd|number_format(2, '.', ',') }} / {{ extra.destroyedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.destroyedprice.gbp|number_format(2, '.', ',') }}">
+	<tr rel="tooltip" title="&#36;{{ extra.destroyedpriceWship.usd|number_format(2, '.', ',') }} / {{ extra.destroyedpriceWship.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.destroyedpriceWship.gbp|number_format(2, '.', ',') }}">
 		<th>Destroyed:</th>
-		<td class="item_destroyed"><span format="format-dec2-once-i" raw="{{ extra.lostisk }}">{{ extra.lostisk | number_format(2, '.', ',') }} ISK</span><span style='color: #888;'> (w/ship)</span></td>
+		<td class="item_destroyed"><span format="format-dec2-once-i" raw="{{ extra.destroyediskWship }}">{{ extra.destroyediskWship | number_format(2, '.', ',') }} ISK</span><span style='color: #888;'> (w/ship)</span></td>
 	</tr>
 	<tr class="item_dropped_row" rel="tooltip" title="&#36;{{ extra.droppedprice.usd|number_format(2, '.', ',') }} / {{ extra.droppedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.droppedprice.gbp|number_format(2, '.', ',') }}">
 		<th>Dropped:</th>
