@@ -23,6 +23,8 @@ if ($mdb->findDoc('killmails', ['killID' => $killID]) == null) {
         Log::log(print_r($ex, true));
     }
 
+    if ($redis->get("zkb:noapi") == "true") return invalidRequest("ESI is unavilable atm");
+
     // wait for the mail to be processed
     $timer = new Timer();
     $processed = null;
