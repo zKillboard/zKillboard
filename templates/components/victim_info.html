@@ -99,7 +99,7 @@
     {% endif %}
 	<tr rel="tooltip" title="&#36;{{ extra.totalprice.usd|number_format(2, '.', ',') }} / {{ extra.totalprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.totalprice.gbp|number_format(2, '.', ',') }}">
 		<th>Total:</th>
-		<td><strong class="item_dropped" format="format-dec2-once-i" raw="{{ (extra.droppedisk + extra.lostisk) }}">{{ (extra.droppedisk + extra.lostisk)|number_format(2, '.', ',') }} ISK</strong></td>
+		<td><strong class="item_dropped" format="format-dec2-once-i" raw="{{ extra.totalisk }}">{{ extra.totalisk|number_format(2, '.', ',') }} ISK</strong></td>
 	</tr>
         {% if extra.sponsoredIsk %}
         <tr>
