@@ -506,3 +506,8 @@ html,body {
 .b-none {
     border: none !important;
 }
+
+.publift:empty + .pbsep { display: none; }
+.publift:empty + .pbsep + .pbblock { display: none; }
+.pbblock { margin-bottom: 3em; }
+.pbblock .btn {	margin: 0em; }
