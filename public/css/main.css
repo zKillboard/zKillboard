@@ -507,6 +507,10 @@ html,body {
     border: none !important;
 }
 
+.scanalyzer {
+	color: red;
+}
+
 .publift:empty + .pbsep { display: none; }
 .publift:empty + .pbsep + .pbblock { display: none; }
 .pbblock { margin-bottom: 3em; }
