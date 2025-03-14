@@ -17,9 +17,11 @@ $subType = $kl == 'k' ? 'killers' : 'losers';
 
 $s = "";
 if ($solo == 'solo') {
+    if ($pageEpoch == 'alltime') $s = "Solo";
     $pageEpoch .= ":solo"; 
-    $s = "Solo";
 }
+
+Log::log("$pageEpoch $entityType $subType $solo $s");
 
 $pageTitle = "Ranks for $type - $pageEpoch - $subType - page $page";
 
@@ -31,7 +33,6 @@ $start = ($page - 1) * $pageSize;
 $end = ($page * $pageSize) - 1;
 
 if ($subType == 'killers') {
-Log::log("tq:ranks:$pageEpoch:$column");
     $r = $redis->zRange("tq:ranks:$pageEpoch:$column", $start, $end);
     $r2 = $redis->zRange("tq:ranks:$pageEpoch:$column", $start, $end + 1);
 } else {
