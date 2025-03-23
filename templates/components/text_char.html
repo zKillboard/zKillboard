@@ -6,4 +6,6 @@
 	<a class="wrapplease" href="/character/{{ field.ceoID }}/">{{ field.ceoName }}</a>
 {% elseif field.characterID %}
 	<a class="wrapplease" href="/character/{{ field.characterID }}/{{ entitySubpage }}">{{ field.characterName }}</a>
+{% elseif field.id and field.name %}
+	<a class="wrapplease" href="/character/{{ field.id }}/">{{ field.name }}</a>
 {% endif %}

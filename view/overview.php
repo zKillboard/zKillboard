@@ -60,6 +60,11 @@ try {
 
 $information = $mdb->findDoc('information', ['type' => "${key}ID", 'id' => (int) $id, 'cacheTime' => 3600]);
 $disqualified = ((int) @$information['disqualified']);
+$dqChars = [];
+if ($disqualified > 0 && ($key == 'alliance' || $key == 'corporation')) {
+    $dqChars = $mdb->find("information", ["type" => "characterID", "${key}ID" => (int) $id, 'disqualified' => true]);
+    Log::log(print_r($dqChars, true));
+}
 
 $redis->setex("zkb:overview:$key:$id", 9600, "true");
 $redis->setex("zkb:overview:${key}ID:$id", 9600, "true");
@@ -507,7 +512,7 @@ $soloKills = addVics($vics, $soloKills);
 
 if ($key == 'label') $kills = [];
 
-$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified);
+$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified, 'dqChars' => $dqChars);
 
 $app->render('overview.html', $renderParams);
 

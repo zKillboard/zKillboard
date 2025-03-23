@@ -295,5 +295,7 @@
 <div class="well well-sm"><h4>Missing Statistics?</h4>zKillboard is currently <a href='/ztop/'>reprocessing <b>ALL</b> statistics</a>, please be patient while this extremely large task is completed. No killmails have been lost, statistics are just being recalculated globally.</div>
 {% endif %}
 {% if disqualified  == 1 %}
-<div class="well well-sm"><h4>Entity Disqualified from Rankings</h4>See <a href='https://old.reddit.com/r/Eve/comments/1iqzd0g/meta_zkillboardcom_killmail_padding_and_you_part_2/'>this Reddit post</a> for more information.</div>
+<div class="well well-sm"><h4>Entity Disqualified from Rankings</h4>See <a href='https://old.reddit.com/r/Eve/comments/1iqzd0g/meta_zkillboardcom_killmail_padding_and_you_part_2/'>this Reddit post</a> for more information.{% if dqChars|length > 0 %} Removal of the following character(s) will remove the disqualification:<br/>
+{% for field in dqChars %}{% include 'components/text_char.html' %}<br/>{% endfor %}{% endif %}
+</div>
 {% endif %}
