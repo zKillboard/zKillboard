@@ -63,7 +63,6 @@ $disqualified = ((int) @$information['disqualified']);
 $dqChars = [];
 if ($disqualified > 0 && ($key == 'alliance' || $key == 'corporation')) {
     $dqChars = $mdb->find("information", ["type" => "characterID", "${key}ID" => (int) $id, 'disqualified' => true]);
-    Log::log(print_r($dqChars, true));
 }
 
 $redis->setex("zkb:overview:$key:$id", 9600, "true");
