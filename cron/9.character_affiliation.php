@@ -5,7 +5,7 @@ use cvweiss\redistools\RedisTimeQueue;
 require_once '../init.php';
 
 if ($redis->get("zkb:noapi") == "true") exit();
-if ($redis->get("zkb:universeLoaded") != "true") exit("Universe not yet loaded...\n");
+if ($redis->get("zkb:universeLoaded") != "true") exit();
 if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit();
 
 $removeFields = ['corporationID', 'allianceID', 'factionID', 'secStatus', 'security_status', 'corporation_id', 'alliance_id', 'faction_id', 'title', 'gender', 'race_id', 'birthday', 'ancestry_id', 'bloodline_id'];
@@ -37,10 +37,10 @@ while ($minute == date('Hi')) {
         // doomheimed characters now throw 404's....
         // however, if a human manages to get their character brought back to life and log in with it,
         // we should be able to fetch that character's information again, so don't skip them
-        if (isset($row['lastAffUpdate']) && (@$row['corporationID'] == 1000001 || $id <= 999999)) {
+/*        if (isset($row['lastAffUpdate']) && (@$row['corporationID'] == 1000001 || $id <= 999999)) {
             $mdb->set("information", $row, ['lastAffUpdate' => $mdb->now()]);
             continue;
-        }
+        }*/
         $fetch[] = $id;
     }
 

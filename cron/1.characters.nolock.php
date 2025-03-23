@@ -9,6 +9,7 @@ require_once "../init.php";
 $sso = ZKillSSO::getSSO();
 
 if ($redis->get("zkb:noapi") == "true") exit();
+if ($redis->get("zkb:universeLoaded") != "true") exit();
 
 $esiCorps = new RedisTimeQueue('tqCorpApiESI', 3600);
 $esi = new RedisTimeQueue('tqApiESI', 3600);
