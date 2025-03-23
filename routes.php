@@ -161,7 +161,6 @@ $app->get('/api/stats/:type/:id/', function ($type, $id) use ($app) {
         });
 
 $app->get('/scanalyzer/', function () use ($app) { include 'view/scanalyzer.php'; });
-$app->get('/cache/bypass/scanalyzer/', function () use ($app) { include 'view/scanalyzer.php'; });
 $app->post('/cache/bypass/scan/', function () use ($app) { include 'view/scanp.php'; });
 
 $app->get('/cache/bypass/stats/', function () use ($app) { include 'view/ajax/stats.php'; });
