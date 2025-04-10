@@ -53,15 +53,46 @@
 {% if extra.insurance.Basic.payout > 0 %}
 <div class="col-lg-4">
 <h4>Insurance <small>Possible payouts</small></h4>
-<table class="table table-condensed" style="text-align: right">
-    <tr><th style="text-align: right">Type</th><th style="text-align: right">Cost</th><th style="text-align: right">Payout</th></tr>
-    <tr><td>None</td><td>{{ extra.insurance.None.cost|number_format(2) }}</td><td format="format-int-once" raw="{{ extra.insurance.None.payout }}">{{ extra.insurance.None.payout|number_format(2) }}</td></tr>
-    <tr><td>Basic</td><td>{{ extra.insurance.Basic.cost|number_format(2) }}</td><td format="format-int-once" raw="{{ extra.insurance.Basic.payout }}">{{ extra.insurance.Basic.payout|number_format(2) }}</td></tr>
-    <tr><td>Standard</td><td>{{ extra.insurance.Standard.cost|number_format(2) }}</td><td format="format-int-once" raw="{{ extra.insurance.Standard.payout }}">{{ extra.insurance.Standard.payout|number_format(2) }}</td></tr>
-    <tr><td>Bronze</td><td>{{ extra.insurance.Bronze.cost|number_format(2) }}</td><td format="format-int-once" raw="{{ extra.insurance.Bronze.payout }}">{{ extra.insurance.Bronze.payout|number_format(2) }}</td></tr>
-    <tr><td>Silver</td><td>{{ extra.insurance.Silver.cost|number_format(2) }}</td><td format="format-int-once" raw="{{ extra.insurance.Silver.payout }}">{{ extra.insurance.Silver.payout|number_format(2) }}</td></tr>
-    <tr><td>Gold</td><td>{{ extra.insurance.Gold.cost|number_format(2) }}</td><td format="format-int-once" raw="{{ extra.insurance.Gold.payout }}">{{ extra.insurance.Gold.payout|number_format(2) }}</td></tr>
-    <tr><td>Platinum</td><td>{{ extra.insurance.Platinum.cost|number_format(2) }}</td><td format="format-int-once" raw="{{ extra.insurance.Platinum.payout }}">{{ extra.insurance.Platinum.payout|number_format(2) }}</td></tr>
+<table class="table table-codensed" style="text-align: right">
+    <tr>
+        <th style="text-align: right">Type</th>
+        <th style="text-align: right">Cost</th>
+        <th style="text-align: right">Payout</th></tr>
+    <tr>
+        <td>None</td>
+        <td format="format-dec2-once" raw="{{ extra.insurance.None.cost }}">{{ extra.insurance.None.cost|number_format(2) }}</td>
+        <td format="format-dec2-once" raw="{{ extra.insurance.None.payout }}">{{ extra.insurance.None.payout|number_format(2) }}</td>
+    </tr>
+    <tr>
+        <td>Basic</td>
+        <td format="format-dec2-once" raw="{{ extra.insurance.Basic.cost }}">{{ extra.insurance.Basic.cost|number_format(2) }}</td>
+        <td format="format-dec2-once" raw="{{ extra.insurance.Basic.payout }}">{{ extra.insurance.Basic.payout|number_format(2) }}</td>
+    </tr>
+    <tr>
+        <td>Standard</td>
+        <td format="format-dec2-once" raw="{{ extra.insurance.Standard.cost }}">{{ extra.insurance.Standard.cost|number_format(2) }}</td>
+        <td format="format-dec2-once" raw="{{ extra.insurance.Standard.payout }}">{{ extra.insurance.Standard.payout|number_format(2) }}</td>
+    </tr>
+    <tr>
+        <td>Bronze</td>
+        <td format="format-dec2-once" raw="{{ extra.insurance.Bronze.cost }}">{{ extra.insurance.Bronze.cost|number_format(2) }}</td>
+        <td format="format-dec2-once" raw="{{ extra.insurance.Bronze.payout }}">{{ extra.insurance.Bronze.payout|number_format(2) }}</td>
+    </tr>
+    <tr>
+        <td>Silver</td>
+        <td format="format-dec2-once" raw="{{ extra.insurance.Silver.cost }}">{{ extra.insurance.Silver.cost|number_format(2) }}</td>
+        <td format="format-dec2-once" raw="{{ extra.insurance.Silver.payout }}">{{ extra.insurance.Silver.payout|number_format(2) }}</td>
+    </tr>
+    <tr>
+        <td>Gold</td>
+        <td format="format-dec2-once" raw="{{ extra.insurance.Gold.cost }}">{{ extra.insurance.Gold.cost|number_format(2) }}</td>
+        <td format="format-dec2-once" raw="{{ extra.insurance.Gold.payout }}">{{ extra.insurance.Gold.payout|number_format(2) }}</td>
+    </tr>
+    <tr>
+        <td>Platinum</td>
+        <td format="format-dec2-once" raw="{{ extra.insurance.Platinum.cost }}">{{ extra.insurance.Platinum.cost|number_format(2) }}</td>
+        <td format="format-dec2-once" raw="{{ extra.insurance.Platinum.payout }}">{{ extra.insurance.Platinum.payout|number_format(2) }}</td>
+    </tr>
 </table>
 </div>
 <div class="d-xs-none d-lg-show col-lg-2">&nbsp;</div>
