@@ -18,15 +18,16 @@ do {
     if ($row == null) exit();
 
     $key = "zkb:calcAlltime:" . $row['type'] . ":" . $row['id'];
+    $i = $row['type'] . " " . $row['id'] . " : " . $row['shipsDestroyed'];
     try {
         if ($redis->set($key, "true", ['nx', 'ex' => 80000]) !== true) exit();
-        calcTop($row);
+        calcTop($row, $i);
     } finally {
         $redis->del($key);
     }
 } while ($minute == date("Hi"));
 
-function calcTop($row)
+function calcTop($row, $i)
 {
     global $mdb;
 
@@ -61,7 +62,8 @@ function calcTop($row)
     $p['limit'] = 6;
     $topKills = array_keys(Stats::getTopIsk($p));
 
-    $nextTopRecalc = ceil($currentSum * 1.01);
+    $inc = min(1001, ceil($currentSum * 0.01));
+    $nextTopRecalc = $currentSum + $inc;
 
     $mdb->set('statistics', ['_id' => $row['_id']], ['topAllTime' => $topLists, 'topIskKills' => $topKills, 'allTimeSum' => $currentSum, 'nextTopRecalc' => $nextTopRecalc, 'calcAlltime' => false]);
     $mdb->removeField('statistics', $row, 'calcAlltime');
