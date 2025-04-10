@@ -572,9 +572,9 @@ function waitForStatsFunctionToLoadBecauseChromeIsBeingDumb(stats) {
 }
 
 function doFormats() {
-    $("[format='format-int']").each(function() { t = $(this); doFieldUpdate(t, Number(t.attr('raw') | '').toLocaleString()); });
-    $("[format='format-int-once']").each(function() { t = $(this); doFieldUpdate(t, Number(t.attr('raw') | '').toLocaleString()); t.removeAttr('format'); });
-    $("[format='format-pct-once']").each(function() { t = $(this); doFieldUpdate(t, (Number(t.attr('raw') | '') + '%').toLocaleString()); t.removeAttr('format'); });
+    $("[format='format-int']").each(function() { t = $(this); doFieldUpdate(t, Number(t.attr('raw') || 0).toLocaleString()); });
+    $("[format='format-int-once']").each(function() { t = $(this); doFieldUpdate(t, Number(t.attr('raw') || 0).toLocaleString()); t.removeAttr('format'); });
+    $("[format='format-pct-once']").each(function() { t = $(this); doFieldUpdate(t, (Number(t.attr('raw') || 0) + '%').toLocaleString()); t.removeAttr('format'); });
 
     $("[format='format-dec1']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(t.attr('raw')).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits:1} )); });
     $("[format='format-isk']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(t.attr('raw')))) });
