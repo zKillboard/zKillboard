@@ -35,6 +35,7 @@ class ESI {
         $export['items'] = [];
         foreach ($items as $item) {
             $flag = $item['flag'];
+            if ($flag == 177) continue;
 
             $nextItem = [];
             $nextItem ['flag'] = $flag;
@@ -53,6 +54,8 @@ class ESI {
             $json = json_decode($result, true);
             if (isset($json['fitting_id'])) return ['message' => "Fit successfully saved to your character's fittings."];
         }
+        Log::log("Fit save error: $result");
+        file_put_contents("/tmp/export_$killID.txt", print_r($export, true));
         return ['message' => "Something went wrong trying to save that fit..."];            
     }
 
