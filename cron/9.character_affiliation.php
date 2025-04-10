@@ -133,7 +133,7 @@ function updateChar(&$guzzler, &$params, &$content)
             }
         }
 
-        $mdb->set("information", ['type' => 'characterID', 'id' => $id], ['corporationID' => $corpID, 'allianceID' => $alliID, 'factionID' => $factionID, 'lastAffUpdate' => $mdb->now()]);
+        $mdb->set("information", ['type' => 'characterID', 'id' => $id], ['corporationID' => $corpID, 'allianceID' => $alliID, 'factionID' => $factionID, 'corporation_id' => $corpID, 'alliance_id' => $alliID, 'faction_id' => $factionID, 'lastAffUpdate' => $mdb->now()]);
         $redis->del(Info::getRedisKey('characterID', $id));
         // Make sure the scopes have the right corporationID for this character
         $mdb->set("scopes", ['characterID' => $id], ['corporationID' => $corpID], true);
