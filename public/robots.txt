@@ -13,6 +13,7 @@ Disallow: /asearch*
 Disallow: /constellation/*
 Disallow: */page/*
 Disallow: */year/*
+Disallow: /ccp*
 sitemap: https://zkillboard.com/sitemaps/sitemaps.xml
 
 User-agent: *
