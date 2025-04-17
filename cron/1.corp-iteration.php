@@ -60,8 +60,9 @@ while ($minute == date('Hi')) {
     $page = 0;
     do {
         $page++;
-        $killmails = $sso->doCall("$esiServer/v1/corporations/$corpID/killmails/recent/?page=$page", [], $accessToken);
-        $count = success(['row' => $row], $killmails);
+        $uri = "$esiServer/v1/corporations/$corpID/killmails/recent/?page=$page";
+        $killmails = $sso->doCall($uri, [], $accessToken);
+        $count = success(['row' => $row], $killmails, $uri);
         sleep(1);
     } while ($count >= 1000 && $iterated !== "true");
 
@@ -76,7 +77,7 @@ while ($minute == date('Hi')) {
     }
 }
 
-function success($params, $content) 
+function success($params, $content, $uri) 
 {
     global $mdb, $redis;
 
@@ -110,14 +111,14 @@ function success($params, $content)
                 $mdb->set("scopes", $row, ['lastFetch' => $mdb->now()]);
                 exit();
             case "Timeout contacting tranquility":
+            case "Timeout waiting on backend":
             case "The datasource tranquility is temporarily unavailable":
                 return -1;
             case "Undefined 404 response. Original message: Requested page does not exist!":
-                                                            return 0; // not really an error, just ignore it and move on
+                return 0; // not really an error, just ignore it and move on
             default:
-                                                            Util::out("Unknown error");
-                                                            print_r($kills);
-                                                            return 0;
+                Util::out("Unknown error: $uri\n" . print_r($kills));
+                return 0;
         }
         // Something went wrong, reset it and try again later
         exit();
