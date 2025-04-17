@@ -14,12 +14,17 @@ class ESI {
 
         $row = $mdb->findDoc("scopes", ['characterID' => $charID, 'scope' => 'esi-fittings.write_fittings.v1']);
         if ($row == null) {
-            return ['message' => 'You have not given zkillboard permission to save fits to your account.'];
+            return ['message' => 'You have not given zkillboard permission to save fits to your account. Log out, and then log back in and make sure you give the appropriate fitting scope.'];
         }
         $sso = ZKillSSO::getSSO();
         $accessToken = $sso->getAccessToken($row['refreshToken']);
 
         $killmail = Kills::getEsiKill($killID);
+        $parsed = $mdb->findDoc("killmails", ['killID' => (int) $killID]);
+
+        if (@$parsed['vGroupID'] == 29) return ['message' => 'Sorry, ESI does not accept saving capsule fittings. (I wish it did though.)'];
+        if (@$parsed['categoryID'] !== 6) return ['message' => 'Sorry, only ship fittings can be saved.'];
+
         $victim = $killmail['victim'];
 
         header('Content-Type: application/json');
@@ -36,6 +41,10 @@ class ESI {
         foreach ($items as $item) {
             $flag = $item['flag'];
             if ($flag == 177) continue;
+            if ($flag == 179) continue;
+            if ($flag == 133) continue;
+            if ($flag == 155) continue;
+            if ($flag == 183) continue;
 
             $nextItem = [];
             $nextItem ['flag'] = $flag;
@@ -52,11 +61,12 @@ class ESI {
         $result = $sso->doCall($esiServer . "/v1/characters/$charID/fittings/", $export, $accessToken, 'POST_JSON');
         if ($result != "") {
             $json = json_decode($result, true);
+            Log::log("$charID successfully saved fit $killID");
             if (isset($json['fitting_id'])) return ['message' => "Fit successfully saved to your character's fittings."];
         }
-        Log::log("Fit save error: $result");
+        Log::log("$killID Fit save error: $result ($charID)");
         file_put_contents("/tmp/export_$killID.txt", print_r($export, true));
-        return ['message' => "Something went wrong trying to save that fit..."];            
+        return ['message' => "<strong>ERROR importing killID $killID</STRONG><br/><code>" . print_r($result, true) . "</code><br/>Something went wrong trying to save that fit... Please let Squizz know about this problem via Discord, in the #zkillboard-com channel, <a target='_blank' href='https://discord.gg/sV2kkwg8UD'>here</a>."];            
     }
 
     private static $infernoFlags = array(
