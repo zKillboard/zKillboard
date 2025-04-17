@@ -16,7 +16,7 @@ class AdvancedSearch
             "isk:1b+", "isk:5b+", "isk:10b+", "isk:100b+"
         ],
         'custom' => [
-            'atShip', 'cat:65', 'capital',
+            'atShip', 'capital', 'cat:0', 'cat:11', 'cat:18', 'cat:22', 'cat:23',  'cat:350001', 'cat:40', 'cat:46', 'cat:6', 'cat:65', 'cat:87'
         ]
     ];
 }
