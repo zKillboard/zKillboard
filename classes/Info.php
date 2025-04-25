@@ -160,6 +160,10 @@ class Info
         $serverVersion = $mdb->findField("versions", "serverVersion", ['epoch' => ['$gte' => $epoch]], ['epoch' => 1]);
         if ($serverVersion == null) throw \Exception("Unknown server version - bailing");
         $system = $mdb->findDoc("geography", ['type' => 'solarSystemID', 'id' => $solarSystemID, 'serverVersion' => "$serverVersion"]);
+        if ($system === null) {
+            $system = $mdb->findDoc("geography", ['type' => 'solarSystemID', 'id' => $solarSystemID, 'serverVersion' => ['$nin' => [null, false] ]], ['serverVersion' => -1]);
+        }
+
         return $system;
     }
 

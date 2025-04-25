@@ -70,8 +70,8 @@ while ($minute == date('Hi')) {
         $system = Info::getSystemByEpoch($systemID, $kill['dttm']->sec);
         if ($system == null) {
             $redis->zadd("tobeparsed", $killID, $killID);
-            $redis->del("zkb:universeLoaded");
-            throw new Exception("NULL SYSTEM");
+            Util::out("NULL SYSTEM $systemID for killmail $killID " . $kill['dttm']->sec);
+            continue;
         }
 
         $solarSystem = array();
