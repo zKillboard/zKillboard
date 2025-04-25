@@ -44,6 +44,7 @@ foreach ($iter as $row) {
         $dqed = $mdb->findField("information", "disqualified", ['type' => $type, 'id' => $id]);
         if ($dqed === true) continue;
     }
+    if ($type == "corporationID" && $id <= 1999999) continue;
 
     $types[$type] = true;
     $key = "tq:ranks:alltime:solo:$type:$today";

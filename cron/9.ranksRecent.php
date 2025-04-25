@@ -40,6 +40,7 @@ foreach ($iter as $row) {
                 $dqed = $mdb->findField("information", "disqualified", ['type' => $type, 'id' => $id]);
                 if ($dqed === true) continue;
             }
+            if ($type == "corporationID" && $id <= 1999999) continue;
 
             $recentKills = getRecent($type, $id, false);
             $recentLosses = getRecent($type, $id, true);
