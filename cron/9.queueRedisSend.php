@@ -1,8 +1,11 @@
 <?php
 
 use cvweiss\redistools\RedisQueue;
+use cvweiss\redistools\RedisTtlCounter;
 
 require_once '../init.php';
+
+$killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
 
 global $redisQServer;
 $ch = null;
@@ -54,5 +57,6 @@ while (date('Hi') == $minute) {
     } else {
         $queuePublish->push($killID);
     }
-    sleep(1);
+    $sleep = 1 + floor($killsLastHour->count() / 500);
+    sleep($sleep);
 }
