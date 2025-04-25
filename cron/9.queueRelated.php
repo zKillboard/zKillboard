@@ -1,6 +1,6 @@
 <?php
 
-$mt = 2; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
+//$mt = 2; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
 use cvweiss\redistools\RedisQueue;
 
@@ -22,8 +22,8 @@ while ($minute == date('Hi')) {
         $current = $redis->get($parameters['key']);
         if ($redis->get($parameters['key']) !== false) continue;
 
-        if ($redis->scard("queueRelatedSet") > 10 && (sizeof($parameters['options']['A']) > 0 || sizeof($parameters['options']['B']) > 0)) continue;
-        if ($redis->scard("queueRelatedSet") > 20) continue;
+        //if ($redis->scard("queueRelatedSet") > 10 && (sizeof($parameters['options']['A']) > 0 || sizeof($parameters['options']['B']) > 0)) continue;
+        //if ($redis->scard("queueRelatedSet") > 20) continue;
 
         if ($redis->get($parameters['key']) != null) continue;
         $kills = Kills::getKills($parameters);
@@ -32,9 +32,9 @@ while ($minute == date('Hi')) {
         $serial = serialize($summary);
         if ($redis->ping() != 1) connectRedis();
         $redis->setex($parameters['key'], 900, $serial);
-        $redis->setex('backup:'.$parameters['key'], 60, $serial);
         $redis->srem('queueRelatedSet', $key);
         $redis->del("$key:params");
+
     } catch (Exception $e) {
         Util::out(print_r($e, true));
     }

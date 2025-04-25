@@ -82,30 +82,23 @@ class RelatedReport {
 
         $sleeps = 0;
         $key = 'br:'.md5("brq:$systemID:$relatedTime:$exHours:".json_encode($json_options).($battleID != null ? ":$battleID" : ''));
-        $summary = null;
-        while (true) {
-            $summary = $redis->get($key);
-            if ($summary != null) break;
-
+        $summary = $redis->get($key);
+        while (strlen($summary) == 0) {
             $parameters = array('solarSystemID' => $systemID, 'relatedTime' => $relatedTime, 'exHours' => $exHours, 'nolimit' => true, 'options' => $json_options, 'key' => $key);
             $serial = serialize($parameters);
             $redis->sadd('queueRelatedSet', $key);
             $redis->setex("$key:params", 3600, $serial);
 
-            // See if we have a backup in place while the main one is being re-calculated?
-            $summary = $redis->get("backup:$key");
-            if ($summary != null) {
-                break;
-            }
-
             usleep(100000);
             ++$sleeps;
-            if ($sleeps > 100) {
+            if ($sleeps > 25) {
                 if ($app === null) return [];
                 header('HTTP/1.1 202 Request being processed');
+                header('Cache-Control: no-store');
                 $app->render('related_wait.html', ['showAds' => false]);
                 exit();
             }
+            $summary = $redis->get($key);
         }
 
         $summary = unserialize($summary);
