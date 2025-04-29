@@ -152,7 +152,8 @@ while ($minute == date('Hi')) {
         addLabel($kill, $solarSystem['security'] >= 0.45, 'loc:highsec');
         addLabel($kill, $solarSystem['security'] < 0.45 && $solarSystem['security'] >= 0, 'loc:lowsec');
         addLabel($kill, $solarSystem['security'] < 0 && $solarSystem['regionID'] < 11000001 && $solarSystem['regionID'] != 10000070 && $solarSystem['regionID'] != 10001000, 'loc:nullsec');
-        addLabel($kill, $solarSystem['regionID'] >= 11000000 && $solarSystem['regionID'] < 12000000, 'loc:w-space');
+        addLabel($kill, $solarSystem['regionID'] >= 11000000 && $solarSystem['regionID'] < 12000000 && $solarSystem['regionID'] != 11000033, 'loc:w-space');
+        addLabel($kill, $solarSystem['regionID'] == 11000033, 'loc:drifter');
         addLabel($kill, $solarSystem['regionID'] >= 12000000 && $solarSystem['regionID'] < 13000000, 'loc:abyssal');
         addLabel($kill, $totalValue >= 1000000000 && $totalValue < 5000000000, 'isk:1b+');
         addLabel($kill, $totalValue >= 5000000000 && $totalValue < 10000000000, 'isk:5b+');
