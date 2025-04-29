@@ -13,6 +13,7 @@ try {
     if ("$bid" != "$id") throw new Exception("$bid is not a valid parameter");
 
     $information = $mdb->findDoc('information', ['type' => $type, 'id' => (int) $id, 'cacheTime' => 3600]);
+    if ($information === null) throw new Exception("Invalid type or id");
     $disqualified = ((int) @$information['disqualified']);
     if ($disqualified != 0) {
         $app->contentType('application/json; charset=utf-8');
