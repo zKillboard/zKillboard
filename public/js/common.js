@@ -5,10 +5,8 @@ var adblocked = undefined;
 $(document).ready(function() {
     if (navbar) $('#tracker-dropdown').load('/navbar/');
 
-    // add the autocomplete search thing
+    // autocomplete
     $('#searchbox').zz_search( function(data, event) { window.location = '/' + data.type + '/' + data.id + '/'; event.preventDefault(); } );
-    //$('#searchbox').on('focus', function() { $("#advancedsearchnavbar").slideDown(); });
-    //$('#searchbox').on('blur', function() { $("#advancedsearchnavbar").slideUp(); });
 
     // prevent firing of window.location in table rows if a link is clicked directly
     $('.killListRow a').click(function(e) {
@@ -28,14 +26,6 @@ $(document).ready(function() {
     $('#postExternalMail').on('click', pasteCrestUrl)
 
     addKillListClicks();
-
-    /*var pathname = $(location).attr('pathname');
-    console.log(pathname.substr(0,9));
-    if (pathname != '/map/' && pathname.substr(0, 9) != '/account/') {
-        $("a[href='/']").on('click', function(event) { doLoad($(this).attr('href')); return false; } );
-        addPartials();
-        console.log($(location).attr('pathname'));
-    }*/
 
     var datepicker = $('.datepicker').datepicker({
             format: "mm/yyyy",
@@ -209,10 +199,11 @@ function prepKills(data) {
     let html = '';
     for(i = 0; i < data.length; i++) {
         killID = data[i];
-        html = html + "<tr id='kill-" + killID + "' class='fetchme' killID='" + killID + "'></tr>'";
+        let tr = $("<tr id='kill-" + killID + "' class='fetchme' killID='" + killID + "'></tr>'");
+        $("#killmailstobdy").append(tr);
+        loadKillRow(killID);
     }
-    $("#killmailstobdy").html(html);
-    $(".fetchme").each(function() { loadKillRow($(this).attr('killID'));  });
+    $("#kms_loading").remove();
 }
 
 var killdata = undefined;
@@ -261,7 +252,7 @@ function audio(uri)
 }
 
 function saveFitting(id) {
-    $('#modalMessageBody').html('Saving fit....');
+    $('#modalMessageBody').html('<div style="color: white;">Saving fit....</div>');
     $('#modalMessage').modal({backdrop: true, keyboard: true, show: true});
 
     var request = $.ajax({
@@ -271,7 +262,7 @@ dataType: "text"
 });
 
 request.done(function(msg) {
-        $('#modalMessageBody').html(msg);
+        $('#modalMessageBody').html('<div style="color: white;">' + msg + '</div>');
         $('#modalMessage').modal({backdrop: true, keyboard: true, show: true});
         });
 }
