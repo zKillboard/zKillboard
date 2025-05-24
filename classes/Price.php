@@ -255,9 +255,12 @@ if ( $typeID == 42124 ) Log::log(print_r($priceList, true));
         }
 
         $url = "$esiServer/v1/markets/10000002/history/?type_id=$typeID";
-        $sso = ZKillSSO::getSSO();
-        $json = json_decode($sso->doCall($url), true);
-        usleep(250000);
+        //$sso = ZKillSSO::getSSO();
+        //$json = json_decode($sso->doCall($url), true);
+        $raw = file_get_contents($url);
+        $json = json_decode($raw, true);
+        Status::addStatus('esi', true);
+        usleep(100000);
 
         foreach ($json as $row) {
             $avgPrice = $row['average'];
