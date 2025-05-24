@@ -14,6 +14,7 @@ $queueApiCheck = new RedisQueue('queueApiCheck');
 $queueSocial = new RedisQueue('queueSocial');
 $queueStats = new RedisQueue('queueStats');
 $queueRedisQ = new RedisQueue('queueRedisQ');
+$queuePublish = new RedisQueue('queuePublish');
 //$queueDiscord = new RedisQueue('queueDiscord');
 $statArray = ['characterID', 'corporationID', 'allianceID', 'factionID', 'shipTypeID', 'groupID'];
 
@@ -27,6 +28,7 @@ while ($minute == date('Hi')) {
 
         $queueSocial->push($killID);
         $queueRedisQ->push($killID);
+        $queuePublish->push($killID);
         //$queueDiscord->push($killID);
         $queueApiCheck->push($killID);
 
@@ -54,11 +56,15 @@ function addActivity($killID)
             addActivityRow($id, $day, $hour, $killmail['killID'], $dttm);
         }
     }
+    addActivityRow(@$killmail['locationID'],  $day, $hour, $killmail['killID'], $dttm);
+    addActivityRow(@$killmail['system']['solarSystemID'],  $day, $hour, $killmail['killID'], $dttm);
 }
 
 function addActivityRow($id, $day, $hour, $killID, $dttm)
 {
     global $mdb;
+
+    if ($id < 0) return;
 
     try {
         $mdb->insert("activity", ['id' => $id, 'day' => $day, 'hour' => $hour, 'killID' => $killID, 'dttm' => $dttm]);
