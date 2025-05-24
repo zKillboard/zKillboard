@@ -12,7 +12,7 @@ if ($listenRedisQID === null) {
 }
 
 $ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, "https://redisq.zkillboard.com/listen.php?queueID=$listenRedisQID");
+curl_setopt($ch, CURLOPT_URL, "https://zkillredisq.stream/listen.php?queueID=$listenRedisQID");
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
 $minute = date('Hi');
