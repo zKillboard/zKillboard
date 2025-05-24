@@ -112,7 +112,7 @@ class Util
                 case 'highsec':
                 case 'solo':
                 case 'pretty':
-                case 'zkbOnly':
+                //case 'zkbOnly': # has been deprecated 
                 case 'abyssal':
                 case 'ganked':
                     $parameters[$key] = true;
@@ -647,5 +647,15 @@ class Util
             if (sizeof($res) >= $limit) break;
         }
         return $res;
+    }
+
+    public static function getRedisAvg($list, $maxCount) {
+        global $redis;
+
+        while ($redis->llen($list) > $maxCount) $redis->lpop($list);
+        $list = $redis->lrange($list, 0, -1);
+        $sum = 0; $c = 0;
+        foreach ($list as $l) { $sum += $l; $c++; }
+        return ($c > 0 ? (round($sum / $c, 0)) : 0);
     }
 }
