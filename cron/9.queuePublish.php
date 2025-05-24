@@ -13,7 +13,9 @@ while ($minute == date('Hi')) {
     $killID = (int) $queuePublish->pop();
     if ($killID > 0 ) {
         if ($redis->get("tobefetched") > 1000 && $killID < ($topKillID - 10000)) continue;
+        if ($redis->get("zkb:published:$killID") == "true") continue;
         publish($killID);
+        $redis->setex("zkb:published:$killID", 86400, "true");
     } else sleep(1);
 }
 
@@ -33,7 +35,7 @@ function publish($killID)
     $zkb['esi'] = "$esiServer/latest/killmails/$killID/".$zkb['hash'].'/';
     $zkb['url'] = "https://zkillboard.com/kill/$killID/";
     $raw['zkb'] = $zkb;
-    $redis->publish("killstream", json_encode($raw, true));
+    //$redis->publish("killstream", json_encode($raw, true)); defer to redisq instead
 
     $hours24 = time() - 86400;
     if ($kill['dttm']->sec < $hours24) return;
