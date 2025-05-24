@@ -7,7 +7,7 @@ require_once '../init.php';
 if ($redis->get("zkb:noapi") == "true") exit();
 if ($redis->get("zkb:universeLoaded") != "true") exit();
 
-$removeFields = ['corporationID', 'allianceID', 'factionID', 'secStatus', 'security_status', 'corporation_id', 'alliance_id', 'faction_id', 'title', 'gender', 'race_id', 'birthday', 'ancestry_id', 'bloodline_id'];
+$removeFields = ['corporationID', 'allianceID', 'factionID', 'secStatus', 'security_status', 'corporation_id', 'alliance_id', 'faction_id', 'title', 'gender', 'race_id', 'ancestry_id', 'bloodline_id'];
 
 $currentSecond = "";
 $guzzler = new Guzzler(5);
