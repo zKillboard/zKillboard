@@ -18,10 +18,13 @@ if ($redisQServer == null) {
 }
 
 $queueRedisQ = new RedisQueue('queueRedisQ');
-$queuePublish = new RedisQueue('queuePublish');
+$queueRedisQFail = new RedisQueue('queueRedisQFail');
+
+while ($queueRedisQFail->size() > 0) $queueRedisQ->push($queueRedisQFail->pop());
 
 $minute = date('Hi');
 while (date('Hi') == $minute) {
+    $redis->sort('queueRedisQ', ['alpha' => true, 'sort' => 'asc', 'store' => 'queueRedisQ']);
     $killID = $queueRedisQ->pop();
     if ($killID == null) {
         sleep(1);
@@ -52,11 +55,8 @@ while (date('Hi') == $minute) {
    $result = json_decode(curl_exec($ch), true);
     if ($result == NULL || @$result['success'] != true) {
         Util::out("Failed to send to redisq: " . $killID . " ($result)");
-        $queueRedisQ->push($killID);
-        sleep(3);
-    } else {
-        $queuePublish->push($killID);
+        $queueRedisQFail->push($killID);
+        sleep(1);
     }
-    $sleep = 1 + floor($killsLastHour->count() / 500);
-    sleep($sleep);
+    usleep(250000);
 }
