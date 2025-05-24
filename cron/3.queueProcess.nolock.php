@@ -27,6 +27,7 @@ $counter = 0;
 $minute = date('Hi');
 
 while ($minute == date('Hi')) {
+try {
     if ($redis->get("zkb:universeLoaded") != "true") break;
     if ($redis->llen("queueInfo") > 100) sleep(1);
     $row = null;
@@ -194,6 +195,9 @@ while ($minute == date('Hi')) {
         $mdb->set('crestmails', $row, ['processed' => true]);
         $redis->zrem("tobeparsed", $killID);
     }
+ } catch (Exception $ex) {
+    if ($row != null) $mdb->set("crestmail", $row, ['processed' => 'parse failure']);
+}
 }
 
 function addLabel(&$kill, $condition, $label)
