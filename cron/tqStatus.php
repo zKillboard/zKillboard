@@ -44,10 +44,11 @@ else $message = ($redis->get("tqCountInt") == 0 || Status::getStatus('esi', fals
 //$message = "ESI has been extremely slow and or timing out for 3+ weeks now. This is causing a delay in fetching killmails. The problem is with CCP servers, not zKillboard. There is nothing zKillboard can do at this time except hope CCP fixes these problems soon.";
 $message = apiStatus($message, 'esi', "Issues with CCP's ESI API - some killmails may be delayed.");
 $message = apiStatus($message, 'sso', "Issues with CCP's SSO API - some killmails may be delayed.");
-if ($message == "" && (Util::getRedisAvg('timer:characters', 1000) > 1000 || Util::getRedisAvg('timer:corporations', 100) > 1500)) $message = "<a href='/ztop/'>ESI Killmail endpoints are very slow atm, post kills manually for faster fetching.</a>";
+if ($message == "" && (Util::getRedisAvg('timer:characters', 1000) > 1000 || Util::getRedisAvg('timer:corporations', 100) > 1500)) $message = "<a href='/ztop/'>ESI endpoints are very slow atm, post kills manually for faster fetching...</a>";
 if ($message == "" && $redis->llen("queueRelated") > 500) $message = "<a href='/ztop/'>Server is experiencing higher than normal load, your happy and pleasurable user experience has been ganked.</a>";
 if ($message == null) $redis->del('tq:apiStatus');
 else $redis->setex('tq:apiStatus', 300, $message);
+$redis->publish("public", json_encode(['action' => 'message', 'message' => "$message"]));
 
 function success($content)
 {

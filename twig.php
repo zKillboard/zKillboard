@@ -77,6 +77,8 @@ $twig->addGlobal('esiServer', $esiServer);
 
 if (@$special != "") {
     $twig->addGlobal('sponsoredMessage', $special);
+    $twig->addGlobal('promoImage1', $promoImage1);
+    $twig->addGlobal('promoURI', $promoURI);
 }
 
 $twig->addGlobal('tqStatus', $redis->get('tqStatus'));

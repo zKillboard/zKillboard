@@ -85,6 +85,8 @@ var entityID = '{{ entityID }}';
 var entityPage = '{{ pageType }}';
 var start_websocket = {{ websocket }};
 var actualURI = '{{ actualURI }}';
+var promoURI = '{{ promoURI }}';
+var promoImage1 = '{{ promoImage1 }}';
                 </script>
 	</head>
 	<body>
@@ -98,7 +100,9 @@ var actualURI = '{{ actualURI }}';
 
 			<div class="container nobackground">
 				{% if apiStatus and actualURI == '/' %}
-					<div class="alert alert-danger" style="font-weight: bold"><center>{{ apiStatus|raw }}</center></div>
+					<div id="zkb-message" class="alert alert-danger" style="font-weight: bold"><center>{{ apiStatus|raw }}</center></div>
+                {% else %}
+					<div id="zkb-message" class="hide alert alert-danger" style="font-weight: bold"></div>
 				{% endif %}
 
 				<!-- Top ad -->
