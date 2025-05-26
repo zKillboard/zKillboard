@@ -86,8 +86,6 @@ class Guzzler
 
         $statusType = self::getType($uri);
 
-        //while (((int) $redis->get("concurrent")) > 10) $this->sleep(0, 1000);
-        $redis->incr("concurrent");
         $guzzler = $this;
 
         if ($callType == "POST" && $body != null) {
@@ -114,7 +112,6 @@ class Guzzler
 
                 try {
                 $guzzler->dec();
-                $redis->decr("concurrent");
                 $content = (string) $response->getBody();
                 Status::addStatus($statusType, true);
                 $this->lastHeaders = array_change_key_case($response->getHeaders());
@@ -130,7 +127,6 @@ class Guzzler
 
                 try {
                     $guzzler->dec();
-                    $redis->decr("concurrent");
                     Status::addStatus($statusType, false);
                     $response = $connectionException->getResponse();
                     $this->lastHeaders = $response == null ? [] : array_change_key_case($response->getHeaders());
