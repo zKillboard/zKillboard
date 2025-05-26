@@ -84,9 +84,6 @@ class Price
             $priceList[] = 0.01;
         }
 
-if ( $typeID == 42124 ) Log::log(print_r($marketHistory, true));
-if ( $typeID == 42124 ) Log::log(print_r($priceList, true));
-
         $total = 0;
         foreach ($priceList as $price) {
             $total += $price;
