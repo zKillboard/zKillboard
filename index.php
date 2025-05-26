@@ -56,14 +56,8 @@ header("Content-Security-Policy: frame-ancestors 'none'");
 if (substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || $uri == '/navbar/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp' || substr($uri, 0, 20) == "/cache/bypass/login/") {
     ini_set('session.gc_maxlifetime', (86400 * 30));
     ini_set('session.cookie_lifetime', (86400 * 30));
+    session_set_save_handler(new MongoSessionHandler($mdb->getCollection("sessions")), true);
     session_start();
-    if (isset($_SESSION['characterID'])) {
-        $rKey = "SESSIDS:" . $_SESSION['characterID'];
-        $sessionID = session_id();
-        $redis->sadd($rKey, $sessionID);
-        $redis->expire($rKey, 7776000);
-        $redis->setex("SESSID:$sessionID", 7776000, $_SESSION['characterID']);
-    }
 }
 
 if ($isApiRequest || $uri == '/navbar/') {
