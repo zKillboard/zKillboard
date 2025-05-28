@@ -20,7 +20,13 @@ class MongoSessionHandler implements SessionHandlerInterface {
 
         $this->collection->update(
             ['_id' => $id],
-            ['$set' => ['data' => $data, 'updatedAt' => new MongoDB\BSON\UTCDateTime()]],
+            ['$set' => [
+                    'data' => $data,
+                    'updatedAt' => new MongoDB\BSON\UTCDateTime(),
+                    'characterID' => @$_SESSION['characterID'],
+                    'characterName' => @$_SESSION['characterName'],
+                ]
+            ],
             ['upsert' => true]
         );
         return true;
