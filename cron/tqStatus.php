@@ -25,7 +25,7 @@ if ($minute >= 1100 && $minute <= 1105) {
     }
 }
 $tqCountInt = (int) $redis->get("tqCountInt");
-if (($minute >= 1054 && $minute <= 1105) || $tqCountInt < 1000) {
+if (($minute >= 1058 && $minute <= 1110) || $tqCountInt < 1000) {
     Util::out("Flagging NO API (TQ Count: $tqCountInt)");
     $redis->setex("zkb:noapi", 110, "true");
 } else if ($redis->get("zkb:noapi") == "true") {
@@ -39,7 +39,8 @@ $killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
 $killCount = $killsLastHour->count();
 $redis->publish("public", json_encode(['action' => 'tqStatus', 'tqStatus' => $serverStatus, 'tqCount' => $loggedIn, 'kills' => $killCount]));
 
-if ($tqCountInt < 1000) $message = "ESI appears offline.";
+if ($tqCountInt < 1000) $message = "ESI offline. Enjoy your downtime.";
+if ($tqCountInt < 1000 && (date('Hi') < 1058 || date ('Hi') > 1110)) $message = "ESI appears offline. Time to panic?";
 else $message = ($redis->get("tqCountInt") == 0 || Status::getStatus('esi', false) >= 100) ? "<a href='/ztop/'>We seem to be having an issue accessing the ESI API, nothing can be done at this time.</a>" : "";
 //$message = "ESI has been extremely slow and or timing out for 3+ weeks now. This is causing a delay in fetching killmails. The problem is with CCP servers, not zKillboard. There is nothing zKillboard can do at this time except hope CCP fixes these problems soon.";
 $message = apiStatus($message, 'esi', "Issues with CCP's ESI API - some killmails may be delayed.");
