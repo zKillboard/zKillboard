@@ -75,7 +75,7 @@ $twig->addGlobal('image_item', 'https://images.evetech.net/types/');
 $twig->addGlobal('image_ship', 'https://images.evetech.net/types/');
 $twig->addGlobal('esiServer', $esiServer);
 
-if (@$special != "") {
+if (@$special1 != "") {
     $twig->addGlobal('sponsoredMessage', $special);
     $twig->addGlobal('promoImage1', $promoImage1);
     $twig->addGlobal('promoURI', $promoURI);
