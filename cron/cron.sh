@@ -10,7 +10,11 @@ mkdir -p logs
 
 touch logs/zkb.log
 
-for each in $(ls *.php | grep -v nolock); do
+# Check if we are master, if not, do not execute crons here
+php 0.masterCheck.php
+if [ ! -f ../isMaster.lock ] ; then exit ; fi
+
+for each in $(ls *.php | grep -v nolock | grep -v ^0); do
 	touch locks/$each.lock
 	touch logs/$each.lock
 	{
@@ -18,7 +22,7 @@ for each in $(ls *.php | grep -v nolock); do
 	} &
 done
 
-for each in $(ls *.php | grep nolock); do
+for each in $(ls *.php | grep nolock | grep -v ^0); do
 	touch logs/$each.log
 	{
 		nice -n 19 php $each >> logs/$each.log 2>&1
