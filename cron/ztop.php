@@ -169,8 +169,9 @@ while ($hour == date('H')) {
     }
     foreach($output as $line) echo "$line\n";
     $output = ob_get_clean();
-    file_put_contents("${baseDir}/public/ztop.txt.temp", $output);
-    rename("${baseDir}/public/ztop.txt.temp", "${baseDir}/public/ztop.txt");
+
+    $redis->publish("ztop", json_encode(['action' => 'ztop', 'message' => $output]));
+
     while ($curSecond == date('s')) usleep(100000);
 }
 

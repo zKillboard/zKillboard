@@ -4,17 +4,11 @@
 {% block title %}{% include 'components/title.html' %}{% endblock %}
 
 {% block content %}
-<pre id="textblock" style="filter: brightness(125%); height: 55em;"></pre>
+<pre id="ztoptextblock" style="filter: brightness(125%); height: 55em;"></pre>
 {% endblock %}
 
 {% block script %}
 <script type="text/javascript">
-    updateTextBlock();
-    function updateTextBlock() {
-        setTimeout(updateTextBlock, 1000);
-        if (typeof $ != 'undefined') $.get("/ztop.txt", function( data ) {
-            $("#textblock").text(data);
-        });
-    }
-  </script>
+(function() { setTimeout(() => { pubsub('ztop'); }, 1000); })();
+</script>
 {% endblock %}
