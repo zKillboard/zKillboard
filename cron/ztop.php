@@ -6,6 +6,8 @@ use cvweiss\redistools\RedisTimeQueue;
 
 require_once '../init.php';
 
+$redis->del("zkb:websockets"); // clear it on start
+
 $redisQueues = [];
 $priorKillLog = 0;
 
@@ -67,7 +69,12 @@ while ($hour == date('H')) {
     $apiR = new RedisTtlCounter('ttlc:apiRequests', 300);
     addInfo('API requests in last 5 minutes', $apiR->count());
 
-    addInfo('websocket connections', (int) $redis->get('zkb:websocketCount'));
+    $ws = $redis->hgetall('zkb:websockets');
+    $total = 0;
+    foreach ($ws as $s=>$c) {
+        $total += (int) $c;
+    }
+    addInfo('websocket connections', $total);
 
     addInfo('Successful ESI calls in last 5 minutes', Status::getStatus('esi', true), false);
     addInfo('Failed ESI calls in last 5 minutes', Status::getStatus('esi', false), false);
