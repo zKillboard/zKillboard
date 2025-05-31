@@ -21,5 +21,5 @@ try {
     $type = $otype;
 	echo json_encode(['type' => $type, 'id' => $id, 'name' => $name], true);
 } catch (Exception $ex) {
-	Log::log(print_r($ex, true));
+	Util::zout(print_r($ex, true));
 }

@@ -212,7 +212,7 @@ class EveOnlineSSO
         if (strpos($uri, 'esi.tech') !== false) return 'esi';
         if (strpos($uri, 'login') !== false) return 'sso';
         if (strpos($uri, 'evewho') !== false) return 'evewho';
-        Log::log("Unknown type for $uri");
+        Util::zout("Unknown type for $uri");
         return 'unknown';
     }
 }

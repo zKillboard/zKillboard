@@ -270,7 +270,7 @@ class Info
             $data['regionID'] = $regionID;
             $data['regionName'] = isset($data['name']) ? $data['name'] : $regionID;
         } catch (Exception $ex) {
-            Log::log("Bad data in Info ~244\n" . print_r($data));
+            Util::zout("Bad data in Info \n" . print_r($data));
             throw $ex;
         }
 
@@ -738,7 +738,7 @@ class Info
         if ($solarSystemID > 32000000 && $solarSystemID <= 32999999) return null;
         $systemLocations = $mdb->findDoc("locations", ['id' => $solarSystemID]);
         if ($systemLocations == null) {
-            Log::log("Fetching fuzz map for system $solarSystemID");
+            Util::zout("Fetching fuzz map for system $solarSystemID");
             $raw = file_get_contents("https://www.fuzzwork.co.uk/api/mapdata.php?solarsystemid=$solarSystemID&format=json");
             $systemLocations = json_decode($raw, true);
             $save = ['id' => $solarSystemID, 'locations' => $systemLocations];

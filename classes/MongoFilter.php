@@ -290,7 +290,7 @@ class MongoFilter
                     $and[] = ['labels' => $value];
                     break;
                 default:
-                    //Log::log("MongoFilter::buildQuery unkonown label $key");
+                    //Util::zout("MongoFilter::buildQuery unknown filter uri:" . @$uri . " $key " . print_r($value, true) . "\n" . print_r($parameters, true));
             }
         }
 

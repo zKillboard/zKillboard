@@ -95,7 +95,7 @@ try {
     }
 
     ZLog::add("Logged in: $charName ($charID)", $charID, true);
-    if ($scopeCount == 0) Log::log("$charName ($charID) omitted scopes.");
+    if ($scopeCount == 0) Util::zout("$charName ($charID) omitted scopes.");
     unset($_SESSION['oauth2State']);
 
     $key = "login:$charID:" . session_id();
@@ -143,7 +143,7 @@ try {
         return $app->render('error.html', ['message' => "CCP failed to send access token data, please try logging in again."], 503);
     
     } else {
-        Log::log(print_r($e, true));
+        Util::zout(print_r($e, true));
         return $app->render('error.html', ['message' => $e->getMessage()], 503);
     }
 } finally {

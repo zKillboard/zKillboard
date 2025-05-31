@@ -21,7 +21,7 @@ try {
     $scan = str_replace("’", "'", $scan);
     $scan = str_replace('"', "", $scan);
     $scan = explode(',', $scan);
-    Log::log("ScanAlyzer: " . sizeof($scan));
+    Util::zout("ScanAlyzer: " . sizeof($scan));
 
     $chars = [];
     $corps = [];
@@ -105,7 +105,7 @@ try {
     $json = json_encode($ret);
     echo $json;
 
-} catch (Exception $e) { Log::log(print_r($e, true)); }
+} catch (Exception $e) { Util::zout(print_r($e, true)); }
 
 function add(&$arr, $row, $type) {
     if (isset($row[$type])) $arr[$row[$type]] = 1;

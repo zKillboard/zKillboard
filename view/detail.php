@@ -18,7 +18,7 @@ $message = '';
 $oID = $id;
 $id = (int) $id;
 if ("$oID" !== "$id") {
-    Log::log("redirecting $oID to $id");
+    Util::zout("redirecting $oID to $id");
     return $app->redirect("/kill/$id/", 302);
 }
 

@@ -104,7 +104,7 @@ class Stats
         $time = $timer->stop();
         if ($time > $longQueryMS) {
             global $uri;
-            // Log::log("getTop Long query (${time}ms): $hashKey $uri");
+            // Util::zout("getTop Long query (${time}ms): $hashKey $uri");
         }
 
         $result = Util::removeDQed($result, $groupByColumn, $parameters['limit'] / 5);
@@ -173,7 +173,7 @@ class Stats
 
         $time = $timer->stop();
         if ($time > $longQueryMS) {
-            // Log::log("Distinct Long query (${time}ms): $hashKey");
+            // Util::zout("Distinct Long query (${time}ms): $hashKey");
         }
 
         $retValue = sizeof($result) == 0 ? 0 : $result[0]['value'];

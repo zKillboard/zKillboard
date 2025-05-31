@@ -6,7 +6,7 @@ global $mdb, $redis, $ip;
 // Basic verification
 if ((int) $killID <= 0 || strlen($hash) != 40) return invalidRequest("Malformed id or hash");
 $killID = (int) $killID;
-Log::log("api mail add $killID $hash");
+Util::zout("api mail add $killID $hash");
 
 // do we trust the poster?
 if (((int) $redis->get("km:post:$ip")) > 5) {
@@ -20,7 +20,7 @@ if ($mdb->findDoc('killmails', ['killID' => $killID]) == null) {
     try {
         $mdb->insert("crestmails", ['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => 'killmail-api-add']);
     } catch (Exception $ex) {
-        Log::log(print_r($ex, true));
+        Util::zout(print_r($ex, true));
     }
 
     if ($redis->get("zkb:noapi") == "true") return invalidRequest("ESI is unavilable atm");
@@ -49,8 +49,8 @@ header('Access-Control-Allow-Methods: GET, POST');
 echo json_encode(['status' => 'success', 'url' => "https://zkillboard.com/kill/${killID}/"]);
 
 function invalidRequest($reason) {
-Log::log("invalid request! $reason");
     global $IP, $redis;
+    Util::zout("invalid request! $reason");
 
     $redis->incr("km:post:$IP");
     $redis->expire("km:post:$IP", 86400);

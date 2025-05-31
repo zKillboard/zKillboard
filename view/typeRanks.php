@@ -21,7 +21,7 @@ if ($solo == 'solo') {
     $pageEpoch .= ":solo"; 
 }
 
-Log::log("$pageEpoch $entityType $subType $solo $s");
+Util::zout("$pageEpoch $entityType $subType $solo $s");
 
 $pageTitle = "Ranks for $type - $pageEpoch - $subType - page $page";
 

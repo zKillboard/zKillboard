@@ -14,12 +14,12 @@ if ($userID > 0 && $id > 0) {
         $tracked[] = $id;
         $name = Info::getInfoField($type.'ID', $id, 'name');
         User::sendMessage("Added $name to your Tracker in the menu bar.");
-        Log::log("$userID adding tracker $type $id");
+        Util::zout("$userID adding tracker $type $id");
     } elseif ($action == 'remove') {
         unset($tracked[array_search($id, $tracked)]);
         $name = Info::getInfoField($type.'ID', $id, 'name');
         User::sendMessage("Removed $name from your Tracker in the menu bar. Please note, your logged in character and their corporation and alliance will always show in the tracker.");
-        Log::log("$userID removing tracker $type $id");
+        Util::zout("$userID removing tracker $type $id");
     }
     UserConfig::set($mapKey, $tracked);
 }

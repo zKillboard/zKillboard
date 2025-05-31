@@ -100,7 +100,7 @@ try {
         $ret = (string) $redis->get($key);
         if ($ret == "PROCESSING") { 
             sleep(1);
-            //if ($waits > 30) Log::log("waiting... $waits");
+            //if ($waits > 30) Util::zout("waiting... $waits");
             $waits++;
             if ($waits > 60) {
                 header('HTTP/1.1 408 Request timeout'); 
@@ -171,7 +171,7 @@ try {
     echo $jsoned;
 
 } catch (Exception $ex) {
-    Log::log(print_r($ex, true));
+    Util::zout(print_r($ex, true));
 }
 
 function buildQuery($queries, $key, $isVictim = null, $joinType = 'and') {
@@ -288,7 +288,7 @@ function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride, $addInfo, 
         $time = $timer->stop();
         if ($time > $longQueryMS) {
             global $uri;
-            Log::log("getTop Long query (${time}ms): $hashKey $uri");
+            Util::zout("getTop Long query (${time}ms): $hashKey $uri");
         }
 
         $result = Util::removeDQed($result, $groupByColumn, 100);
@@ -341,7 +341,7 @@ function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $
         $time = $timer->stop();
         if ($time > $longQueryMS) {
             global $uri;
-            Log::log("getTop Long query (${time}ms): $hashKey $uri");
+            Util::zout("getTop Long query (${time}ms): $hashKey $uri");
         }
 
         RedisCache::set($hashKey, $result, 900);

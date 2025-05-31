@@ -23,14 +23,14 @@ if ($_POST) {
     $deleteentity = Util::getPost('deleteentity');
     // Delete an apikey
     if (isset($deletekeyid)) {
-        Log::log("Character $userID deleting scope " . $deletekeyid);
+        Util::zout("Character $userID deleting scope " . $deletekeyid);
         try {
             $i = $mdb->remove("scopes", ['characterID' => $userID, 'scope' => $deletekeyid]);
             if (isset($i['n']) && $i['n'] > 0) $error = "The scope has been removed.";
             else $error = "We did nothing. Were you supposed to attempt that?";
             User::sendMessage($error);
         } catch (Exception $e) {
-            Log::log(print_r($e, true));
+            Util::zout(print_r($e, true));
             User::sendMessage("An error occurred and has been logged. Sorry.");
         }
     }

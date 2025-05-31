@@ -65,10 +65,10 @@ class ESI {
         $result = $sso->doCall($esiServer . "/v1/characters/$charID/fittings/", $export, $accessToken, 'POST_JSON');
         if ($result != "") {
             $json = json_decode($result, true);
-            Log::log("$charID successfully saved fit $killID");
+            Util::zout("$charID successfully saved fit $killID");
             if (isset($json['fitting_id'])) return ['message' => "Fit successfully saved to your character's fittings."];
         }
-        Log::log("$killID Fit save error: $result ($charID)");
+        Util::zout("$killID Fit save error: $result ($charID)");
         file_put_contents("/tmp/export_$killID.txt", print_r($export, true));
         return ['message' => "<strong>ERROR importing killID $killID</STRONG><br/><code>" . print_r($result, true) . "</code><br/>Something went wrong trying to save that fit... Please let Squizz know about this problem via Discord, in the #zkillboard-com channel, <a target='_blank' href='https://discord.gg/sV2kkwg8UD'>here</a>."];            
     }

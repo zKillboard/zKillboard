@@ -63,7 +63,7 @@ switch ($type) {
                     'url' => $url,
                     'image' => $imageServer . "types/" . $victimInfo['shipTypeID'] . "/render?size=128"];
                 $redis->publish("public", json_encode($redisMessage, JSON_UNESCAPED_SLASHES));
-                Log::log("bigkill $killID");
+                Util::zout("bigkill $killID");
             }
         }      
         break;
@@ -72,7 +72,7 @@ switch ($type) {
 
 $app->render("sponsor.html", ['killID' => $killID, 'iskA' => $iskAvailable, 'response' => $response, 'valueF' => $valueF, 'type' => $type]);
 } catch (Exception $e) {
-    Log::log(print_r($e, true));
+    Util::zout(print_r($e, true));
 }
 
 function getName($victimInfo)

@@ -57,6 +57,6 @@ try {
         }
     }
 } catch (Exception $ex) {
-    Log::log("Error from twitch:\n" . print_r($ex, true));
+    Util::zout("Error from twitch:\n" . print_r($ex, true));
     return $app->render("error.html", ['message' => "Something went wrong with the login from Twitch's end, sorry, can you please try logging in again? *"]);
 }

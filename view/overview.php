@@ -522,7 +522,7 @@ function addVics($vics, $kills = []) {
         foreach ($vics as $kkey => $uri) {
             if (isset($kill['victim'][$kkey])) $vic[] = $kill['victim'][$kkey];
         }
-        if ($uri == "/alliance/99005338/losses/") Log::log(implode(',', $vic));
+        if ($uri == "/alliance/99005338/losses/") Util::zout(implode(',', $vic));
         $kill['vics'] = implode(',', $vic);
         $kills[$kid] = $kill;
     }

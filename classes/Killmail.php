@@ -9,7 +9,7 @@ class Killmail
         $kmKey = "killmailChecked:$killID:$hash";
 
         if ($redis->get($kmKey) == "true") return 0;
-        if (strlen($hash) != 40) return (int) Log::log("Invalid Killmail::addMail $killID $hash");
+        if (strlen($hash) != 40) return (int) Util::zout("Invalid Killmail::addMail $killID $hash");
 
         $exists = $mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash]);
         if (!$exists) {

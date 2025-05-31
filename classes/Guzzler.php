@@ -119,7 +119,7 @@ class Guzzler
 
                 $fulfilled($guzzler, $params, $content);
                 } catch (Exception $ex) {
-                Log::log(print_r($ex, true));
+                Util::zout(print_r($ex, true));
                 }
                 },
                 function($connectionException) use (&$guzzler, &$fulfilled, &$rejected, &$params, $statusType, $uri, $setup, $callType, $body) {
@@ -142,14 +142,13 @@ class Guzzler
                         foreach ($this->lastHeaders as $name => $values) {
                             $h = $h . "$name: "  . implode(',', $values) . "\n";
                         }
-                        if (@$params['retryCount'] > 2) Log::log("$uri ($code)\n$h");
+                        if (@$params['retryCount'] > 2) Util::zout("$uri ($code)\n$h");
                         $this->call($uri, $fulfilled, $rejected, $params, $setup, $callType, $body);
                     } else {
-                        //Log::log($params['uri'] . " $code" . ($params['content'] != '' ? "\n" . $params['content'] : ''));
                         $rejected($guzzler, $params, $connectionException);
                     }
                 } catch (Exception $ex) {
-                    Log::log(print_r($ex, true));
+                    Util::zout(print_r($ex, true));
                 }
                 });
         $this->inc();
@@ -170,7 +169,7 @@ class Guzzler
         if (strpos($uri, 'login') !== false) return 'sso';
         if (strpos($uri, 'api.eve') !== false) return 'xml';
         if (strpos($uri, 'evewho') !== false) return 'evewho';
-        Log::log("Unknown type for $uri");
+        Util::zout("Unknown type for $uri");
         return 'unknown';
     }
 
@@ -191,7 +190,7 @@ class Guzzler
         if ($errorCount == 0) {
             $i = $redis->set("zkb:420ed", "true", ['nx', 'ex' => $errorReset]);
             if ($i === true) {
-                Log::log("420'ed for $errorReset seconds");
+                Util::zout("420'ed for $errorReset seconds");
                 $redis->setex("zkb:420prone", 300, "true");
             }
         }

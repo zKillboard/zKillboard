@@ -19,7 +19,7 @@ if ($commentID >= 0 && $commentID < count(Comments::$defaultComments) && $redis-
     $redis->del($key);
     $publish = true;
 } else if ($votes->count() >= 1500) {
-    Log::log("Banning $ip for excessive comments");
+    Util::zout("Banning $ip for excessive comments");
     $redis->setex("IP:ban:$ip", 900, "true");
 }
 

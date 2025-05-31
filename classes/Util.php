@@ -67,7 +67,7 @@ class Util
         $uri = trim($uri);
         $s = substr($uri, 0, 1);
         $e = substr($uri, -1);
-        if ($s != '/' || $e != '/') Log::log("Invalid? '$uri'");
+        if ($s != '/' || $e != '/') Util::zout("Invalid? '$uri'");
 
         global $isApiRequest;
         $parameters = array();
@@ -475,9 +475,22 @@ class Util
         return isset($_POST[$var]) ? $_POST[$var] : null;
     }
 
-    public static function out($text)
+    public static function out($text, $source = null)
     {
+        global $mdb;
+        if ($source == null) $source = @$_SERVER['argv'][0];
+        $mdb->insert("cronlog", ['epoch' => $mdb->now(), 'source' =>  $source, 'text' => $text]);
         echo date('Y-m-d H:i:s')." > $text\n";
+    }
+
+    public static function zout($text, $source = null)
+    {
+        global $logfile, $mdb, $uri;
+        if (!file_exists($logfile) && !is_writable(dirname($logfile))) return; // Can't create the file
+        if (is_writable($logfile)) error_log(date("Y-m-d H:i:s") . " > $text \n", 3, $logfile); 
+
+        if ($source == null) $source = @$uri;
+        $mdb->insert("cronlog", ['epoch' => $mdb->now(), 'source' =>  $uri, 'text' => $text]);
     }
 
     public static function exitNow()
