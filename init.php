@@ -24,4 +24,4 @@ $sentinel = new RedisSentinel('localhost', 26379);
 $master = $sentinel->getMasterAddrByName('mymaster');
 
 $redis = new Redis();
-$redis->connect($master[0], $master[1]);
+$redis->pconnect($master[0], $master[1]);
