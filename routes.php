@@ -213,18 +213,11 @@ $app->map('/asearchinfo/', function ($type = null, $id = null) use ($app) {
         include 'view/asearchinfo.php';
         })->via('GET');
 
-$app->get('/cache/1hour/autocomplete/', function () use ($app) {
-        include 'view/search2020.php';
-        });
-
 // Autocomplete
-$app->map('/autocomplete/', function () use ($app) {
-        include 'view/autocomplete.php';
-        })->via('POST');
-$app->map('/autocomplete/:entityType/:search/', function ($entityType, $search) use ($app) {
+$app->map('/cache/1hour/autocomplete/:entityType/:search/', function ($entityType, $search) use ($app) {
         include 'view/autocomplete.php';
         })->via('GET');
-$app->map('/autocomplete/:search/', function ($search) use ($app) {
+$app->map('/cache/1hour/autocomplete/:search/', function ($search) use ($app) {
         include 'view/autocomplete.php';
         })->via('GET');
 
