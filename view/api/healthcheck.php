@@ -3,7 +3,7 @@
 $app->contentType('application/json; charset=utf-8');
 global $mdb, $redis;
 
-$res = [];
+$res = ['host' => gethostname()];
 
 try {
     $res['redis'] = true;
@@ -22,4 +22,6 @@ try {
     $res['mongo-error'] = $e->getMessage();
 }
 
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST');
 echo json_encode($res);
