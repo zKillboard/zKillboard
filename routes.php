@@ -306,6 +306,9 @@ $app->get('/cache/bypass/comment/:pageID/:commentID/up/', function ($pageID, $co
 $app->get('/cache/1hour/killlistrow/:killID/', function ($killID) use ($app) { include 'view/killlistrow.php'; });
 $app->get('/cache/24hour/killlistrow/:killID/', function ($killID) use ($app) { include 'view/killlistrow.php'; });
 
+$app->get('/cache/bypass/healthcheck/', function () use ($app) { include 'view/api/healthcheck.php'; });
+
+
 // The Overview stuff
 /*$app->get('/partial/:input+/', function ($input) use ($app) {
         include 'view/overview.php';
