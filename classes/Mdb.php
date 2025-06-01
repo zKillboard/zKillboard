@@ -41,13 +41,6 @@ class Mdb
         }
     }
 
-    public function isMaster()
-    {
-        $db = $this->getDb();
-        $r = $db->getReadPreference();
-        return @$r['type'] == 'primary';
-    }
-
     /*
        Return the specified collection from the mongodb
      */
