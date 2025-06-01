@@ -11,7 +11,7 @@ mkdir -p logs
 touch logs/zkb.log
 
 # Check if we are master, if not, do not execute crons here
-php 0.masterCheck.php
+php 0.masterCheck.php >> logs/0.masterCheck.php.log 2>&1
 if [ ! -f ../isMaster.lock ] ; then exit ; fi
 
 for each in $(ls *.php | grep -v nolock | grep -v ^0); do
