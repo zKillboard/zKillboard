@@ -7,9 +7,11 @@ use cvweiss\redistools\RedisTimeQueue;
 require_once '../init.php';
 
 $redis->del("zkb:websockets"); // clear it on start
+$redis->del("zkb:servers"); // clear it on start
 
 $redisQueues = [];
 $priorKillLog = 0;
+$isMaster = null;
 
 $deltaArray = [];
 
@@ -17,6 +19,10 @@ $lastKillCountSent = null;
 $hour = date('H');
 while ($hour == date('H')) {
     $curSecond = (int) date('s');
+
+    // primary could change while we're running, to prevent conflicts, periodically check
+    if ($isMaster == null || $curSecond % 15 == 0) $isMaster = areWeMaster();
+
     ob_start();
     $infoArray = [];
 
@@ -143,8 +149,17 @@ while ($hour == date('H')) {
     $memTotal = str_pad($memTotal, 5, " ", STR_PAD_LEFT);
     $storageSize = str_pad($storageSize, 5, " ", STR_PAD_LEFT);
     $dataSize = str_pad($dataSize, 5, " ", STR_PAD_LEFT);
-    $output[] = exec('date')." CPU: $cpu% Load: $load  Memory: ${memUsed}G/${memTotal}G  Redis: $mem  MongoDB: ${storageSize}G/${dataSize}G\n";
-    $redis->setex("zkb:memused", 300, $memUsed);
+    $line = exec('date')." CPU: $cpu% Load: $load  Memory: ${memUsed}G/${memTotal}G  Redis: $mem  MongoDB: ${storageSize}G/${dataSize}G";
+    //$output[] = $line;
+    $redis->hset("zkb:servers", $hostname, $line);
+    //$redis->setex("zkb:memused", 300, $memUsed);
+    if (!$isMaster) { sleep(1); continue; }
+
+    $ws = $redis->hgetall('zkb:servers');
+    foreach ($ws as $s=>$l) {
+        echo str_pad($s, 14, " ", STR_PAD_RIGHT) . "$l\n";
+    }
+    echo "\n";
 
     $leftCount = 1;
     $rightCount = 1;
@@ -167,7 +182,7 @@ while ($hour == date('H')) {
         }
         $output[$lineIndex] = $nextLine;
     }
-    foreach($output as $line) echo "$line\n";
+    if ($isMaster) foreach($output as $line) echo "$line\n";
     $output = ob_get_clean();
 
     $redis->publish("ztop", json_encode(['action' => 'ztop', 'message' => $output]));
@@ -228,4 +243,23 @@ function getRedisAvg($list, $maxCount) {
     $sum = 0; $c = 0;
     foreach ($list as $l) { $sum += $l; $c++; }
     return ($c > 0 ? (round($sum / $c, 0)) : 0);
+}
+
+$mmongoClient = null;
+$madmin = null;
+function areWeMaster() {
+    global $mongoConnString, $hostname, $mmongoClient, $madmin;
+
+    $masterHostname = null;
+
+    if ($mmongoClient == null) $mmongoClient = new MongoClient($mongoConnString, ['connectTimeoutMS' => 7200000, 'socketTimeoutMS' => 7200000]);
+    if ($madmin == null) $madmin = $mmongoClient->selectDB('admin');
+    $r = $madmin->command(['replSetGetStatus' => []]);
+    foreach ($r['members'] as $member) {
+        $server = (split(':', $member['name']))[0];
+        $state = $member['state'];
+        if ($state == 1) $masterHostname = $server;
+        if ($state == 1 && $server == $hostname) $isMaster = true;
+    }
+    return ($masterHostname == $hostname);
 }
