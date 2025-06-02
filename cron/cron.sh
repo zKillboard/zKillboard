@@ -12,6 +12,9 @@ touch logs/zkb.log
 
 # Check if we are master, if not, do not execute crons here
 php 0.masterCheck.php >> logs/0.masterCheck.php.log 2>&1
+{
+    flock -x -w 55 locks/0.ztop.lock nice -n 19 php 0.ztop.php >> logs/$each.log 2>&1
+} &
 if [ ! -f ../isMaster.lock ] ; then exit ; fi
 
 for each in $(ls *.php | grep -v nolock | grep -v ^0); do
