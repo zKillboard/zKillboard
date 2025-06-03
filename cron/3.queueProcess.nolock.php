@@ -5,7 +5,9 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once '../init.php';
 
-if ($redis->get("zkb:universeLoaded") != "true") exit();
+$kvc = new KVCache($mdb, $redis);
+
+if ($kvc->get("zkb:universeLoaded") != "true") exit();
 $fittedArray = [11, 12, 13, 87, 89, 93, 158, 159, 172, 2663, 3772];
 $atShipIDs = [2836, 74316, 42246, 32788, 33675, 33397, 32790, 35781, 32207, 74141, 35779, 60764, 3516, 32209, 33395, 42245, 60765, 26842, 2834, 3518, 33673];
 
@@ -28,7 +30,7 @@ $minute = date('Hi');
 
 while ($minute == date('Hi')) {
 try {
-    if ($redis->get("zkb:universeLoaded") != "true") break;
+    if ($kvc->get("zkb:universeLoaded") != "true") break;
     if ($redis->llen("queueInfo") > 100) sleep(1);
     $row = null;
     $sem = sem_get(3976);

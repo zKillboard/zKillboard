@@ -2,18 +2,25 @@
 
 require_once "../init.php";
 
+$kvc = new KVCache($mdb, $redis);
+
 if ($redis->get("zkb:noapi") == "true") exit();
 if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit();
 
-$serverVersion = $redis->get("tqServerVersion");
-$loadedVersion = $redis->get("zkb:tqServerVersion");
-if ($serverVersion != "" && $serverVersion == $loadedVersion && $redis->get("zkb:universeLoaded") == true) {
+$serverVersion = $kvc->get("tqServerVersion");
+$loadedVersion = $kvc->get("zkb:tqServerVersion");
+
+Util::out("$serverVersion $loadedVersion");
+exit();
+
+if ($serverVersion != "" && $serverVersion == $loadedVersion && $kvc->get("zkb:universeLoaded") == true) {
     exit();
 }
 
 Util::out("Prepping to load universe");
-$redis->del("zkb:universeLoaded");
-$redis->del("zkb:tqServerVersion");
+exit();
+$kvc->del("zkb:universeLoaded");
+$kvc->del("zkb:tqServerVersion");
 $guzzler = new Guzzler(25, 10);
 
 $guzzler->call("$esiServer/v1/universe/regions/", "regionsSuccess", "fail");
@@ -21,8 +28,8 @@ $guzzler->finish();
 $guzzler->call("$esiServer/v1/universe/categories/", "categoriesSuccess", "fail");
 $guzzler->finish();
 
-$redis->set("zkb:tqServerVersion", $serverVersion);
-$redis->set("zkb:universeLoaded", "true");
+$kvc->set("zkb:tqServerVersion", $serverVersion);
+$kvc->set("zkb:universeLoaded", "true");
 
 function fail($guzzler, $params, $error) 
 {

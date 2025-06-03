@@ -6,10 +6,12 @@ use cvweiss\redistools\RedisTimeQueue;
 
 require_once "../init.php";
 
+$kvc = new KVCache($mdb, $redis);
+
 $sso = ZKillSSO::getSSO();
 
 if ($redis->get("zkb:noapi") == "true") exit();
-if ($redis->get("zkb:universeLoaded") != "true") exit();
+if ($kvc->get("zkb:universeLoaded") != "true") exit();
 
 $chars = new RedisTimeQueue("zkb:characterID", 86400);
 $esi = new RedisTimeQueue('tqCorpApiESI', $esiCorpKm);
