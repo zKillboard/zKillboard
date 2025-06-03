@@ -46,7 +46,7 @@ class Build
     {
         $rKey = "redis:build:check:" . date('Ymd');
         if ($redis->get($rKey) == "true") return;
-        Util::out("Importing http://sde.zzeve.com/industryActivityMaterials.json");
+        Util::out("Importing https://sde.zzeve.com/industryActivityMaterials.json");
         $raw = file_get_contents("https://sde.zzeve.com/industryActivityMaterials.json");
         $json = json_decode($raw, true);
         $raw = null;
@@ -69,7 +69,7 @@ class Build
     {
         $rKey = "redis:build_qty:check" . date('Ymd');
         if ($redis->get($rKey) != "true") {
-            Util::out("Fetching http://sde.zzeve.com/industryActivityProducts.json");
+            Util::out("Fetching https://sde.zzeve.com/industryActivityProducts.json");
             $raw = file_get_contents("https://sde.zzeve.com/industryActivityProducts.json");
             $json = json_decode($raw, true);
             $raw = null;
