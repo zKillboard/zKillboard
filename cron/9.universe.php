@@ -10,9 +10,6 @@ if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit(
 $serverVersion = $kvc->get("tqServerVersion");
 $loadedVersion = $kvc->get("zkb:tqServerVersion");
 
-Util::out("$serverVersion $loadedVersion");
-exit();
-
 if ($serverVersion != "" && $serverVersion == $loadedVersion && $kvc->get("zkb:universeLoaded") == true) {
     exit();
 }
