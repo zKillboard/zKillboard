@@ -20,8 +20,5 @@ require 'vendor/autoload.php';
 
 $mdb = new Mdb();
 
-$sentinel = new RedisSentinel('localhost', 26379);
-$master = $sentinel->getMasterAddrByName('mymaster');
-
 $redis = new Redis();
-$redis->pconnect($master[0], $master[1]);
+$redis->pconnect('server128gb', 6379);
