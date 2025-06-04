@@ -156,7 +156,13 @@ while ($hour == date('H')) {
     if (!$isMaster) { sleep(1); continue; }
 
     $ws = $redis->hgetall('zkb:servers');
+    $servers = [];
     foreach ($ws as $s=>$l) {
+        $servers[] = $s;
+    }
+    sort($servers);
+    foreach ($servers as $s) {
+        $l = $redis->hget('zkb:servers', $s);
         echo str_pad($s, 14, " ", STR_PAD_RIGHT) . "$l\n";
     }
     echo "\n";
