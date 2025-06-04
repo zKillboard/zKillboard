@@ -82,7 +82,7 @@ function startWebSocket() {
                 wslog(event.data);
         };
         ws.onopen = function(event) {
-            pubsub('public');
+            doSubs();
         };
 
         var channel = entityType + ":" + entityID;
@@ -97,6 +97,11 @@ function startWebSocket() {
     } catch (e) {
         setTimeout(startWebSocket, 100);
     }
+}
+
+const pubsubs = ['public'];
+function doSubs() {
+    pubsubs.forEach((e) => { pubsub(e); });
 }
 
 function htmlNotify (data) 
@@ -167,11 +172,11 @@ function wslog(msg)
 
 function loadLittleMail(killID) {
         // Add the killmail to the live feed kill list
-        $.get("/cache/1hour/killlistrow/" + killID + "/", addLittleKill);
+        $.get("/cache/24hour/killlistrow/" + killID + "/", addLittleKill);
 }
 
 function loadKillRow(killID) {
-        $.get("/cache/1hour/killlistrow/" + killID + "/", function(data) { addKillRow(data, killID); });
+        $.get("/cache/24hour/killlistrow/" + killID + "/", function(data) { addKillRow(data, killID); });
 }
 
 function addKillRow(data, id) {
@@ -429,6 +434,7 @@ function pubsub(channel)
 {
     try {
         ws.send(JSON.stringify({'action':'sub', 'channel': channel}));
+        if (!pubsubs.includes(channel)) pubsubs.push(channel);
         console.log("subscribing to " + channel);
     } catch (e) {
         setTimeout("pubsub('" + channel + "');", 150);
