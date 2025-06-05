@@ -17,7 +17,7 @@ $q = MongoFilter::buildQuery($p);
 $ksa = getKillID($uri, $q, 1, $epoch);
 $kea = getKillID($uri, $q, -1, $epoch);
 
-if ($bypass || "$ks" != "$ksa" || "$ke" != "$kea") return $app->redirect("/cache/1hour/statstopisk/?u=$uri&ks=$ksa&ke=$kea");
+if ($bypass || "$ks" != "$ksa" || "$ke" != "$kea") return $app->redirect("/cache/24hour/statstopisk/?u=$uri&ks=$ksa&ke=$kea");
 
 $disqualified = 0;
 foreach ($p as $type => $val) {

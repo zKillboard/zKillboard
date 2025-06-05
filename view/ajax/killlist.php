@@ -24,7 +24,7 @@ if ($stats == null) $stats = ['sequence' => 0];
 
 $sa = (int) $stats['sequence'];
 if ($bypass || "$sa" != "$sequence") {
-    return $app->redirect("/cache/1hour/killlist/?s=$sa&u=$uri", 302);
+    return $app->redirect("/cache/24hour/killlist/?s=$sa&u=$uri", 302);
 }
 
 $params = Util::convertUriToParameters($uri);

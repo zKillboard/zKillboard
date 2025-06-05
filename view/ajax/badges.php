@@ -6,7 +6,7 @@ $params = URI::validate($app, $uri, ['k' => true]);
 $k = $params['k'];
 $killID = (int) $k;
 
-if (strpos($uri, "/bypass/") !== false || "$k" != "$killID") return $app->redirect("/cache/1hour/badges/?k=$killID");
+if (strpos($uri, "/bypass/") !== false || "$k" != "$killID") return $app->redirect("/cache/24hour/badges/?k=$killID");
 
 $badges = [
     [

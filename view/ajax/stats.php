@@ -14,7 +14,7 @@ $array = $mdb->findDoc('statistics', ['type' => $type, 'id' => $id]);
 if ($array == null) $array = ['epoch' => 0];
 
 $sEpoch = $array['epoch'];
-if (((int) $epoch) != $sEpoch) return $app->redirect("/cache/1hour/stats/?epoch=$sEpoch&type=$type&id=$id");
+if (((int) $epoch) != $sEpoch) return $app->redirect("/cache/24hour/stats/?epoch=$sEpoch&type=$type&id=$id");
 
 //$array['activepvp'] = (object) Stats::getActivePvpStats([$type => [$id]]);
 //$array['info'] = $mdb->findDoc('information', ['type' => $type, 'id' => $id]);

@@ -20,7 +20,7 @@ $q = MongoFilter::buildQuery($p);
 $ksa = getKillID($uri, $q, 1, $epoch);
 $kea = getKillID($uri, $q, -1, $epoch);
 
-if ($bypass || "$ks" != "$ksa" || "$ke" != "$kea") return $app->redirect("/cache/1hour/statstop10/?u=$uri&t=$topType&ks=$ksa&ke=$kea");
+if ($bypass || "$ks" != "$ksa" || "$ke" != "$kea") return $app->redirect("/cache/24hour/statstop10/?u=$uri&t=$topType&ks=$ksa&ke=$kea");
 
 $disqualified = 0;
 if ($topType == 'characterID' || $topType == 'corportionID' || $topType == 'allianceID') {
