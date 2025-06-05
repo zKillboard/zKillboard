@@ -477,20 +477,21 @@ class Util
 
     public static function out($text, $source = null)
     {
-        global $mdb;
+        global $mdb, $hostname;
         if ($source == null) $source = @$_SERVER['argv'][0];
-        $mdb->insert("cronlog", ['epoch' => $mdb->now(), 'source' =>  $source, 'text' => $text]);
+        $mdb->insert("cronlog", ['epoch' => $mdb->now(), 'server' => $hostname, 'source' =>  $source, 'text' => $text]);
         echo date('Y-m-d H:i:s')." > $text\n";
     }
 
     public static function zout($text, $source = null)
     {
-        global $logfile, $mdb, $uri;
-        if (!file_exists($logfile) && !is_writable(dirname($logfile))) return; // Can't create the file
-        if (is_writable($logfile)) error_log(date("Y-m-d H:i:s") . " > $text \n", 3, $logfile); 
+        global $logfile, $mdb, $uri, $hostname;
 
         if ($source == null) $source = @$uri;
-        $mdb->insert("cronlog", ['epoch' => $mdb->now(), 'source' =>  $uri, 'text' => $text]);
+        $mdb->insert("cronlog", ['epoch' => $mdb->now(), 'server' => $hostname, 'source' =>  $source, 'text' => $text]);
+
+        if (!file_exists($logfile) && !is_writable(dirname($logfile))) return; // Can't create the file
+        if (is_writable($logfile)) error_log(date("Y-m-d H:i:s") . " > $text \n", 3, $logfile); 
     }
 
     public static function exitNow()
