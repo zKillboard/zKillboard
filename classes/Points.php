@@ -81,10 +81,10 @@ class Points
             if (!isset($row['dogma_attributes'])) break;
             $row = $row['dogma_attributes'][0];
             $p = max(1, $row['value']);
-            $redis->setex("zkb:rigSize:$typeID", 3600, $p);
+            $redis->setex("zkb:rigSize:$typeID", 300, $p);
             return $p;
         }
-        $redis->setex("zkb:rigSize:$typeID", 3600, 1);
+        $redis->setex("zkb:rigSize:$typeID", 300, 1);
         return 1;
     }
 }

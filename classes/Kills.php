@@ -59,7 +59,7 @@ class Kills
                 Info::addInfo($killmail);
                 unset($killmail['_id']);
 
-                $redis->setex($killHashKey, 3600, serialize($killmail));
+                $redis->setex($killHashKey, 300, serialize($killmail));
             }
             $details[$killID] = $killmail;
         }

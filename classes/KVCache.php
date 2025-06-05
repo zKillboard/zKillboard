@@ -38,7 +38,7 @@ class KVCache
 
         KVCache::$localCache[$key] = ['value' => $value, 'expiresAt' => $expiresAt];
         $this->redis->setex($key, $ttl, $value);
-        $this->mdb->insertUpdate("keyvalues", ['key' => $key], KVCache::$localCache[$key]);
+        $this->mdb->insertUpdate("keyvalues", ['key' => $key], ['value' => $value, 'expiresAt' => $expiresAt, $this->mdb->now($ttl)]);
     }
 
     public function setex($key, $ttl, $value)

@@ -168,6 +168,7 @@ class Mdb
         global $longQueryMS;
 
         $cacheTime = isset($query['cacheTime']) ? $query['cacheTime'] : 0;
+        $cacheTime = min($cacheTime, 900);
         unset($query['cacheTime']); // reserved zkb field for caching doesn't need to be in queries
         $serialized = "Mdb::find|$collection|".serialize($query).'|'.serialize($sort)."|$limit|".serialize($includes);
         $cacheKey = $serialized;

@@ -71,7 +71,7 @@ class MongoFilter
         $killmails = $mdb->getCollection($collection);
         $result = $killmails->count($query);
 
-        RedisCache::set($hashKey, $result, 3600);
+        RedisCache::set($hashKey, $result, 900);
 
         return $result;
     }
