@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
 
-clear
-tail -n0 -F -q logs/*.log
+# Pull and source only the export lines from .bashrc
+source <(grep -E '^\s*export\s+\w+=' ~/.bashrc | grep -v '^\s*#')
+
+mongosh $mongoConnString --file js/watch.mjs
+
