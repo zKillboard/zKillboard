@@ -1,3 +1,9 @@
+## LIVE UPDATES DISABLED?
+
+- Disable adblocker(s)
+- Send ISK (see instructions below)
+- Subscribe via Patreon! (also below)
+
 # ISK Payments & Donations
 <a href="/character/93382481/"><img src="https://imageserver.eveonline.com/Character/93382481_128.jpg" alt="zKillboard" style="width: 128px; height: 128px"></a>
 <hr/>

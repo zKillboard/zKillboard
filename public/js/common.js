@@ -488,6 +488,8 @@ function showAdblockedMessage() {
         else html = '<h4>AdBlocker Detected! :(</h4><p>Please support zKillboard by disabling your adblocker.<br/><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p>';
         $("#publifttop").html(html);
         if (ws) ws.close();
+        $(".liveupdates").addClass('hidden');
+        $("#noliveupdates").removeClass("hidden");
     }
 }
 
