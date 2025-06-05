@@ -15,7 +15,6 @@ if ($serverVersion != "" && $serverVersion == $loadedVersion && $kvc->get("zkb:u
 }
 
 Util::out("Prepping to load universe");
-exit();
 $kvc->del("zkb:universeLoaded");
 $kvc->del("zkb:tqServerVersion");
 $guzzler = new Guzzler(25, 10);
