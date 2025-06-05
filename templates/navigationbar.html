@@ -57,8 +57,9 @@
 				{% endif %}
 			</ul>
 			<ul class="nav navbar-nav navbar-right">
-				<li class="visible-lg"><a href="/top/lasthour/all/" rel="tooltip" title="Kills added this hour" id="lasthour">&nbsp;</a></li>
-				<li class="hidden-xs hidden-sm"><a href="#" rel="tooltip" title="Tranquility Status" onClick="return false;"><span id="tqStatus"><span id="tqStatusDetail"></span><span id="tqCount"></span></span></a></li>
+                <li id="noliveupdates" class="hidden hidden-xs hidden-sm"><a href="/information/payments/" style="color: red; font-style: strikethrough;">LIVE UPDATES DISABLED</a></li>
+				<li class="liveupdates visible-lg"><a href="/top/lasthour/all/" rel="tooltip" title="Kills added this hour" id="lasthour">&nbsp;</a></li>
+				<li class="liveupdates hidden-xs hidden-sm"><a href="#" rel="tooltip" title="Tranquility Status" onClick="return false;"><span id="tqStatus"><span id="tqStatusDetail"></span><span id="tqCount"></span></span></a></li>
 				<li class="hidden-xs hidden-sm hidden-md"><a href="/ztop/" rel="tooltip" title="Eve Time"><div id="my_clock"></div></a></li>
                 <li>
                     <form name="search" id="search" class="navbar-form navbar-right">
