@@ -34,7 +34,7 @@ class zkbSearch
 
             $sub = $low;
             do {
-                $result = unserialize($redis->hget("search:$type", $sub));
+                $result = $mdb->find("information", ['type' => $type, 'l_name' => ['$regex' => "^$low"]], ['l_name' => 1], 10, ['l_name' => 1, 'id' => 1]);
                 if ($result == null) $result = [];
                 if (sizeof($result) == 0) $sub = substr($sub, 0, strlen($sub) - 1);
             } while (sizeof($result) == 0 && strlen($sub) > 0);
@@ -42,11 +42,8 @@ class zkbSearch
             $searchType = $type;
             $type = str_replace(':flag', '', $type);
             foreach ($result as $row) {
-                $split = explode("\x00", $row);
-                if (sizeof($split) == 2 && substr($split[0], 0, strlen($search)) != $search) {
-                    continue;
-                }
-                $id = $split[1];
+                $id = $row['id'];
+
                 $info = Info::getInfo($type, $id);
                 $name = $info['name'];
                 $image = isset(self::$imageMap[$type]) ? self::$imageMap[$type] : '';

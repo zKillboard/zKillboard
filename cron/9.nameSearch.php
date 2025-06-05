@@ -1,29 +1,30 @@
 <?php
 
+exit();
+
 require_once '../init.php';
 
 use cvweiss\redistools\RedisTimeQueue;
 
 global $mdb, $redis;
 
-
-
 $key = "zkb:autocomplete";
-
 
 $charsRTQ = new RedisTimeQueue("zkb:characterID", 86400);
 $corpsRTQ = new RedisTimeQueue("zkb:corporationID", 86400);
 $allisRTQ = new RedisTimeQueue("zkb:allianceID", 86400);
 
 $types = [
-    "allianceID",
-    "corporationID",
     "characterID",
+    "corporationID",
+    "allianceID",
 ];
 
 foreach ($types as $type) {
     if ($redis->get("zkb:reinforced") == true) exit();
-    if ($redis->get("$key:$type") == "true") continue;
+    //if ($redis->get("$key:$type") == "true") continue;
+
+    Util::out("Populating search for $type");
     $redis->del("s:search:$type");
     $toMove = [];
 
