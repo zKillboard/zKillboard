@@ -9,6 +9,9 @@ require_once '../init.php';
 $redis->del("zkb:websockets"); // clear it on start
 $redis->del("zkb:servers"); // clear it on start
 
+$hostRedis = new Redis();
+$hostRedis->connect($hostname, 6379);
+
 $redisQueues = [];
 $priorKillLog = 0;
 $isMaster = null;
@@ -142,7 +145,8 @@ while ($hour == date('H')) {
         }
     }
 
-    $cpu = str_pad(exec("top -d 0.5 -b -n2 | grep \"Cpu(s)\"| tail -n 1 | awk '{print $2 + $4}'"), 5, " ", STR_PAD_LEFT);
+    $cpu = exec("top -d 0.5 -b -n2 | grep \"Cpu(s)\"| tail -n 1 | awk '{print $2 + $4}'");
+    $cpu = str_pad(number_format($cpu, 1, '.', ''), 5, " ", STR_PAD_LEFT);
     $output = [];
     $load = str_pad(Util::getLoad(), 5, " ", STR_PAD_LEFT);
     $memUsed = str_pad($memUsed, 5, " ", STR_PAD_LEFT);
@@ -150,6 +154,9 @@ while ($hour == date('H')) {
     $storageSize = str_pad($storageSize, 5, " ", STR_PAD_LEFT);
     $dataSize = str_pad($dataSize, 5, " ", STR_PAD_LEFT);
     $line = exec('date')." CPU: $cpu% Load: $load  Memory: ${memUsed}G/${memTotal}G  Redis: $mem  MongoDB: ${storageSize}G/${dataSize}G";
+
+    $role = Util::getRole($hostRedis);
+    $line = substr($role, 0, 1) . " $line";
     //$output[] = $line;
     $redis->hset("zkb:servers", $hostname, $line);
     //$redis->setex("zkb:memused", 300, $memUsed);
