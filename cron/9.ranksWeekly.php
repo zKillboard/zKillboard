@@ -10,9 +10,10 @@ $today = date('Ymd');
 $time = time();
 $timeKey = $time - ($time % 1200);
 $itimeKey = "zkb:weeklyRanksCalculated:$timeKey";
-if ($redis->get($itimeKey) == true) {
-    exit();
-}
+$itimeSoloKey = "zkb:weeklyRanksSoloCalculated:$timeKey";
+
+if ($redis->get($itimeKey) == "true") exit();
+if ($redis->get($itimeSoloKey) != "true") exit(); // only one at a time please
 
 $statClasses = ['ships', 'isk', 'points'];
 $statTypes = ['Destroyed', 'Lost'];
@@ -126,7 +127,7 @@ break;
     if ($redis->get("zkb:overview:$type:$id") === "true") Util::statsBoxUpdate($next['type'], $next['id']);
 }
 
-$redis->setex($itimeKey, 1200, true);
+$redis->setex($itimeKey, 1200, "true");
 Util::out('Weekly rankings complete');
 
 function moveAndExpire(&$multi, $today, $key)
