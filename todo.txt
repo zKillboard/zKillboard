@@ -1,3 +1,4 @@
+- Patreon - make it auto update already
 - Add sorts to columns for type rank pages
 - Add tech level to ship images in a way that isn't ugly
 - Allow split on advanced search so that top 100 can fill width of page
@@ -7,3 +8,4 @@
 - add bar indicating hs/ls/null/wh/pochven for kills
 - Make alltime/recent/weekly and all/solo redis mappings more consistent
 - Map the various categories in AdvancedSearch
+- battle reports page revamp, make it nicer for mobile/touchscreens
