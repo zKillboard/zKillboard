@@ -1,7 +1,5 @@
 <?php
 
-use cvweiss\redistools\RedisTimeQueue;
-
 require_once '../init.php';
 
 $kvc = new KVCache($mdb, $redis);
@@ -123,15 +121,11 @@ function updateChar(&$guzzler, &$params, &$content)
         $corpExists = $mdb->count('information', ['type' => 'corporationID', 'id' => $corpID]);
         if ($corpExists == 0) {
             $mdb->insertUpdate('information', ['type' => 'corporationID', 'id' => $corpID]);
-            $corps = new RedisTimeQueue("zkb:corporationID", 86400);
-            $corps->add($corpID);
         }
         if ($alliID > 0) {
             $alliExists = $mdb->count("information", ['type' => 'allianceID', 'id' => $alliID]);
             if ($alliExists == 0) {
                 $mdb->insertUpdate("information", ['type' => 'allianceID', 'id' => $alliID]);
-                $allis =  new RedisTimeQueue("zkb:allianceID", 86400);
-                $allis->add($alliID);
             }
         }
 

@@ -2,7 +2,6 @@
 
 $mt = 4; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
-use cvweiss\redistools\RedisTimeQueue;
 use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
@@ -145,8 +144,6 @@ function updateEntity($killID, $entity)
             $insert['name'] = $defaultName;
             try {$mdb->insert('information', $row);} catch (Exception $eex) {} 
         }
-        $rtq = new RedisTimeQueue("zkb:$type", 86400);
-        $rtq->add($id);
 
         if ($killID < ((int) $redis->get('zkb:topKillID') - 100000)) continue;
 

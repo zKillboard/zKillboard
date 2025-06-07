@@ -13,7 +13,6 @@ $sso = ZKillSSO::getSSO();
 if ($redis->get("zkb:noapi") == "true") exit();
 if ($kvc->get("zkb:universeLoaded") != "true") exit();
 
-$chars = new RedisTimeQueue("zkb:characterID", 86400);
 $esi = new RedisTimeQueue('tqCorpApiESI', $esiCorpKm);
 
 if ($mt == 0 && (date("i") == 44 || $esi->size() < 100)) {

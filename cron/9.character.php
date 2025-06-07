@@ -1,7 +1,5 @@
 <?php
 
-use cvweiss\redistools\RedisTimeQueue;
-
 require_once '../init.php';
 
 $kvc = new KVCache($mdb, $redis);
@@ -131,8 +129,6 @@ function updateChar(&$guzzler, &$params, &$content)
     $corpExists = $mdb->count('information', ['type' => 'corporationID', 'id' => $corpID]);
     if ($corpExists == 0) {
         $mdb->insertUpdate('information', ['type' => 'corporationID', 'id' => $corpID]);
-        $corps = new RedisTimeQueue("zkb:corporationID", 86400);
-        $corps->add($corpID);
     }
 
     $updates['lastApiUpdate'] = $mdb->now();

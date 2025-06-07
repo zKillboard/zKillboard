@@ -2,8 +2,6 @@
 
 require_once "../init.php";
 
-use cvweiss\redistools\RedisTimeQueue;
-
 if (date("i") != 0) exit();
 
 $count = 0;
@@ -20,8 +18,6 @@ while ($cursor->hasNext()) {
         $defaultName = "$type $id";
         $row = ['type' => $type, 'id' => (int) $id];
         $mdb->insertUpdate('information', $row, ['name' => $defaultName]);
-        $rtq = new RedisTimeQueue("zkb:$type", 86400);
-        $rtq->add($id);
         $count = 0;
     }
     if ($count > 100000) break;
