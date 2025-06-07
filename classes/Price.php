@@ -123,8 +123,11 @@ class Price
             case 34557:
             case 44264:
                 return 0.01;
+            case 88001:
+                return 10000000000;
             case 45645: // Loggerhead
                 return 35000000000; // 35b
+            case 87381: // Sarathiel
             case 42124:
                 return 45000000000; // 45b
             case 42243: // Chemosh
