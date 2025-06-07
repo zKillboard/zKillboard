@@ -1,6 +1,7 @@
 function out(doc) {
   const formatted = new Date(doc.epoch).toISOString().replace('T', ' ').slice(0, 19);
-  print(`${formatted} > ${doc.text}`);
+  doc.server = doc.server.padStart(13, ' ' );
+  print(`${doc.server} ${formatted} > ${doc.text}`);
 }
 
 const cursor = db.cronlog.watch([{ $match: { operationType: "insert" } }]);
