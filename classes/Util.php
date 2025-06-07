@@ -611,8 +611,8 @@ class Util
 
         $split = explode(' ', $result);
         $load = $split[0];
-
-        return $load;
+        
+        return number_format((float)$load, 2, '.', '');
     }
 
     private static $count;
@@ -671,5 +671,16 @@ class Util
         $sum = 0; $c = 0;
         foreach ($list as $l) { $sum += $l; $c++; }
         return ($c > 0 ? (round($sum / $c, 0)) : 0);
+    }
+
+    public static function getRole($redisClient) {
+        $info = $redisClient->rawCommand('info', 'replication');
+        $lines = explode("\n", $info);
+        foreach ($lines as $line) {
+            if (stripos($line, 'role:') === 0) {
+                $role = trim(substr($line, 5));
+                return $role;
+            }
+        }
     }
 }
