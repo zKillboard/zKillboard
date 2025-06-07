@@ -158,7 +158,11 @@ class Info
         global $mdb;
 
         $serverVersion = $mdb->findField("versions", "serverVersion", ['epoch' => ['$gte' => $epoch]], ['epoch' => 1]);
-        if ($serverVersion == null) throw \Exception("Unknown server version - bailing");
+        if ($serverVersion == null) {
+            // @TODO FIND OUT WHY THIS IS HAPPENING... WTF
+            //throw new \Exception("Unknown server version - bailing");
+            Util::zout("Could not find $serverVersion for $epoch!");
+        }
         $system = $mdb->findDoc("geography", ['type' => 'solarSystemID', 'id' => $solarSystemID, 'serverVersion' => "$serverVersion"]);
         if ($system === null) {
             $system = $mdb->findDoc("geography", ['type' => 'solarSystemID', 'id' => $solarSystemID, 'serverVersion' => ['$nin' => [null, false] ]], ['serverVersion' => -1]);
