@@ -312,16 +312,16 @@ class MongoFilter
 
     public static function getFirstKillID($year, $month, $day = 1)
     {
-        global $redis;
+        global $redis, $kvc;
 
         if (strlen("$month") < 2) $month = "0$month";
         if (strlen("$day") < 2) $day = "0$day";
-        $first = (int) $redis->get("zkb:firstkillid:{$year}{$month}{$day}");
+        $first = (int) $kvc->get("zkb:firstkillid:{$year}{$month}{$day}");
         if ($first != 0) return $first;
 
         $first = (int) Info::findKillID(strtotime("$year$month$day 00:00"), 'start');
         if ($first == 0) $first = 999999999999;
-        $redis->setex("zkb:firstkillid:{$year}{$month}{$day}", 300, $first);
+        $kvc->setex("zkb:firstkillid:{$year}{$month}{$day}", 300, $first);
         return $first;
     }
 

@@ -6,6 +6,5 @@ if ($ssoCharacterID != null && $ssoHash != null) {
     $value = $redis->del("login:$ssoCharacterID:$ssoHash");
 }
 
-session_unset();
-session_regenerate_id();
+session_destroy();
 $app->redirect('/', 302);

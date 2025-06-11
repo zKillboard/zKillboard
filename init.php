@@ -21,4 +21,6 @@ require 'vendor/autoload.php';
 $mdb = new Mdb();
 
 $redis = new Redis();
-$redis->pconnect('server128gb', 6379);
+$redis->pconnect($mhostname, 6379, 1.0);
+
+$kvc = new KVCache($mdb, $redis);

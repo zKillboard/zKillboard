@@ -2,11 +2,27 @@
 
 use cvweiss\redistools\RedisTimeQueue;
 
-global $mdb, $redis, $adminCharacter;
+global $mdb, $redis, $adminCharacter, $ip;
+
+$sessID = session_id();
+
+if (sizeof($_SESSION) == 0) {
+    if ($redis->get("invalid_login:$ip") >= 5) {
+        $redis->del("invalid_login:$ip");
+        return $app->render("error.html", ['message' => "OK, that's enough.  There is some sort of session bug between you and zkillboard.  Are you running adblockers or some plugin for your browser that could be interfering? Let's figure this out and come visit us on Discord."]);
+    }
+    Util::zout("$ip $sessID invalid login session detected at callback, restarting");
+    $redis->incr("invalid_login:$ip", 1);
+    $redis->expire("invalid_login:$ip", 120);
+    // something went wrong and we likely lost their state info
+    header('Location: /ccplogin');
+    return;
+}
 
 $sem = sem_get(3174);
-
 try {
+    Util::zout("$ip $sessID coming through");
+
     // Using the semaphore helps prevent this code from simultaneously handling multiple
     // logins from the same person because they double/triple clicked the authorize
     // button on CCP's SSO login page.
@@ -15,8 +31,11 @@ try {
     // Is the user already logged in somehow? If so, redirect them
     // this should help handle double/triple clicks from ccp's authorization page
     if (@$_SESSION['characterID'] > 0) {
-        header('Location: /', 302);
-        return;
+session_destroy();
+session_start();
+        //Util::zout("user is already logged in: " . $_SESSION['characterID']);
+        //header('Location: /ccpoauth2/', 302);
+        //return;
     }
 
     $scopeCount = 0;
@@ -41,8 +60,6 @@ try {
     }
     $mdb->set('information', ['id' => (int) $charID], ['name' => $charName, 'namecheck' => true]);
     $mdb->removeField('information', ['type' => 'characterID', 'id' => $charID], 'lastApiUpdate'); // force an api update
-    $rtq = new RedisTimeQueue("zkb:characterID", 86400);
-    $rtq->add($charID, -1);
 
     // Wait for the API update
     unset($userdetails['lastApiUpdate']);
@@ -74,9 +91,9 @@ try {
                 $esi->add($charID);
                 break;
             case 'esi-killmails.read_corporation_killmails.v1':
-                //$esi = new RedisTimeQueue('tqCorpApiESI', 3600);
-                //$esi->remove($corpID);
-                //if ($corpID > 1999999) $esi->add($corpID);
+                $esi = new RedisTimeQueue('tqCorpApiESI', 3600);
+                $esi->remove($corpID);
+                if ($corpID > 1999999) $esi->add($corpID);
                 break;
         }
     }
@@ -94,8 +111,8 @@ try {
         }
     }
 
-    ZLog::add("Logged in: $charName ($charID)", $charID, true);
-    if ($scopeCount == 0) Util::zout("$charName ($charID) omitted scopes.");
+    if ($scopeCount == 0) Util::zout("$ip $sessID Logged in: $charName ($charID) omitted scopes.", $charID, true);
+    else Util::zout("$ip $sessID Logged in: $charName ($charID)", $charID, true);
     unset($_SESSION['oauth2State']);
 
     $key = "login:$charID:" . session_id();
@@ -136,12 +153,14 @@ try {
     header('Location: ' . $redirect, 302);
 
 } catch (Exception $e) {
+    $sessid = session_id();
+    Util::zout("$ip $sessid Failed login attempt: " . $e->getMessage() . "\n" . print_r($_SESSION, true));
     if ($e->getMessage() == "Invalid state returned - possible hijacking attempt") {
         if ($_SESSION['characterID'] > 0) header('Location: /', 302);
         else $app->render('error.html', ['message' => "Please try logging in again, but don't double/triple click this time. CCP's login form isn't very good at handling multiple clicks... "], 503);
     } elseif ($e->getMessage() == "Undefined array key \"access_token\"") {
         return $app->render('error.html', ['message' => "CCP failed to send access token data, please try logging in again."], 503);
-    
+
     } else {
         Util::zout(print_r($e, true));
         return $app->render('error.html', ['message' => $e->getMessage()], 503);

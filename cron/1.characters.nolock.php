@@ -11,7 +11,6 @@ $kvc = new KVCache($mdb, $redis);
 $sso = ZKillSSO::getSSO();
 
 if ($redis->get("zkb:noapi") == "true") exit();
-if ($kvc->get("zkb:universeLoaded") != "true") exit();
 
 $esiCorps = new RedisTimeQueue('tqCorpApiESI', 3600);
 $esi = new RedisTimeQueue('tqApiESI', 3600);

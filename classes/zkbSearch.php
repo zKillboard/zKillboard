@@ -18,15 +18,12 @@ class zkbSearch
     {
         global $redis, $mdb;
 
-        $search = strtolower($search);
-        $regex = (substr($search, 0, 2) == "r:" && strlen($search) > 2) ? substr($search, 2) : null;
-        $search = (substr($search, 0, 2) == "r:" && strlen($search) > 2) ? substr($search, 2) : $search;
-        //$low = "[$search\x00";
+        $search = strtolower(preg_quote($search));
         $low = $search;
 
         $exactMatch = [];
         $partialMatch = [];
-        $types = ['typeID:flag', 'regionID', 'solarSystemID', 'factionID', 'allianceID', 'allianceID:flag', 'corporationID', 'corporationID:flag', 'characterID', 'typeID', 'groupID', 'locationID'];
+        $types = ['typeID', 'regionID', 'solarSystemID', 'factionID', 'allianceID', 'allianceID:flag', 'corporationID', 'corporationID:flag', 'characterID', 'typeID', 'groupID', 'locationID'];
         foreach ($types as $type) {
             if ($entityType != null && $entityType != $type) {
                 continue;
@@ -34,15 +31,18 @@ class zkbSearch
 
             $sub = $low;
             do {
-                $result = $mdb->find("information", ['type' => str_replace(':flag', '', $type), 'l_name' => ['$regex' => "^$low"]], ['l_name' => 1], 10, ['l_name' => 1, 'id' => 1]);
+                $result = $mdb->find("information", ['type' => $type, 'l_name' => ['$regex' => "^$low"]], ['l_name' => 1], 10, ['l_name' => 1, 'id' => 1]);
                 if ($result == null) $result = [];
                 if (sizeof($result) == 0) $sub = substr($sub, 0, strlen($sub) - 1);
             } while (sizeof($result) == 0 && strlen($sub) > 0);
 
             $searchType = $type;
             $type = str_replace(':flag', '', $type);
+            $ids = [];
             foreach ($result as $row) {
                 $id = $row['id'];
+                if (array_search($id, $ids) !== false) continue;
+                $ids[] = $id;
 
                 $info = Info::getInfo($type, $id);
                 $name = $info['name'];

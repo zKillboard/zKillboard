@@ -6,6 +6,8 @@ use cvweiss\redistools\RedisTimeQueue;
 
 require_once '../init.php';
 
+// Ensure we have db and redis access
+$mdb->findDoc("zkillmails");
 $redis->del("zkb:websockets"); // clear it on start
 $redis->del("zkb:servers"); // clear it on start
 

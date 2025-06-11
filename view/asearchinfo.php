@@ -13,7 +13,7 @@ try {
 	$name = @$info['name'];
     if ($name == "") $name = "$type $id";
 
-    if ($type ==  "solarSystemID") $name = "$name (" . Info::getInfoField('regionID', $info['regionID'], "name") . ")";
+    if ($type ==  "solarSystemID") $name = "$name (" . Info::getInfoField('regionID', (int) @$info['regionID'], "name") . ")";
 
 	header('Access-Control-Allow-Methods: GET,POST');
 	$app->contentType('application/json; charset=utf-8');

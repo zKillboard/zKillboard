@@ -9,10 +9,10 @@ $mem = [];
 $totalSize = 0;
 foreach ($keys as $key) {
     $ttl = $redis->ttl($key);
-    if ($ttl <= 0) continue;
+    if ($ttl >= 0) continue;
     $size = $redis->rawCommand('memory', 'usage', $key);
     $split = split(":", $key);
-    $memkey = $split[0]  . ":" . $split[1];
+    $memkey = $split[0] ; //  . ":" . $split[1];
     if (!isset($mem[$memkey])) $mem[$memkey] = 0;
     $mem[$memkey] += $size;
     $totalSize += $size;

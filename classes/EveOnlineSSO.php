@@ -61,6 +61,7 @@ class EveOnlineSSO
         $state = ($this->state === null) ? $this->createState() : $this->state;
         $this->state = $state;
         $this->setSessionState($state, $session);
+        session_write_close();
 
         $fields = [
             "response_type" => "code", 
@@ -117,6 +118,8 @@ class EveOnlineSSO
 
     public function handleCallback($code, $state, $session)
     {
+        global $ip;
+
         $oauth2State = $this->getSessionState($session);
         $this->validateStates($state, $oauth2State);
 
