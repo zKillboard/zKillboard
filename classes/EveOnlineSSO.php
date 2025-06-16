@@ -96,6 +96,7 @@ class EveOnlineSSO
 
     protected function getSessionState($session)
     {
+        if (isset($_SESSION['oauth2State'])) return $_SESSION['oauth2State'];
         $class = is_array($session) ? "Array" : get_class($session);
         switch ($class) {
             case "Array":

@@ -21,7 +21,7 @@ if (sizeof($_SESSION) == 0) {
 
 $sem = sem_get(3174);
 try {
-    Util::zout("$ip $sessID coming through");
+    //Util::zout("$ip $sessID coming through");
 
     // Using the semaphore helps prevent this code from simultaneously handling multiple
     // logins from the same person because they double/triple clicked the authorize
@@ -31,11 +31,9 @@ try {
     // Is the user already logged in somehow? If so, redirect them
     // this should help handle double/triple clicks from ccp's authorization page
     if (@$_SESSION['characterID'] > 0) {
-session_destroy();
-session_start();
-        //Util::zout("user is already logged in: " . $_SESSION['characterID']);
-        //header('Location: /ccpoauth2/', 302);
-        //return;
+        Util::zout("user is already logged in: " . $_SESSION['characterID']);
+        header('Location: /ccpoauth2/', 302);
+        return;
     }
 
     $scopeCount = 0;
@@ -111,8 +109,8 @@ session_start();
         }
     }
 
-    if ($scopeCount == 0) Util::zout("$ip $sessID Logged in: $charName ($charID) omitted scopes.", $charID, true);
-    else Util::zout("$ip $sessID Logged in: $charName ($charID)", $charID, true);
+    if ($scopeCount == 0) Util::zout("Logged in: $charName ($charID) omitted scopes.", $charID, true);
+    else Util::zout("Logged in: $charName ($charID)", $charID, true);
     unset($_SESSION['oauth2State']);
 
     $key = "login:$charID:" . session_id();
