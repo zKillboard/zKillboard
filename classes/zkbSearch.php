@@ -22,8 +22,9 @@ class zkbSearch
         $low = $search;
 
         $exactMatch = [];
+        $exactMatchID = [];
         $partialMatch = [];
-        $types = ['typeID', 'regionID', 'solarSystemID', 'factionID', 'allianceID', 'allianceID:flag', 'corporationID', 'corporationID:flag', 'characterID', 'typeID', 'groupID', 'locationID'];
+        $types = ['typeID', 'regionID', 'solarSystemID', 'factionID', 'allianceID', 'allianceID:flag', 'corporationID', 'corporationID:flag', 'characterID', 'groupID', 'locationID'];
         foreach ($types as $type) {
             if ($entityType != null && $entityType != $type) {
                 continue;
