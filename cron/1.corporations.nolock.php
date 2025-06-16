@@ -28,7 +28,6 @@ while ($minute == date('Hi')) {
         
         $row = $mdb->findDoc("scopes", ['corporationID' => $corpID, 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['lastFetch' => 1]);
         if ($row == null) {
-            Util::out("Removing null row $corpID");
             $esi->remove($corpIDRaw);
             continue;
         }
