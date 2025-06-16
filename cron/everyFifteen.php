@@ -49,6 +49,13 @@ $totalKills = $mdb->count('oneWeek');
 $activePvP[] = ['type' => 'Total Kills', 'count' => "$totalKills"];
 $redis->set('zkb:activePvp', json_encode($activePvP));
 
+// Get unique counts
+$types = $mdb->getCollection("information")->distinct('type');
+foreach ($types as $type) {
+    $total = $mdb->count("information", ['type' => $type]);
+    $redis->setex("zkb:unique:$type", 86400, $total);
+}
+
 // Some cleanup
 $redis->keys('*'); // Helps purge expired ttl's
 $redis->setex($key, 900, true);

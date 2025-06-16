@@ -11,6 +11,8 @@ $mdb->findDoc("zkillmails");
 $redis->del("zkb:websockets"); // clear it on start
 $redis->del("zkb:servers"); // clear it on start
 
+$types = $mdb->getCollection("information")->distinct("type");
+
 $hostRedis = new Redis();
 $hostRedis->connect($hostname, 6379);
 
@@ -106,28 +108,25 @@ while ($hour == date('H')) {
     addInfo('killmail characters avg request time in ms.', getRedisAvg('timer:characters', 1000), false);
     addInfo('killmail corporations avg request time in ms.', getRedisAvg('timer:corporations', 100), false);
 
-    $rtq = new RedisTimeQueue("zkb:characterID", 86400);
     addInfo('', 0, false);
-    addInfo("Characters", $rtq->size(), false);
-    $rtq = new RedisTimeQueue("zkb:corporationID", 86400);
-    addInfo("Corporations", $rtq->size(), false);
-    $rtq = new RedisTimeQueue("zkb:allianceID", 86400);
-    addInfo("Alliances", $rtq->size(), false);
+    foreach ($types as $type) {
+        addInfo("{$type}s", (int) $redis->get("zkb:unique:$type"), false);
+    }
 
-    addInfo('', 0, false);
+    addInfo('', 0, true);
     $sponsored = Mdb::group("sponsored", [], ['entryTime' => ['$gte' => $mdb->now(86400 * -7)]], [], 'isk', ['iskSum' => -1]);
     if ($sponsored == null) $sponsored = [['iskSum' => 0]];
     $sponsored = array_shift($sponsored);
     $sponsored = Util::formatIsk($sponsored['iskSum']);
     $balance = Util::formatIsk((double) $mdb->findField("payments", "balance", ['ref_type' => 'player_donation'], ['_id' => -1]));
-    addInfo('Sponsored Killmails (inflated)', $sponsored, false, false);
-    addInfo('Wallet Balance', $balance, false, false);
+    addInfo('Sponsored Killmails (inflated)', $sponsored, true, false);
+    addInfo('Wallet Balance', $balance, true, false);
 
-    addInfo('', 0, false);
+    /*addInfo('', 0, false);
     addInfo('Load Counter', $redis->get("zkb:load"), false);
     addinfo("Reinforced Mode", (int) $redis->get("zkb:reinforced"), false);
     addinfo("420'ed", max(0, $redis->ttl("zkb:420ed")), false);
-    addinfo("420 Prone", (int) ($redis->get("zkb:420prone") == "true"), false);
+    addinfo("420 Prone", (int) ($redis->get("zkb:420prone") == "true"), false);*/
 
     $info = $redis->info();
     $mem = $info['used_memory_human'];
