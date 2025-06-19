@@ -3,7 +3,8 @@
 $app->contentType('application/json; charset=utf-8');
 global $mdb, $redis;
 
-$res = ['host' => gethostname()];
+$hostname = gethostname();
+$res = ['host' => $hostname];
 
 try {
     $res['redis'] = true;
@@ -17,6 +18,9 @@ try {
     $mdb->findDoc("killmails");
     $res['mongo'] = true;
     $res['mongo-error'] = null;
+    $r = $mdb->getDb()->command(['hello' => 1]);
+    $master = $r['primary'];
+    $res['isMongoPrimary'] = str_contains($master, "${hostname}:");
 } catch (Exception $e) {
     $res['mongo'] = false;
     $res['mongo-error'] = $e->getMessage();
