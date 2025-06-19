@@ -41,6 +41,12 @@ class Mdb
         }
     }
 
+    public function getClient()
+    {
+        $this->getDb();
+        return $this->mongoClient;
+    }
+
     /*
        Return the specified collection from the mongodb
      */
