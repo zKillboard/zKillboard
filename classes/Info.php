@@ -161,7 +161,7 @@ class Info
         if ($serverVersion == null) {
             // @TODO FIND OUT WHY THIS IS HAPPENING... WTF
             //throw new \Exception("Unknown server version - bailing");
-            Util::zout("Could not find $serverVersion for $epoch!");
+            Util::zout("Could not find systemID $solarSystemID for serverversion: $serverVersion for epoch: $epoch!");
         }
         $system = $mdb->findDoc("geography", ['type' => 'solarSystemID', 'id' => $solarSystemID, 'serverVersion' => "$serverVersion"]);
         if ($system === null) {
