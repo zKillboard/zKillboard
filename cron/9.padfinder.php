@@ -2,23 +2,23 @@
 
 require_once "../init.php";
 
-if (date("j") % 5 != 0) exit(); // every 5 days, roughly
 if (date("Hi") != 1000) exit(); 
 
-$coll = "ninetyDays";
-$iter = $mdb->getCollection($coll)->find(['labels' => 'pvp']);
+$modified = 0;
 
-while ($iter->hasNext()) {
-    $killmail = $iter->next();
-    $killmail = $mdb->findDoc("killmails", ['killID' => $killmail['killID']]);
-    if (!isset($killmail['padhash'])) continue;
-    if (@$killmail['reset'] == true) continue;
-    $padhash = $killmail['padhash'];
-    if ($redis->get("zkb:padhash:$padhash") == "true") $isPadded = true;
-    else $isPadded = ($mdb->count("killmails", ['padhash' => $padhash]) >= 3);
+$pipeline = [
+    ['$match' => [ 'labels' => 'pvp', 'padhash' => ['$ne' => null] ]],
+    ['$group' => [ '_id' => '$padhash', 'count' => ['$sum' => 1] ]],
+    ['$match' => [ 'count' => ['$gte' => 3] ]],
+    ['$sort' => [ 'count' => -1 ]]
+];
+$coll = $mdb->getCollection("oneWeek");
 
-    if ($isPadded) {
-        $redis->setex("zkb:padhash:$padhash", 86400, "true");
-        $mdb->set("killmails", ['padhash' => $padhash, 'labels' => 'pvp'], ['reset' => true], true);
-    }
+$cursor = $coll->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true]);
+foreach ($cursor['result'] as $doc) {
+    $padhash = $doc['_id'];
+    $redis->setex("zkb:padhash:$padhash", 86400, "true");
+    $r = $mdb->set("killmails", ['padhash' => $padhash, 'labels' => 'pvp'], ['reset' => true], true);
+    $modified += $r['nModified'];
 }
+Util::out("padhash kilmails reset: $modified");
