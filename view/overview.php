@@ -127,6 +127,7 @@ if ($disqualified == 0 && ($pageType == 'top' || $pageType == 'topalltime')) {
     $topParameters = $parameters; 
     $topParameters['limit'] = 100;
     $topParameters['npc'] = false;
+    $topParameters['labels'] = 'pvp';
     $topParameters['cacheTime'] = 86400;
 
     if ($pageType == 'topalltime') {
