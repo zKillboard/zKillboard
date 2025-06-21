@@ -6,6 +6,8 @@ use cvweiss\redistools\RedisTimeQueue;
 
 require_once '../init.php';
 
+$width = 90;
+
 // Ensure we have db and redis access
 $mdb->findDoc("zkillmails");
 $redis->del("zkb:websockets"); // clear it on start
@@ -178,12 +180,12 @@ while ($hour == date('H')) {
     $leftCount = 1;
     $rightCount = 1;
     $line = "                                                                                                               ";
-    $line = str_repeat(" ", 80);
+    $line = str_repeat(" ", $width);
     foreach ($infoArray as $i) {
         $num = trim($i['num']);
         $text = trim($i['text']);
         $lr = $i['lr'];
-        $start = $lr == true ? 15 : 70;
+        $start = $lr == true ? 15 : $width - 10;
         $leftCount = $lr == true ? $leftCount + 1 : $leftCount;
         $rightCount = $lr == false ? $rightCount + 1 : $rightCount;
 
