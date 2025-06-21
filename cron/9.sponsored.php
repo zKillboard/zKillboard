@@ -12,7 +12,7 @@ foreach ($mails as $mail) {
     $victim = array_shift($involved);
     unset($victim['isVictim']);
 
-    if (((int) $victim['characterID']) == 0) continue; // no character to send the evemail to
+    if (((int) @$victim['characterID']) == 0) continue; // no character to send the evemail to
 
     $victim['solarSystemID'] = $killmail['system']['solarSystemID'];
     $victim['regionID'] = $killmail['system']['regionID'];
