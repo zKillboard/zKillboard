@@ -26,8 +26,7 @@ while ($minute == date('Hi')) {
     $currentSecond = date('His');
     $id = (int) $row['id'];
     if ($id == 1) {
-        // damnit
-        $mdb->remove("information", $row);
+        $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now()]);
         continue;
     }
 
