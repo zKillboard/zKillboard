@@ -446,7 +446,8 @@ function isNPC(&$killmail)
     return true;
 }
 
-// https://forums.eveonline.com/default.aspx?g=posts&m=4900335#post4900335
+// https://forums.eveonline.com/default.aspx?g=posts&m=4900335#post4900335 (now dead)
+// https://web.archive.org/web/20250212235351/https://forums-archive.eveonline.com/message/4900335/#post4900335
 function getPadHash($killmail)
 {
     global $mdb;
