@@ -38,6 +38,7 @@ try {
         sem_acquire($sem);
 
         $row = $mdb->findDoc('crestmails', ['processed' => 'fetched']);
+print_r($row);
         if ($row == null) {
             $killID = $redis->zrevrange("tobeparsed", 0, 0);
             $killID = (int) @$killID[0];
@@ -183,6 +184,9 @@ try {
         $kill['zkb'] = $zkb;
         $kill['damage_taken'] = (int) @$mail['victim']['damage_taken'];
         if (!$isPaddedKill && !$kill['npc']) $kill['padcheck'] = true;
+
+        Log::log(print_r($row, true));
+        if (isset($row['labels_override'])) $kill['labels'] = $row['labels_override'];
 
         saveMail($mdb, 'killmails', $kill);
         if ($kill['dttm']->sec >= $date7Days) saveMail($mdb, 'oneWeek', $kill);
