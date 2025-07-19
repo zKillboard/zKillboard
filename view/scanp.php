@@ -62,7 +62,7 @@ try {
             if (isset($charparsed[$entity])) continue;
             $charparsed[$entity] = true;
 
-            $row = $mdb->findDoc("information", ['type' => 'characterID', 'name' => $entity, 'cacheTime' => 3600], [], $includes);
+            $row = $mdb->findDoc("information", ['type' => 'characterID', 'l_name' => strtolower($entity), 'cacheTime' => 3600], [], $includes);
             if ($row == null) $row = ['name' => $entity, 'id' => -1, 'unknown' => true];
 
             $row['labels'] = [];
