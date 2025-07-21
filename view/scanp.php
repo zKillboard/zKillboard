@@ -82,9 +82,13 @@ try {
             $row['stats']['ganked-shipsDestroyed'] = (int) @$stats['labels']['ganked']['shipsDestroyed'];
             unset($row['stats']['labels']);
 
-            $p = ['characterID' => [$row['id']], 'limit' => 5, 'pastSeconds' => 7776000, 'kills' => true, 'cacheTime' => 3600];
+            $p = ['characterID' => [$row['id']], 'limit' => 6, 'pastSeconds' => 7776000, 'cacheTime' => 3600];
+            $shipsTop = [];
             $topShips = Stats::getTop('shipTypeID', $p);
-            $row['ships'] = $topShips;
+            foreach ($topShips as $topShip) {
+                if ($topShip['groupID'] != 29 && sizeof($shipsTop) < 5) $shipsTop[] = $topShip;
+            }
+            $row['ships'] = $shipsTop;
 
             $chars[] = $row;
             add($corps, $row, 'corporationID');
