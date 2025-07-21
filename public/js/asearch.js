@@ -5,6 +5,16 @@ var radios = { sort: { sortBy: 'date', sortDir: 'desc' }};  // to be deprecated
 var asfilter = {location: [], attackers: [], neutrals: [], victims: [], sort: { sortBy: 'date', sortDir: 'desc' }};
 
 $(document).ready(function() {
+    checkCharID();
+});
+
+function checkCharID() {
+    if (characterID == -1) return setTimeout(checkCharID, 100);
+    if (characterID == 0) return window.location = '/ccplogin/';
+    loadasearch();
+}
+
+function loadasearch() {
     $('.asearch-autocomplete').autocomplete({
            autoSelectFirst: false,
            serviceUrl: '/cache/1hour/autocomplete/',
@@ -43,7 +53,7 @@ $(document).ready(function() {
         setFilters();
         $(".btn-page.btn-primary").click();
     });
-});
+};
 
 function datepick() {
     if (allowChange) {

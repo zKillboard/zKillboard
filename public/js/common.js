@@ -484,7 +484,7 @@ function showAdblockedMessage() {
     if ($("#publifttop").html() == "") {
         gtag('event', 'adblocked', 'detectAdblock blocked');
         let html = '';
-        //if (promoURI != '') html = `<div style='max-height: 130px; max-width: 100%;'><a href="${promoURI}" target="_blank"><img style='max-height: 130px; max-width: 100%;' src="${promoImage1}" alt="Promotional Image" />User code "zkill" for 3% Off!</a></div>`;
+        if (promoURI != '') html = `<div style='max-height: 130px; max-width: 100%;'><a href="${promoURI}" target="_blank"><img style='max-height: 130px; max-width: 100%;' src="${promoImage1}" alt="Promotional Image" />User code "zkill" for 3% Off!</a></div>`;
         //else html = '<h4>AdBlocker Detected! :(</h4><p>Please support zKillboard by disabling your adblocker.<br/><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p>';
         $("#publifttop").html(html);
         if (ws) ws.close();

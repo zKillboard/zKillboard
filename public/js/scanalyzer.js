@@ -1,4 +1,14 @@
 $(document).ready(function() {
+    scanReadyCharCheck();
+});
+
+function scanReadyCharCheck() {
+    if (characterID == -1) return setTimeout(scanReadyCharCheck, 100);
+    if (characterID == 0) return window.location = '/ccplogin/';
+    scanReady();
+}
+
+function scanReady() {
     $('#scaninput').on('blur', startProcess);
 
     if (navigator.clipboard === undefined) $("#clip").hide();
@@ -6,7 +16,7 @@ $(document).ready(function() {
 
     clearInput();
     $("#clippy").removeAttr("disabled");
-})
+}
 
 function clearInput() {
     $('#scaninput').val('');

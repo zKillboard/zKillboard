@@ -1,6 +1,7 @@
 {% if sessionusername %}
 <script type="text/javascript">
 
+characterID = {{ characterID }};
 $("#char-loggedout").remove();
 $("#contest-logged-in").removeClass('hidden');
 $("#loginforapi").remove();
@@ -151,6 +152,7 @@ console.log("nav loaded");
 {% else %}
 
 <script type="text/javascript">
+characterID = 0;
 $("#char-loggedin").remove();
 $("#tracker-none").removeClass("hidden");
 $("#savefit").remove();

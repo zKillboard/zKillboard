@@ -26,7 +26,7 @@ if ($ssoCharacterID > 0) {
         $twig->addGlobal('scopes', explode(' ', $scopes));
     }
 } else {
-    $twig->addGlobal('characterID', 0);
+    $twig->addGlobal('characterID', -1);
 }
 
 // Theme

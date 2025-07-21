@@ -179,8 +179,6 @@ $app->get('/cache/bypass/statstopisk/', function () use ($app) { include 'view/a
 $app->get('/cache/1hour/statstopisk/', function () use ($app) { include 'view/ajax/statstopisk.php'; });
 $app->get('/cache/24hour/statstopisk/', function () use ($app) { include 'view/ajax/statstopisk.php'; });
 
-$app->get('/cache/1hour/badges/', function () use ($app) { include 'view/ajax/badges.php'; });
-
 $app->get('/api/prices/:id/', function ($id) use ($app) {
         include 'view/apiprices.php';
         });

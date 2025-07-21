@@ -299,7 +299,6 @@ function prepComments() {
     		$("#commentblock").load('/cache/bypass/comment/kill-{{ killdata.info.killID }}/-1/up/');
     		pubsub('comment:kill-{{ killdata.info.killID }}');
     	}
-    $("#badges").load("/cache/1hour/badges/?k={{ killdata.info.killID }}");
 }
 </script>
 {% endblock %}
