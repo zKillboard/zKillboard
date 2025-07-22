@@ -4,8 +4,12 @@ $(document).ready(function() {
 
 function scanReadyCharCheck() {
     if (characterID == -1) return setTimeout(scanReadyCharCheck, 100);
-    if (characterID == 0) return window.location = '/ccplogin/';
-    scanReady();
+    if (characterID == 0) {
+        $(".contentrequiredlogin.content").remove();
+    } else {
+        $(".contentrequiredlogin.login").remove();
+        scanReady();
+    }
 }
 
 function scanReady() {

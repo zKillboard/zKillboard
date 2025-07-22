@@ -10,8 +10,12 @@ $(document).ready(function() {
 
 function checkCharID() {
     if (characterID == -1) return setTimeout(checkCharID, 100);
-    if (characterID == 0) return window.location = '/ccplogin/';
-    loadasearch();
+    if (characterID == 0) {
+        $(".contentrequiredlogin.content").remove();
+    } else {
+        $(".contentrequiredlogin.login").remove();
+        loadasearch();
+    }
 }
 
 function loadasearch() {
