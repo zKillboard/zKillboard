@@ -5,13 +5,7 @@ zKillboard is a collaborative effort by many people, see our GitHub repository f
 ## Contacts
 
 - Please read the [FAQ](/information/faq/) before contacting anyone with your questions.
-- Please use our [Ticket System](/account/tickets/) to contact zKillboard devs with any questions.
-
-
-- Squizz Caphinator
- - Slack [Tweetfleet](https://tweetfleet.slack.com), channel #devfleet
- - Twitter: [@squizzc](https://twitter.com/squizzc)
- - EMail: squizzc@gmail.com
+- Please use [Discord](https://discord.gg/sV2kkwg8UD) to contact us about any issues or other questions not covered in the FAQ.
 
 ## 3rd Parties
 
