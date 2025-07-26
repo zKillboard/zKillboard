@@ -124,11 +124,11 @@ while ($hour == date('H')) {
     addInfo('Sponsored Killmails (inflated)', $sponsored, true, false);
     addInfo('Wallet Balance', $balance, true, false);
 
-    /*addInfo('', 0, false);
-    addInfo('Load Counter', $redis->get("zkb:load"), false);
-    addinfo("Reinforced Mode", (int) $redis->get("zkb:reinforced"), false);
-    addinfo("420'ed", max(0, $redis->ttl("zkb:420ed")), false);
-    addinfo("420 Prone", (int) ($redis->get("zkb:420prone") == "true"), false);*/
+    addInfo('', 0);
+    addInfo('Load Counter', $redis->get("zkb:load"));
+    addinfo("Reinforced Mode", (int) $redis->get("zkb:reinforced"));
+    addinfo("420'ed", max(0, $redis->ttl("zkb:420ed")));
+    addinfo("420 Prone", (int) ($redis->get("zkb:420prone") == "true"));
 
     $info = $redis->info();
     $mem = $info['used_memory_human'];
