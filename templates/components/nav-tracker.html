@@ -3,10 +3,13 @@
 
 characterID = {{ characterID }};
 $("#char-loggedout").remove();
+$("#nousermenu").addClass("hidden");
+$("#usermenu").removeClass("hidden");
 $("#contest-logged-in").removeClass('hidden');
 $("#loginforapi").remove();
 $("#username").text("{{ sessionusername }}");
 $("#char-image").attr("src", "{{ image_character }}{{ characterID }}/portrait?size=256");
+console.log("{{ image_character }}{{ characterID }}/portrait?size=256");
 
 try {
 $(".char-image").attr("src", "{{ image_character }}{{ characterID }}/portrait?size=128").on('click', function() { window.location = '/character/{{ characterID }}/'; });

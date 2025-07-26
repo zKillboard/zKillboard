@@ -71,7 +71,9 @@
                         </div>
                     </form>
                 </li>
-				<li id='usermenu' class="dropdown">
+<li id="nousermenu" class="dropdown"><a href="/ccplogin/"><img id="no-char-image" src="https://images.evetech.net/characters/1/portrait?size=32" style="height: 32px; width: 32px; padding: 0px; margin: 0px; margin-top: -8px;"> <span class="caret"></span>
+</a></li>
+				<li id='usermenu' class="dropdown hidden">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown" id='usermenu-dropdown'>
                                         {% if characterID > 0 %}
                                             <img id='char-image' src="{{ image_character }}{{ characterID }}/portrait?size=32" style='height: 32px; width: 32px; padding: 0px; margin: 0px; margin-top: -8px;'/>
