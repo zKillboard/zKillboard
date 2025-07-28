@@ -2,7 +2,7 @@
 
 class Killmail
 {
-    public static function addMail($killID, $hash, $source = 'Killmail::add') 
+    public static function addMail($killID, $hash, $source = 'Killmail::add', $delay = 0) 
     {
         global $mdb, $redis;
 
@@ -14,7 +14,7 @@ class Killmail
         $exists = $mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash]);
         if (!$exists) {
             try {
-                $mdb->save('crestmails', ['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => $source]);
+                $mdb->save('crestmails', ['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => $source, 'delay' => $delay]);
                 $redis->setex($kmKey, 80000 + rand(1,9600), "true");
                 return 1;
             } catch (Exception $ex) {
@@ -22,6 +22,7 @@ class Killmail
                 return 0;
             }
         }
+        $mdb->set('crestmails', ['killID' => $killID, 'hash' => $hash, 'delay' => [ '$gt' => $delay]], ['delay' => $delay]);
         $redis->setex($kmKey, 80000 + rand(1,9600), "true");
         return 0;
     }

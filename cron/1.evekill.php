@@ -2,6 +2,8 @@
 
 require_once "../init.php";
 
+if (date("i") % 5 != 0) exit();
+
 $raw = @file_get_contents($eveKillLatest);
 if ($raw == "") exit(); // eve-kill went down, try again later
 $json = json_decode($raw, true);
@@ -16,7 +18,7 @@ foreach (array_keys($json) as $id) {
     $row = $mdb->findDoc("crestmails", ['killID' => $id, 'hash' => $hash]);
     if ($row == null) {
         $count++;
-        $mdb->insert("crestmails", ['killID' => $id, 'hash' => $hash, 'processed' => false, 'source' => 'eve-kill']);
+        $mdb->insert("crestmails", ['killID' => $id, 'hash' => $hash, 'processed' => false, 'source' => 'eve-kill', 'delay' => 0]);
     }
 }
 if ($count > 0) Util::out("Adding $count kill(s) from evekill");

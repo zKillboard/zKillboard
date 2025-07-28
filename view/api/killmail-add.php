@@ -18,7 +18,7 @@ if (((int) $redis->get("km:post:$ip")) > 5) {
 // do we have the mail?
 if ($mdb->findDoc('killmails', ['killID' => $killID]) == null) {
     try {
-        $mdb->insert("crestmails", ['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => 'killmail-api-add']);
+        $mdb->insert("crestmails", ['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => 'killmail-api-add', 'delay' => 0]);
     } catch (Exception $ex) {
         Util::zout(print_r($ex, true));
     }
@@ -41,6 +41,9 @@ if ($mdb->findDoc('killmails', ['killID' => $killID]) == null) {
         
     // is the mail valid?
     if ($processed !== true) return invalidRequest("Invalid id or hash");
+} else {
+    // update the delay to 0, manual posts always take priority
+    $mdb->set('crestmails', ['killID' => $killID, 'hash' => $hash], ['delay' => 0]);
 }
 
 // return URL for the mail

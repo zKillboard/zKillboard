@@ -43,6 +43,8 @@ $(document).ready(function() {
     });
 
     $(document).on('keypress', checkForSearchKey);
+    $('#dls-slider').on('change input', updateDLS);
+    $('#dls-slider').on('click touchstart mousedown', stopPropagation);
 
     // setup websocket with callbacks
     //if (start_websocket) startWebSocket();
@@ -484,7 +486,7 @@ function showAdblockedMessage() {
     if ($("#publifttop").html() == "") {
         gtag('event', 'adblocked', 'detectAdblock blocked');
         let html = '';
-        if (promoURI != '') html = `<div style='max-height: 130px; max-width: 100%;'><a href="${promoURI}" target="_blank"><img style='max-height: 130px; max-width: 100%;' src="${promoImage1}" alt="Promotional Image" />User code "zkill" for 3% Off!</a></div>`;
+        //if (promoURI != '') html = `<div style='max-height: 130px; max-width: 100%;'><a href="${promoURI}" target="_blank"><img style='max-height: 130px; max-width: 100%;' src="${promoImage1}" alt="Promotional Image" />User code "zkill" for 3% Off!</a></div>`;
         //else html = '<h4>AdBlocker Detected! :(</h4><p>Please support zKillboard by disabling your adblocker.<br/><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p>';
         $("#publifttop").html(html);
         if (ws) ws.close();
@@ -653,4 +655,23 @@ function updateTqStatus(tqStatus, count) {
     doFormats();
 }
 
+const dlsOptions = {
+    '0': 'ASAP - Killmails will post as they are received.',
+    '1': '1 hour - killmails will post when they are 1 hour old.',
+    '2': '3 hours - killmails will post when they are 3 hours old.',
+    '3': '8 hours - killmails will post when they are 8 hours old. ',
+    '4': '24 hours - killmails will post when they are 24 hours old.',
+    '5': '72 hours - killmails will post when they are 72 hours (3 days) old.'
+}
+function updateDLS(e) {
+    let slider = $(this);
+    let val = slider.val() || 0;
+    $("#dls-value").text(dlsOptions[val]);
+    $("#dls-login").attr('href', `/ccpoauth2/${val}/`);
+}
+
 console.log('common.js loaded');
+
+function stopPropagation(e) {
+    e.stopPropagation();
+}

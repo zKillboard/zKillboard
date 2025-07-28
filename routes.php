@@ -262,6 +262,9 @@ $app->get('/ccpsavefit/:killID/', function ($killID) use ($app) {
         });
 
 // EVE Online OAUTH2
+$app->get('/ccpoauth2/:delay/', function($delay)  use ($app) {
+        include 'view/ccpoauth2.php';
+    });
 $app->get('/ccpoauth2/', function()  use ($app) {
         include 'view/ccpoauth2.php';
     });

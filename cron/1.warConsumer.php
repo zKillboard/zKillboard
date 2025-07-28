@@ -100,9 +100,9 @@ function killmailSuccess(&$guzzler, &$params, &$content)
 
         $mdb->insertUpdate('warmails', ['warID' => $id, 'killID' => $killID]);
         if (!$mdb->exists('crestmails',  ['killID' => $killID, 'hash' => $hash])) {
-            $mdb->insert('crestmails', ['killID' => (int) $killID, 'hash' => $hash, 'processed' => false, 'source' => '1.wars']);
+            $mdb->insert('crestmails', ['killID' => (int) $killID, 'hash' => $hash, 'processed' => false, 'source' => '1.wars', 'delay' => 0]);
             Util::out("New WARmail $killID");
-        }
+        } else $mdb->set('crestmails', ['killID' => (int) $killID, 'hash' => $hash, 'processed' => 'delayed'], ['delay' => 0]);
     }
     if (sizeof($killmails) > 1999) {
         $page = $params['page'];

@@ -24,7 +24,7 @@ while ($minute == date("Hi")) {
     foreach ($rows as $row) {
         $killID = $row['killID'];
         $hash = $row['hash'];
-    
+
         if (strlen($hash) != 40) {
             // Invalid hash, wtf
             Util::out("removing invalid hash $killID $hash " . @$row['source']);
@@ -34,13 +34,13 @@ while ($minute == date("Hi")) {
 
         $raw = Kills::getEsiKill($killID);
         if ($raw != null) {
-            $mdb->set("crestmails", ['killID' => $killID, 'hash' => $hash], ['processed' => 'fetched']);
-            $redis->zadd("tobeparsed", $killID, $killID);
+            $mdb->set("crestmails", ['killID' => $killID, 'hash' => $hash], ['processed' => 'delayed']);
             continue;
         }
 
         $mdb->set("crestmails", $row, ['processed' => 'fetching']);
         $guzzler->call("$esiServer/v1/killmails/$killID/$hash/", "success", "fail", ['row' => $row, 'mdb' => $mdb, 'redis' => $redis, 'killID' => $killID, 'esimails' => $esimails]);
+break;
     }
     if (sizeof($rows) == 0) {
         $guzzler->sleep(1);
@@ -89,11 +89,12 @@ function success(&$guzzler, &$params, &$content) {
 
     try {
         $esimails->insert($doc);
+
+        $unixtime = strtotime($doc['killmail_time']);
+        $mdb->set("crestmails", ['killID' => $row['killID'], 'hash' => $row['hash']], ['processed' => 'delayed', 'epoch' => $unixtime]);
+        $killID = $doc['killmail_id'];
+        if ($redis->get("tobefetched") > 0) $redis->incr("tobefetched", -1);
     } catch (Exception $ex) {
         // argh
     }
-    $mdb->set("crestmails", ['killID' => $row['killID'], 'hash' => $row['hash']], ['processed' => 'fetched']);
-    $killID = $doc['killmail_id'];
-    $params['redis']->zadd("tobeparsed", $killID, $killID);
-    if ($redis->get("tobefetched") > 0) $redis->incr("tobefetched", -1);
 }

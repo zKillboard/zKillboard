@@ -2,13 +2,16 @@
 
 global $redis, $ip;
 
-session_destroy();
-session_start();
-
 $sessID = session_id();
+
+$delayInt = isset($delay) ? (int) $delay : 0;
+if ($delayInt > 0 && $delayInt <= 5) {
+    $redis->setex("delay:$sessID", 900, $delay);
+} else $redis->del("delay:$sessID");
+
 $uri = @$_SERVER['HTTP_REFERER'];
 if ($uri != '' && $redis->get("forward:$sessID") == null) {
-    $redis->setex("forward:$sessID", 300, $uri);
+    $redis->setex("forward:$sessID", 900, $uri);
 }
 
 $sso = ZKillSSO::getSSO();

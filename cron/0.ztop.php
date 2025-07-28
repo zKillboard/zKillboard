@@ -64,6 +64,9 @@ while ($hour == date('H')) {
     $killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
     $kCount = $killsLastHour->count();
     addInfo('Kills parsed last hour', $kCount);
+
+    addInfo('Killmails delayed', $mdb->count('crestmails', ['processed' => 'delayed', 'delay' => ['$gt' => 0]]));
+
     if ($kCount != $lastKillCountSent || (time() % 5 == 0)) {
         $serverStatus = $redis->get('tqStatus');
         $loggedIn = $redis->get('tqCount');

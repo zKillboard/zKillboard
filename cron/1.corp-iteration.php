@@ -87,6 +87,7 @@ function success($params, $content, $uri)
     $row = $params['row'];
     $charID = $row['characterID'];
     $corpID = $row['corporationID'];
+    $delay = (int) @$row['delay'];
 
     $newKills = 0;
     $kills = $content == "" ? [] : json_decode($content, true);
@@ -129,7 +130,7 @@ function success($params, $content, $uri)
         $killID = $kill['killmail_id'];
         $hash = $kill['killmail_hash'];
 
-        $newKills += Killmail::addMail($killID, $hash, '1.corp-iteration');
+        $newKills += Killmail::addMail($killID, $hash, '1.corp-iteration', $delay);
     }
 
     if ($newKills > 0) {

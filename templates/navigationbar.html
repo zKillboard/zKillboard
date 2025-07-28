@@ -77,7 +77,16 @@
                                         <span class="caret"></span></a>
 					        <ul class="dropdown-menu" id='char-loggedin'>
 							<li id='username' class="dropdown-header" style="font-weight: bold;">{{ sessionusername }}</li>
-                            <li class="forloggedout"><a href="/ccpoauth2/">Login providing publicData &amp; killmail scopes.<br/><img src="/img/ssologin.png" alt="SSO Login"></a></li>
+                            <li class="forloggedout"><a id="dls-login" href="/ccpoauth2/">Login providing publicData &amp; killmail scopes.<br/><img src="/img/ssologin.png" alt="SSO Login"></a></li>
+                            <li class="forloggedout" id="dls">
+<div id="dlsoption">
+<label for="dls-slider">Delay killmails?</label>
+<input type="range" id="dls-slider" min="0" max="5" step="1" value="0" class="bs3-slider">
+<!--<output id="segments-output">0</output>-->
+<output id="dls-value">ASAP - Killmails will post as they are recevied.</output>
+<p>BETA FEATURE - manual posts will take priority, lowest delays will take priority.</p>
+</div>
+</li>
 
 <img class='char-image clickimage hidden-xs forloggedin' style='margin-left: 10px;'><br/>
 <img class='corp-image clickimage hidden-xs forloggedin' style='margin-left: 10px;'>

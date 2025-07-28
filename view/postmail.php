@@ -29,9 +29,12 @@ if ($_POST) {
                 $hash = (string) $exploded[5];
                 $exists = $mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash]);
                 if (!$exists) {
-                    $in = ['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => 'postmail.php'];
+                    $in = ['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => 'postmail.php', 'delay' => 0];
                     $mdb->getCollection('crestmails')->save($in);
                     $newCrest = true;
+                } else {
+                    // update the delay to 0, manual posts always take priority
+                    $mdb->set('crestmails', ['killID' => $killID, 'hash' => $hash], ['delay' => 0]);
                 }
 
                 $timer = new Timer();

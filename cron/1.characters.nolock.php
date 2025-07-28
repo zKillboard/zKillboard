@@ -74,6 +74,7 @@ function success($params, $content)
     $row = $params['row'];
     $esi = $params['esi'];
     $timer = $params['timer'];
+    $delay = (int) @$row['delay'];
     $redis->rpush("timer:characters", round($timer->stop(), 0));
 
     $newKills = 0;
@@ -91,7 +92,7 @@ function success($params, $content)
         $killID = $kill['killmail_id'];
         $hash = $kill['killmail_hash'];
 
-        $newKills += Killmail::addMail($killID, $hash, '1.characters');
+        $newKills += Killmail::addMail($killID, $hash, '1.characters', $delay);
     }
 
     $charID = (int) $row['characterID'];

@@ -72,10 +72,11 @@ try {
 
     // Clear out existing scopes
     if ($charID != $adminCharacter) $mdb->remove("scopes", ['characterID' => $charID]);
+    $delay = (int) $redis->get("delay:$sessID");
 
     foreach ($scopes as $scope) {
         if ($scope == "publicData") continue;
-        $row = ['characterID' => $charID, 'scope' => $scope, 'refreshToken' => $refresh_token, 'oauth2' => true];
+        $row = ['characterID' => $charID, 'scope' => $scope, 'delay' => $delay, 'refreshToken' => $refresh_token, 'oauth2' => true];
         if ($mdb->count("scopes", ['characterID' => $charID, 'scope' => $scope]) == 0) {
             try {
                 $mdb->save("scopes", $row);
@@ -110,7 +111,7 @@ try {
     }
 
     if ($scopeCount == 0) Util::zout("Logged in: $charName ($charID) omitted scopes.", $charID, true);
-    else Util::zout("Logged in: $charName ($charID)", $charID, true);
+    else Util::zout("Logged in: $charName ($charID) (Delay: $delay)", $charID, true);
     unset($_SESSION['oauth2State']);
 
     $key = "login:$charID:" . session_id();
@@ -123,7 +124,6 @@ try {
 
     // Determine where to redirect the user
     $redirect = '/';
-    $sessID = session_id();
     $forward = $redis->get("forward:$sessID");
     $redis->del("forward:$sessID");
     $loginPage = UserConfig::get('loginPage', 'character');
