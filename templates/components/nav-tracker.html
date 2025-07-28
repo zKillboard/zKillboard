@@ -2,7 +2,8 @@
 <script type="text/javascript">
 
 characterID = {{ characterID }};
-$("#char-loggedout").remove();
+$(".forloggedin").removeClass('hidden');
+$(".forloggedout").addClass('hidden');
 $("#nousermenu").addClass("hidden");
 $("#usermenu").removeClass("hidden");
 $("#contest-logged-in").removeClass('hidden');
@@ -156,7 +157,8 @@ console.log("nav loaded");
 
 <script type="text/javascript">
 characterID = 0;
-$("#char-loggedin").remove();
+$(".forloggedout").removeClass('hidden');
+$(".forloggedin").addClass('hidden');
 $("#tracker-none").removeClass("hidden");
 $("#savefit").remove();
 $("#nosavefit").removeClass("hidden");

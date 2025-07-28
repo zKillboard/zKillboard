@@ -71,32 +71,29 @@
                         </div>
                     </form>
                 </li>
-<li id="nousermenu" class="dropdown"><a href="/ccplogin/"><img id="no-char-image" src="https://images.evetech.net/characters/1/portrait?size=32" style="height: 32px; width: 32px; padding: 0px; margin: 0px; margin-top: -8px;"> <span class="caret"></span>
-</a></li>
-				<li id='usermenu' class="dropdown hidden">
+				<li id='usermenu' class="dropdown">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown" id='usermenu-dropdown'>
-                                        {% if characterID > 0 %}
-                                            <img id='char-image' src="{{ image_character }}{{ characterID }}/portrait?size=32" style='height: 32px; width: 32px; padding: 0px; margin: 0px; margin-top: -8px;'/>
-                                        {% else %}
                                             <img id='char-image' src="/img/transparent_32.png" style='height: 32px; width: 32px; padding: 0px; margin: 0px; margin-top: -8px;'/>
-                                        {% endif %}
                                         <span class="caret"></span></a>
 					        <ul class="dropdown-menu" id='char-loggedin'>
 							<li id='username' class="dropdown-header" style="font-weight: bold;">{{ sessionusername }}</li>
-<img class='char-image clickimage hidden-xs' style='margin-left: 10px;'><br/>
-<img class='corp-image clickimage hidden-xs' style='margin-left: 10px;'>
-<img class='alli-image clickimage hidden-xs' style='margin-left: 0px;'>
-							<li class="divider"></li>
-							<li><a href="/account/api/">API</a></li>
-							<li><a href="/account/log/">Log</a></li>
-							<li><a href="/account/payments/">Payments</a></li>
-							<li><a href="/account/">Settings</a></li>
+                            <li class="forloggedout"><a href="/ccpoauth2/">Login providing publidData &amp; killmail scopes.<br/><img src="/img/ssologin.png" alt="SSO Login"></li>
+
+<img class='char-image clickimage hidden-xs forloggedin' style='margin-left: 10px;'><br/>
+<img class='corp-image clickimage hidden-xs forloggedin' style='margin-left: 10px;'>
+<img class='alli-image clickimage hidden-xs forloggedin' style='margin-left: 0px;'>
+							<li class="forloggedin divider"></li>
+							<li class="forloggedin"><a href="/account/api/">API</a></li>
+							<li class="forloggedin"><a href="/account/log/">Log</a></li>
+							<li class="forloggedin"><a href="/account/payments/">Payments</a></li>
+							<li class="forloggedin"><a href="/account/">Settings</a></li>
 							<li class="divider"></li>
 							<li class="dropdown-header hidden-xs">Support</li>
 							<li><a href='{{ discordServer }}' target='_blank' rel="noopener noreferrer">Discord <i class='glyphicon glyphicon-new-window'></i></a></li>
 							<li><a href='/information/faq/'>FAQ</a></li>
-							<li class="divider"></li>
-							<li><a href="/account/logout/">Logout</a></li>
+							<li class="forloggedin divider"></li>
+							<li class="forloggedin"><a href="/account/logout/">Logout</a></li>
+                            <li class="forloggedout"><a href="/ccpoauth2-360noscope/">publicData only login for those afraid to<br/>share their killmails. 🐔</a></li>
                                                 </ul>
                             {% if characterID == 0 %}
 					        <ul class="dropdown-menu" id='char-loggedout'>
