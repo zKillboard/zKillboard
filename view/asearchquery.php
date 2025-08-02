@@ -4,10 +4,10 @@ use cvweiss\redistools\RedisCache;
 
 global $mdb, $redis, $uri;
 
-if (@$_SESSION['characterID'] <= 0) {
+/*if (@$_SESSION['characterID'] <= 0) {
     header("HTTP/1.1 403 Must be logged in to use this feature.");
     return;
-}
+}*/
 
 MongoCursor::$timeout = 65000;
 

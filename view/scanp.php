@@ -2,10 +2,10 @@
 
 global $mdb, $redis;
 
-if (@$_SESSION['characterID'] <= 0) {
+/*if (@$_SESSION['characterID'] <= 0) {
     header("HTTP/1.1 403 Must be logged in to use this feature.");
     return;
-}
+}*/
 
 $charparsed = [];
 $totalChars = 0;

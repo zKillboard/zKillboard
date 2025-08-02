@@ -3,6 +3,7 @@
 $warID = (int) $warID;
 $warData = War::getWarInfo($warID);
 $warFinished = @$warData['finished'] === true;
+//ZLog::log(print_r($warData, true));
 
 $p = array('warID' => $warID);
 $kills = Kills::getKills($p);
