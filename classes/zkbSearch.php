@@ -32,7 +32,7 @@ class zkbSearch
 
             $sub = $low;
             do {
-                $result = $mdb->find("information", ['type' => $type, 'l_name' => ['$regex' => "^$low"]], ['l_name' => 1], 10, ['l_name' => 1, 'id' => 1]);
+                $result = $mdb->find("information", ['type' => $type, 'l_name' => ['$regex' => "^$low"]], ['l_name' => 1], 10, ['l_name' => 1, 'published' => -1, 'id' => 1]);
                 if ($result == null) $result = [];
                 if (sizeof($result) == 0) $sub = substr($sub, 0, strlen($sub) - 1);
             } while (sizeof($result) == 0 && strlen($sub) > 0);
