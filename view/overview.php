@@ -177,7 +177,7 @@ if ($disqualified == 0 && ($pageType == 'top' || $pageType == 'topalltime')) {
 }
 
 $activity = ['max' => 0];
-if ($pageType == 'overview' && in_array($key, ['character', 'corporation', 'alliance'])) {
+if ($pageType == 'overview') {
     $raw = $redis->hget("zkb:activity", $id);
     if ($raw != null) $activity = unserialize($raw);
     else for ($day = 0; $day <= 6; $day++ ) {
