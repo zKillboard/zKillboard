@@ -31,7 +31,7 @@ if ($mdb->findDoc('killmails', ['killID' => $killID]) == null) {
     do {
         usleep(100000);
         $processed = $mdb->findField("crestmails", "processed", ['killID' => $killID, 'hash' => $hash]);
-    } while ($processed !== true && in_array($processed, [false, 'fetching', 'fetched', 'processing']) && $timer->stop() <= 28000);
+    } while ($processed !== true && in_array($processed, [false, 'delayed', 'fetching', 'fetched', 'processing']) && $timer->stop() <= 28000);
 
     // Did we take too long?
     if ($timer->stop() > 28000) {
@@ -40,7 +40,7 @@ if ($mdb->findDoc('killmails', ['killID' => $killID]) == null) {
     }
         
     // is the mail valid?
-    if ($processed !== true) return invalidRequest("Invalid id or hash");
+    if ($processed !== true) return invalidRequest("Invalid id or hash $processed $killID $hash");
 } else {
     // update the delay to 0, manual posts always take priority
     $mdb->set('crestmails', ['killID' => $killID, 'hash' => $hash], ['delay' => 0]);
