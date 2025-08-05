@@ -58,7 +58,7 @@
     {% for group in labels %}
         <div class='btn-group'>
             {% for label in group %}
-                <button class='filter-btn btn btn-default btn-sm' value='label-{{ label }}'>{{ label }}</button>
+                <button class='filter-btn btn btn-default btn-sm' value='label-{{ label }}' data-label='{{ label }}'>{{ label }}</button>
             {% endfor %}
         </div>
     {% endfor %}

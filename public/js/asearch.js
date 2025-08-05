@@ -354,7 +354,7 @@ function getFilters() {
     var retVal = asfilter;
     retVal.labels = [];
     $(".tfilter.btn-primary").each(function() { retVal.epochbtn = $(this).val(); });
-    $(".filter-btn.btn-primary").each(function() { retVal.labels.push($(this).html()); });
+    $(".filter-btn.btn-primary").each(function() { retVal.labels.push($(this).attr('data-label')); });
     $(".andor .btn-primary").each(function() { retVal.labels.push($(this).val()); });
     retVal.epoch = { start: $("#dtstart").val(), end: $("#dtend").val()};
     retVal.radios = radios;

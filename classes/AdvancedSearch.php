@@ -9,6 +9,9 @@ class AdvancedSearch
         'count' => [
             "solo", "#:1", "#:2+", "#:5+", "#:10+", "#:25+", "#:50+", "#:100+", "#:1000+",
         ],
+        'timezone' => [
+            "tz:au", "tz:eu", "tz:ru", "tz:use", "tz:usw"
+        ],
         'flags' => [
             "awox", "ganked", "npc", "pvp", 'padding'
         ],

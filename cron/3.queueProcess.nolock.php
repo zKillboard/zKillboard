@@ -38,7 +38,6 @@ try {
         sem_acquire($sem);
 
         $row = $mdb->findDoc('crestmails', ['processed' => 'fetched']);
-print_r($row);
         if ($row == null) {
             $killID = $redis->zrevrange("tobeparsed", 0, 0);
             $killID = (int) @$killID[0];
@@ -67,7 +66,9 @@ print_r($row);
         $date = substr($mail['killmail_time'], 0, 19);
         $date = str_replace('.', '-', $date);
 
-        $kill['dttm'] = new MongoDate(strtotime($date . " UTC"));
+        $unixtime = strtotime($date . " UTC");
+        $kill['dttm'] = new MongoDate($unixtime);
+        $kill['labels'][] = getGeneralTZ($unixtime);
 
         $systemID = (int) $mail['solar_system_id'];
         $system = Info::getInfo('solarSystemID', $systemID);
@@ -185,7 +186,6 @@ print_r($row);
         $kill['damage_taken'] = (int) @$mail['victim']['damage_taken'];
         if (!$isPaddedKill && !$kill['npc']) $kill['padcheck'] = true;
 
-        Log::log(print_r($row, true));
         if (isset($row['labels_override'])) $kill['labels'] = $row['labels_override'];
 
         saveMail($mdb, 'killmails', $kill);
@@ -509,4 +509,23 @@ function isCapital($typeID) {
 
     $redis->setex($key, 86400, "$is");
     return $is;
+}
+
+function getGeneralTZ($unix_timestamp) {
+    $hour = (int) gmdate('H', $unix_timestamp);
+
+    switch (true) {
+        case ($hour >= 8 && $hour < 14):
+            return 'tz:au';
+        case ($hour >= 14 && $hour < 17):
+            return 'tz:ru';
+        case ($hour >= 17 && $hour < 22):
+            return 'tz:eu';
+        case ($hour >= 22 && $hour < 4):
+            return 'tz:use';
+        case ($hour >= 4 && $hour < 8):
+            return 'tz:usw';
+        default:
+            return 'tz:unk';
+    }
 }
