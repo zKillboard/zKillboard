@@ -41,8 +41,9 @@ class Killmail
         }
         $p = ['killID' => $killID];
         $mdb->remove('killmails', $p);
-        $mdb->remove('rawmails', $p);
+        $mdb->remove('ninetyDays', $p);
         $mdb->remove('oneWeek', $p);
+        $mdb->remove('rawmails', $p);
         $mdb->set('crestmails', $p, ['processed' => false], true);
         $redis->del("CacheKill:$killID:overview");
     }
