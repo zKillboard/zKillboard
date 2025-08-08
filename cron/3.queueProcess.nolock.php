@@ -521,11 +521,10 @@ function getGeneralTZ($unix_timestamp) {
             return 'tz:ru';
         case ($hour >= 17 && $hour < 22):
             return 'tz:eu';
-        case ($hour >= 22 && $hour < 4):
-            return 'tz:use';
         case ($hour >= 4 && $hour < 8):
             return 'tz:usw';
+        //case ($hour >= 22 || $hour < 4):
         default:
-            return 'tz:unk';
+            return 'tz:use';
     }
 }

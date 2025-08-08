@@ -55,10 +55,11 @@
 </div>
 <hr class='asearchfilters'/>
 <div class='row centered asearchfilters'>
-    {% for group in labels %}
-        <div class='btn-group'>
-            {% for label in group %}
-                <button class='filter-btn btn btn-default btn-sm' value='label-{{ label }}' data-label='{{ label }}'>{{ label }}</button>
+    {% for name, group in labels %}
+        <div class='btn-group' data-group-name="{{ name }}">
+                <button class="btn btn-default btn-sm btn-group-label" disabled>{{ name }}</button>
+            {% for label_id, label_name in group %}
+                <button class='filter-btn btn btn-default btn-sm' value='label-{{ label_id }}' data-label='{{ label_id }}'>{{ label_name }}</button>
             {% endfor %}
         </div>
     {% endfor %}
