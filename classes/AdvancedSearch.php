@@ -3,14 +3,14 @@
 class AdvancedSearch 
 {
     static public $labels = [
-        'Location' => [
+        'location' => [
             "loc:highsec" => "HighSec", 
             "loc:lowsec" => "LowSec", 
             "loc:nullsec" => "NullSec", 
             "loc:w-space" => "W-Space", 
             "loc:abyssal" => "Abyssal",
         ],
-        'Involved' => [
+        'count' => [
             "solo" => "Solo",
             "#:1" => "Just 1",
             "#:2+" => "2+",
@@ -21,27 +21,27 @@ class AdvancedSearch
             "#:100+" => "100+", 
             "#:1000+" => "1000+"
         ],
-        'Primetime' => [
-            "tz:au" => "Aus", 
-            "tz:eu" => "Eur", 
-            "tz:ru" => "Russ", 
-            "tz:use" => "US East", 
-            "tz:usw" => "US West",
+        'primetime' => [
+            "tz:au" => "Aus / China", 
+            "tz:eu" => "Europe", 
+            "tz:ru" => "Russian", 
+            "tz:use" => "USA East", 
+            "tz:usw" => "USA West",
         ],
-        'Flags' => [
+        'flags' => [
             "awox" => "Awox", 
             "ganked" => "HighSec Gank", 
             "npc" => "NPC", 
             "pvp" => "PVP", 
             "padding" => "Padding"
         ],
-        'Isk' => [
+        'isk' => [
             "isk:1b+" => "1b+", 
             "isk:5b+" => "5b+", 
             "isk:10b+" => "10b+", 
             "isk:100b+" => "100b+"
         ],
-        'Custom' => [
+        'custom' => [
             'atShip' => "AT Ships", 
             'capital' => "Capitals", 
             'cat:0' => "Cat 0", 

@@ -214,7 +214,7 @@ function buildFromArray($key, $isVictim = null, $joinType = 'and') {
 
 function getLabelGroup($label) {
     foreach (AdvancedSearch::$labels as $group => $labels) {
-        if (in_array($label, $labels)) return $group;
+        if (in_array($label, array_keys($labels))) return $group;
     }
     return null;
 }

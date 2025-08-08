@@ -187,11 +187,12 @@ function getHTML(suggestion) {
     suggestion.data.id = parseInt(suggestion.data.id);
     suggestion.value = suggestion.value.replaceAll('<', '').replaceAll('>', '');
 console.log(suggestion.data.type, suggestion.data.id, suggestion.data.value);
-    var left = $("<span>").addClass('btn').addClass('btn-sm').addClass("glyphicon").addClass("glyphicon-chevron-left").attr('direction', 'left').on('click', moveLeft);
-    var right = $("<span>").addClass('btn').addClass('btn-sm').addClass("glyphicon").addClass("glyphicon-chevron-right").attr('direction', 'right').on('click', moveRight);
+    var left = $("<span>").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("glyphicon").addClass("glyphicon-chevron-left").attr('direction', 'left').on('click', moveLeft);
+    var right = $("<span>").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("glyphicon").addClass("glyphicon-chevron-right").attr('direction', 'right').on('click', moveRight);
     var remove = $("<span>").addClass('btn').addClass('btn-sm').addClass("glyphicon").addClass("glyphicon-remove").addClass('alert-danger').on('click', moveOut);
     var data = $("<span>")
-        .attr("class", "entity")
+        .addClass("entity")
+        .addClass('btn')
         .attr("id", suggestion.data.type + ':' + suggestion.data.id)
         .attr("entity-id", suggestion.data.id)
         .attr("entity-type", suggestion.data.type)
@@ -527,7 +528,7 @@ function toggleFilters() {
     var filters = [];
     $(".entity").each(function() { filters.push($(this).html().split(': ')[1]); });
     filters.push($(".tfilter.btn-primary").attr('title'));
-    $(".filter-btn.btn-primary").each(function () { filters.push($(this).html()); });
+    $(".filter-btn.btn-primary").each(function () { filters.push($(this).attr('data-label')); });
     var sort = $(".sorttype.btn-primary").html() + ' ' + $(".sortorder.btn-primary").html();
     if (sort != 'Date Desc') filters.push(sort);
     if ($(".pagenum.btn-primary").html() != '1') filters.push('Page ' + $(".pagenum.btn-primary").html());

@@ -519,3 +519,12 @@ html,body {
 #dls {
 	margin: 0 2em;
 }
+
+
+.asearchfilters .btn-group {
+	margin-right: 1em;
+}
+
+.entity {
+  cursor: default !important;
+} 
