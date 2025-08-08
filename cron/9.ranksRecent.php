@@ -148,7 +148,12 @@ function getRecent($type, $id, $isVictim)
 
     // build the query
     $query = [$type => $id, 'isVictim' => $isVictim];
-    if ($isVictim == true) $query['npc'] = false;
+    if ($type != 'label') {
+        unset($query['labels']);
+        $query['npc'] = false;
+        if (!isset($query['labels'])) $query['labels'] = 'pvp';
+        else $query['labels'][] = 'pvp';
+    }
     $query = MongoFilter::buildQuery($query);
 
     $result = $mdb->group('ninetyDays', [], $query, 'killID', ['zkb.points', 'zkb.totalValue']);

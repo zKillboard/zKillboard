@@ -17,7 +17,7 @@ $completed = [];
 
 $everyone = [];
 
-Util::out('recent time ranks - first iteration');
+Util::out('solo recent time ranks - first iteration');
 $types = [];
 $iter = $mdb->getCollection("ninetyDays")->find();
 foreach ($iter as $row) {
@@ -60,7 +60,7 @@ foreach ($iter as $row) {
 }
 $completed = []; // clear the array and free memory
 
-Util::out('recent time ranks - second iteration');
+Util::out('solo recent time ranks - second iteration');
 foreach ($types as $type => $value) {
     $key = "tq:ranks:recent:solo:$type:$today";
     $indexKey = "$key:shipsDestroyed";
@@ -129,7 +129,7 @@ break;
 }
 
 $redis->setex($hourKey, 86400, true);
-Util::out('Recent rankings complete');
+Util::out('solo Recent rankings complete');
 
 function zAdd(&$multi, $key, $value, $id)
 {
@@ -149,7 +149,12 @@ function getRecent($type, $id, $isVictim)
 
     // build the query
     $query = [$type => $id, 'isVictim' => $isVictim, 'solo' => true];
-    if ($isVictim == true) $query['npc'] = false;
+    if ($type != 'label') {
+        unset($query['labels']);
+        $query['npc'] = false;
+        if (!isset($query['labels'])) $query['labels'] = 'pvp';
+        else $query['labels'][] = 'pvp';
+    }
     $query = MongoFilter::buildQuery($query);
 
     $result = $mdb->group('ninetyDays', [], $query, 'killID', ['zkb.points', 'zkb.totalValue']);
