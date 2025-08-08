@@ -13,8 +13,13 @@ var kmLoaded = false;
 function loadKms() {
     if (kmLoaded == true) return;
 
-    if ($("#killlist").length > 0) $.get('/cache/bypass/killlist/?u=' + window.location.pathname, prepKills);
     kmLoaded = true;
+    if ($("#killlist").length > 0) $.get('/cache/bypass/killlist/?u=' + window.location.pathname, prepKills)
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            kmLoaded = false;
+            console.error('Failed to load kill list!');
+            setTimeout(loadKms, 1000);
+        });
 }
 
 var topsLoaded = false;

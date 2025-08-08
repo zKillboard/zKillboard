@@ -177,8 +177,12 @@ function loadLittleMail(killID) {
         $.get("/cache/24hour/killlistrow/" + killID + "/", addLittleKill);
 }
 
-function loadKillRow(killID) {
-        $.get("/cache/24hour/killlistrow/" + killID + "/", function(data) { addKillRow(data, killID); });
+function loadKillRow(killID, retries = 0) {
+        $.get("/cache/24hour/killlistrow/" + killID + "/", function(data) { addKillRow(data, killID); })
+            .fail(function(jqXHR, textStatus, errorThrown) {
+                retries++;
+                if (retries < 3) setTimeout(loadKillRow.bind(null, killID, retries), 1000);
+            });
 }
 
 function addKillRow(data, id) {
@@ -349,6 +353,9 @@ function pasteCrestUrl() {
 }
 async function pasteCrestUrlAsync() {
     try {
+        const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
+        if (isFirefox) return window.location = '/post/';
+
         let str = await navigator.clipboard.readText();
         strSplit = str.split('/');
         if (strSplit.length === 8) strSplit.shift();
