@@ -42,19 +42,19 @@ class AdvancedSearch
             "isk:100b+" => "100b+"
         ],
         'custom' => [
+            'cat:22' => "Anchored", 
             'atShip' => "AT Ships", 
             'capital' => "Capitals", 
-            'cat:0' => "Cat 0", 
-            'cat:11' => "Cat 11", 
-            'cat:18' => "Cat 18", 
-            'cat:22' => "Cat 22", 
-            'cat:23' => "Cat 23",  
-            'cat:350001' => "Cat 350001", 
-            'cat:40' => "Cat 40",  
-            'cat:46' => "Cat 46", 
-            'cat:6' => "Cat 6", 
-            'cat:65' => "Cat 65", 
-            'cat:87' => "Cat 87"
+            'cat:18' => "Drone", 
+            'cat:87' => "Fighter",
+            'cat:46' => "PI", 
+            'cat:23' => "POS",  
+            'cat:6' => "Ship", 
+            'cat:40' => "Sov",  
+            'cat:65' => "Structure"
+            /*'cat:0' => "Cat 0", */
+            /*'cat:11' => "Structure Light Fighter", */
+            /*'cat:350001' => "Dust 514", */
         ]
     ];
 }
