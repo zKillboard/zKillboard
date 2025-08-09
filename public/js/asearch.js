@@ -559,3 +559,33 @@ async function btn_save() {
         alert('Error trying to save: ' + res.statusCode);
     }
 }
+
+function assignClickCatch() {
+    $("a:not(.clickCatch):not(.nocatch)").addClass("clickCatch").on('click', clickCatch);
+}
+setInterval(assignClickCatch, 250);
+
+async function clickCatch(e) {
+    let altPressed = e.metaKey || e.altKey;
+    if (!altPressed) return true; // default behavior
+
+    let name = $(this).text();
+    let href = $(this).attr('href');
+    let split = href.replaceAll('/', ' ').split(' ').filter(Boolean);
+
+    document.querySelector('body').style.minHeight = getComputedStyle(document.querySelector('body')).height;
+
+    console.log(name, split);
+
+    if (split[0] == 'kill') name = 'killID ' + split[1];
+    addEntity({
+        value: name || split[1],
+        data: {
+            type: split[0],
+            id: split[1]
+        }
+    });
+
+    e.preventDefault();
+    return false;
+}

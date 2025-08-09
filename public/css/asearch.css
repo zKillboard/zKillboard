@@ -1,3 +1,8 @@
+body {
+	min-height: 10000px !important;
+	height: 10000px !important;
+}
+
 .autocomplete-suggestions { border: 1px solid #ccc; background: #000; overflow: auto; cursor: default;}
 .autocomplete-suggestion { padding: 2px 5px; white-space: nowrap; overflow: hidden; cursor: pointer; }
 .autocomplete-selected { background: #007800; }
@@ -69,7 +74,13 @@ div[entity-type] {
 	margin: 3px;
 }
 
+
 .entity {
   cursor: default !important;
+  white-space: normal;
+  overflow-wrap: anywhere;
 } 
 
+#location .glyphicon[direction] {
+	display: none !important;
+}
