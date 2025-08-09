@@ -204,6 +204,12 @@ $app->map('/search(/:search)/', function ($search = null) use ($app) {
 $app->map('/asearch/', function ($search = null) use ($app) {
         include 'view/asearch.php';
         })->via('GET');
+$app->map('/asearchsave/', function () use ($app) {
+        include 'view/asearchsave.php';
+        })->via('GET');
+$app->map('/asearchsaved/:id/', function ($id) use ($app) {
+        include 'view/asearchsaved.php';
+        })->via('GET');
 $app->map('/asearchquery/', function ($search = null) use ($app) {
         include 'view/asearchquery.php';
         })->via('GET');

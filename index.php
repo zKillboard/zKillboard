@@ -10,7 +10,8 @@ $isApiRequest = substr($uri, 0, 5) == "/api/";
 
 if ($uri == "/kill/-1/") return header("Location: /keepstar1.html");
 
-if (strpos($uri, "/asearchinfo/") === false && strpos($uri, "/asearchquery/") === false && strpos($uri, "/cache/") === false)  {
+$first7 = substr($uri, 0, 7);
+if (strpos($uri, "/asearch") === false && strpos($uri, "/cache/") === false)  {
     // Check to ensure we have a trailing slash, helps with caching
     if (substr($uri, -1) != '/' && strpos($uri, 'ccpcallback') === false && strpos($uri, 'patreon') === false && strpos($uri, 'brsave') === false && strpos($uri, "ccp") === false && strpos($uri, "related/") === false && strpos($uri, 'twitch') == false) {
         header('Access-Control-Allow-Origin: *');

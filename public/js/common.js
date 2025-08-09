@@ -682,3 +682,32 @@ console.log('common.js loaded');
 function stopPropagation(e) {
     e.stopPropagation();
 }
+
+
+function showToast(message, duration = 3000) {
+	// Ensure a container exists
+	let container = document.getElementById('toast-container');
+	if (!container) {
+		container = document.createElement('div');
+		container.id = 'toast-container';
+		document.body.appendChild(container);
+	}
+
+	// Create toast element
+	const toast = document.createElement('div');
+	toast.className = 'toast';
+	toast.textContent = message;
+
+	container.appendChild(toast);
+
+	setTimeout(() => { toast.classList.add('show'); }, 10);
+
+
+	// Hide and remove after duration
+	setTimeout(hideToast, 3000);
+}
+
+function hideToast() {
+	let container = document.getElementById('toast-container');
+	if (container) container.remove();
+}

@@ -55,6 +55,11 @@ hr {
     order: 6;
 }
 
+.asearchfilters .btn-group {
+    margin-right: 1em;
+}
+
+
 div[entity-type] {
 	border: solid 1px #333;
 	background-color: #333;

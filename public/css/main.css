@@ -520,7 +520,23 @@ html,body {
 	margin: 0 2em;
 }
 
-
-.asearchfilters .btn-group {
-	margin-right: 1em;
+#toast-container {
+	position: fixed;
+	bottom: 32px;
+	right: 32px;
+	z-index: 9999;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
 }
+
+.toast {
+	background: #333;
+	color: #fff;
+	padding: 14px 22px;
+	border-radius: 6px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	font-size: 1rem;
+	pointer-events: auto;
+}
+

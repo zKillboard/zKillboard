@@ -35,6 +35,7 @@ function loadasearch() {
         }).focus();
 
 
+    $("#btn_save").on('click', btn_save);
     $(".tfilter").on('click', adjustTime);
     $(".filter-btn").on('click', toggleFilterBtn);
     $(".radio-btn").on('click', toggleRadioBtn);
@@ -68,7 +69,7 @@ function datepick() {
 }
 
 function toggleRollingTime(event, enabled) {
-    console.log('toggle rolling time');
+    //console.log('toggle rolling time');
     if (enabled == undefined) {
         enabled = !($('#rolling-times').hasClass('btn-primary'));
     }
@@ -186,7 +187,7 @@ function getHTML(suggestion) {
     suggestion.data.type = suggestion.data.type.replace(/[\W_]+/g, '');
     suggestion.data.id = parseInt(suggestion.data.id);
     suggestion.value = suggestion.value.replaceAll('<', '').replaceAll('>', '');
-console.log(suggestion.data.type, suggestion.data.id, suggestion.data.value);
+    //console.log(suggestion.data.type, suggestion.data.id, suggestion.data.value);
     var left = $("<span>").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("glyphicon").addClass("glyphicon-chevron-left").attr('direction', 'left').on('click', moveLeft);
     var right = $("<span>").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("glyphicon").addClass("glyphicon-chevron-right").attr('direction', 'right').on('click', moveRight);
     var remove = $("<span>").addClass('btn').addClass('btn-sm').addClass("glyphicon").addClass("glyphicon-remove").addClass('alert-danger').on('click', moveOut);
@@ -212,8 +213,8 @@ function setFilters(hashfilters) {
     var hash = window.location.hash.substr(1);
     hash = decodeURI(hash).replaceAll('<', '').replaceAll('>', '');
     hashfilters = JSON.parse(hash);
-console.log(hash);
-console.log(hashfilters);
+    //console.log(hash);
+    //console.log(hashfilters);
 
     allowChange = false;
 
@@ -384,7 +385,7 @@ function applyGroupQueryResult(data, textStatus, jqXHR) {
 }
 
 function handleError(jqXHR, textStatus, errorThrown) {
-console.log(jqXHR.status);
+    //console.log(jqXHR.status);
     filtersStringified = null;
     if (jqXHR.status == 403) killlistmessage('Server Reinforced - no advanced search as this time.');
     else if (jqXHR.status == 408) killlistmessage('Query took too long and timed out.');
@@ -532,8 +533,29 @@ function toggleFilters() {
     var sort = $(".sorttype.btn-primary").html() + ' ' + $(".sortorder.btn-primary").html();
     if (sort != 'Date Desc') filters.push(sort);
     if ($(".pagenum.btn-primary").html() != '1') filters.push('Page ' + $(".pagenum.btn-primary").html());
-    console.log(filters);
+    //console.log(filters);
 
     var title = (displayed ? 'Advanced Search' : filters.join(', '));
     $("#titlecontent").text(title);
+}
+
+async function btn_save() {
+    let res = await fetch("/asearchsave/?url=" + encodeURIComponent(window.location.href));
+    console.log(res);
+    if (res.ok) {
+        let short = await res.text();
+        console.log(short);
+        navigator.clipboard.writeText(short)
+            .then(() => {
+                    console.log("Copied to clipboard!");
+                    $("#btn_save").text("Clipped").addClass('btn-info').blur();
+                    setTimeout(() => { $("#btn_save").text("Save").removeClass('btn-info').blur(); }, 5000);
+                    })
+        .catch(err => {
+                console.error("Failed to copy:", err);
+                alert('Failed to copy to your clipboard, see console for details');
+                });
+    } else {
+        alert('Error trying to save: ' + res.statusCode);
+    }
 }
