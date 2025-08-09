@@ -2,6 +2,10 @@
 
 global $redis, $ip;
 
+if ($redis->get("zkb:noapi") == "true") {
+    return $app->render("error.html", ['message' => 'Downtime is not a good time to login, the CCP servers are not reliable, sorry.']);
+}
+
 $sessID = session_id();
 
 $delayInt = isset($delay) ? (int) $delay : 0;
@@ -17,5 +21,5 @@ if ($uri != '' && $redis->get("forward:$sessID") == null) {
 $sso = ZKillSSO::getSSO();
 $url = $sso->getLoginURL($_SESSION);
 
-//Util::zout("$ip $sessID starting a login session " . print_r($_SESSION, true));
+session_write_close();
 $app->redirect($url, 302);

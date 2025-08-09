@@ -7,16 +7,17 @@ global $mdb, $redis, $adminCharacter, $ip;
 $sessID = session_id();
 
 if (sizeof($_SESSION) == 0) {
-    if ($redis->get("invalid_login:$ip") >= 5) {
+    if ($redis->get("invalid_login:$ip") >= 3) {
         $redis->del("invalid_login:$ip");
-        return $app->render("error.html", ['message' => "OK, that's enough.  There is some sort of session bug between you and zkillboard.  Are you running adblockers or some plugin for your browser that could be interfering? Let's figure this out and come visit us on Discord."]);
+        return $app->render("error.html", ['message' => "OK, that's enough.  There is some sort of session bug between you and zkillboard.  Are you trying to run incognito? Are you running adblockers or some plugin for your browser that could be interfering? Let's figure this out and come visit us on Discord."]);
     }
-    Util::zout("$ip $sessID invalid login session detected at callback, restarting");
     $redis->incr("invalid_login:$ip", 1);
     $redis->expire("invalid_login:$ip", 120);
-    // something went wrong and we likely lost their state info
-    header('Location: /ccplogin');
-    return;
+    return header('Location: /ccpoauth2');
+}
+
+if ($redis->get("zkb:noapi") == "true") {
+    return $app->render("error.html", ['message' => 'Downtime is not a good time to login, the CCP servers are not reliable, sorry.']);
 }
 
 $sem = sem_get(3174);
