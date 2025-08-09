@@ -29,12 +29,10 @@ try {
     // button on CCP's SSO login page.
     sem_acquire($sem);
 
-    // Is the user already logged in somehow? If so, redirect them
     // this should help handle double/triple clicks from ccp's authorization page
     if (@$_SESSION['characterID'] > 0) {
-        Util::zout("user is already logged in: " . $_SESSION['characterID']);
-        header('Location: /ccpoauth2/', 302);
-        return;
+        sleep(1); // give other processes a chance to... process... the JWT
+        return header('Location: /', 302);
     }
 
     $scopeCount = 0;

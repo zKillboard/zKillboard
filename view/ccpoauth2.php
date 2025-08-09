@@ -6,6 +6,10 @@ if ($redis->get("zkb:noapi") == "true") {
     return $app->render("error.html", ['message' => 'Downtime is not a good time to login, the CCP servers are not reliable, sorry.']);
 }
 
+if (@$_SESSION['characterID'] > 0) {
+    return $app->render("error.html", ['message' => "Uh... you're already logged in..."]);
+}
+
 $sessID = session_id();
 
 $delayInt = isset($delay) ? (int) $delay : 0;
