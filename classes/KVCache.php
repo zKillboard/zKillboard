@@ -43,15 +43,14 @@ class KVCache
 
     public function setex($key, $ttl, $value)
     {
-        $key = "kv:$key";
-        unset(KVCache::$localCache[$key]);
-        $this->redis->set($key, $value, $ttl);
-        $this->mdb->remove("keyvalues", ["key" => $key]);
+        $this->set($key, $value, $ttl);
     }
 
     public function del($key)
     {
+        $key = "kv:$key";
         $this->redis->del($key);
+        $this->mdb->remove("keyvalues", ["key" => $key]);
     }
 
     public function __call($func, $args)
