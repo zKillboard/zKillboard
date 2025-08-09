@@ -14,9 +14,10 @@ hr {
     margin-top: 1em;
 }
 
+
 .andor, .andor .btn {
-    margin: 0px;
-    padding: 0px;
+    margin: 2px;
+	margin-bottom: 0.5em;
 }
 
 .p-2 {
@@ -53,3 +54,17 @@ hr {
 .filter-groupID {
     order: 6;
 }
+
+div[entity-type] {
+	border: solid 1px #333;
+	background-color: #333;
+	border-radius: 12px;
+	color: white;
+	padding: 1px;
+	margin: 3px;
+}
+
+.entity {
+  cursor: default !important;
+} 
+
