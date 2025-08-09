@@ -25,7 +25,7 @@ if ($minute >= 1100 && $minute <= 1105) {
     }
 }
 $tqCountInt = (int) $redis->get("tqCountInt");
-if (($minute >= 1058 && $minute <= 1115) || $tqCountInt < 1000) {
+if (($minute >= 1058 && $minute <= 1105) || $tqCountInt < 1000) {
     Util::out("Flagging NO API (TQ Count: $tqCountInt)");
     $redis->setex("zkb:noapi", 110, "true");
 } else if ($redis->get("zkb:noapi") == "true") {
