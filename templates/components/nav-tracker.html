@@ -43,6 +43,7 @@ $("#nextstyle").attr("href", "/css/style-edits/{{ style }}-main.css");
 $(".zkblogo").hide();
 {% endif %}
 
+$("#menu-favorites").removeClass('hidden');
 var showAdd = true;
 var tn = ('true' == '{{ trackernotification }}'); // TN = TrackerNotification
 {% for data in tracker_character %}
