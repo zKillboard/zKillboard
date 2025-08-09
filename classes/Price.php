@@ -6,7 +6,7 @@ class Price
 {
     public static function getItemPrice($typeID, $kmDate, $fetch = false, $recalc = false)
     {
-        global $mdb, $redis;
+        global $mdb, $redis, $esiServer;
         $typeID = (int) $typeID;
 
         $categoryID = Info::getInfoField("typeID", $typeID, "categoryID");
@@ -107,7 +107,7 @@ class Price
         switch ($typeID) {
             case 12478: // Khumaak
             case 34559: // Conflux Element
-            case 74523:
+            case 74523: // Prize Mordunium
                 return 0.01; // Items that get market manipulated and abused will go here
             case 44265: // Victory Firework
                 return 0.01; // Items that drop from sites will go here
@@ -247,7 +247,7 @@ class Price
 
     public static function getCrestPrices($typeID)
     {
-        global $mdb, $esiServer;
+        global $mdb, $redis, $esiServer;
 
         $marketHistory = $mdb->findDoc('prices', ['typeID' => $typeID]);
         if ($marketHistory === null) {
@@ -256,8 +256,6 @@ class Price
         }
 
         $url = "$esiServer/v1/markets/10000002/history/?type_id=$typeID";
-        //$sso = ZKillSSO::getSSO();
-        //$json = json_decode($sso->doCall($url), true);
         $raw = file_get_contents($url);
         $json = json_decode($raw, true);
         Status::addStatus('esi', true);
@@ -286,5 +284,36 @@ class Price
                 }
             }
         }
+    }
+
+    private static function getMedian($array, $volumeField, $priceField) {
+        //if (sizeof($array) == 0) throw new Exception('array has no entries');
+        if (sizeof($array) == 0) return -1;
+
+        // Sort by price
+        usort($array, function($a, $b) use ($priceField) { return $a[$priceField] <=> $b[$priceField]; });
+
+        $totalVolume = 0;
+        foreach ($array as $entry) {
+            $totalVolume += $entry[$volumeField];
+        }
+        $median = $totalVolume / 2;
+
+        $price1 = self::getIndexValue($array, floor($median), $volumeField, $priceField);
+        if (is_int($median)) return $price1;
+
+        $price2 = self::getIndexValue($array, ceil($median), $volumeField, $priceField);
+        return (($price1 + $price2) / 2);
+    }
+
+    private static function getIndexValue($array, $index, $indexField, $field) {
+        $index_sum = 0;
+        foreach ($array as $entry) {
+            $index_sum += $entry[$indexField];
+            if ($index <= $index_sum) {
+                return $entry[$field];
+            }
+        }
+        return $array[sizeof($array) - 1][$field];
     }
 }
