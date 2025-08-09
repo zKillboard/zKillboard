@@ -520,14 +520,18 @@ html,body {
 	margin: 0 2em;
 }
 
+
 #toast-container {
 	position: fixed;
-	bottom: 32px;
-	right: 32px;
+    bottom: 3rem;
+    right: 3rem;
+    transform: translate(-50%, -10%); /* center relative to itself */
 	z-index: 9999;
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
+	border: solid 3px white;
+	border-radius: 12px;
 }
 
 .toast {
@@ -536,7 +540,20 @@ html,body {
 	padding: 14px 22px;
 	border-radius: 6px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-	font-size: 1rem;
+	font-size: 2rem;
 	pointer-events: auto;
 }
+
+#otherapps div {
+	margin: 0px;
+	padding: 0px;
+	margin-bottom: 1em;
+	padding: 0.25em;
+	border-bottom: solid 1px #333;
+}
+
+#otherapps span {
+	margin-left: 1em;
+}
+
 

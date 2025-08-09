@@ -549,7 +549,8 @@ async function btn_save() {
             .then(() => {
                     console.log("Copied to clipboard!");
                     $("#btn_save").text("Clipped").addClass('btn-info').blur();
-                    setTimeout(() => { $("#btn_save").text("Save").removeClass('btn-info').blur(); }, 5000);
+                    showToast('Saved URL copied to clipboard');
+                    setTimeout(() => { $("#btn_save").text("Save").removeClass('btn-info').blur(); }, 3000);
                     })
         .catch(err => {
                 console.error("Failed to copy:", err);
