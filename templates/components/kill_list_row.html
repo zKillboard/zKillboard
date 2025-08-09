@@ -44,7 +44,7 @@
         </td>
         <td class="victim" style="text-align: left; vertical-align: top; max-width: 290px;">
           {% if kill.victim.characterID %}
-            <a class="wrapplease" href="/character/{{ kill.victim.characterID }}/">{{ kill.victim.characterName }}</a> ({{ kill.victim.shipName }})<br />
+            <a class="wrapplease" href="/character/{{ kill.victim.characterID }}/">{{ kill.victim.characterName }}</a> (<a class="wrapplease" href="/ship/{{ kill.victim.shipTypeID}}/">{{ kill.victim.shipName }}</a>)<br />
           {% endif %}
           <a class="wrapplease" href="/corporation/{{ kill.victim.corporationID }}/">{{ kill.victim.corporationName }}</a><br/>
           {% if kill.victim.allianceID != 0 %}

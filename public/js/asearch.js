@@ -562,12 +562,12 @@ async function btn_save() {
 }
 
 function assignClickCatch() {
-    $("a:not(.clickCatch):not(.nocatch)").addClass("clickCatch").on('click', clickCatch);
+    $("#clickablecontent a:not(.clickCatch):not(.nocatch)").addClass("clickCatch").on('click', clickCatch);
 }
 setInterval(assignClickCatch, 250);
 
 async function clickCatch(e) {
-    let altPressed = e.metaKey || e.altKey;
+    let altPressed = e.metaKey || e.altKey || $("#clickToDigCheckbox").is(':checked');
     if (!altPressed) return true; // default behavior
 
     let name = $(this).text();

@@ -84,3 +84,26 @@ div[entity-type] {
 #location .glyphicon[direction] {
 	display: none !important;
 }
+
+#clickToDig .checkbox {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#clickToDig .checkbox label {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+#clickToDig .checkbox input[type="checkbox"] {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+}
+
+#clickToDig .checkbox label:hover {
+    color: #337ab7; /* Bootstrap 3 primary color */
+    cursor: pointer;
+}

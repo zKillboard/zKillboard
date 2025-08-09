@@ -96,9 +96,15 @@
     </div>
 </div>
 <hr/>
-<div class="text-right">Press and hold ALT (or META) key and click to add entity to search parameters.</div>
+<div id="clickToDig">
+ <div class="checkbox">
+    <label>
+      <input type="checkbox" id="clickToDigCheckbox"><span id="clickText"> Clicking will Drill Down</span>
+    </label>
+  </div>
+</div>
 <hr/>
-<div class="row">
+<div id="clickablecontent" class="row">
     <div id='page' class='col-md-10'>
         <div zkill-var='sort' zkill-key='sortBy' class='btn-group asearchfilters'>
             <button class='sorttype radio-btn btn btn-primary' value='sort-date'>Date</button>
@@ -127,7 +133,7 @@
   <thead>
     <tr>
       <th>Time</th>
-      <th class="hidden-xs" style="width: 50px; text-align: center;">Ship</th>
+      <th class="hidden-xs" style="width: 50px; text-align: center;"></th>
       <th class="hidden-xs location" style="width:115px;">Place</th>
       <th class="hidden-xs" style="width: 64px;">&nbsp;</th>
       <th class="hidden-xs">Victim</th>
