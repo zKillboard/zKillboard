@@ -50,6 +50,7 @@ try {
 
     $query = buildQuery($query, "location");
     $query = buildQuery($query, "neutrals", null, getSelectedFromBase('either', $buttons));
+//if (sizeof($query)) Util::zout(print_r($query, true));
     $query = buildQuery($query, "attackers", false, getSelectedFromBase('attackers-', $buttons));
     $query = buildQuery($query, "victims", true, getSelectedFromBase('victims-', $buttons));
 
@@ -201,9 +202,11 @@ function buildFromArray($key, $isVictim = null, $joinType = 'and') {
         else if ($isVictim === true) $param['losses'] = true;
         $params[] = MongoFilter::buildQuery($param, true);
     }
-    if ($joinType == 'or') return ['$or' => $params];
-    if ($joinType == 'and') return ['$and' => $params];
-    // Last option is 'mergedand', we need to merge everything
+
+    if ($joinType == 'or' || $joinType == '-or') return ['$or' => $params];
+    if ($joinType == 'and' || $joinType == "-and") return ['$and' => $params];
+
+    // Last option is 'mergedand' or 'In' on the site, we need to merge everything
     $merged = [];
     foreach ($params as $param) {
         $merged = array_merge_recursive($merged, $param);
