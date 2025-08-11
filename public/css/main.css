@@ -557,3 +557,26 @@ html,body {
 }
 
 
+.shipImageSpan {
+  position: relative;
+  display: inline-block;   /* ensure the box has the set width/height */
+  width: attr(--size);
+  height: attr(--size);
+}
+
+.shipImageIcon {
+	display: block;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	transform: scale(calc(var(--sizei) / 64));
+	object-fit: none;
+	object-position: 0 0;
+	transform-origin: 0 0;
+	width: 16px;
+	height: 16px;
+	clip-path: polygon(0 0, 0 100%, 100% 0);
+	image-rendering: crisp-edges;   /* fallback */
+    image-rendering: pixelated;     /* preferred nearest-neighbor */
+}
+

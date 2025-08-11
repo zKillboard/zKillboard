@@ -11,6 +11,9 @@
 	{% endif %}
 	{% set source = ( actualSize > 64 ? image_ship : image_item ) %}
 	<a href="{{ url }}" rel="tooltip" title="{{ title }}" class="{{ isPullLeft ? "pull-left " : "" }}">
-		<img src="{{ source }}{{ field.shipTypeID }}/render?size={{imageSize}}" style='height: {{actualSize}}px; width: {{actualSize}}px;' class="{{ isDelayed ? "delayed " : "" }}{{ isPullLeft ? "pull-left " : "" }}eveimage img-rounded" alt="{{field.shipName}}" onerror="this.setAttribute('shipImageError', 'true')"/>
+        <span class="shipImageSpan"  data-l="{{ actualSize }}px" data-i="{{ actualSize }}"  style="height: {{ actualSize }}px; width: {{ actualSize }}px; --size: {{ actualSize }}px; --sizei: {{ actualSize }};">
+		    <img src="{{ source }}{{ field.shipTypeID }}/render?size={{imageSize}}" style='height: {{actualSize}}px; width: {{actualSize}}px;' class="shipImageRender {{ isDelayed ? "delayed " : "" }}{{ isPullLeft ? "pull-left " : "" }}eveimage img-rounded" alt="{{field.shipName}}" onerror="this.setAttribute('shipImageError', 'true')"/>
+            <img class="shipImageIcon" src="{{ source }}{{ field.shipTypeID }}/icon" alt="">
+        </span>
 	</a>
 {% endif %}
