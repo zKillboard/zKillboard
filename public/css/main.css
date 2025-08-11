@@ -573,8 +573,8 @@ html,body {
 	object-fit: none;
 	object-position: 0 0;
 	transform-origin: 0 0;
-	width: 16px;
-	height: 16px;
+	width: 15px;
+	height: 15px;
 	clip-path: polygon(0 0, 0 100%, 100% 0);
 	image-rendering: crisp-edges;   /* fallback */
     image-rendering: pixelated;     /* preferred nearest-neighbor */
