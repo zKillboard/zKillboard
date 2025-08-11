@@ -3,10 +3,11 @@
 require_once "../init.php";
 
 $rset = "zkb:updatenames";
+$rsetLoad = "zkb:updatenames:" . date('Ymd');
 
 $guzzler = new Guzzler();
 
-if ($redis->scard($rset) == 0) {
+if ($redis->get($rsetLoad) != "true" && $redis->scard($rset) == 0) {
     addToRset($redis, $rset, $mdb->getCollection('ninetyDays')->distinct('involved.characterID'));
     addToRset($redis, $rset, $mdb->getCollection('ninetyDays')->distinct('involved.corporationID'));
     addToRset($redis, $rset, $mdb->getCollection('ninetyDays')->distinct('involved.allianceID'));
@@ -23,6 +24,8 @@ while (sizeof($set) < 1000 && sizeof($set) < $redis->scard($rset)) {
 doCall($guzzler, $mdb, $redis, $rset, $set);
 $guzzler->finish();
 
+if ($redis->scard($rset) == 0) $redis->setex($rsetLoad, 86400, "true");
+
 function doCall($guzzler, $mdb, $redis, $rset, $set) {
     $guzzler->call("https://esi.evetech.net/universe/names", "success", "fail", ['mdb' => $mdb, 'rset' => $rset, 'redis' => $redis, 'set' => $set], [], 'POST_JSON', json_encode($set));
 }
@@ -36,8 +39,12 @@ function success(&$guzzler, &$params, &$content)
     $rows = json_decode($content, true);
     foreach ($rows as $row) {
         $name = $row['name'];
-        $r = $mdb->set("information", ['type' => $row['category'] . "ID", 'id' => $row['id']], ['name' => $name, 'l_name' => strtolower($name)]);
-        if ($r['n'] > 0) $redis->srem($rset, $row['id']);
+        $match = ['type' => $row['category'] . "ID", 'id' => $row['id']];
+        $current = $mdb->findDoc("information", $match);
+        if ($current['name'] != $name) {
+            $mdb->set("information", ['type' => $row['category'] . "ID", 'id' => $row['id']], ['name' => $name, 'l_name' => strtolower($name)]);
+        }
+        $redis->srem($rset, $row['id']);
     }
 }
 
