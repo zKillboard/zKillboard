@@ -6,9 +6,7 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
-if ($redis->get("tobefetched") < 10) $redis->del("zkb:statsStop");
 if ($mdb->findDoc("killmails", ['reset' => true]) != null) exit();
-if ($redis->get("zkb:statsStop") == "true") exit();
 if ($redis->get("zkb:reinforced") == true) exit();
 
 if ($mt == 0) $mdb->getCollection("statistics")->update(['reset' => false], ['$unset' => ['reset' => true]], ['multiple' => true]);
@@ -38,6 +36,8 @@ function checkForResets() {
 $noStatsCount = 0;
 if ($mt == 0 && $redis->scard("queueStatsSet") < 5000) checkForResets();
 while ($minute == date('Hi')) {
+    if ($redis->get("zkb:statsStop") == "true") break;
+
     $raw = $redis->srandmember("queueStatsSet");
     if ($raw == ":" || $raw == ":0") {
         $redis->srem("queueStatsSet", $raw);
