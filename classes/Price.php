@@ -107,7 +107,6 @@ class Price
         switch ($typeID) {
             case 12478: // Khumaak
             case 34559: // Conflux Element
-            case 74523: // Prize Mordunium
                 return 0.01; // Items that get market manipulated and abused will go here
             case 44265: // Victory Firework
                 return 0.01; // Items that drop from sites will go here
@@ -223,6 +222,9 @@ class Price
                 return;
             case 29: // Capsules
                 return 10000; // 10k
+            case 4513: // Mordunium
+            case 4759: // Griemeer
+                return 200;
         }
 
         return;
