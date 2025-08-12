@@ -16,7 +16,7 @@ if ($key != 'label' && (int) $id == 0) {
     }
     $id = $mdb->findField('information', 'id', ['type' => "${searchKey}ID", 'name' => $id]);
     if ($id > 0) return $app->redirect("/$key/$id/");
-    return $app->("./../");
+    return $app->redirect("./../");
 }
 
 if (strlen("$id") > 11) {
