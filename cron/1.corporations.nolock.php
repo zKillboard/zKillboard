@@ -1,10 +1,12 @@
 <?php
 
-$mt = 5; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit(); 
+$mt = 10; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit(); 
 
 use cvweiss\redistools\RedisTimeQueue;
 
 require_once "../init.php";
+
+if ($mt >= $esiCorpMaxThreads) exit();
 
 $kvc = new KVCache($mdb, $redis);
 
