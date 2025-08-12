@@ -1,6 +1,7 @@
 <?php
 
 $app->notFound(function () use ($app) {
+    return $app->redirect("./../", 302);
     http_response_code(404);
         });
 
