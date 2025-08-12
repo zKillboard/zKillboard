@@ -10,7 +10,6 @@ try {
     if ($record == null) {
         if (substr($url, 0, strlen($URLBASE)) != $URLBASE) throw new Exception("invalid domain: $url");
 
-        Util::zout("inserting short");
         $mdb->insert("shortener", ['url' => $url]);
         $record = $mdb->findDoc("shortener", ['url' => $url]);
     }
