@@ -25,9 +25,11 @@ function checkForResets() {
     while ($cursor->hasNext()) {
         $row = $cursor->next();
         $raw = $row['type'] . ":" . $row['id'];
-        $redis->sadd("queueStatsSet", $raw);
-        $count++;
-        $hasResets = true;
+        if (!$redis->sismember("queueStatsSet", $raw)) {
+            $redis->sadd("queueStatsSet", $raw);
+            $count++;
+            $hasResets = true;
+        }
     }
     if ($count > 0) Util::out("Added $count reset records for stats processing");
     return ($count > 0);
