@@ -59,6 +59,9 @@ function loadasearch() {
         setFilters();
         $(".btn-page.btn-primary").click();
     });
+
+    $("#clickToDigCheckbox").prop('checked', localStorage.getItem('drilldown-enabled') === 'false');
+    $("#clickToDigCheckbox").on('change', updateDrillDownPreference);
 };
 
 function datepick() {
@@ -589,4 +592,8 @@ async function clickCatch(e) {
 
     e.preventDefault();
     return false;
+}
+
+function updateDrillDownPreference(e) {
+    localStorage.setItem('drilldown-enabled', $("#clickToDigCheckbox").is(':checked') ? 'true' : 'false');
 }
