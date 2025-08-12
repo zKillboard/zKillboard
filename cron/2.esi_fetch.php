@@ -14,10 +14,12 @@ if ($kvc->get("zkb:universeLoaded") != "true") exit();
 $guzzler = new Guzzler(10);
 $esimails = $mdb->getCollection("esimails");
 
+$mdb->set("crestmails", ['processed' => 'later'], ['processed' => false], true);
 $mdb->set("crestmails", ['processed' => 'fetching'], ['processed' => false], true);
 $mdb->set("crestmails", ['processed' => 'processing'], ['processed' => false], true);
 $mdb->set("crestmails", ['processed' => ['$exists' => false]], ['processed' => false], true);
 
+$checked = [];
 $minute = date("Hi");
 while ($minute == date("Hi")) {
     $rows = $mdb->find("crestmails", ['processed' => false], ['killID' => -1], 10);
@@ -34,9 +36,22 @@ while ($minute == date("Hi")) {
 
         $raw = Kills::getEsiKill($killID);
         if ($raw != null) {
-            $mdb->set("crestmails", ['killID' => $killID, 'hash' => $hash], ['processed' => 'delayed']);
+            // Do we already have a good link for this killID?
+            $count = $mdb->count("crestmails", ['killID' => $killID, 'processed' => true]);
+            if ($count > 0) {
+                $mdb->set("crestmails", ['killID' => $killID, 'processed' => ['$ne' => true]], ['$set' => ['processed' => 'invalid/duplicate']], true);
+            } else {
+              $mdb->set("crestmails", ['killID' => $killID, 'hash' => $hash], ['processed' => 'delayed']);
+            }
             continue;
         }
+        if (in_array($killID, $checked)) {
+            // we've already pulled this one?  check again later
+            Util::out("ESI Fetch $killID $hash ... later");
+            $mdb->set("crestmails", ['killID' => $killID, 'hash' => $hash], ['processed' => 'later']);
+            continue;
+        }
+        $checked[] = $killID;
 
         $mdb->set("crestmails", $row, ['processed' => 'fetching']);
         $guzzler->call("$esiServer/v1/killmails/$killID/$hash/", "success", "fail", ['row' => $row, 'mdb' => $mdb, 'redis' => $redis, 'killID' => $killID, 'esimails' => $esimails]);
