@@ -60,7 +60,6 @@ function loadasearch() {
         $(".btn-page.btn-primary").click();
     });
 
-    $("#clickToDigCheckbox").prop('checked', localStorage.getItem('drilldown-enabled') === 'false');
     $("#clickToDigCheckbox").on('change', updateDrillDownPreference);
 };
 
