@@ -136,7 +136,7 @@ function success($params, $content, $uri)
     if ($newKills > 0) {
         $corpName = Info::getInfoField('corporationID', $corpID, 'name');
         $newKills = str_pad($newKills, 3, " ", STR_PAD_LEFT);
-        ZLog::add("$newKills kills added by corp $corpName *", $charID);
+        ZLog::add("$newKills kills added by corp $corpName *"  . ($delay == 0 ? '' : "($delay)"), $charID);
     }
     return $count;
 }

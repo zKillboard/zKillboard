@@ -102,7 +102,7 @@ function success($params, $content)
         if ($corpName == "") $corpName = "Corporation $corpID";
 
         $newKills = str_pad($newKills, 3, " ", STR_PAD_LEFT);
-        Util::out("$newKills kills added by corp $corpName");
+        Util::out("$newKills kills added by corp $corpName" . ($delay == 0 ? '' : "($delay)"));
     }
 
     if ($redis->get("recentKillmailActivity:corp:$corpID") == "true") $esi->setTime($corpID, time() + 301);
