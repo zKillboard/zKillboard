@@ -39,7 +39,7 @@ while ($minute == date("Hi")) {
             // Do we already have a good link for this killID?
             $count = $mdb->count("crestmails", ['killID' => $killID, 'processed' => true]);
             if ($count > 0) {
-                $mdb->set("crestmails", ['killID' => $killID, 'processed' => ['$ne' => true]], ['$set' => ['processed' => 'invalid/duplicate']], true);
+                $mdb->set("crestmails", ['killID' => $killID, 'processed' => ['$ne' => true]], ['processed' => 'invalid/duplicate'], true);
             } else {
               $mdb->set("crestmails", ['killID' => $killID, 'hash' => $hash], ['processed' => 'delayed']);
             }
