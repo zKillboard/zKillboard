@@ -3,6 +3,7 @@
 require_once "../init.php";
 
 use cvweiss\redistools\RedisCache;
+use cvweiss\redistools\RedisQueue;
 
 global $gankKillBotWebhook;
 
@@ -48,7 +49,7 @@ while ($concord->hasNext()) {
             Util::out("Marking " . $lvictim['killID'] . " as ganked.");
             RedisCache::delete("killDetail:" . $lvictim['killID']);
             RedisCache::delete( "zkb::detail:" . $lvictim['killID']);
-            $queueRedisQ->push($killID);
+            $queueRedisQ->push($lvictim['killID']);
         }
     }
 }
