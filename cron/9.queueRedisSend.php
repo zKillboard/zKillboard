@@ -58,5 +58,5 @@ while (date('Hi') == $minute) {
         $queueRedisQFail->push($killID);
         sleep(1);
     }
-    usleep(250000);
+    sleep($redisQSleep);
 }
