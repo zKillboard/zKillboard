@@ -565,12 +565,15 @@ html,body {
 }
 
 .shipImageIcon {
+	display: none;
+}
+
+.pip {
 	display: block;
 	position: absolute;
 	top: 0px;
 	left: 0px;
-	transform: scale(calc(var(--sizei) / 64));
-	object-fit: none;
+	transform: scale(calc(var(--sizei) / 64));	
 	object-position: 0 0;
 	transform-origin: 0 0;
 	width: 15px;
@@ -578,5 +581,9 @@ html,body {
 	clip-path: polygon(0 0, 0 100%, 100% 0);
 	image-rendering: crisp-edges;   /* fallback */
     image-rendering: pixelated;     /* preferred nearest-neighbor */
+	background-color: black;
 }
 
+.pip[src="/img/pips/pip_tech1.png"] {
+	display: none;
+}
