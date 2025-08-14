@@ -48,7 +48,7 @@ while ($concord->hasNext()) {
             Util::out("Marking " . $lvictim['killID'] . " as ganked.");
             RedisCache::delete("killDetail:" . $lvictim['killID']);
             RedisCache::delete( "zkb::detail:" . $lvictim['killID']);
-            $queueRedisQ->push($killID)
+            $queueRedisQ->push($killID);
         }
     }
 }
