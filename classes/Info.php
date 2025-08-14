@@ -350,6 +350,7 @@ class Info
                     case 'shipTypeID':
                         if (!isset($element['shipName'])) {
                             $element['shipName'] = self::getInfoField('typeID', $value, 'name');
+                            $element['pip'] = self::getInfoField('typeID', $value, 'pip');
                         }
                         if (!isset($element['groupID'])) {
                             $element['groupID'] = self::getGroupID($value);
@@ -369,6 +370,7 @@ class Info
                             foreach ($groupTypes as $type) {
                                 $type['noRecursion'] = true;
                                 $type['shipName'] = $type['name'];
+                                $type['pip'] = @$type['pip'];
                                 $type['shipTypeID'] = $type['id'];
                                 $element['groupShips'][] = $type;
                             }
@@ -687,6 +689,7 @@ class Info
                 $data['name'] = $row[$retArray['type'].'Name'];
             } elseif (isset($row['shipName'])) {
                 $data['name'] = $row['shipName'];
+                $data['pip'] = @$row['pip'];
             }
             $data['kills'] = $row['kills'];
             $retArray['values'][] = $data;
