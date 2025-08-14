@@ -8,6 +8,8 @@ global $gankKillBotWebhook;
 
 if ($redis->get("zkb:gankcheck") == "true") exit();
 
+$queueRedisQ = new RedisQueue('queueRedisQ');
+
 $concord = $mdb->getCollection("killmails")->find(['involved.corporationID' => 1000125])->sort(['killID' => -1])->limit(50000);
 $added = [];
 
@@ -46,6 +48,7 @@ while ($concord->hasNext()) {
             Util::out("Marking " . $lvictim['killID'] . " as ganked.");
             RedisCache::delete("killDetail:" . $lvictim['killID']);
             RedisCache::delete( "zkb::detail:" . $lvictim['killID']);
+            $queueRedisQ->push($killID)
         }
     }
 }
