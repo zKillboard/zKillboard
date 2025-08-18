@@ -7,24 +7,29 @@ require_once '../init.php';
 if ($redis->get("tobefetched") > 1000) exit();
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->scard("queueStatsSet") > 1000) exit();
-if ($mdb->findDoc("statistics", ['reset' => true]) != null) exit();
 
 MongoCursor::$timeout = -1;
 
 $minute = date("Hi");
 
 do {
-    $row = $mdb->findDoc("statistics", ['calcAlltime' => true], ['shipsDestroyed' => 1]);
-    if ($row == null) exit();
+    $rows = $mdb->find("statistics", ['calcAlltime' => true], ['shipsDestroyed' => 1], 100);
 
-    $key = "zkb:calcAlltime:" . $row['type'] . ":" . $row['id'];
-    $i = $row['type'] . " " . $row['id'] . " : " . $row['shipsDestroyed'];
-    try {
-        if ($redis->set($key, "true", ['nx', 'ex' => 80000]) !== true) exit();
-        calcTop($row, $i);
-    } finally {
-        $redis->del($key);
+    if (sizeof($rows) == 0) exit();
+    foreach ($rows as $row) {
+        if ($minute != date("Hi")) break;
+        if ($row['type'] == "label" || @$row['reset'] === true) continue;
+
+        $key = "zkb:calcAlltime:" . $row['type'] . ":" . $row['id'];
+        $i = $row['type'] . " " . $row['id'] . " : " . $row['shipsDestroyed'];
+        try {
+            if ($redis->set($key, "true", ['nx', 'ex' => 80000]) !== true) continue;
+            calcTop($row, $i);
+        } finally {
+            $redis->del($key);
+        }
     }
+    sleep(1);
 } while ($minute == date("Hi"));
 
 function calcTop($row, $i)
