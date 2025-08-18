@@ -32,10 +32,8 @@ function publish($killID)
     $zkb['solo'] = @$kill['solo'];
     $zkb['awox'] = @$kill['awox'];
     $zkb['labels'] = @$kill['labels'];
-    $zkb['esi'] = "$esiServer/latest/killmails/$killID/".$zkb['hash'].'/';
     $zkb['url'] = "https://zkillboard.com/kill/$killID/";
     $raw['zkb'] = $zkb;
-    //$redis->publish("killstream", json_encode($raw, true)); defer to redisq instead
 
     $hours24 = time() - 86400;
     if ($kill['dttm']->sec < $hours24) return;
@@ -74,10 +72,7 @@ function publish($killID)
         'ship_type_id' => (int) @$victimInfo['shipTypeID'],
         'group_id' => (int) @$victimInfo['groupID'],
         'url' => "https://zkillboard.com/kill/$killID/",
-        'hash' => $zkb['hash'],
             ];
-    $redis->setex("zkb:killlistrow:" . $killID, 60, "true");
-    @file_get_contents("https://zkillboard.com/cache/1hour/killlistrow/$killID/");
     foreach ($channels as $channel) {
         $redisMessage['channel'] = $channel;
         $msg = json_encode($redisMessage, JSON_UNESCAPED_SLASHES);

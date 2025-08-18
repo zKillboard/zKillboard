@@ -36,9 +36,9 @@ $app->get('/google/:mobile/', function() use ($app) {
 $app->get('/(page/:page/)', function ($page = 1) use ($app) {
         include 'view/index.php';
         });
-$app->get('/partial/(page/:page/)', function ($page = 1) use ($app) {
+/*$app->get('/partial/(page/:page/)', function ($page = 1) use ($app) {
         include 'view/index.php';
-        });
+        });*/
 
 // Map
 $app->get('/map2020/', function () use ($app) {
@@ -104,14 +104,17 @@ $app->get('/top(/:type)(/:page)(/:time+)/', function ($type = 'weekly', $page = 
   include 'view/raw.php';
   });*/
 
-$app->get('/detail/:id(/:pageview)/', function ($id, $pageview = 'overview') use ($app) {
+/*$app->get('/detail/:id(/:pageview)/', function ($id, $pageview = 'overview') use ($app) {
         $app->redirect("/kill/$id/", 302);
-        });
+        });*/
 // Kill Detail View
-$app->get('/partial/kill/:id(/:pageview)/', function ($id, $pageview = '') use ($app) {
+/*$app->get('/partial/kill/:id(/:pageview)/', function ($id, $pageview = '') use ($app) {
+        include 'view/detail.php';
+        });*/
+$app->get('/kill/:id/redirect/:where/', function ($id, $where, $pageview = '') use ($app) {
         include 'view/detail.php';
         });
-$app->get('/kill/:id/', function ($id, $pageview = '') use ($app) {
+$app->get('/kill/:id/', function ($id, $where = '', $pageview = '') use ($app) {
         include 'view/detail.php';
         });
 

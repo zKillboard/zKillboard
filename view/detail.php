@@ -8,6 +8,20 @@ if ($pageview == 'overview') {
 if ($pageview == '') {
     $pageview = 'overview';
 }
+if ($where != "") {
+    echo $where;
+    $crest = $mdb->findDoc('crestmails', ['killID' => (int) $id, 'processed' => true]);
+    $hash = $crest['hash'];
+    switch ($where) {
+        case 'esi':
+            return $app->redirect("https://esi.evetech.net/latest/killmails/$id/$hash/", 302);
+        case 'eveshipfit':
+            return $app->redirect("https://eveship.fit/?fit=killmail:$id/$hash", 302);
+        case 'eveworkbench':
+            return $app->redirect("https://www.eveworkbench.com/import/killmail/$id/$hash", 302);
+    }
+    return $app->redirect("/kill/$id/", 302);
+}
 if ($pageview != 'overview' && $pageview != 'involved') {
     return header("Location: /");
 }
