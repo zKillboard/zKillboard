@@ -36,9 +36,6 @@ $app->get('/google/:mobile/', function() use ($app) {
 $app->get('/(page/:page/)', function ($page = 1) use ($app) {
         include 'view/index.php';
         });
-/*$app->get('/partial/(page/:page/)', function ($page = 1) use ($app) {
-        include 'view/index.php';
-        });*/
 
 // Map
 $app->get('/map2020/', function () use ($app) {
@@ -87,9 +84,6 @@ $app->get('/bigisk/', function () use ($app) {
 $app->get('/:type/ranks/:kl/:solo/:epoch/:page/', function($type, $kl, $solo, $epoch, $page) use ($app) {
         include 'view/typeRanks.php';
 });
-/*$app->get('/cache/bypass/:type/ranks/:kl/:epoch/:page/', function($type, $kl, $epoch, $page) use ($app) {
-        include 'view/typeRanks.php';
-});*/
 
 // View top
 $app->get('/top/lasthour/:type/', function ($type) use ($app) {
@@ -99,18 +93,6 @@ $app->get('/top(/:type)(/:page)(/:time+)/', function ($type = 'weekly', $page = 
         include 'view/top.php';
         });
 
-// Raw Kill Detail
-/*$app->get('/raw/:id/', function ($id) use ($app) {
-  include 'view/raw.php';
-  });*/
-
-/*$app->get('/detail/:id(/:pageview)/', function ($id, $pageview = 'overview') use ($app) {
-        $app->redirect("/kill/$id/", 302);
-        });*/
-// Kill Detail View
-/*$app->get('/partial/kill/:id(/:pageview)/', function ($id, $pageview = '') use ($app) {
-        include 'view/detail.php';
-        });*/
 $app->get('/kill/:id/redirect/:where/', function ($id, $where, $pageview = '') use ($app) {
         include 'view/detail.php';
         });
@@ -326,9 +308,6 @@ $app->get('/cache/24hour/killlistrow/:killID/', function ($killID) use ($app) { 
 $app->get('/cache/bypass/healthcheck/', function () use ($app) { include 'view/api/healthcheck.php'; });
 
 // The Overview stuff
-/*$app->get('/partial/:input+/', function ($input) use ($app) {
-        include 'view/overview.php';
-        });*/
 $app->get('/:input+/', function ($input) use ($app) {
         include 'view/overview.php';
         });
