@@ -9,8 +9,9 @@ class zkbSearch
         'corporationID' => 'https://image.eveonline.com/corporations/%1$d/logo?size=32',
         'allianceID' => 'https://image.eveonline.com/alliances/%1$d/logo?size=32',
         'factionID' => 'https://image.eveonline.com/corporations/%1$d/logo?size=32',
-        'solarSystemID' => 'https://image.eveonline.com/types/3802/icon?size=32',
-        'regionID' => 'https://zkillboard.com/img/region_64.png',
+        'solarSystemID' => 'https://zkillboard.com/img/nohus/systems/%1$d_32.png',
+        'constellationID' => 'https://zkillboard.com/img/nohus/constellations/%1$d_32.png',
+        'regionID' => 'https://zkillboard.com/img/nohus/regions/%1$d_32.png',
         'locationID' => 'https://image.eveonline.com/alliances/1/logo?size=32',
     ];
 
@@ -24,7 +25,7 @@ class zkbSearch
         $exactMatch = [];
         $exactMatchID = [];
         $partialMatch = [];
-        $types = ['typeID', 'regionID', 'solarSystemID', 'factionID', 'allianceID', 'allianceID:flag', 'corporationID', 'corporationID:flag', 'characterID', 'groupID', 'locationID'];
+        $types = ['typeID', 'regionID', 'solarSystemID', 'factionID', 'allianceID', 'allianceID:flag', 'corporationID', 'corporationID:flag', 'characterID', 'groupID', 'locationID', 'constellationID'];
         foreach ($types as $type) {
             if ($entityType != null && $entityType != $type) {
                 continue;

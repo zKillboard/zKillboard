@@ -221,14 +221,17 @@
 	<meta name="twitter:image" content="{{ image_server }}{{ key }}s/{{ id }}/logo?size=128">
         <meta name="og:image" content="{{ image_server}}{{ key }}s/{{ id }}/logo?size=128">
 {% elseif key == "system" %}
-	<meta name="twitter:image" content="{{ image_server }}types/8/render?size=64">
-        <meta name="og:image" content="{{ image_server}}types/8/render?size=64">
+	<meta name="twitter:image" content="https://zkillboard.com/img/nohus/systems/{{ id }}.png">
+	<meta name="og:image" content="https://zkillboard.com/img/nohus/systems/{{ id }}.png">
 {% elseif key == "ship" %}
 	<meta name="twitter:image" content="{{ image_server }}types/{{ id }}/render?size=64">
         <meta name="og:image" content="{{ image_server}}types/{{ id }}/render?size=64">
 {% elseif key == "region" %}
-	<meta name="twitter:image" content="{{ fullsiteurl }}/img/region_64.png">
-        <meta name="og:image" content="{{ fullsiteurl }}/img/region_64.png">
+	<meta name="twitter:image" content="https://zkillboard.com/img/nohus/regions/{{ id }}.png">
+        <meta name="og:image" content="https://zkillboard.com/img/nohus/regions/{{ id }}.png">
+{% elseif key == "constellation" %}
+	<meta name="twitter:image" content="https://zkillboard.com/img/nohus/constellations/{{ id }}.png">
+        <meta name="og:image" content="https://zkillboard.com/img/nohus/constellations/{{ id }}.png">
 {% else %}
 	<meta name="twitter:image" content="{{ image_server }}{{ key }}s/{{ id }}/render?size=128">
         <meta name="og:image" content="{{ image_server }}{{ key }}s/{{ id }}/render?size=128">

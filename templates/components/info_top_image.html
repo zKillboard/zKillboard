@@ -21,8 +21,12 @@
 	{% if detail.solarSystemName and key == 'system' %}
 		{% include 'components/image_system.html' %}
 	{% endif %}
+	{% if detail.constellationName and key == 'constellation' %}
+		{% set imageSize = 128 %}
+		{% include 'components/image_constellation.html' %}
+    {% endif %}
 	{% if detail.regionName and key == 'region' %}
-		{% set imageSize = 64 %}
+		{% set imageSize = 128 %}
 		{% include 'components/image_region.html' %}
 	{% endif %}
 	{% if detail.itemID and key == 'location' %}

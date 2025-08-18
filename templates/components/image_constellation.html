@@ -1,0 +1,4 @@
+{% set actualSize = resizeImage is defined ? resizeImage : imageSize %}
+<a href="/constellation/{{ field.constellationID }}/" rel='tooltip' title='{{ field.constellationName }}'>
+	<img class="eveimage img-rounded" src="/img/nohus/constellations/{{ field.constellationID }}.png" style='height: {{actualSize}}px; width: {{actualSize}}px;' alt="{{ field.constellationName }}">
+</a>
