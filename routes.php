@@ -62,11 +62,6 @@ $app->get('/related/:system/:time/(o/:options/)', function ($system, $time, $opt
         });
 
 // View Battle Report
-$app->get('/br/list/', function () use ($app) {
-        include 'view/battle_list.php';
-        });
-
-// View Battle Report
 $app->get('/br/:battleID/', function ($battleID) use ($app) {
         include 'view/battle_report.php';
         });
