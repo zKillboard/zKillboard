@@ -5,7 +5,7 @@ body, html {
 .centered { vertical-align:middle; text-align:center; }
 .centered img { display:block; margin:0 auto; }
 
-.eveimage { background-color: #222; overflow: hidden; font-size: 0.1px;}
+.eveimage { background-color: #050505; overflow: hidden; font-size: 0.1px;}
 
 #back-top {
 	position: fixed;
@@ -113,6 +113,11 @@ ul.autocomplete { width: 375px; }
 ul.autocomplete img { position: absolute; top: 4px; left: 4px; }
 ul.autocomplete a { position: relative; padding: 10px 2px 0px 40px; height: 40px; }
 ul.autocomplete span { position: absolute; top: 10px; right: 5px; }
+
+/* Override background color of search results */
+li.active img {
+	background: #050505;
+}
 
 /* cut search results on mobile devices to prevent overlapping of category names */
 @media only screen and (max-width: 767px) {
