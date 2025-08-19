@@ -7,6 +7,7 @@ use cvweiss\redistools\RedisQueue;
 require_once '../init.php';
 
 if ($mdb->findDoc("killmails", ['reset' => true]) != null) exit();
+if (((int) $redis->get("zkb:load")) >= 15) exit();
 if ($redis->get("zkb:reinforced") == true) exit();
 
 if ($mt == 0) $mdb->getCollection("statistics")->update(['reset' => false], ['$unset' => ['reset' => true]], ['multiple' => true]);
