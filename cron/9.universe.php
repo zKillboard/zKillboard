@@ -1,6 +1,10 @@
 <?php
 
+$pid = pcntl_fork();
+
 require_once "../init.php";
+
+if ($pid == 0) sleep(5);
 
 $kvc = new KVCache($mdb, $redis);
 
@@ -19,10 +23,11 @@ $kvc->del("zkb:universeLoaded");
 $kvc->del("zkb:tqServerVersion");
 $guzzler = new Guzzler(25, 10);
 
-$guzzler->call("$esiServer/v1/universe/regions/", "regionsSuccess", "fail");
+if ($pid == 0) $guzzler->call("$esiServer/v1/universe/regions/", "regionsSuccess", "fail");
+else $guzzler->call("$esiServer/v1/universe/categories/", "categoriesSuccess", "fail");
 $guzzler->finish();
-$guzzler->call("$esiServer/v1/universe/categories/", "categoriesSuccess", "fail");
-$guzzler->finish();
+
+if ($pid != 0) pcntl_wait($pid);
 
 $kvc->set("zkb:tqServerVersion", $serverVersion);
 $kvc->set("zkb:universeLoaded", "true");
