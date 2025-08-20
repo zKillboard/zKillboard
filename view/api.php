@@ -2,7 +2,7 @@
 
 use cvweiss\redistools\RedisQueue;
 
-global $redis, $ip;
+global $redis, $ip, $uri;
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
@@ -19,7 +19,6 @@ try {
         return;
     }
 
-    global $uri;
     if (strpos($uri, "/stats/") !== false) {
         throw new Exception("This is not the stats endpoint, refer to the documentation and build your URL properly.");
     }
@@ -76,7 +75,7 @@ try {
     $redis->expire("IP:errorCount:$ip", 300);
     $count = $redis->get("IP:errorCount:$ip");
     if ($count > 40) {
-        if ($redis->set("IP:ban:$ip", "true", ['nx', 'ex' => 3600]) === true) Util::zout("Banning $ip because " . $ex->getMessage());
+        if ($redis->set("IP:ban:$ip", "true", ['nx', 'ex' => 3600]) === true) Util::zout("Banning $ip because " . $ex->getMessage() . "\n$uri");
     }
 
     header('Content-Type: application/json');
