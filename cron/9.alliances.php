@@ -7,7 +7,6 @@ require_once '../init.php';
 $kvc = new KVCache($mdb, $redis);
 
 if ($redis->get("zkb:noapi") == "true") exit();
-if ($kvc->get("zkb:universeLoaded") != "true") exit();
 
 $mdb = new Mdb();
 $guzzler = new Guzzler();

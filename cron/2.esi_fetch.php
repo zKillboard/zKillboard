@@ -9,7 +9,6 @@ $kvc = new KVCache($mdb, $redis);
 
 if ($redis->get("zkb:noapi") == "true") exit();
 if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit();
-if ($kvc->get("zkb:universeLoaded") != "true") exit();
 
 $guzzler = new Guzzler(10);
 $esimails = $mdb->getCollection("esimails");

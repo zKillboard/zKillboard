@@ -7,7 +7,6 @@ $kvc = new KVCache($mdb, $redis);
 use cvweiss\redistools\RedisTimeQueue;
 
 if ($redis->get("zkb:noapi") == "true") exit();
-if ($kvc->get("zkb:universeLoaded") != "true") exit();
 if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit();
 
 $guzzler = new Guzzler();

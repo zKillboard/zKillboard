@@ -5,7 +5,6 @@ require_once '../init.php';
 $kvc = new KVCache($mdb, $redis);
 
 if ($kvc->get("zkb:locationsLoaded") == "true") exit();
-if ($kvc->get("zkb:universeLoaded") != "true") exit();
 
 $raw = file_get_contents("https://sde.zzeve.com/invNames.json");
 $invNames = json_decode($raw, true);
