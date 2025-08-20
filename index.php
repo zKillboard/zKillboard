@@ -51,7 +51,7 @@ if (in_array($ip, $blackList)) return header('HTTP/1.1 403 Blacklisted');
 // Starting Slim Framework
 $app = new \Slim\Slim($config);
 header('X-Frame-Options: DENY');
-header("Content-Security-Policy: frame-ancestors 'none'");
+header("Content-Security-Policy: frame-ancestors 'self'");
 
 // Set up the session if we need it for this uri
 if (substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || $uri == '/navbar/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp' || substr($uri, 0, 20) == "/cache/bypass/login/") {

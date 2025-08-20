@@ -94,6 +94,7 @@ $app->get('/kill/:id/redirect/:where/', function ($id, $where, $pageview = '') u
 $app->get('/kill/:id/', function ($id, $where = '', $pageview = '') use ($app) {
         include 'view/detail.php';
         });
+$app->get('/kill/:id/ingamelink/', function ($id) use ($app) { include 'view/detail_ingamelink.php'; });
 
 // Logout
 $app->get('/account/logout/', function () use ($app) {
