@@ -43,7 +43,8 @@ function success(&$guzzler, &$params, &$content)
         $name = $row['name'];
         $match = ['type' => $row['category'] . "ID", 'id' => $row['id']];
         $current = $mdb->findDoc("information", $match);
-        if ($current['name'] != $name) {
+        if (@$current['name'] != $name) {
+            Util::out("Name update " . @current['name'] . " -> $name");
             $mdb->set("information", ['type' => $row['category'] . "ID", 'id' => $row['id']], ['name' => $name, 'l_name' => strtolower($name)]);
         }
         $redis->srem($rset, $row['id']);
