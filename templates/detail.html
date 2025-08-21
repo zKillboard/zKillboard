@@ -58,9 +58,10 @@
 			<li class="dropdown">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown">Export <b class="caret"></b></a>
 				<ul class="dropdown-menu">
-                                        <li><a href='#' onClick="saveFitting({{ extra.crest.killID }}); return false;" rel="nofollow">Import Fit via ESI</a></li>
+                    <li><a href='#' onClick="saveFitting({{ extra.crest.killID }}); return false;" rel="nofollow">Import Fit via ESI</a></li>
 					<li><a data-toggle="modal" data-target="#DNA" href="#">DNA</a></li>
 					<li><a data-toggle="modal" data-target="#EFT" href="#">EFT</a></li>
+                    <li><a target="_blank" rel="noopener noreferrer" href="/kill/{{ extra.crest.killID }}/redirect/esi/">ESI Link</a></li>
                     <li><a data-toggle="modal" data-target="#ingamelink" href="#" onclick='$("#ingamelink").modal(); $("#ingamelinkcontent").html(`<iframe src="https://zkillboard.com/kill/{{ killdata.info.killID }}/ingamelink/" width="100%" rows="3" title="In Game Link"></iframe>`);'>In Game Link</a></li>
 				</ul>
 			</li>
