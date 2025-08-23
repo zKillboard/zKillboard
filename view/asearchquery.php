@@ -50,7 +50,6 @@ try {
 
     $query = buildQuery($query, "location");
     $query = buildQuery($query, "neutrals", null, getSelectedFromBase('either', $buttons));
-//if (sizeof($query)) Util::zout(print_r($query, true));
     $query = buildQuery($query, "attackers", false, getSelectedFromBase('attackers-', $buttons));
     $query = buildQuery($query, "victims", true, getSelectedFromBase('victims-', $buttons));
 
@@ -106,12 +105,10 @@ try {
         $ret = (string) $redis->get($key);
         if ($ret == "PROCESSING") { 
             sleep(1);
-            //if ($waits > 30) Util::zout("waiting... $waits");
             $waits++;
-            if ($waits > 60) {
+            if ($waits > 28) {
                 header('HTTP/1.1 408 Request timeout'); 
                 return;
-
             }
         }
     } while ($ret == "PROCESSING");
@@ -251,6 +248,7 @@ function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride, $addInfo, 
     while ($redis->get("inprogress:$hashKey") == "true") sleep(1);
     try {
         $redis->setex("inprogress:$hashKey", 60, "true");
+        $isCharacter = (strpos(json_encode($query), "characterID") !== false);
 
         $killmails = $mdb->getCollection('killmails');
 
@@ -275,6 +273,7 @@ function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride, $addInfo, 
         }
         if ($victimsOnly != "null") $pipeline[] = ['$match' => ['involved.isVictim' => ($victimsOnly == "true" ? true : false)]];
         $pipeline[] = ['$match' => [$keyField => ['$ne' => null]]];
+        $pipeline[] = ['$match' => [$keyField => ['$ne' => 0]]];
         $pipeline[] = ['$group' => ['_id' => ['killID' => '$killID', $groupByColumn => '$'.$keyField, 'totalValue' => '$zkb.totalValue', 'involved' => '$attackerCount', 'damage' => '$damage_taken']]];
 
         if ($sortKey == "damage_taken") {
@@ -288,6 +287,7 @@ function getTop($groupByColumn, $query, $victimsOnly, $cacheOverride, $addInfo, 
         }
         $pipeline[] = ['$sort' => ['kills' => $sortBy]];
         $pipeline[] = ['$limit' => 150];
+        // $pipeline[] = ['$limit' => ($isCharacter ? 5000 : 150)];
         $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
 
         $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'maxTimeMS' => 25000]);

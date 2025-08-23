@@ -11,44 +11,53 @@
         {% set imageSize = 64 %}
         {% set field = data %}
         {% if topSet.type == 'character' %}
-          <td>{% include 'components/image_char.html' %}</td>
+          <td colspan="3">{% include 'components/image_char.html' %}</td>
         {% elseif topSet.type == 'corporation' %}
-          <td>{% include 'components/image_corp.html' %}</td>
+          <td colspan="3">{% include 'components/image_corp.html' %}</td>
         {% elseif topSet.type == 'alliance' %}
-          <td>{% include 'components/image_alli.html' %}</td>
+          <td colspan="3">{% include 'components/image_alli.html' %}</td>
         {% elseif topSet.type == 'solarSystem' %}
-          <td>{% include 'components/image_system.html' %}</td>
+          <td colspan="3">{% include 'components/image_system.html' %}</td>
 	{% elseif topSet.type == 'shipType' %}
-          <td>{% include 'components/image_ship.html' %}</td>
+          <td colspan="3">{% include 'components/image_ship.html' %}</td>
 	{% elseif topSet.type == 'location' %}
-          <td>{% include 'components/image_item.html' %}</td>
+          <td colspan="3">{% include 'components/image_item.html' %}</td>
         {% endif %}
       </tr>
       {% set first = false %}
     {% endif %}
     {% if counter == 11 %}
     <tr class="grouping-all-{{ topSet.type }}">
-        <td colspan="3"><center><a href="#" onclick="$('.grouping-{{ topSet.type }}').show(); $('.grouping-all-{{topSet.type}}').hide(); return false;">The Rest (up to 100)</a></center></td>
+        <td colspan="4"><center><span class="btn btn-sm btn-primary" onclick="$('.grouping-{{ topSet.type }}').show(); $('.grouping-all-{{topSet.type}}').hide(); return false;">The Rest (up to 100)</span></center></td>
     </tr>
     {% endif %}
     <tr class="grouping-{{ topSet.type }}{% if counter >= 11 %} collapse{% endif %}">
         {% if topSet.type == 'character' %}
+          <td style="display: none;" class="deepfilter hidedeepfilter"><input type="checkbox" class="topfilter" data-filter-type="{{ topSet.type }}" data-filter-id="{{ field.characterID }}"/></td>
           <td>{% include 'components/text_char.html' %}</td>
         {% elseif topSet.type == 'corporation' %}
+          <td style="display: none;" class="deepfilter hidedeepfilter"><input type="checkbox" class="topfilter" data-filter-type="{{ topSet.type }}" data-filter-id="{{ field.corporationID }}"/></td>
           <td>{% include 'components/text_corp.html' %}</td>
         {% elseif topSet.type == 'alliance' %}
+          <td style="display: none;" class="deepfilter hidedeepfilter"><input type="checkbox" class="topfilter" data-filter-type="{{ topSet.type }}" data-filter-id="{{ field.allianceID }}"/></td>
           <td>{% include 'components/text_alli.html' %}</td>
         {% elseif topSet.type == 'faction' %}
+          <td style="display: none;" class="deepfilter hidedeepfilter"><input type="checkbox" class="topfilter" data-filter-type="{{ topSet.type }}" data-filter-id="{{ field.factionID }}"/></td>
           <td>{% include 'components/text_faction.html' %}</td>
         {% elseif topSet.type == 'solarSystem' %}
+          <td style="display: none;" class="deepfilter hidedeepfilter"><input type="checkbox" class="topfilter" data-filter-type="{{ topSet.type }}" data-filter-id="{{ field.solarSystemID }}"/></td>
           <td>{% include 'components/text_system.html' %}</td>
     	{% elseif topSet.type == 'shipType' %}
+          <td style="display: none;" class="deepfilter hidedeepfilter"><input type="checkbox" class="topfilter" data-filter-type="{{ topSet.type }}" data-filter-id="{{ field.shipTypeID }}"/></td>
           <td>{% include 'components/text_ship.html' %}</td>
     	{% elseif topSet.type == 'group' %}
+          <td style="display: none;" class="deepfilter hidedeepfilter"><input type="checkbox" class="topfilter" data-filter-type="{{ topSet.type }}" data-filter-id="{{ field.groupID }}"/></td>
           <td>{% include 'components/text_group.html' %}</td>
 	    {% elseif topSet.type == 'region' %}
+          <td style="display: none;" class="deepfilter hidedeepfilter"><input type="checkbox" class="topfilter" data-filter-type="{{ topSet.type }}" data-filter-id="{{ field.regionID }}"/></td>
           <td>{% include 'components/text_region.html' %}</td>
 	    {% elseif topSet.type == 'location' %}
+          <td style="display: none;" class="deepfilter hidedeepfilter"><input type="checkbox" class="topfilter" data-filter-type="{{ topSet.type }}" data-filter-id="{{ field.locationID }}"/></td>
           <td>{% include 'components/text_location.html' %}</td>
         {% endif %}
         {% if topSet.sortKey == 'zkb.totalValue' %}

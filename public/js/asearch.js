@@ -253,7 +253,7 @@ function setFilters(hashfilters) {
                 break;
         }
     }
-    Promise.all(promises);
+    // Promise.all(promises); // actually does nothing here since we don't await
     allowChange = true;
 }
 
@@ -573,6 +573,7 @@ async function clickCatch(e) {
     if (!altPressed) return true; // default behavior
 
     let name = $(this).text();
+    if (name == '' && e.target) name = $(e.target).attr('title');
     let href = $(this).attr('href');
     let split = href.replaceAll('/', ' ').split(' ').filter(Boolean);
 
@@ -581,6 +582,7 @@ async function clickCatch(e) {
     console.log(name, split);
 
     if (split[0] == 'kill') name = 'killID ' + split[1];
+    if (name == '') name = split[0] + ' ' + split[1];
     addEntity({
         value: name || split[1],
         data: {
@@ -588,6 +590,7 @@ async function clickCatch(e) {
             id: split[1]
         }
     });
+
 
     e.preventDefault();
     return false;

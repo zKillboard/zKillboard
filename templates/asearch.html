@@ -106,6 +106,7 @@
 <hr/>
 <div id="clickablecontent" class="row">
     <div id='page' class='col-md-10'>
+        <div id='pagefilters'>
         <div zkill-var='sort' zkill-key='sortBy' class='btn-group asearchfilters'>
             <button class='sorttype radio-btn btn btn-primary' value='sort-date'>Date</button>
             <button class='sorttype radio-btn btn btn-default' value='sort-isk'>ISK</button>
@@ -127,7 +128,9 @@
             <button class='pagenum radio-btn btn-page btn btn-default' value='page9'>9</button>
             <button class='pagenum radio-btn btn-page btn btn-default' value='page10'>10</button>
         </div>
-        <div class="clearfix asearchfilters"></div><br class='asearchfilters'/>
+        <div class="clearfix asearchfilters"></div>
+        <br class='asearchfilters'/>
+        </div>
 <div id="killmails-result" style='min-height: 500px;'>
 <table class="table table-condensed table-striped table-hover" style="margin-bottom: 0px;" id="killlist">
   <thead>
@@ -153,6 +156,7 @@
             <div class='radio-btn btn btn-default' value='attackersonly'>Attackers Only</div>
         </div>
         <div><h4 id='result-groups-count'></h4></div>
+        <div id='result-groups-all'>
         <div id='result-groups-character'></div>
         <div id='result-groups-corporation'></div>
         <div id='result-groups-alliance'></div>
@@ -163,6 +167,7 @@
         <div id='result-groups-solarSystem'></div>
         <div id='result-groups-constellation'></div>
         <div id='result-groups-region'></div>
+        </div>
     </div>
 <hr/>
 </div>
