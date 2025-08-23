@@ -1,6 +1,6 @@
 <?php
 
-$mt = 8; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
+$mt = 20; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
 use cvweiss\redistools\RedisTimeQueue;
 
@@ -24,6 +24,7 @@ if ($mt == 0 && (date('i') == 22 || $esi->size() < 100)) {
 }
 if ($esi->size() == 0) exit();
 
+$noCharCount = 0;
 $bumped = [];
 $minute = date('Hi');
 while ($minute == date('Hi')) {
@@ -63,6 +64,8 @@ while ($minute == date('Hi')) {
         }
         usleep(100000);
     } else {
+        $noCharCount++;
+        if ($noCharCount > 10 && $mt > 10) break;
         sleep(1);
     }
 }

@@ -1,12 +1,12 @@
 <?php
 
-$mt = 10; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit(); 
+$mt = 20; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit(); 
 
 use cvweiss\redistools\RedisTimeQueue;
 
 require_once "../init.php";
 
-if ($mt >= $esiCorpMaxThreads) exit();
+if ($mt > $esiCorpMaxThreads) exit();
 
 $kvc = new KVCache($mdb, $redis);
 
@@ -21,6 +21,7 @@ if ($mt == 0 && (date("i") == 44 || $esi->size() < 100)) {
        foreach ($corpIDs as $corpID) $esi->add($corpID);
 }
 
+$noCorpCount = 0;
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $corpIDRaw = $esi->next();
@@ -55,6 +56,8 @@ while ($minute == date('Hi')) {
         $redis->setex("esi-fetched:$corpID", 300, "true");
         usleep(100000);
     } else {
+        $noCorpCount++;
+        if ($noCorpCount > 10 && $mdb > 10) break; // allows us to handle bursts 
         sleep(1);
     }
 }
