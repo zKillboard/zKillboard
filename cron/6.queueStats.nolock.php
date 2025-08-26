@@ -84,7 +84,6 @@ while ($minute == date('Hi')) {
             if ($complete) {
                 Util::statsBoxUpdate($type, $id);
                 $redis->srem("queueStatsSet", $raw);
-                if ($type == 'characterID') $mdb->set("statistics", ['type' => $type, 'id' => $id], ['calcTrophies' => true]);
             }
         } catch (Exception $ex) {
             Log::log(print_r($ex, true));
