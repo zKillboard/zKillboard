@@ -2,8 +2,8 @@
 
 require_once '../init.php';
 $dbName = 'zkillboard';
-$m = new MongoClient();
-$db = $m->selectDB($dbName);
+$mdb = new Mdb();
+$db = $mdb->getDb();
 $mcollections = $db->listCollections();
 $collections = array();
 foreach ($mcollections as $collection) {
@@ -15,6 +15,7 @@ echo "<?php
 require_once \"../init.php\";
 \$m = new MongoClient();
 \$db = \$m->selectDB(\"zkillboard\");\n\n";
+
 foreach ($collections as $colName => $collection) {
     echo "// $colName\n";
     echo "echo \"\\nCreating collection $colName ... \";\n";
@@ -36,19 +37,31 @@ foreach ($collections as $colName => $collection) {
         $sparse = @$index['sparse'] == true ? 1 : 0;
         $unique = @$index['unique'] == true ? 1 : 0;
         $expireAfterSeconds = @$index['expireAfterSeconds'] > 0 ? $index['expireAfterSeconds'] : null;
+        $partialFilterExpression = isset($index['partialFilterExpression']) ? $index['partialFilterExpression'] : null;
+
+        // index fields inline
         $indexFields = '';
         $first = true;
         foreach ($fields as $field => $value) {
-            if (!$first) {
-                $indexFields .= ', ';
-            }
+            if (!$first) $indexFields .= ', ';
             $first = false;
             $indexFields .= "'$field' => $value";
         }
-        $expires = $expireAfterSeconds != null ? ", \"expireAfterSeconds\" => $expireAfterSeconds" : '';
-        echo "echo \"Creating index : $indexFields, with sparse = $sparse and unique = $unique ... \";\n";
-        echo "\$${colName}->ensureIndex(array($indexFields), array(\"sparse\" => $sparse, \"unique\" => $unique${expires}));\n";
+
+        // build options inline just like indexFields
+        $optionsFields = [];
+        if ($sparse) $optionsFields[] = "'sparse' => true";
+        if ($unique) $optionsFields[] = "'unique' => true";
+        if ($expireAfterSeconds !== null) $optionsFields[] = "'expireAfterSeconds' => $expireAfterSeconds";
+        if ($partialFilterExpression !== null) {
+            $optionsFields[] = "'partialFilterExpression' => " . var_export($partialFilterExpression, true);
+        }
+        $optionsFieldsStr = implode(', ', $optionsFields);
+
+        echo "echo \"Creating index : $indexFields ... \";\n";
+        echo "\$${colName}->ensureIndex([$indexFields], [$optionsFieldsStr]);\n";
         echo "echo \"Done\\n\";\n";
     }
     echo "\n";
 }
+
