@@ -747,6 +747,7 @@ class Info
         if ($systemLocations == null) {
             Util::zout("Fetching fuzz map for system $solarSystemID");
             $raw = file_get_contents("https://www.fuzzwork.co.uk/api/mapdata.php?solarsystemid=$solarSystemID&format=json");
+	    if ($raw == null) throw new Exception("Unable to fetch fuzzworks system info");
             $systemLocations = json_decode($raw, true);
             $save = ['id' => $solarSystemID, 'locations' => $systemLocations];
             $mdb->save("locations", $save);
