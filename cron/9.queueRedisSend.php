@@ -24,7 +24,7 @@ while ($queueRedisQFail->size() > 0) $queueRedisQ->push($queueRedisQFail->pop())
 
 $minute = date('Hi');
 while (date('Hi') == $minute) {
-    $redis->sort('queueRedisQ', ['alpha' => true, 'sort' => 'asc', 'store' => 'queueRedisQ']);
+    $redis->sort('queueRedisQ', ['alpha' => true, 'sort' => 'desc', 'store' => 'queueRedisQ']);
     $killID = $queueRedisQ->pop();
     if ($killID == null) {
         sleep(1);
@@ -55,7 +55,10 @@ while (date('Hi') == $minute) {
    $result = json_decode(curl_exec($ch), true);
     if ($result == NULL || @$result['success'] != true) {
         Util::out("Failed to send to redisq: " . $killID . " ($result)");
-        $queueRedisQFail->push($killID);
+        $rfkey = "zkb:redisqfail:$killID";
+        $redis->incr($rfkey);
+        $redis->expire($rfkey, 300);
+        if (((int) $redis->get($rfkey)) <= 20) $queueRedisQFail->push($killID); // After 20 failures, we're giving up
         sleep(1);
     }
     sleep($redisQSleep);
