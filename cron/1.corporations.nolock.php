@@ -57,7 +57,7 @@ while ($minute == date('Hi')) {
         usleep(100000);
     } else {
         $noCorpCount++;
-        if ($noCorpCount > 10 && $mdb > 10) break; // allows us to handle bursts 
+        if ($noCorpCount > 10 && $mt > 10) break; // allows us to handle bursts 
         sleep(1);
     }
 }
