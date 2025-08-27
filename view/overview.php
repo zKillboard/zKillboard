@@ -73,7 +73,7 @@ if ($key != "label") $id = (int) $id;
 global $loadGroupShips; // Can't think of another way to do this just yet
 $loadGroupShips = $key == 'group';
 
-$limit = 50;
+$limit = 100;
 $parameters['limit'] = $limit;
 $parameters['page'] = $page;
 try {
