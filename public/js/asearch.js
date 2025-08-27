@@ -333,6 +333,18 @@ function doQuery() {
     });
     xhrs.push(xhr);
 
+    var f3 = {};
+    Object.assign(f3, f);
+    f3.queryType = "labels";
+    xhr = $.ajax('/asearchquery/', {
+        data: f3,
+        method: 'get',
+        error: handleError,
+        success: applyLabelsResult,
+        timeout: 60000 // 60 seconds
+    });
+    xhrs.push(xhr);
+
     var ff = [];
     for (i = 0; i < types.length; i++) {
         ff[i] = {};
@@ -363,6 +375,10 @@ function getFilters() {
     retVal.epoch = { start: $("#dtstart").val(), end: $("#dtend").val()};
     retVal.radios = radios;
     return retVal;
+}
+
+function applyLabelsResult(data, textStatus, jqXHR) {
+    $("#result-groups-labels").html(data);
 }
 
 function applyKillQueryResult(data, textStatus, jqXHR) {

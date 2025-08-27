@@ -59,11 +59,16 @@
 	    {% elseif topSet.type == 'location' %}
           <td style="display: none;" class="deepfilter hidedeepfilter"><input type="checkbox" class="topfilter" data-filter-type="{{ topSet.type }}" data-filter-id="{{ field.locationID }}"/></td>
           <td>{% include 'components/text_location.html' %}</td>
+	    {% else %}
+          <td style="display: none;" class="deepfilter hidedeepfilter"><input type="checkbox" class="topfilter" data-filter-type="{{ topSet.type }}" data-filter-id="{{ field.right }}"/></td>
+          <td>{{ field.right }}</td>
         {% endif %}
         {% if topSet.sortKey == 'zkb.totalValue' %}
         <td style="text-align: right;" format='format-isk-once' raw='{{ data.kills }}' t='isk'>{{ data.kills }}</td>
         {% elseif topSet.sortKey == 'attackerCount' %}
         <td style="text-align: right;" format='format-dec1' raw='{{ data.kills }}'>{{ data.kills }}</td>
+        {% elseif topSet.sortKey == 'count' %}
+        <td style="text-align: right;" format='format-int' raw='{{ field.count }}'>{{ field.count }}</td>
         {% else %}
         <td style="text-align: right;" {% if data.score != 0 %}title="Score: {{ data.score|number_format(0) }}" rel="tooltip"{% endif %} format="format-int-once" raw="{{ data.kills }}">{{ data.kills|number_format(0) }}</td>
         {% endif %}

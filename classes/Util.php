@@ -22,7 +22,7 @@ class Util
         if (!self::endsWith($string, 's')) {
             return $string.'s';
         } else {
-            return $string.'es';
+            return $string;
         }
     }
 

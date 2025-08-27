@@ -17,6 +17,13 @@ if ($redis->get("zkb:reinforced") == true || $redis->get("zkb_reinforced_as_exte
     return;
 }*/
 
+$labelGroupMaps = [
+    'cat' => 'Categories',
+    'isk' => 'ISK Ranges',
+    'loc' => 'Region Types',
+    'tz' => 'Timezones'
+];
+
 try {
 
     $types = [
@@ -162,6 +169,24 @@ try {
         echo $rendered;
         $redis->setex("htmlgroup:$key", 300, $rendered);
         $redis->del($key);
+        return;
+    } else if ($queryType == "labels") {
+        $app->contentType('text/html; charset=utf-8');
+        $arr['top'] = [];
+        $res = getLabels($query, $victimsOnly, true, true, $sortKey, $sortBy);
+        ob_start();
+        if ($res == null) $res = [];
+        foreach ($res as $labelGroup) {
+            if ($labelGroup['_id'] == "cat") {
+                for ($i = 0; $i < sizeof($labelGroup['rights']); $i++) {
+                    $labelGroup['rights'][$i]['right'] = Util::pluralize(Info::getInfoField('categoryID', (int) $labelGroup['rights'][$i]['right'], 'name'));
+                }
+            }
+            if (isset($labelGroupMaps[$labelGroup['_id']])) $labelGroup['_id'] = $labelGroupMaps[$labelGroup['_id']];
+            $app->render("components/asearch_top_list.html", ['topSet' => ['type' => $labelGroup['_id'], 'title' => 'Top ' . ucwords($labelGroup['_id']), 'values' => $labelGroup['rights'], 'sortKey' => 'count', 'sortBy' => $sortBy]]);
+        }
+        $rendered = ob_get_clean();
+        echo $rendered;
         return;
     } else {
         // what is this? ignore it...
@@ -360,6 +385,145 @@ function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $
     } catch (Exception $ex) {
         RedisCache::set($hashKey, [], 900);
     }
+}
+
+function getLabels($query, $victimsOnly, $cacheOverride = false, $addInfo = true)
+{
+	global $mdb, $longQueryMS;
+
+	$hashKey = "Stats::getLabels:" . serialize($query) . ":" . serialize($victimsOnly);
+	try {
+		$result = RedisCache::get($hashKey);
+		if (false && $cacheOverride == false && $result != null) {
+			return $result;
+		}
+
+		$killmails = $mdb->getCollection('killmails');
+
+		$timer = new Timer();
+		$pipeline = [];
+		$pipeline[] = ['$match' => $query];
+		if ($victimsOnly !== "null") $pipeline[] = ['$match' => ['involved.isVictim' => ($victimsOnly == "true" ? true : false)]];
+
+		$pipeline[] = ['$unwind' => '$labels'];
+		$pipeline[] = ['$project' => ['split' => ['$split' => ['$labels', ':']]]];
+		$pipeline[] = [
+			'$project' => [
+				'left' => [
+					'$switch' => [
+						'branches' => [
+							[
+								'case' => [
+									'$eq' => [
+										['$arrayElemAt' => ['$split', 0]],
+										'solo'
+									]
+								],
+								'then' => 'involved'
+							],
+							[
+								'case' => [
+									'$eq' => [
+										['$size' => '$split'],
+										1
+									]
+								],
+								'then' => 'other'
+							]
+						],
+						'default' => [
+							'$cond' => [
+								[
+									'$eq' => [
+										['$arrayElemAt' => ['$split', 0]],
+										'#'
+									]
+								],
+								'involved',
+								['$arrayElemAt' => ['$split', 0]]
+							]
+						]
+					]
+				],
+				'right' => [
+					'$switch' => [
+						'branches' => [
+							[
+								'case' => [
+									'$eq' => [
+										['$arrayElemAt' => ['$split', 0]],
+										'solo'
+									]
+								],
+								'then' => 'solo'
+							],
+							[
+								'case' => [
+									'$eq' => [
+										['$size' => '$split'],
+										1
+									]
+								],
+								'then' => ['$arrayElemAt' => ['$split', 0]]
+							]
+						],
+						'default' => ['$arrayElemAt' => ['$split', 1]]
+					]
+				]
+			]
+		];
+
+		$pipeline[] = [
+			'$group' => [
+				'_id' => [
+					'left' => '$left',
+					'right' => '$right'
+				],
+				'count' => ['$sum' => 1]
+			]
+		];
+
+		$pipeline[] = [
+			'$sort' => [
+				'_id.left' => 1,
+				'count' => -1,
+				'_id.right' => 1
+			]
+		];
+
+		$pipeline[] = [
+			'$group' => [
+				'_id' => '$_id.left',
+				'rights' => [
+					'$push' => [
+						'right' => '$_id.right',
+						'count' => '$count'
+					]
+				]
+			]
+		];
+
+		$pipeline[] = [
+			'$sort' => [
+				'_id' => 1
+			]
+		];
+
+		$rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'maxTimeMS' => 25000]);
+		$result = $rr['result'];
+
+		$time = $timer->stop();
+		if ($time > $longQueryMS) {
+			global $uri;
+			Util::zout("getTop Long query (${time}ms): $hashKey $uri");
+		}
+
+		RedisCache::set($hashKey, $result, 900);
+
+		return $result;
+	} catch (Exception $ex) {
+		RedisCache::set($hashKey, [], 900);
+	}
 }
 
 function getSelectedFromBase($base, $buttons) {
