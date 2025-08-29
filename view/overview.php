@@ -23,7 +23,7 @@ if (strlen("$id") > 11) {
     return $app->notFound();
 }
 
-$validPageTypes = array('kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime');
+$validPageTypes = array('kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime', 'streambox');
 if ($key == 'alliance') {
     $validPageTypes[] = 'corpstats';
 }
@@ -57,6 +57,12 @@ try {
 } catch (Exception $ex) {
     return $app->notFound();
 }
+
+if (isset($parameters['streambox'])) {
+    $app->render("streambox.html");
+    return;
+}
+unset($parameters['streambox']);
 
 $information = $mdb->findDoc('information', ['type' => "${key}ID", 'id' => (int) $id, 'cacheTime' => 3600]);
 $disqualified = ((int) @$information['disqualified']);
