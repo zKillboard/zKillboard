@@ -292,6 +292,7 @@ var xhrs = [];
 var filtersStringified = undefined;
 function doQuery() {
     if (!allowChange) return;
+    console.log('doQuery() executed');
 
     var f = getFilters();
     var stringified = JSON.stringify(f);
@@ -333,6 +334,7 @@ function doQuery() {
     });
     xhrs.push(xhr);
 
+    $("#result-groups-labels").html("");
     var f3 = {};
     Object.assign(f3, f);
     f3.queryType = "labels";
@@ -341,6 +343,19 @@ function doQuery() {
         method: 'get',
         error: handleError,
         success: applyLabelsResult,
+        timeout: 60000 // 60 seconds
+    });
+    xhrs.push(xhr);
+
+    $("#result-groups-distincts").html("");
+    var f4 = {};
+    Object.assign(f4, f);
+    f4.queryType = "distincts";
+    xhr = $.ajax('/asearchquery/', {
+        data: f4,
+        method: 'get',
+        error: handleError,
+        success: applyDistinctsResult,
         timeout: 60000 // 60 seconds
     });
     xhrs.push(xhr);
@@ -375,6 +390,10 @@ function getFilters() {
     retVal.epoch = { start: $("#dtstart").val(), end: $("#dtend").val()};
     retVal.radios = radios;
     return retVal;
+}
+
+function applyDistinctsResult(data, textStatus, jqXHR) {
+    $("#result-groups-distincts").html(data);
 }
 
 function applyLabelsResult(data, textStatus, jqXHR) {

@@ -173,7 +173,7 @@ try {
     } else if ($queryType == "labels") {
         $app->contentType('text/html; charset=utf-8');
         $arr['top'] = [];
-        $res = getLabels($query, $victimsOnly, true, true, $sortKey, $sortBy);
+        $res = getLabels($query, $victimsOnly, false, true, $sortKey, $sortBy);
         ob_start();
         if ($res == null) $res = [];
         foreach ($res as $labelGroup) {
@@ -185,6 +185,19 @@ try {
             if (isset($labelGroupMaps[$labelGroup['_id']])) $labelGroup['_id'] = $labelGroupMaps[$labelGroup['_id']];
             $app->render("components/asearch_top_list.html", ['topSet' => ['type' => $labelGroup['_id'], 'title' => 'Top ' . ucwords($labelGroup['_id']), 'values' => $labelGroup['rights'], 'sortKey' => 'count', 'sortBy' => $sortBy]]);
         }
+        $rendered = ob_get_clean();
+        echo $rendered;
+        return;
+    } else if ($queryType == "distincts") {
+        $app->contentType('text/html; charset=utf-8');
+        $result = getDistincts($query, $victimsOnly, false, true, $sortKey, $sortBy);
+        if ($result == null) $result = [];
+        $res = [];  
+        foreach ($result as $type => $count) {
+            $res[] = ['type' => ucwords(str_replace("IDs", "s", $type)), 'count' => $count];
+        }
+        $app->render("components/asearch_distincts.html", ['result' => $res]);
+        ob_start();
         $rendered = ob_get_clean();
         echo $rendered;
         return;
@@ -394,7 +407,7 @@ function getLabels($query, $victimsOnly, $cacheOverride = false, $addInfo = true
 	$hashKey = "Stats::getLabels:" . serialize($query) . ":" . serialize($victimsOnly);
 	try {
 		$result = RedisCache::get($hashKey);
-		if (false && $cacheOverride == false && $result != null) {
+		if ($cacheOverride == false && $result != null) {
 			return $result;
 		}
 
@@ -522,8 +535,80 @@ function getLabels($query, $victimsOnly, $cacheOverride = false, $addInfo = true
 
 		return $result;
 	} catch (Exception $ex) {
+        if ($ex->getCode() != 50) Util::zout(print_r($ex, true)); // code 50 is query timeout
 		RedisCache::set($hashKey, [], 900);
 	}
+}
+
+function getDistincts($query, $victimsOnly, $cacheOverride = false, $addInfo = true)
+{
+    global $mdb, $longQueryMS;
+
+    $hashKey = "Stats::getDistincts:" . serialize($query) . ":" . serialize($victimsOnly);
+    try {
+        $result = RedisCache::get($hashKey);
+        if (false && $cacheOverride == false && $result != null) {
+            return $result;
+        }
+
+        $killmails = $mdb->getCollection('killmails');
+
+        $timer = new Timer();
+        $pipeline = [];
+        $pipeline[] = ['$match' => $query];
+        if ($victimsOnly !== "null") $pipeline[] = ['$match' => ['involved.isVictim' => ($victimsOnly == "true" ? true : false)]];
+
+        $pipeline[] = [
+            '$unwind' => '$involved'
+        ];
+
+        $pipeline[] = [
+            '$group' => [
+                '_id' => null,
+            'characterIDs'    => ['$addToSet' => '$involved.characterID'],
+            'corporationIDs'  => ['$addToSet' => '$involved.corporationID'],
+            'allianceIDs'     => ['$addToSet' => '$involved.allianceID'],
+            'factionIDs'      => ['$addToSet' => '$involved.factionID'],
+            'shipTypeIDs'     => ['$addToSet' => '$involved.shipTypeID'],
+            'groupIDs'        => ['$addToSet' => '$involved.groupID'],
+            'solarSystemIDs'  => ['$addToSet' => '$system.solarSystemID'],
+            'constellationIDs'=> ['$addToSet' => '$system.constellationID'],
+            'regionIDs'       => ['$addToSet' => '$system.regionID']
+            ]
+        ];
+
+            $pipeline[] = [
+                '$project' => [
+                    '_id' => 0,
+                'characterIDs' => ['$size' => ['$filter' => ['input' => '$characterIDs', 'cond' => ['$ne' => ['$$this', null]]]]],
+                'corporationIDs' => ['$size' => ['$filter' => ['input' => '$corporationIDs', 'cond' => ['$ne' => ['$$this', null]]]]],
+                'allianceIDs' => ['$size' => ['$filter' => ['input' => '$allianceIDs', 'cond' => ['$ne' => ['$$this', null]]]]],
+                'factionIDs' => ['$size' => ['$filter' => ['input' => '$factionIDs', 'cond' => ['$ne' => ['$$this', null]]]]],
+                'shipTypeIDs' => ['$size' => ['$filter' => ['input' => '$shipTypeIDs', 'cond' => ['$ne' => ['$$this', null]]]]],
+                'groupIDs' => ['$size' => ['$filter' => ['input' => '$groupIDs', 'cond' => ['$ne' => ['$$this', null]]]]],
+                'solarSystemIDs' => ['$size' => ['$filter' => ['input' => '$solarSystemIDs', 'cond' => ['$ne' => ['$$this', null]]]]],
+                'constellationIDs' => ['$size' => ['$filter' => ['input' => '$constellationIDs', 'cond' => ['$ne' => ['$$this', null]]]]],
+                'regionIDs' => ['$size' => ['$filter' => ['input' => '$regionIDs', 'cond' => ['$ne' => ['$$this', null]]]]]
+                ]
+            ];
+
+                $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'maxTimeMS' => 25000]);
+                $result = isset($rr['result'][0]) ? $rr['result'][0] : [];
+
+                $time = $timer->stop();
+                if ($time > $longQueryMS) {
+                    global $uri;
+                    Util::zout("getTop Long query (${time}ms): $hashKey $uri");
+                }
+
+                RedisCache::set($hashKey, $result, 900);
+
+                return $result;
+    } catch (Exception $ex) {
+        if ($ex->getCode() != 50) Util::zout(print_r($ex, true));
+        RedisCache::set($hashKey, [], 900);
+    }
+
 }
 
 function getSelectedFromBase($base, $buttons) {
