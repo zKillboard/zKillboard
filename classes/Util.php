@@ -290,6 +290,10 @@ class Util
                     $parameters['labels'] = array_shift($split);
                     if ($parameters['labels'] == 'all') unset($parameters['labels']);
                     break;
+                case 'streambox':
+                    if (sizeof($split) != 0) dire('streambox must be the last parameter');
+                    $parameters['streambox'] = true;
+                    break;
                 default:
                     if (substr($uri, 0, 5) == "/api/") {
                         dire("$key is an invalid parameter");

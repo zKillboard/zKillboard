@@ -1,0 +1,53 @@
+body {
+  background-color: 050505;
+  color: white;
+}
+
+.hideme {
+    display: none;
+}
+
+.shipImageSpan {
+  position: relative;
+  display: inline-block;   /* ensure the box has the set width/height */
+  width: attr(--size);
+  height: attr(--size);
+  margin: 0.5em;
+}
+
+.shipImageIcon {
+    display: none;
+}
+
+.pip {
+    display: block;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    transform: scale(calc(var(--sizei) / 64));
+    object-position: 0 0;
+    transform-origin: 0 0;
+    width: 15px;
+    height: 15px;
+    clip-path: polygon(0 0, 0 100%, 100% 0);
+    image-rendering: crisp-edges;   /* fallback */
+    image-rendering: pixelated;     /* preferred nearest-neighbor */
+    background-color: black;
+}
+
+.pip[src="/img/pips/pip_tech1.png"] {
+    display: none;
+}
+
+.lost:before {
+    font-family: 'Glyphicons Halflings'; /* or whatever font provides it */
+    content: "×";
+    color: red;
+}
+
+
+#promo {
+    margin-top: 0.25em;
+    text-align: center;
+    max-width: 380px;
+}
