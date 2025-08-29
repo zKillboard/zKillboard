@@ -1,6 +1,6 @@
 <?php
 
-$mt = 20; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit(); 
+$mt = 10; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit(); 
 
 use cvweiss\redistools\RedisTimeQueue;
 
@@ -26,7 +26,7 @@ $minute = date('Hi');
 while ($minute == date('Hi')) {
     $corpIDRaw = $esi->next();
     $corpID = (int) $corpIDRaw;
-    if ($corpID > 0) {
+    if ($corpID > 1999999) {
         if ($redis->get("esi-fetched:$corpID") == "true") continue;
         
         $row = $mdb->findDoc("scopes", ['corporationID' => $corpID, 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['lastFetch' => 1]);
@@ -50,11 +50,13 @@ while ($minute == date('Hi')) {
             continue;
         }
 
+        $redis->setex("esi-fetched:$corpID", 300, "true");
         $timer = new Timer();
         $killmails = $sso->doCall("$esiServer/v1/corporations/$corpID/killmails/recent/", [], $accessToken);
         success(['corpID' => $corpID, 'row' => $row, 'esi' => $esi, 'timer' => $timer], $killmails);
-        $redis->setex("esi-fetched:$corpID", 300, "true");
         usleep(100000);
+    } else if ($corpID > 0) {
+        // probably an npc corp, can ignore
     } else {
         $noCorpCount++;
         if ($noCorpCount > 10 && $mt > 10) break; // allows us to handle bursts 
@@ -72,6 +74,9 @@ function success($params, $content)
     $delay = (int) @$row['delay'];
     $redis->rpush("timer:corporations", round($timer->stop(), 0));
 
+    $charID = $row['characterID'];
+    $corpID = $params['corpID'];
+
     $newKills = 0;
     $kills = $content == "" ? [] : json_decode($content, true);
     if (!is_array($kills)) {
@@ -79,8 +84,25 @@ function success($params, $content)
         return;
     }
     if (isset($kills['error'])) {
-        // Something went wrong, reset it and try again later
-        $esi->add($row['corporationID'], 0);
+        switch($kills['error']) {
+            case "Character does not have required role(s)":
+                $mdb->remove("scopes", $row);
+                $redis->del("esi-fetched:" . $params['corpID'], 300, "true");
+                $esi->add($row['corporationID'], 1); // try others, if we have them
+                break;
+            case "Unauthorized - Invalid token":
+                $redis->del("esi-fetched:" . $params['corpID'], 300, "true");
+                $esi->add($row['corporationID'], 35);
+                break;
+            case "Character is not in the corporation":
+                $mdb->set("information", ['type' => 'characterID', 'id' => (int) $charID], ['lastAffUpdate' => $mdb->now(-86400 * 30)]);
+                break;
+            default:
+                // Something went wrong, reset it and try again later
+                Util::out("1.corporations error - \n" . print_r($row, true) . "\n" . print_r($kills, true));
+                $esi->add($row['corporationID'], 999);
+        }
+        sleep(1);
         return;
     }
     foreach ($kills as $kill) {
@@ -89,9 +111,6 @@ function success($params, $content)
 
         $newKills += Killmail::addMail($killID, $hash, '1.corporation', $delay);
     }
-
-    $charID = $row['characterID'];
-    $corpID = $params['corpID'];
 
     $successes = 1 + ((int) @$row['successes']);
     $modifiers = ['corporationID' => $corpID, 'lastFetch' => $mdb->now(), 'successes' => $successes];

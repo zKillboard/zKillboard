@@ -38,7 +38,10 @@ while ($minute == date('Hi')) {
     $mdb->set("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'lastFetch' => ['$exists' => false]], ['lastFetch' => 0], true);
     $row = $mdb->findDoc("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'corporationID' => ['$exists' => true]], ['lastFetch' => 1]);
 
-    if ($row == null) break; // nothing here, move on...
+    if ($row == null) {
+        sleep(3);
+        continue;
+    }
     $charID = ((int) $row['characterID']);
     $corpID = ((int) $row['corporationID']);
 
@@ -64,7 +67,7 @@ while ($minute == date('Hi')) {
         $uri = "$esiServer/v1/corporations/$corpID/killmails/recent/?page=$page";
         $killmails = $sso->doCall($uri, [], $accessToken);
         $count = success(['row' => $row], $killmails, $uri);
-        sleep(1);
+        sleep(2);
     } while ($count >= 1000 && $iterated !== "true");
 
     if ($count != -1) {
@@ -119,7 +122,7 @@ function success($params, $content, $uri)
             case "Undefined 404 response. Original message: Requested page does not exist!":
                 return 0; // not really an error, just ignore it and move on
             default:
-                Util::out("Unknown error: $uri\n" . print_r($kills));
+                Util::out("Unknown error: $uri\n" . print_r($kills, true));
                 return 0;
         }
         // Something went wrong, reset it and try again later

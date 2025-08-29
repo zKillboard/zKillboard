@@ -1,6 +1,6 @@
 <?php
 
-$mt = 20; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
+$mt = 10; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
 use cvweiss\redistools\RedisTimeQueue;
 
@@ -87,10 +87,15 @@ function success($params, $content)
         return;
     }
     if (isset($kills['error'])) {
-        // Something went wrong, reset it and try again later
-        $esi->add($row['characterID'], 0);
+        switch($kills['error']) {
+            default:
+                // Something went wrong, reset it and try again later
+                Util::out("1.characters error - \n" . print_r($row, true) . "\n" . print_r($kills, true));
+        }
+        sleep(1);
         return;
     }
+
     foreach ($kills as $kill) {
         $killID = $kill['killmail_id'];
         $hash = $kill['killmail_hash'];

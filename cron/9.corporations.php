@@ -15,6 +15,7 @@ $guzzler = new Guzzler();
 $currentSecond = "";
 $minute = date('Hi');
 while ($minute == date('Hi')) {
+    if ($redis->get("zkb:420ed")) break;
     $t = new Timer();
     $row = $mdb->findDoc("information", ['type' => 'corporationID', 'id' => ['$gt' => 1]], ['lastApiUpdate' => 1]);
     if ($row == null) {

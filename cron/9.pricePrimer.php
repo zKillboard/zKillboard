@@ -79,6 +79,7 @@ function fail($guzzler, $params, $error)
 
     Util::out("Fail " . $params['uri']);
 print_r($error);
+exit();
     //$groupID = (int) @$params['groupID'];
     //$typeID = (int) @$params['typeID'];
     //if ($groupID > 0)  $guzzler->call("$esiServer/v1/markets/groups/$groupID/", "groupSuccess", "fail", ['groupID' => $groupID]);
