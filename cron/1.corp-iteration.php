@@ -99,6 +99,7 @@ function success($params, $content, $uri)
         return;
     }
     if (isset($kills['error'])) {
+        Status::addStatus('esi', false);
         switch ($kills['error']) {
             case 'invalid_grant':
             case 'Character does not have required role(s)':
@@ -128,6 +129,7 @@ function success($params, $content, $uri)
         // Something went wrong, reset it and try again later
         exit();
     }
+    Status::addStatus('esi', true);
     foreach ($kills as $kill) {
         $count++;
         $killID = $kill['killmail_id'];
