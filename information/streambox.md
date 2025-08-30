@@ -38,6 +38,8 @@ Streambox was originally requested by streamer **Brother Grimoire**, a well-know
   The most recent killmails from the last 8 hours.
 - **How many killmails are displayed?**  
   Up to 5 at a time.
+- **How often does it update?**  
+  Streambox refreshes automatically, updating approximately once per minute.
 - **Can I configure it?**  
   Configuration options are planned, but the goal is to keep Streambox as simple and hassle-free as possible.
 - **How are losses displayed?**  
