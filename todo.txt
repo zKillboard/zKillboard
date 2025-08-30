@@ -7,6 +7,6 @@
 - do something more robust with the tracker system
 - add bar indicating hs/ls/null/wh/pochven for kills
 - Make alltime/recent/weekly and all/solo redis mappings more consistent
-- Map the various categories in AdvancedSearch
 - battle reports page revamp, make it nicer for mobile/touchscreens
 - consider showing "delay disregarded" on killmail pages that had a delay
+- fix systems with no image on overview page
