@@ -8,16 +8,17 @@ $params = URI::validate($app, $uri, ['u' => true, 'ks' => !$bypass, 'ke' => !$by
 $uri = $params['u'];
 $ks = @$params['ks'];
 $ke = @$params['ke'];
+$c = @$params['c'];
 
 $epoch = time();
 $epoch = $epoch - ($epoch % 900);
 
 $p = Util::convertUriToParameters($uri);
 $q = MongoFilter::buildQuery($p);
-$ksa = getKillID($uri, $q, 1, $epoch);
-$kea = getKillID($uri, $q, -1, $epoch);
+$ksa = $epoch;
+$kea = $epoch + 900;
 
-if ($bypass || "$ks" != "$ksa" || "$ke" != "$kea") return $app->redirect("/cache/24hour/statstopisk/?u=$uri&ks=$ksa&ke=$kea");
+if ($bypass || "$ks" != "$ksa" || "$ke" != "$kea") return $app->redirect("/cache/1hour/statstopisk/?u=$uri&ks=$ksa&ke=$kea");
 
 $disqualified = 0;
 foreach ($p as $type => $val) {
@@ -40,16 +41,4 @@ if ($ksa > 0 && strpos($uri, "/page/") === false && $disqualified == 0) {
     $ret['topSet'] = Stats::getTopIsk($p);
 }
 
-if ($ksa == 0) echo "";
-else $app->render('components/big_top_list.html', $ret);
-
-function getKillID($uri, $q, $sort, $epoch) {
-    global $redis, $mdb;
-    $key = "stats:tops:$sort:$epoch:$uri";
-    $killID = $redis->get($key);
-    if ($killID == null) {
-        $killID = (int) $mdb->findField("oneWeek", "killID", $q, ['killID' => $sort]);
-        $redis->setex($key, 910, $killID);
-    }
-    return (int) $killID;
-}
+$app->render('components/big_top_list.html', $ret);
