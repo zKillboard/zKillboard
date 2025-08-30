@@ -592,3 +592,8 @@ html,body {
 .pip[src="/img/pips/pip_tech1.png"] {
 	display: none;
 }
+
+.information {
+    background-color: #050505;
+    color: #ccc;
+}

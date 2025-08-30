@@ -7,6 +7,10 @@ body {
     display: none;
 }
 
+#content {
+    min-height: 94px;
+}
+
 .shipImageSpan {
   position: relative;
   display: inline-block;   /* ensure the box has the set width/height */

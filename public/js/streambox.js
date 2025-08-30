@@ -1,9 +1,14 @@
 let current_timeout = 0;
-document.addEventListener('DOMContentLoaded', fetchKills);
+document.addEventListener('DOMContentLoaded', init);
+const path = window.location.pathname.replace(/streambox\//, '');
+
+async function init() {
+    document.getElementById('pathname').textContent = path;
+    fetchKills();
+}
 
 async function fetchKills() {
     try {
-        const path = window.location.pathname.replace(/streambox\//, '');
         const response = await fetch('/cache/bypass/killlist/?u=' + path);
 
         if (!response.ok) {
@@ -19,6 +24,8 @@ async function fetchKills() {
 
 async function prepKills(data) {
     const our_id = window.location.pathname.split('/')[2];
+    const unixtime = Math.floor(Date.now() / 1000); // This is always UTC
+    const afterEpoch = unixtime - (3600 * 8); // show kills 8 hours old or less
 
     try {
         const content = document.getElementById('contenttemp');
@@ -34,6 +41,8 @@ async function prepKills(data) {
             temp.innerHTML = html;
             let info = document.querySelector('#temp tr.kltbd');
             let vics = info.getAttribute('vics');
+            let epoch = Number(info.getAttribute('date'));
+            if (epoch < afterEpoch) break; // the rest of the kills are older, we're all done here
             let isVictim = vics.split(',').indexOf(our_id) >= 0;
 
             const el = temp.querySelector('span[format="format-isk-once"]');
