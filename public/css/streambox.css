@@ -1,6 +1,11 @@
 body {
   background-color: 050505;
   color: white;
+  text-shadow:
+    -1px -1px 0 black,
+     1px -1px 0 black,
+    -1px  1px 0 black,
+     1px  1px 0 black;
 }
 
 .hideme {
@@ -47,6 +52,11 @@ body {
     font-family: 'Glyphicons Halflings'; /* or whatever font provides it */
     content: "×";
     color: red;
+    text-shadow:
+        -1px -1px 0 darkred,
+        1px -1px 0 darkred,
+        -1px  1px 0 darkred,
+        1px  1px 0 darkred;
 }
 
 
