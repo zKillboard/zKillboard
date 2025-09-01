@@ -14,6 +14,7 @@ if ($listenRedisQID === null) {
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, "https://zkillredisq.stream/listen.php?queueID=$listenRedisQID");
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
