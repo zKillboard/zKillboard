@@ -2,11 +2,7 @@
 
 global $mdb, $redis;
 
-if (!User::isLoggedIn()) {
-	$sessID = session_id();
-	$redis->setex("forward:$sessID", 900, "/account/$req/");
-	return $app->redirect('/ccpoauth2/', 302);
-}
+if (User::checkForLogin($app, "/account/$req/") == false) return;
 
 $userID = (int) User::getUserID();
 $key = 'sitesettings';
