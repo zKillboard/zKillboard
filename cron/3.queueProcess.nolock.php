@@ -345,8 +345,8 @@ function trackItem($typeID, $dropped, $destroyed, $price, $dttm, $flag)
     }
     if ($flag != 2663 && $flag != 3772 && $flag != 89) {
         if ($dttm == $dateToday || $dttm == $dateYesterday) {
-            $redis->incrBy("zkb:loot:green:$dttm", ($price * $dropped));
-            $redis->incrBy("zkb:loot:red:$dttm", ($price * $destroyed));
+            $redis->incrBy("zkb:loot:green:$dttm", round($price * $dropped));
+            $redis->incrBy("zkb:loot:red:$dttm", round($price * $destroyed));
         }
     }
 }
