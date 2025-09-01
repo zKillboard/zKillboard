@@ -185,8 +185,25 @@ class EveOnlineSSO
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $this->buildParams($fields));
                 break;
         }
+        global $resHeaders;
+        $resHeaders = [];
+
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $callType);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+        // capture headers line-by-line into global $resHeaders
+        curl_setopt($ch, CURLOPT_HEADERFUNCTION, function($curl, $headerLine) {
+                global $resHeaders;
+                $len = strlen($headerLine);
+                $header = explode(":", $headerLine, 2);
+
+                if (count($header) == 2) {
+                $name  = strtolower(trim($header[0]));
+                $value = trim($header[1]);
+                $resHeaders[$name] = $value;
+                }
+                return $len;
+                });
 
         $result = curl_exec($ch);
 
@@ -197,6 +214,7 @@ class EveOnlineSSO
 
         Status::addStatus($statusType, true);
         return $result;
+
     }
 
     protected function buildParams($fields)
