@@ -28,7 +28,9 @@ if (isset($_SERVER['HTTP_REFERER'])) {
 		$uri .= '?' . $query;
 	}
 
-	if (substr($uri, 0, 4) != "/ccp") $redis->setex("forward:$sessID", 900, $uri);
+	if (substr($uri, 0, 4) != "/ccp" && $redis->get("forward:$sessID") == null) {
+		$redis->setex("forward:$sessID", 900, $uri);
+	}
 }
 
 $sso = ZKillSSO::getSSO();

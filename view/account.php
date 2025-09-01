@@ -1,9 +1,11 @@
 <?php
 
-global $mdb;
+global $mdb, $redis;
 
 if (!User::isLoggedIn()) {
-    return $app->redirect('/ccpoauth2/', 302);
+	$sessID = session_id();
+	$redis->setex("forward:$sessID", 900, "/account/$req/");
+	return $app->redirect('/ccpoauth2/', 302);
 }
 
 $userID = (int) User::getUserID();
@@ -14,48 +16,48 @@ $bannerUpdates = array();
 $aliasUpdates = array();
 
 if (isset($req)) {
-    $key = $req;
+	$key = $req;
 }
 
 global $twig, $adFreeMonthCost, $baseAddr;
 if ($_POST) {
-    $deletekeyid = Util::getPost('deletekeyid');
-    $deleteentity = Util::getPost('deleteentity');
-    // Delete an apikey
-    if (isset($deletekeyid)) {
-        Util::zout("Character $userID deleting scope " . $deletekeyid);
-        try {
-            $i = $mdb->remove("scopes", ['characterID' => $userID, 'scope' => $deletekeyid]);
-            if (isset($i['n']) && $i['n'] > 0) $error = "The scope has been removed.";
-            else $error = "We did nothing. Were you supposed to attempt that?";
-            User::sendMessage($error);
-        } catch (Exception $e) {
-            Util::zout(print_r($e, true));
-            User::sendMessage("An error occurred and has been logged. Sorry.");
-        }
-    }
+	$deletekeyid = Util::getPost('deletekeyid');
+	$deleteentity = Util::getPost('deleteentity');
+	// Delete an apikey
+	if (isset($deletekeyid)) {
+		Util::zout("Character $userID deleting scope " . $deletekeyid);
+		try {
+			$i = $mdb->remove("scopes", ['characterID' => $userID, 'scope' => $deletekeyid]);
+			if (isset($i['n']) && $i['n'] > 0) $error = "The scope has been removed.";
+			else $error = "We did nothing. Were you supposed to attempt that?";
+			User::sendMessage($error);
+		} catch (Exception $e) {
+			Util::zout(print_r($e, true));
+			User::sendMessage("An error occurred and has been logged. Sorry.");
+		}
+	}
 
-    // Tracker Notification
-    $tn = Util::getPost('trackernotification');
-    if (isset($tn)) {
-        UserConfig::set('trackernotification', $tn);
-        User::sendMessage("Your tracker notification setting was updated to $tn");
-    }
+	// Tracker Notification
+	$tn = Util::getPost('trackernotification');
+	if (isset($tn)) {
+		UserConfig::set('trackernotification', $tn);
+		User::sendMessage("Your tracker notification setting was updated to $tn");
+	}
 
-    // Style
-    $style = Util::getPost('style');
-    if (isset($style)) {
-        UserConfig::set('style', $style);
-        User::sendMessage("Your theme was updated to $style");
-    }
+	// Style
+	$style = Util::getPost('style');
+	if (isset($style)) {
+		UserConfig::set('style', $style);
+		User::sendMessage("Your theme was updated to $style");
+	}
 
-    $loginPage = Util::getPost('loginPage');
-    if (isset($loginPage)) {
-        UserConfig::set('loginPage', $loginPage);
-        User::sendMessage("Your default login page is now the $loginPage page");
-    }
+	$loginPage = Util::getPost('loginPage');
+	if (isset($loginPage)) {
+		UserConfig::set('loginPage', $loginPage);
+		User::sendMessage("Your default login page is now the $loginPage page");
+	}
 
-    return $app->redirect($_SERVER['REQUEST_URI']);
+	return $app->redirect($_SERVER['REQUEST_URI']);
 }
 
 // Theme
