@@ -3,23 +3,32 @@
 global $redis, $ip;
 
 if ($redis->get("zkb:noapi") == "true") {
-    return $app->render("error.html", ['message' => 'Downtime is not a good time to login, the CCP servers are not reliable, sorry.']);
+	return $app->render("error.html", ['message' => 'Downtime is not a good time to login, the CCP servers are not reliable, sorry.']);
 }
 
 if (@$_SESSION['characterID'] > 0) {
-    return $app->render("error.html", ['message' => "Uh... you're already logged in..."]);
+	return $app->render("error.html", ['message' => "Uh... you're already logged in..."]);
 }
 
 $sessID = session_id();
 
 $delayInt = isset($delay) ? (int) $delay : 0;
 if ($delayInt > 0 && $delayInt <= 5) {
-    $redis->setex("delay:$sessID", 900, $delay);
+	$redis->setex("delay:$sessID", 900, $delay);
 } else $redis->del("delay:$sessID");
 
-$uri = @$_SERVER['HTTP_REFERER'];
-if ($uri != '' && $redis->get("forward:$sessID") == null) {
-    $redis->setex("forward:$sessID", 900, $uri);
+$uri = "/";
+if (isset($_SERVER['HTTP_REFERER'])) {
+	$referer = $_SERVER['HTTP_REFERER'];
+	$uri = parse_url($referer, PHP_URL_PATH);
+
+	// include query string if you want
+	$query = parse_url($referer, PHP_URL_QUERY);
+	if ($query) {
+		$uri .= '?' . $query;
+	}
+
+	if (substr($uri, 0, 4) != "/ccp") $redis->setex("forward:$sessID", 900, $uri);
 }
 
 $sso = ZKillSSO::getSSO();
