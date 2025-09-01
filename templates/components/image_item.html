@@ -18,6 +18,6 @@
 {% else %}
 <a href="/item/{{typeID}}/" rel='tooltip' title='{{typeName}}'>
 {% endif %}
-		<img class="{{eveImage}}img-rounded" src="{{ image_item }}{{typeID}}/icon?size={{imageSize}}" style='height: {{actualSize}}px; width: {{actualSize}}px;' alt="{{ typeName }}" onerror="this.onerror = null; this.src='{{ image_item }}{{typeID}}/bp?size={{imageSize}}';">
+		<img class="{{eveImage}}img-rounded" src="{{ image_item }}{{typeID}}/icon?size={{imageSize}}" style='height: {{actualSize}}px; width: {{actualSize}}px;' alt="{{ typeName }}" onerror="this.removeAttribute('onerror'); this.src='{{ image_item }}{{typeID}}/bp?size={{imageSize}}';">
 </a>
 {% endif %}
