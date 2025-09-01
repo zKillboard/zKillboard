@@ -79,7 +79,7 @@ function checkForSearchKey(event) {
 
 function startWebSocket() {
     try {
-        ws = new ReconnectingWebSocket('wss://' + window.location.hostname + '/websocket/', '', {maxReconnectAttempts: 15});
+        ws = new ReconnectingWebSocket((window.location.hostname == 'localhost' ? 'ws' : 'wss' ) + '://' + window.location.hostname + '/websocket/', '', {maxReconnectAttempts: 15});
         ws.onmessage = function(event) {
                 wslog(event.data);
         };
