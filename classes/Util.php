@@ -146,7 +146,7 @@ class Util
                     if ($value != null) {
                         if (strpos($key, 'ID') === false) {
                             global $isApiRequest;
-                            if ($isApiRequest) dire("$key is invalid for API calls, please use ${key}ID");
+                            if ($isApiRequest) dire("$key is invalid for API calls, please use {$key}ID");
                             $key = $key.'ID';
                         }
                         $legalLargePagination = ($key == 'characterID' || $key == 'corporationID' || $key == 'allianceID');
