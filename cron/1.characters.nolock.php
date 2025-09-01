@@ -87,7 +87,6 @@ function success($params, $content)
         return;
     }
     if (isset($kills['error'])) {
-        Status::addStatus('esi', false);
         switch($kills['error']) {
             default:
                 // Something went wrong, reset it and try again later
@@ -104,7 +103,6 @@ function success($params, $content)
         $newKills += Killmail::addMail($killID, $hash, '1.characters', $delay);
     }
 
-    Status::addStatus('esi', true);
     $charID = (int) $row['characterID'];
     $corpID = (int) $row['corporationID'];
 

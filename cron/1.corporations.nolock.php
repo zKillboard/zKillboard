@@ -68,6 +68,9 @@ function success($params, $content)
 {
     global $mdb, $redis;
 
+    //global $resHeaders;
+    //Util::out(print_r($resHeaders, true));
+
     $row = $params['row'];
     $esi = $params['esi'];
     $timer = $params['timer'];
@@ -84,7 +87,6 @@ function success($params, $content)
         return;
     }
     if (isset($kills['error'])) {
-        Status::addStatus('esi', false);
         switch($kills['error']) {
             case "Character does not have required role(s)":
                 $mdb->remove("scopes", $row);
@@ -113,7 +115,6 @@ function success($params, $content)
         $newKills += Killmail::addMail($killID, $hash, '1.corporation', $delay);
     }
 
-    Status::addStatus('esi', true);
     $successes = 1 + ((int) @$row['successes']);
     $modifiers = ['corporationID' => $corpID, 'lastFetch' => $mdb->now(), 'successes' => $successes];
     if (!isset($row['added'])) $modifiers['added'] = $mdb->now();
