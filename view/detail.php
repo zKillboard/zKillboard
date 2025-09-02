@@ -3,27 +3,27 @@
 global $mdb;
 
 if ($pageview == 'overview') {
-    return $app->redirect("/kill/$id/", 301);
+	return $app->redirect("/kill/$id/", 301);
 }
 if ($pageview == '') {
-    $pageview = 'overview';
+	$pageview = 'overview';
 }
 if ($where != "") {
-    echo $where;
-    $crest = $mdb->findDoc('crestmails', ['killID' => (int) $id, 'processed' => true]);
-    $hash = $crest['hash'];
-    switch ($where) {
-        case 'esi':
-            return $app->redirect("https://esi.evetech.net/latest/killmails/$id/$hash/", 302);
-        case 'eveshipfit':
-            return $app->redirect("https://eveship.fit/?fit=killmail:$id/$hash", 302);
-        case 'eveworkbench':
-            return $app->redirect("https://www.eveworkbench.com/import/killmail/$id/$hash", 302);
-    }
-    return $app->redirect("/kill/$id/", 302);
+	echo $where;
+	$crest = $mdb->findDoc('crestmails', ['killID' => (int) $id, 'processed' => true]);
+	$hash = $crest['hash'];
+	switch ($where) {
+		case 'esi':
+			return $app->redirect("https://esi.evetech.net/latest/killmails/$id/$hash/", 302);
+		case 'eveshipfit':
+			return $app->redirect("https://eveship.fit/?fit=killmail:$id/$hash", 302);
+		case 'eveworkbench':
+			return $app->redirect("https://www.eveworkbench.com/import/killmail/$id/$hash", 302);
+	}
+	return $app->redirect("/kill/$id/", 302);
 }
-if ($pageview != 'overview' && $pageview != 'involved') {
-    return header("Location: /");
+if ($pageview != 'overview' && $pageview != 'involved' && $pageview != 'remaining') {
+	return header("Location: /");
 }
 
 $involved = array();
@@ -32,17 +32,17 @@ $message = '';
 $oID = $id;
 $id = (int) $id;
 if ("$oID" !== "$id") {
-    Util::zout("redirecting $oID to $id");
-    return $app->redirect("/kill/$id/", 302);
+	Util::zout("redirecting $oID to $id");
+	return $app->redirect("/kill/$id/", 302);
 }
 
 while ($mdb->count('queueInfo', ['killID' => $id])) {
-    sleep(1);
+	sleep(1);
 }
 
 $exists = $mdb->exists('killmails', ['killID' => $id]);
 if (!$exists) {
-    return $app->render('404.html', array('message' => "KillID $id does not exist."), 404);
+	return $app->render('404.html', array('message' => "KillID $id does not exist."), 404);
 }
 
 // Create the details on this kill
@@ -53,61 +53,61 @@ $rawmail = Kills::getEsiKill($id);
 $allinvolved = $killdata['involved'];
 $cnt = 0;
 while ($cnt < 10) {
-    if (isset($allinvolved[$cnt])) {
-        $involved[] = $allinvolved[$cnt];
-        unset($allinvolved[$cnt]);
-    }
-    ++$cnt;
-    continue;
+	if (isset($allinvolved[$cnt])) {
+		$involved[] = $allinvolved[$cnt];
+		unset($allinvolved[$cnt]);
+	}
+	++$cnt;
+	continue;
 }
 $topDamage = $finalBlow = null;
 $first = null;
 if (sizeof($killdata['involved']) > 1) {
-    foreach ($killdata['involved'] as $inv) {
-        if ($first == null) {
-            $first = $inv;
-        }
-        if (@$inv['finalBlow'] == 1) {
-            $finalBlow = $inv;
-        }
-        if ($topDamage == null && @$inv['characterID'] != 0) {
-            $topDamage = $inv;
-        }
-    }
-    // If only NPC's are on the mail give them credit for top damage...
-    if ($topDamage == null) {
-        $topDamage = $first;
-    }
+	foreach ($killdata['involved'] as $inv) {
+		if ($first == null) {
+			$first = $inv;
+		}
+		if (@$inv['finalBlow'] == 1) {
+			$finalBlow = $inv;
+		}
+		if ($topDamage == null && @$inv['characterID'] != 0) {
+			$topDamage = $inv;
+		}
+	}
+	// If only NPC's are on the mail give them credit for top damage...
+	if ($topDamage == null) {
+		$topDamage = $first;
+	}
 }
 
 $extra = array();
 // And now give all the arrays and whatnots to twig..
 if ($pageview == 'overview') {
-    $extra['items'] = Detail::combineditems(md5($id), $killdata['items']);
-    $extra['invAll'] = involvedCorpsAndAllis(md5($id), $killdata['involved']);
-    $extra['involved'] = $involved;
-    $extra['allinvolved'] = $allinvolved;
+	$extra['items'] = Detail::combineditems(md5($id), $killdata['items']);
+	$extra['invAll'] = involvedCorpsAndAllis(md5($id), $killdata['involved']);
+	$extra['involved'] = $involved;
+	$extra['allinvolved'] = $allinvolved;
 }
 $insDate = (int) str_replace('-', '', substr($killdata['info']['dttm'], 0, 10));
 $extra['insurance'] = $mdb->findDoc('insurance', ['typeID' => (int) $killdata['victim']['shipTypeID'], 'date' => ['$lte' => $insDate]], ['date' => -1]);
 if (isset($extra['insurance']['Platinum']['payout'])) {
-    // No insurance is 40% of platinum
-    // https://wiki.eveuniversity.org/Insurance
-    $extra['insurance']['None'] = ['cost' => 0, 'payout' => floor(0.4 * $extra['insurance']['Platinum']['payout'])];
+	// No insurance is 40% of platinum
+	// https://wiki.eveuniversity.org/Insurance
+	$extra['insurance']['None'] = ['cost' => 0, 'payout' => floor(0.4 * $extra['insurance']['Platinum']['payout'])];
 }
 
 $extra['location'] = @$killdata['info']['location']['itemName'];
 if (isset($rawmail['victim']['position']) && isset($killdata['info']['location']['itemID'])) {
-    $position = $rawmail['victim']['position'];
-    $locationID = $killdata['info']['location']['itemID'];
-    $auDistance = Util::getAuDistance($position, $locationID, $killdata['info']['system']['solarSystemID']);
-    if ($auDistance > 0.01) {
-        $extra['locationDistance'] = $auDistance;
-        $extra['locationDistanceType'] = "au";
-    } else {
-        $extra['locationDistance'] = round(Util::get3dDistance($position, $locationID, $killdata['info']['system']['solarSystemID']) / 1000, 3);
-        $extra['locationDistanceType'] = "km";
-    }
+	$position = $rawmail['victim']['position'];
+	$locationID = $killdata['info']['location']['itemID'];
+	$auDistance = Util::getAuDistance($position, $locationID, $killdata['info']['system']['solarSystemID']);
+	if ($auDistance > 0.01) {
+		$extra['locationDistance'] = $auDistance;
+		$extra['locationDistanceType'] = "au";
+	} else {
+		$extra['locationDistance'] = round(Util::get3dDistance($position, $locationID, $killdata['info']['system']['solarSystemID']) / 1000, 3);
+		$extra['locationDistanceType'] = "km";
+	}
 }
 $extra['npcOnly'] = @$killdata['info']['npc'];
 $extra['atShip'] = in_array('atShip', @$killdata['info']['labels']);
@@ -119,7 +119,7 @@ $extra['destroyediskWship'] = $extra['shipprice'] + destroyedIsk(md5($id), $kill
 $extra['destroyedprice'] = Util::iskToUsdEurGbp($extra['destroyedisk']);
 $extra['destroyedpriceWship'] = Util::iskToUsdEurGbp($extra['destroyediskWship']);
 $extra['fittedisk'] = fittedIsk(md5($id), $killdata['items']) + $extra['shipprice'];
-$extra['relatedtime'] = date('YmdH00', strtotime($killdata['info']['dttm'])); 
+$extra['relatedtime'] = date('YmdH00', strtotime($killdata['info']['dttm']));
 $extra['fittingwheel'] = Detail::eftarray($killdata['items']);
 $extra['involvedships'] = involvedships($killdata['involved']);
 $extra['involvedshipscount'] = count($extra['involvedships']);
@@ -138,28 +138,28 @@ $extra['nextKillID'] = $mdb->findField('killmails', 'killID', ['cacheTime' => 30
 $extra['warInfo'] = War::getKillIDWarInfo($id);
 $sponsored = Mdb::group("sponsored", ['killID'], ['killID' => $id], [], 'isk', ['iskSum' => -1], 1);
 if (sizeof($sponsored)) {
-    $sponsored = array_shift($sponsored);
-    $isk = $sponsored['iskSum'];
-    if ($isk > 0) $extra['sponsoredIsk'] = $isk;
+	$sponsored = array_shift($sponsored);
+	$isk = $sponsored['iskSum'];
+	if ($isk > 0) $extra['sponsoredIsk'] = $isk;
 }
 $systemID = $killdata['info']['system']['solarSystemID'];
 $data = Info::getWormholeSystemInfo($systemID);
 $extra['wormhole'] = $data;
 
-$url = 'https://'.$_SERVER['SERVER_NAME']."/detail/$id/";
+$url = 'https://' . $_SERVER['SERVER_NAME'] . "/detail/$id/";
 
 $relatedShip = null;
-$query = ['$and' => [['involved' => [ '$elemMatch' => ['isVictim' => true, 'characterID' => (int) @$killdata['victim']['characterID']]]], ['killID' => ['$gte' => ($id - 200)]], ['killID' => ['$lt' => $id]], ['labels' => 'cat:6'], ['vGroupID' => ['$ne' => 29]]]];
+$query = ['$and' => [['involved' => ['$elemMatch' => ['isVictim' => true, 'characterID' => (int) @$killdata['victim']['characterID']]]], ['killID' => ['$gte' => ($id - 200)]], ['killID' => ['$lt' => $id]], ['labels' => 'cat:6'], ['vGroupID' => ['$ne' => 29]]]];
 $relatedKill = $mdb->findDoc('killmails', $query);
 if ($relatedKill) {
-    $relatedShip = ['killID' => $relatedKill['killID'], 'shipTypeID' => $relatedKill['involved'][0]['shipTypeID']];
+	$relatedShip = ['killID' => $relatedKill['killID'], 'shipTypeID' => $relatedKill['involved'][0]['shipTypeID']];
 }
 if ($relatedShip == null) {
-    $query = ['$and' => [['involved.characterID' => (int) @$killdata['victim']['characterID']], ['killID' => ['$lte' => ($id + 200)]], ['killID' => ['$gt' => $id]], ['labels' => 'cat:6'], ['vGroupID' => 29]]];
-    $relatedKill = $mdb->findDoc('killmails', $query);
-    if ($relatedKill) {
-        $relatedShip = ['killID' => $relatedKill['killID'], 'shipTypeID' => $relatedKill['involved'][0]['shipTypeID']];
-    }
+	$query = ['$and' => [['involved.characterID' => (int) @$killdata['victim']['characterID']], ['killID' => ['$lte' => ($id + 200)]], ['killID' => ['$gt' => $id]], ['labels' => 'cat:6'], ['vGroupID' => 29]]];
+	$relatedKill = $mdb->findDoc('killmails', $query);
+	if ($relatedKill) {
+		$relatedShip = ['killID' => $relatedKill['killID'], 'shipTypeID' => $relatedKill['involved'][0]['shipTypeID']];
+	}
 }
 Info::addInfo($relatedShip);
 $killdata['victim']['related'] = $relatedShip;
@@ -174,145 +174,154 @@ $pageID = "kill-$id";
 $c = $mdb->find("comments", ['pageID' => $pageID], ["upvotes" => -1, "dttm" => 1]);
 $comments = [];
 foreach ($c as $cc) {
-    $comments[$cc['comment']] = $cc;
+	$comments[$cc['comment']] = $cc;
 }
 $index = 0;
 foreach (Comments::$defaultComments as $dc) {
-    if (!isset($comments[$dc])) $comments[$dc] = ['pageID' => $pageID, 'commentID' => $index, 'comment' => $dc, "upvotes" => 0];
-    $index++;
+	if (!isset($comments[$dc])) $comments[$dc] = ['pageID' => $pageID, 'commentID' => $index, 'comment' => $dc, "upvotes" => 0];
+	$index++;
 }
 $details['comments'] = array_values($comments);
+
+if ($pageview == 'remaining') {
+	$app->render("components/attackers_list.html", [
+		'attackList' => array_slice($killdata['involved'], 10),
+		'isDelayed' => false,
+		'hideTableHeading' => true
+	]);
+	return;
+}
 
 $app->render('detail.html', $details);
 
 function involvedships($array)
 {
-    $involved = array();
-    foreach ($array as $inv) {
-        if (isset($involved[@$inv['shipTypeID']]) && isset($inv['shipName'])) {
-            $involved[$inv['shipTypeID']] = array('shipName' => $inv['shipName'], 'shipTypeID' => $inv['shipTypeID'], 'count' => $involved[$inv['shipTypeID']]['count'] + 1);
-        } elseif (isset($inv['shipTypeID']) && isset($inv['shipName'])) {
-            $involved[$inv['shipTypeID']] = array('shipName' => $inv['shipName'], 'shipTypeID' => $inv['shipTypeID'], 'count' => 1);
-        } else {
-            continue;
-        }
-    }
+	$involved = array();
+	foreach ($array as $inv) {
+		if (isset($involved[@$inv['shipTypeID']]) && isset($inv['shipName'])) {
+			$involved[$inv['shipTypeID']] = array('shipName' => $inv['shipName'], 'shipTypeID' => $inv['shipTypeID'], 'count' => $involved[$inv['shipTypeID']]['count'] + 1);
+		} elseif (isset($inv['shipTypeID']) && isset($inv['shipName'])) {
+			$involved[$inv['shipTypeID']] = array('shipName' => $inv['shipName'], 'shipTypeID' => $inv['shipTypeID'], 'count' => 1);
+		} else {
+			continue;
+		}
+	}
 
-    usort($involved, 'sortByOrder');
+	usort($involved, 'sortByOrder');
 
-    return $involved;
+	return $involved;
 }
 
 function sortByOrder($a, $b)
 {
-    return $a['count'] < $b['count'];
+	return $a['count'] < $b['count'];
 }
 
 function buildItemKey($itm)
 {
-    $key = $itm['typeName'].($itm['singleton'] == 2 ? ' (Copy)' : '');
-    $key .= '|'.($itm['quantity_dropped'] > 0 ? 'dropped' : 'destroyed');
-    if (!isset($itm['flagName'])) {
-        $itm['flagName'] = Info::getFlagName($itm['flag']);
-    }
-    $key .= '|'.$itm['flagName'];
-    if ($itm['groupID'] == 649) {
-        $key .= microtime().rand(0, 10000);
-    }
+	$key = $itm['typeName'] . ($itm['singleton'] == 2 ? ' (Copy)' : '');
+	$key .= '|' . ($itm['quantity_dropped'] > 0 ? 'dropped' : 'destroyed');
+	if (!isset($itm['flagName'])) {
+		$itm['flagName'] = Info::getFlagName($itm['flag']);
+	}
+	$key .= '|' . $itm['flagName'];
+	if ($itm['groupID'] == 649) {
+		$key .= microtime() . rand(0, 10000);
+	}
 
-    return $key;
+	return $key;
 }
 
 function involvedCorpsAndAllis($md5, $involved)
 {
-    $involvedAlliCount = 0;
-    $involvedCorpCount = 0;
-    // Create the involved corps / alliances list
-    $invAll = array();
-    foreach ($involved as $inv) {
-        $allianceID = @$inv['allianceID'];
-        $corporationID = @$inv['corporationID'];
-        if (!isset($invAll["$allianceID"])) {
-            ++$involvedAlliCount;
-            $invAll["$allianceID"] = array();
-            if ($allianceID != 0) {
-                $invAll["$allianceID"]['allianceName'] = $inv['allianceName'];
-            }
-            if ($allianceID != 0) {
-                $invAll["$allianceID"]['name'] = $inv['allianceName'];
-            }
-            if ($allianceID != 0) {
-                $invAll["$allianceID"]['allianceID'] = $allianceID;
-            }
-            $invAll["$allianceID"]['corporations'] = array();
-            $invAll["$allianceID"]['involved'] = 0;
-        }
-        $involvedCount = $invAll["$allianceID"]['involved'];
-        $invAll["$allianceID"]['involved'] = $involvedCount + 1;
+	$involvedAlliCount = 0;
+	$involvedCorpCount = 0;
+	// Create the involved corps / alliances list
+	$invAll = array();
+	foreach ($involved as $inv) {
+		$allianceID = @$inv['allianceID'];
+		$corporationID = @$inv['corporationID'];
+		if (!isset($invAll["$allianceID"])) {
+			++$involvedAlliCount;
+			$invAll["$allianceID"] = array();
+			if ($allianceID != 0) {
+				$invAll["$allianceID"]['allianceName'] = $inv['allianceName'];
+			}
+			if ($allianceID != 0) {
+				$invAll["$allianceID"]['name'] = $inv['allianceName'];
+			}
+			if ($allianceID != 0) {
+				$invAll["$allianceID"]['allianceID'] = $allianceID;
+			}
+			$invAll["$allianceID"]['corporations'] = array();
+			$invAll["$allianceID"]['involved'] = 0;
+		}
+		$involvedCount = $invAll["$allianceID"]['involved'];
+		$invAll["$allianceID"]['involved'] = $involvedCount + 1;
 
-        if (!isset($invAll["$allianceID"]['corporations']["$corporationID"])) {
-            ++$involvedCorpCount;
-            $invAll["$allianceID"]['corporations']["$corporationID"] = array();
-            $invAll["$allianceID"]['corporations']["$corporationID"]['corporationName'] = isset($inv['corporationName']) ? $inv['corporationName'] : '';
-            $invAll["$allianceID"]['corporations']["$corporationID"]['name'] = isset($inv['corporationName']) ? $inv['corporationName'] : '';
-            $invAll["$allianceID"]['corporations']["$corporationID"]['corporationID'] = $corporationID;
-            $invAll["$allianceID"]['corporations']["$corporationID"]['involved'] = 0;
-        }
-        $involvedCount = $invAll["$allianceID"]['corporations']["$corporationID"]['involved'];
-        $invAll["$allianceID"]['corporations']["$corporationID"]['involved'] = $involvedCount + 1;
-    }
-    uasort($invAll, 'involvedSort');
-    foreach ($invAll as $id => $alliance) {
-        $corps = $alliance['corporations'];
-        uasort($corps, 'involvedSort');
-        $invAll["$id"]['corporations'] = $corps;
-    }
-    if ($involvedCorpCount <= 1 && $involvedAlliCount <= 1) {
-        $invAll = array();
-    }
+		if (!isset($invAll["$allianceID"]['corporations']["$corporationID"])) {
+			++$involvedCorpCount;
+			$invAll["$allianceID"]['corporations']["$corporationID"] = array();
+			$invAll["$allianceID"]['corporations']["$corporationID"]['corporationName'] = isset($inv['corporationName']) ? $inv['corporationName'] : '';
+			$invAll["$allianceID"]['corporations']["$corporationID"]['name'] = isset($inv['corporationName']) ? $inv['corporationName'] : '';
+			$invAll["$allianceID"]['corporations']["$corporationID"]['corporationID'] = $corporationID;
+			$invAll["$allianceID"]['corporations']["$corporationID"]['involved'] = 0;
+		}
+		$involvedCount = $invAll["$allianceID"]['corporations']["$corporationID"]['involved'];
+		$invAll["$allianceID"]['corporations']["$corporationID"]['involved'] = $involvedCount + 1;
+	}
+	uasort($invAll, 'involvedSort');
+	foreach ($invAll as $id => $alliance) {
+		$corps = $alliance['corporations'];
+		uasort($corps, 'involvedSort');
+		$invAll["$id"]['corporations'] = $corps;
+	}
+	if ($involvedCorpCount <= 1 && $involvedAlliCount <= 1) {
+		$invAll = array();
+	}
 
-    return $invAll;
+	return $invAll;
 }
 
 function involvedSort($field1, $field2)
 {
-    if ($field1['involved'] == $field2['involved'] && isset($field1['name']) && isset($field2['name'])) {
-        return strcasecmp($field1['name'], $field2['name']);
-    }
+	if ($field1['involved'] == $field2['involved'] && isset($field1['name']) && isset($field2['name'])) {
+		return strcasecmp($field1['name'], $field2['name']);
+	}
 
-    return $field2['involved'] - $field1['involved'];
+	return $field2['involved'] - $field1['involved'];
 }
 
 function destroyedIsk($md5, $items)
 {
-    $itemisk = 0;
-    foreach ($items as $item) {
-        $itemisk += $item['price'] * (@$item['singleton'] ? @$item['quantity_destroyed'] / 100 : @$item['quantity_destroyed']);
-    }
+	$itemisk = 0;
+	foreach ($items as $item) {
+		$itemisk += $item['price'] * (@$item['singleton'] ? @$item['quantity_destroyed'] / 100 : @$item['quantity_destroyed']);
+	}
 
-    return $itemisk;
+	return $itemisk;
 }
 function droppedIsk($md5, $items)
 {
-    $itemisk = 0;
-    foreach ($items as $item) {
-        $itemisk += $item['price'] * (@$item['singleton'] ? @$item['quantity_dropped'] / 100 : @$item['quantity_dropped']);
-    }
+	$itemisk = 0;
+	foreach ($items as $item) {
+		$itemisk += $item['price'] * (@$item['singleton'] ? @$item['quantity_dropped'] / 100 : @$item['quantity_dropped']);
+	}
 
-    return $itemisk;
+	return $itemisk;
 }
 
 function fittedIsk($md5, $items)
 {
-    $fittedIsk = 0;
-    $flags = array('High Slots', 'Mid Slots', 'Low Slots', 'SubSystems', 'Rigs', 'Drone Bay', 'Fuel Bay');
-    foreach ($items as $item) {
-        if (isset($item['flagName']) && in_array($item['flagName'], $flags)) {
-            $qty = isset($item['quantity_dropped']) ? $item['quantity_dropped'] : 0;
-            $qty += isset($item['quantity_destroyed']) ? $item['quantity_destroyed'] : 0;
-            $fittedIsk = $fittedIsk + ($item['price'] * $qty);
-        }
-    }
+	$fittedIsk = 0;
+	$flags = array('High Slots', 'Mid Slots', 'Low Slots', 'SubSystems', 'Rigs', 'Drone Bay', 'Fuel Bay');
+	foreach ($items as $item) {
+		if (isset($item['flagName']) && in_array($item['flagName'], $flags)) {
+			$qty = isset($item['quantity_dropped']) ? $item['quantity_dropped'] : 0;
+			$qty += isset($item['quantity_destroyed']) ? $item['quantity_destroyed'] : 0;
+			$fittedIsk = $fittedIsk + ($item['price'] * $qty);
+		}
+	}
 
-    return $fittedIsk;
+	return $fittedIsk;
 }

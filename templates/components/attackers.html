@@ -4,19 +4,28 @@
 <div class="accordion" id="allPilots">
 	<div class="accordion-group">
 		<div class="accordion-heading listPilots">
-			<a class="accordion-toggle" data-toggle="collapse" data-parent="#allPilots" href="#listAllPilots" onClick="$('.delayed').each(function(){$(this).attr('src', $(this).attr('data-src'))})">
+			<a class="accordion-toggle" data-toggle="collapse" data-parent="#allPilots" href="#listAllPilots" onClick="loadRemainingPilots();">
 				<div class="centered">List all pilots <span class="glyphicon glyphicon-resize-vertical"></span></div>
 			</a>
 		</div>
 		<div id="listAllPilots" class="accordion-body collapse out">
-			<div class="accordion-inner">
-				{% set attackList = extra.allinvolved %}
+			<div id="listAllPilotsInner" class="accordion-inner">
+				{# {% set attackList = extra.allinvolved %}
 				{% set isDelayed = true %}
 				{% set hideTableHeading = true %}
 				{% include 'components/attackers_list.html'%}
-				{% set isDelayed = false %}
+				{% set isDelayed = false %} #}
 			</div>
 		</div>
 	</div>
 </div>
+<script>
+	function loadRemainingPilots() {
+		// Load pilots beyond the first 10 for killmail {{ killdata.info.killID }}
+		if ($("#listAllPilotsInner").html().trim() == "") {
+			console.log('Fetching remaining pilots');
+			$("#listAllPilotsInner").load("/kill/{{ killdata.info.killID }}/remaining/");
+		}
+	}
+</script>
 {% endif %}
