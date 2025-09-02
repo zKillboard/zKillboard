@@ -533,6 +533,9 @@ class Util
 	public static function out($text, $source = null)
 	{
 		global $mdb, $hostname;
+
+		if (!is_string($text)) $text = print_r($text, true);
+
 		if ($source == null) $source = @$_SERVER['argv'][0];
 		$mdb->insert("cronlog", ['epoch' => $mdb->now(), 'server' => $hostname, 'source' =>  $source, 'text' => $text]);
 		echo date('Y-m-d H:i:s') . " > $text\n";
@@ -542,11 +545,12 @@ class Util
 	{
 		global $logfile, $mdb, $uri, $hostname;
 
+		if (!is_string($text)) $text = print_r($text, true);
+
 		if ($source == null) $source = @$uri;
 		$mdb->insert("cronlog", ['epoch' => $mdb->now(), 'server' => $hostname, 'source' =>  $source, 'text' => $text]);
 
 		if (!file_exists($logfile) && !is_writable(dirname($logfile))) {
-
 			return; // Can't create the file
 		}
 		if (is_writable($logfile)) error_log(date("Y-m-d H:i:s") . " > $text \n", 3, $logfile);
