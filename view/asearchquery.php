@@ -115,16 +115,18 @@ try {
 
 	// Should prevent cache busting from url manipulation
 	array_multisort($query);
-	$jsoned = json_encode($query, true);
+	$jsoned = json_encode($query, true) . json_encode($filter, true);
 	$key = "asearch:$queryType:$groupType:$victimsOnly:" . ($queryType == "kills" ? "$page:$sortKey:$sortBy:" : "") . md5($jsoned);
 
 	$waits = 0;
 	do {
 		$ret = (string) $redis->get($key);
 		if ($ret == "PROCESSING") {
+			Util::zout("waiting on $key");
 			sleep(1);
 			$waits++;
-			if ($waits > 28) {
+			if ($waits > 25) {
+				//header("Location: $uri");
 				header('HTTP/1.1 408 Request timeout');
 				return;
 			}
@@ -132,11 +134,12 @@ try {
 	} while ($ret == "PROCESSING");
 
 	if ($ret != "") {
+		Util::zout($ret);
 		$app->contentType('application/json; charset=utf-8');
 		echo $ret;
 		return;
 	}
-	$redis->setex($key, 3600, "PROCESSING");
+	$redis->setex($key, 300, "PROCESSING");
 
 	$arr = [];
 	if ($queryType == "kills") {
@@ -148,7 +151,6 @@ try {
 		$arr['kills'] = [];
 		foreach ($result as $row) {
 			$killID = $row['killID'];
-			//$redis->setex("zkb:killlistrow:" . $killID, 3660, "true");
 			$arr['kills'][] = $killID;
 		}
 	} else if ($queryType == 'count') {
@@ -164,13 +166,13 @@ try {
 		unset($arr['_id']);
 	} else if ($queryType == "groups") {
 		$app->contentType('text/html; charset=utf-8');
-		$arr['top'] = [];
-		$rendered = $redis->get("htmlgroup:$key");
-		if (false && $rendered !== null && trim($rendered) !== "") {
+		$rendered = $redis->get("groups:$key");
+		if ($rendered !== null && trim($rendered) !== "") {
 			$redis->del($key);
 			echo $rendered;
 			return;
 		}
+		$arr['top'] = [];
 		ob_start();
 		if (in_array($groupType, $types)) {
 			$res = getTop($groupType . 'ID', $query, $victimsOnly, $filter, true, $sortKey, $sortBy);
@@ -178,13 +180,21 @@ try {
 		}
 		$rendered = ob_get_clean();
 		echo $rendered;
-		$redis->setex("htmlgroup:$key", 300, $rendered);
+		$redis->setex("groups:$key", 300, trim($rendered));
 		$redis->del($key);
 		return;
 	} else if ($queryType == "labels") {
 		$app->contentType('text/html; charset=utf-8');
 		$arr['top'] = [];
-		$res = getLabels($query, $victimsOnly, false, true, $sortKey, $sortBy);
+
+		$rendered = $redis->get("labels:$key");
+		if ($rendered !== null && trim($rendered) !== "") {
+			$redis->del($key);
+			echo $rendered;
+			return;
+		}
+
+		$res = getLabels($query, $victimsOnly);
 		ob_start();
 		if ($res == null) $res = [];
 		foreach ($res as $labelGroup) {
@@ -198,19 +208,31 @@ try {
 		}
 		$rendered = ob_get_clean();
 		echo $rendered;
+		$redis->setex("labels:$key", 900, trim($rendered));
+		$redis->del($key);
 		return;
 	} else if ($queryType == "distincts") {
 		$app->contentType('text/html; charset=utf-8');
-		$result = getDistincts($query, $victimsOnly, false, true, $sortKey, $sortBy);
-		if ($result == null) $result = [];
+
+		$rendered = $redis->get("distincts:$key");
+		if ($rendered !== null && trim($rendered) !== "") {
+			$redis->del($key);
+			echo $rendered;
+			return;
+		}
+
+		$result = getDistincts($query, $filter, $victimsOnly);
+
 		$res = [];
 		foreach ($result as $type => $count) {
 			$res[] = ['type' => ucwords(str_replace("IDs", "s", $type)), 'count' => $count];
 		}
-		$app->render("components/asearch_distincts.html", ['result' => $res]);
 		ob_start();
+		$app->render("components/asearch_distincts.html", ['result' => $res]);
 		$rendered = ob_get_clean();
 		echo $rendered;
+		$redis->setex("distincts:$key", 900, trim($rendered));
+		$redis->del($key);
 		return;
 	} else {
 		// what is this? ignore it...
@@ -290,7 +312,6 @@ function parseDate($query, $which)
 
 	return $query;
 }
-
 
 function getTop($groupByColumn, $query, $victimsOnly, $filter, $addInfo, $sortKey, $sortBy)
 {
@@ -406,17 +427,11 @@ function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $
 	}
 }
 
-function getLabels($query, $victimsOnly, $cacheOverride = false, $addInfo = true)
+function getLabels($query, $victimsOnly)
 {
 	global $mdb, $longQueryMS;
 
-	$hashKey = "Stats::getLabels:" . serialize($query) . ":" . serialize($victimsOnly);
 	try {
-		$result = RedisCache::get($hashKey);
-		if ($cacheOverride == false && $result != null) {
-			return $result;
-		}
-
 		$killmails = $mdb->getCollection('killmails');
 
 		$timer = new Timer();
@@ -534,29 +549,20 @@ function getLabels($query, $victimsOnly, $cacheOverride = false, $addInfo = true
 		$time = $timer->stop();
 		if ($time > $longQueryMS) {
 			global $uri;
-			Util::zout("getTop Long query (${time}ms): $hashKey $uri");
+			Util::zout("getTop Long query (${time}ms): $uri");
 		}
-
-		RedisCache::set($hashKey, $result, 900);
-
 		return $result;
 	} catch (Exception $ex) {
 		if ($ex->getCode() != 50) Util::zout(print_r($ex, true)); // code 50 is query timeout
-		RedisCache::set($hashKey, [], 900);
 	}
 }
 
-function getDistincts($query, $victimsOnly, $cacheOverride = false, $addInfo = true)
+function getDistincts($query, $filter, $victimsOnly)
 {
 	global $mdb, $longQueryMS;
 
 	$hashKey = "Stats::getDistincts:" . serialize($query) . ":" . serialize($victimsOnly);
 	try {
-		$result = RedisCache::get($hashKey);
-		if (false && $cacheOverride == false && $result != null) {
-			return $result;
-		}
-
 		$killmails = $mdb->getCollection('killmails');
 
 		$timer = new Timer();
@@ -567,6 +573,7 @@ function getDistincts($query, $victimsOnly, $cacheOverride = false, $addInfo = t
 		$pipeline[] = [
 			'$unwind' => '$involved'
 		];
+		if (sizeof($filter)) $pipeline[] = ['$match' => $filter];
 
 		$pipeline[] = [
 			'$group' => [
@@ -604,15 +611,13 @@ function getDistincts($query, $victimsOnly, $cacheOverride = false, $addInfo = t
 		$time = $timer->stop();
 		if ($time > $longQueryMS) {
 			global $uri;
-			Util::zout("getTop Long query (${time}ms): $hashKey $uri");
+			Util::zout("getTop Long query (${time}ms): $uri");
 		}
-
-		RedisCache::set($hashKey, $result, 900);
 
 		return $result;
 	} catch (Exception $ex) {
 		if ($ex->getCode() != 50) Util::zout(print_r($ex, true));
-		RedisCache::set($hashKey, [], 900);
+		return [];
 	}
 }
 

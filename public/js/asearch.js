@@ -64,6 +64,9 @@ function loadasearch() {
 	});
 
 	$("#clickToDigCheckbox").on('change', updateDrillDownPreference);
+
+	first_load = false;
+	doQuery();
 };
 
 function datepick() {
@@ -239,7 +242,6 @@ function setFilters(hashfilters) {
 		var promises = [];
 		switch (key) {
 			case 'includeAssociates':
-				console.log('ass?', key, value, typeof value);
 				$("#includeAssociates").prop('checked', value);
 				break;
 			case 'dtstart':
@@ -300,13 +302,10 @@ function setHashAdd(filter, asfilter, key) {
 var xhrs = [];
 var filtersStringified = undefined;
 function doQuery(queryType = 'all') {
+	if (first_load) return;
 	if (!allowChange) return;
 
 	console.log('doQuery executing')
-	if (first_load == true) {
-		queryType = 'all';
-		first_load = false;
-	}
 
 	var f = getFilters();
 	var stringified = JSON.stringify(f);
@@ -529,7 +528,6 @@ function toggleRadioBtn() {
 	if (key != undefined) radios[variable][key] = $(this).text().toLowerCase();
 	else radios[variable] = $(this).text().toLowerCase();
 
-	console.log('variable', variable);
 	if (variable == 'page' || variable == 'sort') doQuery('kills');
 	else if (variable == 'group-agg-type') doQuery('groups');
 	else clickPage1();
