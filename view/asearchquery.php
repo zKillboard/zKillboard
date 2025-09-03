@@ -122,7 +122,6 @@ try {
 	do {
 		$ret = (string) $redis->get($key);
 		if ($ret == "PROCESSING") {
-			Util::zout("waiting on $key");
 			sleep(1);
 			$waits++;
 			if ($waits > 25) {
@@ -134,7 +133,6 @@ try {
 	} while ($ret == "PROCESSING");
 
 	if ($ret != "") {
-		Util::zout($ret);
 		$app->contentType('application/json; charset=utf-8');
 		echo $ret;
 		return;
