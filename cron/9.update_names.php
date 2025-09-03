@@ -9,7 +9,7 @@ $rsetLoad = "zkb:updatenames:" . date('Ymd');
 
 $guzzler = new Guzzler();
 
-if ($redis->get($rsetLoad) != "true" && $redis->scard($rset) == 0) {
+if ($redis->get($rsetLoad) != "true" && $redis->scard($rset) <= 100) {
     addToRset($redis, $rset, $mdb->getCollection('ninetyDays')->distinct('involved.characterID'));
     addToRset($redis, $rset, $mdb->getCollection('ninetyDays')->distinct('involved.corporationID'));
     addToRset($redis, $rset, $mdb->getCollection('ninetyDays')->distinct('involved.allianceID'));
@@ -17,14 +17,21 @@ if ($redis->get($rsetLoad) != "true" && $redis->scard($rset) == 0) {
 $redis->srem($rset, "");
 $redis->srem($rset, "1");
 
-$set = [];
-while (sizeof($set) < 1000 && sizeof($set) < $redis->scard($rset)) {
-    $next = $redis->srandmember($rset);
-    if (!in_array($next, $set)) 
-        $set[] = $next;
-}
-doCall($guzzler, $mdb, $redis, $rset, $set);
-$guzzler->finish();
+$minute = date("Hi");
+
+do {
+    $set = [];
+    while (sizeof($set) < 1000 && sizeof($set) < $redis->scard($rset)) {
+        $next = $redis->srandmember($rset);
+        if (!in_array($next, $set)) 
+            $set[] = $next;
+    }
+    if (sizeof($set) > 0) {
+        doCall($guzzler, $mdb, $redis, $rset, $set);
+        $guzzler->finish();
+    }
+    sleep(15);
+} while ($minute == date("Hi"));
 
 if ($redis->scard($rset) == 0) $redis->setex($rsetLoad, 86400, "true");
 
