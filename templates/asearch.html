@@ -1,189 +1,223 @@
 {% extends 'base.html' %}
 
 {% set pageTitle = 'Advanced Search' %}
-{% block title %}{% include 'components/title.html' %}{% endblock %}
-
-{% block content %}
-<div id="asearchcontent" class="c-ontentrequiredlogin content">
-<h3><button id='togglefilters' class='btn btn-primary' value='togglefilters' title='Toggle Filter Display (beta - work in progress)'><i class="glyphicon glyphicon-filter"></i></button> <span id='titlecontent'>Advanced Search</span></h3>
-<hr/>
-<br/>
-<div class="row asearchfilters">
-    <div class="col-md-10">
-        <div class="form-group">
-            <input id='asearch-autocomplete' class="asearch-autocomplete form-control" type="Search" placeholder="Search" aria-label="Search" />
-        </div>
-    </div>
-    <div class="col-md-2">
-        <a href='/asearch/' class='btn btn-default nocatch'>Reset</a>
-        <button id="btn_save" class='btn btn-success'>Save</button>
-    </div>
-</div>
-<hr class='asearchfilters'/>
-<div class='row centered asearchfilters'>
-    <div class='col-md-6'>
-        <label>Location</label>
-        <div id="location">All systems</div>
-    </div>
-    <div class='col-md-6'>
-        <label>Timespan</label>
-        <center>
-                <div class="btn-group btn-group-sm centered">
-                    <button id="stats-epoch-week" class="tfilter btn btn-primary radio-btn" value="week" radio="epoch" title="Last 7 Days">7</button>
-                    <button id="stats-epoch-recent" class="tfilter btn btn-default radio-btn" value="recent" radio="epoch" title="Last 90 Days">90</button>
-                    <button id="stats-epoch-alltime" class="tfilter btn btn-default radio-btn" value="alltime" radio="epoch" title="Alltime">∞</button>
-                    <button id="stats-epoch-prior-month" class="tfilter btn btn-default radio-btn" value="prior month" radio="epoch" title="Prior Month">
-                        <i class="glyphicon glyphicon-arrow-left"></i>
-                        <i class="glyphicon glyphicon-calendar"></i>
-                    </button>
-                    <button id="stats-epoch-current-month" class="tfilter btn btn-default radio-btn" value="current month" radio="epoch" title="Current Month">
-                        <i class="glyphicon glyphicon-calendar"></i>
-                    </button>
-                    <button  id="stats-epoch-custom" class="tfilter btn btn-default radio-btn" value="custom" radio="epoch" title="Custom Date Range">?</button>
-                </div>
-                <div class="btn-group btn-group-sm">
-                    <button type='checkbox' checked id="rolling-times" class="btn btn-primary" value="rolling" title="Time will adjust automatically in 15 minute increments.">
-                        <i class="glyphicon glyphicon-arrow-down"></i>
-                    </button>
-                </div>
-            <br/><br/>
-            <div id="timeframe" class='input-group' >
-                <input id='dtstart' type='search' style='width: 10em;' class='form-control form-line' placeholder='2007-12-05 00:00' disabled>
-                <input id='dtend' type='search' style='width: 10em;' class='form-control form-line' placeholder='Now' disabled>
-            </div>
-        </center>
-    </div>
-</div>
-<hr class='asearchfilters'/>
-<div class='row centered asearchfilters'>
-    {% for name, group in labels %}
-        <div class='btn-group' data-group-name="{{ name }}">
-                <button class="btn btn-default btn-sm btn-group-label" disabled>{{ name }}</button>
-            {% for label_id, label_name in group %}
-                <button class='filter-btn btn btn-default btn-sm' value='label-{{ label_id }}' data-label='{{ label_id }}'>{{ label_name }}</button>
-            {% endfor %}
-        </div>
-    {% endfor %}
-</div>
-<hr class='asearchfilters'/>
-<div class='row centered asearchfilters' style='min-height: 100px;'>
-    <div class="col-md-4">
-        <label>Attackers</label><br/>
-        <div id="attackers-joinType" class="andor btn-group centered">
-            <button id="attackers-joinType-and" class="btn btn-primary radio-btn" value="attackers-and" radio="attackers-joinType" title="And"> And </button>
-            <button id="attackers-joinType-and" class="btn btn-default radio-btn" value="attackers-aand" radio="attackers-joinType" title="AAnd"> In </button>
-            <button id="attackers-joinType-or" class="btn btn-default radio-btn" value="attackers-or" radio="attackers-joinType" title="Or"> Or </button>
-        </div>
-        <div id="attackers"></div>
-    </div>
-    <div class='col-md-4'>
-        <label>Either</label><br/>
-        <div id="either-joinType" class="andor btn-group centered">
-            <button id="either-joinType-and" class="btn btn-primary radio-btn" value="either-and" radio="either-joinType" title="And"> And </button>
-            <button id="attackers-joinType-and" class="btn btn-default radio-btn" value="either-aand" radio="either-joinType" title="AAnd"> In </button>
-            <button id="either-joinType-or" class="btn btn-default radio-btn" value="either-or" radio="either-joinType" title="Or"> Or </button>
-        </div>
-        <div id='neutrals'></div>
-    </div>
-    <div id='victim' class="col-md-4">
-        <label>Victim</label><br/> 
-        <div id="victim-joinType" class="andor btn-group centered">
-            <button id="victim-joinType-and" class="btn btn-primary radio-btn" value="victims-and" radio="victim-joinType" title="And"> And </button>
-            <button id="attackers-joinType-and" class="btn btn-default radio-btn" value="victims-aand" radio="victim-joinType" title="AAnd"> In </button>
-            <button id="victim-joinType-or" class="btn btn-default radio-btn" value="victims-or" radio="victim-joinType" title="Or"> Or </button>
-        </div>
-        <div id="victims"></div>
-    </div>
-</div>
-<hr/>
-<div id="clickToDig">
- <div class="checkbox">
-    <label>
-      <input type="checkbox" id="clickToDigCheckbox"><span id="clickText"> Clicking will Drill Down</span>
-    </label>
-  </div>
-</div>
-<hr/>
-<div id="clickablecontent" class="row">
-    <div id='page' class='col-md-10'>
-        <div id='pagefilters'>
-        <div zkill-var='sort' zkill-key='sortBy' class='btn-group asearchfilters'>
-            <button class='sorttype radio-btn btn btn-primary' value='sort-date'>Date</button>
-            <button class='sorttype radio-btn btn btn-default' value='sort-isk'>ISK</button>
-            <button class='sorttype radio-btn btn btn-default' value='sort-involved'>Involved</button>
-            <button class='sorttype radio-btn btn btn-default' value='sort-damage'>Damage</button>
-        </div>
-        <div zkill-var='sort' zkill-key='sortDir' class='btn-group asearchfilters'>
-            <button class='sortorder radio-btn btn btn-primary' value='sort-desc'>Desc</button>
-            <button class='sortorder radio-btn btn btn-default' value='sort-asc'>Asc</button></div>
-        <div zkill-var='page' class='btn-group pull-right asearchfilters'>
-            <button id='page1' class='pagenum radio-btn btn-page btn btn-primary' value='page1'>1</button>
-            <button class='pagenum radio-btn btn-page btn btn-default' value='page2'>2</button>
-            <button class='pagenum radio-btn btn-page btn btn-default' value='page3'>3</button>
-            <button class='pagenum radio-btn btn-page btn btn-default' value='page4'>4</button>
-            <button class='pagenum radio-btn btn-page btn btn-default' value='page5'>5</button>
-            <button class='pagenum radio-btn btn-page btn btn-default' value='page6'>6</button>
-            <button class='pagenum radio-btn btn-page btn btn-default' value='page7'>7</button>
-            <button class='pagenum radio-btn btn-page btn btn-default' value='page8'>8</button>
-            <button class='pagenum radio-btn btn-page btn btn-default' value='page9'>9</button>
-            <button class='pagenum radio-btn btn-page btn btn-default' value='page10'>10</button>
-        </div>
-        <div class="clearfix asearchfilters"></div>
-        <br class='asearchfilters'/>
-        </div>
-<div id="killmails-result" style='min-height: 500px;'>
-<table class="table table-condensed table-striped table-hover" style="margin-bottom: 0px;" id="killlist">
-  <thead>
-    <tr>
-      <th>Time</th>
-      <th class="hidden-xs" style="width: 50px; text-align: center;"></th>
-      <th class="hidden-xs location" style="width:115px;">Place</th>
-      <th class="hidden-xs" style="width: 64px;">&nbsp;</th>
-      <th class="hidden-xs">Victim</th>
-      <th class="hidden-xs finalBlowColumn" style="width: 64px;">&nbsp;</th>
-      <th class="hidden-xs finalBlowColumn">Final Blow</th>
-    </tr>
-  </thead>
-  <tbody id="killmails-list">
-  </tbody>
-</table>
-</div>
-    </div>
-    <div class='col-md-2'>
-        <div zkill-var='group-agg-type' class='btn-group btn-group-vertical asearchfilters' style='width: 100%'>
-            <div class='radio-btn btn btn-default btn-primary' value='allinvolved'>All Involved</div>
-            <div class='radio-btn btn btn-default' value='victimsonly'>Victims Only</div>
-            <div class='radio-btn btn btn-default' value='attackersonly'>Attackers Only</div>
-        </div>
-        <div><h4 id='result-groups-count'></h4></div>
-        <div id='result-groups-all'>
-        <div id='result-groups-character'></div>
-        <div id='result-groups-corporation'></div>
-        <div id='result-groups-alliance'></div>
-        <div id='result-groups-faction'></div>
-        <div id='result-groups-shipType'></div>
-        <div id='result-groups-group'></div>
-        <div id='result-groups-location'></div>
-        <div id='result-groups-solarSystem'></div>
-        <div id='result-groups-constellation'></div>
-        <div id='result-groups-region'></div>
-        <div id='result-groups-distincts'></div>
-        <div id='result-groups-labels'></div>
-        </div>
-    </div>
-<hr/>
-</div>
-
-</div>
-<!--<div class="contentrequiredlogin login">
-<h3>Login is required to use this feature.</h3>
-<a href="/ccpoauth2/" class="btn btn-block collapse" style="display: inline;"><img src="/img/ssologin.png" style="width: 300px"></a>
-</div>-->
+{% block title %}
+	{% include 'components/title.html' %}
 {% endblock %}
 
+{% block content %}
+	<div id="asearchcontent" class="c-ontentrequiredlogin content">
+		<h3>
+			<button id='togglefilters' class='btn btn-primary' value='togglefilters' title='Toggle Filter Display (beta - work in progress)'>
+				<i class="glyphicon glyphicon-filter"></i>
+			</button>
+			<span id='titlecontent'>Advanced Search</span>
+		</h3>
+		<hr/>
+		<br/>
+		<div class="row asearchfilters">
+			<div class="col-md-10">
+				<div class="form-group">
+					<input id='asearch-autocomplete' class="asearch-autocomplete form-control" type="Search" placeholder="Search" aria-label="Search"/>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<a href='/asearch/' class='btn btn-default nocatch'>Reset</a>
+				<button id="btn_save" class='btn btn-success'>Save</button>
+			</div>
+		</div>
+		<hr class='asearchfilters'/>
+		<div class='row centered asearchfilters'>
+			<div class='col-md-6'>
+				<label>Location</label>
+				<div id="location">All systems</div>
+			</div>
+			<div class='col-md-6'>
+				<label>Timespan</label>
+				<center>
+					<div class="btn-group btn-group-sm centered">
+						<button id="stats-epoch-week" class="tfilter btn btn-primary radio-btn" value="week" radio="epoch" title="Last 7 Days">7</button>
+						<button id="stats-epoch-recent" class="tfilter btn btn-default radio-btn" value="recent" radio="epoch" title="Last 90 Days">90</button>
+						<button id="stats-epoch-alltime" class="tfilter btn btn-default radio-btn" value="alltime" radio="epoch" title="Alltime">∞</button>
+						<button id="stats-epoch-prior-month" class="tfilter btn btn-default radio-btn" value="prior month" radio="epoch" title="Prior Month">
+							<i class="glyphicon glyphicon-arrow-left"></i>
+							<i class="glyphicon glyphicon-calendar"></i>
+						</button>
+						<button id="stats-epoch-current-month" class="tfilter btn btn-default radio-btn" value="current month" radio="epoch" title="Current Month">
+							<i class="glyphicon glyphicon-calendar"></i>
+						</button>
+						<button id="stats-epoch-custom" class="tfilter btn btn-default radio-btn" value="custom" radio="epoch" title="Custom Date Range">?</button>
+					</div>
+					<div class="btn-group btn-group-sm">
+						<button type='checkbox' checked id="rolling-times" class="btn btn-primary" value="rolling" title="Time will adjust automatically in 15 minute increments.">
+							<i class="glyphicon glyphicon-arrow-down"></i>
+						</button>
+					</div>
+					<br/><br/>
+					<div id="timeframe" class='input-group'>
+						<input id='dtstart' type='search' style='width: 10em;' class='form-control form-line' placeholder='2007-12-05 00:00' disabled>
+						<input id='dtend' type='search' style='width: 10em;' class='form-control form-line' placeholder='Now' disabled>
+					</div>
+				</center>
+			</div>
+		</div>
+		<hr class='asearchfilters'/>
+		<div class='row centered asearchfilters'>
+			{% for name, group in labels %}
+				<div class='btn-group' data-group-name="{{ name }}">
+					<button class="btn btn-default btn-sm btn-group-label" disabled>{{ name }}</button>
+					{% for label_id, label_name in group %}
+						<button class='filter-btn btn btn-default btn-sm' value='label-{{ label_id }}' data-label='{{ label_id }}'>{{ label_name }}</button>
+					{% endfor %}
+				</div>
+			{% endfor %}
+		</div>
+		<hr class='asearchfilters'/>
+		<div class='row centered asearchfilters' style='min-height: 100px;'>
+			<div class="col-md-4">
+				<label>Attackers</label><br/>
+				<div id="attackers-joinType" class="andor btn-group centered">
+					<button id="attackers-joinType-and" class="btn btn-primary radio-btn" value="attackers-and" radio="attackers-joinType" title="And">
+						And
+					</button>
+					<button id="attackers-joinType-and" class="btn btn-default radio-btn" value="attackers-aand" radio="attackers-joinType" title="AAnd">
+						In
+					</button>
+					<button id="attackers-joinType-or" class="btn btn-default radio-btn" value="attackers-or" radio="attackers-joinType" title="Or">
+						Or
+					</button>
+				</div>
+				<div id="attackers"></div>
+			</div>
+			<div class='col-md-4'>
+				<label>Either</label><br/>
+				<div id="either-joinType" class="andor btn-group centered">
+					<button id="either-joinType-and" class="btn btn-primary radio-btn" value="either-and" radio="either-joinType" title="And">
+						And
+					</button>
+					<button id="attackers-joinType-and" class="btn btn-default radio-btn" value="either-aand" radio="either-joinType" title="AAnd">
+						In
+					</button>
+					<button id="either-joinType-or" class="btn btn-default radio-btn" value="either-or" radio="either-joinType" title="Or">
+						Or
+					</button>
+				</div>
+				<div id='neutrals'></div>
+			</div>
+			<div id='victim' class="col-md-4">
+				<label>Victim</label><br/>
+				<div id="victim-joinType" class="andor btn-group centered">
+					<button id="victim-joinType-and" class="btn btn-primary radio-btn" value="victims-and" radio="victim-joinType" title="And">
+						And
+					</button>
+					<button id="attackers-joinType-and" class="btn btn-default radio-btn" value="victims-aand" radio="victim-joinType" title="AAnd">
+						In
+					</button>
+					<button id="victim-joinType-or" class="btn btn-default radio-btn" value="victims-or" radio="victim-joinType" title="Or">
+						Or
+					</button>
+				</div>
+				<div id="victims"></div>
+			</div>
+		</div>
+		<hr/>
+		<div id="clickToDig" style="display: flex;">
+			<div class="checkbox">
+				<label>
+					<input type="checkbox" id="clickToDigCheckbox"><span id="clickText">
+						Clicking will Drill Down</span>
+				</label>
+			</div>
+			<div style='margin-left: auto;'></div>
+			<div class="checkbox">
+				<label>
+					<input type="checkbox" checked id="includeAssociates"><span id="includeAssociatesLabel">
+						Include Associates</span>
+				</label>
+			</div>
+		</div>
+		<hr/>
+		<div id="clickablecontent" class="row">
+			<div id='page' class='col-md-10'>
+				<div id='pagefilters'>
+					<div zkill-var='sort' zkill-key='sortBy' class='btn-group asearchfilters'>
+						<button class='sorttype radio-btn btn btn-primary' value='sort-date'>Date</button>
+						<button class='sorttype radio-btn btn btn-default' value='sort-isk'>ISK</button>
+						<button class='sorttype radio-btn btn btn-default' value='sort-involved'>Involved</button>
+						<button class='sorttype radio-btn btn btn-default' value='sort-damage'>Damage</button>
+					</div>
+					<div zkill-var='sort' zkill-key='sortDir' class='btn-group asearchfilters'>
+						<button class='sortorder radio-btn btn btn-primary' value='sort-desc'>Desc</button>
+						<button class='sortorder radio-btn btn btn-default' value='sort-asc'>Asc</button>
+					</div>
+					<div zkill-var='page' class='btn-group pull-right asearchfilters'>
+						<button id='page1' class='pagenum radio-btn btn-page btn btn-primary' value='page1'>1</button>
+						<button class='pagenum radio-btn btn-page btn btn-default' value='page2'>2</button>
+						<button class='pagenum radio-btn btn-page btn btn-default' value='page3'>3</button>
+						<button class='pagenum radio-btn btn-page btn btn-default' value='page4'>4</button>
+						<button class='pagenum radio-btn btn-page btn btn-default' value='page5'>5</button>
+						<button class='pagenum radio-btn btn-page btn btn-default' value='page6'>6</button>
+						<button class='pagenum radio-btn btn-page btn btn-default' value='page7'>7</button>
+						<button class='pagenum radio-btn btn-page btn btn-default' value='page8'>8</button>
+						<button class='pagenum radio-btn btn-page btn btn-default' value='page9'>9</button>
+						<button class='pagenum radio-btn btn-page btn btn-default' value='page10'>10</button>
+					</div>
+					<div class="clearfix asearchfilters"></div>
+					<br class='asearchfilters'/>
+				</div>
+				<div id="killmails-result" style='min-height: 500px;'>
+					<table class="table table-condensed table-striped table-hover" style="margin-bottom: 0px;" id="killlist">
+						<thead>
+							<tr>
+								<th>Time</th>
+								<th class="hidden-xs" style="width: 50px; text-align: center;"></th>
+								<th class="hidden-xs location" style="width:115px;">Place</th>
+								<th class="hidden-xs" style="width: 64px;">&nbsp;</th>
+								<th class="hidden-xs">Victim</th>
+								<th class="hidden-xs finalBlowColumn" style="width: 64px;">&nbsp;</th>
+								<th class="hidden-xs finalBlowColumn">Final Blow</th>
+							</tr>
+						</thead>
+						<tbody id="killmails-list"></tbody>
+					</table>
+				</div>
+			</div>
+			<div class='col-md-2'>
+				<div zkill-var='group-agg-type' class='btn-group btn-group-vertical asearchfilters' style='width: 100%'>
+					<div class='radio-btn btn btn-default btn-primary' value='allinvolved'>All Involved</div>
+					<div class='radio-btn btn btn-default' value='victimsonly'>Victims Only</div>
+					<div class='radio-btn btn btn-default' value='attackersonly'>Attackers Only</div>
+				</div>
+				<div>
+					<h4 id='result-groups-count'></h4>
+				</div>
+				<div id='result-groups-all'>
+					<div id='result-groups-character'></div>
+					<div id='result-groups-corporation'></div>
+					<div id='result-groups-alliance'></div>
+					<div id='result-groups-faction'></div>
+					<div id='result-groups-shipType'></div>
+					<div id='result-groups-group'></div>
+					<div id='result-groups-location'></div>
+					<div id='result-groups-solarSystem'></div>
+					<div id='result-groups-constellation'></div>
+					<div id='result-groups-region'></div>
+					<div id='result-groups-distincts'></div>
+					<div id='result-groups-labels'></div>
+				</div>
+			</div>
+			<hr/>
+		</div>
+
+	</div>
+	<!--<div class="contentrequiredlogin login">
+											<h3>Login is required to use this feature.</h3>
+											<a href="/ccpoauth2/" class="btn btn-block collapse" style="display: inline;"><img src="/img/ssologin.png" style="width: 300px"></a>
+											</div>-->
+{% endblock %}
 {% block script %}
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js" integrity="sha512-AIOTidJAcHBH2G/oZv9viEGXRqDNmfdPVPYOYKGy3fti0xIplnlgMHUGfuNRzC6FkzIo0iIxgFnr9RikFxK+sw==" crossorigin="anonymous"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.css" integrity="sha512-bYPO5jmStZ9WI2602V2zaivdAnbAhtfzmxnEGh9RwtlI00I9s8ulGe4oBa5XxiC6tCITJH/QG70jswBhbLkxPw==" crossorigin="anonymous" />
-<link rel="stylesheet" href="/css/asearch.css?v={{ version }}">
-<script defer type="text/javascript" src="/js/asearch.js?v={{ version }}"></script>
+	<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js" integrity="sha512-AIOTidJAcHBH2G/oZv9viEGXRqDNmfdPVPYOYKGy3fti0xIplnlgMHUGfuNRzC6FkzIo0iIxgFnr9RikFxK+sw==" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.css" integrity="sha512-bYPO5jmStZ9WI2602V2zaivdAnbAhtfzmxnEGh9RwtlI00I9s8ulGe4oBa5XxiC6tCITJH/QG70jswBhbLkxPw==" crossorigin="anonymous"/>
+	<link rel="stylesheet" href="/css/asearch.css?v={{ version }}">
+	<script defer type="text/javascript" src="/js/asearch.js?v={{ version }}"></script>
 {% endblock %}
