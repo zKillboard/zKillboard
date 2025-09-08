@@ -131,4 +131,17 @@ function success($params, $content)
     }
 
     if ($redis->get("recentKillmailActivity:corp:$corpID") == "true") $esi->setTime($corpID, time() + 301);
+
+    $latest = $mdb->findDoc("killmails", ['involved.corporationID' => $corpID], ['killID' => -1], ['killID' => 1, 'dttm' => 1]);
+    $time = $latest == null ? 0 : $latest['dttm']->sec;
+    $monthAgo = time() - (30 * 86400);
+    $yearAgo = time() - (365 * 86400);
+    $adjustment = 0;
+    if ($time < $yearAgo) $adjustment = 24;
+    else if ($time < $monthAgo) $adjustment = 1;
+    if ($adjustment > 0) {
+        $variance = (3600 * $adjustment) / 12;
+        $esi->setTime($corpID, time() + (3600 * $adjustment) + random_int(-1 * $variance, $variance));
+    }
+    $mdb->set("scopes", $row, ['adjustment' => $adjustment]);
 }
