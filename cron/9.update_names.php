@@ -75,6 +75,7 @@ function fail($guzzler, $params, $ex)
     $half = ceil(count($set) / 2);
     list($part1, $part2) = array_chunk($set, $half);
 
+    Util::out("9.update_names.php splitting results... " . sizeof($set));
     doCall($guzzler, $mdb, $redis, $rset, $part1);
     doCall($guzzler, $mdb, $redis, $rset, $part2);
 }
