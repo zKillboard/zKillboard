@@ -33,15 +33,15 @@ class zkbSearch
 
             $sub = $low;
             do {
-                $result = $mdb->find("information", ['type' => $type, 'l_name' => ['$regex' => "^$low"]], ['l_name' => 1], 10, ['l_name' => 1, 'published' => -1, 'id' => 1]);
+                $result = $mdb->find("information", ['type' => $type, 'l_name' => ['$regex' => "^$low"]], ['l_name' => 1], 5, ['l_name' => 1, 'published' => -1, 'id' => 1]);
                 if ($result == null) $result = [];
                 if (sizeof($result) == 0) $sub = substr($sub, 0, strlen($sub) - 1);
             } while (sizeof($result) == 0 && strlen($sub) > 0);
 
-            $searchType = $type;
             $type = str_replace(':flag', '', $type);
             $ids = [];
             foreach ($result as $row) {
+                $searchType = $type;
                 $id = $row['id'];
                 if (array_search($id, $ids) !== false) continue;
                 $ids[] = $id;
@@ -50,9 +50,10 @@ class zkbSearch
                 $name = $info['name'];
                 $image = isset(self::$imageMap[$type]) ? self::$imageMap[$type] : '';
                 $image = sprintf($image, $id);
-                if ($searchType == 'typeID:flag' || $searchType == 'typeID') {
-                    $searchType = 'ship';
-                }
+				if ($searchType == 'typeID:flag' || $searchType == 'typeID') {
+					$catID = Info::getInfoField("groupID", @$info['groupID'], "categoryID");
+					if ($catID == 6) $searchType = 'ship';
+				}
                 if ($searchType == 'factionID') {
                     $searchType = 'faction';
                 }
