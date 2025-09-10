@@ -58,11 +58,14 @@
 	</ul>
 	<ul class="nav navbar-nav pull-right hidden-xs">
 	{% if key == "character" %}
+		<li class="hidden-md hidden-sm"><a href="/information/streambox/">StreamBox</a></li>
 		<li class="hidden-md hidden-sm"><a href="https://evewho.com/character/{{ id }}" target="_blank" rel="noopener noreferrer">EVEWho</a></li>
 	{% elseif key == "corporation" %}
+		<li class="hidden-md hidden-sm"><a href="/information/streambox/">StreamBox</a></li>
 		<li class="hidden-md hidden-sm"><a href="https://evemaps.dotlan.net/corp/{{ pageName|url_encode }}/" target="_blank" rel="noopener noreferrer">DOTLAN</a></li>
 		<li class="hidden-md hidden-sm"><a href="https://evewho.com/corporation/{{ id }}" target="_blank" rel="noopener noreferrer">EVEWho</a></li>
 	{% elseif key == "alliance" %}
+		<li class="hidden-md hidden-sm"><a href="/information/streambox/">StreamBox</a></li>
 		<li class="hidden-md hidden-sm"><a href="https://evemaps.dotlan.net/alliance/{{ pageName|url_encode }}/" target="_blank" rel="noopener noreferrer">DOTLAN</a></li>
 		<li class="hidden-md hidden-sm"><a href="https://evewho.com/alliance/{{ id }}" target="_blank" rel="noopener noreferrer">EVEWho</a></li>
 	{% elseif key == "system" %}
