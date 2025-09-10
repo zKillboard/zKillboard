@@ -99,7 +99,7 @@ while ($hour == date('H')) {
 	addInfo('Successful SSO calls in last 5 minutes', Status::getStatus('sso', true), false);
 	addInfo('Failed SSO calls in last 5 minutes', Status::getStatus('sso', false), false);
 
-	$esiChars = new RedisTimeQueue("tqApiESI", 3600);
+	$esiChars = new RedisTimeQueue("tqApiESI", 900);
 	$esiCorps = new RedisTimeQueue("tqCorpApiESI", 300);
 	$ssoCorps = new RedisTimeQueue("zkb:ssoCorps", 3600);
 	addInfo('', 0, false);

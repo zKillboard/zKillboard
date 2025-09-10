@@ -13,7 +13,7 @@ $sso = ZKillSSO::getSSO();
 if ($redis->get("zkb:noapi") == "true") exit();
 
 $esiCorps = new RedisTimeQueue('tqCorpApiESI', 3600);
-$esi = new RedisTimeQueue('tqApiESI', 3600);
+$esi = new RedisTimeQueue('tqApiESI', 900);
 if ($mt == 0 && (date('i') == 22 || $esi->size() < 100)) {
     //Log::log("populating tqApiESI: " . $esi->size());
     $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_killmails.v1']);
@@ -29,7 +29,7 @@ $bumped = [];
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     if ($esiCorps->pending() > 100) sleep(1);
-    $charID = $esi->next(false);
+    $charID = (int) $esi->next(false);
     if ($charID > 0) {
         if ($redis->get("esi-fetched:$charID") == "true") { usleep(100000); continue; }
 
@@ -40,9 +40,6 @@ while ($minute == date('Hi')) {
             if ($corpID !== @$row['corporationID']) {
                 $mdb->set("scopes", $row, ['corporationID' => $corpID], true);
             }
-
-            $hasRecent = $mdb->exists("ninetyDays", ['involved.characterID' => $charID]);
-            if (!$hasRecent && @$row['lastFetch']->sec != 0 && (($charID % 24) != date('H'))) continue;
 
             $params = ['row' => $row, 'esi' => $esi];
             $refreshToken = $row['refreshToken'];
@@ -113,19 +110,6 @@ function success($params, $content)
     $mdb->set("scopes", $row, $modifiers); 
     $redis->setex("apiVerified:$charID", 86400, time());
 
-    $mKillID = (int) $mdb->findField("killmails", "killID", ['involved.characterID' => $charID], ['killID' => -1]);
-    if ($newKills == 0 && $mKillID < ($redis->get("zkb:topKillID") - 3000000) && @$row['iterated'] == true && isset($row['added']->sec)) {
-        if ($row['added']->sec < (time() - (30 * 86400)) && $mKillID < ($redis->get("zkb:topKillID") - 10000000)) {
-            $esi->remove($charID);
-            $mdb->remove("scopes", $row);
-            $redis->del("apiVerified:$charID");
-            Util::out("Removed char killmail scope for $charID for inactivity");
-            return;
-        }
-        // Otherwise check them roughly once a day
-        $esi->setTime($charID, time() + (rand(24, 30) * 3600));
-    }
-
     if ($newKills > 0) {
         $name = Info::getInfoField('characterID', $charID, 'name');
         $corpName = Info::getInfoField('corporationID', $corpID, 'name');
@@ -136,4 +120,23 @@ function success($params, $content)
 
     // Check recently active characters every 5 minutes
     if ($redis->get("recentKillmailActivity:char:$charID") == "true") $esi->setTime($charID, time() + 301);
+    else {
+        $latest = $mdb->findDoc("killmails", ['involved.characterID' => $charID], ['killID' => -1], ['killID' => 1, 'dttm' => 1]);
+        $time = $latest == null ? 0 : $latest['dttm']->sec;
+        $weekAgo = time() - (7 * 86400);
+        $monthAgo = time() - (30 * 86400);
+        $monthsAgo = time() - (90 * 86400);
+        $yearAgo = time() - (365 * 86400);
+        $adjustment = 0;
+        if ($time < $yearAgo) $adjustment = 72;
+        else if ($time < $monthsAgo) $adjustment = 24;
+        else if ($time < $monthAgo) $adjustment = 4;
+        else if ($time < $weekAgo) $adjustment = 1;
+        if ($adjustment > 0) {
+            $variance = (3600 * $adjustment) / 12;
+            //Util::zout("$charID adjustment $adjustment $variance");
+            $esi->setTime($charID, time() + (3600 * $adjustment) + random_int(-1 * $variance, $variance));
+        }
+        $mdb->set("scopes", $row, ['adjustment' => $adjustment]);
+    }
 }
