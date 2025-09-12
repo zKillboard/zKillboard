@@ -65,7 +65,20 @@ $(document).ready(function() {
     assignRowColor();
     doFormats();
     $(document).ajaxComplete(doFormats);
+
+    // Anything that has a raw value to it will be able to be copied to the clipboard
+    $("[raw]").click(copyToClipboard);
 });
+
+function copyToClipboard(e) {
+    console.log(this);
+    const raw = $(this).attr("raw");
+    console.log(raw);
+    if (navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(raw);
+        showToast(raw + ' has been copied to your clipboard');
+    }
+}
 
 const asciiForwardSlash = '/'.charCodeAt(0);
 const asciiBackSlash = '\\'.charCodeAt(0);
