@@ -9,6 +9,10 @@
 
 {% block script %}
 <script type="text/javascript">
-(function() { setTimeout(() => { pubsub('ztop'); }, 1000); })();
+setTimeout(load_ztop, 1000);
+function load_ztop() {
+    if (!pubsub) setTimeout(load_ztop, 250);
+    pubsub('ztop');
+}
 </script>
 {% endblock %}
