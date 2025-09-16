@@ -52,6 +52,8 @@ class zkbSearch
                 $name = $info['name'];
                 $image = isset(self::$imageMap[$type]) ? self::$imageMap[$type] : '';
                 $image = sprintf($image, $id);
+                if (Util::endsWith($name, "Blueprint")) $image = str_replace("/icon", "/bp", $image);
+
 				if ($searchType == 'typeID:flag' || $searchType == 'typeID') {
 					$catID = Info::getInfoField("groupID", @$info['groupID'], "categoryID");
 					if ($catID == 6) $searchType = 'ship';
