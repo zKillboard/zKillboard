@@ -174,7 +174,15 @@ try {
 		ob_start();
 		if (in_array($groupType, $types)) {
 			$res = getTop($groupType . 'ID', $query, $victimsOnly, $filter, true, $sortKey, $sortBy);
-			$app->render("components/asearch_top_list.html", ['topSet' => ['type' => $groupType, 'title' => 'Top ' . Util::pluralize(ucwords($groupType)), 'values' => $res, 'sortKey' => $sortKey, 'sortBy' => $sortBy]]);
+			$app->render("components/asearch_top_list.html", ['topSet' =>
+			[
+				'type' => $groupType,
+				'singularTitle' => ucwords($groupType),
+				'title' => 'Top ' . Util::pluralize(ucwords($groupType)),
+				'values' => $res,
+				'sortKey' => $sortKey,
+				'sortBy' => $sortBy
+			]]);
 		}
 		$rendered = ob_get_clean();
 		echo $rendered;
@@ -202,7 +210,15 @@ try {
 				}
 			}
 			if (isset($labelGroupMaps[$labelGroup['_id']])) $labelGroup['_id'] = $labelGroupMaps[$labelGroup['_id']];
-			$app->render("components/asearch_top_list.html", ['topSet' => ['type' => $labelGroup['_id'], 'title' => 'Top ' . ucwords($labelGroup['_id']), 'values' => $labelGroup['rights'], 'sortKey' => 'count', 'sortBy' => $sortBy]]);
+			$app->render("components/asearch_top_list.html", ['topSet' =>
+			[
+				'type' => $labelGroup['_id'],
+				'singularTitle' => ucwords($labelGroup['_id']),
+				'title' => 'Top ' . ucwords($labelGroup['_id']),
+				'values' => $labelGroup['rights'],
+				'sortKey' => 'count',
+				'sortBy' => $sortBy
+			]]);
 		}
 		$rendered = ob_get_clean();
 		echo $rendered;

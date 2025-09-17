@@ -2,7 +2,7 @@
 	<center>
 		<h5>Distincts</h5>
 	</center>
-    <table class="table table-condensed topBoxes col-lg-2" style="padding: 0px; margin: 0px; width: 100%;">
+    <table class="table table-condensed topBoxes col-lg-2" style="padding: 0px; margin: 0px; width: 100%;" data-singular="Distincts" aria-title="Distincts">
 	{% for row in result %}
 		<tr><td>{{ row.type }}</td><td align="right" format="format-int-once" raw="{{ row.count }}">{{ row.count|number_format(0) }}</td></tr>
 	{% endfor %}

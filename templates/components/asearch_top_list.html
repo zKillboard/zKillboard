@@ -1,9 +1,9 @@
 {% set first = true %}
 {% set counter = 1 %}
 {% if topSet.values | length %}
-<div class="pull-left" style="width: 100%; padding: 0px; margin: 0px;">
+<div class="groupReport pull-left" style="width: 100%; padding: 0px; margin: 0px;">
   <center><h5>{{ topSet.title }}</h5></center>
-  <table class="table table-condensed topBoxes col-lg-2" style="padding: 0px; margin: 0px; width: 100%;">
+  <table class="table table-condensed topBoxes col-lg-2" style="padding: 0px; margin: 0px; width: 100%;" data-singular="{{ topSet.singularTitle }}" aria-title="{{ topSet.title }}">
   {% for data in topSet.values %}
     {% set field = data %}
     {% if first %}

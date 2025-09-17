@@ -56,11 +56,11 @@ function loadasearch() {
 	}
 
 	setInterval(rollTime, 5000);
-	$(".btn-page.btn-primary").click();
+	$(".btn-page.btn-primary:not(.notafilter)").click();
 
 	window.addEventListener('popstate', function () {
 		setFilters();
-		$(".btn-page.btn-primary").click();
+		$(".btn-page.btn-primary:not(.notafilter)").click();
 	});
 
 	$("#clickToDigCheckbox").on('change', updateDrillDownPreference);
@@ -228,7 +228,7 @@ function setFilters(hashfilters) {
 
 	// Reset the search
 	$(".glyphicon-remove").click();
-	$(".btn.btn-primary").removeClass("btn-primary").addClass("btn-default");
+	$(".btn.btn-primary:not(.notafilter)").removeClass("btn-primary").addClass("btn-default");
 
 	var keys = Object.keys(hashfilters);
 	for (const key in hashfilters) {
@@ -651,3 +651,60 @@ async function clickCatch(e) {
 function updateDrillDownPreference(e) {
 	localStorage.setItem('drilldown-enabled', $("#clickToDigCheckbox").is(':checked') ? 'true' : 'false');
 }
+
+document.getElementById("exportCsv").addEventListener("click", function () {
+	let groups = $("#result-groups-all table");
+
+	const wb = XLSX.utils.book_new();
+
+	let tabdata = [{ 'About': 'This export is beta, it is currently not meant as a killmail export.\nPlanned features include showing the filters used, different file name to reflect filters, etc.' }];
+	let ws = XLSX.utils.json_to_sheet(tabdata);
+	ws['!cols'] = [{ wch: 100 }];
+	XLSX.utils.book_append_sheet(wb, ws, "About This Export");
+
+	const data = [];
+	for (let group of groups) {
+		group = $(group);
+		let tabdata = [];
+		for (let tr of group.find('tr')) {
+			let colHeader = group.attr('data-singular') || 'Header';
+
+			let row = {};
+			let columns = $(tr).find('td');
+			for (let i = 0; i < columns.length; i++) {
+				td = $(columns[i]);
+				if (td.attr('colspan')) continue;
+				let text = td.text().trim();
+				if (text == '') continue;
+				row[i == 1 ? colHeader : 'Kills'] = text;
+			}
+			if (Object.keys(row).length == 0) continue;
+			tabdata.push(row);
+		}
+		if (tabdata.length == 0) continue;
+		const ws = XLSX.utils.json_to_sheet(tabdata);
+
+		const colWidths = Object.keys(tabdata[0]).map(key => {
+			const maxLen = tabdata.reduce((acc, row) => {
+				return Math.max(acc, String(row[key] || "").length);
+			}, key.length);
+			return { wch: maxLen + 2 }; // +2 padding
+		});
+		ws['!cols'] = colWidths;
+
+		XLSX.utils.book_append_sheet(wb, ws, group.attr('aria-title'));
+	}
+
+	/*const data = [
+		{ name: "Squizz", corp: "WHPD", ship: "Tholos" },
+		{ name: "Kaelen", corp: "Gruber", ship: "Prospect" }
+	];
+
+	// Convert to sheet
+	const ws = XLSX.utils.json_to_sheet(data);
+	const wb = XLSX.utils.book_new();
+	XLSX.utils.book_append_sheet(wb, ws, "Pilots");*/
+
+	// Export
+	XLSX.writeFile(wb, "export.xlsx");
+});

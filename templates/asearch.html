@@ -135,6 +135,9 @@
 						Include Associates</span>
 				</label>
 			</div>
+			<div>
+				<span class="btn btn-success btn-sm notafilter" style='margin-top: 0.5em;' id="exportCsv">Export XSLX</span>
+			</div>
 		</div>
 		<hr/>
 		<div id="clickablecontent" class="row">
@@ -211,13 +214,14 @@
 
 	</div>
 	<!--<div class="contentrequiredlogin login">
-											<h3>Login is required to use this feature.</h3>
-											<a href="/ccpoauth2/" class="btn btn-block collapse" style="display: inline;"><img src="/img/ssologin.png" style="width: 300px"></a>
-											</div>-->
+																																			<h3>Login is required to use this feature.</h3>
+																																			<a href="/ccpoauth2/" class="btn btn-block collapse" style="display: inline;"><img src="/img/ssologin.png" style="width: 300px"></a>
+																																			</div>-->
 {% endblock %}
 {% block script %}
 	<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js" integrity="sha512-AIOTidJAcHBH2G/oZv9viEGXRqDNmfdPVPYOYKGy3fti0xIplnlgMHUGfuNRzC6FkzIo0iIxgFnr9RikFxK+sw==" crossorigin="anonymous"></script>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.css" integrity="sha512-bYPO5jmStZ9WI2602V2zaivdAnbAhtfzmxnEGh9RwtlI00I9s8ulGe4oBa5XxiC6tCITJH/QG70jswBhbLkxPw==" crossorigin="anonymous"/>
 	<link rel="stylesheet" href="/css/asearch.css?v={{ version }}">
 	<script defer type="text/javascript" src="/js/asearch.js?v={{ version }}"></script>
+	<script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 {% endblock %}
