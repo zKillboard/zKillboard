@@ -62,7 +62,7 @@ while ($cnt < 10) {
 }
 $topDamage = $finalBlow = null;
 $first = null;
-if (sizeof($killdata['involved']) > 1) {
+if (sizeof($killdata['involved']) > 0) {
 	foreach ($killdata['involved'] as $inv) {
 		if ($first == null) {
 			$first = $inv;
