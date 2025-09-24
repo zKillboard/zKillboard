@@ -11,12 +11,12 @@ if ($redis->get("zkb:gankcheck") == "true") exit();
 
 $queueRedisQ = new RedisQueue('queueRedisQ');
 
-$concord = $mdb->getCollection("killmails")->find(['involved.corporationID' => 1000125])->sort(['killID' => -1])->limit(50000);
+$concord = $mdb->getCollection("killmails")->find(['involved.corporationID' => 1000125])->sort(['sequence' => -1])->limit(50000);
 $added = [];
 
 while ($concord->hasNext()) {
     $kill = $concord->next();
-    if ($kill['killID'] < 68300000) break;
+    if ($kill['killID'] < 68300000) continue;
     $systemID = $kill['system']['solarSystemID'];
     $involved = $kill['involved'];
     $victim = $involved[0];
