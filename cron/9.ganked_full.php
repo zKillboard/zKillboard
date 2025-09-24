@@ -7,20 +7,20 @@ use cvweiss\redistools\RedisQueue;
 
 global $gankKillBotWebhook;
 
-if ($redis->get("zkb:gankcheck") == "true") exit();
+if ($redis->get("zkb:gankcheckfull") == "true") exit();
 
 $queueRedisQ = new RedisQueue('queueRedisQ');
 
-$concord = $mdb->getCollection("killmails")->find(['involved.corporationID' => 1000125])->sort(['sequence' => -1])->limit(50000);
+$concord = $mdb->getCollection("killmails")->find(['involved.corporationID' => 1000125])->sort(['killID' => -1]);
 $added = [];
 
 while ($concord->hasNext()) {
     $kill = $concord->next();
-    if ($kill['killID'] < 68300000) continue;
+    if ($kill['killID'] < 68300000) break;
     $systemID = $kill['system']['solarSystemID'];
     $involved = $kill['involved'];
     $victim = $involved[0];
-    $likelyVictims = $mdb->find("killmails", ['involved.characterID' => $victim['characterID'], 'killID' => ['$lt' => $kill['killID']]], ['killID' => -1], 5);
+    $likelyVictims = $mdb->find("killmails", ['involved.characterID' => $victim['characterID'], 'killID' => ['$lt' => $kill['killID']]], ['killID' => -1], 25);
     foreach ($likelyVictims as $lvictim) {
         if (in_array($lvictim['killID'], $added) === true) continue;
         if (@$lvictim['involved'][0]['groupID'] == 29) continue;
@@ -53,4 +53,4 @@ while ($concord->hasNext()) {
     }
 }
 
-$redis->setex("zkb:gankcheck", 900, "true");
+$redis->setex("zkb:gankcheckfull", 90000, "true"); // check full history for ganks almost daily
