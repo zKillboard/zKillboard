@@ -134,11 +134,13 @@ function success($params, $content)
 
     $latest = $mdb->findDoc("killmails", ['involved.corporationID' => $corpID], ['killID' => -1], ['killID' => 1, 'dttm' => 1]);
     $time = $latest == null ? 0 : $latest['dttm']->sec;
+    $threeDaysAgo = time() - (3 * 86400);
     $monthAgo = time() - (30 * 86400);
     $yearAgo = time() - (365 * 86400);
     $adjustment = 0;
     if ($time < $yearAgo) $adjustment = 24;
     else if ($time < $monthAgo) $adjustment = 1;
+    else if ($time < $threeDaysAgo) $adjustment = 0.25;
     if ($adjustment > 0) {
         $variance = (3600 * $adjustment) / 12;
         $esi->setTime($corpID, time() + (3600 * $adjustment) + random_int(-1 * $variance, $variance));
