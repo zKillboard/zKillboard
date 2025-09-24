@@ -85,6 +85,9 @@ function success($params, $content)
     }
     if (isset($kills['error'])) {
         switch($kills['error']) {
+            case "Unauthorized - Invalid token":
+                $mdb->remove("scopes", $row);
+                break;
             default:
                 // Something went wrong, reset it and try again later
                 Util::out("1.characters error - \n" . print_r($row, true) . "\n" . print_r($kills, true));
