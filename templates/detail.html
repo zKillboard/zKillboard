@@ -280,7 +280,7 @@
 
 {% block opengraph %}
 	<meta name="twitter:title" content="{{ pageTitle }}">
-    <meta name="twitter:image" content="https://images.evetech.net/types/{{ killdata.victim.shipTypeID }}/render">
+    <meta name="twitter:image" content="https://images.evetech.net/types/{{ killdata.victim.shipTypeID }}/icon">
 	<meta name="twitter:card" content="summary">
 	<meta name="og:title" content="{{ pageTitle }}">
 	<meta name="og:url" content="{{ fullsiteurl }}/kill/{{ killdata.info.killID }}/">
@@ -291,7 +291,7 @@
 	<meta name="twitter:description" content="{{ killdata.victim.characterName }} ({{ killdata.victim.corporationName}}) lost their {{ killdata.victim.shipName }} in {{ killdata.info.system.solarSystemName }} ({{ killdata.info.system.regionName }}). Final Blow by {{ finalBlow.characterName }} ({{ finalBlow.corporationName }}) flying {% if killdata.info.solo %}solo {% endif %}in a {{ finalBlow.shipName }}. Total Value: {{ (extra.totalisk)|number_format(2, '.', ',')}} ISK">
 	<meta name="og:description" content="{{ killdata.victim.characterName }} ({{ killdata.victim.corporationName}}) lost their {{ killdata.victim.shipName }} in {{ killdata.info.system.solarSystemName }} ({{ killdata.info.system.regionName }}). Final Blow by {{ finalBlow.characterName }} ({{ finalBlow.corporationName }}) flying {% if killdata.info.solo %}solo {% endif %}in a {{ finalBlow.shipName }}. Total Value: {{ (extra.totalisk)|number_format(2, '.', ',')}} ISK">
 {% endif %}
-	<meta name="og:image" content="https://images.evetech.net/types/{{ killdata.victim.shipTypeID }}/render">
+	<meta name="og:image" content="https://images.evetech.net/types/{{ killdata.victim.shipTypeID }}/icon">
 {% endblock %}
 
 {% block script %}
