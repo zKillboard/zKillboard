@@ -22,25 +22,26 @@ class Points
             $itemInfo = Info::getInfo('typeID', $item['item_type_id']);
             if (@$itemInfo['categoryID'] != 7) continue;
 
-            $flagName = Info::getFlagName($item['flag']); 
+			$flagName = Info::getFlagName($item['flag']); 
             if (($flagName == "Low Slots" || $flagName == "Mid Slots" || $flagName == "High Slots" || $flagName == 'SubSystems') || ($killID < 23970577 && $item['flag'] == 0) ) {
                 $typeID = $item['item_type_id'];
                 $qty = @$item['quantity_destroyed'] + @$item['quantity_dropped'];
                 $metaLevel = Info::getDogma($typeID, 633);
                 $meta = 1 + floor($metaLevel / 2);
                 $heatDamage = Info::getDogma($typeID, 1211);
-                $dangerFactor += ((bool) $heatDamage) * $qty * $meta; // offensive/defensive modules overloading are good for pvp
+                $dangerFactor += ((int) is_numeric($heatDamage)) * $qty * $meta; // offensive/defensive modules overloading are good for pvp
                 $dangerFactor += ($itemInfo['groupID'] == 645) * $qty * $meta; // drone damange multipliers
                 $dangerFactor -= ($itemInfo['groupID'] == 54) * $qty * $meta; // Mining ships don't earn as many points
             }
+			echo "$flagName $heatDamage $dangerFactor\n";
         }
         $points += $dangerFactor;
         $points *= max(0.01, min(1, $dangerFactor / 4));
 
-        // Divide by number of ships on killmail
-        $numAttackers = sizeof($killmail['attackers']);
+        // Divide by number of involved players on killmail
+        $numAttackers = self::getInvolvedCount($killmail['attackers']);
         $involvedPenalty = max(1, $numAttackers * max(1, $numAttackers / 2));
-        $points = $points / $involvedPenalty;
+		$points = $points / $involvedPenalty;
 
         // Apply a bonus/penalty from -50% to 20% depending on average size of attacking ships
         // For example: Smaller ships blowing up bigger ships get a bonus
@@ -87,4 +88,14 @@ class Points
         $redis->setex("zkb:rigSize:$typeID", 300, 1);
         return 1;
     }
+
+	// Do not count NPCs (any involved that do NOT have a characterID)
+	private static function getInvolvedCount($involved)
+	{
+		$count = 0;
+		foreach ($involved as $inv) {
+			if (@$inv['character_id'] > 0) $count++;
+		}
+		return $count;
+	}
 }
