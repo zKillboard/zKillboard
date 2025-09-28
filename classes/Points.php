@@ -33,7 +33,6 @@ class Points
                 $dangerFactor += ($itemInfo['groupID'] == 645) * $qty * $meta; // drone damange multipliers
                 $dangerFactor -= ($itemInfo['groupID'] == 54) * $qty * $meta; // Mining ships don't earn as many points
             }
-			echo "$flagName $heatDamage $dangerFactor\n";
         }
         $points += $dangerFactor;
         $points *= max(0.01, min(1, $dangerFactor / 4));
