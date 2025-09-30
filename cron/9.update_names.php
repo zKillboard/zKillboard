@@ -21,8 +21,9 @@ $minute = date("Hi");
 
 do {
     $set = [];
-    while (sizeof($set) < 1000 && sizeof($set) < $redis->scard($rset)) {
+    while (sizeof($set) < 1000 && $redis->scard($rset) > 0) {
         $next = $redis->srandmember($rset);
+        $redis->srem($rset, $next);
         if (!in_array($next, $set)) 
             $set[] = $next;
     }
@@ -30,7 +31,7 @@ do {
         doCall($guzzler, $mdb, $redis, $rset, $set);
         $guzzler->finish();
     }
-    sleep(15);
+    sleep(10);
 } while ($minute == date("Hi"));
 
 if ($redis->scard($rset) == 0) $redis->setex($rsetLoad, 86400, "true");
@@ -41,6 +42,7 @@ function doCall($guzzler, $mdb, $redis, $rset, $set) {
 
 function success(&$guzzler, &$params, &$content)
 {
+try {
     $mdb = $params['mdb'];
     $rset = $params['rset'];
     $redis = $params['redis'];
@@ -50,11 +52,14 @@ function success(&$guzzler, &$params, &$content)
         $name = $row['name'];
         $match = ['type' => $row['category'] . "ID", 'id' => $row['id']];
         $current = $mdb->findDoc("information", $match);
-        if (@$current['name'] != $name) {
-            Util::out("Name update " . @current['name'] . " -> $name");
+        if (@$current['name'] !== $name) {
             $mdb->set("information", ['type' => $row['category'] . "ID", 'id' => $row['id']], ['name' => $name, 'l_name' => strtolower($name)]);
+            Util::out("Name Update: " . @$current['name'] . " -> $name");
         }
         $redis->srem($rset, $row['id']);
+    }
+    } catch (Exception $ex) {
+        print_r($ex);
     }
 }
 
