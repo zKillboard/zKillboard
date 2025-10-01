@@ -5,8 +5,6 @@ require_once "../init.php";
 use cvweiss\redistools\RedisCache;
 use cvweiss\redistools\RedisQueue;
 
-global $gankKillBotWebhook;
-
 if ($redis->get("zkb:gankcheckfull") == "true") exit();
 
 $queueRedisQ = new RedisQueue('queueRedisQ');
@@ -20,7 +18,7 @@ while ($concord->hasNext()) {
     $systemID = $kill['system']['solarSystemID'];
     $involved = $kill['involved'];
     $victim = $involved[0];
-    $likelyVictims = $mdb->find("killmails", ['involved.characterID' => $victim['characterID'], 'killID' => ['$lt' => $kill['killID']]], ['killID' => -1], 25);
+    $likelyVictims = $mdb->find("killmails", ['involved.characterID' => $victim['characterID'], 'killID' => ['$lt' => $kill['killID'] + 25]], ['killID' => -1], 25);
     foreach ($likelyVictims as $lvictim) {
         if (in_array($lvictim['killID'], $added) === true) continue;
         if (@$lvictim['involved'][0]['groupID'] == 29) continue;
@@ -48,7 +46,8 @@ while ($concord->hasNext()) {
             $mdb->getCollection("oneWeek")->update(['killID' => $lvictim['killID']], ['$addToSet' => ['labels' => 'ganked']]);
             Util::out("Marking " . $lvictim['killID'] . " as ganked.");
             RedisCache::delete("killDetail:" . $lvictim['killID']);
-            RedisCache::delete( "zkb::detail:" . $lvictim['killID']);
+            RedisCache::delete("zkb::detail:" . $lvictim['killID']);
+            $queueRedisQ->push($lvictim['killID']);
         }
     }
 }

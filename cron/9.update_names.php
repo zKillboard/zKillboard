@@ -52,6 +52,10 @@ try {
         $name = $row['name'];
         $match = ['type' => $row['category'] . "ID", 'id' => $row['id']];
         $current = $mdb->findDoc("information", $match);
+
+        // The name that almost got zkill kicked off of google....
+        if ($row['id'] == 99001383) $name = "Alliance " . $row['id'];
+
         if (@$current['name'] !== $name) {
             $mdb->set("information", ['type' => $row['category'] . "ID", 'id' => $row['id']], ['name' => $name, 'l_name' => strtolower($name)]);
             Util::out("Name Update: " . @$current['name'] . " -> $name");

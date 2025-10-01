@@ -24,7 +24,7 @@ while ($queueRedisQFail->size() > 0) $queueRedisQ->push($queueRedisQFail->pop())
 
 $minute = date('Hi');
 while (date('Hi') == $minute) {
-    $redis->sort('queueRedisQ', ['alpha' => true, 'sort' => 'desc', 'store' => 'queueRedisQ']);
+    $redis->sort('queueRedisQ', ['alpha' => true, 'sort' => 'asc', 'store' => 'queueRedisQ']);
     $killID = $queueRedisQ->pop();
     if ($killID == null) {
         sleep(1);
@@ -52,7 +52,7 @@ while (date('Hi') == $minute) {
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, "pass=$redisQAuthPass&package=" . urlencode(json_encode($package, JSON_UNESCAPED_SLASHES)));
 
-   $result = json_decode(curl_exec($ch), true);
+    $result = json_decode(curl_exec($ch), true);
     if ($result == NULL || @$result['success'] != true) {
         Util::out("Failed to send to redisq: " . $killID . " ($result)");
         $rfkey = "zkb:redisqfail:$killID";
