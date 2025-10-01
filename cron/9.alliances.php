@@ -53,7 +53,7 @@ function success(&$guzzler, &$params, $content)
         $memberCount += @$corp['memberCount'];
     }
     $update['memberCount'] = $memberCount;
-    if (@$currentInfo['obscene'] == true) {
+    if (@$currentInfo['obscene'] != null) {
         $update['name'] = "Alliance " . $id;
         $update['ticker'] = (string) $id;
         $update['obscene_name'] = $alliCrest['name'];

@@ -54,7 +54,12 @@ try {
         $current = $mdb->findDoc("information", $match);
 
         // The name that almost got zkill kicked off of google....
-        if ($row['id'] == 99001383) $name = "Alliance " . $row['id'];
+        if (isset($current['obscene'])) {
+            $name = ucfirst($row['category']) . " " . $row['id'];
+            if (isset($current['ticker'])) {
+                $mdb->set("information", ['type' => $row['category'] . "ID", 'id' => $row['id']], ['ticker' => "" . $row['id']]);
+            }
+        }
 
         if (@$current['name'] !== $name) {
             $mdb->set("information", ['type' => $row['category'] . "ID", 'id' => $row['id']], ['name' => $name, 'l_name' => strtolower($name)]);
