@@ -1,4 +1,5 @@
-<table id="corpstats" class="table table-hover table-striped" id="corpstats" style="margin: 1em; width: initial !important;">
+<div style="padding: 1em;">
+<table id="corpstats" class="table table-hover table-striped datatable" data-order='[[1, "asc"]]' id="corpstats">
 	<thead>
 		<tr>
 			<th style="width: 50px;">Ticker</th>
@@ -13,9 +14,10 @@
 		<tr>
 			<td>[{{corp.ticker}}]</td>
 			<td>{% include 'components/text_corp.html' %}</td>
-			<td style="text-align: right">{{ corp.members | number_format(0) }}</td>
+			<td data-order="{{ corp.members }}" raw="{{ corp.members }}" format="format-int-once" style="text-align: right">{{ corp.members }}</td>
 			<td style=""><a href="/character/{{ corp.ceoID }}/">{{ corp.ceoName }}</a></td>
 		</tr>
 	{% endfor %}
 	</tbody>
 </table>
+</div>
