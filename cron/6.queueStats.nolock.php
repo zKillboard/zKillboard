@@ -37,7 +37,7 @@ function checkForResets() {
 }
 
 $noStatsCount = 0;
-if ($mt == 0 && $redis->scard("queueStatsSet") < 5000) checkForResets();
+if ($mt == 0 && $redis->scard("queueStatsSet") < 50) checkForResets();
 while ($minute == date('Hi')) {
     if ($redis->get("zkb:statsStop") == "true") break;
 
