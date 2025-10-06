@@ -6,14 +6,14 @@ require_once '../init.php';
 
 if ($redis->get("tobefetched") > 1000) exit();
 if ($redis->get("zkb:reinforced") == true) exit();
-if ($redis->scard("queueStatsSet") > 1000) exit();
+//if ($redis->scard("queueStatsSet") > 1000) exit();
 
 MongoCursor::$timeout = -1;
 
 $minute = date("Hi");
 
 do {
-    $rows = $mdb->find("statistics", ['calcAlltime' => true], ['shipsDestroyed' => 1], 100);
+    $rows = $mdb->find("statistics", ['calcAlltime' => true, 'reset' => ['$ne' => true]], ['shipsDestroyed' => 1], 100);
 
     if (sizeof($rows) == 0) exit();
     foreach ($rows as $row) {
