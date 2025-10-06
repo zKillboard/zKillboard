@@ -35,12 +35,19 @@
 	<div id="details-menu" class="collapse navbar-collapse navbar-sub">
 		<ul class="nav navbar-nav hidden-xs">
 			{% if extra.prevKillID %}
-			<li class="hidden-xs"><a href="/kill/{{ extra.prevKillID }}/">&lt;</a></li>
+				<li class="hidden-xs"><a href="/kill/{{ extra.prevKillID }}/">&lt;</a></li>
 			{% endif %}
 		</ul>
 		<ul class="nav navbar-nav pull-right">
 			{% if killdata.info.killID < 0 %}
 			<li><a data-toggle="modal" data-target="#report" href="#">Report ({{ extra.reports }})</a></li>
+			{% endif %}
+			{% if sessionusername and sessionusername == killdata.victim.characterName %}
+			{% endif %}
+			{% if promoURI %}
+			<li class="hidden-xs hidden-md" style="padding: 0px; margin: 0px;">
+				<a style="padding: 0px; margin: 0px;" href="{{ promoURI}}" target="_new" alt="Markee Dragon Promo"><img src="{{ promoImage1 }}" style="height: 48px;"></a>
+			</li>
 			{% endif %}
 			<li class="dropdown">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown">External <b class="caret"></b></i></a>
@@ -101,36 +108,8 @@
 
 <div class="col-lg-4">
 	<center>
-<a id='loginsideimage' href='/ccpoauth2/' class='btn btn-block collapse'><img src='/img/ssologin.png' style='width: 209px;'><br/><br/></a>
-
+		<a id='loginsideimage' href='/ccpoauth2/' class='btn btn-block collapse'><img src='/img/ssologin.png' style='width: 209px;'><br/><br/></a>
 	</center>
-
-	{% if sponsoredMessage %}
-	<div style="display: flex;">
-		<div style='max-width: 200px; height: 240px; text-decoration: none;'>{{ sponsoredMessage|raw }}</div>
-		<div style='max-width: 180px; text-decoration: none;  border-radius: 1em; border-radius: 1em; padding-left: 1em;'>
-			<center>
-			<div style='background-color: #1D232A; color: white; border-radius: 1em;'>
-				<a href='https://store.eveonline.com/' target='_new' style='height: 230px; color: white; border: 0px; margin: 0px; padding: 0px;' class='btn'>
-				<h3>Eve Store</h3>
-				<h4>OMEGA SKINs PLEX</h4>
-				<br/>
-				<svg width="130" height="55" viewbox="0 0 130 55" fill="none" xmlns="http://www.w3.org/2000/svg" class="Header_logo___CXuk">
-					<path d="M0 20.8012H39.7595V13.7632H0V20.8012ZM0 10.1847H7.18686C7.18686 10.1847 7.18686 8.4244 7.18686 7.76909C8.20031 7.76909 39.7595 7.76909 39.7595 7.76909V0.724609H0V10.1847ZM7.18686 24.3476H0V33.8334H39.7595V26.7921C39.7595 26.7921 8.20031 26.7921 7.18686 26.7921C7.18686 26.1336 7.18686 24.3476 7.18686 24.3476ZM97.4212 24.3476H90.2374V33.8334H129.994V26.7921C129.994 26.7921 98.4316 26.7921 97.4181 26.7921C97.4212 26.1336 97.4212 24.3476 97.4212 24.3476ZM65.0062 26.0372C64.1534 24.5018 50.9445 0.724609 50.9445 0.724609H43.1273L65.0062 40.3061L86.8696 0.724609H79.0462C79.0462 0.724609 65.8559 24.5018 65.0062 26.0372ZM90.2405 0.724609V10.1847H97.4243C97.4243 10.1847 97.4243 8.4244 97.4243 7.76909C98.4378 7.76909 130 7.76909 130 7.76909V0.724609H90.2405ZM90.2405 20.8012H129.997V13.7632H90.2405V20.8012Z" fill="white"></path>
-					<path d="M26.1796 49.6175C26.1796 49.0682 26.2784 48.6924 26.4793 48.4868C26.677 48.2844 27.0602 48.1816 27.6287 48.1816H31.9204C32.492 48.1816 32.8782 48.2812 33.0791 48.4868C33.2768 48.6892 33.3788 49.065 33.3788 49.6175V52.8298C33.3788 53.3887 33.2768 53.7678 33.0791 53.9669C32.8782 54.1693 32.492 54.2721 31.9204 54.2721H27.6318C27.0602 54.2721 26.6801 54.1725 26.4824 53.9669C26.2815 53.7678 26.1827 53.3887 26.1827 52.8298V49.6175H26.1796ZM27.5422 53.1253H32.0193V49.2674H27.5422V53.1253Z" fill="white"></path>
-					<path d="M42.1776 54.2695V48.1855H43.1076L47.2325 51.7736C47.3716 51.8957 47.4982 52.0049 47.6033 52.1077C47.7114 52.2169 47.8103 52.3229 47.8999 52.4321C47.8783 52.0949 47.8628 51.8507 47.8567 51.7094C47.8505 51.5648 47.8443 51.4556 47.8443 51.3785V48.1855H49.0648V54.2728H48.1347L43.8337 50.5112C43.7287 50.4148 43.6391 50.3281 43.5618 50.251C43.4846 50.1739 43.4135 50.0968 43.3456 50.0133C43.3641 50.2028 43.3765 50.3795 43.3888 50.5466C43.395 50.7136 43.3981 50.8581 43.3981 50.9802V54.2695H42.1776Z" fill="white"></path>
-					<path d="M57.9921 54.2696V48.1855H59.3547V53.126H63.7453V54.2696H57.9921Z" fill="white"></path>
-					<path d="M71.6794 54.2695V48.1855H73.042V54.2728H71.6794V54.2695Z" fill="white"></path>
-					<path d="M81.9626 54.2695V48.1855H82.8958L87.0206 51.7736C87.1628 51.8957 87.2864 52.0049 87.3945 52.1077C87.5026 52.2169 87.6015 52.3229 87.688 52.4321C87.6664 52.0949 87.651 51.8507 87.6448 51.7094C87.6355 51.5648 87.6324 51.4556 87.6324 51.3785V48.1855H88.8498V54.2728H87.9198L83.6188 50.5112C83.5137 50.4148 83.4241 50.3281 83.3438 50.251C83.2696 50.1739 83.1955 50.0968 83.1306 50.0133C83.1491 50.2028 83.1646 50.3795 83.1708 50.5466C83.1831 50.7136 83.1862 50.8581 83.1862 50.9802V54.2695H81.9626Z" fill="white"></path>
-					<path d="M97.7753 54.2696V48.1855H103.763V49.2231H99.141V50.5787H101.832V51.6162H99.141V53.1228H103.819V54.2664H97.7753V54.2696Z" fill="white"></path>
-				</svg>
-				<h5>use code zkill<br/>to support zkill<br/></h5>
-				</a>
-			</div>
-			</center>
-		</div>
-	</div>
-	{% endif %}
 
     <div class='alert alert-info'><center><a href='{{ referralLink }}' alt='1 million SP FREE'><img src='https://images.evetech.net/types/40520/icon?size=32' alt='1 million free skill points!'/>1 Million SP FREE</a></center></div>
 	{% if extra.npcOnly %}
