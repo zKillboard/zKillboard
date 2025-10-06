@@ -81,9 +81,10 @@
 	</tr>
 	{% set totalNonShipsValue = extra.droppedisk + extra.destroyedisk %}
 	{% if totalNonShipsValue > 0 %}
-		{% set pctDropped   = ('<span rel="tooltip" title="does not count ships value" style="float: right;"><span format="format-dec1" raw="' ~ (extra.droppedisk   / totalNonShipsValue * 100) ~ '"></span>%</span>') %}
-		{% set pctDestroyed = ('<span rel="tooltip" title="does not count ships value" style="float: right;"><span format="format-dec1" raw="' ~ (extra.destroyedisk / totalNonShipsValue * 100) ~ '"></span>%</span>') %}
-		{% set pctTotal   = ('<span style="float: right;" class="item_destroyed"><span format="format-dec1" raw="' ~ (extra.destroyediskWship / extra.totalisk * 100) ~ '"></span>%</span>') %}
+		{% set pctDropped   = ('<span rel="tooltip" title="Dropped: Fit + Loot Percentage of Total Value" style="float: right;"><span format="format-dec1" raw="' ~ (extra.droppedisk   / totalNonShipsValue * 100) ~ '"></span>%</span>') %}
+		{% set pctDestroyed = ('<span rel="tooltip" title="Destroyed: Fit + Loot Percentage of Total Value" style="float: right;"><span format="format-dec1" raw="' ~ (extra.destroyedisk / totalNonShipsValue * 100) ~ '"></span>%</span>') %}
+		{% set pctShipFit   = ('<span rel="tooltip" title="Destroyed: Ship + Fit Percentage of Total Value" style="float: right;" class=""><span format="format-dec1" raw="' ~ (extra.destroyediskWship / extra.totalisk * 100) ~ '"></span>%</span>') %}
+		{% set pctShipFitCost   = ('<span rel="tooltip" title=" Ship + Fit Percentage of Total Value" style="float: right;" class=""><span format="format-dec1" raw="' ~ (extra.fittedisk / extra.totalisk * 100) ~ '"></span>%</span>') %}		{% set pctTotal   = ('<span rel="tooltip" title="Destroyed: Ship + Fit + Loot Percentage of Total Value" style="float: right;" class="item_destroyed"><span format="format-dec1" raw="' ~ (extra.destroyediskWship / extra.totalisk * 100) ~ '"></span>%</span>') %}
 	{% endif %}
 	<tr rel="tooltip" title="{{ extra.destroyediskWship|number_format(2) }}&#10;&#36;{{ extra.destroyedpriceWship.usd|number_format(2, '.', ',') }} / {{ extra.destroyedpriceWship.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.destroyedpriceWship.gbp|number_format(2, '.', ',') }}">
 		<th>Destroyed:</th>
@@ -100,7 +101,7 @@
     {% if extra.fittedisk > 0 %}
     <tr rel="tooltip" title="{{ extra.fittedisk|number_format(2) }}&#10;&#36;{{ extra.fittedprice.usd|number_format(2, '.', ',') }} / {{ extra.fittedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.fittedprice.gbp|number_format(2, '.', ',') }}">
         <th>Ship+Fit:</th>
-        <td class="item_fitted"><span format="format-isk-once" raw="{{ extra.fittedisk }}">{{ extra.fittedisk | number_format(2, '.', ',') }}</span> ISK</td>
+        <td class="item_fitted"><span format="format-isk-once" raw="{{ extra.fittedisk }}">{{ extra.fittedisk | number_format(2, '.', ',') }}</span> ISK {{ pctShipFitCost|raw }}</td>
     </tr>
     {% endif %}
 	<tr rel="tooltip" title="{{ extra.totalisk|number_format(2) }}&#10;&#36;{{ extra.totalprice.usd|number_format(2, '.', ',') }} / {{ extra.totalprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.totalprice.gbp|number_format(2, '.', ',') }}">
