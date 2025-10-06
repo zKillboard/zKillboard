@@ -444,12 +444,11 @@ function doFavorite(killID) {
     var action = (color === "rgb(128, 128, 128)") ? "save" : "remove";
     var url = '/account/favorite/' + killID + '/' + action + '/';
     $.post(url, function( data ) {
-            result = JSON.parse(data); console.log(result);
-            $("#fav-star-killmail").css("color", result.color);
-            $('#modalTitle').text('Favorites');
-            $('#modalMessageBody').text(result.message);
-            $('#modalMessage').modal({backdrop: true, keyboard: true, show: true});
-            });
+		result = JSON.parse(data);
+		console.log(result);
+    	$("#fav-star-killmail").css("color", result.color);
+		showToast(result.message, 5000);
+    });
 }
 
 function pubsub(channel)
