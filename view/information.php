@@ -21,5 +21,13 @@ if ($page == 'payments') {
 }
 $output = str_replace("href=\"#", "class='hrefit' name=\"", $output);
 
+$titles = [
+	"zkillbot" => "zKillBot",
+	"faq" => "FAQ"
+];
+
+if (isset($titles[$page])) $title = $titles[$page];
+else $title = ucfirst($page);
+
 // Load the information page html, which is just the bare minimum to load base.html and whatnot, and then spit out the markdown output!
-$app->render('information.html', array('data' => $output, 'pageTitle' => ucfirst($page)));
+$app->render('information.html', array('data' => $output, 'pageTitle' => $title));
