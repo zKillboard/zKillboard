@@ -37,7 +37,7 @@ This command **must be run successfully before any subscriptions can be added**.
 
 Returns the bot’s invite link.
 
-#### `/zkillbot leave` 🌐
+#### `/zkillbot leave` 🔒
 
 Removes all subscriptions on the server and instructs zKillBot to leave the server.
 
