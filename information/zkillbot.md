@@ -33,6 +33,23 @@ Reports various statistics about zKillBot.
 Verifies the current channel’s permissions to ensure zKillBot can post messages here.  
 This command **must be run successfully before any subscriptions can be added**.
 
+#### `/zkillbot config-channel` 🔒
+
+Allows you to customize what fields are posted.  You can Display/Hide each of the following:
+
+- (Header) The Victim (with their image and link to zkill)
+- Description.  If hidden, a description must be present and will default to the killmail's zkill url.
+- Image.  The image of the ship.
+- Destroyed
+- Dropped
+- Fitted Value
+- Involved
+- Points
+- Killmail Value.
+- (Footer) The entity that gave the final blow (with their image)
+- Timestamp.  The time the killmail. This is automatically adjusted by Discord to your locale.
+
+
 #### `/zkillbot invite` 🌐
 
 Returns the bot’s invite link.
@@ -101,8 +118,13 @@ Example:
 - Each killmail will only be posted once per channel, even if it matches more than one subscription.
 - Subscriptions are per-channel, meaning different channels can track different entities.  
 - Killmails posted include links back to [zKillboard](https://zkillboard.com/) for full details.
+- ISK values are adjusted to your guildId's locale setting.
 
 ## Upcoming Features
+- Filter for losses or kills only (advanced filter?)
+- Grouping iskValue, entityId, label together (advanced filter?)
+- LOCALE implementation for language (ISK values already implemented)
+- linking entities to their respective pages
 - Subscribe to ship groups (e.g., Frigates, Titans).  
 - Fine-grained filters for precise control over subscriptions.  
 - Subscribe to a system and receive killmails within a chosen jump range or light-year distance.
