@@ -5,7 +5,11 @@
 
 {% block content %}
 
-<h2><small>Battle Report: </small>{{ systemName }} ({{ regionName }}) / {{ time }} | <small><a href='https://br.evetools.org/related/{{ solarSystemID }}/{{ unixtime}}/' target='_blank' rel="noopener noreferrer"><i>br.evetools.org</i></a></small> | <small><a target='_blank' href='https://riftforeve.online/'><img src='/img/nohus/Icon-256.png' style='height: 32px; width: 32px;'> RIFT</a></small></h2>
+<h2>
+	<small>Battle Report: </small>{{ systemName }} ({{ regionName }}) / {{ time }}
+	| <small><a href='https://br.evetools.org/related/{{ solarSystemID }}/{{ unixtime }}/' target='_blank' rel="noopener noreferrer"><i>br.evetools.org</i></a></small>
+	| <small><a href='https://warbeacon.net/br/related/{{ solarSystemID }}/{{ unixtime }}/' target='_blank' rel="noopener noreferrer"><i>warbeacon.net</i></a></small>
+	| <small><a target='_blank' href='https://riftforeve.online/'><img src='/img/nohus/Icon-256.png' style='height: 32px; width: 32px;'> RIFT</a></small></h2>
 
 {% set teamATotal = summary.teamA.totals.total_price %}
 {% set teamBTotal = summary.teamB.totals.total_price %}
