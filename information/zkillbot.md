@@ -45,9 +45,9 @@ Allows you to customize what fields are posted.  You can Display/Hide each of th
 - Fitted Value
 - Involved
 - Points
-- Killmail Value.
+- Killmail Value
 - (Footer) The entity that gave the final blow (with their image)
-- Timestamp.  The time the killmail. This is automatically adjusted by Discord to your locale.
+- Timestamp.  The time of the killmail. This is automatically adjusted by Discord to your locale.
 
 
 #### `/zkillbot invite` 🌐
