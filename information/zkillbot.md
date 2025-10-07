@@ -24,15 +24,25 @@ All commands are available as Discord slash commands (`/command`).
 
 🔒 command requires Manage Channels permission
 
+#### `/zkillbot about` 🌐
+
+Reports various statistics about zKillBot.
+
 #### `/zkillbot check` 🔒
 
 Verifies the current channel’s permissions to ensure zKillBot can post messages here.  
 This command **must be run successfully before any subscriptions can be added**.
 
 #### `/zkillbot invite` 🌐
+
 Returns the bot’s invite link.
 
+#### `/zkillbot leave` 🌐
+
+Removes all subscriptions on the server and instructs zKillBot to leave the server.
+
 #### `/zkillbot list` 🌐
+
 List all current subscriptions in the channel.
 
 #### `/zkillbot remove_all_subs` 🔒
