@@ -67,7 +67,9 @@ $(document).ready(function() {
     $(document).ajaxComplete(doFormats);
 
     // Anything that has a raw value to it will be able to be copied to the clipboard
-    $("[raw]").click(copyToClipboard);
+	$("[raw]").click(copyToClipboard);
+	
+	$("label[for]").on("click", () => { $(window).focus(); })
 });
 
 function copyToClipboard(e) {

@@ -601,3 +601,11 @@ html,body {
 code {
 	background-color: black !important;
 }
+
+#itemsTable:has(#itemsDestroyed:not(:checked)) .item_row:has(.item_destroyed) {
+	display: none;
+}
+
+#itemsTable:has(#itemsDropped:not(:checked)) .item_row:has(.item_dropped) {
+	display: none;
+}
