@@ -51,7 +51,9 @@ showAdd = showAdder(showAdd, 'character', {{data.id}}, tn);
 {% endfor %}
 $("#tracker-remove-character-{{ characterID }}").remove();
 {% for data in tracker_corporation %}
+{% if data.id > 1999999 %}
 showAdd = showAdder(showAdd, 'corporation', {{data.id}}, tn);
+{% endif %}
 {% endfor %}
 $("#tracker-remove-corporation-{{ corporationID }}").remove();
 {% for data in tracker_alliance %}
