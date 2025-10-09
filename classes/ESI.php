@@ -42,72 +42,68 @@ class ESI {
         foreach ($items as $item) {
             $flag = $item['flag'];
 			switch ($flag) {
-				// --- Valid ESI flags (fall-through, no change) ---
+				// Explicit bays
+				case 5:   $slot = 'Cargo'; break;
+				case 87:  $slot = 'DroneBay'; break;
+				case 158: $slot = 'FighterBay'; break;
 
-				// Cargo / Bays
-				case 5:   // Cargo
-				case 87:  // DroneBay
-				case 158: // FighterBay
+				// High slots (27–34)
+				case 27: $slot = 'HiSlot0'; break;
+				case 28: $slot = 'HiSlot1'; break;
+				case 29: $slot = 'HiSlot2'; break;
+				case 30: $slot = 'HiSlot3'; break;
+				case 31: $slot = 'HiSlot4'; break;
+				case 32: $slot = 'HiSlot5'; break;
+				case 33: $slot = 'HiSlot6'; break;
+				case 34: $slot = 'HiSlot7'; break;
 
-				// High Slots (HiSlot0..HiSlot7)
-				case 27:  // HiSlot0
-				case 28:  // HiSlot1
-				case 29:  // HiSlot2
-				case 30:  // HiSlot3
-				case 31:  // HiSlot4
-				case 32:  // HiSlot5
-				case 33:  // HiSlot6
-				case 34:  // HiSlot7
+				// Low slots (11–18)
+				case 11: $slot = 'LoSlot0'; break;
+				case 12: $slot = 'LoSlot1'; break;
+				case 13: $slot = 'LoSlot2'; break;
+				case 14: $slot = 'LoSlot3'; break;
+				case 15: $slot = 'LoSlot4'; break;
+				case 16: $slot = 'LoSlot5'; break;
+				case 17: $slot = 'LoSlot6'; break;
+				case 18: $slot = 'LoSlot7'; break;
 
-				// Low Slots (LoSlot0..LoSlot7)
-				case 11:  // LoSlot0
-				case 12:  // LoSlot1
-				case 13:  // LoSlot2
-				case 14:  // LoSlot3
-				case 15:  // LoSlot4
-				case 16:  // LoSlot5
-				case 17:  // LoSlot6
-				case 18:  // LoSlot7
+				// Mid slots (19–26)
+				case 19: $slot = 'MedSlot0'; break;
+				case 20: $slot = 'MedSlot1'; break;
+				case 21: $slot = 'MedSlot2'; break;
+				case 22: $slot = 'MedSlot3'; break;
+				case 23: $slot = 'MedSlot4'; break;
+				case 24: $slot = 'MedSlot5'; break;
+				case 25: $slot = 'MedSlot6'; break;
+				case 26: $slot = 'MedSlot7'; break;
 
-				// Mid Slots (MedSlot0..MedSlot7)
-				case 19:  // MedSlot0
-				case 20:  // MedSlot1
-				case 21:  // MedSlot2
-				case 22:  // MedSlot3
-				case 23:  // MedSlot4
-				case 24:  // MedSlot5
-				case 25:  // MedSlot6
-				case 26:  // MedSlot7
+				// Rigs (92–94)
+				case 92: $slot = 'RigSlot0'; break;
+				case 93: $slot = 'RigSlot1'; break;
+				case 94: $slot = 'RigSlot2'; break;
 
-				// Rigs (RigSlot0..RigSlot2)
-				case 92:  // RigSlot0
-				case 93:  // RigSlot1
-				case 94:  // RigSlot2
+				// Structure service slots (164–171)
+				case 164: $slot = 'ServiceSlot0'; break;
+				case 165: $slot = 'ServiceSlot1'; break;
+				case 166: $slot = 'ServiceSlot2'; break;
+				case 167: $slot = 'ServiceSlot3'; break;
+				case 168: $slot = 'ServiceSlot4'; break;
+				case 169: $slot = 'ServiceSlot5'; break;
+				case 170: $slot = 'ServiceSlot6'; break;
+				case 171: $slot = 'ServiceSlot7'; break;
 
-				// Structure Service Slots (ServiceSlot0..ServiceSlot7)
-				case 164: // ServiceSlot0
-				case 165: // ServiceSlot1
-				case 166: // ServiceSlot2
-				case 167: // ServiceSlot3
-				case 168: // ServiceSlot4
-				case 169: // ServiceSlot5
-				case 170: // ServiceSlot6
-				case 171: // ServiceSlot7
+				// Subsystems (125–128)
+				case 125: $slot = 'SubSystemSlot0'; break;
+				case 126: $slot = 'SubSystemSlot1'; break;
+				case 127: $slot = 'SubSystemSlot2'; break;
+				case 128: $slot = 'SubSystemSlot3'; break;
 
-				// Subsystems (SubSystemSlot0..SubSystemSlot3)
-				case 125: // SubSystemSlot0
-				case 126: // SubSystemSlot1
-				case 127: // SubSystemSlot2
-				case 128: // SubSystemSlot3
-					// Valid → no change
-					break;
-
-				// Anything else → force Cargo
 				default:
-					$flag = 5; // Cargo
+					$slot = 'Cargo';
+					$flag = 5; // default flag to Cargo for everything else
 					break;
 			}
-
+			$flag = $slot;  // Can switch between int or string value easily, with this line commented, int value, uncommented, string value
 
             $nextItem = [];
             $nextItem ['flag'] = $flag;
