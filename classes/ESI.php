@@ -41,17 +41,73 @@ class ESI {
         $export['items'] = [];
         foreach ($items as $item) {
             $flag = $item['flag'];
-            if ($flag == 90) continue;
-            if ($flag == 133) continue;
-            if ($flag == 134) continue;
-            if ($flag == 143) continue;
-            if ($flag == 149) continue;
-            if ($flag == 155) continue;
-            if ($flag == 176) continue;
-            if ($flag == 177) continue;
-            if ($flag == 179) continue;
-            if ($flag == 183) continue;
-            if ($flag == 185) continue;
+			switch ($flag) {
+				// --- Valid ESI flags (fall-through, no change) ---
+
+				// Cargo / Bays
+				case 5:   // Cargo
+				case 87:  // DroneBay
+				case 158: // FighterBay
+
+				// High Slots (HiSlot0..HiSlot7)
+				case 27:  // HiSlot0
+				case 28:  // HiSlot1
+				case 29:  // HiSlot2
+				case 30:  // HiSlot3
+				case 31:  // HiSlot4
+				case 32:  // HiSlot5
+				case 33:  // HiSlot6
+				case 34:  // HiSlot7
+
+				// Low Slots (LoSlot0..LoSlot7)
+				case 11:  // LoSlot0
+				case 12:  // LoSlot1
+				case 13:  // LoSlot2
+				case 14:  // LoSlot3
+				case 15:  // LoSlot4
+				case 16:  // LoSlot5
+				case 17:  // LoSlot6
+				case 18:  // LoSlot7
+
+				// Mid Slots (MedSlot0..MedSlot7)
+				case 19:  // MedSlot0
+				case 20:  // MedSlot1
+				case 21:  // MedSlot2
+				case 22:  // MedSlot3
+				case 23:  // MedSlot4
+				case 24:  // MedSlot5
+				case 25:  // MedSlot6
+				case 26:  // MedSlot7
+
+				// Rigs (RigSlot0..RigSlot2)
+				case 92:  // RigSlot0
+				case 93:  // RigSlot1
+				case 94:  // RigSlot2
+
+				// Structure Service Slots (ServiceSlot0..ServiceSlot7)
+				case 164: // ServiceSlot0
+				case 165: // ServiceSlot1
+				case 166: // ServiceSlot2
+				case 167: // ServiceSlot3
+				case 168: // ServiceSlot4
+				case 169: // ServiceSlot5
+				case 170: // ServiceSlot6
+				case 171: // ServiceSlot7
+
+				// Subsystems (SubSystemSlot0..SubSystemSlot3)
+				case 125: // SubSystemSlot0
+				case 126: // SubSystemSlot1
+				case 127: // SubSystemSlot2
+				case 128: // SubSystemSlot3
+					// Valid → no change
+					break;
+
+				// Anything else → force Cargo
+				default:
+					$flag = 5; // Cargo
+					break;
+			}
+
 
             $nextItem = [];
             $nextItem ['flag'] = $flag;
