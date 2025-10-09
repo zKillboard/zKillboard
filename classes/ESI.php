@@ -44,12 +44,14 @@ class ESI {
             if ($flag == 90) continue;
             if ($flag == 133) continue;
             if ($flag == 134) continue;
+            if ($flag == 143) continue;
+            if ($flag == 149) continue;
             if ($flag == 155) continue;
+            if ($flag == 176) continue;
             if ($flag == 177) continue;
             if ($flag == 179) continue;
             if ($flag == 183) continue;
             if ($flag == 185) continue;
-            if ($flag == 149) continue;
 
             $nextItem = [];
             $nextItem ['flag'] = $flag;
