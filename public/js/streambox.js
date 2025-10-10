@@ -32,7 +32,7 @@ async function prepKills(data) {
         content.innerHTML = '';
         const temp = document.getElementById('temp');
 
-        for (let i = 0; i < data.length && i < 5; i++) {
+        for (let i = 0; i < data.length && i < 25; i++) {
             const killID = data[i];
 
             let res = await fetch(`/cache/24hour/killlistrow/${killID}/`);

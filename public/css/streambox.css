@@ -1,19 +1,30 @@
+:root {
+	--max-kills: 5;
+	--vertical: 0;
+	/* 0 for horizontal, 1 for vertical */
+}
+
 body {
-  background-color: 050505;
-  color: white;
-  text-shadow:
-    -1px -1px 0 black,
-     1px -1px 0 black,
-    -1px  1px 0 black,
-     1px  1px 0 black;
+	background-color: 050505;
+	color: white;
+	text-shadow:
+		-1px -1px 0 black,
+		1px -1px 0 black,
+		-1px 1px 0 black,
+		1px 1px 0 black;
 }
 
 .hideme {
-    display: none;
+	display: none;
 }
 
 #content {
-    min-height: 94px;
+	display: flex;
+	flex-wrap: nowrap;
+	max-width: calc(var(--max-kills) * 76px);
+	overflow: hidden;
+	white-space: nowrap;
+	min-height: 92px;
 }
 
 .shipImageSpan {
