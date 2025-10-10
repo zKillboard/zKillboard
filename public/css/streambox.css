@@ -1,7 +1,7 @@
 :root {
-	--max-kills: 5;
-	--vertical: 0;
-	/* 0 for horizontal, 1 for vertical */
+	--max-kills: 5; /* valid values are from 1 to 25 */
+	--vertical: 0; /* 0 for horizontal, 1 for vertical */
+	
 }
 
 body {
@@ -70,9 +70,8 @@ body {
         1px  1px 0 darkred;
 }
 
-
 #promo {
-    margin-top: 0.25em;
-    text-align: center;
-    max-width: 380px;
+	margin-top: 0.25em;
+	text-align: center;
+	max-width: calc(var(--max-kills) * 76px);
 }
