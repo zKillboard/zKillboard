@@ -46,9 +46,11 @@ Allows you to customize what fields are posted.  You can Display/Hide each of th
 - Involved
 - Points
 - Killmail Value
+- System (hidden by default)
+- Constellation (hidden by default)
+- Region (hidden by default)
 - (Footer) The entity that gave the final blow (with their image)
 - Timestamp.  The time of the killmail. This is automatically adjusted by Discord to your locale.
-
 
 #### `/zkillbot invite` 🌐
 
@@ -68,7 +70,19 @@ Remove all subscriptions for the current channel.
 
 #### `/zkillbot subscribe <id | name | isk | label>` 🔒
 
-Subscribes the current channel to killmails for a specific **character, corporation, alliance, location, system, constellation, region, minimum ISK value, or label**.
+Subscribes the current channel to killmails from:
+
+- character
+- corporation
+- alliance
+- location
+- system
+- constellation
+- region
+- ship (typeId)
+- ship's group (the ship's groupId, e.g. Frigate, Titan)
+- isk: Having a minimum ISK value (must be 100m or more)
+- label: Having a specific label (see below for listing of valid labels)
 
 Examples:
 ```
@@ -116,7 +130,8 @@ Example:
 - If a name query matches multiple results, zKillBot will list the IDs so you can subscribe by ID or refine your search with a longer name.
 - A channel may have multiple subscriptions.  
 - Each killmail will only be posted once per channel, even if it matches more than one subscription.
-- Subscriptions are per-channel, meaning different channels can track different entities.  
+- Subscriptions are per-channel, meaning different channels can track different entities.
+- Each channel can have a different display configuration
 - Killmails posted include links back to [zKillboard](https://zkillboard.com/) for full details.
 - ISK values are adjusted to your guildId's locale setting.
 
@@ -125,7 +140,6 @@ Example:
 - Grouping iskValue, entityId, label together (advanced filter?)
 - LOCALE implementation for language (ISK values already implemented)
 - linking entities to their respective pages
-- Subscribe to ship groups (e.g., Frigates, Titans).  
 - Fine-grained filters for precise control over subscriptions.  
 - Subscribe to a system and receive killmails within a chosen jump range or light-year distance.
 
