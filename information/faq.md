@@ -31,7 +31,7 @@ It&#39;s easy! Log in using the dropdown menu in the top right where you can see
 
 CCP has removed all killmail API endpoints from Singularity as some people were found attempting to brute force the ships being tested, and lost, by their rivals for alliance tournaments.
 
-The Chinese server has it's own set of APIs for the dedicated Chinese server. This killboard does not try to mix killmails from different servers that are ran in two very different environments with two different playerbases.
+The Chinese server has its own set of APIs for the dedicated Chinese server. This killboard does not try to mix killmails from different servers that are ran in two very different environments with two different playerbases.
 
 ***
 
@@ -123,4 +123,4 @@ There is a page within your account for that, please visit https://zkillboard.co
 
 Also, CCP provides the following pages to help manage APIs:
 
-* SSO API: https://community.eveonline.com/support/third-party-applications/
+* SSO API: https://developers.eveonline.com/authorized-apps
