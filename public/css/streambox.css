@@ -1,7 +1,8 @@
 :root {
-	--max-kills: 5; /* valid values are from 1 to 25 */
-	--vertical: 0; /* 0 for horizontal, 1 for vertical */
-	
+	--max-kills: 5;
+	/* valid values are from 1 to 25 */
+	--vertical: 0;
+	/* 0 for horizontal, 1 for vertical */
 }
 
 body {
@@ -19,59 +20,70 @@ body {
 }
 
 #content {
-	display: flex;
-	flex-wrap: nowrap;
-	max-width: calc(var(--max-kills) * 76px);
+	position: relative;
+	width: calc((1 - var(--vertical)) * var(--max-kills) * 76px + var(--vertical) * 76px);
+	height: calc(var(--vertical) * var(--max-kills) * 94px + (1 - var(--vertical)) * 94px);
 	overflow: hidden;
-	white-space: nowrap;
-	min-height: 92px;
 }
 
 .shipImageSpan {
-  position: relative;
-  display: inline-block;   /* ensure the box has the set width/height */
-  width: attr(--size);
-  height: attr(--size);
-  margin: 0.5em;
+	position: relative;
+	display: inline-block;
+	/* ensure the box has the set width/height */
+	width: attr(--size);
+	height: attr(--size);
+	margin: 0.5em;
 }
 
 .shipImageIcon {
-    display: none;
+	display: none;
 }
 
 .pip {
-    display: block;
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    transform: scale(calc(var(--sizei) / 64));
-    object-position: 0 0;
-    transform-origin: 0 0;
-    width: 15px;
-    height: 15px;
-    clip-path: polygon(0 0, 0 100%, 100% 0);
-    image-rendering: crisp-edges;   /* fallback */
-    image-rendering: pixelated;     /* preferred nearest-neighbor */
-    background-color: black;
+	display: block;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	transform: scale(calc(var(--sizei) / 64));
+	object-position: 0 0;
+	transform-origin: 0 0;
+	width: 15px;
+	height: 15px;
+	clip-path: polygon(0 0, 0 100%, 100% 0);
+	image-rendering: crisp-edges;
+	/* fallback */
+	image-rendering: pixelated;
+	/* preferred nearest-neighbor */
+	background-color: black;
 }
 
 .pip[src="/img/pips/pip_tech1.png"] {
-    display: none;
+	display: none;
 }
 
 .lost:before {
-    font-family: 'Glyphicons Halflings'; /* or whatever font provides it */
-    content: "×";
-    color: red;
-    text-shadow:
-        -1px -1px 0 darkred,
-        1px -1px 0 darkred,
-        -1px  1px 0 darkred,
-        1px  1px 0 darkred;
+	font-family: 'Glyphicons Halflings';
+	/* or whatever font provides it */
+	content: "×";
+	color: red;
+	text-shadow:
+		-1px -1px 0 darkred,
+		1px -1px 0 darkred,
+		-1px 1px 0 darkred,
+		1px 1px 0 darkred;
 }
 
-#promo {
+#promoLong {
 	margin-top: 0.25em;
 	text-align: center;
-	max-width: calc(var(--max-kills) * 76px);
+	width: calc((1 - var(--vertical)) * var(--max-kills) * 76px + var(--vertical) * 76px);
+	opacity: calc(1 - 1 * var(--vertical));
+}
+
+#promoShort {
+	margin: 0px;
+	padding: 0px;
+	text-align: center;
+	width: calc((1 - var(--vertical)) * var(--max-kills) * 76px + var(--vertical) * 76px);
+	opacity: calc(1 * var(--vertical));
 }

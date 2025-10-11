@@ -74,7 +74,8 @@ async function prepKills(data) {
         temp.innerHTML = '';
         clearTimeout(current_timeout);
         current_timeout = setTimeout(fetchKills, 60000);
-        document.getElementById('promo').classList.remove('hideme');
+		document.getElementById('promoLong').classList.remove('hideme');
+		document.getElementById('promoShort').classList.remove('hideme');
     }
 }
 
