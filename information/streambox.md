@@ -32,6 +32,45 @@ Want only solo kills? Just navigate to your solo page and tack on `/streambox/`:
 
 StreamBox was originally requested by streamer **Brother Grimoire**, a well-known pirate enthusiast. Frustrated by other streamer tools breaking or losing support, he wanted something reliable, simple, and built directly into zKillboard. That’s exactly what StreamBox delivers.
 
+Adjusting Kill Display Count or Layout
+======================================
+
+You can easily control how many kills are displayed and whether they appear in a horizontal or vertical layout by adding a small CSS block to your Custom CSS section in OBS (or whatever tool you’re using to render the browser source).
+
+Step 1: Add these CSS variables
+-------------------------------
+```
+:root {
+	--max-kills: 5;   /* Number of kills to display (1–25 recommended) */
+	--vertical: 0;    /* 0 = horizontal layout, 1 = vertical layout */
+}
+```
+
+Step 2: Customize the values
+----------------------------
+- Horizontal layout (default)
+  Recommended browser source size: 400 px wide × 125 px tall
+
+- Vertical layout
+  Recommended browser source size: 76 px wide × 470 px tall
+
+Step 3: Adjust for custom layouts
+---------------------------------
+If you want a different number of kills, adjust your browser source size using these guides:
+- Add or remove 76 px from the width for each additional kill in horizontal mode
+- Add or remove 94 px from the height for each additional kill in vertical mode
+
+Step 4: Testing in OBS
+----------------------
+1. After changing the CSS, right-click your Browser Source → Properties → Refresh cache of current page to reload it.  
+2. If the layout doesn’t update immediately, toggle the visibility eye off and on again in the Sources list.  
+3. Double-check your Browser Source width and height match the recommendations above.  
+4. If fonts or styling look wrong, verify the Custom CSS was applied correctly — OBS sometimes caches older versions.
+
+Once refreshed, your layout should update instantly to reflect your chosen number of kills and orientation.
+
+
+
 ## FAQ
 
 - **What does it show?**  
@@ -48,8 +87,7 @@ StreamBox was originally requested by streamer **Brother Grimoire**, a well-know
   No! StreamBox is completely public and free for anyone to use.
 - **Can I configure it?**  
   Configuration options are planned, but the goal is to keep StreamBox as simple and hassle-free as possible.
-- **What dimensions should I use for OBS?**
-  A size of around **400px wide by 125px tall** works well for most overlays.
+
 
 ---
 
