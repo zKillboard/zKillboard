@@ -1,32 +1,50 @@
 <?php
 
+$mt = 4; $pids = []; do { $mt--; if (($pid = pcntl_fork()) > 0) $pids[] = $pid; } while ($pid > 0 && $mt > 0); if ($pid > 0) { foreach ($pids as $c) pcntl_waitpid($c, $s); exit(); } $pid = $mt;
+
 use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
 if ($redis->get("tobefetched") > 1000) exit();
 if ($redis->get("zkb:reinforced") == true) exit();
-//if ($redis->scard("queueStatsSet") > 1000) exit();
+if ($redis->scard("queueStatsSet") > 1000) exit();
 
 MongoCursor::$timeout = -1;
 
 $minute = date("Hi");
 
 do {
-    $rows = $mdb->find("statistics", ['calcAlltime' => true, 'reset' => ['$ne' => true]], ['shipsDestroyed' => 1], 100);
+    $rows = $mdb->find("statistics", ['calcAlltime' => true, 'reset' => ['$ne' => true]], ['shipsDestroyed' => 1], 1000);
 
     if (sizeof($rows) == 0) exit();
     foreach ($rows as $row) {
         if ($minute != date("Hi")) break;
-        if ($row['type'] == "label" || @$row['reset'] === true) continue;
+        if ($row['type'] == "label" || $row['id'] == 0) {
+            $mdb->set("statistics", $row, ['calcAlltime' => false]);
+            continue;
+        }
 
+        $highCountKey = "zkb:calcAlltime:highcount";
+        $highCountKeySet = false;
         $key = "zkb:calcAlltime:" . $row['type'] . ":" . $row['id'];
         $i = $row['type'] . " " . $row['id'] . " : " . $row['shipsDestroyed'];
         try {
-            if ($redis->set($key, "true", ['nx', 'ex' => 80000]) !== true) continue;
+            if ($row['shipsDestroyed'] >= 100000 && $mt != 0) continue;
+            if ($row["shipsDestroyed"] >= 100000 && $mt == 0) {
+                if ($redis->set($highCountKey, "true", ['nx', 'ex' => 80000]) !== true) continue;
+                $highCountKeySet = true;
+            }
+
+            if ($redis->set($key, "true", ['nx', 'ex' => 80000]) !== true) {
+                continue;
+            }
+            //Util::out("calcTop $mt $i");
+
             calcTop($row, $i);
         } finally {
-            $redis->del($key);
+            if ($row["shipsDestroyed"] >= 100000 && $mt == 0 && $highCountKeySet) $redis->del($highCountKey);
+            $redis->expire($key, 60); // helps prevent "race" condition 
         }
     }
     sleep(1);
