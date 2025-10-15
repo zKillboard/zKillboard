@@ -111,6 +111,7 @@ class ESI {
             $nextItem['type_id'] = $item['item_type_id'];
 
             $export['items'][] = $nextItem;
+            if (sizeof($export['items']) >= 255) break;
         }
         if (sizeof($export['items']) == 0) {
             return ['message' => 'Cannot save this fit, no hardware.'];

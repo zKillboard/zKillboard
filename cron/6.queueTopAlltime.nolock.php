@@ -1,7 +1,5 @@
 <?php
 
-$mt = 4; $pids = []; do { $mt--; if (($pid = pcntl_fork()) > 0) $pids[] = $pid; } while ($pid > 0 && $mt > 0); if ($pid > 0) { foreach ($pids as $c) pcntl_waitpid($c, $s); exit(); } $pid = $mt;
-
 use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
@@ -13,6 +11,7 @@ if ($redis->scard("queueStatsSet") > 1000) exit();
 MongoCursor::$timeout = -1;
 
 $minute = date("Hi");
+$modulus = date("i") % 4;
 
 do {
     $rows = $mdb->find("statistics", ['calcAlltime' => true, 'reset' => ['$ne' => true]], ['shipsDestroyed' => 1], 1000);
@@ -25,26 +24,21 @@ do {
             continue;
         }
 
-        $highCountKey = "zkb:calcAlltime:highcount";
+        $highCountKey = "zkb:calcAlltime:highcount:$modulus";
         $highCountKeySet = false;
         $key = "zkb:calcAlltime:" . $row['type'] . ":" . $row['id'];
         $i = $row['type'] . " " . $row['id'] . " : " . $row['shipsDestroyed'];
         try {
-            if ($row['shipsDestroyed'] >= 100000 && $mt != 0) continue;
-            if ($row["shipsDestroyed"] >= 100000 && $mt == 0) {
+            if ($row["shipsDestroyed"] >= 100000) {
                 if ($redis->set($highCountKey, "true", ['nx', 'ex' => 80000]) !== true) continue;
                 $highCountKeySet = true;
             }
 
-            if ($redis->set($key, "true", ['nx', 'ex' => 80000]) !== true) {
-                continue;
-            }
-            //Util::out("calcTop $mt $i");
+            Util::out("calcTop $i");
 
             calcTop($row, $i);
         } finally {
-            if ($row["shipsDestroyed"] >= 100000 && $mt == 0 && $highCountKeySet) $redis->del($highCountKey);
-            $redis->expire($key, 60); // helps prevent "race" condition 
+            if ($row["shipsDestroyed"] >= 100000 && $highCountKeySet) $redis->del($highCountKey);
         }
     }
     sleep(1);
@@ -58,6 +52,7 @@ function calcTop($row, $i)
         $mdb->removeField('statistics', $row, 'calcAlltime');
         return;
     }
+    $mdb->set("statistics", $row, ['calcAlltime' => $mdb->now()]);
 
     $dqed = $mdb->findField('information', 'disqualified', ['type' => $row['type'], 'id' => $row['id']]);
     if ($dqed) {
@@ -85,7 +80,7 @@ function calcTop($row, $i)
     $p['limit'] = 6;
     $topKills = array_keys(Stats::getTopIsk($p));
 
-    $inc = min(1001, ceil($currentSum * 0.01));
+    $inc = min(11111, ceil($currentSum * 0.01));
     $nextTopRecalc = $currentSum + $inc;
 
     $mdb->set('statistics', ['_id' => $row['_id']], ['topAllTime' => $topLists, 'topIskKills' => $topKills, 'allTimeSum' => $currentSum, 'nextTopRecalc' => $nextTopRecalc, 'calcAlltime' => false]);
