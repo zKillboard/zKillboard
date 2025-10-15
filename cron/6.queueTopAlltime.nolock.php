@@ -10,11 +10,16 @@ if ($redis->scard("queueStatsSet") > 1000) exit();
 
 MongoCursor::$timeout = -1;
 
+// sets the maximum of number of large queries executing simultenously
 $minute = date("Hi");
 $modulus = date("i") % 4;
 
+// switch between larger and smaller sets every other minute
+$order = date("i") % 2;
+if ($order < 1) $order = -1;
+
 do {
-    $rows = $mdb->find("statistics", ['calcAlltime' => true, 'reset' => ['$ne' => true]], ['shipsDestroyed' => 1], 1000);
+    $rows = $mdb->find("statistics", ['calcAlltime' => true, 'reset' => ['$ne' => true]], ['shipsDestroyed' => $order], 1000);
 
     if (sizeof($rows) == 0) exit();
     foreach ($rows as $row) {
@@ -34,7 +39,7 @@ do {
                 $highCountKeySet = true;
             }
 
-            Util::out("calcTop $i");
+            //Util::out("calcTop $i");
 
             calcTop($row, $i);
         } finally {
