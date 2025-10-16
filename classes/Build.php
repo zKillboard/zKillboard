@@ -69,7 +69,7 @@ class Build
     {
         $rKey = "redis:build_qty:check" . date('Ymd');
         if ($redis->get($rKey) != "true") {
-            Util::out("Fetching https://sde.zzeve.com/industryActivityProducts.json");
+            Util::zout("Fetching https://sde.zzeve.com/industryActivityProducts.json");
             $raw = file_get_contents("https://sde.zzeve.com/industryActivityProducts.json");
             $json = json_decode($raw, true);
             $raw = null;
