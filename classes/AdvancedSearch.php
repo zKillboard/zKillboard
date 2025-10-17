@@ -39,7 +39,8 @@ class AdvancedSearch
             "isk:1b+" => "1b+", 
             "isk:5b+" => "5b+", 
             "isk:10b+" => "10b+", 
-            "isk:100b+" => "100b+"
+            "isk:100b+" => "100b+",
+            "isk:1t+" => "1t+"
         ],
         'custom' => [
             'cat:22' => "Anchored", 
