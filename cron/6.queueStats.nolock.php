@@ -252,7 +252,7 @@ function calcStats($row, $maxSequence)
     $stats['soloRatio'] = $soloRatio;
 
 
-    if (@$stats['shipsDestroyed'] > 10 && @$stats['shipsDestroyed'] > @$stats['nextTopRecalc']) $stats['calcAlltime'] = true;
+    if (@$stats['type'] != 'label' && @$stats['shipsDestroyed'] > 10 && @$stats['shipsDestroyed'] > @$stats['nextTopRecalc']) $stats['calcAlltime'] = true;
     // save it
     $mdb->getCollection('statistics')->save($stats);
 
