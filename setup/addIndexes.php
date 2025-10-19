@@ -1,7 +1,7 @@
 <?php
 require_once "../init.php";
-$m = new MongoClient();
-$db = $m->selectDB("zkillboard");
+
+$db = $mdb->getDb();
 
 // activity
 echo "\nCreating collection activity ... ";
