@@ -34,7 +34,7 @@ function loadTops() {
     let ksa = overviewStats.ksa;
     let kea = overviewStats.kea;
 
-    $("#topset-isk").load("/cache/bypass/statstopisk?u=" + window.location.pathname + "&ks=" + ksa + "&ke=" + kea);
+    $("#topset-isk").load("/cache/bypass/statstopisk/?u=" + window.location.pathname + "&ks=" + ksa + "&ke=" + kea);
     validTopTypes.forEach((t) => $("#topset-" + t).load("/cache/bypass/statstop10/?u=" + window.location.pathname + "&t=" + t + "&ks=" + ksa + "&ke=" + kea));
 
     topsLoaded = true;
