@@ -1,5 +1,5 @@
 {% set actualSize = (resizeImage is defined) ? resizeImage : imageSize %}
 <a href="/system/{{ field.solarSystemID }}/" rel='tooltip' title='{{ field.solarSystemName }}'>
 	<!--<img class="eveimage img-rounded" src="{{ image_item }}{{ field.sunTypeID}}/render" style='height: {{actualSize}}px; width: {{actualSize}}px;' alt="{{ field.solarSystemName }}">-->
-	<img class="eveimage img-rounded" src="/img/nohus/systems/{{ field.solarSystemID }}.png" style='height: {{actualSize}}px; width: {{actualSize}}px;' alt="{{ field.solarSystemName }}">
+	<img class="eveimage img-rounded" src="/img/nohus/systems/{{ field.solarSystemID }}.png" style='height: {{actualSize}}px; width: {{actualSize}}px;' alt="{{ field.solarSystemName }}" onError="this.removeAttribute('onerror'); this.src='{{ image_item }}{{ field.sunTypeID}}/render';">
 </a>
