@@ -12,8 +12,7 @@ try {
     if ("$id" != "$oID") throw new Exception("$oID is not a valid parameter");
     if ("$bid" != "$id") throw new Exception("$bid is not a valid parameter");
 
-    if ($type == 'shipTypeID') $type = 'typeID';
-    $information = $mdb->findDoc('information', ['type' => $type, 'id' => (int) $id]);
+    $information = $mdb->findDoc('information', ['type' => ($type == 'shipTypeID' ? 'typeID' : $type), 'id' => (int) $id]);
     if ($information === null) throw new Exception("Invalid type or id");
     $disqualified = ((int) @$information['disqualified']);
     if ($disqualified != 0) {
