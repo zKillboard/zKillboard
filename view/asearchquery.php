@@ -40,7 +40,7 @@ try {
 		'constellation',
 	]; // war_id is currently excluded
 
-	$validSortBy = ['date' => 'killID', 'isk' => 'zkb.totalValue', 'involved' => 'attackerCount', 'damage' => 'damage_taken'];
+	$validSortBy = ['date' => 'killID', 'isk' => 'zkb.totalValue', 'involved' => 'attackerCount', 'damage' => 'damage_taken', 'points' => 'zkb.points'];
 	$validSortDir = ['asc' => 1, 'desc' => -1];
 
 	$_POST = $_GET;
