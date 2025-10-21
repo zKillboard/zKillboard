@@ -17,10 +17,11 @@ $epoch = $epoch - ($epoch % 900);
 
 $p = Util::convertUriToParameters($uri);
 $q = MongoFilter::buildQuery($p);
-$ksa = $epoch;
-$kea = $epoch + 900;
+$q['cacheTime'] = 60;
+$ksa = (int) $mdb->findField('oneWeek', 'sequence', $q, ['sequence' => 1]);
+$kea = (int) $mdb->findField('oneWeek', 'sequence', $q, ['sequence' => -1]);
 
-if ($bypass || "$ks" != "$ksa" || "$ke" != "$kea") return $app->redirect("/cache/1hour/statstop10/?u=$uri&t=$topType&ks=$ksa&ke=$kea");
+if ($bypass || "$ks" != "$ksa" || "$ke" != "$kea") return $app->redirect("/cache/24hour/statstop10/?u=$uri&t=$topType&ks=$ksa&ke=$kea");
 
 $disqualified = 0;
 if ($topType == 'characterID' || $topType == 'corportionID' || $topType == 'allianceID') {
