@@ -428,9 +428,20 @@ function applyCountQueryResult(data, textStatus, jqXHR) {
 		$("#result-groups-count").html("Timespan > 31 Days");
 		return;
 	}
-	var count = data.kills;
-	var isk = data.isk;
-	if (count != "") $("#result-groups-count").html("Killmails: " + count + "<br/>ISK: " + isk);
+	if (data.kills == 0) $("#result-groups-count").html('')
+	// get the integer percentages for each of these
+	let pctDropped = data.isk > 0 ? Math.round((data.dropped / data.isk) * 100) : 0;
+	let pctDestroyed = data.isk > 0 ? Math.round((data.destroyed / data.isk) * 100) : 0;
+	let pctFitted = data.isk > 0 ? Math.round((data.fitted / data.isk) * 100) : 0;
+
+	let count = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><span>Killmails</span><span class="small"></span></div><div style="display:flex; justify-content:space-between; align-items:flex-end;"><span></span><span raw="${data.kills}" format="format-int-once"></span></div>`;
+	let isk = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><span>Total</span><span class="small"></span></div><div style="display:flex; justify-content:space-between; align-items:flex-end;"><span></span><span raw="${data.isk}" format="format-isk-once"></span></div>`;
+	let fitted = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><span>Fitted</span><span class="small" raw="${pctFitted}" format="format-pct-once"></span></div><div style="display:flex; justify-content:space-between; align-items:flex-end;"><span></span><span raw="${data.fitted}" format="format-isk"></span></div>`;
+	let dropped = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><span>Dropped</span><span class="small" raw="${pctDropped}" format="format-pct-once"></span></div><div style="display:flex; justify-content:space-between; align-items:flex-end;"><span></span><span class="green" raw="${data.dropped}" format="format-isk-once"></span></div>`;
+	let destroyed = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><span>Destroyed</span><span class="small" raw="${pctDestroyed}" format="format-pct-once"></span></div><div style="display:flex; justify-content:space-between; align-items:flex-end;"><span></span><span class="red" raw="${data.destroyed}" format="format-isk-once"></span></div>`;
+
+	let html = [count, isk, fitted, dropped, destroyed].join('<span style="display:block; height:0.5em;"></span>');
+	$("#result-groups-count").html(html);
 }
 
 function applyGroupQueryResult(data, textStatus, jqXHR) {

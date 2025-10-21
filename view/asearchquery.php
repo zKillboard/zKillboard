@@ -158,9 +158,6 @@ try {
 			if (sizeof($result) >= 50) break;
 		}
 		$arr = getSums($groupType . 'ID', $query, $victimsOnly);
-
-		if (isset($arr['isk'])) $arr['isk'] = Util::formatIsk($arr['isk']);
-		if (isset($arr['kills'])) $arr['kills'] = number_format($arr['kills'], 0);
 		unset($arr['_id']);
 	} else if ($queryType == "groups") {
 		$app->contentType('text/html; charset=utf-8');
@@ -422,7 +419,15 @@ function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $
 		$pipeline = [];
 		$pipeline[] = ['$match' => $query];
 		if ($victimsOnly !== "null") $pipeline[] = ['$match' => ['involved.isVictim' => ($victimsOnly == "true" ? true : false)]];
-		$pipeline[] = ['$group' => ['_id' => 0, 'isk' => ['$sum' => '$zkb.totalValue'], 'kills' => ['$sum' => 1]]];
+		$pipeline[] = ['$group' => [
+			'_id' => 0, 
+			'isk' => ['$sum' => '$zkb.totalValue'], 
+			'fitted' => ['$sum' => '$zkb.fittedValue'], 
+			'dropped' => ['$sum' => '$zkb.droppedValue'], 
+			'destroyed' => ['$sum' => '$zkb.destroyedValue'], 
+			'kills' => ['$sum' => 1]
+			]
+		];
 
 		$rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'maxTimeMS' => 25000]);
 		$result = $rr['result'][0];
