@@ -93,8 +93,8 @@ function toggleRollingTime(event, enabled) {
 function rollTime() {
 	var roll = ($('#rolling-times').hasClass('btn-primary'));
 	if (roll == false) return;
-	var currentStartTime = $('#dtstart').val();
-	var currentEndTime = $('#dtend').val();
+	var currentStartTime = toUTCISOString($('#dtstart').val());
+	var currentEndTime = toUTCISOString($('#dtend').val());
 	adjustTime(null, $(".tfilter.btn-primary").first());
 
 	if ((currentStartTime != $('#dtstart').val()) || (currentEndTime != $('#dtend').val())) clickPage1();
@@ -148,10 +148,24 @@ function adjustTime(event, triggerButton) {
 	//if (isDisabled == false) $("#dtstart").focus();
 }
 
+function toUTCISOString(datetimeValue) {
+	if (datetimeValue == null || datetimeValue.length == 0) return '';
+	// Example input: "2025-10-23T10:30"
+	const [datePart, timePart] = datetimeValue.split('T');
+	const [year, month, day] = datePart.split('-').map(Number);
+	const [hour = 0, minute = 0] = timePart.split(':').map(Number);
+
+	// Construct UTC date explicitly
+	const utcDate = new Date(Date.UTC(year, month - 1, day, hour, minute));
+	return utcDate.toISOString(); // "2025-10-23T10:30:00.000Z"
+}
+
+
 function getFormattedTime(unixtime) {
 	if (unixtime == null) return '';
 	var date = new Date(unixtime * 1000);
-	return date.getUTCFullYear() + '/' + zeroPad(date.getUTCMonth() + 1) + '/' + zeroPad(date.getUTCDate()) + ' ' + zeroPad(date.getUTCHours()) + ':' + zeroPad(date.getUTCMinutes());
+	// convert the unixtime to datetime-local format
+	return date.getUTCFullYear() + '-' + zeroPad(date.getUTCMonth() + 1) + '-' + zeroPad(date.getUTCDate()) + 'T' + zeroPad(date.getUTCHours()) + ':' + zeroPad(date.getUTCMinutes());
 }
 
 function zeroPad(text) {
