@@ -145,7 +145,7 @@ function adjustTime(event, triggerButton) {
 	$('#dtstart').prop('disabled', isDisabled).val(getFormattedTime(startTime));
 	$('#dtend').prop('disabled', isDisabled).val(getFormattedTime(endTime));
 	toggleRollingTime(null, isRolling);
-	if (isDisabled == false) $("#dtstart").focus();
+	//if (isDisabled == false) $("#dtstart").focus();
 }
 
 function getFormattedTime(unixtime) {
