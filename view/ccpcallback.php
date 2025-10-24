@@ -109,8 +109,10 @@ try {
         }
     }
 
+	$text = "Logged in: $charName ($charID) (Delay: $delay)";
     if ($scopeCount == 0) Util::zout("Logged in: $charName ($charID) omitted scopes.", $charID, true);
-    else Util::zout("Logged in: $charName ($charID) (Delay: $delay)", $charID, true);
+    else Util::zout($text, $charID, true);
+	ZLog::add($text, $charID, true);
     unset($_SESSION['oauth2State']);
 
     $key = "login:$charID:" . session_id();
