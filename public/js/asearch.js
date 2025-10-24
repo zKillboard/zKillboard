@@ -44,8 +44,8 @@ function loadasearch() {
 	$("#rolling-times").on('click', toggleRollingTime);
 	$("#togglefilters").on('click', toggleFiltersClick);
 
-	$("#dtstart").on('focus', datepick);
-	$("#dtend").on('focus', datepick);
+	$("#dtstart").on('input', clickPage1);
+	$("#dtend").on('input', clickPage1);
 
 	$("#includeAssociates").on('change', doQuery.bind(null, 'groups'));
 
