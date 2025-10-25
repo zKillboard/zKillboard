@@ -102,19 +102,20 @@ foreach ($members as $m) {
         $userId = (int) $m['relationships']['user']['data']['id'];
     }
     
+//if ($userId == 4656951) print_r($m);
     $row = $mdb->findDoc("patreon", ['patreon_id' => $userId]);
     if ($row) {
         if ($amount <= 0) continue;
         $active++;
         $total += (float) $amount;
         $charName = Info::getInfoField("characterID", $row['character_id'], "name");
-        $dt = new DateTime($m['attributes']['last_charge_date']);
-        // Add 33 days to allow for buffer
-        $dt->modify('+33 days');
+        $dt = new DateTime();
+        // Add 14 days to allow for buffer
+        $dt->modify('+14 days');
         $mongoDate = new UTCDateTime($dt->getTimestamp() * 1000);
         $mdb->set("patreon", $row, ['expires' => $mongoDate]);
         $humanDate = $mongoDate->toDateTime()->format(DateTime::ATOM);
-        //echo " - {$charName} :: pledged=\${$amount} thru $humanDate\n";
+        echo " - {$charName} :: pledged=\${$amount} thru $humanDate\n";
     }
 }
 Util::out("Patreon subs refreshed: $active subs at \$$total");
