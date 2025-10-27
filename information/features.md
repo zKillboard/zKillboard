@@ -475,7 +475,6 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 - **CSV Export**: Export search results and data to CSV format
 - **Excel Export**: Spreadsheet-compatible data exports
 - **Sitemap**: Complete sitemap for search engine optimization
-- **XML Feeds**: XML data feeds for external consumption
 
 ### Health & Monitoring
 - **System Status**: System health monitoring
