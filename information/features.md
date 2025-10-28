@@ -271,40 +271,6 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 
 ---
 
-## 🤖 Discord Integration & zKillBot
-
-### zKillBot - Full-Featured Discord Bot
-- **Killmail Streaming**: Automatic killmail notifications via Discord bot
-- **Subscription System**: Subscribe to specific entities, ISK values, or labels
-- **Channel Configuration**: Per-channel subscription and display management
-- **Slash Commands**: Complete Discord slash command interface (/zkillbot)
-- **Permission Management**: Proper Discord permission integration (Manage Channels required)
-
-### Bot Capabilities
-- **Entity Subscriptions**: Characters, corporations, alliances, locations, ships, ship groups
-- **Value Thresholds**: Minimum ISK value filtering (100M+ ISK)
-- **Label Subscriptions**: Extensive label system including:
-  - Gang size labels (#:1, #:2+, #:5+, #:10+, #:25+, #:50+, #:100+, #:1000+)
-  - ISK value labels (isk:1b+, isk:5b+, isk:10b+, isk:100b+, isk:1t+)
-  - Location labels (loc:highsec, loc:lowsec, loc:nullsec, loc:w-space, loc:abyssal)
-  - Special labels (solo, awox, ganked, capital, npc, pvp, padding)
-  - Timezone labels (tz:au, tz:eu, tz:ru, tz:use, tz:usw)
-- **Display Customization**: Configure which fields are shown in Discord posts
-- **Multi-server Support**: Works across multiple Discord servers with per-channel config
-
-### Bot Commands
-- `/zkillbot about` - Bot statistics
-- `/zkillbot check` - Verify channel permissions
-- `/zkillbot config-channel` - Customize display fields
-- `/zkillbot invite` - Get bot invite link
-- `/zkillbot leave` - Remove bot from server
-- `/zkillbot list` - List channel subscriptions
-- `/zkillbot remove_all_subs` - Remove all subscriptions
-- `/zkillbot subscribe` - Add new subscriptions
-- `/zkillbot unsubscribe` - Remove subscriptions
-
----
-
 ## 🎥 Streaming & Content Creation
 
 ### StreamBox Tool
@@ -488,7 +454,6 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 
 ### Community Resources
 - **Discord Community**: Active Discord server for support and discussion
-- **zKillBot Support**: Dedicated Discord channel for bot support
 - **Community Guidelines**: Clear community standards and moderation
 - **User Support**: Help and support for users
 

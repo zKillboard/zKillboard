@@ -22,7 +22,6 @@ if ($page == 'payments') {
 $output = str_replace("href=\"#", "class='hrefit' name=\"", $output);
 
 $titles = [
-	"zkillbot" => "zKillBot",
 	"faq" => "FAQ"
 ];
 
