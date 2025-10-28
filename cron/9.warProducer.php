@@ -17,7 +17,7 @@ if ($redis->get($key) == true) {
 $page = 1;
 
 $guzzler = new Guzzler();
-$guzzler->call("$esiServer/v1/wars/", "success", "fail");
+$guzzler->call("$esiServer/wars/", "success", "fail");
 $guzzler->finish();
 
 $redis->setex($key, 3600, true);
@@ -37,7 +37,7 @@ function success(&$guzzler, &$params, $content)
         $maxWarID = min($maxWarID, $warID);
     }
     if ($warsAdded && sizeof($wars) > 0) {
-        $guzzler->call("$esiServer/v1/wars/?max_war_id=$maxWarID", "success", "fail", $params);
+        $guzzler->call("$esiServer/wars/?max_war_id=$maxWarID", "success", "fail", $params);
     }
     $guzzler->sleep(1);
 }

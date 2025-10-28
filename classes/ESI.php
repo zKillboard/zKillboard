@@ -118,7 +118,7 @@ class ESI {
         }
 
         $sso = ZKillSSO::getSSO();
-        $result = $sso->doCall($esiServer . "/v1/characters/$charID/fittings/", $export, $accessToken, 'POST_JSON');
+        $result = $sso->doCall($esiServer . "/characters/$charID/fittings/", $export, $accessToken, 'POST_JSON');
         if ($result != "") {
             $json = json_decode($result, true);
             Util::zout("$charID successfully saved fit $killID");

@@ -29,7 +29,7 @@ if (sizeof($mails)) {
         ZLog::add("Sending evemail to $name", $charID); 
 
         $mail['approved_cost'] = 1000000;
-        $url = "$esiServer/v1/characters/$evemailCharID/mail/";
+        $url = "$esiServer/characters/$evemailCharID/mail/";
         $response = $sso->doCall($url, $mail, $accessToken, 'POST_JSON');
         $json = json_decode($response, true);
 

@@ -12,7 +12,7 @@ if ($redis->get("zkb:insuranceFetched:$date") == true) {
 if ($redis->get("zkb:420prone") == "true") exit();
 
 $guzzler = new Guzzler();
-$guzzler->call("$esiServer/v1/insurance/prices/", "success", "fail", ['date' => $date]);
+$guzzler->call("$esiServer/insurance/prices/", "success", "fail", ['date' => $date]);
 $guzzler->finish();
 
 $redis->setex("zkb:insuranceFetched:$date", 86400, true);

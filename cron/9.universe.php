@@ -23,8 +23,8 @@ $kvc->del("zkb:universeLoaded");
 $kvc->del("zkb:tqServerVersion");
 $guzzler = new Guzzler(25, 10);
 
-if ($pid == 0) $guzzler->call("$esiServer/v1/universe/regions/", "regionsSuccess", "fail");
-else $guzzler->call("$esiServer/v1/universe/categories/", "categoriesSuccess", "fail");
+if ($pid == 0) $guzzler->call("$esiServer/universe/regions/", "regionsSuccess", "fail");
+else $guzzler->call("$esiServer/universe/categories/", "categoriesSuccess", "fail");
 $guzzler->finish();
 
 if ($pid != 0) pcntl_wait($pid);
@@ -47,7 +47,7 @@ function categoriesSuccess($guzzler, $params, $content)
     $cats = json_decode($content, true);
 
     foreach ($cats as $cat) {
-        $guzzler->call("$esiServer/v1/universe/categories/$cat/", "categorySuccess", "fail");
+        $guzzler->call("$esiServer/universe/categories/$cat/", "categorySuccess", "fail");
     }
 }
 
@@ -64,7 +64,7 @@ function categorySuccess($guzzler, $params, $content)
     $mdb->insertUpdate("information", ['type' => 'categoryID', 'id' => $id], $cat);
 
     foreach ($groups as $group) {
-        $guzzler->call("$esiServer/v1/universe/groups/$group/", "groupSuccess", "fail", ['categoryID' => $id]);
+        $guzzler->call("$esiServer/universe/groups/$group/", "groupSuccess", "fail", ['categoryID' => $id]);
     }
 }
 
@@ -82,7 +82,7 @@ function groupSuccess($guzzler, $params, $content)
     $mdb->insertUpdate("information", ['type' => 'groupID', 'id' => $id], $update);
 
     foreach ($group['types'] as $type) {
-        $guzzler->call("$esiServer/v3/universe/types/$type/", "typeSuccess", "fail", ['categoryID' => $group['category_id']]);
+        $guzzler->call("$esiServer/universe/types/$type/", "typeSuccess", "fail", ['categoryID' => $group['category_id']]);
     }
 }
 
@@ -109,7 +109,7 @@ function regionsSuccess($guzzler, $params, $content)
     $regions = json_decode($content, true);
 
     foreach ($regions as $regionID) {
-        $guzzler->call("$esiServer/v1/universe/regions/$regionID/", "regionSuccess", "fail");
+        $guzzler->call("$esiServer/universe/regions/$regionID/", "regionSuccess", "fail");
     }
 }
 
@@ -127,7 +127,7 @@ function regionSuccess($guzzler, $params, $content)
     $mdb->insertUpdate("geography", ['type' => 'regionID', 'id' => $regionID, 'serverVersion' => $serverVersion], $region);
 
     foreach ($constellations as $constellation) {
-        $guzzler->call("$esiServer/v1/universe/constellations/$constellation/", "constellationSuccess", "fail");
+        $guzzler->call("$esiServer/universe/constellations/$constellation/", "constellationSuccess", "fail");
     }
 }
 
@@ -148,7 +148,7 @@ function constellationSuccess($guzzler, $params, $content)
     $mdb->insertUpdate("geography", ['type' => 'constellationID', 'id' => $constID, 'serverVersion' => $serverVersion], $update);
 
     foreach ($systems as $system) {
-        $guzzler->call("$esiServer/v4/universe/systems/$system/", "systemSuccess", "fail", ['regionID' => $regionID, 'constellationID' => $constID]);
+        $guzzler->call("$esiServer/universe/systems/$system/", "systemSuccess", "fail", ['regionID' => $regionID, 'constellationID' => $constID]);
     }
 }
 

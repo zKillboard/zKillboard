@@ -23,7 +23,7 @@ while ($minute == date('Hi')) {
     while ($currentSecond == date('His')) usleep(50);
     $currentSecond = date('His');
 
-    $guzzler->call("$esiServer/v4/alliances/$id/", "success", "fail", ['id' => $id]);
+    $guzzler->call("$esiServer/alliances/$id/", "success", "fail", ['id' => $id]);
     $guzzler->finish();
 }
 $guzzler->finish();

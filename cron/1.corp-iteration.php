@@ -64,7 +64,7 @@ while ($minute == date('Hi')) {
     $page = 0;
     do {
         $page++;
-        $uri = "$esiServer/v1/corporations/$corpID/killmails/recent/?page=$page";
+        $uri = "$esiServer/corporations/$corpID/killmails/recent/?page=$page";
         $killmails = $sso->doCall($uri, [], $accessToken);
         $count = success(['row' => $row], $killmails, $uri);
         sleep(2);

@@ -33,7 +33,7 @@ while ($minute == date('Hi')) {
     if ($id == null) break;
     $warRow = $mdb->findDoc('information', ['type' => 'warID', 'id' => $id]);
     $params = ['warRow' => $warRow, 'redis' => $redis];
-    $url = "$esiServer/v1/wars/$id/";
+    $url = "$esiServer/wars/$id/";
     $guzzler->call($url, "success", "fail", $params, [], 'GET');
     $guzzler->sleep(1);
 }
@@ -76,7 +76,7 @@ function success(&$guzzler, &$params, &$content)
 
     // Don't fetch killmail api for wars with no kill count change
     if ($prevKills != $currKills) {
-        $baseKmHref = "$esiServer/v1/wars/$id/killmails/";
+        $baseKmHref = "$esiServer/wars/$id/killmails/";
         $page = floor($mdb->count('warmails', ['warID' => $id]) / 2000);
         if ($page == 0) $page = 1;
         $params['baseKmHref'] = $baseKmHref;

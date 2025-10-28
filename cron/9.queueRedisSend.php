@@ -41,7 +41,7 @@ while (date('Hi') == $minute) {
     $zkb['awox'] = @$killmail['awox'];
     $zkb['labels'] = @$killmail['labels'];
 
-    $zkb['href'] = "$esiServer/v1/killmails/$killID/".$zkb['hash'].'/';
+    $zkb['href'] = "$esiServer/killmails/$killID/".$zkb['hash'].'/';
     unset($rawmail['_id']);
 
     $package = ['killID' => $killID, 'killmail' => $rawmail, 'zkb' => $zkb];

@@ -86,7 +86,7 @@ function failChar(&$guzzler, &$params, &$connectionException)
                 $guzzler->finish();
                 exit();
             default:
-                Util::out("/v5/characters/ affiliation failed for $id with code $code");
+                Util::out("/characters/ affiliation failed for $id with code $code");
         }
     }
     $guzzler->sleep(1);

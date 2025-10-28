@@ -16,7 +16,7 @@ if ($minute >= 1100 && $minute <= 1105) {
 } else {
     // Not using Guzzle to prevent tq status conflicts and deadlock
     for ($i = 0; $i <= 3; $i++) {
-        $root = @file_get_contents("$esiServer/v1/status/");
+        $root = @file_get_contents("$esiServer/status/");
         if ($root != "" ) {
             success($root);
             break;

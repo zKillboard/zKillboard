@@ -17,7 +17,7 @@ if ($redis->get($redisKey) != true) {
         $refreshToken = $scope['refreshToken'];
         $params = ['redis' => $redis];
         $accessToken = $sso->getAccessToken($refreshToken);
-        $content = $sso->doCall("$esiServer/v6/characters/$adminCharacter/wallet/journal/", [], $accessToken);
+        $content = $sso->doCall("$esiServer/characters/$adminCharacter/wallet/journal/", [], $accessToken);
         if ($content != "") {
             success($params, $content);
             $redis->del("zkb:monocled");

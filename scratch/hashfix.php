@@ -13,8 +13,8 @@ foreach ($badHashes as $row) {
     $killID = $row['killID'];
     $rawMail = $mdb->findDoc("esimails", ['killmail_id' => $killID]);
     $hash = getCrestHash($killID, $rawMail);
-    echo "$killID $hash $esiServer/v1/killmails/$killID/$hash/\n";
-    $guzzler->call("$esiServer/v1/killmails/$killID/$hash/", "success", "fail", ['row' => $row, 'mdb' => $mdb, 'redis' => $redis, 'killID' => $killID, 'hash' => $hash, 'esimails' => $esimails]);
+    echo "$killID $hash $esiServer/killmails/$killID/$hash/\n";
+    $guzzler->call("$esiServer/killmails/$killID/$hash/", "success", "fail", ['row' => $row, 'mdb' => $mdb, 'redis' => $redis, 'killID' => $killID, 'hash' => $hash, 'esimails' => $esimails]);
     $guzzler->finish();
 }
 

@@ -31,7 +31,7 @@ while ($minute == date('Hi')) {
     while ($currentSecond == date('His')) usleep(50);
     $currentSecond = date('His');
 
-    $url = "$esiServer/v5/corporations/$id/";
+    $url = "$esiServer/corporations/$id/";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
     $a = (isset($row['lastApiUpdate']) && $row['name'] != '') ? [] : [];
     $guzzler->call($url, "updateCorp", "failCorp", $params, $a);
@@ -61,7 +61,7 @@ function failCorp(&$guzzler, &$params, &$connectionException)
             $guzzler->finish();
             exit();
         default:
-            Util::out("/v4/corporations/ failed for $id with code $code");
+            Util::out("/corporations/ failed for $id with code $code");
     }
 }
 

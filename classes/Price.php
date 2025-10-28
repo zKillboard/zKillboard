@@ -257,7 +257,7 @@ class Price
             $mdb->save('prices', $marketHistory);
         }
 
-        $url = "$esiServer/v1/markets/10000002/history/?type_id=$typeID";
+        $url = "$esiServer/markets/10000002/history/?type_id=$typeID";
         $raw = file_get_contents($url);
         $json = json_decode($raw, true);
         Status::addStatus('esi', true);
@@ -275,7 +275,7 @@ class Price
             $key = "zkb:market:" . date('H');
             $market = RedisCache::get($key);
             if ($market == null) {
-                $market = json_decode($sso->doCall("$esiServer/v1/markets/prices/"), true);
+                $market = json_decode($sso->doCall("$esiServer/markets/prices/"), true);
                 RedisCache::set($key, $market, 3600);
             }
             $date = date('Y-m-d');

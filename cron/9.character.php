@@ -47,7 +47,7 @@ while ($minute == date('Hi')) {
     }
 
 
-    $url = "$esiServer/v5/characters/$id/";
+    $url = "$esiServer/characters/$id/";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
     $guzzler->call($url, "updateChar", "failChar", $params, []);
     $guzzler->finish();
@@ -82,7 +82,7 @@ function failChar(&$guzzler, &$params, &$connectionException)
             $guzzler->finish();
             exit();
         default:
-            Util::out("/v5/characters/ failed for $id with code $code");
+            Util::out("/characters/ failed for $id with code $code");
     }
 }
 

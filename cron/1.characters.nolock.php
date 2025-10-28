@@ -53,7 +53,7 @@ while ($minute == date('Hi')) {
             }
 
             $timer = new Timer();
-            $killmails = $sso->doCall("$esiServer/v1/characters/$charID/killmails/recent/", [], $accessToken);
+            $killmails = $sso->doCall("$esiServer/characters/$charID/killmails/recent/", [], $accessToken);
             success(['row' => $row, 'esi' => $esi, 'timer' => $timer], $killmails);
             $redis->setex("esi-fetched:$charID", 300, "true");
         } else {

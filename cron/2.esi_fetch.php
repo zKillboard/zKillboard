@@ -53,7 +53,7 @@ while ($minute == date("Hi")) {
         $checked[] = $killID;
 
         $mdb->set("crestmails", $row, ['processed' => 'fetching']);
-        $guzzler->call("$esiServer/v1/killmails/$killID/$hash/", "success", "fail", ['row' => $row, 'mdb' => $mdb, 'redis' => $redis, 'killID' => $killID, 'esimails' => $esimails]);
+        $guzzler->call("$esiServer/killmails/$killID/$hash/", "success", "fail", ['row' => $row, 'mdb' => $mdb, 'redis' => $redis, 'killID' => $killID, 'esimails' => $esimails]);
 break;
     }
     if (sizeof($rows) == 0) {

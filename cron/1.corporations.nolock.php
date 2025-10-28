@@ -52,7 +52,7 @@ while ($minute == date('Hi')) {
 
         $redis->setex("esi-fetched:$corpID", 300, "true");
         $timer = new Timer();
-        $killmails = $sso->doCall("$esiServer/v1/corporations/$corpID/killmails/recent/", [], $accessToken);
+        $killmails = $sso->doCall("$esiServer/corporations/$corpID/killmails/recent/", [], $accessToken);
         success(['corpID' => $corpID, 'row' => $row, 'esi' => $esi, 'timer' => $timer], $killmails);
         usleep(100000);
     } else if ($corpID > 0) {
