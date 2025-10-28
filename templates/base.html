@@ -122,6 +122,15 @@ var promoImage1 = '{{ promoImage1 }}';
                 <center><a id='twitch-live' type='button' target='_blank' class='btn btn-lg btn-primary' onClick="twitchtime();"><span id='twitch-channel'></span> is currently live on Twitch!<br/><span class='squizz-extra'>Support the zKill Hamsters!<br/>USER APPRECIATION STREAM!<br/></span>Click here to watch!</a></center><br/><br/>
                 </div>
 
+				<div id="highlightContent" class="centered" style="margin-bottom: 1em; {% if highlightMessage is not defined %}display: none;{% endif %}">
+					<a href="{{ highlightURI }}" target="_blank" rel="noopener noreferrer" class="btn btn-info btn-sm" style="padding: 1em; text-align: center; display: block; padding-top: 0em; padding-bottom: 0em; margin-top: 0.5em;">
+						{% if highlightImage is defined and highlightImage|length > 0 %}
+							<img src="{{ highlightImage }}" alt="Highlight" style="max-width: 100%; height: auto;">
+						{% endif %}
+						<span class='pagecontent'>{{ highlightMessage|raw }}</span>
+					</a>					
+				</div>
+
                 <span class='pagecontent'>{% endif %}
 				<!-- The text header -->
 				{% block header %}{% endblock %}

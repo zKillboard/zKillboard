@@ -81,6 +81,12 @@ if (@$special1 != "") {
     $twig->addGlobal('promoURI', $promoURI);
 }
 
+if (isset($highlightMessage) && $highlightMessage != "") {
+	$twig->addGlobal('highlightMessage', $highlightMessage);
+	$twig->addGlobal('highlightImage', $highlightImage);
+	$twig->addGlobal('highlightURI', $highlightURI);
+}
+
 $twig->addGlobal('tqStatus', $redis->get('tqStatus'));
 $twig->addGlobal('tqCount', $redis->get('tqCount'));
 
