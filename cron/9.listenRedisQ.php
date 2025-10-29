@@ -24,13 +24,11 @@ while ($minute == date('Hi')) {
         exit();
     } // Something's wrong , exit and try again later
     $killmail = $json['package'];
-    if ($killmail == null) {
-        continue;
-    }
 
-    $killID = $killmail['killID'];
+    $killID = (int) @$killmail['killID'];
+    $hash = @$killmail['zkb']['hash'];
+    if ($killID == 0 || $hash == "") exit();
 
-    $hash = $killmail['zkb']['hash'];
     if (!$mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash])) {
         $mdb->save('crestmails', ['killID' => $killID, 'hash' => $hash, 'processed' => false, 'RedisQ']);
     }
