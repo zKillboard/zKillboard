@@ -2,7 +2,7 @@
 
 require_once "../init.php";
 
-if (date("i") % 5 != 0) exit();
+if (@$eveKillLatest == "" || date("i") % 15 != 0) exit();
 
 $raw = @file_get_contents($eveKillLatest);
 if ($raw == "") exit(); // eve-kill went down, try again later
