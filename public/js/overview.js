@@ -27,18 +27,28 @@ var topsLoadedStats = {};
 function loadTops() {
     if (window.location.pathname.includes('/page/')) return;
 
-    setTimeout(loadTops, 60000);
-    let now = new Date();
-    if (topsLoaded == true && now.getMinutes() % 15 != 0) return; 
+	try {
+		let ksa = overviewStats.ksa;
+		let kea = overviewStats.kea;
 
-    let ksa = overviewStats.ksa;
-    let kea = overviewStats.kea;
+		$("#topset-isk").load("/cache/bypass/statstopisk/?u=" + window.location.pathname);
+		validTopTypes.forEach((t) => $("#topset-" + t).load("/cache/bypass/statstop10/?u=" + window.location.pathname + "&t=" + t));
 
-    $("#topset-isk").load("/cache/bypass/statstopisk/?u=" + window.location.pathname + "&ks=" + ksa + "&ke=" + kea);
-    validTopTypes.forEach((t) => $("#topset-" + t).load("/cache/bypass/statstop10/?u=" + window.location.pathname + "&t=" + t + "&ks=" + ksa + "&ke=" + kea));
-
-    topsLoaded = true;
-    console.log('tops loaded');
+		topsLoaded = true;
+		console.log('tops loaded');
+	} finally {
+		// Calculate next time the modulus will match
+		let currentUnixTime = Math.floor(Date.now() / 1000);
+		let entityMod = Number(entityID) % 900;
+		let currentMod = currentUnixTime % 900;
+		let secondsUntilNextMatch = entityMod > currentMod ? 
+			(entityMod - currentMod) : 
+			(900 - currentMod + entityMod);
+		
+		// Schedule for the exact next match time
+		console.log(`scheduling next tops load in ${secondsUntilNextMatch} seconds`);
+		setTimeout(loadTops, secondsUntilNextMatch * 1000);
+	}
 }
 
 console.log('overview.js loaded');
