@@ -313,13 +313,6 @@ class Util
 		}
 	}
 
-	public static function pageTimer()
-	{
-		global $pageLoadMS;
-
-		return (microtime(true) - $pageLoadMS) * 1000;
-	}
-
 	public static function isActive($pageType, $currentPage, $retValue = 'active')
 	{
 		return strtolower($pageType) == strtolower($currentPage) ? $retValue : '';
@@ -570,13 +563,6 @@ class Util
 	public static function rankCheck($rank)
 	{
 		return $rank === false || $rank === null ? '-' : (1 + (int) $rank);
-	}
-
-	public static function getQueryCount()
-	{
-		global $mdb;
-
-		return $mdb->getQueryCount();
 	}
 
 	public static function get3dDistance($position, $locationID, $solarSystemID = 0)

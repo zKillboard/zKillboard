@@ -8,7 +8,6 @@ class Mdb
     private $mongoClient = null;
     private $db = null;
 
-    private $queryCount = 0;
     private $emptyArray = [];
 
     /*
@@ -28,7 +27,6 @@ class Mdb
                 $this->db = $this->mongoClient->selectDB('zkillboard');
             }
 
-            ++$this->queryCount;
             return $this->db;
         } catch (Exception $ex) {
             if ($attempt >= 10) {
@@ -55,14 +53,6 @@ class Mdb
         $db = $this->getDb();
 
         return $db->$collection;
-    }
-
-    /*
-       Returns the number of queries performed by this instance
-     */
-    public function getQueryCount()
-    {
-        return $this->queryCount;
     }
 
     /*

@@ -161,8 +161,6 @@ $twig->addGlobal('trackernotification', UserConfig::get('trackernotification', '
 
 $twig->addExtension(new UserGlobals());
 
-$twig->addFunction(new Twig_SimpleFunction('pageTimer', 'Util::pageTimer'));
-$twig->addFunction(new Twig_SimpleFunction('queryCount', 'Util::getQueryCount'));
 $twig->addFunction(new Twig_SimpleFunction('isActive', 'Util::isActive'));
 $twig->addFunction(new Twig_SimpleFunction('pluralize', 'Util::pluralize'));
 $twig->addFunction(new Twig_SimpleFunction('formatIsk', 'Util::formatIsk'));
