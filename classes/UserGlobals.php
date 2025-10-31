@@ -1,15 +1,13 @@
 <?php
 
 use cvweiss\redistools\RedisTtlCounter;
+use Twig\Extension\AbstractExtension;
+use Twig\Extension\GlobalsInterface;
 
-class UserGlobals extends Twig_Extension
+class UserGlobals extends AbstractExtension implements GlobalsInterface
 {
-    public function getName()
-    {
-        return 'UserGlobals';
-    }
 
-    public function getGlobals()
+    public function getGlobals(): array
     {
         $result = array();
         if (User::isLoggedIn()) {

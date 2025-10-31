@@ -1,5 +1,6 @@
 {% set txtLength = 60 %}
-{% for kill in killList if kill.killID > 0 %}
+{% for kill in killList %}
+{% if kill.killID > 0 %}
       {% set shipImageLinkOverride = kill.killID %}
       {% set sDate =  (kill.dttm.sec|date('Y-m-d')) %}
       {% set date = (kill.dttm.sec|date('M d, Y')) %}
@@ -85,4 +86,5 @@
 	  {% endif %}
         </td>
       </tr>
+{% endif %}
 {% endfor %}

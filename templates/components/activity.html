@@ -3,7 +3,7 @@
 {% if pageType == 'overview' and extra.activity.max > 0 %}
     <center><h5>Activity (last 90 days)</h5></center>
     <a href="#" data-toggle="modal" data-target="#heatmap">
-    {% spaceless %}
+    {% apply spaceless %}
     <div style="line-height: 0px;">
     {% set steps = (extra.activity.max / 5)|round(0, 'floor') %}
     {% if steps < 1 %}{% set steps = 1 %}{% endif %}
@@ -19,7 +19,7 @@
         <br style='margin: 0px; padding:0px;'/>
     {% endfor %}
     </div>
-    {% endspaceless %}
+    {% endapply %}
     <center><small><small><i>Click to enlarge</i></small></small></center>
     </a>
 {% endif %}

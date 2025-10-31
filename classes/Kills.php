@@ -132,10 +132,14 @@ class Kills
         if ($stored != null) return $stored;
 
         $killmail = $mdb->findDoc('killmails', ['killID' => (int) $killID]);
+        
+        if ($killmail === null) {
+            return null; // Killmail not found
+        }
 
         $esimail = Kills::getEsiKill($killID);
 
-        $damage = (int) $esimail['victim']['damage_taken'];
+        $damage = (int) ($esimail['victim']['damage_taken'] ?? 0);
         $killmail['damage'] = $damage;
 
         $killmail['dttm'] = date('Y-m-d G:i', $killmail['dttm']->sec);

@@ -11,7 +11,7 @@ if ($pageview == '') {
 if ($where != "") {
 	echo $where;
 	$crest = $mdb->findDoc('crestmails', ['killID' => (int) $id, 'processed' => true]);
-	$hash = $crest['hash'];
+	$hash = $crest['hash'] ?? '';
 	switch ($where) {
 		case 'esi':
 			return $app->redirect("https://esi.evetech.net/latest/killmails/$id/$hash/", 302);
@@ -110,7 +110,7 @@ if (isset($rawmail['victim']['position']) && isset($killdata['info']['location']
 	}
 }
 $extra['npcOnly'] = @$killdata['info']['npc'];
-$extra['atShip'] = in_array('atShip', @$killdata['info']['labels']);
+$extra['atShip'] = in_array('atShip', @$killdata['info']['labels'] ?: []);
 $extra['totalisk'] = $killdata['info']['zkb']['totalValue'];
 $extra['droppedisk'] = droppedIsk(md5($id), $killdata['items']);
 $extra['shipprice'] = Price::getItemPrice($killdata['victim']['shipTypeID'], date('Y-m-d H:i', strtotime($killdata['info']['dttm'])));

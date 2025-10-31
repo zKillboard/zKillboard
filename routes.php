@@ -33,7 +33,7 @@ $app->get('/google/:mobile/', function () use ($app) {
 	return;
 });
 
-$app->get('/(page/:page/)', function ($page = 1) use ($app) {
+$app->get('/', function ($page = 1) use ($app) {
 	include 'view/index.php';
 });
 

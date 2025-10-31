@@ -2,14 +2,30 @@
 
 $currentTime = date("YmdHi");
 
-// Load Twig globals
-$app->view(new \Slim\Views\Twig());
+// Create Twig 3 environment directly
+$loader = new \Twig\Loader\FilesystemLoader($baseDir . 'templates/');
+$twig = new \Twig\Environment($loader, array('debug' => $twigDebug, 'cache' => $twigCache));
 
-// Setup Twig
-$view = $app->view();
-$view->parserOptions = array('debug' => $twigDebug, 'cache' => $twigCache);
+// Create a custom view class that integrates with Slim 2
+class CustomTwigView extends \Slim\View {
+    private $twig;
+    
+    public function __construct($twig) {
+        parent::__construct();
+        $this->twig = $twig;
+    }
+    
+    public function getEnvironment() {
+        return $this->twig;
+    }
+    
+    public function render($template, $data = null) {
+        $data = array_merge($this->data->all(), (array) $data);
+        return $this->twig->render($template, $data);
+    }
+}
 
-$twig = $app->view()->getEnvironment();
+$app->view(new CustomTwigView($twig));
 
 // Check SSO values
 $ssoCharacterID = @$_SESSION['characterID'];
@@ -161,17 +177,17 @@ $twig->addGlobal('trackernotification', UserConfig::get('trackernotification', '
 
 $twig->addExtension(new UserGlobals());
 
-$twig->addFunction(new Twig_SimpleFunction('isActive', 'Util::isActive'));
-$twig->addFunction(new Twig_SimpleFunction('pluralize', 'Util::pluralize'));
-$twig->addFunction(new Twig_SimpleFunction('formatIsk', 'Util::formatIsk'));
-$twig->addFunction(new Twig_SimpleFunction('shortNum', 'Util::formatIsk'));
-$twig->addFunction(new Twig_SimpleFunction('shortString', 'Util::shortString'));
-$twig->addFunction(new Twig_SimpleFunction('truncate', 'Util::truncate'));
-$twig->addFunction(new Twig_SimpleFunction('chart', 'Chart::addChart'));
-$twig->addFunction(new Twig_SimpleFunction('getMonth', 'Util::getMonth'));
-$twig->addFunction(new Twig_SimpleFunction('getLongMonth', 'Util::getLongMonth'));
-$twig->addFunction(new Twig_SimpleFunction('getMessage', 'User::getMessage'));
-$twig->addFunction(new Twig_SimpleFunction('secStatusColor', 'Info::getSystemColorCode'));
-$twig->addFunction(new Twig_SimpleFunction('i', 'Util::counter'));
+$twig->addFunction(new \Twig\TwigFunction('isActive', 'Util::isActive'));
+$twig->addFunction(new \Twig\TwigFunction('pluralize', 'Util::pluralize'));
+$twig->addFunction(new \Twig\TwigFunction('formatIsk', 'Util::formatIsk'));
+$twig->addFunction(new \Twig\TwigFunction('shortNum', 'Util::formatIsk'));
+$twig->addFunction(new \Twig\TwigFunction('shortString', 'Util::shortString'));
+$twig->addFunction(new \Twig\TwigFunction('truncate', 'Util::truncate'));
+$twig->addFunction(new \Twig\TwigFunction('chart', 'Chart::addChart'));
+$twig->addFunction(new \Twig\TwigFunction('getMonth', 'Util::getMonth'));
+$twig->addFunction(new \Twig\TwigFunction('getLongMonth', 'Util::getLongMonth'));
+$twig->addFunction(new \Twig\TwigFunction('getMessage', 'User::getMessage'));
+$twig->addFunction(new \Twig\TwigFunction('secStatusColor', 'Info::getSystemColorCode'));
+$twig->addFunction(new \Twig\TwigFunction('i', 'Util::counter'));
 $twig->addGlobal('version', $version);
 $twig->addGlobal('versionTime', time());

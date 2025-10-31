@@ -37,8 +37,8 @@ $killsLimit = 50;
 $p['limit'] = $killsLimit;
 $preKills = Kills::getKills($p);
 $kills = array();
-$agrID = $warData['aggressor']['id'];
-$dfdID = $warData['defender']['id'];
+$agrID = $warData['aggressor']['id'] ?? 0;
+$dfdID = $warData['defender']['id'] ?? 0;
 
 foreach ($preKills as $kill) {
     $victim = $kill['victim'];

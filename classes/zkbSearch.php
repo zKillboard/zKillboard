@@ -49,7 +49,7 @@ class zkbSearch
                 $ids[] = $id;
 
                 $info = Info::getInfo($type, $id);
-                $name = $info['name'];
+                $name = $info['name'] ?? 'Unknown';
                 $image = isset(self::$imageMap[$type]) ? self::$imageMap[$type] : '';
                 $image = sprintf($image, $id);
                 if (Util::endsWith($name, "Blueprint")) $image = str_replace("/icon", "/bp", $image);

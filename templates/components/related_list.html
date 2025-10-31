@@ -6,10 +6,8 @@
     {% set shipImageLinkOverride = 0 %}
     {% if related.destroyed > 0 %}
 		{% set class='error' %}
-		{% autoescape false %}
 		{% set onClick = "console.log(event.which); if (event.which == 1) { window.location = \"/kill/" ~ related.destroyed ~ "/\"; return false; }" %}
 		{% set shipImageLinkOverride = related.destroyed %}
-		{% endautoescape %}
     {% endif %}
     <tr class="{{ class }}" onClick='{{onClick|raw}}'>
     <td style="width: 285px">

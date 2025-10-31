@@ -2,9 +2,9 @@
 
 global $mdb;
 
-$sID = $_GET['sID'];
-$dttm = $_GET['dttm'];
-$options = $_GET['options'];
+$sID = $_GET['sID'] ?? null;
+$dttm = $_GET['dttm'] ?? null;
+$options = $_GET['options'] ?? null;
 
 $battleID = $mdb->findField('battles', 'battleID', ['$and' => [['solarSystemID' => $sID], ['dttm' => $dttm], ['options' => $options]]], ['battleID' => -1]);
 while ($battleID === null) {

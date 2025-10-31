@@ -5,7 +5,7 @@ use cvweiss\redistools\RedisTtlCounter;
 
 $pageLoadMS = microtime(true);
 
-$uri = @$_SERVER['REQUEST_URI'];
+$uri = @$_SERVER['REQUEST_URI'] ?? '';
 $isApiRequest = substr($uri, 0, 5) == "/api/";
 
 if ($uri == "/kill/-1/") return header("Location: /keepstar1.html");
