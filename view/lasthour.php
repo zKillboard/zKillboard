@@ -3,7 +3,15 @@
 $baseP = array('limit' => 10, 'kills' => true, 'pastSeconds' => 3600, 'cacheTime' => 30, 'npc' => false);
 $types = ['all', 'nullsec', 'lowsec', 'highsec', 'w-space', 'solo'];
 
-if (!in_array($type, $types)) return $app->redirect('/', 302);
+if (!in_array($type, $types)) {
+	if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+		$GLOBALS['redirect_url'] = '/';
+		$GLOBALS['redirect_status'] = 302;
+		return;
+	} else {
+		return $app->redirect('/', 302);
+	}
+}
 
 $allLists = [];
 
@@ -36,4 +44,9 @@ $topLosers[] = array('type' => 'group', 'ranked' => 'Losses', 'data' => Stats::g
 
 $allLists[$type] = ['topKillers' => $topKillers, 'topLosers' => $topLosers];
 
-$app->render('lasthour.html', ['allLists' => $allLists, 'time' => date('H:i'), 'type' => $type, 'types' => $types]);
+if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+	$GLOBALS['render_template'] = 'lasthour.html';
+	$GLOBALS['render_data'] = ['allLists' => $allLists, 'time' => date('H:i'), 'type' => $type, 'types' => $types];
+} else {
+	$app->render('lasthour.html', ['allLists' => $allLists, 'time' => date('H:i'), 'type' => $type, 'types' => $types]);
+}

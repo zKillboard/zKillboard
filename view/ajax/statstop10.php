@@ -5,7 +5,25 @@ global $mdb, $redis, $uri;
 $validTopTypes = ['characterID', 'corporationID', 'allianceID', 'shipTypeID', 'solarSystemID', 'locationID'];
 
 $bypass = strpos($uri, "/bypass/") !== false;
-$params = URI::validate($app, $uri, ['u' => true, 't' => true, 'ks' => !$bypass, 'ke' => !$bypass]);
+
+// Create mock app object for URI validation if needed
+if (isset($GLOBALS['route_args'])) {
+	try {
+		$mockApp = new class {
+			public function notFound() {
+				throw new Exception('Not Found');
+			}
+		};
+		$params = URI::validate($mockApp, $uri, ['u' => true, 't' => true, 'ks' => !$bypass, 'ke' => !$bypass]);
+	} catch (Exception $e) {
+		// If validation fails, return empty result or 404
+		global $twig;
+		$GLOBALS['capture_render_data'] = $twig->render('components/top_killer_list.html', []);
+		return;
+	}
+} else {
+	$params = URI::validate($app, $uri, ['u' => true, 't' => true, 'ks' => !$bypass, 'ke' => !$bypass]);
+}
 
 $uri = $params['u'];
 $topType = $params['t'];
@@ -21,7 +39,15 @@ $q['cacheTime'] = 60;
 $ksa = (int) $mdb->findField('oneWeek', 'sequence', $q, ['sequence' => 1]);
 $kea = (int) $mdb->findField('oneWeek', 'sequence', $q, ['sequence' => -1]);
 
-if ($bypass || "$ks" != "$ksa" || "$ke" != "$kea") return $app->redirect("/cache/24hour/statstop10/?u=$uri&t=$topType&ks=$ksa&ke=$kea");
+if ($bypass || "$ks" != "$ksa" || "$ke" != "$kea") {
+	if (isset($GLOBALS['route_args'])) {
+		header("Location: /cache/24hour/statstop10/?u=$uri&t=$topType&ks=$ksa&ke=$kea");
+		return;
+	} else {
+		header("Location: /cache/24hour/statstop10/?u=$uri&t=$topType&ks=$ksa&ke=$kea");
+		return;
+	}
+}
 
 $disqualified = 0;
 if ($topType == 'characterID' || $topType == 'corportionID' || $topType == 'allianceID') {
@@ -46,4 +72,9 @@ if (strpos($uri, "/page/") === false && in_array($topType, $validTopTypes) && $d
     $ret['topSet'] = Info::doMakeCommon("Top ${name}s", $topType, Stats::getTop($topType, $p));
 }
 
-$app->render('components/top_killer_list.html', $ret);
+if (isset($GLOBALS['route_args'])) {
+	global $twig;
+	$GLOBALS['capture_render_data'] = $twig->render('components/top_killer_list.html', $ret);
+} else {
+	$app->render('components/top_killer_list.html', $ret);
+}

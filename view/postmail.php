@@ -24,7 +24,13 @@ if ($_POST) {
                 $killID = (int) $exploded[4];
                 $exists = $mdb->exists('killmails', ['killID' => $killID]);
                 if ($exists) {
-                    return $app->redirect("/kill/$killID/");
+                    // Handle redirect for compatibility
+                    if (isset($GLOBALS['capture_render_data'])) {
+                        $GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', "/kill/$killID/");
+                        return;
+                    } else {
+                        return $app->redirect("/kill/$killID/");
+                    }
                 }
                 $hash = (string) $exploded[5];
                 $exists = $mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash]);
@@ -49,7 +55,13 @@ if ($_POST) {
                             usleep(100000);
                             $kill = $mdb->findDoc('killmails', ['killID' => $killID]);
                         } 
-                        return $app->redirect("/kill/$killID/");
+                       // Handle redirect for compatibility
+                        if (isset($GLOBALS['capture_render_data'])) {
+                            $GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', "/kill/$killID/");
+                            return;
+                        } else {
+                            return $app->redirect("/kill/$killID/");
+                        }
                     }
                     $crest = $mdb->findDoc('crestmails', ['killID' => $killID, 'hash' => $hash]);
                     if ($crest === null) {
@@ -82,4 +94,11 @@ if (!is_array($error)) {
     $error = array($error);
 }
 
-$app->render('postmail.html', array('message' => $error));
+// Handle render for compatibility
+if (isset($GLOBALS['capture_render_data'])) {
+    $GLOBALS['render_template'] = 'postmail.html';
+    $GLOBALS['render_data'] = array('message' => $error);
+    return;
+} else {
+    $app->render('postmail.html', array('message' => $error));
+}

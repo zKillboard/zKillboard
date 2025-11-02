@@ -2,7 +2,20 @@
 
 global $mdb, $redis;
 
-if (User::checkForLogin($app, "/account/$req/") == false) return;
+// Handle login check for compatibility
+if (isset($GLOBALS['capture_render_data'])) {
+	global $redis;
+	if (!User::isLoggedIn()) {
+		$sessID = session_id();
+		if ("/account/$req/" != '') {
+			$redis->setex("forward:$sessID", 900, "/account/$req/");
+		}
+		$GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', '/ccpoauth2/');
+		return;
+	}
+} else {
+	if (User::checkForLogin($app, "/account/$req/") == false) return;
+}
 
 $userID = (int) User::getUserID();
 $key = 'sitesettings';
@@ -53,7 +66,13 @@ if ($_POST) {
 		User::sendMessage("Your default login page is now the $loginPage page");
 	}
 
-	return $app->redirect($_SERVER['REQUEST_URI']);
+	// Handle redirect for Slim 3 compatibility
+	if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+		$GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', $_SERVER['REQUEST_URI']);
+		return;
+	} else {
+		return $app->redirect($_SERVER['REQUEST_URI']);
+	}
 }
 
 // Theme
@@ -71,4 +90,11 @@ $data['apiScopes'] = $mdb->find("scopes", ['characterID' => (int) $userID], ['sc
 $data['history'] = User::getPaymentHistory($userID);
 $data['log'] = ZLog::get($userID);
 
-$app->render('account.html', array('data' => $data, 'message' => $error, 'key' => $key, 'reqid' => $reqid));
+// Handle rendering for Slim 3 compatibility
+if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+	$GLOBALS['render_template'] = 'account.html';
+	$GLOBALS['render_data'] = array('data' => $data, 'message' => $error, 'key' => $key, 'reqid' => $reqid);
+} else {
+	// Fallback for any remaining Slim 2 usage
+	$app->render('account.html', array('data' => $data, 'message' => $error, 'key' => $key, 'reqid' => $reqid));
+}

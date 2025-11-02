@@ -5,7 +5,13 @@ global $baseDir, $redis;
 $page = preg_replace('[^\W]', '', $page);
 $path = $baseDir."/information/$page.md";
 if (!is_file($path)) {
-    $app->redirect('/');
+    // Handle redirect for Slim 3 compatibility
+    if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+        $GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', '/');
+        return;
+    } else {
+        $app->redirect('/');
+    }
 }
 
 // Load the markdown file
@@ -29,4 +35,11 @@ if (isset($titles[$page])) $title = $titles[$page];
 else $title = ucfirst($page);
 
 // Load the information page html, which is just the bare minimum to load base.html and whatnot, and then spit out the markdown output!
-$app->render('information.html', array('data' => $output, 'pageTitle' => $title));
+// Handle rendering for Slim 3 compatibility
+if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+	$GLOBALS['render_template'] = 'information.html';
+	$GLOBALS['render_data'] = array('data' => $output, 'pageTitle' => $title);
+} else {
+	// Fallback for any remaining Slim 2 usage
+	$app->render('information.html', array('data' => $output, 'pageTitle' => $title));
+}

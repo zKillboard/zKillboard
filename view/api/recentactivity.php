@@ -11,5 +11,11 @@ foreach ($types as $type) {
     $json[$type] = $arr;
 }
 
-$app->contentType('application/json; charset=utf-8');
-echo json_encode($json);
+// Handle JSON output for compatibility
+if (isset($GLOBALS['capture_render_data'])) {
+    $GLOBALS['json_output'] = json_encode($json);
+    return;
+} else {
+    $app->contentType('application/json; charset=utf-8');
+    echo json_encode($json);
+}

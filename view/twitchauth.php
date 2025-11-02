@@ -9,15 +9,28 @@ try {
     $userID = User::getUserID();
     if ($userID == 0) {
         // User not logged in
-        $app->redirect('/');
-        return;
+        // Handle redirect for compatibility
+        if (isset($GLOBALS['capture_render_data'])) {
+            $GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', '/');
+            return;
+        } else {
+            $app->redirect('/');
+            return;
+        }
     }
 
     $state = str_replace("/", "", @$_GET['state']);
     $sessionState = @$_SESSION['oauth2State'];
     $_SESSION['oauth2State'] = '';
     if ($state !== $sessionState) {
-        return $app->render("error.html", ['message' => "Something went wrong with security. Please try again."]);
+        // Handle render for compatibility
+        if (isset($GLOBALS['capture_render_data'])) {
+            $GLOBALS['render_template'] = "error.html";
+            $GLOBALS['render_data'] = ['message' => "Something went wrong with security. Please try again."];
+            return;
+        } else {
+            return $app->render("error.html", ['message' => "Something went wrong with security. Please try again."]);
+        }
     }
     $mdb->remove("twitch", ['character_id' => $userID]);
 
@@ -48,15 +61,42 @@ try {
 
                 ZLog::add("You have linked Twitch. Twitch ad free integration has succeeded. Thank you!!", $userID);
                 User::sendMessage("You have linked Twitch. Twitch ad free integration has succeeded. Thank you!!", $userID);
-                return $app->redirect("/account/log/");
+                // Handle redirect for compatibility
+                if (isset($GLOBALS['capture_render_data'])) {
+                    $GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', "/account/log/");
+                    return;
+                } else {
+                    return $app->redirect("/account/log/");
+                }
             } else {
-                return $app->render("error.html", ['message' => "You are NOT subbed to SquizzCaphinator on Twitch. Twitch ad free integration has failed."]);
+                // Handle render for compatibility
+                if (isset($GLOBALS['capture_render_data'])) {
+                    $GLOBALS['render_template'] = "error.html";
+                    $GLOBALS['render_data'] = ['message' => "You are NOT subbed to SquizzCaphinator on Twitch. Twitch ad free integration has failed."];
+                    return;
+                } else {
+                    return $app->render("error.html", ['message' => "You are NOT subbed to SquizzCaphinator on Twitch. Twitch ad free integration has failed."]);
+                }
             }
         } else {
-            return $app->render("error.html", ['message' => "Something went wrong while trying to validate your Twitch subscription. Please try again."]);
+            // Handle render for compatibility
+            if (isset($GLOBALS['capture_render_data'])) {
+                $GLOBALS['render_template'] = "error.html";
+                $GLOBALS['render_data'] = ['message' => "Something went wrong while trying to validate your Twitch subscription. Please try again."];
+                return;
+            } else {
+                return $app->render("error.html", ['message' => "Something went wrong while trying to validate your Twitch subscription. Please try again."]);
+            }
         }
     }
 } catch (Exception $ex) {
     Util::zout("Error from twitch:\n" . print_r($ex, true));
-    return $app->render("error.html", ['message' => "Something went wrong with the login from Twitch's end, sorry, can you please try logging in again? *"]);
+    // Handle render for compatibility
+    if (isset($GLOBALS['capture_render_data'])) {
+        $GLOBALS['render_template'] = "error.html";
+        $GLOBALS['render_data'] = ['message' => "Something went wrong with the login from Twitch's end, sorry, can you please try logging in again? *"];
+        return;
+    } else {
+        return $app->render("error.html", ['message' => "Something went wrong with the login from Twitch's end, sorry, can you please try logging in again? *"]);
+    }
 }

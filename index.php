@@ -45,11 +45,11 @@ if ($badBot) {
     html403("Bad Robot! Naughty! See robots.txt");
 }
 
-if ($redis->get("IP:ban:$ip") == "true") return header("Location: /html/banned.html", true, 302);
-if (in_array($ip, $blackList)) return header('HTTP/1.1 403 Blacklisted');
+//if ($redis->get("IP:ban:$ip") == "true") return header("Location: /html/banned.html", true, 302);
+//if (in_array($ip, $blackList)) return header('HTTP/1.1 403 Blacklisted');
 
 // Starting Slim Framework
-$app = new \Slim\Slim($config);
+$app = new \Slim\App(['settings' => $config]);
 header('X-Frame-Options: DENY');
 header("Content-Security-Policy: frame-ancestors 'self'");
 
@@ -73,16 +73,22 @@ $visitors->add($ip);
 
 // Theme
 $theme = 'cyborg';
-$app->config(array('templates.path' => $baseDir.'templates/'));
 
-// Error handling
-$app->error(function (\Exception $e) use ($app) { include 'view/error.php'; });
+// Load twig stuff BEFORE routes
+include 'twig.php';
+
+// Setup error handling for Slim 3
+$container = $app->getContainer();
+$container['errorHandler'] = function ($c) {
+    return function ($request, $response, $exception) use ($c) {
+        error_log("Slim 3 Error: " . $exception->getMessage() . " in " . $exception->getFile() . ":" . $exception->getLine());
+        $response->getBody()->write("Error: " . $exception->getMessage());
+        return $response->withStatus(500);
+    };
+};
 
 // Load the routes - always keep at the bottom of the require list ;)
 include 'routes.php';
-
-// Load twig stuff
-include 'twig.php';
 
 // Just some local analytics
 include 'analyticsLoad.php';

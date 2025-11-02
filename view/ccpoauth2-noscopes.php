@@ -12,4 +12,9 @@ if ($uri != '' && $redis->get("forward:$sessID") == null) {
 }
 
 $sso = ZKillSSO::getSSO(['publicData']);
-$app->redirect($sso->getLoginURL($_SESSION), 302);
+if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+	$GLOBALS['redirect_url'] = $sso->getLoginURL($_SESSION);
+	$GLOBALS['redirect_status'] = 302;
+} else {
+	$app->redirect($sso->getLoginURL($_SESSION), 302);
+}

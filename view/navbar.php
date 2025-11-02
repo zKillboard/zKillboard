@@ -11,4 +11,9 @@ $etag = 'W/"' . $etag . '"';
 header("ETag: $etag");
 header("Cache-Control: private");
 
-$app->render('components/nav-tracker.html', ['killsLastHour' => $redis->get("tqKillCount")]);
+if (isset($GLOBALS['route_args'])) {
+	global $twig;
+	$GLOBALS['capture_render_data'] = $twig->render('components/nav-tracker.html', ['killsLastHour' => $redis->get("tqKillCount")]);
+} else {
+	$app->render('components/nav-tracker.html', ['killsLastHour' => $redis->get("tqKillCount")]);
+}

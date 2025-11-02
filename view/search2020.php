@@ -38,7 +38,11 @@ for ($i = 0; $i < sizeof($result); $i++) {
 
 
 // Declare out json return type
-$app->contentType('application/json; charset=utf-8');
+if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+	$GLOBALS['content_type'] = 'application/json; charset=utf-8';
+} else {
+	$app->contentType('application/json; charset=utf-8');
+}
 
 // CORS headers
 header('Access-Control-Allow-Origin: *');

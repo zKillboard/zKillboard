@@ -2,7 +2,7 @@
     "require": {
         "cvweiss/redistools": "v0.0.*",
             "cvweiss/zlibrary" : "*",
-            "slim/slim": "2.*",
+            "slim/slim": "3.12.*",
             "twig/twig": "^3.0",
             "erusev/parsedown": "1.*",
             "zkillboard/redisq": "*",

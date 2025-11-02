@@ -8,4 +8,9 @@ if ($ssoCharacterID != null && $ssoHash != null) {
 
 session_regenerate_id(true);
 session_destroy();
-$app->redirect('/', 302);
+if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+	$GLOBALS['redirect_url'] = '/';
+	$GLOBALS['redirect_status'] = 302;
+} else {
+	$app->redirect('/', 302);
+}

@@ -2,9 +2,23 @@
 
 global $mdb, $redis, $uri, $t;
 
+// Extract route parameters for compatibility
+if (isset($GLOBALS['route_args'])) {
+    $inputString = $GLOBALS['route_args']['input'] ?? '';
+    $input = explode('/', trim($inputString, '/'));
+} else {
+    // Legacy parameter passing still works
+}
+
 $key = $input[0];
 if (!isset($input[1])) {
-    return $app->redirect('/');
+    // Handle redirect for compatibility
+    if (isset($GLOBALS['capture_render_data'])) {
+        $GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', '/');
+        return;
+    } else {
+        return $app->redirect('/');
+    }
 }
 $id = $input[1];
 $pageType = (string) @$input[2];
@@ -15,12 +29,34 @@ if ($key != 'label' && (int) $id == 0) {
         $searchKey = 'solarSystem';
     }
     $id = $mdb->findField('information', 'id', ['type' => "${searchKey}ID", 'name' => $id]);
-    if ($id > 0) return $app->redirect("/$key/$id/");
-    return $app->redirect("./../", 302);
+    if ($id > 0) {
+        // Handle redirect for compatibility
+        if (isset($GLOBALS['capture_render_data'])) {
+            $GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', "/$key/$id/");
+            return;
+        } else {
+            return $app->redirect("/$key/$id/");
+        }
+    }
+    // Handle redirect for compatibility
+    if (isset($GLOBALS['capture_render_data'])) {
+        $GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', "./../");
+        return;
+    } else {
+        return $app->redirect("./../", 302);
+    }
 }
 
 if (strlen("$id") > 11) {
-    return $app->notFound();
+    // Handle 404 for compatibility
+    if (isset($GLOBALS['capture_render_data'])) {
+        $GLOBALS['render_template'] = '404.html';
+        $GLOBALS['render_data'] = array('message' => 'Not Found');
+        $GLOBALS['render_status'] = 404;
+        return;
+    } else {
+        return $app->notFound();
+    }
 }
 
 $validPageTypes = array('kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime', 'streambox');
@@ -45,22 +81,53 @@ $map = array(
         'label' => array('column' => 'label', 'mixed' => true),
         );
 if (!array_key_exists($key, $map)) {
-    return $app->notFound();
+    // Handle 404 for compatibility
+    if (isset($GLOBALS['capture_render_data'])) {
+        $GLOBALS['render_template'] = '404.html';
+        $GLOBALS['render_data'] = array('message' => 'Not Found');
+        $GLOBALS['render_status'] = 404;
+        return;
+    } else {
+        return $app->notFound();
+    }
 }
 
 if ($key != "label" && (!is_numeric($id) || $id <= 0)) {
-    return $app->notFound();
+    // Handle 404 for compatibility
+    if (isset($GLOBALS['capture_render_data'])) {
+        $GLOBALS['render_template'] = '404.html';
+        $GLOBALS['render_data'] = array('message' => 'Not Found');
+        $GLOBALS['render_status'] = 404;
+        return;
+    } else {
+        return $app->notFound();
+    }
 }
 
 try {
     $parameters = Util::convertUriToParameters($_SERVER['REQUEST_URI']);
 } catch (Exception $ex) {
-    return $app->notFound();
+    // Handle 404 for compatibility
+    if (isset($GLOBALS['capture_render_data'])) {
+        $GLOBALS['render_template'] = '404.html';
+        $GLOBALS['render_data'] = array('message' => 'Not Found');
+        $GLOBALS['render_status'] = 404;
+        return;
+    } else {
+        return $app->notFound();
+    }
 }
 
 if (isset($parameters['streambox'])) {
-    $app->render("streambox.html");
-    return;
+    // Handle render for compatibility
+    if (isset($GLOBALS['capture_render_data'])) {
+        $GLOBALS['render_template'] = "streambox.html";
+        $GLOBALS['render_data'] = [];
+        return;
+    } else {
+        $app->render("streambox.html");
+        return;
+    }
 }
 unset($parameters['streambox']);
 
@@ -86,15 +153,38 @@ try {
     $type = $map[$key]['column'];
     $detail = Info::getInfoDetails("${type}ID", $id);
     if (isset($detail['valid']) && $detail['valid'] == false) {
-        return $app->notFound();
+        // Handle 404 for compatibility
+        if (isset($GLOBALS['capture_render_data'])) {
+            $GLOBALS['render_template'] = '404.html';
+            $GLOBALS['render_data'] = array('message' => 'Not Found');
+            $GLOBALS['render_status'] = 404;
+            return;
+        } else {
+            return $app->notFound();
+        }
     }
 } catch (Exception $ex) {
-    return $app->render('error.html', array('message' => "There was an error fetching information for the $key you specified."));
+    // Handle render for compatibility
+    if (isset($GLOBALS['capture_render_data'])) {
+        $GLOBALS['render_template'] = 'error.html';
+        $GLOBALS['render_data'] = array('message' => "There was an error fetching information for the $key you specified.");
+        return;
+    } else {
+        return $app->render('error.html', array('message' => "There was an error fetching information for the $key you specified."));
+    }
 }
 
 $pageName = isset($detail[$map[$key]['column'].'Name']) ? $detail[$map[$key]['column'].'Name'] : '???';
 if ($key != "label" && ($pageName == '???' && !$mdb->exists('information', ['id' => $id]))) {
-    return $app->render('404.html', array('message' => 'This entity is not in our database.'), 404);
+    // Handle render for compatibility
+    if (isset($GLOBALS['capture_render_data'])) {
+        $GLOBALS['render_template'] = '404.html';
+        $GLOBALS['render_data'] = array('message' => 'This entity is not in our database.');
+        $GLOBALS['render_status'] = 404;
+        return;
+    } else {
+        return $app->render('404.html', array('message' => 'This entity is not in our database.'), 404);
+    }
 }
 $columnName = ($key == 'labels') ? "labels" : $map[$key]['column'].'ID';
 $mixedKills = $pageType == 'overview' && $map[$key]['mixed'];
@@ -520,7 +610,14 @@ if ($key == 'label') $kills = [];
 
 $renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified, 'dqChars' => $dqChars);
 
-$app->render('overview.html', $renderParams);
+// Handle render for compatibility
+if (isset($GLOBALS['capture_render_data'])) {
+    $GLOBALS['render_template'] = 'overview.html';
+    $GLOBALS['render_data'] = $renderParams;
+    return;
+} else {
+    $app->render('overview.html', $renderParams);
+}
 
 function addVics($vics, $kills = []) {
     if ($kills === false || $kills === true) $kills = [];

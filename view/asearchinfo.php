@@ -16,7 +16,11 @@ try {
     if ($type ==  "solarSystemID") $name = "$name (" . Info::getInfoField('regionID', (int) @$info['regionID'], "name") . ")";
 
 	header('Access-Control-Allow-Methods: GET,POST');
-	$app->contentType('application/json; charset=utf-8');
+	if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+		$GLOBALS['content_type'] = 'application/json; charset=utf-8';
+	} else {
+		$app->contentType('application/json; charset=utf-8');
+	}
 
     $type = $otype;
 	echo json_encode(['type' => $type, 'id' => $id, 'name' => $name], true);

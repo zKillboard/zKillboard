@@ -2,7 +2,23 @@
 
 global $mdb, $redis, $uri;
 
-$params = URI::validate($app, $uri, ['epoch' => false, 'type' => true, 'id' => true]);
+// Create mock app object for URI validation if needed
+if (isset($GLOBALS['route_args'])) {
+	try {
+		$mockApp = new class {
+			public function notFound() {
+				throw new Exception('Not Found');
+			}
+		};
+		$params = URI::validate($mockApp, $uri, ['epoch' => false, 'type' => true, 'id' => true]);
+	} catch (Exception $e) {
+		// If validation fails, return empty result
+		echo json_encode([]);
+		return;
+	}
+} else {
+	$params = URI::validate($app, $uri, ['epoch' => false, 'type' => true, 'id' => true]);
+}
 
 $epoch = (int) @$params['epoch'];
 $type = $params['type'];
@@ -14,7 +30,15 @@ $array = $mdb->findDoc('statistics', ['type' => $type, 'id' => $id]);
 if ($array == null) $array = ['epoch' => 0];
 
 $sEpoch = $array['epoch'];
-if (((int) $epoch) != $sEpoch) return $app->redirect("/cache/24hour/stats/?epoch=$sEpoch&type=$type&id=$id");
+if (((int) $epoch) != $sEpoch) {
+	if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+		$GLOBALS['redirect_url'] = "/cache/24hour/stats/?epoch=$sEpoch&type=$type&id=$id";
+		return;
+	} else {
+		header("Location: /cache/24hour/stats/?epoch=$sEpoch&type=$type&id=$id");
+		return;
+	}
+}
 
 //$array['activepvp'] = (object) Stats::getActivePvpStats([$type => [$id]]);
 //$array['info'] = $mdb->findDoc('information', ['type' => $type, 'id' => $id]);
@@ -46,7 +70,11 @@ $ret['epoch'] = $sEpoch;
 $ret['sequence'] = @$array['sequence'];
 
 $array['ret'] = $ret;
-$app->contentType('application/json; charset=utf-8');
+if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+	$GLOBALS['content_type'] = 'application/json; charset=utf-8';
+} else {
+	$app->contentType('application/json; charset=utf-8');
+}
 echo json_encode($ret);
 
 function eff($a, $b) {

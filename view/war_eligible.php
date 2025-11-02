@@ -6,7 +6,12 @@ $allis = addStats($mdb->find("information", ['type' => 'allianceID', 'war_eligib
 $corps = addStats($mdb->find("information", ['type' => 'corporationID', 'allianceID' => 0, 'war_eligible' => true, 'has_wars' => false ], ['memberCount' => -1], 100));
 
 
-$app->render('war_eligible.html', ['allis' => $allis, 'corps' => $corps]);
+if (isset($GLOBALS['route_args'])) {
+    $GLOBALS['render_template'] = 'war_eligible.html';
+    $GLOBALS['render_data'] = ['allis' => $allis, 'corps' => $corps];
+} else {
+    $app->render('war_eligible.html', ['allis' => $allis, 'corps' => $corps]);
+}
 
 function addStats($arr) {
     global $mdb;

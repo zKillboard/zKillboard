@@ -14,4 +14,9 @@ foreach ($result as $kill) {
     $sponsored[$kill['killID']] = $killmail;
 }
 
-$app->render("sponsored.html", ['sponsored' => $sponsored]);
+if (isset($GLOBALS['route_args'])) {
+    $GLOBALS['render_template'] = "sponsored.html";
+    $GLOBALS['render_data'] = ['sponsored' => $sponsored];
+} else {
+    $app->render("sponsored.html", ['sponsored' => $sponsored]);
+}

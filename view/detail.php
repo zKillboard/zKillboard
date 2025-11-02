@@ -2,8 +2,23 @@
 
 global $mdb;
 
+// Extract route parameters for compatibility
+if (isset($GLOBALS['route_args'])) {
+	$id = $GLOBALS['route_args']['id'] ?? '';
+	$where = $GLOBALS['route_args']['where'] ?? '';
+} else {
+	// Legacy parameter passing still works
+}
+$pageview = $GLOBALS['pageview'] ?? '';
+
 if ($pageview == 'overview') {
-	return $app->redirect("/kill/$id/", 301);
+	// Handle redirect for compatibility
+	if (isset($GLOBALS['capture_render_data'])) {
+		$GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(301)->withHeader('Location', "/kill/$id/");
+		return;
+	} else {
+		return $app->redirect("/kill/$id/", 301);
+	}
 }
 if ($pageview == '') {
 	$pageview = 'overview';
@@ -14,13 +29,37 @@ if ($where != "") {
 	$hash = $crest['hash'] ?? '';
 	switch ($where) {
 		case 'esi':
-			return $app->redirect("https://esi.evetech.net/latest/killmails/$id/$hash/", 302);
+			// Handle redirect for compatibility
+			if (isset($GLOBALS['capture_render_data'])) {
+				$GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', "https://esi.evetech.net/latest/killmails/$id/$hash/");
+				return;
+			} else {
+				return $app->redirect("https://esi.evetech.net/latest/killmails/$id/$hash/", 302);
+			}
 		case 'eveshipfit':
-			return $app->redirect("https://eveship.fit/?fit=killmail:$id/$hash", 302);
+			// Handle redirect for compatibility
+			if (isset($GLOBALS['capture_render_data'])) {
+				$GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', "https://eveship.fit/?fit=killmail:$id/$hash");
+				return;
+			} else {
+				return $app->redirect("https://eveship.fit/?fit=killmail:$id/$hash", 302);
+			}
 		case 'eveworkbench':
-			return $app->redirect("https://www.eveworkbench.com/import/killmail/$id/$hash", 302);
+			// Handle redirect for compatibility
+			if (isset($GLOBALS['capture_render_data'])) {
+				$GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', "https://www.eveworkbench.com/import/killmail/$id/$hash");
+				return;
+			} else {
+				return $app->redirect("https://www.eveworkbench.com/import/killmail/$id/$hash", 302);
+			}
 	}
-	return $app->redirect("/kill/$id/", 302);
+	// Handle redirect for compatibility
+	if (isset($GLOBALS['capture_render_data'])) {
+		$GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', "/kill/$id/");
+		return;
+	} else {
+		return $app->redirect("/kill/$id/", 302);
+	}
 }
 if ($pageview != 'overview' && $pageview != 'involved' && $pageview != 'remaining') {
 	return header("Location: /");
@@ -33,7 +72,13 @@ $oID = $id;
 $id = (int) $id;
 if ("$oID" !== "$id") {
 	Util::zout("redirecting $oID to $id");
-	return $app->redirect("/kill/$id/", 302);
+	// Handle redirect for compatibility
+	if (isset($GLOBALS['capture_render_data'])) {
+		$GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', "/kill/$id/");
+		return;
+	} else {
+		return $app->redirect("/kill/$id/", 302);
+	}
 }
 
 while ($mdb->count('queueInfo', ['killID' => $id])) {
@@ -42,7 +87,15 @@ while ($mdb->count('queueInfo', ['killID' => $id])) {
 
 $exists = $mdb->exists('killmails', ['killID' => $id]);
 if (!$exists) {
-	return $app->render('404.html', array('message' => "KillID $id does not exist."), 404);
+	// Handle render for compatibility
+	if (isset($GLOBALS['capture_render_data'])) {
+		$GLOBALS['render_template'] = '404.html';
+		$GLOBALS['render_data'] = array('message' => "KillID $id does not exist.");
+		$GLOBALS['render_status'] = 404;
+		return;
+	} else {
+		return $app->render('404.html', array('message' => "KillID $id does not exist."), 404);
+	}
 }
 
 // Create the details on this kill
@@ -184,15 +237,33 @@ foreach (Comments::$defaultComments as $dc) {
 $details['comments'] = array_values($comments);
 
 if ($pageview == 'remaining') {
-	$app->render("components/attackers_list.html", [
-		'attackList' => array_slice($killdata['involved'], 10),
-		'isDelayed' => false,
-		'hideTableHeading' => true
-	]);
-	return;
+	// Handle render for compatibility
+	if (isset($GLOBALS['capture_render_data'])) {
+		$GLOBALS['render_template'] = "components/attackers_list.html";
+		$GLOBALS['render_data'] = [
+			'attackList' => array_slice($killdata['involved'], 10),
+			'isDelayed' => false,
+			'hideTableHeading' => true
+		];
+		return;
+	} else {
+		$app->render("components/attackers_list.html", [
+			'attackList' => array_slice($killdata['involved'], 10),
+			'isDelayed' => false,
+			'hideTableHeading' => true
+		]);
+		return;
+	}
 }
 
-$app->render('detail.html', $details);
+// Handle render for compatibility
+if (isset($GLOBALS['capture_render_data'])) {
+	$GLOBALS['render_template'] = 'detail.html';
+	$GLOBALS['render_data'] = $details;
+	return;
+} else {
+	$app->render('detail.html', $details);
+}
 
 function involvedships($array)
 {

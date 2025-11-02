@@ -23,4 +23,8 @@ $battle['dttm'] = $dttm;
 $battle['options'] = $options;
 $mdb->save('battles', $battle);
 
-$app->redirect("/br/$battleID/", 302);
+if (isset($GLOBALS['route_args'])) {
+    header("Location: /br/$battleID/");
+} else {
+    $app->redirect("/br/$battleID/", 302);
+}

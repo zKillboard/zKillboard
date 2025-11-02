@@ -9,15 +9,35 @@ $sessID = session_id();
 if (sizeof($_SESSION) == 0) {
     if ($redis->get("invalid_login:$ip") >= 3) {
         $redis->del("invalid_login:$ip");
-        return $app->render("error.html", ['message' => "OK, that's enough.  There is some sort of session bug between you and zkillboard.  Are you trying to run incognito? Are you running adblockers or some plugin for your browser that could be interfering? Let's figure this out and come visit us on Discord."]);
+        // Handle render for compatibility
+        if (isset($GLOBALS['capture_render_data'])) {
+            $GLOBALS['render_template'] = "error.html";
+            $GLOBALS['render_data'] = ['message' => "OK, that's enough.  There is some sort of session bug between you and zkillboard.  Are you trying to run incognito? Are you running adblockers or some plugin for your browser that could be interfering? Let's figure this out and come visit us on Discord."];
+            return;
+        } else {
+            return $app->render("error.html", ['message' => "OK, that's enough.  There is some sort of session bug between you and zkillboard.  Are you trying to run incognito? Are you running adblockers or some plugin for your browser that could be interfering? Let's figure this out and come visit us on Discord."]);
+        }
     }
     $redis->incr("invalid_login:$ip", 1);
     $redis->expire("invalid_login:$ip", 120);
-    return header('Location: /ccpoauth2');
+    // Handle redirect for compatibility
+    if (isset($GLOBALS['capture_render_data'])) {
+        $GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', '/ccpoauth2');
+        return;
+    } else {
+        return header('Location: /ccpoauth2');
+    }
 }
 
 if ($redis->get("zkb:noapi") == "true") {
-    return $app->render("error.html", ['message' => 'Downtime is not a good time to login, the CCP servers are not reliable, sorry.']);
+    // Handle render for compatibility
+    if (isset($GLOBALS['capture_render_data'])) {
+        $GLOBALS['render_template'] = "error.html";
+        $GLOBALS['render_data'] = ['message' => 'Downtime is not a good time to login, the CCP servers are not reliable, sorry.'];
+        return;
+    } else {
+        return $app->render("error.html", ['message' => 'Downtime is not a good time to login, the CCP servers are not reliable, sorry.']);
+    }
 }
 
 $sem = sem_get(3174);
@@ -105,7 +125,13 @@ try {
         }
         if ($doRedirect) {
             $sso = ZKillSSO::getSSO($neededScopes);
-            return $app->redirect('Location: ' . $sso->getLoginURL($_SESSION), 302);
+            // Handle redirect for compatibility
+            if (isset($GLOBALS['capture_render_data'])) {
+                $GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', $sso->getLoginURL($_SESSION));
+                return;
+            } else {
+                return $app->redirect('Location: ' . $sso->getLoginURL($_SESSION), 302);
+            }
         }
     }
 
@@ -147,20 +173,59 @@ try {
     if ($redirect == '') $redirect = '/';
 
     $redis->sadd("queueStatsSet", "characterID:$charID"); // encourage stats calc on newly logged in chars
-    header('Location: ' . $redirect, 302);
+    // Handle redirect for compatibility
+    if (isset($GLOBALS['capture_render_data'])) {
+        $GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', $redirect);
+        return;
+    } else {
+        header('Location: ' . $redirect, 302);
+    }
 
 } catch (Exception $e) {
     $sessid = session_id();
     Util::zout("$ip $sessid Failed login attempt: " . $e->getMessage() . "\n" . print_r($_SESSION, true));
     if ($e->getMessage() == "Invalid state returned - possible hijacking attempt") {
-        if ($_SESSION['characterID'] > 0) header('Location: /', 302);
-        else $app->render('error.html', ['message' => "Please try logging in again, but don't double/triple click this time. CCP's login form isn't very good at handling multiple clicks... "], 503);
+        if ($_SESSION['characterID'] > 0) {
+            // Handle redirect for compatibility
+            if (isset($GLOBALS['capture_render_data'])) {
+                $GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', '/');
+                return;
+            } else {
+                header('Location: /', 302);
+            }
+        } else {
+            // Handle render for compatibility
+            if (isset($GLOBALS['capture_render_data'])) {
+                $GLOBALS['render_template'] = 'error.html';
+                $GLOBALS['render_data'] = ['message' => "Please try logging in again, but don't double/triple click this time. CCP's login form isn't very good at handling multiple clicks... "];
+                $GLOBALS['render_status'] = 503;
+                return;
+            } else {
+                $app->render('error.html', ['message' => "Please try logging in again, but don't double/triple click this time. CCP's login form isn't very good at handling multiple clicks... "], 503);
+            }
+        }
     } elseif ($e->getMessage() == "Undefined array key \"access_token\"") {
-        return $app->render('error.html', ['message' => "CCP failed to send access token data, please try logging in again."], 503);
+        // Handle render for compatibility
+        if (isset($GLOBALS['capture_render_data'])) {
+            $GLOBALS['render_template'] = 'error.html';
+            $GLOBALS['render_data'] = ['message' => "CCP failed to send access token data, please try logging in again."];
+            $GLOBALS['render_status'] = 503;
+            return;
+        } else {
+            return $app->render('error.html', ['message' => "CCP failed to send access token data, please try logging in again."], 503);
+        }
 
     } else {
         Util::zout(print_r($e, true));
-        return $app->render('error.html', ['message' => $e->getMessage()], 503);
+        // Handle render for compatibility
+        if (isset($GLOBALS['capture_render_data'])) {
+            $GLOBALS['render_template'] = 'error.html';
+            $GLOBALS['render_data'] = ['message' => $e->getMessage()];
+            $GLOBALS['render_status'] = 503;
+            return;
+        } else {
+            return $app->render('error.html', ['message' => $e->getMessage()], 503);
+        }
     }
 } finally {
     sem_release($sem);

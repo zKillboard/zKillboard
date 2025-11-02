@@ -9,9 +9,14 @@ $id = (int) $id;
 
 $info = $mdb->findDoc('information', ['type' => 'typeID', 'id' => (int) $id, 'cacheTime' => 3600]);
 if ($info == null) {
-    $app->render('404.html', ['message' => 'Item not found']);
-
-    return;
+    if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+        $GLOBALS['render_template'] = '404.html';
+        $GLOBALS['render_data'] = ['message' => 'Item not found'];
+        return;
+    } else {
+        $app->render('404.html', ['message' => 'Item not found']);
+        return;
+    }
 }
 $info['typeName'] = $info['name'];
 $info['description'] = str_replace('<br>', "\n", @$info['description']);
@@ -49,4 +54,9 @@ foreach ($kills as $row) {
 Info::addInfo($victims);
 
 $info['typeID'] = $id;
-$app->render('item.html', array('info' => $info, 'hasKills' => $hasKills, 'kills' => $victims));
+if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+    $GLOBALS['render_template'] = 'item.html';
+    $GLOBALS['render_data'] = array('info' => $info, 'hasKills' => $hasKills, 'kills' => $victims);
+} else {
+    $app->render('item.html', array('info' => $info, 'hasKills' => $hasKills, 'kills' => $victims));
+}

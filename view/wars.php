@@ -19,4 +19,11 @@ $wars[] = ['name' => 'Recently Finished Wars', 'wars' => $mdb->find('information
   $wars[] = War::getNamedWars("Alltime Closed Wars by ISK", "select warID from zz_wars where timeFinished is not null order by (agrIskKilled + dfdIskKilled) desc limit 10");*/
 Info::addInfo($wars);
 
-$app->render('wars.html', array('warTables' => $wars));
+// Handle rendering for Slim 3 compatibility
+if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+	$GLOBALS['render_template'] = 'wars.html';
+	$GLOBALS['render_data'] = array('warTables' => $wars);
+} else {
+	// Fallback for any remaining Slim 2 usage
+	$app->render('wars.html', array('warTables' => $wars));
+}

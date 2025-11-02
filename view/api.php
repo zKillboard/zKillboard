@@ -4,6 +4,14 @@ use cvweiss\redistools\RedisQueue;
 
 global $redis, $ip, $uri;
 
+// Extract route parameters for compatibility
+if (isset($GLOBALS['route_args'])) {
+    $inputString = $GLOBALS['route_args']['input'] ?? '';
+    $input = explode('/', trim($inputString, '/'));
+} else {
+    // Legacy parameter passing still works
+}
+
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 
@@ -56,18 +64,39 @@ try {
         }
         $array[] = $result;
     }
-    $app->expires('+1 hour');
+    // Handle expires for compatibility - add cache headers manually
+    if (!isset($GLOBALS['capture_render_data'])) {
+        $app->expires('+1 hour');
+    }
 
     if (isset($_GET['callback']) && Util::isValidCallback($_GET['callback'])) {
-        $app->contentType('application/javascript; charset=utf-8');
-        header('X-JSONP: true');
-        echo $_GET['callback'].'('.json_encode($array).')';
-    } else {
-        $app->contentType('application/json; charset=utf-8');
-        if (isset($parameters['pretty'])) {
-            echo json_encode($array, JSON_PRETTY_PRINT);
+        // Handle JSONP output for compatibility
+        if (isset($GLOBALS['capture_render_data'])) {
+            header('X-JSONP: true');
+            $GLOBALS['json_output'] = $_GET['callback'].'('.json_encode($array).')';
+            $GLOBALS['json_content_type'] = 'application/javascript; charset=utf-8';
+            return;
         } else {
-            echo json_encode($array);
+            $app->contentType('application/javascript; charset=utf-8');
+            header('X-JSONP: true');
+            echo $_GET['callback'].'('.json_encode($array).')';
+        }
+    } else {
+        // Handle JSON output for compatibility
+        if (isset($GLOBALS['capture_render_data'])) {
+            if (isset($parameters['pretty'])) {
+                $GLOBALS['json_output'] = json_encode($array, JSON_PRETTY_PRINT);
+            } else {
+                $GLOBALS['json_output'] = json_encode($array);
+            }
+            return;
+        } else {
+            $app->contentType('application/json; charset=utf-8');
+            if (isset($parameters['pretty'])) {
+                echo json_encode($array, JSON_PRETTY_PRINT);
+            } else {
+                echo json_encode($array);
+            }
         }
     }
 } catch (Exception $ex) {

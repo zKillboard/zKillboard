@@ -3,7 +3,27 @@
 global $mdb, $redis, $uri;
 
 $bypass = strpos($uri, "/bypass/") !== false;
-$params = URI::validate($app, $uri, ['u' => true, 'ks' => !$bypass, 'ke' => !$bypass]);
+
+// Handle URI validation for compatibility
+if (isset($GLOBALS['capture_render_data'])) {
+    // Try to bypass URI validation for captured requests, set default params
+    try {
+        // Create a mock app object for URI::validate
+        $mockApp = new class {
+            public function notFound() {
+                throw new Exception('Not Found');
+            }
+        };
+        $params = URI::validate($mockApp, $uri, ['u' => true, 'ks' => !$bypass, 'ke' => !$bypass]);
+    } catch (Exception $e) {
+        // If validation fails, return empty result
+        global $twig;
+        $GLOBALS['capture_render_data'] = $twig->render('components/top_killer_list.html', []);
+        return;
+    }
+} else {
+    $params = URI::validate($app, $uri, ['u' => true, 'ks' => !$bypass, 'ke' => !$bypass]);
+}
 
 $uri = $params['u'];
 $ks = @$params['ks'];
@@ -19,7 +39,15 @@ $q['cacheTime'] = 60;
 $ksa = (int) $mdb->findField('oneWeek', 'sequence', $q, ['sequence' => 1]);
 $kea = (int) $mdb->findField('oneWeek', 'sequence', $q, ['sequence' => -1]);
 
-if ($bypass || "$ks" != "$ksa" || "$ke" != "$kea") return $app->redirect("/cache/24hour/statstopisk/?u=$uri&ks=$ksa&ke=$kea");
+if ($bypass || "$ks" != "$ksa" || "$ke" != "$kea") {
+    // Handle redirect for compatibility
+    if (isset($GLOBALS['capture_render_data'])) {
+        $GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', "/cache/24hour/statstopisk/?u=$uri&ks=$ksa&ke=$kea");
+        return;
+    } else {
+        return $app->redirect("/cache/24hour/statstopisk/?u=$uri&ks=$ksa&ke=$kea");
+    }
+}
 
 $disqualified = 0;
 foreach ($p as $type => $val) {
@@ -42,4 +70,11 @@ if ($ksa > 0 && strpos($uri, "/page/") === false && $disqualified == 0) {
     $ret['topSet'] = Stats::getTopIsk($p);
 }
 
-$app->render('components/big_top_list.html', $ret);
+// Handle render for compatibility
+if (isset($GLOBALS['capture_render_data'])) {
+    $GLOBALS['render_template'] = 'components/big_top_list.html';
+    $GLOBALS['render_data'] = $ret;
+    return;
+} else {
+    $app->render('components/big_top_list.html', $ret);
+}

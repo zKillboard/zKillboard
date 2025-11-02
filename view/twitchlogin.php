@@ -7,8 +7,13 @@ $userID = User::getUserID();
 if ($userID == 0) {
     // User not logged in
     $_SESSION['twitch'] = true;
-    $app->redirect('/ccplogin/');
-    return;
+    if (isset($GLOBALS['route_args'])) {
+        header("Location: /ccplogin/");
+        return;
+    } else {
+        $app->redirect('/ccplogin/');
+        return;
+    }
 }
 
 $factory = new \RandomLib\Factory;
@@ -19,4 +24,8 @@ $_SESSION['oauth2State'] = $state;
 $scope_parameters = '&scope='.urlencode('user:read:subscriptions');
 $href = "https://id.twitch.tv/oauth2/authorize?response_type=code&force_verify=true&client_id=$twitch_client_id&redirect_uri=$twitch_redirect_uri&state=" . urlencode($state) . $scope_parameters;
 
-$app->redirect($href, 302);
+if (isset($GLOBALS['route_args'])) {
+    header("Location: $href");
+} else {
+    $app->redirect($href, 302);
+}

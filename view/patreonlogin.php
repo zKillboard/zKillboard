@@ -10,8 +10,14 @@ $userID = User::getUserID();
 if ($userID == 0) {
     // User not logged in
     $_SESSION['patreon'] = true;
-    $app->redirect('/ccplogin/');
-    return;
+    if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+        $GLOBALS['redirect_url'] = '/ccplogin/';
+        $GLOBALS['redirect_status'] = 302;
+        return;
+    } else {
+        $app->redirect('/ccplogin/');
+        return;
+    }
 }
 
 $factory = new \RandomLib\Factory;
@@ -23,4 +29,9 @@ $min_cents = 100;
 $scope_parameters = '&scope=identity%20identity'.urlencode('[email]');
 $href = 'https://www.patreon.com/oauth2/become-patron?response_type=code&min_cents=' . $min_cents . '&client_id=' . $patreon_client_id . $scope_parameters . '&redirect_uri=' . $patreon_redirect_uri . "&state=" . urlencode($state);
 
-$app->redirect($href, 302);
+if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+	$GLOBALS['redirect_url'] = $href;
+	$GLOBALS['redirect_status'] = 302;
+} else {
+	$app->redirect($href, 302);
+}

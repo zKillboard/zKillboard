@@ -2,6 +2,13 @@
 
 global $mdb, $redis;
 
+// Extract route parameters for compatibility
+if (isset($GLOBALS['route_args'])) {
+    $killID = $GLOBALS['route_args']['killID'] ?? 0;
+} else {
+    // Legacy parameter passing still works
+}
+
 //if ($redis->get("zkb:killlistrow:" . $killID) != "true") return;
 
 $map = array(
@@ -32,4 +39,11 @@ foreach ($kills as $id => $kill) {
     $kills[$id] = $kill;
 }
 
-$app->render('components/kill_list_row.html', ['killList' => $kills, 'currentDate' => date('M d, Y')]);
+// Handle render for compatibility
+if (isset($GLOBALS['capture_render_data'])) {
+    $GLOBALS['render_template'] = 'components/kill_list_row.html';
+    $GLOBALS['render_data'] = ['killList' => $kills, 'currentDate' => date('M d, Y')];
+    return;
+} else {
+    $app->render('components/kill_list_row.html', ['killList' => $kills, 'currentDate' => date('M d, Y')]);
+}

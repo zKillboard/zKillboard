@@ -6,12 +6,11 @@ $currentTime = date("YmdHi");
 $loader = new \Twig\Loader\FilesystemLoader($baseDir . 'templates/');
 $twig = new \Twig\Environment($loader, array('debug' => $twigDebug, 'cache' => $twigCache));
 
-// Create a custom view class that integrates with Slim 2
-class CustomTwigView extends \Slim\View {
+// Create a custom view class that works with Slim 3
+class CustomTwigView {
     private $twig;
     
     public function __construct($twig) {
-        parent::__construct();
         $this->twig = $twig;
     }
     
@@ -19,13 +18,25 @@ class CustomTwigView extends \Slim\View {
         return $this->twig;
     }
     
-    public function render($template, $data = null) {
-        $data = array_merge($this->data->all(), (array) $data);
-        return $this->twig->render($template, $data);
+    public function render($response, $template, $data = []) {
+        $body = $this->twig->render($template, $data);
+        $response->getBody()->write($body);
+        return $response;
     }
 }
 
-$app->view(new CustomTwigView($twig));
+// Register the view in the Slim 3 container
+$container = $app->getContainer();
+$container['view'] = function ($c) use ($twig) {
+    return new CustomTwigView($twig);
+};
+
+// Setup not found handler
+$container['notFoundHandler'] = function ($c) {
+    return function ($request, $response) use ($c) {
+        return $response->withStatus(302)->withHeader('Location', './../');
+    };
+};
 
 // Check SSO values
 $ssoCharacterID = @$_SESSION['characterID'];

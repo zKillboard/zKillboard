@@ -32,7 +32,14 @@ $kills = Kills::getKills(array('cacheTime' => 60, 'limit' => 50));
 // Collect active PVP stats
 $activePvP = json_decode($redis->get('zkb:activePvp'));
 
-$app->render('index.html', array('topPods' => $topPods, 'topIsk' => $topIsk, 'topIskShips' => $topIskShips, 'topIskStructures' => $topIskStructures, 'topPoints' => $topPoints, 'topSpecialLosses' => $topSpecialLosses, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => $pageType, 'pager' => true, 'pageTitle' => $pageTitle, 'requestUriPager' => $requestUriPager, 'activePvP' => $activePvP, 'entityID' => '*', 'trackedItems' => $trackedItems, 'topDonators' => json_decode($redis->get("zkb:topDonators"), true), 'sponsored' => $sponsored));
+// Store render data for Slim 3 compatibility
+if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+	$GLOBALS['render_template'] = 'index.html';
+	$GLOBALS['render_data'] = array('topPods' => $topPods, 'topIsk' => $topIsk, 'topIskShips' => $topIskShips, 'topIskStructures' => $topIskStructures, 'topPoints' => $topPoints, 'topSpecialLosses' => $topSpecialLosses, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => $pageType, 'pager' => true, 'pageTitle' => $pageTitle, 'requestUriPager' => $requestUriPager, 'activePvP' => $activePvP, 'entityID' => '*', 'trackedItems' => $trackedItems, 'topDonators' => json_decode($redis->get("zkb:topDonators"), true), 'sponsored' => $sponsored);
+} else {
+	// Fallback for any remaining Slim 2 usage
+	$app->render('index.html', array('topPods' => $topPods, 'topIsk' => $topIsk, 'topIskShips' => $topIskShips, 'topIskStructures' => $topIskStructures, 'topPoints' => $topPoints, 'topSpecialLosses' => $topSpecialLosses, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => $pageType, 'pager' => true, 'pageTitle' => $pageTitle, 'requestUriPager' => $requestUriPager, 'activePvP' => $activePvP, 'entityID' => '*', 'trackedItems' => $trackedItems, 'topDonators' => json_decode($redis->get("zkb:topDonators"), true), 'sponsored' => $sponsored));
+}
 
 function getTop($title, $type)
 {

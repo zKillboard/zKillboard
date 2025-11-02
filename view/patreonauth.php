@@ -9,14 +9,26 @@ try {
     $userID = User::getUserID();
     if ($userID == 0) {
         // User not logged in
-        $app->redirect('/');
-        return;
+        if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+            $GLOBALS['redirect_url'] = '/';
+            $GLOBALS['redirect_status'] = 302;
+            return;
+        } else {
+            $app->redirect('/');
+            return;
+        }
     }
 
     $state = str_replace("/", "", @$_GET['state']);
     $sessionState = @$_SESSION['oauth2State'];
     if ($state !== $sessionState) {
-        return $app->render("error.html", ['message' => "Something went wrong with security. Please try again."]);
+        if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+            $GLOBALS['render_template'] = "error.html";
+            $GLOBALS['render_data'] = ['message' => "Something went wrong with security. Please try again."];
+            return;
+        } else {
+            return $app->render("error.html", ['message' => "Something went wrong with security. Please try again."]);
+        }
     }
 
 
@@ -42,9 +54,20 @@ try {
         ZLog::add("You have linked Patreon. Thank you!!", $userID);
         User::sendMessage("You have linked Patreon. Thank you!!", $userID);
         Util::zout("Character $userID has linked Patreon! ($patronID)");
-        $app->redirect("/account/log/");
+        if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+            $GLOBALS['redirect_url'] = "/account/log/";
+            $GLOBALS['redirect_status'] = 302;
+        } else {
+            $app->redirect("/account/log/");
+        }
     }
 } catch (Exception $ex) {
-throw $ex;
+    throw $ex;
+    if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
+        $GLOBALS['render_template'] = "error.html";
+        $GLOBALS['render_data'] = ['message' => "Something went wrong with the login from Patreon's end, sorry, can you please try logging in again? *"];
+        return;
+    } else {
         return $app->render("error.html", ['message' => "Something went wrong with the login from Patreon's end, sorry, can you please try logging in again? *"]);
+    }
 }
