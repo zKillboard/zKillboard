@@ -14,11 +14,13 @@ if (((int) $redis->get("km:post:$ip")) > 5) {
     return;
 } 
 
+$newKillmail = false;
 // do we have the mail?
 if ($mdb->findDoc('killmails', ['killID' => $killID]) == null) {
     try {
         $mdb->insert("crestmails", ['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => 'killmail-api-add', 'delay' => 0]);
         Util::zout("api mail add $killID $hash");
+		$newKillmail = true;
     } catch (Exception $ex) {
         Util::zout(print_r($ex, true));
     }
@@ -49,7 +51,7 @@ if ($mdb->findDoc('killmails', ['killID' => $killID]) == null) {
 // return URL for the mail
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST');
-echo json_encode(['status' => 'success', 'url' => "https://zkillboard.com/kill/${killID}/"]);
+echo json_encode(['status' => 'success', 'new' => $newKillmail, 'url' => "https://zkillboard.com/kill/${killID}/"]);
 
 function invalidRequest($reason) {
     global $IP, $redis;
