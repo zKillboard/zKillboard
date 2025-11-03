@@ -20,6 +20,7 @@ $mdb->set("crestmails", ['processed' => ['$exists' => false]], ['processed' => f
 
 $checked = [];
 $minute = date("Hi");
+$HEADERS = [];
 while ($minute == date("Hi")) {
     $rows = $mdb->find("crestmails", ['processed' => false], ['killID' => -1], 10);
     foreach ($rows as $row) {
@@ -52,6 +53,8 @@ while ($minute == date("Hi")) {
         }
         $checked[] = $killID;
 
+        $bucketRemaining = (int) ($redis->get("esi:ratelimit:killmail") ?? 3600);
+        if ($bucketRemaining < 100) sleep(2); // bucket getting empty, slow down
         $mdb->set("crestmails", $row, ['processed' => 'fetching']);
         $guzzler->call("$esiServer/killmails/$killID/$hash/", "success", "fail", ['row' => $row, 'mdb' => $mdb, 'redis' => $redis, 'killID' => $killID, 'esimails' => $esimails]);
 break;
@@ -63,6 +66,10 @@ break;
 $guzzler->finish();
 
 function fail($guzzler, $params, $ex) {
+    $HEADERS = $params['HEADERS'];
+    $remaining = @$HEADERS['x-ratelimit-remaining'][0] ?? 3600;
+    $redis->setex("esi:ratelimit:killmail", 900, $remaining);
+
     $mdb = $params['mdb'];
     $row = $params['row'];
 
@@ -89,6 +96,10 @@ function fail($guzzler, $params, $ex) {
 
 function success(&$guzzler, &$params, &$content) {
     global $redis;
+
+    $HEADERS = $params['HEADERS'];
+    $remaining = @$HEADERS['x-ratelimit-remaining'][0] ?? 3600;
+    $redis->setex("esi:ratelimit:killmail", 900, $remaining);
 
     $mdb = $params['mdb'];
     $row = $params['row'];
