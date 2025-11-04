@@ -1,26 +1,29 @@
 <?php
 
-global $redis;
+function handler($request, $response, $args, $container) {
+    global $redis;
 
-$imageMap = ['typeID' => 'Type/%1$d_32.png', 'groupID' => 'Type/1_32.png', 'characterID' => 'Character/%1$d_32.jpg', 'corporationID' => 'Corporation/%1$d_32.png', 'allianceID' => 'Alliance/%1$d_32.png', 'factionID' => 'Alliance/%1$d_32.png'];
+    $imageMap = ['typeID' => 'Type/%1$d_32.png', 'groupID' => 'Type/1_32.png', 'characterID' => 'Character/%1$d_32.jpg', 'corporationID' => 'Corporation/%1$d_32.png', 'allianceID' => 'Alliance/%1$d_32.png', 'factionID' => 'Alliance/%1$d_32.png'];
 
-// Handle POST request data - in Slim 3 this needs to be passed differently
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $search = $_POST['query'] ?? '';
+    // Handle different request methods and parameter sources
+    if ($request->getMethod() === 'POST') {
+        $postData = $request->getParsedBody();
+        $search = $postData['query'] ?? '';
+        $entityType = null;
+    } else {
+        // GET request parameters
+        $search = $args['search'] ?? '';
+        $entityType = $args['entityType'] ?? null;
+    }
+
+    $result = zkbSearch::getResults(ltrim($search), $entityType);
+    if (sizeof($result) == 0) $result = zkbSearch::getResults(trim($search), $entityType);
+
+    // Return JSON response with CORS headers
+    $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8')
+                        ->withHeader('Access-Control-Allow-Origin', '*')
+                        ->withHeader('Access-Control-Allow-Methods', 'GET, POST');
+    
+    $response->getBody()->write(json_encode($result));
+    return $response;
 }
-
-if (!(isset($entityType))) {
-    $entityType = null;
-}
-
-$result = zkbSearch::getResults(ltrim($search), $entityType);
-if (sizeof($result) == 0) $result = zkbSearch::getResults(trim($search), $entityType);
-
-// Declare out json return type
-header('Content-Type: application/json; charset=utf-8');
-
-// CORS headers
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST');
-
-echo json_encode($result);

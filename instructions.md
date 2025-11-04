@@ -2,6 +2,8 @@
 
 - Can test using http://localhost/
 - Can find errors at /var/log/nginx/zkill_error.log
+- when converting a view file, look for any routes that use it and convert them all together for smoother testing
+- ensure routes have slim3 syntax
 
 ## Core Principle
 - **Routes.php**: Only handles routing - maps URLs to handler functions

@@ -1,40 +1,31 @@
 <?php
 
-global $mdb;
-
-// Extract route parameters for compatibility
-if (isset($GLOBALS['route_args'])) {
-    $id = $GLOBALS['route_args']['id'] ?? 0;
-} else {
-    // Legacy parameter passing still works
-}
-
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET');
-
-$row = $mdb->findDoc("prices", ['typeID' => (int) $id]);
-unset($row['_id']);
-$row['currentPrice'] = Price::getItemPrice((int) $id, null);
-
-if (isset($_GET['callback']) && Util::isValidCallback($_GET['callback'])) {
-    // Handle JSONP output for compatibility
-    if (isset($GLOBALS['capture_render_data'])) {
-        header('X-JSONP: true');
-        $GLOBALS['json_output'] = $_GET['callback'].'('.json_encode($row).')';
-        $GLOBALS['json_content_type'] = 'application/javascript; charset=utf-8';
-        return;
+function handler($request, $response, $args, $container) {
+    global $mdb;
+    
+    $id = $args['id'] ?? 0;
+    
+    // Set CORS headers
+    $response = $response->withHeader('Access-Control-Allow-Origin', '*')
+                        ->withHeader('Access-Control-Allow-Methods', 'GET');
+    
+    $row = $mdb->findDoc("prices", ['typeID' => (int) $id]);
+    unset($row['_id']);
+    $row['currentPrice'] = Price::getItemPrice((int) $id, null);
+    
+    $queryParams = $request->getQueryParams();
+    
+    if (isset($queryParams['callback']) && Util::isValidCallback($queryParams['callback'])) {
+        // Handle JSONP output
+        $content = $queryParams['callback'] . '(' . json_encode($row) . ')';
+        $response = $response->withHeader('Content-Type', 'application/javascript; charset=utf-8')
+                            ->withHeader('X-JSONP', 'true');
+        $response->getBody()->write($content);
+        return $response;
     } else {
-        $app->contentType('application/javascript; charset=utf-8');
-        header('X-JSONP: true');
-        echo $_GET['callback'].'('.json_encode($row).')';
-    }
-} else {
-    // Handle JSON output for compatibility
-    if (isset($GLOBALS['capture_render_data'])) {
-        $GLOBALS['json_output'] = json_encode($row);
-        return;
-    } else {
-        $app->contentType('application/json; charset=utf-8');
-        echo json_encode($row);
+        // Handle JSON output
+        $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8');
+        $response->getBody()->write(json_encode($row));
+        return $response;
     }
 }

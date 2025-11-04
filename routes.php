@@ -8,20 +8,19 @@ $app->get('/faq/', function ($request, $response, $args) {
 });
 
 $app->get('/challenge/', function ($request, $response, $args) {
-	include "view/challenge.php";
-	return $response;
+	require_once 'view/challenge.php';
+	return handler($request, $response, $args, $this);
 });
 
 $app->get('/cache/1hour/publift/{type}/', function ($request, $response, $args) {
 	global $publift;
 	$type = $args['type'];
-	echo "<div data-fuse='" . @$publift[$type] . "'></div>";
+	$response->getBody()->write("<div data-fuse='" . @$publift[$type] . "'></div>");
 	return $response;
 });
 $app->get('/cache/1hour/google/', function ($request, $response, $args) {
-	$mobile = false;
-	include "view/google.php";
-	return $response;
+	require_once 'view/google.php';
+	return handler($request, $response, $args, $this);
 });
 $app->get('/google/', function ($request, $response, $args) {
 	return $response->withStatus(302)->withHeader('Location', '/cache/1hour/google/');
@@ -85,26 +84,9 @@ $app->get('/bigisk/', function ($request, $response, $args) {
 	return handler($request, $response, $args, $this);
 });
 
-$app->get('/{type}/ranks/{kl}/:solo/{epoch}/:page/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	$type = $args['type'];
-	$kl = $args['kl'];
-	$solo = $args['solo'];
-	$epoch = $args['epoch'];
-	$page = $args['page'];
-	include 'view/typeRanks.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+$app->get('/{type}/ranks/{kl}/{solo}/{epoch}/{page}/', function ($request, $response, $args) {
+	require_once 'view/typeRanks.php';
+	return handler($request, $response, $args, $this);
 });
 
 // Top Last Hour
@@ -136,7 +118,7 @@ $app->get('/account/logout/', function ($request, $response, $args) {
 	return handler($request, $response, $args, $this);
 });
 
-$app->get('/account/tracker/{type}/:id/{action}/', function ($request, $response, $args) {
+$app->get('/account/tracker/{type}/{id}/{action}/', function ($request, $response, $args) {
 	include 'view/account_tracker.php';
 	return $response;
 });
@@ -167,8 +149,8 @@ $app->get('/api/supers/', function ($request, $response, $args) {
 	require_once 'view/intel.php';
 	return handler($request, $response, $args, $this);
 });
-$app->get('/api/related/{system}/:time/', function ($request, $response, $args) {
-	$mc = RelatedReport::generateReport($system, $time, "[]");
+$app->get('/api/related/{system}/{time}/', function ($request, $response, $args) {
+	$mc = RelatedReport::generateReport($args['system'], $args['time'], "[]");
 	header('Access-Control-Allow-Origin: *');
 	header('Access-Control-Allow-Methods: GET');
 	$app->contentType('application/json; charset=utf-8');
@@ -181,7 +163,7 @@ $app->get('/api/history/{date}/', function ($request, $response, $args) {
 	return $response;
 });
 
-$app->get('/api/stats/{type}/:id/', function ($request, $response, $args) {
+$app->get('/api/stats/{type}/{id}/', function ($request, $response, $args) {
 	include 'view/apistats.php';
 	return $response;
 });
@@ -195,301 +177,29 @@ $app->post('/cache/bypass/scan/', function ($request, $response, $args) {
 	return $response;
 });
 
-$app->get('/cache/bypass/stats/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/ajax/stats.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['redirect_url'])) {
-		$response = $response->withHeader('Location', $GLOBALS['redirect_url']);
-		unset($GLOBALS['redirect_url']);
-		return $response->withStatus(302);
-	}
-	
-	if (isset($GLOBALS['content_type'])) {
-		$response = $response->withHeader('Content-Type', $GLOBALS['content_type']);
-		unset($GLOBALS['content_type']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
-});
-$app->get('/cache/1hour/stats/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/ajax/stats.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['redirect_url'])) {
-		$response = $response->withHeader('Location', $GLOBALS['redirect_url']);
-		unset($GLOBALS['redirect_url']);
-		return $response->withStatus(302);
-	}
-	
-	if (isset($GLOBALS['content_type'])) {
-		$response = $response->withHeader('Content-Type', $GLOBALS['content_type']);
-		unset($GLOBALS['content_type']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
-});
-$app->get('/cache/24hour/stats/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/ajax/stats.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['redirect_url'])) {
-		$response = $response->withHeader('Location', $GLOBALS['redirect_url']);
-		unset($GLOBALS['redirect_url']);
-		return $response->withStatus(302);
-	}
-	
-	if (isset($GLOBALS['content_type'])) {
-		$response = $response->withHeader('Content-Type', $GLOBALS['content_type']);
-		unset($GLOBALS['content_type']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+$app->get('/cache/{cacheType:bypass|1hour|24hour}/stats/', function ($request, $response, $args) {
+	require_once 'view/ajax/stats.php';
+	return handler($request, $response, $args, $this);
 });
 
-$app->get('/cache/bypass/killlist/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/ajax/killlist.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['redirect_url'])) {
-		$response = $response->withHeader('Location', $GLOBALS['redirect_url']);
-		unset($GLOBALS['redirect_url']);
-		return $response->withStatus(302);
-	}
-	
-	if (isset($GLOBALS['content_type'])) {
-		$response = $response->withHeader('Content-Type', $GLOBALS['content_type']);
-		unset($GLOBALS['content_type']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
-});
-$app->get('/cache/1hour/killlist/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/ajax/killlist.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['redirect_url'])) {
-		$response = $response->withHeader('Location', $GLOBALS['redirect_url']);
-		unset($GLOBALS['redirect_url']);
-		return $response->withStatus(302);
-	}
-	
-	if (isset($GLOBALS['content_type'])) {
-		$response = $response->withHeader('Content-Type', $GLOBALS['content_type']);
-		unset($GLOBALS['content_type']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
-});
-$app->get('/cache/24hour/killlist/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/ajax/killlist.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['redirect_url'])) {
-		$response = $response->withHeader('Location', $GLOBALS['redirect_url']);
-		unset($GLOBALS['redirect_url']);
-		return $response->withStatus(302);
-	}
-	
-	if (isset($GLOBALS['content_type'])) {
-		$response = $response->withHeader('Content-Type', $GLOBALS['content_type']);
-		unset($GLOBALS['content_type']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+$app->get('/cache/{cacheType:bypass|1hour|24hour}/killlist/', function ($request, $response, $args) {
+	require_once 'view/ajax/killlist.php';
+	return handler($request, $response, $args, $this);
 });
 
-$app->get('/cache/bypass/statstop10/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/ajax/statstop10.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
-});
-$app->get('/cache/1hour/statstop10/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/ajax/statstop10.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
-});
-$app->get('/cache/24hour/statstop10/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/ajax/statstop10.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+$app->get('/cache/{cacheType:bypass|1hour|24hour}/statstop10/', function ($request, $response, $args) {
+	require_once 'view/ajax/statstop10.php';
+	return handler($request, $response, $args, $this);
 });
 
-$app->get('/cache/bypass/statstopisk/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	include 'view/ajax/statstopisk.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// Check if we got JSON output
-	if (isset($GLOBALS['json_output'])) {
-		$response->getBody()->write($GLOBALS['json_output']);
-		return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		$status = $GLOBALS['render_status'] ?? 200;
-		return $this->view->render($response->withStatus($status), $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Stats loading...');
-	return $response;
-});
-$app->get('/cache/1hour/statstopisk/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	include 'view/ajax/statstopisk.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// Check if we got JSON output
-	if (isset($GLOBALS['json_output'])) {
-		$response->getBody()->write($GLOBALS['json_output']);
-		return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		$status = $GLOBALS['render_status'] ?? 200;
-		return $this->view->render($response->withStatus($status), $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Stats loading...');
-	return $response;
-});
-$app->get('/cache/24hour/statstopisk/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	include 'view/ajax/statstopisk.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// Check if we got JSON output
-	if (isset($GLOBALS['json_output'])) {
-		$response->getBody()->write($GLOBALS['json_output']);
-		return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		$status = $GLOBALS['render_status'] ?? 200;
-		return $this->view->render($response->withStatus($status), $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Stats loading...');
-	return $response;
+$app->get('/cache/{cacheType:bypass|1hour|24hour}/statstopisk/', function ($request, $response, $args) {
+	require_once 'view/ajax/statstopisk.php';
+	return handler($request, $response, $args, $this);
 });
 
 $app->get('/api/prices/{id}/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	$GLOBALS['route_args'] = $args;  // Pass route arguments to view
-	include 'view/apiprices.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// Check if we got JSON output
-	if (isset($GLOBALS['json_output'])) {
-		$response->getBody()->write($GLOBALS['json_output']);
-		$contentType = $GLOBALS['json_content_type'] ?? 'application/json; charset=utf-8';
-		return $response->withHeader('Content-Type', $contentType);
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		$status = $GLOBALS['render_status'] ?? 200;
-		return $this->view->render($response->withStatus($status), $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Price API loading...');
-	return $response;
+	require_once 'view/apiprices.php';  
+	return handler($request, $response, $args, $this);
 });
 
 $app->get('/api/{input:.*}', function ($request, $response, $args) {
@@ -526,48 +236,12 @@ $app->get('/api/{input:.*}', function ($request, $response, $args) {
 
 // Post
 $app->get('/post/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	include 'view/postmail.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		return $this->view->render($response, $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Post loading...');
-	return $response;
+	require_once 'view/postmail.php';  
+	return handler($request, $response, $args, $this);
 });
 $app->post('/post/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	include 'view/postmail.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		return $this->view->render($response, $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Post processing...');
-	return $response;
+	require_once 'view/postmail.php';  
+	return handler($request, $response, $args, $this);
 });
 
 // Search
@@ -697,20 +371,17 @@ $app->get('/cache/1hour/autocomplete/', function ($request, $response, $args) {
 });
 
 // Autocomplete
-$app->post('/autocomplete/', function ($request, $response, $args) {
-	include 'view/autocomplete.php';
-	return $response;
-});
+/*$app->post('/autocomplete/', function ($request, $response, $args) {
+	require_once 'view/autocomplete.php';
+	return handler($request, $response, $args, $this);
+});*/
 $app->get('/autocomplete/{entityType}/{search}/', function ($request, $response, $args) {
-	$entityType = $args['entityType'];
-	$search = $args['search'];
-	include 'view/autocomplete.php';
-	return $response;
+	require_once 'view/autocomplete.php';
+	return handler($request, $response, $args, $this);
 });
 $app->get('/autocomplete/{search}/', function ($request, $response, $args) {
-	$search = $args['search'];
-	include 'view/autocomplete.php';
-	return $response;
+	require_once 'view/autocomplete.php';
+	return handler($request, $response, $args, $this);
 });
 
 // Intel
@@ -720,9 +391,9 @@ $app->get('/intel/supers/', function ($request, $response, $args) {
 });
 
 // Sharing Crest Mails
-$app->get('/crestmail/{killID}/:hash/', function ($request, $response, $args) {
-	include 'view/crestmail.php';
-	return $response;
+$app->get('/crestmail/{killID}/{hash}/', function ($request, $response, $args) {
+	require_once 'view/crestmail.php';
+	return handler($request, $response, $args, $this);
 });
 
 // War!
@@ -998,7 +669,7 @@ $app->get('/ztop/', function ($request, $response, $args) {
 });
 
 // Sponsor killmail adjustments
-$app->get('/sponsor/{type}/:killID/[{value}/]', function ($request, $response, $args) {
+$app->get('/sponsor/{type}/{killID}/[{value}/]', function ($request, $response, $args) {
 	ob_start();
 	$GLOBALS['capture_render_data'] = true;
 	$GLOBALS['route_args'] = $args;
@@ -1040,53 +711,9 @@ $app->get('/cache/bypass/comment/{pageID}/{commentID}/up/', function ($request, 
 	return handler($request, $response, $args, $this);
 });
 
-$app->get('/cache/1hour/killlistrow/{killID}/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	$GLOBALS['route_args'] = $args;  // Pass route arguments to view
-	include 'view/killlistrow.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		$status = $GLOBALS['render_status'] ?? 200;
-		return $this->view->render($response->withStatus($status), $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Kill list loading...');
-	return $response;
-});
-$app->get('/cache/24hour/killlistrow/{killID}/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	$GLOBALS['route_args'] = $args;  // Pass route arguments to view
-	include 'view/killlistrow.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		$status = $GLOBALS['render_status'] ?? 200;
-		return $this->view->render($response->withStatus($status), $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Kill list loading...');
-	return $response;
+$app->get('/cache/{cacheType:1hour|24hour}/killlistrow/{killID}/', function ($request, $response, $args) {
+	require_once 'view/killlistrow.php';
+	return handler($request, $response, $args, $this);
 });
 $app->get('/cache/bypass/healthcheck/', function ($request, $response, $args) {
 	// Include the view logic but capture the data instead of rendering
