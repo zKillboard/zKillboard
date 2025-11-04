@@ -1,6 +1,7 @@
 <?php
 
-$warID = (int) $warID;
+function handler($request, $response, $args, $container) {
+    $warID = (int) $args['warID'];
 $warData = War::getWarInfo($warID);
 $warFinished = @$warData['finished'] === true;
 //ZLog::log(print_r($warData, true));
@@ -50,9 +51,6 @@ foreach ($preKills as $kill) {
     $kills[] = $kill;
 }
 
-if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
-    $GLOBALS['render_template'] = 'index.html';
-    $GLOBALS['render_data'] = array('war' => $warData, 'wars' => array($warData), 'topPods' => $topPods, 'topIsk' => $topIsk, 'topPoints' => $topPoints, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => 'war', 'pager' => false, 'pageTitle' => $pageTitle);
-} else {
-    $app->render('index.html', array('war' => $warData, 'wars' => array($warData), 'topPods' => $topPods, 'topIsk' => $topIsk, 'topPoints' => $topPoints, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => 'war', 'pager' => false, 'pageTitle' => $pageTitle));
+return $container['view']->render($response, 'index.html', array('war' => $warData, 'wars' => array($warData), 'topPods' => $topPods, 'topIsk' => $topIsk, 'topPoints' => $topPoints, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => 'war', 'pager' => false, 'pageTitle' => $pageTitle));
+
 }

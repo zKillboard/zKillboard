@@ -1,18 +1,18 @@
 <?php
 
-// Extract route parameters for compatibility
-if (isset($GLOBALS['route_args'])) {
-    $killID = $GLOBALS['route_args']['killID'] ?? 0;
-} else {
-    // Legacy parameter passing still works
-}
+function handler($request, $response, $args, $container) {
+    $killID = $args['killID'] ?? 0;
 
-try {
-    $result = ESI::saveFitting($killID);
-    echo "CCP's Response: ".@$result['message'];
-    if (isset($result['refid'])) {
-        echo '<br/>refID: '.$result['refid'];
+    try {
+        $result = ESI::saveFitting($killID);
+        $output = "CCP's Response: ".@$result['message'];
+        if (isset($result['refid'])) {
+            $output .= '<br/>refID: '.$result['refid'];
+        }
+    } catch (Exception $ex) {
+        $output = 'Great Scott! An unexpected error occurred: '.$ex->getMessage();
     }
-} catch (Exception $ex) {
-    echo 'Great Scott! An unexpected error occurred: '.$ex->getMessage();
+    
+    $response->getBody()->write($output);
+    return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
 }

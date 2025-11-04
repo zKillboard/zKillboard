@@ -1,5 +1,5 @@
 <?php
 
-global $redis;
-
-header('Location: /ccpoauth2/', 302);
+function handler($request, $response, $args, $container) {
+    return $response->withStatus(302)->withHeader('Location', '/ccpoauth2/');
+}

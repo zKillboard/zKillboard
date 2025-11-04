@@ -2,31 +2,19 @@
 
 use cvweiss\redistools\RedisTimeQueue;
 
-global $mdb, $redis, $adminCharacter, $ip;
+function handler($request, $response, $args, $container) {
+    global $mdb, $redis, $adminCharacter, $ip;
 
-$sessID = session_id();
+    $sessID = session_id();
 
-if (sizeof($_SESSION) == 0) {
+    if (sizeof($_SESSION) == 0) {
     if ($redis->get("invalid_login:$ip") >= 3) {
         $redis->del("invalid_login:$ip");
-        // Handle render for compatibility
-        if (isset($GLOBALS['capture_render_data'])) {
-            $GLOBALS['render_template'] = "error.html";
-            $GLOBALS['render_data'] = ['message' => "OK, that's enough.  There is some sort of session bug between you and zkillboard.  Are you trying to run incognito? Are you running adblockers or some plugin for your browser that could be interfering? Let's figure this out and come visit us on Discord."];
-            return;
-        } else {
-            return $app->render("error.html", ['message' => "OK, that's enough.  There is some sort of session bug between you and zkillboard.  Are you trying to run incognito? Are you running adblockers or some plugin for your browser that could be interfering? Let's figure this out and come visit us on Discord."]);
-        }
+        return $container['view']->render($response, "error.html", ['message' => "OK, that's enough.  There is some sort of session bug between you and zkillboard.  Are you trying to run incognito? Are you running adblockers or some plugin for your browser that could be interfering? Let's figure this out and come visit us on Discord."]);
     }
     $redis->incr("invalid_login:$ip", 1);
     $redis->expire("invalid_login:$ip", 120);
-    // Handle redirect for compatibility
-    if (isset($GLOBALS['capture_render_data'])) {
-        $GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', '/ccpoauth2');
-        return;
-    } else {
-        return header('Location: /ccpoauth2');
-    }
+    return $response->withStatus(302)->withHeader('Location', '/ccpoauth2/');
 }
 
 if ($redis->get("zkb:noapi") == "true") {
@@ -229,4 +217,6 @@ try {
     }
 } finally {
     sem_release($sem);
+}
+
 }

@@ -2,30 +2,27 @@
 
 use cvweiss\redistools\RedisQueue;
 
-global $redis, $ip, $uri;
+function handler($request, $response, $args, $container) {
+    global $redis, $ip, $uri;
 
-// Extract route parameters for compatibility
-if (isset($GLOBALS['route_args'])) {
-    $inputString = $GLOBALS['route_args']['input'] ?? '';
+    $inputString = $args['input'] ?? '';
     $input = explode('/', trim($inputString, '/'));
-} else {
-    // Legacy parameter passing still works
-}
 
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET');
+    // CORS headers
+    $response = $response->withHeader('Access-Control-Allow-Origin', '*');
+    $response = $response->withHeader('Access-Control-Allow-Methods', 'GET');
 
-try {
-    $queryString = $_SERVER['QUERY_STRING'];
-    if ($queryString != '') {
-        header('HTTP/1.0 403 Forbidden - Do not include a query string to evade cache');
-        return;
-    }
+    try {
+        $queryString = $_SERVER['QUERY_STRING'];
+        if ($queryString != '') {
+            $response->getBody()->write('403 Forbidden - Do not include a query string to evade cache');
+            return $response->withStatus(403);
+        }
 
-    if ($redis->get("zkb:reinforced") == true) {
-        header('HTTP/1.1 503 Reinforced mode, please try again later');
-        return;
-    }
+        if ($redis->get("zkb:reinforced") == true) {
+            $response->getBody()->write('503 Reinforced mode, please try again later');
+            return $response->withStatus(503);
+        }
 
     if (strpos($uri, "/stats/") !== false) {
         throw new Exception("This is not the stats endpoint, refer to the documentation and build your URL properly.");
@@ -63,51 +60,39 @@ try {
             }
         }
         $array[] = $result;
-    }
-    // Handle expires for compatibility - add cache headers manually
-    if (!isset($GLOBALS['capture_render_data'])) {
-        $app->expires('+1 hour');
-    }
-
-    if (isset($_GET['callback']) && Util::isValidCallback($_GET['callback'])) {
-        // Handle JSONP output for compatibility
-        if (isset($GLOBALS['capture_render_data'])) {
-            header('X-JSONP: true');
-            $GLOBALS['json_output'] = $_GET['callback'].'('.json_encode($array).')';
-            $GLOBALS['json_content_type'] = 'application/javascript; charset=utf-8';
-            return;
-        } else {
-            $app->contentType('application/javascript; charset=utf-8');
-            header('X-JSONP: true');
-            echo $_GET['callback'].'('.json_encode($array).')';
         }
-    } else {
-        // Handle JSON output for compatibility
-        if (isset($GLOBALS['capture_render_data'])) {
-            if (isset($parameters['pretty'])) {
-                $GLOBALS['json_output'] = json_encode($array, JSON_PRETTY_PRINT);
-            } else {
-                $GLOBALS['json_output'] = json_encode($array);
-            }
-            return;
-        } else {
-            $app->contentType('application/json; charset=utf-8');
-            if (isset($parameters['pretty'])) {
-                echo json_encode($array, JSON_PRETTY_PRINT);
-            } else {
-                echo json_encode($array);
-            }
-        }
-    }
-} catch (Exception $ex) {
-    $redis->incr("IP:errorCount:$ip");
-    $redis->expire("IP:errorCount:$ip", 300);
-    $count = $redis->get("IP:errorCount:$ip");
-    if ($count > 40) {
-        if ($redis->set("IP:ban:$ip", "true", ['nx', 'ex' => 3600]) === true) Util::zout("Banning $ip because " . $ex->getMessage() . "\n$uri");
-    }
 
-    header('Content-Type: application/json');
-    $error = ['error' => $ex->getMessage()];
-    echo json_encode($error);
+        // Add cache headers
+        $response = $response->withHeader('Cache-Control', 'public, max-age=3600');
+        $response = $response->withHeader('Expires', gmdate('D, d M Y H:i:s', time() + 3600) . ' GMT');
+
+        $queryParams = $request->getQueryParams();
+        if (isset($queryParams['callback']) && Util::isValidCallback($queryParams['callback'])) {
+            // JSONP output
+            $response = $response->withHeader('X-JSONP', 'true');
+            $output = $queryParams['callback'].'('.json_encode($array).')';
+            $response->getBody()->write($output);
+            return $response->withHeader('Content-Type', 'application/javascript; charset=utf-8');
+        } else {
+            // JSON output
+            if (isset($parameters['pretty'])) {
+                $output = json_encode($array, JSON_PRETTY_PRINT);
+            } else {
+                $output = json_encode($array);
+            }
+            $response->getBody()->write($output);
+            return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
+        }
+    } catch (Exception $ex) {
+        $redis->incr("IP:errorCount:$ip");
+        $redis->expire("IP:errorCount:$ip", 300);
+        $count = $redis->get("IP:errorCount:$ip");
+        if ($count > 40) {
+            if ($redis->set("IP:ban:$ip", "true", ['nx', 'ex' => 3600]) === true) Util::zout("Banning $ip because " . $ex->getMessage() . "\n$uri");
+        }
+
+        $error = ['error' => $ex->getMessage()];
+        $response->getBody()->write(json_encode($error));
+        return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
+    }
 }

@@ -203,35 +203,8 @@ $app->get('/api/prices/{id}/', function ($request, $response, $args) {
 });
 
 $app->get('/api/{input:.*}', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	$GLOBALS['route_args'] = $args;  // Pass route arguments to view
-	include 'view/api.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// Check if we got JSON output
-	if (isset($GLOBALS['json_output'])) {
-		$response->getBody()->write($GLOBALS['json_output']);
-		$contentType = $GLOBALS['json_content_type'] ?? 'application/json; charset=utf-8';
-		return $response->withHeader('Content-Type', $contentType);
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		$status = $GLOBALS['render_status'] ?? 200;
-		return $this->view->render($response->withStatus($status), $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('API loading...');
-	return $response;
+	require_once 'view/api.php';
+	return handler($request, $response, $args, $this);
 });
 
 // Post
@@ -255,7 +228,7 @@ $app->map(['GET'], '/asearch/', function ($request, $response, $args) {
 	require_once 'view/asearch.php';  
 	return handler($request, $response, $args, $this);
 });
-$app->map(['POST'], '/asearchsave/', function ($request, $response, $args) {
+$app->map(['GET'], '/asearchsave/', function ($request, $response, $args) {
 	require_once 'view/asearchsave.php';  
 	return handler($request, $response, $args, $this);
 });
@@ -273,19 +246,8 @@ $app->map(['GET'], '/asearchinfo/', function ($request, $response, $args) {
 });
 
 $app->get('/cache/1hour/autocomplete/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/search2020.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['content_type'])) {
-		$response = $response->withHeader('Content-Type', $GLOBALS['content_type']);
-		unset($GLOBALS['content_type']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/search2020.php';
+	return handler($request, $response, $args, $this);
 });
 
 // Autocomplete
@@ -316,259 +278,65 @@ $app->get('/crestmail/{killID}/{hash}/', function ($request, $response, $args) {
 
 // War!
 $app->get('/war/eligible/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/war_eligible.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/war_eligible.php';
+	return handler($request, $response, $args, $this);
 });
 $app->get('/war/{warID}/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	$warID = $args['warID'];
-	include 'view/war.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/war.php';
+	return handler($request, $response, $args, $this);
 });
 $app->get('/wars/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	include 'view/wars.php';
-	ob_end_clean();
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		return $this->view->render($response, $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Wars loading...');
-	return $response;
+	require_once 'view/wars.php';
+	return handler($request, $response, $args, $this);
 });
 
-// CREST
 $app->get('/ccplogin/', function ($request, $response, $args) {
-	include 'view/ccplogin.php';
-	return $response;
+	require_once 'view/ccplogin.php';
+	return handler($request, $response, $args, $this);
 });
 $app->get('/ccpcallback/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	include 'view/ccpcallback.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		$status = $GLOBALS['render_status'] ?? 200;
-		return $this->view->render($response->withStatus($status), $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('CCP callback processing...');
-	return $response;
+	require_once 'view/ccpcallback.php';
+	return handler($request, $response, $args, $this);
 });
 $app->get('/ccpsavefit/{killID}/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	$GLOBALS['route_args'] = $args;  // Pass route arguments to view
-	include 'view/ccpsavefit.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		$status = $GLOBALS['render_status'] ?? 200;
-		return $this->view->render($response->withStatus($status), $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('CCP Save Fit loading...');
-	return $response;
+	require_once 'view/ccpsavefit.php';
+	return handler($request, $response, $args, $this);
 });
 
 // EVE Online OAUTH2
 $app->get('/ccpoauth2/{delay}/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	$delay = isset($args['delay']) ? $args['delay'] : null;
-	include 'view/ccpoauth2.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['redirect_url'])) {
-		$response = $response->withHeader('Location', $GLOBALS['redirect_url']);
-		unset($GLOBALS['redirect_url']);
-		return isset($GLOBALS['redirect_status']) ? $response->withStatus($GLOBALS['redirect_status']) : $response->withStatus(302);
-	}
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/ccpoauth2.php';
+	return handler($request, $response, $args, $this);
 });
 $app->get('/ccpoauth2/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	$delay = null;
-	include 'view/ccpoauth2.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['redirect_url'])) {
-		$response = $response->withHeader('Location', $GLOBALS['redirect_url']);
-		unset($GLOBALS['redirect_url']);
-		return isset($GLOBALS['redirect_status']) ? $response->withStatus($GLOBALS['redirect_status']) : $response->withStatus(302);
-	}
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/ccpoauth2.php';
+	return handler($request, $response, $args, $this);
 });
 
 // EVE Online OAUTH2
 $app->get('/ccpoauth2-360noscope/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/ccpoauth2-noscopes.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['redirect_url'])) {
-		$response = $response->withHeader('Location', $GLOBALS['redirect_url']);
-		unset($GLOBALS['redirect_url']);
-		return isset($GLOBALS['redirect_status']) ? $response->withStatus($GLOBALS['redirect_status']) : $response->withStatus(302);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/ccpoauth2-noscopes.php';
+	return handler($request, $response, $args, $this);
 });
 
 // Patreon
 $app->get('/cache/bypass/login/patreon/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/patreonlogin.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['redirect_url'])) {
-		$response = $response->withHeader('Location', $GLOBALS['redirect_url']);
-		unset($GLOBALS['redirect_url']);
-		return isset($GLOBALS['redirect_status']) ? $response->withStatus($GLOBALS['redirect_status']) : $response->withStatus(302);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/patreonlogin.php';
+	return handler($request, $response, $args, $this);
 });
 $app->get('/cache/bypass/login/patreonauth/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/patreonauth.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['redirect_url'])) {
-		$response = $response->withHeader('Location', $GLOBALS['redirect_url']);
-		unset($GLOBALS['redirect_url']);
-		return isset($GLOBALS['redirect_status']) ? $response->withStatus($GLOBALS['redirect_status']) : $response->withStatus(302);
-	}
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/patreonauth.php';
+	return handler($request, $response, $args, $this);
 });
 
 // Twitch
 $app->get('/cache/bypass/login/twitch/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/twitchlogin.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['redirect_url'])) {
-		$response = $response->withHeader('Location', $GLOBALS['redirect_url']);
-		unset($GLOBALS['redirect_url']);
-		return isset($GLOBALS['redirect_status']) ? $response->withStatus($GLOBALS['redirect_status']) : $response->withStatus(302);
-	}
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/twitchlogin.php';
+	return handler($request, $response, $args, $this);
 });
 $app->get('/cache/bypass/login/twitchauth/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	include 'view/twitchauth.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		$status = $GLOBALS['render_status'] ?? 200;
-		return $this->view->render($response->withStatus($status), $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Twitch auth processing...');
-	return $response;
+	require_once 'view/twitchauth.php';
+	return handler($request, $response, $args, $this);
 });
 
 $app->get('/navbar/', function ($request, $response, $args) {
@@ -577,51 +345,18 @@ $app->get('/navbar/', function ($request, $response, $args) {
 });
 
 $app->get('/ztop/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	global $twig;
-	$output = $twig->render("ztop.html", ['showAds' => false]);
-	$response->getBody()->write($output);
-	return $response;
+	return $this->view->render($response, "ztop.html", ['showAds' => false]);
 });
 
 // Sponsor killmail adjustments
 $app->get('/sponsor/{type}/{killID}/[{value}/]', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	$type = $args['type'];
-	$killID = $args['killID'];
-	$value = $args['value'] ?? 0;
-	include 'view/sponsor.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/sponsor.php';
+	return handler($request, $response, $args, $this);
 });
 // Sponsored killmails
 $app->get('/kills/sponsored/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/sponsored.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/sponsored.php';
+	return handler($request, $response, $args, $this);
 });
 
 $app->get('/cache/bypass/comment/{pageID}/{commentID}/up/', function ($request, $response, $args) {
@@ -634,63 +369,12 @@ $app->get('/cache/{cacheType:1hour|24hour}/killlistrow/{killID}/', function ($re
 	return handler($request, $response, $args, $this);
 });
 $app->get('/cache/bypass/healthcheck/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	include 'view/api/healthcheck.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// Check if we got JSON output
-	if (isset($GLOBALS['json_output'])) {
-		$response->getBody()->write($GLOBALS['json_output']);
-		return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		$status = $GLOBALS['render_status'] ?? 200;
-		return $this->view->render($response->withStatus($status), $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Healthcheck loading...');
-	return $response;
+	require_once 'view/api/healthcheck.php';
+	return handler($request, $response, $args, $this);
 });
 
 // The Overview stuff
 $app->get('/{input:.*}/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	$GLOBALS['route_args'] = $args;  // Pass route arguments to view
-	include 'view/overview.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// Check if we got JSON output
-	if (isset($GLOBALS['json_output'])) {
-		$response->getBody()->write($GLOBALS['json_output']);
-		return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		$status = $GLOBALS['render_status'] ?? 200;
-		return $this->view->render($response->withStatus($status), $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Overview loading...');
-	return $response;
+	require_once 'view/overview.php';
+	return handler($request, $response, $args, $this);
 });
