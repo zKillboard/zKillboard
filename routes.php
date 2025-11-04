@@ -311,16 +311,6 @@ $app->get('/cache/bypass/login/patreonauth/', function ($request, $response, $ar
 	return handler($request, $response, $args, $this);
 });
 
-// Twitch
-$app->get('/cache/bypass/login/twitch/', function ($request, $response, $args) {
-	require_once 'view/twitchlogin.php';
-	return handler($request, $response, $args, $this);
-});
-$app->get('/cache/bypass/login/twitchauth/', function ($request, $response, $args) {
-	require_once 'view/twitchauth.php';
-	return handler($request, $response, $args, $this);
-});
-
 $app->get('/navbar/', function ($request, $response, $args) {
 	require_once 'view/navbar.php';
 	return handler($request, $response, $args, $this);

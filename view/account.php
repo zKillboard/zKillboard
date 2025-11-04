@@ -62,13 +62,7 @@ if ($_POST) {
 		User::sendMessage("Your default login page is now the $loginPage page");
 	}
 
-	// Handle redirect for Slim 3 compatibility
-	if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
-		$GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', $_SERVER['REQUEST_URI']);
-		return;
-	} else {
-		return $app->redirect($_SERVER['REQUEST_URI']);
-	}
+	return $response->withStatus(302)->withHeader('Location', $request->getUri()->getPath() . '?' . $request->getUri()->getQuery());
 }
 
 // Theme

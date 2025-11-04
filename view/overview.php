@@ -529,32 +529,6 @@ $soloKills = addVics($vics, $soloKills);
     return $container->view->render($response, 'overview.html', $renderParams);
 }
 
-// Legacy compatibility - call handler if accessed directly
-if (!function_exists('handler') || (isset($GLOBALS['capture_render_data']) && isset($GLOBALS['slim3_response']))) {
-    global $mdb, $redis, $uri, $t;
-
-    // Extract route parameters for compatibility
-    if (isset($GLOBALS['route_args'])) {
-        $inputString = $GLOBALS['route_args']['input'] ?? '';
-        $input = explode('/', trim($inputString, '/'));
-    } else {
-        // Legacy parameter passing still works
-    }
-
-    $key = $input[0];
-    if (!isset($input[1])) {
-        // Handle redirect for compatibility
-        if (isset($GLOBALS['capture_render_data'])) {
-            $GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', '/');
-            return;
-        } else {
-            return $app->redirect('/');
-        }
-    }
-    // ... rest of legacy code would go here, but this is getting very long
-    // The old code will remain as fallback for any direct access
-}
-
 function addVics($vics, $kills = []) {
     if ($kills === false || $kills === true) $kills = [];
     foreach ($kills as $kid => $kill) {

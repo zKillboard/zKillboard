@@ -3,71 +3,50 @@
 use Patreon\API;
 use Patreon\OAuth;
 
-try {
+function handler($request, $response, $args, $container) {
     global $mdb, $patreon_client_id, $patreon_client_secret, $patreon_redirect_uri;
 
-    $userID = User::getUserID();
-    if ($userID == 0) {
-        // User not logged in
-        if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
-            $GLOBALS['redirect_url'] = '/';
-            $GLOBALS['redirect_status'] = 302;
-            return;
-        } else {
-            $app->redirect('/');
-            return;
+    try {
+        $userID = User::getUserID();
+        if ($userID == 0) {
+            // User not logged in
+            return $response->withStatus(302)->withHeader('Location', '/');
         }
-    }
 
-    $state = str_replace("/", "", @$_GET['state']);
-    $sessionState = @$_SESSION['oauth2State'];
-    if ($state !== $sessionState) {
-        if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
-            $GLOBALS['render_template'] = "error.html";
-            $GLOBALS['render_data'] = ['message' => "Something went wrong with security. Please try again."];
-            return;
-        } else {
-            return $app->render("error.html", ['message' => "Something went wrong with security. Please try again."]);
+        $queryParams = $request->getQueryParams();
+        $state = str_replace("/", "", @$queryParams['state']);
+        $sessionState = @$_SESSION['oauth2State'];
+        if ($state !== $sessionState) {
+            return $container->view->render($response, "error.html", ['message' => "Something went wrong with security. Please try again."]);
         }
-    }
 
+        if ( @$queryParams['code'] != '' ) {
+            $oauth_client = new OAuth($patreon_client_id, $patreon_client_secret);  
 
-    if ( $_GET['code'] != '' ) {
-        $oauth_client = new OAuth($patreon_client_id, $patreon_client_secret);  
+            $tokens = $oauth_client->get_tokens($queryParams['code'], $patreon_redirect_uri);
 
-        $tokens = $oauth_client->get_tokens($_GET['code'], $patreon_redirect_uri);
+            $access_token = $tokens['access_token'];
+            $refresh_token = $tokens['refresh_token'];
 
-        $access_token = $tokens['access_token'];
-        $refresh_token = $tokens['refresh_token'];
+            $api_client = new API($access_token);
 
-        $api_client = new API($access_token);
+            // Now get the current user:
+            $patron_response = $api_client->fetch_user();
+            $patronID = (int) $patron_response['data']['id'];
 
-        // Now get the current user:
-        $patron_response = $api_client->fetch_user();
-        $patronID = (int) $patron_response['data']['id'];
+            // Save that user and the fact they've verified \o/
+            $mdb->remove("patreon", ['patreon_id' => $patronID]);
+            $mdb->remove("patreon", ['character_id' => $userID]);
+            $mdb->insert("patreon", ['patreon_id' => $patronID, 'character_id' => $userID, 'expires' => $mdb->now(30 * 86400)]);
 
-        // Save that user and the fact they've verified \o/
-        $mdb->remove("patreon", ['patreon_id' => $patronID]);
-        $mdb->remove("patreon", ['character_id' => $userID]);
-        $mdb->insert("patreon", ['patreon_id' => $patronID, 'character_id' => $userID, 'expires' => $mdb->now(30 * 86400)]);
-
-        ZLog::add("You have linked Patreon. Thank you!!", $userID);
-        User::sendMessage("You have linked Patreon. Thank you!!", $userID);
-        Util::zout("Character $userID has linked Patreon! ($patronID)");
-        if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
-            $GLOBALS['redirect_url'] = "/account/log/";
-            $GLOBALS['redirect_status'] = 302;
-        } else {
-            $app->redirect("/account/log/");
+            ZLog::add("You have linked Patreon. Thank you!!", $userID);
+            User::sendMessage("You have linked Patreon. Thank you!!", $userID);
+            Util::zout("Character $userID has linked Patreon! ($patronID)");
+            return $response->withStatus(302)->withHeader('Location', "/account/log/");
         }
-    }
-} catch (Exception $ex) {
-    throw $ex;
-    if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
-        $GLOBALS['render_template'] = "error.html";
-        $GLOBALS['render_data'] = ['message' => "Something went wrong with the login from Patreon's end, sorry, can you please try logging in again? *"];
-        return;
-    } else {
-        return $app->render("error.html", ['message' => "Something went wrong with the login from Patreon's end, sorry, can you please try logging in again? *"]);
+        
+        return $response;
+    } catch (Exception $ex) {
+        return $container->view->render($response, "error.html", ['message' => "Something went wrong with the login from Patreon's end, sorry, can you please try logging in again? *"]);
     }
 }
