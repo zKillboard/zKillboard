@@ -1,15 +1,13 @@
 <?php
 
-global $mdb;
+function handler($request, $response, $args, $container) {
+    global $mdb, $redis, $twig;
 
-$id = (int) $id;
+    $id = (int) $args['id'];
 
-$crest = $mdb->findDoc("crestmails", ['killID' => $id, 'processed' => true]);
-$killdata = Kills::getKillDetails($id);
+    $crest = $mdb->findDoc("crestmails", ['killID' => $id, 'processed' => true]);
+    $killdata = Kills::getKillDetails($id);
 
-if (isset($GLOBALS['route_args'])) {
-    global $twig;
-    $GLOBALS['capture_render_data'] = $twig->render("components/ingamelink.html", ['crest' => $crest, 'killdata' => $killdata]);
-} else {
-    $app->render("components/ingamelink.html", ['crest' => $crest, 'killdata' => $killdata]);
+    $data = ['crest' => $crest, 'killdata' => $killdata];
+    return $container->view->render($response, 'components/ingamelink.html', $data);
 }

@@ -1,23 +1,5 @@
 <?php
 
-// Temporary test routes
-$app->get('/test-slim3/', function ($request, $response, $args) {
-    $response->getBody()->write('Slim 3 is working!');
-    return $response;
-});
-
-$app->get('/test-slim3/{name}/', function ($request, $response, $args) {
-    $name = $args['name'];
-    $response->getBody()->write("Hello $name from Slim 3!");
-    return $response;
-});
-
-$app->get('/test-slim3-twig/', function ($request, $response, $args) {
-    return $this->view->render($response, 'simple_test.html', ['message' => 'Twig 3 is working with Slim 3!']);
-});
-
-
-
 $app->get('/information/', function ($request, $response, $args) {
 	return $response->withStatus(302)->withHeader('Location', '/information/about/');
 });
@@ -65,20 +47,8 @@ $app->get('/information/{page}/', function ($request, $response, $args) {
 });
 
 $app->get('/account/favorites/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	include 'view/favorites.php';
-	ob_end_clean();
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		return $this->view->render($response, $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Favorites loading...');
-	return $response;
+	require_once 'view/favorites.php';
+	return handler($request, $response, $args, $this);
 });
 $app->post('/account/favorite/{killID}/{action}/', function ($request, $response, $args) {
 	$killID = $args['killID'];
@@ -142,148 +112,28 @@ $app->get('/top/lasthour/{type}/', function ($request, $response, $args) {
 	require_once 'view/lasthour.php';
 	return handler($request, $response, $args, $this);
 });
-$app->get('/top(/{type})(/{page})(/{time:.*})/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	$type = $args['type'] ?? 'weekly';
-	$page = $args['page'] ?? null;
-	$time = $args['time'] ?? array();
-	include 'view/top.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['redirect_url'])) {
-		$response = $response->withHeader('Location', $GLOBALS['redirect_url']);
-		unset($GLOBALS['redirect_url']);
-		return isset($GLOBALS['redirect_status']) ? $response->withStatus($GLOBALS['redirect_status']) : $response->withStatus(302);
-	}
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
-});
 
 $app->get('/kill/{id}/redirect/{where}/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	$GLOBALS['route_args'] = $args;  // Pass route arguments to view
-	$GLOBALS['pageview'] = '';
-	include 'view/detail.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		$status = $GLOBALS['render_status'] ?? 200;
-		return $this->view->render($response->withStatus($status), $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Kill detail loading...');
-	return $response;
+	require_once 'view/detail.php';
+	return handler($request, $response, $args, $this);
 });
 $app->get('/kill/{id}/remaining/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	$GLOBALS['route_args'] = $args;  // Pass route arguments to view
-	$GLOBALS['pageview'] = 'remaining';
-	include 'view/detail.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		$status = $GLOBALS['render_status'] ?? 200;
-		return $this->view->render($response->withStatus($status), $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Kill detail loading...');
-	return $response;
+	require_once 'view/detail.php';
+	return handler($request, $response, $args, $this);
 });
 $app->get('/kill/{id}/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	$GLOBALS['route_args'] = $args;  // Pass route arguments to view
-	$GLOBALS['pageview'] = '';
-	include 'view/detail.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		$status = $GLOBALS['render_status'] ?? 200;
-		return $this->view->render($response->withStatus($status), $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Kill detail loading...');
-	return $response;
+	require_once 'view/detail.php';
+	return handler($request, $response, $args, $this);
 });
 $app->get('/kill/{id}/ingamelink/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	$id = $args['id'];
-	include 'view/detail_ingamelink.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/detail_ingamelink.php';
+	return handler($request, $response, $args, $this);
 });
 
 // Logout
 $app->get('/account/logout/', function ($request, $response, $args) {
-	global $cookie_name, $cookie_time, $baseAddr;
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/logout.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['redirect_url'])) {
-		$response = $response->withHeader('Location', $GLOBALS['redirect_url']);
-		unset($GLOBALS['redirect_url']);
-		return isset($GLOBALS['redirect_status']) ? $response->withStatus($GLOBALS['redirect_status']) : $response->withStatus(302);
-	}
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/logout.php';
+	return handler($request, $response, $args, $this);
 });
 
 $app->get('/account/tracker/{type}/:id/{action}/', function ($request, $response, $args) {
@@ -293,101 +143,29 @@ $app->get('/account/tracker/{type}/:id/{action}/', function ($request, $response
 
 // Account
 $app->map(['GET', 'POST'], '/account/[{req}/[{reqid}/]]', function ($request, $response, $args) {
-	global $cookie_name, $cookie_time;
-	$req = $args['req'] ?? null;
-	$reqid = $args['reqid'] ?? null;
-	
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	include 'view/account.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		return $this->view->render($response, $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Account loading...');
-	return $response;
+	require_once 'view/account.php';
+	return handler($request, $response, $args, $this);
 });
 
 // EveInfo
 $app->get('/item/{id}/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	$id = $args['id'];
-	include 'view/item.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/item.php';
+	return handler($request, $response, $args, $this);
 });
 
 
 $app->get('/api/recentactivity/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	include 'view/api/recentactivity.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// Check if we got JSON output
-	if (isset($GLOBALS['json_output'])) {
-		$response->getBody()->write($GLOBALS['json_output']);
-		return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		$status = $GLOBALS['render_status'] ?? 200;
-		return $this->view->render($response->withStatus($status), $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('API loading...');
-	return $response;
+	require_once 'view/api/recentactivity.php';
+	return handler($request, $response, $args, $this);
 });
-$app->post('/api/killmail/add/{killID}/:hash/', function ($request, $response, $args) {
-	include 'view/api/killmail-add.php';
-	return $response;
+$app->post('/api/killmail/add/{killID}/{hash}/', function ($request, $response, $args) {
+	require_once 'view/api/killmail-add.php';
+	return handler($request, $response, $args, $this);
 });
 
 $app->get('/api/supers/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/intel.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/intel.php';
+	return handler($request, $response, $args, $this);
 });
 $app->get('/api/related/{system}/:time/', function ($request, $response, $args) {
 	$mc = RelatedReport::generateReport($system, $time, "[]");
@@ -409,20 +187,8 @@ $app->get('/api/stats/{type}/:id/', function ($request, $response, $args) {
 });
 
 $app->get('/scanalyzer/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	include 'view/scanalyzer.php';
-	ob_end_clean();
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		return $this->view->render($response, $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Scanalyzer loading...');
-	return $response;
+	require_once 'view/scanalyzer.php';
+	return handler($request, $response, $args, $this);
 });
 $app->post('/cache/bypass/scan/', function ($request, $response, $args) {
 	include 'view/scanp.php';
@@ -949,20 +715,8 @@ $app->get('/autocomplete/{search}/', function ($request, $response, $args) {
 
 // Intel
 $app->get('/intel/supers/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/intel.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/intel.php';
+	return handler($request, $response, $args, $this);
 });
 
 // Sharing Crest Mails
@@ -1229,17 +983,8 @@ $app->get('/cache/bypass/login/twitchauth/', function ($request, $response, $arg
 });
 
 $app->get('/navbar/', function ($request, $response, $args) {
-	global $uri;
-	$GLOBALS['route_args'] = $args;
-	ob_start();
-	include 'view/navbar.php';
-	$output = ob_get_clean();
-	if (isset($GLOBALS['capture_render_data'])) {
-		$response->getBody()->write($GLOBALS['capture_render_data']);
-		return $response;
-	}
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/navbar.php';
+	return handler($request, $response, $args, $this);
 });
 
 $app->get('/ztop/', function ($request, $response, $args) {
@@ -1290,9 +1035,9 @@ $app->get('/kills/sponsored/', function ($request, $response, $args) {
 	return $response;
 });
 
-$app->get('/cache/bypass/comment/{pageID}/:commentID/up/', function ($request, $response, $args) {
-	include 'view/comments-up.php';
-	return $response;
+$app->get('/cache/bypass/comment/{pageID}/{commentID}/up/', function ($request, $response, $args) {
+	require_once 'view/comments-up.php';
+	return handler($request, $response, $args, $this);
 });
 
 $app->get('/cache/1hour/killlistrow/{killID}/', function ($request, $response, $args) {

@@ -1,34 +1,30 @@
 <?php
 
-global $mdb, $redis;
+function handler($request, $response, $args, $container) {
+    global $mdb, $redis, $twig, $adFreeMonthCost, $baseAddr;
+    
+    $req = $args['req'] ?? null;
+    $reqid = $args['reqid'] ?? null;
 
-// Handle login check for compatibility
-if (isset($GLOBALS['capture_render_data'])) {
-	global $redis;
-	if (!User::isLoggedIn()) {
-		$sessID = session_id();
-		if ("/account/$req/" != '') {
-			$redis->setex("forward:$sessID", 900, "/account/$req/");
-		}
-		$GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', '/ccpoauth2/');
-		return;
-	}
-} else {
-	if (User::checkForLogin($app, "/account/$req/") == false) return;
-}
+    // Handle login check
+    if (!User::isLoggedIn()) {
+        $sessID = session_id();
+        if ("/account/$req/" != '') {
+            $redis->setex("forward:$sessID", 900, "/account/$req/");
+        }
+        return $response->withStatus(302)->withHeader('Location', '/ccpoauth2/');
+    }
 
-$userID = (int) User::getUserID();
-$key = 'sitesettings';
-$error = '';
+    $userID = (int) User::getUserID();
+    $key = 'sitesettings';
+    $error = '';
 
-$bannerUpdates = array();
-$aliasUpdates = array();
+    $bannerUpdates = array();
+    $aliasUpdates = array();
 
-if (isset($req)) {
-	$key = $req;
-}
-
-global $twig, $adFreeMonthCost, $baseAddr;
+    if (isset($req)) {
+        $key = $req;
+    }
 if ($_POST) {
 	$deletekeyid = Util::getPost('deletekeyid');
 	$deleteentity = Util::getPost('deleteentity');
@@ -90,11 +86,6 @@ $data['apiScopes'] = $mdb->find("scopes", ['characterID' => (int) $userID], ['sc
 $data['history'] = User::getPaymentHistory($userID);
 $data['log'] = ZLog::get($userID);
 
-// Handle rendering for Slim 3 compatibility
-if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
-	$GLOBALS['render_template'] = 'account.html';
-	$GLOBALS['render_data'] = array('data' => $data, 'message' => $error, 'key' => $key, 'reqid' => $reqid);
-} else {
-	// Fallback for any remaining Slim 2 usage
-	$app->render('account.html', array('data' => $data, 'message' => $error, 'key' => $key, 'reqid' => $reqid));
+    $accountData = array('data' => $data, 'message' => $error, 'key' => $key, 'reqid' => $reqid);
+    return $container->view->render($response, 'account.html', $accountData);
 }

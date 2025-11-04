@@ -223,6 +223,10 @@ class BlankContentTestSuite {
         $this->testRouteContent('/cache/bypass/healthcheck/', [200], 'Health check');
         $this->testRouteContent('/navbar/', [200], 'Navigation bar');
         
+        // Comment routes
+        echo "\n--- Comment Routes ---\n";
+        $this->testRouteContent("/cache/bypass/comment/kill-{$this->realKillId}/-1/up/", [200], 'Comment upvote (REAL kill)');
+        
         $this->printBlankContentSummary();
     }
     

@@ -1,5 +1,8 @@
 # Route Conversion Instructions
 
+- Can test using http://localhost/
+- Can find errors at /var/log/nginx/zkill_error.log
+
 ## Core Principle
 - **Routes.php**: Only handles routing - maps URLs to handler functions
 - **View files**: Convert each `/view/*.php` into a `handler($request, $response, $args)` function

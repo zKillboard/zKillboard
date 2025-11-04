@@ -1,62 +1,54 @@
 <?php
 
-global $mdb;
+function handler($request, $response, $args, $container) {
+    global $mdb, $redis, $twig;
 
-if (!is_numeric($id)) {
-    header('Location: /');
-}
-$id = (int) $id;
-
-$info = $mdb->findDoc('information', ['type' => 'typeID', 'id' => (int) $id, 'cacheTime' => 3600]);
-if ($info == null) {
-    if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
-        $GLOBALS['render_template'] = '404.html';
-        $GLOBALS['render_data'] = ['message' => 'Item not found'];
-        return;
-    } else {
-        $app->render('404.html', ['message' => 'Item not found']);
-        return;
+    $id = $args['id'];
+    if (!is_numeric($id)) {
+        return $response->withHeader('Location', '/')->withStatus(302);
     }
-}
-$info['typeName'] = $info['name'];
-$info['description'] = str_replace('<br>', "\n", @$info['description']);
-$info['description'] = strip_tags(@$info['description']);
-$info['price'] = Price::getItemPrice($id, date('Ymd'));
+    $id = (int) $id;
 
-global $mdb;
-$cursor = $mdb->getCollection('killmails')->find(['involved.shipTypeID' => (int) $id]);
-$hasKills = $cursor->hasNext();
-
-$info['attributes'] = array();
-
-//$info['market'] = Db::query('select * from zz_item_price_lookup where typeID = :typeID order by priceDate desc limit 30', array(':typeID' => $id));
-$market = $mdb->findDoc('prices', ['typeID' => $id]);
-if ($market == null) {
-    $market = [];
-}
-unset($market['typeID']);
-unset($market['_id']);
-krsort($market);
-$market = array_slice($market, 0, 30);
-$info['market'] = $market;
-
-$kills = $mdb->find('itemmails', ['typeID' => (int) $id], ['killID' => -1], 50);
-if ($kills == null) $kills = [];
-$victims = [];
-foreach ($kills as $row) {
-    $kill = $mdb->findDoc('killmails', ['killID' => $row['killID']]);
-    if ($kill && @$kill['involved']) {
-        $victim = $kill['involved'][0];
-        $victim['destroyed'] = $row['killID'];
-        $victims[] = $victim;
+    $info = $mdb->findDoc('information', ['type' => 'typeID', 'id' => (int) $id, 'cacheTime' => 3600]);
+    if ($info == null) {
+        return $container->view->render($response->withStatus(404), '404.html', ['message' => 'Item not found']);
     }
-}
-Info::addInfo($victims);
+    
+    $info['typeName'] = $info['name'];
+    $info['description'] = str_replace('<br>', "\n", @$info['description']);
+    $info['description'] = strip_tags(@$info['description']);
+    $info['price'] = Price::getItemPrice($id, date('Ymd'));
 
-$info['typeID'] = $id;
-if (isset($GLOBALS['capture_render_data']) && $GLOBALS['capture_render_data']) {
-    $GLOBALS['render_template'] = 'item.html';
-    $GLOBALS['render_data'] = array('info' => $info, 'hasKills' => $hasKills, 'kills' => $victims);
-} else {
-    $app->render('item.html', array('info' => $info, 'hasKills' => $hasKills, 'kills' => $victims));
+    $cursor = $mdb->getCollection('killmails')->find(['involved.shipTypeID' => (int) $id]);
+    $hasKills = $cursor->hasNext();
+
+    $info['attributes'] = array();
+
+    //$info['market'] = Db::query('select * from zz_item_price_lookup where typeID = :typeID order by priceDate desc limit 30', array(':typeID' => $id));
+    $market = $mdb->findDoc('prices', ['typeID' => $id]);
+    if ($market == null) {
+        $market = [];
+    }
+    unset($market['typeID']);
+    unset($market['_id']);
+    krsort($market);
+    $market = array_slice($market, 0, 30);
+    $info['market'] = $market;
+
+    $kills = $mdb->find('itemmails', ['typeID' => (int) $id], ['killID' => -1], 50);
+    if ($kills == null) $kills = [];
+    $victims = [];
+    foreach ($kills as $row) {
+        $kill = $mdb->findDoc('killmails', ['killID' => $row['killID']]);
+        if ($kill && @$kill['involved']) {
+            $victim = $kill['involved'][0];
+            $victim['destroyed'] = $row['killID'];
+            $victims[] = $victim;
+        }
+    }
+    Info::addInfo($victims);
+
+    $info['typeID'] = $id;
+    $data = array('info' => $info, 'hasKills' => $hasKills, 'kills' => $victims);
+    return $container->view->render($response, 'item.html', $data);
 }

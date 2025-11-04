@@ -2,11 +2,15 @@
 
 use cvweiss\redistools\RedisTtlCounter;
 
-global $mdb, $ip, $redis;
+function handler($request, $response, $args, $container) {
+    global $mdb, $ip, $redis, $twig;
+    
+    $pageID = $args['pageID'] ?? '';
+    $commentID = (int) ($args['commentID'] ?? -1);
 
-$votes = new RedisTtlCounter("ttlc:votes:$ip", 300);
-$key = "comment:$pageID";
-$publish = false;
+    $votes = new RedisTtlCounter("ttlc:votes:$ip", 300);
+    $key = "comment:$pageID";
+    $publish = false;
 if ($commentID >= 0 && $commentID < count(Comments::$defaultComments) && $redis->get("validUser:$ip") == "true" && $votes->count() < 1500) {
     $votes->add(uniqid());
     $comment = $mdb->findDoc("comments", ['pageID' => $pageID, 'commentID' => $commentID]);
@@ -41,7 +45,9 @@ if ($comments !== false) {
     $redis->setex($key, 60, json_encode($comments));
 }
 
-global $twig;
-$out = $twig->render("components/commentblock.html", ['comments' => $comments]);
-if ($publish) $redis->publish("comment:$pageID", json_encode(['action' => 'comment', 'html' => $out]));
-echo $out;
+    $out = $twig->render("components/commentblock.html", ['comments' => $comments]);
+    if ($publish) $redis->publish("comment:$pageID", json_encode(['action' => 'comment', 'html' => $out]));
+    
+    $response->getBody()->write($out);
+    return $response;
+}
