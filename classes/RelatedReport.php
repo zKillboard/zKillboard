@@ -70,9 +70,9 @@ class RelatedReport {
         }
 
         $systemInfo = $mdb->findDoc('information', ['cacheTime' => 3600, 'type' => 'solarSystemID', 'id' => $systemID]);
-        $systemName = $systemInfo['name'];
-        $regionInfo = $mdb->findDoc('information', ['cacheTime' => 3600, 'type' => 'regionID', 'id' => $systemInfo['regionID']]);
-        $regionName = $regionInfo['name'];
+        $systemName = $systemInfo['name'] ?? 'Unknown System';
+        $regionInfo = $mdb->findDoc('information', ['cacheTime' => 3600, 'type' => 'regionID', 'id' => $systemInfo['regionID'] ?? 0]);
+        $regionName = $regionInfo['name'] ?? 'Unknown Region';
         $time = date('Y-m-d H:i', $unixTime);
 
         $exHours = 1;

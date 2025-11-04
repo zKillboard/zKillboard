@@ -82,13 +82,15 @@ function handler($request, $response, $args, $container) {
 		foreach ($labels as $group => $search) $query[] = ['labels' => ['$in' => $search]];
 
 		$page = (isset($queryParams['radios']['page']) ? max(1, min(10, (int) @$queryParams['radios']['page'])) - 1 : 0);
-		$sortKey = (isset($validSortBy[$queryParams['radios']['sort']['sortBy']]) ? $validSortBy[$queryParams['radios']['sort']['sortBy']] : 'killID');
-		$sortBy = (isset($validSortDir[$queryParams['radios']['sort']['sortDir']]) ? $validSortDir[$queryParams['radios']['sort']['sortDir']] : -1);
+		$sortKey = (isset($queryParams['radios']['sort']['sortBy']) && isset($validSortBy[$queryParams['radios']['sort']['sortBy']]) ? $validSortBy[$queryParams['radios']['sort']['sortBy']] : 'killID');
+		$sortBy = (isset($queryParams['radios']['sort']['sortDir']) && isset($validSortDir[$queryParams['radios']['sort']['sortDir']]) ? $validSortDir[$queryParams['radios']['sort']['sortDir']] : -1);
 		$sort = [$sortKey => $sortBy];
 
-		$groupAggType = (string) @$queryParams['radios']['group-agg-type'];
+		$groupAggType = (string) ($queryParams['radios']['group-agg-type'] ?? '');
 		$victimsOnly = ($groupAggType == "victims only" ? "true" : ($groupAggType == "attackers only" ? "false" : "null"));
-		unset($queryParams['radios']['group-agg-type']);
+		if (isset($queryParams['radios']['group-agg-type'])) {
+			unset($queryParams['radios']['group-agg-type']);
+		}
 
 		$coll = ['killmails'];
 		if ($sortKey == 'killID' && $sortBy == -1 && @$query['hasDateFilter'] != true) {

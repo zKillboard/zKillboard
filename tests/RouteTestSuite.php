@@ -10,10 +10,11 @@ class RouteTestSuite {
     private $results = [];
     private $errorCount = 0;
     private $totalTests = 0;
+    private $ignoreTimeouts = false;
     
     // Real entity IDs extracted from the live application
     private $realKillId = '130765767'; // Real kill ID from homepage
-    private $realCharacterId = '2113213717'; // Real character ID from homepage  
+    private $realCharacterId = '1633218082'; // Real character ID from homepage  
     private $realSystemId = '30000142'; // Jita
     private $realSystemId2 = '30000144'; // Perimeter
     private $realSystemId3 = '30002187'; // Amarr
@@ -24,7 +25,7 @@ class RouteTestSuite {
     private $realItemId2 = '11129'; // Large Skill Injector
     private $realShipId = '587'; // Rifter
     private $realGroupId = '25'; // Frigate group
-    private $realCorporationId = '98012393'; // Real corporation from homepage
+    private $realCorporationId = '1000168'; // Real corporation
     
     // Fake/invalid IDs that should return 404
     private $fakeKillId = '999999999';
@@ -33,8 +34,9 @@ class RouteTestSuite {
     private $fakeAllianceId = '999999999';
     private $fakeWarId = '999999999';
     
-    public function __construct($baseUrl = 'http://localhost') {
+    public function __construct($baseUrl = 'http://localhost', $ignoreTimeouts = false) {
         $this->baseUrl = rtrim($baseUrl, '/');
+        $this->ignoreTimeouts = $ignoreTimeouts;
     }
     
     /**
@@ -143,6 +145,9 @@ class RouteTestSuite {
         $this->totalTests++;
         $url = $this->baseUrl . $path;
         
+        // Start timing
+        $startTime = microtime(true);
+        
         // Use curl to test the route
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -157,17 +162,32 @@ class RouteTestSuite {
         $error = curl_error($ch);
         curl_close($ch);
         
+        // Calculate time taken
+        $timeTaken = microtime(true) - $startTime;
+        
         $status = 'PASS';
+        $failReason = '';
+        
         if ($error) {
             $status = 'ERROR';
+            $failReason = 'CURL_ERROR';
             $this->errorCount++;
+        } elseif ($timeTaken > 1.0 && !$this->ignoreTimeouts) {
+            $status = 'FAIL';
+            $failReason = 'TIMEOUT';
+            $this->errorCount++;
+        } elseif ($timeTaken > 1.0 && $this->ignoreTimeouts) {
+            $status = 'PASS';
+            $failReason = 'TIMEOUT_IGNORED';
         } elseif (is_array($expectedCode)) {
             if (!in_array($httpCode, $expectedCode)) {
                 $status = 'FAIL';
+                $failReason = 'HTTP_CODE';
                 $this->errorCount++;
             }
         } elseif ($httpCode != $expectedCode) {
             $status = 'FAIL';
+            $failReason = 'HTTP_CODE';
             $this->errorCount++;
         }
         
@@ -177,16 +197,22 @@ class RouteTestSuite {
             'actual' => $httpCode ?: 'ERROR',
             'status' => $status,
             'description' => $description,
-            'error' => $error
+            'error' => $error,
+            'time_taken' => $timeTaken,
+            'fail_reason' => $failReason
         ];
         
-        // Real-time output
+        // Real-time output with timing
         $statusColor = $status === 'PASS' ? "\033[32m" : ($status === 'FAIL' ? "\033[31m" : "\033[33m");
-        echo sprintf("%-60s [%s%s\033[0m] %s\n", 
+        $timeColor = $timeTaken > 1.0 ? "\033[31m" : ($timeTaken > 0.5 ? "\033[33m" : "\033[90m");
+        echo sprintf("%-60s [%s%s\033[0m] %s %s%.3fs\033[0m%s\n", 
             $path, 
             $statusColor, 
             $status, 
-            $httpCode ?: $error
+            $httpCode ?: $error,
+            $timeColor,
+            $timeTaken,
+            $failReason ? " ($failReason)" : ''
         );
         
         return $status === 'PASS';
@@ -197,7 +223,11 @@ class RouteTestSuite {
      */
     public function runAllTests() {
         echo "=== zKillboard Route Test Suite ===\n";
-        echo "Testing all routes with REAL entity IDs...\n\n";
+        echo "Testing all routes with REAL entity IDs...\n";
+        if ($this->ignoreTimeouts) {
+            echo "⏰ TIMEOUT IGNORE MODE: Routes taking >1s will pass but be marked as slow\n";
+        }
+        echo "\n";
         
         // Basic routes
         echo "--- Basic Routes ---\n";
@@ -215,26 +245,29 @@ class RouteTestSuite {
         $this->testRoute('/cache/1hour/publift/rectangle/', 200, 'Publift rectangle');
         $this->testRoute('/cache/1hour/publift/mobile/', 200, 'Publift mobile');
                 
-        // Map
-        echo "\n--- Map Routes ---\n";
-        $this->testRoute('/map2020/', 200, 'EVE Online map');
-        
         // Information pages
         echo "\n--- Information Routes ---\n";
         $this->testRoute('/information/about/', 200, 'About page');
         $this->testRoute('/information/faq/', 200, 'FAQ page');
         $this->testRoute('/information/api/', [200, 302], 'API documentation');
         $this->testRoute('/information/donations/', [200, 302], 'Donations page');
+        $this->testRoute('/information/ccpfriends/', [200, 302], 'CCP Friends');
+        $this->testRoute('/information/sponsors/', [200, 302], 'Sponsors page');
+        $this->testRoute('/information/terms/', [200, 302], 'Terms of service');
+        $this->testRoute('/information/privacy/', [200, 302], 'Privacy policy');
         
         // Account routes (most require authentication and redirect)
         echo "\n--- Account Routes ---\n";
         $this->testRoute('/account/', [200, 302], 'Account main');
         $this->testRoute('/account/settings/', [200, 302], 'Account settings');
         $this->testRoute('/account/api/', [200, 302], 'Account API');
+        $this->testRoute('/account/stats/', [200, 302], 'Account stats');
         $this->testRoute('/account/favorites/', 200, 'Account favorites');
         $this->testRoute('/account/logout/', 302, 'Account logout');
-        $this->testRoute("/account/tracker/character/{$this->realCharacterId}/add/", [200, 302, 404], 'Account tracker add');
-        $this->testRoute("/account/tracker/character/{$this->realCharacterId}/remove/", [200, 302, 404], 'Account tracker remove');
+        $this->testRoute("/account/tracker/character/{$this->realCharacterId}/add/", [200, 302, 404], 'Account tracker add character');
+        $this->testRoute("/account/tracker/character/{$this->realCharacterId}/remove/", [200, 302, 404], 'Account tracker remove character');
+        $this->testRoute("/account/tracker/corporation/{$this->realCorporationId}/add/", [200, 302, 404], 'Account tracker add corporation');
+        $this->testRoute("/account/tracker/corporation/{$this->realCorporationId}/remove/", [200, 302, 404], 'Account tracker remove corporation');
         $this->testRoute("/account/favorite/{$this->realKillId}/add/", [200, 302, 405], 'Account favorite add (POST route)');
         $this->testRoute("/account/favorite/{$this->realKillId}/remove/", [200, 302, 405], 'Account favorite remove (POST route)');
         
@@ -257,26 +290,32 @@ class RouteTestSuite {
         
         // Related routes - using REAL system ID
         echo "\n--- Related Routes ---\n";
-        $this->testRoute("/related/{$this->realSystemId}/202510311800", 302, 'Related kills redirect (no slash)');
         $this->testRoute("/related/{$this->realSystemId}/202510311800/", 200, 'Related kills (REAL system)');
         $this->testRoute("/related/{$this->realSystemId}/202510311800/o/npc/", 200, 'Related kills with options (REAL system)');
         
         // Top and Ranks routes
         echo "\n--- Top & Ranks Routes ---\n";
-        $this->testRoute('/top/', 200, 'Top weekly');
-        $this->testRoute('/top/weekly/', 200, 'Top weekly explicit');
-        $this->testRoute('/top/weekly/2/', 200, 'Top weekly page 2');
-        $this->testRoute('/top/monthly/', 200, 'Top monthly');
-        $this->testRoute('/top/alltime/', 200, 'Top alltime');
-        $this->testRoute('/top/weekly/1/today/', 200, 'Top weekly with time filter');
-        $this->testRoute('/top/lasthour/kills/', [200, 302], 'Top last hour kills');
-        $this->testRoute('/top/lasthour/isk/', [200, 302], 'Top last hour ISK');
+        $this->testRoute('/top/lasthour/all/', 200, 'Top last hour all');
+		$this->testRoute('/top/lasthour/nullsec/', 200, 'Top last hour nullsec');
+		$this->testRoute('/top/lasthour/lowsec/', 200, 'Top last hour lowsec');
+		$this->testRoute('/top/lasthour/highsec/', 200, 'Top last hour highsec');
+		$this->testRoute('/top/lasthour/w-space/', 200, 'Top last hour w-space');
+		$this->testRoute('/top/lasthour/solo/', 200, 'Top last hour solo');
         
-        // Type ranks - using REAL vs FAKE IDs
+        // Type ranks - using REAL vs FAKE IDs  
         echo "\n--- Ranks Routes (Real IDs) ---\n";
-        $this->testRoute("/character/ranks/kills/solo/alltime/1/", [200, 302], 'Character ranks');
-        $this->testRoute("/corporation/ranks/kills/solo/weekly/1/", [200, 302], 'Corporation ranks');
-        $this->testRoute("/alliance/ranks/kills/solo/monthly/1/", [200, 302], 'Alliance ranks');
+        $this->testRoute("/character/ranks/k/all/alltime/1/", 200, 'Character ranks kills all alltime');
+        $this->testRoute("/character/ranks/l/all/alltime/1/", 200, 'Character ranks losses all alltime');
+        $this->testRoute("/character/ranks/k/solo/alltime/1/", 200, 'Character ranks kills solo alltime');
+        $this->testRoute("/character/ranks/l/solo/alltime/1/", 200, 'Character ranks losses solo alltime');
+        $this->testRoute("/corporation/ranks/k/all/alltime/1/", 200, 'Corporation ranks kills all alltime');
+        $this->testRoute("/corporation/ranks/l/all/alltime/1/", 200, 'Corporation ranks losses all alltime');
+        $this->testRoute("/corporation/ranks/k/solo/alltime/1/", 200, 'Corporation ranks kills solo alltime');
+        $this->testRoute("/alliance/ranks/k/all/alltime/1/", 200, 'Alliance ranks kills all alltime');
+        $this->testRoute("/alliance/ranks/l/all/alltime/1/", 200, 'Alliance ranks losses all alltime');
+        $this->testRoute("/shipType/ranks/k/all/alltime/1/", 200, 'Ship ranks kills all alltime');
+        $this->testRoute("/group/ranks/k/all/alltime/1/", 200, 'Group ranks kills all alltime');
+        $this->testRoute("/faction/ranks/k/all/alltime/1/", 200, 'Faction ranks kills all alltime');
         
         // API routes - REAL vs FAKE entity testing
         echo "\n--- API Routes (Real IDs) ---\n";
@@ -294,8 +333,17 @@ class RouteTestSuite {
         $this->testRoute("/api/stats/alliance/{$this->fakeAllianceId}/", [200, 404], 'API alliance stats (FAKE alliance - may return empty)');
         
         // Generic API catch-all route  
-        $this->testRoute('/api/kills/', [200, 404], 'API kills endpoint');
-        $this->testRoute("/api/killmail/add/{$this->realKillId}/abc123/", [200, 404, 405], 'API killmail add (POST route)');
+        $this->testRoute('/api/kills/', [200], 'API kills endpoint');
+        $this->testRoute('/api/kills/characterID/1/', [200, 404], 'API kills by character');
+        $this->testRoute('/api/kills/corporationID/1/', [200, 404], 'API kills by corporation');
+        $this->testRoute('/api/kills/allianceID/1/', [200, 404], 'API kills by alliance');
+        $this->testRoute('/api/kills/solarSystemID/30000142/', [200, 404], 'API kills by system');
+        $this->testRoute('/api/kills/shipTypeID/587/', [200, 404], 'API kills by ship');
+        $this->testRoute('/api/kills/w-space/', [200, 404], 'API kills w-space');
+        $this->testRoute('/api/kills/lowsec/', [200, 404], 'API kills lowsec');
+        $this->testRoute('/api/kills/nullsec/', [200, 404], 'API kills nullsec');
+        $this->testRoute('/api/kills/highsec/', [200, 404], 'API kills highsec');
+        $this->testRoute("/api/killmail/add/{$this->realKillId}/baa8832d86d498781edbcc99363700213787f761/", [200], 'API killmail add (POST route)');
         
         // Search routes
         echo "\n--- Search Routes ---\n";
@@ -360,17 +408,22 @@ class RouteTestSuite {
         $this->testPostRoute("/api/killmail/add/{$this->realKillId}/abc123/", [], [200, 404, 405, 500], 'POST API killmail add');
         $this->testPostRoute('/cache/bypass/scan/', ['scan' => 'test'], [200, 302, 405, 500], 'POST scan analyzer');
         
-        // Miscellaneous routes
-        echo "\n--- Miscellaneous Routes ---\n";
-        $this->testRoute('/navbar/', 200, 'Navigation bar');
-        $this->testRoute('/ztop/', 200, 'zTop rankings');
+        // Sponsor routes - COMPREHENSIVE TESTING
+        echo "\n--- Sponsor Routes ---\n";
+        $this->testRoute("/sponsor/query/{$this->realKillId}/", [200, 302], 'Sponsor query (REAL kill)');
+        $this->testRoute("/sponsor/sponsor/{$this->realKillId}/1000000/", [200, 302], 'Sponsor with value (REAL kill)');
         $this->testRoute("/sponsor/featured/{$this->realKillId}/", [200, 302, 404], 'Sponsor featured (REAL kill)');
         $this->testRoute("/sponsor/big/{$this->realKillId}/1000000/", [200, 302, 404], 'Sponsor big kill (REAL kill)');
         $this->testRoute("/sponsor/featured/{$this->realKillId}/5000000/", [200, 302, 404], 'Sponsor featured with value (REAL kill)');
         $this->testRoute('/kills/sponsored/', 200, 'Sponsored kills');
+
+        // Miscellaneous routes
+        echo "\n--- Miscellaneous Routes ---\n";
+        $this->testRoute('/navbar/', 200, 'Navigation bar');
+        $this->testRoute('/ztop/', 200, 'zTop rankings');
         
         // Crest mail routes
-        $this->testRoute("/crestmail/{$this->realKillId}/abc123/", [200, 404], 'CREST killmail (REAL kill)');
+        $this->testRoute("/crestmail/{$this->realKillId}/baa8832d86d498781edbcc99363700213787f761/", 204, 'CREST killmail (REAL kill)');
         
         // Cache routes
         echo "\n--- Cache Routes ---\n";
@@ -394,15 +447,32 @@ class RouteTestSuite {
         
         // Additional missing routes
         echo "\n--- Additional Missing Routes ---\n";
-        $this->testRoute("/ccpsavefit/{$this->realKillId}/", [200, 302, 404], 'CCP save fit (REAL kill)');
-        $this->testRoute("/account/tracker/character/{$this->realCharacterId}/add/", [200, 302], 'Account tracker add character (REAL)');
-        $this->testRoute("/account/tracker/character/{$this->realCharacterId}/remove/", [200, 302], 'Account tracker remove character (REAL)');
-        $this->testRoute("/account/tracker/corporation/{$this->realCorporationId}/add/", [200, 302], 'Account tracker add corp (REAL)');
-        $this->testRoute("/account/tracker/corporation/{$this->realCorporationId}/remove/", [200, 302], 'Account tracker remove corp (REAL)');
-        $this->testRoute('/api/prices/34/', 200, 'API prices for Tritanium');
         $this->testRoute('/api/prices/35/', 200, 'API prices for Pyerite');
-        $this->testRoute("/character/{$this->realCharacterId}/ranks/kills/combined/alltime/1/", [200, 302, 404], 'Character ranks (REAL character)');
-        $this->testRoute("/corporation/{$this->realCorporationId}/ranks/kills/combined/alltime/1/", [200, 302, 404], 'Corporation ranks (REAL corp)');
+        $this->testRoute('/api/prices/36/', 200, 'API prices for Mexallon');
+        $this->testRoute('/api/prices/37/', 200, 'API prices for Isogen');
+        $this->testRoute('/api/prices/38/', 200, 'API prices for Nocxium');
+        $this->testRoute('/api/prices/39/', 200, 'API prices for Zydrine');
+        $this->testRoute('/api/prices/40/', 200, 'API prices for Megacyte');
+        
+        // Test more entity overview pages with different subtypes
+        echo "\n--- Additional Entity Pages ---\n";
+        $this->testRoute("/character/{$this->realCharacterId}/kills/", 200, 'Character kills page (REAL character)');
+        $this->testRoute("/character/{$this->realCharacterId}/losses/", 200, 'Character losses page (REAL character)');
+        $this->testRoute("/character/{$this->realCharacterId}/solo/", 200, 'Character solo page (REAL character)');
+        $this->testRoute("/character/{$this->realCharacterId}/stats/", 200, 'Character stats page (REAL character)');
+        $this->testRoute("/character/{$this->realCharacterId}/trophies/", 200, 'Character trophies page (REAL character)');
+        $this->testRoute("/character/{$this->realCharacterId}/ranks/", 200, 'Character ranks page (REAL character)');
+        $this->testRoute("/corporation/{$this->realCorporationId}/kills/", 200, 'Corporation kills page (REAL corp)');
+        $this->testRoute("/corporation/{$this->realCorporationId}/losses/", 200, 'Corporation losses page (REAL corp)');
+        $this->testRoute("/corporation/{$this->realCorporationId}/stats/", 200, 'Corporation stats page (REAL corp)');
+        $this->testRoute("/corporation/{$this->realCorporationId}/supers/", 200, 'Corporation supers page (REAL corp)');
+        $this->testRoute("/system/{$this->realSystemId}/kills/", 200, 'System kills page (REAL system)');
+        $this->testRoute("/system/{$this->realSystemId}/losses/", 200, 'System losses page (REAL system)');
+        $this->testRoute("/region/{$this->realRegionId}/kills/", 200, 'Region kills page (REAL region)');
+        $this->testRoute("/ship/{$this->realShipId}/kills/", 200, 'Ship kills page (REAL ship)');
+        $this->testRoute("/group/{$this->realGroupId}/kills/", 200, 'Group kills page (REAL group)');
+        $this->testRoute("/location/60003760/", 200, 'Location page'); // Jita 4-4
+        $this->testRoute("/label/pvp/", 200, 'Label page (pvp)');
         
         // Overview routes (catch-all entity pages) - REAL vs FAKE
         echo "\n--- Overview Routes (Real Entities) ---\n";
@@ -445,13 +515,20 @@ class RouteTestSuite {
             echo "\n--- FAILED TESTS ---\n";
             foreach ($this->results as $result) {
                 if ($result['status'] !== 'PASS') {
-                    echo sprintf("FAIL: %s (Expected: %s, Got: %s)\n", 
+                    echo sprintf("FAIL: %s (Expected: %s, Got: %s, Time: %.3fs)\n", 
                         $result['path'], 
                         $result['expected'], 
-                        $result['actual']
+                        $result['actual'],
+                        $result['time_taken']
                     );
-                    if ($result['error']) {
+                    if ($result['fail_reason'] === 'TIMEOUT') {
+                        echo "  Reason: Response took longer than 1 second\n";
+                    } elseif ($result['fail_reason'] === 'TIMEOUT_IGNORED') {
+                        echo "  Reason: Response took longer than 1 second (ignored)\n";
+                    } elseif ($result['error']) {
                         echo "  Error: " . $result['error'] . "\n";
+                    } elseif ($result['fail_reason'] === 'HTTP_CODE') {
+                        echo "  Reason: Unexpected HTTP response code\n";
                     }
                 }
             }

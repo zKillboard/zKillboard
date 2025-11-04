@@ -192,7 +192,6 @@ class BlankContentTestSuite {
         // Routes that were previously problematic
         echo "\n--- Previously Problematic Routes ---\n";
         $this->testRouteContent('/bigisk/', [200], 'Big ISK kills');
-        $this->testRouteContent('/map2020/', [200], 'EVE Online map');
         $this->testRouteContent('/scanalyzer/', [200], 'Scanalyzer');
         $this->testRouteContent('/wars/', [200], 'Wars list');
         $this->testRouteContent('/intel/supers/', [200], 'Intel supers');

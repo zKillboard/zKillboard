@@ -2,7 +2,7 @@
 {% set showImage = true %}
 {% for list in extra.allranks %}
 	{% set loopIndex = 0 %}
-	{% if (loop.index -1) is divisibleby(3) %}
+	{% if (loop.index -1) is divisible by(3) %}
 	<div class="col-lg-12">
 	{% endif %}
 	<div class="col-lg-4" style="margin: 0px; padding-left: 1em;">
@@ -48,7 +48,7 @@
                         {% set entitySubpage = '' %}
 		</table>
 	</div>
-	{% if loop.index is divisibleby(3) %}
+	{% if loop.index is divisible by(3) %}
 	</div>
 	{% endif %}
 {% endfor %}

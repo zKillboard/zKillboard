@@ -107,7 +107,7 @@ class AdvancedSearch
 
     public static function parseDate($queryParams, $query, $which)
     {
-        $val = (string) $queryParams['epoch'][$which];
+        $val = (string) ($queryParams['epoch'][$which] ?? '');
         if ($val == "") return $query;
 
         $time = strtotime($val);
@@ -232,7 +232,13 @@ class AdvancedSearch
             ];
 
             $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'maxTimeMS' => 25000]);
-            $result = $rr['result'][0];
+            $result = isset($rr['result']) && !empty($rr['result']) ? $rr['result'][0] : [
+                'isk' => 0,
+                'fitted' => 0,
+                'dropped' => 0,
+                'destroyed' => 0,
+                'kills' => 0
+            ];
 
             $time = $timer->stop();
             if ($time > $longQueryMS) {
