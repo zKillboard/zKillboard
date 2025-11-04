@@ -445,8 +445,7 @@ function doFavorite(killID) {
     var color = $("#fav-star-killmail").css("color");
     var action = (color === "rgb(128, 128, 128)") ? "save" : "remove";
     var url = '/account/favorite/' + killID + '/' + action + '/';
-    $.post(url, function( data ) {
-		result = JSON.parse(data);
+    $.post(url, function( result ) {
 		console.log(result);
     	$("#fav-star-killmail").css("color", result.color);
 		showToast(result.message, 5000);

@@ -1,6 +1,130 @@
 <?php
 
-global $mdb, $redis;
+function handler($request, $response, $args, $container) {
+    global $mdb, $redis;
+
+    $charparsed = [];
+    $totalChars = 0;
+    $totalShips = 0;
+    $lineCount = 0;
+
+    try {
+        $includes = ['_id' => 0, 'id' => 1, 'ticker' => 1, 'name' => 1, 'corporationID' => 1, 'allianceID' => 1, 'factinoID' => 1, 'secStatus' => 1];
+        $statsIncludes = ['_id' => 0, 'shipsDestroyed' => 1, 'shipsLost' => 1, 'dangerRatio' => 1, 'gangRatio' => 1, 'avgGangSize' => 1, 'labels.ganked.shipsDestroyed' => 1];
+
+        $postData = $request->getParsedBody();
+        $scan = @$postData['scan'];
+        if (strlen($scan) > 50000) {
+            $response = $response->withStatus(400);
+            return $response;
+        }
+        
+        $scan = str_replace(",", "", $scan);
+        $scan = str_replace("\\n", ",", $scan);
+        $scan = str_replace("\n", ",", $scan);
+        $scan = str_replace("'", "'", $scan);
+        $scan = str_replace("'", "'", $scan);
+        $scan = str_replace('"', "", $scan);
+        $scan = explode(',', $scan);
+        Util::zout("ScanAlyzer: " . sizeof($scan));
+
+        $chars = [];
+        $corps = [];
+        $allis = [];
+        $ships = [];
+        foreach ($scan as $line) {
+            $row = null;
+            $line = trim($line);
+            $line = str_replace("\\t", ",", $line);
+            $line = str_replace("   ", ",", $line);
+            $split = explode(',', $line);
+            $entity = trim($split[0]);
+
+            if (strlen($entity) == 0) continue;
+            $row = null;
+
+            $isShip = false;
+            if (is_numeric($entity)) { // Is this a ship?
+                $row = $mdb->findDoc("information", ['type' => 'typeID', 'id' => (int) $entity, 'cacheTime' => 3600]);
+                if ($row != null) {
+                    if (((int) $row['categoryID']) == 6) {
+                        $isShip = true;
+                        $ship = isset($ships[$entity]) ? $ships[$entity] : ['shipTypeID' => $entity, 'count' => 0];
+                        $ship['count']++;
+                        $ships[$entity] = $ship;
+                        $totalShips++;
+                    }
+                }
+            }
+
+            if ($isShip) {
+                $entity = @$split[1];
+                $split = explode(' - ', $entity);
+                $entity = isset($split[1]) ? trim($split[1]) : trim($split[0]);
+            }
+
+            if ($isShip || $row == null) { // Let's see if this is a character
+                if (isset($charparsed[$entity])) continue;
+                $charparsed[$entity] = true;
+
+                $row = $mdb->findDoc("information", ['type' => 'characterID', 'l_name' => strtolower($entity), 'cacheTime' => 3600], [], $includes);
+                if ($row == null) $row = ['name' => $entity, 'id' => -1, 'unknown' => true];
+
+                $row['labels'] = [];
+
+                // do they have activity in the last 90 days
+                $doc = $mdb->findDoc("ninetyDays", ['involved.characterID' => $row['id']]);
+                if ($doc == null) $row['inactive'] = true;
+
+                $totalChars++;
+                $stats = $mdb->findDoc("statistics", ['type' => 'characterID', 'id' => $row['id'], 'cacheTime' => 3600], [], $statsIncludes);
+                $row['stats'] = ($stats == null ? [] : $stats);
+                $row['stats']['ganked-shipsDestroyed'] = (int) @$stats['labels']['ganked']['shipsDestroyed'];
+                unset($row['stats']['labels']);
+
+                $p = ['characterID' => [$row['id']], 'limit' => 6, 'pastSeconds' => 7776000, 'cacheTime' => 3600];
+                $shipsTop = [];
+                $topShips = Stats::getTop('shipTypeID', $p);
+                foreach ($topShips as $topShip) {
+                    if ($topShip['groupID'] != 29 && sizeof($shipsTop) < 5) $shipsTop[] = $topShip;
+                }
+                $row['ships'] = $shipsTop;
+
+                $chars[] = $row;
+                add($corps, $row, 'corporationID');
+                add($allis, $row, 'allianceID');
+            }
+        }
+
+        foreach (array_keys($corps) as $corp) {
+            $row = $mdb->findDoc("information", ['type' => 'corporationID', 'id' => $corp], [], $includes);
+            if ($row != null) $corps[$corp] = $row;
+        }
+
+        foreach (array_keys($allis) as $alli) {
+            $row = $mdb->findDoc("information", ['type' => 'allianceID', 'id' => $alli], [], $includes);
+            if ($row != null) $allis[$alli] = $row;
+        }
+
+        $ships = array_values($ships);
+        $ret = ['chars' => sortem($chars), 'corps' => $corps, 'allis' => $allis, 'ships' => Info::addInfo($ships), 'totalChars' => $totalChars, 'totalShips' => $totalShips];
+        if ($ret['ships'] == null) $ret['ships'] = [];
+
+        $response = $response->withHeader('Content-Type', 'application/json');
+        $response->getBody()->write(json_encode($ret));
+        return $response;
+
+    } catch (Exception $e) { 
+        Util::zout(print_r($e, true));
+        $response = $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+        $response->getBody()->write(json_encode(['error' => 'Internal server error']));
+        return $response;
+    }
+}
+
+// Legacy compatibility - call handler if accessed directly
+if (!function_exists('handler') || !isset($args)) {
+    global $mdb, $redis;
 
 /*if (@$_SESSION['characterID'] <= 0) {
     header("HTTP/1.1 403 Must be logged in to use this feature.");
@@ -115,6 +239,7 @@ try {
     echo $json;
 
 } catch (Exception $e) { Util::zout(print_r($e, true)); }
+}
 
 function add(&$arr, $row, $type) {
     if (isset($row[$type])) $arr[$row[$type]] = 1;

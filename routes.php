@@ -13,10 +13,8 @@ $app->get('/challenge/', function ($request, $response, $args) {
 });
 
 $app->get('/cache/1hour/publift/{type}/', function ($request, $response, $args) {
-	global $publift;
-	$type = $args['type'];
-	$response->getBody()->write("<div data-fuse='" . @$publift[$type] . "'></div>");
-	return $response;
+	require_once 'view/publift.php';
+	return handler($request, $response, $args, $this);
 });
 $app->get('/cache/1hour/google/', function ($request, $response, $args) {
 	require_once 'view/google.php';
@@ -34,11 +32,6 @@ $app->get('/', function ($request, $response, $args) {
 	return handler($request, $response, $args, $this);
 });
 
-// Map
-$app->get('/map2020/', function ($request, $response, $args) {
-	return $this->view->render($response, 'map.html');
-});
-
 //  Information about zKillboard
 $app->get('/information/{page}/', function ($request, $response, $args) {
 	require_once 'view/information.php';
@@ -50,17 +43,10 @@ $app->get('/account/favorites/', function ($request, $response, $args) {
 	return handler($request, $response, $args, $this);
 });
 $app->post('/account/favorite/{killID}/{action}/', function ($request, $response, $args) {
-	$killID = $args['killID'];
-	$action = $args['action'];
-	include 'view/favorite_modify.php';
-	return $response;
+	require_once 'view/favorite_modify.php';
+	return handler($request, $response, $args, $this);
 });
 
-$app->get('/related/{system}/{time}', function ($request, $response, $args) {
-	$system = $args['system'];
-	$time = $args['time'];
-	return $response->withStatus(302)->withHeader('Location', "/related/$system/$time/");
-});
 $app->get('/related/{system}/{time}/[o/{options}/]', function ($request, $response, $args) {
 	require_once 'view/related.php';
 	return handler($request, $response, $args, $this);
@@ -119,8 +105,8 @@ $app->get('/account/logout/', function ($request, $response, $args) {
 });
 
 $app->get('/account/tracker/{type}/{id}/{action}/', function ($request, $response, $args) {
-	include 'view/account_tracker.php';
-	return $response;
+	require_once 'view/account_tracker.php';
+	return handler($request, $response, $args, $this);
 });
 
 // Account
@@ -150,22 +136,18 @@ $app->get('/api/supers/', function ($request, $response, $args) {
 	return handler($request, $response, $args, $this);
 });
 $app->get('/api/related/{system}/{time}/', function ($request, $response, $args) {
-	$mc = RelatedReport::generateReport($args['system'], $args['time'], "[]");
-	header('Access-Control-Allow-Origin: *');
-	header('Access-Control-Allow-Methods: GET');
-	$app->contentType('application/json; charset=utf-8');
-	echo json_encode($mc, JSON_PRETTY_PRINT);
+	require_once 'view/api/related.php';
+	return handler($request, $response, $args, $this);
 });
 
 $app->get('/api/history/{date}/', function ($request, $response, $args) {
-	$date = $args['date'];
-	$response = $response->withHeader('Location', "/api/history/$date.json")->withStatus(302);
-	return $response;
+	require_once 'view/api/history.php';
+	return handler($request, $response, $args, $this);
 });
 
 $app->get('/api/stats/{type}/{id}/', function ($request, $response, $args) {
-	include 'view/apistats.php';
-	return $response;
+	require_once 'view/apistats.php';
+	return handler($request, $response, $args, $this);
 });
 
 $app->get('/scanalyzer/', function ($request, $response, $args) {
@@ -173,8 +155,8 @@ $app->get('/scanalyzer/', function ($request, $response, $args) {
 	return handler($request, $response, $args, $this);
 });
 $app->post('/cache/bypass/scan/', function ($request, $response, $args) {
-	include 'view/scanp.php';
-	return $response;
+	require_once 'view/scanp.php';
+	return handler($request, $response, $args, $this);
 });
 
 $app->get('/cache/{cacheType:bypass|1hour|24hour}/stats/', function ($request, $response, $args) {
@@ -345,7 +327,8 @@ $app->get('/navbar/', function ($request, $response, $args) {
 });
 
 $app->get('/ztop/', function ($request, $response, $args) {
-	return $this->view->render($response, "ztop.html", ['showAds' => false]);
+	require_once 'view/ztop.php';
+	return handler($request, $response, $args, $this);
 });
 
 // Sponsor killmail adjustments
