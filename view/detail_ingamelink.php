@@ -9,5 +9,5 @@ function handler($request, $response, $args, $container) {
     $killdata = Kills::getKillDetails($id);
 
     $data = ['crest' => $crest, 'killdata' => $killdata];
-    return $container->view->render($response, 'components/ingamelink.html', $data);
+    return $container->get('view')->render($response, 'components/ingamelink.html', $data);
 }

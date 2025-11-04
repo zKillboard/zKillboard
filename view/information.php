@@ -31,5 +31,5 @@ function handler($request, $response, $args, $container) {
 	else $title = ucfirst($page);
 
 	$data = array('data' => $output, 'pageTitle' => $title);
-	return $container->view->render($response, 'information.html', $data);
+	return $container->get('view')->render($response, 'information.html', $data);
 }

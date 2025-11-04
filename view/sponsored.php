@@ -15,5 +15,5 @@ function handler($request, $response, $args, $container) {
         $sponsored[$kill['killID']] = $killmail;
     }
 
-    return $container->view->render($response, "sponsored.html", ['sponsored' => $sponsored]);
+    return $container->get('view')->render($response, "sponsored.html", ['sponsored' => $sponsored]);
 }

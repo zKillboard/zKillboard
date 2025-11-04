@@ -4,11 +4,11 @@ function handler($request, $response, $args, $container) {
     global $redis, $ip;
 
     if ($redis->get("zkb:noapi") == "true") {
-        return $container['view']->render($response, "error.html", ['message' => 'Downtime is not a good time to login, the CCP servers are not reliable, sorry.']);
+        return $container->get('view')->render($response, "error.html", ['message' => 'Downtime is not a good time to login, the CCP servers are not reliable, sorry.']);
     }
 
     if (@$_SESSION['characterID'] > 0) {
-        return $container['view']->render($response, "error.html", ['message' => "Uh... you're already logged in..."]);
+        return $container->get('view')->render($response, "error.html", ['message' => "Uh... you're already logged in..."]);
     }
 
     $sessID = session_id();

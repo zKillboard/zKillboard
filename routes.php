@@ -94,9 +94,9 @@ foreach ($routes as $route => [$method, $target]) {
 	} else {
 		// Handle all other routes - normalize method to array and map
 		$methods = is_array($method) ? $method : [$method];
-		$app->map($methods, $route, function ($request, $response, $args) use ($target) {
+		$app->map($methods, $route, function ($request, $response, $args) use ($target, $container) {
 			require_once $target;
-			return handler($request, $response, $args, $this);
+			return handler($request, $response, $args, $container);
 		});
 	}
 }

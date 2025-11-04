@@ -6,7 +6,7 @@ $currentTime = date("YmdHi");
 $loader = new \Twig\Loader\FilesystemLoader($baseDir . 'templates/');
 $twig = new \Twig\Environment($loader, array('debug' => $twigDebug, 'cache' => $twigCache));
 
-// Create a custom view class that works with Slim 3
+// Create a custom view class that works with Slim 4
 class CustomTwigView {
     private $twig;
     
@@ -25,18 +25,10 @@ class CustomTwigView {
     }
 }
 
-// Register the view in the Slim 3 container
-$container = $app->getContainer();
-$container['view'] = function ($c) use ($twig) {
+// Register the view in the Slim 4 container (DI Container)
+$container->set('view', function () use ($twig) {
     return new CustomTwigView($twig);
-};
-
-// Setup not found handler
-$container['notFoundHandler'] = function ($c) {
-    return function ($request, $response) use ($c) {
-        return $response->withStatus(302)->withHeader('Location', './../');
-    };
-};
+});
 
 // Check SSO values
 $ssoCharacterID = @$_SESSION['characterID'];

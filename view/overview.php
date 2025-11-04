@@ -27,7 +27,7 @@ function handler($request, $response, $args, $container) {
     }
 
     if (strlen("$id") > 11) {
-        return $container->view->render($response->withStatus(404), '404.html', array('message' => 'Not Found'));
+        return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => 'Not Found'));
     }
 
     $validPageTypes = array('kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime', 'streambox');
@@ -52,21 +52,21 @@ function handler($request, $response, $args, $container) {
             'label' => array('column' => 'label', 'mixed' => true),
             );
     if (!array_key_exists($key, $map)) {
-        return $container->view->render($response->withStatus(404), '404.html', array('message' => 'Not Found'));
+        return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => 'Not Found'));
     }
 
     if ($key != "label" && (!is_numeric($id) || $id <= 0)) {
-        return $container->view->render($response->withStatus(404), '404.html', array('message' => 'Not Found'));
+        return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => 'Not Found'));
     }
 
     try {
         $parameters = Util::convertUriToParameters($request->getUri()->getPath() . '?' . $request->getUri()->getQuery());
     } catch (Exception $ex) {
-        return $container->view->render($response->withStatus(404), '404.html', array('message' => 'Not Found'));
+        return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => 'Not Found'));
     }
 
     if (isset($parameters['streambox'])) {
-        return $container->view->render($response, "streambox.html", []);
+        return $container->get('view')->render($response, "streambox.html", []);
     }
     unset($parameters['streambox']);
 
@@ -92,15 +92,15 @@ function handler($request, $response, $args, $container) {
         $type = $map[$key]['column'];
         $detail = Info::getInfoDetails("${type}ID", $id);
         if (isset($detail['valid']) && $detail['valid'] == false) {
-            return $container->view->render($response->withStatus(404), '404.html', array('message' => 'Not Found'));
+            return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => 'Not Found'));
         }
     } catch (Exception $ex) {
-        return $container->view->render($response, 'error.html', array('message' => "There was an error fetching information for the $key you specified."));
+        return $container->get('view')->render($response, 'error.html', array('message' => "There was an error fetching information for the $key you specified."));
     }
 
     $pageName = isset($detail[$map[$key]['column'].'Name']) ? $detail[$map[$key]['column'].'Name'] : '???';
     if ($key != "label" && ($pageName == '???' && !$mdb->exists('information', ['id' => $id]))) {
-        return $container->view->render($response->withStatus(404), '404.html', array('message' => 'This entity is not in our database.'));
+        return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => 'This entity is not in our database.'));
     }
 $columnName = ($key == 'labels') ? "labels" : $map[$key]['column'].'ID';
 $mixedKills = $pageType == 'overview' && $map[$key]['mixed'];
@@ -526,7 +526,7 @@ $soloKills = addVics($vics, $soloKills);
 
     $renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified, 'dqChars' => $dqChars);
 
-    return $container->view->render($response, 'overview.html', $renderParams);
+    return $container->get('view')->render($response, 'overview.html', $renderParams);
 }
 
 function addVics($vics, $kills = []) {

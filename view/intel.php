@@ -13,7 +13,7 @@ function handler($request, $response, $args, $container) {
     
     if ($uri == '/intel/supers/') {
         // HTML version
-        return $container->view->render($response, 'intel.html', array('data' => $data));
+        return $container->get('view')->render($response, 'intel.html', array('data' => $data));
     } else {
         // JSON API version
         $response->getBody()->write(json_encode($data));

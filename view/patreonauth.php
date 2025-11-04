@@ -17,7 +17,7 @@ function handler($request, $response, $args, $container) {
         $state = str_replace("/", "", @$queryParams['state']);
         $sessionState = @$_SESSION['oauth2State'];
         if ($state !== $sessionState) {
-            return $container->view->render($response, "error.html", ['message' => "Something went wrong with security. Please try again."]);
+            return $container->get('view')->render($response, "error.html", ['message' => "Something went wrong with security. Please try again."]);
         }
 
         if ( @$queryParams['code'] != '' ) {
@@ -47,6 +47,6 @@ function handler($request, $response, $args, $container) {
         
         return $response;
     } catch (Exception $ex) {
-        return $container->view->render($response, "error.html", ['message' => "Something went wrong with the login from Patreon's end, sorry, can you please try logging in again? *"]);
+        return $container->get('view')->render($response, "error.html", ['message' => "Something went wrong with the login from Patreon's end, sorry, can you please try logging in again? *"]);
     }
 }

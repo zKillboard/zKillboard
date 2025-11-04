@@ -85,5 +85,5 @@ function handler($request, $response, $args, $container) {
         $error = array($error);
     }
 
-    return $container->view->render($response, 'postmail.html', array('message' => $error));
+    return $container->get('view')->render($response, 'postmail.html', array('message' => $error));
 }

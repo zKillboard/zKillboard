@@ -71,10 +71,10 @@ switch ($type) {
     default:
 }
 
-        return $container->view->render($response, "sponsor.html", ['killID' => $killID, 'iskA' => $iskAvailable, 'response' => $responseMessage, 'valueF' => $valueF, 'type' => $type]);
+        return $container->get('view')->render($response, "sponsor.html", ['killID' => $killID, 'iskA' => $iskAvailable, 'response' => $responseMessage, 'valueF' => $valueF, 'type' => $type]);
     } catch (Exception $e) {
         Util::zout(print_r($e, true));
-        return $container->view->render($response, "error.html", ['message' => 'An error occurred processing your request.']);
+        return $container->get('view')->render($response, "error.html", ['message' => 'An error occurred processing your request.']);
     }
 }
 

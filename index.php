@@ -48,8 +48,17 @@ if ($badBot) {
 //if ($redis->get("IP:ban:$ip") == "true") return header("Location: /html/banned.html", true, 302);
 //if (in_array($ip, $blackList)) return header('HTTP/1.1 403 Blacklisted');
 
-// Starting Slim Framework
-$app = new \Slim\App(['settings' => $config]);
+// Starting Slim Framework 4
+use Slim\Factory\AppFactory;
+use DI\Container;
+
+// Create Container
+$container = new Container();
+
+// Set container to create App with on AppFactory
+AppFactory::setContainer($container);
+$app = AppFactory::create();
+
 header('X-Frame-Options: DENY');
 header("Content-Security-Policy: frame-ancestors 'self'");
 
@@ -77,15 +86,13 @@ $theme = 'cyborg';
 // Load twig stuff BEFORE routes
 include 'twig.php';
 
-// Setup error handling for Slim 3
-$container = $app->getContainer();
-$container['errorHandler'] = function ($c) {
-    return function ($request, $response, $exception) use ($c) {
-        error_log("Slim 3 Error: " . $exception->getMessage() . " in " . $exception->getFile() . ":" . $exception->getLine());
-        $response->getBody()->write("Error: " . $exception->getMessage());
-        return $response->withStatus(500);
-    };
-};
+// Add Routing Middleware (required for Slim 4)
+$app->addRoutingMiddleware();
+
+// Setup error handling for Slim 4
+$errorMiddleware = $app->addErrorMiddleware(true, true, true);
+$errorHandler = $errorMiddleware->getDefaultErrorHandler();
+$errorHandler->forceContentType('text/html');
 
 // Load the routes - always keep at the bottom of the require list ;)
 include 'routes.php';

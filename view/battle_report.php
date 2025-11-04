@@ -75,11 +75,11 @@ function handler($request, $response, $args, $container) {
     try {
         $mc = RelatedReport::generateReport($system, $time, $options, $battleID, null);
         if (is_array($mc)) {
-            return $container->view->render($response, 'related.html', $mc);
+            return $container->get('view')->render($response, 'related.html', $mc);
         } else {
-            return $container->view->render($response, 'related_wait.html', ['showAds' => false]);
+            return $container->get('view')->render($response, 'related_wait.html', ['showAds' => false]);
         }
     } catch (Exception $ex) {
-        return $container->view->render($response, 'related_wait.html', ['showAds' => false]);
+        return $container->get('view')->render($response, 'related_wait.html', ['showAds' => false]);
     }
 }

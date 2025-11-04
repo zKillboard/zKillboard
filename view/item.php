@@ -11,7 +11,7 @@ function handler($request, $response, $args, $container) {
 
     $info = $mdb->findDoc('information', ['type' => 'typeID', 'id' => (int) $id, 'cacheTime' => 3600]);
     if ($info == null) {
-        return $container->view->render($response->withStatus(404), '404.html', ['message' => 'Item not found']);
+        return $container->get('view')->render($response->withStatus(404), '404.html', ['message' => 'Item not found']);
     }
     
     $info['typeName'] = $info['name'];
@@ -50,5 +50,5 @@ function handler($request, $response, $args, $container) {
 
     $info['typeID'] = $id;
     $data = array('info' => $info, 'hasKills' => $hasKills, 'kills' => $victims);
-    return $container->view->render($response, 'item.html', $data);
+    return $container->get('view')->render($response, 'item.html', $data);
 }

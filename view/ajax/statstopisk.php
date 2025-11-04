@@ -16,7 +16,7 @@ function handler($request, $response, $args, $container) {
         $params = URI::validate($mockApp, $uri, ['u' => true, 'ks' => !$bypass, 'ke' => !$bypass]);
     } catch (Exception $e) {
         // If validation fails, return empty result
-        return $container->view->render($response, 'components/top_killer_list.html', []);
+        return $container->get('view')->render($response, 'components/top_killer_list.html', []);
     }
 
     $uri = $params['u'];
@@ -58,5 +58,5 @@ function handler($request, $response, $args, $container) {
         $ret['topSet'] = Stats::getTopIsk($p);
     }
 
-    return $container->view->render($response, 'components/big_top_list.html', $ret);
+    return $container->get('view')->render($response, 'components/big_top_list.html', $ret);
 }

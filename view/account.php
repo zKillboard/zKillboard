@@ -81,5 +81,5 @@ $data['history'] = User::getPaymentHistory($userID);
 $data['log'] = ZLog::get($userID);
 
     $accountData = array('data' => $data, 'message' => $error, 'key' => $key, 'reqid' => $reqid);
-    return $container->view->render($response, 'account.html', $accountData);
+    return $container->get('view')->render($response, 'account.html', $accountData);
 }

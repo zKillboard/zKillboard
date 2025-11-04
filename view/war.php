@@ -51,6 +51,6 @@ foreach ($preKills as $kill) {
     $kills[] = $kill;
 }
 
-return $container['view']->render($response, 'index.html', array('war' => $warData, 'wars' => array($warData), 'topPods' => $topPods, 'topIsk' => $topIsk, 'topPoints' => $topPoints, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => 'war', 'pager' => false, 'pageTitle' => $pageTitle));
+return $container->get('view')->render($response, 'index.html', array('war' => $warData, 'wars' => array($warData), 'topPods' => $topPods, 'topIsk' => $topIsk, 'topPoints' => $topPoints, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => 'war', 'pager' => false, 'pageTitle' => $pageTitle));
 
 }

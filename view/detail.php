@@ -57,7 +57,7 @@ while ($mdb->count('queueInfo', ['killID' => $id])) {
 
 $exists = $mdb->exists('killmails', ['killID' => $id]);
 if (!$exists) {
-        return $container->view->render($response->withStatus(404), '404.html', array('message' => "KillID $id does not exist."));
+        return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => "KillID $id does not exist."));
 }
 
 // Create the details on this kill
@@ -199,14 +199,14 @@ foreach (Comments::$defaultComments as $dc) {
 $details['comments'] = array_values($comments);
 
     if ($pageview == 'remaining') {
-        return $container->view->render($response, "components/attackers_list.html", [
+        return $container->get('view')->render($response, "components/attackers_list.html", [
             'attackList' => array_slice($killdata['involved'], 10),
             'isDelayed' => false,
             'hideTableHeading' => true
         ]);
     }
 
-    return $container->view->render($response, 'detail.html', $details);
+    return $container->get('view')->render($response, 'detail.html', $details);
 }
 
 function involvedships($array)

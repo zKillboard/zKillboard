@@ -42,5 +42,5 @@ function handler($request, $response, $args, $container) {
 	$allLists[$type] = ['topKillers' => $topKillers, 'topLosers' => $topLosers];
 
 	$data = ['allLists' => $allLists, 'time' => date('H:i'), 'type' => $type, 'types' => $types];
-	return $container->view->render($response, 'lasthour.html', $data);
+	return $container->get('view')->render($response, 'lasthour.html', $data);
 }
