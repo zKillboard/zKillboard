@@ -1,353 +1,102 @@
 <?php
 
-$app->get('/information/', function ($request, $response, $args) {
-	return $response->withStatus(302)->withHeader('Location', '/information/about/');
-});
-$app->get('/faq/', function ($request, $response, $args) {
-	return $response->withStatus(302)->withHeader('Location', '/information/faq/');
-});
+// Routes configuration - ordered from most specific to most general
+$routes = [
+	// Redirects
+	'/information/' => ['redirect', '/information/about/'],
+	'/faq/' => ['redirect', '/information/faq/'],
+	'/google/' => ['redirect', '/cache/1hour/google/'],
+	'/google/{mobile}/' => ['redirect', '/cache/1hour/google/'],
+	
+	// GET routes
+	'/' => ['GET', 'view/index.php'],
+	'/challenge/' => ['GET', 'view/challenge.php'],
+	'/cache/1hour/publift/{type}/' => ['GET', 'view/publift.php'],
+	'/cache/1hour/google/' => ['GET', 'view/google.php'],
+	'/information/{page}/' => ['GET', 'view/information.php'],
+	'/account/favorites/' => ['GET', 'view/favorites.php'],
+	'/related/{system}/{time}/[o/{options}/]' => ['GET', 'view/related.php'],
+	'/br/{battleID}/' => ['GET', 'view/battle_report.php'],
+	'/brsave/' => ['GET', 'view/brsave.php'],
+	'/bigisk/' => ['GET', 'view/bigisk.php'],
+	'/{type}/ranks/{kl}/{solo}/{epoch}/{page}/' => ['GET', 'view/typeRanks.php'],
+	'/top/lasthour/{type}/' => ['GET', 'view/lasthour.php'],
+	'/kill/{id}/redirect/{where}/' => ['GET', 'view/detail.php'],
+	'/kill/{id}/remaining/' => ['GET', 'view/detail.php'],
+	'/kill/{id}/' => ['GET', 'view/detail.php'],
+	'/kill/{id}/ingamelink/' => ['GET', 'view/detail_ingamelink.php'],
+	'/account/logout/' => ['GET', 'view/logout.php'],
+	'/account/tracker/{type}/{id}/{action}/' => ['GET', 'view/account_tracker.php'],
+	'/item/{id}/' => ['GET', 'view/item.php'],
+	'/api/recentactivity/' => ['GET', 'view/api/recentactivity.php'],
+	'/api/supers/' => ['GET', 'view/intel.php'],
+	'/api/related/{system}/{time}/' => ['GET', 'view/api/related.php'],
+	'/api/history/{date}/' => ['GET', 'view/api/history.php'],
+	'/api/stats/{type}/{id}/' => ['GET', 'view/apistats.php'],
+	'/scanalyzer/' => ['GET', 'view/scanalyzer.php'],
+	'/cache/{cacheType:bypass|1hour|24hour}/stats/' => ['GET', 'view/ajax/stats.php'],
+	'/cache/{cacheType:bypass|1hour|24hour}/killlist/' => ['GET', 'view/ajax/killlist.php'],
+	'/cache/{cacheType:bypass|1hour|24hour}/statstop10/' => ['GET', 'view/ajax/statstop10.php'],
+	'/cache/{cacheType:bypass|1hour|24hour}/statstopisk/' => ['GET', 'view/ajax/statstopisk.php'],
+	'/api/prices/{id}/' => ['GET', 'view/apiprices.php'],
+	'/api/{input:.*}' => ['GET', 'view/api.php'],
+	'/post/' => ['GET', 'view/postmail.php'],
+	'/asearch/' => ['GET', 'view/asearch.php'],
+	'/asearchsave/' => ['GET', 'view/asearchsave.php'],
+	'/asearchsaved/{id}/' => ['GET', 'view/asearchsaved.php'],
+	'/asearchquery/' => ['GET', 'view/asearchquery.php'],
+	'/asearchinfo/' => ['GET', 'view/asearchinfo.php'],
+	'/cache/1hour/autocomplete/' => ['GET', 'view/search2020.php'],
+	'/autocomplete/{entityType}/{search}/' => ['GET', 'view/autocomplete.php'],
+	'/autocomplete/{search}/' => ['GET', 'view/autocomplete.php'],
+	'/intel/supers/' => ['GET', 'view/intel.php'],
+	'/crestmail/{killID}/{hash}/' => ['GET', 'view/crestmail.php'],
+	'/war/eligible/' => ['GET', 'view/war_eligible.php'],
+	'/war/{warID}/' => ['GET', 'view/war.php'],
+	'/wars/' => ['GET', 'view/wars.php'],
+	'/ccplogin/' => ['GET', 'view/ccplogin.php'],
+	'/ccpcallback/' => ['GET', 'view/ccpcallback.php'],
+	'/ccpsavefit/{killID}/' => ['GET', 'view/ccpsavefit.php'],
+	'/ccpoauth2/{delay}/' => ['GET', 'view/ccpoauth2.php'],
+	'/ccpoauth2/' => ['GET', 'view/ccpoauth2.php'],
+	'/ccpoauth2-360noscope/' => ['GET', 'view/ccpoauth2-noscopes.php'],
+	'/cache/bypass/login/patreon/' => ['GET', 'view/patreonlogin.php'],
+	'/cache/bypass/login/patreonauth/' => ['GET', 'view/patreonauth.php'],
+	'/navbar/' => ['GET', 'view/navbar.php'],
+	'/ztop/' => ['GET', 'view/ztop.php'],
+	'/sponsor/{type}/{killID}/[{value}/]' => ['GET', 'view/sponsor.php'],
+	'/kills/sponsored/' => ['GET', 'view/sponsored.php'],
+	'/cache/bypass/comment/{pageID}/{commentID}/up/' => ['GET', 'view/comments-up.php'],
+	'/cache/{cacheType:1hour|24hour}/killlistrow/{killID}/' => ['GET', 'view/killlistrow.php'],
+	'/cache/bypass/healthcheck/' => ['GET', 'view/api/healthcheck.php'],
+	
+	// POST routes
+	'/account/favorite/{killID}/{action}/' => ['POST', 'view/favorite_modify.php'],
+	'/api/killmail/add/{killID}/{hash}/' => ['POST', 'view/api/killmail-add.php'],
+	'/cache/bypass/scan/' => ['POST', 'view/scanp.php'],
+	
+	// Mixed routes
+	'/account/[{req}/[{reqid}/]]' => [['GET', 'POST'], 'view/account.php'],
+	'/search/[{search}/]' => [['GET', 'POST'], 'view/search.php'],
+	'/post/' => [['GET', 'POST'], 'view/postmail.php'],
+	
+	// Catch-all - MUST be last
+	'/{input:.*}/' => ['GET', 'view/overview.php'],
+];
 
-$app->get('/challenge/', function ($request, $response, $args) {
-	require_once 'view/challenge.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/cache/1hour/publift/{type}/', function ($request, $response, $args) {
-	require_once 'view/publift.php';
-	return handler($request, $response, $args, $this);
-});
-$app->get('/cache/1hour/google/', function ($request, $response, $args) {
-	require_once 'view/google.php';
-	return handler($request, $response, $args, $this);
-});
-$app->get('/google/', function ($request, $response, $args) {
-	return $response->withStatus(302)->withHeader('Location', '/cache/1hour/google/');
-});
-$app->get('/google/{mobile}/', function ($request, $response, $args) {
-	return $response->withStatus(302)->withHeader('Location', '/cache/1hour/google/');
-});
-
-$app->get('/', function ($request, $response, $args) {
-	require_once 'view/index.php';
-	return handler($request, $response, $args, $this);
-});
-
-//  Information about zKillboard
-$app->get('/information/{page}/', function ($request, $response, $args) {
-	require_once 'view/information.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/account/favorites/', function ($request, $response, $args) {
-	require_once 'view/favorites.php';
-	return handler($request, $response, $args, $this);
-});
-$app->post('/account/favorite/{killID}/{action}/', function ($request, $response, $args) {
-	require_once 'view/favorite_modify.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/related/{system}/{time}/[o/{options}/]', function ($request, $response, $args) {
-	require_once 'view/related.php';
-	return handler($request, $response, $args, $this);
-});
-
-// View Battle Report
-$app->get('/br/{battleID}/', function ($request, $response, $args) {
-	require_once 'view/battle_report.php';
-	return handler($request, $response, $args, $this);
-});
-
-// Save Battle Report
-$app->get('/brsave/', function ($request, $response, $args) {
-	require_once 'view/brsave.php';
-	return handler($request, $response, $args, $this);
-});
-
-// Big ISK Kills
-$app->get('/bigisk/', function ($request, $response, $args) {
-	require_once 'view/bigisk.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/{type}/ranks/{kl}/{solo}/{epoch}/{page}/', function ($request, $response, $args) {
-	require_once 'view/typeRanks.php';
-	return handler($request, $response, $args, $this);
-});
-
-// Top Last Hour
-$app->get('/top/lasthour/{type}/', function ($request, $response, $args) {
-	require_once 'view/lasthour.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/kill/{id}/redirect/{where}/', function ($request, $response, $args) {
-	require_once 'view/detail.php';
-	return handler($request, $response, $args, $this);
-});
-$app->get('/kill/{id}/remaining/', function ($request, $response, $args) {
-	require_once 'view/detail.php';
-	return handler($request, $response, $args, $this);
-});
-$app->get('/kill/{id}/', function ($request, $response, $args) {
-	require_once 'view/detail.php';
-	return handler($request, $response, $args, $this);
-});
-$app->get('/kill/{id}/ingamelink/', function ($request, $response, $args) {
-	require_once 'view/detail_ingamelink.php';
-	return handler($request, $response, $args, $this);
-});
-
-// Logout
-$app->get('/account/logout/', function ($request, $response, $args) {
-	require_once 'view/logout.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/account/tracker/{type}/{id}/{action}/', function ($request, $response, $args) {
-	require_once 'view/account_tracker.php';
-	return handler($request, $response, $args, $this);
-});
-
-// Account
-$app->map(['GET', 'POST'], '/account/[{req}/[{reqid}/]]', function ($request, $response, $args) {
-	require_once 'view/account.php';
-	return handler($request, $response, $args, $this);
-});
-
-// EveInfo
-$app->get('/item/{id}/', function ($request, $response, $args) {
-	require_once 'view/item.php';
-	return handler($request, $response, $args, $this);
-});
-
-
-$app->get('/api/recentactivity/', function ($request, $response, $args) {
-	require_once 'view/api/recentactivity.php';
-	return handler($request, $response, $args, $this);
-});
-$app->post('/api/killmail/add/{killID}/{hash}/', function ($request, $response, $args) {
-	require_once 'view/api/killmail-add.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/api/supers/', function ($request, $response, $args) {
-	require_once 'view/intel.php';
-	return handler($request, $response, $args, $this);
-});
-$app->get('/api/related/{system}/{time}/', function ($request, $response, $args) {
-	require_once 'view/api/related.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/api/history/{date}/', function ($request, $response, $args) {
-	require_once 'view/api/history.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/api/stats/{type}/{id}/', function ($request, $response, $args) {
-	require_once 'view/apistats.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/scanalyzer/', function ($request, $response, $args) {
-	require_once 'view/scanalyzer.php';
-	return handler($request, $response, $args, $this);
-});
-$app->post('/cache/bypass/scan/', function ($request, $response, $args) {
-	require_once 'view/scanp.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/cache/{cacheType:bypass|1hour|24hour}/stats/', function ($request, $response, $args) {
-	require_once 'view/ajax/stats.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/cache/{cacheType:bypass|1hour|24hour}/killlist/', function ($request, $response, $args) {
-	require_once 'view/ajax/killlist.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/cache/{cacheType:bypass|1hour|24hour}/statstop10/', function ($request, $response, $args) {
-	require_once 'view/ajax/statstop10.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/cache/{cacheType:bypass|1hour|24hour}/statstopisk/', function ($request, $response, $args) {
-	require_once 'view/ajax/statstopisk.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/api/prices/{id}/', function ($request, $response, $args) {
-	require_once 'view/apiprices.php';  
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/api/{input:.*}', function ($request, $response, $args) {
-	require_once 'view/api.php';
-	return handler($request, $response, $args, $this);
-});
-
-// Post
-$app->get('/post/', function ($request, $response, $args) {
-	require_once 'view/postmail.php';  
-	return handler($request, $response, $args, $this);
-});
-$app->post('/post/', function ($request, $response, $args) {
-	require_once 'view/postmail.php';  
-	return handler($request, $response, $args, $this);
-});
-
-// Search
-$app->map(['GET', 'POST'], '/search/[{search}/]', function ($request, $response, $args) {
-	require_once 'view/search.php';  
-	return handler($request, $response, $args, $this);
-});
-
-// Advanced Search
-$app->map(['GET'], '/asearch/', function ($request, $response, $args) {
-	require_once 'view/asearch.php';  
-	return handler($request, $response, $args, $this);
-});
-$app->map(['GET'], '/asearchsave/', function ($request, $response, $args) {
-	require_once 'view/asearchsave.php';  
-	return handler($request, $response, $args, $this);
-});
-$app->map(['GET'], '/asearchsaved/{id}/', function ($request, $response, $args) {
-	require_once 'view/asearchsaved.php';  
-	return handler($request, $response, $args, $this);
-});
-$app->map(['GET'], '/asearchquery/', function ($request, $response, $args) {
-	require_once 'view/asearchquery.php';  
-	return handler($request, $response, $args, $this);
-});
-$app->map(['GET'], '/asearchinfo/', function ($request, $response, $args) {
-	require_once 'view/asearchinfo.php';  
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/cache/1hour/autocomplete/', function ($request, $response, $args) {
-	require_once 'view/search2020.php';
-	return handler($request, $response, $args, $this);
-});
-
-// Autocomplete
-/*$app->post('/autocomplete/', function ($request, $response, $args) {
-	require_once 'view/autocomplete.php';
-	return handler($request, $response, $args, $this);
-});*/
-$app->get('/autocomplete/{entityType}/{search}/', function ($request, $response, $args) {
-	require_once 'view/autocomplete.php';
-	return handler($request, $response, $args, $this);
-});
-$app->get('/autocomplete/{search}/', function ($request, $response, $args) {
-	require_once 'view/autocomplete.php';
-	return handler($request, $response, $args, $this);
-});
-
-// Intel
-$app->get('/intel/supers/', function ($request, $response, $args) {
-	require_once 'view/intel.php';
-	return handler($request, $response, $args, $this);
-});
-
-// Sharing Crest Mails
-$app->get('/crestmail/{killID}/{hash}/', function ($request, $response, $args) {
-	require_once 'view/crestmail.php';
-	return handler($request, $response, $args, $this);
-});
-
-// War!
-$app->get('/war/eligible/', function ($request, $response, $args) {
-	require_once 'view/war_eligible.php';
-	return handler($request, $response, $args, $this);
-});
-$app->get('/war/{warID}/', function ($request, $response, $args) {
-	require_once 'view/war.php';
-	return handler($request, $response, $args, $this);
-});
-$app->get('/wars/', function ($request, $response, $args) {
-	require_once 'view/wars.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/ccplogin/', function ($request, $response, $args) {
-	require_once 'view/ccplogin.php';
-	return handler($request, $response, $args, $this);
-});
-$app->get('/ccpcallback/', function ($request, $response, $args) {
-	require_once 'view/ccpcallback.php';
-	return handler($request, $response, $args, $this);
-});
-$app->get('/ccpsavefit/{killID}/', function ($request, $response, $args) {
-	require_once 'view/ccpsavefit.php';
-	return handler($request, $response, $args, $this);
-});
-
-// EVE Online OAUTH2
-$app->get('/ccpoauth2/{delay}/', function ($request, $response, $args) {
-	require_once 'view/ccpoauth2.php';
-	return handler($request, $response, $args, $this);
-});
-$app->get('/ccpoauth2/', function ($request, $response, $args) {
-	require_once 'view/ccpoauth2.php';
-	return handler($request, $response, $args, $this);
-});
-
-// EVE Online OAUTH2
-$app->get('/ccpoauth2-360noscope/', function ($request, $response, $args) {
-	require_once 'view/ccpoauth2-noscopes.php';
-	return handler($request, $response, $args, $this);
-});
-
-// Patreon
-$app->get('/cache/bypass/login/patreon/', function ($request, $response, $args) {
-	require_once 'view/patreonlogin.php';
-	return handler($request, $response, $args, $this);
-});
-$app->get('/cache/bypass/login/patreonauth/', function ($request, $response, $args) {
-	require_once 'view/patreonauth.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/navbar/', function ($request, $response, $args) {
-	require_once 'view/navbar.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/ztop/', function ($request, $response, $args) {
-	require_once 'view/ztop.php';
-	return handler($request, $response, $args, $this);
-});
-
-// Sponsor killmail adjustments
-$app->get('/sponsor/{type}/{killID}/[{value}/]', function ($request, $response, $args) {
-	require_once 'view/sponsor.php';
-	return handler($request, $response, $args, $this);
-});
-// Sponsored killmails
-$app->get('/kills/sponsored/', function ($request, $response, $args) {
-	require_once 'view/sponsored.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/cache/bypass/comment/{pageID}/{commentID}/up/', function ($request, $response, $args) {
-	require_once 'view/comments-up.php';
-	return handler($request, $response, $args, $this);
-});
-
-$app->get('/cache/{cacheType:1hour|24hour}/killlistrow/{killID}/', function ($request, $response, $args) {
-	require_once 'view/killlistrow.php';
-	return handler($request, $response, $args, $this);
-});
-$app->get('/cache/bypass/healthcheck/', function ($request, $response, $args) {
-	require_once 'view/api/healthcheck.php';
-	return handler($request, $response, $args, $this);
-});
-
-// The Overview stuff
-$app->get('/{input:.*}/', function ($request, $response, $args) {
-	require_once 'view/overview.php';
-	return handler($request, $response, $args, $this);
-});
+// Generate all routes from configuration - single iteration
+foreach ($routes as $route => [$method, $target]) {
+	if ($method === 'redirect') {
+		// Handle redirects
+		$app->get($route, function ($request, $response, $args) use ($target) {
+			return $response->withStatus(302)->withHeader('Location', $target);
+		});
+	} else {
+		// Handle all other routes - normalize method to array and map
+		$methods = is_array($method) ? $method : [$method];
+		$app->map($methods, $route, function ($request, $response, $args) use ($target) {
+			require_once $target;
+			return handler($request, $response, $args, $this);
+		});
+	}
+}
