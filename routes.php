@@ -251,28 +251,23 @@ $app->map(['GET', 'POST'], '/search/[{search}/]', function ($request, $response,
 });
 
 // Advanced Search
-$app->map(['GET', 'POST'], '/asearch/', function ($request, $response, $args) {
+$app->map(['GET'], '/asearch/', function ($request, $response, $args) {
 	require_once 'view/asearch.php';  
 	return handler($request, $response, $args, $this);
 });
-$app->map(['GET', 'POST'], '/asearchsave/', function ($request, $response, $args) {
+$app->map(['POST'], '/asearchsave/', function ($request, $response, $args) {
 	require_once 'view/asearchsave.php';  
 	return handler($request, $response, $args, $this);
 });
-$app->map(['GET', 'POST'], '/asearchsaved/{id}/', function ($request, $response, $args) {
+$app->map(['GET'], '/asearchsaved/{id}/', function ($request, $response, $args) {
 	require_once 'view/asearchsaved.php';  
 	return handler($request, $response, $args, $this);
 });
-$app->map(['GET', 'POST'], '/asearchquery/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['route_args'] = $args;
-	include 'view/asearchquery.php';
-	$output = ob_get_clean();
-	
-	$response->getBody()->write($output);
-	return $response;
+$app->map(['GET'], '/asearchquery/', function ($request, $response, $args) {
+	require_once 'view/asearchquery.php';  
+	return handler($request, $response, $args, $this);
 });
-$app->map(['GET', 'POST'], '/asearchinfo/', function ($request, $response, $args) {
+$app->map(['GET'], '/asearchinfo/', function ($request, $response, $args) {
 	require_once 'view/asearchinfo.php';  
 	return handler($request, $response, $args, $this);
 });
