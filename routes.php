@@ -49,20 +49,8 @@ $app->get('/google/{mobile}/', function ($request, $response, $args) {
 });
 
 $app->get('/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;  // Flag to prevent rendering
-	include 'view/index.php';
-	ob_end_clean();
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		return $this->view->render($response, $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback - basic response
-	$response->getBody()->write('Homepage data loading...');
-	return $response;
+	require_once 'view/index.php';
+	return handler($request, $response, $args, $this);
 });
 
 // Map
@@ -72,28 +60,8 @@ $app->get('/map2020/', function ($request, $response, $args) {
 
 //  Information about zKillboard
 $app->get('/information/{page}/', function ($request, $response, $args) {
-	$page = $args['page'];
-	
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	include 'view/information.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		return $this->view->render($response, $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Information page loading...');
-	return $response;
+	require_once 'view/information.php';
+	return handler($request, $response, $args, $this);
 });
 
 $app->get('/account/favorites/', function ($request, $response, $args) {
@@ -125,84 +93,26 @@ $app->get('/related/{system}/{time}', function ($request, $response, $args) {
 	return $response->withStatus(302)->withHeader('Location', "/related/$system/$time/");
 });
 $app->get('/related/{system}/{time}/[o/{options}/]', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	$system = $args['system'];
-	$time = $args['time'];
-	$options = $args['options'] ?? '';
-	include 'view/related.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/related.php';
+	return handler($request, $response, $args, $this);
 });
 
 // View Battle Report
 $app->get('/br/{battleID}/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	$battleID = $args['battleID'];
-	include 'view/battle_report.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/battle_report.php';
+	return handler($request, $response, $args, $this);
 });
 
 // Save Battle Report
 $app->get('/brsave/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/brsave.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['redirect_url'])) {
-		$response = $response->withHeader('Location', $GLOBALS['redirect_url']);
-		unset($GLOBALS['redirect_url']);
-		return isset($GLOBALS['redirect_status']) ? $response->withStatus($GLOBALS['redirect_status']) : $response->withStatus(302);
-	}
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/brsave.php';
+	return handler($request, $response, $args, $this);
 });
 
-// View Battle Report  
+// Big ISK Kills
 $app->get('/bigisk/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	include 'view/bigisk.php';
-	ob_end_clean();
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		return $this->view->render($response, $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Bigisk loading...');
-	return $response;
+	require_once 'view/bigisk.php';
+	return handler($request, $response, $args, $this);
 });
 
 $app->get('/{type}/ranks/{kl}/:solo/{epoch}/:page/', function ($request, $response, $args) {
@@ -227,29 +137,10 @@ $app->get('/{type}/ranks/{kl}/:solo/{epoch}/:page/', function ($request, $respon
 	return $response;
 });
 
-// View top
+// Top Last Hour
 $app->get('/top/lasthour/{type}/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	$type = $args['type'];
-	include 'view/lasthour.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['redirect_url'])) {
-		$response = $response->withHeader('Location', $GLOBALS['redirect_url']);
-		unset($GLOBALS['redirect_url']);
-		return isset($GLOBALS['redirect_status']) ? $response->withStatus($GLOBALS['redirect_status']) : $response->withStatus(302);
-	}
-	
-	if (isset($GLOBALS['render_data'])) {
-		global $twig;
-		$output = $twig->render($GLOBALS['render_template'], $GLOBALS['render_data']);
-		unset($GLOBALS['render_data'], $GLOBALS['render_template']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/lasthour.php';
+	return handler($request, $response, $args, $this);
 });
 $app->get('/top(/{type})(/{page})(/{time:.*})/', function ($request, $response, $args) {
 	ob_start();
