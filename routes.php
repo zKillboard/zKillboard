@@ -246,88 +246,22 @@ $app->post('/post/', function ($request, $response, $args) {
 
 // Search
 $app->map(['GET', 'POST'], '/search/[{search}/]', function ($request, $response, $args) {
-	$search = $args['search'] ?? null;
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	$GLOBALS['route_args'] = $args;  // Pass route arguments to view
-	include 'view/search.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// Check if we got JSON output
-	if (isset($GLOBALS['json_output'])) {
-		$response->getBody()->write($GLOBALS['json_output']);
-		return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		$status = $GLOBALS['render_status'] ?? 200;
-		return $this->view->render($response->withStatus($status), $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Search loading...');
-	return $response;
+	require_once 'view/search.php';  
+	return handler($request, $response, $args, $this);
 });
 
 // Advanced Search
 $app->map(['GET', 'POST'], '/asearch/', function ($request, $response, $args) {
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	include 'view/asearch.php';
-	ob_end_clean();
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		return $this->view->render($response, $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Advanced search loading...');
-	return $response;
+	require_once 'view/asearch.php';  
+	return handler($request, $response, $args, $this);
 });
 $app->map(['GET', 'POST'], '/asearchsave/', function ($request, $response, $args) {
-	include 'view/asearchsave.php';
-	return $response;
+	require_once 'view/asearchsave.php';  
+	return handler($request, $response, $args, $this);
 });
 $app->map(['GET', 'POST'], '/asearchsaved/{id}/', function ($request, $response, $args) {
-	$id = $args['id'];
-	// Include the view logic but capture the data instead of rendering
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['slim3_response'] = $response;  // Pass response for redirects
-	$GLOBALS['route_args'] = $args;  // Pass route arguments to view
-	include 'view/asearchsaved.php';
-	ob_end_clean();
-	
-	// Check if we got a redirect response
-	if (isset($GLOBALS['redirect_response'])) {
-		return $GLOBALS['redirect_response'];
-	}
-	
-	// Check if we got JSON output
-	if (isset($GLOBALS['json_output'])) {
-		$response->getBody()->write($GLOBALS['json_output']);
-		return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
-	}
-	
-	// The view should have set render data
-	if (isset($GLOBALS['render_template']) && isset($GLOBALS['render_data'])) {
-		$status = $GLOBALS['render_status'] ?? 200;
-		return $this->view->render($response->withStatus($status), $GLOBALS['render_template'], $GLOBALS['render_data']);
-	}
-	
-	// Fallback
-	$response->getBody()->write('Advanced search loading...');
-	return $response;
+	require_once 'view/asearchsaved.php';  
+	return handler($request, $response, $args, $this);
 });
 $app->map(['GET', 'POST'], '/asearchquery/', function ($request, $response, $args) {
 	ob_start();
@@ -339,19 +273,8 @@ $app->map(['GET', 'POST'], '/asearchquery/', function ($request, $response, $arg
 	return $response;
 });
 $app->map(['GET', 'POST'], '/asearchinfo/', function ($request, $response, $args) {
-	ob_start();
-	$GLOBALS['capture_render_data'] = true;
-	$GLOBALS['route_args'] = $args;
-	include 'view/asearchinfo.php';
-	$output = ob_get_clean();
-	
-	if (isset($GLOBALS['content_type'])) {
-		$response = $response->withHeader('Content-Type', $GLOBALS['content_type']);
-		unset($GLOBALS['content_type']);
-	}
-	
-	$response->getBody()->write($output);
-	return $response;
+	require_once 'view/asearchinfo.php';  
+	return handler($request, $response, $args, $this);
 });
 
 $app->get('/cache/1hour/autocomplete/', function ($request, $response, $args) {

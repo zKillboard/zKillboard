@@ -2,40 +2,20 @@
 
 use MongoDB\BSON\ObjectId;
 
-global $mdb;
+function handler($request, $response, $args, $container) {
+    global $mdb;
 
-// Extract route parameters for compatibility
-if (isset($GLOBALS['route_args'])) {
-    $id = $GLOBALS['route_args']['id'] ?? '';
-} else {
-    // Legacy parameter passing still works
-}
+    $id = $args['id'] ?? '';
 
-try {
-    $record = $mdb->findDoc("shortener", ['_id' => new ObjectId($id)]);
-    if ($record == null) {
-        // Handle redirect for compatibility
-        if (isset($GLOBALS['capture_render_data'])) {
-            $GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', '/');
-            return;
+    try {
+        $record = $mdb->findDoc("shortener", ['_id' => new ObjectId($id)]);
+        if ($record == null) {
+            return $response->withHeader('Location', '/')->withStatus(302);
         } else {
-            $app->redirect('/', 302);
+            return $response->withHeader('Location', $record['url'])->withStatus(302);
         }
-    } else {
-        // Handle redirect for compatibility
-        if (isset($GLOBALS['capture_render_data'])) {
-            $GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', $record['url']);
-            return;
-        } else {
-            $app->redirect($record['url'], 302);
-        }
-    }
-} catch (Exception $e) {
-    // Invalid ObjectId format, redirect to home
-    if (isset($GLOBALS['capture_render_data'])) {
-        $GLOBALS['redirect_response'] = $GLOBALS['slim3_response']->withStatus(302)->withHeader('Location', '/');
-        return;
-    } else {
-        $app->redirect('/', 302);
+    } catch (Exception $e) {
+        // Invalid ObjectId format, redirect to home
+        return $response->withHeader('Location', '/')->withStatus(302);
     }
 }
