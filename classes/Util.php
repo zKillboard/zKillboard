@@ -63,7 +63,7 @@ class Util
 		$uri = trim($uri);
 		$s = substr($uri, 0, 1);
 		$e = substr($uri, -1);
-		if ($s != '/' || $e != '/') Util::zout("Invalid? '$uri'");
+		//if ($s != '/' || $e != '/') Util::zout("Invalid? '$uri'");
 
 		global $isApiRequest;
 		$parameters = array();
