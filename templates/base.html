@@ -118,10 +118,6 @@ var promoImage1 = '{{ promoImage1 }}';
 
                 <div id='otherBannerDiv' class='centered' style='display: none; height: 250px; padding-top: 1em;'><a id='otherBannerAnchor' target='_new'><img id='otherBannerImg' /></a></div>
 
-                <div id='twitchers' class='hidden d-xs-none'>
-                <center><a id='twitch-live' type='button' target='_blank' class='btn btn-lg btn-primary' onClick="twitchtime();"><span id='twitch-channel'></span> is currently live on Twitch!<br/><span class='squizz-extra'>Support the zKill Hamsters!<br/>USER APPRECIATION STREAM!<br/></span>Click here to watch!</a></center><br/><br/>
-                </div>
-
 				<div id="highlightContent" class="centered" style="margin-bottom: 1em; {% if highlightMessage is not defined %}display: none;{% endif %}">
 					<a href="{{ highlightURI }}" target="_blank" rel="noopener noreferrer" class="btn btn-info btn-sm" style="padding: 1em; text-align: center; display: block; padding-top: 0em; padding-bottom: 0em; margin-top: 0.5em;">
 						{% if highlightImage is defined and highlightImage|length > 0 %}
@@ -168,7 +164,6 @@ var promoImage1 = '{{ promoImage1 }}';
         <script defer type="text/javascript" src="/js/sclock1.js"></script>
 		<script defer type="text/javascript" src="/js/nprogress.js"></script>
 		<script defer type="text/javascript" src="/js/reconnecting-websocket.js"></script>
-        <script defer src="https://embed.twitch.tv/embed/v1.js"></script>
 		{% block script %}
 		{% endblock %}
 

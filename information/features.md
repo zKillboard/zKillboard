@@ -204,7 +204,6 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 - **Automatic Processing**: Wallet monitoring and automatic credit application via cron jobs
 - **Golden Wreck Icon**: Visual indicator for users with active ad-free time
 - **Payment History**: Complete tracking of donations and ad-free periods
-- **Twitch Integration**: Twitch subscriber verification for ad-free access
 - **Patreon Integration**: Patreon subscriber verification and linking
 
 ### Killmail Sponsoring
@@ -378,7 +377,6 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 
 ### External Service Integration
 - **Patreon Integration**: Full OAuth integration for Patreon subscriber verification
-- **Twitch Integration**: Twitch subscriber verification for ad-free access
 - **EVE Mail System**: Automated EVE mail sending for notifications and achievements
 - **Market Data**: Market price integration for killmail values
 - **Image Services**: Integration with EVE's image servers for renders and portraits

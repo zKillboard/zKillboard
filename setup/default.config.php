@@ -146,11 +146,6 @@ $patreon_client_id = '';
 $patreon_client_secret = '';
 $patreon_redirect_uri = '';
 
-// Twitch
-$twitch_client_id = '';
-$twitch_client_secret = '';
-$twitch_redirect_uri = '';
-
 // Discord
 $discordServer = '';
 $killBotWebhook = '';

@@ -1160,25 +1160,6 @@ echo "Creating index : 'parentID' => 1, 'dttm' => 1 ... ";
 $tickets->ensureIndex(['parentID' => 1, 'dttm' => 1], []);
 echo "Done\n";
 
-// twitch
-echo "\nCreating collection twitch ... ";
-$db->createCollection("twitch");
-$collection = "twitch";
-$twitch = $db->$collection;
-echo "Done\n";
-echo "Creating index : 'character_id' => 1 ... ";
-$twitch->ensureIndex(['character_id' => 1], ['unique' => true]);
-echo "Done\n";
-echo "Creating index : 'twitch_id' => 1 ... ";
-$twitch->ensureIndex(['twitch_id' => 1], ['unique' => true]);
-echo "Done\n";
-echo "Creating index : 'character_id' => 1, 'twitch_id' => 1 ... ";
-$twitch->ensureIndex(['character_id' => 1, 'twitch_id' => 1], ['unique' => true]);
-echo "Done\n";
-echo "Creating index : 'expires' => 1 ... ";
-$twitch->ensureIndex(['expires' => 1], ['expireAfterSeconds' => 3600]);
-echo "Done\n";
-
 // users
 echo "\nCreating collection users ... ";
 $db->createCollection("users");

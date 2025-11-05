@@ -167,12 +167,7 @@ function wslog(msg)
         $("#commentblock").html(json.html);
     } else if (json.action === 'littlekill') {
         var killID = json.killID;
-        setTimeout(function() { loadLittleMail(killID); }, Math.floor(Math.random() * 1000));
-    } else if (json.action === 'twitch-online') {
-        console.log('twitch user online: ' + json.channel);
-        twitchlive(json.channel);
-    } else if (json.action == 'twitch-offline') {
-        twitchoffline();
+        setTimeout(function() { loadLittleMail(killID); }, Math.floor(Math.random() * 1000));    
     } else if (json.action == 'statsbox') {
         console.log(json);
         statsboxUpdate(json);
@@ -550,34 +545,6 @@ setTimeout(otherBanners, Math.min(30000, 1000 * (61 - new Date().getSeconds())))
 function showAdder(showAdd, type, id, doTN) {
     if (doTN) pubsub('tracker:' + type + ':' + id);
     return (showAdd && ($("#tracker-remove-" + type + "-" + id).removeClass("hidden").length == 0));
-}
-
-function twitchlive(channel) {
-    if ($('#twitch-channel').text() != channel) {
-        $('#twitch-embed').html("");
-        $('#twitch-channel').text(channel);
-        $('#twitch-live').removeClass('hidden').attr('href', 'https://twitch.tv/' + channel.toLowerCase());
-        $('#twitchers').removeClass('hidden');
-        if (channel == 'SquizzCaphinator') $('#twitch-channel').addClass('squizz');
-    }
-}
-
-function twitchoffline() {
-    $('#twitch-live').removeClass('squizz');
-    $("#twitch-embed").html("");
-    $("#twitch-channel").text("");
-    $('#twitchers').addClass('hidden');
-    $("#twitch-live").removeClass('hidden');
-}
-
-function twitchtime() {
-    /*new Twitch.Embed("twitch-embed", {
-width: '100%',
-height: 500,
-channel: $("#twitch-channel").text(),
-});
-$("#twitch-live").addClass('hidden');*/
-gtag('event', 'twitch-clicked');
 }
 
 function statsboxUpdate(stats) {

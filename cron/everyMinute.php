@@ -77,12 +77,3 @@ $redis->set("zkb:sponsored", json_encode($sponsored));
 
 $unique = sizeof($mdb->getCollection("scopes")->distinct("corporationID", ['scope' => 'esi-killmails.read_corporation_killmails.v1', 'iterated' => true]));
 $redis->set("tqCorpApiESICount", $unique);
-
-/*$redisMessage = null;
-if ($redis->get("twitch-online") != "") {
-Util::out("foo");
-    $redisMessage = ['action' => 'twitch-online', 'channel' => $redis->get("twitch-online")];
-} else {
-    $redisMessage = ['action' => 'twitch-offline'];
-}
-$redis->publish('public', json_encode($redisMessage, JSON_UNESCAPED_SLASHES));*/

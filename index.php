@@ -13,7 +13,7 @@ if ($uri == "/kill/-1/") return header("Location: /keepstar1.html");
 $first7 = substr($uri, 0, 7);
 if (strpos($uri, "/asearch") === false && strpos($uri, "/cache/") === false)  {
     // Check to ensure we have a trailing slash, helps with caching
-    if (substr($uri, -1) != '/' && strpos($uri, 'ccpcallback') === false && strpos($uri, 'patreon') === false && strpos($uri, 'brsave') === false && strpos($uri, "ccp") === false && strpos($uri, "related/") === false && strpos($uri, 'twitch') == false) {
+    if (substr($uri, -1) != '/' && strpos($uri, 'ccpcallback') === false && strpos($uri, 'patreon') === false && strpos($uri, 'brsave') === false && strpos($uri, "ccp") === false && strpos($uri, "related/") === false) {
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: GET');
         // Is there a question mark in the URL? cut it off, doesn't belong

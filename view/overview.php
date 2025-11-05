@@ -479,8 +479,6 @@ if ($type == 'character') {
         $extra['hasSponsored'] = true;
     }
     if (@$user['monocle'] == true) $extra['hasMonocle'] = true;
-    if ($mdb->findDoc("twitch", ['character_id' => (int) $id]) != null) $extra['isTwitchSubbed'] = true;
-    $extra['isTwitchSubbed'] = false;
 }
 
 // Sponsored killmails

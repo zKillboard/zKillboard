@@ -393,8 +393,6 @@ class RouteTestSuite {
         echo "\n--- Social Login Routes ---\n";
         $this->testRoute('/cache/bypass/login/patreon/', [200, 302], 'Patreon login');
         $this->testRoute('/cache/bypass/login/patreonauth/', [200, 302], 'Patreon auth');
-        $this->testRoute('/cache/bypass/login/twitch/', [200, 302], 'Twitch login');
-        $this->testRoute('/cache/bypass/login/twitchauth/', [200, 302], 'Twitch auth');
         
         // Post routes
         echo "\n--- Post Routes ---\n";
