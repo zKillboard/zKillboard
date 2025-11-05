@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "84f1500018bed7a3229e3ff458829e8d",
+    "content-hash": "378594c0dba7e0e23df832d8225f818f",
     "packages": [
         {
             "name": "alcaeus/mongo-php-adapter",
@@ -846,22 +846,22 @@
         },
         {
             "name": "mongodb/mongodb",
-            "version": "1.15.0",
+            "version": "1.11.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mongodb/mongo-php-library.git",
-                "reference": "3a681a3b2f2c0ebac227a3b86bb9057d0e6eb8f8"
+                "reference": "e4aa59ab15b6fe00a0e56b6772f8b515a0f01bf0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mongodb/mongo-php-library/zipball/3a681a3b2f2c0ebac227a3b86bb9057d0e6eb8f8",
-                "reference": "3a681a3b2f2c0ebac227a3b86bb9057d0e6eb8f8",
+                "url": "https://api.github.com/repos/mongodb/mongo-php-library/zipball/e4aa59ab15b6fe00a0e56b6772f8b515a0f01bf0",
+                "reference": "e4aa59ab15b6fe00a0e56b6772f8b515a0f01bf0",
                 "shasum": ""
             },
             "require": {
                 "ext-hash": "*",
                 "ext-json": "*",
-                "ext-mongodb": "^1.15.0",
+                "ext-mongodb": "^1.12.0",
                 "jean85/pretty-package-versions": "^1.2 || ^2.0.1",
                 "php": "^7.2 || ^8.0",
                 "symfony/polyfill-php80": "^1.19"
@@ -869,13 +869,12 @@
             "require-dev": {
                 "doctrine/coding-standard": "^9.0",
                 "squizlabs/php_codesniffer": "^3.6",
-                "symfony/phpunit-bridge": "^5.2",
-                "vimeo/psalm": "^4.28"
+                "symfony/phpunit-bridge": "^5.2"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.15.x-dev"
+                    "dev-master": "1.11.x-dev"
                 }
             },
             "autoload": {
@@ -910,74 +909,9 @@
             ],
             "support": {
                 "issues": "https://github.com/mongodb/mongo-php-library/issues",
-                "source": "https://github.com/mongodb/mongo-php-library/tree/1.15.0"
+                "source": "https://github.com/mongodb/mongo-php-library/tree/1.11.0"
             },
-            "time": "2022-11-23T04:45:35+00:00"
-        },
-        {
-            "name": "nicklaw5/twitch-api-php",
-            "version": "v7.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/nicklaw5/twitch-api-php.git",
-                "reference": "0d6ddb08b0816b7f27121375309b6c96d299be72"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/nicklaw5/twitch-api-php/zipball/0d6ddb08b0816b7f27121375309b6c96d299be72",
-                "reference": "0d6ddb08b0816b7f27121375309b6c96d299be72",
-                "shasum": ""
-            },
-            "require": {
-                "ext-json": "*",
-                "guzzlehttp/guzzle": "~6.0|~7.0",
-                "php": ">=7.4.0"
-            },
-            "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.10",
-                "phpspec/phpspec": "^7.2",
-                "phpunit/phpunit": "^9.5"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "TwitchApi\\": "src/",
-                    "NewTwitchApi\\": "src/NewTwitchApi",
-                    "TwitchApi\\Tests\\": "test/TwitchApi"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nicholas Law",
-                    "homepage": "https://github.com/nicklaw5"
-                },
-                {
-                    "name": "Brian Zwahr",
-                    "homepage": "https://github.com/echosa"
-                },
-                {
-                    "name": "Brandin Arsenault",
-                    "homepage": "https://github.com/brandinarsenault"
-                }
-            ],
-            "description": "A Twitch API client for PHP.",
-            "homepage": "http://github.com/nicklaw5/twitch-api-php",
-            "keywords": [
-                "api",
-                "twitch",
-                "twitch-api",
-                "twitch-tv",
-                "twitch.tv"
-            ],
-            "support": {
-                "issues": "https://github.com/nicklaw5/twitch-api-php/issues",
-                "source": "https://github.com/nicklaw5/twitch-api-php/tree/v7.2.0"
-            },
-            "time": "2023-06-13T04:20:11+00:00"
+            "time": "2021-12-14T23:38:18+00:00"
         },
         {
             "name": "nikic/fast-route",
@@ -2580,11 +2514,11 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": [],
+    "platform": {},
+    "platform-dev": {},
     "platform-overrides": {
         "ext-mongo": "1.6.16"
     },
