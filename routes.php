@@ -66,7 +66,6 @@ $routes = [
 	'/ztop/' => ['GET', 'view/ztop.php'],
 	'/sponsor/{type}/{killID}/[{value}/]' => ['GET', 'view/sponsor.php'],
 	'/kills/sponsored/' => ['GET', 'view/sponsored.php'],
-	'/cache/bypass/comment/{pageID}/{commentID}/up/' => ['GET', 'view/comments-up.php'],
 	'/cache/{cacheType:1hour|24hour}/killlistrow/{killID}/' => ['GET', 'view/killlistrow.php'],
 	'/cache/bypass/healthcheck/' => ['GET', 'view/api/healthcheck.php'],
 	
@@ -76,6 +75,7 @@ $routes = [
 	'/cache/bypass/scan/' => ['POST', 'view/scanp.php'],
 	
 	// Mixed routes
+	'/cache/bypass/comment/{pageID}/{commentID}/up/' => [['GET', 'POST'], 'view/comments-up.php'],
 	'/account/[{req}/[{reqid}/]]' => [['GET', 'POST'], 'view/account.php'],
 	'/search/[{search}/]' => [['GET', 'POST'], 'view/search.php'],
 	'/post/' => [['GET', 'POST'], 'view/postmail.php'],

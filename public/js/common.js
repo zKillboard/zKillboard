@@ -472,7 +472,19 @@ function curday()
 
 function commentUpVote(pageID, commentID) 
 {
-    if (showAds == 0 || typeof fusetag != "undefined") $.ajax("/cache/bypass/comment/" + pageID + "/" + commentID + "/up/");
+    if (showAds == 0 || typeof fusetag != "undefined") {
+  $.ajax({
+    url: "/cache/bypass/comment/" + pageID + "/" + commentID + "/up/",
+    method: "POST",
+    data: {}, // add payload here if needed
+    success: function(response) {
+      $("#commentblock").html(response);
+    },
+    error: function(xhr, status, err) {
+      console.error("POST failed:", status, err);
+    }
+  });
+    }
 }
 
 var adnumber = 0;

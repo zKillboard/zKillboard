@@ -309,7 +309,13 @@ const killID = '{{ killdata.info.killID }}';
 function prepComments() {
 	if ($ == undefined) setTimeout(prepComments, 500);
 	else {
-    		$("#commentblock").load('/cache/bypass/comment/kill-{{ killdata.info.killID }}/-1/up/');
+            $.post('/cache/bypass/comment/kill-{{ killdata.info.killID }}/-1/up/')
+                .done(function(response) {
+                $("#commentblock").html(response);
+              })
+                .fail(function(xhr, status, err) {
+                console.error("POST failed:", status, err);
+            });
     		pubsub('comment:kill-{{ killdata.info.killID }}');
     	}
 }

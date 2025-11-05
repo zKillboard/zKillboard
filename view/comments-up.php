@@ -59,5 +59,5 @@ if ($comments !== false) {
     if ($publish) $redis->publish("comment:$pageID", json_encode(['action' => 'comment', 'html' => $out]));
     
     $response->getBody()->write($out);
-    return $response;
+    return $response->withHeader('Cache-Control', 'no-store');
 }
