@@ -13,13 +13,23 @@ function handler($request, $response, $args, $container) {
     $publish = false;
 if ($commentID >= 0 && $commentID < count(Comments::$defaultComments) && $redis->get("validUser:$ip") == "true" && $votes->count() < 1500) {
     $votes->add(uniqid());
-    $comment = $mdb->findDoc("comments", ['pageID' => $pageID, 'commentID' => $commentID]);
-    if ($comment == null) {
-        $comment = ['pageID' => $pageID, 'commentID' => $commentID, 'dttm' => $mdb->now(), 'upvotes' => 0, 'comment' => Comments::$defaultComments[$commentID]];
-    }
-    $comment['upvotes'] = $comment['upvotes'] + 1;
 
-    $mdb->save("comments", $comment);
+			// Atomic upsert: increment upvotes by 1, or create with 1 if doesn't exist
+		$mdb->getCollection('comments')->update(
+			['pageID' => $pageID, 'commentID' => $commentID],
+			[
+				'$inc' => ['upvotes' => 1],
+				'$setOnInsert' => [
+					'pageID' => $pageID,
+					'commentID' => $commentID,
+					'dttm' => $mdb->now(),
+					'comment' => Comments::$defaultComments[$commentID]
+				]
+			],
+			['upsert' => true]
+		);
+
+
     $redis->del($key);
     $publish = true;
 } else if ($votes->count() >= 1500) {

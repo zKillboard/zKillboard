@@ -59,6 +59,8 @@ $comments->ensureIndex(['upvotes' => 1], []);
 echo "Done\n";
 echo "Creating index : 'commentID' => 1 ... ";
 $comments->ensureIndex(['commentID' => 1], []);
+echo "Creating index : 'pageID' => 1, 'commentID' => 1 ... ";
+$comments->ensureIndex(['pageID' => 1, 'commentID' => 1], ['unique' => true]);
 echo "Done\n";
 
 // crestmails
