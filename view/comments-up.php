@@ -6,7 +6,7 @@ function handler($request, $response, $args, $container) {
     global $mdb, $ip, $redis, $twig;
     
     $pageID = $args['pageID'] ?? '';
-    $commentID = (int) ($args['commentID'] ?? -1);
+    $commentID = (string) ($args['commentID'] ?? -1);
 
     $votes = new RedisTtlCounter("ttlc:votes:$ip", 300);
     $key = "comment:$pageID";
