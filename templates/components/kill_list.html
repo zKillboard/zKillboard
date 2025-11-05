@@ -19,7 +19,7 @@
   </thead>
   <tbody id='killmailstobdy'>
     {% if killList|length == 0 %}
-      <tr id="kms_loading"><td colspan='7'><i>loading</i></td></tr>
+      <tr id="kms_loading"><td colspan='7'><em>loading</em></td></tr>
     {% else %}
         {% include 'components/kill_list_row_small.html' %}
     {% endif %}

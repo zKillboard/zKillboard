@@ -5,7 +5,7 @@
 
 {% block content %}
 <h3>Favorites</h3>
-{% if killList is empty %}
+{% if kills|length == 0 %}
 	<p>No favorites found.</p>
 {% else %}
 	{% set killList = kills %}
