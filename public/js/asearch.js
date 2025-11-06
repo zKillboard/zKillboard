@@ -55,7 +55,7 @@ function loadasearch() {
 		adjustTime(null, $("#stats-epoch-week"));
 	}
 
-	setInterval(rollTime, 5000);
+	rollTime(); // will handle it's own intervals
 	$(".btn-page.btn-primary:not(.notafilter)").click();
 
 	window.addEventListener('popstate', function () {
@@ -91,13 +91,17 @@ function toggleRollingTime(event, enabled) {
 }
 
 function rollTime() {
-	var roll = ($('#rolling-times').hasClass('btn-primary'));
-	if (roll == false) return;
-	var currentStartTime = toUTCISOString($('#dtstart').val());
-	var currentEndTime = toUTCISOString($('#dtend').val());
-	adjustTime(null, $(".tfilter.btn-primary").first());
+	try {
+		var roll = ($('#rolling-times').hasClass('btn-primary'));
+		if (roll == false) return;
+		var currentStartTime = toUTCISOString($('#dtstart').val());
+		var currentEndTime = toUTCISOString($('#dtend').val());
+		adjustTime(null, $(".tfilter.btn-primary").first());
 
-	if ((currentStartTime != $('#dtstart').val()) || (currentEndTime != $('#dtend').val())) clickPage1();
+		if ((currentStartTime != $('#dtstart').val()) || (currentEndTime != $('#dtend').val())) clickPage1();
+	} finally {
+		setTimeout(rollTime, 5000);
+	}
 }
 
 var lastEpochSelected = null;
@@ -641,9 +645,13 @@ async function btn_save() {
 }
 
 function assignClickCatch() {
-	$("#clickablecontent a:not(.clickCatch):not(.nocatch)").addClass("clickCatch").on('click', clickCatch);
+	try {
+		$("#clickablecontent a:not(.clickCatch):not(.nocatch)").addClass("clickCatch").on('click', clickCatch);
+	} finally {
+		setTimeout(assignClickCatch, 250);
+	}
 }
-setInterval(assignClickCatch, 250);
+assignClickCatch(); // will handle its own intervals
 
 async function clickCatch(e) {
 	let altPressed = e.metaKey || e.altKey || $("#clickToDigCheckbox").is(':checked');
