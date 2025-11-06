@@ -44,7 +44,7 @@ while (date('Hi') == $minute) {
     $zkb['href'] = "$esiServer/killmails/$killID/".$zkb['hash'].'/';
     unset($rawmail['_id']);
 
-    $package = ['killID' => $killID, 'killmail' => $rawmail, 'zkb' => $zkb];
+    $package = ['killID' => $killID, /*'killmail' => $rawmail,*/ 'zkb' => $zkb];
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, "$redisQServer/queue.php");
