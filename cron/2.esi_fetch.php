@@ -66,6 +66,8 @@ break;
 $guzzler->finish();
 
 function fail($guzzler, $params, $ex) {
+    global $mdb, $redis;
+
     $HEADERS = $params['HEADERS'];
     $remaining = @$HEADERS['x-ratelimit-remaining'][0] ?? 3600;
     $redis->setex("esi:ratelimit:killmail", 900, $remaining);
