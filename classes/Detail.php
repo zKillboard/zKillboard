@@ -27,6 +27,8 @@ class Detail
 
     public static function eftarray($items)
     {
+		global $redis;
+
         // EFT / Fitting Wheel
         $eftarray = array();
         $eftarray['high'] = array(); // high
@@ -59,7 +61,20 @@ class Detail
                 $itm['flagName'] = 'Low Slots';
             }
             if ($itm['flag'] == 89) {
-                $slot = Info::getInfoField('typeID', $itm['typeID'], 'implantSlot');
+				$slot = $redis->get("zkb:subsystem_slot:" . $itm['typeID']);
+				if ($slot == null) {
+					$dogmaAttr = Info::getInfoField('typeID', $itm['typeID'], 'dogma_attributes');
+					//print_r($dogmaAttr); die();
+					// now get the `value` of attribute 331
+					foreach ($dogmaAttr as $attr) {
+						if ($attr['attribute_id'] == 331) {
+							$slot = (int) $attr['value'];
+							break;
+						}
+					}
+					$redis->setex("zkb:subsystem_slot:" . $itm['typeID'], 9999, $slot);
+				}
+				$slot = (int) $slot;
                 if ($slot <= 5 && $slot >= 1) {
                     $itm['flagName'] = 'High Slots';
                     $itm['flag'] = 27 + ($slot - 1);
