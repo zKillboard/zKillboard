@@ -24,7 +24,7 @@ if ($mt == 0 && (date("i") == 44 || $esi->size() < 100)) {
 $noCorpCount = 0;
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    $corpIDRaw = $esi->next();
+    $corpIDRaw = $esi->next(); // This is RedisTimeQueue->next(), not MongoDB cursor
     $corpID = (int) $corpIDRaw;
     if ($corpID > 1999999) {
         if ($redis->get("esi-fetched:$corpID") == "true") continue;
@@ -133,7 +133,7 @@ function success($params, $content)
     if ($redis->get("recentKillmailActivity:corp:$corpID") == "true") $esi->setTime($corpID, time() + 301);
 
     $latest = $mdb->findDoc("killmails", ['involved.corporationID' => $corpID], ['killID' => -1], ['killID' => 1, 'dttm' => 1]);
-    $time = $latest == null ? 0 : $latest['dttm']->sec;
+    $time = $latest == null ? 0 : $latest['dttm']->toDateTime()->getTimestamp();
     $threeDaysAgo = time() - (3 * 86400);
     $monthAgo = time() - (30 * 86400);
     $yearAgo = time() - (365 * 86400);

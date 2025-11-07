@@ -99,7 +99,7 @@ class Stats
         $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
 
         $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true]);
-        $result = $rr['result'];
+        $result = iterator_to_array($rr);
 
         $time = $timer->stop();
         if ($time > $longQueryMS) {
@@ -167,8 +167,7 @@ class Stats
         $pipeline[] = ['$group' => ['_id' => '$'.$type, 'foo' => ['$sum' => 1]]];
         $pipeline[] = ['$group' => ['_id' => 'total', 'value' => ['$sum' => 1]]];
 
-        $result = $mdb->getCollection('oneWeek')->aggregateCursor($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true]);
-        //MongoCursor::$timeout = -1;
+        $result = $mdb->getCollection('oneWeek')->aggregate($pipeline, ['allowDiskUse' => true]);
         $result = iterator_to_array($result);
 
         $time = $timer->stop();
@@ -218,7 +217,7 @@ class Stats
             $activePvP[strtolower($type)] = $row;
         }
         $mongoParams = MongoFilter::buildQuery($parameters);
-        $killCount = $mdb->getCollection('oneWeek')->count($mongoParams);
+        $killCount = $mdb->count('oneWeek', $mongoParams);
         if ($killCount > 0) {
             $activePvP['kills'] = ['type' => 'Total Kills', 'count' => $killCount];
         }

@@ -70,16 +70,14 @@ while ($hour == date('H')) {
 	if ($kCount != $lastKillCountSent || (time() % 5 == 0)) {
 		$serverStatus = $redis->get('tqStatus');
 		$loggedIn = $redis->get('tqCount');
-		$redis->publish("public", json_encode(['action' => 'tqStatus', 'tqStatus' => $serverStatus, 'tqCount' => $loggedIn, 'kills' => $kCount]));
-		$redis->setex("tqKillCount", 900, $kCount);
-		$lastKillCountSent = $kCount;
-	}
-	$totalKills = $mdb->getCollection("killmails")->count();
-	$topKillID = max(1, $mdb->findField('killmails', 'killID', [], ['killID' => -1]));
-	addInfo('Total Kills (' . number_format(($totalKills / $topKillID) * 100, 1) . '%)', $totalKills);
-	addInfo('Top killID', $topKillID);
-
-	addInfo('', 0);
+	$redis->publish("public", json_encode(['action' => 'tqStatus', 'tqStatus' => $serverStatus, 'tqCount' => $loggedIn, 'kills' => $kCount]));
+	$redis->setex("tqKillCount", 900, $kCount);
+	$lastKillCountSent = $kCount;
+}
+$totalKills = $mdb->count("killmails");
+$topKillID = max(1, $mdb->findField('killmails', 'killID', [], ['killID' => -1]));
+addInfo('Total Kills (' . number_format(($totalKills / $topKillID) * 100, 1) . '%)', $totalKills);
+addInfo('Top killID', $topKillID);	addInfo('', 0);
 	$nonApiR = new RedisTtlCounter('ttlc:nonApiRequests', 300);
 	addInfo('Visitor page loads in last 5 minutes', $nonApiR->count());
 	$uniqueUsers = new RedisTtlCounter('ttlc:unique_visitors', 300);
@@ -136,7 +134,7 @@ while ($hour == date('H')) {
 	$info = $redis->info();
 	$mem = $info['used_memory_human'];
 
-	$stats = $mdb->getDb()->command(['dbstats' => 1]);
+	$stats = $mdb->getDb()->command(['dbstats' => 1])->toArray()[0];
 	$dataSize = number_format(($stats['dataSize'] + $stats['indexSize']) / (1024 * 1024 * 1024), 2);
 	$storageSize = number_format(($stats['storageSize'] + @$stats['indexStorageSize']) / (1024 * 1024 * 1024), 2);
 
@@ -280,9 +278,18 @@ function areWeMaster()
 
 	$masterHostname = null;
 
-	if ($mmongoClient == null) $mmongoClient = new MongoClient($mongoConnString, ['connectTimeoutMS' => 7200000, 'socketTimeoutMS' => 7200000]);
-	if ($madmin == null) $madmin = $mmongoClient->selectDB('admin');
-	$r = $madmin->command(['replSetGetStatus' => []]);
+	if ($mmongoClient == null) $mmongoClient = new MongoDB\Client($mongoConnString, [], ['connectTimeoutMS' => 7200000, 'socketTimeoutMS' => 7200000]);
+	if ($madmin == null) $madmin = $mmongoClient->selectDatabase('admin');
+	
+	try {
+		$r = $madmin->command(['replSetGetStatus' => []])->toArray()[0];
+	} catch (MongoDB\Driver\Exception\CommandException $e) {
+		// Not running with replication, assume we're the master
+		if ($e->getCode() == 76 || strpos($e->getMessage(), 'not running with --replSet') !== false) {
+			return true;
+		}
+		throw $e;
+	}
 
 	// if running standalone (e.g. for testing)
 	if (@$r['code'] == 76) $r['members'] = [["name" => $hostname . ':27017', 'state' => 1]];

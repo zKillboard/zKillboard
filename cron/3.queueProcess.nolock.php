@@ -67,15 +67,15 @@ try {
         $date = str_replace('.', '-', $date);
 
         $unixtime = strtotime($date . " UTC");
-        $kill['dttm'] = new MongoDate($unixtime);
+        $kill['dttm'] = new MongoDB\BSON\UTCDateTime($unixtime * 1000);
         $kill['labels'][] = getGeneralTZ($unixtime);
 
         $systemID = (int) $mail['solar_system_id'];
         $system = Info::getInfo('solarSystemID', $systemID);
-        $system = Info::getSystemByEpoch($systemID, $kill['dttm']->sec);
+        $system = Info::getSystemByEpoch($systemID, $unixtime);
         if ($system == null) {
             $redis->zadd("tobeparsed", $killID, $killID);
-            Util::out("NULL SYSTEM $systemID for killmail $killID " . $kill['dttm']->sec);
+            Util::out("NULL SYSTEM $systemID for killmail $killID " . $unixtime);
             continue;
         }
 
@@ -189,8 +189,8 @@ try {
         if (isset($row['labels_override'])) $kill['labels'] = $row['labels_override'];
 
         saveMail($mdb, 'killmails', $kill);
-        if ($kill['dttm']->sec >= $date7Days) saveMail($mdb, 'oneWeek', $kill);
-        if ($kill['dttm']->sec >= $date90Days) saveMail($mdb, 'ninetyDays', $kill);
+        if ($kill['dttm']->toDateTime()->getTimestamp() >= $date7Days) saveMail($mdb, 'oneWeek', $kill);
+        if ($kill['dttm']->toDateTime()->getTimestamp() >= $date90Days) saveMail($mdb, 'ninetyDays', $kill);
 
         $queueInfo->push($killID);
         $redis->incr('zkb:totalKills');
@@ -221,11 +221,11 @@ function saveMail($mdb, $collection, $kill)
     do {
         try {
             if ($mdb->exists($collection, ['killID' => $kill['killID']])) return;
-            $mdb->getCollection($collection)->save($kill);
+            $mdb->save($collection, $kill);
             $error = false; 
-        } catch (MongoDuplicateKeyException $ex) {
+        } catch (MongoDB\Driver\Exception\BulkWriteException $ex) {
             return;
-            // Ignore it...
+            // Ignore duplicate key errors...
         } catch (Exception $ex) {
             if ($ex->getCode() != 16759) throw $ex;
             $error = true;
@@ -469,7 +469,7 @@ function getPadHash($killmail)
     if ($victimID == "None") return "unpiloted";
 
     if ($groupID == 31) { // Shuttles
-        $dttm = $killmail['dttm']->sec;
+        $dttm = $killmail['dttm']->toDateTime()->getTimestamp();
         $dttm = $dttm - ($dttm % 3600);
         $locationID = isset($killmail['locationID']) ? $killmail['locationID'] : $killmail['system']['solarSystemID'];
         
@@ -485,7 +485,7 @@ function getPadHash($killmail)
     if ($attacker == null) $attacker = $attackers[0];
     $attackerID = (int) @$attacker['characterID'];
 
-    $dttm = $killmail['dttm']->sec;
+    $dttm = $killmail['dttm']->toDateTime()->getTimestamp();
     $dttm = $dttm - ($dttm % 60);
 
     return "$victimID:$attackerID:$shipTypeID:$dttm";

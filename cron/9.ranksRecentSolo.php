@@ -2,7 +2,6 @@
 
 require_once '../init.php';
 
-MongoCursor::$timeout = -1;
 
 $today = date('Ymd');
 $hourKey = "zkb:recentRanksSoloCalculated:"  . $today;

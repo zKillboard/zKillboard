@@ -8,7 +8,6 @@ if ($redis->get("tobefetched") > 1000) exit();
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->scard("queueStatsSet") > 1000) exit();
 
-MongoCursor::$timeout = -1;
 
 // sets the maximum of number of large queries executing simultenously
 $minute = date("Hi");

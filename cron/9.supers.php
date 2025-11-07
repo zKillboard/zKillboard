@@ -7,13 +7,12 @@ if ($redis->get($key) == true) {
     exit();
 }
 
-MongoCursor::$timeout = -1;
 
-$mdb->getCollection("statistics")->update(['hasSupers' => ['$exists' => true]], ['$set' => ['updatingSupers' => true]], ['multi' => true]);
+$mdb->getCollection("statistics")->updateMany(['hasSupers' => ['$exists' => true]], ['$set' => ['updatingSupers' => true]]);
 
 doSuperResult('allianceID');
 doSuperResult('corporationID');
-$mdb->getCollection("statistics")->update(['updatingSupers' => true], ['$unset' => ['updatingSupers' => 1, 'hasSupers' => 1, 'supers' => 1]], ['multi' => true]);
+$mdb->getCollection("statistics")->updateMany(['updatingSupers' => true], ['$unset' => ['updatingSupers' => 1, 'hasSupers' => 1, 'supers' => 1]]);
 
 $redis->setex($key, 86400, true);
 

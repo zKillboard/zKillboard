@@ -53,12 +53,28 @@ function handler($request, $response, $args, $container) {
     
     try {
         $mc = RelatedReport::generateReport($system, $time, $options, $battleID, null);
-        if (is_array($mc)) {
+        if (is_array($mc) && !empty($mc)) {
             return $container->get('view')->render($response, 'related.html', $mc);
         } else {
-            return $container->get('view')->render($response, 'related_wait.html', ['showAds' => false]);
+            // Empty array means report is being generated
+            return $container->get('view')->render($response->withStatus(202), 'related_wait.html', ['showAds' => false]);
+        }
+    } catch (\InvalidArgumentException $ex) {
+        // Invalid time format - redirect to rounded time
+        $roundedTime = substr($time, 0, strlen("$time") - 2) . "00";
+        return $response->withHeader('Location', "/related/$system/$roundedTime/")->withStatus(302);
+    } catch (\RuntimeException $ex) {
+        // System reinforced or queue busy
+        $systemID = (int) $system;
+        $unixTime = strtotime($time);
+        if ($ex->getMessage() === "System is reinforced") {
+            return $container->get('view')->render($response->withStatus(202), 'related_reinforced.html', ['showAds' => false]);
+        } else if (str_contains($ex->getMessage(), "Queue is too busy")) {
+            return $container->get('view')->render($response->withStatus(202), 'related_notnow.html', ['showAds' => false, 'solarSystemID' => $systemID, 'unixtime' => $unixTime]);
+        } else {
+            return $container->get('view')->render($response->withStatus(202), 'related_wait.html', ['showAds' => false]);
         }
     } catch (Exception $ex) {
-        return $container->get('view')->render($response, 'related_wait.html', ['showAds' => false]);
+        return $container->get('view')->render($response->withStatus(202), 'related_wait.html', ['showAds' => false]);
     }
 }

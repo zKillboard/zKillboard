@@ -12,13 +12,13 @@ if ($from == "" || $to == "") {
 
 $cFrom = $mdb->getCollection($from);
 $cTo = $mdb->getCollection($to);
-foreach ($cFrom->getIndexInfo() as $index) {
+foreach ($cFrom->listIndexes() as $index) {
     print_r($index);
-    $keys = $index['key'];
-    unset($index['keys']);
-    unset($index['ns']);
-    unset($index['name']);
-    unset($index['clustering']);
-    $options = $index;
-    print_r($cTo->ensureIndex($keys, $options));
+    $keys = (array)$index['key'];
+    $options = (array)$index;
+    unset($options['key']);
+    unset($options['ns']);
+    unset($options['name']);
+    unset($options['v']);
+    print_r($cTo->createIndex($keys, $options));
 }
