@@ -195,12 +195,12 @@ $details = array('pageview' => $pageview, 'killdata' => $killdata, 'extra' => $e
 
 // Comments
 $pageID = "kill-$id";
-
-$c = $mdb->find("comments", ['pageID' => $pageID], ["upvotes" => -1, "dttm" => 1]);
 $comments = [];
+
+/*$c = $mdb->find("comments", ['pageID' => $pageID], ["upvotes" => -1, "dttm" => 1]);
 foreach ($c as $cc) {
 	$comments[$cc['comment']] = $cc;
-}
+}*/
 $index = 0;
 foreach (Comments::$defaultComments as $dc) {
 	if (!isset($comments[$dc])) $comments[$dc] = ['pageID' => $pageID, 'commentID' => $index, 'comment' => $dc, "upvotes" => 0];
