@@ -23,6 +23,7 @@ $routes = [
 	'/top/lasthour/{type}/' => ['GET', 'view/lasthour.php'],
 	'/kill/{id}/redirect/{where}/' => ['GET', 'view/detail.php'],
 	'/kill/{id}/remaining/' => ['GET', 'view/detail.php'],
+	'/kill/{id}/items/' => ['GET', 'view/detail.php'],
 	'/kill/{id}/' => ['GET', 'view/detail.php'],
 	'/kill/{id}/ingamelink/' => ['GET', 'view/detail_ingamelink.php'],
 	'/account/logout/' => ['GET', 'view/logout.php'],

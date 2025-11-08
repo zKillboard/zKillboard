@@ -5,7 +5,7 @@ function handler($request, $response, $args, $container) {
 
     // Extract route parameters
     $id = $args['id'] ?? '';
-    $where = $args['where'] ?? '';
+    $where = $args['where'] ?? '';	
     
     // Determine pageview from request URI
     $uri = $request->getUri()->getPath();
@@ -13,6 +13,8 @@ function handler($request, $response, $args, $container) {
         $pageview = 'remaining';
     } elseif (strpos($uri, '/involved/') !== false) {
         $pageview = 'involved';
+    } elseif (strpos($uri, '/items/') !== false) {
+        $pageview = 'items';
     } else {
         $pageview = '';
     }
@@ -20,13 +22,13 @@ function handler($request, $response, $args, $container) {
     if ($pageview == 'overview') {
         return $response->withStatus(302)->withHeader('Location', "/kill/$id/");
     }
-if ($pageview == '') {
-	$pageview = 'overview';
-}
-if ($where != "") {
-	echo $where;
-	$crest = $mdb->findDoc('crestmails', ['killID' => (int) $id, 'processed' => true]);
-	$hash = $crest['hash'] ?? '';
+	if ($pageview == '') {
+		$pageview = 'overview';
+	}
+	if ($where != "") {
+		echo $where;
+		$crest = $mdb->findDoc('crestmails', ['killID' => (int) $id, 'processed' => true]);
+		$hash = $crest['hash'] ?? '';
         switch ($where) {
             case 'esi':
                 return $response->withStatus(302)->withHeader('Location', "https://esi.evetech.net/latest/killmails/$id/$hash/");
@@ -37,8 +39,8 @@ if ($where != "") {
         }
         return $response->withStatus(302)->withHeader('Location', "/kill/$id/");
     }
-    if ($pageview != 'overview' && $pageview != 'involved' && $pageview != 'remaining') {
-        return $response->withStatus(302)->withHeader('Location', '/');
+    if ($pageview != 'overview' && $pageview != 'involved' && $pageview != 'remaining' && $pageview != 'items') {
+        return $response->withStatus(302)->withHeader('Location', "/kill/$id/");
     }
 
     $involved = array();
@@ -51,65 +53,73 @@ if ($where != "") {
         return $response->withStatus(302)->withHeader('Location', "/kill/$id/");
     }
 
-while ($mdb->count('queueInfo', ['killID' => $id])) {
-	sleep(1);
-}
-
-$exists = $mdb->exists('killmails', ['killID' => $id]);
-if (!$exists) {
-        return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => "KillID $id does not exist."));
-}
-
-// Create the details on this kill
-$killdata = Kills::getKillDetails($id);
-$rawmail = Kills::getEsiKill($id);
-
-// create the dropdown involved array
-$allinvolved = $killdata['involved'];
-$cnt = 0;
-while ($cnt < 10) {
-	if (isset($allinvolved[$cnt])) {
-		$involved[] = $allinvolved[$cnt];
-		unset($allinvolved[$cnt]);
+	while ($mdb->count('queueInfo', ['killID' => $id])) {
+		sleep(1);
 	}
-	++$cnt;
-	continue;
-}
-$topDamage = $finalBlow = null;
-$first = null;
-if (sizeof($killdata['involved']) > 0) {
-	foreach ($killdata['involved'] as $inv) {
-		if ($first == null) {
-			$first = $inv;
-		}
-		if (@$inv['finalBlow'] == 1) {
-			$finalBlow = $inv;
-		}
-		if ($topDamage == null && @$inv['characterID'] != 0) {
-			$topDamage = $inv;
-		}
-	}
-	// If only NPC's are on the mail give them credit for top damage...
-	if ($topDamage == null) {
-		$topDamage = $first;
-	}
-}
 
-$extra = array();
-// And now give all the arrays and whatnots to twig..
-if ($pageview == 'overview') {
-	$extra['items'] = Detail::combineditems(md5($id), $killdata['items']);
-	$extra['invAll'] = involvedCorpsAndAllis(md5($id), $killdata['involved']);
-	$extra['involved'] = $involved;
-	$extra['allinvolved'] = $allinvolved;
-}
-$insDate = (int) str_replace('-', '', substr($killdata['info']['dttm'], 0, 10));
-$extra['insurance'] = $mdb->findDoc('insurance', ['typeID' => (int) $killdata['victim']['shipTypeID'], 'date' => ['$lte' => $insDate]], ['date' => -1]);
-if (isset($extra['insurance']['Platinum']['payout'])) {
-	// No insurance is 40% of platinum
-	// https://wiki.eveuniversity.org/Insurance
-	$extra['insurance']['None'] = ['cost' => 0, 'payout' => floor(0.4 * $extra['insurance']['Platinum']['payout'])];
-}
+	$exists = $mdb->exists('killmails', ['killID' => $id]);
+	if (!$exists) {
+			return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => "KillID $id does not exist."));
+	}
+
+	// Create the details on this kill
+	$killdata = Kills::getKillDetails($id);
+	$rawmail = Kills::getEsiKill($id);
+
+	// create the dropdown involved array
+	$allinvolved = $killdata['involved'];
+	$cnt = 0;
+	while ($cnt < 10) {
+		if (isset($allinvolved[$cnt])) {
+			$involved[] = $allinvolved[$cnt];
+			unset($allinvolved[$cnt]);
+		}
+		++$cnt;
+		continue;
+	}
+	$topDamage = $finalBlow = null;
+	$first = null;
+	if (sizeof($killdata['involved']) > 0) {
+		foreach ($killdata['involved'] as $inv) {
+			if ($first == null) {
+				$first = $inv;
+			}
+			if (@$inv['finalBlow'] == 1) {
+				$finalBlow = $inv;
+			}
+			if ($topDamage == null && @$inv['characterID'] != 0) {
+				$topDamage = $inv;
+			}
+		}
+		// If only NPC's are on the mail give them credit for top damage...
+		if ($topDamage == null) {
+			$topDamage = $first;
+		}
+	}
+
+	$extra = array();
+	// And now give all the arrays and whatnots to twig..
+	if ($pageview == 'overview') {
+		$extra['items'] = Detail::combineditems(md5($id), $killdata['items']);
+		if (sizeof($extra['items']) > 100) {
+			$extra['items'] = 'asyncload';
+		}
+		$extra['invAll'] = involvedCorpsAndAllis(md5($id), $killdata['involved']);
+		$extra['involved'] = $involved;
+		$extra['allinvolved'] = $allinvolved;
+	} else if  ($pageview == 'items') {
+		$extra['items'] = Detail::combineditems(md5($id), $killdata['items']);
+		if (sizeof($extra['items']) <= 100) {
+			return $response->withStatus(302)->withHeader('Location', "/kill/$id/");
+		}
+	}
+	$insDate = (int) str_replace('-', '', substr($killdata['info']['dttm'], 0, 10));
+	$extra['insurance'] = $mdb->findDoc('insurance', ['typeID' => (int) $killdata['victim']['shipTypeID'], 'date' => ['$lte' => $insDate]], ['date' => -1]);
+	if (isset($extra['insurance']['Platinum']['payout'])) {
+		// No insurance is 40% of platinum
+		// https://wiki.eveuniversity.org/Insurance
+		$extra['insurance']['None'] = ['cost' => 0, 'payout' => floor(0.4 * $extra['insurance']['Platinum']['payout'])];
+	}
 
 $extra['location'] = @$killdata['info']['location']['itemName'];
 if (isset($rawmail['victim']['position']) && isset($killdata['info']['location']['itemID'])) {
@@ -204,6 +214,10 @@ $details['comments'] = array_values($comments);
             'isDelayed' => false,
             'hideTableHeading' => true
         ]);
+    }
+
+	if ($pageview == 'items') {
+        return $container->get('view')->render($response, "components/item_list.html", $details);
     }
 
     return $container->get('view')->render($response, 'detail.html', $details);

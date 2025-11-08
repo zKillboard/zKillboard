@@ -102,7 +102,16 @@
 		<div class="col-lg-5" style="padding: 0px;">{% include 'components/victim_info.html' %}</div>
 	</div>
 	<div class="row">
+		{% if extra.items == 'asyncload' %}
+		<div id='asyncitemlist'></div>
+		<script type="text/javascript">
+		document.addEventListener("DOMContentLoaded", function() {
+			$("#asyncitemlist").load("/kill/{{ killdata.info.killID }}/items/");
+		});
+		</script>
+		{% else %}
 		<div>{% include 'components/item_list.html' %}</div>
+		{% endif %}
 	</div>
 </div>
 
