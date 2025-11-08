@@ -99,6 +99,7 @@ function typeSuccess($guzzler, $params, $content)
     $type['portionSize'] = @$params['portion_size'];
     Util::out("Type $name $id");
 
+	if ($id == 2233) $type['published'] = true; // Customs Office.... why is this false?!
     $mdb->insertUpdate("information", ['type' => 'typeID', 'id' => $id], $type);
 }
 
