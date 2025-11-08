@@ -104,6 +104,7 @@ if (isset($highlightMessage) && $highlightMessage != "") {
 	$twig->addGlobal('highlightMessage', $highlightMessage);
 	$twig->addGlobal('highlightImage', $highlightImage);
 	$twig->addGlobal('highlightURI', $highlightURI);
+	$twig->addGlobal('highlightClass', $highlightClass);
 }
 
 $twig->addGlobal('tqStatus', $redis->get('tqStatus'));
