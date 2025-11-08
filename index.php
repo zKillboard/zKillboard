@@ -94,6 +94,16 @@ $errorMiddleware = $app->addErrorMiddleware(true, true, true);
 $errorHandler = $errorMiddleware->getDefaultErrorHandler();
 $errorHandler->forceContentType('text/html');
 
+// Custom error handler to suppress 404 logging noise
+$errorMiddleware->setErrorHandler(
+    \Slim\Exception\HttpNotFoundException::class,
+    function ($request, $exception, $displayErrorDetails) use ($app) {
+        $response = $app->getResponseFactory()->createResponse();
+        $response->getBody()->write('404 Not Found');
+        return $response->withStatus(404);
+    }
+);
+
 // Load the routes - always keep at the bottom of the require list ;)
 include 'routes.php';
 
