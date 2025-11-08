@@ -55,8 +55,10 @@ class zkbSearch
                 if (Util::endsWith($name, "Blueprint")) $image = str_replace("/icon", "/bp", $image);
 
 				if ($searchType == 'typeID:flag' || $searchType == 'typeID') {
-					$catID = Info::getInfoField("groupID", @$info['groupID'], "categoryID");
-					if ($catID == 6) $searchType = 'ship';
+					$doc = $mdb->findDoc('killmails', ['involved.shipTypeID' => $id, 'cacheTime' => 3600]);
+					if ($doc != null) {
+						$searchType = 'ship';
+					}
 				}
                 if ($searchType == 'factionID') {
                     $searchType = 'faction';
