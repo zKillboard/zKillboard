@@ -168,23 +168,6 @@ if ($disqualified == 0 && ($pageType == 'top' || $pageType == 'topalltime')) {
         if (!array_key_exists('kills', $topParameters) && !array_key_exists('losses', $topParameters)) {
             $topParameters['kills'] = true;
         }
-
-        if ($disqualified == 0) $topLists[] = array('type' => 'character', 'data' => Stats::getTop('characterID', $topParameters));
-        if ($disqualified == 0) $topLists[] = array('type' => 'corporation', 'data' => Stats::getTop('corporationID', $topParameters));
-        if ($disqualified == 0) $topLists[] = array('type' => 'alliance', 'data' => Stats::getTop('allianceID', $topParameters));
-        $topLists[] = array('type' => 'ship', 'data' => Stats::getTop('shipTypeID', $topParameters));
-        $topLists[] = array('type' => 'system', 'data' => Stats::getTop('solarSystemID', $topParameters));
-        $topLists[] = array('type' => 'location', 'data' => Stats::getTop('locationID', $topParameters));
-
-        if (isset($detail['factionID']) && $detail['factionID'] != 0 && $key != 'faction') {
-            $topParameters['!factionID'] = 0;
-            $topLists[] = array('name' => 'Top Faction Characters', 'type' => 'character', 'data' => Stats::getTop('characterID', $topParameters));
-            $topLists[] = array('name' => 'Top Faction Corporations', 'type' => 'corporation', 'data' => Stats::getTop('corporationID', $topParameters));
-            $topLists[] = array('name' => 'Top Faction Alliances', 'type' => 'alliance', 'data' => Stats::getTop('allianceID', $topParameters));
-        }
-        $p = $topParameters;
-        $p['limit'] = 6;
-        $topKills = Stats::getTopIsk($p);
     }
 }
 
