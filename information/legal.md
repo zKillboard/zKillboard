@@ -1,53 +1,193 @@
-<h1>Legal</h1>
-<hr/>
-<h4>CCP</h4>
-<p>EVE Online and the EVE logo are the registered trademarks of CCP hf. All rights are reserved worldwide. 
-All other trademarks are the property of their respective owners. EVE Online, the EVE logo, EVE and
-all associated logos and designs are the intellectual property of CCP hf. All artwork, screenshots,
-characters, vehicles, storylines, world facts or other recognizable features of the intellectual property
-relating to these trademarks are likewise the intellectual property of CCP hf. CCP hf. has granted
-permission to zKillboard.com to use EVE Online and all associated logos and designs for promotional and information
-purposes on its website but does not endorse, and is not in any way affiliated with, zKillboard.com. CCP is in no
-way responsible for the content on or functioning of this website, nor can it be liable for any damage
-arising from the use of this website.</p>
+# ⚖️ Legal Information
 
-<hr/>
+## EVE Online & CCP Games
 
-<h4>License</h4>
-zKillboard uses the AGPLv3 license. Full license text is available in the `AGPL.md` file.
+**EVE Online** and the EVE logo are registered trademarks of **CCP hf.** All rights are reserved worldwide.
 
-<hr/>
+All other trademarks are the property of their respective owners. EVE Online, the EVE logo, EVE, and all associated logos and designs are the intellectual property of CCP hf. All artwork, screenshots, characters, vehicles, storylines, world facts, or other recognizable features of the intellectual property relating to these trademarks are likewise the intellectual property of CCP hf.
 
-<h4>General Rules</h4>
-<ul>
-	<li>Failure to comply with any of the regulations in this subcategory will result in the immediate termination of your service.</li>
-	<li>Any intentional action that by any means interrupts the service of zKillboard is prohibited.</li>
-	<li>Accessing the API for the purpose of causing increased load on the server is not allowed, and will result in an IP ban from the service.</li>
-	<li>Placing commercial advertisements, be it links, images or any other form, into any part of the site, is not allowed.</li>
-</ul>
+**CCP hf. has granted permission** to zKillboard.com to use EVE Online and all associated logos and designs for promotional and informational purposes on its website but **does not endorse**, and **is not in any way affiliated with**, zKillboard.com. 
 
-<h4>Obligations</h4>
-<ul>
-	<li>Items listed in this section are guaranteed by zKillboard as a term of service.</li>
-	<li>Under no circumstances is a refund guaranteed by zKillboard. Refunds, however, may be administered at the discretion of the killboard administrators.</li>
-	<li>zKillboard will not release API keys, emails or passwords to the public, or anyone else without prior consent of the account holder.</li>
-</ul>
+**CCP is in no way responsible** for the content on or functioning of this website, nor can it be liable for any damage arising from the use of this website.
 
-<hr/>
+---
 
-<h4>Cookies</h4>
-<p>zKillboard.com (and other sites hosted on the zKB software) use cookies for essential purposes. Such as auto login and analytics. We use cookies in order to give you the best experience possible (Logging in, staying logged in). zKillboard.com will never use the cookie data for targetted advertising or similar stuff (Self hosted boards is a different matter)</p>
+## Open Source License
 
-<strong>7fc8ef54a8154c28341bf9a47443a5ce</strong>
-<p>Is used by our session_id system</p>
-<strong>PHPSESSID</strong>
-<p>Is used by our session_id system</p>
-<strong>zKB</strong>
-<p>Cookie that allows you to be logged in automatically</p>
+zKillboard is open-source software licensed under **AGPLv3** (GNU Affero General Public License v3.0).
 
-<strong>__utma __utmb __utmc __utmz</strong>
-<p>These cookies are set by Google Analytics, and tell us how many people visit the website, how they arrived at the site, what pages they visit, what web browsers they are using to view pages etc. They cannot identify you personally.</p>
+**What this means:**
+- ✅ Free to use, modify, and distribute
+- ✅ Source code available on [GitHub](https://github.com/zKillboard/zKillboard)
+- ✅ Community contributions welcome
+- ⚠️ Modified versions must also be open-source
+- ⚠️ Network use constitutes distribution
 
-<strong>Self hosted boards:</strong>
-<p>zKB is open source software, and can thus be hosted by people on their own servers. And they may use cookies differently from zKillboard.com.<br>
-This is not something we can prevent or do anything against.</p>
+Full license text is available in the [`AGPL.md`](https://github.com/zKillboard/zKillboard/blob/master/AGPL.md) file in our repository.
+
+---
+
+## Terms of Service
+
+### Acceptable Use
+
+By using zKillboard, you agree to:
+
+- ✅ Use the service and API responsibly
+- ✅ Respect rate limits and server resources
+- ✅ Report bugs and security issues appropriately
+- ✅ Follow EVE Online's Terms of Service and EULA
+
+### Prohibited Activities
+
+The following actions are not permitted:
+
+- ❌ **Service Disruption**: Intentional actions that interrupt or degrade service availability
+- ❌ **API Abuse**: Excessive or malicious requests that strain server resources
+- ❌ **Unauthorized Advertising**: Commercial advertisements in any user-accessible area
+- ❌ **Automated Scraping**: Bypassing the API to extract site content
+- ❌ **Account Misuse**: Sharing credentials or violating authentication systems
+
+---
+
+## Service Guarantees & Limitations
+
+### What We Guarantee
+
+✅ **Privacy Protection**: We will not release API keys, email addresses, or passwords to third parties without your explicit consent
+
+✅ **Data Integrity**: Killmail data is preserved and processed accurately
+
+✅ **Uptime**: Best-effort availability, though maintenance and unforeseen issues may cause temporary outages
+
+### What We Don't Guarantee
+
+❌ **Refunds**: Under normal circumstances, ISK donations and Patreon subscriptions are non-refundable. Refunds may be granted at administrator discretion on a case-by-case basis.
+
+❌ **Service Continuity**: While we strive for 100% uptime, we cannot guarantee uninterrupted service
+
+❌ **Data Permanence**: While we maintain extensive archives, we cannot guarantee data will be preserved indefinitely
+
+❌ **Third-Party Integrations**: We are not responsible for third-party tools or services that use our API
+
+---
+
+## Privacy & Data Protection
+
+### Data We Collect
+
+When you use zKillboard, we collect:
+
+- **EVE Online Character Information**: Character ID, name, corporation, alliance (via CCP's ESI API)
+- **Killmail Data**: Combat records you authorize us to access
+- **Session Data**: Login sessions and authentication tokens
+- **Usage Analytics**: Page views, API requests, and general site usage
+
+### How We Use Your Data
+
+- ✅ Display your killboard statistics and combat history
+- ✅ Provide personalized features (ad-free access, favorites, trackers)
+- ✅ Improve site performance and user experience
+- ✅ Analyze usage patterns for optimization
+
+### What We DON'T Do
+
+- ❌ **No targeted advertising** based on your personal data
+- ❌ **No selling** of user data to third parties
+- ❌ **No tracking** across other websites
+- ❌ **No sharing** of your information without consent
+
+---
+
+## Cookie Policy
+
+zKillboard uses cookies for **essential functionality** and **analytics**. By using the site, you consent to our use of cookies.
+
+### Essential Cookies
+
+These cookies are required for the site to function:
+
+| Cookie Name | Purpose | Duration |
+|------------|---------|----------|
+| `PHPSESSID` | Session management and persistent login | Session/30 days (approximate) |
+
+### Analytics Cookies
+
+We use Google Analytics to understand site usage:
+
+| Cookie Name | Purpose |
+|------------|---------|
+| `__utma`, `__utmb`, `__utmc`, `__utmz` | Track visits, page views, and traffic sources |
+
+**Note:** Analytics cookies **cannot identify you personally**. They provide aggregate statistics only.
+
+### Managing Cookies
+
+- Most browsers allow you to manage cookie preferences
+- Disabling essential cookies will break site functionality (login, preferences)
+- Disabling analytics cookies won't affect site features
+
+### Self-Hosted Instances
+
+⚠️ **Important**: zKillboard is open-source software. Self-hosted instances may use cookies differently than zKillboard.com. We have no control over third-party installations.
+
+---
+
+## Data Ownership & GDPR
+
+**Important:** All EVE Online character data, including character names, corporation names, alliance names, and killmail information, is owned by **CCP Games**. zKillboard displays this data under license from CCP but does not own or control it.
+
+**For GDPR requests regarding EVE Online data** (character names, etc.), you must contact CCP Games directly at **legal@ccpgames.com**.
+
+zKillboard-specific data (such as account preferences, ad-free status, and favorites) can be managed or deleted by contacting us via settings.  Questions? Visit us at [Discord](https://discord.gg/sV2kkwg8UD).
+
+---
+
+## Content Policy
+
+### User-Generated Content
+
+Users may contribute content through:
+- Killmails
+- Killmail comments
+- Killmail sponsorships
+- Creating and saving Advanded Search reports
+- Creating and saving Related (Battle) reports
+
+**Content Rules:**
+- ✅ Keep it relevant to EVE Online and the killmail
+- ✅ Respect other players
+- ❌ No hate speech, harassment, or threats
+- ❌ No spam or commercial advertising
+- ❌ No illegal content
+
+**Moderation:** We reserve the right to remove content that violates these rules without notice.
+
+---
+
+## Disclaimer of Warranties
+
+zKillboard is provided **"as is"** without warranties of any kind, either express or implied, including but not limited to:
+
+- Accuracy or completeness of killmail data
+- Uninterrupted or error-free operation
+- Fitness for a particular purpose
+- Security of data transmission
+
+**Use at your own risk.** We are not liable for any damages arising from the use of this service.
+
+---
+
+## Changes to Terms
+
+We may update these terms periodically. Continued use of zKillboard after changes constitutes acceptance of the updated terms.
+
+**Last Updated:** November 2025
+
+---
+
+## Contact
+
+**Questions about these terms?** Join our [Discord](https://discord.gg/sV2kkwg8UD) or visit our [GitHub](https://github.com/zKillboard/zKillboard).
+
+**Security Issues?** Please report responsibly through Discord or GitHub issues.

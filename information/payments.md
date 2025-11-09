@@ -1,40 +1,76 @@
-## LIVE UPDATES DISABLED?
+# Support zKillboard
 
-- Disable adblocker(s)
-- Send ISK (see instructions below)
-- Subscribe via Patreon! (also below)
+<a href="/character/93382481/">
+  <img src="https://imageserver.eveonline.com/Character/93382481_128.jpg" alt="zKillboard" style="width: 128px; height: 128px; border-radius: 8px;">
+</a>
 
-# ISK Payments & Donations
-<a href="/character/93382481/"><img src="https://imageserver.eveonline.com/Character/93382481_128.jpg" alt="zKillboard" style="width: 128px; height: 128px"></a>
-<hr/>
-####Golden Wreck! <img src="/img/golden-wreck.png" rel="tooptip" tooltip="This icon will show under your character">
+## 🚨 Live Updates Disabled?
 
-- You can make payments to <a href="/character/93382481/">zKillboard</a> that will remove ads when you are logged in.
-- You can be ad free on zKillboard.com
-- Each month of ad free time costs <strong>{cost}</strong> ISK.
-- Every 6 months you purchase in one lump sum will give you a bonus month!
-- There is no limit to how much you can send either. Yes, I got asked that.
+If you're not seeing live killmail updates, try these solutions:
 
-####To make a payment
+1. **Disable your adblocker** on zKillboard.com
+2. **Send ISK** for ad-free access (instructions below)
+3. **Subscribe via Patreon** for premium features
 
-- Send ISK to the character <a href="/character/93382481/">zKillboard</a> (not the corp) in increments of <string>{cost}</stong> ISK, e.g., 5000000 (5m), 30000000 (30m), 60000000 (60m).
-- Your payment will be detected within 30-60 minutes (api willing) and applied to the account of the character that sent the ISK.
-- The golden wreck icon <img src="/img/golden-wreck.png" rel="tooptip" tooltip="This icon will show under your character"> icon will show under your character on your overview page as long as you have ad free time.
-- Send 1b ISK and you get a permanent monocle on your character page. <img src='https://zkillboard.com/img/monocled.png' style='width: 18px; height: 16px;'>
-- Thank you!
+---
 
-<hr/>
+## 💰 Ad-Free Access with ISK
 
-<h4>Sponsoring Killmails</h4>
-- The ISK for sponsoring killmails comes from your ad free payments above.
-- Killmail sponsorships expire after 7 days.
-- Multiple sponsorships on the same killmail each have their own 7 day expiration.
-- An alltime sponsorship total is kept for individual killmails and can be viewed on the page of that killmail.
+### Golden Wreck Benefits <img src="/img/golden-wreck.png" style="width: 20px; height: 20px; vertical-align: middle;">
 
-<h4>How to sponsor a killmail:</h4>
-<img src='/img/how2sponsor.png' title='Visual instruction to sponsor a killmail.' style='max-width: 100%'/>
+Remove all advertisements from zKillboard when logged in with your character.
 
-<hr/>
-<h4>Other ways to support zKillboard</h4>
-<p><a target="_new" href="https://www.patreon.com/zkillboard"><img src="/img/patreon_lg.jpg"></a></p>
-<p><a target="_new" href="https://brave.com/zki349"><img src="//zkillboard.com/img/brave_switch.png" alt="Switch to the Brave Browser"></a></p>
+**Pricing:**
+- **{cost} ISK per month** of ad-free time
+- **Bonus:** Buy 6 months, get 1 month free!
+- **No limit** on how much you can send
+
+### How to Pay
+
+1. **Send ISK to:** <a href="/character/93382481/">zKillboard</a> *(the character, not the corporation)*
+2. **Amount:** Multiples of **{cost} ISK**
+   - Example: 5,000,000 ISK (5m), 30,000,000 ISK (30m), 60,000,000 ISK (60m)
+3. **Processing:** Payment detected within 30-60 minutes and applied to your character
+4. **Confirmation:** Golden wreck icon <img src="/img/golden-wreck.png" style="width: 16px; height: 16px; vertical-align: middle;"> appears on your character page
+
+### 🎩 Exclusive: Permanent Monocle
+
+Send **1 billion ISK** and receive a permanent monocle icon <img src='https://zkillboard.com/img/monocled.png' style='width: 18px; height: 16px; vertical-align: middle;'> on your character page!
+
+---
+
+## 🎯 Sponsoring Killmails
+
+Highlight killmails by sponsoring them with your ad-free ISK balance.
+
+**How It Works:**
+- Use ISK from your ad-free payments to sponsor killmails
+- Sponsorships last **7 days** per contribution
+- Multiple sponsors on one killmail? Each has their own 7-day timer
+- All-time sponsorship totals are displayed on the killmail page
+
+### Quick Guide
+
+<img src='/img/how2sponsor.png' title='How to sponsor a killmail' style='max-width: 100%; border-radius: 8px; margin: 15px 0;'/>
+
+---
+
+## 🌟 Other Ways to Support
+
+### Patreon
+<p style="margin: 15px 0;">
+  <a target="_blank" href="https://www.patreon.com/zkillboard">
+    <img src="/img/patreon_lg.jpg" alt="Support on Patreon" style="border-radius: 8px;">
+  </a>
+</p>
+
+### Brave Browser
+<p style="margin: 15px 0;">
+  <a target="_blank" href="https://brave.com/zki349">
+    <img src="//zkillboard.com/img/brave_switch.png" alt="Switch to Brave Browser" style="border-radius: 8px;">
+  </a>
+</p>
+
+---
+
+**Thank you for supporting zKillboard!** Your contributions help keep the service running for the entire EVE Online community. o7
