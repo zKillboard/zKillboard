@@ -22,7 +22,7 @@ while ($minute == date("Hi")) {
     $fittedValue += $shipValue;
     if ($fittedValue != $km['zkb']['fittedValue']) {
         //Log::log($killID . ": " . number_format($fittedValue, 2));
-        $mdb->getCollection("killmails")->update(['killID' => $killID], ['$set' => ['zkb.fittedValue' => $fittedValue]]);
+        $mdb->getCollection("killmails")->updateOne(['killID' => $killID], ['$set' => ['zkb.fittedValue' => $fittedValue]]);
     }
 }
 

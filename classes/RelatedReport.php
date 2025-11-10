@@ -8,23 +8,19 @@ class RelatedReport {
     {
         global $mdb, $redis;
 
-        if ($time % 100 != 0 && $app != null) {
-            $app->redirect("/related/$system/" . substr($time, 0, strlen("$time") - 2) . "00/"); exit();
-        } else if ($time % 100 != 0 && $app == null) { throw new \InvalidArgumentException("Minutes must be 00"); }
+        if ($time % 100 != 0) {
+            throw new \InvalidArgumentException("Minutes must be 00");
+        }
 
         $systemID = (int) $system;
         $relatedTime = (int) $time;
         $unixTime = strtotime($relatedTime);
 
         if ($redis->get("zkb:reinforced") == true) {
-            header('HTTP/1.1 202 Request being processed');
-            $app->render('related_reinforced.html', ['showAds' => false]);
-            exit();
+            throw new \RuntimeException("System is reinforced", 202);
         }
         if ($redis->llen("queueRelated") > 25) {
-            header('HTTP/1.1 202 Request being processed');
-            $app->render('related_notnow.html', ['showAds' => false, 'solarSystemID' => $systemID, 'unixtime' => $unixTime]);
-            exit();
+            throw new \RuntimeException("Queue is too busy", 202);
         }
 
         $json_options = json_decode($options, true);
@@ -63,10 +59,9 @@ class RelatedReport {
             $redirect = true;
         }
         if ($redirect) {
-            $json = urlencode(json_encode($json_options));
-            $url = "/related/$systemID/$relatedTime/o/$json/";
-            $app->redirect($url, 302);
-            exit();
+            // Redirect should be handled by the view layer
+            // This code path should not be reached as view handlers handle query params
+            throw new \RuntimeException("Redirect handling should be done in view layer");
         }
 
         $systemInfo = $mdb->findDoc('information', ['cacheTime' => 3600, 'type' => 'solarSystemID', 'id' => $systemID]);
@@ -92,11 +87,8 @@ class RelatedReport {
             usleep(100000);
             ++$sleeps;
             if ($sleeps > 25) {
-                if ($app === null) return [];
-                header('HTTP/1.1 202 Request being processed');
-                header('Cache-Control: no-store');
-                $app->render('related_wait.html', ['showAds' => false]);
-                exit();
+                // Return empty array to signal waiting state
+                return [];
             }
             $summary = $redis->get($key);
         }

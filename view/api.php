@@ -13,7 +13,7 @@ function handler($request, $response, $args, $container) {
     $response = $response->withHeader('Access-Control-Allow-Methods', 'GET');
 
     try {
-        $queryString = $_SERVER['QUERY_STRING'];
+        $queryString = $_SERVER['QUERY_STRING'] ?? '';
         if ($queryString != '') {
             $response->getBody()->write('403 Forbidden - Do not include a query string to evade cache');
             return $response->withStatus(403);

@@ -7,9 +7,8 @@ require_once "../init.php";
 $delta = 10000000;
 $min = $delta * $mt;
 $max = $min + $delta;
-$cursor = $mdb->getCollection("killmails")->find(['killID' => ['$gte' => $min, '$lt' => $max]])->sort(['killID' => -1]);
-while ($cursor->hasNext()) {
-    $km = $cursor->next();
+$cursor = $mdb->getCollection("killmails")->find(['killID' => ['$gte' => $min, '$lt' => $max]], ['sort' => ['killID' => -1]]);
+foreach ($cursor as $km) {
     $points = Points::getKillPoints($km['killID']);
     if ($km['zkb']['points'] != $points) {
         //$mdb->set("oneWeek", ['killID' => $km['killID']], ['zkb.points' => $points]);

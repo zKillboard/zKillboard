@@ -22,7 +22,7 @@ while ($minute == date('Hi')) {
 
     $result = $mdb->find("information", ['type' => 'characterID'], ['lastAffUpdate' => 1], 1000);
     foreach ($result as $row) {
-        if (isset($row['lastAffUpdate']) && @$row['lastAffUpdate']->sec > (time() - 86400)) {
+        if (isset($row['lastAffUpdate']) && $row['lastAffUpdate'] instanceof MongoDB\BSON\UTCDateTime && $row['lastAffUpdate']->toDateTime()->getTimestamp() > (time() - 86400)) {
             usleep(1000);
             continue;
         }

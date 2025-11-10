@@ -15,8 +15,8 @@ $esiCorps = new RedisTimeQueue('tqCorpApiESI', $esiCorpKm);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    $noCorp = $mdb->find("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'corporationID' => ['$exists' => false]]);
-    if (sizeof($noCorp) == 0) $noCorp = $mdb->find("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'corporationID' => 0]);
+    $noCorp = $mdb->find("scopes", ['corporationID' => ['$exists' => false], 'scope' => "esi-killmails.read_corporation_killmails.v1"]);
+    if (sizeof($noCorp) == 0) $noCorp = $mdb->find("scopes", ['corporationID' => 0, 'scope' => "esi-killmails.read_corporation_killmails.v1"]);
     foreach ($noCorp as $row) {
         $charID = $row['characterID'];
         $corpID = (int) Info::getInfoField("characterID", $charID, "corporationID");
@@ -36,7 +36,7 @@ while ($minute == date('Hi')) {
     }
 
     $mdb->set("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'lastFetch' => ['$exists' => false]], ['lastFetch' => 0], true);
-    $row = $mdb->findDoc("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'corporationID' => ['$exists' => true]], ['lastFetch' => 1]);
+    $row = $mdb->findDoc("scopes", ['corporationID' => ['$exists' => true], 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['lastFetch' => 1]);
 
     if ($row == null) {
         sleep(3);

@@ -31,7 +31,7 @@ function success(&$guzzler, &$params, $content)
     $wars = $content == "" ? [] : json_decode($content, true);
     foreach ($wars as $warID) {
         if (!$mdb->exists('information', ['type' => 'warID', 'id' => (int) $warID])) {
-            $mdb->save('information', ['type' => 'warID', 'id' => $warID, 'lastApiUpdate' => new MongoDate(2)]);
+            $mdb->save('information', ['type' => 'warID', 'id' => $warID, 'lastApiUpdate' => new MongoDB\BSON\UTCDateTime(2000)]);
             $warsAdded = true;
         }
         $maxWarID = min($maxWarID, $warID);

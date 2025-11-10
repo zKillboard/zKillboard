@@ -31,7 +31,7 @@ function beSocial($killID)
     if ($kill['vGroupID'] == 902) $twitMin += 5000000000; // Jump Freighters, 15b
     if (in_array($kill['vGroupID'], [1657, 1404, 1406])) $twitMin = 25000000000; // Citadels, Eng. Complexes, and Refineries, 25b
     if ($kill['vGroupID'] == 883) $twitMin += 5000000000; // Rorquals, 15b
-    $noTweet = $kill['dttm']->sec < $hours24 || $victimInfo == null || $totalPrice < $twitMin;
+    $noTweet = $kill['dttm']->toDateTime()->getTimestamp() < $hours24 || $victimInfo == null || $totalPrice < $twitMin;
     if (((int) @$kill['locationID']) == 60012256 && $kill['attackerCount'] > 100 && $totalPrice > 1000000000) $noTweet = false; // whack a bot
     if ($noTweet) {
         return;

@@ -13,7 +13,7 @@ foreach ($types as $type) {
 
 
 function iterate($mdb, $type, $field, $doTicker = false) {
-    $cursor = $mdb->getCollection("information")->find([$field => ['$type' => 'string'], 'type' => $type])->sort([$field => 1]);
+    $cursor = $mdb->getCollection("information")->find([$field => ['$type' => 'string'], 'type' => $type], ['sort' => [$field => 1]]);
 
     if ($doTicker) $type .= "-ticker";
 
@@ -26,9 +26,8 @@ function iterate($mdb, $type, $field, $doTicker = false) {
     $lastkeyc = 0;
     $matches = [];
     $lastletter = null;
-    while ($cursor->hasNext()) {
+    foreach ($cursor as $doc) {
         $count++;
-        $doc = $cursor->next();
 
         $firstletter = mb_substr($doc[$field], 0, 1, 'UTF-8');
         if ($firstletter != $lastletter) {

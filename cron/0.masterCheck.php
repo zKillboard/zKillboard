@@ -11,9 +11,19 @@ while ($minute == date("Hi")) {
 	$masterHostname = null;
 	$previousMaster = (string) file_get_contents("master.lock");
 
-	$mongoClient = new MongoClient($mongoConnString, ['connectTimeoutMS' => 1000, 'socketTimeoutMS' => 60000]);
-	$admin = $mongoClient->selectDB('admin');
-	$r = $admin->command(['replSetGetStatus' => []]);
+	$mongoClient = new MongoDB\Client($mongoConnString, [], ['connectTimeoutMS' => 1000, 'socketTimeoutMS' => 60000]);
+	$admin = $mongoClient->selectDatabase('admin');
+	
+	try {
+		$r = $admin->command(['replSetGetStatus' => []])->toArray()[0];
+	} catch (MongoDB\Driver\Exception\CommandException $e) {
+		// Not running with replication, assume we're the master
+		if ($e->getCode() == 76 || strpos($e->getMessage(), 'not running with --replSet') !== false) {
+			$r = ['members' => [["name" => $hostname . ':27017', 'state' => 1]]];
+		} else {
+			throw $e;
+		}
+	}
 
 	// if running standalone (e.g. for testing)
 	if (@$r['code'] == 76) $r['members'] = [["name" => $hostname . ':27017', 'state' => 1]];

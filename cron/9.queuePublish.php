@@ -36,7 +36,7 @@ function publish($killID)
     $raw['zkb'] = $zkb;
 
     $hours24 = time() - 86400;
-    if ($kill['dttm']->sec < $hours24) return;
+    if ($kill['dttm']->toDateTime()->getTimestamp() < $hours24) return;
 
     $channels = ['none:*' => true, 'all:*' => true];
     foreach ($kill['involved'] as $involved) {

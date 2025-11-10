@@ -10,9 +10,8 @@ if ($mdb->findDoc("killmails", ['reset' => true]) != null) exit();
 if (((int) $redis->get("zkb:load")) >= 15) exit();
 if ($redis->get("zkb:reinforced") == true) exit();
 
-if ($mt == 0) $mdb->getCollection("statistics")->update(['reset' => false], ['$unset' => ['reset' => true]], ['multiple' => true]);
+if ($mt == 0) $mdb->getCollection("statistics")->updateMany(['reset' => false], ['$unset' => ['reset' => true]]);
 
-MongoCursor::$timeout = -1;
 $queueStats = new RedisQueue('queueStats');
 $minute = date('Hi');
 
@@ -22,9 +21,9 @@ function checkForResets() {
     $count = 0;
 
     // Look for resets in statistics and add them to the queue
-    $cursor = $mdb->getCollection("statistics")->find(['reset' => true])->sort(['_id' => -1])->limit(10000);
-    while ($cursor->hasNext()) {
-        $row = $cursor->next();
+    $cursor = $mdb->find("statistics", ['reset' => true], ['_id' => -1], 10000);
+    foreach ($cursor as $row) {
+        
         $raw = $row['type'] . ":" . $row['id'];
         if (!$redis->sismember("queueStatsSet", $raw)) {
             $redis->sadd("queueStatsSet", $raw);
@@ -254,7 +253,7 @@ function calcStats($row, $maxSequence)
 
     if (@$stats['type'] != 'label' && @$stats['shipsDestroyed'] > 10 && @$stats['shipsDestroyed'] > @$stats['nextTopRecalc']) $stats['calcAlltime'] = true;
     // save it
-    $mdb->getCollection('statistics')->save($stats);
+    $mdb->save('statistics', $stats);
 
 
     return ($newSequence == $maxSequence);
