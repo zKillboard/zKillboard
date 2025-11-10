@@ -9,10 +9,11 @@ if ($redis->get("zkb:gankcheckfull") == "true") exit();
 
 $queueRedisQ = new RedisQueue('queueRedisQ');
 
-$concord = $mdb->find("killmails", ['involved.corporationID' => 1000125], ['killID' => -1]);
+$concord = $mdb->getCollection("killmails")->find(['involved.corporationID' => 1000125])->sort(['killID' => -1]);
 $added = [];
 
-foreach ($concord as $kill) {
+while ($concord->hasNext()) {
+    $kill = $concord->next();
     if ($kill['killID'] < 68300000) break;
     $systemID = $kill['system']['solarSystemID'];
     $involved = $kill['involved'];
@@ -40,9 +41,9 @@ foreach ($concord as $kill) {
         if ($concorded == false && $valid == true) {
             $added[] = $lvictim['killID'];
             $mdb->set("killmails", ['killID' => $lvictim['killID']], ['ganked' => true]);
-            $mdb->getCollection("killmails")->updateOne(['killID' => $lvictim['killID']], ['$addToSet' => ['labels' => 'ganked']]);
-            $mdb->getCollection("ninetyDays")->updateOne(['killID' => $lvictim['killID']], ['$addToSet' => ['labels' => 'ganked']]);
-            $mdb->getCollection("oneWeek")->updateOne(['killID' => $lvictim['killID']], ['$addToSet' => ['labels' => 'ganked']]);
+            $mdb->getCollection("killmails")->update(['killID' => $lvictim['killID']], ['$addToSet' => ['labels' => 'ganked']]);
+            $mdb->getCollection("ninetyDays")->update(['killID' => $lvictim['killID']], ['$addToSet' => ['labels' => 'ganked']]);
+            $mdb->getCollection("oneWeek")->update(['killID' => $lvictim['killID']], ['$addToSet' => ['labels' => 'ganked']]);
             Util::out("Marking " . $lvictim['killID'] . " as ganked.");
             RedisCache::delete("killDetail:" . $lvictim['killID']);
             RedisCache::delete("zkb::detail:" . $lvictim['killID']);

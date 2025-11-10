@@ -7,9 +7,9 @@ global $mongoServer, $mongoPort, $mongoConnString, $debug;
 $mongoClient = null;
 
 if ($mongoConnString == null) $mongoConnString = "mongodb://$mongoServer:$mongoPort";
-$mongoClient = new MongoDB\Client($mongoConnString, [], ['connectTimeoutMS' => 7200000, 'socketTimeoutMS' => 7200000]);
-$admin = $mongoClient->selectDatabase('admin');
-$r = $admin->command(['currentOp' => []])->toArray()[0];
+$mongoClient = new MongoClient($mongoConnString, ['connectTimeoutMS' => 7200000, 'socketTimeoutMS' => 7200000]);
+$admin = $mongoClient->selectDB('admin');
+$r = $admin->command(['currentOp' => []]);
 $running = $r['inprog'];
 $high = 0;
 foreach ($running as $x) {

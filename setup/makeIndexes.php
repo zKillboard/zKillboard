@@ -7,14 +7,14 @@ $db = $mdb->getDb();
 $mcollections = $db->listCollections();
 $collections = array();
 foreach ($mcollections as $collection) {
-    $colName = $collection->getName();
-    $collections[$colName] = $db->selectCollection($colName);
+    $colName = str_replace("{$dbName}.", '', "$collection");
+    $collections[$colName] = $collection;
 }
 ksort($collections);
 echo "<?php
 require_once \"../init.php\";
-\$m = new MongoDB\\Client();
-\$db = \$m->selectDatabase(\"zkillboard\");\n\n";
+\$m = new MongoClient();
+\$db = \$m->selectDB(\"zkillboard\");\n\n";
 
 foreach ($collections as $colName => $collection) {
     echo "// $colName\n";
@@ -23,9 +23,10 @@ foreach ($collections as $colName => $collection) {
     echo "\$collection = \"{$colName}\";\n";
     echo "\$$colName = \$db->\$collection;\n";
     echo "echo \"Done\\n\";\n";
-    $indexes = $collection->listIndexes();
-    foreach ($indexes as $index) {
-        $names = array_keys((array)$index['key']);
+    $indexes = $collection->getIndexInfo();
+    ksort($indexes);
+    foreach ($indexes as $key => $index) {
+        $names = array_keys($index['key']);
         if (sizeof($names) == 1 and $names[0] == '_id') {
             continue;
         }
@@ -58,7 +59,7 @@ foreach ($collections as $colName => $collection) {
         $optionsFieldsStr = implode(', ', $optionsFields);
 
         echo "echo \"Creating index : $indexFields ... \";\n";
-        echo "\$${colName}->createIndex([$indexFields], [$optionsFieldsStr]);\n";
+        echo "\$${colName}->ensureIndex([$indexFields], [$optionsFieldsStr]);\n";
         echo "echo \"Done\\n\";\n";
     }
     echo "\n";

@@ -15,7 +15,7 @@ $pipeline = [
 $coll = $mdb->getCollection("oneWeek");
 
 $cursor = $coll->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true]);
-foreach ($cursor as $doc) {
+foreach ($cursor['result'] as $doc) {
     $padhash = $doc['_id'];
     $redis->setex("zkb:padhash:$padhash", 86400, "true");
     $r = $mdb->set("killmails", ['padhash' => $padhash, 'labels' => 'pvp'], ['reset' => true], true);

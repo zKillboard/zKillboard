@@ -5,8 +5,15 @@ function handler($request, $response, $args, $container) {
 
     $bypass = strpos($uri, "/bypass/") !== false;
 
+    // Create a mock app object for URI::validate
+    $mockApp = new class {
+        public function notFound() {
+            throw new Exception('Not Found');
+        }
+    };
+    
     try {
-        $params = URI::validate($uri, ['u' => true, 'ks' => !$bypass, 'ke' => !$bypass]);
+        $params = URI::validate($mockApp, $uri, ['u' => true, 'ks' => !$bypass, 'ke' => !$bypass]);
     } catch (Exception $e) {
         // If validation fails, return empty result
         return $container->get('view')->render($response, 'components/top_killer_list.html', []);

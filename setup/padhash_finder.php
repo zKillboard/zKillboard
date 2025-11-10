@@ -12,7 +12,7 @@ $result = $mdb->getCollection("killmails")->aggregate(
         ],  ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true]);
 
 
-foreach ($result as $row) {
+foreach ($result['result'] as $row) {
     print_r($row);
     $padhash = $row['_id'];
     if ($padhash == null) continue;
@@ -20,8 +20,8 @@ foreach ($result as $row) {
     $count = 0;
     while (($count = $mdb->count("killmails", ['labels' => 'pvp', 'padhash' => $padhash])) > 5) {
         $doc = $mdb->findDoc("killmails", ['padhash' => $padhash, 'labels' => 'pvp']);
-        $mdb->getCollection('killmails')->updateOne(['_id' => $doc['_id']], ['$addToSet' => ['labels' => 'padding']]);
-        $mdb->getCollection('killmails')->updateOne(['_id' => $doc['_id']], ['$pull' => ['labels' => 'pvp']]);
+        $mdb->getCollection('killmails')->update(['_id' => $doc['_id']], ['$addToSet' => ['labels' => 'padding']]);
+        $mdb->getCollection('killmails')->update(['_id' => $doc['_id']], ['$pull' => ['labels' => 'pvp']]);
         Util::out("$padhash $count");
     }
 }

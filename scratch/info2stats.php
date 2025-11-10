@@ -15,8 +15,8 @@ $validTypes = [
 
 $cursor = $mdb->getCollection("information")->find();
 
-foreach ($cursor as $row) {
-    
+while ($cursor->hasNext()) {
+    $row = $cursor->next();
     $type = $row['type'];
     $id = $row['id'];
 

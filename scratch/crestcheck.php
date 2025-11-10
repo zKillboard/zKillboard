@@ -2,8 +2,9 @@
 
 require_once "../init.php";
 
-$crest = $mdb->getCollection("crestmails")->find([], ['sort' => ['killID' => -1]]);
-foreach ($crest as $mail) {
+$crest = $mdb->getCollection("crestmails")->find()->sort(['killID' => -1]);
+while ($crest->hasNext()) {
+	$mail = $crest->next();
 	$killID = $mail['killID'];
 	$kill = $mdb->findDoc("killmails", ['killID' => $killID]);
 	if ($kill === null) {

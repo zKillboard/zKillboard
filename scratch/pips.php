@@ -29,8 +29,8 @@ foreach($json as $row) {
     $metaTypes[$row['typeID']] = $row;
 }
 $cursor = $mdb->getCollection("information")->find(['categoryID' => 6]);
-foreach ($cursor as $row) {
-    
+while ($cursor->hasNext()) {
+    $row = $cursor->next();
     $metaGroupID = (int) @$metaTypes[$row['id']]['metaGroupID'];
     if ($metaGroupID > 0) {
         $mapped = $metaIdToKey[$metaGroupID];

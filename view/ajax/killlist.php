@@ -5,8 +5,15 @@ function handler($request, $response, $args, $container) {
 
     $bypass = strpos($uri, "/bypass/") !== false;
 
+    // Create mock app object for URI validation
+    $mockApp = new class {
+        public function notFound() {
+            throw new Exception('Not Found');
+        }
+    };
+
     try {
-        $params = URI::validate($uri, ['s' => !$bypass, 'u' => true]);
+        $params = URI::validate($mockApp, $uri, ['s' => !$bypass, 'u' => true]);
     } catch (Exception $e) {
         // If validation fails, return empty JSON result
         $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8');

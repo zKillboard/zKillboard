@@ -15,7 +15,7 @@ if ($commentID >= 0 && $commentID < count(Comments::$defaultComments) && $redis-
     $votes->add(uniqid());
 
 			// Atomic upsert: increment upvotes by 1, or create with 1 if doesn't exist
-		$mdb->getCollection('comments')->updateOne(
+		$mdb->getCollection('comments')->update(
 			['pageID' => $pageID, 'commentID' => $commentID],
 			[
 				'$inc' => ['upvotes' => 1],

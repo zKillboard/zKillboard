@@ -4,6 +4,7 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
+MongoCursor::$timeout = -1;
 
 $today = date('Ymd');
 $time = time();

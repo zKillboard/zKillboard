@@ -15,7 +15,7 @@ function populate($type) {
 
     $queue = new RedisTimeQueue('zkb:' . $type, 9600);
     $rows = $mdb->getCollection("information")->find(['type' => $type]);
-    foreach ($rows as $row) {
+    while (($row = $rows->next())) {
         if ($row['id'] <= 1) continue;
         //if (@$row['name'] == "") echo "$type " . $row['id'] . " empty name\n";
         if (@$row['name'] == "") $queue->remove($row['id']); // Go for immediate update

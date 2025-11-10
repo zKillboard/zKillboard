@@ -6,7 +6,7 @@ if (date('i') % 5 != 0) exit();
 
 Status::check('esi');
 $count = 0;
-$crest = $mdb->find('crestmails', [], ['$natural' => -1]);
+$crest = $mdb->getCollection('crestmails')->find()->sort(['$natural' => -1]);
 foreach ($crest as $row) {
     $killID = $row['killID'];
     if (isset($row['npcOnly'])) {

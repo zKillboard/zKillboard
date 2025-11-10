@@ -1,6 +1,10 @@
 <?php
 
+$pid = pcntl_fork();
+
 require_once "../init.php";
+
+if ($pid == 0) sleep(5);
 
 $kvc = new KVCache($mdb, $redis);
 
@@ -9,9 +13,6 @@ if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit(
 
 $serverVersion = $kvc->get("tqServerVersion");
 $loadedVersion = $kvc->get("zkb:tqServerVersion");
-
-// get distinct shipTypeIDs to adjust published on typeIDs
-$distinctTypeIDs = $mdb->getCollection('killmails')->distinct('involved.shipTypeID');
 
 if ($serverVersion != "" && $serverVersion == $loadedVersion && $kvc->get("zkb:universeLoaded") == true) {
     exit();
@@ -22,10 +23,11 @@ $kvc->del("zkb:universeLoaded");
 $kvc->del("zkb:tqServerVersion");
 $guzzler = new Guzzler(25, 10);
 
-$guzzler->call("$esiServer/universe/regions/", "regionsSuccess", "fail");
+if ($pid == 0) $guzzler->call("$esiServer/universe/regions/", "regionsSuccess", "fail");
+else $guzzler->call("$esiServer/universe/categories/", "categoriesSuccess", "fail");
 $guzzler->finish();
-$guzzler->call("$esiServer/universe/categories/", "categoriesSuccess", "fail");
-$guzzler->finish();
+
+if ($pid != 0) pcntl_wait($pid);
 
 $kvc->set("zkb:tqServerVersion", $serverVersion);
 $kvc->set("zkb:universeLoaded", "true");
@@ -86,7 +88,7 @@ function groupSuccess($guzzler, $params, $content)
 
 function typeSuccess($guzzler, $params, $content)
 {
-    global $mdb, $distinctTypeIDs;
+    global $mdb;
 
     $type = json_decode($content, true);
     $id = $type['type_id'];
@@ -95,14 +97,9 @@ function typeSuccess($guzzler, $params, $content)
     $type['groupID'] = $type['group_id'];
     $type['categoryID'] = $params['categoryID'];
     $type['portionSize'] = @$params['portion_size'];
+    Util::out("Type $name $id");
 
-	// check the distinctTypeIDs array to see if this typeID has kills
-	$hasKills = array_search($id, $distinctTypeIDs) !== false;
-	if ($id > 0 && $hasKills && $type['published'] == false) {
-		Util::out("Type {$type['name']} $id - has kills, setting published to true");
-		$type['published'] = true;
-	} else Util::out("Type $name $id");
-	
+	if ($id == 2233) $type['published'] = true; // Customs Office.... why is this false?!
     $mdb->insertUpdate("information", ['type' => 'typeID', 'id' => $id], $type);
 }
 

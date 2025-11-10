@@ -115,7 +115,7 @@ function success(&$guzzler, &$params, &$content) {
     $doc = json_decode($content, true);
 
     try {
-        $esimails->insertOne($doc);
+        $esimails->insert($doc);
 
         $unixtime = strtotime($doc['killmail_time']);
         $mdb->set("crestmails", ['killID' => $row['killID'], 'hash' => $row['hash']], ['processed' => 'delayed', 'epoch' => $unixtime]);

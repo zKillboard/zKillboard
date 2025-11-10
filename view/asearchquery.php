@@ -5,6 +5,7 @@ use cvweiss\redistools\RedisCache;
 function handler($request, $response, $args, $container) {
     global $mdb, $redis, $uri;
 
+	MongoCursor::$timeout = 65000;
 	$key = "asearch:defaultKey"; // placeholder to avoid undefined variable error
 
 	$labelGroupMaps = [
@@ -119,9 +120,8 @@ function handler($request, $response, $args, $container) {
 				$waits++;
 				if ($waits > 25) {
 					//header("Location: $uri");
-					$redis->del($key);
-					$response->getBody()->write(json_encode(['error' => 'Request timeout'], JSON_PRETTY_PRINT));
-					return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withStatus(408);
+					header('HTTP/1.1 408 Request timeout');
+					return;
 				}
 			}
 		} while ($ret == "PROCESSING");
@@ -135,7 +135,7 @@ function handler($request, $response, $args, $container) {
 		$arr = [];
 		if ($queryType == "kills") {
 			foreach ($coll as $col) {
-				$result = iterator_to_array($mdb->find($col, $query, $sort, 100, [], 100 * $page));
+				$result = iterator_to_array($mdb->getCollection($col)->find($query)->sort($sort)->skip(100 * $page)->limit(100));
 				if (sizeof($result) >= 100) break;
 			}
 			$arr['kills'] = [];
@@ -149,7 +149,7 @@ function handler($request, $response, $args, $container) {
 			return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
 		} else if ($queryType == 'count') {
 			foreach ($coll as $col) {
-				$result = iterator_to_array($mdb->find($col, $query, $sort, 50, [], 50 * $page));
+				$result = iterator_to_array($mdb->getCollection($col)->find($query)->sort($sort)->skip(50 * $page)->limit(50));
 				if (sizeof($result) >= 50) break;
 			}
 			$arr = AdvancedSearch::getSums($groupType . 'ID', $query, $victimsOnly);
@@ -247,8 +247,5 @@ function handler($request, $response, $args, $container) {
 		return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
 	} catch (Exception $ex) {
 		Util::zout(print_r($ex, true));
-		$redis->del($key);
-		$response->getBody()->write(json_encode(['error' => 'Internal server error', 'message' => $ex->getMessage()], JSON_PRETTY_PRINT));
-		return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withStatus(500);
 	} 
 }

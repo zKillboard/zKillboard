@@ -46,8 +46,8 @@ function addActivity($killID)
     if ($catID != 6) return;
 
     $dttm = $killmail['dttm'];
-    $day = (int) date('w', $dttm->toDateTime()->getTimestamp());
-    $hour = (int) date('H', $dttm->toDateTime()->getTimestamp());
+    $day = (int) date('w', $dttm->sec);
+    $hour = (int) date('H', $dttm->sec);
     foreach ($killmail['involved'] as $i) {
         foreach ($i as $entity=>$id) {
             if (!in_array($entity, ['characterID', 'corporationID', 'allianceID'])) continue;

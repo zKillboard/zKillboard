@@ -20,7 +20,7 @@ class MongoSessionHandler implements SessionHandlerInterface {
 
         if ($data == 'slim.flash|a:0:{}') return true;
 
-        $this->collection->updateOne(
+        $this->collection->update(
             ['_id' => $id],
             ['$set' => [
                     'server' => $hostname,
@@ -40,7 +40,7 @@ class MongoSessionHandler implements SessionHandlerInterface {
     }
 
     public function destroy($id) {
-        $this->collection->deleteOne(['_id' => $id]);
+        $this->collection->remove(['_id' => $id]);
         return true;
     }
 

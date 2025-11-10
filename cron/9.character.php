@@ -18,7 +18,7 @@ while ($minute == date('Hi')) {
         $guzzler->sleep(1);
         continue;
     }
-    if (isset($row['lastApiUpdate']) && $row['lastApiUpdate'] instanceof MongoDB\BSON\UTCDateTime && $row['lastApiUpdate']->toDateTime()->getTimestamp() > (time() - (7 * 86400))) {
+    if (isset($row['lastApiUpdate']) && @$row['lastApiUpdate']->sec > (time() - (7 * 86400))) {
         $guzzler->sleep(1);
         continue;
     }

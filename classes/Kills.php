@@ -142,7 +142,7 @@ class Kills
         $damage = (int) ($esimail['victim']['damage_taken'] ?? 0);
         $killmail['damage'] = $damage;
 
-        $killmail['dttm'] = date('Y-m-d G:i', $killmail['dttm']->toDateTime()->getTimestamp());
+        $killmail['dttm'] = date('Y-m-d G:i', $killmail['dttm']->sec);
         Info::addInfo($killmail);
 
         $victim = $killmail['involved'][0];

@@ -14,7 +14,7 @@ $mdb->set("scopes", ['added' => ['$exists' => false]], ['added' => $mdb->now()],
 $rows = $mdb->find("scopes", ['scope' => "esi-killmails.read_killmails.v1" ]);
 foreach($rows as $row) {
     $id = $row['characterID'];
-    $added = isset($row['added']) && $row['added'] instanceof MongoDB\BSON\UTCDateTime ? $row['added']->toDateTime()->getTimestamp() : 0;
+    $added = $row['added']->sec;
     if ($id == $adminCharacter) continue; // don't remove admin
 
     if (($threeMonths - $added) <= 0) continue; // Has recent, move on

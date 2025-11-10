@@ -107,7 +107,7 @@ function success($params, $content)
     $corpID = (int) $row['corporationID'];
 
     $modifiers = ['lastFetch' => $mdb->now(), 'errorCount' => 0];
-    if (!isset($row['added']) || !($row['added'] instanceof MongoDB\BSON\UTCDateTime)) $modifiers['added'] = $mdb->now();
+    if (!isset($row['added']->sec)) $modifiers['added'] = $mdb->now();
     if (!isset($row['iterated'])) $modifiers['iterated'] = false;
     if ($content != "" && sizeof($kills) > 0) $modifiers['last_has_data'] = $mdb->now();
     $mdb->set("scopes", $row, $modifiers); 
@@ -125,7 +125,7 @@ function success($params, $content)
     if ($redis->get("recentKillmailActivity:char:$charID") == "true") $esi->setTime($charID, time() + 301);
     else {
         $latest = $mdb->findDoc("killmails", ['involved.characterID' => $charID], ['killID' => -1], ['killID' => 1, 'dttm' => 1]);
-        $time = $latest == null ? 0 : $latest['dttm']->toDateTime()->getTimestamp();
+        $time = $latest == null ? 0 : $latest['dttm']->sec;
         $weekAgo = time() - (7 * 86400);
         $monthAgo = time() - (30 * 86400);
         $monthsAgo = time() - (90 * 86400);

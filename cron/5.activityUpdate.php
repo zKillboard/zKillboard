@@ -19,7 +19,7 @@ while ($minute == date('Hi')) {
         $killmail = $mdb->findDoc("killmails", ['killID' => $killID]);
 
         // Only do this for recent killmails
-        if ($killmail['dttm']->toDateTime()->getTimestamp() < (time() - $delta)) continue;
+        if ($killmail['dttm']->sec < (time() - $delta)) continue;
 
         $involved = $killmail['involved'];
         foreach ($involved as $entity) {

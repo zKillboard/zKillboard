@@ -28,25 +28,15 @@ class MongoFilter
         // Build the query parameters
         $query = $buildQuery ? self::buildQuery($parameters) : $parameters;
 
-        // Build options for the find query
-        $options = [
-            'projection' => ['_id' => 0, 'killID' => 1],
-            'sort' => [$sortKey => $sortDirection]
-        ];
-        
-        // Add skip if page > 0
-        if ($page > 0) {
-            $options['skip'] = $page * $limit;
-        }
-        
-        // Add limit unless 'nolimit' is set
-        if (!isset($parameters['nolimit'])) {
-            $options['limit'] = $limit;
-        }
-
         // Start the query
         $killmails = $mdb->getCollection($collection);
-        $cursor = $killmails->find($query, $options);
+        $cursor = $killmails->find($query, ['_id' => 0, 'killID' => 1]);
+
+        // Apply the sort order
+        $cursor->sort([$sortKey => $sortDirection]);
+
+        self::applyPage($cursor, $page, $limit);
+        self::applyLimit($cursor, $parameters, $limit);
 
         $result = self::getResult($cursor);
 
@@ -160,20 +150,20 @@ class MongoFilter
                 case 'date':
                     $time = strtotime($value);
                     $time = $time - ($time % 86400);
-                    $and[] = ['dttm' => ['$gte' => new MongoDB\BSON\UTCDateTime($time * 1000)]];
-                    $and[] = ['dttm' => ['$lt' => new MongoDB\BSON\UTCDateTime(($time + 86400) * 1000)]];
+                    $and[] = ['dttm' => ['$gte' => new MongoDate($time)]];
+                    $and[] = ['dttm' => ['$lt' => new MongoDate($time + 86400)]];
                     break;
                 case 'relatedTime':
                     $time = strtotime($value);
                     $exHours = isset($parameters['exHours']) ? (int) $parameters['exHours'] : 1;
-                    $and[] = ['dttm' => ['$gte' => new MongoDB\BSON\UTCDateTime(($time - (3600 * $exHours)) * 1000)]];
-                    $and[] = ['dttm' => ['$lte' => new MongoDB\BSON\UTCDateTime(($time + (7200 * $exHours)) * 1000)]];
+                    $and[] = ['dttm' => ['$gte' => new MongoDate($time - (3600 * $exHours))]];
+                    $and[] = ['dttm' => ['$lte' => new MongoDate($time + (7200 * $exHours))]];
                     break;
                 case 'pastSeconds':
                     $value = min($value, (90 * 86400));
                     $value = max(0, $value);
                     if ($value % 3600 != 0) throw new Exception("pastSeconds must be in increments of 3600 - use redisq or the websocket if you want up to the second killmails https://github.com/zKillboard/zKillboard/wiki");
-                    $and[] = ['dttm' => ['$gte' => new MongoDB\BSON\UTCDateTime((time() - $value) * 1000)]];
+                    $and[] = ['dttm' => ['$gte' => new MongoDate(time() - $value)]];
                     break;
                 case 'beforeKillID':
                     $and[] = ['killID' => ['$lt' => ((int) $value)]];
@@ -265,11 +255,11 @@ class MongoFilter
                     break;
                 case 'startTime':
                     $time = strtotime($value);
-                    $and[] = ['dttm' => ['$gte' => new MongoDB\BSON\UTCDateTime($time * 1000)]];
+                    $and[] = ['dttm' => ['$gte' => new MongoDate($time)]];
                     break;
                 case 'endTime':
                     $time = strtotime($value);
-                    $and[] = ['dttm' => ['$lte' => new MongoDB\BSON\UTCDateTime($time * 1000)]];
+                    $and[] = ['dttm' => ['$lte' => new MongoDate($time)]];
                     break;
                 case 'orderBy':
                     // handled by sort, can be ignored
@@ -340,8 +330,8 @@ class MongoFilter
         global $mdb;
 
         $time = $time - ($time % 60);
-        $iter = $mdb->find("killmails", ['dttm' => ['$gte' => new MongoDB\BSON\UTCDateTime($time * 1000)]], [], ['killID' => 1], 1);
-        $row = $iter->current();
+        $iter = $mdb->getCollection("killmails")->find(['dttm' => ['$gte' => new MongoDate($time)]])->sort(['killID' => 1])->limit(1);
+        $row = $iter->next();
         if (!isset($row['killID'])) throw new Exception("invalid time $time");
         return $row['killID'];
     }
