@@ -92,11 +92,7 @@ class RelatedReport {
             usleep(100000);
             ++$sleeps;
             if ($sleeps > 25) {
-                if ($app === null) return [];
-                header('HTTP/1.1 202 Request being processed');
-                header('Cache-Control: no-store');
-                $app->render('related_wait.html', ['showAds' => false]);
-                exit();
+                return ['complete' => false];
             }
             $summary = $redis->get($key);
         }
@@ -112,6 +108,7 @@ class RelatedReport {
             $mdb->set('battles', ['battleID' => $battleID], ['teamA' => $teamA]);
             $mdb->set('battles', ['battleID' => $battleID], ['teamB' => $teamB]);
         }
+		$mc['complete'] = true;
 
         return $mc;
     }
