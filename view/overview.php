@@ -66,6 +66,10 @@ function handler($request, $response, $args, $container) {
     }
 
     if (isset($parameters['streambox'])) {
+        // Allow streambox to be embedded in iframes from any origin
+        $response = $response
+            ->withHeader('X-Frame-Options', 'ALLOWALL')
+            ->withHeader('Content-Security-Policy', "frame-ancestors *");
         return $container->get('view')->render($response, "streambox.html", []);
     }
     unset($parameters['streambox']);

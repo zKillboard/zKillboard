@@ -59,9 +59,6 @@ $container = new Container();
 AppFactory::setContainer($container);
 $app = AppFactory::create();
 
-header('X-Frame-Options: DENY');
-header("Content-Security-Policy: frame-ancestors 'self'");
-
 // Set up the session if we need it for this uri
 if (substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || $uri == '/navbar/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp' || substr($uri, 0, 20) == "/cache/bypass/login/") {
     session_set_save_handler(new MongoSessionHandler($mdb->getCollection("sessions")), true);
@@ -88,6 +85,22 @@ include 'twig.php';
 
 // Add Routing Middleware (required for Slim 4)
 $app->addRoutingMiddleware();
+
+// Add default security headers middleware
+$app->add(function ($request, $handler) {
+    $response = $handler->handle($request);
+    
+    // Set default frame options (deny framing for security)
+    // Individual routes can override these headers if needed
+    if (!$response->hasHeader('X-Frame-Options')) {
+        $response = $response->withHeader('X-Frame-Options', 'DENY');
+    }
+    if (!$response->hasHeader('Content-Security-Policy')) {
+        $response = $response->withHeader('Content-Security-Policy', "frame-ancestors 'self'");
+    }
+    
+    return $response;
+});
 
 // Setup error handling for Slim 4
 $errorMiddleware = $app->addErrorMiddleware(true, true, true);
