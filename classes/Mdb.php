@@ -390,8 +390,12 @@ if ($foobar) print_r($pipeline);
         // Prep the cursor
         $mdb = new self();
         $collection = $mdb->getCollection($collection);
+
+        $options = ['allowDiskUse' => true, 'noCursorTimeout' => true];
+        if (php_sapi_name() !== 'cli') $options['maxTimeMS'] = 65000; // web requests should not run longer than 65 seconds
+
         // Execute the query
-        $result = $collection->aggregate($pipeline, ['allowDiskUse' => true]);
+        $result = $collection->aggregate($pipeline, $options);
         return iterator_to_array($result);
     }
 }

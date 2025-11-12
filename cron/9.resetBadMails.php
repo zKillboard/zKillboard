@@ -11,6 +11,7 @@ $count = 0;
 $collection = $mdb->getCollection('crestmails');
 $cursor = $collection->find([], [
     'sort' => ['$natural' => -1],
+    'limit' => 25000,
     'noCursorTimeout' => true
 ]);
 
@@ -22,14 +23,15 @@ foreach ($cursor as $row) {
     $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
     ++$count;
     if ($killmail != null) {
-        if ($count > 10000) {
-            exit();
-        }
         continue;
     }
     $count = 0;
 
-    $mdb->set('crestmails', ['killID' => $killID], ['processed' => false]);
-    sleep(1);
+    $esi = $mdb->findDoc('esimails', ['killmail_id' => $killID]);
+    if ($esi !== null) {
+        $mdb->set('crestmails', ['killID' => $killID], ['processed' => 'fetched']);
+    } else {
+        $mdb->set('crestmails', ['killID' => $killID], ['processed' => false]);
+    }
+    Util::out("Resetting $killID");
 }
-

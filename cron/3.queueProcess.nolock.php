@@ -31,7 +31,7 @@ $minute = date('Hi');
 while ($minute == date('Hi')) {
 try {
     //if ($kvc->get("zkb:universeLoaded") != "true") break;
-    if ($redis->llen("queueInfo") > 100) sleep(1);
+    //if ($redis->llen("queueInfo") > 100) sleep(1);
     $row = null;
     $sem = sem_get(3976);
     try {
@@ -221,11 +221,12 @@ function saveMail($mdb, $collection, $kill)
     do {
         try {
             if ($mdb->exists($collection, ['killID' => $kill['killID']])) return;
-            $mdb->save($collection, $kill);
+            if ($mdb->getCollection($collection)->findOne(['killID' => $kill['killID']])) {
+                echo "$killID already exists in $collection\n";
+                return;
+            }
+            $mdb->getCollection($collection)->insertOne($kill);
             $error = false; 
-        } catch (MongoDB\Driver\Exception\BulkWriteException $ex) {
-            return;
-            // Ignore duplicate key errors...
         } catch (Exception $ex) {
             if ($ex->getCode() != 16759) throw $ex;
             $error = true;

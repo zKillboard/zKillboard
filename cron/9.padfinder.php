@@ -14,7 +14,7 @@ $pipeline = [
 ];
 $coll = $mdb->getCollection("oneWeek");
 
-$cursor = $coll->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true]);
+$cursor = $coll->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'noCursorTimeout' => true]);
 foreach ($cursor as $doc) {
     $padhash = $doc['_id'];
     $redis->setex("zkb:padhash:$padhash", 86400, "true");

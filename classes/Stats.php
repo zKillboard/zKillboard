@@ -48,6 +48,8 @@ class Stats
         } else {
             $killmails = $mdb->getCollection('killmails');
         }
+        $maxTimeMS = $parameters['maxTimeMS'] ?? -1;
+        unset($parameters['maxTimeMS']);
 
         $query = MongoFilter::buildQuery($parameters);
         $andQuery = MongoFilter::buildQuery($parameters, false);
@@ -98,7 +100,10 @@ class Stats
         }
         $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
 
-        $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true]);
+        $options = ['batchSize' => 1000, 'allowDiskUse' => true, 'noCursorTimeout' => true];
+        if (php_sapi_name() !== 'cli') $options['maxTimeMS'] = 35000; // web requests should not run longer than 35 seconds
+
+        $rr = $killmails->aggregate($pipeline, $options);
         $result = iterator_to_array($rr);
 
         $time = $timer->stop();
@@ -167,7 +172,10 @@ class Stats
         $pipeline[] = ['$group' => ['_id' => '$'.$type, 'foo' => ['$sum' => 1]]];
         $pipeline[] = ['$group' => ['_id' => 'total', 'value' => ['$sum' => 1]]];
 
-        $result = $mdb->getCollection('oneWeek')->aggregate($pipeline, ['allowDiskUse' => true]);
+        $options = ['allowDiskUse' => true, 'noCursorTimeout' => true];
+        if (php_sapi_name() !== 'cli') $options['maxTimeMS'] = 65000; // web requests should not run longer than 65 seconds
+
+        $result = $mdb->getCollection('oneWeek')->aggregate($pipeline, $options);
         $result = iterator_to_array($result);
 
         $time = $timer->stop();
