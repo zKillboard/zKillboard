@@ -8,47 +8,27 @@ if ($redis->get("tobefetched") > 1000) exit();
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->scard("queueStatsSet") > 1000) exit();
 
-
-// sets the maximum of number of large queries executing simultenously
 $minute = date("Hi");
-$modulus = date("i") % 4;
+while ($minute == date("Hi")) {
+    $rows = $mdb->find("statistics", ['calcAlltime' => true, 'reset' => ['$ne' => true]], ['shipsDestroyed' => 1], 1);
+    if (sizeof($rows) == 0) {
+        sleep(1);
+    } else {
+        $row = $rows[0];
 
-// switch between larger and smaller sets every other minute
-$order = date("i") % 2;
-if ($order < 1) $order = -1;
-
-do {
-    $rows = $mdb->find("statistics", ['calcAlltime' => true, 'reset' => ['$ne' => true]], ['shipsDestroyed' => $order], 1000);
-
-    if (sizeof($rows) == 0) exit();
-    foreach ($rows as $row) {
-        if ($minute != date("Hi")) break;
         if ($row['type'] == "label" || $row['id'] == 0) {
             $mdb->set("statistics", $row, ['calcAlltime' => false]);
             continue;
         }
 
-        $highCountKey = "zkb:calcAlltime:highcount:$modulus";
-        $highCountKeySet = false;
-        $key = "zkb:calcAlltime:" . $row['type'] . ":" . $row['id'];
         $i = $row['type'] . " " . $row['id'] . " : " . $row['shipsDestroyed'];
-        try {
-            if ($row["shipsDestroyed"] >= 100000) {
-                if ($redis->set($highCountKey, "true", ['nx', 'ex' => 80000]) !== true) continue;
-                $highCountKeySet = true;
-            }
-
-            //Util::out("calcTop $i");
-
-            calcTop($row, $i);
-        } finally {
-            if ($row["shipsDestroyed"] >= 100000 && $highCountKeySet) $redis->del($highCountKey);
-        }
+        $now = time();
+        calcTop($row);
+        Util::out("calcTop $i -> " . (time() - $now) . " seconds");
     }
-    sleep(1);
-} while ($minute == date("Hi"));
+}
 
-function calcTop($row, $i)
+function calcTop($row)
 {
     global $mdb;
 
