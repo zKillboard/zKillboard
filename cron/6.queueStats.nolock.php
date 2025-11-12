@@ -6,9 +6,14 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
-if ($mdb->findDoc("killmails", ['reset' => true]) != null) exit();
-if (((int) $redis->get("zkb:load")) >= 15) exit();
-if ($redis->get("zkb:reinforced") == true) exit();
+function bailout($reason) {
+    Util::out($reason);
+    exit();
+}
+
+if ($mdb->findDoc("killmails", ['reset' => true]) != null) bailout("killmails awaiting reset - exiting");
+//if (((int) $redis->get("zkb:load")) >= 15) bailout("highload - exiting");
+if ($redis->get("zkb:reinforced") == true) bailout("reinforced - exiting");
 
 if ($mt == 0) $mdb->getCollection("statistics")->updateMany(['reset' => false], ['$unset' => ['reset' => true]]);
 

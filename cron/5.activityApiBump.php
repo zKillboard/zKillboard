@@ -2,6 +2,8 @@
 
 use cvweiss\redistools\RedisTimeQueue;
 
+if (date("i") % 5 !== 0) exit();
+
 require_once "../init.php";
 
 if ($redis->get("zkb:reinforced") == true) exit();

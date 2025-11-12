@@ -6,8 +6,8 @@ require_once '../init.php';
 
 
 $today = date('Ymd');
-$time = time();
-$timeKey = $time - ($time % 1200);
+$time = time() - (30 * 60); // 30 minute offset
+$timeKey = $time - ($time % 3600);
 $itimeKey = "zkb:weeklyRanksSoloCalculated:$timeKey";
 if ($redis->get($itimeKey) == true) {
     exit();

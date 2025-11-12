@@ -51,6 +51,7 @@ while ($minute == date('Hi')) {
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
     $guzzler->call($url, "updateChar", "failChar", $params, []);
     $guzzler->finish();
+    sleep(1);
 }      
 $guzzler->finish();
 

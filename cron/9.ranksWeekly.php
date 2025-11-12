@@ -7,7 +7,7 @@ require_once '../init.php';
 
 $today = date('Ymd');
 $time = time();
-$timeKey = $time - ($time % 1200);
+$timeKey = $time - ($time % 3600);
 $itimeKey = "zkb:weeklyRanksCalculated:$timeKey";
 $itimeSoloKey = "zkb:weeklyRanksSoloCalculated:$timeKey";
 

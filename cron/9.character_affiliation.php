@@ -53,6 +53,7 @@ while ($minute == date('Hi')) {
     $guzzler->call($url, "updateChar", "failChar", $params, [], 'POST_JSON', json_encode($fetch, true));
     $guzzler->finish();
     while ($t->stop() < 1000) usleep(100000);
+    sleep(1);
 }      
 $guzzler->finish();
 

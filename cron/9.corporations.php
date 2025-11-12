@@ -25,9 +25,6 @@ while ($minute == date('Hi')) {
     $id = $row['id'];
 
     $hasRecent = $mdb->exists("ninetyDays", ['involved.corporationID' => $id]);
-    if (isset($row['lastApiUpdate']) && !$hasRecent)  {
-
-    }
     while ($currentSecond == date('His')) usleep(50);
     $currentSecond = date('His');
 
@@ -38,6 +35,7 @@ while ($minute == date('Hi')) {
 
     $guzzler->finish();
     $time = $t->stop();
+    sleep(1);
 }
 $guzzler->finish();
 
