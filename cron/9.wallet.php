@@ -29,7 +29,7 @@ $rows = $mdb->find("payments", ['isk' => ['$exists' => false]]);
 foreach ($rows as $row) {
     $date = $row['date'];
     $time = strtotime("$date UTC");
-    $mdb->set("payments", $row, ['isk' => (double) $row['amount'], 'characterID' => (int) $row['ownerID1'], 'dttm' => new MongoDate($time)]);
+    $mdb->set("payments", $row, ['isk' => (double) $row['amount'], 'characterID' => (int) $row['ownerID1'], 'dttm' => new MongoDB\BSON\UTCDateTime($time * 1000)]);
 }
 
 function success(&$params, $content)

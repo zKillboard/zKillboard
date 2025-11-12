@@ -14,9 +14,13 @@ $totals = [];
 $hashes = [];
 $curDate = "";
 
-$cursor = $mdb->getCollection("killmails")->find([], ['dttm' => 1, 'killID' => 1, 'zkb.hash' => 1, '_id' => 0])->sort(['killID' => 1]);
+$collection = $mdb->getCollection("killmails");
+$cursor = $collection->find([], [
+    'sort' => ['killID' => 1],
+    'noCursorTimeout' => true
+]);
 foreach ($cursor as $row) {
-    $time = $row['dttm']->sec;
+    $time = $row['dttm']->toDateTime()->getTimestamp();
     $time = $time - ($time % 86400);
     $date = date('Ymd', $time);
     if ($date != $curDate) {

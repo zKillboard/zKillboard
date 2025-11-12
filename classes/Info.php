@@ -328,12 +328,12 @@ class Info
         }
         foreach ($element as $key => $value) {
             $class = is_object($value) ? get_class($value) : null;
-            if ($class == 'MongoId' || $class == 'MongoDate') {
+            if ($class == 'MongoId' || $class == 'MongoDate' || $class == 'MongoDB\BSON\UTCDateTime' || $class == 'MongoDB\BSON\ObjectId' || $class == '__PHP_Incomplete_Class') {
                 continue;
             }
             if (is_array($value)) {
                 $element[$key] = self::addInfo($value);
-            } elseif ($value != 0) {
+            } elseif (!is_object($value) && $value != 0) {
                 switch ($key) {
                     case 'lastChecked':
                         $element['lastCheckedTime'] = $value;
@@ -342,7 +342,14 @@ class Info
                         $element['cachedUntilTime'] = $value;
                         break;
                     case 'dttm':
-                        $dttm = is_integer($value) ? $value : strtotime($value);
+                        if (is_object($value) && $value instanceof MongoDB\BSON\UTCDateTime) {
+                            $dttm = $value->toDateTime()->getTimestamp();
+                        } elseif (is_integer($value)) {
+                            $dttm = $value;
+                        } else {
+                            $dttm = strtotime($value);
+                        }
+                        $element['unixtime'] = $dttm;
                         $element['ISO8601'] = date('c', $dttm);
                         $element['killTime'] = date('Y-m-d H:i', $dttm);
                         $element['MonthDayYear'] = date('F j, Y', $dttm);
@@ -725,7 +732,7 @@ class Info
         else $unixtime = $unixtime - ($unixtime % 60); // start at the beginning of the minute
         $starttime = $unixtime;
         do {
-            $killID = $mdb->findField("killmails", "killID", ['dttm' => new MongoDate($unixtime)], ['killID' => ($which == 'start' ? 1 : -1)]);
+            $killID = $mdb->findField("killmails", "killID", ['dttm' => new MongoDB\BSON\UTCDateTime($unixtime * 1000)], ['killID' => ($which == 'start' ? 1 : -1)]);
             $unixtime += ($which == 'start' ? 1 : -1);
             if (abs($starttime - $unixtime) > 3600) break; // only check 1 hour worth of mails
         } while ($killID == null);

@@ -28,8 +28,4 @@ $redis->set('zkb:titans', serialize(Stats::getTop('characterID', $parameters)));
 $parameters = ['groupID' => 659, 'isVictim' => false, 'pastSeconds' => (86400 * 90), 'nolimit' => true];
 $redis->set('zkb:supers', serialize(Stats::getTop('characterID', $parameters)));
 
-// Cleanup old tickets > 3 months old
-$time = time() - (86400 * 90);
-$mdb->getCollection('tickets')->remove(['dttm' => ['$lte' => $time]]);
-
 $redis->setex($key, 3600, 1);

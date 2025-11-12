@@ -290,6 +290,8 @@ class Util
 					if (sizeof($split) != 0) dire('streambox must be the last parameter');
 					$parameters['streambox'] = true;
 					break;
+                case 'account':
+                    exit();
 				default:
 					if (substr($uri, 0, 5) == "/api/") {
 						dire("$key is an invalid parameter");
@@ -541,7 +543,11 @@ class Util
 		if (!is_string($text)) $text = print_r($text, true);
 
 		if ($source == null) $source = @$uri;
+        try {
 		$mdb->insert("cronlog", ['epoch' => $mdb->now(), 'server' => $hostname, 'source' =>  $source, 'text' => $text]);
+        } catch (Exception $ex) {
+
+        }
 
 		if (!file_exists($logfile) && !is_writable(dirname($logfile))) {
 			return; // Can't create the file

@@ -5,10 +5,10 @@ require_once "../init.php";
 use cvweiss\redistools\RedisTimeQueue;
 
 $count = 0;
-$cursor = $mdb->getCollection("statistics")->find()->sort(['_id' => -1]);
-while ($cursor->hasNext()) {
+$cursor = $mdb->getCollection("statistics")->find([], ['sort' => ['_id' => -1]]);
+foreach ($cursor as $row) {
     $count++;
-    $row = $cursor->next();
+    
     $type = $row['type'];
     $id = $row['id'];
     if (!in_array($type, ['characterID', 'corporationID', 'allianceID'])) continue;

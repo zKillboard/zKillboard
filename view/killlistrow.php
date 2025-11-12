@@ -30,6 +30,7 @@ function handler($request, $response, $args, $container) {
             if (isset($kill['victim'][$key])) $vic[] = $kill['victim'][$key];
         }
         $kill['vics'] = implode(',', $vic);
+        $kill['unixtime'] = $kill['dttm']->toDateTime()->getTimestamp();
         $kills[$id] = $kill;
     }
 

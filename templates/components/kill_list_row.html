@@ -2,9 +2,8 @@
 {% for kill in killList %}
 {% if kill.killID > 0 %}
       {% set shipImageLinkOverride = kill.killID %}
-      {% set sDate =  (kill.dttm.sec|date('Y-m-d')) %}
-      {% set date = (kill.dttm.sec|date('M d, Y')) %}
-      {% set currentDate = (kill.dttm.sec|date('M d, Y')) %}
+      {% set sDate =  (kill.unixtime|date('Y-m-d')) %}
+      {% set date = (kill.unixtime|date('M d, Y')) %}
       <tr class='tr-date tr-date-{{ sDate }} asearhfilter' date="{{ date }}">
         <th class="no-stripe" colspan="7"><strong><em>{{ sDate }}</em></strong></th>
       </tr>
@@ -13,13 +12,13 @@
       {% set resizeImage = 60 %}
   
       {% set field = kill.victim %}
-      <tr id="kill-{{ kill.killID }}" class="tr-killmail kltbd" date="{{ kill.dttm.sec }}" killID='{{ kill.killID }}' style="order: {{ kill.killID }};" vics="{{ kill.vics }}">
+      <tr id="kill-{{ kill.killID }}" class="tr-killmail kltbd" date="{{ kill.unixtime }}" killID='{{ kill.killID }}' style="order: {{ kill.killID }};" vics="{{ kill.vics }}">
         <td style='width: 65px;'>
           <span class="killlossicon">
             <span class="glyphicon glyphicon-ok hidden" aria-hidden="true"></span>
             <span class="glyphicon glyphicon-remove hidden" aria-hidden="true"></span>
           </span>
-          <span class='pull-right'>{{ kill.dttm.sec|date('H:i') }}</span>
+          <span class='pull-right'>{{ kill.unixtime|date('H:i') }}</span>
           <br/><a href="/kill/{{ kill.killID }}/"><span class="pull-right" format='format-isk-once' raw="{{ kill.zkb.totalValue }}">{{ formatIsk(kill.zkb.totalValue) }}</span></a>
         </td>
         <td class="icon" style="text-align: center; vertical-align: middle;">

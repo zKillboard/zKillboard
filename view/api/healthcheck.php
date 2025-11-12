@@ -18,7 +18,7 @@ function handler($request, $response, $args, $container) {
         $mdb->findDoc("killmails");
         $res['mongo'] = true;
         $res['mongo-error'] = null;
-        $r = $mdb->getDb()->command(['hello' => 1]);
+        $r = $mdb->getDb()->command(['hello' => 1])->toArray()[0];
         $master = $r['primary'] ?? '';
         $res['isMongoPrimary'] = str_contains($master, "${hostname}:");
     } catch (Exception $e) {

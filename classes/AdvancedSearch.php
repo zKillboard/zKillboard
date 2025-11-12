@@ -171,7 +171,7 @@ class AdvancedSearch
             $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
 
             $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'maxTimeMS' => 25000]);
-            $result = $rr['result'];
+            $result = iterator_to_array($rr);
 
             $time = $timer->stop();
             if ($time > $longQueryMS) {
@@ -232,7 +232,8 @@ class AdvancedSearch
             ];
 
             $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'maxTimeMS' => 25000]);
-            $result = isset($rr['result']) && !empty($rr['result']) ? $rr['result'][0] : [
+            $resultArray = iterator_to_array($rr);
+            $result = !empty($resultArray) ? $resultArray[0] : [
                 'isk' => 0,
                 'fitted' => 0,
                 'dropped' => 0,
@@ -257,12 +258,12 @@ class AdvancedSearch
     public static function getLabels($query, $victimsOnly)
     {
         global $mdb, $longQueryMS;
+        $pipeline = [];
 
         try {
             $killmails = $mdb->getCollection('killmails');
 
             $timer = new Timer();
-            $pipeline = [];
             $pipeline[] = ['$match' => $query];
             if ($victimsOnly !== "null") $pipeline[] = ['$match' => ['involved.isVictim' => ($victimsOnly == "true" ? true : false)]];
 
@@ -371,7 +372,7 @@ class AdvancedSearch
             ];
 
             $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'maxTimeMS' => 25000]);
-            $result = $rr['result'];
+            $result = iterator_to_array($rr);
 
             $time = $timer->stop();
             if ($time > $longQueryMS) {
@@ -380,7 +381,7 @@ class AdvancedSearch
             }
             return $result;
         } catch (Exception $ex) {
-            if ($ex->getCode() != 50) Util::zout(print_r($ex, true)); // code 50 is query timeout
+            if ($ex->getCode() != 50) Util::zout(print_r($ex, true) . "\n" . print_r($pipeline)); // code 50 is query timeout
         }
     }
 
@@ -433,7 +434,8 @@ class AdvancedSearch
             ];
 
             $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'maxTimeMS' => 25000]);
-            $result = isset($rr['result'][0]) ? $rr['result'][0] : [];
+            $resultArray = iterator_to_array($rr);
+            $result = !empty($resultArray) ? $resultArray[0] : [];
 
             $time = $timer->stop();
             if ($time > $longQueryMS) {

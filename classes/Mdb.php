@@ -21,10 +21,18 @@ class Mdb
         try {
             if ($this->mongoClient == null) {
                 if ($mongoConnString == null) $mongoConnString = "mongodb://$mongoServer:$mongoPort";
-                $this->mongoClient = new MongoClient($mongoConnString, ['connectTimeoutMS' => 7200000, 'socketTimeoutMS' => 7200000]);
+                $this->mongoClient = new MongoDB\Client($mongoConnString, [], [
+                    'connectTimeoutMS' => 7200000, 
+                    'socketTimeoutMS' => 7200000,
+                    'typeMap' => [
+                        'root' => 'array',
+                        'document' => 'array',
+                        'array' => 'array'
+                    ]
+                ]);
             }
             if ($this->db == null) {
-                $this->db = $this->mongoClient->selectDB('zkillboard');
+                $this->db = $this->mongoClient->selectDatabase('zkillboard');
             }
 
             return $this->db;
@@ -62,7 +70,7 @@ class Mdb
      */
     public static function now($delta = 0)
     {
-        return new MongoDate(time() + $delta);
+        return new MongoDB\BSON\UTCDateTime((time() + $delta) * 1000);
     }
 
     /*
@@ -72,15 +80,16 @@ class Mdb
     {
         $collection = $this->getCollection($collection);
 
-        return $collection->find($query)->count();
+        if (sizeof($query) == 0) return $collection->estimatedDocumentCount();
+
+        return $collection->countDocuments($query);
     }
 
     public function exists($collection, $query)
     {
         $collection = $this->getCollection($collection);
-        $cursor = $collection->find($query);
-
-        return $cursor->hasNext();
+        
+        return $collection->countDocuments($query, ['limit' => 1]) > 0;
     }
 
     public function insert($collection, $values)
@@ -89,7 +98,8 @@ class Mdb
         try {
             sem_acquire($sem);
 
-            return $this->getCollection($collection)->insert($values);
+            $result = $this->getCollection($collection)->insertOne($values);
+            return ['ok' => 1, '_id' => $result->getInsertedId()];
         } finally {
             sem_release($sem);
         }
@@ -97,11 +107,25 @@ class Mdb
 
     public function save($collection, $document)
     {
+        if ($document === null || !is_array($document)) {
+            throw new InvalidArgumentException("Document cannot be null");
+        }
+        
         $sem = sem_get(3173);
         try {
             sem_acquire($sem);
 
-            return $this->getCollection($collection)->save($document);
+            $collection = $this->getCollection($collection);
+            if (isset($document['_id'])) {
+                // Update existing document
+                $result = $collection->replaceOne(['_id' => $document['_id']], $document, ['upsert' => true]);
+                return ['ok' => 1, 'n' => $result->getModifiedCount() + $result->getUpsertedCount()];
+            } else {
+                // Insert new document
+                $result = $collection->insertOne($document);
+                $document['_id'] = $result->getInsertedId();
+                return ['ok' => 1, '_id' => $document['_id']];
+            }
         } finally {
             sem_release($sem);
         }
@@ -115,7 +139,13 @@ class Mdb
         try {
             sem_acquire($sem);
 
-            return $this->getCollection($collection)->update($key, ['$unset' => [$value => 1]], ['multiple' => $multi]);
+            $collection = $this->getCollection($collection);
+            if ($multi) {
+                $result = $collection->updateMany($key, ['$unset' => [$value => 1]]);
+            } else {
+                $result = $collection->updateOne($key, ['$unset' => [$value => 1]]);
+            }
+            return ['ok' => 1, 'n' => $result->getModifiedCount()];
         } finally {
             sem_release($sem);
         }
@@ -134,7 +164,13 @@ class Mdb
         try {
             sem_acquire($sem);
 
-            return $this->getCollection($collection)->update($key, ['$set' => $value], ['multiple' => $multi]);
+            $collection = $this->getCollection($collection);
+            if ($multi) {
+                $result = $collection->updateMany($key, ['$set' => $value]);
+            } else {
+                $result = $collection->updateOne($key, ['$set' => $value]);
+            }
+            return ['ok' => 1, 'n' => $result->getModifiedCount()];
         } finally {
             sem_release($sem);
         }
@@ -150,7 +186,8 @@ class Mdb
         try {
             sem_acquire($sem);
 
-            return $this->getCollection($collection)->remove($key);
+            $result = $this->getCollection($collection)->deleteOne($key);
+            return ['ok' => 1, 'n' => $result->getDeletedCount()];
         } finally {
             sem_release($sem);
         }
@@ -159,14 +196,14 @@ class Mdb
     /*
        Returns a result as an array of documents based on the given query, includes, sort, and limit
      */
-    public function find($collection, $query = [], $sort = [], $limit = null, $includes = [])
+    public function find($collection, $query = [], $sort = [], $limit = null, $includes = [], $skip = null)
     {
         global $longQueryMS;
 
         $cacheTime = isset($query['cacheTime']) ? $query['cacheTime'] : 0;
         $cacheTime = min($cacheTime, 900);
         unset($query['cacheTime']); // reserved zkb field for caching doesn't need to be in queries
-        $serialized = "Mdb::find|$collection|".serialize($query).'|'.serialize($sort)."|$limit|".serialize($includes);
+        $serialized = "Mdb::find|$collection|".serialize($query).'|'.serialize($sort)."|$limit|".serialize($includes)."|$skip";
         $cacheKey = $serialized;
         if ($cacheTime > 0) {
             try {
@@ -182,15 +219,23 @@ class Mdb
 
         $timer = new Timer();
         $collection = $this->getCollection($collection);
-        $cursor = $collection->find($query, $includes);
-
-        // Set the sort and limit...
+        
+        // Build options for modern MongoDB driver
+        $options = [];
+        if (!empty($includes)) {
+            $options['projection'] = $includes;
+        }
         if (sizeof($sort)) {
-            $cursor->sort($sort);
+            $options['sort'] = $sort;
         }
         if ($limit != null) {
-            $cursor->limit($limit);
+            $options['limit'] = $limit;
         }
+        if ($skip != null) {
+            $options['skip'] = $skip;
+        }
+        
+        $cursor = $collection->find($query, $options);
         $result = iterator_to_array($cursor);
         $time = $timer->stop();
         if ($time > $longQueryMS) {
@@ -234,7 +279,12 @@ class Mdb
         try {
             sem_acquire($sem);
 
-            return $this->getCollection($collection)->findAndModify($keys, (sizeof($values) ? ['$set' => $values] : $keys), $this->emptyArray, ['upsert' => true]);
+            $result = $this->getCollection($collection)->findOneAndUpdate(
+                $keys, 
+                (sizeof($values) ? ['$set' => $values] : ['$set' => $keys]), 
+                ['upsert' => true, 'returnDocument' => MongoDB\Operation\FindOneAndUpdate::RETURN_DOCUMENT_AFTER]
+            );
+            return $result;
         } finally {
             sem_release($sem);
         }
@@ -341,10 +391,7 @@ if ($foobar) print_r($pipeline);
         $mdb = new self();
         $collection = $mdb->getCollection($collection);
         // Execute the query
-        $result = $collection->aggregate($pipeline, ['cursor' => ['batch_size' => 1000], 'allowDiskUse' => true]);
-        if ($result['ok'] == 1) {
-            return $result['result'];
-        }
-        throw new Exception('pipeline query failure');
+        $result = $collection->aggregate($pipeline, ['allowDiskUse' => true]);
+        return iterator_to_array($result);
     }
 }

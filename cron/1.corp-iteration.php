@@ -15,28 +15,23 @@ $esiCorps = new RedisTimeQueue('tqCorpApiESI', $esiCorpKm);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    $noCorp = $mdb->find("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'corporationID' => ['$exists' => false]]);
-    if (sizeof($noCorp) == 0) $noCorp = $mdb->find("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'corporationID' => 0]);
+    $noCorp = $mdb->find("scopes", ['corporationID' => ['$exists' => false], 'scope' => "esi-killmails.read_corporation_killmails.v1"]);
+    if (sizeof($noCorp) == 0) $noCorp = $mdb->find("scopes", ['corporationID' => 0, 'scope' => "esi-killmails.read_corporation_killmails.v1"]);
     foreach ($noCorp as $row) {
         $charID = $row['characterID'];
         $corpID = (int) Info::getInfoField("characterID", $charID, "corporationID");
         if ($corpID > 0) $mdb->set("scopes", $row, ['corporationID' => $corpID, 'lastFetch' => 0]);
         else {
-            //Util::out("Unable to determine corproation for $charID");
-            $i = $mdb->set("information", ['type' => 'characterID', 'id' => ((int) $charID)], ['lastApiUpdate' => 0]);
-            if ($i['nModified'] == 0) {
-                // wtf, char not in database?
-                try {
-                    $mdb->insert("information", ['type' => 'characterID', 'id' => ((int) $charID), 'lastApiUpdate' => 0]);
-                } catch (Exception $exx) { }
-            }
+            try {
+                $mdb->insert("information", ['type' => 'characterID', 'id' => ((int) $charID), 'lastApiUpdate' => 0]);
+            } catch (Exception $exx) { }
             sleep(1);
             continue;
         }
     }
 
     $mdb->set("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'lastFetch' => ['$exists' => false]], ['lastFetch' => 0], true);
-    $row = $mdb->findDoc("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'corporationID' => ['$exists' => true]], ['lastFetch' => 1]);
+    $row = $mdb->findDoc("scopes", ['corporationID' => ['$exists' => true], 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['lastFetch' => 1]);
 
     if ($row == null) {
         sleep(3);

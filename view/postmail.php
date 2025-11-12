@@ -33,7 +33,7 @@ function handler($request, $response, $args, $container) {
                     $exists = $mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash]);
                     if (!$exists) {
                         $in = ['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => 'postmail.php', 'delay' => 0];
-                        $mdb->getCollection('crestmails')->save($in);
+                        $mdb->save('crestmails', $in);
                         $newCrest = true;
                     } else {
                         // update the delay to 0, manual posts always take priority
@@ -62,9 +62,7 @@ function handler($request, $response, $args, $container) {
                         } elseif ($crest['processed'] === null) {
                             Util::zout("$killID $hash failing, will keep trying");
                             $mdb->set('crestmails', ['killID' => $killID, 'hash' => $hash], ['processed' => false]);
-                            $error = '';
-                        } elseif (isset($crest['delayed'])) {
-                            $error = "This viewing of this killmail is delayed until " . $crest['delayed']->sec;
+                            $error = '';                        
                         } elseif ($redis->get("zkb:universeLoaded") == "false") {
                             $error = "The universe is currently being updated. Your killmail will be processed later.";
                         }

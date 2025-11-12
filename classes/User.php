@@ -7,21 +7,6 @@ class User
 		return (int) @$_SESSION['characterID'] != null;
 	}
 
-	public static function checkForLogin($app, $uri = '')
-	{
-		global $redis;
-
-		if (!User::isLoggedIn()) {
-			$sessID = session_id();
-			if ($uri != '') {
-				$redis->setex("forward:$sessID", 900, $uri);
-			}
-			$app->redirect('/ccpoauth2/', 302);
-			return false;
-		}
-		return true;
-	}
-
 	/**
 	 * @return array|null
 	 */

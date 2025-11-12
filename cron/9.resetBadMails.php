@@ -6,8 +6,15 @@ if (date('i') % 5 != 0) exit();
 
 Status::check('esi');
 $count = 0;
-$crest = $mdb->getCollection('crestmails')->find()->sort(['$natural' => -1]);
-foreach ($crest as $row) {
+
+// Get cursor instead of loading all documents into memory
+$collection = $mdb->getCollection('crestmails');
+$cursor = $collection->find([], [
+    'sort' => ['$natural' => -1],
+    'noCursorTimeout' => true
+]);
+
+foreach ($cursor as $row) {
     $killID = $row['killID'];
     if (isset($row['npcOnly'])) {
         continue;
@@ -25,3 +32,4 @@ foreach ($crest as $row) {
     $mdb->set('crestmails', ['killID' => $killID], ['processed' => false]);
     sleep(1);
 }
+

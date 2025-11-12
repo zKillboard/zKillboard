@@ -3,15 +3,8 @@
 function handler($request, $response, $args, $container) {
     global $mdb, $redis, $uri;
 
-    // Create mock app object for URI validation
-    $mockApp = new class {
-        public function notFound() {
-            throw new Exception('Not Found');
-        }
-    };
-
     try {
-        $params = URI::validate($mockApp, $uri, ['epoch' => false, 'type' => true, 'id' => true]);
+        $params = URI::validate($uri, ['epoch' => false, 'type' => true, 'id' => true]);
     } catch (Exception $e) {
         // If validation fails, return empty JSON result
         $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8');
