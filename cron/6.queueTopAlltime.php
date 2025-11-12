@@ -24,7 +24,7 @@ while ($minute == date("Hi")) {
         $i = $row['type'] . " " . $row['id'] . " : " . $row['shipsDestroyed'];
         $now = time();
         calcTop($row);
-        Util::out("calcTop $i -> " . (time() - $now) . " seconds");
+        //Util::out("calcTop $i -> " . (time() - $now) . " seconds");
     }
 }
 

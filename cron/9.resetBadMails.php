@@ -7,9 +7,9 @@ if (date('i') != 11) exit();
 Status::check('esi');
 $count = 0;
 
-// Get cursor instead of loading all documents into memory
+// Inspect the last 25k killmails added for issues
 $collection = $mdb->getCollection('crestmails');
-$cursor = $collection->find([], [
+$cursor = $collection->find(['processed' => true], [
     'sort' => ['$natural' => -1],
     'limit' => 25000,
     'noCursorTimeout' => true
