@@ -112,7 +112,7 @@ class AdvancedSearch
 
         $time = strtotime($val);
         if ($time > time()) {
-            $query[] = ['killID' => 0];
+			// no point in adding a filter for a future date
             return $query;
         }
 
