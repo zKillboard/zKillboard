@@ -60,7 +60,7 @@ function handler($request, $response, $args, $container) {
 		}
 		unset($queryParams['includeAssociates']);
 
-		$query = AdvancedSearch::buildQuery($queryParams, $query, "location");
+		$query = AdvancedSearch::buildQuery($queryParams, $query, "location", null, 'or');
 		$query = AdvancedSearch::parseDate($queryParams, $query, 'start');
 		$query = AdvancedSearch::parseDate($queryParams, $query, 'end');
 		$startTime = (int) @$query['start'];

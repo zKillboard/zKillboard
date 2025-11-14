@@ -196,9 +196,11 @@ function addEntity(suggestion, slot = 'neutrals') {
 		case 'systemID':
 		case 'constellationID':
 		case 'regionID':
-			asfilter.location.length = 0;
+			// Clear "All systems" placeholder if it exists
+			if ($("#location").html().trim() == "All systems") {
+				$("#location").html("");
+			}
 			asfilter.location.push(suggestion.data);
-			$("#location").html("");
 			add('location', suggestion);
 			break;
 		default:
@@ -529,7 +531,10 @@ function moveOut() {
 
 	parent.remove();
 
-	if (location == 'location' && $("#location").html() == "") $("#location").html('All systems');
+	// If location div is empty or only has whitespace, show "All systems" placeholder
+	if (location == 'location' && $("#location").html().trim() == "") {
+		$("#location").html('All systems');
+	}
 	clickPage1();
 }
 
