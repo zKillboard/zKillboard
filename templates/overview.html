@@ -289,8 +289,8 @@
 
 {% if pageType == 'overview' and extra.activity.max > 0 %}
 <div class="modal fade" id="heatmap">
-<div class="modal-dialog">
-<div class="modal-content" style='width: 650px;'>
+<div class="modal-dialog" style="width: 1000px; max-width: 90%;">
+<div class="modal-content">
 <div class="modal-header">
     <h4 class="modal-title">Activity Heatmap</h4>
 </div>
@@ -299,7 +299,7 @@
     {% if steps < 1 %}{% set steps = 1 %}{% endif %}
 
 
-<table>
+<table id='activity-heatmap' style='border-collapse: collapse;'>
         <tr>
             <td></td>
             {% for hour in 0..23 %}<td><center>{{ hour }}</center></td>{% endfor %}
@@ -314,7 +314,7 @@
                         {% set level = (extra.activity[day][hour] / steps)|round(0, 'ceil') %}
                         {% if level > 5 %}{% set level = 5 %}{% endif %}
                     {% endif %}
-                        <td><center><span style='color: white; width: 24px; height: 24px; background-color: hsla(0, 92%, {{ level * 10 }}%, 1); display: inline-block; margin: 0px; padding: 0px;'>{{ extra.activity[day][hour] }}</span></center></td>
+                        <td><center><span class="heatmap-square" style="--level: {{ level }};">{{ extra.activity[day][hour] }}</span></center></td>
                     {% endfor %}
             </tr>
  {% endfor %}

@@ -602,3 +602,22 @@ code {
 #itemsTable:has(#itemsDropped:not(:checked)) .item_row:has(.item_dropped) {
 	display: none;
 }
+
+.heatmap-square {
+	color: white;
+	width: 32px;
+	height: 24px;
+	display: inline-block;
+	margin: 0px;
+	padding: 0px;
+	background-color: hsla(0, 92%, calc(var(--level) * 10%), 1);
+}
+
+#activity-heatmap td {
+	padding: 0.2em;
+}
+
+.modal-content {
+	background-color: #111;
+	color: #ddd;
+}
