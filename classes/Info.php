@@ -592,6 +592,8 @@ class Info
             '183' => 'Mobile Depot Bay',
             '185' => "Infrastructure Hangar",
             '186' => "Moon Material Bay",
+            '187' => 'Capsuleeer Deliveries',
+            '188' => 'Expedition Hold'
             );
 
     /**
