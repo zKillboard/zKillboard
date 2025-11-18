@@ -5,8 +5,6 @@ use cvweiss\redistools\RedisTimeQueue;
 
 require_once "../init.php";
 
-$kvc = new KVCache($mdb, $redis);
-
 if ($redis->get("zkb:reinforced") == true) exit();
 if ($redis->get("zkb:noapi") == "true") exit();
 
@@ -45,6 +43,14 @@ while ($minute == date('Hi')) {
         continue;
     }
 
+	$iterationKey = "zkb:corp:iterated:$corpID";
+    $iterated = $redis->get($iterationKey);
+
+	if ($iterated === "true") {
+		sleep(1);
+		continue;
+	}
+
     $refreshToken = $row['refreshToken'];
     $accessToken = $sso->getAccessToken($refreshToken);
     if (is_array($accessToken)) {
@@ -54,26 +60,30 @@ while ($minute == date('Hi')) {
         }
     }
 
-    $iterated = $redis->get("zkb:corp:iterated:$corpID");
-
+    // Update lastFetch immediately to prevent re-processing if something fails
+    $mdb->set("scopes", $row, ['lastFetch' => $mdb->now()]);
     $page = 0;
     do {
         $page++;
+		
         $uri = "$esiServer/corporations/$corpID/killmails/recent/?page=$page";
+		Util::out("Iterating corp $corpID for killmails $page $uri");
         $killmails = $sso->doCall($uri, [], $accessToken);
+		
         $count = success(['row' => $row], $killmails, $uri);
         sleep(2);
-    } while ($count >= 1000 && $iterated !== "true");
+        
+        // Safety check: stop if count is not a valid number or exceeds reasonable limit
+        if (!is_int($count) || $page > 100) break;
+    } while ($count >= 1000);
 
-    if ($count != -1) {
-        $mdb->set("scopes", $row, ['lastFetch' => $mdb->now()]);
-        $redis->setex("esi-fetched:$corpID", 300, "true");
-        $redis->setex("zkb:corp:iterated:$corpID", 604800, "true");
+	// lastFetch already updated above
+	$redis->setex("esi-fetched:$corpID", 300, "true");
+	$redis->setex($iterationKey, 604800, "true");
 
-        if ($corpID > 1999999) {
-            $esiCorps->add(((int) $corpID));
-        }
-    }
+	if ($corpID > 1999999) {
+		$esiCorps->add(((int) $corpID));
+	}
 }
 
 function success($params, $content, $uri) 
@@ -91,7 +101,7 @@ function success($params, $content, $uri)
     $kills = $content == "" ? [] : json_decode($content, true);
     if (!is_array($kills)) {
         print_r($kills);
-        return;
+        return 0; // Return 0 to stop pagination
     }
     if (isset($kills['error'])) {
         switch ($kills['error']) {

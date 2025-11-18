@@ -15,14 +15,27 @@ $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, "https://zkillredisq.stream/listen.php?queueID=$listenRedisQID");
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+curl_setopt($ch, CURLOPT_TIMEOUT, 15); // RedisQ should answer within 10 seconds...
+curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10); // 10 second connection timeout
 
 $minute = date('Hi');
+
 while ($minute == date('Hi')) {
     $raw = curl_exec($ch);
+    
+    // Check for curl errors
+    if ($raw === false) {
+        $error = curl_error($ch);
+        Util::out("RedisQ curl error: $error");
+        exit();
+    }
+    
     $json = json_decode($raw, true);
     if (!isset($json['package'])) {
+        // Something's wrong, exit and try again later
         exit();
-    } // Something's wrong , exit and try again later
+    }
+    
     $killmail = $json['package'];
 
     $killID = (int) @$killmail['killID'];

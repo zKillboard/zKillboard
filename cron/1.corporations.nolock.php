@@ -83,18 +83,18 @@ function success($params, $content)
     $newKills = 0;
     $kills = $content == "" ? [] : json_decode($content, true);
     if (!is_array($kills)) {
-        print_r($kills);
+        Util::out("1.corporations invalid response for corp $corpID: " . substr($content, 0, 200));
         return;
     }
     if (isset($kills['error'])) {
         switch($kills['error']) {
             case "Character does not have required role(s)":
                 $mdb->remove("scopes", $row);
-                $redis->del("esi-fetched:" . $params['corpID'], 300, "true");
+                $redis->del("esi-fetched:" . $params['corpID']);
                 $esi->add($row['corporationID'], 1); // try others, if we have them
                 break;
             case "Unauthorized - Invalid token":
-                $redis->del("esi-fetched:" . $params['corpID'], 300, "true");
+                $redis->del("esi-fetched:" . $params['corpID']);
                 $esi->add($row['corporationID'], 35);
                 break;
             case "Character is not in the corporation":
