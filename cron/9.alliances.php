@@ -15,7 +15,6 @@ $currentSecond = "";
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     $row = $mdb->findDoc("information", ['type' => 'allianceID', 'id' => ['$gt' => 1]], ['lastApiUpdate' => 1]);
-    print_r($row);
     if ($row == null) {
         sleep(1);
         continue;
