@@ -52,7 +52,11 @@ $(document).ready(function() {
         statsboxUpdate({type: (entityType == 'label' ? entityType : entityType + "ID"), id: entityID});
     }
 
-    $(".datatable").DataTable();
+	try {
+		$(".datatable").DataTable();
+	} catch (e) {
+		console.error("Failed to initialize datatables:", e);
+	}
 
     // Prep comments, if the page has the function for them
     if (typeof prepComments === "function") prepComments();
