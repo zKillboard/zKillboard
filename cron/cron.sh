@@ -30,6 +30,6 @@ done
 for each in $(ls *.php | grep nolock | grep -v ^0); do
 	touch logs/$each.log
 	{
-		nice -n 19 php $each >> logs/$each.log 2>&1
+		nice -n 19 php $each >> logs/$each.log 2> >(php ../scratch/errlogger.php)
 	} &
 done
