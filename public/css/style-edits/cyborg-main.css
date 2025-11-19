@@ -1,9 +1,7 @@
 @media (min-width: 768px) {
 	body {
-		background-color: #000;
-		background-image: url("/img/Catalyst_4k_Clean.jpg");
-		background-size: 100% 100%;
-		background-attachment: fixed;
+		background: url(/img/Catalyst_4k_Clean.jpg) no-repeat center center fixed;
+		background-size: cover !important;
 	}
 }
 
