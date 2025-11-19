@@ -16,11 +16,11 @@ $invNames = null;
 
 $map = $mdb->getCollection('locations')->find();
 foreach ($map as $system) {
-    foreach ($system['locations'] as $row) {
+    foreach ($system['locations'] ?? [] as $row) {
         $name = $row['itemname'];
         if ($name == '') $name = @$names[$row['itemid']];
         if ($name == '') $name = "Location " . $row['itemid'];
-        $mdb->insertUpdate('information', ['type' => 'locationID', 'id' => (int) $row['itemid']], ['name' => $name]);
+        $mdb->insertUpdate('information', ['type' => 'locationID', 'id' => (int) $row['itemid']], ['name' => $name, 'typeID' => $row['typeid']]);
     }
 }
 

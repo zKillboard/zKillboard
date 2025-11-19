@@ -29,9 +29,9 @@
 		{% set imageSize = 128 %}
 		{% include 'components/image_region.html' %}
 	{% endif %}
-	{% if detail.itemID and key == 'location' %}
-		{% set imageSize = 64 %}
-		{% include 'components/image_item.html' %}
+	{% if key == 'location' %}
+		{% set imageSize = 128 %}
+		{% include 'components/image_item.html' %}		
 	{% endif %}
 </div>
 {% if detail.groupShips %}
