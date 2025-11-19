@@ -124,7 +124,8 @@ class Price
             case 44264:
                 return 0.01;
             case 88001:
-                return 10000000000;
+                if ($date <= "2025-06-01") return 10000000000;
+                break;
             case 45645: // Loggerhead
                 return 35000000000; // 35b
             case 87381: // Sarathiel
