@@ -46,6 +46,6 @@ function success($guzzler, $params, $content)
 
 function fail($guzzler, $params, $error)
 {
-    Log::log("Failed to fetch prices...");
+    Util::out("Failed to fetch prices...");
     exit();
 }

@@ -41,7 +41,6 @@ foreach ($iter as $row) {
 
             if ($type == 'characterID' || $type == 'corporationID' || $type == 'allianceID') {
                 $dqed = $mdb->findField("information", "disqualified", ['type' => $type, 'id' => $id]);
-if ($dqed === true) Log::log("DQ'ed: $type $id");
                 if ($dqed === true) continue;
             }
             if ($type == "corporationID" && $id <= 1999999) continue;

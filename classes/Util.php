@@ -781,7 +781,7 @@ class Util
 			$manager = $mdb->getManager();
 			$manager->executeBulkWrite($mdb->getDbName() . '.statistics', $bulk);
 		} catch (Exception $e) {
-			Log::log("Error batch updating ranks: " . $e->getMessage());
+			Util::out("Error batch updating ranks: " . $e->getMessage());
 		}
 	}
 

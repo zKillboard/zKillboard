@@ -77,7 +77,5 @@ function fail($guzzler, $params, $error)
 {
     global $esiServer;
 
-    Util::out("Fail " . $params['uri']);
-	print_r($error);
-	exit();
+    Util::out("Fail " . $params['uri'] . "\n" . print_r($error, true));
 }

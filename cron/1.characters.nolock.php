@@ -15,7 +15,6 @@ if ($redis->get("zkb:noapi") == "true") exit();
 $esiCorps = new RedisTimeQueue('tqCorpApiESI', 3600);
 $esi = new RedisTimeQueue('tqApiESI', 900);
 if ($mt == 0 && (date('i') == 22 || $esi->size() < 100)) {
-    //Log::log("populating tqApiESI: " . $esi->size());
     $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_killmails.v1']);
     foreach ($esis as $row) {
         $charID = $row['characterID'];

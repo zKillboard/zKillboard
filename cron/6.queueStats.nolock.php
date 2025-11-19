@@ -90,7 +90,7 @@ while ($minute == date('Hi')) {
                 $redis->srem("queueStatsSet", $raw);
             }
         } catch (Exception $ex) {
-            Log::log(print_r($ex, true));
+            Util::out(print_r($ex, true));
             throw $ex;
         } finally {
             if ($redis->ping() != 1) connectRedis();

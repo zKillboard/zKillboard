@@ -135,7 +135,6 @@ try {
             else $isPaddedKill = ($mdb->count("killmails", ['padhash' => $padhash]) >= 3);
 
             if ($isPaddedKill) {
-                //Log::log("Marking $killID as padding");
                 $redis->setex("zkb:padhash:$padhash", 86400, "true");
             }
         }

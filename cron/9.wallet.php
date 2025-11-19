@@ -66,7 +66,7 @@ function applyBalances()
 
         $multiplier = (date_format(date_create($date), "N") == 2) ? 2 : 1;
         if ($multiplier == 2) {
-            Log::log("ISK DOUBLED! \o/");
+            Util::out("ISK DOUBLED! \o/");
             $amount = $multiplier * $amount;
         }
 
