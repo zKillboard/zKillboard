@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f1d824892caa824d9a0a8ae250110120",
+    "content-hash": "ec89bea1a4c59fd01460858dc0ec9bbc",
     "packages": [
         {
             "name": "cvweiss/redistools",
@@ -41,83 +41,6 @@
                 "source": "https://github.com/cvweiss/redistools/tree/master"
             },
             "time": "2018-05-17T13:02:51+00:00"
-        },
-        {
-            "name": "cvweiss/zcache",
-            "version": "v0.1.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/cvweiss/zcache.git",
-                "reference": "f59dc70bd70e8eb4388d8ab6d3e1450a6bfbfacb"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/cvweiss/zcache/zipball/f59dc70bd70e8eb4388d8ab6d3e1450a6bfbfacb",
-                "reference": "f59dc70bd70e8eb4388d8ab6d3e1450a6bfbfacb",
-                "shasum": ""
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Unlicense"
-            ],
-            "authors": [
-                {
-                    "name": "Clinton Weiss",
-                    "email": "cvweiss@gmail.com"
-                }
-            ],
-            "description": "Library of classes to simplify caching",
-            "support": {
-                "issues": "https://github.com/cvweiss/zcache/issues",
-                "source": "https://github.com/cvweiss/zcache/tree/v0.1.5"
-            },
-            "time": "2018-05-15T22:01:27+00:00"
-        },
-        {
-            "name": "cvweiss/zlibrary",
-            "version": "v0.3.4.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/cvweiss/zlibrary.git",
-                "reference": "e5cf24ee2d91bd5bfd6642f19a887009c63e2b39"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/cvweiss/zlibrary/zipball/e5cf24ee2d91bd5bfd6642f19a887009c63e2b39",
-                "reference": "e5cf24ee2d91bd5bfd6642f19a887009c63e2b39",
-                "shasum": ""
-            },
-            "require": {
-                "cvweiss/zcache": "*"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Unlicense"
-            ],
-            "authors": [
-                {
-                    "name": "Clinton Weiss",
-                    "email": "cvweiss@gmail.com"
-                }
-            ],
-            "description": "Library of classes to simplify various tasks",
-            "support": {
-                "issues": "https://github.com/cvweiss/zlibrary/issues",
-                "source": "https://github.com/cvweiss/zlibrary/tree/master"
-            },
-            "time": "2018-03-03T16:31:19+00:00"
         },
         {
             "name": "erusev/parsedown",
@@ -2448,10 +2371,10 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": [],
+    "platform": {},
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }

@@ -1,7 +1,6 @@
 {
 	"require": {
 		"cvweiss/redistools": "v0.0.*",
-		"cvweiss/zlibrary": "*",
 		"slim/slim": "^4.0",
 		"slim/twig-view": "^3.0",
 		"slim/psr7": "^1.2",

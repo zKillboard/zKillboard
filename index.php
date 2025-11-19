@@ -31,7 +31,7 @@ if (strpos($uri, "/asearch") === false && strpos($uri, "/cache/") === false)  {
 
 // Include Init
 require_once 'init.php';
-$ip = IP::get();
+$ip = Util::getIP();
 $ipE = explode(',', $ip);
 $ip = $ipE[0];
 
