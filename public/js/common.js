@@ -508,8 +508,12 @@ function loadads() {
 var bottomad = null;
 function adblockloaded() {
     adnumber--;
-    if (adnumber <= 0) {
-        fusetag.loadSlots();
+	if (adnumber <= 0) {
+		if (typeof fusetag != "undefined") {
+			fusetag.loadSlots();
+		} else {
+			showAdblockedMessage();
+		}
     }
 }
 
