@@ -1,17 +1,11 @@
 @media (min-width: 768px) {
 	body {
 		background-color: #000;
-		/*background-image: url("/img/wallpapers/into_the_abyss.jpg");*/
-		/*background-image: url("/img/starbright_1.png");*/
-		/*background-image: url("/img/bg_cyborg_blueish.jpg");*/
-		/*background-image: url("/img/secretcyno.jpg");*/
-		background-image: url("/img/Sarathiel_bg.png");
-		-webkit-background-size: cover;
-		-moz-background-size: cover;
-		-o-background-size: cover;
+		background-image: url("/img/Catalyst_4k_Clean.jpg");
 		background-size: cover;
 		background-attachment: fixed;
 	}
+
 }
 
 
