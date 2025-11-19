@@ -3,9 +3,9 @@
 require_once '../init.php';
 
 $periods = [
-	'alltime' => 'killmails',
-	'recent' => 'ninetyDays',
 	'weekly' => 'oneWeek',
+	'recent' => 'ninetyDays',
+	'alltime' => 'killmails',
 ];
 
 $periodCache = [
@@ -33,13 +33,14 @@ foreach ($periods as $period => $collection) {
 	foreach ($types as $type => $field) {
 		if (date('Hi') !== $minute) break;
 
-		$redisKey = "zkb:{$period}RanksCalculated:{$type}abc";
+		$redisKey = "zkb:{$period}RanksCalculated:{$type}";
 		if ($redis->get($redisKey) != 'true') {
 			calculateRanks($period, $collection, $type, $field, false);
 			calculateRanks($period, $collection, $type, $field, true);
 
-			exit();
 			$redis->setex($redisKey, $periodCache[$period], 'true');
+
+			exit(); // process only one type per run
 		}
 	}
 }
@@ -48,7 +49,7 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 {
 	global $mdb;
 
-	status($period, $type, $solo, "determining id's");
+	status($period, $type, $solo, "starting");
 
 	$disqualified = $mdb->getCollection('information')->distinct('id', ['type' => $type, 'disqualified' => true]);
 	$filter = [];
@@ -59,7 +60,7 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 
 	if ($collection == 'killmails') {
 		// Iterate the type from statistics to get unique ids
-		$cursor = $mdb->getCollection('statistics')->find(['type' => $field, ($solo ? 'shipsDestroyedSolo' : 'shipsDestroyed') => ['$gt' => 10]], ['projection' => ['id' => 1]]);
+		$cursor = $mdb->getCollection('statistics')->find(['type' => $type, ($solo ? 'shipsDestroyedSolo' : 'shipsDestroyed') => ['$gt' => 10]], ['projection' => ['id' => 1]]);
 	} else {
 		// get the distincts
 		$cursor = $mdb->getCollection($collection)->distinct($field, $filter);
@@ -92,7 +93,7 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 		];
 	}
 
-	status($period, $type, $solo, 'applying ranks');
+	//status($period, $type, $solo, 'applying ranks');
 
 	$ranks = [];
 	$first = reset($entityStats);
@@ -111,7 +112,7 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 		}
 	}
 
-	status($period, $type, $solo, 'calculating efficiencies and overall rank');
+	//status($period, $type, $solo, 'calculating efficiencies and overall rank');
 	// Now calculate efficiencies and overall rank
 	foreach ($entityStats as $id => $stats) {
 		// Calculate efficiencies
@@ -133,7 +134,7 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 	}
 		
 	// Now bulk update the statistics collection with the new ranks
-	status($period, $type, $solo, 'bulk updating ranks');
+	//status($period, $type, $solo, 'bulk updating ranks');
 
 	$suffix = $solo ? '_solo' : '';
 	$fieldPrefix = "ranks.{$period}{$suffix}";
@@ -153,9 +154,6 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 		['$unset' => [$fieldPrefix => '']],
 		['multi' => true, 'upsert' => false]
 	);
-
-	print_r($ranks);
-	exit();
 
 	// Then set the new ranks
 	foreach ($ranks as $id => $rankData) {
