@@ -33,7 +33,7 @@ foreach ($periods as $period => $collection) {
 	foreach ($types as $type => $field) {
 		if (date('Hi') !== $minute) break;
 
-		$redisKey = "zkb:{$period}RanksCalculated:{$type}:011";
+		$redisKey = "zkb:{$period}RanksCalculated:{$type}:012";
 		if ($redis->get($redisKey) != 'true') {
 			$success = true;
 			$success = calculateRanks($period, $collection, $type, $field, false) && $success;
@@ -109,10 +109,14 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 	foreach ($first as $field => $value) {
 		uasort($entityStats, customSort($field));
 
-		$rank = 1;
+		$rank = 0;
+		$lastValue = PHP_INT_MAX;
 		foreach ($entityStats as $id => $entry) {
+			if ($entry[$field] < $lastValue) {
+				$rank++;
+				$lastValue = $entry[$field];
+			}
 			$ranks[$id][$field] = $rank;
-			$rank++;
 		}
 	}
 
@@ -131,10 +135,14 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 	}
 
 	uasort($entityStats, customSort("score"));
-	$rank = 1;
+	$rank = 0;
+	$lastValue = PHP_INT_MAX;
 	foreach ($entityStats as $id => $stats) {
+		if ($stats['score'] < $lastValue) {
+			$rank++;
+			$lastValue = $stats['score'];
+		}
 		$ranks[$id]['overall'] = $rank;
-		$rank++;
 	}
 		
 	// Now bulk update the statistics collection with the new ranks
