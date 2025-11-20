@@ -33,14 +33,18 @@ foreach ($periods as $period => $collection) {
 	foreach ($types as $type => $field) {
 		if (date('Hi') !== $minute) break;
 
-		$redisKey = "zkb:{$period}RanksCalculated:{$type}";
+		$redisKey = "zkb:{$period}RanksCalculated:{$type}:011";
 		if ($redis->get($redisKey) != 'true') {
-			calculateRanks($period, $collection, $type, $field, false);
-			calculateRanks($period, $collection, $type, $field, true);
+			$success = true;
+			$success = calculateRanks($period, $collection, $type, $field, false) && $success;
+			$success = calculateRanks($period, $collection, $type, $field, true) && $success;
 
-			$redis->setex($redisKey, $periodCache[$period], 'true');
-
-			exit(); // process only one type per run
+			if ($success) {
+				$redis->setex($redisKey, $periodCache[$period], 'true');
+			} else {
+				Util::out("Failed to calculate ranks for {$period} {$type}");
+				exit();
+			}
 		}
 	}
 }
@@ -148,6 +152,18 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 		['multi' => true]
 	);
 
+	// Store the stats the ranks are based on
+	foreach ($entityStats as $id => $stats) {
+		$filter = ['type' => $type, 'id' => $id];
+		$update = ['$set' => []];
+
+		foreach ($stats as $statKey => $statValue) {
+			$update['$set']["stats.{$period}{$suffix}.{$statKey}"] = $statValue;
+		}
+
+		$bulk->update($filter, $update, ['multi' => false, 'upsert' => false]);
+	}	
+
 	// Clear existing ranks for this type/period/solo combination
 	$bulk->update(
 		['type' => $type],
@@ -170,13 +186,45 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 		$bulk->update($filter, $update, ['multi' => false, 'upsert' => false]);
 	}
 
+	// add the overall rank to ranks_history based on today's date
+	$dateStr = date('Y-m-d');
+	$historyField = $solo ? "ranks_history.{$period}_solo" : "ranks_history.{$period}";
+	
+	foreach ($ranks as $id => $rankData) {
+		$filter = ['type' => $type, 'id' => $id];
+		
+		// Remove existing entry for today's date first to prevent duplicates
+		$bulk->update(
+			$filter,
+			['$pull' => [$historyField => ['date' => $dateStr]]],
+			['multi' => false, 'upsert' => false]
+		);
+		
+		// Then add today's rank
+		$update = ['$push' => []];
+		$update['$push'][$historyField] = ['date' => $dateStr, 'rank' => $rankData['overall']];
+		$bulk->update($filter, $update, ['multi' => false, 'upsert' => false]);
+	}
+
+	// clear any ranks history that are more than 7 days old (keep only last 7 days)
+	$cutoffDate = date('Y-m-d', strtotime('-7 days'));
+	$historyField = $solo ? "ranks_history.{$period}_solo" : "ranks_history.{$period}";
+	
+	$bulk->update(
+		['type' => $type, $historyField => ['$exists' => true]],
+		['$pull' => [$historyField => ['date' => ['$lt' => $cutoffDate]]]],
+		['multi' => true, 'upsert' => false]
+	);
+
 	try {
 		$client = $mdb->getClient();
 		$manager = $client->getManager();
 		$manager->executeBulkWrite('zkillboard.statistics', $bulk);
 		status($period, $type, $solo, 'completed');
+		return true;
 	} catch (Exception $e) {
 		Util::out('Error batch updating ranks: ' . $e->getMessage());
+		return false;
 	}
 }
 
