@@ -78,17 +78,11 @@ if (substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' ||
     session_start();
 }
 
-if ($isApiRequest || $uri == '/navbar/') {
-    $request = $isApiRequest ? new RedisTtlCounter('ttlc:apiRequests', 300) : new RedisTtlCounter('ttlc:nonApiRequests', 300);
-    $request->add(uniqid());
-    if ($uri == '/navbar/') {
-        $uvisitors = new RedisTtlCounter('ttlc:unique_visitors', 300);
-        $uvisitors->add($ip);
-    }
-}
-
-$visitors = new RedisTtlCounter('ttlc:visitors', 300);
-$visitors->add($ip);
+// Insert into visitor log without any write concern
+$n = $mdb->getCollection("visitorlog")->insertOne(
+	['ip' => $ip, 'uri' => $uri, 'api' => $isApiRequest, 'agent' => $agent, 'dttm' => $mdb->now()],
+	['writeConcern' => new MongoDB\Driver\WriteConcern(0)]
+);
 
 // Theme
 $theme = 'cyborg';
@@ -141,9 +135,6 @@ $errorMiddleware->setErrorHandler(
 
 // Load the routes - always keep at the bottom of the require list ;)
 include 'routes.php';
-
-// Just some local analytics
-include 'analyticsLoad.php';
 
 // Run the thing!
 $app->run();

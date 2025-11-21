@@ -78,12 +78,12 @@ $totalKills = $mdb->count("killmails");
 $topKillID = max(1, $mdb->findField('killmails', 'killID', [], ['killID' => -1]));
 addInfo('Total Kills (' . number_format(($totalKills / $topKillID) * 100, 1) . '%)', $totalKills);
 addInfo('Top killID', $topKillID);	addInfo('', 0);
-	$nonApiR = new RedisTtlCounter('ttlc:nonApiRequests', 300);
-	addInfo('Visitor page loads in last 5 minutes', $nonApiR->count());
-	$uniqueUsers = new RedisTtlCounter('ttlc:unique_visitors', 300);
-	addInfo("Visitors in last 5 minutes", $uniqueUsers->count());
-	$apiR = new RedisTtlCounter('ttlc:apiRequests', 300);
-	addInfo('API requests in last 5 minutes', $apiR->count());
+	$nonApiCount = $mdb->count('visitorlog', ['uri' => '/navbar/']);
+	addInfo('Visitor page loads in last 5 minutes', $nonApiCount);
+	$uniqueUsers = $mdb->getCollection('visitorlog')->distinct('ip', ['api' => false]);
+	addInfo("Visitors in last 5 minutes", count($uniqueUsers));
+	$apiCount = $mdb->count('visitorlog', ['api' => true]);
+	addInfo('API requests in last 5 minutes', $apiCount);
 
 	$ws = $redis->hgetall('zkb:websockets');
 	$total = 0;

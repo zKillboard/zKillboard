@@ -1278,3 +1278,24 @@ echo "Creating index : 'entryTime' => 1 ... ";
 $zlog->createIndex(['entryTime' => 1], ['expireAfterSeconds' => 7776000]);
 echo "Done\n";
 
+// visitorlog
+echo "\nCreating collection visitorlog ... ";
+$db->createCollection("visitorlog");
+$collection = "visitorlog";
+$visitorlog = $db->$collection;
+echo "Done\n";
+echo "Creating index : 'dttm' => 1 ... ";
+$visitorlog->createIndex(['dttm' => 1], ['expireAfterSeconds' => 300]);
+echo "Done\n";
+echo "Creating index : 'agent' => 1 ... ";
+$visitorlog->createIndex(['agent' => 1], []);
+echo "Done\n";
+echo "Creating index : 'ip' => 1 ... ";
+$visitorlog->createIndex(['ip' => 1], []);
+echo "Done\n";
+echo "Creating index : 'api' => 1 ... ";
+$visitorlog->createIndex(['api' => 1], []);
+echo "Done\n";
+echo "Creating index : 'uri' => 1 ... ";
+$visitorlog->createIndex(['uri' => 1], []);
+echo "Done\n";

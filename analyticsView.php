@@ -3,40 +3,46 @@
 require_once 'init.php';
 
 while (true) {
-    $agents = [];
-    $uris = [];
-    $ips = [];
-    for ($i = 0; $i <= 6; ++$i) {
-        $ts = floor((time() - ($i * 60)) / 60);
-        @addAll($agents, $redis->hGetAll("analytics:agent:$ts"));
-        @addAll($uris, $redis->hGetAll("analytics:uri:$ts"));
-        @addAll($ips, $redis->hGetAll("analytics:ip:$ts"));
-    }
+    // Get top IPs
+    $ipPipeline = [
+        ['$group' => ['_id' => '$ip', 'count' => ['$sum' => 1]]],
+        ['$sort' => ['count' => -1]],
+        ['$limit' => 10]
+    ];
+    $ips = iterator_to_array($mdb->getCollection('visitorlog')->aggregate($ipPipeline));
+    
+    // Get top URIs
+    $uriPipeline = [
+        ['$group' => ['_id' => '$uri', 'count' => ['$sum' => 1]]],
+        ['$sort' => ['count' => -1]],
+        ['$limit' => 10]
+    ];
+    $uris = iterator_to_array($mdb->getCollection('visitorlog')->aggregate($uriPipeline));
+    
+    // Get top user agents
+    $agentPipeline = [
+        ['$group' => ['_id' => '$agent', 'count' => ['$sum' => 1]]],
+        ['$sort' => ['count' => -1]],
+        ['$limit' => 10]
+    ];
+    $agents = iterator_to_array($mdb->getCollection('visitorlog')->aggregate($agentPipeline));
+    
     system('clear');
+    echo "Top IPs:\n";
     show10($ips);
+    echo "Top URIs:\n";
     show10($uris);
+    echo "Top User Agents:\n";
     show10($agents);
     sleep(5);
 }
 
-function addAll(&$array, &$map)
+function show10($results)
 {
-    foreach ($map as $k => $v) {
-        @$array[$k] += $v;
-    }
-}
-
-function show10(&$array)
-{
-    arsort($array);
-    $i = 10;
-    while (sizeof($array) > 10 && $i > 0) {
-        reset($array);
-        $key = key($array);
-        $value = $array[$key];
-        array_shift($array);
-        echo "$value $key\n";
-        --$i;
+    foreach ($results as $result) {
+        $count = $result['count'];
+        $value = $result['_id'];
+        echo "$count $value\n";
     }
     echo "\n";
 }
