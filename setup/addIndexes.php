@@ -1176,6 +1176,26 @@ echo "Creating index : 'type' => 1, 'shipsDestroyedSolo' => 1 ... ";
 $statistics->createIndex(['type' => 1, 'shipsDestroyedSolo' => 1], ['sparse' => true]);
 echo "Done\n";
 
+// Timestamp-based cleanup indexes - used by cron/9.ranks.php to remove stale ranks
+echo "Creating index : 'type' => 1, 'ranks.weekly.updated' => 1 ... ";
+$statistics->createIndex(['type' => 1, 'ranks.weekly.updated' => 1], ['sparse' => true]);
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'ranks.recent.updated' => 1 ... ";
+$statistics->createIndex(['type' => 1, 'ranks.recent.updated' => 1], ['sparse' => true]);
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'ranks.alltime.updated' => 1 ... ";
+$statistics->createIndex(['type' => 1, 'ranks.alltime.updated' => 1], ['sparse' => true]);
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'ranks.weekly_solo.updated' => 1 ... ";
+$statistics->createIndex(['type' => 1, 'ranks.weekly_solo.updated' => 1], ['sparse' => true]);
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'ranks.recent_solo.updated' => 1 ... ";
+$statistics->createIndex(['type' => 1, 'ranks.recent_solo.updated' => 1], ['sparse' => true]);
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'ranks.alltime_solo.updated' => 1 ... ";
+$statistics->createIndex(['type' => 1, 'ranks.alltime_solo.updated' => 1], ['sparse' => true]);
+echo "Done\n";
+
 // OLD INDEXES TO REMOVE LATER (once new system is verified stable):
 // - 'type' => 1, 'overallRank' => 1 (line 1049)
 // - 'overallRank' => 1 (line 1067)
