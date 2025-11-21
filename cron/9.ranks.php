@@ -128,17 +128,22 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 		$entityStats[$id]['iskEfficiency'] = ($stats['iskDestroyed'] + $stats['iskLost']) > 0 ? $stats['iskDestroyed'] / ($stats['iskDestroyed'] + $stats['iskLost']) : 0;
 		$entityStats[$id]['pointsEfficiency'] = ($stats['pointsDestroyed'] + $stats['pointsLost']) > 0 ? $stats['pointsDestroyed'] / ($stats['pointsDestroyed'] + $stats['pointsLost']) : 0;
 		
-		// Calculate overall score
+		// Calculate overall score (lower is better)
 		$avg = ceil(($ranks[$id]['shipsDestroyed'] + $ranks[$id]['iskDestroyed'] + $ranks[$id]['pointsDestroyed']) / 3);
 		$adjuster = (1 + $entityStats[$id]['shipsEfficiency'] + $entityStats[$id]['iskEfficiency'] + $entityStats[$id]['pointsEfficiency']) / 4;
 		$entityStats[$id]['score'] = ceil($avg / $adjuster);
 	}
 
-	uasort($entityStats, customSort("score"));
+	// Sort by score ascending (lower score = better rank)
+	uasort($entityStats, function ($a, $b) {
+		if ($a['score'] == $b['score']) return 0;
+		return ($a['score'] < $b['score']) ? -1 : 1;
+	});
+	
 	$rank = 0;
-	$lastValue = PHP_INT_MAX;
+	$lastValue = -1;
 	foreach ($entityStats as $id => $stats) {
-		if ($stats['score'] < $lastValue) {
+		if ($stats['score'] > $lastValue) {
 			$rank++;
 			$lastValue = $stats['score'];
 		}
