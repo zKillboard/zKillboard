@@ -96,8 +96,12 @@ class Price
         if ($datePrice > 0 && $datePrice < $avgPrice) $avgPrice = $datePrice;
 
         $redis->hSet($priceKey, $typeID, $avgPrice);
-        $redis->expire($priceKey, 86400);
-
+		// If date is within the last 3 days, set expiry to 1 day, otherwise set for 1 hour
+		if (strtotime($date) >= strtotime('-3 days')) {
+			$redis->expire($priceKey, 86400);
+		} else {
+			$redis->expire($priceKey, 3600);
+		}
         return $avgPrice;
     }
 
