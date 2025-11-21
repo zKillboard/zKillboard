@@ -54,7 +54,7 @@ class Info
                 break;
         }
 
-        $redis->setex($redisKey, 900, serialize($data));
+        $redis->setex($redisKey, 30, serialize($data));
 
         return $data;
     }
@@ -720,10 +720,10 @@ class Info
             if (!isset($row['dogma_attributes'])) break;
             $row = $row['dogma_attributes'][0];
             $p = $row['value'];
-            $redis->setex("zkb:dogma:$typeID:$attr_id", 3600, ($p == null ? "null" : $p));
+            $redis->setex("zkb:dogma:$typeID:$attr_id", 30, ($p == null ? "null" : $p));
             return $p;
         }
-        $redis->setex("zkb:dogma:$typeID:$attr_id", 3600, "null");
+        $redis->setex("zkb:dogma:$typeID:$attr_id", 30, "null");
         return null;
     }
 
