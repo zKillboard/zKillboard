@@ -34,17 +34,17 @@ function handler($request, $response, $args, $container) {
 
     $ret = [];
     $ret['s-a-sd'] = (int) @$array['shipsDestroyed'];
-    $ret['s-a-sd-r'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$type:shipsDestroyed", $id));
+    $ret['s-a-sd-r'] = Util::rankCheck(@$array['ranks']['alltime']['shipsDestroyed'] ?? 0);
     $ret['s-a-sl'] = (int) @$array['shipsLost'];
-    $ret['s-a-sl-r'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$type:shipsLost", $id));
+    $ret['s-a-sl-r'] = Util::rankCheck(@$array['ranks']['alltime']['shipsLost'] ?? 0);
     $ret['s-a-id'] = (int) @$array['iskDestroyed'];
-    $ret['s-a-id-r'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$type:iskDestroyed", $id));
+    $ret['s-a-id-r'] = Util::rankCheck(@$array['ranks']['alltime']['iskDestroyed'] ?? 0);
     $ret['s-a-il'] = (int) @$array['iskLost'];
-    $ret['s-a-il-r'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$type:iskLost", $id));
+    $ret['s-a-il-r'] = Util::rankCheck(@$array['ranks']['alltime']['iskLost'] ?? 0);
     $ret['s-a-pd'] = (int) @$array['pointsDestroyed'];
-    $ret['s-a-pd-r'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$type:pointsDestroyed", $id));
+    $ret['s-a-pd-r'] = Util::rankCheck(@$array['ranks']['alltime']['pointsDestroyed'] ?? 0);
     $ret['s-a-pl'] = (int) @$array['pointsLost'];
-    $ret['s-a-pl-r'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$type:pointsLost", $id));
+    $ret['s-a-pl-r'] = Util::rankCheck(@$array['ranks']['alltime']['pointsLost'] ?? 0);
 
     $ret['s-a-s-e'] = eff($ret['s-a-sd'], $ret['s-a-sl']);
     $ret['s-a-i-e'] = eff($ret['s-a-id'], $ret['s-a-il']);

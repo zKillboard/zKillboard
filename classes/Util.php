@@ -568,7 +568,9 @@ class Util
 
 	public static function rankCheck($rank)
 	{
-		return $rank === false || $rank === null ? '-' : (1 + (int) $rank);
+		// MongoDB ranks are 1-based, so no need to add 1
+		// Return '-' for invalid/missing ranks (0, false, null)
+		return $rank === false || $rank === null || $rank === 0 ? '-' : (int) $rank;
 	}
 
 	public static function get3dDistance($position, $locationID, $solarSystemID = 0)
@@ -746,128 +748,6 @@ class Util
 		}
 	}
 
-	/**
-	 * Batch update ranks in MongoDB
-	 * @param array $ranks Array of ranks to update
-	 * @param string $period 'alltime', 'recent', or 'weekly'
-	 * @param bool $solo Whether to update solo ranks
-	 */
-	public static function batchUpdateRanks($ranks, $period, $solo = false)
-	{
-		global $mdb;
-		
-		if (empty($ranks)) return;
-		
-		$suffix = $solo ? 'Solo' : '';
-		$fieldPrefix = "ranks{$suffix}." . ucfirst($period);
-		
-		$bulk = new MongoDB\Driver\BulkWrite(['ordered' => false]);
-		
-		foreach ($ranks as $rank) {
-			$filter = ['type' => $rank['type'], 'id' => $rank['id']];
-			$update = ['$set' => []];
-			
-			foreach ($rank['ranks'] as $statKey => $statValue) {
-				$update['$set']["{$fieldPrefix}.{$statKey}"] = $statValue;
-			}
-			
-			// Set last updated timestamp for this period
-			$update['$set']["{$fieldPrefix}.updated"] = time();
-			
-			$bulk->update($filter, $update, ['multi' => false, 'upsert' => false]);
-		}
-		
-		try {
-			$manager = $mdb->getManager();
-			$manager->executeBulkWrite($mdb->getDbName() . '.statistics', $bulk);
-		} catch (Exception $e) {
-			Util::out("Error batch updating ranks: " . $e->getMessage());
-		}
-	}
-
-	/**
-	 * Get rank from MongoDB statistics, with Redis fallback
-	 * @param string $type Entity type (characterID, corporationID, etc.)
-	 * @param int $id Entity ID
-	 * @param string $period 'alltime', 'recent', or 'weekly'
-	 * @param string $statKey Stat key (e.g., 'shipsDestroyed', 'overall')
-	 * @param bool $solo Whether to get solo rank
-	 * @return int The rank, or 0 if not found
-	 */
-	public static function getRankFromMongo($type, $id, $period, $statKey, $solo = false)
-	{
-		global $mdb, $redis;
-		
-		$suffix = $solo ? 'Solo' : '';
-		$fieldPrefix = "ranks{$suffix}." . ucfirst($period);
-		$fieldPath = "{$fieldPrefix}.{$statKey}";
-		
-		// Try MongoDB first
-		$stats = $mdb->findDoc('statistics', ['type' => $type, 'id' => (int) $id], [$fieldPath => 1]);
-		
-		if ($stats && isset($stats['ranks' . $suffix][ucfirst($period)][$statKey])) {
-			return (int) $stats['ranks' . $suffix][ucfirst($period)][$statKey];
-		}
-		
-		// Fallback to Redis for backward compatibility
-		$redisKey = $solo ? "tq:ranks:{$period}:solo:{$type}" : "tq:ranks:{$period}:{$type}";
-		if ($statKey === 'overall') {
-			$rank = $redis->zRank($redisKey, $id);
-		} else {
-			$rank = $redis->zRevRank("{$redisKey}:{$statKey}", $id);
-		}
-		
-		return self::rankCheck(0, $rank);
-	}
-
-	/**
-	 * Calculate and assign ranks for a list of entities
-	 * @param array $entities Array of entities with stat values
-	 * @param array $statsToRank List of stat keys to rank
-	 * @return array Ranked stats keyed by entity ID
-	 */
-	public static function calculateRanks($entities, $statsToRank = ['shipsDestroyed', 'shipsLost', 'iskDestroyed', 'iskLost', 'pointsDestroyed', 'pointsLost'])
-	{
-		$rankedStats = [];
-		
-		// Rank each stat category
-		foreach ($statsToRank as $stat) {
-			usort($entities, function($a, $b) use ($stat) {
-				return $b[$stat] <=> $a[$stat];
-			});
-			
-			$rank = 1;
-			foreach ($entities as $entity) {
-				$rankedStats[$entity['id']][$stat] = $rank++;
-			}
-		}
-		
-		// Calculate overall rank using efficiency-weighted average
-		$overallScores = [];
-		foreach ($entities as $entity) {
-			$id = $entity['id'];
-			
-			if ($entity['iskDestroyed'] == 0) continue;
-			
-			$shipsEff = $entity['shipsDestroyed'] / max(1, $entity['shipsDestroyed'] + $entity['shipsLost']);
-			$iskEff = $entity['iskDestroyed'] / max(1, $entity['iskDestroyed'] + $entity['iskLost']);
-			$pointsEff = $entity['pointsDestroyed'] / max(1, $entity['pointsDestroyed'] + $entity['pointsLost']);
-			
-			$avg = ceil(($rankedStats[$id]['shipsDestroyed'] + $rankedStats[$id]['iskDestroyed'] + $rankedStats[$id]['pointsDestroyed']) / 3);
-			$adjuster = (1 + $shipsEff + $iskEff + $pointsEff) / 4;
-			$overallScores[$id] = ceil($avg / $adjuster);
-		}
-		
-		asort($overallScores);
-		$overallRank = 1;
-		foreach ($overallScores as $id => $score) {
-			$rankedStats[$id]['overall'] = $overallRank++;
-		}
-		
-		return $rankedStats;
-	}
-
-	
 	/**
 	 * Get the user's IP address, accounting for proxies and CloudFlare
 	 *

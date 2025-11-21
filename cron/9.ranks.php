@@ -33,7 +33,7 @@ foreach ($periods as $period => $collection) {
 	foreach ($types as $type => $field) {
 		if (date('Hi') !== $minute) break;
 
-		$redisKey = "zkb:{$period}RanksCalculated:{$type}:012";
+		$redisKey = "zkb:{$period}RanksCalculated:{$type}";
 		if ($redis->get($redisKey) != 'true') {
 			$success = true;
 			$success = calculateRanks($period, $collection, $type, $field, false) && $success;

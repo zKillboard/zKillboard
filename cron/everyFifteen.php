@@ -64,23 +64,42 @@ $redis->set("tobefetched", $mdb->count("crestmails", ['processed' => false]));
 
 function getTop($title, $type)
 {
-    global $redis;
+    global $redis, $mdb;
 
     $key = "zkb:Cache:$title:$type";
     $retVal = [];
 
-    $ids = $redis->zRange("tq:ranks:weekly:$type", 0, 20);
-    if (sizeof($ids) == 0) {
+    // Get top 20 by weekly overall rank from MongoDB
+    $cursor = $mdb->getCollection('statistics')->find(
+        [
+            'type' => $type,
+            'ranks.weekly.overall' => ['$exists' => true]
+        ],
+        [
+            'sort' => ['ranks.weekly.overall' => -1],
+            'limit' => 20,
+            'projection' => ['id' => 1, 'stats.weekly.shipsDestroyed' => 1]
+        ]
+    );
+    
+    foreach ($cursor as $row) {
+        if (sizeof($retVal) >= 10) break;
+        $id = $row['id'];
+        if ($type == "corporationID" && $id <= 1999999) continue;
+        
+        $kills = isset($row['stats']['weekly']['shipsDestroyed']) ? $row['stats']['weekly']['shipsDestroyed'] : 0;
+        $retVal[] = [$type => $id, 'kills' => $kills];
+    }
+    
+    if (sizeof($retVal) == 0) {
         return [];
     }
-    foreach ($ids as $id) {
-        if (sizeof($retVal) >= 10) break;
-        if ($type == "corporationID" && $id <= 1999999) continue;
-        $retVal[] = [$type => $id, 'kills' => $redis->zScore("tq:ranks:weekly:$type:shipsDestroyed", $id), 'score' => $redis->zScore("tq:ranks:weekly:$type", $id)];
-    }
+    
     Info::addInfo($retVal);
     $retVal = ['type' => str_replace('ID', '', $type), 'title' => $title, 'values' => $retVal];
     $redis->set($key, json_encode($retVal));
+    print_r($retVal);
+    exit();
 
     return $retVal;
 }
