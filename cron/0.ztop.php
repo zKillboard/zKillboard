@@ -80,7 +80,7 @@ addInfo('Total Kills (' . number_format(($totalKills / $topKillID) * 100, 1) . '
 addInfo('Top killID', $topKillID);	addInfo('', 0);
 	$nonApiCount = $mdb->count('visitorlog', ['uri' => '/navbar/']);
 	addInfo('Visitor page loads in last 5 minutes', $nonApiCount);
-	$uniqueUsers = $mdb->getCollection('visitorlog')->distinct('ip', ['api' => false]);
+	$uniqueUsers = $mdb->getCollection('visitorlog')->distinct('ip', ['uri' => '/navbar/']);
 	addInfo("Visitors in last 5 minutes", count($uniqueUsers));
 	$apiCount = $mdb->count('visitorlog', ['api' => true]);
 	addInfo('API requests in last 5 minutes', $apiCount);
