@@ -23,7 +23,7 @@ function handler($request, $response, $args, $container) {
         if ($id > 0) {
             return $response->withStatus(302)->withHeader('Location', "/$key/$id/");
         }
-        return $response->withStatus(302)->withHeader('Location', "./../");
+        return $response->withStatus(404);
     }
 
     if (strlen("$id") > 11) {
