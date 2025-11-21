@@ -1124,6 +1124,71 @@ echo "Creating index : 'weeklyPrep' => 1 ... ";
 $statistics->createIndex(['weeklyPrep' => 1], ['sparse' => true]);
 echo "Done\n";
 
+// NEW INDEXES FOR NESTED RANK STRUCTURE (added during ranks system migration)
+// These support the new MongoDB-based ranking system introduced in cron/9.ranks.php
+// Old *Rank field indexes (marked below) should be removed once system is stable
+
+// Core lookup index - used by overview.php getRank() and getStat()
+echo "Creating index : 'type' => 1, 'id' => 1, 'ranks' => 1 ... ";
+$statistics->createIndex(['type' => 1, 'id' => 1, 'ranks' => 1], ['sparse' => true]);
+echo "Done\n";
+
+// Pagination indexes - used by typeRanks.php and everyFifteen.php getTop()
+echo "Creating index : 'type' => 1, 'ranks.weekly.overall' => 1 ... ";
+$statistics->createIndex(['type' => 1, 'ranks.weekly.overall' => 1], ['sparse' => true]);
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'ranks.recent.overall' => 1 ... ";
+$statistics->createIndex(['type' => 1, 'ranks.recent.overall' => 1], ['sparse' => true]);
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'ranks.alltime.overall' => 1 ... ";
+$statistics->createIndex(['type' => 1, 'ranks.alltime.overall' => 1], ['sparse' => true]);
+echo "Done\n";
+
+// History lookup index - used by overview.php for rank change display
+echo "Creating index : 'type' => 1, 'id' => 1, 'ranks_history' => 1 ... ";
+$statistics->createIndex(['type' => 1, 'id' => 1, 'ranks_history' => 1], ['sparse' => true]);
+echo "Done\n";
+
+// Compound indexes for nearby ranks - used by overview.php getNearbyRanks()
+echo "Creating index : 'type' => 1, 'ranks.weekly.overall' => 1, 'stats.weekly.overall' => 1 ... ";
+$statistics->createIndex(['type' => 1, 'ranks.weekly.overall' => 1, 'stats.weekly.overall' => 1], ['sparse' => true]);
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'ranks.recent.overall' => 1, 'stats.recent.overall' => 1 ... ";
+$statistics->createIndex(['type' => 1, 'ranks.recent.overall' => 1, 'stats.recent.overall' => 1], ['sparse' => true]);
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'ranks.alltime.overall' => 1, 'stats.alltime.overall' => 1 ... ";
+$statistics->createIndex(['type' => 1, 'ranks.alltime.overall' => 1, 'stats.alltime.overall' => 1], ['sparse' => true]);
+echo "Done\n";
+
+// Solo rank pagination indexes - used for solo rankings display
+echo "Creating index : 'type' => 1, 'ranks.weekly_solo.overall' => 1 ... ";
+$statistics->createIndex(['type' => 1, 'ranks.weekly_solo.overall' => 1], ['sparse' => true]);
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'ranks.recent_solo.overall' => 1 ... ";
+$statistics->createIndex(['type' => 1, 'ranks.recent_solo.overall' => 1], ['sparse' => true]);
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'ranks.alltime_solo.overall' => 1 ... ";
+$statistics->createIndex(['type' => 1, 'ranks.alltime_solo.overall' => 1], ['sparse' => true]);
+echo "Done\n";
+
+// OLD INDEXES TO REMOVE LATER (once new system is verified stable):
+// - 'type' => 1, 'overallRank' => 1 (line 1049)
+// - 'overallRank' => 1 (line 1067)
+// - 'type' => 1, 'shipsDestroyedRank' => 1 (line 1043)
+// - 'type' => 1, 'iskDestroyedRank' => 1 (line 1091)
+// - 'type' => 1, 'iskLostRank' => 1 (line 1031)
+// - 'type' => 1, 'pointsDestroyedRank' => 1 (line 1117)
+// - 'type' => 1, 'pointsLostRank' => 1 (line 997)
+// - 'type' => 1, 'shipsLostRank' => 1 (line 1113)
+// - 'type' => 1, 'recentOverallRank' => 1 (line 1037)
+// - 'type' => 1, 'recentShipsDestroyedRank' => 1 (line 1095)
+// - 'type' => 1, 'recentShipsLostRank' => 1 (line 1085)
+// - 'type' => 1, 'recentIskDestroyedRank' => 1 (line 1101)
+// - 'type' => 1, 'recentIskLostRank' => 1 (line 1107)
+// - 'type' => 1, 'recentPointsDestroyedRank' => 1 (line 1033)
+// - 'type' => 1, 'recentPointsLostRank' => 1 (line 1055)
+// These flat field indexes are no longer used by the new nested rank structure
+
 // statstest
 echo "\nCreating collection statstest ... ";
 $db->createCollection("statstest");
