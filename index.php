@@ -13,17 +13,18 @@ if ($uri == "/kill/-1/") return header("Location: /keepstar1.html");
 $first7 = substr($uri, 0, 7);
 if (strpos($uri, "/asearch") === false && strpos($uri, "/cache/") === false)  {
     // Check to ensure we have a trailing slash, helps with caching
+    $trailingSlashExceptions = ['ccpcallback', 'patreon', 'brsave', 'ccp', 'related/', '.js', '.jpg', '.png', '.css', '.json', '.xml', '.txt', '.ico'];
     $needsTrailingSlash = substr($uri, -1) != '/';
-	if ($needsTrailingSlash === false) {
-	    $trailingSlashExceptions = ['ccpcallback', 'patreon', 'brsave', 'ccp', 'related', '.js', '.jpg', '.png', '.css', '.json', '.xml', '.txt', '.ico'];
-		// Check for exceptions
-		foreach ($trailingSlashExceptions as $exception) {
-			if (strpos($uri, $exception) !== false) {
-				$needsTrailingSlash = false;
-				break;
-			}
-		}
-	}
+    
+    // Check for exceptions
+    if ($needsTrailingSlash) {
+        foreach ($trailingSlashExceptions as $exception) {
+            if (strpos($uri, $exception) !== false) {
+                $needsTrailingSlash = false;
+                break;
+            }
+        }
+    }
     
     if ($needsTrailingSlash) {
         header('Access-Control-Allow-Origin: *');
