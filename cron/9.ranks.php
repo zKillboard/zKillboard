@@ -33,11 +33,12 @@ foreach ($periods as $period => $collection) {
 	foreach ($types as $type => $field) {
 		if (date('Hi') !== $minute) break;
 
-		$redisKey = "zkb:{$period}RanksCalculated:{$type}";
+		$redisKey = "zkb:{$period}RanksCalculated:{$type}a";
 		if ($redis->get($redisKey) != 'true') {
-			$success = true;
-			$success = calculateRanks($period, $collection, $type, $field, false) && $success;
-			$success = calculateRanks($period, $collection, $type, $field, true) && $success;
+			$success = calculateRanks($period, $collection, $type, $field, false);
+            if ($success) {
+    			$success = calculateRanks($period, $collection, $type, $field, true);
+            }
 
 			if ($success) {
 				$redis->setex($redisKey, $periodCache[$period], 'true');
@@ -55,7 +56,7 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 
 	status($period, $type, $solo, "starting");
 
-	$disqualified = $mdb->getCollection('information')->distinct('id', ['type' => $type, 'disqualified' => true]);
+	$disqualified = array_flip($mdb->getCollection('information')->distinct('id', ['type' => $type, 'disqualified' => true]));
 	$filter = [];
 	if ($type != 'label') $filter['labels'] = 'pvp';
 	if ($solo) $filter['solo'] = true;
@@ -81,7 +82,8 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 		$id = $row['id'];
 
 		// Is this $id disqualified?
-		if (in_array($id, $disqualified) || ($type == 'corporationID' && $id <= 1999999)) continue;
+        if (isset($disqualified[$id])) continue;
+		if ($type == 'corporationID' && $id <= 1999999) continue;
 
 		$kills = getStats($type, $id, false, $collection, $solo);
 		$losses = getStats($type, $id, true, $collection, $solo);
