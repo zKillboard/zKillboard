@@ -69,8 +69,12 @@ function handler($request, $response, $args, $container) {
         $id = $doc['id'];
         $rankData = $doc['ranks'][$period . $suffix] ?? [];
         $statData = $doc['stats'][$period . $suffix] ?? [];
+
+		$name = $mdb->findField('information', 'name', ['type' => $entityType == "shipTypeID" ? "typeID" : $entityType, 'id' => $id]);
         
         $row = [$entityType => $id];
+		$nameField = $type == "shipType" ? "ship" : $type;
+		$row["{$nameField}Name"] = $name;
         $row['overallRank'] = Util::rankCheck($rankData['overall'] ?? 0);
         
         $row['shipsDestroyed'] = $statData['shipsDestroyed'] ?? 0;
@@ -103,8 +107,6 @@ function handler($request, $response, $args, $container) {
     
     $hasMore = ($count > $pageSize) ? 'y' : 'n';
     $ranks[] = array('type' => $type, 'data' => $result, 'name' => $names[$type]);
-
-    Info::addInfo($ranks);
 
     return $container->get('view')->render($response, 'typeRanks.html', ['ranks' => $ranks, 'pageTitle' => $pageTitle, 'type' => str_replace("ID", "", $entityType), 'epoch' => $period, 'subType' => substr($subType, 0, 1), 'solo' => $solo, 'page' => $page, 'hasMore' => $hasMore]);
 }
