@@ -100,6 +100,9 @@ function success($params, $content)
             case "Character is not in the corporation":
                 $mdb->set("information", ['type' => 'characterID', 'id' => (int) $charID], ['lastAffUpdate' => $mdb->now(-86400 * 30)]);
                 break;
+            case "Timeout contacting tranquility":
+                Util::out("1.corporations.php - Timeout contacting tranquility");
+                break;
             default:
                 // Something went wrong, reset it and try again later
                 Util::out("1.corporations error - \n" . print_r($row, true) . "\n" . print_r($kills, true));
