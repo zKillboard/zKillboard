@@ -70,7 +70,7 @@ function handler($request, $response, $args, $container) {
         $rankData = $doc['ranks'][$period . $suffix] ?? [];
         $statData = $doc['stats'][$period . $suffix] ?? [];
 
-		$name = $mdb->findField('information', 'name', ['type' => $entityType == "shipTypeID" ? "typeID" : $entityType, 'id' => $id]);
+		$name = $mdb->findField('information', 'name', ['cacheTime' => 300, 'type' => $entityType == "shipTypeID" ? "typeID" : $entityType, 'id' => $id]);
         
         $row = [$entityType => $id];
 		$nameField = $type == "shipType" ? "ship" : $type;
