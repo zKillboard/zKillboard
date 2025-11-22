@@ -21,7 +21,6 @@ $types = [
 	'characterID' => 'involved.characterID',
 	'shipTypeID' => 'involved.shipTypeID',
 	'groupID' => 'involved.groupID',
-
 	'locationID' => 'zkb.locationID',
 	'solarSystemID' => 'system.solarSystemID',
 	'constellationID' => 'system.constellationID',
@@ -31,14 +30,15 @@ $types = [
 $minute = date('Hi');
 foreach ($periods as $period => $collection) {
 	foreach ($types as $type => $field) {
-		if (date('Hi') !== $minute) break;
+		if (date('Hi') !== $minute)
+			break;
 
-		$redisKey = "zkb:{$period}RanksCalculated:{$type}a";
+		$redisKey = "zkb:{$period}RanksCalculated:{$type}0a0";
 		if ($redis->get($redisKey) != 'true') {
 			$success = calculateRanks($period, $collection, $type, $field, false);
-            if ($success) {
-    			$success = calculateRanks($period, $collection, $type, $field, true);
-            }
+			if ($success) {
+				$success = calculateRanks($period, $collection, $type, $field, true);
+			}
 
 			if ($success) {
 				$redis->setex($redisKey, $periodCache[$period], 'true');
@@ -54,18 +54,35 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 {
 	global $mdb;
 
-	status($period, $type, $solo, "starting");
+	status($period, $type, $solo, 'starting');
 
 	$disqualified = array_flip($mdb->getCollection('information')->distinct('id', ['type' => $type, 'disqualified' => true]));
 	$filter = [];
-	if ($type != 'label') $filter['labels'] = 'pvp';
-	if ($solo) $filter['solo'] = true;
+	if ($type != 'label')
+		$filter['labels'] = 'pvp';
+	if ($solo)
+		$filter['solo'] = true;
 
 	$cursor = null;
 
 	if ($collection == 'killmails') {
-		// Iterate the type from statistics to get unique ids
-		$cursor = $mdb->getCollection('statistics')->find(['type' => $type, ($solo ? 'shipsDestroyedSolo' : 'shipsDestroyed') => ['$gt' => 10]], ['projection' => ['id' => 1]]);
+		// Iterate the type from statistics with all needed fields
+		$statFields = [
+			'shipsDestroyed' => $solo ? 'shipsDestroyedSolo' : 'shipsDestroyed',
+			'shipsLost' => $solo ? 'shipsLostSolo' : 'shipsLost',
+			'iskDestroyed' => $solo ? 'iskDestroyedSolo' : 'iskDestroyed',
+			'iskLost' => $solo ? 'iskLostSolo' : 'iskLost',
+			'pointsDestroyed' => $solo ? 'pointsDestroyedSolo' : 'pointsDestroyed',
+			'pointsLost' => $solo ? 'pointsLostSolo' : 'pointsLost',
+		];
+		$projection = ['id' => 1];
+		foreach ($statFields as $dbField) {
+			$projection[$dbField] = 1;
+		}
+		$cursor = $mdb->getCollection('statistics')->find(
+			['type' => $type, $statFields['shipsDestroyed'] => ['$gte' => 10]],
+			['projection' => $projection]
+		);
 	} else {
 		// get the distincts
 		$cursor = $mdb->getCollection($collection)->distinct($field, $filter);
@@ -77,37 +94,62 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 
 	$entityStats = [];
 
+	// Used for alltime killmails to map stats fields
+	$statFields = [
+		'shipsDestroyed' => $solo ? 'shipsDestroyedSolo' : 'shipsDestroyed',
+		'shipsLost' => $solo ? 'shipsLostSolo' : 'shipsLost',
+		'iskDestroyed' => $solo ? 'iskDestroyedSolo' : 'iskDestroyed',
+		'iskLost' => $solo ? 'iskLostSolo' : 'iskLost',
+		'pointsDestroyed' => $solo ? 'pointsDestroyedSolo' : 'pointsDestroyed',
+		'pointsLost' => $solo ? 'pointsLostSolo' : 'pointsLost',
+	];
+
 	// Iterate the cursor
 	foreach ($cursor as $row) {
 		$id = $row['id'];
 
 		// Is this $id disqualified?
-        if (isset($disqualified[$id])) continue;
-		if ($type == 'corporationID' && $id <= 1999999) continue;
+		if (isset($disqualified[$id]))
+			continue;
+		if ($type == 'corporationID' && $id <= 1999999)
+			continue;
 
-		$kills = getStats($type, $id, false, $collection, $solo);
-		$losses = getStats($type, $id, true, $collection, $solo);
-		if ($kills['killIDCount'] + $losses['killIDCount'] == 0) continue;
+		if ($collection == 'killmails') {
+			// Use data already fetched from statistics cursor
+			$entityStats[$id] = [
+				'shipsDestroyed' => (int) @$row[$statFields['shipsDestroyed']],
+				'shipsLost' => (int) @$row[$statFields['shipsLost']],
+				'iskDestroyed' => (int) @$row[$statFields['iskDestroyed']],
+				'iskLost' => (int) @$row[$statFields['iskLost']],
+				'pointsDestroyed' => (int) @$row[$statFields['pointsDestroyed']],
+				'pointsLost' => (int) @$row[$statFields['pointsLost']],
+			];
+		} else {
+			$kills = getStats($type, $id, false, $collection, $solo);
+			$losses = getStats($type, $id, true, $collection, $solo);
+			if ($kills['killIDCount'] + $losses['killIDCount'] == 0)
+				continue;
 
-		$entityStats[$id] = [
-			'shipsDestroyed' => $kills['killIDCount'],
-			'shipsLost' => $losses['killIDCount'],
-			'iskDestroyed' => $kills['zkb_totalValueSum'],
-			'iskLost' => $losses['zkb_totalValueSum'],
-			'pointsDestroyed' => $kills['zkb_pointsSum'],
-			'pointsLost' => $losses['zkb_pointsSum'],
-		];
+			$entityStats[$id] = [
+				'shipsDestroyed' => $kills['killIDCount'],
+				'shipsLost' => $losses['killIDCount'],
+				'iskDestroyed' => $kills['zkb_totalValueSum'],
+				'iskLost' => $losses['zkb_totalValueSum'],
+				'pointsDestroyed' => $kills['zkb_pointsSum'],
+				'pointsLost' => $losses['zkb_pointsSum'],
+			];
+		}
 	}
 
-	//status($period, $type, $solo, 'applying ranks');
+	// status($period, $type, $solo, 'applying ranks');
 
 	$ranks = [];
 	$first = reset($entityStats);
 	if ($first === false || empty($entityStats)) {
 		status($period, $type, $solo, 'no entities to rank, skipping');
-		return;
+		return true;
 	}
-	
+
 	foreach ($first as $field => $value) {
 		uasort($entityStats, customSort($field));
 
@@ -122,14 +164,14 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 		}
 	}
 
-	//status($period, $type, $solo, 'calculating efficiencies and overall rank');
+	// status($period, $type, $solo, 'calculating efficiencies and overall rank');
 	// Now calculate efficiencies and overall rank
 	foreach ($entityStats as $id => $stats) {
 		// Calculate efficiencies
 		$entityStats[$id]['shipsEfficiency'] = ($stats['shipsDestroyed'] + $stats['shipsLost']) > 0 ? $stats['shipsDestroyed'] / ($stats['shipsDestroyed'] + $stats['shipsLost']) : 0;
 		$entityStats[$id]['iskEfficiency'] = ($stats['iskDestroyed'] + $stats['iskLost']) > 0 ? $stats['iskDestroyed'] / ($stats['iskDestroyed'] + $stats['iskLost']) : 0;
 		$entityStats[$id]['pointsEfficiency'] = ($stats['pointsDestroyed'] + $stats['pointsLost']) > 0 ? $stats['pointsDestroyed'] / ($stats['pointsDestroyed'] + $stats['pointsLost']) : 0;
-		
+
 		// Calculate overall score (lower is better)
 		$avg = ceil(($ranks[$id]['shipsDestroyed'] + $ranks[$id]['iskDestroyed'] + $ranks[$id]['pointsDestroyed']) / 3);
 		$adjuster = (1 + $entityStats[$id]['shipsEfficiency'] + $entityStats[$id]['iskEfficiency'] + $entityStats[$id]['pointsEfficiency']) / 4;
@@ -138,10 +180,11 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 
 	// Sort by score ascending (lower score = better rank)
 	uasort($entityStats, function ($a, $b) {
-		if ($a['score'] == $b['score']) return 0;
+		if ($a['score'] == $b['score'])
+			return 0;
 		return ($a['score'] < $b['score']) ? -1 : 1;
 	});
-	
+
 	$rank = 0;
 	$lastValue = -1;
 	foreach ($entityStats as $id => $stats) {
@@ -151,9 +194,9 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 		}
 		$ranks[$id]['overall'] = $rank;
 	}
-		
+
 	// Now bulk update the statistics collection with the new ranks
-	//status($period, $type, $solo, 'bulk updating ranks');
+	// status($period, $type, $solo, 'bulk updating ranks');
 
 	$suffix = $solo ? '_solo' : '';
 	$fieldPrefix = "ranks.{$period}{$suffix}";
@@ -177,7 +220,7 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 		}
 
 		$bulk->update($filter, $update, ['multi' => false, 'upsert' => false]);
-	}	
+	}
 
 	// Clear existing ranks for this type/period/solo combination
 	$bulk->update(
@@ -204,17 +247,17 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 	// add the overall rank to ranks_history based on today's date
 	$dateStr = date('Y-m-d');
 	$historyField = $solo ? "ranks_history.{$period}_solo" : "ranks_history.{$period}";
-	
+
 	foreach ($ranks as $id => $rankData) {
 		$filter = ['type' => $type, 'id' => $id];
-		
+
 		// Remove existing entry for today's date first to prevent duplicates
 		$bulk->update(
 			$filter,
 			['$pull' => [$historyField => ['date' => $dateStr]]],
 			['multi' => false, 'upsert' => false]
 		);
-		
+
 		// Then add today's rank
 		$update = ['$push' => []];
 		$update['$push'][$historyField] = ['date' => $dateStr, 'rank' => $rankData['overall']];
@@ -224,7 +267,7 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 	// clear any ranks history that are more than 7 days old (keep only last 7 days)
 	$cutoffDate = date('Y-m-d', strtotime('-7 days'));
 	$historyField = $solo ? "ranks_history.{$period}_solo" : "ranks_history.{$period}";
-	
+
 	$bulk->update(
 		['type' => $type, $historyField => ['$exists' => true]],
 		['$pull' => [$historyField => ['date' => ['$lt' => $cutoffDate]]]],
@@ -247,7 +290,8 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 function customSort($field)
 {
 	return function ($a, $b) use ($field) {
-		if ($a[$field] == $b[$field]) return 0;
+		if ($a[$field] == $b[$field])
+			return 0;
 		return ($a[$field] > $b[$field]) ? -1 : 1;
 	};
 }
@@ -258,28 +302,6 @@ function customSort($field)
 function getStats($type, $id, $isVictim, $collection, $solo)
 {
 	global $mdb;
-
-	if ($collection == 'killmails') {
-		$stats = $mdb->findDoc('statistics', [
-			'type' => $type,
-			'id' => $id
-		]);
-		if ($stats) {
-			$statFields = [
-				'shipsDestroyed' => $solo ? 'shipsDestroyedSolo' : 'shipsDestroyed',
-				'shipsLost' => $solo ? 'shipsLostSolo' : 'shipsLost',
-				'iskDestroyed' => $solo ? 'iskDestroyedSolo' : 'iskDestroyed',
-				'iskLost' => $solo ? 'iskLostSolo' : 'iskLost',
-				'pointsDestroyed' => $solo ? 'pointsDestroyedSolo' : 'pointsDestroyed',
-				'pointsLost' => $solo ? 'pointsLostSolo' : 'pointsLost',
-			];
-		}
-		return [
-			'killIDCount' => $isVictim ? (int) @$stats[$statFields['shipsLost']] : (int) @$stats[$statFields['shipsDestroyed']],
-			'zkb_totalValueSum' => $isVictim ? (int) @$stats[$statFields['iskLost']] : (int) @$stats[$statFields['iskDestroyed']],
-			'zkb_pointsSum' => $isVictim ? (int) @$stats[$statFields['pointsLost']] : (int) @$stats[$statFields['pointsDestroyed']],
-		];
-	}
 
 	$query = [$type => $id, 'isVictim' => $isVictim];
 
