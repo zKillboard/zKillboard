@@ -9,7 +9,7 @@ if ($redis->get("zkb:gankcheckfull") == "true") exit();
 
 $queueRedisQ = new RedisQueue('queueRedisQ');
 
-$concord = $mdb->find("killmails", ['involved.corporationID' => 1000125], ['killID' => -1]);
+$concord = $mdb->getCollection("killmails")->find(['involved.corporationID' => 1000125], ['sort' => ['killID' => -1]]);
 $added = [];
 
 foreach ($concord as $kill) {
@@ -17,7 +17,7 @@ foreach ($concord as $kill) {
     $systemID = $kill['system']['solarSystemID'];
     $involved = $kill['involved'];
     $victim = $involved[0];
-    $likelyVictims = $mdb->find("killmails", ['involved.characterID' => $victim['characterID'], 'killID' => ['$lt' => $kill['killID'] + 25]], ['killID' => -1], 25);
+    $likelyVictims = $mdb->getCollection("killmails")->find(['involved.characterID' => $victim['characterID'], 'killID' => ['$lt' => $kill['killID'] + 25]], ['sort' => ['killID' => -1], 'limit' => 25]);
     foreach ($likelyVictims as $lvictim) {
         if (in_array($lvictim['killID'], $added) === true) continue;
         if (@$lvictim['involved'][0]['groupID'] == 29) continue;
