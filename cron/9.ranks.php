@@ -205,15 +205,20 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 
 	$suffix = $solo ? '_solo' : '';
 	$fieldPrefix = "ranks.{$period}{$suffix}";
+	$statsPrefix = "stats.{$period}{$suffix}";
+	$time = time();
+
+	// Convert any ranks arrays to objects FIRST, before bulk operations
+	try {
+		$mdb->getCollection('statistics')->updateMany(
+			['type' => $type, 'ranks' => ['$type' => 'array']],
+			['$set' => ['ranks' => new stdClass()]]
+		);
+	} catch (Exception $e) {
+		// Ignore if already converted
+	}
 
 	$bulk = new MongoDB\Driver\BulkWrite(['ordered' => false]);
-
-	// Convert any ranks arrays to objects
-	$bulk->update(
-		['type' => $type, 'ranks' => ['$type' => 'array']],
-		['$set' => ['ranks' => new stdClass()]],
-		['multi' => true]
-	);
 
 	// Store the stats the ranks are based on
 	foreach ($entityStats as $id => $stats) {
