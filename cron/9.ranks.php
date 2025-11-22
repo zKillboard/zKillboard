@@ -33,7 +33,7 @@ foreach ($periods as $period => $collection) {
 		if (date('Hi') !== $minute)
 			break;
 
-		$redisKey = "zkb:{$period}RanksCalculated:{$type}0a0";
+		$redisKey = "zkb:ranks:{$period}:{$type}";
 		if ($redis->get($redisKey) != 'true') {
 			$success = calculateRanks($period, $collection, $type, $field, false);
 			if ($success) {
@@ -173,9 +173,9 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 		$entityStats[$id]['pointsEfficiency'] = ($stats['pointsDestroyed'] + $stats['pointsLost']) > 0 ? $stats['pointsDestroyed'] / ($stats['pointsDestroyed'] + $stats['pointsLost']) : 0;
 
 		// Calculate overall score (lower is better)
-		$avg = ceil(($ranks[$id]['shipsDestroyed'] + $ranks[$id]['iskDestroyed'] + $ranks[$id]['pointsDestroyed']) / 3);
+		$avg = ($ranks[$id]['shipsDestroyed'] + $ranks[$id]['iskDestroyed'] + $ranks[$id]['pointsDestroyed']) / 3;
 		$adjuster = (1 + $entityStats[$id]['shipsEfficiency'] + $entityStats[$id]['iskEfficiency'] + $entityStats[$id]['pointsEfficiency']) / 4;
-		$entityStats[$id]['score'] = ceil($avg / $adjuster);
+		$entityStats[$id]['score'] = round($avg / $adjuster, 5);
 	}
 
 	// Sort by score ascending (lower score = better rank)
