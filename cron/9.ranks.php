@@ -8,10 +8,10 @@ $periods = [
 	'alltime' => 'killmails',
 ];
 
-$periodCache = [
-	'weekly' => 4444,
-	'recent' => 11111,
-	'alltime' => 88888,
+$periodOffsets = [
+	'weekly' => ['ttl' => 3600, 'offset' => -900], // 1hr, -15 minutes offset (HH:45)
+	'recent' => ['ttl' => 28800, 'offset' => 1800], // 8hr, 30 minutes offset (HH:30)
+	'alltime' => ['ttl' => 86400, 'offset' => 25200], // 24hr, 7 hours offset (07:00)
 ];
 
 $types = [
@@ -29,11 +29,16 @@ $types = [
 
 $minute = date('Hi');
 foreach ($periods as $period => $collection) {
+	$ttl = $periodOffsets[$period]['ttl'];
+	$offset = $periodOffsets[$period]['offset'];
+	$time = time() - $offset;
+	$epoch = $time - ($time % $ttl);
+	
 	foreach ($types as $type => $field) {
 		if (date('Hi') !== $minute)
 			break;
 
-		$redisKey = "zkb:ranks:{$period}:{$type}";
+		$redisKey = "zkb:ranks:{$period}:{$type}:$epoch";
 		if ($redis->get($redisKey) != 'true') {
 			$success = calculateRanks($period, $collection, $type, $field, false);
 			if ($success) {
@@ -41,7 +46,7 @@ foreach ($periods as $period => $collection) {
 			}
 
 			if ($success) {
-				$redis->setex($redisKey, $periodCache[$period], 'true');
+				$redis->setex($redisKey, $ttl, 'true');
 			} else {
 				Util::out("Failed to calculate ranks for {$period} {$type}");
 				exit();
