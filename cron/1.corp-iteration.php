@@ -67,7 +67,6 @@ while ($minute == date('Hi')) {
         $page++;
 		
         $uri = "$esiServer/corporations/$corpID/killmails/recent/?page=$page";
-		Util::out("Iterating corp $corpID for killmails $page $uri");
         $killmails = $sso->doCall($uri, [], $accessToken);
 		
         $count = success(['row' => $row], $killmails, $uri);
