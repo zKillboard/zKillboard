@@ -38,7 +38,7 @@ foreach ($periods as $period => $collection) {
 		if (date('Hi') !== $minute)
 			break;
 
-		$redisKey = "zkb:ranks:{$period}:{$type}:$epoch";
+		$redisKey = "zkb:ranks:{$period}:{$type}:$epoch:a";
 		if ($redis->get($redisKey) != 'true') {
 			$success = calculateRanks($period, $collection, $type, $field, false);
 			if ($success) {
@@ -70,22 +70,24 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 
 	$cursor = null;
 
+	// Used for alltime killmails to map stats fields
+	$statFields = [
+		'shipsDestroyed' => $solo ? 'shipsDestroyedSolo' : 'shipsDestroyed',
+		'shipsLost' => $solo ? 'shipsLostSolo' : 'shipsLost',
+		'iskDestroyed' => $solo ? 'iskDestroyedSolo' : 'iskDestroyed',
+		'iskLost' => $solo ? 'iskLostSolo' : 'iskLost',
+		'pointsDestroyed' => $solo ? 'pointsDestroyedSolo' : 'pointsDestroyed',
+		'pointsLost' => $solo ? 'pointsLostSolo' : 'pointsLost',
+	];
+
 	if ($collection == 'killmails') {
 		// Iterate the type from statistics with all needed fields
-		$statFields = [
-			'shipsDestroyed' => $solo ? 'shipsDestroyedSolo' : 'shipsDestroyed',
-			'shipsLost' => $solo ? 'shipsLostSolo' : 'shipsLost',
-			'iskDestroyed' => $solo ? 'iskDestroyedSolo' : 'iskDestroyed',
-			'iskLost' => $solo ? 'iskLostSolo' : 'iskLost',
-			'pointsDestroyed' => $solo ? 'pointsDestroyedSolo' : 'pointsDestroyed',
-			'pointsLost' => $solo ? 'pointsLostSolo' : 'pointsLost',
-		];
 		$projection = ['id' => 1];
 		foreach ($statFields as $dbField) {
 			$projection[$dbField] = 1;
 		}
 		$cursor = $mdb->getCollection('statistics')->find(
-			['type' => $type, $statFields['shipsDestroyed'] => ['$gte' => 10]],
+			['type' => $type, $statFields['shipsDestroyed'] => ['$gte' => 100]],
 			['projection' => $projection]
 		);
 	} else {
@@ -99,15 +101,7 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 
 	$entityStats = [];
 
-	// Used for alltime killmails to map stats fields
-	$statFields = [
-		'shipsDestroyed' => $solo ? 'shipsDestroyedSolo' : 'shipsDestroyed',
-		'shipsLost' => $solo ? 'shipsLostSolo' : 'shipsLost',
-		'iskDestroyed' => $solo ? 'iskDestroyedSolo' : 'iskDestroyed',
-		'iskLost' => $solo ? 'iskLostSolo' : 'iskLost',
-		'pointsDestroyed' => $solo ? 'pointsDestroyedSolo' : 'pointsDestroyed',
-		'pointsLost' => $solo ? 'pointsLostSolo' : 'pointsLost',
-	];
+	$minimumShipsDestroyed = ($period == "recent") ? 10 : 1;
 
 	// Iterate the cursor
 	foreach ($cursor as $row) {
@@ -130,10 +124,14 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 				'pointsLost' => (int) @$row[$statFields['pointsLost']],
 			];
 		} else {
-			$kills = getStats($type, $id, false, $collection, $solo);
-			$losses = getStats($type, $id, true, $collection, $solo);
-			if ($kills['killIDCount'] + $losses['killIDCount'] == 0)
+			// if they don't already have the minimum ships destroyed alltime, skip them
+			if (@$row[$statFields['shipsDestroyed']] < $minimumShipsDestroyed)
 				continue;
+
+			$kills = getStats($type, $id, false, $collection, $solo);
+			if ($kills['killIDCount'] < $minimumShipsDestroyed) continue;
+
+			$losses = getStats($type, $id, true, $collection, $solo);
 
 			$entityStats[$id] = [
 				'shipsDestroyed' => $kills['killIDCount'],
@@ -212,7 +210,7 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 	try {
 		$mdb->getCollection('statistics')->updateMany(
 			['type' => $type, 'ranks' => ['$type' => 'array']],
-			['$set' => ['ranks' => new stdClass()]]
+			['$unset' => ['ranks' => 1]]
 		);
 	} catch (Exception $e) {
 		// Ignore if already converted
@@ -249,7 +247,7 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 		}
 
 		// Set last updated timestamp for this period
-		$update['$set']["{$fieldPrefix}.updated"] = time();
+		$update['$set']["{$fieldPrefix}.updated"] = $time;
 
 		$bulk->update($filter, $update, ['multi' => false, 'upsert' => false]);
 	}
@@ -291,6 +289,7 @@ function calculateRanks($period, $collection, $type, $field, $solo)
 		status($period, $type, $solo, 'completed');
 		return true;
 	} catch (Exception $e) {
+		if ($e->getCode() == 36) return true; // some updates failed, but not all
 		Util::out('Error batch updating ranks: ' . $e->getMessage());
 		return false;
 	}
