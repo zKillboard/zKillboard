@@ -23,7 +23,7 @@ function handler($request, $response, $args, $container) {
         if ($id > 0) {
             return $response->withStatus(302)->withHeader('Location', "/$key/$id/");
         }
-        return $response->withStatus(404);
+        return $response->withStatus(302)->withHeader('Location', "./../");
     }
 
     if (strlen("$id") > 11) {
@@ -300,19 +300,19 @@ if ($key == 'character' && $pageType == 'trophies' && $disqualified == 0) {
 }
 
 if ($pageType == 'ranks') {
-    $alltimeRanks = getNearbyRanks($key, 'alltime', $id, 'Alltime Rank', $statType);
-    $day90Ranks = getNearbyRanks($key, 'recent', $id, '90 Day Rank', $statType);
-    $day7Ranks = getNearbyRanks($key, 'weekly', $id, '7 Day Rank', $statType);
+    $alltimeRanks = getNearbyRanks($key, "tq:ranks:alltime:$statType", $id, 'Alltime Rank', $statType);
+    $day90Ranks = getNearbyRanks($key, "tq:ranks:recent:$statType", $id, '90 Day Rank', $statType);
+    $day7Ranks = getNearbyRanks($key, "tq:ranks:weekly:$statType", $id, '7 Day Rank', $statType);
     $extra['allranks'] = ['7day' => $day7Ranks, '90Day' => $day90Ranks, 'alltime' => $alltimeRanks];
 }
 
-$statistics['shipsDestroyedRank'] = Util::rankCheck(getRank($statType, $id, 'alltime', 'shipsDestroyed'));
-$statistics['shipsLostRank'] = Util::rankCheck(getRank($statType, $id, 'alltime', 'shipsLost'));
-$statistics['iskDestroyedRank'] = Util::rankCheck(getRank($statType, $id, 'alltime', 'iskDestroyed'));
-$statistics['iskLostRank'] = Util::rankCheck(getRank($statType, $id, 'alltime', 'iskLost'));
-$statistics['pointsDestroyedRank'] = Util::rankCheck(getRank($statType, $id, 'alltime', 'pointsDestroyed'));
-$statistics['pointsLostRank'] = Util::rankCheck(getRank($statType, $id, 'alltime', 'pointsLost'));
-$statistics['overallRank'] = (int) Util::rankCheck(getRank($statType, $id, 'alltime', 'overall'));
+$statistics['shipsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:shipsDestroyed", $id));
+$statistics['shipsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:shipsLost", $id));
+$statistics['iskDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:iskDestroyed", $id));
+$statistics['iskLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:iskLost", $id));
+$statistics['pointsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:pointsDestroyed", $id));
+$statistics['pointsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:pointsLost", $id));
+$statistics['overallRank'] = (int) Util::rankCheck($redis->zRank("tq:ranks:alltime:$statType", $id));
 
 $statistics['iskDestroyedUsdEurGbp'] = Util::iskToUsdEurGbp($statistics['iskDestroyed']??0);
 $statistics['iskLostUsdEurGbp'] = Util::iskToUsdEurGbp($statistics['iskLost']??0);
@@ -363,19 +363,19 @@ else if (@$statistics['shipsDestroyed'] > 0) {
     $extra['gangFactor'] = $gangFactor;
 }
 
-$statistics['recentShipsDestroyed'] = getStat($statType, $id, 'recent', 'shipsDestroyed');
-$statistics['recentShipsDestroyedRank'] = Util::rankCheck(getRank($statType, $id, 'recent', 'shipsDestroyed'));
-$statistics['recentShipsLost'] = (int) getStat($statType, $id, 'recent', 'shipsLost');
-$statistics['recentShipsLostRank'] = Util::rankCheck(getRank($statType, $id, 'recent', 'shipsLost'));
-$statistics['recentIskDestroyed'] = getStat($statType, $id, 'recent', 'iskDestroyed');
-$statistics['recentIskDestroyedRank'] = Util::rankCheck(getRank($statType, $id, 'recent', 'iskDestroyed'));
-$statistics['recentIskLost'] = getStat($statType, $id, 'recent', 'iskLost');
-$statistics['recentIskLostRank'] = Util::rankCheck(getRank($statType, $id, 'recent', 'iskLost'));
-$statistics['recentPointsDestroyed'] = getStat($statType, $id, 'recent', 'pointsDestroyed');
-$statistics['recentPointsDestroyedRank'] = Util::rankCheck(getRank($statType, $id, 'recent', 'pointsDestroyed'));
-$statistics['recentPointsLost'] = getStat($statType, $id, 'recent', 'pointsLost');
-$statistics['recentPointsLostRank'] = Util::rankCheck(getRank($statType, $id, 'recent', 'pointsLost'));
-$statistics['recentOverallRank'] = Util::rankCheck(getRank($statType, $id, 'recent', 'overall'));
+$statistics['recentShipsDestroyed'] = $redis->zScore("tq:ranks:recent:$statType:shipsDestroyed", $id);
+$statistics['recentShipsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:shipsDestroyed", $id));
+$statistics['recentShipsLost'] = (int) $redis->zScore("tq:ranks:recent:$statType:shipsLost", $id);
+$statistics['recentShipsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:shipsLost", $id));
+$statistics['recentIskDestroyed'] = $redis->zScore("tq:ranks:recent:$statType:iskDestroyed", $id);
+$statistics['recentIskDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:iskDestroyed", $id));
+$statistics['recentIskLost'] = $redis->zScore("tq:ranks:recent:$statType:iskLost", $id);
+$statistics['recentIskLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:iskLost", $id));
+$statistics['recentPointsDestroyed'] = $redis->zScore("tq:ranks:recent:$statType:pointsDestroyed", $id);
+$statistics['recentPointsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:pointsDestroyed", $id));
+$statistics['recentPointsLost'] = $redis->zScore("tq:ranks:recent:$statType:pointsLost", $id);
+$statistics['recentPointsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:pointsLost", $id));
+$statistics['recentOverallRank'] = (int) Util::rankCheck($redis->zRank("tq:ranks:recent:$statType", $id));
 
 if (@$statistics['recentShipsLost'] > 0 || @$statistics['recentShipsDestroyed'] > 0) {
     $destroyed = @$statistics['recentShipsDestroyed'] + @$statistics['recentPointsDestroyed'];
@@ -396,19 +396,19 @@ else if (@$statistics['shipsDestroyed'] > 0) {
 }
 $statistics['recentSoloKills'] = $recentSoloKills;
 
-$statistics['weeklyShipsDestroyed'] = getStat($statType, $id, 'weekly', 'shipsDestroyed');
-$statistics['weeklyShipsDestroyedRank'] = Util::rankCheck(getRank($statType, $id, 'weekly', 'shipsDestroyed'));
-$statistics['weeklyShipsLost'] = (int) getStat($statType, $id, 'weekly', 'shipsLost');
-$statistics['weeklyShipsLostRank'] = Util::rankCheck(getRank($statType, $id, 'weekly', 'shipsLost'));
-$statistics['weeklyIskDestroyed'] = getStat($statType, $id, 'weekly', 'iskDestroyed');
-$statistics['weeklyIskDestroyedRank'] = Util::rankCheck(getRank($statType, $id, 'weekly', 'iskDestroyed'));
-$statistics['weeklyIskLost'] = getStat($statType, $id, 'weekly', 'iskLost');
-$statistics['weeklyIskLostRank'] = Util::rankCheck(getRank($statType, $id, 'weekly', 'iskLost'));
-$statistics['weeklyPointsDestroyed'] = getStat($statType, $id, 'weekly', 'pointsDestroyed');
-$statistics['weeklyPointsDestroyedRank'] = Util::rankCheck(getRank($statType, $id, 'weekly', 'pointsDestroyed'));
-$statistics['weeklyPointsLost'] = getStat($statType, $id, 'weekly', 'pointsLost');
-$statistics['weeklyPointsLostRank'] = Util::rankCheck(getRank($statType, $id, 'weekly', 'pointsLost'));
-$statistics['weeklyOverallRank'] = Util::rankCheck(getRank($statType, $id, 'weekly', 'overall'));
+$statistics['weeklyShipsDestroyed'] = $redis->zScore("tq:ranks:weekly:$statType:shipsDestroyed", $id);
+$statistics['weeklyShipsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:shipsDestroyed", $id));
+$statistics['weeklyShipsLost'] = (int) $redis->zScore("tq:ranks:weekly:$statType:shipsLost", $id);
+$statistics['weeklyShipsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:shipsLost", $id));
+$statistics['weeklyIskDestroyed'] = $redis->zScore("tq:ranks:weekly:$statType:iskDestroyed", $id);
+$statistics['weeklyIskDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:iskDestroyed", $id));
+$statistics['weeklyIskLost'] = $redis->zScore("tq:ranks:weekly:$statType:iskLost", $id);
+$statistics['weeklyIskLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:iskLost", $id));
+$statistics['weeklyPointsDestroyed'] = $redis->zScore("tq:ranks:weekly:$statType:pointsDestroyed", $id);
+$statistics['weeklyPointsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:pointsDestroyed", $id));
+$statistics['weeklyPointsLost'] = $redis->zScore("tq:ranks:weekly:$statType:pointsLost", $id);
+$statistics['weeklyPointsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:pointsLost", $id));
+$statistics['weeklyOverallRank'] = (int) Util::rankCheck($redis->zRank("tq:ranks:weekly:$statType", $id));
 
 if (@$statistics['weeklyShipsLost'] > 0 || @$statistics['weeklyShipsDestroyed'] > 0) {
     $destroyed = @$statistics['weeklyShipsDestroyed']  + @$statistics['weeklyPointsDestroyed'];
@@ -428,45 +428,19 @@ else if ( $statistics['weeklyShipsDestroyed'] > 0) {
 }
 $statistics['weeklySoloKills'] = $weeklySoloKills;
 
-// Get previous rankings from ranks_history
-$stats = $mdb->findDoc('statistics', ['type' => $statType, 'id' => (int) $id], ['ranks_history' => 1]);
-$prevRanks = ['overallRank' => '-', 'recentOverallRank' => '-', 'weeklyOverallRank' => '-', 'date' => date('Y-m-d')];
-
-if ($stats && isset($stats['ranks_history'])) {
-    // Get earliest alltime rank available
-    if (isset($stats['ranks_history']['alltime']) && is_array($stats['ranks_history']['alltime'])) {
-        usort($stats['ranks_history']['alltime'], function($a, $b) {
-            return strcmp($a['date'], $b['date']); // Sort ascending by date
-        });
-        // Get the oldest entry that's not today
-        $today = date('Y-m-d');
-        foreach ($stats['ranks_history']['alltime'] as $entry) {
-            if ($entry['date'] < $today) {
-                $prevRanks['overallRank'] = Util::rankCheck($entry['rank']);
-                $prevRanks['date'] = $entry['date'];
-                break;
-            }
-        }
+// Get previous rankings 
+$previousTime = time() - (14 * 86400);
+$previousDate = date('Ymd');
+$previousRank = null;
+do {
+    $previousDate = date('Ymd', $previousTime);
+    $previousRank = Util::rankCheck($redis->zRank("tq:ranks:alltime:$statType:$previousDate", $id));
+    if ($previousRank === '-') {
+        $previousTime += 86400;
     }
-    // Get recent rank from same date
-    if (isset($stats['ranks_history']['recent']) && is_array($stats['ranks_history']['recent'])) {
-        foreach ($stats['ranks_history']['recent'] as $entry) {
-            if ($entry['date'] == $prevRanks['date']) {
-                $prevRanks['recentOverallRank'] = Util::rankCheck($entry['rank']);
-                break;
-            }
-        }
-    }
-    // Get weekly rank from same date
-    if (isset($stats['ranks_history']['weekly']) && is_array($stats['ranks_history']['weekly'])) {
-        foreach ($stats['ranks_history']['weekly'] as $entry) {
-            if ($entry['date'] == $prevRanks['date']) {
-                $prevRanks['weeklyOverallRank'] = Util::rankCheck($entry['rank']);
-                break;
-            }
-        }
-    }
-}
+} while ($previousRank == '-' && $previousTime < time());
+$prevRanks = ['overallRank' => Util::rankCheck($previousRank), 'date' => date('Y-m-d', $previousTime)];
+$prevRanks['recentOverallRank'] = Util::rankCheck($redis->zRank("tq:ranks:recent:$statType:$previousDate", $id));
 $statistics['prevRanks'] = $prevRanks;
 
 $groups = @$statistics['groups'];
@@ -576,97 +550,26 @@ function addVics($vics, $kills = []) {
     return $kills;
 }
 
-/**
- * Get rank from MongoDB statistics collection
- * @param string $statType Entity type (e.g. 'characterID', 'corporationID')
- * @param int $id Entity ID
- * @param string $period Period name ('weekly', 'recent', 'alltime')
- * @param string $statKey Stat key (e.g. 'shipsDestroyed', 'overall')
- * @param bool $solo Whether to get solo rank
- * @return int Rank number (0 if not found)
- */
-function getRank($statType, $id, $period, $statKey, $solo = false)
+function getNearbyRanks($key, $rankKeyName, $id, $title, $statType)
 {
-    global $mdb;
-    
-    $suffix = $solo ? '_solo' : '';
-    $fieldPath = "ranks.{$period}{$suffix}.{$statKey}";
-    
-    $stats = $mdb->findDoc('statistics', ['type' => $statType, 'id' => (int) $id], [$fieldPath => 1]);
-    
-    if ($stats && isset($stats['ranks'][$period . $suffix][$statKey])) {
-        return (int) $stats['ranks'][$period . $suffix][$statKey];
-    }
-    
-    return 0;
-}
-
-/**
- * Get stat value from MongoDB statistics collection
- * @param string $statType Entity type
- * @param int $id Entity ID
- * @param string $period Period name
- * @param string $statKey Stat key
- * @param bool $solo Whether to get solo stat
- * @return mixed Stat value (0 if not found)
- */
-function getStat($statType, $id, $period, $statKey, $solo = false)
-{
-    global $mdb;
-    
-    $suffix = $solo ? '_solo' : '';
-    $fieldPath = "stats.{$period}{$suffix}.{$statKey}";
-    
-    $stats = $mdb->findDoc('statistics', ['type' => $statType, 'id' => (int) $id], [$fieldPath => 1]);
-    
-    if ($stats && isset($stats['stats'][$period . $suffix][$statKey])) {
-        return $stats['stats'][$period . $suffix][$statKey];
-    }
-    
-    return 0;
-}
-
-function getNearbyRanks($key, $period, $id, $title, $statType)
-{
-    global $mdb;
+    global $redis;
 
     $array = [];
-    
-    // Get the entity's overall rank
-    $myRank = getRank($statType, $id, $period, 'overall', false);
-    
-    if ($myRank > 0) {
-        // Find entities with nearby ranks
-        $start = max($myRank - 25, 1);
-        $end = $myRank + 25;
-        
-        $cursor = $mdb->getCollection('statistics')->find(
-            [
-                'type' => $statType,
-                "ranks.{$period}.overall" => ['$gte' => $start, '$lte' => $end]
-            ],
-            [
-                'sort' => ["ranks.{$period}.overall" => 1],
-                'limit' => 51,
-                'projection' => ['id' => 1, "ranks.{$period}.overall" => 1, "stats.{$period}" => 1]
-            ]
-        );
-        
-        foreach ($cursor as $row) {
+    $rank = $redis->zrank($rankKeyName, $id);
+    if ($rank !== false) {
+        $start = max($rank - 25, 0);
+        $end = max($rank + 25, 50);
+        $nearRanks = $redis->zrange($rankKeyName, $start, $end);
+        foreach ($nearRanks as $row) {
             $a = [];
-            $a['rank'] = $row['ranks'][$period]['overall'] ?? 0;
-            $a[$statType] = $row['id'];
-            // Use shipsDestroyed + pointsDestroyed as score
-            $shipsD = $row['stats'][$period]['shipsDestroyed'] ?? 0;
-            $pointsD = $row['stats'][$period]['pointsDestroyed'] ?? 0;
-            $a['score'] = $shipsD + $pointsD;
+            $a['rank'] = $redis->zrank($rankKeyName, $row) + 1;
+            $a[$statType] = $row;
+            $a['score'] = $redis->zscore($rankKeyName, $row);
             $array['data'][] = $a;
         }
-        
         Info::addInfo($array);
-        $title = $title . ' #' . number_format($myRank, 0);
+        $title = $title.' #'.number_format($rank + 1, 0);
     }
-    
     $array['title'] = $title;
     $array['type'] = $key;
 

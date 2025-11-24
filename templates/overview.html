@@ -7,7 +7,7 @@
 {% endif %}
 {% block title %}{% include 'components/title.html' %}{% endblock %}
 
-{% set description = pageName ~ ( statistics.overallRank and statistics.overallRank != '-' ? ": Ranked #" ~ statistics.overallRank|number_format(0) ~ " with " : ": " ) ~ detail.shipsDestroyed|number_format(0) ~ " ships destroyed and " ~ detail.shipsLost|number_format(0) ~ " ships lost." %}
+{% set description = pageName ~ ( detail.ranks.overallRank ? ": Ranked #" ~ detail.ranks.overallRank|number_format(0) ~ " with " : ": " ) ~ detail.shipsDestroyed|number_format(0) ~ " ships destroyed and " ~ detail.shipsLost|number_format(0) ~ " ships lost." %}
 {% set canonical = fullsiteurl ~ "/" ~  key ~ "/" ~ id ~ "/" %}
 
 {% block content %}

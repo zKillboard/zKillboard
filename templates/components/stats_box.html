@@ -30,11 +30,11 @@
 		<td id="s-a-s-e" flash format="format-dec1" class="{{greenred}} " style="text-align: right">{{ shipEff | number_format(1) }}</td>
 		<th style="text-align: right;">
 			<strong>{{ statistics.overallRank == 0 ? '-' : statistics.overallRank|number_format(0) }}</strong>
-			{% if statistics.overallRank != '-' and statistics.overallRank != 0 and statistics.prevRanks.overallRank != '-' and statistics.prevRanks.overallRank != 0 and statistics.overallRank < statistics.prevRanks.overallRank %}
+			{% if statistics.overallRank < statistics.prevRanks.overallRank and statistics.overallRank != 0 and statistics.prevRanks.overallRank != 0 %}
 				<small><span rel="tooltip" title="Ranked #{{ statistics.prevRanks.overallRank|number_format(0) }} on {{ statistics.prevRanks.date }}" class="glyphicon glyphicon-arrow-up green"></span></small>
-			{% elseif statistics.overallRank != '-' and statistics.overallRank != 0 and statistics.prevRanks.overallRank != '-' and statistics.prevRanks.overallRank != 0 and statistics.overallRank > statistics.prevRanks.overallRank %}
+			{% elseif statistics.overallRank > statistics.prevRanks.overallRank and statistics.overallRank != 0 and statistics.prevRanks.overallRank != 0 %}
 				<small><span rel="tooltip" title="Ranked #{{ statistics.prevRanks.overallRank|number_format(0) }} on {{ statistics.prevRanks.date }}" class="glyphicon glyphicon-arrow-down red"></span></small>
-			{% elseif statistics.overallRank != '-' and statistics.overallRank != 0 %}
+			{% elseif statistics.overallRank != 0 %}
 				<small><span rel="tooltip" title="No change in rank..." class="glyphicon glyphicon-minus green"></span></small>
 			{% else %}
 				<small><span rel="tooltip" class="glyphicon glyphicon-minus"></span></small>
@@ -59,14 +59,14 @@
 		<td id="s-a-il-r" flash format="format-int" class="red " style="text-align: right">{{ statistics.iskLostRank == 0 ? '-' : statistics.iskLostRank | number_format(0) }}</td>
 		{% set greenred = iskEff >= 50 ? 'green' : 'red' %}
 		<td id="s-a-i-e" flash format="format-dec1" class="{{greenred}} " style="text-align: right">{{ iskEff | number_format(1) }}</td>
-        {% set recentOverallRank = ( statistics.recentOverallRank != '-' ? statistics.recentOverallRank | number_format(0) : '-') %}
+		{% set recentOverallRank = ( statistics.recentOverallRank > 0 ? statistics.recentOverallRank | number_format(0) : '-') %}
         	<th class="" style="text-align: right;">
 			<strong>{{ recentOverallRank }}</strong>
-                        {% if statistics.recentOverallRank != '-' and statistics.prevRanks.recentOverallRank != '-' and statistics.recentOverallRank < statistics.prevRanks.recentOverallRank %}
+                        {% if statistics.recentOverallRank < statistics.prevRanks.recentOverallRank and statistics.recentOverallRank != 0 and statistics.prevRanks.recentOverallRank != 0 %}
                                 <small><span rel="tooltip" title="Ranked #{{ statistics.prevRanks.recentOverallRank|number_format(0) }} on {{ statistics.prevRanks.date }}" class="glyphicon glyphicon-arrow-up green"></span></small>
-                        {% elseif statistics.recentOverallRank != '-' and statistics.prevRanks.recentOverallRank != '-' and statistics.recentOverallRank > statistics.prevRanks.recentOverallRank %}
+                        {% elseif statistics.recentOverallRank > statistics.prevRanks.recentOverallRank and statistics.recentOverallRank != 0 and statistics.prevRanks.recentOverallRank != 0 %}
                                 <small><span rel="tooltip" title="Ranked #{{ statistics.prevRanks.recentOverallRank|number_format(0) }} on {{ statistics.prevRanks.date }}" class="glyphicon glyphicon-arrow-down red"></span></small>
-                        {% elseif statistics.recentOverallRank != '-' %}
+                        {% elseif statistics.recentOverallRank != 0 %}
                                 <small><span rel="tooltip" title="No change in rank..." class="glyphicon glyphicon-minus green"></span></small>
                         {% else %}
                                 <small><span rel="tooltip" class="glyphicon glyphicon-minus"></span></small>
@@ -86,12 +86,12 @@
         {% set greenred = shipEff >= 50 ? 'green' : 'red' %}
         <td class="{{greenred}} " style="text-align: right">{{ shipEff | number_format(1) }}</td>
         <th style="text-align: right;">
-            <strong>{{ statistics.recentOverallRank == '-' ? '-' : statistics.recentOverallRank|number_format(0) }}</strong>
-            {% if statistics.recentOverallRank != '-' and statistics.prevRanks.recentOverallRank != '-' and statistics.recentOverallRank < statistics.prevRanks.recentOverallRank %}
+            <strong>{{ statistics.recentOverallRank == 0 ? '-' : statistics.recentOverallRank|number_format(0) }}</strong>
+            {% if statistics.overallRank < statistics.prevRanks.overallRank and statistics.overallRank != 0 and statistics.prevRanks.overallRank != 0 %}
                 <small><span rel="tooltip" title="Ranked #{{ statistics.prevRanks.recentOverallRank|number_format(0) }} on {{ statistics.prevRanks.date }}" class="glyphicon glyphicon-arrow-up green"></span></small>
-            {% elseif statistics.recentOverallRank != '-' and statistics.prevRanks.recentOverallRank != '-' and statistics.recentOverallRank > statistics.prevRanks.recentOverallRank %}
-                <small><span rel="tooltip" title="Ranked #{{ statistics.prevRanks.recentOverallRank|number_format(0) }} on {{ statistics.prevRanks.date }}" class="glyphicon glyphicon-arrow-down red"></span></small>
-            {% elseif statistics.recentOverallRank != '-' %}
+            {% elseif statistics.overallRank > statistics.prevRanks.recentOverallRank and statistics.recentOverallRank != 0 and statistics.prevRanks.recentOverallRank != 0 %}
+                <small><span rel="tooltip" title="Ranked #{{ statistics.prevRanks.recentOverallRank|number_format(0) }} on {{ statistics.recentPrevRanks.date }}" class="glyphicon glyphicon-arrow-down red"></span></small>
+            {% elseif statistics.overallRank != 0 %}
                 <small><span rel="tooltip" title="No change in rank..." class="glyphicon glyphicon-minus green"></span></small>
             {% else %}
                 <small><span rel="tooltip" class="glyphicon glyphicon-minus"></span></small>
@@ -118,12 +118,12 @@
         <td class="{{greenred}} " style="text-align: right">{{ iskEff | number_format(1) }}</td>
         {% set recentOverallRank = ( statistics.recentOverallRank > 0 ? statistics.recentOverallRank | number_format(0) : '-') %}
             <th class="" style="text-align: right;">
-            <strong>{{ statistics.weeklyOverallRank == '-' ? '-' : statistics.weeklyOverallRank|number_format(0) }}</strong>
-                        {% if statistics.weeklyOverallRank != '-' and statistics.prevRanks.weeklyOverallRank != '-' and statistics.weeklyOverallRank < statistics.prevRanks.weeklyOverallRank %}
+            <strong>{{ statistics.weeklyOverallRank }}</strong>
+                        {% if statistics.weeklyOverallRank < statistics.prevRanks.weeklyOverallRank and statistics.weeklyOverallRank != 0 and statistics.prevRanks.weeklyOverallRank != 0 %}
                                 <small><span rel="tooltip" title="Ranked #{{ statistics.prevRanks.weeklyOverallRank|number_format(0) }} on {{ statistics.prevRanks.date }}" class="glyphicon glyphicon-arrow-up green"></span></small>
-                        {% elseif statistics.weeklyOverallRank != '-' and statistics.prevRanks.weeklyOverallRank != '-' and statistics.weeklyOverallRank > statistics.prevRanks.weeklyOverallRank %}
+                        {% elseif statistics.weeklyOverallRank > statistics.prevRanks.weeklyOverallRank and statistics.weeklyOverallRank != 0 and statistics.prevRanks.weeklyOverallRank != 0 %}
                                 <small><span rel="tooltip" title="Ranked #{{ statistics.prevRanks.weeklyOverallRank|number_format(0) }} on {{ statistics.prevRanks.date }}" class="glyphicon glyphicon-arrow-down red"></span></small>
-                        {% elseif statistics.weeklyOverallRank != '-' %}
+                        {% elseif statistics.weeklyOverallRank != 0 %}
                                 <small><span rel="tooltip" title="No change in rank..." class="glyphicon glyphicon-minus green"></span></small>
                         {% else %}
                                 <small><span rel="tooltip" class="glyphicon glyphicon-minus"></span></small>
@@ -142,12 +142,12 @@
         {% set greenred = shipEff >= 50 ? 'green' : 'red' %}
         <td class="{{greenred}} " style="text-align: right">{{ shipEff | number_format(1) }}</td>
         <th style="text-align: right;">
-            <strong>{{ statistics.weeklyOverallRank == '-' ? '-' : statistics.weeklyOverallRank|number_format(0) }}</strong>
-            {% if statistics.weeklyOverallRank != '-' and statistics.prevRanks.weeklyOverallRank != '-' and statistics.weeklyOverallRank < statistics.prevRanks.weeklyOverallRank %}
+            <strong>{{ statistics.weeklyOverallRank == 0 ? '-' : statistics.weeklyOverallRank|number_format(0) }}</strong>
+            {% if statistics.overallRank < statistics.prevRanks.overallRank and statistics.overallRank != 0 and statistics.prevRanks.overallRank != 0 %}
                 <small><span rel="tooltip" title="Ranked #{{ statistics.prevRanks.weeklyOverallRank|number_format(0) }} on {{ statistics.prevRanks.date }}" class="glyphicon glyphicon-arrow-up green"></span></small>
-            {% elseif statistics.weeklyOverallRank != '-' and statistics.prevRanks.weeklyOverallRank != '-' and statistics.weeklyOverallRank > statistics.prevRanks.weeklyOverallRank %}
-                <small><span rel="tooltip" title="Ranked #{{ statistics.prevRanks.weeklyOverallRank|number_format(0) }} on {{ statistics.prevRanks.date }}" class="glyphicon glyphicon-arrow-down red"></span></small>
-            {% elseif statistics.weeklyOverallRank != '-' %}
+            {% elseif statistics.overallRank > statistics.prevRanks.weeklyOverallRank and statistics.weeklyOverallRank != 0 and statistics.prevRanks.weeklyOverallRank != 0 %}
+                <small><span rel="tooltip" title="Ranked #{{ statistics.prevRanks.weeklyOverallRank|number_format(0) }} on {{ statistics.weeklyPrevRanks.date }}" class="glyphicon glyphicon-arrow-down red"></span></small>
+            {% elseif statistics.overallRank != 0 %}
                 <small><span rel="tooltip" title="No change in rank..." class="glyphicon glyphicon-minus green"></span></small>
             {% else %}
                 <small><span rel="tooltip" class="glyphicon glyphicon-minus"></span></small>
@@ -172,7 +172,7 @@
         <td class="red " style="text-align: right">{{ statistics.weeklyIskLostRank == 0 ? '-' : statistics.weeklyIskLostRank | number_format(0) }}</td>
         {% set greenred = iskEff >= 50 ? 'green' : 'red' %}
         <td class="{{greenred}} " style="text-align: right">{{ iskEff | number_format(1) }}</td>
-        {% set weeklyOverallRank = ( statistics.weeklyOverallRank != '-' ? statistics.weeklyOverallRank | number_format(0) : '-') %}
+        {% set weeklyOverallRank = ( statistics.weeklyOverallRank > 0 ? statistics.weeklyOverallRank | number_format(0) : '-') %}
             <th class="" style="text-align: right;"></th>
     </tr>
 
