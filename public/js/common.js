@@ -90,7 +90,7 @@ function prepTippy() {
 			return title;
 		}
 	});
-	console.log('tippy prepared');
+	setTimeout(prepTippy, 500);
 }
 
 function copyToClipboard(e) {
