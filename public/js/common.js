@@ -2,7 +2,8 @@ var ws;
 var adblocked = undefined;
 
 
-$(document).ready(function() {
+$(document).ready(function () {
+	setTimeout(prepTippy, 500);
     if (navbar) $('#tracker-dropdown').load('/navbar/');
 
     // autocomplete
@@ -75,6 +76,22 @@ $(document).ready(function() {
 	
 	$("label[for]").on("click", () => { $(window).focus(); })
 });
+
+function prepTippy() {
+	tippy('[rel="tooltip"], [title]:not([title=""])', {
+
+		delay: 250,
+		theme: 'light',
+		allowHTML: true,
+		content(reference) {
+			let title = reference.getAttribute('title');
+			// Prevent default browser tooltip
+			reference.removeAttribute('title');
+			return title;
+		}
+	});
+	console.log('tippy prepared');
+}
 
 function copyToClipboard(e) {
     console.log(this);

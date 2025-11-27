@@ -86,25 +86,25 @@
 		{% set pctShipFit   = ('<span rel="tooltip" title="Destroyed: Ship + Fit Percentage of Total Value" style="float: right;" class=""><span format="format-dec1" raw="' ~ (extra.destroyediskWship / extra.totalisk * 100) ~ '"></span>%</span>') %}
 		{% set pctShipFitCost   = ('<span rel="tooltip" title=" Ship + Fit Percentage of Total Value" style="float: right;" class=""><span format="format-dec1" raw="' ~ (extra.fittedisk / extra.totalisk * 100) ~ '"></span>%</span>') %}		{% set pctTotal   = ('<span rel="tooltip" title="Destroyed: Ship + Fit + Loot Percentage of Total Value" style="float: right;" class="item_destroyed"><span format="format-dec1" raw="' ~ (extra.destroyediskWship / extra.totalisk * 100) ~ '"></span>%</span>') %}
 	{% endif %}
-	<tr rel="tooltip" title="{{ extra.destroyediskWship|number_format(2) }}&#10;&#36;{{ extra.destroyedpriceWship.usd|number_format(2, '.', ',') }} / {{ extra.destroyedpriceWship.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.destroyedpriceWship.gbp|number_format(2, '.', ',') }}">
+	<tr rel="tooltip" title="{{ extra.destroyediskWship|number_format(2) }} ISK<br/>{{ extra.destroyedpriceWship.usd|number_format(2, '.', ',') }} / {{ extra.destroyedpriceWship.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.destroyedpriceWship.gbp|number_format(2, '.', ',') }}">
 		<th>Destroyed:</th>
 		<td class="item_destroyed"><span format="format-isk-once" raw="{{ extra.destroyediskWship }}">{{ extra.destroyediskWship | number_format(2, '.', ',') }}</span> ISK<span style='color: #888;'> (w/ship) {{ pctTotal|raw }}</span></td>
 	</tr>
-    <tr rel="tooltip" title="{{ extra.destroyedisk|number_format(2) }}&#10;&#36;{{ extra.destroyedprice.usd|number_format(2, '.', ',') }} / {{ extra.destroyedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.destroyedprice.gbp|number_format(2, '.', ',') }}">
+    <tr rel="tooltip" title="{{ extra.destroyedisk|number_format(2) }} ISK<br/>{{ extra.destroyedprice.usd|number_format(2, '.', ',') }} / {{ extra.destroyedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.destroyedprice.gbp|number_format(2, '.', ',') }}">
         <th>Destroyed:</th>
         <td class="item_destroyed"><span format="format-isk-once" raw="{{ extra.destroyedisk }}">{{ extra.destroyedisk | number_format(2, '.', ',') }}</span> ISK {{ pctDestroyed|raw }}</td>
     </tr>
-	<tr class="item_dropped_row" rel="tooltip" title="{{ extra.droppedisk|number_format(2) }}&#10;&#36;{{ extra.droppedprice.usd|number_format(2, '.', ',') }} / {{ extra.droppedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.droppedprice.gbp|number_format(2, '.', ',') }}">
+	<tr class="item_dropped_row" rel="tooltip" title="{{ extra.droppedisk|number_format(2) }} ISK<br/>{{ extra.droppedprice.usd|number_format(2, '.', ',') }} / {{ extra.droppedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.droppedprice.gbp|number_format(2, '.', ',') }}">
 		<th>Dropped:</th>
 		<td class="item_dropped"><span format="format-isk-once" raw="{{ extra.droppedisk }}">{{ extra.droppedisk|number_format(2, '.', ',') }}</span> ISK  {{ pctDropped|raw }}</td>
 	</tr>
     {% if extra.fittedisk > 0 %}
-    <tr rel="tooltip" title="{{ extra.fittedisk|number_format(2) }}&#10;&#36;{{ extra.fittedprice.usd|number_format(2, '.', ',') }} / {{ extra.fittedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.fittedprice.gbp|number_format(2, '.', ',') }}">
+    <tr rel="tooltip" title="{{ extra.fittedisk|number_format(2) }} ISK<br/>{{ extra.fittedprice.usd|number_format(2, '.', ',') }} / {{ extra.fittedprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.fittedprice.gbp|number_format(2, '.', ',') }}">
         <th>Ship+Fit:</th>
         <td class="item_fitted"><span format="format-isk-once" raw="{{ extra.fittedisk }}">{{ extra.fittedisk | number_format(2, '.', ',') }}</span> ISK {{ pctShipFitCost|raw }}</td>
     </tr>
     {% endif %}
-	<tr rel="tooltip" title="{{ extra.totalisk|number_format(2) }}&#10;&#36;{{ extra.totalprice.usd|number_format(2, '.', ',') }} / {{ extra.totalprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.totalprice.gbp|number_format(2, '.', ',') }}">
+	<tr rel="tooltip" title="{{ extra.totalisk|number_format(2) }} ISK<br/>{{ extra.totalprice.usd|number_format(2, '.', ',') }} / {{ extra.totalprice.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ extra.totalprice.gbp|number_format(2, '.', ',') }}">
 		<th>Total:</th>
 		<td><strong class="item_dropped"><span format="format-isk-once" raw="{{ extra.totalisk }}">{{ extra.totalisk|number_format(2, '.', ',') }}</span> ISK</strong></td>
 	</tr>
