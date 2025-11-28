@@ -3,7 +3,6 @@ var adblocked = undefined;
 
 
 $(document).ready(function () {
-	setTimeout(prepTippy, 500);
     if (navbar) $('#tracker-dropdown').load('/navbar/');
 
     // autocomplete
