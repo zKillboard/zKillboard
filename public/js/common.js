@@ -2,7 +2,7 @@ var ws;
 var adblocked = undefined;
 
 
-$(document).ready(function () {
+$(document).ready(function () {	
     if (navbar) $('#tracker-dropdown').load('/navbar/');
 
     // autocomplete
@@ -74,21 +74,31 @@ $(document).ready(function () {
 	$("[raw]").click(copyToClipboard);
 	
 	$("label[for]").on("click", () => { $(window).focus(); })
+	setTimeout(prepTippy, 1);
 });
 
 function prepTippy() {
-	tippy('[rel="tooltip"], [title]:not([title=""])', {
+	document.querySelectorAll('[rel="tooltip"], [title]:not([title=""])')
+		.forEach(el => {
+			// Skip empty titles or tooltips
+			const content =
+				el.getAttribute('tooltip') ||
+				el.getAttribute('title');
 
-		delay: 250,
-		theme: 'light',
-		allowHTML: true,
-		content(reference) {
-			let title = reference.getAttribute('title');
-			// Prevent default browser tooltip
-			reference.removeAttribute('title');
-			return title;
-		}
-	});
+			if (!content || content.trim() === '') return;
+
+			// Prevent double-initialization
+			if (el._tippy) return;
+
+			// Remove native tooltip
+			el.removeAttribute('title');
+
+			tippy(el, {
+				content,
+				allowHTML: true,
+				delay: 250,
+			});
+		});
 	setTimeout(prepTippy, 500);
 }
 
