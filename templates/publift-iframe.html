@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    /* Remove margins so ads fit perfectly */
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: transparent;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Publift ad container -->
+  <div data-fuse="{{ slot }}"></div>
+
+  <!-- Load Publift Fuse tag -->
+  <script src="https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js"></script>
+  <script type="text/javascript">
+	window.fuse = window.fuse || {};
+	window.fuse.cmd = window.fuse.cmd || [];
+	window.fuse.cmd.push(function() {
+	  window.fuse.loadTags();
+	});
+  </script>
+
+</body>
+</html>

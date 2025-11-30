@@ -12,6 +12,7 @@ $routes = [
 	'/' => ['GET', 'view/index.php'],
 	'/challenge/' => ['GET', 'view/challenge.php'],
 	'/cache/1hour/publift/{type}/' => ['GET', 'view/publift.php'],
+	'/cache/1hour/publift/iframe/{type}/' => ['GET', 'view/publift-iframe.php'],
 	'/cache/1hour/google/' => ['GET', 'view/google.php'],
 	'/information/{page}/' => ['GET', 'view/information.php'],
 	'/account/favorites/' => ['GET', 'view/favorites.php'],
