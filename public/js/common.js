@@ -549,6 +549,20 @@ function adblockloaded() {
     }
 }
 
+function loadPubliftIframe(elementId, $slotType) {
+	const el = document.getElementById(elementId);
+	if (!el) return;
+
+	el.innerHTML = `
+<iframe
+  src="https://zkillboard.com/cache/1hour/publift/iframe/${$slotType}/"
+  sandbox=""
+  style="border:0;width:100%;height:250px;overflow:hidden;"
+></iframe>
+  `;
+}
+
+
 function showAdblockedMessage() {
     if ($("#publifttop").html() == "") {
         gtag('event', 'adblocked', 'detectAdblock blocked');
