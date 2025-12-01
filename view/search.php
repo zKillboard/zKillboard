@@ -4,6 +4,8 @@ function handler($request, $response, $args, $container) {
     global $mdb;    
 
     $search = $args['search'] ?? null;
+	$search = str_replace('%20', ' ', $search);
+	$search = str_replace('+', ' ', $search);
     $method = $request->getMethod();
     
     if ($method === 'POST') {   
@@ -12,7 +14,7 @@ function handler($request, $response, $args, $container) {
         return $response->withHeader('Location', '/search/'.urlencode($searchbox).'/')->withStatus(302);
     }   
 
-    $result = zkbSearch::getResults($search);   
+	$result = zkbSearch::getResults($search);   
 
     // if there is only one result, we redirect.    
     if (count($result) == 1) {  
