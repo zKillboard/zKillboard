@@ -3,6 +3,8 @@ var adblocked = undefined;
 
 
 $(document).ready(function () {	
+	setTime();
+
     if (navbar) $('#tracker-dropdown').load('/navbar/');
 
     // autocomplete
@@ -705,4 +707,19 @@ function showToast(message, duration = 3000) {
 function hideToast() {
 	let container = document.getElementById('toast-container');
 	if (container) container.remove();
+}
+
+let setTimeTimeoutHandle = null;
+function setTime() {
+	clearTimeout(setTimeTimeoutHandle);
+	const now = new Date();
+	const time = now.toUTCString().slice(17, 22) + " UTC";
+	const el = document.getElementById("my_clock");
+	if (el.textContent === time) return;
+	el.textContent = time;
+
+	// now determine approximate sleep time until the next minute
+	const seconds = now.getUTCSeconds();
+	let sleepTime = (60 - seconds) * 1000 + 50; // add a small buffer
+	setTimeTimeoutHandle = setTimeout(setTime, sleepTime);
 }
