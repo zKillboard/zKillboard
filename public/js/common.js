@@ -418,43 +418,6 @@ async function pasteCrestUrlAsync() {
     }
 }
 
-function loadPartial(url) {
-    setTimeout("doLoad('" + url + "');", 1);
-    return false;
-}
-
-function addPartials() {
-    //var partials = ['kill', 'faction', 'system', 'region', 'group', 'ship', 'location'];
-    var partials = ['kill', 'character', 'corporation', 'alliance', 'faction', 'system', 'region', 'group', 'ship', 'location'];
-    for (partial of partials) {
-        console.log("Adding partial for " + partial);
-        $(".pagecontent a[href^='/" + partial + "/']").on('click', function(event) { doLoad($(this).attr('href')); return false; } );
-    }
-}
-
-function loadCompleted() {
-    window.scrollTo(0, 0);
-    NProgress.done();
-    //addPartials();
-    addKillListClicks();
-    $('#tracker-dropdown').load('/navbar/');
-}
-
-function doLoad(url) {
-    return;
-    //console.log("Loading: " + url);
-    var pathname = window.location.pathname;
-    var state = { 'href' : pathname };
-    NProgress.start();
-    $(".pagecontent").load('/partial' + url, null, loadCompleted);
-    history.pushState(state, null, url);
-}
-
-// Revert to a previously saved state
-window.addEventListener('popstate', function(event) {
-        //window.location = window.location;
-        });
-
 function addKillListClicks()
 {
     $(".killListRow").on('click', function(event) {
@@ -548,20 +511,6 @@ function adblockloaded() {
 		}
     }
 }
-
-function loadPubliftIframe(elementId, $slotType) {
-	const el = document.getElementById(elementId);
-	if (!el) return;
-
-	el.innerHTML = `
-<iframe
-  src="https://zkillboard.com/cache/1hour/publift/iframe/${$slotType}/"
-  sandbox=""
-  style="border:0;width:100%;height:250px;overflow:hidden;"
-></iframe>
-  `;
-}
-
 
 function showAdblockedMessage() {
     if ($("#publifttop").html() == "") {
