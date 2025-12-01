@@ -61,7 +61,7 @@ function handler($request, $response, $args, $container) {
     foreach ($r as $row) {
         $id = $row;
         $row = [$column => $row];
-        $row['overallRank'] = Util::rankCheck($redis->zRank("tq:ranks:$pageEpoch:$column", $id));
+        $row['overallRank'] = 1 + (int) Util::rankCheck($redis->zRank("tq:ranks:$pageEpoch:$column", $id));
 
         $row['shipsDestroyed'] = $redis->zScore("tq:ranks:$pageEpoch:$column:shipsDestroyed$s", $id);
         $row['sdRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:$pageEpoch:$column:shipsDestroyed$s", $id));
