@@ -562,13 +562,13 @@ function getNearbyRanks($key, $rankKeyName, $id, $title, $statType)
         $nearRanks = $redis->zrange($rankKeyName, $start, $end);
         foreach ($nearRanks as $row) {
             $a = [];
-            $a['rank'] = $redis->zrank($rankKeyName, $row) + 1;
+            $a['rank'] = Util::rankCheck($redis->zrank($rankKeyName, $row));
             $a[$statType] = $row;
             $a['score'] = $redis->zscore($rankKeyName, $row);
             $array['data'][] = $a;
         }
         Info::addInfo($array);
-        $title = $title.' #'.number_format($rank + 1, 0);
+        $title = $title.' #'.number_format(Util::rankCheck($rank), 0);
     }
     $array['title'] = $title;
     $array['type'] = $key;
