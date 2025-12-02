@@ -53,15 +53,30 @@
 
         <link id="mainstyle" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.1.1/css/cyborg/bootstrap.min.css" integrity="sha512-4q6seYu9/7J2H3HY/XIUvDrw/vgKEB+rawQGDWUQCZYUMldPQA+8vbrTTUDEa6E0BozfGQ32SKBxX8v1+NDrRg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-		<link rel="stylesheet" href="/css/style-edits/cyborg-main.css?v={{ version }}" id="nextstyle">
-		<link rel="stylesheet" href="/css/main.css?v={{ version }}">
 		<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css" integrity="sha512-mSYUmp1HYZDFaVKK//63EcZq4iFWFjxSL+Z3T/aCt4IO9Cejm03q3NKKYN6pFQzY0SBOr8h+eCIAZHPXcpZaNw==" crossorigin="anonymous" />
 
-
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.2/css/bootstrap-slider.css" integrity="sha512-9/DrcJ4ddTEJ6E9+muHEzd7lvbYKl26e2zNkLEMClB6ztAF27Q9glJDMk7ffmQ962RZrx3MsHRRqAgiF00e8/A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+		<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery.devbridge-autocomplete/1.5.0/jquery.autocomplete.min.js" integrity="sha512-zigO6HJddtn1h8sdX3wTCbcAjJ1u2f4KhtNgcqminM75+L8IkibrVHqO19LfUK9Mavk0fYGVNUMmhHpx8COP2g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script defer src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js" integrity="sha512-LsnSViqQyaXpD4mBBdRYeP6sRwJiJveh2ZIbW41EBrNmKxgr/LFZIiWT6yr+nycvhvauz8c2nYMhrP80YhG7Cw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+		<script defer type="text/javascript" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+        <script defer src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js" integrity="sha512-vO2Z2TMWFHV2Qyc0QaK4khEDOClJqw5RDzhsRT7CojWdo5aA2KFp5ry+dTGETq9fWYVg8NEz0/o6n2x1ArFI3w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script defer src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.2/bootstrap-slider.min.js" integrity="sha512-ltNvgoNRZAuKXjWIXHXzLhM2dJCnw7xyxpCn43+TzRr0Kg9zU+P7UpmSNwKRvT/GSaJ6TK6lmukBOjXsSQupUQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+		<script defer src="https://unpkg.com/@popperjs/core@2"></script>
+		<script defer src="https://unpkg.com/tippy.js@6"></script>
+
+		<link rel="stylesheet" href="/css/style-edits/cyborg-main.css?v={{ version }}" id="nextstyle">
+		<link rel="stylesheet" href="/css/main.css?v={{ version }}">
+
+		<script defer type="text/javascript" src="/js/search.js?v={{ version }}"></script>
+		<script defer type="text/javascript" src="/js/common.js?v={{ version }}"></script>
+		<script defer type="text/javascript" src="/js/reconnecting-websocket.js"></script>
 
 		{% block style %}
 		{% endblock %}
@@ -150,20 +165,6 @@ var promoImage1 = '{{ promoImage1 }}';
 			</div>
 		</div>
 
-		<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery.devbridge-autocomplete/1.5.0/jquery.autocomplete.min.js" integrity="sha512-zigO6HJddtn1h8sdX3wTCbcAjJ1u2f4KhtNgcqminM75+L8IkibrVHqO19LfUK9Mavk0fYGVNUMmhHpx8COP2g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script defer src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js" integrity="sha512-LsnSViqQyaXpD4mBBdRYeP6sRwJiJveh2ZIbW41EBrNmKxgr/LFZIiWT6yr+nycvhvauz8c2nYMhrP80YhG7Cw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-		<script defer type="text/javascript" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-        <script defer src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js" integrity="sha512-vO2Z2TMWFHV2Qyc0QaK4khEDOClJqw5RDzhsRT7CojWdo5aA2KFp5ry+dTGETq9fWYVg8NEz0/o6n2x1ArFI3w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script defer src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.2/bootstrap-slider.min.js" integrity="sha512-ltNvgoNRZAuKXjWIXHXzLhM2dJCnw7xyxpCn43+TzRr0Kg9zU+P7UpmSNwKRvT/GSaJ6TK6lmukBOjXsSQupUQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-		<script defer src="https://unpkg.com/@popperjs/core@2"></script>
-		<script defer src="https://unpkg.com/tippy.js@6"></script>
-
-		<script defer type="text/javascript" src="/js/search.js?v={{ version }}"></script>
-		<script defer type="text/javascript" src="/js/common.js?v={{ version }}"></script>
-		<script defer type="text/javascript" src="/js/reconnecting-websocket.js"></script>
 		{% block script %}
 		{% endblock %}
 

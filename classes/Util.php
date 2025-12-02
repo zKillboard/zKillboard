@@ -568,9 +568,7 @@ class Util
 
 	public static function rankCheck($rank)
 	{
-		// MongoDB ranks are 1-based, so no need to add 1
-		// Return '-' for invalid/missing ranks (0, false, null)
-		return $rank === false || $rank === null || $rank === 0 ? '-' : (int) $rank;
+		return $rank === false || $rank === null ? '-' : ((int) $rank) + 1;
 	}
 
 	public static function get3dDistance($position, $locationID, $solarSystemID = 0)
