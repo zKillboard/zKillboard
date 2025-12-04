@@ -45,6 +45,9 @@ function loadTops() {
 			(entityMod - currentMod) : 
 			(900 - currentMod + entityMod);
 		
+		// Basic error checking, just in case
+		if (isNaN(secondsUntilNextMatch)) secondsUntilNextMatch = 900;
+		
 		// Schedule for the exact next match time
 		console.log(`scheduling next tops load in ${secondsUntilNextMatch} seconds`);
 		setTimeout(loadTops, secondsUntilNextMatch * 1000);
