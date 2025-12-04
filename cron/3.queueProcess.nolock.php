@@ -166,6 +166,16 @@ try {
         addLabel($kill, $totalValue >= 1000000000000, 'isk:1t+');
         addLabel($kill, isCapital($victim['shipTypeID']), 'capital');
 
+		$fwFaction = fwFaction($kill);
+		if ($fwFaction !== null) {
+			addLabel($kill, true, $fwFaction);
+			if ($fwFaction == "fw:caldari" || $fwFaction == "fw:gallente") {
+				addLabel($kill, true, 'fw:calgal');
+			} else if ($fwFaction == "fw:amarr" || $fwFaction == "fw:minmatar") {
+				addLabel($kill, true, 'fw:amamin');
+			}
+		}
+
         $zkb = array();
 
         if (isset($mail['war_id']) && $mail['war_id'] != 0) {
@@ -527,4 +537,35 @@ function getGeneralTZ($unix_timestamp) {
         default:
             return 'tz:use';
     }
+}
+
+/**
+ * Check for faction warfare IDs on the killmail,
+ * if two warring factions are present, return the faction of the victim.
+ */
+function fwFaction($kill) {	
+	$involved = $kill['involved'];
+	$factions = [];
+	foreach ($involved as $attacker) {
+		if (isset($attacker['factionID']) == false) continue;
+		$attackerFactionID = (int) $attacker['factionID'];
+		$factions[$attackerFactionID] = true;
+	}
+	// Caldari and Gallente?
+	if (isset($factions[500001]) && isset($factions[500004])) {
+		$victim = $kill['involved'][0];
+		$victimFactionID = (int) @$victim['factionID'];
+		if ($victimFactionID == 500001) return "fw:gallente"; // Gallente won the fight
+		if ($victimFactionID == 500004) return "fw:caldari"; // Caldari won the fight
+		return null;
+	}
+	// Amarr and Minmatar?
+	if (isset($factions[500003]) && isset($factions[500002])) {
+		$victim = $kill['involved'][0];
+		$victimFactionID = (int) @$victim['factionID'];
+		if ($victimFactionID == 500003) return "fw:minmatar"; // Minmatar won the fight
+		if ($victimFactionID == 500002) return "fw:amarr"; // Amarr won the fight
+		return null;
+	}
+	return null;
 }
