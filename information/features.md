@@ -184,7 +184,7 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 - **Participant Lists**: All involved pilots, corporations, and alliances
 - **Battle Saving**: Save battle reports with persistent IDs
 - **Shareable URLs**: Persistent battle report links for sharing
-- **Integration Links**: Links to external battle report tools (br.evetools.org, warbeacon.net, RIFT)
+- **Integration Links**: Links to external battle report tools (warbeacon.net, RIFT)
 
 ### War System
 - **War Declaration Tracking**: Monitors official EVE Online wars
@@ -384,7 +384,6 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 ### Third-Party Tool Integration
 - **EVE Ship Fit**: Direct links to fitting analysis
 - **EVE Workbench**: Fitting comparison and analysis
-- **br.evetools.org**: External battle report integration
 - **warbeacon.net**: Alternative battle report viewing
 - **RIFT Integration**: Support for RIFT intel tool
 
