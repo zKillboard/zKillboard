@@ -2,54 +2,30 @@
 
 require_once '../init.php';
 
-print_r(generateRecap2025('character', 1633218082));
-print_r(generateRecap2025('corporation', 98798418));
-print_r(generateRecap2025('alliance', 99010102));
+$minute = date("Hi") + 0;
+$cursor = $mdb->getCollection("statistics")->find(['recap2025' => false]);
+foreach ($cursor as $next) {
+    echo date("Hi") . " $minute " . $next['type'] . " " . $next['id'] . " ";
+    flush();
+    echo generateRecap2025($next['type'], $next['id'], $next);
+    if (date("Hi") > $minute) break;
+}
 
-function generateRecap2025($type, $id)
+
+function generateRecap2025($type, $id, $statistics)
 {
-	global $mdb, $kvc;
+	global $mdb, $redis, $kvc;
+    $cacheKey = "recap2025:$type:$id";
+
+    $skip = !($type == "characterID" || $type == "corporationID" || $type == "allianceID");
+    $skip |= ($type == "corporationID" && $id <= 1999999);
+    if ($skip) return "skipped\n";
+
+    if ($redis->set($cacheKey, "false", ['nx', 'ex' => 3600]) !== true) "in progress or already calced...\n";
 
     // Get entity info
-    $typeField = $type . 'ID';
+    $typeField = $type;
     $info = Info::getInfoDetails($typeField, $id);
-    if ($info === null) {
-        return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => 'Not Found'));
-    }
-
-    // Get statistics from the statistics collection instead of querying all killmails
-    $statistics = $mdb->findDoc('statistics', ['type' => $typeField, 'id' => $id]);
-    
-    if (!$statistics) {
-        return $container->get('view')->render($response, 'recap2025.html', [
-            'type' => $type,
-            'id' => $id,
-            'info' => $info,
-            'year' => 2025,
-            'totalKills' => 0,
-            'totalLosses' => 0,
-            'totalIskDestroyed' => 0,
-            'totalIskLost' => 0,
-            'totalPointsDestroyed' => 0,
-            'totalPointsLost' => 0,
-            'soloKills' => 0,
-            'monthlyKills' => [],
-            'monthlyLosses' => [],
-            'topVictimCharacters' => [],
-            'topVictimCorporations' => [],
-            'topVictimAlliances' => [],
-            'topKillerCharacters' => [],
-            'topKillerCorporations' => [],
-            'topKillerAlliances' => [],
-            'topShipsUsed' => [],
-            'topShipsLost' => [],
-            'topSystems' => [],
-            'topRegions' => [],
-            'efficiency' => 0,
-            'iskEfficiency' => 0,
-            'info_all' => []
-        ]);
-    }
     
     // Extract 2025 monthly data
     $monthlyKills = [];
@@ -423,9 +399,11 @@ function generateRecap2025($type, $id)
             'updated' => $updatedTime
         ]
     );
+    $mdb->set("statistics", ['type' => $type, 'id' => $id], ['recap2025' => true]);
     
     // Add generation time to the data being rendered
     $data['generationTime'] = $updatedTime;
 
-	return $data;
+    $redis->setex($cacheKey, 86400 * 3, "true");
+	return "complete\n";
 }
