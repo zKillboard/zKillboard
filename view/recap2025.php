@@ -15,6 +15,22 @@ function recap2025Handler($request, $response, $args, $container) {
         return $response->withStatus(302)->withHeader('Location', '/');
     }
 
+    // Check cache first (72 hour TTL)
+    $cacheKey = "recap2025:$type:$id";
+    $cached = $mdb->findDoc('keyvalues', ['key' => $cacheKey, 'expiresAt' => ['$gt' => $mdb->now()]]);
+    if ($cached && isset($cached['value'])) {
+		try {
+        	$data = json_decode($cached['value'], true);
+        	// Add generation time from the updated field
+        	if (isset($cached['updated'])) {
+        		$data['generationTime'] = $cached['updated'];
+        	}
+        	return $container->get('view')->render($response, 'recap2025.html', $data);
+		} catch (Exception $e) {
+			// Fall through to regenerate cache
+		}
+    }
+
     // Get entity info
     $typeField = $key . 'ID';
     $info = Info::getInfoDetails($typeField, $id);
@@ -385,6 +401,21 @@ function recap2025Handler($request, $response, $args, $container) {
     $data['info_all'] = $info_all;
     $data['biggestKill'] = $biggestKill;
     $data['biggestLoss'] = $biggestLoss;
+    
+    // Store in keyvalues cache for 72 hours
+    $ttl = 72 * 3600; // 72 hours in seconds
+    $updatedTime = $mdb->now();
+    $mdb->insertUpdate('keyvalues', 
+        ['key' => $cacheKey], 
+        [
+            'value' => json_encode($data), 
+            'expiresAt' => $mdb->now($ttl), 
+            'updated' => $updatedTime
+        ]
+    );
+    
+    // Add generation time to the data being rendered
+    $data['generationTime'] = $updatedTime;
     
     return $container->get('view')->render($response, 'recap2025.html', $data);
 }
