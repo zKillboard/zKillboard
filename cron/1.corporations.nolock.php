@@ -8,8 +8,6 @@ require_once "../init.php";
 
 if ($mt > $esiCorpMaxThreads) exit();
 
-$kvc = new KVCache($mdb, $redis);
-
 $sso = ZKillSSO::getSSO();
 
 if ($redis->get("zkb:noapi") == "true") exit();

@@ -5,8 +5,6 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once "../init.php";
 
-$kvc = new KVCache($mdb, $redis);
-
 if ($redis->get("zkb:noapi") == "true") exit();
 if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit();
 

@@ -6,8 +6,6 @@ use Patreon\OAuth;
 use Patreon\API;
 use MongoDB\BSON\UTCDateTime;
 
-$kvc = new KVCache($mdb, $redis);
-
 if ($redis->get("zkb:patreonupdates") == "true") exit();
 
 global $patreon_client_id, $patreon_client_secret, $patreon_redirect_uri, $patroen_campaign_id;

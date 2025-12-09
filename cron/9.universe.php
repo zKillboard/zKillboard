@@ -1,8 +1,6 @@
 <?php
 
-require_once "../init.php";
-
-$kvc = new KVCache($mdb, $redis);
+require_once '../init.php';
 
 if ($redis->get("zkb:noapi") == "true") exit();
 if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit();
@@ -14,7 +12,7 @@ $loadedVersion = $kvc->get("zkb:tqServerVersion");
 $distinctTypeIDs = $mdb->getCollection('killmails')->distinct('involved.shipTypeID');
 
 if ($serverVersion != "" && $serverVersion == $loadedVersion && $kvc->get("zkb:universeLoaded") == true) {
-    exit();
+    exit("$serverVersion $loadedVersion");
 }
 
 Util::out("Prepping to load universe");

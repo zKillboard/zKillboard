@@ -4,8 +4,6 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once '../init.php';
 
-$kvc = new KVCache($mdb, $redis);
-
 $minute = (int) date('Hi');
 if ($minute >= 1100 && $minute <= 1105) {
     $redis->set('tqStatus', 'OFFLINE'); // Just in case the result is cached on their end as online

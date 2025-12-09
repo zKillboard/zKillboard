@@ -4,8 +4,6 @@ use cvweiss\redistools\RedisTimeQueue;
 
 require_once '../init.php';
 
-$kvc = new KVCache($mdb, $redis);
-
 if ($redis->get("zkb:noapi") == "true") exit();
 
 $mdb = new Mdb();

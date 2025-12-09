@@ -4,8 +4,6 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
-$kvc = new KVCache($mdb, $redis);
-
 if ($fetchWars !== true) {
 	$redis->del("queueWars");
 	exit();
