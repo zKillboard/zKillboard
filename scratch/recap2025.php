@@ -105,24 +105,31 @@ function generateRecap2025($type, $id, $statistics)
     // Get all top victims in one aggregation using $facet
     $pipeline = [
         ['$match' => $killsQueryAll],
-        ['$unwind' => '$involved'],
-        ['$match' => ['involved.isVictim' => true]],
+        ['$project' => [
+            'killmail_id' => 1,
+            'victims' => ['$filter' => [
+                'input' => '$involved',
+                'as' => 'inv',
+                'cond' => ['$eq' => ['$$inv.isVictim', true]]
+            ]]
+        ]],
+        ['$unwind' => '$victims'],
         ['$facet' => [
             'characters' => [
-                ['$group' => ['_id' => ['entityId' => '$involved.characterID', 'killmail_id' => '$killmail_id'], 'entityId' => ['$first' => '$involved.characterID']]],
+                ['$group' => ['_id' => ['entityId' => '$victims.characterID', 'killmail_id' => '$killmail_id'], 'entityId' => ['$first' => '$victims.characterID']]],
                 ['$group' => ['_id' => '$entityId', 'count' => ['$sum' => 1]]],
                 ['$sort' => ['count' => -1]],
                 ['$limit' => 5]
             ],
             'corporations' => [
-                ['$group' => ['_id' => ['entityId' => '$involved.corporationID', 'killmail_id' => '$killmail_id'], 'entityId' => ['$first' => '$involved.corporationID']]],
+                ['$group' => ['_id' => ['entityId' => '$victims.corporationID', 'killmail_id' => '$killmail_id'], 'entityId' => ['$first' => '$victims.corporationID']]],
                 ['$group' => ['_id' => '$entityId', 'count' => ['$sum' => 1]]],
                 ['$sort' => ['count' => -1]],
                 ['$limit' => 5]
             ],
             'alliances' => [
-                ['$match' => ['involved.allianceID' => ['$gt' => 0]]],
-                ['$group' => ['_id' => ['entityId' => '$involved.allianceID', 'killmail_id' => '$killmail_id'], 'entityId' => ['$first' => '$involved.allianceID']]],
+                ['$match' => ['victims.allianceID' => ['$gt' => 0]]],
+                ['$group' => ['_id' => ['entityId' => '$victims.allianceID', 'killmail_id' => '$killmail_id'], 'entityId' => ['$first' => '$victims.allianceID']]],
                 ['$group' => ['_id' => '$entityId', 'count' => ['$sum' => 1]]],
                 ['$sort' => ['count' => -1]],
                 ['$limit' => 5]
@@ -157,24 +164,31 @@ function generateRecap2025($type, $id, $statistics)
     // Get all top killers in one aggregation using $facet
     $pipeline = [
         ['$match' => $lossesQuery],
-        ['$unwind' => '$involved'],
-        ['$match' => ['involved.isVictim' => false]],
+        ['$project' => [
+            'killmail_id' => 1,
+            'killers' => ['$filter' => [
+                'input' => '$involved',
+                'as' => 'inv',
+                'cond' => ['$eq' => ['$$inv.isVictim', false]]
+            ]]
+        ]],
+        ['$unwind' => '$killers'],
         ['$facet' => [
             'characters' => [
-                ['$group' => ['_id' => ['entityId' => '$involved.characterID', 'killmail_id' => '$killmail_id'], 'entityId' => ['$first' => '$involved.characterID']]],
+                ['$group' => ['_id' => ['entityId' => '$killers.characterID', 'killmail_id' => '$killmail_id'], 'entityId' => ['$first' => '$killers.characterID']]],
                 ['$group' => ['_id' => '$entityId', 'count' => ['$sum' => 1]]],
                 ['$sort' => ['count' => -1]],
                 ['$limit' => 5]
             ],
             'corporations' => [
-                ['$group' => ['_id' => ['entityId' => '$involved.corporationID', 'killmail_id' => '$killmail_id'], 'entityId' => ['$first' => '$involved.corporationID']]],
+                ['$group' => ['_id' => ['entityId' => '$killers.corporationID', 'killmail_id' => '$killmail_id'], 'entityId' => ['$first' => '$killers.corporationID']]],
                 ['$group' => ['_id' => '$entityId', 'count' => ['$sum' => 1]]],
                 ['$sort' => ['count' => -1]],
                 ['$limit' => 5]
             ],
             'alliances' => [
-                ['$match' => ['involved.allianceID' => ['$gt' => 0]]],
-                ['$group' => ['_id' => ['entityId' => '$involved.allianceID', 'killmail_id' => '$killmail_id'], 'entityId' => ['$first' => '$involved.allianceID']]],
+                ['$match' => ['killers.allianceID' => ['$gt' => 0]]],
+                ['$group' => ['_id' => ['entityId' => '$killers.allianceID', 'killmail_id' => '$killmail_id'], 'entityId' => ['$first' => '$killers.allianceID']]],
                 ['$group' => ['_id' => '$entityId', 'count' => ['$sum' => 1]]],
                 ['$sort' => ['count' => -1]],
                 ['$limit' => 5]
