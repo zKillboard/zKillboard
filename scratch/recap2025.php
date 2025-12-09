@@ -10,9 +10,8 @@ function generateRecap2025($type, $id)
 {
 	global $mdb, $kvc;
 
-
     // Get entity info
-    $typeField = $key . 'ID';
+    $typeField = $type . 'ID';
     $info = Info::getInfoDetails($typeField, $id);
     if ($info === null) {
         return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => 'Not Found'));
@@ -97,10 +96,9 @@ function generateRecap2025($type, $id)
     $startTime = new \MongoDB\BSON\UTCDateTime(strtotime('2025-01-01 00:00:00') * 1000);
     $endTime = new \MongoDB\BSON\UTCDateTime(strtotime('2025-12-31 23:59:59') * 1000);
     
-    // For kills, we need to ensure the entity is NOT the victim (victim is at index 0)
+    // For kills, we need to ensure the entity is NOT the victim
     $killsQuery = [
-        'involved.' . $typeField => $id,
-        'involved.0.' . $typeField => ['$ne' => $id],
+        'involved' => ['$elemMatch' => [$typeField => $id, 'isVictim' => false]],
         'dttm' => ['$gte' => $startTime, '$lte' => $endTime],
         'labels' => 'cat:6'
     ];
@@ -109,8 +107,7 @@ function generateRecap2025($type, $id)
     
     // For biggest loss, filter to ships only
     $lossesQueryShips = [
-        'involved.0.' . $typeField => $id,
-        'involved.0.isVictim' => true,
+        'involved' => ['$elemMatch' => [$typeField => $id, 'isVictim' => true]],
         'dttm' => ['$gte' => $startTime, '$lte' => $endTime],
         'labels' => 'cat:6'
     ];
@@ -119,15 +116,13 @@ function generateRecap2025($type, $id)
     
     // For aggregations, include all losses (not just ships)
     $lossesQuery = [
-        'involved.0.' . $typeField => $id,
-        'involved.0.isVictim' => true,
+        'involved' => ['$elemMatch' => [$typeField => $id, 'isVictim' => true]],
         'dttm' => ['$gte' => $startTime, '$lte' => $endTime]
     ];
     
     // For aggregations, include all kills (not just ships)
     $killsQueryAll = [
-        'involved.' . $typeField => $id,
-        'involved.0.' . $typeField => ['$ne' => $id],
+        'involved' => ['$elemMatch' => [$typeField => $id, 'isVictim' => false]],
         'dttm' => ['$gte' => $startTime, '$lte' => $endTime]
     ];
     
