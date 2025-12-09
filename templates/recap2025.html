@@ -1,0 +1,594 @@
+{% extends 'base.html' %}
+
+{% set pageTitle = info.name ~ ' - 2025 Year in Review' %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+<style>
+.recap-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.recap-header {
+    text-align: center;
+    padding: 30px 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+    margin-bottom: 30px;
+    color: white;
+}
+.recap-header h1 {
+    font-size: 2.5em;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+.recap-header .entity-name {
+    font-size: 1.5em;
+    margin-top: 10px;
+    opacity: 0.95;
+}
+.stat-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+.stat-card h3 {
+    margin-top: 0;
+    color: #667eea;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 10px;
+}
+.big-number {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #667eea;
+    margin: 10px 0;
+}
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.stat-row:last-child {
+    border-bottom: none;
+}
+.stat-label {
+    font-weight: bold;
+    opacity: 0.8;
+}
+.stat-value {
+    color: #667eea;
+    font-weight: bold;
+}
+.kills-color { color: #5cb85c !important; }
+.losses-color { color: #d9534f !important; }
+.top-list {
+    list-style: none;
+    padding: 0;
+}
+.top-list li {
+    padding: 10px;
+    margin: 5px 0;
+    background: rgba(255,255,255,0.03);
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.top-list .rank {
+    font-weight: bold;
+    margin-right: 10px;
+    color: #667eea;
+}
+.monthly-chart {
+    margin: 20px 0;
+}
+.month-bar-combined {
+    display: flex;
+    margin: 10px 0;
+    align-items: center;
+    gap: 10px;
+}
+.month-label-left {
+    width: 40px;
+    font-size: 0.9em;
+    text-align: left;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+.bar-merged-container {
+    flex: 1;
+    height: 24px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+}
+.bar-merged-container .bar-kills {
+    border-radius: 4px 0 0 4px;
+    border-right: 2px solid rgba(255,255,255,0.3);
+}
+.bar-merged-container .bar-losses {
+    border-radius: 0 4px 4px 0;
+    margin-left: auto;
+    border-left: 2px solid rgba(255,255,255,0.3);
+}
+.bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s;
+}
+.bar-kills {
+    background: linear-gradient(90deg, #5cb85c, #4cae4c);
+}
+.bar-losses {
+    background: linear-gradient(90deg, #d9534f, #c9302c);
+}
+.bar-value-left {
+    font-weight: bold;
+    min-width: 50px;
+    text-align: right;
+    flex-shrink: 0;
+}
+.bar-value-right {
+    font-weight: bold;
+    min-width: 50px;
+    text-align: left;
+    flex-shrink: 0;
+}
+.month-header {
+    margin-bottom: 5px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+.highlight-box {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+    border: 2px solid #667eea;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+}
+.killmail-preview {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    margin: 10px 0;
+}
+.killmail-preview img {
+    margin-right: 15px;
+}
+</style>
+
+<div class="recap-container">
+    <div class="recap-header">
+        <h1>🎆 2025 Year in Review 🎆</h1>
+        <div class="entity-name">
+            <img src="https://images.evetech.net/{{ type }}s/{{ id }}/{% if type == 'character' %}portrait{% else %}logo{% endif %}?size=64" style="vertical-align: middle; border-radius: 50%;" alt="{{ info.name }}">
+            {{ info.name }}
+        </div>
+    </div>
+
+    {% if totalKills == 0 and totalLosses == 0 %}
+        <div class="stat-card">
+            <h3>📭 No Activity in 2025</h3>
+            <p>No kills or losses recorded for this {{ type }} in 2025. Time to undock!</p>
+        </div>
+    {% else %}
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="stat-card">
+                <h3>✨ Kills Overview</h3>
+                <div class="big-number kills-color" format="format-int-once" raw="{{ totalKills }}">{{ totalKills|number_format(0, '.', ',') }}</div>
+                <div class="stat-row">
+                    <span class="stat-label">Total Ships Destroyed</span>
+                    <span class="stat-value" format="format-int-once" raw="{{ totalKills }}">{{ totalKills|number_format(0, '.', ',') }}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">ISK Destroyed</span>
+                    <span class="stat-value"><span format="format-isk-once" raw="{{ totalIskDestroyed }}">{{ (totalIskDestroyed / 1000000000)|number_format(2, '.', ',') }}</span> ISK</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Total Points Destroyed</span>
+                    <span class="stat-value" format="format-int-once" raw="{{ totalPointsDestroyed }}">{{ totalPointsDestroyed|number_format(0, '.', ',') }}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Solo Kills</span>
+                    <span class="stat-value" format="format-int-once" raw="{{ soloKills }}">{{ soloKills|number_format(0, '.', ',') }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="stat-card">
+                <h3>✨ Losses Overview</h3>
+                <div class="big-number losses-color" format="format-int-once" raw="{{ totalLosses }}">{{ totalLosses|number_format(0, '.', ',') }}</div>
+                <div class="stat-row">
+                    <span class="stat-label">Total Ships Lost</span>
+                    <span class="stat-value" format="format-int-once" raw="{{ totalLosses }}">{{ totalLosses|number_format(0, '.', ',') }}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Total ISK Lost</span>
+                    <span class="stat-value"><span format="format-isk-once" raw="{{ totalIskLost }}">{{ (totalIskLost / 1000000000)|number_format(2, '.', ',') }}</span> ISK</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Points Lost</span>
+                    <span class="stat-value" format="format-int-once" raw="{{ totalPointsLost }}">{{ totalPointsLost|number_format(0, '.', ',') }}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Efficiency</span>
+                    <span class="stat-value"><span format="format-dec1" raw="{{ efficiency }}">{{ efficiency|number_format(1, '.', ',') }}</span>%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% if biggestKill %}
+        <div class="col-md-6">
+            <div class="highlight-box">
+                <h3>🏆 Biggest Ship Kill of 2025</h3>
+                <div class="killmail-preview">
+                    <img src="https://images.evetech.net/types/{{ biggestKill.involved.0.shipTypeID }}/render?size=64" alt="Ship">
+                    <div>
+                        <strong>{{ biggestKill.involved.0.characterName|default('Unknown') }}</strong>
+                        ({{ biggestKill.involved.0.shipName|default('Unknown Ship') }})<br>
+                        <span style="color: #5cb85c; font-size: 1.3em;"><span format="format-isk-once" raw="{{ biggestKillValue }}">{{ (biggestKillValue / 1000000000)|number_format(2, '.', ',') }}</span> ISK</span><br>
+                        <small>{{ biggestKill.MonthDayYear|default('Unknown Date') }} in {{ biggestKill.solarSystemName|default('Unknown System') }}</small><br>
+                        <a href="/kill/{{ biggestKill.killID }}/" class="btn btn-sm btn-primary" style="margin-top: 5px;">View Killmail</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if biggestLoss %}
+        <div class="col-md-6">
+            <div class="highlight-box">
+                <h3>💸 Biggest Ship Loss of 2025</h3>
+                <div class="killmail-preview">
+                    <img src="https://images.evetech.net/types/{{ biggestLoss.involved.0.shipTypeID }}/render?size=64" alt="Ship">
+                    <div>
+                        <strong>{{ biggestLoss.involved.0.characterName|default('Unknown') }}</strong>
+                        ({{ biggestLoss.involved.0.shipName|default('Unknown Ship') }})<br>
+                        <span style="color: #d9534f; font-size: 1.3em;"><span format="format-isk-once" raw="{{ biggestLossValue }}">{{ (biggestLossValue / 1000000000)|number_format(2, '.', ',') }}</span> ISK</span><br>
+                        <small>{{ biggestLoss.MonthDayYear|default('Unknown Date') }} in {{ biggestLoss.solarSystemName|default('Unknown System') }}</small><br>
+                        <a href="/kill/{{ biggestLoss.killID }}/" class="btn btn-sm btn-danger" style="margin-top: 5px;">View Killmail</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="stat-card">
+        <h3>📅 Monthly Activity</h3>
+        <div class="monthly-chart">
+            {% set maxKills = 0 %}
+            {% set maxLosses = 0 %}
+            {% for month, count in monthlyKills %}
+                {% if count > maxKills %}{% set maxKills = count %}{% endif %}
+            {% endfor %}
+            {% for month, count in monthlyLosses %}
+                {% if count > maxLosses %}{% set maxLosses = count %}{% endif %}
+            {% endfor %}
+            {% set maxValue = max(maxKills, maxLosses) %}
+            
+            <div class="month-bar-combined month-header">
+                <span class="month-label-left"></span>
+                <span class="bar-value-left kills-color" style="font-weight: bold;">Kills</span>
+                <div class="bar-merged-container" style="visibility: hidden;"></div>
+                <span class="bar-value-right losses-color" style="font-weight: bold;">Lost</span>
+            </div>
+            
+            {% for i in range(1, 12) %}
+                {% set month = '2025-' ~ (i < 10 ? '0' ~ i : i) %}
+                {% set killCount = monthlyKills[month]|default(0) %}
+                {% set lossCount = monthlyLosses[month]|default(0) %}
+                <div class="month-bar-combined">
+                    <span class="month-label-left">{{ month|date('M') }}</span>
+                    <span class="bar-value-left kills-color">{{ killCount }}</span>
+                    <div class="bar-merged-container">
+                        <div class="bar-fill bar-kills" style="width: {{ maxValue > 0 ? (killCount / maxValue * 100) : 0 }}%;"></div>
+                        <div class="bar-fill bar-losses" style="width: {{ maxValue > 0 ? (lossCount / maxValue * 100) : 0 }}%;"></div>
+                    </div>
+                    <span class="bar-value-right losses-color">{{ lossCount }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="stat-card">
+                <h3>🎯 Most Killed Characters</h3>
+                {% if topVictimCharacters|length > 0 %}
+                    <ul class="top-list">
+                        {% for entityId, count in topVictimCharacters %}
+                            <li>
+                                <span>
+                                    <span class="rank">#{{ loop.index }}</span>
+                                    {% set entityInfo = info_all['characterID'][entityId]|default(null) %}
+                                    {% if entityInfo %}
+                                        <img src="https://images.evetech.net/characters/{{ entityId }}/portrait?size=32" style="vertical-align: middle; border-radius: 3px;" alt="{{ entityInfo.name }}">
+                                        <a href="/character/{{ entityId }}/">{{ entityInfo.name }}</a>
+                                    {% else %}
+                                        Unknown
+                                    {% endif %}
+                                </span>
+                                <span class="stat-value"><span format="format-int-once" raw="{{ count }}">{{ count|number_format(0, '.', ',') }}</span> kills</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No data available</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="stat-card">
+                <h3>💀 Most Killed By (Characters)</h3>
+                {% if topKillerCharacters|length > 0 %}
+                    <ul class="top-list">
+                        {% for entityId, count in topKillerCharacters %}
+                            <li>
+                                <span>
+                                    <span class="rank">#{{ loop.index }}</span>
+                                    {% set entityInfo = info_all['characterID'][entityId]|default(null) %}
+                                    {% if entityInfo %}
+                                        <img src="https://images.evetech.net/characters/{{ entityId }}/portrait?size=32" style="vertical-align: middle; border-radius: 3px;" alt="{{ entityInfo.name }}">
+                                        <a href="/character/{{ entityId }}/">{{ entityInfo.name }}</a>
+                                    {% else %}
+                                        Unknown
+                                    {% endif %}
+                                </span>
+                                <span class="stat-value"><span format="format-int-once" raw="{{ count }}">{{ count|number_format(0, '.', ',') }}</span> times</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="stat-card">
+                <h3>🎯 Most Killed Corporations</h3>
+                {% if topVictimCorporations|length > 0 %}
+                    <ul class="top-list">
+                        {% for entityId, count in topVictimCorporations %}
+                            <li>
+                                <span>
+                                    <span class="rank">#{{ loop.index }}</span>
+                                    {% set entityInfo = info_all['corporationID'][entityId]|default(null) %}
+                                    {% if entityInfo %}
+                                        <img src="https://images.evetech.net/corporations/{{ entityId }}/logo?size=32" style="vertical-align: middle; border-radius: 3px;" alt="{{ entityInfo.name }}">
+                                        <a href="/corporation/{{ entityId }}/">{{ entityInfo.name }}</a>
+                                    {% else %}
+                                        Unknown
+                                    {% endif %}
+                                </span>
+                                <span class="stat-value"><span format="format-int-once" raw="{{ count }}">{{ count|number_format(0, '.', ',') }}</span> kills</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No data available</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="stat-card">
+                <h3>💀 Most Killed By (Corporations)</h3>
+                {% if topKillerCorporations|length > 0 %}
+                    <ul class="top-list">
+                        {% for entityId, count in topKillerCorporations %}
+                            <li>
+                                <span>
+                                    <span class="rank">#{{ loop.index }}</span>
+                                    {% set entityInfo = info_all['corporationID'][entityId]|default(null) %}
+                                    {% if entityInfo %}
+                                        <img src="https://images.evetech.net/corporations/{{ entityId }}/logo?size=32" style="vertical-align: middle; border-radius: 3px;" alt="{{ entityInfo.name }}">
+                                        <a href="/corporation/{{ entityId }}/">{{ entityInfo.name }}</a>
+                                    {% else %}
+                                        Unknown
+                                    {% endif %}
+                                </span>
+                                <span class="stat-value"><span format="format-int-once" raw="{{ count }}">{{ count|number_format(0, '.', ',') }}</span> times</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="stat-card">
+                <h3>🎯 Most Killed Alliances</h3>
+                {% if topVictimAlliances|length > 0 %}
+                    <ul class="top-list">
+                        {% for entityId, count in topVictimAlliances %}
+                            <li>
+                                <span>
+                                    <span class="rank">#{{ loop.index }}</span>
+                                    {% set entityInfo = info_all['allianceID'][entityId]|default(null) %}
+                                    {% if entityInfo %}
+                                        <img src="https://images.evetech.net/alliances/{{ entityId }}/logo?size=32" style="vertical-align: middle; border-radius: 3px;" alt="{{ entityInfo.name }}">
+                                        <a href="/alliance/{{ entityId }}/">{{ entityInfo.name }}</a>
+                                    {% else %}
+                                        Unknown
+                                    {% endif %}
+                                </span>
+                                <span class="stat-value"><span format="format-int-once" raw="{{ count }}">{{ count|number_format(0, '.', ',') }}</span> kills</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No data available</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="stat-card">
+                <h3>💀 Most Killed By (Alliances)</h3>
+                {% if topKillerAlliances|length > 0 %}
+                    <ul class="top-list">
+                        {% for entityId, count in topKillerAlliances %}
+                            <li>
+                                <span>
+                                    <span class="rank">#{{ loop.index }}</span>
+                                    {% set entityInfo = info_all['allianceID'][entityId]|default(null) %}
+                                    {% if entityInfo %}
+                                        <img src="https://images.evetech.net/alliances/{{ entityId }}/logo?size=32" style="vertical-align: middle; border-radius: 3px;" alt="{{ entityInfo.name }}">
+                                        <a href="/alliance/{{ entityId }}/">{{ entityInfo.name }}</a>
+                                    {% else %}
+                                        Unknown
+                                    {% endif %}
+                                </span>
+                                <span class="stat-value"><span format="format-int-once" raw="{{ count }}">{{ count|number_format(0, '.', ',') }}</span> times</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="stat-card">
+                <h3>🚀 Most Used Ships</h3>
+                {% if topShipsUsed|length > 0 %}
+                    <ul class="top-list">
+                        {% for shipId, count in topShipsUsed %}
+                            <li>
+                                <span>
+                                    <span class="rank">#{{ loop.index }}</span>
+                                    {% set shipInfo = info_all['typeID'][shipId]|default(null) %}
+                                    {% if shipInfo %}
+                                        <img src="https://images.evetech.net/types/{{ shipId }}/icon?size=32" style="vertical-align: middle;" alt="{{ shipInfo.name }}">
+                                        <a href="/ship/{{ shipId }}/">{{ shipInfo.name }}</a>
+                                    {% else %}
+                                        Unknown Ship
+                                    {% endif %}
+                                </span>
+                                <span class="stat-value"><span format="format-int-once" raw="{{ count }}">{{ count|number_format(0, '.', ',') }}</span> kills</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No data available</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="stat-card">
+                <h3>💥 Most Lost Ships</h3>
+                {% if topShipsLost|length > 0 %}
+                    <ul class="top-list">
+                        {% for shipId, count in topShipsLost %}
+                            <li>
+                                <span>
+                                    <span class="rank">#{{ loop.index }}</span>
+                                    {% set shipInfo = info_all['typeID'][shipId]|default(null) %}
+                                    {% if shipInfo %}
+                                        <img src="https://images.evetech.net/types/{{ shipId }}/icon?size=32" style="vertical-align: middle;" alt="{{ shipInfo.name }}">
+                                        <a href="/ship/{{ shipId }}/">{{ shipInfo.name }}</a>
+                                    {% else %}
+                                        Unknown Ship
+                                    {% endif %}
+                                </span>
+                                <span class="stat-value"><span format="format-int-once" raw="{{ count }}">{{ count|number_format(0, '.', ',') }}</span> losses</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="stat-card">
+                <h3>🌌 Most Active Systems</h3>
+                {% if topSystems|length > 0 %}
+                    <ul class="top-list">
+                        {% for systemId, count in topSystems %}
+                            <li>
+                                <span>
+                                    <span class="rank">#{{ loop.index }}</span>
+                                    {% set systemInfo = info_all['solarSystemID'][systemId]|default(null) %}
+                                    {% if systemInfo %}
+                                        <a href="/system/{{ systemId }}/">{{ systemInfo.name }}</a>
+                                    {% else %}
+                                        Unknown System
+                                    {% endif %}
+                                </span>
+                                <span class="stat-value"><span format="format-int-once" raw="{{ count }}">{{ count|number_format(0, '.', ',') }}</span> kills</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No data available</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="stat-card">
+                <h3>🗺️ Most Active Regions</h3>
+                {% if topRegions|length > 0 %}
+                    <ul class="top-list">
+                        {% for regionId, count in topRegions %}
+                            <li>
+                                <span>
+                                    <span class="rank">#{{ loop.index }}</span>
+                                    {% set regionInfo = info_all['regionID'][regionId]|default(null) %}
+                                    {% if regionInfo %}
+                                        <a href="/region/{{ regionId }}/">{{ regionInfo.name }}</a>
+                                    {% else %}
+                                        Unknown Region
+                                    {% endif %}
+                                </span>
+                                <span class="stat-value"><span format="format-int-once" raw="{{ count }}">{{ count|number_format(0, '.', ',') }}</span> kills</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin: 40px 0; padding: 20px; background: rgba(255,255,255,0.03); border-radius: 10px;">
+        <h3>Thanks for another great year in New Eden! 🚀</h3>
+        <p>See you in 2026!</p>
+        <a href="/{{ type }}/{{ id }}/" class="btn btn-primary btn-lg">Back to Overview</a>
+    </div>
+
+    {% endif %}
+</div>
+
+{% endblock %}

@@ -30,9 +30,15 @@ function handler($request, $response, $args, $container) {
         return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => 'Not Found'));
     }
 
-    $validPageTypes = array('kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime', 'streambox');
+    $validPageTypes = array('kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime', 'streambox', 'recap2025');
     if ($key == 'alliance') {
         $validPageTypes[] = 'corpstats';
+    }
+
+    // Handle recap2025 page type
+    if ($pageType == 'recap2025' && in_array($key, ['character', 'corporation', 'alliance'])) {
+        require_once 'view/recap2025.php';
+        return recap2025Handler($request, $response, $args, $container);
     }
 
     if ($pageType == '') $pageType = 'overview';
