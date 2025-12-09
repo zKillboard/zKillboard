@@ -138,7 +138,7 @@
             {% if detail.constellationName %}
 			<tr>
 				<th>Constellation:</th>
-				<td itemprop="constellation"><a href="/constellation/{{detail.constellationID}}/">{{ detail.constellationName }}</a>
+				<td itemprop="constellation"><a href="/constellation/{{detail.constellationID}}/" class="{% if detail.constellationID >= 22000000 and detail.constellationID < 23000000 %}triglavian{% endif %}">{{ detail.constellationName }}</a>
 				{% include 'components/tracker.html' %}
                 </td>
 			</tr>
