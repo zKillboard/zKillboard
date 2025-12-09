@@ -7,6 +7,10 @@ class KVCache
 
     public function __construct($mdb, $redis)
     {
+		// Check parameters to ensure they are not null
+		if ($mdb === null || $redis === null) {
+			throw new InvalidArgumentException("MDB and Redis instances cannot be null");
+		}
         $this->mdb = $mdb;
         $this->redis = $redis;
     }
@@ -14,17 +18,25 @@ class KVCache
     public function get($key, $default = null)
     {
         $key = "kv:$key";
-        $value = @KVCache::$localCache[$key];
-        if ($value !== null) {
-            if ($value['expiresAt'] <= time()) {
+        
+        // Check local cache
+        if (isset(KVCache::$localCache[$key])) {
+            $cached = KVCache::$localCache[$key];
+            if ($cached['expiresAt'] <= time()) {
                 unset(KVCache::$localCache[$key]);
-                $value = null;
-            } else $value = $value['value'];
+            } else {
+                return json_decode($cached['value']);
+            }
         }
         
-        if ($value === null) $value = $this->redis->get($key);
-        if ($value === null) $value = $this->mdb->findField("keyvalues", "value", ['key' => $key, 'expiresAt' => ['$gt' => time()]]);
-        if ($value === null) return $default;
+        // Check Redis
+        $value = $this->redis->get($key);
+        if ($value === false || $value === null) {
+            // Check MongoDB as fallback
+            $value = $this->mdb->findField("keyvalues", "value", ['key' => $key, 'expiresAt' => ['$gt' => $this->mdb->now()]]);
+        }
+        
+        if ($value === null || $value === false) return $default;
         return json_decode($value);
     }
 
@@ -38,7 +50,7 @@ class KVCache
 
         KVCache::$localCache[$key] = ['value' => $value, 'expiresAt' => $expiresAt];
         $this->redis->setex($key, $ttl, $value);
-        $this->mdb->insertUpdate("keyvalues", ['key' => $key], ['value' => $value, 'expiresAt' => $expiresAt, 'updated' => $this->mdb->now($ttl)]);
+        $this->mdb->insertUpdate("keyvalues", ['key' => $key], ['value' => $value, 'expiresAt' => $this->mdb->now($ttl), 'updated' => $this->mdb->now()]);
     }
 
     public function setex($key, $ttl, $value)
@@ -49,13 +61,13 @@ class KVCache
     public function del($key)
     {
         $key = "kv:$key";
+        unset(KVCache::$localCache[$key]);
         $this->redis->del($key);
         $this->mdb->remove("keyvalues", ["key" => $key]);
     }
 
     public function __call($func, $args)
     {
-        global $redis;
         return $this->redis->$func(...$args);
     }
 }
