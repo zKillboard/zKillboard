@@ -254,7 +254,7 @@ function calcStats($row, $maxSequence)
     $soloRatio = ($total == 0 ? 0 : round(($invCountSolo / $total) * 100, 1));
     $stats['avgGangSize'] = $avg;
     $stats['soloRatio'] = $soloRatio;
-    $stats['recap2025'] = true;
+    if ($type == "characterID" || $type == "corporationID" || $type == "allianceID") $stats['recap2025'] = false;
 
 
     if (@$stats['type'] != 'label' && @$stats['shipsDestroyed'] > 10 && @$stats['shipsDestroyed'] > @$stats['nextTopRecalc']) $stats['calcAlltime'] = true;
