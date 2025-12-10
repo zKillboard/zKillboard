@@ -16,18 +16,15 @@ function recap2025Handler($request, $response, $args, $container) {
     }
 
     // Check cache first (72 hour TTL)
-    $cacheKey = "recap2025:$type:$id";
-    $cached = $mdb->findDoc('keyvalues', ['key' => $cacheKey, 'expiresAt' => ['$gt' => $mdb->now()]]);
+    $cacheKey = "recap2025:{$type}ID:$id";
+    $cached = $mdb->findDoc('keyvalues', ['key' => $cacheKey]);
     if ($cached && isset($cached['value'])) {
-		try {
-        	$data = json_decode($cached['value'], true);
-        	// Add generation time from the updated field
-        	if (isset($cached['updated'])) {
-        		$data['generationTime'] = $cached['updated'];
-        	}
-        	return $container->get('view')->render($response, 'recap2025.html', $data);
-		} catch (Exception $e) {
+		$data = json_decode($cached['value'], true);
+		// Add generation time from the updated field
+		if (isset($cached['updated'])) {
+			$data['generationTime'] = $cached['updated'];
 		}
+		return $container->get('view')->render($response, 'recap2025.html', $data);
     }
-	return $response->withStatus(302)->withHeader('Location', './../');
+	die("foo");
 }

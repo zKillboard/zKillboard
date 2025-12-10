@@ -65,219 +65,145 @@ function generateRecap2025($type, $id, $statistics)
     // Solo kills approximation (not in monthly stats, use overall)
     $soloKills = (int) (@$statistics['shipsDestroyedSolo'] ?? 0);
     
-    // Use aggregation to get top victims/killers/ships/systems without loading all documents
-    $collection = $mdb->getCollection('killmails');
-    
     // Get biggest kill/loss from killmails collection
     $startTime = new \MongoDB\BSON\UTCDateTime(strtotime('2025-01-01 00:00:00') * 1000);
     $endTime = new \MongoDB\BSON\UTCDateTime(strtotime('2025-12-31 23:59:59') * 1000);
     
-    // For kills, we need to ensure the entity is NOT the victim
-    $killsQuery = [
-        'involved' => ['$elemMatch' => [$typeField => $id, 'isVictim' => false]],
-        'dttm' => ['$gte' => $startTime, '$lte' => $endTime],
-        'labels' => 'cat:6'
-    ];
-    $biggestKill = $mdb->findDoc('killmails', $killsQuery, ['zkb.totalValue' => -1]);
+    $collection = $mdb->getCollection('killmails');
+    
+    // Get biggest kill (any type, not just ships)
+    $biggestKillDoc = $collection->findOne(
+        [
+            'involved' => ['$elemMatch' => [$typeField => $id, 'isVictim' => false]],
+            'dttm' => ['$gte' => $startTime, '$lte' => $endTime]
+        ],
+        ['sort' => ['zkb.totalValue' => -1]]
+    );
+    $biggestKill = $biggestKillDoc ? json_decode(json_encode($biggestKillDoc), true) : null;
     $biggestKillValue = (float) (@$biggestKill['zkb']['totalValue'] ?? 0);
     
-    // For biggest loss, filter to ships only
-    $lossesQueryShips = [
-        'involved' => ['$elemMatch' => [$typeField => $id, 'isVictim' => true]],
-        'dttm' => ['$gte' => $startTime, '$lte' => $endTime],
-        'labels' => 'cat:6'
-    ];
-    $biggestLoss = $mdb->findDoc('killmails', $lossesQueryShips, ['zkb.totalValue' => -1]);
+    // Get biggest loss (any type, not just ships)
+    $biggestLossDoc = $collection->findOne(
+        [
+            'involved' => ['$elemMatch' => [$typeField => $id, 'isVictim' => true]],
+            'dttm' => ['$gte' => $startTime, '$lte' => $endTime]
+        ],
+        ['sort' => ['zkb.totalValue' => -1]]
+    );
+    $biggestLoss = $biggestLossDoc ? json_decode(json_encode($biggestLossDoc), true) : null;
     $biggestLossValue = (float) (@$biggestLoss['zkb']['totalValue'] ?? 0);
     
-    // For aggregations, include all losses (not just ships)
-    $lossesQuery = [
-        'involved' => ['$elemMatch' => [$typeField => $id, 'isVictim' => true]],
-        'dttm' => ['$gte' => $startTime, '$lte' => $endTime]
+    // Custom aggregation function for top entities
+    $getTopEntities = function($entityField, $isVictim, $limit = 5) use ($mdb, $typeField, $id, $startTime, $endTime) {
+        $collection = $mdb->getCollection('killmails');
+        
+        // Build match query
+        $matchQuery = [
+            'involved' => ['$elemMatch' => [$typeField => $id, 'isVictim' => !$isVictim]],
+            'dttm' => ['$gte' => $startTime, '$lte' => $endTime]
+        ];
+        
+        // Build aggregation pipeline
+        $pipeline = [
+            ['$match' => $matchQuery],
+            ['$project' => [
+                'killmail_id' => 1,
+                'targets' => ['$filter' => [
+                    'input' => '$involved',
+                    'as' => 'inv',
+                    'cond' => ['$eq' => ['$$inv.isVictim', $isVictim]]
+                ]]
+            ]],
+            ['$unwind' => '$targets'],
+            ['$group' => [
+                '_id' => ['entityId' => '$targets.'.$entityField, 'killmail_id' => '$killmail_id'],
+                'entityId' => ['$first' => '$targets.'.$entityField]
+            ]],
+            ['$match' => ['entityId' => ['$ne' => null], '_id.entityId' => ['$ne' => null], '_id.entityId' => ['$ne' => 0]]],
+            ['$group' => ['_id' => '$entityId', 'count' => ['$sum' => 1]]],
+            ['$sort' => ['count' => -1]],
+            ['$limit' => $limit]
+        ];
+        
+        $results = [];
+        foreach ($collection->aggregate($pipeline, ['allowDiskUse' => true]) as $result) {
+            if ($result['_id']) {
+                $results[(int)$result['_id']] = (int)$result['count'];
+            }
+        }
+        return $results;
+    };
+    
+    // Get top victims (who we killed)
+    $topVictimCharacters = $getTopEntities('characterID', true);
+    $topVictimCorporations = $getTopEntities('corporationID', true);
+    $topVictimAlliances = $getTopEntities('allianceID', true);
+    
+    // Get top killers (who killed us)
+    $topKillerCharacters = $getTopEntities('characterID', false);
+    $topKillerCorporations = $getTopEntities('corporationID', false);
+    $topKillerAlliances = $getTopEntities('allianceID', false);
+    
+    // Custom function for ships - get the ship the entity was flying
+    $getTopShips = function($isKills, $limit = 5) use ($mdb, $typeField, $id, $startTime, $endTime) {
+        $collection = $mdb->getCollection('killmails');
+        
+        $matchQuery = [
+            'involved' => ['$elemMatch' => [$typeField => $id, 'isVictim' => !$isKills]],
+            'dttm' => ['$gte' => $startTime, '$lte' => $endTime]
+        ];
+        
+        $pipeline = [
+            ['$match' => $matchQuery],
+            ['$project' => [
+                'ship' => ['$filter' => [
+                    'input' => '$involved',
+                    'as' => 'inv',
+                    'cond' => ['$and' => [
+                        ['$eq' => ['$$inv.'.$typeField, $id]],
+                        ['$eq' => ['$$inv.isVictim', !$isKills]]
+                    ]]
+                ]]
+            ]],
+            ['$unwind' => '$ship'],
+            ['$group' => ['_id' => '$ship.shipTypeID', 'count' => ['$sum' => 1]]],
+            ['$match' => ['_id' => ['$ne' => null], '_id' => ['$ne' => 0]]],
+            ['$sort' => ['count' => -1]],
+            ['$limit' => $limit]
+        ];
+        
+        $results = [];
+        foreach ($collection->aggregate($pipeline, ['allowDiskUse' => true]) as $result) {
+            if ($result['_id']) {
+                $results[(int)$result['_id']] = (int)$result['count'];
+            }
+        }
+        return $results;
+    };
+    
+    $topShipsUsed = $getTopShips(true);
+    $topShipsLost = $getTopShips(false);
+    
+    // Get top systems and regions using Stats::getTop
+    $statsParams = [
+        $typeField => [$id],
+        'year' => 2025,
+        'limit' => 5,
+        'cacheTime' => 0
     ];
     
-    // For aggregations, include all kills (not just ships)
-    $killsQueryAll = [
-        'involved' => ['$elemMatch' => [$typeField => $id, 'isVictim' => false]],
-        'dttm' => ['$gte' => $startTime, '$lte' => $endTime]
-    ];
-    
-    // Get all top victims in one aggregation using $facet
-    $pipeline = [
-        ['$match' => $killsQueryAll],
-        ['$project' => [
-            'killmail_id' => 1,
-            'victims' => ['$filter' => [
-                'input' => '$involved',
-                'as' => 'inv',
-                'cond' => ['$eq' => ['$$inv.isVictim', true]]
-            ]]
-        ]],
-        ['$unwind' => '$victims'],
-        ['$facet' => [
-            'characters' => [
-                ['$group' => ['_id' => ['entityId' => '$victims.characterID', 'killmail_id' => '$killmail_id'], 'entityId' => ['$first' => '$victims.characterID']]],
-                ['$group' => ['_id' => '$entityId', 'count' => ['$sum' => 1]]],
-                ['$sort' => ['count' => -1]],
-                ['$limit' => 5]
-            ],
-            'corporations' => [
-                ['$group' => ['_id' => ['entityId' => '$victims.corporationID', 'killmail_id' => '$killmail_id'], 'entityId' => ['$first' => '$victims.corporationID']]],
-                ['$group' => ['_id' => '$entityId', 'count' => ['$sum' => 1]]],
-                ['$sort' => ['count' => -1]],
-                ['$limit' => 5]
-            ],
-            'alliances' => [
-                ['$match' => ['victims.allianceID' => ['$gt' => 0]]],
-                ['$group' => ['_id' => ['entityId' => '$victims.allianceID', 'killmail_id' => '$killmail_id'], 'entityId' => ['$first' => '$victims.allianceID']]],
-                ['$group' => ['_id' => '$entityId', 'count' => ['$sum' => 1]]],
-                ['$sort' => ['count' => -1]],
-                ['$limit' => 5]
-            ]
-        ]]
-    ];
-    
-    $victimResultsArray = $collection->aggregate($pipeline)->toArray();
-    $victimResults = !empty($victimResultsArray) ? $victimResultsArray[0] : ['characters' => [], 'corporations' => [], 'alliances' => []];
-    
-    $topVictimCharacters = [];
-    if (isset($victimResults['characters'])) {
-        foreach ($victimResults['characters'] as $result) {
-            if ($result['_id']) $topVictimCharacters[(int)$result['_id']] = (int)$result['count'];
+    $convertToIdCount = function($results, $idField) {
+        $output = [];
+        foreach ($results as $item) {
+            if (isset($item[$idField]) && isset($item['kills'])) {
+                $output[$item[$idField]] = $item['kills'];
+            }
         }
-    }
+        return $output;
+    };
     
-    $topVictimCorporations = [];
-    if (isset($victimResults['corporations'])) {
-        foreach ($victimResults['corporations'] as $result) {
-            if ($result['_id']) $topVictimCorporations[(int)$result['_id']] = (int)$result['count'];
-        }
-    }
-    
-    $topVictimAlliances = [];
-    if (isset($victimResults['alliances'])) {
-        foreach ($victimResults['alliances'] as $result) {
-            if ($result['_id']) $topVictimAlliances[(int)$result['_id']] = (int)$result['count'];
-        }
-    }
-    
-    // Get all top killers in one aggregation using $facet
-    $pipeline = [
-        ['$match' => $lossesQuery],
-        ['$project' => [
-            'killmail_id' => 1,
-            'killers' => ['$filter' => [
-                'input' => '$involved',
-                'as' => 'inv',
-                'cond' => ['$eq' => ['$$inv.isVictim', false]]
-            ]]
-        ]],
-        ['$unwind' => '$killers'],
-        ['$facet' => [
-            'characters' => [
-                ['$group' => ['_id' => ['entityId' => '$killers.characterID', 'killmail_id' => '$killmail_id'], 'entityId' => ['$first' => '$killers.characterID']]],
-                ['$group' => ['_id' => '$entityId', 'count' => ['$sum' => 1]]],
-                ['$sort' => ['count' => -1]],
-                ['$limit' => 5]
-            ],
-            'corporations' => [
-                ['$group' => ['_id' => ['entityId' => '$killers.corporationID', 'killmail_id' => '$killmail_id'], 'entityId' => ['$first' => '$killers.corporationID']]],
-                ['$group' => ['_id' => '$entityId', 'count' => ['$sum' => 1]]],
-                ['$sort' => ['count' => -1]],
-                ['$limit' => 5]
-            ],
-            'alliances' => [
-                ['$match' => ['killers.allianceID' => ['$gt' => 0]]],
-                ['$group' => ['_id' => ['entityId' => '$killers.allianceID', 'killmail_id' => '$killmail_id'], 'entityId' => ['$first' => '$killers.allianceID']]],
-                ['$group' => ['_id' => '$entityId', 'count' => ['$sum' => 1]]],
-                ['$sort' => ['count' => -1]],
-                ['$limit' => 5]
-            ]
-        ]]
-    ];
-    
-    $killerResultsArray = $collection->aggregate($pipeline)->toArray();
-    $killerResults = !empty($killerResultsArray) ? $killerResultsArray[0] : ['characters' => [], 'corporations' => [], 'alliances' => []];
-    
-    $topKillerCharacters = [];
-    if (isset($killerResults['characters'])) {
-        foreach ($killerResults['characters'] as $result) {
-            if ($result['_id']) $topKillerCharacters[(int)$result['_id']] = (int)$result['count'];
-        }
-    }
-    
-    $topKillerCorporations = [];
-    if (isset($killerResults['corporations'])) {
-        foreach ($killerResults['corporations'] as $result) {
-            if ($result['_id']) $topKillerCorporations[(int)$result['_id']] = (int)$result['count'];
-        }
-    }
-    
-    $topKillerAlliances = [];
-    if (isset($killerResults['alliances'])) {
-        foreach ($killerResults['alliances'] as $result) {
-            if ($result['_id']) $topKillerAlliances[(int)$result['_id']] = (int)$result['count'];
-        }
-    }
-    
-    // Get top ships used and systems/regions in one query using $facet
-    $pipeline = [
-        ['$match' => $killsQueryAll],
-        ['$facet' => [
-            'shipsUsed' => [
-                ['$unwind' => '$involved'],
-                ['$match' => [
-                    'involved.' . $typeField => $id,
-                    'involved.isVictim' => false
-                ]],
-                ['$group' => ['_id' => '$involved.shipTypeID', 'count' => ['$sum' => 1]]],
-                ['$sort' => ['count' => -1]],
-                ['$limit' => 5]
-            ],
-            'systems' => [
-                ['$group' => ['_id' => '$system.solarSystemID', 'count' => ['$sum' => 1]]],
-                ['$sort' => ['count' => -1]],
-                ['$limit' => 5]
-            ],
-            'regions' => [
-                ['$group' => ['_id' => '$system.regionID', 'count' => ['$sum' => 1]]],
-                ['$sort' => ['count' => -1]],
-                ['$limit' => 5]
-            ]
-        ]]
-    ];
-    
-    $killsResults = $collection->aggregate($pipeline)->toArray()[0];
-    
-    $topShipsUsed = [];
-    foreach ($killsResults['shipsUsed'] as $result) {
-        if ($result['_id']) $topShipsUsed[(int)$result['_id']] = (int)$result['count'];
-    }
-    
-    $topSystems = [];
-    foreach ($killsResults['systems'] as $result) {
-        if ($result['_id']) $topSystems[(int)$result['_id']] = (int)$result['count'];
-    }
-    
-    $topRegions = [];
-    foreach ($killsResults['regions'] as $result) {
-        if ($result['_id']) $topRegions[(int)$result['_id']] = (int)$result['count'];
-    }
-    
-    // Get top ships lost
-    $pipeline = [
-        ['$match' => $lossesQuery],
-        ['$project' => [
-            'shipTypeID' => ['$arrayElemAt' => ['$involved.shipTypeID', 0]]
-        ]],
-        ['$group' => ['_id' => '$shipTypeID', 'count' => ['$sum' => 1]]],
-        ['$sort' => ['count' => -1]],
-        ['$limit' => 5]
-    ];
-    $topShipsLost = [];
-    foreach ($collection->aggregate($pipeline) as $result) {
-        if ($result['_id']) $topShipsLost[(int)$result['_id']] = (int)$result['count'];
-    }
+    $topSystems = $convertToIdCount(Stats::getTop('solarSystemID', array_merge($statsParams, ['kills' => true]), false, false), 'solarSystemID');
+    $topRegions = $convertToIdCount(Stats::getTop('regionID', array_merge($statsParams, ['kills' => true]), false, false), 'regionID');
     
     // Prepare data for template
     $data = [
@@ -373,9 +299,9 @@ function generateRecap2025($type, $id, $statistics)
     // Add info to biggest kill/loss
     if ($biggestKill) {
         Info::addInfo($biggestKill);
-        // Manually add date fields since Info::addInfo skips UTCDateTime objects
-        if (isset($biggestKill['dttm'])) {
-            $dttm = $biggestKill['dttm']->toDateTime()->getTimestamp();
+        // Manually add date fields - dttm is now an array after json_decode
+        if (isset($biggestKill['dttm']['$date']['$numberLong'])) {
+            $dttm = (int)($biggestKill['dttm']['$date']['$numberLong'] / 1000);
             $biggestKill['unixtime'] = $dttm;
             $biggestKill['MonthDayYear'] = date('F j, Y', $dttm);
         }
@@ -386,9 +312,9 @@ function generateRecap2025($type, $id, $statistics)
     }
     if ($biggestLoss) {
         Info::addInfo($biggestLoss);
-        // Manually add date fields since Info::addInfo skips UTCDateTime objects
-        if (isset($biggestLoss['dttm'])) {
-            $dttm = $biggestLoss['dttm']->toDateTime()->getTimestamp();
+        // Manually add date fields - dttm is now an array after json_decode
+        if (isset($biggestLoss['dttm']['$date']['$numberLong'])) {
+            $dttm = (int)($biggestLoss['dttm']['$date']['$numberLong'] / 1000);
             $biggestLoss['unixtime'] = $dttm;
             $biggestLoss['MonthDayYear'] = date('F j, Y', $dttm);
         }
@@ -401,7 +327,7 @@ function generateRecap2025($type, $id, $statistics)
     $data['info_all'] = $info_all;
     $data['biggestKill'] = $biggestKill;
     $data['biggestLoss'] = $biggestLoss;
-    
+
     // Store in keyvalues cache for 72 hours
     $ttl = 72 * 3600; // 72 hours in seconds
     $updatedTime = $mdb->now();
