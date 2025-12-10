@@ -5,9 +5,7 @@ require_once '../init.php';
 $minute = date("Hi") + 0;
 $cursor = $mdb->getCollection("statistics")->find(['recap2025' => false]);
 foreach ($cursor as $next) {
-    echo date("Hi") . " $minute " . $next['type'] . " " . $next['id'] . " ";
-    flush();
-    echo generateRecap2025($next['type'], $next['id'], $next);
+    generateRecap2025($next['type'], $next['id'], $next);
     if (date("Hi") > $minute) break;
 }
 

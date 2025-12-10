@@ -26,5 +26,5 @@ function recap2025Handler($request, $response, $args, $container) {
 		}
 		return $container->get('view')->render($response, 'recap2025.html', $data);
     }
-	die("foo");
+	return $response->withStatus(302)->withHeader('Location', './../');
 }
