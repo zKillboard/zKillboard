@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% set imageSize = 64 %}
 
 {% set pageTitle = info.name ~ ' - 2025 Year in Review' %}
 {% block title %}{% include 'components/title.html' %}{% endblock %}
@@ -169,7 +170,13 @@
     <div class="recap-header">
         <h1>🎆 2025 Year in Review 🎆</h1>
         <div class="entity-name">
-            <img src="https://images.evetech.net/{{ type }}s/{{ id }}/{% if type == 'character' %}portrait{% else %}logo{% endif %}?size=64" style="vertical-align: middle; border-radius: 50%;" alt="{{ info.name }}">
+			{% if type == 'characterID' %}
+				{% include 'components/image_char.html' %}
+			{% elseif type == 'corporationID' %}
+				{% include 'components/image_corp.html' %}
+			{% elseif type == 'allianceID' %}
+				{% include 'components/image_alli.html' %}
+			{% endif %}
             {{ info.name }}
         </div>
     </div>
@@ -235,7 +242,8 @@
             <div class="highlight-box">
                 <h3>🏆 Biggest Ship Kill of 2025</h3>
                 <div class="killmail-preview">
-                    <img src="https://images.evetech.net/types/{{ biggestKill.involved.0.shipTypeID }}/render?size=64" alt="Ship">
+					{% set field = biggestKill.involved.0 %}
+					{% include 'components/image_ship.html' %}<span style='width: 1em;'></span>
                     <div>
                         <strong>{{ biggestKill.involved.0.characterName|default('Unknown') }}</strong>
                         ({{ biggestKill.involved.0.shipName|default('Unknown Ship') }})<br>
@@ -253,7 +261,8 @@
             <div class="highlight-box">
                 <h3>💸 Biggest Ship Loss of 2025</h3>
                 <div class="killmail-preview">
-                    <img src="https://images.evetech.net/types/{{ biggestLoss.involved.0.shipTypeID }}/render?size=64" alt="Ship">
+					{% set field = biggestLoss.involved.0 %}
+					{% include 'components/image_ship.html' %}<span style='width: 1em;'></span>
                     <div>
                         <strong>{{ biggestLoss.involved.0.characterName|default('Unknown') }}</strong>
                         ({{ biggestLoss.involved.0.shipName|default('Unknown Ship') }})<br>
@@ -316,8 +325,10 @@
                                     <span class="rank">#{{ loop.index }}</span>
                                     {% set entityInfo = info_all['characterID'][entityId]|default(null) %}
                                     {% if entityInfo %}
-                                        <img src="https://images.evetech.net/characters/{{ entityId }}/portrait?size=32" style="vertical-align: middle; border-radius: 3px;" alt="{{ entityInfo.name }}">
-                                        <a href="/character/{{ entityId }}/">{{ entityInfo.name }}</a>
+                                        {% set imageSize = 32 %}
+                                        {% set field = {'characterID': entityId, 'characterName': entityInfo.name} %}
+                                        {% include 'components/image_char.html' %}
+										{% include 'components/text_char.html' %}
                                     {% else %}
                                         Unknown
                                     {% endif %}
@@ -343,8 +354,10 @@
                                     <span class="rank">#{{ loop.index }}</span>
                                     {% set entityInfo = info_all['characterID'][entityId]|default(null) %}
                                     {% if entityInfo %}
-                                        <img src="https://images.evetech.net/characters/{{ entityId }}/portrait?size=32" style="vertical-align: middle; border-radius: 3px;" alt="{{ entityInfo.name }}">
-                                        <a href="/character/{{ entityId }}/">{{ entityInfo.name }}</a>
+                                        {% set imageSize = 32 %}
+                                        {% set field = {'characterID': entityId, 'characterName': entityInfo.name} %}
+                                        {% include 'components/image_char.html' %}
+										{% include 'components/text_char.html' %}
                                     {% else %}
                                         Unknown
                                     {% endif %}
@@ -372,8 +385,10 @@
                                     <span class="rank">#{{ loop.index }}</span>
                                     {% set entityInfo = info_all['corporationID'][entityId]|default(null) %}
                                     {% if entityInfo %}
-                                        <img src="https://images.evetech.net/corporations/{{ entityId }}/logo?size=32" style="vertical-align: middle; border-radius: 3px;" alt="{{ entityInfo.name }}">
-                                        <a href="/corporation/{{ entityId }}/">{{ entityInfo.name }}</a>
+                                        {% set imageSize = 32 %}
+                                        {% set field = {'corporationID': entityId, 'corporationName': entityInfo.name} %}
+                                        {% include 'components/image_corp.html' %}
+										{% include 'components/text_corp.html' %}
                                     {% else %}
                                         Unknown
                                     {% endif %}
@@ -399,8 +414,10 @@
                                     <span class="rank">#{{ loop.index }}</span>
                                     {% set entityInfo = info_all['corporationID'][entityId]|default(null) %}
                                     {% if entityInfo %}
-                                        <img src="https://images.evetech.net/corporations/{{ entityId }}/logo?size=32" style="vertical-align: middle; border-radius: 3px;" alt="{{ entityInfo.name }}">
-                                        <a href="/corporation/{{ entityId }}/">{{ entityInfo.name }}</a>
+                                        {% set imageSize = 32 %}
+                                        {% set field = {'corporationID': entityId, 'corporationName': entityInfo.name} %}
+                                        {% include 'components/image_corp.html' %}
+										{% include 'components/text_corp.html' %}
                                     {% else %}
                                         Unknown
                                     {% endif %}
@@ -414,8 +431,7 @@
                 {% endif %}
             </div>
         </div>
-    </div>
-
+	</div>
     <div class="row">
         <div class="col-md-6">
             <div class="stat-card">
@@ -428,8 +444,10 @@
                                     <span class="rank">#{{ loop.index }}</span>
                                     {% set entityInfo = info_all['allianceID'][entityId]|default(null) %}
                                     {% if entityInfo %}
-                                        <img src="https://images.evetech.net/alliances/{{ entityId }}/logo?size=32" style="vertical-align: middle; border-radius: 3px;" alt="{{ entityInfo.name }}">
-                                        <a href="/alliance/{{ entityId }}/">{{ entityInfo.name }}</a>
+                                        {% set imageSize = 32 %}
+                                        {% set field = {'allianceID': entityId, 'allianceName': entityInfo.name} %}
+                                        {% include 'components/image_alli.html' %}
+										{% include 'components/text_alli.html' %}
                                     {% else %}
                                         Unknown
                                     {% endif %}
@@ -455,8 +473,10 @@
                                     <span class="rank">#{{ loop.index }}</span>
                                     {% set entityInfo = info_all['allianceID'][entityId]|default(null) %}
                                     {% if entityInfo %}
-                                        <img src="https://images.evetech.net/alliances/{{ entityId }}/logo?size=32" style="vertical-align: middle; border-radius: 3px;" alt="{{ entityInfo.name }}">
-                                        <a href="/alliance/{{ entityId }}/">{{ entityInfo.name }}</a>
+                                        {% set imageSize = 32 %}
+                                        {% set field = {'allianceID': entityId, 'allianceName': entityInfo.name} %}
+                                        {% include 'components/image_alli.html' %}
+										{% include 'components/text_alli.html' %}
                                     {% else %}
                                         Unknown
                                     {% endif %}
@@ -484,6 +504,7 @@
                                     <span class="rank">#{{ loop.index }}</span>
                                     {% set shipInfo = info_all['typeID'][shipId]|default(null) %}
                                     {% if shipInfo %}
+										{% set field = shipInfo %}
                                         <img src="https://images.evetech.net/types/{{ shipId }}/icon?size=32" style="vertical-align: middle;" alt="{{ shipInfo.name }}">
                                         <a href="/ship/{{ shipId }}/">{{ shipInfo.name }}</a>
                                     {% else %}
