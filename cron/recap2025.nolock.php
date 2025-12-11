@@ -2,7 +2,7 @@
 
 require_once '../init.php';
 
-$minute = date("Hi") + 0;
+$minute = date("Hi") + 5;
 $cursor = $mdb->getCollection("statistics")->find(['recap2025' => false]);
 foreach ($cursor as $next) {
     generateRecap2025($next['type'], $next['id'], $next);
@@ -19,7 +19,7 @@ function generateRecap2025($type, $id, $statistics)
     $skip |= ($type == "corporationID" && $id <= 1999999);
     if ($skip) return "skipped\n";
 
-    if ($redis->set($cacheKey, "false", ['nx', 'ex' => 3600]) !== true) "in progress or already calced...\n";
+    if ($redis->set($cacheKey, "false", ['nx', 'ex' => 3600]) !== true) return "in progress or already calced...\n";
 
     // Get entity info
     $typeField = $type;
@@ -66,6 +66,8 @@ function generateRecap2025($type, $id, $statistics)
     // Get biggest kill/loss from killmails collection
     $startTime = new \MongoDB\BSON\UTCDateTime(strtotime('2025-01-01 00:00:00') * 1000);
     $endTime = new \MongoDB\BSON\UTCDateTime(strtotime('2025-12-31 23:59:59') * 1000);
+    $first2025 = MongoFilter::getFirstKillID(2025, 1);
+    $dateFilter = ['$gte' => $first2025];
     
     $collection = $mdb->getCollection('killmails');
     
@@ -73,7 +75,8 @@ function generateRecap2025($type, $id, $statistics)
     $biggestKillDoc = $collection->findOne(
         [
             'involved' => ['$elemMatch' => [$typeField => $id, 'isVictim' => false]],
-            'dttm' => ['$gte' => $startTime, '$lte' => $endTime]
+            //'dttm' => ['$gte' => $startTime, '$lte' => $endTime]
+            'killID' => $dateFilter
         ],
         ['sort' => ['zkb.totalValue' => -1]]
     );
@@ -84,7 +87,8 @@ function generateRecap2025($type, $id, $statistics)
     $biggestLossDoc = $collection->findOne(
         [
             'involved' => ['$elemMatch' => [$typeField => $id, 'isVictim' => true]],
-            'dttm' => ['$gte' => $startTime, '$lte' => $endTime]
+            //'dttm' => ['$gte' => $startTime, '$lte' => $endTime]
+            'killID' => $dateFilter
         ],
         ['sort' => ['zkb.totalValue' => -1]]
     );
@@ -92,13 +96,14 @@ function generateRecap2025($type, $id, $statistics)
     $biggestLossValue = (float) (@$biggestLoss['zkb']['totalValue'] ?? 0);
     
     // Custom aggregation function for top entities
-    $getTopEntities = function($entityField, $isVictim, $limit = 5) use ($mdb, $typeField, $id, $startTime, $endTime) {
+    $getTopEntities = function($entityField, $isVictim, $limit = 5) use ($mdb, $typeField, $id, $startTime, $endTime, $dateFilter) {
         $collection = $mdb->getCollection('killmails');
         
         // Build match query
         $matchQuery = [
             'involved' => ['$elemMatch' => [$typeField => $id, 'isVictim' => !$isVictim]],
-            'dttm' => ['$gte' => $startTime, '$lte' => $endTime]
+            //'dttm' => ['$gte' => $startTime, '$lte' => $endTime]
+            'killID' => $dateFilter
         ];
         
         // Build aggregation pipeline
@@ -143,12 +148,13 @@ function generateRecap2025($type, $id, $statistics)
     $topKillerAlliances = $getTopEntities('allianceID', false);
     
     // Custom function for ships - get the ship the entity was flying
-    $getTopShips = function($isKills, $limit = 5) use ($mdb, $typeField, $id, $startTime, $endTime) {
+    $getTopShips = function($isKills, $limit = 5) use ($mdb, $typeField, $id, $startTime, $endTime, $dateFilter) {
         $collection = $mdb->getCollection('killmails');
         
         $matchQuery = [
             'involved' => ['$elemMatch' => [$typeField => $id, 'isVictim' => !$isKills]],
-            'dttm' => ['$gte' => $startTime, '$lte' => $endTime]
+            //'dttm' => ['$gte' => $startTime, '$lte' => $endTime]
+            'killID' => $dateFilter
         ];
         
         $pipeline = [
@@ -343,5 +349,6 @@ function generateRecap2025($type, $id, $statistics)
     $data['generationTime'] = $updatedTime;
 
     $redis->setex($cacheKey, 86400 * 3, "true");
+    echo "$cacheKey\n";
 	return "complete\n";
 }
