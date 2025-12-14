@@ -171,6 +171,7 @@ class Price
             case 85062: // Sidewinder
                 return 200000000000; // 200b
             case 45531: // Victor
+            case 89808: // Skua
                 return 230000000000; // 230b
             case 48635: // Tiamat
             case 60764: // Laelaps
@@ -181,6 +182,8 @@ class Price
             case 47512: // 'Moreau' Fortizar
             case 45647: // Caiman
                 return 60000000000; // 60b 
+            case 89807: // Anhinga
+                return 450000000000; // 450b
             case 45649: // Komodo
                 return 550000000000; // 550b 
             case 9860: // Polaris
