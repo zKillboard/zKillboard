@@ -169,7 +169,7 @@ function systemSuccess($guzzler, $params, $content)
     $mdb->insertUpdate("information", ['type' => 'solarSystemID', 'id' => $id], $update);
     $mdb->insertUpdate("geography", ['type' => 'solarSystemID', 'id' => $id, 'serverVersion' => $serverVersion], $update);
 
-    if (isset($system['star_id'])) $guzzler->call("$esiServer/latest/universe/stars/" . $system['star_id'] . "/", "starSuccess", "fail", ['starID' => $system['star_id']]);
+    if (isset($system['star_id'])) $guzzler->call("$esiServer/universe/stars/" . $system['star_id'] . "/", "starSuccess", "fail", ['starID' => $system['star_id']]);
 }
 
 function starSuccess($guzzler, $params, $content)

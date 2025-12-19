@@ -46,7 +46,7 @@ while ($minute == date('Hi')) {
         continue;
     }
 
-    $url = "$esiServer/latest/characters/affiliation/";
+    $url = "$esiServer/characters/affiliation/";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row, 'chars' => $fetch];
     $guzzler->call($url, "updateChar", "failChar", $params, [], 'POST_JSON', json_encode($fetch, true));
     $guzzler->finish();

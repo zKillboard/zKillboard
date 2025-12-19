@@ -31,7 +31,7 @@ function handler($request, $response, $args, $container) {
 		$hash = $crest['hash'] ?? '';
         switch ($where) {
             case 'esi':
-                return $response->withStatus(302)->withHeader('Location', "https://esi.evetech.net/latest/killmails/$id/$hash/");
+                return $response->withStatus(302)->withHeader('Location', "https://esi.evetech.net/killmails/$id/$hash/");
             case 'eveshipfit':
                 return $response->withStatus(302)->withHeader('Location', "https://eveship.fit/?fit=killmail:$id/$hash");
             case 'eveworkbench':

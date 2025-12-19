@@ -9,7 +9,7 @@ if (date('Hi') < 1200) exit();
 $rkey = "zkb:factions:" . date('Ymd');
 if ($redis->get($rkey) == "true") exit();
 
-$raw = file_get_contents("https://esi.evetech.net/latest/universe/factions/");
+$raw = file_get_contents("https://esi.evetech.net/universe/factions/");
 $json = json_decode($raw, true);
 
 foreach ($json as $faction) {
