@@ -405,9 +405,9 @@ async function pasteCrestUrlAsync() {
         if (isFirefox) return window.location = '/post/';
 
         let str = await navigator.clipboard.readText();
-        strSplit = str.split('/');
-        if (strSplit.length === 8) strSplit.shift();
-        else return window.location = '/post/';
+		strSplit = str.split('/');
+		// Allow with or without /latest as part of the ESI url
+        if (strSplit.length < 7 || strSplit.length > 8) return window.location = '/post/';
 
         $('#externalurl').val(str);
         $('#externalkmform').submit();
