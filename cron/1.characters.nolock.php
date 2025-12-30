@@ -1,6 +1,6 @@
 <?php
 
-$mt = 10; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
+$mt = 15; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
 use cvweiss\redistools\RedisTimeQueue;
 
@@ -10,56 +10,72 @@ $sso = ZKillSSO::getSSO();
 
 if ($redis->get("zkb:noapi") == "true") exit();
 
-$esiCorps = new RedisTimeQueue('tqCorpApiESI', 3600);
-$esi = new RedisTimeQueue('tqApiESI', 900);
-if ($mt == 0 && (date('i') == 22 || $esi->size() < 100)) {
-    $esis = $mdb->find("scopes", ['scope' => 'esi-killmails.read_killmails.v1']);
-    foreach ($esis as $row) {
-        $charID = $row['characterID'];
-        $esi->add($charID);
-    }
-}
-if ($esi->size() == 0) exit();
-
 $noCharCount = 0;
 $bumped = [];
 $minute = date('Hi');
+$second = -1;
 while ($minute == date('Hi')) {
-    //if ($esiCorps->pending() > 100) sleep(1);
-    $charID = (int) $esi->next(false);
+	if ($mt == 0 && date('s') != $second) {
+		$second = date('s');
+
+		$mdb->set('scopes',
+			[
+				'scope' => 'esi-killmails.read_killmails.v1',
+				'nextCheck' => ['$exists' => false]
+			], [
+				'nextCheck' => 0
+			],
+			true
+		);
+
+		$pending = $mdb->getCollection('scopes')->countDocuments(['scope' => 'esi-killmails.read_killmails.v1', 'nextCheck' => ['$lte' => time()]]);
+		$total = $mdb->getCollection('scopes')->countDocuments(['scope' => 'esi-killmails.read_killmails.v1']);
+		$redis->set('zkb:charKillmailScopesPending', "$pending");
+		$redis->set('zkb:charKillmailScopesTotal', "$total");
+	}
+	$row = $mdb->getCollection('scopes')->findOneAndUpdate(
+		[
+			'scope' => 'esi-killmails.read_killmails.v1',
+			'nextCheck' => ['$lte' => time()]
+		],
+		[
+			'$set' => ['nextCheck' => time() + 301]
+		],
+		[
+            'sort' => ['nextCheck' => 1],
+			'returnDocument' => MongoDB\Operation\FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
+		]
+		);
+
+    $charID = (int) @$row['characterID'];
     if ($charID > 0) {
-        if ($redis->get("esi-fetched:$charID") == "true") { usleep(100000); continue; }
+        if ($redis->set("esi-fetched:$charID", 'true', ['nx', 'ex' => 300]) === false)	
+			continue;
 
-        $row = $mdb->findDoc("scopes", ['characterID' => (int) $charID, 'scope' => "esi-killmails.read_killmails.v1", "oauth2" => true], ['lastFetch' => 1]);
-        if ($row != null) {
-            $corpID = (int) Info::getInfoField("characterID", $charID, "corporationID");
-            $row['corporationID'] = $corpID;
-            if ($corpID !== @$row['corporationID']) {
-                $mdb->set("scopes", $row, ['corporationID' => $corpID], true);
-            }
+		$corpID = (int) Info::getInfoField("characterID", $charID, "corporationID");
+		$row['corporationID'] = $corpID;
+		if ($corpID !== @$row['corporationID']) {
+			$mdb->set("scopes", $row, ['corporationID' => $corpID]);
+		}
 
-            $params = ['row' => $row, 'esi' => $esi];
-            $refreshToken = $row['refreshToken'];
-            $timer = new Timer();
-            $accessToken = $sso->getAccessToken($refreshToken);
-            $redis->rpush("timer:sso", round($timer->stop(), 0));
-            if (is_array($accessToken) && @$accessToken['error'] == "invalid_grant") {
-                $mdb->remove("scopes", $row);
-                //sleep(1);
-                continue;
-            }
+		$params = ['row' => $row];
+		$refreshToken = $row['refreshToken'];
+		$timer = new Timer();
+		$accessToken = $sso->getAccessToken($refreshToken);
+		$redis->rpush("timer:sso", round($timer->stop(), 0));
+		if (is_array($accessToken) && @$accessToken['error'] == "invalid_grant") {
+			$mdb->remove("scopes", $row);
+			continue;
+		}
 
-            $timer = new Timer();
-            $killmails = $sso->doCall("$esiServer/characters/$charID/killmails/recent/", [], $accessToken);
-            success(['row' => $row, 'esi' => $esi, 'timer' => $timer], $killmails);
-            $redis->setex("esi-fetched:$charID", 300, "true");
-        } else {
-            $esi->remove($charID);
-        }
-        usleep(100000);
+		$timer = new Timer();
+		$killmails = $sso->doCall("$esiServer/characters/$charID/killmails/recent/", [], $accessToken);
+		success(['row' => $row, 'timer' => $timer], $killmails);
+
+        usleep(50000);
     } else {
         $noCharCount++;
-        if ($noCharCount > 10 && $mt > 10) break;
+        if ($noCharCount > 10 && $mt > 3) break;
         sleep(1);
     }
 }
@@ -69,7 +85,6 @@ function success($params, $content)
     global $mdb, $redis;
 
     $row = $params['row'];
-    $esi = $params['esi'];
     $timer = $params['timer'];
     $delay = (int) @$row['delay'];
     $redis->rpush("timer:characters", round($timer->stop(), 0));
@@ -96,7 +111,6 @@ function success($params, $content)
     foreach ($kills as $kill) {
         $killID = $kill['killmail_id'];
         $hash = $kill['killmail_hash'];
-
         $newKills += Killmail::addMail($killID, $hash, '1.characters', $delay);
     }
 
@@ -119,8 +133,7 @@ function success($params, $content)
     }
 
     // Check recently active characters every 5 minutes
-    if ($redis->get("recentKillmailActivity:char:$charID") == "true") $esi->setTime($charID, time() + 301);
-    else {
+    if ($redis->get("recentKillmailActivity:char:$charID") != "true") {
         $latest = $mdb->findDoc("killmails", ['involved.characterID' => $charID], ['killID' => -1], ['killID' => 1, 'dttm' => 1]);
         $time = $latest == null ? 0 : $latest['dttm']->toDateTime()->getTimestamp();
         $weekAgo = time() - (7 * 86400);
@@ -132,11 +145,15 @@ function success($params, $content)
         else if ($time < $monthsAgo) $adjustment = 24;
         else if ($time < $monthAgo) $adjustment = 4;
         else if ($time < $weekAgo) $adjustment = 1;
+
+		$nextCheck = -1;
         if ($adjustment > 0) {
             $variance = (3600 * $adjustment) / 12;
-            //Util::zout("$charID adjustment $adjustment $variance");
-            $esi->setTime($charID, time() + (3600 * $adjustment) + random_int(-1 * $variance, $variance));
+            $nextCheck = time() + (3600 * $adjustment) + random_int(-1 * $variance, $variance);
         }
-        $mdb->set("scopes", $row, ['adjustment' => $adjustment]);
+		$set = ['adjustment' => $adjustment];
+		if ($nextCheck > 0) $set['nextCheck'] = $nextCheck;
+        $mdb->set("scopes", $row, $set);
     }
 }
+

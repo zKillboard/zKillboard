@@ -97,13 +97,12 @@ addInfo('Top killID', $topKillID);	addInfo('', 0);
 	addInfo('Successful SSO calls in last 5 minutes', Status::getStatus('sso', true), false);
 	addInfo('Failed SSO calls in last 5 minutes', Status::getStatus('sso', false), false);
 
-	$esiChars = new RedisTimeQueue("tqApiESI", 900);
 	$ssoCorps = new RedisTimeQueue("zkb:ssoCorps", 3600);
 	addInfo('', 0, false);
-	addInfo('Character KillLogs to check', $esiChars->pending(), false);
-	addInfo('Unique Character RefreshTokens', $esiChars->size(), false);
-	addInfo('Corporation Scopes to check', $redis->get("zkb:corpKillmailScopesPending"), false);
-	addInfo('Corporation Scopes', $redis->get("zkb:corpKillmailScopesTotal"), false);
+	addInfo('Character Scopes to check', (int) $redis->get('zkb:charKillmailScopesPending'), false);
+	addInfo('Character Scopes', (int) $redis->get('zkb:charKillmailScopesTotal'), false);
+	addInfo('Corporation Scopes to check', (int) $redis->get("zkb:corpKillmailScopesPending"), false);
+	addInfo('Corporation Scopes', (int) $redis->get("zkb:corpKillmailScopesTotal"), false);
 
 	addInfo('', 0, false);
 	addInfo('access token avg request time in ms.', getRedisAvg('timer:sso', Status::getStatus('esi', true)), false);
