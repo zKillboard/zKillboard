@@ -25,7 +25,7 @@ $noCharCount = 0;
 $bumped = [];
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    if ($esiCorps->pending() > 100) sleep(1);
+    //if ($esiCorps->pending() > 100) sleep(1);
     $charID = (int) $esi->next(false);
     if ($charID > 0) {
         if ($redis->get("esi-fetched:$charID") == "true") { usleep(100000); continue; }

@@ -2,8 +2,6 @@
 
 $mt = 10; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit(); 
 
-use cvweiss\redistools\RedisTimeQueue;
-
 require_once "../init.php";
 
 if ($mt > $esiCorpMaxThreads) exit();
@@ -12,30 +10,49 @@ $sso = ZKillSSO::getSSO();
 
 if ($redis->get("zkb:noapi") == "true") exit();
 
-$esi = new RedisTimeQueue('tqCorpApiESI', $esiCorpKm);
-
-if ($mt == 0 && (date("i") == 44 || $esi->size() < 100)) {
-       $corpIDs = $mdb->getCollection("scopes")->distinct("corporationID", ['scope' => 'esi-killmails.read_corporation_killmails.v1']);
-       foreach ($corpIDs as $corpID) $esi->add($corpID);
-}
-
 $noCorpCount = 0;
 $minute = date('Hi');
+$second = -1;
 while ($minute == date('Hi')) {
-    $corpIDRaw = $esi->next(); // This is RedisTimeQueue->next(), not MongoDB cursor
-    $corpID = (int) $corpIDRaw;
+	if ($mt == 0 && date("s") != $second) {
+        $second = date("s");
+
+        $mdb->set("scopes",
+            [
+                'scope' => 'esi-killmails.read_corporation_killmails.v1',
+                'nextCheck' => ['$exists' => false]
+            ], [
+                'nextCheck' => 0
+            ],
+                true
+            );
+
+        $pending = $mdb->getCollection('scopes')->countDocuments(['scope' => 'esi-killmails.read_corporation_killmails.v1', 'nextCheck' => ['$lte' => time()]]);
+        $total = $mdb->getCollection('scopes')->countDocuments(['scope' => 'esi-killmails.read_corporation_killmails.v1']);
+        $redis->set("zkb:corpKillmailScopesPending", "$pending");
+        $redis->set("zkb:corpKillmailScopesTotal", "$total");
+    }
+    $row = $mdb->getCollection("scopes")->findOneAndUpdate(
+            [
+            'scope' => 'esi-killmails.read_corporation_killmails.v1',
+            'nextCheck' => ['$lte' => time()]
+            ],
+            [
+            '$set' => ['nextCheck' => time() + 301]
+            ],
+            [
+            'sort' => ['nextCheck' => 1],
+            'returnDocument' => MongoDB\Operation\FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
+            ]
+            );
+
+    $corpID = (int) @$row['corporationID'];
     if ($corpID > 1999999) {
-        if ($redis->get("esi-fetched:$corpID") == "true") continue;
-        
-        $row = $mdb->findDoc("scopes", ['corporationID' => $corpID, 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['lastFetch' => 1]);
-        if ($row == null) {
-            $esi->remove($corpIDRaw);
-            continue;
-        }
+        if ($redis->set("esi-fetched:$corpID", "true", ['nx', 'ex' => 300]) === false) continue;
 
         $charID = $row['characterID'];
         $refreshToken = $row['refreshToken'];
-        $params = ['row' => $row, 'esi' => $esi, 'tokenTime' => time(), 'refreshToken' => $refreshToken, 'corpID' => $corpID];
+        $params = ['row' => $row, 'tokenTime' => time(), 'refreshToken' => $refreshToken, 'corpID' => $corpID];
 
         $timer = new Timer();
         $refreshToken = $row['refreshToken'];
@@ -51,29 +68,24 @@ while ($minute == date('Hi')) {
         $redis->setex("esi-fetched:$corpID", 300, "true");
         $timer = new Timer();
         $killmails = $sso->doCall("$esiServer/corporations/$corpID/killmails/recent/", [], $accessToken);
-        success(['corpID' => $corpID, 'row' => $row, 'esi' => $esi, 'timer' => $timer], $killmails);
+        success(['mdb' => $mdb, 'corpID' => $corpID, 'row' => $row, 'timer' => $timer], $killmails);
         usleep(100000);
     } else if ($corpID > 0) {
-        // probably an npc corp, can ignore
+        // npc corp, ignore it
+        $mdb->set("scopes", $row, ['nextCheck' => (time() + mt_rand(3600, 7200))]);
     } else {
         $noCorpCount++;
-        if ($noCorpCount > 10 && $mt > 10) break; // allows us to handle bursts 
+        if ($noCorpCount > 10 && $mt > 3) break; // allows us to handle bursts 
         sleep(1);
     }
 }
 
 function success($params, $content) 
 {
-    global $mdb, $redis;
-
-    //global $resHeaders;
-    //Util::out(print_r($resHeaders, true));
-
+    $mdb = $params['mdb'];
     $row = $params['row'];
-    $esi = $params['esi'];
     $timer = $params['timer'];
     $delay = (int) @$row['delay'];
-    $redis->rpush("timer:corporations", round($timer->stop(), 0));
 
     $charID = $row['characterID'];
     $corpID = $params['corpID'];
@@ -88,12 +100,8 @@ function success($params, $content)
         switch($kills['error']) {
             case "Character does not have required role(s)":
                 $mdb->remove("scopes", $row);
-                $redis->del("esi-fetched:" . $params['corpID']);
-                $esi->add($row['corporationID'], 1); // try others, if we have them
                 break;
             case "Unauthorized - Invalid token":
-                $redis->del("esi-fetched:" . $params['corpID']);
-                $esi->add($row['corporationID'], 35);
                 break;
             case "Character is not in the corporation":
                 $mdb->set("information", ['type' => 'characterID', 'id' => (int) $charID], ['lastAffUpdate' => $mdb->now(-86400 * 30)]);
@@ -104,7 +112,6 @@ function success($params, $content)
             default:
                 // Something went wrong, reset it and try again later
                 Util::out("1.corporations error - \n" . print_r($row, true) . "\n" . print_r($kills, true));
-                $esi->add($row['corporationID'], 999);
         }
         sleep(1);
         return;
@@ -131,8 +138,6 @@ function success($params, $content)
         Util::out("$newKills kills added by corp $corpName" . ($delay == 0 ? '' : "($delay)"));
     }
 
-    if ($redis->get("recentKillmailActivity:corp:$corpID") == "true") $esi->setTime($corpID, time() + 301);
-
     $latest = $mdb->findDoc("killmails", ['involved.corporationID' => $corpID], ['killID' => -1], ['killID' => 1, 'dttm' => 1]);
     $time = $latest == null ? 0 : $latest['dttm']->toDateTime()->getTimestamp();
     $threeDaysAgo = time() - (3 * 86400);
@@ -142,9 +147,14 @@ function success($params, $content)
     if ($time < $yearAgo) $adjustment = 24;
     else if ($time < $monthAgo) $adjustment = 1;
     else if ($time < $threeDaysAgo) $adjustment = 0.25;
+
+    $nextCheck = -1;
     if ($adjustment > 0) {
         $variance = (3600 * $adjustment) / 12;
-        $esi->setTime($corpID, time() + (3600 * $adjustment) + random_int(-1 * $variance, $variance));
+        $nextCheck = time() + (3600 * $adjustment) + random_int(-1 * $variance, $variance);		
     }
-    $mdb->set("scopes", $row, ['adjustment' => $adjustment]);
+    $set = ['adjustment' => $adjustment];
+    if ($nextCheck != -1) $set['nextCheck'] = $nextCheck;
+    $mdb->set("scopes", ['scope' => 'esi-killmails.read_corporation_killmails.v1', 'corporationID' => $corpID], $set, true);
 }
+
