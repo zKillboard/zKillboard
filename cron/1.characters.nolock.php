@@ -1,6 +1,6 @@
 <?php
 
-$mt = 15; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
+$mt = 10; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
 use cvweiss\redistools\RedisTimeQueue;
 
@@ -39,7 +39,7 @@ while ($minute == date('Hi')) {
 			'nextCheck' => ['$lte' => time()]
 		],
 		[
-			'$set' => ['nextCheck' => time() + 301]
+			'$set' => ['nextCheck' => time() + 900 + mt_rand(-30, 30)]
 		],
 		[
             'sort' => ['nextCheck' => 1],

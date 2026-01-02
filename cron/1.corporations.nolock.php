@@ -38,7 +38,7 @@ while ($minute == date('Hi')) {
             'nextCheck' => ['$lte' => time()]
             ],
             [
-            '$set' => ['nextCheck' => time() + 301]
+            '$set' => ['nextCheck' => time() + 900 + mt_rand(-30, 30)]
             ],
             [
             'sort' => ['nextCheck' => 1],
