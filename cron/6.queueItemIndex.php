@@ -18,6 +18,47 @@ while ($minute == date('Hi')) {
 function updateItems($killID, $items, $inContainer = false) {
     global $mdb;
 
+    // Collect all items first
+    $toInsert = [];
+    collectItems($killID, $items, $inContainer, $toInsert);
+
+    if (empty($toInsert)) return;
+
+    // Deduplicate by typeID
+    $uniqueTypes = [];
+    foreach ($toInsert as $record) {
+        $uniqueTypes[$record['typeID']] = $record;
+    }
+
+    // Get the raw MongoDB collection
+    $collection = $mdb->getCollection('itemmails');
+    
+    // Find existing typeIDs for this killID
+    $existingRecords = $collection->find(
+        ['killID' => $killID],
+        ['projection' => ['typeID' => 1]]
+    );
+    
+    $existingSet = [];
+    foreach ($existingRecords as $record) {
+        $existingSet[$record['typeID']] = true;
+    }
+
+    // Filter and prepare batch insert
+    $batch = [];
+    foreach ($uniqueTypes as $typeID => $record) {
+        if (!isset($existingSet[$typeID])) {
+            $batch[] = $record;
+        }
+    }
+
+    // Batch insert if we have new items
+    if (!empty($batch)) {
+        $collection->insertMany($batch, ['ordered' => false]);
+    }
+}
+
+function collectItems($killID, $items, $inContainer, &$toInsert) {
     foreach ($items as $item) {
         $typeID = (int) $item['item_type_id'];
         if ($typeID == 0) continue;
@@ -29,11 +70,10 @@ function updateItems($killID, $items, $inContainer = false) {
         if ($isBlueprint && $item['singleton'] != 0) continue;
         if ($isBlueprint && $killID < 21103361) continue;
 
-        if (!$mdb->exists('itemmails', ['killID' => $killID, 'typeID' => $typeID])) {
-            $mdb->insert('itemmails', ['killID' => $killID, 'typeID' => $typeID]);
-        }
-        if (isset($items['items'])) {
-            updateItems($killID, $items['items'], true);
+        $toInsert[] = ['killID' => $killID, 'typeID' => $typeID];
+
+        if (isset($item['items'])) {
+            collectItems($killID, $item['items'], true, $toInsert);
         }
     }
 }
