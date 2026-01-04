@@ -12,7 +12,7 @@ while ($minute == date('Hi')) {
     if ($killID > 0) {
         $killmail = Kills::getEsiKill($killID);
         updateItems($killID, $killmail['victim']['items']);
-    } else exit();
+    } else sleep(1);
 }
 
 function updateItems($killID, $items, $inContainer = false) {
