@@ -10,21 +10,44 @@ if ($redis->scard("queueStatsSet") > 1000) exit();
 
 $minute = date("Hi");
 while ($minute == date("Hi")) {
-    $rows = $mdb->find("statistics", ['calcAlltime' => true, 'reset' => ['$ne' => true]], ['shipsDestroyed' => 1], 1);
-    if (sizeof($rows) == 0) {
-        sleep(1);
-    } else {
-        $row = $rows[0];
-
-        if ($row['type'] == "label" || $row['id'] == 0) {
+    $rows = $mdb->find("statistics", ['calcAlltime' => true, 'reset' => ['$ne' => true]], ['shipsDestroyed' => 1], 25);
+    if (sizeof($rows) == 0) exit();
+    foreach ($rows as $row) {
+        if ($row['id'] == 0) {
             $mdb->set("statistics", $row, ['calcAlltime' => false]);
             continue;
         }
+        $cacheKey = "zkb:top:" . $row['type'] . ":" . $row['id'];
+        $instanceKey = "x";
+        $proceed = false;
+        $set = false;
+        $instance = -1;
+        try {
+            // Ensure we never have more than 5 instances running at once
+            for ($instance = 0; $instance < 5; $instance++) {
+                $instanceKey = "zkb:topInstance:$instance";
+                if ($redis->set($instanceKey, "true", ['nx', 'ex' => 10800]) === true) {
+                    $proceed = true;
+                    break;
+                }
+            }
+            if (!$proceed) {
+                sleep(1);
+                break; // 5 or more instances already running.....
+            }
 
-        $i = $row['type'] . " " . $row['id'] . " : " . $row['shipsDestroyed'];
-        $now = time();
-        calcTop($row);
-        //Util::out("calcTop $i -> " . (time() - $now) . " seconds");
+            $i = $row['type'] . " " . $row['id'] . " : " . $row['shipsDestroyed'];
+
+            if ($redis->set($cacheKey, "false", ['nx', 'ex' => 10800]) !== true) continue;
+            $set = true;
+
+            //$now = time();
+            calcTop($row);
+            //Util::out("calcTop $i -> " . (time() - $now) . " seconds");
+        } finally {
+            if ($proceed) $redis->del($instanceKey);
+            if ($set) $redis->del($cacheKey);
+        }
     }
 }
 
@@ -51,7 +74,8 @@ function calcTop($row)
     $parameters = [$row['type'] => $row['id']];
     $parameters['limit'] = 100;
     $parameters['kills'] = true;
-    $parameters['labels'] = 'pvp';
+    if ($row['type'] == 'label') $parameters['labels'] = $row['id'];
+    else $parameters['labels'] = 'pvp';
 
     $topLists[] = array('type' => 'character', 'data' => Stats::getTop('characterID', $parameters, true, false));
     $topLists[] = array('type' => 'corporation', 'data' => Stats::getTop('corporationID', $parameters, true, false));

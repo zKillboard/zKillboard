@@ -160,9 +160,11 @@ if ($disqualified == 0 && ($pageType == 'top' || $pageType == 'topalltime')) {
             $useType = 'solarSystem';
         }
 
-        $topLists = $mdb->findField('statistics', 'topAllTime', ['type' => "{$useType}ID", 'id' => (int) $id]);
+        $typeField = $useType == "label" ? $useType : "{$useType}ID";
+        $id = $useType == "label" ? $id : (int) $id;
+        $topLists = $mdb->findField('statistics', 'topAllTime', ['type' => $typeField, 'id' => $id]);
         Info::addInfo($topLists);
-        $topKills = $mdb->findField('statistics', 'topIskKills', ['type' => "{$useType}ID", 'id' => (int) $id]);
+        $topKills = $mdb->findField('statistics', 'topIskKills', ['type' => $typeField, 'id' => $id]);
         $topKills = Kills::getDetails($topKills, true);
         $nextTopRecalc = (int) $mdb->findField('statistics', 'nextTopRecalc', ['type' => "{$useType}ID", 'id' => (int) $id]);
         $nextTopRecalc = $nextTopRecalc + 1;
