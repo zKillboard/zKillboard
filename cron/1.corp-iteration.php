@@ -6,7 +6,7 @@ use cvweiss\redistools\RedisTimeQueue;
 require_once "../init.php";
 
 if ($redis->get("zkb:reinforced") == true) exit();
-if ($redis->get("zkb:noapi") == "true") exit();
+if ($kvc->get("zkb:noapi") == "true") exit();
 
 $sso = ZKillSSO::getSSO();
 $esiCorps = new RedisTimeQueue('tqCorpApiESI', $esiCorpKm);

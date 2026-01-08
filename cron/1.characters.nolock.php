@@ -8,7 +8,7 @@ require_once "../init.php";
 
 $sso = ZKillSSO::getSSO();
 
-if ($redis->get("zkb:noapi") == "true") exit();
+if ($kvc->get("zkb:noapi") == "true") exit();
 
 $noCharCount = 0;
 $bumped = [];

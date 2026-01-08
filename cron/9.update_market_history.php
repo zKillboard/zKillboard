@@ -3,7 +3,7 @@
 require_once "../init.php";
 
 
-if ($redis->get("zkb:noapi") == "true") exit();
+if ($kvc->get("zkb:noapi") == "true") exit();
 
 $rset = "zkb:updatemarket";
 $rsetLoad = "zkb:updatemarket:" . date('Ymd', time() - 40500);

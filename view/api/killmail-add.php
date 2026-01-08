@@ -29,7 +29,7 @@ function handler($request, $response, $args, $container) {
         Util::zout(print_r($ex, true));
     }
 
-        if ($redis->get("zkb:noapi") == "true") {
+        if ($kvc->get("zkb:noapi") == "true") {
             return invalidRequest($response, "ESI is unavilable atm");
         }
 

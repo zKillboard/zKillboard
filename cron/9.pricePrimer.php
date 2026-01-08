@@ -3,7 +3,7 @@
 require_once '../init.php';
 global $primePrices;
 
-if ($redis->get("zkb:noapi") == "true") exit();
+if ($kvc->get("zkb:noapi") == "true") exit();
 if ($primePrices != true) exit();
 if ($redis->get("zkb:420prone") == "true") exit();
 

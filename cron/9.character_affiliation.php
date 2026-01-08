@@ -2,7 +2,7 @@
 
 require_once '../init.php';
 
-if ($redis->get("zkb:noapi") == "true") exit();
+if ($kvc->get("zkb:noapi") == "true") exit();
 if ($kvc->get("zkb:universeLoaded") != "true") exit();
 if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit();
 

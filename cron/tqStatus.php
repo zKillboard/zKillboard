@@ -9,7 +9,7 @@ if ($minute >= 1100 && $minute <= 1105) {
     $redis->set('tqStatus', 'OFFLINE'); // Just in case the result is cached on their end as online
     $redis->set('tqCount', 0);
     $redis->set('tqCountInt', 0);
-    $redis->setex("zkb:noapi", 110, "true");
+    $kvc->setex("zkb:noapi", 110, "true");
     exit();
 } else {
     // Not using Guzzle to prevent tq status conflicts and deadlock
@@ -25,10 +25,10 @@ if ($minute >= 1100 && $minute <= 1105) {
 $tqCountInt = (int) $redis->get("tqCountInt");
 if (($minute >= 1058 && $minute <= 1105) || $tqCountInt < 1000) {
     Util::out("Flagging NO API (TQ Count: $tqCountInt)");
-    $redis->setex("zkb:noapi", 110, "true");
-} else if ($redis->get("zkb:noapi") == "true") {
+    $kvc->setex("zkb:noapi", 110, "true");
+} else if ($kvc->get("zkb:noapi") == "true") {
     Util::out("Re-enabling API");
-    $redis->del("zkb:noapi");
+    $kvc->del("zkb:noapi");
     // since everything else has likely quit by now due to noapi, we'll reexecute cron.sh
     exec('./cron/cron.sh >/dev/null 2>&1 &');
 }

@@ -2,7 +2,7 @@
 
 require_once "../init.php";
 
-if ($redis->get("zkb:noapi") == "true") exit();
+if ($kvc->get("zkb:noapi") == "true") exit();
 
 $rset = "zkb:updatenames";
 $rsetLoad = "zkb:updatenames:" . date('Ymd');

@@ -20,14 +20,14 @@ class KVCache
         $key = "kv:$key";
         
         // Check local cache
-        if (isset(KVCache::$localCache[$key])) {
+        /*if (isset(KVCache::$localCache[$key])) {
             $cached = KVCache::$localCache[$key];
             if ($cached['expiresAt'] <= time()) {
                 unset(KVCache::$localCache[$key]);
             } else {
                 return json_decode($cached['value']);
             }
-        }
+        }*/
         
         // Check Redis
         $value = $this->redis->get($key);
@@ -48,7 +48,7 @@ class KVCache
         if ($ttl === null) $ttl = 86400 * 100; // 100 days
         $expiresAt = time() + $ttl;
 
-        KVCache::$localCache[$key] = ['value' => $value, 'expiresAt' => $expiresAt];
+        //KVCache::$localCache[$key] = ['value' => $value, 'expiresAt' => $expiresAt];
         $this->redis->setex($key, $ttl, $value);
         $this->mdb->insertUpdate("keyvalues", ['key' => $key], ['value' => $value, 'expiresAt' => $this->mdb->now($ttl), 'updated' => $this->mdb->now()]);
     }
@@ -61,7 +61,7 @@ class KVCache
     public function del($key)
     {
         $key = "kv:$key";
-        unset(KVCache::$localCache[$key]);
+        //unset(KVCache::$localCache[$key]);
         $this->redis->del($key);
         $this->mdb->remove("keyvalues", ["key" => $key]);
     }

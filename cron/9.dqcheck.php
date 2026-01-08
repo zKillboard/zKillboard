@@ -2,7 +2,7 @@
 
 require_once "../init.php";
 
-if ($redis->get("zkb:dqcheck") == "true") exit();
+if ($kvc->get("zkb:dqcheck") == "true") exit();
 
 $mdb->set('information', ['type' => 'corporationID', 'disqualified' => true], ['dqremove' => true], true);
 $mdb->set('information', ['type' => 'allianceID', 'disqualified' => true], ['dqremove' => true], true);
@@ -26,4 +26,4 @@ $mdb->set('information', ['dqremove' => true], ['disqualified' => false], true);
 $mdb->removeField('information', ['dqremove' => true], 'disqualified', true);
 $mdb->removeField('information', ['dqremove' => ['$exists' => true]], 'dqremove', true);
 
-$redis->setex("zkb:dqcheck", 3601, "true");
+$kvc->setex("zkb:dqcheck", 3601, "true");

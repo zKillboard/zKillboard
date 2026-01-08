@@ -4,7 +4,7 @@ require_once '../init.php';
 
 if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit();
 
-if ($redis->get("zkb:noapi") == "true") exit();
+if ($kvc->get("zkb:noapi") == "true") exit();
 $date = (int) date('Ymd', time() - 7200);
 if ($redis->get("zkb:insuranceFetched:$date") == true) {
     exit();

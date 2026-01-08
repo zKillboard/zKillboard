@@ -20,7 +20,7 @@ function handler($request, $response, $args, $container)
 		return $response->withStatus(302)->withHeader('Location', '/ccpoauth2/');
 	}
 
-	if ($redis->get('zkb:noapi') == 'true') {
+	if ($kvc->get('zkb:noapi') == 'true') {
 		return $container->get('view')->render($response, 'error.html', ['message' => 'Downtime is not a good time to login, the CCP servers are not reliable, sorry.']);
 	}
 

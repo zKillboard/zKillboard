@@ -5,7 +5,7 @@ require_once "../init.php";
 $day = date('Ymd', time() - (6 * 3600));
 $key = "zkb:dayDumpR2Z2:$day";
 if ($kvc->get($key) == "true") exit();
-if ($CF_R2_SEND != gethostname()) exit(); // prevents dev servers from overwriting
+if (@$CF_R2_SEND != gethostname()) exit(); // prevents dev servers from overwriting
 
 global $CF_ACCOUNT_ID, $CF_R2_ACCESS_KEY, $CF_R2_SECRET_KEY, $CF_R2_BUCKET;
 if (!$CF_ACCOUNT_ID || !$CF_R2_ACCESS_KEY || !$CF_R2_SECRET_KEY || !$CF_R2_BUCKET) {
