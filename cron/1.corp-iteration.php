@@ -114,11 +114,6 @@ function success($params, $content, $uri)
                 $mdb->set("information", ['type' => 'characterID', 'id' => ((int) $charID)], ['lastApiUpdate' => 1, 'lastAffUpdate' => 1]);
                 sleep(1);
                 return 0; // Try again after the corp has been updated
-
-            case "This software has exceeded the error limit for ESI. If you are a user, please contact the maintainer of this software. If you are a developer/maintainer, please make a greater effort in the future to receive valid responses. For tips on how, come have a chat with us in #esi on tweetfleet slack. If you're not on tweetfleet slack yet, you can get an invite here -> https://www.fuzzwork.co.uk/tweetfleet-slack-invites/":
-                // 420'ed
-                $mdb->set("scopes", $row, ['lastFetch' => $mdb->now()]);
-                exit();
             case "Timeout contacting tranquility":
             case "Timeout waiting on backend":
             case "The datasource tranquility is temporarily unavailable":
