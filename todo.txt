@@ -6,3 +6,5 @@
 - add bar indicating hs/ls/null/wh/pochven for kills
 - Make alltime/recent/weekly and all/solo redis mappings more consistent
 - battle reports page revamp, make it nicer for mobile/touchscreens
+- trophy leaderboard
+- 3d vector search (maybe)
