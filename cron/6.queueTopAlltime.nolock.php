@@ -88,7 +88,8 @@ function calcTop($row)
     $p['limit'] = 6;
     $topKills = array_keys(Stats::getTopIsk($p));
 
-    $inc = min(11111, ceil($currentSum * 0.01));
+    if ($row['type'] == 'groupID' || $row['type'] == 'label') $inc = ceil($currentSum * 0.01);
+    else $inc = min(11111, ceil($currentSum * 0.01));
     $nextTopRecalc = $currentSum + $inc;
 
     $mdb->set('statistics', ['_id' => $row['_id']], ['topAllTime' => $topLists, 'topIskKills' => $topKills, 'allTimeSum' => $currentSum, 'nextTopRecalc' => $nextTopRecalc, 'calcAlltime' => false]);
