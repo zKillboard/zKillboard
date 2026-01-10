@@ -259,7 +259,7 @@ function calcStats($row, $maxSequence)
     }
 
 
-    if (@$stats['type'] != 'label' && @$stats['shipsDestroyed'] > 10 && @$stats['shipsDestroyed'] > @$stats['nextTopRecalc']) $stats['calcAlltime'] = true;
+    if (@$stats['shipsDestroyed'] > 10 && @$stats['shipsDestroyed'] > @$stats['nextTopRecalc']) $stats['calcAlltime'] = true;
     // save it
     $mdb->save('statistics', $stats);
 
