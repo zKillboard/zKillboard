@@ -621,3 +621,12 @@ code {
 	background-color: #111;
 	color: #ddd;
 }
+
+.tr-killmail .location {
+	max-width: 130px;
+}
+
+.tr-killmail .victim, .tr-killmail .finalBlow {
+	width: 315px !important;
+	max-width: 315px !important;
+}
