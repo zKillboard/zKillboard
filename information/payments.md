@@ -8,9 +8,9 @@
 
 If you're not seeing live killmail updates, try these solutions:
 
-1. **Disable your adblocker** on zKillboard.com
-2. **Send ISK** for ad-free access (instructions below)
-3. **Subscribe via Patreon** for premium features
+1. **Disable your adblocker** on zKillboard.com, or
+2. **Send ISK** for ad-free access (instructions below), or
+3. **Subscribe via Patreon** to really show your support!
 
 ---
 
