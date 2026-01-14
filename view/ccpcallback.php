@@ -4,9 +4,8 @@ use cvweiss\redistools\RedisTimeQueue;
 
 function handler($request, $response, $args, $container)
 {
-	global $esiServer;
-
-	global $mdb, $redis, $adminCharacter, $ip;
+	global $mdb, $redis, $kvc;
+    global $esiServer, $adminCharacter, $ip;
 
 	$sessID = session_id();
 
