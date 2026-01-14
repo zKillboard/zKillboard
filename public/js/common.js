@@ -499,7 +499,6 @@ function loadads() {
             var fuse = elem.attr("fuse");
             elem.load('/cache/1hour/publift/' + fuse + '/', adblockloaded);
             });
-    startWebSocket();
 }
 
 var bottomad = null;
@@ -507,7 +506,15 @@ function adblockloaded() {
     adnumber--;
 	if (adnumber <= 0) {
 		if (typeof fusetag != "undefined") {
-			fusetag.loadSlots();
+            try {
+    			fusetag.loadSlots();
+                startWebSocket();
+            } catch (e) {
+                console.error(e);
+                gtag('event', 'adblocked', 'detectAdblock blocked');
+                $(".liveupdates").addClass('hidden');
+                $("#noliveupdates").removeClass("hidden");
+            }
 		} else {
 			showAdblockedMessage();
 		}
