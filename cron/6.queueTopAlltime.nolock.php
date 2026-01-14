@@ -24,7 +24,7 @@ while ($minute == date("Hi")) {
         $instance = -1;
         try {
             // Ensure we never have more than 5 instances running at once
-            for ($instance = 0; $instance < 5; $instance++) {
+            for ($instance = 0; $instance < 3; $instance++) {
                 $instanceKey = "zkb:topInstance:$instance";
                 if ($redis->set($instanceKey, "true", ['nx', 'ex' => 10800]) === true) {
                     $proceed = true;
