@@ -54,7 +54,7 @@ function handler($request, $response, $args, $container) {
 		'sponsored' => $sponsored
 	);
 
-	return $container->get('view')->render($response, 'index.html', $data);
+	return $container->get('view')->render($response->withHeader('Expires', '60'), 'index.html', $data);
 }
 
 function getTop($title, $type)
