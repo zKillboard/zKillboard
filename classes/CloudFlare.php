@@ -161,5 +161,71 @@ class CloudFlare
             if (!empty($urls)) usleep(750000); // 1200 requests per 900 seconds
         }
     }
+
+/**
+ * Purge one or more cache tags from Cloudflare cache
+ *
+ * @param string $zoneId   Cloudflare Zone ID
+ * @param string $apiToken Cloudflare API token
+ * @param array  $tags     Array of cache tag strings to purge
+ *
+ * @throws RuntimeException on failure
+ */
+public static function purgeCacheTags(
+        string $zoneId,
+        string $apiToken,
+        array $tags
+        ): void {
+
+    $endpoint = "https://api.cloudflare.com/client/v4/zones/{$zoneId}/purge_cache";
+
+    // Cloudflare allows up to 30 tags per request
+    while (count($tags) > 0) {
+        $first30 = array_slice($tags, 0, 30);
+
+        $payload = json_encode([
+                'tags' => array_values($first30),
+        ], JSON_THROW_ON_ERROR);
+
+        $ch = curl_init($endpoint);
+
+        curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST           => true,
+                CURLOPT_HTTPHEADER     => [
+                        'Authorization: Bearer ' . $apiToken,
+                        'Content-Type: application/json',
+                ],
+                CURLOPT_POSTFIELDS     => $payload,
+        ]);
+
+        $response = curl_exec($ch);
+
+        if ($response === false) {
+            $err = curl_error($ch);
+            curl_close($ch);
+            throw new RuntimeException("Cloudflare purge request failed: {$err}");
+        }
+
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        $decoded = json_decode($response, true);
+
+        if ($httpCode !== 200 || empty($decoded['success'])) {
+            throw new RuntimeException(
+                    'Cloudflare cache-tag purge failed: ' .
+                    ($decoded['errors'][0]['message'] ?? 'Unknown error')
+            );
+        }
+
+        $tags = array_slice($tags, 30);
+
+        // Respect Cloudflare rate limits (same cadence as URL purge)
+        if (!empty($tags)) {
+            usleep(750000); // ~1200 requests / 900 seconds
+        }
+    }
 }
 
+}
