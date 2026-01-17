@@ -94,14 +94,11 @@ class Mdb
 
     public function insert($collection, $values)
     {
-        $sem = sem_get(3173);
         try {
-            sem_acquire($sem);
 
             $result = $this->getCollection($collection)->insertOne($values);
             return ['ok' => 1, '_id' => $result->getInsertedId()];
         } finally {
-            sem_release($sem);
         }
     }
 
@@ -111,9 +108,7 @@ class Mdb
             throw new InvalidArgumentException("Document cannot be null");
         }
         
-        $sem = sem_get(3173);
         try {
-            sem_acquire($sem);
 
             $collection = $this->getCollection($collection);
             if (isset($document['_id'])) {
@@ -127,7 +122,6 @@ class Mdb
                 return ['ok' => 1, '_id' => $document['_id']];
             }
         } finally {
-            sem_release($sem);
         }
     }
 
@@ -135,9 +129,7 @@ class Mdb
     {
         $key = isset($key['_id']) ? ['_id' => $key['_id']] : $key;
 
-        $sem = sem_get(3173);
         try {
-            sem_acquire($sem);
 
             $collection = $this->getCollection($collection);
             if ($multi) {
@@ -147,7 +139,6 @@ class Mdb
             }
             return ['ok' => 1, 'n' => $result->getModifiedCount()];
         } finally {
-            sem_release($sem);
         }
     }
 
@@ -160,10 +151,7 @@ class Mdb
             throw new Exception('Invalid key');
         }
 
-        $sem = sem_get(3173);
         try {
-            sem_acquire($sem);
-
             $collection = $this->getCollection($collection);
             if ($multi) {
                 $result = $collection->updateMany($key, ['$set' => $value]);
@@ -172,7 +160,6 @@ class Mdb
             }
             return ['ok' => 1, 'n' => $result->getModifiedCount()];
         } finally {
-            sem_release($sem);
         }
     }
 
@@ -182,14 +169,11 @@ class Mdb
         
         $key = isset($key['_id']) ? ['_id' => $key['_id']] : $key;
 
-        $sem = sem_get(3173);
         try {
-            sem_acquire($sem);
 
             $result = $this->getCollection($collection)->deleteOne($key);
             return ['ok' => 1, 'n' => $result->getDeletedCount()];
         } finally {
-            sem_release($sem);
         }
     }
 
@@ -275,9 +259,7 @@ class Mdb
      */
     public function insertUpdate($collection, $keys, $values = [])
     {
-        $sem = sem_get(3173);
         try {
-            sem_acquire($sem);
 
             $result = $this->getCollection($collection)->findOneAndUpdate(
                 $keys, 
@@ -286,7 +268,6 @@ class Mdb
             );
             return $result;
         } finally {
-            sem_release($sem);
         }
     }
 
