@@ -130,7 +130,7 @@ try {
         if ($padhash != null) {
             $kill['padhash'] = $padhash;
             if ($redis->get("zkb:padhash:$padhash") == "true") $isPaddedKill = true;
-            else $isPaddedKill = ($mdb->count("killmails", ['padhash' => $padhash]) >= 3);
+            else $isPaddedKill = ($mdb->count("killmails", ['padhash' => $padhash]) >= 2);
 
             if ($isPaddedKill) {
                 $redis->setex("zkb:padhash:$padhash", 86400, "true");
@@ -494,7 +494,7 @@ function getPadHash($killmail)
     $attackerID = (int) @$attacker['characterID'];
 
     $dttm = $killmail['dttm']->toDateTime()->getTimestamp();
-    $dttm = $dttm - ($dttm % 60);
+    $dttm = $dttm - ($dttm % 900);
 
     return "$victimID:$attackerID:$shipTypeID:$dttm";
 }
