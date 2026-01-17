@@ -80,7 +80,7 @@ if (substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' ||
 
 // Insert into visitor log without any write concern
 $n = $mdb->getCollection("visitorlog")->insertOne(
-	['ip' => $ip, 'uri' => $uri, 'api' => $isApiRequest, 'agent' => $agent, 'dttm' => $mdb->now()],
+	['ip' => $ip, 'uri' => $uri, 'api' => $isApiRequest, 'agent' =>  iconv("UTF-8", "UTF-8//IGNORE", $agent), 'dttm' => $mdb->now()],
 	['writeConcern' => new MongoDB\Driver\WriteConcern(0)]
 );
 
