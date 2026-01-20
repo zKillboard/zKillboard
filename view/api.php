@@ -88,7 +88,7 @@ function handler($request, $response, $args, $container) {
         $redis->expire("IP:errorCount:$ip", 300);
         $count = $redis->get("IP:errorCount:$ip");
         if ($count > 40) {
-            if ($redis->set("IP:ban:$ip", "true", ['nx', 'ex' => 3600]) === true) Util::zout("Banning $ip because " . $ex->getMessage() . "\n$uri");
+            return $response->withStatus(302)->withHeader('Location', '/api/blocked.json');
         }
 
         $error = ['error' => $ex->getMessage()];
