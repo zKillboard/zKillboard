@@ -207,6 +207,7 @@ try {
         $killsLastHour->add($row['killID']);
         $mdb->set('crestmails', $row, ['processed' => true]);
         $redis->zrem("tobeparsed", $killID);
+        if ($redis->get("kill-deleted:$killID") === "true") $redis->sadd("queueCacheTags", "kill:$killID");
     }
  } catch (Exception $ex) {
     if ($row != null) $mdb->set("crestmail", $row, ['processed' => 'parse failure']);

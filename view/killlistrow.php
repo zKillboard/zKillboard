@@ -34,5 +34,5 @@ function handler($request, $response, $args, $container) {
         $kills[$id] = $kill;
     }
 
-    return $container->get('view')->render($response, 'components/kill_list_row.html', ['killList' => $kills, 'currentDate' => date('M d, Y')]);
+    return $container->get('view')->render($response->withHeader('Cache-Tag', "kill:$killID"), 'components/kill_list_row.html', ['killList' => $kills, 'currentDate' => date('M d, Y')]);
 }

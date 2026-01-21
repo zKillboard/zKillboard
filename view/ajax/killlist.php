@@ -4,9 +4,11 @@ function handler($request, $response, $args, $container) {
     global $mdb, $uri;
 
     $bypass = strpos($uri, "/bypass/") !== false;
+    $tagged = strpos($uri, "/tagged/") !== false;
 
     try {
-        $params = URI::validate($uri, ['s' => !$bypass, 'u' => true]);
+        if ($tagged) $params = URI::validate($uri, ['u' => true]);
+        else $params = URI::validate($uri, ['s' => !$bypass, 'u' => true]);
     } catch (Exception $e) {
         // If validation fails, return empty JSON result
         $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8');
@@ -14,10 +16,12 @@ function handler($request, $response, $args, $container) {
         return $response;
     }
 
-    $sequence = $params['s'];
+    $sequence = @$params['s'];
     $uri = $params['u'];
 
-    $split = explode('/', $uri);  // Fixed deprecated split() function
+    $split = explode("/", $uri);
+    $cacheTagKey = $split[1] . ":" . $split[2];
+
     $type = @$split[1];
     $id = @$split[2];
     if ($type != 'label') {
@@ -31,9 +35,12 @@ function handler($request, $response, $args, $container) {
     if ($stats == null) $stats = ['sequence' => 0];
 
     $sa = (int) $stats['sequence'];
+
+    if ($tagged === false) 
     if ($bypass || "$sa" != "$sequence") {
         // Redirect to proper sequence URL
         $redirectUrl = "/cache/24hour/killlist/?s=$sa&u=$uri";
+        //$redirectUrl = "/cache/tagged/killlist/?u=$uri";
         return $response->withHeader('Location', $redirectUrl)->withStatus(302);
     }
 
@@ -43,7 +50,7 @@ function handler($request, $response, $args, $container) {
     else $kills = Kills::getKills($params, true);
 
     // Return JSON response
-    $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8');
+    $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', "killlist,killlist:$cacheTagKey");
     $response->getBody()->write(json_encode(array_keys($kills)));
     return $response;
 }

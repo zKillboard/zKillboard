@@ -574,7 +574,7 @@ function showAdder(showAdd, type, id, doTN) {
 function statsboxUpdate(stats) {
     if (stats.type == 'systemID') stats.type = 'solarSystemID';
     else if (stats.type == 'shipID') stats.type = 'shipTypeID';
-    $.get('/cache/bypass/stats/?type=' + stats.type + '&id=' + stats.id, setStatsboxValues);
+    $.get('/cache/tagged/stats/?type=' + stats.type + '&id=' + stats.id, setStatsboxValues);
 }
 
 function setStatsboxValues(stats) {

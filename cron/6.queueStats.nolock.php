@@ -88,6 +88,9 @@ while ($minute == date('Hi')) {
             if ($complete) {
                 Util::statsBoxUpdate($type, $id);
                 $redis->srem("queueStatsSet", $raw);
+                $cacheKey = str_replace("shipType", "ship", str_replace("solarS", "s", str_replace("ID", "", "$type:$id")));
+                $redis->sadd("queueCacheTags", "stats:$cacheKey");
+                $redis->sadd("queueCacheTagsStatsTop", "statstop:$cacheKey");
             }
         } catch (Exception $ex) {
             Util::out(print_r($ex, true));

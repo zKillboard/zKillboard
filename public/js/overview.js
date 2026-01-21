@@ -14,7 +14,7 @@ function loadKms() {
     if (kmLoaded == true) return;
 
     kmLoaded = true;
-    if ($("#killlist").length > 0) $.get('/cache/bypass/killlist/?u=' + window.location.pathname, prepKills)
+    if ($("#killlist").length > 0) $.get('/cache/tagged/killlist/?u=' + window.location.pathname, prepKills)
         .fail(function(jqXHR, textStatus, errorThrown) {
             kmLoaded = false;
             console.error('Failed to load kill list!');
@@ -31,8 +31,8 @@ function loadTops() {
 		let ksa = overviewStats.ksa;
 		let kea = overviewStats.kea;
 
-		$("#topset-isk").load("/cache/bypass/statstopisk/?u=" + window.location.pathname);
-		validTopTypes.forEach((t) => $("#topset-" + t).load("/cache/bypass/statstop10/?u=" + window.location.pathname + "&t=" + t));
+		$("#topset-isk").load("/cache/tagged/statstopisk/?u=" + window.location.pathname);
+		validTopTypes.forEach((t) => $("#topset-" + t).load("/cache/tagged/statstop10/?u=" + window.location.pathname + "&t=" + t));
 
 		topsLoaded = true;
 		console.log('tops loaded');

@@ -13,7 +13,7 @@ while ($minute == date("Hi")) {
         $s = unserialize($redis->spop("queueStatsUpdated"));
         publish($redis, $s['type'], $s['id']);
         $all = true;
-    } else sleep(5);
+    } else break;
 }
 if ($all) publish($redis, "label", "all");
 

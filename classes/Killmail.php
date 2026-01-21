@@ -45,6 +45,6 @@ class Killmail
         $mdb->remove('oneWeek', $p);
         $mdb->remove('rawmails', $p);
         $mdb->set('crestmails', $p, ['processed' => false], true);
-        $redis->del("CacheKill:$killID:overview");
+        $redis->setex("kill-deleted:$killID", 3600, "true");
     }
 }

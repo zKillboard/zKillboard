@@ -4,7 +4,7 @@ function handler($request, $response, $args, $container) {
     global $mdb, $redis, $uri;
 
     try {
-        $params = URI::validate($uri, ['epoch' => false, 'type' => true, 'id' => true]);
+        $params = URI::validate($uri, ['type' => true, 'id' => true]);
     } catch (Exception $e) {
         // If validation fails, return empty JSON result
         $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8');
@@ -15,6 +15,8 @@ function handler($request, $response, $args, $container) {
     $epoch = (int) @$params['epoch'];
     $type = $params['type'];
     $id = $params['id'];
+    $cacheKey = "$type:$id";
+    $cacheKey = str_replace("shipType", "ship", str_replace("solarS", "s", str_replace("ID", "", "$type:$id")));
 
     if ($type != 'label') $id = (int) $id;
 
@@ -22,9 +24,10 @@ function handler($request, $response, $args, $container) {
     if ($array == null) $array = ['epoch' => 0];
 
     $sEpoch = $array['epoch'];
-    if (((int) $epoch) != $sEpoch) {
+    if (false && ((int) $epoch) != $sEpoch) {
         // Redirect to proper epoch URL
-        $redirectUrl = "/cache/24hour/stats/?epoch=$sEpoch&type=$type&id=$id";
+        //$redirectUrl = "/cache/24hour/stats/?epoch=$sEpoch&type=$type&id=$id";
+        $redirectUrl = "/cache/tagged/stats/?type=$type&id=$id";
         return $response->withHeader('Location', $redirectUrl)->withStatus(302);
     }
 
@@ -58,7 +61,7 @@ function handler($request, $response, $args, $container) {
     $ret['sequence'] = @$array['sequence'];
 
     // Return JSON response
-    $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8');
+    $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', "stats,stats:$cacheKey");
     $response->getBody()->write(json_encode($ret));
     return $response;
 }

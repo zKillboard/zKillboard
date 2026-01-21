@@ -6,9 +6,11 @@ function handler($request, $response, $args, $container) {
     $validTopTypes = ['characterID', 'corporationID', 'allianceID', 'shipTypeID', 'solarSystemID', 'locationID'];
 
     $bypass = strpos($uri, "/bypass/") !== false;
+    $tagged = strpos($uri, "/tagged/") !== false;
 
     try {
-        $params = URI::validate($uri, ['u' => true, 't' => true, 'ks' => !$bypass, 'ke' => !$bypass]);
+        if ($tagged || $bypass) $params = URI::validate($uri, ['u' => true, 't' => true]);
+        else $params = URI::validate($uri, ['u' => true, 't' => true, 'ks' => !$bypass, 'ke' => !$bypass]);
     } catch (Exception $e) {
         // If validation fails, return empty template
         return $container->get('view')->render($response, 'components/top_killer_list.html', []);
@@ -19,6 +21,9 @@ function handler($request, $response, $args, $container) {
     $ks = @$params['ks'];
     $ke = @$params['ke'];
 
+    $split = explode("/", $uri);
+    $cacheTagKey = $split[1] . ":" . $split[2];
+
     $epoch = time();
     $epoch = $epoch - ($epoch % 900);
 
@@ -28,9 +33,10 @@ function handler($request, $response, $args, $container) {
     $ksa = (int) $mdb->findField('oneWeek', 'sequence', $q, ['sequence' => 1]);
     $kea = (int) $mdb->findField('oneWeek', 'sequence', $q, ['sequence' => -1]);
 
+    if ($tagged === false) 
     if ($bypass || "$ks" != "$ksa" || "$ke" != "$kea") {
         // Redirect to proper sequence URL
-        $redirectUrl = "/cache/24hour/statstop10/?u=$uri&t=$topType&ks=$ksa&ke=$kea";
+        $redirectUrl = "/cache/tagged/statstop10/?u=$uri&t=$topType";
         return $response->withHeader('Location', $redirectUrl)->withStatus(302);
     }
 
@@ -58,5 +64,5 @@ function handler($request, $response, $args, $container) {
     }
 
     // Return rendered template
-    return $container->get('view')->render($response, 'components/top_killer_list.html', $ret);
+    return $container->get('view')->render($response->withHeader('Cache-Tag', "statstop,statstop10,statstop:$cacheTagKey,$cacheTagKey"), 'components/top_killer_list.html', $ret);
 }

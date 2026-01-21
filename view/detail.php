@@ -220,7 +220,7 @@ $details['comments'] = array_values($comments);
         return $container->get('view')->render($response, "components/item_list.html", $details);
     }
 
-    return $container->get('view')->render($response, 'detail.html', $details);
+    return $container->get('view')->render($response->withHeader("Cache-Tag", "kill:$id"), 'detail.html', $details);
 }
 
 function involvedships($array)
