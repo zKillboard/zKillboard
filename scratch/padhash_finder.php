@@ -2,26 +2,30 @@
 
 require_once "../init.php";
 
-
-$result = $mdb->getCollection("killmails")->aggregate(
+$coll = "ninetyDays";
+$result = $mdb->getCollection($coll)->aggregate(
         [
-        ['$match' => [ 'padhash' => ['$ne' => null ], 'labels' => 'pvp' ]],
-        [ '$group' => [ '_id' => '$padhash', 'count' => [ '$sum' => 1]  ]],
-        ['$match' => [ 'count' => [ '$gt' => 5 ]]],
-        //['$sort'=> ['count' => -1]],
-        ],  ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true]);
+            ['$match' => [ 'padhash' => ['$ne' => null ] ]],
+            [ '$group' => [ '_id' => '$padhash', 'count' => [ '$sum' => 1]  ]],
+            ['$match' => [ 'count' => [ '$gt' => 2 ]]],
+            ['$sort'=> ['count' => -1]],
+        ],  
+        ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true]
+);
 
 
+$total = 0;
 foreach ($result as $row) {
-    print_r($row);
     $padhash = $row['_id'];
     if ($padhash == null) continue;
-    Util::out( "$padhash");
-    $count = 0;
-    while (($count = $mdb->count("killmails", ['labels' => 'pvp', 'padhash' => $padhash])) > 5) {
-        $doc = $mdb->findDoc("killmails", ['padhash' => $padhash, 'labels' => 'pvp']);
-        $mdb->getCollection('killmails')->updateOne(['_id' => $doc['_id']], ['$addToSet' => ['labels' => 'padding']]);
-        $mdb->getCollection('killmails')->updateOne(['_id' => $doc['_id']], ['$pull' => ['labels' => 'pvp']]);
-        Util::out("$padhash $count");
-    }
+    $count = $mdb->count($coll, ['labels' => 'pvp', 'padhash' => $padhash]);
+    $total += $count;
+    $mdb->getCollection("killmails")->updateMany(['padhash' => $padhash], ['$addToSet' => ['labels' => 'padding']]);
+    $mdb->getCollection("ninetyDays")->updateMany(['padhash' => $padhash], ['$addToSet' => ['labels' => 'padding']]);
+    $mdb->getCollection("oneWeek")->updateMany(['padhash' => $padhash], ['$addToSet' => ['labels' => 'padding']]);
 }
+foreach (['killmails', 'ninetyDays', 'oneWeek'] as $coll) {
+    $mdb->getCollection($coll)->updateMany(['labels' => ['$all' => ['padding', 'pvp']]], ['$pull' => ['labels' => 'pvp']]);
+    $mdb->getCollection($coll)->updateMany(['labels' => ['$all' => ['padding', 'solo']]], ['$pull' => ['labels' => 'solo']]);
+}
+Util::out("total: $total");
