@@ -134,7 +134,7 @@ function success($params, $content)
         if ($corpName == "") $corpName = "Corporation $corpID";
 
         $newKills = str_pad($newKills, 3, " ", STR_PAD_LEFT);
-        Util::out("$newKills kills added by corp $corpName" . ($delay == 0 ? '' : "($delay)"));
+        Util::out("$newKills kills added by corp $corpName" . ($delay == 0 ? '' : " (Delay: $delay)"));
     }
 
     $latest = $mdb->findDoc("killmails", ['involved.corporationID' => $corpID], ['killID' => -1], ['killID' => 1, 'dttm' => 1]);

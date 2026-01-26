@@ -127,7 +127,7 @@ function success($params, $content)
         $corpName = Info::getInfoField('corporationID', $corpID, 'name');
         if ($name === null) $name = $charID;
         $newKills = str_pad($newKills, 3, " ", STR_PAD_LEFT);
-        Util::out("$newKills kills added by char $name / $corpName"  . ($delay == 0 ? '' : "($delay)"), $charID);
+        Util::out("$newKills kills added by char $name / $corpName"  . ($delay == 0 ? '' : " (Delay: $delay)"), $charID);
     }
 
     // Check recently active characters every 5 minutes
