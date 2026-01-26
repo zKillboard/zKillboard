@@ -9,7 +9,7 @@ async function init() {
 
 async function fetchKills() {
     try {
-        const response = await fetch('/cache/bypass/killlist/?u=' + path);
+        const response = await fetch('/cache/tagged/killlist/?u=' + path);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
