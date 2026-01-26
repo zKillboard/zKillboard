@@ -10,7 +10,6 @@ $sso = ZKillSSO::getSSO();
 
 if ($kvc->get("zkb:noapi") == "true") exit();
 
-$noCharCount = 0;
 $bumped = [];
 $minute = date('Hi');
 $second = -1;
@@ -33,6 +32,7 @@ while ($minute == date('Hi')) {
 		$redis->set('zkb:charKillmailScopesPending', "$pending");
 		$redis->set('zkb:charKillmailScopesTotal', "$total");
 	}
+    if ($mt >= 5 && $redis->get("zkb:charKillmailScopesPending") < 150) break;
 	$row = $mdb->getCollection('scopes')->findOneAndUpdate(
 		[
 			'scope' => 'esi-killmails.read_killmails.v1',
@@ -72,10 +72,8 @@ while ($minute == date('Hi')) {
 		$killmails = $sso->doCall("$esiServer/characters/$charID/killmails/recent/", [], $accessToken);
 		success(['row' => $row, 'timer' => $timer], $killmails);
 
-        usleep(50000);
+        //usleep(($mt + 1) * 25000);
     } else {
-        $noCharCount++;
-        if ($noCharCount > 10 && $mt > 3) break;
         sleep(1);
     }
 }

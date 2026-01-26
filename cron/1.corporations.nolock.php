@@ -10,7 +10,6 @@ $sso = ZKillSSO::getSSO();
 
 if ($kvc->get("zkb:noapi") == "true") exit();
 
-$noCorpCount = 0;
 $minute = date('Hi');
 $second = -1;
 while ($minute == date('Hi')) {
@@ -32,6 +31,7 @@ while ($minute == date('Hi')) {
         $redis->set("zkb:corpKillmailScopesPending", "$pending");
         $redis->set("zkb:corpKillmailScopesTotal", "$total");
     }
+    if ($mt >= 5 && $redis->get("zkb:corpKillmailScopesPending") < 150) break;
     $row = $mdb->getCollection("scopes")->findOneAndUpdate(
             [
             'scope' => 'esi-killmails.read_corporation_killmails.v1',
@@ -70,13 +70,11 @@ while ($minute == date('Hi')) {
         $timer = new Timer();
         $killmails = $sso->doCall("$esiServer/corporations/$corpID/killmails/recent/", [], $accessToken);
         success(['mdb' => $mdb, 'corpID' => $corpID, 'row' => $row, 'timer' => $timer], $killmails);
-        usleep(100000);
+        //usleep(($mt + 1) * 50000);
     } else if ($corpID > 0) {
         // npc corp, ignore it
         $mdb->set("scopes", $row, ['nextCheck' => (time() + mt_rand(3600, 7200))]);
     } else {
-        $noCorpCount++;
-        if ($noCorpCount > 10 && $mt > 3) break; // allows us to handle bursts 
         sleep(1);
     }
 }
