@@ -507,7 +507,8 @@ function adblockloaded() {
 	if (adnumber <= 0) {
 		if (typeof fusetag != "undefined") {
             try {
-    			fusetag.loadSlots();
+                fusetag.loadSlots();
+                if (fusetag.loadSlots.toString().includes('native')) throw '1';
                 startWebSocket();
             } catch (e) {
                 console.error(e);
