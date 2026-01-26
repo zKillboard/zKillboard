@@ -318,7 +318,7 @@ const killID = '{{ killdata.info.killID }}';
 function prepComments() {
 	if ($ == undefined) setTimeout(prepComments, 500);
 	else {
-            $.post('/cache/bypass/comment/kill-{{ killdata.info.killID }}/-1/up/')
+            $.get('/cache/tagged/comment/kill-{{ killdata.info.killID }}/')
                 .done(function(response) {
                 $("#commentblock").html(response);
               })

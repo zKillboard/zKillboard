@@ -69,14 +69,15 @@ $routes = [
 	'/kills/sponsored/' => ['GET', 'view/sponsored.php'],
 	'/cache/{cacheType:1hour|24hour}/killlistrow/{killID}/' => ['GET', 'view/killlistrow.php'],
 	'/cache/bypass/healthcheck/' => ['GET', 'view/api/healthcheck.php'],
+	'/cache/tagged/comment/{pageID}/' => ['GET', 'view/comments.php'],
 	
 	// POST routes
 	'/account/favorite/{killID}/{action}/' => ['POST', 'view/favorite_modify.php'],
 	'/api/killmail/add/{killID}/{hash}/' => ['POST', 'view/api/killmail-add.php'],
 	'/cache/bypass/scan/' => ['POST', 'view/scanp.php'],
+	'/cache/bypass/comment/{pageID}/{commentID}/up/' => ['POST', 'view/comments-up.php'],
 	
 	// Mixed routes
-	'/cache/bypass/comment/{pageID}/{commentID}/up/' => [['GET', 'POST'], 'view/comments-up.php'],
 	'/account/[{req}/[{reqid}/]]' => [['GET', 'POST'], 'view/account.php'],
 	'/search/[{search}/]' => [['GET', 'POST'], 'view/search.php'],
 	'/post/' => [['GET', 'POST'], 'view/postmail.php'],
