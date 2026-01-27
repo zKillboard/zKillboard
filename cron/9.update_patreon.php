@@ -1,5 +1,14 @@
 <?php
 
+/*
+
+https://www.patreon.com/portal/registration/register-clients
+
+URL needed to get the refresh token since if it errors and Patreon
+updates the refresh_token, we no longer have a valid refresh_token...
+
+*/
+
 require "../init.php";
 
 use Patreon\OAuth;
@@ -21,13 +30,13 @@ $access_token = null;
 
 $oauth = new OAuth($client_id, $client_secret);
 $tokens = $oauth->refresh_token($refresh_token, $patreon_redirect_uri . "?scope=identity+campaigns.members+campaigns.members.email");
-$redis->set('patreon-refresh-token', $tokens['refresh_token']); // backup storage since this was such a pita to get
-$kvc->set('patreon-refresh-token', $tokens['refresh_token']);
 
 if (!isset($tokens['access_token'])) {
     Util::out("ERROR: Could not obtain Patreon access token.");
     exit(1);
 }
+
+$kvc->set('patreon-refresh-token', $tokens['refresh_token']);
 
 $access_token = $tokens['access_token'];
 if (isset($tokens['refresh_token'])) {
