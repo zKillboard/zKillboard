@@ -66,7 +66,9 @@
             let current_query_count = ++query_count;
 			//create our throttled search
 			this.data['throttle'] = setTimeout($.proxy(function() {
-				$.ajax('/autocomplete/' + this.data['element'].val() + '/', {'type' : 'get', 'dataType' : 'json', 'success' : $.proxy(function(result) {
+                const search = this.data['element'].val();
+                if (search.includes('/') || search.includes(':')) return this.data['menu'].empty();
+				$.ajax('/autocomplete/' + search + '/', {'type' : 'get', 'dataType' : 'json', 'success' : $.proxy(function(result) {
 
                     if (current_query_count != query_count) return console.log('search aborted after additional input received');
 					//empty the dropdown and append the new data
