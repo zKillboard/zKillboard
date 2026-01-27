@@ -490,7 +490,7 @@ function popEm() {
 		var killID = killIDs.shift();
 		var tr = $("<tr>").attr('id', 'kill-' + killID);
 		$("#killmails-list").append(tr);
-		$.get("/cache/1hour/killlistrow/" + killID + "/", function (data) {
+		$.get("/cache/24hour/killlistrow/" + killID + "/", function (data) {
 			$("#kill-" + killID).replaceWith(data);
 			doDateCleanup();
 		});
