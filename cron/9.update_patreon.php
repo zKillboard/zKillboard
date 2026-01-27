@@ -125,7 +125,7 @@ foreach ($members as $m) {
         $mongoDate = new UTCDateTime($dt->getTimestamp() * 1000);
         $mdb->set("patreon", $row, ['expires' => $mongoDate]);
         $humanDate = $mongoDate->toDateTime()->format(DateTime::ATOM);
-        echo " - {$charName} :: pledged=\${$amount} thru $humanDate\n";
+        Util::out(" - {$charName} :: pledged=\${$amount} thru $humanDate");
     }
 }
 Util::out("Patreon subs refreshed: $active subs at \$$total");
