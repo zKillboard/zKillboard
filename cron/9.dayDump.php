@@ -41,7 +41,6 @@ $options = [
     'CacheControl' => 'public, max-age=31536000',
     'ContentType'  => 'application/json'
 ];
-$urls = [];
 
 foreach ($cursor as $row) {
     $time = $row['dttm']->toDateTime()->getTimestamp();
@@ -55,11 +54,7 @@ foreach ($cursor as $row) {
                 CloudFlare::r2sendArray($r2, $CF_R2_BUCKET, $hashes, "history/$curDate.json", $options);
                 $kvc->set("zkb:dayDumpHash:$curDate", $md5, 99999 * 86400);
 
-                $urls[] = "https://r2z2.zkillboard.com/history/$curDate.json";
-                if (sizeof($urls) >= 30) {
-                    CloudFlare::purgeUrls($CF_ZONE_ID, $CF_API_TOKEN, $urls);
-                    $urls = [];
-                }
+                $redis->sadd("queueCacheUrls", "https://r2z2.zkillboard.com/history/$curDate.json");
             } else Util::out("Iterated - $curDate");
             $totals[$curDate] = sizeof($hashes);
             $minKillID = min(array_keys($hashes));
@@ -79,8 +74,7 @@ foreach ($cursor as $row) {
     $hashes[$killID] = $hash;
 }
 CloudFlare::r2sendArray($r2, $CF_R2_BUCKET, $totals, "history/totals.json", $options);
-$urls[] = "https://r2z2.zkillboard.com/history/totals.json";
-CloudFlare::purgeUrls($CF_ZONE_ID, $CF_API_TOKEN, $urls);
+$redis->sadd("queueCacheUrls", "https://r2z2.zkillboard.com/history/totals.json");
 
 $kvc->setex($key, 86400, "true");
 

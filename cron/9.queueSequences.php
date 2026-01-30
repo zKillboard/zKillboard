@@ -2,6 +2,8 @@
 
 require_once "../init.php";
 
+if (@$sendSequences !== true) exit();
+
 $r2 = CloudFlare::getR2Client(
         $CF_ACCOUNT_ID,
         $CF_R2_ACCESS_KEY,
@@ -29,11 +31,12 @@ do {
             'zkb' => $kill['zkb']
         ];
         CloudFlare::r2sendArray($r2, $CF_R2_BUCKET, $doc, "ephemeral/$sequence.json", $options);
+        $redis->sadd("queueCacheUrls", "https://r2z2.zkillboard.com/ephemeral/$sequence.json");
         if ($sequence - ((int) $redis->get($ephSequenceKey)) >= 50) {
             // Update the current sequences file once per hour
             $array = ['sequence' => $sequence];
             CloudFlare::r2sendArray($r2, $CF_R2_BUCKET, $array, "ephemeral/sequence.json", $options);
-            CloudFlare::purgeUrls($CF_ZONE_ID, $CF_API_TOKEN, ["https://r2z2.zkillboard.com/ephemeral/sequence.json"]);
+            $redis->sadd("queueCacheUrls", "https://r2z2.zkillboard.com/ephemeral/sequence.json");
             $redis->setex($ephSequenceKey, 3600, $sequence);
         }
         $mdb->remove("queues", ['queue' => 'sequences', 'value' => $sequence]);
