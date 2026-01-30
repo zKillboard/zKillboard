@@ -1,6 +1,6 @@
 <?php
 
-$mt = 10; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit(); 
+$mt = 5; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit(); 
 
 require_once "../init.php";
 
@@ -38,8 +38,7 @@ while ($minute == date('Hi')) {
             'nextCheck' => ['$lte' => time()]
             ],
             [
-            //'$set' => ['nextCheck' => time() + 600 + mt_rand(-30, 30)]
-            '$set' => ['nextCheck' => time() + 301 ]
+            '$set' => ['nextCheck' => time() + 305 ]
             ],
             [
             'sort' => ['nextCheck' => 1],
@@ -60,20 +59,27 @@ while ($minute == date('Hi')) {
         $accessToken = $sso->getAccessToken($refreshToken);
         $redis->rpush("timer:sso", round($timer->stop(), 0));
         if (is_array($accessToken) && @$accessToken['error'] == "invalid_grant") {
-            Util::out("Removing invalid_grant row for corp km scope");
-            $mdb->remove("scopes", $row);
+            $mdb->set("scopes", $row, ['nextCheck' => (time() + (14 * 86400) + mt_rand(-99999, 99999))]);
             sleep(1);
             continue;
         }
 
         $redis->setex("esi-fetched:$corpID", 300, "true");
         $timer = new Timer();
-        $killmails = $sso->doCall("$esiServer/corporations/$corpID/killmails/recent/", [], $accessToken);
+        $reqHeaders = [
+            'X-Compatibility-Date: 2025-12-16'
+        ];
+        /*if (isset($row['etag'])) {
+            $reqHeaders[] = 'If-Modified-Since: ' .  $row['last-modified'];
+            $reqHeaders[] = 'If-None-Match: ' .  $row['etag'];
+        }*/
+        $killmails = $sso->doCall("$esiServer/corporations/$corpID/killmails/recent", [], $accessToken, 'GET', $reqHeaders);
         success(['mdb' => $mdb, 'corpID' => $corpID, 'row' => $row, 'timer' => $timer], $killmails);
-        //usleep(($mt + 1) * 50000);
+        $sleepMicroS = min(50000, max(1, 50000 - floor($timer->stop() * 1000)));
+        usleep($sleepMicroS);
     } else if ($corpID > 0) {
         // npc corp, ignore it
-        $mdb->set("scopes", $row, ['nextCheck' => (time() + mt_rand(3600, 7200))]);
+        $mdb->set("scopes", $row, ['nextCheck' => (time() + mt_rand(86400, 99999))]);
     } else {
         sleep(1);
     }
@@ -81,10 +87,14 @@ while ($minute == date('Hi')) {
 
 function success($params, $content) 
 {
+    global $resHeaders, $resCode, $redis;
+
     $mdb = $params['mdb'];
     $row = $params['row'];
     $timer = $params['timer'];
     $delay = (int) @$row['delay'];
+
+    $redis->rpush("timer:corporations", round($timer->stop(), 0));
 
     $charID = $row['characterID'];
     $corpID = $params['corpID'];
@@ -98,16 +108,20 @@ function success($params, $content)
     if (isset($kills['error'])) {
         switch($kills['error']) {
             case "Character does not have required role(s)":
-                $mdb->remove("scopes", $row);
-                break;
-            case "Unauthorized - Invalid token":
+                $next = time() + (30 * 86400) + mt_rand(-999999, 999999);
+                $mdb->set("scopes", $row, ['lastFetch' => $mdb->now(), 'successes' => 0, 'nextCheck' => $next]);
+                //Util::out("missing required roles $charID $corpID $next");
+                //$mdb->remove("scopes", $row);
+                return;
                 break;
             case "Character is not in the corporation":
-                $mdb->set("information", ['type' => 'characterID', 'id' => (int) $charID], ['lastAffUpdate' => $mdb->now(-86400 * 30)]);
-                break;
+                $next = time() + (1 * 86400) + mt_rand(-9999, 9999);
+                $mdb->set("scopes", $row, ['lastFetch' => $mdb->now(), 'successes' => 0, 'nextCheck' => $next]);
+                return;
             case "Timeout contacting tranquility":
+                $mdb->set("scopes", $row, ['lastFetch' => $mdb->now()]);
                 Util::out("1.corporations.php - Timeout contacting tranquility");
-                break;
+                return;
             default:
                 // Something went wrong, reset it and try again later
                 Util::out("1.corporations error - \n" . print_r($row, true) . "\n" . print_r($kills, true));
@@ -123,7 +137,13 @@ function success($params, $content)
     }
 
     $successes = 1 + ((int) @$row['successes']);
-    $modifiers = ['corporationID' => $corpID, 'lastFetch' => $mdb->now(), 'successes' => $successes];
+    $modifiers = [
+        'corporationID' => $corpID,
+        'lastFetch' => $mdb->now(), 
+        'successes' => $successes,
+        'etag' => @$resHeaders['etag'],
+        'last-modified' => @$resHeaders['last-modified'],
+    ];
     if (!isset($row['added'])) $modifiers['added'] = $mdb->now();
     if (!isset($row['iterated'])) $modifiers['iterated'] = false;
     if ($content != "" && sizeof($kills) > 0) $modifiers['last_has_data'] = $mdb->now();

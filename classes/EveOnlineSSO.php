@@ -152,18 +152,18 @@ class EveOnlineSSO
     public function getAccessToken($refreshToken, $scopes = [])
     {
         $fields = ['grant_type' => 'refresh_token', 'refresh_token' => $refreshToken];
-        $accessString = $this->doCall($this->tokenURL, $fields, null, 'POST', true);
+        $accessString = $this->doCall($this->tokenURL, $fields, null, 'POST');
         $accessJson = json_decode($accessString, true);
         return $accessJson;
     }
 
-    public function doCall($url, $fields = [], $accessToken = null, $callType = 'GET')
+    public function doCall($url, $fields = [], $accessToken = null, $callType = 'GET', $headers = [])
     {
         $statusType = self::getType($url);
 
         $callType = strtoupper($callType);
         $header = $accessToken !== null ? 'Authorization: Bearer ' . $accessToken : 'Authorization: Basic ' . base64_encode($this->clientID . ':' . $this->secretKey);
-        $headers = [$header];
+        $headers[] = $header;
 
         $url = $callType != 'GET' ? $url : $url . $this->buildParams($fields);
 
@@ -187,7 +187,7 @@ class EveOnlineSSO
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $this->buildParams($fields));
                 break;
         }
-        global $resHeaders;
+        global $resHeaders, $resCode;
         $resHeaders = [];
 
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $callType);
@@ -208,6 +208,7 @@ class EveOnlineSSO
                 });
 
         $result = curl_exec($ch);
+        $resCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         if (curl_errno($ch) !== 0) {
             Status::addStatus($statusType, false);

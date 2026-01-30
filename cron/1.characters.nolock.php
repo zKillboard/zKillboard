@@ -1,6 +1,6 @@
 <?php
 
-$mt = 10; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
+$mt = 5; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
 use cvweiss\redistools\RedisTimeQueue;
 
@@ -14,6 +14,7 @@ $bumped = [];
 $minute = date('Hi');
 $second = -1;
 while ($minute == date('Hi')) {
+    try {
 	if ($mt == 0 && date('s') != $second) {
 		$second = date('s');
 
@@ -64,6 +65,7 @@ while ($minute == date('Hi')) {
 		$accessToken = $sso->getAccessToken($refreshToken);
 		$redis->rpush("timer:sso", round($timer->stop(), 0));
 		if (is_array($accessToken) && @$accessToken['error'] == "invalid_grant") {
+            Util::out("Invalid grant... $charID");
 			$mdb->remove("scopes", $row);
 			continue;
 		}
@@ -72,8 +74,13 @@ while ($minute == date('Hi')) {
 		$killmails = $sso->doCall("$esiServer/characters/$charID/killmails/recent/", [], $accessToken);
 		success(['row' => $row, 'timer' => $timer], $killmails);
 
-        //usleep(($mt + 1) * 25000);
+        $sleepMicroS = min(50000, max(1, 50000 - floor($timer->stop() * 1000)));
+        usleep($sleepMicroS);
     } else {
+        sleep(1);
+    }
+    } catch (Exception $ex) {
+        Util::out(__FILE__ . " error: " . $ex->getMessage());
         sleep(1);
     }
 }
@@ -96,7 +103,8 @@ function success($params, $content)
     if (isset($kills['error'])) {
         switch($kills['error']) {
             case "Unauthorized - Invalid token":
-                $mdb->remove("scopes", $row);
+                Util::out("invalid token...");
+                //$mdb->remove("scopes", $row);
                 break;
             default:
                 // Something went wrong, reset it and try again later

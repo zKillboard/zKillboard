@@ -107,7 +107,7 @@ addInfo('Top killID', $topKillID);	addInfo('', 0);
 	addInfo('', 0, false);
 	addInfo('access token avg request time in ms.', getRedisAvg('timer:sso', Status::getStatus('esi', true)), false);
 	addInfo('killmail characters avg request time in ms.', getRedisAvg('timer:characters', 1000), false);
-	addInfo('killmail corporations avg request time in ms.', getRedisAvg('timer:corporations', 100), false);
+	addInfo('killmail corporations avg request time in ms.', getRedisAvg('timer:corporations', 500), false);
 
 	addInfo('', 0, false);
 	foreach ($types as $type) {
