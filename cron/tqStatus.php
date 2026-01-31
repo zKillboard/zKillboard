@@ -13,20 +13,24 @@ if ($minute >= 1100 && $minute <= 1105) {
     exit();
 } else {
     // Not using Guzzle to prevent tq status conflicts and deadlock
+    $success = false;
     for ($i = 0; $i <= 3; $i++) {
         $root = @file_get_contents("$esiServer/status/");
         if ($root != "" ) {
-            success($root);
+            $success = success($root);
             break;
         }
         sleep(5);
+    }
+    if ($success == false) {
+        $kvc->setex("zkb:noapi", 110, "true");
     }
 }
 $tqCountInt = (int) $redis->get("tqCountInt");
 if (($minute >= 1058 && $minute <= 1105) || $tqCountInt < 1000) {
     Util::out("Flagging NO API (TQ Count: $tqCountInt)");
     $kvc->setex("zkb:noapi", 110, "true");
-} else if ($kvc->get("zkb:noapi") == "true") {
+} else if ($kvc->get("zkb:noapi") == "true" && $tqCountInt >= 1000) {
     Util::out("Re-enabling API");
     $kvc->del("zkb:noapi");
     // since everything else has likely quit by now due to noapi, we'll reexecute cron.sh
@@ -71,6 +75,7 @@ function success($content)
     $redis->set('tqStatus', $serverStatus);
     $redis->set('tqCount', $loggedIn);
     Util::out("TQ's status: $serverStatus w/ $loggedIn");
+    return true;
 }
 
 function fail()
@@ -81,6 +86,7 @@ function fail()
     $redis->set('tqCount', 0);
     $redis->set('tqCountInt', 0);
     Util::out("TQ status fail");
+    return false;
 }
 
 function apiStatus($prevMessage, $apiType, $notification)
