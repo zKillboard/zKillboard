@@ -42,7 +42,7 @@ do {
         ];
         CloudFlare::r2sendArray($r2, $CF_R2_BUCKET, $doc, "ephemeral/$sequence.json", $options);
         $redis->sadd("queueCacheUrls", "https://r2z2.zkillboard.com/ephemeral/$sequence.json");
-        if ($sequence - ((int) $redis->get($ephSequenceKey)) >= 50) {
+        if ($sequence - ((int) $redis->get($ephSequenceKey)) > 50) {
             // Update the current sequences file once per hour
             $array = ['sequence' => $sequence];
             CloudFlare::r2sendArray($r2, $CF_R2_BUCKET, $array, "ephemeral/sequence.json", $options);
