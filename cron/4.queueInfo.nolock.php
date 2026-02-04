@@ -12,12 +12,12 @@ $queueInfo = new RedisQueue('queueInfo');
 $queueApiCheck = new RedisQueue('queueApiCheck');
 $queueSocial = new RedisQueue('queueSocial');
 $queueStats = new RedisQueue('queueStats');
-$queueRedisQ = new RedisQueue('queueRedisQ');
 $queuePublish = new RedisQueue('queuePublish');
 $statArray = ['characterID', 'corporationID', 'allianceID', 'factionID', 'shipTypeID', 'groupID'];
 
 $minute = date('Hi');
-while ($minute == date('Hi')) {
+$time = time() + 63;
+while ($time >= time()) {
     $killID = $queueInfo->pop();
 
     if ($killID != null) {
@@ -25,7 +25,6 @@ while ($minute == date('Hi')) {
         updateStatsQueue($killID);
 
         $queueSocial->push($killID);
-        $queueRedisQ->push($killID);
         $queuePublish->push($killID);
         $queueApiCheck->push($killID);
 

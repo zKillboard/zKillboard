@@ -1,6 +1,6 @@
 <?php
 
-$mt = 5; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
+$mt = 10; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
 use cvweiss\redistools\RedisTimeQueue;
 
@@ -12,8 +12,9 @@ if ($kvc->get("zkb:noapi") == "true") exit();
 
 $bumped = [];
 $minute = date('Hi');
+$time = time() + 63;
 $second = -1;
-while ($minute == date('Hi')) {
+while ($time >= time()) {
     try {
 	if ($mt == 0 && date('s') != $second) {
 		$second = date('s');
@@ -59,14 +60,19 @@ while ($minute == date('Hi')) {
 			$mdb->set("scopes", $row, ['corporationID' => $corpID]);
 		}
 
+        if ($corpID == 1000001) {
+            // Player has been recycled....
+            $this->getCollection("scopes")->deleteMany(['characterID' => $charID]);
+            continue;
+        }
+
 		$params = ['row' => $row];
 		$refreshToken = $row['refreshToken'];
 		$timer = new Timer();
 		$accessToken = $sso->getAccessToken($refreshToken);
 		$redis->rpush("timer:sso", round($timer->stop(), 0));
 		if (is_array($accessToken) && @$accessToken['error'] == "invalid_grant") {
-            Util::out("Invalid grant... $charID");
-			$mdb->remove("scopes", $row);
+            $mdb->getCollection("scopes")->deleteMany(['characterID' => $charID]);
 			continue;
 		}
 

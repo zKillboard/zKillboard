@@ -4,6 +4,7 @@ require_once "../init.php";
 
 if (@$sendSequences !== true) exit();
 
+$queueRedisQ = new \cvweiss\redistools\RedisQueue('queueRedisQ');
 $r2 = CloudFlare::getR2Client(
         $CF_ACCOUNT_ID,
         $CF_R2_ACCESS_KEY,
@@ -12,7 +13,6 @@ $r2 = CloudFlare::getR2Client(
 
 $options = [
     'ACL' => 'public-read',
-    'CacheControl' => 'public, max-age=86400',
     'ContentType'  => 'application/json'
 ];
 $ephSequenceKey = "zkb:ephemeral-sequence";
@@ -38,18 +38,22 @@ do {
             'killmail_id' => $kill['killID'],
             'hash' => $kill['zkb']['hash'],
             'esi' => $raw,
-            'zkb' => $zkb
+            'zkb' => $zkb,
+            'uploaded_at' => time(),
+            'sequence_id' => $sequence
         ];
         CloudFlare::r2sendArray($r2, $CF_R2_BUCKET, $doc, "ephemeral/$sequence.json", $options);
         $redis->sadd("queueCacheUrls", "https://r2z2.zkillboard.com/ephemeral/$sequence.json");
+
         if ($sequence - ((int) $redis->get($ephSequenceKey)) > 50) {
-            // Update the current sequences file once per hour
+            // Update the current sequences file once every 50 killmails
             $array = ['sequence' => $sequence];
             CloudFlare::r2sendArray($r2, $CF_R2_BUCKET, $array, "ephemeral/sequence.json", $options);
             $redis->sadd("queueCacheUrls", "https://r2z2.zkillboard.com/ephemeral/sequence.json");
             $redis->setex($ephSequenceKey, 3600, $sequence);
         }
         $mdb->remove("queues", ['queue' => 'sequences', 'value' => $sequence]);
+        $queueRedisQ->push($killID);
     } else {
         sleep(1);
     }

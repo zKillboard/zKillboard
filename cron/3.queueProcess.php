@@ -25,8 +25,9 @@ $storage = $mdb->getCollection('storage');
 
 $counter = 0;
 $minute = date('Hi');
+$time = time() + 63;
 
-while ($minute == date('Hi')) {
+while ($time >= time()) {
 try {
     //if ($kvc->get("zkb:universeLoaded") != "true") break;
     //if ($redis->llen("queueInfo") > 100) sleep(1);
@@ -211,6 +212,7 @@ try {
         $mdb->insert("queues", ['queue' => 'sequences', 'value' => $sequence]);
     }
  } catch (Exception $ex) {
+    Util::out(print_r($ex, true));
     if ($row != null) $mdb->set("crestmail", $row, ['processed' => 'parse failure']);
 }
 }

@@ -13,7 +13,7 @@ global $CF_ACCOUNT_ID, $CF_R2_ACCESS_KEY, $CF_R2_SECRET_KEY, $CF_R2_BUCKET;
 
 $minute = date("Hi");
 while (date("Hi") == $minute) {
-    $tags = $redis->srandmember("queueCacheTags", 30);
+    $tags = $redis->srandmember("queueCacheTags", 25);
     if (sizeof($tags)) {
         try {
             CloudFlare::purgeCacheTags($CF_ZONE_ID, $CF_API_TOKEN, $tags);

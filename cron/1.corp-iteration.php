@@ -9,29 +9,35 @@ if ($redis->get("zkb:reinforced") == true) exit();
 if ($kvc->get("zkb:noapi") == "true") exit();
 
 $sso = ZKillSSO::getSSO();
-$esiCorps = new RedisTimeQueue('tqCorpApiESI', $esiCorpKm);
+
+$noCorp = $mdb->find("scopes", ['corporationID' => ['$exists' => false], 'scope' => "esi-killmails.read_corporation_killmails.v1"]);
+if (sizeof($noCorp) == 0) $noCorp = $mdb->find("scopes", ['corporationID' => 0, 'scope' => "esi-killmails.read_corporation_killmails.v1"]);
+foreach ($noCorp as $row) {
+    $charID = $row['characterID'];
+    $corpID = (int) Info::getInfoField("characterID", $charID, "corporationID");
+    if ($corpID > 0) $mdb->set("scopes", $row, ['corporationID' => $corpID, 'lastFetch' => 0]);
+    else {
+        try {
+            $mdb->insert("information", ['type' => 'characterID', 'id' => ((int) $charID), 'lastApiUpdate' => 0]);
+        } catch (Exception $exx) { }
+        sleep(1);
+        continue;
+    }
+}
+
+$mdb->set("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'lastFetch' => ['$exists' => false]], ['lastFetch' => 0], true);
 
 $minute = date('Hi');
-while ($minute == date('Hi')) {
-    $noCorp = $mdb->find("scopes", ['corporationID' => ['$exists' => false], 'scope' => "esi-killmails.read_corporation_killmails.v1"]);
-    if (sizeof($noCorp) == 0) $noCorp = $mdb->find("scopes", ['corporationID' => 0, 'scope' => "esi-killmails.read_corporation_killmails.v1"]);
-    foreach ($noCorp as $row) {
-        $charID = $row['characterID'];
-        $corpID = (int) Info::getInfoField("characterID", $charID, "corporationID");
-        if ($corpID > 0) $mdb->set("scopes", $row, ['corporationID' => $corpID, 'lastFetch' => 0]);
-        else {
-            try {
-                $mdb->insert("information", ['type' => 'characterID', 'id' => ((int) $charID), 'lastApiUpdate' => 0]);
-            } catch (Exception $exx) { }
-            sleep(1);
-            continue;
-        }
-    }
 
-    $mdb->set("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'lastFetch' => ['$exists' => false]], ['lastFetch' => 0], true);
-    $row = $mdb->findDoc("scopes", ['corporationID' => ['$exists' => true], 'scope' => "esi-killmails.read_corporation_killmails.v1"], ['lastFetch' => 1]);
+if ($minute == "0000") {
+    $mdb->getCollection("scopes")->updateMany(['iterated' => 'defer'], ['$set' => ['iterated' => false]]);
+}
+
+while ($minute == date('Hi')) {
+    $row = $mdb->findDoc("scopes", ['corporationID' => ['$exists' => true], 'scope' => "esi-killmails.read_corporation_killmails.v1", 'iterated' => false]);
 
     if ($row == null) {
+        break;
         sleep(3);
         continue;
     }
@@ -39,17 +45,9 @@ while ($minute == date('Hi')) {
     $corpID = ((int) $row['corporationID']);
 
     if ($corpID <= 1999999) {
-        $mdb->set("scopes", $row, ['lastFetch' => $mdb->now()]);
+        $mdb->set("scopes", $row, ['iterated' => 'defer']);
         continue;
     }
-
-	$iterationKey = "zkb:corp:iterated:$corpID";
-    $iterated = $redis->get($iterationKey);
-
-	if ($iterated === "true") {
-		sleep(1);
-		continue;
-	}
 
     $refreshToken = $row['refreshToken'];
     $accessToken = $sso->getAccessToken($refreshToken);
@@ -65,24 +63,18 @@ while ($minute == date('Hi')) {
     $page = 0;
     do {
         $page++;
-		
+
         $uri = "$esiServer/corporations/$corpID/killmails/recent/?page=$page";
         $killmails = $sso->doCall($uri, [], $accessToken);
-		
+
         $count = success(['row' => $row], $killmails, $uri);
-        sleep(2);
-        
+        sleep($page - 1);
+
         // Safety check: stop if count is not a valid number or exceeds reasonable limit
         if (!is_int($count) || $page > 100) break;
     } while ($count >= 1000);
 
-	// lastFetch already updated above
-	$redis->setex("esi-fetched:$corpID", 300, "true");
-	$redis->setex($iterationKey, 604800, "true");
-
-	if ($corpID > 1999999) {
-		$esiCorps->add(((int) $corpID));
-	}
+    $mdb->set("scopes", $row, ['iterated' => true]);
 }
 
 function success($params, $content, $uri) 
@@ -106,10 +98,7 @@ function success($params, $content, $uri)
         switch ($kills['error']) {
             case 'invalid_grant':
             case 'Character does not have required role(s)':
-                $mdb->remove("scopes", $row);
-                sleep(1);
                 return -1;
-
             case 'Character is not in the corporation':
                 $mdb->set("information", ['type' => 'characterID', 'id' => ((int) $charID)], ['lastApiUpdate' => 1, 'lastAffUpdate' => 1]);
                 sleep(1);
@@ -119,10 +108,10 @@ function success($params, $content, $uri)
             case "The datasource tranquility is temporarily unavailable":
                 return -1;
             case "Undefined 404 response. Original message: Requested page does not exist!":
-                return 0; // not really an error, just ignore it and move on
+                                                            return 0; // not really an error, just ignore it and move on
             default:
-                Util::out("Unknown error: $uri\n" . print_r($kills, true));
-                return 0;
+                                                            Util::out("Unknown error: $uri\n" . print_r($kills, true));
+                                                            return 0;
         }
         // Something went wrong, reset it and try again later
         exit();

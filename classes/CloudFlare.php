@@ -124,9 +124,9 @@ class CloudFlare
             ): void {
         $endpoint = "https://api.cloudflare.com/client/v4/zones/{$zoneId}/purge_cache";
         while (sizeof($urls) > 0) {
-            $first30 = array_slice($urls, 0, 30);
+            $first25 = array_slice($urls, 0, 25);
             $payload = json_encode([
-                    'files' => array_values($first30),
+                    'files' => array_values($first25),
             ], JSON_THROW_ON_ERROR);
 
             $ch = curl_init($endpoint);
@@ -157,7 +157,7 @@ class CloudFlare
             if ($httpCode !== 200 || empty($decoded['success'])) {
                 throw new RuntimeException('Cloudflare purge failed: ' . ($decoded['errors'][0]['message'] ?? 'Unknown error'));
             }
-            $urls = array_slice($urls, 30);
+            $urls = array_slice($urls, 25);
             if (!empty($urls)) usleep(750000); // 1200 requests per 900 seconds
         }
     }
@@ -179,12 +179,12 @@ public static function purgeCacheTags(
 
     $endpoint = "https://api.cloudflare.com/client/v4/zones/{$zoneId}/purge_cache";
 
-    // Cloudflare allows up to 30 tags per request
+    // Cloudflare allows up to 25 tags per request
     while (count($tags) > 0) {
-        $first30 = array_slice($tags, 0, 30);
+        $first25 = array_slice($tags, 0, 25);
 
         $payload = json_encode([
-                'tags' => array_values($first30),
+                'tags' => array_values($first25),
         ], JSON_THROW_ON_ERROR);
 
         $ch = curl_init($endpoint);
@@ -219,7 +219,7 @@ public static function purgeCacheTags(
             );
         }
 
-        $tags = array_slice($tags, 30);
+        $tags = array_slice($tags, 25);
 
         // Respect Cloudflare rate limits (same cadence as URL purge)
         if (!empty($tags)) {
