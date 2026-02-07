@@ -21,7 +21,7 @@ while ($minute == date('Hi')) {
     while ($currentSecond == date('His')) usleep(50);
     $currentSecond = date('His');
 
-    $guzzler->call("$esiServer/alliances/$id/", "success", "fail", ['id' => $id]);
+    $guzzler->call("$esiServer/alliances/$id", "success", "fail", ['id' => $id], ['X-Compatibility-Date' => '2099-01-01']);
     $guzzler->finish();
     sleep(1);
 }
