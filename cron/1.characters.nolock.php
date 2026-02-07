@@ -62,7 +62,7 @@ while ($time >= time()) {
 
         if ($corpID == 1000001) {
             // Player has been recycled....
-            $this->getCollection("scopes")->deleteMany(['characterID' => $charID]);
+            $mdb->getCollection("scopes")->deleteMany(['characterID' => $charID]);
             continue;
         }
 
