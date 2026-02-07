@@ -16,7 +16,7 @@ function handler($request, $response, $args, $container) {
             $exploded = explode('/', $killmailurl);
 
             if (count($exploded) == 8) array_shift($exploded);
-            if (count($exploded) != 7) {
+            if (count($exploded) < 5 || count($exploded) > 7) {
                 $error = 'Invalid killmail link.';
             } else {
                 if ((int) $exploded[4] <= 0) {

@@ -407,7 +407,7 @@ async function pasteCrestUrlAsync() {
         let str = await navigator.clipboard.readText();
 		strSplit = str.split('/');
 		// Allow with or without /latest as part of the ESI url
-        if (strSplit.length < 7 || strSplit.length > 8) return window.location = '/post/';
+        if (strSplit.length < 5 || strSplit.length > 8) return window.location = '/post/';
 
         $('#externalurl').val(str);
         $('#externalkmform').submit();
@@ -502,13 +502,15 @@ function loadads() {
 }
 
 var bottomad = null;
-function adblockloaded() {
+async function adblockloaded() {
     adnumber--;
 	if (adnumber <= 0) {
 		if (typeof fusetag != "undefined") {
             try {
                 fusetag.loadSlots();
                 if (fusetag.loadSlots.toString().includes('native')) throw '1';
+                let res =  await fetch('/check.aspx?adid=');
+                if (res.status != 403) throw '2';
                 startWebSocket();
             } catch (e) {
                 console.error(e);
