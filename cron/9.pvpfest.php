@@ -17,10 +17,10 @@ while ($minute == date("Hi")) {
     $killID = $row['value'];
     $kill = $mdb->findDoc("killmails", ['killID' => $killID]);
     $unixtime = $kill['dttm']->toDateTime()->getTimestamp();
-    /*if ($unixtime < 1770634800 || $unixtime > 1771326000) {
+    if ($unixtime < 1770634800 || $unixtime > 1771326000) {
         $mdb->getCollection("queues")->deleteOne(['_id' => $row['_id']]);
         continue;
-    }*/
+    }
 
     $involved = $kill['involved'];
     $vic = $involved[0];
@@ -49,7 +49,11 @@ while ($minute == date("Hi")) {
     if ($count_att_vic == 0 && $count_att_ship_loc == 0) {
         $mdb->getCollection("pvpfest")->insertOne($record);
     }
-    $mdb->getCollection("queues")->deleteOne(['_id' => $row['_id']]);
+    $mdb->getCollection("queues")->updateOne(
+        ['_id' => $row['_id']],
+        ['$set' => ['queue' => 'pvpfest-backup']]
+    );
+
 }
 
 function getFinalBlow($involved, $killID, $kill) {

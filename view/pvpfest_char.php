@@ -89,9 +89,7 @@ function pvpfestHandler($request, $response, $args, $container) {
 
     return $container->get('view')->render(
         $response
-            ->withHeader('Cache-Tag', "pvpfest:$id,pvpfest,overview")
-            ->withHeader('Cache-Control', 'public, max-age=3600, s-maxage=3600')
-            ->withHeader('Expires', gmdate('D, d M Y H:i:s', time() + 3600) . ' GMT'),
+            ->withHeader('Cache-Tag', "pvpfest:$id,pvpfest,overview"),
         'pvpfest_char.html',
         $data
     );

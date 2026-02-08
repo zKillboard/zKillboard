@@ -175,6 +175,8 @@
 <div class="pvpfest-container">
     <div class="pvpfest-header">
         <h1>PvP Fest</h1>
+        <div class="subtitle">Starts 2026-02-09 11:00 UTC</div>
+        <div><small>updated every 15 minutes</small></div>
         <div class="char-section">
             {% set field = info %}
             {% include 'components/image_char.html' %}
@@ -193,17 +195,17 @@
             <div class="region-name region-overall">Overall Performance</div>
             <div class="stats-row">
                 <div class="stat-block">
-                    <div class="stat-label">Total Kills</div>
+                    <div class="stat-label">Total Points</div>
                     <div class="stat-number" format="format-int-once" raw="{{ stats.overall.kills }}">{{ stats.overall.kills|number_format(0, '.', ',') }}</div>
                 </div>
                 <div class="stat-block">
                     <div class="stat-label">Rank</div>
-                    <div class="stat-number">#<span format="format-int-once" raw="{{ stats.overall.rank }}">{{ stats.overall.rank|number_format(0, '.', ',') }}</span></div>
-                    {% if stats.overall.rank <= 10 %}
+                    <div class="stat-number">{% if stats.overall.rank >= 1 %}#<span format="format-int-once" raw="{{ stats.overall.rank }}">{{ stats.overall.rank|number_format(0, '.', ',') }}</span>i{% else %}-{% endif %}</div>
+                    {% if stats.overall.rank > 0 and stats.overall.rank <= 10 %}
                     <div class="rank-indicator top-rank">TOP 10 PILOT</div>
-                    {% elseif stats.overall.rank <= 100 %}
+                    {% elseif stats.overall.rank > 0 and stats.overall.rank <= 100 %}
                     <div class="rank-indicator">TOP 100</div>
-                    {% else %}
+                    {% elseif stats.overall.rank > 0 %}
                     <div class="rank-indicator" format="format-int-once" raw="{{ totalParticipants }}">{{ totalParticipants|number_format(0, '.', ',') }} Participants</div>
                     {% endif %}
                 </div>
@@ -217,7 +219,7 @@
             <div class="region-name region-lowsec">Lowsec</div>
             <div class="stats-row">
                 <div class="stat-block">
-                    <div class="stat-label">Kills</div>
+                    <div class="stat-label">Points</div>
                     <div class="stat-number {% if stats.lowsec.kills == 0 %}no-kills{% endif %}" format="format-int-once" raw="{{ stats.lowsec.kills }}">
                         {{ stats.lowsec.kills|number_format(0, '.', ',') }}
                     </div>
@@ -238,7 +240,7 @@
             <div class="region-name region-highsec">Highsec</div>
             <div class="stats-row">
                 <div class="stat-block">
-                    <div class="stat-label">Kills</div>
+                    <div class="stat-label">Points</div>
                     <div class="stat-number {% if stats.highsec.kills == 0 %}no-kills{% endif %}" format="format-int-once" raw="{{ stats.highsec.kills }}">
                         {{ stats.highsec.kills|number_format(0, '.', ',') }}
                     </div>
@@ -259,7 +261,7 @@
             <div class="region-name region-nullsec">Nullsec</div>
             <div class="stats-row">
                 <div class="stat-block">
-                    <div class="stat-label">Kills</div>
+                    <div class="stat-label">Points</div>
                     <div class="stat-number {% if stats.nullsec.kills == 0 %}no-kills{% endif %}" format="format-int-once" raw="{{ stats.nullsec.kills }}">
                         {{ stats.nullsec.kills|number_format(0, '.', ',') }}
                     </div>
@@ -280,7 +282,7 @@
             <div class="region-name region-pochven">Pochven</div>
             <div class="stats-row">
                 <div class="stat-block">
-                    <div class="stat-label">Kills</div>
+                    <div class="stat-label">Points</div>
                     <div class="stat-number {% if stats.pochven.kills == 0 %}no-kills{% endif %}" format="format-int-once" raw="{{ stats.pochven.kills }}">
                         {{ stats.pochven.kills|number_format(0, '.', ',') }}
                     </div>
@@ -301,7 +303,7 @@
             <div class="region-name region-wspace">W-Space</div>
             <div class="stats-row">
                 <div class="stat-block">
-                    <div class="stat-label">Kills</div>
+                    <div class="stat-label">Points</div>
                     <div class="stat-number {% if stats['w-space'].kills == 0 %}no-kills{% endif %}" format="format-int-once" raw="{{ stats['w-space'].kills }}">
                         {{ stats['w-space'].kills|number_format(0, '.', ',') }}
                     </div>

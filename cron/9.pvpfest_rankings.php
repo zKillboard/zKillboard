@@ -2,10 +2,9 @@
 
 require_once "../init.php";
 
-$hour = date("H");
-$key = "zkb:pvpfest_rankings:$hour";
-
-// Only run once per hour
+$time = time() + 60; // 
+$time = $time - ($time % 900);
+$key = "zkb:pvpfest_rankings:$time";
 if ($redis->get($key) == true) {
     exit();
 }
@@ -101,4 +100,5 @@ if (count($bulkOps) > 0) {
 
 Util::out("Rankings calculation complete!");
 
-$redis->setex($key, 3700, true);
+$redis->sadd("queueCacheTags", "pvpfest"); // Clear all pvpfest pages
+$redis->setex($key, 999, true);

@@ -46,6 +46,9 @@
 	</li>
 	<li class="{{ isActive('ranks', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/ranks/">Ranks</a></li>
 	<li class="{{ isActive('stats', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/stats/">Stats</a></li>
+    {% if key == 'character' %}
+	    <li><a href="/{{ key }}/{{ id }}/pvpfest/" style="background-color:#E63946; color:#fff;">PvP Fest</a></li>
+    {% endif %}
 	{% if key in ['character', 'corporation', 'alliance'] %}
 	<!--<li class="hidden-xs"><a href="/{{ key }}/{{ id }}/recap2025/" style="color: #667eea; font-weight: bold;">🎆 2025 Recap</a></li>-->
 	{% endif %}
@@ -73,10 +76,10 @@
 		</a>
 	</li>{% endif %}
 <li class="hidden-md hidden-sm">
-	<a href="https://zkillboard.github.io/zkillbot/" target="_new" style="background-color:#5865F2;color:#fff;">
+	<!--<a href="https://zkillboard.github.io/zkillbot/" target="_new" style="background-color:#5865F2;color:#fff;">
 	<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg" alt="Discord" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;">
 	zKillBot
-	</a>
+	</a>-->
 </li>
 
 
