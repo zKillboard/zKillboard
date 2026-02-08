@@ -56,6 +56,7 @@ function getFinalBlow($involved, $killID, $kill) {
     foreach ($involved as $inv) {
         if (isset($inv['finalBlow']) && $inv['finalBlow'] === true && isset($inv['characterID'])) return $inv;
     }
+	
     // NPC somehow got a final blow, look for the first record that has a characterID instead
     foreach ($involved as $inv) {
         if (isset($inv['characterID']) && $inv['characterID'] > 0) return $inv;
@@ -64,12 +65,13 @@ function getFinalBlow($involved, $killID, $kill) {
 }
 
 function getLoc($kill, $killID) {
+	if ($kill['system']['solarSystemID'] === 30100000) return "loc:nullsec";
+    if ($kill['system']['regionID'] === 10000070) return "loc:pochven";
+
     $labels = $kill['labels'];
     foreach ($labels as $label) {
         if (substr($label, 0, 4) == "loc:") return $label;
     }
-    if (@$kill['system']['regionID'] === 10000070) return "loc:pochven";
-    print_r($labels);
-    print_r($kill);
-    throw new Exception("no location?! $killID");
+
+	throw new Exception("no location?! $killID");
 }

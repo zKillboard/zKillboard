@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+{% set imageSize = 128 %}
+
+{% set pageTitle = info.characterName ~ ' | PvP Fest' %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+<style>
+.pvpfest-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #ccc;
+}
+.pvpfest-header {
+    text-align: center;
+    padding: 40px 20px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    margin-bottom: 30px;
+    border: 1px solid rgba(255,255,255,0.15);
+}
+.pvpfest-header h1 {
+    font-size: 2.8em;
+    margin: 0 0 15px 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+    font-weight: bold;
+}
+.pvpfest-header .char-section {
+    margin-top: 20px;
+}
+.pvpfest-header .subtitle {
+    font-size: 1em;
+    margin-top: 10px;
+    opacity: 0.8;
+}
+.region-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+.region-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 25px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.region-card::before {
+    display: none;
+}
+.region-card.overall {
+    grid-column: 1 / -1;
+    background: rgba(255,255,255,0.08);
+    border: 2px solid rgba(255,255,255,0.2);
+}
+.region-card.overall::before {
+    display: none;
+}
+.region-name {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.region-name.region-overall {
+    color: #fff;
+}
+.region-name.region-highsec {
+    color: #71e554;
+}
+.region-name.region-lowsec {
+    color: #DC6D07;
+}
+.region-name.region-nullsec {
+    color: #8d3264;
+}
+.region-name.region-pochven {
+    color: #8d3264;
+}
+.region-name.region-wspace {
+    color: #4ecef8;
+}
+.region-card.overall .region-name {
+    font-size: 2em;
+    text-align: center;
+}
+.stats-row {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.stat-block {
+    text-align: center;
+    padding: 15px;
+    flex: 1;
+    min-width: 120px;
+}
+.stat-label {
+    font-size: 0.9em;
+    opacity: 0.7;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+.stat-number {
+    font-size: 3em;
+    font-weight: bold;
+    line-height: 1;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    color: #eee;
+}
+.region-card.overall .stat-number {
+    font-size: 4em;
+}
+.rank-indicator {
+    display: inline-block;
+    padding: 5px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    font-size: 0.85em;
+    margin-top: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.top-rank {
+    background: linear-gradient(135deg, #d68910, #ca6f1e);
+    color: white;
+    font-weight: bold;
+}
+.info-section {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 30px;
+    text-align: center;
+}
+.info-section h3 {
+    margin-top: 0;
+    font-size: 1.3em;
+}
+.badge {
+    display: inline-block;
+    padding: 8px 16px;
+    margin: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.no-kills {
+    opacity: 0.5;
+    font-style: italic;
+}
+@media (max-width: 768px) {
+    .region-grid {
+        grid-template-columns: 1fr;
+    }
+    .region-card.overall {
+        grid-column: 1;
+    }
+    .pvpfest-header h1 {
+        font-size: 2em;
+    }
+    .stat-number {
+        font-size: 2.5em;
+    }
+}
+</style>
+
+<div class="pvpfest-container">
+    <div class="pvpfest-header">
+        <h1>PvP Fest</h1>
+        <div class="char-section">
+            {% set field = info %}
+            {% include 'components/image_char.html' %}
+			<h2>{{ info.characterName }}</h2>
+            <div style="margin-top: 15px;">
+				<a href=".." class="btn btn-primary">Overview</a>&nbsp; &nbsp;
+                <a href="/{{ pvpfestURI }}/" class="btn btn-primary">Leaderboards</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="region-grid">
+        <!-- Overall Stats - Featured Card -->
+        {% if stats.overall %}
+        <div class="region-card overall">
+            <div class="region-name region-overall">Overall Performance</div>
+            <div class="stats-row">
+                <div class="stat-block">
+                    <div class="stat-label">Total Kills</div>
+                    <div class="stat-number" format="format-int-once" raw="{{ stats.overall.kills }}">{{ stats.overall.kills|number_format(0, '.', ',') }}</div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-label">Rank</div>
+                    <div class="stat-number">#<span format="format-int-once" raw="{{ stats.overall.rank }}">{{ stats.overall.rank|number_format(0, '.', ',') }}</span></div>
+                    {% if stats.overall.rank <= 10 %}
+                    <div class="rank-indicator top-rank">TOP 10 PILOT</div>
+                    {% elseif stats.overall.rank <= 100 %}
+                    <div class="rank-indicator">TOP 100</div>
+                    {% else %}
+                    <div class="rank-indicator" format="format-int-once" raw="{{ totalParticipants }}">{{ totalParticipants|number_format(0, '.', ',') }} Participants</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Lowsec -->
+        {% if stats.lowsec %}
+        <div class="region-card">
+            <div class="region-name region-lowsec">Lowsec</div>
+            <div class="stats-row">
+                <div class="stat-block">
+                    <div class="stat-label">Kills</div>
+                    <div class="stat-number {% if stats.lowsec.kills == 0 %}no-kills{% endif %}" format="format-int-once" raw="{{ stats.lowsec.kills }}">
+                        {{ stats.lowsec.kills|number_format(0, '.', ',') }}
+                    </div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-label">Rank</div>
+                    <div class="stat-number {% if stats.lowsec.kills == 0 %}no-kills{% endif %}">
+                        {% if stats.lowsec.kills == 0 %}-{% else %}#<span format="format-int-once" raw="{{ stats.lowsec.rank }}">{{ stats.lowsec.rank|number_format(0, '.', ',') }}</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Highsec -->
+        {% if stats.highsec %}
+        <div class="region-card">
+            <div class="region-name region-highsec">Highsec</div>
+            <div class="stats-row">
+                <div class="stat-block">
+                    <div class="stat-label">Kills</div>
+                    <div class="stat-number {% if stats.highsec.kills == 0 %}no-kills{% endif %}" format="format-int-once" raw="{{ stats.highsec.kills }}">
+                        {{ stats.highsec.kills|number_format(0, '.', ',') }}
+                    </div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-label">Rank</div>
+                    <div class="stat-number {% if stats.highsec.kills == 0 %}no-kills{% endif %}">
+                        {% if stats.highsec.kills == 0 %}-{% else %}#<span format="format-int-once" raw="{{ stats.highsec.rank }}">{{ stats.highsec.rank|number_format(0, '.', ',') }}</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Nullsec -->
+        {% if stats.nullsec %}
+        <div class="region-card">
+            <div class="region-name region-nullsec">Nullsec</div>
+            <div class="stats-row">
+                <div class="stat-block">
+                    <div class="stat-label">Kills</div>
+                    <div class="stat-number {% if stats.nullsec.kills == 0 %}no-kills{% endif %}" format="format-int-once" raw="{{ stats.nullsec.kills }}">
+                        {{ stats.nullsec.kills|number_format(0, '.', ',') }}
+                    </div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-label">Rank</div>
+                    <div class="stat-number {% if stats.nullsec.kills == 0 %}no-kills{% endif %}">
+                        {% if stats.nullsec.kills == 0 %}-{% else %}#<span format="format-int-once" raw="{{ stats.nullsec.rank }}">{{ stats.nullsec.rank|number_format(0, '.', ',') }}</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Pochven -->
+        {% if stats.pochven %}
+        <div class="region-card">
+            <div class="region-name region-pochven">Pochven</div>
+            <div class="stats-row">
+                <div class="stat-block">
+                    <div class="stat-label">Kills</div>
+                    <div class="stat-number {% if stats.pochven.kills == 0 %}no-kills{% endif %}" format="format-int-once" raw="{{ stats.pochven.kills }}">
+                        {{ stats.pochven.kills|number_format(0, '.', ',') }}
+                    </div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-label">Rank</div>
+                    <div class="stat-number {% if stats.pochven.kills == 0 %}no-kills{% endif %}">
+                        {% if stats.pochven.kills == 0 %}-{% else %}#<span format="format-int-once" raw="{{ stats.pochven.rank }}">{{ stats.pochven.rank|number_format(0, '.', ',') }}</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- W-Space -->
+        {% if stats['w-space'] %}
+        <div class="region-card">
+            <div class="region-name region-wspace">W-Space</div>
+            <div class="stats-row">
+                <div class="stat-block">
+                    <div class="stat-label">Kills</div>
+                    <div class="stat-number {% if stats['w-space'].kills == 0 %}no-kills{% endif %}" format="format-int-once" raw="{{ stats['w-space'].kills }}">
+                        {{ stats['w-space'].kills|number_format(0, '.', ',') }}
+                    </div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-label">Rank</div>
+                    <div class="stat-number {% if stats['w-space'].kills == 0 %}no-kills{% endif %}">
+                        {% if stats['w-space'].kills == 0 %}-{% else %}#<span format="format-int-once" raw="{{ stats['w-space'].rank }}">{{ stats['w-space'].rank|number_format(0, '.', ',') }}</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

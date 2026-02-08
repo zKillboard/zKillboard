@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+
+{% set pageTitle = 'PvP Fest Leaderboards' %}
+{% block title %}{% include 'components/title.html' %}{% endblock %}
+
+{% block content %}
+<style>
+.pvpfest-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #ccc;
+}
+.pvpfest-header {
+    text-align: center;
+    padding: 40px 20px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    margin-bottom: 30px;
+    border: 1px solid rgba(255,255,255,0.15);
+}
+.pvpfest-header h1 {
+    font-size: 3em;
+    margin: 0 0 15px 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+    font-weight: bold;
+}
+.pvpfest-header .subtitle {
+    font-size: 1.2em;
+    opacity: 0.9;
+}
+.leaderboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+.leaderboard-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 20px;
+    overflow: hidden;
+}
+.leaderboard-card.overall {
+    background: rgba(255,255,255,0.08);
+    border: 2px solid rgba(255,255,255,0.2);
+}
+.leaderboard-header {
+    font-size: 1.8em;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    text-align: center;
+}
+.leaderboard-card.overall .leaderboard-header {
+    font-size: 2.2em;
+}
+.leaderboard-header.region-overall {
+    color: #fff;
+}
+.leaderboard-header.region-highsec {
+    color: #71e554;
+}
+.leaderboard-header.region-lowsec {
+    color: #DC6D07;
+}
+.leaderboard-header.region-nullsec {
+    color: #8d3264;
+}
+.leaderboard-header.region-pochven {
+    color: #8d3264;
+}
+.leaderboard-header.region-wspace {
+    color: #4ecef8;
+}
+.leaderboard-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.leaderboard-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    margin: 5px 0;
+    background: rgba(255,255,255,0.03);
+    border-radius: 5px;
+    transition: all 0.2s;
+}
+.rank {
+    font-weight: bold;
+    font-size: 1.2em;
+    min-width: 40px;
+    text-align: center;
+}
+.rank.top1 {
+    color: #f39c12;
+    font-size: 1.5em;
+}
+.rank.top2 {
+    color: #c0c0c0;
+    font-size: 1.4em;
+}
+.rank.top3 {
+    color: #cd7f32;
+    font-size: 1.3em;
+}
+.pilot-image {
+    margin: 0 10px;
+}
+.pilot-image img {
+    border-radius: 5px;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+.pilot-info {
+    flex: 1;
+    margin: 0 15px;
+    overflow: hidden;
+}
+.pilot-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #ddd;
+}
+
+.kill-count {
+    font-weight: bold;
+    font-size: 1.2em;
+    min-width: 60px;
+    text-align: right;
+    color: #ddd;
+}
+.leaderboard-heading {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    margin: 10px 0 5px 0;
+    font-weight: bold;
+    font-size: 0.9em;
+    opacity: 0.6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.leaderboard-heading .rank {
+    font-size: 0.9em;
+}
+.leaderboard-heading .pilot-image {
+    visibility: hidden;
+}
+.info-section {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 30px;
+    text-align: center;
+}
+.info-section h3 {
+    margin-top: 0;
+    font-size: 1.3em;
+}
+.badge {
+    display: inline-block;
+    padding: 8px 16px;
+    margin: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+@media (max-width: 768px) {
+    .leaderboard-grid {
+        grid-template-columns: 1fr;
+    }
+    .pvpfest-header h1 {
+        font-size: 2em;
+    }
+}
+</style>
+
+<div class="pvpfest-container">
+    <div class="pvpfest-header">
+        <h1>PvP Fest Leaderboards</h1>
+    </div>
+
+    <div class="leaderboard-grid">
+        {% for regionName, pilots in leaderboards %}
+        {% set regionClass = regionName|lower|replace({' ': '', '-': ''}) %}
+        <div class="leaderboard-card {% if regionName == 'Overall' %}overall{% endif %}">
+            <div class="leaderboard-header region-{{ regionClass }}">{{ regionName }}</div>
+            <div class="leaderboard-heading">
+                <span class="rank">Rank</span>
+                <div class="pilot-image"><div style="width: 64px;"></div></div>
+                <div class="pilot-info">Pilot</div>
+                <span class="kill-count">Points</span>
+            </div>
+            <ul class="leaderboard-list">
+                {% for pilot in pilots %}
+                <li class="leaderboard-item">
+                    <span class="rank {% if pilot.rank == 1 %}top1{% elseif pilot.rank == 2 %}top2{% elseif pilot.rank == 3 %}top3{% endif %}">
+                        {% if pilot.rank == 1 %}🥇{% elseif pilot.rank == 2 %}🥈{% elseif pilot.rank == 3 %}🥉{% else %}{{ pilot.rank }}{% endif %}
+                    </span>
+                    {% if pilot.rank <= 10 %}
+                    <div class="pilot-image">
+                        {% set imageSize = 64 %}
+                        {% set field = pilot %}
+                        {% include 'components/image_char.html' %}
+                    </div>
+                    {% endif %}
+                    <div class="pilot-info">
+                        <div class="pilot-name">
+                            <a href="/character/{{ pilot.characterID }}/{{ pvpfestURI }}/">{{ pilot.characterName }}</a>
+                            {% if pilot.rank <= 10 %}
+                                <br><small>
+                                    {% if pilot.allianceID %}
+                                        <a href="/alliance/{{ pilot.allianceID }}/">{{ pilot.allianceName }}</a>
+                                    {% elseif pilot.corporationID %}
+                                        <a href="/corporation/{{ pilot.corporationID }}/">{{ pilot.corporationName }}</a>
+                                    {% endif %}
+                                </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <span class="kill-count" format="format-int-once" raw="{{ pilot.kills }}">{{ pilot.kills|number_format(0, '.', ',') }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="info-section">
+        <h3>Event Information</h3>
+        <div>
+            <span class="badge"><span format="format-int-once" raw="{{ totalParticipants }}">{{ totalParticipants|number_format(0, '.', ',') }}</span> Total Participants</span>
+        </div>
+        <div style="margin-top: 15px; opacity: 0.7;">
+            <p>Showing top 25 pilots in each region.</p>
+            <p>For complete rules and scoring details, visit the <a href="https://www.eveonline.com/news/view/pvp-fest-2026" target="_blank" style="color: inherit; text-decoration: underline;">official PvP Fest 2026 announcement</a>.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
