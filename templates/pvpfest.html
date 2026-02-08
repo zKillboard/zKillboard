@@ -188,6 +188,7 @@
     <div class="pvpfest-header">
         <h1>PvP Fest Leaderboards</h1>
         <div class="subtitle">Starts 2026-02-09 11:00 UTC</div>
+        <div><small><a href="https://www.eveonline.com/news/view/pvp-fest-2026" target="_blank" rel="noopener" style="color: inherit; text-decoration: underline;">official PvP Fest 2026 announcement ↗</a></small></div>
         <div><small>updated every 15 minutes</small></div>
     </div>
 
@@ -206,7 +207,7 @@
                 {% for pilot in pilots %}
                 <li class="leaderboard-item">
                     <span class="rank {% if pilot.rank == 1 %}top1{% elseif pilot.rank == 2 %}top2{% elseif pilot.rank == 3 %}top3{% endif %}">
-                        {% if pilot.rank == 1 %}🥇{% elseif pilot.rank == 2 %}🥈{% elseif pilot.rank == 3 %}🥉{% else %}{{ pilot.rank }}{% endif %}
+                        {% if pilot.rank == 1 %}🥇{% elseif pilot.rank == 2 %}🥈{% elseif pilot.rank == 3 %}🥉{% elseif pilot.rank > 0 %}{{ pilot.rank }}{% else %}-{% endif %}
                     </span>
                     {% if pilot.rank <= 10 %}
                     <div class="pilot-image">
@@ -244,7 +245,6 @@
         </div>
         <div style="margin-top: 15px; opacity: 0.7;">
             <p>Showing top 25 pilots in each region.</p>
-            <p>For complete rules and scoring details, visit the <a href="https://www.eveonline.com/news/view/pvp-fest-2026" target="_blank" style="color: inherit; text-decoration: underline;">official PvP Fest 2026 announcement</a>.</p>
         </div>
     </div>
 </div>

@@ -200,7 +200,7 @@
                 </div>
                 <div class="stat-block">
                     <div class="stat-label">Rank</div>
-                    <div class="stat-number">{% if stats.overall.rank >= 1 %}#<span format="format-int-once" raw="{{ stats.overall.rank }}">{{ stats.overall.rank|number_format(0, '.', ',') }}</span>i{% else %}-{% endif %}</div>
+                    <div class="stat-number">{% if stats.overall.rank > 0 %}#<span format="format-int-once" raw="{{ stats.overall.rank }}">{{ stats.overall.rank|number_format(0, '.', ',') }}</span>{% else %}-{% endif %}</div>
                     {% if stats.overall.rank > 0 and stats.overall.rank <= 10 %}
                     <div class="rank-indicator top-rank">TOP 10 PILOT</div>
                     {% elseif stats.overall.rank > 0 and stats.overall.rank <= 100 %}
@@ -226,8 +226,8 @@
                 </div>
                 <div class="stat-block">
                     <div class="stat-label">Rank</div>
-                    <div class="stat-number {% if stats.lowsec.kills == 0 %}no-kills{% endif %}">
-                        {% if stats.lowsec.kills == 0 %}-{% else %}#<span format="format-int-once" raw="{{ stats.lowsec.rank }}">{{ stats.lowsec.rank|number_format(0, '.', ',') }}</span>{% endif %}
+                    <div class="stat-number {% if stats.lowsec.rank <= 0 %}no-kills{% endif %}">
+                        {% if stats.lowsec.rank > 0 %}#<span format="format-int-once" raw="{{ stats.lowsec.rank }}">{{ stats.lowsec.rank|number_format(0, '.', ',') }}</span>{% else %}-{% endif %}
                     </div>
                 </div>
             </div>
@@ -247,8 +247,8 @@
                 </div>
                 <div class="stat-block">
                     <div class="stat-label">Rank</div>
-                    <div class="stat-number {% if stats.highsec.kills == 0 %}no-kills{% endif %}">
-                        {% if stats.highsec.kills == 0 %}-{% else %}#<span format="format-int-once" raw="{{ stats.highsec.rank }}">{{ stats.highsec.rank|number_format(0, '.', ',') }}</span>{% endif %}
+                    <div class="stat-number {% if stats.highsec.rank <= 0 %}no-kills{% endif %}">
+                        {% if stats.highsec.rank > 0 %}#<span format="format-int-once" raw="{{ stats.highsec.rank }}">{{ stats.highsec.rank|number_format(0, '.', ',') }}</span>{% else %}-{% endif %}
                     </div>
                 </div>
             </div>
@@ -268,8 +268,8 @@
                 </div>
                 <div class="stat-block">
                     <div class="stat-label">Rank</div>
-                    <div class="stat-number {% if stats.nullsec.kills == 0 %}no-kills{% endif %}">
-                        {% if stats.nullsec.kills == 0 %}-{% else %}#<span format="format-int-once" raw="{{ stats.nullsec.rank }}">{{ stats.nullsec.rank|number_format(0, '.', ',') }}</span>{% endif %}
+                    <div class="stat-number {% if stats.nullsec.rank <= 0 %}no-kills{% endif %}">
+                        {% if stats.nullsec.rank > 0 %}#<span format="format-int-once" raw="{{ stats.nullsec.rank }}">{{ stats.nullsec.rank|number_format(0, '.', ',') }}</span>{% else %}-{% endif %}
                     </div>
                 </div>
             </div>
@@ -289,8 +289,8 @@
                 </div>
                 <div class="stat-block">
                     <div class="stat-label">Rank</div>
-                    <div class="stat-number {% if stats.pochven.kills == 0 %}no-kills{% endif %}">
-                        {% if stats.pochven.kills == 0 %}-{% else %}#<span format="format-int-once" raw="{{ stats.pochven.rank }}">{{ stats.pochven.rank|number_format(0, '.', ',') }}</span>{% endif %}
+                    <div class="stat-number {% if stats.pochven.rank <= 0 %}no-kills{% endif %}">
+                        {% if stats.pochven.rank > 0 %}#<span format="format-int-once" raw="{{ stats.pochven.rank }}">{{ stats.pochven.rank|number_format(0, '.', ',') }}</span>{% else %}-{% endif %}
                     </div>
                 </div>
             </div>
@@ -310,8 +310,8 @@
                 </div>
                 <div class="stat-block">
                     <div class="stat-label">Rank</div>
-                    <div class="stat-number {% if stats['w-space'].kills == 0 %}no-kills{% endif %}">
-                        {% if stats['w-space'].kills == 0 %}-{% else %}#<span format="format-int-once" raw="{{ stats['w-space'].rank }}">{{ stats['w-space'].rank|number_format(0, '.', ',') }}</span>{% endif %}
+                    <div class="stat-number {% if stats['w-space'].rank <= 0 %}no-kills{% endif %}">
+                        {% if stats['w-space'].rank > 0 %}#<span format="format-int-once" raw="{{ stats['w-space'].rank }}">{{ stats['w-space'].rank|number_format(0, '.', ',') }}</span>{% else %}-{% endif %}
                     </div>
                 </div>
             </div>
