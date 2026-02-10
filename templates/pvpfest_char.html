@@ -45,7 +45,6 @@
     border: 1px solid rgba(255,255,255,0.15);
     border-radius: 12px;
     padding: 25px;
-    transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
 }
@@ -169,6 +168,51 @@
     .stat-number {
         font-size: 2.5em;
     }
+}
+.pvpfest-killmails {
+    margin-top: 40px;
+}
+.pvpfest-killmails .nav-tabs {
+    border-bottom: 2px solid rgba(255,255,255,0.12);
+    margin-bottom: 10px;
+}
+.pvpfest-killmails .nav-tabs > li {
+    margin-bottom: -2px;
+}
+.pvpfest-killmails .nav-tabs > li > a,
+.pvpfest-killmails .nav-tabs > li > a:hover,
+.pvpfest-killmails .nav-tabs > li > a:focus {
+    color: #cfcfcf !important;
+    background: rgba(255,255,255,0.03) !important;
+    border: 2px solid transparent !important;
+    border-bottom: 0 !important;
+    padding: 10px 18px;
+    border-radius: 10px 10px 0 0;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    margin-right: 0;
+    box-sizing: border-box;
+}
+.pvpfest-killmails .nav-tabs > li.active > a,
+.pvpfest-killmails .nav-tabs > li.active > a:hover,
+.pvpfest-killmails .nav-tabs > li.active > a:focus {
+    background: rgba(15,15,15,0.9) !important;
+    color: #fff !important;
+    border: 2px solid rgba(255,255,255,0.25) !important;
+    border-bottom: 0 !important;
+    box-shadow: none !important;
+}
+.pvpfest-killmails .nav-tabs > li.active > a .badge {
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.25);
+}
+.pvpfest-killmails .tab-content {
+    padding-top: 10px;
+    background: rgba(255,255,255,0.03);
+    border: 2px solid rgba(255,255,255,0.12);
+    border-top: 0;
+    border-radius: 0 10px 10px 10px;
+    padding: 15px;
 }
 </style>
 
@@ -318,5 +362,172 @@
         </div>
         {% endif %}
     </div>
+
+    <div class="pvpfest-killmails">
+        <h2>Killmails</h2>
+        <div class="subtitle" style="margin-bottom: 10px; opacity: 0.8;">
+            Showing all killmails per region.
+        </div>
+
+        <ul class="nav nav-tabs" role="tablist">
+            {% for tabKey, tab in killmailTabs %}
+            <li role="presentation" class="{% if loop.first %}active{% endif %}">
+                <a href="#pvpfest-tab-{{ tabKey }}" aria-controls="pvpfest-tab-{{ tabKey }}" role="tab" data-toggle="tab" data-tab-key="{{ tabKey }}">
+                    {{ tab.label }} <span class="badge" format="format-int-once" raw="{{ tab.count }}">{{ tab.count|number_format(0, '.', ',') }}</span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <div class="tab-content">
+            {% for tabKey, tab in killmailTabs %}
+            <div role="tabpanel" class="tab-pane {% if loop.first %}active{% endif %}" id="pvpfest-tab-{{ tabKey }}">
+                <table class="table table-condensed table-striped table-hover" style="margin-bottom: 0px;" id="pvpfest-killlist-{{ tabKey }}">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th style="width: 50px; max-width: 50px; text-align: center;">Ship</th>
+                            <th style="width:115px; max-width: 115px;" class="location">Location</th>
+                            <th class="hidden-xs" style="width: 64px;">&nbsp;</th>
+                            <th style="max-width: 38%;">Victim</th>
+                            <th class="finalBlowColumn hidden-xs" style="width: 64px; max-width: 64px;">&nbsp;</th>
+                            <th class="finalBlowColumn hidden-xs">Final Blow</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pvpfest-killmailstobdy-{{ tabKey }}">
+                        <tr id="pvpfest-kms-loading-{{ tabKey }}"><td colspan="7"><em>loading</em></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript">
+    const pvpfestKillmailTabs = {{ killmailTabs|json_encode|raw }};
+	console.log(pvpfestKillmailTabs);
+    const pvpfestLoadedTabs = {};
+    const pvpfestTabLoadState = {};
+    let pvpfestHeightLocked = false;
+    let pvpfestPrimaryTabKey = null;
+	let pvpfestHeight;
+	let pvpfestHeightTimeout;
+
+    function pvpfestLoadKillRow(killID, rowId, tabKey, retries = 0) {
+        $.get("/cache/24hour/killlistrow/" + killID + "/", function(data) {
+            $("#" + rowId).replaceWith(data);
+			$(".tr-date").remove();
+            const state = pvpfestTabLoadState[tabKey];
+			clearTimeout(pvpfestHeightTimeout);
+			pvpfestHeightTimeout = setTimeout(adjustHeight, 10);
+        }).fail(function() {
+            if (retries < 3) setTimeout(() => pvpfestLoadKillRow(killID, rowId, tabKey, retries + 1), 1000);
+        });
+    }
+
+	function adjustHeight() {
+		let height = $(".pvpfest-container").css("height");
+		height = parseInt(height.replace('px', ''));
+
+		pvpfestHeight = Math.max(height, pvpfestHeight || height);
+		$(".pvpfest-container").css("min-height", pvpfestHeight + 'px');
+
+		assignRowColor();
+	}
+
+    function pvpfestRecordHeight(tabKey) {
+        setTimeout(() => {
+            if (pvpfestHeightLocked) return;
+            if (tabKey !== pvpfestPrimaryTabKey) return;
+
+            const pane = document.getElementById(`pvpfest-tab-${tabKey}`);
+            if (!pane) return;
+
+            const primaryHeight = pane.offsetHeight;
+            const tabContent = document.querySelector('.pvpfest-killmails .tab-content');
+            if (tabContent && primaryHeight > 0) {
+                tabContent.style.minHeight = `${primaryHeight}px`;
+                pvpfestHeightLocked = true;
+            }
+        }, 50);
+    }
+
+    function pvpfestLoadTab(tabKey) {
+        if (!tabKey || !pvpfestKillmailTabs || !pvpfestKillmailTabs[tabKey]) return;
+        if (pvpfestLoadedTabs[tabKey]) return;
+
+        const tab = pvpfestKillmailTabs[tabKey];
+        const tbodyId = "#pvpfest-killmailstobdy-" + tabKey;
+        const $tbody = $(tbodyId);
+
+        if (!tab || !tab.ids || tab.ids.length === 0) {
+            $tbody.html("<tr><td colspan='7'><em>No killmails found.</em></td></tr>");
+            pvpfestTabLoadState[tabKey] = { total: 0, loaded: 0, completed: true };
+            pvpfestRecordHeight(tabKey);
+            return;
+        }
+
+        pvpfestTabLoadState[tabKey] = { total: tab.ids.length, loaded: 0, completed: false };
+
+        tab.ids.forEach((killID) => {
+            const rowId = `pvpfest-${tabKey}-kill-${killID}`;
+            $tbody.append(`<tr id="${rowId}" class="fetchme" killID="${killID}"></tr>`);
+            pvpfestLoadKillRow(killID, rowId, tabKey);
+        });
+
+        $("#pvpfest-kms-loading-" + tabKey).remove();
+        pvpfestLoadedTabs[tabKey] = true;
+    }
+
+    function pvpfestInit() {
+        const firstKey = Object.keys(pvpfestKillmailTabs)[0];
+        pvpfestPrimaryTabKey = firstKey || null;
+        if (firstKey) pvpfestLoadTab(firstKey);
+
+        function pvpfestGetTabKey(target) {
+            if (!target) return null;
+            const dataKey = target.getAttribute && target.getAttribute('data-tab-key');
+            if (dataKey) return dataKey;
+
+            const ariaControls = target.getAttribute && target.getAttribute('aria-controls');
+            if (ariaControls) return ariaControls.replace('pvpfest-tab-', '');
+
+            const href = (target.getAttribute && target.getAttribute('href')) || '';
+            const hash = (target.hash && target.hash.length) ? target.hash : (href.includes('#') ? `#${href.split('#')[1]}` : '');
+            if (!hash) return null;
+            return hash.replace('#pvpfest-tab-', '');
+        }
+
+        $(document).on('show.bs.tab', 'a[data-toggle="tab"]', function(e) {
+            const tabKey = pvpfestGetTabKey(e.target || e.currentTarget);
+            if (!tabKey) return;
+            pvpfestLoadTab(tabKey);
+        });
+
+        $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function(e) {
+            const tabKey = pvpfestGetTabKey(e.target || e.currentTarget);
+            if (!tabKey) return;
+            pvpfestLoadTab(tabKey);
+        });
+
+        $(document).on('click', 'a[data-toggle="tab"]', function(e) {
+            const tabKey = pvpfestGetTabKey(e.currentTarget);
+            if (!tabKey) return;
+            pvpfestLoadTab(tabKey);
+        });
+    }
+
+    function pvpfestReady() {
+        if (window.jQuery) {
+            $(document).ready(pvpfestInit);
+        } else {
+            setTimeout(pvpfestReady, 25);
+        }
+    }
+
+    pvpfestReady();
+</script>
 {% endblock %}

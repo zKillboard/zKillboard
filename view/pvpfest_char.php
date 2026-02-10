@@ -24,6 +24,15 @@ function pvpfestHandler($request, $response, $args, $container) {
         'loc:w-space' => 'w-space'
     ];
 
+    $killmailRegionTabs = [
+        'overall' => ['label' => 'Overall', 'loc' => null],
+        'lowsec' => ['label' => 'Lowsec', 'loc' => 'loc:lowsec'],
+        'highsec' => ['label' => 'Highsec', 'loc' => 'loc:highsec'],
+        'nullsec' => ['label' => 'Nullsec', 'loc' => 'loc:nullsec'],
+        'pochven' => ['label' => 'Pochven', 'loc' => 'loc:pochven'],
+        'w-space' => ['label' => 'W-Space', 'loc' => 'loc:w-space']
+    ];
+
     // Get character info
     $info = Info::getInfo("characterID", $id);
     if ($info === null) {
@@ -63,6 +72,35 @@ function pvpfestHandler($request, $response, $args, $container) {
         ];
     }
 
+    // Killmail lists for each region tab
+    $killmailLimit = null;
+    $killmailTabs = [];
+    foreach ($killmailRegionTabs as $tabKey => $tabConfig) {
+        $filter = ['attacker_id' => $id];
+        if (!empty($tabConfig['loc'])) {
+            $filter['loc'] = $tabConfig['loc'];
+        }
+
+        $cursor = $pvpfestColl->find(
+            $filter,
+            [
+                'projection' => ['killID' => 1],
+                'sort' => ['killID' => -1]
+            ]
+        );
+
+        $killIds = [];
+        foreach ($cursor as $row) {
+            if (isset($row['killID'])) $killIds[] = (int) $row['killID'];
+        }
+
+        $killmailTabs[$tabKey] = [
+            'label' => $tabConfig['label'],
+            'ids' => $killIds,
+            'count' => count($killIds)
+        ];
+    }
+
     // Get some additional details
     $totalParticipants = $pvpfestColl->aggregate([
         ['$group' => ['_id' => '$attacker_id']],
@@ -84,7 +122,12 @@ function pvpfestHandler($request, $response, $args, $container) {
         'totalParticipants' => $participantCount,
         'lastKillTime' => $lastKillTime,
         'characterID' => $id,
-		'pvpfestURI' => $pvpfestURI
+        'pvpfestURI' => $pvpfestURI,
+        'killmailTabs' => $killmailTabs,
+        'killmailLimit' => $killmailLimit,
+        'entityType' => 'character',
+        'entityID' => $id,
+        'pageType' => $pvpfestURI
     ];
 
     return $container->get('view')->render(
