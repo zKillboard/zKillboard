@@ -175,9 +175,12 @@
 .pvpfest-killmails .nav-tabs {
     border-bottom: 2px solid rgba(255,255,255,0.12);
     margin-bottom: 10px;
+    display: flex;
 }
 .pvpfest-killmails .nav-tabs > li {
     margin-bottom: -2px;
+    flex: 1 1 0;
+    text-align: center;
 }
 .pvpfest-killmails .nav-tabs > li > a,
 .pvpfest-killmails .nav-tabs > li > a:hover,
@@ -192,6 +195,38 @@
     letter-spacing: 0.3px;
     margin-right: 0;
     box-sizing: border-box;
+    width: 100%;
+    display: block;
+}
+.pvpfest-killmails .nav-tabs > li > a[data-tab-key="overall"],
+.pvpfest-killmails .nav-tabs > li > a[data-tab-key="overall"]:hover,
+.pvpfest-killmails .nav-tabs > li > a[data-tab-key="overall"]:focus {
+    color: #fff !important;
+}
+.pvpfest-killmails .nav-tabs > li > a[data-tab-key="highsec"],
+.pvpfest-killmails .nav-tabs > li > a[data-tab-key="highsec"]:hover,
+.pvpfest-killmails .nav-tabs > li > a[data-tab-key="highsec"]:focus {
+    color: #71e554 !important;
+}
+.pvpfest-killmails .nav-tabs > li > a[data-tab-key="lowsec"],
+.pvpfest-killmails .nav-tabs > li > a[data-tab-key="lowsec"]:hover,
+.pvpfest-killmails .nav-tabs > li > a[data-tab-key="lowsec"]:focus {
+    color: #DC6D07 !important;
+}
+.pvpfest-killmails .nav-tabs > li > a[data-tab-key="nullsec"],
+.pvpfest-killmails .nav-tabs > li > a[data-tab-key="nullsec"]:hover,
+.pvpfest-killmails .nav-tabs > li > a[data-tab-key="nullsec"]:focus {
+    color: #8d3264 !important;
+}
+.pvpfest-killmails .nav-tabs > li > a[data-tab-key="pochven"],
+.pvpfest-killmails .nav-tabs > li > a[data-tab-key="pochven"]:hover,
+.pvpfest-killmails .nav-tabs > li > a[data-tab-key="pochven"]:focus {
+    color: #8d3264 !important;
+}
+.pvpfest-killmails .nav-tabs > li > a[data-tab-key="w-space"],
+.pvpfest-killmails .nav-tabs > li > a[data-tab-key="w-space"]:hover,
+.pvpfest-killmails .nav-tabs > li > a[data-tab-key="w-space"]:focus {
+    color: #4ecef8 !important;
 }
 .pvpfest-killmails .nav-tabs > li.active > a,
 .pvpfest-killmails .nav-tabs > li.active > a:hover,
