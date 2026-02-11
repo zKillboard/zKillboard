@@ -105,7 +105,7 @@
 .ztop-server-row,
 .ztop-server-header {
     display: grid;
-    grid-template-columns: 140px 24px 70px 70px 140px 140px 160px;
+    grid-template-columns: max-content minmax(120px, max-content) repeat(5, minmax(0, 1fr));
     align-items: center;
     gap: 8px;
 }
@@ -116,8 +116,12 @@
     letter-spacing: 0.4px;
     margin-bottom: 6px;
 }
-.ztop-server-header > div:not(:first-child),
-.ztop-server-row > div:not(:first-child) {
+.ztop-server-header > div:nth-child(1),
+.ztop-server-row > div:nth-child(1) {
+    text-align: center;
+}
+.ztop-server-header > div:nth-child(n+3),
+.ztop-server-row > div:nth-child(n+3) {
     text-align: right;
 }
 .ztop-server-row {
@@ -139,6 +143,17 @@
 }
 .ztop-server-metric {
     white-space: nowrap;
+}
+.ztop-server-metric-graph {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: flex-end;
+}
+.ztop-server-sparkline {
+    width: 56px;
+    height: 16px;
+    opacity: 0.9;
 }
 .ztop-group {
     background: rgba(255, 255, 255, 0.04);
@@ -260,7 +275,8 @@ const ztopState = {
     metricSeries: {},
     maxPoints: 60,
     lastMetrics: [],
-    lastUpdateAt: null
+    lastUpdateAt: null,
+    serverSeries: {}
 };
 
 function toNumber(value) {
@@ -329,14 +345,37 @@ function parseServerLine(line) {
     const mongoAlt = line.match(/MongoDB:\s*([^\s]+)/i);
     const roleMatch = line.match(/^([A-Za-z])\s/);
 
+    const memUsed = memMatch ? parseFloat(memMatch[1].replace(/,/g, '')) : null;
+    const memTotal = memMatch ? parseFloat(memMatch[2].replace(/,/g, '')) : null;
+    const cpuValue = cpuMatch ? parseFloat(cpuMatch[1]) : null;
+    const loadValue = loadMatch ? parseFloat(loadMatch[1]) : null;
+    const redisValue = redisMatch ? sizeToMegabytes(redisMatch[1]) : null;
+    const mongoValue = mongoMatch ? sizeToMegabytes(`${mongoMatch[1]}G`) : null;
+
     return {
         role: roleMatch ? roleMatch[1] : '',
         cpu: cpuMatch ? `${cpuMatch[1]}%` : '--',
         load: loadMatch ? loadMatch[1] : '--',
         memory: memMatch ? `${memMatch[1]}G/${memMatch[2]}G` : (memAlt ? memAlt[1] : '--'),
         redis: redisMatch ? redisMatch[1] : '--',
-        mongo: mongoMatch ? `${mongoMatch[1]}G/${mongoMatch[2]}G` : (mongoAlt ? mongoAlt[1] : '--')
+        mongo: mongoMatch ? `${mongoMatch[1]}G/${mongoMatch[2]}G` : (mongoAlt ? mongoAlt[1] : '--'),
+        cpuValue,
+        loadValue,
+        memUsed,
+        memTotal,
+        redisValue,
+        mongoValue
     };
+}
+
+function sizeToMegabytes(value) {
+    if (!value) return null;
+    const match = String(value).trim().match(/^([0-9.,]+)\s*([KMGTP])?B?$/i);
+    if (!match) return null;
+    const num = parseFloat(match[1].replace(/,/g, ''));
+    const unit = (match[2] || 'M').toUpperCase();
+    const multipliers = { K: 1 / 1024, M: 1, G: 1024, T: 1024 * 1024, P: 1024 * 1024 * 1024 };
+    return num * (multipliers[unit] || 1);
 }
 
 function renderServers(servers) {
@@ -351,8 +390,8 @@ function renderServers(servers) {
     const header = document.createElement('div');
     header.className = 'ztop-server-header';
     header.innerHTML = `
-        <div>Host</div>
         <div>R</div>
+        <div>Host</div>
         <div>CPU</div>
         <div>Load</div>
         <div>Memory</div>
@@ -363,18 +402,74 @@ function renderServers(servers) {
 
     servers.forEach((server) => {
         const parsed = parseServerLine(server.line || '');
+        const hostKey = server.host || 'unknown';
+        if (!ztopState.serverSeries[hostKey]) {
+            ztopState.serverSeries[hostKey] = { cpu: [], load: [], mem: [], redis: [], mongo: [] };
+        }
+        if (parsed && parsed.cpuValue !== null) {
+            ztopState.serverSeries[hostKey].cpu.push(parsed.cpuValue);
+        }
+        if (parsed && parsed.loadValue !== null) {
+            ztopState.serverSeries[hostKey].load.push(parsed.loadValue);
+        }
+        if (parsed && parsed.memUsed !== null && parsed.memTotal) {
+            const percent = (parsed.memUsed / parsed.memTotal) * 100;
+            ztopState.serverSeries[hostKey].mem.push(percent);
+        }
+        if (parsed && parsed.redisValue !== null) {
+            ztopState.serverSeries[hostKey].redis.push(parsed.redisValue);
+        }
+        if (parsed && parsed.mongoValue !== null) {
+            ztopState.serverSeries[hostKey].mongo.push(parsed.mongoValue);
+        }
+
+        ['cpu', 'load', 'mem', 'redis', 'mongo'].forEach((key) => {
+            const series = ztopState.serverSeries[hostKey][key];
+            if (series.length > ztopState.maxPoints) series.shift();
+        });
+
         const row = document.createElement('div');
         row.className = 'ztop-server-row';
         row.innerHTML = `
-            <div class="ztop-server-host">${server.host || '--'}</div>
             <div class="ztop-server-role">${parsed ? parsed.role : ''}</div>
-            <div class="ztop-server-metric">${parsed ? parsed.cpu : '--'}</div>
-            <div class="ztop-server-metric">${parsed ? parsed.load : '--'}</div>
-            <div class="ztop-server-metric">${parsed ? parsed.memory : '--'}</div>
-            <div class="ztop-server-metric">${parsed ? parsed.redis : '--'}</div>
-            <div class="ztop-server-metric">${parsed ? parsed.mongo : '--'}</div>
+            <div class="ztop-server-host">${server.host || '--'}</div>
+            <div class="ztop-server-metric-graph">
+                <canvas class="ztop-server-sparkline" data-series="cpu"></canvas>
+                <span class="ztop-server-metric">${parsed ? parsed.cpu : '--'}</span>
+            </div>
+            <div class="ztop-server-metric-graph">
+                <canvas class="ztop-server-sparkline" data-series="load"></canvas>
+                <span class="ztop-server-metric">${parsed ? parsed.load : '--'}</span>
+            </div>
+            <div class="ztop-server-metric-graph">
+                <canvas class="ztop-server-sparkline" data-series="mem"></canvas>
+                <span class="ztop-server-metric">${parsed ? parsed.memory : '--'}</span>
+            </div>
+            <div class="ztop-server-metric-graph">
+                <canvas class="ztop-server-sparkline" data-series="redis"></canvas>
+                <span class="ztop-server-metric">${parsed ? parsed.redis : '--'}</span>
+            </div>
+            <div class="ztop-server-metric-graph">
+                <canvas class="ztop-server-sparkline" data-series="mongo"></canvas>
+                <span class="ztop-server-metric">${parsed ? parsed.mongo : '--'}</span>
+            </div>
         `;
         container.appendChild(row);
+
+        row.querySelectorAll('.ztop-server-sparkline').forEach((canvas) => {
+            const key = canvas.getAttribute('data-series');
+            const series = ztopState.serverSeries[hostKey][key] || [];
+            const color = key === 'cpu'
+                ? '#67c3ff'
+                : key === 'load'
+                    ? '#f6b26b'
+                    : key === 'mem'
+                        ? '#7ce07c'
+                        : key === 'redis'
+                            ? '#c89bff'
+                            : '#ffb6c1';
+            renderSparkline(canvas, series, color);
+        });
     });
 }
 
