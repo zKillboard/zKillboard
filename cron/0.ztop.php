@@ -23,6 +23,10 @@ $priorKillLog = 0;
 $isMaster = null;
 
 $deltaArray = [];
+$metrics = [];
+$metricIndex = 0;
+$serverMetrics = [];
+$serverRows = [];
 
 $lastKillCountSent = null;
 $hour = date('H');
@@ -34,6 +38,9 @@ while ($hour == date('H')) {
 
 	ob_start();
 	$infoArray = [];
+	$metrics = [];
+	$metricIndex = 0;
+	$serverRows = [];
 
 	$isHardened = $redis->ttl('zkb:isHardened');
 	if ($isHardened > 0) {
@@ -173,9 +180,28 @@ addInfo('Top killID', $topKillID);	addInfo('', 0);
 		$servers[] = $s;
 	}
 	sort($servers);
+	$serverIndex = 0;
 	foreach ($servers as $s) {
 		$l = $redis->hget('zkb:servers', $s);
 		echo str_pad($s, 14, " ", STR_PAD_RIGHT) . "$l\n";
+		$serverRows[] = [
+			'host' => $s,
+			'line' => $l
+		];
+		$serverMetrics[] = [
+			'type' => 'metric',
+			'index' => 'server-' . $serverIndex,
+			'left' => ($serverIndex % 2 === 0),
+			'text' => $s,
+			'label' => $s,
+			'num' => $l,
+			'raw' => $l,
+			'delta' => ''
+		];
+		$serverIndex++;
+	}
+	if (count($serverMetrics) > 0) {
+		$serverMetrics[] = ['type' => 'separator', 'index' => 'server-sep'];
 	}
 	echo "\n";
 
@@ -203,14 +229,24 @@ addInfo('Top killID', $topKillID);	addInfo('', 0);
 	if ($isMaster) foreach ($output as $line) echo "$line\n";
 	$output = ob_get_clean();
 
-	$redis->publish("ztop", json_encode(['action' => 'ztop', 'message' => $output]));
+	$payloadMetrics = $metrics;
+	$redis->publish("ztop", json_encode([
+		'action' => 'ztop',
+		'message' => $output,
+		'payload' => [
+			'timestamp' => time(),
+			'metrics' => $payloadMetrics,
+			'servers' => $serverRows,
+			'raw' => $output
+		]
+	]));
 
 	while ($curSecond == date('s')) usleep(100000);
 }
 
 function addInfo($text, $number, $left = true, $format = true)
 {
-	global $infoArray, $deltaArray;
+	global $infoArray, $deltaArray, $metrics, $metricIndex;
 
 
 	$prevNumber = @$deltaArray[$text];
@@ -223,7 +259,22 @@ function addInfo($text, $number, $left = true, $format = true)
 	$dtext = $delta == 0 ? '' : "($delta)";
 	$num = $format ? number_format($number, 0) : $number;
 	if ($text == '') $num = '';
-	$infoArray[] = ['text' => "$text $dtext", 'num' => $num, 'lr' => $left];
+	$label = "$text $dtext";
+	$infoArray[] = ['text' => $label, 'num' => $num, 'lr' => $left];
+	if ($text == '') {
+		$metrics[] = ['type' => 'separator', 'index' => $metricIndex++];
+		return;
+	}
+	$metrics[] = [
+		'type' => 'metric',
+		'index' => $metricIndex++,
+		'left' => $left,
+		'text' => $text,
+		'label' => $label,
+		'num' => $num,
+		'raw' => $number,
+		'delta' => $delta
+	];
 }
 
 function getSystemMemInfo()

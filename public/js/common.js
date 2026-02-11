@@ -208,7 +208,11 @@ function wslog(msg)
         if (json.message.length > 0) $("#zkb-message").html("<center>" + json.message + "</center>").removeClass('hide');
         else $("#zkb-message").html('').addClass('hide');
     } else if (json.action == 'ztop') {
-        $("#ztoptextblock").text(json.message);
+        if (json.payload && typeof window.ztopUpdate === 'function') {
+            window.ztopUpdate(json.payload);
+        } else {
+            $("#ztoptextblock").text(json.message);
+        }
     } else {
         console.log("Unknown action: " + json.action);
     }

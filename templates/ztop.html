@@ -3,8 +3,245 @@
 {% set pageTitle = 'zKillboard Server Top' %}
 {% block title %}{% include 'components/title.html' %}{% endblock %}
 
+{% block style %}
+<style>
+.ztop-wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    color: #d3d3d3;
+}
+.ztop-hero {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.ztop-title {
+    font-size: 1.2em;
+    font-weight: 700;
+    margin-right: 6px;
+}
+.ztop-subtitle {
+    opacity: 0.75;
+    font-size: 0.9em;
+}
+.ztop-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    font-size: 0.85em;
+    margin-left: auto;
+}
+.ztop-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+.ztop-section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+.ztop-section-header h3 {
+    margin: 0;
+}
+.ztop-toggle {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #d3d3d3;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 0.85em;
+    cursor: pointer;
+}
+.ztop-toggle:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+.ztop-section {
+    margin-top: 6px;
+}
+.ztop-raw.is-hidden {
+    display: none;
+}
+.ztop-pill {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-weight: 600;
+}
+.ztop-pill.is-live {
+    background: rgba(124, 224, 124, 0.2);
+    border-color: rgba(124, 224, 124, 0.6);
+    color: #7ce07c;
+}
+.ztop-pill.is-offline {
+    background: rgba(255, 123, 123, 0.2);
+    border-color: rgba(255, 123, 123, 0.6);
+    color: #ff7b7b;
+}
+.ztop-group-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.ztop-servers {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    font-size: 0.85em;
+}
+.ztop-server-row,
+.ztop-server-header {
+    display: grid;
+    grid-template-columns: 140px 24px 70px 70px 140px 140px 160px;
+    align-items: center;
+    gap: 8px;
+}
+.ztop-server-header {
+    opacity: 0.7;
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 6px;
+}
+.ztop-server-row {
+    padding: 4px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.ztop-server-row:first-of-type {
+    border-top: none;
+}
+.ztop-server-host {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ztop-server-role {
+    text-align: center;
+    font-weight: 600;
+}
+.ztop-server-metric {
+    white-space: nowrap;
+}
+.ztop-group {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 10px;
+}
+.ztop-group-title {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.75;
+    margin: 0 0 6px 0;
+}
+.ztop-columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+.ztop-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 8px;
+    overflow: hidden;
+}
+.ztop-card-title {
+    font-size: 0.7em;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    opacity: 0.7;
+}
+.ztop-card-body {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: center;
+    margin-top: 4px;
+    position: relative;
+}
+.ztop-card-value {
+    font-size: 1.2em;
+    font-weight: 700;
+}
+.ztop-card-delta {
+    font-size: 0.75em;
+    margin-left: 6px;
+}
+.ztop-card-delta.positive { color: #7ce07c; }
+.ztop-card-delta.negative { color: #ff7b7b; }
+.ztop-sparkline {
+    position: absolute;
+    right: 8px;
+    bottom: 6px;
+    width: 42%;
+    height: 55%;
+    pointer-events: none;
+    opacity: 0.9;
+}
+.ztop-raw {
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    white-space: pre-wrap;
+    color: #c8d0ff;
+    filter: brightness(120%);
+    max-height: 42em;
+    overflow: auto;
+}
+@media (max-width: 1100px) {
+    .ztop-group-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<pre id="ztoptextblock" style="filter: brightness(125%); height: 55em;">ztop will populate momentarily unless your live updates are disabled</pre>
+<div class="ztop-wrap">
+    <div class="ztop-hero">
+        <div class="ztop-title">zTop</div>
+        <div class="ztop-subtitle">Live server status, queues, and telemetry.</div>
+        <div class="ztop-controls">
+            <div class="ztop-meta">
+                <span id="ztop-last-update">Waiting for first update…</span>
+                <span class="ztop-pill" id="ztop-connection">Connecting</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="ztop-servers" class="ztop-servers"></div>
+
+    <div id="ztop-groups" class="ztop-group-grid">
+        <div class="ztop-group">
+            <div class="ztop-group-title">Waiting for metrics…</div>
+        </div>
+    </div>
+
+    <div class="ztop-section">
+        <div class="ztop-section-header">
+            <h3>Raw zTop feed</h3>
+            <button class="ztop-toggle" id="ztop-raw-toggle" type="button">Show raw</button>
+        </div>
+        <pre id="ztoptextblock" class="ztop-raw is-hidden">ztop will populate momentarily unless your live updates are disabled</pre>
+    </div>
+</div>
 {% endblock %}
 
 {% block script %}
@@ -13,6 +250,267 @@ setTimeout(load_ztop, 1000);
 function load_ztop() {
     if (!pubsub) setTimeout(load_ztop, 250);
     pubsub('ztop');
+}
+
+const ztopState = {
+    metricSeries: {},
+    maxPoints: 60,
+    lastMetrics: [],
+    lastUpdateAt: null
+};
+
+function toNumber(value) {
+    if (value === null || value === undefined) return null;
+    const cleaned = String(value).replace(/,/g, '').trim();
+    const match = cleaned.match(/(-?\d+(?:\.\d+)?)/);
+    return match ? parseFloat(match[1]) : null;
+}
+
+function updateDelta(el, delta) {
+    if (!el) return;
+    el.textContent = '';
+    el.classList.remove('positive', 'negative');
+    if (!delta || delta === '0' || delta === '+0' || delta === '-0') return;
+    const value = Number(delta);
+    const text = delta.toString().startsWith('+') || delta.toString().startsWith('-') ? delta : (value > 0 ? `+${delta}` : `${delta}`);
+    el.textContent = text;
+    el.classList.add(value >= 0 ? 'positive' : 'negative');
+}
+
+function pushSeries(key, value) {
+    if (!ztopState.metricSeries[key]) ztopState.metricSeries[key] = [];
+    ztopState.metricSeries[key].push(value);
+    if (ztopState.metricSeries[key].length > ztopState.maxPoints) ztopState.metricSeries[key].shift();
+}
+
+function renderSparkline(canvas, data, color) {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const width = canvas.clientWidth || 140;
+    const height = canvas.clientHeight || 46;
+    canvas.width = width;
+    canvas.height = height;
+    ctx.clearRect(0, 0, width, height);
+
+    if (!data || data.length === 0) return;
+    let min = Math.min(...data);
+    let max = Math.max(...data);
+    if (min === max) max = min + 1;
+    const padding = 4;
+    const chartWidth = Math.max(1, width - padding * 2);
+    const chartHeight = Math.max(1, height - padding * 2);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    data.forEach((value, index) => {
+        const x = padding + (chartWidth * index) / Math.max(data.length - 1, 1);
+        const y = padding + chartHeight - ((value - min) / (max - min)) * chartHeight;
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+}
+
+function parseServerLine(line) {
+    if (!line) return null;
+    const cpuMatch = line.match(/CPU:\s*([0-9.]+)%/i);
+    const loadMatch = line.match(/Load:\s*([0-9.]+)/i);
+    const memMatch = line.match(/Memory:\s*([0-9.,]+)G\/([0-9.,]+)G/i);
+    const memAlt = line.match(/Memory:\s*([^\s]+)/i);
+    const redisMatch = line.match(/Redis:\s*([^\s]+)/i);
+    const mongoMatch = line.match(/MongoDB:\s*([0-9.,]+)G\/\s*([0-9.,]+)G/i);
+    const mongoAlt = line.match(/MongoDB:\s*([^\s]+)/i);
+    const roleMatch = line.match(/^([A-Za-z])\s/);
+
+    return {
+        role: roleMatch ? roleMatch[1] : '',
+        cpu: cpuMatch ? `${cpuMatch[1]}%` : '--',
+        load: loadMatch ? loadMatch[1] : '--',
+        memory: memMatch ? `${memMatch[1]}G/${memMatch[2]}G` : (memAlt ? memAlt[1] : '--'),
+        redis: redisMatch ? redisMatch[1] : '--',
+        mongo: mongoMatch ? `${mongoMatch[1]}G/${mongoMatch[2]}G` : (mongoAlt ? mongoAlt[1] : '--')
+    };
+}
+
+function renderServers(servers) {
+    const container = document.getElementById('ztop-servers');
+    if (!container) return;
+    if (!servers || servers.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+    container.innerHTML = '';
+
+    const header = document.createElement('div');
+    header.className = 'ztop-server-header';
+    header.innerHTML = `
+        <div>Host</div>
+        <div>R</div>
+        <div>CPU</div>
+        <div>Load</div>
+        <div>Memory</div>
+        <div>Redis</div>
+        <div>MongoDB</div>
+    `;
+    container.appendChild(header);
+
+    servers.forEach((server) => {
+        const parsed = parseServerLine(server.line || '');
+        const row = document.createElement('div');
+        row.className = 'ztop-server-row';
+        row.innerHTML = `
+            <div class="ztop-server-host">${server.host || '--'}</div>
+            <div class="ztop-server-role">${parsed ? parsed.role : ''}</div>
+            <div class="ztop-server-metric">${parsed ? parsed.cpu : '--'}</div>
+            <div class="ztop-server-metric">${parsed ? parsed.load : '--'}</div>
+            <div class="ztop-server-metric">${parsed ? parsed.memory : '--'}</div>
+            <div class="ztop-server-metric">${parsed ? parsed.redis : '--'}</div>
+            <div class="ztop-server-metric">${parsed ? parsed.mongo : '--'}</div>
+        `;
+        container.appendChild(row);
+    });
+}
+
+function renderGroups(metrics) {
+    if (metrics && metrics.length > 0) {
+        ztopState.lastMetrics = metrics;
+    }
+    const effectiveMetrics = ztopState.lastMetrics;
+    if (!effectiveMetrics || effectiveMetrics.length === 0) return;
+
+    const container = document.getElementById('ztop-groups');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const groupTitles = {
+        1: 'Queues',
+        2: 'Killmails',
+        3: 'Analytics',
+        4: 'Scopes'
+    };
+
+    const groups = {};
+    const ensureGroup = (index) => {
+        if (!groups[index]) groups[index] = { left: [], right: [] };
+    };
+
+    let groupIndex = 1;
+    ensureGroup(groupIndex);
+
+    effectiveMetrics.forEach((metric) => {
+        if (!metric || metric.type === 'separator' || metric.text === '') {
+            groupIndex += 1;
+            ensureGroup(groupIndex);
+            return;
+        }
+        const card = document.createElement('div');
+        card.className = 'ztop-card';
+        const title = document.createElement('div');
+        title.className = 'ztop-card-title';
+        title.textContent = metric.text;
+        const body = document.createElement('div');
+        body.className = 'ztop-card-body';
+        const valueWrap = document.createElement('div');
+        const value = document.createElement('span');
+        value.className = 'ztop-card-value';
+        value.textContent = metric.num || metric.raw || '--';
+        const delta = document.createElement('span');
+        delta.className = 'ztop-card-delta';
+        updateDelta(delta, metric.delta);
+        valueWrap.appendChild(value);
+        valueWrap.appendChild(delta);
+        const canvas = document.createElement('canvas');
+        canvas.className = 'ztop-sparkline';
+        body.appendChild(valueWrap);
+        body.appendChild(canvas);
+        card.appendChild(title);
+        card.appendChild(body);
+
+        const seriesKey = metric.text;
+        const series = ztopState.metricSeries[seriesKey] || [];
+        renderSparkline(canvas, series, metric.left ? '#67c3ff' : '#f6b26b');
+
+        let targetIndex = groupIndex;
+        if (targetIndex === 5) targetIndex = 4;
+        if (targetIndex > 4) return;
+        ensureGroup(targetIndex);
+
+        if (metric.left) groups[targetIndex].left.push(card);
+        else groups[targetIndex].right.push(card);
+    });
+
+    [1, 2, 3, 4].forEach((index) => {
+        const groupData = groups[index];
+        if (!groupData || (!groupData.left.length && !groupData.right.length)) return;
+        const group = document.createElement('div');
+        group.className = 'ztop-group';
+        const title = document.createElement('div');
+        title.className = 'ztop-group-title';
+        title.textContent = groupTitles[index] || `Group ${index}`;
+        group.appendChild(title);
+        const cols = document.createElement('div');
+        cols.className = 'ztop-columns';
+
+        const maxLen = Math.max(groupData.left.length, groupData.right.length);
+        for (let i = 0; i < maxLen; i++) {
+            if (groupData.left[i]) cols.appendChild(groupData.left[i]);
+            if (groupData.right[i]) cols.appendChild(groupData.right[i]);
+        }
+
+        group.appendChild(cols);
+        container.appendChild(group);
+    });
+}
+
+window.ztopUpdate = function(payload) {
+    if (!payload) return;
+    if (payload.raw) {
+        const textBlock = document.getElementById('ztoptextblock');
+        if (textBlock) textBlock.textContent = payload.raw;
+    }
+    renderServers(payload.servers || []);
+    const metrics = Array.isArray(payload.metrics) ? payload.metrics : [];
+    metrics.forEach((metric) => {
+        if (!metric || metric.type !== 'metric') return;
+        const value = toNumber(metric.raw ?? metric.num);
+        if (value === null) return;
+        pushSeries(metric.text, value);
+    });
+    renderGroups(metrics);
+
+    const lastUpdate = document.getElementById('ztop-last-update');
+    if (lastUpdate) lastUpdate.textContent = `Last update: ${new Date().toLocaleString()}`;
+    const connection = document.getElementById('ztop-connection');
+    if (connection) {
+        connection.textContent = 'Live';
+        connection.classList.add('is-live');
+        connection.classList.remove('is-offline');
+    }
+    ztopState.lastUpdateAt = Date.now();
+};
+
+setInterval(() => {
+    const connection = document.getElementById('ztop-connection');
+    if (!connection) return;
+    if (!ztopState.lastUpdateAt) return;
+    const seconds = (Date.now() - ztopState.lastUpdateAt) / 1000;
+    if (seconds > 15) {
+        connection.textContent = 'Disconnected';
+        connection.classList.remove('is-live');
+        connection.classList.add('is-offline');
+    }
+}, 3000);
+
+const rawToggle = document.getElementById('ztop-raw-toggle');
+const rawBlock = document.getElementById('ztoptextblock');
+if (rawToggle && rawBlock) {
+    rawToggle.addEventListener('click', () => {
+        const hidden = rawBlock.classList.toggle('is-hidden');
+        rawToggle.textContent = hidden ? 'Show raw' : 'Hide raw';
+    });
 }
 </script>
 {% endblock %}
