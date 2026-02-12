@@ -29,7 +29,6 @@ while ($minute == date('Hi')) {
     $url = "$esiServer/corporations/$id";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
     $a = (isset($row['lastApiUpdate']) && $row['name'] != '') ? [] : [];
-    $a['X-Compatibility-Date'] = '2099-01-01';
     $guzzler->call($url, "updateCorp", "failCorp", $params, $a);
 
     $guzzler->finish();

@@ -47,7 +47,7 @@ while ($minute == date('Hi')) {
 
     $url = "$esiServer/characters/$id";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
-    $guzzler->call($url, "updateChar", "failChar", $params, ['X-Compatibility-Date' => '2099-01-01']);
+    $guzzler->call($url, "updateChar", "failChar", $params, []);
     $guzzler->finish();
     sleep(1);
 }      
