@@ -55,7 +55,9 @@ do {
         $mdb->remove("queues", ['queue' => 'sequences', 'value' => $sequence]);
         $queueRedisQ->push($killID);
     } else {
-        sleep(1);
+        // no killmails to send, since a killmail happens on
+        // average every 5.5 seconds, we'll wait 6 seconds
+        sleep(6);
     }
 } while ($minute == date("Hi"));
 
