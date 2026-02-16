@@ -14,6 +14,7 @@ $added = [];
 
 foreach ($concord as $kill) {
     if ($kill['killID'] < 68300000) continue;
+    $sequence = $kill['sequence'];
     $systemID = $kill['system']['solarSystemID'];
     $involved = $kill['involved'];
     $victim = $involved[0];
@@ -43,10 +44,11 @@ foreach ($concord as $kill) {
             $mdb->getCollection("killmails")->updateOne(['killID' => $lvictim['killID']], ['$addToSet' => ['labels' => 'ganked']]);
             $mdb->getCollection("ninetyDays")->updateOne(['killID' => $lvictim['killID']], ['$addToSet' => ['labels' => 'ganked']]);
             $mdb->getCollection("oneWeek")->updateOne(['killID' => $lvictim['killID']], ['$addToSet' => ['labels' => 'ganked']]);
-            Util::out("Marking " . $lvictim['killID'] . " as ganked.");
             RedisCache::delete("killDetail:" . $lvictim['killID']);
             RedisCache::delete("zkb::detail:" . $lvictim['killID']);
             $queueRedisQ->push($lvictim['killID']);
+            $mdb->insert("queues", ['queue' => 'sequences', 'value' => $sequence]);
+            Util::out("Marking " . $lvictim['killID'] . " as ganked.");
         }
     }
 }
