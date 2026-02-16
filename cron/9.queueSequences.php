@@ -49,7 +49,7 @@ do {
             $updated = (int) $redis->lpop("zkb:sequenced_updated");
             if ($updated > 0) {
                 $doc['sequence_updated'] = $updated;
-                Util::out("sequence with updated sequence $sequence");
+Util::out("$sequence updated sequence $updated");
             }
         }
         CloudFlare::r2sendArray($r2, $CF_R2_BUCKET, $doc, "ephemeral/$sequence.json", $options);
@@ -59,7 +59,6 @@ do {
         $redis->setex($ephSequenceKeyMax, 3600, $sequenceKeyMax);
         if ($sequence < $sequenceKeyMax) {
             $redis->rpush("zkb:sequenced_updated", $sequence);
-            Util::out("out of sequence: $sequence $sequenceKeyMax");
         }
 
         if ($sequence - ((int) $redis->get($ephSequenceKey)) > 50) {
