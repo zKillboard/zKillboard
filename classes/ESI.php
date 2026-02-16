@@ -125,6 +125,16 @@ class ESI {
             if (isset($json['fitting_id'])) return ['message' => "Fit successfully saved to your character's fittings."];
         }
         Util::zout("$killID Fit save error: $result ($charID)");
+        $json = null;
+        try {
+            $json = json_decode($result, true);
+            if (@$json['error'] == "Unauthorized - Invalid token") {
+                $mdb->remove("scopes", $row);
+                return ['message' => '<strong>ERROR</strong> Your ESI token has become invalid or outdated, you must log out and back in again to obtain a new one!'];
+            }
+        } catch (Exception $ex) {
+            
+        }
         file_put_contents("/tmp/export_$killID.txt", print_r($export, true));
         return ['message' => "<strong>ERROR importing killID $killID</STRONG><br/><code>" . print_r($result, true) . "</code><br/>Something went wrong trying to save that fit... Please let Squizz know about this problem via Discord, in the #zkillboard-com channel, <a target='_blank' href='https://discord.gg/sV2kkwg8UD'>here</a>."];            
     }
