@@ -1,8 +1,8 @@
 <?php
 
 set_error_handler(function ($severity, $message, $file, $line) {
-    throw new ErrorException($message, 0, $severity, $file, $line);
-});
+        throw new ErrorException($message, 0, $severity, $file, $line);
+        });
 
 require_once "../init.php";
 
@@ -44,8 +44,8 @@ while ($minute == date("Hi")) {
         "ship_type_id" => $vic['shipTypeID'],
         "loc" => $loc,
         "killID" => $killID,
-        "unixtime" => $unixtime
-    ];
+        "unixtime" => $unixtime];
+
         //echo "$att_vic $att_ship_loc $killID\n";
         $mdb->getCollection("pvpfest")->deleteMany(['att_vic' => $att_vic, 'killID' => ['$gt' => $killID]]);
         $mdb->getCollection("pvpfest")->deleteMany(['att_ship_loc' => $att_ship_loc, 'killID' => ['$gt' => $killID]]);
@@ -54,11 +54,7 @@ while ($minute == date("Hi")) {
         if ($count_att_vic == 0 && $count_att_ship_loc == 0) {
             $mdb->getCollection("pvpfest")->insertOne($record);
         }
-        $mdb->getCollection("queues")->updateOne(
-                ['_id' => $row['_id']],
-                ['$set' => ['queue' => 'pvpfest-backup']]
-                );
-
+        $mdb->getCollection("queues")->deleteOne(['_id' => $row['_id']]);
 }
 
 function getFinalBlow($involved, $killID, $kill) {
