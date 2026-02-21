@@ -15,7 +15,7 @@ if ($minute >= 1100 && $minute <= 1105) {
     // Not using Guzzle to prevent tq status conflicts and deadlock
     $success = false;
     for ($i = 0; $i <= 3; $i++) {
-        $root = @file_get_contents("$esiServer/status/");
+        $root = @file_get_contents("$esiServer/status");
         if ($root != "" ) {
             $success = success($root);
             break;
@@ -61,21 +61,26 @@ function success($content)
 
     if ($content == "") return fail();
 
-    $root = json_decode($content, true);
-    $version = $root['server_version'];
-    if ($version != null) {
-        $kvc->set('tqServerVersion', $version);
-        $mdb->insertUpdate("versions", ['serverVersion' => $version], ['epoch' => time() + 120]);
+    try {
+        $root = json_decode($content, true);
+        $version = $root['server_version'];
+        if ($version != null) {
+            $kvc->set('tqServerVersion', $version);
+            $mdb->insertUpdate("versions", ['serverVersion' => $version], ['epoch' => time() + 120]);
+        }
+
+        $loggedIn = (int) @$root['players'];
+        $redis->set('tqCountInt', $loggedIn);
+        $serverStatus = $loggedIn > 100 ? 'ONLINE' : 'OFFLINE';
+
+        $redis->set('tqStatus', $serverStatus);
+        $redis->set('tqCount', $loggedIn);
+        Util::out("TQ's status: $serverStatus w/ $loggedIn");
+        return true;
+    } catch (Exception $ex) {
+        Util::out(print_r($ex, true));
+        return fail();
     }
-
-    $loggedIn = (int) @$root['players'];
-    $redis->set('tqCountInt', $loggedIn);
-    $serverStatus = $loggedIn > 100 ? 'ONLINE' : 'OFFLINE';
-
-    $redis->set('tqStatus', $serverStatus);
-    $redis->set('tqCount', $loggedIn);
-    Util::out("TQ's status: $serverStatus w/ $loggedIn");
-    return true;
 }
 
 function fail()
