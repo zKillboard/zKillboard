@@ -1,7 +1,7 @@
 <?php
 
 function handler($request, $response, $args, $container) {
-    global $mdb, $redis, $uri, $t, $pvpfestURI;
+    global $mdb, $redis, $uri, $t;
 
     // Extract route parameters
     $inputString = $args['input'] ?? '';
@@ -30,14 +30,9 @@ function handler($request, $response, $args, $container) {
         return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => 'Not Found'));
     }
 
-    $validPageTypes = array('kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime', 'streambox', 'recap2025', $pvpfestURI);
+    $validPageTypes = array('kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime', 'streambox', 'recap2025');
     if ($key == 'alliance') {
         $validPageTypes[] = 'corpstats';
-    }
-
-    if ($pageType == $pvpfestURI && $key == 'character') {
-        require_once 'view/pvpfest_char.php';
-        return pvpfestHandler($request, $response, $args, $container);
     }
 
     // Handle recap2025 page type

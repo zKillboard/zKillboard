@@ -65,7 +65,6 @@ $routes = [
 	'/cache/bypass/login/patreonauth' => ['GET', 'view/patreonauth.php'],
 	'/navbar/' => ['GET', 'view/navbar.php'],
 	'/ztop/' => ['GET', 'view/ztop.php'],
-	'/pvpfest/' => ['GET', 'view/pvpfest.php'],
 	'/sponsor/{type}/{killID}/[{value}/]' => ['GET', 'view/sponsor.php'],
 	'/kills/sponsored/' => ['GET', 'view/sponsored.php'],
 	'/cache/{cacheType:1hour|24hour}/killlistrow/{killID}/' => ['GET', 'view/killlistrow.php'],

@@ -114,7 +114,6 @@ try {
         $kill['npc'] = isNPC($kill);
         $kill['awox'] = ($kill['npc'] == true) ? false : isAwox($kill);
         $kill['solo'] = ($kill['npc'] == true) ? false : isSolo($kill);
-        $isPvpFest = is_PvpFest_Solo($kill);
 
         $items = $mail['victim']['items'];
         $i = array();
@@ -211,9 +210,6 @@ try {
         $redis->zrem("tobeparsed", $killID);
         if ($redis->get("kill-deleted:$killID") === "true") $redis->sadd("queueCacheTags", "kill:$killID");
         $mdb->insert("queues", ['queue' => 'sequences', 'value' => $sequence]);
-        if ($isPvpFest) {
-            $mdb->insert("queues", ['queue' => 'pvpfest', 'value' => $killID]);
-        }
     }
  } catch (Exception $ex) {
     Util::out(print_r($ex, true));
@@ -413,40 +409,6 @@ function isAwox($row)
     }
 
     return false;
-}
-
-function is_PvpFest_Solo($killmail)
-{
-    // For PVP fest, this is not true
-    // Rookie ships, shuttles, and capsules are not considered as solo
-    $victimGroupID = $killmail['vGroupID'];
-    /*if (in_array($victimGroupID, [29, 31, 237])) {
-        return false;
-    }*/
-
-    // Only ships can be solo'ed
-    $categoryID = Info::getInfoField('groupID', $victimGroupID, 'categoryID');
-    if ($categoryID != 6) {
-        return false;
-    }
-
-    $numPlayers = 0;
-    $involved = $killmail['involved'];
-    array_shift($involved);
-    foreach ($involved as $attacker) {
-        if (@$attacker['characterID'] > 3999999) {
-            ++$numPlayers;
-        }
-        if ($numPlayers > 1) {
-            return false;
-        }
-        $shipTypeID = @$attacker['shipTypeID'];
-        $groupID = Info::getInfoField('shipTypeID', $shipTypeID, 'groupID');
-        $catID = Info::getInfoField('groupID', $groupID, 'categoryID');
-        if ($catID == 65) return false; // If a citadel is on the killmail, its not solo
-    }
-    // Ensure that at least 1 player is on the kill so as not to count losses against NPC's
-    return $numPlayers == 1;
 }
 
 function isSolo($killmail)

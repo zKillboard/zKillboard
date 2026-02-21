@@ -2,8 +2,9 @@
 
 require_once "../init.php";
 
+$epoch = 22222;
 $time = time() + 60;
-$time = $time - ($time % 3600);
+$time = $time - ($time % $epoch);
 $key = "zkb:pvpfest_rankings:$time";
 if ($redis->get($key) == "true") {
     exit();
@@ -101,4 +102,4 @@ if (count($bulkOps) > 0) {
 Util::out("Rankings calculation complete!");
 
 $redis->sadd("queueCacheTags", "pvpfest"); // Clear all pvpfest pages
-$redis->setex($key, 999, "true");
+$redis->setex($key, $epoch, "true");
