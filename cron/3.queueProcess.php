@@ -89,9 +89,6 @@ try {
             $kill['locationID'] = (int) $locationID;
         }
 
-        $sequence = Util::getSequence($mdb, $redis);
-        $kill['sequence'] = $sequence;
-
         $kill['attackerCount'] = sizeof($mail['attackers']);
 
         $victim = createInvolved($mail['victim']);
@@ -195,6 +192,9 @@ try {
         if (!$isPaddedKill && !$kill['npc']) $kill['padcheck'] = true;
 
         if (isset($row['labels_override'])) $kill['labels'] = $row['labels_override'];
+
+        $sequence = Util::getSequence($mdb, $redis);
+        $kill['sequence'] = $sequence;
 
         saveMail($mdb, 'killmails', $kill);
         if ($kill['dttm']->toDateTime()->getTimestamp() >= $date7Days) saveMail($mdb, 'oneWeek', $kill);
