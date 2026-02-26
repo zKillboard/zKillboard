@@ -38,7 +38,18 @@ if (strpos($uri, "/asearch") === false && strpos($uri, "/cache/") === false)  {
         }
 
         if ($isApiRequest) return header("HTTP/1.1 200 Missing trailing slash");
-        else return header("Location: $uri/", true, 302);
+        else {
+            $uri = htmlspecialchars("$uri/", ENT_QUOTES);
+            $url = "https://zkillboard.com$uri";
+
+            http_response_code(404);
+            header("Link: <$url>; rel=\"canonical\"");
+            header("Content-Type: text/html; charset=UTF-8");
+            header("Cache-Control: public, max-age=86400");
+            header("Expires: " . gmdate("D, d M Y H:i:s", time() + 86400) . " GMT");
+            echo "<!DOCTYPE html><html><head><meta http-equiv=\"refresh\" content=\"15;url=$url\"></head><body>Invalid URL!  Put a slash at the end... like this: <a href=\"$url\">$url</a></body></html>";
+            return;
+        }
     }
 }
 
