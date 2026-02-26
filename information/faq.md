@@ -244,6 +244,6 @@ zKillboard does not contain personally identifiable information. If you created 
 
 **Check out:**
 - [About zKillboard](/information/about/)
-- [API Documentation](/information/api/)
+- [API Documentation](https://github.com/zKillboard/zKillboard/wiki)
 - [Legal Information](/information/legal/)
 - [GitHub Repository](https://github.com/zKillboard/zKillboard)
