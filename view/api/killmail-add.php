@@ -26,7 +26,7 @@ function handler($request, $response, $args, $container) {
         Util::zout("api mail add $killID $hash");
 		$newKillmail = true;
     } catch (Exception $ex) {
-        Util::zout(print_r($ex, true));
+        if ($ex->getCode() != 11000) Util::zout(print_r($ex, true));
     }
 
         if ($kvc->get("zkb:noapi") == "true") {
