@@ -46,6 +46,17 @@ hr {
 	margin-top: 1em;
 }
 
+.btn-success {
+	background-color: green;
+	border-color: green;
+	color: white;
+}
+
+.btn-success:hover {
+	background-color: darkgreen;
+	border-color: darkgreen;
+	color: white;
+}
 
 .andor,
 .andor .btn {

@@ -37,6 +37,7 @@ function loadasearch() {
 
 
 	$("#btn_save").on('click', btn_save);
+	$("#btn_export").on('click', btn_export);
 	$(".tfilter").on('click', adjustTime);
 	$(".filter-btn").on('click', toggleFilterBtn);
 	$(".radio-btn").on('click', toggleRadioBtn);
@@ -797,4 +798,49 @@ function buildZkillbotFilter() {
 
 	if (parts.length === 0) return null;
 	return parts.join(';');
+}
+
+function btn_export() {
+	var filter = buildZkillbotFilter();
+	if (!filter) {
+		alert('No filters selected to export!');
+		return;
+	}
+
+	// Show a modal with the filter and option to copy to clipboard
+	var modal = $(`
+		<div class="modal fade" id="exportModal" tabindex="-1" role="dialog" aria-labelledby="exportModalLabel" aria-hidden="true">
+		  <div class="modal-dialog" role="document">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		          <span aria-hidden="true" class="red">&times;</span>
+		        </button>
+		      </div>
+		      <div class="modal-body">
+		        <p>Copy the filter below to use in zkillbot:</p>
+		        <input type="text" class="form-control" id="zkillFilterInput" value="/zkillbot subscribe advanced:${filter}" readonly>
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-primary" id="copyZkillFilter">Copy to Clipboard</button>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+	`);
+	$('body').append(modal);
+	modal.modal('show');
+
+	$('#copyZkillFilter').on('click', function() {
+		var input = document.getElementById('zkillFilterInput');
+		input.select();
+		input.setSelectionRange(0, 99999); // For mobile devices
+		document.execCommand('copy');
+		// remove the modal after copying
+		modal.modal('hide');
+	});	
+	modal.on('hidden.bs.modal', function () {
+		modal.remove();
+	});	
+
 }
