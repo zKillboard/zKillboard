@@ -614,33 +614,6 @@ class Util
 		return $au;
 	}
 
-	public static function getSequence($mdb, $redis)
-	{
-		$sem = sem_get(3175);
-		try {
-			sem_acquire($sem);
-			do {
-				self::populate($mdb, $redis);
-				$i = (int) $redis->lpop("sequence");
-			} while ($i > 0 && $mdb->exists("killmails", ['sequence' => $i]));
-			if ($i <= 0) throw new \Exception("Invalid sequence number received: $i");
-			return $i;
-		} finally {
-			sem_release($sem);
-		}
-	}
-
-	private static function populate($mdb, $redis)
-	{
-		if ($redis->llen("sequence") == 0) {
-			Util::out("populating sequences");
-			$sequenceStart = 1 + $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);
-			$max = $sequenceStart + 10000;
-			for ($i = $sequenceStart; $i <= $max; $i++) {
-				$redis->rpush("sequence", $i);
-			}
-		}
-	}
 	public static function eliminateBetween($base, $delim1, $delim2)
 	{
 		$split1 = explode($delim1, $base);

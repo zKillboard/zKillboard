@@ -23,7 +23,6 @@ $killmails = $mdb->getCollection('killmails');
 $queueInfo = new RedisQueue('queueInfo');
 $storage = $mdb->getCollection('storage');
 
-$counter = 0;
 $minute = date('Hi');
 $time = time() + 63;
 
@@ -193,23 +192,27 @@ try {
 
         if (isset($row['labels_override'])) $kill['labels'] = $row['labels_override'];
 
-        $sequence = Util::getSequence($mdb, $redis);
-        $kill['sequence'] = $sequence;
+		$sem = sem_get(3999);
+    	try {
+        	sem_acquire($sem);
+			$sequence = 1 + ((int) $mdb->findField("killmails", "sequence", [], ['sequence' => -1]));
+			$kill['sequence'] = $sequence;
 
-        saveMail($mdb, 'killmails', $kill);
-        if ($kill['dttm']->toDateTime()->getTimestamp() >= $date7Days) saveMail($mdb, 'oneWeek', $kill);
-        if ($kill['dttm']->toDateTime()->getTimestamp() >= $date90Days) saveMail($mdb, 'ninetyDays', $kill);
+			saveMail($mdb, 'killmails', $kill);
+			if ($kill['dttm']->toDateTime()->getTimestamp() >= $date7Days) saveMail($mdb, 'oneWeek', $kill);
+			if ($kill['dttm']->toDateTime()->getTimestamp() >= $date90Days) saveMail($mdb, 'ninetyDays', $kill);
 
-        $queueInfo->push($killID);
-        $redis->incr('zkb:totalKills');
-        ++$counter;
+			$killsLastHour = new RedisTtlCounter('killsLastHour');
+			$killsLastHour->add($row['killID']);
+			$mdb->set('crestmails', $row, ['processed' => true]);
+			$mdb->insert("queues", ['queue' => 'sequences', 'value' => $sequence]);
 
-        $killsLastHour = new RedisTtlCounter('killsLastHour');
-        $killsLastHour->add($row['killID']);
-        $mdb->set('crestmails', $row, ['processed' => true]);
-        $redis->zrem("tobeparsed", $killID);
-        if ($redis->get("kill-deleted:$killID") === "true") $redis->sadd("queueCacheTags", "kill:$killID");
-        $mdb->insert("queues", ['queue' => 'sequences', 'value' => $sequence]);
+			$queueInfo->push($killID);
+			$redis->incr('zkb:totalKills');
+			$redis->zrem("tobeparsed", $killID);
+		} finally {
+			sem_release($sem);
+		}
     }
  } catch (Exception $ex) {
     Util::out(print_r($ex, true));
