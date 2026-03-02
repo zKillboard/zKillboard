@@ -113,7 +113,7 @@ class EveOnlineSSO
     protected function validateStates($state, $oauth2State)
     {
         if ($oauth2State !== $state) {
-            throw new \Exception("Invalid state returned - possible hijacking attempt");
+            throw new \Exception("Invalid state returned - possible hijacking attempt", -99);
         }
     }
 

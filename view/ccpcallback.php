@@ -44,7 +44,7 @@ function handler($request, $response, $args, $container)
 			$state = filter_input(INPUT_GET, 'state');
 			$userInfo = $sso->handleCallback($code, $state, $_SESSION);
 		} catch (Exception $e) {
-			Util::zout("SSO Issue\n" . print_r($e, true));
+			if ($e->getCode() != -99) Util::zout("SSO Issue\n" . print_r($e, true));
 			return $container->get('view')->render($response, 'error.html', ['message' => 'CCP SSO is currently having issues, please wait a moment and try again...']);
 		}
 
