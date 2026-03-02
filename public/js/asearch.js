@@ -746,3 +746,55 @@ document.getElementById("exportCsv").addEventListener("click", function () {
 	// Export
 	XLSX.writeFile(wb, "export.xlsx");
 });
+
+function buildZkillbotFilter() {
+	var parts = [];
+	
+	var entityFieldMap = {
+		'characterID':    'character_id',
+		'corporationID':  'corporation_id',
+		'allianceID':     'alliance_id',
+		'factionID':      'faction_id',
+		'shipTypeID':     'ship_type_id',
+		'groupID':        'group_id',
+		'systemID':       'solar_system_id',
+		'solarSystemID':  'solar_system_id',
+		'regionID':       'region_id',
+		'constellationID':'constellation_id',
+	};
+
+	function getJoinType(slot) {
+		var val = $(`#${slot}-joinType .btn-primary`).val() || '';
+		return val.endsWith('-or') ? 'or' : 'and';
+	}
+
+	function pushEntities(entities, isVictimFlag, joinType) {
+		var terms = [];
+		for (var i = 0; i < entities.length; i++) {
+			var field = entityFieldMap[entities[i].type];
+			if (!field) continue;
+			var suffix = isVictimFlag !== null ? ';is_victim=' + isVictimFlag : '';
+			terms.push(`[${field}=${entities[i].id}${suffix}]`);
+		}
+		if (terms.length === 0) return;
+		if (joinType === 'or' && terms.length > 1) parts.push('(' + terms.join(',') + ')');
+		else terms.forEach(function(t) { parts.push(t); });
+	}
+
+	pushEntities(asfilter.victims,   'true',  getJoinType('victim'));
+	pushEntities(asfilter.attackers, 'false', getJoinType('attackers'));
+	pushEntities(asfilter.neutrals,  null,    getJoinType('either'));
+
+	for (var i = 0; i < asfilter.location.length; i++) {
+		var e = asfilter.location[i];
+		var field = entityFieldMap[e.type];
+		if (field) parts.push(field + '=' + e.id);
+	}
+
+	$(".filter-btn.btn-primary").each(function () {
+		parts.push('labels=' + $(this).attr('data-label'));
+	});
+
+	if (parts.length === 0) return null;
+	return parts.join(';');
+}
