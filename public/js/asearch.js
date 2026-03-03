@@ -756,6 +756,7 @@ function buildZkillbotFilter() {
 		'corporationID':  'corporation_id',
 		'allianceID':     'alliance_id',
 		'factionID':      'faction_id',
+		'shipID':         'ship_type_id',
 		'shipTypeID':     'ship_type_id',
 		'groupID':        'group_id',
 		'systemID':       'solar_system_id',
