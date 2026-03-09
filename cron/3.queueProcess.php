@@ -198,18 +198,55 @@ try {
 			$sequence = 1 + ((int) $mdb->findField("killmails", "sequence", [], ['sequence' => -1]));
 			$kill['sequence'] = $sequence;
 
-			saveMail($mdb, 'killmails', $kill);
-			if ($kill['dttm']->toDateTime()->getTimestamp() >= $date7Days) saveMail($mdb, 'oneWeek', $kill);
-			if ($kill['dttm']->toDateTime()->getTimestamp() >= $date90Days) saveMail($mdb, 'ninetyDays', $kill);
+            $session = $mdb->getClient()->startSession();
+            try {
+                $session->startTransaction();
 
-			$killsLastHour = new RedisTtlCounter('killsLastHour');
-			$killsLastHour->add($row['killID']);
-			$mdb->set('crestmails', $row, ['processed' => true]);
-			$mdb->insert("queues", ['queue' => 'sequences', 'value' => $sequence]);
+                $bulkOptions = ['ordered' => true, 'session' => $session];
+                $killFilter = ['killID' => $killID];
 
-			$queueInfo->push($killID);
-			$redis->incr('zkb:totalKills');
-			$redis->zrem("tobeparsed", $killID);
+                $mdb->getCollection('killmails')->bulkWrite([
+                    ['updateOne' => [$killFilter, ['$setOnInsert' => $kill], ['upsert' => true]]],
+                ], $bulkOptions);
+
+                if ($kill['dttm']->toDateTime()->getTimestamp() >= $date7Days) {
+                    $mdb->getCollection('oneWeek')->bulkWrite([
+                        ['updateOne' => [$killFilter, ['$setOnInsert' => $kill], ['upsert' => true]]],
+                    ], $bulkOptions);
+                }
+
+                if ($kill['dttm']->toDateTime()->getTimestamp() >= $date90Days) {
+                    $mdb->getCollection('ninetyDays')->bulkWrite([
+                        ['updateOne' => [$killFilter, ['$setOnInsert' => $kill], ['upsert' => true]]],
+                    ], $bulkOptions);
+                }
+
+                $mdb->getCollection('crestmails')->bulkWrite([
+                    ['updateOne' => [['_id' => $row['_id']], ['$set' => ['processed' => true]]]],
+                ], $bulkOptions);
+
+                $mdb->getCollection('queues')->bulkWrite([
+                    ['insertOne' => [['queue' => 'sequences', 'value' => $sequence]]],
+                ], $bulkOptions);
+
+                $session->commitTransaction();
+				Util::out("Processed killmail $killID with sequence $sequence");
+
+				$killsLastHour = new RedisTtlCounter('killsLastHour');
+				$killsLastHour->add($row['killID']);
+
+				$queueInfo->push($killID);
+				$redis->incr('zkb:totalKills');
+				$redis->zrem("tobeparsed", $killID);
+            } catch (Exception $ex) {
+                if ($session->isInTransaction()) {
+                    $session->abortTransaction();
+                }
+                throw $ex;
+            } finally {
+                $session->endSession();
+            }
+
 		} finally {
 			sem_release($sem);
 		}
@@ -227,26 +264,6 @@ function addLabel(&$kill, $condition, $label)
         return true;
     }
     return false;
-}
-
-function saveMail($mdb, $collection, $kill)
-{
-    $error = false; 
-    do {
-        try {
-            if ($mdb->exists($collection, ['killID' => $kill['killID']])) return;
-            if ($mdb->getCollection($collection)->findOne(['killID' => $kill['killID']])) {
-                echo "$killID already exists in $collection\n";
-                return;
-            }
-            $mdb->getCollection($collection)->insertOne($kill);
-            $error = false; 
-        } catch (Exception $ex) {
-            if ($ex->getCode() != 16759) throw $ex;
-            $error = true;
-            usleep(100000);
-        }
-    } while ($error == true);
 }
 
 function createInvolved($data)
