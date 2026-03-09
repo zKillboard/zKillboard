@@ -4,6 +4,11 @@ require_once "../init.php";
 
 global $CF_ACCOUNT_ID, $CF_R2_ACCESS_KEY, $CF_R2_SECRET_KEY, $CF_R2_BUCKET;
 
+if (!isset($CF_API_TOKEN) || !$CF_API_TOKEN || $CF_API_TOKEN === "") {
+	$redis->del("queueCacheUrls");
+	exit();
+}
+
 $minute = date("Hi");
 while (date("Hi") == $minute) {
     $urls = $redis->srandmember("queueCacheUrls", 25);

@@ -11,6 +11,11 @@ if (date("i") % 15 === 0) {
 
 global $CF_ACCOUNT_ID, $CF_R2_ACCESS_KEY, $CF_R2_SECRET_KEY, $CF_R2_BUCKET;
 
+if (!isset($CF_API_TOKEN) || !$CF_API_TOKEN || $CF_API_TOKEN === "") {
+	$redis->del("queueCacheTags");
+	exit();
+}
+
 $minute = date("Hi");
 while (date("Hi") == $minute) {
     $tags = $redis->srandmember("queueCacheTags", 25);
