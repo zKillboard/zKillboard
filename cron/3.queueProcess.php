@@ -22,239 +22,253 @@ $crestmails = $mdb->getCollection('crestmails');
 $killmails = $mdb->getCollection('killmails');
 $queueInfo = new RedisQueue('queueInfo');
 $storage = $mdb->getCollection('storage');
+$killsLastHour = new RedisTtlCounter('killsLastHour');
 
 $minute = date('Hi');
 $time = time() + 63;
 
 while ($time >= time()) {
-try {
-    //if ($kvc->get("zkb:universeLoaded") != "true") break;
-    //if ($redis->llen("queueInfo") > 100) sleep(1);
-    $row = null;
-    $sem = sem_get(3976);
     try {
-        sem_acquire($sem);
+        //if ($kvc->get("zkb:universeLoaded") != "true") break;
+        //if ($redis->llen("queueInfo") > 100) sleep(1);
+        $row = null;
+        $sem = sem_get(3976);
+        try {
+            sem_acquire($sem);
 
-        $row = $mdb->findDoc('crestmails', ['processed' => 'fetched']);
-        if ($row == null) {
-            $killID = $redis->zrevrange("tobeparsed", 0, 0);
-            $killID = (int) @$killID[0];
-            $row = $mdb->findDoc('crestmails', ['killID' => $killID, 'processed' => true]);
-            if ($row != null) {
-                $redis->zrem("tobeparsed", $killID);
-                continue;
+            $row = $mdb->findDoc('crestmails', ['processed' => 'fetched']);
+            if ($row == null) {
+                $killID = $redis->zrevrange("tobeparsed", 0, 0);
+                $killID = (int) @$killID[0];
+                $row = $mdb->findDoc('crestmails', ['killID' => $killID, 'processed' => true]);
+                if ($row != null) {
+                    $redis->zrem("tobeparsed", $killID);
+                    continue;
+                }
             }
+            if ($row != null) $mdb->set('crestmails', $row, ['processed' => 'processing']);
+        } finally {
+            sem_release($sem);
         }
-        if ($row != null) $mdb->set('crestmails', $row, ['processed' => 'processing']);
-    } finally {
-        sem_release($sem);
-    }
-    if ($row == null) {
-        usleep(100000);
-        continue;
-    }
-    if ($row != null) {
-        $killID = (int) $row['killID'];
-        $mail = Kills::getEsiKill($killID);
-
-        $kill = array();
-        $kill['killID'] = $killID;
-        $kill['labels'] = [];
-
-        $date = substr($mail['killmail_time'], 0, 19);
-        $date = str_replace('.', '-', $date);
-
-        $unixtime = strtotime($date . " UTC");
-        $kill['dttm'] = new MongoDB\BSON\UTCDateTime($unixtime * 1000);
-        $kill['labels'][] = getGeneralTZ($unixtime);
-
-        $systemID = (int) $mail['solar_system_id'];
-        $system = Info::getInfo('solarSystemID', $systemID);
-        $system = Info::getSystemByEpoch($systemID, $unixtime);
-        if ($system == null) {
-            $redis->zadd("tobeparsed", $killID, $killID);
-            Util::out("NULL SYSTEM $systemID for killmail $killID " . $unixtime);
+        if ($row == null) {
+            usleep(100000);
             continue;
         }
+        if ($row != null) {
+            $killID = (int) $row['killID'];
+            $mail = Kills::getEsiKill($killID);
 
-        $solarSystem = array();
-        $solarSystem['solarSystemID'] = $systemID;
-        $solarSystem['security'] = (double) @$system['secStatus'];
-        $solarSystem['constellationID'] = (int) @$system['constellationID'];
-        $solarSystem['regionID'] = (int) @$system['regionID'];
-        $kill['system'] = $solarSystem;
-        if (isset($mail['victim']['position'])) {
-            $locationID = Info::getLocationID($systemID, $mail['victim']['position']);
-            $kill['locationID'] = (int) $locationID;
-        }
+            $kill = array();
+            $kill['killID'] = $killID;
+            $kill['labels'] = [];
 
-        $kill['attackerCount'] = sizeof($mail['attackers']);
+            $date = substr($mail['killmail_time'], 0, 19);
+            $date = str_replace('.', '-', $date);
 
-        $victim = createInvolved($mail['victim']);
-        $victim['isVictim'] = true;
-        $kill['vGroupID'] = $victim['groupID'];
-        $kill['categoryID'] = (int) Info::getInfoField('groupID', $victim['groupID'], 'categoryID');
+            $unixtime = strtotime($date . " UTC");
+            $kill['dttm'] = new MongoDB\BSON\UTCDateTime($unixtime * 1000);
+            $kill['labels'][] = getGeneralTZ($unixtime);
 
-        $involved = array();
-        $involved[] = $victim;
-
-        $atShip = false;
-        foreach ($mail['attackers'] as $attacker) {
-            $att = createInvolved($attacker);
-            $att['isVictim'] = false;
-            $involved[] = $att;
-            $atShip |= in_array(((int) @$att['shipTypeID']), $atShipIDs);
-        }
-        $atShip |= in_array($victim['shipTypeID'], $atShipIDs);
-        $kill['involved'] = $involved;
-        $kill['npc'] = isNPC($kill);
-        $kill['awox'] = ($kill['npc'] == true) ? false : isAwox($kill);
-        $kill['solo'] = ($kill['npc'] == true) ? false : isSolo($kill);
-
-        $items = $mail['victim']['items'];
-        $i = array();
-        $destroyedValue = getDValue($killID, $items, $date, false);
-        $droppedValue = getDValue($killID, $items, $date, true);
-
-        $shipValue = Price::getItemPrice($mail['victim']['ship_type_id'], $date);
-        $destroyedValue += $shipValue;
-        $fittedValue = getFittedValue($killID, $mail['victim']['items'], $date);
-        $fittedValue += $shipValue;
-        $totalValue = $destroyedValue + $droppedValue;
-
-        $isPaddedKill = false;
-        $padhash = getPadHash($kill);
-        if ($padhash != null) {
-            $kill['padhash'] = $padhash;
-            if ($redis->get("zkb:padhash:$padhash") == "true") $isPaddedKill = true;
-            else $isPaddedKill = ($mdb->count("killmails", ['padhash' => $padhash]) >= 2);
-
-            if ($isPaddedKill) {
-                $redis->setex("zkb:padhash:$padhash", 86400, "true");
+            $systemID = (int) $mail['solar_system_id'];
+            $system = Info::getInfo('solarSystemID', $systemID);
+            $system = Info::getSystemByEpoch($systemID, $unixtime);
+            if ($system == null) {
+                $redis->zadd("tobeparsed", $killID, $killID);
+                Util::out("NULL SYSTEM $systemID for killmail $killID " . $unixtime);
+                continue;
             }
-        }
 
-        addLabel($kill, $isPaddedKill, 'padding');
-        addLabel($kill, true, "cat:" . $kill['categoryID']); 
-        $countflag = addLabel($kill, $kill['solo'], 'solo');
-        if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 1000, '#:1000+');
-        if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 100, '#:100+');
-        if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 50, '#:50+');
-        if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 25, '#:25+');
-        if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 10, '#:10+');
-        if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 5, '#:5+');
-        if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 2, '#:2+');
-        if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] == 1, '#:1');
-        addLabel($kill, $kill['npc'], 'npc');
-        addLabel($kill, ($kill['npc'] === false && $isPaddedKill === false), 'pvp');
-        addLabel($kill, $kill['awox'], 'awox');
-        addLabel($kill, $solarSystem['security'] >= 0.45, 'loc:highsec');
-        addLabel($kill, $solarSystem['security'] < 0.45 && $solarSystem['security'] >= 0, 'loc:lowsec');
-        addLabel($kill, $solarSystem['security'] < 0 && $solarSystem['regionID'] < 11000001 && $solarSystem['regionID'] != 10000070 && $solarSystem['regionID'] != 10001000, 'loc:nullsec');
-        addLabel($kill, $solarSystem['regionID'] >= 11000000 && $solarSystem['regionID'] < 12000000 && $solarSystem['regionID'] != 11000033, 'loc:w-space');
-        addLabel($kill, $solarSystem['regionID'] == 11000033, 'loc:drifter');
-        addLabel($kill, $solarSystem['regionID'] >= 12000000 && $solarSystem['regionID'] < 13000000, 'loc:abyssal');
-        addLabel($kill, $totalValue >= 1000000000 && $totalValue < 5000000000, 'isk:1b+');
-        addLabel($kill, $totalValue >= 5000000000 && $totalValue < 10000000000, 'isk:5b+');
-        addLabel($kill, $totalValue >= 10000000000 && $totalValue < 100000000000, 'isk:10b+');
-        addLabel($kill, $totalValue >= 100000000000 && $totalValue < 1000000000000, 'isk:100b+');
-        addLabel($kill, $totalValue >= 1000000000000, 'isk:1t+');
-        addLabel($kill, isCapital($victim['shipTypeID']), 'capital');
+            $solarSystem = array();
+            $solarSystem['solarSystemID'] = $systemID;
+            $solarSystem['security'] = (double) @$system['secStatus'];
+            $solarSystem['constellationID'] = (int) @$system['constellationID'];
+            $solarSystem['regionID'] = (int) @$system['regionID'];
+            $kill['system'] = $solarSystem;
+            if (isset($mail['victim']['position'])) {
+                $locationID = Info::getLocationID($systemID, $mail['victim']['position']);
+                $kill['locationID'] = (int) $locationID;
+            }
 
-		$fwFaction = fwFaction($kill);
-		if ($fwFaction !== null) {
-			addLabel($kill, true, $fwFaction);
-			if ($fwFaction == "fw:caldari" || $fwFaction == "fw:gallente") {
-				addLabel($kill, true, 'fw:calgal');
-			} else if ($fwFaction == "fw:amarr" || $fwFaction == "fw:minmatar") {
-				addLabel($kill, true, 'fw:amamin');
-			}
-		}
+            $kill['attackerCount'] = sizeof($mail['attackers']);
 
-        $zkb = array();
+            $victim = createInvolved($mail['victim']);
+            $victim['isVictim'] = true;
+            $kill['vGroupID'] = $victim['groupID'];
+            $kill['categoryID'] = (int) Info::getInfoField('groupID', $victim['groupID'], 'categoryID');
 
-        if (isset($mail['war_id']) && $mail['war_id'] != 0) {
-            $kill['warID'] = (int) $mail['war_id'];
-        }
-        if (isset($kill['locationID'])) {
-            $zkb['locationID'] = $kill['locationID'];
-        }
+            $involved = array();
+            $involved[] = $victim;
 
-        $zkb['hash'] = $row['hash'];
-        $zkb['fittedValue'] = round((double) $fittedValue, 2);
-        $zkb['droppedValue'] = round((double) $droppedValue, 2);
-        $zkb['destroyedValue'] = round((double) $destroyedValue, 2);
-        $zkb['totalValue'] = round((double) $totalValue, 2);
-        $zkb['points'] = ($kill['npc'] == true) ? 1 : (int) Points::getKillPoints($killID);
-        $kill['zkb'] = $zkb;
-        $kill['damage_taken'] = (int) @$mail['victim']['damage_taken'];
-        if (!$isPaddedKill && !$kill['npc']) $kill['padcheck'] = true;
+            $atShip = false;
+            foreach ($mail['attackers'] as $attacker) {
+                $att = createInvolved($attacker);
+                $att['isVictim'] = false;
+                $involved[] = $att;
+                $atShip |= in_array(((int) @$att['shipTypeID']), $atShipIDs);
+            }
+            $atShip |= in_array($victim['shipTypeID'], $atShipIDs);
+            $kill['involved'] = $involved;
+            $kill['npc'] = isNPC($kill);
+            $kill['awox'] = ($kill['npc'] == true) ? false : isAwox($kill);
+            $kill['solo'] = ($kill['npc'] == true) ? false : isSolo($kill);
 
-        if (isset($row['labels_override'])) $kill['labels'] = $row['labels_override'];
+            $items = $mail['victim']['items'];
+            $i = array();
+            $destroyedValue = getDValue($killID, $items, $date, false);
+            $droppedValue = getDValue($killID, $items, $date, true);
 
-		$sem = sem_get(3999);
-    	try {
-        	sem_acquire($sem);
-			$sequence = 1 + ((int) $mdb->findField("killmails", "sequence", [], ['sequence' => -1]));
-			$kill['sequence'] = $sequence;
+            $shipValue = Price::getItemPrice($mail['victim']['ship_type_id'], $date);
+            $destroyedValue += $shipValue;
+            $fittedValue = getFittedValue($killID, $mail['victim']['items'], $date);
+            $fittedValue += $shipValue;
+            $totalValue = $destroyedValue + $droppedValue;
 
-            $session = $mdb->getClient()->startSession();
+            $isPaddedKill = false;
+            $padhash = getPadHash($kill);
+            if ($padhash != null) {
+                $kill['padhash'] = $padhash;
+                if ($redis->get("zkb:padhash:$padhash") == "true") $isPaddedKill = true;
+                else $isPaddedKill = ($mdb->count("killmails", ['padhash' => $padhash]) >= 2);
+
+                if ($isPaddedKill) {
+                    $redis->setex("zkb:padhash:$padhash", 86400, "true");
+                }
+            }
+
+            addLabel($kill, $isPaddedKill, 'padding');
+            addLabel($kill, true, "cat:" . $kill['categoryID']); 
+            $countflag = addLabel($kill, $kill['solo'], 'solo');
+            if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 1000, '#:1000+');
+            if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 100, '#:100+');
+            if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 50, '#:50+');
+            if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 25, '#:25+');
+            if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 10, '#:10+');
+            if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 5, '#:5+');
+            if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] >= 2, '#:2+');
+            if ($countflag == false) $countflag = addLabel($kill, $kill['attackerCount'] == 1, '#:1');
+            addLabel($kill, $kill['npc'], 'npc');
+            addLabel($kill, ($kill['npc'] === false && $isPaddedKill === false), 'pvp');
+            addLabel($kill, $kill['awox'], 'awox');
+            addLabel($kill, $solarSystem['security'] >= 0.45, 'loc:highsec');
+            addLabel($kill, $solarSystem['security'] < 0.45 && $solarSystem['security'] >= 0, 'loc:lowsec');
+            addLabel($kill, $solarSystem['security'] < 0 && $solarSystem['regionID'] < 11000001 && $solarSystem['regionID'] != 10000070 && $solarSystem['regionID'] != 10001000, 'loc:nullsec');
+            addLabel($kill, $solarSystem['regionID'] >= 11000000 && $solarSystem['regionID'] < 12000000 && $solarSystem['regionID'] != 11000033, 'loc:w-space');
+            addLabel($kill, $solarSystem['regionID'] == 11000033, 'loc:drifter');
+            addLabel($kill, $solarSystem['regionID'] >= 12000000 && $solarSystem['regionID'] < 13000000, 'loc:abyssal');
+            addLabel($kill, $totalValue >= 1000000000 && $totalValue < 5000000000, 'isk:1b+');
+            addLabel($kill, $totalValue >= 5000000000 && $totalValue < 10000000000, 'isk:5b+');
+            addLabel($kill, $totalValue >= 10000000000 && $totalValue < 100000000000, 'isk:10b+');
+            addLabel($kill, $totalValue >= 100000000000 && $totalValue < 1000000000000, 'isk:100b+');
+            addLabel($kill, $totalValue >= 1000000000000, 'isk:1t+');
+            addLabel($kill, isCapital($victim['shipTypeID']), 'capital');
+
+            $fwFaction = fwFaction($kill);
+            if ($fwFaction !== null) {
+                addLabel($kill, true, $fwFaction);
+                if ($fwFaction == "fw:caldari" || $fwFaction == "fw:gallente") {
+                    addLabel($kill, true, 'fw:calgal');
+                } else if ($fwFaction == "fw:amarr" || $fwFaction == "fw:minmatar") {
+                    addLabel($kill, true, 'fw:amamin');
+                }
+            }
+
+            $zkb = array();
+
+            if (isset($mail['war_id']) && $mail['war_id'] != 0) {
+                $kill['warID'] = (int) $mail['war_id'];
+            }
+            if (isset($kill['locationID'])) {
+                $zkb['locationID'] = $kill['locationID'];
+            }
+
+            $zkb['hash'] = $row['hash'];
+            $zkb['fittedValue'] = round((double) $fittedValue, 2);
+            $zkb['droppedValue'] = round((double) $droppedValue, 2);
+            $zkb['destroyedValue'] = round((double) $destroyedValue, 2);
+            $zkb['totalValue'] = round((double) $totalValue, 2);
+            $zkb['points'] = ($kill['npc'] == true) ? 1 : (int) Points::getKillPoints($killID);
+            $kill['zkb'] = $zkb;
+            $kill['damage_taken'] = (int) @$mail['victim']['damage_taken'];
+            if (!$isPaddedKill && !$kill['npc']) $kill['padcheck'] = true;
+
+            if (isset($row['labels_override'])) $kill['labels'] = $row['labels_override'];
+
+            $sem = sem_get(3999);
             try {
-                $session->startTransaction();
+                sem_acquire($sem);
+                $sequence = 1 + ((int) $mdb->findField("killmails", "sequence", [], ['sequence' => -1]));
+                $kill['sequence'] = $sequence;
 
-                $bulkOptions = ['ordered' => true, 'session' => $session];
-                $killFilter = ['killID' => $killID];
+                $session = $mdb->getClient()->startSession();
+                try {
+                    $session->startTransaction();
 
-                $mdb->getCollection('killmails')->bulkWrite([
-                    ['updateOne' => [$killFilter, ['$setOnInsert' => $kill], ['upsert' => true]]],
-                ], $bulkOptions);
+                    $bulkOptions = ['ordered' => true, 'session' => $session];
+                    $killFilter = ['killID' => $killID];
 
-                if ($kill['dttm']->toDateTime()->getTimestamp() >= $date7Days) {
-                    $mdb->getCollection('oneWeek')->bulkWrite([
-                        ['updateOne' => [$killFilter, ['$setOnInsert' => $kill], ['upsert' => true]]],
+                    $mdb->getCollection('killmails')->bulkWrite([
+                            ['updateOne' => [$killFilter, ['$setOnInsert' => $kill], ['upsert' => true]]],
                     ], $bulkOptions);
-                }
 
-                if ($kill['dttm']->toDateTime()->getTimestamp() >= $date90Days) {
-                    $mdb->getCollection('ninetyDays')->bulkWrite([
-                        ['updateOne' => [$killFilter, ['$setOnInsert' => $kill], ['upsert' => true]]],
+                    if ($kill['dttm']->toDateTime()->getTimestamp() >= $date7Days) {
+                        $mdb->getCollection('oneWeek')->bulkWrite([
+                                ['updateOne' => [$killFilter, ['$setOnInsert' => $kill], ['upsert' => true]]],
+                        ], $bulkOptions);
+                    }
+
+                    if ($kill['dttm']->toDateTime()->getTimestamp() >= $date90Days) {
+                        $mdb->getCollection('ninetyDays')->bulkWrite([
+                                ['updateOne' => [$killFilter, ['$setOnInsert' => $kill], ['upsert' => true]]],
+                        ], $bulkOptions);
+                    }
+
+                    $mdb->getCollection('crestmails')->bulkWrite([
+                            ['updateOne' => [['_id' => $row['_id']], ['$set' => ['processed' => true]]]],
                     ], $bulkOptions);
+
+                    $mdb->getCollection('queues')->bulkWrite([
+                            ['insertOne' => [['queue' => 'sequences', 'value' => $sequence]]],
+                    ], $bulkOptions);
+
+                    $tries = 5;
+                    do {
+                        try {
+                            $session->commitTransaction();
+                            $tries = 0;
+                            //Util::out("Processed killmail $killID with sequence $sequence");
+                        } catch (Exception $exx) {
+                            $tries--;
+                            if ($tries < 0) throw $exx;
+                            Util::out("Unable to commit, tries remaining: $tries");
+                            usleep(250000);
+                        }
+                    } while ($tries > 0);
+
+                    $killsLastHour->add($row['killID']);
+                    $queueInfo->push($killID);
+                    $redis->incr('zkb:totalKills');
+                    $redis->zrem("tobeparsed", $killID);
+                } catch (Exception $exxx) {
+                    if ($session->isInTransaction()) {
+                        $session->abortTransaction();
+                    }
+                    throw $exxx;
+                } finally {
+                    $session->endSession();
                 }
 
-                $mdb->getCollection('crestmails')->bulkWrite([
-                    ['updateOne' => [['_id' => $row['_id']], ['$set' => ['processed' => true]]]],
-                ], $bulkOptions);
-
-                $mdb->getCollection('queues')->bulkWrite([
-                    ['insertOne' => [['queue' => 'sequences', 'value' => $sequence]]],
-                ], $bulkOptions);
-
-                $session->commitTransaction();
-				Util::out("Processed killmail $killID with sequence $sequence");
-
-				$killsLastHour = new RedisTtlCounter('killsLastHour');
-				$killsLastHour->add($row['killID']);
-
-				$queueInfo->push($killID);
-				$redis->incr('zkb:totalKills');
-				$redis->zrem("tobeparsed", $killID);
-            } catch (Exception $ex) {
-                if ($session->isInTransaction()) {
-                    $session->abortTransaction();
-                }
-                throw $ex;
             } finally {
-                $session->endSession();
+                sem_release($sem);
             }
-
-		} finally {
-			sem_release($sem);
-		}
+        }
+    } catch (Exception $ex) {
+        echo print_r($row, true) . "\n";
+        echo print_r($ex, true) . "\n";
+        echo "=====\n";
+        //Util::out(print_r($ex, true));
+        if ($row != null) $mdb->set("crestmail", $row, ['processed' => 'parse failure']);
+        Util::out("post queue process error");
     }
- } catch (Exception $ex) {
-    Util::out(print_r($ex, true));
-    if ($row != null) $mdb->set("crestmail", $row, ['processed' => 'parse failure']);
-}
 }
 
 function addLabel(&$kill, $condition, $label)
@@ -504,7 +518,7 @@ function getPadHash($killmail)
         $dttm = $killmail['dttm']->toDateTime()->getTimestamp();
         $dttm = $dttm - ($dttm % 3600);
         $locationID = isset($killmail['locationID']) ? $killmail['locationID'] : $killmail['system']['solarSystemID'];
-        
+
         return "$victimID:$groupID:$locationID:$dttm";
     }
 
@@ -555,7 +569,7 @@ function getGeneralTZ($unix_timestamp) {
             return 'tz:eu';
         case ($hour >= 4 && $hour < 8):
             return 'tz:usw';
-        //case ($hour >= 22 || $hour < 4):
+            //case ($hour >= 22 || $hour < 4):
         default:
             return 'tz:use';
     }
@@ -566,28 +580,28 @@ function getGeneralTZ($unix_timestamp) {
  * if two warring factions are present, return the faction of the victim.
  */
 function fwFaction($kill) {	
-	$involved = $kill['involved'];
-	$factions = [];
-	foreach ($involved as $attacker) {
-		if (isset($attacker['factionID']) == false) continue;
-		$attackerFactionID = (int) $attacker['factionID'];
-		$factions[$attackerFactionID] = true;
-	}
-	// Caldari and Gallente?
-	if (isset($factions[500001]) && isset($factions[500004])) {
-		$victim = $kill['involved'][0];
-		$victimFactionID = (int) @$victim['factionID'];
-		if ($victimFactionID == 500001) return "fw:gallente"; // Gallente won the fight
-		if ($victimFactionID == 500004) return "fw:caldari"; // Caldari won the fight
-		return null;
-	}
-	// Amarr and Minmatar?
-	if (isset($factions[500003]) && isset($factions[500002])) {
-		$victim = $kill['involved'][0];
-		$victimFactionID = (int) @$victim['factionID'];
-		if ($victimFactionID == 500003) return "fw:minmatar"; // Minmatar won the fight
-		if ($victimFactionID == 500002) return "fw:amarr"; // Amarr won the fight
-		return null;
-	}
-	return null;
+    $involved = $kill['involved'];
+    $factions = [];
+    foreach ($involved as $attacker) {
+        if (isset($attacker['factionID']) == false) continue;
+        $attackerFactionID = (int) $attacker['factionID'];
+        $factions[$attackerFactionID] = true;
+    }
+    // Caldari and Gallente?
+    if (isset($factions[500001]) && isset($factions[500004])) {
+        $victim = $kill['involved'][0];
+        $victimFactionID = (int) @$victim['factionID'];
+        if ($victimFactionID == 500001) return "fw:gallente"; // Gallente won the fight
+        if ($victimFactionID == 500004) return "fw:caldari"; // Caldari won the fight
+        return null;
+    }
+    // Amarr and Minmatar?
+    if (isset($factions[500003]) && isset($factions[500002])) {
+        $victim = $kill['involved'][0];
+        $victimFactionID = (int) @$victim['factionID'];
+        if ($victimFactionID == 500003) return "fw:minmatar"; // Minmatar won the fight
+        if ($victimFactionID == 500002) return "fw:amarr"; // Amarr won the fight
+        return null;
+    }
+    return null;
 }
