@@ -71,7 +71,31 @@ if (!jsonlPath || !collectionName) {
 }
 
 const collection = db.getCollection(collectionName);
-collection.createIndex({ key: 1 }, { unique: true, name: 'key_unique' });
+
+function ensureUniqueSparseIndex(field, indexName) {
+  const desiredKey = { [field]: 1 };
+  try {
+    collection.createIndex(desiredKey, { unique: true, sparse: true, name: indexName });
+  } catch (err) {
+    const msg = String(err && err.message ? err.message : err);
+    const codeName = String(err && err.codeName ? err.codeName : '');
+    const code = Number(err && err.code ? err.code : -1);
+
+    const isExistingIndexConflict =
+      /already exists|same name as the requested index|equivalent index already exists/i.test(msg) ||
+      codeName === 'IndexOptionsConflict' ||
+      codeName === 'IndexKeySpecsConflict' ||
+      code === 85 ||
+      code === 86;
+
+    if (!isExistingIndexConflict) {
+      throw err;
+    }
+  }
+}
+
+ensureUniqueSparseIndex('_key', '_key_unique');
+ensureUniqueSparseIndex('key', 'key_unique');
 
 const raw = fs.readFileSync(jsonlPath, 'utf8');
 const lines = raw.split(/\r?\n/);
@@ -104,14 +128,18 @@ for (const line of lines) {
 
   processed += 1;
 
-  if (doc.key === undefined || doc.key === null) {
+  const canonicalKey = doc.key !== undefined && doc.key !== null ? doc.key : (doc._key !== undefined && doc._key !== null ? doc._key : null);
+  if (canonicalKey === null) {
     skipped += 1;
     continue;
   }
 
+  doc.key = canonicalKey;
+  doc._key = canonicalKey;
+
   ops.push({
     replaceOne: {
-      filter: { key: doc.key },
+      filter: { $or: [{ key: canonicalKey }, { _key: canonicalKey }] },
       replacement: doc,
       upsert: true,
     },
@@ -148,7 +176,7 @@ while IFS= read -r import_entry || [[ -n "${import_entry}" ]]; do
   fi
 
   base_name="$(basename "${jsonl_file}")"
-  collection="sde-${base_name%.jsonl}"
+  collection="sde_${base_name%.jsonl}"
   echo "Importing ${base_name} -> ${collection}"
   JSONL_FILE="${jsonl_file}" COLLECTION_NAME="${collection}" mongosh "${mongo_uri}" --quiet --file "${mongosh_import_js}"
   import_count=$((import_count + 1))
