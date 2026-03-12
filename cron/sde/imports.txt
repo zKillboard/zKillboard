@@ -1,0 +1,10 @@
+
+blueprints
+categories
+groups
+typeMaterials
+types
+
+mapRegions
+mapConstellations
+mapSolarSystems
