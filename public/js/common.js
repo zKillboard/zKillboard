@@ -125,7 +125,10 @@ function checkForSearchKey(event) {
 }
 
 function startWebSocket() {
-    try {
+	try {
+		if (ws) return;
+		if (characterID == 0) return setTimeout(startWebSocket, 1000);
+
         ws = new ReconnectingWebSocket((window.location.hostname == 'localhost' ? 'ws' : 'wss' ) + '://' + window.location.hostname + '/websocket/', '', {maxReconnectAttempts: 15});
         ws.onmessage = function(event) {
                 wslog(event.data);
