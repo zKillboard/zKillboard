@@ -593,7 +593,9 @@ class Info
             '185' => "Infrastructure Hangar",
             '186' => "Moon Material Bay",
             '187' => 'Capsuleeer Deliveries',
-            '188' => 'Expedition Hold'
+            '188' => 'Expedition Hold',
+            '63' => 'Locked',
+            '64' => 'Unlocked'
             );
 
     /**
