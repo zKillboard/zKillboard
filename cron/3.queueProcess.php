@@ -36,7 +36,7 @@ while ($time >= time()) {
         try {
             sem_acquire($sem);
 
-            $row = $mdb->findDoc('crestmails', ['processed' => 'fetched']);
+            $row = $mdb->findDoc('crestmails', ['processed' => 'fetched'], ['killID' => 1]);
             if ($row == null) {
                 $killID = $redis->zrevrange("tobeparsed", 0, 0);
                 $killID = (int) @$killID[0];
