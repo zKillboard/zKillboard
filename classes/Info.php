@@ -549,7 +549,7 @@ class Info
 
     /**
      * [$effectToSlot description].
-     * Flags are defined here: https://github.com/esi/eve-glue/blob/master/eve_glue/bitmask.py
+     * Flags are defined here: https://github.com/esi/eve-glue/blob/master/eve_glue/location_flag.py
      * @var array
      */
     public static $effectToSlot = array(

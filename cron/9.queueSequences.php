@@ -61,8 +61,8 @@ Util::out("$sequence updated sequence $updated");
             $redis->rpush("zkb:sequenced_updated", $sequence);
         }
 
-        if ($sequence - ((int) $redis->get($ephSequenceKey)) > 50) {
-            // Update the current sequences file once every 50 killmails
+        if ($sequence - ((int) $redis->get($ephSequenceKey)) > 51) {
+            // Update the current sequences file once every 51 killmails
             $array = ['sequence' => $sequence];
             CloudFlare::r2sendArray($r2, $CF_R2_BUCKET, $array, "ephemeral/sequence.json", $options);
             $redis->sadd("queueCacheUrls", "https://r2z2.zkillboard.com/ephemeral/sequence.json");
