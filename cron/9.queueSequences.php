@@ -26,9 +26,15 @@ do {
     $sequence = (int) @$doc['value'];
     if ($sequence > 0) {
         $kill = clean($mdb->findDoc("killmails", ['sequence' => $sequence]));
+
+        if (!isset($kill['killID'])) {
+            Util::out("\n\n\nERROR Sequence missing killmail! sequence: $sequence \n\n");
+            sleep(1);
+            continue;
+        }
+
         $killID = $kill['killID'];
         $raw = clean($mdb->findDoc("esimails", ['killmail_id' => $kill['killID']]));
-
         $zkb = $kill['zkb'];
         $zkb['npc'] = @$kill['npc'];
         $zkb['solo'] = @$kill['solo'];

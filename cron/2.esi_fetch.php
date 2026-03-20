@@ -11,11 +11,6 @@ if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit(
 $guzzler = new Guzzler(10);
 $esimails = $mdb->getCollection("esimails");
 
-$mdb->set("crestmails", ['processed' => 'later'], ['processed' => false], true);
-$mdb->set("crestmails", ['processed' => 'fetching'], ['processed' => false], true);
-$mdb->set("crestmails", ['processed' => 'processing'], ['processed' => false], true);
-$mdb->set("crestmails", ['processed' => ['$exists' => false]], ['processed' => false], true);
-
 $checked = [];
 $minute = date("Hi");
 $HEADERS = [];

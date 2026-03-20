@@ -27,6 +27,12 @@ $killsLastHour = new RedisTtlCounter('killsLastHour');
 $minute = date('Hi');
 $time = time() + 63;
 
+// uses semaphore 3999, which is also used in 3.esi_process.php, so that they don't step on each other
+$mdb->set("crestmails", ['processed' => 'later'], ['processed' => false], true);
+$mdb->set("crestmails", ['processed' => 'fetching'], ['processed' => false], true);
+$mdb->set("crestmails", ['processed' => 'processing'], ['processed' => false], true);
+$mdb->set("crestmails", ['processed' => ['$exists' => false]], ['processed' => false], true);
+
 while ($time >= time()) {
     try {
         //if ($kvc->get("zkb:universeLoaded") != "true") break;
@@ -239,7 +245,7 @@ while ($time >= time()) {
                         } catch (Exception $exx) {
                             $tries--;
                             if ($tries < 0) throw $exx;
-                            Util::out("Unable to commit, tries remaining: $tries");
+                            Util::out("\n\n ERRROR: Unable to commit transaction, tries remaining: $tries\n\n");
                             usleep(250000);
                         }
                     } while ($tries > 0);
@@ -262,12 +268,8 @@ while ($time >= time()) {
             }
         }
     } catch (Exception $ex) {
-        echo print_r($row, true) . "\n";
-        echo print_r($ex, true) . "\n";
-        echo "=====\n";
-        //Util::out(print_r($ex, true));
-        if ($row != null) $mdb->set("crestmail", $row, ['processed' => 'parse failure']);
-        Util::out("post queue process error");
+        Util::out("\n\nERROR: post queue process error\n\n");
+        Util::out(print_r($ex, true));
     }
 }
 
