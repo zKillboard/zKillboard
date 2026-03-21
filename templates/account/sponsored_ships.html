@@ -12,6 +12,13 @@
 		<td style="text-align: right;">{{ row.expired ?: 'No' }}</td>
 	</tr>
 {% endfor %}
+    <tr>
+        <th>Total</th>
+        <th style="text-align: right;"><span format="format-isk-once" raw="{{ data.sponsoredTotalIsk }}">{{ data.sponsoredTotalIsk|number_format(0) }}</span> ISK</th>
+        <th style="text-align: right;"></th>
+        <th style="text-align: right;"></th>
+        <th style="text-align: right;"></th>
+    </tr>
 </table>
 {% else %}
 <em>No sponsored ships found yet...</em>

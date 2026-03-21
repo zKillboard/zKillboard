@@ -81,6 +81,7 @@ $data['history'] = User::getPaymentHistory($userID);
 $data['log'] = ZLog::get($userID);
 
 $sponsoredShips = [];
+$sponsoredTotalIsk = 0;
 $expiredThreshold = time() - (86400 * 7);
 $sponsoredRows = $mdb->find("sponsored", ['characterID' => (int) $userID], ['entryTime' => -1]);
 foreach ($sponsoredRows as $row) {
@@ -107,17 +108,20 @@ foreach ($sponsoredRows as $row) {
 		$entryDttm = date('Y-m-d H:i:s', $entryTimestamp);
 	}
 	$isExpired = ($entryTimestamp !== null && $entryTimestamp < $expiredThreshold) ? 'Yes' : 'No';
+	$isk = (int) @$row['isk'];
+	$sponsoredTotalIsk += $isk;
 	$sponsoredShips[] = [
 		'shipTypeID' => $shipTypeID,
 		'shipName' => Info::getInfoField('typeID', $shipTypeID, 'name'),
 		'victimName' => ($victimName ?: 'Unknown Victim'),
-		'isk' => (int) @$row['isk'],
+		'isk' => @$row['isk'],
 		'killID' => (int) @$row['killID'],
 		'entryDttm' => $entryDttm,
 		'expired' => $isExpired
 	];
 }
 $data['sponsoredShips'] = $sponsoredShips;
+$data['sponsoredTotalIsk'] = $sponsoredTotalIsk;
 
     $accountData = array('data' => $data, 'message' => $error, 'key' => $key, 'reqid' => $reqid);
     return $container->get('view')->render($response, 'account.html', $accountData);
