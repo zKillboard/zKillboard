@@ -147,7 +147,7 @@ class AdvancedSearch
 
             $timer = new Timer();
             $pipeline = [];
-            $pipeline[] = ['$match' => $query];
+            $pipeline[] = ['$match' => (empty($query) ? new stdClass() : $query)];
             if ($groupByColumn != 'solarSystemID' && $groupByColumn != 'regionID' && $groupByColumn != 'locationID') {
                 $pipeline[] = ['$unwind' => '$involved'];
                 if (sizeof($filter)) $pipeline[] = ['$match' => $filter];
@@ -219,7 +219,7 @@ class AdvancedSearch
 
             $timer = new Timer();
             $pipeline = [];
-            $pipeline[] = ['$match' => $query];
+            $pipeline[] = ['$match' => (empty($query) ? new stdClass() : $query)];
             if ($victimsOnly !== "null") $pipeline[] = ['$match' => ['involved.isVictim' => ($victimsOnly == "true" ? true : false)]];
             $pipeline[] = ['$group' => [
                 '_id' => 0, 
@@ -264,7 +264,7 @@ class AdvancedSearch
             $killmails = $mdb->getCollection('killmails');
 
             $timer = new Timer();
-            $pipeline[] = ['$match' => $query];
+            $pipeline[] = ['$match' => (empty($query) ? new stdClass() : $query)];
             if ($victimsOnly !== "null") $pipeline[] = ['$match' => ['involved.isVictim' => ($victimsOnly == "true" ? true : false)]];
 
             $pipeline[] = ['$unwind' => '$labels'];
@@ -381,7 +381,9 @@ class AdvancedSearch
             }
             return $result;
         } catch (Exception $ex) {
-            if ($ex->getCode() != 50) Util::zout(print_r($ex, true) . "\n" . print_r($pipeline)); // code 50 is query timeout
+            if ($ex->getCode() != 50) Util::zout(print_r($ex, true) . "\n" . print_r($pipeline, true));
+            else Util::zout("getLabels query timeout (code 50)");
+            return [];
         }
     }
 
@@ -395,7 +397,7 @@ class AdvancedSearch
 
             $timer = new Timer();
             $pipeline = [];
-            $pipeline[] = ['$match' => $query];
+            $pipeline[] = ['$match' => (empty($query) ? new stdClass() : $query)];
             if ($victimsOnly !== "null") $pipeline[] = ['$match' => ['involved.isVictim' => ($victimsOnly == "true" ? true : false)]];
 
             $pipeline[] = [
