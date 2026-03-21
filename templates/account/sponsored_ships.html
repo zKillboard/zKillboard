@@ -1,0 +1,26 @@
+<div class="row">
+<h4>Sponsored Ships</h4>
+{% if data.sponsoredShips|length %}
+<table class="table table-striped table-hover col-lg-3">
+	<tr><th>Victim / Ship</th><th style="text-align: right;">ISK</th><th style="text-align: right;">Killmail ID</th><th style="text-align: right;">Timestamp</th><th style="text-align: right;">Expired</th></tr>
+{% for row in data.sponsoredShips %}
+	<tr>
+		<td><a href="/kill/{{ row.killID }}/">{{ row.victimName }} {{ row.shipName }}</a></td>
+		<td style="text-align: right;"><span format="format-isk-once" raw="{{ row.isk }}">{{ row.isk|number_format(0) }}</span> ISK</td>
+		<td style="text-align: right;"><a href="/kill/{{ row.killID }}/">{{ row.killID }}</a></td>
+		<td style="text-align: right;">{{ row.entryDttm ?: '-' }}</td>
+		<td style="text-align: right;">{{ row.expired ?: 'No' }}</td>
+	</tr>
+{% endfor %}
+</table>
+{% else %}
+<em>No sponsored ships found yet...</em>
+{% endif %}
+</div>
+<hr/>
+<div class="row">
+<ul>
+	<li><a href='/kills/sponsored/'>Browse all recently sponsored killmails</a></li>
+	<li><a href='http://localhost/information/payments/#sponsor'>Learn more about sponsoring ships</a></li>
+</ul>
+</div>

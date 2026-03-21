@@ -39,7 +39,7 @@ Send **1 billion ISK** and receive a permanent monocle icon <img src='https://zk
 
 ---
 
-## 🎯 Sponsoring Killmails
+##  [#](#sponsor) 🎯 Sponsoring Killmails
 
 Highlight killmails by sponsoring them with your ad-free ISK balance.
 

@@ -21,6 +21,7 @@
 				<li class="{{ isActive('sitesettings', key) }}"><a href="/account/sitesettings/">Site Settings</a></li>
 				<li class="{{ isActive('api', key) }}"><a href="/account/api/">API</a></li>
 				<li class="{{ isActive('log', key) }}"><a href="/account/log/">Log</a></li>
+				<li class="{{ isActive('sponsored', key) }}"><a href="/account/sponsored/">Sponsored Ships</a></li>
 				{% if adFreeMonthCost > 0 %}
 				<li class="{{ isActive('payments', key) }}"><a href="/account/payments/">Payments</a></li>
 				{% endif %}
@@ -32,6 +33,8 @@
 		{% include 'account/me.html' %}
 	{% elseif key == 'log' %}
 		{% include 'account/log.html' %}
+	{% elseif key == 'sponsored' %}
+		{% include 'account/sponsored_ships.html' %}
 	{% elseif key == 'changepassword' %}
 		{% include 'account/changepassword.html' %}
 	{% elseif key == 'changeemail' %}

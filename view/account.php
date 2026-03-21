@@ -80,6 +80,45 @@ $data['apiScopes'] = $mdb->find("scopes", ['characterID' => (int) $userID], ['sc
 $data['history'] = User::getPaymentHistory($userID);
 $data['log'] = ZLog::get($userID);
 
+$sponsoredShips = [];
+$expiredThreshold = time() - (86400 * 7);
+$sponsoredRows = $mdb->find("sponsored", ['characterID' => (int) $userID], ['entryTime' => -1]);
+foreach ($sponsoredRows as $row) {
+	$shipTypeID = (int) @$row['victim']['shipTypeID'];
+	if ($shipTypeID <= 0) continue;
+	$victimName = '';
+	if (isset($row['victim']['characterID'])) {
+		$victimName = Info::getInfoField('characterID', (int) $row['victim']['characterID'], 'name');
+	} else if (isset($row['victim']['allianceID'])) {
+		$victimName = Info::getInfoField('allianceID', (int) $row['victim']['allianceID'], 'name');
+	} else if (isset($row['victim']['corporationID'])	) {
+		$victimName = Info::getInfoField('corporationID', (int) $row['victim']['corporationID'], 'name');
+	}
+	$victimName = str_ends_with($victimName, 's') ? $victimName . "'" : $victimName . "'s";
+	$entryTime = @$row['entryTime'];
+	$entryDttm = null;
+	$entryTimestamp = null;
+	if ($entryTime instanceof MongoDB\BSON\UTCDateTime) {
+		$entryDateTime = $entryTime->toDateTime();
+		$entryTimestamp = $entryDateTime->getTimestamp();
+		$entryDttm = $entryDateTime->format('Y-m-d H:i:s');
+	} else if (is_array($entryTime) && isset($entryTime['sec'])) {
+		$entryTimestamp = (int) $entryTime['sec'];
+		$entryDttm = date('Y-m-d H:i:s', $entryTimestamp);
+	}
+	$isExpired = ($entryTimestamp !== null && $entryTimestamp < $expiredThreshold) ? 'Yes' : 'No';
+	$sponsoredShips[] = [
+		'shipTypeID' => $shipTypeID,
+		'shipName' => Info::getInfoField('typeID', $shipTypeID, 'name'),
+		'victimName' => ($victimName ?: 'Unknown Victim'),
+		'isk' => (int) @$row['isk'],
+		'killID' => (int) @$row['killID'],
+		'entryDttm' => $entryDttm,
+		'expired' => $isExpired
+	];
+}
+$data['sponsoredShips'] = $sponsoredShips;
+
     $accountData = array('data' => $data, 'message' => $error, 'key' => $key, 'reqid' => $reqid);
     return $container->get('view')->render($response, 'account.html', $accountData);
 }
