@@ -109,7 +109,7 @@ foreach ($sponsoredRows as $row) {
 	}
 	$isExpired = ($entryTimestamp !== null && $entryTimestamp < $expiredThreshold) ? 'Yes' : 'No';
 	$isk = (int) @$row['isk'];
-	$sponsoredTotalIsk += $isk;
+	$sponsoredTotalIsk += abs($isk);
 	$sponsoredShips[] = [
 		'shipTypeID' => $shipTypeID,
 		'shipName' => Info::getInfoField('typeID', $shipTypeID, 'name'),
