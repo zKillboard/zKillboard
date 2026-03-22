@@ -20,6 +20,7 @@ $routes = [
 	'/brsave/' => ['GET', 'view/brsave.php'],
 	'/bigisk/' => ['GET', 'view/bigisk.php'],
 	'/{type}/ranks/{kl}/{solo}/{epoch}/{page}/' => ['GET', 'view/typeRanks.php'],
+	'/{type}/ranks/{kl}/{solo}/{epoch}/{page}/{sort}/{dir}/' => ['GET', 'view/typeRanks.php'],
 	'/top/lasthour/{type}/' => ['GET', 'view/lasthour.php'],
 	'/kill/{id}/redirect/{where}/' => ['GET', 'view/detail.php'],
 	'/kill/{id}/remaining/' => ['GET', 'view/detail.php'],

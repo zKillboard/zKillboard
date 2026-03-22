@@ -11,6 +11,8 @@ function handler($request, $response, $args, $container) {
     $solo = $args['solo'];
     $epoch = $args['epoch'];
     $page = (int) $args['page'];
+    $sortKey = @$args['sort'];
+    $sortDir = strtolower(@$args['dir']) == 'asc' ? 'asc' : 'desc';
 
     if ($page < 1) {
         return $response->withStatus(404);
@@ -30,6 +32,27 @@ function handler($request, $response, $args, $container) {
     }
     $subType = $kl == 'k' ? 'killers' : 'losers';
 
+    $validSorts = [
+        'overallRank' => ['redisKey' => '', 'ascMethod' => 'range', 'defaultDir' => ($subType == 'killers' ? 'asc' : 'desc')],
+        'shipsDestroyed' => ['redisKey' => 'shipsDestroyed', 'ascMethod' => 'range', 'defaultDir' => 'desc'],
+        'sdRank' => ['redisKey' => 'shipsDestroyed', 'ascMethod' => 'revrange', 'defaultDir' => 'asc'],
+        'shipsLost' => ['redisKey' => 'shipsLost', 'ascMethod' => 'range', 'defaultDir' => 'desc'],
+        'slRank' => ['redisKey' => 'shipsLost', 'ascMethod' => 'revrange', 'defaultDir' => 'asc'],
+        'pointsDestroyed' => ['redisKey' => 'pointsDestroyed', 'ascMethod' => 'range', 'defaultDir' => 'desc'],
+        'pdRank' => ['redisKey' => 'pointsDestroyed', 'ascMethod' => 'revrange', 'defaultDir' => 'asc'],
+        'pointsLost' => ['redisKey' => 'pointsLost', 'ascMethod' => 'range', 'defaultDir' => 'desc'],
+        'plRank' => ['redisKey' => 'pointsLost', 'ascMethod' => 'revrange', 'defaultDir' => 'asc'],
+        'iskDestroyed' => ['redisKey' => 'iskDestroyed', 'ascMethod' => 'range', 'defaultDir' => 'desc'],
+        'idRank' => ['redisKey' => 'iskDestroyed', 'ascMethod' => 'revrange', 'defaultDir' => 'asc'],
+        'iskLost' => ['redisKey' => 'iskLost', 'ascMethod' => 'range', 'defaultDir' => 'desc'],
+        'ilRank' => ['redisKey' => 'iskLost', 'ascMethod' => 'revrange', 'defaultDir' => 'asc'],
+    ];
+
+    if (!isset($validSorts[$sortKey])) {
+        $sortKey = 'overallRank';
+        $sortDir = $validSorts[$sortKey]['defaultDir'];
+    }
+
     $s = "";
     if ($solo == 'solo') {
         if ($pageEpoch == 'alltime') $s = "Solo";
@@ -45,12 +68,21 @@ function handler($request, $response, $args, $container) {
     $start = ($page - 1) * $pageSize;
     $end = ($page * $pageSize) - 1;
 
-    if ($subType == 'killers') {
-        $r = $redis->zRange("tq:ranks:$pageEpoch:$column", $start, $end);
-        $r2 = $redis->zRange("tq:ranks:$pageEpoch:$column", $start, $end + 1);
+    $sortInfo = $validSorts[$sortKey];
+    $sortRedisKey = $sortInfo['redisKey'] == '' ? "tq:ranks:$pageEpoch:$column" : "tq:ranks:$pageEpoch:$column:{$sortInfo['redisKey']}$s";
+
+    if (!$redis->exists($sortRedisKey)) {
+        return $response->withStatus(404);
+    }
+
+    $useRevRange = ($sortDir == 'asc' && $sortInfo['ascMethod'] == 'revrange') || ($sortDir == 'desc' && $sortInfo['ascMethod'] == 'range');
+
+    if ($useRevRange) {
+        $r = $redis->zRevRange($sortRedisKey, $start, $end);
+        $r2 = $redis->zRevRange($sortRedisKey, $start, $end + 1);
     } else {
-        $r = $redis->zRevRange("tq:ranks:$pageEpoch:$column", $start, $end);
-        $r2 = $redis->zRevRange("tq:ranks:$pageEpoch:$column", $start, $end + 1);
+        $r = $redis->zRange($sortRedisKey, $start, $end);
+        $r2 = $redis->zRange($sortRedisKey, $start, $end + 1);
     }
     if (sizeof($r) == 0) {
         return $response->withStatus(404);
@@ -92,5 +124,5 @@ function handler($request, $response, $args, $container) {
 
     $pageEpoch = str_replace(":solo", "", $pageEpoch);
 
-    return $container->get('view')->render($response, 'typeRanks.html', ['ranks' => $ranks, 'pageTitle' => $pageTitle, 'type' => str_replace("ID", "", $column), 'epoch' => $pageEpoch, 'subType' => substr($subType, 0, 1), 'solo' => $solo, 'page' => $page, 'hasMore' => $hasMore]);
+    return $container->get('view')->render($response, 'typeRanks.html', ['ranks' => $ranks, 'pageTitle' => $pageTitle, 'type' => str_replace("ID", "", $column), 'epoch' => $pageEpoch, 'subType' => substr($subType, 0, 1), 'solo' => $solo, 'page' => $page, 'hasMore' => $hasMore, 'sortKey' => $sortKey, 'sortDir' => $sortDir]);
 }

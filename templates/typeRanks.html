@@ -60,6 +60,8 @@ const ranksEpoch = '{{ epoch }}';
 const ranksPage = '{{ page }}';
 const ranksGroup = '{{ solo }}';
 const ranksHasMore = '{{ hasMore }}';
+const ranksSortKey = '{{ sortKey|default("overallRank") }}';
+const ranksSortDir = '{{ sortDir|default("asc") }}';
 </script>
 <script defer type="text/javascript" src="/js/typeranks.js?v={{ currentTime }}"></script>
 {% endblock %}

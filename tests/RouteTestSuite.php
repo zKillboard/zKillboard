@@ -305,6 +305,8 @@ class RouteTestSuite {
         // Type ranks - using REAL vs FAKE IDs  
         echo "\n--- Ranks Routes (Real IDs) ---\n";
         $this->testRoute("/character/ranks/k/all/alltime/1/", 200, 'Character ranks kills all alltime');
+        $this->testRoute("/character/ranks/k/all/alltime/1/sdRank/asc/", 200, 'Character ranks kills all alltime ships rank asc');
+        $this->testRoute("/character/ranks/k/all/alltime/1/sdRank/desc/", 200, 'Character ranks kills all alltime ships rank desc');
         $this->testRoute("/character/ranks/l/all/alltime/1/", 200, 'Character ranks losses all alltime');
         $this->testRoute("/character/ranks/k/solo/alltime/1/", 200, 'Character ranks kills solo alltime');
         $this->testRoute("/character/ranks/l/solo/alltime/1/", 200, 'Character ranks losses solo alltime');
