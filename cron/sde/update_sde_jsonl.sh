@@ -34,10 +34,10 @@ fi
 
 tmp_dir="$(mktemp -d)"
 echo "Using temporary directory: ${tmp_dir}"
-#cleanup() {
-  #rm -rf "${tmp_dir}"
-#}
-#trap cleanup EXIT
+cleanup() {
+  rm -rf "${tmp_dir}"
+}
+trap cleanup EXIT
 
 remote_latest_file="${tmp_dir}/latest.remote.json"
 zip_file="${tmp_dir}/sde.zip"

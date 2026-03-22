@@ -19,8 +19,12 @@ $sourceCollections = [
 $targetCollection = $mdb->getCollection('locations_calced');
 try {
     $targetCollection->createIndex(
-        ['sourceCollection' => 1, 'id' => 1],
-        ['unique' => true, 'name' => 'sourceCollection_id_unique']
+        ['id' => 1],
+        ['unique' => true, 'name' => 'id_unique']
+    );
+	$targetCollection->createIndex(
+        ['id' => 1, 'solarSystemID' => 1],
+        ['unique' => true, 'name' => 'id_solarSystemID_unique']
     );
 } catch (Exception $ex) {
     $msg = (string) $ex->getMessage();
@@ -90,6 +94,115 @@ function getSolarSystemID($row, $source)
     return null;
 }
 
+function getRadius($row)
+{
+    global $mdb;
+
+    if (isset($row['radius']) && is_numeric($row['radius'])) return (float) $row['radius'];
+
+    $typeID = $row['typeID'] ?? null;
+    if (!is_numeric($typeID)) return null;
+
+    $radius = $mdb->findField('information', 'radius', ['type' => 'typeID', 'id' => (int) $typeID, 'cacheTime' => 3600]);
+    if (!is_numeric($radius)) return null;
+    return (float) $radius;
+}
+
+function clamp($value, $min, $max)
+{
+    if ($value < $min) return $min;
+    if ($value > $max) return $max;
+    return $value;
+}
+
+// Warpin location formulas are obtained from https://developers.eveonline.com/docs/guides/useful-formulae/
+
+function calcLargeObjectWarpPoint($x, $y, $z, $radius)
+{
+    $warpX = $x + (($radius + 5000000) * cos($radius));
+    $warpY = $y + (1.3 * $radius) - 7500;
+    $warpZ = $z - (($radius + 5000000) * sin($radius));
+    return ['x' => (float) $warpX, 'y' => (float) $warpY, 'z' => (float) $warpZ];
+}
+
+function calcSunWarpPoint($radius)
+{
+    $warpX = ($radius + 100000) * cos($radius);
+    $warpY = 0.2 * $radius;
+    $warpZ = -($radius + 100000) * sin($radius);
+    return ['x' => (float) $warpX, 'y' => (float) $warpY, 'z' => (float) $warpZ];
+}
+
+function calcPlanetWarpPoint($planetID, $x, $y, $z, $radius)
+{
+    mt_srand((int) $planetID);
+    $mt = mt_rand() / mt_getrandmax();
+    $j = ($mt - 1) / 3;
+
+    $sRaw = 20 * pow(((10 * log10($radius / 1000000) - 39) / 40), 20) + 0.5;
+    $s = clamp($sRaw, 0.5, 10.5);
+    $d = $radius * ($s + 1) + 1000000;
+
+    $xzLength = sqrt(pow($x, 2) + pow($z, 2));
+    if ($xzLength <= 0) return null;
+
+    $xSign = ($x >= 0 ? 1 : -1);
+    $ratio = ($xSign * $z) / $xzLength;
+    $ratio = clamp($ratio, -1, 1);
+    $theta = asin($ratio) + $j;
+
+    $warpX = $x + sin($theta) * $d;
+    $warpY = $y + $radius * sin($j) / 2;
+    $warpZ = $z - cos($theta) * $d;
+
+    return ['x' => (float) $warpX, 'y' => (float) $warpY, 'z' => (float) $warpZ];
+}
+
+function getWarpPoint($source, $row, $position, $radius, $entityID)
+{
+    global $mdb;
+
+    if ($entityID !== null) {
+        $celestial = $mdb->findDoc('celestials', ['CelestialID' => (int) $entityID], ['WarpX' => 1, 'WarpY' => 1, 'WarpZ' => 1]);
+        if (
+            $celestial != null &&
+            isset($celestial['WarpX']) && is_numeric($celestial['WarpX']) &&
+            isset($celestial['WarpY']) && is_numeric($celestial['WarpY']) &&
+            isset($celestial['WarpZ']) && is_numeric($celestial['WarpZ'])
+        ) {
+            return [
+                'x' => (float) $celestial['WarpX'],
+                'y' => (float) $celestial['WarpY'],
+                'z' => (float) $celestial['WarpZ'],
+            ];
+        }
+    }
+
+    if (!is_numeric($radius)) return null;
+    $radius = (float) $radius;
+    if ($radius <= 0) return null;
+
+    $x = (float) $position['x'];
+    $y = (float) $position['y'];
+    $z = (float) $position['z'];
+
+    if ($source === 'mapStars') {
+        return calcSunWarpPoint($radius);
+    }
+
+    if ($source === 'mapPlanets') {
+        $planetID = $row['planetID'] ?? $row['key'] ?? $row['_key'] ?? null;
+        if (!is_numeric($planetID)) return null;
+        return calcPlanetWarpPoint((int) $planetID, $x, $y, $z, $radius);
+    }
+
+    if ($source !== 'mapStars' && $source !== 'mapPlanets' && $source != "npcStations" && $radius >= 90000) {
+        return calcLargeObjectWarpPoint($x, $y, $z, $radius);
+    }
+
+    return null;
+}
+
 $stats = [];
 $totalUpserts = 0;
 $totalSkipped = 0;
@@ -124,16 +237,27 @@ foreach ($sourceCollections as $source => $sourceConfig) {
             continue;
         }
 
+        $entityID = getEntityID($row, $idKeys);
+        $radius = getRadius($row);
+        $warp = getWarpPoint($source, $row, $position, $radius, $entityID);
+
         $doc = [
             'sourceCollection' => $fullCollection,
             'type' => $source,
             'id' => $sourceKey,
-            'entityID' => getEntityID($row, $idKeys),
+            'entityID' => $entityID,
             'solar_system_id' => getSolarSystemID($row, $source),
             'name' => ($row['name'] ?? "$source $sourceKey"),
             'position' => $position,
+            'Radius' => (is_numeric($radius) ? (float) $radius : null),
             'updated' => $mdb->now(),
         ];
+
+        if (is_array($warp)) {
+            $doc['WarpX'] = $warp['x'];
+            $doc['WarpY'] = $warp['y'];
+            $doc['WarpZ'] = $warp['z'];
+        }
 
         $bulkOps[] = [
             'updateOne' => [

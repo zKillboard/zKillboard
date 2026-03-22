@@ -573,41 +573,44 @@ class Util
 
 	public static function get3dDistance($position, $locationID, $solarSystemID = 0)
 	{
-		global $redis, $mdb;
+		global $mdb;
 
 		$x = $position['x'];
 		$y = $position['y'];
 		$z = $position['z'];
 
-		$celestial = $mdb->findDoc("celestials", ['CelestialID' => $locationID]);
-		$r = (int) @$celestial['Radius'];
-
-		$lD = 0;
 		$query = ['id' => is_numeric($locationID) ? (int) $locationID : $locationID];
 		if ((int) $solarSystemID > 0) $query['solar_system_id'] = (int) $solarSystemID;
 		$location = $mdb->findDoc("locations_calced", $query);
-		if ($location == null && (int) $solarSystemID > 0) {
+		if ($location === null && (int) $solarSystemID > 0) {
 			$location = $mdb->findDoc("locations_calced", ['id' => is_numeric($locationID) ? (int) $locationID : $locationID]);
 		}
-		if (!($location == null || !isset($location['position']) || !is_array($location['position']))) {
-			$lp = $location['position'];
-			if (isset($lp['x']) && isset($lp['y']) && isset($lp['z'])) {
-				$lD = sqrt(pow($lp['x'] - $x, 2) + pow($lp['y'] - $y, 2) + pow($lp['z'] - $z, 2));
-				$lD = max(0, $lD - $r);
-				if ($lD <= 0) return 0;
-			}
+		if ($location === null) return 0;
+
+		$hasWarpPoint = (
+			isset($location['WarpX']) && is_numeric($location['WarpX']) &&
+			isset($location['WarpY']) && is_numeric($location['WarpY']) &&
+			isset($location['WarpZ']) && is_numeric($location['WarpZ'])
+		);
+
+		if ($hasWarpPoint) {
+			$distance = sqrt(
+				pow((float) $location['WarpX'] - $x, 2) +
+				pow((float) $location['WarpY'] - $y, 2) +
+				pow((float) $location['WarpZ'] - $z, 2)
+			);
+			return max(0, $distance);
 		}
 
-		$cD = 0;
-		if (@$celestial['WarpX'] !== null) {
-			$d = sqrt(pow($celestial['WarpX'] - $x, 2) + pow($celestial['WarpY'] - $y, 2) + pow($celestial['WarpZ'] - $z, 2));
-			$cD = max(0, $d);
-			if ($cD <= 0) return 0;
-		}
+		if (!isset($location['position']) || !is_array($location['position'])) return 0;
+		$locPos = $location['position'];
+		if (!isset($locPos['x']) || !isset($locPos['y']) || !isset($locPos['z'])) return 0;
 
-		if ($cD > 0 && $lD > 0) return min($cD, $lD);
-		if ($cD > 0) return $cD;
-		return $lD;
+		$distance = sqrt(pow($locPos['x'] - $x, 2) + pow($locPos['y'] - $y, 2) + pow($locPos['z'] - $z, 2));
+
+		$r = (isset($location['Radius']) && is_numeric($location['Radius'])) ? (float) $location['Radius'] : 0.0;
+//die("$distance , $r");
+		return max(0, $distance - $r);
 	}
 
 	public static function getAuDistance($position, $locationID, $solarSystemID = 0)
