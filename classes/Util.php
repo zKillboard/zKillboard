@@ -582,12 +582,17 @@ class Util
 		$celestial = $mdb->findDoc("celestials", ['CelestialID' => $locationID]);
 		$r = (int) @$celestial['Radius'];
 
-		$row = $mdb->findDoc("locations", ['id' => $solarSystemID]);
 		$lD = 0;
-		if (!($row == null || !isset($row['locations']))) {
-			foreach ($row['locations'] as $location) {
-				if ($location['itemid'] != $locationID) continue;
-				$lD = sqrt(pow($location['x'] - $x, 2) + pow($location['y'] - $y, 2) + pow($location['z'] - $z, 2));
+		$query = ['id' => is_numeric($locationID) ? (int) $locationID : $locationID];
+		if ((int) $solarSystemID > 0) $query['solar_system_id'] = (int) $solarSystemID;
+		$location = $mdb->findDoc("locations_calced", $query);
+		if ($location == null && (int) $solarSystemID > 0) {
+			$location = $mdb->findDoc("locations_calced", ['id' => is_numeric($locationID) ? (int) $locationID : $locationID]);
+		}
+		if (!($location == null || !isset($location['position']) || !is_array($location['position']))) {
+			$lp = $location['position'];
+			if (isset($lp['x']) && isset($lp['y']) && isset($lp['z'])) {
+				$lD = sqrt(pow($lp['x'] - $x, 2) + pow($lp['y'] - $y, 2) + pow($lp['z'] - $z, 2));
 				$lD = max(0, $lD - $r);
 				if ($lD <= 0) return 0;
 			}

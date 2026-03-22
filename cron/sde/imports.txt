@@ -5,6 +5,13 @@ groups
 typeMaterials
 types
 
+landmarks
+mapAsteroidBelts
+mapMoons
+mapPlanets
 mapRegions
 mapConstellations
 mapSolarSystems
+mapStargates
+mapStars
+npcStations

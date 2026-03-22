@@ -754,21 +754,37 @@ class Info
         $z = $position['z'];
 
         if ($solarSystemID > 32000000 && $solarSystemID <= 32999999) return null;
-        $systemLocations = $mdb->findDoc("locations", ['id' => $solarSystemID]);
-        if ($systemLocations == null) {
-            Util::zout("Fetching fuzz map for system $solarSystemID");
-            $raw = file_get_contents("https://www.fuzzwork.co.uk/api/mapdata.php?solarsystemid=$solarSystemID&format=json");
-	    if ($raw == null) throw new Exception("Unable to fetch fuzzworks system info");
-            $systemLocations = json_decode($raw, true);
-            $save = ['id' => $solarSystemID, 'locations' => $systemLocations];
-            $mdb->save("locations", $save);
-            $systemLocations = $save;
-        }
+        $systemLocations = $mdb->find("locations_calced", ['solar_system_id' => (int) $solarSystemID], ['id' => 1]);
+
         $minDistance = null;
         $returnID = null;
-        foreach ($systemLocations['locations'] as $row) { //$itemIDs as $itemID => $v) {
-            $itemID = $row['itemid'];
-            $distance = sqrt(pow($row['x'] - $x, 2) + pow($row['y'] - $y, 2) + pow($row['z'] - $z, 2));
+        foreach ($systemLocations as $row) {
+            if (!isset($row['position']) || !is_array($row['position'])) continue;
+            $p = $row['position'];
+            if (!isset($p['x']) || !isset($p['y']) || !isset($p['z'])) continue;
+            $itemID = @$row['id'];
+            if ($itemID === null) continue;
+
+            $hasWarpPoint = (
+                isset($row['WarpX']) && is_numeric($row['WarpX']) &&
+                isset($row['WarpY']) && is_numeric($row['WarpY']) &&
+                isset($row['WarpZ']) && is_numeric($row['WarpZ'])
+            );
+
+            if ($hasWarpPoint) {
+                $distance = sqrt(
+                    pow(((float) $row['WarpX']) - $x, 2) +
+                    pow(((float) $row['WarpY']) - $y, 2) +
+                    pow(((float) $row['WarpZ']) - $z, 2)
+                );
+            } else {
+                $distance = sqrt(pow($p['x'] - $x, 2) + pow($p['y'] - $y, 2) + pow($p['z'] - $z, 2));
+            }
+
+            // Stargates have a ~2.5km radius; subtract it so kills at the gate surface compare correctly
+            if (($row['type'] ?? '') === 'mapStargates') {
+                $distance = max(0.0, $distance - 2500.0);
+            }
 
             if ($minDistance === null) {
                 // Initialize with the first value we find

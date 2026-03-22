@@ -12,14 +12,28 @@ foreach ($invNames as $row) {
 }
 $invNames = null;
 
-$map = $mdb->getCollection('locations')->find();
-foreach ($map as $system) {
-    foreach ($system['locations'] ?? [] as $row) {
-        $name = $row['itemname'];
-        if ($name == '') $name = @$names[$row['itemid']];
-        if ($name == '') $name = "Location " . $row['itemid'];
-        $mdb->insertUpdate('information', ['type' => 'locationID', 'id' => (int) $row['itemid']], ['name' => $name, 'typeID' => $row['typeid']]);
+$map = $mdb->getCollection('locations_calced')->find();
+foreach ($map as $row) {
+    $locationID = @$row['id'];
+    if (!is_numeric($locationID)) continue;
+    $locationID = (int) $locationID;
+
+    $name = (string) (@$row['name'] ?? '');
+    if ($name == '') $name = @$names[$locationID];
+    if ($name == '') $name = "Location " . $locationID;
+
+    $typeID = null;
+    $sourceCollection = @$row['sourceCollection'];
+    if (is_string($sourceCollection) && $sourceCollection != '') {
+        $sourceDoc = $mdb->findDoc($sourceCollection, ['$or' => [['key' => $row['id']], ['_key' => $row['id']]]]);
+        if ($sourceDoc != null && isset($sourceDoc['typeID']) && is_numeric($sourceDoc['typeID'])) {
+            $typeID = (int) $sourceDoc['typeID'];
+        }
     }
+
+    $update = ['name' => $name];
+    if ($typeID !== null) $update['typeID'] = $typeID;
+    $mdb->insertUpdate('information', ['type' => 'locationID', 'id' => $locationID], $update);
 }
 
 $kvc->set("zkb:locationsLoaded", "true");
