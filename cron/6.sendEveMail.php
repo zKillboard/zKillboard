@@ -3,6 +3,7 @@
 require_once "../init.php";
 
 if ($kvc->get("zkb:noapi") == "true") exit();
+if ($env != "production") exit();
 
 $sso = ZKillSSO::getSSO();
 
