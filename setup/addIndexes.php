@@ -1,7 +1,7 @@
 <?php
 require_once "../init.php";
-
-$db = $mdb->getDb();
+$m = new MongoDB\Client();
+$db = $m->selectDatabase("zkillboard");
 
 // activity
 echo "\nCreating collection activity ... ";
@@ -59,6 +59,7 @@ $comments->createIndex(['upvotes' => 1], []);
 echo "Done\n";
 echo "Creating index : 'commentID' => 1 ... ";
 $comments->createIndex(['commentID' => 1], []);
+echo "Done\n";
 echo "Creating index : 'pageID' => 1, 'commentID' => 1 ... ";
 $comments->createIndex(['pageID' => 1, 'commentID' => 1], ['unique' => true]);
 echo "Done\n";
@@ -471,6 +472,28 @@ echo "Creating index : 'id' => 1 ... ";
 $locations->createIndex(['id' => 1], []);
 echo "Done\n";
 
+// locations_calced
+echo "\nCreating collection locations_calced ... ";
+$db->createCollection("locations_calced");
+$collection = "locations_calced";
+$locations_calced = $db->$collection;
+echo "Done\n";
+echo "Creating index : 'id' => 1 ... ";
+$locations_calced->createIndex(['id' => 1], ['unique' => true]);
+echo "Done\n";
+echo "Creating index : 'id' => 1, 'solarSystemID' => 1 ... ";
+$locations_calced->createIndex(['id' => 1, 'solarSystemID' => 1], ['unique' => true]);
+echo "Done\n";
+echo "Creating index : 'id' => 1 ... ";
+$locations_calced->createIndex(['id' => 1], []);
+echo "Done\n";
+echo "Creating index : 'id' => 1, 'solarSystemID' => 1 ... ";
+$locations_calced->createIndex(['id' => 1, 'solarSystemID' => 1], []);
+echo "Done\n";
+echo "Creating index : 'solar_system_id' => 1 ... ";
+$locations_calced->createIndex(['solar_system_id' => 1], []);
+echo "Done\n";
+
 // markethistory
 echo "\nCreating collection markethistory ... ";
 $db->createCollection("markethistory");
@@ -631,9 +654,6 @@ $oneWeek->createIndex(['involved.corporationID' => 1, 'killID' => 1], []);
 echo "Done\n";
 echo "Creating index : 'categoryID' => 1 ... ";
 $oneWeek->createIndex(['categoryID' => 1], []);
-echo "Done\n";
-echo "Creating index : 'system.constellationID' => 1 ... ";
-$oneWeek->createIndex(['system.constellationID' => 1], []);
 echo "Done\n";
 echo "Creating index : 'system.solarSystemID' => 1, 'involved.corporationID' => 1 ... ";
 $oneWeek->createIndex(['system.solarSystemID' => 1, 'involved.corporationID' => 1], []);
@@ -806,6 +826,9 @@ echo "Done\n";
 echo "Creating index : 'locationID' => 1 ... ";
 $oneWeek->createIndex(['locationID' => 1], []);
 echo "Done\n";
+echo "Creating index : 'system.constellationID' => 1 ... ";
+$oneWeek->createIndex(['system.constellationID' => 1], []);
+echo "Done\n";
 
 // padhash
 echo "\nCreating collection padhash ... ";
@@ -874,6 +897,19 @@ echo "Creating index : 'typeID' => 1 ... ";
 $prices->createIndex(['typeID' => 1], ['unique' => true]);
 echo "Done\n";
 
+// queues
+echo "\nCreating collection queues ... ";
+$db->createCollection("queues");
+$collection = "queues";
+$queues = $db->$collection;
+echo "Done\n";
+echo "Creating index : 'queue' => 1 ... ";
+$queues->createIndex(['queue' => 1], []);
+echo "Done\n";
+echo "Creating index : 'queue' => 1, 'value' => 1 ... ";
+$queues->createIndex(['queue' => 1, 'value' => 1], []);
+echo "Done\n";
+
 // rewards
 echo "\nCreating collection rewards ... ";
 $db->createCollection("rewards");
@@ -910,6 +946,209 @@ $scopes->createIndex(['corporationID' => 1, 'scope' => 1, 'lastFetch' => 1], [])
 echo "Done\n";
 echo "Creating index : 'characterID' => 1, 'scope' => 1 ... ";
 $scopes->createIndex(['characterID' => 1, 'scope' => 1], ['unique' => true]);
+echo "Done\n";
+echo "Creating index : 'scope' => 1, 'nextCheck' => 1 ... ";
+$scopes->createIndex(['scope' => 1, 'nextCheck' => 1], ['partialFilterExpression' => array (
+  'nextCheck' => 
+  array (
+    '$exists' => true,
+  ),
+)]);
+echo "Done\n";
+
+// sde_blueprints
+echo "\nCreating collection sde_blueprints ... ";
+$db->createCollection("sde_blueprints");
+$collection = "sde_blueprints";
+$sde_blueprints = $db->$collection;
+echo "Done\n";
+echo "Creating index : '_key' => 1 ... ";
+$sde_blueprints->createIndex(['_key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+echo "Creating index : 'key' => 1 ... ";
+$sde_blueprints->createIndex(['key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+
+// sde_categories
+echo "\nCreating collection sde_categories ... ";
+$db->createCollection("sde_categories");
+$collection = "sde_categories";
+$sde_categories = $db->$collection;
+echo "Done\n";
+echo "Creating index : '_key' => 1 ... ";
+$sde_categories->createIndex(['_key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+echo "Creating index : 'key' => 1 ... ";
+$sde_categories->createIndex(['key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+
+// sde_groups
+echo "\nCreating collection sde_groups ... ";
+$db->createCollection("sde_groups");
+$collection = "sde_groups";
+$sde_groups = $db->$collection;
+echo "Done\n";
+echo "Creating index : '_key' => 1 ... ";
+$sde_groups->createIndex(['_key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+echo "Creating index : 'key' => 1 ... ";
+$sde_groups->createIndex(['key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+
+// sde_landmarks
+echo "\nCreating collection sde_landmarks ... ";
+$db->createCollection("sde_landmarks");
+$collection = "sde_landmarks";
+$sde_landmarks = $db->$collection;
+echo "Done\n";
+echo "Creating index : '_key' => 1 ... ";
+$sde_landmarks->createIndex(['_key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+echo "Creating index : 'key' => 1 ... ";
+$sde_landmarks->createIndex(['key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+
+// sde_mapAsteroidBelts
+echo "\nCreating collection sde_mapAsteroidBelts ... ";
+$db->createCollection("sde_mapAsteroidBelts");
+$collection = "sde_mapAsteroidBelts";
+$sde_mapAsteroidBelts = $db->$collection;
+echo "Done\n";
+echo "Creating index : '_key' => 1 ... ";
+$sde_mapAsteroidBelts->createIndex(['_key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+echo "Creating index : 'key' => 1 ... ";
+$sde_mapAsteroidBelts->createIndex(['key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+
+// sde_mapConstellations
+echo "\nCreating collection sde_mapConstellations ... ";
+$db->createCollection("sde_mapConstellations");
+$collection = "sde_mapConstellations";
+$sde_mapConstellations = $db->$collection;
+echo "Done\n";
+echo "Creating index : '_key' => 1 ... ";
+$sde_mapConstellations->createIndex(['_key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+echo "Creating index : 'key' => 1 ... ";
+$sde_mapConstellations->createIndex(['key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+
+// sde_mapMoons
+echo "\nCreating collection sde_mapMoons ... ";
+$db->createCollection("sde_mapMoons");
+$collection = "sde_mapMoons";
+$sde_mapMoons = $db->$collection;
+echo "Done\n";
+echo "Creating index : '_key' => 1 ... ";
+$sde_mapMoons->createIndex(['_key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+echo "Creating index : 'key' => 1 ... ";
+$sde_mapMoons->createIndex(['key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+
+// sde_mapPlanets
+echo "\nCreating collection sde_mapPlanets ... ";
+$db->createCollection("sde_mapPlanets");
+$collection = "sde_mapPlanets";
+$sde_mapPlanets = $db->$collection;
+echo "Done\n";
+echo "Creating index : '_key' => 1 ... ";
+$sde_mapPlanets->createIndex(['_key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+echo "Creating index : 'key' => 1 ... ";
+$sde_mapPlanets->createIndex(['key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+
+// sde_mapRegions
+echo "\nCreating collection sde_mapRegions ... ";
+$db->createCollection("sde_mapRegions");
+$collection = "sde_mapRegions";
+$sde_mapRegions = $db->$collection;
+echo "Done\n";
+echo "Creating index : '_key' => 1 ... ";
+$sde_mapRegions->createIndex(['_key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+echo "Creating index : 'key' => 1 ... ";
+$sde_mapRegions->createIndex(['key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+
+// sde_mapSolarSystems
+echo "\nCreating collection sde_mapSolarSystems ... ";
+$db->createCollection("sde_mapSolarSystems");
+$collection = "sde_mapSolarSystems";
+$sde_mapSolarSystems = $db->$collection;
+echo "Done\n";
+echo "Creating index : '_key' => 1 ... ";
+$sde_mapSolarSystems->createIndex(['_key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+echo "Creating index : 'key' => 1 ... ";
+$sde_mapSolarSystems->createIndex(['key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+
+// sde_mapStargates
+echo "\nCreating collection sde_mapStargates ... ";
+$db->createCollection("sde_mapStargates");
+$collection = "sde_mapStargates";
+$sde_mapStargates = $db->$collection;
+echo "Done\n";
+echo "Creating index : '_key' => 1 ... ";
+$sde_mapStargates->createIndex(['_key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+echo "Creating index : 'key' => 1 ... ";
+$sde_mapStargates->createIndex(['key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+
+// sde_mapStars
+echo "\nCreating collection sde_mapStars ... ";
+$db->createCollection("sde_mapStars");
+$collection = "sde_mapStars";
+$sde_mapStars = $db->$collection;
+echo "Done\n";
+echo "Creating index : '_key' => 1 ... ";
+$sde_mapStars->createIndex(['_key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+echo "Creating index : 'key' => 1 ... ";
+$sde_mapStars->createIndex(['key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+
+// sde_npcStations
+echo "\nCreating collection sde_npcStations ... ";
+$db->createCollection("sde_npcStations");
+$collection = "sde_npcStations";
+$sde_npcStations = $db->$collection;
+echo "Done\n";
+echo "Creating index : '_key' => 1 ... ";
+$sde_npcStations->createIndex(['_key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+echo "Creating index : 'key' => 1 ... ";
+$sde_npcStations->createIndex(['key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+
+// sde_typeMaterials
+echo "\nCreating collection sde_typeMaterials ... ";
+$db->createCollection("sde_typeMaterials");
+$collection = "sde_typeMaterials";
+$sde_typeMaterials = $db->$collection;
+echo "Done\n";
+echo "Creating index : '_key' => 1 ... ";
+$sde_typeMaterials->createIndex(['_key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+echo "Creating index : 'key' => 1 ... ";
+$sde_typeMaterials->createIndex(['key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+
+// sde_types
+echo "\nCreating collection sde_types ... ";
+$db->createCollection("sde_types");
+$collection = "sde_types";
+$sde_types = $db->$collection;
+echo "Done\n";
+echo "Creating index : '_key' => 1 ... ";
+$sde_types->createIndex(['_key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+echo "Creating index : 'key' => 1 ... ";
+$sde_types->createIndex(['key' => 1], ['sparse' => true, 'unique' => true]);
 echo "Done\n";
 
 // searches
@@ -1123,6 +1362,17 @@ echo "Done\n";
 echo "Creating index : 'weeklyPrep' => 1 ... ";
 $statistics->createIndex(['weeklyPrep' => 1], ['sparse' => true]);
 echo "Done\n";
+echo "Creating index : 'calcAlltime' => 1, 'reset' => 1, 'shipsDestroyed' => 1 ... ";
+$statistics->createIndex(['calcAlltime' => 1, 'reset' => 1, 'shipsDestroyed' => 1], ['partialFilterExpression' => array (
+  'calcAlltime' => true,
+)]);
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'shipsDestroyedSolo' => 1 ... ";
+$statistics->createIndex(['type' => 1, 'shipsDestroyedSolo' => 1], ['sparse' => true]);
+echo "Done\n";
+echo "Creating index : 'recap2025' => 1 ... ";
+$statistics->createIndex(['recap2025' => 1], ['sparse' => true]);
+echo "Done\n";
 
 // statstest
 echo "\nCreating collection statstest ... ";
@@ -1156,6 +1406,25 @@ echo "Creating index : 'parentID' => 1, 'dttm' => 1 ... ";
 $tickets->createIndex(['parentID' => 1, 'dttm' => 1], []);
 echo "Done\n";
 
+// twitch
+echo "\nCreating collection twitch ... ";
+$db->createCollection("twitch");
+$collection = "twitch";
+$twitch = $db->$collection;
+echo "Done\n";
+echo "Creating index : 'character_id' => 1 ... ";
+$twitch->createIndex(['character_id' => 1], ['unique' => true]);
+echo "Done\n";
+echo "Creating index : 'twitch_id' => 1 ... ";
+$twitch->createIndex(['twitch_id' => 1], ['unique' => true]);
+echo "Done\n";
+echo "Creating index : 'character_id' => 1, 'twitch_id' => 1 ... ";
+$twitch->createIndex(['character_id' => 1, 'twitch_id' => 1], ['unique' => true]);
+echo "Done\n";
+echo "Creating index : 'expires' => 1 ... ";
+$twitch->createIndex(['expires' => 1], ['expireAfterSeconds' => 3600]);
+echo "Done\n";
+
 // users
 echo "\nCreating collection users ... ";
 $db->createCollection("users");
@@ -1180,6 +1449,28 @@ $versions->createIndex(['serverVersion' => 1], ['unique' => true]);
 echo "Done\n";
 echo "Creating index : 'epoch' => 1 ... ";
 $versions->createIndex(['epoch' => 1], []);
+echo "Done\n";
+
+// visitorlog
+echo "\nCreating collection visitorlog ... ";
+$db->createCollection("visitorlog");
+$collection = "visitorlog";
+$visitorlog = $db->$collection;
+echo "Done\n";
+echo "Creating index : 'dttm' => 1 ... ";
+$visitorlog->createIndex(['dttm' => 1], ['expireAfterSeconds' => 300]);
+echo "Done\n";
+echo "Creating index : 'agent' => 1 ... ";
+$visitorlog->createIndex(['agent' => 1], []);
+echo "Done\n";
+echo "Creating index : 'ip' => 1 ... ";
+$visitorlog->createIndex(['ip' => 1], []);
+echo "Done\n";
+echo "Creating index : 'api' => 1 ... ";
+$visitorlog->createIndex(['api' => 1], []);
+echo "Done\n";
+echo "Creating index : 'uri' => 1 ... ";
+$visitorlog->createIndex(['uri' => 1], []);
 echo "Done\n";
 
 // warmails
