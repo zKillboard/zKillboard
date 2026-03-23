@@ -17,27 +17,6 @@ $sourceCollections = [
 ];
 
 $targetCollection = $mdb->getCollection('locations_calced');
-try {
-    $targetCollection->createIndex(
-        ['id' => 1],
-        ['unique' => true, 'name' => 'id_unique']
-    );
-	$targetCollection->createIndex(
-        ['id' => 1, 'solarSystemID' => 1],
-        ['unique' => true, 'name' => 'id_solarSystemID_unique']
-    );
-} catch (Exception $ex) {
-    $msg = (string) $ex->getMessage();
-    $code = (int) $ex->getCode();
-    $isIndexConflict = (
-        stripos($msg, 'already exists') !== false ||
-        stripos($msg, 'same name as the requested index') !== false ||
-        stripos($msg, 'equivalent index already exists') !== false ||
-        $code === 85 ||
-        $code === 86
-    );
-    if (!$isIndexConflict) throw $ex;
-}
 
 function getNormalizedPosition($row)
 {
