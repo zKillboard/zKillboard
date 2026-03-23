@@ -304,7 +304,8 @@ if ($key == 'corporation' || $key == 'alliance' || $key == 'faction') {
 }
 
 if ($key == 'character' && $pageType == 'trophies' && $disqualified == 0) {
-    $extra['trophies'] = Trophies::getTrophies($id);
+	$trophies = $mdb->findDoc('trophies', ['id' => (int) $id]);
+    $extra['trophies'] = $trophies ? $trophies['trophies'] : Trophies::getTrophies($id);
 }
 
 if ($pageType == 'ranks') {
