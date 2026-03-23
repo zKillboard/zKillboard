@@ -76,7 +76,7 @@ const collection = db.getCollection(collectionName);
 function ensureUniqueSparseIndex(field, indexName) {
   const desiredKey = { [field]: 1 };
   try {
-    collection.createIndex(desiredKey, { unique: true, sparse: true, name: indexName });
+    collection.createIndex(desiredKey, { unique: true, sparse: true });
   } catch (err) {
     const msg = String(err && err.message ? err.message : err);
     const codeName = String(err && err.codeName ? err.codeName : '');
