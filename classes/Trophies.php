@@ -2,6 +2,9 @@
 
 class Trophies
 {
+    private static $shipGroups = null;
+    private static $groupIDsWithTypes = null;
+
     // isk values
     // be in tournament region
     // freighter burn 
@@ -45,13 +48,18 @@ class Trophies
                 if (isset($filter['characterID'])) {
                     $filter['characterID'] = $charID;
                 }
-                $query = MongoFilter::buildQuery($filter);
-                if (isset($filter['compare'])) {
-                    $part2 = ['characterID' => $charID, 'isVictim' => !$filter['isVictim']];
-                    $part2 = MongoFilter::buildQuery($part2);
-                    $query = ['$and' => [$query, $part2]];
+
+                $count = static::getFilterCountFromStats($stats, $filter);
+                if ($count === null) {
+                    $query = MongoFilter::buildQuery($filter);
+                    if (isset($filter['compare'])) {
+                        $part2 = ['characterID' => $charID, 'isVictim' => !$filter['isVictim']];
+                        $part2 = MongoFilter::buildQuery($part2);
+                        $query = ['$and' => [$query, $part2]];
+                    }
+                    $count = $mdb->count('killmails', $query);
                 }
-                $count = $mdb->count('killmails', $query);
+
                 static::addTrophy($trophies, $condition, $count > 0, $count);
                 $levelCount += self::getLevel($count);
 
@@ -72,14 +80,11 @@ class Trophies
             }
         }
 
-        $groups = $mdb->find('information', ['type' => 'groupID', 'cacheTime' => 3600], ['name' => 1]);
+        $groups = static::getShipGroups();
 
         foreach ($groups as $row) {
-            if (@$row['categoryID'] != 6 || @$row['published'] != true) continue;
-
             $groupID = (int) $row['id'];
-            $count = $mdb->count('information', ['groupID' => $groupID]);
-            if ($count == 0) continue;
+            if (!isset(static::$groupIDsWithTypes[$groupID])) continue;
 
             $maxLevelCount += 2;
 
@@ -102,6 +107,62 @@ class Trophies
         $trophies['completedPct'] = number_format(($levelCount / $maxLevelCount) * 100, 0);
 
         return $trophies;
+    }
+
+    private static function getShipGroups()
+    {
+        global $mdb;
+
+        if (static::$shipGroups !== null && static::$groupIDsWithTypes !== null) {
+            return static::$shipGroups;
+        }
+
+        static::$shipGroups = $mdb->find('information', ['type' => 'groupID', 'categoryID' => 6, 'published' => true, 'cacheTime' => 3600], ['name' => 1], null, ['id' => 1, 'name' => 1]);
+        static::$groupIDsWithTypes = [];
+
+        $groupIDs = $mdb->getCollection('information')->distinct('groupID', ['type' => 'typeID', 'groupID' => ['$exists' => true]]);
+        foreach ($groupIDs as $groupID) {
+            static::$groupIDsWithTypes[(int) $groupID] = true;
+        }
+
+        return static::$shipGroups;
+    }
+
+    private static function getFilterCountFromStats($stats, $filter)
+    {
+        if (!is_array($filter)) {
+            return null;
+        }
+        if (isset($filter['compare'])) {
+            return null;
+        }
+        if (isset($filter['characterID']) && $filter['characterID'] !== '?' && (int) $filter['characterID'] <= 0) {
+            return null;
+        }
+
+        $isVictim = isset($filter['isVictim']) ? (bool) $filter['isVictim'] : false;
+        $field = $isVictim ? 'shipsLost' : 'shipsDestroyed';
+
+        if (!empty($filter['highsec'])) {
+            return (int) @$stats['labels']['loc:highsec'][$field];
+        }
+        if (!empty($filter['lowsec'])) {
+            return (int) @$stats['labels']['loc:lowsec'][$field];
+        }
+        if (!empty($filter['nullsec'])) {
+            return (int) @$stats['labels']['loc:nullsec'][$field];
+        }
+        if (!empty($filter['w-space'])) {
+            return (int) @$stats['labels']['loc:w-space'][$field];
+        }
+        if (!empty($filter['ganked'])) {
+            return (int) @$stats['labels']['ganked'][$field];
+        }
+        if (!empty($filter['awox'])) {
+            return (int) @$stats['labels']['awox'][$field];
+        }
+
+        return null;
     }
 
     public static function addTrophy(&$trophies, $condition, $conditionMet, $value, $noNext = false, $link = null)
@@ -152,3 +213,4 @@ class Trophies
         return $value + 1;
     }
 }
+

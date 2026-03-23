@@ -22,6 +22,7 @@ while ($minute == date("Hi")) {
 			'trophies' => $trophies,
 			'updated' => Mdb::now(),
 		]);
+        $mdb->set("statistics", ['type' => 'characterID', 'id' => $characterID], ['calcTrophies' => false, 'calcTrophies_updated' => $trophies['calcTrophies_updated']]);
 	}
 	sleep(1);
 }
