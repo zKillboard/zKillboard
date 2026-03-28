@@ -19,8 +19,8 @@ function handler($request, $response, $args, $container) {
     $info['description'] = strip_tags(@$info['description']);
     $info['price'] = Price::getItemPrice($id, date('Ymd'));
 
-    $cursor = $mdb->find('killmails', ['involved.shipTypeID' => (int) $id], [], 1);
-    $hasKills = (iterator_count($cursor) > 0);
+    $doc = $mdb->findDoc('killmails', ['involved.shipTypeID' => (int) $id]);
+    $hasKills = $doc !== null;
 
     $info['attributes'] = array();
 
