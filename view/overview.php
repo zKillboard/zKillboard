@@ -27,7 +27,7 @@ function handler($request, $response, $args, $container) {
     }
 
     if (strlen("$id") > 11) {
-        return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => 'Not Found'));
+        return renderCached404($container, $response, 'Not Found');
     }
 
     $validPageTypes = array('kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime', 'streambox', 'recap2025');
@@ -58,17 +58,17 @@ function handler($request, $response, $args, $container) {
             'label' => array('column' => 'label', 'mixed' => true),
             );
     if (!array_key_exists($key, $map)) {
-        return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => 'Not Found'));
+        return renderCached404($container, $response, 'Not Found');
     }
 
     if ($key != "label" && (!is_numeric($id) || $id <= 0)) {
-        return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => 'Not Found'));
+        return renderCached404($container, $response, 'Not Found');
     }
 
     try {
         $parameters = Util::convertUriToParameters($request->getUri()->getPath() . '?' . $request->getUri()->getQuery());
     } catch (Exception $ex) {
-        return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => 'Not Found'));
+        return renderCached404($container, $response, 'Not Found');
     }
 
     if (isset($parameters['streambox'])) {
@@ -102,7 +102,7 @@ function handler($request, $response, $args, $container) {
         $type = $map[$key]['column'];
         $detail = Info::getInfoDetails("${type}ID", $id);
         if (isset($detail['valid']) && $detail['valid'] == false) {
-            return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => 'Not Found'));
+            return renderCached404($container, $response, 'Not Found');
         }
     } catch (Exception $ex) {
         return $container->get('view')->render($response, 'error.html', array('message' => "There was an error fetching information for the $key you specified."));
@@ -110,7 +110,7 @@ function handler($request, $response, $args, $container) {
 
     $pageName = isset($detail[$map[$key]['column'].'Name']) ? $detail[$map[$key]['column'].'Name'] : '???';
     if ($key != "label" && ($pageName == '???' && !$mdb->exists('information', ['id' => $id]))) {
-        return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => 'This entity is not in our database.'));
+        return renderCached404($container, $response, 'This entity is not in our database.');
     }
 $columnName = ($key == 'labels') ? "labels" : $map[$key]['column'].'ID';
 $mixedKills = $pageType == 'overview' && $map[$key]['mixed'];
@@ -559,6 +559,17 @@ function addVics($vics, $kills = []) {
     return $kills;
 }
 
+function renderCached404($container, $response, $message = 'Not Found') {
+    $cacheControl = 'public, max-age=3600, s-maxage=3600';
+    $cached404Response = $response
+        ->withStatus(404)
+        ->withHeader('Cache-Control', $cacheControl)
+        ->withHeader('CDN-Cache-Control', $cacheControl)
+        ->withHeader('Cloudflare-CDN-Cache-Control', $cacheControl);
+
+    return $container->get('view')->render($cached404Response, '404.html', array('message' => $message));
+}
+
 function getNearbyRanks($key, $rankKeyName, $id, $title, $statType)
 {
     global $redis;
@@ -584,3 +595,4 @@ function getNearbyRanks($key, $rankKeyName, $id, $title, $statType)
 
     return $array;
 }
+
