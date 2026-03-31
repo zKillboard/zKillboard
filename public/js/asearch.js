@@ -116,7 +116,7 @@ function adjustTime(event, triggerButton) {
 	var endTime = null;
 
 	var isDisabled = true;
-	var isRolling = true;
+	var isRolling = false;
 
 	switch (epoch) {
 		case 'week':

@@ -135,7 +135,7 @@ function handler($request, $response, $args, $container) {
 		$arr = [];
 		if ($queryType == "kills") {
 			foreach ($coll as $col) {
-				$result = iterator_to_array($mdb->find($col, $query, $sort, 100, [], 100 * $page));
+				$result = iter2array($mdb->find($col, $query, $sort, 100, [], 100 * $page));
 				if (sizeof($result) >= 100) break;
 			}
 			$arr['kills'] = [];
@@ -149,7 +149,7 @@ function handler($request, $response, $args, $container) {
 			return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
 		} else if ($queryType == 'count') {
 			foreach ($coll as $col) {
-				$result = iterator_to_array($mdb->find($col, $query, $sort, 50, [], 50 * $page));
+				$result = iter2array($mdb->find($col, $query, $sort, 50, [], 50 * $page));
 				if (sizeof($result) >= 50) break;
 			}
 			$arr = AdvancedSearch::getSums($groupType . 'ID', $query, $victimsOnly);
@@ -251,4 +251,9 @@ function handler($request, $response, $args, $container) {
 		$response->getBody()->write(json_encode(['error' => 'Internal server error', 'message' => $ex->getMessage()], JSON_PRETTY_PRINT));
 		return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withStatus(500);
 	} 
+}
+
+function iter2array($iter) 
+{
+    return gettype($iter) == "array" ? $iter : iterator_to_array($iter);
 }
