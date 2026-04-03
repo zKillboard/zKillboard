@@ -223,7 +223,8 @@ public static function purgeCacheTags(
 
         // Respect Cloudflare rate limits (same cadence as URL purge)
         if (!empty($tags)) {
-            usleep(750000); // ~1200 requests / 900 seconds
+Util::out("extra cf sleep");
+            usleep(250000); // ~1200 requests / 900 seconds
         }
     }
 }

@@ -24,9 +24,10 @@ while (date("Hi") == $minute) {
             CloudFlare::purgeCacheTags($CF_ZONE_ID, $CF_API_TOKEN, $tags);
             $redis->srem("queueCacheTags", ...$tags);
         } catch (Exception $ex) {
+            $redis->sadd("queueCacheTags", ...$tags);
             Util::out("Cloudflare exception: " . $ex->getMessage());
             // CF goofed....
         }
     }
-    sleep(1);
+    usleep(250000);
 }
