@@ -90,7 +90,7 @@ while ($minute == date('Hi')) {
                 $redis->srem("queueStatsSet", $raw);
                 $cacheKey = str_replace("shipType", "ship", str_replace("solarS", "s", str_replace("ID", "", "$type:$id")));
                 $redis->sadd("queueCacheTags", "stats:$cacheKey");
-                $redis->sadd("queueCacheTagsStatsTop", "statstop:$cacheKey");
+                $redis->sadd("queueZest3", $cacheKey);
             }
         } catch (Exception $ex) {
             Util::out(print_r($ex, true));
