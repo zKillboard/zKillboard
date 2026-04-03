@@ -25,7 +25,7 @@ $client_id = $patreon_client_id;
 $client_secret = $patreon_client_secret;
 
 $campaign_id = $patreon_campaign_id;
-$refresh_token = $kvc->get('patreon-refresh-token');
+$refresh_token = $mdb->findField("keyvalues", "value", ['key' => 'patreon-refresh-token']);
 $access_token = null;
 
 $oauth = new OAuth($client_id, $client_secret);
@@ -36,7 +36,7 @@ if (!isset($tokens['access_token'])) {
     exit(1);
 }
 
-$kvc->set('patreon-refresh-token', $tokens['refresh_token']);
+$mdb->set("keyvalues", ['key' => 'patreon-refresh-token'], ['value' => $tokens['refresh_token']]);
 
 $access_token = $tokens['access_token'];
 if (isset($tokens['refresh_token'])) {
