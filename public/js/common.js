@@ -1,6 +1,9 @@
 var ws;
 var adblocked = undefined;
 
+window.onerror = function (message, source, lineno, colno, error) {
+	console.error("Global error:", message, error);
+};
 
 $(document).ready(function () {	
 	setTime();
@@ -227,15 +230,23 @@ function loadLittleMail(killID) {
 }
 
 function loadKillRow(killID, retries = 0) {
-        $.get("/cache/24hour/killlistrow/" + killID + "/", function(data) { addKillRow(data, killID); })
-            .fail(function(jqXHR, textStatus, errorThrown) {
+        fetch("/cache/24hour/killlistrow/" + killID + "/", { credentials: 'same-origin' })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Failed to load kill row');
+                return res.text();
+            })
+            .then(function(data) {
+                addKillRow(data, killID);
+            })
+            .catch(function() {
                 retries++;
                 if (retries < 3) setTimeout(loadKillRow.bind(null, killID, retries), 1000);
             });
 }
 
 function addKillRow(data, id) {
-    $("#kill-" + id).replaceWith(data);
+    const row = document.getElementById('kill-' + id);
+    if (row) row.outerHTML = data;
     assignRowColor();
     adjustKillmailPresentation();
 }
@@ -244,28 +255,46 @@ var dateFormatter = new Intl.DateTimeFormat(undefined, {dateStyle: 'long', timeZ
 var longFormatter = new Intl.DateTimeFormat(undefined, {dateStyle: 'long', timeStyle: 'long', timeZone: 'UTC' });
 function adjustKillmailPresentation() {
     // Remove excess killmails
-    while ($(".tr-killmail").length > 50) $(".tr-killmail").last().remove();
+    while (document.querySelectorAll('.tr-killmail').length > 50) {
+        const rows = document.querySelectorAll('.tr-killmail');
+        const lastRow = rows[rows.length - 1];
+        if (!lastRow) break;
+        lastRow.remove();
+    }
+
     // Ensure the last row isn't a dangling date row
-    while ($("#killmailstobdy tr").last().hasClass("tr-date")) $("#killmailstobdy tr").last().remove();
+    const killmailsBody = document.getElementById('killmailstobdy');
+    if (!killmailsBody) return;
+    while (killmailsBody.lastElementChild && killmailsBody.lastElementChild.classList.contains('tr-date')) {
+        killmailsBody.lastElementChild.remove();
+    }
 
     // Check over date rows and only show the first tr-date row for a particular date
     let priorDate = undefined;
-    $(".tr-date").each( function() { row = $(this); date = row.attr('date'); if (date == priorDate) row.hide(); else row.show(); priorDate = date; }  );
-    /*
-    $(".dateFormat th").each( function()  { t = $(this); p = t.parent(); t.text(p.attr('date'); p.removeClass("dateFormat"); });
-    $("[format='format-date-long-once']").each(function() { t = $(this); t.html( longFormatter.format( new Date( Number(t.attr('epoch'))) )); t.removeAttr('format'); });
-    */
+    document.querySelectorAll('.tr-date').forEach(function(row) {
+        const date = row.getAttribute('date');
+        if (date == priorDate) row.style.display = 'none';
+        else row.style.display = '';
+        priorDate = date;
+    });
 }
 
 function prepKills(data) {
-    let html = '';
-    for(i = 0; i < data.length; i++) {
-        killID = data[i];
-        let tr = $("<tr id='kill-" + killID + "' class='fetchme' killID='" + killID + "'></tr>'");
-        $("#killmailstobdy").append(tr);
+    const tbody = document.getElementById('killmailstobdy');
+    if (!tbody || !Array.isArray(data)) return;
+
+    for (let i = 0; i < data.length; i++) {
+        const killID = data[i];
+        const tr = document.createElement('tr');
+        tr.id = 'kill-' + killID;
+        tr.className = 'fetchme';
+        tr.setAttribute('killID', killID);
+        tbody.appendChild(tr);
         loadKillRow(killID);
     }
-    $("#kms_loading").remove();
+
+    const loading = document.getElementById('kms_loading');
+    if (loading) loading.remove();
 }
 
 var killdata = undefined;
@@ -637,7 +666,9 @@ function formatISK(value, decimals = 2) {
 }
 
 function assignRowColor() {
-    $(".kltbd").each(assignGreenRed);
+    document.querySelectorAll('.kltbd').forEach(function(el) {
+        assignGreenRed.call(el);
+    });
 }
 
 function assignGreenRed() {
@@ -646,18 +677,22 @@ function assignGreenRed() {
     if (urisplit.length < 4 || urisplit[2] == '') return;
     let vicid = urisplit[2];
 
-    let row = $(this).removeClass('kltbd').removeClass('winwin').removeClass('error');
-    let vics = row.attr('vics');
+    const row = this;
+    row.classList.remove('kltbd', 'winwin', 'error');
+    let vics = row.getAttribute('vics');
     if (vics == '') return;
     vics = vics.split(',');
 
-    for (i=0;i<vics.length;i++) if (vicid == vics[i]) {
-        $("#kill-" + row.attr('killID') + " .glyphicon-remove").removeClass('hidden');
-        return row.addClass('error');
+    for (let i = 0; i < vics.length; i++) if (vicid == vics[i]) {
+        const removeIcon = document.querySelector('#kill-' + row.getAttribute('killID') + ' .glyphicon-remove');
+        if (removeIcon) removeIcon.classList.remove('hidden');
+        row.classList.add('error');
+        return;
     }
 
-    $("#kill-" + row.attr('killID') + " .glyphicon-ok").removeClass('hidden');
-    row.addClass('winwin');
+    const okIcon = document.querySelector('#kill-' + row.getAttribute('killID') + ' .glyphicon-ok');
+    if (okIcon) okIcon.classList.remove('hidden');
+    row.classList.add('winwin');
 }
 
 function fixCCPsBrokenImages() {

@@ -478,8 +478,9 @@ if (is_array($months) && sizeof($months) > 0) {
 }
 
 // Collect active PVP stats
-if ($key == "label") $activePvP = [];
-else $activePvP = Stats::getActivePvpStats($parameters);
+//if ($key == "label") $activePvP = [];
+//else $activePvP = Stats::getActivePvpStats($parameters);
+$activePvP = [];
 
 $hasPager = in_array($pageType, ['overview', 'kills', 'losses', 'solo']);
 

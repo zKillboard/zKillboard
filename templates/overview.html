@@ -151,6 +151,9 @@
     {% include 'components/big_top_list.html' %}
     <div class="centered publift adrow ad-xl-none" fuse="home_incontent" id="detailadrow" style='padding-top: 1em;'></div>
     {% include 'components/kill_list.html' %}
+	<script>
+		loadKms();
+	</script>
   </div>
   <div class="col-lg-2 pull-left" style="padding: 0px;">
     <center><div style='max-width: 180px;'><a id='loginsideimage' href='/ccpoauth2/' class='btn btn-block collapse'><img src='/img/ssologin.png' style='width: 100%; max-width: 100%; margin-bottom: 1em;'></a></div></center>
@@ -266,8 +269,11 @@
 {% endif %}
 {% endblock %}
 
+{% block head %}
+	<script type="text/javascript" src="/js/overview.js?v={{ version}}"></script>
+{% endblock %}
+
 {% block script %}
-	<script defer type="text/javascript" src="/js/overview.js?v={{ version}}"></script>
 	<script defer type="text/javascript">
         const pageType = '{{ key }}';
         const pageID = '{{ id }}';

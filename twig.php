@@ -93,6 +93,7 @@ $twig->addGlobal('image_alliance', 'https://images.evetech.net/alliances/');
 $twig->addGlobal('image_item', 'https://images.evetech.net/types/');
 $twig->addGlobal('image_ship', 'https://images.evetech.net/types/');
 $twig->addGlobal('esiServer', $esiServer);
+$twig->addGlobal('z3', $z3);
 
 if (@$special1 != "") {
     $twig->addGlobal('sponsoredMessage', $special);
