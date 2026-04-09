@@ -33,16 +33,19 @@ class MongoFilter
             'projection' => ['_id' => 0, 'killID' => 1],
             'sort' => [$sortKey => $sortDirection]
         ];
-        
+
         // Add skip if page > 0
         if ($page > 0) {
             $options['skip'] = $page * $limit;
         }
-        
+
         // Add limit unless 'nolimit' is set
         if (!isset($parameters['nolimit'])) {
             $options['limit'] = $limit;
         }
+
+        // Cap server-side query time for web requests (matches Stats.php/Mdb.php pattern)
+        if (php_sapi_name() !== 'cli') $options['maxTimeMS'] = 30000;
 
         // Start the query
         $killmails = $mdb->getCollection($collection);
@@ -77,9 +80,13 @@ class MongoFilter
         // Build the query parameters
         $query = $buildQuery ? self::buildQuery($parameters) : $parameters;
 
+        // Cap server-side query time for web requests (matches Stats.php/Mdb.php pattern)
+        $options = [];
+        if (php_sapi_name() !== 'cli') $options['maxTimeMS'] = 30000;
+
         // Start the query
         $killmails = $mdb->getCollection($collection);
-        $result = $killmails->count($query);
+        $result = $killmails->count($query, $options);
 
         RedisCache::set($hashKey, $result, 900);
 
