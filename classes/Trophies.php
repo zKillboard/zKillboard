@@ -120,7 +120,9 @@ class Trophies
         static::$shipGroups = $mdb->find('information', ['type' => 'groupID', 'categoryID' => 6, 'published' => true, 'cacheTime' => 3600], ['name' => 1], null, ['id' => 1, 'name' => 1]);
         static::$groupIDsWithTypes = [];
 
-        $groupIDs = $mdb->getCollection('information')->distinct('groupID', ['type' => 'typeID', 'groupID' => ['$exists' => true]]);
+        $distinctOptions = [];
+        if (php_sapi_name() !== 'cli') $distinctOptions['maxTimeMS'] = 30000;
+        $groupIDs = $mdb->getCollection('information')->distinct('groupID', ['type' => 'typeID', 'groupID' => ['$exists' => true]], $distinctOptions);
         foreach ($groupIDs as $groupID) {
             static::$groupIDsWithTypes[(int) $groupID] = true;
         }
