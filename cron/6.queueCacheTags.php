@@ -16,8 +16,16 @@ if (!isset($CF_API_TOKEN) || !$CF_API_TOKEN || $CF_API_TOKEN === "") {
 	exit();
 }
 
+$lastDeferMove = 0;
 $minute = date("Hi");
 while (date("Hi") == $minute) {
+    if (time() - $lastDeferMove > 5) {
+        $redis->multi();
+        $redis->sUnionStore('queueCacheTags', 'queueCacheTags', 'queueCacheTagsDefer');
+        $redis->del('queueCacheTagsDefer');
+        $result = $redis->exec();
+        $lastDeferMove = time();
+    }
     $tags = $redis->srandmember("queueCacheTags", 25);
     if (sizeof($tags)) {
         try {

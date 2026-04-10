@@ -47,7 +47,9 @@
 		{% if canonical is not defined %}
 			{% set canonical = fullsiteurl ~ requesturi %}
 		{% endif %}
-
+<script>
+const z3 = '{{ z3 }}';
+</script>
 		<link rel="canonical" href="{{ canonical }}">
 		<link rel="search" type="application/opensearchdescription+xml" href="/xml/zkbsearch.xml" title="search">
 

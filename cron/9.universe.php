@@ -55,7 +55,7 @@ function categorySuccess($guzzler, $params, $content)
     $id = $cat['category_id'];
     $name = $cat['name'];
     $groups = $cat['groups'];
-    Util::out("Category $name $id");
+    //Util::out("Category $name $id");
 
     $mdb->insertUpdate("information", ['type' => 'categoryID', 'id' => $id], $cat);
 
@@ -71,7 +71,7 @@ function groupSuccess($guzzler, $params, $content)
     $group = json_decode($content, true);
     $id = $group['group_id'];
     $name = $group['name'];
-    Util::out("Group $name $id");
+    //Util::out("Group $name $id");
 
     $update = $group;
     $update['categoryID'] = $params['categoryID'];
@@ -97,9 +97,9 @@ function typeSuccess($guzzler, $params, $content)
 	// check the distinctTypeIDs array to see if this typeID has kills
 	$hasKills = array_search($id, $distinctTypeIDs) !== false;
 	if ($id > 0 && $hasKills && $type['published'] == false) {
-		Util::out("Type {$type['name']} $id - has kills, setting published to true");
+		//Util::out("Type {$type['name']} $id - has kills, setting published to true");
 		$type['published'] = true;
-	} else Util::out("Type $name $id");
+	} //else Util::out("Type $name $id");
 	
     $mdb->insertUpdate("information", ['type' => 'typeID', 'id' => $id], $type);
 }
@@ -123,7 +123,7 @@ function regionSuccess($guzzler, $params, $content)
     $regionID = (int) $region['region_id'];
     $name = ($regionID >= 12000000 && $regionID < 13000000) ? Info::getMangledSystemName($regionID, $regionID)  : $region['name'];
     $constellations = $region['constellations'];
-    Util::out("Region: $name");
+    //Util::out("Region: $name");
 
     $mdb->insertUpdate("information", ['type' => 'regionID', 'id' => $regionID], $region);
     $mdb->insertUpdate("geography", ['type' => 'regionID', 'id' => $regionID, 'serverVersion' => $serverVersion], $region);
@@ -142,7 +142,7 @@ function constellationSuccess($guzzler, $params, $content)
     $name = ($constID >= 22000000 && $constID < 23000000) ? Info::getMangledSystemName($constID, 0) : $const['name'];
     $regionID = $const['region_id'];
     $systems = $const['systems'];
-    Util::out("Constellation: $name");
+    //Util::out("Constellation: $name");
 
     $update = $const;
     $update['regionID'] = $regionID;
@@ -163,7 +163,7 @@ function systemSuccess($guzzler, $params, $content)
     $regionID = $params['regionID'];
     $id = $system['system_id'];
     $name = ($id >= 32000000 && $id < 33000000) ? Info::getMangledSystemName($id, 0) : $system['name'];
-    Util::out("System $name $id");
+    //Util::out("System $name $id");
     
     $update = array_merge($system, ['name' => $name, 'secClass' => @$system['security_class'], 'secStatus' => $system['security_status'], 'regionID' => $params['regionID'], 'constellationID' => $params['constellationID']]);
     $mdb->insertUpdate("information", ['type' => 'solarSystemID', 'id' => $id], $update);
@@ -183,7 +183,7 @@ function starSuccess($guzzler, $params, $content)
 
     $star['type'] = 'starID';
     $star['id'] = $id;
-    Util::out("Star $id");
+    //Util::out("Star $id");
 
     $mdb->insertUpdate("information", ['type' => 'starID', 'id' => $id], $star);
     $mdb->insertUpdate("geography", ['type' => 'starID', 'id' => $id, 'serverVersion' => $serverVersion], $star);

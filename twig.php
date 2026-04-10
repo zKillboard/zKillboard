@@ -126,6 +126,7 @@ $twig->addGlobal('reinforced', $redis->get("zkb:reinforced") == true ? "true" : 
 $twig->addGlobal("universeUpdating", $redis->get("zkb:universeLoaded") == "false"? "true" : "false");
 $twig->addGlobal("tobefetched", $redis->get("tobefetched"));
 $twig->addGlobal("tobeStatsCount", $redis->scard("queueStatsSet"));
+$twig->addGlobal("z3", $z3);
 
 $twig->addGlobal('referralLink', $referralLink);
 

@@ -395,7 +395,7 @@ if (@$statistics['recentShipsLost'] > 0 || @$statistics['recentShipsDestroyed'] 
     }
 }
 
-$recentSoloKills = MongoFilter::getCount(['isVictim' => false, "${type}ID" => (int) $id, 'solo' => true, 'pastSeconds' => 7776000]);
+$recentSoloKills = 0; // MongoFilter::getCount(['isVictim' => false, "${type}ID" => (int) $id, 'solo' => true, 'pastSeconds' => 7776000]);
 if ($recentSoloKills > 0 && $statistics['recentShipsDestroyed'] > 0) {
     $gangFactor = 100 - floor(100 * ($recentSoloKills / ($recentSoloKills + $statistics['recentShipsDestroyed'])));
     $extra['recentGangFactor'] = $gangFactor;
@@ -427,7 +427,7 @@ if (@$statistics['weeklyShipsLost'] > 0 || @$statistics['weeklyShipsDestroyed'] 
         $extra['weeklyDangerRatio'] = $ratio;
     }
 }
-$weeklySoloKills = MongoFilter::getCount(['isVictim' => false, "${type}ID" => (int) $id, 'solo' => true, 'pastSeconds' => 604800]);
+$weeklySoloKills = 0; // MongoFilter::getCount(['isVictim' => false, "${type}ID" => (int) $id, 'solo' => true, 'pastSeconds' => 604800]);
 if ($weeklySoloKills > 0 && $statistics['weeklyShipsDestroyed'] > 0) {
     $gangFactor = 100 - floor(100 * ($weeklySoloKills / ($weeklySoloKills + $statistics['weeklyShipsDestroyed'])));
     $extra['weeklyGangFactor'] = $gangFactor;
@@ -478,8 +478,9 @@ if (is_array($months) && sizeof($months) > 0) {
 }
 
 // Collect active PVP stats
-if ($key == "label") $activePvP = [];
-else $activePvP = Stats::getActivePvpStats($parameters);
+//if ($key == "label") $activePvP = [];
+//else $activePvP = Stats::getActivePvpStats($parameters);
+$activePvP = [];
 
 $hasPager = in_array($pageType, ['overview', 'kills', 'losses', 'solo']);
 

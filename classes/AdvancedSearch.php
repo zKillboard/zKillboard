@@ -257,6 +257,7 @@ class AdvancedSearch
 
     public static function getLabels($query, $victimsOnly)
     {
+        return [];
         global $mdb, $longQueryMS;
         $pipeline = [];
 

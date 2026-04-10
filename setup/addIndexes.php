@@ -627,6 +627,36 @@ echo "Done\n";
 echo "Creating index : 'labels' => 1, 'killID' => -1 ... ";
 $ninetyDays->createIndex(['labels' => 1, 'killID' => -1], []);
 echo "Done\n";
+echo "Creating index : 'zkb.hash' => 1 ... ";
+$ninetyDays->createIndex(['zkb.hash' => 1], []);
+echo "Done\n";
+echo "Creating index : 'system.solarSystemID' => 1, 'sequence' => 1 ... ";
+$ninetyDays->createIndex(['system.solarSystemID' => 1, 'sequence' => 1], []);
+echo "Done\n";
+echo "Creating index : 'system.constellationID' => 1, 'sequence' => 1 ... ";
+$ninetyDays->createIndex(['system.constellationID' => 1, 'sequence' => 1], []);
+echo "Done\n";
+echo "Creating index : 'campaigns' => 1 ... ";
+$ninetyDays->createIndex(['campaigns' => 1], ['sparse' => true]);
+echo "Done\n";
+echo "Creating index : 'system.regionID' => 1, 'sequence' => 1 ... ";
+$ninetyDays->createIndex(['system.regionID' => 1, 'sequence' => 1], []);
+echo "Done\n";
+echo "Creating index : 'sponsored' => 1 ... ";
+$ninetyDays->createIndex(['sponsored' => 1], ['sparse' => true]);
+echo "Done\n";
+echo "Creating index : 'reset' => 1 ... ";
+$ninetyDays->createIndex(['reset' => 1], ['sparse' => true]);
+echo "Done\n";
+echo "Creating index : 'locationID' => 1, 'sequence' => 1 ... ";
+$ninetyDays->createIndex(['locationID' => 1, 'sequence' => 1], ['sparse' => true]);
+echo "Done\n";
+echo "Creating index : 'system.constellationID' => 1, 'killID' => -1 ... ";
+$ninetyDays->createIndex(['system.constellationID' => 1, 'killID' => -1], []);
+echo "Done\n";
+echo "Creating index : 'labels' => 1, 'sequence' => 1 ... ";
+$ninetyDays->createIndex(['labels' => 1, 'sequence' => 1], []);
+echo "Done\n";
 
 // oneWeek
 echo "\nCreating collection oneWeek ... ";
@@ -1364,8 +1394,8 @@ echo "Done\n";
 echo "Creating index : 'type' => 1, 'shipsDestroyedSolo' => 1 ... ";
 $statistics->createIndex(['type' => 1, 'shipsDestroyedSolo' => 1], ['sparse' => true]);
 echo "Done\n";
-echo "Creating index : 'recap2025' => 1 ... ";
-$statistics->createIndex(['recap2025' => 1], ['sparse' => true]);
+echo "Creating index : 'zest3' => 1 ... ";
+$statistics->createIndex(['zest3' => 1], []);
 echo "Done\n";
 
 // statstest
@@ -1398,6 +1428,16 @@ $tickets->createIndex(['dttm' => 1, 'characterID' => 1], []);
 echo "Done\n";
 echo "Creating index : 'parentID' => 1, 'dttm' => 1 ... ";
 $tickets->createIndex(['parentID' => 1, 'dttm' => 1], []);
+echo "Done\n";
+
+// trophies
+echo "\nCreating collection trophies ... ";
+$db->createCollection("trophies");
+$collection = "trophies";
+$trophies = $db->$collection;
+echo "Done\n";
+echo "Creating index : 'id' => 1 ... ";
+$trophies->createIndex(['id' => 1], ['unique' => true]);
 echo "Done\n";
 
 // twitch
@@ -1478,6 +1518,16 @@ $warmails->createIndex(['warID' => 1], []);
 echo "Done\n";
 echo "Creating index : 'warID' => 1, 'killID' => 1 ... ";
 $warmails->createIndex(['warID' => 1, 'killID' => 1], ['unique' => true]);
+echo "Done\n";
+
+// zest3
+echo "\nCreating collection zest3 ... ";
+$db->createCollection("zest3");
+$collection = "zest3";
+$zest3 = $db->$collection;
+echo "Done\n";
+echo "Creating index : 'path' => 1 ... ";
+$zest3->createIndex(['path' => 1], ['unique' => true]);
 echo "Done\n";
 
 // zlog
