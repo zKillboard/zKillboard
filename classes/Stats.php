@@ -132,7 +132,9 @@ class Stats
 
         if ($parameters == []) {
             $type = ($groupByColumn == 'solarSystemID' || $groupByColumn == 'regionID') ? "system.$groupByColumn" : "involved.$groupByColumn";
-            $result = $mdb->getCollection('oneWeek')->distinct($type);
+            $distinctOptions = [];
+            if (php_sapi_name() !== 'cli') $distinctOptions['maxTimeMS'] = 30000;
+            $result = $mdb->getCollection('oneWeek')->distinct($type, [], $distinctOptions);
             RedisCache::set($hashKey, sizeof($result), 900);
 
             return sizeof($result);

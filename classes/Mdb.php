@@ -82,14 +82,20 @@ class Mdb
 
         if (sizeof($query) == 0) return $collection->estimatedDocumentCount();
 
-        return $collection->countDocuments($query);
+        $options = [];
+        if (php_sapi_name() !== 'cli') $options['maxTimeMS'] = 30000;
+
+        return $collection->countDocuments($query, $options);
     }
 
     public function exists($collection, $query)
     {
         $collection = $this->getCollection($collection);
-        
-        return $collection->countDocuments($query, ['limit' => 1]) > 0;
+
+        $options = ['limit' => 1];
+        if (php_sapi_name() !== 'cli') $options['maxTimeMS'] = 30000;
+
+        return $collection->countDocuments($query, $options) > 0;
     }
 
     public function insert($collection, $values)
@@ -203,7 +209,7 @@ class Mdb
 
         $timer = new Timer();
         $collection = $this->getCollection($collection);
-        
+
         // Build options for modern MongoDB driver
         $options = [];
         if (!empty($includes)) {
@@ -218,7 +224,8 @@ class Mdb
         if ($skip != null) {
             $options['skip'] = $skip;
         }
-        
+        if (php_sapi_name() !== 'cli') $options['maxTimeMS'] = 30000;
+
         $cursor = $collection->find($query, $options);
         $result = iterator_to_array($cursor);
         $time = $timer->stop();
