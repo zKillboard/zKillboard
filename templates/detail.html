@@ -44,11 +44,7 @@
 			{% endif %}
 			{% if sessionusername and sessionusername == killdata.victim.characterName %}
 			{% endif %}
-			{% if promoURI %}
-			<li class="hidden-xs hidden-md" style="padding: 0px; margin: 0px;">
-				<a style="padding: 0px; margin: 0px;" href="{{ promoURI}}" target="_new" alt="Markee Dragon Promo"><img src="{{ promoImage1 }}" style="height: 48px;"></a>
-			</li>
-			{% endif %}
+			<li><a href='{{ referralLink }}' title='1 million SP FREE' style='padding-top: 14px; padding-bottom: 14px; background-color: #7b1fa2; color: #ffffff !important;'><img src='https://images.evetech.net/types/40520/icon?size=32' alt='1 million free skill points!' style='height: 24px; margin-right: 4px;'/> 1 Million SP FREE</a></li>
 			<li class="dropdown">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown">External <b class="caret"></b></i></a>
 				<ul class="dropdown-menu">
@@ -120,8 +116,10 @@
 		<a id='loginsideimage' href='/ccpoauth2/' class='btn btn-block collapse'><img src='/img/ssologin.png' style='width: 209px;'><br/><br/></a>
 	</center>
 
-    <div class='alert alert-info'><center><a href='{{ referralLink }}' alt='1 million SP FREE'><img src='https://images.evetech.net/types/40520/icon?size=32' alt='1 million free skill points!'/>1 Million SP FREE</a></center></div>
-	{% if extra.npcOnly %}
+	<div class='text-center' style='width: 100%; display: flex; justify-content: center;'>
+		<div style='max-width: 200px; width: 100%;'>{{ sponsoredMessage|raw }}</div>
+	</div>
+    {% if extra.npcOnly %}
 		<div class="alert alert-info">This is an NPC Only killmail.<br/>It is not counted in statistics.</div>
 	{% endif %}
 	{% if extra.atShip %}
@@ -330,3 +328,4 @@ function prepComments() {
 }
 </script>
 {% endblock %}
+

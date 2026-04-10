@@ -531,10 +531,10 @@ function loadads() {
     var adblocks = $(".publift:visible");
     adnumber = adblocks.length;
     adblocks.each(function() {
-            var elem = $(this);
-            var fuse = elem.attr("fuse");
-            elem.load('/cache/1hour/publift/' + fuse + '/', adblockloaded);
-            });
+        const elem = $(this);
+        const fuse = elem.attr("fuse") || '';
+		if (fuse.trim().length > 0) elem.load('/cache/1hour/publift/' + fuse + '/', adblockloaded);
+    });
 }
 
 var bottomad = null;
@@ -587,6 +587,7 @@ var banners_sm = ['/img/banners/gtcplex320.jpg', '/img/banners/merch320.jpg'];
 var banners_lg = ['/img/banners/gtcplex728.jpg?1', '/img/banners/merch728.jpg'];
 var ob_firstcall = true;
 function otherBanners() {
+return;
 if (ob_firstcall) {
 ob_firstcall = false;
 return setTimeout(otherBanners, 6000);

@@ -108,7 +108,7 @@ function addToStatsQueue($type, $id, $sequence)
     $mdb->getCollection('zest3_tasks')->updateOne(
         ['type' => $type, 'id' => $id],
         [
-            '$set' => ['killmails' => true],
+            '$set' => ['mixed' => true],
             '$max' => ['sequence' => $sequence]
         ],
         ['upsert' => true]

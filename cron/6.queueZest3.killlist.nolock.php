@@ -21,8 +21,8 @@ while (time() - $time < 60) {
     $lockKeyNext = null;
     try {
         $doc = $tasks->findOneAndUpdate(
-            ['killmails' => true],
-            ['$set' => ['killmails' => 'processing', 'uniqid' => $uniqid]],
+            ['mixed' => true],
+            ['$set' => ['mixed' => 'processing', 'uniqid' => $uniqid]],
             [
                 'projection' => ['type' => 1, 'id' => 1, 'sequence' => 1, '_id' => 0],
                 'returnDocument' => MongoDB\Operation\FindOneAndUpdate::RETURN_DOCUMENT_AFTER
@@ -91,7 +91,7 @@ while (time() - $time < 60) {
                 $c->bulkWrite($ops);
             }
             $match = ['type' => $doc['type'], 'id' => $doc['id'], 'sequence' => $doc['sequence']];
-            $set = ['$set' => ['killmails' => false]];
+            $set = ['$set' => ['mixed' => false]];
             $r = $tasks->updateOne($match, $set);
 
             $redis->sadd("queueCacheTagsDefer", "killlist:$cacheTag");
@@ -104,7 +104,7 @@ while (time() - $time < 60) {
     }
 }
 // cleanup
-$r = $tasks->updateMany(['killmails' => 'processing', 'uniqid' => $uniqid], ['$set' => ['killmails' => true]]);
+$r = $tasks->updateMany(['mixed' => 'processing', 'uniqid' => $uniqid], ['$set' => ['mixed' => true]]);
 $r = $tasks->updateMany(['uniqid' => $uniqid], ['$unset' => ['uniqid' => 1]]);
 
 function buildOp($url, $path, $cacheTag, $type)

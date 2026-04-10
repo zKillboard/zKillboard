@@ -630,3 +630,22 @@ code {
 	width: 315px !important;
 	max-width: 315px !important;
 }
+
+body:has(img[src="/n5dev.png"])::before {
+        content: 'UBLOCK DETECTED :(';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 6px 10px;
+        background: #111;
+        color: #fff;
+        font-size: 12px;
+        text-align: center;
+        z-index: 9999;
+        pointer-events: none;
+}
+
+body:has(img[src="/n5dev.png"]) {
+        margin-top: 28px;
+}

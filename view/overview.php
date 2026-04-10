@@ -130,17 +130,6 @@ if ($pageType != 'solo' || $key == 'faction') {
 }
 $solo = []; //Kills::mergeKillArrays($soloKills, array(), $limit, $columnName, $id);
 
-$padSum = 0;
-$vPadSum = 0;
-// PadSum?
-if ($key == 'character') {
-    $result = Mdb::group("padhash", ['characterID'], ['characterID' => (int) $id, 'isVictim' => false, 'count' => ['$gte' => 5]], [], ['count']);
-    $padSum = (int) @$result[0]['countSum'];
-    $result = Mdb::group("padhash", ['characterID'], ['characterID' => (int) $id, 'isVictim' => true, 'count' => ['$gte' => 5]], [], ['count']);
-    $vPadSum = (int) @$result[0]['countSum'];
-}
-
-
 $validAllTimePages = array('character', 'corporation', 'alliance', 'faction');
 $nextTopRecalc = 0;
 $topLists = [];
@@ -240,8 +229,8 @@ if ($pageType == 'stats' && in_array($key, $onlyHistory)) {
 $nextApiCheck = null;
 
 $extra = array();
-$extra['padSum'] = $padSum;
-$extra['vPadSum'] = $vPadSum;
+$extra['padSum'] = 0; // $padSum;
+$extra['vPadSum'] = 0; // $vPadSum;
 $extra['activity'] = $activity;
 $tracked = false;
 if (User::isLoggedIn()) {
@@ -478,8 +467,8 @@ if (is_array($months) && sizeof($months) > 0) {
 }
 
 // Collect active PVP stats
-//if ($key == "label") $activePvP = [];
-//else $activePvP = Stats::getActivePvpStats($parameters);
+if ($key == "label") $activePvP = [];
+else $activePvP = Stats::getActivePvpStats($parameters);
 $activePvP = [];
 
 $hasPager = in_array($pageType, ['overview', 'kills', 'losses', 'solo']);
