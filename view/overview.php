@@ -384,7 +384,9 @@ if (@$statistics['recentShipsLost'] > 0 || @$statistics['recentShipsDestroyed'] 
     }
 }
 
-$recentSoloKills = 0; // MongoFilter::getCount(['isVictim' => false, "${type}ID" => (int) $id, 'solo' => true, 'pastSeconds' => 7776000]);
+$recentSoloKills = (string) $redis->get("zkb:recentSoloKills:$type:$id");
+if ($recentSoloKills === "") $recentSoloKills = MongoFilter::getCount(['isVictim' => false, "${type}ID" => (int) $id, 'solo' => true, 'pastSeconds' => 7776000]);
+else $recentSoloKills = (int) $recentSoloKills;
 if ($recentSoloKills > 0 && $statistics['recentShipsDestroyed'] > 0) {
     $gangFactor = 100 - floor(100 * ($recentSoloKills / ($recentSoloKills + $statistics['recentShipsDestroyed'])));
     $extra['recentGangFactor'] = $gangFactor;
@@ -416,7 +418,10 @@ if (@$statistics['weeklyShipsLost'] > 0 || @$statistics['weeklyShipsDestroyed'] 
         $extra['weeklyDangerRatio'] = $ratio;
     }
 }
-$weeklySoloKills = 0; // MongoFilter::getCount(['isVictim' => false, "${type}ID" => (int) $id, 'solo' => true, 'pastSeconds' => 604800]);
+
+$weeklySoloKills = (string) $redis->get("zkb:weeklySoloKills:$type:id");
+if ($weeklySoloKills === "") $weeklySoloKills = MongoFilter::getCount(['isVictim' => false, "${type}ID" => (int) $id, 'solo' => true, 'pastSeconds' => 604800]);
+else $weeklySoloKills = (int) $weeklySoloKills;
 if ($weeklySoloKills > 0 && $statistics['weeklyShipsDestroyed'] > 0) {
     $gangFactor = 100 - floor(100 * ($weeklySoloKills / ($weeklySoloKills + $statistics['weeklyShipsDestroyed'])));
     $extra['weeklyGangFactor'] = $gangFactor;

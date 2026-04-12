@@ -232,7 +232,7 @@ class Stats
             $activePvP['kills'] = ['type' => 'Total Kills', 'count' => $killCount];
         }
 
-        RedisCache::set($key, $activePvP, (($cacheOverride == null) ? 3600 : $cacheOverride));
+        RedisCache::set($key, $activePvP, (($cacheOverride == null) ? 80000 : $cacheOverride));
 
         return $activePvP;
     }
