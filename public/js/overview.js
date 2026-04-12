@@ -2,24 +2,25 @@ const validTopTypes = ['characterID', 'corporationID', 'allianceID', 'shipTypeID
 
 var overviewStats = undefined;
 
+loadKms();
+loadTops();
 function updateStats(stats) {
     overviewStats = stats;
     console.log('stats updated');
-    loadKms();
-    if (topsLoaded === false) loadTops();
 }
 
 var kmLoaded = false;
 
 function loadKmsFromKilllistCache() {
-	if (!$) return setTimeout(loadKmsFromKilllistCache, 100);
-
 	kmLoaded = true;
-	if ($("#killlist").length > 0) {
-		$.get('/cache/tagged/killlist/?u=' + window.location.pathname, prepKills)
-			.fail(function () {
+	const killlistElement = document.querySelector("#killlist");
+	if (killlistElement) {
+		fetch('/cache/tagged/killlist/?u=' + window.location.pathname)
+			.then(response => response.json())
+			.then(data => prepKills(data))
+			.catch(error => {
 				kmLoaded = false;
-				console.error('Failed to load kill list!');
+				console.error('Failed to load kill list!', error);
 				setTimeout(loadKms, 1000);
 			});
 	}
@@ -28,7 +29,8 @@ function loadKmsFromKilllistCache() {
 }
 
 async function loadKms() {
-	try {
+	if (topsLoaded) return;
+	try {		
 		if (kmLoaded == true) return;
 	
 		const pathRegex = /^\/[^\/]+\/\d+\/(kills|losses|solo)?\/?$/;
@@ -69,15 +71,31 @@ async function loadKms() {
 
 var topsLoaded = false;
 var topsLoadedStats = {};
-function loadTops() {
+async function loadTops() {
     if (window.location.pathname.includes('/page/')) return;
 
 	try {
-		let ksa = overviewStats.ksa;
-		let kea = overviewStats.kea;
+		// Load ISK top stats
+		try {
+			const response = await fetch("/cache/tagged/statstopisk/?u=" + window.location.pathname);
+			const html = await response.text();
+			const element = document.querySelector("#topset-isk");
+			if (element) element.innerHTML = html;
+		} catch (error) {
+			console.error('Failed to load ISK stats:', error);
+		}
 
-		$("#topset-isk").load("/cache/tagged/statstopisk/?u=" + window.location.pathname);
-		validTopTypes.forEach((t) => $("#topset-" + t).load("/cache/tagged/statstop10/?u=" + window.location.pathname + "&t=" + t));
+		// Load top types
+		for (const t of validTopTypes) {
+			try {
+				const response = await fetch("/cache/tagged/statstop10/?u=" + window.location.pathname + "&t=" + t);
+				const html = await response.text();
+				const element = document.querySelector("#topset-" + t);
+				if (element) element.innerHTML = html;
+			} catch (error) {
+				console.error('Failed to load top stats for ' + t + ':', error);
+			}
+		}
 
 		topsLoaded = true;
 		console.log('tops loaded');
@@ -100,3 +118,4 @@ function loadTops() {
 }
 
 console.log('overview.js loaded');
+
