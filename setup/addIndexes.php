@@ -1394,9 +1394,6 @@ echo "Done\n";
 echo "Creating index : 'type' => 1, 'shipsDestroyedSolo' => 1 ... ";
 $statistics->createIndex(['type' => 1, 'shipsDestroyedSolo' => 1], ['sparse' => true]);
 echo "Done\n";
-echo "Creating index : 'zest3' => 1 ... ";
-$statistics->createIndex(['zest3' => 1], []);
-echo "Done\n";
 
 // statstest
 echo "\nCreating collection statstest ... ";
@@ -1528,6 +1525,37 @@ $zest3 = $db->$collection;
 echo "Done\n";
 echo "Creating index : 'path' => 1 ... ";
 $zest3->createIndex(['path' => 1], ['unique' => true]);
+echo "Done\n";
+
+// zest3_tasks
+echo "\nCreating collection zest3_tasks ... ";
+$db->createCollection("zest3_tasks");
+$collection = "zest3_tasks";
+$zest3_tasks = $db->$collection;
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'id' => 1 ... ";
+$zest3_tasks->createIndex(['type' => 1, 'id' => 1], ['unique' => true]);
+echo "Done\n";
+echo "Creating index : 'killmails' => 1 ... ";
+$zest3_tasks->createIndex(['killmails' => 1], []);
+echo "Done\n";
+echo "Creating index : 'uniqid' => 1 ... ";
+$zest3_tasks->createIndex(['uniqid' => 1], []);
+echo "Done\n";
+echo "Creating index : 'activity' => 1 ... ";
+$zest3_tasks->createIndex(['activity' => 1], []);
+echo "Done\n";
+echo "Creating index : 'stats' => 1 ... ";
+$zest3_tasks->createIndex(['stats' => 1], []);
+echo "Done\n";
+echo "Creating index : 'topisk' => 1 ... ";
+$zest3_tasks->createIndex(['topisk' => 1], []);
+echo "Done\n";
+echo "Creating index : 'toptens' => 1 ... ";
+$zest3_tasks->createIndex(['toptens' => 1], []);
+echo "Done\n";
+echo "Creating index : 'mixed' => 1 ... ";
+$zest3_tasks->createIndex(['mixed' => 1], []);
 echo "Done\n";
 
 // zlog
