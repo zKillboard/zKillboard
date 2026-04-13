@@ -30,6 +30,7 @@ showAds = {{ showAds }};
 $.getScript("https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js").done(loadads).fail(showAdblockedMessage);
 
 {% else %}
+    $('img[src="/n5dev.png"').remove();
     startWebSocket();
     gtag('event', 'patron');
     $("#messagedad").remove();
