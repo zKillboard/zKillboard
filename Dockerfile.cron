@@ -76,10 +76,14 @@ RUN chmod -R 755 . && \
     chmod -R 777 /app/var/cache /app/var/logs && \
     chmod +x /app/cron/cron.sh
 
-# Install crontab entry to run cron.sh every minute on the minute
-RUN echo '* * * * * root /app/cron/cron.sh >> /var/log/cron.log 2>&1' > /etc/cron.d/zkill-cron \
-    && chmod 0644 /etc/cron.d/zkill-cron \
-    && touch /var/log/cron.log
+# Install crontab entry to run cron.sh every minute on the minute.
+# Send job output to container stdout/stderr to avoid growing files in the container filesystem.
+RUN printf '%s\n' \
+    'SHELL=/bin/sh' \
+    'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' \
+    '* * * * * root /app/cron/cron.sh >> /proc/1/fd/1 2>> /proc/1/fd/2' \
+    > /etc/cron.d/zkill-cron \
+    && chmod 0644 /etc/cron.d/zkill-cron
 
-# Run cron in foreground and tail log so container stays alive
-CMD cron && tail -f /var/log/cron.log
+# Run cron in foreground so container lifecycle follows the cron daemon.
+CMD ["cron", "-f"]

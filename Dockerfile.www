@@ -1,15 +1,15 @@
 # Multi-stage build for zKillboard
 
-# Stage 1: PHP Application
-FROM php:8.2-cli
+# Stage 1: PHP-FPM Application
+FROM php:8.2-fpm
+
+STOPSIGNAL SIGQUIT
 
 WORKDIR /app
 
-# Configure PHP error reporting to suppress deprecation warnings (match production behavior)
-RUN echo "error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT" >> /usr/local/etc/php/conf.d/error-reporting.ini
-
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    libfcgi-bin \
     git \
     curl \
     unzip \
@@ -30,10 +30,31 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions to mirror the local environment.
-RUN docker-php-ext-install \
+RUN docker-php-ext-install -j$(nproc) \
+    calendar \
     curl \
+    dom \
+    exif \
+    ffi \
+    ftp \
+    gettext \
+    intl \
+    xml \
     mbstring \
-    pcntl 
+    mysqli \
+    opcache \
+    pcntl \
+    pdo_mysql \
+    shmop \
+    simplexml \
+    sockets \
+    sodium \
+    sysvmsg \
+    sysvsem \
+    sysvshm \
+    xsl \
+    zip \
+    bcmath
 
 # Install PECL extensions required by composer dependencies.
 # Updating the PECL channel avoids stale index failures (e.g. "No releases available").
@@ -44,24 +65,29 @@ RUN pecl channel-update pecl.php.net \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Production PHP and FPM settings for nginx -> php-fpm deployments.
+COPY setup/php/production.ini /usr/local/etc/php/conf.d/zz-production.ini
+COPY setup/php/www.conf /usr/local/etc/php-fpm.d/www.conf
+COPY setup/php/start-www.sh /usr/local/bin/start-www.sh
+
 # Copy application code
 COPY . .
 
 # Install PHP dependencies from composer.json
 RUN composer install --optimize-autoloader --no-dev --no-interaction
 
-# Expose port for PHP built-in server (or your preferred app server)
-EXPOSE 8000
+# Expose FastCGI and optional HTTP ports
+EXPOSE 9000 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/ || exit 1
+	CMD sh -c 'if [ "${WWW_MODE:-fpm}" = "http" ]; then curl -fsS "http://127.0.0.1:${WWW_HTTP_PORT:-8000}/cache/bypass/healthcheck/" >/dev/null; else SCRIPT_NAME=/ping SCRIPT_FILENAME=/ping REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 | grep -q pong; fi' || exit 1
 
 # Set proper permissions
 RUN chmod -R 755 . && \
     mkdir -p /app/var/cache /app/var/logs && \
-    chmod -R 777 /app/var/cache /app/var/logs
+    chmod -R 777 /app/var/cache /app/var/logs && \
+    chmod +x /usr/local/bin/start-www.sh
 
-# Start PHP built-in server
-# For production, replace with a proper app server (e.g., using Caddy, Apache, or php-fpm)
-CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
+# Run php-fpm by default; set WWW_MODE=http to serve HTTP directly.
+CMD ["/usr/local/bin/start-www.sh"]
