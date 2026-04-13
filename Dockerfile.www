@@ -1,0 +1,67 @@
+# Multi-stage build for zKillboard
+
+# Stage 1: PHP Application
+FROM php:8.2-cli
+
+WORKDIR /app
+
+# Configure PHP error reporting to suppress deprecation warnings (match production behavior)
+RUN echo "error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT" >> /usr/local/etc/php/conf.d/error-reporting.ini
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    unzip \
+    libssl-dev \
+    libcurl4-openssl-dev \
+    libbz2-dev \
+    libxml2-dev \
+    libreadline-dev \
+    libonig-dev \
+    libicu-dev \
+    libxslt1-dev \
+    libzip-dev \
+    libsodium-dev \
+    libffi-dev \
+    zlib1g-dev \
+    sqlite3 \
+    libsqlite3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions to mirror the local environment.
+RUN docker-php-ext-install \
+    curl \
+    mbstring \
+    pcntl 
+
+# Install PECL extensions required by composer dependencies.
+# Updating the PECL channel avoids stale index failures (e.g. "No releases available").
+RUN pecl channel-update pecl.php.net \
+    && pecl install igbinary mongodb-1.21.5 redis \
+    && docker-php-ext-enable igbinary mongodb redis
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copy application code
+COPY . .
+
+# Install PHP dependencies from composer.json
+RUN composer install --optimize-autoloader --no-dev --no-interaction
+
+# Expose port for PHP built-in server (or your preferred app server)
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/ || exit 1
+
+# Set proper permissions
+RUN chmod -R 755 . && \
+    mkdir -p /app/var/cache /app/var/logs && \
+    chmod -R 777 /app/var/cache /app/var/logs
+
+# Start PHP built-in server
+# For production, replace with a proper app server (e.g., using Caddy, Apache, or php-fpm)
+CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
