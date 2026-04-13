@@ -1,0 +1,89 @@
+# zKillboard Cron Worker
+FROM php:8.2-cli
+
+WORKDIR /app
+
+# Configure PHP error reporting to suppress deprecation warnings (match production behavior)
+RUN echo "error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT" >> /usr/local/etc/php/conf.d/error-reporting.ini
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    cron \
+    git \
+    curl \
+    unzip \
+    libssl-dev \
+    libcurl4-openssl-dev \
+    libbz2-dev \
+    libxml2-dev \
+    libreadline-dev \
+    libonig-dev \
+    libicu-dev \
+    libxslt1-dev \
+    libzip-dev \
+    libsodium-dev \
+    libffi-dev \
+    zlib1g-dev \
+    sqlite3 \
+    libsqlite3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions to mirror the local environment.
+RUN docker-php-ext-install \
+    calendar \
+    curl \
+    dom \
+    exif \
+    ffi \
+    ftp \
+    gettext \
+    intl \
+    xml \
+    mbstring \
+    mysqli \
+    opcache \
+    pcntl \
+    pdo_mysql \
+    shmop \
+    simplexml \
+    sockets \
+    sodium \
+    sysvmsg \
+    sysvsem \
+    sysvshm \
+    xsl \
+    zip \
+    bcmath
+
+# Install PECL extensions required by composer dependencies.
+# Updating the PECL channel avoids stale index failures (e.g. "No releases available").
+RUN pecl channel-update pecl.php.net \
+    && pecl install igbinary mongodb-1.21.5 redis \
+    && docker-php-ext-enable igbinary mongodb redis
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copy application code
+COPY . .
+
+# Install PHP dependencies from composer.json
+RUN composer install --optimize-autoloader --no-dev --no-interaction
+
+# Set proper permissions
+RUN chmod -R 755 . && \
+    mkdir -p /app/var/cache /app/var/logs && \
+    chmod -R 777 /app/var/cache /app/var/logs && \
+    chmod +x /app/cron/cron.sh
+
+# Install crontab entry to run cron.sh every minute on the minute.
+# Send job output to container stdout/stderr to avoid growing files in the container filesystem.
+RUN printf '%s\n' \
+    'SHELL=/bin/sh' \
+    'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' \
+    '* * * * * root /app/cron/cron.sh >> /proc/1/fd/1 2>> /proc/1/fd/2' \
+    > /etc/cron.d/zkill-cron \
+    && chmod 0644 /etc/cron.d/zkill-cron
+
+# Run cron in foreground so container lifecycle follows the cron daemon.
+CMD ["cron", "-f"]
