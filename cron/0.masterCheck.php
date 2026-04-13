@@ -5,7 +5,7 @@ require 'vendor/autoload.php';
 
 $minute = date("Hi");
 while ($minute == date("Hi")) {
-	$isMaster = false;
+	$isMaster = (@$env === "development");
 
 	$hostname = gethostname();
 	$masterHostname = null;
@@ -26,7 +26,7 @@ while ($minute == date("Hi")) {
 	}
 
 	// if running standalone (e.g. for testing)
-	if (@$r['code'] == 76) $r['members'] = [["name" => $hostname . ':27017', 'state' => 1]];
+	if ($env == "development" || @$r['code'] == 76) $r['members'] = [["name" => $hostname . ':27017', 'state' => 1]];
 
 	foreach ($r['members'] as $member) {
 		$server = (split(':', $member['name']))[0];
