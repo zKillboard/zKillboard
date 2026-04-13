@@ -8,6 +8,7 @@ RUN echo "error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT" >> /usr/local/etc
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    cron \
     git \
     curl \
     unzip \
@@ -75,5 +76,10 @@ RUN chmod -R 755 . && \
     chmod -R 777 /app/var/cache /app/var/logs && \
     chmod +x /app/cron/cron.sh
 
-# Run the cron script
-CMD ["/app/cron/cron.sh"]
+# Install crontab entry to run cron.sh every minute on the minute
+RUN echo '* * * * * root /app/cron/cron.sh >> /var/log/cron.log 2>&1' > /etc/cron.d/zkill-cron \
+    && chmod 0644 /etc/cron.d/zkill-cron \
+    && touch /var/log/cron.log
+
+# Run cron in foreground and tail log so container stays alive
+CMD cron && tail -f /var/log/cron.log
