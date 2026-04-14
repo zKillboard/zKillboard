@@ -32,6 +32,7 @@ Remove all advertisements from zKillboard when logged in with your character.
    - Example: 5,000,000 ISK (5m), 30,000,000 ISK (30m), 60,000,000 ISK (60m)
 3. **Processing:** Payment detected within 30-60 minutes and applied to your character
 4. **Confirmation:** Golden wreck icon <img src="/img/golden-wreck.png" style="width: 16px; height: 16px; vertical-align: middle;"> appears on your character page
+5. **Eve Mail:** An eve mail will be sent to you letting you know that the funs have been received.  You might not get the eve mail if your CSPA is over 1 million ISK or you have blocked unknown senders.
 
 ### 🎩 Exclusive: Permanent Monocle
 
