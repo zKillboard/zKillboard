@@ -2,10 +2,15 @@
 
 require_once '../init.php';
 
+$redisKey = "zkb:zest3_populate_info_stats";
+if ($redis->get($redisKey) == true) exit();
+
 $tasks = $mdb->getCollection('zest3_tasks');
 
 iterate($mdb, $tasks, 'statistics');
 iterate($mdb, $tasks, 'information');
+
+$redis->setex($redisKey, 10000, "true");
 
 function iterate($mdb, $tasks, $coll) {
     $inserted = 0;
@@ -89,3 +94,4 @@ function iterate($mdb, $tasks, $coll) {
 
     if ($inserted > 0) Util::out("Added $inserted for zest3_tasks from $coll");
 }
+

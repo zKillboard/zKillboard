@@ -277,6 +277,9 @@ echo "Done\n";
 echo "Creating index : 'type' => 1, 'l_name' => 1 ... ";
 $information->createIndex(['type' => 1, 'l_name' => 1], []);
 echo "Done\n";
+echo "Creating index : 'type' => 1, 'groupID' => 1 ... ";
+$information->createIndex(['type' => 1, 'groupID' => 1], []);
+echo "Done\n";
 
 // insurance
 echo "\nCreating collection insurance ... ";
@@ -460,6 +463,12 @@ $killmails->createIndex(['system.constellationID' => 1, 'killID' => -1], []);
 echo "Done\n";
 echo "Creating index : 'labels' => 1, 'sequence' => 1 ... ";
 $killmails->createIndex(['labels' => 1, 'sequence' => 1], []);
+echo "Done\n";
+echo "Creating index : 'locationID' => 1, 'killID' => -1 ... ";
+$killmails->createIndex(['locationID' => 1, 'killID' => -1], []);
+echo "Done\n";
+echo "Creating index : 'locationID' => 1, 'labels' => 1, 'killID' => -1 ... ";
+$killmails->createIndex(['locationID' => 1, 'labels' => 1, 'killID' => -1], []);
 echo "Done\n";
 
 // locations
@@ -972,12 +981,13 @@ echo "Creating index : 'characterID' => 1, 'scope' => 1 ... ";
 $scopes->createIndex(['characterID' => 1, 'scope' => 1], ['unique' => true]);
 echo "Done\n";
 echo "Creating index : 'scope' => 1, 'nextCheck' => 1 ... ";
-$scopes->createIndex(['scope' => 1, 'nextCheck' => 1], ['partialFilterExpression' => array (
-  'nextCheck' => 
-  array (
-    '$exists' => true,
-  ),
-)]);
+$scopes->createIndex(['scope' => 1, 'nextCheck' => 1], []);
+echo "Done\n";
+echo "Creating index : 'scope' => 1, 'lastFetch' => 1 ... ";
+$scopes->createIndex(['scope' => 1, 'lastFetch' => 1], []);
+echo "Done\n";
+echo "Creating index : 'scope' => 1, 'iterated' => 1, 'corporationID' => 1 ... ";
+$scopes->createIndex(['scope' => 1, 'iterated' => 1, 'corporationID' => 1], []);
 echo "Done\n";
 
 // sde_blueprints
@@ -1393,6 +1403,12 @@ $statistics->createIndex(['calcAlltime' => 1, 'reset' => 1, 'shipsDestroyed' => 
 echo "Done\n";
 echo "Creating index : 'type' => 1, 'shipsDestroyedSolo' => 1 ... ";
 $statistics->createIndex(['type' => 1, 'shipsDestroyedSolo' => 1], ['sparse' => true]);
+echo "Done\n";
+echo "Creating index : 'calcTrophies_updated' => 1 ... ";
+$statistics->createIndex(['calcTrophies_updated' => 1], ['partialFilterExpression' => array (
+  'type' => 'characterID',
+  'calcTrophies' => true,
+)]);
 echo "Done\n";
 
 // statstest
