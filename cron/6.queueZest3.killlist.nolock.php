@@ -118,7 +118,7 @@ function buildOp($url, $path, $cacheTag, $type)
                 'content' => json_encode($arr, true),
                 'mimetype' => 'application/json',
                 'maxage' => 1,
-                'smaxage' => 300,
+                'smaxage' => 31000000,
                 'lastModified' => new MongoDB\BSON\UTCDateTime((int) (microtime(true) * 1000)),
                 'headers' => [
                     'Cache-Tag' => "zest3,killlist,killlist:$cacheTag",
