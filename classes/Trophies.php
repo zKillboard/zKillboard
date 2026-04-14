@@ -111,7 +111,7 @@ class Trophies
 
     private static function getShipGroups()
     {
-        global $mdb;
+        global $mdb, $redis;
 
         if (static::$shipGroups !== null && static::$groupIDsWithTypes !== null) {
             return static::$shipGroups;
@@ -122,9 +122,15 @@ class Trophies
 
         $distinctOptions = [];
         if (php_sapi_name() !== 'cli') $distinctOptions['maxTimeMS'] = 30000;
-        $groupIDs = $mdb->getCollection('information')->distinct('groupID', ['type' => 'typeID', 'groupID' => ['$exists' => true]], $distinctOptions);
+        $groupIDs = (string) $redis->get("zkb:information:shipgroups");
+        if ($groupIDs != "") {
+            $groupIDs = json_decode($groupIDs, true);
+        } else {
+            $groupIDs = $mdb->getCollection('information')->distinct('groupID', ['type' => 'typeID', 'groupID' => ['$exists' => true]], $distinctOptions);
+            $redis->setex("zkb:information:shipgroups", 9000, json_encode($groupIDs, true));
+        }
         foreach ($groupIDs as $groupID) {
-            static::$groupIDsWithTypes[(int) $groupID] = true;
+            if (((int) $groupID) > 0) static::$groupIDsWithTypes[(int) $groupID] = true;
         }
 
         return static::$shipGroups;
