@@ -55,6 +55,32 @@ docker run -d --network host -v $(pwd):/app --name zkill-www \
 	zkill-www
 ```
 
+### Live Code Changes (Bind Mount)
+
+Use a bind mount so file edits on the host are reflected immediately in the container:
+
+```bash
+# php-fpm mode (default)
+docker run -d --network host -v $(pwd):/app --name zkill-www \
+	--log-opt max-size=50m --log-opt max-file=3 \
+	zkill-www
+
+# direct HTTP mode
+docker run -d --network host -e WWW_MODE=http -e WWW_HTTP_PORT=8000 -v $(pwd):/app --name zkill-www \
+	--log-opt max-size=50m --log-opt max-file=3 \
+	zkill-www
+```
+
+For cron with live code changes:
+
+```bash
+docker run -d --network host -v $(pwd):/app --name zkill-cron \
+	--log-opt max-size=50m --log-opt max-file=3 \
+	zkill-cron
+```
+
+Note: bind mounting `/app` also mounts your local `vendor` directory if it exists, which overrides the image's built dependencies.
+
 ## Run Cron Worker
 
 ```bash
