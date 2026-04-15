@@ -795,8 +795,6 @@ class Info
 			);
 
 			if ($hasWarpPoint) {
-				echo "using warp point for location $itemID\n";
-				print_r($row);
 				$distance = sqrt(
 					pow(((float) $row['WarpX']) - $x, 2)
 					+ pow(((float) $row['WarpY']) - $y, 2)
@@ -812,14 +810,12 @@ class Info
 				$distance = max(0.0, $distance - $structureRadius);
 			}
 
-			echo "Considering location $itemID with distance $distance\n";
 			if ($minDistance === null) {
 				// Initialize with the first value we find
 				$minDistance = $distance;
 				$returnID = $itemID;
 			} elseif ($distance < $minDistance) {
 				// Overwrite with the lowest distance we found so far
-				echo "Found closer location: $itemID with distance $distance (previous: $returnID with distance $minDistance)\n";
 				$minDistance = $distance;
 				$returnID = $itemID;
 			}

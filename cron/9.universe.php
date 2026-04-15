@@ -12,7 +12,7 @@ $loadedVersion = $kvc->get("zkb:tqServerVersion");
 $distinctTypeIDs = $mdb->getCollection('killmails')->distinct('involved.shipTypeID');
 
 if ($serverVersion != "" && $serverVersion == $loadedVersion && $kvc->get("zkb:universeLoaded") == true) {
-    exit("$serverVersion $loadedVersion");
+    exit();
 }
 
 Util::out("Prepping to load universe");
