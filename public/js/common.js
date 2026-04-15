@@ -96,6 +96,7 @@ function prepTippy() {
 			if (el._tippy) return;
 
 			// Remove native tooltip
+			el.setAttribute('prev-title', content);
 			el.removeAttribute('title');
 
 			tippy(el, {

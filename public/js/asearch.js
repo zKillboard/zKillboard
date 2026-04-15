@@ -285,6 +285,7 @@ function setFilters(hashfilters) {
 	}
 	// Promise.all(promises); // actually does nothing here since we don't await
 	allowChange = true;
+	toggleFilters();
 }
 
 function setHash() {
@@ -607,26 +608,47 @@ function toggleFiltersClick() {
 	if (has_primary) element.removeClass('btn-primary').addClass('btn-default').blur();
 	else element.removeClass('btn-default').addClass('btn-primary').blur();
 	toggleFilters();
+	if (allowChange) setHash();
 }
 
 // Toggle filters being displayed
 function toggleFilters() {
-	if (allowChange == false) return;
-	var displayed = $("#togglefilters").hasClass("btn-primary");
+	if (allowChange == false) return false;
+	const displayed = $("#togglefilters").hasClass("btn-primary");
 	$(".asearchfilters").toggle(displayed);
 	$(".tr-date").toggle(displayed);
+	$("#clickToDig").toggle(displayed);
+	$("#clickToDigHr").toggle(displayed);
+
+	updateTitle();
+}
+
+function updateTitle() {
+	const displayed = $("#togglefilters").hasClass("btn-primary");
 
 	var filters = [];
-	$(".entity").each(function () { filters.push($(this).html().split(': ')[1]); });
-	filters.push($(".tfilter.btn-primary").attr('title'));
-	$(".filter-btn.btn-primary").each(function () { filters.push($(this).attr('data-label')); });
-	var sort = $(".sorttype.btn-primary").html() + ' ' + $(".sortorder.btn-primary").html();
-	if (sort != 'Date Desc') filters.push(sort);
-	if ($(".pagenum.btn-primary").html() != '1') filters.push('Page ' + $(".pagenum.btn-primary").html());
+	$(".entity").each(function () {
+		var entityText = $(this).html().split(': ')[1];
+		if (entityText != undefined && entityText !== '') filters.push(entityText);
+	});
+	var epochTitle = $(".tfilter.btn-primary").attr('title') ?? $(".tfilter.btn-primary").attr('prev-title');	
 
-	var title = (displayed ? 'Advanced Search' : filters.join(', '));
+	if (epochTitle != undefined && epochTitle !== '') filters.push(epochTitle);
+	$(".filter-btn.btn-primary").each(function () {
+		var label = $(this).attr('data-label');
+		if (label != undefined && label !== '') filters.push(label);
+	});
+	var sortType = $(".sorttype.btn-primary").text().trim();
+	var sortOrder = $(".sortorder.btn-primary").text().trim();
+	var sort = (sortType + ' ' + sortOrder).trim();
+	if (sort !== '' && sort != 'Date Desc') filters.push(sort);
+	var currentPage = $(".pagenum.btn-primary").text().trim();
+	if (currentPage !== '' && currentPage != '1') filters.push('Page ' + currentPage);
+
+	var title = 'Advanced Search: ' + (filters.length > 0 ? filters.join(', ') : 'No filters selected');
 	$("#titlecontent").text(title);
 }
+setInterval(updateTitle, 1000); // in case something changes that doesn't trigger an update, like the epoch rolling time
 
 async function btn_save() {
 	let res = await fetch("/asearchsave/?url=" + encodeURIComponent(window.location.href));
