@@ -16,7 +16,7 @@ docker build -f Dockerfile.cron -t zkill-cron .
 ## Run Web Server
 
 ```bash
-docker run -d --network host --name zkill-www \
+docker run -d --restart unless-stopped --network host --name zkill-www \
 	--log-opt max-size=50m --log-opt max-file=3 \
 	zkill-www
 ```
@@ -27,14 +27,14 @@ If nginx runs in another container, either:
 
 ```bash
 # Option A: same host network
-docker run -d --network host --name zkill-www zkill-www
+docker run -d --restart unless-stopped --network host --name zkill-www zkill-www
 ```
 
 or
 
 ```bash
 # Option B: publish FastCGI port on the host
-docker run -d -p 9000:9000 --name zkill-www zkill-www
+docker run -d --restart unless-stopped -p 9000:9000 --name zkill-www zkill-www
 ```
 
 `localhost:9000` is FastCGI, not HTTP. Use nginx `fastcgi_pass` to reach it.
@@ -42,7 +42,7 @@ docker run -d -p 9000:9000 --name zkill-www zkill-www
 To serve HTTP directly from this same image:
 
 ```bash
-docker run -d --network host -e WWW_MODE=http -e WWW_HTTP_PORT=8000 --name zkill-www zkill-www
+docker run -d --restart unless-stopped --network host -e WWW_MODE=http -e WWW_HTTP_PORT=8000 --name zkill-www zkill-www
 ```
 
 Then access `http://localhost:8000`.
@@ -50,7 +50,7 @@ Then access `http://localhost:8000`.
 ### Development with volume
 
 ```bash
-docker run -d --network host -v $(pwd):/app --name zkill-www \
+docker run -d --restart unless-stopped --network host -v $(pwd):/app --name zkill-www \
 	--log-opt max-size=50m --log-opt max-file=3 \
 	zkill-www
 ```
@@ -61,12 +61,12 @@ Use a bind mount so file edits on the host are reflected immediately in the cont
 
 ```bash
 # php-fpm mode (default)
-docker run -d --network host -v $(pwd):/app --name zkill-www \
+docker run -d --restart unless-stopped --network host -v $(pwd):/app --name zkill-www \
 	--log-opt max-size=50m --log-opt max-file=3 \
 	zkill-www
 
 # direct HTTP mode
-docker run -d --network host -e WWW_MODE=http -e WWW_HTTP_PORT=8000 -v $(pwd):/app --name zkill-www \
+docker run -d --restart unless-stopped --network host -e WWW_MODE=http -e WWW_HTTP_PORT=8000 -v $(pwd):/app --name zkill-www \
 	--log-opt max-size=50m --log-opt max-file=3 \
 	zkill-www
 ```
@@ -74,7 +74,7 @@ docker run -d --network host -e WWW_MODE=http -e WWW_HTTP_PORT=8000 -v $(pwd):/a
 For cron with live code changes:
 
 ```bash
-docker run -d --network host -v $(pwd):/app --name zkill-cron \
+docker run -d --restart unless-stopped --network host -v $(pwd):/app --name zkill-cron \
 	--log-opt max-size=50m --log-opt max-file=3 \
 	zkill-cron
 ```
@@ -84,7 +84,7 @@ Note: bind mounting `/app` also mounts your local `vendor` directory if it exist
 ## Run Cron Worker
 
 ```bash
-docker run -d --network host --name zkill-cron \
+docker run -d --restart unless-stopped --network host --name zkill-cron \
 	--log-opt max-size=50m --log-opt max-file=3 \
 	zkill-cron
 ```
