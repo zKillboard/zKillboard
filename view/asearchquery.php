@@ -246,7 +246,8 @@ function handler($request, $response, $args, $container) {
 		$response->getBody()->write($jsoned);
 		return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
 	} catch (Exception $ex) {
-		Util::zout(print_r($ex, true));
+		if ($ex->getCode() != 50) Util::zout(print_r($ex, true));
+        else Util::zout("Query timeout in advanced search");
 		$redis->del($key);
 		$response->getBody()->write(json_encode(['error' => 'Internal server error', 'message' => $ex->getMessage()], JSON_PRETTY_PRINT));
 		return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withStatus(500);
