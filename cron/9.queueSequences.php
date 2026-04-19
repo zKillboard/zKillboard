@@ -55,7 +55,6 @@ do {
             $updated = (int) $redis->lpop("zkb:sequenced_updated");
             if ($updated > 0) {
                 $doc['sequence_updated'] = $updated;
-Util::out("$sequence updated sequence $updated");
             }
         }
         CloudFlare::r2sendArray($r2, $CF_R2_BUCKET, $doc, "ephemeral/$sequence.json", $options);
