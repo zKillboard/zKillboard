@@ -4,14 +4,14 @@ $mt = 10; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($p
 
 require_once '../init.php';
 
+$c = $mdb->getCollection('zest3');
+$tasks = $mdb->getCollection('zest3_tasks');
 $lockKey = "zkb:zest3:killlist:$mt";
-if ($redis->set($lockKey, 1, ['nx', 'ex' => 900])) {
-    try {
-        $c = $mdb->getCollection('zest3');
-        $tasks = $mdb->getCollection('zest3_tasks');
 
-        $minute = date("Hi");
-        while (date("Hi") == $minute) {
+$minute = date("Hi");
+while (date("Hi") == $minute) {
+    if ($redis->set($lockKey, 1, ['nx', 'ex' => 900])) {
+        try {
             $doc = null;
             $lockKeyNext = null;
             $docs = $tasks->find(['mixed' => ['$ne' => false]]);
@@ -22,7 +22,11 @@ if ($redis->set($lockKey, 1, ['nx', 'ex' => 900])) {
                 $lockKeyNext = "zkb:zest3:killlist:$type:$id";
                 if ($redis->set($lockKeyNext, 1, ['nx', 'ex' => 900])) {
                     try {
-                        process($type, $id, $doc, $c, $tasks);
+                        // Re-check the latest mixed after acquiring lock so stale cursor rows are skipped.
+                        $current = $tasks->findOne(['type' => $type, 'id' => $id], ['projection' => ['mixed' => 1]]);
+                        if ($current !== null && ($current['mixed'] ?? false) === $doc['mixed']) {
+                            process($type, $id, $doc, $c, $tasks);
+                        }
                     } finally {
                         $redis->del($lockKeyNext);
                     }
@@ -30,10 +34,10 @@ if ($redis->set($lockKey, 1, ['nx', 'ex' => 900])) {
                 }
             }
             if ($doc === null) usleep(100000);
+        } finally {
+            $redis->del($lockKey);
         }
-    } finally {
-        $redis->del($lockKey);
-    }
+    } else usleep(100000);
 }
 
 
