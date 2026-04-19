@@ -4,108 +4,92 @@ $mt = 10; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($p
 
 require_once '../init.php';
 
-$uniqid = uniqid();
-$c = $mdb->getCollection('zest3');
-$tasks = $mdb->getCollection('zest3_tasks');
-
-$time = time();
-while (time() - $time < 60) {
-    // prevent too much overrun 
-    $lockKey = "zkb:zest3:kills:$mt";
-    $gotLock = $redis->set($lockKey, 1, ['nx', 'ex' => 900]);
-    if ($gotLock === false) {
-        usleep(1000);
-        continue;
-    }
-
-    $lockKeyNext = null;
+$lockKey = "zkb:zest3:killlist:$mt";
+if ($redis->set($lockKey, 1, ['nx', 'ex' => 900])) {
     try {
-        $doc = $tasks->findOneAndUpdate(
-            ['mixed' => true],
-            ['$set' => ['mixed' => 'processing', 'uniqid' => $uniqid]],
-            [
-                'projection' => ['type' => 1, 'id' => 1, 'sequence' => 1, '_id' => 0],
-                'returnDocument' => MongoDB\Operation\FindOneAndUpdate::RETURN_DOCUMENT_AFTER
-            ]);
-        if ($doc == null) {
-            usleep(1000);
-            continue;
-        }
+        $c = $mdb->getCollection('zest3');
+        $tasks = $mdb->getCollection('zest3_tasks');
 
-        $type = $doc['type'];
-        $id = $doc['id'];
-        $sequence = $doc['sequence'];
-        $lockKeyNext = "zkb:zest3:kills:$type:$id";
-        $gotLock = $redis->set($lockKeyNext, 1, ['nx', 'ex' => 900]);
-        if ($gotLock === false) {
+        $minute = date("Hi");
+        while (date("Hi") == $minute) {
+            $doc = null;
             $lockKeyNext = null;
-            usleep(1000);
-            continue;
-        }
+            $docs = $tasks->find(['mixed' => ['$ne' => false]]);
 
-        $cacheTag = str_replace("shipType", "ship", str_replace("solarS", "s", str_replace("ID", "", "$type:$id")));
-
-        try {
-            if ($id !== 0) {
-                $type = str_replace("ID", "", $type);
-                switch ($type) {
-                    case 'character':
-                    case 'corporation':
-                    case 'alliance':
-                    case 'faction':
-                    case 'group':
-                    case 'ship':
-                    case 'label':
-                    case 'location':
-                    case 'system':
-                    case 'constellation':
-                    case 'region':
-                        break;
-                    case 'solarSystem':
-                        $type = 'system';
-                        break;
-                    case 'shipType':
-                        $type = 'ship';
-                        break;
-                    default:
-                        exit("Unknown type: $type");
+            foreach ($docs as $doc) {
+                $type = $doc['type'];
+                $id = $doc['id'];
+                $lockKeyNext = "zkb:zest3:killlist:$type:$id";
+                if ($redis->set($lockKeyNext, 1, ['nx', 'ex' => 900])) {
+                    try {
+                        process($type, $id, $doc, $c, $tasks);
+                    } finally {
+                        $redis->del($lockKeyNext);
+                    }
+                    if (date("Hi") != $minute) break;
                 }
-                $ops = [
-                    buildOp("/$type/$id/",          "/$type/$id/mixed.json", $cacheTag, $doc['type']),
-                ];
-                $ops[] = buildOp($type == "label" ? null : "/$type/$id/solo/",     "/$type/$id/solo.json", $cacheTag, $doc['type']);
-                switch ($type) {
-                    case 'character':
-                    case 'corporation':
-                    case 'alliance':
-                    case 'faction':
-                    case 'ship':
-                    case 'group':
-                        $ops[] = buildOp("/$type/$id/kills/",    "/$type/$id/kills.json", $cacheTag, $doc['type']);
-                        $ops[] = buildOp("/$type/$id/losses/",   "/$type/$id/losses.json", $cacheTag, $doc['type']);
-                        break;
-                    default: 
-                        $ops[] = buildOp(null,    "/$type/$id/kills.json", $cacheTag, $doc['type']);
-                        $ops[] = buildOp(null,    "/$type/$id/losses.json", $cacheTag, $doc['type']);
-                }
-                $c->bulkWrite($ops);
             }
-            $match = ['type' => $doc['type'], 'id' => $doc['id'], 'sequence' => $doc['sequence']];
-            $set = ['$set' => ['mixed' => false]];
-            $r = $tasks->updateOne($match, $set);
-
-            $redis->sadd("queueCacheTagsDefer", "killlist:$cacheTag");
-        } catch (Exception $ex) {
-            Util::out(print_r($ex, true));
+            if ($doc === null) usleep(100000);
         }
     } finally {
         $redis->del($lockKey);
-        if ($lockKeyNext !== null) $redis->del($lockKeyNext);
     }
 }
-// cleanup
-$r = $tasks->updateMany(['mixed' => 'processing', 'uniqid' => $uniqid], ['$set' => ['mixed' => true]]);
-$r = $tasks->updateMany(['uniqid' => $uniqid], ['$unset' => ['uniqid' => 1]]);
+
+
+function process($type, $id, $doc, $c, $tasks) {
+    $cacheTag = str_replace("shipType", "ship", str_replace("solarS", "s", str_replace("ID", "", "$type:$id")));
+
+    if ($id !== 0) {
+        $type = str_replace("ID", "", $type);
+        switch ($type) {
+            case 'character':
+            case 'corporation':
+            case 'alliance':
+            case 'faction':
+            case 'group':
+            case 'ship':
+            case 'label':
+            case 'location':
+            case 'system':
+            case 'constellation':
+            case 'region':
+                break;
+            case 'solarSystem':
+                $type = 'system';
+                break;
+            case 'shipType':
+                $type = 'ship';
+                break;
+            default:
+                exit("Unknown type: $type");
+        }
+        $ops = [
+            buildOp("/$type/$id/",          "/$type/$id/mixed.json", $cacheTag, $doc['type']),
+        ];
+        $ops[] = buildOp($type == "label" ? null : "/$type/$id/solo/",     "/$type/$id/solo.json", $cacheTag, $doc['type']);
+        switch ($type) {
+            case 'character':
+            case 'corporation':
+            case 'alliance':
+            case 'faction':
+            case 'ship':
+            case 'group':
+                $ops[] = buildOp("/$type/$id/kills/",    "/$type/$id/kills.json", $cacheTag, $doc['type']);
+                $ops[] = buildOp("/$type/$id/losses/",   "/$type/$id/losses.json", $cacheTag, $doc['type']);
+                break;
+            default: 
+                $ops[] = buildOp(null,    "/$type/$id/kills.json", $cacheTag, $doc['type']);
+                $ops[] = buildOp(null,    "/$type/$id/losses.json", $cacheTag, $doc['type']);
+        }
+        $c->bulkWrite($ops);
+    }
+    $match = ['type' => $doc['type'], 'id' => $doc['id'], 'mixed' => $doc['mixed']];
+    $set = ['$set' => ['mixed' => false]];
+    $r = $tasks->updateOne($match, $set);
+    $m = $r->getModifiedCount();
+    //if ($m > 0) $redis->sadd("queueCacheTagsDefer", "killlist:$cacheTag");
+}
 
 function buildOp($url, $path, $cacheTag, $type)
 {
@@ -115,15 +99,15 @@ function buildOp($url, $path, $cacheTag, $type)
         [
             '$set' => [
                 'path' => $path,
-                'content' => json_encode($arr, true),
-                'mimetype' => 'application/json',
-                'maxage' => 1,
-                'smaxage' => 31000000,
-                'lastModified' => new MongoDB\BSON\UTCDateTime((int) (microtime(true) * 1000)),
-                'headers' => [
-                    'Cache-Tag' => "zest3,killlist,killlist:$cacheTag",
-                    'Access-Control-Allow-Origin' => 'https://zkillboard.com'
-                ],
+        'content' => json_encode($arr, true),
+        'mimetype' => 'application/json',
+        'maxage' => 1,
+        'smaxage' => 31000000,
+        'lastModified' => new MongoDB\BSON\UTCDateTime((int) (microtime(true) * 1000)),
+        'headers' => [
+            'Cache-Tag' => "zest3,killlist,killlist:$cacheTag",
+        'Access-Control-Allow-Origin' => 'https://zkillboard.com'
+        ],
             ],
         ],
         ['upsert' => true],

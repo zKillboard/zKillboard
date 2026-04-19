@@ -105,11 +105,12 @@ function addToStatsQueue($type, $id, $sequence)
 
     $redis->sadd("queueStatsSet", "$type:$id");
 
+    $cacheTag = str_replace("shipType", "ship", str_replace("solarS", "s", str_replace("ID", "", "$type:$id")));
+    $redis->sadd("queueCacheTagsDefer", "killlist:$cacheTag");
     $mdb->getCollection('zest3_tasks')->updateOne(
         ['type' => $type, 'id' => $id],
         [
-            '$set' => ['mixed' => true],
-            '$max' => ['sequence' => $sequence]
+            '$set' => ['mixed' => $sequence],
         ],
         ['upsert' => true]
     );

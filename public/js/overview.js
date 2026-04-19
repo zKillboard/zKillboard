@@ -35,7 +35,7 @@ async function loadKms() {
 	
 		const pathRegex = /^\/[^\/]+\/\d+\/(kills|losses|solo)?\/?$/;
 		const currentPath = window.location.pathname;
-		if (pathRegex.test(currentPath)) {
+		if (false && pathRegex.test(currentPath)) {
 			kmLoaded = true;
 			const pathMatch = currentPath.match(/^\/[^\/]+\/\d+\/(kills|losses|solo)?\/?$/);
 			let type = 'mixed';
