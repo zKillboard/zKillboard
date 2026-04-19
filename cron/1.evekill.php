@@ -2,15 +2,16 @@
 
 require_once "../init.php";
 
-if (@$eveKillLatest == "" || date("i") % 15 != 0) exit();
+if (date("i") % 5 != 0) exit();
 
-$raw = @file_get_contents($eveKillLatest);
+$raw = @file_get_contents("https://api.eve-kill.com/history/latest");
 if ($raw == "") exit(); // eve-kill went down, try again later
 $json = json_decode($raw, true);
 
+$data = $json['data'];
 $count = 0;
-foreach (array_keys($json) as $id) {
-    $hash = $json[$id];
+foreach (array_keys($data) as $id) {
+    $hash = $data[$id];
     $id = (int) $id;
     if ($id <= 0) continue;
     if (strlen($hash) != 40) continue;
