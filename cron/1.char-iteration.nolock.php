@@ -10,46 +10,19 @@ if ($kvc->get("zkb:noapi") == "true") exit();
 
 $sso = ZKillSSO::getSSO();
 
-$noCorp = $mdb->find("scopes", ['corporationID' => ['$exists' => false], 'scope' => "esi-killmails.read_corporation_killmails.v1"]);
-if (sizeof($noCorp) == 0) $noCorp = $mdb->find("scopes", ['corporationID' => 0, 'scope' => "esi-killmails.read_corporation_killmails.v1"]);
-foreach ($noCorp as $row) {
-    $charID = $row['characterID'];
-    $corpID = (int) Info::getInfoField("characterID", $charID, "corporationID");
-    if ($corpID > 0) $mdb->set("scopes", $row, ['corporationID' => $corpID, 'lastFetch' => 0]);
-    else {
-        try {
-            $mdb->insert("information", ['type' => 'characterID', 'id' => ((int) $charID), 'lastApiUpdate' => 0]);
-        } catch (Exception $exx) {
-            sleep(1);
-            continue;
-        }
-    }
-}
-
-$mdb->set("scopes", ['scope' => "esi-killmails.read_corporation_killmails.v1", 'lastFetch' => ['$exists' => false]], ['lastFetch' => 0], true);
-
 $minute = date('Hi');
 
-if ($minute == "0000") {
-    $mdb->getCollection("scopes")->updateMany(['iterated' => 'defer'], ['$set' => ['iterated' => false]]);
-}
 $mdb->getCollection("scopes")->updateMany(['iterated' => 'wait'], ['$set' => ['iterated' => false]]);
 $mdb->getCollection("scopes")->updateMany(['iterated' => 'error'], ['$set' => ['iterated' => false]]);
 
 while ($minute == date('Hi')) {
-    $row = $mdb->findDoc("scopes", ['corporationID' => ['$exists' => true], 'scope' => "esi-killmails.read_corporation_killmails.v1", 'iterated' => false]);
+    $row = $mdb->findDoc("scopes", ['scope' => "esi-killmails.read_killmails.v1", 'iterated' => false]);
 
     if ($row == null) {
         sleep(3);
         continue;
     }
     $charID = ((int) $row['characterID']);
-    $corpID = ((int) $row['corporationID']);
-
-    if ($corpID <= 1999999) {
-        $mdb->set("scopes", $row, ['iterated' => 'defer']);
-        continue;
-    }
 
     $refreshToken = $row['refreshToken'];
     $accessToken = $sso->getAccessToken($refreshToken);
@@ -60,8 +33,8 @@ while ($minute == date('Hi')) {
         }
     }
 
-    $corpKey = "zkb:corp-iterate:$corpID";
-    if ($redis->set($corpKey, "true", ['nx', 'ex' => 9999]) === false) {
+    $charKey = "zkb:char-iterate:$charID";
+    if ($redis->set($charKey, "true", ['nx', 'ex' => 9999]) === false) {
         $mdb->set("scopes", $row, ['iterated' => 'wait']);
         continue;
     }
@@ -72,7 +45,7 @@ while ($minute == date('Hi')) {
         do {
             $page++;
 
-            $uri = "$esiServer/corporations/$corpID/killmails/recent/?page=$page";
+            $uri = "$esiServer/characters/$charID/killmails/recent/?page=$page";
             //Util::out("$uri $charID");
             $killmails = $sso->doCall($uri, [], $accessToken);
 
@@ -92,8 +65,8 @@ while ($minute == date('Hi')) {
     } catch (Exception $ex) {
         $mdb->set("scopes", $row, ['iterated' => 'error']);
     } finally {
-        // don't re-iterate a corp until this has expired
-        $redis->expire($corpKey, 999);
+        // don't re-iterate a char until this has expired
+        $redis->expire($charKey, 9);
     }
 }
 
@@ -105,7 +78,7 @@ function success($params, $content, $uri)
 
     $row = $params['row'];
     $charID = $row['characterID'];
-    $corpID = $row['corporationID'];
+    $charID = $row['characterID'];
     $delay = (int) @$row['delay'];
 
     $newKills = 0;
@@ -117,12 +90,7 @@ function success($params, $content, $uri)
     if (isset($kills['error'])) {
         switch ($kills['error']) {
             case 'invalid_grant':
-            case 'Character does not have required role(s)':
                 return -1;
-            case 'Character is not in the corporation':
-                $mdb->set("information", ['type' => 'characterID', 'id' => ((int) $charID)], ['lastApiUpdate' => 1, 'lastAffUpdate' => 1]);
-                sleep(1);
-                return 0; // Try again after the corp has been updated
             case 'Requested page does not exist!':
             case "Undefined 404 response. Original message: Requested page does not exist!":
                                                             return 0; // not really an error, just ignore it and move on
@@ -141,13 +109,13 @@ function success($params, $content, $uri)
         $killID = $kill['killmail_id'];
         $hash = $kill['killmail_hash'];
 
-        $newKills += Killmail::addMail($killID, $hash, '1.corp-iteration', $delay);
+        $newKills += Killmail::addMail($killID, $hash, '1.char-iteration', $delay);
     }
 
     if ($newKills > 0) {
-        $corpName = Info::getInfoField('corporationID', $corpID, 'name');
+        $charName = Info::getInfoField('characterID', $charID, 'name');
         $newKills = str_pad($newKills, 3, " ", STR_PAD_LEFT);
-        ZLog::add("$newKills kills added by corp $corpName *"  . ($delay == 0 ? '' : "($delay)"), $charID);
+        ZLog::add("$newKills kills added by char $charName *"  . ($delay == 0 ? '' : "($delay)"), $charID);
     }
     return $count;
 }
