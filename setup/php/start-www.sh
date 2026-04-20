@@ -1,6 +1,11 @@
 #!/bin/sh
 set -eu
 
+# Initialize MongoDB indexes before serving web traffic.
+cd /app/setup
+php addIndexes.php
+cd /app
+
 mode="${WWW_MODE:-fpm}"
 
 case "$mode" in

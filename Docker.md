@@ -15,6 +15,8 @@ docker build -f Dockerfile.cron -t zkill-cron .
 
 ## Run Web Server
 
+On startup, the container runs `php setup/addIndexes.php` before starting `php-fpm` (or HTTP mode).
+
 ```bash
 docker run -d --restart unless-stopped --network host --name zkill-www \
 	--log-opt max-size=50m --log-opt max-file=3 \
@@ -82,6 +84,8 @@ docker run -d --restart unless-stopped --network host -v $(pwd):/app --name zkil
 Note: bind mounting `/app` also mounts your local `vendor` directory if it exists, which overrides the image's built dependencies.
 
 ## Run Cron Worker
+
+On startup, the container runs `php setup/addIndexes.php` before starting `cron -f`.
 
 ```bash
 docker run -d --restart unless-stopped --network host --name zkill-cron \

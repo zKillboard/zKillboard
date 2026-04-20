@@ -85,5 +85,5 @@ RUN printf '%s\n' \
     > /etc/cron.d/zkill-cron \
     && chmod 0644 /etc/cron.d/zkill-cron
 
-# Run cron in foreground so container lifecycle follows the cron daemon.
-CMD ["cron", "-f"]
+# Initialize indexes first, then run cron in foreground so container lifecycle follows the cron daemon.
+CMD ["sh", "-ec", "cd /app/setup && php addIndexes.php && exec cron -f"]
