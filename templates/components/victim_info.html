@@ -42,10 +42,13 @@
 	</tr>
         {% if killdata.victim.related.killID %}
 		{% set shipImageLinkOverride = killdata.victim.related.killID %}
-		{% set field = killdata.victim.related %}
+		{% set field = killdata.victim.related %}		
 	<tr>
 		<th>Related:</th>
-		<td>{% include 'components/text_ship.html' %}</td>
+		<td>
+			{% include 'components/text_ship.html' %}
+			<small format="format-isk-once" raw="{{ field.zkb.totalValue }}"></small>
+		</td>
 	</tr>
         {% endif %}
 	{% set field = killdata.info.system %}

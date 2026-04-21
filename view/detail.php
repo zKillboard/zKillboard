@@ -177,13 +177,21 @@ $relatedShip = null;
 $query = ['$and' => [['involved' => ['$elemMatch' => ['isVictim' => true, 'characterID' => (int) @$killdata['victim']['characterID']]]], ['killID' => ['$gte' => ($id - 200)]], ['killID' => ['$lt' => $id]], ['labels' => 'cat:6'], ['vGroupID' => ['$ne' => 29]]]];
 $relatedKill = $mdb->findDoc('killmails', $query);
 if ($relatedKill) {
-	$relatedShip = ['killID' => $relatedKill['killID'], 'shipTypeID' => $relatedKill['involved'][0]['shipTypeID']];
+	$relatedShip = [
+		'killID' => $relatedKill['killID'], 
+		'shipTypeID' => $relatedKill['involved'][0]['shipTypeID'],
+		'zkb' => $relatedKill['zkb']
+		];
 }
 if ($relatedShip == null) {
 	$query = ['$and' => [['involved.characterID' => (int) @$killdata['victim']['characterID']], ['killID' => ['$lte' => ($id + 200)]], ['killID' => ['$gt' => $id]], ['labels' => 'cat:6'], ['vGroupID' => 29]]];
 	$relatedKill = $mdb->findDoc('killmails', $query);
 	if ($relatedKill) {
-		$relatedShip = ['killID' => $relatedKill['killID'], 'shipTypeID' => $relatedKill['involved'][0]['shipTypeID']];
+		$relatedShip = [
+			'killID' => $relatedKill['killID'], 
+			'shipTypeID' => $relatedKill['involved'][0]['shipTypeID'],
+			'zkb' => $relatedKill['zkb']
+			];
 	}
 }
 Info::addInfo($relatedShip);
