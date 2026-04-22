@@ -11,7 +11,7 @@
 </script>
 </head>
 <body>
-<textarea id='textarea' onClick="this.select(); copyToClipboard(); return true;" rows="3" style='width: 100%;'><url=killReport:{{ crest.killID }}:{{ crest.hash }}>Kill: {{ killdata.victim.characterName }}'s {{ killdata.victim.shipName }}</url></textarea>
+<textarea id='textarea' onClick="this.select(); copyToClipboard(); return true;" rows="3" style='width: 100%;'><url=killReport:{{ crest.killID }}:{{ crest.hash }}>Kill: {{ killdata.victim.characterName }} ({{ killdata.victim.shipName }})</url></textarea>
 <div id='copied' style='display: none; color: white;'><i>... Link has been copied to your clipboard ...</i></div>
 </body>
 </html>
