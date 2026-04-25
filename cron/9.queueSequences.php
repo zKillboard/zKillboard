@@ -60,6 +60,9 @@ do {
         CloudFlare::r2sendArray($r2, $CF_R2_BUCKET, $doc, "ephemeral/$sequence.json", $options);
         $redis->sadd("queueCacheUrls", "https://r2z2.zkillboard.com/ephemeral/$sequence.json");
 
+        // We'll doubly invalidate to help fight CF not purging some URLs from all edges properly
+        $redis->sadd("queueCacheUrlsDefer", "https://r2z2.zkillboard.com/ephemeral/$sequence.json");
+
         $sequenceKeyMax = max($sequenceKeyMax, $sequence);
         $redis->setex($ephSequenceKeyMax, 3600, $sequenceKeyMax);
         if ($sequence < $sequenceKeyMax) {
