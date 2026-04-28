@@ -11,6 +11,8 @@ if ($redis->get($key) == true) {
     exit();
 }
 
+$redis->sadd("queueCacheTags", "statstop");
+
 $p = array();
 $numDays = 7;
 $p['limit'] = 10;
