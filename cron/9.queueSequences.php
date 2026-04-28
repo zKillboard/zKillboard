@@ -2,7 +2,10 @@
 
 require_once "../init.php";
 
-if (@$sendSequences !== true) exit();
+if (@$sendSequences !== true) {
+	$mdb->getCollection("queues")->deleteMany(['queue' => 'sequences']);
+	exit();
+}
 
 $queueRedisQ = new \cvweiss\redistools\RedisQueue('queueRedisQ');
 $r2 = CloudFlare::getR2Client(
