@@ -505,7 +505,7 @@
                                     {% set shipInfo = info_all['typeID'][shipId]|default(null) %}
                                     {% if shipInfo %}
 										{% set field = shipInfo %}
-                                        <img src="https://images.evetech.net/types/{{ shipId }}/icon?size=32" style="vertical-align: middle;" alt="{{ shipInfo.name }}">
+                                        <img src="https://images.evetech.net/types/{{ shipId }}/icon?size=32" style="vertical-align: middle;" alt="{{ shipInfo.name }}"  loading="lazy" decoding="async" fetchpriority="low">
                                         <a href="/ship/{{ shipId }}/">{{ shipInfo.name }}</a>
                                     {% else %}
                                         Unknown Ship
@@ -532,7 +532,7 @@
                                     <span class="rank">#{{ loop.index }}</span>
                                     {% set shipInfo = info_all['typeID'][shipId]|default(null) %}
                                     {% if shipInfo %}
-                                        <img src="https://images.evetech.net/types/{{ shipId }}/icon?size=32" style="vertical-align: middle;" alt="{{ shipInfo.name }}">
+                                        <img src="https://images.evetech.net/types/{{ shipId }}/icon?size=32" style="vertical-align: middle;" alt="{{ shipInfo.name }}"  loading="lazy" decoding="async" fetchpriority="low">
                                         <a href="/ship/{{ shipId }}/">{{ shipInfo.name }}</a>
                                     {% else %}
                                         Unknown Ship

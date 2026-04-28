@@ -44,7 +44,7 @@
 			{% endif %}
 			{% if sessionusername and sessionusername == killdata.victim.characterName %}
 			{% endif %}
-			<li><a href='{{ referralLink }}' title='1 million SP FREE' style='padding-top: 14px; padding-bottom: 14px; background-color: #7b1fa2; color: #ffffff !important;'><img src='https://images.evetech.net/types/40520/icon?size=32' alt='1 million free skill points!' style='height: 24px; margin-right: 4px;'/> 1 Million SP FREE</a></li>
+			<li><a href='{{ referralLink }}' title='1 million SP FREE' style='padding-top: 14px; padding-bottom: 14px; background-color: #7b1fa2; color: #ffffff !important;'><img src='https://images.evetech.net/types/40520/icon?size=32' alt='1 million free skill points!' style='height: 24px; margin-right: 4px;' loading="lazy" decoding="async" fetchpriority="low"/> 1 Million SP FREE</a></li>
 			<li class="dropdown">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown">External <b class="caret"></b></i></a>
 				<ul class="dropdown-menu">
@@ -71,9 +71,9 @@
 			<li class="dropdown">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown">Social <b class="caret"></b></i></a>
 				<ul class="dropdown-menu">
-					<li><a href="https://www.facebook.com/sharer/sharer.php?u={{url}}" target="_blank" rel="noopener noreferrer"><img src="//{{ siteurl }}/img/social/fb_1.png"> Facebook</a></li>
-					<li><a href="https://x.com/intent/tweet?text={{ pageTitle|url_encode }}&url={{url}}" target="_blank" rel="noopener noreferrer"><img src="//{{ siteurl }}/img/social/twitter_1.png"> X / Twitter</a></li>
-					<li><a href="https://www.reddit.com/submit?url={{url}}&title={{ pageTitle|url_encode }}" target="_blank" rel="noopener noreferrer"><img src="//{{ siteurl }}/img/social/reddit.png"> Reddit</a></li>
+					<li><a href="https://www.facebook.com/sharer/sharer.php?u={{url}}" target="_blank" rel="noopener noreferrer"><img src="//{{ siteurl }}/img/social/fb_1.png" loading="lazy" decoding="async" fetchpriority="low"> Facebook</a></li>
+					<li><a href="https://x.com/intent/tweet?text={{ pageTitle|url_encode }}&url={{url}}" target="_blank" rel="noopener noreferrer"><img src="//{{ siteurl }}/img/social/twitter_1.png" loading="lazy" decoding="async" fetchpriority="low"> X / Twitter</a></li>
+					<li><a href="https://www.reddit.com/submit?url={{url}}&title={{ pageTitle|url_encode }}" target="_blank" rel="noopener noreferrer"><img src="//{{ siteurl }}/img/social/reddit.png" loading="lazy" decoding="async" fetchpriority="low"> Reddit</a></li>
 				</ul>
 			</li>
 			<li><a href="/related/{{ killdata.info.system.solarSystemID }}/{{ extra.relatedtime }}/">Related</a></li>
@@ -113,7 +113,7 @@
 
 <div class="col-lg-4">
 	<center>
-		<a id='loginsideimage' href='/ccpoauth2/' class='btn btn-block collapse'><img src='/img/ssologin.png' style='width: 209px;'><br/><br/></a>
+		<a id='loginsideimage' href='/ccpoauth2/' class='btn btn-block collapse'><img src='/img/ssologin.png' style='width: 209px;' loading="lazy" decoding="async" fetchpriority="low"><br/><br/></a>
 	</center>
 
 	<div class='text-center' style='width: 100%; display: flex; justify-content: center;'>

@@ -64,19 +64,19 @@
 	<ul class="nav navbar-nav pull-right hidden-xs">
 	{% if key == "ship" %}<li class="hidden-md hidden-sm">
 		<a href="https://eveconomy.online/item/{{ id }}" style="background-color:#72ABB6;color:#fff;" target="_blank" rel="noopener noreferrer">
-		<img src="/img/eveconomy.png" alt="EVEconomy" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;">
+		<img src="/img/eveconomy.png" alt="EVEconomy" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;" loading="lazy" decoding="async" fetchpriority="low">
 		EVEconomy
 		</a>
 	</li>{% endif %}
 	{% if key == "character" %}<li class="hidden-md hidden-sm">
 		<a href="https://podmail.space" style="color:#fff;" target="_blank" rel="noopener noreferrer">
-		<img src="/img/podmail.png" alt="PodMail" style="height:16px;vertical-align:middle;margin-right:4px;">
+		<img src="/img/podmail.png" alt="PodMail" style="height:16px;vertical-align:middle;margin-right:4px;" loading="lazy" decoding="async" fetchpriority="low">
 		PodMail
 		</a>
 	</li>{% endif %}
 <li class="hidden-md hidden-sm">
 	<!--<a href="https://zkillboard.github.io/zkillbot/" target="_new" style="background-color:#5865F2;color:#fff;">
-	<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg" alt="Discord" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;">
+	<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg" alt="Discord" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;" loading="lazy" decoding="async" fetchpriority="low">
 	zKillBot
 	</a>-->
 </li>
@@ -153,7 +153,7 @@
     {% include 'components/kill_list.html' %}
   </div>
   <div class="col-lg-2 pull-left" style="padding: 0px;">
-    <center><div style='max-width: 180px;'><a id='loginsideimage' href='/ccpoauth2/' class='btn btn-block collapse'><img src='/img/ssologin.png' style='width: 100%; max-width: 100%; margin-bottom: 1em;'></a></div></center>
+    <center><div style='max-width: 180px;'><a id='loginsideimage' href='/ccpoauth2/' class='btn btn-block collapse'><img src='/img/ssologin.png' style='width: 100%; max-width: 100%; margin-bottom: 1em;' loading="lazy" decoding="async" fetchpriority="low"></a></div></center>
     {% include 'components/activity.html' %}
 	{% include 'components/activePvP.html' %}
             <div id="topset-characterID"></div>

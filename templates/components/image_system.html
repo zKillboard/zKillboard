@@ -1,5 +1,4 @@
 {% set actualSize = (resizeImage is defined) ? resizeImage : imageSize %}
 <a href="/system/{{ field.solarSystemID }}/" rel='tooltip' title='{{ field.solarSystemName }}'>
-	<!--<img class="eveimage img-rounded" src="{{ image_item }}{{ field.sunTypeID}}/render" style='height: {{actualSize}}px; width: {{actualSize}}px;' alt="{{ field.solarSystemName }}">-->
-	<img class="eveimage img-rounded" src="{% if field.solarSystemID < 32000000 %}/img/nohus/systems/{{ field.solarSystemID }}.png{% else %}/img/empty_32.png{% endif %}" style='height: {{actualSize}}px; width: {{actualSize}}px;' alt="{{ field.solarSystemName }}" onError="this.removeAttribute('onerror'); this.src='{{ image_item }}{{ field.sunTypeID}}/render';">
+	<img class="eveimage img-rounded" src="{% if field.solarSystemID < 32000000 %}/img/nohus/systems/{{ field.solarSystemID }}.png{% else %}/img/empty_32.png{% endif %}" style='height: {{actualSize}}px; width: {{actualSize}}px;' alt="{{ field.solarSystemName }}" onError="this.removeAttribute('onerror'); this.src='{{ image_item }}{{ field.sunTypeID}}/render';"  loading="lazy" decoding="async" fetchpriority="low"/>
 </a>

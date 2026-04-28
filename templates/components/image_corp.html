@@ -1,9 +1,9 @@
 {% set actualSize = (resizeImage is defined) ? resizeImage : imageSize %}
 {% if field.corporationID == 0 %}
-<img src="{{ image_corporation}}1/logo?size={{imageSize}}" style='height: {{actualSize}}px; width: {{actualSize}}px;'  class="eveimage img-rounded"/>
+<img src="{{ image_corporation}}1/logo?size={{imageSize}}" style='height: {{actualSize}}px; width: {{actualSize}}px;'  class="eveimage img-rounded" loading="lazy" decoding="async" fetchpriority="low"/>
 {% else %}
 <a href="/corporation/{{ field.corporationID }}/" rel="tooltip" title="{{ field.corporationName }}">
-    <img src="{{ image_corporation}}{{ field.corporationID }}/logo?size={{imageSize}}" style='height: {{actualSize}}px; width: {{actualSize}}px;' class="eveimage img-rounded" alt="{{ field.corporationName}}" oonerror="this.onerror = null; this.src='{{ image_alliance }}1/logo?size={{ imageSize }}'"/>
+    <img src="{{ image_corporation}}{{ field.corporationID }}/logo?size={{imageSize}}" style='height: {{actualSize}}px; width: {{actualSize}}px;' class="eveimage img-rounded" alt="{{ field.corporationName}}" oonerror="this.onerror = null; this.src='{{ image_alliance }}1/logo?size={{ imageSize }}'" loading="lazy" decoding="async" fetchpriority="low"/>
 </a>
 {% endif %}
 
