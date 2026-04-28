@@ -9,7 +9,7 @@ require_once '../init.php';
 $width = 90;
 
 // Ensure we have db and redis access
-$mdb->findDoc("zkillmails");
+$mdb->findDoc("killmails");
 $redis->del("zkb:websockets"); // clear it on start
 $redis->del("zkb:servers"); // clear it on start
 
@@ -323,7 +323,9 @@ $mmongoClient = null;
 $madmin = null;
 function areWeMaster()
 {
-	global $mongoConnString, $hostname, $mmongoClient, $madmin;
+	global $mongoConnString, $hostname, $mmongoClient, $madmin, $env;
+
+	if ($env == "development") return true;
 
 	$masterHostname = null;
 
