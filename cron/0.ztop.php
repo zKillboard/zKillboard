@@ -50,16 +50,50 @@ while ($hour == date('H')) {
 
 	$queues = $redis->sMembers('queues');
 	$queues[] = "queueRelatedSet";
+	$mongoQueues = $mdb->getCollection('queues')->distinct('queue');
+	if (!is_array($mongoQueues)) $mongoQueues = [];
+	$mongoQueueLookup = [];
+	foreach ($mongoQueues as $queue) {
+		if (!is_string($queue) || trim($queue) == '') continue;
+		$mongoQueueLookup[$queue] = true;
+		$queues[] = $queue;
+	}
 	foreach ($queues as $queue) {
+		if (!is_string($queue) || trim($queue) == '') continue;
 		$redisQueues[$queue] = true;
 	}
-	ksort($redisQueues);
+	ksort($redisQueues, SORT_NATURAL | SORT_FLAG_CASE);
 
+	$queueMetrics = [];
 	foreach ($redisQueues as $queue => $v) {
-		if ($queue == 'queueStats') addInfo('queueStats', $redis->scard('queueStatsSet'));
-		else if ($queue == 'queueStatsUpdated') addInfo('queueStatsUpdated', $redis->scard('queueStatsUpdated'));
-		else if ($queue == 'queueRelatedSet') addInfo('queueRelated', $redis->scard('queueRelatedSet'));
-		else addInfo($queue, $redis->lLen($queue));
+		$queueLabel = preg_replace('/^queue/i', '', $queue);
+		if ($queueLabel === '') $queueLabel = $queue;
+
+		if ($queue == 'queueStats') $queueCount = $redis->scard('queueStatsSet');
+		else if ($queue == 'queueStatsUpdated') $queueCount = $redis->scard('queueStatsUpdated');
+		else if ($queue == 'queueRelatedSet') $queueCount = $redis->scard('queueRelatedSet');
+		else {
+			$queueCount = $redis->lLen($queue);
+			if ($queueCount == 0 && isset($mongoQueueLookup[$queue])) {
+				$queueCount = $mdb->count('queues', ['queue' => $queue]);
+			}
+		}
+
+		$queueMetrics[] = [
+			'label' => $queueLabel,
+			'count' => $queueCount,
+			'source' => $queue
+		];
+	}
+
+	usort($queueMetrics, function ($a, $b) {
+		$cmp = strnatcasecmp($a['label'], $b['label']);
+		if ($cmp != 0) return $cmp;
+		return strnatcasecmp($a['source'], $b['source']);
+	});
+
+	foreach ($queueMetrics as $queueMetric) {
+		addInfo($queueMetric['label'], $queueMetric['count']);
 	}
 
 	addInfo('', 0);
@@ -84,7 +118,8 @@ while ($hour == date('H')) {
 $totalKills = $mdb->count("killmails");
 $topKillID = max(1, $mdb->findField('killmails', 'killID', [], ['killID' => -1]));
 addInfo('Total Kills (' . number_format(($totalKills / $topKillID) * 100, 1) . '%)', $totalKills);
-addInfo('Top killID', $topKillID);	addInfo('', 0);
+addInfo('Top killID', $topKillID);
+addInfo('', 0);
 	$nonApiCount = $mdb->count('visitorlog', ['uri' => '/navbar/']);
 	addInfo('Visitor page loads in last 5 minutes', $nonApiCount);
 	$uniqueUsers = $mdb->getCollection('visitorlog')->distinct('ip', ['uri' => '/navbar/']);

@@ -90,7 +90,7 @@
 }
 .ztop-group-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 10px;
     margin-bottom: 12px;
 }
@@ -169,9 +169,11 @@
     margin: 0 0 6px 0;
 }
 .ztop-columns {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 8px;
+    overflow-x: visible;
+    padding-bottom: 0;
 }
 .ztop-card {
     background: rgba(255, 255, 255, 0.05);
@@ -179,6 +181,8 @@
     border-radius: 10px;
     padding: 8px;
     overflow: hidden;
+    min-width: 220px;
+    flex: 1 1 220px;
 }
 .ztop-card-title {
     font-size: 0.7em;
@@ -225,8 +229,9 @@
     overflow: auto;
 }
 @media (max-width: 1100px) {
-    .ztop-group-grid {
-        grid-template-columns: 1fr;
+    .ztop-card {
+        min-width: 200px;
+        flex-basis: 200px;
     }
 }
 </style>
@@ -541,7 +546,7 @@ function renderGroups(metrics) {
         else groups[targetIndex].right.push(card);
     });
 
-    [1, 2, 3, 4].forEach((index) => {
+    [2, 1, 4, 3].forEach((index) => {
         const groupData = groups[index];
         if (!groupData || (!groupData.left.length && !groupData.right.length)) return;
         const group = document.createElement('div');
