@@ -33,3 +33,6 @@ cd $DIR/logs
 for each in *.log; do
   rotate $each
 done
+
+# cleanup old log files
+find . -name "*.log.2" -type f -delete
