@@ -313,14 +313,11 @@ $db->createCollection("keyvalues");
 $collection = "keyvalues";
 $keyvalues = $db->$collection;
 echo "Done\n";
-echo "Creating index : 'expiresAt' => 1 ... ";
-$keyvalues->createIndex(['expiresAt' => 1], []);
-echo "Done\n";
 echo "Creating index : 'key' => 1 ... ";
 $keyvalues->createIndex(['key' => 1], ['unique' => true]);
 echo "Done\n";
-echo "Creating index : 'key' => 1, 'expiresAt' => 1 ... ";
-$keyvalues->createIndex(['key' => 1, 'expiresAt' => 1], []);
+echo "Creating index : 'expiresAt' => 1 ... ";
+$keyvalues->createIndex(['expiresAt' => 1], []);
 echo "Done\n";
 
 // killmails
@@ -469,6 +466,28 @@ $killmails->createIndex(['locationID' => 1, 'killID' => -1], []);
 echo "Done\n";
 echo "Creating index : 'locationID' => 1, 'labels' => 1, 'killID' => -1 ... ";
 $killmails->createIndex(['locationID' => 1, 'labels' => 1, 'killID' => -1], []);
+echo "Done\n";
+echo "Creating index : 'involved.characterID' => 1, 'killID' => -1 ... ";
+$killmails->createIndex(['involved.characterID' => 1, 'killID' => -1], []);
+echo "Done\n";
+echo "Creating index : 'involved.characterID' => 1, 'involved.isVictim' => 1, 'killID' => -1 ... ";
+$killmails->createIndex(['involved.characterID' => 1, 'involved.isVictim' => 1, 'killID' => -1], []);
+echo "Done\n";
+echo "Creating index : 'involved.corporationID' => 1, 'killID' => -1 ... ";
+$killmails->createIndex(['involved.corporationID' => 1, 'killID' => -1], []);
+echo "Done\n";
+echo "Creating index : 'involved.corporationID' => 1, 'involved.isVictim' => 1, 'killID' => -1 ... ";
+$killmails->createIndex(['involved.corporationID' => 1, 'involved.isVictim' => 1, 'killID' => -1], []);
+echo "Done\n";
+echo "Creating index : 'involved.characterID' => 1, 'killID' => -1, 'solo' => 1 ... ";
+$killmails->createIndex(['involved.characterID' => 1, 'killID' => -1, 'solo' => 1], ['partialFilterExpression' => array (
+  'solo' => true,
+)]);
+echo "Done\n";
+echo "Creating index : 'involved.corporationID' => 1, 'killID' => -1, 'solo' => 1 ... ";
+$killmails->createIndex(['involved.corporationID' => 1, 'killID' => -1, 'solo' => 1], ['partialFilterExpression' => array (
+  'solo' => true,
+)]);
 echo "Done\n";
 
 // locations
@@ -988,6 +1007,12 @@ $scopes->createIndex(['scope' => 1, 'lastFetch' => 1], []);
 echo "Done\n";
 echo "Creating index : 'scope' => 1, 'iterated' => 1, 'corporationID' => 1 ... ";
 $scopes->createIndex(['scope' => 1, 'iterated' => 1, 'corporationID' => 1], []);
+echo "Done\n";
+echo "Creating index : 'scope' => 1 ... ";
+$scopes->createIndex(['scope' => 1], []);
+echo "Done\n";
+echo "Creating index : 'scope' => 1, 'iterated' => 1 ... ";
+$scopes->createIndex(['scope' => 1, 'iterated' => 1], []);
 echo "Done\n";
 
 // sde_blueprints
@@ -1531,47 +1556,6 @@ $warmails->createIndex(['warID' => 1], []);
 echo "Done\n";
 echo "Creating index : 'warID' => 1, 'killID' => 1 ... ";
 $warmails->createIndex(['warID' => 1, 'killID' => 1], ['unique' => true]);
-echo "Done\n";
-
-// zest3
-echo "\nCreating collection zest3 ... ";
-$db->createCollection("zest3");
-$collection = "zest3";
-$zest3 = $db->$collection;
-echo "Done\n";
-echo "Creating index : 'path' => 1 ... ";
-$zest3->createIndex(['path' => 1], ['unique' => true]);
-echo "Done\n";
-
-// zest3_tasks
-echo "\nCreating collection zest3_tasks ... ";
-$db->createCollection("zest3_tasks");
-$collection = "zest3_tasks";
-$zest3_tasks = $db->$collection;
-echo "Done\n";
-echo "Creating index : 'type' => 1, 'id' => 1 ... ";
-$zest3_tasks->createIndex(['type' => 1, 'id' => 1], ['unique' => true]);
-echo "Done\n";
-echo "Creating index : 'killmails' => 1 ... ";
-$zest3_tasks->createIndex(['killmails' => 1], []);
-echo "Done\n";
-echo "Creating index : 'uniqid' => 1 ... ";
-$zest3_tasks->createIndex(['uniqid' => 1], []);
-echo "Done\n";
-echo "Creating index : 'activity' => 1 ... ";
-$zest3_tasks->createIndex(['activity' => 1], []);
-echo "Done\n";
-echo "Creating index : 'stats' => 1 ... ";
-$zest3_tasks->createIndex(['stats' => 1], []);
-echo "Done\n";
-echo "Creating index : 'topisk' => 1 ... ";
-$zest3_tasks->createIndex(['topisk' => 1], []);
-echo "Done\n";
-echo "Creating index : 'toptens' => 1 ... ";
-$zest3_tasks->createIndex(['toptens' => 1], []);
-echo "Done\n";
-echo "Creating index : 'mixed' => 1 ... ";
-$zest3_tasks->createIndex(['mixed' => 1], []);
 echo "Done\n";
 
 // zlog
