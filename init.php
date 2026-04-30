@@ -23,4 +23,4 @@ $mdb = new Mdb();
 $redis = new Redis();
 $redis->pconnect($mhostname, 6379, 1.0);
 
-$kvc = new KVCache($mdb, $redis);
+$kvc = new KVCache($mdb);

@@ -7,7 +7,7 @@ global $redis;
 $time = time();
 $time = $time - ($time % 900);
 $key = "zkb:everyFifteen:$time";
-if ($redis->get($key) == true) {
+if ($kvc->get($key) == true) {
     exit();
 }
 
@@ -59,8 +59,7 @@ foreach ($types as $type) {
 }
 
 // Some cleanup
-$redis->keys('*'); // Helps purge expired ttl's
-$redis->setex($key, 900, true);
+$kvc->setex($key, 900, true);
 
 $redis->set("tobefetched", $mdb->count("crestmails", ['processed' => false]));
 

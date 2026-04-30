@@ -3,7 +3,8 @@
 require_once "../init.php";
 
 $date = date("Ymd");
-if ($redis->get("zkb:map-activity:$date") == "true") exit();
+$key = "zkb:map-activity:$date";
+if ($kvc->get($key) == "true") exit();
 
 $checkem = ["involved.characterID"];
 
@@ -26,4 +27,4 @@ foreach ($checkem as $check) {
 }
 
 $redis->rename("zkb:activity_map", "zkb:activity");
-$redis->setex("zkb:map-activity:$date", 86400, "true");
+$kvc->setex($key, 86400, "true");

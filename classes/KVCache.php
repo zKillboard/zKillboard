@@ -2,72 +2,51 @@
 
 class KVCache
 {
-    public static $localCache = [];
-    public $mdb, $redis;
+	private $collection;
 
-    public function __construct($mdb, $redis)
-    {
-		// Check parameters to ensure they are not null
-		if ($mdb === null || $redis === null) {
-			throw new InvalidArgumentException("MDB and Redis instances cannot be null");
+	public function __construct($mdb)
+	{
+		if ($mdb === null) {
+			throw new InvalidArgumentException('MDB instance cannot be null');
 		}
-        $this->mdb = $mdb;
-        $this->redis = $redis;
-    }
+		$this->collection = $mdb->getCollection('keyvalues');
+	}
 
-    public function get($key, $default = null)
-    {
-        $key = "kv:$key";
-        
-        // Check local cache
-        /*if (isset(KVCache::$localCache[$key])) {
-            $cached = KVCache::$localCache[$key];
-            if ($cached['expiresAt'] <= time()) {
-                unset(KVCache::$localCache[$key]);
-            } else {
-                return json_decode($cached['value']);
-            }
-        }*/
-        
-        // Check Redis
-        $value = $this->redis->get($key);
-        if ($value === false || $value === null) {
-            // Check MongoDB as fallback
-            $value = $this->mdb->findField("keyvalues", "value", ['key' => $key, 'expiresAt' => ['$gt' => $this->mdb->now()]]);
-        }
-        
-        if ($value === null || $value === false) return $default;
-        return json_decode($value);
-    }
+	private static function now($delta = 0): MongoDB\BSON\UTCDateTime
+	{
+		return new MongoDB\BSON\UTCDateTime((time() + $delta) * 1000);
+	}
 
-    public function set($key, $value, $ttl = null)
-    {
-        $key = "kv:$key";
-        $value = json_encode($value);
+	public function get($key, $default = null)
+	{
+		$doc = $this->collection->findOne(
+			['key' => $key, 'expiresAt' => ['$gt' => self::now()]],
+			['projection' => ['value' => 1, '_id' => 0]]
+		);
+		if ($doc === null || !isset($doc['value']))
+			return $default;
+		return json_decode($doc['value']);
+	}
 
-        if ($ttl === null) $ttl = 86400 * 100; // 100 days
-        $expiresAt = time() + $ttl;
+	public function set($key, $value, $ttl = null)
+	{
+		$value = json_encode($value);
+		if ($ttl === null)
+			$ttl = 86400 * 100;  // 100 days
+		$this->collection->findOneAndUpdate(
+			['key' => $key],
+			['$set' => ['value' => $value, 'expiresAt' => self::now($ttl), 'updated' => self::now()]],
+			['upsert' => true]
+		);
+	}
 
-        //KVCache::$localCache[$key] = ['value' => $value, 'expiresAt' => $expiresAt];
-        $this->redis->setex($key, $ttl, $value);
-        $this->mdb->insertUpdate("keyvalues", ['key' => $key], ['value' => $value, 'expiresAt' => $this->mdb->now($ttl), 'updated' => $this->mdb->now()]);
-    }
+	public function setex($key, $ttl, $value)
+	{
+		$this->set($key, $value, $ttl);
+	}
 
-    public function setex($key, $ttl, $value)
-    {
-        $this->set($key, $value, $ttl);
-    }
-
-    public function del($key)
-    {
-        $key = "kv:$key";
-        //unset(KVCache::$localCache[$key]);
-        $this->redis->del($key);
-        $this->mdb->remove("keyvalues", ["key" => $key]);
-    }
-
-    public function __call($func, $args)
-    {
-        return $this->redis->$func(...$args);
-    }
+	public function del($key)
+	{
+		$this->collection->deleteOne(['key' => $key]);
+	}
 }

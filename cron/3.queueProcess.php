@@ -252,7 +252,6 @@ while ($time >= time()) {
 
                     $killsLastHour->add($row['killID']);
                     $queueInfo->push($killID);
-                    $redis->incr('zkb:totalKills');
                     $redis->zrem("tobeparsed", $killID);
                 } catch (Exception $exxx) {
                     if ($session->isInTransaction()) {

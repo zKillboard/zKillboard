@@ -13,13 +13,13 @@ $key = "tq:pricesChecked:$date";
 
 // Market region history endpoint is refreshed at 11:05 daily
 // We'll wait a few minutes then start pulling
-if ($redis->get($key) == "true" || date('Hi') < 1115) exit();
+if ($kvc->get($key) == "true" || date('Hi') < 1115) exit();
 
 $guzzler = new Guzzler(1, 1000000);
 $guzzler->call("$esiServer/markets/groups/", "groupsSuccess", "fail");
 $guzzler->finish();
 
-$redis->setex($key, 86400, "true");
+$kvc->setex($key, 86400, "true");
 
 function groupsSuccess($guzzler, $params, $content)
 {

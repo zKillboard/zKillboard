@@ -5,7 +5,8 @@ require_once "../init.php";
 use cvweiss\redistools\RedisCache;
 use cvweiss\redistools\RedisQueue;
 
-if ($redis->get("zkb:gankcheck") == "true") exit();
+$key = "zkb:gankcheck";
+if ($kvc->get($key) == "true") exit();
 
 $queueRedisQ = new RedisQueue('queueRedisQ');
 
@@ -54,4 +55,4 @@ foreach ($concord as $kill) {
     }
 }
 
-$redis->setex("zkb:gankcheck", 900, "true");
+$kvc->setex($key, 900, "true");

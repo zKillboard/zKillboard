@@ -10,7 +10,7 @@ if ($fetchWars !== true) exit();
 if ($redis->get("zkb:420prone") == "true") exit();
 
 $key = 'tqFetchWars';
-if ($redis->get($key) == true) {
+if ($kvc->get($key) == true) {
     exit();
 }
 
@@ -20,7 +20,7 @@ $guzzler = new Guzzler();
 $guzzler->call("$esiServer/wars/", "success", "fail");
 $guzzler->finish();
 
-$redis->setex($key, 3600, true);
+$kvc->setex($key, 3600, true);
 
 function success(&$guzzler, &$params, $content)
 {

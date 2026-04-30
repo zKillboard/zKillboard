@@ -6,7 +6,7 @@ if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit(
 
 if ($kvc->get("zkb:noapi") == "true") exit();
 $date = (int) date('Ymd', time() - 7200);
-if ($redis->get("zkb:insuranceFetched:$date") == true) {
+if ($kvc->get("zkb:insuranceFetched:$date") == true) {
     exit();
 }
 if ($redis->get("zkb:420prone") == "true") exit();
@@ -15,7 +15,7 @@ $guzzler = new Guzzler();
 $guzzler->call("$esiServer/insurance/prices/", "success", "fail", ['date' => $date]);
 $guzzler->finish();
 
-$redis->setex("zkb:insuranceFetched:$date", 86400, true);
+$kvc->setex("zkb:insuranceFetched:$date", 86400, true);
 
 function success($guzzler, $params, $content)
 {

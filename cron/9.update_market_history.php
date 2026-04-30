@@ -8,7 +8,7 @@ if ($kvc->get("zkb:noapi") == "true") exit();
 $rset = "zkb:updatemarket";
 $rsetLoad = "zkb:updatemarket:" . date('Ymd', time() - 40500);
 
-if ($redis->get($rsetLoad) == "true") exit();
+if ($kvc->get($rsetLoad) == "true") exit();
 
 $guzzler = new Guzzler(5);
 
@@ -35,7 +35,7 @@ while ($minute == date("Hi") && $redis->scard($rset) > 0) {
 }
 $guzzler->finish();
 
-if ($redis->scard($rset) == 0) $redis->setex($rsetLoad, 86400, "true");
+if ($redis->scard($rset) == 0) $kvc->setex($rsetLoad, 86400, "true");
 
 function isuccess(&$guzzler, $params, $content) {
     $redis = $params['redis'];

@@ -3,7 +3,7 @@
 require_once '../init.php';
 
 $key = 'zkb:supersCalced:'.date('Ymd');
-if ($redis->get($key) == true) {
+if ($kvc->get($key) == true) {
     exit();
 }
 
@@ -14,7 +14,7 @@ doSuperResult('allianceID');
 doSuperResult('corporationID');
 $mdb->getCollection("statistics")->updateMany(['updatingSupers' => true], ['$unset' => ['updatingSupers' => 1, 'hasSupers' => 1, 'supers' => 1]]);
 
-$redis->setex($key, 86400, true);
+$kvc->setex($key, 86400, true);
 
 function doSuperResult($type)
 {

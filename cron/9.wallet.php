@@ -10,12 +10,12 @@ if ($kvc->get("zkb:noapi") == "true") exit();
 if ($redis->get("zkb:420prone") == "true") exit();
 
 $redisKey = 'zkb:walletCheck';
-if ($redis->get($redisKey) != true) {
+if ($kvc->get($redisKey) != true) {
     $guzzler = new Guzzler();
     $scope = $mdb->findDoc("scopes", ['characterID' => $adminCharacter, 'scope' => 'esi-wallet.read_character_wallet.v1']);
     if (isset($scope['refreshToken'])) {
         $refreshToken = $scope['refreshToken'];
-        $params = ['redis' => $redis];
+        $params = ['redis' => $redis, 'kvc' => $kvc];
         $accessToken = $sso->getAccessToken($refreshToken);
         $content = $sso->doCall("$esiServer/characters/$adminCharacter/wallet/journal/", [], $accessToken);
         if ($content != "") {
@@ -40,7 +40,8 @@ function success(&$params, $content)
     insertRecords($response);
     applyBalances();
     $redis = $params['redis'];
-    $redis->setex("zkb:walletCheck", 3600, "true");
+    $kvc = $params['kvc'];
+    $kvc->setex("zkb:walletCheck", 3600, "true");
 }
 
 function applyBalances()
