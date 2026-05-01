@@ -15,7 +15,7 @@ use Patreon\OAuth;
 use Patreon\API;
 use MongoDB\BSON\UTCDateTime;
 
-if ($redis->get("zkb:patreonupdates") == "true") exit();
+if ($kvc->get("zkb:patreonupdates") == "true") exit();
 
 global $patreon_client_id, $patreon_client_secret, $patreon_redirect_uri, $patroen_campaign_id;
 if (!isset($patreon_campaign_id)) exit(); // not setup in local, stop erroring
@@ -46,7 +46,7 @@ if (isset($tokens['refresh_token'])) {
 $base_url = "https://www.patreon.com/api/oauth2/v2/campaigns/{$campaign_id}/members";
 $params = [
     'include' => 'user,currently_entitled_tiers',
-    'fields[member]' => 'full_name,email,patron_status,last_charge_date,last_charge_status,currently_entitled_amount_cents,pledge_relationship_start',
+    'fields[member]' => 'full_name,email,patron_status,last_charge_date,last_charge_status,currently_entitled_amount_cents,pledge_relationship_start,pledge_cadence',
     'fields[user]'   => 'full_name,email,vanity,thumb_url',
     'page[count]'    => 100
 ];
@@ -103,6 +103,8 @@ foreach ($members as $m) {
     $attrs = $m['attributes'] ?? [];
     $status = $attrs['patron_status'] ?? $attrs['last_charge_status'] ?? 'unknown';
     $amount = ($attrs['currently_entitled_amount_cents'] ?? 0) / 100;
+    $pledgeCadence = (int) ($attrs['pledge_cadence'] ?? 0);
+    $cadenceLabel = $pledgeCadence === 12 ? 'yearly' : ($pledgeCadence === 1 ? 'monthly' : 'unknown');
     $fullName = $attrs['full_name'] ?? '(no name)';
     $email = $attrs['email'] ?? '(hidden)';
 
@@ -117,7 +119,7 @@ foreach ($members as $m) {
     if ($row) {
         if ($amount <= 0) continue;
         $active++;
-        $total += (float) $amount;
+        $total += $pledgeCadence > 0 ? (((float) $amount) / $pledgeCadence) : 0;
         $charName = Info::getInfoField("characterID", $row['character_id'], "name");
         $dt = new DateTime();
         // Add 14 days to allow for buffer
@@ -125,9 +127,12 @@ foreach ($members as $m) {
         $mongoDate = new UTCDateTime($dt->getTimestamp() * 1000);
         $mdb->set("patreon", $row, ['expires' => $mongoDate]);
         $humanDate = $mongoDate->toDateTime()->format(DateTime::ATOM);
-        Util::out(" - {$charName} :: pledged=\${$amount} thru $humanDate");
+        Util::out(" - {$charName} :: pledged=\${$amount} cadence={$cadenceLabel} ({$pledgeCadence}) thru $humanDate");
     }
 }
-Util::out("Patreon subs refreshed: $active subs at \$$total");
+$total = number_format($total, 2);
+$kvc->set("patreon_total", $total);
+Util::out("Patreon subs refreshed: $active subs at \$$total per month");
 
-$redis->setex("zkb:patreonupdates", 88888, "true");
+$kvc->setex("zkb:patreonupdates", 88888, "true");
+
