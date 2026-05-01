@@ -77,5 +77,9 @@ function fail($guzzler, $params, $error)
 {
     global $esiServer;
 
-    Util::out("Fail " . $params['uri'] . "\n" . print_r($error, true));
+    $code = method_exists($error, 'getCode') ? (int) $error->getCode() : 0;
+    if ($code === 404) return;
+    $message = method_exists($error, 'getMessage') ? $error->getMessage() : (string) $error;
+    Util::out("Fail " . $params['uri'] . " (" . $code . "): " . $message);
 }
+
