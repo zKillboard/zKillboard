@@ -12,6 +12,10 @@ foreach ($invNames as $row) {
 }
 $invNames = null;
 
+$bulkSize = 10000;
+$ops = [];
+$infoCollection = $mdb->getCollection('information');
+
 $map = $mdb->getCollection('locations_calced')->find();
 foreach ($map as $row) {
     $locationID = @$row['id'];
@@ -31,9 +35,26 @@ foreach ($map as $row) {
         }
     }
 
+echo "$locationID $name\n";
     $update = ['name' => $name];
     if ($typeID !== null) $update['typeID'] = $typeID;
-    $mdb->insertUpdate('information', ['type' => 'locationID', 'id' => $locationID], $update);
+    $ops[] = [
+        'updateOne' => [
+            ['type' => 'locationID', 'id' => $locationID],
+            ['$set' => $update],
+            ['upsert' => true],
+        ],
+    ];
+
+    if (count($ops) >= $bulkSize) {
+        $infoCollection->bulkWrite($ops, ['ordered' => false]);
+        $ops = [];
+    }
+}
+
+if (!empty($ops)) {
+    $infoCollection->bulkWrite($ops, ['ordered' => false]);
 }
 
 $kvc->set("zkb:locationsLoaded", "true");
+
