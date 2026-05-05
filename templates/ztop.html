@@ -234,6 +234,71 @@
         flex-basis: 200px;
     }
 }
+@media (max-width: 760px) {
+    .ztop-server-header {
+        display: none;
+    }
+    .ztop-server-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-areas:
+            "host host"
+            "cpu load"
+            "mem redis"
+            "mongo role";
+        gap: 6px 10px;
+        padding: 8px 0;
+    }
+    .ztop-server-row > div {
+        text-align: left;
+    }
+    .ztop-server-row > div:nth-child(1) { grid-area: role; }
+    .ztop-server-row > div:nth-child(2) { grid-area: host; }
+    .ztop-server-row > div:nth-child(3) { grid-area: cpu; }
+    .ztop-server-row > div:nth-child(4) { grid-area: load; }
+    .ztop-server-row > div:nth-child(5) { grid-area: mem; }
+    .ztop-server-row > div:nth-child(6) { grid-area: redis; }
+    .ztop-server-row > div:nth-child(7) { grid-area: mongo; }
+    .ztop-server-host {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+        font-size: 0.95em;
+    }
+    .ztop-server-role {
+        justify-self: end;
+        opacity: 0.8;
+    }
+    .ztop-server-metric-graph {
+        display: grid;
+        grid-template-columns: 52px minmax(0, 1fr);
+        grid-template-areas:
+            "label label"
+            "spark value";
+        align-items: center;
+        gap: 2px 6px;
+    }
+    .ztop-server-row > div:nth-child(3)::before { content: 'CPU'; }
+    .ztop-server-row > div:nth-child(4)::before { content: 'Load'; }
+    .ztop-server-row > div:nth-child(5)::before { content: 'Memory'; }
+    .ztop-server-row > div:nth-child(6)::before { content: 'Redis'; }
+    .ztop-server-row > div:nth-child(7)::before { content: 'MongoDB'; }
+    .ztop-server-row > div:nth-child(n+3)::before {
+        grid-area: label;
+        font-size: 0.72em;
+        opacity: 0.75;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+    .ztop-server-sparkline {
+        grid-area: spark;
+        width: 52px;
+    }
+    .ztop-server-metric {
+        grid-area: value;
+        justify-self: end;
+        text-align: right;
+    }
+}
 </style>
 {% endblock %}
 
