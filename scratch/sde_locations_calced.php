@@ -16,7 +16,8 @@ $sourceCollections = [
     'npcStations' => ['idKeys' => ['stationID', 'solarSystemID', 'typeID']],
 ];
 
-$targetCollection = $mdb->getCollection('locations_calced');
+$locations_calced = $mdb->getCollection('locations_calced');
+$information = $mdb->getCollection('information');
 
 function getNormalizedPosition($row)
 {
@@ -193,7 +194,8 @@ foreach ($sourceCollections as $source => $sourceConfig) {
     $processed = 0;
     $upserted = 0;
     $skipped = 0;
-    $bulkOps = [];
+    $locations_bulkOps = [];
+	$information_bulkOps = [];
     $batchSize = 1000;
 
     $rows = $mdb->find($fullCollection);
@@ -226,7 +228,7 @@ foreach ($sourceCollections as $source => $sourceConfig) {
             'id' => $sourceKey,
             'entityID' => $entityID,
             'solar_system_id' => getSolarSystemID($row, $source),
-            'name' => ($row['name']['en'] ?? "$source $sourceKey"),
+            'name' => ((string) ($row['name']['en'] ?? "$source $sourceKey")),
             'position' => $position,
             'Radius' => (is_numeric($radius) ? (float) $radius : null),
             'updated' => $mdb->now(),
@@ -238,7 +240,7 @@ foreach ($sourceCollections as $source => $sourceConfig) {
             $doc['WarpZ'] = $warp['z'];
         }
 
-        $bulkOps[] = [
+        $locations_bulkOps[] = [
             'updateOne' => [
                 ['sourceCollection' => $fullCollection, 'id' => $sourceKey],
                 ['$set' => $doc],
@@ -246,16 +248,60 @@ foreach ($sourceCollections as $source => $sourceConfig) {
             ],
         ];
 
-        if (sizeof($bulkOps) >= $batchSize) {
-            $targetCollection->bulkWrite($bulkOps, ['ordered' => false]);
-            $upserted += sizeof($bulkOps);
-            $bulkOps = [];
+		$type = "locationID";
+		switch ($source) {
+			case 'mapRegions':
+				$type = 'regionID';
+				break;
+			case 'mapConstellations':
+				$type = 'constellationID';
+				break;
+			case 'mapSolarSystems':
+				$type = 'solarSystemID';
+				break;
+			case 'mapStargates':
+				$type = 'stargateID';
+				break;
+			case 'mapStars':
+				$type = 'starID';
+				$doc['name'] .= " (Star)";
+				break;
+		}
+		echo $fullCollection . " " . $sourceKey . " " . $doc['name'] . "\n";
+
+		$info_doc = [
+			'type' => $type,
+			'id' => $sourceKey,
+			'name' => $doc['name'],
+			'l_name' => strtolower($doc['name']),
+		];
+		$information_bulkOps[] = [
+			'updateOne' => [
+				['type' => $type, 'id' => $sourceKey],
+				['$set' => $info_doc],
+				['upsert' => true],
+			],
+		];
+
+        if (sizeof($locations_bulkOps) >= $batchSize) {
+            $locations_calced->bulkWrite($locations_bulkOps, ['ordered' => false]);
+            $upserted += sizeof($locations_bulkOps);
+            $locations_bulkOps = [];
+
+			if (sizeof($information_bulkOps) >= $batchSize) {
+				$information->bulkWrite($information_bulkOps, ['ordered' => false]);
+				$information_bulkOps = [];
+			}
         }
     }
 
-    if (sizeof($bulkOps) > 0) {
-        $targetCollection->bulkWrite($bulkOps, ['ordered' => false]);
-        $upserted += sizeof($bulkOps);
+    if (sizeof($locations_bulkOps) > 0) {
+        $locations_calced->bulkWrite($locations_bulkOps, ['ordered' => false]);
+        $upserted += sizeof($locations_bulkOps);
+    }
+
+    if (sizeof($information_bulkOps) > 0) {
+        $information->bulkWrite($information_bulkOps, ['ordered' => false]);
     }
 
     $stats[$fullCollection] = ['processed' => $processed, 'upserted' => $upserted, 'skipped' => $skipped];
