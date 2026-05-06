@@ -8,7 +8,7 @@ LOCAL_LATEST_FILE="${SCRIPT_DIR}/latest.json"
 IMPORTS_FILE="${SCRIPT_DIR}/imports.txt"
 REMOTE_LATEST_URL="https://developers.eveonline.com/static-data/tranquility/latest.jsonl"
 SDE_ZIP_URL="https://developers.eveonline.com/static-data/eve-online-static-data-latest-jsonl.zip"
-SDE_ZIP_URL="https://sde.riftforeve.online/assets/eve-online-static-data-3326071-enhanced-jsonl.zip"
+SDE_ZIP_URL="https://sde.riftforeve.online/assets/eve-online-static-data-latest-enhanced-jsonl.zip"
 
 require_cmd() {
   if ! command -v "$1" >/dev/null 2>&1; then
