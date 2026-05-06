@@ -259,15 +259,10 @@ foreach ($sourceCollections as $source => $sourceConfig) {
 			case 'mapSolarSystems':
 				$type = 'solarSystemID';
 				break;
-			case 'mapStargates':
-				$type = 'stargateID';
-				break;
 			case 'mapStars':
-				$type = 'starID';
 				$doc['name'] .= " (Star)";
 				break;
 		}
-		echo $fullCollection . " " . $sourceKey . " " . $doc['name'] . "\n";
 
 		$info_doc = [
 			'type' => $type,
@@ -275,6 +270,11 @@ foreach ($sourceCollections as $source => $sourceConfig) {
 			'name' => $doc['name'],
 			'l_name' => strtolower($doc['name']),
 		];
+
+		if ($type == "locationID" && isset($row['solarSystemID'])) {
+			$info_doc['solarSystemID'] = $row['solarSystemID'];
+		}
+
 		$information_bulkOps[] = [
 			'updateOne' => [
 				['type' => $type, 'id' => $sourceKey],
