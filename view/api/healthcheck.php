@@ -7,11 +7,12 @@ function handler($request, $response, $args, $container) {
     $res = ['host' => $hostname];
 
     try {
+		$redis->ping();
         $res['redis'] = true;
         $res['redis-error'] = null;
     } catch (Exception $e) {
         $res['redis'] = false;
-        $res['redis-error'] = $e->getMessage(); 
+        $res['redis-error'] = iconv('UTF-8', 'UTF-8//IGNORE', $e->getMessage());
     }
 
     try {
