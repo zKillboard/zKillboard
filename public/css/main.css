@@ -5,6 +5,8 @@ body, html {
 .centered { vertical-align:middle; text-align:center; }
 .centered img { display:block; margin:0 auto; }
 
+zk-home-side { display: block; text-align: center; }
+
 .eveimage { background-color: #151515; overflow: hidden; font-size: 0.1px;}
 
 #back-top {
