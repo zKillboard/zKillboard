@@ -4,6 +4,11 @@ class ZKillSSO extends EveOnlineSSO
 {
     private static $defaultScopes = ['esi-killmails.read_killmails.v1', 'esi-killmails.read_corporation_killmails.v1', 'esi-fittings.write_fittings.v1'];
 
+    public static function getDefaultScopes()
+    {
+        return self::$defaultScopes;
+    }
+
     public static function getSSO($scopes = null)
     {
         global $ccpCallback, $ccpClientID, $ccpSecret;

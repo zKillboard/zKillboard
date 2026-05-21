@@ -35,7 +35,23 @@ if (isset($_SERVER['HTTP_REFERER'])) {
 	}
 }
 
-    $sso = ZKillSSO::getSSO();
+    $scopes = null;
+    $requestedScopes = trim((string) filter_input(INPUT_GET, 'scopes'));
+    if ($requestedScopes != '') {
+        $allowedScopes = array_merge(['publicData'], ZKillSSO::getDefaultScopes());
+        $allowedLookup = array_flip($allowedScopes);
+        $selectedScopes = [];
+        foreach (explode(',', $requestedScopes) as $scope) {
+            $scope = trim($scope);
+            if ($scope == '' || !isset($allowedLookup[$scope])) continue;
+            $selectedScopes[$scope] = $scope;
+        }
+
+        $scopes = array_values($selectedScopes);
+        if (sizeof($scopes) == 0) $scopes = ['publicData'];
+    }
+
+    $sso = ZKillSSO::getSSO($scopes);
     $url = $sso->getLoginURL($_SESSION);
 
     session_write_close();

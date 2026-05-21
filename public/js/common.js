@@ -50,6 +50,12 @@ $(document).ready(function () {
     $(document).on('keypress', checkForSearchKey);
     $('#dls-slider').on('change input', updateDLS);
     $('#dls-slider').on('click touchstart mousedown', stopPropagation);
+    $('#login-delay-slider').on('change input', updateDLS);
+    $('#login-delay-slider').on('click touchstart mousedown', stopPropagation);
+    $(document).on('click', 'a[href^="/ccpoauth2/"]:not([href^="/ccpoauth2-"])', interceptLoginClick);
+    $(document).on('submit', 'form[action^="/ccpoauth2/"]', interceptLoginSubmit);
+    $('#continueLoginWithOptions').on('click', continueLoginWithOptions);
+    updateDLS.call($('#dls-slider'));
 
     // setup websocket with callbacks
     //if (start_websocket) startWebSocket();
@@ -721,11 +727,85 @@ const dlsOptions = {
     '4': '24 hours - killmails will post when they are 24 hours old.',
     '5': '72 hours - killmails will post when they are 72 hours (3 days) old.'
 }
+
+const defaultSSOScopes = [
+    'esi-killmails.read_killmails.v1',
+    'esi-killmails.read_corporation_killmails.v1',
+    'esi-fittings.write_fittings.v1'
+];
+
 function updateDLS(e) {
     let slider = $(this);
-    let val = slider.val() || 0;
+    let val = parseInt(slider.val() || 0, 10);
+    if (Number.isNaN(val) || val < 0 || val > 5) val = 0;
+
+    $('#dls-slider').val(val);
+    $('#login-delay-slider').val(val);
     $("#dls-value").text(dlsOptions[val]);
+    $("#login-delay-value").text(dlsOptions[val]);
     $("#dls-login").attr('href', `/ccpoauth2/${val}/`);
+}
+
+function parseDelayFromAuthPath(urlPath) {
+    if (!urlPath) return null;
+    const parts = String(urlPath).split('?')[0].match(/^\/ccpoauth2\/(\d+)\/?$/);
+    if (!parts || !parts[1]) return null;
+    const parsed = parseInt(parts[1], 10);
+    if (Number.isNaN(parsed) || parsed < 0 || parsed > 5) return null;
+    return parsed;
+}
+
+function interceptLoginClick(e) {
+    if (e.which && e.which !== 1) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+    const href = $(this).attr('href') || '/ccpoauth2/';
+    if (!href.startsWith('/ccpoauth2/')) return;
+    if (href.startsWith('/ccpoauth2-')) return;
+
+    e.preventDefault();
+    openLoginOptionsModal(href);
+}
+
+function interceptLoginSubmit(e) {
+    const action = $(this).attr('action') || '/ccpoauth2/';
+    if (!action.startsWith('/ccpoauth2/')) return;
+
+    e.preventDefault();
+    openLoginOptionsModal(action);
+}
+
+function openLoginOptionsModal(loginTarget) {
+    const modal = $('#loginOptionsModal');
+    if (modal.length == 0) {
+        window.location = loginTarget;
+        return;
+    }
+
+    const delayFromTarget = parseDelayFromAuthPath(loginTarget);
+    const currentDelay = parseInt($('#dls-slider').val() || 0, 10);
+    const delay = delayFromTarget == null ? currentDelay : delayFromTarget;
+    $('#login-delay-slider').val(delay);
+    updateDLS.call($('#login-delay-slider'));
+
+    modal.find('.login-scope').prop('checked', true);
+    modal.modal('show');
+}
+
+function continueLoginWithOptions() {
+    const delay = parseInt($('#login-delay-slider').val() || 0, 10);
+    const selectedScopes = [];
+    $('#loginOptionsModal .login-scope:checked').each(function() {
+        selectedScopes.push($(this).val());
+    });
+
+    let loginURL = `/ccpoauth2/${delay}/`;
+    const scopes = selectedScopes.length > 0 ? selectedScopes : ['publicData'];
+    if (scopes.join(',') !== defaultSSOScopes.join(',')) {
+        loginURL += `?scopes=${encodeURIComponent(scopes.join(','))}`;
+    }
+
+    window.location = loginURL;
 }
 
 console.log('common.js loaded');
