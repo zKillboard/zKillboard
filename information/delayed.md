@@ -12,14 +12,29 @@ This feature addresses long-standing community requests for better OpSec without
 
 Choose the delay that best fits your operational needs:
 
-| Delay Setting | When Killmails Post | Best For |
-|--------------|---------------------|----------|
-| **ASAP** *(default)* | Immediately | Solo PvP, public fleets, no OpSec concerns |
-| **1 Hour** | After 1 hour | Quick roams, small gang PvP |
-| **3 Hours** | After 3 hours | Medium-scale operations, wormhole chains |
-| **8 Hours** | After 8 hours | Strategic operations, daily fleet activities |
-| **24 Hours** | After 1 day | Major operations, capital deployments |
-| **72 Hours** | After 3 days | Maximum OpSec, sensitive campaigns |
+- **ASAP** *(default)*
+	Posts: Immediately
+	Best for: Solo PvP, public fleets, no OpSec concerns
+
+- **1 Hour**
+	Posts: After 1 hour
+	Best for: Quick roams, small gang PvP
+
+- **3 Hours**
+	Posts: After 3 hours
+	Best for: Medium-scale operations, wormhole chains
+
+- **8 Hours**
+	Posts: After 8 hours
+	Best for: Strategic operations, daily fleet activities
+
+- **24 Hours**
+	Posts: After 1 day
+	Best for: Major operations, capital deployments
+
+- **72 Hours**
+	Posts: After 3 days
+	Best for: Maximum OpSec, sensitive campaigns
 
 ---
 
