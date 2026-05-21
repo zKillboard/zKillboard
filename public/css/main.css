@@ -1,5 +1,29 @@
-body, html {
-	height: 108%;
+html {
+    scrollbar-gutter: stable;
+}
+
+body.modal-open {
+	overflow: hidden !important;
+	padding-right: 0 !important;
+}
+
+body.modal-open .modal {
+	overflow-y: auto;
+	scrollbar-width: none;
+	/* Firefox */
+	-ms-overflow-style: none;
+	/* old Edge */
+}
+
+body.modal-open .modal::-webkit-scrollbar {
+	width: 0 !important;
+	height: 0 !important;
+	background: #151515 !important;
+}
+
+body.modal-open .modal::-webkit-scrollbar-track,
+body.modal-open .modal::-webkit-scrollbar-thumb {
+	background: #151515 !important;
 }
 
 .centered { vertical-align:middle; text-align:center; }
@@ -335,7 +359,6 @@ td.centered {
 html,body {
     height: 100%;
     margin-bottom: 125px !important;
-    /*overflow-x: hidden;**//
 }
 }
 @media only screen and (max-width: 1579px) {
