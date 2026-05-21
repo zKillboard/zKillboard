@@ -28,7 +28,7 @@
     {% endif %}
     {% if counter == 11 %}
     <tr class="grouping-all-{{ topSet.type }}">
-        <td colspan="4"><center><span class="btn btn-sm btn-primary" onclick="$('.grouping-{{ topSet.type }}').show(); $('.grouping-all-{{topSet.type}}').hide(); return false;">The Rest (up to 100)</span></center></td>
+        <td colspan="4"><center><span class="btn btn-sm btn-primary" onclick="$('.grouping-{{ topSet.type }}').show(); $('.grouping-all-{{topSet.type}}').hide(); return false;">The Rest (up to 500)</span></center></td>
     </tr>
     {% endif %}
     <tr class="grouping-{{ topSet.type }}{% if counter >= 11 %} collapse{% endif %}">

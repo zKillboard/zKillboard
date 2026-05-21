@@ -130,7 +130,7 @@ class AdvancedSearch
     {
         global $mdb, $longQueryMS, $redis;
 
-        $hashKey = "Stats::getTop:q:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly);
+        $hashKey = "Stats::getTop:r:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly);
         while ($redis->get("inprogress:$hashKey") == "true") sleep(1);
         try {
             $redis->setex("inprogress:$hashKey", 60, "true");
@@ -167,7 +167,7 @@ class AdvancedSearch
                 $pipeline[] = ['$group' => ['_id' => '$_id.' . $groupByColumn, 'kills' => ['$sum' => 1]]];
             }
             $pipeline[] = ['$sort' => ['kills' => $sortBy]];
-            $pipeline[] = ['$limit' => 150];
+            $pipeline[] = ['$limit' => 550];
             $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
 
             $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'maxTimeMS' => 25000]);
@@ -179,7 +179,7 @@ class AdvancedSearch
                 Util::zout("getTop Long query (${time}ms): $hashKey $uri");
             }
 
-            $result = Util::removeDQed($result, $groupByColumn, 100);
+            $result = Util::removeDQed($result, $groupByColumn, 500);
 
             if ($addInfo) Info::addInfo($result);
 
