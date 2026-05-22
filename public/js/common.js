@@ -309,9 +309,11 @@ var killdata = undefined;
 function addLittleKill(data) {
 	const y = window.scrollY;
 
-	var data = $(data);
-	killdata = $(data);
-	$("#killlist tbody tr").first().before(data);
+    var data = $(data);
+    killdata = $(data);
+    const row = data.filter('.tr-killmail').first();
+    $("#killlist tbody tr").first().before(data);
+    if (row.length > 0 && typeof window.playAmbientKillmailNote === 'function') window.playAmbientKillmailNote(row);
 
 	// Keep the page from growing too much...
 	while ($("#killlist tbody tr").length > 100) $("#killlist tbody tr:last").remove();

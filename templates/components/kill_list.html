@@ -1,6 +1,12 @@
 {% set txtLength = 60 %}
 {% include 'components/pager.html' %}
-<h3 class="pull-left">{{ killListTitle }}</h3>
+{% set isMostRecentKills = (killListTitle|lower == 'most recent kills') %}
+<div class="kill-list-header">
+  <h3 class="kill-list-title{% if isMostRecentKills %} most-recent-kills-title{% endif %}"{% if isMostRecentKills %} id="mostRecentKillsTitle"{% endif %}>{{ killListTitle }}</h3>
+  {% if isMostRecentKills %}
+  <div id="ambientKillmailHost" class="kill-list-ambience"></div>
+  {% endif %}
+</div>
 {% set CurrentYear = '' %}
 {% set CurrentMonth = '' %}
 {% set CurrentDay = ''%}
