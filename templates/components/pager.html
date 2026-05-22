@@ -17,9 +17,9 @@
 	<ul class="pagination pagination-sm">
 		{% if pager == true %}
 			{% if page == 2 %}
-				<li><a href="{{ pageBase }}" rel="nofollow prev">&laquo;</a></li>
+				<li class="pagination-li-1"><a href="{{ pageBase }}" rel="nofollow prev">&laquo;</a></li>
 			{% elseif page > 2 %}
-				<li><a href="{{ pageBase }}page/{{ page - 1 }}/" rel="nofollow prev">&laquo;</a></li>
+				<li class="pagination-li-{{ page - 1 }}"><a href="{{ pageBase }}page/{{ page - 1 }}/" rel="nofollow prev">&laquo;</a></li>
 			{% endif %}
 	
 			{% set startIndex = page - 3 %}
@@ -27,13 +27,13 @@
 	
 			{% for pageIndex in startIndex..endIndex %}
 				{% if pageIndex == 1 %}
-					<li class="{{ isActive(pageIndex, page, 'active') }}"><a href="{{ pageBase }}" rel="nofollow">{{ pageIndex }}</a></li>
+					<li class="pagination-li-{{ pageIndex }} {{ isActive(pageIndex, page, 'active') }}"><a href="{{ pageBase }}" rel="nofollow">{{ pageIndex }}</a></li>
 				{% elseif pageIndex > 1 %}
-					<li class="{{ isActive(pageIndex, page, 'active') }}"><a href="{{ pageBase }}page/{{pageIndex}}/" rel="nofollow">{{ pageIndex }}</a></li>
+					<li class="pagination-li-{{ pageIndex }} {{ isActive(pageIndex, page, 'active') }}"><a href="{{ pageBase }}page/{{pageIndex}}/" rel="nofollow">{{ pageIndex }}</a></li>
 				{% endif %}
 			{% endfor %}
             {% if page < 20 %}
-			<li><a href="{{ pageBase }}page/{{ page + 1 }}/" rel="nofollow next">&raquo;</a></li>
+			<li class="pagination-li-{{ page + 1 }}"><a href="{{ pageBase }}page/{{ page + 1 }}/" rel="nofollow next">&raquo;</a></li>
             {% endif %}
 		{% endif %}
 	</ul>

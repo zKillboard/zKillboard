@@ -5,8 +5,25 @@ var overviewStats = undefined;
 loadKms();
 loadTops();
 function updateStats(stats) {
-    overviewStats = stats;
-    console.log('stats updated');
+	overviewStats = stats;
+
+	console.log(stats);
+	console.log('stats updated');
+
+	const kills = stats['s-a-sd'] || 0;
+	const losses = stats['s-a-sl'] || 0;
+	const total = kills + losses;
+
+	const valueToUse = window.location.pathname.includes('/losses/') ? losses : window.location.pathname.includes('/kills/') ? kills : total;
+	for (i = 10; i > 1; i--) {
+		let els = document.getElementsByClassName(`pagination-li-${i}`);
+
+		if (valueToUse < i * 100) {
+			$(els).hide();
+		} else {
+			$(els).show();
+		}
+	}
 }
 
 var kmLoaded = false;
