@@ -842,7 +842,7 @@ function btn_export() {
 		      </div>
 		      <div class="modal-body">
 		        <p>Copy the filter below to use in zkillbot:</p>
-		        <input type="text" class="form-control" id="zkillFilterInput" value="/zkillbot subscribe advanced:${filter}" readonly>
+		        <input type="text" class="form-control" id="zkillFilterInput" readonly>
 		      </div>
 		      <div class="modal-footer">
 		        <button type="button" class="btn btn-primary" id="copyZkillFilter">Copy to Clipboard</button>
@@ -851,6 +851,7 @@ function btn_export() {
 		  </div>
 		</div>
 	`);
+	modal.find('#zkillFilterInput').val('/zkillbot subscribe advanced:' + filter);
 	$('body').append(modal);
 	modal.modal('show');
 
