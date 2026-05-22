@@ -85,8 +85,10 @@ function updateSoloBtn() {
 
 function updatePageBtn() {
     const t = $(this);
-    const page = t.text();
+    const pageText = t.text().trim();
+    const page = Number.parseInt(pageText, 10);
     if (t.css('display') == 'none') return t.remove();
+    if (!Number.isFinite(page) || page < 1) return t.remove();
     t.attr('href', buildURL(ranksType, ranksKL, ranksGroup, ranksEpoch, page, ranksSortKey, ranksSortDir));
 }
 
