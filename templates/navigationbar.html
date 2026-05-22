@@ -84,7 +84,7 @@
                                         <span class="caret"></span></a>
 					        <ul class="dropdown-menu" id='char-loggedin'>
 							<li id='username' class="dropdown-header" style="font-weight: bold;">{{ sessionusername }}</li>
-                            <li class="forloggedout"><a id="dls-login" href="/ccpoauth2/"><img src="/img/ssologin.png" alt="SSO Login"></a></li>
+                            <li class="forloggedout"><a id="dls-login"  onclick="interceptLoginClick();" href="/ccpoauth2/"><img src="/img/ssologin.png" alt="SSO Login"></a></li>
 
 <img class='char-image clickimage hidden-xs forloggedin' style='margin-left: 10px;'><br/>
 <img class='corp-image clickimage hidden-xs forloggedin' style='margin-left: 10px;'>
