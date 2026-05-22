@@ -4,7 +4,7 @@
 		"slim/slim": "^4.0",
 		"slim/twig-view": "^3.0",
 		"slim/psr7": "^1.2",
-		"twig/twig": "^3.0",
+		"twig/twig": "^3.26",
 		"erusev/parsedown": "1.*",
 		"zkillboard/redisq": "*",
 		"ircmaxell/random-lib": "^1.1",
