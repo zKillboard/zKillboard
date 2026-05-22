@@ -226,7 +226,7 @@ function getHTML(suggestion) {
 		.attr("id", suggestion.data.type + ':' + suggestion.data.id)
 		.attr("entity-id", suggestion.data.id)
 		.attr("entity-type", suggestion.data.type)
-		.html(suggestion.data.type.replace('ID', '') + ': ' + suggestion.value);
+		.text(suggestion.data.type.replace('ID', '') + ': ' + suggestion.value);
 	return $("<div>").attr('entity-type', suggestion.data.type).attr('entity-id', suggestion.data.id).append(left).append(data).append(right).append(remove).attr('time-id', 'id-' + Date.now()).addClass('filter').addClass('filter-' + suggestion.data.type);
 }
 
