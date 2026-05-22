@@ -73,7 +73,11 @@ $(document).ready(function () {
     if (typeof prepComments === "function") prepComments();
 
     // For named anchors with the hrefit classname, make it a link as well
-    $(".hrefit").each(function() { t = $(this);  t.attr('href', '#' + t.attr('name')); });
+    $(".hrefit").each(function() {
+        t = $(this);
+        var anchorName = (t.attr('name') || '').replace(/[^A-Za-z0-9_\-:\.]/g, '');
+        t.attr('href', '#' + anchorName);
+    });
     $(".fetchme").each(function() { loadKillRow($(this).attr('killID'));  });
     setTimeout(fixCCPsBrokenImages, 1000);
 
