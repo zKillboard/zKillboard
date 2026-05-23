@@ -128,7 +128,7 @@
 				border-radius: 10px;
 				background: rgba(8, 12, 18, 0.82);
 				backdrop-filter: blur(8px);
-				pointer-events: none;
+				pointer-events: auto;
 			}
 			.system-activity {
 				position: absolute;
@@ -142,7 +142,7 @@
 				border-radius: 10px;
 				background: rgba(8, 12, 18, 0.82);
 				backdrop-filter: blur(8px);
-				pointer-events: none;
+				pointer-events: auto;
 			}
 			.system-activity[hidden] { display: none; }
 			.region-activity[hidden] { display: none; }
@@ -159,9 +159,15 @@
 			.system-activity-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 			.system-activity-table td { padding: 3px 0; }
 			.system-activity-table td:last-child { text-align: right; color: rgba(223, 237, 255, 0.9); }
-			.killmail-stream { position: absolute; top: 0; left: 18px; width: 292px; height: 100vh; height: 100dvh; overflow: hidden; pointer-events: none; }
+			.region-activity-table tr,
+			.system-activity-table tr { cursor: pointer; }
+			.region-activity-table tr:hover td,
+			.system-activity-table tr:hover td { color: #ffffff; }
+			.killmail-stream { position: absolute; top: 0; left: 18px; width: 292px; height: 100vh; height: 100dvh; overflow: hidden; pointer-events: auto; }
 			.feed-list { list-style: none; margin: 0; padding: 0; overflow: hidden; position: absolute; inset: 0; }
 			.feed-list li { padding: 8px 0; margin-bottom: 6px; border-bottom: 1px solid rgba(255, 255, 255, 0.09); }
+			.feed-list li a { color: inherit; text-decoration: none; display: block; }
+			.feed-list li a:hover .kill-system { color: #ffffff; }
 			.kill-row { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 10px; align-items: center; }
 			.kill-image { width: 42px; height: 42px; border-radius: 10px; overflow: hidden; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); }
 			.kill-image img { display: block; width: 100%; height: 100%; object-fit: cover; }

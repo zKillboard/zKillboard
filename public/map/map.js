@@ -48,7 +48,9 @@ document.addEventListener('DOMContentLoaded', () => {
 	const MAX_ACTIVE_REGIONS = 5;
 	const MAX_ACTIVE_SYSTEMS = 5;
 	const MODE_TRANSITION_MS = 1000;
-	const DRAG_START_PX = 6;
+	const DRAG_START_PX = 10;
+	const SYSTEM_HOVER_RADIUS_PX = 12;
+	const SYSTEM_CLICK_RADIUS_PX = 20;
 	const CANVAS_FONT_FAMILY = '"Noto Sans", "Segoe UI", sans-serif';
 
 	function canvasFont(sizePx, weight = 700) {
@@ -706,15 +708,19 @@ document.addEventListener('DOMContentLoaded', () => {
 		for (const kill of state.feed.slice(0, renderCount)) {
 			const item = document.createElement('li');
 			const imageUrl = getKillImageUrl(kill.victim_ship_type_id);
+			const killId = asNumber(kill.killmail_id || kill.sequence_id);
+			const killUrl = killId > 0 ? `https://zkillboard.com/kill/${killId}/` : '#';
 			item.innerHTML = `
-				<div class="kill-row">
-					<div class="kill-image"><img src="${imageUrl}" alt="" loading="lazy" decoding="async" fetchpriority="low"></div>
-					<div class="kill-copy">
-						<div class="kill-time">${formatTime(kill.killmail_time || kill.uploaded_at)}</div>
-						<div class="kill-system">${kill.systemName || 'Unknown system'}</div>
-						<div class="kill-meta">${kill.regionName ? `${kill.regionName} | ` : ''}${formatIsk(kill.total_value)} ISK | ${kill.attacker_count} attackers</div>
+				<a href="${killUrl}" target="_blank" rel="noopener noreferrer">
+					<div class="kill-row">
+						<div class="kill-image"><img src="${imageUrl}" alt="" loading="lazy" decoding="async" fetchpriority="low"></div>
+						<div class="kill-copy">
+							<div class="kill-time">${formatTime(kill.killmail_time || kill.uploaded_at)}</div>
+							<div class="kill-system">${kill.systemName || 'Unknown system'}</div>
+							<div class="kill-meta">${kill.regionName ? `${kill.regionName} | ` : ''}${formatIsk(kill.total_value)} ISK | ${kill.attacker_count} attackers</div>
+						</div>
 					</div>
-				</div>
+				</a>
 			`;
 			liveFeed.appendChild(item);
 		}
@@ -749,6 +755,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		regionActivityBody.replaceChildren();
 		for (const [region, count] of topRegions) {
 			const row = document.createElement('tr');
+			row.dataset.regionName = region;
+			row.title = `Focus region: ${region}`;
 			const nameCell = document.createElement('td');
 			const countCell = document.createElement('td');
 			nameCell.textContent = region;
@@ -786,6 +794,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		systemActivityBody.replaceChildren();
 		for (const [system, count] of topSystems) {
 			const row = document.createElement('tr');
+			row.dataset.systemName = system;
+			row.title = `Focus system: ${system}`;
 			const nameCell = document.createElement('td');
 			const countCell = document.createElement('td');
 			nameCell.textContent = system;
@@ -968,7 +978,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	function findHoveredSystem(clientX, clientY) {
+	function findHoveredSystem(clientX, clientY, maxDistance = SYSTEM_HOVER_RADIUS_PX) {
 		let best = null;
 		let bestDistance = Infinity;
 		for (const system of state.systems) {
@@ -976,7 +986,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			const dx = point.x - clientX;
 			const dy = point.y - clientY;
 			const distance = Math.sqrt(dx * dx + dy * dy);
-			if (distance < bestDistance && distance <= 12) {
+			if (distance < bestDistance && distance <= maxDistance) {
 				best = system;
 				bestDistance = distance;
 			}
@@ -1055,7 +1065,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	function handleMapClick(clientX, clientY) {
-		const system = findHoveredSystem(clientX, clientY);
+		const system = findHoveredSystem(clientX, clientY, SYSTEM_CLICK_RADIUS_PX);
 		if (system) {
 			focusSystem(system);
 			return;
@@ -1111,7 +1121,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 			const dx = event.clientX - state.pointer.startX;
 			const dy = event.clientY - state.pointer.startY;
-			const movedBeyondClick = Math.abs(dx) > DRAG_START_PX || Math.abs(dy) > DRAG_START_PX;
+			const movedBeyondClick = Math.hypot(dx, dy) > DRAG_START_PX;
 			const wasDragging = state.pointer.dragging || movedBeyondClick;
 			state.pointer = null;
 			if (!wasDragging) handleMapClick(event.clientX, event.clientY);
@@ -1135,6 +1145,13 @@ document.addEventListener('DOMContentLoaded', () => {
 			state.camera.y += worldBefore.y - worldAfter.y;
 			requestDraw();
 		}, { passive: false });
+
+		canvas.addEventListener('dblclick', (event) => {
+			event.preventDefault();
+			state.pointer = null;
+			fitCamera();
+			requestDraw();
+		});
 	}
 
 	function bindControls() {
@@ -1168,6 +1185,31 @@ document.addEventListener('DOMContentLoaded', () => {
 			fitCamera();
 			requestDraw();
 		});
+	}
+
+	function bindActivityFocus() {
+		if (regionActivityBody) {
+			regionActivityBody.addEventListener('click', (event) => {
+				const row = event.target.closest('tr[data-region-name]');
+				if (!row) return;
+				const regionName = String(row.dataset.regionName || '').trim();
+				if (!regionName) return;
+				focusRegion(regionName);
+			});
+		}
+
+		if (systemActivityBody) {
+			systemActivityBody.addEventListener('click', (event) => {
+				const row = event.target.closest('tr[data-system-name]');
+				if (!row) return;
+				const systemName = String(row.dataset.systemName || '').trim().toLowerCase();
+				if (!systemName) return;
+				const systemId = state.systemIdByName.get(systemName);
+				const system = state.systemById.get(systemId);
+				if (!system) return;
+				focusSystem(system);
+			});
+		}
 	}
 
 	function updateProjectionToggleUi() {
@@ -1252,6 +1294,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		ensureHintElement();
 		bindControls();
 		bindRecenterButton();
+		bindActivityFocus();
 		bindProjectionToggle();
 		bindRegionLabelToggle();
 		bindCanvasInteractions();
