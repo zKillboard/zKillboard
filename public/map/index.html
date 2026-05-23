@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<meta name="description" content="A standalone live New Eden map rendered from the R2Z2 killmail stream and zKillboard system data.">
+		<meta name="theme-color" content="#04070b">
+		<link rel="canonical" href="/map/index.html">
+		<title>New Eden Map</title>
+		<style>
+			:root {
+				--bg: #04070b;
+				--panel: rgba(8, 12, 18, 0.72);
+				--panel-border: rgba(126, 179, 255, 0.16);
+				--text: #eff6ff;
+				--muted: rgba(221, 233, 248, 0.7);
+			}
+
+			html, body {
+				width: 100%;
+				height: 100%;
+				margin: 0;
+				overflow: hidden;
+				background: var(--bg);
+				color: var(--text);
+				font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+			}
+
+			body {
+				background:
+					radial-gradient(circle at 20% 20%, rgba(72, 108, 154, 0.18), transparent 35%),
+					radial-gradient(circle at 80% 30%, rgba(68, 143, 198, 0.12), transparent 28%),
+					linear-gradient(180deg, #05070b 0%, #030408 100%);
+			}
+
+			#mapApp { position: fixed; inset: 0; overflow: hidden; }
+			#mapCanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+			#mapCanvas:active { cursor: grabbing; }
+			.vignette, .grid-overlay { position: absolute; inset: 0; pointer-events: none; }
+			.vignette { background: radial-gradient(circle at center, transparent 55%, rgba(2, 4, 7, 0.55) 100%); }
+			.grid-overlay {
+				background-image: linear-gradient(rgba(130, 170, 220, 0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(130, 170, 220, 0.035) 1px, transparent 1px);
+				background-size: 80px 80px;
+				mask-image: radial-gradient(circle at center, black 42%, transparent 100%);
+				opacity: 0.55;
+			}
+			.panel {
+				position: absolute;
+				background: rgba(8, 12, 18, 0.72);
+				border: 1px solid rgba(126, 179, 255, 0.16);
+				backdrop-filter: blur(18px);
+				box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+			}
+			.top-right { left: 18px; bottom: 132px; width: min(420px, calc(100vw - 36px)); padding: 16px; border-radius: 18px; }
+			.bottom-left { left: 18px; bottom: 18px; width: min(420px, calc(100vw - 36px)); padding: 14px 16px; border-radius: 18px; }
+			.sidebar { position: absolute; top: 18px; left: 18px; width: 292px; padding: 14px 12px 12px; border-radius: 18px; overflow: hidden; }
+			.stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 14px; }
+			.stat { padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.06); }
+			.stat-label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+			.stat-value { display: block; font-size: 17px; margin-top: 4px; font-weight: 700; }
+			.toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+			.toolbar button { appearance: none; border: 1px solid rgba(121, 183, 255, 0.28); background: rgba(13, 18, 26, 0.9); color: var(--text); border-radius: 12px; padding: 10px 14px; font: inherit; cursor: pointer; }
+			.feed-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--muted); margin: 0 0 10px; }
+			.feed-list { list-style: none; margin: 0; padding: 0; overflow: hidden; max-height: calc(100vh - 92px); }
+			.feed-list li { padding: 10px 11px; border-radius: 12px; margin-bottom: 6px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.05); }
+			.kill-row { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 10px; align-items: center; }
+			.kill-image { width: 42px; height: 42px; border-radius: 10px; overflow: hidden; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); }
+			.kill-image img { display: block; width: 100%; height: 100%; object-fit: cover; }
+			.kill-copy { min-width: 0; }
+			.kill-time { font-size: 11px; color: var(--muted); }
+			.kill-system { font-size: 14px; font-weight: 700; margin-top: 2px; }
+			.kill-meta { font-size: 11px; color: rgba(221, 233, 248, 0.78); margin-top: 2px; }
+			.hint { position: absolute; min-width: 240px; padding: 12px 14px; border-radius: 14px; background: rgba(6, 9, 13, 0.88); border: 1px solid rgba(121, 183, 255, 0.2); backdrop-filter: blur(12px); pointer-events: none; display: none; z-index: 5; }
+			.hint-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+			.hint-muted { font-size: 12px; color: var(--muted); margin-top: 4px; }
+			.loading { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(2, 4, 7, 0.82); backdrop-filter: blur(12px); z-index: 8; }
+			.loading[hidden] { display: none; }
+			.loading-card { padding: 20px 24px; border-radius: 18px; border: 1px solid rgba(121, 183, 255, 0.18); background: rgba(8, 12, 18, 0.92); text-align: center; }
+			.loading-card strong { display: block; font-size: 18px; margin-bottom: 8px; }
+			.loading-card span { font-size: 13px; color: var(--muted); }
+			@media (max-width: 1100px) {
+				.sidebar { left: 18px; right: 18px; top: auto; bottom: 18px; width: auto; height: 220px; }
+				.feed-list { max-height: 150px; }
+				.top-right { left: 18px; right: 18px; width: auto; bottom: 350px; }
+				.bottom-left { bottom: 256px; }
+			}
+			@media (max-width: 720px) {
+				.top-right, .bottom-left, .sidebar { left: 12px; right: 12px; width: auto; }
+				.top-right { bottom: 342px; }
+				.bottom-left { bottom: 248px; }
+				.sidebar { bottom: 12px; height: 220px; }
+			}
+		</style>
+	</head>
+	<body>
+		<div id="mapApp">
+			<canvas id="mapCanvas" aria-label="New Eden map canvas"></canvas>
+			<div class="grid-overlay"></div>
+			<div class="vignette"></div>
+			<section class="panel top-right">
+				<div class="stats">
+					<div class="stat"><span class="stat-label">Systems</span><strong class="stat-value" id="mapSystemCount">-</strong></div>
+					<div class="stat"><span class="stat-label">Hot systems</span><strong class="stat-value" id="mapLiveCount">-</strong></div>
+					<div class="stat"><span class="stat-label">Sequence</span><strong class="stat-value" id="mapSequence">-</strong></div>
+					<div class="stat"><span class="stat-label">Refresh</span><strong class="stat-value" id="mapRefreshAt">-</strong></div>
+				</div>
+				<div class="toolbar" id="mapToolbar">
+					<button type="button" data-action="fit">Fit view</button>
+					<button type="button" data-action="heat">Reset heat</button>
+					<button type="button" data-action="refresh">Refresh</button>
+				</div>
+			</section>
+			<section class="panel bottom-left">
+				<div class="stats" style="grid-template-columns: repeat(3, 1fr); margin-top: 0;">
+					<div class="stat"><span class="stat-label">Hover</span><strong class="stat-value" id="hudSystem">-</strong></div>
+					<div class="stat"><span class="stat-label">Constellation</span><strong class="stat-value" id="hudConstellation">-</strong></div>
+					<div class="stat"><span class="stat-label">Region</span><strong class="stat-value" id="hudRegion">-</strong></div>
+				</div>
+			</section>
+			<aside class="panel sidebar" id="liveKillsPanel">
+				<h2 class="feed-title">Live kills</h2>
+				<ul class="feed-list" id="liveKillFeed"></ul>
+			</aside>
+			<div id="mapHint" class="hint"></div>
+			<div id="mapLoading" class="loading">
+				<div class="loading-card">
+					<strong>Loading star map</strong>
+					<span>Fetching map geometry and starting the live R2Z2 stream.</span>
+				</div>
+			</div>
+		</div>
+		<script>
+			window.mapPageConfig = {
+				r2z2BaseUrl: 'https://r2z2.zkillboard.com/ephemeral',
+				systemsUrl: '/data/mapSystems.jsonl',
+				regionsUrl: '/data/mapRegions.jsonl',
+				constellationsUrl: '/data/mapConstellations.jsonl'
+			};
+		</script>
+		<script src="/map/map.js?v=static"></script>
+	</body>
+</html>
