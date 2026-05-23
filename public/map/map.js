@@ -1,8 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
 	const config = {
 		apiUrl: '',
-		r2z2BaseUrl: 'https://r2z2.zkillboard.com/ephemeral',
+		websocketUrl: '/websocket/',
 		systemsUrl: '/data/mapSystems.jsonl',
+		systems2dUrl: '/data/mapSystems2d.jsonl',
 		regionsUrl: '/data/mapRegions.jsonl',
 		constellationsUrl: '/data/mapConstellations.jsonl',
 		...(window.mapPageConfig || {})
@@ -10,7 +11,14 @@ document.addEventListener('DOMContentLoaded', () => {
 	const canvas = document.getElementById('mapCanvas');
 	const context = canvas.getContext('2d', { alpha: true });
 	const loading = document.getElementById('mapLoading');
-	const hint = document.getElementById('mapHint');
+	let hint = document.getElementById('mapHint');
+	const recenterButton = document.getElementById('recenterButton');
+	const projectionToggle = document.getElementById('projectionToggle');
+	const regionLabelToggle = document.getElementById('regionLabelToggle');
+	const regionActivity = document.getElementById('regionActivity');
+	const regionActivityBody = document.getElementById('regionActivityBody');
+	const systemActivity = document.getElementById('systemActivity');
+	const systemActivityBody = document.getElementById('systemActivityBody');
 	const liveFeed = document.getElementById('liveKillFeed');
 	const systemCount = document.getElementById('mapSystemCount');
 	const liveCount = document.getElementById('mapLiveCount');
@@ -36,10 +44,21 @@ document.addEventListener('DOMContentLoaded', () => {
 		'0.1': '#722020'
 	};
 	const KILL_TTL_MS = 15 * 60 * 1000;
+	const MAX_FEED_KILLS = 500;
+	const MAX_ACTIVE_REGIONS = 5;
+	const MAX_ACTIVE_SYSTEMS = 5;
+	const MODE_TRANSITION_MS = 1000;
+	const DRAG_START_PX = 6;
+	const CANVAS_FONT_FAMILY = '"Noto Sans", "Segoe UI", sans-serif';
+
+	function canvasFont(sizePx, weight = 700) {
+		return `italic ${weight} ${Math.round(sizePx)}px ${CANVAS_FONT_FAMILY}`;
+	}
 
 	const state = {
 		systems: [],
 		systemById: new Map(),
+		systemIdByName: new Map(),
 		connections: [],
 		regionLabels: [],
 		constellationLabels: [],
@@ -59,9 +78,17 @@ document.addEventListener('DOMContentLoaded', () => {
 		hoveredSystem: null,
 		pointer: null,
 		worldBounds: null,
+		worldBounds3d: null,
+		worldBounds2d: null,
 		sequence: 0,
-		retryAfterMs: 6000,
-		pollTimer: null,
+		showRegionLabels: false,
+		projectionMode: '2d',
+		modeTransition: null,
+		cameraTransition: null,
+		ws: null,
+		wsReconnectMs: 1000,
+		wsReconnectTimer: null,
+		pendingKillIds: new Set(),
 		animationFrame: null
 	};
 
@@ -80,6 +107,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	function clamp(value, min, max) {
 		return Math.max(min, Math.min(max, value));
+	}
+
+	function lerp(start, end, t) {
+		return start + (end - start) * t;
+	}
+
+	function easeInOut(t) {
+		return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+	}
+
+	function getModeBlend() {
+		const transition = state.modeTransition;
+		if (!transition) return state.projectionMode === '2d' ? 1 : 0;
+
+		const elapsed = performance.now() - transition.start;
+		const raw = clamp(elapsed / transition.duration, 0, 1);
+		const eased = easeInOut(raw);
+		const blend = lerp(transition.fromBlend, transition.toBlend, eased);
+		if (raw >= 1) {
+			state.modeTransition = null;
+			state.projectionMode = transition.toMode;
+			return transition.toBlend;
+		}
+
+		requestDraw();
+		return blend;
+	}
+
+	function getSystemWorldPosition(system) {
+		const blend = getModeBlend();
+		return {
+			x: lerp(asNumber(system.worldX3d), asNumber(system.worldX2d), blend),
+			y: lerp(asNumber(system.worldY3d), asNumber(system.worldY2d), blend)
+		};
+	}
+
+	function getRegionWorldPosition(region) {
+		const blend = getModeBlend();
+		return {
+			x: lerp(asNumber(region.x3d), asNumber(region.x2d), blend),
+			y: lerp(asNumber(region.y3d), asNumber(region.y2d), blend)
+		};
+	}
+
+	function getWorldBoundsForBlend(blend) {
+		if (!state.worldBounds3d || !state.worldBounds2d) return state.worldBounds;
+		return {
+			minX: lerp(state.worldBounds3d.minX, state.worldBounds2d.minX, blend),
+			maxX: lerp(state.worldBounds3d.maxX, state.worldBounds2d.maxX, blend),
+			minY: lerp(state.worldBounds3d.minY, state.worldBounds2d.minY, blend),
+			maxY: lerp(state.worldBounds3d.maxY, state.worldBounds2d.maxY, blend)
+		};
+	}
+
+	function getCurrentWorldBounds() {
+		return getWorldBoundsForBlend(getModeBlend());
 	}
 
 	function formatIsk(value) {
@@ -175,15 +258,34 @@ document.addEventListener('DOMContentLoaded', () => {
 		return { left, right };
 	}
 
-	function getFitTargetScreenX(insets) {
+	function getFitTargetScreenX(insets, blendOverride) {
 		if (window.innerWidth <= 1100) {
 			return state.canvasWidth / 2;
 		}
 
 		const leftBound = insets.left;
 		const rightBound = state.canvasWidth - insets.right;
-		const target = state.canvasWidth * 0.60;
+		const blend = blendOverride == null ? getModeBlend() : blendOverride;
+		const target = state.canvasWidth * (blend ? 0.50 : 0.55);
 		return clamp(target, leftBound + 120, rightBound - 120);
+	}
+
+	function computeFitCameraState(blend) {
+		const margin = 48;
+		const bounds = getWorldBoundsForBlend(blend);
+		if (!bounds) return null;
+		const insets = getFitInsets();
+		const width = bounds.maxX - bounds.minX;
+		const height = bounds.maxY - bounds.minY;
+		const worldCenterX = (bounds.minX + bounds.maxX) / 2;
+		const targetScreenX = getFitTargetScreenX(insets, blend);
+		const screenOffsetX = targetScreenX - state.canvasWidth / 2;
+		const zoom = clamp((state.canvasHeight - margin * 2) / height, state.camera.minZoom, state.camera.maxZoom);
+		return {
+			x: worldCenterX - screenOffsetX / zoom,
+			y: (bounds.minY + bounds.maxY) / 2,
+			zoom
+		};
 	}
 
 	function toScreen(point) {
@@ -204,53 +306,93 @@ document.addEventListener('DOMContentLoaded', () => {
 		return asNumber(regionId) < 10099999;
 	}
 
-	function computeWorldLayout(systems, constellations, regions) {
-		const regionById = new Map(regions.map((region) => [region.id, region.regionName]));
-		const constellationById = new Map(constellations.map((constellation) => [constellation.id, constellation]));
-		const visibleSystems = systems.filter((system) => {
-			const constellation = constellationById.get(system.constellationID);
-			return isDisplayRegion(constellation?.regionID);
-		});
-
+	function buildWorldCoordinates(systems, getRawX, getRawY) {
 		let minX = Number.POSITIVE_INFINITY;
 		let minY = Number.POSITIVE_INFINITY;
 		let maxX = Number.NEGATIVE_INFINITY;
 		let maxY = Number.NEGATIVE_INFINITY;
 
-		for (const system of visibleSystems) {
-			const px = asNumber(system.position?.x);
-			const py = asNumber(system.position?.z);
-			minX = Math.min(minX, px);
-			minY = Math.min(minY, py);
-			maxX = Math.max(maxX, px);
-			maxY = Math.max(maxY, py);
+		for (const system of systems) {
+			const x = getRawX(system);
+			const y = getRawY(system);
+			minX = Math.min(minX, x);
+			minY = Math.min(minY, y);
+			maxX = Math.max(maxX, x);
+			maxY = Math.max(maxY, y);
 		}
 
 		const spanX = maxX - minX || 1;
 		const spanY = maxY - minY || 1;
 		const worldWidth = 4200;
-		const worldHeight = worldWidth * (spanY / spanX);
+		const worldHeight = worldWidth * (spanY / spanX || 1);
+		const pointById = new Map();
 
-		state.systems = visibleSystems.map((system) => {
+		for (const system of systems) {
+			const x = ((getRawX(system) - minX) / spanX - 0.5) * worldWidth;
+			const y = (0.5 - (getRawY(system) - minY) / spanY) * worldHeight;
+			pointById.set(system.id, { x, y });
+		}
+
+		return {
+			pointById,
+			bounds: {
+				minX: -worldWidth / 2,
+				maxX: worldWidth / 2,
+				minY: -worldHeight / 2,
+				maxY: worldHeight / 2
+			}
+		};
+	}
+
+	function computeWorldLayout(systems3d, systems2d, constellations, regions) {
+		const regionById = new Map(regions.map((region) => [region.id, region.regionName]));
+		const constellationById = new Map(constellations.map((constellation) => [constellation.id, constellation]));
+		const visibleSystems3d = systems3d.filter((system) => {
 			const constellation = constellationById.get(system.constellationID);
+			return isDisplayRegion(constellation?.regionID);
+		});
+		const systems2dById = new Map(systems2d.map((system) => [system.id, system]));
+
+		const layout3d = buildWorldCoordinates(
+			visibleSystems3d,
+			(system) => asNumber(system.position?.x),
+			(system) => asNumber(system.position?.z)
+		);
+
+		const layout2d = buildWorldCoordinates(
+			visibleSystems3d,
+			(system) => {
+				const system2d = systems2dById.get(system.id);
+				return asNumber(system2d?.position?.x ?? system.position?.x);
+			},
+			(system) => {
+				const system2d = systems2dById.get(system.id);
+				return asNumber(system2d?.position?.z ?? system.position?.z);
+			}
+		);
+
+		state.systems = visibleSystems3d.map((system) => {
+			const constellation = constellationById.get(system.constellationID);
+			const point3d = layout3d.pointById.get(system.id) || { x: 0, y: 0 };
+			const point2d = layout2d.pointById.get(system.id) || point3d;
 			return {
 				...system,
 				regionID: asNumber(constellation?.regionID),
 				regionName: regionById.get(constellation?.regionID) ?? '',
 				constellationName: constellation?.constellationName ?? '',
-				worldX: ((asNumber(system.position?.x) - minX) / spanX - 0.5) * worldWidth,
-				worldY: ((asNumber(system.position?.z) - minY) / spanY - 0.5) * worldHeight,
+				worldX3d: point3d.x,
+				worldY3d: point3d.y,
+				worldX2d: point2d.x,
+				worldY2d: point2d.y,
 				color: securityColor(system.securityStatus)
 			};
 		});
 
 		state.systemById = new Map(state.systems.map((system) => [system.id, system]));
-		state.worldBounds = {
-			minX: -worldWidth / 2,
-			maxX: worldWidth / 2,
-			minY: -worldHeight / 2,
-			maxY: worldHeight / 2
-		};
+		state.systemIdByName = new Map(state.systems.map((system) => [String(system.name || '').trim().toLowerCase(), system.id]));
+		state.worldBounds3d = layout3d.bounds;
+		state.worldBounds2d = layout2d.bounds;
+		state.worldBounds = layout3d.bounds;
 
 		const seenConnections = new Set();
 		state.connections = [];
@@ -267,9 +409,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 		const regionAccumulator = new Map();
 		for (const system of state.systems) {
-			const regionEntry = regionAccumulator.get(system.regionName) || { x: 0, y: 0, count: 0 };
-			regionEntry.x += system.worldX;
-			regionEntry.y += system.worldY;
+			const regionEntry = regionAccumulator.get(system.regionName) || { x3d: 0, y3d: 0, x2d: 0, y2d: 0, count: 0 };
+			regionEntry.x3d += system.worldX3d;
+			regionEntry.y3d += system.worldY3d;
+			regionEntry.x2d += system.worldX2d;
+			regionEntry.y2d += system.worldY2d;
 			regionEntry.count += 1;
 			regionAccumulator.set(system.regionName, regionEntry);
 		}
@@ -277,27 +421,35 @@ document.addEventListener('DOMContentLoaded', () => {
 		state.regionLabels = Array.from(regionAccumulator.entries()).map(([name, entry]) => ({
 			name,
 			count: entry.count,
-			x: entry.x / entry.count,
-			y: entry.y / entry.count
+			x3d: entry.x3d / entry.count,
+			y3d: entry.y3d / entry.count,
+			x2d: entry.x2d / entry.count,
+			y2d: entry.y2d / entry.count
 		}));
 
 		state.constellationLabels = [];
 	}
 
 	function fitCamera() {
-		const margin = 48;
-		const bounds = state.worldBounds;
-		if (!bounds) return;
-		const insets = getFitInsets();
-		const width = bounds.maxX - bounds.minX;
-		const height = bounds.maxY - bounds.minY;
-		const worldCenterX = (bounds.minX + bounds.maxX) / 2;
-		const targetScreenX = getFitTargetScreenX(insets);
-		const screenOffsetX = targetScreenX - state.canvasWidth / 2;
-		state.camera.y = (bounds.minY + bounds.maxY) / 2;
-		state.camera.zoom = (state.canvasHeight - margin * 2) / height;
-		state.camera.zoom = clamp(state.camera.zoom, state.camera.minZoom, state.camera.maxZoom);
-		state.camera.x = worldCenterX - screenOffsetX / state.camera.zoom;
+		const cameraState = computeFitCameraState(getModeBlend());
+		if (!cameraState) return;
+		state.camera.x = cameraState.x;
+		state.camera.y = cameraState.y;
+		state.camera.zoom = cameraState.zoom;
+	}
+
+	function updateCameraTransition() {
+		const transition = state.cameraTransition;
+		if (!transition) return;
+		const elapsed = performance.now() - transition.start;
+		const raw = clamp(elapsed / transition.duration, 0, 1);
+		const eased = easeInOut(raw);
+		state.camera.x = lerp(transition.from.x, transition.to.x, eased);
+		state.camera.y = lerp(transition.from.y, transition.to.y, eased);
+		state.camera.zoom = lerp(transition.from.zoom, transition.to.zoom, eased);
+		if (raw >= 1) {
+			state.cameraTransition = null;
+		}
 	}
 
 	function isVisible(point, margin) {
@@ -332,7 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	function getVisibleSystems() {
 		const visibleSystems = [];
 		for (const system of state.systems) {
-			const point = toScreen({ x: system.worldX, y: system.worldY });
+			const point = toScreen(getSystemWorldPosition(system));
 			if (!isVisible(point, 30)) continue;
 			visibleSystems.push({ system, point });
 		}
@@ -340,30 +492,16 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	function getRegionLabelsForView() {
-		const minimumDistance = clamp(140 + (1 / Math.max(state.camera.zoom, 0.12)) * 18, 140, 260);
-		const visibleLabels = state.regionLabels
-			.map((region) => ({ ...region, point: toScreen(region) }))
+		return state.regionLabels
+			.map((region) => ({ ...region, point: toScreen(getRegionWorldPosition(region)) }))
 			.filter((region) => isVisible(region.point, 140))
 			.sort((left, right) => right.count - left.count);
-
-		const selected = [];
-		for (const region of visibleLabels) {
-			const tooClose = selected.some((picked) => {
-				const dx = picked.point.x - region.point.x;
-				const dy = picked.point.y - region.point.y;
-				return Math.sqrt(dx * dx + dy * dy) < minimumDistance;
-			});
-			if (tooClose) continue;
-			selected.push(region);
-			if (selected.length >= 10) break;
-		}
-		return selected;
 	}
 
 	function drawConnections() {
 		for (const connection of state.connections) {
-			const from = toScreen({ x: connection.from.worldX, y: connection.from.worldY });
-			const to = toScreen({ x: connection.to.worldX, y: connection.to.worldY });
+			const from = toScreen(getSystemWorldPosition(connection.from));
+			const to = toScreen(getSystemWorldPosition(connection.to));
 			if (!isVisible(from, 40) && !isVisible(to, 40)) continue;
 
 			const gradient = context.createLinearGradient(from.x, from.y, to.x, to.y);
@@ -380,14 +518,18 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	function drawRegionLabels() {
+		if (!state.showRegionLabels) return;
 		context.save();
 		context.textAlign = 'center';
 		context.textBaseline = 'middle';
-		context.font = `${clamp(16 + state.camera.zoom * 5, 16, 28)}px Trebuchet MS, sans-serif`;
+		context.font = canvasFont(clamp(16 + state.camera.zoom * 5, 16, 28), 700);
+		context.lineWidth = 3.2;
+		context.strokeStyle = 'rgba(0, 0, 0, 0.94)';
 		for (const region of getRegionLabelsForView()) {
 			const point = region.point;
-			context.fillStyle = 'rgba(198, 218, 246, 0.18)';
-			context.fillText(region.name.toUpperCase(), point.x, point.y);
+			context.fillStyle = 'rgba(255, 255, 255, 0.85)';
+			context.strokeText(region.name, point.x, point.y);
+			context.fillText(region.name, point.x, point.y);
 		}
 		context.restore();
 	}
@@ -448,11 +590,11 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 
 			if (labeledSystemIds.has(system.id) || heatLevel >= 4) {
-				context.font = `${heatLevel > 0 ? 13 : 11}px Trebuchet MS, sans-serif`;
+				context.font = canvasFont(heatLevel > 0 ? 13 : 11, 700);
 				context.textAlign = 'left';
 				context.textBaseline = 'middle';
 				context.lineWidth = 3;
-				context.strokeStyle = 'rgba(4, 7, 10, 0.92)';
+				context.strokeStyle = 'rgba(0, 0, 0, 0.94)';
 				context.fillStyle = heatLevel > 0 ? '#ffe5cf' : 'rgba(226, 237, 248, 0.78)';
 				context.strokeText(system.name, point.x + baseRadius + 5, point.y - baseRadius - 2);
 				context.fillText(system.name, point.x + baseRadius + 5, point.y - baseRadius - 2);
@@ -465,7 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	function drawHover() {
 		if (!state.hoveredSystem) return;
-		const point = toScreen({ x: state.hoveredSystem.worldX, y: state.hoveredSystem.worldY });
+		const point = toScreen(getSystemWorldPosition(state.hoveredSystem));
 		context.strokeStyle = 'rgba(255, 255, 255, 0.95)';
 		context.lineWidth = 1.4;
 		context.beginPath();
@@ -474,28 +616,60 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	function draw() {
+		updateCameraTransition();
 		context.clearRect(0, 0, state.canvasWidth, state.canvasHeight);
 		context.save();
 		drawConnections();
-		drawRegionLabels();
 		drawSystems();
+		drawRegionLabels();
 		drawHover();
 		context.restore();
 	}
 
 	function updateHud(system) {
+		if (!hudSystem || !hudConstellation || !hudRegion) return;
 		hudSystem.textContent = system?.name || '-';
 		hudConstellation.textContent = system?.constellationName || '-';
 		hudRegion.textContent = system?.regionName || '-';
 	}
 
+	function ensureHintElement() {
+		if (hint) return;
+		hint = document.createElement('div');
+		hint.id = 'mapHint';
+		hint.style.position = 'fixed';
+		hint.style.display = 'none';
+		hint.style.zIndex = '7';
+		hint.style.pointerEvents = 'none';
+		hint.style.minWidth = '180px';
+		hint.style.maxWidth = '260px';
+		hint.style.padding = '10px 12px';
+		hint.style.borderRadius = '12px';
+		hint.style.background = 'rgba(8, 12, 18, 0.88)';
+		hint.style.border = '1px solid rgba(126, 179, 255, 0.24)';
+		hint.style.color = '#eff6ff';
+		hint.style.font = 'italic 700 12px/1.35 "Noto Sans", "Segoe UI", sans-serif';
+		hint.style.backdropFilter = 'blur(8px)';
+		hint.style.boxShadow = '0 10px 26px rgba(0, 0, 0, 0.42)';
+		document.body.appendChild(hint);
+	}
+
+	function getSystemKillCount(systemId) {
+		if (!systemId) return 0;
+		let count = 0;
+		for (const kill of state.feed) {
+			if (asNumber(kill.solar_system_id) === systemId) count += 1;
+		}
+		return count;
+	}
+
 	function showHint(screenX, screenY, system) {
-		const heatLevel = currentHeatLevel(system.id);
+		if (!hint) return;
+		const killCount = getSystemKillCount(system.id);
 		hint.innerHTML = `
 			<div class="hint-name">${system.name}</div>
 			<div>${system.regionName || '-'}</div>
-			<div>${system.constellationName || '-'}</div>
-			<div class="hint-muted">Security ${asNumber(system.securityStatus).toFixed(1)} | Gates ${(system.linkedSystemIDs || []).length} | Live heat ${heatLevel}</div>
+			<div class="hint-muted">Kills: ${killCount}</div>
 		`;
 		hint.style.display = 'block';
 		hint.style.left = `${Math.min(screenX + 18, window.innerWidth - 270)}px`;
@@ -504,21 +678,32 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	function hideHint() {
+		if (!hint) return;
 		hint.style.display = 'none';
 		updateHud(state.hoveredSystem);
 	}
 
 	function updateStats() {
+		if (!systemCount || !liveCount || !refreshAt || !mapSequence) return;
 		systemCount.textContent = String(state.systems.length);
 		liveCount.textContent = String(Array.from(state.heat.values()).filter((entry) => entry.count > 0).length);
 		refreshAt.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'UTC', hour12: false }) + ' UTC';
 		mapSequence.textContent = state.sequence > 0 ? String(state.sequence) : '-';
 	}
 
+	function getFeedRenderCount() {
+		if (!liveFeed) return 0;
+		const availableHeight = liveFeed.clientHeight || liveKillsPanel?.clientHeight || window.innerHeight;
+		const estimatedRowHeight = 58;
+		return clamp(Math.floor(availableHeight / estimatedRowHeight), 1, MAX_FEED_KILLS);
+	}
+
 	function renderFeed() {
 		pruneExpiredKills();
+		if (!liveFeed) return;
+		const renderCount = getFeedRenderCount();
 		liveFeed.replaceChildren();
-		for (const kill of state.feed.slice(0, 11)) {
+		for (const kill of state.feed.slice(0, renderCount)) {
 			const item = document.createElement('li');
 			const imageUrl = getKillImageUrl(kill.victim_ship_type_id);
 			item.innerHTML = `
@@ -532,6 +717,82 @@ document.addEventListener('DOMContentLoaded', () => {
 				</div>
 			`;
 			liveFeed.appendChild(item);
+		}
+		updateRegionActivity();
+		updateSystemActivity();
+	}
+
+	function updateRegionActivity() {
+		if (!regionActivity || !regionActivityBody) return;
+
+		const counts = new Map();
+		for (const kill of state.feed) {
+			const region = String(kill.regionName || kill.region_name || '').trim();
+			if (!region) continue;
+			counts.set(region, (counts.get(region) || 0) + 1);
+		}
+
+		const topRegions = Array.from(counts.entries())
+			.sort((left, right) => {
+				if (right[1] !== left[1]) return right[1] - left[1];
+				return left[0].localeCompare(right[0]);
+			})
+			.slice(0, MAX_ACTIVE_REGIONS);
+
+		if (topRegions.length === 0) {
+			regionActivity.hidden = true;
+			regionActivityBody.replaceChildren();
+			return;
+		}
+
+		regionActivity.hidden = false;
+		regionActivityBody.replaceChildren();
+		for (const [region, count] of topRegions) {
+			const row = document.createElement('tr');
+			const nameCell = document.createElement('td');
+			const countCell = document.createElement('td');
+			nameCell.textContent = region;
+			countCell.textContent = String(count);
+			row.appendChild(nameCell);
+			row.appendChild(countCell);
+			regionActivityBody.appendChild(row);
+		}
+	}
+
+	function updateSystemActivity() {
+		if (!systemActivity || !systemActivityBody) return;
+
+		const counts = new Map();
+		for (const kill of state.feed) {
+			const system = String(kill.systemName || kill.system_name || '').trim();
+			if (!system) continue;
+			counts.set(system, (counts.get(system) || 0) + 1);
+		}
+
+		const topSystems = Array.from(counts.entries())
+			.sort((left, right) => {
+				if (right[1] !== left[1]) return right[1] - left[1];
+				return left[0].localeCompare(right[0]);
+			})
+			.slice(0, MAX_ACTIVE_SYSTEMS);
+
+		if (topSystems.length === 0) {
+			systemActivity.hidden = true;
+			systemActivityBody.replaceChildren();
+			return;
+		}
+
+		systemActivity.hidden = false;
+		systemActivityBody.replaceChildren();
+		for (const [system, count] of topSystems) {
+			const row = document.createElement('tr');
+			const nameCell = document.createElement('td');
+			const countCell = document.createElement('td');
+			nameCell.textContent = system;
+			countCell.textContent = String(count);
+			row.appendChild(nameCell);
+			row.appendChild(countCell);
+			systemActivityBody.appendChild(row);
 		}
 	}
 
@@ -551,71 +812,167 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 
 		const system = state.systemById.get(kill.solar_system_id);
+		const parsedSystemName = String(kill.system_name || kill.systemName || '').trim();
+		const parsedRegionName = String(kill.region_name || kill.regionName || '').trim();
+		const fallbackSystemName = kill.solar_system_id > 0 ? `System ${kill.solar_system_id}` : 'Unknown system';
 		state.feed.unshift({
 			...kill,
 			occurredAt: Date.now(),
-			systemName: system?.name || `System ${kill.solar_system_id}`,
-			regionName: system?.regionName || ''
+			systemName: parsedSystemName || system?.name || fallbackSystemName,
+			regionName: parsedRegionName || system?.regionName || ''
 		});
 		pruneExpiredKills();
-		state.feed = state.feed.slice(0, 80);
+		state.feed = state.feed.slice(0, MAX_FEED_KILLS);
 		rebuildHeat();
 	}
 
-	function normalizeKillmail(doc) {
-		const esi = doc?.esi || {};
-		const zkb = doc?.zkb || {};
+	function getWebSocketUrl() {
+		const configured = String(config.websocketUrl || '/websocket/').trim();
+		if (configured.startsWith('ws://') || configured.startsWith('wss://')) return configured;
+		if (configured.startsWith('http://')) return `ws://${configured.slice('http://'.length)}`;
+		if (configured.startsWith('https://')) return `wss://${configured.slice('https://'.length)}`;
+		const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+		const path = configured.startsWith('/') ? configured : `/${configured}`;
+		return `${protocol}//${window.location.host}${path}`;
+	}
+
+	function parseAttackerCount(row) {
+		const finalBlowCell = row?.querySelector('td.finalBlow');
+		if (!finalBlowCell) return 0;
+		const text = finalBlowCell.textContent || '';
+		if (text.includes('1000+')) return 1000;
+		if (text.includes('100+')) return 100;
+		const match = text.match(/\((\d+)\)/);
+		return match ? asNumber(match[1]) : 0;
+	}
+
+	function parseShipTypeId(row) {
+		const img = row?.querySelector('.shipImageSpan img');
+		const src = img?.getAttribute('src') || '';
+		const match = src.match(/\/(\d+)\/(?:render|icon)(?:\?|$)/);
+		return match ? asNumber(match[1]) : 0;
+	}
+
+	function parseSystemId(row) {
+		const systemLink = row?.querySelector('td.location a[href^="/system/"]');
+		const href = systemLink?.getAttribute('href') || '';
+		const fromHref = asNumber(href.split('/')[2]);
+		if (fromHref > 0) return fromHref;
+		const systemName = String(systemLink?.textContent || '').trim().toLowerCase();
+		return state.systemIdByName.get(systemName) || 0;
+	}
+
+	function parseSystemName(row) {
+		const systemLink = row?.querySelector('td.location a[href^="/system/"]');
+		return String(systemLink?.textContent || '').trim();
+	}
+
+	function parseRegionName(row) {
+		const regionLink = row?.querySelector('td.location a[href^="/region/"]');
+		return String(regionLink?.textContent || '').trim();
+	}
+
+	function parseKillmailRow(html, fallbackKillId) {
+		const parser = new DOMParser();
+		const doc = parser.parseFromString(`<table><tbody>${html}</tbody></table>`, 'text/html');
+		const row = doc.querySelector('tr.kltbd');
+		if (!row) return null;
+
+		const killId = asNumber(row.getAttribute('killID')) || asNumber(fallbackKillId);
+		const unix = asNumber(row.getAttribute('date'));
+		const valueRaw = row.querySelector('[format="format-isk-once"]')?.getAttribute('raw');
 		return {
-			sequence_id: asNumber(doc?.sequence_id),
-			killmail_id: asNumber(doc?.killmail_id || esi?.killmail_id),
-			uploaded_at: asNumber(doc?.uploaded_at),
-			killmail_time: esi?.killmail_time || null,
-			solar_system_id: asNumber(esi?.solar_system_id),
-			victim_ship_type_id: asNumber(esi?.victim?.ship_type_id),
-			attacker_count: asNumber(zkb?.attackerCount),
-			total_value: asNumber(zkb?.totalValue),
-			points: asNumber(zkb?.points),
-			labels: Array.isArray(zkb?.labels) ? zkb.labels : Object.values(zkb?.labels || {})
+			sequence_id: killId,
+			killmail_id: killId,
+			uploaded_at: unix,
+			killmail_time: unix > 0 ? new Date(unix * 1000).toISOString() : null,
+			solar_system_id: parseSystemId(row),
+			system_name: parseSystemName(row),
+			region_name: parseRegionName(row),
+			victim_ship_type_id: parseShipTypeId(row),
+			attacker_count: parseAttackerCount(row),
+			total_value: asNumber(valueRaw)
 		};
 	}
 
-	async function fetchJson(url) {
-		const response = await fetch(url, { mode: 'cors', credentials: 'omit' });
+	async function fetchKillmailRow(killId) {
+		const response = await fetch(`/cache/24hour/killlistrow/${killId}/`, { credentials: 'same-origin' });
 		if (!response.ok) throw new Error(`HTTP ${response.status}`);
-		return response.json();
+		const html = await response.text();
+		return parseKillmailRow(html, killId);
 	}
 
-	async function pollKills(forceInitial) {
-		window.clearTimeout(state.pollTimer);
-
+	async function ingestLittleKill(killId) {
+		if (!killId || state.seenSequences.has(killId) || state.pendingKillIds.has(killId)) return;
+		state.pendingKillIds.add(killId);
 		try {
-			if (state.sequence == 0) {
-				const sequenceDoc = await fetchJson(`${config.r2z2BaseUrl}/sequence.json`);
-				state.sequence = asNumber(sequenceDoc?.sequence);
-				console.log('Starting R2Z2 poll at sequence', state.sequence);
-			}
-			const url = `${config.r2z2BaseUrl}/${state.sequence}.json`;
-			const data = await fetchJson(url);
-			addKill(normalizeKillmail(data));
-			state.retryAfterMs = 99;
-			state.sequence++;
-
+			const kill = await fetchKillmailRow(killId);
+			if (!kill) return;
+			addKill(kill);
+			state.sequence = Math.max(state.sequence, killId);
 			renderFeed();
 			updateStats();
 			requestDraw();
 		} catch (error) {
-			console.error('Failed to poll R2Z2', error);
-			state.retryAfterMs = 6666;
+			console.error(`Failed to load killmail ${killId}`, error);
 		} finally {
-			state.pollTimer = window.setTimeout(() => pollKills(false), state.retryAfterMs);
+			state.pendingKillIds.delete(killId);
 		}
+	}
+
+	function scheduleReconnect() {
+		if (state.wsReconnectTimer) return;
+		const delay = state.wsReconnectMs;
+		state.wsReconnectMs = Math.min(Math.floor(state.wsReconnectMs * 1.8), 30000);
+		state.wsReconnectTimer = window.setTimeout(() => {
+			state.wsReconnectTimer = null;
+			connectKillStream();
+		}, delay);
+	}
+
+	function handleSocketMessage(raw) {
+		if (raw === 'ping' || raw === 'pong') return;
+		let message;
+		try {
+			message = JSON.parse(raw);
+		} catch {
+			return;
+		}
+		if (message?.action !== 'littlekill') return;
+		ingestLittleKill(asNumber(message.killID || message.kill_id));
+	}
+
+	function connectKillStream() {
+		if (state.ws && (state.ws.readyState === WebSocket.CONNECTING || state.ws.readyState === WebSocket.OPEN)) return;
+		const socket = new WebSocket(getWebSocketUrl());
+		state.ws = socket;
+
+		socket.addEventListener('open', () => {
+			state.wsReconnectMs = 1000;
+			socket.send(JSON.stringify({ action: 'sub', channel: 'public' }));
+			socket.send(JSON.stringify({ action: 'sub', channel: 'all:*' }));
+			console.log('Connected to site websocket stream');
+		});
+
+		socket.addEventListener('message', (event) => {
+			handleSocketMessage(event.data);
+		});
+
+		socket.addEventListener('error', () => {
+			scheduleReconnect();
+		});
+
+		socket.addEventListener('close', () => {
+			if (state.ws === socket) state.ws = null;
+			scheduleReconnect();
+		});
 	}
 
 	function findHoveredSystem(clientX, clientY) {
 		let best = null;
 		let bestDistance = Infinity;
 		for (const system of state.systems) {
-			const point = toScreen({ x: system.worldX, y: system.worldY });
+			const point = toScreen(getSystemWorldPosition(system));
 			const dx = point.x - clientX;
 			const dy = point.y - clientY;
 			const distance = Math.sqrt(dx * dx + dy * dy);
@@ -627,6 +984,89 @@ document.addEventListener('DOMContentLoaded', () => {
 		return best;
 	}
 
+	function applyCameraTarget(centerX, centerY, zoom) {
+		const insets = getFitInsets();
+		const targetScreenX = getFitTargetScreenX(insets);
+		const screenOffsetX = targetScreenX - state.canvasWidth / 2;
+		state.camera.zoom = clamp(zoom, state.camera.minZoom, state.camera.maxZoom);
+		state.camera.x = centerX - screenOffsetX / state.camera.zoom;
+		state.camera.y = centerY;
+		requestDraw();
+	}
+
+	function focusSystem(system) {
+		if (!system) return false;
+		const targetZoom = Math.max(state.camera.zoom, 2.8);
+		const point = getSystemWorldPosition(system);
+		applyCameraTarget(point.x, point.y, targetZoom);
+		return true;
+	}
+
+	function findRegionLabelAtPoint(clientX, clientY) {
+		if (!state.showRegionLabels) return null;
+		const labels = getRegionLabelsForView();
+		if (labels.length === 0) return null;
+
+		const fontSize = clamp(16 + state.camera.zoom * 5, 16, 28);
+		context.save();
+		context.font = canvasFont(fontSize, 700);
+		for (const region of labels) {
+			const text = region.name.toUpperCase();
+			const width = context.measureText(text).width;
+			const halfW = width / 2 + 10;
+			const halfH = fontSize / 2 + 7;
+			if (Math.abs(clientX - region.point.x) <= halfW && Math.abs(clientY - region.point.y) <= halfH) {
+				context.restore();
+				return region;
+			}
+		}
+		context.restore();
+		return null;
+	}
+
+	function focusRegion(regionName) {
+		const systems = state.systems.filter((system) => system.regionName === regionName);
+		if (systems.length === 0) return false;
+
+		if (systems.length === 1) {
+			return focusSystem(systems[0]);
+		}
+
+		let minX = Number.POSITIVE_INFINITY;
+		let minY = Number.POSITIVE_INFINITY;
+		let maxX = Number.NEGATIVE_INFINITY;
+		let maxY = Number.NEGATIVE_INFINITY;
+		for (const system of systems) {
+			const point = getSystemWorldPosition(system);
+			minX = Math.min(minX, point.x);
+			minY = Math.min(minY, point.y);
+			maxX = Math.max(maxX, point.x);
+			maxY = Math.max(maxY, point.y);
+		}
+
+		const width = Math.max(120, maxX - minX);
+		const height = Math.max(120, maxY - minY);
+		const margin = 100;
+		const zoomX = (state.canvasWidth - margin * 2) / width;
+		const zoomY = (state.canvasHeight - margin * 2) / height;
+		const targetZoom = Math.min(zoomX, zoomY);
+		applyCameraTarget((minX + maxX) / 2, (minY + maxY) / 2, targetZoom);
+		return true;
+	}
+
+	function handleMapClick(clientX, clientY) {
+		const system = findHoveredSystem(clientX, clientY);
+		if (system) {
+			focusSystem(system);
+			return;
+		}
+
+		const region = findRegionLabelAtPoint(clientX, clientY);
+		if (region) {
+			focusRegion(region.name);
+		}
+	}
+
 	function bindCanvasInteractions() {
 		canvas.addEventListener('pointerdown', (event) => {
 			canvas.setPointerCapture(event.pointerId);
@@ -634,6 +1074,8 @@ document.addEventListener('DOMContentLoaded', () => {
 				id: event.pointerId,
 				startX: event.clientX,
 				startY: event.clientY,
+				lastX: event.clientX,
+				lastY: event.clientY,
 				cameraX: state.camera.x,
 				cameraY: state.camera.y,
 				dragging: false
@@ -644,7 +1086,9 @@ document.addEventListener('DOMContentLoaded', () => {
 			if (state.pointer && state.pointer.id === event.pointerId) {
 				const dx = event.clientX - state.pointer.startX;
 				const dy = event.clientY - state.pointer.startY;
-				if (Math.abs(dx) > 2 || Math.abs(dy) > 2) state.pointer.dragging = true;
+				state.pointer.lastX = event.clientX;
+				state.pointer.lastY = event.clientY;
+				if (Math.abs(dx) > DRAG_START_PX || Math.abs(dy) > DRAG_START_PX) state.pointer.dragging = true;
 				if (state.pointer.dragging) {
 					state.camera.x = state.pointer.cameraX - dx / state.camera.zoom;
 					state.camera.y = state.pointer.cameraY - dy / state.camera.zoom;
@@ -660,8 +1104,17 @@ document.addEventListener('DOMContentLoaded', () => {
 			requestDraw();
 		});
 
-		const releasePointer = () => {
+		const releasePointer = (event) => {
+			if (!state.pointer || state.pointer.id !== event.pointerId) {
+				state.pointer = null;
+				return;
+			}
+			const dx = event.clientX - state.pointer.startX;
+			const dy = event.clientY - state.pointer.startY;
+			const movedBeyondClick = Math.abs(dx) > DRAG_START_PX || Math.abs(dy) > DRAG_START_PX;
+			const wasDragging = state.pointer.dragging || movedBeyondClick;
 			state.pointer = null;
+			if (!wasDragging) handleMapClick(event.clientX, event.clientY);
 		};
 
 		canvas.addEventListener('pointerup', releasePointer);
@@ -685,6 +1138,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	function bindControls() {
+		if (!controls) return;
 		controls.addEventListener('click', (event) => {
 			const button = event.target.closest('button[data-action]');
 			if (!button) return;
@@ -700,7 +1154,92 @@ document.addEventListener('DOMContentLoaded', () => {
 				updateStats();
 				requestDraw();
 			}
-			if (action === 'refresh') pollKills(false);
+			if (action === 'refresh') {
+				if (state.ws) state.ws.close();
+				state.ws = null;
+				connectKillStream();
+			}
+		});
+	}
+
+	function bindRecenterButton() {
+		if (!recenterButton) return;
+		recenterButton.addEventListener('click', () => {
+			fitCamera();
+			requestDraw();
+		});
+	}
+
+	function updateProjectionToggleUi() {
+		if (!projectionToggle) return;
+		projectionToggle.dataset.mode = state.projectionMode;
+		projectionToggle.textContent = state.projectionMode === '2d' ? '2D' : '3D';
+		projectionToggle.setAttribute('aria-pressed', state.projectionMode === '2d' ? 'true' : 'false');
+	}
+
+	function setProjectionMode(nextMode) {
+		if (nextMode !== '2d' && nextMode !== '3d') return;
+		const currentBlend = getModeBlend();
+		const targetBlend = nextMode === '2d' ? 1 : 0;
+		if (Math.abs(currentBlend - targetBlend) < 0.001) {
+			state.modeTransition = null;
+			state.projectionMode = nextMode;
+			state.cameraTransition = null;
+			fitCamera();
+			updateProjectionToggleUi();
+			requestDraw();
+			return;
+		}
+
+		const cameraTarget = computeFitCameraState(targetBlend);
+		if (cameraTarget) {
+			state.cameraTransition = {
+				start: performance.now(),
+				duration: MODE_TRANSITION_MS,
+				from: {
+					x: state.camera.x,
+					y: state.camera.y,
+					zoom: state.camera.zoom
+				},
+				to: cameraTarget
+			};
+		}
+
+		state.modeTransition = {
+			start: performance.now(),
+			duration: MODE_TRANSITION_MS,
+			fromBlend: currentBlend,
+			toBlend: targetBlend,
+			toMode: nextMode
+		};
+		state.projectionMode = nextMode;
+		updateProjectionToggleUi();
+		requestDraw();
+	}
+
+	function bindProjectionToggle() {
+		if (!projectionToggle) return;
+		updateProjectionToggleUi();
+		projectionToggle.addEventListener('click', () => {
+			const nextMode = state.projectionMode === '3d' ? '2d' : '3d';
+			setProjectionMode(nextMode);
+		});
+	}
+
+	function updateRegionLabelToggleUi() {
+		if (!regionLabelToggle) return;
+		regionLabelToggle.textContent = 'RG';
+		regionLabelToggle.title = state.showRegionLabels ? 'Region labels: on' : 'Region labels: off';
+		regionLabelToggle.setAttribute('aria-pressed', state.showRegionLabels ? 'true' : 'false');
+	}
+
+	function bindRegionLabelToggle() {
+		if (!regionLabelToggle) return;
+		updateRegionLabelToggleUi();
+		regionLabelToggle.addEventListener('click', () => {
+			state.showRegionLabels = !state.showRegionLabels;
+			updateRegionLabelToggleUi();
+			requestDraw();
 		});
 	}
 
@@ -710,23 +1249,31 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	async function init() {
+		ensureHintElement();
 		bindControls();
+		bindRecenterButton();
+		bindProjectionToggle();
+		bindRegionLabelToggle();
 		bindCanvasInteractions();
-		window.addEventListener('resize', resizeCanvas);
+		window.addEventListener('resize', () => {
+			resizeCanvas();
+			renderFeed();
+		});
 		resizeCanvas();
 
 		try {
-			const [systems, regions, constellations] = await Promise.all([
+			const [systems3d, systems2d, regions, constellations] = await Promise.all([
 				loadJsonl(config.systemsUrl),
+				loadJsonl(config.systems2dUrl || config.systemsUrl),
 				loadJsonl(config.regionsUrl),
 				loadJsonl(config.constellationsUrl)
 			]);
-			computeWorldLayout(systems, constellations, regions);
+			computeWorldLayout(systems3d, systems2d, constellations, regions);
 			fitCamera();
 			updateStats();
 			requestDraw();
 			loading.remove();
-			pollKills(true);
+			connectKillStream();
 			window.setInterval(pruneLiveState, 15000);
 		} catch (error) {
 			console.error(error);

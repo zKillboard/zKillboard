@@ -6,12 +6,13 @@
 		<meta name="description" content="A standalone live New Eden map rendered from the R2Z2 killmail stream and zKillboard system data.">
 		<meta name="theme-color" content="#04070b">
 		<link rel="canonical" href="/map/index.html">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap">
 		<title>New Eden Map</title>
 		<style>
 			:root {
 				--bg: #04070b;
-				--panel: rgba(8, 12, 18, 0.72);
-				--panel-border: rgba(126, 179, 255, 0.16);
 				--text: #eff6ff;
 				--muted: rgba(221, 233, 248, 0.7);
 			}
@@ -23,7 +24,7 @@
 				overflow: hidden;
 				background: var(--bg);
 				color: var(--text);
-				font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+				font-family: "Noto Sans", "Segoe UI", sans-serif;
 			}
 
 			body {
@@ -44,25 +45,123 @@
 				mask-image: radial-gradient(circle at center, black 42%, transparent 100%);
 				opacity: 0.55;
 			}
-			.panel {
+			.recenter-btn {
 				position: absolute;
-				background: rgba(8, 12, 18, 0.72);
-				border: 1px solid rgba(126, 179, 255, 0.16);
-				backdrop-filter: blur(18px);
-				box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+				top: 14px;
+				right: 14px;
+				z-index: 6;
+				display: grid;
+				place-items: center;
+				width: 34px;
+				height: 34px;
+				padding: 0;
+				border: 1px solid rgba(126, 179, 255, 0.24);
+				border-radius: 10px;
+				background: rgba(8, 12, 18, 0.84);
+				color: #eff6ff;
+				cursor: pointer;
+				pointer-events: auto;
 			}
-			.top-right { left: 18px; bottom: 132px; width: min(420px, calc(100vw - 36px)); padding: 16px; border-radius: 18px; }
-			.bottom-left { left: 18px; bottom: 18px; width: min(420px, calc(100vw - 36px)); padding: 14px 16px; border-radius: 18px; }
-			.sidebar { position: absolute; top: 18px; left: 18px; width: 292px; padding: 14px 12px 12px; border-radius: 18px; overflow: hidden; }
-			.stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 14px; }
-			.stat { padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.06); }
-			.stat-label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
-			.stat-value { display: block; font-size: 17px; margin-top: 4px; font-weight: 700; }
-			.toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-			.toolbar button { appearance: none; border: 1px solid rgba(121, 183, 255, 0.28); background: rgba(13, 18, 26, 0.9); color: var(--text); border-radius: 12px; padding: 10px 14px; font: inherit; cursor: pointer; }
-			.feed-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--muted); margin: 0 0 10px; }
-			.feed-list { list-style: none; margin: 0; padding: 0; overflow: hidden; max-height: calc(100vh - 92px); }
-			.feed-list li { padding: 10px 11px; border-radius: 12px; margin-bottom: 6px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.05); }
+			.recenter-btn:hover { background: rgba(18, 26, 38, 0.9); }
+			.recenter-btn:active { transform: translateY(1px); }
+			.recenter-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+			.projection-btn {
+				position: absolute;
+				top: 14px;
+				right: 56px;
+				z-index: 6;
+				display: grid;
+				place-items: center;
+				min-width: 42px;
+				height: 34px;
+				padding: 0 10px;
+				border: 1px solid rgba(126, 179, 255, 0.24);
+				border-radius: 10px;
+				background: rgba(8, 12, 18, 0.84);
+				color: #eff6ff;
+				font: italic 700 12px/1 "Noto Sans", "Segoe UI", sans-serif;
+				letter-spacing: 0.08em;
+				cursor: pointer;
+				pointer-events: auto;
+			}
+			.projection-btn:hover { background: rgba(18, 26, 38, 0.9); }
+			.projection-btn:active { transform: translateY(1px); }
+			.projection-btn[data-mode="2d"] {
+				border-color: rgba(126, 235, 205, 0.3);
+				color: #c9ffe5;
+			}
+			.region-label-toggle {
+				position: absolute;
+				top: 56px;
+				right: 14px;
+				z-index: 6;
+				display: grid;
+				place-items: center;
+				width: 34px;
+				height: 34px;
+				padding: 0;
+				border: 1px solid rgba(126, 179, 255, 0.24);
+				border-radius: 10px;
+				background: rgba(8, 12, 18, 0.84);
+				color: #eaf4ff;
+				font: italic 700 11px/1 "Noto Sans", "Segoe UI", sans-serif;
+				letter-spacing: 0.03em;
+				text-transform: uppercase;
+				cursor: pointer;
+				pointer-events: auto;
+			}
+			.region-label-toggle:hover { background: rgba(18, 26, 38, 0.9); }
+			.region-label-toggle:active { transform: translateY(1px); }
+			.region-label-toggle[aria-pressed="true"] {
+				border-color: rgba(126, 235, 205, 0.3);
+				color: #c9ffe5;
+			}
+			.region-activity {
+				position: absolute;
+				right: 14px;
+				bottom: 14px;
+				z-index: 6;
+				min-width: 220px;
+				max-width: 280px;
+				padding: 8px 10px;
+				border: 1px solid rgba(126, 179, 255, 0.18);
+				border-radius: 10px;
+				background: rgba(8, 12, 18, 0.82);
+				backdrop-filter: blur(8px);
+				pointer-events: none;
+			}
+			.system-activity {
+				position: absolute;
+				right: 252px;
+				bottom: 14px;
+				z-index: 6;
+				min-width: 220px;
+				max-width: 280px;
+				padding: 8px 10px;
+				border: 1px solid rgba(126, 179, 255, 0.18);
+				border-radius: 10px;
+				background: rgba(8, 12, 18, 0.82);
+				backdrop-filter: blur(8px);
+				pointer-events: none;
+			}
+			.system-activity[hidden] { display: none; }
+			.region-activity[hidden] { display: none; }
+			.region-activity-title {
+				margin: 0 0 6px;
+				font-size: 10px;
+				text-transform: uppercase;
+				letter-spacing: 0.12em;
+				color: var(--muted);
+			}
+			.region-activity-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+			.region-activity-table td { padding: 3px 0; }
+			.region-activity-table td:last-child { text-align: right; color: rgba(223, 237, 255, 0.9); }
+			.system-activity-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+			.system-activity-table td { padding: 3px 0; }
+			.system-activity-table td:last-child { text-align: right; color: rgba(223, 237, 255, 0.9); }
+			.killmail-stream { position: absolute; top: 0; left: 18px; width: 292px; height: 100vh; height: 100dvh; overflow: hidden; pointer-events: none; }
+			.feed-list { list-style: none; margin: 0; padding: 0; overflow: hidden; position: absolute; inset: 0; }
+			.feed-list li { padding: 8px 0; margin-bottom: 6px; border-bottom: 1px solid rgba(255, 255, 255, 0.09); }
 			.kill-row { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 10px; align-items: center; }
 			.kill-image { width: 42px; height: 42px; border-radius: 10px; overflow: hidden; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); }
 			.kill-image img { display: block; width: 100%; height: 100%; object-fit: cover; }
@@ -70,25 +169,16 @@
 			.kill-time { font-size: 11px; color: var(--muted); }
 			.kill-system { font-size: 14px; font-weight: 700; margin-top: 2px; }
 			.kill-meta { font-size: 11px; color: rgba(221, 233, 248, 0.78); margin-top: 2px; }
-			.hint { position: absolute; min-width: 240px; padding: 12px 14px; border-radius: 14px; background: rgba(6, 9, 13, 0.88); border: 1px solid rgba(121, 183, 255, 0.2); backdrop-filter: blur(12px); pointer-events: none; display: none; z-index: 5; }
-			.hint-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-			.hint-muted { font-size: 12px; color: var(--muted); margin-top: 4px; }
 			.loading { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(2, 4, 7, 0.82); backdrop-filter: blur(12px); z-index: 8; }
 			.loading[hidden] { display: none; }
 			.loading-card { padding: 20px 24px; border-radius: 18px; border: 1px solid rgba(121, 183, 255, 0.18); background: rgba(8, 12, 18, 0.92); text-align: center; }
 			.loading-card strong { display: block; font-size: 18px; margin-bottom: 8px; }
 			.loading-card span { font-size: 13px; color: var(--muted); }
 			@media (max-width: 1100px) {
-				.sidebar { left: 18px; right: 18px; top: auto; bottom: 18px; width: auto; height: 220px; }
-				.feed-list { max-height: 150px; }
-				.top-right { left: 18px; right: 18px; width: auto; bottom: 350px; }
-				.bottom-left { bottom: 256px; }
+				.killmail-stream { left: 18px; right: 18px; width: auto; }
 			}
 			@media (max-width: 720px) {
-				.top-right, .bottom-left, .sidebar { left: 12px; right: 12px; width: auto; }
-				.top-right { bottom: 342px; }
-				.bottom-left { bottom: 248px; }
-				.sidebar { bottom: 12px; height: 220px; }
+				.killmail-stream { left: 12px; right: 12px; width: auto; }
 			}
 		</style>
 	</head>
@@ -97,31 +187,32 @@
 			<canvas id="mapCanvas" aria-label="New Eden map canvas"></canvas>
 			<div class="grid-overlay"></div>
 			<div class="vignette"></div>
-			<section class="panel top-right">
-				<div class="stats">
-					<div class="stat"><span class="stat-label">Systems</span><strong class="stat-value" id="mapSystemCount">-</strong></div>
-					<div class="stat"><span class="stat-label">Hot systems</span><strong class="stat-value" id="mapLiveCount">-</strong></div>
-					<div class="stat"><span class="stat-label">Sequence</span><strong class="stat-value" id="mapSequence">-</strong></div>
-					<div class="stat"><span class="stat-label">Refresh</span><strong class="stat-value" id="mapRefreshAt">-</strong></div>
-				</div>
-				<div class="toolbar" id="mapToolbar">
-					<button type="button" data-action="fit">Fit view</button>
-					<button type="button" data-action="heat">Reset heat</button>
-					<button type="button" data-action="refresh">Refresh</button>
-				</div>
-			</section>
-			<section class="panel bottom-left">
-				<div class="stats" style="grid-template-columns: repeat(3, 1fr); margin-top: 0;">
-					<div class="stat"><span class="stat-label">Hover</span><strong class="stat-value" id="hudSystem">-</strong></div>
-					<div class="stat"><span class="stat-label">Constellation</span><strong class="stat-value" id="hudConstellation">-</strong></div>
-					<div class="stat"><span class="stat-label">Region</span><strong class="stat-value" id="hudRegion">-</strong></div>
-				</div>
-			</section>
-			<aside class="panel sidebar" id="liveKillsPanel">
-				<h2 class="feed-title">Live kills</h2>
+			<button id="recenterButton" class="recenter-btn" type="button" aria-label="Re-center map">
+				<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+					<circle cx="12" cy="12" r="6"></circle>
+					<path d="M12 2v3"></path>
+					<path d="M12 19v3"></path>
+					<path d="M2 12h3"></path>
+					<path d="M19 12h3"></path>
+				</svg>
+			</button>
+			<button id="projectionToggle" class="projection-btn" type="button" data-mode="2d" aria-label="Switch map projection" aria-pressed="true">2D</button>
+			<button id="regionLabelToggle" class="region-label-toggle" type="button" aria-label="Toggle region labels" aria-pressed="false" title="Toggle region labels">RG</button>
+			<aside class="killmail-stream" id="liveKillsPanel">
 				<ul class="feed-list" id="liveKillFeed"></ul>
 			</aside>
-			<div id="mapHint" class="hint"></div>
+			<aside id="regionActivity" class="region-activity" hidden>
+				<h2 class="region-activity-title">Top Active Regions</h2>
+				<table class="region-activity-table" aria-label="Top active regions">
+					<tbody id="regionActivityBody"></tbody>
+				</table>
+			</aside>
+			<aside id="systemActivity" class="system-activity" hidden>
+				<h2 class="region-activity-title">Top Active Systems</h2>
+				<table class="system-activity-table" aria-label="Top active systems">
+					<tbody id="systemActivityBody"></tbody>
+				</table>
+			</aside>
 			<div id="mapLoading" class="loading">
 				<div class="loading-card">
 					<strong>Loading star map</strong>
@@ -131,12 +222,13 @@
 		</div>
 		<script>
 			window.mapPageConfig = {
-				r2z2BaseUrl: 'https://r2z2.zkillboard.com/ephemeral',
+				websocketUrl: '/websocket/',
 				systemsUrl: '/data/mapSystems.jsonl',
+				systems2dUrl: '/data/mapSystems2d.jsonl',
 				regionsUrl: '/data/mapRegions.jsonl',
 				constellationsUrl: '/data/mapConstellations.jsonl'
 			};
 		</script>
-		<script src="/map/map.js?v=static"></script>
+		<script src="/map/map.js?v=ws2"></script>
 	</body>
 </html>
