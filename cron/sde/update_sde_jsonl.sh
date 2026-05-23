@@ -27,10 +27,45 @@ if [[ ! -f "${CONFIG_FILE}" ]]; then
   exit 1
 fi
 
-mongo_uri="$({ sed -n 's/^[[:space:]]*\$mongoConnString[[:space:]]*=[[:space:]]*"\(.*\)";[[:space:]]*$/\1/p' "${CONFIG_FILE}" | head -n 1; } || true)"
+mongo_uri="$({
+  awk '
+    BEGIN { in_assignment = 0 }
+    {
+      line = $0
+
+      if (!in_assignment && line ~ /^[[:space:]]*\$mongoConnString[[:space:]]*=/) {
+        in_assignment = 1
+      }
+
+      if (!in_assignment) {
+        next
+      }
+
+      while (match(line, /"([^"\\]|\\.)*"/)) {
+        segment = substr(line, RSTART + 1, RLENGTH - 2)
+        gsub(/\\"/, "\"", segment)
+        gsub(/\\\\/, "\\", segment)
+        printf "%s", segment
+        line = substr(line, RSTART + RLENGTH)
+      }
+
+      if (line ~ /;[[:space:]]*$/) {
+        exit
+      }
+    }
+  ' "${CONFIG_FILE}"
+} || true)"
 if [[ -z "${mongo_uri}" ]]; then
   echo "Unable to parse \$mongoConnString from ${CONFIG_FILE}" >&2
   exit 1
+fi
+
+# Enforce primary reads for this CLI import script.
+mongo_uri="$(printf '%s' "${mongo_uri}" | sed -E 's/([?&])readPreference=[^&]*&/\1/g; s/([?&])readPreference=[^&]*$/\1/; s/\?&/?/; s/[?&]$//')"
+if [[ "${mongo_uri}" == *\?* ]]; then
+  mongo_uri="${mongo_uri}&readPreference=primary"
+else
+  mongo_uri="${mongo_uri}?readPreference=primary"
 fi
 
 tmp_dir="$(mktemp -d)"
