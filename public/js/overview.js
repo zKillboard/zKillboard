@@ -9,7 +9,7 @@ function updateStats(stats) {
 
 	console.log(stats);
 	console.log('stats updated');
-
+return;
 	const kills = stats['s-a-sd'] || 0;
 	const losses = stats['s-a-sl'] || 0;
 	const total = kills + losses;
@@ -18,7 +18,7 @@ function updateStats(stats) {
 	for (i = 10; i > 1; i--) {
 		let els = document.getElementsByClassName(`pagination-li-${i}`);
 
-		if (valueToUse < i * 100) {
+		if (valueToUse < ((i - 1) * 100)) {
 			$(els).hide();
 		} else {
 			$(els).show();
