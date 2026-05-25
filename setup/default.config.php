@@ -79,12 +79,11 @@ $showAnalytics = false;
 $analyticsID = ''; // UA-<number>
 $analyticsName = ''; // name
 
-// Twitter
-$twitterName = '';
-$consumerKey = '';
-$consumerSecret = '';
-$accessToken = '';
-$accessTokenSecret = '';
+// XTwitter OAuth 2.0 (User Context)
+$xtwitterClientId = '';
+$xtwitterClientSecret = '';
+$xtwitterAccessToken = '';
+$xtwitterRefreshToken = '';
 
 $adFreeMonthCost = 5000000; // 5 million ISK per month
 $banLength = 9600;

@@ -16,9 +16,9 @@ while ($minute == date('Hi')) {
 
 function beSocial($killID)
 {
-    global $mdb, $redis, $fullAddr, $twitterName, $imageServer, $queueSocial, $bigKillBotWebhook;
+    global $mdb, $redis, $fullAddr, $imageServer, $queueSocial, $bigKillBotWebhook, $xtwitterMinimumIsk;	
 
-    $twitMin = 10000000000;
+    $xMin = 10000000000;
     $kill = $mdb->findDoc('killmails', ['killID' => $killID]);
 
     $hours24 = time() - 86400;
@@ -28,12 +28,12 @@ function beSocial($killID)
     if ($victimInfo['corporationID'] < 1999999 && @$victimInfo['characterID'] == 0) return;
 
     $totalPrice = $kill['zkb']['totalValue'];
-    if ($kill['vGroupID'] == 902) $twitMin += 5000000000; // Jump Freighters, 15b
-    if (in_array($kill['vGroupID'], [1657, 1404, 1406])) $twitMin = 25000000000; // Citadels, Eng. Complexes, and Refineries, 25b
-    if ($kill['vGroupID'] == 883) $twitMin += 5000000000; // Rorquals, 15b
-    $noTweet = $kill['dttm']->toDateTime()->getTimestamp() < $hours24 || $victimInfo == null || $totalPrice < $twitMin;
-    if (((int) @$kill['locationID']) == 60012256 && $kill['attackerCount'] > 100 && $totalPrice > 1000000000) $noTweet = false; // whack a bot
-    if ($noTweet) {
+    if ($kill['vGroupID'] == 902) $xMin += 5000000000; // Jump Freighters, 15b
+    if (in_array($kill['vGroupID'], [1657, 1404, 1406])) $xMin = 25000000000; // Citadels, Eng. Complexes, and Refineries, 25b
+    if ($kill['vGroupID'] == 883) $xMin += 5000000000; // Rorquals, 15b
+    $noPost = $kill['dttm']->toDateTime()->getTimestamp() < $hours24 || $victimInfo == null || $totalPrice < $xMin;
+    if (((int) @$kill['locationID']) == 60012256 && $kill['attackerCount'] > 100 && $totalPrice > 1000000000) $noPost = false; // whack a bot
+    if ($noPost) {
         return;
     }
 
@@ -44,6 +44,7 @@ function beSocial($killID)
     $attempts = 0;
     do {
         $name = getName($victimInfo);
+        $attempts++;
         if ($name == "") sleep(1);
     } while ($name == "" && $attempts < 10);
     if ($name == "") {
@@ -62,11 +63,18 @@ function beSocial($killID)
     ];
     $redis->publish("public", json_encode($redisMessage, JSON_UNESCAPED_SLASHES));
     Discord::webhook($bigKillBotWebhook, $url);
+
+	if (@$xtwitterMinimumIsk >= 25000000000 && $totalPrice > $xtwitterMinimumIsk) { // 25b
+		$xtwitterResult = XTwitterPoster::post($message);
+		if (!$xtwitterResult['ok'] && empty($xtwitterResult['skipped'])) {
+			Util::out('XTwitter post failed: ' . $xtwitterResult['error']);
+		}
+	}
 }
 
 function adjustMessage($name, $message)
 {
-    $newMessage = "$name $message #tweetfleet #eveonline";
+    $newMessage = "$name $message #eveonline #tweetfleet";
     $message = (strlen($newMessage) <= 260) ? $newMessage : $message;
 
     $message = strlen($message) > 260 ? str_replace(' worth ', ': ', $message) : $message;
