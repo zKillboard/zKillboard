@@ -65,7 +65,7 @@ function beSocial($killID)
     Discord::webhook($bigKillBotWebhook, $url);
 
 	if (@$xtwitterMinimumIsk >= 25000000000 && $totalPrice > $xtwitterMinimumIsk) { // 25b
-		$xtwitterResult = XTwitterPoster::post($message);
+		$xtwitterResult = XTwitterPoster::post("$message #tweetfleet #eveonline");
 		if (!$xtwitterResult['ok'] && empty($xtwitterResult['skipped'])) {
 			Util::out('XTwitter post failed: ' . $xtwitterResult['error']);
 		}
