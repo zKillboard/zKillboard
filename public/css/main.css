@@ -87,7 +87,6 @@ zk-home-side { display: block; text-align: center; }
 position: fixed;
 top: 70px;
 left: 5px;
-z-index: 0;
 cursor: pointer;
 width: 160px;
 }
@@ -96,7 +95,6 @@ width: 160px;
 position: fixed;
 top: 70px;
 right: 5px;
-z-index: 9500;
 cursor: pointer;
 width: 160px;
 }
@@ -118,10 +116,6 @@ width: 160px;
 	text-align: right;
 }
 
-.collapse {
-    overflow: hidden !important;
-    max-height: 100% !important;
-}
 
 .footer {
 	margin-top: 20px;
@@ -176,7 +170,6 @@ li.active img {
 	left: -200px;
 	top: 0px;
 	width: 200px;
-	z-index: 99;
 	height: 100%;
 }
 
@@ -656,30 +649,10 @@ code {
 	max-width: 315px !important;
 }
 
-body:has(img[src="/n5dev.png"])::before {
-        content: 'UBLOCK DETECTED :(';
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        padding: 6px 10px;
-        background: #111;
-        color: #fff;
-        font-size: 12px;
-        text-align: center;
-        z-index: 9999;
-        pointer-events: none;
-}
-
-body:has(img[src="/n5dev.png"]) {
-        margin-top: 28px;
-}
-
 .ambient-killmail-toggle {
     position: fixed;
     right: 14px;
     bottom: 14px;
-    z-index: 2001;
     padding: 7px 12px;
     border: 1px solid #2f3a4f;
     border-radius: 999px;
@@ -712,7 +685,6 @@ body:has(img[src="/n5dev.png"]) {
     position: static;
     right: auto;
     bottom: auto;
-    z-index: auto;
     padding: 5px 10px;
     font-size: 11px;
     letter-spacing: 0.02em;

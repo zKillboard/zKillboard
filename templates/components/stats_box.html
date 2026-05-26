@@ -162,7 +162,7 @@
         <td class="red " style="text-align: right">{{ statistics.weeklyPointsLostRank  == 0 ? '-' : statistics.weeklyPointsLostRank | number_format(0) }}</td>
         {% set greenred = pointsEff >= 50 ? 'green' : 'red' %}
         <td class="{{greenred}} " style="text-align: right">{{ pointsEff | number_format(1) }}</td>
-        <th style="text-align: right"><div class=""></div><div class="visible-xs"></div></th>
+        <th style="text-align: right"><div class=""></div><div class="d-block d-md-none"></div></th>
     </tr>
     <tr class="weekly-ranks collapse">
         <th class="" style="text-align: right">ISK</th>

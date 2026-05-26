@@ -16,7 +16,7 @@
 
 <div class="navbar navbar-default">
 	<div class="navbar-header">
-    	<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-sub">
+	    <button type="button" class="navbar-toggle" data-bs-toggle="collapse" data-bs-target=".navbar-sub">
 			<span class="icon-bar"></span>
 			<span class="icon-bar"></span>
 			<span class="icon-bar"></span>
@@ -25,11 +25,11 @@
 	<div class="collapse navbar-collapse navbar-sub">
 	<ul class="nav navbar-nav">
 		{% if prevID %}
-		<li class="hidden-xs"><a href="/{{ key }}/{{ prevID }}/">&lt;</a></li>
+		<li class="d-none d-md-block"><a href="/{{ key }}/{{ prevID }}/">&lt;</a></li>
 		{% endif %}
 		<li class="{{ isActive('Overview', pageType) }}"><a href="/{{ key }}/{{ id }}/">Overview</a></li>
 		<li class="{{ isActive('Kills', pageType) }}"><a href="/{{ key }}/{{ id }}/kills/{{YWMurl}}">Kills</a></li>
-		<li class="{{ isActive('Solo', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/solo/{{YWMurl}}">Solo</a></li>
+		<li class="{{ isActive('Solo', pageType) }} d-none d-md-block"><a href="/{{ key }}/{{ id }}/solo/{{YWMurl}}">Solo</a></li>
 		<li class="{{ isActive('Losses', pageType) }}"><a href="/{{ key }}/{{ id }}/losses/{{YWMurl}}">Losses</a></li>
         {% if key == 'character' %}
 		<li class="{{ isActive('Trophies', pageType) }}"><a href="/{{ key }}/{{ id }}/trophies/">Trophies</a></li>
@@ -37,44 +37,44 @@
 	{% if key == "ship" %}
 		<li class="{{ isActive('Description', pageType) }}"><a href="/item/{{ id }}/">Description</a></li>
 	{% endif %}
-	<li class="dropdown hidden-xs">
+	<li class="dropdown d-none d-md-block">
 		<a href="#" class="dropdown-toggle" data-toggle="dropdown">Top <b class="caret"></b></i></a>
 		<ul class="dropdown-menu">
-			<li class="{{ isActive('top', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/top/">Monthly Top</a></li>
-			<li class="{{ isActive('topalltime', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/topalltime/">All Time Top</a></li>
+			<li class="{{ isActive('top', pageType) }} d-none d-md-block"><a href="/{{ key }}/{{ id }}/top/">Monthly Top</a></li>
+			<li class="{{ isActive('topalltime', pageType) }} d-none d-md-block"><a href="/{{ key }}/{{ id }}/topalltime/">All Time Top</a></li>
 		</ul>
 	</li>
-	<li class="{{ isActive('ranks', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/ranks/">Ranks</a></li>
-	<li class="{{ isActive('stats', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/stats/">Stats</a></li>
+	<li class="{{ isActive('ranks', pageType) }} d-none d-md-block"><a href="/{{ key }}/{{ id }}/ranks/">Ranks</a></li>
+	<li class="{{ isActive('stats', pageType) }} d-none d-md-block"><a href="/{{ key }}/{{ id }}/stats/">Stats</a></li>
     {% if key == 'character' %}
     {% endif %}
 	{% if key in ['character', 'corporation', 'alliance'] %}
-	<!--<li class="hidden-xs"><a href="/{{ key }}/{{ id }}/recap2025/" style="color: #667eea; font-weight: bold;">🎆 2025 Recap</a></li>-->
+	<!--<li class="d-none d-md-block"><a href="/{{ key }}/{{ id }}/recap2025/" style="color: #667eea; font-weight: bold;">🎆 2025 Recap</a></li>-->
 	{% endif %}
 	{% if extra.hasSupers %}
-	<li class="{{ isActive('supers', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/supers/">Supers</a></li>
+	<li class="{{ isActive('supers', pageType) }} d-none d-md-block"><a href="/{{ key }}/{{ id }}/supers/">Supers</a></li>
 	{% endif %}
 	{% if extra.hasWars > 0 %}
-	<li class="{{ isActive('wars', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/wars/">Wars</a></li>
+	<li class="{{ isActive('wars', pageType) }} d-none d-md-block"><a href="/{{ key }}/{{ id }}/wars/">Wars</a></li>
 	{% endif %}
 	{% if key == "alliance" %}
-		<li class="{{ isActive('corpstats', pageType) }} hidden-xs"><a href="/{{ key }}/{{ id }}/corpstats/">Corporations</a></li>
+		<li class="{{ isActive('corpstats', pageType) }} d-none d-md-block"><a href="/{{ key }}/{{ id }}/corpstats/">Corporations</a></li>
     {% endif %}
 	</ul>
-	<ul class="nav navbar-nav pull-right hidden-xs">
-	{% if key == "ship" %}<li class="hidden-md hidden-sm">
+	<ul class="nav navbar-nav pull-right d-none d-md-flex">
+	{% if key == "ship" %}<li class="d-md-none d-xl-block">
 		<a href="https://eveconomy.online/item/{{ id }}" style="background-color:#72ABB6;color:#fff;" target="_blank" rel="noopener noreferrer">
 		<img src="/img/eveconomy.png" alt="EVEconomy" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;" loading="lazy" decoding="async" fetchpriority="low">
 		EVEconomy
 		</a>
 	</li>{% endif %}
-	{% if key == "character" %}<li class="hidden-md hidden-sm">
+	{% if key == "character" %}<li class="d-md-none d-xl-block">
 		<a href="https://podmail.space" style="color:#fff;" target="_blank" rel="noopener noreferrer">
 		<img src="/img/podmail.png" alt="PodMail" style="height:16px;vertical-align:middle;margin-right:4px;" loading="lazy" decoding="async" fetchpriority="low">
 		PodMail
 		</a>
 	</li>{% endif %}
-<li class="hidden-md hidden-sm">
+<li class="d-md-none d-xl-block">
 	<!--<a href="https://zkillboard.github.io/zkillbot/" target="_new" style="background-color:#5865F2;color:#fff;">
 	<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/discord.svg" alt="Discord" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;" loading="lazy" decoding="async" fetchpriority="low">
 	zKillBot
@@ -83,16 +83,16 @@
 
 
 	{% if key == "character" %}
-		<li class="hidden-md hidden-sm"><a href="/information/streambox/">StreamBox</a></li>
-		<li class="hidden-md hidden-sm"><a href="https://evewho.com/character/{{ id }}" target="_blank" rel="noopener noreferrer">EVEWho</a></li>
+		<li class="d-md-none d-xl-block"><a href="/information/streambox/">StreamBox</a></li>
+		<li class="d-md-none d-xl-block"><a href="https://evewho.com/character/{{ id }}" target="_blank" rel="noopener noreferrer">EVEWho</a></li>
 	{% elseif key == "corporation" %}
-		<li class="hidden-md hidden-sm"><a href="/information/streambox/">StreamBox</a></li>
-		<li class="hidden-md hidden-sm"><a href="https://evemaps.dotlan.net/corp/{{ pageName|url_encode }}/" target="_blank" rel="noopener noreferrer">DOTLAN</a></li>
-		<li class="hidden-md hidden-sm"><a href="https://evewho.com/corporation/{{ id }}" target="_blank" rel="noopener noreferrer">EVEWho</a></li>
+		<li class="d-md-none d-xl-block"><a href="/information/streambox/">StreamBox</a></li>
+		<li class="d-md-none d-xl-block"><a href="https://evemaps.dotlan.net/corp/{{ pageName|url_encode }}/" target="_blank" rel="noopener noreferrer">DOTLAN</a></li>
+		<li class="d-md-none d-xl-block"><a href="https://evewho.com/corporation/{{ id }}" target="_blank" rel="noopener noreferrer">EVEWho</a></li>
 	{% elseif key == "alliance" %}
-		<li class="hidden-md hidden-sm"><a href="/information/streambox/">StreamBox</a></li>
-		<li class="hidden-md hidden-sm"><a href="https://evemaps.dotlan.net/alliance/{{ pageName|url_encode }}/" target="_blank" rel="noopener noreferrer">DOTLAN</a></li>
-		<li class="hidden-md hidden-sm"><a href="https://evewho.com/alliance/{{ id }}" target="_blank" rel="noopener noreferrer">EVEWho</a></li>
+		<li class="d-md-none d-xl-block"><a href="/information/streambox/">StreamBox</a></li>
+		<li class="d-md-none d-xl-block"><a href="https://evemaps.dotlan.net/alliance/{{ pageName|url_encode }}/" target="_blank" rel="noopener noreferrer">DOTLAN</a></li>
+		<li class="d-md-none d-xl-block"><a href="https://evewho.com/alliance/{{ id }}" target="_blank" rel="noopener noreferrer">EVEWho</a></li>
 	{% elseif key == "system" %}
         {% if detail.regionID == 10000070 %}
 		    <li><a href="https://evemetro.com" target="_blank" rel="noopener noreferrer">Eve Metro</a></li>
@@ -105,7 +105,7 @@
 		<li><a href="https://evemaps.dotlan.net/region/{{ pageName|url_encode }}/" target="_blank" rel="noopener noreferrer">DOTLAN</a></li>
 	{% endif %}
 		{% if nextID %}
-		<li class="hidden-xs"><a href="/{{ key }}/{{ nextID }}/">&gt;</a></li>
+		<li class="d-none d-md-block"><a href="/{{ key }}/{{ nextID }}/">&gt;</a></li>
 		{% endif %}
 	</ul>
 </div>

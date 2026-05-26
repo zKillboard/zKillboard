@@ -3,7 +3,7 @@ composer.phar
 config.php
 db
 public/sitemaps/
-vendor/
+/vendor/
 work
 public/ztop.txt
 public/api/

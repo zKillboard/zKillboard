@@ -2,11 +2,11 @@
 <script type="text/javascript">
 
 characterID = {{ characterID }};
-$(".forloggedin").removeClass('hidden');
-$(".forloggedout").addClass('hidden');
-$("#nousermenu").addClass("hidden");
-$("#usermenu").removeClass("hidden");
-$("#contest-logged-in").removeClass('hidden');
+$(".forloggedin").removeClass('d-none');
+$(".forloggedout").addClass('d-none');
+$("#nousermenu").addClass("d-none");
+$("#usermenu").removeClass("d-none");
+$("#contest-logged-in").removeClass('d-none');
 $("#loginforapi").remove();
 $("#username").text("{{ sessionusername }}");
 $("#char-image").attr("src", "{{ image_character }}{{ characterID }}/portrait?size=256");
@@ -44,7 +44,7 @@ $("#nextstyle").attr("href", "/css/style-edits/{{ style }}-main.css");
 $(".zkblogo").hide();
 {% endif %}
 
-$("#menu-favorites").removeClass('hidden');
+$("#menu-favorites").removeClass('d-none');
 var showAdd = true;
 var tn = ('true' == '{{ trackernotification }}'); // TN = TrackerNotification
 {% for data in tracker_character %}
@@ -86,86 +86,86 @@ showAdd = showAdder(showAdd, 'region', {{data.id}}, tn);
 $(".fav-star-" + {{ killID }}).css("color", "#FDBC2C");
 {% endfor %}
 
-if (showAdd) $("#tracker-add").removeClass("hidden");
+if (showAdd) $("#tracker-add").removeClass("d-none");
 
 console.log("nav loaded");
 </script>
 {% if tracker_character %}
-<li class="dropdown-header">Characters</li>
+<li><h6 class="dropdown-header">Characters</h6></li>
 {% for data in tracker_character %}
-<li><a href="/character/{{ data.id }}/">{{ data.name }}</a></li>
+<li><a class="dropdown-item" href="/character/{{ data.id }}/">{{ data.name }}</a></li>
 {% endfor %}
 {% endif %}
 
 {% if tracker_corporation %}
-<li class="dropdown-header">Corporations</li>
+<li><h6 class="dropdown-header">Corporations</h6></li>
 {% for data in tracker_corporation %}
-<li><a href="/corporation/{{ data.id }}/">{{ data.name }}</a></li>
+<li><a class="dropdown-item" href="/corporation/{{ data.id }}/">{{ data.name }}</a></li>
 {% endfor %}
 {% endif %}
 
 {% if tracker_alliance %}
-<li class="dropdown-header">Alliances</li>
+<li><h6 class="dropdown-header">Alliances</h6></li>
 {% for data in tracker_alliance %}
-<li><a href="/alliance/{{ data.id }}/">{{ data.name }}</a></li>
+<li><a class="dropdown-item" href="/alliance/{{ data.id }}/">{{ data.name }}</a></li>
 {% endfor %}
 {% endif %}
 
 {% if tracker_faction %}
-<li class="dropdown-header">Factions</li>
+<li><h6 class="dropdown-header">Factions</h6></li>
 {% for data in tracker_faction %}
-<li><a href="/faction/{{ data.id }}/">{{ data.name }}</a></li>
+<li><a class="dropdown-item" href="/faction/{{ data.id }}/">{{ data.name }}</a></li>
 {% endfor %}
 
 {% endif %}
 
 {% if tracker_ship %}
-<li class="dropdown-header">Ships</li>
+<li><h6 class="dropdown-header">Ships</h6></li>
 {% for data in tracker_ship %}
-<li><a href="/ship/{{ data.id }}/">{{ data.name }}</a></li>
+<li><a class="dropdown-item" href="/ship/{{ data.id }}/">{{ data.name }}</a></li>
 {% endfor %}
 {% endif %}
 
 {% if tracker_group %}
-<li class="dropdown-header">Groups</li>
+<li><h6 class="dropdown-header">Groups</h6></li>
 {% for data in tracker_group %}
-<li><a href="/group/{{ data.id }}/">{{ data.name }}</a></li>
+<li><a class="dropdown-item" href="/group/{{ data.id }}/">{{ data.name }}</a></li>
 {% endfor %}
 {% endif %}
 
 {% if tracker_system %}
-<li class="dropdown-header">Systems</li>
+<li><h6 class="dropdown-header">Systems</h6></li>
 {% for data in tracker_system %}
-<li><a href="/system/{{ data.id }}/">{{ data.name }}</a></li>
+<li><a class="dropdown-item" href="/system/{{ data.id }}/">{{ data.name }}</a></li>
 {% endfor %}
 {% endif %}
 
 {% if tracker_constellation %}
-<li class="dropdown-header">Constellations</li>
+<li><h6 class="dropdown-header">Constellations</h6></li>
 {% for data in tracker_constellation %}
-<li><a href="/constellation/{{ data.id }}/">{{ data.name }}</a></li>
+<li><a class="dropdown-item" href="/constellation/{{ data.id }}/">{{ data.name }}</a></li>
 {% endfor %}
 {% endif %}
 
 {% if tracker_region %}
-<li class="dropdown-header">Regions</li>
+<li><h6 class="dropdown-header">Regions</h6></li>
 {% for data in tracker_region %}
-<li><a href="/region/{{ data.id }}/">{{ data.name }}</a></li>
+<li><a class="dropdown-item" href="/region/{{ data.id }}/">{{ data.name }}</a></li>
 {% endfor %}
 {% endif %}
 
-<li class="divider"></li>
-<li class="dropdown-header">* Cannot be removed.</li>
+<li><hr class="dropdown-divider"></li>
+<li><h6 class="dropdown-header">* Cannot be removed.</h6></li>
 
 {% else %}
 
 <script type="text/javascript">
 characterID = 0;
-$(".forloggedout").removeClass('hidden');
-$(".forloggedin").addClass('hidden');
-$("#tracker-none").removeClass("hidden");
+$(".forloggedout").removeClass('d-none');
+$(".forloggedin").addClass('d-none');
+$("#tracker-none").removeClass("d-none");
 $("#savefit").remove();
-$("#nosavefit").removeClass("hidden");
+$("#nosavefit").removeClass("d-none");
 $("#char-image").attr("src", "{{ image_character }}1/portrait?size=32");
 $("#loginforapi").show();
 

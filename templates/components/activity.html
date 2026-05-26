@@ -2,7 +2,7 @@
 {{ sponsoredMessage|raw }}
 {% if pageType == 'overview' and extra.activity.max > 0 %}
     <center><h5>Activity (last 90 days)</h5></center>
-    <a href="#" data-toggle="modal" data-target="#heatmap">
+    <a href="#" data-bs-toggle="modal" data-bs-target="#heatmap">
     {% apply spaceless %}
     <div style="line-height: 0px;">
     {% set steps = (extra.activity.max / 5)|round(0, 'floor') %}

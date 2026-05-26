@@ -836,9 +836,7 @@ function btn_export() {
 		  <div class="modal-dialog" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
-		        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-		          <span aria-hidden="true" class="red">&times;</span>
-		        </button>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 		      </div>
 		      <div class="modal-body">
 		        <p>Copy the filter below to use in zkillbot:</p>
@@ -853,7 +851,9 @@ function btn_export() {
 	`);
 	modal.find('#zkillFilterInput').val('/zkillbot subscribe advanced:' + filter);
 	$('body').append(modal);
-	modal.modal('show');
+	const modalEl = modal[0];
+	const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+	modalInstance.show();
 
 	$('#copyZkillFilter').on('click', function() {
 		var input = document.getElementById('zkillFilterInput');
@@ -861,7 +861,7 @@ function btn_export() {
 		input.setSelectionRange(0, 99999); // For mobile devices
 		document.execCommand('copy');
 		// remove the modal after copying
-		modal.modal('hide');
+		modalInstance.hide();
 	});	
 	modal.on('hidden.bs.modal', function () {
 		modal.remove();

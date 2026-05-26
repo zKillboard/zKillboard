@@ -1,113 +1,109 @@
-<div class="navbar navbar-default" style="margin-bottom: 0px;">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="margin-bottom: 0px;">
 	<div class="container">
-		<div class="navbar-header">
-			<button type="button" class="navbar-toggle openMenu" data-toggle="collapse" data-target=".navbar-main">
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
+		<div>
+			<button type="button" class="navbar-toggler openMenu" data-bs-toggle="collapse" data-bs-target="#navbar-main" aria-controls="navbar-main" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
 			</button>
-			<a class="navbar-brand" href="/"><img class='zkblogo' src='/img/logo.png' style='width: 16px; height: 16px;'/> z<span class="hidden-xs">Killboard</span></a>
+			<a class="navbar-brand" href="/"><img class='zkblogo' src='/img/logo.png' style='width: 16px; height: 16px;'/> z<span class="d-none d-md-inline">Killboard</span></a>
 		</div>
-		<div class="collapse navbar-collapse navbar-main">
-			<ul class="nav navbar-nav">
-				<li class="dropdown hidden-xs hidden-sm">
-					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu <b class="caret"></b></a>
+		<div class="collapse navbar-collapse navbar-main" id="navbar-main">
+			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+				<li class="nav-item dropdown d-none d-lg-block">
+					<button type="button" class="nav-link dropdown-toggle btn btn-link border-0 bg-transparent" data-bs-toggle="dropdown" aria-expanded="false">Menu</button>
 					<ul class="dropdown-menu asclicks">
-						<li><a href="/character/ranks/k/all/alltime/1/">Top Ranks</a></li>
-                        <li><a href="/asearch/">Advanced Search</a></li>
-						<li class="divider"></li>
-						<li><a href='/asearch/#{"buttons":["week","rolling","label-isk:5b+","sort-date","sort-desc","page1","victimsonly"]}'>Top Kills (5b+)</a></li>
-						<li><a href='/asearch/#{"buttons":["week","rolling","label-isk:10b+","label-isk:100b+","sort-date","sort-desc","page1","victimsonly"]}'>Big Kills (10b+)</a></li>
-						<li><a href='/asearch/#{"buttons":["week","rolling","label-capital","label-pvp","sort-date","sort-desc","page1","victimsonly"]}'>Capitals</a></li>
-						<li><a href='/asearch/#{"buttons":["week","rolling","label-cat:65","label-pvp","sort-date","sort-desc","page1","victimsonly"]}'>Structures</a></li>
-						<li><a href='/asearch/#{"buttons":["week","rolling","label-loc:abyssal","sort-date","sort-desc","page1","victimsonly"]}'>Abyssal</a></li>
-						<li><a href='/asearch/#{"buttons":["week","rolling","label-loc:abyssal","label-pvp","sort-date","sort-desc","page1","victimsonly"]}'>Abyssal PvP</a></li>
-						<li><a href='/asearch/#{"buttons":["week","rolling","label-awox","sort-date","sort-desc","page1","victimsonly"]}'>Awox</a></li>
-						<li><a href='/asearch/#{"buttons":["week","rolling","label-ganked","sort-date","sort-desc","page1","victimsonly"]}'>Ganked</a></li>
-						<li><a href='/asearch/#{"buttons":["week","rolling","label-solo","sort-date","sort-desc","page1","victimsonly"]}'>Solo</a></li>
-						<li class="divider"></li>
-						<li><a href='/asearch/#{"buttons":["week","rolling","label-loc:highsec","sort-date","sort-desc","page1","victimsonly"]}'>Highsec</a></li>
-						<li><a href='/asearch/#{"buttons":["week","rolling","label-loc:lowsec","sort-date","sort-desc","page1","victimsonly"]}'>Lowsec</a></li>
-						<li><a href='/asearch/#{"buttons":["week","rolling","label-loc:nullsec","sort-date","sort-desc","page1","victimsonly"]}'>Nullsec</a></li>
-						<li><a href='/asearch/#{"buttons":["week","rolling","label-loc:w-space","sort-date","sort-desc","page1","victimsonly"]}'>W-Space</a></li>
-						<li><a href='/asearchsaved/68a46dfdda54f9254e0bf0e6/'>Pochven</a></li>
-						<li class="divider"></li>
-                        <li><a href='/asearch/#{"buttons":["togglefilters","week","rolling","attackers-and","either-and","victims-and","sort-date","sort-desc","page1","allinvolved"],"attackers":[{"type":"factionID","id":"500001"}],"victims":[{"type":"factionID","id":"500004"}]}'>Caldari vs Gallente</a></li>
-                        <li><a href='/asearch/#{"buttons":["togglefilters","week","rolling","attackers-and","either-and","victims-and","sort-date","sort-desc","page1","allinvolved"],"attackers":[{"type":"factionID","id":"500003"}],"victims":[{"type":"factionID","id":"500002"}]}'>Amarr vs Minmatar</a></li>
-                        <li><a href="/wars/">Wars</a></li>
-                        <li><a href="/war/eligible/">War Eligible</a></li>
-						<li class="divider"></li>
-						<li><a href="/kills/sponsored/">Sponsored</a></li>
-                        <li><a href="/top/lasthour/all/">Hourly Stats</a><li>
-                        <li><a href="/ztop/">zTop</a></li>
+						<li><a class="dropdown-item" href="/character/ranks/k/all/alltime/1/">Top Ranks</a></li>
+						<li><a class="dropdown-item" href="/asearch/">Advanced Search</a></li>
+						<li><hr class="dropdown-divider"></li>
+						<li><a class="dropdown-item" href='/asearch/#{"buttons":["week","rolling","label-isk:5b+","sort-date","sort-desc","page1","victimsonly"]}'>Top Kills (5b+)</a></li>
+						<li><a class="dropdown-item" href='/asearch/#{"buttons":["week","rolling","label-isk:10b+","label-isk:100b+","sort-date","sort-desc","page1","victimsonly"]}'>Big Kills (10b+)</a></li>
+						<li><a class="dropdown-item" href='/asearch/#{"buttons":["week","rolling","label-capital","label-pvp","sort-date","sort-desc","page1","victimsonly"]}'>Capitals</a></li>
+						<li><a class="dropdown-item" href='/asearch/#{"buttons":["week","rolling","label-cat:65","label-pvp","sort-date","sort-desc","page1","victimsonly"]}'>Structures</a></li>
+						<li><a class="dropdown-item" href='/asearch/#{"buttons":["week","rolling","label-loc:abyssal","sort-date","sort-desc","page1","victimsonly"]}'>Abyssal</a></li>
+						<li><a class="dropdown-item" href='/asearch/#{"buttons":["week","rolling","label-loc:abyssal","label-pvp","sort-date","sort-desc","page1","victimsonly"]}'>Abyssal PvP</a></li>
+						<li><a class="dropdown-item" href='/asearch/#{"buttons":["week","rolling","label-awox","sort-date","sort-desc","page1","victimsonly"]}'>Awox</a></li>
+						<li><a class="dropdown-item" href='/asearch/#{"buttons":["week","rolling","label-ganked","sort-date","sort-desc","page1","victimsonly"]}'>Ganked</a></li>
+						<li><a class="dropdown-item" href='/asearch/#{"buttons":["week","rolling","label-solo","sort-date","sort-desc","page1","victimsonly"]}'>Solo</a></li>
+						<li><hr class="dropdown-divider"></li>
+						<li><a class="dropdown-item" href='/asearch/#{"buttons":["week","rolling","label-loc:highsec","sort-date","sort-desc","page1","victimsonly"]}'>Highsec</a></li>
+						<li><a class="dropdown-item" href='/asearch/#{"buttons":["week","rolling","label-loc:lowsec","sort-date","sort-desc","page1","victimsonly"]}'>Lowsec</a></li>
+						<li><a class="dropdown-item" href='/asearch/#{"buttons":["week","rolling","label-loc:nullsec","sort-date","sort-desc","page1","victimsonly"]}'>Nullsec</a></li>
+						<li><a class="dropdown-item" href='/asearch/#{"buttons":["week","rolling","label-loc:w-space","sort-date","sort-desc","page1","victimsonly"]}'>W-Space</a></li>
+						<li><a class="dropdown-item" href='/asearchsaved/68a46dfdda54f9254e0bf0e6/'>Pochven</a></li>
+						<li><hr class="dropdown-divider"></li>
+						<li><a class="dropdown-item" href='/asearch/#{"buttons":["togglefilters","week","rolling","attackers-and","either-and","victims-and","sort-date","sort-desc","page1","allinvolved"],"attackers":[{"type":"factionID","id":"500001"}],"victims":[{"type":"factionID","id":"500004"}]}'>Caldari vs Gallente</a></li>
+						<li><a class="dropdown-item" href='/asearch/#{"buttons":["togglefilters","week","rolling","attackers-and","either-and","victims-and","sort-date","sort-desc","page1","allinvolved"],"attackers":[{"type":"factionID","id":"500003"}],"victims":[{"type":"factionID","id":"500002"}]}'>Amarr vs Minmatar</a></li>
+						<li><a class="dropdown-item" href="/wars/">Wars</a></li>
+						<li><a class="dropdown-item" href="/war/eligible/">War Eligible</a></li>
+						<li><hr class="dropdown-divider"></li>
+						<li><a class="dropdown-item" href="/kills/sponsored/">Sponsored</a></li>
+						<li><a class="dropdown-item" href="/top/lasthour/all/">Hourly Stats</a></li>
+						<li><a class="dropdown-item" href="/ztop/">zTop</a></li>
 					</ul>
 				</li>
-				<li class="dropdown hidden-xs hidden-sm" id="tracker-menu">
-					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Tracker <b class="caret"></b></a>
+				<li class="nav-item dropdown d-none d-lg-block" id="tracker-menu">
+					<button type="button" class="nav-link dropdown-toggle btn btn-link border-0 bg-transparent" data-bs-toggle="dropdown" aria-expanded="false">Tracker</button>
 					<ul class="dropdown-menu" id='tracker-dropdown'>
-						<li>Please log in first.</li>
+						<li><span class="dropdown-item-text">Please log in first.</span></li>
 					</ul>
 				</li>
-				<li id="postExternalMail" class="hidden-xs hidden-sm"><a href="/post/">Post</a></li>
-				<li id="maplink" class="hidden-xs hidden-sm"><a href="/map/index.html">Map</a></li>
-                <li class="hidden-xs hidden-sm hidden-md"><a href="/scanalyzer/"><span class="scanalyzer">&#128924;<span></a></li>
-				<li class="hidden-xs hidden-sm"><a href="/information/payments/"><img src='/img/gold_logo_cropped_32.png' style="width: 20px;"></a></li>
-                <!--<li id="menu-favorites" class="hidden-xs hidden-sm hidden"><a href="/account/favorites/"><span id='favorite' style='width: 1em; cursor: pointer;'><b id='fav-star' class="glyphicon glyphicon-star" style='color: #FDBC2C'></b></span></a></li>-->
+				<li id="postExternalMail" class="nav-item d-none d-lg-block"><a class="nav-link" href="/post/">Post</a></li>
+				<li id="maplink" class="nav-item d-none d-lg-block"><a class="nav-link" href="/map/index.html">Map</a></li>
+				<li class="nav-item d-none d-xl-block"><a class="nav-link" href="/scanalyzer/"><span class="scanalyzer">&#128924;</span></a></li>
+				<li class="nav-item d-none d-lg-block"><a class="nav-link" href="/information/payments/"><img src='/img/gold_logo_cropped_32.png' style="width: 20px;"></a></li>
 				{% if statslink %}
-					<li class="hidden-xs hidden-sm"><a href="{{ statslink }}">Stats</a></li>
+					<li class="nav-item d-none d-lg-block"><a class="nav-link" href="{{ statslink }}">Stats</a></li>
 				{% endif %}
 			</ul>
-			<ul class="nav navbar-nav navbar-right">
-                <li id="noliveupdates" class="hidden hidden-xs hidden-sm"><a href="/information/payments/" style="color: red; font-style: strikethrough;">LIVE UPDATES DISABLED</a></li>
-				<li class="liveupdates visible-lg"><a href="/top/lasthour/all/" rel="tooltip" title="Kills added this hour" id="lasthour">&nbsp;</a></li>
-				<li class="liveupdates hidden-xs hidden-sm"><a href="#" rel="tooltip" title="Tranquility Status" onClick="return false;"><span id="tqStatus"><span id="tqStatusDetail"></span><span id="tqCount"></span></span></a></li>
-				<li class="hidden-xs hidden-sm hidden-md"><a href="/ztop/" rel="tooltip" title="Eve Time"><div id="my_clock"></div></a></li>
-                <li>
-                    <form name="search" id="search" class="navbar-form navbar-right">
-                        <div class="form-group">
-                        <div class='input-group' style='width: 100px;'>
-                            <div class="input-group-addon" style='cursor: pointer;' onclick='window.location = "/asearch/"' rel='tooltip' data-original-title='Advanced Search'><a href='/asearch/'  title='Advanced Search'><span class="glyphicon glyphicon-search" style='color: white;'></span></a></div>
-                            <input type="text" class="form-control" placeholder="search '/' or '\'" autocomplete="off" id="searchbox" name="searchbox" tabindex="1" style='width: 200px;'>
-                        </div>
-                        </div>
-                    </form>
-                </li>
-				<li id='usermenu' class="dropdown">
-					<a href="#" class="dropdown-toggle" data-toggle="dropdown" id='usermenu-dropdown'>
-                                            <img id='char-image' src="/img/transparent_32.png" style='height: 32px; width: 32px; padding: 0px; margin: 0px; margin-top: -8px;'/>
-                                        <span class="caret"></span></a>
-					        <ul class="dropdown-menu" id='char-loggedin'>
-							<li id='username' class="dropdown-header" style="font-weight: bold;">{{ sessionusername }}</li>
-                            <li class="forloggedout"><a id="dls-login"  onclick="interceptLoginClick();" href="/ccpoauth2/"><img src="/img/ssologin.png" alt="SSO Login"></a></li>
-
-<img class='char-image clickimage hidden-xs forloggedin' style='margin-left: 10px;'><br/>
-<img class='corp-image clickimage hidden-xs forloggedin' style='margin-left: 10px;'>
-<img class='alli-image clickimage hidden-xs forloggedin' style='margin-left: 0px;'>
-							<li class="forloggedin divider"></li>
-							<li class="forloggedin"><a href="/account/favorites/">Favorites</a></li>
-							<li class="forloggedin"><a href="/account/api/">API</a></li>
-							<li class="forloggedin"><a href="/account/log/">Log</a></li>
-							<li class="forloggedin"><a href="/account/sponsored/">Sponsored Ships</a></li>
-							<li class="forloggedin"><a href="/account/payments/">Payments</a></li>
-							<li class="forloggedin"><a href="/account/">Settings</a></li>
-							<li class="divider"></li>
-							<li class="dropdown-header hidden-xs">Support</li>
-							<li><a href='{{ discordServer }}' target='_blank' rel="noopener noreferrer">Discord <i class='glyphicon glyphicon-new-window'></i></a></li>
-							<li><a href='/information/faq/'>FAQ</a></li>
-							<li class="forloggedin divider"></li>
-							<li class="forloggedin"><a href="/account/logout/">Logout</a></li>
-                                                </ul>
-                            {% if characterID == 0 %}
-					        <ul class="dropdown-menu" id='char-loggedout'>
-							    <form action="/ccpoauth2/" id="loginform">
-								    <input id='ssologinimage' type="image" src="/img/ssologin.png">
-                                <p><small>Will request killmails and save fitting scopes.</small></p>
-							    </form>
-                            </ul>
-                            {% endif %}
+			<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+				<li id="noliveupdates" class="nav-item d-none"><a class="nav-link" href="/information/payments/" style="color: red; font-style: strikethrough;">LIVE UPDATES DISABLED</a></li>
+				<li class="nav-item liveupdates d-none d-xl-block"><a class="nav-link" href="/top/lasthour/all/" rel="tooltip" title="Kills added this hour" id="lasthour">&nbsp;</a></li>
+				<li class="nav-item liveupdates d-none d-lg-block"><a class="nav-link" href="#" rel="tooltip" title="Tranquility Status" onClick="return false;"><span id="tqStatus"><span id="tqStatusDetail"></span><span id="tqCount"></span></span></a></li>
+				<li class="nav-item d-none d-xl-block"><a class="nav-link" href="/ztop/" rel="tooltip" title="Eve Time"><div id="my_clock"></div></a></li>
+				<li class="nav-item">
+					<form name="search" id="search" class="d-flex ms-lg-2">
+						<div class='input-group'>
+							<span class="input-group-text" style='cursor: pointer;' onclick='window.location = "/asearch/"' rel='tooltip' data-original-title='Advanced Search'><a href='/asearch/' title='Advanced Search'><i class="fas fa-search" style='color: white;'></i></a></span>
+							<input type="text" class="form-control" placeholder="search '/' or '\'" autocomplete="off" id="searchbox" name="searchbox" tabindex="1" style='width: 200px;'>
+						</div>
+					</form>
+				</li>
+				<li id='usermenu' class="nav-item dropdown">
+					<button type="button" class="nav-link dropdown-toggle btn btn-link border-0 bg-transparent" data-bs-toggle="dropdown" aria-expanded="false" id='usermenu-dropdown'>
+						<img id='char-image' src="/img/transparent_32.png" style='height: 32px; width: 32px; padding: 0px; margin: 0px; margin-top: -8px;'/>
+					</button>
+					<ul class="dropdown-menu dropdown-menu-end" id='char-loggedin'>
+						<li id='username' class="dropdown-header" style="font-weight: bold;">{{ sessionusername }}</li>
+						<li class="forloggedout"><a class="dropdown-item" id="dls-login" onclick="interceptLoginClick();" href="/ccpoauth2/"><img src="/img/ssologin.png" alt="SSO Login"></a></li>
+						<li class="forloggedin d-none d-sm-block px-3 py-1"><img class='char-image clickimage' style='margin-left: 10px;'></li>
+						<li class="forloggedin d-none d-sm-block px-3 py-1"><img class='corp-image clickimage' style='margin-left: 10px;'></li>
+						<li class="forloggedin d-none d-sm-block px-3 py-1"><img class='alli-image clickimage' style='margin-left: 0px;'></li>
+						<li class="forloggedin d-none"><hr class="dropdown-divider"></li>
+						<li class="forloggedin d-none"><a class="dropdown-item" href="/account/favorites/">Favorites</a></li>
+						<li class="forloggedin d-none"><a class="dropdown-item" href="/account/api/">API</a></li>
+						<li class="forloggedin d-none"><a class="dropdown-item" href="/account/log/">Log</a></li>
+						<li class="forloggedin d-none"><a class="dropdown-item" href="/account/sponsored/">Sponsored Ships</a></li>
+						<li class="forloggedin d-none"><a class="dropdown-item" href="/account/payments/">Payments</a></li>
+						<li class="forloggedin d-none"><a class="dropdown-item" href="/account/">Settings</a></li>
+						<li><hr class="dropdown-divider"></li>
+						<li class="dropdown-header d-none d-sm-block">Support</li>
+						<li><a class="dropdown-item" href='{{ discordServer }}' target='_blank' rel="noopener noreferrer">Discord <i class='fas fa-up-right-from-square'></i></a></li>
+						<li><a class="dropdown-item" href='/information/faq/'>FAQ</a></li>
+						<li class="forloggedin d-none"><hr class="dropdown-divider"></li>
+						<li class="forloggedin d-none"><a class="dropdown-item" href="/account/logout/">Logout</a></li>
+					</ul>
+					{% if characterID == 0 %}
+					<ul class="dropdown-menu dropdown-menu-end" id='char-loggedout'>
+						<li>
+							<form action="/ccpoauth2/" id="loginform">
+								<input id='ssologinimage' type="image" src="/img/ssologin.png">
+								<p><small>Will request killmails and save fitting scopes.</small></p>
+							</form>
+						</li>
+					</ul>
+					{% endif %}
 				</li>
 			</ul>
 		</div>
 	</div>
     <div id="advancedsearchnavbar" style="background-color: black; text-align: right; padding: 0.5em; padding-right: 7em; display: none;"><a href="/asearch/">Click here for Advanced Search</a></div>
-</div>
+</nav>

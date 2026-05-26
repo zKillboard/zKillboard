@@ -23,6 +23,56 @@
        box-shadow: 0 0 5px 5px rgba(6,6,6,0.95);
 }
 
+#navibar .navbar {
+	--bs-navbar-padding-y: 0;
+	--bs-navbar-nav-link-padding-x: 15px;
+	--bs-nav-link-padding-y: 15px;
+	--bs-nav-link-font-size: 14px;
+}
+
+#navibar .navbar > .container {
+	padding-left: 15px;
+	padding-right: 15px;
+}
+
+#navibar .navbar-brand {
+	font-size: 18px;
+	padding: 15px;
+	margin-left: -15px;
+	margin-right: 0;
+	color: #fff;
+}
+
+#navibar .navbar-brand:hover,
+#navibar .navbar-brand:focus {
+	color: #fff;
+}
+
+#navibar .navbar-expand-lg .navbar-nav .nav-link,
+#navibar .navbar-expand-lg .navbar-nav .dropdown-toggle {
+	padding-top: 15px !important;
+	padding-bottom: 15px !important;
+	font-size: 14px;
+}
+
+#navibar .navbar-nav .btn.nav-link {
+	padding: 15px;
+	color: #888;
+	background: transparent;
+	border: 0;
+	box-shadow: none;
+	text-decoration: none;
+}
+
+#navibar .navbar-nav .btn.nav-link:hover,
+#navibar .navbar-nav .btn.nav-link:focus {
+	color: #888;
+}
+
+#navibar .dropdown-menu .dropdown-item {
+	font-size: 14px;
+}
+
 #killmailstobdy tr {
 	background-color: #111;
 }

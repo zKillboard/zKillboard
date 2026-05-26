@@ -25,22 +25,22 @@
 {% block content %}
 {% include 'components/partial_title.html' %}
 <div class="navbar navbar-default">
-	<div class="navbar-header hidden-xs">
-		<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+	<div class="navbar-header d-none d-md-block">
+		<button type="button" class="navbar-toggle" data-bs-toggle="collapse" data-bs-target=".navbar-ex1-collapse">
 			<span class="icon-bar"></span>
 			<span class="icon-bar"></span>
 			<span class="icon-bar"></span>
 		</button>
 	</div>
 	<div id="details-menu" class="collapse navbar-collapse navbar-sub">
-		<ul class="nav navbar-nav hidden-xs">
+		<ul class="nav navbar-nav d-none d-md-flex">
 			{% if extra.prevKillID %}
-				<li class="hidden-xs"><a href="/kill/{{ extra.prevKillID }}/">&lt;</a></li>
+				<li class="d-none d-md-block"><a href="/kill/{{ extra.prevKillID }}/">&lt;</a></li>
 			{% endif %}
 		</ul>
 		<ul class="nav navbar-nav pull-right">
 			{% if killdata.info.killID < 0 %}
-			<li><a data-toggle="modal" data-target="#report" href="#">Report ({{ extra.reports }})</a></li>
+			<li><a data-bs-toggle="modal" data-bs-target="#report" href="#">Report ({{ extra.reports }})</a></li>
 			{% endif %}
 			{% if sessionusername and sessionusername == killdata.victim.characterName %}
 			{% endif %}
@@ -62,10 +62,10 @@
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown">Export <b class="caret"></b></a>
 				<ul class="dropdown-menu">
                     <li><a href='#' onClick="saveFitting({{ extra.crest.killID }}); return false;" rel="nofollow">Import Fit via ESI</a></li>
-					<li><a data-toggle="modal" data-target="#DNA" href="#">DNA</a></li>
-					<li><a data-toggle="modal" data-target="#EFT" href="#">EFT</a></li>
+					<li><a data-bs-toggle="modal" data-bs-target="#DNA" href="#">DNA</a></li>
+					<li><a data-bs-toggle="modal" data-bs-target="#EFT" href="#">EFT</a></li>
                     <li><a target="_blank" rel="noopener noreferrer" href="/kill/{{ extra.crest.killID }}/redirect/esi/">ESI Link</a></li>
-                    <li><a data-toggle="modal" data-target="#ingamelink" href="#" onclick='$("#ingamelink").modal(); $("#ingamelinkcontent").html(`<iframe src="https://zkillboard.com/kill/{{ killdata.info.killID }}/ingamelink/" width="100%" rows="3" title="In Game Link"></iframe>`);'>In Game Link</a></li>
+					<li><a data-bs-toggle="modal" data-bs-target="#ingamelink" href="#" onclick='bootstrap.Modal.getOrCreateInstance(document.getElementById("ingamelink")).show(); document.getElementById("ingamelinkcontent").innerHTML = `<iframe src="https://zkillboard.com/kill/{{ killdata.info.killID }}/ingamelink/" width="100%" rows="3" title="In Game Link"></iframe>`;'>In Game Link</a></li>
 				</ul>
 			</li>
 			<li class="dropdown">
@@ -78,7 +78,7 @@
 			</li>
 			<li><a href="/related/{{ killdata.info.system.solarSystemID }}/{{ extra.relatedtime }}/">Related</a></li>
 			{% if extra.nextKillID %}
-			<li class="hidden-xs"><a href="/kill/{{ extra.nextKillID }}/">&gt;</a></li>
+			<li class="d-none d-md-block"><a href="/kill/{{ extra.nextKillID }}/">&gt;</a></li>
 			{% endif %}
 		</ul>
 	</div>
@@ -86,13 +86,13 @@
 
 {% if pageview == "overview" %}
 <div class="col-lg-8" style="padding-left: 0px;">
-	<table class="hidden-xs" style="background-color:transparent;">
+	<table class="d-none d-md-table" style="background-color:transparent;">
 		<tr>
 			<td style="padding: 0px; vertical-align: top;">{% include 'components/fitting_wheel.html' %}</td>
 			<td style="width: 100%;" valign="top">{% include 'components/victim_info.html' %}</td>
 		<tr>
 	</table>
-	<div class="row visible-xs" style="padding: 0px;">
+	<div class="row d-flex d-md-none" style="padding: 0px;">
 		<div class="col-lg-5" style="padding: 0px;"  id="fittingwheeldiv">{% include 'components/fitting_wheel.html' %}</div>
         <br class="d-lg-none" />
 		<div class="col-lg-5" style="padding: 0px;">{% include 'components/victim_info.html' %}</div>
@@ -135,7 +135,7 @@
 		<div class="alert alert-danger"><center>GANKED</center></div>
 		{% endif %}
         {% endif %}
-		<div class="tab-pane fade in active" id="details">
+		<div class="tab-pane fade show active" id="details">
 			{% if extra.warInfo.dscr %}
 			<div>
 				<table class="table table-condensed" style="margin: 0px; text-align: center;">
@@ -240,7 +240,7 @@
 						<textarea onClick="this.select();" class="fitting col-md-12" rows="2" id="dna" name="dna">{{ extra.dnatext }}</textarea>
 					</div>
 					<div class="form-group">
-						<a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>
+						<button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
 					</div>
 				</form>
 			</div>
@@ -261,7 +261,7 @@
 {{ extra.efttext }}</textarea>
 					</div>
 					<div class="form-group">
-						<a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>
+						<button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
 					</div>
 				</form>
 			</div>
@@ -283,7 +283,7 @@
                                             <div id='ingamelinkcontent'></div>
                                         </div>
                                         <div class="form-group">
-                                                <a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>
+												<button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
                                         </div>
                                 </form>
                         </div>
