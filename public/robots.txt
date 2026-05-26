@@ -1,5 +1,10 @@
 User-agent: bingbot
 User-agent: googlebot
+User-agent: msnbot
+User-agent: spider.yandex.com
+User-agent: Twitterbot
+User-agent: discordbot
+User-agent: slack
 Disallow: /cache/*
 Disallow: /api/*
 Disallow: /navbar/

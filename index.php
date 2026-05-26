@@ -61,17 +61,6 @@ $ip = $ipE[0];
 
 $agent = strtolower(@$_SERVER['HTTP_USER_AGENT']);
 
-if ($redis->get("zkb:badbot:$agent") == true) html403("Bad Robot! Naughty! See robots.txt");
-$goodBot = $isApiRequest ? true : partialInArray($redis, $agent, $validBots);
-$badBot = $goodBot ? false : partialInArray($redis, $agent, $badBots);
-if ($badBot) {
-    $redis->setex("zkb:badbot:$agent", 86400, "true");
-    html403("Bad Robot! Naughty! See robots.txt");
-}
-
-//if ($redis->get("IP:ban:$ip") == "true") return header("Location: /html/banned.html", true, 302);
-//if (in_array($ip, $blackList)) return header('HTTP/1.1 403 Blacklisted');
-
 // Starting Slim Framework 4
 use Slim\Factory\AppFactory;
 use DI\Container;
@@ -156,18 +145,6 @@ function contains($needle, $haystack) {
         return false;
     } 
     return (strpos($haystack, 0, strlen($needle)) !== false);
-}
-
-function partialInArray(&$redis, &$haystack, &$needles) {
-    $ret = $redis->get("zkb:partial:$haystack");
-    if ($ret !== null) {
-        $ret = false;
-        foreach ($needles as $needle) {
-            if (strpos($haystack, $needle) !== false) $ret = true;
-        }
-    }
-    $redis->setex("zkb:partial:$haystack", 9600, "$ret");
-    return (bool) $ret;
 }
 
 function html403($reason) {
