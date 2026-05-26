@@ -38,7 +38,7 @@
 		<li class="{{ isActive('Description', pageType) }}"><a href="/item/{{ id }}/">Description</a></li>
 	{% endif %}
 	<li class="dropdown d-none d-md-block">
-		<a href="#" class="dropdown-toggle" data-toggle="dropdown">Top <b class="caret"></b></i></a>
+		<a href="#" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Top</a>
 		<ul class="dropdown-menu">
 			<li class="{{ isActive('top', pageType) }} d-none d-md-block"><a href="/{{ key }}/{{ id }}/top/">Monthly Top</a></li>
 			<li class="{{ isActive('topalltime', pageType) }} d-none d-md-block"><a href="/{{ key }}/{{ id }}/topalltime/">All Time Top</a></li>

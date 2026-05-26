@@ -29,8 +29,27 @@
 }
 
 body {
+	font-family: "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+	color: #888;
 	font-size: 1rem;
 	line-height: 1.42857143;
+}
+
+.pull-right {
+	float: right !important;
+}
+
+.pull-left {
+	float: left !important;
+}
+
+@media (min-width: 768px) {
+	#details-menu.navbar-collapse.collapse {
+		display: block !important;
+		height: auto !important;
+		overflow: visible !important;
+		padding-bottom: 0;
+	}
 }
 
 h1, .h1 {
@@ -141,12 +160,12 @@ h6, .h6 {
 	font-size: 14px;
 }
 
-#killmailstobdy tr {
-	background-color: #111;
+#killmailstobdy tr.tr-killmail:nth-child(odd of .tr-killmail) {
+	--bs-table-bg: #111;
 }
 
-#killmailstobdy tr:nth-child(4n) {
-	background-color: black;
+#killmailstobdy tr.tr-killmail:nth-child(even of .tr-killmail) {
+	--bs-table-bg: #000;
 }
 
 .table tbody tr.error td
@@ -168,7 +187,7 @@ color: black;
 	background-color: #001600;
 }
 .item_dropped_row .price {
-	color: white;
+	color: #35b04a;
 }
 .item_dropped,
 td.item_dropped,
@@ -194,6 +213,9 @@ td.item_destroyed,
 	color: #35b04a;
 }
 
+.item_row:has(td.item_destroyed) td.price {
+	color: #ff3b3b !important;
+}
 #tracked_items td.green {
 	color: #35b04a;
 }
@@ -215,12 +237,21 @@ td.item_destroyed,
 }
 
 table, .table {
+	--bs-table-color: #ababab;
 	color: #ababab;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover,
+a:focus {
+	text-decoration: underline;
 }
 
 table a, .table a {
 	color: #2a9fd6;
-	text-decoration: none;
 }
 
 tr.heading {

@@ -190,6 +190,31 @@ li.active img {
 	}
 }
 
+@media only screen and (min-width: 768px) {
+    #details-menu .navbar-nav {
+        display: block;
+        margin: 0;
+    }
+
+    #details-menu .navbar-nav > li {
+        float: left;
+    }
+
+    #details-menu > .navbar-nav > li > a,
+    #details-menu .navbar-nav.pull-right > li > a {
+        display: block;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        padding-left: 15px;
+        padding-right: 15px;
+        color: #888;
+    }
+
+    #details-menu .navbar-nav.pull-right {
+        float: right !important;
+    }
+}
+
 #addentity label { margin-right: 15px; }
 #addentity h3 { display: inline-block; }
 
@@ -398,7 +423,7 @@ html,body {
 .left-sticky-ad {
     position: fixed;
     top: 50px;
-    left: calc(50% - 785px);
+    left: calc(50% - 860px);
     width: 180px;
     max-width: 180px;
     height: 600px;
@@ -409,7 +434,7 @@ html,body {
 .right-sticky-ad {
     position: fixed;
     top: 50px;
-    left: calc(50% + 615px);
+    left: calc(50% + 680px);
     width: 180px;
     max-width: 180px;
     height: 600px;
@@ -427,12 +452,13 @@ html,body {
 
 @media only screen and (min-width: 1860px) {
 .left-sticky-ad {
-    left: calc(50% - 905px);
+    left: calc(50% - 980px);
     width: 300px;
     max-width: 300px;
 }
 
 .right-sticky-ad {
+    left: calc(50% + 680px);
     width: 300px;
     max-width: 300px;
 }

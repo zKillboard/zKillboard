@@ -363,7 +363,8 @@ function audio(uri)
 
 function saveFitting(id) {
     $('#modalMessageBody').html('<div style="color: white;">Saving fit....</div>');
-    $('#modalMessage').modal({backdrop: true, keyboard: true, show: true});
+    $('#modalTitle').text('Save Fit');
+    showBsModal('#modalMessage');
 
     var request = $.ajax({
 url: "/ccpsavefit/" + id + "/",
@@ -373,7 +374,12 @@ dataType: "text"
 
 request.done(function(msg) {
         $('#modalMessageBody').html('<div style="color: white;">' + msg + '</div>');
-        $('#modalMessage').modal({backdrop: true, keyboard: true, show: true});
+    showBsModal('#modalMessage');
+    });
+
+request.fail(function() {
+    $('#modalMessageBody').html('<div style="color: white;">Unable to save fit right now. Please try again.</div>');
+    showBsModal('#modalMessage');
         });
 }
 
@@ -483,7 +489,7 @@ function doSponsor(url)
 {
     $('#modalMessageBody').load(url);
     $('#modalTitle').text('Sponsor this killmail');
-    $('#modalMessage').modal({backdrop: true, keyboard: true, show: true});
+    showBsModal('#modalMessage');
 }
 
 function doFavorite(killID) {

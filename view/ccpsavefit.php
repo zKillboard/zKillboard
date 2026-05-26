@@ -5,7 +5,7 @@ function handler($request, $response, $args, $container) {
 
     try {
         $result = ESI::saveFitting($killID);
-        $output = "CCP's Response: ".@$result['message'];
+        $output = @$result['message'];
         if (isset($result['refid'])) {
             $output .= '<br/>refID: '.$result['refid'];
         }
