@@ -170,17 +170,36 @@ color: black;
 .item_dropped_row .price {
 	color: white;
 }
-.item_dropped {
-	color: white;
+.item_dropped,
+td.item_dropped,
+.table .item_dropped {
+	color: #35b04a;
 }
-.item_dropped_qty {
-	color: white;
+.item_dropped_qty,
+td.item_dropped_qty,
+.table .item_dropped_qty {
+	color: #35b04a;
 }
-.item_destroyed, .red {
-	color: red;
+.item_destroyed,
+td.item_destroyed,
+.table .item_destroyed,
+.red {
+	color: #ff3b3b;
+}
+.item_dropped a,
+.item_destroyed a {
+	color: inherit;
 }
 .green {
-	color: green;
+	color: #35b04a;
+}
+
+#tracked_items td.green {
+	color: #35b04a;
+}
+
+#tracked_items td.red {
+	color: #ff3b3b;
 }
 
 .no-stripe {
