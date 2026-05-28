@@ -282,12 +282,15 @@ function adjustKillmailPresentation() {
         killmailsBody.lastElementChild.remove();
     }
 
-    // Check over date rows and only show the first tr-date row for a particular date
+    // Keep only the first date marker per day. Hiding duplicates breaks table striping
+    // because nth-of-type still counts hidden rows.
     let priorDate = undefined;
     document.querySelectorAll('.tr-date').forEach(function(row) {
         const date = row.getAttribute('date');
-        if (date == priorDate) row.style.display = 'none';
-        else row.style.display = '';
+        if (date == priorDate) {
+            row.remove();
+            return;
+        }
         priorDate = date;
     });
 }
