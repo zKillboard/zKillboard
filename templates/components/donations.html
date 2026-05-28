@@ -1,8 +1,8 @@
 {% set first = true %}
 {% if topDonators | length %}
-<div class="pull-left" style="width: 100%; padding: 0px; margin: 0px;">
+<div class="float-start" style="width: 100%; padding: 0px; margin: 0px;">
   <center><h5>Biggest Golden Wrecks</h5></center>
-  <table class="table table-condensed topBoxes col-lg-2" style="padding: 0px; margin: 0px; width: 100%;">
+  <table class="table table-sm topBoxes col-lg-2" style="padding: 0px; margin: 0px; width: 100%;">
   {% for data in topDonators %}
     {% set field = data %}
     {% if first %}

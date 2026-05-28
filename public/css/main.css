@@ -83,11 +83,6 @@ zk-home-side { display: block; text-align: center; }
     border-top:0px solid #e5e5e5;
 }
 
-.btn-block {
-	display: block;
-	width: 100%;
-}
-
 #left-banner {
 position: fixed;
 top: 70px;

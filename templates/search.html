@@ -20,7 +20,7 @@
             <h3>{{ field.type|capitalize }}s</h3>
             {% set lastType = field.type %}
         {% endif %}
-        <div class="pull-left" style="margin-bottom: 0.5em; width: 250px;"/>
+        <div class="float-start" style="margin-bottom: 0.5em; width: 250px;">
             <a href="/{{ field.type }}/{{ field.id }}/">{{ field.name }}</a>
         </div>
 {% endfor %}

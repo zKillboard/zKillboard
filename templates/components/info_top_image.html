@@ -1,4 +1,4 @@
-<div class="pull-left" style="margin-right: 0.5em;">
+<div class="float-start" style="margin-right: 0.5em;">
 	{% set imageSize = 128 %}
 	{% set field = detail %}
 	{% if detail.shipTypeID and key == 'ship' %}
@@ -35,12 +35,12 @@
 	{% endif %}
 </div>
 {% if detail.groupShips %}
-<div class="pull-left">
+<div class="float-start">
 	{% set imageSize = 64 %}
 	{% set isPullLeft = true %}
 	{% for field in detail.groupShips %}
 		{% include 'components/image_ship.html' %}
 	{% endfor %}
 	{% set isPullLeft = false %}
-</div>
+	</div>
 {% endif %}

@@ -5,7 +5,7 @@
 
 {% block content %}
 	{% if message %}
-		<div class="alert alert-success" data-dismiss="alert"><button type="button" class="close" data-dismiss="alert">&times;</button>{{ message }}</div>
+		<div class="alert alert-success alert-dismissible fade show"><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>{{ message }}</div>
 	{% endif %}
 
 	<nav class="navbar navbar-expand-md navbar-dark bg-dark rounded mb-3">

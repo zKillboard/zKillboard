@@ -17,7 +17,7 @@
 		<br/>
 		<div class="row asearchfilters">
 			<div class="col-md-8">
-				<div class="form-group">
+				<div class="mb-3">
 					<input id='asearch-autocomplete' class="asearch-autocomplete form-control" type="Search" placeholder="Search" aria-label="Search"/>
 				</div>
 			</div>
@@ -155,7 +155,7 @@
 						<button class='sortorder radio-btn btn btn-primary' value='sort-desc'>Desc</button>
 						<button class='sortorder radio-btn btn btn-secondary' value='sort-asc'>Asc</button>
 					</div>
-					<div zkill-var='page' class='btn-group pull-right asearchfilters'>
+					<div zkill-var='page' class='btn-group float-end asearchfilters'>
 						<button id='page1' class='pagenum radio-btn btn-page btn btn-primary' value='page1'>1</button>
 						<button class='pagenum radio-btn btn-page btn btn-secondary' value='page2'>2</button>
 						<button class='pagenum radio-btn btn-page btn btn-secondary' value='page3'>3</button>
@@ -171,7 +171,7 @@
 					<br class='asearchfilters'/>
 				</div>
 				<div id="killmails-result" style='min-height: 500px;'>
-					<table class="table table-condensed table-striped table-hover" style="margin-bottom: 0px;" id="killlist">
+					<table class="table table-sm table-striped table-hover" style="margin-bottom: 0px;" id="killlist">
 						<thead>
 							<tr>
 								<th>Time</th>
@@ -215,11 +215,8 @@
 		</div>
 
 	</div>
-	<!--<div class="contentrequiredlogin login">
-																																			<h3>Login is required to use this feature.</h3>
-																																			<a href="/ccpoauth2/" class="btn btn-block collapse" style="display: inline;"><img src="/img/ssologin.png" style="width: 300px"></a>
-																																			</div>-->
 {% endblock %}
+
 {% block script %}
 	<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js" integrity="sha512-AIOTidJAcHBH2G/oZv9viEGXRqDNmfdPVPYOYKGy3fti0xIplnlgMHUGfuNRzC6FkzIo0iIxgFnr9RikFxK+sw==" crossorigin="anonymous"></script>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.css" integrity="sha512-bYPO5jmStZ9WI2602V2zaivdAnbAhtfzmxnEGh9RwtlI00I9s8ulGe4oBa5XxiC6tCITJH/QG70jswBhbLkxPw==" crossorigin="anonymous"/>

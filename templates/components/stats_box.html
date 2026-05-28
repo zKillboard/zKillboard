@@ -1,4 +1,4 @@
-<table id="statsbox" style="margin: 0px; padding: 0px; background-color: transparent;" class="table table-condensed">
+<table id="statsbox" style="margin: 0px; padding: 0px; background-color: transparent;" class="table table-sm">
 	<tbody>
     <tr id="teststats">
         <td colspan='8'><center>
@@ -178,7 +178,7 @@
 
 	{% if extra.dangerRatio is defined %}
 	<tr>
-		<table style='width: 100%; opacity: 0.50;' class="table table-condensed alltime-ranks">
+        <table style='width: 100%; opacity: 0.50;' class="table table-sm alltime-ranks">
 		<tr>
 			<td style='width: 50%; padding: 3px;' colspan='2'>
 			<div class="progress" style='width: 100%; margin-bottom: 0px;'>
@@ -188,7 +188,7 @@
   				<div class="progress-bar" role="progressbar" aria-valuenow="{{ iRatio }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ iRatio }}%; background-color: #007800;">{% if iRatio > 10 %}{{ iRatio}}%{% endif %}</div>
 			</div>
 				<span class='red'>Dangerous</span>
-				<span class='pull-right green'>Snuggly</span>
+                <span class='float-end green'>Snuggly</span>
 			</td>
 			<td style='width: 50%; padding: 3px;' colspan='2'>
                         {% if not extra.involvedLabels %}
@@ -199,7 +199,7 @@
                                 <div class="progress-bar" role="progressbar" aria-valuenow="{{ iRatio }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ iRatio }}%; background-color: #007800;">{% if iRatio > 10 %}{{ iRatio}}%{% endif %}</div>
                         </div>
                                 <span class='red'>Gangs</span>
-                                <span class='pull-right green'> {% if statistics.soloKills %}{{ statistics.soloKills|number_format(0) }} {% endif %}Solo</span>
+                                <span class='float-end green'> {% if statistics.soloKills %}{{ statistics.soloKills|number_format(0) }} {% endif %}Solo</span>
                         {% endif %}
                         {% if extra.involvedLabels and statistics.shipsDestroyed %}
                         {% set valuenow = 0 %}
@@ -215,7 +215,7 @@
                                 {% set valuenow = valuenow + label.ratio %}
                             {% endfor %}
                         </div>
-                                <span class='pull-right green'> {% if statistics.soloKills %}{{ statistics.soloKills|number_format(0) }} {% endif %}Solo Kills <a href='/information/faq/#solo'>*</a></span>
+                                <span class='float-end green'> {% if statistics.soloKills %}{{ statistics.soloKills|number_format(0) }} {% endif %}Solo Kills <a href='/information/faq/#solo'>*</a></span>
                         {% endif %}
                         </td>
 			</td>
@@ -236,7 +236,7 @@
                 <div class="progress-bar" role="progressbar" aria-valuenow="{{ iRatio }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ iRatio }}%; background-color: #007800;">{% if iRatio > 10 %}{{ iRatio}}%{% endif %}</div>
             </div>
                 <span class='red'>Dangerous</span>
-                <span class='pull-right green'>Snuggly</span>
+                <span class='float-end green'>Snuggly</span>
             </td>
             <td style='width: 50%; padding: 3px;' colspan='2'>
                         <div class="progress" style='width: 100%; margin-bottom: 0px;'>
@@ -246,7 +246,7 @@
                                 <div class="progress-bar" role="progressbar" aria-valuenow="{{ iRatio }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ iRatio }}%; background-color: #007800;">{% if iRatio > 10 %}{{ iRatio}}%{% endif %}</div>
                         </div>
                                 <span class='red'>Gangs</span>
-                                <span class='pull-right green'> {% if statistics.recentSoloKills %}{{ statistics.recentSoloKills|number_format(0) }} {% endif %}Solo</span>
+                                <span class='float-end green'> {% if statistics.recentSoloKills %}{{ statistics.recentSoloKills|number_format(0) }} {% endif %}Solo</span>
                         </td>
             </td>
         </tr>
@@ -266,7 +266,7 @@
                 <div class="progress-bar" role="progressbar" aria-valuenow="{{ iRatio }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ iRatio }}%; background-color: #007800;">{% if iRatio > 10 %}{{ iRatio}}%{% endif %}</div>
             </div>
                 <span class='red'>Dangerous</span>
-                <span class='pull-right green'>Snuggly</span>
+                <span class='float-end green'>Snuggly</span>
             </td>
             <td style='width: 50%; padding: 3px;' colspan='2'>
                         <div class="progress" style='width: 100%; margin-bottom: 0px;'>
@@ -276,7 +276,7 @@
                                 <div class="progress-bar" role="progressbar" aria-valuenow="{{ iRatio }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ iRatio }}%; background-color: #007800;">{% if iRatio > 10 %}{{ iRatio}}%{% endif %}</div>
                         </div> 
                                 <span class='red'>Gangs</span>
-                                <span class='pull-right green'> {% if statistics.weeklySoloKills %}{{ statistics.weeklySoloKills|number_format(0) }} {% endif %}Solo</span>
+                                <span class='float-end green'> {% if statistics.weeklySoloKills %}{{ statistics.weeklySoloKills|number_format(0) }} {% endif %}Solo</span>
                         </td>
             </td>
         </tr>

@@ -64,11 +64,11 @@ body {
 	}
 }
 
-.pull-right {
+.float-end {
 	float: right !important;
 }
 
-.pull-left {
+.float-start {
 	float: left !important;
 }
 

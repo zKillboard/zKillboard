@@ -700,14 +700,14 @@ function assignGreenRed() {
     vics = vics.split(',');
 
     for (let i = 0; i < vics.length; i++) if (vicid == vics[i]) {
-        const removeIcon = document.querySelector('#kill-' + row.getAttribute('killID') + ' .glyphicon-remove');
-        if (removeIcon) removeIcon.classList.remove('hidden');
+        const removeIcon = document.querySelector('#kill-' + row.getAttribute('killID') + ' .fa-times');
+        if (removeIcon) removeIcon.classList.remove('d-none');
         row.classList.add('error');
         return;
     }
 
-    const okIcon = document.querySelector('#kill-' + row.getAttribute('killID') + ' .glyphicon-ok');
-    if (okIcon) okIcon.classList.remove('hidden');
+    const okIcon = document.querySelector('#kill-' + row.getAttribute('killID') + ' .fa-check');
+    if (okIcon) okIcon.classList.remove('d-none');
     row.classList.add('winwin');
 }
 

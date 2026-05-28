@@ -8,7 +8,7 @@
         <div id="listInvAll" class="accordion-body collapse">
             <div class="card-body">
                 <h3>Involved <small>Alliance(s) / Corp(s)</small></h3>
-                <table class="table table-condensed table-striped">
+                <table class="table table-sm table-striped">
                 {% for allianceID, alliance in field %}
                     <tr><th>
                     {% if allianceID == 0 %}None{% else %}{% set field = alliance %}{% include 'components/text_alli.html' %}{% endif %} 

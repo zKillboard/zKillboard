@@ -17,11 +17,11 @@
 
 <br/>
 <div class="row m-0 p-0 overview-top" style="margin: 0px; padding: 0px;">
-	<div class="col-xs-12 col-md-6 pull-left" style="margin: 0px; padding: 0px; padding-right: 2em;">
+    <div class="col-12 col-md-6 float-start" style="margin: 0px; padding: 0px; padding-right: 2em;">
         {% if detail.label %}
             <h2>{{ detail.label }}<small> killmails</small></h2>
         {% endif %}
-        <table class="table table-condensed table-borderless m-0 p-0">
+		<table class="table table-sm table-borderless m-0 p-0">
 		{% if detail.groupShips %}
                         <tr>   
                                 <th class='col-lg-1'>Class:</th>
@@ -31,12 +31,17 @@
                         </tr>
 		{% endif %}
         <tr class="d-table-row d-md-none"><td colspan='2'>{% include 'components/info_top_image.html' %}</td></tr>
-        <tr><td class="d-none d-md-table-cell" {% if detail.groupShips %}colspan='2' {% endif %} style="{{ not detail.groupShips ? 'width: 130px; ' : ''}}border-top: none; margin: 0px; padding: 0px;">
+        <tr>
+        {% if detail.groupShips %}
+        <td class="d-none d-md-table-cell" colspan='2' style="border-top: none; margin: 0px; padding: 0px;">
+        {% else %}
+        <td class="d-none d-md-table-cell" style="width: 130px; border-top: none; margin: 0px; padding: 0px;">
+        {% endif %}
 		{% include 'components/info_top_image.html' %}
 		</td><td style="border-top: none; margin: 0px; padding: 0px;">
-		<div itemscope class="pull-left">
+        <div itemscope class="float-start">
 		{% if not detail.groupShips %}
-            <table class="table table-condensed table-borderless">
+            <table class="table table-sm table-borderless">
 			<tbody>
    	         {% if detail.characterID %}
    	         <tr>
@@ -91,20 +96,20 @@
                 {% set color = secStatusColor(calcStatus) %}
                         <tr>   
                                 <th>Sec. Status:</th>
-                                <td itemprop="sec_status" style='color: {{ color }}'>{{ detail.secStatus|number_format(2) }}</td>
+                                <td itemprop="sec_status"><font color="{{ color }}">{{ detail.secStatus|number_format(2) }}</font></td>
                         </tr>
             {% endif %}
             {% if detail.birthday %}
                         <tr>
                                 <th>Birthday:</th>
                                 <td itemprop="birthday">{{ detail.birthday|split('T')|first }}</td>
-                        <tr/>
+                            </tr>
             {% endif %}
             {% if detail.date_founded %}
                         <tr>
                                 <th>Founded:</th>
                                 <td itemprop="founded">{{ detail.date_founded|split('T')|first }}</td>
-                        <tr/>
+                            </tr>
             {% endif %}
             {% if detail.shipName %}
 			<tr>
@@ -198,7 +203,7 @@
 	</td></tr>
     </table>
 	</div>
-	<div class="col-xs-12 col-md-6 pull-right" style='padding: 0px; margin: 0px;'>
+    <div class="col-12 col-md-6 float-end" style='padding: 0px; margin: 0px;'>
 		{% include 'components/stats_box.html' %}
 	</div>
 </div>

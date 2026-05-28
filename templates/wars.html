@@ -4,7 +4,7 @@
 
 {% block content %}
 {% for row in warTables %}
-	<div class="pull-left col-lg-6">
+	<div class="float-start col-lg-6">
 	<center><h4>{{ row.name }}</h4></center>
 	{% set wars = row.wars %}
 	{% include 'components/wars_table.html' %}

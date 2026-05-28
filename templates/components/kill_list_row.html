@@ -18,8 +18,8 @@
             <span class="fas fa-check d-none" aria-hidden="true"></span>
             <span class="fas fa-times d-none" aria-hidden="true"></span>
           </span>
-          <span class='pull-right'>{{ kill.unixtime|date('H:i') }}</span>
-          <br/><a href="/kill/{{ kill.killID }}/"><span class="pull-right" format='format-isk-once' raw="{{ kill.zkb.totalValue }}">{{ formatIsk(kill.zkb.totalValue) }}</span></a>
+          <span class='float-end'>{{ kill.unixtime|date('H:i') }}</span>
+          <br/><a href="/kill/{{ kill.killID }}/"><span class="float-end" format='format-isk-once' raw="{{ kill.zkb.totalValue }}">{{ formatIsk(kill.zkb.totalValue) }}</span></a>
         </td>
         <td class="icon" style="text-align: center; vertical-align: middle;">
           {% include 'components/image_ship.html' %}

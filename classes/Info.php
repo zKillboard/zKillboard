@@ -366,7 +366,16 @@ class Info
 					case 'shipTypeID':
 						if (!isset($element['shipName'])) {
 							$element['shipName'] = self::getInfoField('typeID', $value, 'name');
-							$element['pip'] = self::getInfoField('typeID', $value, 'pip');
+						}
+						if (!isset($element['pip']) || $element['pip'] == '') {
+							$pip = self::getInfoField('typeID', $value, 'pip');
+							if ($pip == null || $pip == '') {
+								$techLevel = (int) self::getDogma($value, 422);
+								if ($techLevel >= 1 && $techLevel <= 3) {
+									$pip = "pip_tech{$techLevel}.png";
+								}
+							}
+							$element['pip'] = $pip;
 						}
 						if (!isset($element['groupID'])) {
 							$element['groupID'] = self::getGroupID($value);
@@ -387,6 +396,12 @@ class Info
 								$type['noRecursion'] = true;
 								$type['shipName'] = $type['name'];
 								$type['pip'] = @$type['pip'];
+								if (@$type['pip'] == null || @$type['pip'] == '') {
+									$techLevel = (int) self::getDogma($type['id'], 422);
+									if ($techLevel >= 1 && $techLevel <= 3) {
+										$type['pip'] = "pip_tech{$techLevel}.png";
+									}
+								}
 								$type['shipTypeID'] = $type['id'];
 								$element['groupShips'][] = $type;
 							}

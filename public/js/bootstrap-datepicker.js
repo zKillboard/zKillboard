@@ -452,19 +452,19 @@
 	};
 	DPGlobal.template = '<div class="datepicker dropdown-menu">'+
 							'<div class="datepicker-days">'+
-								'<table class=" table-condensed">'+
+								'<table class=" table-sm">'+
 									DPGlobal.headTemplate+
 									'<tbody></tbody>'+
 								'</table>'+
 							'</div>'+
 							'<div class="datepicker-months">'+
-								'<table class="table-condensed">'+
+								'<table class="table-sm">'+
 									DPGlobal.headTemplate+
 									DPGlobal.contTemplate+
 								'</table>'+
 							'</div>'+
 							'<div class="datepicker-years">'+
-								'<table class="table-condensed">'+
+								'<table class="table-sm">'+
 									DPGlobal.headTemplate+
 									DPGlobal.contTemplate+
 								'</table>'+

@@ -1,4 +1,4 @@
-<table class="table table-condensed table-striped table-hover rank-table table-bordered" id="rank_table_{{rankTable.name}}">
+<table class="table table-sm table-striped table-hover rank-table table-bordered" id="rank_table_{{rankTable.name}}">
 	<thead>
 		<tr>
 			<th class="b-none" rowspan="2" data-sort-key="overallRank">#</th>
@@ -30,6 +30,7 @@
 	{% for row in rankTable.data %}
 	{% set field = row %}
     {% set imageSize = 32 %}
+	{% if rankTable.type == "group" %}{% set showImage = true %}{% endif %}
 		<tr>
 			<td style="width: 35px;" data-order="{{ row.overallRank }}"><strong>{{ row.overallRank | number_format(0) }}</strong></td>
 			<td style="text-align: left">

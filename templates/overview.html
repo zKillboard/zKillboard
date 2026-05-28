@@ -109,7 +109,7 @@
 <br/>
 <div class="row">
 {% if pageType == 'overview' or pageType == 'kills' or pageType == 'solo' or pageType == 'losses' %}
-  <div class="col-lg-10 pull-left" style="padding-left: 0px;">
+	<div class="col-lg-10 float-start" style="padding-left: 0px;">
     <div id="topset-isk"></div>
     {% if mixed %}
         {% set killListTitle = 'Recent Activity' %}
@@ -148,8 +148,8 @@
     <div class="centered publift adrow ad-xl-none" fuse="home_incontent" id="detailadrow" style='padding-top: 1em;'></div>
     {% include 'components/kill_list.html' %}
   </div>
-  <div class="col-lg-2 pull-left" style="padding: 0px;">
-    <center><div style='max-width: 100%;'><a id='loginsideimage' href='/ccpoauth2/' class='btn btn-block collapse'><img src='/img/ssologin.png' style='width: 100%; max-width: 100%; margin-bottom: 1em;' loading="lazy" decoding="async" fetchpriority="low"></a></div></center>
+	<div class="col-lg-2 float-start" style="padding: 0px;">
+		<center><div style='max-width: 100%;'><a id='loginsideimage' href='/ccpoauth2/' class='btn w-100 collapse'><img src='/img/ssologin.png' style='width: 100%; max-width: 100%; margin-bottom: 1em;' loading="lazy" decoding="async" fetchpriority="low"></a></div></center>
     {% include 'components/activity.html' %}
 	{% include 'components/activePvP.html' %}
             <div id="topset-characterID"></div>
@@ -215,7 +215,7 @@
 
 {% elseif pageType == 'wars' %}
 {% for row in extra.wars %}
-        <div class="pull-left col-lg-6">
+	<div class="col-lg-6 float-start">
         <center><h4>{{ row.name }}</h4></center>
 	{% set wars = row.wars %}
         {% include 'components/wars_table.html' %}
