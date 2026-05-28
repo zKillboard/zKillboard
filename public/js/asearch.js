@@ -547,8 +547,8 @@ function doDateCleanup() {
 
 function toggleFilterBtn() {
 	var element = $(this);
-	if (element.hasClass('btn-primary')) element.removeClass('btn-primary').blur();
-	else element.addClass('btn-primary').blur();
+	if (element.hasClass('btn-primary')) element.removeClass('btn-primary').addClass('btn-secondary').blur();
+	else element.removeClass('btn-secondary').addClass('btn-primary').blur();
 	clickPage1();
 }
 
