@@ -6,7 +6,7 @@
 	{% endif %}
 	{% if detail.characterID and key == 'character' %}
 		<center>
-		{% include 'components/image_char.html' %}<br/><small><small><i><a href='#' onClick="$('#largeImage').modal(); return false;">Enlarge</a></small></small></i><br/>
+		{% include 'components/image_char.html' %}<br/><small><small><i><a href="#" data-bs-toggle="modal" data-bs-target="#largeImage" onclick="return false;">Enlarge</a></small></small></i><br/>
 		</center>
 	{% endif %}
 	{% if detail.corporationID and key == 'corporation' %}
