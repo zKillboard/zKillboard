@@ -54,6 +54,7 @@ $(document).ready(function () {
     $('#login-delay-slider').on('click touchstart mousedown', stopPropagation);
     $(document).on('click', 'a[href^="/ccpoauth2/"]:not([href^="/ccpoauth2-"])', interceptLoginClick);
     $(document).on('submit', 'form[action^="/ccpoauth2/"]', interceptLoginSubmit);
+    $(document).on('click', 'a[id^="login-scope-select-"]', loginScopeSelectClick);
     $('#continueLoginWithOptions').on('click', continueLoginWithOptions);
     updateDLS.call($('#dls-slider'));
 
@@ -812,6 +813,16 @@ function continueLoginWithOptions() {
     }
 
     window.location = loginURL;
+}
+
+function loginScopeSelectClick(action) {
+    action.preventDefault();
+    const actionId = action.currentTarget?.id || '';
+    if (actionId && actionId === 'login-scope-select-all') {
+        $('.login-scope').prop('checked', true);
+    } else if (actionId && actionId === 'login-scope-select-none') {
+        $('.login-scope').prop('checked', false);
+    }
 }
 
 console.log('common.js loaded');
