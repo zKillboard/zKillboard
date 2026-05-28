@@ -83,12 +83,12 @@ function toggleRollingTime(event, enabled) {
 		enabled = !($('#rolling-times').hasClass('btn-primary'));
 	}
 
-	$('#rolling-times').blur().removeClass('btn-default').removeClass('btn-primary');
+	$('#rolling-times').blur().removeClass('btn-secondary').removeClass('btn-primary');
 
 	if (enabled) {
 		$('#rolling-times').addClass('btn-primary');
 	}
-	else $('#rolling-times').addClass('btn-default');
+	else $('#rolling-times').addClass('btn-secondary');
 }
 
 function rollTime() {
@@ -217,9 +217,9 @@ function getHTML(suggestion) {
 	suggestion.data.id = parseInt(suggestion.data.id);
 	suggestion.value = suggestion.value.replaceAll('<', '').replaceAll('>', '');
 	//console.log(suggestion.data.type, suggestion.data.id, suggestion.data.value);
-	var left = $("<span>").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("glyphicon").addClass("glyphicon-chevron-left").attr('direction', 'left').on('click', moveLeft);
-	var right = $("<span>").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("glyphicon").addClass("glyphicon-chevron-right").attr('direction', 'right').on('click', moveRight);
-	var remove = $("<span>").addClass('btn').addClass('btn-sm').addClass("glyphicon").addClass("glyphicon-remove").addClass('alert-danger').on('click', moveOut);
+	var left = $("<span>").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("fas").addClass("fa-chevron-left").attr('direction', 'left').on('click', moveLeft);
+	var right = $("<span>").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("fas").addClass("fa-chevron-right").attr('direction', 'right').on('click', moveRight);
+	var remove = $("<span>").addClass('btn').addClass('btn-sm').addClass("fas").addClass("fa-times").addClass("filter-remove").addClass('alert-danger').on('click', moveOut);
 	var data = $("<span>")
 		.addClass("entity")
 		.addClass('btn')
@@ -248,8 +248,8 @@ function setFilters(hashfilters) {
 	allowChange = false;
 
 	// Reset the search
-	$(".glyphicon-remove").click();
-	$(".btn.btn-primary:not(.notafilter)").removeClass("btn-primary").addClass("btn-default");
+	$(".filter-remove").click();
+	$(".btn.btn-primary:not(.notafilter)").removeClass("btn-primary").addClass("btn-secondary");
 
 	var keys = Object.keys(hashfilters);
 	for (const key in hashfilters) {
@@ -558,9 +558,9 @@ function toggleRadioBtn() {
 	var variable = parent.attr('zkill-var');
 	var key = parent.attr('zkill-key');
 	parent.children().each(function () {
-		$(this).removeClass('btn-primary').addClass('btn-default');
+		$(this).removeClass('btn-primary').addClass('btn-secondary');
 	});
-	element.removeClass('btn-default').addClass('btn-primary');
+	element.removeClass('btn-secondary').addClass('btn-primary');
 	if (key != undefined) radios[variable][key] = $(this).text().toLowerCase();
 	else radios[variable] = $(this).text().toLowerCase();
 
@@ -605,8 +605,8 @@ function toggleFiltersClick() {
 	var element = $(this);
 	var has_primary = element.hasClass('btn-primary');
 
-	if (has_primary) element.removeClass('btn-primary').addClass('btn-default').blur();
-	else element.removeClass('btn-default').addClass('btn-primary').blur();
+	if (has_primary) element.removeClass('btn-primary').addClass('btn-secondary').blur();
+	else element.removeClass('btn-secondary').addClass('btn-primary').blur();
 	toggleFilters();
 	if (allowChange) setHash();
 }

@@ -110,6 +110,15 @@ hr {
 	margin-right: 1em;
 }
 
+.row.centered.asearchfilters > .btn-group[data-group-name] {
+	width: auto;
+	flex: 0 0 auto;
+}
+
+.row.centered.asearchfilters {
+	justify-content: center;
+}
+
 
 div[entity-type] {
 	border: solid 1px #333;
@@ -127,7 +136,7 @@ div[entity-type] {
 	overflow-wrap: anywhere;
 }
 
-#location .glyphicon[direction] {
+#location [direction] {
 	display: none !important;
 }
 
