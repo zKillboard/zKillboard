@@ -26,6 +26,8 @@
 /* Normalize Bootstrap 5 typography closer to historical site baseline (BS3-era). */
 :root {
 	font-size: 14px;
+	--zk-color-green: #35b04a;
+	--zk-color-red: #ff3b3b;
 }
 
 body {
@@ -187,41 +189,53 @@ color: black;
 	background-color: #001600;
 }
 .item_dropped_row .price {
-	color: #35b04a;
+	color: var(--zk-color-green);
 }
 .item_dropped,
 td.item_dropped,
 .table .item_dropped {
-	color: #35b04a;
+	color: var(--zk-color-green);
 }
 .item_dropped_qty,
 td.item_dropped_qty,
 .table .item_dropped_qty {
-	color: #35b04a;
+	color: var(--zk-color-green);
 }
 .item_destroyed,
 td.item_destroyed,
 .table .item_destroyed,
 .red {
-	color: #ff3b3b;
+	color: var(--zk-color-red);
 }
 .item_dropped a,
 .item_destroyed a {
 	color: inherit;
 }
 .green {
-	color: #35b04a;
+	color: var(--zk-color-green);
 }
 
 .item_row:has(td.item_destroyed) td.price {
-	color: #ff3b3b !important;
+	color: var(--zk-color-red) !important;
 }
 #tracked_items td.green {
-	color: #35b04a;
+	color: var(--zk-color-green);
 }
 
 #tracked_items td.red {
-	color: #ff3b3b;
+	color: var(--zk-color-red);
+}
+
+#statsbox .green,
+#statsbox td.green,
+#statsbox th.green {
+	color: var(--zk-color-green);
+}
+
+#statsbox .red,
+#statsbox td.red,
+#statsbox th.red {
+	color: var(--zk-color-red);
 }
 
 .no-stripe {
@@ -264,25 +278,6 @@ tr.heading {
 	border-bottom-color: #888;
 }
 
-#overview-navbar {
-	border-color: #000 #000 #282828;
-	margin-bottom: 6px;
-}
-
-@media only screen and (min-width: 768px) {
-	#overview-navbar .navbar-nav > .nav-item > .nav-link {
-		color: #888;
-		padding: 15px;
-		line-height: 20px;
-	}
-
-	#overview-navbar .navbar-nav > .nav-item.active > .nav-link,
-	#overview-navbar .navbar-nav > .nav-item > .nav-link:hover,
-	#overview-navbar .navbar-nav > .nav-item > .nav-link:focus {
-		color: #fff;
-	}
-}
-
 input.datepicker {
 	cursor: pointer !important;
 	outline: none;
@@ -304,6 +299,25 @@ pre {
 
 .alltime-ranks {
     background-color: #060606;
+}
+
+.overview-top .table {
+	--bs-table-bg: #000;
+	--bs-table-accent-bg: #000;
+	--bs-table-striped-bg: #000;
+	--bs-table-hover-bg: #000;
+}
+
+.overview-top,
+.overview-top table,
+.overview-top tr,
+.overview-top th,
+.overview-top td,
+.overview-top .table > :not(caption) > * > *,
+.overview-top .alltime-ranks,
+.overview-top .recent-ranks,
+.overview-top .weekly-ranks {
+	background-color: #000 !important;
 }
 
 .alert-success {
