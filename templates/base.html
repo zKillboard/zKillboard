@@ -209,12 +209,15 @@ var promoImage1 = '{{ promoImage1 }}';
 			<div class="modal-body">
 				<p><small>Pick your preferred scopes and delay before continuing to EVE SSO.</small></p>
 				<div class="checkbox">
+					<label><input type="checkbox" id="login-scope-all" checked> All scopes</label>
+				</div>
+				<div class="checkbox" style="margin-left: 1.5em;">
 					<label><input type="checkbox" class="login-scope" value="esi-killmails.read_killmails.v1" checked> Character killmail scope</label>
 				</div>
-				<div class="checkbox">
+				<div class="checkbox" style="margin-left: 1.5em;">
 					<label><input type="checkbox" class="login-scope" value="esi-killmails.read_corporation_killmails.v1" checked> Corporation killmail scope</label>
 				</div>
-				<div class="checkbox">
+				<div class="checkbox" style="margin-left: 1.5em;">
 					<label><input type="checkbox" class="login-scope" value="esi-fittings.write_fittings.v1" checked> Save fittings scope</label>
 				</div>
 				<hr/>

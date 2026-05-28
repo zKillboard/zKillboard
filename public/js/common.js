@@ -20,7 +20,7 @@ $(document).ready(function () {
 
     // See if we are embedded in an iframe on another website perhaps?
     if (top !== self) {
-        showBsModal('#iframed');
+        $("#iframed").modal('show');
     }
 
     // Send that ESI URL to the parser, allows the website to parse the killmail so that
@@ -54,6 +54,8 @@ $(document).ready(function () {
     $('#login-delay-slider').on('click touchstart mousedown', stopPropagation);
     $(document).on('click', 'a[href^="/ccpoauth2/"]:not([href^="/ccpoauth2-"])', interceptLoginClick);
     $(document).on('submit', 'form[action^="/ccpoauth2/"]', interceptLoginSubmit);
+    $(document).on('change', '#login-scope-all', loginScopeAllChange);
+    $(document).on('change', '#loginOptionsModal .login-scope', syncLoginScopeAllCheckbox);
     $('#continueLoginWithOptions').on('click', continueLoginWithOptions);
     updateDLS.call($('#dls-slider'));
 
@@ -222,8 +224,8 @@ function wslog(msg)
         statsboxUpdate(json);
     } else if (json.action == 'message') {
         console.log(json);
-        if (json.message.length > 0) $("#zkb-message").html("<center>" + json.message + "</center>").removeClass('d-none');
-        else $("#zkb-message").html('').addClass('d-none');
+        if (json.message.length > 0) $("#zkb-message").html("<center>" + json.message + "</center>").removeClass('hide');
+        else $("#zkb-message").html('').addClass('hide');
     } else if (json.action == 'ztop') {
         if (json.payload && typeof window.ztopUpdate === 'function') {
             window.ztopUpdate(json.payload);
@@ -363,8 +365,7 @@ function audio(uri)
 
 function saveFitting(id) {
     $('#modalMessageBody').html('<div style="color: white;">Saving fit....</div>');
-    $('#modalTitle').text('Save Fit');
-    showBsModal('#modalMessage');
+    $('#modalMessage').modal({backdrop: true, keyboard: true, show: true});
 
     var request = $.ajax({
 url: "/ccpsavefit/" + id + "/",
@@ -374,12 +375,7 @@ dataType: "text"
 
 request.done(function(msg) {
         $('#modalMessageBody').html('<div style="color: white;">' + msg + '</div>');
-    showBsModal('#modalMessage');
-    });
-
-request.fail(function() {
-    $('#modalMessageBody').html('<div style="color: white;">Unable to save fit right now. Please try again.</div>');
-    showBsModal('#modalMessage');
+        $('#modalMessage').modal({backdrop: true, keyboard: true, show: true});
         });
 }
 
@@ -390,8 +386,8 @@ function doSort(column, doHide)
 {
     let count = $(".item_row").length;
     if (count >= 250 && confirm(`Are you sure? There are ${count} rows to sort! This could result in high cpu usage which could cause your web application to temporarily lock up during the sort and possible increased battery drainage (e.g. phones, tablets, laptops).`) === false) return;
-    if (doHide) $(".hide-when-sorted").addClass('d-none');
-    else $(".hide-when-sorted").removeClass('d-none');
+    if (doHide) $(".hide-when-sorted").hide();
+    else $(".hide-when-sorted").show();
 
     if (column != sortColumn) {
         if (column >= 2) order = -1;
@@ -489,7 +485,7 @@ function doSponsor(url)
 {
     $('#modalMessageBody').load(url);
     $('#modalTitle').text('Sponsor this killmail');
-    showBsModal('#modalMessage');
+    $('#modalMessage').modal({backdrop: true, keyboard: true, show: true});
 }
 
 function doFavorite(killID) {
@@ -570,8 +566,8 @@ async function adblockloaded() {
             } catch (e) {
                 console.error(e);
                 gtag('event', 'adblocked', 'detectAdblock blocked');
-                $(".liveupdates").addClass('d-none');
-                $("#noliveupdates").removeClass("d-none").addClass("d-lg-block");
+                $(".liveupdates").addClass('hidden');
+                $("#noliveupdates").removeClass("hidden");
             }
 		} else {
 			showAdblockedMessage();
@@ -587,8 +583,8 @@ function showAdblockedMessage() {
         //else html = '<h4>AdBlocker Detected! :(</h4><p>Please support zKillboard by disabling your adblocker.<br/><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p>';
         $("#publifttop").html(html);
         if (ws) ws.close();
-        $(".liveupdates").addClass('d-none');
-        $("#noliveupdates").removeClass("d-none").addClass("d-lg-block");
+        $(".liveupdates").addClass('hidden');
+        $("#noliveupdates").removeClass("hidden");
     }
 }
 
@@ -627,7 +623,7 @@ setTimeout(otherBanners, Math.min(30000, 1000 * (61 - new Date().getSeconds())))
 
 function showAdder(showAdd, type, id, doTN) {
     if (doTN) pubsub('tracker:' + type + ':' + id);
-    return (showAdd && ($("#tracker-remove-" + type + "-" + id).removeClass("d-none").length == 0));
+    return (showAdd && ($("#tracker-remove-" + type + "-" + id).removeClass("hidden").length == 0));
 }
 
 function statsboxUpdate(stats) {
@@ -705,13 +701,13 @@ function assignGreenRed() {
 
     for (let i = 0; i < vics.length; i++) if (vicid == vics[i]) {
         const removeIcon = document.querySelector('#kill-' + row.getAttribute('killID') + ' .glyphicon-remove');
-        if (removeIcon) removeIcon.classList.remove('d-none');
+        if (removeIcon) removeIcon.classList.remove('hidden');
         row.classList.add('error');
         return;
     }
 
     const okIcon = document.querySelector('#kill-' + row.getAttribute('killID') + ' .glyphicon-ok');
-    if (okIcon) okIcon.classList.remove('d-none');
+    if (okIcon) okIcon.classList.remove('hidden');
     row.classList.add('winwin');
 }
 
@@ -801,7 +797,8 @@ function openLoginOptionsModal(loginTarget) {
     updateDLS.call($('#login-delay-slider'));
 
     modal.find('.login-scope').prop('checked', true);
-    showBsModal('#loginOptionsModal');
+    syncLoginScopeAllCheckbox();
+    modal.modal('show');
 }
 
 function continueLoginWithOptions() {
@@ -820,18 +817,20 @@ function continueLoginWithOptions() {
     window.location = loginURL;
 }
 
-function showBsModal(selector) {
-    const el = document.querySelector(selector);
-    if (!el) return;
-    const modal = bootstrap.Modal.getOrCreateInstance(el);
-    modal.show();
+function loginScopeAllChange() {
+    const checked = $(this).is(':checked');
+    $('#loginOptionsModal .login-scope').prop('checked', checked);
+    syncLoginScopeAllCheckbox();
 }
 
-function hideBsModal(selector) {
-    const el = document.querySelector(selector);
-    if (!el) return;
-    const modal = bootstrap.Modal.getOrCreateInstance(el);
-    modal.hide();
+function syncLoginScopeAllCheckbox() {
+    const scopes = $('#loginOptionsModal .login-scope');
+    const checkedCount = scopes.filter(':checked').length;
+    const totalCount = scopes.length;
+    const allScopes = $('#login-scope-all');
+
+    allScopes.prop('checked', totalCount > 0 && checkedCount === totalCount);
+    allScopes.prop('indeterminate', checkedCount > 0 && checkedCount < totalCount);
 }
 
 console.log('common.js loaded');
