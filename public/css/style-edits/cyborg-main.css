@@ -238,6 +238,7 @@ td.item_destroyed,
 
 table, .table {
 	--bs-table-color: #ababab;
+	--bs-table-striped-color: #ababab;
 	color: #ababab;
 }
 
@@ -261,6 +262,25 @@ tr.heading {
 .nav .caret, .nav a:hover .caret {
 	border-top-color: #888;
 	border-bottom-color: #888;
+}
+
+#overview-navbar {
+	border-color: #000 #000 #282828;
+	margin-bottom: 6px;
+}
+
+@media only screen and (min-width: 768px) {
+	#overview-navbar .navbar-nav > .nav-item > .nav-link {
+		color: #888;
+		padding: 15px;
+		line-height: 20px;
+	}
+
+	#overview-navbar .navbar-nav > .nav-item.active > .nav-link,
+	#overview-navbar .navbar-nav > .nav-item > .nav-link:hover,
+	#overview-navbar .navbar-nav > .nav-item > .nav-link:focus {
+		color: #fff;
+	}
 }
 
 input.datepicker {

@@ -8,18 +8,16 @@
 {% set pageBase = (pageBase == '' ? '/' : pageBase) %}
 
 {% if showPager != "false" %}
-<div class="pull-right">
+<div class="float-end d-flex align-items-center gap-2">
 	{% if datepicker == true %}
-	<ul class="pagination pagination-sm">
-		<li class="pull-left"><input type="text" name="datepicker" class="datepicker" value="{{ month }}/{{ year }}"></li>
-	</ul>
+	<div><input type="text" name="datepicker" class="datepicker" value="{{ month }}/{{ year }}"></div>
 	{% endif %}
-	<ul class="pagination pagination-sm">
+	<ul class="pagination pagination-sm mb-0">
 		{% if pager == true %}
 			{% if page == 2 %}
-				<li class="pagination-li-1"><a href="{{ pageBase }}" rel="nofollow prev">&laquo;</a></li>
+				<li class="page-item pagination-li-1"><a class="page-link" href="{{ pageBase }}" rel="nofollow prev">&laquo;</a></li>
 			{% elseif page > 2 %}
-				<li class="pagination-li-{{ page - 1 }}"><a href="{{ pageBase }}page/{{ page - 1 }}/" rel="nofollow prev">&laquo;</a></li>
+				<li class="page-item pagination-li-{{ page - 1 }}"><a class="page-link" href="{{ pageBase }}page/{{ page - 1 }}/" rel="nofollow prev">&laquo;</a></li>
 			{% endif %}
 	
 			{% set startIndex = page - 3 %}
@@ -27,13 +25,13 @@
 	
 			{% for pageIndex in startIndex..endIndex %}
 				{% if pageIndex == 1 %}
-					<li class="pagination-li-{{ pageIndex }} {{ isActive(pageIndex, page, 'active') }}"><a href="{{ pageBase }}" rel="nofollow">{{ pageIndex }}</a></li>
+					<li class="page-item pagination-li-{{ pageIndex }} {{ isActive(pageIndex, page, 'active') }}"><a class="page-link" href="{{ pageBase }}" rel="nofollow">{{ pageIndex }}</a></li>
 				{% elseif pageIndex > 1 %}
-					<li class="pagination-li-{{ pageIndex }} {{ isActive(pageIndex, page, 'active') }}"><a href="{{ pageBase }}page/{{pageIndex}}/" rel="nofollow">{{ pageIndex }}</a></li>
+					<li class="page-item pagination-li-{{ pageIndex }} {{ isActive(pageIndex, page, 'active') }}"><a class="page-link" href="{{ pageBase }}page/{{pageIndex}}/" rel="nofollow">{{ pageIndex }}</a></li>
 				{% endif %}
 			{% endfor %}
             {% if page < 20 %}
-			<li class="pagination-li-{{ page + 1 }}"><a href="{{ pageBase }}page/{{ page + 1 }}/" rel="nofollow next">&raquo;</a></li>
+			<li class="page-item pagination-li-{{ page + 1 }}"><a class="page-link" href="{{ pageBase }}page/{{ page + 1 }}/" rel="nofollow next">&raquo;</a></li>
             {% endif %}
 		{% endif %}
 	</ul>

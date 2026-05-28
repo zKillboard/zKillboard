@@ -15,12 +15,13 @@
 <h2><small>Overview for</small> {{ name }}</h2>
 {% endif %}
 
-<div class="row" style="margin: 0px; padding: 0px;">
+<br/>
+<div class="row m-0 p-0" style="border: solid 1px red; margin: 0px; padding: 0px;">
 	<div class="col-xs-12 col-md-6 pull-left" style="margin: 0px; padding: 0px; padding-right: 2em;">
         {% if detail.label %}
             <h2>{{ detail.label }}<small> killmails</small></h2>
         {% endif %}
-		<table style="margin: 0px; padding: 0px; background-color: black;" class="table table-condensed">
+        <table class="table table-condensed m-0 p-0"'>
 		{% if detail.groupShips %}
                         <tr>   
                                 <th class='col-lg-1'>Class:</th>
@@ -35,7 +36,7 @@
 		</td><td style="border-top: none; margin: 0px; padding: 0px;">
 		<div itemscope class="pull-left">
 		{% if not detail.groupShips %}
-	        <table class="table table-condensed">
+            <table class="table table-condensed">
 			<tbody>
    	         {% if detail.characterID %}
    	         <tr>
