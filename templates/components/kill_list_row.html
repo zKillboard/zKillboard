@@ -15,8 +15,8 @@
       <tr id="kill-{{ kill.killID }}" class="tr-killmail kltbd" date="{{ kill.unixtime }}" killID='{{ kill.killID }}' style="order: {{ kill.killID }};" vics="{{ kill.vics }}">
         <td style='width: 65px;'>
           <span class="killlossicon">
-            <span class="glyphicon glyphicon-ok d-none" aria-hidden="true"></span>
-            <span class="glyphicon glyphicon-remove d-none" aria-hidden="true"></span>
+            <span class="fas fa-check d-none" aria-hidden="true"></span>
+            <span class="fas fa-times d-none" aria-hidden="true"></span>
           </span>
           <span class='pull-right'>{{ kill.unixtime|date('H:i') }}</span>
           <br/><a href="/kill/{{ kill.killID }}/"><span class="pull-right" format='format-isk-once' raw="{{ kill.zkb.totalValue }}">{{ formatIsk(kill.zkb.totalValue) }}</span></a>

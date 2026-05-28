@@ -1,12 +1,12 @@
-<div class="accordion well well-small" id="invAll">
-    <div class="accordion-group">
-        <div class="accordion-heading">
+<div class="accordion card" id="invAll">
+    <div class="card">
+        <div class="card-header">
             <a class="accordion-toggle" data-bs-toggle="collapse" data-bs-parent="#invAll" href="#listInvAll">
                 <div class="centered">Involved Alliances / Corporations <i class="fas fa-chevron-down" aria-hidden="true"></i></div>
             </a>
         </div>
         <div id="listInvAll" class="accordion-body collapse">
-            <div class="accordion-inner">
+            <div class="card-body">
                 <h3>Involved <small>Alliance(s) / Corp(s)</small></h3>
                 <table class="table table-condensed table-striped">
                 {% for allianceID, alliance in field %}

@@ -40,24 +40,24 @@
 {% set teamAEff = teamBTotal / total * 100 %}
 {% set teamBEff = teamATotal / total * 100 %}
 
-<table class="table table-condensed">
+<table class="table table-sm">
 	<tr>
-		<th class="col-lg-6" style="text-align: center"><h5>Team A ({{ teamASize }} involved)</h5></th>
-		<th class="col-lg-6" style="text-align: center"><h5>Team B ({{ teamBSize }} involved)</h5></th>
+		<th class="col-lg-6 text-center"><h5>Team A ({{ teamASize }} involved)</h5></th>
+		<th class="col-lg-6 text-center"><h5>Team B ({{ teamBSize }} involved)</h5></th>
 	</tr>
 	<tr>
 		<td><a class="btn btn-sm btn-success active" href="/related/{{ solarSystemID }}/{{ relatedTime }}/">Reset Report</a> </td>
-		<td style="text-align: right"><a class="btn btn-sm btn-success active" rel="nofollow" href="/brsave/?sID={{ solarSystemID }}&dttm={{ relatedTime }}&options={{ options }}">Save Battle Report</a></td>
+		<td class="text-end"><a class="btn btn-sm btn-success active" rel="nofollow" href="/brsave/?sID={{ solarSystemID }}&dttm={{ relatedTime }}&options={{ options }}">Save Battle Report</a></td>
 	</tr>
 	<tr>
 		<td>
 			{% for entity, name in summary.teamA.entities %}
-				<div><a rel="nofollow" href="./?right={{entity}}"><span class="glyphicon glyphicon-circle-arrow-right"></span></a> {{ name }}</div>
+				<div><a rel="nofollow" href="./?right={{entity}}"><i class="fas fa-arrow-alt-circle-right"></i></a> {{ name }}</div>
 			{% endfor %}
 		</td>
-		<td style="text-align: right;">
+		<td class="text-end">
 			{% for entity, name in summary.teamB.entities %}
-			<div>{{ name }} <a rel="nofollow" href="./?left={{entity}}"><span class="glyphicon glyphicon-circle-arrow-left"></a></div>
+			<div>{{ name }} <a rel="nofollow" href="./?left={{entity}}"><i class="fas fa-arrow-alt-circle-left"></i></a></div>
 			{% endfor %}
 		</td>
 	</tr>
@@ -66,24 +66,24 @@
 		<td>{% set groupIDs = summary.teamB.totals.groupIDs %}{% include 'components/related_summary.html' %}</td>
 	</tr>
 	<tr>
-		<td>Ships Lost: <div class="pull-right"><strong>{{ summary.teamA.totals.totalShips | number_format(0)}} Ships</strong></div></td>
-		<td>Ships Lost: <div class="pull-right"><strong>{{ summary.teamB.totals.totalShips | number_format(0)}} Ships</strong></div></td>
+		<td>Ships Lost: <div class="float-end"><strong>{{ summary.teamA.totals.totalShips | number_format(0)}} Ships</strong></div></td>
+		<td>Ships Lost: <div class="float-end"><strong>{{ summary.teamB.totals.totalShips | number_format(0)}} Ships</strong></div></td>
 	</tr>
 	<tr>
-		<td>Points Lost: <div class="pull-right"><strong>{{ teamAPoints | number_format(0)}}</strong></div></td>
-		<td>Points Lost: <div class="pull-right"><strong>{{ teamBPoints | number_format(0)}}</strong></div></td>
+		<td>Points Lost: <div class="float-end"><strong>{{ teamAPoints | number_format(0)}}</strong></div></td>
+		<td>Points Lost: <div class="float-end"><strong>{{ teamBPoints | number_format(0)}}</strong></div></td>
 	</tr>
 	<tr>
-		<td rel="tooltip" title="&#36;{{ teamATotalConv.usd|number_format(2, '.', ',') }} / {{ teamATotalConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamATotalConv.gbp|number_format(2, '.', ',') }}">ISK Lost: <div class="pull-right"><strong>{{ teamATotal | number_format(2)}}</strong></div></td>
-		<td rel="tooltip" title="&#36;{{ teamBTotalConv.usd|number_format(2, '.', ',') }} / {{ teamBTotalConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamBTotalConv.gbp|number_format(2, '.', ',') }}">ISK Lost: <div class="pull-right"><strong>{{ teamBTotal | number_format(2)}}</strong></div></td>
+		<td rel="tooltip" title="&#36;{{ teamATotalConv.usd|number_format(2, '.', ',') }} / {{ teamATotalConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamATotalConv.gbp|number_format(2, '.', ',') }}">ISK Lost: <div class="float-end"><strong>{{ teamATotal | number_format(2)}}</strong></div></td>
+		<td rel="tooltip" title="&#36;{{ teamBTotalConv.usd|number_format(2, '.', ',') }} / {{ teamBTotalConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamBTotalConv.gbp|number_format(2, '.', ',') }}">ISK Lost: <div class="float-end"><strong>{{ teamBTotal | number_format(2)}}</strong></div></td>
 	</tr>
 	<tr>
-		<td rel="tooltip" title="&#36;{{ teamADroppedConv.usd|number_format(2, '.', ',') }} / {{ teamADroppedConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamADroppedConv.gbp|number_format(2, '.', ',') }}">Loot Dropped: <div class="pull-right"><strong>{{ teamATotalDropped | number_format(2)}}</strong></div></td>
-		<td rel="tooltip" title="&#36;{{ teamBDroppedConv.usd|number_format(2, '.', ',') }} / {{ teamBDroppedConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamBDroppedConv.gbp|number_format(2, '.', ',') }}">Loot Dropped: <div class="pull-right"><strong>{{ teamBTotalDropped | number_format(2)}}</strong></div></td>
+		<td rel="tooltip" title="&#36;{{ teamADroppedConv.usd|number_format(2, '.', ',') }} / {{ teamADroppedConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamADroppedConv.gbp|number_format(2, '.', ',') }}">Loot Dropped: <div class="float-end"><strong>{{ teamATotalDropped | number_format(2)}}</strong></div></td>
+		<td rel="tooltip" title="&#36;{{ teamBDroppedConv.usd|number_format(2, '.', ',') }} / {{ teamBDroppedConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamBDroppedConv.gbp|number_format(2, '.', ',') }}">Loot Dropped: <div class="float-end"><strong>{{ teamBTotalDropped | number_format(2)}}</strong></div></td>
 	</tr>
 	<tr>
-		<td>Efficiency: <div class="pull-right"><strong>{{ teamAEff | number_format(1)}} %</strong></div></td>
-		<td>Efficiency: <div class="pull-right"><strong>{{ teamBEff | number_format(1)}} %</strong></div></td>
+		<td>Efficiency: <div class="float-end"><strong>{{ teamAEff | number_format(1)}} %</strong></div></td>
+		<td>Efficiency: <div class="float-end"><strong>{{ teamBEff | number_format(1)}} %</strong></div></td>
 	</tr>
 	<tr>
 		<td>{% set list = summary.teamA.list %}{% include 'components/related_list.html' %}</td>

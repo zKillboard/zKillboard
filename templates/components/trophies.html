@@ -19,7 +19,7 @@
 	    <tr><th>Trophy</th><th style='width: 175px;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th><th><span class='pull-right'></span></th></tr>
         {% for condition, value in conditions %}
 	    <tr>
-            <td style='width: 100%';><span class='{% if value.met > 0%}green{%endif%}'>{{ condition }}</span> {% if value.link %} <a href='{{value.link}}'><span class="glyphicon glyphicon-arrow-right small"></span></a>{% endif %}</td>
+            <td style='width: 100%';><span class='{% if value.met > 0%}green{%endif%}'>{{ condition }}</span> {% if value.link %} <a href='{{value.link}}'><span class="fas fa-arrow-right small"></span></a>{% endif %}</td>
             <td><span class='pull-right'>{{ value.value|number_format(0) }}{% if value.level < 5 %} / {{ value.next|number_format(0) }}{% endif %}</span></td>
             <td style='width: 0.5em;'><span class='pull-right'><img style='' src='/img/level/level{{ value.level }}.gif' title='{% if value.noNext %}Hardcoded level (for now){% else %}At: {{ value.value }} {% if value.level < 5 %}Next Level: {{ value.next }} {% endif %}{% endif %}'></span></td>
             </tr>
