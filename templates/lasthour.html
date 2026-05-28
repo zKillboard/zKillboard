@@ -6,17 +6,13 @@
 {% block content %}
 {% set showImage = true %}
 
-<div class="navbar navbar-default">
-    <div class="container">
-        <div class="collapse navbar-collapse navbar-main">
-            <ul class="nav navbar-nav">
-                {% for typeO in types %}
-                    <li class="{{ isActive(typeO, type) }}"><a href="/top/lasthour/{{ typeO }}/">{{ typeO }}</a></li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-</div>
+<nav class="mb-3">
+    <ul class="nav nav-pills flex-wrap">
+        {% for typeO in types %}
+            <li class="nav-item"><a class="nav-link {{ isActive(typeO, type) }}" href="/top/lasthour/{{ typeO }}/">{{ typeO }}</a></li>
+        {% endfor %}
+    </ul>
+</nav>
 
 {% for type, list in allLists %}
 <a name="{{ type }}"></a><br/>

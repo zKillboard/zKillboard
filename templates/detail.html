@@ -15,7 +15,7 @@
 
 {% if message %}
 <div class="alert">
-	<a class="close" data-dismiss="alert" href="#" aria-hidden="true">&times;</a>
+	<a class="close" data-bs-dismiss="alert" href="#" aria-hidden="true">&times;</a>
 	{{ message }}
 </div>
 {% endif %}
@@ -24,14 +24,14 @@
 
 {% block content %}
 {% include 'components/partial_title.html' %}
-<div id="navibar" class="navbar navbar-default navbar-dark navbar-expand-md">
-	<div id="details-menu" class="collapse navbar-collapse navbar-sub">
-		<ul class="nav navbar-nav pull-left d-none d-md-block">
+<div id="navibar" class="navbar navbar-dark navbar-expand-md">
+	<div id="details-menu" class="navbar-collapse navbar-sub d-block">
+		<ul class="navbar-nav me-auto d-none d-md-flex">
 			{% if extra.prevKillID %}
 				<li class="nav-item d-none d-md-block"><a class="nav-link" href="/kill/{{ extra.prevKillID }}/">&lt;</a></li>
 			{% endif %}
 		</ul>
-		<ul class="nav navbar-nav pull-right">
+		<ul class="navbar-nav ms-auto flex-row flex-wrap">
 			{% if killdata.info.killID < 0 %}
 			<li class="nav-item"><a class="nav-link" data-bs-toggle="modal" data-bs-target="#report" href="#">Report ({{ extra.reports }})</a></li>
 			{% endif %}
