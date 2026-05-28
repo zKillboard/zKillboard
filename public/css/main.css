@@ -794,3 +794,7 @@ code {
 .clearfix {
 	margin-bottom: 1em;
 }
+
+.img-rounded {
+	border-radius: 6px;
+}
