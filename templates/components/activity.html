@@ -1,10 +1,15 @@
-<div class='alert alert-info'><center><a href='{{ referralLink }}' target='_blank' alt='1 million SP FREE'><img src='https://images.evetech.net/types/40520/icon?size=32' alt='1 million free skill points!' loading="lazy" decoding="async" fetchpriority="low"/>1 Million SP FREE</a></center></div>
+<div class="alert alert-info text-center">
+    <a href="{{ referralLink }}" target="_blank" alt="1 million SP FREE">
+        <img src="https://images.evetech.net/types/40520/icon?size=32" alt="1 million free skill points!" loading="lazy" decoding="async" fetchpriority="low" />
+        1 Million SP FREE
+    </a>
+</div>
 {{ sponsoredMessage|raw }}
 {% if pageType == 'overview' and extra.activity.max > 0 %}
-    <center><h5>Activity (last 90 days)</h5></center>
-    <a href="#" data-bs-toggle="modal" data-bs-target="#heatmap">
+    <h5 class="text-center">Activity (last 90 days)</h5>
+    <a href="#" data-bs-toggle="modal" data-bs-target="#heatmap" class="d-block text-center text-decoration-none">
     {% apply spaceless %}
-    <div style="line-height: 0px;">
+    <div style="line-height: 0;">
     {% set steps = (extra.activity.max / 5)|round(0, 'floor') %}
     {% if steps < 1 %}{% set steps = 1 %}{% endif %}
     {% for day in 0..6 %}
@@ -14,12 +19,13 @@
                 {% set level = (extra.activity[day][hour] / steps)|round(0, 'ceil') %}
                 {% if level > 5 %}{% set level = 5 %}{% endif %}
             {% endif %}
-            <span style='width: 8px; height: 8px; background-color: hsla(0, 92%, {{ level * 10 }}%, 1); display: inline-block; margin: 0px; padding: 0px;'></span>
+            <span style="width: calc(100% / 24); height: 8px; background-color: hsla(0, 92%, {{ level * 10 }}%, 1); display: inline-block; margin: 0; padding: 0; box-sizing: border-box;"></span>
         {% endfor %}
-        <br style='margin: 0px; padding:0px;'/>
+        <br class="m-0 p-0" />
     {% endfor %}
     </div>
     {% endapply %}
-    <center><small><small><i>Click to enlarge</i></small></small></center>
+    <small><small><i>Click to enlarge</i></small></small>
     </a>
+    <br />
 {% endif %}

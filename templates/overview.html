@@ -14,26 +14,24 @@
 {% include 'components/partial_title.html' %}
 {% include 'components/info_top.html' %}
 
-<div id="overview-navbar" class="navbar navbar-default navbar-dark navbar-expand-md">
-	<div class="navbar-header d-md-none">
-	    <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#overview-menu" aria-controls="overview-menu" aria-expanded="false" aria-label="Toggle navigation">
-			<span class="navbar-toggler-icon"></span>
-		</button>
-	</div>
+<div id="overview-navbar" class="navbar navbar-dark navbar-expand-md">
+	<button type="button" class="navbar-toggler d-md-none" data-bs-toggle="collapse" data-bs-target="#overview-menu" aria-controls="overview-menu" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+	</button>
 	<div id="overview-menu" class="collapse navbar-collapse navbar-sub">
 	<ul class="navbar-nav me-auto">
 		{% if prevID %}
 		<li class="nav-item d-none d-md-block"><a class="nav-link" href="/{{ key }}/{{ prevID }}/">&lt;</a></li>
 		{% endif %}
-		<li class="nav-item {{ isActive('Overview', pageType) }}"><a class="nav-link" href="/{{ key }}/{{ id }}/">Overview</a></li>
-		<li class="nav-item {{ isActive('Kills', pageType) }}"><a class="nav-link" href="/{{ key }}/{{ id }}/kills/{{YWMurl}}">Kills</a></li>
-		<li class="nav-item {{ isActive('Solo', pageType) }} d-none d-md-block"><a class="nav-link" href="/{{ key }}/{{ id }}/solo/{{YWMurl}}">Solo</a></li>
-		<li class="nav-item {{ isActive('Losses', pageType) }}"><a class="nav-link" href="/{{ key }}/{{ id }}/losses/{{YWMurl}}">Losses</a></li>
+		<li class="nav-item"><a class="nav-link {{ isActive('Overview', pageType) }}" href="/{{ key }}/{{ id }}/">Overview</a></li>
+		<li class="nav-item"><a class="nav-link {{ isActive('Kills', pageType) }}" href="/{{ key }}/{{ id }}/kills/{{YWMurl}}">Kills</a></li>
+		<li class="nav-item d-none d-md-block"><a class="nav-link {{ isActive('Solo', pageType) }}" href="/{{ key }}/{{ id }}/solo/{{YWMurl}}">Solo</a></li>
+		<li class="nav-item"><a class="nav-link {{ isActive('Losses', pageType) }}" href="/{{ key }}/{{ id }}/losses/{{YWMurl}}">Losses</a></li>
         {% if key == 'character' %}
-		<li class="nav-item {{ isActive('Trophies', pageType) }}"><a class="nav-link" href="/{{ key }}/{{ id }}/trophies/">Trophies</a></li>
+		<li class="nav-item"><a class="nav-link {{ isActive('Trophies', pageType) }}" href="/{{ key }}/{{ id }}/trophies/">Trophies</a></li>
 	{% endif %}
 	{% if key == "ship" %}
-		<li class="nav-item {{ isActive('Description', pageType) }}"><a class="nav-link" href="/item/{{ id }}/">Description</a></li>
+		<li class="nav-item"><a class="nav-link {{ isActive('Description', pageType) }}" href="/item/{{ id }}/">Description</a></li>
 	{% endif %}
 	<li class="nav-item dropdown d-none d-md-block">
 		<a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Top</a>
@@ -42,21 +40,21 @@
 			<li class="d-none d-md-block"><a class="dropdown-item {{ isActive('topalltime', pageType) }}" href="/{{ key }}/{{ id }}/topalltime/">All Time Top</a></li>
 		</ul>
 	</li>
-	<li class="nav-item {{ isActive('ranks', pageType) }} d-none d-md-block"><a class="nav-link" href="/{{ key }}/{{ id }}/ranks/">Ranks</a></li>
-	<li class="nav-item {{ isActive('stats', pageType) }} d-none d-md-block"><a class="nav-link" href="/{{ key }}/{{ id }}/stats/">Stats</a></li>
+	<li class="nav-item d-none d-md-block"><a class="nav-link {{ isActive('ranks', pageType) }}" href="/{{ key }}/{{ id }}/ranks/">Ranks</a></li>
+	<li class="nav-item d-none d-md-block"><a class="nav-link {{ isActive('stats', pageType) }}" href="/{{ key }}/{{ id }}/stats/">Stats</a></li>
     {% if key == 'character' %}
     {% endif %}
 	{% if key in ['character', 'corporation', 'alliance'] %}
 	<!--<li class="d-none d-md-block"><a href="/{{ key }}/{{ id }}/recap2025/" style="color: #667eea; font-weight: bold;">🎆 2025 Recap</a></li>-->
 	{% endif %}
 	{% if extra.hasSupers %}
-	<li class="nav-item {{ isActive('supers', pageType) }} d-none d-md-block"><a class="nav-link" href="/{{ key }}/{{ id }}/supers/">Supers</a></li>
+	<li class="nav-item d-none d-md-block"><a class="nav-link {{ isActive('supers', pageType) }}" href="/{{ key }}/{{ id }}/supers/">Supers</a></li>
 	{% endif %}
 	{% if extra.hasWars > 0 %}
-	<li class="nav-item {{ isActive('wars', pageType) }} d-none d-md-block"><a class="nav-link" href="/{{ key }}/{{ id }}/wars/">Wars</a></li>
+	<li class="nav-item d-none d-md-block"><a class="nav-link {{ isActive('wars', pageType) }}" href="/{{ key }}/{{ id }}/wars/">Wars</a></li>
 	{% endif %}
 	{% if key == "alliance" %}
-		<li class="nav-item {{ isActive('corpstats', pageType) }} d-none d-md-block"><a class="nav-link" href="/{{ key }}/{{ id }}/corpstats/">Corporations</a></li>
+		<li class="nav-item d-none d-md-block"><a class="nav-link {{ isActive('corpstats', pageType) }}" href="/{{ key }}/{{ id }}/corpstats/">Corporations</a></li>
     {% endif %}
 	</ul>
 	<ul class="navbar-nav ms-auto d-none d-md-flex">
@@ -108,7 +106,7 @@
 	</ul>
 </div>
 </div>
-
+<br/>
 <div class="row">
 {% if pageType == 'overview' or pageType == 'kills' or pageType == 'solo' or pageType == 'losses' %}
   <div class="col-lg-10 pull-left" style="padding-left: 0px;">
@@ -151,7 +149,7 @@
     {% include 'components/kill_list.html' %}
   </div>
   <div class="col-lg-2 pull-left" style="padding: 0px;">
-    <center><div style='max-width: 180px;'><a id='loginsideimage' href='/ccpoauth2/' class='btn btn-block collapse'><img src='/img/ssologin.png' style='width: 100%; max-width: 100%; margin-bottom: 1em;' loading="lazy" decoding="async" fetchpriority="low"></a></div></center>
+    <center><div style='max-width: 100%;'><a id='loginsideimage' href='/ccpoauth2/' class='btn btn-block collapse'><img src='/img/ssologin.png' style='width: 100%; max-width: 100%; margin-bottom: 1em;' loading="lazy" decoding="async" fetchpriority="low"></a></div></center>
     {% include 'components/activity.html' %}
 	{% include 'components/activePvP.html' %}
             <div id="topset-characterID"></div>

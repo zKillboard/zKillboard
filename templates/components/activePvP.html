@@ -1,13 +1,19 @@
 {% if activePvP|length > 0 %}
-<div class="pull-left" style="width: 100%; padding: 0px; margin: 0px;">
-	<center>
+<div class="float-start w-100 p-0 m-0">
+	<div class="text-center">
 		<h5>Active PVP (last 7 days)</h5>
-		{% if pageType == "overview" %}<small><a href='./kills/'>Kills</a> + <a href='./losses/'>Losses</a></small>{% endif %}
-	</center>
-	<table class="table table-condensed topBoxes col-lg-2" style="padding: 0px; margin: 0px; width: 100%;">
-	{% for row in activePvP %}
-		<tr><td>{{ row.type }}</td><td align="right" format="format-int-once" raw="{{ row.count }}">{{ row.count|number_format(0) }}</td></tr>
-	{% endfor %}
+		{% if pageType == "overview" %}
+			<small><a href="./kills/">Kills</a> + <a href="./losses/">Losses</a></small>
+		{% endif %}
+	</div>
+	<table class="table table-condensed topBoxes col-lg-2 w-100 p-0 m-0">
+		{% for row in activePvP %}
+			<tr>
+				<td>{{ row.type }}</td>
+				<td class="text-end" format="format-int-once" raw="{{ row.count }}">{{ row.count|number_format(0) }}</td>
+			</tr>
+		{% endfor %}
 	</table>
 </div>
+<div class="clearfix"></div>
 {% endif %}

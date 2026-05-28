@@ -24,14 +24,7 @@
 
 {% block content %}
 {% include 'components/partial_title.html' %}
-<div class="navbar navbar-default navbar-dark navbar-expand-md">
-	<div class="navbar-header d-md-none">
-		<button type="button" class="navbar-toggle" data-bs-toggle="collapse" data-bs-target="#details-menu" aria-controls="details-menu" aria-expanded="false" aria-label="Toggle navigation">
-			<span class="icon-bar"></span>
-			<span class="icon-bar"></span>
-			<span class="icon-bar"></span>
-		</button>
-	</div>
+<div id="navibar" class="navbar navbar-default navbar-dark navbar-expand-md">
 	<div id="details-menu" class="collapse navbar-collapse navbar-sub">
 		<ul class="nav navbar-nav pull-left d-none d-md-block">
 			{% if extra.prevKillID %}

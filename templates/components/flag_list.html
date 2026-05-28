@@ -2,10 +2,14 @@
 {% set resizeImage = 24 %}
 {% set headerDisplayed = false %}
 {% set total = 0 %}
+{% set totalDropped = 0 %}
+{% set totalDestroyed = 0 %}
 {% for item in items %}
 	{% if item.flagName == flagName %}
 	{% if headerDisplayed == false %}
                 {% set total = 0 %}
+		{% set totalDropped = 0 %}
+		{% set totalDestroyed = 0 %}
 		<tr class="hide-when-sorted">
 			<th data-order="{{ i() }}" colspan="4"><h5>{{ flagName }}</h5>{% if flagName == "Frigate Bay" %} <small>Full value of frigate not included in killmail value.</small>{% endif %}</th>
 <th class="d-none"></th>
@@ -27,6 +31,9 @@
 		<td class="price" style="text-align: right;" data-order="{{ price }}" format="format-dec2-once" raw="{{ price }}">{{ price|number_format(2) }}</td>
 </tr>
                 {% set total = (total + price) %}
+		{% set unitPrice = qty > 0 ? (price / qty) : 0 %}
+		{% set totalDropped = totalDropped + (unitPrice * item.quantity_dropped) %}
+		{% set totalDestroyed = totalDestroyed + (unitPrice * item.quantity_destroyed) %}
 	{% endif %}
 {% endfor %}
-{% if total > 0 and items|length > 1 %}<tr class="hide-when-sorted"><td data-order="{{ i() }}" colspan='4' style='text-align: right'><small>Total: <span format="format-dec2-once" raw="{{ total }}">{{ total|number_format(2) }}</span></small></td><td class="d-none"></td><td class="d-none"></td><td class="d-none"></td></tr>{% endif %}
+{% if total > 0 and items|length > 1 %}<tr class="hide-when-sorted"><td data-order="{{ i() }}" colspan='4' style='text-align: right'><small><span class="item_dropped"><i class="fas fa-check" aria-hidden="true" style="color: inherit;"></i> <span format="format-dec2-once" raw="{{ totalDropped }}">{{ totalDropped|number_format(2) }}</span></span> | <span class="item_destroyed"><i class="fas fa-times" aria-hidden="true" style="color: inherit;"></i> <span format="format-dec2-once" raw="{{ totalDestroyed }}">{{ totalDestroyed|number_format(2) }}</span></span> | Total: <span format="format-dec2-once" raw="{{ total }}">{{ total|number_format(2) }}</span></small></td><td class="d-none"></td><td class="d-none"></td><td class="d-none"></td></tr>{% endif %}
