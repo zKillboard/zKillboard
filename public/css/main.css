@@ -493,8 +493,8 @@ html,body {
 }
 
 #resultstable th, #resultstable td {
-    padding-left: 0px;
-    padding-right: 0px;
+    padding-left: 4px;
+    padding-right: 4px;
 }
 
 .pilotmemberimage {
@@ -509,8 +509,26 @@ html,body {
 	width: 75px;
 }
 
-#upperentities {
+.upperentities {
 	padding-right: 0.5em;
+}
+
+#scanlayout {
+    display: grid;
+    grid-template-columns: 75px minmax(0, 1fr);
+    width: 100%;
+}
+
+#scanlayout.has-ships {
+    grid-template-columns: 75px 75px minmax(0, 1fr);
+}
+
+#scan-shipgroups-col {
+    display: none;
+}
+
+#scanlayout.has-ships #scan-shipgroups-col {
+    display: block;
 }
 
 #resultslegend {
