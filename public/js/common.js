@@ -54,7 +54,8 @@ $(document).ready(function () {
     $('#login-delay-slider').on('click touchstart mousedown', stopPropagation);
     $(document).on('click', 'a[href^="/ccpoauth2/"]:not([href^="/ccpoauth2-"])', interceptLoginClick);
     $(document).on('submit', 'form[action^="/ccpoauth2/"]', interceptLoginSubmit);
-    $(document).on('click', 'a[id^="login-scope-select-"]', loginScopeSelectClick);
+    $(document).on('change', '#login-scope-all', loginScopeAllChange);
+    $(document).on('change', '#loginOptionsModal .login-scope', syncLoginScopeAllCheckbox);
     $('#continueLoginWithOptions').on('click', continueLoginWithOptions);
     updateDLS.call($('#dls-slider'));
 
@@ -796,6 +797,7 @@ function openLoginOptionsModal(loginTarget) {
     updateDLS.call($('#login-delay-slider'));
 
     modal.find('.login-scope').prop('checked', true);
+    syncLoginScopeAllCheckbox();
     modal.modal('show');
 }
 
@@ -815,14 +817,20 @@ function continueLoginWithOptions() {
     window.location = loginURL;
 }
 
-function loginScopeSelectClick(action) {
-    action.preventDefault();
-    const actionId = action.currentTarget?.id || '';
-    if (actionId && actionId === 'login-scope-select-all') {
-        $('.login-scope').prop('checked', true);
-    } else if (actionId && actionId === 'login-scope-select-none') {
-        $('.login-scope').prop('checked', false);
-    }
+function loginScopeAllChange() {
+    const checked = $(this).is(':checked');
+    $('#loginOptionsModal .login-scope').prop('checked', checked);
+    syncLoginScopeAllCheckbox();
+}
+
+function syncLoginScopeAllCheckbox() {
+    const scopes = $('#loginOptionsModal .login-scope');
+    const checkedCount = scopes.filter(':checked').length;
+    const totalCount = scopes.length;
+    const allScopes = $('#login-scope-all');
+
+    allScopes.prop('checked', totalCount > 0 && checkedCount === totalCount);
+    allScopes.prop('indeterminate', checkedCount > 0 && checkedCount < totalCount);
 }
 
 console.log('common.js loaded');
