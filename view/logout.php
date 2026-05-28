@@ -1,11 +1,10 @@
 <?php
 
 function handler($request, $response, $args, $container) {
-    global $cookie_name, $ssoCharacterID, $ssoHash, $redis, $twig;
+    global $cookie_name;
 
-    if ($ssoCharacterID != null && $ssoHash != null) {
-        $value = $redis->del("login:$ssoCharacterID:$ssoHash");
-    }
+    unset($_SESSION['characterID']);
+    unset($_SESSION['characterName']);
 
     session_regenerate_id(true);
     session_destroy();
