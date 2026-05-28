@@ -1,5 +1,4 @@
 <div class="" id="subcommentblock" style='width: 100%;'>
-<a href='https://discord.gg/sV2kkwg8UD' target='_new' class='btn bn-success w-100' style='background-color: #6E85D2; color: white;'>Discord</a><br/>
 <table class='table table-sm'>
 {% for comment in comments %}
     <tr><td class='green' style='text-align: right;' format="format-int-once" raw="{{ comment.upvotes }}">{{ comment.upvotes|number_format() }}</td><td>&nbsp; <a href='#' onClick="commentUpVote('{{ comment.pageID }}', '{{ comment.commentID }}'); return false;"><i class="fas fa-arrow-up" aria-hidden="true"></i> {{ comment.comment }}</a></td></tr>

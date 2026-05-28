@@ -4,7 +4,7 @@
       {% set shipImageLinkOverride = kill.killID %}
       {% set sDate =  (kill.unixtime|date('Y-m-d')) %}
       {% set date = (kill.unixtime|date('M d, Y')) %}
-      <tr class='tr-date tr-date-{{ sDate }} asearhfilter' date="{{ date }}">
+      <tr class='tr-date tr-date-{{ sDate }}' date="{{ date }}">
         <th class="no-stripe" colspan="7"><em>{{ sDate }}</em></th>
       </tr>
   
