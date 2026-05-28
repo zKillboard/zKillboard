@@ -2,7 +2,7 @@
 <script type="text/javascript">
 
 characterID = {{ characterID }};
-$(".forloggedin").removeClass('d-none');
+$(".forloggedin").removeClass('d-none d-sm-none');
 $(".forloggedout").addClass('d-none');
 $("#nousermenu").addClass("d-none");
 $("#usermenu").removeClass("d-none");
@@ -162,7 +162,7 @@ console.log("nav loaded");
 <script type="text/javascript">
 characterID = 0;
 $(".forloggedout").removeClass('d-none');
-$(".forloggedin").addClass('d-none');
+$(".forloggedin").addClass('d-none d-sm-none');
 $("#tracker-none").removeClass("d-none");
 $("#savefit").remove();
 $("#nosavefit").removeClass("d-none");

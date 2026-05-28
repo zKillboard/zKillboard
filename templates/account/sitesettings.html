@@ -1,60 +1,38 @@
 <div class="row">
 	<div class="col-lg-6">
-                <h3>Login Screen</h3>
-                                <form class="form-horizontal" name="loginscreen" method="post" action="/account/sitesettings/">
-                                        <div class="form-group col-lg-3">
-                                                <select name="loginPage" class="form-control input-sm"> prevPage
-							{% set selected = "" %}
-							{% if data.loginPage == "main" %}{% set selected = "selected"%}{% endif %}
-                                                        <option value="main" {{ selected }}>Main Page</option>
-							{% set selected = "" %}
-							{% if data.loginPage == "character" %}{% set selected = "selected"%}{% endif %}
-                                                        <option value="character" {{ selected }}>Character</option>
-							{% set selected = "" %}
-							{% if data.loginPage == "corporation" %}{% set selected = "selected"%}{% endif %}
-                                                        <option value="corporation" {{ selected }}>Corporation</option>
-							{% set selected = "" %}
-							{% if data.loginPage == "alliance" %}{% set selected = "selected"%}{% endif %}
-                                                        <option value="alliance" {{ selected }}>Alliance</option>
-                                                </select>
-                                        </div>
-                                        <div class="form-group col-lg-2">
-                                        &nbsp;  <input type="submit" class="btn btn-primary btn-sm" value="Set">
-                                        </div>
-                                </form>
-                <div class="clearfix"></div>
-		<h3>Theme</h3>
-				<form class="form-horizontal" name="styles" method="post" action="/account/sitesettings/">
-					<div class="form-group col-lg-3">
-						<select name="style" class="form-control input-sm">
-						{% for style in data.stylesAvailable %}
-							{% set selected = "" %}
-							{% if style == data.currentStyle or (data.currentStyle == "" and style == "cyborg") %}{% set selected = "selected"%}{% endif %}
-							<option value="{{ style }}" {{ selected }}>{{ style }}</option>
-						{% endfor %}
-						</select>
-					</div>
-					<div class="form-group col-lg-2">
-					&nbsp;	<input type="submit" class="btn btn-primary btn-sm" value="Set">
-					</div>
-				</form>
-				<p>Site's default is 'cyborg'</p>
-		<div class="clearfix"></div>
+        <h3>Login Screen</h3>
+        <form name="loginscreen" method="post" action="/account/sitesettings/" class="mb-3">
+            <div class="input-group input-group-sm w-100">
+                <select name="loginPage" class="form-select" aria-label="Default login page">
+					{% set selected = "" %}
+					{% if data.loginPage == "main" %}{% set selected = "selected"%}{% endif %}
+                    <option value="main" {{ selected }}>Main Page</option>
+					{% set selected = "" %}
+					{% if data.loginPage == "character" %}{% set selected = "selected"%}{% endif %}
+                    <option value="character" {{ selected }}>Character</option>
+					{% set selected = "" %}
+					{% if data.loginPage == "corporation" %}{% set selected = "selected"%}{% endif %}
+                    <option value="corporation" {{ selected }}>Corporation</option>
+					{% set selected = "" %}
+					{% if data.loginPage == "alliance" %}{% set selected = "selected"%}{% endif %}
+                    <option value="alliance" {{ selected }}>Alliance</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Set</button>
+            </div>
+        </form>
+
         <h3>Tracker Notifications</h3>
-				<form class="form-horizontal" name="styles" method="post" action="/account/sitesettings/">
-					<div class="form-group col-lg-3">
-						<select name="trackernotification" class="form-control input-sm">
+				<form name="styles" method="post" action="/account/sitesettings/" class="mb-2">
+					<div class="input-group input-group-sm w-100">
+						<select name="trackernotification" class="form-select" aria-label="Tracker notifications">
                             {% if data.trackernotification == "true" %}{% set selected = "selected" %}{% else %}{% set selected = "" %}{% endif %}
 							<option value="true" {{ selected }}>Yes!</option>
                             {% if data.trackernotification == "false" %}{% set selected = "selected" %}{% else %}{% set selected = "" %}{% endif %}
 							<option value="false" {{ selected }}>No :(</option>
 						</select>
-					</div>
-					<div class="form-group col-lg-2">
-					&nbsp;	<input type="submit" class="btn btn-primary btn-sm" value="Set">
+						<button type="submit" class="btn btn-primary">Set</button>
 					</div>
 				</form>
 				<p>Site's default is Yes!</p>
-		<div class="clearfix"></div>
 	</div>
 </div>
