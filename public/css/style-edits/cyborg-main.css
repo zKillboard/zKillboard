@@ -270,6 +270,41 @@ td.item_destroyed,
 	color: var(--zk-color-red);
 }
 
+.rank-table td.green,
+.rank-table th.green,
+.rank-table .green {
+	color: var(--zk-color-green);
+}
+
+.rank-table td.red,
+.rank-table th.red,
+.rank-table .red {
+	color: var(--zk-color-red);
+}
+
+#war-eligible .datatable td.green,
+#war-eligible .datatable th.green,
+#war-eligible .datatable .green {
+	color: var(--zk-color-green);
+}
+
+#war-eligible .datatable td.red,
+#war-eligible .datatable th.red,
+#war-eligible .datatable .red {
+	color: var(--zk-color-red);
+}
+
+#war-eligible .datatable thead tr:last-child th:nth-child(1),
+#war-eligible .datatable tbody td:nth-child(1) {
+	width: 33.3333% !important;
+	max-width: 33.3333% !important;
+}
+
+#war-eligible .datatable thead tr:last-child th:nth-child(2),
+#war-eligible .datatable tbody td:nth-child(2) {
+	width: 12% !important;
+}
+
 .overview-top .progress {
 	--bs-progress-height: 20px;
 }

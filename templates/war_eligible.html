@@ -6,6 +6,7 @@
 <h2>War Eligible Alliances and Corporations</h2>
 <p>Listed here are alliances and corporations that are eligible for war, but do not have any active wars at the moment.  This information could be stale by a couple of days depending on API/ESI updates. This list is based on the top 100 by member count. Corporations with 0 members are still war eligible as they may have a structure somewhere in space.</p>
 
+<div id="war-eligible">
 <h3>Alliances</h3>
 {% set entities = allis %}
 {% set entityTitle = 'Alliance' %}
@@ -15,5 +16,6 @@
 {% set entities = corps %}
 {% set entityTitle = 'Corporation' %}
 {% include 'components/entitylist.html' %}
+</div>
 <div class="clearfix"></div>
 {% endblock %}

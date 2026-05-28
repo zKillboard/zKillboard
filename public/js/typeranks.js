@@ -47,10 +47,10 @@ function getDefaultDirection(sortKey) {
 }
 
 function applyStyles() {
-    $('#type-' + ranksType.replace('ID', '')).addClass('btn-primary');
-    $('#epoch-' + ranksEpoch).addClass('btn-primary');
-    $('#kl-' + ranksKL).addClass('btn-primary');
-    $('#group-' + ranksGroup).addClass('btn-primary');
+    $('#type-' + ranksType.replace('ID', '')).removeClass('btn-secondary').addClass('btn-primary');
+    $('#epoch-' + ranksEpoch).removeClass('btn-secondary').addClass('btn-primary');
+    $('#kl-' + ranksKL).removeClass('btn-secondary').addClass('btn-primary');
+    $('#group-' + ranksGroup).removeClass('btn-secondary').addClass('btn-primary');
 
     $('.epoch-btn').each(updateEpochBtn);
     $('.kl-btn').each(updateKLBtn);
