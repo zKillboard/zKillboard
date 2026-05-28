@@ -21,8 +21,8 @@
 					{% for group in divGroups %}
 						<tr rel="tooltip" title="{{ group.groupName }}">
 							<td><a href="/{{ key }}/{{ id }}/reset/group/{{group.groupID}}/losses/">{{ group.groupName }}</a></td>
-							<td class="green" style="text-align: right;">{{ group.shipsDestroyed|number_format(0) }}</td>
-							<td class="red" style="text-align: right;">{{ group.shipsLost|number_format(0) }}</td>
+							<td style="text-align: right;"><span class="green">{{ group.shipsDestroyed|number_format(0) }}</span></td>
+							<td style="text-align: right;"><span class="red">{{ group.shipsLost|number_format(0) }}</span></td>
 						</tr>
 					{% endfor %}
 				</tbody>
