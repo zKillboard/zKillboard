@@ -33,17 +33,7 @@ $container->set('view', function () use ($twig) {
 // Check SSO values
 $ssoCharacterID = @$_SESSION['characterID'];
 if ($ssoCharacterID > 0) {
-    $key = 'login:'.$ssoCharacterID.':'.session_id();
-    $refreshToken = $redis->get("$key:refreshToken");
-    $scopes = $redis->get("$key:scopes");
-    if ($refreshToken != null) {
-        $twig->addGlobal('characterID', (int) $ssoCharacterID);
-    } else {
-        unset($_SESSION['characterID']);
-    }
-    if ($scopes != null) {
-        $twig->addGlobal('scopes', explode(' ', $scopes));
-    }
+    $twig->addGlobal('characterID', (int) $ssoCharacterID);
 } else {
     $twig->addGlobal('characterID', -1);
 }

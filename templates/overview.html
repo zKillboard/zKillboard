@@ -277,25 +277,34 @@
 
 {% block modal %}
         {% if detail.characterID and key == 'character' %}
-<div class="modal fade" id="largeImage">
-                <div class="modal-dialog">
-                        <div class="modal-content"><center>
+<div class="modal fade" id="largeImage" tabindex="-1" aria-labelledby="largeImageLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="largeImageLabel">{{ detail.name }}</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body text-center">
 {% set imageSize = 512 %}
+{% set imageStyle = 'max-width: min(90vw, 640px) !important; max-height: 75vh !important; width: auto !important; height: auto !important;' %}
 {% set field = detail %}
-		<h3>{{ detail.name }}</h3>
-                {% include 'components/image_char.html' %}</center><br/><br/>
-</div></div></div>
+				{% include 'components/image_char.html' %}
+			</div>
+		</div>
+	</div>
+</div>
         {% endif %}
 
 
 {% if pageType == 'overview' and extra.activity.max > 0 %}
-<div class="modal fade" id="heatmap">
+<div class="modal fade" id="heatmap" tabindex="-1" aria-labelledby="heatmapLabel" aria-hidden="true">
 <div class="modal-dialog" style="width: 1000px; max-width: 90%;">
 <div class="modal-content">
 <div class="modal-header">
-    <h4 class="modal-title">Activity Heatmap</h4>
+	<h5 class="modal-title" id="heatmapLabel">Activity Heatmap</h5>
+	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
-<div style='margin-right: 1em; padding: 1em;'>
+<div class="modal-body" style='margin-right: 1em; padding: 1em;'>
 {% set steps = (extra.activity.max / 5)|round(0, 'floor') %}
     {% if steps < 1 %}{% set steps = 1 %}{% endif %}
 
@@ -320,9 +329,9 @@
             </tr>
  {% endfor %}
     </table>
-     <p>Each block represents an hour of the day for each day of the week. The number indicates how many kills were achieved in that hour over the last 90 days. The redder the block the more kills. A black, empty box indicates 0 kills.</p>
-            </div>
-        </div>
+	<p>Each block represents an hour of the day for each day of the week. The number indicates how many kills were achieved in that hour over the last 90 days. The redder the block the more kills. A black, empty box indicates 0 kills.</p>
+</div>
+</div>
 </div>
 </div>
 {% endif %}

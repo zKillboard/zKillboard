@@ -171,11 +171,6 @@ function handler($request, $response, $args, $container)
 			ZLog::add("Logged in: $charName ($charID) (Delay: $delay)", $charID, true);
 		unset($_SESSION['oauth2State']);
 
-		$key = "login:$charID:" . session_id();
-		$redis->setex("$key:refreshToken", (86400 * 14), $refresh_token);
-		$redis->setex("$key:accessToken", 1000, $access_token);
-		$redis->setex("$key:scopes", (86400 * 14), @$userInfo['scopes']);
-
 		$_SESSION['characterID'] = $charID;
 		$_SESSION['characterName'] = $charName;
 

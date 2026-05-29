@@ -30,7 +30,9 @@
 		<td><span class="float-end red">{{ month.shipsLost | number_format(0) }}</span></td>	
 		<td><span class="float-end red">{{ month.pointsLost | number_format(0) }}</span></td>	
 		<td><span class="float-end red">{{ formatIsk(month.iskLost) }}</span></td>	
-		<td><span class="float-end">{{ (month.iskDestroyed == 0 ? '0.0' : (month.iskDestroyed / (month.iskDestroyed + month.iskLost) * 100)) | number_format(1) }}%</span></td>
+		{% set efficiency = (month.iskDestroyed == 0 ? 0 : (month.iskDestroyed / (month.iskDestroyed + month.iskLost) * 100)) %}
+		{% set efficiencyClass = (efficiency > 50 ? 'green' : 'red') %}
+		<td><span class="float-end {{ efficiencyClass }}">{{ efficiency | number_format(1) }}%</span></td>
 		<td><span class="float-end"><a href="/{{ key }}/{{ id }}/top/year/{{ month.year }}/month/{{ month.month }}/">{{ month.month }} / {{ month.year }}</a></span></td>
 	</tr>
 {% endfor %}
