@@ -13,6 +13,27 @@ $(document).ready(function () {
     // autocomplete
     $('#searchbox').zz_search( function(data, event) { window.location = '/' + data.type + '/' + data.id + '/'; event.preventDefault(); } );
 
+    var $searchbox = $('#searchbox');
+    var $mobileNavShell = $('.nav-mobile-shell');
+    var mobileMediaQuery = window.matchMedia('(max-width: 767px)');
+    function setMobileSearchActive(active) {
+        if (!$mobileNavShell.length) return;
+        if (!mobileMediaQuery.matches) {
+            $mobileNavShell.removeClass('search-active');
+            return;
+        }
+        $mobileNavShell.toggleClass('search-active', active);
+    }
+
+    $searchbox.on('focus', function() { setMobileSearchActive(true); });
+    $searchbox.on('blur', function() { setMobileSearchActive(false); });
+    $searchbox.on('keydown', function(event) {
+        if (event.key === 'Escape') {
+            this.blur();
+        }
+    });
+    $(window).on('resize orientationchange', function() { setMobileSearchActive(false); });
+
     // prevent firing of window.location in table rows if a link is clicked directly
     $('.killListRow a').click(function(e) {
         e.stopPropagation();

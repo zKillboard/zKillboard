@@ -111,11 +111,11 @@ var promoImage1 = '{{ promoImage1 }}';
 		<div class="content">
 
 			<!-- The navbar -->
-			<div class="container px-0" id='navibar'>
+			<div class="page-shell" id='navibar'>
 				{% include "navigationbar.html" %}
 			</div>
 
-			<div class="container nobackground">
+			<div class="page-shell nobackground">
 				{% if apiStatus and actualURI == '/' %}
 					<div id="zkb-message" class="alert alert-danger" style="font-weight: bold"><center>{{ apiStatus|raw }}</center></div>
                 {% else %}
@@ -163,7 +163,7 @@ var promoImage1 = '{{ promoImage1 }}';
 			</div>
 
 			<!-- Modals -->
-			<div class="container">
+			<div class="page-shell">
 				{% block modal %}{% endblock %}
 			</div>
 		</div>
