@@ -224,8 +224,8 @@ function wslog(msg)
         statsboxUpdate(json);
     } else if (json.action == 'message') {
         console.log(json);
-        if (json.message.length > 0) $("#zkb-message").html("<center>" + json.message + "</center>").removeClass('hide');
-        else $("#zkb-message").html('').addClass('hide');
+        if (json.message.length > 0) $("#zkb-message").html("<center>" + json.message + "</center>").removeClass('d-none');
+        else $("#zkb-message").html('').addClass('d-none');
     } else if (json.action == 'ztop') {
         if (json.payload && typeof window.ztopUpdate === 'function') {
             window.ztopUpdate(json.payload);
