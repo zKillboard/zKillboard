@@ -383,38 +383,6 @@ li.active img {
 		text-overflow: ellipsis;
 	}
 
-	#details-menu {
-		padding: 0px;
-	}
-
-	#details-menu .nav li a {
-		padding-left: 0px;
-	}
-}
-
-@media only screen and (min-width: 768px) {
-	#details-menu .navbar-nav {
-		display: flex;
-		flex-direction: row;
-		margin: 0;
-	}
-
-	#details-menu .navbar-nav>li {
-		float: none;
-	}
-
-	#details-menu>.navbar-nav>li>a {
-		display: block;
-		padding-top: 15px;
-		padding-bottom: 15px;
-		padding-left: 15px;
-		padding-right: 15px;
-		color: #888;
-	}
-
-	#details-menu .navbar-nav.ms-auto {
-		margin-left: auto !important;
-	}
 }
 
 #addentity label {
@@ -587,23 +555,6 @@ td.centered {
 }
 
 @media (max-width: 767px) {
-	#details-menu .navbar-nav {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		margin: 0;
-	}
-
-	#details-menu .navbar-nav>li {
-		float: none;
-	}
-
-	#details-menu.navbar-collapse {
-		display: block !important;
-		height: auto !important;
-		padding-bottom: 0;
-		overflow: visible !important;
-	}
 }
 
 .pointer {

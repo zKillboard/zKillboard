@@ -24,8 +24,9 @@
 	padding-bottom: 1em;
 }
 
-#details-menu {
-	border-bottom: 1px solid #333;
+#detail-navibar {
+	background: #000;
+	padding-bottom: 1em;
 }
 
 /* Normalize Bootstrap 5 typography closer to historical site baseline (BS3-era). */
@@ -48,15 +49,6 @@ body {
 
 .float-start {
 	float: left !important;
-}
-
-@media (min-width: 768px) {
-	#details-menu.navbar-collapse.collapse {
-		display: block !important;
-		height: auto !important;
-		overflow: visible !important;
-		padding-bottom: 0;
-	}
 }
 
 h1, .h1 {
