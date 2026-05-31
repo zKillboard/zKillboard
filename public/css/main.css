@@ -328,6 +328,12 @@ li.active img {
 		padding-right: 0.25rem;
 	}
 
+	/* Force user dropdown to overlay (not accordion) on mobile */
+	.nav-user-shell .dropdown-menu {
+		position: absolute;
+		z-index: 1056;
+	}
+
 	#search.nav-search-item .input-group {
 		width: 100%;
 		flex-wrap: nowrap;

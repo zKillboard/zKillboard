@@ -22,6 +22,8 @@
 #navibar {
 	background: #000;
 	padding-bottom: 1em;
+	position: relative;
+	z-index: 1030;
 }
 
 #detail-navibar {
