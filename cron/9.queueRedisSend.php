@@ -12,15 +12,15 @@ $ch = null;
 
 $topKillID = max(1, $mdb->findField('killmails', 'killID', [], ['killID' => -1]));
 
-if ($redisQServer == null) {
-    $redis->del('queueRedisQ');
-    exit();
-}
-
 $queueRedisQ = new RedisQueue('queueRedisQ');
 $queueRedisQFail = new RedisQueue('queueRedisQFail');
 
 while ($queueRedisQFail->size() > 0) $queueRedisQ->push($queueRedisQFail->pop());
+
+if ($redisQServer == null) {
+    $redis->del('queueRedisQ');
+    exit();
+}
 
 $minute = date('Hi');
 while (date('Hi') == $minute) {

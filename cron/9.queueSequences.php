@@ -7,7 +7,6 @@ if (@$sendSequences !== true) {
 	exit();
 }
 
-$queueRedisQ = new \cvweiss\redistools\RedisQueue('queueRedisQ');
 $r2 = CloudFlare::getR2Client(
         $CF_ACCOUNT_ID,
         $CF_R2_ACCESS_KEY,
@@ -80,7 +79,6 @@ do {
             $redis->setex($ephSequenceKey, 3600, $sequence);
         }
         $mdb->remove("queues", ['queue' => 'sequences', 'value' => $sequence]);
-        $queueRedisQ->push($killID);
     } else {
         // no killmails to send, since a killmail happens on
         // average every 5.5 seconds, we'll wait 6 seconds
