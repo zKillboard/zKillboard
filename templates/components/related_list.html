@@ -1,26 +1,28 @@
 {% set imageSize = 64 %}
-<table class="table table-sm table-striped table-hover" style="table-layout: fixed; width: 100%;">
+<table class="table table-sm table-striped table-hover related-list-table" style="table-layout: fixed; width: 100%;">
 {% for related in list %}
     {% set class='' %}
     {% set onClick = '' %}
     {% set shipImageLinkOverride = 0 %}
     {% if related.destroyed > 0 %}
 		{% set class='error' %}
-		{% set onClick = "console.log(event.which); if (event.which == 1) { window.location = \"/kill/" ~ related.destroyed ~ "/\"; return false; }" %}
+		{% set onClick = "if (event.which == 1) { window.location = \"/kill/" ~ related.destroyed ~ "/\"; return false; }" %}
 		{% set shipImageLinkOverride = related.destroyed %}
     {% endif %}
     <tr class="{{ class }}" onClick='{{onClick|raw}}'>
-    <td style="width: 285px; min-width: 285px; white-space: nowrap;">
+    <td class="related-list-icons">
+    <div class="related-list-icon-grid">
     {% set field = related %}
     {% include 'components/image_ship.html' %}
     {% include 'components/image_char.html' %}
     {% include 'components/image_corp.html' %}
     {% include 'components/image_alli.html' %}
-    </td><td>
-    <div style="display: block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ related.characterName }}{% if related.shipTypeID != 0%} ({{ related.shipName}}{% if related.shipTypeID != 670 and related.podded == 1%} / Capsule{%endif%}){% endif %}</div>
-    <div style="display: block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ related.corporationName }}</div>
-    {% if related.allianceID != 0 %}<div style="display: block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ related.allianceName}}</div>{% endif %}
-    {% if related.factionID != 0 %}<div style="display: block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ related.factionName}}</div>{% endif %}
+    </div>
+    </td><td class="related-list-text">
+    <div class="related-list-ellipsis">{% if related.characterID != 0 %}<a class="related-list-link" href="/character/{{ related.characterID }}/">{{ related.characterName }}</a>{% else %}{{ related.characterName }}{% endif %}{% if related.shipTypeID != 0%} (<a class="related-list-link" href="/ship/{{ related.shipTypeID }}/">{{ related.shipName}}</a>{% if related.shipTypeID != 670 and related.podded == 1%} / Capsule{%endif%}){% endif %}</div>
+    <div class="related-list-ellipsis">{% if related.corporationID != 0 %}<a class="related-list-link" href="/corporation/{{ related.corporationID }}/">{{ related.corporationName }}</a>{% else %}{{ related.corporationName }}{% endif %}</div>
+    {% if related.allianceID != 0 %}<div class="related-list-ellipsis"><a class="related-list-link" href="/alliance/{{ related.allianceID }}/">{{ related.allianceName}}</a></div>{% endif %}
+    {% if related.factionID != 0 %}<div class="related-list-ellipsis"><a class="related-list-link" href="/faction/{{ related.factionID }}/">{{ related.factionName}}</a></div>{% endif %}
     </td></tr>
 {% endfor %}
 </table>

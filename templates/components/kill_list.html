@@ -1,6 +1,9 @@
 {% set txtLength = 60 %}
 {% include 'components/pager.html' %}
 {% set isMostRecentKills = (killListTitle|lower == 'most recent kills') %}
+{% set isTeamAKills = (killListTitle|lower == 'team a losses') %}
+{% set isTeamBKills = (killListTitle|lower == 'team b losses') %}
+<div class="kill-list-shell{% if isTeamAKills %} kill-list-shell-a{% elseif isTeamBKills %} kill-list-shell-b{% endif %}">
 <div class="kill-list-header">
   <h3 class="kill-list-title{% if isMostRecentKills %} most-recent-kills-title{% endif %}"{% if isMostRecentKills %} id="mostRecentKillsTitle"{% endif %}>{{ killListTitle }}</h3>
   {% if isMostRecentKills %}
@@ -32,3 +35,4 @@
   </tbody>
 </table>
 {% include 'components/pager.html' %}
+</div>
