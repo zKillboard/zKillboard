@@ -70,18 +70,18 @@
 		PodMail
 		</a>
 	</li>{% endif %}
-<li class="nav-item d-md-none d-xl-block">
+<li class="nav-item d-none d-sm-block">
 	{% if key == "character" %}
-		<li class="nav-item d-md-none d-xl-block"><a class="nav-link" href="/information/streambox/">StreamBox</a></li>
-		<li class="nav-item d-md-none d-xl-block"><a class="nav-link" href="https://evewho.com/character/{{ id }}" target="_blank" rel="noopener noreferrer">EVEWho</a></li>
+		<li class="nav-item"><a class="nav-link" href="/information/streambox/">StreamBox</a></li>
+		<li class="nav-item"><a class="nav-link" href="https://evewho.com/character/{{ id }}" target="_blank" rel="noopener noreferrer">EVEWho</a></li>
 	{% elseif key == "corporation" %}
-		<li class="nav-item d-md-none d-xl-block"><a class="nav-link" href="/information/streambox/">StreamBox</a></li>
-		<li class="nav-item d-md-none d-xl-block"><a class="nav-link" href="https://evemaps.dotlan.net/corp/{{ pageName|url_encode }}/" target="_blank" rel="noopener noreferrer">DOTLAN</a></li>
-		<li class="nav-item d-md-none d-xl-block"><a class="nav-link" href="https://evewho.com/corporation/{{ id }}" target="_blank" rel="noopener noreferrer">EVEWho</a></li>
+		<li class="nav-item"><a class="nav-link" href="/information/streambox/">StreamBox</a></li>
+		<li class="nav-item"><a class="nav-link" href="https://evemaps.dotlan.net/corp/{{ pageName|url_encode }}/" target="_blank" rel="noopener noreferrer">DOTLAN</a></li>
+		<li class="nav-item"><a class="nav-link" href="https://evewho.com/corporation/{{ id }}" target="_blank" rel="noopener noreferrer">EVEWho</a></li>
 	{% elseif key == "alliance" %}
-		<li class="nav-item d-md-none d-xl-block"><a class="nav-link" href="/information/streambox/">StreamBox</a></li>
-		<li class="nav-item d-md-none d-xl-block"><a class="nav-link" href="https://evemaps.dotlan.net/alliance/{{ pageName|url_encode }}/" target="_blank" rel="noopener noreferrer">DOTLAN</a></li>
-		<li class="nav-item d-md-none d-xl-block"><a class="nav-link" href="https://evewho.com/alliance/{{ id }}" target="_blank" rel="noopener noreferrer">EVEWho</a></li>
+		<li class="nav-item"><a class="nav-link" href="/information/streambox/">StreamBox</a></li>
+		<li class="nav-item"><a class="nav-link" href="https://evemaps.dotlan.net/alliance/{{ pageName|url_encode }}/" target="_blank" rel="noopener noreferrer">DOTLAN</a></li>
+		<li class="nav-item"><a class="nav-link" href="https://evewho.com/alliance/{{ id }}" target="_blank" rel="noopener noreferrer">EVEWho</a></li>
 	{% elseif key == "system" %}
         {% if detail.regionID == 10000070 %}
 		    <li class="nav-item"><a class="nav-link" href="https://evemetro.com" target="_blank" rel="noopener noreferrer">Eve Metro</a></li>
@@ -100,9 +100,9 @@
 </div>
 </div>
 <br/>
-<div class="row gx-2">
+<div class="row gx-0 gx-md-3">
 {% if pageType == 'overview' or pageType == 'kills' or pageType == 'solo' or pageType == 'losses' %}
-	<div class="col-lg-10 float-start" style="padding-left: 0px;">
+	<div class="col-lg-10 float-start ps-md-0">
     <div id="topset-isk"></div>
     {% if mixed %}
         {% set killListTitle = 'Recent Activity' %}

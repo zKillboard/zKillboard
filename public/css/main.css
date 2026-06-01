@@ -2,6 +2,12 @@ html {
 	scrollbar-gutter: stable;
 }
 
+@media (max-width: 767px) {
+	html {
+		scrollbar-gutter: auto;
+	}
+}
+
 .page-shell {
 	width: 100%;
 	max-width: 1170px;
@@ -12,11 +18,60 @@ html {
 	box-sizing: border-box;
 }
 
+#navibar.page-shell {
+	max-width: 1170px;
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+}
+
+#navibar {
+	padding-bottom: 0 !important;
+}
+
+#navibar .navbar {
+	width: 100%;
+	margin: 0;
+	padding-top: 0.1rem;
+	padding-bottom: 0.1rem;
+	border: 0 !important;
+	border-top: 0 !important;
+	border-left: 0 !important;
+	border-right: 0 !important;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.14) !important;
+	border-radius: 0;
+	box-shadow: none;
+}
+
+#overview-navbar,
+#detail-navibar {
+	padding-left: 0;
+	padding-right: 0;
+}
+
 .nav-mobile-shell {
 	width: 100%;
 	padding-left: 0;
 	padding-right: 0;
 	box-sizing: border-box;
+}
+
+.nav-user-shell {
+	display: flex;
+	align-items: center;
+	margin-bottom: 0;
+}
+
+#usermenu-dropdown {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 1;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+#usermenu-dropdown #char-image {
+	display: block;
 }
 
 .navbar-main {
@@ -220,6 +275,90 @@ zk-home-side {
 .rank-table tr td,
 .rank-table tr th {
 	text-align: right;
+}
+
+.rank-table-scroll {
+	width: 100%;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+.rank-table-scroll .rank-table {
+	min-width: 920px;
+	margin-bottom: 0;
+}
+
+@media only screen and (max-width: 767px) {
+	#war-eligible .dataTables_wrapper {
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 0.35rem;
+		margin-bottom: 0.75rem;
+	}
+
+	#war-eligible table.datatable {
+		min-width: 640px;
+		margin-bottom: 0;
+	}
+}
+
+@media only screen and (max-width: 767px) {
+	.rank-table-scroll {
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 0.35rem;
+		background: rgba(0, 0, 0, 0.2);
+	}
+
+	.rank-table-scroll::before {
+		content: "Swipe left/right for more columns";
+		display: block;
+		font-size: 0.72rem;
+		letter-spacing: 0.02em;
+		color: #9fa9b4;
+		padding: 0.35rem 0.5rem;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+	}
+
+	.rank-table-scroll .rank-table th:nth-child(1),
+	.rank-table-scroll .rank-table td:nth-child(1) {
+		position: sticky;
+		left: 0;
+		z-index: 4;
+		background: #0a0a0a;
+		box-shadow: 1px 0 0 rgba(255, 255, 255, 0.08);
+	}
+
+	.rank-table-scroll .rank-table th:nth-child(2),
+	.rank-table-scroll .rank-table td:nth-child(2) {
+		position: sticky;
+		left: 42px;
+		z-index: 3;
+		background: #0a0a0a;
+		box-shadow: 1px 0 0 rgba(255, 255, 255, 0.08);
+	}
+
+	.rank-table-scroll .rank-table thead th {
+		z-index: 5;
+	}
+
+	.typeranks-controls .btn-group {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		width: 100%;
+		gap: 0.35rem;
+		margin-bottom: 0.35rem;
+	}
+
+	.typeranks-controls > [class*="col-"] {
+		margin-bottom: 0.3rem;
+	}
+
+	.typeranks-controls .btn-group .btn {
+		margin: 0;
+		padding: 0.3rem 0.55rem;
+	}
 }
 
 
@@ -1021,6 +1160,40 @@ code {
 	border-radius: 0 6px 6px 6px;
 }
 
+@media only screen and (max-width: 767px) {
+	#overview-navbar {
+		align-items: flex-start;
+	}
+
+	.statsbox-scroll {
+		max-width: 100%;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	#overview-menu.navbar-sub {
+		max-width: 100%;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	#overview-menu.navbar-sub .navbar-nav {
+		flex-direction: row;
+		flex-wrap: wrap;
+		gap: 0.2rem;
+		width: 100%;
+	}
+
+	#overview-menu.navbar-sub .nav-item {
+		flex: 0 0 auto;
+	}
+
+	#overview-menu.navbar-sub .nav-link {
+		padding: 0.3rem 0.5rem;
+		white-space: nowrap;
+	}
+}
+
 .related-report-page {
 	margin-bottom: 1.25rem;
 }
@@ -1428,7 +1601,12 @@ code {
 	}
 
 	.related-report-actions {
-		justify-content: flex-start;
+		justify-content: space-between;
+		flex-wrap: nowrap;
+	}
+
+	.related-report-actions .btn {
+		white-space: nowrap;
 	}
 
 	.related-status-card {

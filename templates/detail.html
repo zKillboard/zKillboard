@@ -78,7 +78,7 @@
 </div>
 
 {% if pageview == "overview" %}
-<div class="row gx-3">
+<div class="row gx-0 gx-md-3">
 <div class="col-lg-8" style="padding-left: 0px;">
 	<table class="d-none d-md-table" style="background-color:transparent;">
 		<tr>
@@ -86,12 +86,12 @@
 			<td style="width: 100%;" valign="top">{% include 'components/victim_info.html' %}</td>
 		<tr>
 	</table>
-	<div class="row gx-2 d-flex d-md-none" style="padding: 0px;">
+	<div class="row gx-0 d-flex d-md-none" style="padding: 0px;">
 		<div class="col-lg-5" style="padding: 0px;"  id="fittingwheeldiv">{% include 'components/fitting_wheel.html' %}</div>
         <br class="d-lg-none" />
 		<div class="col-lg-5" style="padding: 0px;">{% include 'components/victim_info.html' %}</div>
 	</div>
-	<div class="row gx-2">
+	<div class="row gx-0">
 		{% if extra.items == 'asyncload' %}
 		<div id='asyncitemlist'></div>
 		<script type="text/javascript">
