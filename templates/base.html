@@ -211,18 +211,20 @@ var promoImage1 = '{{ promoImage1 }}';
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
 			<div class="modal-body">
-				<p><small>Pick your preferred scopes and delay before continuing to EVE SSO.</small></p>
 				<div class="checkbox">
-					<label><input type="checkbox" id="login-scope-all" checked> All scopes</label>
+					<label><input type="checkbox" id="login-scope-all" checked> All Permissions</label>
 				</div>
 				<div class="checkbox" style="margin-left: 1.5em;">
-					<label><input type="checkbox" class="login-scope" value="esi-killmails.read_killmails.v1" checked> Character killmail scope</label>
+					<label><input type="checkbox" class="login-scope" value="esi-killmails.read_killmails.v1" checked> Fetch Character Killmails</label>
+					<p class="text-muted" style="margin-left: 1.5em;"><small>Fetch the character's killmails where they are the victim or received the final blow.</small></p>
 				</div>
 				<div class="checkbox" style="margin-left: 1.5em;">
-					<label><input type="checkbox" class="login-scope" value="esi-killmails.read_corporation_killmails.v1" checked> Corporation killmail scope</label>
+					<label><input type="checkbox" class="login-scope" value="esi-killmails.read_corporation_killmails.v1" checked> Fetch Corporation Killmails</label>
+					<p class="text-muted" style="margin-left: 1.5em;"><small>Fetch the corporation's killmails where corporation members are the victim or received the final blow.  This permission is restricted to CEOs and Directors.</small></p>
 				</div>
 				<div class="checkbox" style="margin-left: 1.5em;">
-					<label><input type="checkbox" class="login-scope" value="esi-fittings.write_fittings.v1" checked> Save fittings scope</label>
+					<label><input type="checkbox" class="login-scope" value="esi-fittings.write_fittings.v1" checked> Save fittings</label>
+					<p class="text-muted" style="margin-left: 1.5em;"><small>Save a ship's fit directly to your character's fitting library.</small></p>
 				</div>
 				<hr/>
 				<label for="login-delay-slider">Delay killmails? <a href="/information/delayed/" rel="tooltip" title="Learn more about delayed killmails"><i class="fas fa-circle-question"></i></a></label>
