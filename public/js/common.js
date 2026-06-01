@@ -16,9 +16,21 @@ $(document).ready(function () {
     var $searchbox = $('#searchbox');
     var $mobileNavShell = $('.nav-mobile-shell');
     var mobileMediaQuery = window.matchMedia('(max-width: 767px)');
+    function mobileSearchNeedsExpansion() {
+        if (!$searchbox.length) return false;
+        var searchbox = $searchbox.get(0);
+        var maxWidth = parseFloat(window.getComputedStyle(searchbox).maxWidth);
+        if (!Number.isFinite(maxWidth) || maxWidth <= 0) return true;
+        return searchbox.getBoundingClientRect().width < maxWidth - 8;
+    }
+
     function setMobileSearchActive(active) {
         if (!$mobileNavShell.length) return;
         if (!mobileMediaQuery.matches) {
+            $mobileNavShell.removeClass('search-active');
+            return;
+        }
+        if (active && !mobileSearchNeedsExpansion()) {
             $mobileNavShell.removeClass('search-active');
             return;
         }

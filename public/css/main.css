@@ -332,6 +332,12 @@ li.active img {
 	.nav-user-shell .dropdown-menu {
 		position: absolute;
 		z-index: 1056;
+		max-width: calc(100vw - 0.5rem);
+	}
+
+	.nav-user-shell .dropdown-menu img {
+		max-width: 100%;
+		height: auto;
 	}
 
 	#search.nav-search-item .input-group {
