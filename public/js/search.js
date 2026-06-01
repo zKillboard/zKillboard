@@ -35,14 +35,21 @@
 		//get the position of the input so we can correctly offset the search window
 		get_position: function() {
 			var pos = $.extend({}, this.data['element'].offset(), { height: this.data['element'][0].offsetHeight });
-            var searchOffsetX;
-            var searchOffsetY = pos.top + pos.height;
-            if (window.matchMedia('only screen and (max-width: 767px)').matches) {
-                searchOffsetX = 0;
-            } else {
-                searchOffsetX = pos.left - 90;
-            }
-            return { top: searchOffsetY, left: searchOffsetX };
+			var inputGroup = this.data['element'].closest('.input-group');
+			var anchor = inputGroup.length ? inputGroup : this.data['element'];
+			var anchorOffset = anchor.offset();
+			var isMobile = window.matchMedia('only screen and (max-width: 767px)').matches;
+			var menuWidth = isMobile ? anchor.outerWidth() : 375;
+			var searchOffsetX = isMobile ? anchorOffset.left : pos.left - 90;
+			var searchOffsetY = pos.top + pos.height;
+			var viewportWidth = $(window).width();
+			var gutter = 8;
+
+			menuWidth = Math.max(200, Math.min(menuWidth, viewportWidth - (gutter * 2)));
+			if (searchOffsetX + menuWidth > viewportWidth - gutter) searchOffsetX = viewportWidth - gutter - menuWidth;
+			if (searchOffsetX < gutter) searchOffsetX = gutter;
+
+			return { top: searchOffsetY, left: searchOffsetX, width: menuWidth };
 		},
 				
 		//move the selection around
@@ -73,7 +80,7 @@
                     if (current_query_count != query_count) return console.log('search aborted after additional input received');
 					//empty the dropdown and append the new data
 					this.data['menu'].empty().append($.map(result, $.proxy(function(item, index) {
-						return $('<li><a href="/' + item.type + '/' + item.id + '/">' + ((item.image != '') ? '<img src="' + item.image + '" width="32" height="32" alt=" ">' : '') + '<p style="max-width: 300px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">' + item.name.replace(RegExp('(' + this.data['element'].val() + ')', "gi"), function($1, match){ return '<strong>' + match + '</strong>'; } ) + '</p><span><small>' + item.type + '</small></span></a></li>').attr('data-value', JSON.stringify(item));
+						return $('<li><a href="/' + item.type + '/' + item.id + '/">' + ((item.image != '') ? '<img src="' + item.image + '" width="32" height="32" alt=" ">' : '') + '<p style="width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">' + item.name.replace(RegExp('(' + this.data['element'].val() + ')', "gi"), function($1, match){ return '<strong>' + match + '</strong>'; } ) + '</p><span><small>' + item.type + '</small></span></a></li>').attr('data-value', JSON.stringify(item));
 					}, this)));
 
 					//if its not visible already fade it in - and position it as needed and autoselect the first item

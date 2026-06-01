@@ -164,3 +164,60 @@ div[entity-type] {
 	/* Bootstrap 3 primary color */
 	cursor: pointer;
 }
+
+@media only screen and (max-width: 767px) {
+	.asearchfilters .btn-group {
+		margin-right: 0.35rem;
+	}
+
+	.row.centered.asearchfilters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		justify-content: center;
+	}
+
+	.row.centered.asearchfilters > .btn-group[data-group-name] {
+		display: inline-flex;
+		flex-wrap: wrap;
+		max-width: 100%;
+		justify-content: center;
+	}
+
+	#asearchcontent .btn-group {
+		max-width: 100%;
+	}
+
+	#asearchcontent #timeframe {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		justify-content: center;
+	}
+
+	#asearchcontent #timeframe input {
+		min-width: 0 !important;
+		max-width: 100% !important;
+		flex: 1 1 12rem;
+	}
+
+	#clickToDig {
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	#clickablecontent .float-end {
+		float: none !important;
+	}
+
+	#clickablecontent .btn-group.asearchfilters {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		margin-right: 0.35rem;
+	}
+
+	#clickablecontent .btn-group-vertical {
+		width: 100%;
+	}
+}

@@ -12,10 +12,6 @@
         background-color: #000;
 		overflow-x: hidden;		
 	}
-
-	.content {
-		margin-left: 15px;
-	}
 }
 
 .nobackground, .navbar {
@@ -26,10 +22,13 @@
 #navibar {
 	background: #000;
 	padding-bottom: 1em;
+	position: relative;
+	z-index: 1030;
 }
 
-#details-menu {
-	border-bottom: 1px solid #333;
+#detail-navibar {
+	background: #000;
+	padding-bottom: 1em;
 }
 
 /* Normalize Bootstrap 5 typography closer to historical site baseline (BS3-era). */
@@ -46,39 +45,12 @@ body {
 	line-height: 1.42857143;
 }
 
-@media (min-width: 768px) {
-	.container {
-		max-width: 750px;
-	}
-}
-
-@media (min-width: 992px) {
-	.container {
-		max-width: 970px;
-	}
-}
-
-@media (min-width: 1200px) {
-	.container {
-		max-width: 1170px;
-	}
-}
-
 .float-end {
 	float: right !important;
 }
 
 .float-start {
 	float: left !important;
-}
-
-@media (min-width: 768px) {
-	#details-menu.navbar-collapse.collapse {
-		display: block !important;
-		height: auto !important;
-		overflow: visible !important;
-		padding-bottom: 0;
-	}
 }
 
 h1, .h1 {

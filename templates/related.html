@@ -5,16 +5,18 @@
 
 {% block content %}
 
-<h2>
+<div class="related-report-page">
+
+<h2 class="related-report-title">
 	<small>Battle Report: </small>{{ systemName }} ({{ regionName }}) / {{ time }}
 </h2>
 
-<h4>
+<div class="related-report-links">
 	<a href='https://br.evetools.org/related/{{ solarSystemID }}/{{ unixtime }}/' target='_blank' rel="noopener noreferrer"><i>br.evetools.org</i></a>
-	| <a href='https://warbeacon.net/br/related/{{ solarSystemID }}/{{ relatedTime }}/' target='_blank' rel="noopener noreferrer"><i>warbeacon.net</i></a>
-	| <a target='_blank' href='https://riftforeve.online/'><img src='/img/nohus/Icon-256.png' style='height: 32px; width: 32px;'> RIFT</a>
-	| <a href='https://killmail.app/related/{{ solarSystemID }}/{{ relatedTime }}/' target='_blank' rel="noopener noreferrer"><img src='/img/killmail-app/logo.png' style='margin-right: 8px; height: 24px; width: 24px;' />killmail.app</a>
-</h4>
+	<a href='https://warbeacon.net/br/related/{{ solarSystemID }}/{{ relatedTime }}/' target='_blank' rel="noopener noreferrer"><i>warbeacon.net</i></a>
+	<a target='_blank' href='https://riftforeve.online/' rel="noopener noreferrer"><img src='/img/nohus/Icon-256.png' style='height: 24px; width: 24px;' alt='RIFT' loading="lazy" decoding="async"/> RIFT</a>
+	<a href='https://killmail.app/related/{{ solarSystemID }}/{{ relatedTime }}/' target='_blank' rel="noopener noreferrer"><img src='/img/killmail-app/logo.png' style='margin-right: 6px; height: 20px; width: 20px;' alt='killmail.app' loading="lazy" decoding="async"/>killmail.app</a>
+</div>
 
 {% set teamATotal = summary.teamA.totals.total_price %}
 {% set teamBTotal = summary.teamB.totals.total_price %}
@@ -39,63 +41,189 @@
 {% set teamBSize = summary.teamB.totals.pilotCount %}
 {% set teamAEff = teamBTotal / total * 100 %}
 {% set teamBEff = teamATotal / total * 100 %}
+{% set shipTotalLost = summary.teamA.totals.totalShips + summary.teamB.totals.totalShips %}
+{% set pointTotalLost = teamAPoints + teamBPoints %}
+{% set teamAISKLostPct = total > 0 ? (teamATotal / total * 100) : 50 %}
+{% set teamBISKLostPct = total > 0 ? (teamBTotal / total * 100) : 50 %}
+{% set teamAShipsPct = shipTotalLost > 0 ? (summary.teamA.totals.totalShips / shipTotalLost * 100) : 50 %}
+{% set teamBShipsPct = shipTotalLost > 0 ? (summary.teamB.totals.totalShips / shipTotalLost * 100) : 50 %}
+{% set teamAPointsPct = pointTotalLost > 0 ? (teamAPoints / pointTotalLost * 100) : 50 %}
+{% set teamBPointsPct = pointTotalLost > 0 ? (teamBPoints / pointTotalLost * 100) : 50 %}
 
-<table class="table table-sm">
-	<tr>
-		<th class="col-lg-6 text-center"><h5>Team A ({{ teamASize }} involved)</h5></th>
-		<th class="col-lg-6 text-center"><h5>Team B ({{ teamBSize }} involved)</h5></th>
-	</tr>
-	<tr>
-		<td><a class="btn btn-sm btn-success active" href="/related/{{ solarSystemID }}/{{ relatedTime }}/">Reset Report</a> </td>
-		<td class="text-end"><a class="btn btn-sm btn-success active" rel="nofollow" href="/brsave/?sID={{ solarSystemID }}&dttm={{ relatedTime }}&options={{ options }}">Save Battle Report</a></td>
-	</tr>
-	<tr>
-		<td>
-			{% for entity, name in summary.teamA.entities %}
-				<div><a rel="nofollow" href="./?right={{entity}}"><i class="fas fa-arrow-alt-circle-right"></i></a> {{ name }}</div>
-			{% endfor %}
-		</td>
-		<td class="text-end">
-			{% for entity, name in summary.teamB.entities %}
-			<div>{{ name }} <a rel="nofollow" href="./?left={{entity}}"><i class="fas fa-arrow-alt-circle-left"></i></a></div>
-			{% endfor %}
-		</td>
-	</tr>
-	<tr>
-		<td>{% set groupIDs = summary.teamA.totals.groupIDs %}{% include 'components/related_summary.html' %}</td>
-		<td>{% set groupIDs = summary.teamB.totals.groupIDs %}{% include 'components/related_summary.html' %}</td>
-	</tr>
-	<tr>
-		<td>Ships Lost: <div class="float-end"><strong>{{ summary.teamA.totals.totalShips | number_format(0)}} Ships</strong></div></td>
-		<td>Ships Lost: <div class="float-end"><strong>{{ summary.teamB.totals.totalShips | number_format(0)}} Ships</strong></div></td>
-	</tr>
-	<tr>
-		<td>Points Lost: <div class="float-end"><strong>{{ teamAPoints | number_format(0)}}</strong></div></td>
-		<td>Points Lost: <div class="float-end"><strong>{{ teamBPoints | number_format(0)}}</strong></div></td>
-	</tr>
-	<tr>
-		<td rel="tooltip" title="&#36;{{ teamATotalConv.usd|number_format(2, '.', ',') }} / {{ teamATotalConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamATotalConv.gbp|number_format(2, '.', ',') }}">ISK Lost: <div class="float-end"><strong>{{ teamATotal | number_format(2)}}</strong></div></td>
-		<td rel="tooltip" title="&#36;{{ teamBTotalConv.usd|number_format(2, '.', ',') }} / {{ teamBTotalConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamBTotalConv.gbp|number_format(2, '.', ',') }}">ISK Lost: <div class="float-end"><strong>{{ teamBTotal | number_format(2)}}</strong></div></td>
-	</tr>
-	<tr>
-		<td rel="tooltip" title="&#36;{{ teamADroppedConv.usd|number_format(2, '.', ',') }} / {{ teamADroppedConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamADroppedConv.gbp|number_format(2, '.', ',') }}">Loot Dropped: <div class="float-end"><strong>{{ teamATotalDropped | number_format(2)}}</strong></div></td>
-		<td rel="tooltip" title="&#36;{{ teamBDroppedConv.usd|number_format(2, '.', ',') }} / {{ teamBDroppedConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamBDroppedConv.gbp|number_format(2, '.', ',') }}">Loot Dropped: <div class="float-end"><strong>{{ teamBTotalDropped | number_format(2)}}</strong></div></td>
-	</tr>
-	<tr>
-		<td>Efficiency: <div class="float-end"><strong>{{ teamAEff | number_format(1)}} %</strong></div></td>
-		<td>Efficiency: <div class="float-end"><strong>{{ teamBEff | number_format(1)}} %</strong></div></td>
-	</tr>
-	<tr>
-		<td>{% set list = summary.teamA.list %}{% include 'components/related_list.html' %}</td>
-		<td>{% set list = summary.teamB.list %}{% include 'components/related_list.html' %}</td>
-	</tr>
-</table>
+<div class="related-quick-compare">
+	<div class="related-quick-metric">
+		<div class="related-quick-label">ISK Lost</div>
+		<div class="related-quick-team related-quick-team-a">
+			<span class="related-quick-team-name">Team A</span>
+			<div class="related-quick-track"><div class="related-quick-fill" style="width: {{ teamAISKLostPct|number_format(2, '.', '') }}%"></div></div>
+			<span class="related-quick-value">{{ teamATotal | number_format(2) }}</span>
+		</div>
+		<div class="related-quick-team related-quick-team-b">
+			<span class="related-quick-team-name">Team B</span>
+			<div class="related-quick-track"><div class="related-quick-fill" style="width: {{ teamBISKLostPct|number_format(2, '.', '') }}%"></div></div>
+			<span class="related-quick-value">{{ teamBTotal | number_format(2) }}</span>
+		</div>
+	</div>
+	<div class="related-quick-metric">
+		<div class="related-quick-label">Points Lost</div>
+		<div class="related-quick-team related-quick-team-a">
+			<span class="related-quick-team-name">Team A</span>
+			<div class="related-quick-track"><div class="related-quick-fill" style="width: {{ teamAPointsPct|number_format(2, '.', '') }}%"></div></div>
+			<span class="related-quick-value">{{ teamAPoints | number_format(0) }}</span>
+		</div>
+		<div class="related-quick-team related-quick-team-b">
+			<span class="related-quick-team-name">Team B</span>
+			<div class="related-quick-track"><div class="related-quick-fill" style="width: {{ teamBPointsPct|number_format(2, '.', '') }}%"></div></div>
+			<span class="related-quick-value">{{ teamBPoints | number_format(0) }}</span>
+		</div>
+	</div>
+	<div class="related-quick-metric">
+		<div class="related-quick-label">Ships Lost</div>
+		<div class="related-quick-team related-quick-team-a">
+			<span class="related-quick-team-name">Team A</span>
+			<div class="related-quick-track"><div class="related-quick-fill" style="width: {{ teamAShipsPct|number_format(2, '.', '') }}%"></div></div>
+			<span class="related-quick-value">{{ summary.teamA.totals.totalShips | number_format(0) }}</span>
+		</div>
+		<div class="related-quick-team related-quick-team-b">
+			<span class="related-quick-team-name">Team B</span>
+			<div class="related-quick-track"><div class="related-quick-fill" style="width: {{ teamBShipsPct|number_format(2, '.', '') }}%"></div></div>
+			<span class="related-quick-value">{{ summary.teamB.totals.totalShips | number_format(0) }}</span>
+		</div>
+	</div>
+	<div class="related-quick-metric">
+		<div class="related-quick-label">Efficiency</div>
+		<div class="related-quick-team related-quick-team-a">
+			<span class="related-quick-team-name">Team A</span>
+			<div class="related-quick-track"><div class="related-quick-fill" style="width: {{ teamAEff|number_format(2, '.', '') }}%"></div></div>
+			<span class="related-quick-value">{{ teamAEff | number_format(1) }}%</span>
+		</div>
+		<div class="related-quick-team related-quick-team-b">
+			<span class="related-quick-team-name">Team B</span>
+			<div class="related-quick-track"><div class="related-quick-fill" style="width: {{ teamBEff|number_format(2, '.', '') }}%"></div></div>
+			<span class="related-quick-value">{{ teamBEff | number_format(1) }}%</span>
+		</div>
+	</div>
+</div>
+
+<div class="related-report-actions">
+	<a class="btn btn-sm btn-success active" href="/related/{{ solarSystemID }}/{{ relatedTime }}/">Reset Report</a>
+	<a class="btn btn-sm btn-success active" rel="nofollow" href="/brsave/?sID={{ solarSystemID }}&dttm={{ relatedTime }}&options={{ options }}">Save Battle Report</a>
+</div>
+
+<div class="related-mobile-tabs d-lg-none" role="tablist" aria-label="Select team">
+	<button type="button" class="btn btn-sm related-mobile-tab is-active" data-team="a" aria-pressed="true">Team A</button>
+	<button type="button" class="btn btn-sm related-mobile-tab" data-team="b" aria-pressed="false">Team B</button>
+</div>
+
+<div class="row g-3 related-team-grid">
+	<div class="col-12 col-lg-6 order-1 order-lg-1 related-team-panel related-team-panel-a is-active" data-team="a">
+		<section class="related-team-card related-team-card-a">
+			<h5 class="related-team-heading">Team A <small>({{ teamASize }} involved)</small></h5>
+			<div class="related-team-entities">
+				{% for entity, name in summary.teamA.entities %}
+					<div class="related-entity-row related-entity-row-a"><a class="related-entity-move" rel="nofollow" href="./?right={{entity}}" title="Move to Team B"><i class="fas fa-arrow-alt-circle-right"></i></a><a class="related-entity-name" href="/{{ entity }}/">{{ name }}</a></div>
+				{% endfor %}
+			</div>
+			<div class="related-team-block">
+				{% set groupIDs = summary.teamA.totals.groupIDs %}{% include 'components/related_summary.html' %}
+			</div>
+			<ul class="related-team-stats list-unstyled">
+				<li><span>Ships Lost</span><strong>{{ summary.teamA.totals.totalShips | number_format(0)}} Ships</strong></li>
+				<li><span>Points Lost</span><strong>{{ teamAPoints | number_format(0)}}</strong></li>
+				<li rel="tooltip" title="&#36;{{ teamATotalConv.usd|number_format(2, '.', ',') }} / {{ teamATotalConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamATotalConv.gbp|number_format(2, '.', ',') }}"><span>ISK Lost</span><strong>{{ teamATotal | number_format(2)}}</strong></li>
+				<li rel="tooltip" title="&#36;{{ teamADroppedConv.usd|number_format(2, '.', ',') }} / {{ teamADroppedConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamADroppedConv.gbp|number_format(2, '.', ',') }}"><span>Loot Dropped</span><strong>{{ teamATotalDropped | number_format(2)}}</strong></li>
+				<li><span>Efficiency</span><strong>{{ teamAEff | number_format(1)}} %</strong></li>
+			</ul>
+		</section>
+	</div>
+	<div class="col-12 col-lg-6 order-3 order-lg-2 related-team-panel related-team-panel-b" data-team="b">
+		<section class="related-team-card related-team-card-b">
+			<h5 class="related-team-heading text-lg-end">Team B <small>({{ teamBSize }} involved)</small></h5>
+			<div class="related-team-entities">
+				{% for entity, name in summary.teamB.entities %}
+					<div class="related-entity-row related-entity-row-b"><a class="related-entity-name" href="/{{ entity }}/">{{ name }}</a><a class="related-entity-move" rel="nofollow" href="./?left={{entity}}" title="Move to Team A"><i class="fas fa-arrow-alt-circle-left"></i></a></div>
+				{% endfor %}
+			</div>
+			<div class="related-team-block">
+				{% set groupIDs = summary.teamB.totals.groupIDs %}{% include 'components/related_summary.html' %}
+			</div>
+			<ul class="related-team-stats list-unstyled">
+				<li><span>Ships Lost</span><strong>{{ summary.teamB.totals.totalShips | number_format(0)}} Ships</strong></li>
+				<li><span>Points Lost</span><strong>{{ teamBPoints | number_format(0)}}</strong></li>
+				<li rel="tooltip" title="&#36;{{ teamBTotalConv.usd|number_format(2, '.', ',') }} / {{ teamBTotalConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamBTotalConv.gbp|number_format(2, '.', ',') }}"><span>ISK Lost</span><strong>{{ teamBTotal | number_format(2)}}</strong></li>
+				<li rel="tooltip" title="&#36;{{ teamBDroppedConv.usd|number_format(2, '.', ',') }} / {{ teamBDroppedConv.eur|number_format(2, '.', ',') }}&euro; / &pound;{{ teamBDroppedConv.gbp|number_format(2, '.', ',') }}"><span>Loot Dropped</span><strong>{{ teamBTotalDropped | number_format(2)}}</strong></li>
+				<li><span>Efficiency</span><strong>{{ teamBEff | number_format(1)}} %</strong></li>
+			</ul>
+		</section>
+	</div>
+	<div class="col-12 col-lg-6 order-2 order-lg-3 related-team-panel related-team-panel-a is-active" data-team="a">
+		<section class="related-team-card related-team-card-a related-team-list-card">
+			<div class="related-team-block mb-0">
+				{% set list = summary.teamA.list %}{% include 'components/related_list.html' %}
+			</div>
+		</section>
+	</div>
+	<div class="col-12 col-lg-6 order-4 order-lg-4 related-team-panel related-team-panel-b" data-team="b">
+		<section class="related-team-card related-team-card-b related-team-list-card">
+			<div class="related-team-block">
+				{% set list = summary.teamB.list %}{% include 'components/related_list.html' %}
+			</div>
+		</section>
+	</div>
+</div>
+
+<script type="text/javascript">
+document.addEventListener("DOMContentLoaded", function () {
+	var tabs = document.querySelectorAll(".related-mobile-tab");
+	var panels = document.querySelectorAll(".related-team-panel");
+	if (!tabs.length || !panels.length) return;
+
+	function teamFromHash() {
+		if (window.location.hash === "#team-b") return "b";
+		if (window.location.hash === "#team-a") return "a";
+		return null;
+	}
+
+	function setTeam(team, updateHash) {
+		tabs.forEach(function (tab) {
+			var active = tab.dataset.team === team;
+			tab.classList.toggle("is-active", active);
+			tab.setAttribute("aria-pressed", active ? "true" : "false");
+		});
+		panels.forEach(function (panel) {
+			panel.classList.toggle("is-active", panel.dataset.team === team);
+		});
+		if (updateHash) {
+			var nextHash = team === "b" ? "#team-b" : "#team-a";
+			if (window.history && window.history.replaceState) {
+				window.history.replaceState(null, "", nextHash);
+			} else {
+				window.location.hash = nextHash;
+			}
+		}
+	}
+
+	tabs.forEach(function (tab) {
+		tab.addEventListener("click", function () {
+			setTeam(tab.dataset.team || "a", true);
+		});
+	});
+
+	setTeam(teamFromHash() || "a", false);
+	window.addEventListener("hashchange", function () {
+		var team = teamFromHash();
+		if (team) setTeam(team, false);
+	});
+});
+</script>
 
 {% set killListTitle = 'Team B Losses' %}
 {% set killList = summary.teamB.kills %}
 {% set isEmbedded = true %}
 {% if killList|length > 0 %}
+<div class="related-team-panel related-team-panel-b" data-team="b">
 {% include 'components/kill_list.html' %}
+</div>
 {% endif %}
 
 
@@ -103,10 +231,14 @@
 {% set killList = summary.teamA.kills %}
 {% set isEmbedded = true %}
 {% if killList|length > 0 %}
+<div class="related-team-panel related-team-panel-a is-active" data-team="a">
 {% include 'components/kill_list.html' %}
+</div>
 {% endif %}
 
 {% endif %}
+
+</div>
 
 {% endblock %}
 

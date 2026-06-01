@@ -4,11 +4,27 @@
 {% block title %}{% include 'components/title.html' %}{% endblock %}
 
 {% block content %}
-<div class="row">
-<h2><i>Battle report generating... please wait a few moments...</i></h2>
+<div class="row related-status-wrap">
+<div class="col-12 col-lg-10 col-xl-8">
+<div class="related-status-card related-status-card-wait">
+<h2>Battle report generating</h2>
+<p>Please wait a few moments while we build the report.</p>
+<p class="related-status-meta">Refreshing automatically in <strong id="related-wait-seconds">3</strong>s.</p>
+<div class="related-status-links">
+	<a href='https://br.evetools.org/related/{{ solarSystemID }}/{{ unixtime }}/' target='_blank' rel="noopener noreferrer">Open in br.evetools.org</a>
+	<a href='https://br.inyour.space/?s={{ solarSystemID }}&b={{ unixtime }}&e=90' target='_blank' rel="noopener noreferrer">Open in br.inyour.space</a>
+</div>
+</div>
+</div>
 </div>
 <script type="text/javascript">
     navbar = false;
+	var waitSeconds = 3;
+	var waitNode = document.getElementById("related-wait-seconds");
+	setInterval(function () {
+		waitSeconds--;
+		if (waitNode && waitSeconds >= 0) waitNode.textContent = waitSeconds;
+	}, 1000);
 	setTimeout(function(){ location.reload(); }, 3000);
 </script>
 

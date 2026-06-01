@@ -24,20 +24,20 @@
 
 {% block content %}
 {% include 'components/partial_title.html' %}
-<div id="navibar" class="navbar navbar-dark navbar-expand-md">
-	<div id="details-menu" class="navbar-collapse navbar-sub d-block">
-		<ul class="navbar-nav me-auto d-none d-md-flex">
+<div id="detail-navibar" class="navbar navbar-dark navbar-expand py-0 mb-2">
+	<div class="container-fluid px-0">
+		<ul class="navbar-nav align-items-center me-2 d-none d-md-flex">
 			{% if extra.prevKillID %}
-				<li class="nav-item d-none d-md-block"><a class="nav-link" href="/kill/{{ extra.prevKillID }}/">&lt;</a></li>
+				<li class="nav-item d-none d-md-flex align-items-center"><a class="nav-link py-2" href="/kill/{{ extra.prevKillID }}/">&lt;</a></li>
 			{% endif %}
 		</ul>
-		<ul class="navbar-nav ms-auto flex-row flex-wrap">
+		<ul class="navbar-nav align-items-center ms-auto">
 			{% if killdata.info.killID < 0 %}
 			<li class="nav-item"><a class="nav-link" data-bs-toggle="modal" data-bs-target="#report" href="#">Report ({{ extra.reports }})</a></li>
 			{% endif %}
 			{% if sessionusername and sessionusername == killdata.victim.characterName %}
 			{% endif %}
-			<li class="nav-item"><a class="nav-link" target='_blank' href='{{ referralLink }}' title='1 million SP FREE' style='padding-top: 14px; padding-bottom: 14px; background-color: #7b1fa2; color: #ffffff !important;'><img src='https://images.evetech.net/types/40520/icon?size=32' alt='1 million free skill points!' style='height: 24px; margin-right: 4px;' loading="lazy" decoding="async" fetchpriority="low"/> 1 Million SP FREE</a></li>
+			<li class="nav-item"><a class="nav-link d-none d-md-flex align-items-center gap-1 py-2 px-3" target='_blank' href='{{ referralLink }}' title='1 million SP FREE' style='background-color: #7b1fa2; color: #ffffff !important;'><img src='https://images.evetech.net/types/40520/icon?size=32' alt='1 million free skill points!' style='height: 18px; margin-right: 2px;' loading="lazy" decoding="async" fetchpriority="low"/> 1 Million SP FREE</a></li>
 			<li class="nav-item dropdown">
 				<a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">External</a>
 				<ul class="dropdown-menu">
@@ -71,14 +71,14 @@
 			</li>
 			<li class="nav-item"><a class="nav-link" href="/related/{{ killdata.info.system.solarSystemID }}/{{ extra.relatedtime }}/">Related</a></li>
 			{% if extra.nextKillID %}
-			<li class="nav-item d-none d-md-block"><a class="nav-link" href="/kill/{{ extra.nextKillID }}/">&gt;</a></li>
+			<li class="nav-item d-none d-md-flex align-items-center"><a class="nav-link py-2" href="/kill/{{ extra.nextKillID }}/">&gt;</a></li>
 			{% endif %}
 		</ul>
 	</div>
 </div>
 
 {% if pageview == "overview" %}
-<div class="row">
+<div class="row gx-0 gx-md-3">
 <div class="col-lg-8" style="padding-left: 0px;">
 	<table class="d-none d-md-table" style="background-color:transparent;">
 		<tr>
@@ -86,12 +86,12 @@
 			<td style="width: 100%;" valign="top">{% include 'components/victim_info.html' %}</td>
 		<tr>
 	</table>
-	<div class="row d-flex d-md-none" style="padding: 0px;">
+	<div class="row gx-0 d-flex d-md-none" style="padding: 0px;">
 		<div class="col-lg-5" style="padding: 0px;"  id="fittingwheeldiv">{% include 'components/fitting_wheel.html' %}</div>
         <br class="d-lg-none" />
 		<div class="col-lg-5" style="padding: 0px;">{% include 'components/victim_info.html' %}</div>
 	</div>
-	<div class="row">
+	<div class="row gx-0">
 		{% if extra.items == 'asyncload' %}
 		<div id='asyncitemlist'></div>
 		<script type="text/javascript">
@@ -309,6 +309,40 @@
 {% block script %}
 <script>
 const killID = '{{ killdata.info.killID }}';
+
+function resizeMobileFittingWheel() {
+	const mobileContainer = document.getElementById('fittingwheeldiv');
+	if (!mobileContainer) return;
+
+	const panel = mobileContainer.querySelector('#Fitting_Panel');
+	if (!panel) return;
+
+	const baseSize = 398;
+	const isMobile = window.matchMedia('(max-width: 767px)').matches;
+
+	if (!isMobile) {
+		panel.style.transform = '';
+		panel.style.transformOrigin = '';
+		mobileContainer.style.height = '';
+		mobileContainer.style.overflow = '';
+		return;
+	}
+
+	const availableWidth = mobileContainer.clientWidth;
+	if (!availableWidth) return;
+
+	const scale = Math.min(1, availableWidth / baseSize);
+	panel.style.transformOrigin = 'top left';
+	panel.style.transform = `scale(${scale})`;
+	mobileContainer.style.height = `${Math.ceil(baseSize * scale)}px`;
+	mobileContainer.style.overflow = 'hidden';
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+	resizeMobileFittingWheel();
+	window.addEventListener('resize', resizeMobileFittingWheel, { passive: true });
+});
+
 function prepComments() {
 	if ($ == undefined) setTimeout(prepComments, 500);
 	else {
