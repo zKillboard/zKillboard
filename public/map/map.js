@@ -43,7 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
 		'0.2': '#bc1117',
 		'0.1': '#722020'
 	};
-	const KILL_TTL_MS = 15 * 60 * 1000;
+	const KILL_TTL_MS = 60 * 60 * 1000;
+	const LABEL_KILL_WINDOW_MS = 60 * 60 * 1000;
+	const LABEL_KILL_THRESHOLD = 5;
 	const MAX_FEED_KILLS = 500;
 	const MAX_ACTIVE_REGIONS = 5;
 	const MAX_ACTIVE_SYSTEMS = 5;
@@ -66,6 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		constellationLabels: [],
 		feed: [],
 		heat: new Map(),
+		recentKillCounts: new Map(),
+		bootstrapRecentKillCounts: new Map(),
 		seenSequences: new Set(),
 		camera: {
 			x: 0,
@@ -91,7 +95,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		wsReconnectMs: 1000,
 		wsReconnectTimer: null,
 		pendingKillIds: new Set(),
-		animationFrame: null
+		animationFrame: null,
+		lastVisibleSystems: []
 	};
 
 	function parseJsonl(text) {
@@ -235,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	function resizeCanvas() {
-		state.dpr = window.devicePixelRatio || 1;
+		state.dpr = Math.min(window.devicePixelRatio || 1, 2);
 		state.canvasWidth = window.innerWidth;
 		state.canvasHeight = window.innerHeight;
 		canvas.width = Math.floor(state.canvasWidth * state.dpr);
@@ -465,9 +470,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	function rebuildHeat() {
 		state.heat.clear();
+		state.recentKillCounts.clear();
+		const recentCutoff = Date.now() - LABEL_KILL_WINDOW_MS;
+
+		for (const [systemId, count] of state.bootstrapRecentKillCounts.entries()) {
+			state.recentKillCounts.set(systemId, count);
+		}
+
 		for (const kill of state.feed) {
 			const systemId = asNumber(kill.solar_system_id);
 			if (!systemId || !state.systemById.has(systemId)) continue;
+
+			if (getKillTimestamp(kill) >= recentCutoff) {
+				state.recentKillCounts.set(systemId, (state.recentKillCounts.get(systemId) || 0) + 1);
+			}
+
 			const heat = state.heat.get(systemId) || { count: 0 };
 			heat.count = Math.min(heat.count + 2, 12);
 			state.heat.set(systemId, heat);
@@ -483,35 +500,76 @@ document.addEventListener('DOMContentLoaded', () => {
 		return true;
 	}
 
-	function getVisibleSystems() {
+	function buildFrameProjection(blend) {
 		const visibleSystems = [];
+		const projectedBySystemId = new Map();
+
 		for (const system of state.systems) {
-			const point = toScreen(getSystemWorldPosition(system));
-			if (!isVisible(point, 30)) continue;
-			visibleSystems.push({ system, point });
+			const worldX = lerp(system.worldX3d, system.worldX2d, blend);
+			const worldY = lerp(system.worldY3d, system.worldY2d, blend);
+			const screenX = (worldX - state.camera.x) * state.camera.zoom + state.canvasWidth / 2;
+			const screenY = (worldY - state.camera.y) * state.camera.zoom + state.canvasHeight / 2;
+			const entry = {
+				system,
+				x: screenX,
+				y: screenY,
+				heatLevel: currentHeatLevel(system.id)
+			};
+			projectedBySystemId.set(system.id, entry);
+			if (!isVisible({ x: screenX, y: screenY }, 30)) continue;
+			visibleSystems.push(entry);
 		}
-		return visibleSystems;
+
+		return {
+			blend,
+			visibleSystems,
+			projectedBySystemId
+		};
 	}
 
-	function getRegionLabelsForView() {
+	function getRegionLabelsForView(blend) {
 		return state.regionLabels
-			.map((region) => ({ ...region, point: toScreen(getRegionWorldPosition(region)) }))
+			.map((region) => ({
+				...region,
+				point: toScreen({
+					x: lerp(region.x3d, region.x2d, blend),
+					y: lerp(region.y3d, region.y2d, blend)
+				})
+			}))
 			.filter((region) => isVisible(region.point, 140))
 			.sort((left, right) => right.count - left.count);
 	}
 
-	function drawConnections() {
+	function drawConnections(frame) {
+		const useSimpleLines = state.camera.zoom < 0.55 || frame.visibleSystems.length > 380;
+		context.lineWidth = clamp(0.6 + state.camera.zoom * 0.5, 0.6, 1.8);
+
+		if (useSimpleLines) {
+			context.strokeStyle = 'rgba(170, 200, 240, 0.18)';
+			context.beginPath();
+			for (const connection of state.connections) {
+				const from = frame.projectedBySystemId.get(connection.from.id);
+				const to = frame.projectedBySystemId.get(connection.to.id);
+				if (!from || !to) continue;
+				if (!isVisible({ x: from.x, y: from.y }, 40) && !isVisible({ x: to.x, y: to.y }, 40)) continue;
+				context.moveTo(from.x, from.y);
+				context.lineTo(to.x, to.y);
+			}
+			context.stroke();
+			return;
+		}
+
 		for (const connection of state.connections) {
-			const from = toScreen(getSystemWorldPosition(connection.from));
-			const to = toScreen(getSystemWorldPosition(connection.to));
-			if (!isVisible(from, 40) && !isVisible(to, 40)) continue;
+			const from = frame.projectedBySystemId.get(connection.from.id);
+			const to = frame.projectedBySystemId.get(connection.to.id);
+			if (!from || !to) continue;
+			if (!isVisible({ x: from.x, y: from.y }, 40) && !isVisible({ x: to.x, y: to.y }, 40)) continue;
 
 			const gradient = context.createLinearGradient(from.x, from.y, to.x, to.y);
 			gradient.addColorStop(0, rgba(connection.from.color, 0.22));
 			gradient.addColorStop(1, rgba(connection.to.color, 0.22));
 
 			context.strokeStyle = gradient;
-			context.lineWidth = clamp(0.6 + state.camera.zoom * 0.5, 0.6, 1.8);
 			context.beginPath();
 			context.moveTo(from.x, from.y);
 			context.lineTo(to.x, to.y);
@@ -519,7 +577,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	}
 
-	function drawRegionLabels() {
+	function drawRegionLabels(blend) {
 		if (!state.showRegionLabels) return;
 		context.save();
 		context.textAlign = 'center';
@@ -527,7 +585,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		context.font = canvasFont(clamp(16 + state.camera.zoom * 5, 16, 28), 700);
 		context.lineWidth = 3.2;
 		context.strokeStyle = 'rgba(0, 0, 0, 0.94)';
-		for (const region of getRegionLabelsForView()) {
+		for (const region of getRegionLabelsForView(blend)) {
 			const point = region.point;
 			context.fillStyle = 'rgba(255, 255, 255, 0.85)';
 			context.strokeText(region.name, point.x, point.y);
@@ -536,26 +594,42 @@ document.addEventListener('DOMContentLoaded', () => {
 		context.restore();
 	}
 
-	function drawSystems() {
+	function drawSystems(frame) {
 		const baseRadius = clamp(1.4 + state.camera.zoom * 0.8, 1.4, 4.5);
-		const visibleSystems = getVisibleSystems();
+		const visibleSystems = frame.visibleSystems;
+		const lowDetail = visibleSystems.length > 500 || state.camera.zoom < 0.45;
 		const allowSystemLabels = visibleSystems.length <= 30;
 		const labeledSystems = allowSystemLabels ? visibleSystems.slice(0, 30) : [];
 		const labeledSystemIds = new Set(labeledSystems.map((entry) => entry.system.id));
 		const normalSystems = [];
 		const hotSystems = [];
+		const forcedLabels = [];
 
 		for (const entry of visibleSystems) {
-			if (currentHeatLevel(entry.system.id) > 0) hotSystems.push(entry);
+			if (entry.heatLevel > 0) hotSystems.push(entry);
 			else normalSystems.push(entry);
 		}
 
-		const drawSystemNode = ({ system, point }) => {
-			const heatLevel = currentHeatLevel(system.id);
+		const drawSystemNode = ({ system, x, y, heatLevel }) => {
+			const recentKillCount = state.recentKillCounts.get(system.id) || 0;
+			const shouldShowLabel = labeledSystemIds.has(system.id) || heatLevel >= 4 || recentKillCount >= LABEL_KILL_THRESHOLD;
+			if (lowDetail) {
+				context.fillStyle = heatLevel > 0 ? '#ff866e' : system.color;
+				context.beginPath();
+				context.arc(x, y, baseRadius + Math.min(heatLevel * 0.2, 1.6), 0, Math.PI * 2);
+				context.fill();
+
+				if (shouldShowLabel) {
+					forcedLabels.push({ system, x, y, heatLevel });
+				}
+
+				return;
+			}
+
 			const glowRadius = heatLevel > 0
 				? baseRadius * (5.2 + heatLevel * 0.22)
 				: baseRadius * 2.2;
-			const glow = context.createRadialGradient(point.x, point.y, 0, point.x, point.y, glowRadius);
+			const glow = context.createRadialGradient(x, y, 0, x, y, glowRadius);
 			glow.addColorStop(0, heatLevel > 0 ? `rgba(255, 94, 94, ${clamp(0.36 + heatLevel * 0.04, 0.36, 0.8)})` : rgba(system.color, 0.2));
 			if (heatLevel > 0) glow.addColorStop(0.45, `rgba(255, 168, 76, ${clamp(0.22 + heatLevel * 0.03, 0.22, 0.5)})`);
 			glow.addColorStop(1, rgba(system.color, 0));
@@ -563,53 +637,67 @@ document.addEventListener('DOMContentLoaded', () => {
 			if (heatLevel > 0) context.globalCompositeOperation = 'screen';
 			context.fillStyle = glow;
 			context.beginPath();
-			context.arc(point.x, point.y, glowRadius, 0, Math.PI * 2);
+			context.arc(x, y, glowRadius, 0, Math.PI * 2);
 			context.fill();
 			context.restore();
 
 			context.fillStyle = system.color;
 			context.beginPath();
-			context.arc(point.x, point.y, baseRadius + Math.min(heatLevel * 0.28, 2.4), 0, Math.PI * 2);
+			context.arc(x, y, baseRadius + Math.min(heatLevel * 0.28, 2.4), 0, Math.PI * 2);
 			context.fill();
 
 			context.fillStyle = '#f8fcff';
 			context.beginPath();
-			context.arc(point.x, point.y, clamp(baseRadius * 0.42, 0.7, 1.8), 0, Math.PI * 2);
+			context.arc(x, y, clamp(baseRadius * 0.42, 0.7, 1.8), 0, Math.PI * 2);
 			context.fill();
 
 			if (heatLevel > 0) {
 				context.strokeStyle = `rgba(255, 108, 108, ${clamp(0.45 + heatLevel * 0.04, 0.45, 0.9)})`;
 				context.lineWidth = 1.6;
 				context.beginPath();
-				context.arc(point.x, point.y, baseRadius * 2.8 + heatLevel * 0.7, 0, Math.PI * 2);
+				context.arc(x, y, baseRadius * 2.8 + heatLevel * 0.7, 0, Math.PI * 2);
 				context.stroke();
 
 				context.strokeStyle = `rgba(255, 196, 116, ${clamp(0.2 + heatLevel * 0.03, 0.2, 0.55)})`;
 				context.lineWidth = 1;
 				context.beginPath();
-				context.arc(point.x, point.y, baseRadius * 4 + heatLevel * 0.95, 0, Math.PI * 2);
+				context.arc(x, y, baseRadius * 4 + heatLevel * 0.95, 0, Math.PI * 2);
 				context.stroke();
 			}
 
-			if (labeledSystemIds.has(system.id) || heatLevel >= 4) {
+			if (shouldShowLabel) {
 				context.font = canvasFont(heatLevel > 0 ? 13 : 11, 700);
 				context.textAlign = 'left';
 				context.textBaseline = 'middle';
 				context.lineWidth = 3;
 				context.strokeStyle = 'rgba(0, 0, 0, 0.94)';
 				context.fillStyle = heatLevel > 0 ? '#ffe5cf' : 'rgba(226, 237, 248, 0.78)';
-				context.strokeText(system.name, point.x + baseRadius + 5, point.y - baseRadius - 2);
-				context.fillText(system.name, point.x + baseRadius + 5, point.y - baseRadius - 2);
+				context.strokeText(system.name, x + baseRadius + 5, y - baseRadius - 2);
+				context.fillText(system.name, x + baseRadius + 5, y - baseRadius - 2);
 			}
 		};
 
 		for (const entry of normalSystems) drawSystemNode(entry);
 		for (const entry of hotSystems) drawSystemNode(entry);
+
+		if (forcedLabels.length > 0) {
+			context.font = canvasFont(13, 700);
+			context.textAlign = 'left';
+			context.textBaseline = 'middle';
+			context.lineWidth = 3.2;
+			context.strokeStyle = 'rgba(0, 0, 0, 0.94)';
+			for (const label of forcedLabels) {
+				context.fillStyle = label.heatLevel > 0 ? '#ffd9b3' : '#eef6ff';
+				context.strokeText(label.system.name, label.x + baseRadius + 4, label.y - baseRadius - 2);
+				context.fillText(label.system.name, label.x + baseRadius + 4, label.y - baseRadius - 2);
+			}
+		}
 	}
 
-	function drawHover() {
+	function drawHover(frame) {
 		if (!state.hoveredSystem) return;
-		const point = toScreen(getSystemWorldPosition(state.hoveredSystem));
+		const point = frame.projectedBySystemId.get(state.hoveredSystem.id);
+		if (!point) return;
 		context.strokeStyle = 'rgba(255, 255, 255, 0.95)';
 		context.lineWidth = 1.4;
 		context.beginPath();
@@ -619,12 +707,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	function draw() {
 		updateCameraTransition();
+		const blend = getModeBlend();
+		const frame = buildFrameProjection(blend);
+		state.lastVisibleSystems = frame.visibleSystems;
 		context.clearRect(0, 0, state.canvasWidth, state.canvasHeight);
 		context.save();
-		drawConnections();
-		drawSystems();
-		drawRegionLabels();
-		drawHover();
+		drawConnections(frame);
+		drawSystems(frame);
+		drawRegionLabels(blend);
+		drawHover(frame);
 		context.restore();
 	}
 
@@ -930,6 +1021,30 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	}
 
+	async function loadBootstrapRecentKillCounts() {
+		try {
+			const response = await fetch('/cache/1hour/killlist/', { credentials: 'same-origin' });
+			if (!response.ok) return;
+			const html = await response.text();
+			const parser = new DOMParser();
+			const doc = parser.parseFromString(html, 'text/html');
+			const counts = new Map();
+
+			for (const row of doc.querySelectorAll('tr.kltbd')) {
+				const systemId = parseSystemId(row);
+				if (!systemId || !state.systemById.has(systemId)) continue;
+				counts.set(systemId, (counts.get(systemId) || 0) + 1);
+			}
+
+			state.bootstrapRecentKillCounts = counts;
+			rebuildHeat();
+			updateStats();
+			requestDraw();
+		} catch (error) {
+			console.warn('Unable to load 1-hour killlist bootstrap for map labels', error);
+		}
+	}
+
 	function scheduleReconnect() {
 		if (state.wsReconnectTimer) return;
 		const delay = state.wsReconnectMs;
@@ -979,16 +1094,16 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	function findHoveredSystem(clientX, clientY, maxDistance = SYSTEM_HOVER_RADIUS_PX) {
+		const maxDistanceSquared = maxDistance * maxDistance;
 		let best = null;
-		let bestDistance = Infinity;
-		for (const system of state.systems) {
-			const point = toScreen(getSystemWorldPosition(system));
-			const dx = point.x - clientX;
-			const dy = point.y - clientY;
-			const distance = Math.sqrt(dx * dx + dy * dy);
-			if (distance < bestDistance && distance <= maxDistance) {
-				best = system;
-				bestDistance = distance;
+		let bestDistanceSquared = Number.POSITIVE_INFINITY;
+		for (const entry of state.lastVisibleSystems) {
+			const dx = entry.x - clientX;
+			const dy = entry.y - clientY;
+			const distanceSquared = dx * dx + dy * dy;
+			if (distanceSquared < bestDistanceSquared && distanceSquared <= maxDistanceSquared) {
+				best = entry.system;
+				bestDistanceSquared = distanceSquared;
 			}
 		}
 		return best;
@@ -1014,7 +1129,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	function findRegionLabelAtPoint(clientX, clientY) {
 		if (!state.showRegionLabels) return null;
-		const labels = getRegionLabelsForView();
+		const labels = getRegionLabelsForView(getModeBlend());
 		if (labels.length === 0) return null;
 
 		const fontSize = clamp(16 + state.camera.zoom * 5, 16, 28);
@@ -1107,11 +1222,12 @@ document.addEventListener('DOMContentLoaded', () => {
 				}
 			}
 
+			const previousHovered = state.hoveredSystem;
 			const hovered = findHoveredSystem(event.clientX, event.clientY);
 			state.hoveredSystem = hovered;
 			if (hovered) showHint(event.clientX, event.clientY, hovered);
-			else hideHint();
-			requestDraw();
+			else if (previousHovered) hideHint();
+			if (hovered !== previousHovered) requestDraw();
 		});
 
 		const releasePointer = (event) => {
@@ -1313,6 +1429,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			]);
 			computeWorldLayout(systems3d, systems2d, constellations, regions);
 			fitCamera();
+			loadBootstrapRecentKillCounts();
 			updateStats();
 			requestDraw();
 			loading.remove();
