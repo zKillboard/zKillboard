@@ -51,6 +51,17 @@
 					<li><a class="dropdown-item" href="https://evewho.com/character/{{ topDamage.characterID }}" target="_blank" rel="noopener noreferrer">{{ topDamage.characterName }}</a></li>
 				</ul>
 			</li>
+			{% if killdata.info.killID > 0 %}
+			<li class="nav-item dropdown">
+				<a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">OtherKB</a>
+				<ul class="dropdown-menu">
+					<li><a class="dropdown-item" href="https://eve-kill.com/kill/{{ killdata.info.killID }}/" target="_blank" rel="noopener noreferrer">EVE-Kill</a></li>
+					<li><a class="dropdown-item" href="https://www.eveos.space/killboard/kill/{{ killdata.info.killID }}" target="_blank" rel="noopener noreferrer">EVE OS</a></li>
+					<li><a class="dropdown-item" href="https://kb.evetools.org/kill/{{ killdata.info.killID }}" target="_blank" rel="noopener noreferrer">EVE Tools KB</a></li>
+					<li><a class="dropdown-item" href="https://socketkill.com/kill/{{ killdata.info.killID }}/" target="_blank" rel="noopener noreferrer">SocketKill</a></li>
+				</ul>
+			</li>
+			{% endif %}
 			<li class="nav-item dropdown">
 				<a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">Export</a>
 				<ul class="dropdown-menu">
