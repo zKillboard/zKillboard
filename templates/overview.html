@@ -291,23 +291,23 @@
 
 {% if pageType == 'overview' and extra.activity.max > 0 %}
 <div class="modal fade" id="heatmap" tabindex="-1" aria-labelledby="heatmapLabel" aria-hidden="true">
-<div class="modal-dialog" style="width: 1000px; max-width: 90%;">
-<div class="modal-content">
+<div class="modal-dialog modal-xl modal-dialog-scrollable heatmap-modal-dialog">
+<div class="modal-content heatmap-modal-content">
 <div class="modal-header">
 	<h5 class="modal-title" id="heatmapLabel">Activity Heatmap</h5>
 	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
-<div class="modal-body" style='margin-right: 1em; padding: 1em;'>
+<div class="modal-body heatmap-modal-body">
 {% set steps = (extra.activity.max / 5)|round(0, 'floor') %}
     {% if steps < 1 %}{% set steps = 1 %}{% endif %}
+{% set days = [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ] %}
 
-
-<table id='activity-heatmap' style='border-collapse: collapse;'>
+<div class="activity-heatmap-scroll d-none d-md-block">
+<table id='activity-heatmap' class="activity-heatmap-table" style='border-collapse: collapse;'>
         <tr>
             <td></td>
             {% for hour in 0..23 %}<td><center>{{ hour }}</center></td>{% endfor %}
         </tr>
- {% set days = [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ] %}
         {% for day in 0..6 %}
             <tr>
   <td style='width: 24px; height: 24px;'><center>{{ days[day] }}</center></td>
@@ -322,6 +322,29 @@
             </tr>
  {% endfor %}
     </table>
+	</div>
+
+	<div class="activity-heatmap-mobile d-md-none">
+	<table class="activity-heatmap-mobile-table" style='border-collapse: collapse;'>
+		<tr>
+			<td></td>
+			{% for day in 0..6 %}<td><center>{{ days[day] }}</center></td>{% endfor %}
+		</tr>
+		{% for hour in 0..23 %}
+			<tr>
+				<td><center>{{ hour }}</center></td>
+				{% for day in 0..6 %}
+					{% set level = 0 %}
+					{% if extra.activity[day][hour] > 0 %}
+						{% set level = (extra.activity[day][hour] / steps)|round(0, 'ceil') %}
+						{% if level > 5 %}{% set level = 5 %}{% endif %}
+					{% endif %}
+					<td><center><span class="heatmap-square heatmap-square-mobile" style="--level: {{ level }};">{{ extra.activity[day][hour] }}</span></center></td>
+				{% endfor %}
+			</tr>
+		{% endfor %}
+	</table>
+	</div>
 	<p>Each block represents an hour of the day for each day of the week. The number indicates how many kills were achieved in that hour over the last 90 days. The redder the block the more kills. A black, empty box indicates 0 kills.</p>
 </div>
 </div>

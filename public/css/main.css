@@ -1047,11 +1047,89 @@ code {
 	display: inline-block;
 	margin: 0px;
 	padding: 0px;
+	line-height: 24px;
+	font-size: 11px;
+	text-align: center;
 	background-color: hsla(0, 92%, calc(var(--level) * 10%), 1);
 }
 
-#activity-heatmap td {
+.activity-heatmap-table td,
+.activity-heatmap-mobile-table td {
 	padding: 0.2em;
+}
+
+.heatmap-modal-dialog {
+	max-width: min(96vw, 1100px);
+}
+
+.heatmap-modal-body {
+	padding: 1rem;
+	overflow: auto;
+}
+
+.activity-heatmap-scroll {
+	width: 100%;
+	overflow-x: auto;
+	overflow-y: hidden;
+	-webkit-overflow-scrolling: touch;
+	padding-bottom: 0.25rem;
+}
+
+.activity-heatmap-table {
+	min-width: 920px;
+}
+
+.activity-heatmap-mobile {
+	width: 100%;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+.activity-heatmap-mobile-table {
+	width: 100%;
+	table-layout: fixed;
+}
+
+.heatmap-square-mobile {
+	width: 100%;
+	max-width: 34px;
+}
+
+@media only screen and (max-width: 767px) {
+	.heatmap-modal-dialog {
+		max-width: 100vw;
+		margin: 0;
+	}
+
+	.heatmap-modal-content {
+		min-height: 100vh;
+		border-radius: 0;
+	}
+
+	.heatmap-modal-body {
+		padding: 0.65rem;
+	}
+
+	.activity-heatmap-table td,
+	.activity-heatmap-mobile-table td {
+		padding: 0.06rem;
+		font-size: 10px;
+		white-space: nowrap;
+	}
+
+	.heatmap-square {
+		width: 20px;
+		height: 18px;
+		line-height: 18px;
+		font-size: 9px;
+	}
+
+	.heatmap-square-mobile {
+		width: 100%;
+		height: 18px;
+		line-height: 18px;
+		max-width: none;
+	}
 }
 
 .modal-content {
