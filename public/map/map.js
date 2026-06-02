@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	};
 	const KILL_TTL_MS = 60 * 60 * 1000;
 	const LABEL_KILL_WINDOW_MS = 60 * 60 * 1000;
-	const LABEL_KILL_THRESHOLD = 5;
+	const LABEL_KILL_THRESHOLD = 10;
 	const MAX_FEED_KILLS = 500;
 	const MAX_ACTIVE_REGIONS = 5;
 	const MAX_ACTIVE_SYSTEMS = 5;
@@ -599,9 +599,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		const baseRadius = clamp(1.4 + state.camera.zoom * 0.8, 1.4, 4.5);
 		const visibleSystems = frame.visibleSystems;
 		const lowDetail = visibleSystems.length > 500 || state.camera.zoom < 0.45;
-		const allowSystemLabels = visibleSystems.length <= 30;
-		const labeledSystems = allowSystemLabels ? visibleSystems.slice(0, 30) : [];
-		const labeledSystemIds = new Set(labeledSystems.map((entry) => entry.system.id));
 		const normalSystems = [];
 		const hotSystems = [];
 		const forcedLabels = [];
@@ -613,7 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 		const drawSystemNode = ({ system, x, y, heatLevel }) => {
 			const recentKillCount = state.recentKillCounts.get(system.id) || 0;
-			const shouldShowLabel = labeledSystemIds.has(system.id) || heatLevel >= 4 || recentKillCount >= LABEL_KILL_THRESHOLD;
+			const shouldShowLabel = recentKillCount >= LABEL_KILL_THRESHOLD;
 			if (lowDetail) {
 				context.fillStyle = heatLevel > 0 ? '#ff866e' : system.color;
 				context.beginPath();
