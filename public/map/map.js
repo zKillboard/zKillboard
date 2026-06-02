@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	const recenterButton = document.getElementById('recenterButton');
 	const projectionToggle = document.getElementById('projectionToggle');
 	const regionLabelToggle = document.getElementById('regionLabelToggle');
+	const ambientVolumeSlider = document.getElementById('ambientVolumeSlider');
 	const regionActivity = document.getElementById('regionActivity');
 	const regionActivityBody = document.getElementById('regionActivityBody');
 	const systemActivity = document.getElementById('systemActivity');
@@ -925,6 +926,24 @@ document.addEventListener('DOMContentLoaded', () => {
 		pruneExpiredKills();
 		state.feed = state.feed.slice(0, MAX_FEED_KILLS);
 		rebuildHeat();
+
+		if (typeof window.playAmbientKillmailNote === 'function') {
+			window.playAmbientKillmailNote(kill);
+		}
+	}
+
+	function bindAmbientVolume() {
+		if (!ambientVolumeSlider) return;
+
+		const applyVolume = (value) => {
+			if (typeof window.setAmbientKillmailVolume !== 'function') return;
+			window.setAmbientKillmailVolume(value);
+		};
+
+		applyVolume(Number(ambientVolumeSlider.value || 0));
+		ambientVolumeSlider.addEventListener('input', () => {
+			applyVolume(Number(ambientVolumeSlider.value || 0));
+		});
 	}
 
 	function getWebSocketUrl() {
@@ -945,6 +964,19 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (text.includes('100+')) return 100;
 		const match = text.match(/\((\d+)\)/);
 		return match ? asNumber(match[1]) : 0;
+	}
+
+	function parseFinalBlowLabels(row) {
+		const finalBlowCell = row?.querySelector('td.finalBlow');
+		const text = String(finalBlowCell?.textContent || '').toUpperCase();
+		if (!text) return '';
+
+		const labels = [];
+		if (text.includes('SOLO')) labels.push('SOLO');
+		if (text.includes('GANKED')) labels.push('GANKED');
+		if (text.includes('NPC')) labels.push('NPC');
+		if (text.includes('PADDING') || text.includes('PAD')) labels.push('PADDING');
+		return labels.join(' ');
 	}
 
 	function parseShipTypeId(row) {
@@ -968,6 +1000,19 @@ document.addEventListener('DOMContentLoaded', () => {
 		return String(systemLink?.textContent || '').trim();
 	}
 
+	function parseSecurityStatus(row) {
+		const locationCell = row?.querySelector('td.location');
+		if (!locationCell) return null;
+
+		const firstSpan = locationCell.querySelector('span');
+		const text = String(firstSpan?.textContent || '').trim();
+		if (!text || /^[A-Za-z]/.test(text)) return null;
+
+		const numeric = Number.parseFloat(text);
+		if (!Number.isFinite(numeric)) return null;
+		return clamp(numeric, -1, 1);
+	}
+
 	function parseRegionName(row) {
 		const regionLink = row?.querySelector('td.location a[href^="/region/"]');
 		return String(regionLink?.textContent || '').trim();
@@ -982,17 +1027,25 @@ document.addEventListener('DOMContentLoaded', () => {
 		const killId = asNumber(row.getAttribute('killID')) || asNumber(fallbackKillId);
 		const unix = asNumber(row.getAttribute('date'));
 		const valueRaw = row.querySelector('[format="format-isk-once"]')?.getAttribute('raw');
+		const systemId = parseSystemId(row);
+		const parsedSecurity = parseSecurityStatus(row);
+		const system = state.systemById.get(systemId);
+		const securityStatus = parsedSecurity != null
+			? parsedSecurity
+			: (Number.isFinite(system?.securityStatus) ? system.securityStatus : null);
 		return {
 			sequence_id: killId,
 			killmail_id: killId,
 			uploaded_at: unix,
 			killmail_time: unix > 0 ? new Date(unix * 1000).toISOString() : null,
-			solar_system_id: parseSystemId(row),
+			solar_system_id: systemId,
 			system_name: parseSystemName(row),
 			region_name: parseRegionName(row),
 			victim_ship_type_id: parseShipTypeId(row),
 			attacker_count: parseAttackerCount(row),
-			total_value: asNumber(valueRaw)
+			total_value: asNumber(valueRaw),
+			labels: parseFinalBlowLabels(row),
+			security_status: securityStatus
 		};
 	}
 
@@ -1413,6 +1466,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		bindActivityFocus();
 		bindProjectionToggle();
 		bindRegionLabelToggle();
+		bindAmbientVolume();
 		bindCanvasInteractions();
 		window.addEventListener('resize', () => {
 			resizeCanvas();

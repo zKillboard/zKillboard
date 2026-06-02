@@ -116,6 +116,39 @@
 				border-color: rgba(126, 235, 205, 0.3);
 				color: #c9ffe5;
 			}
+			.map-ambient-volume {
+				position: absolute;
+				top: 96px;
+				right: 14px;
+				z-index: 6;
+				display: grid;
+				grid-template-columns: 1fr;
+				gap: 6px;
+				width: 34px;
+				box-sizing: border-box;
+				padding: 8px 4px 7px;
+				border: 1px solid rgba(126, 179, 255, 0.24);
+				border-radius: 10px;
+				background: rgba(8, 12, 18, 0.84);
+				backdrop-filter: blur(8px);
+				pointer-events: auto;
+				justify-items: center;
+			}
+			.map-ambient-volume label {
+				font: italic 700 9px/1 "Noto Sans", "Segoe UI", sans-serif;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				color: rgba(221, 233, 248, 0.82);
+			}
+			.map-ambient-volume input[type="range"] {
+				width: 14px;
+				height: 96px;
+				margin: 0;
+				accent-color: #87f5cf;
+				writing-mode: vertical-lr;
+				direction: rtl;
+				-webkit-appearance: slider-vertical;
+			}
 			.region-activity {
 				position: absolute;
 				right: 14px;
@@ -204,6 +237,10 @@
 			</button>
 			<button id="projectionToggle" class="projection-btn" type="button" data-mode="2d" aria-label="Switch map projection" aria-pressed="true">2D</button>
 			<button id="regionLabelToggle" class="region-label-toggle" type="button" aria-label="Toggle region labels" aria-pressed="false" title="Toggle region labels">RG</button>
+			<div class="map-ambient-volume" aria-label="Map ambience volume">
+				<label for="ambientVolumeSlider">AMB</label>
+				<input id="ambientVolumeSlider" type="range" min="0" max="1" step="0.01" value="0" aria-label="Map ambience volume">
+			</div>
 			<aside class="killmail-stream" id="liveKillsPanel">
 				<ul class="feed-list" id="liveKillFeed"></ul>
 			</aside>
@@ -234,6 +271,7 @@
 				constellationsUrl: '/data/mapConstellations.jsonl'
 			};
 		</script>
-		<script src="/map/map.js?v=ws2"></script>
+		<script src="/js/ambience.js?v=map1"></script>
+		<script src="/map/map.js?v=ws3"></script>
 	</body>
 </html>
