@@ -77,7 +77,6 @@ class Guzzler
 
         $iterations = 0;
         while ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") {
-            //Util::out("tqCountInt < 100 or 420ed is true");
             $this->tick();
             $this->sleep(1);
             $iterations++;
@@ -116,7 +115,7 @@ class Guzzler
                 Status::addStatus($statusType, true);
                 $this->lastHeaders = array_change_key_case($response->getHeaders());
                 $params['HEADERS'] = $this->lastHeaders;
-                if (isset($this->lastHeaders['warning'])) Util::out("Warning: " . $params['uri'] . " " . $this->lastHeaders['warning'][0]);
+                if (isset($this->lastHeaders['warning'])) Util::zout("Warning: " . $params['uri'] . " " . $this->lastHeaders['warning'][0]);
 
                 $fulfilled($guzzler, $params, $content);
                 } catch (Exception $ex) {
@@ -139,7 +138,6 @@ class Guzzler
 
                     if (($code == 0 || $code >= 500) && @$params['retryCount'] <= 3) {
                         $params['retryCount'] = @$params['retryCount'] + 1;
-                        //if (@$params['retryCount'] > 2) Util::out("guzzler retrying $uri (http error $code) retry number " . $params['retryCount']);
                         $h = $params['content'] . "\n";
                         foreach ($this->lastHeaders as $name => $values) {
                             $h = $h . "$name: "  . implode(',', $values) . "\n";

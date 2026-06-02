@@ -46,7 +46,7 @@ class Build
     {
         $rKey = "redis:build:check:" . date('Ymd');
         if ($redis->get($rKey) == "true") return;
-        Util::out("Importing https://sde.zzeve.com/industryActivityMaterials.json");
+        Util::zout("Importing https://sde.zzeve.com/industryActivityMaterials.json");
         $raw = file_get_contents("https://sde.zzeve.com/industryActivityMaterials.json");
         $json = json_decode($raw, true);
         $raw = null;
