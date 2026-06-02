@@ -9,16 +9,13 @@ function showModal(selector) {
     const modalEl = document.querySelector(selector);
     if (!modalEl) return;
 
-    // Bootstrap 5 no longer exposes jQuery modal plugins by default.
-    if (window.bootstrap && window.bootstrap.Modal) {
-        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modalInstance.show();
+    if (!window.bootstrap || !window.bootstrap.Modal) {
+        console.error('Bootstrap Modal API unavailable for selector:', selector);
         return;
     }
 
-    if (typeof $(selector).modal === 'function') {
-        $(selector).modal({backdrop: true, keyboard: true, show: true});
-    }
+    const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modalInstance.show();
 }
 
 $(document).ready(function () {	
