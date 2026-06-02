@@ -117,7 +117,7 @@
     <span><a href="/kill/{{ extra.crest.killID }}/redirect/eveworkbench/" class="green" target="_blank" rel="noopener">EVE Workbench</a></span>
 </div>
 <span id='favorite' class='float-end btn btn-sm btn-secondary' style='width: 2em; cursor: pointer; margin: 0px; padding: 0px; margin-right: 0.5em;'><i id='fav-star-killmail' rel="tooltip" class="fas fa-star fav-star-{{ extra.crest.killID }}" style='color: rgb(128, 128, 128)' title="Favorite this killmail" onClick="doFavorite({{ extra.crest.killID }});" aria-hidden="true"></i></span>
-<span id='sponsor' class='float-end btn btn-sm btn-secondary' style='width: 2em; cursor: pointer; margin: 0px; padding: 0px; margin-right: 0.5em;'><i rel="tooltip" class="fas fa-bullhorn" style='color: green;' title="Sponsor this Killmail" onClick="doSponsor('/sponsor/query/{{ extra.crest.killID }}/');" aria-hidden="true"></i></span>
+<span id='sponsor' class='float-end btn btn-sm btn-secondary' style='width: 2em; cursor: pointer; margin: 0px; padding: 0px; margin-right: 0.5em;' onClick="doSponsor('/sponsor/query/{{ extra.crest.killID }}/');"><i rel="tooltip" class="fas fa-bullhorn" style='color: green;' title="Sponsor this Killmail" aria-hidden="true"></i></span>
 <span><small><a class="btn btn-sm btn-primary" href='#' onClick="saveFitting({{ extra.crest.killID }}); return false;" rel="nofollow">Save Fit</a></small></span><br/>
 </div>
 

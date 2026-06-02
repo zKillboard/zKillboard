@@ -5,6 +5,22 @@ window.onerror = function (message, source, lineno, colno, error) {
 	console.error("Global error:", message, error);
 };
 
+function showModal(selector) {
+    const modalEl = document.querySelector(selector);
+    if (!modalEl) return;
+
+    // Bootstrap 5 no longer exposes jQuery modal plugins by default.
+    if (window.bootstrap && window.bootstrap.Modal) {
+        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modalInstance.show();
+        return;
+    }
+
+    if (typeof $(selector).modal === 'function') {
+        $(selector).modal({backdrop: true, keyboard: true, show: true});
+    }
+}
+
 $(document).ready(function () {	
 	setTime();
 
@@ -51,9 +67,10 @@ $(document).ready(function () {
         e.stopPropagation();
     });
 
+
     // See if we are embedded in an iframe on another website perhaps?
     if (top !== self) {
-        $("#iframed").modal('show');
+        showModal('#iframed');
     }
 
     // Send that ESI URL to the parser, allows the website to parse the killmail so that
@@ -401,7 +418,7 @@ function audio(uri)
 
 function saveFitting(id) {
     $('#modalMessageBody').html('<div style="color: white;">Saving fit....</div>');
-    $('#modalMessage').modal({backdrop: true, keyboard: true, show: true});
+    showModal('#modalMessage');
 
     var request = $.ajax({
 url: "/ccpsavefit/" + id + "/",
@@ -411,7 +428,7 @@ dataType: "text"
 
 request.done(function(msg) {
         $('#modalMessageBody').html('<div style="color: white;">' + msg + '</div>');
-        $('#modalMessage').modal({backdrop: true, keyboard: true, show: true});
+        showModal('#modalMessage');
         });
 }
 
@@ -521,7 +538,7 @@ function doSponsor(url)
 {
     $('#modalMessageBody').load(url);
     $('#modalTitle').text('Sponsor this killmail');
-    $('#modalMessage').modal({backdrop: true, keyboard: true, show: true});
+    showModal('#modalMessage');
 }
 
 function doFavorite(killID) {
@@ -834,7 +851,7 @@ function openLoginOptionsModal(loginTarget) {
 
     modal.find('.login-scope').prop('checked', true);
     syncLoginScopeAllCheckbox();
-    modal.modal('show');
+    showModal('#loginOptionsModal');
 }
 
 function continueLoginWithOptions() {
