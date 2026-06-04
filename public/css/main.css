@@ -510,24 +510,6 @@ li.active img {
 		font-size: 0.95rem;
 	}
 
-	.nav-mobile-shell.search-active> :not(#search) {
-		visibility: hidden;
-		pointer-events: none;
-	}
-
-	.nav-mobile-shell.search-active #search.nav-search-item {
-		position: absolute;
-		top: 50%;
-		left: 0.5rem;
-		right: 0.5rem;
-		z-index: 1060;
-		transform: translateY(-50%);
-		max-width: none;
-		margin: 0 !important;
-		visibility: visible;
-		pointer-events: auto;
-	}
-
 	ul.autocomplete a {
 		padding: 0px 75px 0px 40px;
 		overflow: hidden;
