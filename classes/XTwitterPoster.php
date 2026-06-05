@@ -48,13 +48,10 @@ class XTwitterPoster
                     $retry = self::postWithAccessToken($message, $newToken);
                     if ($retry['ok']) {
                         $retry['tokenRefreshed'] = true;
-                        $retry['newAccessToken'] = $newToken;
-                        if (!empty($refreshResult['refreshToken'])) {
-                            $retry['newRefreshToken'] = $refreshResult['refreshToken'];
-                        }
                         return $retry;
                     }
-                    $retry['tokenRefreshError'] = $refreshResult['error'] ?? '';
+                    $retry['tokenRefreshed'] = true;
+                    $retry['error'] = 'Token refreshed, but retry failed: ' . ($retry['error'] ?? 'Unknown error');
                     return $retry;
                 }
             }
@@ -181,10 +178,10 @@ class XTwitterPoster
         $refreshToken = trim((string) $refreshToken);
 
         if ($accessToken !== '') {
-            $mdb->set('keyvalues', ['key' => self::KV_ACCESS_TOKEN], ['value' => $accessToken]);
+            $mdb->insertUpdate('keyvalues', ['key' => self::KV_ACCESS_TOKEN], ['value' => $accessToken]);
         }
         if ($refreshToken !== '') {
-            $mdb->set('keyvalues', ['key' => self::KV_REFRESH_TOKEN], ['value' => $refreshToken]);
+            $mdb->insertUpdate('keyvalues', ['key' => self::KV_REFRESH_TOKEN], ['value' => $refreshToken]);
         }
     }
 }

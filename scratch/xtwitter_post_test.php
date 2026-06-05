@@ -41,23 +41,19 @@ if (!$status['ok']) {
 }
 
 if (!$send) {
-    echo "Dry run mode. No post sent.\n";
-    echo "Message: {$message}\n";
-    echo "Use --send to publish.\n";
+    Util::zout("Dry run mode. No post sent.");
+    Util::zout("Message: {$message}");
+    Util::zout("Use --send to publish.");
     exit(0);
 }
 
 $result = XTwitterPoster::post($message);
 if ($result['ok']) {
-    echo "Posted. HTTP " . $result['status'] . "\n";
-    echo $result['body'] . "\n";
+    Util::zout("Posted. HTTP " . $result['status']);
+    Util::zout($result['body']);
     if (!empty($result['tokenRefreshed'])) {
-        echo "Access token was refreshed during this request.\n";
-        echo "Update config.php with these new values:\n";
-        echo "xtwitterAccessToken=" . ($result['newAccessToken'] ?? '') . "\n";
-        if (!empty($result['newRefreshToken'])) {
-            echo "xtwitterRefreshToken=" . $result['newRefreshToken'] . "\n";
-        }
+        Util::zout("Access token was refreshed during this request.");
+        Util::zout("Refreshed tokens were saved to keyvalues.");
     }
     exit(0);
 }
