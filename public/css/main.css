@@ -1026,18 +1026,27 @@ code {
 	color: white;
 	width: 32px;
 	height: 24px;
-	display: inline-block;
+	display: block;
 	margin: 0px;
 	padding: 0px;
 	line-height: 24px;
 	font-size: 11px;
 	text-align: center;
+	box-sizing: border-box;
 	background-color: hsla(0, 92%, calc(var(--level) * 10%), 1);
 }
 
 .activity-heatmap-table td,
 .activity-heatmap-mobile-table td {
 	padding: 0.2em;
+	text-align: center;
+	vertical-align: middle;
+}
+
+.activity-heatmap-table td .heatmap-square,
+.activity-heatmap-mobile-table td .heatmap-square {
+	margin-left: auto;
+	margin-right: auto;
 }
 
 .heatmap-modal-dialog {
