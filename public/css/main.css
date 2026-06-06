@@ -1022,31 +1022,28 @@ code {
 	display: none;
 }
 
-.heatmap-square {
+.heatmap-cell {
 	color: white;
 	width: 32px;
 	height: 24px;
-	display: block;
 	margin: 0px;
 	padding: 0px;
 	line-height: 24px;
 	font-size: 11px;
 	text-align: center;
+	vertical-align: middle;
 	box-sizing: border-box;
 	background-color: hsla(0, 92%, calc(var(--level) * 10%), 1);
 }
 
 .activity-heatmap-table td,
 .activity-heatmap-mobile-table td {
-	padding: 0.2em;
 	text-align: center;
 	vertical-align: middle;
 }
 
-.activity-heatmap-table td .heatmap-square,
-.activity-heatmap-mobile-table td .heatmap-square {
-	margin-left: auto;
-	margin-right: auto;
+.heatmap-axis-cell {
+	padding: 0.2em;
 }
 
 .heatmap-modal-dialog {
@@ -1068,6 +1065,8 @@ code {
 
 .activity-heatmap-table {
 	min-width: 920px;
+	border-collapse: separate;
+	border-spacing: 0.2em;
 }
 
 .activity-heatmap-mobile {
@@ -1079,11 +1078,12 @@ code {
 .activity-heatmap-mobile-table {
 	width: 100%;
 	table-layout: fixed;
+	border-collapse: separate;
+	border-spacing: 0.06rem;
 }
 
-.heatmap-square-mobile {
-	width: 100%;
-	max-width: 34px;
+.activity-heatmap-mobile-table .heatmap-axis-cell:first-child {
+	width: 1.6rem;
 }
 
 @media only screen and (max-width: 767px) {
@@ -1103,23 +1103,19 @@ code {
 
 	.activity-heatmap-table td,
 	.activity-heatmap-mobile-table td {
-		padding: 0.06rem;
 		font-size: 10px;
 		white-space: nowrap;
 	}
 
-	.heatmap-square {
-		width: 20px;
+	.heatmap-axis-cell {
+		padding: 0.06rem;
+	}
+
+	.heatmap-cell {
+		width: auto;
 		height: 18px;
 		line-height: 18px;
 		font-size: 9px;
-	}
-
-	.heatmap-square-mobile {
-		width: 100%;
-		height: 18px;
-		line-height: 18px;
-		max-width: none;
 	}
 }
 
