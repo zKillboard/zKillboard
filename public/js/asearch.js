@@ -189,7 +189,9 @@ function createSuggestion(json, slot) {
 
 function addEntity(suggestion, slot = 'neutrals') {
 	delete suggestion.data.groupBy;
-	if (suggestion.data.type != 'label' && suggestion.data.type.indexOf('ID') < 0) suggestion.data.type = suggestion.data.type + 'ID';
+	if (suggestion.data.type == 'item') suggestion.data.type = 'typeID';
+	else if (suggestion.data.type == 'ship') suggestion.data.type = 'shipID';
+	else if (suggestion.data.type != 'label' && suggestion.data.type.indexOf('ID') < 0) suggestion.data.type = suggestion.data.type + 'ID';
 	if (suggestion.data.type == 'itemID') suggestion.data.type = 'typeID';
 	switch (suggestion.data.type) {
 		case 'label':
@@ -243,7 +245,7 @@ function getHTML(suggestion) {
 	var data = $("<span>")
 		.addClass("entity")
 		.addClass('btn')
-		.css({ display: "inline-flex", alignItems: "center", justifyContent: "flex-start", textAlign: "left", flex: "1 1 auto", width: "auto", minWidth: 0, padding: "4px 10px 4px 0", borderRadius: 0 })
+		.css({ display: "inline-flex", alignItems: "center", justifyContent: "flex-start", textAlign: "left", flex: "1 1 auto", width: "auto", minWidth: 0, padding: "4px 10px 4px 0", borderRadius: 0, color: "#ddd", backgroundColor: "#3f3f3f" })
 		.attr("id", suggestion.data.type + ':' + suggestion.data.id)
 		.attr("entity-id", suggestion.data.id)
 		.attr("entity-type", suggestion.data.type)
@@ -254,7 +256,7 @@ function getHTML(suggestion) {
 		.attr('entity-type', suggestion.data.type)
 		.attr('entity-id', suggestion.data.id)
 		.attr('time-id', 'id-' + Date.now())
-		.css({ display: "flex", alignItems: "stretch", borderRadius: "7px", overflow: "hidden", padding: 0, backgroundColor: "#333" })
+		.css({ display: "flex", alignItems: "stretch", borderRadius: "7px", overflow: "hidden", padding: 0, backgroundColor: "#3f3f3f" })
 		.addClass('filter')
 		.addClass('filter-' + suggestion.data.type)
 		.append(left)

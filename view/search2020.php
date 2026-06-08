@@ -26,7 +26,6 @@ for ($i = 0; $i < sizeof($result); $i++) {
     $row = $result[$i];
     //if ($row['data']['groupBy'] == 'undefined' || $row['data']['groupBy'] == 'item') continue;
     if ($row['type'] == null) continue;
-    if ($row['type'] == 'item') $row['type'] = 'ship';
     $add = [
             'value' => $row['name'],
             'data' => [
