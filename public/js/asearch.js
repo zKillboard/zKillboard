@@ -3,7 +3,7 @@ var allowChange = true;
 var first_load = true;
 
 var radios = { sort: { sortBy: 'date', sortDir: 'desc' } };  // to be deprecated
-var asfilter = { location: [], attackers: [], neutrals: [], victims: [], sort: { sortBy: 'date', sortDir: 'desc' } };
+var asfilter = { location: [], attackers: [], neutrals: [], victims: [], items: [], sort: { sortBy: 'date', sortDir: 'desc' } };
 
 $(document).ready(function () {
 	checkCharID();
@@ -190,6 +190,7 @@ function createSuggestion(json, slot) {
 function addEntity(suggestion, slot = 'neutrals') {
 	delete suggestion.data.groupBy;
 	if (suggestion.data.type != 'label' && suggestion.data.type.indexOf('ID') < 0) suggestion.data.type = suggestion.data.type + 'ID';
+	if (suggestion.data.type == 'itemID') suggestion.data.type = 'typeID';
 	switch (suggestion.data.type) {
 		case 'label':
 
@@ -204,6 +205,10 @@ function addEntity(suggestion, slot = 'neutrals') {
 			asfilter.location.push(suggestion.data);
 			add('location', suggestion);
 			break;
+		case 'typeID':
+			asfilter.items.push(suggestion.data);
+			add('items', suggestion);
+			break;
 		default:
 			asfilter[slot].push(suggestion.data);
 			add(slot, suggestion);
@@ -216,6 +221,7 @@ function getHTML(suggestion) {
 	suggestion.data.type = suggestion.data.type.replace(/[\W_]+/g, '');
 	suggestion.data.id = parseInt(suggestion.data.id);
 	suggestion.value = suggestion.value.replaceAll('<', '').replaceAll('>', '');
+	var displayType = suggestion.data.type == 'typeID' ? 'item' : suggestion.data.type.replace('ID', '');
 	//console.log(suggestion.data.type, suggestion.data.id, suggestion.data.value);
 	var left = $("<span>").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("fas").addClass("fa-chevron-left").attr('direction', 'left').on('click', moveLeft);
 	var right = $("<span>").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("fas").addClass("fa-chevron-right").attr('direction', 'right').on('click', moveRight);
@@ -226,7 +232,7 @@ function getHTML(suggestion) {
 		.attr("id", suggestion.data.type + ':' + suggestion.data.id)
 		.attr("entity-id", suggestion.data.id)
 		.attr("entity-type", suggestion.data.type)
-		.text(suggestion.data.type.replace('ID', '') + ': ' + suggestion.value);
+		.text(displayType + ': ' + suggestion.value);
 	return $("<div>").attr('entity-type', suggestion.data.type).attr('entity-id', suggestion.data.id).append(left).append(data).append(right).append(remove).attr('time-id', 'id-' + Date.now()).addClass('filter').addClass('filter-' + suggestion.data.type);
 }
 
@@ -273,6 +279,7 @@ function setFilters(hashfilters) {
 			case 'attackers':
 			case 'neutrals':
 			case 'victims':
+			case 'items':
 				for (var i = 0; i < value.length; i++) {
 					var url = '/asearchinfo/?type=' + value[i].type + '&id=' + value[i].id;
 					promises.push($.ajax({
@@ -304,6 +311,7 @@ function setHash() {
 	filter = setHashAdd(filter, asfilter, 'neutrals');
 	filter = setHashAdd(filter, asfilter, 'victims');
 	filter = setHashAdd(filter, asfilter, 'location');
+	filter = setHashAdd(filter, asfilter, 'items');
 
 	filter.includeAssociates = $("#includeAssociates").prop('checked') == true;
 
@@ -500,12 +508,12 @@ function popEm() {
 	}
 }
 
-var lefts = { 'neutrals': 'attackers', 'victims': 'neutrals' };
+var lefts = { 'neutrals': 'attackers', 'victims': 'neutrals', 'items': 'victims' };
 function moveLeft() {
 	move(this, lefts);
 }
 
-var rights = { 'neutrals': 'victims', 'attackers': 'neutrals' };
+var rights = { 'neutrals': 'victims', 'attackers': 'neutrals', 'victims': 'items' };
 function moveRight() {
 	move(this, rights);
 }
@@ -515,13 +523,20 @@ function move(element, arr) {
 	var location = parent.parent().attr('id');
 
 	var data = { type: parent.attr('entity-type'), id: parent.attr('entity-id') };
-	filterCleanup(data);
+	var destination = arr[location];
 
-	if (arr[location] != undefined) {
-		asfilter[arr[location]].push(data);
-		parent.detach().appendTo('#' + arr[location]);
+	if (destination != undefined && canMoveTo(data, destination)) {
+		filterCleanup(data);
+		asfilter[destination].push(data);
+		parent.detach().appendTo('#' + destination);
 		clickPage1();
 	}
+}
+
+function canMoveTo(data, destination) {
+	if (destination != 'items') return true;
+
+	return ['characterID', 'corporationID', 'allianceID', 'factionID'].indexOf(data.type) < 0;
 }
 
 function moveOut() {

@@ -75,7 +75,7 @@
 		</div>
 		<hr class='asearchfilters'/>
 		<div class='row centered asearchfilters' style='min-height: 100px;'>
-			<div class="col-md-4">
+			<div class="col-md-3">
 				<label>Attackers</label><br/>
 				<div id="attackers-joinType" class="andor btn-group centered">
 					<button id="attackers-joinType-and" class="btn btn-primary radio-btn" value="attackers-and" radio="attackers-joinType" title="And">
@@ -90,7 +90,7 @@
 				</div>
 				<div id="attackers"></div>
 			</div>
-			<div class='col-md-4'>
+			<div class='col-md-3'>
 				<label>Either</label><br/>
 				<div id="either-joinType" class="andor btn-group centered">
 					<button id="either-joinType-and" class="btn btn-primary radio-btn" value="either-and" radio="either-joinType" title="And">
@@ -105,7 +105,7 @@
 				</div>
 				<div id='neutrals'></div>
 			</div>
-			<div id='victim' class="col-md-4">
+			<div id='victim' class="col-md-3">
 				<label>Victim</label><br/>
 				<div id="victim-joinType" class="andor btn-group centered">
 					<button id="victim-joinType-and" class="btn btn-primary radio-btn" value="victims-and" radio="victim-joinType" title="And">
@@ -119,6 +119,18 @@
 					</button>
 				</div>
 				<div id="victims"></div>
+			</div>
+			<div class='col-md-3'>
+				<label>Items</label><br/>
+				<div id="items-joinType" class="andor btn-group centered">
+					<button id="items-joinType-and" class="btn btn-primary radio-btn" value="items-and" radio="items-joinType" title="And">
+						And
+					</button>
+					<button id="items-joinType-or" class="btn btn-secondary radio-btn" value="items-or" radio="items-joinType" title="Or">
+						Or
+					</button>
+				</div>
+				<div id="items"></div>
 			</div>
 		</div>
 		<hr id="clickToDigHr"/>
@@ -193,6 +205,7 @@
 					<div class='radio-btn btn btn-secondary' value='victimsonly'>Victims Only</div>
 					<div class='radio-btn btn btn-secondary' value='attackersonly'>Attackers Only</div>
 				</div>
+				<br/><br/>
 				<div>
 					<h4 id='result-groups-count'></h4>
 				</div>

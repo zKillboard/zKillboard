@@ -63,6 +63,8 @@ function handler($request, $response, $args, $container) {
 		$query = AdvancedSearch::buildQuery($queryParams, $query, "location", null, 'or');
 		$query = AdvancedSearch::parseDate($queryParams, $query, 'start');
 		$query = AdvancedSearch::parseDate($queryParams, $query, 'end');
+		$killIDFilter = AdvancedSearch::getKillIDFilter($query);
+		$query = AdvancedSearch::buildItemHistoryQuery($queryParams, $query, "items", AdvancedSearch::getSelectedFromBase('items-', $buttons), $killIDFilter);
 		$startTime = (int) @$query['start'];
 		$endTime = (int) @$query['end'];
 		if ($startTime > time()) $startTime = time();

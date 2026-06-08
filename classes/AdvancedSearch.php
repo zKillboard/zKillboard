@@ -68,6 +68,68 @@ class AdvancedSearch
         return $queries;
     }
 
+    public static function buildItemHistoryQuery($queryParams, $queries, $key = 'items', $joinType = 'and', $killIDFilter = [])
+    {
+        global $mdb;
+
+        if (!isset($queryParams[$key]) || !is_array($queryParams[$key])) return $queries;
+
+        $typeIDs = [];
+        foreach ($queryParams[$key] as $row) {
+            if (!isset($row['id'])) continue;
+            $typeID = (int) $row['id'];
+            if ($typeID > 0) $typeIDs[$typeID] = $typeID;
+        }
+        $typeIDs = array_values($typeIDs);
+        if (sizeof($typeIDs) == 0) return $queries;
+
+        $itemmails = $mdb->getCollection('itemmails');
+        $itemMatch = ['typeID' => ['$in' => $typeIDs]];
+        if (sizeof($killIDFilter)) {
+            $itemMatch['killID'] = $killIDFilter;
+        }
+
+        $killIDs = [];
+        if ($joinType == 'or' || $joinType == '-or' || sizeof($typeIDs) == 1) {
+            $cursor = $itemmails->find(
+                $itemMatch,
+                ['projection' => ['killID' => 1, '_id' => 0]]
+            );
+            foreach ($cursor as $row) {
+                $killID = (int) @$row['killID'];
+                if ($killID > 0) $killIDs[$killID] = $killID;
+            }
+        } else {
+            $cursor = $itemmails->aggregate([
+                ['$match' => $itemMatch],
+                ['$group' => ['_id' => '$killID', 'typeIDs' => ['$addToSet' => '$typeID']]],
+                ['$project' => ['killID' => '$_id', 'matches' => ['$size' => '$typeIDs'], '_id' => 0]],
+                ['$match' => ['matches' => sizeof($typeIDs)]]
+            ], ['allowDiskUse' => true]);
+            foreach ($cursor as $row) {
+                $killID = (int) @$row['killID'];
+                if ($killID > 0) $killIDs[$killID] = $killID;
+            }
+        }
+
+        $queries[] = ['killID' => sizeof($killIDs) ? ['$in' => array_values($killIDs)] : -1];
+        return $queries;
+    }
+
+    public static function getKillIDFilter($queries)
+    {
+        $filter = [];
+        foreach ($queries as $query) {
+            if (!isset($query['killID']) || !is_array($query['killID'])) continue;
+            foreach (['$gte', '$lte', '$gt', '$lt'] as $operator) {
+                if (isset($query['killID'][$operator])) {
+                    $filter[$operator] = $query['killID'][$operator];
+                }
+            }
+        }
+        return $filter;
+    }
+
     public static function buildFromArray($key, $isVictim = null, $joinType = 'and', $useElemMatch, $queryParams)
     {
         if (!isset($queryParams[$key])) return null;
