@@ -221,19 +221,93 @@ function getHTML(suggestion) {
 	suggestion.data.type = suggestion.data.type.replace(/[\W_]+/g, '');
 	suggestion.data.id = parseInt(suggestion.data.id);
 	suggestion.value = suggestion.value.replaceAll('<', '').replaceAll('>', '');
-	var displayType = suggestion.data.type == 'typeID' ? 'item' : suggestion.data.type.replace('ID', '');
+	var entityImage = getEntityImage(suggestion.data.type, suggestion.data.id);
 	//console.log(suggestion.data.type, suggestion.data.id, suggestion.data.value);
 	var left = $("<span>").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("fas").addClass("fa-chevron-left").attr('direction', 'left').on('click', moveLeft);
 	var right = $("<span>").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("fas").addClass("fa-chevron-right").attr('direction', 'right').on('click', moveRight);
 	var remove = $("<span>").addClass('btn').addClass('btn-sm').addClass("fas").addClass("fa-times").addClass("filter-remove").addClass('alert-danger').on('click', moveOut);
+	left.css({ flex: "0 0 auto", width: "34px", display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: "6px 0 0 6px", marginRight: "3px" });
+	right.css({ flex: "0 0 auto", width: "34px", display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 0 });
+	remove.css({ flex: "0 0 auto", width: "30px", display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: "0 6px 6px 0" });
+	var imageWrap = $("<span>")
+		.css({ width: "42px", height: "42px", marginRight: "0.55em", flex: "0 0 42px", display: "inline-flex", alignItems: "center", justifyContent: "flex-start", overflow: "hidden" });
+	var image = $("<img>")
+		.attr("src", entityImage.src)
+		.attr("alt", "")
+		.attr("loading", "lazy")
+		.attr("decoding", "async")
+		.css({ width: "42px", height: "42px", flex: "0 0 42px", objectFit: "contain", objectPosition: "left center" })
+		.addClass("eveimage img-rounded");
+	if (entityImage.onerror != undefined) image.attr("onerror", entityImage.onerror);
+	imageWrap.append(image);
 	var data = $("<span>")
 		.addClass("entity")
 		.addClass('btn')
+		.css({ display: "inline-flex", alignItems: "center", justifyContent: "flex-start", textAlign: "left", flex: "1 1 auto", width: "auto", minWidth: 0, padding: "4px 10px 4px 0", borderRadius: 0 })
 		.attr("id", suggestion.data.type + ':' + suggestion.data.id)
 		.attr("entity-id", suggestion.data.id)
 		.attr("entity-type", suggestion.data.type)
-		.text(displayType + ': ' + suggestion.value);
-	return $("<div>").attr('entity-type', suggestion.data.type).attr('entity-id', suggestion.data.id).append(left).append(data).append(right).append(remove).attr('time-id', 'id-' + Date.now()).addClass('filter').addClass('filter-' + suggestion.data.type);
+		.attr("entity-name", suggestion.value)
+		.append(imageWrap)
+		.append($("<span>").text(suggestion.value));
+	return $("<div>")
+		.attr('entity-type', suggestion.data.type)
+		.attr('entity-id', suggestion.data.id)
+		.attr('time-id', 'id-' + Date.now())
+		.css({ display: "flex", alignItems: "stretch", borderRadius: "7px", overflow: "hidden", padding: 0, backgroundColor: "#333" })
+		.addClass('filter')
+		.addClass('filter-' + suggestion.data.type)
+		.append(left)
+		.append(data)
+		.append(right)
+		.append(remove);
+}
+
+function getEntityImage(type, id) {
+	var size = 32;
+	var image = { src: "/img/empty_32.png" };
+
+	switch (type) {
+		case 'characterID':
+			image.src = "https://image.eveonline.com/Character/" + id + "_" + size + ".jpg";
+			break;
+		case 'corporationID':
+			image.src = "https://image.eveonline.com/Corporation/" + id + "_" + size + ".png";
+			break;
+		case 'allianceID':
+			image.src = "https://image.eveonline.com/Alliance/" + id + "_" + size + ".png";
+			break;
+		case 'factionID':
+			image.src = "https://image.eveonline.com/Corporation/" + id + "_" + size + ".png";
+			break;
+		case 'shipID':
+		case 'shipTypeID':
+			image.src = "https://image.eveonline.com/Type/" + id + "_" + size + ".png";
+			break;
+		case 'typeID':
+			image.src = "https://image.eveonline.com/Type/" + id + "_" + size + ".png";
+			image.onerror = "this.removeAttribute('onerror'); this.src='https://image.eveonline.com/Type/" + id + "_32.png';";
+			break;
+		case 'groupID':
+			image.src = "https://image.eveonline.com/Type/1_" + size + ".png";
+			break;
+		case 'systemID':
+		case 'solarSystemID':
+			image.src = id < 32000000 ? "/img/nohus/systems/" + id + "_32.png" : "/img/empty_32.png";
+			break;
+		case 'constellationID':
+			image.src = "/img/nohus/constellations/" + id + "_32.png";
+			break;
+		case 'regionID':
+			image.src = "/img/nohus/regions/" + id + "_32.png";
+			break;
+		case 'locationID':
+			image.src = "https://image.eveonline.com/Type/" + id + "_" + size + ".png";
+			image.onerror = "this.removeAttribute('onerror'); this.src='/img/empty_32.png';";
+			break;
+	}
+
+	return image;
 }
 
 function add(id, suggestion) {
@@ -643,7 +717,7 @@ function updateTitle() {
 
 	var filters = [];
 	$(".entity").each(function () {
-		var entityText = $(this).html().split(': ')[1];
+		var entityText = $(this).attr('entity-name') || $(this).text();
 		if (entityText != undefined && entityText !== '') filters.push(entityText);
 	});
 	var epochTitle = $(".tfilter.btn-primary").attr('title') ?? $(".tfilter.btn-primary").attr('prev-title');	
