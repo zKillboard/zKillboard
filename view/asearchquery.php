@@ -63,14 +63,6 @@ function handler($request, $response, $args, $container) {
 		$query = AdvancedSearch::buildQuery($queryParams, $query, "location", null, 'or');
 		$query = AdvancedSearch::parseDate($queryParams, $query, 'start');
 		$query = AdvancedSearch::parseDate($queryParams, $query, 'end');
-		$killIDFilter = AdvancedSearch::getKillIDFilter($query);
-		$query = AdvancedSearch::buildItemHistoryQuery($queryParams, $query, "items", AdvancedSearch::getSelectedFromBase('items-', $buttons), $killIDFilter);
-		$startTime = (int) @$query['start'];
-		$endTime = (int) @$query['end'];
-		if ($startTime > time()) $startTime = time();
-		if ($endTime == 0 || $endTime > time()) $endTime = time();
-		unset($query['start']);
-		unset($query['end']);
 
 		$labels = [];
 		foreach ($buttons as $label) {
@@ -81,6 +73,13 @@ function handler($request, $response, $args, $container) {
 			}
 		}
 		foreach ($labels as $group => $search) $query[] = ['labels' => ['$in' => $search]];
+		$query = AdvancedSearch::buildItemHistoryQuery($queryParams, $query, "items", AdvancedSearch::getSelectedFromBase('items-', $buttons));
+		$startTime = (int) @$query['start'];
+		$endTime = (int) @$query['end'];
+		if ($startTime > time()) $startTime = time();
+		if ($endTime == 0 || $endTime > time()) $endTime = time();
+		unset($query['start']);
+		unset($query['end']);
 
 		$page = (isset($queryParams['radios']['page']) ? max(1, min(10, (int) @$queryParams['radios']['page'])) - 1 : 0);
 		$sortKey = (isset($queryParams['radios']['sort']['sortBy']) && isset($validSortBy[$queryParams['radios']['sort']['sortBy']]) ? $validSortBy[$queryParams['radios']['sort']['sortBy']] : 'killID');
@@ -249,7 +248,7 @@ function handler($request, $response, $args, $container) {
 		return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
 	} catch (Exception $ex) {
 		if ($ex->getCode() != 50) Util::zout(print_r($ex, true));
-        else Util::zout("Query timeout in advanced search");
+		else Util::zout("Query timeout in advanced search");
 		$redis->del($key);
 		$response->getBody()->write(json_encode(['error' => 'Internal server error', 'message' => $ex->getMessage()], JSON_PRETTY_PRINT));
 		return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withStatus(500);

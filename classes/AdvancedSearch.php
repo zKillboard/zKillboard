@@ -4,6 +4,8 @@ use cvweiss\redistools\RedisCache;
 
 class AdvancedSearch 
 {
+    const MAX_ITEM_HISTORY_KILLIDS = 25000;
+
     static public $labels = [
         'location' => [
             "loc:highsec" => "HighSec", 
@@ -68,7 +70,7 @@ class AdvancedSearch
         return $queries;
     }
 
-    public static function buildItemHistoryQuery($queryParams, $queries, $key = 'items', $joinType = 'and', $killIDFilter = [])
+    public static function buildItemHistoryQuery($queryParams, $queries, $key = 'items', $joinType = 'and')
     {
         global $mdb;
 
@@ -83,17 +85,22 @@ class AdvancedSearch
         $typeIDs = array_values($typeIDs);
         if (sizeof($typeIDs) == 0) return $queries;
 
-        $itemmails = $mdb->getCollection('itemmails');
-        $itemMatch = ['typeID' => ['$in' => $typeIDs]];
-        if (sizeof($killIDFilter)) {
-            $itemMatch['killID'] = $killIDFilter;
+        $candidateKillIDs = self::getCandidateKillIDs($queries);
+        if (sizeof($candidateKillIDs) == 0) {
+            $queries[] = ['killID' => -1];
+            return $queries;
         }
+        $itemmails = $mdb->getCollection('itemmails');
+        $itemMatch = ['typeID' => ['$in' => $typeIDs], 'killID' => ['$in' => $candidateKillIDs]];
 
         $killIDs = [];
         if ($joinType == 'or' || $joinType == '-or' || sizeof($typeIDs) == 1) {
             $cursor = $itemmails->find(
                 $itemMatch,
-                ['projection' => ['killID' => 1, '_id' => 0]]
+                [
+                    'projection' => ['killID' => 1, '_id' => 0],
+                    'maxTimeMS' => 5000
+                ]
             );
             foreach ($cursor as $row) {
                 $killID = (int) @$row['killID'];
@@ -105,15 +112,55 @@ class AdvancedSearch
                 ['$group' => ['_id' => '$killID', 'typeIDs' => ['$addToSet' => '$typeID']]],
                 ['$project' => ['killID' => '$_id', 'matches' => ['$size' => '$typeIDs'], '_id' => 0]],
                 ['$match' => ['matches' => sizeof($typeIDs)]]
-            ], ['allowDiskUse' => true]);
+            ], ['allowDiskUse' => true, 'maxTimeMS' => 5000]);
             foreach ($cursor as $row) {
                 $killID = (int) @$row['killID'];
                 if ($killID > 0) $killIDs[$killID] = $killID;
             }
         }
 
-        $queries[] = ['killID' => sizeof($killIDs) ? ['$in' => array_values($killIDs)] : -1];
+        $killIDs = array_values($killIDs);
+        $queries[] = ['killID' => sizeof($killIDs) ? ['$in' => $killIDs] : -1];
         return $queries;
+    }
+
+    private static function getCandidateKillIDs($queries)
+    {
+        global $mdb;
+
+        $baseQuery = self::buildMongoQuery($queries);
+
+        $killIDs = [];
+        $cursor = $mdb->getCollection('killmails')->find(
+            $baseQuery,
+            [
+                'projection' => ['killID' => 1, '_id' => 0],
+                'sort' => ['killID' => -1],
+                'limit' => self::MAX_ITEM_HISTORY_KILLIDS,
+                'maxTimeMS' => 5000
+            ]
+        );
+
+        foreach ($cursor as $row) {
+            $killID = (int) @$row['killID'];
+            if ($killID > 0) $killIDs[$killID] = $killID;
+        }
+
+        return array_values($killIDs);
+    }
+
+    private static function buildMongoQuery($queries)
+    {
+        $query = [];
+        foreach ($queries as $key => $value) {
+            if (is_int($key) && is_array($value)) {
+                $query[] = $value;
+            }
+        }
+
+        if (sizeof($query) == 0) return [];
+        if (sizeof($query) == 1) return $query[0];
+        return ['$and' => $query];
     }
 
     public static function getKillIDFilter($queries)
