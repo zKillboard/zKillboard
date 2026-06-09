@@ -299,7 +299,7 @@ function getHTML(suggestion) {
 }
 
 function getEntityImage(type, id) {
-	var size = 32;
+	var size = 64;
 	var image = { src: "/img/empty_32.png" };
 
 	switch (type) {
@@ -321,20 +321,20 @@ function getEntityImage(type, id) {
 			break;
 		case 'typeID':
 			image.src = "https://image.eveonline.com/Type/" + id + "_" + size + ".png";
-			image.onerror = "this.removeAttribute('onerror'); this.src='https://image.eveonline.com/Type/" + id + "_32.png';";
+			image.onerror = "this.removeAttribute('onerror'); this.src='https://image.eveonline.com/Type/" + id + "_" + size + ".png';";
 			break;
 		case 'groupID':
 			image.src = "https://image.eveonline.com/Type/1_" + size + ".png";
 			break;
 		case 'systemID':
 		case 'solarSystemID':
-			image.src = id < 32000000 ? "/img/nohus/systems/" + id + "_32.png" : "/img/empty_32.png";
+			image.src = id < 32000000 ? "/img/nohus/systems/" + id + ".png" : "/img/empty_32.png";
 			break;
 		case 'constellationID':
-			image.src = "/img/nohus/constellations/" + id + "_32.png";
+			image.src = "/img/nohus/constellations/" + id + ".png";
 			break;
 		case 'regionID':
-			image.src = "/img/nohus/regions/" + id + "_32.png";
+			image.src = "/img/nohus/regions/" + id + ".png";
 			break;
 		case 'locationID':
 			image.src = "https://image.eveonline.com/Type/" + id + "_" + size + ".png";
