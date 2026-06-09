@@ -1,26 +1,37 @@
 <?php
 
 function handler($request, $response, $args, $container) {
-    global $mdb;
+    global $mdb, $baseAddr, $fullAddr;
 
-    $URLBASE = "https://zkillboard.com/asearch/";
-    
     try {
         $queryParams = $request->getQueryParams();
-        $url = rawurldecode((string) ($queryParams['url'] ?? ''));
+        $url = (string) ($queryParams['url'] ?? '');
+        $uri = $request->getUri();
+        $origin = $uri->getScheme() . '://' . $uri->getHost();
+        if ($uri->getPort() !== null && !in_array($uri->getPort(), [80, 443])) $origin .= ':' . $uri->getPort();
+        $shortOrigin = ($uri->getHost() === $baseAddr && !empty($fullAddr)) ? rtrim($fullAddr, '/') : $origin;
+
+        $parsedUrl = parse_url($url);
+        if ($parsedUrl === false) throw new Exception("invalid url");
+        $urlOrigin = ($parsedUrl['scheme'] ?? '') . '://' . ($parsedUrl['host'] ?? '');
+        if (isset($parsedUrl['port'])) $urlOrigin .= ':' . $parsedUrl['port'];
+        $urlPath = $parsedUrl['path'] ?? '';
+
+        if (!in_array($urlOrigin, [$origin, rtrim($fullAddr, '/'), 'https://zkillboard.com'])) throw new Exception("invalid domain: $url");
+        if ($urlPath !== '/asearch/' && strpos($urlPath, '/asearch/') !== 0) throw new Exception("invalid path: $url");
+
         $record = $mdb->findDoc("shortener", ['url' => $url]);
         if ($record == null) {
-            if (substr($url, 0, strlen($URLBASE)) != $URLBASE) throw new Exception("invalid domain: $url");
-
             $mdb->insert("shortener", ['url' => $url]);
             $record = $mdb->findDoc("shortener", ['url' => $url]);
         }
         $id = (string) $record['_id'];
-        $output = "https://zkillboard.com/asearchsaved/$id/";
+        $output = "$shortOrigin/asearchsaved/$id/";
     } catch (Exception $ex) {
         $output = $ex->getMessage();
+        $response = $response->withStatus(400);
     }
     
     $response->getBody()->write($output);
-    return $response;
+    return $response->withHeader('Content-Type', 'text/plain; charset=utf-8');
 }

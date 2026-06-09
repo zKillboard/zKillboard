@@ -776,25 +776,35 @@ if (!window.zkbAsearchTitleInterval) {
 	}, 1000); // in case something changes that doesn't trigger an update, like the epoch rolling time
 }
 
-async function btn_save() {
-	let res = await fetch("/asearchsave/?url=" + encodeURIComponent(window.location.href));
-	console.log(res);
-	if (res.ok) {
+async function btn_save(event) {
+	if (event) event.preventDefault();
+
+	const button = $("#btn_save");
+	button.prop("disabled", true).attr("title", "Saving");
+
+	try {
+		let res = await fetch("/asearchsave/?url=" + encodeURIComponent(window.location.href), {
+			credentials: "same-origin"
+		});
 		let short = await res.text();
-		console.log(short);
-		navigator.clipboard.writeText(short)
-			.then(() => {
-				console.log("Copied to clipboard!");
-				$("#btn_save").text("Clipped").addClass('btn-info').blur();
-				showToast('Saved URL copied to clipboard');
-				setTimeout(() => { $("#btn_save").text("Save").removeClass('btn-info').blur(); }, 3000);
-			})
-			.catch(err => {
-				console.error("Failed to copy:", err);
-				alert('Failed to copy to your clipboard, see console for details');
-			});
-	} else {
-		alert('Error trying to save: ' + res.statusCode);
+		if (!res.ok) throw new Error(short || ("Unexpected status " + res.status));
+		if (!/^https?:\/\/[^\/]+\/asearchsaved\/[a-f0-9]+\/$/i.test(short)) throw new Error(short || "Invalid saved URL");
+
+		try {
+			if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error("Clipboard API unavailable");
+			await navigator.clipboard.writeText(short);
+			button.addClass('btn-info').attr("title", "Saved URL copied").blur();
+			showToast('Saved URL copied to clipboard');
+		} catch (err) {
+			console.error("Failed to copy:", err);
+			button.addClass('btn-info').attr("title", "Saved URL ready").blur();
+			window.prompt('Saved URL', short);
+		}
+	} catch (err) {
+		console.error("Error trying to save:", err);
+		alert('Error trying to save: ' + err.message);
+	} finally {
+		setTimeout(() => { button.prop("disabled", false).removeClass('btn-info').attr("title", "").blur(); }, 3000);
 	}
 }
 
