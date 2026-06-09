@@ -500,7 +500,10 @@ class Info
 							$element['constellationID'] = Info::getInfoField('solarSystemID', $value, 'constellationID');
 						}
 						if (!isset($element['regionID'])) {
-							$element['regionID'] = Info::getInfoField('constellationID', $value, 'regionID');
+							$element['regionID'] = Info::getInfoField('solarSystemID', $value, 'regionID');
+							if (!$element['regionID']) {
+								$element['regionID'] = Info::getInfoField('constellationID', $element['constellationID'], 'regionID');
+							}
 						}
 						$element['constellationName'] = Info::getInfoField('constellationID', $element['constellationID'], 'name');
 						$element['regionName'] = Info::getInfoField('regionID', $element['regionID'], 'name');

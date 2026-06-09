@@ -562,8 +562,16 @@ function handler($request, $response, $args, $container)
 	if ($key == 'label')
 		$kills = [];
 	if ($key == 'location') {
-		$typeID = $mdb->findField('information', 'typeID', ['type' => 'locationID', 'id' => (int) $id]);
-		$detail['typeID'] = $typeID;
+		$locationInfo = $mdb->findDoc('information', ['type' => 'locationID', 'id' => (int) $id]);
+		$detail['typeID'] = (int) @$locationInfo['typeID'];
+		$detail['solarSystemID'] = (int) @$locationInfo['solarSystemID'];
+		if ($detail['solarSystemID'] <= 0) {
+			$detail['solarSystemID'] = (int) $mdb->findField('locations_calced', 'solar_system_id', ['$or' => [['id' => (int) $id], ['entityID' => (int) $id]]]);
+		}
+		if ($detail['solarSystemID'] <= 0) {
+			$detail['solarSystemID'] = (int) $mdb->findField('killmails', 'system.solarSystemID', ['locationID' => (int) $id], ['killID' => -1]);
+		}
+		Info::addInfo($detail);
 	}
 
 	$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified, 'dqChars' => $dqChars);
