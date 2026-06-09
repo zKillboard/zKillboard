@@ -1,13 +1,25 @@
 var types = ['character', 'corporation', 'alliance', 'faction', 'shipType', 'group', 'location', 'solarSystem', 'region'];
 var allowChange = true;
 var first_load = true;
+var asearchRollTimeTimer = null;
+var asearchClickCatchTimer = null;
 
 var radios = { sort: { sortBy: 'date', sortDir: 'desc' } };  // to be deprecated
 var asfilter = { location: [], attackers: [], neutrals: [], victims: [], items: [], sort: { sortBy: 'date', sortDir: 'desc' } };
 
 $(document).ready(function () {
-	checkCharID();
+	zkbInitAsearch();
 });
+
+function zkbInitAsearch() {
+	allowChange = true;
+	first_load = true;
+	radios = { sort: { sortBy: 'date', sortDir: 'desc' } };
+	asfilter = { location: [], attackers: [], neutrals: [], victims: [], items: [], sort: { sortBy: 'date', sortDir: 'desc' } };
+	checkCharID();
+}
+
+window.zkbInitAsearch = zkbInitAsearch;
 
 function checkCharID() {
 	/*if (characterID == -1) return setTimeout(checkCharID, 100);
@@ -36,19 +48,20 @@ function loadasearch() {
 	}).focus();
 
 
-	$("#btn_save").on('click', btn_save);
-	$("#btn_export").on('click', btn_export);
-	$(".tfilter").on('click', adjustTime);
-	$(".filter-btn").on('click', toggleFilterBtn);
-	$(".radio-btn").on('click', toggleRadioBtn);
+	$("#btn_save").off('click.zkb-asearch').on('click.zkb-asearch', btn_save);
+	$("#btn_export").off('click.zkb-asearch').on('click.zkb-asearch', btn_export);
+	$("#exportCsv").off('click.zkb-asearch').on('click.zkb-asearch', exportCsv);
+	$(".tfilter").off('click.zkb-asearch').on('click.zkb-asearch', adjustTime);
+	$(".filter-btn").off('click.zkb-asearch').on('click.zkb-asearch', toggleFilterBtn);
+	$(".radio-btn").off('click.zkb-asearch').on('click.zkb-asearch', toggleRadioBtn);
 
-	$("#rolling-times").on('click', toggleRollingTime);
-	$("#togglefilters").on('click', toggleFiltersClick);
+	$("#rolling-times").off('click.zkb-asearch').on('click.zkb-asearch', toggleRollingTime);
+	$("#togglefilters").off('click.zkb-asearch').on('click.zkb-asearch', toggleFiltersClick);
 
-	$("#dtstart").on('input', clickPage1);
-	$("#dtend").on('input', clickPage1);
+	$("#dtstart").off('input.zkb-asearch').on('input.zkb-asearch', clickPage1);
+	$("#dtend").off('input.zkb-asearch').on('input.zkb-asearch', clickPage1);
 
-	$("#includeAssociates").on('change', doQuery.bind(null, 'groups'));
+	$("#includeAssociates").off('change.zkb-asearch').on('change.zkb-asearch', doQuery.bind(null, 'groups'));
 
 	if (window.location.hash != '') {
 		setFilters();
@@ -56,19 +69,25 @@ function loadasearch() {
 		adjustTime(null, $("#stats-epoch-week"));
 	}
 
-	rollTime(); // will handle it's own intervals
+	startAsearchLoops();
 	$(".btn-page.btn-primary:not(.notafilter)").click();
 
-	window.addEventListener('popstate', function () {
-		setFilters();
-		$(".btn-page.btn-primary:not(.notafilter)").click();
-	});
+	if (!window.zkbAsearchPopstateBound) {
+		window.addEventListener('popstate', asearchPopstate);
+		window.zkbAsearchPopstateBound = true;
+	}
 
-	$("#clickToDigCheckbox").on('change', updateDrillDownPreference);
+	$("#clickToDigCheckbox").off('change.zkb-asearch').on('change.zkb-asearch', updateDrillDownPreference);
 
 	first_load = false;
 	doQuery();
 };
+
+function asearchPopstate() {
+	if (!document.getElementById('asearchcontent')) return;
+	setFilters();
+	$(".btn-page.btn-primary:not(.notafilter)").click();
+}
 
 function datepick() {
 	if (allowChange) {
@@ -92,6 +111,11 @@ function toggleRollingTime(event, enabled) {
 }
 
 function rollTime() {
+	if (!document.getElementById('asearchcontent')) {
+		asearchRollTimeTimer = null;
+		return;
+	}
+
 	try {
 		var roll = ($('#rolling-times').hasClass('btn-primary'));
 		if (roll == false) return;
@@ -101,7 +125,7 @@ function rollTime() {
 
 		if ((currentStartTime != $('#dtstart').val()) || (currentEndTime != $('#dtend').val())) clickPage1();
 	} finally {
-		setTimeout(rollTime, 5000);
+		asearchRollTimeTimer = setTimeout(rollTime, 5000);
 	}
 }
 
@@ -393,7 +417,10 @@ function setHash() {
 
 	var hash = '';
 	if (Object.keys(filter).length > 0) hash = '#' + JSON.stringify(filter);
-	if ((window.location.pathname + window.location.hash) != (window.location.pathname + hash)) history.pushState("", document.title, window.location.pathname + hash);
+	if ((window.location.pathname + window.location.hash) != (window.location.pathname + hash)) {
+		var historyState = (typeof getSpaHistoryState === 'function') ? getSpaHistoryState() : "";
+		history.pushState(historyState, document.title, window.location.pathname + hash);
+	}
 }
 
 function setHashAdd(filter, asfilter, key) {
@@ -743,7 +770,11 @@ function updateTitle() {
 	var title = 'Advanced Search: ' + (filters.length > 0 ? filters.join(', ') : 'No filters selected');
 	$("#titlecontent").text(title);
 }
-setInterval(updateTitle, 1000); // in case something changes that doesn't trigger an update, like the epoch rolling time
+if (!window.zkbAsearchTitleInterval) {
+	window.zkbAsearchTitleInterval = setInterval(function() {
+		if (document.getElementById('asearchcontent')) updateTitle();
+	}, 1000); // in case something changes that doesn't trigger an update, like the epoch rolling time
+}
 
 async function btn_save() {
 	let res = await fetch("/asearchsave/?url=" + encodeURIComponent(window.location.href));
@@ -768,17 +799,30 @@ async function btn_save() {
 }
 
 function assignClickCatch() {
+	if (!document.getElementById('asearchcontent')) {
+		asearchClickCatchTimer = null;
+		return;
+	}
+
 	try {
 		$("#clickablecontent a:not(.clickCatch):not(.nocatch)").addClass("clickCatch").on('click', clickCatch);
 	} finally {
-		setTimeout(assignClickCatch, 250);
+		asearchClickCatchTimer = setTimeout(assignClickCatch, 250);
 	}
 }
-assignClickCatch(); // will handle its own intervals
+
+function startAsearchLoops() {
+	if (asearchRollTimeTimer == null) rollTime();
+	if (asearchClickCatchTimer == null) assignClickCatch();
+}
 
 async function clickCatch(e) {
 	let altPressed = e.metaKey || e.altKey || $("#clickToDigCheckbox").is(':checked');
 	if (!altPressed) return true; // default behavior
+
+	e.preventDefault();
+	e.stopPropagation();
+	e.stopImmediatePropagation();
 
 	let name = $(this).text();
 	if (name == '' && e.target) name = $(e.target).attr('title');
@@ -798,9 +842,6 @@ async function clickCatch(e) {
 			id: split[1]
 		}
 	});
-
-
-	e.preventDefault();
 	return false;
 }
 
@@ -808,12 +849,12 @@ function updateDrillDownPreference(e) {
 	localStorage.setItem('drilldown-enabled', $("#clickToDigCheckbox").is(':checked') ? 'true' : 'false');
 }
 
-document.getElementById("exportCsv").addEventListener("click", function () {
+function exportCsv() {
 	let groups = $("#result-groups-all table");
 
 	const wb = XLSX.utils.book_new();
 
-	let tabdata = [{ 'About': 'This export is beta, it is currently not meant as a killmail export.\nPlanned features include showing the filters used, different file name to reflect filters, etc.' }];
+	let tabdata = [{ 'About': 'This export is not meant as a killmail export.\nPlanned features include showing the filters used, different file name to reflect filters, etc.' }];
 	let ws = XLSX.utils.json_to_sheet(tabdata);
 	ws['!cols'] = [{ wch: 100 }];
 	XLSX.utils.book_append_sheet(wb, ws, "About This Export");
@@ -863,7 +904,7 @@ document.getElementById("exportCsv").addEventListener("click", function () {
 
 	// Export
 	XLSX.writeFile(wb, "export.xlsx");
-});
+}
 
 function buildZkillbotFilter() {
 	var parts = [];

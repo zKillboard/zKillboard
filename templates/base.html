@@ -148,7 +148,7 @@ var promoImage1 = '{{ promoImage1 }}';
 					</a>					
 				</div>
 
-                <span class='pagecontent'>{% endif %}
+                <span id="zkb-page-content" class='pagecontent' data-entity-type="{{ entityType }}" data-entity-id="{{ entityID }}" data-entity-page="{{ pageType }}" data-actual-uri="{{ actualURI }}">{% endif %}
 				<!-- The text header -->
 				{% block header %}{% endblock %}
 				<!-- The actual site content-->
@@ -167,13 +167,15 @@ var promoImage1 = '{{ promoImage1 }}';
 			</div>
 
 			<!-- Modals -->
-			<div class="page-shell">
+			<div class="page-shell" id="zkb-page-modals">
 				{% block modal %}{% endblock %}
 			</div>
 		</div>
 
+		<div id="zkb-page-scripts" style="display: none;">
 		{% block script %}
 		{% endblock %}
+		</div>
 
 <div class="ttooltip d-none" id="ttooltip"><span class='X red' onclick="$('#ttooltip').addClass('d-none'); return false;">X</span><br/><span id='tipmsg'></span></div>
 <div class="modal fade" id="modalMessage">

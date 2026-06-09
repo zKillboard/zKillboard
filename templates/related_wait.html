@@ -17,15 +17,19 @@
 </div>
 </div>
 </div>
-<script type="text/javascript">
-    navbar = false;
-	var waitSeconds = 3;
-	var waitNode = document.getElementById("related-wait-seconds");
-	setInterval(function () {
-		waitSeconds--;
-		if (waitNode && waitSeconds >= 0) waitNode.textContent = waitSeconds;
-	}, 1000);
-	setTimeout(function(){ location.reload(); }, 3000);
-</script>
+	<script type="text/javascript">
+	    navbar = false;
+		var waitSeconds = 3;
+		var waitNode = document.getElementById("related-wait-seconds");
+		var relatedWaitInterval = setInterval(function () {
+			waitSeconds--;
+			if (waitNode && waitSeconds >= 0) waitNode.textContent = waitSeconds;
+		}, 1000);
+		var relatedWaitReload = setTimeout(function(){ location.reload(); }, 3000);
+		window.zkbPageCleanup = function () {
+			clearInterval(relatedWaitInterval);
+			clearTimeout(relatedWaitReload);
+		};
+	</script>
 
 {% endblock %}

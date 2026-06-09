@@ -334,9 +334,13 @@
 
 {% block script %}
 <script type="text/javascript">
-setTimeout(load_ztop, 1000);
+window.zkbZtopLoadTimeout = setTimeout(load_ztop, 1000);
 function load_ztop() {
-    if (!pubsub) setTimeout(load_ztop, 250);
+    if (window.location.pathname != '/ztop/') return;
+    if (!pubsub) {
+        window.zkbZtopLoadTimeout = setTimeout(load_ztop, 250);
+        return;
+    }
     pubsub('ztop');
 }
 
@@ -660,17 +664,26 @@ window.ztopUpdate = function(payload) {
     ztopState.lastUpdateAt = Date.now();
 };
 
-setInterval(() => {
-    const connection = document.getElementById('ztop-connection');
-    if (!connection) return;
-    if (!ztopState.lastUpdateAt) return;
-    const seconds = (Date.now() - ztopState.lastUpdateAt) / 1000;
-    if (seconds > 15) {
-        connection.textContent = 'Disconnected';
-        connection.classList.remove('is-live');
-        connection.classList.add('is-offline');
-    }
-}, 3000);
+if (!window.zkbZtopConnectionInterval) {
+    window.zkbZtopConnectionInterval = setInterval(() => {
+        const connection = document.getElementById('ztop-connection');
+        if (!connection || !window.ztopState || !window.ztopState.lastUpdateAt) return;
+        const seconds = (Date.now() - window.ztopState.lastUpdateAt) / 1000;
+        if (seconds > 15) {
+            connection.textContent = 'Disconnected';
+            connection.classList.remove('is-live');
+            connection.classList.add('is-offline');
+        }
+    }, 3000);
+}
+
+window.zkbPageCleanup = function () {
+    clearTimeout(window.zkbZtopLoadTimeout);
+    clearInterval(window.zkbZtopConnectionInterval);
+    window.zkbZtopLoadTimeout = undefined;
+    window.zkbZtopConnectionInterval = undefined;
+    window.ztopState = undefined;
+};
 
 const rawToggle = document.getElementById('ztop-raw-toggle');
 const rawBlock = document.getElementById('ztoptextblock');

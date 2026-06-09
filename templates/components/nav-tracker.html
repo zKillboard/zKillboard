@@ -13,10 +13,10 @@ $("#char-image").attr("src", "{{ image_character }}{{ characterID }}/portrait?si
 console.log("{{ image_character }}{{ characterID }}/portrait?size=256");
 
 try {
-$(".char-image").attr("src", "{{ image_character }}{{ characterID }}/portrait?size=128").on('click', function() { window.location = '/character/{{ characterID }}/'; });
-$(".corp-image").attr("src", "{{ image_corporation }}{{ corporationID }}/logo?size=64").on('click', function() { window.location = '/corporation/{{ corporationID }}/'; });
+	$(".char-image").attr("src", "{{ image_character }}{{ characterID }}/portrait?size=128").on('click', function() { navigateTo('/character/{{ characterID }}/'); });
+	$(".corp-image").attr("src", "{{ image_corporation }}{{ corporationID }}/logo?size=64").on('click', function() { navigateTo('/corporation/{{ corporationID }}/'); });
 {% if allianceID > 0 %}
-$(".alli-image").attr("src", "{{ image_alliance }}{{ allianceID }}/logo?size=64").on('click', function() { window.location = '/alliance/{{ allianceID }}/'; });
+	$(".alli-image").attr("src", "{{ image_alliance }}{{ allianceID }}/logo?size=64").on('click', function() { navigateTo('/alliance/{{ allianceID }}/'); });
 {% else %}
 $(".alli-image").remove();
 {% endif %}

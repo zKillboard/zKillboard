@@ -178,6 +178,7 @@
 
 <script type="text/javascript">
 document.addEventListener("DOMContentLoaded", function () {
+	if (typeof window.zkbPageCleanup === "function") window.zkbPageCleanup();
 	var tabs = document.querySelectorAll(".related-mobile-tab");
 	var panels = document.querySelectorAll(".related-team-panel");
 	if (!tabs.length || !panels.length) return;
@@ -217,7 +218,8 @@ document.addEventListener("DOMContentLoaded", function () {
 		if (updateHash) {
 			var nextHash = team === "b" ? "#team-b" : "#team-a";
 			if (window.history && window.history.replaceState) {
-				window.history.replaceState(null, "", nextHash);
+				var historyState = (typeof getSpaHistoryState === "function") ? getSpaHistoryState() : window.history.state;
+				window.history.replaceState(historyState, "", nextHash);
 			} else {
 				window.location.hash = nextHash;
 			}
@@ -232,14 +234,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	setTeam(teamFromHash() || "a", false);
 	alignEntityRows();
-	window.addEventListener("resize", function () {
+	function resizeHandler() {
 		clearTimeout(resizeTimer);
 		resizeTimer = setTimeout(alignEntityRows, 100);
-	});
-	window.addEventListener("hashchange", function () {
+	}
+	function hashChangeHandler() {
 		var team = teamFromHash();
 		if (team) setTeam(team, false);
-	});
+	}
+	window.addEventListener("resize", resizeHandler);
+	window.addEventListener("hashchange", hashChangeHandler);
+	window.zkbPageCleanup = function () {
+		clearTimeout(resizeTimer);
+		window.removeEventListener("resize", resizeHandler);
+		window.removeEventListener("hashchange", hashChangeHandler);
+	};
 });
 </script>
 

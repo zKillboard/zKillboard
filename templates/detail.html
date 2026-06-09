@@ -319,7 +319,8 @@
 
 {% block script %}
 <script>
-const killID = '{{ killdata.info.killID }}';
+window.killID = '{{ killdata.info.killID }}';
+window.zkbDetailActiveKillID = window.killID;
 
 function resizeMobileFittingWheel() {
 	const mobileContainer = document.getElementById('fittingwheeldiv');
@@ -352,6 +353,10 @@ function resizeMobileFittingWheel() {
 document.addEventListener('DOMContentLoaded', function () {
 	resizeMobileFittingWheel();
 	window.addEventListener('resize', resizeMobileFittingWheel, { passive: true });
+	window.zkbPageCleanup = function () {
+		window.removeEventListener('resize', resizeMobileFittingWheel);
+		window.zkbDetailActiveKillID = undefined;
+	};
 });
 
 function prepComments() {
@@ -359,6 +364,7 @@ function prepComments() {
 	else {
             $.get('/cache/tagged/comment/kill-{{ killdata.info.killID }}/')
                 .done(function(response) {
+                if (window.zkbDetailActiveKillID != '{{ killdata.info.killID }}') return;
                 $("#commentblock").html(response);
               })
                 .fail(function(xhr, status, err) {
@@ -369,4 +375,3 @@ function prepComments() {
 }
 </script>
 {% endblock %}
-

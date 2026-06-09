@@ -1,6 +1,16 @@
 $(document).ready(function() {
-    scanReadyCharCheck();
+    zkbInitScanalyzer();
 });
+
+function zkbInitScanalyzer() {
+    window.zkbPageCleanup = function() {
+        if (scanCall != undefined) clearTimeout(scanCall);
+        scanCall = undefined;
+    };
+    scanReadyCharCheck();
+}
+
+window.zkbInitScanalyzer = zkbInitScanalyzer;
 
 function scanReadyCharCheck() {
     /*if (characterID == -1) return setTimeout(scanReadyCharCheck, 100);
@@ -14,10 +24,10 @@ function scanReadyCharCheck() {
 }
 
 function scanReady() {
-    $('#scaninput').on('blur', startProcess);
+    $('#scaninput').off('blur.zkb-scanalyzer').on('blur.zkb-scanalyzer', startProcess);
 
     if (navigator.clipboard === undefined) $("#clip").hide();
-    else $('#clippy').on('click', copypasta);
+    else $('#clippy').off('click.zkb-scanalyzer').on('click.zkb-scanalyzer', copypasta);
 
     clearInput();
     $("#clippy").removeAttr("disabled");
@@ -38,6 +48,7 @@ async function copypasta() {
 
 var scanCall = undefined;
 function startProcess() {
+    if (!document.getElementById('scaninput')) return;
     $("#clippy").attr("disabled", "true");
     $('#resultssection').hide();
     $('#resultcounts').html('');
@@ -50,6 +61,7 @@ function startProcess() {
 }
 
 function doScan() {
+    if (!document.getElementById('scaninput')) return;
     updateStatus('fetching');
     scanCall = undefined;
 
@@ -179,6 +191,7 @@ function popUEc(corp) {
 let result = undefined;
 let mapping = undefined;
 function showResult(r) {
+    if (!document.getElementById('scaninput')) return;
     result = r;
     mapping = {corps: {}, allis: {}};
     console.log(result);
@@ -213,16 +226,19 @@ function showResult(r) {
 }
 
 function showError(a, b, c) {
+    if (!document.getElementById('scaninput')) return;
     updateStatus('an error! check the console for details');
     console.log('error', a, b, c);
 }
 
 function showDone() {
+    if (!document.getElementById('scaninput')) return;
     $("#scaninput").removeAttr('disabled');
     $("#clippy").removeAttr("disabled");
 }
 
 function updateStatus(msg = '') {
+    if (!document.getElementById('status')) return;
     if (msg == '') {
         $('#status').html('').hide();
         $('#resultssection').show();

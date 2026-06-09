@@ -1,7 +1,13 @@
 $(document).ready(function() {
+    zkbInitTypeRanks();
+});
+
+function zkbInitTypeRanks() {
     applyStyles();
     initRankTableServerSorting();
-});
+}
+
+window.zkbInitTypeRanks = zkbInitTypeRanks;
 
 function initRankTableServerSorting() {
     $('.rank-table').each(function() {
@@ -20,8 +26,8 @@ function initRankTableServerSorting() {
             header.find('.sort-pip').remove();
             header.append(`<span class='sort-pip text-muted' style='font-size: 9px; margin-left: 4px;'>${pip}</span>`);
             header.attr('title', `Sort by ${direction.toUpperCase()}`);
-            header.on('click', function() {
-                window.location.href = buildURL(ranksType, ranksKL, ranksGroup, ranksEpoch, 1, sortKey, direction);
+            header.off('click.zkb-ranks').on('click.zkb-ranks', function() {
+                navigateTo(buildURL(ranksType, ranksKL, ranksGroup, ranksEpoch, 1, sortKey, direction));
             });
         });
     });

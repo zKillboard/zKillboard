@@ -22,9 +22,10 @@ $(document).ready(function () {
 	setTime();
 
     if (navbar) $('#tracker-dropdown').load('/navbar/');
+    initSpaNavigation();
 
     // autocomplete
-    $('#searchbox').zz_search( function(data, event) { window.location = '/' + data.type + '/' + data.id + '/'; event.preventDefault(); } );
+    $('#searchbox').zz_search( function(data, event) { navigateTo('/' + data.type + '/' + data.id + '/'); event.preventDefault(); } );
 
     // prevent firing of window.location in table rows if a link is clicked directly
     $('.killListRow a').click(function(e) {
@@ -58,7 +59,7 @@ $(document).ready(function () {
             var month = date.getMonth() + 1;
             var newHREF = actualURI + 'year/' + year + '/month/' + month + '/';
             console.log(newHREF);
-            location.href = newHREF;
+            navigateTo(newHREF);
     });
 
     $(document).on('keypress', checkForSearchKey);
@@ -94,7 +95,7 @@ $(document).ready(function () {
         var anchorName = (t.attr('name') || '').replace(/[^A-Za-z0-9_\-:\.]/g, '');
         t.attr('href', '#' + anchorName);
     });
-    $(".fetchme").each(function() { loadKillRow($(this).attr('killID'));  });
+    loadFetchmeKillRows();
     setTimeout(fixCCPsBrokenImages, 1000);
 
     assignRowColor();
@@ -107,6 +108,502 @@ $(document).ready(function () {
 	$("label[for]").on("click", () => { $(window).focus(); })
 	setTimeout(prepTippy, 1);
 });
+
+function initPageContent() {
+    try {
+        $(".datatable").not(".dataTable").DataTable();
+    } catch (e) {
+        console.error("Failed to initialize datatables:", e);
+    }
+
+    if (typeof prepComments === "function") prepComments();
+    addKillListClicks();
+    assignRowColor();
+    doFormats();
+    loadFetchmeKillRows();
+    loadHomeKillListIfNeeded();
+    $("[raw]").off("click.zkb-copy").on("click.zkb-copy", copyToClipboard);
+    setTimeout(fixCCPsBrokenImages, 1000);
+    setTimeout(prepTippy, 1);
+}
+
+function loadFetchmeKillRows() {
+    $(".fetchme").each(function() {
+        const row = $(this);
+        if (row.attr("data-fetching") === "true") return;
+        row.attr("data-fetching", "true");
+        loadKillRow(row.attr("killID"));
+    });
+}
+
+function loadHomeKillListIfNeeded() {
+    if (window.location.pathname !== "/") return;
+    if (!document.getElementById("kms_loading")) return;
+    if (!document.getElementById("killmailstobdy")) return;
+
+    fetch("/cache/tagged/killlist/?u=/")
+        .then(response => {
+            if (!response.ok) throw new Error("Unexpected status " + response.status);
+            const contentType = response.headers.get("content-type") || "";
+            if (!contentType.includes("application/json")) throw new Error("Unexpected content type " + contentType);
+            return response.json();
+        })
+        .then(data => prepKills(data))
+        .catch(error => console.error("Failed to load home kill list!", error));
+}
+
+let spaAbortController = null;
+let spaScrollSaveTimeout = null;
+let spaRenderedURL = window.location.href;
+const spaLoadedScripts = new Set(Array.from(document.scripts)
+    .map(script => script.src)
+    .filter(Boolean)
+    .map(normalizeAssetURL));
+const spaLoadedStyles = new Set(Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+    .map(link => link.href)
+    .filter(Boolean)
+    .map(normalizeAssetURL));
+
+function initSpaNavigation() {
+    if (!window.history || !window.fetch || !window.DOMParser) return;
+
+    if ("scrollRestoration" in window.history) window.history.scrollRestoration = "manual";
+    window.history.replaceState(getSpaHistoryState(), document.title, window.location.href);
+
+    $(document).on("click", "a[href]", function(event) {
+        if (isAsearchDrillDownClick(this)) return;
+        if (!shouldSpaNavigate(event, this)) return;
+
+        event.preventDefault();
+        spaNavigate(this.href, true);
+    });
+
+    window.addEventListener("popstate", function(event) {
+        if (!event.state || !event.state.zkbSpa) return;
+        if (isSpaRenderedURL(window.location.href)) return;
+        spaNavigate(window.location.href, false, event.state);
+    });
+
+    window.addEventListener("scroll", scheduleSpaScrollSave, { passive: true });
+}
+
+function shouldSpaNavigate(event, anchor) {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return false;
+    if (anchor.target && anchor.target !== "_self") return false;
+    if (anchor.hasAttribute("download") || anchor.hasAttribute("onclick")) return false;
+    if (anchor.getAttribute("data-bs-toggle") || anchor.getAttribute("data-spa") === "off") return false;
+
+    const href = anchor.getAttribute("href") || "";
+    if (href === "" || href === "#" || href.startsWith("#")) return false;
+    if (/^(mailto:|tel:|javascript:)/i.test(href)) return false;
+
+    let url;
+    try {
+        url = new URL(anchor.href, window.location.href);
+    } catch (e) {
+        return false;
+    }
+
+    if (url.origin !== window.location.origin) return false;
+    if (url.pathname === window.location.pathname && url.search === window.location.search) return false;
+    if (url.hash && anchor.pathname === window.location.pathname && anchor.search === window.location.search) return false;
+    if (!url.pathname.endsWith("/")) return false;
+    if (/\.(?:css|js|json|xml|txt|ico|png|jpg|jpeg|gif|webp|svg|html)$/i.test(url.pathname)) return false;
+
+    return !isSpaExcludedPath(url.pathname);
+}
+
+function isAsearchDrillDownClick(anchor) {
+    return !!(
+        document.getElementById("asearchcontent") &&
+        anchor.closest("#clickablecontent") &&
+        document.getElementById("clickToDigCheckbox") &&
+        document.getElementById("clickToDigCheckbox").checked
+    );
+}
+
+function isSpaExcludedPath(pathname) {
+    return [
+        "/api/",
+        "/cache/",
+        "/account/logout/",
+        "/ccp",
+        "/ccpoauth2",
+        "/crestmail/",
+        "/logout/",
+        "/navbar/",
+        "/partial/"
+    ].some(prefix => pathname.startsWith(prefix));
+}
+
+async function spaNavigate(href, pushState, historyState) {
+    const targetURL = new URL(href, window.location.href);
+    if (pushState) saveSpaScrollPosition();
+
+    if (spaAbortController) spaAbortController.abort();
+    spaAbortController = new AbortController();
+
+    try {
+        const response = await fetch(targetURL.href, {
+            method: "GET",
+            credentials: "same-origin",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            signal: spaAbortController.signal
+        });
+
+        if (!response.ok || response.redirected) return fullNavigate(targetURL.href);
+
+        const html = await response.text();
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const nextContent = doc.querySelector("#zkb-page-content");
+        const currentContent = document.querySelector("#zkb-page-content");
+
+        if (!nextContent || !currentContent) return fullNavigate(targetURL.href);
+
+        const nextModals = doc.querySelector("#zkb-page-modals");
+        const currentModals = document.querySelector("#zkb-page-modals");
+
+        document.title = doc.title || document.title;
+        updateHeadLink("canonical", doc);
+        updateHeadMeta("description", doc);
+        syncSpaHeadExtras(doc);
+
+        if (pushState) {
+            window.history.pushState(getSpaHistoryState({ scrollX: 0, scrollY: 0 }), document.title, targetURL.href);
+        }
+
+        clearSpaPageHelpers();
+        currentContent.innerHTML = nextContent.innerHTML;
+        if (nextModals && currentModals) currentModals.innerHTML = nextModals.innerHTML;
+        syncPageGlobals(currentContent);
+        syncPagePubsubs();
+        const contentAssets = await loadSpaElementScripts(currentContent);
+        const modalAssets = currentModals ? await loadSpaElementScripts(currentModals) : emptySpaAssetResult();
+        const pageAssets = await loadSpaPageAssets(doc);
+
+        initPageContent();
+        runSpaPageInitializers(mergeSpaAssetResults(contentAssets, modalAssets, pageAssets));
+        restoreSpaScrollPosition(pushState ? null : historyState);
+        spaRenderedURL = window.location.href;
+        collapseMobileNav();
+    } catch (e) {
+        if (e.name === "AbortError") return;
+        console.error("SPA navigation failed:", e);
+        fullNavigate(targetURL.href);
+    }
+}
+
+function getSpaHistoryState(overrides) {
+    const currentState = window.history.state || {};
+    return Object.assign({}, currentState, {
+        zkbSpa: true,
+        scrollX: window.scrollX || window.pageXOffset || 0,
+        scrollY: window.scrollY || window.pageYOffset || 0
+    }, overrides || {});
+}
+
+function saveSpaScrollPosition() {
+    if (!window.history || !window.history.replaceState) return;
+    const currentState = window.history.state;
+    if (!currentState || !currentState.zkbSpa) return;
+    window.history.replaceState(getSpaHistoryState(), document.title, window.location.href);
+}
+
+function scheduleSpaScrollSave() {
+    if (spaScrollSaveTimeout) return;
+    spaScrollSaveTimeout = setTimeout(function() {
+        spaScrollSaveTimeout = null;
+        saveSpaScrollPosition();
+    }, 150);
+}
+
+function restoreSpaScrollPosition(historyState) {
+    const left = historyState ? historyState.scrollX || 0 : 0;
+    const top = historyState ? historyState.scrollY || 0 : 0;
+    window.scrollTo({ top: top, left: left, behavior: "auto" });
+}
+
+function isSpaRenderedURL(href) {
+    try {
+        const rendered = new URL(spaRenderedURL, window.location.href);
+        const current = new URL(href, window.location.href);
+        return rendered.pathname === current.pathname && rendered.search === current.search;
+    } catch (e) {
+        return false;
+    }
+}
+
+function updateHeadLink(rel, doc) {
+    const next = doc.querySelector(`link[rel="${rel}"]`);
+    let current = document.querySelector(`link[rel="${rel}"]`);
+    if (!next) return;
+    if (!current) {
+        current = document.createElement("link");
+        current.setAttribute("rel", rel);
+        document.head.appendChild(current);
+    }
+    current.setAttribute("href", next.getAttribute("href"));
+}
+
+function updateHeadMeta(name, doc) {
+    const next = doc.querySelector(`meta[name="${name}"]`);
+    let current = document.querySelector(`meta[name="${name}"]`);
+    if (!next) return;
+    if (!current) {
+        current = document.createElement("meta");
+        current.setAttribute("name", name);
+        document.head.appendChild(current);
+    }
+    current.setAttribute("content", next.getAttribute("content"));
+}
+
+function syncSpaHeadExtras(doc) {
+    document.querySelectorAll("[data-spa-head-extra]").forEach(el => el.remove());
+
+    doc.head.querySelectorAll("style").forEach(style => {
+        const next = document.createElement("style");
+        next.setAttribute("data-spa-head-extra", "style");
+        next.textContent = style.textContent;
+        document.head.appendChild(next);
+    });
+
+    const currentRefresh = document.querySelector('meta[http-equiv="refresh"]');
+    if (currentRefresh) currentRefresh.remove();
+
+    const nextRefresh = doc.querySelector('meta[http-equiv="refresh"]');
+    if (nextRefresh) {
+        const meta = document.createElement("meta");
+        copyAttributes(nextRefresh, meta);
+        meta.setAttribute("data-spa-head-extra", "refresh");
+        document.head.appendChild(meta);
+    }
+}
+
+function syncPageGlobals(content) {
+    if (!content) return;
+    window.entityType = content.getAttribute("data-entity-type") || "none";
+    window.entityID = content.getAttribute("data-entity-id") || "0";
+    window.entityPage = content.getAttribute("data-entity-page") || "";
+    window.actualURI = content.getAttribute("data-actual-uri") || window.location.pathname;
+}
+
+function clearSpaPageHelpers() {
+    if (typeof window.zkbPageCleanup === "function") {
+        try {
+            window.zkbPageCleanup();
+        } catch (e) {
+            console.error("SPA page cleanup failed:", e);
+        }
+    }
+    window.zkbPageCleanup = undefined;
+    window.prepComments = undefined;
+    window.resizeMobileFittingWheel = undefined;
+    window.loadRemainingPilots = undefined;
+    window.load_ztop = undefined;
+    window.ztopUpdate = undefined;
+    window.ztopState = undefined;
+}
+
+async function loadSpaPageAssets(doc) {
+    const assets = doc.querySelector("#zkb-page-scripts");
+    const result = emptySpaAssetResult();
+    if (!assets) return result;
+
+    for (const link of assets.querySelectorAll('link[rel="stylesheet"]')) {
+        await loadSpaStylesheet(link);
+    }
+
+    for (const script of assets.querySelectorAll("script")) {
+        const loadedScript = await loadSpaScript(script);
+        if (loadedScript === "inline") result.inline = true;
+        else if (loadedScript && loadedScript.reused) result.reusedScripts.add(loadedScript.key);
+        else if (loadedScript && loadedScript.key) result.loadedScripts.add(loadedScript.key);
+    }
+
+    return result;
+}
+
+async function loadSpaElementScripts(root) {
+    const result = emptySpaAssetResult();
+    if (!root) return result;
+
+    for (const script of Array.from(root.querySelectorAll("script"))) {
+        const loadedScript = await loadSpaScript(script);
+        if (loadedScript === "inline") result.inline = true;
+        else if (loadedScript && loadedScript.reused) result.reusedScripts.add(loadedScript.key);
+        else if (loadedScript && loadedScript.key) result.loadedScripts.add(loadedScript.key);
+        script.remove();
+    }
+
+    return result;
+}
+
+function emptySpaAssetResult() {
+    return { inline: false, loadedScripts: new Set(), reusedScripts: new Set() };
+}
+
+function mergeSpaAssetResults(...results) {
+    const merged = emptySpaAssetResult();
+    for (const result of results) {
+        if (!result) continue;
+        merged.inline = merged.inline || result.inline;
+        for (const key of result.loadedScripts || []) merged.loadedScripts.add(key);
+        for (const key of result.reusedScripts || []) merged.reusedScripts.add(key);
+    }
+    return merged;
+}
+
+function loadSpaStylesheet(link) {
+    const href = link.href;
+    const key = normalizeAssetURL(href);
+    if (!href || spaLoadedStyles.has(key)) return Promise.resolve();
+
+    return new Promise((resolve, reject) => {
+        const next = document.createElement("link");
+        copyAttributes(link, next);
+        next.onload = () => {
+            spaLoadedStyles.add(key);
+            resolve();
+        };
+        next.onerror = reject;
+        document.head.appendChild(next);
+    });
+}
+
+function loadSpaScript(script) {
+    if (script.src) {
+        const key = normalizeAssetURL(script.src);
+        if (spaLoadedScripts.has(key)) return Promise.resolve({ key, reused: true });
+
+        return new Promise((resolve, reject) => {
+            const next = document.createElement("script");
+            copyAttributes(script, next);
+            next.defer = false;
+            next.async = false;
+            next.onload = () => {
+                spaLoadedScripts.add(key);
+                resolve({ key, reused: false });
+            };
+            next.onerror = reject;
+            document.body.appendChild(next);
+        });
+    }
+
+    runInlinePageScript(script.textContent || "");
+    return Promise.resolve("inline");
+}
+
+function copyAttributes(from, to) {
+    for (const attr of from.attributes) {
+        if (attr.name === "defer") continue;
+        to.setAttribute(attr.name, attr.value);
+    }
+}
+
+function normalizeInlinePageScript(scriptText) {
+    const pageGlobals = [
+        "killID",
+        "pageID",
+        "pageType",
+        "ranksEpoch",
+        "ranksGroup",
+        "ranksHasMore",
+        "ranksKL",
+        "ranksPage",
+        "ranksSortDir",
+        "ranksSortKey",
+        "ranksType",
+        "rawBlock",
+        "rawToggle",
+        "ztopState"
+    ].join("|");
+    const pageGlobalDeclaration = new RegExp("^\\s*(?:const|let)\\s+(" + pageGlobals + ")\\s*=", "gm");
+
+    return scriptText
+        .replace(pageGlobalDeclaration, "window.$1 =")
+        .replace(/^(\s*)function\s+(loadRemainingPilots|prepComments|resizeMobileFittingWheel|load_ztop|toNumber|updateDelta|pushSeries|renderSparkline|parseServerLine|sizeToMegabytes|renderServers|renderGroups)\s*\(/gm, "$1window.$2 = function(");
+}
+
+function runInlinePageScript(scriptText) {
+    const normalizedScript = normalizeInlinePageScript(scriptText || "");
+    const spaDocument = new Proxy(document, {
+        get(target, prop) {
+            if (prop === "addEventListener") {
+                return function(type, listener, options) {
+                    if (type === "DOMContentLoaded" && typeof listener === "function") {
+                        listener.call(target, new Event("DOMContentLoaded"));
+                        return;
+                    }
+                    return target.addEventListener(type, listener, options);
+                };
+            }
+
+            const value = target[prop];
+            return typeof value === "function" ? value.bind(target) : value;
+        }
+    });
+
+    (new Function("document", normalizedScript))(spaDocument);
+}
+
+function normalizeAssetURL(url) {
+    try {
+        const parsed = new URL(url, window.location.href);
+        parsed.search = "";
+        parsed.hash = "";
+        return parsed.href;
+    } catch (e) {
+        return url;
+    }
+}
+
+function runSpaPageInitializers(pageAssets) {
+    const reusedScripts = pageAssets && pageAssets.reusedScripts ? pageAssets.reusedScripts : new Set();
+    if (typeof window.zkbInitOverview === "function" && document.querySelector("#killlist") && hasReusedSpaScript(reusedScripts, "/js/overview.js")) window.zkbInitOverview();
+    if (typeof window.zkbInitTypeRanks === "function" && document.querySelector(".rank-table") && hasReusedSpaScript(reusedScripts, "/js/typeranks.js")) window.zkbInitTypeRanks();
+    if (typeof window.zkbInitScanalyzer === "function" && document.querySelector("#scaninput") && hasReusedSpaScript(reusedScripts, "/js/scanalyzer.js")) window.zkbInitScanalyzer();
+    if (typeof window.zkbInitAsearch === "function" && document.querySelector("#asearchcontent") && hasReusedSpaScript(reusedScripts, "/js/asearch.js")) window.zkbInitAsearch();
+    if (typeof window.resizeMobileFittingWheel === "function") window.resizeMobileFittingWheel();
+}
+
+function hasReusedSpaScript(reusedScripts, pathname) {
+    for (const scriptURL of reusedScripts) {
+        try {
+            if (new URL(scriptURL).pathname === pathname) return true;
+        } catch (e) {
+            if (scriptURL.includes(pathname)) return true;
+        }
+    }
+    return false;
+}
+
+function collapseMobileNav() {
+    const nav = document.getElementById("navbar-main");
+    if (!nav || !window.bootstrap) return;
+    const collapse = bootstrap.Collapse.getInstance(nav);
+    if (collapse) collapse.hide();
+}
+
+function fullNavigate(href) {
+    window.location.href = href;
+}
+
+function navigateTo(href) {
+    let url;
+    try {
+        url = new URL(href, window.location.href);
+    } catch (e) {
+        return fullNavigate(href);
+    }
+
+    if (url.origin !== window.location.origin || isSpaExcludedPath(url.pathname) || !url.pathname.endsWith("/")) {
+        return fullNavigate(url.href);
+    }
+
+    spaNavigate(url.href, true);
+}
 
 function prepTippy() {
 	document.querySelectorAll('[rel="tooltip"], [title]:not([title=""])')
@@ -150,7 +647,10 @@ const asciiBackSlash = '\\'.charCodeAt(0);
 function checkForSearchKey(event) {
     if ($("input:focus, textarea:focus").length == 0) {
         if (event.which == asciiForwardSlash) {$("#searchbox").focus(); return false; }
-        if (event.which == asciiBackSlash) return window.location = '/asearch/';
+        if (event.which == asciiBackSlash) {
+            navigateTo('/asearch/');
+            return false;
+        }
     }
 }
 
@@ -159,6 +659,7 @@ function startWebSocket() {
 		if (ws) return;
 		if (location.pathname != '/ztop/' && characterID == 0) return setTimeout(startWebSocket, 1000);
 
+        addCurrentPagePubsubs();
         ws = new ReconnectingWebSocket((window.location.hostname == 'localhost' ? 'ws' : 'wss' ) + '://' + window.location.hostname + '/websocket/', '', {maxReconnectAttempts: 15});
         ws.onmessage = function(event) {
                 wslog(event.data);
@@ -167,23 +668,64 @@ function startWebSocket() {
             doSubs();
         };
 
-        var channel = entityType + ":" + entityID;
-        if (entityPage != 'index' && entityPage != 'overview') channel = channel + ":" + entityPage;
-        if (entityType != 'none') {
-            pubsub(channel);
-            pubsub('stats:' + channel);
-        }
-        if (window.location.pathname == '/') pubsub('all:*');
-
         console.log('WebSocket connected');
     } catch (e) {
         setTimeout(startWebSocket, 100);
     }
 }
 
-const pubsubs = ['public'];
+const basePubsubs = ['public'];
+let pubsubs = basePubsubs.slice();
+let pubsubGeneration = 0;
+
+function getCurrentPagePubsubs() {
+    const channels = [];
+
+    if (entityType != 'none') {
+        var channel = entityType + ":" + entityID;
+        if (entityPage != 'index' && entityPage != 'overview') channel = channel + ":" + entityPage;
+        channels.push(channel);
+        channels.push('stats:' + channel);
+    }
+
+    if (window.location.pathname == '/') channels.push('all:*');
+    if (window.location.pathname == '/ztop/') channels.push('ztop');
+
+    return channels;
+}
+
+function addPubsubChannel(channel) {
+    if (channel && !pubsubs.includes(channel)) pubsubs.push(channel);
+}
+
+function addCurrentPagePubsubs() {
+    getCurrentPagePubsubs().forEach(addPubsubChannel);
+}
+
+function syncPagePubsubs() {
+    const previousPubsubs = pubsubs.slice();
+    pubsubGeneration++;
+    pubsubs = previousPubsubs.filter(isPersistentPubsub);
+    basePubsubs.forEach(addPubsubChannel);
+    addCurrentPagePubsubs();
+
+    if (!ws) return;
+
+    previousPubsubs
+        .filter((channel) => !isPersistentPubsub(channel) && !pubsubs.includes(channel))
+        .forEach((channel) => unpubsub(channel));
+
+    pubsubs
+        .filter((channel) => !previousPubsubs.includes(channel))
+        .forEach((channel) => pubsub(channel, true));
+}
+
 function doSubs() {
-    pubsubs.forEach((e) => { pubsub(e); });
+    pubsubs.forEach((e) => { pubsub(e, true); });
+}
+
+function isPersistentPubsub(channel) {
+    return basePubsubs.includes(channel) || channel.startsWith('tracker:');
 }
 
 function htmlNotify (data) 
@@ -490,10 +1032,10 @@ async function pasteCrestUrlAsync() {
 
 function addKillListClicks()
 {
-    $(".killListRow").on('click', function(event) {
+    $(".killListRow").off('click.zkb-killrow').on('click.zkb-killrow', function(event) {
             if (event.which === 2) return false;
             console.log($(this).attr('killID'));
-            window.location = '/kill/' + $(this).attr('killID') + '/';
+            navigateTo('/kill/' + $(this).attr('killID') + '/');
             return false;
             });
 }
@@ -516,14 +1058,36 @@ function doFavorite(killID) {
     });
 }
 
-function pubsub(channel)
+function pubsub(channel, forceSend, generation)
 {
+    if (!channel) return;
+    if (generation !== undefined && generation !== pubsubGeneration) return;
+
+    const alreadySubscribed = pubsubs.includes(channel);
+    if (!alreadySubscribed) pubsubs.push(channel);
+    if (alreadySubscribed && !forceSend) return;
+
     try {
         ws.send(JSON.stringify({'action':'sub', 'channel': channel}));
-        if (!pubsubs.includes(channel)) pubsubs.push(channel);
         console.log("subscribing to " + channel);
     } catch (e) {
-        setTimeout("pubsub('" + channel + "');", 150);
+        const retryGeneration = pubsubGeneration;
+        setTimeout(function() { pubsub(channel, true, retryGeneration); }, 150);
+    }
+}
+
+function unpubsub(channel, generation)
+{
+    if (!channel) return;
+    if (isPersistentPubsub(channel)) return;
+    if (generation !== undefined && generation !== pubsubGeneration) return;
+
+    try {
+        ws.send(JSON.stringify({'action':'unsub', 'channel': channel}));
+        console.log("unsubscribing from " + channel);
+    } catch (e) {
+        const retryGeneration = pubsubGeneration;
+        setTimeout(function() { unpubsub(channel, retryGeneration); }, 150);
     }
 }
 
@@ -899,4 +1463,3 @@ function setTime() {
 	let sleepTime = (60 - seconds) * 1000 + 50; // add a small buffer
 	setTimeTimeoutHandle = setTimeout(setTime, sleepTime);
 }
-
