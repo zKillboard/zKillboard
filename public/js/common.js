@@ -772,7 +772,7 @@ function wslog(msg)
     if (msg === 'ping' || msg === 'pong') return;
     json = JSON.parse(msg);
     if (json.action === 'tqStatus') {
-        $("#lasthour").attr('raw', json.kills).attr('format', 'format-int-once');
+        setLiveCounter($('#lasthour'), json.kills);
         updateTqStatus(json.tqStatus, json.tqCount);
     } else if (json.action === 'reload') {
         console.log('Reload imminent in the next 5 minutes');
@@ -780,8 +780,7 @@ function wslog(msg)
     } else if (json.action === 'bigkill') {
         htmlNotify(json);
     } else if (json.action === 'lastHour') {
-        $("#lasthour").text(json.kills);
-        doFormats();
+        setLiveCounter($('#lasthour'), json.kills);
     } else if (json.action === 'audio') {
         audio(json.uri);
     } else if (json.action === 'comment') {
@@ -805,6 +804,14 @@ function wslog(msg)
     } else {
         console.log("Unknown action: " + json.action);
     }
+}
+
+function setLiveCounter(elem, value) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) elem.attr('raw', parsed);
+    else elem.attr('raw', value == null ? '' : String(value));
+    const formatted = Number.isFinite(parsed) ? parsed.toLocaleString() : String(value || '');
+    doFieldUpdate(elem, formatted);
 }
 
 function loadLittleMail(killID) {
@@ -1259,8 +1266,14 @@ function doFieldUpdate(f, v) {
 
     if (f.text() == String(v)) return;
 
+    // Hidden tabs can queue animations and replay them on focus; update immediately instead.
+    if (document.hidden || (typeof document.hasFocus === 'function' && !document.hasFocus())) {
+        f.stop(true, true).text(v).css('opacity', 1);
+        return;
+    }
+
     let o = $(f).attr('flash') == undefined ? 1 : 0;
-    f.animate({opacity: o}, 100, function() {
+    f.stop(true, true).animate({opacity: o}, 100, function() {
             $(this).text(v).animate({opacity: 1}, 100);
             })
 }
@@ -1311,15 +1324,13 @@ function fixCCPsBrokenImages() {
 }
 
 function updateTqStatus(tqStatus, count) { 
-    $("#tqCount").attr('raw', count).attr('format', 'format-int-once');
+    setLiveCounter($('#tqCount'), count);
     let detail = 'TQ ', clss = 'green';
 
     if (tqStatus != 'ONLINE') clss = 'red';
 
     $("#tqStatusDetail").text(detail);
     $("#tqStatus").removeClass("red").removeClass("green").addClass(clss);
-
-    doFormats();
 }
 
 const dlsOptions = {
