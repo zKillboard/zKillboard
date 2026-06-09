@@ -76,8 +76,9 @@ function handler($request, $response, $args, $container) {
 		$query = AdvancedSearch::buildItemHistoryQuery($queryParams, $query, "items", AdvancedSearch::getSelectedFromBase('items-', $buttons));
 		$startTime = (int) @$query['start'];
 		$endTime = (int) @$query['end'];
-		if ($startTime > time()) $startTime = time();
-		if ($endTime == 0 || $endTime > time()) $endTime = time();
+		$now = time();
+		if ($startTime > $now) $startTime = $now;
+		if ($endTime == 0 || $endTime > $now) $endTime = $now;
 		unset($query['start']);
 		unset($query['end']);
 
@@ -96,6 +97,7 @@ function handler($request, $response, $args, $container) {
 		if ($sortKey == 'killID' && $sortBy == -1 && @$query['hasDateFilter'] != true) {
 			$coll = ['oneWeek', 'ninetyDays', 'killmails'];
 		}
+		$aggregateCollection = getAsearchAggregateCollection($startTime, $now);
 		unset($query['hasDateFilter']);
 
 		if (sizeof($query) == 0) $query = [];
@@ -116,18 +118,16 @@ function handler($request, $response, $args, $container) {
 		do {
 			$ret = (string) $redis->get($key);
 			if ($ret == "PROCESSING") {
-				sleep(1);
+				usleep(100000); // 100ms
 				$waits++;
-				if ($waits > 25) {
-					//header("Location: $uri");
-					$redis->del($key);
+				if ($waits > 250) { // 25 seconds
 					$response->getBody()->write(json_encode(['error' => 'Request timeout'], JSON_PRETTY_PRINT));
 					return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withStatus(408);
 				}
 			}
 		} while ($ret == "PROCESSING");
 
-		if (false && $ret != "") {
+		if ($ret != "") {
 			$response->getBody()->write($ret);
 			return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
 		}
@@ -149,11 +149,7 @@ function handler($request, $response, $args, $container) {
 			$response->getBody()->write($jsoned);
 			return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
 		} else if ($queryType == 'count') {
-			foreach ($coll as $col) {
-				$result = iter2array($mdb->find($col, $query, $sort, 50, [], 50 * $page));
-				if (sizeof($result) >= 50) break;
-			}
-			$arr = AdvancedSearch::getSums($groupType . 'ID', $query, $victimsOnly);
+			$arr = AdvancedSearch::getSums($groupType . 'ID', $query, $victimsOnly, false, true, $aggregateCollection);
 			unset($arr['_id']);
 			$jsoned = json_encode($arr, true);
 			$redis->setex($key, 300, $jsoned);
@@ -169,7 +165,7 @@ function handler($request, $response, $args, $container) {
 			$arr['top'] = [];
 			$rendered = '';
 			if (in_array($groupType, $types)) {
-				$res = AdvancedSearch::getTop($groupType . 'ID', $query, $victimsOnly, $filter, true, $sortKey, $sortBy);
+				$res = AdvancedSearch::getTop($groupType . 'ID', $query, $victimsOnly, $filter, true, $sortKey, $sortBy, $aggregateCollection);
 				$rendered = $container->get('view')->getEnvironment()->render("components/asearch_top_list.html", ['topSet' =>
 				[
 					'type' => $groupType,
@@ -226,7 +222,7 @@ function handler($request, $response, $args, $container) {
 				return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
 			}
 
-			$result = AdvancedSearch::getDistincts($query, $filter, $victimsOnly);
+			$result = AdvancedSearch::getDistincts($query, $filter, $victimsOnly, $aggregateCollection);
 
 			$res = [];
 			foreach ($result as $type => $count) {
@@ -258,4 +254,12 @@ function handler($request, $response, $args, $container) {
 function iter2array($iter) 
 {
     return gettype($iter) == "array" ? $iter : iterator_to_array($iter);
+}
+
+function getAsearchAggregateCollection($startTime, $now)
+{
+	if ($startTime <= 0) return 'killmails';
+	if ($startTime >= ($now - 604800)) return 'oneWeek';
+	if ($startTime >= ($now - 7776000)) return 'ninetyDays';
+	return 'killmails';
 }

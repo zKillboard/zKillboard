@@ -235,16 +235,18 @@ class AdvancedSearch
         return $query;
     }
 
-    public static function getTop($groupByColumn, $query, $victimsOnly, $filter, $addInfo, $sortKey, $sortBy)
+    public static function getTop($groupByColumn, $query, $victimsOnly, $filter, $addInfo, $sortKey, $sortBy, $collection = 'killmails')
     {
         global $mdb, $longQueryMS, $redis;
 
-        $hashKey = "Stats::getTop:r:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly);
+        $collection = self::getAggregateCollection($collection);
+        if ($collection == null) return [];
+        $hashKey = "Stats::getTop:r:$collection:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly) . ":$sortKey:$sortBy";
         while ($redis->get("inprogress:$hashKey") == "true") sleep(1);
         try {
             $redis->setex("inprogress:$hashKey", 60, "true");
 
-            $killmails = $mdb->getCollection('killmails');
+            $killmails = $mdb->getCollection($collection);
 
             if ($groupByColumn == 'solarSystemID' || $groupByColumn == "constellationID" || $groupByColumn == 'regionID') {
                 $keyField = "system.$groupByColumn";
@@ -300,18 +302,20 @@ class AdvancedSearch
         }
     }
 
-    public static function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $addInfo = true)
+    public static function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $addInfo = true, $collection = 'killmails')
     {
         global $mdb, $longQueryMS;
 
-        $hashKey = "Stats::getSums:q:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly);
+        $collection = self::getAggregateCollection($collection);
+        if ($collection == null) return self::getEmptySums();
+        $hashKey = "Stats::getSums:q:$collection:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly);
         try {
             $result = RedisCache::get($hashKey);
             if ($cacheOverride == false && $result != null) {
                 return $result;
             }
 
-            $killmails = $mdb->getCollection('killmails');
+            $killmails = $mdb->getCollection($collection);
 
             if ($groupByColumn == 'solarSystemID' || $groupByColumn == "constellationID" || $groupByColumn == 'regionID') {
                 $keyField = "system.$groupByColumn";
@@ -343,14 +347,7 @@ class AdvancedSearch
 
             $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'maxTimeMS' => 25000]);
             $resultArray = iterator_to_array($rr);
-            $result = !empty($resultArray) ? $resultArray[0] : [
-                'isk' => 0,
-                'droppable' => 0,
-                'fitted' => 0,
-                'dropped' => 0,
-                'destroyed' => 0,
-                'kills' => 0
-            ];
+            $result = !empty($resultArray) ? $resultArray[0] : self::getEmptySums();
 
             $time = $timer->stop();
             if ($time > $longQueryMS) {
@@ -499,13 +496,15 @@ class AdvancedSearch
         }
     }
 
-    public static function getDistincts($query, $filter, $victimsOnly)
+    public static function getDistincts($query, $filter, $victimsOnly, $collection = 'killmails')
     {
         global $mdb, $longQueryMS;
 
-        $hashKey = "Stats::getDistincts:" . serialize($query) . ":" . serialize($victimsOnly);
+        $collection = self::getAggregateCollection($collection);
+        if ($collection == null) return [];
+        $hashKey = "Stats::getDistincts:$collection:" . serialize($query) . ":" . serialize($victimsOnly);
         try {
-            $killmails = $mdb->getCollection('killmails');
+            $killmails = $mdb->getCollection($collection);
 
             $timer = new Timer();
             $pipeline = [];
@@ -570,5 +569,23 @@ class AdvancedSearch
             if (Util::startsWith($button, $base)) return str_replace($base, '', $button);
         }
         return 'and'; // default
+    }
+
+    private static function getAggregateCollection($collection)
+    {
+        $allowed = ['oneWeek', 'ninetyDays', 'killmails'];
+        return in_array($collection, $allowed, true) ? $collection : null;
+    }
+
+    private static function getEmptySums()
+    {
+        return [
+            'isk' => 0,
+            'droppable' => 0,
+            'fitted' => 0,
+            'dropped' => 0,
+            'destroyed' => 0,
+            'kills' => 0
+        ];
     }
 }
