@@ -21,7 +21,13 @@ function handler($request, $response, $args, $container) {
                             ->withHeader('Content-Type', 'application/json; charset=utf-8');
 
         $type = $otype;
-        $output = json_encode(['type' => $type, 'id' => $id, 'name' => $name], true);
+        $output = ['type' => $type, 'id' => $id, 'name' => $name];
+        if ($type == 'shipID' || $type == 'shipTypeID') {
+            $ship = ['shipTypeID' => $id];
+            Info::addInfo($ship);
+            $output['pip'] = @$ship['pip'];
+        }
+        $output = json_encode($output, true);
         $response->getBody()->write($output);
         return $response;
     } catch (Exception $ex) {

@@ -34,6 +34,11 @@ for ($i = 0; $i < sizeof($result); $i++) {
                     'id' => $row['id']
                 ]
             ];
+    if ($row['type'] == 'ship' || $row['type'] == 'shipID' || $row['type'] == 'shipTypeID') {
+        $ship = ['shipTypeID' => (int) $row['id']];
+        Info::addInfo($ship);
+        $add['data']['pip'] = @$ship['pip'];
+    }
     $ret[] = $add;
 }
 

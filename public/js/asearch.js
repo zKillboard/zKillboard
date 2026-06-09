@@ -206,7 +206,8 @@ function createSuggestion(json, slot) {
 		value: json.name,
 		data: {
 			type: json.type,
-			id: json.id
+			id: json.id,
+			pip: json.pip
 		}
 	}, slot);
 }
@@ -265,6 +266,13 @@ function getHTML(suggestion) {
 		.css({ width: "42px", height: "42px", flex: "0 0 42px", objectFit: "contain", objectPosition: "left center" })
 		.addClass("eveimage img-rounded");
 	if (entityImage.onerror != undefined) image.attr("onerror", entityImage.onerror);
+	if ((suggestion.data.type == 'shipID' || suggestion.data.type == 'shipTypeID') && suggestion.data.pip) {
+		image = $("<span>")
+			.addClass("shipImageSpan")
+			.css({ width: "42px", height: "42px", "--size": "42px", "--sizei": "42", margin: 0 })
+			.append(image)
+			.append($("<img>").addClass("pip").attr("src", "/img/pips/" + suggestion.data.pip).attr("alt", ""));
+	}
 	imageWrap.append(image);
 	var data = $("<span>")
 		.addClass("entity")
@@ -279,6 +287,7 @@ function getHTML(suggestion) {
 	return $("<div>")
 		.attr('entity-type', suggestion.data.type)
 		.attr('entity-id', suggestion.data.id)
+		.attr('entity-pip', suggestion.data.pip || "")
 		.attr('time-id', 'id-' + Date.now())
 		.css({ display: "flex", alignItems: "stretch", borderRadius: "7px", overflow: "hidden", padding: 0, backgroundColor: "#3f3f3f" })
 		.addClass('filter')
@@ -630,6 +639,8 @@ function move(element, arr) {
 	var location = parent.parent().attr('id');
 
 	var data = { type: parent.attr('entity-type'), id: parent.attr('entity-id') };
+	var pip = parent.attr('entity-pip');
+	if (pip != undefined && pip != '') data.pip = pip;
 	var destination = arr[location];
 
 	if (destination != undefined && canMoveTo(data, destination)) {
