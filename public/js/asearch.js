@@ -550,7 +550,7 @@ function applyCountQueryResult(data, textStatus, jqXHR) {
 	let dropped = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><span>Dropped</span><span class="small" raw="${pctDropped}" format="format-pct-once"></span></div><div style="display:flex; justify-content:space-between; align-items:flex-end;"><span></span><span class="green" raw="${data.dropped}" format="format-isk-once"></span></div>`;
 	let destroyed = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><span>Destroyed</span><span class="small" raw="${pctDestroyed}" format="format-pct-once"></span></div><div style="display:flex; justify-content:space-between; align-items:flex-end;"><span></span><span class="red" raw="${data.destroyed}" format="format-isk-once"></span></div>`;
 
-	let html = [count, isk, droppableHtml, fitted, dropped, destroyed].join('<span style="display:block; height:0.5em;"></span>');
+	let html = [count, isk, fitted, dropped, destroyed, droppableHtml].join('<span style="display:block; height:0.5em;"></span>');
 	$("#result-groups-count").html(html);
 }
 
