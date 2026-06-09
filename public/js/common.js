@@ -223,17 +223,24 @@ function isAsearchDrillDownClick(anchor) {
 }
 
 function isSpaExcludedPath(pathname) {
-    return [
+    const excludedPrefixes = [
         "/api/",
         "/cache/",
         "/account/logout/",
+        "/account/tracker/",
+        "/asearchsaved/",
+        "/brsave/",
         "/ccp",
         "/ccpoauth2",
         "/crestmail/",
         "/logout/",
         "/navbar/",
-        "/partial/"
-    ].some(prefix => pathname.startsWith(prefix));
+        "/partial/",
+        "/sponsor/"
+    ];
+
+    if (excludedPrefixes.some(prefix => pathname.startsWith(prefix))) return true;
+    return /^\/kill\/\d+\/redirect\//.test(pathname);
 }
 
 async function spaNavigate(href, pushState, historyState) {
