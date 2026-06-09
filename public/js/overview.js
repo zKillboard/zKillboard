@@ -92,24 +92,26 @@ async function loadTops() {
     if (window.location.pathname.includes('/page/')) return;
 
 	try {
-		// Load ISK top stats
-		try {
-			const response = await fetch("/cache/tagged/statstopisk/?u=" + window.location.pathname);
-			const html = await response.text();
-			const element = document.querySelector("#topset-isk");
-			if (element) element.innerHTML = html;
-		} catch (error) {
+			// Load ISK top stats
+			try {
+				const response = await fetch("/cache/tagged/statstopisk/?u=" + window.location.pathname);
+				if (response.status >= 400) throw new Error("Unexpected status " + response.status);
+				const html = await response.text();
+				const element = document.querySelector("#topset-isk");
+				if (element) element.innerHTML = html;
+			} catch (error) {
 			console.error('Failed to load ISK stats:', error);
 		}
 
 		// Load top types
-		for (const t of validTopTypes) {
-			try {
-				const response = await fetch("/cache/tagged/statstop10/?u=" + window.location.pathname + "&t=" + t);
-				const html = await response.text();
-				const element = document.querySelector("#topset-" + t);
-				if (element) element.innerHTML = html;
-			} catch (error) {
+			for (const t of validTopTypes) {
+				try {
+					const response = await fetch("/cache/tagged/statstop10/?u=" + window.location.pathname + "&t=" + t);
+					if (response.status >= 400) throw new Error("Unexpected status " + response.status);
+					const html = await response.text();
+					const element = document.querySelector("#topset-" + t);
+					if (element) element.innerHTML = html;
+				} catch (error) {
 				console.error('Failed to load top stats for ' + t + ':', error);
 			}
 		}
