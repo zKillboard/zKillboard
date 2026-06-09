@@ -1403,7 +1403,10 @@ code {
 	border-top: 3px solid transparent;
 	border-radius: 0.45rem;
 	padding: 0.65rem;
+	display: flex;
+	flex-direction: column;
 	height: 100%;
+	width: 100%;
 }
 
 .related-team-card-a {
@@ -1433,6 +1436,14 @@ code {
 
 .related-team-block {
 	margin-bottom: 0.55rem;
+}
+
+.related-team-card > .related-team-block {
+	flex: 1 1 auto;
+}
+
+.related-team-list-card > .related-team-block {
+	flex: 0 1 auto;
 }
 
 .related-team-stats {
