@@ -536,17 +536,21 @@ function applyCountQueryResult(data, textStatus, jqXHR) {
 	}
 	if (data.kills == 0) $("#result-groups-count").html('')
 	// get the integer percentages for each of these
-	let pctDropped = data.isk > 0 ? Math.round((data.dropped / data.isk) * 100) : 0;
-	let pctDestroyed = data.isk > 0 ? Math.round((data.destroyed / data.isk) * 100) : 0;
+	let droppable = data.droppable > 0 ? data.droppable : data.isk;
+	let droppableDestroyed = Math.max(0, droppable - data.dropped);
+	let pctDropped = droppable > 0 ? Math.round((data.dropped / droppable) * 100) : 0;
+	let pctDestroyed = droppable > 0 ? Math.round((droppableDestroyed / droppable) * 100) : 0;
 	let pctFitted = data.isk > 0 ? Math.round((data.fitted / data.isk) * 100) : 0;
 
 	let count = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><span>Killmails</span><span class="small"></span></div><div style="display:flex; justify-content:space-between; align-items:flex-end;"><span></span><span raw="${data.kills}" format="format-int-once"></span></div>`;
 	let isk = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><span>Total</span><span class="small"></span></div><div style="display:flex; justify-content:space-between; align-items:flex-end;"><span></span><span raw="${data.isk}" format="format-isk-once"></span></div>`;
+	let droppablePct = `<span class="small" style="display:inline-flex; gap:12px; align-items:center;"><span class="green" title="Dropped: Percentage of Droppable Value"><span raw="${pctDropped}" format="format-pct-once"></span> <i class="fas fa-check" aria-hidden="true" style="color: inherit;"></i></span><span class="red" title="Destroyed: Percentage of Droppable Value"><span raw="${pctDestroyed}" format="format-pct-once"></span> <i class="fas fa-times" aria-hidden="true" style="color: inherit;"></i></span></span>`;
+	let droppableHtml = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><span>Droppable</span><span class="small"></span></div><div style="display:flex; justify-content:space-between; align-items:flex-end;"><span></span><span raw="${droppable}" format="format-isk-once"></span></div><div style="display:flex; justify-content:flex-end; align-items:center; line-height:1.1; margin-top:2px;">${droppablePct}</div>`;
 	let fitted = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><span>Fitted</span><span class="small" raw="${pctFitted}" format="format-pct-once"></span></div><div style="display:flex; justify-content:space-between; align-items:flex-end;"><span></span><span raw="${data.fitted}" format="format-isk"></span></div>`;
 	let dropped = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><span>Dropped</span><span class="small" raw="${pctDropped}" format="format-pct-once"></span></div><div style="display:flex; justify-content:space-between; align-items:flex-end;"><span></span><span class="green" raw="${data.dropped}" format="format-isk-once"></span></div>`;
 	let destroyed = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><span>Destroyed</span><span class="small" raw="${pctDestroyed}" format="format-pct-once"></span></div><div style="display:flex; justify-content:space-between; align-items:flex-end;"><span></span><span class="red" raw="${data.destroyed}" format="format-isk-once"></span></div>`;
 
-	let html = [count, isk, fitted, dropped, destroyed].join('<span style="display:block; height:0.5em;"></span>');
+	let html = [count, isk, droppableHtml, fitted, dropped, destroyed].join('<span style="display:block; height:0.5em;"></span>');
 	$("#result-groups-count").html(html);
 }
 

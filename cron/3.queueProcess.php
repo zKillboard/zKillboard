@@ -128,6 +128,7 @@ while ($time >= time()) {
             $fittedValue = getFittedValue($killID, $mail['victim']['items'], $date);
             $fittedValue += $shipValue;
             $totalValue = $destroyedValue + $droppedValue;
+            $totalDroppableValue = getTotalDroppableValue($killID, $mail['victim']['items'], $date);
 
             $isPaddedKill = false;
             $padhash = getPadHash($kill);
@@ -192,6 +193,7 @@ while ($time >= time()) {
             $zkb['droppedValue'] = round((double) $droppedValue, 2);
             $zkb['destroyedValue'] = round((double) $destroyedValue, 2);
             $zkb['totalValue'] = round((double) $totalValue, 2);
+            $zkb['totalDroppableValue'] = round((double) $totalDroppableValue, 2);
             $zkb['points'] = ($kill['npc'] == true) ? 1 : (int) Points::getKillPoints($killID);
             $kill['zkb'] = $zkb;
             $kill['damage_taken'] = (int) @$mail['victim']['damage_taken'];
@@ -336,6 +338,51 @@ function getDValue($killID, $items, $dttm, $dropped)
         if ($qty > 0) $dValue += processItems($killID, [$item], $dttm);
     }
     return $dValue;
+}
+
+function getTotalDroppableValue($killID, $items, $dttm, $isCargo = false)
+{
+    if ($killID < 21112472) {
+        return 0;
+    }
+
+    $totalDroppableValue = 0;
+    foreach ($items as $item) {
+        $flagLocation = Info::getFlagLocation((int) @$item['flag']);
+        if ($flagLocation == 2663 || $flagLocation == 89) {
+            continue;
+        }
+
+        $totalDroppableValue += getItemValue($killID, $item, $dttm, $isCargo);
+
+        if (@is_array($item['items'])) {
+            $totalDroppableValue += getTotalDroppableValue($killID, $item['items'], $dttm, true);
+        }
+    }
+
+    return $totalDroppableValue;
+}
+
+function getItemValue($killID, $item, $dttm, $isCargo = false)
+{
+    $typeID = (int) $item['item_type_id'];
+    if ($typeID == 0) return 0;
+    $flag = (int) @$item['flag'];
+
+    if ($typeID == 33329 && $flag == 89) $price = 0.01;
+    else if ($flag == 179) $price = 0.01;
+    else $price = Price::getItemPrice($typeID, $dttm);
+
+    if ($killID < 21112472 && $isCargo) {
+        $itemName = Info::getInfoField("typeID", $typeID, "name");
+        if ($itemName == null) $itemName = "TypeID $typeID";
+        if (strpos($itemName, 'Blueprint') !== false) $item['singleton'] = 2;
+    }
+    if (@$item['singleton'] == 2) {
+        $price = 0.01;
+    }
+
+    return $price * (@$item['quantity_dropped'] + @$item['quantity_destroyed']);
 }
 
 function processItems($killID, $items, $dttm, $isCargo = false, $parentFlag = 0)

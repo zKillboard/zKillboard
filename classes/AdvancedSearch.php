@@ -286,6 +286,7 @@ class AdvancedSearch
             $pipeline[] = ['$group' => [
                 '_id' => 0, 
                 'isk' => ['$sum' => '$zkb.totalValue'], 
+                'droppable' => ['$sum' => '$zkb.totalDroppableValue'], 
                 'fitted' => ['$sum' => '$zkb.fittedValue'], 
                 'dropped' => ['$sum' => '$zkb.droppedValue'], 
                 'destroyed' => ['$sum' => '$zkb.destroyedValue'], 
@@ -297,6 +298,7 @@ class AdvancedSearch
             $resultArray = iterator_to_array($rr);
             $result = !empty($resultArray) ? $resultArray[0] : [
                 'isk' => 0,
+                'droppable' => 0,
                 'fitted' => 0,
                 'dropped' => 0,
                 'destroyed' => 0,
