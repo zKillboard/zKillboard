@@ -55,7 +55,7 @@ const z3 = '{{ z3 }}';
 
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Droid+Sans:wght@400;700&display=swap">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Droid+Sans:wght@400;700&display=block">
 
 		<link id="mainstyle" rel="stylesheet" href="/vendor/bootstrap/5.3.3/cyborg/bootstrap.min.css" />
 
@@ -65,6 +65,12 @@ const z3 = '{{ z3 }}';
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css" integrity="sha512-mSYUmp1HYZDFaVKK//63EcZq4iFWFjxSL+Z3T/aCt4IO9Cejm03q3NKKYN6pFQzY0SBOr8h+eCIAZHPXcpZaNw==" crossorigin="anonymous" />
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.2/css/bootstrap-slider.css" integrity="sha512-9/DrcJ4ddTEJ6E9+muHEzd7lvbYKl26e2zNkLEMClB6ztAF27Q9glJDMk7ffmQ962RZrx3MsHRRqAgiF00e8/A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+		<link rel="stylesheet" href="/css/style-edits/cyborg-main.css?v={{ version }}" id="nextstyle">
+		<link rel="stylesheet" href="/css/main.css?v={{ version }}">
+
+		{% block style %}
+		{% endblock %}
 
 		<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery.devbridge-autocomplete/1.5.0/jquery.autocomplete.min.js" integrity="sha512-zigO6HJddtn1h8sdX3wTCbcAjJ1u2f4KhtNgcqminM75+L8IkibrVHqO19LfUK9Mavk0fYGVNUMmhHpx8COP2g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -77,16 +83,10 @@ const z3 = '{{ z3 }}';
 		<script defer src="https://unpkg.com/@popperjs/core@2"></script>
 		<script defer src="https://unpkg.com/tippy.js@6"></script>
 
-		<link rel="stylesheet" href="/css/style-edits/cyborg-main.css?v={{ version }}" id="nextstyle">
-		<link rel="stylesheet" href="/css/main.css?v={{ version }}">
-
 		<script defer type="text/javascript" src="/js/search.js?v={{ version }}"></script>
 		<script defer type="text/javascript" src="/js/common.js?v={{ version }}"></script>
 		<script defer type="text/javascript" src="/js/ambience.js?v={{ version }}"></script>
 		<script defer type="text/javascript" src="/js/reconnecting-websocket.js"></script>
-
-		{% block style %}
-		{% endblock %}
 
 		{% if showAnalytics != false %}
 			{{ analytics|raw }}

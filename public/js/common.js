@@ -276,6 +276,7 @@ async function spaNavigate(href, pushState, historyState) {
         updateHeadLink("canonical", doc);
         updateHeadMeta("description", doc);
         syncSpaHeadExtras(doc);
+        await loadSpaHeadStylesheets(doc);
 
         if (pushState) {
             window.history.pushState(getSpaHistoryState({ scrollX: 0, scrollY: 0 }), document.title, targetURL.href);
@@ -430,6 +431,12 @@ async function loadSpaPageAssets(doc) {
     }
 
     return result;
+}
+
+async function loadSpaHeadStylesheets(doc) {
+    for (const link of doc.head.querySelectorAll('link[rel="stylesheet"]')) {
+        await loadSpaStylesheet(link);
+    }
 }
 
 async function loadSpaElementScripts(root) {
