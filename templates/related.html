@@ -120,8 +120,10 @@
 		<section class="related-team-card related-team-card-a">
 			<h5 class="related-team-heading">Team A <small>({{ teamASize }} involved)</small></h5>
 			<div class="related-team-entities">
-				{% for entity, name in summary.teamA.entities %}
-					<div class="related-entity-row related-entity-row-a"><a class="related-entity-move" rel="nofollow" href="./?right={{entity}}" title="Move to Team B"><i class="fas fa-arrow-alt-circle-right"></i></a><a class="related-entity-name" href="/{{ entity }}/">{{ name }}</a></div>
+				{% for entity, data in summary.teamA.entities %}
+					{% set entityName = data.name is defined ? data.name : data %}
+					{% set entityType = data.type is defined ? data.type : 'corporation' %}
+					<div class="related-entity-row related-entity-row-a"><a class="related-entity-move" rel="nofollow" href="./?right={{entity}}" title="Move to Team B"><i class="fas fa-arrow-alt-circle-right"></i></a><a class="related-entity-name" href="/{{ entityType }}/{{ entity }}/">{{ entityName }}</a></div>
 				{% endfor %}
 			</div>
 			<div class="related-team-block">
@@ -140,8 +142,10 @@
 		<section class="related-team-card related-team-card-b">
 			<h5 class="related-team-heading text-lg-end">Team B <small>({{ teamBSize }} involved)</small></h5>
 			<div class="related-team-entities">
-				{% for entity, name in summary.teamB.entities %}
-					<div class="related-entity-row related-entity-row-b"><a class="related-entity-name" href="/{{ entity }}/">{{ name }}</a><a class="related-entity-move" rel="nofollow" href="./?left={{entity}}" title="Move to Team A"><i class="fas fa-arrow-alt-circle-left"></i></a></div>
+				{% for entity, data in summary.teamB.entities %}
+					{% set entityName = data.name is defined ? data.name : data %}
+					{% set entityType = data.type is defined ? data.type : 'corporation' %}
+					<div class="related-entity-row related-entity-row-b"><a class="related-entity-name" href="/{{ entityType }}/{{ entity }}/">{{ entityName }}</a><a class="related-entity-move" rel="nofollow" href="./?left={{entity}}" title="Move to Team A"><i class="fas fa-arrow-alt-circle-left"></i></a></div>
 				{% endfor %}
 			</div>
 			<div class="related-team-block">

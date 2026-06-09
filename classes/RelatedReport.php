@@ -98,6 +98,7 @@ class RelatedReport {
         }
 
         $summary = unserialize($summary);
+        self::normalizeEntityLinks($summary);
         $mc = array('summary' => $summary, 'systemID' => $systemID, 'systemName' => $systemName, 'regionName' => $regionName, 'time' => $time, 'exHours' => $exHours, 'solarSystemID' => $systemID, 'relatedTime' => $relatedTime, 'options' => json_encode($json_options), 'unixtime' => $unixTime);
 
         if ($battleID > 0) {
@@ -111,5 +112,27 @@ class RelatedReport {
 		$mc['complete'] = true;
 
         return $mc;
+    }
+
+    private static function normalizeEntityLinks(&$summary)
+    {
+        foreach (['teamA', 'teamB'] as $team) {
+            if (!isset($summary[$team]['entities']) || !is_array($summary[$team]['entities'])) {
+                continue;
+            }
+            foreach ($summary[$team]['entities'] as $entity => $data) {
+                if (is_array($data) && isset($data['name']) && isset($data['type'])) {
+                    continue;
+                }
+
+                $name = is_array($data) && isset($data['name']) ? $data['name'] : $data;
+                $type = 'alliance';
+                if (Info::getInfoField('allianceID', $entity, 'name') === null) {
+                    $type = 'corporation';
+                }
+
+                $summary[$team]['entities'][$entity] = ['name' => $name, 'type' => $type];
+            }
+        }
     }
 }

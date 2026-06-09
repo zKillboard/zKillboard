@@ -210,9 +210,13 @@ class Related
         foreach ($team as $entity) {
             if (isset($retValue[$entity])) continue;
             $name = Info::getInfoField('allianceID', $entity, 'name');
-            if ($name === null) $name = Info::getInfoField('corporationID', $entity, 'name');
+            $type = 'alliance';
+            if ($name === null) {
+                $name = Info::getInfoField('corporationID', $entity, 'name');
+                $type = 'corporation';
+            }
             if ($name === null) $name = "Entity $entity";
-            $retValue[$entity] = $name;
+            $retValue[$entity] = ['name' => $name, 'type' => $type];
         }
 
         return $retValue;
