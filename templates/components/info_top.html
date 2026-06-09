@@ -149,12 +149,32 @@
                 </td>
 			</tr>
             {% endif %}
+            {% if key == 'constellation' and detail.systems %}
+			<tr>
+				<th>Systems:</th>
+				<td>
+					{% for system in detail.systems %}
+						<a href="/system/{{ system.id }}/">{{ system.name }}</a>{% if not loop.last %}, {% endif %}
+					{% endfor %}
+				</td>
+			</tr>
+            {% endif %}
             {% if detail.regionName %}
 			<tr>
 				<th>Region:</th>
 				<td itemprop="region"><a href="/region/{{detail.regionID}}/" class="{% if detail.regionID >= 12000001 and detail.regionID < 13000000 %}triglavian{% endif %}">{{ detail.regionName }}</a>
 				{% include 'components/tracker.html' %}
                 </td>
+			</tr>
+            {% endif %}
+            {% if key == 'region' and detail.constellations %}
+			<tr>
+				<th>Constellations:</th>
+				<td>
+					{% for constellation in detail.constellations %}
+						<a href="/constellation/{{ constellation.id }}/">{{ constellation.name }}</a>{% if not loop.last %}, {% endif %}
+					{% endfor %}
+				</td>
 			</tr>
             {% endif %}
             {% if detail.type == 'solarSystemID' and detail.class %}
