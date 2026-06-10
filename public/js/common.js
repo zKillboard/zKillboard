@@ -1225,7 +1225,7 @@ setTimeout(otherBanners, Math.min(30000, 1000 * (61 - new Date().getSeconds())))
 
 function showAdder(showAdd, type, id, doTN) {
     if (doTN) pubsub('tracker:' + type + ':' + id);
-    return (showAdd && ($("#tracker-remove-" + type + "-" + id).removeClass("hidden").length == 0));
+    return (showAdd && ($("#tracker-remove-" + type + "-" + id).removeClass("hidden d-none").length == 0));
 }
 
 function statsboxUpdate(stats) {
