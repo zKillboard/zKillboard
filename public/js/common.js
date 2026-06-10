@@ -287,7 +287,6 @@ function isSpaExcludedPath(pathname) {
         "/crestmail/",
         "/logout/",
         "/navbar/",
-        "/partial/",
         "/sponsor/"
     ];
 

@@ -1,4 +1,4 @@
-{% if not partial %}<!DOCTYPE html>
+<!DOCTYPE html>
 <html prefix="og: http://ogp.me/ns#" lang="en" class="no-js">
 	<head>
 		<meta charset="utf-8">
@@ -145,13 +145,13 @@ var promoImage1 = '{{ promoImage1 }}';
 					</a>					
 				</div>
 
-                <span id="zkb-page-content" class='pagecontent' data-entity-type="{{ entityType }}" data-entity-id="{{ entityID }}" data-entity-page="{{ pageType }}" data-actual-uri="{{ actualURI }}">{% endif %}
+                <span id="zkb-page-content" class='pagecontent' data-entity-type="{{ entityType }}" data-entity-id="{{ entityID }}" data-entity-page="{{ pageType }}" data-actual-uri="{{ actualURI }}">
 				<!-- The text header -->
 				{% block header %}{% endblock %}
 				<!-- The actual site content-->
 				{% block content %}Default content{% endblock %}
 
-{% if not partial %}</span>
+</span>
 
 				<div class="clearfix"></div>
 
@@ -242,4 +242,3 @@ var promoImage1 = '{{ promoImage1 }}';
 <form id="externalkmform" method="post" action="/post/" style="display: none;"><input type="text" id="externalurl" name="killmailurl"/></form>
 </body>
 </html>
-{% endif %}

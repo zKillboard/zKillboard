@@ -73,7 +73,6 @@ if (strlen($requestUri) == 0 || substr($requestUri, -1) != '/') {
 $twig->addGlobal('requestUriPager', $requestUri);
 //$twig->addGlobal('actualURI', $actualURI);
 $twig->addGlobal('actualURI', $requestUri);
-$twig->addGlobal('partial', ("/partial/" === substr($uri, 0, 9)));
 
 // Twig globals
 $twig->addGlobal('image_server', $imageServer);
