@@ -44,7 +44,6 @@ $("#nextstyle").attr("href", "/css/style-edits/{{ style }}-main.css");
 $(".zkblogo").hide();
 {% endif %}
 
-$("#menu-favorites").removeClass('d-none');
 var tn = ('true' == '{{ trackernotification }}'); // TN = TrackerNotification
 window.tn = tn;
 window.zkbTrackerState = {
@@ -67,13 +66,13 @@ window.zkbTrackerState = {
 };
 
 applyTrackerControls();
-
-{% for killID in favorites %}
-$(".fav-star-" + {{ killID }}).css("color", "#FDBC2C");
-{% endfor %}
+window.zkbFavorites = [{% for killID in favorites %}{{ killID }}{% if not loop.last %}, {% endif %}{% endfor %}];
+applyFavoriteStars();
 
 console.log("nav loaded");
 </script>
+<li><a class="dropdown-item" href="/account/favorites/">Favorites</a></li>
+<li><hr class="dropdown-divider"></li>
 {% if tracker_character %}
 <li><h6 class="dropdown-header">Characters</h6></li>
 {% for data in tracker_character %}

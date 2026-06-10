@@ -1,6 +1,7 @@
 var ws;
 var adblocked = undefined;
 var zkbVersionCheckTimeout = null;
+window.zkbFavorites = window.zkbFavorites || [];
 
 window.onerror = function (message, source, lineno, colno, error) {
 	console.error("Global error:", message, error);
@@ -109,6 +110,7 @@ function initPageContent() {
     doFormats();
     loadFetchmeKillRows();
     loadHomeKillListIfNeeded();
+    applyFavoriteStars();
     $("[raw]").off("click.zkb-copy").on("click.zkb-copy", copyToClipboard);
     setTimeout(fixCCPsBrokenImages, 1000);
     setTimeout(prepTippy, 1);
@@ -1120,15 +1122,49 @@ function doSponsor(url)
     showModal('#modalMessage');
 }
 
-function doFavorite(killID) {
-    var color = $("#fav-star-killmail").css("color");
-    var action = (color === "rgb(128, 128, 128)") ? "save" : "remove";
+function doFavorite(killID, star) {
+    var favoriteStars = $(".fav-star-" + killID);
+    var clickedElement = star ? $(star) : favoriteStars.first();
+    var clickedStar = clickedElement.hasClass("fa-star") ? clickedElement : clickedElement.find(".fa-star").first();
+    var color = clickedStar.css("color");
+    var action = (color === "rgb(253, 188, 44)") ? "remove" : "save";
     var url = '/account/favorite/' + killID + '/' + action + '/';
     $.post(url, function( result ) {
 		console.log(result);
-    	$("#fav-star-killmail").css("color", result.color);
+        favoriteStars.css("color", result.color);
+        favoriteStars.toggleClass("fas", result.color === "#FDBC2C");
+        favoriteStars.toggleClass("far", result.color !== "#FDBC2C");
+        updateFavoriteState(killID, result.color === "#FDBC2C");
 		showToast(result.message, 5000);
+    }, "json").fail(function() {
+        showToast("Unable to update favorite. Please try again.", 5000);
     });
+}
+
+function applyFavoriteStars() {
+    const favorites = new Set((window.zkbFavorites || []).map(Number));
+
+    $('[class*="fav-star-"]').each(function() {
+        const star = $(this);
+        const favoriteClass = (this.className || '').split(/\s+/).find(name => name.indexOf('fav-star-') === 0);
+        if (!favoriteClass) return;
+
+        const killID = Number(favoriteClass.replace('fav-star-', ''));
+        const isFavorite = favorites.has(killID);
+        star.css("color", isFavorite ? "#FDBC2C" : "#d0d0d0");
+        star.toggleClass("fas", isFavorite);
+        star.toggleClass("far", !isFavorite);
+    });
+}
+
+function updateFavoriteState(killID, isFavorite) {
+    const favoriteSet = new Set((window.zkbFavorites || []).map(Number));
+    killID = Number(killID);
+
+    if (isFavorite) favoriteSet.add(killID);
+    else favoriteSet.delete(killID);
+
+    window.zkbFavorites = Array.from(favoriteSet);
 }
 
 function pubsub(channel, forceSend, generation)

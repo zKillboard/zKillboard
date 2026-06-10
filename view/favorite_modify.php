@@ -8,7 +8,7 @@ function handler($request, $response, $args, $container) {
 
     if (!User::isLoggedIn()) {
         $response = $response->withHeader('Content-Type', 'application/json');
-        $response->getBody()->write(json_encode(['color' => 'rgb(128, 128, 128)', 'message' => "You are not logged in. You need to log in to bookmark killmails."]));
+        $response->getBody()->write(json_encode(['color' => '#d0d0d0', 'message' => "You are not logged in. You need to log in to bookmark killmails."]));
         return $response;
     }
     
@@ -26,7 +26,7 @@ function handler($request, $response, $args, $container) {
         ZLog::add("$name has favorited $killID - https://zkillboard.com/kill/$killID/", $userID, true);
     } else {
         $mdb->remove("favorites", $key);
-        $response->getBody()->write(json_encode(['color' => 'rgb(128, 128, 128)', 'message' => "Killmail has been removed from your bookmarks."]));
+        $response->getBody()->write(json_encode(['color' => '#d0d0d0', 'message' => "Killmail has been removed from your bookmarks."]));
         ZLog::add("$name has unfavorited $killID - https://zkillboard.com/kill/$killID/", $userID, true);
     }
     
@@ -40,7 +40,7 @@ if (!function_exists('handler') || !isset($args)) {
     $action = ($action == "save");
 
     if (!User::isLoggedIn()) {
-        echo json_encode(['color' => 'rgb(128, 128, 128)', 'message' => "You are not logged in. You need to log in to bookmark killmails."]);
+        echo json_encode(['color' => '#d0d0d0', 'message' => "You are not logged in. You need to log in to bookmark killmails."]);
         return;
     }
     $userID = (int) User::getUserID();
@@ -54,7 +54,7 @@ if (!function_exists('handler') || !isset($args)) {
         ZLog::add("$name has favorited $killID - https://zkillboard.com/kill/$killID/", $userID, true);
     } else {
         $mdb->remove("favorites", $key);
-        echo json_encode(['color' => 'rgb(128, 128, 128)', 'message' => "Killmail has been removed from your bookmarks."]);
+        echo json_encode(['color' => '#d0d0d0', 'message' => "Killmail has been removed from your bookmarks."]);
         ZLog::add("$name has unfavorited $killID - https://zkillboard.com/kill/$killID/", $userID, true);
     }
 }
