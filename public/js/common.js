@@ -1,5 +1,6 @@
 var ws;
 var adblocked = undefined;
+var zkbVersionCheckTimeout = null;
 
 window.onerror = function (message, source, lineno, colno, error) {
 	console.error("Global error:", message, error);
@@ -23,6 +24,7 @@ $(document).ready(function () {
 
     refreshNavbarTracker();
     initSpaNavigation();
+    scheduleVersionCheck();
 
     // autocomplete
     $('#searchbox').zz_search( function(data, event) { navigateTo('/' + data.type + '/' + data.id + '/'); event.preventDefault(); } );
@@ -110,6 +112,36 @@ function initPageContent() {
     $("[raw]").off("click.zkb-copy").on("click.zkb-copy", copyToClipboard);
     setTimeout(fixCCPsBrokenImages, 1000);
     setTimeout(prepTippy, 1);
+}
+
+function scheduleVersionCheck() {
+    if (zkbVersionCheckTimeout) clearTimeout(zkbVersionCheckTimeout);
+
+    const delay = (3000 + Math.floor(Math.random() * 1201)) * 1000;
+    zkbVersionCheckTimeout = setTimeout(checkSiteVersion, delay);
+}
+
+async function checkSiteVersion() {
+    try {
+        const response = await fetch('/api/version/', {
+            credentials: 'same-origin',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) throw new Error("Unexpected status " + response.status);
+
+        const data = await response.json();
+        if (data && data.version && typeof zkbVersion !== "undefined" && data.version !== zkbVersion) {
+            window.location.reload();
+            return;
+        }
+    } catch (error) {
+        console.error("Version check failed:", error);
+    }
+
+    scheduleVersionCheck();
 }
 
 function refreshNavbarTracker() {

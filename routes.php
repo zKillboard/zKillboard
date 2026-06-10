@@ -30,6 +30,7 @@ $routes = [
 	'/account/logout/' => ['GET', 'view/logout.php'],
 	'/account/tracker/{type}/{id}/{action}/' => ['GET', 'view/account_tracker.php'],
 	'/item/{id}/' => ['GET', 'view/item.php'],
+	'/api/version/' => ['GET', 'view/api/version.php'],
 	'/api/recentactivity/' => ['GET', 'view/api/recentactivity.php'],
 	'/api/supers/' => ['GET', 'view/intel.php'],
 	'/api/related/{system}/{time}/' => ['GET', 'view/api/related.php'],
