@@ -57,13 +57,13 @@ html {
 
 .nav-user-shell {
 	display: flex;
-	align-items: center;
+	align-items: start;
 	margin-bottom: 0;
 }
 
 #usermenu-dropdown {
 	display: inline-flex;
-	align-items: center;
+	align-items: start;
 	justify-content: center;
 	line-height: 1;
 	padding-top: 0;
@@ -1169,6 +1169,303 @@ code {
 	margin-bottom: 0.75rem;
 }
 
+.war-kill-layout {
+	display: grid;
+	grid-template-columns: minmax(170px, 220px) minmax(0, 1fr) minmax(170px, 220px);
+	gap: 0.85rem;
+	align-items: start;
+	margin-top: 0.85rem;
+}
+
+.war-kill-center {
+	min-width: 0;
+}
+
+.war-top-rail {
+	min-width: 0;
+}
+
+.war-top-rail > .float-start {
+	float: none !important;
+	margin-bottom: 0.75rem !important;
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-top: 3px solid rgba(42, 159, 214, 0.75);
+	border-radius: 0.45rem;
+	overflow: hidden;
+}
+
+.war-top-rail-right > .float-start {
+	border-top-color: rgba(242, 163, 106, 0.85);
+}
+
+.war-top-rail h5 {
+	margin: 0;
+	padding: 0.45rem 0.55rem;
+	background: rgba(0, 0, 0, 0.38);
+	color: #e7edf2;
+	font-size: 0.92rem;
+	line-height: 1.2;
+}
+
+.war-top-rail .table {
+	margin-bottom: 0 !important;
+}
+
+.war-top-rail .table td {
+	padding: 0.25rem 0.35rem;
+	vertical-align: middle;
+}
+
+.war-kill-list-shell {
+	border-top-color: #000;
+	margin-top: 0;
+}
+
+.war-kill-list-header {
+	justify-content: center;
+	margin-bottom: 0.5rem;
+}
+
+.war-kill-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.45rem;
+}
+
+.war-kill-date {
+	padding: 0.25rem 0.55rem;
+	background: #000;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 0.35rem;
+	color: #9fa9b4;
+	font-size: 0.82rem;
+	line-height: 1.2;
+}
+
+.war-kill-card {
+	display: grid;
+	grid-template-columns: minmax(0, 33.5%) minmax(220px, 33%) minmax(0, 33.5%);
+	gap: 0.5rem;
+	padding: 0.25rem 0.5rem;
+	background: rgba(255, 255, 255, 0.035);
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 0.45rem;
+	align-items: start;
+}
+
+.war-kill-card.war-kill-victim-defender {
+	border-left: 3px solid #f2a36a;
+}
+
+.war-kill-card.war-kill-victim-aggressor {
+	border-left: 3px solid #5db7ff;
+}
+
+.war-kill-card.war-kill-finalblow-defender {
+	border-right: 3px solid #f2a36a;
+}
+
+.war-kill-card.war-kill-finalblow-aggressor {
+	border-right: 3px solid #5db7ff;
+}
+
+.war-kill-side-defender .war-kill-party-image img {
+	box-shadow: 0 0 0 1px rgba(242, 163, 106, 0.7);
+}
+
+.war-kill-side-aggressor .war-kill-party-image img {
+	box-shadow: 0 0 0 1px rgba(93, 183, 255, 0.7);
+}
+
+.war-kill-party,
+.war-kill-ship {
+	min-width: 0;
+}
+
+.war-kill-party {
+	display: grid;
+	grid-template-columns: 56px minmax(0, 1fr);
+	gap: 0.45rem;
+	align-items: start;
+	padding-top: 0.15rem;
+	width: 100%;
+	justify-self: stretch;
+}
+
+.war-kill-finalblow {
+	grid-template-columns: minmax(0, 1fr) 56px;
+	text-align: right;
+	justify-self: stretch;
+}
+
+.war-kill-party-image {
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+}
+
+.war-kill-party-image img,
+.war-kill-ship-image img {
+	max-width: 56px;
+	max-height: 56px;
+}
+
+.war-kill-party-copy,
+.war-kill-ship-copy {
+	min-width: 0;
+}
+
+.war-kill-ship-copy {
+	position: relative;
+	padding-right: 3.2rem;
+}
+
+.war-kill-party-copy a,
+.war-kill-location a {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.war-kill-label {
+	display: flex;
+	align-items: center;
+	gap: 0.3rem;
+	color: #8f9ca8;
+	font-size: 0.64rem;
+	font-weight: 700;
+	line-height: 1.1;
+	text-transform: uppercase;
+}
+
+.war-kill-finalblow .war-kill-label {
+	justify-content: flex-end;
+}
+
+.war-kill-involved-count {
+	color: #c0c9d2;
+	font-weight: 700;
+}
+
+.war-kill-finalblow-meta {
+	display: inline-flex;
+	margin-bottom: 0.08rem;
+}
+
+.war-kill-name,
+.war-kill-ship-name {
+	color: #eef2f6;
+	font-weight: 700;
+	line-height: 1.16;
+}
+
+.war-kill-ship-name {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.war-kill-time {
+	position: absolute;
+	top: 0;
+	right: 0;
+	color: #9facb8;
+	font-size: 0.76rem;
+	font-weight: 700;
+	line-height: 1.15;
+}
+
+.war-kill-time-meta {
+	position: absolute;
+	top: 1rem;
+	right: 0;
+	color: #c0c9d2;
+	font-size: 0.74rem;
+	font-weight: 700;
+	line-height: 1.15;
+}
+
+.war-kill-time-meta .war-kill-badge {
+	font-size: 0.68rem;
+}
+
+.war-kill-ship {
+	display: grid;
+	grid-template-columns: 62px minmax(0, 1fr);
+	gap: 0.45rem;
+	align-items: start;
+	padding: 0.15rem 0.35rem;
+	background: rgba(0, 0, 0, 0.12);
+	border-radius: 0.25rem;
+}
+
+.war-kill-ship-image {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.war-kill-value {
+	display: block;
+	color: #c9d8e4;
+	font-weight: 700;
+	line-height: 1.16;
+}
+
+.war-kill-location {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
+	color: #9faab5;
+	font-size: 0.78rem;
+	line-height: 1.16;
+}
+
+.war-kill-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
+	margin-top: 0.08rem;
+	color: #98a4af;
+	font-size: 0.72rem;
+}
+
+.war-kill-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.05rem 0.35rem;
+	border-radius: 999px;
+	color: #fff;
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+}
+
+.war-kill-badge-warning {
+	background: #8a6d1c;
+}
+
+.war-kill-badge-success {
+	background: #1f7a3a;
+}
+
+.war-kill-badge-danger {
+	background: #8a1f1f;
+}
+
+.war-kill-badge-info {
+	background: #6f2c7d;
+}
+
+.war-kill-empty {
+	padding: 1rem;
+	color: #9da7b0;
+	text-align: center;
+}
+
 .kill-list-shell-a {
 	border-top-color: #5db7ff;
 }
@@ -1214,6 +1511,67 @@ code {
 
 	.kill-list-ambience {
 		margin-top: 0;
+	}
+
+	.war-kill-layout {
+		grid-template-columns: 1fr;
+	}
+
+	.war-kill-center {
+		order: 1;
+	}
+
+	.war-top-rail-left {
+		order: 2;
+	}
+
+	.war-top-rail-right {
+		order: 3;
+	}
+
+	.war-kill-card {
+		grid-template-columns: 1fr;
+	}
+
+	.war-kill-finalblow {
+		grid-template-columns: 56px minmax(0, 1fr);
+		text-align: left;
+	}
+
+	.war-kill-finalblow .war-kill-party-image {
+		order: 1;
+	}
+
+	.war-kill-finalblow .war-kill-party-copy {
+		order: 2;
+	}
+
+	.war-kill-finalblow .war-kill-label {
+		justify-content: flex-start;
+	}
+
+	.war-kill-party-copy a,
+	.war-kill-location a {
+		white-space: normal;
+	}
+}
+
+@media only screen and (min-width: 768px) and (max-width: 1099px) {
+	.war-kill-layout {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	}
+
+	.war-kill-center {
+		grid-column: 1 / -1;
+		order: 1;
+	}
+
+	.war-top-rail-left {
+		order: 2;
+	}
+
+	.war-top-rail-right {
+		order: 3;
 	}
 }
 
@@ -1267,6 +1625,76 @@ code {
 	margin-bottom: 0.4rem;
 }
 
+.war-matchup-title {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+	align-items: baseline;
+	gap: 0.7rem;
+}
+
+.war-matchup-entity {
+	display: block;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.war-matchup-aggressor {
+	text-align: right;
+}
+
+.war-matchup-defender {
+	text-align: left;
+}
+
+.war-matchup-versus {
+	color: #9fb8cb;
+	font-size: 0.82em;
+	font-weight: 700;
+	text-align: center;
+	text-decoration: none;
+}
+
+.war-matchup-versus:hover,
+.war-matchup-versus:focus {
+	color: #d8effb;
+	text-decoration: none;
+}
+
+.war-report-meta {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.45rem 1rem;
+	margin: 0 0 0.85rem;
+	padding: 0.45rem 0;
+	border-top: 1px solid rgba(255, 255, 255, 0.08);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.war-report-meta div {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 0.3rem;
+	min-width: 0;
+}
+
+.war-report-meta dt {
+	color: #8f9ca8;
+	font-size: 0.72rem;
+	font-weight: 700;
+	line-height: 1.2;
+	text-transform: uppercase;
+}
+
+.war-report-meta dd {
+	margin: 0;
+	color: #d3dbe2;
+	font-size: 0.86rem;
+	line-height: 1.2;
+}
+
 .related-report-links {
 	display: flex;
 	flex-wrap: wrap;
@@ -1283,6 +1711,25 @@ code {
 	border-radius: 0.3rem;
 	background: rgba(255, 255, 255, 0.04);
 	text-decoration: none;
+}
+
+.related-report-links span {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.2rem 0.45rem;
+	border-radius: 0.3rem;
+	background: rgba(255, 255, 255, 0.04);
+}
+
+.war-report-page .related-report-links span {
+	border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.war-report-page .related-report-links span.is-active {
+	border-color: rgba(91, 183, 255, 0.42);
+	background: rgba(42, 159, 214, 0.15);
+	color: #d8effb;
 }
 
 .related-report-actions {
@@ -1432,6 +1879,35 @@ code {
 	margin-bottom: 0.55rem;
 	padding-bottom: 0.45rem;
 	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.war-team-entity {
+	display: flex;
+	align-items: center;
+	gap: 0.65rem;
+	margin-bottom: 0.55rem;
+	padding-bottom: 0.55rem;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.war-team-entity-defender {
+	justify-content: flex-end;
+	text-align: right;
+}
+
+.war-team-entity img {
+	flex: 0 0 48px;
+	width: 48px;
+	height: 48px;
+	border-radius: 0.35rem;
+	background: #111;
+	border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.war-team-entity .related-entity-name {
+	font-size: 1rem;
+	font-weight: 700;
+	color: #eef2f6;
 }
 
 .related-team-block {

@@ -45,8 +45,22 @@ foreach ($preKills as $kill) {
     $victim = $kill['victim'];
     if (@$victim['corporationID'] == $dfdID || @$victim['allianceID'] == $dfdID) {
         $kill['displayAsKill'] = true;
+        $kill['victimWarSide'] = 'defender';
+        $kill['finalBlowWarSide'] = 'aggressor';
     } else {
         $kill['displayAsLoss'] = true;
+        $kill['victimWarSide'] = 'aggressor';
+        $kill['finalBlowWarSide'] = 'defender';
+    }
+    $vics = array();
+    foreach (array('characterID', 'corporationID', 'allianceID', 'shipTypeID', 'groupID', 'factionID') as $key) {
+        if (isset($kill['victim'][$key])) {
+            $vics[] = $kill['victim'][$key];
+        }
+    }
+    $kill['vics'] = implode(',', $vics);
+    if (isset($kill['dttm'])) {
+        $kill['unixtime'] = $kill['dttm']->toDateTime()->getTimestamp();
     }
     $kills[] = $kill;
 }

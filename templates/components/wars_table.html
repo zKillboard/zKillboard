@@ -1,26 +1,44 @@
-<table class="table table-sm">
-	<tr>
-		<th style="width: 135px;">Aggressor</th>
-		<th style="text-align: right; width: 30px;">Kills</th>
-		<th style="text-align: right; width: 30px;">ISK</th>
-		<th style="width: 10px;">&nbsp;</th>
-		<th style="text-align: right; width: 30px;">Kills</th>
-		<th style="text-align: right; width: 30px;">ISK</th>
-		<th>Defender</th>
-	</tr>
+<div class="war-list">
 	{% for war in wars %}
-	<tr>
-		<td class="wrapplease">{{ war.aggressor.name }}</td>
-		{% set color = (war.aggressor.ships_killed >= war.defender.ships_killed) ? "green" : "red" %}
-		<td class="{{ color }}" style="text-align: right" format="format-int-once" raw="{{ war.aggressor.ships_killed }}">{{ shortNum(war.aggressor.ships_killed) }}</td>
-		{% set color = (war.aggressor.isk_destroyed >= war.defender.isk_destroyed) ? "green" : "red" %}
-		<td class="{{ color }}" style="text-align: right" format="format-isk-once" raw="{{ war.aggressor.isk_killed }}">{{ shortNum(war.aggressor.isk_killed) }}</td>
-		<td><center><a href="/war/{{ war.id}}/" class="fa fa-info"></a></center></td>
-		{% set color = (war.aggressor.ships_destroyed >= war.defender.ships_killed) ? "red" : "green" %}
-		<td style="text-align: right" class="{{ color }}" format="format-int-once" raw="{{ war.defender.ships_killed }}">{{ shortNum(war.defender.ships_killed) }}</td>
-		{% set color = (war.aggressor.isk_killed >= war.defender.isk_destroyed) ? "red" : "green" %}
-		<td style="text-align: right" class="{{ color }}" format="format-isk-once" raw="{{ war.defender.isk_destroyed }}">{{ shortNum(war.defender.isk_destroyed) }}</td>
-		<td class="wrapplease">{{ war.defender.name }}</td>
-	</tr>
+		{% set aggressorKills = war.aggressor.ships_killed|default(0) %}
+		{% set defenderKills = war.defender.ships_killed|default(0) %}
+		{% set aggressorIsk = war.aggressor.isk_destroyed|default(war.aggressor.isk_killed|default(0)) %}
+		{% set defenderIsk = war.defender.isk_destroyed|default(war.defender.isk_killed|default(0)) %}
+		{% set aggressorName = war.aggressor.name|default('Unknown aggressor', true) %}
+		{% set defenderName = war.defender.name|default('Unknown defender', true) %}
+		{% set aggressorID = war.aggressor.alliance_id|default(war.aggressor.corporation_id|default(war.aggressor.id|default(0))) %}
+		{% set defenderID = war.defender.alliance_id|default(war.defender.corporation_id|default(war.defender.id|default(0))) %}
+		{% set aggressorKind = war.aggressor.alliance_id is defined ? 'alliances' : 'corporations' %}
+		{% set defenderKind = war.defender.alliance_id is defined ? 'alliances' : 'corporations' %}
+		<a class="war-row" href="/war/{{ war.id }}/" aria-label="War {{ aggressorName }} versus {{ defenderName }}">
+			<div class="war-side war-side-aggressor">
+				<img src="https://images.evetech.net/{{ aggressorKind }}/{{ aggressorID }}/logo?size=64" alt="" loading="lazy" decoding="async" fetchpriority="low">
+				<div class="war-side-copy">
+					<span class="war-label">Aggressor</span>
+					<strong>{{ aggressorName }}</strong>
+				</div>
+			</div>
+			<div class="war-scoreboard">
+				<div class="war-score-pair">
+					<span class="{{ aggressorKills >= defenderKills ? 'green' : 'red' }}" format="format-int-once" raw="{{ aggressorKills }}">{{ shortNum(aggressorKills) }}</span>
+					<small>Kills</small>
+					<span class="{{ defenderKills >= aggressorKills ? 'green' : 'red' }}" format="format-int-once" raw="{{ defenderKills }}">{{ shortNum(defenderKills) }}</span>
+				</div>
+				<div class="war-score-pair">
+					<span class="{{ aggressorIsk >= defenderIsk ? 'green' : 'red' }}" format="format-isk-once" raw="{{ aggressorIsk }}">{{ shortNum(aggressorIsk) }}</span>
+					<small>ISK</small>
+					<span class="{{ defenderIsk >= aggressorIsk ? 'green' : 'red' }}" format="format-isk-once" raw="{{ defenderIsk }}">{{ shortNum(defenderIsk) }}</span>
+				</div>
+			</div>
+			<div class="war-side war-side-defender">
+				<div class="war-side-copy">
+					<span class="war-label">Defender</span>
+					<strong>{{ defenderName }}</strong>
+				</div>
+				<img src="https://images.evetech.net/{{ defenderKind }}/{{ defenderID }}/logo?size=64" alt="" loading="lazy" decoding="async" fetchpriority="low">
+			</div>
+		</a>
+	{% else %}
+		<div class="war-empty">No wars found.</div>
 	{% endfor %}
-</table>
+</div>

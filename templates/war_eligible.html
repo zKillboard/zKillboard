@@ -3,19 +3,38 @@
 {% block title %}{% include 'components/title.html' %}{% endblock %}
 
 {% block content %}
-<h2>War Eligible Alliances and Corporations</h2>
-<p>Listed here are alliances and corporations that are eligible for war, but do not have any active wars at the moment.  This information could be stale by a couple of days depending on API/ESI updates. This list is based on the top 100 by member count. Corporations with 0 members are still war eligible as they may have a structure somewhere in space.</p>
+<section class="war-page">
+<header class="war-page-header">
+	<div>
+		<p class="war-page-kicker">Potential targets</p>
+		<h2>War Eligible</h2>
+	</div>
+	<nav class="war-page-actions" aria-label="War pages">
+		<a class="btn btn-sm btn-secondary" href="/wars/"><i class="fas fa-list" aria-hidden="true"></i> Wars</a>
+	</nav>
+</header>
+<p class="war-page-intro">Alliances and corporations eligible for war without active wars right now. ESI updates can lag by a couple of days; the lists use the top 100 by member count, and 0-member corporations may still qualify if they have a structure in space.</p>
 
 <div id="war-eligible">
-<h3>Alliances</h3>
-{% set entities = allis %}
-{% set entityTitle = 'Alliance' %}
-{% include 'components/entitylist.html' %}
+	<section class="war-section war-eligible-section">
+		<header class="war-section-header">
+			<h3>Alliances</h3>
+			<span>{{ allis|length|number_format(0) }}</span>
+		</header>
+		{% set entities = allis %}
+		{% set entityTitle = 'Alliance' %}
+		{% include 'components/entitylist.html' %}
+	</section>
 
-<h3>Corporations</h3>
-{% set entities = corps %}
-{% set entityTitle = 'Corporation' %}
-{% include 'components/entitylist.html' %}
+	<section class="war-section war-eligible-section">
+		<header class="war-section-header">
+			<h3>Corporations</h3>
+			<span>{{ corps|length|number_format(0) }}</span>
+		</header>
+		{% set entities = corps %}
+		{% set entityTitle = 'Corporation' %}
+		{% include 'components/entitylist.html' %}
+	</section>
 </div>
-<div class="clearfix"></div>
+</section>
 {% endblock %}

@@ -10,6 +10,30 @@
 {% endif %}
 {% set killListTitle = 'Most recent kills' %}
 {% set killList = kills %}
+{% if pageType == 'war' %}
+<div class="war-kill-layout">
+  <aside class="war-top-rail war-top-rail-left">
+    {% set isEmbedded = true %}
+    {% for topSet in topKillers %}
+      {% if loop.index is odd %}
+        {% include 'components/top_killer_list.html' %}
+      {% endif %}
+    {% endfor %}
+  </aside>
+  <main class="war-kill-center">
+    {% set showPager = "false" %}
+    {% include 'components/war_kill_list.html' %}
+  </main>
+  <aside class="war-top-rail war-top-rail-right">
+    {% set isEmbedded = true %}
+    {% for topSet in topKillers %}
+      {% if loop.index is even %}
+        {% include 'components/top_killer_list.html' %}
+      {% endif %}
+    {% endfor %}
+  </aside>
+</div>
+{% else %}
 <div class="row gx-0 gx-md-3">
 <div class="col-sm-10 float-start ps-md-0">
     <div>
@@ -80,6 +104,7 @@
     {% include 'components/donations.html' %}
 </div>
 </div>
+{% endif %}
 
 <div class="brd"></div>
 

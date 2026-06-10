@@ -1,0 +1,108 @@
+{% for kill in killList %}
+	{% if kill.killID > 0 %}
+		{% set victim = kill.victim %}
+		{% set finalBlow = kill.finalBlow %}
+		{% set imageSize = 64 %}
+		{% set resizeImage = 60 %}
+		{% set shipImageLinkOverride = kill.killID %}
+		{% set sDate = kill.unixtime|default(0)|date('Y-m-d') %}
+		{% set date = kill.unixtime|default(0)|date('M d, Y') %}
+		{% set previousDate = loop.first ? '' : killList[loop.index0 - 1].unixtime|default(0)|date('Y-m-d') %}
+		{% if sDate != previousDate %}
+			<div class="war-kill-date tr-date tr-date-{{ sDate }}" date="{{ date }}"><em>{{ sDate }}</em></div>
+		{% endif %}
+		<article id="kill-{{ kill.killID }}" class="war-kill-card tr-killmail war-kill-victim-{{ kill.victimWarSide|default('unknown') }} war-kill-finalblow-{{ kill.finalBlowWarSide|default('unknown') }}" date="{{ kill.unixtime|default(0) }}" killID="{{ kill.killID }}" vics="{{ kill.vics|default('') }}">
+			<section class="war-kill-party war-kill-victim war-kill-side-{{ kill.victimWarSide|default('unknown') }}">
+				<div class="war-kill-party-image">
+					{% set field = victim %}
+					{% if victim.allianceID|default(0) != 0 %}
+						{% include 'components/image_alli.html' %}
+					{% else %}
+						{% include 'components/image_corp.html' %}
+					{% endif %}
+				</div>
+				<div class="war-kill-party-copy">
+					{% if victim.characterID|default(0) %}
+						<a class="war-kill-name" href="/character/{{ victim.characterID }}/">{{ victim.characterName }}</a>
+					{% else %}
+						<span class="war-kill-name">Unknown pilot</span>
+					{% endif %}
+					<a href="/corporation/{{ victim.corporationID }}/">{{ victim.corporationName }}</a>
+					{% if victim.allianceID|default(0) != 0 %}
+						<a href="/alliance/{{ victim.allianceID }}/">{{ victim.allianceName }}</a>
+					{% endif %}
+				</div>
+			</section>
+
+			<section class="war-kill-ship">
+				<div class="war-kill-ship-image">
+					{% set field = victim %}
+					{% include 'components/image_ship.html' %}
+				</div>
+				<div class="war-kill-ship-copy">
+					<span class="war-kill-time">{{ kill.unixtime|default(0)|date('H:i') }}</span>
+					<span class="war-kill-time-meta">
+						{% if kill.solo == true %}
+							<a class="war-kill-badge war-kill-badge-success" href="/character/{{ finalBlow.characterID }}/solo/">solo</a>
+						{% else %}
+							<span class="war-kill-involved-count">({{ kill.attackerCount|number_format(0) }})</span>
+						{% endif %}
+					</span>
+					<a class="war-kill-ship-name" href="/ship/{{ victim.shipTypeID }}/">{{ victim.shipName }}</a>
+					<a class="war-kill-value" href="/kill/{{ kill.killID }}/" format="format-isk-once" raw="{{ kill.zkb.totalValue }}">{{ formatIsk(kill.zkb.totalValue) }}</a>
+					<div class="war-kill-location">
+						<span style="color: {{ kill.system.systemColorCode }}">
+							{% if kill.system.systemClass %}
+								C{{ kill.system.systemClass }}
+							{% else %}
+								{{ "%1.1f"|format(kill.system.solarSystemSecurity) }}
+							{% endif %}
+						</span>
+						<a href="/system/{{ kill.system.solarSystemID }}/" class="{% if kill.system.solarSystemID >= 32000000 and kill.system.solarSystemID < 33000000 %}triglavian{% endif %}">{{ kill.system.solarSystemName }}</a>
+					</div>
+					<div class="war-kill-meta">
+						{% if "padding" in kill.labels %}
+							<a class="war-kill-badge war-kill-badge-warning" href='/asearch/#{"buttons":["togglefilters","week","label-padding","sort-date","sort-desc","page1","victimsonly"]}'>padding</a>
+						{% elseif "atShip" in kill.labels %}
+							<span class="war-kill-badge war-kill-badge-success">AT Ship</span>
+						{% elseif kill.ganked == true %}
+							<a class="war-kill-badge war-kill-badge-danger" href='/asearch/#{"buttons":["togglefilters","week","label-ganked","sort-date","sort-desc","page1","victimsonly"]}'>ganked</a>
+						{% elseif kill.npc == true %}
+							<span class="war-kill-badge war-kill-badge-info">NPC</span>
+						{% elseif kill.attackerCount >= 1000 %}
+							<span class="war-kill-badge war-kill-badge-danger">1000+</span>
+						{% elseif kill.attackerCount >= 100 %}
+							<span class="war-kill-badge war-kill-badge-warning">100+</span>
+						{% endif %}
+					</div>
+				</div>
+			</section>
+
+			<section class="war-kill-party war-kill-finalblow war-kill-side-{{ kill.finalBlowWarSide|default('unknown') }}">
+				<div class="war-kill-party-copy">
+					{% if finalBlow.characterID|default(0) %}
+						<a class="war-kill-name" href="/character/{{ finalBlow.characterID }}/">{{ finalBlow.characterName }}</a>
+					{% else %}
+						{% set field = finalBlow %}
+						<a class="war-kill-name" href="/ship/{{ finalBlow.shipTypeID }}/">{{ finalBlow.shipName }}</a>
+					{% endif %}
+					<a href="/corporation/{{ finalBlow.corporationID }}/">{{ finalBlow.corporationName }}</a>
+					{% if finalBlow.allianceID|default(0) != 0 %}
+						<a href="/alliance/{{ finalBlow.allianceID }}/">{{ finalBlow.allianceName }}</a>
+					{% endif %}
+					{% if finalBlow.factionID|default(0) == 500021 %}
+						<a href="/faction/{{ finalBlow.factionID }}/">Unknown</a>
+					{% endif %}
+				</div>
+				<div class="war-kill-party-image">
+					{% set field = finalBlow %}
+					{% if finalBlow.allianceID|default(0) != 0 %}
+						{% include 'components/image_alli.html' %}
+					{% else %}
+						{% include 'components/image_corp.html' %}
+					{% endif %}
+				</div>
+			</section>
+		</article>
+	{% endif %}
+{% endfor %}

@@ -3,16 +3,28 @@
 {% block title %}{% include 'components/title.html' %}{% endblock %}
 
 {% block content %}
-{% for row in warTables %}
-	<div class="float-start col-lg-6">
-	<center><h4>{{ row.name }}</h4></center>
-	{% set wars = row.wars %}
-	{% include 'components/wars_table.html' %}
-	</div>
+<section class="war-page">
+	<header class="war-page-header">
+		<div>
+			<p class="war-page-kicker">CONCORD sanctioned conflict</p>
+			<h2>Wars</h2>
+		</div>
+		<nav class="war-page-actions" aria-label="War pages">
+			<a class="btn btn-sm btn-info" href="/war/eligible/"><i class="fas fa-shield-alt" aria-hidden="true"></i> Eligible</a>
+		</nav>
+	</header>
 
-	{% if loop.index0 is odd %}
-		<div class="clearfix"></div>
-	{% endif %}
-{% endfor %}
-<div class="clearfix"></div>
+	<div class="war-table-grid">
+	{% for row in warTables %}
+		<section class="war-section">
+			<header class="war-section-header">
+				<h3>{{ row.name }}</h3>
+				<span>{{ row.wars|length|number_format(0) }}</span>
+			</header>
+			{% set wars = row.wars %}
+			{% include 'components/wars_table.html' %}
+		</section>
+	{% endfor %}
+	</div>
+</section>
 {% endblock %}
