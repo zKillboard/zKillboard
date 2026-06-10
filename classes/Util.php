@@ -195,7 +195,7 @@ class Util
 					if (substr($value, 0, 1) === "0") dire("Do not prefix values with 0");
 					$value = (int) $value;
 					if ($value < 1) dire("page value <= 1 not allowed");
-					if ($value > 20) dire("page vale > 20 not allowed");
+					if ($value > 100) dire("page value > 100 not allowed");
 					$parameters[$key] = (int) $value;
 					$paginated = true;
 					break;

@@ -21,7 +21,7 @@
 			{% endif %}
 	
 			{% set startIndex = page - 3 %}
-			{% set endIndex = min(20, page + 3) %}
+			{% set endIndex = min(100, page + 3) %}
 	
 			{% for pageIndex in startIndex..endIndex %}
 				{% if pageIndex == 1 %}
@@ -30,7 +30,7 @@
 					<li class="page-item pagination-li-{{ pageIndex }} {{ isActive(pageIndex, page, 'active') }}"><a class="page-link" href="{{ pageBase }}page/{{pageIndex}}/" rel="nofollow">{{ pageIndex }}</a></li>
 				{% endif %}
 			{% endfor %}
-            {% if page < 20 %}
+            {% if page < 100 %}
 			<li class="page-item pagination-li-{{ page + 1 }}"><a class="page-link" href="{{ pageBase }}page/{{ page + 1 }}/" rel="nofollow next">&raquo;</a></li>
             {% endif %}
 		{% endif %}

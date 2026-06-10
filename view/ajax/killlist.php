@@ -46,7 +46,7 @@ function handler($request, $response, $args, $container) {
 
     $params = Util::convertUriToParameters($uri);
     $page = (int) @$params['page'];
-    if ($page < 0 || $page > 20) $kills = [];
+    if ($page < 0 || $page > 100) $kills = [];
     else $kills = Kills::getKills($params, true);
 
     // Return JSON response
