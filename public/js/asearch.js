@@ -797,9 +797,10 @@ async function btn_save(event) {
 		let res = await fetch("/asearchsave/?url=" + encodeURIComponent(window.location.href), {
 			credentials: "same-origin"
 		});
-		let short = await res.text();
-		if (!res.ok) throw new Error(short || ("Unexpected status " + res.status));
-		if (!/^https?:\/\/[^\/]+\/asearchsaved\/[a-f0-9]+\/$/i.test(short)) throw new Error(short || "Invalid saved URL");
+		let savedPath = await res.text();
+		if (!res.ok) throw new Error(savedPath || ("Unexpected status " + res.status));
+		if (!/^\/asearchsaved\/[a-f0-9]+\/$/i.test(savedPath)) throw new Error(savedPath || "Invalid saved URL");
+		let short = window.location.origin + savedPath;
 
 		try {
 			if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error("Clipboard API unavailable");

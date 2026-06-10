@@ -1,15 +1,14 @@
 <?php
 
 function handler($request, $response, $args, $container) {
-    global $mdb, $baseAddr, $fullAddr;
+    global $mdb;
 
     try {
         $queryParams = $request->getQueryParams();
         $url = (string) ($queryParams['url'] ?? '');
         $uri = $request->getUri();
-        $origin = $uri->getScheme() . '://' . $uri->getHost();
-        if ($uri->getPort() !== null && !in_array($uri->getPort(), [80, 443])) $origin .= ':' . $uri->getPort();
-        $shortOrigin = ($uri->getHost() === $baseAddr && !empty($fullAddr)) ? rtrim($fullAddr, '/') : $origin;
+        $requestOrigin = $uri->getScheme() . '://' . $uri->getHost();
+        if ($uri->getPort() !== null && !in_array($uri->getPort(), [80, 443])) $requestOrigin .= ':' . $uri->getPort();
 
         $parsedUrl = parse_url($url);
         if ($parsedUrl === false) throw new Exception("invalid url");
@@ -17,7 +16,7 @@ function handler($request, $response, $args, $container) {
         if (isset($parsedUrl['port'])) $urlOrigin .= ':' . $parsedUrl['port'];
         $urlPath = $parsedUrl['path'] ?? '';
 
-        if (!in_array($urlOrigin, [$origin, rtrim($fullAddr, '/'), 'https://zkillboard.com'])) throw new Exception("invalid domain: $url");
+        if (!in_array($urlOrigin, [$requestOrigin, 'https://zkillboard.com'])) throw new Exception("invalid domain: $url");
         if ($urlPath !== '/asearch/' && strpos($urlPath, '/asearch/') !== 0) throw new Exception("invalid path: $url");
 
         $record = $mdb->findDoc("shortener", ['url' => $url]);
@@ -26,7 +25,7 @@ function handler($request, $response, $args, $container) {
             $record = $mdb->findDoc("shortener", ['url' => $url]);
         }
         $id = (string) $record['_id'];
-        $output = "$shortOrigin/asearchsaved/$id/";
+        $output = "/asearchsaved/$id/";
     } catch (Exception $ex) {
         $output = $ex->getMessage();
         $response = $response->withStatus(400);
