@@ -175,7 +175,7 @@
     <p><center><a class='btn btn-info' href='/character/ranks/k/all/alltime/1/'>See more Top Ranks here</a></center></p>
     {% include 'components/rank_list.html' %}
 {% elseif pageType == 'top' %}
-	<div class="row centered"><input style="background: transparent; color: white; border: 0px; width:60px; height:35px;" type="text" name="datepicker" class="datepicker" value="{{ month }}/{{ year }}">&nbsp;<i class="fa fa-calendar-o"></i><br/><a href='./solo/'>Solo Version</a></div><hr/>
+	<div class="row centered"><a href='./solo/'>Solo Version</a></div><hr/>
     {% set topSet = topKills %}
     {% set topTitle = 'Most Valuable Kills - Month Selected' %}
 	{% set isEmbedded = true %}

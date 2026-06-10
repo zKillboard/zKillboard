@@ -47,21 +47,6 @@ $(document).ready(function () {
 
     addKillListClicks();
 
-    var datepicker = $('.datepicker').datepicker({
-            format: "mm/yyyy",
-            viewMode: 1,
-            minViewMode: 1,
-            autoclose: true
-    }).on("changeDate", function(ev){
-            console.log(ev);
-            date = new Date(ev.date);
-            var year = date.getFullYear();
-            var month = date.getMonth() + 1;
-            var newHREF = actualURI + 'year/' + year + '/month/' + month + '/';
-            console.log(newHREF);
-            navigateTo(newHREF);
-    });
-
     $(document).on('keypress', checkForSearchKey);
     $('#dls-slider').on('change input', updateDLS);
     $('#dls-slider').on('click touchstart mousedown', stopPropagation);

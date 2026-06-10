@@ -9,9 +9,6 @@
 
 {% if showPager != "false" %}
 <div class="float-end d-flex align-items-center gap-2">
-	{% if datepicker == true %}
-	<div><input type="text" name="datepicker" class="datepicker" value="{{ month }}/{{ year }}"></div>
-	{% endif %}
 	<ul class="pagination pagination-sm mb-0">
 		{% if pager == true %}
 			{% if page == 2 %}
