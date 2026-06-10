@@ -57,7 +57,12 @@
 		move_next: function(event) { event.preventDefault(); this.data['menu'].find('.active').removeClass('active').next().addClass('active'); if ( this.data['menu'].find('.active').length == 0) { this.data['menu'].find('li').first().addClass('active'); } },
 	
 		//goto the selected items seach page
-		run_callback: function(event) { $.proxy(this.callback(this.data['menu'].find('.active').data('value'), event), this); },
+		run_callback: function(event) {
+			var selected = this.data['menu'].find('.active').data('value');
+			this.data['element'].val('');
+			this.hide_menu(event);
+			$.proxy(this.callback(selected, event), this);
+		},
 	
 		//hide the drop down
 		hide_menu: function(event) { this.data['menu'].fadeOut(200); },
