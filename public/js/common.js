@@ -21,7 +21,7 @@ function showModal(selector) {
 $(document).ready(function () {	
 	setTime();
 
-    if (navbar) $('#tracker-dropdown').load('/navbar/');
+    refreshNavbarTracker();
     initSpaNavigation();
 
     // autocomplete
@@ -125,6 +125,41 @@ function initPageContent() {
     $("[raw]").off("click.zkb-copy").on("click.zkb-copy", copyToClipboard);
     setTimeout(fixCCPsBrokenImages, 1000);
     setTimeout(prepTippy, 1);
+}
+
+function refreshNavbarTracker() {
+    if (!navbar) return;
+    const trackerDropdown = $('#tracker-dropdown');
+    if (trackerDropdown.length == 0) return;
+
+    trackerDropdown.load('/navbar/');
+}
+
+function applyTrackerControls() {
+    const trackerControls = $("#tracker-add, #tracker-none, [id^='tracker-remove-']");
+    if (trackerControls.length == 0) return;
+
+    trackerControls.addClass("d-none");
+
+    const trackerState = window.zkbTrackerState;
+    if (!trackerState || !trackerState.loggedIn) {
+        $("#tracker-none").removeClass("d-none");
+        return;
+    }
+
+    let showAdd = true;
+    const tracked = trackerState.tracked || {};
+    Object.keys(tracked).forEach(function(type) {
+        (tracked[type] || []).forEach(function(id) {
+            showAdd = showAdder(showAdd, type, id, trackerState.trackNotification);
+        });
+    });
+
+    $("#tracker-remove-character-" + trackerState.characterID).remove();
+    $("#tracker-remove-corporation-" + trackerState.corporationID).remove();
+    if (trackerState.allianceID > 0) $("#tracker-remove-alliance-" + trackerState.allianceID).remove();
+
+    if (showAdd) $("#tracker-add").removeClass("d-none");
 }
 
 function loadFetchmeKillRows() {
@@ -292,6 +327,7 @@ async function spaNavigate(href, pushState, historyState) {
         const pageAssets = await loadSpaPageAssets(doc);
 
         initPageContent();
+        applyTrackerControls();
         runSpaPageInitializers(mergeSpaAssetResults(contentAssets, modalAssets, pageAssets));
         restoreSpaScrollPosition(pushState ? null : historyState);
         spaRenderedURL = window.location.href;
