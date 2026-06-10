@@ -1,6 +1,10 @@
 {% if finalBlow or topDamage %}
-<table class="table table-sm" style="margin: 0px;">
+<table class="table table-sm" style="margin: 0px; table-layout: fixed; width: 100%;">
 	{% set imageSize = 64 %}
+	<colgroup>
+		<col style="width: 50%;">
+		<col style="width: 50%;">
+	</colgroup>
 	<thead>
 		<tr class="titles centered">
 			<th style="text-align: center;">Final Blow</th>
@@ -16,6 +20,7 @@
 			{% else %}
 				{% include 'components/image_corp.html'%}
 			{%endif%}
+			</td>
 			<td style="text-align: center;">
 			{% set field = topDamage %}
 			{% if field.characterID != 0 %}
