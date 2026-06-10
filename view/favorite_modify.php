@@ -50,11 +50,11 @@ if (!function_exists('handler') || !isset($args)) {
     $mdb->remove("favorites", $key);
     if ($action) {
         $mdb->insert("favorites", $key);
-        echo json_encode(['color' => '#FDBC2C', 'message' => "Killmail has been added to your bookmarks."]);
+        echo json_encode(['color' => '#FDBC2C', 'message' => "Killmail has been added to your Favorites."]);
         ZLog::add("$name has favorited $killID - https://zkillboard.com/kill/$killID/", $userID, true);
     } else {
         $mdb->remove("favorites", $key);
-        echo json_encode(['color' => '#d0d0d0', 'message' => "Killmail has been removed from your bookmarks."]);
+        echo json_encode(['color' => '#d0d0d0', 'message' => "Killmail has been removed from your Favorites."]);
         ZLog::add("$name has unfavorited $killID - https://zkillboard.com/kill/$killID/", $userID, true);
     }
 }
