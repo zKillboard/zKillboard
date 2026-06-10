@@ -51,9 +51,9 @@ function loadasearch() {
 	$("#btn_save").off('click.zkb-asearch').on('click.zkb-asearch', btn_save);
 	$("#btn_export").off('click.zkb-asearch').on('click.zkb-asearch', btn_export);
 	$("#exportCsv").off('click.zkb-asearch').on('click.zkb-asearch', exportCsv);
-	$(".tfilter").off('click.zkb-asearch').on('click.zkb-asearch', adjustTime);
+	$(".tfilter").off('click.zkb-asearch').on('click.zkb-asearch', selectTimeFilter);
 	$(".filter-btn").off('click.zkb-asearch').on('click.zkb-asearch', toggleFilterBtn);
-	$(".radio-btn").off('click.zkb-asearch').on('click.zkb-asearch', toggleRadioBtn);
+	$(".radio-btn").not(".tfilter").off('click.zkb-asearch').on('click.zkb-asearch', toggleRadioBtn);
 
 	$("#rolling-times").off('click.zkb-asearch').on('click.zkb-asearch', toggleRollingTime);
 	$("#togglefilters").off('click.zkb-asearch').on('click.zkb-asearch', toggleFiltersClick);
@@ -130,6 +130,19 @@ function rollTime() {
 }
 
 var lastEpochSelected = null;
+function selectTimeFilter(event) {
+	if (event) event.preventDefault();
+	var element = $(this);
+	var parent = element.parent();
+
+	parent.children(".tfilter").removeClass("btn-primary").addClass("btn-secondary");
+	element.removeClass("btn-secondary").addClass("btn-primary").blur();
+
+	radios.epoch = element.text().toLowerCase();
+	adjustTime(null, element);
+	clickPage1();
+}
+
 function adjustTime(event, triggerButton) {
 	var element = $(triggerButton == null ? this : triggerButton);
 	var epoch = element.val();
