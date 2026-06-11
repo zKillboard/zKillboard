@@ -19,7 +19,14 @@
 		}, this));
 		
 		//handle any enter key presses intelligently
-		this.data['element'].on('keypress', $.proxy(function(event) { event.stopPropagation(); if (event.keyCode == 13 && this.data['menu'].find('.active').length == 1) { $.proxy(this.run_callback(event), this); } }, this));
+		this.data['element'].on('keypress', $.proxy(function(event) {
+			event.stopPropagation();
+			if (event.keyCode != 13) return;
+			event.preventDefault();
+			if (this.data['menu'].find('.active').length == 1) {
+				$.proxy(this.run_callback(event), this);
+			}
+		}, this));
 		
 		//handle a couple of other types of event
 		this.data['element'].on('blur', $.proxy(function(){ $.proxy(this.hide_menu(), this); }, this));
