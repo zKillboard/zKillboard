@@ -422,6 +422,30 @@ ul.autocomplete span {
 	transform: translateY(-50%);
 }
 
+ul.autocomplete .autocomplete-empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	min-height: 44px;
+	padding: 0.55rem 0.85rem;
+	color: #adafae;
+	cursor: default;
+}
+
+ul.autocomplete .autocomplete-empty i {
+	font-size: 0.9rem;
+	opacity: 0.75;
+}
+
+ul.autocomplete .autocomplete-empty span {
+	position: static;
+	transform: none;
+	font-size: 0.9rem;
+	font-weight: 600;
+	letter-spacing: 0;
+}
+
 /* Override background color of search results */
 li.active img {
 	background: #050505;

@@ -31,7 +31,7 @@
 		//handle a couple of other types of event
 		this.data['element'].on('blur', $.proxy(function(){ $.proxy(this.hide_menu(), this); }, this));
 		this.data['menu'].on('click', 'a', $.proxy(function(event){ $.proxy(this.run_callback(event), this); }, this));	
-		this.data['menu'].on('mouseenter', 'li', $.proxy(function(event){ this.data['menu'].find('.active').removeClass('active'); $(event.currentTarget).addClass('active').addClass('active'); }, this));
+		this.data['menu'].on('mouseenter', 'li', $.proxy(function(event){ if ($(event.currentTarget).data('value') == null) return; this.data['menu'].find('.active').removeClass('active'); $(event.currentTarget).addClass('active').addClass('active'); }, this));
 	}
 
 	//add all the functions we need
@@ -91,13 +91,18 @@
 
                     if (current_query_count != query_count) return console.log('search aborted after additional input received');
 					//empty the dropdown and append the new data
-					this.data['menu'].empty().append($.map(result, $.proxy(function(item, index) {
-						return $('<li><a href="/' + item.type + '/' + item.id + '/">' + ((item.image != '') ? '<img src="' + item.image + '" width="32" height="32" alt=" ">' : '') + '<p style="width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">' + item.name.replace(RegExp('(' + this.data['element'].val() + ')', "gi"), function($1, match){ return '<strong>' + match + '</strong>'; } ) + '</p><span><small>' + item.type + '</small></span></a></li>').attr('data-value', JSON.stringify(item));
-					}, this)));
+					this.data['menu'].empty();
+					if (result.length == 0) {
+						this.data['menu'].append($('<li class="autocomplete-empty"><i class="fas fa-search" aria-hidden="true"></i><span>No results</span></li>'));
+					} else {
+						this.data['menu'].append($.map(result, $.proxy(function(item, index) {
+							return $('<li><a href="/' + item.type + '/' + item.id + '/">' + ((item.image != '') ? '<img src="' + item.image + '" width="32" height="32" alt=" ">' : '') + '<p style="width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">' + item.name.replace(RegExp('(' + this.data['element'].val() + ')', "gi"), function($1, match){ return '<strong>' + match + '</strong>'; } ) + '</p><span><small>' + item.type + '</small></span></a></li>').attr('data-value', JSON.stringify(item));
+						}, this)));
+					}
 
 					//if its not visible already fade it in - and position it as needed and autoselect the first item
 					this.data['menu'].not(':visible').css(this.get_position()).fadeIn(200);
-					this.data['menu'].find('li').first().addClass('active');
+					if (result.length > 0) this.data['menu'].find('li').first().addClass('active');
 				}, this)});
 			}, this), 50);
 		}
