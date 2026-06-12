@@ -49,9 +49,9 @@ window.tn = tn;
 window.zkbTrackerState = {
 	loggedIn: true,
 	trackNotification: tn,
-	characterID: {{ characterID }},
-	corporationID: {{ corporationID }},
-	allianceID: {{ allianceID }},
+	characterID: {{ characterID|default(0) }},
+	corporationID: {{ corporationID|default(0) }},
+	allianceID: {{ allianceID|default(0) }},
 	tracked: {
 		character: [{% for data in tracker_character %}{{ data.id }}{% if not loop.last %}, {% endif %}{% endfor %}],
 		corporation: [{% for data in tracker_corporation %}{% if data.id > 1999999 %}{{ data.id }}, {% endif %}{% endfor %}],
