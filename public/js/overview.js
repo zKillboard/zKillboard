@@ -175,7 +175,7 @@ function isOverviewPath() {
 }
 
 function isOverviewPathname(pathname) {
-	return /^\/(?:character|corporation|alliance|faction|ship|group|system|region|location)\/\d+\/(?:(?:kills|losses|solo|stats|wars|supers|trophies|ranks|top|topalltime|streambox|corpstats)\/?)?(?:page\/\d+\/?)?$/.test(pathname);
+	return /^\/(?:character|corporation|alliance|faction|ship|group|system|region|location)\/\d+(?:\/(?!page\/)[^/]+)*(?:\/page\/\d+)?\/?$/.test(pathname);
 }
 
 function isCurrentOverviewLoad(token, pagePath) {
