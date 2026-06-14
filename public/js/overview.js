@@ -170,14 +170,8 @@ async function loadTops(token, pagePath, pageEntityID) {
 
 console.log('overview.js loaded');
 
-function isOverviewPath() {
-	return isOverviewPathname(window.location.pathname);
-}
-
-function isOverviewPathname(pathname) {
-	return /^\/(?:character|corporation|alliance|faction|ship|group|system|region|location)\/\d+\/(?:(?:kills|losses|solo|stats|wars|supers|trophies|ranks|top|topalltime|streambox|corpstats)\/?)?(?:page\/\d+\/?)?$/.test(pathname);
-}
-
 function isCurrentOverviewLoad(token, pagePath) {
-	return token === overviewLoadToken && pagePath === window.location.pathname && isOverviewPathname(pagePath);
+	return token === overviewLoadToken
+		&& pagePath === window.location.pathname
+		&& !!document.querySelector('#killlist');
 }
