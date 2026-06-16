@@ -55,7 +55,7 @@ class zkbSearch
                 if (Util::endsWith($name, "Blueprint")) $image = str_replace("/icon", "/bp", $image);
 
                 if ($searchType == 'typeID:flag' || $searchType == 'typeID') {
-                    $searchType = ((int) @$info['categoryID'] == 6) ? 'ship' : 'item';
+                    $searchType = in_array((int) @$info['categoryID'], [6, 65]) ? 'ship' : 'item';
                 }
                 if ($searchType == 'factionID') {
                     $searchType = 'faction';
