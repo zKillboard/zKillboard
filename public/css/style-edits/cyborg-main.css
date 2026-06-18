@@ -188,11 +188,13 @@ select, textarea, input[type="text"], input[type="password"], input[type="dateti
 color: black;
  }
 
-.item_dropped_row {
+.table .item_dropped_row > * {
 	background-color: #001600;
+	color: #fff;
 }
-.item_dropped_row .price {
-	color: var(--zk-color-green);
+.table .item_dropped_row .item_dropped,
+.table .item_dropped_row .price {
+	color: #fff;
 }
 .item_dropped,
 td.item_dropped,
@@ -213,6 +215,10 @@ td.item_destroyed,
 .item_dropped a,
 .item_destroyed a {
 	color: inherit;
+}
+#itemsTable .fa-check,
+#itemsTable .fa-times {
+	font-size: 0.8em;
 }
 .green {
 	color: var(--zk-color-green);
