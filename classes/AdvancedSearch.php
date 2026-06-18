@@ -5,6 +5,7 @@ use cvweiss\redistools\RedisCache;
 class AdvancedSearch 
 {
     const MAX_ITEM_HISTORY_KILLIDS = 25000;
+    const LOG_CONTEXT_MAX_LENGTH = 12000;
 
     static public $labels = [
         'location' => [
@@ -296,6 +297,21 @@ class AdvancedSearch
 
             return $result;
         } catch (Exception $ex) {
+            if ($ex->getCode() == 50) {
+                self::logTimeout('AdvancedSearch::getTop', [
+                    'collection' => $collection,
+                    'groupByColumn' => $groupByColumn,
+                    'victimsOnly' => $victimsOnly,
+                    'filter' => $filter,
+                    'sortKey' => $sortKey,
+                    'sortBy' => $sortBy,
+                    'query' => $query,
+                    'pipeline' => $pipeline ?? [],
+                    'hashKey' => $hashKey
+                ], $ex);
+            } else {
+                Util::zout(print_r($ex, true));
+            }
             RedisCache::set($hashKey, [], 900);
         } finally {
             $redis->del("inprogress:$hashKey");
@@ -359,6 +375,18 @@ class AdvancedSearch
 
             return $result;
         } catch (Exception $ex) {
+            if ($ex->getCode() == 50) {
+                self::logTimeout('AdvancedSearch::getSums', [
+                    'collection' => $collection,
+                    'groupByColumn' => $groupByColumn,
+                    'victimsOnly' => $victimsOnly,
+                    'query' => $query,
+                    'pipeline' => $pipeline ?? [],
+                    'hashKey' => $hashKey
+                ], $ex);
+            } else {
+                Util::zout(print_r($ex, true));
+            }
             RedisCache::set($hashKey, [], 900);
         }
     }
@@ -491,7 +519,11 @@ class AdvancedSearch
             return $result;
         } catch (Exception $ex) {
             if ($ex->getCode() != 50) Util::zout(print_r($ex, true) . "\n" . print_r($pipeline, true));
-            else Util::zout("getLabels query timeout (code 50)");
+            else self::logTimeout('AdvancedSearch::getLabels', [
+                'victimsOnly' => $victimsOnly,
+                'query' => $query,
+                'pipeline' => $pipeline
+            ], $ex);
             return [];
         }
     }
@@ -559,8 +591,40 @@ class AdvancedSearch
             return $result;
         } catch (Exception $ex) {
             if ($ex->getCode() != 50) Util::zout(print_r($ex, true));
+            else self::logTimeout('AdvancedSearch::getDistincts', [
+                'collection' => $collection,
+                'victimsOnly' => $victimsOnly,
+                'filter' => $filter,
+                'query' => $query,
+                'pipeline' => $pipeline ?? [],
+                'hashKey' => $hashKey
+            ], $ex);
             return [];
         }
+    }
+
+    public static function logTimeout($operation, $context = [], $ex = null)
+    {
+        global $uri;
+
+        $payload = [
+            'operation' => $operation,
+            'uri' => $uri,
+            'exceptionCode' => $ex ? $ex->getCode() : null,
+            'exceptionMessage' => $ex ? $ex->getMessage() : null,
+            'context' => $context
+        ];
+
+        $encoded = json_encode($payload, JSON_UNESCAPED_SLASHES);
+        if ($encoded === false) {
+            $encoded = print_r($payload, true);
+        }
+
+        if (strlen($encoded) > self::LOG_CONTEXT_MAX_LENGTH) {
+            $encoded = substr($encoded, 0, self::LOG_CONTEXT_MAX_LENGTH) . '... [truncated]';
+        }
+
+        Util::zout("Advanced search query timeout: " . $encoded);
     }
 
     public static function getSelectedFromBase($base, $buttons)

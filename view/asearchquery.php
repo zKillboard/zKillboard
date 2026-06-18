@@ -6,6 +6,18 @@ function handler($request, $response, $args, $container) {
     global $mdb, $redis, $uri;
 
 	$key = "asearch:defaultKey"; // placeholder to avoid undefined variable error
+	$queryType = "unknown";
+	$groupType = "";
+	$victimsOnly = "null";
+	$queryParams = [];
+	$query = [];
+	$filter = [];
+	$sort = [];
+	$sortKey = "";
+	$sortBy = "";
+	$page = 0;
+	$coll = [];
+	$aggregateCollection = "";
 
 	$labelGroupMaps = [
 		'cat' => 'Categories',
@@ -121,6 +133,22 @@ function handler($request, $response, $args, $container) {
 				usleep(100000); // 100ms
 				$waits++;
 				if ($waits > 250) { // 25 seconds
+					AdvancedSearch::logTimeout('asearch processing wait', [
+						'cacheKey' => $key,
+						'queryType' => $queryType,
+						'groupType' => $groupType,
+						'victimsOnly' => $victimsOnly,
+						'collections' => $coll,
+						'aggregateCollection' => $aggregateCollection,
+						'page' => $page,
+						'sortKey' => $sortKey,
+						'sortBy' => $sortBy,
+						'sort' => $sort,
+						'query' => $query,
+						'filter' => $filter,
+						'requestParams' => $queryParams,
+						'uri' => $uri
+					]);
 					$response->getBody()->write(json_encode(['error' => 'Request timeout'], JSON_PRETTY_PRINT));
 					return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withStatus(408);
 				}
@@ -244,7 +272,22 @@ function handler($request, $response, $args, $container) {
 		return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
 	} catch (Exception $ex) {
 		if ($ex->getCode() != 50) Util::zout(print_r($ex, true));
-		else Util::zout("Query timeout in advanced search");
+		else AdvancedSearch::logTimeout('asearch handler', [
+			'cacheKey' => $key,
+			'queryType' => $queryType,
+			'groupType' => $groupType,
+			'victimsOnly' => $victimsOnly,
+			'collections' => $coll,
+			'aggregateCollection' => $aggregateCollection,
+			'page' => $page,
+			'sortKey' => $sortKey,
+			'sortBy' => $sortBy,
+			'sort' => $sort,
+			'query' => $query,
+			'filter' => $filter,
+			'requestParams' => $queryParams,
+			'uri' => $uri
+		], $ex);
 		$redis->del($key);
 		$response->getBody()->write(json_encode(['error' => 'Internal server error', 'message' => $ex->getMessage()], JSON_PRETTY_PRINT));
 		return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withStatus(500);
