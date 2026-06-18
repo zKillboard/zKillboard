@@ -15,7 +15,7 @@ touch logs/zkb.log
     php 0.masterCheck.php >> logs/0.masterCheck.php.log 2> >(php ../scratch/errlogger.php)
 } &
 {
-    flock -x -w 65 locks/0.ztop.lock nice -n 19 php 0.ztop.php >> logs/$each.log 2> >(php ../scratch/errlogger.php)
+    flock -x -w 65 locks/0.ztop.lock nice -n 19 php 0.ztop.php >> logs/0.ztop.php.log 2> >(php ../scratch/errlogger.php)
 } &
 if [ ! -f ../isMaster.lock ] ; then exit ; fi
 
