@@ -190,11 +190,11 @@ color: black;
 
 .table .item_dropped_row > * {
 	background-color: #001600;
-	color: #fff;
+	color: #d7ead9;
 }
 .table .item_dropped_row .item_dropped,
 .table .item_dropped_row .price {
-	color: #fff;
+	color: #d7ead9;
 }
 .item_dropped,
 td.item_dropped,
@@ -218,7 +218,14 @@ td.item_destroyed,
 }
 #itemsTable .fa-check,
 #itemsTable .fa-times {
+	display: inline-block;
 	font-size: 0.8em;
+	margin-left: 2px;
+	text-align: left;
+	width: 1em;
+}
+#itemsTable .item_row > td {
+	vertical-align: middle;
 }
 .green {
 	color: var(--zk-color-green);
