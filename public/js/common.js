@@ -1317,9 +1317,13 @@ function showAdder(showAdd, type, id, doTN) {
 }
 
 function statsboxUpdate(stats) {
+    const statsbox = document.getElementById('statsbox');
+    if (!statsbox || statsbox.dataset.entity != stats.type.replace(/ID$/, '') + ':' + stats.id) return;
     if (stats.type == 'systemID') stats.type = 'solarSystemID';
     else if (stats.type == 'shipID') stats.type = 'shipTypeID';
-    $.get('/cache/tagged/stats/?type=' + stats.type + '&id=' + stats.id, setStatsboxValues);
+    $.get('/cache/tagged/stats/?type=' + stats.type + '&id=' + stats.id, function(values) {
+        if (statsbox.isConnected) setStatsboxValues(values);
+    });
 }
 
 function setStatsboxValues(stats) {
