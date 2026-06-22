@@ -56,6 +56,7 @@ $(document).ready(function () {
     $('#login-delay-slider').on('change input', updateDLS);
     $('#login-delay-slider').on('click touchstart mousedown', stopPropagation);
     $(document).on('click', 'a[href^="/ccpoauth2/"]:not([href^="/ccpoauth2-"])', interceptLoginClick);
+    $(document).on('click', 'a[href^="/account/tracker/"]', handleTrackerClick);
     $(document).on('submit', 'form[action^="/ccpoauth2/"]', interceptLoginSubmit);
     $(document).on('change', '#login-scope-all', loginScopeAllChange);
     $(document).on('change', '#loginOptionsModal .login-scope', syncLoginScopeAllCheckbox);
@@ -152,6 +153,65 @@ function refreshNavbarTracker() {
     if (trackerDropdown.length == 0) return;
 
     trackerDropdown.load('/navbar/');
+}
+
+async function handleTrackerClick(event) {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+    const match = this.pathname.match(/^\/account\/tracker\/([^/]+)\/(\d+)\/(add|remove)\/$/);
+    if (!match) return;
+
+    event.preventDefault();
+
+    const link = $(this);
+    if (link.data("tracker-pending")) return;
+    link.data("tracker-pending", true);
+
+    try {
+        const response = await fetch(this.href, {
+            method: "GET",
+            credentials: "same-origin",
+            headers: {
+                "Accept": "application/json",
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        });
+
+        if (!response.ok) throw new Error("Unexpected status " + response.status);
+
+        const data = await response.json();
+        if (!data.success) {
+            showToast(data.message || "Unable to update tracker. Please try again.", 5000);
+            return;
+        }
+
+        updateTrackerState(data.type, data.id, data.action);
+        applyTrackerControls();
+        refreshNavbarTracker();
+        showToast(data.message || "Tracker updated.", 5000);
+    } catch (error) {
+        console.error("Failed to update tracker:", error);
+        showToast("Unable to update tracker. Please try again.", 5000);
+    } finally {
+        link.data("tracker-pending", false);
+    }
+}
+
+function updateTrackerState(type, id, action) {
+    const trackerState = window.zkbTrackerState;
+    if (!trackerState || !trackerState.loggedIn) return;
+
+    id = Number(id);
+    trackerState.tracked = trackerState.tracked || {};
+    trackerState.tracked[type] = (trackerState.tracked[type] || []).map(Number);
+
+    if (action === "add" && !trackerState.tracked[type].includes(id)) {
+        trackerState.tracked[type].push(id);
+    } else if (action === "remove") {
+        trackerState.tracked[type] = trackerState.tracked[type].filter(function(trackedId) {
+            return trackedId !== id;
+        });
+    }
 }
 
 function applyTrackerControls() {
