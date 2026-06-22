@@ -62,6 +62,11 @@ $(document).ready(function () {
     $(document).on('change', '#loginOptionsModal .login-scope', syncLoginScopeAllCheckbox);
     $('#continueLoginWithOptions').on('click', continueLoginWithOptions);
     updateDLS.call($('#dls-slider'));
+    document.addEventListener("pointerdown", hideTransientTooltips, true);
+    document.addEventListener("keydown", function(event) {
+        if (event.key === "Escape") hideTransientTooltips();
+    }, true);
+    window.addEventListener("pagehide", hideTransientTooltips);
 
     // setup websocket with callbacks
     //if (start_websocket) startWebSocket();
@@ -359,6 +364,7 @@ function isSpaExcludedPath(pathname) {
 async function spaNavigate(href, pushState, historyState) {
     const targetURL = new URL(href, window.location.href);
     if (pushState) saveSpaScrollPosition();
+    hideTransientTooltips();
 
     if (spaAbortController) spaAbortController.abort();
     spaAbortController = new AbortController();
@@ -396,6 +402,8 @@ async function spaNavigate(href, pushState, historyState) {
         }
 
         clearSpaPageHelpers();
+        destroyTooltipsIn(currentContent);
+        if (currentModals) destroyTooltipsIn(currentModals);
         currentContent.innerHTML = nextContent.innerHTML;
         if (nextModals && currentModals) currentModals.innerHTML = nextModals.innerHTML;
         syncPageGlobals(currentContent);
@@ -720,6 +728,7 @@ function collapseMobileNav() {
 }
 
 function fullNavigate(href) {
+    hideTransientTooltips();
     window.location.href = href;
 }
 
@@ -765,6 +774,20 @@ function prepTippy() {
 			});
 		});
 	setTimeout(prepTippy, 500);
+}
+
+function hideTransientTooltips() {
+    if (window.tippy && window.tippy.hideAll) window.tippy.hideAll({ duration: 0 });
+    const legacyTooltip = document.getElementById("ttooltip");
+    if (legacyTooltip) legacyTooltip.classList.add("d-none");
+}
+
+function destroyTooltipsIn(root) {
+    if (!root) return;
+    if (root._tippy) root._tippy.destroy();
+    root.querySelectorAll("[data-tippy-root], [rel='tooltip'], [prev-title]").forEach(el => {
+        if (el._tippy) el._tippy.destroy();
+    });
 }
 
 function copyToClipboard(e) {
