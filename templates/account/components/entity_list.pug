@@ -1,0 +1,44 @@
+if (!empty($entities))
+  table.table.table-sm.table-striped
+    each $entity, $type in $entities
+      each $field in $entity
+        - $field = is_object($field) ? (array) $field : $field;
+        tr
+          td(style="width: 32px;")
+            if ($type == 'faction')
+              include ../../components/image_faction.pug
+            else if ($type == 'alliance')
+              include ../../components/image_alli.pug
+            else if ($type == 'corporation')
+              include ../../components/image_corp.pug
+            else if ($type == 'character')
+              include ../../components/image_char.pug
+            else if ($type == 'ship' || $type == 'item')
+              include ../../components/image_ship.pug
+            else if ($type == 'region')
+              include ../../components/image_region.pug
+            else if ($type == 'system')
+              include ../../components/image_system.pug
+          td
+            if ($type == 'faction')
+              include ../../components/text_faction.pug
+            else if ($type == 'alliance')
+              include ../../components/text_alli.pug
+            else if ($type == 'corporation')
+              include ../../components/text_corp.pug
+            else if ($type == 'character')
+              include ../../components/text_char.pug
+            else if ($type == 'ship' || $type == 'item')
+              include ../../components/text_ship.pug
+            else if ($type == 'region')
+              a(href=('/region/' . ($field['regionID'] ?? 0) . '/'))= $field['regionName'] ?? ''
+            else if ($type == 'system')
+              a(href=('/system/' . ($field['solarSystemID'] ?? 0) . '/'))= $field['solarSystemName'] ?? ''
+          td(style="text-align:right;")
+            form(name="deleteentity" method="post" action="/account/campaigns/")
+              input#deleteentityid(name="deleteentityid" type="hidden" value=($field['id'] ?? ''))
+              input#deleteentitytype(name="deleteentitytype" type="hidden" value=$type)
+              input(type="hidden" name="campaignID" value=($data['campainID'] ?? ''))
+              input.btn.btn-danger.btn-sm(type="submit" value="Remove" onclick=("return confirm('Are you sure you want to remove " . addslashes((string) ($field['name'] ?? '')) . "?');"))
+else
+  i Nothing to list here yet...

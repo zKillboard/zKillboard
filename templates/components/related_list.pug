@@ -1,0 +1,47 @@
+table.table.table-sm.table-striped.table-hover.related-list-table(style="table-layout: fixed; width: 100%;")
+  each $related in ($list ?? [])
+    - $destroyed = $related['destroyed'] ?? 0;
+    - $rowClass = $destroyed > 0 ? 'error' : '';
+    - $onClick = $destroyed > 0 ? ('if (event.which == 1) { navigateTo("/kill/' . $destroyed . '/"); return false; }') : '';
+    tr(class=$rowClass onClick=$onClick)
+      td.related-list-icons
+        .related-list-icon-grid
+          - $shipTypeID = $related['shipTypeID'] ?? 0;
+          - $characterID = $related['characterID'] ?? 0;
+          - $corporationID = $related['corporationID'] ?? 0;
+          - $allianceID = $related['allianceID'] ?? 0;
+          if ($shipTypeID > 0)
+            a(href=('/ship/' . $shipTypeID . '/') rel="tooltip" title=($related['shipName'] ?? ''))
+              img.eveimage.img-rounded(src=(($image_item ?? 'https://images.evetech.net/types/') . $shipTypeID . '/render?size=64') style="height: 64px; width: 64px;" alt=($related['shipName'] ?? '') loading="lazy" decoding="async" fetchpriority="low")
+          if ($characterID > 0)
+            a(href=('/character/' . $characterID . '/') rel="tooltip" title=($related['characterName'] ?? ''))
+              img.eveimage.img-rounded(src=(($image_character ?? 'https://images.evetech.net/characters/') . $characterID . '/portrait?size=64') style="height: 64px; width: 64px;" alt=($related['characterName'] ?? '') loading="lazy" decoding="async" fetchpriority="low")
+          if ($corporationID > 0)
+            a(href=('/corporation/' . $corporationID . '/') rel="tooltip" title=($related['corporationName'] ?? ''))
+              img.eveimage.img-rounded(src=(($image_corporation ?? 'https://images.evetech.net/corporations/') . $corporationID . '/logo?size=64') style="height: 64px; width: 64px;" alt=($related['corporationName'] ?? '') loading="lazy" decoding="async" fetchpriority="low")
+          if ($allianceID > 0)
+            a(href=('/alliance/' . $allianceID . '/') rel="tooltip" title=($related['allianceName'] ?? ''))
+              img.eveimage.img-rounded(src=(($image_alliance ?? 'https://images.evetech.net/alliances/') . $allianceID . '/logo?size=64') style="height: 64px; width: 64px;" alt=($related['allianceName'] ?? '') loading="lazy" decoding="async" fetchpriority="low")
+      td.related-list-text
+        .related-list-ellipsis
+          if (($related['characterID'] ?? 0) != 0)
+            a.related-list-link(href=('/character/' . $related['characterID'] . '/'))= $related['characterName'] ?? ''
+          else
+            = $related['characterName'] ?? ''
+          if (($related['shipTypeID'] ?? 0) != 0)
+            |  (
+            a.related-list-link(href=('/ship/' . $related['shipTypeID'] . '/'))= $related['shipName'] ?? ''
+            if (($related['shipTypeID'] ?? 0) != 670 && ($related['podded'] ?? 0) == 1)
+              |  / Capsule
+            | )
+        .related-list-ellipsis
+          if (($related['corporationID'] ?? 0) != 0)
+            a.related-list-link(href=('/corporation/' . $related['corporationID'] . '/'))= $related['corporationName'] ?? ''
+          else
+            = $related['corporationName'] ?? ''
+        if (($related['allianceID'] ?? 0) != 0)
+          .related-list-ellipsis
+            a.related-list-link(href=('/alliance/' . $related['allianceID'] . '/'))= $related['allianceName'] ?? ''
+        if (($related['factionID'] ?? 0) != 0)
+          .related-list-ellipsis
+            a.related-list-link(href=('/faction/' . $related['factionID'] . '/'))= $related['factionName'] ?? ''

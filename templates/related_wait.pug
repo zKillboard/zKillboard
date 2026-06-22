@@ -1,0 +1,34 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'Battle report generating...';
+
+block title
+  include components/title.pug
+
+block content
+  .row.related-status-wrap
+    .col-12.col-lg-10.col-xl-8
+      .related-status-card.related-status-card-wait
+        h2 Battle report generating
+        p Please wait a few moments while we build the report.
+        p.related-status-meta
+          | Refreshing automatically in 
+          strong#related-wait-seconds 3
+          | s.
+        .related-status-links
+          a(href=('https://br.evetools.org/related/' . ($solarSystemID ?? '') . '/' . ($unixtime ?? '') . '/') target="_blank" rel="noopener noreferrer") Open in br.evetools.org
+          a(href=('https://br.inyour.space/?s=' . ($solarSystemID ?? '') . '&b=' . ($unixtime ?? '') . '&e=90') target="_blank" rel="noopener noreferrer") Open in br.inyour.space
+  script(type="text/javascript").
+    navbar = false;
+    var waitSeconds = 3;
+    var waitNode = document.getElementById("related-wait-seconds");
+    var relatedWaitInterval = setInterval(function () {
+      waitSeconds--;
+      if (waitNode && waitSeconds >= 0) waitNode.textContent = waitSeconds;
+    }, 1000);
+    var relatedWaitReload = setTimeout(function(){ location.reload(); }, 3000);
+    window.zkbPageCleanup = function () {
+      clearInterval(relatedWaitInterval);
+      clearTimeout(relatedWaitReload);
+    };

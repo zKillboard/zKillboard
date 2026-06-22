@@ -1,0 +1,45 @@
+div
+  if (!empty($extra['trophies']))
+    - $trophies = is_object($extra['trophies']) ? (array) $extra['trophies'] : $extra['trophies'];
+    .row.g-3
+      fieldset.col-12.col-lg-4
+        legend Trophies
+        table.table.table-sm
+          tr
+            th Level / Total
+            th Completed
+            th
+          tr
+            td= ($trophies['levelCount'] ?? 0) . ' / ' . ($trophies['maxLevelCount'] ?? 0)
+            td= ($trophies['completedPct'] ?? 0) . '%'
+            td
+              img(src=('https://zkillboard.com/img/level/level' . ($trophies['boxes'] ?? 0) . '.gif'))
+    .row.g-3
+      each $conditions, $category in ($trophies['trophies'] ?? [])
+        - $conditions = is_object($conditions) ? (array) $conditions : $conditions;
+        fieldset.col-12.col-lg-6
+          legend= $category
+          table.table.table-sm.table-striped
+            tr
+              th Trophy
+              th(style="width: 175px;") &nbsp;
+              th
+                span.float-end
+            each $value, $condition in $conditions
+              - $value = is_object($value) ? (array) $value : $value;
+              tr
+                td(style="width: 100%;")
+                  span(class=((($value['met'] ?? 0) > 0) ? 'green' : ''))= $condition
+                  if (!empty($value['link']))
+                    |  
+                    a(href=$value['link'])
+                      span.fas.fa-arrow-right.small
+                td
+                  span.float-end
+                    = number_format((float) ($value['value'] ?? 0), 0)
+                    if (($value['level'] ?? 0) < 5)
+                      | &nbsp;/&nbsp;
+                      = number_format((float) ($value['next'] ?? 0), 0)
+                td(style="width: 0.5em;")
+                  span.float-end
+                    img(src=('/img/level/level' . ($value['level'] ?? 0) . '.gif') title=(!empty($value['noNext']) ? 'Hardcoded level (for now)' : ('At: ' . ($value['value'] ?? 0) . ((($value['level'] ?? 0) < 5) ? (' Next Level: ' . ($value['next'] ?? 0)) : ''))))

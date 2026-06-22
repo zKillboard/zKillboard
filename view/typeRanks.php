@@ -124,5 +124,5 @@ function handler($request, $response, $args, $container) {
 
     $pageEpoch = str_replace(":solo", "", $pageEpoch);
 
-    return $container->get('view')->render($response->withHeader('Cache-Tag', "ranks,ranks:$type,ranks:$type:$pageEpoch"), 'typeRanks.html', ['ranks' => $ranks, 'pageTitle' => $pageTitle, 'type' => str_replace("ID", "", $column), 'epoch' => $pageEpoch, 'subType' => substr($subType, 0, 1), 'solo' => $solo, 'page' => $page, 'hasMore' => $hasMore, 'sortKey' => $sortKey, 'sortDir' => $sortDir]);
+    return $container->get('view')->render($response->withHeader('Cache-Tag', "ranks,ranks:$type,ranks:$type:$pageEpoch"), 'typeRanks.pug', ['ranks' => $ranks, 'pageTitle' => $pageTitle, 'type' => str_replace("ID", "", $column), 'epoch' => $pageEpoch, 'subType' => substr($subType, 0, 1), 'solo' => $solo, 'page' => $page, 'hasMore' => $hasMore, 'sortKey' => $sortKey, 'sortDir' => $sortDir]);
 }

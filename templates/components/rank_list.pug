@@ -1,0 +1,56 @@
+.row
+  - $showImage = true;
+  each $list, $listIndex in ($extra['allranks'] ?? [])
+    - $list = is_object($list) ? (array) $list : $list;
+    - $loopIndex = 0;
+    if ($listIndex % 3 == 0)
+      .row
+    .col-lg-4(style="margin: 0px; padding-left: 1em;")
+      table.table.table-sm.table-striped.table-hover.table-bordered.caption-top
+        caption
+          strong= $list['title'] ?? ''
+        thead
+          tr
+            th Rank
+            th(style="width: 100%;")= ucfirst((string) ($list['type'] ?? ''))
+        - $entitySubpage = 'ranks/';
+        tbody
+          each $field in ($list['data'] ?? [])
+            - $field = is_object($field) ? (array) $field : $field;
+            - $loopIndex++;
+            tr
+              td(style="text-align: center; vertical-align: middle;" format="format-int-once" raw=($field['rank'] ?? 0))= $field['rank'] ?? ''
+              td
+                if (($list['type'] ?? '') == 'alliance')
+                  include text_alli.pug
+                else if (($list['type'] ?? '') == 'corporation')
+                  include text_corp.pug
+                else if (($list['type'] ?? '') == 'character')
+                  include text_char.pug
+                else if (($list['type'] ?? '') == 'weapon')
+                  include text_item.pug
+                else if (($list['type'] ?? '') == 'ship')
+                  include text_ship.pug
+                else if (($list['type'] ?? '') == 'group')
+                  include text_shipclass.pug
+                else if (($list['type'] ?? '') == 'faction')
+                  include text_faction.pug
+                else if (($list['type'] ?? '') == 'system')
+                  include text_system.pug
+                else if (($list['type'] ?? '') == 'region')
+                  include text_region.pug
+                else if (($list['type'] ?? '') == 'location')
+                  include text_location.pug
+                else
+                  = $list['type'] ?? ''
+          each $i in range(0, 10)
+            - $loopIndex++;
+            if ($loopIndex <= 10)
+              tr
+                td &nbsp;
+                td
+                  if ($showImage)
+                    div(style="height: 32px")
+                  | &nbsp;
+                td &nbsp;
+        - $entitySubpage = '';

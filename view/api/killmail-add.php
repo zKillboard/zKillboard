@@ -1,7 +1,7 @@
 <?php
 
 function handler($request, $response, $args, $container) {
-    global $mdb, $redis, $ip, $twig, $kvc;
+    global $mdb, $redis, $ip, $templates, $kvc;
 
     $killID = $args['killID'] ?? '';
     $hash = $args['hash'] ?? '';

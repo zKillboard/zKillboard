@@ -1,0 +1,56 @@
+each $war in ($wars ?? [])
+  - $war = is_object($war) ? (array) $war : $war;
+  - $aggressor = is_object($war['aggressor'] ?? null) ? (array) $war['aggressor'] : ($war['aggressor'] ?? []);
+  - $defender = is_object($war['defender'] ?? null) ? (array) $war['defender'] : ($war['defender'] ?? []);
+  - $aggressorKills = $aggressor['ships_killed'] ?? 0;
+  - $defenderKills = $defender['ships_killed'] ?? 0;
+  - $aggressorIsk = $aggressor['isk_destroyed'] ?? ($aggressor['isk_killed'] ?? 0);
+  - $defenderIsk = $defender['isk_destroyed'] ?? ($defender['isk_killed'] ?? 0);
+  - $aggressorName = $war['agrName'] ?? ($war['aggressorName'] ?? 'Unknown aggressor');
+  - $defenderName = $war['dfdName'] ?? ($war['defenderName'] ?? 'Unknown defender');
+  - $totalIsk = $aggressorIsk + $defenderIsk;
+  - $aggressorEfficiency = $totalIsk > 0 ? ($aggressorIsk / $totalIsk * 100) : 0;
+  - $defenderEfficiency = $totalIsk > 0 ? ($defenderIsk / $totalIsk * 100) : 0;
+  - $aggressorID = $aggressor['alliance_id'] ?? ($aggressor['corporation_id'] ?? ($aggressor['id'] ?? 0));
+  - $defenderID = $defender['alliance_id'] ?? ($defender['corporation_id'] ?? ($defender['id'] ?? 0));
+  - $aggressorKind = isset($aggressor['alliance_id']) ? 'alliances' : 'corporations';
+  - $defenderKind = isset($defender['alliance_id']) ? 'alliances' : 'corporations';
+  .row.g-3.related-team-grid.war-team-grid
+    .col-12.col-lg-6.related-team-panel.related-team-panel-a.is-active(data-team="a")
+      section.related-team-card.related-team-card-a
+        h5.related-team-heading Aggressor
+        .war-team-entity
+          img(src=('https://images.evetech.net/' . $aggressorKind . '/' . $aggressorID . '/logo?size=64') alt="" loading="lazy" decoding="async" fetchpriority="low")
+          a.related-entity-name(href=($war['agrLink'] ?? ($war['aggressorLink'] ?? '/wars/')))= $aggressorName
+        ul.related-team-stats.list-unstyled
+          li
+            span Ships Killed
+            strong(class=($aggressorKills >= $defenderKills ? 'green' : 'red'))= number_format((float) $aggressorKills, 0)
+          li
+            span ISK Destroyed
+            strong(class=($aggressorIsk >= $defenderIsk ? 'green' : 'red'))= $shortNum($aggressorIsk)
+          li
+            span Efficiency
+            strong= number_format((float) $aggressorEfficiency, 1) . '%'
+          li
+            span War Role
+            strong Aggressor
+    .col-12.col-lg-6.related-team-panel.related-team-panel-b.is-active(data-team="b")
+      section.related-team-card.related-team-card-b
+        h5.related-team-heading.text-lg-end Defender
+        .war-team-entity.war-team-entity-defender
+          a.related-entity-name(href=($war['dfdLink'] ?? ($war['defenderLink'] ?? '/wars/')))= $defenderName
+          img(src=('https://images.evetech.net/' . $defenderKind . '/' . $defenderID . '/logo?size=64') alt="" loading="lazy" decoding="async" fetchpriority="low")
+        ul.related-team-stats.list-unstyled
+          li
+            span Ships Killed
+            strong(class=($defenderKills >= $aggressorKills ? 'green' : 'red'))= number_format((float) $defenderKills, 0)
+          li
+            span ISK Destroyed
+            strong(class=($defenderIsk >= $aggressorIsk ? 'green' : 'red'))= $shortNum($defenderIsk)
+          li
+            span Efficiency
+            strong= number_format((float) $defenderEfficiency, 1) . '%'
+          li
+            span War Role
+            strong Defender

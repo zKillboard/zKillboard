@@ -1,0 +1,10 @@
+if (!empty($showImage))
+  - $imageSize = 32;
+  include image_corp.pug
+if (!empty($field['executorCorpID']) && !empty($field['executorCorpName']))
+  a.wrapplease(href=('/corporation/' . $field['executorCorpID'] . '/'))= $field['executorCorpName']
+else if (($field['corporationID'] ?? 0) != 0)
+  a.wrapplease(href=('/corporation/' . $field['corporationID'] . '/' . ($entitySubpage ?? '')))= $field['corporationName'] ?? ''
+else if (($field['id'] ?? 0) != 0)
+  a.wrapplease(href=('/corporation/' . $field['id'] . '/'))= $field['name'] ?? ''
+- $shortLength = 30;

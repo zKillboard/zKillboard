@@ -1,0 +1,31 @@
+.accordion.card.m-0.p-0.bg-transparent#invAll
+  .card.m-0.p-0.bg-transparent
+    .card-header
+      a.accordion-toggle(data-bs-toggle="collapse" data-bs-parent="#invAll" href="#listInvAll")
+        .centered
+          | Involved Alliances / Corporations 
+          i.fas.fa-chevron-down(aria-hidden="true")
+    #listInvAll.accordion-body.collapse.m-0.p-0
+      .card-body.m-0.p-0
+        h3
+          | Involved 
+          small Alliance(s) / Corp(s)
+        table.table.table-sm.table-striped
+          each $alliance, $allianceID in ($field ?? [])
+            - $alliance = is_object($alliance) ? (array) $alliance : $alliance;
+            tr
+              th
+                if ((int) $allianceID == 0)
+                  | None
+                else
+                  - $field = $alliance;
+                  include text_alli.pug
+              th(style="text-align: right;")= number_format((float) ($alliance['involved'] ?? 0), 0)
+            each $corp in ($alliance['corporations'] ?? [])
+              - $corp = is_object($corp) ? (array) $corp : $corp;
+              tr
+                td
+                  | &mdash; 
+                  - $field = $corp;
+                  include text_corp.pug
+                td(style="text-align: right;")= number_format((float) ($corp['involved'] ?? 0), 0)

@@ -1,0 +1,18 @@
+.row
+  h4 Payment History
+  if (!empty($data['history'] ?? []))
+    table.table.table-striped.table-hover.col-lg-3
+      tr
+        th Date
+        th Amount
+        th Received
+      each $row in $data['history']
+        tr
+          td= $row['date'] ?? ''
+          td= $row['amount'] ?? ''
+          td= $row['months'] ?? ''
+  else
+    em No payment history at this time...
+.row
+  a(href="/information/payments/") Payment Information
+  br

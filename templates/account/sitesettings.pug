@@ -1,0 +1,19 @@
+.row
+  .col-lg-6
+    h3 Login Screen
+    form.mb-3(name="loginscreen" method="post" action="/account/sitesettings/")
+      .input-group.input-group-sm.w-100
+        select.form-select(name="loginPage" aria-label="Default login page")
+          option(value="main" selected=(($data['loginPage'] ?? '') == 'main')) Main Page
+          option(value="character" selected=(($data['loginPage'] ?? '') == 'character')) Character
+          option(value="corporation" selected=(($data['loginPage'] ?? '') == 'corporation')) Corporation
+          option(value="alliance" selected=(($data['loginPage'] ?? '') == 'alliance')) Alliance
+        button.btn.btn-primary(type="submit") Set
+    h3 Tracker Notifications
+    form.mb-2(name="styles" method="post" action="/account/sitesettings/")
+      .input-group.input-group-sm.w-100
+        select.form-select(name="trackernotification" aria-label="Tracker notifications")
+          option(value="true" selected=(($data['trackernotification'] ?? '') == 'true')) Yes!
+          option(value="false" selected=(($data['trackernotification'] ?? '') == 'false')) No :(
+        button.btn.btn-primary(type="submit") Set
+    p Site's default is Yes!

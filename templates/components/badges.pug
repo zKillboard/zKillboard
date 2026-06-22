@@ -1,0 +1,6 @@
+each $badge in ($badges ?? [])
+  - $badge = is_object($badge) ? (array) $badge : $badge;
+  span.float-start
+    a(href=($badge['url'] ?? '') target="_blank" alt=($badge['title'] ?? ''))
+      img(style="height: 64px; width: 64px;" title=($badge['title'] ?? '') src=($badge['image'] ?? ''))
+br

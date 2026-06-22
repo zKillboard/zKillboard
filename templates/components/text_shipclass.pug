@@ -1,0 +1,4 @@
+if (!empty($showImage))
+  - $imageSize = 32;
+  include image_ship.pug
+a(href=('/group/' . ($field['groupID'] ?? 0) . '/' . ($entitySubpage ?? '')))= $field['groupName'] ?? ''

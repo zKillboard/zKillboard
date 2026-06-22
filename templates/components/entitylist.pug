@@ -1,0 +1,32 @@
+table.table.table-hover.table-striped.datatable(data-order='[ 1, "desc" ]')
+  thead
+    tr
+      th(colspan="2")
+      th.green(colspan="3" style="text-align: center;") Destroyed
+      th.red(colspan="3" style="text-align: center;") Lost
+    tr
+      th= $entityTitle ?? ''
+      th(style="text-align: right") Members
+      th.green(style="text-align: right") Kills
+      th.green(style="text-align: right") ISK
+      th.green(style="text-align: right") Points
+      th.red(style="text-align: right") Losses
+      th.red(style="text-align: right") ISK
+      th.red(style="text-align: right") Points
+  tbody
+    each $field in ($entities ?? [])
+      - $field = is_object($field) ? (array) $field : $field;
+      tr
+        if (($entityTitle ?? '') == 'Alliance')
+          td
+            include text_alli.pug
+        if (($entityTitle ?? '') == 'Corporation')
+          td
+            include text_corp.pug
+        td(data-order=($field['memberCount'] ?? 0) style="text-align: right")= number_format((float) ($field['memberCount'] ?? 0), 0)
+        td.green(data-order=($field['shipsDestroyed'] ?? 0) style="text-align: right")= number_format((float) ($field['shipsDestroyed'] ?? 0), 0)
+        td.green(data-order=($field['iskDestroyed'] ?? 0) style="text-align: right")= $formatIsk($field['iskDestroyed'] ?? 0)
+        td.green(data-order=($field['pointsDestroyed'] ?? 0) style="text-align: right")= $formatIsk($field['pointsDestroyed'] ?? 0)
+        td.red(data-order=($field['shipsLost'] ?? 0) style="text-align: right")= number_format((float) ($field['shipsLost'] ?? 0), 0)
+        td.red(data-order=($field['iskLost'] ?? 0) style="text-align: right")= $formatIsk($field['iskLost'] ?? 0)
+        td.red(data-order=($field['pointsLost'] ?? 0) style="text-align: right")= $formatIsk($field['pointsLost'] ?? 0)

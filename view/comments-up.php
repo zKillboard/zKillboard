@@ -3,7 +3,7 @@
 use cvweiss\redistools\RedisTtlCounter;
 
 function handler($request, $response, $args, $container) {
-    global $mdb, $ip, $redis, $twig;
+    global $mdb, $ip, $redis, $templates;
 
     $pageID = $args['pageID'] ?? '';
     $commentID = (string) ($args['commentID'] ?? -1);
@@ -55,7 +55,7 @@ function handler($request, $response, $args, $container) {
         $redis->setex($key, 60, json_encode($comments));
     }
 
-    $out = $twig->render("components/commentblock.html", ['comments' => $comments]);
+    $out = $templates->render("components/commentblock.pug", ['comments' => $comments]);
     if ($publish) {
         $redis->sadd("queueCacheTags", $key);
         $redis->publish("comment:$pageID", json_encode(['action' => 'comment', 'html' => $out]));

@@ -65,6 +65,6 @@ foreach ($preKills as $kill) {
     $kills[] = $kill;
 }
 
-return $container->get('view')->render($response->withHeader('Cache-Tag', "wars,war,war:$warID"), 'index.html', array('war' => $warData, 'wars' => array($warData), 'topPods' => $topPods, 'topIsk' => $topIsk, 'topPoints' => $topPoints, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => 'war', 'pager' => false, 'pageTitle' => $pageTitle));
+return $container->get('view')->render($response->withHeader('Cache-Tag', "wars,war,war:$warID"), 'index.pug', array('war' => $warData, 'wars' => array($warData), 'topPods' => $topPods, 'topIsk' => $topIsk, 'topPoints' => $topPoints, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => 'war', 'pager' => false, 'pageTitle' => $pageTitle));
 
 }

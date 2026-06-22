@@ -1,0 +1,19 @@
+div(style="padding: 1em;")
+  table#corpstats.table.table-hover.table-striped.datatable(data-order='[[1, "asc"]]')
+    thead
+      tr
+        th(style="width: 50px;") Ticker
+        th(style="width: 200px;") Corporation
+        th(style="width: 100px; text-align: right") Members
+        th(style="width: 200px;") CEO
+    tbody
+      each $corp in ($corpStats ?? [])
+        - $corp = is_object($corp) ? (array) $corp : $corp;
+        - $field = $corp;
+        tr
+          td= '[' . ($corp['ticker'] ?? '') . ']'
+          td
+            include text_corp.pug
+          td(data-order=($corp['members'] ?? 0) raw=($corp['members'] ?? 0) format="format-int-once" style="text-align: right")= $corp['members'] ?? 0
+          td
+            a(href=('/character/' . ($corp['ceoID'] ?? 0) . '/'))= $corp['ceoName'] ?? ''

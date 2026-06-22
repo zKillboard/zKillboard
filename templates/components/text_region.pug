@@ -1,0 +1,4 @@
+if (!empty($showImage))
+  - $imageSize = 32;
+  include image_region.pug
+a(href=('/region/' . ($field['regionID'] ?? 0) . '/' . ($entitySubpage ?? '')) class=((($field['regionID'] ?? 0) >= 12000000 && ($field['regionID'] ?? 0) < 13000000) ? 'triglavian' : ''))= $field['regionName'] ?? ''

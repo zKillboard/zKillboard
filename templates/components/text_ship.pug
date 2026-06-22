@@ -1,0 +1,8 @@
+- $shipNameLength = $shipNameLength ?? 30;
+if (!empty($showImage))
+  - $imageSize = 32;
+  include image_ship.pug
+if (($shipImageLinkOverride ?? 0) > 0)
+  a(href=('/kill/' . $shipImageLinkOverride . '/') rel="tooltip" title=('Detail for ' . $shipImageLinkOverride))= $field['shipName'] ?? ''
+else
+  a(href=('/ship/' . ($field['shipTypeID'] ?? 0) . '/' . ($entitySubpage ?? '')))= $field['shipName'] ?? ''

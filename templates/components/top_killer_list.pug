@@ -1,0 +1,54 @@
+- $topSetData = is_object($topSet ?? null) ? (array) $topSet : ($topSet ?? []);
+- $first = true;
+if (count($topSetData['values'] ?? []) > 0)
+  .float-start(style="width: 100%; padding: 0px; margin: 0px;")
+    center
+      h5= $topSetData['title'] ?? ''
+    table.table.table-sm.topBoxes.col-lg-2(style="padding: 0px; margin: 0px; width: 100%;")
+      each $data in ($topSetData['values'] ?? [])
+        - $data = is_object($data) ? (array) $data : $data;
+        - $field = $data;
+        if ($first)
+          tr
+            - $imageSize = 64;
+            - $field = $data;
+            if (($topSetData['type'] ?? '') == 'character')
+              td(colspan="2")
+                include image_char.pug
+            else if (($topSetData['type'] ?? '') == 'corporation')
+              td(colspan="2")
+                include image_corp.pug
+            else if (($topSetData['type'] ?? '') == 'alliance')
+              td(colspan="2")
+                include image_alli.pug
+            else if (($topSetData['type'] ?? '') == 'solarSystem')
+              td(colspan="2")
+                include image_system.pug
+            else if (($topSetData['type'] ?? '') == 'shipType')
+              td(colspan="2")
+                include image_ship.pug
+            else if (($topSetData['type'] ?? '') == 'location')
+              td(colspan="2")
+                include image_item.pug
+          - $first = false;
+        tr
+          if (($topSetData['type'] ?? '') == 'character')
+            td
+              include text_char.pug
+          else if (($topSetData['type'] ?? '') == 'corporation')
+            td
+              include text_corp.pug
+          else if (($topSetData['type'] ?? '') == 'alliance')
+            td
+              include text_alli.pug
+          else if (($topSetData['type'] ?? '') == 'solarSystem')
+            td
+              include text_system.pug
+          else if (($topSetData['type'] ?? '') == 'shipType')
+            td
+              include text_ship.pug
+          else if (($topSetData['type'] ?? '') == 'location')
+            td
+              include text_location.pug
+          td(style="text-align: right;" title=((($data['score'] ?? 0) != 0) ? ('Score: ' . number_format((float) $data['score'], 0)) : false) rel=((($data['score'] ?? 0) != 0) ? 'tooltip' : false) format="format-int-once" raw=($data['kills'] ?? 0))= number_format((float) ($data['kills'] ?? 0), 0)
+  .clearfix

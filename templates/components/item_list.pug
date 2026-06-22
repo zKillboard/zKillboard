@@ -1,0 +1,105 @@
+- $extraData = is_object($extra ?? null) ? (array) $extra : ($extra ?? []);
+- $killData = is_object($killdata ?? null) ? (array) $killdata : ($killdata ?? []);
+- $victim = is_object($killData['victim'] ?? null) ? (array) $killData['victim'] : ($killData['victim'] ?? []);
+- $priceTitle = function ($prices) { $prices = is_object($prices ?? null) ? (array) $prices : ($prices ?? []); return '$' . number_format((float) ($prices['usd'] ?? 0), 2, '.', ',') . ' / ' . number_format((float) ($prices['eur'] ?? 0), 2, '.', ',') . ' euro / GBP ' . number_format((float) ($prices['gbp'] ?? 0), 2, '.', ','); };
+br
+.centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent" style="padding-top: 1em;")
+#itemsTable
+  .d-flex.align-items-center.justify-content-between.flex-wrap.gap-2.mb-2
+    h3.m-0 Item(s)
+    .d-flex.align-items-center.gap-3.small
+      label.d-flex.align-items-center.gap-1.mb-0.item_dropped(for="itemsDropped" title="Dropped" style="cursor: pointer;")
+        input#itemsDropped(type="checkbox" checked)
+        span(aria-hidden="true")
+          i.fas.fa-check
+      span#itemsDestroyedSpan
+        label.d-flex.align-items-center.gap-1.mb-0.item_destroyed(for="itemsDestroyed" title="Destroyed" style="cursor: pointer;")
+          input#itemsDestroyed(type="checkbox" checked)
+          span(aria-hidden="true")
+            i.fas.fa-times
+  table#itemTable.table.table-sm.item_list.item-table(data-paging="false" data-dom="lrt")
+    thead
+      tr.titles
+        th(style="width: 40px;")
+          span.btn.btn-sm.m-0.p-0(onClick="doSort(0, false);")
+            i.fas.fa-sort(aria-hidden="true")
+        th
+          span.btn.btn-sm.m-0.p-0(onClick="doSort(1, true);")
+            | Item Name 
+            i.fas.fa-sort(aria-hidden="true")
+        th(style="width: 85px;")
+          div(onClick="doSort(2, true);" align="right")
+            span.btn.btn-sm.m-0.p-0
+              | Qty 
+              i.fas.fa-sort(aria-hidden="true")
+        th(style="width: 110px;")
+          div(align="right")
+            span.btn.btn-sm.m-0.p-0(onClick="doSort(3, true);")
+              | Value 
+              i.fas.fa-sort(aria-hidden="true")
+    tbody
+      - $items = $extraData['items'] ?? [];
+      each $flagName, $flag in ($flags ?? [])
+        include flag_list.pug
+      tr.hide-when-sorted
+        td(data-order=$i() colspan="4")
+          h5 Ship
+        td.d-none
+        td.d-none
+        td.d-none
+      - $imageSize = 32;
+      - unset($resizeImage);
+      tr.item_row
+        - $field = $victim;
+        td.icons(data-order=$i())
+          div(align="center")
+            include image_ship.pug
+        td(data-order=($victim['shipName'] ?? ''))
+          a(href=('/item/' . ($victim['shipTypeID'] ?? 0) . '/'))= $victim['shipName'] ?? ''
+        td(data-order="1")
+          div.item_destroyed.qty(align="right")
+            | 1 
+            i.fas.fa-times(aria-hidden="true" style="color: inherit;")
+        td.price.item_destroyed(data-order=($extraData['shipprice'] ?? 0))
+          div(align="right" format="format-dec2-once" raw=($extraData['shipprice'] ?? 0))= number_format((float) ($extraData['shipprice'] ?? 0), 2, '.', ',')
+      tr.item_dropped_row.hide-when-sorted
+        td(data-order=$i() colspan="2")
+          h5 Total Dropped:
+        td(colspan="2" style="text-align: right;")
+          .float-end(style="width: 100%;")
+            h5.item_dropped(rel="tooltip" title=$priceTitle($extraData['droppedprice'] ?? []) format="format-dec2-once" raw=($extraData['droppedisk'] ?? 0))= number_format((float) ($extraData['droppedisk'] ?? 0), 2, '.', ',')
+        td.d-none
+        td.d-none
+      tr.hide-when-sorted
+        td(data-order=$i() colspan="2")
+          h5 Total Destroyed:
+        td(colspan="2" style="text-align: right;")
+          .float-end(style="width: 100%;")
+            h5.item_destroyed(rel="tooltip" title=$priceTitle($extraData['destroyedprice'] ?? []) format="format-dec2-once" raw=($extraData['destroyedisk'] ?? 0))= number_format((float) ($extraData['destroyedisk'] ?? 0), 2, '.', ',')
+        td.d-none
+        td.d-none
+      tr.hide-when-sorted
+        td(data-order=$i() colspan="2")
+          h5 Grand Total:
+        td.totalprice(colspan="2" style="text-align: right;")
+          .float-end(style="width: 100%;")
+            h5(rel="tooltip" title=$priceTitle($extraData['totalprice'] ?? []) format="format-dec2-once" raw=($extraData['totalisk'] ?? 0))= number_format((float) ($extraData['totalisk'] ?? 0), 2, '.', ',')
+        td.d-none
+        td.d-none
+if (($extraData['insurance']['Basic']['payout'] ?? 0) > 0)
+  .col-lg-4
+    h4
+      | Insurance 
+      small Possible payouts
+    table.table.table-codensed(style="text-align: right")
+      tr
+        th(style="text-align: right") Type
+        th(style="text-align: right") Cost
+        th(style="text-align: right") Payout
+      each $insuranceType in ['None', 'Basic', 'Standard', 'Bronze', 'Silver', 'Gold', 'Platinum']
+        - $insurance = $extraData['insurance'][$insuranceType] ?? ['cost' => 0, 'payout' => 0];
+        tr
+          td= $insuranceType
+          td(format="format-dec2-once" raw=($insurance['cost'] ?? 0))= number_format((float) ($insurance['cost'] ?? 0), 2)
+          td(format="format-dec2-once" raw=($insurance['payout'] ?? 0))= number_format((float) ($insurance['payout'] ?? 0), 2)
+  .d-none.d-lg-block.col-lg-2 &nbsp;

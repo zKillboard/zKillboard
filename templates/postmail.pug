@@ -1,0 +1,37 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'Post';
+
+block title
+  include components/title.pug
+
+block content
+  each $msg in ($message ?? [])
+    if ($msg != '')
+      .row
+        .alert.alert-success= $msg
+  .row
+    .col-lg-6
+      .row
+        h3 Post External Killmail Link (ESI)
+        form.form(name="postkillmailurl" method="post" action="/post/")
+          .mb-3
+            input#killmailurl.form-control(type="text" name="killmailurl" required placeholder="External Killmail Link")
+          .mb-3
+            .col-lg-2
+              input.btn.btn-primary(type="submit")
+      .row
+        br
+        img(src="/img/km_external_link.png")
+        br
+      hr
+    #loginforapi.col-lg-5(style="display: none;")
+      h3 Login for API Driven Killmails
+      .card
+        .card-body
+          form#loginform(action="/ccpoauth2/")
+            input#ssologinimage(type="image" src="/img/ssologin.png")
+
+block robots
+  meta(name="robots" content="nofollow")

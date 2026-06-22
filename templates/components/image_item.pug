@@ -1,0 +1,22 @@
+- $imageSize = $imageSize ?? 32;
+- $actualSize = $resizeImage ?? $imageSize;
+- $typeID = 0;
+- $typeName = '';
+if (($field['weaponTypeID'] ?? 0) != 0)
+  - $typeID = $field['weaponTypeID'];
+  - $typeName = $field['weaponTypeName'] ?? '';
+else if (($field['locationID'] ?? 0) != 0)
+  - $typeID = $field['typeID'] ?? 0;
+  - $typeName = $field['locationName'] ?? '';
+else if (($field['typeID'] ?? 0) != 0)
+  - $typeID = $field['typeID'];
+  - $typeName = $field['typeName'] ?? '';
+if (!empty($typeID))
+  - $eveImageClass = $eveImageClass ?? true;
+  - $eveImage = $eveImageClass == true ? 'eveimage ' : '';
+  if (!empty($placement))
+    a(href=('/item/' . $typeID . '/') rel="tooltip" data-placement=$placement title=$typeName)
+      img.img-rounded(src=(($image_item ?? 'https://images.evetech.net/types/') . $typeID . '/icon?size=' . $imageSize) class=$eveImage style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;') alt=$typeName onerror=("this.removeAttribute('onerror'); this.src='" . ($image_item ?? 'https://images.evetech.net/types/') . $typeID . "/bp?size=" . $imageSize . "';") loading="lazy" decoding="async" fetchpriority="low")
+  else
+    a(href=('/item/' . $typeID . '/') rel="tooltip" title=$typeName)
+      img.img-rounded(src=(($image_item ?? 'https://images.evetech.net/types/') . $typeID . '/icon?size=' . $imageSize) class=$eveImage style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;') alt=$typeName onerror=("this.removeAttribute('onerror'); this.src='" . ($image_item ?? 'https://images.evetech.net/types/') . $typeID . "/bp?size=" . $imageSize . "';") loading="lazy" decoding="async" fetchpriority="low")

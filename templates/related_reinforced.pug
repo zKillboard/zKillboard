@@ -1,0 +1,21 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'Battle report generating...';
+
+block title
+  include components/title.pug
+
+block content
+  .row.related-status-wrap
+    .col-12.col-lg-10.col-xl-8
+      .related-status-card.related-status-card-reinforced
+        h2 Reinforced mode enabled
+        p Related battle reports are temporarily disabled while the site is under heavy load.
+        p.related-status-meta Try again later, or use one of these alternatives:
+        .related-status-links
+          a(href=('https://br.evetools.org/related/' . ($solarSystemID ?? '') . '/' . ($unixtime ?? '') . '/') target="_blank" rel="noopener noreferrer") Open in br.evetools.org
+          a(href=('https://br.inyour.space/?s=' . ($solarSystemID ?? '') . '&b=' . ($unixtime ?? '') . '&e=90') target="_blank" rel="noopener noreferrer") Open in br.inyour.space
+  script(type="text/javascript").
+    //navbar = false;
+    //setTimeout(function(){ location.reload(); }, 3000);

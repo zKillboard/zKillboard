@@ -1,0 +1,26 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'Wars';
+
+block title
+  include components/title.pug
+
+block content
+  section.war-page
+    header.war-page-header
+      div
+        p.war-page-kicker CONCORD sanctioned conflict
+        h2 Wars
+      nav.war-page-actions(aria-label="War pages")
+        a.btn.btn-sm.btn-info(href="/war/eligible/")
+          i.fas.fa-shield-alt(aria-hidden="true")
+          |  Eligible
+    .war-table-grid
+      each $row in ($warTables ?? [])
+        section.war-section
+          header.war-section-header
+            h3= $row['name'] ?? ''
+            span= number_format(count($row['wars'] ?? []), 0)
+          - $wars = $row['wars'] ?? [];
+          include components/wars_table.pug

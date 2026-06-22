@@ -1,0 +1,164 @@
+- $navRows = function ($rows) { return array_map(fn($row) => is_object($row) ? (array) $row : $row, $rows ?? []); };
+- $trackerCharacter = $navRows($tracker_character ?? []);
+- $trackerCorporation = $navRows($tracker_corporation ?? []);
+- $trackerAlliance = $navRows($tracker_alliance ?? []);
+- $trackerFaction = $navRows($tracker_faction ?? []);
+- $trackerShip = $navRows($tracker_ship ?? []);
+- $trackerGroup = $navRows($tracker_group ?? []);
+- $trackerSystem = $navRows($tracker_system ?? []);
+- $trackerConstellation = $navRows($tracker_constellation ?? []);
+- $trackerRegion = $navRows($tracker_region ?? []);
+- $navIds = fn($rows, $filter = null) => array_values(array_map(fn($row) => (int) ($row['id'] ?? 0), array_filter($rows, fn($row) => ($filter === null || $filter($row)) && !empty($row['id']))));
+- $trackerState = ['loggedIn' => !empty($sessionusername), 'trackNotification' => (($trackernotification ?? '') === 'true'), 'characterID' => (int) ($characterID ?? 0), 'corporationID' => (int) ($corporationID ?? 0), 'allianceID' => (int) ($allianceID ?? 0), 'tracked' => ['character' => $navIds($trackerCharacter), 'corporation' => $navIds($trackerCorporation, fn($row) => (int) ($row['id'] ?? 0) > 1999999), 'alliance' => $navIds($trackerAlliance), 'faction' => $navIds($trackerFaction), 'ship' => $navIds($trackerShip), 'group' => $navIds($trackerGroup), 'system' => $navIds($trackerSystem), 'constellation' => $navIds($trackerConstellation), 'region' => $navIds($trackerRegion)]];
+if (!empty($sessionusername))
+  script(type="text/javascript")
+    | characterID =
+    != json_encode((int) ($characterID ?? 0))
+    | ;
+    | $(".forloggedin").removeClass('d-none d-sm-none');
+    | $(".forloggedout").addClass('d-none');
+    | $("#nousermenu").addClass("d-none");
+    | $("#usermenu").removeClass("d-none");
+    | $("#contest-logged-in").removeClass('d-none');
+    | $("#loginforapi").remove();
+    | $("#username").text(
+    != json_encode($sessionusername ?? '')
+    | );
+    | $("#char-image").attr("src",
+    != json_encode(($image_character ?? '') . ($characterID ?? 0) . '/portrait?size=256')
+    | );
+    | console.log(
+    != json_encode(($image_character ?? '') . ($characterID ?? 0) . '/portrait?size=256')
+    | );
+    | try {
+    | $(".char-image").attr("src",
+    != json_encode(($image_character ?? '') . ($characterID ?? 0) . '/portrait?size=128')
+    | ).on('click', function() { navigateTo(
+    != json_encode('/character/' . ($characterID ?? 0) . '/')
+    | ); });
+    | $(".corp-image").attr("src",
+    != json_encode(($image_corporation ?? '') . ($corporationID ?? 0) . '/logo?size=64')
+    | ).on('click', function() { navigateTo(
+    != json_encode('/corporation/' . ($corporationID ?? 0) . '/')
+    | ); });
+    if (($allianceID ?? 0) > 0)
+      | $(".alli-image").attr("src",
+      != json_encode(($image_alliance ?? '') . ($allianceID ?? 0) . '/logo?size=64')
+      | ).on('click', function() { navigateTo(
+      != json_encode('/alliance/' . ($allianceID ?? 0) . '/')
+      | ); });
+    else
+      | $(".alli-image").remove();
+    | } catch (e) { }
+    | $('.clickimage').css('cursor', 'pointer');
+    | showAds =
+    != json_encode((int) ($showAds ?? 0))
+    | ;
+    if (($showAds ?? 0) != 0)
+      | $.getScript("https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js").done(loadads).fail(showAdblockedMessage);
+    else
+      | $('img[src="/n5dev.png"').remove();
+      | startWebSocket();
+      | gtag('event', 'patron');
+      | $("#messagedad").remove();
+    | gtag('event', 'navbar_loaded');
+    if (($style ?? 'cyborg') != 'cyborg')
+      | $("#mainstyle").attr("href",
+      != json_encode('https://netdna.bootstrapcdn.com/bootswatch/latest/' . ($style ?? 'cyborg') . '/bootstrap.min.css')
+      | );
+      | $("#nextstyle").attr("href",
+      != json_encode('/css/style-edits/' . ($style ?? 'cyborg') . '-main.css')
+      | );
+      | $(".zkblogo").hide();
+    | var tn = (
+    != json_encode((($trackernotification ?? '') === 'true'))
+    | ); // TN = TrackerNotification
+    | window.tn = tn;
+    | window.zkbTrackerState =
+    != json_encode($trackerState, JSON_UNESCAPED_SLASHES)
+    | ;
+    | applyTrackerControls();
+    | window.zkbFavorites =
+    != json_encode(array_values($favorites ?? []), JSON_UNESCAPED_SLASHES)
+    | ;
+    | applyFavoriteStars();
+    | console.log("nav loaded");
+  li
+    a.dropdown-item(href="/account/favorites/") Favorites
+  li
+    hr.dropdown-divider
+  if (!empty($trackerCharacter))
+    li
+      h6.dropdown-header Characters
+    each $data in $trackerCharacter
+      li
+        a.dropdown-item(href=('/character/' . ($data['id'] ?? 0) . '/'))= $data['name'] ?? ''
+  if (!empty($trackerCorporation))
+    li
+      h6.dropdown-header Corporations
+    each $data in $trackerCorporation
+      li
+        a.dropdown-item(href=('/corporation/' . ($data['id'] ?? 0) . '/'))= $data['name'] ?? ''
+  if (!empty($trackerAlliance))
+    li
+      h6.dropdown-header Alliances
+    each $data in $trackerAlliance
+      li
+        a.dropdown-item(href=('/alliance/' . ($data['id'] ?? 0) . '/'))= $data['name'] ?? ''
+  if (!empty($trackerFaction))
+    li
+      h6.dropdown-header Factions
+    each $data in $trackerFaction
+      li
+        a.dropdown-item(href=('/faction/' . ($data['id'] ?? 0) . '/'))= $data['name'] ?? ''
+  if (!empty($trackerShip))
+    li
+      h6.dropdown-header Ships
+    each $data in $trackerShip
+      li
+        a.dropdown-item(href=('/ship/' . ($data['id'] ?? 0) . '/'))= $data['name'] ?? ''
+  if (!empty($trackerGroup))
+    li
+      h6.dropdown-header Groups
+    each $data in $trackerGroup
+      li
+        a.dropdown-item(href=('/group/' . ($data['id'] ?? 0) . '/'))= $data['name'] ?? ''
+  if (!empty($trackerSystem))
+    li
+      h6.dropdown-header Systems
+    each $data in $trackerSystem
+      li
+        a.dropdown-item(href=('/system/' . ($data['id'] ?? 0) . '/'))= $data['name'] ?? ''
+  if (!empty($trackerConstellation))
+    li
+      h6.dropdown-header Constellations
+    each $data in $trackerConstellation
+      li
+        a.dropdown-item(href=('/constellation/' . ($data['id'] ?? 0) . '/'))= $data['name'] ?? ''
+  if (!empty($trackerRegion))
+    li
+      h6.dropdown-header Regions
+    each $data in $trackerRegion
+      li
+        a.dropdown-item(href=('/region/' . ($data['id'] ?? 0) . '/'))= $data['name'] ?? ''
+  li
+    hr.dropdown-divider
+  li
+    h6.dropdown-header * Cannot be removed.
+else
+  script(type="text/javascript")
+    | characterID = 0;
+    | window.zkbTrackerState = { loggedIn: false, tracked: {} };
+    | $(".forloggedout").removeClass('d-none');
+    | $(".forloggedin").addClass('d-none d-sm-none');
+    | applyTrackerControls();
+    | $("#savefit").remove();
+    | $("#nosavefit").removeClass("d-none");
+    | $("#char-image").attr("src",
+    != json_encode(($image_character ?? '') . '1/portrait?size=32')
+    | );
+    | $("#loginforapi").show();
+    | $.getScript("https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js").done(loadads).fail(showAdblockedMessage);
+    | $("#loginsideimage").removeClass("collapse").css("display", "block");
+    | gtag('event', 'navbar_loaded');
+  li Please log in first.

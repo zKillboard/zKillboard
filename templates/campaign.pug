@@ -1,0 +1,32 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'Campaign';
+
+block title
+  include components/title.pug
+
+block content
+  .row
+    .float-start.col-lg-7
+      h4= $pageTitle
+      span= $subTitle ?? ''
+    .col-lg-3.float-end
+      include components/stats_box.pug
+  .clearfix
+  - $killListTitle = 'Most recent kills';
+  - $killList = $kills ?? [];
+  .row
+    .col-sm-10.float-start(style="padding-left: 0px;")
+      div
+        - $shipNameLength = 11;
+        - $topTitle = 'Most Valuable Kills - Last 7 Days';
+        - $topSet = $topIsk ?? [];
+        include components/big_top_list.pug
+      .clearfix
+      include components/kill_list.pug
+    .col-sm-2.float-start(style="padding: 0px;")
+      - $isEmbedded = true;
+      each $topSet in ($topKillers ?? [])
+        - $topSet = is_object($topSet) ? (array) $topSet : $topSet;
+        include components/top_killer_list.pug

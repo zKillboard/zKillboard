@@ -1,0 +1,98 @@
+- $txtLength = 60;
+each $kill in ($killList ?? [])
+  if (($kill['killID'] ?? 0) > 0)
+    - $shipImageLinkOverride = $kill['killID'];
+    - $sDate = date('Y-m-d', (int) ($kill['unixtime'] ?? time()));
+    - $date = date('M d, Y', (int) ($kill['unixtime'] ?? time()));
+    tr(class=('tr-date tr-date-' . $sDate) date=$date)
+      th.no-stripe(colspan="7")
+        em= $sDate
+    - $imageSize = 64;
+    - $resizeImage = 60;
+    - $field = $kill['victim'] ?? [];
+    tr.tr-killmail.kltbd(id=('kill-' . $kill['killID']) date=($kill['unixtime'] ?? '') killID=$kill['killID'] style=('order: ' . $kill['killID'] . ';') vics=($kill['vics'] ?? ''))
+      td(style="width: 65px;")
+        span.killlossicon
+          span.fas.fa-check.d-none(aria-hidden="true")
+          span.fas.fa-times.d-none(aria-hidden="true")
+        span.float-end= date('H:i', (int) ($kill['unixtime'] ?? time()))
+        br
+        a(href=('/kill/' . $kill['killID'] . '/'))
+          span.float-end(format="format-isk-once" raw=($kill['zkb']['totalValue'] ?? 0))= $formatIsk($kill['zkb']['totalValue'] ?? 0)
+      td.icon(style="text-align: center; vertical-align: middle;")
+        include image_ship.pug
+      td.location
+        div(style="width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;")
+          span(style=('color: ' . ($kill['system']['systemColorCode'] ?? '')))
+            if (!empty($kill['system']['systemClass']))
+              = 'C' . $kill['system']['systemClass']
+            else
+              = sprintf('%1.1f', $kill['system']['solarSystemSecurity'] ?? 0)
+          |
+          a(href=('/system/' . ($kill['system']['solarSystemID'] ?? 0) . '/') class=((($kill['system']['solarSystemID'] ?? 0) >= 32000000 && ($kill['system']['solarSystemID'] ?? 0) < 33000000) ? 'triglavian' : ''))= $kill['system']['solarSystemName'] ?? ''
+        a(href=('/region/' . ($kill['system']['regionID'] ?? 0) . '/') class=((($kill['system']['regionID'] ?? 0) >= 12000001 && ($kill['system']['regionID'] ?? 0) < 13000000) ? 'triglavian' : ''))= $kill['system']['regionName'] ?? ''
+      td.d-none.d-md-table-cell(style="text-align: center; vertical-align: middle; max-width: 64px;")
+        if (($kill['victim']['allianceID'] ?? 0) != 0)
+          include image_alli.pug
+        else
+          include image_corp.pug
+      td.victim(style="text-align: left; vertical-align: top; max-width: 290px;")
+        if (!empty($kill['victim']['characterID']))
+          a.wrapplease(href=('/character/' . $kill['victim']['characterID'] . '/'))= $kill['victim']['characterName'] ?? ''
+          |
+          | (
+          a.wrapplease(href=('/ship/' . ($kill['victim']['shipTypeID'] ?? 0) . '/'))= $kill['victim']['shipName'] ?? ''
+          | )
+          br
+        a.wrapplease(href=('/corporation/' . ($kill['victim']['corporationID'] ?? 0) . '/'))= $kill['victim']['corporationName'] ?? ''
+        br
+        if (($kill['victim']['allianceID'] ?? 0) != 0)
+          a.wrapplease(href=('/alliance/' . $kill['victim']['allianceID'] . '/'))= $kill['victim']['allianceName'] ?? ''
+      - $field = $kill['finalBlow'] ?? [];
+      td.d-none.d-md-table-cell.finalBlowColumn(style="text-align: center; vertical-align: middle; max-width: 64px;")
+        if (($kill['finalBlow']['allianceID'] ?? 0) != 0)
+          include image_alli.pug
+        else
+          include image_corp.pug
+      td.finalBlow.d-none.d-md-table-cell.finalBlowColumn(style="text-align: left; vertical-align: top; max-width: 290px;")
+        a.wrapplease(href=('/character/' . ($kill['finalBlow']['characterID'] ?? 0) . '/'))= $kill['finalBlow']['characterName'] ?? ''
+        if (($field['characterID'] ?? 0) == 0)
+          - $shipImageLinkOverride = 0;
+          include text_ship.pug
+        if (in_array('padding', $kill['labels'] ?? []))
+          a(href='/asearch/#{"buttons":["togglefilters","week","label-padding","sort-date","sort-desc","page1","victimsonly"]}')
+            small
+              font.alert.alert-warning(style="padding: 0px; margin: 0px;") &nbsp;padding&nbsp;
+        else if (in_array('atShip', $kill['labels'] ?? []))
+          small
+            font.alert.alert-success(style="padding: 0px; margin: 0px;") &nbsp;AT Ship&nbsp;
+        else if (!empty($kill['ganked']))
+          a(href='/asearch/#{"buttons":["togglefilters","week","label-ganked","sort-date","sort-desc","page1","victimsonly"]}')
+            small
+              font.alert.alert-danger(style="padding: 0px; margin: 0px;") &nbsp;GANKED&nbsp;
+        else if (!empty($kill['solo']))
+          a(href=('/character/' . ($kill['finalBlow']['characterID'] ?? 0) . '/solo/'))
+            small
+              font.alert.alert-success(style="padding: 0px; margin: 0px;") &nbsp;SOLO&nbsp;
+        else if (!empty($kill['npc']))
+          |
+          small
+            font.alert.alert-info(style="padding: 0px; margin: 0px;") &nbsp;NPC&nbsp;
+        else if (($kill['attackerCount'] ?? 0) >= 1000)
+          |
+          small
+            font.alert.alert-danger(style="padding: 0px; margin: 0px;") &nbsp;1000+&nbsp;
+        else if (($kill['attackerCount'] ?? 0) >= 100)
+          |
+          small
+            font.alert.alert-warning(style="padding: 0px; margin: 0px;") &nbsp;100+&nbsp;
+        else
+          = ' (' . ($kill['attackerCount'] ?? 0) . ')'
+        br
+        a.wrapplease(href=('/corporation/' . ($kill['finalBlow']['corporationID'] ?? 0) . '/'))= $kill['finalBlow']['corporationName'] ?? ''
+        br
+        if (($kill['finalBlow']['allianceID'] ?? 0) != 0)
+          a.wrapplease(href=('/alliance/' . $kill['finalBlow']['allianceID'] . '/'))= $kill['finalBlow']['allianceName'] ?? ''
+        if (($kill['finalBlow']['factionID'] ?? 0) == 500021)
+          a(href=('/faction/' . $kill['finalBlow']['factionID'] . '/')) Unknown
+    - unset($resizeImage);

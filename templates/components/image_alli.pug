@@ -1,0 +1,5 @@
+if (($field['allianceID'] ?? 0) != 0)
+  - $imageSize = $imageSize ?? 32;
+  - $actualSize = $resizeImage ?? $imageSize;
+  a(href=('/alliance/' . $field['allianceID'] . '/') rel="tooltip" title=($field['allianceName'] ?? ''))
+    img.eveimage.img-rounded(src=(($image_alliance ?? 'https://images.evetech.net/alliances/') . $field['allianceID'] . '/logo?size=' . $imageSize) style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;') alt=($field['allianceName'] ?? '') loading="lazy" decoding="async" fetchpriority="low")

@@ -1,7 +1,7 @@
 <?php
 
 function handler($request, $response, $args, $container) {
-	global $mdb, $redis, $twig;
+	global $mdb, $redis, $templates;
 
 	$page = 1;
 	$pageTitle = '';
@@ -54,7 +54,7 @@ function handler($request, $response, $args, $container) {
 		'sponsored' => $sponsored
 	);
 
-	return $container->get('view')->render($response->withHeader('Cache-Control', 'max-age=60')->withHeader('Cache-Tag', 'index'), 'index.html', $data);
+	return $container->get('view')->render($response->withHeader('Cache-Control', 'max-age=60')->withHeader('Cache-Tag', 'index'), 'index.pug', $data);
 }
 
 function getTop($title, $type)

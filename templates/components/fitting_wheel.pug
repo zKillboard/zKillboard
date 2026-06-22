@@ -1,0 +1,96 @@
+- $imageSize = 32;
+- $extraData = is_object($extra ?? null) ? (array) $extra : ($extra ?? []);
+- $killData = is_object($killdata ?? null) ? (array) $killdata : ($killdata ?? []);
+- $victim = is_object($killData['victim'] ?? null) ? (array) $killData['victim'] : ($killData['victim'] ?? []);
+- $fitting = is_object($extraData['fittingwheel'] ?? null) ? (array) $extraData['fittingwheel'] : ($extraData['fittingwheel'] ?? []);
+- $slotCounts = is_object($extraData['slotCounts'] ?? null) ? (array) $extraData['slotCounts'] : ($extraData['slotCounts'] ?? []);
+- $crest = is_object($extraData['crest'] ?? null) ? (array) $extraData['crest'] : ($extraData['crest'] ?? []);
+- $eveImageClass = false;
+- $placement = 'top';
+- unset($resizeImage);
+- $slotItem = function ($section, $flag, $variant) use ($fitting) { $slot = $fitting[$section][$flag][$variant] ?? []; return is_object($slot) ? (array) $slot : $slot; };
+- $slotCount = function ($section, $fallback) use ($fitting) { return count($fitting[$section] ?? []) > $fallback ? count($fitting[$section] ?? []) : $fallback; };
+#Fitting_Panel(style="position: relative; height:398px; width:398px; z-index: 3; margin: 0 auto;")
+  #mask(style="position:absolute; left: 0px; top: 0 px; width:398px; height:398px; z-index:-1;")
+    img(style="position:absolute; left: 0px; top: 0px; height:398px; width:398px; border:0px" src="/img/panel/tyrannis.png" alt="")
+  - $highCount = min(8, max(0, $slotCount('high', $slotCounts['hiSlots'] ?? 0)));
+  if (($victim['groupID'] ?? 0) == 29)
+    - $highCount = 5;
+  #highx(style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;")
+    img(src=('/img/panel/' . $highCount . 'h.png') alt="" style="border:0px;")
+  - $slots = [['high1','73px','60px',27],['high2','102px','42px',28],['high3','134px','27px',29],['high4','169px','21px',30],['high5','203px','22px',31],['high6','238px','30px',32],['high7','270px','45px',33],['high8','295px','64px',34]];
+  each $slot in $slots
+    - $field = $slotItem('high', $slot[3], 0);
+    div(id=$slot[0] style=('position:absolute; left:' . $slot[1] . '; top:' . $slot[2] . '; width:32px; height:32px;'))
+      include image_item.pug
+  - $midCount = min(8, max(0, $slotCount('mid', $slotCounts['medSlots'] ?? 0)));
+  #midx(style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;")
+    img(src=('/img/panel/' . $midCount . 'm.png') alt="" style="border:0px;")
+  - $slots = [['mid1','26px','140px',19],['mid2','24px','176px',20],['mid3','23px','212px',21],['mid4','30px','245px',22],['mid5','46px','278px',23],['mid6','69px','304px',24],['mid7','100px','328px',25],['mid8','133px','342px',26]];
+  each $slot in $slots
+    - $field = $slotItem('mid', $slot[3], 0);
+    div(id=$slot[0] style=('position:absolute; left:' . $slot[1] . '; top:' . $slot[2] . '; width:32px; height:32px;'))
+      include image_item.pug
+  - $lowCount = min(8, max(0, $slotCount('low', $slotCounts['lowSlots'] ?? 0)));
+  if (($victim['groupID'] ?? 0) == 29)
+    - $lowCount = 5;
+  #lowx(style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;")
+    img(src=('/img/panel/' . $lowCount . 'l.png') alt="" style="border:0px;")
+  - $slots = [['low1','344px','143px',11],['low2','350px','178px',12],['low3','349px','213px',13],['low4','340px','246px',14],['low5','323px','277px',15],['low6','300px','304px',16],['low7','268px','324px',17],['low8','234px','338px',18]];
+  each $slot in $slots
+    - $field = $slotItem('low', $slot[3], 0);
+    div(id=$slot[0] style=('position:absolute; left:' . $slot[1] . '; top:' . $slot[2] . '; width:32px; height:32px;'))
+      include image_item.pug
+  - $rigCount = $slotCount('rig', $slotCounts['rigSlots'] ?? 0);
+  #rigxx(style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;")
+    img(src=('/img/panel/' . $rigCount . 'r.png') alt="" style="border:0px;")
+  - $slots = [['rig1','148px','259px',92],['rig2','185px','267px',93],['rig3','221px','259px',94]];
+  each $slot in $slots
+    - $field = $slotItem('rig', $slot[3], 0);
+    div(id=$slot[0] style=('position:absolute; left:' . $slot[1] . '; top:' . $slot[2] . '; width:32px; height:32px;'))
+      include image_item.pug
+  if (count($fitting['sub'] ?? []) > 0)
+    #subx(style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;")
+      if (count($fitting['sub'] ?? []) == 4)
+        img(src="/img/panel/4s.png" alt="" style="border:0px;")
+      else
+        img(src="/img/panel/5s.png" alt="" style="border:0px;")
+    - $slots = [['sub1','117px','131px',125],['sub2','147px','108px',126],['sub3','184px','98px',127],['sub4','221px','107px',128],['sub5','250px','131px',129]];
+    each $slot in $slots
+      - $field = $slotItem('sub', $slot[3], 0);
+      div(id=$slot[0] style=('position:absolute; left:' . $slot[1] . '; top:' . $slot[2] . '; width:32px; height:32px;'))
+        include image_item.pug
+  - $imageSize = 32;
+  - $resizeImage = 24;
+  - $slots = [['high1l','94px','88px','high',27],['high2l','119px','70px','high',28],['high3l','146px','58px','high',29],['high4l','175px','52px','high',30],['high5l','204px','52px','high',31],['high6l','232px','60px','high',32],['high7l','258px','72px','high',33],['high8l','280px','91px','high',34],['mid1l','59px','154px','mid',19],['mid2l','54px','182px','mid',20],['mid3l','56px','210px','mid',21],['mid4l','62px','238px','mid',22],['mid5l','76px','265px','mid',23],['mid6l','94px','288px','mid',24],['mid7l','118px','305px','mid',25],['mid8l','146px','318px','mid',26],['low1l','315px','150px','low',11],['low2l','319px','179px','low',12],['low3l','318px','206px','low',13],['low4l','310px','234px','low',14],['low5l','297px','261px','low',15],['low6l','275px','283px','low',16],['low7l','251px','300px','low',17],['low8l','225px','310px','low',18]];
+  each $slot in $slots
+    - $field = $slotItem($slot[3], $slot[4], 1);
+    div(id=$slot[0] style=('position:absolute; left:' . $slot[1] . '; top:' . $slot[2] . '; width:24px; height:24px;'))
+      include image_item.pug
+  #bigship(style="position:absolute; left:72px; top:71px; width:256px; height:256px; z-index:-2;")
+    if (!empty($extraData['isExploit']))
+      img.eveimage.img-rounded(src="/img/exploit_256.png" height="256" width="256" alt=($field['shipName'] ?? ''))
+    else
+      - $imageSize = 256;
+      - unset($resizeImage);
+      - $field = $victim;
+      include image_ship.pug
+  #badges(style="position: absolute; right: 3px; top: 350px; z-index: 5;")
+  #eveworkbench(style="position: absolute; left: 0px; top: 340px; z-index: 5;")
+    span
+      a.green(target="_blank" rel="noopener noreferrer" href=('/kill/' . ($crest['killID'] ?? 0) . '/redirect/esi/')) Verified
+      br
+    span
+      a.green(href=('/kill/' . ($crest['killID'] ?? 0) . '/redirect/eveshipfit/') target="_blank" rel="noopener") EVEShip.Fit
+    br
+    span
+      a.green(href=('/kill/' . ($crest['killID'] ?? 0) . '/redirect/eveworkbench/') target="_blank" rel="noopener") EVE Workbench
+  span.favorite.float-end(style="width: 1.5em; cursor: pointer; margin: 0px; padding: 0px; margin-right: 0.5em; text-align: center; font-size: 1rem; line-height: 1.25;" onClick=('doFavorite(' . ($crest['killID'] ?? 0) . ', this);'))
+    i.far.fa-star(rel="tooltip" class=('fav-star-' . ($crest['killID'] ?? 0)) style="color: #d0d0d0; text-shadow: 0 1px 2px #000;" title="Favorite this killmail" aria-hidden="true")
+  span.sponsor.float-end(style="width: 1.5em; cursor: pointer; margin: 0px; padding: 0px; margin-right: 0.5em; text-align: center; font-size: 1rem; line-height: 1.25;" onClick=("doSponsor('/sponsor/query/" . ($crest['killID'] ?? 0) . "/');"))
+    i.fas.fa-bullhorn(rel="tooltip" style="color: #37d05c; text-shadow: 0 1px 2px #000;" title="Sponsor this Killmail" aria-hidden="true")
+  span
+    small
+      a.btn.btn-sm.btn-primary(href="#" onClick=('saveFitting(' . ($crest['killID'] ?? 0) . '); return false;') rel="nofollow") Save Fit
+  br
+- $eveImageClass = true;

@@ -1,0 +1,16 @@
+.col-lg-6
+  .card.mb-3
+    .card-header
+      h5.mb-0= $teamName ?? ''
+    .card-body
+      p
+        | Select which Character, Corporation, Alliance, Faction, Ship, System, Region you would like to add to 
+        = $teamName ?? ''
+        | .
+      form#addentity.form-inline(name="addentity" method="post" action="/account/campaigns/")
+        input(type="hidden" name="entitymetadata" value="")
+        input(type="hidden" name="campaignID" value=($data['campainID'] ?? ''))
+        input.form-control(type="text" autocomplete="off" placeholder="Start typing a name..." id=('addEntity' . ($team ?? '')) name=('addEntity' . ($team ?? '')))
+      br
+      - $imageSize = 32;
+      include entity_list.pug

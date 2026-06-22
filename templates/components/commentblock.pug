@@ -1,0 +1,11 @@
+#subcommentblock(style="width: 100%;")
+  table.table.table-sm
+    each $comment in ($comments ?? [])
+      - $comment = is_object($comment) ? (array) $comment : $comment;
+      tr
+        td.green(style="text-align: right;" format="format-int-once" raw=($comment['upvotes'] ?? 0))= number_format((float) ($comment['upvotes'] ?? 0))
+        td
+          | &nbsp; 
+          a(href="#" onClick=("commentUpVote('" . ($comment['pageID'] ?? '') . "', '" . ($comment['commentID'] ?? '') . "'); return false;"))
+            i.fas.fa-arrow-up(aria-hidden="true")
+            = ' ' . ($comment['comment'] ?? '')

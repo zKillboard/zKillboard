@@ -1,0 +1,10 @@
+table.table.table-striped.table-sm.table-bordered.table-hover
+  thead
+    tr
+      th Date
+      th(style="text-align: right") Avg Price
+  tbody
+    each $price, $dttm in ($field ?? [])
+      tr
+        td= $dttm
+        td(style="text-align: right")= number_format((float) $price, 2)

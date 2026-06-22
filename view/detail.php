@@ -1,7 +1,7 @@
 <?php
 
 function handler($request, $response, $args, $container) {
-    global $mdb, $redis, $twig;
+    global $mdb, $redis, $templates;
 
     // Extract route parameters
     $id = $args['id'] ?? '';
@@ -59,7 +59,7 @@ function handler($request, $response, $args, $container) {
 
 	$exists = $mdb->exists('killmails', ['killID' => $id]);
 	if (!$exists) {
-			return $container->get('view')->render($response->withStatus(404)->withHeader('Cache-Tag', "error,404,kill,kill:$id"), '404.html', array('message' => "KillID $id does not exist."));
+			return $container->get('view')->render($response->withStatus(404)->withHeader('Cache-Tag', "error,404,kill,kill:$id"), '404.pug', array('message' => "KillID $id does not exist."));
 	}
 
 	// Create the details on this kill
@@ -98,7 +98,7 @@ function handler($request, $response, $args, $container) {
 	}
 
 	$extra = array();
-	// And now give all the arrays and whatnots to twig..
+	// And now give all the arrays and whatnots to templates..
 	if ($pageview == 'overview') {
 		$extra['items'] = Detail::combineditems(md5($id), $killdata['items']);
 		if (sizeof($extra['items']) > 100) {
@@ -221,7 +221,7 @@ foreach (Comments::$defaultComments as $dc) {
 $details['comments'] = array_values($comments);
 
     if ($pageview == 'remaining') {
-        return $container->get('view')->render($response->withHeader('Cache-Tag', "kill,kill:$id,kill:remaining"), "components/attackers_list.html", [
+        return $container->get('view')->render($response->withHeader('Cache-Tag', "kill,kill:$id,kill:remaining"), "components/attackers_list.pug", [
             'attackList' => array_slice($killdata['involved'], 10),
             'isDelayed' => false,
             'hideTableHeading' => true
@@ -229,10 +229,10 @@ $details['comments'] = array_values($comments);
     }
 
 	if ($pageview == 'items') {
-        return $container->get('view')->render($response->withHeader('Cache-Tag', "kill,kill:$id,kill:items"), "components/item_list.html", $details);
+        return $container->get('view')->render($response->withHeader('Cache-Tag', "kill,kill:$id,kill:items"), "components/item_list.pug", $details);
     }
 
-    return $container->get('view')->render($response->withHeader("Cache-Tag", "detail,kill,kill:$id"), 'detail.html', $details);
+    return $container->get('view')->render($response->withHeader("Cache-Tag", "detail,kill,kill:$id"), 'detail.pug', $details);
 }
 
 function involvedships($array)

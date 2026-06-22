@@ -1,0 +1,17 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'Intel - Supers';
+
+block title
+  include components/title.pug
+
+block content
+  .row
+    h3
+      | Intel - Supers 
+      small (Last 3 months)
+    - $fieldset = $data['titans'] ?? [];
+    include components/intel_table.pug
+    - $fieldset = $data['supercarriers'] ?? [];
+    include components/intel_table.pug

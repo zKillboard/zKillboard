@@ -1,0 +1,158 @@
+- $showImage = true;
+- $killData = is_object($killdata ?? null) ? (array) $killdata : ($killdata ?? []);
+- $victim = is_object($killData['victim'] ?? null) ? (array) $killData['victim'] : ($killData['victim'] ?? []);
+- $info = is_object($killData['info'] ?? null) ? (array) $killData['info'] : ($killData['info'] ?? []);
+- $system = is_object($info['system'] ?? null) ? (array) $info['system'] : ($info['system'] ?? []);
+- $location = is_object($info['location'] ?? null) ? (array) $info['location'] : ($info['location'] ?? []);
+- $zkb = is_object($info['zkb'] ?? null) ? (array) $info['zkb'] : ($info['zkb'] ?? []);
+- $extraData = is_object($extra ?? null) ? (array) $extra : ($extra ?? []);
+- $priceTitle = function ($isk, $prices) { $prices = is_object($prices ?? null) ? (array) $prices : ($prices ?? []); return number_format((float) $isk, 2) . ' ISK<br/>' . number_format((float) ($prices['usd'] ?? 0), 2, '.', ',') . ' / ' . number_format((float) ($prices['eur'] ?? 0), 2, '.', ',') . ' euro / GBP ' . number_format((float) ($prices['gbp'] ?? 0), 2, '.', ','); };
+- $pctSpan = function ($title, $raw, $class = '', $icon = '') { if ($raw === null) return ''; return '<span rel="tooltip" title="' . htmlspecialchars($title, ENT_QUOTES) . '" style="float: right; margin-left: 10px;" class="' . htmlspecialchars($class, ENT_QUOTES) . '"><span format="format-dec1" raw="' . htmlspecialchars((string) $raw, ENT_QUOTES) . '"></span>%' . $icon . '</span>'; };
+- $totalNonShipsValue = ($extraData['droppedisk'] ?? 0) + ($extraData['destroyedisk'] ?? 0);
+- $pctDropped = $totalNonShipsValue > 0 ? $pctSpan('Dropped: Fit + Loot Percentage of Total Value', (($extraData['droppedisk'] ?? 0) / $totalNonShipsValue * 100), '') : '';
+- $pctDestroyed = $totalNonShipsValue > 0 ? $pctSpan('Destroyed: Fit + Loot Percentage of Total Value', (($extraData['destroyedisk'] ?? 0) / $totalNonShipsValue * 100), '') : '';
+- $pctTotal = (($extraData['totalisk'] ?? 0) > 0) ? $pctSpan('Destroyed: Ship + Fit + Loot Percentage of Total Value', (($extraData['destroyediskWship'] ?? 0) / ($extraData['totalisk'] ?? 1) * 100), 'item_destroyed') : '';
+- $pctShipFitCost = (($extraData['totalisk'] ?? 0) > 0) ? $pctSpan('Ship + Fit Percentage of Total Value', (($extraData['fittedisk'] ?? 0) / ($extraData['totalisk'] ?? 1) * 100), '') : '';
+- $pctDroppableDestroyed = (($extraData['droppableisk'] ?? 0) > 0) ? $pctSpan('Destroyed: Percentage of Droppable Value', (($extraData['droppabledestroyedisk'] ?? 0) / ($extraData['droppableisk'] ?? 1) * 100), 'item_destroyed', ' <i class="fas fa-times" aria-hidden="true" style="color: inherit;"></i>') : '';
+- $pctDroppableDropped = (($extraData['droppableisk'] ?? 0) > 0) ? $pctSpan('Dropped: Percentage of Droppable Value', (($extraData['droppabledroppedisk'] ?? 0) / ($extraData['droppableisk'] ?? 1) * 100), 'item_dropped', ' <i class="fas fa-check" aria-hidden="true" style="color: inherit;"></i>') : '';
+- $field = $victim;
+div(style="padding: 0px; width: 100%; margin: 0px;")
+  table.table.table-sm(style="width: 100%; margin: 0px;")
+    tr
+      td(style="width: 66px; padding: 0px;")
+        - $imageSize = 64;
+        - unset($resizeImage);
+        include image_char.pug
+      td(style="width: 34px; padding: 0px;")
+        - $imageSize = 32;
+        - unset($resizeImage);
+        include image_corp.pug
+        br
+        if (($field['allianceID'] ?? 0) != 0)
+          include image_alli.pug
+        else if (($field['factionID'] ?? 0) != 0)
+          include image_faction.pug
+      td
+        - $showImage = false;
+        include text_char.pug
+        br
+        include text_corp.pug
+        br
+        if (($field['allianceID'] ?? 0) != 0)
+          include text_alli.pug
+          br
+        else if (($field['factionID'] ?? 0) != 0)
+          include text_faction.pug
+  table.table.table-sm.table-striped.table-hover(style="width: 100%; padding: 0px; margin: 0px;")
+    if (!empty($victim['factionName']))
+      tr
+        th Faction:
+        td
+          include text_faction.pug
+    tr
+      th Ship:
+      td(style="width: 100%")
+        include text_ship.pug
+        |  
+        small
+          | ( 
+          include text_group.pug
+          |  )
+    if (!empty($victim['related']['killID']))
+      - $shipImageLinkOverride = $victim['related']['killID'];
+      - $field = is_object($victim['related']) ? (array) $victim['related'] : $victim['related'];
+      tr
+        th Related:
+        td
+          include text_ship.pug
+          small(format="format-isk-once" raw=($field['zkb']['totalValue'] ?? 0))
+    - $field = $system;
+    tr
+      th System:
+      td
+        include text_system.pug
+        |  
+        span
+          | (
+          span(style=('color: ' . ($field['systemColorCode'] ?? '')))= number_format((float) ($field['solarSystemSecurity'] ?? 0), 1)
+          | ) / 
+        include text_region.pug
+    if (!empty($location['itemName']))
+      tr
+        if (strpos(($extraData['locationDistanceType'] ?? ''), 'au') !== false)
+          th Closest:
+        else
+          th Location:
+        td
+          a(href=('/location/' . ($info['locationID'] ?? 0) . '/'))= $location['itemName'] ?? ''
+          |  
+          span
+            | (
+            span(format="format-dec2-once" raw=($extraData['locationDistance'] ?? 0))
+            = $extraData['locationDistanceType'] ?? ''
+            | )
+    tr
+      th Time:
+      - $time = strtotime($info['dttm'] ?? 'now');
+      - $epoch = 1000 * $time;
+      td.info_kill_dttm
+        = date('Y-m-d H:i', $time)
+        br
+        span(format="format-date-long" epoch=$epoch)
+    if (($zkb['points'] ?? 0) > 0)
+      tr
+        th Points:
+        td(format="format-int-once" raw=($zkb['points'] ?? 0))= number_format((float) ($zkb['points'] ?? 0), 0)
+    tr
+      th Damage:
+      td(format="format-int-once" raw=($info['damage'] ?? 0))= number_format((float) ($info['damage'] ?? 0), 0)
+    tr(rel="tooltip" title=$priceTitle($extraData['destroyediskWship'] ?? 0, $extraData['destroyedpriceWship'] ?? []))
+      th Destroyed:
+      td.item_destroyed
+        span(format="format-isk-once" raw=($extraData['destroyediskWship'] ?? 0))= number_format((float) ($extraData['destroyediskWship'] ?? 0), 2, '.', ',')
+        |  ISK
+        span(style="color: #888;")
+          |  (w/ship) 
+          != $pctTotal
+    tr(rel="tooltip" title=$priceTitle($extraData['destroyedisk'] ?? 0, $extraData['destroyedprice'] ?? []))
+      th Destroyed:
+      td.item_destroyed
+        span(format="format-isk-once" raw=($extraData['destroyedisk'] ?? 0))= number_format((float) ($extraData['destroyedisk'] ?? 0), 2, '.', ',')
+        |  ISK 
+        != $pctDestroyed
+    tr.item_dropped_row(rel="tooltip" title=$priceTitle($extraData['droppedisk'] ?? 0, $extraData['droppedprice'] ?? []))
+      th Dropped:
+      td.item_dropped
+        span(format="format-isk-once" raw=($extraData['droppedisk'] ?? 0))= number_format((float) ($extraData['droppedisk'] ?? 0), 2, '.', ',')
+        |  ISK 
+        != $pctDropped
+    if (($extraData['fittedisk'] ?? 0) > 0)
+      tr(rel="tooltip" title=$priceTitle($extraData['fittedisk'] ?? 0, $extraData['fittedprice'] ?? []))
+        th Ship+Fit:
+        td.item_fitted
+          span(format="format-isk-once" raw=($extraData['fittedisk'] ?? 0))= number_format((float) ($extraData['fittedisk'] ?? 0), 2, '.', ',')
+          |  ISK 
+          != $pctShipFitCost
+    tr(rel="tooltip" title=$priceTitle($extraData['droppableisk'] ?? 0, $extraData['droppableprice'] ?? []))
+      th Droppable:
+      td
+        span(format="format-isk-once" raw=($extraData['droppableisk'] ?? 0))= number_format((float) ($extraData['droppableisk'] ?? 0), 2, '.', ',')
+        |  ISK 
+        != $pctDroppableDestroyed
+        |  
+        != $pctDroppableDropped
+    tr(rel="tooltip" title=$priceTitle($extraData['totalisk'] ?? 0, $extraData['totalprice'] ?? []))
+      th Total:
+      td
+        strong.item_dropped
+          span(format="format-isk-once" raw=($extraData['totalisk'] ?? 0))= number_format((float) ($extraData['totalisk'] ?? 0), 2, '.', ',')
+          |  ISK
+    if (!empty($extraData['sponsoredIsk']))
+      tr
+        th
+          | Sponsored:
+          br
+          | (alltime)
+        td
+          span(format="format-isk-once" raw=($extraData['sponsoredIsk'] ?? 0))= number_format((float) ($extraData['sponsoredIsk'] ?? 0), 0)
+          |  ISK

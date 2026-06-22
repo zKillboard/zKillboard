@@ -1,7 +1,7 @@
 # Test Suite Documentation
 
 ## Overview
-This directory contains comprehensive tests for the zKillboard application after the Twig 1→3 upgrade and PHP 8.1+ compatibility fixes.
+This directory contains comprehensive tests for the zKillboard application after the Pug template migration and PHP 8.1+ compatibility fixes.
 
 ## Files
 - `RouteTestSuite.php` - Complete route testing with real entity validation
@@ -53,9 +53,8 @@ Latest test run: **144/144 tests passed (100% pass rate)**
 - ✅ All POST routes working after PHP 8.1+ compatibility fixes
 
 ## Framework Status
-- ✅ Twig upgraded from 1.44.8 → 3.22.0
 - ✅ PHP 8.1+ compatibility ensured (tested on PHP 8.3.6)
-- ✅ Slim 2.6.3 with custom Twig 3 integration
-- ✅ All template syntax updated for Twig 3
+- ✅ Slim 4 with custom Pug template integration
+- ✅ All application templates migrated to Pug
 - ✅ Real entity validation implemented
 - ✅ POST functionality fully working after PHP 8.1 compatibility fixes

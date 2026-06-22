@@ -1,0 +1,14 @@
+extends ../base.pug
+
+block vars
+  - $pageTitle = 'stackTrace';
+
+block title
+  include title.pug
+
+block content
+  h2
+    a(href=($url ?? '')) stackTrace
+  | Problem page: 
+  a(href=($url ?? ''))= ($siteurl ?? '') . ($url ?? '')
+  pre!= $stacktrace ?? ''

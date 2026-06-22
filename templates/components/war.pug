@@ -1,0 +1,59 @@
+- $warID = $war['warID'] ?? ($war['id'] ?? null);
+- $aggressorName = $war['agrName'] ?? ($war['aggressorName'] ?? ($war['aggressor']['name'] ?? 'Unknown aggressor'));
+- $defenderName = $war['dfdName'] ?? ($war['defenderName'] ?? ($war['defender']['name'] ?? 'Unknown defender'));
+- $aggressorKills = $war['aggressor']['ships_killed'] ?? 0;
+- $defenderKills = $war['defender']['ships_killed'] ?? 0;
+- $aggressorIsk = $war['aggressor']['isk_destroyed'] ?? ($war['aggressor']['isk_killed'] ?? 0);
+- $defenderIsk = $war['defender']['isk_destroyed'] ?? ($war['defender']['isk_killed'] ?? 0);
+- $killTotal = $aggressorKills + $defenderKills;
+- $iskTotal = $aggressorIsk + $defenderIsk;
+- $aggressorKillsPct = $killTotal > 0 ? ($aggressorKills / $killTotal * 100) : 50;
+- $defenderKillsPct = $killTotal > 0 ? ($defenderKills / $killTotal * 100) : 50;
+- $aggressorIskPct = $iskTotal > 0 ? ($aggressorIsk / $iskTotal * 100) : 50;
+- $defenderIskPct = $iskTotal > 0 ? ($defenderIsk / $iskTotal * 100) : 50;
+.related-report-page.war-report-page
+  h2.related-report-title.war-matchup-title
+    span.war-matchup-entity.war-matchup-aggressor= $aggressorName
+    a.war-matchup-versus(href="/wars/") v
+    span.war-matchup-entity.war-matchup-defender= $defenderName
+  dl.war-report-meta
+    div
+      dt War
+      dd= $warID
+    div
+      dt Started
+      dd= $war['started'] ?? 'Unknown'
+    div
+      dt Finished
+      dd= $war['finished'] ?? 'Active'
+    div
+      dt Mutual
+      dd= !empty($war['mutual']) ? 'Yes' : 'No'
+    div
+      dt Allies
+      dd= !empty($war['open_for_allies'] ?? ($war['openForAllies'] ?? false)) ? 'Open' : 'Closed'
+  .related-quick-compare
+    .related-quick-metric
+      .related-quick-label Ships Killed
+      .related-quick-team.related-quick-team-a
+        span.related-quick-team-name Aggressor
+        .related-quick-track
+          .related-quick-fill(style=('width: ' . number_format((float) $aggressorKillsPct, 2, '.', '') . '%'))
+        span.related-quick-value= number_format((float) $aggressorKills, 0)
+      .related-quick-team.related-quick-team-b
+        span.related-quick-team-name Defender
+        .related-quick-track
+          .related-quick-fill(style=('width: ' . number_format((float) $defenderKillsPct, 2, '.', '') . '%'))
+        span.related-quick-value= number_format((float) $defenderKills, 0)
+    .related-quick-metric
+      .related-quick-label ISK Destroyed
+      .related-quick-team.related-quick-team-a
+        span.related-quick-team-name Aggressor
+        .related-quick-track
+          .related-quick-fill(style=('width: ' . number_format((float) $aggressorIskPct, 2, '.', '') . '%'))
+        span.related-quick-value= $shortNum($aggressorIsk)
+      .related-quick-team.related-quick-team-b
+        span.related-quick-team-name Defender
+        .related-quick-track
+          .related-quick-fill(style=('width: ' . number_format((float) $defenderIskPct, 2, '.', '') . '%'))
+        span.related-quick-value= $shortNum($defenderIsk)

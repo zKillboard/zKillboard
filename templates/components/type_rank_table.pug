@@ -1,0 +1,79 @@
+.rank-table-scroll
+  table.table.table-sm.table-striped.table-hover.rank-table.table-bordered(id=('rank_table_' . ($rankTable['name'] ?? '')))
+    thead
+      tr
+        th.b-none(rowspan="2" data-sort-key="overallRank") #
+        th.b-none &nbsp;
+        th.lb-bold(colspan="5" style="text-align: center") Ships
+        th.lb-bold(colspan="5" style="text-align: center") Points
+        th.lb-bold(colspan="5" style="text-align: center") ISK
+      tr
+        th.b-none(style="text-align: left")= ucfirst((string) ($rankTable['type'] ?? ''))
+        th.lb-bold(data-sort-key="shipsDestroyed") Destroyed
+        th(data-sort-key="sdRank") Rank
+        th(data-sort-key="shipsLost") Lost
+        th(data-sort-key="slRank") Rank
+        th %
+        th.lb-bold(data-sort-key="pointsDestroyed") Destroyed
+        th(data-sort-key="pdRank") Rank
+        th(data-sort-key="pointsLost") Lost
+        th(data-sort-key="plRank") Rank
+        th %
+        th.lb-bold(data-sort-key="iskDestroyed") Destroyed
+        th(data-sort-key="idRank") Rank
+        th(data-sort-key="iskLost") Lost
+        th(data-sort-key="ilRank") Rank
+        th %
+    tbody
+      each $row in ($rankTable['data'] ?? [])
+        - $field = $row;
+        - $imageSize = 32;
+        - $showImage = (($rankTable['type'] ?? '') == 'group');
+        tr
+          td(style="width: 35px;" data-order=($row['overallRank'] ?? 0))
+            strong= number_format((float) ($row['overallRank'] ?? 0), 0)
+          td(style="text-align: left")
+            if (($rankTable['type'] ?? '') == 'alliance')
+              include image_alli.pug
+              include text_alli.pug
+            else if (($rankTable['type'] ?? '') == 'corporation')
+              include image_corp.pug
+              include text_corp.pug
+            else if (($rankTable['type'] ?? '') == 'character')
+              include image_char.pug
+              include text_char.pug
+            else if (($rankTable['type'] ?? '') == 'shipType')
+              include image_ship.pug
+              include text_ship.pug
+            else if (($rankTable['type'] ?? '') == 'group')
+              include text_shipclass.pug
+            else if (($rankTable['type'] ?? '') == 'faction')
+              include text_faction.pug
+            else if (($rankTable['type'] ?? '') == 'system')
+              include text_system.pug
+            else if (($rankTable['type'] ?? '') == 'region')
+              include text_region.pug
+            else
+              = $rankTable['type'] ?? ''
+          td.green.lb-bold(data-order=($row['shipsDestroyed'] ?? 0))= $shortNum($row['shipsDestroyed'] ?? 0)
+          td.geen(data-order=($row['sdRank'] ?? 0))
+            if (($row['sdRank'] ?? 0) == 0)
+              | -
+            else
+              = number_format((float) $row['sdRank'], 0)
+          td.red(data-order=($row['shipsLost'] ?? 0))= $shortNum($row['shipsLost'] ?? 0)
+          td.rd(data-order=($row['slRank'] ?? 0))= number_format((float) ($row['slRank'] ?? 0), 0)
+          - $color = (($row['shipEff'] ?? 0) >= 50 ? 'green' : 'red');
+          td(class=$color data-order=($row['shipEff'] ?? 0))= number_format((float) ($row['shipEff'] ?? 0), 1)
+          td.green.lb-bold(data-order=($row['pointsDestroyed'] ?? 0))= $shortNum($row['pointsDestroyed'] ?? 0)
+          td.geen(data-order=($row['pdRank'] ?? 0))= number_format((float) ($row['pdRank'] ?? 0), 0)
+          td.red(data-order=($row['pointsLost'] ?? 0))= $shortNum($row['pointsLost'] ?? 0)
+          td.rd(data-order=($row['plRank'] ?? 0))= number_format((float) ($row['plRank'] ?? 0), 0)
+          - $color = (($row['pointsEff'] ?? 0) >= 50 ? 'green' : 'red');
+          td(class=$color data-order=($row['pointsEff'] ?? 0))= number_format((float) ($row['pointsEff'] ?? 0), 1)
+          td.green.lb-bold(data-order=($row['iskDestroyed'] ?? 0))= $shortNum($row['iskDestroyed'] ?? 0)
+          td.geen(data-order=($row['idRank'] ?? 0))= number_format((float) ($row['idRank'] ?? 0), 0)
+          td.red(data-order=($row['iskLost'] ?? 0))= $shortNum($row['iskLost'] ?? 0)
+          td.rd(data-order=($row['ilRank'] ?? 0))= number_format((float) ($row['ilRank'] ?? 0), 0)
+          - $color = (($row['iskEff'] ?? 0) >= 50 ? 'green' : 'red');
+          td(class=$color data-order=($row['iskEff'] ?? 0))= number_format((float) ($row['iskEff'] ?? 0), 1)

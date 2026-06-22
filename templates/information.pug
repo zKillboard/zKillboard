@@ -1,0 +1,11 @@
+extends base.pug
+
+block vars
+  - $pageTitle = (($pageTitle ?? '') . ' | Information');
+
+block title
+  include components/title.pug
+
+block content
+  .information
+    != $data ?? ''

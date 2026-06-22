@@ -1,0 +1,5 @@
+if (!empty($showImage))
+  - $imageSize = 32;
+  include image_faction.pug
+if (($field['factionID'] ?? 0) != 0)
+  a(href=('/faction/' . $field['factionID'] . '/' . ($entitySubpage ?? '')))= $field['factionName'] ?? ''

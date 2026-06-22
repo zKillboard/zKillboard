@@ -1,0 +1,130 @@
+- $statisticsData = is_object($statistics ?? null) ? (array) $statistics : ($statistics ?? []);
+- $extraData = is_object($extra ?? null) ? (array) $extra : ($extra ?? []);
+- $prevRanks = is_object($statisticsData['prevRanks'] ?? null) ? (array) $statisticsData['prevRanks'] : ($statisticsData['prevRanks'] ?? []);
+- $moneyTitle = function ($prices) { $prices = is_object($prices ?? null) ? (array) $prices : ($prices ?? []); return '$' . number_format((float) ($prices['usd'] ?? 0), 2, '.', ',') . ' / ' . number_format((float) ($prices['eur'] ?? 0), 2, '.', ',') . ' euro / GBP ' . number_format((float) ($prices['gbp'] ?? 0), 2, '.', ','); };
+- $eff = fn($destroyed, $lost) => (($destroyed + $lost) == 0 ? 100 : ($destroyed / ($destroyed + $lost)) * 100);
+- $rank = fn($value) => (($value ?? 0) == 0 ? '-' : number_format((float) $value, 0));
+- $trend = function ($current, $previous, $date) { if (($current ?? 0) == 0 || ($previous ?? 0) == 0) return ['fas fa-minus', '', '']; if ($current < $previous) return ['fas fa-arrow-up green', 'Ranked #' . number_format((float) $previous, 0) . ' on ' . $date, '']; if ($current > $previous) return ['fas fa-arrow-down red', 'Ranked #' . number_format((float) $previous, 0) . ' on ' . $date, '']; return ['fas fa-minus green', 'No change in rank...', '']; };
+- $rankCell = function ($current, $previous, $date) use ($rank, $trend) { [$icon, $title] = $trend($current, $previous, $date); return '<strong>' . $rank($current) . '</strong> <small><span rel="tooltip" title="' . htmlspecialchars($title, ENT_QUOTES) . '" class="' . htmlspecialchars($icon, ENT_QUOTES) . '"></span></small>'; };
+- $progressPair = function ($left, $leftLabel, $rightLabel) { $left = max(0, min(100, (float) $left)); $right = 100 - $left; return '<div class="progress" style="width: 100%; margin-bottom: 0px;"><div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="' . $left . '" aria-valuemin="0" aria-valuemax="100" style="width: ' . $left . '%; background-color: #A90707;">' . ($left > 10 ? number_format($left, 0) . '%' : '') . '</div><div class="progress-bar" role="progressbar" aria-valuenow="' . $right . '" aria-valuemin="0" aria-valuemax="100" style="width: ' . $right . '%; background-color: #007800;">' . ($right > 10 ? number_format($right, 0) . '%' : '') . '</div></div><span class="red">' . $leftLabel . '</span><span class="float-end green">' . $rightLabel . '</span>'; };
+.statsbox-scroll
+  table#statsbox.table.table-sm(data-entity=(($entityType ?? '') . ':' . ($entityID ?? '')) style="margin: 0px; padding: 0px; background-color: transparent;")
+    tbody
+      tr#teststats
+        td(colspan="8")
+          center
+            li.stat-range.stat-active(style="display: inline-block; width: 100px;" onclick='$(".alltime-ranks").show(); $(".recent-ranks").hide(); $(".weekly-ranks").hide(); $(".stat-range").removeClass("stat-active"); $(this).addClass("stat-active");') Alltime
+            li.stat-range(style="display: inline-block; width: 100px;" onclick='$(".alltime-ranks").hide(); $(".recent-ranks").show(); $(".weekly-ranks").hide(); $(".stat-range").removeClass("stat-active"); $(this).addClass("stat-active");') Recent
+            li.stat-range(style="display: inline-block; width: 100px;" onclick='$(".alltime-ranks").hide(); $(".recent-ranks").hide(); $(".weekly-ranks").show(); $(".stat-range").removeClass("stat-active"); $(this).addClass("stat-active");') Weekly
+      tr
+        th &nbsp;
+        th(style="text-align: right") Destroyed
+        th(style="text-align: right") Rank
+        th(style="text-align: right") Lost
+        th(style="text-align: right") Rank
+        th(style="text-align: right; white-space:nowrap;") Eff. %
+        th.table-no-hover(style="text-align: right; white-space:nowrap;") Rank
+      - $ranges = [['alltime-ranks', '', 'overallRank', 'Recent'], ['recent-ranks collapse', 'recent', 'recentOverallRank', 'Weekly'], ['weekly-ranks collapse', 'weekly', 'weeklyOverallRank', '']];
+      each $range in $ranges
+        - $rowClass = $range[0]; $prefix = $range[1]; $overallKey = $range[2]; $rightLabel = $range[3];
+        - $keyPrefix = $prefix === '' ? '' : ucfirst($prefix);
+        - $shipsDestroyed = $statisticsData[$prefix === '' ? 'shipsDestroyed' : $prefix . 'ShipsDestroyed'] ?? 0;
+        - $shipsLost = $statisticsData[$prefix === '' ? 'shipsLost' : $prefix . 'ShipsLost'] ?? 0;
+        - $pointsDestroyed = $statisticsData[$prefix === '' ? 'pointsDestroyed' : $prefix . 'PointsDestroyed'] ?? 0;
+        - $pointsLost = $statisticsData[$prefix === '' ? 'pointsLost' : $prefix . 'PointsLost'] ?? 0;
+        - $iskDestroyed = $statisticsData[$prefix === '' ? 'iskDestroyed' : $prefix . 'IskDestroyed'] ?? 0;
+        - $iskLost = $statisticsData[$prefix === '' ? 'iskLost' : $prefix . 'IskLost'] ?? 0;
+        - $shipEff = $eff($shipsDestroyed, $shipsLost);
+        - $pointsEff = $eff($pointsDestroyed, $pointsLost);
+        - $iskEff = $eff($iskDestroyed, $iskLost);
+        tr(class=$rowClass)
+          th(style="text-align: right") Ships
+          td.green(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-sd' : false))= number_format((float) $shipsDestroyed, 0)
+          td.green(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-sd-r' : false))= $rank($statisticsData[$prefix === '' ? 'shipsDestroyedRank' : $prefix . 'ShipsDestroyedRank'] ?? 0)
+          td.red(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-sl' : false))= number_format((float) $shipsLost, 0)
+          td.red(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-sl-r' : false))= $rank($statisticsData[$prefix === '' ? 'shipsLostRank' : $prefix . 'ShipsLostRank'] ?? 0)
+          td(style="text-align: right" format="format-dec1" class=($shipEff >= 50 ? 'green' : 'red') id=($prefix === '' ? 's-a-s-e' : false))= number_format((float) $shipEff, 1)
+          th(style="text-align: right;")
+            != $rankCell($statisticsData[$overallKey] ?? 0, $prevRanks[$overallKey] ?? 0, $prevRanks['date'] ?? '')
+        tr(class=$rowClass)
+          th(style="text-align: right") Points
+          td.green(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-pd' : false))= number_format((float) $pointsDestroyed, 0)
+          td.green(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-pd-r' : false))= $rank($statisticsData[$prefix === '' ? 'pointsDestroyedRank' : $prefix . 'PointsDestroyedRank'] ?? 0)
+          td.red(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-pl' : false))= number_format((float) $pointsLost, 0)
+          td.red(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-pl-r' : false))= $rank($statisticsData[$prefix === '' ? 'pointsLostRank' : $prefix . 'PointsLostRank'] ?? 0)
+          td(style="text-align: right" format="format-dec1" class=($pointsEff >= 50 ? 'green' : 'red') id=($prefix === '' ? 's-a-p-e' : false))= number_format((float) $pointsEff, 1)
+          th(style="text-align: right")= $rightLabel
+        tr(class=$rowClass)
+          th(style="text-align: right") ISK
+          td.green(style="text-align: right" rel="tooltip" title=$moneyTitle($statisticsData[$prefix === '' ? 'iskDestroyedUsdEurGbp' : $prefix . 'IskDestroyedUsdEurGbp'] ?? []) format="format-isk" id=($prefix === '' ? 's-a-id' : false))= $formatIsk($iskDestroyed)
+          td.green(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-id-r' : false))= $rank($statisticsData[$prefix === '' ? 'iskDestroyedRank' : $prefix . 'IskDestroyedRank'] ?? 0)
+          td.red(style="text-align: right" rel="tooltip" title=$moneyTitle($statisticsData[$prefix === '' ? 'iskLostUsdEurGbp' : $prefix . 'IskLostUsdEurGbp'] ?? []) format="format-isk" id=($prefix === '' ? 's-a-il' : false))= $formatIsk($iskLost)
+          td.red(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-il-r' : false))= $rank($statisticsData[$prefix === '' ? 'iskLostRank' : $prefix . 'IskLostRank'] ?? 0)
+          td(style="text-align: right" format="format-dec1" class=($iskEff >= 50 ? 'green' : 'red') id=($prefix === '' ? 's-a-i-e' : false))= number_format((float) $iskEff, 1)
+          th(style="text-align: right;")
+            if ($prefix === '')
+              != $rankCell($statisticsData['recentOverallRank'] ?? 0, $prevRanks['recentOverallRank'] ?? 0, $prevRanks['date'] ?? '')
+            else if ($prefix === 'recent')
+              != $rankCell($statisticsData['weeklyOverallRank'] ?? 0, $prevRanks['weeklyOverallRank'] ?? 0, $prevRanks['date'] ?? '')
+      if (isset($extraData['dangerRatio']))
+        tr
+          td(colspan="7")
+            table.table.table-sm.alltime-ranks(style="width: 100%; opacity: 0.50;")
+              tr
+                td(style="width: 50%; padding: 3px;" colspan="2")
+                  != $progressPair($extraData['dangerRatio'] ?? 0, 'Dangerous', 'Snuggly')
+                td(style="width: 50%; padding: 3px;" colspan="2")
+                  if (empty($extraData['involvedLabels']))
+                    != $progressPair($extraData['gangFactor'] ?? 0, 'Gangs', ((($statisticsData['soloKills'] ?? 0) ? number_format((float) $statisticsData['soloKills'], 0) . ' ' : '') . 'Solo'))
+                  else if (!empty($statisticsData['shipsDestroyed']))
+                    .progress(style="width: 100%; margin-bottom: 0px")
+                      - $backgroundcolor = '#007800';
+                      each $label in ($extraData['involvedLabels'] ?? [])
+                        - $label = is_object($label) ? (array) $label : $label;
+                        - $backgroundcolor = ($backgroundcolor == '#A90707') ? '#007800' : '#A90707';
+                        .progress-bar(role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style=('width: ' . ($label['ratio'] ?? 0) . '%; background-color: ' . $backgroundcolor . ';'))= ($label['label'] ?? '') . ' ' . number_format((float) ($label['ratio'] ?? 0), 0) . '%'
+                    span.float-end.green
+                      if (!empty($statisticsData['soloKills']))
+                        = number_format((float) $statisticsData['soloKills'], 0) . ' '
+                      | Solo Kills 
+                      a(href="/information/faq/#solo") *
+      each $period in [['recent', 'recentDangerRatio', 'recentGangFactor', 'recentSoloKills'], ['weekly', 'weeklyDangerRatio', 'weeklyGangFactor', 'weeklySoloKills']]
+        if (isset($extraData[$period[1]]))
+          tr
+            td(colspan="7")
+              table(style="width: 100%; opacity: 0.50;" class=($period[0] . '-ranks collapse'))
+                tr
+                  td(style="width: 50%; padding: 3px;" colspan="2")
+                    != $progressPair($extraData[$period[1]] ?? 0, 'Dangerous', 'Snuggly')
+                  td(style="width: 50%; padding: 3px;" colspan="2")
+                    != $progressPair($extraData[$period[2]] ?? 0, 'Gangs', ((($statisticsData[$period[3]] ?? 0) ? number_format((float) $statisticsData[$period[3]], 0) . ' ' : '') . 'Solo'))
+br
+if (($tobefetched ?? 0) > 1000)
+  .alert.alert-secondary
+    h4 Missing Killmails?
+    | zKillboard is currently 
+    a(href="/ztop/")
+      b ALL
+      |  killmails
+    | , please be patient while this extremely large task is completed. No killmails have been lost, they just need to be reparsed.
+if (($tobeStatsCount ?? 0) > 10000)
+  .alert.alert-secondary
+    h4 Missing Statistics?
+    | zKillboard is currently 
+    a(href="/ztop/")
+      b ALL
+      |  statistics
+    | , please be patient while this extremely large task is completed. No killmails have been lost, statistics are just being recalculated globally.
+if (($disqualified ?? 0) == 1)
+  .alert.alert-secondary
+    h4 Entity Disqualified from Rankings
+    | See 
+    a(href="https://old.reddit.com/r/Eve/comments/1iqzd0g/meta_zkillboardcom_killmail_padding_and_you_part_2/") this Reddit post
+    |  for more information.
+    if (count($dqChars ?? []) > 0)
+      |  Removal of the following character(s) will remove the disqualification:
+      br
+      each $field in ($dqChars ?? [])
+        - $field = is_object($field) ? (array) $field : $field;
+        include text_char.pug
+        br

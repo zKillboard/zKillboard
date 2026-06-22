@@ -1,0 +1,20 @@
+extends base.pug
+
+block vars
+  - $pageTitle = '404 Not Found';
+
+block title
+  include components/title.pug
+
+block content
+  h2 404
+  .alert.alert-danger
+    | The content you're after isn't here. Please go 
+    a(onClick="history.go(-1); this.preventDefault()" href="#") back
+    |  and try again, or use the mighty fine search at the top! ;)
+    if ($message ?? false)
+      br
+      = $message
+
+block robots
+  meta(name="robots" content="nofollow, noindex")

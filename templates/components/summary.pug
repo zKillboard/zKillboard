@@ -1,0 +1,26 @@
+- $loopIndex = 0;
+if (empty($summaryTable))
+  h3 Summary
+  .alert No summary data available...
+else if (count($summaryTable) == 1)
+  // No summary included for an item with one row
+else
+  h3 Summary
+  .row
+    each $divGroups in (($statistics['groups'] ?? []))
+      .col-lg-3
+        table.table.table-sm.table-hover
+          thead
+            tr
+              th Ship Class
+              th(style="text-align: right") Killed
+              th(style="text-align: right") Lost
+          tbody
+            each $group in $divGroups
+              tr(rel="tooltip" title=($group['groupName'] ?? ''))
+                td
+                  a(href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/reset/group/' . ($group['groupID'] ?? 0) . '/losses/'))= $group['groupName'] ?? ''
+                td(style="text-align: right;")
+                  span.green= number_format((float) ($group['shipsDestroyed'] ?? 0), 0)
+                td(style="text-align: right;")
+                  span.red= number_format((float) ($group['shipsLost'] ?? 0), 0)

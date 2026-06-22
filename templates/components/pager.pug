@@ -1,0 +1,29 @@
+if (($pageType ?? '') == 'kills' || ($pageType ?? '') == 'overview' || ($pageType ?? '') == 'solo' || ($pageType ?? '') == 'losses' || ($pageType ?? '') == 'subdomain')
+  - $pageBase = $requestUriPager ?? '';
+else if (($pageType ?? '') == 'index')
+  - $pageBase = '/kills/';
+else
+  - $pageBase = $requesturi ?? '/';
+- $pageBase = $pageBase == '' ? '/' : $pageBase;
+if (($showPager ?? '') != 'false')
+  .float-end.d-flex.align-items-center.gap-2
+    ul.pagination.pagination-sm.mb-0
+      if (!empty($pager))
+        if (($page ?? 1) == 2)
+          li.page-item.pagination-li-1
+            a.page-link(href=$pageBase rel="nofollow prev") &laquo;
+        else if (($page ?? 1) > 2)
+          li(class=('page-item pagination-li-' . (($page ?? 1) - 1)))
+            a.page-link(href=($pageBase . 'page/' . (($page ?? 1) - 1) . '/') rel="nofollow prev") &laquo;
+        - $startIndex = ($page ?? 1) - 3;
+        - $endIndex = min(100, ($page ?? 1) + 3);
+        for $pageIndex in range($startIndex, $endIndex)
+          if ($pageIndex == 1)
+            li(class=('page-item pagination-li-' . $pageIndex . ' ' . $isActive($pageIndex, $page ?? 1, 'active')))
+              a.page-link(href=$pageBase rel="nofollow")= $pageIndex
+          else if ($pageIndex > 1)
+            li(class=('page-item pagination-li-' . $pageIndex . ' ' . $isActive($pageIndex, $page ?? 1, 'active')))
+              a.page-link(href=($pageBase . 'page/' . $pageIndex . '/') rel="nofollow")= $pageIndex
+        if (($page ?? 1) < 100)
+          li(class=('page-item pagination-li-' . (($page ?? 1) + 1)))
+            a.page-link(href=($pageBase . 'page/' . (($page ?? 1) + 1) . '/') rel="nofollow next") &raquo;

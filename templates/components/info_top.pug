@@ -1,0 +1,202 @@
+- $shortLength = 100;
+- $detailData = is_object($detail ?? null) ? (array) $detail : ($detail ?? []);
+- $extraData = is_object($extra ?? null) ? (array) $extra : ($extra ?? []);
+- $name = $detailData['characterName'] ?? ($detailData['corporationName'] ?? ($detailData['allianceName'] ?? ($detailData['factionName'] ?? ($pageName ?? (($key ?? '') == 'label' ? ($id ?? '') : '')))));
+- $ticker = !empty($detailData['aticker']) ? (' <' . $detailData['aticker'] . '>') : (!empty($detailData['cticker']) ? (' [' . $detailData['cticker'] . ']') : '');
+- $field = $detailData;
+- $dateOnly = fn($value) => explode('T', (string) $value)[0];
+- $trigClass = fn($value, $low, $high) => (($value ?? 0) >= $low && ($value ?? 0) < $high) ? 'triglavian' : '';
+if (($key ?? '') == '')
+  h2
+    small Overview for
+    = ' ' . $name
+br
+.row.m-0.p-0.overview-top(style="margin: 0px; padding: 0px;")
+  .col-12.col-md-6.float-start(style="margin: 0px; padding: 0px; padding-right: 2em;")
+    if (!empty($detailData['label']))
+      h2
+        = $detailData['label']
+        small  killmails
+    table.table.table-sm.table-borderless.m-0.p-0
+      if (!empty($detailData['groupShips']))
+        tr
+          th.col-lg-1 Class:
+          td(itemprop="class")
+            a(href=('/group/' . ($detailData['groupID'] ?? 0) . '/'))= $detailData['groupName'] ?? ''
+            include tracker.pug
+      tr.d-table-row.d-md-none
+        td(colspan="2")
+          include info_top_image.pug
+      tr
+        if (!empty($detailData['groupShips']))
+          td.d-none.d-md-table-cell(colspan="2" style="border-top: none; margin: 0px; padding: 0px;")
+            include info_top_image.pug
+        else
+          td.d-none.d-md-table-cell(style="width: 130px; border-top: none; margin: 0px; padding: 0px;")
+            include info_top_image.pug
+        td(style="border-top: none; margin: 0px; padding: 0px;")
+          div.float-start(itemscope)
+            if (empty($detailData['groupShips']))
+              table.table.table-sm.table-borderless
+                tbody
+                  if (!empty($detailData['characterID']))
+                    tr
+                      th Character:
+                      td(itemprop="name")
+                        - $field = $detailData;
+                        include text_char.pug
+                        if (($key ?? '') == 'character' && ($apiVerified ?? 0) > 0 && ($apiCorpVerified ?? false) != true)
+                          |  
+                          b.fa.fa-check(rel="tooltip" title=('API Verified' . (!empty($nextApiCheck) ? "\nLast checked at " . $nextApiCheck : '')) style="color:#00FF00")
+                        if (!empty($extraData['recentkills']))
+                          | &nbsp;
+                          i.fa.fa-bolt.green(title="Recently Active." rel="tooltip")
+                        include tracker.pug
+                  if (!empty($detailData['corporationID']))
+                    tr
+                      th Corporation:
+                      td(itemprop="corporation")
+                        - $field = $detailData;
+                        include text_corp.pug
+                        if (!empty($detailData['cticker']))
+                          = ' [' . $detailData['cticker'] . ']'
+                        if (($key ?? '') == 'corporation' && ($apiVerified ?? 0) > 0)
+                          |  
+                          b.fa.fa-check(rel="tooltip" title=('API Verified' . (!empty($nextApiCheck) ? "\n Last Checked at " . $nextApiCheck : '')) style="color:#00FF00")
+                        else if (($apiCorpVerified ?? false) == true)
+                          |  
+                          b.fa.fa-check(rel="tooltip" title="Corp API Verified" style="color:#00FF00")
+                        include tracker.pug
+                  if (($detailData['ceoID'] ?? 0) > 1 && !empty($detailData['ceoName']))
+                    tr
+                      th.span2 CEO:
+                      td(itemprop="ceo")
+                        - $field = $detailData;
+                        include text_char.pug
+                  if (!empty($detailData['allianceName']))
+                    tr
+                      th Alliance:
+                      td(itemprop="alliance")
+                        - $field = $detailData;
+                        include text_alli.pug
+                        if (!empty($detailData['aticker']))
+                          = ' <' . $detailData['aticker'] . '>'
+                        include tracker.pug
+                  if (!empty($detailData['executorCorpID']) && !empty($detailData['executorCorpName']))
+                    tr
+                      th.span2 Executor:
+                      td(itemprop="executor")
+                        - $field = $detailData;
+                        include text_corp.pug
+                  if (!empty($detailData['factionName']))
+                    tr
+                      th Faction:
+                      td(itemprop="faction")
+                        - $field = $detailData;
+                        include text_faction.pug
+                        include tracker.pug
+                  if (!empty($detailData['secStatus']) && empty($detailData['solarSystemName']))
+                    - $calcStatus = max(-5, min(5, $detailData['secStatus']));
+                    - $calcStatus = min(1, ($calcStatus / 5) + 0.8);
+                    tr
+                      th Sec. Status:
+                      td(itemprop="sec_status")
+                        font(color=$secStatusColor($calcStatus))= number_format((float) $detailData['secStatus'], 2)
+                  if (!empty($detailData['birthday']))
+                    tr
+                      th Birthday:
+                      td(itemprop="birthday")= $dateOnly($detailData['birthday'])
+                  if (!empty($detailData['date_founded']))
+                    tr
+                      th Founded:
+                      td(itemprop="founded")= $dateOnly($detailData['date_founded'])
+                  if (!empty($detailData['shipName']))
+                    tr
+                      th Ship:
+                      td(itemprop="ship")
+                        a(href=('/item/' . ($detailData['shipTypeID'] ?? 0) . '/'))= $detailData['shipName']
+                        include tracker.pug
+                  if (!empty($detailData['locationID']))
+                    tr
+                      th Location:
+                      td(itemprop="location")
+                        a(href=('/location/' . ($detailData['locationID'] ?? 0) . '/'))= $detailData['name'] ?? ''
+                  if (!empty($detailData['groupName']) && $detailData['groupName'] != '#System')
+                    tr
+                      th Class:
+                      td(itemprop="class")
+                        a(href=('/group/' . ($detailData['groupID'] ?? 0) . '/'))= $detailData['groupName']
+                  if (!empty($detailData['solarSystemName']))
+                    tr
+                      th System:
+                      td(itemprop="systemname")
+                        a(href=('/system/' . ($detailData['solarSystemID'] ?? 0) . '/') class=$trigClass($detailData['solarSystemID'] ?? 0, 32000000, 33000000))= $detailData['solarSystemName']
+                        |  (
+                        font(color=($detailData['systemColorCode'] ?? ''))= number_format((float) ($detailData['solarSystemSecurity'] ?? 0), 1)
+                        | )
+                        include tracker.pug
+                  if (!empty($detailData['constellationName']))
+                    tr
+                      th Constellation:
+                      td(itemprop="constellation")
+                        a(href=('/constellation/' . ($detailData['constellationID'] ?? 0) . '/') class=$trigClass($detailData['constellationID'] ?? 0, 22000000, 23000000))= $detailData['constellationName']
+                        include tracker.pug
+                  if (($key ?? '') == 'constellation' && !empty($detailData['systems']))
+                    tr
+                      th Systems:
+                      td
+                        each $system, $idx in $detailData['systems']
+                          - $system = is_object($system) ? (array) $system : $system;
+                          a(href=('/system/' . ($system['id'] ?? 0) . '/'))= $system['name'] ?? ''
+                          if ($idx < count($detailData['systems']) - 1)
+                            | , 
+                  if (!empty($detailData['regionName']))
+                    tr
+                      th Region:
+                      td(itemprop="region")
+                        a(href=('/region/' . ($detailData['regionID'] ?? 0) . '/') class=$trigClass($detailData['regionID'] ?? 0, 12000001, 13000000))= $detailData['regionName']
+                        include tracker.pug
+                  if (($key ?? '') == 'region' && !empty($detailData['constellations']))
+                    tr
+                      th Constellations:
+                      td
+                        each $constellation, $idx in $detailData['constellations']
+                          - $constellation = is_object($constellation) ? (array) $constellation : $constellation;
+                          a(href=('/constellation/' . ($constellation['id'] ?? 0) . '/'))= $constellation['name'] ?? ''
+                          if ($idx < count($detailData['constellations']) - 1)
+                            | , 
+                  if (($detailData['type'] ?? '') == 'solarSystemID' && !empty($detailData['class']))
+                    tr
+                      th Class:
+                      td(itemprop="systemclass")= $detailData['class']
+                  if (!empty($detailData['effects']))
+                    tr
+                      th Effect:
+                      td(itemprop="effect")= $detailData['effects']
+                  if (!empty($detailData['statics']))
+                    tr
+                      th Statics:
+                      td(itemprop="effect")= $detailData['statics']
+                  if (isset($detailData['memberCount']) && $detailData['memberCount'] >= 0)
+                    tr
+                      th Members:
+                      td(itemprop="members")
+                        if (($detailData['memberCount'] ?? 0) == 0)
+                          | (Closed)
+                        else
+                          = number_format((float) $detailData['memberCount'], 0)
+                  tr
+                    td(colspan="2" style="background-color: #000; border: none;")
+                      div
+                        if (!empty($extraData['hasMonocle']))
+                          img(src="/img/monocled.png" rel="tooltip" title="Big Money! Has sent at least 1b ISK to zKillboard." style="padding-right: 0.5em;")
+                        if (($gold ?? 0) > 0)
+                          a(href="/information/payments/")
+                            img(src="/img/gold_logo_cropped_32.png" rel="tooltip" title="Thank you!")
+                        if (!empty($extraData['hasSponsored']))
+                          b.fas.fa-bullhorn(rel="tooltip" style="color: green;" title="Sponsored at least one Killmail")
+                  tr.border-0
+                    td.border-0.p-0.m-0(colspan="2")
+                      span#badges
+  .col-12.col-md-6.float-end(style="padding: 0px; margin: 0px;")
+    include stats_box.pug

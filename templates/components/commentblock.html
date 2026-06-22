@@ -1,7 +1,0 @@
-<div class="" id="subcommentblock" style='width: 100%;'>
-<table class='table table-sm'>
-{% for comment in comments %}
-    <tr><td class='green' style='text-align: right;' format="format-int-once" raw="{{ comment.upvotes }}">{{ comment.upvotes|number_format() }}</td><td>&nbsp; <a href='#' onClick="commentUpVote('{{ comment.pageID }}', '{{ comment.commentID }}'); return false;"><i class="fas fa-arrow-up" aria-hidden="true"></i> {{ comment.comment }}</a></td></tr>
-{% endfor %}
-</table>
-</div>

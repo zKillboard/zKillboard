@@ -1,0 +1,25 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'Search';
+
+block title
+  include components/title.pug
+
+block content
+  if (empty($data))
+    .alert.alert-info
+      | No Character/Corp/Alliance by that name could be found! 
+      p Please search again with the search box at the top
+  if (!empty($data))
+    h2 Results
+    - $lastType = '';
+    - $imageSize = 64;
+    .container
+      each $field in $data
+        if (($field['type'] ?? '') != $lastType)
+          .clearfix
+          h3= ucfirst((string) ($field['type'] ?? '')) . 's'
+          - $lastType = $field['type'] ?? '';
+        .float-start(style="margin-bottom: 0.5em; width: 250px;")
+          a(href=('/' . ($field['type'] ?? '') . '/' . ($field['id'] ?? '') . '/'))= $field['name'] ?? ''

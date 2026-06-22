@@ -12,7 +12,7 @@ function handler($request, $response, $args, $container)
 	if (sizeof($_SESSION) == 0) {
 		if ($redis->get("invalid_login:$ip") >= 3) {
 			$redis->del("invalid_login:$ip");
-			return $container->get('view')->render($response->withHeader('Cache-Tag', 'error,login'), 'error.html', ['message' => "OK, that's enough.  There is some sort of session bug between you and zkillboard.  Are you trying to run incognito? Are you running adblockers or some plugin for your browser that could be interfering? Let's figure this out and come visit us on Discord."]);
+			return $container->get('view')->render($response->withHeader('Cache-Tag', 'error,login'), 'error.pug', ['message' => "OK, that's enough.  There is some sort of session bug between you and zkillboard.  Are you trying to run incognito? Are you running adblockers or some plugin for your browser that could be interfering? Let's figure this out and come visit us on Discord."]);
 		}
 		$redis->incr("invalid_login:$ip", 1);
 		$redis->expire("invalid_login:$ip", 120);
@@ -20,7 +20,7 @@ function handler($request, $response, $args, $container)
 	}
 
 	if ($kvc->get('zkb:noapi') == 'true') {
-		return $container->get('view')->render($response->withHeader('Cache-Tag', 'error,login'), 'error.html', ['message' => 'Downtime is not a good time to login, the CCP servers are not reliable, sorry.']);
+		return $container->get('view')->render($response->withHeader('Cache-Tag', 'error,login'), 'error.pug', ['message' => 'Downtime is not a good time to login, the CCP servers are not reliable, sorry.']);
 	}
 
 	$sem = sem_get(3174);
@@ -45,11 +45,11 @@ function handler($request, $response, $args, $container)
 			$userInfo = $sso->handleCallback($code, $state, $_SESSION);
 		} catch (Exception $e) {
 			if ($e->getCode() != -99) Util::zout("SSO Issue\n" . print_r($e, true));
-			return $container->get('view')->render($response->withHeader('Cache-Tag', 'error,login'), 'error.html', ['message' => 'CCP SSO is currently having issues, please wait a moment and try again...']);
+			return $container->get('view')->render($response->withHeader('Cache-Tag', 'error,login'), 'error.pug', ['message' => 'CCP SSO is currently having issues, please wait a moment and try again...']);
 		}
 
 		if ($userInfo == null || sizeof($userInfo) == 0) {
-			return $container->get('view')->render($response->withHeader('Cache-Tag', 'error,login'), 'error.html', ['message' => 'CCP SSO is failed to send us the user information, please try logging in again.']);
+			return $container->get('view')->render($response->withHeader('Cache-Tag', 'error,login'), 'error.pug', ['message' => 'CCP SSO is failed to send us the user information, please try logging in again.']);
 		}
 
 		$charID = (int) $userInfo['characterID'];
@@ -209,13 +209,13 @@ function handler($request, $response, $args, $container)
 			if ($_SESSION['characterID'] > 0) {
 				return $response->withStatus(302)->withHeader('Location', '/');
 			} else {
-				return $container->get('view')->render($response->withStatus(503)->withHeader('Cache-Tag', 'error,login'), 'error.html', ['message' => "Please try logging in again, but don't double/triple click this time. CCP's login form isn't very good at handling multiple clicks... "]);
+				return $container->get('view')->render($response->withStatus(503)->withHeader('Cache-Tag', 'error,login'), 'error.pug', ['message' => "Please try logging in again, but don't double/triple click this time. CCP's login form isn't very good at handling multiple clicks... "]);
 			}
 		} elseif ($e->getMessage() == 'Undefined array key "access_token"') {
-			return $container->get('view')->render($response->withStatus(503)->withHeader('Cache-Tag', 'error,login'), 'error.html', ['message' => 'CCP failed to send access token data, please try logging in again.']);
+			return $container->get('view')->render($response->withStatus(503)->withHeader('Cache-Tag', 'error,login'), 'error.pug', ['message' => 'CCP failed to send access token data, please try logging in again.']);
 		} else {
 			Util::zout(print_r($e, true));
-			return $container->get('view')->render($response->withStatus(503)->withHeader('Cache-Tag', 'error,login'), 'error.html', ['message' => $e->getMessage()]);
+			return $container->get('view')->render($response->withStatus(503)->withHeader('Cache-Tag', 'error,login'), 'error.pug', ['message' => $e->getMessage()]);
 		}
 	} finally {
 		sem_release($sem);

@@ -1,0 +1,7 @@
+if (!empty($showImage))
+  - $imageSize = 32;
+  include image_alli.pug
+if (($field['allianceID'] ?? 0) != 0)
+  a.wrapplease(href=('/alliance/' . $field['allianceID'] . '/' . ($entitySubpage ?? '')))= $field['allianceName'] ?? ''
+else if (($field['id'] ?? 0) != 0)
+  a.wrapplease(href=('/alliance/' . $field['id'] . '/'))= $field['name'] ?? ''

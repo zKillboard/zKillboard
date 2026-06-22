@@ -1,0 +1,159 @@
+nav.navbar.navbar-expand-md.navbar-dark.bg-dark(style="margin-bottom: 0px;")
+  .nav-mobile-shell.d-flex.align-items-center
+    button.navbar-toggler.openMenu.d-md-none.me-2(type="button" data-bs-toggle="collapse" data-bs-target="#navbar-main" aria-controls="navbar-main" aria-expanded="false" aria-label="Toggle navigation")
+      span.navbar-toggler-icon
+    a.navbar-brand.me-2(href="/")
+      img.zkblogo(src="/img/logo.png" style="width: 16px; height: 16px;")
+      |  z
+      span.d-none.d-md-inline Killboard
+
+    #navbar-main.collapse.navbar-collapse.navbar-main.me-md-2
+      ul.navbar-nav.me-auto.mb-2.mb-md-0
+        li.nav-item.dropdown
+          button.nav-link.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false") Menu
+          ul.dropdown-menu.asclicks
+            li
+              a.dropdown-item(href="/character/ranks/k/all/alltime/1/") Top Ranks
+            li
+              a.dropdown-item(href="/asearch/") Advanced Search
+            li
+              hr.dropdown-divider
+            li
+              a.dropdown-item(href='/asearch/#{"buttons":["week","rolling","label-isk:5b+","sort-date","sort-desc","page1","victimsonly"]}') Top Kills (5b+)
+            li
+              a.dropdown-item(href='/asearch/#{"buttons":["week","rolling","label-isk:10b+","label-isk:100b+","sort-date","sort-desc","page1","victimsonly"]}') Big Kills (10b+)
+            li
+              a.dropdown-item(href='/asearch/#{"buttons":["week","rolling","label-capital","label-pvp","sort-date","sort-desc","page1","victimsonly"]}') Capitals
+            li
+              a.dropdown-item(href='/asearch/#{"buttons":["week","rolling","label-cat:65","label-pvp","sort-date","sort-desc","page1","victimsonly"]}') Structures
+            li
+              a.dropdown-item(href='/asearch/#{"buttons":["week","rolling","label-loc:abyssal","sort-date","sort-desc","page1","victimsonly"]}') Abyssal
+            li
+              a.dropdown-item(href='/asearch/#{"buttons":["week","rolling","label-loc:abyssal","label-pvp","sort-date","sort-desc","page1","victimsonly"]}') Abyssal PvP
+            li
+              a.dropdown-item(href='/asearch/#{"buttons":["week","rolling","label-awox","sort-date","sort-desc","page1","victimsonly"]}') Awox
+            li
+              a.dropdown-item(href='/asearch/#{"buttons":["week","rolling","label-ganked","sort-date","sort-desc","page1","victimsonly"]}') Ganked
+            li
+              a.dropdown-item(href='/asearch/#{"buttons":["week","rolling","label-solo","sort-date","sort-desc","page1","victimsonly"]}') Solo
+            li
+              hr.dropdown-divider
+            li
+              a.dropdown-item(href='/asearch/#{"buttons":["week","rolling","label-loc:highsec","sort-date","sort-desc","page1","victimsonly"]}') Highsec
+            li
+              a.dropdown-item(href='/asearch/#{"buttons":["week","rolling","label-loc:lowsec","sort-date","sort-desc","page1","victimsonly"]}') Lowsec
+            li
+              a.dropdown-item(href='/asearch/#{"buttons":["week","rolling","label-loc:nullsec","sort-date","sort-desc","page1","victimsonly"]}') Nullsec
+            li
+              a.dropdown-item(href='/asearch/#{"buttons":["week","rolling","label-loc:w-space","sort-date","sort-desc","page1","victimsonly"]}') W-Space
+            li
+              a.dropdown-item(href="/asearchsaved/68a46dfdda54f9254e0bf0e6/") Pochven
+            li
+              hr.dropdown-divider
+            li
+              a.dropdown-item(href='/asearch/#{"buttons":["togglefilters","week","rolling","attackers-and","either-and","victims-and","sort-date","sort-desc","page1","allinvolved"],"attackers":[{"type":"factionID","id":"500001"}],"victims":[{"type":"factionID","id":"500004"}]}') Caldari vs Gallente
+            li
+              a.dropdown-item(href='/asearch/#{"buttons":["togglefilters","week","rolling","attackers-and","either-and","victims-and","sort-date","sort-desc","page1","allinvolved"],"attackers":[{"type":"factionID","id":"500003"}],"victims":[{"type":"factionID","id":"500002"}]}') Amarr vs Minmatar
+            li
+              a.dropdown-item(href="/wars/") Wars
+            li
+              a.dropdown-item(href="/war/eligible/") War Eligible
+            li
+              hr.dropdown-divider
+            li
+              a.dropdown-item(href="/kills/sponsored/") Sponsored
+            li
+              a.dropdown-item(href="/top/lasthour/all/") Hourly Stats
+            li
+              a.dropdown-item(href="/ztop/") zTop
+        li#tracker-menu.nav-item.dropdown
+          button.nav-link.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false") Tracker
+          ul#tracker-dropdown.dropdown-menu
+            li
+              span.dropdown-item-text Please log in first.
+        li#postExternalMail.nav-item
+          a.nav-link(href="/post/") Post
+        li#maplink.nav-item
+          a.nav-link(href="/map/index.html" target="_blank") Map
+        li.nav-item.d-none.d-md-block
+          a.nav-link(href="/scanalyzer/")
+            span.scanalyzer &#128924;
+        li.nav-item.d-none.d-md-block
+          a.nav-link(href="/information/payments/")
+            img(src="/img/gold_logo_cropped_32.png" style="padding-top: 2px; width: 20px; display: block;")
+        if ($statslink ?? false)
+          li.nav-item
+            a.nav-link(href=$statslink) Stats
+
+      ul.navbar-nav.ms-auto.mb-2.mb-md-0.d-none.d-md-flex
+        li#noliveupdates.nav-item.d-none
+          a.nav-link(href="/information/payments/" style="color: red; font-style: strikethrough;") LIVE UPDATES DISABLED
+        li.nav-item.liveupdates.d-none.d-lg-block
+          a#lasthour.nav-link.text-end.text-nowrap(href="/top/lasthour/all/" rel="tooltip" title="Kills added this hour") &nbsp;
+        li.nav-item.liveupdates.d-none.d-lg-block
+          a.nav-link.text-end.text-nowrap(href="#" rel="tooltip" title="Tranquility Status" onClick="return false;")
+            span#tqStatus
+              span#tqStatusDetail
+              span#tqCount
+        li.nav-item.d-none.d-xl-block
+          a.nav-link.text-end.text-nowrap(href="/ztop/" rel="tooltip" title="Eve Time")
+            #my_clock
+
+    .flex-grow-1.d-md-none
+
+    form#search.nav-search-item.d-flex.flex-grow-1.flex-md-grow-0.ms-auto.ms-md-2.me-2.me-md-0(name="search")
+      .input-group
+        span.input-group-text(style="cursor: pointer;" onclick='navigateTo("/asearch/"); return false;' rel="tooltip" title="Advanced Search")
+          a(href="/asearch/")
+            i.fas.fa-search(style="color: white;")
+        input#searchbox.form-control(type="text" placeholder="search '/' or '\\'" autocomplete="off" name="searchbox" tabindex="1")
+
+    ul.navbar-nav.nav-user-shell.flex-row
+      li#usermenu.nav-item.dropdown
+        button#usermenu-dropdown.nav-link.dropdown-toggle.btn.btn-link.border-0.bg-transparent(type="button" data-bs-toggle="dropdown" aria-expanded="false")
+          img#char-image(src="/img/transparent_32.png" style="height: 32px; width: 32px; padding: 0px; margin: 0px;")
+        ul#char-loggedin.dropdown-menu.dropdown-menu-end
+          li#username.dropdown-header(style="font-weight: bold;")= $sessionusername ?? ''
+          li.forloggedout
+            a#dls-login.dropdown-item(onclick="interceptLoginClick();" href="/ccpoauth2/")
+              img(src="/img/ssologin.png" alt="SSO Login")
+          li.forloggedin.d-none.d-sm-block.px-3.py-1
+            img.char-image.clickimage(style="margin-left: 10px;")
+          li.forloggedin.d-none.d-sm-block.px-3.py-1
+            img.corp-image.clickimage(style="margin-left: 10px;")
+          li.forloggedin.d-none.d-sm-block.px-3.py-1
+            img.alli-image.clickimage(style="margin-left: 0px;")
+          li.forloggedin.d-none
+            hr.dropdown-divider
+          li.forloggedin.d-none
+            a.dropdown-item(href="/account/api/") API
+          li.forloggedin.d-none
+            a.dropdown-item(href="/account/log/") Log
+          li.forloggedin.d-none
+            a.dropdown-item(href="/account/sponsored/") Sponsored Ships
+          li.forloggedin.d-none
+            a.dropdown-item(href="/account/payments/") Payments
+          li.forloggedin.d-none
+            a.dropdown-item(href="/account/") Settings
+          li
+            hr.dropdown-divider
+          li.dropdown-header.d-none.d-sm-block Support
+          li
+            a.dropdown-item(href=($discordServer ?? '') target="_blank" rel="noopener noreferrer")
+              | Discord 
+              i.fas.fa-up-right-from-square
+          li
+            a.dropdown-item(href="/information/faq/") FAQ
+          li.forloggedin.d-none
+            hr.dropdown-divider
+          li.forloggedin.d-none
+            a.dropdown-item(href="/account/logout/") Logout
+        if (($characterID ?? -1) == 0)
+          ul#char-loggedout.dropdown-menu.dropdown-menu-end
+            li
+              form#loginform(action="/ccpoauth2/")
+                input#ssologinimage(type="image" src="/img/ssologin.png")
+                p
+                  small Will request killmails and save fitting scopes.
+  #advancedsearchnavbar(style="background-color: black; text-align: right; padding: 0.5em; padding-right: 7em; display: none;")
+    a(href="/asearch/") Click here for Advanced Search

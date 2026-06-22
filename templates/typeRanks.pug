@@ -1,0 +1,56 @@
+extends base.pug
+
+block vars
+  - $pageTitle = ($pageTitle ?? '') . ' - ' . ucfirst((string) ($subType ?? ''));
+
+block title
+  include components/title.pug
+
+block content
+  br
+  .row.typeranks-controls
+    .col-12.col-md-5
+      .btn-group.btn-group-sm.centered
+        a#type-character.type-btn.btn.btn-secondary(href="/character/ranks/k/all/alltime/1/") Characters
+        a#type-corporation.type-btn.btn.btn-secondary(href="/corporation/ranks/k/all/alltime/1/") Corporations
+        a#type-alliance.type-btn.btn.btn-secondary(href="/alliance/ranks/k/all/alltime/1/") Alliances
+        a#type-faction.type-btn.btn.btn-secondary(href="/faction/ranks/k/all/alltime/1/") Factions
+        a#type-shipType.type-btn.btn.btn-secondary(href="/shipType/ranks/k/all/alltime/1/") Ships
+        a#type-group.type-btn.btn.btn-secondary(href="/group/ranks/k/all/alltime/1/") Groups
+    .col-12.col-md-5.text-center
+      .btn-group.btn-group-sm.centered
+        a#epoch-weekly.epoch-btn.btn.btn-secondary 7 Days
+        a#epoch-recent.epoch-btn.btn.btn-secondary 90 Days
+        a#epoch-alltime.epoch-btn.btn.btn-secondary Alltime
+      .btn-group.btn-group-sm.centered
+        a#kl-l.kl-btn.btn.btn-secondary Losers
+        a#kl-k.kl-btn.btn.btn-secondary Killers
+      .btn-group.btn-group-sm.centered
+        a#group-all.group-btn.btn.btn-secondary All
+        a#group-solo.group-btn.btn.btn-secondary Solo
+    .col-12.col-md-2.text-end
+      .btn-group.btn-group-sm.centered(disable="disabled")
+        a#page-1.page-btn.btn.btn-secondary &nbsp;
+        a#page-2.page-btn.btn.btn-secondary &nbsp;
+        a#page-3.page-btn.btn.btn-primary &nbsp;
+        a#page-4.page-btn.btn.btn-secondary &nbsp;
+        a#page-5.page-btn.btn.btn-secondary &nbsp;
+  hr
+  each $rankTable in ($ranks ?? [])
+    include components/type_rank_table.pug
+  .alert.alert-info
+    | Ranks are updated daily...
+    br
+    | To search for a particular entity use the searchbox in the navigation bar to find them and then select the Ranks tab on their page.
+
+block script
+  script.
+    const ranksType = '#{$type ?? ""}';
+    const ranksKL = '#{$subType ?? ""}';
+    const ranksEpoch = '#{$epoch ?? ""}';
+    const ranksPage = '#{$page ?? ""}';
+    const ranksGroup = '#{$solo ?? ""}';
+    const ranksHasMore = '#{$hasMore ?? ""}';
+    const ranksSortKey = '#{$sortKey ?? "overallRank"}';
+    const ranksSortDir = '#{$sortDir ?? "asc"}';
+  script(defer type="text/javascript" src="/js/typeranks.js?v=" . ($currentTime ?? $version ?? ''))

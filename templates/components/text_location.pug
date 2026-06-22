@@ -1,0 +1,7 @@
+- $actualSize = $resizeImage ?? $imageSize;
+- $typeID = $field['locationID'] ?? 0;
+- $typeName = $field['locationName'] ?? '';
+if (!empty($showImage))
+  - $imageSize = 32;
+  include image_item.pug
+a(href=('/location/' . $typeID . '/' . ($entitySubpage ?? '')))= $typeName

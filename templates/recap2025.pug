@@ -1,0 +1,236 @@
+extends base.pug
+
+block vars
+  - $imageSize = 64;
+  - $infoData = is_object($info ?? null) ? (array) $info : ($info ?? []);
+  - $pageTitle = ($infoData['name'] ?? '') . ' - 2025 Year in Review';
+  - $infoAll = is_object($info_all ?? null) ? (array) $info_all : ($info_all ?? []);
+  - $fmt = fn($value, $decimals = 0) => number_format((float) ($value ?? 0), $decimals, '.', ',');
+  - $billions = fn($value) => number_format((float) ($value ?? 0) / 1000000000, 2, '.', ',');
+  - $entity = function ($bucket, $id) use ($infoAll) { $row = $infoAll[$bucket][$id] ?? null; return is_object($row) ? (array) $row : $row; };
+  - $entityRow = function ($bucket, $id, $type, $count, $label, $rank) use ($entity, $fmt) { $row = $entity($bucket, $id); if (!$row) return '<span><span class="rank">#' . $rank . '</span>Unknown</span><span class="stat-value">' . $fmt($count) . ' ' . $label . '</span>'; $name = htmlspecialchars($row['name'] ?? 'Unknown', ENT_QUOTES); $path = ['characterID' => 'character', 'corporationID' => 'corporation', 'allianceID' => 'alliance'][$bucket] ?? 'character'; $imagePath = ['characterID' => 'characters', 'corporationID' => 'corporations', 'allianceID' => 'alliances'][$bucket] ?? 'characters'; $imageSuffix = $bucket === 'characterID' ? 'portrait' : 'logo'; return '<span><span class="rank">#' . $rank . '</span><img src="https://images.evetech.net/' . $imagePath . '/' . (int) $id . '/' . $imageSuffix . '?size=32" style="vertical-align: middle; width: 32px; height: 32px;" alt="' . $name . '" loading="lazy" decoding="async" fetchpriority="low"> <a href="/' . $path . '/' . (int) $id . '/">' . $name . '</a></span><span class="stat-value"><span format="format-int-once" raw="' . htmlspecialchars((string) $count, ENT_QUOTES) . '">' . $fmt($count) . '</span> ' . $label . '</span>'; };
+  - $shipRow = function ($id, $count, $label, $rank) use ($entity, $fmt) { $row = $entity('typeID', $id); $name = htmlspecialchars($row['name'] ?? 'Unknown Ship', ENT_QUOTES); return '<span><span class="rank">#' . $rank . '</span><img src="https://images.evetech.net/types/' . (int) $id . '/icon?size=32" style="vertical-align: middle;" alt="' . $name . '" loading="lazy" decoding="async" fetchpriority="low"> <a href="/ship/' . (int) $id . '/">' . $name . '</a></span><span class="stat-value"><span format="format-int-once" raw="' . htmlspecialchars((string) $count, ENT_QUOTES) . '">' . $fmt($count) . '</span> ' . $label . '</span>'; };
+  - $placeRow = function ($bucket, $id, $path, $unknown, $count, $label, $rank) use ($entity, $fmt) { $row = $entity($bucket, $id); $name = htmlspecialchars($row['name'] ?? $unknown, ENT_QUOTES); return '<span><span class="rank">#' . $rank . '</span><a href="/' . $path . '/' . (int) $id . '/">' . $name . '</a></span><span class="stat-value"><span format="format-int-once" raw="' . htmlspecialchars((string) $count, ENT_QUOTES) . '">' . $fmt($count) . '</span> ' . $label . '</span>'; };
+
+block title
+  include components/title.pug
+
+block content
+  style.
+    .recap-container { max-width: 1200px; margin: 0 auto; }
+    .recap-header { text-align: center; padding: 30px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; margin-bottom: 30px; color: white; }
+    .recap-header h1 { font-size: 2.5em; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+    .recap-header .entity-name { font-size: 1.5em; margin-top: 10px; opacity: 0.95; }
+    .stat-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    .stat-card h3 { margin-top: 0; color: #667eea; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+    .big-number { font-size: 2.5em; font-weight: bold; color: #667eea; margin: 10px 0; }
+    .stat-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { font-weight: bold; opacity: 0.8; }
+    .stat-value { color: #667eea; font-weight: bold; }
+    .kills-color { color: #5cb85c !important; }
+    .losses-color { color: #d9534f !important; }
+    .top-list { list-style: none; padding: 0; }
+    .top-list li { padding: 10px; margin: 5px 0; background: rgba(255,255,255,0.03); border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+    .top-list .rank { font-weight: bold; margin-right: 10px; color: #667eea; }
+    .monthly-chart { margin: 20px 0; }
+    .month-bar-combined { display: flex; margin: 10px 0; align-items: center; gap: 10px; }
+    .month-label-left { width: 40px; font-size: 0.9em; text-align: left; font-weight: bold; flex-shrink: 0; }
+    .bar-merged-container { flex: 1; height: 24px; background: rgba(255,255,255,0.1); border-radius: 4px; position: relative; overflow: hidden; display: flex; }
+    .bar-merged-container .bar-kills { border-radius: 4px 0 0 4px; border-right: 2px solid rgba(255,255,255,0.3); }
+    .bar-merged-container .bar-losses { border-radius: 0 4px 4px 0; margin-left: auto; border-left: 2px solid rgba(255,255,255,0.3); }
+    .bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+    .bar-kills { background: linear-gradient(90deg, #5cb85c, #4cae4c); }
+    .bar-losses { background: linear-gradient(90deg, #d9534f, #c9302c); }
+    .bar-value-left { font-weight: bold; min-width: 50px; text-align: right; flex-shrink: 0; }
+    .bar-value-right { font-weight: bold; min-width: 50px; text-align: left; flex-shrink: 0; }
+    .month-header { margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+    .highlight-box { background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2)); border: 2px solid #667eea; border-radius: 10px; padding: 20px; margin: 20px 0; }
+    .killmail-preview { display: flex; align-items: center; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 8px; margin: 10px 0; }
+    .killmail-preview img { margin-right: 15px; }
+  .recap-container
+    .recap-header
+      h1 2025 Year in Review
+      .entity-name
+        if (($type ?? '') == 'characterID')
+          img(src=('https://images.evetech.net/characters/' . ($id ?? 0) . '/portrait?size=64') alt=($infoData['name'] ?? '') loading="lazy" decoding="async" fetchpriority="low")
+        else if (($type ?? '') == 'corporationID')
+          img(src=('https://images.evetech.net/corporations/' . ($id ?? 0) . '/logo?size=64') alt=($infoData['name'] ?? '') loading="lazy" decoding="async" fetchpriority="low")
+        else if (($type ?? '') == 'allianceID')
+          img(src=('https://images.evetech.net/alliances/' . ($id ?? 0) . '/logo?size=64') alt=($infoData['name'] ?? '') loading="lazy" decoding="async" fetchpriority="low")
+        = ' ' . ($infoData['name'] ?? '')
+    if (($totalKills ?? 0) == 0 && ($totalLosses ?? 0) == 0)
+      .stat-card
+        h3 No Activity in 2025
+        p= 'No kills or losses recorded for this ' . ($type ?? '') . ' in 2025. Time to undock!'
+    else
+      .row
+        .col-md-6
+          .stat-card
+            h3 Kills Overview
+            .big-number.kills-color(format="format-int-once" raw=($totalKills ?? 0))= $fmt($totalKills ?? 0)
+            .stat-row
+              span.stat-label Total Ships Destroyed
+              span.stat-value(format="format-int-once" raw=($totalKills ?? 0))= $fmt($totalKills ?? 0)
+            .stat-row
+              span.stat-label ISK Destroyed
+              span.stat-value
+                span(format="format-isk-once" raw=($totalIskDestroyed ?? 0))= $billions($totalIskDestroyed ?? 0)
+                |  ISK
+            .stat-row
+              span.stat-label Total Points Destroyed
+              span.stat-value(format="format-int-once" raw=($totalPointsDestroyed ?? 0))= $fmt($totalPointsDestroyed ?? 0)
+            .stat-row
+              span.stat-label Solo Kills
+              span.stat-value(format="format-int-once" raw=($soloKills ?? 0))= $fmt($soloKills ?? 0)
+        .col-md-6
+          .stat-card
+            h3 Losses Overview
+            .big-number.losses-color(format="format-int-once" raw=($totalLosses ?? 0))= $fmt($totalLosses ?? 0)
+            .stat-row
+              span.stat-label Total Ships Lost
+              span.stat-value(format="format-int-once" raw=($totalLosses ?? 0))= $fmt($totalLosses ?? 0)
+            .stat-row
+              span.stat-label Total ISK Lost
+              span.stat-value
+                span(format="format-isk-once" raw=($totalIskLost ?? 0))= $billions($totalIskLost ?? 0)
+                |  ISK
+            .stat-row
+              span.stat-label Points Lost
+              span.stat-value(format="format-int-once" raw=($totalPointsLost ?? 0))= $fmt($totalPointsLost ?? 0)
+            .stat-row
+              span.stat-label Efficiency
+              span.stat-value
+                span(format="format-dec1" raw=($efficiency ?? 0))= number_format((float) ($efficiency ?? 0), 1, '.', ',')
+                | %
+      .row
+        if (!empty($biggestKill))
+          - $bk = is_object($biggestKill) ? (array) $biggestKill : $biggestKill;
+          - $bki = is_object($bk['involved'][0] ?? null) ? (array) $bk['involved'][0] : ($bk['involved'][0] ?? []);
+          .col-md-6
+            .highlight-box
+              h3 Biggest Ship Kill of 2025
+              .killmail-preview
+                img(src=('https://images.evetech.net/types/' . ($bki['shipTypeID'] ?? 0) . '/icon?size=64') alt=($bki['shipName'] ?? '') loading="lazy" decoding="async" fetchpriority="low")
+                div
+                  strong= $bki['characterName'] ?? 'Unknown'
+                  = ' (' . ($bki['shipName'] ?? 'Unknown Ship') . ')'
+                  br
+                  span(style="color: #5cb85c; font-size: 1.3em;")
+                    span(format="format-isk-once" raw=($biggestKillValue ?? 0))= $billions($biggestKillValue ?? 0)
+                    |  ISK
+                  br
+                  small= ($bk['MonthDayYear'] ?? 'Unknown Date') . ' in ' . ($bk['solarSystemName'] ?? 'Unknown System')
+                  br
+                  a.btn.btn-sm.btn-primary(style="margin-top: 5px;" href=('/kill/' . ($bk['killID'] ?? 0) . '/')) View Killmail
+        if (!empty($biggestLoss))
+          - $bl = is_object($biggestLoss) ? (array) $biggestLoss : $biggestLoss;
+          - $bli = is_object($bl['involved'][0] ?? null) ? (array) $bl['involved'][0] : ($bl['involved'][0] ?? []);
+          .col-md-6
+            .highlight-box
+              h3 Biggest Ship Loss of 2025
+              .killmail-preview
+                img(src=('https://images.evetech.net/types/' . ($bli['shipTypeID'] ?? 0) . '/icon?size=64') alt=($bli['shipName'] ?? '') loading="lazy" decoding="async" fetchpriority="low")
+                div
+                  strong= $bli['characterName'] ?? 'Unknown'
+                  = ' (' . ($bli['shipName'] ?? 'Unknown Ship') . ')'
+                  br
+                  span(style="color: #d9534f; font-size: 1.3em;")
+                    span(format="format-isk-once" raw=($biggestLossValue ?? 0))= $billions($biggestLossValue ?? 0)
+                    |  ISK
+                  br
+                  small= ($bl['MonthDayYear'] ?? 'Unknown Date') . ' in ' . ($bl['solarSystemName'] ?? 'Unknown System')
+                  br
+                  a.btn.btn-sm.btn-danger(style="margin-top: 5px;" href=('/kill/' . ($bl['killID'] ?? 0) . '/')) View Killmail
+      .stat-card
+        h3 Monthly Activity
+        .monthly-chart
+          - $monthlyKillsData = $monthlyKills ?? [];
+          - $monthlyLossesData = $monthlyLosses ?? [];
+          - $maxValue = max([1, ...array_values($monthlyKillsData ?: [0]), ...array_values($monthlyLossesData ?: [0])]);
+          .month-bar-combined.month-header
+            span.month-label-left
+            span.bar-value-left.kills-color(style="font-weight: bold;") Kills
+            .bar-merged-container(style="visibility: hidden;")
+            span.bar-value-right.losses-color(style="font-weight: bold;") Lost
+          each $i in range(1, 12)
+            - $month = '2025-' . ($i < 10 ? '0' . $i : $i);
+            - $killCount = $monthlyKillsData[$month] ?? 0;
+            - $lossCount = $monthlyLossesData[$month] ?? 0;
+            .month-bar-combined
+              span.month-label-left= date('M', strtotime($month . '-01'))
+              span.bar-value-left.kills-color= $killCount
+              .bar-merged-container
+                .bar-fill.bar-kills(style=('width: ' . ($killCount / $maxValue * 100) . '%;'))
+                .bar-fill.bar-losses(style=('width: ' . ($lossCount / $maxValue * 100) . '%;'))
+              span.bar-value-right.losses-color= $lossCount
+      - $sections = [['Most Killed Characters', $topVictimCharacters ?? [], 'characterID', 'kills'], ['Most Killed By (Characters)', $topKillerCharacters ?? [], 'characterID', 'times'], ['Most Killed Corporations', $topVictimCorporations ?? [], 'corporationID', 'kills'], ['Most Killed By (Corporations)', $topKillerCorporations ?? [], 'corporationID', 'times'], ['Most Killed Alliances', $topVictimAlliances ?? [], 'allianceID', 'kills'], ['Most Killed By (Alliances)', $topKillerAlliances ?? [], 'allianceID', 'times']];
+      each $pair in array_chunk($sections, 2)
+        .row
+          each $section in $pair
+            .col-md-6
+              .stat-card
+                h3= $section[0]
+                if (count($section[1]) > 0)
+                  ul.top-list
+                    - $rank = 1;
+                    each $count, $entityId in $section[1]
+                      li!= $entityRow($section[2], $entityId, $section[2], $count, $section[3], $rank)
+                      - $rank++;
+                else
+                  p No data available
+      .row
+        .col-md-6
+          .stat-card
+            h3 Most Used Ships
+            if (count($topShipsUsed ?? []) > 0)
+              ul.top-list
+                - $rank = 1;
+                each $count, $shipId in ($topShipsUsed ?? [])
+                  li!= $shipRow($shipId, $count, 'kills', $rank)
+                  - $rank++;
+            else
+              p No data available
+        .col-md-6
+          .stat-card
+            h3 Most Lost Ships
+            if (count($topShipsLost ?? []) > 0)
+              ul.top-list
+                - $rank = 1;
+                each $count, $shipId in ($topShipsLost ?? [])
+                  li!= $shipRow($shipId, $count, 'losses', $rank)
+                  - $rank++;
+            else
+              p No data available
+      .row
+        .col-md-6
+          .stat-card
+            h3 Most Active Systems
+            if (count($topSystems ?? []) > 0)
+              ul.top-list
+                - $rank = 1;
+                each $count, $systemId in ($topSystems ?? [])
+                  li!= $placeRow('solarSystemID', $systemId, 'system', 'Unknown System', $count, 'kills', $rank)
+                  - $rank++;
+            else
+              p No data available
+        .col-md-6
+          .stat-card
+            h3 Most Active Regions
+            if (count($topRegions ?? []) > 0)
+              ul.top-list
+                - $rank = 1;
+                each $count, $regionId in ($topRegions ?? [])
+                  li!= $placeRow('regionID', $regionId, 'region', 'Unknown Region', $count, 'kills', $rank)
+                  - $rank++;
+            else
+              p No data available
+      div(style="text-align: center; margin: 40px 0; padding: 20px; background: rgba(255,255,255,0.03); border-radius: 10px;")
+        h3 Thanks for another great year in New Eden!
+        p See you in 2026!
+        a.btn.btn-primary.btn-lg(href=('/' . ($type ?? '') . '/' . ($id ?? '') . '/')) Back to Overview
+      div
+        small
+          | will update every ~72 hours
+          br
+          | This was CCP Pinky's idea, so if you don't like it blame him.

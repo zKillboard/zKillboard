@@ -80,7 +80,7 @@ function handler($request, $response, $args, $container)
 			->withHeader('X-Frame-Options', 'ALLOWALL')
 			->withHeader('Content-Security-Policy', 'frame-ancestors *')
 			->withHeader('Cache-Tag', "overview,overview:$id,streambox");
-		return $container->get('view')->render($response, 'streambox.html', []);
+		return $container->get('view')->render($response, 'streambox.pug', []);
 	}
 	unset($parameters['streambox']);
 
@@ -110,7 +110,7 @@ function handler($request, $response, $args, $container)
 			return renderCached404($container, $response, 'Not Found');
 		}
 	} catch (Exception $ex) {
-		return $container->get('view')->render($response->withHeader('Cache-Tag', "error,overview,overview:$id"), 'error.html', array('message' => "There was an error fetching information for the $key you specified."));
+		return $container->get('view')->render($response->withHeader('Cache-Tag', "error,overview,overview:$id"), 'error.pug', array('message' => "There was an error fetching information for the $key you specified."));
 	}
 
 	$pageName = isset($detail[$map[$key]['column'] . 'Name']) ? $detail[$map[$key]['column'] . 'Name'] : '???';
@@ -544,9 +544,9 @@ function handler($request, $response, $args, $container)
 
 	$extra['recentkills'] = $type == 'character' && $redis->get("recentKillmailActivity:$id") == true;
 
-	global $twig;
-	$twig->addGlobal('year', (isset($parameters['year']) ? $parameters['year'] : date('Y')));
-	$twig->addGlobal('month', (isset($parameters['month']) ? $parameters['month'] : date('m')));
+	global $templates;
+	$templates->addGlobal('year', (isset($parameters['year']) ? $parameters['year'] : date('Y')));
+	$templates->addGlobal('month', (isset($parameters['month']) ? $parameters['month'] : date('m')));
 
 	if ($type == 'label') {
 		$detail = ['label' => $id];
@@ -583,7 +583,7 @@ function handler($request, $response, $args, $container)
 
 	$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified, 'dqChars' => $dqChars);
 
-	return $container->get('view')->render($response->withHeader('Cache-Tag', "overview,overview:$id"), 'overview.html', $renderParams);
+	return $container->get('view')->render($response->withHeader('Cache-Tag', "overview,overview:$id"), 'overview.pug', $renderParams);
 }
 
 function addVics($vics, $kills = [])
@@ -614,7 +614,7 @@ function renderCached404($container, $response, $message = 'Not Found')
 		->withHeader('Cloudflare-CDN-Cache-Control', $cacheControl)
 		->withHeader('Cache-Tag', 'error,404,overview');
 
-	return $container->get('view')->render($cached404Response, '404.html', array('message' => $message));
+	return $container->get('view')->render($cached404Response, '404.pug', array('message' => $message));
 }
 
 function getNearbyRanks($key, $rankKeyName, $id, $title, $statType)
