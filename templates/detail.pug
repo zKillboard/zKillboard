@@ -215,6 +215,7 @@ block content
               br
               a(href=('/item/' . ($attacker['weaponTypeID'] ?? 0) . '/'))= $attacker['weaponTypeName'] ?? ''
             td.damage(style="vertical-align: middle;")= $attacker['damage'] ?? 0
+        - unset($resizeImage);
 
 block modal
   #report.modal.fade

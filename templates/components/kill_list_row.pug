@@ -95,3 +95,4 @@ each $kill in ($killList ?? [])
           a.wrapplease(href=('/alliance/' . $kill['finalBlow']['allianceID'] . '/'))= $kill['finalBlow']['allianceName'] ?? ''
         if (($kill['finalBlow']['factionID'] ?? 0) == 500021)
           a(href=('/faction/' . $kill['finalBlow']['factionID'] . '/')) Unknown
+    - unset($resizeImage);
