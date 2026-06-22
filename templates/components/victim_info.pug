@@ -21,10 +21,11 @@ div(style="padding: 0px; width: 100%; margin: 0px;")
     tr
       td(style="width: 66px; padding: 0px;")
         - $imageSize = 64;
-        - $imageResize = 64;
+        - unset($resizeImage);
         include image_char.pug
       td(style="width: 34px; padding: 0px;")
         - $imageSize = 32;
+        - unset($resizeImage);
         include image_corp.pug
         br
         if (($field['allianceID'] ?? 0) != 0)

@@ -13,9 +13,11 @@ table.table.table-sm.table-striped.table-hover(style="margin-bottom: 0px;")
       tr.attacker
         td(style="width: 40px; vertical-align: middle;")
           - $imageSize = 64;
+          - unset($resizeImage);
           include image_char.pug
         td(style="width: 35px; vertical-align: middle;")
           - $imageSize = 32;
+          - unset($resizeImage);
           include image_ship.pug
           if (($field['weaponTypeID'] ?? 0) == 0)
             include image_ship.pug

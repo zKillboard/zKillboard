@@ -3,6 +3,7 @@
 if (!empty($finalBlowData) || !empty($topDamageData))
   table.table.table-sm(style="margin: 0px; table-layout: fixed; width: 100%;")
     - $imageSize = 64;
+    - unset($resizeImage);
     colgroup
       col(style="width: 50%;")
       col(style="width: 50%;")
@@ -14,12 +15,16 @@ if (!empty($finalBlowData) || !empty($topDamageData))
       tr
         td(style="text-align: center;")
           - $field = $finalBlowData;
+          - $imageSize = 64;
+          - unset($resizeImage);
           if (($field['characterID'] ?? 0) != 0)
             include image_char.pug
           else
             include image_corp.pug
         td(style="text-align: center;")
           - $field = $topDamageData;
+          - $imageSize = 64;
+          - unset($resizeImage);
           if (($field['characterID'] ?? 0) != 0)
             include image_char.pug
           else
