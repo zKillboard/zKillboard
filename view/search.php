@@ -14,7 +14,7 @@ function handler($request, $response, $args, $container) {
         return $response->withHeader('Location', '/search/'.urlencode($searchbox).'/')->withStatus(302);
     }   
 
-	$result = zkbSearch::getResults($search);   
+	$result = zkbSearch::getResults($search, null, 64);   
 
     // if there is only one result, we redirect.    
     if (count($result) == 1) {  

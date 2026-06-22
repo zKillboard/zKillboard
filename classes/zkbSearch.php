@@ -3,19 +3,19 @@
 class zkbSearch
 {
     public static $imageMap = [
-        'typeID' => 'https://images.evetech.net/types/%1$d/icon?size=32',
-        'groupID' => 'https://image.eveonline.com/types/1/icon?size=32.png',
-        'characterID' => 'https://image.eveonline.com/characters/%1$d/portrait?size=32',
-        'corporationID' => 'https://image.eveonline.com/corporations/%1$d/logo?size=32',
-        'allianceID' => 'https://image.eveonline.com/alliances/%1$d/logo?size=32',
-        'factionID' => 'https://image.eveonline.com/corporations/%1$d/logo?size=32',
-        'solarSystemID' => 'https://zkillboard.com/img/nohus/systems/%1$d_32.png',
-        'constellationID' => 'https://zkillboard.com/img/nohus/constellations/%1$d_32.png',
-        'regionID' => 'https://zkillboard.com/img/nohus/regions/%1$d_32.png',
-        'locationID' => 'https://image.eveonline.com/alliances/1/logo?size=32',
+        'typeID' => 'https://images.evetech.net/types/%1$d/icon?size=%2$d',
+        'groupID' => 'https://image.eveonline.com/types/1/icon?size=%2$d',
+        'characterID' => 'https://image.eveonline.com/characters/%1$d/portrait?size=%2$d',
+        'corporationID' => 'https://image.eveonline.com/corporations/%1$d/logo?size=%2$d',
+        'allianceID' => 'https://image.eveonline.com/alliances/%1$d/logo?size=%2$d',
+        'factionID' => 'https://image.eveonline.com/corporations/%1$d/logo?size=%2$d',
+        'solarSystemID' => 'https://zkillboard.com/img/nohus/systems/%1$d%3$s.png',
+        'constellationID' => 'https://zkillboard.com/img/nohus/constellations/%1$d%3$s.png',
+        'regionID' => 'https://zkillboard.com/img/nohus/regions/%1$d%3$s.png',
+        'locationID' => 'https://image.eveonline.com/alliances/1/logo?size=%2$d',
     ];
 
-    public static function getResults($search, $entityType = null)
+    public static function getResults($search, $entityType = null, $imageSize = 32)
     {
         global $redis, $mdb;
 
@@ -51,7 +51,8 @@ class zkbSearch
                 $info = Info::getInfo($type, $id);
                 $name = $info['name'] ?? 'Unknown';
                 $image = isset(self::$imageMap[$type]) ? self::$imageMap[$type] : '';
-                $image = sprintf($image, $id);
+                $localImageSuffix = $imageSize <= 32 ? '_32' : '';
+                $image = sprintf($image, $id, $imageSize, $localImageSuffix);
                 if (Util::endsWith($name, "Blueprint")) $image = str_replace("/icon", "/bp", $image);
 
                 if ($searchType == 'typeID:flag' || $searchType == 'typeID') {
