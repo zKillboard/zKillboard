@@ -41,6 +41,15 @@ function handler($request, $response, $args, $container) {
 					$mdb->set("killmails", ['killID' => $killID], ['sponsored' => true]);
 					ZLog::add("$charName sponsored $formatted ISK for kill $killID", $userID, true);
 					$responseMessage = "Thank you! You have sponsored $formatted ISK for this kill! Please give the front page up to 2 minutes and entity pages up to 10 minutes to reflect your kill sponsorship. Please remember sponsorships will expire after 7 days.";
+					$sponsoredTotal = Mdb::group("sponsored", ['killID'], ['killID' => $killID], [], 'isk', ['iskSum' => -1], 1);
+					$sponsoredTotal = array_shift($sponsoredTotal);
+					$sponsoredTotal = (int) @$sponsoredTotal['iskSum'];
+					$redis->sadd("queueCacheTags", "kill:$killID");
+					$redis->publish("kill:$killID", json_encode([
+						'action' => 'sponsored',
+						'killID' => $killID,
+						'isk' => $sponsoredTotal
+					], JSON_UNESCAPED_SLASHES));
 
 					if ($value >= 100000000) {
 						$kill = $mdb->findDoc('killmails', ['killID' => (int) $killID]);

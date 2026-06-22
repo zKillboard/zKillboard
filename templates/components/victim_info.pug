@@ -147,12 +147,11 @@ div(style="padding: 0px; width: 100%; margin: 0px;")
         strong.item_dropped
           span(format="format-isk-once" raw=($extraData['totalisk'] ?? 0))= number_format((float) ($extraData['totalisk'] ?? 0), 2, '.', ',')
           |  ISK
-    if (!empty($extraData['sponsoredIsk']))
-      tr
-        th
-          | Sponsored:
-          br
-          | (alltime)
-        td
-          span(format="format-isk-once" raw=($extraData['sponsoredIsk'] ?? 0))= number_format((float) ($extraData['sponsoredIsk'] ?? 0), 0)
-          |  ISK
+    tr#sponsored-isk-row(class=(empty($extraData['sponsoredIsk']) ? 'd-none' : ''))
+      th
+        | Sponsored:
+        br
+        | (alltime)
+      td
+        span#sponsored-isk(format="format-isk-once" raw=($extraData['sponsoredIsk'] ?? 0))= number_format((float) ($extraData['sponsoredIsk'] ?? 0), 0)
+        |  ISK

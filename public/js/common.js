@@ -901,6 +901,8 @@ function wslog(msg)
         setTimeout("location.reload(true);", Math.floor(1 + (Math.random() * 500000)));
     } else if (json.action === 'bigkill') {
         htmlNotify(json);
+    } else if (json.action === 'sponsored') {
+        updateSponsoredKillmail(json);
     } else if (json.action === 'lastHour') {
         setLiveCounter($('#lasthour'), json.kills);
     } else if (json.action === 'audio') {
@@ -926,6 +928,17 @@ function wslog(msg)
     } else {
         console.log("Unknown action: " + json.action);
     }
+}
+
+function updateSponsoredKillmail(json) {
+    const sponsored = $("#sponsored-isk");
+    if (sponsored.length == 0) return;
+
+    const isk = Number(json.isk || 0);
+    sponsored.attr("raw", isk).attr("format", "format-isk-once").text(isk);
+    $("#sponsored-isk-row").toggleClass("d-none", isk <= 0);
+    doFormats();
+    if (isk > 0) showToast("This killmail has new sponsorship.", 5000);
 }
 
 function setLiveCounter(elem, value) {
@@ -1243,6 +1256,7 @@ function pubsub(channel, forceSend, generation)
     const alreadySubscribed = pubsubs.includes(channel);
     if (!alreadySubscribed) pubsubs.push(channel);
     if (alreadySubscribed && !forceSend) return;
+    if (!ws || ws.readyState !== 1) return;
 
     try {
         ws.send(JSON.stringify({'action':'sub', 'channel': channel}));

@@ -335,5 +335,6 @@ block script
             console.error("POST failed:", status, err);
           });
         pubsub('comment:kill-#{($infoData['killID'] ?? 0)}');
+        pubsub('kill:#{($infoData['killID'] ?? 0)}');
       }
     }
