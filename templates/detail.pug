@@ -186,7 +186,7 @@ block content
           th(colspan="2") Equipment
           th Damage
       tbody
-        - $imageSize = 32;
+        - $imageSize = 64;
         - $resizeImage = 40;
         each $attacker in ($killData['involved'] ?? [])
           - $attacker = is_object($attacker) ? (array) $attacker : $attacker;
