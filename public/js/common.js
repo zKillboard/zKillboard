@@ -1616,14 +1616,21 @@ function showToast(message, duration = 3000) {
 
 	setTimeout(() => { toast.classList.add('show'); }, 10);
 
-
 	// Hide and remove after duration
-	setTimeout(hideToast, 3000);
+	setTimeout(() => { hideToast(toast); }, duration);
 }
 
-function hideToast() {
-	let container = document.getElementById('toast-container');
-	if (container) container.remove();
+function hideToast(toast) {
+	if (!toast || !toast.parentNode) return;
+
+	toast.classList.remove('show');
+	setTimeout(function() {
+		const container = toast.parentNode;
+		if (container) {
+			toast.remove();
+			if (container.id === 'toast-container' && container.children.length === 0) container.remove();
+		}
+	}, 200);
 }
 
 let setTimeTimeoutHandle = null;

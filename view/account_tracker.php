@@ -23,7 +23,7 @@ function handler($request, $response, $args, $container) {
             $position = array_search($id, $tracked);
             if ($position !== false) unset($tracked[$position]);
             $name = Info::getInfoField($type.'ID', $id, 'name');
-            $message = "Removed $name from your Tracker in the menu bar. Please note, your logged in character and their corporation and alliance will always show in the tracker.";
+            $message = "Removed $name from your Tracker in the menu bar.";
             User::sendMessage($message);
             Util::zout("$userID removing tracker $type $id");
         }

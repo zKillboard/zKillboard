@@ -968,18 +968,25 @@ td.centered {
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
-	border: solid 3px white;
-	border-radius: 12px;
 }
 
 .toast {
 	background: #333;
 	color: #fff;
-	padding: 14px 22px;
+	border: solid 2px white;
+	padding: 10px 14px;
 	border-radius: 6px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-	font-size: 2rem;
+	font-size: 0.95rem;
+	line-height: 1.35;
+	max-width: min(360px, calc(100vw - 2rem));
+	opacity: 0;
 	pointer-events: auto;
+	transition: opacity 0.2s ease;
+}
+
+.toast.show {
+	opacity: 1;
 }
 
 #otherapps div {
