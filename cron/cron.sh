@@ -41,5 +41,10 @@ if [ $((10#$minute % 15)) -eq 0 ]; then
 	{
 		flock -x -n locks/update_sde_jsonl.lock nice -n 19 ./sde/update_sde_jsonl.sh >> logs/update_sde_jsonl.sh.log 2> >(php ../scratch/errlogger.php)
 	} &
-fi
 
+	touch locks/update_icons.lock
+	touch logs/update_icons.sh.log
+	{
+		flock -x -n locks/update_icons.lock nice -n 19 ./icons/update_icons.sh >> logs/update_icons.sh.log 2> >(php ../scratch/errlogger.php)
+	} &
+fi
