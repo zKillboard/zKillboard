@@ -21,6 +21,7 @@ require_cmd curl
 require_cmd unzip
 require_cmd mktemp
 require_cmd mongosh
+require_cmd php
 
 if [[ ! -f "${CONFIG_FILE}" ]]; then
   echo "Could not find config file at ${CONFIG_FILE}" >&2
@@ -223,6 +224,9 @@ if [[ ${import_count} -eq 0 ]]; then
   echo "No valid import entries found in ${IMPORTS_FILE}" >&2
   exit 1
 fi
+
+echo "Recalculating SDE locations..."
+(cd "${REPO_ROOT}/scratch" && php sde_locations_calced.php)
 
 mv "${remote_latest_file}" "${LOCAL_LATEST_FILE}"
 echo "SDE import complete. Updated ${LOCAL_LATEST_FILE}."

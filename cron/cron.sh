@@ -33,3 +33,13 @@ for each in $(ls *.php | grep nolock | grep -v ^0); do
 		nice -n 19 php $each >> logs/$each.log 2> >(php ../scratch/errlogger.php)
 	} &
 done
+
+minute=$(date +%M)
+if [ $((10#$minute % 15)) -eq 0 ]; then
+	touch locks/update_sde_jsonl.lock
+	touch logs/update_sde_jsonl.sh.log
+	{
+		flock -x -n locks/update_sde_jsonl.lock nice -n 19 ./sde/update_sde_jsonl.sh >> logs/update_sde_jsonl.sh.log 2> >(php ../scratch/errlogger.php)
+	} &
+fi
+
