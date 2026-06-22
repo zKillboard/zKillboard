@@ -21,5 +21,25 @@ block content
           .clearfix
           h3= ucfirst((string) ($field['type'] ?? '')) . 's'
           - $lastType = $field['type'] ?? '';
+        - $fieldType = $field['type'] ?? '';
+        - $fieldID = (int) ($field['id'] ?? 0);
+        - $fieldName = $field['name'] ?? '';
+        - $fieldURL = '/' . $fieldType . '/' . $fieldID . '/';
+        - $imageURL = $field['image'] ?? '';
+        - $imageOnError = '';
+        if ($fieldType == 'ship')
+          - $imageURL = ($image_ship ?? $image_item ?? 'https://images.evetech.net/types/') . $fieldID . '/render?size=' . $imageSize;
+          - $imageOnError = "this.setAttribute('shipImageError', 'true')";
+        else if ($fieldType == 'item')
+          - $imageOnError = "this.onerror=function(){this.removeAttribute('onerror'); this.src='/img/icons/" . $fieldID . "_64.png';}; this.src='" . ($image_item ?? 'https://images.evetech.net/types/') . $fieldID . "/bp?size=" . $imageSize . "';";
         .float-start(style="margin-bottom: 0.5em; width: 250px;")
-          a(href=('/' . ($field['type'] ?? '') . '/' . ($field['id'] ?? '') . '/'))= $field['name'] ?? ''
+          a.d-inline-flex.align-items-center(href=$fieldURL style="gap: 0.5em; max-width: 100%;")
+            if (!empty($imageURL))
+              if ($fieldType == 'ship')
+                span.shipImageSpan(data-l=($imageSize . 'px') data-i=$imageSize style=('height: ' . $imageSize . 'px; width: ' . $imageSize . 'px; --size: ' . $imageSize . 'px; --sizei: ' . $imageSize . '; flex: 0 0 auto;'))
+                  img.shipImageRender.eveimage.img-rounded(src=$imageURL style=('height: ' . $imageSize . 'px; width: ' . $imageSize . 'px;') alt=$fieldName onerror=$imageOnError loading="lazy" decoding="async" fetchpriority="low")
+                  if (strlen((string) ($field['pip'] ?? '')) > 0)
+                    img.pip(src=('/img/pips/' . $field['pip']) alt="" loading="lazy" decoding="async" fetchpriority="low")
+              else
+                img.eveimage.img-rounded(src=$imageURL style=('height: ' . $imageSize . 'px; width: ' . $imageSize . 'px; flex: 0 0 auto;') alt=$fieldName onerror=$imageOnError loading="lazy" decoding="async" fetchpriority="low")
+            span(style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;")= $fieldName

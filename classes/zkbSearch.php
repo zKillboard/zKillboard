@@ -83,10 +83,13 @@ class zkbSearch
                     $regionName = Info::getInfoField('regionID', $regionID, 'name');
                     $name = "$name ($regionName)";
                 }
+                $pip = $searchType == 'ship' ? ($info['pip'] ?? '') : '';
+                $searchResult = ['id' => (int) $id, 'name' => $name, 'type' => str_replace('ID', '', $searchType), 'image' => $image];
+                if ($pip != '') $searchResult['pip'] = $pip;
                 if (strtolower($name) === $search) {
-                    $exactMatch[] = ['id' => (int) $id, 'name' => $name, 'type' => str_replace('ID', '', $searchType), 'image' => $image];
+                    $exactMatch[] = $searchResult;
                 } else {
-                    $partialMatch[] = ['id' => (int) $id, 'name' => $name, 'type' => str_replace('ID', '', $searchType), 'image' => $image];
+                    $partialMatch[] = $searchResult;
                 }
             }
         }

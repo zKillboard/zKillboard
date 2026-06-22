@@ -422,6 +422,19 @@ ul.autocomplete span {
 	transform: translateY(-50%);
 }
 
+ul.autocomplete .shipImageSpan {
+	position: absolute;
+	top: 4px;
+	left: 4px;
+	right: auto;
+	transform: none;
+}
+
+ul.autocomplete .shipImageSpan img {
+	top: 0px;
+	left: 0px;
+}
+
 ul.autocomplete .autocomplete-empty {
 	display: flex;
 	align-items: center;

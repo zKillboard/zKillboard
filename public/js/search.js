@@ -10,6 +10,14 @@
 			onerror = ' onerror="this.onerror=function(){this.removeAttribute(\'onerror\'); this.src=\'/img/icons/' + id + '_64.png\';}; this.src=\'https://images.evetech.net/types/' + id + '/bp?size=32\';"';
 		}
 
+		if (item.type == 'ship') {
+			var pip = item.pip ? '<img class="pip" src="/img/pips/' + item.pip + '" alt="">' : '';
+			return '<span class="shipImageSpan" data-l="32px" data-i="32" style="height: 32px; width: 32px; --size: 32px; --sizei: 32;">' +
+				'<img class="shipImageRender eveimage img-rounded" src="' + item.image + '" width="32" height="32" alt=" " onerror="this.setAttribute(\'shipImageError\', \'true\')">' +
+				pip +
+				'</span>';
+		}
+
 		return '<img src="' + item.image + '" width="32" height="32" alt=" "' + onerror + '>';
 	}
 
