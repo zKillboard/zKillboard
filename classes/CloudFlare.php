@@ -70,16 +70,9 @@ class CloudFlare
             string $remoteKey,
             array $options = []
             ): array {
-        $stream = fopen('php://temp', 'r+');
-        if ($stream === false) {
-            throw new RuntimeException('Failed to open temp stream');
-        }
-
         try {
-            fwrite($stream, json_encode($data, JSON_THROW_ON_ERROR));
-            rewind($stream);
+            $body = json_encode($data, JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
-            fclose($stream);
             throw new RuntimeException(
                     'JSON encode failed: ' . $e->getMessage(),
                     (int) $e->getCode(),
@@ -90,16 +83,13 @@ class CloudFlare
         $params = array_merge([
                 'Bucket'      => $bucket,
                 'Key'         => $remoteKey,
-                'Body'        => $stream,
+                'Body'        => $body,
                 'ContentType' => 'application/json',
         ], $options);
 
         try {
-            $result = $r2->putObject($params)->toArray();
-            fclose($stream);
-            return $result;
+            return $r2->putObject($params)->toArray();
         } catch (AwsException $e) {
-            fclose($stream);
             throw new RuntimeException(
                     'R2 upload failed: ' . $e->getAwsErrorMessage(),
                     (int) $e->getCode(),
