@@ -24,5 +24,5 @@ function handler($request, $response, $args, $container) {
         return $response->withHeader('Location', "/$type/$id/")->withStatus(302);
     }   
 
-    return $container->get('view')->render($response, 'search.html', array('data' => $result));
+    return $container->get('view')->render($response->withHeader('Cache-Tag', 'search'), 'search.html', array('data' => $result));
 }

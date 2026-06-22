@@ -16,7 +16,7 @@ function handler($request, $response, $args, $container) {
         $scan = @$postData['scan'];
         if (strlen($scan) > 50000) {
             $response = $response->withStatus(400);
-            return $response;
+            return $response->withHeader('Cache-Tag', 'scanalyzer,error');
         }
         
         $scan = str_replace(",", "", $scan);
@@ -110,13 +110,13 @@ function handler($request, $response, $args, $container) {
         $ret = ['chars' => sortem($chars), 'corps' => $corps, 'allis' => $allis, 'ships' => Info::addInfo($ships), 'totalChars' => $totalChars, 'totalShips' => $totalShips];
         if ($ret['ships'] == null) $ret['ships'] = [];
 
-        $response = $response->withHeader('Content-Type', 'application/json');
+        $response = $response->withHeader('Content-Type', 'application/json')->withHeader('Cache-Tag', 'scanalyzer');
         $response->getBody()->write(json_encode($ret));
         return $response;
 
     } catch (Exception $e) { 
         Util::zout(print_r($e, true));
-        $response = $response->withStatus(500)->withHeader('Content-Type', 'application/json');
+        $response = $response->withStatus(500)->withHeader('Content-Type', 'application/json')->withHeader('Cache-Tag', 'scanalyzer,error');
         $response->getBody()->write(json_encode(['error' => 'Internal server error']));
         return $response;
     }

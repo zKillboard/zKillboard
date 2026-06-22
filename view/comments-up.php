@@ -62,5 +62,5 @@ function handler($request, $response, $args, $container) {
     }
 
     $response->getBody()->write($out);
-    return $response->withHeader('Cache-Control', 'no-store');
+    return $response->withHeader('Cache-Control', 'no-store')->withHeader('Cache-Tag', "comments,$pageID");
 }

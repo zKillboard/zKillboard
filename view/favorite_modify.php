@@ -7,7 +7,7 @@ function handler($request, $response, $args, $container) {
     $action = ($args['action'] == "save");
 
     if (!User::isLoggedIn()) {
-        $response = $response->withHeader('Content-Type', 'application/json');
+        $response = $response->withHeader('Content-Type', 'application/json')->withHeader('Cache-Tag', "account,favorite,kill:$killID");
         $response->getBody()->write(json_encode(['color' => '#d0d0d0', 'message' => "You are not logged in. You need to log in to bookmark killmails."]));
         return $response;
     }
@@ -18,7 +18,7 @@ function handler($request, $response, $args, $container) {
     $key =  ['characterID' => $userID, 'killID' => (int) $killID];
     $mdb->remove("favorites", $key);
     
-    $response = $response->withHeader('Content-Type', 'application/json');
+    $response = $response->withHeader('Content-Type', 'application/json')->withHeader('Cache-Tag', "account,favorite,kill:$killID");
     
     if ($action) {
         $mdb->insert("favorites", $key);

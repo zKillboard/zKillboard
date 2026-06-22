@@ -124,6 +124,7 @@ function handler($request, $response, $args, $container) {
 		array_multisort($query);
 		$jsoned = json_encode($query, true) . json_encode($filter, true);
 		$key = "asearch:$queryType:$groupType:$victimsOnly:" . ($queryType == "kills" ? "$page:$sortKey:$sortBy:" : "") . md5($jsoned);
+		$cacheTag = "asearch,asearch:$key";
 
 		$waits = 0;
 		$ret = "";
@@ -150,14 +151,14 @@ function handler($request, $response, $args, $container) {
 						'uri' => $uri
 					]);
 					$response->getBody()->write(json_encode(['error' => 'Request timeout'], JSON_PRETTY_PRINT));
-					return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withStatus(408);
+					return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', $cacheTag)->withStatus(408);
 				}
 			}
 		} while ($ret == "PROCESSING");
 
 		if ($ret != "") {
 			$response->getBody()->write($ret);
-			return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
+			return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 		}
 		$redis->setex($key, 300, "PROCESSING");
 
@@ -175,20 +176,20 @@ function handler($request, $response, $args, $container) {
 			$jsoned = json_encode($arr, true);
 			$redis->setex($key, 300, $jsoned);
 			$response->getBody()->write($jsoned);
-			return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
+			return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 		} else if ($queryType == 'count') {
 			$arr = AdvancedSearch::getSums($groupType . 'ID', $query, $victimsOnly, false, true, $aggregateCollection);
 			unset($arr['_id']);
 			$jsoned = json_encode($arr, true);
 			$redis->setex($key, 300, $jsoned);
 			$response->getBody()->write($jsoned);
-			return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
+			return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 		} else if ($queryType == "groups") {
 			$rendered = $redis->get("groups:$key");
 			if ($rendered !== null && trim($rendered) !== "") {
 				$redis->del($key);
 				$response->getBody()->write($rendered);
-				return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
+				return $response->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 			}
 			$arr['top'] = [];
 			$rendered = '';
@@ -207,7 +208,7 @@ function handler($request, $response, $args, $container) {
 			$redis->setex("groups:$key", 300, trim($rendered));
 			$redis->del($key);
 			$response->getBody()->write($rendered);
-			return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
+			return $response->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 		} else if ($queryType == "labels") {
 			$arr['top'] = [];
 
@@ -215,7 +216,7 @@ function handler($request, $response, $args, $container) {
 			if ($rendered !== null && trim($rendered) !== "") {
 				$redis->del($key);
 				$response->getBody()->write($rendered);
-				return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
+				return $response->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 			}
 
 			$res = AdvancedSearch::getLabels($query, $victimsOnly);
@@ -241,13 +242,13 @@ function handler($request, $response, $args, $container) {
 			$redis->setex("labels:$key", 900, trim($rendered));
 			$redis->del($key);
 			$response->getBody()->write($rendered);
-			return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
+			return $response->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 		} else if ($queryType == "distincts") {
 			$rendered = $redis->get("distincts:$key");
 			if ($rendered !== null && trim($rendered) !== "") {
 				$redis->del($key);
 				$response->getBody()->write($rendered);
-				return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
+				return $response->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 			}
 
 			$result = AdvancedSearch::getDistincts($query, $filter, $victimsOnly, $aggregateCollection);
@@ -260,7 +261,7 @@ function handler($request, $response, $args, $container) {
 			$redis->setex("distincts:$key", 900, trim($rendered));
 			$redis->del($key);
 			$response->getBody()->write($rendered);
-			return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
+			return $response->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 		} else {
 			// what is this? ignore it...
 			$arr = [];
@@ -269,7 +270,7 @@ function handler($request, $response, $args, $container) {
 		$jsoned = json_encode($arr, true);
 		$redis->setex($key, 300, $jsoned);
 		$response->getBody()->write($jsoned);
-		return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
+		return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 	} catch (Exception $ex) {
 		if ($ex->getCode() != 50) Util::zout(print_r($ex, true));
 		else AdvancedSearch::logTimeout('asearch handler', [
@@ -290,7 +291,7 @@ function handler($request, $response, $args, $container) {
 		], $ex);
 		$redis->del($key);
 		$response->getBody()->write(json_encode(['error' => 'Internal server error', 'message' => $ex->getMessage()], JSON_PRETTY_PRINT));
-		return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withStatus(500);
+		return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', "asearch,asearch:$key,error")->withStatus(500);
 	} 
 }
 

@@ -18,7 +18,8 @@ function handler($request, $response, $args, $container) {
         if ($type ==  "solarSystemID") $name = "$name (" . Info::getInfoField('regionID', (int) @$info['regionID'], "name") . ")";
 
         $response = $response->withHeader('Access-Control-Allow-Methods', 'GET,POST')
-                            ->withHeader('Content-Type', 'application/json; charset=utf-8');
+                            ->withHeader('Content-Type', 'application/json; charset=utf-8')
+                            ->withHeader('Cache-Tag', "asearch,asearchinfo,$type:$id");
 
         $type = $otype;
         $output = ['type' => $type, 'id' => $id, 'name' => $name];
@@ -32,7 +33,7 @@ function handler($request, $response, $args, $container) {
         return $response;
     } catch (Exception $ex) {
         Util::zout(print_r($ex, true));
-        $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8');
+        $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', 'asearch,asearchinfo,error');
         $response->getBody()->write('{"error": "Internal error"}');
         return $response;
     }

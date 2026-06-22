@@ -13,5 +13,5 @@ function handler($request, $response, $args, $container) {
     }
 
     $response->getBody()->write(json_encode($json));
-    return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
+    return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', 'api,recentactivity');
 }

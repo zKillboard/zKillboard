@@ -15,20 +15,20 @@ function handler($request, $response, $args, $container) {
     $sortDir = strtolower(@$args['dir']) == 'asc' ? 'asc' : 'desc';
 
     if ($page < 1) {
-        return $response->withStatus(404);
+        return $response->withStatus(404)->withHeader('Cache-Tag', 'error,404,ranks');
     }
 
     $pageEpoch = $epoch;
     $entityType = "${type}ID";
     if (!$redis->exists("tq:ranks:$pageEpoch:$entityType")) {
-        return $response->withStatus(404);
+        return $response->withStatus(404)->withHeader('Cache-Tag', "error,404,ranks,ranks:$type");
     }
 
     if (!($solo == 'all' || $solo == 'solo')) {
-        return $response->withStatus(404);
+        return $response->withStatus(404)->withHeader('Cache-Tag', "error,404,ranks,ranks:$type");
     }
     if (!($kl == 'k' || $kl == 'l')) {
-        return $response->withStatus(404);
+        return $response->withStatus(404)->withHeader('Cache-Tag', "error,404,ranks,ranks:$type");
     }
     $subType = $kl == 'k' ? 'killers' : 'losers';
 
@@ -72,7 +72,7 @@ function handler($request, $response, $args, $container) {
     $sortRedisKey = $sortInfo['redisKey'] == '' ? "tq:ranks:$pageEpoch:$column" : "tq:ranks:$pageEpoch:$column:{$sortInfo['redisKey']}$s";
 
     if (!$redis->exists($sortRedisKey)) {
-        return $response->withStatus(404);
+        return $response->withStatus(404)->withHeader('Cache-Tag', "error,404,ranks,ranks:$type");
     }
 
     $useRevRange = ($sortDir == 'asc' && $sortInfo['ascMethod'] == 'revrange') || ($sortDir == 'desc' && $sortInfo['ascMethod'] == 'range');
@@ -85,7 +85,7 @@ function handler($request, $response, $args, $container) {
         $r2 = $redis->zRange($sortRedisKey, $start, $end + 1);
     }
     if (sizeof($r) == 0) {
-        return $response->withStatus(404);
+        return $response->withStatus(404)->withHeader('Cache-Tag', "error,404,ranks,ranks:$type");
     }
     $hasMore = (sizeof($r2) > sizeof($r)) ? 'y' : 'n';
 
@@ -124,5 +124,5 @@ function handler($request, $response, $args, $container) {
 
     $pageEpoch = str_replace(":solo", "", $pageEpoch);
 
-    return $container->get('view')->render($response, 'typeRanks.html', ['ranks' => $ranks, 'pageTitle' => $pageTitle, 'type' => str_replace("ID", "", $column), 'epoch' => $pageEpoch, 'subType' => substr($subType, 0, 1), 'solo' => $solo, 'page' => $page, 'hasMore' => $hasMore, 'sortKey' => $sortKey, 'sortDir' => $sortDir]);
+    return $container->get('view')->render($response->withHeader('Cache-Tag', "ranks,ranks:$type,ranks:$type:$pageEpoch"), 'typeRanks.html', ['ranks' => $ranks, 'pageTitle' => $pageTitle, 'type' => str_replace("ID", "", $column), 'epoch' => $pageEpoch, 'subType' => substr($subType, 0, 1), 'solo' => $solo, 'page' => $page, 'hasMore' => $hasMore, 'sortKey' => $sortKey, 'sortDir' => $sortDir]);
 }

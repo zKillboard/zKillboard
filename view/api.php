@@ -16,12 +16,12 @@ function handler($request, $response, $args, $container) {
         $queryString = $_SERVER['QUERY_STRING'] ?? '';
         if ($queryString != '') {
             $response->getBody()->write('403 Forbidden - Do not include a query string to evade cache');
-            return $response->withStatus(403);
+            return $response->withStatus(403)->withHeader('Cache-Tag', 'api,error');
         }
 
         if ($redis->get("zkb:reinforced") == true) {
             $response->getBody()->write('503 Reinforced mode, please try again later');
-            return $response->withStatus(503);
+            return $response->withStatus(503)->withHeader('Cache-Tag', 'api,error');
         }
 
     if (strpos($uri, "/stats/") !== false) {
@@ -72,7 +72,7 @@ function handler($request, $response, $args, $container) {
             $response = $response->withHeader('X-JSONP', 'true');
             $output = $queryParams['callback'].'('.json_encode($array).')';
             $response->getBody()->write($output);
-            return $response->withHeader('Content-Type', 'application/javascript; charset=utf-8');
+            return $response->withHeader('Content-Type', 'application/javascript; charset=utf-8')->withHeader('Cache-Tag', 'api');
         } else {
             // JSON output
             if (isset($parameters['pretty'])) {
@@ -81,7 +81,7 @@ function handler($request, $response, $args, $container) {
                 $output = json_encode($array);
             }
             $response->getBody()->write($output);
-            return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
+            return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', 'api');
         }
     } catch (Exception $ex) {
         $redis->incr("IP:errorCount:$ip");
@@ -93,6 +93,6 @@ function handler($request, $response, $args, $container) {
 
         $error = ['error' => $ex->getMessage()];
         $response->getBody()->write(json_encode($error));
-        return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
+        return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', 'api,error');
     }
 }

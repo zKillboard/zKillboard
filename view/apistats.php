@@ -20,7 +20,7 @@ function handler($request, $response, $args, $container) {
         if ($information === null) throw new Exception("Invalid type or id");
         $disqualified = ((int) @$information['disqualified']);
         if ($disqualified != 0) {
-            $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8');
+            $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', "api,apistats,$type:$id");
             $response->getBody()->write(json_encode(['error' => 'entity is disqualified']));
             return $response;
         }
@@ -69,13 +69,14 @@ function handler($request, $response, $args, $container) {
         if (isset($queryParams['callback']) && Util::isValidCallback($queryParams['callback'])) {
             $response = $response->withHeader('Content-Type', 'application/javascript; charset=utf-8');
             $response = $response->withHeader('X-JSONP', 'true');
+            $response = $response->withHeader('Cache-Tag', "api,apistats,$type:$id");
             $response->getBody()->write($queryParams['callback'].'('.json_encode($array).')');
         } else {
-            $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8');
+            $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', "api,apistats,$type:$id");
             $response->getBody()->write(json_encode($array));
         }
     } catch (Exception $ex) {
-        $response = $response->withHeader('Content-Type', 'application/json');
+        $response = $response->withHeader('Content-Type', 'application/json')->withHeader('Cache-Tag', 'api,apistats,error');
         $error = ['error' => $ex->getMessage()];
         $response->getBody()->write(json_encode($error));
     }

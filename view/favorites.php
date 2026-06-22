@@ -13,5 +13,5 @@ function handler($request, $response, $args, $container) {
     }
 
     $data = ['kills' => $kills];
-    return $container->get('view')->render($response, 'favorites.html', $data);
+    return $container->get('view')->render($response->withHeader('Cache-Tag', 'account,favorites'), 'favorites.html', $data);
 }

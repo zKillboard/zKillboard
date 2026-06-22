@@ -13,5 +13,5 @@ function handler($request, $response, $args, $container) {
     $data = ['killsLastHour' => $redis->get("tqKillCount")];
     $result = $container->get('view')->render($response, 'components/nav-tracker.html', $data);
     
-    return $result->withHeader('ETag', $etag)->withHeader('Cache-Control', 'private');
+    return $result->withHeader('ETag', $etag)->withHeader('Cache-Control', 'private')->withHeader('Cache-Tag', 'navbar');
 }

@@ -7,7 +7,7 @@ function handler($request, $response, $args, $container) {
         $params = URI::validate($uri, ['type' => true, 'id' => true]);
     } catch (Exception $e) {
         // If validation fails, return empty JSON result
-        $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8');
+        $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', 'stats');
         $response->getBody()->write(json_encode([]));
         return $response;
     }

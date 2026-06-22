@@ -7,5 +7,5 @@ function handler($request, $response, $args, $container) {
     $fusecode = @$publift[$type];
     
     $response->getBody()->write("<div data-fuse='$fusecode'></div>");
-    return $response;
+    return $response->withHeader('Cache-Tag', "ads,publift,publift:$type");
 }

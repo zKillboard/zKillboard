@@ -17,7 +17,7 @@ function handler($request, $response, $args, $container) {
         $state = str_replace("/", "", @$queryParams['state']);
         $sessionState = @$_SESSION['oauth2State'];
         if ($state !== $sessionState) {
-            return $container->get('view')->render($response, "error.html", ['message' => "Something went wrong with security. Please try again."]);
+            return $container->get('view')->render($response->withHeader('Cache-Tag', 'error,patreon'), "error.html", ['message' => "Something went wrong with security. Please try again."]);
         }
 
         if ( @$queryParams['code'] != '' ) {
@@ -45,8 +45,8 @@ function handler($request, $response, $args, $container) {
             return $response->withStatus(302)->withHeader('Location', "/account/log/");
         }
         
-        return $response;
+        return $response->withHeader('Cache-Tag', 'patreon');
     } catch (Exception $ex) {
-        return $container->get('view')->render($response, "error.html", ['message' => "Something went wrong with the login from Patreon's end, sorry, can you please try logging in again? *"]);
+        return $container->get('view')->render($response->withHeader('Cache-Tag', 'error,patreon'), "error.html", ['message' => "Something went wrong with the login from Patreon's end, sorry, can you please try logging in again? *"]);
     }
 }

@@ -54,7 +54,7 @@ function handler($request, $response, $args, $container) {
 		'sponsored' => $sponsored
 	);
 
-	return $container->get('view')->render($response->withHeader('Cache-Control', 'max-age=60'), 'index.html', $data);
+	return $container->get('view')->render($response->withHeader('Cache-Control', 'max-age=60')->withHeader('Cache-Tag', 'index'), 'index.html', $data);
 }
 
 function getTop($title, $type)

@@ -78,7 +78,8 @@ function handler($request, $response, $args, $container)
 		// Allow streambox to be embedded in iframes from any origin
 		$response = $response
 			->withHeader('X-Frame-Options', 'ALLOWALL')
-			->withHeader('Content-Security-Policy', 'frame-ancestors *');
+			->withHeader('Content-Security-Policy', 'frame-ancestors *')
+			->withHeader('Cache-Tag', "overview,overview:$id,streambox");
 		return $container->get('view')->render($response, 'streambox.html', []);
 	}
 	unset($parameters['streambox']);
@@ -109,7 +110,7 @@ function handler($request, $response, $args, $container)
 			return renderCached404($container, $response, 'Not Found');
 		}
 	} catch (Exception $ex) {
-		return $container->get('view')->render($response, 'error.html', array('message' => "There was an error fetching information for the $key you specified."));
+		return $container->get('view')->render($response->withHeader('Cache-Tag', "error,overview,overview:$id"), 'error.html', array('message' => "There was an error fetching information for the $key you specified."));
 	}
 
 	$pageName = isset($detail[$map[$key]['column'] . 'Name']) ? $detail[$map[$key]['column'] . 'Name'] : '???';
@@ -610,7 +611,8 @@ function renderCached404($container, $response, $message = 'Not Found')
 		->withStatus(404)
 		->withHeader('Cache-Control', $cacheControl)
 		->withHeader('CDN-Cache-Control', $cacheControl)
-		->withHeader('Cloudflare-CDN-Cache-Control', $cacheControl);
+		->withHeader('Cloudflare-CDN-Cache-Control', $cacheControl)
+		->withHeader('Cache-Tag', 'error,404,overview');
 
 	return $container->get('view')->render($cached404Response, '404.html', array('message' => $message));
 }

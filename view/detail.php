@@ -59,7 +59,7 @@ function handler($request, $response, $args, $container) {
 
 	$exists = $mdb->exists('killmails', ['killID' => $id]);
 	if (!$exists) {
-			return $container->get('view')->render($response->withStatus(404), '404.html', array('message' => "KillID $id does not exist."));
+			return $container->get('view')->render($response->withStatus(404)->withHeader('Cache-Tag', "error,404,kill,kill:$id"), '404.html', array('message' => "KillID $id does not exist."));
 	}
 
 	// Create the details on this kill
@@ -221,7 +221,7 @@ foreach (Comments::$defaultComments as $dc) {
 $details['comments'] = array_values($comments);
 
     if ($pageview == 'remaining') {
-        return $container->get('view')->render($response, "components/attackers_list.html", [
+        return $container->get('view')->render($response->withHeader('Cache-Tag', "kill,kill:$id,kill:remaining"), "components/attackers_list.html", [
             'attackList' => array_slice($killdata['involved'], 10),
             'isDelayed' => false,
             'hideTableHeading' => true
@@ -229,7 +229,7 @@ $details['comments'] = array_values($comments);
     }
 
 	if ($pageview == 'items') {
-        return $container->get('view')->render($response, "components/item_list.html", $details);
+        return $container->get('view')->render($response->withHeader('Cache-Tag', "kill,kill:$id,kill:items"), "components/item_list.html", $details);
     }
 
     return $container->get('view')->render($response->withHeader("Cache-Tag", "detail,kill,kill:$id"), 'detail.html', $details);

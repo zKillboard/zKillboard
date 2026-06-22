@@ -22,5 +22,5 @@ function handler($request, $response, $args, $container) {
         }
     }
     
-    return $response->withStatus(204);
+    return $response->withStatus(204)->withHeader('Cache-Tag', "kill,kill:$killID,crestmail");
 }

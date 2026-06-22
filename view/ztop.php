@@ -1,5 +1,5 @@
 <?php
 
 function handler($request, $response, $args, $container) {
-    return $container->get('view')->render($response, "ztop.html", ['showAds' => false]);
+    return $container->get('view')->render($response->withHeader('Cache-Tag', 'ztop'), "ztop.html", ['showAds' => false]);
 }
