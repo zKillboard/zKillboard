@@ -267,16 +267,29 @@ class AdvancedSearch
             if ($victimsOnly != "null") $pipeline[] = ['$match' => ['involved.isVictim' => ($victimsOnly == "true" ? true : false)]];
             $pipeline[] = ['$match' => [$keyField => ['$ne' => null]]];
             $pipeline[] = ['$match' => [$keyField => ['$ne' => 0]]];
-            $pipeline[] = ['$group' => ['_id' => ['killID' => '$killID', $groupByColumn => '$' . $keyField, 'totalValue' => '$zkb.totalValue', 'involved' => '$attackerCount', 'damage' => '$damage_taken']]];
+
+            $groupNeedsKillDedupe = !in_array($groupByColumn, ['solarSystemID', 'regionID', 'locationID'], true);
+            if ($groupNeedsKillDedupe) {
+                $pipeline[] = ['$group' => ['_id' => ['killID' => '$killID', $groupByColumn => '$' . $keyField, 'totalValue' => '$zkb.totalValue', 'involved' => '$attackerCount', 'damage' => '$damage_taken']]];
+                $groupValueField = '$_id.' . $groupByColumn;
+                $totalValueField = '$_id.totalValue';
+                $involvedField = '$_id.involved';
+                $damageField = '$_id.damage';
+            } else {
+                $groupValueField = '$' . $keyField;
+                $totalValueField = '$zkb.totalValue';
+                $involvedField = '$attackerCount';
+                $damageField = '$damage_taken';
+            }
 
             if ($sortKey == "damage_taken") {
-                $pipeline[] = ['$group' => ['_id' => '$_id.' . $groupByColumn, 'kills' => ['$sum' => '$_id.damage']]];
+                $pipeline[] = ['$group' => ['_id' => $groupValueField, 'kills' => ['$sum' => $damageField]]];
             } else if ($sortKey == "attackerCount") {
-                $pipeline[] = ['$group' => ['_id' => '$_id.' . $groupByColumn, 'kills' => ['$avg' => '$_id.involved']]];
+                $pipeline[] = ['$group' => ['_id' => $groupValueField, 'kills' => ['$avg' => $involvedField]]];
             } else if ($sortKey == "zkb.totalValue") {
-                $pipeline[] = ['$group' => ['_id' => '$_id.' . $groupByColumn, 'kills' => ['$sum' => '$_id.totalValue']]];
+                $pipeline[] = ['$group' => ['_id' => $groupValueField, 'kills' => ['$sum' => $totalValueField]]];
             } else {
-                $pipeline[] = ['$group' => ['_id' => '$_id.' . $groupByColumn, 'kills' => ['$sum' => 1]]];
+                $pipeline[] = ['$group' => ['_id' => $groupValueField, 'kills' => ['$sum' => 1]]];
             }
             $pipeline[] = ['$sort' => ['kills' => $sortBy]];
             $pipeline[] = ['$limit' => 550];
