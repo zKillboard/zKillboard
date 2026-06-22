@@ -2,7 +2,15 @@
 
 $currentTime = date("YmdHi");
 
-$pugOptions = [];
+$pugDebug = (isset($pugDebug) ? (bool) $pugDebug : false);
+$pugOptions = [
+    'debug' => $pugDebug,
+    'execution_max_time' => -1,
+    'memory_limit' => -1,
+];
+if (!$pugDebug) {
+    $pugOptions['enable_profiler'] = false;
+}
 if ($pugCache !== false && $pugCache !== null && $pugCache !== '') {
     $pugOptions['cache'] = rtrim((string) $pugCache, '/') . '/pug/';
     if (!is_dir($pugOptions['cache'])) {
