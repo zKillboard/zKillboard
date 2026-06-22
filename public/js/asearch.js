@@ -337,8 +337,8 @@ function getEntityImage(type, id) {
 			image.src = "https://image.eveonline.com/Type/" + id + "_" + size + ".png";
 			break;
 		case 'typeID':
-			image.src = "https://image.eveonline.com/Type/" + id + "_" + size + ".png";
-			image.onerror = "this.removeAttribute('onerror'); this.src='https://image.eveonline.com/Type/" + id + "_" + size + ".png';";
+			image.src = "https://images.evetech.net/types/" + id + "/icon?size=" + size;
+			image.onerror = "this.onerror=function(){this.removeAttribute('onerror'); this.src='/img/icons/" + id + "_64.png';}; this.src='https://images.evetech.net/types/" + id + "/bp?size=" + size + "';";
 			break;
 		case 'groupID':
 			image.src = "https://image.eveonline.com/Type/1_" + size + ".png";

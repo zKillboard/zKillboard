@@ -37,7 +37,7 @@ block content
             a.nav-link(data-bs-toggle="modal" data-bs-target="#report" href="#")= 'Report (' . ($extraData['reports'] ?? 0) . ')'
         li.nav-item
           a.nav-link.d-none.d-md-flex.align-items-center.gap-1.py-2.px-3(target="_blank" href=($referralLink ?? '') title="1 million SP FREE" style="background-color: #7b1fa2; color: #ffffff !important;")
-            img(src="https://images.evetech.net/types/40520/icon?size=32" alt="1 million free skill points!" style="height: 18px; margin-right: 2px;" loading="lazy" decoding="async" fetchpriority="low")
+            img(src="https://images.evetech.net/types/40520/icon?size=32" alt="1 million free skill points!" style="height: 18px; margin-right: 2px;" onerror="this.onerror=function(){this.removeAttribute('onerror'); this.src='/img/icons/40520_64.png';}; this.src='https://images.evetech.net/types/40520/bp?size=32';" loading="lazy" decoding="async" fetchpriority="low")
             | 1 Million SP FREE
         li.nav-item.dropdown
           a.nav-link.dropdown-toggle(href="#" data-bs-toggle="dropdown" aria-expanded="false") External

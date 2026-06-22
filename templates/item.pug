@@ -12,7 +12,7 @@ block content
     - $typeName = $info['typeName'] ?? '';
     if ($typeID > 0)
       a(href=('/item/' . $typeID . '/') rel="tooltip" title=$typeName)
-        img.img-rounded(src=(($image_item ?? 'https://images.evetech.net/types/') . $typeID . '/icon?size=64') style="height: 64px; width: 64px;" alt=$typeName onerror=("this.removeAttribute('onerror'); this.src='" . ($image_item ?? 'https://images.evetech.net/types/') . $typeID . "/bp?size=64';") loading="lazy" decoding="async" fetchpriority="low")
+        img.img-rounded(src=(($image_item ?? 'https://images.evetech.net/types/') . $typeID . '/icon?size=64') style="height: 64px; width: 64px;" alt=$typeName onerror=("this.onerror=function(){this.removeAttribute('onerror'); this.src='/img/icons/" . $typeID . "_64.png';}; this.src='" . ($image_item ?? 'https://images.evetech.net/types/') . $typeID . "/bp?size=64';") loading="lazy" decoding="async" fetchpriority="low")
     | 
     = $typeName
   .navbar.navbar-dark.navbar-expand.mb-3

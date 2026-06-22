@@ -1,6 +1,18 @@
 (function( $ ) {
     let query_count = 0;
 
+	function image_html(item) {
+		if (item.image == '') return '';
+
+		var onerror = '';
+		if (item.type == 'item') {
+			var id = parseInt(item.id);
+			onerror = ' onerror="this.onerror=function(){this.removeAttribute(\'onerror\'); this.src=\'/img/icons/' + id + '_64.png\';}; this.src=\'https://images.evetech.net/types/' + id + '/bp?size=32\';"';
+		}
+
+		return '<img src="' + item.image + '" width="32" height="32" alt=" "' + onerror + '>';
+	}
+
 	var zz_search = function(element, callback) {
 		//create our objects and things
 		this.data = {}, this.data['element'] = element, this.data['menu'] = $('<ul class="autocomplete dropdown-menu" style="display: none;"></ul>').appendTo('body'), this.callback = callback;
@@ -96,7 +108,7 @@
 						this.data['menu'].append($('<li class="autocomplete-empty"><i class="fas fa-search" aria-hidden="true"></i><span>No results</span></li>'));
 					} else {
 						this.data['menu'].append($.map(result, $.proxy(function(item, index) {
-							return $('<li><a href="/' + item.type + '/' + item.id + '/">' + ((item.image != '') ? '<img src="' + item.image + '" width="32" height="32" alt=" ">' : '') + '<p style="width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">' + item.name.replace(RegExp('(' + this.data['element'].val() + ')', "gi"), function($1, match){ return '<strong>' + match + '</strong>'; } ) + '</p><span><small>' + item.type + '</small></span></a></li>').attr('data-value', JSON.stringify(item));
+							return $('<li><a href="/' + item.type + '/' + item.id + '/">' + image_html(item) + '<p style="width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">' + item.name.replace(RegExp('(' + this.data['element'].val() + ')', "gi"), function($1, match){ return '<strong>' + match + '</strong>'; } ) + '</p><span><small>' + item.type + '</small></span></a></li>').attr('data-value', JSON.stringify(item));
 						}, this)));
 					}
 

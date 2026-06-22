@@ -14,9 +14,10 @@ else if (($field['typeID'] ?? 0) != 0)
 if (!empty($typeID))
   - $eveImageClass = $eveImageClass ?? true;
   - $eveImage = $eveImageClass == true ? 'eveimage ' : '';
+  - $itemImageOnError = "this.onerror=function(){this.removeAttribute('onerror'); this.src='/img/icons/" . $typeID . "_64.png';}; this.src='" . ($image_item ?? 'https://images.evetech.net/types/') . $typeID . "/bp?size=" . $imageSize . "';";
   if (!empty($placement))
     a(href=('/item/' . $typeID . '/') rel="tooltip" data-placement=$placement title=$typeName)
-      img.img-rounded(src=(($image_item ?? 'https://images.evetech.net/types/') . $typeID . '/icon?size=' . $imageSize) class=$eveImage style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;') alt=$typeName onerror=("this.removeAttribute('onerror'); this.src='" . ($image_item ?? 'https://images.evetech.net/types/') . $typeID . "/bp?size=" . $imageSize . "';") loading="lazy" decoding="async" fetchpriority="low")
+      img.img-rounded(src=(($image_item ?? 'https://images.evetech.net/types/') . $typeID . '/icon?size=' . $imageSize) class=$eveImage style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;') alt=$typeName onerror=$itemImageOnError loading="lazy" decoding="async" fetchpriority="low")
   else
     a(href=('/item/' . $typeID . '/') rel="tooltip" title=$typeName)
-      img.img-rounded(src=(($image_item ?? 'https://images.evetech.net/types/') . $typeID . '/icon?size=' . $imageSize) class=$eveImage style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;') alt=$typeName onerror=("this.removeAttribute('onerror'); this.src='" . ($image_item ?? 'https://images.evetech.net/types/') . $typeID . "/bp?size=" . $imageSize . "';") loading="lazy" decoding="async" fetchpriority="low")
+      img.img-rounded(src=(($image_item ?? 'https://images.evetech.net/types/') . $typeID . '/icon?size=' . $imageSize) class=$eveImage style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;') alt=$typeName onerror=$itemImageOnError loading="lazy" decoding="async" fetchpriority="low")

@@ -3,7 +3,7 @@
 class zkbSearch
 {
     public static $imageMap = [
-        'typeID' => 'https://image.eveonline.com/types/%1$d/icon?size=32',
+        'typeID' => 'https://images.evetech.net/types/%1$d/icon?size=32',
         'groupID' => 'https://image.eveonline.com/types/1/icon?size=32.png',
         'characterID' => 'https://image.eveonline.com/characters/%1$d/portrait?size=32',
         'corporationID' => 'https://image.eveonline.com/corporations/%1$d/logo?size=32',
