@@ -12,6 +12,10 @@ $(document).ready(function () {
 });
 
 function zkbInitAsearch() {
+	var initKey = window.location.pathname + window.location.hash;
+	if (window.zkbAsearchInitKey === initKey) return;
+	window.zkbAsearchInitKey = initKey;
+
 	allowChange = true;
 	first_load = true;
 	radios = { sort: { sortBy: 'date', sortDir: 'desc' } };

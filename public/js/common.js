@@ -689,11 +689,16 @@ function normalizeAssetURL(url) {
 
 function runSpaPageInitializers(pageAssets) {
     const reusedScripts = pageAssets && pageAssets.reusedScripts ? pageAssets.reusedScripts : new Set();
-    if (typeof window.zkbInitOverview === "function" && document.querySelector("#killlist") && hasReusedSpaScript(reusedScripts, "/js/overview.js")) window.zkbInitOverview();
-    if (typeof window.zkbInitTypeRanks === "function" && document.querySelector(".rank-table") && hasReusedSpaScript(reusedScripts, "/js/typeranks.js")) window.zkbInitTypeRanks();
-    if (typeof window.zkbInitScanalyzer === "function" && document.querySelector("#scaninput") && hasReusedSpaScript(reusedScripts, "/js/scanalyzer.js")) window.zkbInitScanalyzer();
-    if (typeof window.zkbInitAsearch === "function" && document.querySelector("#asearchcontent") && hasReusedSpaScript(reusedScripts, "/js/asearch.js")) window.zkbInitAsearch();
+    const loadedScripts = pageAssets && pageAssets.loadedScripts ? pageAssets.loadedScripts : new Set();
+    if (typeof window.zkbInitOverview === "function" && document.querySelector("#killlist") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/overview.js")) window.zkbInitOverview();
+    if (typeof window.zkbInitTypeRanks === "function" && document.querySelector(".rank-table") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/typeranks.js")) window.zkbInitTypeRanks();
+    if (typeof window.zkbInitScanalyzer === "function" && document.querySelector("#scaninput") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/scanalyzer.js")) window.zkbInitScanalyzer();
+    if (typeof window.zkbInitAsearch === "function" && document.querySelector("#asearchcontent") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/asearch.js")) window.zkbInitAsearch();
     if (typeof window.resizeMobileFittingWheel === "function") window.resizeMobileFittingWheel();
+}
+
+function hasSpaPageScript(reusedScripts, loadedScripts, pathname) {
+    return hasReusedSpaScript(reusedScripts, pathname) || hasReusedSpaScript(loadedScripts, pathname);
 }
 
 function hasReusedSpaScript(reusedScripts, pathname) {
