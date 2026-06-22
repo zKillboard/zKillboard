@@ -1,0 +1,10 @@
+extends base.pug
+
+block title
+  include components/title.pug
+
+block content
+  h2= $pageTitle ?? ''
+  include components/summary.pug
+  - $killList = $kills ?? [];
+  include components/kill_list.pug

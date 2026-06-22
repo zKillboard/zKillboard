@@ -1,0 +1,338 @@
+extends base.pug
+
+block vars
+  - $killData = is_object($killdata ?? null) ? (array) $killdata : ($killdata ?? []);
+  - $victimData = is_object($killData['victim'] ?? null) ? (array) $killData['victim'] : ($killData['victim'] ?? []);
+  - $infoData = is_object($killData['info'] ?? null) ? (array) $killData['info'] : ($killData['info'] ?? []);
+  - $systemData = is_object($infoData['system'] ?? null) ? (array) $infoData['system'] : ($infoData['system'] ?? []);
+  - $extraData = is_object($extra ?? null) ? (array) $extra : ($extra ?? []);
+  - $crestData = is_object($extraData['crest'] ?? null) ? (array) $extraData['crest'] : ($extraData['crest'] ?? []);
+  - $finalBlowData = is_object($finalBlow ?? null) ? (array) $finalBlow : ($finalBlow ?? []);
+  - $topDamageData = is_object($topDamage ?? null) ? (array) $topDamage : ($topDamage ?? []);
+  - $victim = (($victimData['characterID'] ?? 0) != 0) ? ($victimData['characterName'] ?? '') : ($victimData['corporationName'] ?? '');
+  - $pageTitle = ($victimData['shipName'] ?? '') . ' | ' . $victim . ' | Killmail';
+  - $description = $victim . ' lost their ' . ($victimData['shipName'] ?? '') . ' worth ' . number_format((float) ($extraData['totalisk'] ?? 0), 2, '.', ',') . ' ISK.';
+  - $canonical = ($fullsiteurl ?? '') . '/kill/' . ($infoData['killID'] ?? 0) . '/';
+
+block title
+  include components/title.pug
+
+block header
+  if (!empty($message))
+    .alert
+      button.btn-close(type="button" data-bs-dismiss="alert" aria-label="Close")
+      = $message
+  - $showImage = true;
+
+block content
+  #detail-navibar.navbar.navbar-dark.navbar-expand.py-0.mb-2
+    .container-fluid.px-0
+      ul.navbar-nav.align-items-center.me-2.d-none.d-md-flex
+        if (!empty($extraData['prevKillID']))
+          li.nav-item.d-none.d-md-flex.align-items-center
+            a.nav-link.py-2(href=('/kill/' . $extraData['prevKillID'] . '/')) &lt;
+      ul.navbar-nav.align-items-center.ms-auto
+        if (($infoData['killID'] ?? 0) < 0)
+          li.nav-item
+            a.nav-link(data-bs-toggle="modal" data-bs-target="#report" href="#")= 'Report (' . ($extraData['reports'] ?? 0) . ')'
+        li.nav-item
+          a.nav-link.d-none.d-md-flex.align-items-center.gap-1.py-2.px-3(target="_blank" href=($referralLink ?? '') title="1 million SP FREE" style="background-color: #7b1fa2; color: #ffffff !important;")
+            img(src="https://images.evetech.net/types/40520/icon?size=32" alt="1 million free skill points!" style="height: 18px; margin-right: 2px;" loading="lazy" decoding="async" fetchpriority="low")
+            | 1 Million SP FREE
+        li.nav-item.dropdown
+          a.nav-link.dropdown-toggle(href="#" data-bs-toggle="dropdown" aria-expanded="false") External
+          ul.dropdown-menu
+            li
+              h6.dropdown-header DOTLAN
+            li
+              a.dropdown-item(href=('https://evemaps.dotlan.net/system/' . rawurlencode($systemData['solarSystemName'] ?? '')) target="_blank" rel="noopener noreferrer")= $systemData['solarSystemName'] ?? ''
+            li
+              a.dropdown-item(href=('https://evemaps.dotlan.net/region/' . rawurlencode($systemData['regionName'] ?? '')) target="_blank" rel="noopener noreferrer")= $systemData['regionName'] ?? ''
+            li
+              hr.dropdown-divider
+            li
+              h6.dropdown-header EVEWho Char Info
+            li
+              a.dropdown-item(href=('https://evewho.com/character/' . ($victimData['characterID'] ?? 0)) target="_blank" rel="noopener noreferrer")= $victimData['characterName'] ?? ''
+            li
+              a.dropdown-item(href=('https://evewho.com/character/' . ($finalBlowData['characterID'] ?? 0)) target="_blank" rel="noopener noreferrer")= $finalBlowData['characterName'] ?? ''
+            li
+              a.dropdown-item(href=('https://evewho.com/character/' . ($topDamageData['characterID'] ?? 0)) target="_blank" rel="noopener noreferrer")= $topDamageData['characterName'] ?? ''
+        if (($infoData['killID'] ?? 0) > 0)
+          li.nav-item.dropdown
+            a.nav-link.dropdown-toggle(href="#" data-bs-toggle="dropdown" aria-expanded="false") OtherKB
+            ul.dropdown-menu
+              li
+                a.dropdown-item(href=('https://eve-kill.com/kill/' . ($infoData['killID'] ?? 0) . '/') target="_blank" rel="noopener noreferrer") EVE-Kill
+              li
+                a.dropdown-item(href=('https://www.eveos.space/killboard/kill/' . ($infoData['killID'] ?? 0)) target="_blank" rel="noopener noreferrer") EVE OS
+              li
+                a.dropdown-item(href=('https://kb.evetools.org/kill/' . ($infoData['killID'] ?? 0)) target="_blank" rel="noopener noreferrer") EVE Tools KB
+              li
+                a.dropdown-item(href=('https://socketkill.com/kill/' . ($infoData['killID'] ?? 0) . '/') target="_blank" rel="noopener noreferrer") SocketKill
+        li.nav-item.dropdown
+          a.nav-link.dropdown-toggle(href="#" data-bs-toggle="dropdown" aria-expanded="false") Export
+          ul.dropdown-menu
+            li
+              a.dropdown-item(href="#" onClick=('saveFitting(' . ($crestData['killID'] ?? 0) . '); return false;') rel="nofollow") Import Fit via ESI
+            li
+              a.dropdown-item(data-bs-toggle="modal" data-bs-target="#DNA" href="#") DNA
+            li
+              a.dropdown-item(data-bs-toggle="modal" data-bs-target="#EFT" href="#") EFT
+            li
+              a.dropdown-item(target="_blank" rel="noopener noreferrer" href=('/kill/' . ($crestData['killID'] ?? 0) . '/redirect/esi/')) ESI Link
+            li
+              a.dropdown-item(data-bs-toggle="modal" data-bs-target="#ingamelink" href="#" onclick=("bootstrap.Modal.getOrCreateInstance(document.getElementById(\"ingamelink\")).show(); document.getElementById(\"ingamelinkcontent\").innerHTML = `<iframe src=\"https://zkillboard.com/kill/" . ($infoData['killID'] ?? 0) . "/ingamelink/\" width=\"100%\" rows=\"3\" title=\"In Game Link\"></iframe>`;")) In Game Link
+        li.nav-item.dropdown
+          a.nav-link.dropdown-toggle(href="#" data-bs-toggle="dropdown" aria-expanded="false") Social
+          ul.dropdown-menu
+            li
+              a.dropdown-item(href=('https://www.facebook.com/sharer/sharer.php?u=' . ($url ?? '')) target="_blank" rel="noopener noreferrer")
+                img(src=('//' . ($siteurl ?? '') . '/img/social/fb_1.png') loading="lazy" decoding="async" fetchpriority="low")
+                |  Facebook
+            li
+              a.dropdown-item(href=('https://x.com/intent/tweet?text=' . rawurlencode($pageTitle) . '&url=' . ($url ?? '')) target="_blank" rel="noopener noreferrer")
+                img(src=('//' . ($siteurl ?? '') . '/img/social/twitter_1.png') loading="lazy" decoding="async" fetchpriority="low")
+                |  X / Twitter
+            li
+              a.dropdown-item(href=('https://www.reddit.com/submit?url=' . ($url ?? '') . '&title=' . rawurlencode($pageTitle)) target="_blank" rel="noopener noreferrer")
+                img(src=('//' . ($siteurl ?? '') . '/img/social/reddit.png') loading="lazy" decoding="async" fetchpriority="low")
+                |  Reddit
+        li.nav-item
+          a.nav-link(href=('/related/' . ($systemData['solarSystemID'] ?? 0) . '/' . ($extraData['relatedtime'] ?? 0) . '/')) Related
+        if (!empty($extraData['nextKillID']))
+          li.nav-item.d-none.d-md-flex.align-items-center
+            a.nav-link.py-2(href=('/kill/' . $extraData['nextKillID'] . '/')) &gt;
+  if (($pageview ?? 'overview') == 'overview')
+    .row.gx-0.gx-md-3
+      .col-lg-8(style="padding-left: 0px;")
+        table.d-none.d-md-table(style="background-color:transparent;")
+          tr
+            td(style="padding: 0px; vertical-align: top;")
+              include components/fitting_wheel.pug
+            td(style="width: 100%;" valign="top")
+              include components/victim_info.pug
+        .row.gx-0.d-flex.d-md-none(style="padding: 0px;")
+          #fittingwheeldiv.col-lg-5(style="padding: 0px;")
+            include components/fitting_wheel.pug
+          br.d-lg-none
+          .col-lg-5(style="padding: 0px;")
+            include components/victim_info.pug
+        .row.gx-0
+          if (($extraData['items'] ?? null) == 'asyncload')
+            #asyncitemlist
+            script(type="text/javascript").
+              document.addEventListener("DOMContentLoaded", function() {
+                $("#asyncitemlist").load("/kill/#{($infoData['killID'] ?? 0)}/items/");
+              });
+          else
+            div
+              include components/item_list.pug
+      .col-lg-4
+        center
+          a#loginsideimage.btn.w-100.collapse(href="/ccpoauth2/")
+            img(src="/img/ssologin.png" style="width: 209px;" loading="lazy" decoding="async" fetchpriority="low")
+            br
+            br
+        .text-center(style="width: 100%; display: flex; justify-content: center;")
+          div(style="max-width: 200px; width: 100%;")!= $sponsoredMessage ?? ''
+        if (!empty($extraData['npcOnly']))
+          .alert.alert-info
+            | This is an NPC Only killmail.
+            br
+            | It is not counted in statistics.
+        if (!empty($extraData['atShip']))
+          center
+            .alert.alert-success AT Ship Involved
+        if (in_array('padding', $infoData['labels'] ?? []))
+          .alert.alert-warning
+            center
+              | Killboard Padding
+              br
+              | It is not counted in statistics.
+        else
+          if (!empty($infoData['solo']))
+            .alert.alert-success
+              center Solo Killmail
+          if (!empty($infoData['ganked']))
+            .alert.alert-danger
+              center GANKED
+        #details.tab-pane.fade.show.active
+          - $warInfo = is_object($extraData['warInfo'] ?? null) ? (array) $extraData['warInfo'] : ($extraData['warInfo'] ?? []);
+          if (!empty($warInfo['dscr']))
+            div
+              table.table.table-sm(style="margin: 0px; text-align: center;")
+                tr
+                  th(style="text-align: center;") War
+                tr
+                  td
+                    a(href=('/war/' . ($warInfo['warID'] ?? 0) . '/'))= $warInfo['dscr'] ?? ''
+          div(style="margin-bottom: 0.25em;")
+            include components/tdfb.pug
+          div
+            div(style="margin: 0px;")
+              include components/attackers.pug
+          if (count($extraData['invAll'] ?? []) > 0)
+            div(style="margin: 0px;")
+              - $field = $extraData['invAll'];
+              include components/involved_summary.pug
+        hr
+        #commentblock
+  else if (($pageview ?? '') == 'involved')
+    table.table.table-sm.table-striped
+      thead
+        tr.titles
+          th(colspan="2") Attacker
+          th(colspan="2") Equipment
+          th Damage
+      tbody
+        - $imageSize = 32;
+        - $resizeImage = 40;
+        each $attacker in ($killData['involved'] ?? [])
+          - $attacker = is_object($attacker) ? (array) $attacker : $attacker;
+          tr.attacker
+            td.icons(style="vertical-align: middle; width: 200px;")
+              - $field = $attacker;
+              include components/image_char.pug
+              include components/image_corp.pug
+              include components/image_alli.pug
+              include components/image_faction.pug
+            td.pilot
+              a(href=('/character/' . ($attacker['characterID'] ?? 0) . '/'))= $attacker['characterName'] ?? ''
+              br
+              a(href=('/corporation/' . ($attacker['corporationID'] ?? 0) . '/'))= $attacker['corporationName'] ?? ''
+              if (($attacker['allianceID'] ?? 0) != 0)
+                |  / 
+                a(href=('/alliance/' . ($attacker['allianceID'] ?? 0) . '/'))= $attacker['allianceName'] ?? ''
+              if (($attacker['factionID'] ?? 0) != 0)
+                |  / 
+                a(href=('/faction/' . ($attacker['factionID'] ?? 0) . '/'))= $attacker['factionName'] ?? ''
+            td.icons(style="width:100px;")
+              include components/image_ship.pug
+              include components/image_item.pug
+            td.equipment
+              a(href=('/item/' . ($attacker['shipTypeID'] ?? 0) . '/'))= $attacker['shipName'] ?? ''
+              br
+              a(href=('/item/' . ($attacker['weaponTypeID'] ?? 0) . '/'))= $attacker['weaponTypeName'] ?? ''
+            td.damage(style="vertical-align: middle;")= $attacker['damage'] ?? 0
+
+block modal
+  #report.modal.fade
+    .modal-dialog
+      .modal-content
+        .modal-content
+          h4.modal-title Report Mail
+        .modal-body
+          if (!empty($sessionusername))
+            form(name="report" method="post" action=('/kill/' . ($infoData['killID'] ?? 0) . '/'))
+              .mb-3
+                textarea#report.col-md-12(name="report" type="text" required placeholder="Report Reason" rows="12")
+              .mb-3
+                button.btn.btn-primary(type="submiut") Post Report
+          else
+            .alert.alert-warning Sorry, you are not logged in.
+  #DNA.modal.fade
+    .modal-dialog
+      .modal-content
+        .modal-header
+          h4.modal-title DNA
+        .modal-body
+          form(name="myform")
+            .mb-3
+              textarea#dna.fitting.col-md-12(onClick="this.select();" rows="2" name="dna")= $extraData['dnatext'] ?? ''
+            .mb-3
+              button.btn.btn-primary(type="button" data-bs-dismiss="modal") Close
+  #EFT.modal.fade
+    .modal-dialog
+      .modal-content
+        .modal-header
+          h4.modal-title EFT
+        .modal-body
+          form(name="myform")
+            .mb-3
+              textarea#eft.fitting.col-md-12(onClick="this.select();" rows="15" name="eft" readonly="readonly")= '[' . ($victimData['shipName'] ?? '') . ', ' . ($victimData['characterName'] ?? '') . "'s " . ($victimData['shipName'] ?? '') . "]\n" . ($extraData['efttext'] ?? '')
+            .mb-3
+              button.btn.btn-primary(type="button" data-bs-dismiss="modal") Close
+  #ingamelink.modal.fade
+    .modal-dialog
+      .modal-content
+        .modal-header
+          h4.modal-title Killmail - In Game Link
+        .modal-body
+          form.form(name="myform")
+            p Must copy to in game notepad to create the link in game, then you can drag and copy that elsewhere. Human verification is in place because of scrapers slamming the site, sorry.
+            .mb-3
+              #ingamelinkcontent
+            .mb-3
+              button.btn.btn-primary(type="button" data-bs-dismiss="modal") Close
+
+block opengraph
+  meta(name="twitter:title" content=$pageTitle)
+  meta(name="twitter:image" content=('https://images.evetech.net/types/' . ($victimData['shipTypeID'] ?? 0) . '/icon'))
+  meta(name="twitter:card" content="summary")
+  meta(property="og:title" content=$pageTitle)
+  meta(property="og:url" content=(($fullsiteurl ?? '') . '/kill/' . ($infoData['killID'] ?? 0) . '/'))
+  if (empty($finalBlowData['characterName']))
+    - $ogDescription = ($victimData['characterName'] ?? '') . ' (' . ($victimData['corporationName'] ?? '') . ') lost their ' . ($victimData['shipName'] ?? '') . ' in ' . ($systemData['solarSystemName'] ?? '') . ' (' . ($systemData['regionName'] ?? '') . ') Total Value: ' . number_format((float) ($extraData['totalisk'] ?? 0), 2, '.', ',') . ' ISK';
+  else
+    - $ogDescription = ($victimData['characterName'] ?? '') . ' (' . ($victimData['corporationName'] ?? '') . ') lost their ' . ($victimData['shipName'] ?? '') . ' in ' . ($systemData['solarSystemName'] ?? '') . ' (' . ($systemData['regionName'] ?? '') . '). Final Blow by ' . ($finalBlowData['characterName'] ?? '') . ' (' . ($finalBlowData['corporationName'] ?? '') . ') flying ' . (!empty($infoData['solo']) ? 'solo ' : '') . 'in a ' . ($finalBlowData['shipName'] ?? '') . '. Total Value: ' . number_format((float) ($extraData['totalisk'] ?? 0), 2, '.', ',') . ' ISK';
+  meta(name="twitter:description" content=$ogDescription)
+  meta(property="og:description" content=$ogDescription)
+  meta(property="og:image" content=('https://images.evetech.net/types/' . ($victimData['shipTypeID'] ?? 0) . '/icon'))
+
+block script
+  script.
+    window.killID = '#{($infoData['killID'] ?? 0)}';
+    window.zkbDetailActiveKillID = window.killID;
+
+    function resizeMobileFittingWheel() {
+      const mobileContainer = document.getElementById('fittingwheeldiv');
+      if (!mobileContainer) return;
+
+      const panel = mobileContainer.querySelector('#Fitting_Panel');
+      if (!panel) return;
+
+      const baseSize = 398;
+      const isMobile = window.matchMedia('(max-width: 767px)').matches;
+
+      if (!isMobile) {
+        panel.style.transform = '';
+        panel.style.transformOrigin = '';
+        mobileContainer.style.height = '';
+        mobileContainer.style.overflow = '';
+        return;
+      }
+
+      const availableWidth = mobileContainer.clientWidth;
+      if (!availableWidth) return;
+
+      const scale = Math.min(1, availableWidth / baseSize);
+      panel.style.transformOrigin = 'top left';
+      panel.style.transform = `scale(${scale})`;
+      mobileContainer.style.height = `${Math.ceil(baseSize * scale)}px`;
+      mobileContainer.style.overflow = 'hidden';
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      resizeMobileFittingWheel();
+      window.addEventListener('resize', resizeMobileFittingWheel, { passive: true });
+      window.zkbPageCleanup = function () {
+        window.removeEventListener('resize', resizeMobileFittingWheel);
+        window.zkbDetailActiveKillID = undefined;
+      };
+    });
+
+    function prepComments() {
+      if ($ == undefined) setTimeout(prepComments, 500);
+      else {
+        $.get('/cache/tagged/comment/kill-#{($infoData['killID'] ?? 0)}/')
+          .done(function(response) {
+            if (window.zkbDetailActiveKillID != '#{($infoData['killID'] ?? 0)}') return;
+            $("#commentblock").html(response);
+          })
+          .fail(function(xhr, status, err) {
+            console.error("POST failed:", status, err);
+          });
+        pubsub('comment:kill-#{($infoData['killID'] ?? 0)}');
+      }
+    }

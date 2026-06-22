@@ -40,9 +40,9 @@ $apiCacheLocation = '/tmp/apiCache/';
 // Debug
 $debug = false;
 
-// Twig
-$twigDebug = true;
-$twigCache = '/dev/shm/twigtemplates/';
+// Pug
+$pugDebug = true;
+$pugCache = '/dev/shm/pugtemplates/';
 
 // Logfile
 $logfile = $baseDir.'/cron/logs/zkb.log';

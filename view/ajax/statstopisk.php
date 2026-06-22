@@ -11,7 +11,7 @@ function handler($request, $response, $args, $container) {
         else $params = URI::validate($uri, ['u' => true, 'ks' => !$bypass, 'ke' => !$bypass]);
     } catch (Exception $e) {
         // If validation fails, return empty result
-        return $container->get('view')->render($response->withHeader('Cache-Tag', 'statstop,statstopisk'), 'components/top_killer_list.html', []);
+        return $container->get('view')->render($response->withHeader('Cache-Tag', 'statstop,statstopisk'), 'components/top_killer_list.pug', []);
     }
 
     $uri = $params['u'];
@@ -57,5 +57,5 @@ function handler($request, $response, $args, $container) {
         $ret['topSet'] = Stats::getTopIsk($p);
     }
 
-    return $container->get('view')->render($response->withHeader('Cache-Tag', "statstop,statstopisk,statstop:$cacheTagKey,$cacheTagKey"), 'components/big_top_list.html', $ret);
+    return $container->get('view')->render($response->withHeader('Cache-Tag', "statstop,statstopisk,statstop:$cacheTagKey,$cacheTagKey"), 'components/big_top_list.pug', $ret);
 }

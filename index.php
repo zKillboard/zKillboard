@@ -91,8 +91,8 @@ $n = $mdb->getCollection("visitorlog")->insertOne(
 // Theme
 $theme = 'cyborg';
 
-// Load twig stuff BEFORE routes
-include 'twig.php';
+// Load template renderer BEFORE routes
+include 'pug.php';
 
 // Add Routing Middleware (required for Slim 4)
 $app->addRoutingMiddleware();

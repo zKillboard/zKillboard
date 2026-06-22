@@ -1,0 +1,9 @@
+if (!empty($showImage))
+  - $imageSize = 32;
+  include image_char.pug
+if (!isset($field['characterID']) && isset($field['ceoID']) && isset($field['ceoName']))
+  a.wrapplease(href=('/character/' . $field['ceoID'] . '/'))= $field['ceoName']
+else if (!empty($field['characterID']))
+  a.wrapplease(href=('/character/' . $field['characterID'] . '/' . ($entitySubpage ?? '')))= $field['characterName'] ?? ''
+else if (!empty($field['id']) && !empty($field['name']))
+  a.wrapplease(href=('/character/' . $field['id'] . '/'))= $field['name']

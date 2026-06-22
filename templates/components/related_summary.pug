@@ -1,0 +1,18 @@
+if (count($groupIDs ?? []) > 0)
+  table.table.table-striped.table-sm.table-hover
+    tbody
+      tr
+        th Ship Class
+        th.text-end Lost
+        th.text-end Points
+        th.text-end ISK
+      each $stats in ($groupIDs ?? [])
+        - $stats = is_object($stats) ? (array) $stats : $stats;
+        tr
+          td= $stats['groupName'] ?? ''
+          td.text-end
+            strong.text-success= number_format((float) ($stats['count'] ?? 0), 0)
+          td.text-end
+            strong.text-success= number_format((float) ($stats['points'] ?? 0), 0)
+          td.text-end
+            strong.text-success= number_format((float) ($stats['isk'] ?? 0), 2)

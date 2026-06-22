@@ -1,9 +1,0 @@
-{% if showImage %}
-        {% set imageSize = 32 %}
-        {% include 'components/image_system.html' %}
-{% endif %}
-{% if extra.wormhole %}
-	{% set wormholeclass = extra.wormhole.class %}
-{% endif %}
-
-<a href="/system/{{ field.solarSystemID }}/{{ entitySubpage }}" class="{% if field.solarSystemID >= 32000000 and field.solarSystemID  < 33000000 %}triglavian{% endif %}">{{ field.solarSystemName }} {% if wormholeclass %}(C{{ wormholeclass}}){% endif %}</a>

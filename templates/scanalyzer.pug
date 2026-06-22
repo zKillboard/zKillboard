@@ -1,0 +1,74 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'ScanAlyzer';
+
+block title
+  include components/title.pug
+
+block content
+  .c-ontentrequiredlogin.content
+    h2
+      span.scanalyzer &#128924;
+      |  ScanAlyzer 
+      small get information on local or d-scan
+    .row
+      .col-12.col-lg-2(style="padding-right: 0px;")
+        fieldset
+          legend
+            small
+              span#clip
+                a#clippy.btn.btn-sm.btn-info(disabled="true" href="#" onclick="return false;") &#128203; Paste
+          textarea#scaninput(rows="25" style="width: 100%")
+        br
+        | Inspired by 
+        a(href="http://eve-plh.com/#/home" target="_blank") PLH
+        | .
+      .col-12.col-lg-10(style="padding-left: 5px;")
+        fieldset
+          legend#resultslegend
+            | Results 
+            small#resultcounts
+          #status
+          #scanlayout
+            div
+              .upperentities
+                #playergroups.entitygroup
+                .clearfix
+            #scan-shipgroups-col
+              .upperentities
+                #shipgroups.entitygroup
+                .clearfix
+            div
+              #resultssection(style="display: none;")
+                #pilotentities
+                  table#resultstable.table.table-sm(style="background-color: #000;")
+                    thead
+                      tr
+                        th Name
+                        th Recent Ships
+                        th(colspan="2") Member
+                        th.text-end
+                          span.green K
+                          |  / 
+                          span.red L
+                        th.text-end
+                          span.red &#x26A0;
+                          |  / 
+                          span.green &#x2764;
+                        th.text-end
+                          i.fas.fa-user
+                          i.fas.fa-user
+                          i.fas.fa-user
+                        th.text-end
+                          i.fas.fa-user
+                    tbody#results
+                  div
+                    small
+                      i
+                        | - the number below danger is their snuggly percentage
+                        br
+                        | - the number below Gang % (not solo kills) is the average fleet size (not everyone has this recorded, yet)
+
+block script
+  script(defer type="text/javascript" src=('/js/scanalyzer.js?v=' . ($currentTime ?? '')))

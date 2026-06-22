@@ -1,0 +1,49 @@
+- $attackRows = array_map(fn($row) => is_object($row) ? (array) $row : $row, $attackList ?? []);
+- $killInfo = is_object($killdata['info'] ?? null) ? (array) $killdata['info'] : ($killdata['info'] ?? []);
+- $victim = is_object($killdata['victim'] ?? null) ? (array) $killdata['victim'] : ($killdata['victim'] ?? []);
+table.table.table-sm.table-striped.table-hover(style="margin-bottom: 0px;")
+  if (empty($hideTableHeading))
+    thead
+      tr.titles
+        th(colspan="3")= ($killInfo['number_involved'] ?? count($attackRows)) . ' Involved'
+        th.text-end Damage
+  tbody
+    each $attacker in $attackRows
+      - $field = $attacker;
+      tr.attacker
+        td(style="width: 40px; vertical-align: middle;")
+          - $imageSize = 64;
+          include image_char.pug
+        td(style="width: 35px; vertical-align: middle;")
+          - $imageSize = 32;
+          include image_ship.pug
+          if (($field['weaponTypeID'] ?? 0) == 0)
+            include image_ship.pug
+          else
+            include image_item.pug
+        td.pilotinfo
+          - $field = $attacker;
+          - $shortLength = 25;
+          div
+            if (!array_key_exists('characterID', $field))
+              include text_ship.pug
+              br
+            else
+              include text_char.pug
+              br
+            include text_corp.pug
+            br
+            include text_alli.pug
+            if (!empty($field['factionName']))
+              br
+              include text_faction.pug
+          - $shortLength = 30;
+        td.damage.text-end
+          span(format="format-int-once" raw=($attacker['damage'] ?? 0))= number_format((float) ($attacker['damage'] ?? 0), 0)
+          br
+          if (($attacker['damage'] ?? 0) > 0 && ($victim['damage'] ?? 0) > 0)
+            - $percentage = (($attacker['damage'] / $victim['damage']) * 100);
+            small
+              span.format-dec1-once(raw=$percentage)= number_format((float) $percentage, 1)
+              | %
+              small

@@ -1,0 +1,6 @@
+- $imageSize = $imageSize ?? 32;
+- $actualSize = $resizeImage ?? $imageSize;
+- $solarSystemID = $field['solarSystemID'] ?? 0;
+- $systemImage = $solarSystemID < 32000000 ? ('/img/nohus/systems/' . $solarSystemID . '.png') : '/img/empty_32.png';
+a(href=('/system/' . $solarSystemID . '/') rel="tooltip" title=($field['solarSystemName'] ?? ''))
+  img.eveimage.img-rounded(src=$systemImage style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;') alt=($field['solarSystemName'] ?? '') onError=("this.removeAttribute('onerror'); this.src='" . ($image_item ?? 'https://images.evetech.net/types/') . ($field['sunTypeID'] ?? 0) . "/render';") loading="lazy" decoding="async" fetchpriority="low")

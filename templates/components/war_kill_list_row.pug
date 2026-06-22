@@ -1,0 +1,81 @@
+each $kill, $index in ($killList ?? [])
+  if (($kill['killID'] ?? 0) > 0)
+    - $victim = $kill['victim'] ?? [];
+    - $finalBlow = $kill['finalBlow'] ?? [];
+    - $imageSize = 64;
+    - $resizeImage = 60;
+    - $shipImageLinkOverride = $kill['killID'];
+    - $sDate = date('Y-m-d', (int) ($kill['unixtime'] ?? 0));
+    - $date = date('M d, Y', (int) ($kill['unixtime'] ?? 0));
+    - $previousDate = $index == 0 ? '' : date('Y-m-d', (int) ($killList[$index - 1]['unixtime'] ?? 0));
+    if ($sDate != $previousDate)
+      div(class=('war-kill-date tr-date tr-date-' . $sDate) date=$date)
+        em= $sDate
+    article(class=('war-kill-card tr-killmail war-kill-victim-' . ($kill['victimWarSide'] ?? 'unknown') . ' war-kill-finalblow-' . ($kill['finalBlowWarSide'] ?? 'unknown')) id=('kill-' . $kill['killID']) date=($kill['unixtime'] ?? 0) killID=$kill['killID'] vics=($kill['vics'] ?? ''))
+      section(class=('war-kill-party war-kill-victim war-kill-side-' . ($kill['victimWarSide'] ?? 'unknown')))
+        .war-kill-party-image
+          - $field = $victim;
+          if (($victim['allianceID'] ?? 0) != 0)
+            include image_alli.pug
+          else
+            include image_corp.pug
+        .war-kill-party-copy
+          if (!empty($victim['characterID']))
+            a.war-kill-name(href=('/character/' . $victim['characterID'] . '/'))= $victim['characterName'] ?? ''
+          else
+            span.war-kill-name Unknown pilot
+          a(href=('/corporation/' . ($victim['corporationID'] ?? 0) . '/'))= $victim['corporationName'] ?? ''
+          if (($victim['allianceID'] ?? 0) != 0)
+            a(href=('/alliance/' . $victim['allianceID'] . '/'))= $victim['allianceName'] ?? ''
+      section.war-kill-ship
+        .war-kill-ship-image
+          - $field = $victim;
+          include image_ship.pug
+        .war-kill-ship-copy
+          span.war-kill-time= date('H:i', (int) ($kill['unixtime'] ?? 0))
+          span.war-kill-time-meta
+            if (!empty($kill['solo']))
+              a.war-kill-badge.war-kill-badge-success(href=('/character/' . ($finalBlow['characterID'] ?? 0) . '/solo/')) solo
+            else
+              span.war-kill-involved-count= '(' . number_format((float) ($kill['attackerCount'] ?? 0), 0) . ')'
+          a.war-kill-ship-name(href=('/ship/' . ($victim['shipTypeID'] ?? 0) . '/'))= $victim['shipName'] ?? ''
+          a.war-kill-value(href=('/kill/' . $kill['killID'] . '/') format="format-isk-once" raw=($kill['zkb']['totalValue'] ?? 0))= $formatIsk($kill['zkb']['totalValue'] ?? 0)
+          .war-kill-location
+            span(style=('color: ' . ($kill['system']['systemColorCode'] ?? '')))
+              if (!empty($kill['system']['systemClass']))
+                = 'C' . $kill['system']['systemClass']
+              else
+                = sprintf('%1.1f', $kill['system']['solarSystemSecurity'] ?? 0)
+            |
+            a(href=('/system/' . ($kill['system']['solarSystemID'] ?? 0) . '/') class=((($kill['system']['solarSystemID'] ?? 0) >= 32000000 && ($kill['system']['solarSystemID'] ?? 0) < 33000000) ? 'triglavian' : ''))= $kill['system']['solarSystemName'] ?? ''
+          .war-kill-meta
+            if (in_array('padding', $kill['labels'] ?? []))
+              a.war-kill-badge.war-kill-badge-warning(href='/asearch/#{"buttons":["togglefilters","week","label-padding","sort-date","sort-desc","page1","victimsonly"]}') padding
+            else if (in_array('atShip', $kill['labels'] ?? []))
+              span.war-kill-badge.war-kill-badge-success AT Ship
+            else if (!empty($kill['ganked']))
+              a.war-kill-badge.war-kill-badge-danger(href='/asearch/#{"buttons":["togglefilters","week","label-ganked","sort-date","sort-desc","page1","victimsonly"]}') ganked
+            else if (!empty($kill['npc']))
+              span.war-kill-badge.war-kill-badge-info NPC
+            else if (($kill['attackerCount'] ?? 0) >= 1000)
+              span.war-kill-badge.war-kill-badge-danger 1000+
+            else if (($kill['attackerCount'] ?? 0) >= 100)
+              span.war-kill-badge.war-kill-badge-warning 100+
+      section(class=('war-kill-party war-kill-finalblow war-kill-side-' . ($kill['finalBlowWarSide'] ?? 'unknown')))
+        .war-kill-party-copy
+          if (!empty($finalBlow['characterID']))
+            a.war-kill-name(href=('/character/' . $finalBlow['characterID'] . '/'))= $finalBlow['characterName'] ?? ''
+          else
+            - $field = $finalBlow;
+            a.war-kill-name(href=('/ship/' . ($finalBlow['shipTypeID'] ?? 0) . '/'))= $finalBlow['shipName'] ?? ''
+          a(href=('/corporation/' . ($finalBlow['corporationID'] ?? 0) . '/'))= $finalBlow['corporationName'] ?? ''
+          if (($finalBlow['allianceID'] ?? 0) != 0)
+            a(href=('/alliance/' . $finalBlow['allianceID'] . '/'))= $finalBlow['allianceName'] ?? ''
+          if (($finalBlow['factionID'] ?? 0) == 500021)
+            a(href=('/faction/' . $finalBlow['factionID'] . '/')) Unknown
+        .war-kill-party-image
+          - $field = $finalBlow;
+          if (($finalBlow['allianceID'] ?? 0) != 0)
+            include image_alli.pug
+          else
+            include image_corp.pug

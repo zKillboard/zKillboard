@@ -1,0 +1,45 @@
+extends base.pug
+
+block vars
+  - $pageTitle = (($info['typeName'] ?? '') . ' | Item');
+
+block title
+  include components/title.pug
+
+block content
+  h2
+    - $typeID = $info['typeID'] ?? 0;
+    - $typeName = $info['typeName'] ?? '';
+    if ($typeID > 0)
+      a(href=('/item/' . $typeID . '/') rel="tooltip" title=$typeName)
+        img.img-rounded(src=(($image_item ?? 'https://images.evetech.net/types/') . $typeID . '/icon?size=64') style="height: 64px; width: 64px;" alt=$typeName onerror=("this.removeAttribute('onerror'); this.src='" . ($image_item ?? 'https://images.evetech.net/types/') . $typeID . "/bp?size=64';") loading="lazy" decoding="async" fetchpriority="low")
+    | 
+    = $typeName
+  .navbar.navbar-dark.navbar-expand.mb-3
+    ul.navbar-nav.me-auto
+      if ($hasKills ?? false)
+        li.nav-item
+          a.nav-link(href=('/ship/' . $typeID . '/')) Overview
+        li.nav-item
+          a.nav-link(href=('/ship/' . $typeID . '/kills/')) Kills
+        li.nav-item
+          a.nav-link(href=('/ship/' . $typeID . '/losses/')) Losses
+      li.nav-item
+        a.nav-link.active(aria-current="page" href=('/item/' . $typeID . '/')) Description
+  != nl2br(htmlspecialchars((string) ($info['description'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'))
+  .clearfix
+  hr
+  .row.g-4
+    .col-12.col-lg-6
+      h3 Some kills having this item:
+      - $list = $kills ?? [];
+      include components/related_list.pug
+    .col-12.col-lg-6
+      h4 Market Prices - The Forge
+      h5= 'zKillboard Price: ' . number_format((float) ($info['price'] ?? 0), 2) . ' ISK'
+      - $field = $info['market'] ?? [];
+      include components/market.pug
+      i
+        | Information pulled from in game Market 
+        a(href=(($esiServer ?? '') . '/markets/10000002/history/?type_id=' . $typeID) target="_blank" rel="noopener noreferrer") ESI API
+        | .

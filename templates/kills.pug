@@ -1,0 +1,16 @@
+extends base.pug
+
+block vars
+  - $pageType = 'kills';
+  if (!empty($killsType))
+    - $pageTitle = 'Kills (' . ucfirst((string) $killsType) . ')';
+  else
+    - $pageTitle = 'Kills';
+
+block title
+  include components/title.pug
+
+block content
+  - $killListTitle = $pageTitle;
+  - $killList = $kills ?? [];
+  include components/kill_list.pug

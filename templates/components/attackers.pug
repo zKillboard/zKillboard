@@ -1,0 +1,23 @@
+- $extraData = is_object($extra ?? null) ? (array) $extra : ($extra ?? []);
+- $killInfo = is_object($killdata['info'] ?? null) ? (array) $killdata['info'] : ($killdata['info'] ?? []);
+- $attackList = $extraData['involved'] ?? [];
+include attackers_list.pug
+if (($killInfo['number_involved'] ?? 0) > 10)
+  .accordion#allPilots
+    .accordion-group
+      .accordion-heading.listPilots
+        a.accordion-toggle(data-bs-toggle="collapse" data-bs-parent="#allPilots" href="#listAllPilots" onMouseOver="loadRemainingPilots();" onClick="loadRemainingPilots();")
+          .centered
+            | List all pilots 
+            i.fas.fa-chevron-down(aria-hidden="true")
+      #listAllPilots.accordion-body.collapse.m-0.p-0
+        #listAllPilotsInner.accordion-inner
+  script.
+    function loadRemainingPilots() {
+      // Load pilots beyond the first 10 for killmail #{($killInfo['killID'] ?? 0)}
+      if ($("#listAllPilotsInner").html().trim() == "") {
+        $("#listAllPilotsInner").html("...");
+        console.log('Fetching remaining pilots');
+        $("#listAllPilotsInner").load("/kill/#{($killInfo['killID'] ?? 0)}/remaining/");
+      }
+    }

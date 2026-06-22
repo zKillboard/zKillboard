@@ -1,7 +1,7 @@
 <?php
 
 function handler($request, $response, $args, $container) {
-    global $mdb, $redis, $twig;
+    global $mdb, $redis, $templates;
 
     $id = (int) $args['id'];
 
@@ -9,5 +9,5 @@ function handler($request, $response, $args, $container) {
     $killdata = Kills::getKillDetails($id);
 
     $data = ['crest' => $crest, 'killdata' => $killdata];
-    return $container->get('view')->render($response->withHeader('Cache-Tag', "kill,kill:$id"), 'components/ingamelink.html', $data);
+    return $container->get('view')->render($response->withHeader('Cache-Tag', "kill,kill:$id"), 'components/ingamelink.pug', $data);
 }

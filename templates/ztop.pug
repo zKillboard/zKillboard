@@ -1,0 +1,32 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'zKillboard Server Top';
+
+block title
+  include components/title.pug
+
+block style
+  link(rel="stylesheet" href="/css/ztop.css?v=" . $version)
+
+block content
+  .ztop-wrap
+    .ztop-hero
+      .ztop-title zTop
+      .ztop-subtitle Live server status, queues, and telemetry.
+      .ztop-controls
+        .ztop-meta
+          span#ztop-last-update Waiting for first update...
+          span#ztop-connection.ztop-pill Connecting
+    #ztop-servers.ztop-servers
+    #ztop-groups.ztop-group-grid
+      .ztop-group
+        .ztop-group-title Waiting for metrics...
+    .ztop-section
+      .ztop-section-header
+        h3 Raw zTop feed
+        button#ztop-raw-toggle.ztop-toggle(type="button") Show raw
+      pre#ztoptextblock.ztop-raw.is-hidden ztop will populate momentarily unless your live updates are disabled
+
+block script
+  script(defer type="text/javascript" src="/js/ztop.js?v=" . $version)

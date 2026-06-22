@@ -1,0 +1,70 @@
+- $flagItems = array_map(fn($row) => is_object($row) ? (array) $row : $row, $items ?? []);
+- $headerDisplayed = false;
+- $total = 0;
+- $totalDropped = 0;
+- $totalDestroyed = 0;
+- $imageSize = 32;
+- $resizeImage = 24;
+each $item in $flagItems
+  if (($item['flagName'] ?? '') == ($flagName ?? ''))
+    if (!$headerDisplayed)
+      - $total = 0;
+      - $totalDropped = 0;
+      - $totalDestroyed = 0;
+      tr.hide-when-sorted
+        th(data-order=$i() colspan="4")
+          h5= $flagName ?? ''
+          if (($flagName ?? '') == 'Frigate Bay')
+            |  
+            small Full value of frigate not included in killmail value.
+        th.d-none
+        th.d-none
+        th.d-none
+      - $headerDisplayed = true;
+    - $droppedRow = (($item['quantity_dropped'] ?? 0) > 0) ? 'item_dropped_row' : '';
+    - $dropped = (($item['quantity_dropped'] ?? 0) > 0) ? 'item_dropped' : '';
+    - $destroyed = (($item['quantity_destroyed'] ?? 0) > 0) ? 'item_destroyed' : '';
+    tr.item_row(class=$droppedRow)
+      - $field = $item;
+      td.icons(data-order=$i())
+        div(align="center")
+          include image_item.pug
+      td(data-order=($item['typeName'] ?? '') class=(!empty($dropped) ? $dropped : $destroyed))
+        if (($item['inContainer'] ?? 0) == 1)
+          span.hide-when-sorted &mdash; 
+        a(href=('/item/' . ($item['typeID'] ?? 0) . '/'))
+          = $item['typeName'] ?? ''
+          if (($item['singleton'] ?? 0) == 2)
+            |  (Copy)
+      - $qty = ($item['quantity_dropped'] ?? 0) + ($item['quantity_destroyed'] ?? 0);
+      td.columnQty(style="text-align: right;" data-order=$qty class=(!empty($dropped) ? $dropped : $destroyed))
+        span(format="format-int-once" raw=$qty)= $qty
+        |  
+        if (!empty($dropped))
+          i.fas.fa-check(aria-hidden="true" style="color: inherit;")
+        else
+          i.fas.fa-times(aria-hidden="true" style="color: inherit;")
+      - $price = (($item['singleton'] ?? 0) == 2 ? 0.01 * $qty : ($item['price'] ?? 0));
+      td.price(style="text-align: right;" data-order=$price format="format-dec2-once" raw=$price)= number_format((float) $price, 2)
+    - $total = $total + $price;
+    - $unitPrice = $qty > 0 ? ($price / $qty) : 0;
+    - $totalDropped = $totalDropped + ($unitPrice * ($item['quantity_dropped'] ?? 0));
+    - $totalDestroyed = $totalDestroyed + ($unitPrice * ($item['quantity_destroyed'] ?? 0));
+if ($total > 0 && count($flagItems) > 1)
+  tr.hide-when-sorted
+    td(data-order=$i() colspan="4" style="text-align: right")
+      small
+        span.item_dropped
+          span(format="format-dec2-once" raw=$totalDropped)= number_format((float) $totalDropped, 2)
+          |  
+          i.fas.fa-check(aria-hidden="true" style="color: inherit;")
+        |  | 
+        span.item_destroyed
+          span(format="format-dec2-once" raw=$totalDestroyed)= number_format((float) $totalDestroyed, 2)
+          |  
+          i.fas.fa-times(aria-hidden="true" style="color: inherit;")
+        |  | Total: 
+        span(format="format-dec2-once" raw=$total)= number_format((float) $total, 2)
+    td.d-none
+    td.d-none
+    td.d-none

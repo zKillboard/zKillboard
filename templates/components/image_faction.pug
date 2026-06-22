@@ -1,0 +1,5 @@
+if (($field['factionID'] ?? 0) != 0)
+  - $imageSize = $imageSize ?? 32;
+  - $actualSize = $resizeImage ?? $imageSize;
+  a(href=('/faction/' . $field['factionID'] . '/') rel="tooltip" title=($field['factionName'] ?? ''))
+    img.eveimage.img-rounded(src=(($image_corporation ?? 'https://images.evetech.net/corporations/') . $field['factionID'] . '/logo?size=' . $imageSize) style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;') alt=($field['factionName'] ?? '') loading="lazy" decoding="async" fetchpriority="low")

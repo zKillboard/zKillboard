@@ -1,0 +1,28 @@
+.alert.alert-info.text-center
+  a(href=($referralLink ?? '') target="_blank" alt="1 million SP FREE")
+    img(src="https://images.evetech.net/types/40520/icon?size=32" alt="1 million free skill points!" loading="lazy" decoding="async" fetchpriority="low")
+    |  1 Million SP FREE
+!= $sponsoredMessage ?? ''
+- $extraData = is_object($extra ?? null) ? (array) $extra : ($extra ?? []);
+- $activity = is_object($extraData['activity'] ?? null) ? (array) $extraData['activity'] : ($extraData['activity'] ?? []);
+if (($pageType ?? '') == 'overview' && ($activity['max'] ?? 0) > 0)
+  h5.text-center Activity (last 90 days)
+  a.d-block.text-center.text-decoration-none(href="#" data-bs-toggle="modal" data-bs-target="#heatmap")
+    div(style="line-height: 0;")
+      - $steps = floor(($activity['max'] ?? 0) / 5);
+      if ($steps < 1)
+        - $steps = 1;
+      each $day in range(0, 6)
+        each $hour in range(0, 23)
+          - $value = $activity[$day][$hour] ?? 0;
+          - $level = 0;
+          if ($value > 0)
+            - $level = (int) ceil($value / $steps);
+            if ($level > 5)
+              - $level = 5;
+          span(style=('width: calc(100% / 24); height: 8px; background-color: hsla(0, 92%, ' . ($level * 10) . '%, 1); display: inline-block; margin: 0; padding: 0; box-sizing: border-box;'))
+        br.m-0.p-0
+    small
+      small
+        i Click to enlarge
+  br

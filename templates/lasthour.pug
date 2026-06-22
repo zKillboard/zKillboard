@@ -1,0 +1,30 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'Last Hour';
+
+block title
+  include components/title.pug
+
+block content
+  - $showImage = true;
+  nav.mb-3
+    ul.nav.nav-pills.flex-wrap
+      each $typeO in ($types ?? [])
+        li.nav-item
+          a.nav-link(href=('/top/lasthour/' . $typeO . '/') class=$isActive($typeO, $type ?? ''))= $typeO
+  each $list, $typeName in ($allLists ?? [])
+    a(name=$typeName)
+    br
+    h4= ucfirst((string) $typeName) . ': Top Killers in the Last Hour as of ' . ($time ?? '')
+    - $topLists = $list['topKillers'] ?? [];
+    include components/top_list.pug
+    hr
+    h4= ucfirst((string) $typeName) . ': Top Losers in the Last Hour as of ' . ($time ?? '')
+    - $topLists = $list['topLosers'] ?? [];
+    include components/top_list.pug
+    .clear
+    hr
+
+block head
+  meta(http-equiv="refresh" content="300")

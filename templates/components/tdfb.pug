@@ -1,0 +1,39 @@
+- $finalBlowData = is_object($finalBlow ?? null) ? (array) $finalBlow : ($finalBlow ?? []);
+- $topDamageData = is_object($topDamage ?? null) ? (array) $topDamage : ($topDamage ?? []);
+if (!empty($finalBlowData) || !empty($topDamageData))
+  table.table.table-sm(style="margin: 0px; table-layout: fixed; width: 100%;")
+    - $imageSize = 64;
+    colgroup
+      col(style="width: 50%;")
+      col(style="width: 50%;")
+    thead
+      tr.titles.centered
+        th(style="text-align: center;") Final Blow
+        th(style="text-align: center;") Top Damage
+    tbody
+      tr
+        td(style="text-align: center;")
+          - $field = $finalBlowData;
+          if (($field['characterID'] ?? 0) != 0)
+            include image_char.pug
+          else
+            include image_corp.pug
+        td(style="text-align: center;")
+          - $field = $topDamageData;
+          if (($field['characterID'] ?? 0) != 0)
+            include image_char.pug
+          else
+            include image_corp.pug
+      tr
+        td(style="text-align: center;")
+          - $field = $finalBlowData;
+          if (($field['characterID'] ?? 0) != 0)
+            a.info_final_blow(href=('/character/' . ($finalBlowData['characterID'] ?? 0) . '/'))= $field['characterName'] ?? ''
+          else
+            a.info_final_blow(href=('/corporation/' . ($finalBlowData['corporationID'] ?? 0) . '/'))= $field['corporationName'] ?? ''
+        td(style="text-align: center;")
+          - $field = $topDamageData;
+          if (($field['characterID'] ?? 0) != 0)
+            a.info_top_damage(href=('/character/' . ($topDamageData['characterID'] ?? 0) . '/'))= $field['characterName'] ?? ''
+          else
+            a.info_top_damage(href=('/corporation/' . ($topDamageData['corporationID'] ?? 0) . '/'))= $field['corporationName'] ?? ''

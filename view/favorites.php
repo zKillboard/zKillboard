@@ -1,7 +1,7 @@
 <?php
 
 function handler($request, $response, $args, $container) {
-    global $mdb, $redis, $twig;
+    global $mdb, $redis, $templates;
 
     if (!User::isLoggedIn()) {
         $kills = [];
@@ -13,5 +13,5 @@ function handler($request, $response, $args, $container) {
     }
 
     $data = ['kills' => $kills];
-    return $container->get('view')->render($response->withHeader('Cache-Tag', 'account,favorites'), 'favorites.html', $data);
+    return $container->get('view')->render($response->withHeader('Cache-Tag', 'account,favorites'), 'favorites.pug', $data);
 }

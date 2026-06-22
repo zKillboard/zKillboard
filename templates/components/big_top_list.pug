@@ -1,0 +1,39 @@
+if (!empty($topSet))
+  .container(style="width: 100%")
+    center
+      h4= $topSet['title'] ?? ($topTitle ?? '')
+    .clearfix
+    .clearfix
+    .row
+      each $data in $topSet
+        if (is_array($data) && isset($data['victim']))
+          - $field = $data['victim'] ?? [];
+          - $killID = $data['killID'] ?? 0;
+          - $shipTypeID = $field['shipTypeID'] ?? 0;
+          - $shipName = $field['shipName'] ?? '';
+          - $totalValue = $data['zkb']['totalValue'] ?? 0;
+          .col-6.col-sm-4.col-lg-2.float-start(style="text-align: center; height: 220px;")
+            div(style="width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;")
+              if ($killID > 0)
+                a(href=('/kill/' . $killID . '/') rel="tooltip" title=('Detail for ' . $killID))= $shipName
+              else
+                a(href=('/ship/' . $shipTypeID . '/'))= $shipName
+            if ($shipTypeID == 0)
+              img.eveimage.img-rounded(src=('//' . ($siteurl ?? '') . '/img/eve-question.png') style="height: 128px; width: 128px;" alt="" loading="lazy" decoding="async" fetchpriority="low")
+            else
+              a(href=('/kill/' . $killID . '/') rel="tooltip" title=('Detail for ' . $killID))
+                span.shipImageSpan(data-l="128px" data-i="128" style="height: 128px; width: 128px; --size: 128px; --sizei: 128;")
+                  img.shipImageRender.eveimage.img-rounded(src=(($image_ship ?? $image_item ?? 'https://images.evetech.net/types/') . $shipTypeID . '/render?size=128') style="height: 128px; width: 128px;" alt=$shipName onerror="this.setAttribute('shipImageError', 'true')" loading="lazy" decoding="async" fetchpriority="low")
+                  if (strlen((string) ($field['pip'] ?? '')) > 0)
+                    img.pip(src=('/img/pips/' . $field['pip']) alt="" loading="lazy" decoding="async" fetchpriority="low")
+            br
+            h6(format="format-isk-once-i" raw=$totalValue)= $formatIsk($totalValue) . ' ISK'
+            span
+              if (strlen((string) ($field['characterName'] ?? '')) > 0)
+                a.wrapplease(href=('/character/' . ($field['characterID'] ?? 0) . '/'))= $field['characterName'] ?? ''
+              else
+                a.wrapplease(href=('/corporation/' . ($field['corporationID'] ?? 0) . '/'))= $field['corporationName'] ?? ''
+              br
+            br
+  .clearfix
+  br

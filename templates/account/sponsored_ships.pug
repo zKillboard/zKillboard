@@ -1,0 +1,38 @@
+.row
+  h4 Sponsored Ships
+  if (!empty($data['sponsoredShips'] ?? []))
+    table.table.table-striped.table-hover.col-lg-3
+      tr
+        th Victim / Ship
+        th(style="text-align: right;") ISK
+        th(style="text-align: right;") Killmail ID
+        th(style="text-align: right;") Timestamp
+        th(style="text-align: right;") Expired
+      each $row in $data['sponsoredShips']
+        tr
+          td
+            a(href=('/kill/' . ($row['killID'] ?? '') . '/'))= (($row['victimName'] ?? '') . ' ' . ($row['shipName'] ?? ''))
+          td(style="text-align: right;")
+            span(format="format-isk-once" raw=($row['isk'] ?? 0))= number_format((float) ($row['isk'] ?? 0), 0)
+            |  ISK
+          td(style="text-align: right;")
+            a(href=('/kill/' . ($row['killID'] ?? '') . '/'))= $row['killID'] ?? ''
+          td(style="text-align: right;")= ($row['entryDttm'] ?? '-') ?: '-'
+          td(style="text-align: right;")= ($row['expired'] ?? 'No') ?: 'No'
+      tr
+        th Total
+        th(style="text-align: right;")
+          span(format="format-isk-once" raw=($data['sponsoredTotalIsk'] ?? 0))= number_format((float) ($data['sponsoredTotalIsk'] ?? 0), 0)
+          |  ISK
+        th(style="text-align: right;")
+        th(style="text-align: right;")
+        th(style="text-align: right;")
+  else
+    em No sponsored ships found yet...
+hr
+.row
+  ul
+    li
+      a(href="/kills/sponsored/") Browse all recently sponsored killmails
+    li
+      a(href="/information/payments/#sponsor") Learn more about sponsoring ships

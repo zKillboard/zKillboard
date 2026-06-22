@@ -1,0 +1,103 @@
+- $topSetData = is_object($topSet ?? null) ? (array) $topSet : ($topSet ?? []);
+- $first = true;
+- $counter = 1;
+if (count($topSetData['values'] ?? []) > 0)
+  .groupReport.float-start(style="width: 100%; padding: 0px; margin: 0px;")
+    center
+      h5= $topSetData['title'] ?? ''
+    table.table.table-sm.topBoxes.col-lg-2(style="padding: 0px; margin: 0px; width: 100%;" data-singular=($topSetData['singularTitle'] ?? '') aria-title=($topSetData['title'] ?? ''))
+      each $data in ($topSetData['values'] ?? [])
+        - $data = is_object($data) ? (array) $data : $data;
+        - $field = $data;
+        if ($first)
+          tr
+            - $imageSize = 64;
+            - $field = $data;
+            if (($topSetData['type'] ?? '') == 'character')
+              td(colspan="3")
+                include image_char.pug
+            else if (($topSetData['type'] ?? '') == 'corporation')
+              td(colspan="3")
+                include image_corp.pug
+            else if (($topSetData['type'] ?? '') == 'alliance')
+              td(colspan="3")
+                include image_alli.pug
+            else if (($topSetData['type'] ?? '') == 'solarSystem')
+              td(colspan="3")
+                include image_system.pug
+            else if (($topSetData['type'] ?? '') == 'shipType')
+              td(colspan="3")
+                include image_ship.pug
+            else if (($topSetData['type'] ?? '') == 'location')
+              td(colspan="3")
+                include image_item.pug
+          - $first = false;
+        if ($counter == 11)
+          tr(class=('grouping-all-' . ($topSetData['type'] ?? '')))
+            td(colspan="4")
+              center
+                span.btn.btn-sm.btn-primary(onclick=("$('.grouping-" . ($topSetData['type'] ?? '') . "').show(); $('.grouping-all-" . ($topSetData['type'] ?? '') . "').hide(); return false;")) The Rest (up to 500)
+        tr(class=('grouping-' . ($topSetData['type'] ?? '') . ($counter >= 11 ? ' collapse' : '')))
+          if (($topSetData['type'] ?? '') == 'character')
+            td.deepfilter.hidedeepfilter(style="display: none;")
+              input.topfilter(type="checkbox" data-filter-type=($topSetData['type'] ?? '') data-filter-id=($field['characterID'] ?? 0))
+            td
+              include text_char.pug
+          else if (($topSetData['type'] ?? '') == 'corporation')
+            td.deepfilter.hidedeepfilter(style="display: none;")
+              input.topfilter(type="checkbox" data-filter-type=($topSetData['type'] ?? '') data-filter-id=($field['corporationID'] ?? 0))
+            td
+              include text_corp.pug
+          else if (($topSetData['type'] ?? '') == 'alliance')
+            td.deepfilter.hidedeepfilter(style="display: none;")
+              input.topfilter(type="checkbox" data-filter-type=($topSetData['type'] ?? '') data-filter-id=($field['allianceID'] ?? 0))
+            td
+              include text_alli.pug
+          else if (($topSetData['type'] ?? '') == 'faction')
+            td.deepfilter.hidedeepfilter(style="display: none;")
+              input.topfilter(type="checkbox" data-filter-type=($topSetData['type'] ?? '') data-filter-id=($field['factionID'] ?? 0))
+            td
+              include text_faction.pug
+          else if (($topSetData['type'] ?? '') == 'solarSystem')
+            td.deepfilter.hidedeepfilter(style="display: none;")
+              input.topfilter(type="checkbox" data-filter-type=($topSetData['type'] ?? '') data-filter-id=($field['solarSystemID'] ?? 0))
+            td
+              include text_system.pug
+          else if (($topSetData['type'] ?? '') == 'shipType')
+            td.deepfilter.hidedeepfilter(style="display: none;")
+              input.topfilter(type="checkbox" data-filter-type=($topSetData['type'] ?? '') data-filter-id=($field['shipTypeID'] ?? 0))
+            td
+              include text_ship.pug
+          else if (($topSetData['type'] ?? '') == 'group')
+            td.deepfilter.hidedeepfilter(style="display: none;")
+              input.topfilter(type="checkbox" data-filter-type=($topSetData['type'] ?? '') data-filter-id=($field['groupID'] ?? 0))
+            td
+              include text_group.pug
+          else if (($topSetData['type'] ?? '') == 'region')
+            td.deepfilter.hidedeepfilter(style="display: none;")
+              input.topfilter(type="checkbox" data-filter-type=($topSetData['type'] ?? '') data-filter-id=($field['regionID'] ?? 0))
+            td
+              include text_region.pug
+          else if (($topSetData['type'] ?? '') == 'location')
+            td.deepfilter.hidedeepfilter(style="display: none;")
+              input.topfilter(type="checkbox" data-filter-type=($topSetData['type'] ?? '') data-filter-id=($field['locationID'] ?? 0))
+            td
+              include text_location.pug
+          else
+            td.deepfilter.hidedeepfilter(style="display: none;")
+              input.topfilter(type="checkbox" data-filter-type=($topSetData['type'] ?? '') data-filter-id=($field['right'] ?? ''))
+            td= $field['right'] ?? ''
+          if (($topSetData['sortKey'] ?? '') == 'zkb.totalValue')
+            td(style="text-align: right;" format="format-isk-once" raw=($data['kills'] ?? 0) t="isk")= $data['kills'] ?? 0
+          else if (($topSetData['sortKey'] ?? '') == 'attackerCount')
+            td(style="text-align: right;" format="format-dec1" raw=($data['kills'] ?? 0))= $data['kills'] ?? 0
+          else if (($topSetData['sortKey'] ?? '') == 'count')
+            td(style="text-align: right;" format="format-int" raw=($field['count'] ?? 0))= $field['count'] ?? 0
+          else
+            td(style="text-align: right;" title=((($data['score'] ?? 0) != 0) ? ('Score: ' . number_format((float) $data['score'], 0)) : false) rel=((($data['score'] ?? 0) != 0) ? 'tooltip' : false) format="format-int-once" raw=($data['kills'] ?? 0))= number_format((float) ($data['kills'] ?? 0), 0)
+        - $counter++;
+  .clearfix
+else if (($topSetData['title'] ?? '') == 'Top Characters')
+  | Empty result or some resultsets too large for fast grouping. Check your filters.
+else
+  .d-none

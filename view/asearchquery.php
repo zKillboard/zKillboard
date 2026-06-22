@@ -195,7 +195,7 @@ function handler($request, $response, $args, $container) {
 			$rendered = '';
 			if (in_array($groupType, $types)) {
 				$res = AdvancedSearch::getTop($groupType . 'ID', $query, $victimsOnly, $filter, true, $sortKey, $sortBy, $aggregateCollection);
-				$rendered = $container->get('view')->getEnvironment()->render("components/asearch_top_list.html", ['topSet' =>
+				$rendered = $container->get('view')->getEnvironment()->render("components/asearch_top_list.pug", ['topSet' =>
 				[
 					'type' => $groupType,
 					'singularTitle' => ucwords($groupType),
@@ -229,7 +229,7 @@ function handler($request, $response, $args, $container) {
 					}
 				}
 				if (isset($labelGroupMaps[$labelGroup['_id']])) $labelGroup['_id'] = $labelGroupMaps[$labelGroup['_id']];
-				$rendered .= $container->get('view')->getEnvironment()->render("components/asearch_top_list.html", ['topSet' =>
+				$rendered .= $container->get('view')->getEnvironment()->render("components/asearch_top_list.pug", ['topSet' =>
 				[
 					'type' => $labelGroup['_id'],
 					'singularTitle' => ucwords($labelGroup['_id']),
@@ -257,7 +257,7 @@ function handler($request, $response, $args, $container) {
 			foreach ($result as $type => $count) {
 				$res[] = ['type' => ucwords(str_replace("IDs", "s", $type)), 'count' => $count];
 			}
-			$rendered = $container->get('view')->getEnvironment()->render("components/asearch_distincts.html", ['result' => $res]);
+			$rendered = $container->get('view')->getEnvironment()->render("components/asearch_distincts.pug", ['result' => $res]);
 			$redis->setex("distincts:$key", 900, trim($rendered));
 			$redis->del($key);
 			$response->getBody()->write($rendered);

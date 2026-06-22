@@ -1,0 +1,46 @@
+div
+  center
+    a(href="/information/payments/") Throw away ISK by sending to zKillboard in game.
+  br
+  center
+    .alert.alert-danger
+      | ISK comes from your adfree donation,
+      br
+      | so if you sponsor you will lose adfree time!
+  hr
+  if (($type ?? '') == 'query')
+    center
+      h4= 'Balance: ' . number_format((float) ($iskA ?? 0), 0) . ' ISK'
+      hr
+      - $initValue = floor(($iskA ?? 0) / 5000000) * 5000000;
+      small
+        small
+          i slide left for negative values
+      p
+        input#slider(data-slider-id="sponsor-slider" type="text" data-slider-min=(($iskA ?? 0) * -1) data-slider-max=($iskA ?? 0) data-slider-step="1" data-slider-value="0")
+        span(style="left-margin: 0.5em")
+      br
+      p
+        b.green
+          | Sponsor 
+          span#sliderValue 0
+          |  ISK
+      br
+      br
+      input.btn.btn-primary(type="submit" value="Sponsor" onClick=("doSponsor('/sponsor/sponsor/" . ($killID ?? '') . "/' + $('#slider').attr('value') + '/'); return false;"))
+      br
+      br
+      .alert.alert-success Sponsoring 100m isk or more will send a notification!
+    script.
+      function showChange(event)
+      {
+          $("#sliderValue").text((event.value.newValue).toLocaleString(undefined, undefined)).removeClass("red").removeClass("green").addClass( event.value.newValue >= 0 ? 'green' : 'red');
+          console.log($(".sliderhandle").attr('aria-valuenow'));
+      }
+
+      $("#slider").slider().bind('change', null, showChange);
+  else
+    = $response ?? ''
+  hr
+  center
+    a(href="/kills/sponsored/") List of all Sponsored Killmails

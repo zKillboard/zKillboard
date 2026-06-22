@@ -1,0 +1,34 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'Wars';
+
+block title
+  include components/title.pug
+
+block content
+  section.war-page
+    header.war-page-header
+      div
+        p.war-page-kicker Potential targets
+        h2 War Eligible
+      nav.war-page-actions(aria-label="War pages")
+        a.btn.btn-sm.btn-secondary(href="/wars/")
+          i.fas.fa-list(aria-hidden="true")
+          |  Wars
+    p.war-page-intro Alliances and corporations eligible for war without active wars right now. ESI updates can lag by a couple of days; the lists use the top 100 by member count, and 0-member corporations may still qualify if they have a structure in space.
+    #war-eligible
+      section.war-section.war-eligible-section
+        header.war-section-header
+          h3 Alliances
+          span= number_format(count($allis ?? []), 0)
+        - $entities = $allis ?? [];
+        - $entityTitle = 'Alliance';
+        include components/war_eligible_entitylist.pug
+      section.war-section.war-eligible-section
+        header.war-section-header
+          h3 Corporations
+          span= number_format(count($corps ?? []), 0)
+        - $entities = $corps ?? [];
+        - $entityTitle = 'Corporation';
+        include components/war_eligible_entitylist.pug

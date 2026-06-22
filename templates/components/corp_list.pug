@@ -1,0 +1,21 @@
+table.table.table-hover.table-striped
+  tr
+    th Corp. Name
+    th Ticker
+    th(style="text-align: right") Members
+    th(style="text-align: right") API
+    th Last Checked
+  each $corp in ($corps ?? [])
+    - $corp = is_object($corp) ? (array) $corp : $corp;
+    - $field = $corp;
+    tr
+      td
+        include text_corp.pug
+      td= '[' . ($corp['ticker'] ?? '') . ']'
+      td(style="text-align: right")= number_format((float) ($corp['memberCount'] ?? 0), 0)
+      td(style="text-align: right")
+        if (($corp['apiVerified'] ?? 0) == 1)
+          font.green API Verified
+        else if (isset($corp['apiPercentage']))
+          = $corp['apiPercentage'] . '% Verified'
+      td= $corp['cachedUntilTime'] ?? ''

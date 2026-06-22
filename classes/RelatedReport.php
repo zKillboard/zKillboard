@@ -18,12 +18,12 @@ class RelatedReport {
 
         if ($redis->get("zkb:reinforced") == true) {
             header('HTTP/1.1 202 Request being processed');
-            $app->render('related_reinforced.html', ['showAds' => false]);
+            $app->render('related_reinforced.pug', ['showAds' => false]);
             exit();
         }
         if ($redis->llen("queueRelated") > 25) {
             header('HTTP/1.1 202 Request being processed');
-            $app->render('related_notnow.html', ['showAds' => false, 'solarSystemID' => $systemID, 'unixtime' => $unixTime]);
+            $app->render('related_notnow.pug', ['showAds' => false, 'solarSystemID' => $systemID, 'unixtime' => $unixTime]);
             exit();
         }
 

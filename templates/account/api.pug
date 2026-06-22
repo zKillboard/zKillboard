@@ -1,0 +1,27 @@
+.row
+  span.col-lg-6
+    h3 Scopes
+    table.table.table-striped.table-sm.col-lg-4
+      thead
+        tr
+          th Scope
+          th Last Validated
+          th &nbsp;
+      tbody
+        each $row in ($data['apiScopes'] ?? [])
+          tr
+            td= $row['scope'] ?? ''
+            td
+              if (isset($row['lastFetch']['sec']))
+                = date('Y-m-d H:i', (int) $row['lastFetch']['sec'])
+            td(style="text-align: right;")
+              form(name="deleteapi" method="post" action="/account/api/")
+                input#deletekeyid(name="deletekeyid" type="hidden" value=($row['scope'] ?? ''))
+                input.btn.btn-danger.btn-sm(type="submit" value="Remove" onclick="return confirm('Are you sure you want to remove this API key?');")
+.row
+  span.col-lg-6
+    | Manage SSO API Keys here:
+    br
+    a(target="_blank" href="https://developers.eveonline.com/authorized-apps") https://developers.eveonline.com/authorized-apps
+    br
+  .clearfix

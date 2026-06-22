@@ -1,0 +1,14 @@
+span.col-lg-12.float-start
+  h3 Log
+  table.table.table-striped.table-sm
+    thead
+      tr
+        th.col-lg-2 Time
+        th Message
+    tbody
+      each $entry in ($data['log'] ?? [])
+        tr
+          td
+            if (isset($entry['entryTime']['sec']))
+              = date('Y/m/d H:i:s', (int) $entry['entryTime']['sec'])
+          td= $entry['message'] ?? ''

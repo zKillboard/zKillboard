@@ -1,0 +1,12 @@
+table.table.table-sm.table-striped
+  caption
+    h5 Top Pilots
+  tr
+    th Pilot
+    th Kills
+  each $pilot in ($topPilots ?? [])
+    - $pilot = is_object($pilot) ? (array) $pilot : $pilot;
+    tr
+      td
+        a(href=('/kill/' . ($pilot['characterID'] ?? 0) . '/'))= $pilot['characterName'] ?? ''
+      td(style="text-align: right" format="format-int-once" raw=($pilot['kills'] ?? 0))= number_format((float) ($pilot['kills'] ?? 0), 0)

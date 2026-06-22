@@ -1,0 +1,10 @@
+if (!empty($showImage))
+  - $imageSize = 32;
+  include image_system.pug
+- $wormholeclass = $extra['wormhole']['class'] ?? null;
+a(href=('/system/' . ($field['solarSystemID'] ?? 0) . '/' . ($entitySubpage ?? '')) class=((($field['solarSystemID'] ?? 0) >= 32000000 && ($field['solarSystemID'] ?? 0) < 33000000) ? 'triglavian' : ''))
+  = $field['solarSystemName'] ?? ''
+  if ($wormholeclass)
+    |  (C
+    = $wormholeclass
+    | )

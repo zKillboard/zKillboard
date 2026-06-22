@@ -1,0 +1,15 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'Error';
+
+block title
+  include components/title.pug
+
+block content
+  .alert.alert-danger
+    strong= $message ?? ''
+    br
+    = $codeHash ?? ''
+    br
+    != $html ?? ''

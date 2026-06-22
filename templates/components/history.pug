@@ -1,0 +1,53 @@
+hr
+h3 Monthly History
+- $history = $statistics['months'] ?? [];
+- $currentYear = 0;
+table.table.table-sm.table-hover
+  thead
+    tr
+      th
+        span.float-end.green &nbsp;
+      th
+        span.float-end.green Kills
+      th
+        span.float-end.green Points
+      th
+        span.float-end.green ISK
+      th
+        span.float-end.red Losses
+      th
+        span.float-end.red Points
+      th
+        span.float-end.red ISK
+      th
+        span.float-end Efficiency
+      th
+        span.float-end Top 10
+  each $month in $history
+    - $month = is_object($month) ? (array) $month : $month;
+    if ($currentYear != ($month['year'] ?? 0))
+      tr.heading
+        th(colspan="9")= $month['year'] ?? ''
+      - $currentYear = $month['year'] ?? 0;
+    tr
+      td
+        a(href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/year/' . ($month['year'] ?? '') . '/month/' . ($month['month'] ?? '') . '/'))= $getLongMonth($month['month'] ?? 0)
+      td
+        span.float-end.green= number_format((float) ($month['shipsDestroyed'] ?? 0), 0)
+      td
+        span.float-end.green= number_format((float) ($month['pointsDestroyed'] ?? 0), 0)
+      td
+        span.float-end.green= $formatIsk($month['iskDestroyed'] ?? 0)
+      td
+        span.float-end.red= number_format((float) ($month['shipsLost'] ?? 0), 0)
+      td
+        span.float-end.red= number_format((float) ($month['pointsLost'] ?? 0), 0)
+      td
+        span.float-end.red= $formatIsk($month['iskLost'] ?? 0)
+      - $efficiency = (($month['iskDestroyed'] ?? 0) == 0 ? 0 : (($month['iskDestroyed'] ?? 0) / (($month['iskDestroyed'] ?? 0) + ($month['iskLost'] ?? 0)) * 100));
+      - $efficiencyClass = $efficiency > 50 ? 'green' : 'red';
+      td
+        span.float-end(class=$efficiencyClass)= number_format((float) $efficiency, 1) . '%'
+      td
+        span.float-end
+          a(href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/top/year/' . ($month['year'] ?? '') . '/month/' . ($month['month'] ?? '') . '/'))= ($month['month'] ?? '') . ' / ' . ($month['year'] ?? '')

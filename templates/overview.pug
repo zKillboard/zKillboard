@@ -1,0 +1,293 @@
+extends base.pug
+
+block vars
+  - $detailData = is_object($detail ?? null) ? (array) $detail : ($detail ?? []);
+  - $extraData = is_object($extra ?? null) ? (array) $extra : ($extra ?? []);
+  - $pageType = $pageType ?? 'overview';
+  - $pageTitle = (!empty($pageType) && $pageType != 'overview') ? (($pageName ?? '') . ' | ' . ucfirst((string) $pageType) . ' | ' . ucfirst((string) ($key ?? ''))) : (($pageName ?? '') . ' | ' . ucfirst((string) ($key ?? '')));
+  - $rankText = !empty($detailData['ranks']['overallRank']) ? (': Ranked #' . number_format((float) $detailData['ranks']['overallRank'], 0) . ' with ') : ': ';
+  - $description = ($pageName ?? '') . $rankText . number_format((float) ($detailData['shipsDestroyed'] ?? 0), 0) . ' ships destroyed and ' . number_format((float) ($detailData['shipsLost'] ?? 0), 0) . ' ships lost.';
+  - $canonical = ($fullsiteurl ?? '') . '/' . ($key ?? '') . '/' . ($id ?? '') . '/';
+
+block title
+  include components/title.pug
+
+block content
+  include components/info_top.pug
+  #overview-navbar.navbar.navbar-dark.navbar-expand
+    button.navbar-toggler.d-md-none(type="button" data-bs-toggle="collapse" data-bs-target="#overview-menu" aria-controls="overview-menu" aria-expanded="false" aria-label="Toggle navigation")
+      span.navbar-toggler-icon
+    #overview-menu.collapse.navbar-collapse.navbar-sub
+      ul.navbar-nav.me-auto
+        if (!empty($prevID))
+          li.nav-item.d-none.d-md-block
+            a.nav-link(href=('/' . ($key ?? '') . '/' . $prevID . '/')) &lt;
+        each $nav in [['Overview',''], ['Kills','kills/'], ['Solo','solo/'], ['Losses','losses/']]
+          li.nav-item
+            a.nav-link(class=$isActive($nav[0], $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/' . $nav[1] . ($nav[1] ? ($YWMurl ?? '') : '')))= $nav[0]
+        if (($key ?? '') == 'character')
+          li.nav-item
+            a.nav-link(class=$isActive('Trophies', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/trophies/')) Trophies
+        if (($key ?? '') == 'ship')
+          li.nav-item
+            a.nav-link(class=$isActive('Description', $pageType) href=('/item/' . ($id ?? '') . '/')) Description
+        li.nav-item.dropdown
+          a.nav-link.dropdown-toggle(href="#" data-bs-toggle="dropdown" aria-expanded="false") Top
+          ul.dropdown-menu
+            li
+              a.dropdown-item(class=$isActive('top', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/top/')) Monthly Top
+            li
+              a.dropdown-item(class=$isActive('topalltime', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/topalltime/')) All Time Top
+        li.nav-item
+          a.nav-link(class=$isActive('ranks', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/ranks/')) Ranks
+        li.nav-item
+          a.nav-link(class=$isActive('stats', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/stats/')) Stats
+        if (!empty($extraData['hasSupers']))
+          li.nav-item
+            a.nav-link(class=$isActive('supers', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/supers/')) Supers
+        if (($extraData['hasWars'] ?? 0) > 0)
+          li.nav-item
+            a.nav-link(class=$isActive('wars', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/wars/')) Wars
+        if (($key ?? '') == 'alliance')
+          li.nav-item
+            a.nav-link(class=$isActive('corpstats', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/corpstats/')) Corporations
+      ul.navbar-nav.ms-auto.d-none.d-md-flex
+        if (($key ?? '') == 'ship')
+          li.nav-item.d-md-none.d-xl-block
+            a.nav-link(href=('https://eveconomy.online/item/' . ($id ?? '')) style="background-color:#72ABB6;color:#fff;" target="_blank" rel="noopener noreferrer")
+              img(src="/img/eveconomy.png" alt="EVEconomy" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;" loading="lazy" decoding="async" fetchpriority="low")
+              | EVEconomy
+        if (($key ?? '') == 'character')
+          li.nav-item.d-md-none.d-xl-block
+            a.nav-link(href="https://podmail.space" style="color:#fff;" target="_blank" rel="noopener noreferrer")
+              img(src="/img/podmail.png" alt="PodMail" style="height:16px;vertical-align:middle;margin-right:4px;" loading="lazy" decoding="async" fetchpriority="low")
+              | PodMail
+        li.nav-item.d-none.d-sm-block
+          if (in_array(($key ?? ''), ['character', 'corporation', 'alliance']))
+            li.nav-item
+              a.nav-link(href="/information/streambox/") StreamBox
+          if (($key ?? '') == 'character')
+            li.nav-item
+              a.nav-link(href=('https://evewho.com/character/' . ($id ?? '')) target="_blank" rel="noopener noreferrer") EVEWho
+          else if (($key ?? '') == 'corporation')
+            li.nav-item
+              a.nav-link(href=('https://evemaps.dotlan.net/corp/' . rawurlencode($pageName ?? '') . '/') target="_blank" rel="noopener noreferrer") DOTLAN
+            li.nav-item
+              a.nav-link(href=('https://evewho.com/corporation/' . ($id ?? '')) target="_blank" rel="noopener noreferrer") EVEWho
+          else if (($key ?? '') == 'alliance')
+            li.nav-item
+              a.nav-link(href=('https://evemaps.dotlan.net/alliance/' . rawurlencode($pageName ?? '') . '/') target="_blank" rel="noopener noreferrer") DOTLAN
+            li.nav-item
+              a.nav-link(href=('https://evewho.com/alliance/' . ($id ?? '')) target="_blank" rel="noopener noreferrer") EVEWho
+          else if (($key ?? '') == 'system')
+            if (($detailData['regionID'] ?? 0) == 10000070)
+              li.nav-item
+                a.nav-link(href="https://evemetro.com" target="_blank" rel="noopener noreferrer") Eve Metro
+            li.nav-item
+              a.nav-link(href=('https://evemaps.dotlan.net/system/' . rawurlencode($pageName ?? '') . '/') target="_blank" rel="noopener noreferrer") DOTLAN
+          else if (($key ?? '') == 'region')
+            if (($id ?? 0) == 10000070)
+              li.nav-item
+                a.nav-link(href="https://evemetro.com" target="_blank" rel="noopener noreferrer") Eve Metro
+            li.nav-item
+              a.nav-link(href=('https://evemaps.dotlan.net/region/' . rawurlencode($pageName ?? '') . '/') target="_blank" rel="noopener noreferrer") DOTLAN
+          if (!empty($nextID))
+            li.nav-item.d-none.d-md-block
+              a.nav-link(href=('/' . ($key ?? '') . '/' . $nextID . '/')) &gt;
+  br
+  .row.gx-0.gx-md-3
+    if (in_array($pageType, ['overview', 'kills', 'solo', 'losses']))
+      .col-lg-10.float-start.ps-md-0
+        #topset-isk
+        - $killListTitle = !empty($mixed) ? 'Recent Activity' : 'Kills';
+        - $killList = $kills ?? [];
+        - $mixed = 0;
+        - $numPages = $combinedPages ?? 0;
+        - $isEmbedded = true;
+        if ($pageType == 'kills')
+          - $topTitle = 'Most Valuable Kills - Last 7 Days'; $killListTitle = 'Kills'; $numPages = $killPages ?? 0; $killList = $kills ?? [];
+        else if ($pageType == 'solo')
+          - $topTitle = 'Most Valuable Solo Kills - Last 7 Days'; $killListTitle = 'Solo'; $numPages = $soloPages ?? 0; $killList = $solo ?? [];
+        else if ($pageType == 'losses')
+          - $topTitle = 'Most Valuable Losses - Last 7 Days'; $killListTitle = 'Losses'; $numPages = $lossPages ?? 0; $killList = $losses ?? [];
+        - $topSet = $topKills ?? [];
+        - $topTitle = 'Most Valuable Kills - Last 7 Days';
+        include components/big_top_list.pug
+        - $topTitle = 'Sponsored Killmails - Last 7 Days';
+        - $topSet = $extraData['sponsoredMails'] ?? [];
+        include components/big_top_list.pug
+        .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent" style="padding-top: 1em;")
+        include components/kill_list.pug
+      .col-lg-2.float-start(style="padding: 0px;")
+        center
+          div(style="max-width: 100%;")
+            a#loginsideimage.btn.w-100.collapse(href="/ccpoauth2/")
+              img(src="/img/ssologin.png" style="width: 100%; max-width: 100%; margin-bottom: 1em;" loading="lazy" decoding="async" fetchpriority="low")
+        include components/activity.pug
+        include components/activePvP.pug
+        #topset-characterID
+        #topset-corporationID
+        #topset-allianceID
+        #topset-factionID
+        #topset-shipTypeID
+        #topset-groupID
+        #topset-solarSystemID
+        #topset-locationID
+        if (count($topLists ?? []) > 0)
+          each $topSet in ($topLists ?? [])
+            - $topSet = is_object($topSet) ? (array) $topSet : $topSet;
+            include components/top_killer_list.pug
+    else if ($pageType == 'trophies')
+      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent" style="padding-top: 1em;")
+      include components/trophies.pug
+    else if ($pageType == 'api')
+      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent" style="padding-top: 1em;")
+      include components/corp_list.pug
+    else if ($pageType == 'stats')
+      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent" style="padding-top: 1em;")
+      include components/summary.pug
+      .clearfix
+      include components/history.pug
+    else if ($pageType == 'ranks')
+      p
+        center
+          a.btn.btn-info(href="/character/ranks/k/all/alltime/1/") See more Top Ranks here
+      include components/rank_list.pug
+    else if ($pageType == 'top')
+      .row.centered
+        a(href="./solo/") Solo Version
+      hr
+      - $topSet = $topKills ?? [];
+      - $topTitle = 'Most Valuable Kills - Month Selected';
+      - $isEmbedded = true;
+      include components/big_top_list.pug
+      hr
+      - $showImage = true;
+      include components/top_list.pug
+    else if ($pageType == 'topalltime')
+      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent" style="padding-top: 1em;")
+      h4 Top All Time
+      - $topSet = $topKills ?? [];
+      - $topTitle = 'Most Valuable Kills - All Time';
+      - $isEmbedded = true;
+      include components/big_top_list.pug
+      hr
+      - $showImage = true;
+      include components/top_list.pug
+    else if ($pageType == 'corpstats')
+      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent" style="padding-top: 1em;")
+      include components/corpstats.pug
+    else if ($pageType == 'supers')
+      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent" style="padding-top: 1em;")
+      h3
+        | Intel - Supers 
+        small (Last 3 months)
+      - $fieldset = $extraData['supers']['titans'] ?? [];
+      include components/intel_table.pug
+      - $fieldset = $extraData['supers']['supercarriers'] ?? [];
+      include components/intel_table.pug
+      .clearfix
+    else if ($pageType == 'wars')
+      each $row, $idx in ($extraData['wars'] ?? [])
+        - $row = is_object($row) ? (array) $row : $row;
+        .col-lg-6.float-start
+          center
+            h4= $row['name'] ?? ''
+          - $wars = $row['wars'] ?? [];
+          include components/wars_table.pug
+        if ($idx % 2 == 1)
+          .clearfix
+      .clearfix
+
+block opengraph
+  meta(name="twitter:title" content=$pageTitle)
+  meta(name="twitter:card" content="summary")
+  meta(name="og:title" content=$pageTitle)
+  meta(name="og:url" content=(($fullsiteurl ?? '') . '/' . ($key ?? '') . '/' . ($id ?? '') . '/'))
+  meta(name="twitter:description" content=$description)
+  meta(name="og:description" content=$description)
+  if (($key ?? '') == 'character')
+    meta(name="twitter:image" content=(($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/portrait?size=128'))
+    meta(name="og:image" content=(($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/portrait?size=128'))
+  else if (in_array(($key ?? ''), ['corporation', 'alliance']))
+    meta(name="twitter:image" content=(($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/logo?size=128'))
+    meta(name="og:image" content=(($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/logo?size=128'))
+  else if (($key ?? '') == 'system')
+    meta(name="twitter:image" content=('https://zkillboard.com/img/nohus/systems/' . ($id ?? '') . '.png'))
+    meta(name="og:image" content=('https://zkillboard.com/img/nohus/systems/' . ($id ?? '') . '.png'))
+  else if (($key ?? '') == 'ship')
+    meta(name="twitter:image" content=(($image_server ?? 'https://images.evetech.net/') . 'types/' . ($id ?? '') . '/render?size=64'))
+    meta(name="og:image" content=(($image_server ?? 'https://images.evetech.net/') . 'types/' . ($id ?? '') . '/render?size=64'))
+  else if (($key ?? '') == 'region')
+    meta(name="twitter:image" content=('https://zkillboard.com/img/nohus/regions/' . ($id ?? '') . '.png'))
+    meta(name="og:image" content=('https://zkillboard.com/img/nohus/regions/' . ($id ?? '') . '.png'))
+  else if (($key ?? '') == 'constellation')
+    meta(name="twitter:image" content=('https://zkillboard.com/img/nohus/constellations/' . ($id ?? '') . '.png'))
+    meta(name="og:image" content=('https://zkillboard.com/img/nohus/constellations/' . ($id ?? '') . '.png'))
+  else
+    meta(name="twitter:image" content=(($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/render?size=128'))
+    meta(name="og:image" content=(($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/render?size=128'))
+
+block script
+  script(defer type="text/javascript" src=('/js/overview.js?v=' . ($version ?? '')))
+  script(defer type="text/javascript").
+    const pageType = '#{($key ?? '')}';
+    const pageID = '#{($id ?? '')}';
+    function prepPage() {}
+    function removeCommas(val) {
+      return val.innerHTML.replace(',', '', 'g');
+    }
+
+block modal
+  if (!empty($detailData['characterID']) && ($key ?? '') == 'character')
+    #largeImage.modal.fade(tabindex="-1" aria-labelledby="largeImageLabel" aria-hidden="true")
+      .modal-dialog.modal-dialog-centered.modal-lg
+        .modal-content
+          .modal-header
+            h5#largeImageLabel.modal-title= $detailData['name'] ?? ($detailData['characterName'] ?? '')
+            button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+          .modal-body.text-center
+            - $imageSize = 512;
+            - $imageStyle = 'max-width: min(90vw, 640px) !important; max-height: 75vh !important; width: auto !important; height: auto !important;';
+            - $field = $detailData;
+            include components/image_char.pug
+  - $activity = is_object($extraData['activity'] ?? null) ? (array) $extraData['activity'] : ($extraData['activity'] ?? []);
+  if ($pageType == 'overview' && ($activity['max'] ?? 0) > 0)
+    #heatmap.modal.fade(tabindex="-1" aria-labelledby="heatmapLabel" aria-hidden="true")
+      .modal-dialog.modal-xl.modal-dialog-scrollable.heatmap-modal-dialog
+        .modal-content.heatmap-modal-content
+          .modal-header
+            h5#heatmapLabel.modal-title Activity Heatmap
+            button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+          .modal-body.heatmap-modal-body
+            - $steps = floor(($activity['max'] ?? 0) / 5);
+            if ($steps < 1)
+              - $steps = 1;
+            - $days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            .activity-heatmap-scroll.d-none.d-md-block
+              table#activity-heatmap.activity-heatmap-table
+                tr
+                  td.heatmap-axis-cell
+                  each $hour in range(0, 23)
+                    td.heatmap-axis-cell= $hour
+                each $day in range(0, 6)
+                  tr
+                    td.heatmap-axis-cell= $days[$day]
+                    each $hour in range(0, 23)
+                      - $value = $activity[$day][$hour] ?? 0;
+                      - $level = $value > 0 ? min(5, (int) ceil($value / $steps)) : 0;
+                      td.heatmap-cell(style=('--level: ' . $level . ';'))= $value > 0 ? $value : ''
+            .activity-heatmap-mobile.d-md-none
+              table.activity-heatmap-mobile-table
+                tr
+                  td.heatmap-axis-cell
+                  each $day in range(0, 6)
+                    td.heatmap-axis-cell= $days[$day]
+                each $hour in range(0, 23)
+                  tr
+                    td.heatmap-axis-cell= $hour
+                    each $day in range(0, 6)
+                      - $value = $activity[$day][$hour] ?? 0;
+                      - $level = $value > 0 ? min(5, (int) ceil($value / $steps)) : 0;
+                      td.heatmap-cell.heatmap-cell-mobile(style=('--level: ' . $level . ';'))= $value > 0 ? $value : ''
+            p Each block represents an hour of the day for each day of the week. The number indicates how many kills were achieved in that hour over the last 90 days. The redder the block the more kills. A black, empty box indicates 0 kills.

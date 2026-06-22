@@ -1,0 +1,14 @@
+if (($skipTracker ?? '') != 'yes')
+  span.d-none(id=('tracker-remove-' . ($key ?? '') . '-' . ($id ?? '')))
+    | &nbsp; 
+    a(href=('/account/tracker/' . ($key ?? '') . '/' . ($id ?? '') . '/remove/') rel="nofollow")
+      i.fa.fa-minus(rel="tooltip" title="Remove from Tracker" style="color: red;")
+  span#tracker-add.d-none
+    | &nbsp; 
+    a(href=('/account/tracker/' . ($key ?? '') . '/' . ($id ?? '') . '/add/') rel="nofollow")
+      i.fa.fa-plus(rel="tooltip" title="Add to Tracker" style="color: green;")
+  span#tracker-none.d-none
+    a(href="#" onclick="alert('Please log in first.'); return false;" rel="nofollow")
+      i.fa.fa-plus(rel="tooltip" title="Add to Tracker" style="color: gray;")
+  span#track-entity
+  - $skipTracker = 'yes';

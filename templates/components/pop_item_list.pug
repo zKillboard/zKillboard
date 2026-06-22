@@ -1,0 +1,41 @@
+- $extraData = is_object($extra ?? null) ? (array) $extra : ($extra ?? []);
+- $killData = is_object($killdata ?? null) ? (array) $killdata : ($killdata ?? []);
+- $victim = is_object($killData['victim'] ?? null) ? (array) $killData['victim'] : ($killData['victim'] ?? []);
+- $info = is_object($killData['info'] ?? null) ? (array) $killData['info'] : ($killData['info'] ?? []);
+- $prices = is_object($extraData['totalprice'] ?? null) ? (array) $extraData['totalprice'] : ($extraData['totalprice'] ?? []);
+table.table.table-sm.item_list
+  thead
+    tr.titles
+      th.d-none.d-md-table-cell &nbsp;
+      th Item Type
+      th
+        div(align="right") Qty
+      th
+        div(align="right") Price (ISK)
+  tbody
+    - $items = $extraData['items'] ?? [];
+    each $flagName, $flag in ($flags ?? [])
+      include flag_list.pug
+    tr
+      th(colspan="6")
+        h5 Ship
+    tr
+      - $imageSize = 32;
+      - $field = $victim;
+      td.icons.d-none.d-md-table-cell
+        div(align="center")
+          include image_ship.pug
+      td
+        a(href=('/item/' . ($victim['shipTypeID'] ?? 0) . '/'))= $victim['shipName'] ?? ''
+      td
+        div.qty(align="right") 1
+      td.price
+        div(align="right")= number_format((float) ($victim['shipPrice'] ?? 0), 2, '.', ',')
+    tr.d-none.d-md-table-row
+      td(colspan="2")
+        h5 Total:
+      td.totalprice(colspan="4" style="text-align: right;")
+        .float-end(style="width: 100%;")
+          h5(rel="tooltip" title=('$' . number_format((float) ($prices['usd'] ?? 0), 2, '.', ',') . ' / ' . number_format((float) ($prices['eur'] ?? 0), 2, '.', ',') . ' euro / GBP ' . number_format((float) ($prices['gbp'] ?? 0), 2, '.', ',')))
+            = number_format((float) ($info['total_price'] ?? 0), 2, '.', ',')
+            |  ISK

@@ -1,0 +1,187 @@
+block vars
+doctype html
+html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
+  head
+    meta(charset="utf-8")
+    meta(http-equiv="X-UA-Compatible" content="IE=edge,chrome=1")
+    - $description = $description ?? 'zKillboard.com is the premier killboard for EVE Online. Track players, corporations, and alliances, analyze battle reports, and monitor PvP anywhere in New Eden.';
+    meta(name="description" content=$description)
+    meta(name="title" content=(($pageTitle ?? '') . ' | ' . ($siteurl ?? '')))
+    meta(name="keywords" content="eve-online, eve, fenris, fenris creations, ccp, ccp games, kills, kill, massively, multiplayer, online, role, playing, game, mmorpg, rank, isk, mmorpg, killboard, zkillboard")
+    meta(name="robots" content="index,follow")
+    meta(property="og:locale" content="en_US")
+    meta(property="og:type" content="website")
+    meta(property="og:site_name" content=($siteurl ?? ''))
+    meta(name="fb:app_id" content=($fbAppID ?? ''))
+    meta(name="twitter:site" content="@zKillboard")
+    meta(name="twitter:domain" content=($fullsiteurl ?? ''))
+    meta(name="application-name" content=($siteurl ?? ''))
+    meta(name="msapplication-TileColor" content="#000000")
+    meta(name="mobile-web-app-capable" content="yes")
+    link(rel="icon" href="/img/logo.png")
+    block opengraph
+      meta(name="twitter:title" content=(($pageTitle ?? '') . ' | ' . ($siteurl ?? '')))
+      meta(name="twitter:card" content="summary")
+      meta(name="twitter:description" content=$description)
+      meta(name="twitter:image" content=(($fullsiteurl ?? '') . '/img/3D.png'))
+      meta(property="og:title" content=(($siteurl ?? '') . ' / ' . ($pageTitle ?? '')))
+      meta(property="og:url" content=($fullsiteurl ?? ''))
+      meta(property="og:description" content=$description)
+      meta(property="og:image" content=(($fullsiteurl ?? '') . '/img/3D.png'))
+    block head
+    block robots
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title
+      block title
+        = $siteurl ?? ''
+    link(rel="canonical" href=($canonical ?? (($fullsiteurl ?? '') . ($requesturi ?? ''))))
+    script
+      != "const z3 = '" . addslashes((string) ($z3 ?? '')) . "';\n"
+      != "const zkbVersion = '" . addslashes((string) ($version ?? '')) . "';\n"
+    link(rel="search" type="application/opensearchdescription+xml" href="/xml/zkbsearch.xml" title="search")
+    link(rel="preconnect" href="https://fonts.googleapis.com")
+    link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin)
+    link(rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Droid+Sans:wght@400;700&display=block")
+    link#mainstyle(rel="stylesheet" href="/vendor/bootstrap/5.3.3/cyborg/bootstrap.min.css")
+    link(rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css")
+    link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous")
+    link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.2/css/bootstrap-slider.css" integrity="sha512-9/DrcJ4ddTEJ6E9+muHEzd7lvbYKl26e2zNkLEMClB6ztAF27Q9glJDMk7ffmQ962RZrx3MsHRRqAgiF00e8/A==" crossorigin="anonymous" referrerpolicy="no-referrer")
+    link#nextstyle(rel="stylesheet" href=('/css/style-edits/cyborg-main.css?v=' . ($version ?? '')))
+    link(rel="stylesheet" href=('/css/main.css?v=' . ($version ?? '')))
+    block style
+    script(defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer")
+    script(defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery.devbridge-autocomplete/1.5.0/jquery.autocomplete.min.js" integrity="sha512-zigO6HJddtn1h8sdX3wTCbcAjJ1u2f4KhtNgcqminM75+L8IkibrVHqO19LfUK9Mavk0fYGVNUMmhHpx8COP2g==" crossorigin="anonymous" referrerpolicy="no-referrer")
+    script(defer type="text/javascript" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js")
+    script(defer src="/vendor/bootstrap/5.3.3/bootstrap.bundle.min.js")
+    script(defer src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.2/bootstrap-slider.min.js" integrity="sha512-ltNvgoNRZAuKXjWIXHXzLhM2dJCnw7xyxpCn43+TzRr0Kg9zU+P7UpmSNwKRvT/GSaJ6TK6lmukBOjXsSQupUQ==" crossorigin="anonymous" referrerpolicy="no-referrer")
+    script(defer src="https://unpkg.com/@popperjs/core@2")
+    script(defer src="https://unpkg.com/tippy.js@6")
+    script(defer type="text/javascript" src=('/js/search.js?v=' . ($version ?? '')))
+    script(defer type="text/javascript" src=('/js/common.js?v=' . ($version ?? '')))
+    script(defer type="text/javascript" src=('/js/ambience.js?v=' . ($version ?? '')))
+    script(defer type="text/javascript" src="/js/reconnecting-websocket.js")
+    if (($showAnalytics ?? true) != false)
+      != $analytics ?? ''
+    style(type="text/css").
+      .topBoxes td {
+      vertical-align: middle !important;
+      }
+    script(type="text/javascript")
+      != "var showAds = " . (int) ($showAds ?? 1) . ";\n"
+      != "var characterID = " . (int) ($characterID ?? -1) . ";\n"
+      | var navbar = true;
+      != "\nvar entityType = '" . addslashes((string) ($entityType ?? '')) . "';\n"
+      != "var entityID = '" . addslashes((string) ($entityID ?? '')) . "';\n"
+      != "var entityPage = '" . addslashes((string) ($pageType ?? '')) . "';\n"
+      != "var start_websocket = " . (int) ($websocket ?? 0) . ";\n"
+      != "var actualURI = '" . addslashes((string) ($actualURI ?? '')) . "';\n"
+      != "var promoURI = '" . addslashes((string) ($promoURI ?? '')) . "';\n"
+      != "var promoImage1 = '" . addslashes((string) ($promoImage1 ?? '')) . "';\n"
+  body(style="background-color: #111;")
+    noscript
+      #nojsfulloverlay JavaScript required.
+    .content
+      #navibar.page-shell
+        include navigationbar.pug
+      .page-shell.nobackground
+        if (($apiStatus ?? false) && (($actualURI ?? '') == '/'))
+          #zkb-message.alert.alert-danger(style="font-weight: bold")
+            center!= $apiStatus
+        else
+          #zkb-message.d-none.alert.alert-danger(style="font-weight: bold")
+        div
+          center.pbcen
+            #publifttop.centered.publift(fuse="home_header" style="padding-top: 0.25em; max-height: 250px; max-width: 975px;")
+            hr.pbsep
+            .pbblock
+              a.pbblock.btn.btn-success(href="https://www.patreon.com/zkillboard" target="_blank") Block Ads with Patreon!
+        #otherBannerDiv.centered(style="display: none; height: 250px; padding-top: 1em;")
+          a#otherBannerAnchor(target="_new")
+            img#otherBannerImg
+        #highlightContent.centered(style=("margin-bottom: 1em; " . (!isset($highlightMessage) ? "display: none;" : "")))
+          a.btn.btn-sm(href=($highlightURI ?? '') target="_blank" rel="noopener noreferrer" class=($highlightClass ?? '') style="padding: 1em; text-align: center; display: block; padding-top: 0em; padding-bottom: 0em; margin-top: 0.5em;")
+            if (isset($highlightImage) && strlen((string) $highlightImage) > 0)
+              img(src=$highlightImage alt="Highlight" style="max-width: 100%; height: auto;")
+            span.pagecontent!= $highlightMessage ?? ''
+        span#zkb-page-content.pagecontent(data-entity-type=($entityType ?? '') data-entity-id=($entityID ?? '') data-entity-page=($pageType ?? '') data-actual-uri=($actualURI ?? ''))
+          block header
+          block content
+            | Default content
+        .clearfix
+        center
+          #adsensebottom.centered.publift(fuse="home_footer" style="padding-top: 2em; padding-bottom: 2em; max-height: 250px; max-width: 975px;")
+        div
+          include footer.pug
+        div(style="height: 50px;") &nbsp;
+      #zkb-page-modals.page-shell
+        block modal
+    #zkb-page-scripts(style="display: none;")
+      block script
+    #ttooltip.ttooltip.d-none
+      span.X.red(onclick="$('#ttooltip').addClass('d-none'); return false;") X
+      br
+      span#tipmsg
+    #modalMessage.modal.fade
+      .modal-dialog
+        .modal-content
+          .modal-header
+            span#modalTitle.modal-title Message
+            button#modalCloseButton.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+          .modal-body
+            form.form(name="myform")
+              span#modalMessageBody
+    #iframed.modal.fade
+      .modal-dialog
+        .modal-content
+          .modal-header
+            h4.modal-title &lt;iframe&gt; detected
+          .modal-body
+            p
+              | zKillboard has detected that it has been embedded in an iframe.  We're ok with this, however, your experience might not be that great.  
+              a(href=(($fullsiteurl ?? '') . ($requesturi ?? '')) target="_blank" rel="noopener noreferrer") Click here to view this embedded window properly
+              | , or just click anywhere below this dialog to view the iframe.
+    #loginOptionsModal.modal.fade
+      .modal-dialog
+        .modal-content
+          .modal-header
+            h4.modal-title Login Options
+            button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+          .modal-body
+            .checkbox
+              label
+                input#login-scope-all(type="checkbox" checked)
+                |  All Permissions
+            .checkbox(style="margin-left: 1.5em;")
+              label
+                input.login-scope(type="checkbox" value="esi-killmails.read_killmails.v1" checked)
+                |  Fetch Character Killmails
+              p.text-muted(style="margin-left: 1.5em;")
+                small Fetch the character's killmails where they are the victim or received the final blow.
+            .checkbox(style="margin-left: 1.5em;")
+              label
+                input.login-scope(type="checkbox" value="esi-killmails.read_corporation_killmails.v1" checked)
+                |  Fetch Corporation Killmails
+              p.text-muted(style="margin-left: 1.5em;")
+                small Fetch the corporation's killmails where corporation members are the victim or received the final blow.  This permission is restricted to CEOs and Directors.
+            .checkbox(style="margin-left: 1.5em;")
+              label
+                input.login-scope(type="checkbox" value="esi-fittings.write_fittings.v1" checked)
+                |  Save fittings
+              p.text-muted(style="margin-left: 1.5em;")
+                small Lets you save a ship's fit directly to your character's fitting library.
+            hr
+            label(for="login-delay-slider")
+              | Delay killmails? 
+              a(href="/information/delayed/" rel="tooltip" title="Learn more about delayed killmails")
+                i.fas.fa-circle-question
+            input#login-delay-slider.bs3-slider(type="range" min="0" max="5" step="1" value="0")
+            output#login-delay-value ASAP - Killmails will post as they are received.
+          .modal-footer
+            button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancel
+            button#continueLoginWithOptions.btn.btn-primary(type="button") Continue to EVE Login
+    .ad-xl-block
+      .ad-xl-block.left-sticky-ad.publift(fuse="left-sticky")
+    .ad-xl-block
+      .ad-xl-block.right-sticky-ad.publift(fuse="right-sticky")
+    form#externalkmform(method="post" action="/post/" style="display: none;")
+      input#externalurl(type="text" name="killmailurl")

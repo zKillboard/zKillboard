@@ -1,0 +1,11 @@
+include pager.pug
+section.war-kill-list-shell.kill-list-shell
+  header.kill-list-header.war-kill-list-header
+    h3.kill-list-title= $killListTitle ?? ''
+  #killmailstobdy.war-kill-list
+    if (count($killList ?? []) == 0)
+      #kms_loading.war-kill-empty
+        em loading
+    else
+      include war_kill_list_row.pug
+include pager.pug

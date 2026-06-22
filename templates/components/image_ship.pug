@@ -1,0 +1,19 @@
+- $imageSize = $imageSize ?? 32;
+- $actualSize = $resizeImage ?? $imageSize;
+if (($field['shipTypeID'] ?? 0) == 0)
+  img.eveimage.img-rounded(src=('//' . ($siteurl ?? '') . '/img/eve-question.png') style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;') alt="" loading="lazy" decoding="async" fetchpriority="low")
+else
+  if (($shipImageLinkOverride ?? 0) != 0)
+    - $url = '/kill/' . $shipImageLinkOverride . '/';
+    - $title = 'Detail for ' . $shipImageLinkOverride;
+  else
+    - $url = '/ship/' . $field['shipTypeID'] . '/';
+    - $title = $field['shipName'] ?? '';
+  - $source = $actualSize > 64 ? ($image_ship ?? 'https://images.evetech.net/types/') : ($image_item ?? 'https://images.evetech.net/types/');
+  - $floatClass = !empty($isPullLeft) ? 'float-start ' : '';
+  - $delayedClass = !empty($isDelayed) ? 'delayed ' : '';
+  a(href=$url rel="tooltip" title=$title class=$floatClass)
+    span.shipImageSpan(data-l=($actualSize . 'px') data-i=$actualSize style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px; --size: ' . $actualSize . 'px; --sizei: ' . $actualSize . ';'))
+      img.shipImageRender.eveimage.img-rounded(src=($source . $field['shipTypeID'] . '/render?size=' . $imageSize) style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;') class=($delayedClass . $floatClass) alt=($field['shipName'] ?? '') onerror="this.setAttribute('shipImageError', 'true')" loading="lazy" decoding="async" fetchpriority="low")
+      if (strlen((string) ($field['pip'] ?? '')) > 0)
+        img.pip(src=('/img/pips/' . $field['pip']) alt="" loading="lazy" decoding="async" fetchpriority="low")

@@ -1,0 +1,65 @@
+if (count($topLists ?? []) > 0)
+  .row
+    if (!empty($nextTopRecalc))
+      .col-lg-12
+        | Next all time top lists recalculation will happen shortly after 
+        = number_format((float) $nextTopRecalc, 0)
+        |  kills has been reached.
+        br
+        br
+        hr
+    each $topList in ($topLists ?? [])
+      .col-lg-4.pll-left(style="margin: 0px; padding-left: 1em;")
+        table.table.table-sm.table-striped.table-hover.table-bordered.caption-top
+          caption
+            strong
+              if (isset($topList['name']))
+                = $topList['name']
+              else
+                = 'Top ' . $pluralize(ucfirst((string) ($topList['type'] ?? '')))
+          thead
+            tr
+              th Rank
+              th(style="width: 100%;")= ucfirst((string) ($topList['type'] ?? ''))
+              th(style="text-align: right")
+                if (isset($topList['ranked']))
+                  = $topList['ranked']
+                else
+                  | Kills
+          tbody
+            each $field, $index in ($topList['data'] ?? [])
+              - $rank = $index + 1;
+              tr
+                td(style="text-align: center; vertical-align: middle;")= $rank
+                td
+                  .nowrap-parent
+                    .nowrap
+                      if (($topList['type'] ?? '') == 'alliance')
+                        include text_alli.pug
+                      else if (($topList['type'] ?? '') == 'corporation')
+                        include text_corp.pug
+                      else if (($topList['type'] ?? '') == 'character')
+                        include text_char.pug
+                      else if (($topList['type'] ?? '') == 'weapon')
+                        include text_item.pug
+                      else if (($topList['type'] ?? '') == 'ship')
+                        include text_ship.pug
+                      else if (($topList['type'] ?? '') == 'group')
+                        include text_shipclass.pug
+                      else if (($topList['type'] ?? '') == 'faction')
+                        include text_faction.pug
+                      else if (($topList['type'] ?? '') == 'system')
+                        include text_system.pug
+                      else if (($topList['type'] ?? '') == 'region')
+                        include text_region.pug
+                      else if (($topList['type'] ?? '') == 'location')
+                        include text_location.pug
+                      else
+                        = $topList['type'] ?? ''
+                td(style="text-align: right; vertical-align: middle;" format="format-int-once" raw=($field['kills'] ?? 0))= $formatIsk($field['kills'] ?? 0, $isInt ?? false)
+  .clear
+else
+  h4
+    | Nothing here? Checking 
+    a(href="/ztop/") zTop's
+    |  queueTopAlltime, the lists may be pending calculation or this entity does not have at least 10 kills.

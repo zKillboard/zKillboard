@@ -1,0 +1,12 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'Top Losses by Ship';
+
+block title
+  include components/title.pug
+
+block content
+  h4 Biggest Isk Kills by Ship
+  h5 These kills include only the hull and fitted items.
+  include components/big_top_list.pug

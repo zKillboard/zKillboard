@@ -1,7 +1,7 @@
 <?php
 
 function handler($request, $response, $args, $container) {
-    global $mdb, $redis, $twig, $adFreeMonthCost, $baseAddr;
+    global $mdb, $redis, $templates, $adFreeMonthCost, $baseAddr;
     
     $req = $args['req'] ?? null;
     $reqid = $args['reqid'] ?? null;
@@ -124,5 +124,5 @@ $data['sponsoredShips'] = $sponsoredShips;
 $data['sponsoredTotalIsk'] = $sponsoredTotalIsk;
 
     $accountData = array('data' => $data, 'message' => $error, 'key' => $key, 'reqid' => $reqid);
-    return $container->get('view')->render($response->withHeader('Cache-Tag', 'account'), 'account.html', $accountData);
+    return $container->get('view')->render($response->withHeader('Cache-Tag', 'account'), 'account.pug', $accountData);
 }

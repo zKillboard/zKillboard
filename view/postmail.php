@@ -83,5 +83,5 @@ function handler($request, $response, $args, $container) {
         $error = array($error);
     }
 
-    return $container->get('view')->render($response->withHeader('Cache-Tag', 'postmail'), 'postmail.html', array('message' => $error));
+    return $container->get('view')->render($response->withHeader('Cache-Tag', 'postmail'), 'postmail.pug', array('message' => $error));
 }

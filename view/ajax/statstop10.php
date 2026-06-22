@@ -13,7 +13,7 @@ function handler($request, $response, $args, $container) {
         else $params = URI::validate($uri, ['u' => true, 't' => true, 'ks' => !$bypass, 'ke' => !$bypass]);
     } catch (Exception $e) {
         // If validation fails, return empty template
-        return $container->get('view')->render($response->withHeader('Cache-Tag', 'statstop,statstop10'), 'components/top_killer_list.html', []);
+        return $container->get('view')->render($response->withHeader('Cache-Tag', 'statstop,statstop10'), 'components/top_killer_list.pug', []);
     }
 
     $uri = $params['u'];
@@ -64,5 +64,5 @@ function handler($request, $response, $args, $container) {
     }
 
     // Return rendered template
-    return $container->get('view')->render($response->withHeader('Cache-Tag', "statstop,statstop10,statstop:$cacheTagKey,$cacheTagKey"), 'components/top_killer_list.html', $ret);
+    return $container->get('view')->render($response->withHeader('Cache-Tag', "statstop,statstop10,statstop:$cacheTagKey,$cacheTagKey"), 'components/top_killer_list.pug', $ret);
 }

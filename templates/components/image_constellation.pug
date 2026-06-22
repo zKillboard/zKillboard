@@ -1,0 +1,4 @@
+- $imageSize = $imageSize ?? 32;
+- $actualSize = $resizeImage ?? $imageSize;
+a(href=('/constellation/' . ($field['constellationID'] ?? 0) . '/') rel="tooltip" title=($field['constellationName'] ?? ''))
+  img.eveimage.img-rounded(src=('/img/nohus/constellations/' . ($field['constellationID'] ?? 0) . '.png') style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;') alt=($field['constellationName'] ?? '') loading="lazy" decoding="async" fetchpriority="low")

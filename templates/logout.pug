@@ -1,0 +1,11 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'Logout';
+
+block title
+  include components/title.pug
+
+block content
+  .alert.alert-info
+    strong You have been logged out.

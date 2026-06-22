@@ -1,0 +1,25 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'Sitemap';
+
+block title
+  include components/title.pug
+
+block content
+  .row
+    h3 Sitemap
+    ul
+      each $values, $key in ($data ?? [])
+        li= strtoupper((string) $key)
+        ul
+          each $url, $page in $values
+            if (substr((string) $url, 0, 1) == '/' || substr((string) $url, 0, 4) == 'http')
+              li
+                a(href=$url)= $page
+            elseif (strlen((string) $url) == 0)
+              li
+                a(href=('/' . $key . '/'))= $page
+            else
+              li
+                a(href=('/' . $key . '/' . $url . '/'))= $page

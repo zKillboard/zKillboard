@@ -1,0 +1,4 @@
+- $imageSize = $imageSize ?? 32;
+- $actualSize = $resizeImage ?? $imageSize;
+a(href=('/region/' . ($field['regionID'] ?? 0) . '/') rel="tooltip" title=($field['regionName'] ?? ''))
+  img.eveimage.img-rounded(src=('/img/nohus/regions/' . ($field['regionID'] ?? 0) . '.png') style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;') alt=($field['regionName'] ?? '') loading="lazy" decoding="async" fetchpriority="low")

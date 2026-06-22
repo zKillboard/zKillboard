@@ -1,0 +1,10 @@
+if (($field['weaponTypeID'] ?? 0) != 0)
+  - $typeID = $field['weaponTypeID'];
+  - $typeName = $field['weaponTypeName'] ?? '';
+else if (($field['typeID'] ?? 0) != 0)
+  - $typeID = $field['typeID'];
+  - $typeName = $field['typeName'] ?? '';
+if (!empty($showImage))
+  - $imageSize = 32;
+  include image_item.pug
+a(href=('/item/' . ($typeID ?? 0) . '/' . ($entitySubpage ?? '')))= $typeName ?? ''
