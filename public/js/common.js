@@ -754,6 +754,9 @@ function prepTippy() {
 				content,
 				allowHTML: true,
 				delay: 250,
+				onShow(instance) {
+					if (tippy.hideAll) tippy.hideAll({ exclude: instance });
+				},
 			});
 		});
 	setTimeout(prepTippy, 500);
