@@ -1230,19 +1230,18 @@ function doSponsor(url)
     showModal('#modalMessage');
 }
 
-function doFavorite(killID, star) {
-    var favoriteStars = $(".fav-star-" + killID);
+function doFavorite(killID, star, scope) {
+    scope = scope || "character";
+    var favoriteStars = favoriteStarsForScope(killID, scope);
     var clickedElement = star ? $(star) : favoriteStars.first();
     var clickedStar = clickedElement.hasClass("fa-star") ? clickedElement : clickedElement.find(".fa-star").first();
-    var color = clickedStar.css("color");
-    var action = (color === "rgb(253, 188, 44)") ? "remove" : "save";
-    var url = '/account/favorite/' + killID + '/' + action + '/';
+    var action = clickedStar.hasClass("fas") ? "remove" : "save";
+    var url = scope === "character" ? '/account/favorite/' + killID + '/' + action + '/' : '/account/favorite/' + scope + '/' + killID + '/' + action + '/';
     $.post(url, function( result ) {
 		console.log(result);
-        favoriteStars.css("color", result.color);
-        favoriteStars.toggleClass("fas", result.color === "#FDBC2C");
-        favoriteStars.toggleClass("far", result.color !== "#FDBC2C");
-        updateFavoriteState(killID, result.color === "#FDBC2C");
+        var isFavorite = (result.favorited !== undefined) ? result.favorited : result.color === "#FDBC2C";
+        applyFavoriteStarState(favoriteStars, scope, isFavorite);
+        updateFavoriteState(killID, isFavorite, scope);
 		showToast(result.message, 5000);
     }, "json").fail(function() {
         showToast("Unable to update favorite. Please try again.", 5000);
@@ -1250,29 +1249,72 @@ function doFavorite(killID, star) {
 }
 
 function applyFavoriteStars() {
-    const favorites = new Set((window.zkbFavorites || []).map(Number));
+    const favoritesByScope = getFavoritesByScope();
+    applyFavoriteControls();
 
     $('[class*="fav-star-"]').each(function() {
         const star = $(this);
-        const favoriteClass = (this.className || '').split(/\s+/).find(name => name.indexOf('fav-star-') === 0);
-        if (!favoriteClass) return;
+        const favoriteInfo = getFavoriteStarInfo(this);
+        if (!favoriteInfo) return;
 
-        const killID = Number(favoriteClass.replace('fav-star-', ''));
-        const isFavorite = favorites.has(killID);
-        star.css("color", isFavorite ? "#FDBC2C" : "#d0d0d0");
-        star.toggleClass("fas", isFavorite);
-        star.toggleClass("far", !isFavorite);
+        const isFavorite = favoritesByScope[favoriteInfo.scope].has(favoriteInfo.killID);
+        applyFavoriteStarState(star, favoriteInfo.scope, isFavorite);
     });
 }
 
-function updateFavoriteState(killID, isFavorite) {
-    const favoriteSet = new Set((window.zkbFavorites || []).map(Number));
+function applyFavoriteControls() {
+    const permissions = window.zkbFavoritePermissions || {};
+    $(".favorite-corporation").toggleClass("d-none", !permissions.corporation);
+    $(".favorite-alliance").toggleClass("d-none", !permissions.alliance);
+}
+
+function updateFavoriteState(killID, isFavorite, scope) {
+    scope = scope || "character";
+    const favoritesByScope = window.zkbFavoritesByScope || { character: window.zkbFavorites || [], corporation: [], alliance: [] };
+    const favoriteSet = new Set((favoritesByScope[scope] || []).map(Number));
     killID = Number(killID);
 
     if (isFavorite) favoriteSet.add(killID);
     else favoriteSet.delete(killID);
 
-    window.zkbFavorites = Array.from(favoriteSet);
+    favoritesByScope[scope] = Array.from(favoriteSet);
+    window.zkbFavoritesByScope = favoritesByScope;
+    if (scope === "character") window.zkbFavorites = favoritesByScope.character;
+}
+
+function getFavoritesByScope() {
+    const favoritesByScope = window.zkbFavoritesByScope || { character: window.zkbFavorites || [], corporation: [], alliance: [] };
+    return {
+        character: new Set((favoritesByScope.character || []).map(Number)),
+        corporation: new Set((favoritesByScope.corporation || []).map(Number)),
+        alliance: new Set((favoritesByScope.alliance || []).map(Number)),
+    };
+}
+
+function favoriteStarsForScope(killID, scope) {
+    if (scope === "character") return $(".fav-star-" + killID + ", .fav-star-character-" + killID);
+    return $(".fav-star-" + scope + "-" + killID);
+}
+
+function getFavoriteStarInfo(element) {
+    const classes = (element.className || '').split(/\s+/);
+    for (const className of classes) {
+        let match = className.match(/^fav-star-(character|corporation|alliance)-(\d+)$/);
+        if (match) return { scope: match[1], killID: Number(match[2]) };
+    }
+    for (const className of classes) {
+        let match = className.match(/^fav-star-(\d+)$/);
+        if (match) return { scope: "character", killID: Number(match[1]) };
+    }
+    return null;
+}
+
+function applyFavoriteStarState(stars, scope, isFavorite) {
+    const colors = { character: "#FDBC2C", corporation: "#37d05c", alliance: "#4aa3ff" };
+    const emptyColors = { character: "#d0d0d0", corporation: "#37d05c", alliance: "#4aa3ff" };
+    stars.css("color", isFavorite ? colors[scope] : emptyColors[scope]);
+    stars.toggleClass("fas", isFavorite);
+    stars.toggleClass("far", !isFavorite);
 }
 
 function pubsub(channel, forceSend, generation)

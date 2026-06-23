@@ -58,26 +58,77 @@ class UserGlobals
         // Second, add the character, corp, and alliance for the current account
         $info = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $userID, 'cacheTime' => 300]);
         $charName = Info::getInfoField('characterID', $userID, 'name')  . ' *';
-        $corpID = (int) @$info['corporationID'];
+        $corpID = (int) (@$info['corporationID'] ?: @$info['corporation_id']);
         $corpName = $corpID > 0 ? Info::getInfoField('corporationID', $corpID, 'name') . ' *' : null;
-        $alliID = (int) @$info['allianceID'];
+        $alliID = (int) (@$info['allianceID'] ?: @$info['alliance_id']);
         $alliName = $alliID > 0 ? Info::getInfoField('allianceID', $alliID, 'name')  . ' *' : null;
+        $isCEO = $this->isCorporationCEO($userID, $corpID, $info);
+        $isExecutorCEO = $isCEO && $this->isAllianceExecutorCorporation($alliID, $corpID, $info);
 
         $result['tracker_character'] = $this->addTracker(@$result['tracker_character'], $userID, $charName);
         $result['tracker_corporation'] = $this->addTracker(@$result['tracker_corporation'], $corpID, $corpName);
         $this->addGlobal($result, 'corporationID', $corpID, $corpName);
+        $this->addGlobal($result, 'canFavoriteCorporation', $corpID > 1999999 && $isCEO);
+        $this->addGlobal($result, 'showCorporationFavorites', $corpID > 1999999);
         $result['tracker_alliance'] = $this->addTracker(@$result['tracker_alliance'], $alliID, $alliName);
         $this->addGlobal($result, 'allianceID', $alliID, $alliName);
+        $this->addGlobal($result, 'canFavoriteAlliance', $alliID > 0 && $isExecutorCEO);
+        $this->addGlobal($result, 'showAllianceFavorites', $alliID > 0);
     }
 
     public function addFavorites(&$result, $userID)
     {
         global $mdb;
 
-        $favs = $mdb->find("favorites", ['characterID' => (int) $userID]);
+        $info = Info::getInfo('characterID', $userID);
+        $corpID = (int) (@$info['corporationID'] ?: @$info['corporation_id']);
+        $alliID = (int) (@$info['allianceID'] ?: @$info['alliance_id']);
+
+        $result['favorites'] = $this->getFavoriteKillIDs('characterID', $userID);
+        $result['corpFavorites'] = $corpID > 1999999 ? $this->getFavoriteKillIDs('characterID', $corpID) : [];
+        $result['alliFavorites'] = $alliID > 0 ? $this->getFavoriteKillIDs('characterID', $alliID) : [];
+    }
+
+    private function getFavoriteKillIDs($field, $id)
+    {
+        global $mdb;
+
+        $favs = $mdb->find('favorites', [$field => (int) $id]);
         $favorites = [];
         foreach ($favs as $fav) $favorites[] = $fav['killID'];
-        $result['favorites'] = $favorites;
+        return $favorites;
+    }
+
+    private function isCorporationCEO($userID, $corpID, $info)
+    {
+        global $mdb;
+
+        if ((bool) @$info['isCEO']) return true;
+        if ($corpID <= 1999999) return false;
+        return $mdb->exists('information', [
+            'type' => 'corporationID',
+            'id' => (int) $corpID,
+            '$or' => [
+                ['ceoID' => (int) $userID],
+                ['ceo_id' => (int) $userID],
+            ],
+        ]);
+    }
+
+    private function isAllianceExecutorCorporation($alliID, $corpID, $info)
+    {
+        global $mdb;
+
+        if ((bool) @$info['isExecutorCEO']) return true;
+        if ($alliID <= 0 || $corpID <= 1999999) return false;
+        return $mdb->exists('information', [
+            'type' => 'allianceID',
+            'id' => (int) $alliID,
+            '$or' => [
+                ['executorCorpID' => (int) $corpID],
+                ['executor_corporation_id' => (int) $corpID],
+            ],
+        ]);
     }
 
     private function parseTrackers(&$result, $type)

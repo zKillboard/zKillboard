@@ -1,13 +1,13 @@
 extends base.pug
 
 block vars
-  - $pageTitle = 'Favorites';
+  - $pageTitle = $title ?? 'Favorites';
 
 block title
   include components/title.pug
 
 block content
-  h3 Favorites
+  h3= $title ?? 'Favorites'
   if (count($kills ?? []) == 0)
     p No favorites found.
   else
@@ -15,6 +15,12 @@ block content
     include components/kill_list.pug
   hr
   strong
-    i To add favorites, go to a killmail and click the star. Same thing to remove the killmail from your favorites.
-  br
-  img(src="/img/favorites_example.png" alt="Favorites Example")
+    if (($scope ?? 'character') == 'corporation')
+      i Corporation favorites can be added or removed from killmails by the corporation CEO.
+    elseif (($scope ?? 'character') == 'alliance')
+      i Alliance favorites can be added or removed from killmails by the executor corporation CEO.
+    else
+      i To add favorites, go to a killmail and click the star. Same thing to remove the killmail from your favorites.
+  if (($scope ?? 'character') == 'character')
+    br
+    img(src="/img/favorites_example.png" alt="Favorites Example")

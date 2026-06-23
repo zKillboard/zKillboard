@@ -81,10 +81,22 @@ if (!empty($sessionusername))
     | window.zkbFavorites =
     != json_encode(array_values($favorites ?? []), JSON_UNESCAPED_SLASHES)
     | ;
+    | window.zkbFavoritesByScope =
+    != json_encode(['character' => array_values($favorites ?? []), 'corporation' => array_values($corpFavorites ?? []), 'alliance' => array_values($alliFavorites ?? [])], JSON_UNESCAPED_SLASHES)
+    | ;
+    | window.zkbFavoritePermissions =
+    != json_encode(['corporation' => !empty($canFavoriteCorporation), 'alliance' => !empty($canFavoriteAlliance)], JSON_UNESCAPED_SLASHES)
+    | ;
     | applyFavoriteStars();
     | console.log("nav loaded");
   li
     a.dropdown-item(href="/account/favorites/") Favorites
+  if (!empty($showCorporationFavorites))
+    li
+      a.dropdown-item(href="/account/favorites/corporation/") Corporation Favorites
+  if (!empty($showAllianceFavorites))
+    li
+      a.dropdown-item(href="/account/favorites/alliance/") Alliance Favorites
   li
     hr.dropdown-divider
   if (!empty($trackerCharacter))

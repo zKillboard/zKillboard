@@ -15,6 +15,7 @@ $routes = [
 	'/cache/1hour/google/' => ['GET', 'view/google.php'],
 	'/information/{page}/' => ['GET', 'view/information.php'],
 	'/account/favorites/' => ['GET', 'view/favorites.php'],
+	'/account/favorites/{scope}/' => ['GET', 'view/favorites.php'],
 	'/related/{system}/{time}/[o/{options}/]' => ['GET', 'view/related.php'],
 	'/br/{battleID}/' => ['GET', 'view/battle_report.php'],
 	'/brsave/' => ['GET', 'view/brsave.php'],
@@ -75,6 +76,7 @@ $routes = [
 	
 	// POST routes
 	'/account/favorite/{killID}/{action}/' => ['POST', 'view/favorite_modify.php'],
+	'/account/favorite/{scope}/{killID}/{action}/' => ['POST', 'view/favorite_modify.php'],
 	'/api/killmail/add/{killID}/{hash}/' => ['POST', 'view/api/killmail-add.php'],
 	'/cache/bypass/scan/' => ['POST', 'view/scanp.php'],
 	'/cache/bypass/comment/{pageID}/{commentID}/up/' => ['POST', 'view/comments-up.php'],
