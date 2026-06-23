@@ -21,6 +21,7 @@ function zkbInitAsearch() {
 
 	allowChange = true;
 	first_load = true;
+	filtersStringified = undefined;
 	radios = { sort: { sortBy: 'date', sortDir: 'desc' } };
 	asfilter = { location: [], attackers: [], neutrals: [], victims: [], items: [], sort: { sortBy: 'date', sortDir: 'desc' } };
 	checkCharID();
@@ -96,6 +97,8 @@ function asearchPopstate() {
 	if (window.location.hash == '') return;
 	setFilters();
 	$(".btn-page.btn-primary:not(.notafilter)").click();
+	filtersStringified = undefined;
+	doQuery();
 }
 
 function datepick() {
