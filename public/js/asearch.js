@@ -58,6 +58,7 @@ function loadasearch() {
 	$("#btn_save").off('click.zkb-asearch').on('click.zkb-asearch', btn_save);
 	$("#btn_export").off('click.zkb-asearch').on('click.zkb-asearch', btn_export);
 	$("#exportCsv").off('click.zkb-asearch').on('click.zkb-asearch', exportCsv);
+	$("#toggleGroupLayout").off('click.zkb-asearch').on('click.zkb-asearch', toggleGroupLayout);
 	$(".tfilter").off('click.zkb-asearch').on('click.zkb-asearch', selectTimeFilter);
 	$(".filter-btn").off('click.zkb-asearch').on('click.zkb-asearch', toggleFilterBtn);
 	$(".radio-btn").not(".tfilter").off('click.zkb-asearch').on('click.zkb-asearch', toggleRadioBtn);
@@ -116,6 +117,17 @@ function toggleRollingTime(event, enabled) {
 		$('#rolling-times').addClass('btn-primary');
 	}
 	else $('#rolling-times').addClass('btn-secondary');
+}
+
+function toggleGroupLayout(event, enabled) {
+	if (event) event.preventDefault();
+	if (enabled == undefined) enabled = !$("#toggleGroupLayout").hasClass("btn-primary");
+	$("#page").toggleClass("d-none", enabled);
+	$("#result-groups-column").toggleClass("col-md-2", !enabled).toggleClass("col-12", enabled);
+	$("#result-groups-all").toggleClass("row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3", enabled);
+	$("#result-groups-all > div").toggleClass("col", enabled);
+	$("#toggleGroupLayout").toggleClass("btn-primary", enabled).toggleClass("btn-secondary", !enabled);
+	if (allowChange) setHash();
 }
 
 function rollTime() {
@@ -384,6 +396,7 @@ function setFilters(hashfilters) {
 	allowChange = false;
 
 	// Reset the search
+	toggleGroupLayout(null, false);
 	$(".filter-remove").click();
 	$(".btn.btn-primary:not(.notafilter)").removeClass("btn-primary").addClass("btn-secondary");
 

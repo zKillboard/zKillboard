@@ -105,6 +105,7 @@ block content
           span#includeAssociatesLabel Include Associates
       div
         span#exportCsv.btn.btn-success.btn-sm.notafilter(style="margin-top: 0.5em;") Export XSLX
+        span#toggleGroupLayout.btn.btn-secondary.btn-sm(value="split" style="margin-top: 0.5em; margin-left: 0.5em;" title="Toggle wide aggregation layout") Wide Groups
     hr
     #clickablecontent.row
       #page.col-md-10
@@ -143,16 +144,14 @@ block content
                 th.d-none.d-md-table-cell.finalBlowColumn(style="width: 64px;") &nbsp;
                 th.d-none.d-md-table-cell.finalBlowColumn Final Blow
             tbody#killmails-list
-      .col-md-2
-        .btn-group.btn-group-vertical.asearchfilters(zkill-var="group-agg-type" style="width: 100%")
-          .radio-btn.btn.btn-secondary.btn-primary(value="allinvolved") All Involved
-          .radio-btn.btn.btn-secondary(value="victimsonly") Victims Only
-          .radio-btn.btn.btn-secondary(value="attackersonly") Attackers Only
-        br
-        br
-        div
-          h4#result-groups-count
+      #result-groups-column.col-md-2
         #result-groups-all
+          #result-groups-summary
+            .btn-group.btn-group-vertical.asearchfilters.mb-2(zkill-var="group-agg-type" style="width: 100%")
+              .radio-btn.btn.btn-secondary.btn-primary(value="allinvolved") All Involved
+              .radio-btn.btn.btn-secondary(value="victimsonly") Victims Only
+              .radio-btn.btn.btn-secondary(value="attackersonly") Attackers Only
+            h4#result-groups-count
           #result-groups-character
           #result-groups-corporation
           #result-groups-alliance
