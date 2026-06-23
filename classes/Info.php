@@ -9,6 +9,68 @@ class Info
 	 */
 	public static $infoFieldCache = [];
 
+	const POCHVEN_CREATED_EPOCH = 1602586800; // 2020-10-13 11:00:00 UTC
+
+	private static $prePochvenLocationBySystemID = [
+		30000021 => ['constellationID' => 20000003, 'regionID' => 10000001], // Kuharah
+		30000157 => ['constellationID' => 20000022, 'regionID' => 10000002], // Otela
+		30000192 => ['constellationID' => 20000027, 'regionID' => 10000002], // Otanuomi
+		30000206 => ['constellationID' => 20000029, 'regionID' => 10000002], // Wirashoda
+		30001372 => ['constellationID' => 20000200, 'regionID' => 10000016], // Kino
+		30001381 => ['constellationID' => 20000202, 'regionID' => 10000016], // Arvasaras
+		30001413 => ['constellationID' => 20000207, 'regionID' => 10000016], // Nani
+		30001445 => ['constellationID' => 20000212, 'regionID' => 10000016], // Nalvula
+		30002079 => ['constellationID' => 20000306, 'regionID' => 10000042], // Krirald
+		30002225 => ['constellationID' => 20000326, 'regionID' => 10000043], // Harva
+		30002411 => ['constellationID' => 20000354, 'regionID' => 10000028], // Skarkon
+		30002652 => ['constellationID' => 20000388, 'regionID' => 10000032], // Ala
+		30002702 => ['constellationID' => 20000395, 'regionID' => 10000032], // Archee
+		30002737 => ['constellationID' => 20000401, 'regionID' => 10000033], // Konola
+		30002770 => ['constellationID' => 20000406, 'regionID' => 10000033], // Tunudan
+		30002797 => ['constellationID' => 20000410, 'regionID' => 10000033], // Kaunokka
+		30003046 => ['constellationID' => 20000446, 'regionID' => 10000037], // Angymonne
+		30003495 => ['constellationID' => 20000510, 'regionID' => 10000043], // Raravoss
+		30003504 => ['constellationID' => 20000511, 'regionID' => 10000043], // Niarja
+		30005005 => ['constellationID' => 20000732, 'regionID' => 10000064], // Ignebaener
+		30005029 => ['constellationID' => 20000735, 'regionID' => 10000064], // Vale
+		30010141 => ['constellationID' => 20000019, 'regionID' => 10000002], // Sakenta
+		30020141 => ['constellationID' => 20000018, 'regionID' => 10000002], // Senda
+		30031392 => ['constellationID' => 20000413, 'regionID' => 10000033], // Komo
+		30040141 => ['constellationID' => 20000409, 'regionID' => 10000033], // Urhinichi
+		30045328 => ['constellationID' => 20000784, 'regionID' => 10000069], // Ahtila
+		30045329 => ['constellationID' => 20000784, 'regionID' => 10000069], // Ichoriya
+	];
+
+	private static $currentPochvenLocationBySystemID = [
+		30000021 => ['constellationID' => 20000788, 'regionID' => 10000070], // Kuharah
+		30000157 => ['constellationID' => 20000787, 'regionID' => 10000070], // Otela
+		30000192 => ['constellationID' => 20000787, 'regionID' => 10000070], // Otanuomi
+		30000206 => ['constellationID' => 20000789, 'regionID' => 10000070], // Wirashoda
+		30001372 => ['constellationID' => 20000787, 'regionID' => 10000070], // Kino
+		30001381 => ['constellationID' => 20000789, 'regionID' => 10000070], // Arvasaras
+		30001413 => ['constellationID' => 20000788, 'regionID' => 10000070], // Nani
+		30001445 => ['constellationID' => 20000787, 'regionID' => 10000070], // Nalvula
+		30002079 => ['constellationID' => 20000787, 'regionID' => 10000070], // Krirald
+		30002225 => ['constellationID' => 20000788, 'regionID' => 10000070], // Harva
+		30002411 => ['constellationID' => 20000788, 'regionID' => 10000070], // Skarkon
+		30002652 => ['constellationID' => 20000789, 'regionID' => 10000070], // Ala
+		30002702 => ['constellationID' => 20000789, 'regionID' => 10000070], // Archee
+		30002737 => ['constellationID' => 20000787, 'regionID' => 10000070], // Konola
+		30002770 => ['constellationID' => 20000788, 'regionID' => 10000070], // Tunudan
+		30002797 => ['constellationID' => 20000789, 'regionID' => 10000070], // Kaunokka
+		30003046 => ['constellationID' => 20000789, 'regionID' => 10000070], // Angymonne
+		30003495 => ['constellationID' => 20000788, 'regionID' => 10000070], // Raravoss
+		30003504 => ['constellationID' => 20000788, 'regionID' => 10000070], // Niarja
+		30005005 => ['constellationID' => 20000787, 'regionID' => 10000070], // Ignebaener
+		30005029 => ['constellationID' => 20000789, 'regionID' => 10000070], // Vale
+		30010141 => ['constellationID' => 20000787, 'regionID' => 10000070], // Sakenta
+		30020141 => ['constellationID' => 20000789, 'regionID' => 10000070], // Senda
+		30031392 => ['constellationID' => 20000787, 'regionID' => 10000070], // Komo
+		30040141 => ['constellationID' => 20000788, 'regionID' => 10000070], // Urhinichi
+		30045328 => ['constellationID' => 20000788, 'regionID' => 10000070], // Ahtila
+		30045329 => ['constellationID' => 20000789, 'regionID' => 10000070], // Ichoriya
+	];
+
 	public static function getRedisKey($type, $id)
 	{
 		return "info::$type:$id";
@@ -161,22 +223,27 @@ class Info
 		return $systemInfo['security'];
 	}
 
-	public static function getSystemByEpoch($solarSystemID, $epoch)
+	public static function getSystemLocationByKillTime($solarSystemID, $killTime, $system = [])
 	{
-		global $mdb;
-
-		$serverVersion = $mdb->findField('versions', 'serverVersion', ['epoch' => ['$gte' => $epoch]], ['epoch' => 1]);
-		if ($serverVersion == null) {
-			// @TODO FIND OUT WHY THIS IS HAPPENING... WTF
-			// throw new \Exception("Unknown server version - bailing");
-			Util::zout("Could not find systemID $solarSystemID for serverversion: $serverVersion for epoch: $epoch!");
-		}
-		$system = $mdb->findDoc('geography', ['type' => 'solarSystemID', 'id' => $solarSystemID, 'serverVersion' => "$serverVersion"]);
-		if ($system === null) {
-			$system = $mdb->findDoc('geography', ['type' => 'solarSystemID', 'id' => $solarSystemID, 'serverVersion' => ['$nin' => [null, false]]], ['serverVersion' => -1]);
+		$solarSystemID = (int) $solarSystemID;
+		if ($killTime instanceof DateTimeInterface) {
+			$epoch = $killTime->getTimestamp();
+		} else {
+			$epoch = is_numeric($killTime) ? (int) $killTime : strtotime(str_replace('.', '-', (string) $killTime) . ' UTC');
 		}
 
-		return $system;
+		if ($epoch < self::POCHVEN_CREATED_EPOCH && isset(self::$prePochvenLocationBySystemID[$solarSystemID])) {
+			return self::$prePochvenLocationBySystemID[$solarSystemID];
+		}
+
+		if (isset(self::$currentPochvenLocationBySystemID[$solarSystemID])) {
+			return self::$currentPochvenLocationBySystemID[$solarSystemID];
+		}
+
+		return [
+			'constellationID' => (int) @$system['constellationID'],
+			'regionID' => (int) @$system['regionID'],
+		];
 	}
 
 	/**

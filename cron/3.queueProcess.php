@@ -77,18 +77,18 @@ while ($time >= time()) {
 
             $systemID = (int) $mail['solar_system_id'];
             $system = Info::getInfo('solarSystemID', $systemID);
-            $system = Info::getSystemByEpoch($systemID, $unixtime);
             if ($system == null) {
                 $redis->zadd("tobeparsed", $killID, $killID);
                 Util::out("NULL SYSTEM $systemID for killmail $killID " . $unixtime);
                 continue;
             }
+            $systemLocation = Info::getSystemLocationByKillTime($systemID, $unixtime, $system);
 
             $solarSystem = array();
             $solarSystem['solarSystemID'] = $systemID;
             $solarSystem['security'] = (double) @$system['secStatus'];
-            $solarSystem['constellationID'] = (int) @$system['constellationID'];
-            $solarSystem['regionID'] = (int) @$system['regionID'];
+            $solarSystem['constellationID'] = (int) @$systemLocation['constellationID'];
+            $solarSystem['regionID'] = (int) @$systemLocation['regionID'];
             $kill['system'] = $solarSystem;
             if (isset($mail['victim']['position'])) {
                 $locationID = Info::getLocationID($systemID, $mail['victim']['position']);

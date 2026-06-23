@@ -154,22 +154,6 @@ $collection = "funcs";
 $funcs = $db->$collection;
 echo "Done\n";
 
-// geography
-echo "\nCreating collection geography ... ";
-$db->createCollection("geography");
-$collection = "geography";
-$geography = $db->$collection;
-echo "Done\n";
-echo "Creating index : 'type' => 1, 'id' => 1, 'serverVersion' => 1 ... ";
-$geography->createIndex(['type' => 1, 'id' => 1, 'serverVersion' => 1], []);
-echo "Done\n";
-echo "Creating index : 'serverVersion' => 1 ... ";
-$geography->createIndex(['serverVersion' => 1], []);
-echo "Done\n";
-echo "Creating index : 'id' => 1 ... ";
-$geography->createIndex(['id' => 1], []);
-echo "Done\n";
-
 // information
 echo "\nCreating collection information ... ";
 $db->createCollection("information");
@@ -1570,4 +1554,3 @@ echo "Done\n";
 echo "Creating index : 'entryTime' => 1 ... ";
 $zlog->createIndex(['entryTime' => 1], ['expireAfterSeconds' => 7776000]);
 echo "Done\n";
-
