@@ -363,6 +363,7 @@ function isSpaExcludedPath(pathname) {
 
 async function spaNavigate(href, pushState, historyState) {
     const targetURL = new URL(href, window.location.href);
+    let contentSwapped = false;
     if (pushState) saveSpaScrollPosition();
     hideTransientTooltips();
 
@@ -406,6 +407,7 @@ async function spaNavigate(href, pushState, historyState) {
         if (currentModals) destroyTooltipsIn(currentModals);
         currentContent.innerHTML = nextContent.innerHTML;
         if (nextModals && currentModals) currentModals.innerHTML = nextModals.innerHTML;
+        contentSwapped = true;
         syncPageGlobals(currentContent);
         syncPagePubsubs();
         const contentAssets = await loadSpaElementScripts(currentContent);
@@ -421,6 +423,10 @@ async function spaNavigate(href, pushState, historyState) {
     } catch (e) {
         if (e.name === "AbortError") return;
         console.error("SPA navigation failed:", e);
+        if (contentSwapped) {
+            spaRenderedURL = window.location.href;
+            return;
+        }
         fullNavigate(targetURL.href);
     }
 }
