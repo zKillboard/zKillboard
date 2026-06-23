@@ -1321,6 +1321,16 @@ echo "Done\n";
 echo "Creating index : 'type' => 1, 'id' => 1 ... ";
 $statistics->createIndex(['type' => 1, 'id' => 1], ['unique' => true]);
 echo "Done\n";
+foreach (['alltime', 'recent', 'weekly'] as $rankEpoch) {
+    foreach (['all', 'solo'] as $rankScope) {
+        echo "Creating index : 'type' => 1, 'rankings.$rankEpoch.$rankScope.ranks.overall' => 1 ... ";
+        $statistics->createIndex(
+            ['type' => 1, "rankings.$rankEpoch.$rankScope.ranks.overall" => 1],
+            ['partialFilterExpression' => ["rankings.$rankEpoch.$rankScope.ranks.overall" => ['$exists' => true]]]
+        );
+        echo "Done\n";
+    }
+}
 echo "Creating index : 'type' => 1, 'shipsDestroyedRank' => 1 ... ";
 $statistics->createIndex(['type' => 1, 'shipsDestroyedRank' => 1], []);
 echo "Done\n";
