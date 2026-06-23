@@ -710,11 +710,6 @@ a {
 	text-decoration: none;
 }
 
-a:hover,
-a:focus {
-	text-decoration: underline;
-}
-
 table a, .table a {
 	color: #2a9fd6;
 }

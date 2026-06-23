@@ -112,6 +112,16 @@ html {
 	margin-right: 4px;
 }
 
+#zkb-page-content a:not(.btn):not(.nav-link):not(.dropdown-item):not(.navbar-brand):not(.page-link):hover,
+#zkb-page-content a:not(.btn):not(.nav-link):not(.dropdown-item):not(.navbar-brand):not(.page-link):focus {
+	text-decoration: underline;
+}
+
+#zkb-page-content .navbar a:hover,
+#zkb-page-content .navbar a:focus {
+	text-decoration: none;
+}
+
 #search.nav-search-item .input-group {
 	width: 100%;
 	flex-wrap: nowrap;
@@ -2040,10 +2050,6 @@ code {
 	color: inherit;
 }
 
-.related-entity-name:hover {
-	text-decoration: underline;
-}
-
 .related-entity-move {
 	display: inline-flex;
 	align-items: center;
@@ -2103,10 +2109,6 @@ code {
 .related-list-link {
 	color: inherit;
 	text-decoration: none;
-}
-
-.related-list-link:hover {
-	text-decoration: underline;
 }
 
 .related-status-wrap {
