@@ -57,13 +57,13 @@ html {
 
 .nav-user-shell {
 	display: flex;
-	align-items: start;
+	align-items: center;
 	margin-bottom: 0;
 }
 
 #usermenu-dropdown {
 	display: inline-flex;
-	align-items: start;
+	align-items: center;
 	justify-content: center;
 	line-height: 1;
 	padding-top: 0;
