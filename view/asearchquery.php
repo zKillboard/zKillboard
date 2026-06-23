@@ -72,9 +72,14 @@ function handler($request, $response, $args, $container) {
 		}
 		unset($queryParams['includeAssociates']);
 
+		$epochButton = (string) @$queryParams['epochbtn'];
+		$usePeriodCollectionOnly = in_array($epochButton, ['week', 'recent'], true);
+
 		$query = AdvancedSearch::buildQuery($queryParams, $query, "location", null, 'or');
-		$query = AdvancedSearch::parseDate($queryParams, $query, 'start');
-		$query = AdvancedSearch::parseDate($queryParams, $query, 'end');
+		if (!$usePeriodCollectionOnly) {
+			$query = AdvancedSearch::parseDate($queryParams, $query, 'start');
+			$query = AdvancedSearch::parseDate($queryParams, $query, 'end');
+		}
 
 		$labels = [];
 		foreach ($buttons as $label) {
@@ -105,11 +110,16 @@ function handler($request, $response, $args, $container) {
 			unset($queryParams['radios']['group-agg-type']);
 		}
 
-		$coll = ['killmails'];
-		if ($sortKey == 'killID' && $sortBy == -1 && @$query['hasDateFilter'] != true) {
+		if ($epochButton == 'week') {
+			$coll = ['oneWeek'];
+		} else if ($epochButton == 'recent') {
+			$coll = ['ninetyDays'];
+		} else if ($sortKey == 'killID' && $sortBy == -1 && @$query['hasDateFilter'] != true) {
 			$coll = ['oneWeek', 'ninetyDays', 'killmails'];
+		} else {
+			$coll = ['killmails'];
 		}
-		$aggregateCollection = getAsearchAggregateCollection($startTime, $now, (string) @$queryParams['epochbtn']);
+		$aggregateCollection = getAsearchAggregateCollection($startTime, $now, $epochButton);
 		unset($query['hasDateFilter']);
 
 		if (sizeof($query) == 0) $query = [];
