@@ -620,15 +620,44 @@ class AdvancedSearch
     {
         global $uri;
 
+        $sourceUri = isset($context['uri']) ? $context['uri'] : $uri;
+        $params = [];
+        $path = null;
+        if ($sourceUri) {
+            $parts = parse_url($sourceUri);
+            $path = isset($parts['path']) ? $parts['path'] : null;
+            if (isset($parts['query'])) parse_str($parts['query'], $params);
+        }
+
+        $sort = isset($params['sort']) && is_array($params['sort']) ? $params['sort'] : [];
+        $radios = isset($params['radios']) && is_array($params['radios']) ? $params['radios'] : [];
+        if (isset($radios['sort']) && is_array($radios['sort'])) $sort = array_replace($sort, $radios['sort']);
+        $sortBy = isset($sort['sortBy']) ? $sort['sortBy'] : @$context['sortKey'];
+        $sortDir = isset($sort['sortDir']) ? $sort['sortDir'] : @$context['sortBy'];
+        if ($sortDir === 1 || $sortDir === '1') $sortDir = 'asc';
+        if ($sortDir === -1 || $sortDir === '-1') $sortDir = 'desc';
+
         $payload = [
             'operation' => $operation,
-            'uri' => $uri,
-            'exceptionCode' => $ex ? $ex->getCode() : null,
-            'exceptionMessage' => $ex ? $ex->getMessage() : null,
-            'context' => $context
+            'reason' => $ex ? $ex->getMessage() : 'timed out waiting for in-progress request',
+            'path' => $path,
+            'queryType' => isset($context['queryType']) ? $context['queryType'] : @$params['queryType'],
+            'groupType' => isset($context['groupType']) ? $context['groupType'] : @$params['groupType'],
+            'page' => isset($context['page']) ? $context['page'] : @$radios['page'],
+            'sort' => trim("$sortBy $sortDir"),
+            'epoch' => @$params['epoch'],
+            'labels' => isset($params['labels']) && is_array($params['labels']) ? array_values($params['labels']) : null,
+            'includeAssociates' => @$params['includeAssociates'],
+            'collection' => @$context['collection'] ?: @$context['aggregateCollection'],
+            'collections' => @$context['collections'],
+            'groupBy' => @$context['groupByColumn'],
+            'victimsOnly' => @$context['victimsOnly'],
+            'query' => @$context['query'],
+            'filter' => @$context['filter'],
+            'pipelineStages' => self::getPipelineStageNames(@$context['pipeline'])
         ];
 
-        $encoded = json_encode($payload, JSON_UNESCAPED_SLASHES);
+        $encoded = json_encode(self::removeEmptyTimeoutFields($payload), JSON_UNESCAPED_SLASHES);
         if ($encoded === false) {
             $encoded = print_r($payload, true);
         }
@@ -638,6 +667,29 @@ class AdvancedSearch
         }
 
         Util::zout("Advanced search query timeout: " . $encoded);
+    }
+
+    private static function getPipelineStageNames($pipeline)
+    {
+        if (!is_array($pipeline)) return null;
+        $stages = [];
+        foreach ($pipeline as $stage) {
+            if (is_array($stage) && !empty($stage)) $stages[] = key($stage);
+        }
+        return $stages;
+    }
+
+    private static function removeEmptyTimeoutFields($value)
+    {
+        if (!is_array($value)) return $value;
+
+        $clean = [];
+        foreach ($value as $key => $child) {
+            $child = self::removeEmptyTimeoutFields($child);
+            if ($child === null || $child === '' || $child === []) continue;
+            $clean[$key] = $child;
+        }
+        return $clean;
     }
 
     public static function getSelectedFromBase($base, $buttons)
