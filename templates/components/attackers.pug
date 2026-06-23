@@ -14,7 +14,6 @@ if (($killInfo['number_involved'] ?? 0) > 10)
         #listAllPilotsInner.accordion-inner
   script.
     function loadRemainingPilots() {
-      // Load pilots beyond the first 10 for killmail #{($killInfo['killID'] ?? 0)}
       if ($("#listAllPilotsInner").html().trim() == "") {
         $("#listAllPilotsInner").html("...");
         console.log('Fetching remaining pilots');
