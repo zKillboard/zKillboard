@@ -622,10 +622,8 @@ class AdvancedSearch
 
         $sourceUri = isset($context['uri']) ? $context['uri'] : $uri;
         $params = [];
-        $path = null;
         if ($sourceUri) {
             $parts = parse_url($sourceUri);
-            $path = isset($parts['path']) ? $parts['path'] : null;
             if (isset($parts['query'])) parse_str($parts['query'], $params);
         }
 
@@ -636,17 +634,17 @@ class AdvancedSearch
         $sortDir = isset($sort['sortDir']) ? $sort['sortDir'] : @$context['sortBy'];
         if ($sortDir === 1 || $sortDir === '1') $sortDir = 'asc';
         if ($sortDir === -1 || $sortDir === '-1') $sortDir = 'desc';
+        $sortText = trim("$sortBy $sortDir");
 
         $queryType = isset($context['queryType']) ? $context['queryType'] : @$params['queryType'];
         $groupType = isset($context['groupType']) ? $context['groupType'] : @$params['groupType'];
         $page = isset($context['page']) ? $context['page'] : @$radios['page'];
+        $page = (int) $page;
         $collection = @$context['collection'] ?: @$context['aggregateCollection'];
         $groupBy = @$context['groupByColumn'];
-        $labels = isset($params['labels']) && is_array($params['labels']) ? implode(', ', $params['labels']) : null;
         $epoch = self::summarizeTimeoutEpoch(@$params['epoch']);
         $query = self::summarizeTimeoutCriteria(@$context['query']);
         $filter = self::summarizeTimeoutCriteria(@$context['filter']);
-        $pipeline = self::getPipelineStageNames(@$context['pipeline']);
         $execution = implode(' ', array_filter([
             $collection ? "collection $collection" : null,
             $groupBy ? "groupBy $groupBy" : null
@@ -654,16 +652,15 @@ class AdvancedSearch
 
         $parts = [
             $operation . ': ' . ($ex ? self::shortTimeoutReason($ex->getMessage()) : 'timed out waiting for in-progress request'),
-            "request " . trim("$queryType/$groupType") . ($page ? " page $page" : '') . (trim("$sortBy $sortDir") ? " sort " . trim("$sortBy $sortDir") : ''),
-            $path ? "path $path" : null,
+            "request " . trim("$queryType/$groupType"),
+            $page > 1 ? "page $page" : null,
+            $sortText && $sortText !== 'date desc' ? "sort $sortText" : null,
             $epoch ? "epoch $epoch" : null,
-            $labels ? "labels $labels" : null,
-            @$params['includeAssociates'] ? "includeAssociates " . @$params['includeAssociates'] : null,
+            isset($params['includeAssociates']) && $params['includeAssociates'] !== 'true' ? "includeAssociates " . $params['includeAssociates'] : null,
             $execution,
             @$context['victimsOnly'] && @$context['victimsOnly'] !== 'null' ? "victimsOnly " . @$context['victimsOnly'] : null,
-            $query ? "query $query" : null,
-            $filter ? "filter $filter" : null,
-            !empty($pipeline) ? "pipeline " . implode(' > ', $pipeline) : null
+            $query ? "selected $query" : null,
+            $filter ? "filter $filter" : null
         ];
 
         $encoded = implode('; ', array_values(array_filter($parts)));
@@ -673,16 +670,6 @@ class AdvancedSearch
         }
 
         Util::zout("Advanced search query timeout: " . $encoded);
-    }
-
-    private static function getPipelineStageNames($pipeline)
-    {
-        if (!is_array($pipeline)) return null;
-        $stages = [];
-        foreach ($pipeline as $stage) {
-            if (is_array($stage) && !empty($stage)) $stages[] = key($stage);
-        }
-        return $stages;
     }
 
     private static function summarizeTimeoutEpoch($epoch)
@@ -706,7 +693,7 @@ class AdvancedSearch
                 $summary = self::summarizeTimeoutCriteria($child);
                 if ($summary) $parts[] = $summary;
             }
-            return implode('; ', $parts);
+            return implode('; ', self::combineTimeoutCriteriaParts($parts));
         }
 
         if (isset($criteria['$or']) && is_array($criteria['$or'])) {
@@ -727,6 +714,22 @@ class AdvancedSearch
         }
 
         return implode('; ', $parts);
+    }
+
+    private static function combineTimeoutCriteriaParts($parts)
+    {
+        $labels = [];
+        $combined = [];
+        foreach ($parts as $part) {
+            if (preg_match('/^labels in \\[(.*)\\]$/', $part, $matches)) {
+                foreach (explode(', ', $matches[1]) as $label) $labels[] = $label;
+            } else {
+                $combined[] = $part;
+            }
+        }
+
+        if (!empty($labels)) array_unshift($combined, 'labels in [' . implode(', ', $labels) . ']');
+        return $combined;
     }
 
     private static function summarizeTimeoutOr($criteria)
