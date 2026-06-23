@@ -626,6 +626,9 @@ class AdvancedSearch
             $parts = parse_url($sourceUri);
             if (isset($parts['query'])) parse_str($parts['query'], $params);
         }
+        if (isset($context['requestParams']) && is_array($context['requestParams'])) {
+            $params = array_replace_recursive($context['requestParams'], $params);
+        }
 
         $sort = isset($params['sort']) && is_array($params['sort']) ? $params['sort'] : [];
         $radios = isset($params['radios']) && is_array($params['radios']) ? $params['radios'] : [];
@@ -642,6 +645,7 @@ class AdvancedSearch
         $page = (int) $page;
         $collection = @$context['collection'] ?: @$context['aggregateCollection'];
         $groupBy = @$context['groupByColumn'];
+        $timeSpan = self::summarizeTimeoutTimeSpan($params);
         $epoch = self::summarizeTimeoutEpoch(@$params['epoch']);
         $query = self::summarizeTimeoutCriteria(@$context['query']);
         $filter = self::summarizeTimeoutCriteria(@$context['filter']);
@@ -655,6 +659,7 @@ class AdvancedSearch
             "request " . trim("$queryType/$groupType"),
             $page > 1 ? "page $page" : null,
             $sortText && $sortText !== 'date desc' ? "sort $sortText" : null,
+            $timeSpan ? "timespan $timeSpan" : null,
             $epoch ? "epoch $epoch" : null,
             isset($params['includeAssociates']) && $params['includeAssociates'] !== 'true' ? "includeAssociates " . $params['includeAssociates'] : null,
             $execution,
@@ -670,6 +675,39 @@ class AdvancedSearch
         }
 
         Util::zout("Advanced search query timeout: " . $encoded);
+    }
+
+    private static function summarizeTimeoutTimeSpan($params)
+    {
+        if (!is_array($params)) return null;
+
+        $span = trim((string) @$params['epochbtn']);
+        if ($span == '' && isset($params['buttons']) && is_array($params['buttons'])) {
+            foreach ($params['buttons'] as $button) {
+                $button = trim((string) $button);
+                if (in_array($button, ['week', 'recent', 'alltime', 'prior month', 'current month', 'custom'], true)) {
+                    $span = $button;
+                    break;
+                }
+            }
+        }
+        if ($span == '') return null;
+
+        $labels = [
+            'week' => 'Last 7 Days',
+            'recent' => 'Last 90 Days',
+            'alltime' => 'Alltime',
+            'prior month' => 'Prior Month',
+            'current month' => 'Current Month',
+            'custom' => 'Custom Date Range'
+        ];
+        $label = isset($labels[$span]) ? $labels[$span] : $span;
+
+        if (isset($params['buttons']) && is_array($params['buttons']) && in_array('rolling', $params['buttons'], true)) {
+            $label .= ' rolling';
+        }
+
+        return $label == $span ? $label : "$label ($span)";
     }
 
     private static function summarizeTimeoutEpoch($epoch)
