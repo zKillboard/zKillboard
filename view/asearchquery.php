@@ -109,7 +109,7 @@ function handler($request, $response, $args, $container) {
 		if ($sortKey == 'killID' && $sortBy == -1 && @$query['hasDateFilter'] != true) {
 			$coll = ['oneWeek', 'ninetyDays', 'killmails'];
 		}
-		$aggregateCollection = getAsearchAggregateCollection($startTime, $now);
+		$aggregateCollection = getAsearchAggregateCollection($startTime, $now, (string) @$queryParams['epochbtn']);
 		unset($query['hasDateFilter']);
 
 		if (sizeof($query) == 0) $query = [];
@@ -300,8 +300,21 @@ function iter2array($iter)
     return gettype($iter) == "array" ? $iter : iterator_to_array($iter);
 }
 
-function getAsearchAggregateCollection($startTime, $now)
+function getAsearchAggregateCollection($startTime, $now, $epochButton = '')
 {
+	$epochButton = trim((string) $epochButton);
+	switch ($epochButton) {
+		case 'week':
+			return 'oneWeek';
+		case 'recent':
+		case 'current month':
+		case 'prior month':
+			return 'ninetyDays';
+		case 'alltime':
+			return 'killmails';
+	}
+
+	// Custom and legacy requests do not have a preset button value to trust.
 	if ($startTime <= 0) return 'killmails';
 	if ($startTime >= ($now - 604800)) return 'oneWeek';
 	if ($startTime >= ($now - 7776000)) return 'ninetyDays';
