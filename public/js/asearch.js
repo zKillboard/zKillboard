@@ -12,9 +12,12 @@ $(document).ready(function () {
 });
 
 function zkbInitAsearch() {
+	var container = document.getElementById('asearchcontent');
+	if (!container) return;
+
 	var initKey = window.location.pathname + window.location.hash;
-	if (window.zkbAsearchInitKey === initKey) return;
-	window.zkbAsearchInitKey = initKey;
+	if (container.getAttribute('data-zkb-asearch-init-key') === initKey) return;
+	container.setAttribute('data-zkb-asearch-init-key', initKey);
 
 	allowChange = true;
 	first_load = true;
@@ -89,6 +92,7 @@ function loadasearch() {
 
 function asearchPopstate() {
 	if (!document.getElementById('asearchcontent')) return;
+	if (window.location.hash == '') return;
 	setFilters();
 	$(".btn-page.btn-primary:not(.notafilter)").click();
 }
