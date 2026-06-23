@@ -48,6 +48,6 @@ $response = $response->withHeader('Access-Control-Allow-Methods', 'GET');
 
 $json = json_encode(['suggestions' => $ret]);
 $response->getBody()->write($json);
-return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', 'search,autocomplete');
+return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', 'www,search,autocomplete');
 
 }

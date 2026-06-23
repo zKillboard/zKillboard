@@ -6,5 +6,5 @@ function handler($request, $response, $args, $container) {
 	$array = json_decode($redis->get("zkb:topKillsByShip"), true);
 	$data = array('topSet' => $array);
 	
-	return $container->get('view')->render($response->withHeader('Cache-Tag', 'bigisk'), 'bigisk.pug', $data);
+	return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,bigisk'), 'bigisk.pug', $data);
 }

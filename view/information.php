@@ -31,5 +31,5 @@ function handler($request, $response, $args, $container) {
 	else $title = ucfirst($page);
 
 	$data = array('data' => $output, 'pageTitle' => $title);
-	return $container->get('view')->render($response->withHeader('Cache-Tag', "information,information:$page"), 'information.pug', $data);
+	return $container->get('view')->render($response->withHeader('Cache-Tag', "www,information,information:$page"), 'information.pug', $data);
 }

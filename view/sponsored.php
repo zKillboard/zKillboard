@@ -15,5 +15,5 @@ function handler($request, $response, $args, $container) {
         $sponsored[$kill['killID']] = $killmail;
     }
 
-    return $container->get('view')->render($response->withHeader('Cache-Tag', 'sponsored'), "sponsored.pug", ['sponsored' => $sponsored]);
+    return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,sponsored'), "sponsored.pug", ['sponsored' => $sponsored]);
 }

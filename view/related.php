@@ -6,7 +6,7 @@ function handler($request, $response, $args, $container) {
     $system = $args['system'];
     $time = $args['time'];
     $options = $args['options'] ?? '';
-    $cacheTag = "related,related:system:$system";
+    $cacheTag = "www,related,related:system:$system";
     
     // Handle query parameters like ?right=1000167 or ?left=12345
     $queryParams = $request->getQueryParams();

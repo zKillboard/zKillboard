@@ -13,13 +13,13 @@ function handler($request, $response, $args, $container) {
     
     if ($uri == '/intel/supers/') {
         // HTML version
-        return $container->get('view')->render($response->withHeader('Cache-Tag', 'intel,supers'), 'intel.pug', array('data' => $data));
+        return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,intel,supers'), 'intel.pug', array('data' => $data));
     } else {
         // JSON API version
         $response->getBody()->write(json_encode($data));
         return $response->withHeader('Access-Control-Allow-Origin', '*')
                        ->withHeader('Access-Control-Allow-Methods', 'GET')
                        ->withHeader('Content-Type', 'application/json; charset=utf-8')
-                       ->withHeader('Cache-Tag', 'api,intel,supers');
+                       ->withHeader('Cache-Tag', 'www,api,intel,supers');
     }
 }

@@ -19,7 +19,7 @@ function handler($request, $response, $args, $container) {
 
         $response = $response->withHeader('Access-Control-Allow-Methods', 'GET,POST')
                             ->withHeader('Content-Type', 'application/json; charset=utf-8')
-                            ->withHeader('Cache-Tag', "asearch,asearchinfo,$type:$id");
+                            ->withHeader('Cache-Tag', "www,asearch,asearchinfo,$type:$id");
 
         $type = $otype;
         $output = ['type' => $type, 'id' => $id, 'name' => $name];
@@ -33,7 +33,7 @@ function handler($request, $response, $args, $container) {
         return $response;
     } catch (Exception $ex) {
         Util::zout(print_r($ex, true));
-        $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', 'asearch,asearchinfo,error');
+        $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', 'www,asearch,asearchinfo,error');
         $response->getBody()->write('{"error": "Internal error"}');
         return $response;
     }

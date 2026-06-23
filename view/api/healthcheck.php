@@ -30,7 +30,7 @@ function handler($request, $response, $args, $container) {
     $response = $response->withHeader('Access-Control-Allow-Origin', '*');
     $response = $response->withHeader('Access-Control-Allow-Methods', 'GET, POST');
     $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8');
-    $response = $response->withHeader('Cache-Tag', 'api,healthcheck');
+    $response = $response->withHeader('Cache-Tag', 'www,api,healthcheck');
     
     $response->getBody()->write(json_encode($res));
     return $response;

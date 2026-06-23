@@ -15,7 +15,7 @@ function handler($request, $response, $args, $container) {
     // do we trust the poster?
     if (((int) $redis->get("km:post:$ip")) > 5) {
         $response->getBody()->write(json_encode(['error' => 'you cannot be trusted']));
-        return $response->withStatus(401)->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', 'api,killmail-add,error');
+        return $response->withStatus(401)->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', 'www,api,killmail-add,error');
     }
 
     $newKillmail = false;
@@ -44,7 +44,7 @@ function handler($request, $response, $args, $container) {
         // Did we take too long?
         if ($timer->stop() > 28000) {
             $response->getBody()->write(json_encode(['error' => 'timeout']));
-            return $response->withStatus(408)->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', "api,killmail-add,kill:$killID,error");
+            return $response->withStatus(408)->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', "www,api,killmail-add,kill:$killID,error");
         }
 
         // is the mail valid?
@@ -62,7 +62,7 @@ function handler($request, $response, $args, $container) {
     return $response->withHeader('Access-Control-Allow-Origin', '*')
         ->withHeader('Access-Control-Allow-Methods', 'GET, POST')
         ->withHeader('Content-Type', 'application/json; charset=utf-8')
-        ->withHeader('Cache-Tag', "api,killmail-add,kill:$killID");
+        ->withHeader('Cache-Tag', "www,api,killmail-add,kill:$killID");
 }
 
 function invalidRequest($response, $reason) {
@@ -73,5 +73,5 @@ function invalidRequest($response, $reason) {
     $redis->expire("km:post:$ip", 86400);
 
     $response->getBody()->write(json_encode(['status' => 'error', 'error' => $reason]));
-    return $response->withStatus(422)->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', 'api,killmail-add,error');
+    return $response->withStatus(422)->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', 'www,api,killmail-add,error');
 }

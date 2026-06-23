@@ -38,7 +38,7 @@ if (strpos($uri, "/asearch") === false && strpos($uri, "/cache/") === false)  {
         }
 
         if ($isApiRequest) {
-            header("Cache-Tag: error,trailing-slash");
+            header("Cache-Tag: www,error,trailing-slash");
             return header("HTTP/1.1 200 Missing trailing slash");
         }
         else {
@@ -48,7 +48,7 @@ if (strpos($uri, "/asearch") === false && strpos($uri, "/cache/") === false)  {
             http_response_code(404);
             header("Link: <$url>; rel=\"canonical\"");
             header("Content-Type: text/html; charset=UTF-8");
-            header("Cache-Tag: error,404,trailing-slash");
+            header("Cache-Tag: www,error,404,trailing-slash");
             header("Cache-Control: public, max-age=86400");
             header("Expires: " . gmdate("D, d M Y H:i:s", time() + 86400) . " GMT");
             echo "<!DOCTYPE html><html><head><meta http-equiv=\"refresh\" content=\"15;url=$url\"></head><body>Invalid URL!  Put a slash at the end... like this: <a href=\"$url\">$url</a></body></html>";
@@ -124,7 +124,7 @@ $errorMiddleware->setErrorHandler(
     function ($request, $exception, $displayErrorDetails) use ($app) {
         $response = $app->getResponseFactory()->createResponse();
         $response->getBody()->write('404 Not Found');
-        return $response->withStatus(404)->withHeader('Cache-Tag', 'error,404');
+        return $response->withStatus(404)->withHeader('Cache-Tag', 'www,error,404');
     }
 );
 
@@ -133,7 +133,7 @@ $errorMiddleware->setErrorHandler(
     function ($request, $exception, $displayErrorDetails) use ($app) {
         $response = $app->getResponseFactory()->createResponse();
         $response->getBody()->write('405 Method Not Allowed');
-        return $response->withStatus(405)->withHeader('Cache-Tag', 'error,405');
+        return $response->withStatus(405)->withHeader('Cache-Tag', 'www,error,405');
     }
 );
 
@@ -152,7 +152,7 @@ function contains($needle, $haystack) {
 }
 
 function html403($reason) {
-    header("Cache-Tag: error,403");
+    header("Cache-Tag: www,error,403");
     header("HTTP/1.1 403 $reason");
     exit();
 }

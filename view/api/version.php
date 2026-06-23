@@ -5,7 +5,7 @@ function handler($request, $response, $args, $container) {
 
     $response = $response
         ->withHeader('Content-Type', 'application/json; charset=utf-8')
-        ->withHeader('Cache-Tag', 'version')
+        ->withHeader('Cache-Tag', 'www,version')
         ->withHeader('Cache-Control', 'public, max-age=3600');
 
     $response->getBody()->write(json_encode(['version' => $version]));

@@ -14,5 +14,5 @@ function handler($request, $response, $args, $container) {
     }
     
     $response->getBody()->write($output);
-    return $response->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', "kill,kill:$killID,fit");
+    return $response->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', "www,kill,kill:$killID,fit");
 }

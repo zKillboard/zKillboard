@@ -24,7 +24,7 @@ function recap2025Handler($request, $response, $args, $container) {
 		if (isset($cached['updated'])) {
 			$data['generationTime'] = $cached['updated'];
 		}
-		return $container->get('view')->render($response->withHeader('Cache-Tag', "recap2025,$key:$id"), 'recap2025.pug', $data);
+		return $container->get('view')->render($response->withHeader('Cache-Tag', "www,recap2025,$key:$id"), 'recap2025.pug', $data);
     }
 	return $response->withStatus(302)->withHeader('Location', './../');
 }

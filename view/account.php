@@ -124,5 +124,5 @@ $data['sponsoredShips'] = $sponsoredShips;
 $data['sponsoredTotalIsk'] = $sponsoredTotalIsk;
 
     $accountData = array('data' => $data, 'message' => $error, 'key' => $key, 'reqid' => $reqid);
-    return $container->get('view')->render($response->withHeader('Cache-Tag', 'account'), 'account.pug', $accountData);
+    return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,account'), 'account.pug', $accountData);
 }

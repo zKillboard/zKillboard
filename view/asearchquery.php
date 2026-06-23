@@ -124,7 +124,7 @@ function handler($request, $response, $args, $container) {
 		array_multisort($query);
 		$jsoned = json_encode($query, true) . json_encode($filter, true);
 		$key = "asearch:$queryType:$groupType:$victimsOnly:" . ($queryType == "kills" ? "$page:$sortKey:$sortBy:" : "") . md5($jsoned);
-		$cacheTag = "asearch,asearch:$key";
+		$cacheTag = "www,asearch,asearch:$key";
 
 		$waits = 0;
 		$ret = "";
@@ -291,7 +291,7 @@ function handler($request, $response, $args, $container) {
 		], $ex);
 		$redis->del($key);
 		$response->getBody()->write(json_encode(['error' => 'Internal server error', 'message' => $ex->getMessage()], JSON_PRETTY_PRINT));
-		return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', "asearch,asearch:$key,error")->withStatus(500);
+		return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', "www,asearch,asearch:$key,error")->withStatus(500);
 	} 
 }
 

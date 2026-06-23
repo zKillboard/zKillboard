@@ -71,10 +71,10 @@ function handler($request, $response, $args, $container) {
 			default:
 		}
 
-        return $container->get('view')->render($response->withHeader('Cache-Tag', "sponsor,kill:$killID"), "sponsor.pug", ['killID' => $killID, 'iskA' => $iskAvailable, 'response' => $responseMessage, 'valueF' => $valueF, 'type' => $type]);
+        return $container->get('view')->render($response->withHeader('Cache-Tag', "www,sponsor,kill:$killID"), "sponsor.pug", ['killID' => $killID, 'iskA' => $iskAvailable, 'response' => $responseMessage, 'valueF' => $valueF, 'type' => $type]);
     } catch (Exception $e) {
         Util::zout(print_r($e, true));
-        return $container->get('view')->render($response->withHeader('Cache-Tag', 'error,sponsor'), "error.pug", ['message' => 'An error occurred processing your request.']);
+        return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,error,sponsor'), "error.pug", ['message' => 'An error occurred processing your request.']);
     }
 }
 

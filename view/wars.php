@@ -12,5 +12,5 @@ function handler($request, $response, $args, $container) {
     $wars[] = ['name' => 'Recently Finished Wars', 'wars' => $mdb->find('information', ['cacheTime' => 3600, 'type' => 'warID'], ['finished' => -1], 25)];
     Info::addInfo($wars);
 
-    return $container->get('view')->render($response->withHeader('Cache-Tag', 'wars'), 'wars.pug', array('warTables' => $wars));
+    return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,wars'), 'wars.pug', array('warTables' => $wars));
 }

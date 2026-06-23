@@ -23,7 +23,7 @@ function handler($request, $response, $args, $container) {
     $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8')
                         ->withHeader('Access-Control-Allow-Origin', '*')
                         ->withHeader('Access-Control-Allow-Methods', 'GET, POST')
-                        ->withHeader('Cache-Tag', 'search,autocomplete');
+                        ->withHeader('Cache-Tag', 'www,search,autocomplete');
     
     $response->getBody()->write(json_encode($result));
     return $response;

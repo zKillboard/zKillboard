@@ -79,7 +79,7 @@ function handler($request, $response, $args, $container)
 		$response = $response
 			->withHeader('X-Frame-Options', 'ALLOWALL')
 			->withHeader('Content-Security-Policy', 'frame-ancestors *')
-			->withHeader('Cache-Tag', "overview,overview:$id,streambox");
+			->withHeader('Cache-Tag', "www,overview,overview:$id,streambox");
 		return $container->get('view')->render($response, 'streambox.pug', []);
 	}
 	unset($parameters['streambox']);
@@ -110,7 +110,7 @@ function handler($request, $response, $args, $container)
 			return renderCached404($container, $response, 'Not Found');
 		}
 	} catch (Exception $ex) {
-		return $container->get('view')->render($response->withHeader('Cache-Tag', "error,overview,overview:$id"), 'error.pug', array('message' => "There was an error fetching information for the $key you specified."));
+		return $container->get('view')->render($response->withHeader('Cache-Tag', "www,error,overview,overview:$id"), 'error.pug', array('message' => "There was an error fetching information for the $key you specified."));
 	}
 
 	$pageName = isset($detail[$map[$key]['column'] . 'Name']) ? $detail[$map[$key]['column'] . 'Name'] : '???';
@@ -583,7 +583,7 @@ function handler($request, $response, $args, $container)
 
 	$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified, 'dqChars' => $dqChars);
 
-	return $container->get('view')->render($response->withHeader('Cache-Tag', "overview,overview:$id"), 'overview.pug', $renderParams);
+	return $container->get('view')->render($response->withHeader('Cache-Tag', "www,overview,overview:$id"), 'overview.pug', $renderParams);
 }
 
 function addVics($vics, $kills = [])
@@ -612,7 +612,7 @@ function renderCached404($container, $response, $message = 'Not Found')
 		->withHeader('Cache-Control', $cacheControl)
 		->withHeader('CDN-Cache-Control', $cacheControl)
 		->withHeader('Cloudflare-CDN-Cache-Control', $cacheControl)
-		->withHeader('Cache-Tag', 'error,404,overview');
+		->withHeader('Cache-Tag', 'www,error,404,overview');
 
 	return $container->get('view')->render($cached404Response, '404.pug', array('message' => $message));
 }

@@ -11,7 +11,7 @@ function handler($request, $response, $args, $container) {
         else $params = URI::validate($uri, ['s' => !$bypass, 'u' => true]);
     } catch (Exception $e) {
         // If validation fails, return empty JSON result
-        $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', 'killlist');
+        $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', 'www,killlist');
         $response->getBody()->write(json_encode([]));
         return $response;
     }
@@ -50,7 +50,7 @@ function handler($request, $response, $args, $container) {
     else $kills = Kills::getKills($params, true);
 
     // Return JSON response
-    $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', "killlist,killlist:$cacheTagKey");
+    $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', "www,killlist,killlist:$cacheTagKey");
     $response->getBody()->write(json_encode(array_keys($kills)));
     return $response;
 }

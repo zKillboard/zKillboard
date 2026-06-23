@@ -42,5 +42,5 @@ function handler($request, $response, $args, $container) {
 	$allLists[$type] = ['topKillers' => $topKillers, 'topLosers' => $topLosers];
 
 	$data = ['allLists' => $allLists, 'time' => date('H:i'), 'type' => $type, 'types' => $types];
-	return $container->get('view')->render($response->withHeader('Cache-Tag', "lasthour,lasthour:$type"), 'lasthour.pug', $data);
+	return $container->get('view')->render($response->withHeader('Cache-Tag', "www,lasthour,lasthour:$type"), 'lasthour.pug', $data);
 }

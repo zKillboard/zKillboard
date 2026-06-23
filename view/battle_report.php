@@ -4,7 +4,7 @@ function handler($request, $response, $args, $container) {
     global $mdb, $baseDir;
     
     $battleID = (int) $args['battleID'];
-    $cacheTag = "battle,battle:$battleID";
+    $cacheTag = "www,battle,battle:$battleID";
 
     $battle = $mdb->findDoc('battles', ['battleID' => $battleID]);
     if ($battle) {

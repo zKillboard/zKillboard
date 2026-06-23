@@ -32,5 +32,5 @@ function handler($request, $response, $args, $container) {
     }
     
     $response->getBody()->write($output);
-    return $response->withHeader('Content-Type', 'text/plain; charset=utf-8')->withHeader('Cache-Tag', 'asearch,asearchsave');
+    return $response->withHeader('Content-Type', 'text/plain; charset=utf-8')->withHeader('Cache-Tag', 'www,asearch,asearchsave');
 }
