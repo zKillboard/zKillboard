@@ -618,7 +618,7 @@ class AdvancedSearch
 
     public static function logTimeout($operation, $context = [], $ex = null)
     {
-        global $uri;
+        global $uri, $logAsearchAlltimeTimeouts;
 
         $sourceUri = isset($context['uri']) ? $context['uri'] : $uri;
         $params = [];
@@ -629,6 +629,7 @@ class AdvancedSearch
         if (isset($context['requestParams']) && is_array($context['requestParams'])) {
             $params = array_replace_recursive($context['requestParams'], $params);
         }
+        if (@$logAsearchAlltimeTimeouts !== true && ((string) @$params['epochbtn'] == 'alltime' || (isset($params['buttons']) && is_array($params['buttons']) && in_array('alltime', $params['buttons'], true)))) return;
 
         $sort = isset($params['sort']) && is_array($params['sort']) ? $params['sort'] : [];
         $radios = isset($params['radios']) && is_array($params['radios']) ? $params['radios'] : [];
