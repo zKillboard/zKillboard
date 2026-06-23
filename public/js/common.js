@@ -537,8 +537,6 @@ function clearSpaPageHelpers() {
     window.prepComments = undefined;
     window.resizeMobileFittingWheel = undefined;
     window.loadRemainingPilots = undefined;
-    window.load_ztop = undefined;
-    window.ztopUpdate = undefined;
     window.ztopState = undefined;
 }
 
