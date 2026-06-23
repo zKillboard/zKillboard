@@ -3,8 +3,8 @@ nav.navbar.navbar-expand-md.navbar-dark.bg-dark(style="margin-bottom: 0px;")
     button.navbar-toggler.openMenu.d-md-none.me-2(type="button" data-bs-toggle="collapse" data-bs-target="#navbar-main" aria-controls="navbar-main" aria-expanded="false" aria-label="Toggle navigation")
       span.navbar-toggler-icon
     a.navbar-brand.me-2(href="/")
-      img.zkblogo(src="/img/logo.png" style="width: 16px; height: 16px;")
-      |  z
+      img.zkblogo.zkb-nav-logo(src="/img/logo_cropped_32.png" alt="")
+      | z
       span.d-none.d-md-inline Killboard
 
     #navbar-main.collapse.navbar-collapse.navbar-main.me-md-2
@@ -80,7 +80,7 @@ nav.navbar.navbar-expand-md.navbar-dark.bg-dark(style="margin-bottom: 0px;")
             span.scanalyzer &#128924;
         li.nav-item.d-none.d-md-block
           a.nav-link(href="/information/payments/")
-            img(src="/img/gold_logo_cropped_32.png" style="padding-top: 2px; width: 20px; display: block;")
+            img.zkb-nav-logo(src="/img/gold_logo_cropped_32.png" alt="")
         if ($statslink ?? false)
           li.nav-item
             a.nav-link(href=$statslink) Stats

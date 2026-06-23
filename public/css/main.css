@@ -96,6 +96,22 @@ html {
 	display: block;
 }
 
+#navibar .navbar-brand {
+	display: inline-flex;
+	align-items: center;
+}
+
+.zkb-nav-logo {
+	display: block;
+	width: 20px;
+	height: auto;
+	margin-top: 2px;
+}
+
+#navibar .navbar-brand .zkb-nav-logo {
+	margin-right: 4px;
+}
+
 #search.nav-search-item .input-group {
 	width: 100%;
 	flex-wrap: nowrap;
