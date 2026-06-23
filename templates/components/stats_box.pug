@@ -67,37 +67,35 @@
             else if ($prefix === 'recent')
               != $rankCell($statisticsData['weeklyOverallRank'] ?? 0, $prevRanks['weeklyOverallRank'] ?? 0, $prevRanks['date'] ?? '')
       if (isset($extraData['dangerRatio']))
-        tr
-          td(colspan="7")
-            table.table.table-sm.alltime-ranks(style="width: 100%; opacity: 0.50;")
-              tr
-                td(style="width: 50%; padding: 3px;" colspan="2")
-                  != $progressPair($extraData['dangerRatio'] ?? 0, 'Dangerous', 'Snuggly')
-                td(style="width: 50%; padding: 3px;" colspan="2")
-                  if (empty($extraData['involvedLabels']))
-                    != $progressPair($extraData['gangFactor'] ?? 0, 'Gangs', ((($statisticsData['soloKills'] ?? 0) ? number_format((float) $statisticsData['soloKills'], 0) . ' ' : '') . 'Solo'))
-                  else if (!empty($statisticsData['shipsDestroyed']))
-                    .progress(style="width: 100%; margin-bottom: 0px")
-                      - $backgroundcolor = '#007800';
-                      each $label in ($extraData['involvedLabels'] ?? [])
-                        - $label = is_object($label) ? (array) $label : $label;
-                        - $backgroundcolor = ($backgroundcolor == '#A90707') ? '#007800' : '#A90707';
-                        .progress-bar(role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style=('width: ' . ($label['ratio'] ?? 0) . '%; background-color: ' . $backgroundcolor . ';'))= ($label['label'] ?? '') . ' ' . number_format((float) ($label['ratio'] ?? 0), 0) . '%'
-                    span.float-end.green
-                      if (!empty($statisticsData['soloKills']))
-                        = number_format((float) $statisticsData['soloKills'], 0) . ' '
-                      | Solo Kills 
-                      a(href="/information/faq/#solo") *
+        tr.alltime-ranks
+          td.border-bottom-0(colspan="7")
+            div(style="display: flex; gap: 8px; opacity: 0.50;")
+              div(style="width: 50%; padding: 3px;")
+                != $progressPair($extraData['dangerRatio'] ?? 0, 'Dangerous', 'Snuggly')
+              div(style="width: 50%; padding: 3px;")
+                if (empty($extraData['involvedLabels']))
+                  != $progressPair($extraData['gangFactor'] ?? 0, 'Gangs', ((($statisticsData['soloKills'] ?? 0) ? number_format((float) $statisticsData['soloKills'], 0) . ' ' : '') . 'Solo'))
+                else if (!empty($statisticsData['shipsDestroyed']))
+                  .progress(style="width: 100%; margin-bottom: 0px")
+                    - $backgroundcolor = '#007800';
+                    each $label in ($extraData['involvedLabels'] ?? [])
+                      - $label = is_object($label) ? (array) $label : $label;
+                      - $backgroundcolor = ($backgroundcolor == '#A90707') ? '#007800' : '#A90707';
+                      .progress-bar(role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style=('width: ' . ($label['ratio'] ?? 0) . '%; background-color: ' . $backgroundcolor . ';'))= ($label['label'] ?? '') . ' ' . number_format((float) ($label['ratio'] ?? 0), 0) . '%'
+                  span.float-end.green
+                    if (!empty($statisticsData['soloKills']))
+                      = number_format((float) $statisticsData['soloKills'], 0) . ' '
+                    | Solo Kills 
+                    a(href="/information/faq/#solo") *
       each $period in [['recent', 'recentDangerRatio', 'recentGangFactor', 'recentSoloKills'], ['weekly', 'weeklyDangerRatio', 'weeklyGangFactor', 'weeklySoloKills']]
         if (isset($extraData[$period[1]]))
-          tr
-            td(colspan="7")
-              table(style="width: 100%; opacity: 0.50;" class=($period[0] . '-ranks collapse'))
-                tr
-                  td(style="width: 50%; padding: 3px;" colspan="2")
-                    != $progressPair($extraData[$period[1]] ?? 0, 'Dangerous', 'Snuggly')
-                  td(style="width: 50%; padding: 3px;" colspan="2")
-                    != $progressPair($extraData[$period[2]] ?? 0, 'Gangs', ((($statisticsData[$period[3]] ?? 0) ? number_format((float) $statisticsData[$period[3]], 0) . ' ' : '') . 'Solo'))
+          tr(class=($period[0] . '-ranks collapse'))
+            td.border-bottom-0(colspan="7")
+              div(style="display: flex; gap: 8px; opacity: 0.50;")
+                div(style="width: 50%; padding: 3px;")
+                  != $progressPair($extraData[$period[1]] ?? 0, 'Dangerous', 'Snuggly')
+                div(style="width: 50%; padding: 3px;")
+                  != $progressPair($extraData[$period[2]] ?? 0, 'Gangs', ((($statisticsData[$period[3]] ?? 0) ? number_format((float) $statisticsData[$period[3]], 0) . ' ' : '') . 'Solo'))
 br
 if (($tobefetched ?? 0) > 1000)
   .alert.alert-secondary
