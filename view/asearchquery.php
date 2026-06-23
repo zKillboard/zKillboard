@@ -133,7 +133,8 @@ function handler($request, $response, $args, $container) {
 		// Should prevent cache busting from url manipulation
 		array_multisort($query);
 		$jsoned = json_encode($query, true) . json_encode($filter, true);
-		$key = "asearch:$queryType:$groupType:$victimsOnly:" . ($queryType == "kills" ? "$page:$sortKey:$sortBy:" : "") . md5($jsoned);
+		$collectionScope = ($queryType == "kills" ? implode(',', $coll) : $aggregateCollection);
+		$key = "asearch:$queryType:$groupType:$victimsOnly:$collectionScope:" . ($queryType == "kills" ? "$page:$sortKey:$sortBy:" : "") . md5($jsoned);
 		$cacheTag = "www,asearch,asearch:$key";
 
 		$waits = 0;
