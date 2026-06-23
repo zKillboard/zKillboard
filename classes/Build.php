@@ -46,22 +46,8 @@ class Build
     {
         $rKey = "redis:build:check:" . date('Ymd');
         if ($redis->get($rKey) == "true") return;
-        Util::zout("Importing https://sde.zzeve.com/industryActivityMaterials.json");
-        $raw = file_get_contents("https://sde.zzeve.com/industryActivityMaterials.json");
-        $json = json_decode($raw, true);
-        $raw = null;
 
-        $builds = [];
-        foreach ($json as $row) {
-            if ($row['activityID'] != 1) continue;
-            $typeID = $row['typeID'];
-            $reqs = isset($builds[$typeID]) ? $builds[$typeID] : [];
-            $reqs[$row['materialTypeID']] = max(1, ceil(0.9 * $row['quantity']));
-            $builds[$typeID] = $reqs;
-        }
-        foreach ($builds as $build => $reqs) {
-            $redis->setex("zkb:build:" . $build, 160000, serialize($reqs));
-        }
+        self::import_blueprints($redis);
         $redis->setex($rKey, 86400, "true");
     }
 
@@ -69,14 +55,7 @@ class Build
     {
         $rKey = "redis:build_qty:check" . date('Ymd');
         if ($redis->get($rKey) != "true") {
-            Util::zout("Fetching https://sde.zzeve.com/industryActivityProducts.json");
-            $raw = file_get_contents("https://sde.zzeve.com/industryActivityProducts.json");
-            $json = json_decode($raw, true);
-            $raw = null;
-
-            foreach ($json as $row) {
-                $redis->setex("zkb:blueprint:" . $row['productTypeID'], 160000, serialize($row));
-            }
+            self::import_blueprints($redis);
             $redis->setex($rKey, 86400, "true");
         }
         self::import_reqs($redis);
@@ -87,5 +66,61 @@ class Build
         $bp['reqs'] = unserialize($redis->get("zkb:build:" . $bp['typeID']));
 
         return $bp;
+    }
+
+    protected static function import_blueprints($redis)
+    {
+        global $mdb;
+
+        $rKey = "redis:build_import:check:" . date('Ymd');
+        if ($redis->get($rKey) == "true") return;
+
+        Util::zout("Importing build data from sde_blueprints");
+        $rows = $mdb->find('sde_blueprints');
+        foreach ($rows as $row) {
+            $bp = self::normalize_blueprint($row);
+            if ($bp == null) continue;
+
+            $redis->setex("zkb:blueprint:" . $bp['productTypeID'], 160000, serialize($bp));
+            $redis->setex("zkb:build:" . $bp['typeID'], 160000, serialize($bp['reqs']));
+        }
+        $redis->setex($rKey, 86400, "true");
+    }
+
+    protected static function normalize_blueprint($row)
+    {
+        $manufacturing = $row['activities']['manufacturing'] ?? null;
+        if ($manufacturing == null && isset($row['activities'][1])) $manufacturing = $row['activities'][1];
+        if ($manufacturing == null) return null;
+
+        $products = $manufacturing['products'] ?? [];
+        $materials = $manufacturing['materials'] ?? [];
+        if (sizeof($products) == 0 || sizeof($materials) == 0) return null;
+
+        $blueprintTypeID = $row['blueprintTypeID'] ?? $row['typeID'] ?? $row['key'] ?? $row['_key'] ?? null;
+        if (!is_numeric($blueprintTypeID)) return null;
+        $blueprintTypeID = (int) $blueprintTypeID;
+
+        $reqs = [];
+        foreach ($materials as $material) {
+            $materialTypeID = $material['materialTypeID'] ?? $material['typeID'] ?? null;
+            $quantity = $material['quantity'] ?? null;
+            if (!is_numeric($materialTypeID) || !is_numeric($quantity)) continue;
+            $reqs[(int) $materialTypeID] = max(1, ceil(0.9 * (int) $quantity));
+        }
+        if (sizeof($reqs) == 0) return null;
+
+        $product = array_shift($products);
+        $productTypeID = $product['productTypeID'] ?? $product['typeID'] ?? null;
+        $quantity = $product['quantity'] ?? 1;
+        if (!is_numeric($productTypeID)) return null;
+
+        return [
+            'typeID' => $blueprintTypeID,
+            'activityID' => 1,
+            'productTypeID' => (int) $productTypeID,
+            'quantity' => max(1, (int) $quantity),
+            'reqs' => $reqs,
+        ];
     }
 }
