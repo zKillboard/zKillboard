@@ -637,30 +637,36 @@ class AdvancedSearch
         if ($sortDir === 1 || $sortDir === '1') $sortDir = 'asc';
         if ($sortDir === -1 || $sortDir === '-1') $sortDir = 'desc';
 
-        $payload = [
-            'operation' => $operation,
-            'reason' => $ex ? $ex->getMessage() : 'timed out waiting for in-progress request',
-            'path' => $path,
-            'queryType' => isset($context['queryType']) ? $context['queryType'] : @$params['queryType'],
-            'groupType' => isset($context['groupType']) ? $context['groupType'] : @$params['groupType'],
-            'page' => isset($context['page']) ? $context['page'] : @$radios['page'],
-            'sort' => trim("$sortBy $sortDir"),
-            'epoch' => @$params['epoch'],
-            'labels' => isset($params['labels']) && is_array($params['labels']) ? array_values($params['labels']) : null,
-            'includeAssociates' => @$params['includeAssociates'],
-            'collection' => @$context['collection'] ?: @$context['aggregateCollection'],
-            'collections' => @$context['collections'],
-            'groupBy' => @$context['groupByColumn'],
-            'victimsOnly' => @$context['victimsOnly'],
-            'query' => @$context['query'],
-            'filter' => @$context['filter'],
-            'pipelineStages' => self::getPipelineStageNames(@$context['pipeline'])
+        $queryType = isset($context['queryType']) ? $context['queryType'] : @$params['queryType'];
+        $groupType = isset($context['groupType']) ? $context['groupType'] : @$params['groupType'];
+        $page = isset($context['page']) ? $context['page'] : @$radios['page'];
+        $collection = @$context['collection'] ?: @$context['aggregateCollection'];
+        $groupBy = @$context['groupByColumn'];
+        $labels = isset($params['labels']) && is_array($params['labels']) ? implode(', ', $params['labels']) : null;
+        $epoch = self::summarizeTimeoutEpoch(@$params['epoch']);
+        $query = self::summarizeTimeoutCriteria(@$context['query']);
+        $filter = self::summarizeTimeoutCriteria(@$context['filter']);
+        $pipeline = self::getPipelineStageNames(@$context['pipeline']);
+        $execution = implode(' ', array_filter([
+            $collection ? "collection $collection" : null,
+            $groupBy ? "groupBy $groupBy" : null
+        ]));
+
+        $parts = [
+            $operation . ': ' . ($ex ? self::shortTimeoutReason($ex->getMessage()) : 'timed out waiting for in-progress request'),
+            "request " . trim("$queryType/$groupType") . ($page ? " page $page" : '') . (trim("$sortBy $sortDir") ? " sort " . trim("$sortBy $sortDir") : ''),
+            $path ? "path $path" : null,
+            $epoch ? "epoch $epoch" : null,
+            $labels ? "labels $labels" : null,
+            @$params['includeAssociates'] ? "includeAssociates " . @$params['includeAssociates'] : null,
+            $execution,
+            @$context['victimsOnly'] && @$context['victimsOnly'] !== 'null' ? "victimsOnly " . @$context['victimsOnly'] : null,
+            $query ? "query $query" : null,
+            $filter ? "filter $filter" : null,
+            !empty($pipeline) ? "pipeline " . implode(' > ', $pipeline) : null
         ];
 
-        $encoded = json_encode(self::removeEmptyTimeoutFields($payload), JSON_UNESCAPED_SLASHES);
-        if ($encoded === false) {
-            $encoded = print_r($payload, true);
-        }
+        $encoded = implode('; ', array_values(array_filter($parts)));
 
         if (strlen($encoded) > self::LOG_CONTEXT_MAX_LENGTH) {
             $encoded = substr($encoded, 0, self::LOG_CONTEXT_MAX_LENGTH) . '... [truncated]';
@@ -679,17 +685,102 @@ class AdvancedSearch
         return $stages;
     }
 
-    private static function removeEmptyTimeoutFields($value)
+    private static function summarizeTimeoutEpoch($epoch)
     {
-        if (!is_array($value)) return $value;
+        if (!is_array($epoch)) return null;
+        $start = trim((string) @$epoch['start']);
+        $end = trim((string) @$epoch['end']);
+        if ($start == '' && $end == '') return null;
+        if ($start == '') return "before $end";
+        if ($end == '') return "after $start";
+        return "$start to $end";
+    }
 
-        $clean = [];
-        foreach ($value as $key => $child) {
-            $child = self::removeEmptyTimeoutFields($child);
-            if ($child === null || $child === '' || $child === []) continue;
-            $clean[$key] = $child;
+    private static function summarizeTimeoutCriteria($criteria)
+    {
+        if (!is_array($criteria) || empty($criteria)) return null;
+
+        if (isset($criteria['$and']) && is_array($criteria['$and'])) {
+            $parts = [];
+            foreach ($criteria['$and'] as $child) {
+                $summary = self::summarizeTimeoutCriteria($child);
+                if ($summary) $parts[] = $summary;
+            }
+            return implode('; ', $parts);
         }
-        return $clean;
+
+        if (isset($criteria['$or']) && is_array($criteria['$or'])) {
+            return self::summarizeTimeoutOr($criteria['$or']);
+        }
+
+        $parts = [];
+        foreach ($criteria as $field => $value) {
+            if (is_array($value) && isset($value['$elemMatch']) && is_array($value['$elemMatch'])) {
+                $parts[] = "$field has " . self::summarizeTimeoutCriteria($value['$elemMatch']);
+            } elseif (is_array($value)) {
+                foreach ($value as $operator => $operatorValue) {
+                    $parts[] = "$field " . self::timeoutOperator($operator) . " " . self::timeoutValue($operatorValue);
+                }
+            } else {
+                $parts[] = "$field = " . self::timeoutValue($value);
+            }
+        }
+
+        return implode('; ', $parts);
+    }
+
+    private static function summarizeTimeoutOr($criteria)
+    {
+        $field = null;
+        $values = [];
+        foreach ($criteria as $child) {
+            if (!is_array($child) || sizeof($child) != 1) return '$or with ' . sizeof($criteria) . ' branches';
+            $childField = key($child);
+            if ($field === null) $field = $childField;
+            if ($field !== $childField || is_array($child[$childField])) return '$or with ' . sizeof($criteria) . ' branches';
+            $values[] = $child[$childField];
+        }
+
+        return "$field in " . sizeof($values) . " values " . self::timeoutValueSample($values);
+    }
+
+    private static function timeoutOperator($operator)
+    {
+        $operators = [
+            '$eq' => '=',
+            '$ne' => '!=',
+            '$gt' => '>',
+            '$gte' => '>=',
+            '$lt' => '<',
+            '$lte' => '<=',
+            '$in' => 'in',
+            '$nin' => 'not in'
+        ];
+        return isset($operators[$operator]) ? $operators[$operator] : $operator;
+    }
+
+    private static function timeoutValue($value)
+    {
+        if ($value === null) return 'null';
+        if (is_bool($value)) return $value ? 'true' : 'false';
+        if (is_array($value)) return self::timeoutValueSample($value);
+        return (string) $value;
+    }
+
+    private static function timeoutValueSample($values)
+    {
+        $values = array_values($values);
+        $sample = array_slice(array_map(function ($value) {
+            return self::timeoutValue($value);
+        }, $values), 0, 8);
+        if (sizeof($values) > sizeof($sample)) $sample[] = '+' . (sizeof($values) - sizeof($sample)) . ' more';
+        return '[' . implode(', ', $sample) . ']';
+    }
+
+    private static function shortTimeoutReason($reason)
+    {
+        $parts = explode(':: caused by ::', $reason);
+        return trim(end($parts));
     }
 
     public static function getSelectedFromBase($base, $buttons)
