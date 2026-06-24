@@ -44,6 +44,7 @@ else
           .daily-range-hit { opacity: 0; }
           .daily-range-guide { pointer-events: none; }
           .daily-range-grip { pointer-events: none; }
+          .daily-range-visual { pointer-events: none; }
         rect(x="0" y="0" width=$dailyGraph['width'] height=$dailyGraph['height'] fill="#0d0d0d")
         each $metric, $metricIdx in $dailyGraph['metrics']
           - $metricKey = $metric['key'];
@@ -75,11 +76,11 @@ else
           rect.daily-range-fill(x=$dailyGraph['rangeStartX'] y=$rangeRailY width=max(1, $dailyGraph['rangeEndX'] - $dailyGraph['rangeStartX']) height=$rangeRailHeight rx="3" fill="#5bc0de" opacity="0.28")
           rect.daily-range-handle.daily-range-hit.daily-range-left(data-handle="left" x=($dailyGraph['rangeStartX'] - 10) y="0" width="20" height=$dailyGraph['height'] fill="#fff")
             title Drag range start
-          rect.daily-range-left-visual(x=($dailyGraph['rangeStartX'] - 4) y=($rangeRailY - 4) width="8" height=($rangeRailHeight + 8) rx="3" fill="#111" stroke="#9adff0" stroke-width="1")
+          rect.daily-range-visual.daily-range-left-visual(x=($dailyGraph['rangeStartX'] - 4) y=($rangeRailY - 4) width="8" height=($rangeRailHeight + 8) rx="3" fill="#111" stroke="#9adff0" stroke-width="1")
           line.daily-range-grip(x1=$dailyGraph['rangeStartX'] x2=$dailyGraph['rangeStartX'] y1=($rangeRailY + 2) y2=($rangeRailY + $rangeRailHeight - 2) stroke="#9adff0" stroke-width="1" opacity="0.9")
           rect.daily-range-handle.daily-range-hit.daily-range-right(data-handle="right" x=($dailyGraph['rangeEndX'] - 10) y="0" width="20" height=$dailyGraph['height'] fill="#fff")
             title Drag range end
-          rect.daily-range-right-visual(x=($dailyGraph['rangeEndX'] - 4) y=($rangeRailY - 4) width="8" height=($rangeRailHeight + 8) rx="3" fill="#111" stroke="#9adff0" stroke-width="1")
+          rect.daily-range-visual.daily-range-right-visual(x=($dailyGraph['rangeEndX'] - 4) y=($rangeRailY - 4) width="8" height=($rangeRailHeight + 8) rx="3" fill="#111" stroke="#9adff0" stroke-width="1")
           line.daily-range-grip(x1=$dailyGraph['rangeEndX'] x2=$dailyGraph['rangeEndX'] y1=($rangeRailY + 2) y2=($rangeRailY + $rangeRailHeight - 2) stroke="#9adff0" stroke-width="1" opacity="0.9")
       .d-flex.flex-wrap.justify-content-center.align-items-center(style="gap: 0.5em; font-size: 0.9em;")
         .btn-group.btn-group-sm.daily-metric-toggle(role="group" aria-label="Daily graph metric")
