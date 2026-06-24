@@ -318,6 +318,7 @@ function storeRanks($job, $type)
     $ops = [];
 
     $runID = "{$job['date']}:" . time();
+    normalizeRankContainers($collection, $job, $type);
 
     foreach (rankIds($key) as $id) {
         $row = rankRowFromRedis($job, $type, $id, $key, $now, $runID);
@@ -340,6 +341,24 @@ function storeRanks($job, $type)
 
     if ($job['epoch'] != 'alltime') {
         clearOldRanks($collection, $job, $type, $runID);
+    }
+}
+
+function normalizeRankContainers($collection, $job, $type)
+{
+    foreach (['rankings', 'rankHistory'] as $field) {
+        $epochPath = "$field.{$job['epoch']}";
+        $scopePath = "$epochPath.{$job['scope']}";
+
+        $collection->updateMany(
+            ['type' => $type, $epochPath => ['$type' => 'array']],
+            ['$set' => [$epochPath => (object) []]]
+        );
+
+        $collection->updateMany(
+            ['type' => $type, $scopePath => ['$type' => 'array']],
+            ['$set' => [$scopePath => (object) []]]
+        );
     }
 }
 
