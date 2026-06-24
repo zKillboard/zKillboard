@@ -546,7 +546,7 @@ class DailyStats
 
     private static function buildQuery($type, $id, $day, $losses)
     {
-        $parameters = ['date' => $day];
+        $parameters = [];
         if ($type == 'label') {
             if ($id != 'all') {
                 $parameters['labels'] = $id;
@@ -561,7 +561,26 @@ class DailyStats
             $parameters['npc'] = false;
             $parameters['labels'] = 'pvp';
         }
-        return MongoFilter::buildQuery($parameters);
+
+        return self::withDayKillIDRange(MongoFilter::buildQuery($parameters), $day);
+    }
+
+    private static function withDayKillIDRange($query, $day)
+    {
+        $time = strtotime($day);
+        $nextTime = strtotime('+1 day', $time);
+        $first = MongoFilter::getFirstKillID(date('Y', $time), date('m', $time), date('d', $time));
+        $next = MongoFilter::getFirstKillID(date('Y', $nextTime), date('m', $nextTime), date('d', $nextTime));
+        $dayQuery = ['killID' => ['$gte' => (int) $first, '$lt' => (int) $next]];
+
+        if (empty($query)) {
+            return $dayQuery;
+        }
+        if (isset($query['$and'])) {
+            $query['$and'][] = $dayQuery;
+            return $query;
+        }
+        return ['$and' => [$query, $dayQuery]];
     }
 
     private static function summary($query)
