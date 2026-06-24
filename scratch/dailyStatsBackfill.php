@@ -2,6 +2,21 @@
 
 require_once '../init.php';
 
+$backfillTypes = [
+    'characterID',
+    // 'corporationID',
+    // 'allianceID',
+    // 'factionID',
+    // 'shipTypeID',
+    // 'groupID',
+    // 'solarSystemID',
+    // 'constellationID',
+    // 'regionID',
+    // 'locationID',
+    // 'label',
+];
+$backfillTypes = array_fill_keys($backfillTypes, true);
+
 $cursor = $mdb->getCollection('killmails')->find([], [
     'projection' => [
         '_id' => 0,
@@ -31,6 +46,10 @@ foreach ($cursor as $killmail) {
     }
 
     foreach (DailyStats::keysFromKillmail($killmail) as $key) {
+        if (!isset($backfillTypes[$key['type']])) {
+            continue;
+        }
+
         $batchKey = DailyStats::queueValue($key['type'], $key['id'], $key['day']);
         if (!isset($batch[$batchKey]) || $batch[$batchKey]['sequence'] < $sequence) {
             $key['sequence'] = $sequence;
