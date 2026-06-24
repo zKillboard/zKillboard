@@ -1,13 +1,10 @@
 <?php
 
 use cvweiss\redistools\RedisQueue;
-use cvweiss\redistools\RedisTimeQueue;
 
 require_once "../init.php";
 
 $queueApiCheck = new RedisQueue('queueApiCheck');
-$esi = new RedisTimeQueue('tqApiESI', 3600); 
-$esiCorp = new RedisTimeQueue('tqCorpApiESI', 3600);
 
 $delta = 9600;
 

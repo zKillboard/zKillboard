@@ -1,7 +1,5 @@
 <?php
 
-use cvweiss\redistools\RedisTimeQueue;
-
 function handler($request, $response, $args, $container)
 {
 	global $mdb, $redis, $kvc;
@@ -135,19 +133,6 @@ function handler($request, $response, $args, $container)
 			if ($mdb->count('scopes', ['characterID' => $charID, 'scope' => $scope]) == 0) {
 				$mdb->save('scopes', $row);
 				$scopeCount++;
-			}
-			switch ($scope) {
-				case 'esi-killmails.read_killmails.v1':
-					$esi = new RedisTimeQueue('tqApiESI', 3600);
-					$esi->remove($charID);
-					$esi->add($charID);
-					break;
-				case 'esi-killmails.read_corporation_killmails.v1':
-					$esi = new RedisTimeQueue('tqCorpApiESI', 3600);
-					$esi->remove($corpID);
-					if ($corpID > 1999999)
-						$esi->add($corpID);
-					break;
 			}
 		}
 

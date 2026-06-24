@@ -2,8 +2,6 @@
 
 $mt = 10; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
-use cvweiss\redistools\RedisTimeQueue;
-
 require_once "../init.php";
 
 $sso = ZKillSSO::getSSO();
@@ -168,4 +166,3 @@ function success($params, $content)
         $mdb->set("scopes", $row, $set);
     }
 }
-

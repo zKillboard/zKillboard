@@ -1,32 +1,71 @@
 <?php
 
-use cvweiss\redistools\RedisTimeQueue;
-
 if (date("i") % 5 !== 0) exit();
 
 require_once "../init.php";
 
 if ($redis->get("zkb:reinforced") == true) exit();
 
-$waitfor = [];
-$waitfor[] = bump("recentKillmailActivity:corp:", "tqCorpApiESI", "corporationID");
-$waitfor[] = bump("recentKillmailActivity:char:", "tqApiESI", "characterID");
+bumpRecentCharacters();
+bumpRecentCorporations();
 
-function bump($key, $rtqName, $type) {
+function bumpRecentCharacters()
+{
 	global $redis, $mdb;
 
-	$rtq = new RedisTimeQueue($rtqName, 3600);
+	foreach (getRecentActivityIDs("recentKillmailActivity:char:") as $charID) {
+		if ($charID <= 199999) continue;
+		if (wasRecentlyFetched($charID)) continue;
 
-	$values = $redis->keys("$key*");
-	$count = 0;
-	foreach ($values as $sID) {
-		$sID = ((int) str_replace($key, "", $sID));
-		if ($rtq->isMember($sID) === true && $redis->get("esi-fetched:$sID") !== "true" && $sID > "199999") {
-            if ($type == "characterID" && ($mdb->findDoc("scopes", ['characterID' => (int) $sID, 'scope' => "esi-killmails.read_killmails.v1", "oauth2" => true], ['lastFetch' => 1]))) {
-                $rtq->setTime($sID, 1);
-            }
-		}
+		$mdb->getCollection("scopes")->updateOne(
+			[
+				'characterID' => $charID,
+				'scope' => 'esi-killmails.read_killmails.v1',
+				'oauth2' => true,
+			],
+			[
+				'$set' => ['nextCheck' => 1],
+			]
+		);
+	}
+}
+
+function bumpRecentCorporations()
+{
+	global $redis, $mdb;
+
+	foreach (getRecentActivityIDs("recentKillmailActivity:corp:") as $corpID) {
+		if ($corpID <= 1999999) continue;
+		if (wasRecentlyFetched($corpID)) continue;
+
+		$mdb->getCollection("scopes")->updateMany(
+			[
+				'corporationID' => $corpID,
+				'scope' => 'esi-killmails.read_corporation_killmails.v1',
+			],
+			[
+				'$set' => ['nextCheck' => 1],
+			]
+		);
+	}
+}
+
+function getRecentActivityIDs($prefix)
+{
+	global $redis;
+
+	$ids = [];
+	foreach ($redis->keys("$prefix*") as $key) {
+		$id = (int) str_replace($prefix, "", $key);
+		if ($id > 0) $ids[$id] = true;
 	}
 
-	return $rtqName;
+	return array_keys($ids);
+}
+
+function wasRecentlyFetched($id)
+{
+	global $redis;
+
+	return $redis->ttl("esi-fetched:$id") > 0;
 }

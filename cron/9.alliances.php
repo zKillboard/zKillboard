@@ -1,7 +1,5 @@
 <?php
 
-use cvweiss\redistools\RedisTimeQueue;
-
 require_once '../init.php';
 
 if ($kvc->get("zkb:noapi") == "true") exit();

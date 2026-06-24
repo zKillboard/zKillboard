@@ -74,6 +74,3 @@ foreach ($result as $kill) {
     $sponsored[$kill['killID']] = $killmail;
 }
 $redis->set("zkb:sponsored", json_encode($sponsored));
-
-$unique = sizeof($mdb->getCollection("scopes")->distinct("corporationID", ['scope' => 'esi-killmails.read_corporation_killmails.v1', 'iterated' => true]));
-$redis->set("tqCorpApiESICount", $unique);

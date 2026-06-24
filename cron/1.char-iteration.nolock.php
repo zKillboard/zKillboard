@@ -1,8 +1,5 @@
 <?php
 
-
-use cvweiss\redistools\RedisTimeQueue;
-
 require_once "../init.php";
 
 if ($redis->get("zkb:reinforced") == true) exit();

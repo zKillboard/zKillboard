@@ -2,12 +2,9 @@
 
 require_once "../init.php";
 
-use cvweiss\redistools\RedisTimeQueue;
-
 //if (date('Hi') != 1100) exit();
 
 $threeMonths = time() - (86400 * 90);
-$esiChar = new RedisTimeQueue('tqApiESI', 3600);
 
 $mdb->set("scopes", ['added' => ['$exists' => false]], ['added' => $mdb->now()], true);
 
