@@ -5,16 +5,33 @@ function handler($request, $response, $args, $container)
 	global $mdb, $redis, $uri, $t;
 
 	// Extract route parameters
-	$inputString = $args['input'] ?? '';
-	$input = explode('/', trim($inputString, '/'));
-
-	$key = $input[0];
-	if (!isset($input[1])) {
-		return $response->withStatus(302)->withHeader('Location', '/');
+	$dailyRouteDate = null;
+	$dailyRouteSide = null;
+	$dailyRouteDays = null;
+	if (isset($args['type']) && isset($args['id'])) {
+		$key = $args['type'];
+		$id = $args['id'];
+		$pageType = (string) ($args['pageType'] ?? '');
+		$dailyRouteDate = isset($args['dailyDate']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $args['dailyDate']) ? $args['dailyDate'] : null;
+		$dailyRouteSide = isset($args['dailySide']) && in_array($args['dailySide'], ['kills', 'losses']) ? $args['dailySide'] : null;
+		$dailyRouteDays = isset($args['dailyDays']) ? (string) $args['dailyDays'] : null;
+	} else {
+		$inputString = $args['input'] ?? '';
+		$input = explode('/', trim($inputString, '/'));
+		$key = $input[0];
+		if (!isset($input[1])) {
+			return $response->withStatus(302)->withHeader('Location', '/');
+		}
+		$id = $input[1];
+		$pageType = (string) @$input[2];
+		if (isset($input[3]) && in_array($input[3], ['kills', 'losses'])) {
+			$dailyRouteSide = $input[3];
+			$dailyRouteDays = isset($input[4]) ? (string) $input[4] : null;
+		} else {
+			$dailyRouteDate = isset($input[3]) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $input[3]) ? $input[3] : null;
+			$dailyRouteSide = isset($input[4]) && in_array($input[4], ['kills', 'losses']) ? $input[4] : null;
+		}
 	}
-	$id = $input[1];
-	$pageType = (string) @$input[2];
-
 	if ($key != 'label' && (int) $id == 0) {
 		$searchKey = $key;
 		if ($key == 'system') {
@@ -31,7 +48,7 @@ function handler($request, $response, $args, $container)
 		return renderCached404($container, $response, 'Not Found');
 	}
 
-	$validPageTypes = array('kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime', 'streambox', 'recap2025');
+	$validPageTypes = array('kills', 'losses', 'solo', 'stats', 'daily', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime', 'streambox', 'recap2025');
 	if ($key == 'alliance') {
 		$validPageTypes[] = 'corpstats';
 	}
@@ -46,6 +63,10 @@ function handler($request, $response, $args, $container)
 		$pageType = 'overview';
 	else if (!in_array($pageType, $validPageTypes))
 		$pageType = 'overview';
+
+	if ($pageType == 'daily' && ($key != 'character' || (int) $id != 1633218082)) {
+		return renderCached404($container, $response, 'Not Found');
+	}
 
 	$map = array(
 		'corporation' => array('column' => 'corporation', 'mixed' => true),
@@ -69,7 +90,11 @@ function handler($request, $response, $args, $container)
 	}
 
 	try {
-		$parameters = Util::convertUriToParameters($request->getUri()->getPath() . '?' . $request->getUri()->getQuery());
+		$parameterPath = $request->getUri()->getPath();
+		if ($pageType == 'daily' && ($dailyRouteDate != null || $dailyRouteSide != null || $dailyRouteDays != null)) {
+			$parameterPath = "/$key/$id/daily/";
+		}
+		$parameters = Util::convertUriToParameters($parameterPath . '?' . $request->getUri()->getQuery());
 	} catch (Exception $ex) {
 		return renderCached404($container, $response, 'Not Found');
 	}
@@ -293,6 +318,36 @@ function handler($request, $response, $args, $container)
 		$id = (int) $id;
 	}
 	$statistics = $mdb->findDoc('statistics', ['type' => $statType, 'id' => $id]);
+
+	$dailyStats = null;
+	$dailyDays = [];
+	$dailyDate = null;
+	$dailySide = 'kills';
+	$dailySelectedDays = [];
+	if ($pageType == 'daily') {
+		$queryParams = $request->getQueryParams();
+		$dailyDate = $dailyRouteDate ?? (isset($queryParams['date']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $queryParams['date']) ? $queryParams['date'] : null);
+		$dailySide = $dailyRouteSide ?? (isset($queryParams['side']) && in_array($queryParams['side'], ['kills', 'losses']) ? $queryParams['side'] : 'kills');
+		$dailyDays = DailyStats::getDays($statType, $id);
+		$selectedDaysInput = $dailyRouteDays ?? ($queryParams['days'] ?? null);
+		if ($selectedDaysInput != null && $selectedDaysInput != 'all') {
+			foreach (explode(',', (string) $selectedDaysInput) as $day) {
+				if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $day)) {
+					$dailySelectedDays[$day] = $day;
+				}
+			}
+			$dailySelectedDays = array_values($dailySelectedDays);
+		} else if ($dailyDate != null) {
+			$dailySelectedDays = [$dailyDate];
+		}
+		$dailyStats = DailyStats::getAggregate($statType, $id, count($dailySelectedDays) > 0 ? $dailySelectedDays : null);
+		if ($dailyStats != null) {
+			$dailyDate = $dailyStats['day'];
+			if (count($dailySelectedDays) == 0) {
+				$dailySelectedDays = $dailyStats['days'] ?? [];
+			}
+		}
+	}
 
 	if ($key == 'corporation' || $key == 'alliance' || $key == 'faction') {
 		$extra['hasSupers'] = @$statistics['hasSupers'];
@@ -581,7 +636,7 @@ function handler($request, $response, $args, $container)
 		$detail['systems'] = $mdb->find('information', ['type' => 'solarSystemID', 'constellationID' => (int) $id], ['name' => 1], null, ['id' => 1, 'name' => 1]);
 	}
 
-	$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified, 'dqChars' => $dqChars);
+	$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'dailyStats' => $dailyStats, 'dailyDays' => $dailyDays, 'dailyDate' => $dailyDate, 'dailySide' => $dailySide, 'dailySelectedDays' => $dailySelectedDays, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified, 'dqChars' => $dqChars);
 
 	return $container->get('view')->render($response->withHeader('Cache-Tag', "www,overview,overview:$id"), 'overview.pug', $renderParams);
 }

@@ -1,7 +1,6 @@
 <?php
 require_once "../init.php";
-$m = new MongoDB\Client();
-$db = $m->selectDatabase("zkillboard");
+$db = $mdb->getDb();
 
 // activity
 echo "\nCreating collection activity ... ";
@@ -115,6 +114,22 @@ $daydump = $db->$collection;
 echo "Done\n";
 echo "Creating index : 'day' => 1 ... ";
 $daydump->createIndex(['day' => 1], []);
+echo "Done\n";
+
+// dailystats
+echo "\nCreating collection dailystats ... ";
+$db->createCollection("dailystats");
+$collection = "dailystats";
+$dailystats = $db->$collection;
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'id' => 1, 'day' => 1 ... ";
+$dailystats->createIndex(['type' => 1, 'id' => 1, 'day' => 1], ['unique' => true]);
+echo "Done\n";
+echo "Creating index : 'update' => 1 ... ";
+$dailystats->createIndex(['update' => 1], ['partialFilterExpression' => ['update' => ['$gt' => 0]]]);
+echo "Done\n";
+echo "Creating index : 'type' => 1, 'id' => 1, 'day' => -1 ... ";
+$dailystats->createIndex(['type' => 1, 'id' => 1, 'day' => -1], []);
 echo "Done\n";
 
 // esimails
@@ -301,7 +316,7 @@ echo "Creating index : 'key' => 1 ... ";
 $keyvalues->createIndex(['key' => 1], ['unique' => true]);
 echo "Done\n";
 echo "Creating index : 'expiresAt' => 1 ... ";
-$keyvalues->createIndex(['expiresAt' => 1], []);
+$keyvalues->createIndex(['expiresAt' => 1], ['expireAfterSeconds' => 0]);
 echo "Done\n";
 
 // killmails

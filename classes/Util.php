@@ -91,6 +91,7 @@ class Util
 				case 'top':
 				case 'topalltime':
 				case 'stats':
+				case 'daily':
 				case 'ranks':
 				case 'trophies':
 				case 'wars':

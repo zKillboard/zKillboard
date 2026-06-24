@@ -42,6 +42,9 @@ block content
           a.nav-link(class=$isActive('ranks', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/ranks/')) Ranks
         li.nav-item
           a.nav-link(class=$isActive('stats', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/stats/')) Stats
+        //- Daily is temporarily hidden while the feature is production-gated.
+        //- li.nav-item
+        //-   a.nav-link(class=$isActive('daily', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/daily/')) Daily
         if (!empty($extraData['hasSupers']))
           li.nav-item
             a.nav-link(class=$isActive('supers', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/supers/')) Supers
@@ -148,6 +151,9 @@ block content
       include components/summary.pug
       .clearfix
       include components/history.pug
+    else if ($pageType == 'daily')
+      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent" style="padding-top: 1em;")
+      include components/daily_stats.pug
     else if ($pageType == 'ranks')
       p
         center

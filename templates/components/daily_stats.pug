@@ -1,0 +1,250 @@
+- $dailyStats = is_object($dailyStats ?? null) ? (array) $dailyStats : ($dailyStats ?? []);
+- $dailyDays = $dailyDays ?? [];
+- $dailyDate = $dailyDate ?? ($dailyStats['day'] ?? null);
+- $dailySide = in_array(($dailySide ?? 'kills'), ['kills', 'losses']) ? $dailySide : 'kills';
+- $dailySelectedDays = array_values((array) ($dailySelectedDays ?? []));
+- $dailySelectedDaySet = array_fill_keys($dailySelectedDays, true);
+
+if (empty($dailyStats))
+  h4 Daily stats are not available for this entity yet.
+else
+  - $dailyGraphRows = array_map(fn($row) => is_object($row) ? (array) $row : $row, (array) $dailyDays);
+  - $historyRows = (function ($rows) { $byDay = []; foreach ($rows as $row) { if (isset($row['day'])) $byDay[$row['day']] = $row; } if (count($byDay) == 0) return []; ksort($byDay); $zeroSide = ['summary' => ['count' => 0, 'isk' => 0, 'points' => 0]]; $history = []; $cursor = new DateTimeImmutable(array_key_first($byDay), new DateTimeZone('UTC')); $end = new DateTimeImmutable(array_key_last($byDay), new DateTimeZone('UTC')); while ($cursor <= $end) { $day = $cursor->format('Y-m-d'); $history[] = $byDay[$day] ?? ['day' => $day, 'kills' => $zeroSide, 'losses' => $zeroSide]; $cursor = $cursor->modify('+1 day'); } return $history; })($dailyGraphRows);
+  if (count($historyRows) > 0)
+    - $width = 1200;
+    - $height = 390;
+    - $bandHeight = 120;
+    - $bandGap = 10;
+    - $bandMid = 58;
+    - $pad = 12;
+    - $padX = 18;
+    - $topHeight = $bandMid - $pad;
+    - $bottomHeight = $bandHeight - $bandMid - $pad;
+    - $historyCount = count($historyRows);
+    - $graphWidth = $width - ($padX * 2);
+    - $barWidth = max(1, min(10, 160 / max(1, $historyCount)));
+    - $historyDays = array_map(function ($row) { return $row['day']; }, $historyRows);
+    - $selectedCount = count($dailySelectedDays);
+    - $selectionLabel = $selectedCount == count($historyDays) ? 'All days' : ($selectedCount . ' day' . ($selectedCount == 1 ? '' : 's'));
+    - $metricRows = ['kills' => ['count' => [], 'isk' => [], 'points' => []], 'losses' => ['count' => [], 'isk' => [], 'points' => []]];
+    each $row in $historyRows
+      - $killSummary = is_object($row['kills']['summary'] ?? null) ? (array) $row['kills']['summary'] : ($row['kills']['summary'] ?? []);
+      - $lossSummary = is_object($row['losses']['summary'] ?? null) ? (array) $row['losses']['summary'] : ($row['losses']['summary'] ?? []);
+      - $metricRows['kills']['count'][] = (float) ($killSummary['count'] ?? 0);
+      - $metricRows['kills']['isk'][] = (float) ($killSummary['isk'] ?? 0);
+      - $metricRows['kills']['points'][] = (float) ($killSummary['points'] ?? 0);
+      - $metricRows['losses']['count'][] = (float) ($lossSummary['count'] ?? 0);
+      - $metricRows['losses']['isk'][] = (float) ($lossSummary['isk'] ?? 0);
+      - $metricRows['losses']['points'][] = (float) ($lossSummary['points'] ?? 0);
+    - $dailyBarHeight = function ($values, $value, $availableHeight) { $value = max(0, (float) $value); if ($value <= 0) return 0; $max = max(1, max($values ?: [0])); $height = (log(1 + $value) / log(1 + $max)) * $availableHeight; return round(max(2, min($availableHeight, $height)), 2); };
+    .daily-history-graph(data-base-url=('/' . $key . '/' . $id . '/daily/') data-selected-days=implode(',', $dailySelectedDays) data-all-days=implode(',', $historyDays) data-current-side=$dailySide style="width: 100%; overflow: hidden; margin-bottom: 1em;")
+      svg(viewBox=('0 0 ' . $width . ' ' . $height) preserveAspectRatio="none" style="width: 100%; height: 390px; display: block;")
+        style.
+          .daily-bar-segment text { display: none; pointer-events: none; }
+          .daily-bar-segment:hover text { display: block; }
+          .daily-bar-link:hover rect { opacity: 0.85; }
+        rect(x="0" y="0" width=$width height=$height fill="#111")
+        - $dailyMetricConfigs = [['key' => 'count', 'label' => 'Ships', 'killColor' => '#5cb85c', 'lossColor' => '#d9534f', 'format' => 'int'], ['key' => 'isk', 'label' => 'ISK', 'killColor' => '#5bc0de', 'lossColor' => '#b85c9e', 'format' => 'isk'], ['key' => 'points', 'label' => 'Points', 'killColor' => '#f0ad4e', 'lossColor' => '#9370db', 'format' => 'int']];
+        each $metric, $metricIdx in $dailyMetricConfigs
+          - $metricKey = $metric['key'];
+          - $metricTop = $metricIdx * ($bandHeight + $bandGap);
+          - $metricMid = $metricTop + $bandMid;
+          rect(x="0" y=$metricTop width=$width height=$bandHeight fill=($metricIdx % 2 == 0 ? '#151515' : '#101010'))
+          text(x="8" y=($metricTop + 16) fill="#ddd" font-size="13")= $metric['label']
+          line(x1="0" x2=$width y1=$metricMid y2=$metricMid stroke="#555" stroke-width="1")
+          each $row, $idx in $historyRows
+            - $rowDay = $row['day'] ?? '';
+            - $xCenter = $historyCount <= 1 ? ($width / 2) : ($padX + (($idx / ($historyCount - 1)) * $graphWidth));
+            - $killValue = $metricRows['kills'][$metricKey][$idx] ?? 0;
+            - $lossValue = $metricRows['losses'][$metricKey][$idx] ?? 0;
+            - $killHeight = $dailyBarHeight($metricRows['kills'][$metricKey], $killValue, $topHeight);
+            - $lossHeight = $dailyBarHeight($metricRows['losses'][$metricKey], $lossValue, $bottomHeight);
+            - $killFormatted = $metric['format'] == 'isk' ? ($formatIsk($killValue) . ' ISK') : number_format((float) $killValue, 0);
+            - $lossFormatted = $metric['format'] == 'isk' ? ($formatIsk($lossValue) . ' ISK') : number_format((float) $lossValue, 0);
+            - $killLabel = $rowDay . ' Kill ' . $metric['label'] . ': ' . $killFormatted;
+            - $lossLabel = $rowDay . ' Loss ' . $metric['label'] . ': ' . $lossFormatted;
+            g.daily-bar-day
+              a.daily-bar-link(href=('/' . $key . '/' . $id . '/daily/kills/' . $rowDay . '/') data-day=$rowDay data-side="kills")
+                g.daily-bar-segment
+                  title= $killLabel
+                  rect(x=round($xCenter - ($barWidth / 2), 2) y=round($metricMid - $killHeight, 2) width=$barWidth height=$killHeight fill=$metric['killColor'])
+                  text(x=$xCenter y=($metricTop + $bandHeight - 4) fill="#ddd" text-anchor="middle" font-size="13")= $killLabel
+              a.daily-bar-link(href=('/' . $key . '/' . $id . '/daily/losses/' . $rowDay . '/') data-day=$rowDay data-side="losses")
+                g.daily-bar-segment
+                  title= $lossLabel
+                  rect(x=round($xCenter - ($barWidth / 2), 2) y=$metricMid width=$barWidth height=$lossHeight fill=$metric['lossColor'])
+                  text(x=$xCenter y=($metricTop + $bandHeight - 4) fill="#ddd" text-anchor="middle" font-size="13")= $lossLabel
+      .d-flex.flex-wrap.justify-content-center(style="gap: 0.75em; font-size: 0.9em;")
+        span(style="color: #5cb85c;") Kills
+        span(style="color: #5bc0de;") Kill ISK
+        span(style="color: #f0ad4e;") Kill Points
+        span(style="color: #d9534f;") Losses
+        span(style="color: #b85c9e;") Loss ISK
+        span(style="color: #9370db;") Loss Points
+      .text-center(style="margin-top: 0.5em;")
+        a.daily-all-days(href=('/' . $key . '/' . $id . '/daily/' . $dailySide . '/all/') data-side=$dailySide) Select all days
+      script.
+        if (window.zkbDailyStatsRestoreScroll) {
+          (function (pos) {
+            window.zkbDailyStatsRestoreScroll = null;
+            requestAnimationFrame(function () {
+              window.scrollTo(pos.x || 0, pos.y || 0);
+            });
+          })(window.zkbDailyStatsRestoreScroll);
+        }
+        if (!window.zkbDailyStatsGraphSpaBound) {
+          window.zkbDailyStatsGraphSpaBound = true;
+          document.addEventListener("click", function (event) {
+            var target = event.target;
+            var link = target && target.closest ? target.closest(".daily-bar-link, .daily-all-days") : null;
+            if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            var graph = link.closest(".daily-history-graph");
+            if (!graph) return;
+            event.preventDefault();
+            event.stopPropagation();
+            var splitDays = function (value) {
+              return (value || "").split(",").filter(function (day) { return /^\d{4}-\d{2}-\d{2}$/.test(day); });
+            };
+            var allDays = splitDays(graph.getAttribute("data-all-days"));
+            var selectedDays = splitDays(graph.getAttribute("data-selected-days"));
+            var currentSide = graph.getAttribute("data-current-side") || "kills";
+            var side = link.getAttribute("data-side") || "kills";
+            if (link.classList.contains("daily-all-days")) {
+              selectedDays = allDays.slice();
+            } else {
+              var day = link.getAttribute("data-day");
+              if (selectedDays.length == allDays.length) {
+                selectedDays = [day];
+              } else {
+                var next = [];
+                var found = false;
+                selectedDays.forEach(function (selectedDay) {
+                  if (selectedDay == day) {
+                    found = true;
+                  } else {
+                    next.push(selectedDay);
+                  }
+                });
+                if (!found || side != currentSide) next.push(day);
+                selectedDays = next.length > 0 ? next : allDays.slice();
+              }
+            }
+            var selectedSet = {};
+            selectedDays.forEach(function (day) { selectedSet[day] = true; });
+            selectedDays = allDays.filter(function (day) { return selectedSet[day]; });
+            graph.setAttribute("data-selected-days", selectedDays.join(","));
+            var url = (graph.getAttribute("data-base-url") || link.getAttribute("href")) + encodeURIComponent(side) + "/" + (selectedDays.join(",") || "all") + "/";
+            window.zkbDailyStatsRestoreScroll = {
+              x: window.scrollX || window.pageXOffset || 0,
+              y: window.scrollY || window.pageYOffset || 0
+            };
+            if (typeof spaNavigate == "function") {
+              spaNavigate(url, false, {
+                zkbSpa: true,
+                scrollX: window.zkbDailyStatsRestoreScroll.x,
+                scrollY: window.zkbDailyStatsRestoreScroll.y
+              });
+            } else if (typeof navigateTo == "function") {
+              navigateTo(url);
+            } else {
+              window.location = url;
+            }
+          }, true);
+        }
+  - $sideName = $dailySide;
+  - $side = is_object($dailyStats[$sideName] ?? null) ? (array) $dailyStats[$sideName] : ($dailyStats[$sideName] ?? []);
+  - $summary = is_object($side['summary'] ?? null) ? (array) $side['summary'] : ($side['summary'] ?? []);
+  - $selectedCount = count($dailySelectedDays);
+  - $totalDayCount = count($dailyGraphRows ?? []);
+  - $selectionLabel = $selectedCount == $totalDayCount ? 'All days' : ($selectedCount . ' day' . ($selectedCount == 1 ? '' : 's'));
+  h4= 'Selected: ' . $selectionLabel . ' ' . ucfirst($sideName)
+  h4= 'Daily ' . ucfirst($sideName)
+  table.table.table-sm.table-striped.table-bordered
+    thead
+      tr
+        th.text-end Ships
+        th.text-end ISK
+        th.text-end Points
+    tbody
+      tr
+        td.text-end(format="format-int-once" raw=($summary['count'] ?? 0))= $formatIsk($summary['count'] ?? 0, true)
+        td.text-end(format="format-isk-once" raw=($summary['isk'] ?? 0))= $formatIsk($summary['isk'] ?? 0)
+        td.text-end(format="format-int-once" raw=($summary['points'] ?? 0))= $formatIsk($summary['points'] ?? 0, true)
+  - $topSet = array_slice((array) ($side['topValues'] ?? []), 0, 6);
+  - $topTitle = 'Most Valuable ' . ucfirst($sideName);
+  - $isEmbedded = true;
+  if (!empty($topSet))
+    .container(style="width: 100%")
+      center
+        h4= $topTitle
+      .clearfix
+      .clearfix
+      .row
+        each $data in $topSet
+          if (is_array($data) && isset($data['victim']))
+            - $field = $data['victim'] ?? [];
+            - $killID = $data['killID'] ?? 0;
+            - $shipTypeID = $field['shipTypeID'] ?? 0;
+            - $shipName = $field['shipName'] ?? '';
+            - $totalValue = $data['zkb']['totalValue'] ?? 0;
+            .col-6.col-sm-4.col-lg-2.float-start(style="text-align: center; height: 220px;")
+              div(style="width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;")
+                if ($killID > 0)
+                  a(href=('/kill/' . $killID . '/') rel="tooltip" title=('Detail for ' . $killID))= $shipName
+                else
+                  a(href=('/ship/' . $shipTypeID . '/'))= $shipName
+              if ($shipTypeID == 0)
+                img.eveimage.img-rounded(src=('//' . ($siteurl ?? '') . '/img/eve-question.png') style="height: 128px; width: 128px;" alt="" loading="lazy" decoding="async" fetchpriority="low")
+              else
+                a(href=('/kill/' . $killID . '/') rel="tooltip" title=('Detail for ' . $killID))
+                  span.shipImageSpan(data-l="128px" data-i="128" style="height: 128px; width: 128px; --size: 128px; --sizei: 128;")
+                    img.shipImageRender.eveimage.img-rounded(src=(($image_ship ?? $image_item ?? 'https://images.evetech.net/types/') . $shipTypeID . '/render?size=128') style="height: 128px; width: 128px;" alt=$shipName onerror="this.setAttribute('shipImageError', 'true')" loading="lazy" decoding="async" fetchpriority="low")
+                    if (strlen((string) ($field['pip'] ?? '')) > 0)
+                      img.pip(src=('/img/pips/' . $field['pip']) alt="" loading="lazy" decoding="async" fetchpriority="low")
+              br
+              h6(format="format-isk-once-i" raw=$totalValue)= $formatIsk($totalValue) . ' ISK'
+              span
+                if (strlen((string) ($field['characterName'] ?? '')) > 0)
+                  a.wrapplease(href=('/character/' . ($field['characterID'] ?? 0) . '/'))= $field['characterName'] ?? ''
+                else
+                  a.wrapplease(href=('/corporation/' . ($field['corporationID'] ?? 0) . '/'))= $field['corporationName'] ?? ''
+                br
+    .clearfix
+    br
+  hr
+  - $topLists = $side['topLists'] ?? [];
+  - $nextTopRecalc = 0;
+  - $showImage = true;
+  .daily-top-lists
+    include top_list.pug
+  h5 Labels
+  - $rows = $side['labels'] ?? [];
+  if (!empty($rows))
+    - $labelCharts = DailyStats::labelRadarCharts($rows);
+    if (!empty($labelCharts))
+      .row.row-cols-1.row-cols-md-2.row-cols-xl-3.g-3.mb-3
+        style.
+          .daily-label-radar svg { max-width: 360px; }
+          .daily-label-axis-label { font-size: 10px; fill: #ddd; }
+        each $chart in $labelCharts
+          .col
+            .daily-label-radar.h-100.p-2.text-center
+              .fw-bold.mb-1= $chart['title']
+              .small.mb-2
+                span(format="format-int-once" raw=$chart['totalCount'])= $formatIsk($chart['totalCount'], true)
+                span= ' / ' . $formatIsk($chart['totalIsk']) . ' ISK'
+              svg.w-100.h-auto.d-block.mx-auto(viewBox="0 0 300 300" role="img" aria-label=$chart['title'])
+                rect(x="0" y="0" width="300" height="300" fill="#111")
+                each $grid in $chart['grids']
+                  polygon(points=$grid fill="none" stroke="#333" stroke-width="1")
+                each $axis in $chart['axes']
+                  line(x1="150" y1="150" x2=$axis['x2'] y2=$axis['y2'] stroke="#444" stroke-width="1")
+                  text.daily-label-axis-label(x=$axis['labelX'] y=$axis['labelY'] text-anchor=$axis['anchor'])
+                    title= $axis['fullLabel'] . ': ' . number_format($axis['count']) . ' (' . number_format($axis['percent'], 1) . '%) / ' . $formatIsk($axis['isk']) . ' ISK'
+                    tspan(x=$axis['labelX'] dy="0")= strlen($axis['label']) > 12 ? substr($axis['label'], 0, 11) . '...' : $axis['label']
+                    tspan(x=$axis['labelX'] dy="11")= number_format($axis['count']) . ' / ' . number_format($axis['percent'], 1) . '%'
+                if (strlen((string) $chart['points']) > 0)
+                  polygon(points=$chart['points'] fill="rgba(91, 192, 222, 0.28)" stroke="#5bc0de" stroke-width="2")
+                  each $axis in $chart['axes']
+                    circle(cx=$axis['pointX'] cy=$axis['pointY'] r="3" fill="#5bc0de")
+                      title= $axis['fullLabel'] . ': ' . number_format($axis['count']) . ' (' . number_format($axis['percent'], 1) . '%) / ' . $formatIsk($axis['isk']) . ' ISK'

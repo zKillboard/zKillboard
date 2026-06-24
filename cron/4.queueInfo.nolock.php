@@ -23,6 +23,7 @@ while ($time >= time()) {
     if ($killID != null) {
         updateInfo($killID);
         updateStatsQueue($killID);
+        updateDailyStatsQueue($killID);
 
         $queueSocial->push($killID);
         $queuePublish->push($killID);
@@ -107,6 +108,18 @@ function addToStatsQueue($type, $id, $sequence)
 
     $cacheTag = str_replace("shipType", "ship", str_replace("solarS", "s", str_replace("ID", "", "$type:$id")));
     $redis->sadd("queueCacheTagsDefer", "killlist:$cacheTag");
+}
+
+function updateDailyStatsQueue($killID)
+{
+    global $mdb;
+
+    $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
+    if ($killmail == null) {
+        return;
+    }
+
+    DailyStats::markDirtyFromKillmail($killmail);
 }
 
 function updateInfo($killID)

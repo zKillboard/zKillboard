@@ -73,6 +73,9 @@ $routes = [
 	'/cache/{cacheType:1hour|24hour}/killlistrow/{killID}/' => ['GET', 'view/killlistrow.php'],
 	'/cache/bypass/healthcheck/' => ['GET', 'view/api/healthcheck.php'],
 	'/cache/tagged/comment/{pageID}/' => ['GET', 'view/comments.php'],
+	'/{type:character|corporation|alliance|faction|system|constellation|region|group|ship|location|label}/{id}/{pageType:daily}/{dailySide:kills|losses}/{dailyDays}/' => ['GET', 'view/overview.php'],
+	'/{type:character|corporation|alliance|faction|system|constellation|region|group|ship|location|label}/{id}/{pageType:daily}/{dailyDate}/{dailySide}/' => ['GET', 'view/overview.php'],
+	'/{type:character|corporation|alliance|faction|system|constellation|region|group|ship|location|label}/{id}/{pageType:daily}/' => ['GET', 'view/overview.php'],
 	
 	// POST routes
 	'/account/favorite/{killID}/{action}/' => ['POST', 'view/favorite_modify.php'],
