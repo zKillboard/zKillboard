@@ -326,6 +326,8 @@ function handler($request, $response, $args, $container)
 	$dailySelectedDays = [];
 	$dailySelectedStart = null;
 	$dailySelectedEnd = null;
+	$dailyGraphStart = null;
+	$dailyGraphEnd = null;
 	if ($pageType == 'daily') {
 		$queryParams = $request->getQueryParams();
 		$dailyDate = $dailyRouteDate ?? (isset($queryParams['date']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $queryParams['date']) ? $queryParams['date'] : null);
@@ -360,6 +362,11 @@ function handler($request, $response, $args, $container)
 			$dailySelectedDays = [$dailyDate];
 			$dailySelectedStart = $dailyDate;
 			$dailySelectedEnd = $dailyDate;
+		}
+		$dailyGraphInput = (string) ($queryParams['graph'] ?? $request->getHeaderLine('X-ZKB-Daily-Graph'));
+		if ($dailyGraphInput != '' && preg_match('/^(\d{4}-\d{2}-\d{2})\.\.(\d{4}-\d{2}-\d{2})$/', $dailyGraphInput, $matches)) {
+			$dailyGraphStart = min($matches[1], $matches[2]);
+			$dailyGraphEnd = max($matches[1], $matches[2]);
 		}
 		$dailyStats = DailyStats::getAggregate($statType, $id, count($dailySelectedDays) > 0 ? $dailySelectedDays : null);
 		if ($dailyStats != null) {
@@ -660,7 +667,7 @@ function handler($request, $response, $args, $container)
 		$detail['systems'] = $mdb->find('information', ['type' => 'solarSystemID', 'constellationID' => (int) $id], ['name' => 1], null, ['id' => 1, 'name' => 1]);
 	}
 
-	$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'dailyStats' => $dailyStats, 'dailyDays' => $dailyDays, 'dailyDate' => $dailyDate, 'dailySide' => $dailySide, 'dailySelectedDays' => $dailySelectedDays, 'dailySelectedStart' => $dailySelectedStart, 'dailySelectedEnd' => $dailySelectedEnd, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified, 'dqChars' => $dqChars);
+	$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'dailyStats' => $dailyStats, 'dailyDays' => $dailyDays, 'dailyDate' => $dailyDate, 'dailySide' => $dailySide, 'dailySelectedDays' => $dailySelectedDays, 'dailySelectedStart' => $dailySelectedStart, 'dailySelectedEnd' => $dailySelectedEnd, 'dailyGraphStart' => $dailyGraphStart, 'dailyGraphEnd' => $dailyGraphEnd, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified, 'dqChars' => $dqChars);
 
 	return $container->get('view')->render($response->withHeader('Cache-Tag', "www,overview,overview:$id"), 'overview.pug', $renderParams);
 }

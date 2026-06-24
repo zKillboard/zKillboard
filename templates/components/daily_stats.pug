@@ -6,10 +6,10 @@
 if (empty($dailyStats))
   h4 Daily stats are not available for this entity yet.
 else
-  - $graphStart = $dailySelectedStart;
-  - $graphEnd = $dailySelectedEnd;
-  - if (($dailyDate ?? null) != null && count($dailySelectedDays) == 1) { $graphStart = date('Y-m-01', strtotime($dailyDate)); $graphEnd = date('Y-m-t', strtotime($dailyDate)); }
-  - $dailyGraph = (function ($dailyDays, $selectedDays, $selectedStart, $selectedEnd) {
+  - $graphStart = $dailyGraphStart ?? $dailySelectedStart;
+  - $graphEnd = $dailyGraphEnd ?? $dailySelectedEnd;
+  - if (($dailyGraphStart ?? null) == null && ($dailyDate ?? null) != null && count($dailySelectedDays) == 1) { $graphStart = date('Y-m-01', strtotime($dailyDate)); $graphEnd = date('Y-m-t', strtotime($dailyDate)); }
+  - $dailyGraph = (function ($dailyDays, $selectedDays, $selectedStart, $selectedEnd, $viewStart, $viewEnd) {
   -   $byDay = [];
   -   foreach ((array) $dailyDays as $row) { $row = is_object($row) ? (array) $row : (array) $row; if (isset($row['day'])) $byDay[$row['day']] = $row; }
   -   if (count($byDay) == 0) return null;
@@ -21,13 +21,28 @@ else
   -   while ($cursor <= $end) { $day = $cursor->format('Y-m-d'); $history[] = $byDay[$day] ?? ['day' => $day, 'kills' => $zero, 'losses' => $zero]; $cursor = $cursor->modify('+1 day'); }
   -   $days = array_map(function ($row) { return $row['day']; }, $history);
   -   $count = count($days);
-  -   $startIdx = array_search($selectedStart ?? (count($selectedDays) > 0 ? min($selectedDays) : $days[0]), $days);
-  -   $endIdx = array_search($selectedEnd ?? (count($selectedDays) > 0 ? max($selectedDays) : $days[$count - 1]), $days);
+  -   $selectedStart = $selectedStart ?? (count($selectedDays) > 0 ? min($selectedDays) : $days[0]);
+  -   $selectedEnd = $selectedEnd ?? (count($selectedDays) > 0 ? max($selectedDays) : $days[$count - 1]);
+  -   if ($selectedStart > $selectedEnd) { $tmp = $selectedStart; $selectedStart = $selectedEnd; $selectedEnd = $tmp; }
+  -   $selectedStartIdx = array_search($selectedStart, $days);
+  -   $selectedEndIdx = array_search($selectedEnd, $days);
+  -   $selectedStartIdx = $selectedStartIdx === false ? 0 : $selectedStartIdx;
+  -   $selectedEndIdx = $selectedEndIdx === false ? $count - 1 : $selectedEndIdx;
+  -   $allSelected = $selectedStartIdx == 0 && $selectedEndIdx == $count - 1;
+  -   $viewStart = $viewStart ?? $selectedStart;
+  -   $viewEnd = $viewEnd ?? $selectedEnd;
+  -   if ($viewStart > $viewEnd) { $tmp = $viewStart; $viewStart = $viewEnd; $viewEnd = $tmp; }
+  -   $viewStartIdx = array_search($viewStart, $days);
+  -   $viewEndIdx = array_search($viewEnd, $days);
+  -   $viewStartIdx = $viewStartIdx === false ? 0 : $viewStartIdx;
+  -   $viewEndIdx = $viewEndIdx === false ? $count - 1 : $viewEndIdx;
+  -   if ($viewStartIdx > $viewEndIdx) { $tmp = $viewStartIdx; $viewStartIdx = $viewEndIdx; $viewEndIdx = $tmp; }
+  -   if ($viewStartIdx > 0 || $viewEndIdx < $count - 1) { $history = array_slice($history, $viewStartIdx, $viewEndIdx - $viewStartIdx + 1); $days = array_map(function ($row) { return $row['day']; }, $history); $count = count($days); }
+  -   $startIdx = array_search(max($selectedStart, $days[0]), $days);
+  -   $endIdx = array_search(min($selectedEnd, $days[$count - 1]), $days);
   -   $startIdx = $startIdx === false ? 0 : $startIdx;
   -   $endIdx = $endIdx === false ? $count - 1 : $endIdx;
   -   if ($startIdx > $endIdx) { $tmp = $startIdx; $startIdx = $endIdx; $endIdx = $tmp; }
-  -   $allSelected = $startIdx == 0 && $endIdx == $count - 1;
-  -   if ($startIdx > 0 || $endIdx < $count - 1) { $history = array_slice($history, $startIdx, $endIdx - $startIdx + 1); $days = array_map(function ($row) { return $row['day']; }, $history); $count = count($days); $startIdx = 0; $endIdx = $count - 1; }
   -   $width = 1200; $height = 190; $bandHeight = 150; $mid = 118; $padX = 18; $graphWidth = $width - ($padX * 2);
   -   $x = function ($idx) use ($count, $width, $padX, $graphWidth) { return $count <= 1 ? ($width / 2) : ($padX + (($idx / ($count - 1)) * $graphWidth)); };
   -   $rangeFor = function ($start, $end) use ($days, $x) { $start = max($start, $days[0]); $end = min($end, $days[count($days) - 1]); $startIdx = array_search($start, $days); $endIdx = array_search($end, $days); if ($startIdx === false || $endIdx === false) return null; return ['start' => $start, 'end' => $end, 'x' => round($x($startIdx), 2), 'endX' => round($x($endIdx), 2), 'midX' => round(($x($startIdx) + $x($endIdx)) / 2, 2)]; };
@@ -43,7 +58,7 @@ else
   -   $cursor = new DateTimeImmutable(substr($days[0], 0, 4) . '-01-01', new DateTimeZone('UTC')); $last = new DateTimeImmutable($days[$count - 1], new DateTimeZone('UTC'));
   -   while ($cursor <= $last) { $yearStart = $cursor->format('Y-01-01'); $yearEnd = $cursor->format('Y-12-31'); $range = $rangeFor($yearStart, $yearEnd); if ($range != null) { $range['start'] = $yearStart; $range['end'] = $yearEnd; $years[] = $range + ['label' => $cursor->format('Y')]; } for ($m = 1; $m <= 12; $m++) { $month = $cursor->setDate((int) $cursor->format('Y'), $m, 1); $monthStart = $month->format('Y-m-01'); $monthEnd = $month->modify('last day of this month')->format('Y-m-d'); $range = $rangeFor($monthStart, $monthEnd); if ($range != null) { $range['start'] = $monthStart; $range['end'] = $monthEnd; $months[] = $range + ['label' => $month->format('M Y'), 'short' => $month->format('M')]; } } $cursor = $cursor->modify('+1 year'); }
   -   return ['width' => $width, 'height' => $height, 'bandHeight' => $bandHeight, 'bandMid' => $mid, 'padX' => $padX, 'graphWidth' => $graphWidth, 'historyDays' => $days, 'rangeStartDay' => $days[$startIdx], 'rangeEndDay' => $days[$endIdx], 'rangeStartX' => round($x($startIdx), 2), 'rangeEndX' => round($x($endIdx), 2), 'allSelected' => $allSelected, 'metrics' => $metrics, 'years' => $years, 'months' => $months, 'dayHits' => $dayHits];
-  - })($dailyDays, $dailySelectedDays, $graphStart, $graphEnd);
+  - })($dailyDays, $dailySelectedDays, $dailySelectedStart, $dailySelectedEnd, $graphStart, $graphEnd);
   - $dailyAllSelected = $dailyGraph['allSelected'] ?? true;
   - $dailyYear = substr((string) (($dailySelectedStart ?? null) ?: ($dailyGraph['rangeStartDay'] ?? '')), 0, 4);
   - $dailyYearStart = preg_match('/^\d{4}$/', $dailyYear) ? ($dailyYear . '-01-01') : '';
@@ -95,18 +110,18 @@ else
           rect.daily-range-right-shade(x=$dailyGraph['rangeEndX'] y="0" width=($dailyGraph['width'] - $dailyGraph['rangeEndX']) height=$dailyGraph['height'] fill="#000" opacity="0.14")
           line.daily-range-guide.daily-range-left-guide(x1=$dailyGraph['rangeStartX'] x2=$dailyGraph['rangeStartX'] y1="0" y2=$dailyGraph['height'] stroke="#5bc0de" stroke-width="1" opacity="0.28")
           line.daily-range-guide.daily-range-right-guide(x1=$dailyGraph['rangeEndX'] x2=$dailyGraph['rangeEndX'] y1="0" y2=$dailyGraph['height'] stroke="#5bc0de" stroke-width="1" opacity="0.28")
-          each $month in $dailyGraph['months']
-            g.daily-range-link(data-start=$month['start'] data-end=$month['end'])
-              title= $month['label']
-              rect.daily-month-hit(x=($month['x'] - 4) y=($rangeRailY - 15) width="8" height="30" fill="#fff")
-              line(x1=$month['x'] x2=$month['x'] y1=($rangeRailY - 8) y2=($rangeRailY + $rangeRailHeight + 2) stroke="#3b6f7b" stroke-width="1" opacity="0.72")
-              if (!$dailyGraph['allSelected'] && count($dailyGraph['months']) <= 12)
-                text(x=$month['midX'] y=($rangeRailY - 10) fill="#9aa" font-size="10" text-anchor="middle")= $month['short']
           each $year in $dailyGraph['years']
             g.daily-range-link(data-start=$year['start'] data-end=$year['end'])
               title= $year['label']
-              rect.daily-month-hit(x=$year['x'] y=($rangeRailY - 34) width=max(10, $year['endX'] - $year['x']) height="16" fill="#fff")
-              text(x=$year['midX'] y=($rangeRailY - 22) fill="#9aa" font-size="12" text-anchor="middle")= $year['label']
+              rect.daily-month-hit(x=$year['x'] y=($rangeRailY - 16) width=max(10, $year['endX'] - $year['x']) height="14" fill="#fff")
+              text(x=$year['midX'] y=($rangeRailY - 4) fill="#9aa" font-size="12" text-anchor="middle")= $year['label']
+          each $month in $dailyGraph['months']
+            g.daily-range-link(data-start=$month['start'] data-end=$month['end'])
+              title= $month['label']
+              rect.daily-month-hit(x=$month['x'] y=($rangeRailY - 42) width=max(8, $month['endX'] - $month['x']) height="20" fill="#fff")
+              line(x1=$month['x'] x2=$month['x'] y1=($rangeRailY - 38) y2=($rangeRailY - 22) stroke="#3b6f7b" stroke-width="1" opacity="0.72")
+              if (!$dailyGraph['allSelected'] && count($dailyGraph['months']) <= 14)
+                text(x=$month['midX'] y=($rangeRailY - 27) fill="#9aa" font-size="10" text-anchor="middle")= $month['short']
           rect(x=$dailyGraph['padX'] y=$rangeRailY width=$dailyGraph['graphWidth'] height=$rangeRailHeight rx="3" fill="#000" opacity="0.3")
           rect.daily-range-fill(x=$dailyGraph['rangeStartX'] y=$rangeRailY width=max(1, $dailyGraph['rangeEndX'] - $dailyGraph['rangeStartX']) height=$rangeRailHeight rx="3" fill="#5bc0de" opacity="0.28")
           rect.daily-range-handle.daily-range-hit.daily-range-left(data-handle="left" x=($dailyGraph['rangeStartX'] - 10) y="0" width="20" height=$dailyGraph['height'] fill="#fff")
@@ -154,10 +169,46 @@ else
           var setAttrs = function (el, attrs) {
             Object.keys(attrs).forEach(function (name) { if (el) el.setAttribute(name, attrs[name]); });
           };
-          var keepDailyUrl = function (graph) {
+          var keepDailyUrl = function (graph, hash) {
             if (window.history && window.history.replaceState) {
-              window.history.replaceState(window.history.state || {}, document.title, graph.getAttribute("data-base-url") || window.location.href);
+              window.history.replaceState(window.history.state || {}, document.title, (graph.getAttribute("data-base-url") || window.location.href) + (hash !== undefined ? hash : (window.location.hash || "")));
             }
+          };
+          var monthEnd = function (ym) {
+            var parts = ym.split("-");
+            return ym + "-" + new Date(parseInt(parts[0], 10), parseInt(parts[1], 10), 0).getDate();
+          };
+          var currentMetric = function (graph) {
+            return window.zkbDailyStatsMetric || graph.getAttribute("data-current-metric") || "count";
+          };
+          var tokenToHash = function (token, graph, side, zoom) {
+            var metric = currentMetric(graph);
+            var prefix = (zoom ? "z" : "") + (side == "losses" ? "l" : "") + (metric == "isk" ? "i" : (metric == "points" ? "p" : ""));
+            var days = splitDays(graph.getAttribute("data-history-days"));
+            if (token == "all") return prefix == "" ? "" : "#" + prefix + "all";
+            if (/^\d{4}-\d{2}-\d{2}$/.test(token)) return "#" + prefix + token;
+            var match = (token || "").match(/^(\d{4})-(\d{2})-(\d{2})\.\.(\d{4})-(\d{2})-(\d{2})$/);
+            if (!match) return "";
+            if (days.length > 0 && token == days[0] + ".." + days[days.length - 1]) return prefix == "" ? "" : "#" + prefix + "all";
+            if (match[1] == match[4] && match[2] == "01" && match[3] == "01" && match[5] == "12" && match[6] == "31") return "#" + prefix + match[1];
+            if (match[1] == match[4] && match[2] == match[5] && match[3] == "01" && token.split("..")[1] == monthEnd(match[1] + "-" + match[2])) return "#" + prefix + match[1] + "-" + match[2];
+            return "#" + prefix + token;
+          };
+          var hashToToken = function (hash) {
+            hash = decodeURIComponent((hash || "").replace(/^#/, ""));
+            if (hash == "") return null;
+            var zoom = hash.charAt(0) == "z";
+            if (zoom) hash = hash.substring(1);
+            var side = hash.charAt(0) == "l" ? "losses" : "kills";
+            if (side == "losses") hash = hash.substring(1);
+            var metric = hash.charAt(0) == "i" ? "isk" : (hash.charAt(0) == "p" ? "points" : "count");
+            if (metric != "count") hash = hash.substring(1);
+            if (hash == "all") return { type: "token", value: "all", side: side, zoom: zoom, metric: metric };
+            if (/^\d{4}$/.test(hash)) return { type: "token", value: hash + "-01-01.." + hash + "-12-31", side: side, zoom: zoom, metric: metric };
+            if (/^\d{4}-\d{2}$/.test(hash)) return { type: "token", value: hash + "-01.." + monthEnd(hash), side: side, zoom: zoom, metric: metric };
+            if (/^\d{4}-\d{2}-\d{2}$/.test(hash)) return { type: "day", value: hash, side: side, zoom: zoom, metric: metric };
+            if (/^\d{4}-\d{2}-\d{2}\.\.\d{4}-\d{2}-\d{2}$/.test(hash)) return { type: "token", value: hash, side: side, zoom: zoom, metric: metric };
+            return null;
           };
           var applyDailyMetric = function () {
             document.querySelectorAll(".daily-history-graph").forEach(function (graph) {
@@ -173,12 +224,14 @@ else
               });
             });
           };
-          var loadDaily = function (graph, url, scroll) {
+          var loadDaily = function (graph, url, scroll, graphWindow, hash) {
             var baseUrl = graph.getAttribute("data-base-url") || window.location.href;
+            var headers = { "X-Requested-With": "XMLHttpRequest" };
+            if (graphWindow) headers["X-ZKB-Daily-Graph"] = graphWindow;
             fetch(url, {
               method: "GET",
               credentials: "same-origin",
-              headers: { "X-Requested-With": "XMLHttpRequest" }
+              headers: headers
             }).then(function (response) {
               if (!response.ok || response.redirected) throw new Error("daily fetch failed");
               return response.text();
@@ -190,40 +243,55 @@ else
               current.innerHTML = next.innerHTML;
               if (typeof initPageContent == "function") initPageContent();
               applyDailyMetric();
-              keepDailyUrl(document.querySelector(".daily-history-graph") || graph);
+              keepDailyUrl(document.querySelector(".daily-history-graph") || graph, hash);
               window.scrollTo(scroll.x, scroll.y);
             }).catch(function () {
-              if (window.history && window.history.replaceState) window.history.replaceState(window.history.state || {}, document.title, baseUrl);
+              if (window.history && window.history.replaceState) window.history.replaceState(window.history.state || {}, document.title, baseUrl + (hash !== undefined ? hash : (window.location.hash || "")));
             });
+          };
+          var graphWindowToken = function (graph) {
+            var days = splitDays(graph.getAttribute("data-history-days"));
+            return days.length == 0 ? "" : (days[0] + ".." + days[days.length - 1]);
+          };
+          var selectionToken = function (graph) {
+            var days = splitDays(graph.getAttribute("data-history-days"));
+            var start = graph.getAttribute("data-range-start");
+            var end = graph.getAttribute("data-range-end");
+            var selected = document.querySelector("h4[data-daily-selected-day]");
+            if (selected) return selected.getAttribute("data-daily-selected-day");
+            return (graph.getAttribute("data-all-selected") == "1" && start == days[0] && end == days[days.length - 1]) ? "all" : (start + ".." + end);
           };
           var navigateRange = function (graph) {
             var start = graph.getAttribute("data-range-start");
             var end = graph.getAttribute("data-range-end");
             var days = splitDays(graph.getAttribute("data-history-days"));
-            var token = (graph.getAttribute("data-all-selected") == "1" && start == days[0] && end == days[days.length - 1]) ? "all" : (start + ".." + end);
+            var token = start + ".." + end;
             var side = graph.getAttribute("data-current-side") || "kills";
+            var graphWindow = graphWindowToken(graph);
             var url = (graph.getAttribute("data-base-url") || "") + encodeURIComponent(side) + "/" + token + "/";
             var scroll = {
               x: window.scrollX || window.pageXOffset || 0,
               y: window.scrollY || window.pageYOffset || 0
             };
-            loadDaily(graph, url, scroll);
+            loadDaily(graph, url, scroll, graphWindow, tokenToHash(token, graph, side, false));
           };
-          var navigateToken = function (graph, side, token) {
+          var navigateToken = function (graph, side, token, keepWindow) {
             var url = (graph.getAttribute("data-base-url") || "") + encodeURIComponent(side) + "/" + token + "/";
+            var graphWindow = keepWindow ? graphWindowToken(graph) : null;
             var scroll = {
               x: window.scrollX || window.pageXOffset || 0,
               y: window.scrollY || window.pageYOffset || 0
             };
-            loadDaily(graph, url, scroll);
+            loadDaily(graph, url, scroll, graphWindow, tokenToHash(token, graph, side, !keepWindow));
           };
-          var navigateDay = function (graph, side, day) {
+          var navigateDay = function (graph, side, day, keepWindow) {
             var url = (graph.getAttribute("data-base-url") || "") + day + "/" + encodeURIComponent(side) + "/";
+            var graphWindow = keepWindow ? graphWindowToken(graph) : null;
             var scroll = {
               x: window.scrollX || window.pageXOffset || 0,
               y: window.scrollY || window.pageYOffset || 0
             };
-            loadDaily(graph, url, scroll);
+            loadDaily(graph, url, scroll, graphWindow, tokenToHash(day, graph, side, !keepWindow));
           };
           document.addEventListener("pointerdown", function (event) {
             var target = event.target;
@@ -340,6 +408,7 @@ else
               item.classList.toggle("btn-primary", item == button);
               item.classList.toggle("btn-secondary", item != button);
             });
+            keepDailyUrl(graph, tokenToHash(selectionToken(graph), graph, graph.getAttribute("data-current-side") || "kills", false));
           }, true);
           document.addEventListener("click", function (event) {
             var target = event.target;
@@ -355,15 +424,28 @@ else
             var selected = document.querySelector("h4[data-daily-selected-day]");
             if (selected) token = selected.getAttribute("data-daily-selected-day");
             graph.setAttribute("data-current-side", side);
-            navigateToken(graph, side, token);
+            navigateToken(graph, side, token, true);
           }, true);
+          setTimeout(function () {
+            var graph = document.querySelector(".daily-history-graph");
+            var selection = hashToToken(window.location.hash);
+            if (!graph || !selection) return;
+            window.zkbDailyStatsMetric = selection.metric || "count";
+            if (selection.type == "day") navigateDay(graph, selection.side, selection.value, !selection.zoom);
+            else navigateToken(graph, selection.side, selection.value, !selection.zoom);
+          }, 1);
         }
   - $sideName = $dailySide;
   - $side = is_object($dailyStats[$sideName] ?? null) ? (array) $dailyStats[$sideName] : ($dailyStats[$sideName] ?? []);
   - $summary = is_object($side['summary'] ?? null) ? (array) $side['summary'] : ($side['summary'] ?? []);
   - $selectionLabel = $dailyAllSelected ? 'All' : (($dailySelectedStart ?? '') == ($dailySelectedEnd ?? '') ? ($dailySelectedStart ?? '') : (($dailySelectedStart ?? '') . ' to ' . ($dailySelectedEnd ?? '')));
-  h4(data-daily-selected-day=((($dailySelectedStart ?? '') == ($dailySelectedEnd ?? '') && !$dailyAllSelected) ? $dailySelectedStart : false))= 'Selected: ' . $selectionLabel . ' ' . ucfirst($sideName)
-  h4= 'Daily ' . ucfirst($sideName)
+  h4.text-center(data-daily-selected-day=((($dailySelectedStart ?? '') == ($dailySelectedEnd ?? '') && !$dailyAllSelected) ? $dailySelectedStart : false))
+    span= $selectionLabel . ' '
+    if ($sideName == 'kills')
+      i.fas.fa-check.green(aria-hidden="true")
+    else
+      i.fas.fa-times.red(aria-hidden="true")
+    span= ' ' . ucfirst($sideName)
   table.table.table-sm.table-striped.table-bordered
     thead
       tr
