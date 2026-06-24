@@ -536,12 +536,7 @@ class DailyStats
     private static function sideStats($type, $id, $day, $losses)
     {
         $query = self::buildQuery($type, $id, $day, $losses);
-        return [
-            'summary' => self::summary($query),
-            'labels' => self::labels($query),
-            'top' => self::topEntities($query, $losses),
-            'topValueKillIDs' => self::topValueKillIDs($query),
-        ];
+        return self::facetedSideStats($query, $losses);
     }
 
     private static function buildQuery($type, $id, $day, $losses)
@@ -583,12 +578,36 @@ class DailyStats
         return ['$and' => [$query, $dayQuery]];
     }
 
-    private static function summary($query)
+    private static function facetedSideStats($query, $losses)
     {
         global $mdb;
 
-        $pipeline = [
+        $facets = [
+            'summary' => self::summaryFacet(),
+            'labels' => self::labelsFacet(),
+            'topValueKillIDs' => self::topValueKillIDsFacet(),
+        ];
+        foreach (self::$topTypes as $type => $meta) {
+            $facets[$type] = self::topEntityFacet($type, $meta['field'], $losses);
+        }
+
+        $rows = iterator_to_array($mdb->getCollection('killmails')->aggregate([
             ['$match' => $query],
+            ['$facet' => $facets],
+        ], self::aggregateOptions()));
+        $row = $rows[0] ?? [];
+
+        return [
+            'summary' => self::normalizeSummary($row['summary'][0] ?? []),
+            'labels' => (array) ($row['labels'] ?? []),
+            'top' => self::normalizeTopFacets($row),
+            'topValueKillIDs' => self::normalizeTopValueKillIDs($row['topValueKillIDs'] ?? []),
+        ];
+    }
+
+    private static function summaryFacet()
+    {
+        return [
             ['$group' => [
                 '_id' => null,
                 'count' => ['$sum' => 1],
@@ -597,20 +616,11 @@ class DailyStats
             ]],
             ['$project' => ['_id' => 0, 'count' => 1, 'isk' => 1, 'points' => 1]],
         ];
-        $rows = iterator_to_array($mdb->getCollection('killmails')->aggregate($pipeline, self::aggregateOptions()));
-        if (count($rows) == 0) {
-            return ['count' => 0, 'isk' => 0, 'points' => 0];
-        }
-        $row = $rows[0];
-        return ['count' => (int) $row['count'], 'isk' => (double) $row['isk'], 'points' => (int) $row['points']];
     }
 
-    private static function labels($query)
+    private static function labelsFacet()
     {
-        global $mdb;
-
-        $pipeline = [
-            ['$match' => $query],
+        return [
             ['$unwind' => '$labels'],
             ['$group' => [
                 '_id' => '$labels',
@@ -620,23 +630,11 @@ class DailyStats
             ['$sort' => ['count' => -1, 'isk' => -1]],
             ['$project' => ['_id' => 0, 'label' => '$_id', 'count' => 1, 'isk' => 1]],
         ];
-        return iterator_to_array($mdb->getCollection('killmails')->aggregate($pipeline, self::aggregateOptions()));
     }
 
-    private static function topEntities($query, $losses)
+    private static function topEntityFacet($type, $field, $losses)
     {
-        $top = [];
-        foreach (self::$topTypes as $type => $meta) {
-            $top[$type] = self::topEntity($query, $type, $meta['field'], $losses);
-        }
-        return $top;
-    }
-
-    private static function topEntity($query, $type, $field, $losses)
-    {
-        global $mdb;
-
-        $pipeline = [['$match' => $query]];
+        $pipeline = [];
         if (strpos($field, 'involved.') === 0) {
             $pipeline[] = ['$unwind' => '$involved'];
             $pipeline[] = ['$match' => ['involved.isVictim' => $losses]];
@@ -655,22 +653,40 @@ class DailyStats
         $pipeline[] = ['$limit' => 50];
         $pipeline[] = ['$project' => ['_id' => 0, $type => '$_id', 'kills' => 1, 'isk' => 1]];
 
-        return iterator_to_array($mdb->getCollection('killmails')->aggregate($pipeline, self::aggregateOptions()));
+        return $pipeline;
     }
 
-    private static function topValueKillIDs($query)
+    private static function topValueKillIDsFacet()
     {
-        global $mdb;
-
-        $pipeline = [
-            ['$match' => $query],
+        return [
             ['$unwind' => '$involved'],
             ['$match' => ['involved.isVictim' => true, 'involved.shipTypeID' => ['$nin' => [null, 0]]]],
             ['$sort' => ['zkb.totalValue' => -1, 'killID' => -1]],
             ['$limit' => 10],
             ['$project' => ['_id' => 0, 'killID' => 1]],
         ];
-        $rows = iterator_to_array($mdb->getCollection('killmails')->aggregate($pipeline, self::aggregateOptions()));
+    }
+
+    private static function normalizeSummary($row)
+    {
+        return [
+            'count' => (int) ($row['count'] ?? 0),
+            'isk' => (double) ($row['isk'] ?? 0),
+            'points' => (int) ($row['points'] ?? 0),
+        ];
+    }
+
+    private static function normalizeTopFacets($row)
+    {
+        $top = [];
+        foreach (array_keys(self::$topTypes) as $type) {
+            $top[$type] = (array) ($row[$type] ?? []);
+        }
+        return $top;
+    }
+
+    private static function normalizeTopValueKillIDs($rows)
+    {
         $killIDs = [];
         foreach ($rows as $row) {
             $killIDs[] = (int) $row['killID'];
