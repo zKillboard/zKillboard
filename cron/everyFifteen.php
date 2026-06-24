@@ -70,14 +70,17 @@ function getTop($title, $type)
     $key = "zkb:Cache:$title:$type";
     $retVal = [];
 
-    $ids = $redis->zRange("tq:ranks:weekly:$type", 0, 20);
+    $page = Ranks::getPage('weekly', 'all', $type, 'overallRank', 'asc', 1);
+    $ids = $page['ids'] ?? [];
     if (sizeof($ids) == 0) {
         return [];
     }
     foreach ($ids as $id) {
         if (sizeof($retVal) >= 10) break;
         if ($type == "corporationID" && $id <= 1999999) continue;
-        $retVal[] = [$type => $id, 'kills' => $redis->zScore("tq:ranks:weekly:$type:shipsDestroyed", $id), 'score' => $redis->zScore("tq:ranks:weekly:$type", $id)];
+        $rankRow = Ranks::getRow('weekly', 'all', $type, $id);
+        if ($rankRow == null) continue;
+        $retVal[] = [$type => $id, 'kills' => $rankRow['metrics']['shipsDestroyed'] ?? 0, 'score' => $rankRow['overallScore'] ?? 0];
     }
     Info::addInfo($retVal);
     $retVal = ['type' => str_replace('ID', '', $type), 'title' => $title, 'values' => $retVal];

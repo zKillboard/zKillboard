@@ -1,7 +1,7 @@
 <?php
 
 function handler($request, $response, $args, $container) {
-    global $mdb, $redis, $uri;
+    global $mdb, $uri;
 
     try {
         $params = URI::validate($uri, ['type' => true, 'id' => true]);
@@ -36,18 +36,19 @@ function handler($request, $response, $args, $container) {
     //unset($array['info']['_id']);
 
     $ret = [];
+    $rankRow = Ranks::getRow('alltime', 'all', $type, $id);
     $ret['s-a-sd'] = (int) @$array['shipsDestroyed'];
-    $ret['s-a-sd-r'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$type:shipsDestroyed", $id));
+    $ret['s-a-sd-r'] = rankRowRank($rankRow, 'shipsDestroyed');
     $ret['s-a-sl'] = (int) @$array['shipsLost'];
-    $ret['s-a-sl-r'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$type:shipsLost", $id));
+    $ret['s-a-sl-r'] = rankRowRank($rankRow, 'shipsLost');
     $ret['s-a-id'] = (int) @$array['iskDestroyed'];
-    $ret['s-a-id-r'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$type:iskDestroyed", $id));
+    $ret['s-a-id-r'] = rankRowRank($rankRow, 'iskDestroyed');
     $ret['s-a-il'] = (int) @$array['iskLost'];
-    $ret['s-a-il-r'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$type:iskLost", $id));
+    $ret['s-a-il-r'] = rankRowRank($rankRow, 'iskLost');
     $ret['s-a-pd'] = (int) @$array['pointsDestroyed'];
-    $ret['s-a-pd-r'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$type:pointsDestroyed", $id));
+    $ret['s-a-pd-r'] = rankRowRank($rankRow, 'pointsDestroyed');
     $ret['s-a-pl'] = (int) @$array['pointsLost'];
-    $ret['s-a-pl-r'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$type:pointsLost", $id));
+    $ret['s-a-pl-r'] = rankRowRank($rankRow, 'pointsLost');
 
     $ret['s-a-s-e'] = eff($ret['s-a-sd'], $ret['s-a-sl']);
     $ret['s-a-i-e'] = eff($ret['s-a-id'], $ret['s-a-il']);
@@ -70,4 +71,9 @@ function eff($a, $b) {
     $t = $a + $b;
     if ($t == 0) return "-";
     return ($a / $t) * 100;
+}
+
+function rankRowRank($row, $metric)
+{
+    return $row['ranks'][$metric] ?? null;
 }
