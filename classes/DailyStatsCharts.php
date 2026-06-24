@@ -52,10 +52,24 @@ class DailyStatsCharts
                     'rows' => [],
                 ];
             }
-            $row['axisLabel'] = $pos === false ? $label : (substr($label, $pos + 1) ?: $label);
+            $row['axisLabel'] = self::axisLabel($groupKey, $label, $pos === false ? $label : (substr($label, $pos + 1) ?: $label));
             $groups[$groupKey]['rows'][] = $row;
         }
         return $groups;
+    }
+
+    private static function axisLabel($groupKey, $label, $axisLabel)
+    {
+        if ($groupKey == 'cat' && preg_match('/^cat:(\d+)$/', $label, $matches)) {
+            $name = Info::getInfoField('categoryID', (int) $matches[1], 'name');
+            if ($name != null && $name != '') {
+                return $name;
+            }
+
+            return AdvancedSearch::$labels['custom'][$label] ?? $axisLabel;
+        }
+
+        return $axisLabel;
     }
 
     private static function addUnderOneBillionIskBand(&$groups)
