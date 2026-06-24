@@ -1,172 +1,234 @@
 - $dailyStats = is_object($dailyStats ?? null) ? (array) $dailyStats : ($dailyStats ?? []);
 - $dailyDays = $dailyDays ?? [];
-- $dailyDate = $dailyDate ?? ($dailyStats['day'] ?? null);
 - $dailySide = in_array(($dailySide ?? 'kills'), ['kills', 'losses']) ? $dailySide : 'kills';
 - $dailySelectedDays = array_values((array) ($dailySelectedDays ?? []));
 
 if (empty($dailyStats))
   h4 Daily stats are not available for this entity yet.
 else
-  - $dailyGraphRows = array_map(fn($row) => is_object($row) ? (array) $row : $row, (array) $dailyDays);
-  - $historyRows = (function ($rows) { $byDay = []; foreach ($rows as $row) { if (isset($row['day'])) $byDay[$row['day']] = $row; } if (count($byDay) == 0) return []; ksort($byDay); $zeroSide = ['summary' => ['count' => 0, 'isk' => 0, 'points' => 0]]; $history = []; $cursor = new DateTimeImmutable(array_key_first($byDay), new DateTimeZone('UTC')); $end = new DateTimeImmutable(array_key_last($byDay), new DateTimeZone('UTC')); while ($cursor <= $end) { $day = $cursor->format('Y-m-d'); $history[] = $byDay[$day] ?? ['day' => $day, 'kills' => $zeroSide, 'losses' => $zeroSide]; $cursor = $cursor->modify('+1 day'); } return $history; })($dailyGraphRows);
-  - $dailyGraphDays = array_values(array_filter(array_map(function ($row) { return $row['day'] ?? null; }, $dailyGraphRows)));
-  - $dailySelectedCount = (function ($days, $selected) { $set = array_fill_keys($selected, true); $count = 0; foreach ($days as $day) { if (isset($set[$day])) $count++; } return $count; })($dailyGraphDays, $dailySelectedDays);
-  - $dailyAllSelected = count($dailyGraphDays) > 0 && (count($dailySelectedDays) == 0 || $dailySelectedCount == count($dailyGraphDays));
-  - $dailySelectedToken = $dailyAllSelected ? 'all' : implode(',', $dailySelectedDays);
-  if (count($historyRows) > 0)
-    - $width = 1200;
-    - $height = 390;
-    - $bandHeight = 120;
-    - $bandGap = 10;
-    - $bandMid = 58;
-    - $pad = 12;
-    - $padX = 18;
-    - $topHeight = $bandMid - $pad;
-    - $bottomHeight = $bandHeight - $bandMid - $pad;
-    - $historyCount = count($historyRows);
-    - $graphWidth = $width - ($padX * 2);
-    - $barWidth = max(1, min(10, 160 / max(1, $historyCount)));
-    - $metricRows = ['kills' => ['count' => [], 'isk' => [], 'points' => []], 'losses' => ['count' => [], 'isk' => [], 'points' => []]];
-    each $row in $historyRows
-      - $killSummary = is_object($row['kills']['summary'] ?? null) ? (array) $row['kills']['summary'] : ($row['kills']['summary'] ?? []);
-      - $lossSummary = is_object($row['losses']['summary'] ?? null) ? (array) $row['losses']['summary'] : ($row['losses']['summary'] ?? []);
-      - $metricRows['kills']['count'][] = (float) ($killSummary['count'] ?? 0);
-      - $metricRows['kills']['isk'][] = (float) ($killSummary['isk'] ?? 0);
-      - $metricRows['kills']['points'][] = (float) ($killSummary['points'] ?? 0);
-      - $metricRows['losses']['count'][] = (float) ($lossSummary['count'] ?? 0);
-      - $metricRows['losses']['isk'][] = (float) ($lossSummary['isk'] ?? 0);
-      - $metricRows['losses']['points'][] = (float) ($lossSummary['points'] ?? 0);
-    - $dailyBarHeight = function ($values, $value, $availableHeight) { $value = max(0, (float) $value); if ($value <= 0) return 0; $max = max(1, max($values ?: [0])); $height = (log(1 + $value) / log(1 + $max)) * $availableHeight; return round(max(2, min($availableHeight, $height)), 2); };
-    .daily-history-graph(data-base-url=('/' . $key . '/' . $id . '/daily/') data-selected-days=$dailySelectedToken data-all-days=implode(',', $dailyGraphDays) data-current-side=$dailySide style="width: 100%; overflow: hidden; margin-bottom: 1em;")
-      svg(viewBox=('0 0 ' . $width . ' ' . $height) preserveAspectRatio="none" style="width: 100%; height: 390px; display: block;")
+  - $dailyGraph = (function ($dailyDays, $selectedDays, $selectedStart, $selectedEnd) {
+  -   $byDay = [];
+  -   foreach ((array) $dailyDays as $row) { $row = is_object($row) ? (array) $row : (array) $row; if (isset($row['day'])) $byDay[$row['day']] = $row; }
+  -   if (count($byDay) == 0) return null;
+  -   ksort($byDay);
+  -   $zero = ['summary' => ['count' => 0, 'isk' => 0, 'points' => 0]];
+  -   $history = [];
+  -   $cursor = new DateTimeImmutable(array_key_first($byDay), new DateTimeZone('UTC'));
+  -   $end = new DateTimeImmutable(array_key_last($byDay), new DateTimeZone('UTC'));
+  -   while ($cursor <= $end) { $day = $cursor->format('Y-m-d'); $history[] = $byDay[$day] ?? ['day' => $day, 'kills' => $zero, 'losses' => $zero]; $cursor = $cursor->modify('+1 day'); }
+  -   $days = array_map(function ($row) { return $row['day']; }, $history);
+  -   $count = count($days);
+  -   $startIdx = array_search($selectedStart ?? (count($selectedDays) > 0 ? min($selectedDays) : $days[0]), $days);
+  -   $endIdx = array_search($selectedEnd ?? (count($selectedDays) > 0 ? max($selectedDays) : $days[$count - 1]), $days);
+  -   $startIdx = $startIdx === false ? 0 : $startIdx;
+  -   $endIdx = $endIdx === false ? $count - 1 : $endIdx;
+  -   if ($startIdx > $endIdx) { $tmp = $startIdx; $startIdx = $endIdx; $endIdx = $tmp; }
+  -   $width = 1200; $height = 190; $bandHeight = 150; $mid = 118; $padX = 18; $graphWidth = $width - ($padX * 2);
+  -   $x = function ($idx) use ($count, $width, $padX, $graphWidth) { return $count <= 1 ? ($width / 2) : ($padX + (($idx / ($count - 1)) * $graphWidth)); };
+  -   $heightFor = function ($value, $max, $maxHeight) { $value = max(0, (float) $value); return $max <= 0 || $value <= 0 ? 0 : round(min($maxHeight, ($value / $max) * $maxHeight), 2); };
+  -   $series = ['kills' => ['count' => [], 'isk' => [], 'points' => []], 'losses' => ['count' => [], 'isk' => [], 'points' => []]];
+  -   foreach ($history as $row) { foreach (['kills', 'losses'] as $side) { $summary = is_object($row[$side]['summary'] ?? null) ? (array) $row[$side]['summary'] : ($row[$side]['summary'] ?? []); foreach (['count', 'isk', 'points'] as $metric) $series[$side][$metric][] = (float) ($summary[$metric] ?? 0); } }
+  -   $path = function ($values, $above, $max, $maxHeight) use ($x, $mid, $heightFor) { $points = []; foreach (array_values($values) as $idx => $value) { $h = $heightFor($value, $max, $maxHeight); $points[] = round($x($idx), 2) . ' ' . round($above ? ($mid - $h) : ($mid + $h), 2); } return 'M ' . round($x(0), 2) . " $mid L " . implode(' L ', $points) . ' L ' . round($x(max(0, count($values) - 1)), 2) . " $mid Z"; };
+  -   $metrics = [['key' => 'count', 'label' => 'Ships', 'killColor' => '#5cb85c', 'lossColor' => '#d9534f'], ['key' => 'isk', 'label' => 'ISK', 'killColor' => '#5bc0de', 'lossColor' => '#b85c9e'], ['key' => 'points', 'label' => 'Points', 'killColor' => '#f0ad4e', 'lossColor' => '#9370db']];
+  -   foreach ($metrics as &$metric) { $key = $metric['key']; $killMax = max(array_merge($series['kills'][$key], [1])); $lossMax = max(array_merge($series['losses'][$key], [1])); $metric['killPath'] = $path($series['kills'][$key], true, $killMax, $mid - 14); $metric['lossPath'] = $path($series['losses'][$key], false, $lossMax, 24); }
+  -   return ['width' => $width, 'height' => $height, 'bandHeight' => $bandHeight, 'bandMid' => $mid, 'padX' => $padX, 'graphWidth' => $graphWidth, 'historyDays' => $days, 'rangeStartDay' => $days[$startIdx], 'rangeEndDay' => $days[$endIdx], 'rangeStartX' => round($x($startIdx), 2), 'rangeEndX' => round($x($endIdx), 2), 'allSelected' => $startIdx == 0 && $endIdx == $count - 1, 'metrics' => $metrics];
+  - })($dailyDays, $dailySelectedDays, $dailySelectedStart, $dailySelectedEnd);
+  - $dailyAllSelected = $dailyGraph['allSelected'] ?? true;
+  if ($dailyGraph != null)
+    .daily-history-graph.w-100.mb-3(style="overflow: hidden;" data-base-url=('/' . $key . '/' . $id . '/daily/') data-history-days=implode(',', $dailyGraph['historyDays']) data-range-start=$dailyGraph['rangeStartDay'] data-range-end=$dailyGraph['rangeEndDay'] data-current-side=$dailySide data-view-width=$dailyGraph['width'] data-pad-x=$dailyGraph['padX'] data-graph-width=$dailyGraph['graphWidth'])
+      svg.d-block.w-100(viewBox=('0 0 ' . $dailyGraph['width'] . ' ' . $dailyGraph['height']) preserveAspectRatio="none" style=('height: ' . $dailyGraph['height'] . 'px;'))
         style.
-          .daily-bar-segment text { display: none; pointer-events: none; }
-          .daily-bar-segment:hover text { display: block; }
-          .daily-bar-link:hover rect { opacity: 0.85; }
-        rect(x="0" y="0" width=$width height=$height fill="#111")
-        - $dailyMetricConfigs = [['key' => 'count', 'label' => 'Ships', 'killColor' => '#5cb85c', 'lossColor' => '#d9534f', 'format' => 'int'], ['key' => 'isk', 'label' => 'ISK', 'killColor' => '#5bc0de', 'lossColor' => '#b85c9e', 'format' => 'isk'], ['key' => 'points', 'label' => 'Points', 'killColor' => '#f0ad4e', 'lossColor' => '#9370db', 'format' => 'int']];
-        each $metric, $metricIdx in $dailyMetricConfigs
+          .daily-stream-area { opacity: 0.82; filter: drop-shadow(0 0 3px rgba(255,255,255,0.12)); }
+          .daily-stream-area:hover { opacity: 0.95; }
+          .daily-range-handle { cursor: ew-resize; }
+          .daily-range-hit { opacity: 0; }
+          .daily-range-guide { pointer-events: none; }
+          .daily-range-grip { pointer-events: none; }
+        rect(x="0" y="0" width=$dailyGraph['width'] height=$dailyGraph['height'] fill="#0d0d0d")
+        each $metric, $metricIdx in $dailyGraph['metrics']
           - $metricKey = $metric['key'];
-          - $metricTop = $metricIdx * ($bandHeight + $bandGap);
-          - $metricMid = $metricTop + $bandMid;
-          rect(x="0" y=$metricTop width=$width height=$bandHeight fill=($metricIdx % 2 == 0 ? '#151515' : '#101010'))
-          text(x="8" y=($metricTop + 16) fill="#ddd" font-size="13")= $metric['label']
-          line(x1="0" x2=$width y1=$metricMid y2=$metricMid stroke="#555" stroke-width="1")
-          each $row, $idx in $historyRows
-            - $rowDay = $row['day'] ?? '';
-            - $xCenter = $historyCount <= 1 ? ($width / 2) : ($padX + (($idx / ($historyCount - 1)) * $graphWidth));
-            - $killValue = $metricRows['kills'][$metricKey][$idx] ?? 0;
-            - $lossValue = $metricRows['losses'][$metricKey][$idx] ?? 0;
-            - $killHeight = $dailyBarHeight($metricRows['kills'][$metricKey], $killValue, $topHeight);
-            - $lossHeight = $dailyBarHeight($metricRows['losses'][$metricKey], $lossValue, $bottomHeight);
-            - $killFormatted = $metric['format'] == 'isk' ? ($formatIsk($killValue) . ' ISK') : number_format((float) $killValue, 0);
-            - $lossFormatted = $metric['format'] == 'isk' ? ($formatIsk($lossValue) . ' ISK') : number_format((float) $lossValue, 0);
-            - $killLabel = $rowDay . ' Kill ' . $metric['label'] . ': ' . $killFormatted;
-            - $lossLabel = $rowDay . ' Loss ' . $metric['label'] . ': ' . $lossFormatted;
-            g.daily-bar-day
-              if ($killValue > 0)
-                a.daily-bar-link(href=('/' . $key . '/' . $id . '/daily/kills/' . $rowDay . '/') data-day=$rowDay data-side="kills")
-                  g.daily-bar-segment
-                    title= $killLabel
-                    rect(x=round($xCenter - ($barWidth / 2), 2) y=round($metricMid - $killHeight, 2) width=$barWidth height=$killHeight fill=$metric['killColor'])
-                    text(x=$xCenter y=($metricTop + $bandHeight - 4) fill="#ddd" text-anchor="middle" font-size="13")= $killLabel
-              if ($lossValue > 0)
-                a.daily-bar-link(href=('/' . $key . '/' . $id . '/daily/losses/' . $rowDay . '/') data-day=$rowDay data-side="losses")
-                  g.daily-bar-segment
-                    title= $lossLabel
-                    rect(x=round($xCenter - ($barWidth / 2), 2) y=$metricMid width=$barWidth height=$lossHeight fill=$metric['lossColor'])
-                    text(x=$xCenter y=($metricTop + $bandHeight - 4) fill="#ddd" text-anchor="middle" font-size="13")= $lossLabel
-      .d-flex.flex-wrap.justify-content-center(style="gap: 0.75em; font-size: 0.9em;")
+          g.daily-metric-layer(data-metric=$metricKey style=($metricIdx == 0 ? '' : 'display: none;'))
+            defs
+              linearGradient(id=('daily-kill-' . $metricKey) x1="0" x2="0" y1="0" y2="1")
+                stop(offset="0%" stop-color=$metric['killColor'] stop-opacity="0.95")
+                stop(offset="100%" stop-color=$metric['killColor'] stop-opacity="0.22")
+              linearGradient(id=('daily-loss-' . $metricKey) x1="0" x2="0" y1="0" y2="1")
+                stop(offset="0%" stop-color=$metric['lossColor'] stop-opacity="0.22")
+                stop(offset="100%" stop-color=$metric['lossColor'] stop-opacity="0.95")
+            rect(x="0" y="0" width=$dailyGraph['width'] height=$dailyGraph['bandHeight'] fill="#111")
+            text.daily-metric-title(x="8" y="16" fill="#aaa" font-size="13")= $metric['label']
+            line(x1="0" x2=$dailyGraph['width'] y1=($dailyGraph['bandMid'] - 60) y2=($dailyGraph['bandMid'] - 60) stroke="#1d1d1d" stroke-width="1")
+            line(x1="0" x2=$dailyGraph['width'] y1=$dailyGraph['bandMid'] y2=$dailyGraph['bandMid'] stroke="#444" stroke-width="1.4")
+            line(x1="0" x2=$dailyGraph['width'] y1=($dailyGraph['bandMid'] + 20) y2=($dailyGraph['bandMid'] + 20) stroke="#1d1d1d" stroke-width="1")
+            path.daily-stream-area(d=$metric['killPath'] fill=('url(#daily-kill-' . $metricKey . ')') stroke=$metric['killColor'] stroke-width="2")
+              title= 'Kill ' . $metric['label']
+            path.daily-stream-area(d=$metric['lossPath'] fill=('url(#daily-loss-' . $metricKey . ')') stroke=$metric['lossColor'] stroke-width="2")
+              title= 'Loss ' . $metric['label']
+        g.daily-range-selector
+          - $rangeRailY = $dailyGraph['height'] - 24;
+          - $rangeRailHeight = 14;
+          rect.daily-range-left-shade(x="0" y="0" width=$dailyGraph['rangeStartX'] height=$dailyGraph['height'] fill="#000" opacity="0.14")
+          rect.daily-range-right-shade(x=$dailyGraph['rangeEndX'] y="0" width=($dailyGraph['width'] - $dailyGraph['rangeEndX']) height=$dailyGraph['height'] fill="#000" opacity="0.14")
+          line.daily-range-guide.daily-range-left-guide(x1=$dailyGraph['rangeStartX'] x2=$dailyGraph['rangeStartX'] y1="0" y2=$dailyGraph['height'] stroke="#5bc0de" stroke-width="1" opacity="0.28")
+          line.daily-range-guide.daily-range-right-guide(x1=$dailyGraph['rangeEndX'] x2=$dailyGraph['rangeEndX'] y1="0" y2=$dailyGraph['height'] stroke="#5bc0de" stroke-width="1" opacity="0.28")
+          rect(x=$dailyGraph['padX'] y=$rangeRailY width=$dailyGraph['graphWidth'] height=$rangeRailHeight rx="3" fill="#000" opacity="0.3")
+          rect.daily-range-fill(x=$dailyGraph['rangeStartX'] y=$rangeRailY width=max(1, $dailyGraph['rangeEndX'] - $dailyGraph['rangeStartX']) height=$rangeRailHeight rx="3" fill="#5bc0de" opacity="0.28")
+          rect.daily-range-handle.daily-range-hit.daily-range-left(data-handle="left" x=($dailyGraph['rangeStartX'] - 10) y="0" width="20" height=$dailyGraph['height'] fill="#fff")
+            title Drag range start
+          rect.daily-range-left-visual(x=($dailyGraph['rangeStartX'] - 4) y=($rangeRailY - 4) width="8" height=($rangeRailHeight + 8) rx="3" fill="#111" stroke="#9adff0" stroke-width="1")
+          line.daily-range-grip(x1=$dailyGraph['rangeStartX'] x2=$dailyGraph['rangeStartX'] y1=($rangeRailY + 2) y2=($rangeRailY + $rangeRailHeight - 2) stroke="#9adff0" stroke-width="1" opacity="0.9")
+          rect.daily-range-handle.daily-range-hit.daily-range-right(data-handle="right" x=($dailyGraph['rangeEndX'] - 10) y="0" width="20" height=$dailyGraph['height'] fill="#fff")
+            title Drag range end
+          rect.daily-range-right-visual(x=($dailyGraph['rangeEndX'] - 4) y=($rangeRailY - 4) width="8" height=($rangeRailHeight + 8) rx="3" fill="#111" stroke="#9adff0" stroke-width="1")
+          line.daily-range-grip(x1=$dailyGraph['rangeEndX'] x2=$dailyGraph['rangeEndX'] y1=($rangeRailY + 2) y2=($rangeRailY + $rangeRailHeight - 2) stroke="#9adff0" stroke-width="1" opacity="0.9")
+      .d-flex.flex-wrap.justify-content-center.align-items-center(style="gap: 0.5em; font-size: 0.9em;")
+        .btn-group.btn-group-sm.daily-metric-toggle(role="group" aria-label="Daily graph metric")
+          button.btn.btn-secondary.active(type="button" data-metric="count") Ships
+          button.btn.btn-dark(type="button" data-metric="isk") ISK
+          button.btn.btn-dark(type="button" data-metric="points") Points
+        if (!$dailyAllSelected)
+          a.btn.btn-sm.btn-dark(href=('/' . $key . '/' . $id . '/daily/' . $dailySide . '/all/')) All days
         span(style="color: #5cb85c;") Kills
-        span(style="color: #5bc0de;") Kill ISK
-        span(style="color: #f0ad4e;") Kill Points
         span(style="color: #d9534f;") Losses
-        span(style="color: #b85c9e;") Loss ISK
-        span(style="color: #9370db;") Loss Points
-      .text-center(style="margin-top: 0.5em;")
-        a.daily-all-days(href=('/' . $key . '/' . $id . '/daily/' . $dailySide . '/all/') data-side=$dailySide) Select all days
       script.
-        if (window.zkbDailyStatsRestoreScroll) {
-          (function (pos) {
-            window.zkbDailyStatsRestoreScroll = null;
-            requestAnimationFrame(function () {
-              window.scrollTo(pos.x || 0, pos.y || 0);
+        if (window.zkbDailyStatsMetric) {
+          document.querySelectorAll(".daily-history-graph").forEach(function (graph) {
+            var metric = window.zkbDailyStatsMetric;
+            graph.querySelectorAll(".daily-metric-layer").forEach(function (layer) {
+              layer.style.display = layer.getAttribute("data-metric") == metric ? "" : "none";
             });
-          })(window.zkbDailyStatsRestoreScroll);
+            graph.querySelectorAll(".daily-metric-toggle button").forEach(function (item) {
+              var active = item.getAttribute("data-metric") == metric;
+              item.classList.toggle("active", active);
+              item.classList.toggle("btn-secondary", active);
+              item.classList.toggle("btn-dark", !active);
+            });
+          });
         }
         if (!window.zkbDailyStatsGraphSpaBound) {
           window.zkbDailyStatsGraphSpaBound = true;
-          document.addEventListener("click", function (event) {
-            var target = event.target;
-            var link = target && target.closest ? target.closest(".daily-bar-link, .daily-all-days") : null;
-            if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-            var graph = link.closest(".daily-history-graph");
-            if (!graph) return;
-            event.preventDefault();
-            event.stopPropagation();
-            var splitDays = function (value) {
-              return (value || "").split(",").filter(function (day) { return /^\d{4}-\d{2}-\d{2}$/.test(day); });
-            };
-            var allDays = splitDays(graph.getAttribute("data-all-days"));
-            var selectedToken = graph.getAttribute("data-selected-days") || "all";
-            var selectedIsAll = selectedToken == "all";
-            var selectedDays = selectedIsAll ? [] : splitDays(selectedToken);
-            var currentSide = graph.getAttribute("data-current-side") || "kills";
-            var side = link.getAttribute("data-side") || "kills";
-            if (link.classList.contains("daily-all-days")) {
-              selectedIsAll = true;
-              selectedDays = [];
-            } else {
-              var day = link.getAttribute("data-day");
-              if (selectedIsAll) {
-                selectedDays = [day];
-              } else {
-                var next = [];
-                var found = false;
-                selectedDays.forEach(function (selectedDay) {
-                  if (selectedDay == day) {
-                    found = true;
-                  } else {
-                    next.push(selectedDay);
-                  }
-                });
-                if (!found || side != currentSide) next.push(day);
-                selectedDays = next;
-              }
-              selectedIsAll = false;
-            }
-            var selectedSet = {};
-            selectedDays.forEach(function (day) { selectedSet[day] = true; });
-            selectedDays = allDays.filter(function (day) { return selectedSet[day]; });
-            if (selectedIsAll || selectedDays.length == 0 || selectedDays.length == allDays.length) {
-              selectedIsAll = true;
-              selectedDays = [];
-            }
-            var daysToken = selectedIsAll ? "all" : selectedDays.join(",");
-            graph.setAttribute("data-selected-days", daysToken);
-            var url = (graph.getAttribute("data-base-url") || link.getAttribute("href")) + encodeURIComponent(side) + "/" + daysToken + "/";
-            window.zkbDailyStatsRestoreScroll = {
+          var splitDays = function (value) {
+            return (value || "").split(",").filter(function (day) { return /^\d{4}-\d{2}-\d{2}$/.test(day); });
+          };
+          var setAttrs = function (el, attrs) {
+            Object.keys(attrs).forEach(function (name) { if (el) el.setAttribute(name, attrs[name]); });
+          };
+          var navigateRange = function (graph) {
+            var start = graph.getAttribute("data-range-start");
+            var end = graph.getAttribute("data-range-end");
+            var days = splitDays(graph.getAttribute("data-history-days"));
+            var token = (start == days[0] && end == days[days.length - 1]) ? "all" : (start + ".." + end);
+            var side = graph.getAttribute("data-current-side") || "kills";
+            var url = (graph.getAttribute("data-base-url") || "") + encodeURIComponent(side) + "/" + token + "/";
+            var scroll = {
               x: window.scrollX || window.pageXOffset || 0,
               y: window.scrollY || window.pageYOffset || 0
             };
             if (typeof spaNavigate == "function") {
               spaNavigate(url, false, {
                 zkbSpa: true,
-                scrollX: window.zkbDailyStatsRestoreScroll.x,
-                scrollY: window.zkbDailyStatsRestoreScroll.y
+                scrollX: scroll.x,
+                scrollY: scroll.y
               });
             } else if (typeof navigateTo == "function") {
               navigateTo(url);
             } else {
               window.location = url;
             }
+          };
+          document.addEventListener("pointerdown", function (event) {
+            var target = event.target;
+            var handle = target && target.closest ? target.closest(".daily-range-handle") : null;
+            if (!handle || event.button !== 0) return;
+            var graph = handle.closest(".daily-history-graph");
+            var svg = handle.closest("svg");
+            if (!graph || !svg) return;
+            event.preventDefault();
+            event.stopPropagation();
+            var days = splitDays(graph.getAttribute("data-history-days"));
+            if (days.length == 0) return;
+            var handleName = handle.getAttribute("data-handle");
+            var padX = parseFloat(graph.getAttribute("data-pad-x") || "18");
+            var graphWidth = parseFloat(graph.getAttribute("data-graph-width") || "1164");
+            var viewWidth = parseFloat(graph.getAttribute("data-view-width") || "1200");
+            var leftShade = svg.querySelector(".daily-range-left-shade");
+            var rightShade = svg.querySelector(".daily-range-right-shade");
+            var leftHandle = svg.querySelector(".daily-range-left");
+            var rightHandle = svg.querySelector(".daily-range-right");
+            var leftVisual = svg.querySelector(".daily-range-left-visual");
+            var rightVisual = svg.querySelector(".daily-range-right-visual");
+            var rangeFill = svg.querySelector(".daily-range-fill");
+            var leftGuide = svg.querySelector(".daily-range-left-guide");
+            var rightGuide = svg.querySelector(".daily-range-right-guide");
+            var grips = svg.querySelectorAll(".daily-range-grip");
+            var startIdx = Math.max(0, days.indexOf(graph.getAttribute("data-range-start")));
+            var endIdx = Math.max(0, days.indexOf(graph.getAttribute("data-range-end")));
+            if (endIdx < startIdx) endIdx = startIdx;
+            var idxToX = function (idx) {
+              return days.length <= 1 ? (viewWidth / 2) : (padX + ((idx / (days.length - 1)) * graphWidth));
+            };
+            var clientToIdx = function (clientX) {
+              var rect = svg.getBoundingClientRect();
+              var x = ((clientX - rect.left) / rect.width) * viewWidth;
+              var idx = Math.round(((x - padX) / graphWidth) * (days.length - 1));
+              return Math.max(0, Math.min(days.length - 1, idx));
+            };
+            var render = function () {
+              var startX = idxToX(startIdx);
+              var endX = idxToX(endIdx);
+              graph.setAttribute("data-range-start", days[startIdx]);
+              graph.setAttribute("data-range-end", days[endIdx]);
+              setAttrs(leftShade, { width: startX });
+              setAttrs(rightShade, { x: endX, width: viewWidth - endX });
+              setAttrs(rangeFill, { x: startX, width: Math.max(1, endX - startX) });
+              setAttrs(leftHandle, { x: startX - 10 });
+              setAttrs(rightHandle, { x: endX - 10 });
+              setAttrs(leftVisual, { x: startX - 4 });
+              setAttrs(rightVisual, { x: endX - 4 });
+              setAttrs(leftGuide, { x1: startX, x2: startX });
+              setAttrs(rightGuide, { x1: endX, x2: endX });
+              setAttrs(grips[0], { x1: startX, x2: startX });
+              setAttrs(grips[1], { x1: endX, x2: endX });
+            };
+            var move = function (moveEvent) {
+              var idx = clientToIdx(moveEvent.clientX);
+              if (handleName == "left") {
+                startIdx = Math.min(idx, endIdx);
+              } else {
+                endIdx = Math.max(idx, startIdx);
+              }
+              render();
+            };
+            var up = function () {
+              document.removeEventListener("pointermove", move, true);
+              document.removeEventListener("pointerup", up, true);
+              navigateRange(graph);
+            };
+            document.addEventListener("pointermove", move, true);
+            document.addEventListener("pointerup", up, true);
+          }, true);
+          document.addEventListener("click", function (event) {
+            var target = event.target;
+            var button = target && target.closest ? target.closest(".daily-metric-toggle button") : null;
+            if (!button) return;
+            var graph = button.closest(".daily-history-graph");
+            if (!graph) return;
+            var metric = button.getAttribute("data-metric");
+            window.zkbDailyStatsMetric = metric;
+            graph.querySelectorAll(".daily-metric-layer").forEach(function (layer) {
+              layer.style.display = layer.getAttribute("data-metric") == metric ? "" : "none";
+            });
+            graph.querySelectorAll(".daily-metric-toggle button").forEach(function (item) {
+              item.classList.toggle("active", item == button);
+              item.classList.toggle("btn-secondary", item == button);
+              item.classList.toggle("btn-dark", item != button);
+            });
           }, true);
         }
   - $sideName = $dailySide;
   - $side = is_object($dailyStats[$sideName] ?? null) ? (array) $dailyStats[$sideName] : ($dailyStats[$sideName] ?? []);
   - $summary = is_object($side['summary'] ?? null) ? (array) $side['summary'] : ($side['summary'] ?? []);
-  - $selectedCount = count($dailySelectedDays);
-  - $selectionLabel = $dailyAllSelected ? 'All days' : ($selectedCount . ' day' . ($selectedCount == 1 ? '' : 's'));
+  - $selectionLabel = $dailyAllSelected ? 'All days' : (($dailySelectedStart ?? '') . ' to ' . ($dailySelectedEnd ?? ''));
   h4= 'Selected: ' . $selectionLabel . ' ' . ucfirst($sideName)
   h4= 'Daily ' . ucfirst($sideName)
   table.table.table-sm.table-striped.table-bordered
@@ -230,7 +292,7 @@ else
   h5 Labels
   - $rows = $side['labels'] ?? [];
   if (!empty($rows))
-    - $labelCharts = DailyStats::labelRadarCharts($rows);
+    - $labelCharts = DailyStatsCharts::labelRadarCharts($rows);
     if (!empty($labelCharts))
       .row.row-cols-1.row-cols-md-2.row-cols-xl-3.g-3.mb-3
         style.

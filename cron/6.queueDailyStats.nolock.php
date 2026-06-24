@@ -10,7 +10,7 @@ if ($redis->get("zkb:reinforced") == true) {
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    $candidates = $mdb->find(DailyStats::COLLECTION, ['update' => ['$gt' => 0]], ['update' => 1], 100, ['type' => 1, 'id' => 1, 'day' => 1, 'update' => 1]);
+    $candidates = $mdb->find(DailyStats::COLLECTION, ['update' => ['$gt' => 0]], ['update' => -1], 100, ['type' => 1, 'id' => 1, 'day' => 1, 'update' => 1]);
     $row = null;
     $lockKey = null;
     foreach ($candidates as $candidate) {

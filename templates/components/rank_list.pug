@@ -2,8 +2,9 @@
   - $showImage = true;
   each $list, $listIndex in ($extra['allranks'] ?? [])
     - $list = is_object($list) ? (array) $list : $list;
+    - $listPosition = is_numeric($listIndex) ? (int) $listIndex : array_search($listIndex, array_keys($extra['allranks'] ?? []), true);
     - $loopIndex = 0;
-    if ($listIndex % 3 == 0)
+    if ($listPosition % 3 == 0)
       .row
     .col-lg-4(style="margin: 0px; padding-left: 1em;")
       table.table.table-sm.table-striped.table-hover.table-bordered.caption-top

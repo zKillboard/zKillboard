@@ -5,17 +5,17 @@ class DailyStats
     const COLLECTION = 'dailystats';
 
     public static $types = [
-        'characterID' => ['label' => 'character', 'field' => 'involved.characterID', 'entitySide' => true],
-        'corporationID' => ['label' => 'corporation', 'field' => 'involved.corporationID', 'entitySide' => true],
-        'allianceID' => ['label' => 'alliance', 'field' => 'involved.allianceID', 'entitySide' => true],
-        'factionID' => ['label' => 'faction', 'field' => 'involved.factionID', 'entitySide' => true],
-        'shipTypeID' => ['label' => 'ship', 'field' => 'involved.shipTypeID', 'entitySide' => true],
-        'groupID' => ['label' => 'group', 'field' => 'involved.groupID', 'entitySide' => true],
-        'solarSystemID' => ['label' => 'system', 'field' => 'system.solarSystemID', 'entitySide' => false],
-        'constellationID' => ['label' => 'constellation', 'field' => 'system.constellationID', 'entitySide' => false],
-        'regionID' => ['label' => 'region', 'field' => 'system.regionID', 'entitySide' => false],
-        'locationID' => ['label' => 'location', 'field' => 'locationID', 'entitySide' => false],
-        'label' => ['label' => 'label', 'field' => 'labels', 'entitySide' => false],
+        'characterID' => true,
+        'corporationID' => true,
+        'allianceID' => true,
+        'factionID' => true,
+        'shipTypeID' => true,
+        'groupID' => true,
+        'solarSystemID' => false,
+        'constellationID' => false,
+        'regionID' => false,
+        'locationID' => false,
+        'label' => false,
     ];
 
     public static $topTypes = [
@@ -50,15 +50,7 @@ class DailyStats
         return isset($map[$type]) ? $map[$type] : $type;
     }
 
-    public static function dayFromKillmail($killmail)
-    {
-        if (isset($killmail['dttm']) && $killmail['dttm'] instanceof MongoDB\BSON\UTCDateTime) {
-            return $killmail['dttm']->toDateTime()->format('Y-m-d');
-        }
-        return gmdate('Y-m-d', strtotime((string) @$killmail['dttm']));
-    }
-
-    public static function markDirtySequence($type, $id, $day, $sequence)
+    private static function markDirtySequence($type, $id, $day, $sequence)
     {
         global $mdb;
 
@@ -73,40 +65,11 @@ class DailyStats
             return;
         }
         $key = ['type' => $type, 'id' => $id, 'day' => $day];
-        if (self::isToday($day)) {
-            $mdb->getCollection(self::COLLECTION)->updateOne($key, [
-                '$setOnInsert' => $key + ['created' => time()],
-            ], ['upsert' => true]);
-            $mdb->getCollection(self::COLLECTION)->updateOne($key + [
-                '$or' => [
-                    ['update' => ['$exists' => false]],
-                    ['update' => ['$lte' => 0]],
-                ],
-            ], [
-                '$set' => ['update' => -1],
-            ]);
-            return;
-        }
 
         $mdb->getCollection(self::COLLECTION)->updateOne($key, [
             '$setOnInsert' => $key + ['created' => time()],
             '$max' => ['update' => $sequence],
         ], ['upsert' => true]);
-    }
-
-    public static function isToday($day)
-    {
-        return $day == gmdate('Y-m-d');
-    }
-
-    public static function releaseToday()
-    {
-        global $mdb;
-
-        return $mdb->getCollection(self::COLLECTION)->updateMany(
-            ['day' => gmdate('Y-m-d'), 'update' => -1],
-            ['$set' => ['update' => 1]]
-        );
     }
 
     public static function markDirtyFromKillmail($killmail)
@@ -126,7 +89,9 @@ class DailyStats
             return [];
         }
 
-        $day = self::dayFromKillmail($killmail);
+        $day = $killmail['dttm'] instanceof MongoDB\BSON\UTCDateTime
+            ? $killmail['dttm']->toDateTime()->format('Y-m-d')
+            : gmdate('Y-m-d', strtotime((string) @$killmail['dttm']));
         $keys = [];
         $mark = function ($type, $id) use ($day, &$keys) {
             $type = DailyStats::normalizeType($type);
@@ -207,28 +172,6 @@ class DailyStats
         return $doc;
     }
 
-    public static function get($type, $id, $day = null)
-    {
-        global $mdb;
-
-        $type = self::normalizeType($type);
-        $id = $type == 'label' ? (string) $id : (int) $id;
-        $baseQuery = ['type' => $type, 'id' => $id, 'updated' => ['$exists' => true]];
-        if ($day === null) {
-            $day = $mdb->findField(self::COLLECTION, 'day', $baseQuery, ['day' => -1]);
-        }
-        if ($day == null) {
-            return null;
-        }
-
-        $doc = $mdb->findDoc(self::COLLECTION, $baseQuery + ['day' => $day]);
-        if ($doc != null) {
-            self::hydrateForView($doc);
-        }
-
-        return $doc;
-    }
-
     public static function getAggregate($type, $id, $days = null)
     {
         global $mdb;
@@ -265,7 +208,7 @@ class DailyStats
         }
 
         foreach (['kills', 'losses'] as $sideName) {
-            self::finishSideAggregate($doc[$sideName]);
+            self::finishSideAggregate($doc[$sideName], $type, $id);
         }
         self::hydrateForView($doc);
 
@@ -350,8 +293,12 @@ class DailyStats
         }
     }
 
-    private static function finishSideAggregate(&$side)
+    private static function finishSideAggregate(&$side, $type = null, $id = null)
     {
+        if ($type != null && $id != null) {
+            self::ensureCurrentEntityTopRow($side, $type, $id);
+        }
+
         $side['labels'] = array_values($side['labels']);
         usort($side['labels'], function ($a, $b) {
             if ($a['count'] == $b['count']) {
@@ -408,190 +355,10 @@ class DailyStats
         }, $rows));
     }
 
-    public static function labelRadarCharts($rows)
-    {
-        $groups = self::labelGroups($rows);
-        self::addUnderOneBillionIskBand($groups);
-
-        $charts = [];
-        foreach ($groups as $group) {
-            usort($group['rows'], function ($a, $b) {
-                if (($a['count'] ?? 0) == ($b['count'] ?? 0)) {
-                    return ($b['isk'] ?? 0) <=> ($a['isk'] ?? 0);
-                }
-                return ($b['count'] ?? 0) <=> ($a['count'] ?? 0);
-            });
-
-            $totalCount = array_sum(array_map(function ($row) { return (int) ($row['count'] ?? 0); }, $group['rows']));
-            $totalIsk = array_sum(array_map(function ($row) { return (double) ($row['isk'] ?? 0); }, $group['rows']));
-            $chartRows = self::topRowsWithOther($group['rows']);
-            $charts[] = self::radarChart($group['title'], $chartRows, $totalCount, $totalIsk);
-        }
-
-        usort($charts, function ($a, $b) {
-            return ($b['totalCount'] ?? 0) <=> ($a['totalCount'] ?? 0);
-        });
-        return $charts;
-    }
-
-    private static function labelGroups($rows)
-    {
-        $titles = [
-            'loc' => 'Locations',
-            'tz' => 'Time Zones',
-            'cat' => 'Categories',
-            'isk' => 'ISK Bands',
-            '#' => 'Attacker Counts',
-            'fw' => 'Faction Warfare',
-        ];
-
-        $groups = [];
-        foreach ((array) $rows as $row) {
-            $row = is_object($row) ? (array) $row : (array) $row;
-            $label = (string) ($row['label'] ?? '');
-            if ($label == '') {
-                continue;
-            }
-
-            $pos = strpos($label, ':');
-            if ($pos === false) {
-                $groupKey = '_labels';
-                $axisLabel = $label;
-            } else {
-                $groupKey = substr($label, 0, $pos);
-                $axisLabel = substr($label, $pos + 1);
-            }
-
-            if (!isset($groups[$groupKey])) {
-                $groups[$groupKey] = [
-                    'title' => $groupKey == '_labels' ? 'Labels' : ($titles[$groupKey] ?? strtoupper($groupKey) . ' Labels'),
-                    'rows' => [],
-                ];
-            }
-            $row['axisLabel'] = $axisLabel == '' ? $label : $axisLabel;
-            $groups[$groupKey]['rows'][] = $row;
-        }
-        return $groups;
-    }
-
-    private static function addUnderOneBillionIskBand(&$groups)
-    {
-        $pvpRow = null;
-        foreach (($groups['_labels']['rows'] ?? []) as $row) {
-            if (($row['label'] ?? '') == 'pvp') {
-                $pvpRow = $row;
-                break;
-            }
-        }
-        if ($pvpRow == null) {
-            return;
-        }
-
-        if (!isset($groups['isk'])) {
-            $groups['isk'] = ['title' => 'ISK Bands', 'rows' => []];
-        }
-
-        $iskCount = 0;
-        $iskTotal = 0;
-        foreach ($groups['isk']['rows'] as $row) {
-            $iskCount += (int) ($row['count'] ?? 0);
-            $iskTotal += (double) ($row['isk'] ?? 0);
-        }
-
-        $underCount = max(0, (int) ($pvpRow['count'] ?? 0) - $iskCount);
-        $underIsk = max(0, (double) ($pvpRow['isk'] ?? 0) - $iskTotal);
-        if ($underCount > 0 || $underIsk > 0) {
-            $groups['isk']['rows'][] = [
-                'label' => 'isk:<1b',
-                'axisLabel' => '<1b',
-                'count' => $underCount,
-                'isk' => $underIsk,
-            ];
-        }
-    }
-
-    private static function topRowsWithOther($rows)
-    {
-        if (count($rows) <= 12) {
-            return array_values($rows);
-        }
-
-        $topRows = array_slice($rows, 0, 11);
-        $other = ['label' => 'other', 'axisLabel' => 'other', 'count' => 0, 'isk' => 0];
-        foreach (array_slice($rows, 11) as $row) {
-            $other['count'] += (int) ($row['count'] ?? 0);
-            $other['isk'] += (double) ($row['isk'] ?? 0);
-        }
-        $topRows[] = $other;
-        return $topRows;
-    }
-
-    private static function radarChart($title, $rows, $totalCount, $totalIsk)
-    {
-        $center = 150;
-        $radius = 82;
-        $labelRadius = 108;
-        $count = count($rows);
-        $max = 1;
-        foreach ($rows as $row) {
-            $max = max($max, (float) ($row['count'] ?? 0));
-        }
-
-        $points = [];
-        $axes = [];
-        foreach ($rows as $idx => $row) {
-            $angle = (2 * M_PI * $idx / max(3, $count)) - (M_PI / 2);
-            $pointScale = min(1, ((float) ($row['count'] ?? 0)) / $max);
-            $points[] = self::radarPoint($center, $radius * $pointScale, $angle);
-            $axes[] = [
-                'x2' => round($center + cos($angle) * $radius, 2),
-                'y2' => round($center + sin($angle) * $radius, 2),
-                'labelX' => round($center + cos($angle) * $labelRadius, 2),
-                'labelY' => round($center + sin($angle) * $labelRadius, 2),
-                'anchor' => cos($angle) > 0.25 ? 'start' : (cos($angle) < -0.25 ? 'end' : 'middle'),
-                'label' => (string) ($row['axisLabel'] ?? $row['label'] ?? ''),
-                'fullLabel' => (string) ($row['label'] ?? ''),
-                'count' => (int) ($row['count'] ?? 0),
-                'isk' => (double) ($row['isk'] ?? 0),
-                'percent' => $totalCount > 0 ? (((int) ($row['count'] ?? 0)) / $totalCount) * 100 : 0,
-                'pointX' => round($center + cos($angle) * $radius * $pointScale, 2),
-                'pointY' => round($center + sin($angle) * $radius * $pointScale, 2),
-            ];
-        }
-
-        return [
-            'title' => $title,
-            'points' => implode(' ', $points),
-            'axes' => $axes,
-            'grids' => self::radarGrids($center, $radius, $count),
-            'totalCount' => $totalCount,
-            'totalIsk' => $totalIsk,
-        ];
-    }
-
-    private static function radarPoint($center, $radius, $angle)
-    {
-        return round($center + cos($angle) * $radius, 2) . ',' . round($center + sin($angle) * $radius, 2);
-    }
-
-    private static function radarGrids($center, $radius, $count)
-    {
-        $grids = [];
-        foreach ([0.25, 0.5, 0.75, 1] as $scale) {
-            $points = [];
-            for ($idx = 0; $idx < max(3, $count); $idx++) {
-                $angle = (2 * M_PI * $idx / max(3, $count)) - (M_PI / 2);
-                $points[] = self::radarPoint($center, $radius * $scale, $angle);
-            }
-            $grids[] = implode(' ', $points);
-        }
-        return $grids;
-    }
-
     private static function sideStats($type, $id, $day, $losses)
     {
         $query = self::buildQuery($type, $id, $day, $losses);
-        return self::facetedSideStats($query, $losses);
+        return self::facetedSideStats($query, $losses, $type, $id);
     }
 
     private static function buildQuery($type, $id, $day, $losses)
@@ -601,7 +368,7 @@ class DailyStats
             if ($id != 'all') {
                 $parameters['labels'] = $id;
             }
-        } elseif (self::$types[$type]['entitySide']) {
+        } elseif (self::$types[$type]) {
             $parameters[$type] = $id;
             $parameters[$losses ? 'losses' : 'kills'] = true;
             $parameters['npc'] = false;
@@ -619,8 +386,14 @@ class DailyStats
     {
         $time = strtotime($day);
         $nextTime = strtotime('+1 day', $time);
-        $first = MongoFilter::getFirstKillID(date('Y', $time), date('m', $time), date('d', $time));
-        $next = MongoFilter::getFirstKillID(date('Y', $nextTime), date('m', $nextTime), date('d', $nextTime));
+        $first = self::getFirstKillIDAtOrAfter($time);
+        $next = self::getFirstKillIDAtOrAfter($nextTime);
+        if ($first == 0) {
+            return ['killID' => 0];
+        }
+        if ($next == 0) {
+            $next = 999999999999;
+        }
         $dayQuery = ['killID' => ['$gte' => (int) $first, '$lt' => (int) $next]];
 
         if (empty($query)) {
@@ -633,58 +406,131 @@ class DailyStats
         return ['$and' => [$query, $dayQuery]];
     }
 
-    private static function facetedSideStats($query, $losses)
+    private static function getFirstKillIDAtOrAfter($time)
+    {
+        global $mdb, $kvc;
+
+        $time = $time - ($time % 86400);
+        $cacheKey = 'zkb:firstkillid:after:' . gmdate('Ymd', $time);
+        $cached = (int) $kvc->get($cacheKey);
+        if ($cached > 0) {
+            return $cached;
+        }
+
+        $rows = $mdb->getCollection('killmails')->find(
+            ['dttm' => ['$gte' => new MongoDB\BSON\UTCDateTime($time * 1000)]],
+            [
+                'projection' => ['_id' => 0, 'killID' => 1],
+                'sort' => ['dttm' => 1, 'killID' => 1],
+                'limit' => 1,
+            ]
+        )->toArray();
+
+        $killID = (int) ($rows[0]['killID'] ?? 0);
+        if ($killID > 0) {
+            $kvc->setex($cacheKey, 86400, $killID);
+        }
+        return $killID;
+    }
+
+    private static function facetedSideStats($query, $losses, $type, $id)
     {
         global $mdb;
 
         $facets = [
-            'summary' => self::summaryFacet(),
-            'labels' => self::labelsFacet(),
-            'topValueKillIDs' => self::topValueKillIDsFacet(),
+            'summary' => [
+                ['$group' => [
+                    '_id' => null,
+                    'count' => ['$sum' => 1],
+                    'isk' => ['$sum' => '$zkb.totalValue'],
+                    'points' => ['$sum' => '$zkb.points'],
+                ]],
+                ['$project' => ['_id' => 0, 'count' => 1, 'isk' => 1, 'points' => 1]],
+            ],
+            'labels' => [
+                ['$unwind' => '$labels'],
+                ['$group' => [
+                    '_id' => '$labels',
+                    'count' => ['$sum' => 1],
+                    'isk' => ['$sum' => '$zkb.totalValue'],
+                ]],
+                ['$sort' => ['count' => -1, 'isk' => -1]],
+                ['$project' => ['_id' => 0, 'label' => '$_id', 'count' => 1, 'isk' => 1]],
+            ],
+            'topValueKillIDs' => [
+                ['$unwind' => '$involved'],
+                ['$match' => ['involved.isVictim' => true, 'involved.shipTypeID' => ['$nin' => [null, 0]]]],
+                ['$sort' => ['zkb.totalValue' => -1, 'killID' => -1]],
+                ['$limit' => 10],
+                ['$project' => ['_id' => 0, 'killID' => 1]],
+            ],
         ];
-        foreach (self::$topTypes as $type => $meta) {
-            $facets[$type] = self::topEntityFacet($type, $meta['field'], $losses);
+        foreach (self::$topTypes as $topType => $meta) {
+            $facets[$topType] = self::topEntityFacet($topType, $meta['field'], $losses);
         }
 
         $rows = iterator_to_array($mdb->getCollection('killmails')->aggregate([
             ['$match' => $query],
             ['$facet' => $facets],
-        ], self::aggregateOptions()));
+        ], ['allowDiskUse' => true]));
         $row = $rows[0] ?? [];
+        $summary = $row['summary'][0] ?? [];
 
-        return [
-            'summary' => self::normalizeSummary($row['summary'][0] ?? []),
+        $stats = [
+            'summary' => [
+                'count' => (int) ($summary['count'] ?? 0),
+                'isk' => (double) ($summary['isk'] ?? 0),
+                'points' => (int) ($summary['points'] ?? 0),
+            ],
             'labels' => (array) ($row['labels'] ?? []),
-            'top' => self::normalizeTopFacets($row),
-            'topValueKillIDs' => self::normalizeTopValueKillIDs($row['topValueKillIDs'] ?? []),
+            'top' => [],
+            'topValueKillIDs' => [],
         ];
+        foreach (array_keys(self::$topTypes) as $topType) {
+            $stats['top'][$topType] = (array) ($row[$topType] ?? []);
+        }
+        foreach ((array) ($row['topValueKillIDs'] ?? []) as $topValue) {
+            $stats['topValueKillIDs'][] = (int) $topValue['killID'];
+        }
+        self::ensureCurrentEntityTopRow($stats, $type, $id);
+        return $stats;
     }
 
-    private static function summaryFacet()
+    private static function ensureCurrentEntityTopRow(&$stats, $type, $id)
     {
-        return [
-            ['$group' => [
-                '_id' => null,
-                'count' => ['$sum' => 1],
-                'isk' => ['$sum' => '$zkb.totalValue'],
-                'points' => ['$sum' => '$zkb.points'],
-            ]],
-            ['$project' => ['_id' => 0, 'count' => 1, 'isk' => 1, 'points' => 1]],
-        ];
-    }
+        if (!isset(self::$topTypes[$type])) {
+            return;
+        }
 
-    private static function labelsFacet()
-    {
-        return [
-            ['$unwind' => '$labels'],
-            ['$group' => [
-                '_id' => '$labels',
-                'count' => ['$sum' => 1],
-                'isk' => ['$sum' => '$zkb.totalValue'],
-            ]],
-            ['$sort' => ['count' => -1, 'isk' => -1]],
-            ['$project' => ['_id' => 0, 'label' => '$_id', 'count' => 1, 'isk' => 1]],
-        ];
+        $summary = $stats['summary'] ?? [];
+        $count = (int) ($summary['count'] ?? 0);
+        if ($count <= 0) {
+            return;
+        }
+
+        $id = (int) $id;
+        if (!isset($stats['top'][$type]) || !is_array($stats['top'][$type])) {
+            $stats['top'][$type] = [];
+        }
+
+        $found = false;
+        foreach ($stats['top'][$type] as $idx => $row) {
+            $row = is_object($row) ? (array) $row : (array) $row;
+            if ((int) ($row[$type] ?? 0) == $id) {
+                $stats['top'][$type][$idx]['kills'] = $count;
+                $stats['top'][$type][$idx]['isk'] = (double) ($summary['isk'] ?? 0);
+                $found = true;
+                break;
+            }
+        }
+
+        if (!$found) {
+            $stats['top'][$type][] = [
+                $type => $id,
+                'kills' => $count,
+                'isk' => (double) ($summary['isk'] ?? 0),
+            ];
+        }
     }
 
     private static function topEntityFacet($type, $field, $losses)
@@ -709,44 +555,6 @@ class DailyStats
         $pipeline[] = ['$project' => ['_id' => 0, $type => '$_id', 'kills' => 1, 'isk' => 1]];
 
         return $pipeline;
-    }
-
-    private static function topValueKillIDsFacet()
-    {
-        return [
-            ['$unwind' => '$involved'],
-            ['$match' => ['involved.isVictim' => true, 'involved.shipTypeID' => ['$nin' => [null, 0]]]],
-            ['$sort' => ['zkb.totalValue' => -1, 'killID' => -1]],
-            ['$limit' => 10],
-            ['$project' => ['_id' => 0, 'killID' => 1]],
-        ];
-    }
-
-    private static function normalizeSummary($row)
-    {
-        return [
-            'count' => (int) ($row['count'] ?? 0),
-            'isk' => (double) ($row['isk'] ?? 0),
-            'points' => (int) ($row['points'] ?? 0),
-        ];
-    }
-
-    private static function normalizeTopFacets($row)
-    {
-        $top = [];
-        foreach (array_keys(self::$topTypes) as $type) {
-            $top[$type] = (array) ($row[$type] ?? []);
-        }
-        return $top;
-    }
-
-    private static function normalizeTopValueKillIDs($rows)
-    {
-        $killIDs = [];
-        foreach ($rows as $row) {
-            $killIDs[] = (int) $row['killID'];
-        }
-        return $killIDs;
     }
 
     private static function hydrateForView(&$doc)
@@ -774,12 +582,4 @@ class DailyStats
         }
     }
 
-    private static function aggregateOptions()
-    {
-        $options = ['allowDiskUse' => true, 'noCursorTimeout' => true];
-        if (php_sapi_name() !== 'cli') {
-            $options['maxTimeMS'] = 30000;
-        }
-        return $options;
-    }
 }

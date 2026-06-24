@@ -324,6 +324,8 @@ function handler($request, $response, $args, $container)
 	$dailyDate = null;
 	$dailySide = 'kills';
 	$dailySelectedDays = [];
+	$dailySelectedStart = null;
+	$dailySelectedEnd = null;
 	if ($pageType == 'daily') {
 		$queryParams = $request->getQueryParams();
 		$dailyDate = $dailyRouteDate ?? (isset($queryParams['date']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $queryParams['date']) ? $queryParams['date'] : null);
@@ -331,14 +333,33 @@ function handler($request, $response, $args, $container)
 		$dailyDays = DailyStats::getDays($statType, $id);
 		$selectedDaysInput = $dailyRouteDays ?? ($queryParams['days'] ?? null);
 		if ($selectedDaysInput != null && $selectedDaysInput != 'all') {
-			foreach (explode(',', (string) $selectedDaysInput) as $day) {
-				if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $day)) {
-					$dailySelectedDays[$day] = $day;
+			if (preg_match('/^(\d{4}-\d{2}-\d{2})\.\.(\d{4}-\d{2}-\d{2})$/', (string) $selectedDaysInput, $matches)) {
+				$startDay = min($matches[1], $matches[2]);
+				$endDay = max($matches[1], $matches[2]);
+				$dailySelectedStart = $startDay;
+				$dailySelectedEnd = $endDay;
+				foreach ($dailyDays as $row) {
+					$day = (string) ($row['day'] ?? '');
+					if ($day >= $startDay && $day <= $endDay) {
+						$dailySelectedDays[$day] = $day;
+					}
+				}
+			} else {
+				foreach (explode(',', (string) $selectedDaysInput) as $day) {
+					if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $day)) {
+						$dailySelectedDays[$day] = $day;
+					}
+				}
+				if (count($dailySelectedDays) > 0) {
+					$dailySelectedStart = min($dailySelectedDays);
+					$dailySelectedEnd = max($dailySelectedDays);
 				}
 			}
 			$dailySelectedDays = array_values($dailySelectedDays);
 		} else if ($dailyDate != null) {
 			$dailySelectedDays = [$dailyDate];
+			$dailySelectedStart = $dailyDate;
+			$dailySelectedEnd = $dailyDate;
 		}
 		$dailyStats = DailyStats::getAggregate($statType, $id, count($dailySelectedDays) > 0 ? $dailySelectedDays : null);
 		if ($dailyStats != null) {
@@ -363,19 +384,20 @@ function handler($request, $response, $args, $container)
 	}
 
 	if ($pageType == 'ranks') {
-		$alltimeRanks = getNearbyRanks($key, "tq:ranks:alltime:$statType", $id, 'Alltime Rank', $statType);
-		$day90Ranks = getNearbyRanks($key, "tq:ranks:recent:$statType", $id, '90 Day Rank', $statType);
-		$day7Ranks = getNearbyRanks($key, "tq:ranks:weekly:$statType", $id, '7 Day Rank', $statType);
+		$alltimeRanks = getNearbyRanks($key, 'alltime', 'all', $id, 'Alltime Rank', $statType);
+		$day90Ranks = getNearbyRanks($key, 'recent', 'all', $id, '90 Day Rank', $statType);
+		$day7Ranks = getNearbyRanks($key, 'weekly', 'all', $id, '7 Day Rank', $statType);
 		$extra['allranks'] = ['7day' => $day7Ranks, '90Day' => $day90Ranks, 'alltime' => $alltimeRanks];
 	}
 
-	$statistics['shipsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:shipsDestroyed", $id));
-	$statistics['shipsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:shipsLost", $id));
-	$statistics['iskDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:iskDestroyed", $id));
-	$statistics['iskLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:iskLost", $id));
-	$statistics['pointsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:pointsDestroyed", $id));
-	$statistics['pointsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:alltime:$statType:pointsLost", $id));
-	$statistics['overallRank'] = (int) Util::rankCheck($redis->zRank("tq:ranks:alltime:$statType", $id));
+	$alltimeRankRow = Ranks::getRow('alltime', 'all', $statType, $id);
+	$statistics['shipsDestroyedRank'] = rankRowRank($alltimeRankRow, 'shipsDestroyed');
+	$statistics['shipsLostRank'] = rankRowRank($alltimeRankRow, 'shipsLost');
+	$statistics['iskDestroyedRank'] = rankRowRank($alltimeRankRow, 'iskDestroyed');
+	$statistics['iskLostRank'] = rankRowRank($alltimeRankRow, 'iskLost');
+	$statistics['pointsDestroyedRank'] = rankRowRank($alltimeRankRow, 'pointsDestroyed');
+	$statistics['pointsLostRank'] = rankRowRank($alltimeRankRow, 'pointsLost');
+	$statistics['overallRank'] = rankRowRank($alltimeRankRow, 'overall');
 
 	$statistics['iskDestroyedUsdEurGbp'] = Util::iskToUsdEurGbp($statistics['iskDestroyed'] ?? 0);
 	$statistics['iskLostUsdEurGbp'] = Util::iskToUsdEurGbp($statistics['iskLost'] ?? 0);
@@ -426,19 +448,20 @@ function handler($request, $response, $args, $container)
 		$extra['gangFactor'] = $gangFactor;
 	}
 
-	$statistics['recentShipsDestroyed'] = $redis->zScore("tq:ranks:recent:$statType:shipsDestroyed", $id);
-	$statistics['recentShipsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:shipsDestroyed", $id));
-	$statistics['recentShipsLost'] = (int) $redis->zScore("tq:ranks:recent:$statType:shipsLost", $id);
-	$statistics['recentShipsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:shipsLost", $id));
-	$statistics['recentIskDestroyed'] = $redis->zScore("tq:ranks:recent:$statType:iskDestroyed", $id);
-	$statistics['recentIskDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:iskDestroyed", $id));
-	$statistics['recentIskLost'] = $redis->zScore("tq:ranks:recent:$statType:iskLost", $id);
-	$statistics['recentIskLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:iskLost", $id));
-	$statistics['recentPointsDestroyed'] = $redis->zScore("tq:ranks:recent:$statType:pointsDestroyed", $id);
-	$statistics['recentPointsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:pointsDestroyed", $id));
-	$statistics['recentPointsLost'] = $redis->zScore("tq:ranks:recent:$statType:pointsLost", $id);
-	$statistics['recentPointsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:recent:$statType:pointsLost", $id));
-	$statistics['recentOverallRank'] = (int) Util::rankCheck($redis->zRank("tq:ranks:recent:$statType", $id));
+	$recentRankRow = Ranks::getRow('recent', 'all', $statType, $id);
+	$statistics['recentShipsDestroyed'] = rankRowMetric($recentRankRow, 'shipsDestroyed');
+	$statistics['recentShipsDestroyedRank'] = rankRowRank($recentRankRow, 'shipsDestroyed');
+	$statistics['recentShipsLost'] = (int) rankRowMetric($recentRankRow, 'shipsLost');
+	$statistics['recentShipsLostRank'] = rankRowRank($recentRankRow, 'shipsLost');
+	$statistics['recentIskDestroyed'] = rankRowMetric($recentRankRow, 'iskDestroyed');
+	$statistics['recentIskDestroyedRank'] = rankRowRank($recentRankRow, 'iskDestroyed');
+	$statistics['recentIskLost'] = rankRowMetric($recentRankRow, 'iskLost');
+	$statistics['recentIskLostRank'] = rankRowRank($recentRankRow, 'iskLost');
+	$statistics['recentPointsDestroyed'] = rankRowMetric($recentRankRow, 'pointsDestroyed');
+	$statistics['recentPointsDestroyedRank'] = rankRowRank($recentRankRow, 'pointsDestroyed');
+	$statistics['recentPointsLost'] = rankRowMetric($recentRankRow, 'pointsLost');
+	$statistics['recentPointsLostRank'] = rankRowRank($recentRankRow, 'pointsLost');
+	$statistics['recentOverallRank'] = rankRowRank($recentRankRow, 'overall');
 
 	if (@$statistics['recentShipsLost'] > 0 || @$statistics['recentShipsDestroyed'] > 0) {
 		$destroyed = @$statistics['recentShipsDestroyed'] + @$statistics['recentPointsDestroyed'];
@@ -476,19 +499,20 @@ function handler($request, $response, $args, $container)
 	}
 	$statistics['recentSoloKills'] = $recentSoloKills;
 
-	$statistics['weeklyShipsDestroyed'] = $redis->zScore("tq:ranks:weekly:$statType:shipsDestroyed", $id);
-	$statistics['weeklyShipsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:shipsDestroyed", $id));
-	$statistics['weeklyShipsLost'] = (int) $redis->zScore("tq:ranks:weekly:$statType:shipsLost", $id);
-	$statistics['weeklyShipsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:shipsLost", $id));
-	$statistics['weeklyIskDestroyed'] = $redis->zScore("tq:ranks:weekly:$statType:iskDestroyed", $id);
-	$statistics['weeklyIskDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:iskDestroyed", $id));
-	$statistics['weeklyIskLost'] = $redis->zScore("tq:ranks:weekly:$statType:iskLost", $id);
-	$statistics['weeklyIskLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:iskLost", $id));
-	$statistics['weeklyPointsDestroyed'] = $redis->zScore("tq:ranks:weekly:$statType:pointsDestroyed", $id);
-	$statistics['weeklyPointsDestroyedRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:pointsDestroyed", $id));
-	$statistics['weeklyPointsLost'] = $redis->zScore("tq:ranks:weekly:$statType:pointsLost", $id);
-	$statistics['weeklyPointsLostRank'] = Util::rankCheck($redis->zRevRank("tq:ranks:weekly:$statType:pointsLost", $id));
-	$statistics['weeklyOverallRank'] = (int) Util::rankCheck($redis->zRank("tq:ranks:weekly:$statType", $id));
+	$weeklyRankRow = Ranks::getRow('weekly', 'all', $statType, $id);
+	$statistics['weeklyShipsDestroyed'] = rankRowMetric($weeklyRankRow, 'shipsDestroyed');
+	$statistics['weeklyShipsDestroyedRank'] = rankRowRank($weeklyRankRow, 'shipsDestroyed');
+	$statistics['weeklyShipsLost'] = (int) rankRowMetric($weeklyRankRow, 'shipsLost');
+	$statistics['weeklyShipsLostRank'] = rankRowRank($weeklyRankRow, 'shipsLost');
+	$statistics['weeklyIskDestroyed'] = rankRowMetric($weeklyRankRow, 'iskDestroyed');
+	$statistics['weeklyIskDestroyedRank'] = rankRowRank($weeklyRankRow, 'iskDestroyed');
+	$statistics['weeklyIskLost'] = rankRowMetric($weeklyRankRow, 'iskLost');
+	$statistics['weeklyIskLostRank'] = rankRowRank($weeklyRankRow, 'iskLost');
+	$statistics['weeklyPointsDestroyed'] = rankRowMetric($weeklyRankRow, 'pointsDestroyed');
+	$statistics['weeklyPointsDestroyedRank'] = rankRowRank($weeklyRankRow, 'pointsDestroyed');
+	$statistics['weeklyPointsLost'] = rankRowMetric($weeklyRankRow, 'pointsLost');
+	$statistics['weeklyPointsLostRank'] = rankRowRank($weeklyRankRow, 'pointsLost');
+	$statistics['weeklyOverallRank'] = rankRowRank($weeklyRankRow, 'overall');
 
 	if (@$statistics['weeklyShipsLost'] > 0 || @$statistics['weeklyShipsDestroyed'] > 0) {
 		$destroyed = @$statistics['weeklyShipsDestroyed'] + @$statistics['weeklyPointsDestroyed'];
@@ -520,13 +544,13 @@ function handler($request, $response, $args, $container)
 	$previousRank = null;
 	do {
 		$previousDate = date('Ymd', $previousTime);
-		$previousRank = Util::rankCheck($redis->zRank("tq:ranks:alltime:$statType:$previousDate", $id));
-		if ($previousRank === '-') {
+		$previousRank = Ranks::rank('alltime', 'all', $statType, $id, 'overall', $previousDate);
+		if ($previousRank === null) {
 			$previousTime += 86400;
 		}
-	} while ($previousRank == '-' && $previousTime < time());
-	$prevRanks = ['overallRank' => Util::rankCheck($previousRank), 'date' => date('Y-m-d', $previousTime)];
-	$prevRanks['recentOverallRank'] = Util::rankCheck($redis->zRank("tq:ranks:recent:$statType:$previousDate", $id));
+	} while ($previousRank === null && $previousTime < time());
+	$prevRanks = ['overallRank' => $previousRank, 'date' => date('Y-m-d', $previousTime)];
+	$prevRanks['recentOverallRank'] = Ranks::rank('recent', 'all', $statType, $id, 'overall', $previousDate);
 	$statistics['prevRanks'] = $prevRanks;
 
 	$groups = @$statistics['groups'];
@@ -636,7 +660,7 @@ function handler($request, $response, $args, $container)
 		$detail['systems'] = $mdb->find('information', ['type' => 'solarSystemID', 'constellationID' => (int) $id], ['name' => 1], null, ['id' => 1, 'name' => 1]);
 	}
 
-	$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'dailyStats' => $dailyStats, 'dailyDays' => $dailyDays, 'dailyDate' => $dailyDate, 'dailySide' => $dailySide, 'dailySelectedDays' => $dailySelectedDays, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified, 'dqChars' => $dqChars);
+	$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'dailyStats' => $dailyStats, 'dailyDays' => $dailyDays, 'dailyDate' => $dailyDate, 'dailySide' => $dailySide, 'dailySelectedDays' => $dailySelectedDays, 'dailySelectedStart' => $dailySelectedStart, 'dailySelectedEnd' => $dailySelectedEnd, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified, 'dqChars' => $dqChars);
 
 	return $container->get('view')->render($response->withHeader('Cache-Tag', "www,overview,overview:$id"), 'overview.pug', $renderParams);
 }
@@ -672,28 +696,27 @@ function renderCached404($container, $response, $message = 'Not Found')
 	return $container->get('view')->render($cached404Response, '404.pug', array('message' => $message));
 }
 
-function getNearbyRanks($key, $rankKeyName, $id, $title, $statType)
+function getNearbyRanks($key, $epoch, $scope, $id, $title, $statType)
 {
-	global $redis;
-
 	$array = [];
-	$rank = $redis->zrank($rankKeyName, $id);
-	if ($rank !== false) {
-		$start = max($rank - 25, 0);
-		$end = max($rank + 25, 50);
-		$nearRanks = $redis->zrange($rankKeyName, $start, $end);
-		foreach ($nearRanks as $row) {
-			$a = [];
-			$a['rank'] = Util::rankCheck($redis->zrank($rankKeyName, $row));
-			$a[$statType] = $row;
-			$a['score'] = $redis->zscore($rankKeyName, $row);
-			$array['data'][] = $a;
-		}
-		Info::addInfo($array);
-		$title = $title . ' #' . number_format(Util::rankCheck($rank), 0);
+	$rank = Ranks::rank($epoch, $scope, $statType, $id);
+	if ($rank !== null) {
+		$array['data'] = Ranks::nearby($epoch, $scope, $statType, $id);
+		if (sizeof($array['data']) > 0) Info::addInfo($array);
+		$title = $title . ' #' . number_format($rank, 0);
 	}
 	$array['title'] = $title;
 	$array['type'] = $key;
 
 	return $array;
+}
+
+function rankRowMetric($row, $metric)
+{
+	return $row['metrics'][$metric] ?? 0;
+}
+
+function rankRowRank($row, $metric)
+{
+	return $row['ranks'][$metric] ?? null;
 }
