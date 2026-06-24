@@ -73,10 +73,40 @@ class DailyStats
             return;
         }
         $key = ['type' => $type, 'id' => $id, 'day' => $day];
+        if (self::isToday($day)) {
+            $mdb->getCollection(self::COLLECTION)->updateOne($key, [
+                '$setOnInsert' => $key + ['created' => time()],
+            ], ['upsert' => true]);
+            $mdb->getCollection(self::COLLECTION)->updateOne($key + [
+                '$or' => [
+                    ['update' => ['$exists' => false]],
+                    ['update' => ['$lte' => 0]],
+                ],
+            ], [
+                '$set' => ['update' => -1],
+            ]);
+            return;
+        }
+
         $mdb->getCollection(self::COLLECTION)->updateOne($key, [
             '$setOnInsert' => $key + ['created' => time()],
             '$max' => ['update' => $sequence],
         ], ['upsert' => true]);
+    }
+
+    public static function isToday($day)
+    {
+        return $day == gmdate('Y-m-d');
+    }
+
+    public static function releaseToday()
+    {
+        global $mdb;
+
+        return $mdb->getCollection(self::COLLECTION)->updateMany(
+            ['day' => gmdate('Y-m-d'), 'update' => -1],
+            ['$set' => ['update' => 1]]
+        );
     }
 
     public static function markDirtyFromKillmail($killmail)
@@ -341,16 +371,41 @@ class DailyStats
             $side['top'][$type] = array_slice($rows, 0, 50);
         }
 
-        $topValues = Kills::getDetails(array_values($side['topValueKillIDs']), true);
-        uasort($topValues, function ($a, $b) {
-            $valueCompare = ((double) ($b['zkb']['totalValue'] ?? 0)) <=> ((double) ($a['zkb']['totalValue'] ?? 0));
+        $side['topValueKillIDs'] = self::topValueKillIDsByValue($side['topValueKillIDs']);
+        $side['topValues'] = Kills::getDetails($side['topValueKillIDs'], true);
+    }
+
+    private static function topValueKillIDsByValue($killIDs)
+    {
+        global $mdb;
+
+        $killIDs = array_values(array_unique(array_filter(array_map('intval', (array) $killIDs))));
+        if (count($killIDs) == 0) {
+            return [];
+        }
+
+        $rows = $mdb->getCollection('killmails')->find(
+            ['killID' => ['$in' => $killIDs]],
+            ['projection' => ['_id' => 0, 'killID' => 1, 'zkb.totalValue' => 1]]
+        )->toArray();
+
+        usort($rows, function ($a, $b) {
+            $a = is_object($a) ? (array) $a : (array) $a;
+            $b = is_object($b) ? (array) $b : (array) $b;
+            $aZkb = is_object($a['zkb'] ?? null) ? (array) $a['zkb'] : (array) ($a['zkb'] ?? []);
+            $bZkb = is_object($b['zkb'] ?? null) ? (array) $b['zkb'] : (array) ($b['zkb'] ?? []);
+            $valueCompare = ((double) ($bZkb['totalValue'] ?? 0)) <=> ((double) ($aZkb['totalValue'] ?? 0));
             if ($valueCompare != 0) {
                 return $valueCompare;
             }
             return ((int) ($b['killID'] ?? 0)) <=> ((int) ($a['killID'] ?? 0));
         });
-        $side['topValues'] = array_slice($topValues, 0, 10, true);
-        $side['topValueKillIDs'] = array_map('intval', array_keys($side['topValues']));
+
+        $rows = array_slice($rows, 0, 10);
+        return array_values(array_map(function ($row) {
+            $row = is_object($row) ? (array) $row : (array) $row;
+            return (int) ($row['killID'] ?? 0);
+        }, $rows));
     }
 
     public static function labelRadarCharts($rows)
