@@ -184,13 +184,14 @@ else
           };
           var tokenToHash = function (token, graph, side, zoom) {
             var metric = currentMetric(graph);
-            var prefix = (zoom ? "z" : "") + (side == "losses" ? "l" : "") + (metric == "isk" ? "i" : (metric == "points" ? "p" : ""));
+            var statePrefix = (side == "losses" ? "l" : "") + (metric == "isk" ? "i" : (metric == "points" ? "p" : ""));
+            var prefix = (zoom ? "z" : "") + statePrefix;
             var days = splitDays(graph.getAttribute("data-history-days"));
-            if (token == "all") return prefix == "" ? "" : "#" + prefix + "all";
+            if (token == "all") return statePrefix == "" ? "" : "#" + statePrefix + "all";
             if (/^\d{4}-\d{2}-\d{2}$/.test(token)) return "#" + prefix + token;
             var match = (token || "").match(/^(\d{4})-(\d{2})-(\d{2})\.\.(\d{4})-(\d{2})-(\d{2})$/);
             if (!match) return "";
-            if (days.length > 0 && token == days[0] + ".." + days[days.length - 1]) return prefix == "" ? "" : "#" + prefix + "all";
+            if (days.length > 0 && token == days[0] + ".." + days[days.length - 1]) return statePrefix == "" ? "" : "#" + statePrefix + "all";
             if (match[1] == match[4] && match[2] == "01" && match[3] == "01" && match[5] == "12" && match[6] == "31") return "#" + prefix + match[1];
             if (match[1] == match[4] && match[2] == match[5] && match[3] == "01" && token.split("..")[1] == monthEnd(match[1] + "-" + match[2])) return "#" + prefix + match[1] + "-" + match[2];
             return "#" + prefix + token;
