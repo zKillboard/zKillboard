@@ -37,12 +37,14 @@ else
   -   $viewStartIdx = $viewStartIdx === false ? 0 : $viewStartIdx;
   -   $viewEndIdx = $viewEndIdx === false ? $count - 1 : $viewEndIdx;
   -   if ($viewStartIdx > $viewEndIdx) { $tmp = $viewStartIdx; $viewStartIdx = $viewEndIdx; $viewEndIdx = $tmp; }
-  -   if ($viewStartIdx > 0 || $viewEndIdx < $count - 1) { $history = array_slice($history, $viewStartIdx, $viewEndIdx - $viewStartIdx + 1); $days = array_map(function ($row) { return $row['day']; }, $history); $count = count($days); }
+  -   $graphZoomed = $viewStartIdx > 0 || $viewEndIdx < $count - 1;
+  -   if ($graphZoomed) { $history = array_slice($history, $viewStartIdx, $viewEndIdx - $viewStartIdx + 1); $days = array_map(function ($row) { return $row['day']; }, $history); $count = count($days); }
   -   $startIdx = array_search(max($selectedStart, $days[0]), $days);
   -   $endIdx = array_search(min($selectedEnd, $days[$count - 1]), $days);
   -   $startIdx = $startIdx === false ? 0 : $startIdx;
   -   $endIdx = $endIdx === false ? $count - 1 : $endIdx;
   -   if ($startIdx > $endIdx) { $tmp = $startIdx; $startIdx = $endIdx; $endIdx = $tmp; }
+  -   $selectionCoversGraph = $startIdx == 0 && $endIdx == $count - 1;
   -   $width = 1200; $height = 190; $bandHeight = 150; $mid = 118; $padX = 18; $graphWidth = $width - ($padX * 2);
   -   $x = function ($idx) use ($count, $width, $padX, $graphWidth) { return $count <= 1 ? ($width / 2) : ($padX + (($idx / ($count - 1)) * $graphWidth)); };
   -   $rangeFor = function ($start, $end) use ($days, $x) { $start = max($start, $days[0]); $end = min($end, $days[count($days) - 1]); $startIdx = array_search($start, $days); $endIdx = array_search($end, $days); if ($startIdx === false || $endIdx === false) return null; return ['start' => $start, 'end' => $end, 'x' => round($x($startIdx), 2), 'endX' => round($x($endIdx), 2), 'midX' => round(($x($startIdx) + $x($endIdx)) / 2, 2)]; };
@@ -57,7 +59,7 @@ else
   -   $years = []; $months = [];
   -   $cursor = new DateTimeImmutable(substr($days[0], 0, 4) . '-01-01', new DateTimeZone('UTC')); $last = new DateTimeImmutable($days[$count - 1], new DateTimeZone('UTC'));
   -   while ($cursor <= $last) { $yearStart = $cursor->format('Y-01-01'); $yearEnd = $cursor->format('Y-12-31'); $range = $rangeFor($yearStart, $yearEnd); if ($range != null) { $range['start'] = $yearStart; $range['end'] = $yearEnd; $years[] = $range + ['label' => $cursor->format('Y')]; } for ($m = 1; $m <= 12; $m++) { $month = $cursor->setDate((int) $cursor->format('Y'), $m, 1); $monthStart = $month->format('Y-m-01'); $monthEnd = $month->modify('last day of this month')->format('Y-m-d'); $range = $rangeFor($monthStart, $monthEnd); if ($range != null) { $range['start'] = $monthStart; $range['end'] = $monthEnd; $months[] = $range + ['label' => $month->format('M Y'), 'short' => $month->format('M')]; } } $cursor = $cursor->modify('+1 year'); }
-  -   return ['width' => $width, 'height' => $height, 'bandHeight' => $bandHeight, 'bandMid' => $mid, 'padX' => $padX, 'graphWidth' => $graphWidth, 'historyDays' => $days, 'rangeStartDay' => $days[$startIdx], 'rangeEndDay' => $days[$endIdx], 'rangeStartX' => round($x($startIdx), 2), 'rangeEndX' => round($x($endIdx), 2), 'allSelected' => $allSelected, 'metrics' => $metrics, 'years' => $years, 'months' => $months, 'dayHits' => $dayHits];
+  -   return ['width' => $width, 'height' => $height, 'bandHeight' => $bandHeight, 'bandMid' => $mid, 'padX' => $padX, 'graphWidth' => $graphWidth, 'historyDays' => $days, 'rangeStartDay' => $days[$startIdx], 'rangeEndDay' => $days[$endIdx], 'rangeStartX' => round($x($startIdx), 2), 'rangeEndX' => round($x($endIdx), 2), 'allSelected' => $allSelected, 'graphZoomed' => $graphZoomed, 'selectionCoversGraph' => $selectionCoversGraph, 'metrics' => $metrics, 'years' => $years, 'months' => $months, 'dayHits' => $dayHits];
   - })($dailyDays, $dailySelectedDays, $dailySelectedStart, $dailySelectedEnd, $graphStart, $graphEnd);
   - $dailyAllSelected = $dailyGraph['allSelected'] ?? true;
   - $dailyYear = substr((string) (($dailySelectedStart ?? null) ?: ($dailyGraph['rangeStartDay'] ?? '')), 0, 4);
@@ -78,6 +80,8 @@ else
           .daily-range-visual { pointer-events: none; }
           .daily-range-link { cursor: pointer; }
           .daily-range-link:hover text { fill: #fff; }
+          .daily-token-link { cursor: pointer; }
+          .daily-token-link:hover text { fill: #fff; }
           .daily-month-hit { opacity: 0; pointer-events: none; }
           .daily-day-hit { cursor: pointer; opacity: 0; }
         rect(x="0" y="0" width=$dailyGraph['width'] height=$dailyGraph['height'] fill="#0d0d0d")
@@ -125,6 +129,18 @@ else
                 text(x=$month['midX'] y=($rangeRailY - 19) fill="#9aa" font-size="10" text-anchor="middle")= $month['short']
           rect(x=$dailyGraph['padX'] y=$rangeRailY width=$dailyGraph['graphWidth'] height=$rangeRailHeight rx="3" fill="#000" opacity="0.3")
           rect.daily-range-fill(x=$dailyGraph['rangeStartX'] y=$rangeRailY width=max(1, $dailyGraph['rangeEndX'] - $dailyGraph['rangeStartX']) height=$rangeRailHeight rx="3" fill="#5bc0de" opacity="0.28")
+          if (!empty($dailyGraph['graphZoomed']))
+            g.daily-token-link(data-token="all")
+              title All
+              rect.daily-range-hit(x=(($dailyGraph['width'] / 2) - 15) y=($rangeRailY - 5) width="30" height=($rangeRailHeight + 10) fill="#fff")
+              text(x=($dailyGraph['width'] / 2) y=($rangeRailY + 12) fill="#c9f3fb" font-size="18" font-weight="700" text-anchor="middle") ⟷
+          if (!$dailyGraph['allSelected'] && empty($dailyGraph['selectionCoversGraph']) && $dailyGraph['rangeStartDay'] != $dailyGraph['rangeEndDay'])
+            - $zoomSelectionX = ($dailyGraph['rangeStartX'] + $dailyGraph['rangeEndX']) / 2;
+            - if (!empty($dailyGraph['graphZoomed']) && abs($zoomSelectionX - ($dailyGraph['width'] / 2)) < 34) { $zoomSelectionX = ($dailyGraph['width'] / 2) + 34; }
+            g.daily-token-link(data-token=($dailyGraph['rangeStartDay'] . '..' . $dailyGraph['rangeEndDay']))
+              title Zoom to selection
+              rect.daily-range-hit(x=($zoomSelectionX - 18) y=($rangeRailY - 5) width="36" height=($rangeRailHeight + 10) fill="#fff")
+              text(x=$zoomSelectionX y=($rangeRailY + 11) fill="#c9f3fb" font-size="15" font-weight="700" text-anchor="middle") ⇢⇠
           rect.daily-range-handle.daily-range-hit.daily-range-left(data-handle="left" x=($dailyGraph['rangeStartX'] - 10) y="0" width="20" height=$dailyGraph['height'] fill="#fff")
             title Drag range start
           rect.daily-range-visual.daily-range-left-visual(x=($dailyGraph['rangeStartX'] - 4) y=($rangeRailY - 4) width="8" height=($rangeRailHeight + 8) rx="3" fill="#111" stroke="#9adff0" stroke-width="1")
