@@ -161,6 +161,10 @@ h6, .h6 {
 	font-size: 14px;
 }
 
+.dropdown-menu {
+	--bs-dropdown-header-color: #d6e0e6;
+}
+
 .table>:not(caption)>tr.error>td, .table>:not(caption)>tr.winwin>td {
 	box-shadow: none;
 }
