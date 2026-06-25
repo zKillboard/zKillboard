@@ -119,10 +119,10 @@ else
           each $month in $dailyGraph['months']
             g.daily-range-link(data-start=$month['start'] data-end=$month['end'])
               title= $month['label']
-              rect.daily-month-hit(x=$month['x'] y=($rangeRailY - 42) width=max(8, $month['endX'] - $month['x']) height="20" fill="#fff")
-              line(x1=$month['x'] x2=$month['x'] y1=($rangeRailY - 38) y2=($rangeRailY - 22) stroke="#3b6f7b" stroke-width="1" opacity="0.72")
+              rect.daily-month-hit(x=$month['x'] y=($rangeRailY - 34) width=max(8, $month['endX'] - $month['x']) height="18" fill="#fff")
+              line(x1=$month['x'] x2=$month['x'] y1=($rangeRailY - 30) y2=($rangeRailY - 16) stroke="#3b6f7b" stroke-width="1" opacity="0.72")
               if (!$dailyGraph['allSelected'] && count($dailyGraph['months']) <= 14)
-                text(x=$month['midX'] y=($rangeRailY - 27) fill="#9aa" font-size="10" text-anchor="middle")= $month['short']
+                text(x=$month['midX'] y=($rangeRailY - 19) fill="#9aa" font-size="10" text-anchor="middle")= $month['short']
           rect(x=$dailyGraph['padX'] y=$rangeRailY width=$dailyGraph['graphWidth'] height=$rangeRailHeight rx="3" fill="#000" opacity="0.3")
           rect.daily-range-fill(x=$dailyGraph['rangeStartX'] y=$rangeRailY width=max(1, $dailyGraph['rangeEndX'] - $dailyGraph['rangeStartX']) height=$rangeRailHeight rx="3" fill="#5bc0de" opacity="0.28")
           rect.daily-range-handle.daily-range-hit.daily-range-left(data-handle="left" x=($dailyGraph['rangeStartX'] - 10) y="0" width="20" height=$dailyGraph['height'] fill="#fff")
