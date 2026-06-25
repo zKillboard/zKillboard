@@ -851,6 +851,40 @@ td.centered {
 	word-break: break-word;
 }
 
+.zkb-top-list .nowrap-parent {
+	width: auto;
+	min-width: 0;
+}
+
+.zkb-top-list .nowrap {
+	display: grid;
+	grid-template-columns: 36px minmax(0, 1fr);
+	column-gap: 1rem;
+	align-items: center;
+	white-space: normal;
+	overflow: visible;
+	text-overflow: clip;
+}
+
+.zkb-top-list .nowrap > :first-child:not(:last-child) {
+	grid-column: 1;
+	justify-self: center;
+}
+
+.zkb-top-list .nowrap > :last-child {
+	grid-column: 2;
+	display: block;
+	min-width: 0;
+	line-height: 1.25;
+	white-space: normal;
+	overflow-wrap: break-word;
+	word-break: normal;
+}
+
+.zkb-top-list .nowrap > :only-child {
+	grid-column: 1 / -1;
+}
+
 .scan-entity {
 	margin: 0.25em;
 	width: 64px;

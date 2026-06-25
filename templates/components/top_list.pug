@@ -10,7 +10,7 @@ if (count($topLists ?? []) > 0)
         hr
     each $topList in ($topLists ?? [])
       .col-lg-4.pll-left(style="margin: 0px; padding-left: 1em;")
-        table.table.table-sm.table-striped.table-hover.table-bordered.caption-top
+        table.table.table-sm.table-striped.table-hover.table-bordered.caption-top.zkb-top-list
           caption
             strong
               if (isset($topList['name']))
