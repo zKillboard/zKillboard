@@ -368,7 +368,7 @@ function handler($request, $response, $args, $container)
 			$dailyGraphStart = min($matches[1], $matches[2]);
 			$dailyGraphEnd = max($matches[1], $matches[2]);
 		}
-		$dailyStats = DailyStats::getAggregate($statType, $id, count($dailySelectedDays) > 0 ? $dailySelectedDays : null);
+		$dailyStats = DailyStats::getAggregate($statType, $id, count($dailySelectedDays) > 0 ? $dailySelectedDays : null, $dailySide);
 		if ($dailyStats != null) {
 			$dailyDate = $dailyStats['day'];
 			if (count($dailySelectedDays) == 0) {

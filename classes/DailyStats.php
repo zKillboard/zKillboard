@@ -172,7 +172,7 @@ class DailyStats
         return $doc;
     }
 
-    public static function getAggregate($type, $id, $days = null)
+    public static function getAggregate($type, $id, $days = null, $viewSide = null)
     {
         global $mdb;
 
@@ -207,10 +207,11 @@ class DailyStats
             }
         }
 
+        $viewSides = in_array($viewSide, ['kills', 'losses']) ? [$viewSide] : ['kills', 'losses'];
         foreach (['kills', 'losses'] as $sideName) {
-            self::finishSideAggregate($doc[$sideName], $type, $id);
+            self::finishSideAggregate($doc[$sideName], $type, $id, in_array($sideName, $viewSides));
         }
-        self::hydrateForView($doc);
+        self::hydrateForView($doc, $viewSides);
 
         return $doc;
     }
@@ -293,7 +294,7 @@ class DailyStats
         }
     }
 
-    private static function finishSideAggregate(&$side, $type = null, $id = null)
+    private static function finishSideAggregate(&$side, $type = null, $id = null, $loadTopValues = true)
     {
         if ($type != null && $id != null) {
             self::ensureCurrentEntityTopRow($side, $type, $id);
@@ -318,8 +319,10 @@ class DailyStats
             $side['top'][$type] = array_slice($rows, 0, 50);
         }
 
-        $side['topValueKillIDs'] = self::topValueKillIDsByValue($side['topValueKillIDs']);
-        $side['topValues'] = Kills::getDetails($side['topValueKillIDs'], true);
+        if ($loadTopValues) {
+            $side['topValueKillIDs'] = self::topValueKillIDsByValue($side['topValueKillIDs']);
+            $side['topValues'] = Kills::getDetails($side['topValueKillIDs'], true);
+        }
     }
 
     private static function topValueKillIDsByValue($killIDs)
@@ -557,9 +560,9 @@ class DailyStats
         return $pipeline;
     }
 
-    private static function hydrateForView(&$doc)
+    private static function hydrateForView(&$doc, $viewSides = ['kills', 'losses'])
     {
-        foreach (['kills', 'losses'] as $sideName) {
+        foreach ($viewSides as $sideName) {
             if (!isset($doc[$sideName]) || !is_array($doc[$sideName])) {
                 continue;
             }
