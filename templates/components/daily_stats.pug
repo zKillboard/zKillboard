@@ -65,7 +65,7 @@ else
   - $dailyYearEnd = preg_match('/^\d{4}$/', $dailyYear) ? ($dailyYear . '-12-31') : '';
   - $dailyShowYearButton = $dailyYearStart != '' && !(($graphStart ?? '') <= $dailyYearStart && ($graphEnd ?? '') >= $dailyYearEnd);
   if ($dailyGraph != null)
-    .daily-history-graph.w-100.mb-3(style="overflow: hidden;" data-base-url=('/' . $key . '/' . $id . '/daily/') data-history-days=implode(',', $dailyGraph['historyDays']) data-range-start=$dailyGraph['rangeStartDay'] data-range-end=$dailyGraph['rangeEndDay'] data-selected-start=($dailySelectedStart ?? '') data-selected-end=($dailySelectedEnd ?? '') data-all-selected=($dailyAllSelected ? '1' : '0') data-current-side=$dailySide data-view-width=$dailyGraph['width'] data-pad-x=$dailyGraph['padX'] data-graph-width=$dailyGraph['graphWidth'])
+    .daily-history-graph.w-100.mb-3(style="overflow: hidden;" data-base-url=('/' . $key . '/' . $id . '/daily/') data-history-days=implode(',', $dailyGraph['historyDays']) data-range-start=$dailyGraph['rangeStartDay'] data-range-end=$dailyGraph['rangeEndDay'] data-selected-start=($dailySelectedStart ?? '') data-selected-end=($dailySelectedEnd ?? '') data-all-selected=($dailyAllSelected ? '1' : '0') data-current-side=$dailySide data-view-width=$dailyGraph['width'] data-band-mid=$dailyGraph['bandMid'] data-pad-x=$dailyGraph['padX'] data-graph-width=$dailyGraph['graphWidth'])
       svg.d-block.w-100(viewBox=('0 0 ' . $dailyGraph['width'] . ' ' . $dailyGraph['height']) preserveAspectRatio="none" style=('height: ' . $dailyGraph['height'] . 'px;'))
         style.
           .daily-stream-area { opacity: 0.82; filter: drop-shadow(0 0 3px rgba(255,255,255,0.12)); }
@@ -73,11 +73,12 @@ else
           .daily-range-handle { cursor: ew-resize; }
           .daily-range-hit { opacity: 0; }
           .daily-range-guide { pointer-events: none; }
+          .daily-range-left-shade, .daily-range-right-shade, .daily-range-fill { pointer-events: none; }
           .daily-range-grip { pointer-events: none; }
           .daily-range-visual { pointer-events: none; }
           .daily-range-link { cursor: pointer; }
           .daily-range-link:hover text { fill: #fff; }
-          .daily-month-hit { opacity: 0; }
+          .daily-month-hit { opacity: 0; pointer-events: none; }
           .daily-day-hit { cursor: pointer; opacity: 0; }
         rect(x="0" y="0" width=$dailyGraph['width'] height=$dailyGraph['height'] fill="#0d0d0d")
         each $metric, $metricIdx in $dailyGraph['metrics']
@@ -390,7 +391,16 @@ else
             var graph = day.closest(".daily-history-graph");
             if (!graph) return;
             event.preventDefault();
-            navigateDay(graph, graph.getAttribute("data-current-side") || "kills", day.getAttribute("data-day"));
+            var svg = day.closest("svg");
+            var side = graph.getAttribute("data-current-side") || "kills";
+            if (svg) {
+              var rect = svg.getBoundingClientRect();
+              var viewHeight = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal.height : 190;
+              var y = ((event.clientY - rect.top) / rect.height) * viewHeight;
+              side = y > parseFloat(graph.getAttribute("data-band-mid") || "118") ? "losses" : "kills";
+            }
+            graph.setAttribute("data-current-side", side);
+            navigateDay(graph, side, day.getAttribute("data-day"));
           }, true);
           document.addEventListener("click", function (event) {
             var target = event.target;
