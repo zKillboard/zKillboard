@@ -1,6 +1,7 @@
 - $attackRows = array_map(fn($row) => is_object($row) ? (array) $row : $row, $attackList ?? []);
 - $killInfo = is_object($killdata['info'] ?? null) ? (array) $killdata['info'] : ($killdata['info'] ?? []);
 - $victim = is_object($killdata['victim'] ?? null) ? (array) $killdata['victim'] : ($killdata['victim'] ?? []);
+- unset($shipImageLinkOverride);
 table.table.table-sm.table-striped.table-hover(style="margin-bottom: 0px;")
   if (empty($hideTableHeading))
     thead

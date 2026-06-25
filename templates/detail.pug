@@ -211,7 +211,7 @@ block content
               include components/image_ship.pug
               include components/image_item.pug
             td.equipment
-              a(href=('/item/' . ($attacker['shipTypeID'] ?? 0) . '/'))= $attacker['shipName'] ?? ''
+              a(href=('/ship/' . ($attacker['shipTypeID'] ?? 0) . '/'))= $attacker['shipName'] ?? ''
               br
               a(href=('/item/' . ($attacker['weaponTypeID'] ?? 0) . '/'))= $attacker['weaponTypeName'] ?? ''
             td.damage(style="vertical-align: middle;")= $attacker['damage'] ?? 0
