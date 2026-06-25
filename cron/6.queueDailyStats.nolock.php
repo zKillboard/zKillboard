@@ -46,9 +46,6 @@ while ($minute == date('Hi')) {
             ['type' => $type, 'id' => $id, 'day' => $day, 'update' => $startUpdate],
             ['$set' => ['update' => 0]]
         );
-        $cacheKey = str_replace("shipType", "ship", str_replace("solarS", "s", str_replace("ID", "", "$type:$id")));
-        $redis->sadd("queueCacheTags", "overview:$cacheKey");
-        $redis->sadd("queueCacheTags", "daily:$cacheKey");
     } catch (Exception $ex) {
         Util::out(print_r($ex, true));
     } finally {
