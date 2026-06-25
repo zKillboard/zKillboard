@@ -9,6 +9,14 @@ block vars
   - $crestData = is_object($extraData['crest'] ?? null) ? (array) $extraData['crest'] : ($extraData['crest'] ?? []);
   - $finalBlowData = is_object($finalBlow ?? null) ? (array) $finalBlow : ($finalBlow ?? []);
   - $topDamageData = is_object($topDamage ?? null) ? (array) $topDamage : ($topDamage ?? []);
+  - $involvedByDamage = array_map(fn($row) => is_object($row) ? (array) $row : $row, $killData['involved'] ?? []);
+  - usort($involvedByDamage, fn($a, $b) => ((float) ($b['damage'] ?? 0)) <=> ((float) ($a['damage'] ?? 0)));
+  - $topDamageDealers = [];
+  - foreach ($involvedByDamage as $row) { $characterID = (int) ($row['characterID'] ?? 0); if ($characterID <= 0 || isset($topDamageDealers[$characterID])) continue; $topDamageDealers[$characterID] = $row; if (count($topDamageDealers) >= 10) break; }
+  - $eveWhoRows = array_merge([$victimData, $topDamageData, $finalBlowData], array_values($topDamageDealers));
+  - $eveWhoCharacters = array_reduce($eveWhoRows, function ($rows, $row) { $row = is_object($row ?? null) ? (array) $row : ($row ?? []); $characterID = (int) ($row['characterID'] ?? 0); if ($characterID > 0 && !isset($rows[$characterID])) $rows[$characterID] = ['characterID' => $characterID, 'characterName' => $row['characterName'] ?? ('Character ' . $characterID)]; return $rows; }, []);
+  - $eveWhoCharacters = array_values($eveWhoCharacters);
+  - usort($eveWhoCharacters, fn($a, $b) => strcasecmp($a['characterName'] ?? '', $b['characterName'] ?? ''));
   - $victim = (($victimData['characterID'] ?? 0) != 0) ? ($victimData['characterName'] ?? '') : ($victimData['corporationName'] ?? '');
   - $pageTitle = ($victimData['shipName'] ?? '') . ' | ' . $victim . ' | Killmail';
   - $description = $victim . ' lost their ' . ($victimData['shipName'] ?? '') . ' worth ' . number_format((float) ($extraData['totalisk'] ?? 0), 2, '.', ',') . ' ISK.';
@@ -50,14 +58,12 @@ block content
               a.dropdown-item(href=('https://evemaps.dotlan.net/region/' . rawurlencode($systemData['regionName'] ?? '')) target="_blank" rel="noopener noreferrer")= $systemData['regionName'] ?? ''
             li
               hr.dropdown-divider
-            li
-              h6.dropdown-header EVEWho Char Info
-            li
-              a.dropdown-item(href=('https://evewho.com/character/' . ($victimData['characterID'] ?? 0)) target="_blank" rel="noopener noreferrer")= $victimData['characterName'] ?? ''
-            li
-              a.dropdown-item(href=('https://evewho.com/character/' . ($finalBlowData['characterID'] ?? 0)) target="_blank" rel="noopener noreferrer")= $finalBlowData['characterName'] ?? ''
-            li
-              a.dropdown-item(href=('https://evewho.com/character/' . ($topDamageData['characterID'] ?? 0)) target="_blank" rel="noopener noreferrer")= $topDamageData['characterName'] ?? ''
+            if (!empty($eveWhoCharacters))
+              li
+                h6.dropdown-header EVEWho Char Info
+              each $eveWhoCharacter in $eveWhoCharacters
+                li
+                  a.dropdown-item(href=('https://evewho.com/character/' . $eveWhoCharacter['characterID']) target="_blank" rel="noopener noreferrer")= $eveWhoCharacter['characterName']
         if (($infoData['killID'] ?? 0) > 0)
           li.nav-item.dropdown
             a.nav-link.dropdown-toggle(href="#" data-bs-toggle="dropdown" aria-expanded="false") OtherKB
