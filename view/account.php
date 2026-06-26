@@ -206,9 +206,11 @@ foreach ($sponsoredRows as $row) {
 	$isExpired = ($entryTimestamp !== null && $entryTimestamp < $expiredThreshold) ? 'Yes' : 'No';
 	$isk = (int) @$row['isk'];
 	$sponsoredTotalIsk += abs($isk);
+	$ship = Info::addInfo(['shipTypeID' => $shipTypeID]);
 	$sponsoredShips[] = [
 		'shipTypeID' => $shipTypeID,
-		'shipName' => Info::getInfoField('typeID', $shipTypeID, 'name'),
+		'shipName' => $ship['shipName'] ?? Info::getInfoField('typeID', $shipTypeID, 'name'),
+		'pip' => $ship['pip'] ?? '',
 		'victimName' => ($victimName ?: 'Unknown Victim'),
 		'isk' => @$row['isk'],
 		'killID' => (int) @$row['killID'],

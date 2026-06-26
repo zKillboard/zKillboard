@@ -11,7 +11,12 @@
       each $row in $data['sponsoredShips']
         tr
           td
-            a(href=('/kill/' . ($row['killID'] ?? '') . '/'))= (($row['victimName'] ?? '') . ' ' . ($row['shipName'] ?? ''))
+            .d-flex.align-items-center.gap-2
+              - $field = is_object($row) ? (array) $row : $row;
+              - $shipImageLinkOverride = $row['killID'] ?? 0;
+              include ../components/image_ship.pug
+              a(href=('/kill/' . ($row['killID'] ?? '') . '/'))= (($row['victimName'] ?? '') . ' ' . ($row['shipName'] ?? ''))
+              - $shipImageLinkOverride = 0;
           td(style="text-align: right;")
             span(format="format-isk-once" raw=($row['isk'] ?? 0))= number_format((float) ($row['isk'] ?? 0), 0)
             |  ISK
