@@ -9,6 +9,9 @@ span.col-lg-12.float-start
       each $entry in ($data['log'] ?? [])
         tr
           td
-            if (isset($entry['entryTime']['sec']))
-              = date('Y/m/d H:i:s', (int) $entry['entryTime']['sec'])
+            - $entryTime = $entry['entryTime'] ?? null;
+            if ($entryTime instanceof MongoDB\BSON\UTCDateTime)
+              = $entryTime->toDateTime()->format('Y/m/d H:i:s')
+            elseif (is_array($entryTime) && isset($entryTime['sec']))
+              = date('Y/m/d H:i:s', (int) $entryTime['sec'])
           td= $entry['message'] ?? ''
