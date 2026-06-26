@@ -2,15 +2,7 @@
 
 require_once "../init.php";
 
-global $sdeLocation;
-
-
-$typesFile = $sdeLocation . "/types.jsonl";
-
-// ensure the file exists
-if (!file_exists($typesFile)) {
-	die("typesFile does not exist: $typesFile\n");
-}
+global $mdb;
 
 $metaIdToKey = [
     1  => 'tech1',
@@ -32,27 +24,25 @@ $pipMap = [
     'officer'   => 'pip_officer.png',
 ];
 
-$raw = file_get_contents($typesFile);
-// read each line individually
-$json = [];
-$lines = explode("\n", $raw);
-foreach ($lines as $line) {
-    if (trim($line) === '') continue;
-    $json[] = json_decode($line, true);
-}
-$metaTypes = [];
-foreach($json as $row) {
-    $metaTypes[$row['_key']] = $row;
-}
-
+$sdeTypes = $mdb->getCollection("sde_types");
 $cursor = $mdb->getCollection("information")->find(['categoryID' => 6]);
 foreach ($cursor as $row) {
-    $metaGroupID = (int) @$metaTypes[$row['id']]['metaGroupID'];
+    $typeID = (int) $row['id'];
+    $typeKeys = [$typeID, (string) $typeID];
+    $type = $sdeTypes->findOne(
+        ['$or' => [
+            ['key' => ['$in' => $typeKeys]],
+            ['_key' => ['$in' => $typeKeys]],
+        ]],
+        ['projection' => ['metaGroupID' => 1]]
+    );
+    $metaGroupID = (int) @$type['metaGroupID'];
     if ($metaGroupID > 0) {
+        if (!isset($metaIdToKey[$metaGroupID])) continue;
         $mapped = $metaIdToKey[$metaGroupID];
         $file = $pipMap[$mapped];
-        echo $row['name'] . " $metaGroupID " . $row['id'] . " $file\n";
-        $n = $mdb->set("information", ['type' => 'typeID', 'id' => $row['id']], ['pip' => $file]);
+        echo $row['name'] . " $metaGroupID " . $typeID . " $file\n";
+        $n = $mdb->set("information", ['type' => 'typeID', 'id' => $typeID], ['pip' => $file]);
 		if ($n['n'] > 0) {
 			echo "  Updated\n";
 		}
