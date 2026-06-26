@@ -225,7 +225,10 @@ else
             if (/^\d{4}$/.test(hash)) return { type: "token", value: hash + "-01-01.." + hash + "-12-31", side: side, zoom: zoom, metric: metric };
             if (/^\d{4}-\d{2}$/.test(hash)) return { type: "token", value: hash + "-01.." + monthEnd(hash), side: side, zoom: zoom, metric: metric };
             if (/^\d{4}-\d{2}-\d{2}$/.test(hash)) return { type: "day", value: hash, side: side, zoom: zoom, metric: metric };
-            if (/^\d{4}-\d{2}-\d{2}\.\.\d{4}-\d{2}-\d{2}$/.test(hash)) return { type: "token", value: hash, side: side, zoom: zoom, metric: metric };
+            if (/^\d{4}-\d{2}-\d{2}\.\.\d{4}-\d{2}-\d{2}$/.test(hash)) {
+              var range = hash.split("..");
+              return range[0] <= range[1] ? { type: "token", value: hash, side: side, zoom: zoom, metric: metric } : { type: "token", value: "all", side: side, zoom: false, metric: metric };
+            }
             return null;
           };
           var applyDailyMetric = function () {

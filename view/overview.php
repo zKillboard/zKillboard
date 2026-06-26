@@ -336,14 +336,16 @@ function handler($request, $response, $args, $container)
 		$selectedDaysInput = $dailyRouteDays ?? ($queryParams['days'] ?? null);
 		if ($selectedDaysInput != null && $selectedDaysInput != 'all') {
 			if (preg_match('/^(\d{4}-\d{2}-\d{2})\.\.(\d{4}-\d{2}-\d{2})$/', (string) $selectedDaysInput, $matches)) {
-				$startDay = min($matches[1], $matches[2]);
-				$endDay = max($matches[1], $matches[2]);
-				$dailySelectedStart = $startDay;
-				$dailySelectedEnd = $endDay;
-				foreach ($dailyDays as $row) {
-					$day = (string) ($row['day'] ?? '');
-					if ($day >= $startDay && $day <= $endDay) {
-						$dailySelectedDays[$day] = $day;
+				$startDay = $matches[1];
+				$endDay = $matches[2];
+				if ($startDay <= $endDay) {
+					$dailySelectedStart = $startDay;
+					$dailySelectedEnd = $endDay;
+					foreach ($dailyDays as $row) {
+						$day = (string) ($row['day'] ?? '');
+						if ($day >= $startDay && $day <= $endDay) {
+							$dailySelectedDays[$day] = $day;
+						}
 					}
 				}
 			} else {
@@ -365,8 +367,10 @@ function handler($request, $response, $args, $container)
 		}
 		$dailyGraphInput = (string) ($queryParams['graph'] ?? $request->getHeaderLine('X-ZKB-Daily-Graph'));
 		if ($dailyGraphInput != '' && preg_match('/^(\d{4}-\d{2}-\d{2})\.\.(\d{4}-\d{2}-\d{2})$/', $dailyGraphInput, $matches)) {
-			$dailyGraphStart = min($matches[1], $matches[2]);
-			$dailyGraphEnd = max($matches[1], $matches[2]);
+			if ($matches[1] <= $matches[2]) {
+				$dailyGraphStart = $matches[1];
+				$dailyGraphEnd = $matches[2];
+			}
 		}
 		$dailyStats = DailyStats::getAggregate($statType, $id, count($dailySelectedDays) > 0 ? $dailySelectedDays : null, $dailySide);
 		if ($dailyStats != null) {
