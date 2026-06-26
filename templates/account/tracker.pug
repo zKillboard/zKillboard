@@ -1,12 +1,45 @@
 - $trackerRows = function ($rows) { return array_values(array_map(fn($row) => is_object($row) ? (array) $row : $row, $rows ?? [])); };
 - $trackerGroups = [['type' => 'character', 'label' => 'Characters', 'items' => $trackerRows($tracker_character ?? [])], ['type' => 'corporation', 'label' => 'Corporations', 'items' => $trackerRows($tracker_corporation ?? [])], ['type' => 'alliance', 'label' => 'Alliances', 'items' => $trackerRows($tracker_alliance ?? [])], ['type' => 'faction', 'label' => 'Factions', 'items' => $trackerRows($tracker_faction ?? [])], ['type' => 'ship', 'label' => 'Ships', 'items' => $trackerRows($tracker_ship ?? [])], ['type' => 'group', 'label' => 'Groups', 'items' => $trackerRows($tracker_group ?? [])], ['type' => 'system', 'label' => 'Systems', 'items' => $trackerRows($tracker_system ?? [])], ['type' => 'constellation', 'label' => 'Constellations', 'items' => $trackerRows($tracker_constellation ?? [])], ['type' => 'region', 'label' => 'Regions', 'items' => $trackerRows($tracker_region ?? [])]];
 - $trackerTotal = array_sum(array_map(fn($group) => count($group['items']), $trackerGroups));
+- $dashboard = is_object($data['trackerDashboard'] ?? null) ? (array) $data['trackerDashboard'] : ($data['trackerDashboard'] ?? []);
+- $trackerStats = is_object($dashboard['stats'] ?? null) ? (array) $dashboard['stats'] : ($dashboard['stats'] ?? []);
+- $trackerDestroyed = is_object($trackerStats['destroyed'] ?? null) ? (array) $trackerStats['destroyed'] : ($trackerStats['destroyed'] ?? []);
+- $trackerLost = is_object($trackerStats['lost'] ?? null) ? (array) $trackerStats['lost'] : ($trackerStats['lost'] ?? []);
+- $trackerKills = $dashboard['kills'] ?? [];
+- $trackerKillmailLimit = (int) ($dashboard['killmailLimit'] ?? 100);
 
 h3.mb-3 Tracker
 
 if ($trackerTotal == 0)
   .alert.alert-info Nothing is tracked yet.
 else
+  .table-responsive
+    table.table.table-sm.table-striped.table-hover.align-middle.mb-3
+      thead
+        tr
+          th(scope="col") Last 7 Days
+          th.text-end(scope="col") Kills
+          th.text-end(scope="col") ISK
+          th.text-end(scope="col") Points
+      tbody
+        tr
+          th.text-success(scope="row") Destroyed
+          td.text-success.text-end.fw-bold(format="format-int-once" raw=($trackerDestroyed['count'] ?? 0))= number_format((float) ($trackerDestroyed['count'] ?? 0), 0)
+          td.text-success.text-end.fw-bold(format="format-isk-once" raw=($trackerDestroyed['isk'] ?? 0))= number_format((float) ($trackerDestroyed['isk'] ?? 0), 0)
+          td.text-success.text-end.fw-bold(format="format-int-once" raw=($trackerDestroyed['points'] ?? 0))= number_format((float) ($trackerDestroyed['points'] ?? 0), 0)
+        tr
+          th.text-danger(scope="row") Lost
+          td.text-danger.text-end.fw-bold(format="format-int-once" raw=($trackerLost['count'] ?? 0))= number_format((float) ($trackerLost['count'] ?? 0), 0)
+          td.text-danger.text-end.fw-bold(format="format-isk-once" raw=($trackerLost['isk'] ?? 0))= number_format((float) ($trackerLost['isk'] ?? 0), 0)
+          td.text-danger.text-end.fw-bold(format="format-int-once" raw=($trackerLost['points'] ?? 0))= number_format((float) ($trackerLost['points'] ?? 0), 0)
+  - $killListTitle = 'Tracked Killmails - Last 7 Days, Latest ' . $trackerKillmailLimit;
+  - $killList = $trackerKills;
+  if (count($killList) == 0)
+    h3= $killListTitle
+    .alert.alert-info No tracked killmails found in the last 7 days.
+  else
+    include ../components/kill_list.pug
+  h4.mt-4 Manage Tracker
   .table-responsive
     table.table.table-sm.table-striped.table-hover.align-middle
       thead

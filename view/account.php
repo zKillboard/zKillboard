@@ -1,5 +1,101 @@
 <?php
 
+function trackerDashboardData($userID)
+{
+	global $mdb;
+
+	$globals = (new UserGlobals())->getGlobals();
+	$tracked = trackerGroupsFromGlobals($globals);
+	$query = trackerDashboardQuery($tracked);
+	$killmailLimit = 100;
+	$stats = [
+		'destroyed' => ['count' => 0, 'isk' => 0, 'points' => 0],
+		'lost' => ['count' => 0, 'isk' => 0, 'points' => 0],
+	];
+	$kills = [];
+
+	if (!empty($query)) {
+		$options = [
+			'projection' => ['_id' => 0, 'killID' => 1],
+			'sort' => ['killID' => -1],
+			'limit' => $killmailLimit,
+			'maxTimeMS' => 30000,
+		];
+		$killIDs = iterator_to_array($mdb->getCollection('oneWeek')->find($query, $options));
+		$kills = Kills::getDetails($killIDs, true);
+
+		$participantQuery = trackerParticipantQuery($tracked);
+		if (!empty($participantQuery)) {
+			$stats['destroyed'] = trackerDashboardSummary($participantQuery['kills']);
+			$stats['lost'] = trackerDashboardSummary($participantQuery['losses']);
+		}
+	}
+
+	return ['trackerDashboard' => ['tracked' => $tracked, 'stats' => $stats, 'kills' => $kills, 'killmailLimit' => $killmailLimit]];
+}
+
+function trackerGroupsFromGlobals($globals)
+{
+	$groups = [];
+	foreach (['character', 'corporation', 'alliance', 'faction', 'ship', 'group', 'system', 'constellation', 'region'] as $type) {
+		$rows = array_map(fn($row) => is_object($row) ? (array) $row : $row, $globals['tracker_' . $type] ?? []);
+		$groups[$type] = array_values(array_filter(array_map(fn($row) => (int) ($row['id'] ?? 0), $rows)));
+	}
+	return $groups;
+}
+
+function trackerDashboardQuery($tracked)
+{
+	$or = trackerParticipantClauses($tracked);
+	foreach (['system' => 'solarSystemID', 'constellation' => 'constellationID', 'region' => 'regionID'] as $type => $field) {
+		if (!empty($tracked[$type])) $or[] = ['system.' . $field => ['$in' => $tracked[$type]]];
+	}
+	return empty($or) ? [] : ['$or' => $or];
+}
+
+function trackerParticipantQuery($tracked)
+{
+	$killOr = trackerParticipantClauses($tracked, false);
+	$lossOr = trackerParticipantClauses($tracked, true);
+	return empty($killOr) ? [] : ['kills' => ['$or' => $killOr], 'losses' => ['$or' => $lossOr]];
+}
+
+function trackerParticipantClauses($tracked, $isVictim = null)
+{
+	$fieldMap = [
+		'character' => 'characterID',
+		'corporation' => 'corporationID',
+		'alliance' => 'allianceID',
+		'faction' => 'factionID',
+		'ship' => 'shipTypeID',
+		'group' => 'groupID',
+	];
+	$or = [];
+	foreach ($fieldMap as $type => $field) {
+		if (empty($tracked[$type])) continue;
+		$elem = [$field => ['$in' => $tracked[$type]]];
+		if ($isVictim !== null) $elem['isVictim'] = $isVictim;
+		$or[] = ['involved' => ['$elemMatch' => $elem]];
+	}
+	return $or;
+}
+
+function trackerDashboardSummary($query)
+{
+	global $mdb;
+
+	$pipeline = [
+		['$match' => $query],
+		['$group' => ['_id' => null, 'count' => ['$sum' => 1], 'isk' => ['$sum' => '$zkb.totalValue'], 'points' => ['$sum' => '$zkb.points']]],
+	];
+	$row = current(iterator_to_array($mdb->getCollection('oneWeek')->aggregate($pipeline, ['maxTimeMS' => 30000])));
+	return [
+		'count' => (int) ($row['count'] ?? 0),
+		'isk' => (double) ($row['isk'] ?? 0),
+		'points' => (int) ($row['points'] ?? 0),
+	];
+}
+
 function handler($request, $response, $args, $container) {
     global $mdb, $redis, $templates, $adFreeMonthCost, $baseAddr;
     
@@ -122,6 +218,10 @@ foreach ($sponsoredRows as $row) {
 }
 $data['sponsoredShips'] = $sponsoredShips;
 $data['sponsoredTotalIsk'] = $sponsoredTotalIsk;
+
+if ($key == 'tracker') {
+	$data = array_merge($data, trackerDashboardData($userID));
+}
 
     $accountData = array('data' => $data, 'message' => $error, 'key' => $key, 'reqid' => $reqid);
     return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,account'), 'account.pug', $accountData);
