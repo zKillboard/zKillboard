@@ -885,6 +885,17 @@ td.centered {
 	grid-column: 1 / -1;
 }
 
+.overview-support-icon {
+	color: green;
+	display: inline-block;
+	font-size: 32px;
+	line-height: 1;
+	margin-left: 0.25em;
+	text-align: center;
+	vertical-align: middle;
+	width: 32px;
+}
+
 .scan-entity {
 	margin: 0.25em;
 	width: 64px;
