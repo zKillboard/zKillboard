@@ -6,23 +6,34 @@ function handler($request, $response, $args, $container) {
     $type = $args['type'];
     $id = (int) $args['id'];
     $action = $args['action'];
+    $infoTypes = [
+        'character' => 'characterID',
+        'corporation' => 'corporationID',
+        'alliance' => 'allianceID',
+        'faction' => 'factionID',
+        'ship' => 'typeID',
+        'group' => 'groupID',
+        'system' => 'solarSystemID',
+        'constellation' => 'constellationID',
+        'region' => 'regionID',
+    ];
 
     $userID = User::getUserID();
     $message = null;
-    if ($userID > 0 && $id > 0) {
+    if ($userID > 0 && $id > 0 && isset($infoTypes[$type])) {
         $redisKey = 'user:'.$userID;
         $mapKey = 'tracker_'.$type;
         $tracked = UserConfig::get($mapKey, []);
         if ($action == 'add') {
             if (!in_array($id, $tracked)) $tracked[] = $id;
-            $name = Info::getInfoField($type.'ID', $id, 'name');
+            $name = Info::getInfoField($infoTypes[$type], $id, 'name');
             $message = "Added $name to your Tracker in the menu bar.";
             User::sendMessage($message);
             Util::zout("$userID adding tracker $type $id");
         } elseif ($action == 'remove') {
             $position = array_search($id, $tracked);
             if ($position !== false) unset($tracked[$position]);
-            $name = Info::getInfoField($type.'ID', $id, 'name');
+            $name = Info::getInfoField($infoTypes[$type], $id, 'name');
             $message = "Removed $name from your Tracker in the menu bar.";
             User::sendMessage($message);
             Util::zout("$userID removing tracker $type $id");

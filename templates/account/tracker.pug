@@ -1,0 +1,59 @@
+- $trackerRows = function ($rows) { return array_values(array_map(fn($row) => is_object($row) ? (array) $row : $row, $rows ?? [])); };
+- $trackerGroups = [['type' => 'character', 'label' => 'Characters', 'items' => $trackerRows($tracker_character ?? [])], ['type' => 'corporation', 'label' => 'Corporations', 'items' => $trackerRows($tracker_corporation ?? [])], ['type' => 'alliance', 'label' => 'Alliances', 'items' => $trackerRows($tracker_alliance ?? [])], ['type' => 'faction', 'label' => 'Factions', 'items' => $trackerRows($tracker_faction ?? [])], ['type' => 'ship', 'label' => 'Ships', 'items' => $trackerRows($tracker_ship ?? [])], ['type' => 'group', 'label' => 'Groups', 'items' => $trackerRows($tracker_group ?? [])], ['type' => 'system', 'label' => 'Systems', 'items' => $trackerRows($tracker_system ?? [])], ['type' => 'constellation', 'label' => 'Constellations', 'items' => $trackerRows($tracker_constellation ?? [])], ['type' => 'region', 'label' => 'Regions', 'items' => $trackerRows($tracker_region ?? [])]];
+- $trackerTotal = array_sum(array_map(fn($group) => count($group['items']), $trackerGroups));
+
+h3.mb-3 Tracker
+
+if ($trackerTotal == 0)
+  .alert.alert-info Nothing is tracked yet.
+else
+  .table-responsive
+    table.table.table-sm.table-striped.table-hover.align-middle
+      thead
+        tr
+          th Entity
+          th Type
+          th.text-end Action
+      tbody
+        each $group in $trackerGroups
+          if (!empty($group['items']))
+            tr.table-active
+              th(colspan="3")= $group['label']
+            each $item in $group['items']
+              - $type = $group['type'];
+              - $id = (int) ($item['id'] ?? 0);
+              - $name = (string) ($item['name'] ?? '');
+              - $displayName = rtrim($name, ' *');
+              - $isProtected = ($type == 'character' && $id == (int) ($characterID ?? 0)) || ($type == 'corporation' && $id == (int) ($corporationID ?? 0)) || ($type == 'alliance' && $id == (int) ($allianceID ?? 0)) || str_ends_with($name, ' *');
+              - $hrefType = $type;
+              - $field = ['id' => $id, 'name' => $displayName, 'characterID' => $id, 'characterName' => $displayName, 'corporationID' => $id, 'corporationName' => $displayName, 'allianceID' => $id, 'allianceName' => $displayName, 'factionID' => $id, 'factionName' => $displayName, 'shipTypeID' => $id, 'shipName' => $displayName, 'groupID' => $id, 'groupName' => $displayName, 'solarSystemID' => $id, 'solarSystemName' => $displayName, 'constellationID' => $id, 'constellationName' => $displayName, 'regionID' => $id, 'regionName' => $displayName];
+              tr(data-tracker-row=($type . '-' . $id))
+                td
+                  .d-flex.align-items-center.gap-2
+                    .text-center.flex-shrink-0(style="width: 34px;")
+                      if ($type == 'character')
+                        include ../components/image_char.pug
+                      elseif ($type == 'corporation')
+                        include ../components/image_corp.pug
+                      elseif ($type == 'alliance')
+                        include ../components/image_alli.pug
+                      elseif ($type == 'faction')
+                        include ../components/image_faction.pug
+                      elseif ($type == 'ship')
+                        include ../components/image_ship.pug
+                      elseif ($type == 'system')
+                        include ../components/image_system.pug
+                      elseif ($type == 'constellation')
+                        include ../components/image_constellation.pug
+                      elseif ($type == 'region')
+                        include ../components/image_region.pug
+                      else
+                        i.fas.fa-crosshairs
+                    a(href=('/' . $hrefType . '/' . $id . '/'))= $displayName
+                td.text-muted= ucfirst($type)
+                td.text-end
+                  if ($isProtected)
+                    span.badge.bg-secondary(role="status" aria-label=($displayName . ' is pinned to your tracker')) Pinned
+                  else
+                    a.btn.btn-link.btn-sm.text-danger.p-0(href=('/account/tracker/' . $type . '/' . $id . '/remove/') rel="nofollow" aria-label=('Remove ' . $displayName . ' from tracker') title="Remove from Tracker")
+                      i.fa.fa-minus(aria-hidden="true")

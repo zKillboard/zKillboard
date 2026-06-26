@@ -18,6 +18,8 @@ block content
       li.nav-item
         a.nav-link(class=(($key ?? '') == 'api' ? 'active' : '') href="/account/api/") API
       li.nav-item
+        a.nav-link(class=(($key ?? '') == 'tracker' ? 'active' : '') href="/account/tracker/") Tracker
+      li.nav-item
         a.nav-link(class=(($key ?? '') == 'log' ? 'active' : '') href="/account/log/") Log
       li.nav-item
         a.nav-link(class=(($key ?? '') == 'sponsored' ? 'active' : '') href="/account/sponsored/") Sponsored Ships
@@ -31,6 +33,8 @@ block content
     include account/sponsored_ships.pug
   elseif (($key ?? '') == 'api')
     include account/api.pug
+  elseif (($key ?? '') == 'tracker')
+    include account/tracker.pug
   elseif (($key ?? '') == 'payments')
     include account/payments.pug
   else

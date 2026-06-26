@@ -193,6 +193,11 @@ async function handleTrackerClick(event) {
         updateTrackerState(data.type, data.id, data.action);
         applyTrackerControls();
         refreshNavbarTracker();
+        if (data.action === "remove") {
+            $('[data-tracker-row="' + data.type + '-' + data.id + '"]').fadeOut(150, function() {
+                $(this).remove();
+            });
+        }
         showToast(data.message || "Tracker updated.", 5000);
     } catch (error) {
         console.error("Failed to update tracker:", error);
