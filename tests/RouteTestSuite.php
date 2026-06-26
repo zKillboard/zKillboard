@@ -298,9 +298,10 @@ class RouteTestSuite {
         $this->testRoute('/top/lasthour/all/', 200, 'Top last hour all');
 		$this->testRoute('/top/lasthour/nullsec/', 200, 'Top last hour nullsec');
 		$this->testRoute('/top/lasthour/lowsec/', 200, 'Top last hour lowsec');
-		$this->testRoute('/top/lasthour/highsec/', 200, 'Top last hour highsec');
+        $this->testRoute('/top/lasthour/highsec/', 200, 'Top last hour highsec');
 		$this->testRoute('/top/lasthour/w-space/', 200, 'Top last hour w-space');
 		$this->testRoute('/top/lasthour/solo/', 200, 'Top last hour solo');
+        $this->testRoute('/trophies/', 200, 'Trophy leaderboard');
         
         // Type ranks - using REAL vs FAKE IDs  
         echo "\n--- Ranks Routes (Real IDs) ---\n";

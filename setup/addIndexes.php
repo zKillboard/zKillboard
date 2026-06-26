@@ -1489,6 +1489,9 @@ echo "Done\n";
 echo "Creating index : 'id' => 1 ... ";
 $trophies->createIndex(['id' => 1], ['unique' => true]);
 echo "Done\n";
+echo "Creating index : 'trophies.levelCount' => -1, 'trophies.calcTrophies_updated' => -1, 'trophies.id' => 1 ... ";
+$trophies->createIndex(['trophies.levelCount' => -1, 'trophies.calcTrophies_updated' => -1, 'trophies.id' => 1], ['sparse' => true]);
+echo "Done\n";
 
 // twitch
 echo "\nCreating collection twitch ... ";

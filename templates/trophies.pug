@@ -1,0 +1,46 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'Trophy Leaderboard';
+  - $description = 'The zKillboard trophy leaderboard highlights EVE Online characters with the most completed trophy levels.';
+
+block title
+  include components/title.pug
+
+block content
+  h4 Trophy Leaderboard
+  h5 Characters with the most trophy levels completed.
+
+  if (count($leaders ?? []) > 0)
+    table.table.table-sm.table-striped.table-hover.table-bordered.caption-top
+      caption
+        strong Top Trophy Hunters
+      thead
+        tr
+          th(style="width: 4em; text-align: center;") Rank
+          th Character
+          th(style="text-align: right;") Levels
+          th(style="text-align: right;") Complete
+          th(style="width: 5em; text-align: center;") Trophy
+      tbody
+        each $field, $index in ($leaders ?? [])
+          - $rank = $index + 1;
+          tr
+            td(style="text-align: center; vertical-align: middle;")= $rank
+            td(style="vertical-align: middle;")
+              - $showImage = true;
+              - $entitySubpage = 'trophies/';
+              include components/text_char.pug
+            td(style="text-align: right; vertical-align: middle;")
+              = number_format((float) ($field['levelCount'] ?? 0), 0)
+              |  / 
+              = number_format((float) ($field['maxLevelCount'] ?? 0), 0)
+            td(style="text-align: right; vertical-align: middle;")
+              = number_format((float) ($field['completedPct'] ?? 0), 0)
+              | %
+            td(style="text-align: center; vertical-align: middle;")
+              a(href=('/character/' . ($field['characterID'] ?? 0) . '/trophies/'))
+                img(src=('/img/level/level' . ($field['boxes'] ?? 0) . '.gif') alt=('Level ' . ($field['boxes'] ?? 0)))
+  else
+    h4 No trophy leaders yet.
+    p Trophy data is populated by the trophy update job after characters become eligible for trophy calculation.

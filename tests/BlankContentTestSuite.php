@@ -198,6 +198,7 @@ class BlankContentTestSuite {
         $this->testRouteContent('/war/eligible/', [200], 'War eligible');
         $this->testRouteContent('/kills/sponsored/', [200], 'Sponsored kills');
         $this->testRouteContent('/ztop/', [200], 'zTop rankings');
+        $this->testRouteContent('/trophies/', [200], 'Trophy leaderboard');
         
         // Battle report routes
         echo "\n--- Battle Report Routes ---\n";
