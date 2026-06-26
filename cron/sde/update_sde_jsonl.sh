@@ -228,5 +228,8 @@ fi
 echo "Recalculating SDE locations..."
 (cd "${REPO_ROOT}/scratch" && php sde_locations_calced.php)
 
+echo "Updating type pips..."
+(cd "${REPO_ROOT}/scratch" && php pips.php)
+
 mv "${remote_latest_file}" "${LOCAL_LATEST_FILE}"
 echo "SDE import complete. Updated ${LOCAL_LATEST_FILE}."
