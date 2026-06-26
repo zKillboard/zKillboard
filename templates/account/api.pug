@@ -12,8 +12,11 @@
           tr
             td= $row['scope'] ?? ''
             td
-              if (isset($row['lastFetch']['sec']))
-                = date('Y-m-d H:i', (int) $row['lastFetch']['sec'])
+              - $lastFetch = $row['lastFetch'] ?? null;
+              if ($lastFetch instanceof MongoDB\BSON\UTCDateTime)
+                = $lastFetch->toDateTime()->format('Y-m-d H:i')
+              elseif (is_array($lastFetch) && isset($lastFetch['sec']))
+                = date('Y-m-d H:i', (int) $lastFetch['sec'])
             td(style="text-align: right;")
               form(name="deleteapi" method="post" action="/account/api/")
                 input#deletekeyid(name="deletekeyid" type="hidden" value=($row['scope'] ?? ''))
