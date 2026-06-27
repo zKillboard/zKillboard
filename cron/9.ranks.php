@@ -333,10 +333,14 @@ function storeRanks($job, $type)
             ],
             ['upsert' => true],
         ]];
-        flushRankBulk($collection, $ops);
+        flushRankBulk($collection, $ops, false, function () use ($collection, $job, $type) {
+            normalizeRankContainers($collection, $job, $type);
+        });
     }
 
-    flushRankBulk($collection, $ops, true);
+    flushRankBulk($collection, $ops, true, function () use ($collection, $job, $type) {
+        normalizeRankContainers($collection, $job, $type);
+    });
     clearOldRankHistory($collection, $job, $type);
 
     if ($job['epoch'] != 'alltime') {
@@ -467,9 +471,15 @@ function rankCheck($max, $rank)
     return $rank + 1;
 }
 
-function flushRankBulk($collection, &$ops, $force = false)
+function flushRankBulk($collection, &$ops, $force = false, $retryNormalize = null)
 {
     if (sizeof($ops) == 0 || (!$force && sizeof($ops) < 500)) return;
-    $collection->bulkWrite($ops);
+    try {
+        $collection->bulkWrite($ops);
+    } catch (MongoDB\Driver\Exception\BulkWriteException $e) {
+        if ($retryNormalize == null || strpos($e->getMessage(), 'Cannot create field') === false) throw $e;
+        $retryNormalize();
+        $collection->bulkWrite($ops);
+    }
     $ops = [];
 }
