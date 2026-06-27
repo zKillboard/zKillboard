@@ -601,6 +601,7 @@ function applyLabelsResult(data, textStatus, jqXHR) {
 
 function applyKillQueryResult(data, textStatus, jqXHR) {
 	if (jqXHR.status == 202 || (data && data.processing == true)) return scheduleAsearchRetry('kills');
+	$(".asearch-waiting-message").remove();
 	$(".killlistmessage").remove();
 	killIDs = data.kills;
 	if (data.kills.length == 0) killlistmessage("no results - expand timespan, adjust pagination, or reduce filters...");
@@ -609,6 +610,7 @@ function applyKillQueryResult(data, textStatus, jqXHR) {
 
 function applyCountQueryResult(data, textStatus, jqXHR) {
 	if (jqXHR.status == 202 || (data && data.processing == true)) return scheduleAsearchRetry('groups');
+	$("#asearch-groups-waiting").remove();
 	if (data == null || data.exceeds == true) {
 		$("#result-groups-count").html("Timespan > 31 Days");
 		return;
@@ -652,12 +654,16 @@ function scheduleAsearchRetry(queryType) {
 }
 
 function showAsearchWaiting(queryType) {
-	if (queryType == 'kills' || queryType == 'all') killlistmessage('Waiting on server results...');
+	if ((queryType == 'kills' || queryType == 'all') && $(".asearch-waiting-message").length == 0) {
+		var tr = $("<tr>").addClass('asearch-waiting-message');
+		var td = $("<td>").attr('colspan', 7).html('<i>Waiting on server results...</i>');
+		tr.append(td);
+		$("#killmails-list").prepend(tr);
+	}
 	if (queryType == 'groups' || queryType == 'all') {
-		$("#result-groups-count").html("Waiting on server results...");
-		$("#result-groups-labels").html("");
-		$("#result-groups-distincts").html("");
-		for (var i = 0; i < types.length; i++) $("#result-groups-" + types[i]).html("");
+		if ($("#asearch-groups-waiting").length == 0) {
+			$("#result-groups-summary").append('<div id="asearch-groups-waiting"><i>Waiting on server results...</i></div>');
+		}
 	}
 }
 
