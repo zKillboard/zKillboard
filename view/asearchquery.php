@@ -81,6 +81,13 @@ function handler($request, $response, $args, $container) {
 			$query = AdvancedSearch::parseDate($queryParams, $query, 'end');
 		}
 
+		$startTime = (int) @$query['start'];
+		$endTime = (int) @$query['end'];
+		$now = time();
+		if ($startTime > $now) $startTime = $now;
+		if ($endTime == 0 || $endTime > $now) $endTime = $now;
+		$guaranteedQuery = in_array($epochButton, ['week', 'recent'], true) || ($startTime > 0 && ($endTime - $startTime) <= 7776000);
+
 		$labels = [];
 		foreach ($buttons as $label) {
 			$group = AdvancedSearch::getLabelGroup($label);
@@ -90,12 +97,9 @@ function handler($request, $response, $args, $container) {
 			}
 		}
 		foreach ($labels as $group => $search) $query[] = ['labels' => ['$in' => $search]];
-		$query = AdvancedSearch::buildItemHistoryQuery($queryParams, $query, "items", AdvancedSearch::getSelectedFromBase('items-', $buttons));
-		$startTime = (int) @$query['start'];
-		$endTime = (int) @$query['end'];
-		$now = time();
-		if ($startTime > $now) $startTime = $now;
-		if ($endTime == 0 || $endTime > $now) $endTime = $now;
+		if (!$guaranteedQuery) {
+			$query = AdvancedSearch::buildItemHistoryQuery($queryParams, $query, "items", AdvancedSearch::getSelectedFromBase('items-', $buttons), 5000);
+		}
 		unset($query['start']);
 		unset($query['end']);
 
@@ -120,6 +124,7 @@ function handler($request, $response, $args, $container) {
 			$coll = ['killmails'];
 		}
 		$aggregateCollection = getAsearchAggregateCollection($startTime, $now, $epochButton);
+		$cacheTime = getAsearchCacheTime($startTime, $endTime, $epochButton, $queryType == "kills" ? $coll : [$aggregateCollection]);
 		unset($query['hasDateFilter']);
 
 		if (sizeof($query) == 0) $query = [];
@@ -132,19 +137,61 @@ function handler($request, $response, $args, $container) {
 
 		// Should prevent cache busting from url manipulation
 		array_multisort($query);
-		$jsoned = json_encode($query, true) . json_encode($filter, true);
+		$jsoned = json_encode($query, true) . json_encode($filter, true) . json_encode(@$queryParams['items'], true) . AdvancedSearch::getSelectedFromBase('items-', $buttons);
 		$collectionScope = ($queryType == "kills" ? implode(',', $coll) : $aggregateCollection);
 		$key = "asearch:$queryType:$groupType:$victimsOnly:$collectionScope:" . ($queryType == "kills" ? "$page:$sortKey:$sortBy:" : "") . md5($jsoned);
 		$cacheTag = "www,asearch,asearch:$key";
+		$job = [
+			'key' => $key,
+			'queryType' => $queryType,
+			'groupType' => $groupType,
+			'victimsOnly' => $victimsOnly,
+			'coll' => $coll,
+			'aggregateCollection' => $aggregateCollection,
+			'page' => $page,
+			'sortKey' => $sortKey,
+			'sortBy' => $sortBy,
+			'sort' => $sort,
+			'query' => $query,
+			'filter' => $filter,
+			'types' => $types,
+			'queryParams' => $queryParams,
+			'itemJoin' => AdvancedSearch::getSelectedFromBase('items-', $buttons),
+			'guaranteedQuery' => $guaranteedQuery,
+			'cacheTime' => $cacheTime
+		];
+		if ($queryType != 'kills' && $queryType != 'count') {
+			$rendered = $redis->get("$queryType:$key");
+			if ($rendered !== false && $rendered !== null && trim($rendered) !== "") {
+				$response->getBody()->write($rendered);
+				return withAsearchCacheHeaders($response, $cacheTime)->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
+			}
+		}
 
 		$waits = 0;
 		$ret = "";
 		do {
+			$rawResult = $redis->get("$key:result");
+			if ($rawResult !== false && $rawResult !== null) {
+				$redis->del("$key:result");
+				$redis->del($key);
+				return renderAsearchResult($response, $container, $cacheTag, $job, unserialize($rawResult), $labelGroupMaps);
+			}
 			$ret = (string) $redis->get($key);
 			if ($ret == "PROCESSING") {
 				usleep(100000); // 100ms
 				$waits++;
-				if ($waits > 250) { // 25 seconds
+				if ($guaranteedQuery && $waits > 50) { // 5 seconds
+					$isJson = $queryType == 'kills' || $queryType == 'count';
+					$response->getBody()->write($isJson ? json_encode(['processing' => true]) : '');
+					return $response
+						->withHeader('Content-Type', $isJson ? 'application/json; charset=utf-8' : 'text/html; charset=utf-8')
+						->withHeader('Cache-Control', 'no-store')
+						->withHeader('Cache-Tag', $cacheTag)
+						->withHeader('Retry-After', '3')
+						->withStatus(202);
+				}
+				if (!$guaranteedQuery && $waits > 250) { // 25 seconds
 					AdvancedSearch::logTimeout('asearch processing wait', [
 						'cacheKey' => $key,
 						'queryType' => $queryType,
@@ -162,126 +209,43 @@ function handler($request, $response, $args, $container) {
 						'uri' => $uri
 					]);
 					$response->getBody()->write(json_encode(['error' => 'Request timeout'], JSON_PRETTY_PRINT));
-					return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', $cacheTag)->withStatus(408);
+					return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Control', 'no-store')->withHeader('Cache-Tag', $cacheTag)->withStatus(408);
 				}
 			}
 		} while ($ret == "PROCESSING");
 
 		if ($ret != "") {
 			$response->getBody()->write($ret);
-			return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
+			return withAsearchCacheHeaders($response, $cacheTime)->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 		}
-		$redis->setex($key, 300, "PROCESSING");
+		$redis->setex($key, max(300, min($cacheTime, 14400)), "PROCESSING");
+		if ($guaranteedQuery) {
+			$redis->sadd('queueAsearchSet', $key);
+			$redis->setex("$key:params", max(3600, $cacheTime), serialize($job));
 
-		$arr = [];
-		if ($queryType == "kills") {
-			foreach ($coll as $col) {
-				$result = iter2array($mdb->find($col, $query, $sort, 100, [], 100 * $page));
-				if (sizeof($result) >= 100) break;
-			}
-			$arr['kills'] = [];
-			foreach ($result as $row) {
-				$killID = $row['killID'];
-				$arr['kills'][] = $killID;
-			}			
-			$jsoned = json_encode($arr, true);
-			$redis->setex($key, 300, $jsoned);
-			$response->getBody()->write($jsoned);
-			return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
-		} else if ($queryType == 'count') {
-			$arr = AdvancedSearch::getSums($groupType . 'ID', $query, $victimsOnly, false, true, $aggregateCollection);
-			unset($arr['_id']);
-			$jsoned = json_encode($arr, true);
-			$redis->setex($key, 300, $jsoned);
-			$response->getBody()->write($jsoned);
-			return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
-		} else if ($queryType == "groups") {
-			$rendered = $redis->get("groups:$key");
-			if ($rendered !== null && trim($rendered) !== "") {
-				$redis->del($key);
-				$response->getBody()->write($rendered);
-				return $response->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
-			}
-			$arr['top'] = [];
-			$rendered = '';
-			if (in_array($groupType, $types)) {
-				$res = AdvancedSearch::getTop($groupType . 'ID', $query, $victimsOnly, $filter, true, $sortKey, $sortBy, $aggregateCollection);
-				$rendered = $container->get('view')->getEnvironment()->render("components/asearch_top_list.pug", ['topSet' =>
-				[
-					'type' => $groupType,
-					'singularTitle' => ucwords($groupType),
-					'title' => 'Top ' . Util::pluralize(ucwords($groupType)),
-					'values' => $res,
-					'sortKey' => $sortKey,
-					'sortBy' => $sortBy
-				]]);
-			}
-			$redis->setex("groups:$key", 300, trim($rendered));
-			$redis->del($key);
-			$response->getBody()->write($rendered);
-			return $response->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
-		} else if ($queryType == "labels") {
-			$arr['top'] = [];
-
-			$rendered = $redis->get("labels:$key");
-			if ($rendered !== null && trim($rendered) !== "") {
-				$redis->del($key);
-				$response->getBody()->write($rendered);
-				return $response->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
-			}
-
-			$res = AdvancedSearch::getLabels($query, $victimsOnly);
-			$rendered = '';
-			if ($res == null) $res = [];
-			foreach ($res as $labelGroup) {
-				if ($labelGroup['_id'] == "cat") {
-					for ($i = 0; $i < sizeof($labelGroup['rights']); $i++) {
-						$labelGroup['rights'][$i]['right'] = Util::pluralize(Info::getInfoField('categoryID', (int) $labelGroup['rights'][$i]['right'], 'name'));
-					}
+			$waits = 0;
+			do {
+				usleep(100000);
+				$rawResult = $redis->get("$key:result");
+				if ($rawResult !== false && $rawResult !== null) {
+					$redis->del("$key:result");
+					$redis->del($key);
+					return renderAsearchResult($response, $container, $cacheTag, $job, unserialize($rawResult), $labelGroupMaps);
 				}
-				if (isset($labelGroupMaps[$labelGroup['_id']])) $labelGroup['_id'] = $labelGroupMaps[$labelGroup['_id']];
-				$rendered .= $container->get('view')->getEnvironment()->render("components/asearch_top_list.pug", ['topSet' =>
-				[
-					'type' => $labelGroup['_id'],
-					'singularTitle' => ucwords($labelGroup['_id']),
-					'title' => 'Top ' . ucwords($labelGroup['_id']),
-					'values' => $labelGroup['rights'],
-					'sortKey' => 'count',
-					'sortBy' => $sortBy
-				]]);
-			}
-			$redis->setex("labels:$key", 900, trim($rendered));
-			$redis->del($key);
-			$response->getBody()->write($rendered);
-			return $response->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
-		} else if ($queryType == "distincts") {
-			$rendered = $redis->get("distincts:$key");
-			if ($rendered !== null && trim($rendered) !== "") {
-				$redis->del($key);
-				$response->getBody()->write($rendered);
-				return $response->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
-			}
+				$waits++;
+			} while ($waits <= 50);
 
-			$result = AdvancedSearch::getDistincts($query, $filter, $victimsOnly, $aggregateCollection);
-
-			$res = [];
-			foreach ($result as $type => $count) {
-				$res[] = ['type' => ucwords(str_replace("IDs", "s", $type)), 'count' => $count];
-			}
-			$rendered = $container->get('view')->getEnvironment()->render("components/asearch_distincts.pug", ['result' => $res]);
-			$redis->setex("distincts:$key", 900, trim($rendered));
-			$redis->del($key);
-			$response->getBody()->write($rendered);
-			return $response->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
-		} else {
-			// what is this? ignore it...
-			$arr = [];
+			$isJson = $queryType == 'kills' || $queryType == 'count';
+			$response->getBody()->write($isJson ? json_encode(['processing' => true]) : '');
+			return $response
+				->withHeader('Content-Type', $isJson ? 'application/json; charset=utf-8' : 'text/html; charset=utf-8')
+				->withHeader('Cache-Control', 'no-store')
+				->withHeader('Cache-Tag', $cacheTag)
+				->withHeader('Retry-After', '3')
+				->withStatus(202);
 		}
 
-		$jsoned = json_encode($arr, true);
-		$redis->setex($key, 300, $jsoned);
-		$response->getBody()->write($jsoned);
-		return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
+		return renderAsearchResult($response, $container, $cacheTag, $job, AdvancedSearch::runQueuedQuery($job), $labelGroupMaps);
 	} catch (Exception $ex) {
 		if ($ex->getCode() != 50) Util::zout(print_r($ex, true));
 		else AdvancedSearch::logTimeout('asearch handler', [
@@ -302,13 +266,95 @@ function handler($request, $response, $args, $container) {
 		], $ex);
 		$redis->del($key);
 		$response->getBody()->write(json_encode(['error' => 'Internal server error', 'message' => $ex->getMessage()], JSON_PRETTY_PRINT));
-		return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', "www,asearch,asearch:$key,error")->withStatus(500);
+		return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Control', 'no-store')->withHeader('Cache-Tag', "www,asearch,asearch:$key,error")->withStatus(500);
 	} 
+}
+
+function renderAsearchResult($response, $container, $cacheTag, $job, $result, $labelGroupMaps)
+{
+	global $redis;
+
+	$key = $job['key'];
+	$cacheTime = (int) ($job['cacheTime'] ?? 300);
+	if ($job['queryType'] == 'kills' || $job['queryType'] == 'count') {
+		$jsoned = json_encode($result, true);
+		$redis->setex($key, $cacheTime, $jsoned);
+		$response->getBody()->write($jsoned);
+		return withAsearchCacheHeaders($response, $cacheTime)->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
+	}
+
+	$rendered = '';
+	if ($job['queryType'] == 'groups') {
+		$rendered = $container->get('view')->getEnvironment()->render("components/asearch_top_list.pug", ['topSet' => [
+			'type' => $job['groupType'],
+			'singularTitle' => ucwords($job['groupType']),
+			'title' => 'Top ' . Util::pluralize(ucwords($job['groupType'])),
+			'values' => $result,
+			'sortKey' => $job['sortKey'],
+			'sortBy' => $job['sortBy']
+		]]);
+	} else if ($job['queryType'] == 'labels') {
+		if ($result == null) $result = [];
+		foreach ($result as $labelGroup) {
+			if ($labelGroup['_id'] == "cat") {
+				for ($i = 0; $i < sizeof($labelGroup['rights']); $i++) {
+					$labelGroup['rights'][$i]['right'] = Util::pluralize(Info::getInfoField('categoryID', (int) $labelGroup['rights'][$i]['right'], 'name'));
+				}
+			}
+			if (isset($labelGroupMaps[$labelGroup['_id']])) $labelGroup['_id'] = $labelGroupMaps[$labelGroup['_id']];
+			$rendered .= $container->get('view')->getEnvironment()->render("components/asearch_top_list.pug", ['topSet' => [
+				'type' => $labelGroup['_id'],
+				'singularTitle' => ucwords($labelGroup['_id']),
+				'title' => 'Top ' . ucwords($labelGroup['_id']),
+				'values' => $labelGroup['rights'],
+				'sortKey' => 'count',
+				'sortBy' => $job['sortBy']
+			]]);
+		}
+	} else if ($job['queryType'] == 'distincts') {
+		$res = [];
+		foreach ($result as $type => $count) $res[] = ['type' => ucwords(str_replace("IDs", "s", $type)), 'count' => $count];
+		$rendered = $container->get('view')->getEnvironment()->render("components/asearch_distincts.pug", ['result' => $res]);
+	}
+
+	$redis->setex($job['queryType'] . ":$key", $cacheTime, trim($rendered));
+	$redis->del($key);
+	$response->getBody()->write($rendered);
+	return withAsearchCacheHeaders($response, $cacheTime)->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 }
 
 function iter2array($iter) 
 {
     return gettype($iter) == "array" ? $iter : iterator_to_array($iter);
+}
+
+function withAsearchCacheHeaders($response, $cacheTime)
+{
+	$cacheTime = max(0, (int) $cacheTime);
+	$cacheControl = "public, max-age=$cacheTime, s-maxage=$cacheTime";
+	return $response
+		->withHeader('Cache-Control', $cacheControl)
+		->withHeader('CDN-Cache-Control', $cacheControl)
+		->withHeader('Cloudflare-CDN-Cache-Control', $cacheControl)
+		->withHeader('Expires', gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT');
+}
+
+function getAsearchCacheTime($startTime, $endTime, $epochButton, $collections)
+{
+	$span = ($startTime > 0 && $endTime > $startTime) ? $endTime - $startTime : 0;
+	if ($span > 0) {
+		if ($span <= 604800) return 900;
+		if ($span <= 2678400) return 3600;
+		if ($span <= 7776000) return 14400;
+		return 86400;
+	}
+
+	if ($epochButton == 'week') return 900;
+	if ($epochButton == 'recent') return 14400;
+	if (in_array('killmails', $collections, true)) return 86400;
+	if (in_array('oneWeek', $collections, true)) return 900;
+	if (in_array('ninetyDays', $collections, true)) return 14400;
+	return 86400;
 }
 
 function getAsearchAggregateCollection($startTime, $now, $epochButton = '')

@@ -480,6 +480,8 @@ function setHashAdd(filter, asfilter, key) {
 
 var xhrs = [];
 var filtersStringified = undefined;
+var asearchRetryTimer = null;
+var asearchRetryQueryType = null;
 function doQuery(queryType = 'all') {
 	if (first_load) return;
 	if (!allowChange) return;
@@ -588,14 +590,17 @@ function getFilters() {
 }
 
 function applyDistinctsResult(data, textStatus, jqXHR) {
+	if (jqXHR.status == 202) return scheduleAsearchRetry('groups');
 	$("#result-groups-distincts").html(data);
 }
 
 function applyLabelsResult(data, textStatus, jqXHR) {
+	if (jqXHR.status == 202) return scheduleAsearchRetry('groups');
 	$("#result-groups-labels").html(data);
 }
 
 function applyKillQueryResult(data, textStatus, jqXHR) {
+	if (jqXHR.status == 202) return scheduleAsearchRetry('kills');
 	$(".killlistmessage").remove();
 	killIDs = data.kills;
 	if (data.kills.length == 0) killlistmessage("no results - expand timespan, adjust pagination, or reduce filters...");
@@ -603,6 +608,7 @@ function applyKillQueryResult(data, textStatus, jqXHR) {
 }
 
 function applyCountQueryResult(data, textStatus, jqXHR) {
+	if (jqXHR.status == 202) return scheduleAsearchRetry('groups');
 	if (data == null || data.exceeds == true) {
 		$("#result-groups-count").html("Timespan > 31 Days");
 		return;
@@ -628,7 +634,20 @@ function applyCountQueryResult(data, textStatus, jqXHR) {
 }
 
 function applyGroupQueryResult(data, textStatus, jqXHR) {
+	if (jqXHR.status == 202) return scheduleAsearchRetry('groups');
 	$("#result-groups-" + this.title).html(data);
+}
+
+function scheduleAsearchRetry(queryType) {
+	asearchRetryQueryType = (asearchRetryQueryType && asearchRetryQueryType != queryType) ? 'all' : queryType;
+	if (asearchRetryTimer != null) return;
+	asearchRetryTimer = setTimeout(function () {
+		var retryQueryType = asearchRetryQueryType || 'all';
+		asearchRetryTimer = null;
+		asearchRetryQueryType = null;
+		filtersStringified = null;
+		doQuery(retryQueryType);
+	}, 3000);
 }
 
 function handleError(jqXHR, textStatus, errorThrown) {
