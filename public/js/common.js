@@ -1182,14 +1182,21 @@ function sortItemTable(column, order) {
     } while (haveSwitched); 
 } 
 
+function parseKillmailUrl(str) {
+    const match = (str || '').trim().match(/\/killmails\/(\d+)\/([a-f0-9]{40})\/?/i);
+    if (!match) return null;
+
+    return {
+        killID: parseInt(match[1], 10),
+        hash: match[2]
+    };
+}
+
 function sendCrestUrl() {
-    str = $("#killmailurl").val();
-    strSplit = str.split("/");
-    if (strSplit.length === 8) strSplit.shift();
-    killID = strSplit[4];
-    hash = strSplit[5];
-    a = ['/crestmail/', killID, '/', hash, '/'];
-    url = a.join('');
+    const parsed = parseKillmailUrl($("#killmailurl").val());
+    if (!parsed || parsed.killID <= 0) return;
+
+    const url = ['/crestmail/', parsed.killID, '/', parsed.hash, '/'].join('');
     $.get(url);
 }
 
@@ -1203,9 +1210,7 @@ async function pasteCrestUrlAsync() {
         if (isFirefox) return window.location = '/post/';
 
         let str = await navigator.clipboard.readText();
-		strSplit = str.split('/');
-		// Allow with or without /latest as part of the ESI url
-        if (strSplit.length < 5 || strSplit.length > 8) return window.location = '/post/';
+        if (!parseKillmailUrl(str)) return window.location = '/post/';
 
         $('#externalurl').val(str);
         $('#externalkmform').submit();
