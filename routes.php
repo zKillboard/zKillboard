@@ -81,7 +81,7 @@ $routes = [
 	// POST routes
 	'/account/favorite/{killID}/{action}/' => ['POST', 'view/favorite_modify.php'],
 	'/account/favorite/{scope}/{killID}/{action}/' => ['POST', 'view/favorite_modify.php'],
-	'/api/killmail/add/{killID}/{hash}/' => ['POST', 'view/api/killmail-add.php'],
+	'/api/killmail/add/{killID}/{hash}/[{delay}/]' => ['POST', 'view/api/killmail-add.php'],
 	'/cache/bypass/scan/' => ['POST', 'view/scanp.php'],
 	'/cache/bypass/comment/{pageID}/{commentID}/up/' => ['POST', 'view/comments-up.php'],
 	

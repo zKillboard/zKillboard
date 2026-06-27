@@ -5,9 +5,7 @@ function handler($request, $response, $args, $container) {
 
     $killID = $args['killID'] ?? '';
     $hash = $args['hash'] ?? '';
-    $parsedBody = $request->getParsedBody() ?? [];
-    $queryParams = $request->getQueryParams();
-    $delay = Util::parseKillmailDelay($parsedBody['delay'] ?? $queryParams['delay'] ?? 0);
+    $delay = Util::parseKillmailDelay($args['delay'] ?? 0);
 
     // Basic verification
     if ((int) $killID <= 0 || strlen($hash) != 40) {
