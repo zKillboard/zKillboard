@@ -145,7 +145,6 @@ class Util
 				case 'warID':
 					$value = array_shift($split);
 					if (substr($value, 0, 1) === "0") dire("Do not prefix values with 0");
-					$intValue = (int) $value;
 					if ($value != null) {
 						if (strpos($key, 'ID') === false) {
 							global $isApiRequest;
@@ -165,9 +164,8 @@ class Util
 						$multi = sizeof($exploded) > 1;
 						$ints = [];
 						foreach ($exploded as $ex) {
-							if ("$ex" != (string) (int) $ex) dire("$ex is not an integer");
-							if (is_numeric($ex)) $ints[] = (int) $ex;
-							else $ints[] = (string) $ex;
+							if (!ctype_digit((string) $ex)) dire("$ex is not an integer");
+							$ints[] = (int) $ex;
 						}
 						if (sizeof($ints) > 1) {
 							asort($ints);
@@ -200,6 +198,7 @@ class Util
 					self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
 					$value = array_shift($split);
 					if (substr($value, 0, 1) === "0") dire("Do not prefix values with 0");
+					if (!ctype_digit((string) $value)) dire("$value is not a valid entry for $key");
 					$value = (int) $value;
 					if ($value < 1) dire("page value <= 1 not allowed");
 					if ($value > 100) dire("page value > 100 not allowed");
@@ -212,6 +211,7 @@ class Util
 					self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
 					$value = array_shift($split);
 					if (substr($value, 0, 1) === "0") dire("Do not prefix values with 0");
+					if (!ctype_digit((string) $value)) dire("$value is not a valid entry for $key");
 					$value = (int) $value;
 					if (($value / 86400) > 7) {
 						dire('pastSeconds is limited to a max of 7 days');
@@ -253,15 +253,17 @@ class Util
 				case 'killID':
 					$value = array_shift($split);
 					if (substr($value, 0, 1) === "0") dire("Do not prefix values with 0");
-					if (!is_numeric($value)) {
+					if (!ctype_digit((string) $value)) {
 						dire("$value is not a valid entry for $key");
 					}
 					if (isset($parameters[$key])) dire("duplicate key");
 					$parameters[$key] = (int) $value;
 					break;
 				case 'iskValue':
-					$value = (int) array_shift($split);
+					$value = array_shift($split);
 					if (substr($value, 0, 1) === "0") dire("Do not prefix values with 0");
+					if (!ctype_digit((string) $value)) dire("$value is not a valid entry for $key");
+					$value = (int) $value;
 					if ($value == 0 || $value % 500000000 != 0) {
 						dire("$value is not a valid multiple of 5b ISK");
 					}
@@ -274,6 +276,7 @@ class Util
 					self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
 					$value = array_shift($split);
 					if (substr($value, 0, 1) === "0") dire("Do not prefix values with 0");
+					if (!ctype_digit((string) $value)) dire("$value is not a valid entry for $key");
 					$value = (int) $value;
 					if ($value < 2007) dire("$value is not a valid entry for $key");
 					if ($value > date('Y')) dire("$value is not a valid entry for $key");
@@ -282,7 +285,7 @@ class Util
 				case 'month':
 					self::checkEntityRequirement($entityRequiredSatisfied, "Please provide an entity filter first.");
 					$value = array_shift($split);
-					if (substr($value, 0, 1) === "0") dire("Do not prefix values with 0");
+					if (!ctype_digit((string) $value)) dire("$value is not a valid entry for $key");
 					$value = (int) $value;
 					if ($value < 1 || $value > 12) dire("$value is not a valid entry for $key");
 					$parameters[$key] = $value;
