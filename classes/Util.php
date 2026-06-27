@@ -38,6 +38,12 @@ class Util
 		return substr($haystack, -strlen($needle)) === $needle;
 	}
 
+	public static function parseKillmailDelay($delay)
+	{
+		$delay = (int) $delay;
+		return $delay >= 0 && $delay <= 5 ? $delay : 0;
+	}
+
 	private static $formatIskIndexes = array('', 'k', 'm', 'b', 't', 'k t', 'm t', 'b t');
 
 	public static function formatIsk($value, $int = false)

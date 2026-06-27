@@ -7,8 +7,9 @@ function handler($request, $response, $args, $container) {
     $method = $request->getMethod();
 
     if ($method === 'POST') {
-        $parsedBody = $request->getParsedBody();
+        $parsedBody = $request->getParsedBody() ?? [];
         $killmailurl = $parsedBody['killmailurl'] ?? '';
+        $delay = Util::parseKillmailDelay($parsedBody['delay'] ?? 0);
 
         if ($killmailurl) {
             $timer = new Timer();
@@ -32,12 +33,16 @@ function handler($request, $response, $args, $container) {
                     $hash = (string) $exploded[5];
                     $exists = $mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash]);
                     if (!$exists) {
-                        $in = ['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => 'postmail.php', 'delay' => 0];
+                        $in = ['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => 'postmail.php', 'delay' => $delay];
                         $mdb->save('crestmails', $in);
                         $newCrest = true;
                     } else {
-                        // update the delay to 0, manual posts always take priority
-                        $mdb->set('crestmails', ['killID' => $killID, 'hash' => $hash], ['delay' => 0]);
+                        $mdb->set('crestmails', ['killID' => $killID, 'hash' => $hash, 'delay' => [ '$gt' => $delay]], ['delay' => $delay]);
+                    }
+
+                    if ($delay > 0) {
+                        $error = "Killmail accepted and queued with delay $delay.";
+                        return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,postmail'), 'postmail.pug', array('message' => [$error]));
                     }
 
                     $timer = new Timer();

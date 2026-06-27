@@ -5,6 +5,9 @@ function handler($request, $response, $args, $container) {
 
     $killID = $args['killID'] ?? '';
     $hash = $args['hash'] ?? '';
+    $parsedBody = $request->getParsedBody() ?? [];
+    $queryParams = $request->getQueryParams();
+    $delay = Util::parseKillmailDelay($parsedBody['delay'] ?? $queryParams['delay'] ?? 0);
 
     // Basic verification
     if ((int) $killID <= 0 || strlen($hash) != 40) {
@@ -22,15 +25,25 @@ function handler($request, $response, $args, $container) {
     // do we have the mail?
     if ($mdb->findDoc('killmails', ['killID' => $killID]) == null) {
         try {
-            $mdb->insert("crestmails", ['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => 'killmail-api-add', 'delay' => 0]);
+            $mdb->insert("crestmails", ['killID' => $killID, 'hash' => $hash, 'processed' => false, 'source' => 'killmail-api-add', 'delay' => $delay]);
             Util::zout("api mail add $killID $hash");
             $newKillmail = true;
         } catch (Exception $ex) {
             if ($ex->getCode() != 11000) Util::zout(print_r($ex, true));
+            $mdb->set('crestmails', ['killID' => $killID, 'hash' => $hash, 'delay' => [ '$gt' => $delay]], ['delay' => $delay]);
         }
 
         if ($kvc->get("zkb:noapi") == "true") {
             return invalidRequest($response, "ESI is unavilable atm");
+        }
+
+        if ($delay > 0) {
+            $responseData = ['status' => 'success', 'new' => $newKillmail, 'delayed' => true, 'delay' => $delay, 'url' => "https://zkillboard.com/kill/${killID}/"];
+            $response->getBody()->write(json_encode($responseData));
+            return $response->withHeader('Access-Control-Allow-Origin', '*')
+                ->withHeader('Access-Control-Allow-Methods', 'GET, POST')
+                ->withHeader('Content-Type', 'application/json; charset=utf-8')
+                ->withHeader('Cache-Tag', "www,api,killmail-add,kill:$killID");
         }
 
         // wait for the mail to be processed
@@ -52,12 +65,11 @@ function handler($request, $response, $args, $container) {
             return invalidRequest($response, "Invalid id or hash $processed $killID $hash");
         }
     } else {
-        // update the delay to 0, manual posts always take priority
-        $mdb->set('crestmails', ['killID' => $killID, 'hash' => $hash], ['delay' => 0]);
+        $mdb->set('crestmails', ['killID' => $killID, 'hash' => $hash, 'delay' => [ '$gt' => $delay]], ['delay' => $delay]);
     }
 
     // return URL for the mail
-    $responseData = ['status' => 'success', 'new' => $newKillmail, 'url' => "https://zkillboard.com/kill/${killID}/"];
+    $responseData = ['status' => 'success', 'new' => $newKillmail, 'delayed' => false, 'delay' => $delay, 'url' => "https://zkillboard.com/kill/${killID}/"];
     $response->getBody()->write(json_encode($responseData));
     return $response->withHeader('Access-Control-Allow-Origin', '*')
         ->withHeader('Access-Control-Allow-Methods', 'GET, POST')
