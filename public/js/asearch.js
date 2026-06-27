@@ -482,7 +482,7 @@ var xhrs = [];
 var filtersStringified = undefined;
 var asearchRetryTimer = null;
 var asearchRetryQueryType = null;
-function doQuery(queryType = 'all') {
+function doQuery(queryType = 'all', isRetry = false) {
 	if (first_load) return;
 	if (!allowChange) return;
 
@@ -490,18 +490,19 @@ function doQuery(queryType = 'all') {
 
 	var f = getFilters();
 	var stringified = JSON.stringify(f);
-	if (filtersStringified === stringified) {
+	if (!isRetry && filtersStringified === stringified) {
 		return;
 	}
-	filtersStringified = stringified;
+	if (!isRetry) filtersStringified = stringified;
 
 	while (xhrs.length > 0) {
 		var xhr = xhrs.pop();
 		xhr.abort();
 	}
 
+	if (!isRetry) clearAsearchResults(queryType);
+
 	if (queryType == 'all' || queryType == 'kills') {
-		$("#killmails-list").html("");
 		var f1 = {};
 		Object.assign(f1, f);
 		f1.queryType = "kills";
@@ -516,7 +517,6 @@ function doQuery(queryType = 'all') {
 	}
 
 	if (queryType == 'all' || queryType == 'groups') {
-		$("#result-groups-count").html("");
 		var f2 = {};
 		Object.assign(f2, f);
 		f2.queryType = "count";
@@ -529,7 +529,6 @@ function doQuery(queryType = 'all') {
 		});
 		xhrs.push(xhr);
 
-		$("#result-groups-labels").html("");
 		var f3 = {};
 		Object.assign(f3, f);
 		f3.queryType = "labels";
@@ -542,7 +541,6 @@ function doQuery(queryType = 'all') {
 		});
 		xhrs.push(xhr);
 
-		$("#result-groups-distincts").html("");
 		var f4 = {};
 		Object.assign(f4, f);
 		f4.queryType = "distincts";
@@ -561,7 +559,6 @@ function doQuery(queryType = 'all') {
 			Object.assign(ff[i], f);
 			ff[i].queryType = "groups";
 			ff[i].groupType = types[i];
-			$("#result-groups-" + types[i]).html("");
 			xhr = $.ajax('/asearchquery/', {
 				title: types[i],
 				data: ff[i],
@@ -601,8 +598,7 @@ function applyLabelsResult(data, textStatus, jqXHR) {
 
 function applyKillQueryResult(data, textStatus, jqXHR) {
 	if (jqXHR.status == 202 || (data && data.processing == true)) return scheduleAsearchRetry('kills');
-	$(".asearch-waiting-message").remove();
-	$(".killlistmessage").remove();
+	$("#killmails-list").html("");
 	killIDs = data.kills;
 	if (data.kills.length == 0) killlistmessage("no results - expand timespan, adjust pagination, or reduce filters...");
 	else popEm();
@@ -610,7 +606,6 @@ function applyKillQueryResult(data, textStatus, jqXHR) {
 
 function applyCountQueryResult(data, textStatus, jqXHR) {
 	if (jqXHR.status == 202 || (data && data.processing == true)) return scheduleAsearchRetry('groups');
-	$("#asearch-groups-waiting").remove();
 	if (data == null || data.exceeds == true) {
 		$("#result-groups-count").html("Timespan > 31 Days");
 		return;
@@ -641,29 +636,23 @@ function applyGroupQueryResult(data, textStatus, jqXHR) {
 }
 
 function scheduleAsearchRetry(queryType) {
-	showAsearchWaiting(queryType);
 	asearchRetryQueryType = (asearchRetryQueryType && asearchRetryQueryType != queryType) ? 'all' : queryType;
 	if (asearchRetryTimer != null) return;
 	asearchRetryTimer = setTimeout(function () {
 		var retryQueryType = asearchRetryQueryType || 'all';
 		asearchRetryTimer = null;
 		asearchRetryQueryType = null;
-		filtersStringified = null;
-		doQuery(retryQueryType);
+		doQuery(retryQueryType, true);
 	}, 3000);
 }
 
-function showAsearchWaiting(queryType) {
-	if ((queryType == 'kills' || queryType == 'all') && $(".asearch-waiting-message").length == 0) {
-		var tr = $("<tr>").addClass('asearch-waiting-message');
-		var td = $("<td>").attr('colspan', 7).html('<i>Waiting on server results...</i>');
-		tr.append(td);
-		$("#killmails-list").prepend(tr);
-	}
-	if (queryType == 'groups' || queryType == 'all') {
-		if ($("#asearch-groups-waiting").length == 0) {
-			$("#result-groups-summary").append('<div id="asearch-groups-waiting"><i>Waiting on server results...</i></div>');
-		}
+function clearAsearchResults(queryType) {
+	if (queryType == 'all' || queryType == 'kills') $("#killmails-list").html("");
+	if (queryType == 'all' || queryType == 'groups') {
+		$("#result-groups-count").html("");
+		$("#result-groups-labels").html("");
+		$("#result-groups-distincts").html("");
+		for (var i = 0; i < types.length; i++) $("#result-groups-" + types[i]).html("");
 	}
 }
 
