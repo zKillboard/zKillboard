@@ -48,6 +48,7 @@ while ($hour == date('H')) {
 		addInfo('', 0);
 	}
 
+	foreach (['queueRedis', 'queueRedisFail'] as $staleQueue) $redis->srem('queues', $staleQueue);
 	$queues = $redis->sMembers('queues');
 	$queues[] = "queueRelatedSet";
 	$queues[] = "queueAsearchSet";
