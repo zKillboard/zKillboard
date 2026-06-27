@@ -173,23 +173,18 @@ function handler($request, $response, $args, $container) {
 		do {
 			$rawResult = $redis->get("$key:result");
 			if ($rawResult !== false && $rawResult !== null) {
+				$result = unserialize($rawResult);
 				$redis->del("$key:result");
 				$redis->del($key);
-				return renderAsearchResult($response, $container, $cacheTag, $job, unserialize($rawResult), $labelGroupMaps);
+				if ($result === null) return renderAsearchProcessing($response, $cacheTag, $queryType);
+				return renderAsearchResult($response, $container, $cacheTag, $job, $result, $labelGroupMaps);
 			}
 			$ret = (string) $redis->get($key);
 			if ($ret == "PROCESSING") {
 				usleep(100000); // 100ms
 				$waits++;
 				if ($guaranteedQuery && $waits > 50) { // 5 seconds
-					$isJson = $queryType == 'kills' || $queryType == 'count';
-					$response->getBody()->write($isJson ? json_encode(['processing' => true]) : '');
-					return $response
-						->withHeader('Content-Type', $isJson ? 'application/json; charset=utf-8' : 'text/html; charset=utf-8')
-						->withHeader('Cache-Control', 'no-store')
-						->withHeader('Cache-Tag', $cacheTag)
-						->withHeader('Retry-After', '3')
-						->withStatus(202);
+					return renderAsearchProcessing($response, $cacheTag, $queryType);
 				}
 				if (!$guaranteedQuery && $waits > 250) { // 25 seconds
 					AdvancedSearch::logTimeout('asearch processing wait', [
@@ -228,21 +223,16 @@ function handler($request, $response, $args, $container) {
 				usleep(100000);
 				$rawResult = $redis->get("$key:result");
 				if ($rawResult !== false && $rawResult !== null) {
+					$result = unserialize($rawResult);
 					$redis->del("$key:result");
 					$redis->del($key);
-					return renderAsearchResult($response, $container, $cacheTag, $job, unserialize($rawResult), $labelGroupMaps);
+					if ($result === null) return renderAsearchProcessing($response, $cacheTag, $queryType);
+					return renderAsearchResult($response, $container, $cacheTag, $job, $result, $labelGroupMaps);
 				}
 				$waits++;
 			} while ($waits <= 50);
 
-			$isJson = $queryType == 'kills' || $queryType == 'count';
-			$response->getBody()->write($isJson ? json_encode(['processing' => true]) : '');
-			return $response
-				->withHeader('Content-Type', $isJson ? 'application/json; charset=utf-8' : 'text/html; charset=utf-8')
-				->withHeader('Cache-Control', 'no-store')
-				->withHeader('Cache-Tag', $cacheTag)
-				->withHeader('Retry-After', '3')
-				->withStatus(202);
+			return renderAsearchProcessing($response, $cacheTag, $queryType);
 		}
 
 		return renderAsearchResult($response, $container, $cacheTag, $job, AdvancedSearch::runQueuedQuery($job), $labelGroupMaps);
@@ -268,6 +258,18 @@ function handler($request, $response, $args, $container) {
 		$response->getBody()->write(json_encode(['error' => 'Internal server error', 'message' => $ex->getMessage()], JSON_PRETTY_PRINT));
 		return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Control', 'no-store')->withHeader('Cache-Tag', "www,asearch,asearch:$key,error")->withStatus(500);
 	} 
+}
+
+function renderAsearchProcessing($response, $cacheTag, $queryType)
+{
+	$isJson = $queryType == 'kills' || $queryType == 'count';
+	$response->getBody()->write($isJson ? json_encode(['processing' => true]) : '');
+	return $response
+		->withHeader('Content-Type', $isJson ? 'application/json; charset=utf-8' : 'text/html; charset=utf-8')
+		->withHeader('Cache-Control', 'no-store')
+		->withHeader('Cache-Tag', $cacheTag)
+		->withHeader('Retry-After', '3')
+		->withStatus(202);
 }
 
 function renderAsearchResult($response, $container, $cacheTag, $job, $result, $labelGroupMaps)

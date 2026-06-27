@@ -600,7 +600,7 @@ function applyLabelsResult(data, textStatus, jqXHR) {
 }
 
 function applyKillQueryResult(data, textStatus, jqXHR) {
-	if (jqXHR.status == 202) return scheduleAsearchRetry('kills');
+	if (jqXHR.status == 202 || (data && data.processing == true)) return scheduleAsearchRetry('kills');
 	$(".killlistmessage").remove();
 	killIDs = data.kills;
 	if (data.kills.length == 0) killlistmessage("no results - expand timespan, adjust pagination, or reduce filters...");
@@ -608,7 +608,7 @@ function applyKillQueryResult(data, textStatus, jqXHR) {
 }
 
 function applyCountQueryResult(data, textStatus, jqXHR) {
-	if (jqXHR.status == 202) return scheduleAsearchRetry('groups');
+	if (jqXHR.status == 202 || (data && data.processing == true)) return scheduleAsearchRetry('groups');
 	if (data == null || data.exceeds == true) {
 		$("#result-groups-count").html("Timespan > 31 Days");
 		return;
@@ -639,6 +639,7 @@ function applyGroupQueryResult(data, textStatus, jqXHR) {
 }
 
 function scheduleAsearchRetry(queryType) {
+	showAsearchWaiting(queryType);
 	asearchRetryQueryType = (asearchRetryQueryType && asearchRetryQueryType != queryType) ? 'all' : queryType;
 	if (asearchRetryTimer != null) return;
 	asearchRetryTimer = setTimeout(function () {
@@ -648,6 +649,16 @@ function scheduleAsearchRetry(queryType) {
 		filtersStringified = null;
 		doQuery(retryQueryType);
 	}, 3000);
+}
+
+function showAsearchWaiting(queryType) {
+	if (queryType == 'kills' || queryType == 'all') killlistmessage('Waiting on server results...');
+	if (queryType == 'groups' || queryType == 'all') {
+		$("#result-groups-count").html("Waiting on server results...");
+		$("#result-groups-labels").html("");
+		$("#result-groups-distincts").html("");
+		for (var i = 0; i < types.length; i++) $("#result-groups-" + types[i]).html("");
+	}
 }
 
 function handleError(jqXHR, textStatus, errorThrown) {
