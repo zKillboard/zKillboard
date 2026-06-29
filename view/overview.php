@@ -64,7 +64,7 @@ function handler($request, $response, $args, $container)
 	else if (!in_array($pageType, $validPageTypes))
 		$pageType = 'overview';
 
-	if ($pageType == 'daily' && ($key != 'character' || (int) $id != 1633218082)) {
+	if ($pageType == 'daily' && $key != 'character') {
 		return renderCached404($container, $response, 'Not Found');
 	}
 
