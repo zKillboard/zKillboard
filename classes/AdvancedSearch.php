@@ -71,7 +71,46 @@ class AdvancedSearch
         return $queries;
     }
 
-    public static function buildItemHistoryQuery($queryParams, $queries, $key = 'items', $joinType = 'and')
+    public static function runQueuedQuery($job)
+    {
+        global $mdb;
+
+        if (!empty($job['guaranteedQuery']) && isset($job['queryParams']['items'])) {
+            if (isset($job['query']['$and']) && is_array($job['query']['$and'])) $queries = $job['query']['$and'];
+            else $queries = empty($job['query']) ? [] : [$job['query']];
+            $queries = self::buildItemHistoryQuery($job['queryParams'], $queries, "items", $job['itemJoin'], null);
+            if (sizeof($queries) == 0) $job['query'] = [];
+            else if (sizeof($queries) == 1) $job['query'] = $queries[0];
+            else $job['query'] = ['$and' => $queries];
+        }
+
+        $maxTimeMS = !empty($job['guaranteedQuery']) ? null : 25000;
+        if ($job['queryType'] == 'kills') {
+            $result = [];
+            foreach ($job['coll'] as $col) {
+                $cursor = $mdb->find($col, $job['query'], $job['sort'], 100, [], 100 * $job['page']);
+                $result = is_array($cursor) ? $cursor : iterator_to_array($cursor);
+                if (sizeof($result) >= 100) break;
+            }
+            $kills = [];
+            foreach ($result as $row) $kills[] = $row['killID'];
+            return ['kills' => $kills];
+        }
+        if ($job['queryType'] == 'count') {
+            $result = self::getSums($job['groupType'] . 'ID', $job['query'], $job['victimsOnly'], false, true, $job['aggregateCollection'], $maxTimeMS);
+            unset($result['_id']);
+            return $result;
+        }
+        if ($job['queryType'] == 'groups') {
+            if (!in_array($job['groupType'], $job['types'], true)) return [];
+            return self::getTop($job['groupType'] . 'ID', $job['query'], $job['victimsOnly'], $job['filter'], true, $job['sortKey'], $job['sortBy'], $job['aggregateCollection'], $maxTimeMS);
+        }
+        if ($job['queryType'] == 'labels') return self::getLabels($job['query'], $job['victimsOnly']);
+        if ($job['queryType'] == 'distincts') return self::getDistincts($job['query'], $job['filter'], $job['victimsOnly'], $job['aggregateCollection'], $maxTimeMS);
+        return [];
+    }
+
+    public static function buildItemHistoryQuery($queryParams, $queries, $key = 'items', $joinType = 'and', $maxTimeMS = 5000)
     {
         global $mdb;
 
@@ -86,7 +125,7 @@ class AdvancedSearch
         $typeIDs = array_values($typeIDs);
         if (sizeof($typeIDs) == 0) return $queries;
 
-        $candidateKillIDs = self::getCandidateKillIDs($queries);
+        $candidateKillIDs = self::getCandidateKillIDs($queries, $maxTimeMS);
         if (sizeof($candidateKillIDs) == 0) {
             $queries[] = ['killID' => -1];
             return $queries;
@@ -96,24 +135,22 @@ class AdvancedSearch
 
         $killIDs = [];
         if ($joinType == 'or' || $joinType == '-or' || sizeof($typeIDs) == 1) {
-            $cursor = $itemmails->find(
-                $itemMatch,
-                [
-                    'projection' => ['killID' => 1, '_id' => 0],
-                    'maxTimeMS' => 5000
-                ]
-            );
+            $options = ['projection' => ['killID' => 1, '_id' => 0]];
+            if ($maxTimeMS !== null) $options['maxTimeMS'] = $maxTimeMS;
+            $cursor = $itemmails->find($itemMatch, $options);
             foreach ($cursor as $row) {
                 $killID = (int) @$row['killID'];
                 if ($killID > 0) $killIDs[$killID] = $killID;
             }
         } else {
+            $options = ['allowDiskUse' => true];
+            if ($maxTimeMS !== null) $options['maxTimeMS'] = $maxTimeMS;
             $cursor = $itemmails->aggregate([
                 ['$match' => $itemMatch],
                 ['$group' => ['_id' => '$killID', 'typeIDs' => ['$addToSet' => '$typeID']]],
                 ['$project' => ['killID' => '$_id', 'matches' => ['$size' => '$typeIDs'], '_id' => 0]],
                 ['$match' => ['matches' => sizeof($typeIDs)]]
-            ], ['allowDiskUse' => true, 'maxTimeMS' => 5000]);
+            ], $options);
             foreach ($cursor as $row) {
                 $killID = (int) @$row['killID'];
                 if ($killID > 0) $killIDs[$killID] = $killID;
@@ -125,22 +162,20 @@ class AdvancedSearch
         return $queries;
     }
 
-    private static function getCandidateKillIDs($queries)
+    private static function getCandidateKillIDs($queries, $maxTimeMS = 5000)
     {
         global $mdb;
 
         $baseQuery = self::buildMongoQuery($queries);
 
         $killIDs = [];
-        $cursor = $mdb->getCollection('killmails')->find(
-            $baseQuery,
-            [
-                'projection' => ['killID' => 1, '_id' => 0],
-                'sort' => ['killID' => -1],
-                'limit' => self::MAX_ITEM_HISTORY_KILLIDS,
-                'maxTimeMS' => 5000
-            ]
-        );
+        $options = [
+            'projection' => ['killID' => 1, '_id' => 0],
+            'sort' => ['killID' => -1],
+            'limit' => self::MAX_ITEM_HISTORY_KILLIDS
+        ];
+        if ($maxTimeMS !== null) $options['maxTimeMS'] = $maxTimeMS;
+        $cursor = $mdb->getCollection('killmails')->find($baseQuery, $options);
 
         foreach ($cursor as $row) {
             $killID = (int) @$row['killID'];
@@ -236,7 +271,7 @@ class AdvancedSearch
         return $query;
     }
 
-    public static function getTop($groupByColumn, $query, $victimsOnly, $filter, $addInfo, $sortKey, $sortBy, $collection = 'killmails')
+    public static function getTop($groupByColumn, $query, $victimsOnly, $filter, $addInfo, $sortKey, $sortBy, $collection = 'killmails', $maxTimeMS = 25000)
     {
         global $mdb, $longQueryMS, $redis;
 
@@ -295,7 +330,9 @@ class AdvancedSearch
             $pipeline[] = ['$limit' => 550];
             $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
 
-            $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'maxTimeMS' => 25000]);
+            $options = ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true];
+            if ($maxTimeMS !== null) $options['maxTimeMS'] = $maxTimeMS;
+            $rr = $killmails->aggregate($pipeline, $options);
             $result = iterator_to_array($rr);
 
             $time = $timer->stop();
@@ -331,7 +368,7 @@ class AdvancedSearch
         }
     }
 
-    public static function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $addInfo = true, $collection = 'killmails')
+    public static function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $addInfo = true, $collection = 'killmails', $maxTimeMS = 25000)
     {
         global $mdb, $longQueryMS;
 
@@ -374,7 +411,9 @@ class AdvancedSearch
                 ]
             ];
 
-            $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'maxTimeMS' => 25000]);
+            $options = ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true];
+            if ($maxTimeMS !== null) $options['maxTimeMS'] = $maxTimeMS;
+            $rr = $killmails->aggregate($pipeline, $options);
             $resultArray = iterator_to_array($rr);
             $result = !empty($resultArray) ? $resultArray[0] : self::getEmptySums();
 
@@ -541,7 +580,7 @@ class AdvancedSearch
         }
     }
 
-    public static function getDistincts($query, $filter, $victimsOnly, $collection = 'killmails')
+    public static function getDistincts($query, $filter, $victimsOnly, $collection = 'killmails', $maxTimeMS = 25000)
     {
         global $mdb, $longQueryMS;
 
@@ -591,7 +630,9 @@ class AdvancedSearch
                 ]
             ];
 
-            $rr = $killmails->aggregate($pipeline, ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true, 'maxTimeMS' => 25000]);
+            $options = ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true];
+            if ($maxTimeMS !== null) $options['maxTimeMS'] = $maxTimeMS;
+            $rr = $killmails->aggregate($pipeline, $options);
             $resultArray = iterator_to_array($rr);
             $result = !empty($resultArray) ? $resultArray[0] : [];
 
