@@ -80,20 +80,30 @@ function flushDailyStatsBatch($batch)
         return 0;
     }
 
-    $ops = [];
+    $ensureOps = [];
+    $updateOps = [];
     foreach ($batch as $row) {
         $month = substr($row['day'], 0, 7);
+        $dayField = substr($row['day'], 8, 2);
+        $sequence = (int) $row['sequence'];
         $key = ['type' => $row['type'], 'id' => $row['id'], DailyStats::MONTH_FIELD => $month];
-        $ops[] = ['updateOne' => [
+        $ensureOps[] = ['updateOne' => [
             $key,
-            [
-                '$setOnInsert' => $key + ['created' => time()],
-                '$addToSet' => ['updates' => "{$row['day']}:" . (int) $row['sequence']],
-            ],
+            ['$setOnInsert' => $key + ['created' => time()]],
             ['upsert' => true],
+        ]];
+        $updateOps[] = ['updateOne' => [
+            $key + ['$or' => [
+                [$dayField => ['$exists' => false]],
+                ["$dayField.sequence" => ['$exists' => false]],
+                ["$dayField.sequence" => ['$lt' => $sequence]],
+            ]],
+            ['$addToSet' => ['updates' => "{$row['day']}:$sequence"]],
         ]];
     }
 
-    $mdb->getCollection(DailyStats::COLLECTION)->bulkWrite($ops, ['ordered' => false]);
+    $collection = $mdb->getCollection(DailyStats::COLLECTION);
+    $collection->bulkWrite($ensureOps, ['ordered' => false]);
+    $collection->bulkWrite($updateOps, ['ordered' => false]);
     return count($batch);
 }
