@@ -50,7 +50,7 @@ foreach ($cursor as $killmail) {
             continue;
         }
 
-        $batchKey = DailyStats::queueValue($key['type'], $key['id'], $key['day']);
+        $batchKey = "{$key['type']}:{$key['id']}:{$key['day']}";
         if (!isset($batch[$batchKey]) || $batch[$batchKey]['sequence'] < $sequence) {
             $key['sequence'] = $sequence;
             $batch[$batchKey] = $key;
@@ -80,41 +80,20 @@ function flushDailyStatsBatch($batch)
         return 0;
     }
 
-    $existingQuery = ['$or' => []];
-    foreach ($batch as $row) {
-        $existingQuery['$or'][] = ['type' => $row['type'], 'id' => $row['id'], 'day' => $row['day']];
-    }
-
-    $existing = [];
-    $cursor = $mdb->getCollection(DailyStats::COLLECTION)->find($existingQuery, [
-        'projection' => ['_id' => 0, 'type' => 1, 'id' => 1, 'day' => 1],
-    ]);
-    foreach ($cursor as $row) {
-        $existing[DailyStats::queueValue($row['type'], $row['id'], $row['day'])] = true;
-    }
-
     $ops = [];
-    foreach ($batch as $batchKey => $row) {
-        if (isset($existing[$batchKey])) {
-            continue;
-        }
-
-        $key = ['type' => $row['type'], 'id' => $row['id'], 'day' => $row['day']];
-        $sequence = (int) $row['sequence'];
+    foreach ($batch as $row) {
+        $month = substr($row['day'], 0, 7);
+        $key = ['type' => $row['type'], 'id' => $row['id'], DailyStats::MONTH_FIELD => $month];
         $ops[] = ['updateOne' => [
             $key,
             [
                 '$setOnInsert' => $key + ['created' => time()],
-                '$max' => ['update' => $sequence],
+                '$addToSet' => ['updates' => "{$row['day']}:" . (int) $row['sequence']],
             ],
             ['upsert' => true],
         ]];
     }
 
-    if (count($ops) == 0) {
-        return 0;
-    }
-
     $mdb->getCollection(DailyStats::COLLECTION)->bulkWrite($ops, ['ordered' => false]);
-    return count($ops);
+    return count($batch);
 }
