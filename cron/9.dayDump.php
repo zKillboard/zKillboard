@@ -51,10 +51,24 @@ foreach ($cursor as $row) {
             $md5 = md5(implode("", $hashes));
             if ($kvc->get("zkb:dayDumpHash:$curDate") != $md5) {
                 Util::out("Iterated - $curDate - sending");
+                $rawDump = [];
+                foreach (array_chunk(array_keys($hashes), 5000) as $killIDChunk) {
+                    $killIDChunk = array_map('intval', $killIDChunk);
+                    $cursor = $mdb->getCollection("esimails")->find(
+                        ['killmail_id' => ['$in' => $killIDChunk]],
+                        ['projection' => ['_id' => 0]]
+                    );
+                    foreach ($cursor as $raw) {
+                        $rawDump[(int) $raw['killmail_id']] = $raw;
+                    }
+                }
+                ksort($rawDump);
                 CloudFlare::r2sendArray($r2, $CF_R2_BUCKET, $hashes, "history/$curDate.json", $options);
+                CloudFlare::r2sendArray($r2, $CF_R2_BUCKET, $rawDump, "history/raw/$curDate.json", $options);
                 $kvc->set("zkb:dayDumpHash:$curDate", $md5, 99999 * 86400);
 
                 $redis->sadd("queueCacheUrls", "https://r2z2.zkillboard.com/history/$curDate.json");
+                $redis->sadd("queueCacheUrls", "https://r2z2.zkillboard.com/history/raw/$curDate.json");
             } else Util::out("Iterated - $curDate");
             $totals[$curDate] = sizeof($hashes);
             $minKillID = min(array_keys($hashes));
