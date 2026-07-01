@@ -116,23 +116,23 @@ echo "Creating index : 'day' => 1 ... ";
 $daydump->createIndex(['day' => 1], []);
 echo "Done\n";
 
-// dailystats
-echo "\nCreating collection dailystats ... ";
-$db->createCollection("dailystats");
-$collection = "dailystats";
-$dailystats = $db->$collection;
+// stats_monthly
+echo "\nCreating collection stats_monthly ... ";
+$db->createCollection("stats_monthly");
+$collection = "stats_monthly";
+$stats_monthly = $db->$collection;
 echo "Done\n";
-echo "Creating index : 'type' => 1, 'id' => 1, 'day' => 1 ... ";
-$dailystats->createIndex(['type' => 1, 'id' => 1, 'day' => 1], ['unique' => true]);
+echo "Creating index : 'type' => 1, 'id' => 1, 'yyyy-mm' => 1 ... ";
+$stats_monthly->createIndex(['type' => 1, 'id' => 1, 'yyyy-mm' => 1], ['unique' => true]);
 echo "Done\n";
-echo "Creating index : 'update' => 1 ... ";
-$dailystats->createIndex(['update' => 1], ['partialFilterExpression' => ['update' => ['$gt' => 0]]]);
+echo "Creating index : 'updates' => 1 ... ";
+$stats_monthly->createIndex(['updates' => 1], ['partialFilterExpression' => ['updates' => ['$exists' => true]]]);
 echo "Done\n";
-echo "Creating index : 'day' => 1, 'update' => 1 ... ";
-$dailystats->createIndex(['day' => 1, 'update' => 1], ['partialFilterExpression' => ['update' => -1]]);
+echo "Creating index : 'type' => 1, 'id' => 1, 'updates' => 1 ... ";
+$stats_monthly->createIndex(['type' => 1, 'id' => 1, 'updates' => 1], ['partialFilterExpression' => ['updates' => ['$exists' => true]]]);
 echo "Done\n";
-echo "Creating index : 'type' => 1, 'id' => 1, 'day' => -1 ... ";
-$dailystats->createIndex(['type' => 1, 'id' => 1, 'day' => -1], []);
+echo "Creating index : 'type' => 1, 'id' => 1, 'yyyy-mm' => -1 ... ";
+$stats_monthly->createIndex(['type' => 1, 'id' => 1, 'yyyy-mm' => -1], []);
 echo "Done\n";
 
 // esimails
