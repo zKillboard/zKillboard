@@ -54,6 +54,7 @@ $cookie_time = (86400 * 30);
 $cookie_secret = 'cookie';
 
 $beSocial = false;
+$showDailies = true;
 
 // Slim config
 $config = array(

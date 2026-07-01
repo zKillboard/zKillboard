@@ -2,7 +2,7 @@
 
 function handler($request, $response, $args, $container)
 {
-	global $mdb, $redis, $uri, $t;
+	global $mdb, $redis, $uri, $t, $showDailies;
 
 	// Extract route parameters
 	$dailyRouteDate = null;
@@ -48,7 +48,7 @@ function handler($request, $response, $args, $container)
 		return renderCached404($container, $response, 'Not Found');
 	}
 
-	$validPageTypes = array('kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime', 'streambox', 'recap2025');
+	$validPageTypes = array('kills', 'losses', 'solo', 'daily', 'stats', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime', 'streambox', 'recap2025');
 	if ($key == 'alliance') {
 		$validPageTypes[] = 'corpstats';
 	}
@@ -63,10 +63,6 @@ function handler($request, $response, $args, $container)
 		$pageType = 'overview';
 	else if (!in_array($pageType, $validPageTypes))
 		$pageType = 'overview';
-
-	if ($pageType == 'daily' && $key != 'character') {
-		return renderCached404($container, $response, 'Not Found');
-	}
 
 	$map = array(
 		'corporation' => array('column' => 'corporation', 'mixed' => true),
@@ -318,6 +314,10 @@ function handler($request, $response, $args, $container)
 		$id = (int) $id;
 	}
 	$statistics = $mdb->findDoc('statistics', ['type' => $statType, 'id' => $id]);
+	$showDailyStats = ($showDailies ?? false) && $key == 'character' && DailyStats::hasData($statType, $id);
+	if ($pageType == 'daily' && !$showDailyStats) {
+		return renderCached404($container, $response, 'Not Found');
+	}
 
 	$dailyStats = null;
 	$dailyDays = [];
@@ -671,7 +671,7 @@ function handler($request, $response, $args, $container)
 		$detail['systems'] = $mdb->find('information', ['type' => 'solarSystemID', 'constellationID' => (int) $id], ['name' => 1], null, ['id' => 1, 'name' => 1]);
 	}
 
-	$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'dailyStats' => $dailyStats, 'dailyDays' => $dailyDays, 'dailyDate' => $dailyDate, 'dailySide' => $dailySide, 'dailySelectedDays' => $dailySelectedDays, 'dailySelectedStart' => $dailySelectedStart, 'dailySelectedEnd' => $dailySelectedEnd, 'dailyGraphStart' => $dailyGraphStart, 'dailyGraphEnd' => $dailyGraphEnd, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified, 'dqChars' => $dqChars);
+	$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'showDailyStats' => $showDailyStats, 'dailyStats' => $dailyStats, 'dailyDays' => $dailyDays, 'dailyDate' => $dailyDate, 'dailySide' => $dailySide, 'dailySelectedDays' => $dailySelectedDays, 'dailySelectedStart' => $dailySelectedStart, 'dailySelectedEnd' => $dailySelectedEnd, 'dailyGraphStart' => $dailyGraphStart, 'dailyGraphEnd' => $dailyGraphEnd, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified, 'dqChars' => $dqChars);
 
 	return $container->get('view')->render($response->withHeader('Cache-Tag', "www,overview,overview:$id"), 'overview.pug', $renderParams);
 }

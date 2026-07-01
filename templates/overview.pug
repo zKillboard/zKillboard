@@ -22,9 +22,11 @@ block content
         if (!empty($prevID))
           li.nav-item.d-none.d-md-block
             a.nav-link(href=('/' . ($key ?? '') . '/' . $prevID . '/')) &lt;
-        each $nav in [['Overview',''], ['Kills','kills/'], ['Solo','solo/'], ['Losses','losses/']]
+        - $navItems = [['Overview','','overview'], ['Kills','kills/','kills'], ['Solo','solo/','solo'], ['Losses','losses/','losses']];
+        - if (!empty($showDailyStats)) $navItems[] = ['Dailies','daily/','daily'];
+        each $nav in $navItems
           li.nav-item
-            a.nav-link(class=$isActive($nav[0], $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/' . $nav[1] . ($nav[1] ? ($YWMurl ?? '') : '')))= $nav[0]
+            a.nav-link(class=$isActive($nav[2], $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/' . $nav[1] . ($nav[1] ? ($YWMurl ?? '') : '')))= $nav[0]
         if (($key ?? '') == 'character')
           li.nav-item
             a.nav-link(class=$isActive('Trophies', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/trophies/')) Trophies

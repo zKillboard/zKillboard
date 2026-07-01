@@ -2,7 +2,8 @@
 
 class DailyStats
 {
-    const COLLECTION = 'dailystats';
+    const COLLECTION = 'stats_monthly';
+    const MONTH_FIELD = 'yyyy-mm';
 
     public static $types = [
         'characterID' => true,
@@ -50,7 +51,7 @@ class DailyStats
         return isset($map[$type]) ? $map[$type] : $type;
     }
 
-    private static function markDirtySequence($type, $id, $day, $sequence)
+    public static function markDirtySequence($type, $id, $day, $sequence)
     {
         global $mdb;
 
@@ -64,12 +65,17 @@ class DailyStats
         if ($sequence <= 0) {
             return;
         }
-        $key = ['type' => $type, 'id' => $id, 'day' => $day];
+        $month = substr($day, 0, 7);
+        $key = ['type' => $type, 'id' => $id, self::MONTH_FIELD => $month];
 
-        $mdb->getCollection(self::COLLECTION)->updateOne($key, [
-            '$setOnInsert' => $key + ['created' => time()],
-            '$max' => ['update' => $sequence],
-        ], ['upsert' => true]);
+        $mdb->getCollection(self::COLLECTION)->updateOne(
+            $key,
+            [
+                '$setOnInsert' => $key + ['created' => time()],
+                '$addToSet' => ['updates' => "$day:$sequence"],
+            ],
+            ['upsert' => true]
+        );
     }
 
     public static function markDirtyFromKillmail($killmail)
@@ -102,8 +108,7 @@ class DailyStats
                 return;
             }
             $id = $type == 'label' ? (string) $id : (int) $id;
-            $key = DailyStats::queueValue($type, $id, $day);
-            $keys[$key] = ['type' => $type, 'id' => $id, 'day' => $day];
+            $keys["$type:$id:$day"] = ['type' => $type, 'id' => $id, 'day' => $day];
         };
 
         foreach ((array) @$killmail['involved'] as $involved) {
@@ -125,11 +130,6 @@ class DailyStats
         return array_values($keys);
     }
 
-    public static function queueValue($type, $id, $day)
-    {
-        return "$type:$id:$day";
-    }
-
     public static function rebuild($type, $id, $day, $expectedUpdate = null)
     {
         global $mdb;
@@ -140,10 +140,18 @@ class DailyStats
         }
 
         $id = $type == 'label' ? (string) $id : (int) $id;
+        $dayField = substr($day, 8, 2);
+        $key = ['type' => $type, 'id' => $id, self::MONTH_FIELD => substr($day, 0, 7)];
+        if ($expectedUpdate !== null) {
+            $existing = $mdb->getCollection(self::COLLECTION)->findOne($key, ['projection' => ["$dayField.sequence" => 1]]);
+            if ((int) ($existing[$dayField]['sequence'] ?? 0) >= (int) $expectedUpdate) {
+                self::clearUpdate($key, $day, $expectedUpdate);
+                return null;
+            }
+        }
+
         $doc = [
-            'type' => $type,
-            'id' => $id,
-            'day' => $day,
+            'sequence' => (int) $expectedUpdate,
             'updated' => time(),
             'kills' => self::sideStats($type, $id, $day, false),
             'losses' => self::sideStats($type, $id, $day, true),
@@ -155,21 +163,113 @@ class DailyStats
         );
 
         if (!$hasActivity) {
-            $deleteKey = ['type' => $type, 'id' => $id, 'day' => $day];
-            if ($expectedUpdate !== null) {
-                $deleteKey['update'] = (int) $expectedUpdate;
-            }
-            $mdb->getCollection(self::COLLECTION)->deleteOne($deleteKey);
+            $mdb->getCollection(self::COLLECTION)->updateOne($key, ['$unset' => [$dayField => 1]]);
+            self::clearUpdate($key, $day, $expectedUpdate);
             return null;
         }
 
         $mdb->getCollection(self::COLLECTION)->updateOne(
-            ['type' => $type, 'id' => $id, 'day' => $day],
-            ['$set' => $doc],
+            $key,
+            ['$set' => [$dayField => $doc]],
             ['upsert' => true]
         );
+        self::clearUpdate($key, $day, $expectedUpdate);
 
         return $doc;
+    }
+
+    public static function rebuildMonthly($monthlyDoc)
+    {
+        global $mdb;
+
+        $type = self::normalizeType($monthlyDoc['type']);
+        if (!isset(self::$types[$type])) {
+            throw new Exception("Unknown daily stats type: $type");
+        }
+
+        $id = $type == 'label' ? (string) $monthlyDoc['id'] : (int) $monthlyDoc['id'];
+        $updates = [];
+        $pullUpdates = [];
+        foreach ((array) ($monthlyDoc['updates'] ?? []) as $update) {
+            if (!preg_match('/^(\d{4}-\d{2}-\d{2}):(\d+)$/', (string) $update, $matches)) {
+                $pullUpdates[] = $update;
+                continue;
+            }
+            $day = $matches[1];
+            $sequence = (int) $matches[2];
+            if (substr($day, 0, 7) != $monthlyDoc[self::MONTH_FIELD]) {
+                $pullUpdates[] = (string) $update;
+                continue;
+            }
+            if (!isset($updates[$day]) || $updates[$day]['sequence'] < $sequence) {
+                if (isset($updates[$day])) {
+                    $pullUpdates[] = $updates[$day]['value'];
+                }
+                $updates[$day] = ['day' => $day, 'sequence' => $sequence, 'value' => (string) $update];
+            } else {
+                $pullUpdates[] = (string) $update;
+            }
+        }
+
+        $updates = array_values($updates);
+        usort($updates, function ($a, $b) { return $b['sequence'] <=> $a['sequence']; });
+
+        $set = [];
+        $unset = [];
+        foreach ($updates as $update) {
+            $day = $update['day'];
+            $dayField = substr($day, 8, 2);
+            if ((int) ($monthlyDoc[$dayField]['sequence'] ?? 0) >= $update['sequence']) {
+                $pullUpdates[] = $update['value'];
+                continue;
+            }
+
+            $doc = [
+                'sequence' => $update['sequence'],
+                'updated' => time(),
+                'kills' => self::sideStats($type, $id, $day, false),
+                'losses' => self::sideStats($type, $id, $day, true),
+            ];
+
+            if (((int) @$doc['kills']['summary']['count'] > 0) || ((int) @$doc['losses']['summary']['count'] > 0)) {
+                $set[$dayField] = $doc;
+            } else {
+                $unset[$dayField] = 1;
+            }
+            $pullUpdates[] = $update['value'];
+        }
+
+        $write = [];
+        if (count($set) > 0) {
+            $write['$set'] = $set;
+        }
+        if (count($unset) > 0) {
+            $write['$unset'] = $unset;
+        }
+        if (count($pullUpdates) > 0) {
+            $write['$pull'] = ['updates' => ['$in' => array_values(array_unique($pullUpdates))]];
+        }
+        if (count($write) > 0) {
+            $mdb->getCollection(self::COLLECTION)->bulkWrite([
+                ['updateOne' => [['_id' => $monthlyDoc['_id']], $write]],
+            ], ['ordered' => false]);
+        }
+
+        $mdb->getCollection(self::COLLECTION)->updateOne(['_id' => $monthlyDoc['_id'], 'updates' => []], ['$unset' => ['updates' => 1]]);
+        return ['updated' => count($set), 'removed' => count($unset), 'pulled' => count($pullUpdates)];
+    }
+
+    private static function clearUpdate($key, $day, $sequence)
+    {
+        global $mdb;
+
+        $collection = $mdb->getCollection(self::COLLECTION);
+        if ($sequence === null) {
+            return;
+        }
+
+        $collection->updateOne($key, ['$pull' => ['updates' => "$day:" . (int) $sequence]]);
+        $collection->updateOne($key + ['updates' => []], ['$unset' => ['updates' => 1]]);
     }
 
     public static function getAggregate($type, $id, $days = null, $viewSide = null)
@@ -178,16 +278,16 @@ class DailyStats
 
         $type = self::normalizeType($type);
         $id = $type == 'label' ? (string) $id : (int) $id;
-        $query = ['type' => $type, 'id' => $id, 'updated' => ['$exists' => true]];
+        $query = ['type' => $type, 'id' => $id];
         if (is_array($days) && count($days) > 0) {
-            $query['day'] = ['$in' => array_values($days)];
+            $months = [];
+            foreach ($days as $day) {
+                $months[substr($day, 0, 7)] = substr($day, 0, 7);
+            }
+            $query[self::MONTH_FIELD] = ['$in' => array_values($months)];
         }
 
-        $docs = $mdb->find(self::COLLECTION, $query, ['day' => -1], null, [
-            'day' => 1,
-            'kills' => 1,
-            'losses' => 1,
-        ]);
+        $docs = self::dailyDocs($mdb->find(self::COLLECTION, $query, [self::MONTH_FIELD => -1]), is_array($days) ? array_fill_keys($days, true) : null);
         if (count($docs) == 0) {
             return null;
         }
@@ -222,15 +322,46 @@ class DailyStats
 
         $type = self::normalizeType($type);
         $id = $type == 'label' ? (string) $id : (int) $id;
-        return $mdb->find(self::COLLECTION, ['type' => $type, 'id' => $id, 'updated' => ['$exists' => true]], ['day' => -1], $limit, [
-            'day' => 1,
-            'kills.summary.count' => 1,
-            'kills.summary.isk' => 1,
-            'kills.summary.points' => 1,
-            'losses.summary.count' => 1,
-            'losses.summary.isk' => 1,
-            'losses.summary.points' => 1,
-        ]);
+        return array_slice(self::dailyDocs($mdb->find(self::COLLECTION, ['type' => $type, 'id' => $id], [self::MONTH_FIELD => -1])), 0, $limit);
+    }
+
+    public static function hasData($type, $id)
+    {
+        global $mdb;
+
+        $type = self::normalizeType($type);
+        $id = $type == 'label' ? (string) $id : (int) $id;
+        $days = [];
+        for ($day = 1; $day <= 31; $day++) {
+            $days[] = [sprintf('%02d', $day) => ['$exists' => true]];
+        }
+
+        return $mdb->getCollection(self::COLLECTION)->findOne(
+            ['type' => $type, 'id' => $id, '$or' => $days],
+            ['projection' => ['_id' => 1]]
+        ) != null;
+    }
+
+    private static function dailyDocs($monthlyDocs, $wanted = null)
+    {
+        $docs = [];
+        foreach ($monthlyDocs as $monthDoc) {
+            $month = (string) ($monthDoc[self::MONTH_FIELD] ?? '');
+            for ($dayNum = 31; $dayNum >= 1; $dayNum--) {
+                $dayField = sprintf('%02d', $dayNum);
+                if (!isset($monthDoc[$dayField]) || !is_array($monthDoc[$dayField])) {
+                    continue;
+                }
+                $doc = $monthDoc[$dayField];
+                $doc['day'] = $doc['day'] ?? "$month-$dayField";
+                if ($wanted !== null && !isset($wanted[$doc['day']])) {
+                    continue;
+                }
+                $docs[] = $doc;
+            }
+        }
+        usort($docs, function ($a, $b) { return strcmp($b['day'], $a['day']); });
+        return $docs;
     }
 
     private static function emptySideAggregate()

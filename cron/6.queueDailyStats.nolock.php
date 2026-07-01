@@ -1,5 +1,4 @@
 <?php
-exit();
 
 $mt = 6; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
@@ -11,11 +10,19 @@ if ($redis->get("zkb:reinforced") == true) {
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    $candidates = $mdb->find(DailyStats::COLLECTION, ['update' => ['$gt' => 0]], ['update' => -1], 100, ['type' => 1, 'id' => 1, 'day' => 1, 'update' => 1]);
+    $candidates = $mdb->find(DailyStats::COLLECTION, ['updates' => ['$exists' => true]], ['type' => 1, 'id' => 1], 100);
     $row = null;
     $lockKey = null;
     foreach ($candidates as $candidate) {
-        $candidateLockKey = "zkb:dailystats:{$candidate['type']}:{$candidate['id']}:{$candidate['day']}";
+        $updates = (array) ($candidate['updates'] ?? []);
+        if (count($updates) == 0) {
+            $mdb->getCollection(DailyStats::COLLECTION)->updateOne(
+                ['_id' => $candidate['_id'], 'updates' => []],
+                ['$unset' => ['updates' => 1]]
+            );
+            continue;
+        }
+        $candidateLockKey = "zkb:stats_monthly:{$candidate['_id']}";
         if ($redis->set($candidateLockKey, "true", ['nx', 'ex' => 1800]) === true) {
             $row = $candidate;
             $lockKey = $candidateLockKey;
@@ -36,17 +43,8 @@ while ($minute == date('Hi')) {
         continue;
     }
 
-    $type = $row['type'];
-    $id = $row['id'];
-    $day = $row['day'];
-    $startUpdate = (int) $row['update'];
-
     try {
-        DailyStats::rebuild($type, $id, $day, $startUpdate);
-        $mdb->getCollection(DailyStats::COLLECTION)->updateOne(
-            ['type' => $type, 'id' => $id, 'day' => $day, 'update' => $startUpdate],
-            ['$set' => ['update' => 0]]
-        );
+        DailyStats::rebuildMonthly($row);
     } catch (Exception $ex) {
         Util::out(print_r($ex, true));
     } finally {
