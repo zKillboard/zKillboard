@@ -24,6 +24,10 @@ block content
         - $fieldType = $field['type'] ?? '';
         - $fieldID = (int) ($field['id'] ?? 0);
         - $fieldName = $field['name'] ?? '';
+        - $fieldNameHtml = htmlspecialchars((string) $fieldName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        - $fieldMatchHtml = htmlspecialchars((string) ($search ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        if ($fieldMatchHtml != '')
+          - $fieldNameHtml = preg_replace('/(' . preg_quote($fieldMatchHtml, '/') . ')/i', '<strong>$1</strong>', $fieldNameHtml);
         - $fieldURL = '/' . $fieldType . '/' . $fieldID . '/';
         - $imageURL = $field['image'] ?? '';
         - $imageOnError = '';
@@ -42,4 +46,4 @@ block content
                     img.pip(src=('/img/pips/' . $field['pip']) alt="" loading="lazy" decoding="async" fetchpriority="low")
               else
                 img.eveimage.img-rounded(src=$imageURL style=('height: ' . $imageSize . 'px; width: ' . $imageSize . 'px; flex: 0 0 auto;') alt=$fieldName onerror=$imageOnError loading="lazy" decoding="async" fetchpriority="low")
-            span(style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;")= $fieldName
+            span(style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;")!= $fieldNameHtml
