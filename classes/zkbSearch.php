@@ -41,6 +41,15 @@ class zkbSearch
                 if (sizeof($result) == 0) $sub = substr($sub, 0, strlen($sub) - 1);
             } while (sizeof($result) == 0 && strlen($sub) > 0);
 
+            if (sizeof($result) == 0 && strpos($low, ' ') !== false) {
+                $terms = array_filter(explode(' ', $low), 'strlen');
+                $wordPrefix = '^' . implode('.*\b', $terms);
+                $query = ['type' => $type, 'l_name' => ['$regex' => $wordPrefix]];
+                if ($type == "typeID") $query['published'] = true;
+                $result = $mdb->find("information", $query, ['l_name' => 1], 5, ['l_name' => 1, 'id' => 1]);
+                if ($result == null) $result = [];
+            }
+
             if (trim($rawSearch) != '' && ($type == 'corporationID' || $type == 'allianceID')) {
                 $tickerSearch = preg_quote(strtoupper(trim($rawSearch)));
                 $tickerResult = $mdb->find("information", ['type' => $type, 'ticker' => ['$regex' => "^$tickerSearch"]], ['ticker' => 1], 5, ['ticker' => 1, 'id' => 1]);
