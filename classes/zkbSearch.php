@@ -19,6 +19,7 @@ class zkbSearch
     {
         global $redis, $mdb;
 
+        $rawSearch = (string) $search;
         $search = strtolower(preg_quote($search));
         $low = $search;
 
@@ -40,6 +41,15 @@ class zkbSearch
                 if (sizeof($result) == 0) $sub = substr($sub, 0, strlen($sub) - 1);
             } while (sizeof($result) == 0 && strlen($sub) > 0);
 
+            if (trim($rawSearch) != '' && ($type == 'corporationID' || $type == 'allianceID')) {
+                $tickerSearch = preg_quote(strtoupper(trim($rawSearch)));
+                $tickerResult = $mdb->find("information", ['type' => $type, 'ticker' => ['$regex' => "^$tickerSearch"]], ['ticker' => 1], 5, ['ticker' => 1, 'id' => 1]);
+                if ($tickerResult == null) $tickerResult = [];
+                foreach ($tickerResult as &$row) $row['tickerMatch'] = true;
+                unset($row);
+                $result = array_merge($tickerResult, $result);
+            }
+
             $type = str_replace(':flag', '', $type);
             $ids = [];
             foreach ($result as $row) {
@@ -50,6 +60,7 @@ class zkbSearch
 
                 $info = Info::getInfo($type, $id);
                 $name = $info['name'] ?? 'Unknown';
+                $ticker = trim((string) (@$info['ticker'] ?? ''));
                 $image = isset(self::$imageMap[$type]) ? self::$imageMap[$type] : '';
                 $localImageSuffix = $imageSize <= 32 ? '_32' : '';
                 $image = sprintf($image, $id, $imageSize, $localImageSuffix);
@@ -83,6 +94,10 @@ class zkbSearch
                     $regionID = Info::getInfoField('solarSystemID', $id, 'regionID');
                     $regionName = Info::getInfoField('regionID', $regionID, 'name');
                     $name = "$name ($regionName)";
+                }
+                if (@$row['tickerMatch'] === true && $ticker != '') {
+                    if ($searchType == 'alliance' || $searchType == 'allianceID') $name = "$name <$ticker>";
+                    if ($searchType == 'corporation' || $searchType == 'corporationID') $name = "$name [$ticker]";
                 }
                 $pip = $searchType == 'ship' ? ($info['pip'] ?? '') : '';
                 $searchResult = ['id' => (int) $id, 'name' => $name, 'type' => str_replace('ID', '', $searchType), 'image' => $image];
