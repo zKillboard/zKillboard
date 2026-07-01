@@ -42,10 +42,6 @@ block content
           a.nav-link(class=$isActive('ranks', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/ranks/')) Ranks
         li.nav-item
           a.nav-link(class=$isActive('stats', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/stats/')) Stats
-        //- Daily is temporarily hidden while the feature is production-gated.
-		if (($key ?? '') == 'character')
-          li.nav-item
-            a.nav-link(class=$isActive('daily', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/daily/')) Daily
         if (!empty($extraData['hasSupers']))
           li.nav-item
             a.nav-link(class=$isActive('supers', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/supers/')) Supers

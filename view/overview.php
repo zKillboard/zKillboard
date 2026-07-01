@@ -48,7 +48,7 @@ function handler($request, $response, $args, $container)
 		return renderCached404($container, $response, 'Not Found');
 	}
 
-	$validPageTypes = array('kills', 'losses', 'solo', 'stats', 'daily', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime', 'streambox', 'recap2025');
+	$validPageTypes = array('kills', 'losses', 'solo', 'stats', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime', 'streambox', 'recap2025');
 	if ($key == 'alliance') {
 		$validPageTypes[] = 'corpstats';
 	}

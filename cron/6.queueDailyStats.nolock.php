@@ -1,4 +1,5 @@
 <?php
+exit();
 
 $mt = 6; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
