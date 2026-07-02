@@ -87,15 +87,28 @@ class AdvancedSearch
         }
 
         if ($job['queryType'] == 'kills') {
-            $result = [];
-            foreach ($job['coll'] as $col) {
-                $cursor = $mdb->getCollection($col)->find($job['query'], ['sort' => $job['sort'], 'limit' => 100, 'skip' => 100 * $job['page'], 'maxTimeMS' => $maxTimeMS]);
-                $result = is_array($cursor) ? $cursor : iterator_to_array($cursor);
-                if (sizeof($result) >= 100) break;
+            try {
+                $result = [];
+                foreach ($job['coll'] as $col) {
+                    $cursor = $mdb->getCollection($col)->find($job['query'], ['sort' => $job['sort'], 'limit' => 100, 'skip' => 100 * $job['page'], 'maxTimeMS' => $maxTimeMS]);
+                    $result = is_array($cursor) ? $cursor : iterator_to_array($cursor);
+                    if (sizeof($result) >= 100) break;
+                }
+                $kills = [];
+                foreach ($result as $row) $kills[] = $row['killID'];
+                return ['kills' => $kills];
+            } catch (Exception $ex) {
+                if ($ex->getCode() == 50) self::logTimeout('AdvancedSearch::getKills', [
+                    'collections' => $job['coll'],
+                    'queryType' => $job['queryType'],
+                    'query' => $job['query'],
+                    'sort' => $job['sort'],
+                    'page' => $job['page'],
+                    'requestParams' => $job['queryParams'] ?? []
+                ], $ex);
+                else Util::zout(print_r($ex, true));
+                return ['kills' => []];
             }
-            $kills = [];
-            foreach ($result as $row) $kills[] = $row['killID'];
-            return ['kills' => $kills];
         }
         if ($job['queryType'] == 'count') {
             $result = self::getSums($job['groupType'] . 'ID', $job['query'], $job['victimsOnly'], false, true, $job['aggregateCollection'], $maxTimeMS);
@@ -364,6 +377,7 @@ class AdvancedSearch
                 Util::zout(print_r($ex, true));
             }
             RedisCache::set($hashKey, [], 900);
+            return [];
         } finally {
             $redis->del("inprogress:$hashKey");
         }
@@ -441,6 +455,7 @@ class AdvancedSearch
                 Util::zout(print_r($ex, true));
             }
             RedisCache::set($hashKey, [], 900);
+            return self::getEmptySums();
         }
     }
 
