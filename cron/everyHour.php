@@ -4,12 +4,12 @@ use cvweiss\redistools\RedisTtlCounter;
 
 require_once '../init.php';
 
-$key = date('YmdH');
-if ($kvc->get($key) == 1) {
+$time = time();
+$time = $time - ($time % 3600);
+$key = "zkb:everyHour:$time";
+if ($kvc->get($key) == true) {
     exit();
 }
-
-$mdb = new Mdb();
 
 $killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
 $kills = $killsLastHour->count();
@@ -20,10 +20,30 @@ if ($kills > 0) {
 }
 
 $parameters = ['groupID' => 30, 'isVictim' => false, 'pastSeconds' => (86400 * 90), 'nolimit' => true];
-$data['titans']['data'] = Stats::getTop('characterID', $parameters);
 $redis->set('zkb:titans', serialize(Stats::getTop('characterID', $parameters)));
 
 $parameters = ['groupID' => 659, 'isVictim' => false, 'pastSeconds' => (86400 * 90), 'nolimit' => true];
 $redis->set('zkb:supers', serialize(Stats::getTop('characterID', $parameters)));
 
-$kvc->setex($key, 3600, 1);
+$result = $mdb->getCollection('information')->updateMany(
+    [
+        'name' => ['$type' => 'string'],
+        '$expr' => [
+            '$ne' => [
+                ['$toLower' => '$name'],
+                ['$toLower' => '$l_name'],
+            ],
+        ],
+    ],
+    [
+        [
+            '$set' => [
+                'l_name' => ['$toLower' => '$name'],
+            ],
+        ],
+    ]
+);
+
+Util::out('l_name has been updated: ' . $result->getModifiedCount() . ' rows modified.', 'l_name update');
+
+$kvc->setex($key, 3600, true);
