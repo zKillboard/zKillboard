@@ -111,6 +111,7 @@ $redisQServer = '';
 # The number of ms when a query is considered to be running a long time
 $longQueryMS = 25000;
 $logAsearchAlltimeTimeouts = false;
+$advancedSearchMaxTimeSeconds = 60;
 
 # CREST SSO
 $ccpCallback = '';

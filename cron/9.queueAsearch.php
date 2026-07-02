@@ -1,8 +1,16 @@
 <?php
 
-$mt = 4; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
+$mt = 24; $workerID = $mt; do { $mt--; $workerID = $mt; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
 require_once '../init.php';
+
+if ($mt < 8) {
+	$queue = 'queueAsearchKillsSet';
+} elseif ($mt < 16) {
+	$queue = 'queueAsearchAggregationsSet';
+} else {
+	$queue = 'queueAsearchSet';
+}
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
@@ -12,7 +20,7 @@ while ($minute == date('Hi')) {
         if ($redis->get("zkb:reinforced") == true) break;
         if ($redis->ping() != 1) connectRedis();
 
-        $key = $redis->spop("queueAsearchSet");
+		$key = $redis->spop($queue);
         if ($key == null) { sleep(1); continue; }
         if ($redis->get("$key:result") !== false) continue;
 

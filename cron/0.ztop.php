@@ -51,6 +51,8 @@ while ($hour == date('H')) {
 	foreach (['queueRedis', 'queueRedisFail'] as $staleQueue) $redis->srem('queues', $staleQueue);
 	$queues = $redis->sMembers('queues');
 	$queues[] = "queueRelatedSet";
+	$queues[] = "queueAsearchKillsSet";
+	$queues[] = "queueAsearchAggregationsSet";
 	$queues[] = "queueAsearchSet";
 	$mongoQueues = $mdb->getCollection('queues')->distinct('queue');
 	if (!is_array($mongoQueues)) $mongoQueues = [];
@@ -74,6 +76,8 @@ while ($hour == date('H')) {
 		if ($queue == 'queueStats') $queueCount = $redis->scard('queueStatsSet');
 		else if ($queue == 'queueStatsUpdated') $queueCount = $redis->scard('queueStatsUpdated');
 		else if ($queue == 'queueRelatedSet') $queueCount = $redis->scard('queueRelatedSet');
+		else if ($queue == 'queueAsearchKillsSet') $queueCount = $redis->scard('queueAsearchKillsSet');
+		else if ($queue == 'queueAsearchAggregationsSet') $queueCount = $redis->scard('queueAsearchAggregationsSet');
 		else if ($queue == 'queueAsearchSet') $queueCount = $redis->scard('queueAsearchSet');
 		else {
 			$queueCount = $redis->lLen($queue);
