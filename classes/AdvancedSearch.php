@@ -255,7 +255,12 @@ class AdvancedSearch
         $val = (string) ($queryParams['epoch'][$which] ?? '');
         if ($val == "") return $query;
 
-        $time = strtotime($val);
+        $time = self::parseEpochTime($val);
+        if ($time === null) {
+            $query['invalidDateFilter'] = true;
+            return $query;
+        }
+
         if ($time > time()) {
 			// no point in adding a filter for a future date
             return $query;
@@ -269,6 +274,22 @@ class AdvancedSearch
         }
 
         return $query;
+    }
+
+    private static function parseEpochTime($val)
+    {
+        $val = trim((string) $val);
+        if ($val == '') return null;
+
+        if (!preg_match('/^(\d{4})-\d{2}-\d{2}(?:[T ][0-2]\d:[0-5]\d(?::[0-5]\d)?(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)?$/', $val, $matches)) {
+            return null;
+        }
+
+        $date = substr($val, 0, 10);
+        if ($date < '2007-12-05' || $date > gmdate('Y-m-d')) return null;
+
+        $time = strtotime($val);
+        return $time === false ? null : $time;
     }
 
     public static function getTop($groupByColumn, $query, $victimsOnly, $filter, $addInfo, $sortKey, $sortBy, $collection = 'killmails', $maxTimeMS = 25000)

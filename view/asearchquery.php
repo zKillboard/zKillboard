@@ -86,7 +86,9 @@ function handler($request, $response, $args, $container) {
 		$now = time();
 		if ($startTime > $now) $startTime = $now;
 		if ($endTime == 0 || $endTime > $now) $endTime = $now;
-		$guaranteedQuery = in_array($epochButton, ['week', 'recent'], true) || ($startTime > 0 && ($endTime - $startTime) <= 7776000);
+		$invalidDateFilter = @$query['invalidDateFilter'] == true || ($startTime > 0 && $endTime > 0 && $endTime < $startTime);
+		if ($invalidDateFilter) $query[] = ['killID' => -1];
+		$guaranteedQuery = $invalidDateFilter || in_array($epochButton, ['week', 'recent'], true) || ($startTime > 0 && ($endTime - $startTime) <= 7776000);
 
 		$labels = [];
 		foreach ($buttons as $label) {
@@ -102,6 +104,7 @@ function handler($request, $response, $args, $container) {
 		}
 		unset($query['start']);
 		unset($query['end']);
+		unset($query['invalidDateFilter']);
 
 		$page = (isset($queryParams['radios']['page']) ? max(1, min(10, (int) @$queryParams['radios']['page'])) - 1 : 0);
 		$sortKey = (isset($queryParams['radios']['sort']['sortBy']) && isset($validSortBy[$queryParams['radios']['sort']['sortBy']]) ? $validSortBy[$queryParams['radios']['sort']['sortBy']] : 'killID');
