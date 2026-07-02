@@ -86,9 +86,6 @@ function handler($request, $response, $args, $container) {
 		$now = time();
 		if ($startTime > $now) $startTime = $now;
 		if ($endTime == 0 || $endTime > $now) $endTime = $now;
-		$invalidDateFilter = @$query['invalidDateFilter'] == true || ($startTime > 0 && $endTime > 0 && $endTime < $startTime);
-		if ($invalidDateFilter) $query[] = ['killID' => -1];
-		$guaranteedQuery = $invalidDateFilter || in_array($epochButton, ['week', 'recent'], true) || ($startTime > 0 && ($endTime - $startTime) <= 7776000);
 
 		$labels = [];
 		foreach ($buttons as $label) {
@@ -99,12 +96,8 @@ function handler($request, $response, $args, $container) {
 			}
 		}
 		foreach ($labels as $group => $search) $query[] = ['labels' => ['$in' => $search]];
-		if (!$guaranteedQuery) {
-			$query = AdvancedSearch::buildItemHistoryQuery($queryParams, $query, "items", AdvancedSearch::getSelectedFromBase('items-', $buttons), 5000);
-		}
 		unset($query['start']);
 		unset($query['end']);
-		unset($query['invalidDateFilter']);
 
 		$page = (isset($queryParams['radios']['page']) ? max(1, min(10, (int) @$queryParams['radios']['page'])) - 1 : 0);
 		$sortKey = (isset($queryParams['radios']['sort']['sortBy']) && isset($validSortBy[$queryParams['radios']['sort']['sortBy']]) ? $validSortBy[$queryParams['radios']['sort']['sortBy']] : 'killID');
@@ -160,7 +153,6 @@ function handler($request, $response, $args, $container) {
 			'types' => $types,
 			'queryParams' => $queryParams,
 			'itemJoin' => AdvancedSearch::getSelectedFromBase('items-', $buttons),
-			'guaranteedQuery' => $guaranteedQuery,
 			'cacheTime' => $cacheTime
 		];
 		if ($queryType != 'kills' && $queryType != 'count') {
@@ -186,28 +178,8 @@ function handler($request, $response, $args, $container) {
 			if ($ret == "PROCESSING") {
 				usleep(100000); // 100ms
 				$waits++;
-				if ($guaranteedQuery && $waits > 50) { // 5 seconds
+				if ($waits > 50) { // 5 seconds
 					return renderAsearchProcessing($response, $cacheTag, $queryType);
-				}
-				if (!$guaranteedQuery && $waits > 250) { // 25 seconds
-					AdvancedSearch::logTimeout('asearch processing wait', [
-						'cacheKey' => $key,
-						'queryType' => $queryType,
-						'groupType' => $groupType,
-						'victimsOnly' => $victimsOnly,
-						'collections' => $coll,
-						'aggregateCollection' => $aggregateCollection,
-						'page' => $page,
-						'sortKey' => $sortKey,
-						'sortBy' => $sortBy,
-						'sort' => $sort,
-						'query' => $query,
-						'filter' => $filter,
-						'requestParams' => $queryParams,
-						'uri' => $uri
-					]);
-					$response->getBody()->write(json_encode(['error' => 'Request timeout'], JSON_PRETTY_PRINT));
-					return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Control', 'no-store')->withHeader('Cache-Tag', $cacheTag)->withStatus(408);
 				}
 			}
 		} while ($ret == "PROCESSING");
@@ -217,28 +189,24 @@ function handler($request, $response, $args, $container) {
 			return withAsearchCacheHeaders($response, $cacheTime)->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 		}
 		$redis->setex($key, max(300, min($cacheTime, 14400)), "PROCESSING");
-		if ($guaranteedQuery) {
-			$redis->sadd('queueAsearchSet', $key);
-			$redis->setex("$key:params", max(3600, $cacheTime), serialize($job));
+		$redis->sadd('queueAsearchSet', $key);
+		$redis->setex("$key:params", max(3600, $cacheTime), serialize($job));
 
-			$waits = 0;
-			do {
-				usleep(100000);
-				$rawResult = $redis->get("$key:result");
-				if ($rawResult !== false && $rawResult !== null) {
-					$result = unserialize($rawResult);
-					$redis->del("$key:result");
-					$redis->del($key);
-					if ($result === null) return renderAsearchProcessing($response, $cacheTag, $queryType);
-					return renderAsearchResult($response, $container, $cacheTag, $job, $result, $labelGroupMaps);
-				}
-				$waits++;
-			} while ($waits <= 50);
+		$waits = 0;
+		do {
+			usleep(100000);
+			$rawResult = $redis->get("$key:result");
+			if ($rawResult !== false && $rawResult !== null) {
+				$result = unserialize($rawResult);
+				$redis->del("$key:result");
+				$redis->del($key);
+				if ($result === null) return renderAsearchProcessing($response, $cacheTag, $queryType);
+				return renderAsearchResult($response, $container, $cacheTag, $job, $result, $labelGroupMaps);
+			}
+			$waits++;
+		} while ($waits <= 50);
 
-			return renderAsearchProcessing($response, $cacheTag, $queryType);
-		}
-
-		return renderAsearchResult($response, $container, $cacheTag, $job, AdvancedSearch::runQueuedQuery($job), $labelGroupMaps);
+		return renderAsearchProcessing($response, $cacheTag, $queryType);
 	} catch (Exception $ex) {
 		if ($ex->getCode() != 50) Util::zout(print_r($ex, true));
 		else AdvancedSearch::logTimeout('asearch handler', [

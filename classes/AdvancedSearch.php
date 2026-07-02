@@ -75,7 +75,7 @@ class AdvancedSearch
     {
         global $mdb;
 
-        if (!empty($job['guaranteedQuery']) && isset($job['queryParams']['items'])) {
+        if (isset($job['queryParams']['items'])) {
             if (isset($job['query']['$and']) && is_array($job['query']['$and'])) $queries = $job['query']['$and'];
             else $queries = empty($job['query']) ? [] : [$job['query']];
             $queries = self::buildItemHistoryQuery($job['queryParams'], $queries, "items", $job['itemJoin'], null);
@@ -84,7 +84,6 @@ class AdvancedSearch
             else $job['query'] = ['$and' => $queries];
         }
 
-        $maxTimeMS = !empty($job['guaranteedQuery']) ? null : 25000;
         if ($job['queryType'] == 'kills') {
             $result = [];
             foreach ($job['coll'] as $col) {
@@ -97,16 +96,16 @@ class AdvancedSearch
             return ['kills' => $kills];
         }
         if ($job['queryType'] == 'count') {
-            $result = self::getSums($job['groupType'] . 'ID', $job['query'], $job['victimsOnly'], false, true, $job['aggregateCollection'], $maxTimeMS);
+            $result = self::getSums($job['groupType'] . 'ID', $job['query'], $job['victimsOnly'], false, true, $job['aggregateCollection'], null);
             unset($result['_id']);
             return $result;
         }
         if ($job['queryType'] == 'groups') {
             if (!in_array($job['groupType'], $job['types'], true)) return [];
-            return self::getTop($job['groupType'] . 'ID', $job['query'], $job['victimsOnly'], $job['filter'], true, $job['sortKey'], $job['sortBy'], $job['aggregateCollection'], $maxTimeMS);
+            return self::getTop($job['groupType'] . 'ID', $job['query'], $job['victimsOnly'], $job['filter'], true, $job['sortKey'], $job['sortBy'], $job['aggregateCollection'], null);
         }
         if ($job['queryType'] == 'labels') return self::getLabels($job['query'], $job['victimsOnly']);
-        if ($job['queryType'] == 'distincts') return self::getDistincts($job['query'], $job['filter'], $job['victimsOnly'], $job['aggregateCollection'], $maxTimeMS);
+        if ($job['queryType'] == 'distincts') return self::getDistincts($job['query'], $job['filter'], $job['victimsOnly'], $job['aggregateCollection'], null);
         return [];
     }
 
@@ -255,12 +254,7 @@ class AdvancedSearch
         $val = (string) ($queryParams['epoch'][$which] ?? '');
         if ($val == "") return $query;
 
-        $time = self::parseEpochTime($val);
-        if ($time === null) {
-            $query['invalidDateFilter'] = true;
-            return $query;
-        }
-
+        $time = strtotime($val);
         if ($time > time()) {
 			// no point in adding a filter for a future date
             return $query;
@@ -274,22 +268,6 @@ class AdvancedSearch
         }
 
         return $query;
-    }
-
-    private static function parseEpochTime($val)
-    {
-        $val = trim((string) $val);
-        if ($val == '') return null;
-
-        if (!preg_match('/^(\d{4})-\d{2}-\d{2}(?:[T ][0-2]\d:[0-5]\d(?::[0-5]\d)?(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)?$/', $val, $matches)) {
-            return null;
-        }
-
-        $date = substr($val, 0, 10);
-        if ($date < '2007-12-05' || $date > gmdate('Y-m-d')) return null;
-
-        $time = strtotime($val);
-        return $time === false ? null : $time;
     }
 
     public static function getTop($groupByColumn, $query, $victimsOnly, $filter, $addInfo, $sortKey, $sortBy, $collection = 'killmails', $maxTimeMS = 25000)
