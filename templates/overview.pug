@@ -161,6 +161,10 @@ block content
     else if ($pageType == 'top')
       .row.centered
         a(href="./solo/") Solo Version
+      .alert.alert-info.text-center
+        | Looking for the months filter? Use 
+        a.alert-link(href="/asearch/") Advanced Search
+        | .
       hr
       - $topSet = $topKills ?? [];
       - $topTitle = 'Most Valuable Kills - Month Selected';
