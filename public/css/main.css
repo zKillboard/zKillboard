@@ -439,7 +439,7 @@ ul.autocomplete a:focus {
 ul.autocomplete li.active>a,
 ul.autocomplete li>a:hover,
 ul.autocomplete li>a:focus {
-	background-color: #111;
+	background-color: var(--bs-dropdown-link-active-bg, #2a9fd6);
 }
 
 ul.autocomplete a p {
