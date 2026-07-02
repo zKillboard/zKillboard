@@ -73,12 +73,14 @@ class AdvancedSearch
 
     public static function runQueuedQuery($job)
     {
-        global $mdb;
+        global $mdb, $advancedSearchMaxTimeSeconds;
+
+        $maxTimeMS = (isset($advancedSearchMaxTimeSeconds) ? max(1, (int) $advancedSearchMaxTimeSeconds) : 60) * 1000;
 
         if (isset($job['queryParams']['items'])) {
             if (isset($job['query']['$and']) && is_array($job['query']['$and'])) $queries = $job['query']['$and'];
             else $queries = empty($job['query']) ? [] : [$job['query']];
-            $queries = self::buildItemHistoryQuery($job['queryParams'], $queries, "items", $job['itemJoin'], null);
+            $queries = self::buildItemHistoryQuery($job['queryParams'], $queries, "items", $job['itemJoin'], $maxTimeMS);
             if (sizeof($queries) == 0) $job['query'] = [];
             else if (sizeof($queries) == 1) $job['query'] = $queries[0];
             else $job['query'] = ['$and' => $queries];
@@ -87,7 +89,7 @@ class AdvancedSearch
         if ($job['queryType'] == 'kills') {
             $result = [];
             foreach ($job['coll'] as $col) {
-                $cursor = $mdb->find($col, $job['query'], $job['sort'], 100, [], 100 * $job['page']);
+                $cursor = $mdb->getCollection($col)->find($job['query'], ['sort' => $job['sort'], 'limit' => 100, 'skip' => 100 * $job['page'], 'maxTimeMS' => $maxTimeMS]);
                 $result = is_array($cursor) ? $cursor : iterator_to_array($cursor);
                 if (sizeof($result) >= 100) break;
             }
@@ -96,16 +98,16 @@ class AdvancedSearch
             return ['kills' => $kills];
         }
         if ($job['queryType'] == 'count') {
-            $result = self::getSums($job['groupType'] . 'ID', $job['query'], $job['victimsOnly'], false, true, $job['aggregateCollection'], null);
+            $result = self::getSums($job['groupType'] . 'ID', $job['query'], $job['victimsOnly'], false, true, $job['aggregateCollection'], $maxTimeMS);
             unset($result['_id']);
             return $result;
         }
         if ($job['queryType'] == 'groups') {
             if (!in_array($job['groupType'], $job['types'], true)) return [];
-            return self::getTop($job['groupType'] . 'ID', $job['query'], $job['victimsOnly'], $job['filter'], true, $job['sortKey'], $job['sortBy'], $job['aggregateCollection'], null);
+            return self::getTop($job['groupType'] . 'ID', $job['query'], $job['victimsOnly'], $job['filter'], true, $job['sortKey'], $job['sortBy'], $job['aggregateCollection'], $maxTimeMS);
         }
         if ($job['queryType'] == 'labels') return self::getLabels($job['query'], $job['victimsOnly']);
-        if ($job['queryType'] == 'distincts') return self::getDistincts($job['query'], $job['filter'], $job['victimsOnly'], $job['aggregateCollection'], null);
+        if ($job['queryType'] == 'distincts') return self::getDistincts($job['query'], $job['filter'], $job['victimsOnly'], $job['aggregateCollection'], $maxTimeMS);
         return [];
     }
 
