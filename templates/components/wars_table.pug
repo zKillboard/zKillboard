@@ -16,8 +16,8 @@
       - $defenderKills = $defender['ships_killed'] ?? 0;
       - $aggressorIsk = $aggressor['isk_destroyed'] ?? ($aggressor['isk_killed'] ?? 0);
       - $defenderIsk = $defender['isk_destroyed'] ?? ($defender['isk_killed'] ?? 0);
-      - $aggressorName = $aggressor['name'] ?? 'Unknown aggressor';
-      - $defenderName = $defender['name'] ?? 'Unknown defender';
+      - $aggressorName = $aggressor['name'] ?? ($war['agrName'] ?? 'Unknown aggressor');
+      - $defenderName = $defender['name'] ?? ($war['dfdName'] ?? 'Unknown defender');
       - $aggressorID = $aggressor['alliance_id'] ?? ($aggressor['corporation_id'] ?? ($aggressor['id'] ?? 0));
       - $defenderID = $defender['alliance_id'] ?? ($defender['corporation_id'] ?? ($defender['id'] ?? 0));
       - $aggressorKind = isset($aggressor['alliance_id']) ? 'alliances' : 'corporations';

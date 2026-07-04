@@ -62,7 +62,7 @@ class War
     {
         global $mdb, $redis;
 
-        $cacheKey = 'zkb:wars:page:v1';
+        $cacheKey = 'zkb:wars:page:v2';
         if (!$forceRefresh) {
             try {
                 $cached = $redis->get($cacheKey);
@@ -86,6 +86,25 @@ class War
         $wars[] = ['name' => 'Recent Declared Wars - Mutual', 'wars' => $mdb->find('information', ['cacheTime' => 3600, 'type' => 'warID', 'mutual' => true], ['timeStarted' => -1], 50, $fields)];
         $wars[] = ['name' => 'Recently Declared Wars', 'wars' => $mdb->find('information', ['cacheTime' => 3600, 'type' => 'warID'], ['started' => -1], 25, $fields)];
         $wars[] = ['name' => 'Recently Finished Wars', 'wars' => $mdb->find('information', ['cacheTime' => 3600, 'type' => 'warID'], ['finished' => -1], 25, $fields)];
+        foreach ($wars as &$warTable) {
+            foreach ($warTable['wars'] as &$war) {
+                foreach (['aggressor', 'defender'] as $side) {
+                    if (!isset($war[$side]) || !is_array($war[$side]) || isset($war[$side]['name'])) {
+                        continue;
+                    }
+                    $id = $war[$side]['alliance_id'] ?? ($war[$side]['corporation_id'] ?? ($war[$side]['id'] ?? 0));
+                    if ((int) $id <= 0) {
+                        continue;
+                    }
+                    $type = isset($war[$side]['alliance_id']) ? 'allianceID' : 'corporationID';
+                    $name = Info::getInfoField($type, $id, 'name');
+                    if ($name != null && $name != '') {
+                        $war[$side]['name'] = $name;
+                    }
+                }
+            }
+        }
+        unset($warTable, $war);
 
         try {
             $redis->setex($cacheKey, 3900, serialize($wars));
