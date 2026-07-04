@@ -632,7 +632,7 @@ function handler($request, $response, $args, $container)
 
 	$extra['statsRecalced'] = $redis->llen('queueStats');
 
-	$extra['recentkills'] = $type == 'character' && $redis->get("recentKillmailActivity:$id") == true;
+	$extra['recentkills'] = $type == 'character' && $redis->get("recentKillmailActivity:char:$id") == true;
 
 	global $templates;
 	$templates->addGlobal('year', (isset($parameters['year']) ? $parameters['year'] : date('Y')));

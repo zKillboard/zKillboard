@@ -23,9 +23,6 @@ while ($minute == date('Hi')) {
             $charID = ((int) @$entity['characterID']);
             $corpID = ((int) @$entity['corporationID']);
 
-            $redis->setex("recentKillmailActivity:$charID", $delta, "true");
-            $redis->setex("recentKillmailActivity:$corpID", $delta, "true");
-
             $redis->setex("recentKillmailActivity:char:$charID", $delta, "true");
             $redis->setex("recentKillmailActivity:corp:$corpID", $delta, "true");
         }

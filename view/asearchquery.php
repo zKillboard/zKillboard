@@ -249,9 +249,10 @@ function renderAsearchResult($response, $container, $cacheTag, $job, $result, $l
 
 	$key = $job['key'];
 	$cacheTime = (int) ($job['cacheTime'] ?? 300);
+	$redisCacheTime = min($cacheTime, 900);
 	if ($job['queryType'] == 'kills' || $job['queryType'] == 'count') {
 		$jsoned = json_encode($result, true);
-		$redis->setex($key, $cacheTime, $jsoned);
+		$redis->setex($key, $redisCacheTime, $jsoned);
 		$response->getBody()->write($jsoned);
 		return withAsearchCacheHeaders($response, $cacheTime)->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 	}
@@ -290,7 +291,7 @@ function renderAsearchResult($response, $container, $cacheTag, $job, $result, $l
 		$rendered = $container->get('view')->getEnvironment()->render("components/asearch_distincts.pug", ['result' => $res]);
 	}
 
-	$redis->setex($job['queryType'] . ":$key", $cacheTime, trim($rendered));
+	$redis->setex($job['queryType'] . ":$key", $redisCacheTime, trim($rendered));
 	$redis->del($key);
 	$response->getBody()->write($rendered);
 	return withAsearchCacheHeaders($response, $cacheTime)->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
