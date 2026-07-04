@@ -800,6 +800,7 @@ function destroyTooltipsIn(root) {
 }
 
 function copyToClipboard(e) {
+    if (this.closest && this.closest(".noclipboard")) return;
     console.log(this);
     const raw = $(this).attr("raw");
     console.log(raw);
