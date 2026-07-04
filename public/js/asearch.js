@@ -840,7 +840,7 @@ function updateTitle() {
 	var currentPage = $(".pagenum.btn-primary").text().trim();
 	if (currentPage !== '' && currentPage != '1') filters.push('Page ' + currentPage);
 
-	var title = 'Advanced Search: ' + (filters.length > 0 ? filters.join(', ') : 'No filters selected');
+	var title = ' Advanced Search: ' + (filters.length > 0 ? filters.join(', ') : 'No filters selected');
 	$("#titlecontent").text(title);
 }
 if (!window.zkbAsearchTitleInterval) {

@@ -62,30 +62,30 @@ each $kill in ($killList ?? [])
         if (in_array('padding', $kill['labels'] ?? []))
           a(href='/asearch/#{"buttons":["togglefilters","week","label-padding","sort-date","sort-desc","page1","victimsonly"]}')
             small
-              font.alert.alert-warning(style="padding: 0px; margin: 0px;") &nbsp;padding&nbsp;
+              font.alert.alert-warning.m-2(style="padding: 0px; margin: 0px;") &nbsp;padding&nbsp;
         else if (in_array('atShip', $kill['labels'] ?? []))
           small
-            font.alert.alert-success(style="padding: 0px; margin: 0px;") &nbsp;AT Ship&nbsp;
+            font.alert.alert-success.m-2(style="padding: 0px; margin: 0px;") &nbsp;AT Ship&nbsp;
         else if (!empty($kill['ganked']))
           a(href='/asearch/#{"buttons":["togglefilters","week","label-ganked","sort-date","sort-desc","page1","victimsonly"]}')
             small
-              font.alert.alert-danger(style="padding: 0px; margin: 0px;") &nbsp;GANKED&nbsp;
+              font.alert.alert-danger.m-2(style="padding: 0px; margin: 0px;") &nbsp;GANKED&nbsp;
         else if (!empty($kill['solo']))
           a(href=('/character/' . ($kill['finalBlow']['characterID'] ?? 0) . '/solo/'))
             small
-              font.alert.alert-success(style="padding: 0px; margin: 0px;") &nbsp;SOLO&nbsp;
+              font.alert.alert-success.m-2(style="padding: 0px; margin: 0px;") &nbsp;SOLO&nbsp;
         else if (!empty($kill['npc']))
           |
           small
-            font.alert.alert-info(style="padding: 0px; margin: 0px;") &nbsp;NPC&nbsp;
+            font.alert.alert-info.m-2(style="padding: 0px; margin: 0px;") &nbsp;NPC&nbsp;
         else if (($kill['attackerCount'] ?? 0) >= 1000)
           |
           small
-            font.alert.alert-danger(style="padding: 0px; margin: 0px;") &nbsp;1000+&nbsp;
+            font.alert.alert-danger.m-2(style="padding: 0px; margin: 0px;") &nbsp;1000+&nbsp;
         else if (($kill['attackerCount'] ?? 0) >= 100)
           |
           small
-            font.alert.alert-warning(style="padding: 0px; margin: 0px;") &nbsp;100+&nbsp;
+            font.alert.alert-warning.m-2(style="padding: 0px; margin: 0px;") &nbsp;100+&nbsp;
         else
           = ' (' . ($kill['attackerCount'] ?? 0) . ')'
         br
