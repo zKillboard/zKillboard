@@ -5,7 +5,7 @@ section.war-kill-list-shell.kill-list-shell
   #killmailstobdy.war-kill-list
     if (count($killList ?? []) == 0)
       #kms_loading.war-kill-empty
-        em loading
+        em No kills found.
     else
       include war_kill_list_row.pug
 include pager.pug

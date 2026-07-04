@@ -17,9 +17,6 @@ $page = 1;
 $pageTitle = "War $warID";
 
 $p['kills'] = true;
-if (!$warFinished) {
-    $p['pastSeconds'] = (7 * 86400);
-}
 
 $top = array();
 $top[] = Info::doMakeCommon('Top Characters', 'characterID', Stats::getTop('characterID', $p));
@@ -30,7 +27,6 @@ $top[] = Info::doMakeCommon('Top Systems', 'solarSystemID', Stats::getTop('solar
 
 $p['limit'] = 5;
 $topIsk = array(); //Stats::getTopIsk($p);
-unset($p['pastSeconds']);
 unset($p['kills']);
 
 // get latest kills
