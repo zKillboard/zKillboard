@@ -2,6 +2,13 @@
   if (empty($wars))
     .war-empty No wars found.
   else
+    .war-row.war-row-head
+      .war-entity-cell Aggressor
+      .war-num-cell Kills
+      .war-num-cell ISK
+      .war-num-cell Kills
+      .war-num-cell ISK
+      .war-entity-cell.war-defender-cell Defender
     each $war in $wars
       - $aggressor = $war['aggressor'] ?? [];
       - $defender = $war['defender'] ?? [];
@@ -15,23 +22,14 @@
       - $defenderID = $defender['alliance_id'] ?? ($defender['corporation_id'] ?? ($defender['id'] ?? 0));
       - $aggressorKind = isset($aggressor['alliance_id']) ? 'alliances' : 'corporations';
       - $defenderKind = isset($defender['alliance_id']) ? 'alliances' : 'corporations';
-      a.war-row(href=('/war/' . ($war['id'] ?? '') . '/') aria-label=('War ' . $aggressorName . ' versus ' . $defenderName))
-        .war-side.war-side-aggressor
+      .war-row
+        a.war-entity-cell.war-entity-link(href=('/war/' . ($war['id'] ?? '') . '/') aria-label=('War ' . $aggressorName . ' versus ' . $defenderName))
           img(src=('https://images.evetech.net/' . $aggressorKind . '/' . $aggressorID . '/logo?size=64') alt="" loading="lazy" decoding="async" fetchpriority="low")
-          .war-side-copy
-            span.war-label Aggressor
-            strong= $aggressorName
-        .war-scoreboard
-          .war-score-pair
-            span(class=($aggressorKills >= $defenderKills ? 'green' : 'red') format="format-int-once" raw=$aggressorKills)= $shortNum($aggressorKills)
-            small Kills
-            span(class=($defenderKills >= $aggressorKills ? 'green' : 'red') format="format-int-once" raw=$defenderKills)= $shortNum($defenderKills)
-          .war-score-pair
-            span(class=($aggressorIsk >= $defenderIsk ? 'green' : 'red') format="format-isk-once" raw=$aggressorIsk)= $shortNum($aggressorIsk)
-            small ISK
-            span(class=($defenderIsk >= $aggressorIsk ? 'green' : 'red') format="format-isk-once" raw=$defenderIsk)= $shortNum($defenderIsk)
-        .war-side.war-side-defender
-          .war-side-copy
-            span.war-label Defender
-            strong= $defenderName
+          span= $aggressorName
+        a.war-num-cell(href=('/war/' . ($war['id'] ?? '') . '/') class=($aggressorKills >= $defenderKills ? 'green' : 'red') format="format-int-once" raw=$aggressorKills)= $shortNum($aggressorKills)
+        a.war-num-cell(href=('/war/' . ($war['id'] ?? '') . '/') class=($aggressorIsk >= $defenderIsk ? 'green' : 'red') format="format-isk-once" raw=$aggressorIsk)= $shortNum($aggressorIsk)
+        a.war-num-cell(href=('/war/' . ($war['id'] ?? '') . '/') class=($defenderKills >= $aggressorKills ? 'green' : 'red') format="format-int-once" raw=$defenderKills)= $shortNum($defenderKills)
+        a.war-num-cell(href=('/war/' . ($war['id'] ?? '') . '/') class=($defenderIsk >= $aggressorIsk ? 'green' : 'red') format="format-isk-once" raw=$defenderIsk)= $shortNum($defenderIsk)
+        a.war-entity-cell.war-entity-link.war-defender-cell(href=('/war/' . ($war['id'] ?? '') . '/') aria-label=('War ' . $aggressorName . ' versus ' . $defenderName))
+          span= $defenderName
           img(src=('https://images.evetech.net/' . $defenderKind . '/' . $defenderID . '/logo?size=64') alt="" loading="lazy" decoding="async" fetchpriority="low")
