@@ -62,7 +62,7 @@ each $kill in ($killList ?? [])
         if (in_array('padding', $kill['labels'] ?? []))
           a(href='/asearch/#{"buttons":["togglefilters","week","label-padding","sort-date","sort-desc","page1","victimsonly"]}')
             small
-              font.alert.alert-warning.m-2(style="padding: 0px; margin: 0px;") &nbsp;padding&nbsp;
+              font.alert.alert-warning.m-2(style="padding: 0px; margin: 0px; background-color: #CC5500;") &nbsp;padding&nbsp;
         else if (in_array('atShip', $kill['labels'] ?? []))
           small
             font.alert.alert-success.m-2(style="padding: 0px; margin: 0px;") &nbsp;AT Ship&nbsp;
