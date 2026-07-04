@@ -58,6 +58,44 @@ class War
         return $warInfo;
     }
 
+    public static function getWarsPageTables($forceRefresh = false)
+    {
+        global $mdb, $redis;
+
+        $cacheKey = 'zkb:wars:page:v1';
+        if (!$forceRefresh) {
+            try {
+                $cached = $redis->get($cacheKey);
+                if ($cached != null) {
+                    $wars = unserialize($cached);
+                    if (is_array($wars)) {
+                        return $wars;
+                    }
+                }
+            } catch (Exception $ex) {
+                try {
+                    $redis->del($cacheKey);
+                } catch (Exception $ex) {
+                }
+            }
+        }
+
+        $fields = ['id' => 1, 'aggressor' => 1, 'defender' => 1, 'started' => 1, 'finished' => 1, 'timeStarted' => 1];
+        $wars = array();
+        $wars[] = ['name' => 'Recent Declared Wars - Open to Allies', 'wars' => $mdb->find('information', ['cacheTime' => 3600, 'type' => 'warID', 'open_for_allies' => true], ['timeStarted' => -1], 50, $fields)];
+        $wars[] = ['name' => 'Recent Declared Wars - Mutual', 'wars' => $mdb->find('information', ['cacheTime' => 3600, 'type' => 'warID', 'mutual' => true], ['timeStarted' => -1], 50, $fields)];
+        $wars[] = ['name' => 'Recently Declared Wars', 'wars' => $mdb->find('information', ['cacheTime' => 3600, 'type' => 'warID'], ['started' => -1], 25, $fields)];
+        $wars[] = ['name' => 'Recently Finished Wars', 'wars' => $mdb->find('information', ['cacheTime' => 3600, 'type' => 'warID'], ['finished' => -1], 25, $fields)];
+
+        try {
+            $redis->setex($cacheKey, 3900, serialize($wars));
+        } catch (Exception $ex) {
+            // The page can still render directly if Redis is temporarily unavailable.
+        }
+
+        return $wars;
+    }
+
     public static function isAlliance($entityID)
     {
         global $mdb;

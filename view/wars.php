@@ -1,16 +1,17 @@
 <?php
 
 function handler($request, $response, $args, $container) {
-    global $mdb;
+    $wars = War::getWarsPageTables();
 
-    $timeStarted = date('Y-m-dTH:m:s', time() - (86400 * 90));
-
-    $wars = array();
-    $wars[] = ['name' => 'Recent Declared Wars - Open to Allies', 'wars' => $mdb->find('information', ['cacheTime' => 3600, 'type' => 'warID', 'open_for_allies' => true], ['timeStarted' => -1], 50)];
-    $wars[] = ['name' => 'Recent Declared Wars - Mutual', 'wars' => $mdb->find('information', ['cacheTime' => 3600, 'type' => 'warID', 'mutual' => true], ['timeStarted' => -1], 50)];
-    $wars[] = ['name' => 'Recently Declared Wars', 'wars' => $mdb->find('information', ['cacheTime' => 3600, 'type' => 'warID'], ['started' => -1], 25)];
-    $wars[] = ['name' => 'Recently Finished Wars', 'wars' => $mdb->find('information', ['cacheTime' => 3600, 'type' => 'warID'], ['finished' => -1], 25)];
-    Info::addInfo($wars);
-
-    return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,wars'), 'wars.pug', array('warTables' => $wars));
+    $cacheControl = 'public, max-age=3600, s-maxage=3600';
+    return $container->get('view')->render(
+        $response
+            ->withHeader('Cache-Control', $cacheControl)
+            ->withHeader('CDN-Cache-Control', $cacheControl)
+            ->withHeader('Cloudflare-CDN-Cache-Control', $cacheControl)
+            ->withHeader('Expires', gmdate('D, d M Y H:i:s', time() + 3600) . ' GMT')
+            ->withHeader('Cache-Tag', 'www,wars'),
+        'wars.pug',
+        array('warTables' => $wars)
+    );
 }
