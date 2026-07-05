@@ -48,6 +48,7 @@ $routes = [
 	'/asearch/' => ['GET', 'view/asearch.php'],
 	'/asearchsave/' => ['GET', 'view/asearchsave.php'],
 	'/asearchsaved/{id}/' => ['GET', 'view/asearchsaved.php'],
+	'/asearch/daily/' => ['GET', 'view/dailyquery.php'],
 	'/asearchquery/' => ['GET', 'view/asearchquery.php'],
 	'/asearchinfo/' => ['GET', 'view/asearchinfo.php'],
 	'/cache/1hour/autocomplete/' => ['GET', 'view/search2020.php'],

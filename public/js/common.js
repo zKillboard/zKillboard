@@ -95,6 +95,7 @@ $(document).ready(function () {
     assignRowColor();
     doFormats();
     $(document).ajaxComplete(doFormats);
+    loadDailyAsyncParts();
 
     // Anything that has a raw value to it will be able to be copied to the clipboard
 	$("[raw]").click(copyToClipboard);
@@ -115,12 +116,67 @@ function initPageContent() {
     assignRowColor();
     doFormats();
     loadFetchmeKillRows();
+    loadDailyAsyncParts();
     loadHomeKillListIfNeeded();
     applyFavoriteStars();
     $("[raw]").off("click.zkb-copy").on("click.zkb-copy", copyToClipboard);
     setTimeout(fixCCPsBrokenImages, 1000);
     setTimeout(prepTippy, 1);
 }
+
+function loadDailyAsyncParts() {
+    document.querySelectorAll(".daily-async").forEach(function (root) {
+        const base = root.getAttribute("data-base") || "";
+        if (base === "") return;
+        root.querySelectorAll(".daily-async-part").forEach(function (target) {
+            if (target.getAttribute("data-loaded") === "1" || target.getAttribute("data-loading") === "1") return;
+            target.setAttribute("data-loading", "1");
+            let url = base + "&part=" + encodeURIComponent(target.getAttribute("data-part") || "");
+            if (target.getAttribute("data-group")) url += "&group=" + encodeURIComponent(target.getAttribute("data-group"));
+
+            const load = function () {
+                fetch(url, { credentials: "same-origin", headers: { "X-Requested-With": "XMLHttpRequest" } }).then(function (response) {
+                    if (response.status === 202) {
+                        setTimeout(load, 1500);
+                        return "";
+                    }
+                    if (!response.ok) throw new Error("daily query failed");
+                    return response.text();
+                }).then(function (html) {
+                    if (html) {
+                        target.innerHTML = html;
+                        executeInsertedScripts(target);
+                        target.setAttribute("data-loaded", "1");
+                        target.removeAttribute("data-loading");
+                        doFormats();
+                        setTimeout(prepTippy, 1);
+                    }
+                }).catch(function () {
+                    target.removeAttribute("data-loading");
+                    setTimeout(function () {
+                        target.removeAttribute("data-loaded");
+                        loadDailyAsyncParts();
+                    }, 3000);
+                });
+            };
+
+            load();
+        });
+    });
+}
+
+function executeInsertedScripts(root) {
+    if (!root) return;
+
+    root.querySelectorAll("script").forEach(function (oldScript) {
+        const script = document.createElement("script");
+        for (const attr of oldScript.attributes) script.setAttribute(attr.name, attr.value);
+        script.text = oldScript.text || oldScript.textContent || "";
+        oldScript.replaceWith(script);
+    });
+}
+
+window.zkbExecuteInsertedScripts = executeInsertedScripts;
 
 function scheduleVersionCheck() {
     if (zkbVersionCheckTimeout) clearTimeout(zkbVersionCheckTimeout);
@@ -303,6 +359,7 @@ function initSpaNavigation() {
     });
 
     window.addEventListener("popstate", function(event) {
+        if (event.state && event.state.zkbDailyStats) return;
         if (!event.state || !event.state.zkbSpa) return;
         if (isSpaRenderedURL(window.location.href)) return;
         spaNavigate(window.location.href, false, event.state);

@@ -332,7 +332,6 @@ function handler($request, $response, $args, $container)
 		$queryParams = $request->getQueryParams();
 		$dailyDate = $dailyRouteDate ?? (isset($queryParams['date']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $queryParams['date']) ? $queryParams['date'] : null);
 		$dailySide = $dailyRouteSide ?? (isset($queryParams['side']) && in_array($queryParams['side'], ['kills', 'losses']) ? $queryParams['side'] : 'kills');
-		$dailyDays = DailyStats::getDays($statType, $id);
 		$selectedDaysInput = $dailyRouteDays ?? ($queryParams['days'] ?? null);
 		if ($selectedDaysInput != null && $selectedDaysInput != 'all') {
 			if (preg_match('/^(\d{4}-\d{2}-\d{2})\.\.(\d{4}-\d{2}-\d{2})$/', (string) $selectedDaysInput, $matches)) {
@@ -341,12 +340,6 @@ function handler($request, $response, $args, $container)
 				if ($startDay <= $endDay) {
 					$dailySelectedStart = $startDay;
 					$dailySelectedEnd = $endDay;
-					foreach ($dailyDays as $row) {
-						$day = (string) ($row['day'] ?? '');
-						if ($day >= $startDay && $day <= $endDay) {
-							$dailySelectedDays[$day] = $day;
-						}
-					}
 				}
 			} else {
 				foreach (explode(',', (string) $selectedDaysInput) as $day) {
@@ -372,13 +365,7 @@ function handler($request, $response, $args, $container)
 				$dailyGraphEnd = $matches[2];
 			}
 		}
-		$dailyStats = DailyStats::getAggregate($statType, $id, count($dailySelectedDays) > 0 ? $dailySelectedDays : null, $dailySide);
-		if ($dailyStats != null) {
-			$dailyDate = $dailyStats['day'];
-			if (count($dailySelectedDays) == 0) {
-				$dailySelectedDays = $dailyStats['days'] ?? [];
-			}
-		}
+		$dailyStats = ['async' => true];
 	}
 
 	if ($key == 'corporation' || $key == 'alliance' || $key == 'faction') {
@@ -673,7 +660,11 @@ function handler($request, $response, $args, $container)
 
 	$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'showDailyStats' => $showDailyStats, 'dailyStats' => $dailyStats, 'dailyDays' => $dailyDays, 'dailyDate' => $dailyDate, 'dailySide' => $dailySide, 'dailySelectedDays' => $dailySelectedDays, 'dailySelectedStart' => $dailySelectedStart, 'dailySelectedEnd' => $dailySelectedEnd, 'dailyGraphStart' => $dailyGraphStart, 'dailyGraphEnd' => $dailyGraphEnd, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified, 'dqChars' => $dqChars);
 
-	return $container->get('view')->render($response->withHeader('Cache-Tag', "www,overview,overview:$id"), 'overview.pug', $renderParams);
+	$overviewResponse = $response->withHeader('Cache-Tag', "www,overview,overview:$id" . ($pageType == 'daily' ? ',daily-v2' : ''));
+	if ($pageType == 'daily') {
+		$overviewResponse = $overviewResponse->withHeader('Cache-Control', 'no-store');
+	}
+	return $container->get('view')->render($overviewResponse, 'overview.pug', $renderParams);
 }
 
 function addVics($vics, $kills = [])

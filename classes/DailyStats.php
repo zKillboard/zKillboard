@@ -52,7 +52,7 @@ class DailyStats
         return isset($map[$type]) ? $map[$type] : $type;
     }
 
-    public static function markDirtySequence($type, $id, $day, $sequence)
+    public static function markDirtySequence($type, $id, $day, $sequence, $persistChecked = false)
     {
         global $mdb;
 
@@ -66,7 +66,7 @@ class DailyStats
         if ($sequence <= 0) {
             return;
         }
-        if (!self::shouldPersist($type, $id)) {
+        if (!$persistChecked && !self::shouldPersist($type, $id)) {
             return;
         }
         $month = substr($day, 0, 7);
@@ -86,11 +86,16 @@ class DailyStats
     {
         $keys = self::keysFromKillmail($killmail);
         $sequence = (int) @$killmail['sequence'];
+        $marked = 0;
         foreach ($keys as $key) {
-            self::markDirtySequence($key['type'], $key['id'], $key['day'], $sequence);
+            if (!self::shouldPersist($key['type'], $key['id'])) {
+                continue;
+            }
+            self::markDirtySequence($key['type'], $key['id'], $key['day'], $sequence, true);
+            $marked++;
         }
 
-        return count($keys);
+        return $marked;
     }
 
     public static function keysFromKillmail($killmail)
@@ -269,8 +274,16 @@ class DailyStats
             ['projection' => ['_id' => 1]]
         ) == null) {
             $mdb->getCollection('statistics')->updateOne(
-                ['type' => $type, 'id' => $id, 'dailyStatsBackfillQueued' => true],
-                ['$set' => ['dailyStatsBackfillComplete' => true, 'dailyStatsBackfillCompleteAt' => time()]]
+                ['type' => $type, 'id' => $id],
+                [
+                    '$set' => ['dailyStatsBackfillComplete' => true],
+                    '$unset' => [
+                        'dailyStatsBackfillQueued' => 1,
+                        'dailyStatsBackfillQueuedAt' => 1,
+                        'dailyStatsBackfillCompleteAt' => 1,
+                        'dailyStatsBackfillNeededAt' => 1,
+                    ],
+                ]
             );
         }
         return ['updated' => count($set), 'removed' => count($unset), 'pulled' => count($pullUpdates)];
@@ -295,7 +308,7 @@ class DailyStats
 
         $type = self::normalizeType($type);
         $id = $type == 'label' ? (string) $id : (int) $id;
-        if (!self::shouldPersist($type, $id) || self::backfillPending($type, $id)) {
+        if (!self::shouldPersist($type, $id)) {
             return self::getAggregateOnDemand($type, $id, $days, $viewSide);
         }
         $query = ['type' => $type, 'id' => $id];
@@ -308,9 +321,7 @@ class DailyStats
         }
 
         $docs = self::dailyDocs($mdb->find(self::COLLECTION, $query, [self::MONTH_FIELD => -1]), is_array($days) ? array_fill_keys($days, true) : null);
-        if (count($docs) == 0) {
-            return self::getAggregateOnDemand($type, $id, $days, $viewSide);
-        }
+        if (count($docs) == 0) return null;
 
         $doc = [
             'type' => $type,
@@ -342,11 +353,11 @@ class DailyStats
 
         $type = self::normalizeType($type);
         $id = $type == 'label' ? (string) $id : (int) $id;
-        if (!self::shouldPersist($type, $id) || self::backfillPending($type, $id)) {
+        if (!self::shouldPersist($type, $id)) {
             return array_slice(self::getDaysOnDemand($type, $id), 0, $limit);
         }
         $docs = self::dailyDocs($mdb->find(self::COLLECTION, ['type' => $type, 'id' => $id], [self::MONTH_FIELD => -1]));
-        return array_slice(count($docs) > 0 ? $docs : self::getDaysOnDemand($type, $id), 0, $limit);
+        return array_slice($docs, 0, $limit);
     }
 
     public static function hasData($type, $id)
@@ -355,22 +366,161 @@ class DailyStats
 
         $type = self::normalizeType($type);
         $id = $type == 'label' ? (string) $id : (int) $id;
-        if (!self::shouldPersist($type, $id) || self::backfillPending($type, $id)) {
-            return self::totalStats($type, $id) > 0;
-        }
-        $days = [];
-        for ($day = 1; $day <= 31; $day++) {
-            $days[] = [sprintf('%02d', $day) => ['$exists' => true]];
+        return self::totalStats($type, $id) > 0;
+    }
+
+    public static function runQueuedQuery($job)
+    {
+        $type = self::normalizeType($job['type'] ?? '');
+        $id = $type == 'label' ? (string) ($job['id'] ?? '') : (int) ($job['id'] ?? 0);
+        $side = in_array(($job['side'] ?? 'kills'), ['kills', 'losses']) ? $job['side'] : 'kills';
+        $part = in_array(($job['part'] ?? 'history'), ['history', 'summary', 'topvalues', 'toplists', 'labels']) ? $job['part'] : 'history';
+        $selectedDays = self::selectedDaysFromJob($job);
+        $dailySelectionAll = count($selectedDays) == 0;
+        $useDailyHistory = self::isSingleMonthHistory($selectedDays, $job);
+
+        $dailyStats = [
+            'type' => $type,
+            'id' => $id,
+            'day' => count($selectedDays) == 1 ? $selectedDays[0] : null,
+            'days' => $selectedDays,
+            'kills' => self::emptySideAggregate(),
+            'losses' => self::emptySideAggregate(),
+        ];
+        $dailyDays = [];
+
+        if ($part == 'history') {
+            if ($useDailyHistory) {
+                $dailyDays = self::shouldPersist($type, $id) ? self::getDays($type, $id) : self::getDaysOnDemand($type, $id);
+                $historyWindow = self::singleMonthHistoryWindow($selectedDays, $job);
+                if ($historyWindow != null) {
+                    $cursor = new DateTimeImmutable($historyWindow[0], new DateTimeZone('UTC'));
+                    $end = new DateTimeImmutable($historyWindow[1], new DateTimeZone('UTC'));
+                    $wanted = [];
+                    while ($cursor <= $end) {
+                        $wanted[$cursor->format('Y-m-d')] = true;
+                        $cursor = $cursor->modify('+1 day');
+                    }
+                    $dailyDays = array_values(array_filter($dailyDays, function ($row) use ($wanted) {
+                        return isset($wanted[$row['day'] ?? '']);
+                    }));
+                    $byDay = [];
+                    foreach ($dailyDays as $row) {
+                        $byDay[$row['day']] = $row;
+                    }
+                    foreach ($historyWindow as $edgeDay) {
+                        if (!isset($byDay[$edgeDay])) {
+                            $byDay[$edgeDay] = [
+                                'day' => $edgeDay,
+                                'kills' => self::emptySideAggregate(),
+                                'losses' => self::emptySideAggregate(),
+                            ];
+                        }
+                    }
+                    ksort($byDay);
+                    $dailyDays = array_values($byDay);
+                }
+            } else {
+                $dailyDays = self::getMonthsFromStatistics($type, $id);
+            }
+            $dailyStats['days'] = array_values(array_map(function ($row) { return $row['day']; }, $dailyDays));
+        } else if (self::shouldPersist($type, $id)) {
+            $persisted = self::getAggregate($type, $id, count($selectedDays) > 0 ? $selectedDays : null, $side);
+            if ($persisted == null) return ['processing' => true];
+            $dailyStats = $persisted;
+        } else if ($part == 'summary') {
+            $dailyStats[$side]['summary'] = self::summaryOnDemand($type, $id, $selectedDays, $side == 'losses');
+        } else if ($part == 'topvalues') {
+            $dailyStats[$side]['topValues'] = self::topValuesOnDemand($type, $id, $selectedDays, $side == 'losses');
+        } else if ($part == 'toplists') {
+            $dailyStats[$side]['topLists'] = self::topListsOnDemand($type, $id, $selectedDays, $side == 'losses');
+        } else if ($part == 'labels') {
+            $query = self::buildQueryForSelectedDays($type, $id, $selectedDays, $side == 'losses');
+            $dailyStats[$side]['labels'] = self::onDemandLabels($query);
         }
 
-        if ($mdb->getCollection(self::COLLECTION)->findOne(
-            ['type' => $type, 'id' => $id, '$or' => $days],
-            ['projection' => ['_id' => 1]]
-        ) != null) {
-            return true;
+        $start = count($selectedDays) > 0 ? min($selectedDays) : null;
+        $end = count($selectedDays) > 0 ? max($selectedDays) : null;
+        if (($job['days'] ?? '') == 'all') {
+            $allDays = $dailyDays ?: self::getMonthsFromStatistics($type, $id);
+            if (count($allDays) > 0) {
+                $dayNames = array_values(array_map(function ($row) { return $row['day']; }, $allDays));
+                $start = min($dayNames);
+                $end = max(array_values(array_map(function ($row) { return $row['periodEnd'] ?? $row['day']; }, $allDays)));
+            }
         }
 
+        return [
+            'dailyStats' => $dailyStats,
+            'dailyDays' => $dailyDays,
+            'dailySide' => $side,
+            'dailySelectedDays' => $selectedDays,
+            'dailySelectedStart' => $start,
+            'dailySelectedEnd' => $end,
+            'dailySelectionAll' => $dailySelectionAll,
+            'dailyGraphStart' => null,
+            'dailyGraphEnd' => null,
+            'dailyDate' => count($selectedDays) == 1 ? $selectedDays[0] : null,
+            'entityType' => $job['entityType'] ?? self::entityTypeFromStatType($type),
+            'entityID' => $id,
+            'key' => $job['entityType'] ?? self::entityTypeFromStatType($type),
+            'id' => $id,
+        ];
+    }
+
+    private static function isSingleMonthHistory($selectedDays, $job)
+    {
+        $ranges = [];
+        if (count($selectedDays) > 0) {
+            $ranges[] = [min($selectedDays), max($selectedDays)];
+        }
+        foreach (['graph', 'days'] as $field) {
+            $value = (string) ($job[$field] ?? '');
+            if (preg_match('/^(\d{4}-\d{2}-\d{2})\.\.(\d{4}-\d{2}-\d{2})$/', $value, $matches)) {
+                $ranges[] = [$matches[1], $matches[2]];
+            } else if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+                $ranges[] = [$value, $value];
+            }
+        }
+        if (isset($job['date']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $job['date'])) {
+            $ranges[] = [(string) $job['date'], (string) $job['date']];
+        }
+
+        foreach ($ranges as $range) {
+            if (substr($range[0], 0, 7) == substr($range[1], 0, 7)) {
+                return true;
+            }
+        }
         return false;
+    }
+
+    private static function singleMonthHistoryWindow($selectedDays, $job)
+    {
+        $ranges = [];
+        if (count($selectedDays) > 0) {
+            $ranges[] = [min($selectedDays), max($selectedDays)];
+        }
+        foreach (['graph', 'days'] as $field) {
+            $value = (string) ($job[$field] ?? '');
+            if (preg_match('/^(\d{4}-\d{2}-\d{2})\.\.(\d{4}-\d{2}-\d{2})$/', $value, $matches)) {
+                $ranges[] = [$matches[1], $matches[2]];
+            } else if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+                $ranges[] = [$value, $value];
+            }
+        }
+        if (isset($job['date']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $job['date'])) {
+            $ranges[] = [(string) $job['date'], (string) $job['date']];
+        }
+
+        foreach ($ranges as $range) {
+            if (substr($range[0], 0, 7) != substr($range[1], 0, 7)) {
+                continue;
+            }
+            $start = substr($range[0], 0, 7) . '-01';
+            return [$start, gmdate('Y-m-t', strtotime($start . ' 00:00:00 UTC'))];
+        }
+
+        return null;
     }
 
     public static function shouldPersist($type, $id)
@@ -391,12 +541,27 @@ class DailyStats
             return 0;
         }
 
+        return 0;
+    }
+
+    public static function populateBackfill($type, $id)
+    {
+        global $mdb;
+
+        $type = self::normalizeType($type);
+        if (!isset(self::$types[$type])) {
+            return 0;
+        }
+        $id = $type == 'label' ? (string) $id : (int) $id;
+        if ($id === '' || ($type != 'label' && $id == 0) || !self::shouldPersist($type, $id)) {
+            return 0;
+        }
+
         $statsKey = ['type' => $type, 'id' => $id];
-        $claim = $mdb->getCollection('statistics')->updateOne(
-            $statsKey + ['dailyStatsBackfillQueued' => ['$ne' => true]],
-            ['$set' => ['dailyStatsBackfillQueued' => true, 'dailyStatsBackfillComplete' => false, 'dailyStatsBackfillQueuedAt' => time()]]
-        );
-        if ($claim->getModifiedCount() == 0) {
+        if ($mdb->getCollection(self::COLLECTION)->findOne(
+            $statsKey + ['updates' => ['$exists' => true]],
+            ['projection' => ['_id' => 1]]
+        ) != null) {
             return 0;
         }
 
@@ -435,19 +600,20 @@ class DailyStats
             $mdb->getCollection(self::COLLECTION)->bulkWrite($ops, ['ordered' => false]);
         }
 
+        $mdb->getCollection('statistics')->updateOne(
+            $statsKey,
+            [
+                '$set' => ['dailyStatsBackfillComplete' => count($ops) == 0],
+                '$unset' => [
+                    'dailyStatsBackfillQueued' => 1,
+                    'dailyStatsBackfillQueuedAt' => 1,
+                    'dailyStatsBackfillCompleteAt' => 1,
+                    'dailyStatsBackfillNeededAt' => 1,
+                ],
+            ]
+        );
+
         return count($ops);
-    }
-
-    private static function backfillPending($type, $id)
-    {
-        global $mdb;
-
-        $stats = $mdb->findDoc('statistics', [
-            'type' => self::normalizeType($type),
-            'id' => self::normalizeType($type) == 'label' ? (string) $id : (int) $id,
-        ]);
-
-        return @$stats['dailyStatsBackfillQueued'] === true && @$stats['dailyStatsBackfillComplete'] !== true;
     }
 
     private static function totalStats($type, $id)
@@ -462,6 +628,63 @@ class DailyStats
         $id = $type == 'label' ? (string) $id : (int) $id;
         $stats = $mdb->findDoc('statistics', ['type' => $type, 'id' => $id]);
         return (int) ($stats['shipsDestroyed'] ?? 0) + (int) ($stats['shipsLost'] ?? 0);
+    }
+
+    private static function getMonthsFromStatistics($type, $id)
+    {
+        global $mdb;
+
+        $type = self::normalizeType($type);
+        if (!isset(self::$types[$type])) {
+            return [];
+        }
+
+        $id = $type == 'label' ? (string) $id : (int) $id;
+        $stats = $mdb->findDoc('statistics', ['type' => $type, 'id' => $id]);
+        $months = (array) ($stats['months'] ?? []);
+        if (count($months) == 0) {
+            return [];
+        }
+        $byMonth = [];
+        foreach ($months as $monthStats) {
+            $monthStats = is_object($monthStats) ? (array) $monthStats : (array) $monthStats;
+            $year = (int) ($monthStats['year'] ?? 0);
+            $month = (int) ($monthStats['month'] ?? 0);
+            if ($year <= 0 || $month <= 0 || $month > 12) {
+                continue;
+            }
+            $byMonth[sprintf('%04d-%02d', $year, $month)] = $monthStats;
+        }
+        if (count($byMonth) == 0) {
+            return [];
+        }
+        ksort($byMonth);
+
+        $rows = [];
+        $cursor = new DateTimeImmutable(array_key_first($byMonth) . '-01', new DateTimeZone('UTC'));
+        $end = new DateTimeImmutable(array_key_last($byMonth) . '-01', new DateTimeZone('UTC'));
+        while ($cursor <= $end) {
+            $monthKey = $cursor->format('Y-m');
+            $monthStats = $byMonth[$monthKey] ?? [];
+            $day = $monthKey . '-01';
+            $rows[] = [
+                'day' => $day,
+                'periodEnd' => gmdate('Y-m-t', strtotime($day . ' 00:00:00 UTC')),
+                'kills' => ['summary' => [
+                    'count' => (int) ($monthStats['shipsDestroyed'] ?? 0),
+                    'isk' => (double) ($monthStats['iskDestroyed'] ?? 0),
+                    'points' => (int) ($monthStats['pointsDestroyed'] ?? 0),
+                ]],
+                'losses' => ['summary' => [
+                    'count' => (int) ($monthStats['shipsLost'] ?? 0),
+                    'isk' => (double) ($monthStats['iskLost'] ?? 0),
+                    'points' => (int) ($monthStats['pointsLost'] ?? 0),
+                ]],
+            ];
+            $cursor = $cursor->modify('+1 month');
+        }
+
+        return $rows;
     }
 
     private static function getAggregateOnDemand($type, $id, $days = null, $viewSide = null)
@@ -530,12 +753,18 @@ class DailyStats
             ];
         }, $rows);
 
+        $summaries = [
+            'kills' => self::onDemandDailySummaries($type, $id, false),
+            'losses' => self::onDemandDailySummaries($type, $id, true),
+        ];
+
         $byDay = [];
         foreach ($days as $idx => $row) {
             $byDay[$row['day']] = $idx;
         }
-        foreach ([false => 'kills', true => 'losses'] as $losses => $sideName) {
-            foreach (self::onDemandDailySummaries($type, $id, (bool) $losses) as $summary) {
+        foreach (['kills', 'losses'] as $sideName) {
+            foreach ((array) ($summaries[$sideName] ?? []) as $summary) {
+                $summary = is_object($summary) ? (array) $summary : (array) $summary;
                 $day = (string) ($summary['day'] ?? '');
                 if (isset($byDay[$day])) {
                     $days[$byDay[$day]][$sideName]['summary'] = [
@@ -1075,6 +1304,111 @@ class DailyStats
                 $side['topValues'] = Kills::getDetails((array) @$side['topValueKillIDs'], true);
             }
         }
+    }
+
+    private static function selectedDaysFromJob($job)
+    {
+        $days = [];
+        $input = (string) ($job['days'] ?? '');
+        if ($input != '' && $input != 'all') {
+            if (preg_match('/^(\d{4}-\d{2}-\d{2})\.\.(\d{4}-\d{2}-\d{2})$/', $input, $matches) && $matches[1] <= $matches[2]) {
+                $cursor = new DateTimeImmutable($matches[1], new DateTimeZone('UTC'));
+                $end = new DateTimeImmutable($matches[2], new DateTimeZone('UTC'));
+                while ($cursor <= $end) {
+                    $days[] = $cursor->format('Y-m-d');
+                    $cursor = $cursor->modify('+1 day');
+                }
+            } else {
+                foreach (explode(',', $input) as $day) {
+                    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $day)) $days[$day] = $day;
+                }
+                $days = array_values($days);
+            }
+        } else if (isset($job['date']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $job['date'])) {
+            $days[] = (string) $job['date'];
+        }
+        sort($days);
+        return $days;
+    }
+
+    private static function buildQueryForSelectedDays($type, $id, $days, $losses)
+    {
+        if (count($days) > 0) return self::buildQueryForDays($type, $id, $days, $losses);
+        return MongoFilter::buildQuery(self::buildParameters($type, $id, null, $losses));
+    }
+
+    private static function summaryOnDemand($type, $id, $days, $losses)
+    {
+        global $mdb;
+
+        $query = self::buildQueryForSelectedDays($type, $id, $days, $losses);
+        $rows = iterator_to_array($mdb->getCollection('killmails')->aggregate([
+            ['$match' => $query],
+            ['$group' => [
+                '_id' => null,
+                'count' => ['$sum' => 1],
+                'isk' => ['$sum' => '$zkb.totalValue'],
+                'points' => ['$sum' => '$zkb.points'],
+            ]],
+            ['$project' => ['_id' => 0, 'count' => 1, 'isk' => 1, 'points' => 1]],
+        ], ['allowDiskUse' => true]));
+        $row = $rows[0] ?? [];
+        return [
+            'count' => (int) ($row['count'] ?? 0),
+            'isk' => (double) ($row['isk'] ?? 0),
+            'points' => (int) ($row['points'] ?? 0),
+        ];
+    }
+
+    private static function topValuesOnDemand($type, $id, $days, $losses)
+    {
+        global $mdb;
+
+        if (count($days) == 1) {
+            $parameters = self::buildParameters($type, $id, $days[0], $losses);
+            $parameters['limit'] = 6;
+            return Stats::getTopIsk($parameters);
+        }
+
+        $query = self::buildQueryForSelectedDays($type, $id, $days, $losses);
+        $rows = $mdb->getCollection('killmails')->find($query, [
+            'projection' => ['_id' => 0, 'killID' => 1],
+            'sort' => ['zkb.totalValue' => -1, 'killID' => -1],
+            'limit' => 6,
+        ])->toArray();
+        return Kills::getDetails(array_values(array_map(function ($row) { return (int) ($row['killID'] ?? 0); }, $rows)), true);
+    }
+
+    private static function topListsOnDemand($type, $id, $days, $losses)
+    {
+        $query = self::buildQueryForSelectedDays($type, $id, $days, $losses);
+        $topLists = [];
+        foreach (self::$topTypes as $group => $meta) {
+            $topLists[] = [
+                'type' => $meta['label'] ?? $group,
+                'typeID' => $group,
+                'data' => AdvancedSearch::getTop($group, $query, $losses ? 'true' : 'false', [], true, 'killID', -1),
+            ];
+        }
+        return $topLists;
+    }
+
+    private static function entityTypeFromStatType($type)
+    {
+        $map = [
+            'characterID' => 'character',
+            'corporationID' => 'corporation',
+            'allianceID' => 'alliance',
+            'factionID' => 'faction',
+            'shipTypeID' => 'ship',
+            'groupID' => 'group',
+            'solarSystemID' => 'system',
+            'constellationID' => 'constellation',
+            'regionID' => 'region',
+            'locationID' => 'location',
+            'label' => 'label',
+        ];
+        return $map[$type] ?? $type;
     }
 
 }

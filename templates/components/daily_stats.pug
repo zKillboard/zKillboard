@@ -3,7 +3,27 @@
 - $dailySide = in_array(($dailySide ?? 'kills'), ['kills', 'losses']) ? $dailySide : 'kills';
 - $dailySelectedDays = array_values((array) ($dailySelectedDays ?? []));
 
-if (empty($dailyStats))
+if (!empty($dailyStats['async']))
+  - $dailyToken = count($dailySelectedDays) > 0 ? implode(',', $dailySelectedDays) : (((($dailySelectedStart ?? '') != '') && (($dailySelectedEnd ?? '') != '')) ? ($dailySelectedStart . '..' . $dailySelectedEnd) : 'all');
+  - $dailyQueryBase = '/asearch/daily/?type=' . rawurlencode((string) ($entityType ?? $key ?? '')) . '&id=' . rawurlencode((string) ($entityID ?? $id ?? '')) . '&side=' . rawurlencode((string) $dailySide) . '&days=' . rawurlencode((string) $dailyToken);
+  if (($dailyDate ?? null) != null)
+    - $dailyQueryBase .= '&date=' . rawurlencode((string) $dailyDate);
+  if (($dailyGraphStart ?? null) != null && ($dailyGraphEnd ?? null) != null)
+    - $dailyQueryBase .= '&graph=' . rawurlencode($dailyGraphStart . '..' . $dailyGraphEnd);
+  .daily-async(data-base=$dailyQueryBase)
+    .daily-async-part(data-part="history" style="min-height: 250px;")
+      .text-center.p-4 Daily stats are processing...
+    .daily-async-part(data-part="summary" style="min-height: 110px;")
+      .text-center.p-4 Daily summary is processing...
+    .daily-async-part(data-part="topvalues" style="min-height: 300px;")
+      .text-center.p-4 Top ISK is processing...
+    .daily-async-part(data-part="toplists" style="min-height: 460px;")
+      .text-center.p-4 Top lists are processing...
+    .daily-async-part(data-part="labels" style="min-height: 390px;")
+      .text-center.p-4 Labels are processing...
+  script.
+    if (typeof loadDailyAsyncParts == "function") loadDailyAsyncParts();
+else if (empty($dailyStats))
   h4 Daily stats are not available for this entity yet.
 else
   - $graphStart = $dailyGraphStart ?? $dailySelectedStart;
@@ -16,38 +36,35 @@ else
   -   ksort($byDay);
   -   $zero = ['summary' => ['count' => 0, 'isk' => 0, 'points' => 0]];
   -   $history = [];
-  -   $cursor = new DateTimeImmutable(array_key_first($byDay), new DateTimeZone('UTC'));
-  -   $end = new DateTimeImmutable(array_key_last($byDay), new DateTimeZone('UTC'));
-  -   while ($cursor <= $end) { $day = $cursor->format('Y-m-d'); $history[] = $byDay[$day] ?? ['day' => $day, 'kills' => $zero, 'losses' => $zero]; $cursor = $cursor->modify('+1 day'); }
+  -   $bucketed = false;
+  -   foreach ($byDay as $row) { if (($row['periodEnd'] ?? ($row['day'] ?? '')) != ($row['day'] ?? '')) { $bucketed = true; break; } }
+  -   if ($bucketed) { $history = array_values($byDay); } else { $cursor = new DateTimeImmutable(array_key_first($byDay), new DateTimeZone('UTC')); $end = new DateTimeImmutable(array_key_last($byDay), new DateTimeZone('UTC')); while ($cursor <= $end) { $day = $cursor->format('Y-m-d'); $history[] = $byDay[$day] ?? ['day' => $day, 'periodEnd' => $day, 'kills' => $zero, 'losses' => $zero]; $cursor = $cursor->modify('+1 day'); } }
   -   $days = array_map(function ($row) { return $row['day']; }, $history);
+  -   $periodEnds = array_map(function ($row) { return $row['periodEnd'] ?? $row['day']; }, $history);
   -   $count = count($days);
   -   $selectedStart = $selectedStart ?? (count($selectedDays) > 0 ? min($selectedDays) : $days[0]);
-  -   $selectedEnd = $selectedEnd ?? (count($selectedDays) > 0 ? max($selectedDays) : $days[$count - 1]);
+  -   $selectedEnd = $selectedEnd ?? (count($selectedDays) > 0 ? max($selectedDays) : $periodEnds[$count - 1]);
   -   if ($selectedStart > $selectedEnd) { $tmp = $selectedStart; $selectedStart = $selectedEnd; $selectedEnd = $tmp; }
-  -   $selectedStartIdx = array_search($selectedStart, $days);
-  -   $selectedEndIdx = array_search($selectedEnd, $days);
-  -   $selectedStartIdx = $selectedStartIdx === false ? 0 : $selectedStartIdx;
-  -   $selectedEndIdx = $selectedEndIdx === false ? $count - 1 : $selectedEndIdx;
+  -   $startIndexFor = function ($date) use ($periodEnds, $count) { for ($i = 0; $i < $count; $i++) { if ($periodEnds[$i] >= $date) return $i; } return $count - 1; };
+  -   $endIndexFor = function ($date) use ($days, $count) { for ($i = $count - 1; $i >= 0; $i--) { if ($days[$i] <= $date) return $i; } return 0; };
+  -   $selectedStartIdx = $startIndexFor($selectedStart);
+  -   $selectedEndIdx = $endIndexFor($selectedEnd);
   -   $allSelected = $selectedStartIdx == 0 && $selectedEndIdx == $count - 1;
   -   $viewStart = $viewStart ?? $selectedStart;
   -   $viewEnd = $viewEnd ?? $selectedEnd;
   -   if ($viewStart > $viewEnd) { $tmp = $viewStart; $viewStart = $viewEnd; $viewEnd = $tmp; }
-  -   $viewStartIdx = array_search($viewStart, $days);
-  -   $viewEndIdx = array_search($viewEnd, $days);
-  -   $viewStartIdx = $viewStartIdx === false ? 0 : $viewStartIdx;
-  -   $viewEndIdx = $viewEndIdx === false ? $count - 1 : $viewEndIdx;
+  -   $viewStartIdx = $startIndexFor($viewStart);
+  -   $viewEndIdx = $endIndexFor($viewEnd);
   -   if ($viewStartIdx > $viewEndIdx) { $tmp = $viewStartIdx; $viewStartIdx = $viewEndIdx; $viewEndIdx = $tmp; }
   -   $graphZoomed = $viewStartIdx > 0 || $viewEndIdx < $count - 1;
-  -   if ($graphZoomed) { $history = array_slice($history, $viewStartIdx, $viewEndIdx - $viewStartIdx + 1); $days = array_map(function ($row) { return $row['day']; }, $history); $count = count($days); }
-  -   $startIdx = array_search(max($selectedStart, $days[0]), $days);
-  -   $endIdx = array_search(min($selectedEnd, $days[$count - 1]), $days);
-  -   $startIdx = $startIdx === false ? 0 : $startIdx;
-  -   $endIdx = $endIdx === false ? $count - 1 : $endIdx;
+  -   if ($graphZoomed) { $history = array_slice($history, $viewStartIdx, $viewEndIdx - $viewStartIdx + 1); $days = array_map(function ($row) { return $row['day']; }, $history); $periodEnds = array_map(function ($row) { return $row['periodEnd'] ?? $row['day']; }, $history); $count = count($days); $startIndexFor = function ($date) use ($periodEnds, $count) { for ($i = 0; $i < $count; $i++) { if ($periodEnds[$i] >= $date) return $i; } return $count - 1; }; $endIndexFor = function ($date) use ($days, $count) { for ($i = $count - 1; $i >= 0; $i--) { if ($days[$i] <= $date) return $i; } return 0; }; }
+  -   $startIdx = $startIndexFor(max($selectedStart, $days[0]));
+  -   $endIdx = $endIndexFor(min($selectedEnd, $periodEnds[$count - 1]));
   -   if ($startIdx > $endIdx) { $tmp = $startIdx; $startIdx = $endIdx; $endIdx = $tmp; }
   -   $selectionCoversGraph = $startIdx == 0 && $endIdx == $count - 1;
   -   $width = 1200; $height = 190; $bandHeight = 150; $mid = 118; $padX = 18; $graphWidth = $width - ($padX * 2);
   -   $x = function ($idx) use ($count, $width, $padX, $graphWidth) { return $count <= 1 ? ($width / 2) : ($padX + (($idx / ($count - 1)) * $graphWidth)); };
-  -   $rangeFor = function ($start, $end) use ($days, $x) { $start = max($start, $days[0]); $end = min($end, $days[count($days) - 1]); $startIdx = array_search($start, $days); $endIdx = array_search($end, $days); if ($startIdx === false || $endIdx === false) return null; return ['start' => $start, 'end' => $end, 'x' => round($x($startIdx), 2), 'endX' => round($x($endIdx), 2), 'midX' => round(($x($startIdx) + $x($endIdx)) / 2, 2)]; };
+  -   $rangeFor = function ($start, $end) use ($days, $periodEnds, $x, $startIndexFor, $endIndexFor) { $start = max($start, $days[0]); $end = min($end, $periodEnds[count($periodEnds) - 1]); $startIdx = $startIndexFor($start); $endIdx = $endIndexFor($end); if ($startIdx > $endIdx) return null; return ['start' => $start, 'end' => $end, 'x' => round($x($startIdx), 2), 'endX' => round($x($endIdx), 2), 'midX' => round(($x($startIdx) + $x($endIdx)) / 2, 2)]; };
   -   $heightFor = function ($value, $max, $maxHeight) { $value = max(0, (float) $value); return $max <= 0 || $value <= 0 ? 0 : round(min($maxHeight, ($value / $max) * $maxHeight), 2); };
   -   $series = ['kills' => ['count' => [], 'isk' => [], 'points' => []], 'losses' => ['count' => [], 'isk' => [], 'points' => []]];
   -   foreach ($history as $row) { foreach (['kills', 'losses'] as $side) { $summary = is_object($row[$side]['summary'] ?? null) ? (array) $row[$side]['summary'] : ($row[$side]['summary'] ?? []); foreach (['count', 'isk', 'points'] as $metric) $series[$side][$metric][] = (float) ($summary[$metric] ?? 0); } }
@@ -55,19 +72,20 @@ else
   -   $metrics = [['key' => 'count', 'label' => 'Ships', 'killColor' => '#5cb85c', 'lossColor' => '#d9534f'], ['key' => 'isk', 'label' => 'ISK', 'killColor' => '#5bc0de', 'lossColor' => '#b85c9e'], ['key' => 'points', 'label' => 'Points', 'killColor' => '#f0ad4e', 'lossColor' => '#9370db']];
   -   foreach ($metrics as &$metric) { $key = $metric['key']; $killMax = max(array_merge($series['kills'][$key], [1])); $lossMax = max(array_merge($series['losses'][$key], [1])); $metric['killPath'] = $path($series['kills'][$key], true, $killMax, $mid - 14); $metric['lossPath'] = $path($series['losses'][$key], false, $lossMax, 24); }
   -   $dayHits = [];
-  -   foreach ($history as $idx => $row) { $killSummary = is_object($row['kills']['summary'] ?? null) ? (array) $row['kills']['summary'] : ($row['kills']['summary'] ?? []); $lossSummary = is_object($row['losses']['summary'] ?? null) ? (array) $row['losses']['summary'] : ($row['losses']['summary'] ?? []); $killCount = (float) ($killSummary['count'] ?? 0); $lossCount = (float) ($lossSummary['count'] ?? 0); if ($killCount > 0 || $lossCount > 0) $dayHits[] = ['day' => $row['day'], 'x' => round($x($idx), 2), 'width' => max(3, round($graphWidth / max(1, $count), 2)), 'title' => $row['day'] . ' - Kills: ' . number_format($killCount, 0) . ' / Losses: ' . number_format($lossCount, 0)]; }
+  -   foreach ($history as $idx => $row) { $killSummary = is_object($row['kills']['summary'] ?? null) ? (array) $row['kills']['summary'] : ($row['kills']['summary'] ?? []); $lossSummary = is_object($row['losses']['summary'] ?? null) ? (array) $row['losses']['summary'] : ($row['losses']['summary'] ?? []); $killCount = (float) ($killSummary['count'] ?? 0); $lossCount = (float) ($lossSummary['count'] ?? 0); if ($killCount > 0 || $lossCount > 0) $dayHits[] = ['day' => $row['day'], 'x' => round($x($idx), 2), 'width' => max(3, round($graphWidth / max(1, $count), 2)), 'title' => $row['day'] . (($row['periodEnd'] ?? $row['day']) != $row['day'] ? ('..' . $row['periodEnd']) : '') . ' - Kills: ' . number_format($killCount, 0) . ' / Losses: ' . number_format($lossCount, 0)]; }
   -   $years = []; $months = [];
   -   $cursor = new DateTimeImmutable(substr($days[0], 0, 4) . '-01-01', new DateTimeZone('UTC')); $last = new DateTimeImmutable($days[$count - 1], new DateTimeZone('UTC'));
   -   while ($cursor <= $last) { $yearStart = $cursor->format('Y-01-01'); $yearEnd = $cursor->format('Y-12-31'); $range = $rangeFor($yearStart, $yearEnd); if ($range != null) { $range['start'] = $yearStart; $range['end'] = $yearEnd; $years[] = $range + ['label' => $cursor->format('Y')]; } for ($m = 1; $m <= 12; $m++) { $month = $cursor->setDate((int) $cursor->format('Y'), $m, 1); $monthStart = $month->format('Y-m-01'); $monthEnd = $month->modify('last day of this month')->format('Y-m-d'); $range = $rangeFor($monthStart, $monthEnd); if ($range != null) { $range['start'] = $monthStart; $range['end'] = $monthEnd; $months[] = $range + ['label' => $month->format('M Y'), 'short' => $month->format('M')]; } } $cursor = $cursor->modify('+1 year'); }
-  -   return ['width' => $width, 'height' => $height, 'bandHeight' => $bandHeight, 'bandMid' => $mid, 'padX' => $padX, 'graphWidth' => $graphWidth, 'historyDays' => $days, 'rangeStartDay' => $days[$startIdx], 'rangeEndDay' => $days[$endIdx], 'rangeStartX' => round($x($startIdx), 2), 'rangeEndX' => round($x($endIdx), 2), 'allSelected' => $allSelected, 'graphZoomed' => $graphZoomed, 'selectionCoversGraph' => $selectionCoversGraph, 'metrics' => $metrics, 'years' => $years, 'months' => $months, 'dayHits' => $dayHits];
+  -   return ['width' => $width, 'height' => $height, 'bandHeight' => $bandHeight, 'bandMid' => $mid, 'padX' => $padX, 'graphWidth' => $graphWidth, 'historyDays' => $days, 'historyPeriodEnds' => $periodEnds, 'rangeStartDay' => $days[$startIdx], 'rangeEndDay' => $days[$endIdx], 'rangeStartX' => round($x($startIdx), 2), 'rangeEndX' => round($x($endIdx), 2), 'allSelected' => $allSelected, 'graphZoomed' => $graphZoomed, 'selectionCoversGraph' => $selectionCoversGraph, 'metrics' => $metrics, 'years' => $years, 'months' => $months, 'dayHits' => $dayHits];
   - })($dailyDays, $dailySelectedDays, $dailySelectedStart, $dailySelectedEnd, $graphStart, $graphEnd);
-  - $dailyAllSelected = $dailyGraph['allSelected'] ?? true;
+  - $dailyAllSelected = isset($dailySelectionAll) ? (bool) $dailySelectionAll : ($dailyGraph['allSelected'] ?? true);
   - $dailyYear = substr((string) (($dailySelectedStart ?? null) ?: ($dailyGraph['rangeStartDay'] ?? '')), 0, 4);
   - $dailyYearStart = preg_match('/^\d{4}$/', $dailyYear) ? ($dailyYear . '-01-01') : '';
   - $dailyYearEnd = preg_match('/^\d{4}$/', $dailyYear) ? ($dailyYear . '-12-31') : '';
   - $dailyShowYearButton = $dailyYearStart != '' && !(($graphStart ?? '') <= $dailyYearStart && ($graphEnd ?? '') >= $dailyYearEnd);
+  | <!--daily-part-history-start-->
   if ($dailyGraph != null)
-    .daily-history-graph.w-100.mb-3(style="overflow: hidden;" data-base-url=('/' . $key . '/' . $id . '/daily/') data-history-days=implode(',', $dailyGraph['historyDays']) data-range-start=$dailyGraph['rangeStartDay'] data-range-end=$dailyGraph['rangeEndDay'] data-selected-start=($dailySelectedStart ?? '') data-selected-end=($dailySelectedEnd ?? '') data-all-selected=($dailyAllSelected ? '1' : '0') data-current-side=$dailySide data-view-width=$dailyGraph['width'] data-band-mid=$dailyGraph['bandMid'] data-pad-x=$dailyGraph['padX'] data-graph-width=$dailyGraph['graphWidth'])
+    .daily-history-graph.w-100.mb-3(style="overflow: hidden;" data-base-url=('/' . $key . '/' . $id . '/daily/') data-history-days=implode(',', $dailyGraph['historyDays']) data-history-period-ends=implode(',', $dailyGraph['historyPeriodEnds']) data-range-start=$dailyGraph['rangeStartDay'] data-range-end=$dailyGraph['rangeEndDay'] data-selected-start=($dailySelectedStart ?? '') data-selected-end=($dailySelectedEnd ?? '') data-all-selected=($dailyAllSelected ? '1' : '0') data-current-side=$dailySide data-view-width=$dailyGraph['width'] data-band-mid=$dailyGraph['bandMid'] data-pad-x=$dailyGraph['padX'] data-graph-width=$dailyGraph['graphWidth'])
       svg.d-block.w-100(viewBox=('0 0 ' . $dailyGraph['width'] . ' ' . $dailyGraph['height']) preserveAspectRatio="none" style=('height: ' . $dailyGraph['height'] . 'px;'))
         style.
           .daily-stream-area { opacity: 0.82; filter: drop-shadow(0 0 3px rgba(255,255,255,0.12)); }
@@ -82,7 +100,7 @@ else
           .daily-range-link:hover text { fill: #fff; }
           .daily-token-link { cursor: pointer; }
           .daily-token-link:hover text { fill: #fff; }
-          .daily-month-hit { opacity: 0; pointer-events: none; }
+          .daily-month-hit { cursor: pointer; opacity: 0; pointer-events: all; }
           .daily-day-hit { cursor: pointer; opacity: 0; }
         rect(x="0" y="0" width=$dailyGraph['width'] height=$dailyGraph['height'] fill="#0d0d0d")
         each $metric, $metricIdx in $dailyGraph['metrics']
@@ -183,12 +201,20 @@ else
           var splitDays = function (value) {
             return (value || "").split(",").filter(function (day) { return /^\d{4}-\d{2}-\d{2}$/.test(day); });
           };
+          var splitPeriodEnds = function (graph) {
+            var days = splitDays(graph.getAttribute("data-history-days"));
+            var ends = splitDays(graph.getAttribute("data-history-period-ends"));
+            return days.map(function (day, idx) { return ends[idx] || day; });
+          };
           var setAttrs = function (el, attrs) {
             Object.keys(attrs).forEach(function (name) { if (el) el.setAttribute(name, attrs[name]); });
           };
-          var keepDailyUrl = function (graph, hash) {
+          var keepDailyUrl = function (graph, hash, push) {
             if (window.history && window.history.replaceState) {
-              window.history.replaceState(window.history.state || {}, document.title, (graph.getAttribute("data-base-url") || window.location.href) + (hash !== undefined ? hash : (window.location.hash || "")));
+              var url = (graph.getAttribute("data-base-url") || window.location.href) + (hash !== undefined ? hash : (window.location.hash || ""));
+              var state = Object.assign({}, window.history.state || {}, { zkbDailyStats: true });
+              if (push && window.history.pushState) window.history.pushState(state, document.title, url);
+              else window.history.replaceState(state, document.title, url);
             }
           };
           var monthEnd = function (ym) {
@@ -203,11 +229,12 @@ else
             var statePrefix = (side == "losses" ? "l" : "") + (metric == "isk" ? "i" : (metric == "points" ? "p" : ""));
             var prefix = (zoom ? "z" : "") + statePrefix;
             var days = splitDays(graph.getAttribute("data-history-days"));
+            var periodEnds = splitPeriodEnds(graph);
             if (token == "all") return statePrefix == "" ? "" : "#" + statePrefix + "all";
             if (/^\d{4}-\d{2}-\d{2}$/.test(token)) return "#" + prefix + token;
             var match = (token || "").match(/^(\d{4})-(\d{2})-(\d{2})\.\.(\d{4})-(\d{2})-(\d{2})$/);
             if (!match) return "";
-            if (days.length > 0 && token == days[0] + ".." + days[days.length - 1]) return statePrefix == "" ? "" : "#" + statePrefix + "all";
+            if (days.length > 0 && token == days[0] + ".." + periodEnds[periodEnds.length - 1]) return statePrefix == "" ? "" : "#" + statePrefix + "all";
             if (match[1] == match[4] && match[2] == "01" && match[3] == "01" && match[5] == "12" && match[6] == "31") return "#" + prefix + match[1];
             if (match[1] == match[4] && match[2] == match[5] && match[3] == "01" && token.split("..")[1] == monthEnd(match[1] + "-" + match[2])) return "#" + prefix + match[1] + "-" + match[2];
             return "#" + prefix + token;
@@ -245,9 +272,11 @@ else
               });
             });
           };
-          var loadDaily = function (graph, url, scroll, graphWindow, hash) {
+          var loadDaily = function (graph, url, scroll, graphWindow, hash, pushHistory) {
             var baseUrl = graph.getAttribute("data-base-url") || window.location.href;
             var headers = { "X-Requested-With": "XMLHttpRequest" };
+            var currentContent = document.querySelector("#zkb-page-content");
+            if (currentContent) currentContent.style.minHeight = Math.max(currentContent.offsetHeight || 0, currentContent.scrollHeight || 0) + "px";
             if (graphWindow) headers["X-ZKB-Daily-Graph"] = graphWindow;
             fetch(url, {
               method: "GET",
@@ -262,9 +291,10 @@ else
               var current = document.querySelector("#zkb-page-content");
               if (!next || !current) throw new Error("daily content missing");
               current.innerHTML = next.innerHTML;
+              if (typeof window.zkbExecuteInsertedScripts == "function") window.zkbExecuteInsertedScripts(current);
               if (typeof initPageContent == "function") initPageContent();
               applyDailyMetric();
-              keepDailyUrl(document.querySelector(".daily-history-graph") || graph, hash);
+              keepDailyUrl(document.querySelector(".daily-history-graph") || graph, hash, pushHistory);
               window.scrollTo(scroll.x, scroll.y);
             }).catch(function () {
               if (window.history && window.history.replaceState) window.history.replaceState(window.history.state || {}, document.title, baseUrl + (hash !== undefined ? hash : (window.location.hash || "")));
@@ -272,21 +302,27 @@ else
           };
           var graphWindowToken = function (graph) {
             var days = splitDays(graph.getAttribute("data-history-days"));
-            return days.length == 0 ? "" : (days[0] + ".." + days[days.length - 1]);
+            var periodEnds = splitPeriodEnds(graph);
+            return days.length == 0 ? "" : (days[0] + ".." + periodEnds[periodEnds.length - 1]);
           };
           var selectionToken = function (graph) {
             var days = splitDays(graph.getAttribute("data-history-days"));
+            var periodEnds = splitPeriodEnds(graph);
             var start = graph.getAttribute("data-range-start");
             var end = graph.getAttribute("data-range-end");
+            var endIdx = Math.max(0, days.indexOf(end));
+            var tokenEnd = periodEnds[endIdx] || end;
             var selected = document.querySelector("h4[data-daily-selected-day]");
             if (selected) return selected.getAttribute("data-daily-selected-day");
-            return (graph.getAttribute("data-all-selected") == "1" && start == days[0] && end == days[days.length - 1]) ? "all" : (start + ".." + end);
+            return (graph.getAttribute("data-all-selected") == "1" && start == days[0] && tokenEnd == periodEnds[periodEnds.length - 1]) ? "all" : (start + ".." + tokenEnd);
           };
-          var navigateRange = function (graph) {
+          var navigateRange = function (graph, pushHistory) {
             var start = graph.getAttribute("data-range-start");
             var end = graph.getAttribute("data-range-end");
             var days = splitDays(graph.getAttribute("data-history-days"));
-            var token = start + ".." + end;
+            var periodEnds = splitPeriodEnds(graph);
+            var endIdx = Math.max(0, days.indexOf(end));
+            var token = start + ".." + (periodEnds[endIdx] || end);
             var side = graph.getAttribute("data-current-side") || "kills";
             var graphWindow = graphWindowToken(graph);
             var url = (graph.getAttribute("data-base-url") || "") + encodeURIComponent(side) + "/" + token + "/";
@@ -294,25 +330,33 @@ else
               x: window.scrollX || window.pageXOffset || 0,
               y: window.scrollY || window.pageYOffset || 0
             };
-            loadDaily(graph, url, scroll, graphWindow, tokenToHash(token, graph, side, false));
+            loadDaily(graph, url, scroll, graphWindow, tokenToHash(token, graph, side, false), pushHistory !== false);
           };
-          var navigateToken = function (graph, side, token, keepWindow) {
+          var navigateToken = function (graph, side, token, keepWindow, pushHistory) {
             var url = (graph.getAttribute("data-base-url") || "") + encodeURIComponent(side) + "/" + token + "/";
             var graphWindow = keepWindow ? graphWindowToken(graph) : null;
             var scroll = {
               x: window.scrollX || window.pageXOffset || 0,
               y: window.scrollY || window.pageYOffset || 0
             };
-            loadDaily(graph, url, scroll, graphWindow, tokenToHash(token, graph, side, !keepWindow));
+            loadDaily(graph, url, scroll, graphWindow, tokenToHash(token, graph, side, !keepWindow), pushHistory !== false);
           };
-          var navigateDay = function (graph, side, day, keepWindow) {
+          var navigateDay = function (graph, side, day, keepWindow, pushHistory) {
             var url = (graph.getAttribute("data-base-url") || "") + day + "/" + encodeURIComponent(side) + "/";
             var graphWindow = keepWindow ? graphWindowToken(graph) : null;
             var scroll = {
               x: window.scrollX || window.pageXOffset || 0,
               y: window.scrollY || window.pageYOffset || 0
             };
-            loadDaily(graph, url, scroll, graphWindow, tokenToHash(day, graph, side, !keepWindow));
+            loadDaily(graph, url, scroll, graphWindow, tokenToHash(day, graph, side, !keepWindow), pushHistory !== false);
+          };
+          var navigateHashState = function (pushHistory) {
+            var graph = document.querySelector(".daily-history-graph");
+            if (!graph) return;
+            var selection = hashToToken(window.location.hash) || { type: "token", value: "all", side: "kills", zoom: false, metric: "count" };
+            window.zkbDailyStatsMetric = selection.metric || "count";
+            if (selection.type == "day") navigateDay(graph, selection.side, selection.value, !selection.zoom, pushHistory);
+            else navigateToken(graph, selection.side, selection.value, !selection.zoom, pushHistory);
           };
           document.addEventListener("pointerdown", function (event) {
             var target = event.target;
@@ -392,7 +436,6 @@ else
             var graph = link.closest(".daily-history-graph");
             if (!graph) return;
             event.preventDefault();
-            if (graph.getAttribute("data-selected-start") == link.getAttribute("data-start") && graph.getAttribute("data-selected-end") == link.getAttribute("data-end")) return;
             navigateToken(graph, graph.getAttribute("data-current-side") || "kills", link.getAttribute("data-start") + ".." + link.getAttribute("data-end"));
           }, true);
           document.addEventListener("click", function (event) {
@@ -438,7 +481,7 @@ else
               item.classList.toggle("btn-primary", item == button);
               item.classList.toggle("btn-secondary", item != button);
             });
-            keepDailyUrl(graph, tokenToHash(selectionToken(graph), graph, graph.getAttribute("data-current-side") || "kills", false));
+            keepDailyUrl(graph, tokenToHash(selectionToken(graph), graph, graph.getAttribute("data-current-side") || "kills", false), false);
           }, true);
           document.addEventListener("click", function (event) {
             var target = event.target;
@@ -456,19 +499,20 @@ else
             graph.setAttribute("data-current-side", side);
             navigateToken(graph, side, token, true);
           }, true);
+          window.addEventListener("popstate", function () {
+            if (!/\/daily(?:\/|$)/.test(window.location.pathname)) return;
+            navigateHashState(false);
+          });
           setTimeout(function () {
-            var graph = document.querySelector(".daily-history-graph");
-            var selection = hashToToken(window.location.hash);
-            if (!graph || !selection) return;
-            window.zkbDailyStatsMetric = selection.metric || "count";
-            if (selection.type == "day") navigateDay(graph, selection.side, selection.value, !selection.zoom);
-            else navigateToken(graph, selection.side, selection.value, !selection.zoom);
+            if (window.location.hash) navigateHashState(false);
           }, 1);
         }
+  | <!--daily-part-history-end-->
   - $sideName = $dailySide;
   - $side = is_object($dailyStats[$sideName] ?? null) ? (array) $dailyStats[$sideName] : ($dailyStats[$sideName] ?? []);
   - $summary = is_object($side['summary'] ?? null) ? (array) $side['summary'] : ($side['summary'] ?? []);
   - $selectionLabel = $dailyAllSelected ? 'All' : (($dailySelectedStart ?? '') == ($dailySelectedEnd ?? '') ? ($dailySelectedStart ?? '') : (($dailySelectedStart ?? '') . ' to ' . ($dailySelectedEnd ?? '')));
+  | <!--daily-part-summary-start-->
   h4.text-center(data-daily-selected-day=((($dailySelectedStart ?? '') == ($dailySelectedEnd ?? '') && !$dailyAllSelected) ? $dailySelectedStart : false))
     span= $selectionLabel . ' '
     if ($sideName == 'kills')
@@ -487,6 +531,8 @@ else
         td.text-end(format="format-int-once" raw=($summary['count'] ?? 0))= $formatIsk($summary['count'] ?? 0, true)
         td.text-end(format="format-isk-once" raw=($summary['isk'] ?? 0))= $formatIsk($summary['isk'] ?? 0)
         td.text-end(format="format-int-once" raw=($summary['points'] ?? 0))= $formatIsk($summary['points'] ?? 0, true)
+  | <!--daily-part-summary-end-->
+  | <!--daily-part-topvalues-start-->
   - $topSet = array_slice((array) ($side['topValues'] ?? []), 0, 6);
   - $topTitle = 'Most Valuable ' . ucfirst($sideName);
   - $isEmbedded = true;
@@ -528,12 +574,8 @@ else
                 br
     .clearfix
     br
-  hr
-  - $topLists = $side['topLists'] ?? [];
-  - $nextTopRecalc = 0;
-  - $showImage = true;
-  .daily-top-lists
-    include top_list.pug
+  | <!--daily-part-topvalues-end-->
+  | <!--daily-part-labels-start-->
   h5 Labels
   - $rows = $side['labels'] ?? [];
   if (!empty($rows))
@@ -565,3 +607,4 @@ else
                   each $axis in $chart['axes']
                     circle(cx=$axis['pointX'] cy=$axis['pointY'] r="3" fill="#5bc0de")
                       title= $axis['fullLabel'] . ': ' . number_format($axis['count']) . ' (' . number_format($axis['percent'], 1) . '%) / ' . $formatIsk($axis['isk']) . ' ISK'
+  | <!--daily-part-labels-end-->
