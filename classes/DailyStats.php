@@ -4,6 +4,7 @@ class DailyStats
 {
     const COLLECTION = 'stats_monthly';
     const MONTH_FIELD = 'yyyy-mm';
+    const PERSIST_MIN_TOTAL = 10000;
 
     public static $types = [
         'characterID' => true,
@@ -63,6 +64,9 @@ class DailyStats
         $id = $type == 'label' ? (string) $id : (int) $id;
         $sequence = (int) $sequence;
         if ($sequence <= 0) {
+            return;
+        }
+        if (!self::shouldPersist($type, $id)) {
             return;
         }
         $month = substr($day, 0, 7);
@@ -188,6 +192,10 @@ class DailyStats
         }
 
         $id = $type == 'label' ? (string) $monthlyDoc['id'] : (int) $monthlyDoc['id'];
+        if (!self::shouldPersist($type, $id)) {
+            $mdb->getCollection(self::COLLECTION)->deleteOne(['_id' => $monthlyDoc['_id']]);
+            return ['updated' => 0, 'removed' => 0, 'pulled' => count((array) ($monthlyDoc['updates'] ?? [])), 'deleted' => true];
+        }
         $updates = [];
         $pullUpdates = [];
         foreach ((array) ($monthlyDoc['updates'] ?? []) as $update) {
@@ -256,6 +264,15 @@ class DailyStats
         }
 
         $mdb->getCollection(self::COLLECTION)->updateOne(['_id' => $monthlyDoc['_id'], 'updates' => []], ['$unset' => ['updates' => 1]]);
+        if ($mdb->getCollection(self::COLLECTION)->findOne(
+            ['type' => $type, 'id' => $id, 'updates' => ['$exists' => true]],
+            ['projection' => ['_id' => 1]]
+        ) == null) {
+            $mdb->getCollection('statistics')->updateOne(
+                ['type' => $type, 'id' => $id, 'dailyStatsBackfillQueued' => true],
+                ['$set' => ['dailyStatsBackfillComplete' => true, 'dailyStatsBackfillCompleteAt' => time()]]
+            );
+        }
         return ['updated' => count($set), 'removed' => count($unset), 'pulled' => count($pullUpdates)];
     }
 
@@ -278,6 +295,9 @@ class DailyStats
 
         $type = self::normalizeType($type);
         $id = $type == 'label' ? (string) $id : (int) $id;
+        if (!self::shouldPersist($type, $id) || self::backfillPending($type, $id)) {
+            return self::getAggregateOnDemand($type, $id, $days, $viewSide);
+        }
         $query = ['type' => $type, 'id' => $id];
         if (is_array($days) && count($days) > 0) {
             $months = [];
@@ -289,7 +309,7 @@ class DailyStats
 
         $docs = self::dailyDocs($mdb->find(self::COLLECTION, $query, [self::MONTH_FIELD => -1]), is_array($days) ? array_fill_keys($days, true) : null);
         if (count($docs) == 0) {
-            return null;
+            return self::getAggregateOnDemand($type, $id, $days, $viewSide);
         }
 
         $doc = [
@@ -322,7 +342,11 @@ class DailyStats
 
         $type = self::normalizeType($type);
         $id = $type == 'label' ? (string) $id : (int) $id;
-        return array_slice(self::dailyDocs($mdb->find(self::COLLECTION, ['type' => $type, 'id' => $id], [self::MONTH_FIELD => -1])), 0, $limit);
+        if (!self::shouldPersist($type, $id) || self::backfillPending($type, $id)) {
+            return array_slice(self::getDaysOnDemand($type, $id), 0, $limit);
+        }
+        $docs = self::dailyDocs($mdb->find(self::COLLECTION, ['type' => $type, 'id' => $id], [self::MONTH_FIELD => -1]));
+        return array_slice(count($docs) > 0 ? $docs : self::getDaysOnDemand($type, $id), 0, $limit);
     }
 
     public static function hasData($type, $id)
@@ -331,15 +355,352 @@ class DailyStats
 
         $type = self::normalizeType($type);
         $id = $type == 'label' ? (string) $id : (int) $id;
+        if (!self::shouldPersist($type, $id) || self::backfillPending($type, $id)) {
+            return self::totalStats($type, $id) > 0;
+        }
         $days = [];
         for ($day = 1; $day <= 31; $day++) {
             $days[] = [sprintf('%02d', $day) => ['$exists' => true]];
         }
 
-        return $mdb->getCollection(self::COLLECTION)->findOne(
+        if ($mdb->getCollection(self::COLLECTION)->findOne(
             ['type' => $type, 'id' => $id, '$or' => $days],
             ['projection' => ['_id' => 1]]
-        ) != null;
+        ) != null) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static function shouldPersist($type, $id)
+    {
+        return self::totalStats($type, $id) >= self::PERSIST_MIN_TOTAL;
+    }
+
+    public static function queueBackfill($type, $id)
+    {
+        global $mdb;
+
+        $type = self::normalizeType($type);
+        if (!isset(self::$types[$type])) {
+            return 0;
+        }
+        $id = $type == 'label' ? (string) $id : (int) $id;
+        if ($id === '' || ($type != 'label' && $id == 0) || !self::shouldPersist($type, $id)) {
+            return 0;
+        }
+
+        $statsKey = ['type' => $type, 'id' => $id];
+        $claim = $mdb->getCollection('statistics')->updateOne(
+            $statsKey + ['dailyStatsBackfillQueued' => ['$ne' => true]],
+            ['$set' => ['dailyStatsBackfillQueued' => true, 'dailyStatsBackfillComplete' => false, 'dailyStatsBackfillQueuedAt' => time()]]
+        );
+        if ($claim->getModifiedCount() == 0) {
+            return 0;
+        }
+
+        $query = self::buildBaseQuery($type, $id);
+        $rows = iterator_to_array($mdb->getCollection('killmails')->aggregate([
+            ['$match' => $query],
+            ['$group' => [
+                '_id' => ['$dateToString' => ['format' => '%Y-%m-%d', 'date' => '$dttm']],
+                'sequence' => ['$max' => '$sequence'],
+            ]],
+            ['$project' => ['_id' => 0, 'day' => '$_id', 'sequence' => 1]],
+        ], ['allowDiskUse' => true]));
+
+        $ops = [];
+        foreach ($rows as $row) {
+            $row = is_object($row) ? (array) $row : (array) $row;
+            $day = (string) ($row['day'] ?? '');
+            $sequence = (int) ($row['sequence'] ?? 0);
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $day) || $sequence <= 0) {
+                continue;
+            }
+
+            $month = substr($day, 0, 7);
+            $key = ['type' => $type, 'id' => $id, self::MONTH_FIELD => $month];
+            $ops[] = ['updateOne' => [
+                $key,
+                [
+                    '$setOnInsert' => $key + ['created' => time()],
+                    '$addToSet' => ['updates' => "$day:$sequence"],
+                ],
+                ['upsert' => true],
+            ]];
+        }
+
+        if (count($ops) > 0) {
+            $mdb->getCollection(self::COLLECTION)->bulkWrite($ops, ['ordered' => false]);
+        }
+
+        return count($ops);
+    }
+
+    private static function backfillPending($type, $id)
+    {
+        global $mdb;
+
+        $stats = $mdb->findDoc('statistics', [
+            'type' => self::normalizeType($type),
+            'id' => self::normalizeType($type) == 'label' ? (string) $id : (int) $id,
+        ]);
+
+        return @$stats['dailyStatsBackfillQueued'] === true && @$stats['dailyStatsBackfillComplete'] !== true;
+    }
+
+    private static function totalStats($type, $id)
+    {
+        global $mdb;
+
+        $type = self::normalizeType($type);
+        if (!isset(self::$types[$type])) {
+            return 0;
+        }
+
+        $id = $type == 'label' ? (string) $id : (int) $id;
+        $stats = $mdb->findDoc('statistics', ['type' => $type, 'id' => $id]);
+        return (int) ($stats['shipsDestroyed'] ?? 0) + (int) ($stats['shipsLost'] ?? 0);
+    }
+
+    private static function getAggregateOnDemand($type, $id, $days = null, $viewSide = null)
+    {
+        $type = self::normalizeType($type);
+        $id = $type == 'label' ? (string) $id : (int) $id;
+        $dayRows = self::getDaysOnDemand($type, $id);
+        if (count($dayRows) == 0) {
+            return null;
+        }
+
+        $wanted = null;
+        if (is_array($days) && count($days) > 0) {
+            $wanted = array_fill_keys($days, true);
+            $dayRows = array_values(array_filter($dayRows, function ($row) use ($wanted) {
+                return isset($wanted[$row['day'] ?? '']);
+            }));
+        }
+        if (count($dayRows) == 0) {
+            return null;
+        }
+
+        $selectedDays = array_values(array_map(function ($row) { return $row['day']; }, $dayRows));
+        $doc = [
+            'type' => $type,
+            'id' => $id,
+            'day' => count($selectedDays) == 1 ? $selectedDays[0] : null,
+            'days' => $selectedDays,
+            'kills' => self::onDemandSideStats($type, $id, $selectedDays, false),
+            'losses' => self::onDemandSideStats($type, $id, $selectedDays, true),
+        ];
+
+        $viewSides = in_array($viewSide, ['kills', 'losses']) ? [$viewSide] : ['kills', 'losses'];
+        foreach (['kills', 'losses'] as $sideName) {
+            self::finishSideAggregate($doc[$sideName], $type, $id, in_array($sideName, $viewSides));
+        }
+        self::hydrateForView($doc, $viewSides);
+
+        return $doc;
+    }
+
+    private static function getDaysOnDemand($type, $id)
+    {
+        global $mdb;
+
+        $type = self::normalizeType($type);
+        $id = $type == 'label' ? (string) $id : (int) $id;
+        $query = self::buildBaseQuery($type, $id);
+        $rows = iterator_to_array($mdb->getCollection('killmails')->aggregate([
+            ['$match' => $query],
+            ['$group' => [
+                '_id' => ['$dateToString' => ['format' => '%Y-%m-%d', 'date' => '$dttm']],
+                'sequence' => ['$max' => '$sequence'],
+            ]],
+            ['$sort' => ['_id' => -1]],
+            ['$project' => ['_id' => 0, 'day' => '$_id', 'sequence' => 1]],
+        ], ['allowDiskUse' => true]));
+
+        $days = array_map(function ($row) {
+            $row = is_object($row) ? (array) $row : (array) $row;
+            return [
+                'day' => (string) ($row['day'] ?? ''),
+                'sequence' => (int) ($row['sequence'] ?? 0),
+                'kills' => ['summary' => ['count' => 0, 'isk' => 0, 'points' => 0]],
+                'losses' => ['summary' => ['count' => 0, 'isk' => 0, 'points' => 0]],
+            ];
+        }, $rows);
+
+        $byDay = [];
+        foreach ($days as $idx => $row) {
+            $byDay[$row['day']] = $idx;
+        }
+        foreach ([false => 'kills', true => 'losses'] as $losses => $sideName) {
+            foreach (self::onDemandDailySummaries($type, $id, (bool) $losses) as $summary) {
+                $day = (string) ($summary['day'] ?? '');
+                if (isset($byDay[$day])) {
+                    $days[$byDay[$day]][$sideName]['summary'] = [
+                        'count' => (int) ($summary['count'] ?? 0),
+                        'isk' => (double) ($summary['isk'] ?? 0),
+                        'points' => (int) ($summary['points'] ?? 0),
+                    ];
+                }
+            }
+        }
+
+        return $days;
+    }
+
+    private static function onDemandSideStats($type, $id, $days, $losses)
+    {
+        global $mdb;
+
+        $query = self::buildQueryForDays($type, $id, $days, $losses);
+        $summary = AdvancedSearch::getSums($type, $query, 'null', false, false);
+        $pointsRows = iterator_to_array($mdb->getCollection('killmails')->aggregate([
+            ['$match' => $query],
+            ['$group' => ['_id' => null, 'points' => ['$sum' => '$zkb.points']]],
+        ], ['allowDiskUse' => true]));
+
+        $stats = [
+            'summary' => [
+                'count' => (int) ($summary['kills'] ?? 0),
+                'isk' => (double) ($summary['isk'] ?? 0),
+                'points' => (int) ($pointsRows[0]['points'] ?? 0),
+            ],
+            'labels' => self::onDemandLabels($query),
+            'top' => [],
+            'topValueKillIDs' => self::onDemandTopValueKillIDs($type, $id, $days, $losses),
+        ];
+
+        foreach (self::$topTypes as $topType => $meta) {
+            $stats['top'][$topType] = AdvancedSearch::getTop($topType, $query, $losses ? 'true' : 'false', [], false, 'killID', -1);
+        }
+        self::ensureCurrentEntityTopRow($stats, $type, $id);
+
+        return $stats;
+    }
+
+    private static function buildBaseQuery($type, $id)
+    {
+        $parameters = [];
+        if ($type == 'label') {
+            if ($id != 'all') {
+                $parameters['labels'] = $id;
+            }
+        } else {
+            $parameters[$type] = $id;
+            $parameters['npc'] = false;
+            $parameters['labels'] = 'pvp';
+        }
+
+        return MongoFilter::buildQuery($parameters);
+    }
+
+    private static function buildParameters($type, $id, $day = null, $losses = null)
+    {
+        $parameters = [];
+        if ($type == 'label') {
+            if ($id != 'all') {
+                $parameters['labels'] = $id;
+            }
+        } elseif (self::$types[$type]) {
+            $parameters[$type] = $id;
+            if ($losses !== null) {
+                $parameters[$losses ? 'losses' : 'kills'] = true;
+            }
+            $parameters['npc'] = false;
+            $parameters['labels'] = 'pvp';
+        } else {
+            $parameters[$type] = $id;
+            $parameters['npc'] = false;
+            $parameters['labels'] = 'pvp';
+        }
+        if ($day !== null) {
+            $parameters['date'] = $day;
+        }
+
+        return $parameters;
+    }
+
+    private static function buildQueryForDays($type, $id, $days, $losses)
+    {
+        $query = self::buildQuery($type, $id, $days[0], $losses);
+        if (count($days) == 1) {
+            return $query;
+        }
+
+        $ranges = [];
+        foreach ($days as $day) {
+            $dayQuery = self::withDayKillIDRange([], $day);
+            if (isset($dayQuery['killID'])) {
+                $ranges[] = $dayQuery;
+            }
+        }
+        if (count($ranges) == 0) {
+            return ['killID' => 0];
+        }
+
+        $baseQuery = self::buildQuery($type, $id, $days[0], $losses);
+        $baseParts = isset($baseQuery['$and']) ? $baseQuery['$and'] : [$baseQuery];
+        $baseParts = array_values(array_filter($baseParts, function ($part) {
+            return !isset($part['killID']);
+        }));
+        $baseParts[] = count($ranges) == 1 ? $ranges[0] : ['$or' => $ranges];
+
+        return count($baseParts) == 1 ? $baseParts[0] : ['$and' => $baseParts];
+    }
+
+    private static function onDemandDailySummaries($type, $id, $losses)
+    {
+        global $mdb;
+
+        $parameters = self::buildParameters($type, $id, null, $losses);
+        $query = MongoFilter::buildQuery($parameters);
+
+        return iterator_to_array($mdb->getCollection('killmails')->aggregate([
+            ['$match' => $query],
+            ['$group' => [
+                '_id' => ['$dateToString' => ['format' => '%Y-%m-%d', 'date' => '$dttm']],
+                'count' => ['$sum' => 1],
+                'isk' => ['$sum' => '$zkb.totalValue'],
+                'points' => ['$sum' => '$zkb.points'],
+            ]],
+            ['$project' => ['_id' => 0, 'day' => '$_id', 'count' => 1, 'isk' => 1, 'points' => 1]],
+        ], ['allowDiskUse' => true]));
+    }
+
+    private static function onDemandLabels($query)
+    {
+        global $mdb;
+
+        return iterator_to_array($mdb->getCollection('killmails')->aggregate([
+            ['$match' => $query],
+            ['$unwind' => '$labels'],
+            ['$group' => [
+                '_id' => '$labels',
+                'count' => ['$sum' => 1],
+                'isk' => ['$sum' => '$zkb.totalValue'],
+            ]],
+            ['$sort' => ['count' => -1, 'isk' => -1]],
+            ['$project' => ['_id' => 0, 'label' => '$_id', 'count' => 1, 'isk' => 1]],
+        ], ['allowDiskUse' => true]));
+    }
+
+    private static function onDemandTopValueKillIDs($type, $id, $days, $losses)
+    {
+        $killIDs = [];
+        foreach ($days as $day) {
+            $parameters = self::buildParameters($type, $id, $day, $losses);
+            $parameters['limit'] = 10;
+            foreach (Stats::getTopIsk($parameters) as $killID => $killmail) {
+                $killID = (int) $killID;
+                if ($killID > 0) {
+                    $killIDs[$killID] = $killID;
+                }
+            }
+        }
+
+        return self::topValueKillIDsByValue($killIDs);
     }
 
     private static function dailyDocs($monthlyDocs, $wanted = null)

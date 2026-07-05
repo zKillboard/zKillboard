@@ -113,6 +113,7 @@ function calcStats($row, $maxSequence)
     $id = $row['id'];
     $key = ['type' => $type, 'id' => $id];
     $stats = $mdb->findDoc('statistics', $key);
+    $oldDailyStatsTotal = (int) ($stats['shipsDestroyed'] ?? 0) + (int) ($stats['shipsLost'] ?? 0);
     $resetInProgress = false;
     if ($stats === null || @$stats['reset'] === true) {
         $resetInProgress = true;
@@ -265,6 +266,14 @@ function calcStats($row, $maxSequence)
 	if ($type == 'characterID' && @$stats['shipsDestroyed'] > 1000) $stats['calcTrophies'] = true;
     // save it
     $mdb->save('statistics', $stats);
+
+    $newDailyStatsTotal = (int) ($stats['shipsDestroyed'] ?? 0) + (int) ($stats['shipsLost'] ?? 0);
+    if ($oldDailyStatsTotal < DailyStats::PERSIST_MIN_TOTAL && $newDailyStatsTotal >= DailyStats::PERSIST_MIN_TOTAL) {
+        $queuedDays = DailyStats::queueBackfill($type, $id);
+        if ($queuedDays > 0) {
+            Util::out("Queued daily stats backfill for $type:$id ($queuedDays days)");
+        }
+    }
 
 
     return ($newSequence == $maxSequence);

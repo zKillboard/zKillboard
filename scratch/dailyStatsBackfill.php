@@ -49,6 +49,9 @@ foreach ($cursor as $killmail) {
         if (!isset($backfillTypes[$key['type']])) {
             continue;
         }
+        if (!dailyStatsBackfillShouldPersist($key['type'], $key['id'])) {
+            continue;
+        }
 
         $batchKey = "{$key['type']}:{$key['id']}:{$key['day']}";
         if (!isset($batch[$batchKey]) || $batch[$batchKey]['sequence'] < $sequence) {
@@ -71,6 +74,18 @@ foreach ($cursor as $killmail) {
 $flushedCount += flushDailyStatsBatch($batch);
 
 echo "Done: scanned $killmailCount killmails; saw $queuedCount daily stat updates; flushed $flushedCount unique updates\n";
+
+function dailyStatsBackfillShouldPersist($type, $id)
+{
+    static $eligible = [];
+
+    $cacheKey = "$type:$id";
+    if (!isset($eligible[$cacheKey])) {
+        $eligible[$cacheKey] = DailyStats::shouldPersist($type, $id);
+    }
+
+    return $eligible[$cacheKey];
+}
 
 function flushDailyStatsBatch($batch)
 {

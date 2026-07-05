@@ -314,7 +314,7 @@ function handler($request, $response, $args, $container)
 		$id = (int) $id;
 	}
 	$statistics = $mdb->findDoc('statistics', ['type' => $statType, 'id' => $id]);
-	$showDailyStats = ($showDailies ?? false) && $key == 'character' && DailyStats::hasData($statType, $id);
+	$showDailyStats = ($showDailies ?? false) && DailyStats::hasData($statType, $id);
 	if ($pageType == 'daily' && !$showDailyStats) {
 		return renderCached404($container, $response, 'Not Found');
 	}
