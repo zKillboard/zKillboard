@@ -51,4 +51,3 @@ if (count($topSetData['values'] ?? []) > 0)
             td
               include text_location.pug
           td(style="text-align: right;" title=((($data['score'] ?? 0) != 0) ? ('Score: ' . number_format((float) $data['score'], 0)) : false) rel=((($data['score'] ?? 0) != 0) ? 'tooltip' : false) format="format-int-once" raw=($data['kills'] ?? 0))= number_format((float) ($data['kills'] ?? 0), 0)
-  .clearfix
