@@ -1,15 +1,13 @@
 <?php
 
-$mt = 24; $workerID = $mt; do { $mt--; $workerID = $mt; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
+$mt = 64; $workerID = $mt; do { $mt--; $workerID = $mt; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
 require_once '../init.php';
 
 if ($mt < 8) {
 	$queue = 'queueAsearchKillsSet';
-} elseif ($mt < 16) {
-	$queue = 'queueAsearchAggregationsSet';
 } else {
-	$queue = 'queueAsearchSet';
+	$queue = 'queueAsearchAggregationsSet';
 }
 
 $minute = date('Hi');
