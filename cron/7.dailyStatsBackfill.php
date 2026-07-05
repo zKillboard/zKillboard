@@ -26,14 +26,21 @@ $query = [
     'type' => ['$in' => array_keys(DailyStats::$types)],
 ];
 
+$minute = date('Hi');
 $queuedEntities = 0;
 $queuedDays = 0;
+$completedScan = true;
 $cursor = $mdb->getCollection('statistics')->find($query, [
     'projection' => ['type' => 1, 'id' => 1],
     'sort' => ['type' => 1, 'id' => 1],
 ]);
 
 foreach ($cursor as $row) {
+    if ($minute != date('Hi') || $redis->get("zkb:reinforced") == true) {
+        $completedScan = false;
+        break;
+    }
+
     $type = DailyStats::normalizeType($row['type'] ?? '');
     $id = $type == 'label' ? (string) ($row['id'] ?? '') : (int) ($row['id'] ?? 0);
     if (!isset(DailyStats::$types[$type]) || $id === '' || ($type != 'label' && $id == 0)) {
@@ -50,5 +57,9 @@ foreach ($cursor as $row) {
     Util::out("Queued daily stats backfill for $type:$id ($days days)");
 }
 
-Util::out("Daily stats backfill scan complete: $queuedEntities entities, $queuedDays days queued");
-$kvc->setex($key, 86400, true);
+if ($completedScan) {
+    Util::out("Daily stats backfill scan complete: $queuedEntities entities, $queuedDays days queued");
+    $kvc->setex($key, 86400, true);
+} else {
+    Util::out("Daily stats backfill scan paused: $queuedEntities entities, $queuedDays days queued");
+}
