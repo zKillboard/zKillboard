@@ -4,6 +4,15 @@ require_once "../init.php";
 
 if ($kvc->get("zkb:checkMonocles") != true) exit();
 
+function clearOverview($id)
+{
+    global $redis;
+
+    $redis->del("zkb:overview:character:$id");
+    $redis->del("zkb:overview:characterID:$id");
+    $redis->sadd("queueCacheTags", "overview:$id");
+}
+
 $rows = $mdb->getCollection("payments")->aggregate([
     ['$match' => ['characterID' => ['$exists' => true], 'isk' => ['$exists' => true]]],
     ['$group' => ['_id' => '$characterID', 'isk' => ['$sum' => '$isk']]],
@@ -18,6 +27,7 @@ foreach ($rows as $row) {
     $isk = $row['isk'];
     Util::out("$id super monocled $isk");
     $mdb->set("users", ['characterID' => $id], ['monocle' => true, 'supermonocle' => true]);
+    clearOverview($id);
 
     Util::sendEveMail($id, "Super Monocle!", "You have given at least 10000000000 ISK to zKillboard! In appreciation of your exceptionally deep pockets a super monocle will show up very soon on your character's zKillboard page. Thank you! \n\n<a href=\"https://zkillboard.com/character/$id/\">Your zKillboard character page.</a>");
     sleep(1);
@@ -37,6 +47,7 @@ foreach ($rows as $row) {
     $isk = $row['isk'];
     Util::out("$id monocled $isk");
     $mdb->set("users", ['characterID' => $id], ['monocle' => true]);
+    clearOverview($id);
 
     Util::sendEveMail($id, "Monocle!", "You have given at least 1000000000 ISK to zKillboard! In appreciation of your deep pockets a monocle will show up very soon on your character's zKillboard page. Thank you! \n\n<a href=\"https://zkillboard.com/character/$id/\">Your zKillboard character page.</a>");
     sleep(1);
