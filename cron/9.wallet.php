@@ -42,6 +42,7 @@ function success(&$params, $content)
     $redis = $params['redis'];
     $kvc = $params['kvc'];
     $kvc->setex("zkb:walletCheck", 3600, "true");
+    $kvc->set("zkb:checkMonocles", true);
 }
 
 function applyBalances()
