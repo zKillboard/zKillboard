@@ -9,13 +9,21 @@
 - $progressPair = function ($left, $leftLabel, $rightLabel) { $left = max(0, min(100, (float) $left)); $right = 100 - $left; return '<div class="progress" style="width: 100%; margin-bottom: 0px;"><div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="' . $left . '" aria-valuemin="0" aria-valuemax="100" style="width: ' . $left . '%; background-color: #A90707;">' . ($left > 10 ? number_format($left, 0) . '%' : '') . '</div><div class="progress-bar" role="progressbar" aria-valuenow="' . $right . '" aria-valuemin="0" aria-valuemax="100" style="width: ' . $right . '%; background-color: #007800;">' . ($right > 10 ? number_format($right, 0) . '%' : '') . '</div></div><span class="red">' . $leftLabel . '</span><span class="float-end green">' . $rightLabel . '</span>'; };
 .statsbox-scroll
   table#statsbox.table.table-sm(data-entity=(($entityType ?? '') . ':' . ($entityID ?? '')) style="margin: 0px; padding: 0px; background-color: transparent;")
+    colgroup
+      col.stat-label-col
+      col.stat-value-col
+      col.stat-rank-col
+      col.stat-value-col
+      col.stat-rank-col
+      col.stat-eff-col
+      col.stat-rank-col
     tbody
       tr#teststats
-        td(colspan="8")
-          center
-            li.stat-range.stat-active(style="display: inline-block; width: 100px;" onclick='$(".alltime-ranks").show(); $(".recent-ranks").hide(); $(".weekly-ranks").hide(); $(".stat-range").removeClass("stat-active"); $(this).addClass("stat-active");') Alltime
-            li.stat-range(style="display: inline-block; width: 100px;" onclick='$(".alltime-ranks").hide(); $(".recent-ranks").show(); $(".weekly-ranks").hide(); $(".stat-range").removeClass("stat-active"); $(this).addClass("stat-active");') Recent
-            li.stat-range(style="display: inline-block; width: 100px;" onclick='$(".alltime-ranks").hide(); $(".recent-ranks").hide(); $(".weekly-ranks").show(); $(".stat-range").removeClass("stat-active"); $(this).addClass("stat-active");') Weekly
+        td(colspan="7")
+          .btn-group.btn-group-sm.stat-range-tabs.d-flex.mx-auto(role="group" aria-label="Statistics range")
+            button.btn.btn-primary.stat-range.stat-active(type="button" title="Alltime" onclick='$(".alltime-ranks").show(); $(".recent-ranks").hide(); $(".weekly-ranks").hide(); $(".stat-range").removeClass("btn-primary stat-active").addClass("btn-secondary"); $(this).removeClass("btn-secondary").addClass("btn-primary stat-active");') Alltime &infin;
+            button.btn.btn-secondary.stat-range(type="button" title="Recent" onclick='$(".alltime-ranks").hide(); $(".recent-ranks").show(); $(".weekly-ranks").hide(); $(".stat-range").removeClass("btn-primary stat-active").addClass("btn-secondary"); $(this).removeClass("btn-secondary").addClass("btn-primary stat-active");') Recent 90d
+            button.btn.btn-secondary.stat-range(type="button" title="Weekly" onclick='$(".alltime-ranks").hide(); $(".recent-ranks").hide(); $(".weekly-ranks").show(); $(".stat-range").removeClass("btn-primary stat-active").addClass("btn-secondary"); $(this).removeClass("btn-secondary").addClass("btn-primary stat-active");') Weekly 7d
       tr
         th &nbsp;
         th(style="text-align: right") Destroyed
@@ -66,10 +74,10 @@
               != $rankCell($statisticsData['recentOverallRank'] ?? 0, $prevRanks['recentOverallRank'] ?? 0, $prevRanks['date'] ?? '')
             else if ($prefix === 'recent')
               != $rankCell($statisticsData['weeklyOverallRank'] ?? 0, $prevRanks['weeklyOverallRank'] ?? 0, $prevRanks['date'] ?? '')
-      if (isset($extraData['dangerRatio']))
-        tr.alltime-ranks
-          td.border-bottom-0(colspan="7")
-            div(style="display: flex; gap: 8px; opacity: 0.50;")
+      tr.alltime-ranks
+        td.border-bottom-0(colspan="7")
+          .stat-range-details
+            if (isset($extraData['dangerRatio']))
               div(style="width: 50%; padding: 3px;")
                 != $progressPair($extraData['dangerRatio'] ?? 0, 'Dangerous', 'Snuggly')
               div(style="width: 50%; padding: 3px;")
@@ -88,10 +96,10 @@
                     | Solo Kills 
                     a(href="/information/faq/#solo") *
       each $period in [['recent', 'recentDangerRatio', 'recentGangFactor', 'recentSoloKills'], ['weekly', 'weeklyDangerRatio', 'weeklyGangFactor', 'weeklySoloKills']]
-        if (isset($extraData[$period[1]]))
-          tr(class=($period[0] . '-ranks collapse'))
-            td.border-bottom-0(colspan="7")
-              div(style="display: flex; gap: 8px; opacity: 0.50;")
+        tr(class=($period[0] . '-ranks collapse'))
+          td.border-bottom-0(colspan="7")
+            .stat-range-details
+              if (isset($extraData[$period[1]]))
                 div(style="width: 50%; padding: 3px;")
                   != $progressPair($extraData[$period[1]] ?? 0, 'Dangerous', 'Snuggly')
                 div(style="width: 50%; padding: 3px;")

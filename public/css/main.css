@@ -747,16 +747,83 @@ td.centered {
 }
 
 .stat-range {
-	border-bottom: solid 2px transparent;
 	cursor: pointer;
 }
 
 .stat-active {
-	border-bottom: solid 2px #efefef;
 	color: #FCFDFD;
 }
 
+#statsbox {
+	table-layout: fixed;
+}
+
+#statsbox .stat-label-col {
+	width: 10%;
+}
+
+#statsbox .stat-value-col {
+	width: 20%;
+}
+
+#statsbox .stat-rank-col {
+	width: 13%;
+}
+
+#statsbox .stat-eff-col {
+	width: 10%;
+}
+
+#statsbox th,
+#statsbox td {
+	white-space: nowrap;
+}
+
+.stat-range-tabs {
+	max-width: 360px;
+}
+
+.stat-range-details {
+	display: flex;
+	gap: 8px;
+	min-height: 42px;
+	opacity: 0.50;
+}
+
 @media (max-width: 767px) {
+	.statsbox-scroll {
+		max-width: 100%;
+		overflow-x: visible;
+	}
+
+	#statsbox {
+		width: 100%;
+	}
+
+	#statsbox th,
+	#statsbox td {
+		padding-left: 0.15rem;
+		padding-right: 0.15rem;
+		white-space: normal;
+	}
+
+	.stat-range-tabs {
+		width: 100%;
+		max-width: none;
+	}
+
+	.stat-range-tabs .btn {
+		flex: 1 1 0;
+	}
+
+	.stat-range-details {
+		display: block;
+		min-height: 78px;
+	}
+
+	.stat-range-details > div {
+		width: 100% !important;
+	}
 }
 
 .pointer {
@@ -1711,8 +1778,7 @@ code {
 
 	.statsbox-scroll {
 		max-width: 100%;
-		overflow-x: auto;
-		-webkit-overflow-scrolling: touch;
+		overflow-x: visible;
 	}
 
 	#overview-menu.navbar-sub {
