@@ -7,10 +7,16 @@ $iter = $mdb->getCollection("payments")->distinct("characterID", ['monocle_check
 foreach ($iter as $id) {
     $id = (int) $id;
     $userInfo = $mdb->findDoc("users", ['userID' => "user:$id"]);
-    if ($userInfo != null && @$userInfo['monocle'] != true) {
+    if ($userInfo != null && (@$userInfo['monocle'] != true || @$userInfo['supermonocle'] != true)) {
         $result = Mdb::group("payments", ['characterID'], ['characterID' => $id], [], 'isk', ['iskSum' => -1], 6);
         $isk = $result[0]['iskSum'];
-        if ($isk >= 1000000000) {
+        if ($isk >= 10000000000 && @$userInfo['supermonocle'] != true) {
+            Util::out("$id super monocled $isk");
+            $mdb->set("users", ['characterID' => (int) $id], ['monocle' => true, 'supermonocle' => true]);
+
+            Util::sendEveMail($id, "Super Monocle!", "You have given at least 10000000000 ISK to zKillboard! In appreciation of your exceptionally deep pockets a super monocle will show up very soon on your character's zKillboard page. Thank you! \n\n<a href=\"https://zkillboard.com/character/$id/\">Your zKillboard character page.</a>");
+            sleep(1);
+        } else if ($isk >= 1000000000 && @$userInfo['monocle'] != true) {
             Util::out("$id monocled $isk");
             $mdb->set("users", ['characterID' => (int) $id], ['monocle' => true]);
 

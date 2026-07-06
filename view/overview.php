@@ -595,6 +595,8 @@ function handler($request, $response, $args, $container)
 		}
 		if (@$user['monocle'] == true)
 			$extra['hasMonocle'] = true;
+		if (@$user['supermonocle'] == true)
+			$extra['hasSuperMonocle'] = true;
 	}
 
 	// Sponsored killmails
