@@ -28,8 +28,8 @@ $jobs = [
     alltimeJob('solo', $alltimeDate, 'zkb:alltimeSoloRanksCalculated:%s:%s'),
     periodJob('recent', 'all', 'ninetyDays', $today, "zkb:recentRanksCalculated:$today", 86400, ['npc' => false, 'labels' => 'pvp']),
     periodJob('recent', 'solo', 'ninetyDays', $today, "zkb:recentRanksSoloCalculated:$today", 86400, ['npc' => false, 'labels' => 'pvp', 'solo' => true]),
-    periodJob('weekly', 'solo', 'oneWeek', $today, "zkb:weeklyRanksSoloCalculated:$soloHour", 1200, ['npc' => false, 'categoryID' => 6, 'solo' => true]),
-    periodJob('weekly', 'all', 'oneWeek', $today, "zkb:weeklyRanksCalculated:$hour", 1200, ['npc' => false, 'categoryID' => 6], "zkb:weeklyRanksSoloCalculated:$hour"),
+    periodJob('weekly', 'solo', 'oneWeek', $today, "zkb:weeklyRanksSoloCalculated:$soloHour", 1200, ['npc' => false, 'labels' => 'pvp', 'solo' => true]),
+    periodJob('weekly', 'all', 'oneWeek', $today, "zkb:weeklyRanksCalculated:$hour", 1200, ['npc' => false, 'labels' => 'pvp'], "zkb:weeklyRanksSoloCalculated:$hour"),
 ];
 
 if (hasArg('--reset-complete') || hasArg('--recalculate')) {
