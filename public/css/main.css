@@ -2348,3 +2348,7 @@ code {
 		font-size: 1.3rem;
 	}
 }
+
+.btn-primary {
+	background-color: #1E73BE;
+}
