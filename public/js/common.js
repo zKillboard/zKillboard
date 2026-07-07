@@ -126,8 +126,31 @@ function initPageContent() {
 
 function loadDailyAsyncParts() {
     document.querySelectorAll(".daily-async").forEach(function (root) {
-        const base = root.getAttribute("data-base") || "";
+        let base = root.getAttribute("data-base") || "";
         if (base === "") return;
+        if (!root.getAttribute("data-hash-applied") && window.location.hash) {
+            const hash = decodeURIComponent(window.location.hash.replace(/^#/, ""));
+            let token = hash;
+            let zoom = token.charAt(0) === "z";
+            if (zoom) token = token.substring(1);
+            let side = token.charAt(0) === "l" ? "losses" : "kills";
+            if (side === "losses") token = token.substring(1);
+            if (token.charAt(0) === "i" || token.charAt(0) === "p") token = token.substring(1);
+            if (token === "all" || /^\d{4}$/.test(token) || /^\d{4}-\d{2}$/.test(token) || /^\d{4}-\d{2}-\d{2}$/.test(token) || /^\d{4}-\d{2}-\d{2}\.\.\d{4}-\d{2}-\d{2}$/.test(token)) {
+                if (/^\d{4}$/.test(token)) token = token + "-01-01.." + token + "-12-31";
+                if (/^\d{4}-\d{2}$/.test(token)) {
+                    const parts = token.split("-");
+                    token = token + "-01.." + token + "-" + new Date(parseInt(parts[0], 10), parseInt(parts[1], 10), 0).getDate();
+                }
+                const url = new URL(base, window.location.origin);
+                url.searchParams.set("side", side);
+                url.searchParams.set("days", token);
+                if (zoom && token !== "all" && token.indexOf("..") !== -1) url.searchParams.set("graph", token);
+                base = url.pathname + url.search;
+                root.setAttribute("data-base", base);
+            }
+            root.setAttribute("data-hash-applied", "1");
+        }
         root.querySelectorAll(".daily-async-part").forEach(function (target) {
             if (target.getAttribute("data-loaded") === "1" || target.getAttribute("data-loading") === "1") return;
             target.setAttribute("data-loading", "1");

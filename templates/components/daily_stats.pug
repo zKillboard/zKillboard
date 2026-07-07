@@ -62,9 +62,10 @@ else
   -   $endIdx = $endIndexFor(min($selectedEnd, $periodEnds[$count - 1]));
   -   if ($startIdx > $endIdx) { $tmp = $startIdx; $startIdx = $endIdx; $endIdx = $tmp; }
   -   $selectionCoversGraph = $startIdx == 0 && $endIdx == $count - 1;
-  -   $width = 1200; $height = 190; $bandHeight = 150; $mid = 118; $padX = 18; $graphWidth = $width - ($padX * 2);
+  -   $width = 1200; $height = 220; $bandHeight = 150; $mid = 118; $padX = 18; $graphWidth = $width - ($padX * 2);
   -   $x = function ($idx) use ($count, $width, $padX, $graphWidth) { return $count <= 1 ? ($width / 2) : ($padX + (($idx / ($count - 1)) * $graphWidth)); };
-  -   $rangeFor = function ($start, $end) use ($days, $periodEnds, $x, $startIndexFor, $endIndexFor) { $start = max($start, $days[0]); $end = min($end, $periodEnds[count($periodEnds) - 1]); $startIdx = $startIndexFor($start); $endIdx = $endIndexFor($end); if ($startIdx > $endIdx) return null; return ['start' => $start, 'end' => $end, 'x' => round($x($startIdx), 2), 'endX' => round($x($endIdx), 2), 'midX' => round(($x($startIdx) + $x($endIdx)) / 2, 2)]; };
+  -   $rangeStartX = round($x($startIdx), 2); $rangeEndX = round($x($endIdx), 2);
+  -   $rangeFor = function ($start, $end) use ($days, $periodEnds, $x, $startIndexFor, $endIndexFor) { $start = max($start, $days[0]); $end = min($end, $periodEnds[count($periodEnds) - 1]); if ($start > $end) return null; $startIdx = $startIndexFor($start); $endIdx = $endIndexFor($end); if ($startIdx > $endIdx) return null; return ['start' => $start, 'end' => $end, 'x' => round($x($startIdx), 2), 'endX' => round($x($endIdx), 2), 'midX' => round(($x($startIdx) + $x($endIdx)) / 2, 2)]; };
   -   $heightFor = function ($value, $max, $maxHeight) { $value = max(0, (float) $value); return $max <= 0 || $value <= 0 ? 0 : round(min($maxHeight, ($value / $max) * $maxHeight), 2); };
   -   $series = ['kills' => ['count' => [], 'isk' => [], 'points' => []], 'losses' => ['count' => [], 'isk' => [], 'points' => []]];
   -   foreach ($history as $row) { foreach (['kills', 'losses'] as $side) { $summary = is_object($row[$side]['summary'] ?? null) ? (array) $row[$side]['summary'] : ($row[$side]['summary'] ?? []); foreach (['count', 'isk', 'points'] as $metric) $series[$side][$metric][] = (float) ($summary[$metric] ?? 0); } }
@@ -73,10 +74,12 @@ else
   -   foreach ($metrics as &$metric) { $key = $metric['key']; $killMax = max(array_merge($series['kills'][$key], [1])); $lossMax = max(array_merge($series['losses'][$key], [1])); $metric['killPath'] = $path($series['kills'][$key], true, $killMax, $mid - 14); $metric['lossPath'] = $path($series['losses'][$key], false, $lossMax, 24); }
   -   $dayHits = [];
   -   foreach ($history as $idx => $row) { $killSummary = is_object($row['kills']['summary'] ?? null) ? (array) $row['kills']['summary'] : ($row['kills']['summary'] ?? []); $lossSummary = is_object($row['losses']['summary'] ?? null) ? (array) $row['losses']['summary'] : ($row['losses']['summary'] ?? []); $killCount = (float) ($killSummary['count'] ?? 0); $lossCount = (float) ($lossSummary['count'] ?? 0); if ($killCount > 0 || $lossCount > 0) $dayHits[] = ['day' => $row['day'], 'x' => round($x($idx), 2), 'width' => max(3, round($graphWidth / max(1, $count), 2)), 'title' => $row['day'] . (($row['periodEnd'] ?? $row['day']) != $row['day'] ? ('..' . $row['periodEnd']) : '') . ' - Kills: ' . number_format($killCount, 0) . ' / Losses: ' . number_format($lossCount, 0)]; }
-  -   $years = []; $months = [];
-  -   $cursor = new DateTimeImmutable(substr($days[0], 0, 4) . '-01-01', new DateTimeZone('UTC')); $last = new DateTimeImmutable($days[$count - 1], new DateTimeZone('UTC'));
-  -   while ($cursor <= $last) { $yearStart = $cursor->format('Y-01-01'); $yearEnd = $cursor->format('Y-12-31'); $range = $rangeFor($yearStart, $yearEnd); if ($range != null) { $range['start'] = $yearStart; $range['end'] = $yearEnd; $years[] = $range + ['label' => $cursor->format('Y')]; } for ($m = 1; $m <= 12; $m++) { $month = $cursor->setDate((int) $cursor->format('Y'), $m, 1); $monthStart = $month->format('Y-m-01'); $monthEnd = $month->modify('last day of this month')->format('Y-m-d'); $range = $rangeFor($monthStart, $monthEnd); if ($range != null) { $range['start'] = $monthStart; $range['end'] = $monthEnd; $months[] = $range + ['label' => $month->format('M Y'), 'short' => $month->format('M')]; } } $cursor = $cursor->modify('+1 year'); }
-  -   return ['width' => $width, 'height' => $height, 'bandHeight' => $bandHeight, 'bandMid' => $mid, 'padX' => $padX, 'graphWidth' => $graphWidth, 'historyDays' => $days, 'historyPeriodEnds' => $periodEnds, 'rangeStartDay' => $days[$startIdx], 'rangeEndDay' => $days[$endIdx], 'rangeStartX' => round($x($startIdx), 2), 'rangeEndX' => round($x($endIdx), 2), 'allSelected' => $allSelected, 'graphZoomed' => $graphZoomed, 'selectionCoversGraph' => $selectionCoversGraph, 'metrics' => $metrics, 'years' => $years, 'months' => $months, 'dayHits' => $dayHits];
+  -   $years = []; $months = []; $dayTicks = [];
+  -   $cursor = new DateTimeImmutable(substr($days[0], 0, 4) . '-01-01', new DateTimeZone('UTC')); $last = new DateTimeImmutable($days[$count - 1], new DateTimeZone('UTC')); $lastPeriodEnd = $periodEnds[$count - 1];
+  -   while ($cursor <= $last) { $yearStart = $cursor->format('Y-01-01'); $yearEnd = $cursor->format('Y-12-31'); $range = $rangeFor($yearStart, $yearEnd); if ($range != null) { $range['start'] = $yearStart; $range['end'] = $yearEnd; $range['textX'] = abs($range['midX'] - $rangeStartX) < 22 ? min($width - $padX, $range['midX'] + 22) : (abs($range['midX'] - $rangeEndX) < 22 ? max($padX, $range['midX'] - 22) : $range['midX']); $years[] = $range + ['label' => $cursor->format('Y')]; } for ($m = 1; $m <= 12; $m++) { $month = $cursor->setDate((int) $cursor->format('Y'), $m, 1); $monthStart = $month->format('Y-m-01'); $monthEnd = $month->modify('last day of this month')->format('Y-m-d'); if ($monthStart > $lastPeriodEnd) continue; $range = $rangeFor($monthStart, $monthEnd); if ($range != null) { $range['start'] = $monthStart; $range['end'] = $monthEnd; $range['textX'] = abs($range['midX'] - $rangeStartX) < 22 ? min($width - $padX, $range['midX'] + 22) : (abs($range['midX'] - $rangeEndX) < 22 ? max($padX, $range['midX'] - 22) : $range['midX']); $months[] = $range + ['label' => $month->format('M Y'), 'short' => $month->format('M')]; } } $cursor = $cursor->modify('+1 year'); }
+  -   $viewDays = (new DateTimeImmutable($days[0], new DateTimeZone('UTC')))->diff(new DateTimeImmutable($periodEnds[$count - 1], new DateTimeZone('UTC')))->days + 1;
+  -   if (!$bucketed && $viewDays <= 90) { foreach ($days as $idx => $day) { $tickX = round($x($idx), 2); $tickTextX = abs($tickX - $rangeStartX) < 22 ? min($width - $padX, $tickX + 22) : (abs($tickX - $rangeEndX) < 22 ? max($padX, $tickX - 22) : $tickX); $dayTicks[] = ['day' => $day, 'x' => $tickX, 'textX' => $tickTextX, 'label' => (new DateTimeImmutable($day, new DateTimeZone('UTC')))->format('j')]; } }
+  -   return ['width' => $width, 'height' => $height, 'bandHeight' => $bandHeight, 'bandMid' => $mid, 'padX' => $padX, 'graphWidth' => $graphWidth, 'historyDays' => $days, 'historyPeriodEnds' => $periodEnds, 'rangeStartDay' => $days[$startIdx], 'rangeEndDay' => $days[$endIdx], 'rangeStartX' => $rangeStartX, 'rangeEndX' => $rangeEndX, 'allSelected' => $allSelected, 'graphZoomed' => $graphZoomed, 'selectionCoversGraph' => $selectionCoversGraph, 'metrics' => $metrics, 'years' => $years, 'months' => $months, 'dayTicks' => $dayTicks, 'dayHits' => $dayHits];
   - })($dailyDays, $dailySelectedDays, $dailySelectedStart, $dailySelectedEnd, $graphStart, $graphEnd);
   - $dailyAllSelected = isset($dailySelectionAll) ? (bool) $dailySelectionAll : ($dailyGraph['allSelected'] ?? true);
   - $dailyYear = substr((string) (($dailySelectedStart ?? null) ?: ($dailyGraph['rangeStartDay'] ?? '')), 0, 4);
@@ -129,6 +132,9 @@ else
         g.daily-range-selector
           - $rangeRailY = $dailyGraph['height'] - 24;
           - $rangeRailHeight = 14;
+          - $dayTickY = $rangeRailY - 42;
+          - $monthTickY = $rangeRailY - 27;
+          - $yearTickY = $rangeRailY - 10;
           rect.daily-range-left-shade(x="0" y="0" width=$dailyGraph['rangeStartX'] height=$dailyGraph['height'] fill="#000" opacity="0.14")
           rect.daily-range-right-shade(x=$dailyGraph['rangeEndX'] y="0" width=($dailyGraph['width'] - $dailyGraph['rangeEndX']) height=$dailyGraph['height'] fill="#000" opacity="0.14")
           line.daily-range-guide.daily-range-left-guide(x1=$dailyGraph['rangeStartX'] x2=$dailyGraph['rangeStartX'] y1="0" y2=$dailyGraph['height'] stroke="#5bc0de" stroke-width="1" opacity="0.28")
@@ -136,15 +142,21 @@ else
           each $year in $dailyGraph['years']
             g.daily-range-link(data-start=$year['start'] data-end=$year['end'])
               title= $year['label']
-              rect.daily-month-hit(x=$year['x'] y=($rangeRailY - 16) width=max(10, $year['endX'] - $year['x']) height="14" fill="#fff")
-              text(x=$year['midX'] y=($rangeRailY - 4) fill="#9aa" font-size="12" text-anchor="middle")= $year['label']
+              rect.daily-month-hit(x=$year['x'] y=($yearTickY - 11) width=max(10, $year['endX'] - $year['x']) height="14" fill="#fff")
+              text(x=max($dailyGraph['padX'] + 11, min($dailyGraph['width'] - $dailyGraph['padX'] - 11, $year['midX'])) y=$yearTickY fill="#9aa" font-size="12" text-anchor="middle")= $year['label']
           each $month in $dailyGraph['months']
             g.daily-range-link(data-start=$month['start'] data-end=$month['end'])
               title= $month['label']
-              rect.daily-month-hit(x=$month['x'] y=($rangeRailY - 34) width=max(8, $month['endX'] - $month['x']) height="18" fill="#fff")
-              line(x1=$month['x'] x2=$month['x'] y1=($rangeRailY - 30) y2=($rangeRailY - 16) stroke="#3b6f7b" stroke-width="1" opacity="0.72")
-              if (!$dailyGraph['allSelected'] && count($dailyGraph['months']) <= 14)
-                text(x=$month['midX'] y=($rangeRailY - 19) fill="#9aa" font-size="10" text-anchor="middle")= $month['short']
+              rect.daily-month-hit(x=$month['x'] y=($monthTickY - 11) width=max(8, $month['endX'] - $month['x']) height="14" fill="#fff")
+              line(x1=$month['x'] x2=$month['x'] y1=($monthTickY - 8) y2=($yearTickY - 12) stroke="#3b6f7b" stroke-width="1" opacity="0.72")
+              if (count($dailyGraph['months']) <= 14)
+                text(x=max($dailyGraph['padX'] + 11, min($dailyGraph['width'] - $dailyGraph['padX'] - 11, $month['midX'])) y=$monthTickY fill="#9aa" font-size="10" text-anchor="middle")= $month['short']
+          each $day in $dailyGraph['dayTicks']
+            g
+              title= $day['day']
+              rect.daily-day-hit(data-day=$day['day'] x=($day['x'] - 6) y=($dayTickY - 10) width="12" height="12" fill="#fff")
+              line(x1=$day['x'] x2=$day['x'] y1=($dayTickY - 8) y2=($dayTickY - 4) stroke="#34565d" stroke-width="1" opacity="0.8" pointer-events="none")
+              text(x=max($dailyGraph['padX'] + 11, min($dailyGraph['width'] - $dailyGraph['padX'] - 11, $day['x'])) y=$dayTickY fill="#899" font-size="8" text-anchor="middle" pointer-events="none")= $day['label']
           rect(x=$dailyGraph['padX'] y=$rangeRailY width=$dailyGraph['graphWidth'] height=$rangeRailHeight rx="3" fill="#000" opacity="0.3")
           rect.daily-range-fill(x=$dailyGraph['rangeStartX'] y=$rangeRailY width=max(1, $dailyGraph['rangeEndX'] - $dailyGraph['rangeStartX']) height=$rangeRailHeight rx="3" fill="#5bc0de" opacity="0.28")
           if (!empty($dailyGraph['graphZoomed']))
@@ -386,6 +398,8 @@ else
             var startIdx = Math.max(0, days.indexOf(graph.getAttribute("data-range-start")));
             var endIdx = Math.max(0, days.indexOf(graph.getAttribute("data-range-end")));
             if (endIdx < startIdx) endIdx = startIdx;
+            var originalStartIdx = startIdx;
+            var originalEndIdx = endIdx;
             var idxToX = function (idx) {
               return days.length <= 1 ? (viewWidth / 2) : (padX + ((idx / (days.length - 1)) * graphWidth));
             };
@@ -424,6 +438,7 @@ else
             var up = function () {
               document.removeEventListener("pointermove", move, true);
               document.removeEventListener("pointerup", up, true);
+              if (startIdx == originalStartIdx && endIdx == originalEndIdx) return;
               navigateRange(graph);
             };
             document.addEventListener("pointermove", move, true);

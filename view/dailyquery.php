@@ -1,7 +1,7 @@
 <?php
 
 function handler($request, $response, $args, $container) {
-    global $redis;
+    global $redis, $pugDebug;
 
     $params = $request->getQueryParams();
     $entityType = (string) ($params['type'] ?? '');
@@ -18,6 +18,8 @@ function handler($request, $response, $args, $container) {
         return $response->withHeader('Content-Type', 'text/plain; charset=utf-8')->withHeader('Cache-Control', 'no-store')->withStatus(400);
     }
 
+    $cacheTime = 900;
+    $renderCacheTime = !empty($pugDebug) ? 0 : $cacheTime;
     $job = [
         'queryType' => 'dailyStats',
         'type' => $type,
@@ -28,16 +30,16 @@ function handler($request, $response, $args, $container) {
         'date' => $date,
         'graph' => $graph,
         'part' => $part,
-        'cacheTime' => 900,
+        'cacheTime' => $cacheTime,
     ];
     $key = 'dailyStats:' . md5(serialize($job));
     $job['key'] = $key;
     $cacheTag = "www,asearch,dailyStats:$key,$type:$id";
 
-    $rendered = $redis->get("rendered:$key");
-    if ($rendered !== false && $rendered !== null && trim($rendered) !== '') {
+    $rendered = $renderCacheTime > 0 ? $redis->get("rendered:$key") : false;
+    if ($renderCacheTime > 0 && $rendered !== false && $rendered !== null && trim($rendered) !== '') {
         $response->getBody()->write($rendered);
-        return dailyQueryCacheHeaders($response, 900)->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
+        return dailyQueryCacheHeaders($response, $renderCacheTime)->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
     }
 
     $rawResult = $redis->get("$key:result");
@@ -49,11 +51,11 @@ function handler($request, $response, $args, $container) {
             return renderDailyQueryProcessing($response, $cacheTag);
         }
         $rendered = renderDailyQueryPart($container, (array) $result, $part);
-        $redis->setex("rendered:$key", 900, $rendered);
+        if ($renderCacheTime > 0) $redis->setex("rendered:$key", $renderCacheTime, $rendered);
         $redis->del("$key:result");
         $redis->del($key);
         $response->getBody()->write($rendered);
-        return dailyQueryCacheHeaders($response, 900)->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
+        return dailyQueryCacheHeaders($response, $renderCacheTime)->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
     }
 
     if ($redis->get($key) !== 'PROCESSING') {
@@ -72,11 +74,11 @@ function handler($request, $response, $args, $container) {
                 break;
             }
             $rendered = renderDailyQueryPart($container, (array) $result, $part);
-            $redis->setex("rendered:$key", 900, $rendered);
+            if ($renderCacheTime > 0) $redis->setex("rendered:$key", $renderCacheTime, $rendered);
             $redis->del("$key:result");
             $redis->del($key);
             $response->getBody()->write($rendered);
-            return dailyQueryCacheHeaders($response, 900)->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
+            return dailyQueryCacheHeaders($response, $renderCacheTime)->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
         }
         $waits++;
     } while ($waits <= 50);
@@ -105,6 +107,9 @@ function renderDailyQueryProcessing($response, $cacheTag)
 function dailyQueryCacheHeaders($response, $cacheTime)
 {
     $cacheTime = max(0, (int) $cacheTime);
+    if ($cacheTime == 0) {
+        return $response->withHeader('Cache-Control', 'no-store');
+    }
     $cacheControl = "public, max-age=$cacheTime, s-maxage=$cacheTime";
     return $response
         ->withHeader('Cache-Control', $cacheControl)
