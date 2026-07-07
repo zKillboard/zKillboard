@@ -389,6 +389,8 @@ class DailyStats
         $id = $type == 'label' ? (string) ($job['id'] ?? '') : (int) ($job['id'] ?? 0);
         $side = in_array(($job['side'] ?? 'kills'), ['kills', 'losses']) ? $job['side'] : 'kills';
         $part = in_array(($job['part'] ?? 'history'), ['history', 'summary', 'topvalues', 'toplists', 'labels']) ? $job['part'] : 'history';
+        $group = (string) ($job['group'] ?? '');
+        $group = isset(self::$topTypes[$group]) ? $group : '';
         $selectedDays = self::selectedDaysFromJob($job);
         $dailySelectionAll = count($selectedDays) == 0;
         $useDailyHistory = self::isSingleMonthHistory($selectedDays, $job);
@@ -438,6 +440,12 @@ class DailyStats
                 $dailyDays = self::getMonthsFromStatistics($type, $id);
             }
             $dailyStats['days'] = array_values(array_map(function ($row) { return $row['day']; }, $dailyDays));
+        } else if ($part == 'toplists' && $group != '') {
+            if (self::shouldPersist($type, $id)) {
+                $dailyStats[$side]['topLists'] = [self::topListFromPersisted($type, $id, $selectedDays, $side, $group)];
+            } else {
+                $dailyStats[$side]['topLists'] = [self::topListOnDemand($type, $id, $selectedDays, $side == 'losses', $group)];
+            }
         } else if (self::shouldPersist($type, $id)) {
             $persisted = self::getAggregate($type, $id, count($selectedDays) > 0 ? $selectedDays : null, $side);
             if ($persisted == null) return ['processing' => true];
@@ -1443,6 +1451,88 @@ class DailyStats
             ];
         }
         return $topLists;
+    }
+
+    private static function topListOnDemand($type, $id, $days, $losses, $group)
+    {
+        $query = self::buildQueryForSelectedDays($type, $id, $days, $losses);
+        $meta = self::$topTypes[$group] ?? ['label' => $group];
+        return [
+            'type' => $meta['label'] ?? $group,
+            'typeID' => $group,
+            'data' => AdvancedSearch::getTop($group, $query, $losses ? 'true' : 'false', [], true, 'killID', -1),
+        ];
+    }
+
+    private static function topListFromPersisted($type, $id, $days, $side, $group)
+    {
+        global $mdb;
+
+        $query = ['type' => $type, 'id' => $id];
+        $wanted = null;
+        if (is_array($days) && count($days) > 0) {
+            $wanted = array_fill_keys($days, true);
+            $months = [];
+            foreach ($days as $day) {
+                $months[substr($day, 0, 7)] = substr($day, 0, 7);
+            }
+            $query[self::MONTH_FIELD] = ['$in' => array_values($months)];
+        }
+
+        $projection = [self::MONTH_FIELD => 1];
+        for ($dayNum = 1; $dayNum <= 31; $dayNum++) {
+            $dayField = sprintf('%02d', $dayNum);
+            $projection["$dayField.$side.summary"] = 1;
+            $projection["$dayField.$side.top.$group"] = 1;
+        }
+
+        $monthlyDocs = $mdb->getCollection(self::COLLECTION)->find($query, [
+            'projection' => $projection,
+            'sort' => [self::MONTH_FIELD => -1],
+        ]);
+        $docs = self::dailyDocs($monthlyDocs, $wanted);
+
+        $summary = ['count' => 0, 'isk' => 0, 'points' => 0];
+        $rowsByID = [];
+        foreach ($docs as $dailyDoc) {
+            $sideDoc = is_object($dailyDoc[$side] ?? null) ? (array) $dailyDoc[$side] : ($dailyDoc[$side] ?? []);
+            $daySummary = is_object($sideDoc['summary'] ?? null) ? (array) $sideDoc['summary'] : ($sideDoc['summary'] ?? []);
+            $summary['count'] += (int) ($daySummary['count'] ?? 0);
+            $summary['isk'] += (double) ($daySummary['isk'] ?? 0);
+            $summary['points'] += (int) ($daySummary['points'] ?? 0);
+
+            $topRows = (array) ($sideDoc['top'][$group] ?? []);
+            foreach ($topRows as $row) {
+                $row = is_object($row) ? (array) $row : (array) $row;
+                $entityID = (int) ($row[$group] ?? 0);
+                if ($entityID == 0) {
+                    continue;
+                }
+                if (!isset($rowsByID[$entityID])) {
+                    $rowsByID[$entityID] = [$group => $entityID, 'kills' => 0, 'isk' => 0];
+                }
+                $rowsByID[$entityID]['kills'] += (int) ($row['kills'] ?? 0);
+                $rowsByID[$entityID]['isk'] += (double) ($row['isk'] ?? 0);
+            }
+        }
+
+        $stats = ['summary' => $summary, 'top' => [$group => $rowsByID]];
+        self::ensureCurrentEntityTopRow($stats, $type, $id);
+        $rows = array_values($stats['top'][$group] ?? []);
+        usort($rows, function ($a, $b) {
+            if ($a['kills'] == $b['kills']) {
+                return $b['isk'] <=> $a['isk'];
+            }
+            return $b['kills'] <=> $a['kills'];
+        });
+        $rows = array_slice($rows, 0, 50);
+        Info::addInfo($rows);
+
+        return [
+            'type' => self::$topTypes[$group]['label'] ?? $group,
+            'typeID' => $group,
+            'data' => $rows,
+        ];
     }
 
     private static function entityTypeFromStatType($type)

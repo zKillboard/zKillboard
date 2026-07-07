@@ -12,6 +12,13 @@ function handler($request, $response, $args, $container) {
     $date = isset($params['date']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $params['date']) ? (string) $params['date'] : null;
     $graph = isset($params['graph']) ? (string) $params['graph'] : null;
     $part = in_array(($params['part'] ?? 'history'), ['history', 'summary', 'topvalues', 'toplists', 'labels']) ? $params['part'] : 'history';
+    $group = null;
+    if ($part == 'toplists') {
+        $groupParam = (string) ($params['group'] ?? '');
+        if (isset(DailyStats::$topTypes[$groupParam])) {
+            $group = $groupParam;
+        }
+    }
 
     if (!isset(DailyStats::$types[$type]) || $id === '' || ($type != 'label' && $id == 0)) {
         $response->getBody()->write('Invalid daily stats query');
@@ -30,6 +37,7 @@ function handler($request, $response, $args, $container) {
         'date' => $date,
         'graph' => $graph,
         'part' => $part,
+        'group' => $group,
         'cacheTime' => $cacheTime,
     ];
     $key = 'dailyStats:' . md5(serialize($job));
@@ -50,7 +58,7 @@ function handler($request, $response, $args, $container) {
             queueDailyStatsJob($redis, $key, $job);
             return renderDailyQueryProcessing($response, $cacheTag);
         }
-        $rendered = renderDailyQueryPart($container, (array) $result, $part);
+        $rendered = renderDailyQueryPart($container, (array) $result, $part, $group);
         if ($renderCacheTime > 0) $redis->setex("rendered:$key", $renderCacheTime, $rendered);
         $redis->del("$key:result");
         $redis->del($key);
@@ -73,7 +81,7 @@ function handler($request, $response, $args, $container) {
                 queueDailyStatsJob($redis, $key, $job);
                 break;
             }
-            $rendered = renderDailyQueryPart($container, (array) $result, $part);
+            $rendered = renderDailyQueryPart($container, (array) $result, $part, $group);
             if ($renderCacheTime > 0) $redis->setex("rendered:$key", $renderCacheTime, $rendered);
             $redis->del("$key:result");
             $redis->del($key);
@@ -118,20 +126,23 @@ function dailyQueryCacheHeaders($response, $cacheTime)
         ->withHeader('Expires', gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT');
 }
 
-function renderDailyQueryPart($container, $result, $part)
+function renderDailyQueryPart($container, $result, $part, $group = null)
 {
     if ($part == 'toplists') {
         $side = in_array(($result['dailySide'] ?? 'kills'), ['kills', 'losses']) ? $result['dailySide'] : 'kills';
-        $rendered = '<div class="row">';
+        $rendered = '';
         foreach ((array) ($result['dailyStats'][$side]['topLists'] ?? []) as $topList) {
             $topList = is_object($topList) ? (array) $topList : (array) $topList;
             $typeID = (string) ($topList['typeID'] ?? '');
+            if ($group !== null && $typeID != $group) {
+                continue;
+            }
             $type = dailyAsearchTopListType($typeID, (string) ($topList['type'] ?? ''));
             $title = 'Top ' . Util::pluralize(ucwords($type));
             if ($type == 'shipType') $title = 'Top ShipTypes';
             if ($type == 'solarSystem') $title = 'Top SolarSystems';
 
-            $rendered .= '<div class="col-lg-4 pll-left" style="margin: 0px; padding-left: 1em;">';
+            $rendered .= '<div class="pll-left" style="margin: 0px; padding-left: 1em;">';
             $rendered .= $container->get('view')->getEnvironment()->render('components/asearch_top_list.pug', ['topSet' => [
                 'type' => $type,
                 'singularTitle' => ucwords($type),
@@ -141,8 +152,12 @@ function renderDailyQueryPart($container, $result, $part)
                 'sortBy' => -1,
             ]]);
             $rendered .= '</div>';
+
+            if ($group !== null) {
+                break;
+            }
         }
-        return $rendered . '</div><div class="clear"></div>';
+        return $rendered . '<div class="clear"></div>';
     }
 
     $rendered = $container->get('view')->getEnvironment()->render('components/daily_stats.pug', $result);
