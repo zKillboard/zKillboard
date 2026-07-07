@@ -26,7 +26,6 @@ $query = [
     'type' => ['$in' => array_keys(DailyStats::$types)],
 ];
 
-$minute = date('Hi');
 $queuedEntities = 0;
 $queuedDays = 0;
 $completedScan = true;
@@ -34,9 +33,10 @@ $cursor = $mdb->getCollection('statistics')->find($query, [
     'projection' => ['type' => 1, 'id' => 1],
     'sort' => ['type' => 1, 'id' => 1],
 ]);
+$time = time();
 
 foreach ($cursor as $row) {
-    if ($minute != date('Hi') || $redis->get("zkb:reinforced") == true) {
+    if ((time() - $time) > 900) {
         $completedScan = false;
         break;
     }
