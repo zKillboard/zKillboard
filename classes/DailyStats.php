@@ -530,8 +530,6 @@ class DailyStats
 
     public static function queueBackfill($type, $id)
     {
-        global $mdb;
-
         $type = self::normalizeType($type);
         if (!isset(self::$types[$type])) {
             return 0;
@@ -541,7 +539,7 @@ class DailyStats
             return 0;
         }
 
-        return 0;
+        return self::populateBackfill($type, $id);
     }
 
     public static function populateBackfill($type, $id)
@@ -558,11 +556,37 @@ class DailyStats
         }
 
         $statsKey = ['type' => $type, 'id' => $id];
-        if ($mdb->getCollection(self::COLLECTION)->findOne(
-            $statsKey + ['updates' => ['$exists' => true]],
-            ['projection' => ['_id' => 1]]
-        ) != null) {
-            return 0;
+        $existing = [];
+        $pendingUpdates = 0;
+        $projection = [self::MONTH_FIELD => 1, 'updates' => 1];
+        for ($dayNum = 1; $dayNum <= 31; $dayNum++) {
+            $dayField = sprintf('%02d', $dayNum);
+            $projection["$dayField.day"] = 1;
+            $projection["$dayField.sequence"] = 1;
+        }
+        $monthlyDocs = $mdb->getCollection(self::COLLECTION)->find($statsKey, [
+            'projection' => $projection,
+            'sort' => [self::MONTH_FIELD => -1],
+        ]);
+        foreach ($monthlyDocs as $monthlyDoc) {
+            $month = (string) ($monthlyDoc[self::MONTH_FIELD] ?? '');
+            if ($month == '') {
+                continue;
+            }
+            foreach ((array) ($monthlyDoc['updates'] ?? []) as $update) {
+                if (preg_match('/^(\d{4}-\d{2}-\d{2}):(\d+)$/', (string) $update, $matches)) {
+                    $existing[$matches[1]] = max((int) ($existing[$matches[1]] ?? 0), (int) $matches[2]);
+                    $pendingUpdates++;
+                }
+            }
+            for ($dayNum = 1; $dayNum <= 31; $dayNum++) {
+                $dayField = sprintf('%02d', $dayNum);
+                if (!isset($monthlyDoc[$dayField]) || !is_array($monthlyDoc[$dayField])) {
+                    continue;
+                }
+                $day = (string) ($monthlyDoc[$dayField]['day'] ?? "$month-$dayField");
+                $existing[$day] = max((int) ($existing[$day] ?? 0), (int) ($monthlyDoc[$dayField]['sequence'] ?? 0));
+            }
         }
 
         $query = self::buildBaseQuery($type, $id);
@@ -584,6 +608,9 @@ class DailyStats
                 continue;
             }
 
+            if ((int) ($existing[$day] ?? 0) >= $sequence) {
+                continue;
+            }
             $month = substr($day, 0, 7);
             $key = ['type' => $type, 'id' => $id, self::MONTH_FIELD => $month];
             $ops[] = ['updateOne' => [
@@ -603,8 +630,15 @@ class DailyStats
         $mdb->getCollection('statistics')->updateOne(
             $statsKey,
             [
-                '$set' => ['dailyStatsBackfillComplete' => count($ops) == 0],
-                '$unset' => [
+                '$set' => count($ops) > 0 ? [
+                    'dailyStatsBackfillComplete' => false,
+                    'dailyStatsBackfillQueued' => true,
+                    'dailyStatsBackfillQueuedAt' => time(),
+                ] : ['dailyStatsBackfillComplete' => $pendingUpdates == 0],
+                '$unset' => count($ops) > 0 ? [
+                    'dailyStatsBackfillCompleteAt' => 1,
+                    'dailyStatsBackfillNeededAt' => 1,
+                ] : [
                     'dailyStatsBackfillQueued' => 1,
                     'dailyStatsBackfillQueuedAt' => 1,
                     'dailyStatsBackfillCompleteAt' => 1,
