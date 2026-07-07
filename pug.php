@@ -3,6 +3,9 @@
 $currentTime = date("YmdHi");
 
 $pugDebug = (isset($pugDebug) ? (bool) $pugDebug : false);
+if ($pugDebug && function_exists('opcache_reset')) {
+    opcache_reset();
+}
 $pugOptions = [
     'debug' => $pugDebug,
     'execution_max_time' => -1,
@@ -11,7 +14,7 @@ $pugOptions = [
 if (!$pugDebug) {
     $pugOptions['enable_profiler'] = false;
 }
-if ($pugCache !== false && $pugCache !== null && $pugCache !== '') {
+if (!$pugDebug && $pugCache !== false && $pugCache !== null && $pugCache !== '') {
     $pugOptions['cache'] = rtrim((string) $pugCache, '/') . '/pug/';
     if (!is_dir($pugOptions['cache'])) {
         @mkdir($pugOptions['cache'], 0777, true);
