@@ -356,8 +356,22 @@ class DailyStats
         if (!self::shouldPersist($type, $id)) {
             return array_slice(self::getDaysOnDemand($type, $id), 0, $limit);
         }
-        $docs = self::dailyDocs($mdb->find(self::COLLECTION, ['type' => $type, 'id' => $id], [self::MONTH_FIELD => -1]));
-        return array_slice($docs, 0, $limit);
+
+        $query = ['type' => $type, 'id' => $id];
+        $projection = [self::MONTH_FIELD => 1];
+        for ($dayNum = 1; $dayNum <= 31; $dayNum++) {
+            $dayField = sprintf('%02d', $dayNum);
+            $projection["$dayField.day"] = 1;
+            $projection["$dayField.kills.summary"] = 1;
+            $projection["$dayField.losses.summary"] = 1;
+        }
+
+        $monthlyDocs = $mdb->getCollection(self::COLLECTION)->find($query, [
+            'projection' => $projection,
+            'sort' => [self::MONTH_FIELD => -1],
+        ]);
+
+        return self::dailyDocs($monthlyDocs, null, $limit);
     }
 
     public static function hasData($type, $id)
@@ -966,9 +980,10 @@ class DailyStats
         return self::topValueKillIDsByValue($killIDs);
     }
 
-    private static function dailyDocs($monthlyDocs, $wanted = null)
+    private static function dailyDocs($monthlyDocs, $wanted = null, $limit = null)
     {
         $docs = [];
+        $limit = $limit === null ? null : max(0, (int) $limit);
         foreach ($monthlyDocs as $monthDoc) {
             $month = (string) ($monthDoc[self::MONTH_FIELD] ?? '');
             for ($dayNum = 31; $dayNum >= 1; $dayNum--) {
@@ -982,9 +997,11 @@ class DailyStats
                     continue;
                 }
                 $docs[] = $doc;
+                if ($limit !== null && count($docs) >= $limit) {
+                    return $docs;
+                }
             }
         }
-        usort($docs, function ($a, $b) { return strcmp($b['day'], $a['day']); });
         return $docs;
     }
 
