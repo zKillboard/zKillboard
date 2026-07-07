@@ -544,8 +544,15 @@ else
             graph.setAttribute("data-current-side", side);
             navigateToken(graph, side, token, true);
           }, true);
-          window.addEventListener("popstate", function () {
-            if (!/\/daily(?:\/|$)/.test(window.location.pathname)) return;
+          window.addEventListener("popstate", function (event) {
+            if (!event.state || !event.state.zkbDailyStats) {
+              window.location.href = window.location.href;
+              return;
+            }
+            if (!/\/daily(?:\/|$)/.test(window.location.pathname)) {
+              window.location.href = window.location.href;
+              return;
+            }
             navigateHashState(false);
           });
           setTimeout(function () {
