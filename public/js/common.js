@@ -151,9 +151,24 @@ function loadDailyAsyncParts() {
             }
             root.setAttribute("data-hash-applied", "1");
         }
+        const reservedHeight = parseInt(root.getAttribute("data-reserved-height") || "0", 10);
+        if (reservedHeight > 0 && root.getAttribute("data-height-locked") !== "1") {
+            root.style.minHeight = Math.max(reservedHeight, root.offsetHeight || 0, root.scrollHeight || 0) + "px";
+            root.setAttribute("data-height-locked", "1");
+        }
+        const settleHeight = function () {
+            const parts = root.querySelectorAll(".daily-async-part");
+            const pending = root.querySelectorAll(".daily-async-part:not([data-loaded='1'])");
+            if (parts.length > 0 && pending.length == 0) {
+                root.style.minHeight = Math.max(root.offsetHeight || 0, root.scrollHeight || 0) + "px";
+            }
+        };
         root.querySelectorAll(".daily-async-part").forEach(function (target) {
             if (target.getAttribute("data-loaded") === "1" || target.getAttribute("data-loading") === "1") return;
             target.setAttribute("data-loading", "1");
+            const loadingTimer = setTimeout(function () {
+                target.setAttribute("data-show-loading", "1");
+            }, 300);
             let url = base + "&part=" + encodeURIComponent(target.getAttribute("data-part") || "");
             if (target.getAttribute("data-group")) url += "&group=" + encodeURIComponent(target.getAttribute("data-group"));
 
@@ -167,15 +182,24 @@ function loadDailyAsyncParts() {
                     return response.text();
                 }).then(function (html) {
                     if (html) {
+                        clearTimeout(loadingTimer);
+                        const minHeight = Math.max(target.offsetHeight || 0, target.scrollHeight || 0);
+                        if (minHeight > 0) target.style.minHeight = minHeight + "px";
                         target.innerHTML = html;
                         executeInsertedScripts(target);
+                        const loadedHeight = Math.max(target.offsetHeight || 0, target.scrollHeight || 0);
+                        if (loadedHeight > minHeight) target.style.minHeight = loadedHeight + "px";
                         target.setAttribute("data-loaded", "1");
                         target.removeAttribute("data-loading");
+                        target.removeAttribute("data-show-loading");
                         doFormats();
                         setTimeout(prepTippy, 1);
+                        settleHeight();
                     }
                 }).catch(function () {
+                    clearTimeout(loadingTimer);
                     target.removeAttribute("data-loading");
+                    target.removeAttribute("data-show-loading");
                     setTimeout(function () {
                         target.removeAttribute("data-loaded");
                         loadDailyAsyncParts();
