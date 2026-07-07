@@ -1334,7 +1334,8 @@ class DailyStats
     private static function buildQueryForSelectedDays($type, $id, $days, $losses)
     {
         if (count($days) > 0) return self::buildQueryForDays($type, $id, $days, $losses);
-        return MongoFilter::buildQuery(self::buildParameters($type, $id, null, $losses));
+        $parameters = self::buildParameters($type, $id, null, $losses);
+        return MongoFilter::buildQuery($parameters);
     }
 
     private static function summaryOnDemand($type, $id, $days, $losses)
