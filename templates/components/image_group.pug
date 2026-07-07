@@ -1,0 +1,4 @@
+- $imageSize = $imageSize ?? 32;
+- $actualSize = $resizeImage ?? $imageSize;
+a(href=('/group/' . ($field['groupID'] ?? 0) . '/') rel="tooltip" title=($field['groupName'] ?? ''))
+  img.eveimage.img-rounded(src=('https://images.evetech.net/types/1/icon?size=' . $imageSize) style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;') alt=($field['groupName'] ?? '') onerror="this.removeAttribute('onerror'); this.src='/img/empty_32.png';" loading="lazy" decoding="async" fetchpriority="low")

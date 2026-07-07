@@ -525,6 +525,9 @@ class Info
 						}
 						if (!isset($element['typeID'])) {
 							$element['typeID'] = self::getInfoField('itemID', $value, 'typeID');
+							if (empty($element['typeID'])) {
+								$element['typeID'] = self::getInfoField('locationID', $value, 'typeID');
+							}
 						}
 						break;
 					case 'typeID':

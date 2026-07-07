@@ -22,15 +22,24 @@ if (count($topSetData['values'] ?? []) > 0)
             else if (($topSetData['type'] ?? '') == 'alliance')
               td(colspan="3")
                 include image_alli.pug
+            else if (($topSetData['type'] ?? '') == 'faction')
+              td(colspan="3")
+                include image_faction.pug
             else if (($topSetData['type'] ?? '') == 'solarSystem')
               td(colspan="3")
                 include image_system.pug
             else if (($topSetData['type'] ?? '') == 'shipType')
               td(colspan="3")
                 include image_ship.pug
+            else if (($topSetData['type'] ?? '') == 'group')
+              td(colspan="3")
+                include image_group.pug
             else if (($topSetData['type'] ?? '') == 'location')
               td(colspan="3")
                 include image_item.pug
+            else if (($topSetData['type'] ?? '') == 'region')
+              td(colspan="3")
+                include image_region.pug
           - $first = false;
         if ($counter == 11)
           tr(class=('grouping-all-' . ($topSetData['type'] ?? '')))
