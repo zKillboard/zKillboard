@@ -1,3 +1,7 @@
+# General
+- KISS
+- YAGNI
+
 # Git
 - Read-only git commands are okay; otherwise, do not use git commands unless explicitly instructed.
 
