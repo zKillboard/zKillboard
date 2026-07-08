@@ -3,12 +3,9 @@
 require_once "../init.php";
 
 use cvweiss\redistools\RedisCache;
-use cvweiss\redistools\RedisQueue;
 
 $key = "zkb:gankcheck";
 if ($kvc->get($key) == "true") exit();
-
-$queueRedisQ = new RedisQueue('queueRedisQ');
 
 $concord = $mdb->find("killmails", ['involved.corporationID' => 1000125], ['sequence' => -1], 50000);
 $added = [];
