@@ -20,6 +20,10 @@ $hostRedis->connect($hostname, 6379);
 
 $redisQueues = [];
 $redisQueueTypes = [];
+$mongoQueueLookup = [];
+$lastQueueDiscovery = 0;
+$savedQueuePrefix = 'zkb:ztop:queue:';
+$savedQueuePrefixLength = strlen($savedQueuePrefix);
 $priorKillLog = 0;
 $isMaster = null;
 
@@ -49,66 +53,67 @@ while ($hour == date('H')) {
 		addInfo('', 0);
 	}
 
-	$currentQueueTypes = [];
-	$savedQueuePrefix = 'zkb:ztop:queue:';
-	$savedQueuePrefixLength = strlen($savedQueuePrefix);
-	$iterator = null;
-	do {
-		$keys = $redis->scan($iterator, $savedQueuePrefix . '*', 1000);
-		if ($keys === false) continue;
-		foreach ($keys as $key) {
-			$queue = substr($key, $savedQueuePrefixLength);
-			if ($queue == '') continue;
-			$queueType = $redis->get($key);
-			if ($queueType === false) continue;
-			$redisQueues[$queue] = true;
-			$redisQueueTypes[$queue] = (int) $queueType;
-		}
-	} while ($iterator > 0);
+	if (time() - $lastQueueDiscovery >= 60) {
+		$lastQueueDiscovery = time();
+		$currentQueueTypes = [];
+		$iterator = null;
+		do {
+			$keys = $redis->scan($iterator, $savedQueuePrefix . '*', 1000);
+			if ($keys === false) continue;
+			foreach ($keys as $key) {
+				$queue = substr($key, $savedQueuePrefixLength);
+				if ($queue == '') continue;
+				$queueType = $redis->get($key);
+				if ($queueType === false) continue;
+				$redisQueues[$queue] = true;
+				$redisQueueTypes[$queue] = (int) $queueType;
+			}
+		} while ($iterator > 0);
 
-	$queues = $redis->sMembers('queues');
-	$registeredQueues = [];
-	foreach ($queues as $queue) {
-		if (!is_string($queue) || trim($queue) == '') continue;
-		$registeredQueues[$queue] = true;
-	}
-	$iterator = null;
-	do {
-		$keys = $redis->scan($iterator, 'queue*', 1000);
-		if ($keys === false) continue;
-		foreach ($keys as $key) {
-			if ($key == 'queues') continue;
-			$setQueue = preg_replace('/Set$/', '', $key);
-			if (isset($registeredQueues[$setQueue])) continue;
-			$queues[] = $key;
+		$queues = $redis->sMembers('queues');
+		$registeredQueues = [];
+		foreach ($queues as $queue) {
+			if (!is_string($queue) || trim($queue) == '') continue;
+			$registeredQueues[$queue] = true;
 		}
-	} while ($iterator > 0);
-	foreach ($registeredQueues as $queue => $v) {
-		if ($redis->type($queue) == Redis::REDIS_NOT_FOUND && $redis->type($queue . 'Set') != Redis::REDIS_NOT_FOUND) {
-			$currentQueueTypes[$queue] = Redis::REDIS_SET;
+		$iterator = null;
+		do {
+			$keys = $redis->scan($iterator, 'queue*', 1000);
+			if ($keys === false) continue;
+			foreach ($keys as $key) {
+				if ($key == 'queues') continue;
+				$setQueue = preg_replace('/Set$/', '', $key);
+				if (isset($registeredQueues[$setQueue])) continue;
+				$queues[] = $key;
+			}
+		} while ($iterator > 0);
+		foreach ($registeredQueues as $queue => $v) {
+			if ($redis->type($queue) == Redis::REDIS_NOT_FOUND && $redis->type($queue . 'Set') != Redis::REDIS_NOT_FOUND) {
+				$currentQueueTypes[$queue] = Redis::REDIS_SET;
+				$queues[] = $queue;
+			}
+		}
+		$mongoQueues = $mdb->getCollection('queues')->distinct('queue');
+		if (!is_array($mongoQueues)) $mongoQueues = [];
+		$mongoQueueLookup = [];
+		foreach ($mongoQueues as $queue) {
+			if (!is_string($queue) || trim($queue) == '') continue;
+			$mongoQueueLookup[$queue] = true;
 			$queues[] = $queue;
 		}
+		foreach ($queues as $queue) {
+			if (!is_string($queue) || trim($queue) == '') continue;
+			$queueType = $redis->type($queue);
+			if (isset($currentQueueTypes[$queue])) $queueType = $currentQueueTypes[$queue];
+			if ($queueType == Redis::REDIS_NOT_FOUND && !isset($mongoQueueLookup[$queue])) continue;
+			$currentQueueTypes[$queue] = $queueType;
+			$isNewQueue = !isset($redisQueues[$queue]);
+			$redisQueues[$queue] = true;
+			$redisQueueTypes[$queue] = $queueType;
+			if ($isNewQueue) $redis->setex($savedQueuePrefix . $queue, 86400, $queueType);
+		}
+		ksort($redisQueues, SORT_NATURAL | SORT_FLAG_CASE);
 	}
-	$mongoQueues = $mdb->getCollection('queues')->distinct('queue');
-	if (!is_array($mongoQueues)) $mongoQueues = [];
-	$mongoQueueLookup = [];
-	foreach ($mongoQueues as $queue) {
-		if (!is_string($queue) || trim($queue) == '') continue;
-		$mongoQueueLookup[$queue] = true;
-		$queues[] = $queue;
-	}
-	foreach ($queues as $queue) {
-		if (!is_string($queue) || trim($queue) == '') continue;
-		$queueType = $redis->type($queue);
-		if (isset($currentQueueTypes[$queue])) $queueType = $currentQueueTypes[$queue];
-		if ($queueType == Redis::REDIS_NOT_FOUND && !isset($mongoQueueLookup[$queue])) continue;
-		$currentQueueTypes[$queue] = $queueType;
-		$isNewQueue = !isset($redisQueues[$queue]);
-		$redisQueues[$queue] = true;
-		$redisQueueTypes[$queue] = $queueType;
-		if ($isNewQueue) $redis->setex($savedQueuePrefix . $queue, 86400, $queueType);
-	}
-	ksort($redisQueues, SORT_NATURAL | SORT_FLAG_CASE);
 
 	$queueMetrics = [];
 	foreach ($redisQueues as $queue => $v) {
