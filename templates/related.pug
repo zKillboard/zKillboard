@@ -206,11 +206,11 @@ block content
             if (team) setTeam(team, false);
           }
           window.addEventListener("resize", resizeHandler);
-          window.addEventListener("hashchange", hashChangeHandler);
+          $(document).off("zkb:spa:hashchange.relatedTeam").on("zkb:spa:hashchange.relatedTeam", hashChangeHandler);
           window.zkbPageCleanup = function () {
             clearTimeout(resizeTimer);
             window.removeEventListener("resize", resizeHandler);
-            window.removeEventListener("hashchange", hashChangeHandler);
+            $(document).off("zkb:spa:hashchange.relatedTeam", hashChangeHandler);
           };
         });
       - $killListTitle = 'Team B Losses';

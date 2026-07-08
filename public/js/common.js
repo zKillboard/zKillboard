@@ -382,6 +382,7 @@ function loadHomeKillListIfNeeded() {
 let spaAbortController = null;
 let spaScrollSaveTimeout = null;
 let spaRenderedURL = window.location.href;
+let spaRenderedHash = window.location.hash || "";
 const spaLoadedScripts = new Set(Array.from(document.scripts)
     .map(script => script.src)
     .filter(Boolean)
@@ -405,15 +406,43 @@ function initSpaNavigation() {
         spaNavigate(this.href, true);
     });
 
-    window.addEventListener("popstate", function(event) {
-        if (event.state && event.state.zkbDailyStats) return;
-        if (!event.state || !event.state.zkbSpa) return;
-        if (isSpaRenderedURL(window.location.href)) return;
-        spaNavigate(window.location.href, false, event.state);
-    });
+    window.addEventListener("popstate", handleSpaLocationEvent);
+    window.addEventListener("hashchange", handleSpaLocationEvent);
 
     window.addEventListener("scroll", scheduleSpaScrollSave, { passive: true });
 }
+
+function handleSpaLocationEvent(event) {
+    if (event.type === "hashchange") {
+        if ((window.location.hash || "") === spaRenderedHash) return;
+        spaRenderedHash = window.location.hash || "";
+        $(document).trigger("zkb:spa:hashchange", [event]);
+        return;
+    }
+
+    $(document).trigger("zkb:spa:popstate", [event]);
+    if ((window.location.hash || "") !== spaRenderedHash) {
+        spaRenderedHash = window.location.hash || "";
+        $(document).trigger("zkb:spa:hashchange", [event]);
+    }
+    if (!event.state || !event.state.zkbSpa) return;
+    if (isSpaRenderedURL(window.location.href)) return;
+    spaNavigate(window.location.href, false, event.state);
+}
+
+function setSpaHash(hash, baseUrl) {
+    hash = hash || "";
+    const url = (baseUrl || (window.location.pathname + window.location.search)) + hash;
+    if (!window.history || !window.history.pushState) {
+        window.location.hash = hash;
+        return;
+    }
+    window.history.pushState(window.history.state || {}, document.title, url);
+    spaRenderedHash = hash;
+    $(document).trigger("zkb:spa:hashchange", [null]);
+}
+
+window.zkbSetSpaHash = setSpaHash;
 
 function shouldSpaNavigate(event, anchor) {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return false;
@@ -528,12 +557,14 @@ async function spaNavigate(href, pushState, historyState) {
         runSpaPageInitializers(mergeSpaAssetResults(contentAssets, modalAssets, pageAssets));
         restoreSpaScrollPosition(pushState ? null : historyState);
         spaRenderedURL = window.location.href;
+        spaRenderedHash = window.location.hash || "";
         collapseMobileNav();
     } catch (e) {
         if (e.name === "AbortError") return;
         console.error("SPA navigation failed:", e);
         if (contentSwapped) {
             spaRenderedURL = window.location.href;
+            spaRenderedHash = window.location.hash || "";
             return;
         }
         fullNavigate(targetURL.href);

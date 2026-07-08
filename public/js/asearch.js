@@ -3,6 +3,7 @@ var allowChange = true;
 var first_load = true;
 var asearchRollTimeTimer = null;
 var asearchClickCatchTimer = null;
+var asearchHistoryNavigation = false;
 
 var radios = { sort: { sortBy: 'date', sortDir: 'desc' } };  // to be deprecated
 var asfilter = { location: [], attackers: [], neutrals: [], victims: [], items: [], sort: { sortBy: 'date', sortDir: 'desc' } };
@@ -81,10 +82,7 @@ function loadasearch() {
 	startAsearchLoops();
 	$(".btn-page.btn-primary:not(.notafilter)").click();
 
-	if (!window.zkbAsearchPopstateBound) {
-		window.addEventListener('popstate', asearchPopstate);
-		window.zkbAsearchPopstateBound = true;
-	}
+	$(document).off('zkb:spa:popstate.asearch').on('zkb:spa:popstate.asearch', asearchPopstate);
 
 	$("#clickToDigCheckbox").off('change.zkb-asearch').on('change.zkb-asearch', updateDrillDownPreference);
 
@@ -94,11 +92,16 @@ function loadasearch() {
 
 function asearchPopstate() {
 	if (!document.getElementById('asearchcontent')) return;
-	if (window.location.hash == '') return;
-	setFilters();
-	$(".btn-page.btn-primary:not(.notafilter)").click();
-	filtersStringified = undefined;
-	doQuery();
+	asearchHistoryNavigation = true;
+	try {
+		if (window.location.hash == '') resetFilters();
+		else setFilters();
+		$(".btn-page.btn-primary:not(.notafilter)").click();
+		filtersStringified = undefined;
+		doQuery();
+	} finally {
+		asearchHistoryNavigation = false;
+	}
 }
 
 function datepick() {
@@ -442,6 +445,20 @@ function setFilters(hashfilters) {
 	toggleFilters();
 }
 
+function resetFilters() {
+	allowChange = false;
+	toggleGroupLayout(null, false);
+	$(".filter-remove").click();
+	$(".btn.btn-primary:not(.notafilter)").removeClass("btn-primary").addClass("btn-secondary");
+	radios = { sort: { sortBy: 'date', sortDir: 'desc' } };
+	asfilter = { location: [], attackers: [], neutrals: [], victims: [], items: [], sort: { sortBy: 'date', sortDir: 'desc' } };
+	$("#includeAssociates").prop('checked', false);
+	$("#stats-epoch-week").removeClass("btn-secondary").addClass("btn-primary");
+	adjustTime(null, $("#stats-epoch-week"));
+	allowChange = true;
+	toggleFilters();
+}
+
 function setHash() {
 	var buttons = [];
 	$(".btn.btn-primary").each(function () {
@@ -572,7 +589,7 @@ function doQuery(queryType = 'all', isRetry = false) {
 		}
 	}
 
-	setHash();
+	if (!asearchHistoryNavigation) setHash();
 }
 
 function getFilters() {

@@ -251,12 +251,11 @@ else
           var setAttrs = function (el, attrs) {
             Object.keys(attrs).forEach(function (name) { if (el) el.setAttribute(name, attrs[name]); });
           };
-          var keepDailyUrl = function (graph, hash, push) {
+          var keepDailyUrl = function (graph, hash) {
             if (window.history && window.history.replaceState) {
-              var url = (graph.getAttribute("data-base-url") || window.location.href) + (hash !== undefined ? hash : (window.location.hash || ""));
-              var state = Object.assign({}, window.history.state || {}, { zkbDailyStats: true });
-              if (push && window.history.pushState) window.history.pushState(state, document.title, url);
-              else window.history.replaceState(state, document.title, url);
+              var dailyHash = hash !== undefined ? hash : (window.location.hash || "");
+              var url = (graph.getAttribute("data-base-url") || window.location.href) + dailyHash;
+              window.history.replaceState(window.history.state || {}, document.title, url);
             }
           };
           var monthEnd = function (ym) {
@@ -314,8 +313,7 @@ else
               });
             });
           };
-          var loadDaily = function (graph, url, scroll, graphWindow, hash, pushHistory) {
-            var baseUrl = graph.getAttribute("data-base-url") || window.location.href;
+          var loadDaily = function (graph, url, scroll, graphWindow) {
             var headers = { "X-Requested-With": "XMLHttpRequest" };
             var currentContent = document.querySelector("#zkb-page-content");
             if (currentContent) currentContent.style.minHeight = Math.max(currentContent.offsetHeight || 0, currentContent.scrollHeight || 0) + "px";
@@ -336,11 +334,16 @@ else
               if (typeof window.zkbExecuteInsertedScripts == "function") window.zkbExecuteInsertedScripts(current);
               if (typeof initPageContent == "function") initPageContent();
               applyDailyMetric();
-              keepDailyUrl(document.querySelector(".daily-history-graph") || graph, hash, pushHistory);
               window.scrollTo(scroll.x, scroll.y);
-            }).catch(function () {
-              if (window.history && window.history.replaceState) window.history.replaceState(window.history.state || {}, document.title, baseUrl + (hash !== undefined ? hash : (window.location.hash || "")));
-            });
+            }).catch(function () {});
+          };
+          var ignoreDailyHashChange = false;
+          var setDailyHash = function (graph, hash) {
+            if ((window.location.hash || "") == hash) return navigateHashState(false, hash);
+            ignoreDailyHashChange = true;
+            if (typeof window.zkbSetSpaHash == "function") window.zkbSetSpaHash(hash, graph.getAttribute("data-base-url") || window.location.pathname);
+            else window.location.hash = hash;
+            navigateHashState(false, hash);
           };
           var graphWindowToken = function (graph) {
             var days = splitDays(graph.getAttribute("data-history-days"));
@@ -367,39 +370,49 @@ else
             var token = start + ".." + (periodEnds[endIdx] || end);
             var side = graph.getAttribute("data-current-side") || "kills";
             var graphWindow = graphWindowToken(graph);
+            if (pushHistory !== false) return setDailyHash(graph, tokenToHash(token, graph, side, false));
             var url = (graph.getAttribute("data-base-url") || "") + encodeURIComponent(side) + "/" + token + "/";
             var scroll = {
               x: window.scrollX || window.pageXOffset || 0,
               y: window.scrollY || window.pageYOffset || 0
             };
-            loadDaily(graph, url, scroll, graphWindow, tokenToHash(token, graph, side, false), pushHistory !== false);
+            loadDaily(graph, url, scroll, graphWindow);
           };
           var navigateToken = function (graph, side, token, keepWindow, pushHistory) {
+            if (pushHistory !== false) return setDailyHash(graph, tokenToHash(token, graph, side, !keepWindow));
             var url = (graph.getAttribute("data-base-url") || "") + encodeURIComponent(side) + "/" + token + "/";
             var graphWindow = keepWindow ? graphWindowToken(graph) : null;
             var scroll = {
               x: window.scrollX || window.pageXOffset || 0,
               y: window.scrollY || window.pageYOffset || 0
             };
-            loadDaily(graph, url, scroll, graphWindow, tokenToHash(token, graph, side, !keepWindow), pushHistory !== false);
+            loadDaily(graph, url, scroll, graphWindow);
           };
           var navigateDay = function (graph, side, day, keepWindow, pushHistory) {
+            if (pushHistory !== false) return setDailyHash(graph, tokenToHash(day, graph, side, !keepWindow));
             var url = (graph.getAttribute("data-base-url") || "") + day + "/" + encodeURIComponent(side) + "/";
             var graphWindow = keepWindow ? graphWindowToken(graph) : null;
             var scroll = {
               x: window.scrollX || window.pageXOffset || 0,
               y: window.scrollY || window.pageYOffset || 0
             };
-            loadDaily(graph, url, scroll, graphWindow, tokenToHash(day, graph, side, !keepWindow), pushHistory !== false);
+            loadDaily(graph, url, scroll, graphWindow);
           };
-          var navigateHashState = function (pushHistory) {
+          var navigateHashState = function (pushHistory, hash) {
             var graph = document.querySelector(".daily-history-graph");
             if (!graph) return;
-            var selection = hashToToken(window.location.hash) || { type: "token", value: "all", side: "kills", zoom: false, metric: "count" };
+            var selection = hashToToken(hash !== undefined ? hash : window.location.hash) || { type: "token", value: "all", side: "kills", zoom: false, metric: "count" };
             window.zkbDailyStatsMetric = selection.metric || "count";
             if (selection.type == "day") navigateDay(graph, selection.side, selection.value, !selection.zoom, pushHistory);
-            else navigateToken(graph, selection.side, selection.value, !selection.zoom, pushHistory);
+            else navigateToken(graph, selection.side, selection.value, selection.value != "all" && !selection.zoom, pushHistory);
           };
+          $(document).off("zkb:spa:hashchange.dailyStats").on("zkb:spa:hashchange.dailyStats", function () {
+            if (ignoreDailyHashChange) {
+              ignoreDailyHashChange = false;
+              return;
+            }
+            if (/\/daily(?:\/|$)/.test(window.location.pathname) && document.querySelector(".daily-history-graph")) navigateHashState(false);
+          });
           document.addEventListener("pointerdown", function (event) {
             var target = event.target;
             var handle = target && target.closest ? target.closest(".daily-range-handle") : null;
@@ -526,7 +539,7 @@ else
               item.classList.toggle("btn-primary", item == button);
               item.classList.toggle("btn-secondary", item != button);
             });
-            keepDailyUrl(graph, tokenToHash(selectionToken(graph), graph, graph.getAttribute("data-current-side") || "kills", false), false);
+            keepDailyUrl(graph, tokenToHash(selectionToken(graph), graph, graph.getAttribute("data-current-side") || "kills", false));
           }, true);
           document.addEventListener("click", function (event) {
             var target = event.target;
@@ -544,17 +557,6 @@ else
             graph.setAttribute("data-current-side", side);
             navigateToken(graph, side, token, true);
           }, true);
-          window.addEventListener("popstate", function (event) {
-            if (!event.state || !event.state.zkbDailyStats) {
-              window.location.href = window.location.href;
-              return;
-            }
-            if (!/\/daily(?:\/|$)/.test(window.location.pathname)) {
-              window.location.href = window.location.href;
-              return;
-            }
-            navigateHashState(false);
-          });
           setTimeout(function () {
             if (window.location.hash) navigateHashState(false);
           }, 1);
