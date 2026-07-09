@@ -543,6 +543,7 @@ async function spaNavigate(href, pushState, historyState) {
         clearSpaPageHelpers();
         destroyTooltipsIn(currentContent);
         if (currentModals) destroyTooltipsIn(currentModals);
+        copyAttributes(nextContent, currentContent);
         currentContent.innerHTML = nextContent.innerHTML;
         if (nextModals && currentModals) currentModals.innerHTML = nextModals.innerHTML;
         contentSwapped = true;
