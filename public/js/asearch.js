@@ -650,7 +650,7 @@ function applyCountQueryResult(data, textStatus, jqXHR) {
 		$("#result-groups-count").html("Timespan > 31 Days");
 		return;
 	}
-	if (data.kills == 0) $("#result-groups-count").html('')
+	if (data.timedOut == true || data.kills == 0) $("#result-groups-count").html('')
 	// get the integer percentages for each of these
 	let droppable = data.droppable > 0 ? data.droppable : data.isk;
 	let droppableDestroyed = Math.max(0, droppable - data.dropped);

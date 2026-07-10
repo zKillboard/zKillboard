@@ -452,6 +452,10 @@ class AdvancedSearch
                     'pipeline' => $pipeline ?? [],
                     'hashKey' => $hashKey
                 ], $ex);
+                $result = self::getEmptySums();
+                $result['timedOut'] = true;
+                RedisCache::set($hashKey, $result, 900);
+                return $result;
             } else {
                 Util::zout(print_r($ex, true));
             }
