@@ -237,6 +237,7 @@ class AdvancedSearch
             $param = [];
             if ($row['type'] == 'systemID') $row['type'] = 'solarSystemID';
             if ($row['type'] == 'shipID') $row['type'] = 'shipTypeID';
+            if ($row['type'] == 'typeID') $row['type'] = 'shipTypeID';
 
             $param[$row['type']] = (int) $row['id'];
             if ($isVictim === false) $param['kills'] = true;
