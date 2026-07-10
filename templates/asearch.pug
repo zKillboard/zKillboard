@@ -98,7 +98,8 @@ block content
         label
           input#clickToDigCheckbox(type="checkbox")
           span#clickText Clicking will Drill Down
-      div(style="margin-left: auto;")
+      div(style="flex: 1; text-align: center;")
+        span#asearchQueueIndicator.badge.bg-warning.text-black.fs-6(style="display: none; margin-top: 0.4em;")
       .checkbox
         label
           input#includeAssociates(type="checkbox" checked)

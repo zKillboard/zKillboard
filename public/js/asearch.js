@@ -500,6 +500,7 @@ var xhrs = [];
 var filtersStringified = undefined;
 var asearchRetryTimer = null;
 var asearchRetryQueryType = null;
+var asearchBatch = null;
 function doQuery(queryType = 'all', isRetry = false) {
 	if (first_load) return;
 	if (!allowChange) return;
@@ -513,9 +514,18 @@ function doQuery(queryType = 'all', isRetry = false) {
 	}
 	if (!isRetry) filtersStringified = stringified;
 
+	asearchBatch = null;
 	while (xhrs.length > 0) {
 		var xhr = xhrs.pop();
 		xhr.abort();
+	}
+	if (!isRetry) updateAsearchQueueIndicator();
+	var batch = [];
+	asearchBatch = batch;
+	function request(options) {
+		var xhr = $.ajax('/asearchquery/', options);
+		xhrs.push(xhr);
+		batch.push(xhr);
 	}
 
 	if (!isRetry) clearAsearchResults(queryType);
@@ -524,52 +534,48 @@ function doQuery(queryType = 'all', isRetry = false) {
 		var f1 = {};
 		Object.assign(f1, f);
 		f1.queryType = "kills";
-		xhr = $.ajax('/asearchquery/', {
+		request({
 			data: f1,
 			method: 'get',
 			error: handleError,
 			success: applyKillQueryResult,
 			timeout: 60000 // 60 seconds
 		});
-		xhrs.push(xhr);
 	}
 
 	if (queryType == 'all' || queryType == 'groups') {
 		var f2 = {};
 		Object.assign(f2, f);
 		f2.queryType = "count";
-		xhr = $.ajax('/asearchquery/', {
+		request({
 			data: f2,
 			method: 'get',
 			error: handleError,
 			success: applyCountQueryResult,
 			timeout: 60000 // 60 seconds
 		});
-		xhrs.push(xhr);
 
 		var f3 = {};
 		Object.assign(f3, f);
 		f3.queryType = "labels";
-		xhr = $.ajax('/asearchquery/', {
+		request({
 			data: f3,
 			method: 'get',
 			error: handleError,
 			success: applyLabelsResult,
 			timeout: 60000 // 60 seconds
 		});
-		xhrs.push(xhr);
 
 		var f4 = {};
 		Object.assign(f4, f);
 		f4.queryType = "distincts";
-		xhr = $.ajax('/asearchquery/', {
+		request({
 			data: f4,
 			method: 'get',
 			error: handleError,
 			success: applyDistinctsResult,
 			timeout: 60000 // 60 seconds
 		});
-		xhrs.push(xhr);
 
 		var ff = [];
 		for (i = 0; i < types.length; i++) {
@@ -577,7 +583,7 @@ function doQuery(queryType = 'all', isRetry = false) {
 			Object.assign(ff[i], f);
 			ff[i].queryType = "groups";
 			ff[i].groupType = types[i];
-			xhr = $.ajax('/asearchquery/', {
+			request({
 				title: types[i],
 				data: ff[i],
 				method: 'get',
@@ -585,10 +591,12 @@ function doQuery(queryType = 'all', isRetry = false) {
 				success: applyGroupQueryResult,
 				timeout: 60000 // 60 seconds
 			});
-			xhrs.push(xhr);
 		}
 	}
 
+	$.when.apply($, batch).always(function () {
+		if (batch === asearchBatch && asearchRetryTimer == null) updateAsearchQueueIndicator();
+	});
 	if (!asearchHistoryNavigation) setHash();
 }
 
@@ -604,18 +612,32 @@ function getFilters() {
 	return retVal;
 }
 
+function updateAsearchQueueIndicator(jqXHR) {
+	var queueDepth = jqXHR ? parseInt(jqXHR.getResponseHeader('X-Asearch-Queue-Depth') || 0) : 0;
+	var indicator = $("#asearchQueueIndicator");
+	if (queueDepth > 25) indicator.text("Queued: " + queueDepth).show();
+	else indicator.hide().text("");
+}
+
+function asearchProcessing(jqXHR, queryType) {
+	if (jqXHR.status != 202) return false;
+	updateAsearchQueueIndicator(jqXHR);
+	scheduleAsearchRetry(queryType);
+	return true;
+}
+
 function applyDistinctsResult(data, textStatus, jqXHR) {
-	if (jqXHR.status == 202) return scheduleAsearchRetry('groups');
+	if (asearchProcessing(jqXHR, 'groups')) return;
 	$("#result-groups-distincts").html(data);
 }
 
 function applyLabelsResult(data, textStatus, jqXHR) {
-	if (jqXHR.status == 202) return scheduleAsearchRetry('groups');
+	if (asearchProcessing(jqXHR, 'groups')) return;
 	$("#result-groups-labels").html(data);
 }
 
 function applyKillQueryResult(data, textStatus, jqXHR) {
-	if (jqXHR.status == 202 || (data && data.processing == true)) return scheduleAsearchRetry('kills');
+	if (asearchProcessing(jqXHR, 'kills')) return;
 	$("#killmails-list").html("");
 	killIDs = data.kills;
 	if (data.kills.length == 0) killlistmessage("no results - expand timespan, adjust pagination, or reduce filters...");
@@ -623,7 +645,7 @@ function applyKillQueryResult(data, textStatus, jqXHR) {
 }
 
 function applyCountQueryResult(data, textStatus, jqXHR) {
-	if (jqXHR.status == 202 || (data && data.processing == true)) return scheduleAsearchRetry('groups');
+	if (asearchProcessing(jqXHR, 'groups')) return;
 	if (data == null || data.exceeds == true) {
 		$("#result-groups-count").html("Timespan > 31 Days");
 		return;
@@ -649,7 +671,7 @@ function applyCountQueryResult(data, textStatus, jqXHR) {
 }
 
 function applyGroupQueryResult(data, textStatus, jqXHR) {
-	if (jqXHR.status == 202) return scheduleAsearchRetry('groups');
+	if (asearchProcessing(jqXHR, 'groups')) return;
 	$("#result-groups-" + this.title).html(data);
 }
 
@@ -676,6 +698,7 @@ function clearAsearchResults(queryType) {
 
 function handleError(jqXHR, textStatus, errorThrown) {
 	//console.log(jqXHR.status);
+	if (textStatus == 'abort') return;
 	filtersStringified = null;
 	if (jqXHR.status == 403) killlistmessage('Server Reinforced - no advanced search as this time.');
 	else if (jqXHR.status == 408) killlistmessage('Query took too long and timed out.');

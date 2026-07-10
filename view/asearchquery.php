@@ -233,12 +233,16 @@ function handler($request, $response, $args, $container) {
 
 function renderAsearchProcessing($response, $cacheTag, $queryType)
 {
+	global $redis;
+
 	$isJson = $queryType == 'kills' || $queryType == 'count';
-	$response->getBody()->write($isJson ? json_encode(['processing' => true]) : '');
+	$queue = $queryType == 'kills' ? 'queueAsearchKillsSet' : 'queueAsearchAggregationsSet';
+	$queueDepth = (int) $redis->scard($queue);
 	return $response
-		->withHeader('Content-Type', $isJson ? 'application/json; charset=utf-8' : 'text/html; charset=utf-8')
+		->withHeader('Content-Type', 'text/plain; charset=utf-8')
 		->withHeader('Cache-Control', 'no-store')
 		->withHeader('Cache-Tag', $cacheTag)
+		->withHeader('X-Asearch-Queue-Depth', (string) $queueDepth)
 		->withHeader('Retry-After', '3')
 		->withStatus(202);
 }
