@@ -36,6 +36,7 @@
       each $range in $ranges
         - $rowClass = $range[0]; $prefix = $range[1]; $overallKey = $range[2]; $rightLabel = $range[3];
         - $keyPrefix = $prefix === '' ? '' : ucfirst($prefix);
+        - $idPrefix = $prefix === '' ? 'a' : substr($prefix, 0, 1);
         - $shipsDestroyed = $statisticsData[$prefix === '' ? 'shipsDestroyed' : $prefix . 'ShipsDestroyed'] ?? 0;
         - $shipsLost = $statisticsData[$prefix === '' ? 'shipsLost' : $prefix . 'ShipsLost'] ?? 0;
         - $pointsDestroyed = $statisticsData[$prefix === '' ? 'pointsDestroyed' : $prefix . 'PointsDestroyed'] ?? 0;
@@ -47,28 +48,28 @@
         - $iskEff = $eff($iskDestroyed, $iskLost);
         tr(class=$rowClass)
           th(style="text-align: right") Ships
-          td.green(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-sd' : false))= number_format((float) $shipsDestroyed, 0)
-          td.green(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-sd-r' : false))= $rank($statisticsData[$prefix === '' ? 'shipsDestroyedRank' : $prefix . 'ShipsDestroyedRank'] ?? 0)
-          td.red(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-sl' : false))= number_format((float) $shipsLost, 0)
-          td.red(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-sl-r' : false))= $rank($statisticsData[$prefix === '' ? 'shipsLostRank' : $prefix . 'ShipsLostRank'] ?? 0)
-          td(style="text-align: right" format="format-dec1" class=($shipEff >= 50 ? 'green' : 'red') id=($prefix === '' ? 's-a-s-e' : false))= number_format((float) $shipEff, 1)
+          td.green(style="text-align: right" format="format-int" id=('s-' . $idPrefix . '-sd'))= number_format((float) $shipsDestroyed, 0)
+          td.green(style="text-align: right" format="format-int" id=('s-' . $idPrefix . '-sd-r'))= $rank($statisticsData[$prefix === '' ? 'shipsDestroyedRank' : $prefix . 'ShipsDestroyedRank'] ?? 0)
+          td.red(style="text-align: right" format="format-int" id=('s-' . $idPrefix . '-sl'))= number_format((float) $shipsLost, 0)
+          td.red(style="text-align: right" format="format-int" id=('s-' . $idPrefix . '-sl-r'))= $rank($statisticsData[$prefix === '' ? 'shipsLostRank' : $prefix . 'ShipsLostRank'] ?? 0)
+          td(style="text-align: right" format="format-dec1" class=($shipEff >= 50 ? 'green' : 'red') id=('s-' . $idPrefix . '-s-e'))= number_format((float) $shipEff, 1)
           th(style="text-align: right;")
             != $rankCell($statisticsData[$overallKey] ?? 0, $prevRanks[$overallKey] ?? 0, $prevRanks['date'] ?? '')
         tr(class=$rowClass)
           th(style="text-align: right") Points
-          td.green(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-pd' : false))= number_format((float) $pointsDestroyed, 0)
-          td.green(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-pd-r' : false))= $rank($statisticsData[$prefix === '' ? 'pointsDestroyedRank' : $prefix . 'PointsDestroyedRank'] ?? 0)
-          td.red(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-pl' : false))= number_format((float) $pointsLost, 0)
-          td.red(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-pl-r' : false))= $rank($statisticsData[$prefix === '' ? 'pointsLostRank' : $prefix . 'PointsLostRank'] ?? 0)
-          td(style="text-align: right" format="format-dec1" class=($pointsEff >= 50 ? 'green' : 'red') id=($prefix === '' ? 's-a-p-e' : false))= number_format((float) $pointsEff, 1)
+          td.green(style="text-align: right" format="format-int" id=('s-' . $idPrefix . '-pd'))= number_format((float) $pointsDestroyed, 0)
+          td.green(style="text-align: right" format="format-int" id=('s-' . $idPrefix . '-pd-r'))= $rank($statisticsData[$prefix === '' ? 'pointsDestroyedRank' : $prefix . 'PointsDestroyedRank'] ?? 0)
+          td.red(style="text-align: right" format="format-int" id=('s-' . $idPrefix . '-pl'))= number_format((float) $pointsLost, 0)
+          td.red(style="text-align: right" format="format-int" id=('s-' . $idPrefix . '-pl-r'))= $rank($statisticsData[$prefix === '' ? 'pointsLostRank' : $prefix . 'PointsLostRank'] ?? 0)
+          td(style="text-align: right" format="format-dec1" class=($pointsEff >= 50 ? 'green' : 'red') id=('s-' . $idPrefix . '-p-e'))= number_format((float) $pointsEff, 1)
           th(style="text-align: right")= $rightLabel
         tr(class=$rowClass)
           th(style="text-align: right") ISK
-          td.green(style="text-align: right" rel="tooltip" title=$moneyTitle($statisticsData[$prefix === '' ? 'iskDestroyedUsdEurGbp' : $prefix . 'IskDestroyedUsdEurGbp'] ?? []) format="format-isk" id=($prefix === '' ? 's-a-id' : false))= $formatIsk($iskDestroyed)
-          td.green(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-id-r' : false))= $rank($statisticsData[$prefix === '' ? 'iskDestroyedRank' : $prefix . 'IskDestroyedRank'] ?? 0)
-          td.red(style="text-align: right" rel="tooltip" title=$moneyTitle($statisticsData[$prefix === '' ? 'iskLostUsdEurGbp' : $prefix . 'IskLostUsdEurGbp'] ?? []) format="format-isk" id=($prefix === '' ? 's-a-il' : false))= $formatIsk($iskLost)
-          td.red(style="text-align: right" format="format-int" id=($prefix === '' ? 's-a-il-r' : false))= $rank($statisticsData[$prefix === '' ? 'iskLostRank' : $prefix . 'IskLostRank'] ?? 0)
-          td(style="text-align: right" format="format-dec1" class=($iskEff >= 50 ? 'green' : 'red') id=($prefix === '' ? 's-a-i-e' : false))= number_format((float) $iskEff, 1)
+          td.green(style="text-align: right" rel="tooltip" title=$moneyTitle($statisticsData[$prefix === '' ? 'iskDestroyedUsdEurGbp' : $prefix . 'IskDestroyedUsdEurGbp'] ?? []) format="format-isk" id=('s-' . $idPrefix . '-id'))= $formatIsk($iskDestroyed)
+          td.green(style="text-align: right" format="format-int" id=('s-' . $idPrefix . '-id-r'))= $rank($statisticsData[$prefix === '' ? 'iskDestroyedRank' : $prefix . 'IskDestroyedRank'] ?? 0)
+          td.red(style="text-align: right" rel="tooltip" title=$moneyTitle($statisticsData[$prefix === '' ? 'iskLostUsdEurGbp' : $prefix . 'IskLostUsdEurGbp'] ?? []) format="format-isk" id=('s-' . $idPrefix . '-il'))= $formatIsk($iskLost)
+          td.red(style="text-align: right" format="format-int" id=('s-' . $idPrefix . '-il-r'))= $rank($statisticsData[$prefix === '' ? 'iskLostRank' : $prefix . 'IskLostRank'] ?? 0)
+          td(style="text-align: right" format="format-dec1" class=($iskEff >= 50 ? 'green' : 'red') id=('s-' . $idPrefix . '-i-e'))= number_format((float) $iskEff, 1)
           th(style="text-align: right;")
             if ($prefix === '')
               != $rankCell($statisticsData['recentOverallRank'] ?? 0, $prevRanks['recentOverallRank'] ?? 0, $prevRanks['date'] ?? '')
@@ -103,7 +104,7 @@
                 div(style="width: 50%; padding: 3px;")
                   != $progressPair($extraData[$period[1]] ?? 0, 'Dangerous', 'Snuggly')
                 div(style="width: 50%; padding: 3px;")
-                  != $progressPair($extraData[$period[2]] ?? 0, 'Gangs', ((($statisticsData[$period[3]] ?? 0) ? number_format((float) $statisticsData[$period[3]], 0) . ' ' : '') . 'Solo'))
+                  != $progressPair($extraData[$period[2]] ?? 0, 'Gangs', ('<span id="s-' . substr($period[0], 0, 1) . '-solo" format="format-int">' . number_format((float) ($statisticsData[$period[3]] ?? 0), 0) . '</span> Solo'))
 br
 if (($tobefetched ?? 0) > 1000)
   .alert.alert-secondary

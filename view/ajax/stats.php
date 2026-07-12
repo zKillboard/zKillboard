@@ -36,7 +36,7 @@ function handler($request, $response, $args, $container) {
     //unset($array['info']['_id']);
 
     $ret = [];
-    $rankRow = Ranks::getRow('alltime', 'all', $type, $id);
+    $rankRow = $array['rankings']['alltime']['all'] ?? null;
     $ret['s-a-sd'] = (int) @$array['shipsDestroyed'];
     $ret['s-a-sd-r'] = rankRowRank($rankRow, 'shipsDestroyed');
     $ret['s-a-sl'] = (int) @$array['shipsLost'];
@@ -54,10 +54,27 @@ function handler($request, $response, $args, $container) {
     $ret['s-a-i-e'] = eff($ret['s-a-id'], $ret['s-a-il']);
     $ret['s-a-p-e'] = eff($ret['s-a-pd'], $ret['s-a-pl']);
 
-    $p = Util::convertUriToParameters("/$type/$id/");
-    $q = MongoFilter::buildQuery($p);
-    $ret['ksa'] = (int) $mdb->findField("oneWeek", "killID", $q, ['killID' => 1]);
-    $ret['kea'] = (int) $mdb->findField("oneWeek", "killID", $q, ['killID' => -1]);
+    foreach (['recent' => 'r', 'weekly' => 'w'] as $epoch => $prefix) {
+        $periodRankRow = $array['rankings'][$epoch]['all'] ?? null;
+        $ret["s-$prefix-sd"] = (int) ($periodRankRow['metrics']['shipsDestroyed'] ?? 0);
+        $ret["s-$prefix-sd-r"] = rankRowRank($periodRankRow, 'shipsDestroyed');
+        $ret["s-$prefix-sl"] = (int) ($periodRankRow['metrics']['shipsLost'] ?? 0);
+        $ret["s-$prefix-sl-r"] = rankRowRank($periodRankRow, 'shipsLost');
+        $ret["s-$prefix-id"] = (int) ($periodRankRow['metrics']['iskDestroyed'] ?? 0);
+        $ret["s-$prefix-id-r"] = rankRowRank($periodRankRow, 'iskDestroyed');
+        $ret["s-$prefix-il"] = (int) ($periodRankRow['metrics']['iskLost'] ?? 0);
+        $ret["s-$prefix-il-r"] = rankRowRank($periodRankRow, 'iskLost');
+        $ret["s-$prefix-pd"] = (int) ($periodRankRow['metrics']['pointsDestroyed'] ?? 0);
+        $ret["s-$prefix-pd-r"] = rankRowRank($periodRankRow, 'pointsDestroyed');
+        $ret["s-$prefix-pl"] = (int) ($periodRankRow['metrics']['pointsLost'] ?? 0);
+        $ret["s-$prefix-pl-r"] = rankRowRank($periodRankRow, 'pointsLost');
+
+        $ret["s-$prefix-s-e"] = eff($ret["s-$prefix-sd"], $ret["s-$prefix-sl"]);
+        $ret["s-$prefix-i-e"] = eff($ret["s-$prefix-id"], $ret["s-$prefix-il"]);
+        $ret["s-$prefix-p-e"] = eff($ret["s-$prefix-pd"], $ret["s-$prefix-pl"]);
+        $ret["s-$prefix-solo"] = (int) ($array['rankings'][$epoch]['solo']['metrics']['shipsDestroyed'] ?? 0);
+    }
+
     $ret['epoch'] = $sEpoch;
     $ret['sequence'] = @$array['sequence'];
 
