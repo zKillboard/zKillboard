@@ -447,6 +447,7 @@ function handler($request, $response, $args, $container)
 	}
 
 	$recentRankRow = Ranks::getRow('recent', 'all', $statType, $id);
+	$recentSoloRankRow = Ranks::getRow('recent', 'solo', $statType, $id);
 	$statistics['recentShipsDestroyed'] = rankRowMetric($recentRankRow, 'shipsDestroyed');
 	$statistics['recentShipsDestroyedRank'] = rankRowRank($recentRankRow, 'shipsDestroyed');
 	$statistics['recentShipsLost'] = (int) rankRowMetric($recentRankRow, 'shipsLost');
@@ -484,12 +485,9 @@ function handler($request, $response, $args, $container)
 
 	$recentSoloKills = 0;
 	if ($getSoloStats) {
-		if ($recentSoloKills === '')
-			$recentSoloKills = MongoFilter::getCount(['isVictim' => false, "${type}ID" => (int) $id, 'solo' => true, 'pastSeconds' => 7776000]);
-		else
-			$recentSoloKills = (int) $recentSoloKills;
+		$recentSoloKills = (int) rankRowMetric($recentSoloRankRow, 'shipsDestroyed');
 		if ($recentSoloKills > 0 && $statistics['recentShipsDestroyed'] > 0) {
-			$gangFactor = 100 - floor(100 * ($recentSoloKills / ($recentSoloKills + $statistics['recentShipsDestroyed'])));
+			$gangFactor = 100 - floor(100 * ($recentSoloKills / $statistics['recentShipsDestroyed']));
 			$extra['recentGangFactor'] = $gangFactor;
 		} else if (@$statistics['shipsDestroyed'] > 0) {
 			$extra['recentGangFactor'] = 100;
@@ -498,6 +496,7 @@ function handler($request, $response, $args, $container)
 	$statistics['recentSoloKills'] = $recentSoloKills;
 
 	$weeklyRankRow = Ranks::getRow('weekly', 'all', $statType, $id);
+	$weeklySoloRankRow = Ranks::getRow('weekly', 'solo', $statType, $id);
 	$statistics['weeklyShipsDestroyed'] = rankRowMetric($weeklyRankRow, 'shipsDestroyed');
 	$statistics['weeklyShipsDestroyedRank'] = rankRowRank($weeklyRankRow, 'shipsDestroyed');
 	$statistics['weeklyShipsLost'] = (int) rankRowMetric($weeklyRankRow, 'shipsLost');
@@ -523,12 +522,9 @@ function handler($request, $response, $args, $container)
 
 	$weeklySoloKills = 0;
 	if ($getSoloStats) {
-		if ($weeklySoloKills === '')
-			$weeklySoloKills = MongoFilter::getCount(['isVictim' => false, "${type}ID" => (int) $id, 'solo' => true, 'pastSeconds' => 604800]);
-		else
-			$weeklySoloKills = (int) $weeklySoloKills;
+		$weeklySoloKills = (int) rankRowMetric($weeklySoloRankRow, 'shipsDestroyed');
 		if ($weeklySoloKills > 0 && $statistics['weeklyShipsDestroyed'] > 0) {
-			$gangFactor = 100 - floor(100 * ($weeklySoloKills / ($weeklySoloKills + $statistics['weeklyShipsDestroyed'])));
+			$gangFactor = 100 - floor(100 * ($weeklySoloKills / $statistics['weeklyShipsDestroyed']));
 			$extra['weeklyGangFactor'] = $gangFactor;
 		} else if ($statistics['weeklyShipsDestroyed'] > 0) {
 			$extra['weeklyGangFactor'] = 100;
