@@ -6,7 +6,7 @@ class AdvancedSearch
 {
     const MAX_ITEM_HISTORY_KILLIDS = 25000;
     const LOG_CONTEXT_MAX_LENGTH = 12000;
-    const AGGREGATE_CHUNK_SIZE = 1000000;
+    const DEFAULT_AGGREGATE_CHUNK_SIZE = 1000000;
     const GROUP_LIMIT = 1000;
     const AGGREGATE_QUEUE = 'queueAsearchAggregationsSet';
     const ALLTIME_AGGREGATE_QUEUE = 'queueAsearchAlltimeAggregationsSet';
@@ -194,10 +194,18 @@ class AdvancedSearch
         if ($max <= $min) return [];
 
         $chunks = [];
-        for ($start = $min; $start < $max; $start += self::AGGREGATE_CHUNK_SIZE) {
-            $chunks[] = [$start, min($start + self::AGGREGATE_CHUNK_SIZE, $max)];
+        $chunkSize = self::getAggregateChunkSize();
+        for ($start = $min; $start < $max; $start += $chunkSize) {
+            $chunks[] = [$start, min($start + $chunkSize, $max)];
         }
         return $chunks;
+    }
+
+    private static function getAggregateChunkSize()
+    {
+        global $advancedSearchAggregateChunkSize;
+
+        return max(10000, (int) ($advancedSearchAggregateChunkSize ?? self::DEFAULT_AGGREGATE_CHUNK_SIZE));
     }
 
     private static function getKillIDBounds($query)

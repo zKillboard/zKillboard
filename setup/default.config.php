@@ -112,6 +112,7 @@ $redisQServer = '';
 $longQueryMS = 25000;
 $logAsearchAlltimeTimeouts = false;
 $advancedSearchMaxTimeSeconds = 60;
+$advancedSearchAggregateChunkSize = 1000000;
 
 # CREST SSO
 $ccpCallback = '';
