@@ -262,6 +262,7 @@ class AdvancedSearch
     {
         global $redis;
 
+        $redis->sadd('queues', $queue);
         $redis->rpush($queue, $key);
     }
 

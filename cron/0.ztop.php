@@ -32,6 +32,33 @@ $metrics = [];
 $metricIndex = 0;
 $serverMetrics = [];
 $serverRows = [];
+$knownRedisQueues = [
+	'queueAPI',
+	'queueAsearchAggregationsList',
+	'queueAsearchAggregationsSet',
+	'queueAsearchAlltimeAggregationsList',
+	'queueAsearchAlltimeAggregationsSet',
+	'queueAsearchKillsList',
+	'queueAsearchKillsSet',
+	'queueApiCheck',
+	'queueCacheTags',
+	'queueCacheTagsDefer',
+	'queueCacheUrls',
+	'queueCacheUrlsDefer',
+	'queueDailyStats',
+	'queueDailyStatsSet',
+	'queueInfo',
+	'queueItemIndex',
+	'queuePublish',
+	'queueRelated',
+	'queueRelatedSet',
+	'queueSocial',
+	'queueStats',
+	'queueStatsSet',
+	'queueStatsUpdated',
+	'queueWars'
+];
+foreach ($knownRedisQueues as $knownRedisQueue) $redis->sadd('queues', $knownRedisQueue);
 
 $lastKillCountSent = null;
 $hour = date('H');
@@ -71,22 +98,12 @@ while ($hour == date('H')) {
 		} while ($iterator > 0);
 
 		$queues = $redis->sMembers('queues');
+		$queues = array_merge($queues, $knownRedisQueues);
 		$registeredQueues = [];
 		foreach ($queues as $queue) {
 			if (!is_string($queue) || trim($queue) == '') continue;
 			$registeredQueues[$queue] = true;
 		}
-		$iterator = null;
-		do {
-			$keys = $redis->scan($iterator, 'queue*', 1000);
-			if ($keys === false) continue;
-			foreach ($keys as $key) {
-				if ($key == 'queues') continue;
-				$setQueue = preg_replace('/Set$/', '', $key);
-				if (isset($registeredQueues[$setQueue])) continue;
-				$queues[] = $key;
-			}
-		} while ($iterator > 0);
 		foreach ($registeredQueues as $queue => $v) {
 			if ($redis->type($queue) == Redis::REDIS_NOT_FOUND && $redis->type($queue . 'Set') != Redis::REDIS_NOT_FOUND) {
 				$currentQueueTypes[$queue] = Redis::REDIS_SET;
