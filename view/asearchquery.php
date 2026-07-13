@@ -284,7 +284,7 @@ function renderAsearchResult($response, $container, $cacheTag, $job, $result, $l
 	global $redis;
 
 	$key = $job['key'];
-	$cacheTime = (int) ($job['cacheTime'] ?? 300);
+	$cacheTime = min(900, (int) ($job['cacheTime'] ?? 300));
 	$redisCacheTime = min($cacheTime, 900);
 	if ($job['queryType'] == 'kills' || $job['queryType'] == 'count') {
 		$jsoned = json_encode($result, true);
@@ -342,7 +342,7 @@ function iter2array($iter)
 
 function withAsearchCacheHeaders($response, $cacheTime)
 {
-	$cacheTime = max(0, (int) $cacheTime);
+	$cacheTime = min(900, max(0, (int) $cacheTime));
 	$cacheControl = "public, max-age=$cacheTime, s-maxage=$cacheTime";
 	return $response
 		->withHeader('Cache-Control', $cacheControl)
@@ -356,17 +356,15 @@ function getAsearchCacheTime($startTime, $endTime, $epochButton, $collections)
 	$span = ($startTime > 0 && $endTime > $startTime) ? $endTime - $startTime : 0;
 	if ($span > 0) {
 		if ($span <= 604800) return 900;
-		if ($span <= 2678400) return 3600;
-		if ($span <= 7776000) return 14400;
-		return 86400;
+		return 900;
 	}
 
 	if ($epochButton == 'week') return 900;
-	if ($epochButton == 'recent') return 14400;
-	if (in_array('killmails', $collections, true)) return 86400;
+	if ($epochButton == 'recent') return 900;
+	if (in_array('killmails', $collections, true)) return 900;
 	if (in_array('oneWeek', $collections, true)) return 900;
-	if (in_array('ninetyDays', $collections, true)) return 14400;
-	return 86400;
+	if (in_array('ninetyDays', $collections, true)) return 900;
+	return 900;
 }
 
 function requiresAsearchManualQuery($epochButton, $startTime, $endTime)

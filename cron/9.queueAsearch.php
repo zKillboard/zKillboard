@@ -41,7 +41,7 @@ while ($minute == date('Hi')) {
             usleep(500000);
             continue;
         }
-        $redis->setex("$key:result", (int) ($job['cacheTime'] ?? 900), serialize($result));
+        $redis->setex("$key:result", min(900, (int) ($job['cacheTime'] ?? 900)), serialize($result));
         $redis->del("$key:params");
         $redis->del($key);
     } catch (Exception $e) {
