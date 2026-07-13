@@ -263,6 +263,7 @@ function renderAsearchManualRequired($response, $queryType)
 		->withHeader('Content-Type', 'application/json; charset=utf-8')
 		->withHeader('Cache-Control', 'no-store')
 		->withHeader('X-Asearch-Manual-Required', '1')
+		->withHeader('X-Asearch-Queue-Depth', (string) getAsearchQueueDepthTotal())
 		->withStatus(428);
 }
 
@@ -273,6 +274,7 @@ function renderAsearchManualLocked($response)
 		->withHeader('Content-Type', 'application/json; charset=utf-8')
 		->withHeader('Cache-Control', 'no-store')
 		->withHeader('X-Asearch-Query-Locked', '1')
+		->withHeader('X-Asearch-Queue-Depth', (string) getAsearchQueueDepthTotal())
 		->withHeader('Retry-After', '3')
 		->withStatus(423);
 }
@@ -430,6 +432,11 @@ function getAsearchManualLockKey()
 	$userID = User::getUserID();
 	if ($userID > 0) return "asearch:manual-lock:user:$userID";
 	return "asearch:manual-lock:session:" . session_id();
+}
+
+function getAsearchQueueDepthTotal()
+{
+	return AdvancedSearch::getAsearchQueueDepth(AdvancedSearch::KILL_QUEUE) + AdvancedSearch::getAsearchQueueDepth(AdvancedSearch::AGGREGATE_QUEUE) + AdvancedSearch::getAsearchQueueDepth(AdvancedSearch::ALLTIME_AGGREGATE_QUEUE);
 }
 
 function getAsearchManualQueryPart($queryType, $groupType)

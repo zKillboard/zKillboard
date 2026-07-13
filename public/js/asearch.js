@@ -793,10 +793,12 @@ function handleError(jqXHR, textStatus, errorThrown) {
 	if (textStatus == 'abort') return;
 	filtersStringified = null;
 	if (jqXHR.status == 428) {
+		updateAsearchQueueIndicator(jqXHR);
 		updateManualQueryRow(true, false);
 		return;
 	}
 	if (jqXHR.status == 423) {
+		updateAsearchQueueIndicator(jqXHR);
 		updateManualQueryRow(true, true);
 		return;
 	}
