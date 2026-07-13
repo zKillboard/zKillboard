@@ -189,7 +189,7 @@ function handler($request, $response, $args, $container) {
 			return withAsearchCacheHeaders($response, $cacheTime)->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 		}
 		$redis->setex($key, max(300, min($cacheTime, 14400)), "PROCESSING");
-		$redis->sadd($queryType == 'kills' ? 'queueAsearchKillsSet' : 'queueAsearchAggregationsSet', $key);
+		$redis->sadd($queryType == 'kills' ? 'queueAsearchKillsSet' : AdvancedSearch::getAggregateQueue($job), $key);
 		$redis->setex("$key:params", max(3600, $cacheTime), serialize($job));
 
 		$waits = 0;

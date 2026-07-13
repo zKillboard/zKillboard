@@ -8,6 +8,8 @@ class AdvancedSearch
     const LOG_CONTEXT_MAX_LENGTH = 12000;
     const AGGREGATE_CHUNK_SIZE = 1000000;
     const GROUP_LIMIT = 1000;
+    const AGGREGATE_QUEUE = 'queueAsearchAggregationsSet';
+    const ALLTIME_AGGREGATE_QUEUE = 'queueAsearchAlltimeAggregationsSet';
 
     static public $labels = [
         'location' => [
@@ -235,7 +237,14 @@ class AdvancedSearch
         $ttl = max(3600, (int) ($job['cacheTime'] ?? 900));
         $redis->setex($chunkKey, $ttl, "PROCESSING");
         $redis->setex("$chunkKey:params", $ttl, serialize($chunkJob));
-        $redis->sadd('queueAsearchAggregationsSet', $chunkKey);
+        $redis->sadd(self::ALLTIME_AGGREGATE_QUEUE, $chunkKey);
+    }
+
+    public static function getAggregateQueue($job)
+    {
+        if (self::shouldChunkAggregateJob($job)) return self::ALLTIME_AGGREGATE_QUEUE;
+        if (isset($job['aggregateChunk'])) return self::ALLTIME_AGGREGATE_QUEUE;
+        return self::AGGREGATE_QUEUE;
     }
 
     private static function addKillIDRange($query, $start, $end)

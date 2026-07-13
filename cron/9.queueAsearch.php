@@ -6,8 +6,10 @@ require_once '../init.php';
 
 if ($mt < 8) {
 	$queue = 'queueAsearchKillsSet';
+} else if ($mt < 48) {
+	$queue = AdvancedSearch::ALLTIME_AGGREGATE_QUEUE;
 } else {
-	$queue = 'queueAsearchAggregationsSet';
+	$queue = AdvancedSearch::AGGREGATE_QUEUE;
 }
 
 $minute = date('Hi');
