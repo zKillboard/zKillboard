@@ -140,7 +140,7 @@ function handler($request, $response, $args, $container) {
 		$collectionScope = ($queryType == "kills" ? implode(',', $coll) : $aggregateCollection);
 		$key = "asearch:$queryType:$groupType:$victimsOnly:$collectionScope:" . ($queryType == "kills" ? "$page:$sortKey:$sortBy:" : "") . md5($jsoned);
 		$cacheTag = "www,asearch,asearch:$key";
-		$manualLock = checkAsearchManualLock($response, $manualQuery, requiresAsearchManualQuery($epochButton, $startTime, $endTime), md5("$victimsOnly:$collectionScope:$page:$sortKey:$sortBy:$jsoned"), getAsearchManualQueryPart($queryType, $groupType));
+		$manualLock = checkAsearchManualLock($response, $manualQuery, requiresAsearchManualQuery($epochButton, $startTime, $endTime), md5("$victimsOnly:$page:$sortKey:$sortBy:$jsoned"), getAsearchManualQueryPart($queryType, $groupType));
 		if ($manualLock['response'] != null) return $manualLock['response'];
 		$job = [
 			'key' => $key,

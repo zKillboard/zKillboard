@@ -520,13 +520,6 @@ function doQuery(queryType = 'all', isRetry = false, manualStart = false) {
 	var requiresManualQuery = asearchRequiresManualQuery(f);
 	var pendingManualQuery = getPendingManualQuery();
 	var hasPendingManualQuery = pendingManualQuery != null;
-	if (!manualStart && !isRetry && pendingManualQuery != null && pendingManualQuery.stringified !== stringified) {
-		updateManualQueryRow(true, true);
-		if (!asearchHistoryNavigation) setHash();
-		clearAsearchResults(queryType);
-		filtersStringified = null;
-		return;
-	}
 	if (requiresManualQuery && pendingManualQuery != null && pendingManualQuery.stringified === stringified) {
 		asearchManualQueryStringified = stringified;
 	}
@@ -535,7 +528,7 @@ function doQuery(queryType = 'all', isRetry = false, manualStart = false) {
 		setPendingManualQuery(stringified);
 		hasPendingManualQuery = true;
 	}
-	updateManualQueryRow(requiresManualQuery, hasPendingManualQuery);
+	updateManualQueryRow(requiresManualQuery, requiresManualQuery && hasPendingManualQuery);
 	if (!isRetry && requiresManualQuery && asearchManualQueryStringified !== stringified) {
 		if (!asearchHistoryNavigation) setHash();
 		clearAsearchResults(queryType);
@@ -799,7 +792,7 @@ function handleError(jqXHR, textStatus, errorThrown) {
 	}
 	if (jqXHR.status == 423) {
 		updateAsearchQueueIndicator(jqXHR);
-		updateManualQueryRow(true, true);
+		updateManualQueryRow(asearchRequiresManualQuery(getFilters()), asearchRequiresManualQuery(getFilters()));
 		return;
 	}
 	if (jqXHR.status == 403) killlistmessage('Server Reinforced - no advanced search as this time.');
