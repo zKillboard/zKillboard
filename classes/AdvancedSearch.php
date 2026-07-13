@@ -137,7 +137,7 @@ class AdvancedSearch
     private static function shouldChunkAggregateJob($job)
     {
         if (isset($job['aggregateChunk'])) return false;
-        if (($job['aggregateCollection'] ?? '') != 'killmails') return false;
+        if (($job['aggregateCollection'] ?? '') == 'oneWeek') return false;
         if (!in_array($job['queryType'] ?? '', ['count', 'groups'], true)) return false;
         if (($job['queryType'] ?? '') == 'groups' && ($job['sortKey'] ?? '') == 'attackerCount') return false;
         return true;
@@ -187,10 +187,17 @@ class AdvancedSearch
     {
         global $mdb;
 
+        $collection = self::getAggregateCollection($job['aggregateCollection'] ?? 'killmails');
+        if ($collection == null) return [];
+
         $bounds = self::getKillIDBounds($job['query']);
         if ($bounds['max'] == null) {
-            $latest = $mdb->getCollection('killmails')->findOne([], ['projection' => ['killID' => 1, '_id' => 0], 'sort' => ['killID' => -1], 'maxTimeMS' => 5000]);
+            $latest = $mdb->getCollection($collection)->findOne([], ['projection' => ['killID' => 1, '_id' => 0], 'sort' => ['killID' => -1], 'maxTimeMS' => 5000]);
             $bounds['max'] = (int) ($latest['killID'] ?? 0) + 1;
+        }
+        if ($bounds['min'] == null) {
+            $oldest = $mdb->getCollection($collection)->findOne([], ['projection' => ['killID' => 1, '_id' => 0], 'sort' => ['killID' => 1], 'maxTimeMS' => 5000]);
+            $bounds['min'] = (int) ($oldest['killID'] ?? 1);
         }
 
         $min = max(1, (int) $bounds['min']);
@@ -214,7 +221,7 @@ class AdvancedSearch
 
     private static function getKillIDBounds($query)
     {
-        $bounds = ['min' => 1, 'max' => null];
+        $bounds = ['min' => null, 'max' => null];
         self::addKillIDBounds($query, $bounds);
         return $bounds;
     }
@@ -224,10 +231,14 @@ class AdvancedSearch
         if (!is_array($query)) return;
 
         if (isset($query['killID']) && is_array($query['killID'])) {
-            if (isset($query['killID']['$gte'])) $bounds['min'] = max($bounds['min'], (int) $query['killID']['$gte']);
-            if (isset($query['killID']['$gt'])) $bounds['min'] = max($bounds['min'], (int) $query['killID']['$gt'] + 1);
+            if (isset($query['killID']['$gte'])) $bounds['min'] = max($bounds['min'] ?? 1, (int) $query['killID']['$gte']);
+            if (isset($query['killID']['$gt'])) $bounds['min'] = max($bounds['min'] ?? 1, (int) $query['killID']['$gt'] + 1);
             if (isset($query['killID']['$lte'])) $bounds['max'] = min($bounds['max'] ?? PHP_INT_MAX, (int) $query['killID']['$lte'] + 1);
             if (isset($query['killID']['$lt'])) $bounds['max'] = min($bounds['max'] ?? PHP_INT_MAX, (int) $query['killID']['$lt']);
+        } else if (isset($query['killID'])) {
+            $killID = (int) $query['killID'];
+            $bounds['min'] = $killID;
+            $bounds['max'] = $killID + 1;
         }
 
         if (isset($query['$and']) && is_array($query['$and'])) {
@@ -248,14 +259,20 @@ class AdvancedSearch
         if (!$redis->setnx($chunkKey, "PROCESSING")) return;
         $redis->expire($chunkKey, $ttl);
         $redis->setex("$chunkKey:params", $ttl, serialize($chunkJob));
-        self::enqueueAsearchQueue(self::ALLTIME_AGGREGATE_QUEUE, $chunkKey);
+        self::enqueueAsearchQueue(self::getAggregateQueue($chunkJob), $chunkKey);
     }
 
     public static function getAggregateQueue($job)
     {
-        if (self::shouldChunkAggregateJob($job)) return self::ALLTIME_AGGREGATE_QUEUE;
-        if (isset($job['aggregateChunk'])) return self::ALLTIME_AGGREGATE_QUEUE;
+        if (self::isAlltimeAggregateJob($job)) return self::ALLTIME_AGGREGATE_QUEUE;
         return self::AGGREGATE_QUEUE;
+    }
+
+    private static function isAlltimeAggregateJob($job)
+    {
+        if (($job['aggregateCollection'] ?? '') != 'killmails') return false;
+        $bounds = self::getKillIDBounds($job['query'] ?? []);
+        return $bounds['min'] == null && $bounds['max'] == null;
     }
 
     public static function enqueueAsearchQueue($queue, $key)
