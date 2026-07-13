@@ -8,8 +8,12 @@ class AdvancedSearch
     const LOG_CONTEXT_MAX_LENGTH = 12000;
     const DEFAULT_AGGREGATE_CHUNK_SIZE = 1000000;
     const GROUP_LIMIT = 1000;
-    const AGGREGATE_QUEUE = 'queueAsearchAggregationsSet';
-    const ALLTIME_AGGREGATE_QUEUE = 'queueAsearchAlltimeAggregationsSet';
+    const KILL_QUEUE = 'queueAsearchKillsList';
+    const AGGREGATE_QUEUE = 'queueAsearchAggregationsList';
+    const ALLTIME_AGGREGATE_QUEUE = 'queueAsearchAlltimeAggregationsList';
+    const LEGACY_KILL_QUEUE = 'queueAsearchKillsSet';
+    const LEGACY_AGGREGATE_QUEUE = 'queueAsearchAggregationsSet';
+    const LEGACY_ALLTIME_AGGREGATE_QUEUE = 'queueAsearchAlltimeAggregationsSet';
 
     static public $labels = [
         'location' => [
@@ -235,17 +239,16 @@ class AdvancedSearch
     {
         global $redis;
 
-        if ($redis->get($chunkKey) === "PROCESSING" || $redis->get("$chunkKey:params") !== false) return;
-
         $chunkJob = $job;
         $chunkJob['key'] = $chunkKey;
         $chunkJob['aggregateChunk'] = true;
         $chunkJob['query'] = self::addKillIDRange($job['query'], $start, $end);
 
         $ttl = max(3600, (int) ($job['cacheTime'] ?? 900));
-        $redis->setex($chunkKey, $ttl, "PROCESSING");
+        if (!$redis->setnx($chunkKey, "PROCESSING")) return;
+        $redis->expire($chunkKey, $ttl);
         $redis->setex("$chunkKey:params", $ttl, serialize($chunkJob));
-        $redis->sadd(self::ALLTIME_AGGREGATE_QUEUE, $chunkKey);
+        self::enqueueAsearchQueue(self::ALLTIME_AGGREGATE_QUEUE, $chunkKey);
     }
 
     public static function getAggregateQueue($job)
@@ -253,6 +256,43 @@ class AdvancedSearch
         if (self::shouldChunkAggregateJob($job)) return self::ALLTIME_AGGREGATE_QUEUE;
         if (isset($job['aggregateChunk'])) return self::ALLTIME_AGGREGATE_QUEUE;
         return self::AGGREGATE_QUEUE;
+    }
+
+    public static function enqueueAsearchQueue($queue, $key)
+    {
+        global $redis;
+
+        $redis->rpush($queue, $key);
+    }
+
+    public static function popAsearchQueue($queue)
+    {
+        global $redis;
+
+        $key = $redis->lpop($queue);
+        if ($key !== false && $key !== null) return $key;
+
+        $legacyQueue = self::getLegacyAsearchQueue($queue);
+        if ($legacyQueue == null) return null;
+        return $redis->spop($legacyQueue);
+    }
+
+    public static function getAsearchQueueDepth($queue)
+    {
+        global $redis;
+
+        $depth = (int) $redis->llen($queue);
+        $legacyQueue = self::getLegacyAsearchQueue($queue);
+        if ($legacyQueue != null) $depth += (int) $redis->scard($legacyQueue);
+        return $depth;
+    }
+
+    private static function getLegacyAsearchQueue($queue)
+    {
+        if ($queue == self::KILL_QUEUE) return self::LEGACY_KILL_QUEUE;
+        if ($queue == self::AGGREGATE_QUEUE) return self::LEGACY_AGGREGATE_QUEUE;
+        if ($queue == self::ALLTIME_AGGREGATE_QUEUE) return self::LEGACY_ALLTIME_AGGREGATE_QUEUE;
+        return null;
     }
 
     private static function addKillIDRange($query, $start, $end)

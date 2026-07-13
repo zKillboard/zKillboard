@@ -171,7 +171,7 @@ function handler($request, $response, $args, $container) {
 				$result = unserialize($rawResult);
 				$redis->del("$key:result");
 				$redis->del($key);
-				if ($result === null) return renderAsearchProcessing($response, $cacheTag, $queryType);
+				if ($result === null) return renderAsearchProcessing($response, $cacheTag, $queryType, $job);
 				return renderAsearchResult($response, $container, $cacheTag, $job, $result, $labelGroupMaps);
 			}
 			$ret = (string) $redis->get($key);
@@ -179,7 +179,7 @@ function handler($request, $response, $args, $container) {
 				usleep(100000); // 100ms
 				$waits++;
 				if ($waits > 50) { // 5 seconds
-					return renderAsearchProcessing($response, $cacheTag, $queryType);
+					return renderAsearchProcessing($response, $cacheTag, $queryType, $job);
 				}
 			}
 		} while ($ret == "PROCESSING");
@@ -188,9 +188,10 @@ function handler($request, $response, $args, $container) {
 			$response->getBody()->write($ret);
 			return withAsearchCacheHeaders($response, $cacheTime)->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 		}
-		$redis->setex($key, max(300, min($cacheTime, 14400)), "PROCESSING");
-		$redis->sadd($queryType == 'kills' ? 'queueAsearchKillsSet' : AdvancedSearch::getAggregateQueue($job), $key);
+		if (!$redis->setnx($key, "PROCESSING")) return renderAsearchProcessing($response, $cacheTag, $queryType, $job);
+		$redis->expire($key, max(300, min($cacheTime, 14400)));
 		$redis->setex("$key:params", max(3600, $cacheTime), serialize($job));
+		AdvancedSearch::enqueueAsearchQueue($queryType == 'kills' ? AdvancedSearch::KILL_QUEUE : AdvancedSearch::getAggregateQueue($job), $key);
 
 		$waits = 0;
 		do {
@@ -200,13 +201,13 @@ function handler($request, $response, $args, $container) {
 				$result = unserialize($rawResult);
 				$redis->del("$key:result");
 				$redis->del($key);
-				if ($result === null) return renderAsearchProcessing($response, $cacheTag, $queryType);
+				if ($result === null) return renderAsearchProcessing($response, $cacheTag, $queryType, $job);
 				return renderAsearchResult($response, $container, $cacheTag, $job, $result, $labelGroupMaps);
 			}
 			$waits++;
 		} while ($waits <= 50);
 
-		return renderAsearchProcessing($response, $cacheTag, $queryType);
+		return renderAsearchProcessing($response, $cacheTag, $queryType, $job);
 	} catch (Exception $ex) {
 		if ($ex->getCode() != 50) Util::zout(print_r($ex, true));
 		else AdvancedSearch::logTimeout('asearch handler', [
@@ -231,13 +232,13 @@ function handler($request, $response, $args, $container) {
 	} 
 }
 
-function renderAsearchProcessing($response, $cacheTag, $queryType)
+function renderAsearchProcessing($response, $cacheTag, $queryType, $job = null)
 {
 	global $redis;
 
 	$isJson = $queryType == 'kills' || $queryType == 'count';
-	$queue = $queryType == 'kills' ? 'queueAsearchKillsSet' : 'queueAsearchAggregationsSet';
-	$queueDepth = (int) $redis->scard($queue);
+	$queue = $queryType == 'kills' ? AdvancedSearch::KILL_QUEUE : ($job == null ? AdvancedSearch::AGGREGATE_QUEUE : AdvancedSearch::getAggregateQueue($job));
+	$queueDepth = AdvancedSearch::getAsearchQueueDepth($queue);
 	return $response
 		->withHeader('Content-Type', 'text/plain; charset=utf-8')
 		->withHeader('Cache-Control', 'no-store')

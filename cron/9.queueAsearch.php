@@ -5,7 +5,7 @@ $mt = 64; $workerID = $mt; do { $mt--; $workerID = $mt; $pid = pcntl_fork(); } w
 require_once '../init.php';
 
 if ($mt < 8) {
-	$queue = 'queueAsearchKillsSet';
+	$queue = AdvancedSearch::KILL_QUEUE;
 } else if ($mt < 48) {
 	$queue = AdvancedSearch::ALLTIME_AGGREGATE_QUEUE;
 } else {
@@ -20,7 +20,7 @@ while ($minute == date('Hi')) {
         if ($redis->get("zkb:reinforced") == true) break;
         if ($redis->ping() != 1) connectRedis();
 
-		$key = $redis->spop($queue);
+		$key = AdvancedSearch::popAsearchQueue($queue);
         if ($key == null) { sleep(1); continue; }
         if ($redis->get("$key:result") !== false) continue;
 
@@ -37,7 +37,7 @@ while ($minute == date('Hi')) {
 
         if ($redis->ping() != 1) connectRedis();
         if ($result === null) {
-            $redis->sadd($queue, $key);
+            AdvancedSearch::enqueueAsearchQueue($queue, $key);
             usleep(500000);
             continue;
         }
