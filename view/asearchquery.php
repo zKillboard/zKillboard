@@ -140,8 +140,9 @@ function handler($request, $response, $args, $container) {
 		$collectionScope = ($queryType == "kills" ? implode(',', $coll) : $aggregateCollection);
 		$key = "asearch:$queryType:$groupType:$victimsOnly:$collectionScope:" . ($queryType == "kills" ? "$page:$sortKey:$sortBy:" : "") . md5($jsoned);
 		$cacheTag = "www,asearch,asearch:$key";
-		$manualLock = checkAsearchManualLock($response, $manualQuery, requiresAsearchManualQuery($epochButton, $startTime, $endTime), md5("$victimsOnly:$page:$sortKey:$sortBy:$jsoned"), getAsearchManualQueryPart($queryType, $groupType));
-		if ($manualLock['response'] != null) return $manualLock['response'];
+		if (requiresAsearchManualQuery($epochButton, $startTime, $endTime) && !$manualQuery) {
+			return renderAsearchManualRequired($response);
+		}
 		$job = [
 			'key' => $key,
 			'queryType' => $queryType,
@@ -158,13 +159,11 @@ function handler($request, $response, $args, $container) {
 			'types' => $types,
 			'queryParams' => $queryParams,
 			'itemJoin' => AdvancedSearch::getSelectedFromBase('items-', $buttons),
-			'cacheTime' => $cacheTime,
-			'manualLock' => $manualLock
+			'cacheTime' => $cacheTime
 		];
 		if ($queryType != 'kills' && $queryType != 'count') {
 			$rendered = $redis->get("$queryType:$key");
 			if ($rendered !== false && $rendered !== null && trim($rendered) !== "") {
-				finishAsearchManualQueryPart($manualLock);
 				$response->getBody()->write($rendered);
 				return withAsearchCacheHeaders($response, $cacheTime)->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 			}
@@ -192,7 +191,6 @@ function handler($request, $response, $args, $container) {
 		} while ($ret == "PROCESSING");
 
 		if ($ret != "") {
-			finishAsearchManualQueryPart($manualLock);
 			$response->getBody()->write($ret);
 			return withAsearchCacheHeaders($response, $cacheTime)->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 		}
@@ -256,7 +254,7 @@ function renderAsearchProcessing($response, $cacheTag, $queryType, $job = null)
 		->withStatus(202);
 }
 
-function renderAsearchManualRequired($response, $queryType)
+function renderAsearchManualRequired($response)
 {
 	$response->getBody()->write(json_encode(['error' => 'Manual query required'], JSON_PRETTY_PRINT));
 	return $response
@@ -265,18 +263,6 @@ function renderAsearchManualRequired($response, $queryType)
 		->withHeader('X-Asearch-Manual-Required', '1')
 		->withHeader('X-Asearch-Queue-Depth', (string) getAsearchQueueDepthTotal())
 		->withStatus(428);
-}
-
-function renderAsearchManualLocked($response)
-{
-	$response->getBody()->write(json_encode(['error' => 'Prior query still running'], JSON_PRETTY_PRINT));
-	return $response
-		->withHeader('Content-Type', 'application/json; charset=utf-8')
-		->withHeader('Cache-Control', 'no-store')
-		->withHeader('X-Asearch-Query-Locked', '1')
-		->withHeader('X-Asearch-Queue-Depth', (string) getAsearchQueueDepthTotal())
-		->withHeader('Retry-After', '3')
-		->withStatus(423);
 }
 
 function renderAsearchResult($response, $container, $cacheTag, $job, $result, $labelGroupMaps)
@@ -289,7 +275,6 @@ function renderAsearchResult($response, $container, $cacheTag, $job, $result, $l
 	if ($job['queryType'] == 'kills' || $job['queryType'] == 'count') {
 		$jsoned = json_encode($result, true);
 		$redis->setex($key, $redisCacheTime, $jsoned);
-		finishAsearchManualQueryPart($job['manualLock'] ?? []);
 		$response->getBody()->write($jsoned);
 		return withAsearchCacheHeaders($response, $cacheTime)->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 	}
@@ -330,7 +315,6 @@ function renderAsearchResult($response, $container, $cacheTag, $job, $result, $l
 
 	$redis->setex($job['queryType'] . ":$key", $redisCacheTime, trim($rendered));
 	$redis->del($key);
-	finishAsearchManualQueryPart($job['manualLock'] ?? []);
 	$response->getBody()->write($rendered);
 	return withAsearchCacheHeaders($response, $cacheTime)->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
 }
@@ -374,92 +358,9 @@ function requiresAsearchManualQuery($epochButton, $startTime, $endTime)
 	return ($endTime - $startTime) >= (86400 * 183);
 }
 
-function checkAsearchManualLock($response, $manualQuery, $manualRequired, $signature, $part)
-{
-	global $redis;
-
-	$lockKey = getAsearchManualLockKey();
-	$raw = $redis->get($lockKey);
-	$lock = $raw ? unserialize($raw) : null;
-	if (is_array($lock) && (string) ($lock['signature'] ?? '') != $signature) {
-		return ['response' => renderAsearchManualLocked($response)];
-	}
-
-	if ($manualRequired && !$manualQuery && !is_array($lock)) {
-		return ['response' => renderAsearchManualRequired($response, '')];
-	}
-
-	if ($manualRequired && $manualQuery && !is_array($lock)) {
-		$lock = ['signature' => $signature, 'created' => time()];
-		$redis->setex($lockKey, 86400, serialize($lock));
-		$redis->del("$lockKey:done");
-		$redis->del("$lockKey:expected");
-		foreach (getAsearchManualExpectedParts() as $expectedPart) $redis->sadd("$lockKey:expected", $expectedPart);
-		$redis->expire("$lockKey:expected", 86400);
-		$redis->expire("$lockKey:done", 86400);
-	}
-
-	return [
-		'response' => null,
-		'lockKey' => is_array($lock) ? $lockKey : null,
-		'part' => is_array($lock) ? $part : null
-	];
-}
-
-function finishAsearchManualQueryPart($manualLock)
-{
-	global $redis;
-
-	if (!is_array($manualLock) || empty($manualLock['lockKey']) || empty($manualLock['part'])) return;
-
-	$lockKey = $manualLock['lockKey'];
-	$redis->sadd("$lockKey:done", $manualLock['part']);
-	$redis->expire("$lockKey:done", 86400);
-
-	$expected = (int) $redis->scard("$lockKey:expected");
-	$done = (int) $redis->scard("$lockKey:done");
-	if ($expected > 0 && $done >= $expected) {
-		$redis->del($lockKey);
-		$redis->del("$lockKey:done");
-		$redis->del("$lockKey:expected");
-	}
-}
-
-function getAsearchManualLockKey()
-{
-	$userID = User::getUserID();
-	if ($userID > 0) return "asearch:manual-lock:user:$userID";
-	return "asearch:manual-lock:session:" . session_id();
-}
-
 function getAsearchQueueDepthTotal()
 {
 	return AdvancedSearch::getAsearchQueueDepth(AdvancedSearch::KILL_QUEUE) + AdvancedSearch::getAsearchQueueDepth(AdvancedSearch::AGGREGATE_QUEUE) + AdvancedSearch::getAsearchQueueDepth(AdvancedSearch::ALLTIME_AGGREGATE_QUEUE);
-}
-
-function getAsearchManualQueryPart($queryType, $groupType)
-{
-	if ($queryType == 'groups') return "groups:$groupType";
-	return $queryType;
-}
-
-function getAsearchManualExpectedParts()
-{
-	return [
-		'kills',
-		'count',
-		'labels',
-		'distincts',
-		'groups:character',
-		'groups:corporation',
-		'groups:alliance',
-		'groups:faction',
-		'groups:shipType',
-		'groups:group',
-		'groups:location',
-		'groups:solarSystem',
-		'groups:region'
-	];
 }
 
 function getAsearchAggregateCollection($startTime, $now, $epochButton = '')
