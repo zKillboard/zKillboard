@@ -651,8 +651,21 @@ function parseAsearchDate(value) {
 }
 
 function updateManualQueryRow(displayed, disabled) {
+	var isDisabled = disabled == true;
 	$("#manualQueryRow").toggle(displayed);
-	$("#manualQueryBtn").prop('disabled', disabled == true).toggleClass('disabled', disabled == true);
+	setAsearchControlsDisabled(isDisabled);
+	$("#manualQueryBtn").prop('disabled', isDisabled).toggleClass('disabled', isDisabled);
+}
+
+function setAsearchControlsDisabled(disabled) {
+	var content = $("#asearchcontent");
+	content.find("button, input, select, textarea").prop('disabled', disabled);
+	if (!disabled && $(".tfilter.btn-primary").first().val() != 'custom') {
+		$("#dtstart, #dtend").prop('disabled', true);
+	}
+	content.find("a.btn, span.btn, div.btn").toggleClass('disabled', disabled);
+	if (disabled) content.find("a.btn, span.btn, div.btn").attr('aria-disabled', 'true');
+	else content.find("a.btn, span.btn, div.btn").removeAttr('aria-disabled');
 }
 
 function getPendingManualQuery() {
