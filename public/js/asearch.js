@@ -23,6 +23,7 @@ function zkbInitAsearch() {
 	allowChange = true;
 	first_load = true;
 	filtersStringified = undefined;
+	asearchManualQueryStringified = null;
 	radios = { sort: { sortBy: 'date', sortDir: 'desc' } };
 	asfilter = { location: [], attackers: [], neutrals: [], victims: [], items: [], sort: { sortBy: 'date', sortDir: 'desc' } };
 	checkCharID();
@@ -61,6 +62,10 @@ function loadasearch() {
 	$("#btn_export").off('click.zkb-asearch').on('click.zkb-asearch', btn_export);
 	$("#exportCsv").off('click.zkb-asearch').on('click.zkb-asearch', exportCsv);
 	$("#toggleGroupLayout").off('click.zkb-asearch').on('click.zkb-asearch', toggleGroupLayout);
+	$("#manualQueryBtn").off('click.zkb-asearch').on('click.zkb-asearch', function (event) {
+		if (event) event.preventDefault();
+		doQuery('all', false, true);
+	});
 	$(".tfilter").off('click.zkb-asearch').on('click.zkb-asearch', selectTimeFilter);
 	$(".filter-btn").off('click.zkb-asearch').on('click.zkb-asearch', toggleFilterBtn);
 	$(".radio-btn").not(".tfilter").off('click.zkb-asearch').on('click.zkb-asearch', toggleRadioBtn);
@@ -98,6 +103,7 @@ function asearchPopstate() {
 		else setFilters();
 		$(".btn-page.btn-primary:not(.notafilter)").click();
 		filtersStringified = undefined;
+		asearchManualQueryStringified = null;
 		doQuery();
 	} finally {
 		asearchHistoryNavigation = false;
@@ -501,7 +507,9 @@ var filtersStringified = undefined;
 var asearchRetryTimer = null;
 var asearchRetryQueryType = null;
 var asearchBatch = null;
-function doQuery(queryType = 'all', isRetry = false) {
+var asearchManualQueryStringified = null;
+var asearchManualQueryStorageKey = 'zkb:asearch:manual-query';
+function doQuery(queryType = 'all', isRetry = false, manualStart = false) {
 	if (first_load) return;
 	if (!allowChange) return;
 
@@ -509,6 +517,24 @@ function doQuery(queryType = 'all', isRetry = false) {
 
 	var f = getFilters();
 	var stringified = JSON.stringify(f);
+	var requiresManualQuery = asearchRequiresManualQuery(f);
+	var pendingManualQuery = getPendingManualQuery();
+	var hasPendingManualQuery = pendingManualQuery != null;
+	if (requiresManualQuery && pendingManualQuery != null && pendingManualQuery.stringified === stringified) {
+		asearchManualQueryStringified = stringified;
+	}
+	if (manualStart) {
+		asearchManualQueryStringified = stringified;
+		setPendingManualQuery(stringified);
+		hasPendingManualQuery = true;
+	}
+	updateManualQueryRow(requiresManualQuery, hasPendingManualQuery);
+	if (!isRetry && requiresManualQuery && asearchManualQueryStringified !== stringified) {
+		if (!asearchHistoryNavigation) setHash();
+		clearAsearchResults(queryType);
+		filtersStringified = null;
+		return;
+	}
 	if (!isRetry && filtersStringified === stringified) {
 		return;
 	}
@@ -595,9 +621,65 @@ function doQuery(queryType = 'all', isRetry = false) {
 	}
 
 	$.when.apply($, batch).always(function () {
-		if (batch === asearchBatch && asearchRetryTimer == null) updateAsearchQueueIndicator();
+		if (batch === asearchBatch && asearchRetryTimer == null) {
+			updateAsearchQueueIndicator();
+			finishPendingManualQuery(stringified);
+		}
 	});
 	if (!asearchHistoryNavigation) setHash();
+}
+
+function asearchRequiresManualQuery(filters) {
+	if (filters.epochbtn == 'alltime') return true;
+	if (filters.epochbtn != 'custom') return false;
+
+	var start = parseAsearchDate(filters.epoch.start);
+	if (start == null) return false;
+	var end = parseAsearchDate(filters.epoch.end);
+	if (end == null) end = new Date();
+
+	return (end.getTime() - start.getTime()) >= (86400 * 183 * 1000);
+}
+
+function parseAsearchDate(value) {
+	if (value == null || value == '') return null;
+	var parsed = new Date(value);
+	return isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function updateManualQueryRow(displayed, disabled) {
+	$("#manualQueryRow").toggle(displayed);
+	$("#manualQueryBtn").prop('disabled', disabled == true).toggleClass('disabled', disabled == true);
+}
+
+function getPendingManualQuery() {
+	var raw = localStorage.getItem(asearchManualQueryStorageKey);
+	if (raw == null || raw == '') return null;
+	try {
+		var pending = JSON.parse(raw);
+		if (pending.created == null || (Date.now() - pending.created) > (86400 * 1000)) {
+			localStorage.removeItem(asearchManualQueryStorageKey);
+			return null;
+		}
+		return pending;
+	} catch (e) {
+		localStorage.removeItem(asearchManualQueryStorageKey);
+		return null;
+	}
+}
+
+function setPendingManualQuery(stringified) {
+	localStorage.setItem(asearchManualQueryStorageKey, JSON.stringify({
+		stringified: stringified,
+		created: Date.now()
+	}));
+}
+
+function finishPendingManualQuery(stringified) {
+	var pending = getPendingManualQuery();
+	if (pending == null || pending.stringified !== stringified) return;
+	localStorage.removeItem(asearchManualQueryStorageKey);
+	updateManualQueryRow(asearchRequiresManualQuery(getFilters()), false);
 }
 
 function getFilters() {
