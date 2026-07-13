@@ -34,6 +34,11 @@ while ($minute == date('Hi')) {
         $result = AdvancedSearch::runQueuedQuery($job);
 
         if ($redis->ping() != 1) connectRedis();
+        if ($result === null) {
+            $redis->sadd($queue, $key);
+            usleep(500000);
+            continue;
+        }
         $redis->setex("$key:result", (int) ($job['cacheTime'] ?? 900), serialize($result));
         $redis->del("$key:params");
         $redis->del($key);

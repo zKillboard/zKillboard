@@ -6,6 +6,8 @@ class AdvancedSearch
 {
     const MAX_ITEM_HISTORY_KILLIDS = 25000;
     const LOG_CONTEXT_MAX_LENGTH = 12000;
+    const AGGREGATE_CHUNK_SIZE = 1000000;
+    const GROUP_LIMIT = 1000;
 
     static public $labels = [
         'location' => [
@@ -110,6 +112,8 @@ class AdvancedSearch
                 return ['kills' => []];
             }
         }
+        if (self::shouldChunkAggregateJob($job)) return self::runChunkedAggregateQuery($job);
+
         if ($job['queryType'] == 'count') {
             $result = self::getSums($job['groupType'] . 'ID', $job['query'], $job['victimsOnly'], false, true, $job['aggregateCollection'], $maxTimeMS);
             unset($result['_id']);
@@ -122,6 +126,164 @@ class AdvancedSearch
         if ($job['queryType'] == 'labels') return self::getLabels($job['query'], $job['victimsOnly']);
         if ($job['queryType'] == 'distincts') return self::getDistincts($job['query'], $job['filter'], $job['victimsOnly'], $job['aggregateCollection'], $maxTimeMS);
         return [];
+    }
+
+    private static function shouldChunkAggregateJob($job)
+    {
+        if (isset($job['aggregateChunk'])) return false;
+        if (($job['aggregateCollection'] ?? '') != 'killmails') return false;
+        if (!in_array($job['queryType'] ?? '', ['count', 'groups'], true)) return false;
+        if (($job['queryType'] ?? '') == 'groups' && ($job['sortKey'] ?? '') == 'attackerCount') return false;
+        return true;
+    }
+
+    private static function runChunkedAggregateQuery($job)
+    {
+        global $redis;
+
+        $chunks = self::buildAggregateChunks($job);
+        if (sizeof($chunks) <= 1) {
+            $job['aggregateChunk'] = true;
+            return self::runQueuedQuery($job);
+        }
+
+        $results = [];
+        $pending = 0;
+        foreach ($chunks as $chunk) {
+            $chunkKey = $job['key'] . ':chunk:' . $chunk[0] . ':' . $chunk[1];
+            $rawResult = $redis->get("$chunkKey:result");
+            if ($rawResult !== false && $rawResult !== null) {
+                $result = unserialize($rawResult);
+                if (is_array($result) && !empty($result['timedOut'])) {
+                    $redis->del("$chunkKey:result");
+                } else {
+                    $results[] = $result;
+                    continue;
+                }
+            }
+
+            self::queueAggregateChunk($job, $chunkKey, $chunk[0], $chunk[1]);
+            $pending++;
+        }
+
+        if ($pending > 0) return null;
+
+        foreach ($chunks as $chunk) {
+            $chunkKey = $job['key'] . ':chunk:' . $chunk[0] . ':' . $chunk[1];
+            $redis->del("$chunkKey:result");
+        }
+
+        if ($job['queryType'] == 'count') return self::mergeChunkedSums($results);
+        return self::mergeChunkedGroups($results, $job['groupType'] . 'ID', $job['sortKey'], $job['sortBy']);
+    }
+
+    private static function buildAggregateChunks($job)
+    {
+        global $mdb;
+
+        $bounds = self::getKillIDBounds($job['query']);
+        if ($bounds['max'] == null) {
+            $latest = $mdb->getCollection('killmails')->findOne([], ['projection' => ['killID' => 1, '_id' => 0], 'sort' => ['killID' => -1], 'maxTimeMS' => 5000]);
+            $bounds['max'] = (int) ($latest['killID'] ?? 0) + 1;
+        }
+
+        $min = max(1, (int) $bounds['min']);
+        $max = (int) $bounds['max'];
+        if ($max <= $min) return [];
+
+        $chunks = [];
+        for ($start = $min; $start < $max; $start += self::AGGREGATE_CHUNK_SIZE) {
+            $chunks[] = [$start, min($start + self::AGGREGATE_CHUNK_SIZE, $max)];
+        }
+        return $chunks;
+    }
+
+    private static function getKillIDBounds($query)
+    {
+        $bounds = ['min' => 1, 'max' => null];
+        self::addKillIDBounds($query, $bounds);
+        return $bounds;
+    }
+
+    private static function addKillIDBounds($query, &$bounds)
+    {
+        if (!is_array($query)) return;
+
+        if (isset($query['killID']) && is_array($query['killID'])) {
+            if (isset($query['killID']['$gte'])) $bounds['min'] = max($bounds['min'], (int) $query['killID']['$gte']);
+            if (isset($query['killID']['$gt'])) $bounds['min'] = max($bounds['min'], (int) $query['killID']['$gt'] + 1);
+            if (isset($query['killID']['$lte'])) $bounds['max'] = min($bounds['max'] ?? PHP_INT_MAX, (int) $query['killID']['$lte'] + 1);
+            if (isset($query['killID']['$lt'])) $bounds['max'] = min($bounds['max'] ?? PHP_INT_MAX, (int) $query['killID']['$lt']);
+        }
+
+        if (isset($query['$and']) && is_array($query['$and'])) {
+            foreach ($query['$and'] as $part) self::addKillIDBounds($part, $bounds);
+        }
+    }
+
+    private static function queueAggregateChunk($job, $chunkKey, $start, $end)
+    {
+        global $redis;
+
+        if ($redis->get($chunkKey) === "PROCESSING" || $redis->get("$chunkKey:params") !== false) return;
+
+        $chunkJob = $job;
+        $chunkJob['key'] = $chunkKey;
+        $chunkJob['aggregateChunk'] = true;
+        $chunkJob['query'] = self::addKillIDRange($job['query'], $start, $end);
+
+        $ttl = max(3600, (int) ($job['cacheTime'] ?? 900));
+        $redis->setex($chunkKey, $ttl, "PROCESSING");
+        $redis->setex("$chunkKey:params", $ttl, serialize($chunkJob));
+        $redis->sadd('queueAsearchAggregationsSet', $chunkKey);
+    }
+
+    private static function addKillIDRange($query, $start, $end)
+    {
+        $range = ['killID' => ['$gte' => (int) $start, '$lt' => (int) $end]];
+        if (empty($query)) return $range;
+        if (isset($query['$and']) && is_array($query['$and'])) {
+            $query['$and'][] = $range;
+            return $query;
+        }
+        return ['$and' => [$query, $range]];
+    }
+
+    private static function mergeChunkedSums($results)
+    {
+        $merged = self::getEmptySums();
+        foreach ($results as $result) {
+            foreach (['isk', 'droppable', 'fitted', 'dropped', 'destroyed', 'kills'] as $field) {
+                $merged[$field] += $result[$field] ?? 0;
+            }
+        }
+        unset($merged['_id']);
+        return $merged;
+    }
+
+    private static function mergeChunkedGroups($results, $groupByColumn, $sortKey, $sortBy)
+    {
+        $merged = [];
+        foreach ($results as $result) {
+            if (!is_array($result)) continue;
+            foreach ($result as $row) {
+                if (!isset($row[$groupByColumn])) continue;
+                $id = (int) $row[$groupByColumn];
+                if ($id == 0) continue;
+                if (!isset($merged[$id])) $merged[$id] = [$groupByColumn => $id, 'kills' => 0];
+                $merged[$id]['kills'] += $row['kills'] ?? 0;
+            }
+        }
+
+        $merged = array_values($merged);
+        usort($merged, function ($a, $b) use ($sortBy) {
+            if ($a['kills'] == $b['kills']) return 0;
+            return ($a['kills'] < $b['kills'] ? -1 : 1) * $sortBy;
+        });
+        $merged = array_slice($merged, 0, self::GROUP_LIMIT);
+        $merged = Util::removeDQed($merged, $groupByColumn, 500);
+        Info::addInfo($merged);
+        return $merged;
     }
 
     public static function buildItemHistoryQuery($queryParams, $queries, $key = 'items', $joinType = 'and', $maxTimeMS = 5000)
@@ -342,7 +504,7 @@ class AdvancedSearch
                 $pipeline[] = ['$group' => ['_id' => $groupValueField, 'kills' => ['$sum' => 1]]];
             }
             $pipeline[] = ['$sort' => ['kills' => $sortBy]];
-            $pipeline[] = ['$limit' => 550];
+            $pipeline[] = ['$limit' => self::GROUP_LIMIT];
             $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
 
             $options = ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true];
