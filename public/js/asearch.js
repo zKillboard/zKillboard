@@ -520,6 +520,13 @@ function doQuery(queryType = 'all', isRetry = false, manualStart = false) {
 	var requiresManualQuery = asearchRequiresManualQuery(f);
 	var pendingManualQuery = getPendingManualQuery();
 	var hasPendingManualQuery = pendingManualQuery != null;
+	if (!manualStart && !isRetry && pendingManualQuery != null && pendingManualQuery.stringified !== stringified) {
+		updateManualQueryRow(true, true);
+		if (!asearchHistoryNavigation) setHash();
+		clearAsearchResults(queryType);
+		filtersStringified = null;
+		return;
+	}
 	if (requiresManualQuery && pendingManualQuery != null && pendingManualQuery.stringified === stringified) {
 		asearchManualQueryStringified = stringified;
 	}
@@ -539,6 +546,9 @@ function doQuery(queryType = 'all', isRetry = false, manualStart = false) {
 		return;
 	}
 	if (!isRetry) filtersStringified = stringified;
+	if (requiresManualQuery && asearchManualQueryStringified === stringified) {
+		f.manualQuery = true;
+	}
 
 	asearchBatch = null;
 	while (xhrs.length > 0) {
@@ -782,6 +792,14 @@ function handleError(jqXHR, textStatus, errorThrown) {
 	//console.log(jqXHR.status);
 	if (textStatus == 'abort') return;
 	filtersStringified = null;
+	if (jqXHR.status == 428) {
+		updateManualQueryRow(true, false);
+		return;
+	}
+	if (jqXHR.status == 423) {
+		updateManualQueryRow(true, true);
+		return;
+	}
 	if (jqXHR.status == 403) killlistmessage('Server Reinforced - no advanced search as this time.');
 	else if (jqXHR.status == 408) killlistmessage('Query took too long and timed out.');
 	else killlistmessage(errorThrown + ' ' + textStatus);
