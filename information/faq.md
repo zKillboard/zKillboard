@@ -155,13 +155,11 @@ We never write fittings automatically or without your explicit action.
 
 ### [#](#namechange) I changed my character's name - how do I update it?
 
-**Quick update method:**
+If you recently had your name updated by CCP / FC and want to see it reflected on zKill, please log into zKill. Your name will be added to the queue and updated shortly.
 
-1. Log out of zKillboard
-2. Log back in with your character
-3. Allow 1-2 hours for caches to clear
+Once a name has been updated, it may take a few hours for the update to be fully reflected in caches.
 
-The ESI API doesn't always reflect name changes immediately, but logging in forces an update.
+Also, once a month all names will be iterated and checked for updates.
 
 ---
 
