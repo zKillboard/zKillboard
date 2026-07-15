@@ -1268,11 +1268,10 @@ let sortOrder = 1;
 let sortColumn = 0;
 function doSort(column, doHide)
 {
-    let count = $(".item_row").length;
-    if (count >= 250 && confirm(`Are you sure? There are ${count} rows to sort! This could result in high cpu usage which could cause your web application to temporarily lock up during the sort and possible increased battery drainage (e.g. phones, tablets, laptops).`) === false) return;
     if (doHide) $(".hide-when-sorted").hide();
     else $(".hide-when-sorted").show();
 
+    let order;
     if (column != sortColumn) {
         if (column >= 2) order = -1;
         else order = 1;
@@ -1288,35 +1287,35 @@ function doSort(column, doHide)
 }
 
 function sortItemTable(column, order) {
-    var table, rows, switching, i, x, y, shouldSwitch;  
-    table = document.getElementById("itemTable");
-    switching = true;
-    haveSwitched = false;
+    const table = document.getElementById("itemTable");
+    if (!table || !table.tBodies.length) return;
 
-    do {
-        haveSwitched = false;
-        rows = table.rows;
-        for (i = 1; i < (rows.length - 1); i++) {
-            x = rows[i].getElementsByTagName("td")[column];
-            if (x == undefined) x = rows[i].getElementsByTagName("th")[column];
-            y = rows[i + 1].getElementsByTagName("td")[column];
-            if (y == undefined) y = rows[i + 1].getElementsByTagName("th")[column];
-            if (!x || !y) continue;
-            let v1 = x.getAttribute('data-order');
-            v1 = (v1 == null) ? x.innerHTML : parseFloat(v1);
-            if (isNaN(v1)) v1 = x.getAttribute('data-order');
-            let v2 = y.getAttribute('data-order');
-            v2 = (v2 == null) ? y.innerHTML : parseFloat(v2);
-            if (isNaN(v2)) v2 = y.getAttribute('data-order');
-            if ((order == 1 && v1 > v2) || (order == -1 && v1 < v2)) {
-                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                t = rows[i];
-                rows[i] = rows[i] + 1;
-                rows[i + 1] = t;
-                haveSwitched = true;
-            }
+    const tbody = table.tBodies[0];
+    const numericSort = column != 1;
+    const rows = Array.from(tbody.rows).map(function(row, index) {
+        const cell = row.cells[column];
+        let value = cell ? cell.getAttribute('data-order') : null;
+        value = (value == null && cell) ? cell.textContent.trim() : value;
+        if (value == null) value = '';
+
+        if (numericSort) {
+            value = parseFloat(value);
+            if (isNaN(value)) value = 0;
         }
-    } while (haveSwitched); 
+
+        return { row: row, value: value, index: index };
+    });
+
+    rows.sort(function(a, b) {
+        if (a.value === b.value) return a.index - b.index;
+        return (a.value > b.value ? 1 : -1) * order;
+    });
+
+    const fragment = document.createDocumentFragment();
+    rows.forEach(function(entry) {
+        fragment.appendChild(entry.row);
+    });
+    tbody.appendChild(fragment);
 } 
 
 function parseKillmailUrl(str) {
