@@ -106,42 +106,32 @@ class Detail
                     $i = 0;
                     while ($i < $repeats) {
                         if ($itm['flagName'] == 'High Slots') {
-                            high:
-                            if (isset($eftarray['high'][$itm['flag']])) {
+                            while (isset($eftarray['high'][$itm['flag']])) {
                                 $itm['flag'] = $itm['flag'] + 1;
-                                goto high;
                             }
                             $eftarray['high'][$itm['flag']][] = array('typeName' => $itm['typeName'], 'typeID' => $itm['typeID']);
                         }
                         if ($itm['flagName'] == 'Mid Slots') {
-                            mid:
-                            if (isset($eftarray['mid'][$itm['flag']])) {
+                            while (isset($eftarray['mid'][$itm['flag']])) {
                                 $itm['flag'] = $itm['flag'] + 1;
-                                goto mid;
                             }
                             $eftarray['mid'][$itm['flag']][] = array('typeName' => $itm['typeName'], 'typeID' => $itm['typeID']);
                         }
                         if ($itm['flagName'] == 'Low Slots') {
-                            low:
-                            if (isset($eftarray['low'][$itm['flag']])) {
+                            while (isset($eftarray['low'][$itm['flag']])) {
                                 $itm['flag'] = $itm['flag'] + 1;
-                                goto low;
                             }
                             $eftarray['low'][$itm['flag']][] = array('typeName' => $itm['typeName'], 'typeID' => $itm['typeID']);
                         }
                         if ($itm['flagName'] == 'Rigs') {
-                            rigs:
-                            if (isset($eftarray['rig'][$itm['flag']])) {
+                            while (isset($eftarray['rig'][$itm['flag']])) {
                                 $itm['flag'] = $itm['flag'] + 1;
-                                goto rigs;
                             }
                             $eftarray['rig'][$itm['flag']][] = array('typeName' => $itm['typeName'], 'typeID' => $itm['typeID']);
                         }
                         if ($itm['flagName'] == 'SubSystems' || $itm['flagName'] == 'Structure Service Slots') {
-                            subs:
-                            if (isset($eftarray['sub'][$itm['flag']])) {
+                            while (isset($eftarray['sub'][$itm['flag']])) {
                                 $itm['flag'] = $itm['flag'] + 1;
-                                goto subs;
                             }
                             if ($itm['flagName'] == 'Structure Service Slots') {
                                 $itm['flag'] = $subSlot;
