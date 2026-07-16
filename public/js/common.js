@@ -166,6 +166,7 @@ function loadDailyAsyncParts() {
         root.querySelectorAll(".daily-async-part").forEach(function (target) {
             if (target.getAttribute("data-loaded") === "1" || target.getAttribute("data-loading") === "1") return;
             target.setAttribute("data-loading", "1");
+            target.setAttribute("aria-busy", "true");
             const loadingTimer = setTimeout(function () {
                 target.setAttribute("data-show-loading", "1");
             }, 300);
@@ -192,6 +193,7 @@ function loadDailyAsyncParts() {
                         target.setAttribute("data-loaded", "1");
                         target.removeAttribute("data-loading");
                         target.removeAttribute("data-show-loading");
+                        target.setAttribute("aria-busy", "false");
                         doFormats();
                         setTimeout(prepTippy, 1);
                         settleHeight();
@@ -200,6 +202,7 @@ function loadDailyAsyncParts() {
                     clearTimeout(loadingTimer);
                     target.removeAttribute("data-loading");
                     target.removeAttribute("data-show-loading");
+                    target.setAttribute("aria-busy", "false");
                     setTimeout(function () {
                         target.removeAttribute("data-loaded");
                         loadDailyAsyncParts();
@@ -1461,6 +1464,7 @@ function applyFavoriteStarState(stars, scope, isFavorite) {
     stars.css("color", isFavorite ? colors[scope] : emptyColors[scope]);
     stars.toggleClass("fas", isFavorite);
     stars.toggleClass("far", !isFavorite);
+    stars.closest(".favorite").attr("aria-pressed", isFavorite ? "true" : "false");
 }
 
 function pubsub(channel, forceSend, generation)

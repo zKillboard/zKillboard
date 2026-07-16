@@ -19,7 +19,7 @@ block content
         each $topSet, $topIndex in ($topKillers ?? [])
           if (($topIndex + 1) % 2 == 1)
             include components/top_killer_list.pug
-      main.war-kill-center
+      .war-kill-center
         - $showPager = 'false';
         include components/war_kill_list.pug
       aside.war-top-rail.war-top-rail-right
@@ -28,6 +28,7 @@ block content
           if (($topIndex + 1) % 2 == 0)
             include components/top_killer_list.pug
   else
+    h1.visually-hidden zKillboard
     .row.gx-0.gx-md-3
       .col-sm-10.float-start.ps-md-0
         div

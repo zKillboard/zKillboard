@@ -76,10 +76,10 @@ nav.navbar.navbar-expand-md.navbar-dark.bg-dark(style="margin-bottom: 0px;")
         li#postExternalMail.nav-item
           a.nav-link(href="/post/") Post
         li#maplink.nav-item
-          a.nav-link(href="/map/index.html" target="_blank") Map
+          a.nav-link(href="/map/index.html" target="_blank" rel="noopener noreferrer") Map
         li.nav-item.d-none.d-md-block
-          a.nav-link(href="/scanalyzer/")
-            span.scanalyzer &#128924;
+          a.nav-link(href="/scanalyzer/" aria-label="Scanalyzer" title="Scanalyzer")
+            span.scanalyzer(aria-hidden="true") &#128924;
         li.nav-item.d-none.d-md-block
           a.nav-link(href="/information/payments/")
             img.zkb-nav-logo(src="/img/gold_logo_cropped_32.png" alt="")
@@ -93,7 +93,7 @@ nav.navbar.navbar-expand-md.navbar-dark.bg-dark(style="margin-bottom: 0px;")
         li.nav-item.liveupdates.d-none.d-lg-block
           a#lasthour.nav-link.text-end.text-nowrap(href="/top/lasthour/all/" rel="tooltip" title="Kills added this hour") &nbsp;
         li.nav-item.liveupdates.d-none.d-lg-block
-          a.nav-link.text-end.text-nowrap(href="#" rel="tooltip" title="Tranquility Status" onClick="return false;")
+          span.nav-link.text-end.text-nowrap(rel="tooltip" title="Tranquility Status" role="status" aria-live="polite" aria-atomic="true")
             span#tqStatus
               span#tqStatusDetail
               span#tqCount
@@ -105,15 +105,14 @@ nav.navbar.navbar-expand-md.navbar-dark.bg-dark(style="margin-bottom: 0px;")
 
     form#search.nav-search-item.d-flex.flex-grow-1.flex-md-grow-0.ms-auto.ms-md-2.me-2.me-md-0(name="search")
       .input-group
-        span.input-group-text(style="cursor: pointer;" onclick='navigateTo("/asearch/"); return false;' rel="tooltip" title="Advanced Search")
-          a(href="/asearch/")
-            i.fas.fa-search(style="color: white;")
-        input#searchbox.form-control(type="text" placeholder="search '/' or '\\'" autocomplete="off" name="searchbox" tabindex="1")
+        a.input-group-text(href="/asearch/" rel="tooltip" title="Advanced Search" aria-label="Advanced Search")
+          i.fas.fa-search(style="color: white;" aria-hidden="true")
+        input#searchbox.form-control(type="text" placeholder="search '/' or '\\'" autocomplete="off" name="searchbox" aria-label="Search zKillboard")
 
     ul.navbar-nav.nav-user-shell.flex-row
       li#usermenu.nav-item.dropdown
-        button#usermenu-dropdown.nav-link.dropdown-toggle.btn.btn-link.border-0.bg-transparent(type="button" data-bs-toggle="dropdown" aria-expanded="false")
-          img#char-image(src="/img/transparent_32.png" style="height: 32px; width: 32px; padding: 0px; margin: 0px;")
+        button#usermenu-dropdown.nav-link.dropdown-toggle.btn.btn-link.border-0.bg-transparent(type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Account menu")
+          img#char-image(src="/img/transparent_32.png" style="height: 32px; width: 32px; padding: 0px; margin: 0px;" alt="")
         ul#char-loggedin.dropdown-menu.dropdown-menu-end
           li#username.dropdown-header(style="font-weight: bold;")= $sessionusername ?? ''
           li.forloggedout

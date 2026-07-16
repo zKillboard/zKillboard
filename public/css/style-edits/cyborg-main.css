@@ -311,6 +311,7 @@ td.item_destroyed,
 	border-radius: 0.25rem;
 }
 
+.war-page-header h1,
 .war-page-header h2 {
 	margin: 0;
 	color: #f1f5f8;
@@ -628,6 +629,7 @@ td.item_destroyed,
 		padding: 0.7rem;
 	}
 
+	.war-page-header h1,
 	.war-page-header h2 {
 		font-size: 1.35rem;
 	}

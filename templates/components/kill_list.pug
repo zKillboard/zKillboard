@@ -23,10 +23,10 @@ div(class=$shellClass)
         th(style="max-width: 38%;") Victim
         th.finalBlowColumn.d-none.d-md-table-cell(style="width: 64px; max-width: 64px;") &nbsp;
         th.finalBlowColumn.d-none.d-md-table-cell Final Blow
-    tbody#killmailstobdy
+    tbody#killmailstobdy(aria-live="polite" aria-atomic="false" aria-busy=(count($killList ?? []) == 0 ? 'true' : 'false'))
       if (count($killList ?? []) == 0)
         tr#kms_loading
-          td(colspan="7")
+          td(colspan="7" role="status")
             em loading
       else
         include kill_list_row_small.pug

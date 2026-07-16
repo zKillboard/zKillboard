@@ -78,6 +78,7 @@ html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
       != "var promoURI = '" . addslashes((string) ($promoURI ?? '')) . "';\n"
       != "var promoImage1 = '" . addslashes((string) ($promoImage1 ?? '')) . "';\n"
   body(style="background-color: #111;")
+    a.visually-hidden-focusable(href="#zkb-page-content") Skip to content
     noscript
       #nojsfulloverlay JavaScript required.
     .content
@@ -85,10 +86,10 @@ html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
         include navigationbar.pug
       .page-shell.nobackground
         if (($apiStatus ?? false) && (($actualURI ?? '') == '/'))
-          #zkb-message.alert.alert-danger(style="font-weight: bold")
+          #zkb-message.alert.alert-danger(style="font-weight: bold" role="alert" aria-live="assertive" aria-atomic="true")
             center!= $apiStatus
         else
-          #zkb-message.d-none.alert.alert-danger(style="font-weight: bold")
+          #zkb-message.d-none.alert.alert-danger(style="font-weight: bold" role="alert" aria-live="assertive" aria-atomic="true")
         div
           center.pbcen
             #publifttop.centered.publift(fuse="home_header" style="padding-top: 0.25em; max-height: 250px; max-width: 975px;")
@@ -103,14 +104,14 @@ html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
             if (isset($highlightImage) && strlen((string) $highlightImage) > 0)
               img(src=$highlightImage alt="Highlight" style="max-width: 100%; height: auto;")
             span.pagecontent!= $highlightMessage ?? ''
-        span#zkb-page-content.pagecontent(data-entity-type=($entityType ?? '') data-entity-id=($entityID ?? '') data-entity-page=($pageType ?? '') data-actual-uri=($actualURI ?? ''))
+        main#zkb-page-content.pagecontent(tabindex="-1" data-entity-type=($entityType ?? '') data-entity-id=($entityID ?? '') data-entity-page=($pageType ?? '') data-actual-uri=($actualURI ?? ''))
           block header
           block content
             | Default content
         .clearfix
         center
           #adsensebottom.centered.publift(fuse="home_footer" style="padding-top: 2em; padding-bottom: 2em; max-height: 250px; max-width: 975px;")
-        div
+        footer
           include footer.pug
         div(style="height: 50px;") &nbsp;
       #zkb-page-modals.page-shell
