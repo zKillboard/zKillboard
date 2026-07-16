@@ -113,6 +113,24 @@ Points are **final and not subject to debate**. Attempts to argue about point va
 
 ## 💰 ISK Values
 
+### [#](#prices) How are prices determined?
+
+zKillboard prices are based on CCP market data when reliable data is available.
+
+**The normal pricing flow:**
+
+1. Use CCP market history for The Forge, storing each day's average market price
+2. For a killmail, look at recent stored prices up to the killmail date
+3. Trim obvious high/low outliers when enough history exists
+4. Average the remaining prices and round to two decimals
+5. If market data is missing or unusable, fall back to build cost when zKillboard can calculate one
+
+Some items use special pricing rules. Rare ships, heavily manipulated items, capsules, some materials, and other edge cases may have fixed prices. Blueprint copies and SKINs are priced at **0.01 ISK**. Other items that should not affect killmail value may also be priced at **0.01 ISK**.
+
+Prices are meant to keep killmail values stable and abuse-resistant. They will not always match the current lowest sell order, highest buy order, or a contract price.
+
+---
+
 ### [#](#blueprint) How do you price blueprint copies and SKINs?
 
 Blueprint copies and SKIN prices are extremely volatile and unreliable in the market API. 
