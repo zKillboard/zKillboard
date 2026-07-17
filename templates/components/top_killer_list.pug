@@ -2,7 +2,7 @@
 - $first = true;
 if (count($topSetData['values'] ?? []) > 0)
   .float-start(style="width: 100%; padding: 0px; margin: 0px;")
-    center
+    .text-center
       h5= $topSetData['title'] ?? ''
     table.table.table-sm.topBoxes.col-lg-2(style="padding: 0px; margin: 0px; width: 100%;")
       each $data in ($topSetData['values'] ?? [])
@@ -50,4 +50,4 @@ if (count($topSetData['values'] ?? []) > 0)
           else if (($topSetData['type'] ?? '') == 'location')
             td
               include text_location.pug
-          td(style="text-align: right;" title=((($data['score'] ?? 0) != 0) ? ('Score: ' . number_format((float) $data['score'], 0)) : false) rel=((($data['score'] ?? 0) != 0) ? 'tooltip' : false) format="format-int-once" raw=($data['kills'] ?? 0))= number_format((float) ($data['kills'] ?? 0), 0)
+          td.text-end(title=((($data['score'] ?? 0) != 0) ? ('Score: ' . number_format((float) $data['score'], 0)) : false) rel=((($data['score'] ?? 0) != 0) ? 'tooltip' : false) format="format-int-once" raw=($data['kills'] ?? 0))= number_format((float) ($data['kills'] ?? 0), 0)

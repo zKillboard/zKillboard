@@ -44,7 +44,7 @@ block content
           li.nav-item
             a.nav-link(data-bs-toggle="modal" data-bs-target="#report" href="#")= 'Report (' . ($extraData['reports'] ?? 0) . ')'
         li.nav-item
-          a.nav-link.d-none.d-md-flex.align-items-center.gap-1.py-2.px-3(target="_blank" href=($referralLink ?? '') title="1 million SP FREE" style="background-color: #7b1fa2; color: #ffffff !important;")
+          a.nav-link.d-none.d-md-flex.align-items-center.gap-1.py-2.px-3(target="_blank" rel="noopener noreferrer" href=($referralLink ?? '') title="1 million SP FREE" style="background-color: #7b1fa2; color: #ffffff !important;")
             img(src="https://images.evetech.net/types/40520/icon?size=32" alt="1 million free skill points!" style="height: 18px; margin-right: 2px;" onerror="this.onerror=function(){this.removeAttribute('onerror'); this.src='/img/icons/40520_64.png';}; this.src='https://images.evetech.net/types/40520/bp?size=32';" loading="lazy" decoding="async" fetchpriority="low")
             | 1 Million SP FREE
         li.nav-item.dropdown
@@ -114,15 +114,15 @@ block content
       .col-lg-8(style="padding-left: 0px;")
         table.d-none.d-md-table(style="background-color:transparent;")
           tr
-            td(style="padding: 0px; vertical-align: top;")
+            td.p-0.align-top
               include components/fitting_wheel.pug
-            td(style="width: 100%;" valign="top")
+            td.align-top(style="width: 100%;")
               include components/victim_info.pug
-        .row.gx-0.d-flex.d-md-none(style="padding: 0px;")
-          #fittingwheeldiv.col-lg-5(style="padding: 0px;")
+        .row.gx-0.d-flex.d-md-none.p-0
+          #fittingwheeldiv.col-lg-5.p-0
             include components/fitting_wheel.pug
           br.d-lg-none
-          .col-lg-5(style="padding: 0px;")
+          .col-lg-5.p-0
             include components/victim_info.pug
         .row.gx-0
           if (($extraData['items'] ?? null) == 'asyncload')
@@ -135,24 +135,24 @@ block content
             div
               include components/item_list.pug
       .col-lg-4
-        center
+        .text-center
           a#loginsideimage.btn.w-100.collapse(href="/ccpoauth2/")
-            img(src="/img/ssologin.png" style="width: 209px;" loading="lazy" decoding="async" fetchpriority="low")
+            img(src="/img/ssologin.png" width="209" loading="lazy" decoding="async" fetchpriority="low")
             br
             br
-        .text-center(style="width: 100%; display: flex; justify-content: center;")
-          div(style="max-width: 200px; width: 100%;")!= $sponsoredMessage ?? ''
+        .text-center.w-100.d-flex.justify-content-center
+          .w-100(style="max-width: 200px;")!= $sponsoredMessage ?? ''
         if (!empty($extraData['npcOnly']))
           .alert.alert-info
             | This is an NPC Only killmail.
             br
             | It is not counted in statistics.
         if (!empty($extraData['atShip']))
-          center
+          .text-center
             .alert.alert-success AT Ship Involved
         if (in_array('padding', $infoData['labels'] ?? []))
           .alert.alert-warning
-            center
+            .text-center
               | Killboard Padding
               br
               | It is not counted in statistics.
@@ -169,7 +169,7 @@ block content
             div
               table.table.table-sm(style="margin: 0px; text-align: center;")
                 tr
-                  th(style="text-align: center;") War
+                  th.text-center War
                 tr
                   td
                     a(href=('/war/' . ($warInfo['warID'] ?? 0) . '/'))= $warInfo['dscr'] ?? ''
@@ -197,7 +197,7 @@ block content
         each $attacker in ($killData['involved'] ?? [])
           - $attacker = is_object($attacker) ? (array) $attacker : $attacker;
           tr.attacker
-            td.icons(style="vertical-align: middle; width: 200px;")
+            td.icons.align-middle(style="width: 200px;")
               - $field = $attacker;
               include components/image_char.pug
               include components/image_corp.pug
@@ -220,7 +220,7 @@ block content
               a(href=('/ship/' . ($attacker['shipTypeID'] ?? 0) . '/'))= $attacker['shipName'] ?? ''
               br
               a(href=('/item/' . ($attacker['weaponTypeID'] ?? 0) . '/'))= $attacker['weaponTypeName'] ?? ''
-            td.damage(style="vertical-align: middle;")= $attacker['damage'] ?? 0
+            td.damage.align-middle= $attacker['damage'] ?? 0
         - unset($resizeImage);
 
 block modal

@@ -1,11 +1,11 @@
 .float-start.col-lg-4
-  center
+  .text-center
     h5= $fieldset['title'] ?? ''
   table.table.table-sm.topBoxes(style="padding: 0px; margin: 0px; width: 100%;")
     tr
       th(style="width: 42px;") &nbsp;
       th Character
-      th(style="width: 100px; text-align: right;") Kills
+      th.text-end(style="width: 100px;") Kills
     each $field in ($fieldset['data'] ?? [])
       tr
         td
@@ -22,5 +22,5 @@
             = $field['characterName'] ?? ''
           br
           = $field['shipName'] ?? ''
-        td(style="text-align: right;")= number_format((float) ($field['kills'] ?? 0), 0)
+        td.text-end= number_format((float) ($field['kills'] ?? 0), 0)
         td= $field['title'] ?? ''

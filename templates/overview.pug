@@ -120,8 +120,8 @@ block content
         include components/big_top_list.pug
         .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent")
         include components/kill_list.pug
-      .col-lg-2.float-start(style="padding: 0px;")
-        center
+      .col-lg-2.float-start.p-0
+        .text-center
           div(style="max-width: 100%;")
             a#loginsideimage.btn.w-100.collapse(href="/ccpoauth2/")
               img(src="/img/ssologin.png" style="width: 100%; max-width: 100%; margin-bottom: 1em;" loading="lazy" decoding="async" fetchpriority="low")
@@ -155,7 +155,7 @@ block content
       include components/daily_stats.pug
     else if ($pageType == 'ranks')
       p
-        center
+        .text-center
           a.btn.btn-info(href="/character/ranks/k/all/alltime/1/") See more Top Ranks here
       include components/rank_list.pug
     else if ($pageType == 'top')
@@ -200,7 +200,7 @@ block content
       each $row, $idx in ($extraData['wars'] ?? [])
         - $row = is_object($row) ? (array) $row : $row;
         .col-lg-6.float-start
-          center
+          .text-center
             h4= $row['name'] ?? ''
           - $wars = $row['wars'] ?? [];
           include components/wars_table.pug

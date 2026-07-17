@@ -48,31 +48,31 @@ block content
         .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent")
         - $showPager = 'false';
         include components/kill_list.pug
-      .col-sm-2.float-start(style="padding: 0px;")
+      .col-sm-2.float-start.p-0
         if (($reinforced ?? '') == 'true')
           .alert.alert-danger
-            center
+            .text-center
               a(href="/ztop/") REINFORCED MODE
           br
         if (($universeUpdating ?? '') == 'true')
           .alert.alert-success
-            center
+            .text-center
               a(href="/ztop/") Universe is Updating
           br
         div
           zk-home-side
-            .col-12(style="background-color: black;")
+            .col-12.bg-black
               a#loginsideimage.btn.w-100.collapse(href="/ccpoauth2/")
-                img(src="/img/ssologin.png" style="width: 100%" loading="lazy" decoding="async" fetchpriority="low" alt="")
+                img.w-100(src="/img/ssologin.png" loading="lazy" decoding="async" fetchpriority="low" alt="")
               hr
             .alert.alert-info
-              center
-                a(href=($referralLink ?? '') target="_blank" alt="1 million SP FREE")
+              .text-center
+                a(href=($referralLink ?? '') target="_blank" rel="noopener noreferrer" alt="1 million SP FREE")
                   img(src="https://images.evetech.net/types/40520/icon?size=32" alt="1 million free skill points!" onerror="this.onerror=function(){this.removeAttribute('onerror'); this.src='/img/icons/40520_64.png';}; this.src='https://images.evetech.net/types/40520/bp?size=32';" loading="lazy" decoding="async" fetchpriority="low")
                   | 1 Million SP FREE
             != $sponsoredMessage ?? ''
-            .col-12(style="background-color: black;")
-              a.btn.bn-success.w-100(href="https://store.eveonline.com" target="_new" style="background-color: #1D232A; color: white;")
+            .col-12.bg-black
+              a.btn.bn-success.w-100(href="https://store.eveonline.com" target="_blank" rel="noopener noreferrer" style="background-color: #1D232A; color: white;")
                 span
                   | EVE Online Store
                   br
@@ -80,12 +80,12 @@ block content
                     | use code zkill
                     br
                     |  to support zkill
-              a.btn.bn-success.w-100(href="https://discord.gg/sV2kkwg8UD" target="_new" style="background-color: #6E85D2; color: white;")
-                img(src="/img/discord.png" alt="discord logo" style="height: 22px;" loading="lazy" decoding="async" fetchpriority="low")
+              a.btn.bn-success.w-100(href="https://discord.gg/sV2kkwg8UD" target="_blank" rel="noopener noreferrer" style="background-color: #6E85D2; color: white;")
+                img(src="/img/discord.png" alt="discord logo" height="22" loading="lazy" decoding="async" fetchpriority="low")
                 |  Discord
-              a.btn.bn-success.w-100(href="/cache/bypass/login/patreon/" target="_new" style="background-color: white;")
-                img(src="/img/patreon_sm.png" alt="Patreon" style="height: 25px;" loading="lazy" decoding="async" fetchpriority="low")
-              a.btn.bn-success.w-100(href="https://store.markeedragon.com/affiliate.php?id=928&redirect=index.php?cat=4" target="_new" style="background-color: #223801; color: white;")
+              a.btn.bn-success.w-100(href="/cache/bypass/login/patreon/" target="_blank" rel="noopener noreferrer" style="background-color: white;")
+                img(src="/img/patreon_sm.png" alt="Patreon" height="25" loading="lazy" decoding="async" fetchpriority="low")
+              a.btn.bn-success.w-100(href="https://store.markeedragon.com/affiliate.php?id=928&redirect=index.php?cat=4" target="_blank" rel="noopener noreferrer" style="background-color: #223801; color: white;")
                 | SP &amp; PLEX
                 br
                 | Promo "zkill" 3% Off
@@ -93,26 +93,26 @@ block content
           #otherapps
             div
               a(href="https://evewho.com" target="_blank" rel="noopener noreferrer")
-                img(src="https://image.eveonline.com/Character/1_64.jpg" style="height: 32px; width: 32px;" loading="lazy" decoding="async" fetchpriority="low" alt="")
+                img(src="https://image.eveonline.com/Character/1_64.jpg" width="32" height="32" loading="lazy" decoding="async" fetchpriority="low" alt="")
                 span EveWho
             div
               a(href="https://podmail.space" target="_blank" rel="noopener noreferrer")
-                img(src="/img/podmail.png" style="width: 32px;" loading="lazy" decoding="async" fetchpriority="low" alt="")
+                img(src="/img/podmail.png" width="32" loading="lazy" decoding="async" fetchpriority="low" alt="")
                 span PodMail
             div
               a(href="https://eveconomy.online" target="_blank" rel="noopener noreferrer")
-                img(src="/img/eveconomy.png" style="height: 32px; width: 32px;" loading="lazy" decoding="async" fetchpriority="low" alt="")
+                img(src="/img/eveconomy.png" width="32" height="32" loading="lazy" decoding="async" fetchpriority="low" alt="")
                 span EVEconomy
             div
               a(href="https://skillq.net/" target="_blank" rel="noopener noreferrer")
-                img(src="https://skillq.net/favicon.ico" style="height: 32px; width: 32px;" loading="lazy" decoding="async" fetchpriority="low" alt="")
+                img(src="https://skillq.net/favicon.ico" width="32" height="32" loading="lazy" decoding="async" fetchpriority="low" alt="")
                 span SkillQ
             div
               a(href="https://logos.zzeve.com" target="_blank" rel="noopener noreferrer")
-                img(src="https://image.eveonline.com/Alliance/1_32.png" style="height: 32px; width: 32px; background-color: #222;" loading="lazy" decoding="async" alt="" fetchpriority="low")
+                img.bg-dark(src="https://image.eveonline.com/Alliance/1_32.png" width="32" height="32" loading="lazy" decoding="async" alt="" fetchpriority="low")
                 span Logos
           .clearfix
-        center
+        .text-center
           a(href="/top/lasthour/all/") Current Activity
         include components/activePvP.pug
         .clearfix
@@ -124,7 +124,7 @@ block content
           include components/top_killer_list.pug
         if (count($topKillers ?? []) > 0)
           br
-          center
+          .text-center
             em
               small
                 | 7 Day Top Killers

@@ -101,7 +101,7 @@ br
                     tr
                       th Sec. Status:
                       td(itemprop="sec_status")
-                        font(color=$secStatusColor($calcStatus))= number_format((float) $detailData['secStatus'], 2)
+                        span(style=("color: " . $secStatusColor($calcStatus)))= number_format((float) $detailData['secStatus'], 2)
                   if (!empty($detailData['birthday']))
                     tr
                       th Birthday:
@@ -132,7 +132,7 @@ br
                       td(itemprop="systemname")
                         a(href=('/system/' . ($detailData['solarSystemID'] ?? 0) . '/') class=$trigClass($detailData['solarSystemID'] ?? 0, 32000000, 33000000))= $detailData['solarSystemName']
                         |  (
-                        font(color=($detailData['systemColorCode'] ?? ''))= number_format((float) ($detailData['solarSystemSecurity'] ?? 0), 1)
+                        span(style=("color: " . ($detailData['systemColorCode'] ?? '')))= number_format((float) ($detailData['solarSystemSecurity'] ?? 0), 1)
                         | )
                         include tracker.pug
                   if (!empty($detailData['constellationName']))

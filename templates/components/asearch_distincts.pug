@@ -1,9 +1,9 @@
 .float-start(style="width: 100%; padding: 0px; margin: 0px;")
-  center
+  .text-center
     h5 Distincts
   table.table.table-sm.topBoxes.col-lg-2(style="padding: 0px; margin: 0px; width: 100%;" data-singular="Distincts" aria-title="Distincts")
     each $row in ($result ?? [])
       - $row = is_object($row) ? (array) $row : $row;
       tr
         td= $row['type'] ?? ''
-        td(align="right" format="format-int-once" raw=($row['count'] ?? 0))= number_format((float) ($row['count'] ?? 0), 0)
+        td.text-end(format="format-int-once" raw=($row['count'] ?? 0))= number_format((float) ($row['count'] ?? 0), 0)

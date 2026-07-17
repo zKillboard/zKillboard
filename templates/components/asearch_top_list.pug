@@ -3,7 +3,7 @@
 - $counter = 1;
 if (count($topSetData['values'] ?? []) > 0)
   .groupReport.float-start(style="width: 100%; padding: 0px; margin: 0px;")
-    center
+    .text-center
       h5= $topSetData['title'] ?? ''
     table.table.table-sm.topBoxes.col-lg-2(style="padding: 0px; margin: 0px; width: 100%;" data-singular=($topSetData['singularTitle'] ?? '') aria-title=($topSetData['title'] ?? ''))
       each $data in ($topSetData['values'] ?? [])
@@ -44,7 +44,7 @@ if (count($topSetData['values'] ?? []) > 0)
         if ($counter == 11)
           tr(class=('grouping-all-' . ($topSetData['type'] ?? '')))
             td(colspan="4")
-              center
+              .text-center
                 span.btn.btn-sm.btn-primary(onclick=("$('.grouping-" . ($topSetData['type'] ?? '') . "').show(); $('.grouping-all-" . ($topSetData['type'] ?? '') . "').hide(); return false;")) The Rest (up to 500)
         tr(class=('grouping-' . ($topSetData['type'] ?? '') . ($counter >= 11 ? ' collapse' : '')))
           if (($topSetData['type'] ?? '') == 'character')

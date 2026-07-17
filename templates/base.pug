@@ -86,30 +86,30 @@ html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
         include navigationbar.pug
       .page-shell.nobackground
         if (($apiStatus ?? false) && (($actualURI ?? '') == '/'))
-          #zkb-message.alert.alert-danger(style="font-weight: bold" role="alert" aria-live="assertive" aria-atomic="true")
-            center!= $apiStatus
+          #zkb-message.alert.alert-danger.fw-bold(role="alert" aria-live="assertive" aria-atomic="true")
+            .text-center!= $apiStatus
         else
-          #zkb-message.d-none.alert.alert-danger(style="font-weight: bold" role="alert" aria-live="assertive" aria-atomic="true")
+          #zkb-message.d-none.alert.alert-danger.fw-bold(role="alert" aria-live="assertive" aria-atomic="true")
         div
-          center.pbcen
+          .pbcen.text-center
             #publifttop.centered.publift(fuse="home_header" style="padding-top: 0.25em; max-height: 250px; max-width: 975px;")
             hr.pbsep
             .pbblock
-              a.pbblock.btn.btn-success(href="https://www.patreon.com/zkillboard" target="_blank") Block Ads with Patreon!
+              a.pbblock.btn.btn-success(href="https://www.patreon.com/zkillboard" target="_blank" rel="noopener noreferrer") Block Ads with Patreon!
         #otherBannerDiv.centered(style="display: none; height: 250px; padding-top: 1em;")
-          a#otherBannerAnchor(target="_new")
+          a#otherBannerAnchor(target="_blank" rel="noopener noreferrer")
             img#otherBannerImg
         #highlightContent.centered(style=("margin-bottom: 1em; " . (!isset($highlightMessage) ? "display: none;" : "")))
-          a.btn.btn-sm(href=($highlightURI ?? '') target="_blank" rel="noopener noreferrer" class=($highlightClass ?? '') style="padding: 1em; text-align: center; display: block; padding-top: 0em; padding-bottom: 0em; margin-top: 0.5em;")
+          a.btn.btn-sm.d-block.text-center.px-3.py-0.mt-2(href=($highlightURI ?? '') target="_blank" rel="noopener noreferrer" class=($highlightClass ?? ''))
             if (isset($highlightImage) && strlen((string) $highlightImage) > 0)
-              img(src=$highlightImage alt="Highlight" style="max-width: 100%; height: auto;")
+              img.img-fluid(src=$highlightImage alt="Highlight")
             span.pagecontent!= $highlightMessage ?? ''
         main#zkb-page-content.pagecontent(tabindex="-1" data-entity-type=($entityType ?? '') data-entity-id=($entityID ?? '') data-entity-page=($pageType ?? '') data-actual-uri=($actualURI ?? ''))
           block header
           block content
             | Default content
         .clearfix
-        center
+        .text-center
           #adsensebottom.centered.publift(fuse="home_footer" style="padding-top: 2em; padding-bottom: 2em; max-height: 250px; max-width: 975px;")
         footer
           include footer.pug
@@ -152,23 +152,23 @@ html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
               label
                 input#login-scope-all(type="checkbox" checked)
                 |  All Permissions
-            .checkbox(style="margin-left: 1.5em;")
+            .checkbox.ms-4
               label
                 input.login-scope(type="checkbox" value="esi-killmails.read_killmails.v1" checked)
                 |  Fetch Character Killmails
-              p.text-muted(style="margin-left: 1.5em;")
+              p.text-muted.ms-4
                 small Fetch the character's killmails where they are the victim or received the final blow.
-            .checkbox(style="margin-left: 1.5em;")
+            .checkbox.ms-4
               label
                 input.login-scope(type="checkbox" value="esi-killmails.read_corporation_killmails.v1" checked)
                 |  Fetch Corporation Killmails
-              p.text-muted(style="margin-left: 1.5em;")
+              p.text-muted.ms-4
                 small Fetch the corporation's killmails where corporation members are the victim or received the final blow.  This permission is restricted to CEOs and Directors.
-            .checkbox(style="margin-left: 1.5em;")
+            .checkbox.ms-4
               label
                 input.login-scope(type="checkbox" value="esi-fittings.write_fittings.v1" checked)
                 |  Save fittings
-              p.text-muted(style="margin-left: 1.5em;")
+              p.text-muted.ms-4
                 small Lets you save a ship's fit directly to your character's fitting library.
             hr
             label(for="login-delay-slider")

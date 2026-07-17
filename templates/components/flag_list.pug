@@ -27,7 +27,7 @@ each $item in $flagItems
     tr.item_row(class=$droppedRow)
       - $field = $item;
       td.icons(data-order=$i())
-        div(align="center")
+        .text-center
           include image_item.pug
       td(data-order=($item['typeName'] ?? '') class=(!empty($dropped) ? $dropped : $destroyed))
         if (($item['inContainer'] ?? 0) == 1)

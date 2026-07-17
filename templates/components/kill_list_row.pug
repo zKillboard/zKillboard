@@ -19,7 +19,7 @@ each $kill in ($killList ?? [])
         br
         a(href=('/kill/' . $kill['killID'] . '/'))
           span.float-end(format="format-isk-once" raw=($kill['zkb']['totalValue'] ?? 0))= $formatIsk($kill['zkb']['totalValue'] ?? 0)
-      td.icon(style="text-align: center; vertical-align: middle;")
+      td.icon.text-center.align-middle
         include image_ship.pug
       td.location
         div(style="width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;")
@@ -31,12 +31,12 @@ each $kill in ($killList ?? [])
           |
           a(href=('/system/' . ($kill['system']['solarSystemID'] ?? 0) . '/') class=((($kill['system']['solarSystemID'] ?? 0) >= 32000000 && ($kill['system']['solarSystemID'] ?? 0) < 33000000) ? 'triglavian' : ''))= $kill['system']['solarSystemName'] ?? ''
         a(href=('/region/' . ($kill['system']['regionID'] ?? 0) . '/') class=((($kill['system']['regionID'] ?? 0) >= 12000001 && ($kill['system']['regionID'] ?? 0) < 13000000) ? 'triglavian' : ''))= $kill['system']['regionName'] ?? ''
-      td.d-none.d-md-table-cell(style="text-align: center; vertical-align: middle; max-width: 64px;")
+      td.d-none.d-md-table-cell.text-center.align-middle(style="max-width: 64px;")
         if (($kill['victim']['allianceID'] ?? 0) != 0)
           include image_alli.pug
         else
           include image_corp.pug
-      td.victim(style="text-align: left; vertical-align: top; max-width: 290px;")
+      td.victim.align-top(style="max-width: 290px;")
         if (!empty($kill['victim']['characterID']))
           a.wrapplease(href=('/character/' . $kill['victim']['characterID'] . '/'))= $kill['victim']['characterName'] ?? ''
           |
@@ -49,12 +49,12 @@ each $kill in ($killList ?? [])
         if (($kill['victim']['allianceID'] ?? 0) != 0)
           a.wrapplease(href=('/alliance/' . $kill['victim']['allianceID'] . '/'))= $kill['victim']['allianceName'] ?? ''
       - $field = $kill['finalBlow'] ?? [];
-      td.d-none.d-md-table-cell.finalBlowColumn(style="text-align: center; vertical-align: middle; max-width: 64px;")
+      td.d-none.d-md-table-cell.finalBlowColumn.text-center.align-middle(style="max-width: 64px;")
         if (($kill['finalBlow']['allianceID'] ?? 0) != 0)
           include image_alli.pug
         else
           include image_corp.pug
-      td.finalBlow.d-none.d-md-table-cell.finalBlowColumn(style="text-align: left; vertical-align: top; max-width: 290px;")
+      td.finalBlow.d-none.d-md-table-cell.finalBlowColumn.align-top(style="max-width: 290px;")
         a.wrapplease(href=('/character/' . ($kill['finalBlow']['characterID'] ?? 0) . '/'))= $kill['finalBlow']['characterName'] ?? ''
         if (($field['characterID'] ?? 0) == 0)
           - $shipImageLinkOverride = 0;
@@ -62,30 +62,30 @@ each $kill in ($killList ?? [])
         if (in_array('padding', $kill['labels'] ?? []))
           a(href='/asearch/#{"buttons":["togglefilters","week","label-padding","sort-date","sort-desc","page1","victimsonly"]}')
             small
-              font.alert.alert-warning.m-2(style="padding: 0px; margin: 0px; background-color: #CC5500;") &nbsp;padding&nbsp;
+              span.badge.text-bg-warning padding
         else if (in_array('atShip', $kill['labels'] ?? []))
           small
-            font.alert.alert-success.m-2(style="padding: 0px; margin: 0px;") &nbsp;AT Ship&nbsp;
+            span.badge.text-bg-success AT Ship
         else if (!empty($kill['ganked']))
           a(href='/asearch/#{"buttons":["togglefilters","week","label-ganked","sort-date","sort-desc","page1","victimsonly"]}')
             small
-              font.alert.alert-danger.m-2(style="padding: 0px; margin: 0px;") &nbsp;GANKED&nbsp;
+              span.badge.text-bg-danger GANKED
         else if (!empty($kill['solo']))
           a(href=('/character/' . ($kill['finalBlow']['characterID'] ?? 0) . '/solo/'))
             small
-              font.alert.alert-success.m-2(style="padding: 0px; margin: 0px;") &nbsp;SOLO&nbsp;
+              span.badge.text-bg-success SOLO
         else if (!empty($kill['npc']))
           |
           small
-            font.alert.alert-info.m-2(style="padding: 0px; margin: 0px;") &nbsp;NPC&nbsp;
+            span.badge.text-bg-info NPC
         else if (($kill['attackerCount'] ?? 0) >= 1000)
           |
           small
-            font.alert.alert-danger.m-2(style="padding: 0px; margin: 0px;") &nbsp;1000+&nbsp;
+            span.badge.text-bg-danger 1000+
         else if (($kill['attackerCount'] ?? 0) >= 100)
           |
           small
-            font.alert.alert-warning.m-2(style="padding: 0px; margin: 0px;") &nbsp;100+&nbsp;
+            span.badge.text-bg-warning 100+
         else
           = ' (' . ($kill['attackerCount'] ?? 0) . ')'
         br

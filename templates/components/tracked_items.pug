@@ -4,14 +4,14 @@ div
       tr
         td(colspan="2")
           if (($item['typeID'] ?? 0) == 0)
-            center
+            .text-center
               strong
                 h5
                   = $item['name'] ?? ''
                   if (!empty($item['price']))
                     = ' ' . $shortNum($item['price'])
           else
-            center
+            .text-center
               strong
                 a(href=('/item/' . $item['typeID'] . '/'))
                   = $item['name'] ?? ''
@@ -28,6 +28,6 @@ div
             = $shortNum($item['destroyed'])
             br
           = $shortNum($item['lV'] ?? 0)
-  center
+  .text-center
     small
       i Last 7 days...

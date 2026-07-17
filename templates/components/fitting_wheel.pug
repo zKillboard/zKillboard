@@ -81,10 +81,10 @@
       a.green(target="_blank" rel="noopener noreferrer" href=('/kill/' . ($crest['killID'] ?? 0) . '/redirect/esi/')) Verified
       br
     span
-      a.green(href=('/kill/' . ($crest['killID'] ?? 0) . '/redirect/eveshipfit/') target="_blank" rel="noopener") EVEShip.Fit
+      a.green(href=('/kill/' . ($crest['killID'] ?? 0) . '/redirect/eveshipfit/') target="_blank" rel="noopener noreferrer") EVEShip.Fit
     br
     span
-      a.green(href=('/kill/' . ($crest['killID'] ?? 0) . '/redirect/eveworkbench/') target="_blank" rel="noopener") EVE Workbench
+      a.green(href=('/kill/' . ($crest['killID'] ?? 0) . '/redirect/eveworkbench/') target="_blank" rel="noopener noreferrer") EVE Workbench
   .favorite-stack.float-end.d-flex.flex-column.align-items-center.gap-1.me-2.text-center(style="width: 1.5em; font-size: 1rem; line-height: 1.25;")
     button.favorite.d-inline-block.text-center.btn.btn-link.border-0.bg-transparent.p-0(type="button" style="width: 1.5em; cursor: pointer;" onClick=('doFavorite(' . ($crest['killID'] ?? 0) . ', this);') aria-label="Favorite this killmail" aria-pressed="false")
       i.far.fa-star(rel="tooltip" class=('fav-star-' . ($crest['killID'] ?? 0) . ' fav-star-character-' . ($crest['killID'] ?? 0)) style="color: #d0d0d0; text-shadow: 0 1px 2px #000;" title="Favorite this killmail" aria-hidden="true")
