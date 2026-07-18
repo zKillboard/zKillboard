@@ -12,8 +12,8 @@
           strong= $list['title'] ?? ''
         thead
           tr
-            th Rank
-            th(style="width: 100%;")= ucfirst((string) ($list['type'] ?? ''))
+            th(scope="col") Rank
+            th(scope="col" style="width: 100%;")= ucfirst((string) ($list['type'] ?? ''))
         - $entitySubpage = 'ranks/';
         tbody
           each $field in ($list['data'] ?? [])

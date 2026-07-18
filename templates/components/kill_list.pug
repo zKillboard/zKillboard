@@ -16,13 +16,15 @@ div(class=$shellClass)
   table#killlist.table.table-sm.table-striped.table-hover(style="margin-bottom: 0px;")
     thead
       tr
-        th Time
-        th(style="width: 50px; max-width: 50px; text-align: center;") Ship
-        th.location(style="width:115px; max-width: 115px;") Location
-        th.d-none.d-md-table-cell(style="width: 64px;") &nbsp;
-        th(style="max-width: 38%;") Victim
-        th.finalBlowColumn.d-none.d-md-table-cell(style="width: 64px; max-width: 64px;") &nbsp;
-        th.finalBlowColumn.d-none.d-md-table-cell Final Blow
+        th(scope="col") Time
+        th(scope="col" style="width: 50px; max-width: 50px; text-align: center;") Ship
+        th.location(scope="col" style="width:115px; max-width: 115px;") Location
+        th.d-none.d-md-table-cell(scope="col" style="width: 64px;")
+          span.visually-hidden Victim portrait
+        th(scope="col" style="max-width: 38%;") Victim
+        th.finalBlowColumn.d-none.d-md-table-cell(scope="col" style="width: 64px; max-width: 64px;")
+          span.visually-hidden Final blow portrait
+        th.finalBlowColumn.d-none.d-md-table-cell(scope="col") Final Blow
     tbody#killmailstobdy(aria-live="polite" aria-atomic="false" aria-busy=(count($killList ?? []) == 0 ? 'true' : 'false'))
       if (count($killList ?? []) == 0)
         tr#kms_loading

@@ -13,7 +13,7 @@ block style
 block content
   #asearchcontent.c-ontentrequiredlogin.content
     h1.h3
-      button#togglefilters.btn.btn-primary(type="button" value="togglefilters" title="Toggle Filter Display" aria-label="Toggle filter display" aria-pressed="true")
+      button#togglefilters.btn.btn-primary(type="button" value="togglefilters" title="Toggle Filter Display" aria-label="Toggle filter display" aria-pressed="true" aria-expanded="true")
         i.fas.fa-filter(aria-hidden="true")
       span#titlecontent Advanced Search
     hr
@@ -49,9 +49,13 @@ block content
               i.fas.fa-arrow-down(aria-hidden="true")
           br
           br
-          #timeframe.input-group
-            input#dtstart.form-control.form-line(type="datetime-local" style="min-width: 14em; max-width: 14em;" placeholder="2007-12-05 00:00" autocomplete="off" disabled)
-            input#dtend.form-control.form-line(type="datetime-local" style="min-width: 14em; max-width: 14em;" placeholder="Now" autocomplete="off" disabled)
+          #timeframe.d-flex.flex-wrap.justify-content-center.gap-2
+            .input-group.input-group-sm.w-auto
+              label.input-group-text(for="dtstart") Start
+              input#dtstart.form-control.form-line(type="datetime-local" style="min-width: 14em; max-width: 14em;" placeholder="2007-12-05 00:00" autocomplete="off" disabled)
+            .input-group.input-group-sm.w-auto
+              label.input-group-text(for="dtend") End
+              input#dtend.form-control.form-line(type="datetime-local" style="min-width: 14em; max-width: 14em;" placeholder="Now" autocomplete="off" disabled)
     hr.asearchfilters
     .row.centered.asearchfilters
       each $group, $name in ($labels ?? [])
@@ -106,8 +110,9 @@ block content
           span#includeAssociatesLabel Include Associates
       div
         button#exportCsv.btn.btn-success.btn-sm.notafilter(type="button" style="margin-top: 0.5em;") Export XLSX
-        button#toggleGroupLayout.btn.btn-secondary.btn-sm(type="button" value="split" style="margin-top: 0.5em; margin-left: 0.5em;" title="Toggle wide aggregation layout" aria-pressed="false") Wide Groups
+        button#toggleGroupLayout.btn.btn-secondary.btn-sm(type="button" value="split" style="margin-top: 0.5em; margin-left: 0.5em;" title="Toggle wide aggregation layout" aria-pressed="false" aria-controls="page result-groups-column") Wide Groups
     hr
+    #asearchStatus.visually-hidden(role="status" aria-live="polite" aria-atomic="true")
     #clickablecontent.row
       #page.col-md-10
         #pagefilters
@@ -137,13 +142,16 @@ block content
           table#killlist.table.table-sm.table-striped.table-hover(style="margin-bottom: 0px;")
             thead
               tr
-                th Time
-                th.d-none.d-md-table-cell(style="width: 50px; text-align: center;")
-                th.d-none.d-md-table-cell.location(style="width:115px;") Place
-                th.d-none.d-md-table-cell(style="width: 64px;") &nbsp;
-                th.d-none.d-md-table-cell Victim
-                th.d-none.d-md-table-cell.finalBlowColumn(style="width: 64px;") &nbsp;
-                th.d-none.d-md-table-cell.finalBlowColumn Final Blow
+                th(scope="col") Time
+                th.d-none.d-md-table-cell(scope="col" style="width: 50px; text-align: center;")
+                  span.visually-hidden Ship
+                th.d-none.d-md-table-cell.location(scope="col" style="width:115px;") Place
+                th.d-none.d-md-table-cell(scope="col" style="width: 64px;")
+                  span.visually-hidden Victim portrait
+                th.d-none.d-md-table-cell(scope="col") Victim
+                th.d-none.d-md-table-cell.finalBlowColumn(scope="col" style="width: 64px;")
+                  span.visually-hidden Final blow portrait
+                th.d-none.d-md-table-cell.finalBlowColumn(scope="col") Final Blow
             tbody#killmails-list(aria-live="polite" aria-atomic="false" aria-busy="false")
       #result-groups-column.col-md-2
         #result-groups-all

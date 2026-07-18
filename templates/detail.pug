@@ -94,15 +94,15 @@ block content
           ul.dropdown-menu
             li
               a.dropdown-item(href=('https://www.facebook.com/sharer/sharer.php?u=' . ($url ?? '')) target="_blank" rel="noopener noreferrer")
-                img(src=('//' . ($siteurl ?? '') . '/img/social/fb_1.png') loading="lazy" decoding="async" fetchpriority="low")
+                img(src=('//' . ($siteurl ?? '') . '/img/social/fb_1.png') alt="Facebook logo" loading="lazy" decoding="async" fetchpriority="low")
                 |  Facebook
             li
               a.dropdown-item(href=('https://x.com/intent/tweet?text=' . rawurlencode($pageTitle) . '&url=' . ($url ?? '')) target="_blank" rel="noopener noreferrer")
-                img(src=('//' . ($siteurl ?? '') . '/img/social/twitter_1.png') loading="lazy" decoding="async" fetchpriority="low")
+                img(src=('//' . ($siteurl ?? '') . '/img/social/twitter_1.png') alt="X / Twitter logo" loading="lazy" decoding="async" fetchpriority="low")
                 |  X / Twitter
             li
               a.dropdown-item(href=('https://www.reddit.com/submit?url=' . ($url ?? '') . '&title=' . rawurlencode($pageTitle)) target="_blank" rel="noopener noreferrer")
-                img(src=('//' . ($siteurl ?? '') . '/img/social/reddit.png') loading="lazy" decoding="async" fetchpriority="low")
+                img(src=('//' . ($siteurl ?? '') . '/img/social/reddit.png') alt="Reddit logo" loading="lazy" decoding="async" fetchpriority="low")
                 |  Reddit
         li.nav-item
           a.nav-link(href=('/related/' . ($systemData['solarSystemID'] ?? 0) . '/' . ($extraData['relatedtime'] ?? 0) . '/')) Related
@@ -137,7 +137,7 @@ block content
       .col-lg-4
         .text-center
           a#loginsideimage.btn.w-100.collapse(href="/ccpoauth2/")
-            img(src="/img/ssologin.png" width="209" loading="lazy" decoding="async" fetchpriority="low")
+            img(src="/img/ssologin.png" width="209" alt="SSO Login" loading="lazy" decoding="async" fetchpriority="low")
             br
             br
         .text-center.w-100.d-flex.justify-content-center

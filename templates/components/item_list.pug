@@ -20,19 +20,19 @@ br
   table#itemTable.table.table-sm.item_list.item-table(data-paging="false" data-dom="lrt")
     thead
       tr.titles
-        th(style="width: 40px;")
+        th(scope="col" style="width: 40px;")
           button.btn.btn-sm.m-0.p-0(type="button" data-zkb-sort-column="0" data-zkb-sort-hide="false" aria-label="Sort by item icon")
             i.fas.fa-sort(aria-hidden="true")
-        th
+        th(scope="col")
           button.btn.btn-sm.m-0.p-0(type="button" data-zkb-sort-column="1" data-zkb-sort-hide="true")
             | Item Name 
             i.fas.fa-sort(aria-hidden="true")
-        th(style="width: 85px;")
+        th(scope="col" style="width: 85px;")
           .text-end
             button.btn.btn-sm.m-0.p-0(type="button" data-zkb-sort-column="2" data-zkb-sort-hide="true")
               | Qty 
               i.fas.fa-sort(aria-hidden="true")
-        th(style="width: 110px;")
+        th(scope="col" style="width: 110px;")
           .text-end
             button.btn.btn-sm.m-0.p-0(type="button" data-zkb-sort-column="3" data-zkb-sort-hide="true")
               | Value 
@@ -93,9 +93,9 @@ if (($extraData['insurance']['Basic']['payout'] ?? 0) > 0)
       small Possible payouts
     table.table.table-codensed.text-end
       tr
-        th.text-end Type
-        th.text-end Cost
-        th.text-end Payout
+        th.text-end(scope="col") Type
+        th.text-end(scope="col") Cost
+        th.text-end(scope="col") Payout
       each $insuranceType in ['None', 'Basic', 'Standard', 'Bronze', 'Silver', 'Gold', 'Platinum']
         - $insurance = $extraData['insurance'][$insuranceType] ?? ['cost' => 0, 'payout' => 0];
         tr

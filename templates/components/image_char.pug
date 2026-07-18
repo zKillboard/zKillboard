@@ -2,7 +2,7 @@
 - $actualSize = $resizeImage ?? $imageSize;
 - $imageStyleText = !empty($imageStyle) ? (' ' . $imageStyle) : '';
 if (($field['characterID'] ?? 0) == 0)
-  img.eveimage.img-rounded(src=(($image_character ?? 'https://images.evetech.net/characters/') . '1/portrait?size=' . $imageSize) style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;' . $imageStyleText) loading="lazy" decoding="async" fetchpriority="low")
+  img.eveimage.img-rounded(src=(($image_character ?? 'https://images.evetech.net/characters/') . '1/portrait?size=' . $imageSize) style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;' . $imageStyleText) alt="Unknown character portrait" loading="lazy" decoding="async" fetchpriority="low")
 else
   a(href=('/character/' . $field['characterID'] . '/') rel="tooltip" title=($field['characterName'] ?? ''))
     if (!empty($isDelayed))

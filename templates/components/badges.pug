@@ -1,6 +1,6 @@
 each $badge in ($badges ?? [])
   - $badge = is_object($badge) ? (array) $badge : $badge;
   span.float-start
-    a(href=($badge['url'] ?? '') target="_blank" rel="noopener noreferrer" alt=($badge['title'] ?? ''))
-      img(style="height: 64px; width: 64px;" title=($badge['title'] ?? '') src=($badge['image'] ?? ''))
+    a(href=($badge['url'] ?? '') target="_blank" rel="noopener noreferrer" aria-label=($badge['title'] ?? 'Badge'))
+      img(style="height: 64px; width: 64px;" title=($badge['title'] ?? '') src=($badge['image'] ?? '') alt=($badge['title'] ?? 'Badge') loading="lazy" decoding="async" fetchpriority="low")
 br

@@ -35,8 +35,21 @@ function updateAsearchButtonStates() {
 	if (!root) return;
 	root.querySelectorAll('.filter-btn, .radio-btn, .tfilter, #togglefilters, #rolling-times, #toggleGroupLayout').forEach(function (element) {
 		if (!element.classList.contains('btn')) return;
-		element.setAttribute('aria-pressed', element.classList.contains('btn-primary') ? 'true' : 'false');
+		var pressed = element.classList.contains('btn-primary');
+		element.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+		if (element.classList.contains('pagenum')) {
+			if (pressed) element.setAttribute('aria-current', 'page');
+			else element.removeAttribute('aria-current');
+		}
+		if (element.id == 'togglefilters' || element.id == 'toggleGroupLayout') {
+			element.setAttribute('aria-expanded', pressed ? 'true' : 'false');
+		}
 	});
+}
+
+function setAsearchStatus(message) {
+	var status = document.getElementById('asearchStatus');
+	if (status) status.textContent = message || '';
 }
 
 function checkCharID() {
@@ -302,9 +315,10 @@ function getHTML(suggestion) {
 	suggestion.value = suggestion.value.replaceAll('<', '').replaceAll('>', '');
 	var entityImage = getEntityImage(suggestion.data.type, suggestion.data.id);
 	//console.log(suggestion.data.type, suggestion.data.id, suggestion.data.value);
-	var left = $("<button>").attr("type", "button").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("fas").addClass("fa-chevron-left").attr('direction', 'left').attr('aria-label', 'Move filter left').attr('title', 'Move filter left').on('click', moveLeft);
-	var right = $("<button>").attr("type", "button").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("fas").addClass("fa-chevron-right").attr('direction', 'right').attr('aria-label', 'Move filter right').attr('title', 'Move filter right').on('click', moveRight);
-	var remove = $("<button>").attr("type", "button").addClass('btn').addClass('btn-sm').addClass("fas").addClass("fa-times").addClass("filter-remove").addClass('alert-danger').attr('aria-label', 'Remove filter').attr('title', 'Remove filter').on('click', moveOut);
+	var filterName = suggestion.value || 'filter';
+	var left = $("<button>").attr("type", "button").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("fas").addClass("fa-chevron-left").attr('direction', 'left').attr('aria-label', 'Move ' + filterName + ' filter left').attr('title', 'Move filter left').on('click', moveLeft);
+	var right = $("<button>").attr("type", "button").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("fas").addClass("fa-chevron-right").attr('direction', 'right').attr('aria-label', 'Move ' + filterName + ' filter right').attr('title', 'Move filter right').on('click', moveRight);
+	var remove = $("<button>").attr("type", "button").addClass('btn').addClass('btn-sm').addClass("fas").addClass("fa-times").addClass("filter-remove").addClass('alert-danger').attr('aria-label', 'Remove ' + filterName + ' filter').attr('title', 'Remove filter').on('click', moveOut);
 	left.css({ flex: "0 0 auto", width: "34px", display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: "6px 0 0 6px", marginRight: "3px" });
 	right.css({ flex: "0 0 auto", width: "34px", display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 0 });
 	remove.css({ flex: "0 0 auto", width: "30px", display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: "0 6px 6px 0" });
@@ -518,6 +532,7 @@ var asearchRetryQueryType = null;
 var asearchBatch = null;
 var asearchKillRowBatch = null;
 var pendingKillRows = 0;
+var lastAsearchKillCount = 0;
 function doQuery(queryType = 'all', isRetry = false) {
 	if (first_load) return;
 	if (!allowChange) return;
@@ -632,7 +647,10 @@ function getFilters() {
 function updateAsearchQueueIndicator(jqXHR) {
 	var queueDepth = jqXHR ? parseInt(jqXHR.getResponseHeader('X-Asearch-Queue-Depth') || 0) : 0;
 	var indicator = $("#asearchQueueIndicator");
-	if (queueDepth > 25) indicator.text("Queued: " + queueDepth).show();
+	if (queueDepth > 25) {
+		indicator.text("Queued: " + queueDepth).show();
+		setAsearchStatus("Search queued. Queue depth " + queueDepth + ".");
+	}
 	else indicator.hide().text("");
 }
 
@@ -659,9 +677,13 @@ function applyKillQueryResult(data, textStatus, jqXHR) {
 	killIDs = data.kills;
 	asearchKillRowBatch = {};
 	pendingKillRows = data.kills.length;
+	lastAsearchKillCount = data.kills.length;
 	$("#killmails-list").attr("aria-busy", pendingKillRows > 0 ? "true" : "false");
 	if (data.kills.length == 0) killlistmessage("no results - expand timespan, adjust pagination, or reduce filters...");
-	else popEm();
+	else {
+		setAsearchStatus("Loading " + data.kills.length + " killmail" + (data.kills.length == 1 ? "" : "s") + ".");
+		popEm();
+	}
 }
 
 function applyCountQueryResult(data, textStatus, jqXHR) {
@@ -710,13 +732,16 @@ function clearAsearchResults(queryType) {
 	if (queryType == 'all' || queryType == 'kills') {
 		asearchKillRowBatch = {};
 		pendingKillRows = 0;
+		lastAsearchKillCount = 0;
 		$("#killmails-list").attr("aria-busy", "true").html("");
+		setAsearchStatus("Loading killmails.");
 	}
 	if (queryType == 'all' || queryType == 'groups') {
 		$("#result-groups-count").html("");
 		$("#result-groups-labels").html("");
 		$("#result-groups-distincts").html("");
 		for (var i = 0; i < types.length; i++) $("#result-groups-" + types[i]).html("");
+		if (queryType == 'groups') setAsearchStatus("Loading result groups.");
 	}
 }
 
@@ -733,6 +758,7 @@ function killlistmessage(message) {
 	asearchKillRowBatch = null;
 	pendingKillRows = 0;
 	$("#killmails-list").attr("aria-busy", "false");
+	setAsearchStatus(message);
 	$(".killlistmessage").remove();
 	var tr = $("<tr>").addClass('killlistmessage');
 	var td = $("<td>").attr('colspan', 7).html('<i>' + message + '</i>');
@@ -753,7 +779,10 @@ function popEm() {
 		}).always(function () {
 			if (rowBatch !== asearchKillRowBatch) return;
 			pendingKillRows--;
-			if (pendingKillRows <= 0) $("#killmails-list").attr("aria-busy", "false");
+			if (pendingKillRows <= 0) {
+				$("#killmails-list").attr("aria-busy", "false");
+				setAsearchStatus("Loaded " + lastAsearchKillCount + " killmail" + (lastAsearchKillCount == 1 ? "" : "s") + ".");
+			}
 		});
 		popEm();
 	}
@@ -1050,7 +1079,7 @@ function exportCsv() {
 		});
 		ws['!cols'] = colWidths;
 
-		XLSX.utils.book_append_sheet(wb, ws, group.attr('aria-title'));
+		XLSX.utils.book_append_sheet(wb, ws, group.attr('aria-label') || group.attr('data-singular') || 'Group');
 	}
 
 	/*const data = [
@@ -1133,6 +1162,7 @@ function btn_export() {
 		  <div class="modal-dialog" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
+		        <h5 class="modal-title" id="exportModalLabel">zKillBot Export</h5>
 		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 		      </div>
 		      <div class="modal-body">

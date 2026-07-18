@@ -1,11 +1,12 @@
 - $topSetData = is_object($topSet ?? null) ? (array) $topSet : ($topSet ?? []);
+- $topSetTitle = $topSetData['title'] ?? '';
 - $first = true;
 - $counter = 1;
 if (count($topSetData['values'] ?? []) > 0)
   .groupReport.float-start(style="width: 100%; padding: 0px; margin: 0px;")
     .text-center
-      h5= $topSetData['title'] ?? ''
-    table.table.table-sm.topBoxes.col-lg-2(style="padding: 0px; margin: 0px; width: 100%;" data-singular=($topSetData['singularTitle'] ?? '') aria-title=($topSetData['title'] ?? ''))
+      h5= $topSetTitle
+    table.table.table-sm.topBoxes.col-lg-2(style="padding: 0px; margin: 0px; width: 100%;" data-singular=($topSetData['singularTitle'] ?? '') aria-label=$topSetTitle)
       each $data in ($topSetData['values'] ?? [])
         - $data = is_object($data) ? (array) $data : $data;
         - $field = $data;

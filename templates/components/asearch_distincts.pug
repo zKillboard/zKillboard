@@ -1,7 +1,7 @@
 .float-start(style="width: 100%; padding: 0px; margin: 0px;")
   .text-center
     h5 Distincts
-  table.table.table-sm.topBoxes.col-lg-2(style="padding: 0px; margin: 0px; width: 100%;" data-singular="Distincts" aria-title="Distincts")
+  table.table.table-sm.topBoxes.col-lg-2(style="padding: 0px; margin: 0px; width: 100%;" data-singular="Distincts" aria-label="Distincts")
     each $row in ($result ?? [])
       - $row = is_object($row) ? (array) $row : $row;
       tr

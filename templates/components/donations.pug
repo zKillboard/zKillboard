@@ -3,7 +3,7 @@ if (count($topDonators ?? []) > 0)
   .float-start(style="width: 100%; padding: 0px; margin: 0px;")
     .text-center
       h5 Biggest Golden Wrecks
-    table.table.table-sm.topBoxes.col-lg-2.p-0.m-0.w-100
+    table.table.table-sm.topBoxes.col-lg-2.p-0.m-0.w-100(aria-label="Biggest Golden Wrecks")
       each $data in ($topDonators ?? [])
         - $field = $data;
         if ($first)

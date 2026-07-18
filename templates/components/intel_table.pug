@@ -3,15 +3,16 @@
     h5= $fieldset['title'] ?? ''
   table.table.table-sm.topBoxes(style="padding: 0px; margin: 0px; width: 100%;")
     tr
-      th(style="width: 42px;") &nbsp;
-      th Character
-      th.text-end(style="width: 100px;") Kills
+      th(scope="col" style="width: 42px;")
+        span.visually-hidden Character portrait
+      th(scope="col") Character
+      th.text-end(scope="col" style="width: 100px;") Kills
     each $field in ($fieldset['data'] ?? [])
       tr
         td
           - $characterID = $field['characterID'] ?? 0;
           if ($characterID == 0)
-            img.eveimage.img-rounded(src=(($image_character ?? 'https://images.evetech.net/characters/') . '1/portrait?size=64') style="height: 40px; width: 40px;" loading="lazy" decoding="async" fetchpriority="low")
+            img.eveimage.img-rounded(src=(($image_character ?? 'https://images.evetech.net/characters/') . '1/portrait?size=64') style="height: 40px; width: 40px;" alt="Unknown character portrait" loading="lazy" decoding="async" fetchpriority="low")
           else
             a(href=('/character/' . $characterID . '/') rel="tooltip" title=($field['characterName'] ?? ''))
               img.eveimage.img-rounded(src=(($image_character ?? 'https://images.evetech.net/characters/') . $characterID . '/portrait?size=64') style="height: 40px; width: 40px;" alt=($field['characterName'] ?? '') loading="lazy" decoding="async" fetchpriority="low")

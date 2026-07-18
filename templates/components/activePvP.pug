@@ -4,10 +4,10 @@ if (count($activePvP ?? []) > 0)
       h5 Active PVP (last 7 days)
       if (($pageType ?? '') == 'overview')
         small
-          a(href="./kills/") Kills
-          |  + 
-          a(href="./losses/") Losses
-    table.table.table-sm.topBoxes.col-lg-2.w-100.p-0.m-0
+            a(href="./kills/") Kills
+            |  + 
+            a(href="./losses/") Losses
+    table.table.table-sm.topBoxes.col-lg-2.w-100.p-0.m-0(aria-label="Active PVP last 7 days")
       each $row in ($activePvP ?? [])
         - $row = is_object($row) ? (array) $row : $row;
         tr

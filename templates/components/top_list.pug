@@ -22,9 +22,9 @@ if (count($topLists ?? []) > 0)
                 = 'Top ' . $pluralize(ucfirst((string) ($topList['type'] ?? '')))
           thead
             tr
-              th Rank
-              th(style="width: 100%;")= ucfirst((string) ($topList['type'] ?? ''))
-              th(style="text-align: right")
+              th(scope="col") Rank
+              th(scope="col" style="width: 100%;")= ucfirst((string) ($topList['type'] ?? ''))
+              th(scope="col" style="text-align: right")
                 if (isset($topList['ranked']))
                   = $topList['ranked']
                 else
