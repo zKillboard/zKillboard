@@ -62,30 +62,30 @@ each $kill in ($killList ?? [])
         if (in_array('padding', $kill['labels'] ?? []))
           a(href='/asearch/#{"buttons":["togglefilters","week","label-padding","sort-date","sort-desc","page1","victimsonly"]}')
             small
-              span.badge.text-bg-warning padding
+              span.alert.alert-warning.m-0.ms-1.px-1.py-0.zkb-padding-label padding
         else if (in_array('atShip', $kill['labels'] ?? []))
           small
-            span.badge.text-bg-success AT Ship
+            span.alert.alert-success.m-0.ms-1.px-1.py-0 AT Ship
         else if (!empty($kill['ganked']))
           a(href='/asearch/#{"buttons":["togglefilters","week","label-ganked","sort-date","sort-desc","page1","victimsonly"]}')
             small
-              span.badge.text-bg-danger GANKED
+              span.alert.alert-danger.m-0.ms-1.px-1.py-0 GANKED
         else if (!empty($kill['solo']))
           a(href=('/character/' . ($kill['finalBlow']['characterID'] ?? 0) . '/solo/'))
             small
-              span.badge.text-bg-success SOLO
+              span.alert.alert-success.m-0.ms-1.px-1.py-0 SOLO
         else if (!empty($kill['npc']))
           |
           small
-            span.badge.text-bg-info NPC
+            span.alert.alert-info.m-0.ms-1.px-1.py-0 NPC
         else if (($kill['attackerCount'] ?? 0) >= 1000)
           |
           small
-            span.badge.text-bg-danger 1000+
+            span.alert.alert-danger.m-0.ms-1.px-1.py-0 1000+
         else if (($kill['attackerCount'] ?? 0) >= 100)
           |
           small
-            span.badge.text-bg-warning 100+
+            span.alert.alert-warning.m-0.ms-1.px-1.py-0 100+
         else
           = ' (' . ($kill['attackerCount'] ?? 0) . ')'
         br

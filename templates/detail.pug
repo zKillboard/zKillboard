@@ -33,6 +33,7 @@ block header
   - $showImage = true;
 
 block content
+  h1.visually-hidden= $pageTitle
   #detail-navibar.navbar.navbar-dark.navbar-expand.py-0.mb-2
     .container-fluid.px-0
       ul.navbar-nav.align-items-center.me-2.d-none.d-md-flex
@@ -159,10 +160,10 @@ block content
         else
           if (!empty($infoData['solo']))
             .alert.alert-success
-              center Solo Killmail
+              .text-center Solo Killmail
           if (!empty($infoData['ganked']))
             .alert.alert-danger
-              center GANKED
+              .text-center GANKED
         #details.tab-pane.fade.show.active
           - $warInfo = is_object($extraData['warInfo'] ?? null) ? (array) $extraData['warInfo'] : ($extraData['warInfo'] ?? []);
           if (!empty($warInfo['dscr']))

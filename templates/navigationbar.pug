@@ -1,3 +1,7 @@
+- $navName = function ($rows, $id, $fallback) { foreach ($rows ?? [] as $row) { $row = is_object($row) ? (array) $row : (array) $row; if ((int) ($row['id'] ?? 0) == (int) $id && strlen((string) ($row['name'] ?? '')) > 0) return rtrim((string) $row['name'], ' *'); } return $fallback; };
+- $navCharacterName = $navName($tracker_character ?? [], $characterID ?? 0, $sessionusername ?? 'Character');
+- $navCorporationName = $navName($tracker_corporation ?? [], $corporationID ?? 0, 'your corporation');
+- $navAllianceName = $navName($tracker_alliance ?? [], $allianceID ?? 0, 'your alliance');
 nav.navbar.navbar-expand-md.navbar-dark.bg-dark(style="margin-bottom: 0px;")
   .nav-mobile-shell.d-flex.align-items-center
     button.navbar-toggler.openMenu.d-md-none.me-2(type="button" data-bs-toggle="collapse" data-bs-target="#navbar-main" aria-controls="navbar-main" aria-expanded="false" aria-label="Toggle navigation")
@@ -81,7 +85,7 @@ nav.navbar.navbar-expand-md.navbar-dark.bg-dark(style="margin-bottom: 0px;")
           a.nav-link(href="/scanalyzer/" aria-label="Scanalyzer" title="Scanalyzer")
             span.scanalyzer(aria-hidden="true") &#128924;
         li.nav-item.d-none.d-md-block
-          a.nav-link(href="/information/payments/")
+          a.nav-link(href="/information/payments/" aria-label="Payments" title="Payments")
             img.zkb-nav-logo(src="/img/gold_logo_cropped_32.png" alt="")
         if ($statslink ?? false)
           li.nav-item
@@ -91,14 +95,14 @@ nav.navbar.navbar-expand-md.navbar-dark.bg-dark(style="margin-bottom: 0px;")
         li#noliveupdates.nav-item.d-none
           a.nav-link(href="/information/payments/" style="color: red; font-style: strikethrough;") LIVE UPDATES DISABLED
         li.nav-item.liveupdates.d-none.d-lg-block
-          a#lasthour.nav-link.text-end.text-nowrap(href="/top/lasthour/all/" rel="tooltip" title="Kills added this hour") &nbsp;
+          a#lasthour.nav-link.text-end.text-nowrap(href="/top/lasthour/all/" rel="tooltip" title="Kills added this hour" aria-label="Kills added this hour") &nbsp;
         li.nav-item.liveupdates.d-none.d-lg-block
           span.nav-link.text-end.text-nowrap(rel="tooltip" title="Tranquility Status" role="status" aria-live="polite" aria-atomic="true")
             span#tqStatus
               span#tqStatusDetail
               span#tqCount
         li.nav-item.d-none.d-xl-block
-          a.nav-link.text-end.text-nowrap(href="/ztop/" rel="tooltip" title="Eve Time")
+          a.nav-link.text-end.text-nowrap(href="/ztop/" rel="tooltip" title="Eve Time" aria-label="Eve Time")
             #my_clock
 
     .flex-grow-1.d-md-none
@@ -119,10 +123,13 @@ nav.navbar.navbar-expand-md.navbar-dark.bg-dark(style="margin-bottom: 0px;")
             a#dls-login.dropdown-item(href="/ccpoauth2/")
               img(src="/img/ssologin.png" alt="SSO Login")
           li.forloggedin.d-none.d-sm-block.px-3.py-1
-            img.char-image.eveimage.img-rounded.clickimage(style="margin-left: 10px;")
+            a#nav-character-link.d-inline-block(href=('/character/' . ($characterID ?? 0) . '/') aria-label=('View ' . $navCharacterName))
+              img.char-image.eveimage.img-rounded(style="margin-left: 10px;" alt=($navCharacterName . ' portrait'))
           li.forloggedin.d-none.d-sm-flex.px-3.py-1(style="margin-left: 10px;")
-            img.corp-image.eveimage.img-rounded.clickimage
-            img.alli-image.eveimage.img-rounded.clickimage
+            a#nav-corporation-link.d-inline-block(href=('/corporation/' . ($corporationID ?? 0) . '/') aria-label=('View ' . $navCorporationName))
+              img.corp-image.eveimage.img-rounded(alt=($navCorporationName . ' logo'))
+            a#nav-alliance-link.d-inline-block(href=('/alliance/' . ($allianceID ?? 0) . '/') aria-label=('View ' . $navAllianceName))
+              img.alli-image.eveimage.img-rounded(alt=($navAllianceName . ' logo'))
           li.forloggedin.d-none
             hr.dropdown-divider
           li.forloggedin.d-none
@@ -152,7 +159,7 @@ nav.navbar.navbar-expand-md.navbar-dark.bg-dark(style="margin-bottom: 0px;")
           ul#char-loggedout.dropdown-menu.dropdown-menu-end
             li
               form#loginform(action="/ccpoauth2/")
-                input#ssologinimage(type="image" src="/img/ssologin.png")
+                input#ssologinimage(type="image" src="/img/ssologin.png" alt="Log in with EVE Online SSO")
                 p
                   small Will request killmails and save fitting scopes.
   #advancedsearchnavbar(style="background-color: black; text-align: right; padding: 0.5em; padding-right: 7em; display: none;")

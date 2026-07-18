@@ -13,6 +13,7 @@ block title
   include components/title.pug
 
 block content
+  h1.visually-hidden= $pageTitle
   include components/info_top.pug
   #overview-navbar.navbar.navbar-dark.navbar-expand
     button.navbar-toggler.d-md-none(type="button" data-bs-toggle="collapse" data-bs-target="#overview-menu" aria-controls="overview-menu" aria-expanded="false" aria-label="Toggle navigation")

@@ -1330,6 +1330,10 @@ code {
 	max-width: 315px !important;
 }
 
+.tr-killmail .zkb-padding-label {
+	background-color: #CC5500;
+}
+
 .ambient-killmail-toggle {
 	position: fixed;
 	right: 14px;
