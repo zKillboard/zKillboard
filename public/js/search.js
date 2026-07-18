@@ -1,24 +1,33 @@
 (function( $ ) {
     let query_count = 0;
 
+	function attr_text(value) {
+		return String(value || '').replace(/[&<>"']/g, function(char) {
+			return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char];
+		});
+	}
+
 	function image_html(item) {
 		if (item.image == '') return '';
 
 		var onerror = '';
+		var alt = attr_text(item.name);
 		if (item.type == 'item') {
 			var id = parseInt(item.id);
 			onerror = ' onerror="this.onerror=function(){this.removeAttribute(\'onerror\'); this.src=\'/img/icons/' + id + '_64.png\';}; this.src=\'https://images.evetech.net/types/' + id + '/bp?size=32\';"';
 		}
 
 		if (item.type == 'ship') {
-			var pip = item.pip ? '<img class="pip" src="/img/pips/' + item.pip + '" alt="">' : '';
+			var pipLabel = item.pip ? item.pip.replace(/^pip_/, '').replace(/\.png$/, '').replace(/^tech([0-9])$/, 'Tech $1') : '';
+			pipLabel = pipLabel ? pipLabel.charAt(0).toUpperCase() + pipLabel.slice(1) : '';
+			var pip = item.pip ? '<img class="pip" src="/img/pips/' + item.pip + '" alt="' + attr_text(pipLabel) + '">' : '';
 			return '<span class="shipImageSpan" data-l="32px" data-i="32" style="height: 32px; width: 32px; --size: 32px; --sizei: 32;">' +
-				'<img class="shipImageRender eveimage img-rounded" src="' + item.image + '" width="32" height="32" alt=" " onerror="this.setAttribute(\'shipImageError\', \'true\')">' +
+				'<img class="shipImageRender eveimage img-rounded" src="' + item.image + '" width="32" height="32" alt="' + alt + '" onerror="this.setAttribute(\'shipImageError\', \'true\')">' +
 				pip +
 				'</span>';
 		}
 
-		return '<img src="' + item.image + '" width="32" height="32" alt=" "' + onerror + '>';
+		return '<img src="' + item.image + '" width="32" height="32" alt="' + alt + '"' + onerror + '>';
 	}
 
 	var zz_search = function(element, callback) {

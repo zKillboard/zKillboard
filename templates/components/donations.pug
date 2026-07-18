@@ -13,8 +13,8 @@ if (count($topDonators ?? []) > 0)
             td
               include image_char.pug
             td.text-center.align-middle
-              a(href="/information/payments/")
-                img(src="/img/gold_logo_cropped_32.png" alt="")
+              a(href="/information/payments/" aria-label="zKillboard payment information")
+                img(src="/img/gold_logo_cropped_32.png" alt="zKillboard gold supporter badge")
           - $first = false;
         tr
           td

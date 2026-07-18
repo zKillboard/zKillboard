@@ -189,12 +189,12 @@ br
                     td(colspan="2" style="background-color: #000; border: none;")
                       div
                         if (!empty($extraData['hasSuperMonocle']))
-                          img(src="/img/golden_monocle.png" rel="tooltip" title="Super Big Money! Has sent at least 10b ISK to zKillboard." style="height: 64px; padding-right: 0.5em;")
+                          img(src="/img/golden_monocle.png" alt="Super Big Money supporter badge" rel="tooltip" title="Super Big Money! Has sent at least 10b ISK to zKillboard." style="height: 64px; padding-right: 0.5em;")
                         else if (!empty($extraData['hasMonocle']))
-                          img(src="/img/monocled.png" rel="tooltip" title="Big Money! Has sent at least 1b ISK to zKillboard." style="padding-right: 0.5em;")
+                          img(src="/img/monocled.png" alt="Big Money supporter badge" rel="tooltip" title="Big Money! Has sent at least 1b ISK to zKillboard." style="padding-right: 0.5em;")
                         if (($gold ?? 0) > 0)
-                          a(href="/information/payments/")
-                            img(src="/img/gold_logo_cropped_32.png" rel="tooltip" title="Thank you!")
+                          a(href="/information/payments/" aria-label="zKillboard payment information")
+                            img(src="/img/gold_logo_cropped_32.png" alt="zKillboard gold supporter badge" rel="tooltip" title="Thank you!")
                         if (!empty($extraData['hasSponsored']))
                           b.overview-support-icon.fas.fa-bullhorn(rel="tooltip" title="Sponsored at least one Killmail")
                   tr.border-0

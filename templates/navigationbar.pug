@@ -86,7 +86,7 @@ nav.navbar.navbar-expand-md.navbar-dark.bg-dark(style="margin-bottom: 0px;")
             span.scanalyzer(aria-hidden="true") &#128924;
         li.nav-item.d-none.d-md-block
           a.nav-link(href="/information/payments/" aria-label="Payments" title="Payments")
-            img.zkb-nav-logo(src="/img/gold_logo_cropped_32.png" alt="")
+            img.zkb-nav-logo(src="/img/gold_logo_cropped_32.png" alt="Payments")
         if ($statslink ?? false)
           li.nav-item
             a.nav-link(href=$statslink) Stats
@@ -121,7 +121,7 @@ nav.navbar.navbar-expand-md.navbar-dark.bg-dark(style="margin-bottom: 0px;")
           li#username.dropdown-header(style="font-weight: bold;")= $sessionusername ?? ''
           li.forloggedout
             a#dls-login.dropdown-item(href="/ccpoauth2/")
-              img(src="/img/ssologin.png" alt="SSO Login")
+              img(src="/img/ssologin.png" alt="Log in with EVE Online SSO")
           li.forloggedin.d-none.d-sm-block.px-3.py-1
             a#nav-character-link.d-inline-block(href=('/character/' . ($characterID ?? 0) . '/') aria-label=('View ' . $navCharacterName))
               img.char-image.eveimage.img-rounded(style="margin-left: 10px;" alt=($navCharacterName . ' portrait'))
