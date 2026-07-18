@@ -35,10 +35,11 @@ if (!empty($entities))
             else if ($type == 'system')
               a(href=('/system/' . ($field['solarSystemID'] ?? 0) . '/'))= $field['solarSystemName'] ?? ''
           td(style="text-align:right;")
-            form(name="deleteentity" method="post" action="/account/campaigns/")
+            - $confirmMessage = "Are you sure you want to remove " . ($field['name'] ?? '') . "?";
+            form(name="deleteentity" method="post" action="/account/campaigns/" data-zkb-confirm=$confirmMessage)
               input#deleteentityid(name="deleteentityid" type="hidden" value=($field['id'] ?? ''))
               input#deleteentitytype(name="deleteentitytype" type="hidden" value=$type)
               input(type="hidden" name="campaignID" value=($data['campainID'] ?? ''))
-              input.btn.btn-danger.btn-sm(type="submit" value="Remove" onclick=("return confirm('Are you sure you want to remove " . addslashes((string) ($field['name'] ?? '')) . "?');"))
+              input.btn.btn-danger.btn-sm(type="submit" value="Remove")
 else
   i Nothing to list here yet...

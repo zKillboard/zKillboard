@@ -57,7 +57,23 @@ $(document).ready(function () {
     $('#login-delay-slider').on('click touchstart mousedown', stopPropagation);
     $(document).on('click', 'a[href^="/ccpoauth2/"]:not([href^="/ccpoauth2-"])', interceptLoginClick);
     $(document).on('click', 'a[href^="/account/tracker/"]', handleTrackerClick);
+    $(document).on('click', '[data-zkb-close-tooltip]', closeLegacyTooltipClick);
+    $(document).on('click', '[data-zkb-sort-column]', sortItemTableClick);
+    $(document).on('click', '[data-zkb-stat-range]', statRangeClick);
+    $(document).on('click', '[data-zkb-favorite-kill]', favoriteKillClick);
+    $(document).on('click', '[data-zkb-sponsor-url]', sponsorClick);
+    $(document).on('click', '[data-zkb-save-fitting]', saveFittingClick);
+    $(document).on('click', '[data-zkb-select-on-click]', selectOnClick);
+    $(document).on('click', '[data-zkb-history-back]', historyBackClick);
+    $(document).on('click', '[data-zkb-ingame-link-src]', ingameLinkClick);
+    $(document).on('click', '[data-zkb-show-grouping]', showGroupingClick);
+    $(document).on('click mouseover', '[data-zkb-load-remaining-pilots]', loadRemainingPilotsTrigger);
+    $(document).on('click', '[data-zkb-sponsor-slider]', sponsorSliderClick);
+    $(document).on('click', '[data-zkb-login-required]', loginRequiredClick);
+    $(document).on('click', '[data-zkb-comment-upvote]', commentUpVoteClick);
+    $(document).on('click', '[data-zkb-related-kill]', relatedKillRowClick);
     $(document).on('submit', 'form[action^="/ccpoauth2/"]', interceptLoginSubmit);
+    $(document).on('submit', 'form[data-zkb-confirm]', confirmSubmit);
     $(document).on('change', '#login-scope-all', loginScopeAllChange);
     $(document).on('change', '#loginOptionsModal .login-scope', syncLoginScopeAllCheckbox);
     $('#continueLoginWithOptions').on('click', continueLoginWithOptions);
@@ -930,6 +946,11 @@ function hideTransientTooltips() {
     if (legacyTooltip) legacyTooltip.classList.add("d-none");
 }
 
+function closeLegacyTooltipClick(event) {
+    event.preventDefault();
+    hideTransientTooltips();
+}
+
 function destroyTooltipsIn(root) {
     if (!root) return;
     if (root._tippy) root._tippy.destroy();
@@ -1269,6 +1290,13 @@ request.done(function(msg) {
 
 let sortOrder = 1;
 let sortColumn = 0;
+function sortItemTableClick(event) {
+    event.preventDefault();
+    const column = parseInt(this.getAttribute("data-zkb-sort-column"), 10);
+    if (Number.isNaN(column)) return;
+    doSort(column, this.getAttribute("data-zkb-sort-hide") === "true");
+}
+
 function doSort(column, doHide)
 {
     if (doHide) $(".hide-when-sorted").hide();
@@ -1377,6 +1405,114 @@ function doSponsor(url)
     $('#modalMessageBody').load(url);
     $('#modalTitle').text('Sponsor this killmail');
     showModal('#modalMessage');
+}
+
+function sponsorClick(event) {
+    event.preventDefault();
+    const url = this.getAttribute("data-zkb-sponsor-url");
+    if (url) doSponsor(url);
+}
+
+function saveFittingClick(event) {
+    event.preventDefault();
+    const id = parseInt(this.getAttribute("data-zkb-save-fitting"), 10);
+    if (!Number.isNaN(id)) saveFitting(id);
+}
+
+function selectOnClick() {
+    if (typeof this.select === "function") this.select();
+}
+
+function historyBackClick(event) {
+    event.preventDefault();
+    history.go(-1);
+}
+
+function ingameLinkClick(event) {
+    event.preventDefault();
+    const src = this.getAttribute("data-zkb-ingame-link-src");
+    const target = document.getElementById("ingamelinkcontent");
+    if (src && target) {
+        target.textContent = "";
+        const iframe = document.createElement("iframe");
+        iframe.src = src;
+        iframe.width = "100%";
+        iframe.setAttribute("rows", "3");
+        iframe.title = "In Game Link";
+        target.appendChild(iframe);
+    }
+    showModal("#ingamelink");
+}
+
+function showGroupingClick(event) {
+    event.preventDefault();
+    const type = this.getAttribute("data-zkb-show-grouping");
+    if (!type) return;
+    $(".grouping-" + type).show();
+    $(".grouping-all-" + type).hide();
+}
+
+function loadRemainingPilotsTrigger() {
+    if (typeof window.loadRemainingPilots === "function") window.loadRemainingPilots();
+}
+
+function sponsorSliderClick(event) {
+    event.preventDefault();
+    const baseUrl = this.getAttribute("data-zkb-sponsor-slider");
+    if (!baseUrl) return;
+    const amount = $("#slider").attr("value") || $("#slider").val() || "0";
+    doSponsor(baseUrl + amount + "/");
+}
+
+function loginRequiredClick(event) {
+    event.preventDefault();
+    alert(this.getAttribute("data-zkb-login-required") || "Please log in first.");
+}
+
+function commentUpVoteClick(event) {
+    event.preventDefault();
+    const pageID = this.getAttribute("data-zkb-comment-page");
+    const commentID = this.getAttribute("data-zkb-comment-upvote");
+    if (pageID && commentID) commentUpVote(pageID, commentID);
+}
+
+function relatedKillRowClick(event) {
+    if (event.which !== 1) return;
+    const target = event.target;
+    if (target && target.closest && target.closest("a, button, input, textarea, select")) return;
+
+    const killID = parseInt(this.getAttribute("data-zkb-related-kill"), 10);
+    if (Number.isNaN(killID) || killID <= 0) return;
+
+    event.preventDefault();
+    navigateTo("/kill/" + killID + "/");
+    return false;
+}
+
+function confirmSubmit(event) {
+    const message = this.getAttribute("data-zkb-confirm");
+    if (message && !confirm(message)) {
+        event.preventDefault();
+        return false;
+    }
+}
+
+function favoriteKillClick(event) {
+    event.preventDefault();
+    const killID = parseInt(this.getAttribute("data-zkb-favorite-kill"), 10);
+    if (Number.isNaN(killID)) return;
+    doFavorite(killID, this, this.getAttribute("data-zkb-favorite-scope") || undefined);
+}
+
+function statRangeClick(event) {
+    event.preventDefault();
+    const targetRange = this.getAttribute("data-zkb-stat-range");
+    if (!targetRange) return;
+
+    $(".alltime-ranks, .recent-ranks, .weekly-ranks").hide();
+    $("." + targetRange).show();
+    $(".stat-range").removeClass("btn-primary stat-active").addClass("btn-secondary");
+    $(this).removeClass("btn-secondary").addClass("btn-primary stat-active");
 }
 
 function doFavorite(killID, star, scope) {

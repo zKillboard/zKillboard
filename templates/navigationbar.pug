@@ -116,7 +116,7 @@ nav.navbar.navbar-expand-md.navbar-dark.bg-dark(style="margin-bottom: 0px;")
         ul#char-loggedin.dropdown-menu.dropdown-menu-end
           li#username.dropdown-header(style="font-weight: bold;")= $sessionusername ?? ''
           li.forloggedout
-            a#dls-login.dropdown-item(onclick="interceptLoginClick();" href="/ccpoauth2/")
+            a#dls-login.dropdown-item(href="/ccpoauth2/")
               img(src="/img/ssologin.png" alt="SSO Login")
           li.forloggedin.d-none.d-sm-block.px-3.py-1
             img.char-image.eveimage.img-rounded.clickimage(style="margin-left: 10px;")

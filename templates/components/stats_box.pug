@@ -21,9 +21,9 @@
       tr#teststats
         td(colspan="7")
           .btn-group.btn-group-sm.stat-range-tabs.d-flex.mx-auto(role="group" aria-label="Statistics range")
-            button.btn.btn-primary.stat-range.stat-active(type="button" title="Alltime" onclick='$(".alltime-ranks").show(); $(".recent-ranks").hide(); $(".weekly-ranks").hide(); $(".stat-range").removeClass("btn-primary stat-active").addClass("btn-secondary"); $(this).removeClass("btn-secondary").addClass("btn-primary stat-active");') Alltime &infin;
-            button.btn.btn-secondary.stat-range(type="button" title="Recent" onclick='$(".alltime-ranks").hide(); $(".recent-ranks").show(); $(".weekly-ranks").hide(); $(".stat-range").removeClass("btn-primary stat-active").addClass("btn-secondary"); $(this).removeClass("btn-secondary").addClass("btn-primary stat-active");') Recent 90d
-            button.btn.btn-secondary.stat-range(type="button" title="Weekly" onclick='$(".alltime-ranks").hide(); $(".recent-ranks").hide(); $(".weekly-ranks").show(); $(".stat-range").removeClass("btn-primary stat-active").addClass("btn-secondary"); $(this).removeClass("btn-secondary").addClass("btn-primary stat-active");') Weekly 7d
+            button.btn.btn-primary.stat-range.stat-active(type="button" title="Alltime" data-zkb-stat-range="alltime-ranks") Alltime &infin;
+            button.btn.btn-secondary.stat-range(type="button" title="Recent" data-zkb-stat-range="recent-ranks") Recent 90d
+            button.btn.btn-secondary.stat-range(type="button" title="Weekly" data-zkb-stat-range="weekly-ranks") Weekly 7d
       tr
         th &nbsp;
         th(style="text-align: right") Destroyed

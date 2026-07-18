@@ -10,7 +10,7 @@ block content
   h2 404
   .alert.alert-danger
     | The content you're after isn't here. Please go 
-    a(onClick="history.go(-1); this.preventDefault()" href="#") back
+    a(href="#" data-zkb-history-back) back
     |  and try again, or use the mighty fine search at the top! ;)
     if ($message ?? false)
       br

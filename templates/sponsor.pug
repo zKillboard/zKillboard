@@ -27,7 +27,7 @@ div
           |  ISK
       br
       br
-      input.btn.btn-primary(type="submit" value="Sponsor" onClick=("doSponsor('/sponsor/sponsor/" . ($killID ?? '') . "/' + $('#slider').attr('value') + '/'); return false;"))
+      button.btn.btn-primary(type="button" data-zkb-sponsor-slider=('/sponsor/sponsor/' . ($killID ?? '') . '/')) Sponsor
       br
       br
       .alert.alert-success Sponsoring 100m isk or more will send a notification!

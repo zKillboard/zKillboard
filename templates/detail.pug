@@ -80,7 +80,7 @@ block content
           a.nav-link.dropdown-toggle(href="#" data-bs-toggle="dropdown" aria-expanded="false") Export
           ul.dropdown-menu
             li
-              a.dropdown-item(href="#" onClick=('saveFitting(' . ($crestData['killID'] ?? 0) . '); return false;') rel="nofollow") Import Fit via ESI
+              a.dropdown-item(href="#" data-zkb-save-fitting=($crestData['killID'] ?? 0) rel="nofollow") Import Fit via ESI
             li
               a.dropdown-item(data-bs-toggle="modal" data-bs-target="#DNA" href="#") DNA
             li
@@ -88,7 +88,7 @@ block content
             li
               a.dropdown-item(target="_blank" rel="noopener noreferrer" href=('/kill/' . ($crestData['killID'] ?? 0) . '/redirect/esi/')) ESI Link
             li
-              a.dropdown-item(data-bs-toggle="modal" data-bs-target="#ingamelink" href="#" onclick=("bootstrap.Modal.getOrCreateInstance(document.getElementById(\"ingamelink\")).show(); document.getElementById(\"ingamelinkcontent\").innerHTML = `<iframe src=\"https://zkillboard.com/kill/" . ($infoData['killID'] ?? 0) . "/ingamelink/\" width=\"100%\" rows=\"3\" title=\"In Game Link\"></iframe>`;")) In Game Link
+              a.dropdown-item(href="#" data-zkb-ingame-link-src=("https://zkillboard.com/kill/" . ($infoData['killID'] ?? 0) . "/ingamelink/")) In Game Link
         li.nav-item.dropdown
           a.nav-link.dropdown-toggle(href="#" data-bs-toggle="dropdown" aria-expanded="false") Social
           ul.dropdown-menu
@@ -246,7 +246,7 @@ block modal
         .modal-body
           form(name="myform")
             .mb-3
-              textarea#dna.fitting.col-md-12(onClick="this.select();" rows="2" name="dna")= $extraData['dnatext'] ?? ''
+              textarea#dna.fitting.col-md-12(data-zkb-select-on-click rows="2" name="dna")= $extraData['dnatext'] ?? ''
             .mb-3
               button.btn.btn-primary(type="button" data-bs-dismiss="modal") Close
   #EFT.modal.fade
@@ -257,7 +257,7 @@ block modal
         .modal-body
           form(name="myform")
             .mb-3
-              textarea#eft.fitting.col-md-12(onClick="this.select();" rows="15" name="eft" readonly="readonly")= '[' . ($victimData['shipName'] ?? '') . ', ' . ($victimData['characterName'] ?? '') . "'s " . ($victimData['shipName'] ?? '') . "]\n" . ($extraData['efttext'] ?? '')
+              textarea#eft.fitting.col-md-12(data-zkb-select-on-click rows="15" name="eft" readonly="readonly")= '[' . ($victimData['shipName'] ?? '') . ', ' . ($victimData['characterName'] ?? '') . "'s " . ($victimData['shipName'] ?? '') . "]\n" . ($extraData['efttext'] ?? '')
             .mb-3
               button.btn.btn-primary(type="button" data-bs-dismiss="modal") Close
   #ingamelink.modal.fade

@@ -21,20 +21,20 @@ br
     thead
       tr.titles
         th(style="width: 40px;")
-          span.btn.btn-sm.m-0.p-0(onClick="doSort(0, false);")
+          button.btn.btn-sm.m-0.p-0(type="button" data-zkb-sort-column="0" data-zkb-sort-hide="false" aria-label="Sort by item icon")
             i.fas.fa-sort(aria-hidden="true")
         th
-          span.btn.btn-sm.m-0.p-0(onClick="doSort(1, true);")
+          button.btn.btn-sm.m-0.p-0(type="button" data-zkb-sort-column="1" data-zkb-sort-hide="true")
             | Item Name 
             i.fas.fa-sort(aria-hidden="true")
         th(style="width: 85px;")
-          .text-end(onClick="doSort(2, true);")
-            span.btn.btn-sm.m-0.p-0
+          .text-end
+            button.btn.btn-sm.m-0.p-0(type="button" data-zkb-sort-column="2" data-zkb-sort-hide="true")
               | Qty 
               i.fas.fa-sort(aria-hidden="true")
         th(style="width: 110px;")
           .text-end
-            span.btn.btn-sm.m-0.p-0(onClick="doSort(3, true);")
+            button.btn.btn-sm.m-0.p-0(type="button" data-zkb-sort-column="3" data-zkb-sort-hide="true")
               | Value 
               i.fas.fa-sort(aria-hidden="true")
     tbody

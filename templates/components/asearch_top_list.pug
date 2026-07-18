@@ -45,7 +45,8 @@ if (count($topSetData['values'] ?? []) > 0)
           tr(class=('grouping-all-' . ($topSetData['type'] ?? '')))
             td(colspan="4")
               .text-center
-                span.btn.btn-sm.btn-primary(onclick=("$('.grouping-" . ($topSetData['type'] ?? '') . "').show(); $('.grouping-all-" . ($topSetData['type'] ?? '') . "').hide(); return false;")) The Rest (up to 500)
+                - $groupingType = $topSetData['type'] ?? '';
+                button.btn.btn-sm.btn-primary(type="button" data-zkb-show-grouping=$groupingType) The Rest (up to 500)
         tr(class=('grouping-' . ($topSetData['type'] ?? '') . ($counter >= 11 ? ' collapse' : '')))
           if (($topSetData['type'] ?? '') == 'character')
             td.deepfilter.hidedeepfilter(style="display: none;")

@@ -119,7 +119,7 @@ html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
     #zkb-page-scripts(style="display: none;")
       block script
     #ttooltip.ttooltip.d-none
-      span.X.red(onclick="$('#ttooltip').addClass('d-none'); return false;") X
+      button.X.red.btn.btn-link.p-0(type="button" data-zkb-close-tooltip aria-label="Close tooltip") X
       br
       span#tipmsg
     #modalMessage.modal.fade
