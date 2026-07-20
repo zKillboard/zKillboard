@@ -127,7 +127,7 @@ function getTotalDroppableValueForBackfill($killID, $items, $dttm, $isCargo = fa
     $totalDroppableValue = 0;
     foreach ($items as $item) {
         $flagLocation = Info::getFlagLocation((int) @$item["flag"]);
-        if ($flagLocation == 2663 || $flagLocation == 89) {
+        if ($flagLocation == 2663 || $flagLocation == 3772 || $flagLocation == 89) {
             continue;
         }
 

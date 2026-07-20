@@ -31,6 +31,28 @@ function zkbInitAsearch() {
 
 window.zkbInitAsearch = zkbInitAsearch;
 
+function updateAsearchButtonStates() {
+	var root = document.getElementById('asearchcontent');
+	if (!root) return;
+	root.querySelectorAll('.filter-btn, .radio-btn, .tfilter, #togglefilters, #rolling-times, #toggleGroupLayout').forEach(function (element) {
+		if (!element.classList.contains('btn')) return;
+		var pressed = element.classList.contains('btn-primary');
+		element.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+		if (element.classList.contains('pagenum')) {
+			if (pressed) element.setAttribute('aria-current', 'page');
+			else element.removeAttribute('aria-current');
+		}
+		if (element.id == 'togglefilters' || element.id == 'toggleGroupLayout') {
+			element.setAttribute('aria-expanded', pressed ? 'true' : 'false');
+		}
+	});
+}
+
+function setAsearchStatus(message) {
+	var status = document.getElementById('asearchStatus');
+	if (status) status.textContent = message || '';
+}
+
 function checkCharID() {
 	/*if (characterID == -1) return setTimeout(checkCharID, 100);
 	if (characterID == 0) {
@@ -55,7 +77,7 @@ function loadasearch() {
 		error: function (xhr) {
 			console.log("ERROR", xhr);
 		}
-	}).focus();
+	});
 
 
 	$("#btn_save").off('click.zkb-asearch').on('click.zkb-asearch', btn_save);
@@ -92,6 +114,7 @@ function loadasearch() {
 	$("#clickToDigCheckbox").off('change.zkb-asearch').on('change.zkb-asearch', updateDrillDownPreference);
 
 	first_load = false;
+	updateAsearchButtonStates();
 	doQuery();
 };
 
@@ -123,12 +146,13 @@ function toggleRollingTime(event, enabled) {
 		enabled = !($('#rolling-times').hasClass('btn-primary'));
 	}
 
-	$('#rolling-times').blur().removeClass('btn-secondary').removeClass('btn-primary');
+	$('#rolling-times').removeClass('btn-secondary').removeClass('btn-primary');
 
 	if (enabled) {
 		$('#rolling-times').addClass('btn-primary');
 	}
 	else $('#rolling-times').addClass('btn-secondary');
+	updateAsearchButtonStates();
 }
 
 function toggleGroupLayout(event, enabled) {
@@ -139,6 +163,7 @@ function toggleGroupLayout(event, enabled) {
 	$("#result-groups-all").toggleClass("row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3", enabled);
 	$("#result-groups-all > div").toggleClass("col", enabled);
 	$("#toggleGroupLayout").toggleClass("btn-primary", enabled).toggleClass("btn-secondary", !enabled);
+	updateAsearchButtonStates();
 	if (allowChange) setHash();
 }
 
@@ -168,10 +193,11 @@ function selectTimeFilter(event) {
 	var parent = element.parent();
 
 	parent.children(".tfilter").removeClass("btn-primary").addClass("btn-secondary");
-	element.removeClass("btn-secondary").addClass("btn-primary").blur();
+	element.removeClass("btn-secondary").addClass("btn-primary");
 
 	radios.epoch = element.text().toLowerCase();
 	adjustTime(null, element);
+	updateAsearchButtonStates();
 	clickPage1();
 }
 
@@ -295,9 +321,10 @@ function getHTML(suggestion) {
 	suggestion.value = suggestion.value.replaceAll('<', '').replaceAll('>', '');
 	var entityImage = getEntityImage(suggestion.data.type, suggestion.data.id);
 	//console.log(suggestion.data.type, suggestion.data.id, suggestion.data.value);
-	var left = $("<span>").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("fas").addClass("fa-chevron-left").attr('direction', 'left').on('click', moveLeft);
-	var right = $("<span>").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("fas").addClass("fa-chevron-right").attr('direction', 'right').on('click', moveRight);
-	var remove = $("<span>").addClass('btn').addClass('btn-sm').addClass("fas").addClass("fa-times").addClass("filter-remove").addClass('alert-danger').on('click', moveOut);
+	var filterName = suggestion.value || 'filter';
+	var left = $("<button>").attr("type", "button").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("fas").addClass("fa-chevron-left").attr('direction', 'left').attr('aria-label', 'Move ' + filterName + ' filter left').attr('title', 'Move filter left').on('click', moveLeft);
+	var right = $("<button>").attr("type", "button").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("fas").addClass("fa-chevron-right").attr('direction', 'right').attr('aria-label', 'Move ' + filterName + ' filter right').attr('title', 'Move filter right').on('click', moveRight);
+	var remove = $("<button>").attr("type", "button").addClass('btn').addClass('btn-sm').addClass("fas").addClass("fa-times").addClass("filter-remove").addClass('alert-danger').attr('aria-label', 'Remove ' + filterName + ' filter').attr('title', 'Remove filter').on('click', moveOut);
 	left.css({ flex: "0 0 auto", width: "34px", display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: "6px 0 0 6px", marginRight: "3px" });
 	right.css({ flex: "0 0 auto", width: "34px", display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 0 });
 	remove.css({ flex: "0 0 auto", width: "30px", display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: "0 6px 6px 0" });
@@ -401,7 +428,7 @@ function add(id, suggestion) {
 function setFilters(hashfilters) {
 	// load up that filter
 	var hash = window.location.hash.substr(1);
-	hash = decodeURI(hash).replaceAll('<', '').replaceAll('>', '');
+	hash = decodeURIComponent(hash).replaceAll('<', '').replaceAll('>', '');
 	hashfilters = JSON.parse(hash);
 	//console.log(hash);
 	//console.log(hashfilters);
@@ -449,6 +476,7 @@ function setFilters(hashfilters) {
 	// Promise.all(promises); // actually does nothing here since we don't await
 	allowChange = true;
 	toggleFilters();
+	updateAsearchButtonStates();
 }
 
 function resetFilters() {
@@ -463,6 +491,7 @@ function resetFilters() {
 	adjustTime(null, $("#stats-epoch-week"));
 	allowChange = true;
 	toggleFilters();
+	updateAsearchButtonStates();
 }
 
 function setHash() {
@@ -486,7 +515,7 @@ function setHash() {
 	filter.includeAssociates = $("#includeAssociates").prop('checked') == true;
 
 	var hash = '';
-	if (Object.keys(filter).length > 0) hash = '#' + JSON.stringify(filter);
+	if (Object.keys(filter).length > 0) hash = '#' + encodeURIComponent(JSON.stringify(filter));
 	if ((window.location.pathname + window.location.hash) != (window.location.pathname + hash)) {
 		var historyState = (typeof getSpaHistoryState === 'function') ? getSpaHistoryState() : "";
 		history.pushState(historyState, document.title, window.location.pathname + hash);
@@ -508,6 +537,9 @@ var asearchRetryTimer = null;
 var asearchRetryQueryType = null;
 var asearchBatch = null;
 var asearchManualQueryStringified = null;
+var asearchKillRowBatch = null;
+var pendingKillRows = 0;
+var lastAsearchKillCount = 0;
 function doQuery(queryType = 'all', isRetry = false, manualStart = false) {
 	if (first_load) return;
 	if (!allowChange) return;
@@ -660,7 +692,10 @@ function getFilters() {
 function updateAsearchQueueIndicator(jqXHR) {
 	var queueDepth = jqXHR ? parseInt(jqXHR.getResponseHeader('X-Asearch-Queue-Depth') || 0) : 0;
 	var indicator = $("#asearchQueueIndicator");
-	if (queueDepth > 25) indicator.text("Queued: " + queueDepth).show();
+	if (queueDepth > 25) {
+		indicator.text("Queued: " + queueDepth).show();
+		setAsearchStatus("Search queued. Queue depth " + queueDepth + ".");
+	}
 	else indicator.hide().text("");
 }
 
@@ -685,8 +720,15 @@ function applyKillQueryResult(data, textStatus, jqXHR) {
 	if (asearchProcessing(jqXHR, 'kills')) return;
 	$("#killmails-list").html("");
 	killIDs = data.kills;
+	asearchKillRowBatch = {};
+	pendingKillRows = data.kills.length;
+	lastAsearchKillCount = data.kills.length;
+	$("#killmails-list").attr("aria-busy", pendingKillRows > 0 ? "true" : "false");
 	if (data.kills.length == 0) killlistmessage("no results - expand timespan, adjust pagination, or reduce filters...");
-	else popEm();
+	else {
+		setAsearchStatus("Loading " + data.kills.length + " killmail" + (data.kills.length == 1 ? "" : "s") + ".");
+		popEm();
+	}
 }
 
 function applyCountQueryResult(data, textStatus, jqXHR) {
@@ -732,12 +774,19 @@ function scheduleAsearchRetry(queryType) {
 }
 
 function clearAsearchResults(queryType) {
-	if (queryType == 'all' || queryType == 'kills') $("#killmails-list").html("");
+	if (queryType == 'all' || queryType == 'kills') {
+		asearchKillRowBatch = {};
+		pendingKillRows = 0;
+		lastAsearchKillCount = 0;
+		$("#killmails-list").attr("aria-busy", "true").html("");
+		setAsearchStatus("Loading killmails.");
+	}
 	if (queryType == 'all' || queryType == 'groups') {
 		$("#result-groups-count").html("");
 		$("#result-groups-labels").html("");
 		$("#result-groups-distincts").html("");
 		for (var i = 0; i < types.length; i++) $("#result-groups-" + types[i]).html("");
+		if (queryType == 'groups') setAsearchStatus("Loading result groups.");
 	}
 }
 
@@ -756,6 +805,10 @@ function handleError(jqXHR, textStatus, errorThrown) {
 }
 
 function killlistmessage(message) {
+	asearchKillRowBatch = null;
+	pendingKillRows = 0;
+	$("#killmails-list").attr("aria-busy", "false");
+	setAsearchStatus(message);
 	$(".killlistmessage").remove();
 	var tr = $("<tr>").addClass('killlistmessage');
 	var td = $("<td>").attr('colspan', 7).html('<i>' + message + '</i>');
@@ -767,11 +820,20 @@ var killIDs = [];
 function popEm() {
 	if (killIDs.length > 0) {
 		var killID = killIDs.shift();
-		var tr = $("<tr>").attr('id', 'kill-' + killID);
+		var rowBatch = asearchKillRowBatch;
+		var tr = $("<tr>").attr('id', 'kill-' + killID).attr('data-kill-id', killID);
+		tr.append($("<td>").attr('colspan', 7).addClass('visually-hidden').text('Loading killmail'));
 		$("#killmails-list").append(tr);
 		$.get("/cache/24hour/killlistrow/" + killID + "/", function (data) {
 			$("#kill-" + killID).replaceWith(data);
 			doDateCleanup();
+		}).always(function () {
+			if (rowBatch !== asearchKillRowBatch) return;
+			pendingKillRows--;
+			if (pendingKillRows <= 0) {
+				$("#killmails-list").attr("aria-busy", "false");
+				setAsearchStatus("Loaded " + lastAsearchKillCount + " killmail" + (lastAsearchKillCount == 1 ? "" : "s") + ".");
+			}
 		});
 		popEm();
 	}
@@ -828,21 +890,22 @@ function moveOut() {
 
 function doDateCleanup() {
 	var rows = $("#killmails-list tr.tr-date");
-	for (var i = rows.length - 1; i > 0; i--) { var r = $(rows[i]); var n = $(rows[i - 1]); if (r.attr('date') != '' && r.attr('date') == n.attr('date')) r.remove(); }
+	for (var i = rows.length - 1; i > 0; i--) { var r = $(rows[i]); var n = $(rows[i - 1]); var rdate = r.attr('data-kill-date') || r.attr('date'); var ndate = n.attr('data-kill-date') || n.attr('date'); if (rdate != '' && rdate == ndate) r.remove(); }
 }
 
 function toggleFilterBtn() {
 	var element = $(this);
-	if (element.hasClass('btn-primary')) element.removeClass('btn-primary').addClass('btn-secondary').blur();
-	else element.removeClass('btn-secondary').addClass('btn-primary').blur();
+	if (element.hasClass('btn-primary')) element.removeClass('btn-primary').addClass('btn-secondary');
+	else element.removeClass('btn-secondary').addClass('btn-primary');
+	updateAsearchButtonStates();
 	clickPage1();
 }
 
 function toggleRadioBtn() {
 	var element = $(this);
 	var parent = element.parent();
-	var variable = parent.attr('zkill-var');
-	var key = parent.attr('zkill-key');
+	var variable = parent.attr('data-zkill-var') || parent.attr('zkill-var');
+	var key = parent.attr('data-zkill-key') || parent.attr('zkill-key');
 	parent.children().each(function () {
 		$(this).removeClass('btn-primary').addClass('btn-secondary');
 	});
@@ -850,6 +913,7 @@ function toggleRadioBtn() {
 	if (key != undefined) radios[variable][key] = $(this).text().toLowerCase();
 	else radios[variable] = $(this).text().toLowerCase();
 
+	updateAsearchButtonStates();
 	if (variable == 'page' || variable == 'sort') doQuery('kills');
 	else if (variable == 'group-agg-type') doQuery('groups');
 	else clickPage1();
@@ -891,8 +955,9 @@ function toggleFiltersClick() {
 	var element = $(this);
 	var has_primary = element.hasClass('btn-primary');
 
-	if (has_primary) element.removeClass('btn-primary').addClass('btn-secondary').blur();
-	else element.removeClass('btn-secondary').addClass('btn-primary').blur();
+	if (has_primary) element.removeClass('btn-primary').addClass('btn-secondary');
+	else element.removeClass('btn-secondary').addClass('btn-primary');
+	updateAsearchButtonStates();
 	toggleFilters();
 	if (allowChange) setHash();
 }
@@ -910,6 +975,7 @@ function toggleFilters() {
 }
 
 function updateTitle() {
+	updateAsearchButtonStates();
 	const displayed = $("#togglefilters").hasClass("btn-primary");
 
 	var filters = [];
@@ -958,18 +1024,18 @@ async function btn_save(event) {
 		try {
 			if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error("Clipboard API unavailable");
 			await navigator.clipboard.writeText(short);
-			button.addClass('btn-info').attr("title", "Saved URL copied").blur();
+			button.addClass('btn-info').attr("title", "Saved URL copied");
 			showToast('Saved URL copied to clipboard');
 		} catch (err) {
 			console.error("Failed to copy:", err);
-			button.addClass('btn-info').attr("title", "Saved URL ready").blur();
+			button.addClass('btn-info').attr("title", "Saved URL ready");
 			window.prompt('Saved URL', short);
 		}
 	} catch (err) {
 		console.error("Error trying to save:", err);
 		alert('Error trying to save: ' + err.message);
 	} finally {
-		setTimeout(() => { button.prop("disabled", false).removeClass('btn-info').attr("title", "").blur(); }, 3000);
+		setTimeout(() => { button.prop("disabled", false).removeClass('btn-info').attr("title", ""); }, 3000);
 	}
 }
 
@@ -1064,7 +1130,7 @@ function exportCsv() {
 		});
 		ws['!cols'] = colWidths;
 
-		XLSX.utils.book_append_sheet(wb, ws, group.attr('aria-title'));
+		XLSX.utils.book_append_sheet(wb, ws, group.attr('aria-label') || group.attr('data-singular') || 'Group');
 	}
 
 	/*const data = [
@@ -1147,6 +1213,7 @@ function btn_export() {
 		  <div class="modal-dialog" role="document">
 		    <div class="modal-content">
 		      <div class="modal-header">
+		        <h5 class="modal-title" id="exportModalLabel">zKillBot Export</h5>
 		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 		      </div>
 		      <div class="modal-body">

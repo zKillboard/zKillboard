@@ -30,6 +30,10 @@ h1, h2, h3, h4, h5, h6 {
 	padding-right: 0.5rem;
 }
 
+#zkb-page-content:focus {
+	outline: none;
+}
+
 #navibar {
 	padding-bottom: 0 !important;
 }
@@ -1102,6 +1106,10 @@ td.centered {
 	display: none;
 }
 
+#detailadrow:not(:empty) {
+	padding: 1em 0;
+}
+
 .pbblock {
 	margin-bottom: 3em;
 }
@@ -1322,6 +1330,10 @@ code {
 	max-width: 315px !important;
 }
 
+.tr-killmail .zkb-padding-label {
+	background-color: #CC5500;
+}
+
 .ambient-killmail-toggle {
 	position: fixed;
 	right: 14px;
@@ -1340,12 +1352,13 @@ code {
 
 .kill-list-header {
 	display: flex;
-	align-items: center;
+	align-items: flex-end;
 	gap: 10px;
+	margin-bottom: 0.2rem;
 }
 
 .kill-list-title {
-	margin: 6px 0;
+	margin: 0;
 	line-height: 1.1;
 }
 

@@ -13,7 +13,7 @@ div
             td= ($trophies['levelCount'] ?? 0) . ' / ' . ($trophies['maxLevelCount'] ?? 0)
             td= ($trophies['completedPct'] ?? 0) . '%'
             td
-              img(src=('https://zkillboard.com/img/level/level' . ($trophies['boxes'] ?? 0) . '.gif'))
+              img(src=('https://zkillboard.com/img/level/level' . ($trophies['boxes'] ?? 0) . '.gif') alt=('Trophy completion level ' . ($trophies['boxes'] ?? 0)))
     .row.g-3
       each $conditions, $category in ($trophies['trophies'] ?? [])
         - $conditions = is_object($conditions) ? (array) $conditions : $conditions;
@@ -42,4 +42,4 @@ div
                       = number_format((float) ($value['next'] ?? 0), 0)
                 td(style="width: 0.5em;")
                   span.float-end
-                    img(src=('/img/level/level' . ($value['level'] ?? 0) . '.gif') title=(!empty($value['noNext']) ? 'Hardcoded level (for now)' : ('At: ' . ($value['value'] ?? 0) . ((($value['level'] ?? 0) < 5) ? (' Next Level: ' . ($value['next'] ?? 0)) : ''))))
+                    img(src=('/img/level/level' . ($value['level'] ?? 0) . '.gif') title=(!empty($value['noNext']) ? 'Hardcoded level (for now)' : ('At: ' . ($value['value'] ?? 0) . ((($value['level'] ?? 0) < 5) ? (' Next Level: ' . ($value['next'] ?? 0)) : ''))) alt=('Trophy level ' . ($value['level'] ?? 0)))

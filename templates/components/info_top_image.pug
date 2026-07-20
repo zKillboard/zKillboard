@@ -5,13 +5,13 @@
   if (!empty($detailData['shipTypeID']) && ($key ?? '') == 'ship')
     include image_ship.pug
   if (!empty($detailData['characterID']) && ($key ?? '') == 'character')
-    center
+    .text-center
       include image_char.pug
       br
       small
         small
           i
-            a(href="#" data-bs-toggle="modal" data-bs-target="#largeImage" onclick="return false;") Enlarge
+            button.btn.btn-link.btn-sm.p-0(type="button" data-bs-toggle="modal" data-bs-target="#largeImage") Enlarge
       br
   if (!empty($detailData['corporationID']) && ($key ?? '') == 'corporation')
     include image_corp.pug

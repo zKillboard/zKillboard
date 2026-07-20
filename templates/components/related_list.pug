@@ -2,8 +2,8 @@ table.table.table-sm.table-striped.table-hover.related-list-table(style="table-l
   each $related in ($list ?? [])
     - $destroyed = $related['destroyed'] ?? 0;
     - $rowClass = $destroyed > 0 ? 'error' : '';
-    - $onClick = $destroyed > 0 ? ('if (event.which == 1) { navigateTo("/kill/' . $destroyed . '/"); return false; }') : '';
-    tr(class=$rowClass onClick=$onClick)
+    - $relatedKillID = $destroyed > 0 ? $destroyed : 0;
+    tr(class=$rowClass data-zkb-related-kill=$relatedKillID)
       td.related-list-icons
         .related-list-icon-grid
           - $shipTypeID = $related['shipTypeID'] ?? 0;

@@ -3,7 +3,7 @@ doctype html
 html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
   head
     meta(charset="utf-8")
-    meta(http-equiv="X-UA-Compatible" content="IE=edge,chrome=1")
+    meta(http-equiv="X-UA-Compatible" content="IE=edge")
     - $description = $description ?? 'zKillboard.com is the premier killboard for EVE Online. Track players, corporations, and alliances, analyze battle reports, and monitor PvP anywhere in New Eden.';
     meta(name="description" content=$description)
     meta(name="title" content=(($pageTitle ?? '') . ' | ' . ($siteurl ?? '')))
@@ -51,22 +51,22 @@ html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
     block style
     script(defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer")
     script(defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery.devbridge-autocomplete/1.5.0/jquery.autocomplete.min.js" integrity="sha512-zigO6HJddtn1h8sdX3wTCbcAjJ1u2f4KhtNgcqminM75+L8IkibrVHqO19LfUK9Mavk0fYGVNUMmhHpx8COP2g==" crossorigin="anonymous" referrerpolicy="no-referrer")
-    script(defer type="text/javascript" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js")
+    script(defer src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js")
     script(defer src="/vendor/bootstrap/5.3.3/bootstrap.bundle.min.js")
     script(defer src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.2/bootstrap-slider.min.js" integrity="sha512-ltNvgoNRZAuKXjWIXHXzLhM2dJCnw7xyxpCn43+TzRr0Kg9zU+P7UpmSNwKRvT/GSaJ6TK6lmukBOjXsSQupUQ==" crossorigin="anonymous" referrerpolicy="no-referrer")
     script(defer src="https://unpkg.com/@popperjs/core@2")
     script(defer src="https://unpkg.com/tippy.js@6")
-    script(defer type="text/javascript" src=('/js/search.js?v=' . ($version ?? '')))
-    script(defer type="text/javascript" src=('/js/common.js?v=' . ($version ?? '')))
-    script(defer type="text/javascript" src=('/js/ambience.js?v=' . ($version ?? '')))
-    script(defer type="text/javascript" src="/js/reconnecting-websocket.js")
+    script(defer src=('/js/search.js?v=' . ($version ?? '')))
+    script(defer src=('/js/common.js?v=' . ($version ?? '')))
+    script(defer src=('/js/ambience.js?v=' . ($version ?? '')))
+    script(defer src="/js/reconnecting-websocket.js")
     if (($showAnalytics ?? true) != false)
       != $analytics ?? ''
-    style(type="text/css").
+    style.
       .topBoxes td {
       vertical-align: middle !important;
       }
-    script(type="text/javascript")
+    script
       != "var showAds = " . (int) ($showAds ?? 1) . ";\n"
       != "var characterID = " . (int) ($characterID ?? -1) . ";\n"
       | var navbar = true;
@@ -78,6 +78,7 @@ html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
       != "var promoURI = '" . addslashes((string) ($promoURI ?? '')) . "';\n"
       != "var promoImage1 = '" . addslashes((string) ($promoImage1 ?? '')) . "';\n"
   body(style="background-color: #111;")
+    a.visually-hidden-focusable(href="#zkb-page-content") Skip to content
     noscript
       #nojsfulloverlay JavaScript required.
     .content
@@ -85,32 +86,32 @@ html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
         include navigationbar.pug
       .page-shell.nobackground
         if (($apiStatus ?? false) && (($actualURI ?? '') == '/'))
-          #zkb-message.alert.alert-danger(style="font-weight: bold")
-            center!= $apiStatus
+          #zkb-message.alert.alert-danger.fw-bold(role="alert" aria-live="assertive" aria-atomic="true")
+            .text-center!= $apiStatus
         else
-          #zkb-message.d-none.alert.alert-danger(style="font-weight: bold")
+          #zkb-message.d-none.alert.alert-danger.fw-bold(role="alert" aria-live="assertive" aria-atomic="true")
         div
-          center.pbcen
-            #publifttop.centered.publift(fuse="home_header" style="padding-top: 0.25em; max-height: 250px; max-width: 975px;")
+          .pbcen.text-center
+            #publifttop.centered.publift(data-fuse="home_header" style="padding-top: 0.25em; max-height: 250px; max-width: 975px;")
             hr.pbsep
             .pbblock
-              a.pbblock.btn.btn-success(href="https://www.patreon.com/zkillboard" target="_blank") Block Ads with Patreon!
+              a.pbblock.btn.btn-success(href="https://www.patreon.com/zkillboard" target="_blank" rel="noopener noreferrer") Block Ads with Patreon!
         #otherBannerDiv.centered(style="display: none; height: 250px; padding-top: 1em;")
-          a#otherBannerAnchor(target="_new")
-            img#otherBannerImg
+          a#otherBannerAnchor(target="_blank" rel="noopener noreferrer")
+            img#otherBannerImg(src="/img/transparent_32.png" alt="Promotion")
         #highlightContent.centered(style=("margin-bottom: 1em; " . (!isset($highlightMessage) ? "display: none;" : "")))
-          a.btn.btn-sm(href=($highlightURI ?? '') target="_blank" rel="noopener noreferrer" class=($highlightClass ?? '') style="padding: 1em; text-align: center; display: block; padding-top: 0em; padding-bottom: 0em; margin-top: 0.5em;")
+          a.btn.btn-sm.d-block.text-center.px-3.py-0.mt-2(href=($highlightURI ?? '') target="_blank" rel="noopener noreferrer" class=($highlightClass ?? ''))
             if (isset($highlightImage) && strlen((string) $highlightImage) > 0)
-              img(src=$highlightImage alt="Highlight" style="max-width: 100%; height: auto;")
+              img.img-fluid(src=$highlightImage alt="Highlight")
             span.pagecontent!= $highlightMessage ?? ''
-        span#zkb-page-content.pagecontent(data-entity-type=($entityType ?? '') data-entity-id=($entityID ?? '') data-entity-page=($pageType ?? '') data-actual-uri=($actualURI ?? ''))
+        main#zkb-page-content.pagecontent(tabindex="-1" data-entity-type=($entityType ?? '') data-entity-id=($entityID ?? '') data-entity-page=($pageType ?? '') data-actual-uri=($actualURI ?? ''))
           block header
           block content
             | Default content
         .clearfix
-        center
-          #adsensebottom.centered.publift(fuse="home_footer" style="padding-top: 2em; padding-bottom: 2em; max-height: 250px; max-width: 975px;")
-        div
+        .text-center
+          #adsensebottom.centered.publift(data-fuse="home_footer" style="padding-top: 2em; padding-bottom: 2em; max-height: 250px; max-width: 975px;")
+        footer
           include footer.pug
         div(style="height: 50px;") &nbsp;
       #zkb-page-modals.page-shell
@@ -118,7 +119,7 @@ html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
     #zkb-page-scripts(style="display: none;")
       block script
     #ttooltip.ttooltip.d-none
-      span.X.red(onclick="$('#ttooltip').addClass('d-none'); return false;") X
+      button.X.red.btn.btn-link.p-0(type="button" data-zkb-close-tooltip aria-label="Close tooltip") X
       br
       span#tipmsg
     #modalMessage.modal.fade
@@ -134,7 +135,7 @@ html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
       .modal-dialog
         .modal-content
           .modal-header
-            h4.modal-title &lt;iframe&gt; detected
+            div.h4.modal-title &lt;iframe&gt; detected
           .modal-body
             p
               | zKillboard has detected that it has been embedded in an iframe.  We're ok with this, however, your experience might not be that great.  
@@ -144,30 +145,30 @@ html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
       .modal-dialog
         .modal-content
           .modal-header
-            h4.modal-title Login Options
+            div.h4.modal-title Login Options
             button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
           .modal-body
             .checkbox
               label
                 input#login-scope-all(type="checkbox" checked)
                 |  All Permissions
-            .checkbox(style="margin-left: 1.5em;")
+            .checkbox.ms-4
               label
                 input.login-scope(type="checkbox" value="esi-killmails.read_killmails.v1" checked)
                 |  Fetch Character Killmails
-              p.text-muted(style="margin-left: 1.5em;")
+              p.text-muted.ms-4
                 small Fetch the character's killmails where they are the victim or received the final blow.
-            .checkbox(style="margin-left: 1.5em;")
+            .checkbox.ms-4
               label
                 input.login-scope(type="checkbox" value="esi-killmails.read_corporation_killmails.v1" checked)
                 |  Fetch Corporation Killmails
-              p.text-muted(style="margin-left: 1.5em;")
+              p.text-muted.ms-4
                 small Fetch the corporation's killmails where corporation members are the victim or received the final blow.  This permission is restricted to CEOs and Directors.
-            .checkbox(style="margin-left: 1.5em;")
+            .checkbox.ms-4
               label
                 input.login-scope(type="checkbox" value="esi-fittings.write_fittings.v1" checked)
                 |  Save fittings
-              p.text-muted(style="margin-left: 1.5em;")
+              p.text-muted.ms-4
                 small Lets you save a ship's fit directly to your character's fitting library.
             hr
             label(for="login-delay-slider")
@@ -180,8 +181,8 @@ html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
             button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancel
             button#continueLoginWithOptions.btn.btn-primary(type="button") Continue to EVE Login
     .ad-xl-block
-      .ad-xl-block.left-sticky-ad.publift(fuse="left-sticky")
+      .ad-xl-block.left-sticky-ad.publift(data-fuse="left-sticky")
     .ad-xl-block
-      .ad-xl-block.right-sticky-ad.publift(fuse="right-sticky")
+      .ad-xl-block.right-sticky-ad.publift(data-fuse="right-sticky")
     form#externalkmform(method="post" action="/post/" style="display: none;")
       input#externalurl(type="text" name="killmailurl")

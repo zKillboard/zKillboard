@@ -81,21 +81,21 @@
       a.green(target="_blank" rel="noopener noreferrer" href=('/kill/' . ($crest['killID'] ?? 0) . '/redirect/esi/')) Verified
       br
     span
-      a.green(href=('/kill/' . ($crest['killID'] ?? 0) . '/redirect/eveshipfit/') target="_blank" rel="noopener") EVEShip.Fit
+      a.green(href=('/kill/' . ($crest['killID'] ?? 0) . '/redirect/eveshipfit/') target="_blank" rel="noopener noreferrer") EVEShip.Fit
     br
     span
-      a.green(href=('/kill/' . ($crest['killID'] ?? 0) . '/redirect/eveworkbench/') target="_blank" rel="noopener") EVE Workbench
+      a.green(href=('/kill/' . ($crest['killID'] ?? 0) . '/redirect/eveworkbench/') target="_blank" rel="noopener noreferrer") EVE Workbench
   .favorite-stack.float-end.d-flex.flex-column.align-items-center.gap-1.me-2.text-center(style="width: 1.5em; font-size: 1rem; line-height: 1.25;")
-    span.favorite.d-inline-block.text-center(style="width: 1.5em; cursor: pointer;" onClick=('doFavorite(' . ($crest['killID'] ?? 0) . ', this);'))
+    button.favorite.d-inline-block.text-center.btn.btn-link.border-0.bg-transparent.p-0(type="button" style="width: 1.5em; cursor: pointer;" data-zkb-favorite-kill=($crest['killID'] ?? 0) aria-label="Favorite this killmail" aria-pressed="false")
       i.far.fa-star(rel="tooltip" class=('fav-star-' . ($crest['killID'] ?? 0) . ' fav-star-character-' . ($crest['killID'] ?? 0)) style="color: #d0d0d0; text-shadow: 0 1px 2px #000;" title="Favorite this killmail" aria-hidden="true")
-    span.favorite.favorite-corporation.d-none.text-center(style="width: 1.5em; cursor: pointer;" onClick=('doFavorite(' . ($crest['killID'] ?? 0) . ', this, "corporation");'))
+    button.favorite.favorite-corporation.d-none.text-center.btn.btn-link.border-0.bg-transparent.p-0(type="button" style="width: 1.5em; cursor: pointer;" data-zkb-favorite-kill=($crest['killID'] ?? 0) data-zkb-favorite-scope="corporation" aria-label="Favorite this killmail for your corporation" aria-pressed="false")
       i.far.fa-star(rel="tooltip" class=('fav-star-corporation-' . ($crest['killID'] ?? 0)) style="color: #37d05c; text-shadow: 0 1px 2px #000;" title="Favorite this killmail for your corporation" aria-hidden="true")
-    span.favorite.favorite-alliance.d-none.text-center(style="width: 1.5em; cursor: pointer;" onClick=('doFavorite(' . ($crest['killID'] ?? 0) . ', this, "alliance");'))
+    button.favorite.favorite-alliance.d-none.text-center.btn.btn-link.border-0.bg-transparent.p-0(type="button" style="width: 1.5em; cursor: pointer;" data-zkb-favorite-kill=($crest['killID'] ?? 0) data-zkb-favorite-scope="alliance" aria-label="Favorite this killmail for your alliance" aria-pressed="false")
       i.far.fa-star(rel="tooltip" class=('fav-star-alliance-' . ($crest['killID'] ?? 0)) style="color: #4aa3ff; text-shadow: 0 1px 2px #000;" title="Favorite this killmail for your alliance" aria-hidden="true")
-  span.sponsor.float-end(style="width: 1.5em; cursor: pointer; margin: 0px; padding: 0px; margin-right: 0.5em; text-align: center; font-size: 1rem; line-height: 1.25;" onClick=("doSponsor('/sponsor/query/" . ($crest['killID'] ?? 0) . "/');"))
+  button.sponsor.float-end.btn.btn-link.border-0.bg-transparent.p-0(type="button" style="width: 1.5em; cursor: pointer; margin: 0px; padding: 0px; margin-right: 0.5em; text-align: center; font-size: 1rem; line-height: 1.25;" data-zkb-sponsor-url=('/sponsor/query/' . ($crest['killID'] ?? 0) . '/') aria-label="Sponsor this killmail")
     i.fas.fa-bullhorn(rel="tooltip" style="color: #37d05c; text-shadow: 0 1px 2px #000;" title="Sponsor this Killmail" aria-hidden="true")
   span
     small
-      a.btn.btn-sm.btn-primary(href="#" onClick=('saveFitting(' . ($crest['killID'] ?? 0) . '); return false;') rel="nofollow") Save Fit
+      button.btn.btn-sm.btn-primary(type="button" data-zkb-save-fitting=($crest['killID'] ?? 0)) Save Fit
   br
 - $eveImageClass = true;

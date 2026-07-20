@@ -6,7 +6,7 @@ if (($killInfo['number_involved'] ?? 0) > 10)
   .accordion#allPilots
     .accordion-group
       .accordion-heading.listPilots
-        a.accordion-toggle(data-bs-toggle="collapse" data-bs-parent="#allPilots" href="#listAllPilots" onMouseOver="loadRemainingPilots();" onClick="loadRemainingPilots();")
+        a.accordion-toggle(data-bs-toggle="collapse" data-bs-parent="#allPilots" href="#listAllPilots" data-zkb-load-remaining-pilots)
           .centered
             | List all pilots 
             i.fas.fa-chevron-down(aria-hidden="true")

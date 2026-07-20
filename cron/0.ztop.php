@@ -43,6 +43,7 @@ $knownRedisQueues = [
 	'queueApiCheck',
 	'queueCacheTags',
 	'queueCacheTagsDefer',
+	'queueCacheTagsStatsTop',
 	'queueCacheUrls',
 	'queueCacheUrlsDefer',
 	'queueDailyStats',
@@ -56,7 +57,10 @@ $knownRedisQueues = [
 	'queueStats',
 	'queueStatsSet',
 	'queueStatsUpdated',
-	'queueWars'
+	'queueWars',
+	'zkb:sequenced_updated',
+	'zkb:updatemarket',
+	'zkb:updatenames'
 ];
 foreach ($knownRedisQueues as $knownRedisQueue) $redis->sadd('queues', $knownRedisQueue);
 
@@ -135,6 +139,7 @@ while ($hour == date('H')) {
 	$queueMetrics = [];
 	foreach ($redisQueues as $queue => $v) {
 		$queueLabel = preg_replace('/^queue/i', '', $queue);
+		$queueLabel = preg_replace('/^zkb:/i', '', $queueLabel);
 		if ($queueLabel === '') $queueLabel = $queue;
 
 		$queueType = $redisQueueTypes[$queue];

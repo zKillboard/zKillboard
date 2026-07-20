@@ -1,15 +1,15 @@
 div
-  center
+  .text-center
     a(href="/information/payments/") Throw away ISK by sending to zKillboard in game.
   br
-  center
+  .text-center
     .alert.alert-danger
       | ISK comes from your adfree donation,
       br
       | so if you sponsor you will lose adfree time!
   hr
   if (($type ?? '') == 'query')
-    center
+    .text-center
       h4= 'Balance: ' . number_format((float) ($iskA ?? 0), 0) . ' ISK'
       hr
       - $initValue = floor(($iskA ?? 0) / 5000000) * 5000000;
@@ -27,7 +27,7 @@ div
           |  ISK
       br
       br
-      input.btn.btn-primary(type="submit" value="Sponsor" onClick=("doSponsor('/sponsor/sponsor/" . ($killID ?? '') . "/' + $('#slider').attr('value') + '/'); return false;"))
+      button.btn.btn-primary(type="button" data-zkb-sponsor-slider=('/sponsor/sponsor/' . ($killID ?? '') . '/')) Sponsor
       br
       br
       .alert.alert-success Sponsoring 100m isk or more will send a notification!
@@ -42,5 +42,5 @@ div
   else
     = $response ?? ''
   hr
-  center
+  .text-center
     a(href="/kills/sponsored/") List of all Sponsored Killmails

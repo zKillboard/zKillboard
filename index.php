@@ -109,6 +109,31 @@ $app->add(function ($request, $handler) {
     if (!$response->hasHeader('Content-Security-Policy')) {
         $response = $response->withHeader('Content-Security-Policy', "frame-ancestors 'self'");
     }
+    if (!$response->hasHeader('Content-Security-Policy-Report-Only')) {
+        $frameAncestors = $response->getHeaderLine('Content-Security-Policy') == 'frame-ancestors *' ? 'frame-ancestors *' : "frame-ancestors 'self'";
+        $response = $response->withHeader('Content-Security-Policy-Report-Only', implode('; ', [
+            "default-src 'self'",
+            "base-uri 'self'",
+            "object-src 'none'",
+            $frameAncestors,
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.datatables.net https://unpkg.com https://cdn.fuseplatform.net",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.datatables.net https://cdnjs.cloudflare.com https://netdna.bootstrapcdn.com",
+            "img-src 'self' data: https: http:",
+            "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
+            "connect-src 'self' ws: wss:",
+            "frame-src 'self' https://zkillboard.com",
+            "form-action 'self'",
+        ]));
+    }
+    if (!$response->hasHeader('X-Content-Type-Options')) {
+        $response = $response->withHeader('X-Content-Type-Options', 'nosniff');
+    }
+    if (!$response->hasHeader('Referrer-Policy')) {
+        $response = $response->withHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    }
+    if (!$response->hasHeader('Permissions-Policy')) {
+        $response = $response->withHeader('Permissions-Policy', 'camera=(), geolocation=(), microphone=()');
+    }
     
     return $response;
 });

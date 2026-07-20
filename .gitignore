@@ -16,5 +16,5 @@ isMaster.lock
 master.lock
 .vscode
 
-mdpromo*
+public/img/md*
 latest.json

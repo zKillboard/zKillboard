@@ -8,7 +8,7 @@ block title
 
 block content
   .c-ontentrequiredlogin.content
-    h2
+    h1
       span.scanalyzer &#128924;
       |  ScanAlyzer 
       small get information on local or d-scan
@@ -18,11 +18,12 @@ block content
           legend
             small
               span#clip
-                a#clippy.btn.btn-sm.btn-info(disabled="true" href="#" onclick="return false;") &#128203; Paste
+                button#clippy.btn.btn-sm.btn-info(type="button" disabled) &#128203; Paste
+          label.form-label(for="scaninput") Scan input
           textarea#scaninput(rows="25" style="width: 100%")
         br
         | Inspired by 
-        a(href="http://eve-plh.com/#/home" target="_blank") PLH
+        a(href="http://eve-plh.com/#/home" target="_blank" rel="noopener noreferrer") PLH
         | .
       .col-12.col-lg-10(style="padding-left: 5px;")
         fieldset
@@ -47,7 +48,9 @@ block content
                       tr
                         th Name
                         th Recent Ships
-                        th(colspan="2") Member
+                        th
+                          span.visually-hidden Member image
+                        th Member
                         th.text-end
                           span.green K
                           |  / 
@@ -71,4 +74,4 @@ block content
                         | - the number below Gang % (not solo kills) is the average fleet size (not everyone has this recorded, yet)
 
 block script
-  script(defer type="text/javascript" src=('/js/scanalyzer.js?v=' . ($currentTime ?? '')))
+  script(defer src=('/js/scanalyzer.js?v=' . ($currentTime ?? '')))

@@ -21,7 +21,7 @@ function handler($request, $response, $args, $container) {
 		global $adFreeMonthCost;
 		$output = str_replace('{cost}', number_format($adFreeMonthCost, 0), $output);
 	}
-	$output = str_replace("href=\"#", "class='hrefit' name=\"", $output);
+	$output = preg_replace('/href="#([^"]+)"/', 'class=\'hrefit\' id="$1" name="$1" href="#$1"', $output);
 
 	$titles = [
 		"faq" => "FAQ"

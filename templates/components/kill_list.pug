@@ -1,5 +1,4 @@
 - $txtLength = 60;
-include pager.pug
 - $titleLower = strtolower((string) ($killListTitle ?? ''));
 - $isMostRecentKills = $titleLower == 'most recent kills';
 - $isTeamAKills = $titleLower == 'team a losses';
@@ -7,27 +6,29 @@ include pager.pug
 - $shellClass = 'kill-list-shell' . ($isTeamAKills ? ' kill-list-shell-a' : ($isTeamBKills ? ' kill-list-shell-b' : ''));
 div(class=$shellClass)
   .kill-list-header
-    h3(class=('kill-list-title' . ($isMostRecentKills ? ' most-recent-kills-title' : '')) id=($isMostRecentKills ? 'mostRecentKillsTitle' : false))= $killListTitle ?? ''
+    h2.h3(class=('kill-list-title' . ($isMostRecentKills ? ' most-recent-kills-title' : '')) id=($isMostRecentKills ? 'mostRecentKillsTitle' : false))= $killListTitle ?? ''
     if ($isMostRecentKills)
       #ambientKillmailHost.kill-list-ambience
+    include pager.pug
   - $CurrentYear = '';
   - $CurrentMonth = '';
   - $CurrentDay = '';
-  .clearfix
   table#killlist.table.table-sm.table-striped.table-hover(style="margin-bottom: 0px;")
     thead
       tr
-        th Time
-        th(style="width: 50px; max-width: 50px; text-align: center;") Ship
-        th.location(style="width:115px; max-width: 115px;") Location
-        th.d-none.d-md-table-cell(style="width: 64px;") &nbsp;
-        th(style="max-width: 38%;") Victim
-        th.finalBlowColumn.d-none.d-md-table-cell(style="width: 64px; max-width: 64px;") &nbsp;
-        th.finalBlowColumn.d-none.d-md-table-cell Final Blow
-    tbody#killmailstobdy
+        th(scope="col") Time
+        th(scope="col" style="width: 50px; max-width: 50px; text-align: center;") Ship
+        th.location(scope="col" style="width:115px; max-width: 115px;") Location
+        th.d-none.d-md-table-cell(scope="col" style="width: 64px;")
+          span.visually-hidden Victim portrait
+        th(scope="col" style="max-width: 38%;") Victim
+        th.finalBlowColumn.d-none.d-md-table-cell(scope="col" style="width: 64px; max-width: 64px;")
+          span.visually-hidden Final blow portrait
+        th.finalBlowColumn.d-none.d-md-table-cell(scope="col") Final Blow
+    tbody#killmailstobdy(aria-live="polite" aria-atomic="false" aria-busy=(count($killList ?? []) == 0 ? 'true' : 'false'))
       if (count($killList ?? []) == 0)
         tr#kms_loading
-          td(colspan="7")
+          td(colspan="7" role="status")
             em loading
       else
         include kill_list_row_small.pug

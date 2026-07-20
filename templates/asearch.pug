@@ -12,9 +12,9 @@ block style
 
 block content
   #asearchcontent.c-ontentrequiredlogin.content
-    h3
-      button#togglefilters.btn.btn-primary(value="togglefilters" title="Toggle Filter Display")
-        i.fas.fa-filter
+    h1.h3
+      button#togglefilters.btn.btn-primary(type="button" value="togglefilters" title="Toggle Filter Display" aria-label="Toggle filter display" aria-pressed="true" aria-expanded="true")
+        i.fas.fa-filter(aria-hidden="true")
       span#titlecontent Advanced Search
     hr
     br
@@ -24,8 +24,8 @@ block content
           input#asearch-autocomplete.asearch-autocomplete.form-control(type="Search" placeholder="Search" aria-label="Search")
       .col-md-4(style="text-align: right;")
         a.btn.btn-secondary.nocatch(href="/asearch/") Reset
-        button#btn_export.btn.btn-success(style="background-color: purple; border-color: purple;") Export (zKillBot)
-        button#btn_save.btn.btn-success(style="margin-left: 2em;") Save
+        button#btn_export.btn.btn-success(type="button" style="background-color: purple; border-color: purple;") Export (zKillBot)
+        button#btn_save.btn.btn-success(type="button" style="margin-left: 2em;") Save
     hr.asearchfilters
     .row.centered.asearchfilters
       .col-md-6
@@ -33,64 +33,68 @@ block content
         #location All systems
       .col-md-6
         label Timespan (UTC)
-        center
-          .btn-group.btn-group-sm.centered(zkill-var="epoch")
-            button#stats-epoch-week.tfilter.btn.btn-primary.radio-btn(value="week" radio="epoch" title="Last 7 Days") 7
-            button#stats-epoch-recent.tfilter.btn.btn-secondary.radio-btn(value="recent" radio="epoch" title="Last 90 Days") 90
-            button#stats-epoch-alltime.tfilter.btn.btn-secondary.radio-btn(value="alltime" radio="epoch" title="Alltime") &infin;
-            button#stats-epoch-prior-month.tfilter.btn.btn-secondary.radio-btn(value="prior month" radio="epoch" title="Prior Month")
-              i.fas.fa-arrow-left
-              i.fas.fa-calendar
-            button#stats-epoch-current-month.tfilter.btn.btn-secondary.radio-btn(value="current month" radio="epoch" title="Current Month")
-              i.fas.fa-calendar
-            button#stats-epoch-custom.tfilter.btn.btn-secondary.radio-btn(value="custom" radio="epoch" title="Custom Date Range") ✏️
+        .text-center
+          .btn-group.btn-group-sm.centered(data-zkill-var="epoch" role="group" aria-label="Timespan")
+            button#stats-epoch-week.tfilter.btn.btn-primary.radio-btn(value="week" title="Last 7 Days" aria-pressed="true") 7
+            button#stats-epoch-recent.tfilter.btn.btn-secondary.radio-btn(value="recent" title="Last 90 Days" aria-pressed="false") 90
+            button#stats-epoch-alltime.tfilter.btn.btn-secondary.radio-btn(value="alltime" title="Alltime" aria-pressed="false") &infin;
+            button#stats-epoch-prior-month.tfilter.btn.btn-secondary.radio-btn(value="prior month" title="Prior Month" aria-label="Prior month" aria-pressed="false")
+              i.fas.fa-arrow-left(aria-hidden="true")
+              i.fas.fa-calendar(aria-hidden="true")
+            button#stats-epoch-current-month.tfilter.btn.btn-secondary.radio-btn(value="current month" title="Current Month" aria-label="Current month" aria-pressed="false")
+              i.fas.fa-calendar(aria-hidden="true")
+            button#stats-epoch-custom.tfilter.btn.btn-secondary.radio-btn(value="custom" title="Custom Date Range" aria-label="Custom date range" aria-pressed="false") ✏️
           .btn-group.btn-group-sm
-            button#rolling-times.btn.btn-secondary.btn-secondary(type="checkbox" checked value="rolling" title="Time will adjust automatically in 15 minute increments.")
-              i.fas.fa-arrow-down
+            button#rolling-times.btn.btn-secondary(type="button" value="rolling" title="Time will adjust automatically in 15 minute increments." aria-label="Use rolling timespan" aria-pressed="false")
+              i.fas.fa-arrow-down(aria-hidden="true")
           br
           br
-          #timeframe.input-group
-            input#dtstart.form-control.form-line(type="datetime-local" style="min-width: 14em; max-width: 14em;" placeholder="2007-12-05 00:00" autocomplete="off" disabled)
-            input#dtend.form-control.form-line(type="datetime-local" style="min-width: 14em; max-width: 14em;" placeholder="Now" autocomplete="off" disabled)
+          #timeframe.d-flex.flex-wrap.justify-content-center.gap-2
+            .input-group.input-group-sm.w-auto
+              label.input-group-text(for="dtstart") Start
+              input#dtstart.form-control.form-line(type="datetime-local" style="min-width: 14em; max-width: 14em;" autocomplete="off" disabled)
+            .input-group.input-group-sm.w-auto
+              label.input-group-text(for="dtend") End
+              input#dtend.form-control.form-line(type="datetime-local" style="min-width: 14em; max-width: 14em;" autocomplete="off" disabled)
     hr.asearchfilters
     .row.centered.asearchfilters
       each $group, $name in ($labels ?? [])
-        .btn-group(data-group-name=$name)
+        .btn-group(data-group-name=$name role="group" aria-label=($name . ' filters'))
           button.btn.btn-secondary.btn-sm.btn-group-label(disabled)= $name
           each $label_name, $label_id in $group
-            button.filter-btn.btn.btn-secondary.btn-sm(value="label-" . $label_id data-label=$label_id)= $label_name
+            button.filter-btn.btn.btn-secondary.btn-sm(value="label-" . $label_id data-label=$label_id aria-pressed="false")= $label_name
     hr.asearchfilters
     .row.centered.asearchfilters(style="min-height: 100px;")
       .col-md-3
         label Attackers
         br
-        #attackers-joinType.andor.btn-group.centered
-          button#attackers-joinType-and.btn.btn-primary.radio-btn(value="attackers-and" radio="attackers-joinType" title="And") And
-          button#attackers-joinType-and.btn.btn-secondary.radio-btn(value="attackers-aand" radio="attackers-joinType" title="AAnd") In
-          button#attackers-joinType-or.btn.btn-secondary.radio-btn(value="attackers-or" radio="attackers-joinType" title="Or") Or
+        #attackers-joinType.andor.btn-group.centered(role="group" aria-label="Attackers match type")
+          button#attackers-joinType-and.btn.btn-primary.radio-btn(value="attackers-and" title="And" aria-pressed="true") And
+          button#attackers-joinType-in.btn.btn-secondary.radio-btn(value="attackers-aand" title="AAnd" aria-pressed="false") In
+          button#attackers-joinType-or.btn.btn-secondary.radio-btn(value="attackers-or" title="Or" aria-pressed="false") Or
         #attackers
       .col-md-3
         label Either
         br
-        #either-joinType.andor.btn-group.centered
-          button#either-joinType-and.btn.btn-primary.radio-btn(value="either-and" radio="either-joinType" title="And") And
-          button#attackers-joinType-and.btn.btn-secondary.radio-btn(value="either-aand" radio="either-joinType" title="AAnd") In
-          button#either-joinType-or.btn.btn-secondary.radio-btn(value="either-or" radio="either-joinType" title="Or") Or
+        #either-joinType.andor.btn-group.centered(role="group" aria-label="Either match type")
+          button#either-joinType-and.btn.btn-primary.radio-btn(value="either-and" title="And" aria-pressed="true") And
+          button#either-joinType-in.btn.btn-secondary.radio-btn(value="either-aand" title="AAnd" aria-pressed="false") In
+          button#either-joinType-or.btn.btn-secondary.radio-btn(value="either-or" title="Or" aria-pressed="false") Or
         #neutrals
       #victim.col-md-3
         label Victim
         br
-        #victim-joinType.andor.btn-group.centered
-          button#victim-joinType-and.btn.btn-primary.radio-btn(value="victims-and" radio="victim-joinType" title="And") And
-          button#attackers-joinType-and.btn.btn-secondary.radio-btn(value="victims-aand" radio="victim-joinType" title="AAnd") In
-          button#victim-joinType-or.btn.btn-secondary.radio-btn(value="victims-or" radio="victim-joinType" title="Or") Or
+        #victim-joinType.andor.btn-group.centered(role="group" aria-label="Victim match type")
+          button#victim-joinType-and.btn.btn-primary.radio-btn(value="victims-and" title="And" aria-pressed="true") And
+          button#victim-joinType-in.btn.btn-secondary.radio-btn(value="victims-aand" title="AAnd" aria-pressed="false") In
+          button#victim-joinType-or.btn.btn-secondary.radio-btn(value="victims-or" title="Or" aria-pressed="false") Or
         #victims
       .col-md-3
         label Items
         br
-        #items-joinType.andor.btn-group.centered
-          button#items-joinType-and.btn.btn-primary.radio-btn(value="items-and" radio="items-joinType" title="And") And
-          button#items-joinType-or.btn.btn-secondary.radio-btn(value="items-or" radio="items-joinType" title="Or") Or
+        #items-joinType.andor.btn-group.centered(role="group" aria-label="Items match type")
+          button#items-joinType-and.btn.btn-primary.radio-btn(value="items-and" title="And" aria-pressed="true") And
+          button#items-joinType-or.btn.btn-secondary.radio-btn(value="items-or" title="Or" aria-pressed="false") Or
         #items
     hr#clickToDigHr
     #clickToDig(style="display: flex;")
@@ -99,65 +103,69 @@ block content
           input#clickToDigCheckbox(type="checkbox")
           span#clickText Clicking will Drill Down
       div(style="flex: 1; text-align: center;")
-        span#asearchQueueIndicator.badge.bg-warning.text-black.fs-6(style="display: none; margin-top: 0.4em;")
+        span#asearchQueueIndicator.badge.bg-warning.text-black.fs-6(style="display: none; margin-top: 0.4em;" role="status" aria-live="polite" aria-atomic="true")
       .checkbox
         label
           input#includeAssociates(type="checkbox" checked)
           span#includeAssociatesLabel Include Associates
       div
-        span#exportCsv.btn.btn-success.btn-sm.notafilter(style="margin-top: 0.5em;") Export XSLX
-        span#toggleGroupLayout.btn.btn-secondary.btn-sm(value="split" style="margin-top: 0.5em; margin-left: 0.5em;" title="Toggle wide aggregation layout") Wide Groups
+        button#exportCsv.btn.btn-success.btn-sm.notafilter(type="button" style="margin-top: 0.5em;") Export XLSX
+        button#toggleGroupLayout.btn.btn-secondary.btn-sm(type="button" value="split" style="margin-top: 0.5em; margin-left: 0.5em;" title="Toggle wide aggregation layout" aria-pressed="false" aria-controls="page result-groups-column") Wide Groups
     .row#manualQueryRow.my-3(style="display: none;")
       .col-12.text-center
         button#manualQueryBtn.btn.btn-warning.btn-lg.px-5.fw-bold(type="button")
           i.fas.fa-play.me-2
           | Query
     hr
+    #asearchStatus.visually-hidden(role="status" aria-live="polite" aria-atomic="true")
     #clickablecontent.row
       #page.col-md-10
         #pagefilters
-          .btn-group.asearchfilters(zkill-var="sort" zkill-key="sortBy")
-            button.sorttype.radio-btn.btn.btn-primary(value="sort-date") Date
-            button.sorttype.radio-btn.btn.btn-secondary(value="sort-isk") ISK
-            button.sorttype.radio-btn.btn.btn-secondary(value="sort-involved") Involved
-            button.sorttype.radio-btn.btn.btn-secondary(value="sort-damage") Damage
-            button.sorttype.radio-btn.btn.btn-secondary(value="sort-points") Points
-          .btn-group.asearchfilters(zkill-var="sort" zkill-key="sortDir")
-            button.sortorder.radio-btn.btn.btn-primary(value="sort-desc") Desc
-            button.sortorder.radio-btn.btn.btn-secondary(value="sort-asc") Asc
-          .btn-group.float-end.asearchfilters(zkill-var="page")
-            button#page1.pagenum.radio-btn.btn-page.btn.btn-primary(value="page1") 1
-            button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page2") 2
-            button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page3") 3
-            button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page4") 4
-            button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page5") 5
-            button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page6") 6
-            button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page7") 7
-            button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page8") 8
-            button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page9") 9
-            button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page10") 10
+          .btn-group.asearchfilters(data-zkill-var="sort" data-zkill-key="sortBy" role="group" aria-label="Sort by")
+            button.sorttype.radio-btn.btn.btn-primary(value="sort-date" aria-pressed="true") Date
+            button.sorttype.radio-btn.btn.btn-secondary(value="sort-isk" aria-pressed="false") ISK
+            button.sorttype.radio-btn.btn.btn-secondary(value="sort-involved" aria-pressed="false") Involved
+            button.sorttype.radio-btn.btn.btn-secondary(value="sort-damage" aria-pressed="false") Damage
+            button.sorttype.radio-btn.btn.btn-secondary(value="sort-points" aria-pressed="false") Points
+          .btn-group.asearchfilters(data-zkill-var="sort" data-zkill-key="sortDir" role="group" aria-label="Sort direction")
+            button.sortorder.radio-btn.btn.btn-primary(value="sort-desc" aria-pressed="true") Desc
+            button.sortorder.radio-btn.btn.btn-secondary(value="sort-asc" aria-pressed="false") Asc
+          .btn-group.float-end.asearchfilters(data-zkill-var="page" role="group" aria-label="Search result page")
+            button#page1.pagenum.radio-btn.btn-page.btn.btn-primary(value="page1" aria-pressed="true") 1
+            button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page2" aria-pressed="false") 2
+            button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page3" aria-pressed="false") 3
+            button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page4" aria-pressed="false") 4
+            button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page5" aria-pressed="false") 5
+            button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page6" aria-pressed="false") 6
+            button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page7" aria-pressed="false") 7
+            button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page8" aria-pressed="false") 8
+            button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page9" aria-pressed="false") 9
+            button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page10" aria-pressed="false") 10
           .clearfix.asearchfilters
           br.asearchfilters
         #killmails-result(style="min-height: 500px;")
           table#killlist.table.table-sm.table-striped.table-hover(style="margin-bottom: 0px;")
             thead
               tr
-                th Time
-                th.d-none.d-md-table-cell(style="width: 50px; text-align: center;")
-                th.d-none.d-md-table-cell.location(style="width:115px;") Place
-                th.d-none.d-md-table-cell(style="width: 64px;") &nbsp;
-                th.d-none.d-md-table-cell Victim
-                th.d-none.d-md-table-cell.finalBlowColumn(style="width: 64px;") &nbsp;
-                th.d-none.d-md-table-cell.finalBlowColumn Final Blow
-            tbody#killmails-list
+                th(scope="col") Time
+                th.d-none.d-md-table-cell(scope="col" style="width: 50px; text-align: center;")
+                  span.visually-hidden Ship
+                th.d-none.d-md-table-cell.location(scope="col" style="width:115px;") Place
+                th.d-none.d-md-table-cell(scope="col" style="width: 64px;")
+                  span.visually-hidden Victim portrait
+                th.d-none.d-md-table-cell(scope="col") Victim
+                th.d-none.d-md-table-cell.finalBlowColumn(scope="col" style="width: 64px;")
+                  span.visually-hidden Final blow portrait
+                th.d-none.d-md-table-cell.finalBlowColumn(scope="col") Final Blow
+            tbody#killmails-list(aria-live="polite" aria-atomic="false" aria-busy="false")
       #result-groups-column.col-md-2
         #result-groups-all
           #result-groups-summary
-            .btn-group.btn-group-vertical.asearchfilters.mb-2(zkill-var="group-agg-type" style="width: 100%")
-              .radio-btn.btn.btn-secondary.btn-primary(value="allinvolved") All Involved
-              .radio-btn.btn.btn-secondary(value="victimsonly") Victims Only
-              .radio-btn.btn.btn-secondary(value="attackersonly") Attackers Only
-            h4#result-groups-count
+            .btn-group.btn-group-vertical.asearchfilters.mb-2(data-zkill-var="group-agg-type" style="width: 100%" role="group" aria-label="Aggregation type")
+              button.radio-btn.btn.btn-primary(type="button" value="allinvolved" aria-pressed="true") All Involved
+              button.radio-btn.btn.btn-secondary(type="button" value="victimsonly" aria-pressed="false") Victims Only
+              button.radio-btn.btn.btn-secondary(type="button" value="attackersonly" aria-pressed="false") Attackers Only
+            div#result-groups-count.h4(role="status" aria-live="polite" aria-atomic="true")
           #result-groups-character
           #result-groups-corporation
           #result-groups-alliance
@@ -174,5 +182,5 @@ block content
 
 block script
   script(defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js" integrity="sha512-AIOTidJAcHBH2G/oZv9viEGXRqDNmfdPVPYOYKGy3fti0xIplnlgMHUGfuNRzC6FkzIo0iIxgFnr9RikFxK+sw==" crossorigin="anonymous")
-  script(defer type="text/javascript" src="/js/asearch.js?v=" . $version)
+  script(defer src="/js/asearch.js?v=" . $version)
   script(defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js")

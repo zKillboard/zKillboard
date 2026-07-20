@@ -6,6 +6,8 @@
         td.green(style="text-align: right;" format="format-int-once" raw=($comment['upvotes'] ?? 0))= number_format((float) ($comment['upvotes'] ?? 0))
         td
           | &nbsp; 
-          a(href="#" onClick=("commentUpVote('" . ($comment['pageID'] ?? '') . "', '" . ($comment['commentID'] ?? '') . "'); return false;"))
+          - $commentPageID = $comment['pageID'] ?? '';
+          - $commentID = $comment['commentID'] ?? '';
+          button.btn.btn-link.text-decoration-none.p-0.align-baseline(type="button" data-zkb-comment-page=$commentPageID data-zkb-comment-upvote=$commentID)
             i.fas.fa-arrow-up(aria-hidden="true")
             = ' ' . ($comment['comment'] ?? '')

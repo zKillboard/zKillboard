@@ -8,7 +8,7 @@ if (($skipTracker ?? '') != 'yes')
     a(href=('/account/tracker/' . ($key ?? '') . '/' . ($id ?? '') . '/add/') rel="nofollow")
       i.fa.fa-plus(rel="tooltip" title="Add to Tracker" style="color: green;")
   span#tracker-none.d-none
-    a(href="#" onclick="alert('Please log in first.'); return false;" rel="nofollow")
+    button.btn.btn-link.p-0(type="button" data-zkb-login-required="Please log in first.")
       i.fa.fa-plus(rel="tooltip" title="Add to Tracker" style="color: gray;")
   span#track-entity
   - $skipTracker = 'yes';

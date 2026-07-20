@@ -1,6 +1,6 @@
 table.table.table-sm.table-striped
   caption
-    h5 Top Pilots
+    h2.h5 Top Pilots
   tr
     th Pilot
     th Kills
@@ -9,4 +9,4 @@ table.table.table-sm.table-striped
     tr
       td
         a(href=('/kill/' . ($pilot['characterID'] ?? 0) . '/'))= $pilot['characterName'] ?? ''
-      td(style="text-align: right" format="format-int-once" raw=($pilot['kills'] ?? 0))= number_format((float) ($pilot['kills'] ?? 0), 0)
+      td(style="text-align: right" data-format="format-int-once" data-raw=($pilot['kills'] ?? 0))= number_format((float) ($pilot['kills'] ?? 0), 0)

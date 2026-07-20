@@ -111,8 +111,8 @@ function calcStats($row, $maxSequence)
 
     $type = $row['type'];
     $id = $row['id'];
-    $key = ['type' => $type, 'id' => $id];
-    $stats = $mdb->findDoc('statistics', $key);
+    $statKey = ['type' => $type, 'id' => $id];
+    $stats = $mdb->findDoc('statistics', $statKey);
     $oldDailyStatsTotal = (int) ($stats['shipsDestroyed'] ?? 0) + (int) ($stats['shipsLost'] ?? 0);
     $resetInProgress = false;
     if ($stats === null || @$stats['reset'] === true) {
@@ -265,7 +265,13 @@ function calcStats($row, $maxSequence)
     if (@$stats['shipsDestroyed'] > 10 && @$stats['shipsDestroyed'] > @$stats['nextTopRecalc']) $stats['calcAlltime'] = true;
 	if ($type == 'characterID' && @$stats['shipsDestroyed'] > 1000) $stats['calcTrophies'] = true;
     // save it
-    $mdb->save('statistics', $stats);
+    if ($resetInProgress) {
+        $mdb->save('statistics', $stats);
+    } else {
+        $statsUpdate = $stats;
+        unset($statsUpdate['_id'], $statsUpdate['rankings'], $statsUpdate['rankHistory']);
+        $mdb->getCollection('statistics')->updateOne($statKey, ['$set' => $statsUpdate], ['upsert' => true]);
+    }
 
     $newDailyStatsTotal = (int) ($stats['shipsDestroyed'] ?? 0) + (int) ($stats['shipsLost'] ?? 0);
     if ($oldDailyStatsTotal < DailyStats::PERSIST_MIN_TOTAL && $newDailyStatsTotal >= DailyStats::PERSIST_MIN_TOTAL) {

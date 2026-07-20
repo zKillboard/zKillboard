@@ -2,9 +2,9 @@ include pager.pug
 section.war-kill-list-shell.kill-list-shell
   header.kill-list-header.war-kill-list-header
     h3.kill-list-title= $killListTitle ?? ''
-  #killmailstobdy.war-kill-list
+  #killmailstobdy.war-kill-list(aria-live="polite" aria-atomic="false" aria-busy="false")
     if (count($killList ?? []) == 0)
-      #kms_loading.war-kill-empty
+      #kms_loading.war-kill-empty(role="status")
         em No kills found.
     else
       include war_kill_list_row.pug

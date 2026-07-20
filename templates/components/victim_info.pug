@@ -65,6 +65,7 @@ div(style="padding: 0px; width: 100%; margin: 0px;")
         th Related:
         td
           include text_ship.pug
+          = ' '
           small(format="format-isk-once" raw=($field['zkb']['totalValue'] ?? 0))
     - $field = $system;
     tr

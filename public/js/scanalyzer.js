@@ -112,16 +112,37 @@ function getName(type, id) {
     }
 }
 
+function finiteOrBlank(value) {
+    if (value === '' || value === null || typeof value == 'undefined') return '';
+    let number = Number(value);
+    return Number.isFinite(number) ? number : '';
+}
+
 function popChar(ch) {
     let type = ch.allianceID > 0 ? 'alli' : 'corp';
     let id = ch.allianceID > 0 ? ch.allianceID : ch.corporationID;
+    ch.stats = ch.stats || {};
+    ch.labels = ch.labels || [];
+    ch.ships = ch.ships || [];
 
     let ships = '';
     for (let i = 0; i < ch.ships.length; i++) {
         ships = ships + `<a href='/character/${ch.id}/reset/ship/${ch.ships[i].shipTypeID}/'><img class="eveimage img-rounded" src="https://images.evetech.net/types/${ch.ships[i].shipTypeID}/render?size=64" style='width: 40px;' title="${ch.ships[i].shipName} ${ch.ships[i].kills} Kills" /></a>`;
     }
 
-    ch.stats.snuggly = 100 - ch.stats.dangerRatio;
+    ch.stats.shipsDestroyed = Number(ch.stats.shipsDestroyed) | 0;
+    ch.stats.shipsLost = Number(ch.stats.shipsLost) | 0;
+    ch.stats.dangerRatio = finiteOrBlank(ch.stats.dangerRatio);
+    if (ch.stats.dangerRatio === '') {
+        if (ch.stats.shipsLost > 0) {
+            let destroyed = ch.stats.shipsDestroyed + (Number(ch.stats.pointsDestroyed) || 0);
+            let lost = ch.stats.shipsLost + (Number(ch.stats.pointsLost) || 0);
+            if (destroyed > 0 || lost > 0) ch.stats.dangerRatio = Math.floor((destroyed / (lost + destroyed)) * 100);
+        } else if (ch.stats.shipsDestroyed > 0) {
+            ch.stats.dangerRatio = 100;
+        }
+    }
+    ch.stats.snuggly = ch.stats.dangerRatio === '' ? '' : 100 - ch.stats.dangerRatio;
     let char = ch.id > 0 ? `<a href='/character/${ch.id}/'>${ch.name}</a>` : ch.name;
     let secStatus = ch.id > 0 && typeof ch.secStatus != 'undefined' ? ch.secStatus : '?';
     if (secStatus == '?') ch.labels.unshift('?');
@@ -133,14 +154,13 @@ function popChar(ch) {
     if (typeof ch.secStatus == 'undefined') ch.secStatus = 0;
     if (ch.allianceID) mapping['allis'][ch.allianceID] = (mapping['allis'][ch.allianceID] | 0) + 1;
     else if (ch.corporationID) mapping['corps'][ch.corporationID] = (mapping['corps'][ch.corporationID] | 0) + 1;
+    ch.stats.gangRatio = finiteOrBlank(ch.stats.gangRatio);
+    ch.stats.avgGangSize = finiteOrBlank(ch.stats.avgGangSize);
     if (!(ch.stats.shipsDestroyed > 1)) ch.stats.gangRatio = '';
-    ch.stats.soloRatio = 100 - ch.stats.gangRatio;
-    ch.stats.shipsDestroyed = ch.stats.shipsDestroyed | 0;
+    ch.stats.soloRatio = ch.stats.gangRatio === '' && ch.stats.shipsDestroyed > 1 ? '' : 100 - ch.stats.gangRatio;
     if (ch.stats.shipsDestroyed == 0) {
         ch.stats.soloRatio = '';
         ch.stats.avgGangSize = '';
-        ch.stats.dangerRatio = '';
-        ch.stats.snuggly = ch.stats.shipsLost > 0 ? 100 : '';
     }
     if (ch.unknown == true) ch.labels.push('no known kb activity');
     else if (ch.inactive == true) ch.labels.push('no recent kb activity');

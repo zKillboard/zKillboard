@@ -6,7 +6,7 @@ else
   - $pageBase = $requesturi ?? '/';
 - $pageBase = $pageBase == '' ? '/' : $pageBase;
 if (($showPager ?? '') != 'false')
-  .float-end.d-flex.align-items-center.gap-2
+  .kill-list-pager.float-end.d-flex.align-items-center.gap-2.ms-auto.align-self-end
     ul.pagination.pagination-sm.mb-0
       if (!empty($pager))
         if (($page ?? 1) == 2)

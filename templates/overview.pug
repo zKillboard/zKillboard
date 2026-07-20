@@ -13,6 +13,7 @@ block title
   include components/title.pug
 
 block content
+  h1.visually-hidden= $pageTitle
   include components/info_top.pug
   #overview-navbar.navbar.navbar-dark.navbar-expand
     button.navbar-toggler.d-md-none(type="button" data-bs-toggle="collapse" data-bs-target="#overview-menu" aria-controls="overview-menu" aria-expanded="false" aria-label="Toggle navigation")
@@ -34,7 +35,7 @@ block content
           li.nav-item
             a.nav-link(class=$isActive('Description', $pageType) href=('/item/' . ($id ?? '') . '/')) Description
         li.nav-item.dropdown
-          a.nav-link.dropdown-toggle(href="#" data-bs-toggle="dropdown" aria-expanded="false") Top
+          button.nav-link.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false") Top
           ul.dropdown-menu
             li
               a.dropdown-item(class=$isActive('top', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/top/')) Monthly Top
@@ -118,13 +119,13 @@ block content
         - $topTitle = 'Sponsored Killmails - Last 7 Days';
         - $topSet = $extraData['sponsoredMails'] ?? [];
         include components/big_top_list.pug
-        .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent" style="padding-top: 1em;")
+        .centered.publift.adrow.ad-xl-none#detailadrow(data-fuse="home_incontent")
         include components/kill_list.pug
-      .col-lg-2.float-start(style="padding: 0px;")
-        center
+      .col-lg-2.float-start.p-0
+        .text-center
           div(style="max-width: 100%;")
-            a#loginsideimage.btn.w-100.collapse(href="/ccpoauth2/")
-              img(src="/img/ssologin.png" style="width: 100%; max-width: 100%; margin-bottom: 1em;" loading="lazy" decoding="async" fetchpriority="low")
+            a#loginsideimage.btn.w-100.collapse(href="/ccpoauth2/" aria-label="Log in with EVE Online SSO")
+              img(src="/img/ssologin.png" alt="Log in with EVE Online SSO" style="width: 100%; max-width: 100%; margin-bottom: 1em;" loading="lazy" decoding="async" fetchpriority="low")
         include components/activity.pug
         include components/activePvP.pug
         #topset-characterID
@@ -140,22 +141,22 @@ block content
             - $topSet = is_object($topSet) ? (array) $topSet : $topSet;
             include components/top_killer_list.pug
     else if ($pageType == 'trophies')
-      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent" style="padding-top: 1em;")
+      .centered.publift.adrow.ad-xl-none#detailadrow(data-fuse="home_incontent")
       include components/trophies.pug
     else if ($pageType == 'api')
-      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent" style="padding-top: 1em;")
+      .centered.publift.adrow.ad-xl-none#detailadrow(data-fuse="home_incontent")
       include components/corp_list.pug
     else if ($pageType == 'stats')
-      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent" style="padding-top: 1em;")
+      .centered.publift.adrow.ad-xl-none#detailadrow(data-fuse="home_incontent")
       include components/summary.pug
       .clearfix
       include components/history.pug
     else if ($pageType == 'daily')
-      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent" style="padding-top: 1em;")
+      .centered.publift.adrow.ad-xl-none#detailadrow(data-fuse="home_incontent")
       include components/daily_stats.pug
     else if ($pageType == 'ranks')
       p
-        center
+        .text-center
           a.btn.btn-info(href="/character/ranks/k/all/alltime/1/") See more Top Ranks here
       include components/rank_list.pug
     else if ($pageType == 'top')
@@ -174,7 +175,7 @@ block content
       - $showImage = true;
       include components/top_list.pug
     else if ($pageType == 'topalltime')
-      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent" style="padding-top: 1em;")
+      .centered.publift.adrow.ad-xl-none#detailadrow(data-fuse="home_incontent")
       h4 Top All Time
       - $topSet = $topKills ?? [];
       - $topTitle = 'Most Valuable Kills - All Time';
@@ -184,10 +185,10 @@ block content
       - $showImage = true;
       include components/top_list.pug
     else if ($pageType == 'corpstats')
-      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent" style="padding-top: 1em;")
+      .centered.publift.adrow.ad-xl-none#detailadrow(data-fuse="home_incontent")
       include components/corpstats.pug
     else if ($pageType == 'supers')
-      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent" style="padding-top: 1em;")
+      .centered.publift.adrow.ad-xl-none#detailadrow(data-fuse="home_incontent")
       h3
         | Intel - Supers 
         small (Last 3 months)
@@ -200,7 +201,7 @@ block content
       each $row, $idx in ($extraData['wars'] ?? [])
         - $row = is_object($row) ? (array) $row : $row;
         .col-lg-6.float-start
-          center
+          .text-center
             h4= $row['name'] ?? ''
           - $wars = $row['wars'] ?? [];
           include components/wars_table.pug

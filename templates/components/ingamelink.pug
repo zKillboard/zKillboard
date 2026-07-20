@@ -1,6 +1,15 @@
 html
   head
     script.
+      document.addEventListener('DOMContentLoaded', function () {
+        const textarea = document.getElementById('textarea');
+        if (!textarea) return;
+        textarea.addEventListener('click', function () {
+          this.select();
+          copyToClipboard();
+        });
+      });
+
       function copyToClipboard() {
         const text = document.getElementById('textarea').value;
         console.log('Attempting to copy to clipboard:', text);
@@ -9,7 +18,7 @@ html
         });
       }
   body
-    textarea#textarea(onClick="this.select(); copyToClipboard(); return true;" rows="3" style="width: 100%;")
+    textarea#textarea(rows="3" style="width: 100%;")
       | <url=killReport:
       = $crest['killID'] ?? ''
       | :

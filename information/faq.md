@@ -113,6 +113,24 @@ Points are **final and not subject to debate**. Attempts to argue about point va
 
 ## 💰 ISK Values
 
+### [#](#prices) How are prices determined?
+
+zKillboard prices are based on CCP market data when reliable data is available.
+
+**The normal pricing flow:**
+
+1. Use CCP market history for The Forge, storing each day's average market price
+2. For a killmail, look at recent stored prices up to the killmail date
+3. Trim obvious high/low outliers when enough history exists
+4. Average the remaining prices and round to two decimals
+5. If market data is missing or unusable, fall back to build cost when zKillboard can calculate one
+
+Some items use special pricing rules. Rare ships, heavily manipulated items, capsules, some materials, and other edge cases may have fixed prices. Blueprint copies and SKINs are priced at **0.01 ISK**. Other items that should not affect killmail value may also be priced at **0.01 ISK**.
+
+Prices are meant to keep killmail values stable and abuse-resistant. They will not always match the current lowest sell order, highest buy order, or a contract price.
+
+---
+
 ### [#](#blueprint) How do you price blueprint copies and SKINs?
 
 Blueprint copies and SKIN prices are extremely volatile and unreliable in the market API. 
@@ -155,13 +173,11 @@ We never write fittings automatically or without your explicit action.
 
 ### [#](#namechange) I changed my character's name - how do I update it?
 
-**Quick update method:**
+If you recently had your name updated by CCP / FC and want to see it reflected on zKill, please log into zKill. Your name will be added to the queue and updated shortly.
 
-1. Log out of zKillboard
-2. Log back in with your character
-3. Allow 1-2 hours for caches to clear
+Once a name has been updated, it may take a few hours for the update to be fully reflected in caches.
 
-The ESI API doesn't always reflect name changes immediately, but logging in forces an update.
+Also, once a month all names will be iterated and checked for updates.
 
 ---
 

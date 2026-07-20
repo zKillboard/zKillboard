@@ -57,7 +57,23 @@ $(document).ready(function () {
     $('#login-delay-slider').on('click touchstart mousedown', stopPropagation);
     $(document).on('click', 'a[href^="/ccpoauth2/"]:not([href^="/ccpoauth2-"])', interceptLoginClick);
     $(document).on('click', 'a[href^="/account/tracker/"]', handleTrackerClick);
+    $(document).on('click', '[data-zkb-close-tooltip]', closeLegacyTooltipClick);
+    $(document).on('click', '[data-zkb-sort-column]', sortItemTableClick);
+    $(document).on('click', '[data-zkb-stat-range]', statRangeClick);
+    $(document).on('click', '[data-zkb-favorite-kill]', favoriteKillClick);
+    $(document).on('click', '[data-zkb-sponsor-url]', sponsorClick);
+    $(document).on('click', '[data-zkb-save-fitting]', saveFittingClick);
+    $(document).on('click', '[data-zkb-select-on-click]', selectOnClick);
+    $(document).on('click', '[data-zkb-history-back]', historyBackClick);
+    $(document).on('click', '[data-zkb-ingame-link-src]', ingameLinkClick);
+    $(document).on('click', '[data-zkb-show-grouping]', showGroupingClick);
+    $(document).on('click mouseover', '[data-zkb-load-remaining-pilots]', loadRemainingPilotsTrigger);
+    $(document).on('click', '[data-zkb-sponsor-slider]', sponsorSliderClick);
+    $(document).on('click', '[data-zkb-login-required]', loginRequiredClick);
+    $(document).on('click', '[data-zkb-comment-upvote]', commentUpVoteClick);
+    $(document).on('click', '[data-zkb-related-kill]', relatedKillRowClick);
     $(document).on('submit', 'form[action^="/ccpoauth2/"]', interceptLoginSubmit);
+    $(document).on('submit', 'form[data-zkb-confirm]', confirmSubmit);
     $(document).on('change', '#login-scope-all', loginScopeAllChange);
     $(document).on('change', '#loginOptionsModal .login-scope', syncLoginScopeAllCheckbox);
     $('#continueLoginWithOptions').on('click', continueLoginWithOptions);
@@ -98,7 +114,7 @@ $(document).ready(function () {
     loadDailyAsyncParts();
 
     // Anything that has a raw value to it will be able to be copied to the clipboard
-	$("[raw]").click(copyToClipboard);
+	$("[raw], [data-raw]").click(copyToClipboard);
 	
 	$("label[for]").on("click", () => { $(window).focus(); })
 	setTimeout(prepTippy, 1);
@@ -119,7 +135,7 @@ function initPageContent() {
     loadDailyAsyncParts();
     loadHomeKillListIfNeeded();
     applyFavoriteStars();
-    $("[raw]").off("click.zkb-copy").on("click.zkb-copy", copyToClipboard);
+    $("[raw], [data-raw]").off("click.zkb-copy").on("click.zkb-copy", copyToClipboard);
     setTimeout(fixCCPsBrokenImages, 1000);
     setTimeout(prepTippy, 1);
 }
@@ -166,6 +182,7 @@ function loadDailyAsyncParts() {
         root.querySelectorAll(".daily-async-part").forEach(function (target) {
             if (target.getAttribute("data-loaded") === "1" || target.getAttribute("data-loading") === "1") return;
             target.setAttribute("data-loading", "1");
+            target.setAttribute("aria-busy", "true");
             const loadingTimer = setTimeout(function () {
                 target.setAttribute("data-show-loading", "1");
             }, 300);
@@ -192,6 +209,7 @@ function loadDailyAsyncParts() {
                         target.setAttribute("data-loaded", "1");
                         target.removeAttribute("data-loading");
                         target.removeAttribute("data-show-loading");
+                        target.setAttribute("aria-busy", "false");
                         doFormats();
                         setTimeout(prepTippy, 1);
                         settleHeight();
@@ -200,6 +218,7 @@ function loadDailyAsyncParts() {
                     clearTimeout(loadingTimer);
                     target.removeAttribute("data-loading");
                     target.removeAttribute("data-show-loading");
+                    target.setAttribute("aria-busy", "false");
                     setTimeout(function () {
                         target.removeAttribute("data-loaded");
                         loadDailyAsyncParts();
@@ -359,7 +378,7 @@ function loadFetchmeKillRows() {
         const row = $(this);
         if (row.attr("data-fetching") === "true") return;
         row.attr("data-fetching", "true");
-        loadKillRow(row.attr("killID"));
+        loadKillRow(row.attr("data-kill-id") || row.attr("killID"));
     });
 }
 
@@ -927,6 +946,11 @@ function hideTransientTooltips() {
     if (legacyTooltip) legacyTooltip.classList.add("d-none");
 }
 
+function closeLegacyTooltipClick(event) {
+    event.preventDefault();
+    hideTransientTooltips();
+}
+
 function destroyTooltipsIn(root) {
     if (!root) return;
     if (root._tippy) root._tippy.destroy();
@@ -938,7 +962,7 @@ function destroyTooltipsIn(root) {
 function copyToClipboard(e) {
     if (this.closest && this.closest(".noclipboard")) return;
     console.log(this);
-    const raw = $(this).attr("raw");
+    const raw = getRawValue($(this));
     console.log(raw);
     if (navigator.clipboard.writeText) {
         navigator.clipboard.writeText(raw);
@@ -1086,8 +1110,8 @@ function wslog(msg)
         statsboxUpdate(json);
     } else if (json.action == 'message') {
         console.log(json);
-        if (json.message.length > 0) $("#zkb-message").html("<center>" + json.message + "</center>").removeClass('d-none');
-        else $("#zkb-message").html('').addClass('d-none');
+        if (json.message.length > 0) $("#zkb-message").html(json.message).addClass('text-center').removeClass('d-none');
+        else $("#zkb-message").html('').removeClass('text-center').addClass('d-none');
     } else if (json.action == 'ztop') {
         if (json.payload && typeof window.ztopUpdate === 'function') {
             window.ztopUpdate(json.payload);
@@ -1141,6 +1165,7 @@ function loadKillRow(killID, retries = 0) {
 function addKillRow(data, id) {
     const row = document.getElementById('kill-' + id);
     if (row) row.outerHTML = data;
+    doFormats();
     assignRowColor();
     adjustKillmailPresentation();
 }
@@ -1167,7 +1192,7 @@ function adjustKillmailPresentation() {
     // because nth-of-type still counts hidden rows.
     let priorDate = undefined;
     document.querySelectorAll('.tr-date').forEach(function(row) {
-        const date = row.getAttribute('date');
+        const date = row.getAttribute('data-kill-date') || row.getAttribute('date');
         if (date == priorDate) {
             row.remove();
             return;
@@ -1185,7 +1210,12 @@ function prepKills(data) {
         const tr = document.createElement('tr');
         tr.id = 'kill-' + killID;
         tr.className = 'fetchme';
-        tr.setAttribute('killID', killID);
+        tr.setAttribute('data-kill-id', killID);
+        const td = document.createElement('td');
+        td.className = 'visually-hidden';
+        td.colSpan = 7;
+        td.textContent = 'Loading killmail';
+        tr.appendChild(td);
         tbody.appendChild(tr);
         loadKillRow(killID);
     }
@@ -1204,6 +1234,7 @@ function addLittleKill(data) {
     const row = data.filter('.tr-killmail').first();
     $("#killlist tbody tr").first().before(data);
     if (row.length > 0 && typeof window.playAmbientKillmailNote === 'function') window.playAmbientKillmailNote(row);
+    doFormats();
 
 	// Keep the page from growing too much...
 	while ($("#killlist tbody tr").length > 100) $("#killlist tbody tr:last").remove();
@@ -1225,11 +1256,11 @@ function addLittleKillInOrder(data) {
     let rows = [].reverse.call($("#killmailstobdy tr"));
     data = $(data);
     data.hide();
-    let killid = Number(data.attr('killid'));
+    let killid = Number(data.attr('data-kill-id') || data.attr('killid'));
     console.log('loading', killid);
     for (row of rows) {
         row = $(row);
-        let curKillID = Number(row.attr('killid'));
+        let curKillID = Number(row.attr('data-kill-id') || row.attr('killid'));
         if (isNaN(curKillID)) continue;
         if (curKillID == killid) return; // we're already displaying this killmail
         if (curKillID > killid) {  row.after(data); break; }
@@ -1266,13 +1297,19 @@ request.done(function(msg) {
 
 let sortOrder = 1;
 let sortColumn = 0;
+function sortItemTableClick(event) {
+    event.preventDefault();
+    const column = parseInt(this.getAttribute("data-zkb-sort-column"), 10);
+    if (Number.isNaN(column)) return;
+    doSort(column, this.getAttribute("data-zkb-sort-hide") === "true");
+}
+
 function doSort(column, doHide)
 {
-    let count = $(".item_row").length;
-    if (count >= 250 && confirm(`Are you sure? There are ${count} rows to sort! This could result in high cpu usage which could cause your web application to temporarily lock up during the sort and possible increased battery drainage (e.g. phones, tablets, laptops).`) === false) return;
     if (doHide) $(".hide-when-sorted").hide();
     else $(".hide-when-sorted").show();
 
+    let order;
     if (column != sortColumn) {
         if (column >= 2) order = -1;
         else order = 1;
@@ -1288,35 +1325,35 @@ function doSort(column, doHide)
 }
 
 function sortItemTable(column, order) {
-    var table, rows, switching, i, x, y, shouldSwitch;  
-    table = document.getElementById("itemTable");
-    switching = true;
-    haveSwitched = false;
+    const table = document.getElementById("itemTable");
+    if (!table || !table.tBodies.length) return;
 
-    do {
-        haveSwitched = false;
-        rows = table.rows;
-        for (i = 1; i < (rows.length - 1); i++) {
-            x = rows[i].getElementsByTagName("td")[column];
-            if (x == undefined) x = rows[i].getElementsByTagName("th")[column];
-            y = rows[i + 1].getElementsByTagName("td")[column];
-            if (y == undefined) y = rows[i + 1].getElementsByTagName("th")[column];
-            if (!x || !y) continue;
-            let v1 = x.getAttribute('data-order');
-            v1 = (v1 == null) ? x.innerHTML : parseFloat(v1);
-            if (isNaN(v1)) v1 = x.getAttribute('data-order');
-            let v2 = y.getAttribute('data-order');
-            v2 = (v2 == null) ? y.innerHTML : parseFloat(v2);
-            if (isNaN(v2)) v2 = y.getAttribute('data-order');
-            if ((order == 1 && v1 > v2) || (order == -1 && v1 < v2)) {
-                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                t = rows[i];
-                rows[i] = rows[i] + 1;
-                rows[i + 1] = t;
-                haveSwitched = true;
-            }
+    const tbody = table.tBodies[0];
+    const numericSort = column != 1;
+    const rows = Array.from(tbody.rows).map(function(row, index) {
+        const cell = row.cells[column];
+        let value = cell ? cell.getAttribute('data-order') : null;
+        value = (value == null && cell) ? cell.textContent.trim() : value;
+        if (value == null) value = '';
+
+        if (numericSort) {
+            value = parseFloat(value);
+            if (isNaN(value)) value = 0;
         }
-    } while (haveSwitched); 
+
+        return { row: row, value: value, index: index };
+    });
+
+    rows.sort(function(a, b) {
+        if (a.value === b.value) return a.index - b.index;
+        return (a.value > b.value ? 1 : -1) * order;
+    });
+
+    const fragment = document.createDocumentFragment();
+    rows.forEach(function(entry) {
+        fragment.appendChild(entry.row);
+    });
+    tbody.appendChild(fragment);
 } 
 
 function parseKillmailUrl(str) {
@@ -1364,8 +1401,9 @@ function addKillListClicks()
 {
     $(".killListRow").off('click.zkb-killrow').on('click.zkb-killrow', function(event) {
             if (event.which === 2) return false;
-            console.log($(this).attr('killID'));
-            navigateTo('/kill/' + $(this).attr('killID') + '/');
+            const killID = $(this).attr('data-kill-id') || $(this).attr('killID');
+            console.log(killID);
+            navigateTo('/kill/' + killID + '/');
             return false;
             });
 }
@@ -1375,6 +1413,114 @@ function doSponsor(url)
     $('#modalMessageBody').load(url);
     $('#modalTitle').text('Sponsor this killmail');
     showModal('#modalMessage');
+}
+
+function sponsorClick(event) {
+    event.preventDefault();
+    const url = this.getAttribute("data-zkb-sponsor-url");
+    if (url) doSponsor(url);
+}
+
+function saveFittingClick(event) {
+    event.preventDefault();
+    const id = parseInt(this.getAttribute("data-zkb-save-fitting"), 10);
+    if (!Number.isNaN(id)) saveFitting(id);
+}
+
+function selectOnClick() {
+    if (typeof this.select === "function") this.select();
+}
+
+function historyBackClick(event) {
+    event.preventDefault();
+    history.go(-1);
+}
+
+function ingameLinkClick(event) {
+    event.preventDefault();
+    const src = this.getAttribute("data-zkb-ingame-link-src");
+    const target = document.getElementById("ingamelinkcontent");
+    if (src && target) {
+        target.textContent = "";
+        const iframe = document.createElement("iframe");
+        iframe.src = src;
+        iframe.width = "100%";
+        iframe.setAttribute("rows", "3");
+        iframe.title = "In Game Link";
+        target.appendChild(iframe);
+    }
+    showModal("#ingamelink");
+}
+
+function showGroupingClick(event) {
+    event.preventDefault();
+    const type = this.getAttribute("data-zkb-show-grouping");
+    if (!type) return;
+    $(".grouping-" + type).show();
+    $(".grouping-all-" + type).hide();
+}
+
+function loadRemainingPilotsTrigger() {
+    if (typeof window.loadRemainingPilots === "function") window.loadRemainingPilots();
+}
+
+function sponsorSliderClick(event) {
+    event.preventDefault();
+    const baseUrl = this.getAttribute("data-zkb-sponsor-slider");
+    if (!baseUrl) return;
+    const amount = $("#slider").attr("value") || $("#slider").val() || "0";
+    doSponsor(baseUrl + amount + "/");
+}
+
+function loginRequiredClick(event) {
+    event.preventDefault();
+    alert(this.getAttribute("data-zkb-login-required") || "Please log in first.");
+}
+
+function commentUpVoteClick(event) {
+    event.preventDefault();
+    const pageID = this.getAttribute("data-zkb-comment-page");
+    const commentID = this.getAttribute("data-zkb-comment-upvote");
+    if (pageID && commentID) commentUpVote(pageID, commentID);
+}
+
+function relatedKillRowClick(event) {
+    if (event.which !== 1) return;
+    const target = event.target;
+    if (target && target.closest && target.closest("a, button, input, textarea, select")) return;
+
+    const killID = parseInt(this.getAttribute("data-zkb-related-kill"), 10);
+    if (Number.isNaN(killID) || killID <= 0) return;
+
+    event.preventDefault();
+    navigateTo("/kill/" + killID + "/");
+    return false;
+}
+
+function confirmSubmit(event) {
+    const message = this.getAttribute("data-zkb-confirm");
+    if (message && !confirm(message)) {
+        event.preventDefault();
+        return false;
+    }
+}
+
+function favoriteKillClick(event) {
+    event.preventDefault();
+    const killID = parseInt(this.getAttribute("data-zkb-favorite-kill"), 10);
+    if (Number.isNaN(killID)) return;
+    doFavorite(killID, this, this.getAttribute("data-zkb-favorite-scope") || undefined);
+}
+
+function statRangeClick(event) {
+    event.preventDefault();
+    const targetRange = this.getAttribute("data-zkb-stat-range");
+    if (!targetRange) return;
+
+    $(".alltime-ranks, .recent-ranks, .weekly-ranks").hide();
+    $("." + targetRange).show();
+    $(".stat-range").removeClass("btn-primary stat-active").addClass("btn-secondary");
+    $(this).removeClass("btn-secondary").addClass("btn-primary stat-active");
 }
 
 function doFavorite(killID, star, scope) {
@@ -1462,6 +1608,7 @@ function applyFavoriteStarState(stars, scope, isFavorite) {
     stars.css("color", isFavorite ? colors[scope] : emptyColors[scope]);
     stars.toggleClass("fas", isFavorite);
     stars.toggleClass("far", !isFavorite);
+    stars.closest(".favorite").attr("aria-pressed", isFavorite ? "true" : "false");
 }
 
 function pubsub(channel, forceSend, generation)
@@ -1535,7 +1682,7 @@ function loadads() {
     adnumber = adblocks.length;
     adblocks.each(function() {
         const elem = $(this);
-        const fuse = elem.attr("fuse") || '';
+        const fuse = elem.attr("data-fuse") || elem.attr("fuse") || '';
 		if (fuse.trim().length > 0) elem.load('/cache/1hour/publift/' + fuse + '/', adblockloaded);
     });
 }
@@ -1567,7 +1714,7 @@ function showAdblockedMessage() {
     if ($("#publifttop").html() == "") {
         gtag('event', 'adblocked', 'detectAdblock blocked');
         let html = '';
-        //if (promoURI != '') html = `<div style='max-height: 130px; max-width: 100%;'><a href="${promoURI}" target="_blank"><img style='max-height: 130px; max-width: 100%;' src="${promoImage1}" alt="Promotional Image" />User code "zkill" for 3% Off!</a></div>`;
+        //if (promoURI != '') html = `<div style='max-height: 130px; max-width: 100%;'><a href="${promoURI}" target="_blank" rel="noopener noreferrer"><img style='max-height: 130px; max-width: 100%;' src="${promoImage1}" alt="Promotional Image" />User code "zkill" for 3% Off!</a></div>`;
         //else html = '<h4>AdBlocker Detected! :(</h4><p>Please support zKillboard by disabling your adblocker.<br/><a href="/information/payments/">Or block them with ISK and get a golden wreck too.</a></p>';
         $("#publifttop").html(html);
         if (ws) ws.close();
@@ -1636,22 +1783,23 @@ function waitForStatsFunctionToLoadBecauseChromeIsBeingDumb(stats) {
 }
 
 function doFormats() {
-    $("[format='format-int']").each(function() { t = $(this); doFieldUpdate(t, Number(t.attr('raw') || 0).toLocaleString()); });
-    $("[format='format-int-once']").each(function() { t = $(this); doFieldUpdate(t, Number(t.attr('raw') || 0).toLocaleString()); t.removeAttr('format'); });
-    $("[format='format-pct-once']").each(function() { t = $(this); doFieldUpdate(t, (Number(t.attr('raw') || 0) + '%').toLocaleString()); t.removeAttr('format'); });
+    $("[format='format-int'], [data-format='format-int']").each(function() { t = $(this); doFieldUpdate(t, Number(getRawValue(t) || 0).toLocaleString()); });
+    $("[format='format-int-once'], [data-format='format-int-once']").each(function() { t = $(this); doFieldUpdate(t, Number(getRawValue(t) || 0).toLocaleString()); removeFormatMarker(t); });
+    $("[format='format-pct-once'], [data-format='format-pct-once']").each(function() { t = $(this); doFieldUpdate(t, (Number(getRawValue(t) || 0) + '%').toLocaleString()); removeFormatMarker(t); });
 
-    $("[format='format-dec1']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(t.attr('raw')).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits:1} )); });
-    $("[format='format-isk']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(t.attr('raw')))) });
+    $("[format='format-dec1'], [data-format='format-dec1']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(getRawValue(t)).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits:1} )); });
+    $("[format='format-isk'], [data-format='format-isk']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(getRawValue(t)))) });
 
-    $("[format='format-dec2-once']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(t.attr('raw')).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2} )); t.removeAttr('format'); });
-    $("[format='format-dec2-once-i']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(t.attr('raw')).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2} ) + ' ISK'); t.removeAttr('format'); });
-    $("[format='format-isk-once']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(t.attr('raw')))); t.removeAttr('format'); });
-    $("[format='format-isk-once-i']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(t.attr('raw'))) + ' ISK'); t.removeAttr('format'); });
-    $("#statsbox td[raw='-']").text('-');
+    $("[format='format-dec2-once'], [data-format='format-dec2-once']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(getRawValue(t)).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2} )); removeFormatMarker(t); });
+    $("[format='format-dec2-once-i'], [data-format='format-dec2-once-i']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(getRawValue(t)).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2} ) + ' ISK'); removeFormatMarker(t); });
+    $("[format='format-isk-once'], [data-format='format-isk-once']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(getRawValue(t)))); removeFormatMarker(t); });
+    $("[format='format-isk-once-i'], [data-format='format-isk-once-i']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(getRawValue(t))) + ' ISK'); removeFormatMarker(t); });
+    $("#statsbox td[raw='-'], #statsbox td[data-raw='-']").text('-');
 }
 
 function doFieldUpdate(f, v) {
-    if (f.attr('raw') == '' || f.attr('raw') == '-' || f.attr('raw') == undefined) return;
+    const raw = getRawValue(f);
+    if (raw == '' || raw == '-' || raw == undefined) return;
     if (v == 'NaN') v = '';
 
     if (f.text() == String(v)) return;
@@ -1666,6 +1814,15 @@ function doFieldUpdate(f, v) {
     f.stop(true, true).animate({opacity: o}, 100, function() {
             $(this).text(v).animate({opacity: 1}, 100);
             })
+}
+
+function getRawValue(f) {
+    const raw = f.attr('raw');
+    return raw == undefined ? f.attr('data-raw') : raw;
+}
+
+function removeFormatMarker(f) {
+    f.removeAttr('format').removeAttr('data-format');
 }
 
 const formatIskIndex = ['', 'k', 'm', 'b', 't', 'k t', 'm t', 'b t'];
@@ -1693,18 +1850,18 @@ function assignGreenRed() {
 
     const row = this;
     row.classList.remove('kltbd', 'winwin', 'error');
-    let vics = row.getAttribute('vics');
+    let vics = row.getAttribute('data-vics') || row.getAttribute('vics');
     if (vics == '') return;
     vics = vics.split(',');
 
     for (let i = 0; i < vics.length; i++) if (vicid == vics[i]) {
-        const removeIcon = document.querySelector('#kill-' + row.getAttribute('killID') + ' .fa-times');
+        const removeIcon = document.querySelector('#kill-' + (row.getAttribute('data-kill-id') || row.getAttribute('killID')) + ' .fa-times');
         if (removeIcon) removeIcon.classList.remove('d-none');
         row.classList.add('error');
         return;
     }
 
-    const okIcon = document.querySelector('#kill-' + row.getAttribute('killID') + ' .fa-check');
+    const okIcon = document.querySelector('#kill-' + (row.getAttribute('data-kill-id') || row.getAttribute('killID')) + ' .fa-check');
     if (okIcon) okIcon.classList.remove('d-none');
     row.classList.add('winwin');
 }

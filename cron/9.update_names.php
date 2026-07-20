@@ -6,8 +6,27 @@ if ($kvc->get("zkb:noapi") == "true") exit();
 
 $rset = "zkb:updatenames";
 $rsetLoad = "zkb:updatenames:" . date('Ymd');
+$rsetMonthlyCharacters = "zkb:updatenames:characters:" . date('Ym');
+$rsetMonthlyCharactersLastID = "$rsetMonthlyCharacters:lastID";
 
 $guzzler = new Guzzler();
+
+if ($kvc->get($rsetMonthlyCharacters) != "true" && (date('j') == 1 || $kvc->get($rsetMonthlyCharactersLastID) !== null) && $redis->scard($rset) <= 50000) {
+    $lastID = (int) $kvc->get($rsetMonthlyCharactersLastID, 0);
+    $rows = $mdb->getCollection('information')->find(['type' => 'characterID', 'id' => ['$gt' => $lastID]], ['projection' => ['_id' => 0, 'id' => 1], 'sort' => ['id' => 1], 'limit' => 5000]);
+    $set = [];
+    foreach ($rows as $row) {
+        $set[] = $row['id'];
+        $lastID = $row['id'];
+    }
+    if (sizeof($set) > 0) {
+        $redis->sadd($rset, ...$set);
+        $kvc->setex($rsetMonthlyCharactersLastID, 86400 * 40, $lastID);
+    } else {
+        $kvc->setex($rsetMonthlyCharacters, 86400 * 40, "true");
+        $kvc->del($rsetMonthlyCharactersLastID);
+    }
+}
 
 if ($redis->get($rsetLoad) != "true" && $redis->scard($rset) <= 100) {
     addToRset($redis, $rset, $mdb->getCollection('ninetyDays')->distinct('involved.characterID'));

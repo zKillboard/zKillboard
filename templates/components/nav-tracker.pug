@@ -9,6 +9,10 @@
 - $trackerConstellation = $navRows($tracker_constellation ?? []);
 - $trackerRegion = $navRows($tracker_region ?? []);
 - $navIds = fn($rows, $filter = null) => array_values(array_map(fn($row) => (int) ($row['id'] ?? 0), array_filter($rows, fn($row) => ($filter === null || $filter($row)) && !empty($row['id']))));
+- $navName = function ($rows, $id, $fallback) { foreach ($rows ?? [] as $row) { if ((int) ($row['id'] ?? 0) == (int) $id && strlen((string) ($row['name'] ?? '')) > 0) return rtrim((string) $row['name'], ' *'); } return $fallback; };
+- $navCharacterName = $navName($trackerCharacter, $characterID ?? 0, $sessionusername ?? 'Character');
+- $navCorporationName = $navName($trackerCorporation, $corporationID ?? 0, 'your corporation');
+- $navAllianceName = $navName($trackerAlliance, $allianceID ?? 0, 'your alliance');
 - $trackerState = ['loggedIn' => !empty($sessionusername), 'trackNotification' => (($trackernotification ?? '') === 'true'), 'characterID' => (int) ($characterID ?? 0), 'corporationID' => (int) ($corporationID ?? 0), 'allianceID' => (int) ($allianceID ?? 0), 'tracked' => ['character' => $navIds($trackerCharacter), 'corporation' => $navIds($trackerCorporation, fn($row) => (int) ($row['id'] ?? 0) > 1999999), 'alliance' => $navIds($trackerAlliance), 'faction' => $navIds($trackerFaction), 'ship' => $navIds($trackerShip), 'group' => $navIds($trackerGroup), 'system' => $navIds($trackerSystem), 'constellation' => $navIds($trackerConstellation), 'region' => $navIds($trackerRegion)]];
 if (!empty($sessionusername))
   script(type="text/javascript")
@@ -31,26 +35,40 @@ if (!empty($sessionusername))
     != json_encode(($image_character ?? '') . ($characterID ?? 0) . '/portrait?size=256')
     | );
     | try {
+    | $("#nav-character-link").attr("href",
+    != json_encode('/character/' . ($characterID ?? 0) . '/')
+    | ).attr("aria-label",
+    != json_encode('View ' . $navCharacterName)
+    | );
     | $(".char-image").attr("src",
     != json_encode(($image_character ?? '') . ($characterID ?? 0) . '/portrait?size=128')
-    | ).on('click', function() { navigateTo(
-    != json_encode('/character/' . ($characterID ?? 0) . '/')
-    | ); });
+    | ).attr("alt",
+    != json_encode($navCharacterName . ' portrait')
+    | );
+    | $("#nav-corporation-link").attr("href",
+    != json_encode('/corporation/' . ($corporationID ?? 0) . '/')
+    | ).attr("aria-label",
+    != json_encode('View ' . $navCorporationName)
+    | );
     | $(".corp-image").attr("src",
     != json_encode(($image_corporation ?? '') . ($corporationID ?? 0) . '/logo?size=64')
-    | ).on('click', function() { navigateTo(
-    != json_encode('/corporation/' . ($corporationID ?? 0) . '/')
-    | ); });
+    | ).attr("alt",
+    != json_encode($navCorporationName . ' logo')
+    | );
     if (($allianceID ?? 0) > 0)
+      | $("#nav-alliance-link").attr("href",
+      != json_encode('/alliance/' . ($allianceID ?? 0) . '/')
+      | ).attr("aria-label",
+      != json_encode('View ' . $navAllianceName)
+      | );
       | $(".alli-image").attr("src",
       != json_encode(($image_alliance ?? '') . ($allianceID ?? 0) . '/logo?size=64')
-      | ).on('click', function() { navigateTo(
-      != json_encode('/alliance/' . ($allianceID ?? 0) . '/')
-      | ); });
+      | ).attr("alt",
+      != json_encode($navAllianceName . ' logo')
+      | );
     else
-      | $(".alli-image").remove();
+      | $("#nav-alliance-link").remove();
     | } catch (e) { }
-    | $('.clickimage').css('cursor', 'pointer');
     | showAds =
     != json_encode((int) ($showAds ?? 0))
     | ;

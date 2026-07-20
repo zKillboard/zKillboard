@@ -186,6 +186,7 @@ function handler($request, $response, $args, $container)
 			$redirect = '/';
 
 		$redis->sadd('queueStatsSet', "characterID:$charID");  // encourage stats calc on newly logged in chars
+		$redis->sadd('zkb:updatenames', $charID);
 		return $response->withStatus(302)->withHeader('Location', $redirect);
 	} catch (Exception $e) {
 		$sessid = session_id();

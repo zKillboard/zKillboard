@@ -1,11 +1,12 @@
 - $topSetData = is_object($topSet ?? null) ? (array) $topSet : ($topSet ?? []);
+- $topSetTitle = $topSetData['title'] ?? '';
 - $first = true;
 - $counter = 1;
 if (count($topSetData['values'] ?? []) > 0)
   .groupReport.float-start(style="width: 100%; padding: 0px; margin: 0px;")
-    center
-      h5= $topSetData['title'] ?? ''
-    table.table.table-sm.topBoxes.col-lg-2(style="padding: 0px; margin: 0px; width: 100%;" data-singular=($topSetData['singularTitle'] ?? '') aria-title=($topSetData['title'] ?? ''))
+    .text-center
+      h5= $topSetTitle
+    table.table.table-sm.topBoxes.col-lg-2(style="padding: 0px; margin: 0px; width: 100%;" data-singular=($topSetData['singularTitle'] ?? '') aria-label=$topSetTitle)
       each $data in ($topSetData['values'] ?? [])
         - $data = is_object($data) ? (array) $data : $data;
         - $field = $data;
@@ -44,8 +45,9 @@ if (count($topSetData['values'] ?? []) > 0)
         if ($counter == 11)
           tr(class=('grouping-all-' . ($topSetData['type'] ?? '')))
             td(colspan="4")
-              center
-                span.btn.btn-sm.btn-primary(onclick=("$('.grouping-" . ($topSetData['type'] ?? '') . "').show(); $('.grouping-all-" . ($topSetData['type'] ?? '') . "').hide(); return false;")) The Rest (up to 500)
+              .text-center
+                - $groupingType = $topSetData['type'] ?? '';
+                button.btn.btn-sm.btn-primary(type="button" data-zkb-show-grouping=$groupingType) The Rest (up to 500)
         tr(class=('grouping-' . ($topSetData['type'] ?? '') . ($counter >= 11 ? ' collapse' : '')))
           if (($topSetData['type'] ?? '') == 'character')
             td.deepfilter.hidedeepfilter(style="display: none;")

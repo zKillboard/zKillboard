@@ -1,9 +1,9 @@
 - $first = true;
 if (count($topDonators ?? []) > 0)
   .float-start(style="width: 100%; padding: 0px; margin: 0px;")
-    center
-      h5 Biggest Golden Wrecks
-    table.table.table-sm.topBoxes.col-lg-2(style="padding: 0px; margin: 0px; width: 100%;")
+    .text-center
+      h2.h5 Biggest Golden Wrecks
+    table.table.table-sm.topBoxes.col-lg-2.p-0.m-0.w-100(aria-label="Biggest Golden Wrecks")
       each $data in ($topDonators ?? [])
         - $field = $data;
         if ($first)
@@ -12,14 +12,14 @@ if (count($topDonators ?? []) > 0)
             - $field = $data;
             td
               include image_char.pug
-            td(align="middle" valign="middle")
-              a(href="/information/payments/")
-                img(src="/img/gold_logo_cropped_32.png" alt="")
+            td.text-center.align-middle
+              a(href="/information/payments/" aria-label="zKillboard payment information")
+                img(src="/img/gold_logo_cropped_32.png" alt="zKillboard gold supporter badge")
           - $first = false;
         tr
           td
             include text_char.pug
-          td(style="text-align: right;" title=(($data['iskSum'] ?? 0) . ' ISK') rel="tooltip")= $shortNum($data['iskSum'] ?? 0)
-  center
+          td.text-end(title=(($data['iskSum'] ?? 0) . ' ISK') rel="tooltip")= $shortNum($data['iskSum'] ?? 0)
+  .text-center
     i Last 7 days - Thank you!
   .clearfix
