@@ -43,13 +43,13 @@ block content
       ul.navbar-nav.align-items-center.ms-auto
         if (($infoData['killID'] ?? 0) < 0)
           li.nav-item
-            a.nav-link(data-bs-toggle="modal" data-bs-target="#report" href="#")= 'Report (' . ($extraData['reports'] ?? 0) . ')'
+            button.nav-link(type="button" data-bs-toggle="modal" data-bs-target="#report")= 'Report (' . ($extraData['reports'] ?? 0) . ')'
         li.nav-item
           a.nav-link.d-none.d-md-flex.align-items-center.gap-1.py-2.px-3(target="_blank" rel="noopener noreferrer" href=($referralLink ?? '') title="1 million SP FREE" style="background-color: #7b1fa2; color: #ffffff !important;")
             img(src="https://images.evetech.net/types/40520/icon?size=32" alt="1 million free skill points!" style="height: 18px; margin-right: 2px;" onerror="this.onerror=function(){this.removeAttribute('onerror'); this.src='/img/icons/40520_64.png';}; this.src='https://images.evetech.net/types/40520/bp?size=32';" loading="lazy" decoding="async" fetchpriority="low")
             | 1 Million SP FREE
         li.nav-item.dropdown
-          a.nav-link.dropdown-toggle(href="#" data-bs-toggle="dropdown" aria-expanded="false") External
+          button.nav-link.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false") External
           ul.dropdown-menu
             li
               h6.dropdown-header DOTLAN
@@ -67,7 +67,7 @@ block content
                   a.dropdown-item(href=('https://evewho.com/character/' . $eveWhoCharacter['characterID']) target="_blank" rel="noopener noreferrer")= $eveWhoCharacter['characterName']
         if (($infoData['killID'] ?? 0) > 0)
           li.nav-item.dropdown
-            a.nav-link.dropdown-toggle(href="#" data-bs-toggle="dropdown" aria-expanded="false") OtherKB
+            button.nav-link.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false") OtherKB
             ul.dropdown-menu
               li
                 a.dropdown-item(href=('https://eve-kill.com/kill/' . ($infoData['killID'] ?? 0) . '/') target="_blank" rel="noopener noreferrer") EVE-Kill
@@ -78,20 +78,20 @@ block content
               li
                 a.dropdown-item(href=('https://socketkill.com/kill/' . ($infoData['killID'] ?? 0) . '/') target="_blank" rel="noopener noreferrer") SocketKill
         li.nav-item.dropdown
-          a.nav-link.dropdown-toggle(href="#" data-bs-toggle="dropdown" aria-expanded="false") Export
+          button.nav-link.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false") Export
           ul.dropdown-menu
             li
-              a.dropdown-item(href="#" data-zkb-save-fitting=($crestData['killID'] ?? 0) rel="nofollow") Import Fit via ESI
+              button.dropdown-item(type="button" data-zkb-save-fitting=($crestData['killID'] ?? 0)) Import Fit via ESI
             li
-              a.dropdown-item(data-bs-toggle="modal" data-bs-target="#DNA" href="#") DNA
+              button.dropdown-item(type="button" data-bs-toggle="modal" data-bs-target="#DNA") DNA
             li
-              a.dropdown-item(data-bs-toggle="modal" data-bs-target="#EFT" href="#") EFT
+              button.dropdown-item(type="button" data-bs-toggle="modal" data-bs-target="#EFT") EFT
             li
               a.dropdown-item(target="_blank" rel="noopener noreferrer" href=('/kill/' . ($crestData['killID'] ?? 0) . '/redirect/esi/')) ESI Link
             li
-              a.dropdown-item(href="#" data-zkb-ingame-link-src=("https://zkillboard.com/kill/" . ($infoData['killID'] ?? 0) . "/ingamelink/")) In Game Link
+              button.dropdown-item(type="button" data-zkb-ingame-link-src=("https://zkillboard.com/kill/" . ($infoData['killID'] ?? 0) . "/ingamelink/")) In Game Link
         li.nav-item.dropdown
-          a.nav-link.dropdown-toggle(href="#" data-bs-toggle="dropdown" aria-expanded="false") Social
+          button.nav-link.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false") Social
           ul.dropdown-menu
             li
               a.dropdown-item(href=('https://www.facebook.com/sharer/sharer.php?u=' . ($url ?? '')) target="_blank" rel="noopener noreferrer")

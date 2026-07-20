@@ -35,7 +35,7 @@ block content
           li.nav-item
             a.nav-link(class=$isActive('Description', $pageType) href=('/item/' . ($id ?? '') . '/')) Description
         li.nav-item.dropdown
-          a.nav-link.dropdown-toggle(href="#" data-bs-toggle="dropdown" aria-expanded="false") Top
+          button.nav-link.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false") Top
           ul.dropdown-menu
             li
               a.dropdown-item(class=$isActive('top', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/top/')) Monthly Top

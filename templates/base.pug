@@ -97,7 +97,7 @@ html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
             .pbblock
               a.pbblock.btn.btn-success(href="https://www.patreon.com/zkillboard" target="_blank" rel="noopener noreferrer") Block Ads with Patreon!
         #otherBannerDiv.centered(style="display: none; height: 250px; padding-top: 1em;")
-          a#otherBannerAnchor(href="#" target="_blank" rel="noopener noreferrer")
+          a#otherBannerAnchor(target="_blank" rel="noopener noreferrer")
             img#otherBannerImg(src="/img/transparent_32.png" alt="Promotion")
         #highlightContent.centered(style=("margin-bottom: 1em; " . (!isset($highlightMessage) ? "display: none;" : "")))
           a.btn.btn-sm.d-block.text-center.px-3.py-0.mt-2(href=($highlightURI ?? '') target="_blank" rel="noopener noreferrer" class=($highlightClass ?? ''))

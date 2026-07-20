@@ -7,7 +7,7 @@
 - $activity = is_object($extraData['activity'] ?? null) ? (array) $extraData['activity'] : ($extraData['activity'] ?? []);
 if (($pageType ?? '') == 'overview' && ($activity['max'] ?? 0) > 0)
   h5.text-center Activity (last 90 days)
-  a.d-block.text-center.text-decoration-none(href="#" data-bs-toggle="modal" data-bs-target="#heatmap")
+  a.d-block.text-center.text-decoration-none(href="#heatmap" data-bs-toggle="modal" data-bs-target="#heatmap")
     div(style="line-height: 0;")
       - $steps = floor(($activity['max'] ?? 0) / 5);
       if ($steps < 1)
