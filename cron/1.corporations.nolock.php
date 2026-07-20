@@ -121,8 +121,15 @@ function success($params, $content)
                 Util::out("1.corporations.php - Timeout contacting tranquility");
                 return;
             default:
+                if ($resCode == 403) {
+                    $next = time() + 900 + mt_rand(-300, 300);
+                    $mdb->set("scopes", $row, ['lastFetch' => $mdb->now(), 'successes' => 0, 'nextCheck' => $next]);
+                    Util::out("1.corporations 403 for corp $corpID character $charID: " . $kills['error']);
+                    return;
+                }
+
                 // Something went wrong, reset it and try again later
-                Util::out("1.corporations error - \n" . print_r($row, true) . "\n" . print_r($kills, true));
+                Util::out("1.corporations error for corp $corpID character $charID - " . print_r($kills, true));
         }
         sleep(1);
         return;
