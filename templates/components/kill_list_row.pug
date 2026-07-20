@@ -19,7 +19,7 @@ each $kill in ($killList ?? [])
         span.float-end= date('H:i', (int) ($kill['unixtime'] ?? time()))
         br
         a(href=('/kill/' . $kill['killID'] . '/'))
-          span.float-end(data-format="format-isk-once" data-raw=($kill['zkb']['totalValue'] ?? 0))= $formatIsk($kill['zkb']['totalValue'] ?? 0)
+          span.float-end(data-format="format-isk-once" data-raw=($kill['zkb']['totalValue'] ?? 0))
       td.icon.text-center.align-middle
         include image_ship.pug
       td.location

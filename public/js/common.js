@@ -1165,6 +1165,7 @@ function loadKillRow(killID, retries = 0) {
 function addKillRow(data, id) {
     const row = document.getElementById('kill-' + id);
     if (row) row.outerHTML = data;
+    doFormats();
     assignRowColor();
     adjustKillmailPresentation();
 }
@@ -1233,6 +1234,7 @@ function addLittleKill(data) {
     const row = data.filter('.tr-killmail').first();
     $("#killlist tbody tr").first().before(data);
     if (row.length > 0 && typeof window.playAmbientKillmailNote === 'function') window.playAmbientKillmailNote(row);
+    doFormats();
 
 	// Keep the page from growing too much...
 	while ($("#killlist tbody tr").length > 100) $("#killlist tbody tr:last").remove();
