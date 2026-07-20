@@ -209,6 +209,7 @@ class EveOnlineSSO
 
         $result = curl_exec($ch);
         $resCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        Status::addEsiStatus($url, $resCode, $resHeaders);
 
         if (curl_errno($ch) !== 0) {
             Status::addStatus($statusType, false);

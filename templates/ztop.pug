@@ -22,11 +22,9 @@ block content
     #ztop-groups.ztop-group-grid
       .ztop-group
         .ztop-group-title Waiting for metrics...
-    .ztop-section
-      .ztop-section-header
-        h3 Raw zTop feed
-        button#ztop-raw-toggle.ztop-toggle(type="button") Show raw
-      pre#ztoptextblock.ztop-raw.is-hidden ztop will populate momentarily unless your live updates are disabled
+    #ztop-esi-buckets.ztop-esi-buckets
+      .ztop-group-title ESI outbound calls
+      .ztop-empty Waiting for ESI telemetry...
 
 block script
   script(defer type="text/javascript" src="/js/ztop.js?v=" . $version)

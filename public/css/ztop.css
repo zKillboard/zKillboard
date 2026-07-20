@@ -43,39 +43,6 @@
     margin-left: auto;
 }
 
-.ztop-section-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 6px;
-}
-
-.ztop-section-header h3 {
-    margin: 0;
-}
-
-.ztop-toggle {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #d3d3d3;
-    border-radius: 999px;
-    padding: 4px 10px;
-    font-size: 0.85em;
-    cursor: pointer;
-}
-
-.ztop-toggle:hover {
-    background: rgba(255, 255, 255, 0.16);
-}
-
-.ztop-section {
-    margin-top: 6px;
-}
-
-.ztop-raw.is-hidden {
-    display: none;
-}
-
 .ztop-pill {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -176,6 +143,83 @@
     opacity: 0.9;
 }
 
+.ztop-empty {
+    opacity: 0.7;
+    font-size: 0.85em;
+}
+
+.ztop-esi-buckets {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    font-size: 0.85em;
+}
+
+.ztop-esi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.ztop-esi-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    min-width: 0;
+    padding: 6px;
+}
+
+.ztop-esi-card-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.ztop-esi-name {
+    flex: 1 1 auto;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ztop-esi-bucket-values {
+    flex: 0 0 auto;
+    font-size: 0.82em;
+    font-weight: 600;
+    opacity: 0.8;
+    white-space: nowrap;
+}
+
+.ztop-esi-chart-cell {
+    margin-top: 4px;
+}
+
+.ztop-esi-chart {
+    width: 100%;
+    height: 42px;
+    display: block;
+    opacity: 0.95;
+}
+
+.ztop-esi-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+    min-height: 17px;
+}
+
+.ztop-esi-legend-item {
+    font-size: 0.78em;
+    font-weight: 600;
+    line-height: 1.25;
+    white-space: nowrap;
+}
+
 .ztop-group {
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.12);
@@ -245,26 +289,22 @@
     opacity: 0.9;
 }
 
-.ztop-raw {
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 10px;
-    padding: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    white-space: pre-wrap;
-    color: #c8d0ff;
-    filter: brightness(120%);
-    max-height: 42em;
-    overflow: auto;
-}
-
 @media (max-width: 1100px) {
     .ztop-columns {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ztop-esi-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 760px) {
     .ztop-columns {
+        grid-template-columns: 1fr;
+    }
+
+    .ztop-esi-grid {
         grid-template-columns: 1fr;
     }
 

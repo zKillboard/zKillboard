@@ -9,7 +9,10 @@ if (date('Hi') < 1200) exit();
 $rkey = "zkb:factions:" . date('Ymd');
 if ($kvc->get($rkey) == "true") exit();
 
-$raw = file_get_contents("https://esi.evetech.net/universe/factions/");
+$url = "https://esi.evetech.net/universe/factions/";
+$http_response_header = [];
+$raw = file_get_contents($url);
+Status::addEsiStatusFromHttpResponseHeaders($url, $http_response_header);
 $json = json_decode($raw, true);
 
 foreach ($json as $faction) {

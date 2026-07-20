@@ -6,8 +6,6 @@ use cvweiss\redistools\RedisTimeQueue;
 
 require_once '../init.php';
 
-$width = 90;
-
 // Ensure we have db and redis access
 $mdb->findDoc("killmails");
 $redis->del("zkb:websockets"); // clear it on start
@@ -30,7 +28,6 @@ $isMaster = null;
 $deltaArray = [];
 $metrics = [];
 $metricIndex = 0;
-$serverMetrics = [];
 $serverRows = [];
 $knownRedisQueues = [
 	'queueAPI',
@@ -67,8 +64,6 @@ while ($hour == date('H')) {
 	// primary could change while we're running, to prevent conflicts, periodically check
 	if ($isMaster == null || $curSecond % 15 == 0) $isMaster = areWeMaster();
 
-	ob_start();
-	$infoArray = [];
 	$metrics = [];
 	$metricIndex = 0;
 	$serverRows = [];
@@ -252,16 +247,8 @@ addInfo('', 0);
 	$memTotal = number_format((int) $memory['MemTotal'] / (1024 * 1024), 2);
 	$memUsed = number_format(((int) $memory['MemTotal'] - (int) $memory['MemFree'] - (int) $memory['Cached']) / (1024 * 1024), 2);
 
-	$maxLen = 0;
-	foreach ($infoArray as $i) {
-		foreach ($i as $key => $value) {
-			$maxLen = max($maxLen, strlen("$value"));
-		}
-	}
-
 	$cpu = exec("top -d 0.5 -b -n2 | grep \"Cpu(s)\"| tail -n 1 | awk '{print $2 + $4}'");
 	$cpu = str_pad(number_format($cpu, 1, '.', ''), 5, " ", STR_PAD_LEFT);
-	$output = [];
 	$load = str_pad(Util::getLoad(), 5, " ", STR_PAD_LEFT);
 	$memUsed = str_pad($memUsed, 5, " ", STR_PAD_LEFT);
 	$memTotal = str_pad($memTotal, 5, " ", STR_PAD_LEFT);
@@ -271,7 +258,6 @@ addInfo('', 0);
 
 	$role = Util::getRole($hostRedis);
 	$line = substr($role, 0, 1) . " $line";
-	//$output[] = $line;
 	$redis->hset("zkb:servers", $hostname, $line);
 	//$redis->setex("zkb:memused", 300, $memUsed);
 	if (!$isMaster) {
@@ -285,64 +271,23 @@ addInfo('', 0);
 		$servers[] = $s;
 	}
 	sort($servers);
-	$serverIndex = 0;
 	foreach ($servers as $s) {
 		$l = $redis->hget('zkb:servers', $s);
-		echo str_pad($s, 14, " ", STR_PAD_RIGHT) . "$l\n";
 		$serverRows[] = [
 			'host' => $s,
 			'line' => $l
 		];
-		$serverMetrics[] = [
-			'type' => 'metric',
-			'index' => 'server-' . $serverIndex,
-			'left' => ($serverIndex % 2 === 0),
-			'text' => $s,
-			'label' => $s,
-			'num' => $l,
-			'raw' => $l,
-			'delta' => ''
-		];
-		$serverIndex++;
 	}
-	if (count($serverMetrics) > 0) {
-		$serverMetrics[] = ['type' => 'separator', 'index' => 'server-sep'];
-	}
-	echo "\n";
-
-	$leftCount = 1;
-	$rightCount = 1;
-	$line = "                                                                                                               ";
-	$line = str_repeat(" ", $width);
-	foreach ($infoArray as $i) {
-		$num = trim($i['num']);
-		$text = trim($i['text']);
-		$lr = $i['lr'];
-		$start = $lr == true ? 15 : $width - 10;
-		$leftCount = $lr == true ? $leftCount + 1 : $leftCount;
-		$rightCount = $lr == false ? $rightCount + 1 : $rightCount;
-
-		$lineIndex = $lr == true ? $leftCount : $rightCount;
-		$nextLine = isset($output[$lineIndex]) ? $output[$lineIndex] : $line;
-
-		if (strlen($text) != '') {
-			$nextLine = substr_replace($nextLine, $num, ($start - strlen($num)), strlen($num));
-			$nextLine = substr_replace($nextLine, $text, $start + 2, strlen($text));
-		}
-		$output[$lineIndex] = $nextLine;
-	}
-	if ($isMaster) foreach ($output as $line) echo "$line\n";
-	$output = ob_get_clean();
 
 	$payloadMetrics = $metrics;
+	$esiBuckets = Status::getEsiStatus();
 	$redis->publish("ztop", json_encode([
 		'action' => 'ztop',
-		'message' => $output,
 		'payload' => [
 			'timestamp' => time(),
 			'metrics' => $payloadMetrics,
 			'servers' => $serverRows,
-			'raw' => $output
+			'esiBuckets' => $esiBuckets
 		]
 	]));
 
@@ -351,7 +296,7 @@ addInfo('', 0);
 
 function addInfo($text, $number, $left = true, $format = true)
 {
-	global $infoArray, $deltaArray, $metrics, $metricIndex;
+	global $deltaArray, $metrics, $metricIndex;
 
 
 	$prevNumber = @$deltaArray[$text];
@@ -365,7 +310,6 @@ function addInfo($text, $number, $left = true, $format = true)
 	$num = $format ? number_format($number, 0) : $number;
 	if ($text == '') $num = '';
 	$label = "$text $dtext";
-	$infoArray[] = ['text' => $label, 'num' => $num, 'lr' => $left];
 	if ($text == '') {
 		$metrics[] = ['type' => 'separator', 'index' => $metricIndex++];
 		return;

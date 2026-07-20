@@ -14,8 +14,10 @@ const ztopState = {
     maxPoints: 60,
     lastMetrics: [],
     lastUpdateAt: null,
+    esiBucketSeries: {},
     serverSeries: {}
 };
+window.ztopState = ztopState;
 
 function toNumber(value) {
     if (value === null || value === undefined) return null;
@@ -70,6 +72,47 @@ function renderSparkline(canvas, data, color) {
         else ctx.lineTo(x, y);
     });
     ctx.stroke();
+}
+
+function renderMultiSparkline(canvas, seriesByCode, codes) {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const width = canvas.clientWidth || 220;
+    const height = canvas.clientHeight || 52;
+    canvas.width = width;
+    canvas.height = height;
+    ctx.clearRect(0, 0, width, height);
+
+    const values = [];
+    codes.forEach((code) => {
+        (seriesByCode[code] || []).forEach((value) => values.push(value));
+    });
+    if (values.length === 0) return;
+
+    const min = 0;
+    let max = Math.max(...values);
+    if (max === min) max = min + 1;
+    const padding = 4;
+    const chartWidth = Math.max(1, width - padding * 2);
+    const chartHeight = Math.max(1, height - padding * 2);
+
+    codes.forEach((code, index) => {
+        const data = seriesByCode[code] || [];
+        if (data.length === 0) return;
+        ctx.strokeStyle = codeColor(code, index);
+        ctx.lineWidth = code === '200' || code === '304' ? 2 : 1.5;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        data.forEach((value, pointIndex) => {
+            const x = padding + (chartWidth * pointIndex) / Math.max(data.length - 1, 1);
+            const y = padding + chartHeight - ((value - min) / (max - min)) * chartHeight;
+            if (pointIndex === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+    });
 }
 
 function parseServerLine(line) {
@@ -211,6 +254,125 @@ function renderServers(servers) {
     });
 }
 
+function addText(parent, className, text) {
+    const el = document.createElement('div');
+    if (className) el.className = className;
+    el.textContent = text;
+    parent.appendChild(el);
+    return el;
+}
+
+function codeColor(code, index) {
+    const status = Number(code);
+    if (status === 200) return '#7ce07c';
+    if (status === 304) return '#67c3ff';
+    if (status >= 400 && status < 500) return '#f6b26b';
+    if (status >= 500 || status === 0) return '#ff7b7b';
+    const colors = ['#c89bff', '#ffb6c1', '#f9d66b', '#64d8cb'];
+    return colors[index % colors.length];
+}
+
+function esiCodeSort(a, b) {
+    const aNum = Number(a);
+    const bNum = Number(b);
+    if (a === '200') return -1;
+    if (b === '200') return 1;
+    if (a === '304') return -1;
+    if (b === '304') return 1;
+    if (!Number.isNaN(aNum) && !Number.isNaN(bNum)) return aNum - bNum;
+    return String(a).localeCompare(String(b));
+}
+
+function updateEsiBucketSeries(bucketName, codes) {
+    if (!ztopState.esiBucketSeries[bucketName]) ztopState.esiBucketSeries[bucketName] = {};
+    const series = ztopState.esiBucketSeries[bucketName];
+    const counts = {};
+
+    codes.forEach((code) => {
+        counts[String(code.code)] = Number(code.count) || 0;
+    });
+
+    const codeSet = { 200: true, 304: true };
+    Object.keys(series).forEach((code) => { codeSet[code] = true; });
+    Object.keys(counts).forEach((code) => { codeSet[code] = true; });
+    const trackedCodes = Object.keys(codeSet).sort(esiCodeSort);
+
+    trackedCodes.forEach((code) => {
+        if (!series[code]) series[code] = [];
+        series[code].push(counts[code] || 0);
+        if (series[code].length > ztopState.maxPoints) series[code].shift();
+    });
+
+    return trackedCodes.filter((code) => code === '200' || code === '304' || (series[code] || []).some((value) => value > 0));
+}
+
+function renderEsiBuckets(buckets) {
+    const container = document.getElementById('ztop-esi-buckets');
+    if (!container) return;
+    container.innerHTML = '';
+    addText(container, 'ztop-group-title', 'ESI outbound calls');
+
+    if (!Array.isArray(buckets) || buckets.length === 0) {
+        addText(container, 'ztop-empty', 'Waiting for ESI telemetry...');
+        return;
+    }
+
+    const grid = document.createElement('div');
+    grid.className = 'ztop-esi-grid';
+    container.appendChild(grid);
+
+    buckets.slice().sort((a, b) => {
+        return String(a.bucket || '').localeCompare(String(b.bucket || ''), undefined, { sensitivity: 'base' });
+    }).forEach((bucket) => {
+        const last = bucket.last || {};
+        const card = document.createElement('div');
+        card.className = 'ztop-esi-card';
+        card.title = `${bucket.total || 0} calls, ${bucket.success || 0} ok, ${bucket.failure || 0} fail, ${bucket.token_cost || 0} tokens`;
+
+        const top = document.createElement('div');
+        top.className = 'ztop-esi-card-top';
+        const bucketName = bucket.bucket || '--';
+        addText(top, 'ztop-esi-name', bucketName);
+        if (last.remaining !== undefined || last.limit !== undefined) {
+            let limit = last.limit || '?';
+            let time = '';
+            const limitParts = String(limit).split('/');
+            if (limitParts.length === 2) {
+                limit = limitParts[0];
+                time = ` (${limitParts[1]})`;
+            }
+            addText(top, 'ztop-esi-bucket-values', `${last.remaining || '?'} / ${limit}${time}`);
+        } else if (last.error_remain !== undefined) {
+            const reset = last.error_reset ? ` (${last.error_reset}s)` : '';
+            addText(top, 'ztop-esi-bucket-values', `${last.error_remain} errors remaining${reset}`);
+        }
+        card.appendChild(top);
+
+        const codes = Array.isArray(bucket.codes) ? bucket.codes : [];
+        const chartCell = document.createElement('div');
+        chartCell.className = 'ztop-esi-chart-cell';
+        const chart = document.createElement('canvas');
+        chart.className = 'ztop-esi-chart';
+        chartCell.appendChild(chart);
+        const chartCodes = updateEsiBucketSeries(bucketName, codes);
+        const legend = document.createElement('div');
+        legend.className = 'ztop-esi-legend';
+        const codeCounts = {};
+        codes.forEach((code) => {
+            codeCounts[String(code.code)] = Number(code.count) || 0;
+        });
+        chartCodes.forEach((code, index) => {
+            const label = addText(legend, 'ztop-esi-legend-item', `${code}: ${codeCounts[code] || 0}`);
+            label.style.color = codeColor(code, index);
+        });
+        chartCell.appendChild(legend);
+        card.appendChild(chartCell);
+
+        grid.appendChild(card);
+        renderMultiSparkline(chart, ztopState.esiBucketSeries[bucketName], chartCodes);
+    });
+}
+
 function renderGroups(metrics) {
     if (metrics && metrics.length > 0) {
         ztopState.lastMetrics = metrics;
@@ -304,11 +466,8 @@ function renderGroups(metrics) {
 
 window.ztopUpdate = function(payload) {
     if (!payload) return;
-    if (payload.raw) {
-        const textBlock = document.getElementById('ztoptextblock');
-        if (textBlock) textBlock.textContent = payload.raw;
-    }
     renderServers(payload.servers || []);
+    renderEsiBuckets(payload.esiBuckets || []);
     const metrics = Array.isArray(payload.metrics) ? payload.metrics : [];
     metrics.forEach((metric) => {
         if (!metric || metric.type !== 'metric') return;
@@ -349,12 +508,3 @@ window.zkbPageCleanup = function () {
     window.zkbZtopConnectionInterval = undefined;
     window.ztopState = undefined;
 };
-
-const rawToggle = document.getElementById('ztop-raw-toggle');
-const rawBlock = document.getElementById('ztoptextblock');
-if (rawToggle && rawBlock) {
-    rawToggle.addEventListener('click', () => {
-        const hidden = rawBlock.classList.toggle('is-hidden');
-        rawToggle.textContent = hidden ? 'Show raw' : 'Hide raw';
-    });
-}

@@ -114,6 +114,7 @@ class Guzzler
                 $content = (string) $response->getBody();
                 Status::addStatus($statusType, true);
                 $this->lastHeaders = array_change_key_case($response->getHeaders());
+                Status::addEsiStatus($params['uri'], $response->getStatusCode(), $this->lastHeaders);
                 $params['HEADERS'] = $this->lastHeaders;
                 if (isset($this->lastHeaders['warning'])) Util::zout("Warning: " . $params['uri'] . " " . $this->lastHeaders['warning'][0]);
 
@@ -130,9 +131,10 @@ class Guzzler
                     Status::addStatus($statusType, false);
                     $response = $connectionException->getResponse();
                     $this->lastHeaders = $response == null ? [] : array_change_key_case($response->getHeaders());
+                    $code = $response == null ? $connectionException->getCode() : $response->getStatusCode();
+                    Status::addEsiStatus($params['uri'], $code, $this->lastHeaders);
                     $params['HEADERS'] = $this->lastHeaders;
-                    $params['content'] = method_exists($connectionException->getResponse(), "getBody") ? (string) $connectionException->getResponse()->getBody() : "";
-                    $code = $connectionException->getCode();
+                    $params['content'] = $response != null && method_exists($response, "getBody") ? (string) $response->getBody() : "";
                     $sleep = $this->setEsiErrorCount();
                     sleep(1);
 

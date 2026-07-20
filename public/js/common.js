@@ -1115,8 +1115,6 @@ function wslog(msg)
     } else if (json.action == 'ztop') {
         if (json.payload && typeof window.ztopUpdate === 'function') {
             window.ztopUpdate(json.payload);
-        } else {
-            $("#ztoptextblock").text(json.message);
         }
     } else {
         console.log("Unknown action: " + json.action);

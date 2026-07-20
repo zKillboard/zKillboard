@@ -266,7 +266,9 @@ class Price
         }
 
         $url = "$esiServer/markets/10000002/history/?type_id=$typeID";
+        $http_response_header = [];
         $raw = file_get_contents($url);
+        Status::addEsiStatusFromHttpResponseHeaders($url, $http_response_header);
         $json = json_decode($raw, true);
         Status::addStatus('esi', true);
         usleep(100000);
