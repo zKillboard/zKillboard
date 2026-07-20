@@ -129,7 +129,6 @@ class Status
         foreach ($bucketKeys as $bucketKey) {
             $all = new RedisTtlCounter("ttlc:esi:status:$bucketKey:all", $seconds);
             $total = $all->count();
-            if ($total == 0) continue;
 
             $codes = $redis->sMembers("zkb:esi:status:codes:$bucketKey");
             if (!is_array($codes)) $codes = [];

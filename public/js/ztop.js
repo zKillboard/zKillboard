@@ -11,7 +11,7 @@ function load_ztop() {
 
 const ztopState = {
     metricSeries: {},
-    maxPoints: 60,
+    maxPoints: 3600,
     lastMetrics: [],
     lastUpdateAt: null,
     esiBucketSeries: {},
