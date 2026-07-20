@@ -45,7 +45,7 @@ block content
           - $topTitle = 'Sponsored Killmails - Last 7 Days';
           - $topSet = $sponsored ?? [];
           include components/big_top_list.pug
-        .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent")
+        .centered.publift.adrow.ad-xl-none#detailadrow(data-fuse="home_incontent")
         - $showPager = 'false';
         include components/kill_list.pug
       .col-sm-2.float-start.p-0
@@ -67,7 +67,7 @@ block content
               hr
             .alert.alert-info
               .text-center
-                a(href=($referralLink ?? '') target="_blank" rel="noopener noreferrer" alt="1 million SP FREE")
+                a(href=($referralLink ?? '') target="_blank" rel="noopener noreferrer" title="1 million SP FREE")
                   img(src="https://images.evetech.net/types/40520/icon?size=32" alt="1 million free skill points!" onerror="this.onerror=function(){this.removeAttribute('onerror'); this.src='/img/icons/40520_64.png';}; this.src='https://images.evetech.net/types/40520/bp?size=32';" loading="lazy" decoding="async" fetchpriority="low")
                   | 1 Million SP FREE
             != $sponsoredMessage ?? ''

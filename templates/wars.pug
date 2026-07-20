@@ -20,7 +20,7 @@ block content
       each $row in ($warTables ?? [])
         section.war-section
           header.war-section-header
-            h3= $row['name'] ?? ''
+            h2.h3= $row['name'] ?? ''
             span= number_format(count($row['wars'] ?? []), 0)
           - $wars = $row['wars'] ?? [];
           include components/wars_table.pug

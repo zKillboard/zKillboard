@@ -40,16 +40,19 @@ async function prepKills(data) {
 
             temp.innerHTML = html;
             let info = document.querySelector('#temp tr.kltbd');
-            let vics = info.getAttribute('vics');
-            let epoch = Number(info.getAttribute('date'));
+            if (!info) continue;
+            let vics = info.getAttribute('data-vics') || info.getAttribute('vics') || '';
+            let epoch = Number(info.getAttribute('data-kill-date') || info.getAttribute('date') || 0);
             if (epoch < afterEpoch) break; // the rest of the kills are older, we're all done here
             let isVictim = vics.split(',').indexOf(our_id) >= 0;
 
-            const el = temp.querySelector('span[format="format-isk-once"]');
-            const raw = el.getAttribute('raw');
+            const el = temp.querySelector('span[data-format="format-isk-once"], span[format="format-isk-once"]');
+            if (!el) continue;
+            const raw = el.getAttribute('data-raw') || el.getAttribute('raw') || 0;
             const value = formatISK(Number(raw));
 
             const image = temp.querySelector('span.shipImageSpan');
+            if (!image) continue;
 
             const clone = image.cloneNode(true);
 

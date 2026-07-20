@@ -1,7 +1,7 @@
 if (count($activePvP ?? []) > 0)
   .float-start.w-100.p-0.m-0
     .text-center
-      h5 Active PVP (last 7 days)
+      h2.h5 Active PVP (last 7 days)
       if (($pageType ?? '') == 'overview')
         small
             a(href="./kills/") Kills
@@ -12,5 +12,5 @@ if (count($activePvP ?? []) > 0)
         - $row = is_object($row) ? (array) $row : $row;
         tr
           td= $row['type'] ?? ''
-          td.text-end(format="format-int-once" raw=($row['count'] ?? 0))= number_format((float) ($row['count'] ?? 0), 0)
+          td.text-end(data-format="format-int-once" data-raw=($row['count'] ?? 0))= number_format((float) ($row['count'] ?? 0), 0)
   .clearfix

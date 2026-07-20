@@ -1,6 +1,6 @@
 if (!empty($topSet))
   .container-fluid.px-0.mb-3
-    h4.text-center.mt-2.mb-2= $topSet['title'] ?? ($topTitle ?? '')
+    h2.h4.text-center.mt-2.mb-2= $topSet['title'] ?? ($topTitle ?? '')
     .row.gy-1
       each $data in $topSet
         if (is_array($data) && isset($data['victim']))
@@ -23,7 +23,7 @@ if (!empty($topSet))
                   img.shipImageRender.eveimage.img-rounded(src=(($image_ship ?? $image_item ?? 'https://images.evetech.net/types/') . $shipTypeID . '/render?size=128') style="height: 128px; width: 128px;" alt=$shipName onerror="this.setAttribute('shipImageError', 'true')" loading="lazy" decoding="async" fetchpriority="low")
                   if (strlen((string) ($field['pip'] ?? '')) > 0)
                     img.pip(src=('/img/pips/' . $field['pip']) alt="" loading="lazy" decoding="async" fetchpriority="low")
-            h6.mb-1(format="format-isk-once-i" raw=$totalValue)= $formatIsk($totalValue) . ' ISK'
+            div.h6.mb-1(data-format="format-isk-once-i" data-raw=$totalValue)= $formatIsk($totalValue) . ' ISK'
             .text-truncate
               if (strlen((string) ($field['characterName'] ?? '')) > 0)
                 a(href=('/character/' . ($field['characterID'] ?? 0) . '/') title=($field['characterName'] ?? ''))= $field['characterName'] ?? ''

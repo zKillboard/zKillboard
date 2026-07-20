@@ -5,11 +5,10 @@ div
         td(colspan="2")
           if (($item['typeID'] ?? 0) == 0)
             .text-center
-              strong
-                h5
-                  = $item['name'] ?? ''
-                  if (!empty($item['price']))
-                    = ' ' . $shortNum($item['price'])
+              strong.d-block.h5
+                = $item['name'] ?? ''
+                if (!empty($item['price']))
+                  = ' ' . $shortNum($item['price'])
           else
             .text-center
               strong

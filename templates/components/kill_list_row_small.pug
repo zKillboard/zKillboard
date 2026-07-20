@@ -1,3 +1,4 @@
 each $kill in ($killList ?? [])
   if (($kill['killID'] ?? 0) > 0)
-    tr.fetchme(id=('kill-' . $kill['killID']) killID=$kill['killID'])
+    tr.fetchme(id=('kill-' . $kill['killID']) data-kill-id=$kill['killID'])
+      td.visually-hidden(colspan="7") Loading killmail

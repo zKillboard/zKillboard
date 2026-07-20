@@ -119,7 +119,7 @@ block content
         - $topTitle = 'Sponsored Killmails - Last 7 Days';
         - $topSet = $extraData['sponsoredMails'] ?? [];
         include components/big_top_list.pug
-        .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent")
+        .centered.publift.adrow.ad-xl-none#detailadrow(data-fuse="home_incontent")
         include components/kill_list.pug
       .col-lg-2.float-start.p-0
         .text-center
@@ -141,18 +141,18 @@ block content
             - $topSet = is_object($topSet) ? (array) $topSet : $topSet;
             include components/top_killer_list.pug
     else if ($pageType == 'trophies')
-      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent")
+      .centered.publift.adrow.ad-xl-none#detailadrow(data-fuse="home_incontent")
       include components/trophies.pug
     else if ($pageType == 'api')
-      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent")
+      .centered.publift.adrow.ad-xl-none#detailadrow(data-fuse="home_incontent")
       include components/corp_list.pug
     else if ($pageType == 'stats')
-      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent")
+      .centered.publift.adrow.ad-xl-none#detailadrow(data-fuse="home_incontent")
       include components/summary.pug
       .clearfix
       include components/history.pug
     else if ($pageType == 'daily')
-      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent")
+      .centered.publift.adrow.ad-xl-none#detailadrow(data-fuse="home_incontent")
       include components/daily_stats.pug
     else if ($pageType == 'ranks')
       p
@@ -175,7 +175,7 @@ block content
       - $showImage = true;
       include components/top_list.pug
     else if ($pageType == 'topalltime')
-      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent")
+      .centered.publift.adrow.ad-xl-none#detailadrow(data-fuse="home_incontent")
       h4 Top All Time
       - $topSet = $topKills ?? [];
       - $topTitle = 'Most Valuable Kills - All Time';
@@ -185,10 +185,10 @@ block content
       - $showImage = true;
       include components/top_list.pug
     else if ($pageType == 'corpstats')
-      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent")
+      .centered.publift.adrow.ad-xl-none#detailadrow(data-fuse="home_incontent")
       include components/corpstats.pug
     else if ($pageType == 'supers')
-      .centered.publift.adrow.ad-xl-none#detailadrow(fuse="home_incontent")
+      .centered.publift.adrow.ad-xl-none#detailadrow(data-fuse="home_incontent")
       h3
         | Intel - Supers 
         small (Last 3 months)

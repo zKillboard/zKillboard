@@ -46,7 +46,12 @@ function pre_prepKills(data) {
 		const tr = document.createElement('tr');
 		tr.id = `kill-${killID}`;
 		tr.className = 'fetchme';
-		tr.setAttribute('killID', killID);
+		tr.setAttribute('data-kill-id', killID);
+		const td = document.createElement('td');
+		td.className = 'visually-hidden';
+		td.colSpan = 7;
+		td.textContent = 'Loading killmail';
+		tr.appendChild(td);
 		if (tbody) {
 			tbody.appendChild(tr);
 		}

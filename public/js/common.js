@@ -114,7 +114,7 @@ $(document).ready(function () {
     loadDailyAsyncParts();
 
     // Anything that has a raw value to it will be able to be copied to the clipboard
-	$("[raw]").click(copyToClipboard);
+	$("[raw], [data-raw]").click(copyToClipboard);
 	
 	$("label[for]").on("click", () => { $(window).focus(); })
 	setTimeout(prepTippy, 1);
@@ -135,7 +135,7 @@ function initPageContent() {
     loadDailyAsyncParts();
     loadHomeKillListIfNeeded();
     applyFavoriteStars();
-    $("[raw]").off("click.zkb-copy").on("click.zkb-copy", copyToClipboard);
+    $("[raw], [data-raw]").off("click.zkb-copy").on("click.zkb-copy", copyToClipboard);
     setTimeout(fixCCPsBrokenImages, 1000);
     setTimeout(prepTippy, 1);
 }
@@ -378,7 +378,7 @@ function loadFetchmeKillRows() {
         const row = $(this);
         if (row.attr("data-fetching") === "true") return;
         row.attr("data-fetching", "true");
-        loadKillRow(row.attr("killID"));
+        loadKillRow(row.attr("data-kill-id") || row.attr("killID"));
     });
 }
 
@@ -962,7 +962,7 @@ function destroyTooltipsIn(root) {
 function copyToClipboard(e) {
     if (this.closest && this.closest(".noclipboard")) return;
     console.log(this);
-    const raw = $(this).attr("raw");
+    const raw = getRawValue($(this));
     console.log(raw);
     if (navigator.clipboard.writeText) {
         navigator.clipboard.writeText(raw);
@@ -1191,7 +1191,7 @@ function adjustKillmailPresentation() {
     // because nth-of-type still counts hidden rows.
     let priorDate = undefined;
     document.querySelectorAll('.tr-date').forEach(function(row) {
-        const date = row.getAttribute('date');
+        const date = row.getAttribute('data-kill-date') || row.getAttribute('date');
         if (date == priorDate) {
             row.remove();
             return;
@@ -1209,7 +1209,12 @@ function prepKills(data) {
         const tr = document.createElement('tr');
         tr.id = 'kill-' + killID;
         tr.className = 'fetchme';
-        tr.setAttribute('killID', killID);
+        tr.setAttribute('data-kill-id', killID);
+        const td = document.createElement('td');
+        td.className = 'visually-hidden';
+        td.colSpan = 7;
+        td.textContent = 'Loading killmail';
+        tr.appendChild(td);
         tbody.appendChild(tr);
         loadKillRow(killID);
     }
@@ -1249,11 +1254,11 @@ function addLittleKillInOrder(data) {
     let rows = [].reverse.call($("#killmailstobdy tr"));
     data = $(data);
     data.hide();
-    let killid = Number(data.attr('killid'));
+    let killid = Number(data.attr('data-kill-id') || data.attr('killid'));
     console.log('loading', killid);
     for (row of rows) {
         row = $(row);
-        let curKillID = Number(row.attr('killid'));
+        let curKillID = Number(row.attr('data-kill-id') || row.attr('killid'));
         if (isNaN(curKillID)) continue;
         if (curKillID == killid) return; // we're already displaying this killmail
         if (curKillID > killid) {  row.after(data); break; }
@@ -1394,8 +1399,9 @@ function addKillListClicks()
 {
     $(".killListRow").off('click.zkb-killrow').on('click.zkb-killrow', function(event) {
             if (event.which === 2) return false;
-            console.log($(this).attr('killID'));
-            navigateTo('/kill/' + $(this).attr('killID') + '/');
+            const killID = $(this).attr('data-kill-id') || $(this).attr('killID');
+            console.log(killID);
+            navigateTo('/kill/' + killID + '/');
             return false;
             });
 }
@@ -1674,7 +1680,7 @@ function loadads() {
     adnumber = adblocks.length;
     adblocks.each(function() {
         const elem = $(this);
-        const fuse = elem.attr("fuse") || '';
+        const fuse = elem.attr("data-fuse") || elem.attr("fuse") || '';
 		if (fuse.trim().length > 0) elem.load('/cache/1hour/publift/' + fuse + '/', adblockloaded);
     });
 }
@@ -1775,22 +1781,23 @@ function waitForStatsFunctionToLoadBecauseChromeIsBeingDumb(stats) {
 }
 
 function doFormats() {
-    $("[format='format-int']").each(function() { t = $(this); doFieldUpdate(t, Number(t.attr('raw') || 0).toLocaleString()); });
-    $("[format='format-int-once']").each(function() { t = $(this); doFieldUpdate(t, Number(t.attr('raw') || 0).toLocaleString()); t.removeAttr('format'); });
-    $("[format='format-pct-once']").each(function() { t = $(this); doFieldUpdate(t, (Number(t.attr('raw') || 0) + '%').toLocaleString()); t.removeAttr('format'); });
+    $("[format='format-int'], [data-format='format-int']").each(function() { t = $(this); doFieldUpdate(t, Number(getRawValue(t) || 0).toLocaleString()); });
+    $("[format='format-int-once'], [data-format='format-int-once']").each(function() { t = $(this); doFieldUpdate(t, Number(getRawValue(t) || 0).toLocaleString()); removeFormatMarker(t); });
+    $("[format='format-pct-once'], [data-format='format-pct-once']").each(function() { t = $(this); doFieldUpdate(t, (Number(getRawValue(t) || 0) + '%').toLocaleString()); removeFormatMarker(t); });
 
-    $("[format='format-dec1']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(t.attr('raw')).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits:1} )); });
-    $("[format='format-isk']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(t.attr('raw')))) });
+    $("[format='format-dec1'], [data-format='format-dec1']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(getRawValue(t)).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits:1} )); });
+    $("[format='format-isk'], [data-format='format-isk']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(getRawValue(t)))) });
 
-    $("[format='format-dec2-once']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(t.attr('raw')).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2} )); t.removeAttr('format'); });
-    $("[format='format-dec2-once-i']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(t.attr('raw')).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2} ) + ' ISK'); t.removeAttr('format'); });
-    $("[format='format-isk-once']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(t.attr('raw')))); t.removeAttr('format'); });
-    $("[format='format-isk-once-i']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(t.attr('raw'))) + ' ISK'); t.removeAttr('format'); });
-    $("#statsbox td[raw='-']").text('-');
+    $("[format='format-dec2-once'], [data-format='format-dec2-once']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(getRawValue(t)).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2} )); removeFormatMarker(t); });
+    $("[format='format-dec2-once-i'], [data-format='format-dec2-once-i']").each(function() { t = $(this); doFieldUpdate(t, parseFloat(getRawValue(t)).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2} ) + ' ISK'); removeFormatMarker(t); });
+    $("[format='format-isk-once'], [data-format='format-isk-once']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(getRawValue(t)))); removeFormatMarker(t); });
+    $("[format='format-isk-once-i'], [data-format='format-isk-once-i']").each(function() { t = $(this); doFieldUpdate(t, formatISK(Number(getRawValue(t))) + ' ISK'); removeFormatMarker(t); });
+    $("#statsbox td[raw='-'], #statsbox td[data-raw='-']").text('-');
 }
 
 function doFieldUpdate(f, v) {
-    if (f.attr('raw') == '' || f.attr('raw') == '-' || f.attr('raw') == undefined) return;
+    const raw = getRawValue(f);
+    if (raw == '' || raw == '-' || raw == undefined) return;
     if (v == 'NaN') v = '';
 
     if (f.text() == String(v)) return;
@@ -1805,6 +1812,15 @@ function doFieldUpdate(f, v) {
     f.stop(true, true).animate({opacity: o}, 100, function() {
             $(this).text(v).animate({opacity: 1}, 100);
             })
+}
+
+function getRawValue(f) {
+    const raw = f.attr('raw');
+    return raw == undefined ? f.attr('data-raw') : raw;
+}
+
+function removeFormatMarker(f) {
+    f.removeAttr('format').removeAttr('data-format');
 }
 
 const formatIskIndex = ['', 'k', 'm', 'b', 't', 'k t', 'm t', 'b t'];
@@ -1832,18 +1848,18 @@ function assignGreenRed() {
 
     const row = this;
     row.classList.remove('kltbd', 'winwin', 'error');
-    let vics = row.getAttribute('vics');
+    let vics = row.getAttribute('data-vics') || row.getAttribute('vics');
     if (vics == '') return;
     vics = vics.split(',');
 
     for (let i = 0; i < vics.length; i++) if (vicid == vics[i]) {
-        const removeIcon = document.querySelector('#kill-' + row.getAttribute('killID') + ' .fa-times');
+        const removeIcon = document.querySelector('#kill-' + (row.getAttribute('data-kill-id') || row.getAttribute('killID')) + ' .fa-times');
         if (removeIcon) removeIcon.classList.remove('d-none');
         row.classList.add('error');
         return;
     }
 
-    const okIcon = document.querySelector('#kill-' + row.getAttribute('killID') + ' .fa-check');
+    const okIcon = document.querySelector('#kill-' + (row.getAttribute('data-kill-id') || row.getAttribute('killID')) + ' .fa-check');
     if (okIcon) okIcon.classList.remove('d-none');
     row.classList.add('winwin');
 }

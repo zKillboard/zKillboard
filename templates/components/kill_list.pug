@@ -6,7 +6,7 @@
 - $shellClass = 'kill-list-shell' . ($isTeamAKills ? ' kill-list-shell-a' : ($isTeamBKills ? ' kill-list-shell-b' : ''));
 div(class=$shellClass)
   .kill-list-header
-    h3(class=('kill-list-title' . ($isMostRecentKills ? ' most-recent-kills-title' : '')) id=($isMostRecentKills ? 'mostRecentKillsTitle' : false))= $killListTitle ?? ''
+    h2.h3(class=('kill-list-title' . ($isMostRecentKills ? ' most-recent-kills-title' : '')) id=($isMostRecentKills ? 'mostRecentKillsTitle' : false))= $killListTitle ?? ''
     if ($isMostRecentKills)
       #ambientKillmailHost.kill-list-ambience
     include pager.pug

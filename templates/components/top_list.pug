@@ -59,7 +59,7 @@ if (count($topLists ?? []) > 0)
                         include text_location.pug
                       else
                         = $topList['type'] ?? ''
-                td(style="text-align: right; vertical-align: middle;" format="format-int-once" raw=($field['kills'] ?? 0))= $formatIsk($field['kills'] ?? 0, $isInt ?? false)
+                td(style="text-align: right; vertical-align: middle;" data-format="format-int-once" data-raw=($field['kills'] ?? 0))= $formatIsk($field['kills'] ?? 0, $isInt ?? false)
   .clear
 else
   h4

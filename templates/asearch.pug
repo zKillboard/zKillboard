@@ -34,16 +34,16 @@ block content
       .col-md-6
         label Timespan (UTC)
         .text-center
-          .btn-group.btn-group-sm.centered(zkill-var="epoch" role="group" aria-label="Timespan")
-            button#stats-epoch-week.tfilter.btn.btn-primary.radio-btn(value="week" radio="epoch" title="Last 7 Days" aria-pressed="true") 7
-            button#stats-epoch-recent.tfilter.btn.btn-secondary.radio-btn(value="recent" radio="epoch" title="Last 90 Days" aria-pressed="false") 90
-            button#stats-epoch-alltime.tfilter.btn.btn-secondary.radio-btn(value="alltime" radio="epoch" title="Alltime" aria-pressed="false") &infin;
-            button#stats-epoch-prior-month.tfilter.btn.btn-secondary.radio-btn(value="prior month" radio="epoch" title="Prior Month" aria-label="Prior month" aria-pressed="false")
+          .btn-group.btn-group-sm.centered(data-zkill-var="epoch" role="group" aria-label="Timespan")
+            button#stats-epoch-week.tfilter.btn.btn-primary.radio-btn(value="week" title="Last 7 Days" aria-pressed="true") 7
+            button#stats-epoch-recent.tfilter.btn.btn-secondary.radio-btn(value="recent" title="Last 90 Days" aria-pressed="false") 90
+            button#stats-epoch-alltime.tfilter.btn.btn-secondary.radio-btn(value="alltime" title="Alltime" aria-pressed="false") &infin;
+            button#stats-epoch-prior-month.tfilter.btn.btn-secondary.radio-btn(value="prior month" title="Prior Month" aria-label="Prior month" aria-pressed="false")
               i.fas.fa-arrow-left(aria-hidden="true")
               i.fas.fa-calendar(aria-hidden="true")
-            button#stats-epoch-current-month.tfilter.btn.btn-secondary.radio-btn(value="current month" radio="epoch" title="Current Month" aria-label="Current month" aria-pressed="false")
+            button#stats-epoch-current-month.tfilter.btn.btn-secondary.radio-btn(value="current month" title="Current Month" aria-label="Current month" aria-pressed="false")
               i.fas.fa-calendar(aria-hidden="true")
-            button#stats-epoch-custom.tfilter.btn.btn-secondary.radio-btn(value="custom" radio="epoch" title="Custom Date Range" aria-label="Custom date range" aria-pressed="false") ✏️
+            button#stats-epoch-custom.tfilter.btn.btn-secondary.radio-btn(value="custom" title="Custom Date Range" aria-label="Custom date range" aria-pressed="false") ✏️
           .btn-group.btn-group-sm
             button#rolling-times.btn.btn-secondary(type="button" value="rolling" title="Time will adjust automatically in 15 minute increments." aria-label="Use rolling timespan" aria-pressed="false")
               i.fas.fa-arrow-down(aria-hidden="true")
@@ -52,10 +52,10 @@ block content
           #timeframe.d-flex.flex-wrap.justify-content-center.gap-2
             .input-group.input-group-sm.w-auto
               label.input-group-text(for="dtstart") Start
-              input#dtstart.form-control.form-line(type="datetime-local" style="min-width: 14em; max-width: 14em;" placeholder="2007-12-05 00:00" autocomplete="off" disabled)
+              input#dtstart.form-control.form-line(type="datetime-local" style="min-width: 14em; max-width: 14em;" autocomplete="off" disabled)
             .input-group.input-group-sm.w-auto
               label.input-group-text(for="dtend") End
-              input#dtend.form-control.form-line(type="datetime-local" style="min-width: 14em; max-width: 14em;" placeholder="Now" autocomplete="off" disabled)
+              input#dtend.form-control.form-line(type="datetime-local" style="min-width: 14em; max-width: 14em;" autocomplete="off" disabled)
     hr.asearchfilters
     .row.centered.asearchfilters
       each $group, $name in ($labels ?? [])
@@ -69,32 +69,32 @@ block content
         label Attackers
         br
         #attackers-joinType.andor.btn-group.centered(role="group" aria-label="Attackers match type")
-          button#attackers-joinType-and.btn.btn-primary.radio-btn(value="attackers-and" radio="attackers-joinType" title="And" aria-pressed="true") And
-          button#attackers-joinType-in.btn.btn-secondary.radio-btn(value="attackers-aand" radio="attackers-joinType" title="AAnd" aria-pressed="false") In
-          button#attackers-joinType-or.btn.btn-secondary.radio-btn(value="attackers-or" radio="attackers-joinType" title="Or" aria-pressed="false") Or
+          button#attackers-joinType-and.btn.btn-primary.radio-btn(value="attackers-and" title="And" aria-pressed="true") And
+          button#attackers-joinType-in.btn.btn-secondary.radio-btn(value="attackers-aand" title="AAnd" aria-pressed="false") In
+          button#attackers-joinType-or.btn.btn-secondary.radio-btn(value="attackers-or" title="Or" aria-pressed="false") Or
         #attackers
       .col-md-3
         label Either
         br
         #either-joinType.andor.btn-group.centered(role="group" aria-label="Either match type")
-          button#either-joinType-and.btn.btn-primary.radio-btn(value="either-and" radio="either-joinType" title="And" aria-pressed="true") And
-          button#either-joinType-in.btn.btn-secondary.radio-btn(value="either-aand" radio="either-joinType" title="AAnd" aria-pressed="false") In
-          button#either-joinType-or.btn.btn-secondary.radio-btn(value="either-or" radio="either-joinType" title="Or" aria-pressed="false") Or
+          button#either-joinType-and.btn.btn-primary.radio-btn(value="either-and" title="And" aria-pressed="true") And
+          button#either-joinType-in.btn.btn-secondary.radio-btn(value="either-aand" title="AAnd" aria-pressed="false") In
+          button#either-joinType-or.btn.btn-secondary.radio-btn(value="either-or" title="Or" aria-pressed="false") Or
         #neutrals
       #victim.col-md-3
         label Victim
         br
         #victim-joinType.andor.btn-group.centered(role="group" aria-label="Victim match type")
-          button#victim-joinType-and.btn.btn-primary.radio-btn(value="victims-and" radio="victim-joinType" title="And" aria-pressed="true") And
-          button#victim-joinType-in.btn.btn-secondary.radio-btn(value="victims-aand" radio="victim-joinType" title="AAnd" aria-pressed="false") In
-          button#victim-joinType-or.btn.btn-secondary.radio-btn(value="victims-or" radio="victim-joinType" title="Or" aria-pressed="false") Or
+          button#victim-joinType-and.btn.btn-primary.radio-btn(value="victims-and" title="And" aria-pressed="true") And
+          button#victim-joinType-in.btn.btn-secondary.radio-btn(value="victims-aand" title="AAnd" aria-pressed="false") In
+          button#victim-joinType-or.btn.btn-secondary.radio-btn(value="victims-or" title="Or" aria-pressed="false") Or
         #victims
       .col-md-3
         label Items
         br
         #items-joinType.andor.btn-group.centered(role="group" aria-label="Items match type")
-          button#items-joinType-and.btn.btn-primary.radio-btn(value="items-and" radio="items-joinType" title="And" aria-pressed="true") And
-          button#items-joinType-or.btn.btn-secondary.radio-btn(value="items-or" radio="items-joinType" title="Or" aria-pressed="false") Or
+          button#items-joinType-and.btn.btn-primary.radio-btn(value="items-and" title="And" aria-pressed="true") And
+          button#items-joinType-or.btn.btn-secondary.radio-btn(value="items-or" title="Or" aria-pressed="false") Or
         #items
     hr#clickToDigHr
     #clickToDig(style="display: flex;")
@@ -116,16 +116,16 @@ block content
     #clickablecontent.row
       #page.col-md-10
         #pagefilters
-          .btn-group.asearchfilters(zkill-var="sort" zkill-key="sortBy" role="group" aria-label="Sort by")
+          .btn-group.asearchfilters(data-zkill-var="sort" data-zkill-key="sortBy" role="group" aria-label="Sort by")
             button.sorttype.radio-btn.btn.btn-primary(value="sort-date" aria-pressed="true") Date
             button.sorttype.radio-btn.btn.btn-secondary(value="sort-isk" aria-pressed="false") ISK
             button.sorttype.radio-btn.btn.btn-secondary(value="sort-involved" aria-pressed="false") Involved
             button.sorttype.radio-btn.btn.btn-secondary(value="sort-damage" aria-pressed="false") Damage
             button.sorttype.radio-btn.btn.btn-secondary(value="sort-points" aria-pressed="false") Points
-          .btn-group.asearchfilters(zkill-var="sort" zkill-key="sortDir" role="group" aria-label="Sort direction")
+          .btn-group.asearchfilters(data-zkill-var="sort" data-zkill-key="sortDir" role="group" aria-label="Sort direction")
             button.sortorder.radio-btn.btn.btn-primary(value="sort-desc" aria-pressed="true") Desc
             button.sortorder.radio-btn.btn.btn-secondary(value="sort-asc" aria-pressed="false") Asc
-          .btn-group.float-end.asearchfilters(zkill-var="page" role="group" aria-label="Search result page")
+          .btn-group.float-end.asearchfilters(data-zkill-var="page" role="group" aria-label="Search result page")
             button#page1.pagenum.radio-btn.btn-page.btn.btn-primary(value="page1" aria-pressed="true") 1
             button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page2" aria-pressed="false") 2
             button.pagenum.radio-btn.btn-page.btn.btn-secondary(value="page3" aria-pressed="false") 3
@@ -156,11 +156,11 @@ block content
       #result-groups-column.col-md-2
         #result-groups-all
           #result-groups-summary
-            .btn-group.btn-group-vertical.asearchfilters.mb-2(zkill-var="group-agg-type" style="width: 100%" role="group" aria-label="Aggregation type")
+            .btn-group.btn-group-vertical.asearchfilters.mb-2(data-zkill-var="group-agg-type" style="width: 100%" role="group" aria-label="Aggregation type")
               button.radio-btn.btn.btn-primary(type="button" value="allinvolved" aria-pressed="true") All Involved
               button.radio-btn.btn.btn-secondary(type="button" value="victimsonly" aria-pressed="false") Victims Only
               button.radio-btn.btn.btn-secondary(type="button" value="attackersonly" aria-pressed="false") Attackers Only
-            h4#result-groups-count(role="status" aria-live="polite" aria-atomic="true")
+            div#result-groups-count.h4(role="status" aria-live="polite" aria-atomic="true")
           #result-groups-character
           #result-groups-corporation
           #result-groups-alliance
@@ -177,5 +177,5 @@ block content
 
 block script
   script(defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js" integrity="sha512-AIOTidJAcHBH2G/oZv9viEGXRqDNmfdPVPYOYKGy3fti0xIplnlgMHUGfuNRzC6FkzIo0iIxgFnr9RikFxK+sw==" crossorigin="anonymous")
-  script(defer type="text/javascript" src="/js/asearch.js?v=" . $version)
+  script(defer src="/js/asearch.js?v=" . $version)
   script(defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js")

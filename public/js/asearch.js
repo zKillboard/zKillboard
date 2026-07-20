@@ -422,7 +422,7 @@ function add(id, suggestion) {
 function setFilters(hashfilters) {
 	// load up that filter
 	var hash = window.location.hash.substr(1);
-	hash = decodeURI(hash).replaceAll('<', '').replaceAll('>', '');
+	hash = decodeURIComponent(hash).replaceAll('<', '').replaceAll('>', '');
 	hashfilters = JSON.parse(hash);
 	//console.log(hash);
 	//console.log(hashfilters);
@@ -509,7 +509,7 @@ function setHash() {
 	filter.includeAssociates = $("#includeAssociates").prop('checked') == true;
 
 	var hash = '';
-	if (Object.keys(filter).length > 0) hash = '#' + JSON.stringify(filter);
+	if (Object.keys(filter).length > 0) hash = '#' + encodeURIComponent(JSON.stringify(filter));
 	if ((window.location.pathname + window.location.hash) != (window.location.pathname + hash)) {
 		var historyState = (typeof getSpaHistoryState === 'function') ? getSpaHistoryState() : "";
 		history.pushState(historyState, document.title, window.location.pathname + hash);
@@ -771,7 +771,8 @@ function popEm() {
 	if (killIDs.length > 0) {
 		var killID = killIDs.shift();
 		var rowBatch = asearchKillRowBatch;
-		var tr = $("<tr>").attr('id', 'kill-' + killID);
+		var tr = $("<tr>").attr('id', 'kill-' + killID).attr('data-kill-id', killID);
+		tr.append($("<td>").attr('colspan', 7).addClass('visually-hidden').text('Loading killmail'));
 		$("#killmails-list").append(tr);
 		$.get("/cache/24hour/killlistrow/" + killID + "/", function (data) {
 			$("#kill-" + killID).replaceWith(data);
@@ -839,7 +840,7 @@ function moveOut() {
 
 function doDateCleanup() {
 	var rows = $("#killmails-list tr.tr-date");
-	for (var i = rows.length - 1; i > 0; i--) { var r = $(rows[i]); var n = $(rows[i - 1]); if (r.attr('date') != '' && r.attr('date') == n.attr('date')) r.remove(); }
+	for (var i = rows.length - 1; i > 0; i--) { var r = $(rows[i]); var n = $(rows[i - 1]); var rdate = r.attr('data-kill-date') || r.attr('date'); var ndate = n.attr('data-kill-date') || n.attr('date'); if (rdate != '' && rdate == ndate) r.remove(); }
 }
 
 function toggleFilterBtn() {
@@ -853,8 +854,8 @@ function toggleFilterBtn() {
 function toggleRadioBtn() {
 	var element = $(this);
 	var parent = element.parent();
-	var variable = parent.attr('zkill-var');
-	var key = parent.attr('zkill-key');
+	var variable = parent.attr('data-zkill-var') || parent.attr('zkill-var');
+	var key = parent.attr('data-zkill-key') || parent.attr('zkill-key');
 	parent.children().each(function () {
 		$(this).removeClass('btn-primary').addClass('btn-secondary');
 	});

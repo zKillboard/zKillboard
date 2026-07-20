@@ -445,8 +445,8 @@ function extractKillmailMusicInfo($row) {
 
     if ($row.length === 0) return null;
 
-    const killID = Number($row.attr('killid') || $row.attr('killID') || 0);
-    const epoch = Number($row.attr('date') || 0);
+    const killID = Number($row.attr('data-kill-id') || $row.attr('killid') || $row.attr('killID') || 0);
+    const epoch = Number($row.attr('data-kill-date') || $row.attr('date') || 0);
     const valueRaw = Number($row.find("span[format='format-isk-once']").attr('raw') || 0);
 
     let attackerCount = 1;
