@@ -17,7 +17,8 @@ if ($kvc->get($key) == true) {
 $page = 1;
 
 $guzzler = new Guzzler();
-$guzzler->call("$esiServer/wars/", "success", "fail");
+$url = "$esiServer/wars/";
+$guzzler->call($url, "success", "fail", ['conditionalUri' => $url], Status::getEsiConditionalHeaders($url));
 $guzzler->finish();
 
 $kvc->setex($key, 3600, true);
@@ -25,6 +26,9 @@ $kvc->setex($key, 3600, true);
 function success(&$guzzler, &$params, $content)
 {
     global $mdb, $esiServer;
+
+    $uri = @$params['conditionalUri'] ?: $params['uri'];
+    Status::saveEsiConditionalHeaders($uri, @$params['HEADERS']);
 
     $maxWarID = 9999999999;
     $warsAdded = false;
@@ -37,7 +41,9 @@ function success(&$guzzler, &$params, $content)
         $maxWarID = min($maxWarID, $warID);
     }
     if ($warsAdded && sizeof($wars) > 0) {
-        $guzzler->call("$esiServer/wars/?max_war_id=$maxWarID", "success", "fail", $params);
+        $url = "$esiServer/wars/?max_war_id=$maxWarID";
+        $params['conditionalUri'] = $url;
+        $guzzler->call($url, "success", "fail", $params, Status::getEsiConditionalHeaders($url));
     }
     $guzzler->sleep(1);
 }

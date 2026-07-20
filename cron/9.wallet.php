@@ -17,8 +17,13 @@ if ($kvc->get($redisKey) != true) {
         $refreshToken = $scope['refreshToken'];
         $params = ['redis' => $redis, 'kvc' => $kvc];
         $accessToken = $sso->getAccessToken($refreshToken);
-        $content = $sso->doCall("$esiServer/characters/$adminCharacter/wallet/journal/", [], $accessToken);
-        if ($content != "") {
+        $url = "$esiServer/characters/$adminCharacter/wallet/journal/";
+        $headers = Status::getEsiConditionalHeaders($url, true);
+        $content = $sso->doCall($url, [], $accessToken, 'GET', $headers);
+        Status::saveEsiConditionalHeaders($url, $resHeaders);
+        if ($resCode == 304) {
+            $kvc->setex($redisKey, 3600, "true");
+        } else if ($content != "") {
             success($params, $content);
             $redis->del("zkb:monocled");
         }

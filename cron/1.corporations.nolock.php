@@ -69,10 +69,8 @@ while ($time >= time()) {
         $reqHeaders = [
             'X-Compatibility-Date: 2025-12-16'
         ];
-        /*if (isset($row['etag'])) {
-            $reqHeaders[] = 'If-Modified-Since: ' .  $row['last-modified'];
-            $reqHeaders[] = 'If-None-Match: ' .  $row['etag'];
-        }*/
+        if (!empty($row['etag'])) $reqHeaders[] = 'If-None-Match: ' . $row['etag'];
+        if (!empty($row['last-modified'])) $reqHeaders[] = 'If-Modified-Since: ' . $row['last-modified'];
         $killmails = $sso->doCall("$esiServer/corporations/$corpID/killmails/recent", [], $accessToken, 'GET', $reqHeaders);
         success(['mdb' => $mdb, 'corpID' => $corpID, 'row' => $row, 'timer' => $timer], $killmails);
         $sleepMicroS = min(50000, max(1, 50000 - floor($timer->stop() * 1000)));
@@ -141,9 +139,9 @@ function success($params, $content)
         'corporationID' => $corpID,
         'lastFetch' => $mdb->now(), 
         'successes' => $successes,
-        'etag' => @$resHeaders['etag'],
-        'last-modified' => @$resHeaders['last-modified'],
     ];
+    if (isset($resHeaders['etag'])) $modifiers['etag'] = $resHeaders['etag'];
+    if (isset($resHeaders['last-modified'])) $modifiers['last-modified'] = $resHeaders['last-modified'];
     if (!isset($row['added'])) $modifiers['added'] = $mdb->now();
     if (!isset($row['iterated'])) $modifiers['iterated'] = false;
     if ($content != "" && sizeof($kills) > 0) $modifiers['last_has_data'] = $mdb->now();
@@ -176,4 +174,3 @@ function success($params, $content)
     if ($nextCheck != -1) $set['nextCheck'] = $nextCheck;
     $mdb->set("scopes", ['scope' => 'esi-killmails.read_corporation_killmails.v1', 'corporationID' => $corpID], $set, true);
 }
-

@@ -47,7 +47,10 @@ while ($minute == date('Hi')) {
 
     $url = "$esiServer/characters/$id";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
-    $guzzler->call($url, "updateChar", "failChar", $params, []);
+    $headers = [];
+    if (!empty($row['etag'])) $headers['If-None-Match'] = $row['etag'];
+    if (!empty($row['last-modified'])) $headers['If-Modified-Since'] = $row['last-modified'];
+    $guzzler->call($url, "updateChar", "failChar", $params, $headers);
     $guzzler->finish();
     sleep(1);
 }      
@@ -129,6 +132,9 @@ function updateChar(&$guzzler, &$params, &$content)
     }
 
     $updates['lastApiUpdate'] = $mdb->now();
+    $headers = @$params['HEADERS'];
+    if (isset($headers['etag'][0])) $updates['etag'] = $headers['etag'][0];
+    if (isset($headers['last-modified'][0])) $updates['last-modified'] = $headers['last-modified'][0];
     $mdb->set("information", $row, $updates);
     if (sizeof($updates) > 1) {
         $redis->del(Info::getRedisKey('characterID', $id));

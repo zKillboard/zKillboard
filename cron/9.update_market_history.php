@@ -60,7 +60,7 @@ function ifail(&$guzzler, $params, $ex) {
     $rset = $params['rset'];
     $redis = $params['redis'];
 
-    $redis>srem($rset, $type_id);
+    $redis->srem($rset, $type_id);
     Util::out("market history item fetch fail: $type_id with http code " . $ex->getCode());
 }
 

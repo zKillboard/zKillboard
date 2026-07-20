@@ -75,7 +75,10 @@ while ($time >= time()) {
 		}
 
 		$timer = new Timer();
-		$killmails = $sso->doCall("$esiServer/characters/$charID/killmails/recent/", [], $accessToken);
+		$reqHeaders = [];
+		if (!empty($row['etag'])) $reqHeaders[] = 'If-None-Match: ' . $row['etag'];
+		if (!empty($row['last-modified'])) $reqHeaders[] = 'If-Modified-Since: ' . $row['last-modified'];
+		$killmails = $sso->doCall("$esiServer/characters/$charID/killmails/recent/", [], $accessToken, 'GET', $reqHeaders);
 		success(['row' => $row, 'timer' => $timer], $killmails);
 
         $sleepMicroS = min(50000, max(1, 50000 - floor($timer->stop() * 1000)));
@@ -91,7 +94,7 @@ while ($time >= time()) {
 
 function success($params, $content) 
 {
-    global $mdb, $redis;
+    global $mdb, $redis, $resHeaders;
 
     $row = $params['row'];
     $timer = $params['timer'];
@@ -128,6 +131,8 @@ function success($params, $content)
     $corpID = (int) $row['corporationID'];
 
     $modifiers = ['lastFetch' => $mdb->now(), 'errorCount' => 0];
+    if (isset($resHeaders['etag'])) $modifiers['etag'] = $resHeaders['etag'];
+    if (isset($resHeaders['last-modified'])) $modifiers['last-modified'] = $resHeaders['last-modified'];
     if (!isset($row['added']) || !($row['added'] instanceof MongoDB\BSON\UTCDateTime)) $modifiers['added'] = $mdb->now();
     if (!isset($row['iterated'])) $modifiers['iterated'] = false;
     if ($content != "" && sizeof($kills) > 0) $modifiers['last_has_data'] = $mdb->now();

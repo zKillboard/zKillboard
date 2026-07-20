@@ -6,6 +6,7 @@ class Status
 {
     private static $esiBucketSet = 'zkb:esi:status:buckets';
     private static $esiBucketNames = 'zkb:esi:status:bucketNames';
+    private static $esiConditionalHeaders = 'zkb:esi:conditional:headers:';
 
     public static function addStatus($apiType, $success, $seconds = 300)
     {
@@ -30,13 +31,7 @@ class Status
 
         if (strpos($uri, 'esi.evetech') === false && strpos($uri, 'esi.tech') === false) return;
 
-        $normalized = [];
-        foreach ($headers as $name => $value) {
-            $name = strtolower(trim($name));
-            if ($name == '') continue;
-            $normalized[$name] = is_array($value) ? $value : [$value];
-        }
-        $headers = $normalized;
+        $headers = self::normalizeHeaders($headers);
 
         $bucket = self::getHeader($headers, 'x-ratelimit-group');
         if ($bucket === null || $bucket === '') $bucket = self::normalizeEsiUri($uri);
@@ -87,6 +82,40 @@ class Status
             $headers[$name][] = trim($header[1]);
         }
         self::addEsiStatus($uri, $code, $headers, $seconds);
+    }
+
+    public static function getEsiConditionalHeaders($uri, $forCurl = false)
+    {
+        global $redis;
+
+        $values = $redis->hGetAll(self::getEsiConditionalHeadersKey($uri));
+        if (!is_array($values)) return [];
+
+        $headers = [];
+        if (!empty($values['etag'])) {
+            if ($forCurl) $headers[] = "If-None-Match: " . $values['etag'];
+            else $headers['If-None-Match'] = $values['etag'];
+        }
+        if (!empty($values['last-modified'])) {
+            if ($forCurl) $headers[] = "If-Modified-Since: " . $values['last-modified'];
+            else $headers['If-Modified-Since'] = $values['last-modified'];
+        }
+        return $headers;
+    }
+
+    public static function saveEsiConditionalHeaders($uri, $headers, $seconds = 2592000)
+    {
+        global $redis;
+
+        $headers = self::normalizeHeaders($headers);
+        $etag = self::getHeader($headers, 'etag');
+        $lastModified = self::getHeader($headers, 'last-modified');
+        if (($etag === null || $etag === '') && ($lastModified === null || $lastModified === '')) return;
+
+        $key = self::getEsiConditionalHeadersKey($uri);
+        if ($etag !== null && $etag !== '') $redis->hSet($key, 'etag', $etag);
+        if ($lastModified !== null && $lastModified !== '') $redis->hSet($key, 'last-modified', $lastModified);
+        $redis->expire($key, $seconds);
     }
 
     public static function getEsiStatus($seconds = 300)
@@ -206,6 +235,35 @@ class Status
         $value = $headers[$name];
         if (is_array($value)) return @$value[0];
         return $value;
+    }
+
+    private static function normalizeHeaders($headers)
+    {
+        if (!is_array($headers)) return [];
+
+        $normalized = [];
+        foreach ($headers as $name => $value) {
+            if (is_int($name) && is_string($value)) {
+                $header = explode(':', $value, 2);
+                if (count($header) != 2) continue;
+                $name = $header[0];
+                $value = trim($header[1]);
+            }
+
+            $name = strtolower(trim($name));
+            if ($name == '') continue;
+            $values = is_array($value) ? $value : [$value];
+            foreach ($values as $item) {
+                if ($item === null || $item === false || $item === '') continue;
+                $normalized[$name][] = $item;
+            }
+        }
+        return $normalized;
+    }
+
+    private static function getEsiConditionalHeadersKey($uri)
+    {
+        return self::$esiConditionalHeaders . md5($uri);
     }
 
     private static function setLastHeaderValue($key, $field, $value)

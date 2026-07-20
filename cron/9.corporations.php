@@ -26,8 +26,10 @@ while ($minute == date('Hi')) {
 
     $url = "$esiServer/corporations/$id";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
-    $a = (isset($row['lastApiUpdate']) && $row['name'] != '') ? [] : [];
-    $guzzler->call($url, "updateCorp", "failCorp", $params, $a);
+    $headers = [];
+    if (!empty($row['etag'])) $headers['If-None-Match'] = $row['etag'];
+    if (!empty($row['last-modified'])) $headers['If-Modified-Since'] = $row['last-modified'];
+    $guzzler->call($url, "updateCorp", "failCorp", $params, $headers);
 
     $guzzler->finish();
     $time = $t->stop();
@@ -62,12 +64,16 @@ function failCorp(&$guzzler, &$params, &$connectionException)
 function updateCorp(&$guzzler, &$params, &$content)
 {
     try {
-        if ($content == "") { echo "empty content\n"; return; }
-
         $redis = $params['redis'];
         $mdb = $params['mdb'];
         $row = $params['row'];
         $id = $row['id'];
+
+        if ($content == "") {
+            if (@$params['STATUS_CODE'] == 304) $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now()]);
+            else echo "empty content\n";
+            return;
+        }
 
         $content = Util::eliminateBetween($content, '"description"', '"faction_id"');
         $content = Util::eliminateBetween($content, '"description"', '"home_station_id"');
@@ -87,6 +93,9 @@ function updateCorp(&$guzzler, &$params, &$content)
         $updates['allianceID'] = (int) @$json['alliance_id'];
         $updates['factionID'] = (int) @$json['faction_id'];
         $updates['war_eligible'] = (isset($json['war_eligible']) ? $json['war_eligible'] : false);
+        $headers = @$params['HEADERS'];
+        if (isset($headers['etag'][0])) $updates['etag'] = $headers['etag'][0];
+        if (isset($headers['last-modified'][0])) $updates['last-modified'] = $headers['last-modified'][0];
 
         $currentWar = $mdb->findDoc("information", ['type' => 'warID', 'finished' => ['$exists' => false], '$or' => [['aggressor.corporation_id'=> $id], ['defender.corporation_id'=> $id]]]);
         $updates['has_wars'] = ($currentWar != null);

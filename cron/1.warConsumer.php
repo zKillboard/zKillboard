@@ -32,7 +32,10 @@ while ($minute == date('Hi')) {
     $warRow = $mdb->findDoc('information', ['type' => 'warID', 'id' => $id]);
     $params = ['warRow' => $warRow, 'redis' => $redis];
     $url = "$esiServer/wars/$id/";
-    $guzzler->call($url, "success", "fail", $params, [], 'GET');
+    $headers = [];
+    if (!empty($warRow['etag'])) $headers['If-None-Match'] = $warRow['etag'];
+    if (!empty($warRow['last-modified'])) $headers['If-Modified-Since'] = $warRow['last-modified'];
+    $guzzler->call($url, "success", "fail", $params, $headers, 'GET');
     $guzzler->sleep(1);
 }
 $guzzler->finish();
@@ -45,14 +48,20 @@ function success(&$guzzler, &$params, &$content)
 {
     global $mdb, $esiServer;
 
-    if ($content == "") return;
-
-    $war = json_decode($content, true);
     $warRow = $params['warRow'];
     $id = $params['warRow']['id'];
+    if ($content == "") {
+        if (@$params['STATUS_CODE'] == 304) $mdb->set('information', $warRow, ['lastApiUpdate' => $mdb->now()]);
+        return;
+    }
+
+    $war = json_decode($content, true);
 
     $war['lastApiUpdate'] = $mdb->now();
     $war['id'] = $id;
+    $headers = @$params['HEADERS'];
+    if (isset($headers['etag'][0])) $war['etag'] = $headers['etag'][0];
+    if (isset($headers['last-modified'][0])) $war['last-modified'] = $headers['last-modified'][0];
     if (!isset($war['aggressor']['id'])) $war['aggressor']['id'] = isset($war['aggressor']['alliance_id']) ? $war['aggressor']['alliance_id'] : $war['aggressor']['corporation_id'];
     if (!isset($war['defender']['id'])) $war['defender']['id'] = isset($war['defender']['alliance_id']) ? $war['defender']['alliance_id'] : $war['defender']['corporation_id'];
     if (!isset($war['aggressor']['name'])) {
@@ -79,13 +88,19 @@ function success(&$guzzler, &$params, &$content)
         if ($page == 0) $page = 1;
         $params['baseKmHref'] = $baseKmHref;
         $params['page'] = $page;
-        $guzzler->call("$baseKmHref?page=$page", "killmailSuccess", "fail", $params, [], 'GET');
+        $url = "$baseKmHref?page=$page";
+        $params['conditionalUri'] = $url;
+        $guzzler->call($url, "killmailSuccess", "fail", $params, Status::getEsiConditionalHeaders($url), 'GET');
     }
 }
 
 function killmailSuccess(&$guzzler, &$params, &$content)
 {
     global $mdb;
+
+    $uri = @$params['conditionalUri'] ?: $params['uri'];
+    Status::saveEsiConditionalHeaders($uri, @$params['HEADERS']);
+    if ($content == "" && @$params['STATUS_CODE'] == 304) return;
 
     $killmails = $content == "" ? [] : json_decode($content, true);
     $warRow = $params['warRow'];
@@ -106,7 +121,9 @@ function killmailSuccess(&$guzzler, &$params, &$content)
         $page++;
         $params['page'] = $page;
         $baseKmHref = $params['baseKmHref'];
-        $guzzler->call("$baseKmHref?page=$page", "killmailSuccess", "fail", $params, [], 'GET');
+        $url = "$baseKmHref?page=$page";
+        $params['conditionalUri'] = $url;
+        $guzzler->call($url, "killmailSuccess", "fail", $params, Status::getEsiConditionalHeaders($url), 'GET');
     }
 }
 

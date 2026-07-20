@@ -19,7 +19,10 @@ while ($minute == date('Hi')) {
     while ($currentSecond == date('His')) usleep(50);
     $currentSecond = date('His');
 
-    $guzzler->call("$esiServer/alliances/$id", "success", "fail", ['id' => $id], []);
+    $headers = [];
+    if (!empty($row['etag'])) $headers['If-None-Match'] = $row['etag'];
+    if (!empty($row['last-modified'])) $headers['If-Modified-Since'] = $row['last-modified'];
+    $guzzler->call("$esiServer/alliances/$id", "success", "fail", ['id' => $id, 'row' => $row], $headers);
     $guzzler->finish();
     sleep(1);
 }
@@ -30,7 +33,10 @@ function success(&$guzzler, &$params, $content)
     global $mdb, $esiServer;
 
     $id = $params['id'];
-    if ($content == "") return;
+    if ($content == "") {
+        if (@$params['STATUS_CODE'] == 304) $mdb->set("information", $params['row'], ['lastApiUpdate' => $mdb->now()]);
+        return;
+    }
 
     $content = str_replace('\u', '', $content);
     $alliCrest = json_decode($content, true);
@@ -40,6 +46,9 @@ function success(&$guzzler, &$params, $content)
 
     $update = $alliCrest;
     $update['lastApiUpdate'] = $mdb->now();
+    $headers = @$params['HEADERS'];
+    if (isset($headers['etag'][0])) $update['etag'] = $headers['etag'][0];
+    if (isset($headers['last-modified'][0])) $update['last-modified'] = $headers['last-modified'][0];
     $update['executorCorpID'] = (int) @$alliCrest['executor_corporation_id'];
     addCorp($update['executorCorpID']);
 
