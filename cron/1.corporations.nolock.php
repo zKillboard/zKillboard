@@ -106,12 +106,8 @@ function success($params, $content)
     if (isset($kills['error'])) {
         switch($kills['error']) {
             case "Character does not have required role(s)":
-                $next = time() + (30 * 86400) + mt_rand(-999999, 999999);
-                $mdb->set("scopes", $row, ['lastFetch' => $mdb->now(), 'successes' => 0, 'nextCheck' => $next]);
-                //Util::out("missing required roles $charID $corpID $next");
-                //$mdb->remove("scopes", $row);
+                $mdb->remove("scopes", $row);
                 return;
-                break;
             case "Character is not in the corporation":
                 $next = time() + (1 * 86400) + mt_rand(-9999, 9999);
                 $mdb->set("scopes", $row, ['lastFetch' => $mdb->now(), 'successes' => 0, 'nextCheck' => $next]);
