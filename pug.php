@@ -61,6 +61,7 @@ if ($ssoCharacterID > 0) {
     $info = User::getUserInfo();
     $adFreeUntil = (int) @$info['adFreeUntil']; 
     $userShowAds = ($adFreeUntil < time());
+    if ((int) Info::getInfoField('characterID', (int) $ssoCharacterID, 'corporationID') == 109299958) $userShowAds = false;
 }
 
 $uri = $_SERVER['REQUEST_URI'];
