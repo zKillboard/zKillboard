@@ -1320,6 +1320,10 @@ code {
 	color: #ddd;
 }
 
+#killlist {
+	--bs-table-hover-color: var(--bs-table-color);
+}
+
 .tr-killmail .location {
 	max-width: 130px;
 }

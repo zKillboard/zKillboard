@@ -173,8 +173,16 @@ h6, .h6 {
 	background-color: #2F0202;
 }
 
+#killmailstobdy tr.tr-killmail.error:hover > td {
+	background-color: #210101;
+}
+
 #killmailstobdy tr.tr-killmail.winwin > td {
 	background-color: #001600;
+}
+
+#killmailstobdy tr.tr-killmail.winwin:hover > td {
+	background-color: #000F00;
 }
 
 .table tbody tr.error td
