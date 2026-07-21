@@ -35,9 +35,9 @@ class Status
 
         $bucket = self::getHeader($headers, 'x-ratelimit-group');
         if ($bucket === null || $bucket === '') $bucket = self::normalizeEsiUri($uri);
-        $bucketKey = strtolower($bucket);
-        $bucketKey = preg_replace('/[^a-z0-9_.-]+/', '_', $bucketKey);
-        $bucketKey = trim($bucketKey, '_') ?: 'unknown';
+        $bucket = preg_replace('/^endpoint:/', '', $bucket);
+        if (preg_match('/^markets(\/|$)/', $bucket)) $bucket = 'markets';
+        $bucketKey = trim(preg_replace('/[^a-z0-9_.-]+/', '_', strtolower($bucket)), '_') ?: 'unknown';
         $code = (int) $code;
         $codeLabel = $code > 0 ? "$code" : '0';
         $id = uniqid('', true);
@@ -127,46 +127,43 @@ class Status
 
         $rows = [];
         foreach ($bucketKeys as $bucketKey) {
+            $bucket = $redis->hGet(self::$esiBucketNames, $bucketKey);
+            if ($bucket == false) $bucket = $bucketKey;
+            $bucket = preg_replace('/^endpoint:/', '', $bucket);
+            if (preg_match('/^markets(\/|$)/', $bucket)) $bucket = 'markets';
+            $aggregateKey = trim(preg_replace('/[^a-z0-9_.-]+/', '_', strtolower($bucket)), '_') ?: 'unknown';
+            if (!isset($rows[$aggregateKey])) $rows[$aggregateKey] = ['bucket' => $bucket, 'total' => 0, 'success' => 0, 'failure' => 0, 'token_cost' => 0, 'codes' => [], 'last' => []];
+
             $all = new RedisTtlCounter("ttlc:esi:status:$bucketKey:all", $seconds);
-            $total = $all->count();
+            $rows[$aggregateKey]['total'] += $all->count();
 
             $codes = $redis->sMembers("zkb:esi:status:codes:$bucketKey");
             if (!is_array($codes)) $codes = [];
-            sort($codes, SORT_NATURAL);
 
-            $codeRows = [];
-            $success = 0;
-            $failure = 0;
-            $tokenCost = 0;
             foreach ($codes as $code) {
                 $counter = new RedisTtlCounter("ttlc:esi:status:$bucketKey:code:$code", $seconds);
                 $count = $counter->count();
                 if ($count == 0) continue;
-                $codeRows[] = ['code' => $code, 'count' => $count];
-                if ((int) $code >= 200 && (int) $code < 400) $success += $count;
-                else $failure += $count;
+                if (!isset($rows[$aggregateKey]['codes'][$code])) $rows[$aggregateKey]['codes'][$code] = ['code' => $code, 'count' => 0];
+                $rows[$aggregateKey]['codes'][$code]['count'] += $count;
+                if ((int) $code >= 200 && (int) $code < 400) $rows[$aggregateKey]['success'] += $count;
+                else $rows[$aggregateKey]['failure'] += $count;
                 $statusCode = (int) $code;
-                if ($statusCode >= 200 && $statusCode < 300) $tokenCost += 2 * $count;
-                else if ($statusCode >= 300 && $statusCode < 400) $tokenCost += $count;
-                else if ($statusCode >= 400 && $statusCode < 500 && $statusCode != 429) $tokenCost += 5 * $count;
+                if ($statusCode >= 200 && $statusCode < 300) $rows[$aggregateKey]['token_cost'] += 2 * $count;
+                else if ($statusCode >= 300 && $statusCode < 400) $rows[$aggregateKey]['token_cost'] += $count;
+                else if ($statusCode >= 400 && $statusCode < 500 && $statusCode != 429) $rows[$aggregateKey]['token_cost'] += 5 * $count;
             }
 
             $last = $redis->hGetAll("zkb:esi:status:last:$bucketKey");
             if (!is_array($last)) $last = [];
-            $bucket = $redis->hGet(self::$esiBucketNames, $bucketKey);
-            if ($bucket == false) $bucket = $bucketKey;
-            $bucket = preg_replace('/^endpoint:/', '', $bucket);
-
-            $rows[] = [
-                'bucket' => $bucket,
-                'total' => $total,
-                'success' => $success,
-                'failure' => $failure,
-                'token_cost' => $tokenCost,
-                'codes' => $codeRows,
-                'last' => $last
-            ];
+            if (((int) @$last['updated']) >= ((int) @$rows[$aggregateKey]['last']['updated'])) $rows[$aggregateKey]['last'] = $last;
         }
+
+        foreach ($rows as &$row) {
+            ksort($row['codes'], SORT_NATURAL);
+            $row['codes'] = array_values($row['codes']);
+        }
+        unset($row);
 
         usort($rows, function ($a, $b) {
             return strnatcasecmp($a['bucket'], $b['bucket']);
