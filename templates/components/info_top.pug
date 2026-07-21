@@ -6,6 +6,12 @@
 - $field = $detailData;
 - $dateOnly = fn($value) => explode('T', (string) $value)[0];
 - $trigClass = fn($value, $low, $high) => (($value ?? 0) >= $low && ($value ?? 0) < $high) ? 'triglavian' : '';
+- $ceoID = (int) ($detailData['ceoID'] ?? ($detailData['ceo_id'] ?? 0));
+- $creatorID = (int) ($detailData['creatorID'] ?? ($detailData['creator_id'] ?? 0));
+- $homeStationID = (int) ($detailData['homeStationID'] ?? ($detailData['home_station_id'] ?? 0));
+- $taxRate = $detailData['taxRate'] ?? ($detailData['tax_rate'] ?? null);
+- $corpUrl = (string) ($detailData['url'] ?? '');
+- $corpUrlValid = filter_var($corpUrl, FILTER_VALIDATE_URL) && preg_match('/^https?:\\/\\//i', $corpUrl);
 if (($key ?? '') == '')
   h2
     small Overview for
@@ -73,6 +79,12 @@ br
                       td(itemprop="ceo")
                         - $field = $detailData;
                         include text_char.pug
+                  if (($key ?? '') == 'corporation' && $creatorID > 1 && $creatorID != $ceoID)
+                    tr
+                      th Founder:
+                      td(itemprop="founder")
+                        - $field = ['characterID' => $creatorID, 'characterName' => ($detailData['creatorName'] ?? '')];
+                        include text_char.pug
                   if (!empty($detailData['allianceName']))
                     tr
                       th Alliance:
@@ -110,6 +122,11 @@ br
                     tr
                       th Founded:
                       td(itemprop="founded")= $dateOnly($detailData['date_founded'])
+                  if (($key ?? '') == 'corporation' && $homeStationID > 0)
+                    tr
+                      th Home Station:
+                      td(itemprop="homeStation")
+                        a.wrapplease(href=('/location/' . $homeStationID . '/'))= !empty($detailData['homeStationName']) ? $detailData['homeStationName'] : ('Location ' . $homeStationID)
                   if (!empty($detailData['shipName']))
                     tr
                       th Ship:
@@ -185,6 +202,25 @@ br
                           | (Closed)
                         else
                           = number_format((float) $detailData['memberCount'], 0)
+                  if (($key ?? '') == 'corporation' && $taxRate !== null)
+                    tr
+                      th Tax Rate:
+                      td
+                        span(format="format-dec1" raw=((float) $taxRate * 100))
+                        | %
+                  if (($key ?? '') == 'corporation' && array_key_exists('war_eligible', $detailData))
+                    tr
+                      th War Eligible:
+                      td
+                        if (!empty($detailData['war_eligible']))
+                          span.badge.bg-success Yes
+                        else
+                          span.badge.bg-secondary No
+                  if (($key ?? '') == 'corporation' && $corpUrlValid)
+                    tr
+                      th Website:
+                      td
+                        a.wrapplease(href=$corpUrl target="_blank" rel="nofollow ugc noopener noreferrer")= $corpUrl
                   tr
                     td(colspan="2" style="background-color: #000; border: none;")
                       div

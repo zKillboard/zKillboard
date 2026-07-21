@@ -484,6 +484,37 @@ class Info
 							$element['ceoName'] = self::getInfoField('characterID', $value, 'name');
 						}
 						break;
+					case 'creatorID':
+						if (!isset($element['creatorName'])) {
+							$element['creatorName'] = self::getInfoField('characterID', $value, 'name');
+						}
+						break;
+					case 'creator_id':
+						if (!isset($element['creatorID'])) {
+							$element['creatorID'] = (int) $value;
+						}
+						if (!isset($element['creatorName'])) {
+							$element['creatorName'] = self::getInfoField('characterID', $value, 'name');
+						}
+						break;
+					case 'homeStationID':
+						if (!isset($element['homeStationName'])) {
+							$element['homeStationName'] = self::getInfoField('locationID', $value, 'name');
+						}
+						break;
+					case 'home_station_id':
+						if (!isset($element['homeStationID'])) {
+							$element['homeStationID'] = (int) $value;
+						}
+						if (!isset($element['homeStationName'])) {
+							$element['homeStationName'] = self::getInfoField('locationID', $value, 'name');
+						}
+						break;
+					case 'tax_rate':
+						if (!isset($element['taxRate'])) {
+							$element['taxRate'] = (float) $value;
+						}
+						break;
 					case 'characterID':
 						if (!isset($element['characterName'])) {
 							$element['characterName'] = self::getInfoField('characterID', $value, 'name');

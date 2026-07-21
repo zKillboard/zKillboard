@@ -24,7 +24,7 @@ while ($minute == date('Hi')) {
     while ($currentSecond == date('His')) usleep(50);
     $currentSecond = date('His');
 
-    $url = "$esiServer/corporations/$id";
+    $url = "$esiServer/corporations/$id/";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
     $headers = [];
     if (!empty($row['etag'])) $headers['If-None-Match'] = $row['etag'];
@@ -75,23 +75,24 @@ function updateCorp(&$guzzler, &$params, &$content)
             return;
         }
 
-        $content = Util::eliminateBetween($content, '"description"', '"faction_id"');
-        $content = Util::eliminateBetween($content, '"description"', '"home_station_id"');
-        $content = Util::eliminateBetween($content, '"description"', '"member_count"');
-        $content = Util::eliminateBetween($content, '"description"', '"name"');
-
         $json = json_decode($content, true);
-        if ($json['name'] == "") return; // bad data, ignore it
-        $ceoID = (int) $json['ceo_id'];
+        if (!is_array($json) || @$json['name'] == "") return; // bad data, ignore it
+        unset($json['description']);
+        $ceoID = (int) @$json['ceo_id'];
+        $creatorID = (int) @$json['creator_id'];
 
         $updates = $json;
         $updates['lastApiUpdate'] =  $mdb->now();
         if (isset($json['name']) && $json['name'] != "") $updates['name'] = (string) @$json['name'];
         if (isset($json['ticker']) && $json['ticker'] != "") $updates['ticker'] = (string) @$json['ticker'];
         $updates['ceoID'] = (int) @$json['ceo_id'];
+        $updates['creatorID'] = $creatorID;
         $updates['memberCount'] = (int) @$json['member_count'];
         $updates['allianceID'] = (int) @$json['alliance_id'];
         $updates['factionID'] = (int) @$json['faction_id'];
+        $updates['homeStationID'] = (int) @$json['home_station_id'];
+        $updates['taxRate'] = (float) @$json['tax_rate'];
+        $updates['url'] = (string) @$json['url'];
         $updates['war_eligible'] = (isset($json['war_eligible']) ? $json['war_eligible'] : false);
         $headers = @$params['HEADERS'];
         if (isset($headers['etag'][0])) $updates['etag'] = $headers['etag'][0];
@@ -100,10 +101,12 @@ function updateCorp(&$guzzler, &$params, &$content)
         $currentWar = $mdb->findDoc("information", ['type' => 'warID', 'finished' => ['$exists' => false], '$or' => [['aggressor.corporation_id'=> $id], ['defender.corporation_id'=> $id]]]);
         $updates['has_wars'] = ($currentWar != null);
 
-        // Does the CEO exist in our info table?
-        $ceoExists = $mdb->count('information', ['type' => 'characterID', 'id' => $ceoID]);
-        if ($ceoExists == 0) {
-            $mdb->insertUpdate('information', ['type' => 'characterID', 'id' => $ceoID], []);
+        foreach (array_unique([$ceoID, $creatorID]) as $characterID) {
+            if ($characterID <= 1) continue;
+            $characterExists = $mdb->count('information', ['type' => 'characterID', 'id' => $characterID]);
+            if ($characterExists == 0) {
+                $mdb->insertUpdate('information', ['type' => 'characterID', 'id' => $characterID], ['name' => "Character $characterID"]);
+            }
         }
 
         if (sizeof($updates)) {
@@ -113,7 +116,7 @@ function updateCorp(&$guzzler, &$params, &$content)
 
         if (isset($json['alliance_id'])) {
             $exists = $mdb->exists("information", ['type' => 'allianceID', 'id' => (int) $json['alliance_id']]);
-            if ($exists == false) $mdb->insert("information", ['type' => 'allianceID', 'id' => (int) $json['alliance_id'], 'name' => 'allianceID ' . (int) $json['alliance_id']]);
+            if ($exists == false) $mdb->insert("information", ['type' => 'allianceID', 'id' => (int) $json['alliance_id'], 'name' => 'Alliance ' . (int) $json['alliance_id']]);
         }
     } catch (Exception $ex) {
         Util::out(print_r($ex, true));
