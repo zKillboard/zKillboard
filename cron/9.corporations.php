@@ -26,7 +26,7 @@ while ($minute == date('Hi')) {
 
     $url = "$esiServer/corporations/$id/";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
-    $headers = [];
+    $headers = ['X-Compatibility-Date' => '2026-07-21'];
     if (!empty($row['etag'])) $headers['If-None-Match'] = $row['etag'];
     if (!empty($row['last-modified'])) $headers['If-Modified-Since'] = $row['last-modified'];
     $guzzler->call($url, "updateCorp", "failCorp", $params, $headers);
@@ -77,7 +77,7 @@ function updateCorp(&$guzzler, &$params, &$content)
 
         $json = json_decode($content, true);
         if (!is_array($json) || @$json['name'] == "") return; // bad data, ignore it
-        unset($json['description']);
+        unset($json['description'], $json['shares']);
         $ceoID = (int) @$json['ceo_id'];
         $creatorID = (int) @$json['creator_id'];
 
@@ -85,13 +85,14 @@ function updateCorp(&$guzzler, &$params, &$content)
         $updates['lastApiUpdate'] =  $mdb->now();
         if (isset($json['name']) && $json['name'] != "") $updates['name'] = (string) @$json['name'];
         if (isset($json['ticker']) && $json['ticker'] != "") $updates['ticker'] = (string) @$json['ticker'];
+        unset($updates['type']);
         $updates['ceoID'] = (int) @$json['ceo_id'];
         $updates['creatorID'] = $creatorID;
         $updates['memberCount'] = (int) @$json['member_count'];
         $updates['allianceID'] = (int) @$json['alliance_id'];
         $updates['factionID'] = (int) @$json['faction_id'];
         $updates['homeStationID'] = (int) @$json['home_station_id'];
-        $updates['taxRate'] = (float) @$json['tax_rate'];
+        if (isset($json['tax_rate'])) $updates['taxRate'] = (float) @$json['tax_rate'];
         $updates['url'] = (string) @$json['url'];
         $updates['war_eligible'] = (isset($json['war_eligible']) ? $json['war_eligible'] : false);
         $headers = @$params['HEADERS'];

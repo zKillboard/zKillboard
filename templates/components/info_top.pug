@@ -10,6 +10,10 @@
 - $creatorID = (int) ($detailData['creatorID'] ?? ($detailData['creator_id'] ?? 0));
 - $homeStationID = (int) ($detailData['homeStationID'] ?? ($detailData['home_station_id'] ?? 0));
 - $taxRate = $detailData['taxRate'] ?? ($detailData['tax_rate'] ?? null);
+- $taxRates = (array) ($detailData['tax_rates'] ?? []);
+- $taxRateIsk = isset($taxRates['isk']) ? (float) $taxRates['isk'] : ($taxRate !== null ? (float) $taxRate * 100 : null);
+- $taxRateLP = isset($taxRates['loyalty_point']) ? (float) $taxRates['loyalty_point'] : null;
+- $friendly_fire = (string) ($detailData['friendly_fire'] ?? '');
 - $corpUrl = (string) ($detailData['url'] ?? '');
 - $corpUrlValid = filter_var($corpUrl, FILTER_VALIDATE_URL) && preg_match('/^https?:\\/\\//i', $corpUrl);
 if (($key ?? '') == '')
@@ -73,11 +77,11 @@ br
                           |  
                           b.fa.fa-check(rel="tooltip" title="Corp API Verified" style="color:#00FF00")
                         include tracker.pug
-                  if (($detailData['ceoID'] ?? 0) > 1 && !empty($detailData['ceoName']))
+                  if ($ceoID > 1 && !empty($detailData['ceoName']))
                     tr
                       th.span2 CEO:
                       td(itemprop="ceo")
-                        - $field = $detailData;
+                        - $field = ['characterID' => $ceoID, 'characterName' => ($detailData['ceoName'] ?? '')];
                         include text_char.pug
                   if (($key ?? '') == 'corporation' && $creatorID > 1 && $creatorID != $ceoID)
                     tr
@@ -202,20 +206,33 @@ br
                           | (Closed)
                         else
                           = number_format((float) $detailData['memberCount'], 0)
-                  if (($key ?? '') == 'corporation' && $taxRate !== null)
+                  if (($key ?? '') == 'corporation' && ($taxRateIsk !== null || $taxRateLP !== null))
                     tr
-                      th Tax Rate:
+                      th Tax Rates:
                       td
-                        span(format="format-dec1" raw=((float) $taxRate * 100))
-                        | %
+                        if ($taxRateIsk !== null)
+                          | ISK: 
+                          span(format="format-dec1" raw=$taxRateIsk)
+                          | %
+                        if ($taxRateIsk !== null && $taxRateLP !== null)
+                          |  / 
+                        if ($taxRateLP !== null)
+                          | LP: 
+                          span(format="format-dec1" raw=$taxRateLP)
+                          | %
                   if (($key ?? '') == 'corporation' && array_key_exists('war_eligible', $detailData))
                     tr
                       th War Eligible:
                       td
                         if (!empty($detailData['war_eligible']))
-                          span.badge.bg-success Yes
+                          | Yes
                         else
-                          span.badge.bg-secondary No
+                          | No
+                  if (($key ?? '') == 'corporation' && $friendly_fire != '')
+                    tr
+                      th Friendly Fire:
+                      td
+                        = ucwords(str_replace('_', ' ', $friendly_fire))
                   if (($key ?? '') == 'corporation' && $corpUrlValid)
                     tr
                       th Website:

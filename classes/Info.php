@@ -484,6 +484,14 @@ class Info
 							$element['ceoName'] = self::getInfoField('characterID', $value, 'name');
 						}
 						break;
+					case 'ceo_id':
+						if (!isset($element['ceoID'])) {
+							$element['ceoID'] = (int) $value;
+						}
+						if (!isset($element['ceoName'])) {
+							$element['ceoName'] = self::getInfoField('characterID', $value, 'name');
+						}
+						break;
 					case 'creatorID':
 						if (!isset($element['creatorName'])) {
 							$element['creatorName'] = self::getInfoField('characterID', $value, 'name');
