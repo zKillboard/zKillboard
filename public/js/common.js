@@ -975,7 +975,7 @@ const asciiBackSlash = '\\'.charCodeAt(0);
 
 function checkForSearchKey(event) {
     if ($("input:focus, textarea:focus").length == 0) {
-        if (event.which == asciiForwardSlash) {$("#searchbox").focus(); return false; }
+        if (event.which == asciiForwardSlash || event.which == '^'.charCodeAt(0)) {$("#searchbox").focus(); return false; }
         if (event.which == asciiBackSlash) {
             navigateTo('/asearch/');
             return false;
