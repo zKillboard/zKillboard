@@ -104,9 +104,12 @@ function updateCorp(&$guzzler, &$params, &$content)
 
         foreach (array_unique([$ceoID, $creatorID]) as $characterID) {
             if ($characterID <= 1) continue;
-            $characterExists = $mdb->count('information', ['type' => 'characterID', 'id' => $characterID]);
-            if ($characterExists == 0) {
+            $characterInfo = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $characterID], [], ['name' => 1]);
+            if ($characterInfo == null) {
                 $mdb->insertUpdate('information', ['type' => 'characterID', 'id' => $characterID], ['name' => "Character $characterID"]);
+                $redis->sadd('zkb:updatenames', $characterID);
+            } else if (@$characterInfo['name'] == "Character $characterID") {
+                $redis->sadd('zkb:updatenames', $characterID);
             }
         }
 
