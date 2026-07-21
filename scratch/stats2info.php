@@ -18,6 +18,7 @@ foreach ($cursor as $row) {
         $defaultName = "$type $id";
         $row = ['type' => $type, 'id' => (int) $id];
         $mdb->insertUpdate('information', $row, ['name' => $defaultName]);
+        if ($type == 'characterID') $redis->sadd('zkb:updatenames', $id);
         $rtq = new RedisTimeQueue("zkb:$type", 86400);
         $rtq->add($id);
         $count = 0;
