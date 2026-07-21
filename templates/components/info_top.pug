@@ -16,6 +16,12 @@
 - $friendly_fire = (string) ($detailData['friendly_fire'] ?? '');
 - $corpUrl = (string) ($detailData['url'] ?? '');
 - $corpUrlValid = filter_var($corpUrl, FILTER_VALIDATE_URL) && preg_match('/^https?:\\/\\//i', $corpUrl);
+//- Corp title display is disabled for now; titles are UGC and can contain presentation-breaking art.
+//- - $corpTitleRaw = html_entity_decode((string) ($detailData['corporation_title'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+//- - $corpTitle = trim(preg_replace('/\s+/', ' ', strip_tags($corpTitleRaw)));
+//- - preg_match_all('/[^\p{L}\p{N}\s]/u', $corpTitle, $corpTitleSymbols);
+//- - preg_match_all('/[\p{L}\p{N}]/u', $corpTitle, $corpTitleAlphaNum);
+//- - $corpTitleIsAsciiArt = preg_match('/[\r\n]|<\s*br\b|<\/?(?:div|p|pre|table|tr|td|li)\b/i', $corpTitleRaw) || preg_match('/[=_*~#.-]{6,}|[\/\\\\|]{5,}/', $corpTitle) || (strlen($corpTitle) >= 12 && count($corpTitleSymbols[0]) > count($corpTitleAlphaNum[0]));
 if (($key ?? '') == '')
   h2
     small Overview for
@@ -111,6 +117,19 @@ br
                         - $field = $detailData;
                         include text_faction.pug
                         include tracker.pug
+                  //- Corp title display is disabled for now; titles are UGC and can contain presentation-breaking art.
+                    if (($key ?? '') == 'character' && $corpTitle != '' && !$corpTitleIsAsciiArt)
+                      tr
+                        th Corp Title:
+                        td.text-break.ugc(itemprop="corporation_title" data-zkb-ugc="corporation_title")= $corpTitle
+                  if (($key ?? '') == 'character' && (!empty($detailData['characterTitleName']) || !empty($detailData['character_title_id'])))
+                    tr
+                      th Character Title:
+                      td.text-break(itemprop="character_title")
+                        if (!empty($detailData['characterTitleName']))
+                          = $detailData['characterTitleName']
+                        else
+                          = $detailData['character_title_id']
                   if (!empty($detailData['secStatus']) && empty($detailData['solarSystemName']))
                     - $calcStatus = max(-5, min(5, $detailData['secStatus']));
                     - $calcStatus = min(1, ($calcStatus / 5) + 0.8);
@@ -122,6 +141,10 @@ br
                     tr
                       th Birthday:
                       td(itemprop="birthday")= $dateOnly($detailData['birthday'])
+                  if (($key ?? '') == 'character' && array_key_exists('achievement_score', $detailData))
+                    tr
+                      th Achievements:
+                      td(itemprop="achievement_score")= number_format((float) $detailData['achievement_score'], 0)
                   if (!empty($detailData['date_founded']))
                     tr
                       th Founded:

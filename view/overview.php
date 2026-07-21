@@ -133,6 +133,15 @@ function handler($request, $response, $args, $container)
 	} catch (Exception $ex) {
 		return $container->get('view')->render($response->withHeader('Cache-Tag', "www,error,overview,overview:$id"), 'error.pug', array('message' => "There was an error fetching information for the $key you specified."));
 	}
+	if ($key == 'character' && !empty($detail['character_title_id'])) {
+		$characterTitle = $mdb->findDoc('sde_characterTitles', ['key' => (string) $detail['character_title_id']], [], ['name' => 1]);
+		$characterTitleName = @$characterTitle['name'];
+		if (is_array($characterTitleName)) {
+			$detail['characterTitleName'] = (string) ($characterTitleName['en'] ?? reset($characterTitleName));
+		} else if (!empty($characterTitleName)) {
+			$detail['characterTitleName'] = (string) $characterTitleName;
+		}
+	}
 
 	$pageName = isset($detail[$map[$key]['column'] . 'Name']) ? $detail[$map[$key]['column'] . 'Name'] : '???';
 	if ($key != 'label' && ($pageName == '???' && !$mdb->exists('information', ['id' => $id]))) {

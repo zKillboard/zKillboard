@@ -1043,6 +1043,19 @@ echo "Creating index : 'key' => 1 ... ";
 $sde_categories->createIndex(['key' => 1], ['sparse' => true, 'unique' => true]);
 echo "Done\n";
 
+// sde_characterTitles
+echo "\nCreating collection sde_characterTitles ... ";
+$db->createCollection("sde_characterTitles");
+$collection = "sde_characterTitles";
+$sde_characterTitles = $db->$collection;
+echo "Done\n";
+echo "Creating index : '_key' => 1 ... ";
+$sde_characterTitles->createIndex(['_key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+echo "Creating index : 'key' => 1 ... ";
+$sde_characterTitles->createIndex(['key' => 1], ['sparse' => true, 'unique' => true]);
+echo "Done\n";
+
 // sde_groups
 echo "\nCreating collection sde_groups ... ";
 $db->createCollection("sde_groups");

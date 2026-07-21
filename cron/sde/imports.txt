@@ -1,6 +1,7 @@
 
 blueprints
 categories
+characterTitles
 groups
 typeMaterials
 types

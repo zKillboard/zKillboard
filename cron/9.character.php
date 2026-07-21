@@ -47,7 +47,7 @@ while ($minute == date('Hi')) {
 
     $url = "$esiServer/characters/$id";
     $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
-    $headers = [];
+    $headers = ['X-Compatibility-Date' => '2026-07-21'];
     if (!empty($row['etag'])) $headers['If-None-Match'] = $row['etag'];
     if (!empty($row['last-modified'])) $headers['If-Modified-Since'] = $row['last-modified'];
     $guzzler->call($url, "updateChar", "failChar", $params, $headers);
@@ -122,7 +122,7 @@ function updateChar(&$guzzler, &$params, &$content)
     } else if (@$row['name'] == "") {
         compareAttributes($updates, "name", @$row['name'], (string) $json['name']);
     }
-    compareAttributes($updates, "secStatus", @$row['secStatus'], (double) $json['security_status']);
+    if (isset($json['security_status'])) compareAttributes($updates, "secStatus", @$row['secStatus'], (double) $json['security_status']);
 
     if (@$row['name'] != "" && strpos($updates['name'], " Citizen ") === false) unset($updates['name']); // Names will no longer be updated here
 
