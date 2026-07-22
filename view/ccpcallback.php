@@ -59,7 +59,7 @@ function handler($request, $response, $args, $container)
 		// Get latest char details from ESI
 		try {
 			$sso = EveOnlineSSO::getSSO(['publicData']);
-			$charAffiliationRaw = $sso->doCall("$esiServer/latest/characters/affiliation/", [$charID], $access_token, 'POST_JSON');
+			$charAffiliationRaw = $sso->doCall("$esiServer/characters/affiliation/", [$charID], $access_token, 'POST_JSON');
 			$charAffiliation = json_decode($charAffiliationRaw, true);
 
 			if (!is_array($charAffiliation) || empty($charAffiliation) || !isset($charAffiliation[0]['corporation_id'])) {

@@ -67,7 +67,7 @@ while ($time >= time()) {
         $redis->setex("esi-fetched:$corpID", 300, "true");
         $timer = new Timer();
         $reqHeaders = [
-            'X-Compatibility-Date: 2025-12-16'
+            'X-Compatibility-Date: 2026-07-21'
         ];
         if (!empty($row['etag'])) $reqHeaders[] = 'If-None-Match: ' . $row['etag'];
         if (!empty($row['last-modified'])) $reqHeaders[] = 'If-Modified-Since: ' . $row['last-modified'];

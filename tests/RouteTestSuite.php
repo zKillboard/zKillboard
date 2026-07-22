@@ -52,7 +52,7 @@ class RouteTestSuite {
 
         // Test with valid-format but fake killmail URL (should show error)
         $result2 = $this->testPostRoute('/post/', [
-            'killmailurl' => 'https://esi.evetech.net/latest/killmails/99999999/abcd1234567890abcd1234567890abcd12345678/'
+            'killmailurl' => 'https://esi.evetech.net/killmails/99999999/abcd1234567890abcd1234567890abcd12345678/'
         ], [200], 'POST fake killmail URL');
         
         // Test with empty form (should show form )

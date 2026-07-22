@@ -266,11 +266,18 @@ class Price
         }
 
         $url = "$esiServer/markets/10000002/history/?type_id=$typeID";
-        $http_response_header = [];
-        $raw = file_get_contents($url);
-        Status::addEsiStatusFromHttpResponseHeaders($url, $http_response_header);
+        $raw = "";
+        $guzzler = new Guzzler(1);
+        $guzzler->call($url,
+            function($guzzler, $params, $content) use (&$raw) {
+                $raw = $content;
+            },
+            function($guzzler, $params, $ex) {
+                Util::out("Market history fetch failed for " . $params['uri'] . " with http code " . $ex->getCode());
+            });
+        $guzzler->finish();
         $json = json_decode($raw, true);
-        Status::addStatus('esi', true);
+        if (!is_array($json)) $json = [];
         usleep(100000);
 
         foreach ($json as $row) {
