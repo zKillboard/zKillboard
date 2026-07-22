@@ -323,7 +323,7 @@ class RouteTestSuite {
         // API routes - REAL vs FAKE entity testing
         echo "\n--- API Routes (Real IDs) ---\n";
         $this->testRoute('/api/stats/', 200, 'API stats endpoint');
-        $this->testRoute("/api/stats/character/{$this->realCharacterId}/", [200, 404], 'API character stats (REAL character)');
+        $this->testRoute("/api/stats/character/{$this->realCharacterId}/", [200, 302, 404], 'API character stats (REAL character)');
         $this->testRoute("/api/related/{$this->realSystemId}/202510311800/", 200, 'API related kills (REAL system)');
         $this->testRoute('/api/history/20251031/', 302, 'API history redirect');
         $this->testRoute("/api/prices/{$this->realItemId}/", 200, 'API item prices (REAL item - Tritanium)');
@@ -331,9 +331,9 @@ class RouteTestSuite {
         $this->testRoute('/api/supers/', 200, 'API supers intel');
         
         echo "\n--- API Routes (Fake IDs - Should 404) ---\n";
-        $this->testRoute("/api/stats/character/{$this->fakeCharacterId}/", [200, 404], 'API character stats (FAKE character - may return empty)');
-        $this->testRoute("/api/stats/corporation/{$this->fakeCorporationId}/", [200, 404], 'API corporation stats (FAKE corp - may return empty)');
-        $this->testRoute("/api/stats/alliance/{$this->fakeAllianceId}/", [200, 404], 'API alliance stats (FAKE alliance - may return empty)');
+        $this->testRoute("/api/stats/character/{$this->fakeCharacterId}/", [200, 302, 404], 'API character stats (FAKE character - may return empty)');
+        $this->testRoute("/api/stats/corporation/{$this->fakeCorporationId}/", [200, 302, 404], 'API corporation stats (FAKE corp - may return empty)');
+        $this->testRoute("/api/stats/alliance/{$this->fakeAllianceId}/", [200, 302, 404], 'API alliance stats (FAKE alliance - may return empty)');
         
         // Generic API catch-all route  
         $this->testRoute('/api/kills/', [200], 'API kills endpoint');

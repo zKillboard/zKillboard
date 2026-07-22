@@ -36,6 +36,7 @@ $routes = [
 	'/api/supers/' => ['GET', 'view/intel.php'],
 	'/api/related/{system}/{time}/' => ['GET', 'view/api/related.php'],
 	'/api/history/{date}/' => ['GET', 'view/api/history.php'],
+	'/api/stats/{type}/{id}/{sort:kills|isk}/' => ['GET', 'view/apistats.php'],
 	'/api/stats/{type}/{id}/' => ['GET', 'view/apistats.php'],
 	'/scanalyzer/' => ['GET', 'view/scanalyzer.php'],
 	'/cache/{cacheType:bypass|1hour|24hour|tagged}/stats/' => ['GET', 'view/ajax/stats.php'],

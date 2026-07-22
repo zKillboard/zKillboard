@@ -9,7 +9,18 @@ function handler($request, $response, $args, $container) {
     $response = $response->withHeader('Access-Control-Allow-Origin', '*');
     $response = $response->withHeader('Access-Control-Allow-Methods', 'GET');
 
+    if (!isset($args['sort'])) {
+        return $response
+            ->withStatus(302)
+            ->withHeader('Location', '/api/stats/' . rawurlencode((string) $type) . '/' . rawurlencode((string) $id) . '/kills/')
+            ->withHeader('Cache-Tag', "www,api,apistats,redirect,$type:$id");
+    }
+
     try {
+        $queryParams = $request->getQueryParams();
+        $requestedSort = strtolower((string) ($args['sort'] ?? ($queryParams['sort'] ?? ($queryParams['s'] ?? 'kills'))));
+        $topListsSort = $requestedSort == 'isk' ? 'isk' : 'kills';
+
         $bid = $id;
         $oID = $id;
         $id = (int) $id;
@@ -41,15 +52,16 @@ function handler($request, $response, $args, $container) {
         $p['pastSeconds'] = $numDays * 86400;
         $p['kills'] = true;
 
-        $topLists[] = Info::doMakeCommon('Top Characters', 'characterID', Stats::getTop('characterID', $p));
-        $topLists[] = Info::doMakeCommon('Top Corporations', 'corporationID', Stats::getTop('corporationID', $p));
-        $topLists[] = Info::doMakeCommon('Top Alliances', 'allianceID', Stats::getTop('allianceID', $p));
-        $topLists[] = Info::doMakeCommon('Top Ships', 'shipTypeID', Stats::getTop('shipTypeID', $p));
-        $topLists[] = Info::doMakeCommon('Top Systems', 'solarSystemID', Stats::getTop('solarSystemID', $p));
-        $topLists[] = Info::doMakeCommon('Top Locations', 'locationID', Stats::getTop('locationID', $p));
+        $topLists[] = Info::doMakeCommon('Top Characters', 'characterID', Stats::getTop('characterID', $p, false, true, $topListsSort));
+        $topLists[] = Info::doMakeCommon('Top Corporations', 'corporationID', Stats::getTop('corporationID', $p, false, true, $topListsSort));
+        $topLists[] = Info::doMakeCommon('Top Alliances', 'allianceID', Stats::getTop('allianceID', $p, false, true, $topListsSort));
+        $topLists[] = Info::doMakeCommon('Top Ships', 'shipTypeID', Stats::getTop('shipTypeID', $p, false, true, $topListsSort));
+        $topLists[] = Info::doMakeCommon('Top Systems', 'solarSystemID', Stats::getTop('solarSystemID', $p, false, true, $topListsSort));
+        $topLists[] = Info::doMakeCommon('Top Locations', 'locationID', Stats::getTop('locationID', $p, false, true, $topListsSort));
 
         $p['limit'] = 6;
         $array['topLists'] = $topLists;
+        $array['topListsSort'] = $topListsSort;
         $array['topIskKillIDs'] = array_keys(Stats::getTopIsk($p));
 
         $activity = ['max' => 0];
@@ -65,7 +77,6 @@ function handler($request, $response, $args, $container) {
         $activity['days'] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         if ($activity['max'] > 0) $array['activity'] = $activity;
 
-        $queryParams = $request->getQueryParams();
         if (isset($queryParams['callback']) && Util::isValidCallback($queryParams['callback'])) {
             $response = $response->withHeader('Content-Type', 'application/javascript; charset=utf-8');
             $response = $response->withHeader('X-JSONP', 'true');
