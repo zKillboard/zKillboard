@@ -92,7 +92,7 @@ html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
           #zkb-message.d-none.alert.alert-danger.fw-bold(role="alert" aria-live="assertive" aria-atomic="true")
         div
           .pbcen.text-center
-            #publifttop.centered.publift(data-fuse="home_header" style="padding-top: 0.25em; max-height: 250px; max-width: 975px;")
+            #publifttop.centered.publift(data-publift="home_header" style="padding-top: 0.25em; max-height: 250px; max-width: 975px;")
             hr.pbsep
             .pbblock
               a.pbblock.btn.btn-success(href="https://www.patreon.com/zkillboard" target="_blank" rel="noopener noreferrer") Block Ads with Patreon!
@@ -110,7 +110,7 @@ html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
             | Default content
         .clearfix
         .text-center
-          #adsensebottom.centered.publift(data-fuse="home_footer" style="padding-top: 2em; padding-bottom: 2em; max-height: 250px; max-width: 975px;")
+          #adsensebottom.centered.publift(data-publift="home_footer" style="padding-top: 2em; padding-bottom: 2em; max-height: 250px; max-width: 975px;")
         footer
           include footer.pug
         div(style="height: 50px;") &nbsp;
@@ -181,8 +181,8 @@ html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
             button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancel
             button#continueLoginWithOptions.btn.btn-primary(type="button") Continue to EVE Login
     .ad-xl-block
-      .ad-xl-block.left-sticky-ad.publift(data-fuse="left-sticky")
+      .ad-xl-block.left-sticky-ad.publift(data-publift="left-sticky")
     .ad-xl-block
-      .ad-xl-block.right-sticky-ad.publift(data-fuse="right-sticky")
+      .ad-xl-block.right-sticky-ad.publift(data-publift="right-sticky")
     form#externalkmform(method="post" action="/post/" style="display: none;")
       input#externalurl(type="text" name="killmailurl")

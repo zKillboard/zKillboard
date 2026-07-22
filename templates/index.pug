@@ -45,7 +45,7 @@ block content
           - $topTitle = 'Sponsored Killmails - Last 7 Days';
           - $topSet = $sponsored ?? [];
           include components/big_top_list.pug
-        .centered.publift.adrow.ad-xl-none#detailadrow(data-fuse="home_incontent")
+        .centered.publift.adrow.ad-xl-none#detailadrow(data-publift="home_incontent")
         - $showPager = 'false';
         include components/kill_list.pug
       .col-sm-2.float-start.p-0

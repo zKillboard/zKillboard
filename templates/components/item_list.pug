@@ -3,7 +3,7 @@
 - $victim = is_object($killData['victim'] ?? null) ? (array) $killData['victim'] : ($killData['victim'] ?? []);
 - $priceTitle = function ($prices) { $prices = is_object($prices ?? null) ? (array) $prices : ($prices ?? []); return '$' . number_format((float) ($prices['usd'] ?? 0), 2, '.', ',') . ' / ' . number_format((float) ($prices['eur'] ?? 0), 2, '.', ',') . ' euro / GBP ' . number_format((float) ($prices['gbp'] ?? 0), 2, '.', ','); };
 br
-.centered.publift.adrow.ad-xl-none#detailadrow(data-fuse="home_incontent")
+.centered.publift.adrow.ad-xl-none#detailadrow(data-publift="home_incontent")
 #itemsTable
   .d-flex.align-items-center.justify-content-between.flex-wrap.gap-2.mb-2
     h3.m-0 Item(s)

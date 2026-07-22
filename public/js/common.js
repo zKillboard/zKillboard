@@ -1680,7 +1680,7 @@ function loadads() {
     adnumber = adblocks.length;
     adblocks.each(function() {
         const elem = $(this);
-        const fuse = elem.attr("data-fuse") || elem.attr("fuse") || '';
+        const fuse = elem.attr("data-publift") || '';
 		if (fuse.trim().length > 0) elem.load('/cache/1hour/publift/' + fuse + '/', adblockloaded);
     });
 }
