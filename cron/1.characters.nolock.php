@@ -4,6 +4,8 @@ $mt = 10; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($p
 
 require_once "../init.php";
 
+if (isset($cronForks[basename(__FILE__)]) && $mt > $cronForks[basename(__FILE__)]) exit();
+
 $sso = ZKillSSO::getSSO();
 
 if ($kvc->get("zkb:noapi") == "true") exit();

@@ -4,6 +4,8 @@ $mt = 64; $workerID = $mt; do { $mt--; $workerID = $mt; $pid = pcntl_fork(); } w
 
 require_once '../init.php';
 
+if (isset($cronForks[basename(__FILE__)]) && $mt > $cronForks[basename(__FILE__)]) exit();
+
 if ($mt < 8) {
 	$queue = 'queueAsearchKillsSet';
 } else {

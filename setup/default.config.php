@@ -56,6 +56,19 @@ $cookie_secret = 'cookie';
 $beSocial = false;
 $showDailies = true;
 
+// Cron forks
+$cronForks = array(
+        '1.characters.nolock.php' => 10,
+        '1.corporations.nolock.php' => 10,
+        '4.queueInfo.nolock.php' => 4,
+        '6.queueDailyStats.nolock.php' => 4,
+        '6.queueStats.nolock.php' => 8,
+        '9.queueAPI.php' => 4,
+        '9.queueAsearch.php' => 64,
+        '9.queueDailyStats.php' => 4,
+        'recalc_fitted_values.php' => 2,
+        );
+
 // Slim config
 $config = array(
         'mode' => 'production',

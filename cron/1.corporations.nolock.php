@@ -4,6 +4,8 @@ $mt = 10; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($p
 
 require_once "../init.php";
 
+if (isset($cronForks[basename(__FILE__)]) && $mt > $cronForks[basename(__FILE__)]) exit();
+
 if ($mt > $esiCorpMaxThreads) exit();
 
 $sso = ZKillSSO::getSSO();

@@ -4,6 +4,8 @@ $mt = 2; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pi
 
 require_once "../init.php";
 
+if (isset($cronForks[basename(__FILE__)]) && $mt > $cronForks[basename(__FILE__)]) exit();
+
 $fittedArray = [11, 12, 13, 87, 89, 93, 158, 159, 172, 2663, 3772];
 
 $minute = date("Hi");
@@ -45,4 +47,3 @@ function getFittedValue($killID, $items, $dttm)
     }
     return $fittedValue;
 }
-

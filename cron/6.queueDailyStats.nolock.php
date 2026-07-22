@@ -4,6 +4,8 @@ $mt = 4; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pi
 
 require_once '../init.php';
 
+if (isset($cronForks[basename(__FILE__)]) && $mt > $cronForks[basename(__FILE__)]) exit();
+
 if ($redis->get("zkb:reinforced") == true) {
     exit();
 }

@@ -6,6 +6,8 @@ use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
+if (isset($cronForks[basename(__FILE__)]) && $mt > $cronForks[basename(__FILE__)]) exit();
+
 function bailout($reason) {
     Util::out($reason);
     exit();
