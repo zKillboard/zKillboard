@@ -1,11 +1,13 @@
 - $topSetData = is_object($topSet ?? null) ? (array) $topSet : ($topSet ?? []);
 - $topSetTitle = $topSetData['title'] ?? '';
+- $topSetSort = ($topSetData['sort'] ?? 'kills') == 'isk' ? 'isk' : 'kills';
+- $canSortTopSet = !empty($topSetData['sortUri']) && !empty($topSetData['sortType']);
 - $first = true;
 if (count($topSetData['values'] ?? []) > 0)
-  .float-start(style="width: 100%; padding: 0px; margin: 0px;")
+  .float-start(style="width: 100%; padding: 0px; margin: 1em 0 0 0;" data-zkb-top-list="1" data-zkb-top-sort-uri=($topSetData['sortUri'] ?? '') data-zkb-top-sort-type=($topSetData['sortType'] ?? ''))
     .text-center
-      h2.h5= $topSetTitle
-    table.table.table-sm.topBoxes.col-lg-2(style="padding: 0px; margin: 0px; width: 100%;" aria-label=$topSetTitle)
+      h2.h4= $topSetTitle
+    table.table.table-sm.topBoxes.col-lg-2.zkb-top-killer-list(style="padding: 0px; margin: 0px; width: 100%;" aria-label=$topSetTitle)
       each $data in ($topSetData['values'] ?? [])
         - $data = is_object($data) ? (array) $data : $data;
         - $field = $data;
@@ -13,23 +15,37 @@ if (count($topSetData['values'] ?? []) > 0)
           tr
             - $imageSize = 64;
             - $field = $data;
-            if (($topSetData['type'] ?? '') == 'character')
-              td(colspan="2")
+            td(colspan="2" style=($canSortTopSet ? 'padding-bottom: 0 !important;' : false))
+              if ($canSortTopSet)
+                .d-flex.justify-content-between.align-items-end.w-100
+                  div
+                    if (($topSetData['type'] ?? '') == 'character')
+                      include image_char.pug
+                    else if (($topSetData['type'] ?? '') == 'corporation')
+                      include image_corp.pug
+                    else if (($topSetData['type'] ?? '') == 'alliance')
+                      include image_alli.pug
+                    else if (($topSetData['type'] ?? '') == 'solarSystem')
+                      include image_system.pug
+                    else if (($topSetData['type'] ?? '') == 'shipType')
+                      include image_ship.pug
+                    else if (($topSetData['type'] ?? '') == 'location')
+                      include image_item.pug
+                  .text-end(style="line-height: 0;")
+                    .btn-group.btn-group-sm(role="group" aria-label=($topSetTitle . ' sort'))
+                      button.btn(type="button" class=($topSetSort == 'kills' ? 'btn-primary active' : 'btn-outline-primary') data-zkb-top-sort="kills" aria-pressed=($topSetSort == 'kills' ? 'true' : 'false')) Kills
+                      button.btn(type="button" class=($topSetSort == 'isk' ? 'btn-primary active' : 'btn-outline-primary') data-zkb-top-sort="isk" aria-pressed=($topSetSort == 'isk' ? 'true' : 'false')) ISK
+              else if (($topSetData['type'] ?? '') == 'character')
                 include image_char.pug
-            else if (($topSetData['type'] ?? '') == 'corporation')
-              td(colspan="2")
+              else if (($topSetData['type'] ?? '') == 'corporation')
                 include image_corp.pug
-            else if (($topSetData['type'] ?? '') == 'alliance')
-              td(colspan="2")
+              else if (($topSetData['type'] ?? '') == 'alliance')
                 include image_alli.pug
-            else if (($topSetData['type'] ?? '') == 'solarSystem')
-              td(colspan="2")
+              else if (($topSetData['type'] ?? '') == 'solarSystem')
                 include image_system.pug
-            else if (($topSetData['type'] ?? '') == 'shipType')
-              td(colspan="2")
+              else if (($topSetData['type'] ?? '') == 'shipType')
                 include image_ship.pug
-            else if (($topSetData['type'] ?? '') == 'location')
-              td(colspan="2")
+              else if (($topSetData['type'] ?? '') == 'location')
                 include image_item.pug
           - $first = false;
         tr
@@ -51,4 +67,7 @@ if (count($topSetData['values'] ?? []) > 0)
           else if (($topSetData['type'] ?? '') == 'location')
             td
               include text_location.pug
-          td.text-end(title=((($data['score'] ?? 0) != 0) ? ('Score: ' . number_format((float) $data['score'], 0)) : false) rel=((($data['score'] ?? 0) != 0) ? 'tooltip' : false) data-format="format-int-once" data-raw=($data['kills'] ?? 0))= number_format((float) ($data['kills'] ?? 0), 0)
+          if ($topSetSort == 'isk')
+            td.text-end(title=('Kills: ' . number_format((float) ($data['kills'] ?? 0), 0)) rel="tooltip" data-format="format-isk-once" data-raw=($data['isk'] ?? 0))= $formatIsk($data['isk'] ?? 0)
+          else
+            td.text-end(title=((($data['score'] ?? 0) != 0) ? ('Score: ' . number_format((float) $data['score'], 0)) : false) rel=((($data['score'] ?? 0) != 0) ? 'tooltip' : false) data-format="format-int-once" data-raw=($data['kills'] ?? 0))= number_format((float) ($data['kills'] ?? 0), 0)

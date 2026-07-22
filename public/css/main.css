@@ -928,6 +928,26 @@ td.centered {
 	word-break: break-word;
 }
 
+.zkb-top-killer-list tr:not(:first-child) td:first-child {
+	max-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.zkb-top-killer-list tr:not(:first-child) td:first-child a {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	word-break: normal;
+}
+
+.zkb-top-killer-list tr:not(:first-child) td:last-child {
+	white-space: nowrap;
+	width: 1%;
+}
+
 .zkb-top-list .nowrap-parent {
 	width: auto;
 	min-width: 0;

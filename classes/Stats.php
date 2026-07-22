@@ -27,11 +27,12 @@ class Stats
     /**
      * @param string $groupByColumn
      */
-    public static function getTop($groupByColumn, $parameters = array(), $cacheOverride = false, $addInfo = true)
+    public static function getTop($groupByColumn, $parameters = array(), $cacheOverride = false, $addInfo = true, $sortBy = 'kills')
     {
         global $mdb, $longQueryMS;
 
-        $hashKey = "Stats::getTop:$groupByColumn:".serialize($parameters);
+        $sortBy = $sortBy == 'isk' ? 'isk' : 'kills';
+        $hashKey = "Stats::getTop:$groupByColumn:$sortBy:".serialize($parameters);
         $result = RedisCache::get($hashKey);
         if ($cacheOverride == false && $result != null) {
             return $result;
@@ -92,13 +93,13 @@ class Stats
         $pipeline[] = ['$match' => [$keyField => ['$ne' => null]]];
         $pipeline[] = ['$match' => [$keyField => ['$ne' => 0]]];
         $pipeline[] = ['$match' => $andQuery];
-        $pipeline[] = ['$group' => ['_id' => ['killID' => '$killID', $groupByColumn => '$'.$keyField]]];
-        $pipeline[] = ['$group' => ['_id' => '$_id.'.$groupByColumn, 'kills' => ['$sum' => 1]]];
-        $pipeline[] = ['$sort' => ['kills' => -1]];
+        $pipeline[] = ['$group' => ['_id' => ['killID' => '$killID', $groupByColumn => '$'.$keyField], 'isk' => ['$first' => '$zkb.totalValue']]];
+        $pipeline[] = ['$group' => ['_id' => '$_id.'.$groupByColumn, 'kills' => ['$sum' => 1], 'isk' => ['$sum' => '$isk']]];
+        $pipeline[] = ['$sort' => ($sortBy == 'isk' ? ['isk' => -1, 'kills' => -1] : ['kills' => -1, 'isk' => -1])];
         if (!isset($parameters['nolimit'])) {
             $pipeline[] = ['$limit' => $parameters['limit']];
         }
-        $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
+        $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, 'isk' => 1, '_id' => 0]];
 
         $options = ['batchSize' => 1000, 'allowDiskUse' => true, 'noCursorTimeout' => true];
         if (php_sapi_name() !== 'cli') $options['maxTimeMS'] = 35000; // web requests should not run longer than 35 seconds

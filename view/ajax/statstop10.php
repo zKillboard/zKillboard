@@ -9,8 +9,8 @@ function handler($request, $response, $args, $container) {
     $tagged = strpos($uri, "/tagged/") !== false;
 
     try {
-        if ($tagged || $bypass) $params = URI::validate($uri, ['u' => true, 't' => true]);
-        else $params = URI::validate($uri, ['u' => true, 't' => true, 'ks' => !$bypass, 'ke' => !$bypass]);
+        if ($tagged || $bypass) $params = URI::validate($uri, ['u' => true, 't' => true, 's' => false]);
+        else $params = URI::validate($uri, ['u' => true, 't' => true, 'ks' => !$bypass, 'ke' => !$bypass, 's' => false]);
     } catch (Exception $e) {
         // If validation fails, return empty template
         return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,statstop,statstop10'), 'components/top_killer_list.pug', []);
@@ -18,6 +18,7 @@ function handler($request, $response, $args, $container) {
 
     $uri = $params['u'];
     $topType = $params['t'];
+    $sortBy = @$params['s'] == 'isk' ? 'isk' : 'kills';
     $ks = @$params['ks'];
     $ke = @$params['ke'];
 
@@ -36,12 +37,14 @@ function handler($request, $response, $args, $container) {
     if ($tagged === false) 
     if ($bypass || "$ks" != "$ksa" || "$ke" != "$kea") {
         // Redirect to proper sequence URL
-        $redirectUrl = "/cache/tagged/statstop10/?u=$uri&t=$topType";
+        $redirectParams = ['u' => $uri, 't' => $topType];
+        if ($sortBy == 'isk') $redirectParams['s'] = $sortBy;
+        $redirectUrl = "/cache/tagged/statstop10/?".http_build_query($redirectParams);
         return $response->withHeader('Location', $redirectUrl)->withStatus(302);
     }
 
     $disqualified = 0;
-    if ($topType == 'characterID' || $topType == 'corportionID' || $topType == 'allianceID') {
+    if ($topType == 'characterID' || $topType == 'corporationID' || $topType == 'allianceID') {
         foreach ($p as $type => $val) {
             if ($type == 'characterID' || $type == 'corporationID' || $type == 'allianceID') {
                 foreach ($val as $id) {
@@ -60,7 +63,11 @@ function handler($request, $response, $args, $container) {
         if (strpos($uri, "/label/") === false) $p['label'] = 'pvp';
 
         $name = ucfirst(str_replace("solar", "", str_replace("Type", "", str_replace("ID", "", $topType))));
-        $ret['topSet'] = Info::doMakeCommon("Top ${name}s", $topType, Stats::getTop($topType, $p));
+        $topSet = Info::doMakeCommon("Top ${name}s", $topType, Stats::getTop($topType, $p, false, true, $sortBy));
+        $topSet['sort'] = $sortBy;
+        $topSet['sortUri'] = $uri;
+        $topSet['sortType'] = $topType;
+        $ret['topSet'] = $topSet;
     }
 
     // Return rendered template

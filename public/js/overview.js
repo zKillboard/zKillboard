@@ -3,6 +3,7 @@ const validTopTypes = ['characterID', 'corporationID', 'allianceID', 'shipTypeID
 var overviewStats = undefined;
 var overviewLoadToken = 0;
 
+document.addEventListener('click', overviewTopSortClick);
 zkbInitOverview();
 function zkbInitOverview() {
 	overviewStats = undefined;
@@ -169,6 +170,50 @@ async function loadTops(token, pagePath, pageEntityID) {
 }
 
 console.log('overview.js loaded');
+
+async function overviewTopSortClick(event) {
+	const button = event.target.closest('[data-zkb-top-sort]');
+	if (!button) return;
+
+	event.preventDefault();
+	event.stopPropagation();
+	if (button.classList.contains('active')) return;
+
+	const topList = button.closest('[data-zkb-top-list]');
+	if (!topList) return;
+
+	const sortBy = button.getAttribute('data-zkb-top-sort') == 'isk' ? 'isk' : 'kills';
+	const sortUri = topList.getAttribute('data-zkb-top-sort-uri');
+	const sortType = topList.getAttribute('data-zkb-top-sort-type');
+	if (!sortUri || !sortType) return;
+
+	const topListButtons = topList.querySelectorAll('[data-zkb-top-sort]');
+	topListButtons.forEach(function(button) { button.disabled = true; });
+	topList.setAttribute('aria-busy', 'true');
+
+	try {
+		const params = new URLSearchParams({u: sortUri, t: sortType, s: sortBy});
+		const response = await fetch('/cache/tagged/statstop10/?' + params.toString());
+		if (response.status >= 400) throw new Error('Unexpected status ' + response.status);
+
+		const html = await response.text();
+		if (!topList.isConnected) return;
+		const template = document.createElement('template');
+		template.innerHTML = html.trim();
+		const refreshedTopList = template.content.firstElementChild;
+		if (!refreshedTopList) throw new Error('Empty top stats response');
+
+		topList.replaceWith(refreshedTopList);
+		const focusButton = refreshedTopList.querySelector('[data-zkb-top-sort="' + sortBy + '"]');
+		if (focusButton) focusButton.focus();
+		doFormats();
+		setTimeout(prepTippy, 1);
+	} catch (error) {
+		console.error('Failed to sort top stats:', error);
+		topListButtons.forEach(function(button) { button.disabled = false; });
+		topList.removeAttribute('aria-busy');
+	}
+}
 
 function isCurrentOverviewLoad(token, pagePath) {
 	return token === overviewLoadToken
