@@ -13,7 +13,9 @@
 - $taxRates = (array) ($detailData['tax_rates'] ?? []);
 - $taxRateIsk = isset($taxRates['isk']) ? (float) $taxRates['isk'] : ($taxRate !== null ? (float) $taxRate * 100 : null);
 - $taxRateLP = isset($taxRates['loyalty_point']) ? (float) $taxRates['loyalty_point'] : null;
-- $friendly_fire = (string) ($detailData['friendly_fire'] ?? '');
+- $friendlyFire = $detailData['friendly_fire'] ?? ($detailData['friendly_fire_enabled'] ?? null);
+- $friendlyFireText = is_bool($friendlyFire) ? ($friendlyFire ? 'Enabled' : 'Disabled') : ucwords(str_replace('_', ' ', (string) $friendlyFire));
+- $friendlyFireEnabled = is_bool($friendlyFire) ? $friendlyFire : in_array(strtolower((string) $friendlyFire), ['enabled', 'legal', 'true', 'yes', '1'], true);
 - $corpUrl = (string) ($detailData['url'] ?? '');
 - $corpUrlValid = filter_var($corpUrl, FILTER_VALIDATE_URL) && preg_match('/^https?:\\/\\//i', $corpUrl);
 //- Corp title display is disabled for now; titles are UGC and can contain presentation-breaking art.
@@ -89,12 +91,6 @@ br
                       td(itemprop="ceo")
                         - $field = ['characterID' => $ceoID, 'characterName' => ($detailData['ceoName'] ?? '')];
                         include text_char.pug
-                  if (($key ?? '') == 'corporation' && $creatorID > 1 && $creatorID != $ceoID)
-                    tr
-                      th Founder:
-                      td(itemprop="founder")
-                        - $field = ['characterID' => $creatorID, 'characterName' => ($detailData['creatorName'] ?? '')];
-                        include text_char.pug
                   if (!empty($detailData['allianceName']))
                     tr
                       th Alliance:
@@ -145,15 +141,10 @@ br
                     tr
                       th Achievements:
                       td(itemprop="achievement_score")= number_format((float) $detailData['achievement_score'], 0)
-                  if (!empty($detailData['date_founded']))
+                  if (($key ?? '') != 'corporation' && !empty($detailData['date_founded']))
                     tr
                       th Founded:
                       td(itemprop="founded")= $dateOnly($detailData['date_founded'])
-                  if (($key ?? '') == 'corporation' && $homeStationID > 0)
-                    tr
-                      th Home Station:
-                      td(itemprop="homeStation")
-                        a.wrapplease(href=('/location/' . $homeStationID . '/'))= !empty($detailData['homeStationName']) ? $detailData['homeStationName'] : ('Location ' . $homeStationID)
                   if (!empty($detailData['shipName']))
                     tr
                       th Ship:
@@ -229,33 +220,6 @@ br
                           | (Closed)
                         else
                           = number_format((float) $detailData['memberCount'], 0)
-                  if (($key ?? '') == 'corporation' && ($taxRateIsk !== null || $taxRateLP !== null))
-                    tr
-                      th Tax Rates:
-                      td
-                        if ($taxRateIsk !== null)
-                          | ISK: 
-                          span(format="format-dec1" raw=$taxRateIsk)
-                          | %
-                        if ($taxRateIsk !== null && $taxRateLP !== null)
-                          |  / 
-                        if ($taxRateLP !== null)
-                          | LP: 
-                          span(format="format-dec1" raw=$taxRateLP)
-                          | %
-                  if (($key ?? '') == 'corporation' && array_key_exists('war_eligible', $detailData))
-                    tr
-                      th War Eligible:
-                      td
-                        if (!empty($detailData['war_eligible']))
-                          | Yes
-                        else
-                          | No
-                  if (($key ?? '') == 'corporation' && $friendly_fire != '')
-                    tr
-                      th Friendly Fire:
-                      td
-                        = ucwords(str_replace('_', ' ', $friendly_fire))
                   if (($key ?? '') == 'corporation' && $corpUrlValid)
                     tr
                       th Website:
@@ -278,3 +242,57 @@ br
                       span#badges
   .col-12.col-md-6.float-end(style="padding: 0px; margin: 0px;")
     include stats_box.pug
+if (($key ?? '') == 'corporation' && (($taxRateIsk !== null || $taxRateLP !== null) || !empty($detailData['date_founded']) || ($creatorID > 1 && !empty($detailData['creatorName'])) || $homeStationID > 0 || array_key_exists('war_eligible', $detailData) || array_key_exists('friendly_fire', $detailData) || array_key_exists('friendly_fire_enabled', $detailData)))
+  table.table.table-sm.table-borderless.mb-2(style="table-layout: fixed; width: 100%;")
+    thead
+      tr
+        if ($taxRateIsk !== null || $taxRateLP !== null)
+          th.text-truncate(scope="col") Tax Rates
+        if (!empty($detailData['date_founded']))
+          th.text-truncate(scope="col") Founded
+        if ($creatorID > 1 && !empty($detailData['creatorName']))
+          th.text-truncate(scope="col") Founder
+        if ($homeStationID > 0)
+          th.text-truncate(scope="col") Home Station
+        if (array_key_exists('war_eligible', $detailData))
+          th.text-truncate(scope="col") War Eligible
+        if (array_key_exists('friendly_fire', $detailData) || array_key_exists('friendly_fire_enabled', $detailData))
+          th.text-truncate(scope="col") Friendly Fire
+    tbody
+      tr
+        if ($taxRateIsk !== null || $taxRateLP !== null)
+          td.pe-3.text-truncate
+            if ($taxRateIsk !== null)
+              | ISK: 
+              span(format="format-dec1" raw=$taxRateIsk)
+              | %
+            if ($taxRateIsk !== null && $taxRateLP !== null)
+              |  / 
+            if ($taxRateLP !== null)
+              | LP: 
+              span(format="format-dec1" raw=$taxRateLP)
+              | %
+        if (!empty($detailData['date_founded']))
+          td.pe-3.text-truncate(itemprop="founded")= $dateOnly($detailData['date_founded'])
+        if ($creatorID > 1 && !empty($detailData['creatorName']))
+          td.pe-3(itemprop="founder")
+            a.d-block.text-truncate(href=('/character/' . $creatorID . '/'))= $detailData['creatorName'] ?? ''
+        if ($homeStationID > 0)
+          td.pe-3(itemprop="homeStation")
+            a.d-block.text-truncate(href=('/location/' . $homeStationID . '/'))= !empty($detailData['homeStationName']) ? $detailData['homeStationName'] : ('Location ' . $homeStationID)
+        if (array_key_exists('war_eligible', $detailData))
+          td.pe-3.text-truncate
+            if (!empty($detailData['war_eligible']))
+              i.fa.fa-check.green(aria-hidden="true" rel="tooltip" title="Yes")
+              |  Yes
+            else
+              i.fa.fa-times.red(aria-hidden="true" rel="tooltip" title="No")
+              |  No
+        if (array_key_exists('friendly_fire', $detailData) || array_key_exists('friendly_fire_enabled', $detailData))
+          td.pe-3.text-truncate
+            if ($friendlyFireEnabled)
+              i.fa.fa-check.green(aria-hidden="true" rel="tooltip" title=$friendlyFireText)
+              = ' ' . $friendlyFireText
+            else
+              i.fa.fa-times.red(aria-hidden="true" rel="tooltip" title=$friendlyFireText)
+              = ' ' . $friendlyFireText
