@@ -1,9 +1,7 @@
 <?php
 
 function handler($request, $response, $args, $container) {
-    global $redis;
-
-    $imageMap = ['typeID' => 'Type/%1$d_32.png', 'groupID' => 'Type/1_32.png', 'characterID' => 'Character/%1$d_32.jpg', 'corporationID' => 'Corporation/%1$d_32.png', 'allianceID' => 'Alliance/%1$d_32.png', 'factionID' => 'Alliance/%1$d_32.png'];
+    global $mdb;
 
     // Handle different request methods and parameter sources
     if ($request->getMethod() === 'POST') {
@@ -16,8 +14,26 @@ function handler($request, $response, $args, $container) {
         $entityType = $args['entityType'] ?? null;
     }
 
-    $result = zkbSearch::getResults(ltrim($search), $entityType);
-    if (sizeof($result) == 0) $result = zkbSearch::getResults(trim($search), $entityType);
+    if ($entityType == 'ship') {
+        $regex = '^' . strtolower(preg_quote(trim($search)));
+        $rows = $mdb->find('information', ['type' => 'typeID', 'published' => true, 'categoryID' => 6, 'l_name' => ['$regex' => $regex]], ['l_name' => 1], 15, ['id' => 1]);
+        $result = [];
+        foreach ($rows as $row) {
+            $id = (int) ($row['id'] ?? 0);
+            if ($id <= 0) continue;
+            $info = Info::getInfo('typeID', $id);
+            $result[] = [
+                'id' => $id,
+                'name' => $info['name'] ?? "Ship $id",
+                'type' => 'ship',
+                'image' => sprintf(zkbSearch::$imageMap['typeID'], $id, 32),
+                'pip' => $info['pip'] ?? '',
+            ];
+        }
+    } else {
+        $result = zkbSearch::getResults(ltrim($search), $entityType);
+        if (sizeof($result) == 0) $result = zkbSearch::getResults(trim($search), $entityType);
+    }
 
     // Return JSON response with CORS headers
     $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8')

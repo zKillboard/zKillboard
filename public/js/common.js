@@ -866,6 +866,7 @@ function runSpaPageInitializers(pageAssets) {
     if (typeof window.zkbInitTypeRanks === "function" && document.querySelector(".rank-table") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/typeranks.js")) window.zkbInitTypeRanks();
     if (typeof window.zkbInitScanalyzer === "function" && document.querySelector("#scaninput") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/scanalyzer.js")) window.zkbInitScanalyzer();
     if (typeof window.zkbInitAsearch === "function" && document.querySelector("#asearchcontent") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/asearch.js")) window.zkbInitAsearch();
+    if (typeof window.zkbInitFits === "function" && document.querySelector("#fit-ship-form") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/fits.js")) window.zkbInitFits();
     if (typeof window.resizeMobileFittingWheel === "function") window.resizeMobileFittingWheel();
 }
 

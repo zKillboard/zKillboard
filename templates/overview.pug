@@ -31,6 +31,9 @@ block content
         if (($key ?? '') == 'character')
           li.nav-item
             a.nav-link(class=$isActive('Trophies', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/trophies/')) Trophies
+        if (($key ?? '') == 'ship' && (int) ($detailData['categoryID'] ?? 0) == 6)
+          li.nav-item
+            a.nav-link(href=('/fits/' . ($id ?? '') . '/')) Fits
         if (($key ?? '') == 'ship')
           li.nav-item
             a.nav-link(class=$isActive('Description', $pageType) href=('/item/' . ($id ?? '') . '/')) Description

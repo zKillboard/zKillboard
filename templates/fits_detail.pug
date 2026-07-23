@@ -1,0 +1,32 @@
+- $fitData = is_object($fit ?? null) ? (array) $fit : ($fit ?? []);
+- $lossID = (int) ($sampleLossID ?? $fitData['sampleLossID'] ?? 0);
+- $fitKey = preg_replace('/[^A-Za-z0-9_-]/', '', (string) ($fitData['hash'] ?? $lossID));
+- if ($fitKey == '') $fitKey = (string) $lossID;
+- $fittingWheelIDPrefix = 'fit-' . $fitKey . '-';
+- $eftID = $fittingWheelIDPrefix . 'eft';
+- $shipName = (string) ($fitData['shipName'] ?? $killdata['victim']['shipName'] ?? 'ship');
+.row.g-3.align-items-start
+  .col-12.col-xl-auto.text-center
+    include components/fitting_wheel.pug
+  .col-12.col-xl
+    .d-flex.flex-wrap.align-items-center.gap-2.mb-2
+      button.btn.btn-sm.btn-primary.text-white.d-inline-flex.align-items-center.gap-1(type="button" data-zkb-save-fitting=$lossID aria-label=('Save inferred ' . $shipName . ' fit'))
+        i.fas.fa-save(aria-hidden="true")
+        span Save Fit
+      a.btn.btn-sm.btn-secondary.text-white.d-inline-flex.align-items-center.gap-1(target="_blank" rel="noopener noreferrer" href=('/kill/' . $lossID . '/') aria-label=('Open sample loss ' . $lossID . ' for this ' . $shipName . ' fit'))
+        i.fas.fa-external-link-alt(aria-hidden="true")
+        span Sample Loss
+      a.btn.btn-sm.btn-secondary.text-white.d-inline-flex.align-items-center.gap-1(target="_blank" rel="noopener noreferrer" href=('/kill/' . $lossID . '/redirect/esi/') aria-label=('Open ESI link for sample loss ' . $lossID . ' for this ' . $shipName . ' fit'))
+        i.fas.fa-external-link-alt(aria-hidden="true")
+        span ESI Link
+      a.btn.btn-sm.btn-secondary.text-white.d-inline-flex.align-items-center.gap-1(target="_blank" rel="noopener noreferrer" href=('/kill/' . $lossID . '/redirect/eveshipfit/') aria-label=('Open this ' . $shipName . ' fit in EVEShip.Fit'))
+        i.fas.fa-external-link-alt(aria-hidden="true")
+        span EVEShip.Fit
+      a.btn.btn-sm.btn-secondary.text-white.d-inline-flex.align-items-center.gap-1(target="_blank" rel="noopener noreferrer" href=('/kill/' . $lossID . '/redirect/eveworkbench/') aria-label=('Open this ' . $shipName . ' fit in EVE Workbench'))
+        i.fas.fa-external-link-alt(aria-hidden="true")
+        span EVE Workbench
+    label.form-label(for=$eftID) EFT
+    .position-relative
+      button.btn.btn-sm.btn-secondary.position-absolute.top-0.end-0.mt-1.me-4(type="button" title="Copy to Clipboard" aria-label=('Copy ' . $shipName . ' EFT fit to clipboard') aria-controls=$eftID data-zkb-copy-eft)
+        i.fas.fa-copy(aria-hidden="true")
+      textarea.form-control.fitting.pe-5(id=$eftID data-zkb-select-on-click rows="18" readonly="readonly" style="padding-right: 4rem !important;")= $eftText ?? ''

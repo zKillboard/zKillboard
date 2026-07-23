@@ -33,6 +33,10 @@
 	var zz_search = function(element, callback) {
 		//create our objects and things
 		this.data = {}, this.data['element'] = element, this.data['menu'] = $('<ul class="autocomplete dropdown-menu" style="display: none;"></ul>').appendTo('body'), this.callback = callback;
+		this.data['source'] = element.data('zkbAutocompleteSource') || '/autocomplete/';
+		this.data['linkPrefix'] = element.data('zkbAutocompleteLinkPrefix') || '';
+		this.data['submitFormOnEnter'] = element.data('zkbAutocompleteSubmitForm') === true || element.attr('data-zkb-autocomplete-submit-form') != null;
+		if (this.data['source'].slice(-1) != '/') this.data['source'] += '/';
 
 		//bind our primary search event
 		this.data['element'].on('keyup', $.proxy(function(event) { if (!event.isDefaultPrevented() && event.keyCode != 9 && event.keyCode != 38 && event.keyCode != 40) { return $.proxy(this.do_search(event), this); } }, this));
@@ -51,15 +55,17 @@
 		this.data['element'].on('keypress', $.proxy(function(event) {
 			event.stopPropagation();
 			if (event.keyCode != 13) return;
-			event.preventDefault();
 			if (this.data['menu'].find('.active').length == 1) {
-				$.proxy(this.run_callback(event), this);
+				event.preventDefault();
+				this.run_callback(event);
+			} else if (!this.data['submitFormOnEnter']) {
+				event.preventDefault();
 			}
 		}, this));
 		
 		//handle a couple of other types of event
 		this.data['element'].on('blur', $.proxy(function(){ $.proxy(this.hide_menu(), this); }, this));
-		this.data['menu'].on('click', 'a', $.proxy(function(event){ $.proxy(this.run_callback(event), this); }, this));	
+		this.data['menu'].on('click', 'a', $.proxy(function(event){ this.run_callback(event); }, this));	
 		this.data['menu'].on('mouseenter', 'li', $.proxy(function(event){ if ($(event.currentTarget).data('value') == null) return; this.data['menu'].find('.active').removeClass('active'); $(event.currentTarget).addClass('active').addClass('active'); }, this));
 	}
 
@@ -75,8 +81,9 @@
 			var anchor = inputGroup.length ? inputGroup : this.data['element'];
 			var anchorOffset = anchor.offset();
 			var isMobile = window.matchMedia('only screen and (max-width: 767px)').matches;
-			var menuWidth = isMobile ? anchor.outerWidth() : 375;
-			var searchOffsetX = isMobile ? anchorOffset.left : pos.left - 90;
+			var alignInput = this.data['element'].data('zkbAutocompleteAlign') == 'input';
+			var menuWidth = (isMobile || alignInput) ? anchor.outerWidth() : 375;
+			var searchOffsetX = (isMobile || alignInput) ? anchorOffset.left : pos.left - 90;
 			var searchOffsetY = pos.top + pos.height;
 			var viewportWidth = $(window).width();
 			var gutter = 8;
@@ -94,7 +101,12 @@
 	
 		//goto the selected items seach page
 		run_callback: function(event) {
-			var selected = this.data['menu'].find('.active').data('value');
+			if (event) {
+				event.preventDefault();
+				event.stopPropagation();
+			}
+			var selected = event ? $(event.currentTarget).closest('li').data('value') : null;
+			if (selected == null) selected = this.data['menu'].find('.active').data('value');
 			this.data['element'].val('');
 			this.hide_menu(event);
 			$.proxy(this.callback(selected, event), this);
@@ -116,7 +128,7 @@
 			this.data['throttle'] = setTimeout($.proxy(function() {
                 const search = this.data['element'].val();
                 if (search.includes('/') || search.includes(':')) return this.data['menu'].empty();
-				$.ajax('/autocomplete/' + search + '/', {'type' : 'get', 'dataType' : 'json', 'success' : $.proxy(function(result) {
+				$.ajax(this.data['source'] + encodeURIComponent(search) + '/', {'type' : 'get', 'dataType' : 'json', 'success' : $.proxy(function(result) {
 
                     if (current_query_count != query_count) return console.log('search aborted after additional input received');
 					//empty the dropdown and append the new data
@@ -125,7 +137,8 @@
 						this.data['menu'].append($('<li class="autocomplete-empty"><i class="fas fa-search" aria-hidden="true"></i><span>No results</span></li>'));
 					} else {
 						this.data['menu'].append($.map(result, $.proxy(function(item, index) {
-							return $('<li><a href="/' + item.type + '/' + item.id + '/">' + image_html(item) + '<p style="width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">' + item.name.replace(RegExp('(' + this.data['element'].val() + ')', "gi"), function($1, match){ return '<strong>' + match + '</strong>'; } ) + '</p><span><small>' + item.type + '</small></span></a></li>').attr('data-value', JSON.stringify(item));
+							var href = this.data['linkPrefix'] != '' ? this.data['linkPrefix'] + item.id + '/' : '/' + item.type + '/' + item.id + '/';
+							return $('<li><a href="' + href + '">' + image_html(item) + '<p style="width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">' + item.name.replace(RegExp('(' + this.data['element'].val() + ')', "gi"), function($1, match){ return '<strong>' + match + '</strong>'; } ) + '</p><span><small>' + item.type + '</small></span></a></li>').attr('data-value', JSON.stringify(item));
 						}, this)));
 					}
 

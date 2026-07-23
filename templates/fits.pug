@@ -1,0 +1,139 @@
+extends base.pug
+
+block vars
+  - $pageTitle = !empty($selectedShip) ? 'Inferred Fits: ' . ($selectedShip['name'] ?? '') : 'Inferred Fits';
+  - $description = 'Inferred EVE Online ship fits that were observed on zKillboard losses after the same pilot earned kills in the same ship.';
+
+block title
+  include components/title.pug
+
+block content
+  h1= !empty($selectedShip) ? 'Inferred Fits: ' . ($selectedShip['name'] ?? '') : 'Inferred Fits'
+
+  form#fit-ship-form.row.g-2.align-items-center.mb-3(method="get" action="/fits/" role="search" aria-label="Search inferred fits by ship" data-zkb-open-top-fit=(!empty($selectedShip) ? 'true' : 'false'))
+    .col-12.col-sm-8.col-md-6
+      label.visually-hidden(for="fit-ship-search") Ship
+      input#fit-ship-search.form-control(type="search" value=($searchDisplay ?? $search ?? '') placeholder="Search by ship" autocomplete="off" aria-autocomplete="list" data-zkb-autocomplete-source="/autocomplete/ship/" data-zkb-autocomplete-link-prefix="/fits/" data-zkb-autocomplete-align="input" data-zkb-autocomplete-submit-form=true)
+    .col-auto
+      button.btn.btn-primary.d-inline-flex.align-items-center.gap-1(type="submit")
+        i.fas.fa-search(aria-hidden="true")
+        span Search
+    if (!empty($selectedShip))
+      .col-auto
+        a.btn.btn-secondary.d-inline-flex.align-items-center.gap-1(href="/fits/" aria-label="Clear ship filter")
+          i.fas.fa-times(aria-hidden="true")
+          span Clear
+
+  if (!empty($meta))
+    p.text-muted
+      small
+        | Updated 
+        = gmdate('Y-m-d H:i', (int) ($meta['updated'] ?? 0))
+        |  UTC from 
+        = number_format((int) ($meta['processed'] ?? 0))
+        |  killmails over 
+        = number_format((int) ($meta['days'] ?? 0))
+        |  days.
+
+  .alert.alert-secondary(role="note")
+    i.fas.fa-exclamation-triangle.text-warning.me-1(aria-hidden="true")
+    strong Inferred fits are best-effort.
+    |  Ammo, drones, charges, cargo, implants, boosters, and refits may be missing or guessed from limited killmail data. Use these as a starting point and sanity check the fit before buying or flying it.
+
+  if (empty($selectedShip) && !empty($search))
+    .alert.alert-info No ship found for that search.
+
+  if (!empty($search) && count($shipMatches ?? []) > 1)
+    p
+      small
+        | Other matches: 
+        each $match, $index in array_slice($shipMatches, 1, 6)
+          if ($index > 0)
+            | , 
+          a(href=('/fits/' . (int) ($match['id'] ?? 0) . '/'))= $match['name'] ?? ''
+
+  if (empty($shipGroups) && (empty($search) || !empty($selectedShip)))
+    .alert.alert-info
+      | No inferred killing fits are available yet
+      if (!empty($search))
+        |  for this ship
+      | .
+  else if (!empty($shipGroups))
+    .table-responsive
+      table.table.table-sm.table-bordered.caption-top.align-middle
+        caption
+          if (!empty($selectedShip))
+            strong= 'Top inferred ' . ($selectedShip['name'] ?? '') . ' fits'
+          else
+            strong Top inferred killing fits by ship
+        thead
+          tr
+            th.text-center(scope="col" style="width: 4em;") Rank
+            th.text-center(scope="col" aria-label="Ship image") Pic
+            th(scope="col") Name
+            th.text-center(scope="col")
+              | #1 Kills
+            th.text-center(scope="col")
+              | #2 Kills
+            th.text-center(scope="col")
+              | #3 Kills
+            th.text-center(scope="col")
+              | #4 Kills
+            th.text-center(scope="col")
+              | #5 Kills
+        tbody
+          each $shipGroup in $shipGroups
+            tr
+              td.text-center
+                if ((int) ($shipGroup['displayRank'] ?? 0) > 0)
+                  = number_format((int) ($shipGroup['displayRank'] ?? 0))
+                else
+                  span.text-muted -
+              td.text-center
+                - $field = ['shipTypeID' => (int) ($shipGroup['shipTypeID'] ?? 0), 'shipName' => $shipGroup['shipName'] ?? '', 'pip' => $shipGroup['pip'] ?? ''];
+                - $imageSize = 64;
+                include components/image_ship.pug
+              th.fw-normal(scope="row")
+                a(href=('/fits/' . (int) ($shipGroup['shipTypeID'] ?? 0) . '/'))= $shipGroup['shipName'] ?? ''
+                br
+                small.text-muted
+                  = number_format((int) ($shipGroup['recentKills'] ?? 0))
+                  |  recent kills
+                  br
+                  = number_format((int) ($shipGroup['fitKills'] ?? 0))
+                  |  inferred fit kills across 
+                  = number_format((int) ($shipGroup['fitCount'] ?? count($shipGroup['fits'] ?? [])))
+                  |  fits
+              each $fit in ($shipGroup['fitCells'] ?? [])
+                td.text-center
+                  if (!empty($fit))
+                    - $detailID = 'fit-detail-' . ($fit['hash'] ?? '');
+                    - $fitNumber = (int) ($fit['displayRank'] ?? 0);
+                    - $fitLabelBase = ($shipGroup['shipName'] ?? 'ship') . ' fit #' . $fitNumber . ', ' . number_format((int) ($fit['kills'] ?? 0)) . ' kills, ' . number_format((int) ($fit['finalBlows'] ?? 0)) . ' final, ' . number_format((int) ($fit['soloKills'] ?? 0)) . ' solo';
+                    - $viewLabel = 'View ' . $fitLabelBase;
+                    - $hideLabel = 'Hide ' . $fitLabelBase;
+                    strong.d-block= number_format((int) ($fit['kills'] ?? 0))
+                    small.text-muted.d-block
+                      | (
+                      = number_format((int) ($fit['finalBlows'] ?? 0))
+                      |  final, 
+                      = number_format((int) ($fit['soloKills'] ?? 0))
+                      |  solo)
+                    .d-grid.gap-1.mt-1
+                      button.btn.btn-sm.btn-secondary.d-inline-flex.align-items-center.justify-content-center.gap-1(type="button" aria-expanded="false" aria-controls=$detailID aria-label=$viewLabel data-zkb-fit-detail=($fit['hash'] ?? '') data-zkb-view-label=$viewLabel data-zkb-hide-label=$hideLabel)
+                        i.fas.fa-eye(aria-hidden="true")
+                        span.fit-button-label View Fit
+                  else
+                    span.text-muted -
+            each $fit in ($shipGroup['fits'] ?? [])
+              - $detailID = 'fit-detail-' . ($fit['hash'] ?? '');
+              - $fitNumber = (int) ($fit['displayRank'] ?? 0);
+              tr.fit-killer-detail-row.d-none(aria-hidden="true")
+                td.p-0(colspan="8")
+                  div.fit-killer-detail(id=$detailID data-zkb-fit-detail-hash=($fit['hash'] ?? '') data-zkb-fit-ship=((int) ($shipGroup['shipTypeID'] ?? 0)) role="region" aria-label=(($shipGroup['shipName'] ?? 'Ship') . ' fit #' . $fitNumber . ' details'))
+                    div.p-2(data-zkb-fit-detail-body=($fit['hash'] ?? ''))
+                      .text-muted(role="status") Loading fit...
+    #fit-action-status.visually-hidden(role="status" aria-live="polite" aria-atomic="true")
+
+block script
+  script(defer type="text/javascript" src=('/js/fits.js?v=' . ($version ?? '')))

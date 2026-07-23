@@ -165,6 +165,25 @@ echo "Creating index : 'characterID' => 1, 'killID' => 1 ... ";
 $favorites->createIndex(['characterID' => 1, 'killID' => 1], ['unique' => true]);
 echo "Done\n";
 
+// fitkillers
+echo "\nCreating collection fitkillers ... ";
+$db->createCollection("fitkillers");
+$collection = "fitkillers";
+$fitkillers = $db->$collection;
+echo "Done\n";
+echo "Creating index : 'hash' => 1 ... ";
+$fitkillers->createIndex(['hash' => 1], ['unique' => true]);
+echo "Done\n";
+echo "Creating index : 'runID' => 1, 'kills' => -1 ... ";
+$fitkillers->createIndex(['runID' => 1, 'kills' => -1], []);
+echo "Done\n";
+echo "Creating index : 'runID' => 1, 'shipTypeID' => 1, 'kills' => -1 ... ";
+$fitkillers->createIndex(['runID' => 1, 'shipTypeID' => 1, 'kills' => -1], []);
+echo "Done\n";
+echo "Creating index : 'shipTypeID' => 1 ... ";
+$fitkillers->createIndex(['shipTypeID' => 1], []);
+echo "Done\n";
+
 // funcs
 echo "\nCreating collection funcs ... ";
 $db->createCollection("funcs");

@@ -287,6 +287,8 @@ class RouteTestSuite {
         $this->testRoute('/br/validbattle123/', 200, 'Battle report (creates if needed)');
         $this->testRoute('/brsave/', [200, 302], 'Battle report save');
         $this->testRoute('/bigisk/', 200, 'Big ISK kills');
+        $this->testRoute('/fits/', 200, 'Fit killers');
+        $this->testRoute('/fits/Rifter/', 200, 'Fit killers ship search');
         
         // Related routes - using REAL system ID
         echo "\n--- Related Routes ---\n";
