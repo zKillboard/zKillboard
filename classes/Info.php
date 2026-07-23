@@ -524,8 +524,16 @@ class Info
 						}
 						break;
 					case 'characterID':
+						$characterID = (int) $value;
+						$characterInfo = self::getInfo('characterID', $characterID);
 						if (!isset($element['characterName'])) {
-							$element['characterName'] = self::getInfoField('characterID', $value, 'name');
+							$element['characterName'] = @$characterInfo['name'];
+						}
+						if (!empty($characterInfo['monocle'])) {
+							$element['monocle'] = true;
+						}
+						if (!empty($characterInfo['supermonocle'])) {
+							$element['supermonocle'] = true;
 						}
 						break;
 					case 'corporationID':

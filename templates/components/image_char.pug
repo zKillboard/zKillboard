@@ -2,11 +2,12 @@
 - $actualSize = $resizeImage ?? $imageSize;
 - $imageStyleText = !empty($imageStyle) ? (' ' . $imageStyle) : '';
 - $characterName = !empty($field['characterName']) ? $field['characterName'] : ('Character ' . ($field['characterID'] ?? 0));
+- $characterImageClass = !empty($field['supermonocle']) ? 'character-shiny character-super-shiny' : (!empty($field['monocle']) ? 'character-shiny' : '');
 if (($field['characterID'] ?? 0) == 0)
   img.eveimage.img-rounded(src=(($image_character ?? 'https://images.evetech.net/characters/') . '1/portrait?size=' . $imageSize) style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;' . $imageStyleText) alt="Unknown character portrait" loading="lazy" decoding="async" fetchpriority="low")
 else
   a(href=('/character/' . $field['characterID'] . '/') rel="tooltip" title=$characterName)
     if (!empty($isDelayed))
-      img.eveimage.img-rounded.delayed(src="#" data-src=(($image_character ?? 'https://images.evetech.net/characters/') . $field['characterID'] . '/portrait?size=' . $imageSize) style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;' . $imageStyleText) alt=$characterName loading="lazy" decoding="async" fetchpriority="low")
+      img.eveimage.img-rounded.delayed(src="#" data-src=(($image_character ?? 'https://images.evetech.net/characters/') . $field['characterID'] . '/portrait?size=' . $imageSize) style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;' . $imageStyleText) class=$characterImageClass alt=$characterName loading="lazy" decoding="async" fetchpriority="low")
     else
-      img.eveimage.img-rounded(src=(($image_character ?? 'https://images.evetech.net/characters/') . $field['characterID'] . '/portrait?size=' . $imageSize) style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;' . $imageStyleText) alt=$characterName loading="lazy" decoding="async" fetchpriority="low")
+      img.eveimage.img-rounded(src=(($image_character ?? 'https://images.evetech.net/characters/') . $field['characterID'] . '/portrait?size=' . $imageSize) style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;' . $imageStyleText) class=$characterImageClass alt=$characterName loading="lazy" decoding="async" fetchpriority="low")

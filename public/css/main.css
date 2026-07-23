@@ -224,6 +224,36 @@ zk-home-side {
 	font-size: 0.1px;
 }
 
+.character-shiny {
+	--character-shiny-edge: rgba(210, 226, 235, 0.6);
+	--character-shiny-glow: rgba(210, 226, 235, 0.5);
+	--character-shiny-bright: rgba(255, 255, 255, 0.63);
+	--character-shiny-soft: rgba(190, 214, 226, 0.3);
+	box-shadow: 0 0 10px var(--character-shiny-glow);
+	filter: saturate(1.23) brightness(1.08);
+	animation: character-shiny 3.5s ease-in-out infinite;
+}
+
+.character-super-shiny {
+	--character-shiny-edge: rgba(255, 215, 96, 0.57);
+	--character-shiny-glow: rgba(255, 215, 96, 0.5);
+	--character-shiny-bright: rgba(255, 244, 179, 0.63);
+	--character-shiny-soft: rgba(255, 215, 96, 0.3);
+}
+
+@keyframes character-shiny {
+	50% {
+		box-shadow: 0 0 16px var(--character-shiny-bright), 0 0 28px var(--character-shiny-soft);
+		filter: saturate(1.4) brightness(1.17);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.character-shiny {
+		animation: none;
+	}
+}
+
 #back-top {
 	position: fixed;
 	bottom: 50px;

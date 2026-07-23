@@ -13,6 +13,21 @@ function clearOverview($id)
     $redis->sadd("queueCacheTags", "overview:$id");
 }
 
+function updateInformationMonocle($id, $supermonocle = false)
+{
+    global $mdb, $redis;
+
+    $id = (int) $id;
+    if ($id <= 0) return;
+
+    $values = ['monocle' => true];
+    if ($supermonocle) {
+        $values['supermonocle'] = true;
+    }
+    $mdb->set("information", ['type' => 'characterID', 'id' => $id], $values);
+    $redis->del(Info::getRedisKey('characterID', $id));
+}
+
 $rows = $mdb->getCollection("payments")->aggregate([
     ['$match' => ['characterID' => ['$exists' => true], 'isk' => ['$exists' => true]]],
     ['$group' => ['_id' => '$characterID', 'isk' => ['$sum' => '$isk']]],
@@ -27,6 +42,7 @@ foreach ($rows as $row) {
     $isk = $row['isk'];
     Util::out("$id super monocled $isk");
     $mdb->set("users", ['characterID' => $id], ['monocle' => true, 'supermonocle' => true]);
+    updateInformationMonocle($id, true);
     clearOverview($id);
 
     Util::sendEveMail($id, "Super Monocle!", "You have given at least 10000000000 ISK to zKillboard! In appreciation of your exceptionally deep pockets a super monocle will show up very soon on your character's zKillboard page. Thank you! \n\n<a href=\"https://zkillboard.com/character/$id/\">Your zKillboard character page.</a>");
@@ -47,6 +63,7 @@ foreach ($rows as $row) {
     $isk = $row['isk'];
     Util::out("$id monocled $isk");
     $mdb->set("users", ['characterID' => $id], ['monocle' => true]);
+    updateInformationMonocle($id);
     clearOverview($id);
 
     Util::sendEveMail($id, "Monocle!", "You have given at least 1000000000 ISK to zKillboard! In appreciation of your deep pockets a monocle will show up very soon on your character's zKillboard page. Thank you! \n\n<a href=\"https://zkillboard.com/character/$id/\">Your zKillboard character page.</a>");

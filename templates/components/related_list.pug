@@ -14,8 +14,9 @@ table.table.table-sm.table-striped.table-hover.related-list-table(style="table-l
             a(href=('/ship/' . $shipTypeID . '/') rel="tooltip" title=($related['shipName'] ?? ''))
               img.eveimage.img-rounded(src=(($image_item ?? 'https://images.evetech.net/types/') . $shipTypeID . '/render?size=64') style="height: 64px; width: 64px;" alt=($related['shipName'] ?? '') loading="lazy" decoding="async" fetchpriority="low")
           if ($characterID > 0)
-            a(href=('/character/' . $characterID . '/') rel="tooltip" title=($related['characterName'] ?? ''))
-              img.eveimage.img-rounded(src=(($image_character ?? 'https://images.evetech.net/characters/') . $characterID . '/portrait?size=64') style="height: 64px; width: 64px;" alt=($related['characterName'] ?? '') loading="lazy" decoding="async" fetchpriority="low")
+            - $field = $related;
+            - $imageSize = 64;
+            include image_char.pug
           if ($corporationID > 0)
             a(href=('/corporation/' . $corporationID . '/') rel="tooltip" title=($related['corporationName'] ?? ''))
               img.eveimage.img-rounded(src=(($image_corporation ?? 'https://images.evetech.net/corporations/') . $corporationID . '/logo?size=64') style="height: 64px; width: 64px;" alt=($related['corporationName'] ?? '') loading="lazy" decoding="async" fetchpriority="low")
