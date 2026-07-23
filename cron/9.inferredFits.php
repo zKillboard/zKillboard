@@ -50,7 +50,7 @@ $matchedKills = 0;
 $cursor = $mdb->getCollection('killmails')->find(
 	[
 		'npc' => false,
-		'labels' => 'pvp',
+		'labels' => ['$all' => ['pvp', 'cat:6']],
 		'dttm' => ['$gte' => $since],
 	],
 	[
