@@ -158,6 +158,27 @@ if ($_POST) {
 		User::sendMessage("Your default login page is now the $loginPage page");
 	}
 
+	$shinyPortraits = Util::getPost('shinyPortraits');
+	if (isset($shinyPortraits)) {
+		UserConfig::set('shinyPortraits', $shinyPortraits);
+		if ($shinyPortraits == 'false') {
+			$mdb->removeField("information", ['type' => 'characterID', 'id' => $userID], 'monocle');
+			$mdb->removeField("information", ['type' => 'characterID', 'id' => $userID], 'supermonocle');
+		} else {
+			$userInfo = $mdb->findDoc("users", ['userID' => "user:$userID"]);
+			$values = [];
+			if (@$userInfo['monocle'] == true) $values['monocle'] = true;
+			if (@$userInfo['supermonocle'] == true) $values['supermonocle'] = true;
+			if (!empty($values)) $mdb->set("information", ['type' => 'characterID', 'id' => $userID], $values);
+		}
+		$redis->del(Info::getRedisKey('characterID', $userID));
+		$redis->del("RC:" . md5("info:details:characterID:$userID"));
+		$redis->del("zkb:overview:character:$userID");
+		$redis->del("zkb:overview:characterID:$userID");
+		$redis->sadd("queueCacheTags", "overview:$userID");
+		User::sendMessage("Your shiny portrait setting was " . ($shinyPortraits == 'false' ? 'disabled' : 'enabled'));
+	}
+
 	return $response->withStatus(302)->withHeader('Location', $request->getUri()->getPath() . '?' . $request->getUri()->getQuery());
 }
 
@@ -172,6 +193,7 @@ $data['currentStyle'] = UserConfig::get('style');
 $data['trackernotification'] = UserConfig::get('trackernotification');
 
 $data['loginPage'] = UserConfig::get('loginPage', 'character');
+$data['shinyPortraits'] = UserConfig::get('shinyPortraits', 'true');
 $data['apiScopes'] = $mdb->find("scopes", ['characterID' => (int) $userID], ['scope' => 1]);
 $data['history'] = User::getPaymentHistory($userID);
 $data['log'] = ZLog::get($userID);

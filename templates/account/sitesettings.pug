@@ -17,3 +17,10 @@
           option(value="false" selected=(($data['trackernotification'] ?? '') == 'false')) No :(
         button.btn.btn-primary(type="submit") Set
     p Site's default is Yes!
+    h3 Shiny Portrait
+    form.mb-2(name="shinyPortrait" method="post" action="/account/sitesettings/")
+      .input-group.input-group-sm.w-100
+        select.form-select(name="shinyPortraits" aria-label="Shiny portrait")
+          option(value="true" selected=(($data['shinyPortraits'] ?? 'true') == 'true')) Yes!
+          option(value="false" selected=(($data['shinyPortraits'] ?? 'true') == 'false')) No :(
+        button.btn.btn-primary(type="submit") Set

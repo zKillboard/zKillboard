@@ -22,7 +22,15 @@ foreach ($rows as $row) {
     $id = (int) @$row['characterID'];
     if ($id <= 0) continue;
 
-    $values = ['monocle' => true];
+	$userInfo = $mdb->findDoc("users", ['characterID' => $id]);
+    $shinyPortraits = @$userInfo['shinyPortraits'];
+    if (is_string($shinyPortraits)) {
+        $decodedShinyPortraits = json_decode($shinyPortraits, true);
+        if ($decodedShinyPortraits !== null) $shinyPortraits = $decodedShinyPortraits;
+    }
+    if ($shinyPortraits === false || $shinyPortraits == 'false') continue;
+	
+	$values = ['monocle' => true];
     if (!empty($row['supermonocle'])) {
         $values['supermonocle'] = true;
         $superMonocles++;

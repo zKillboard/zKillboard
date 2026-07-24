@@ -20,6 +20,14 @@ function updateInformationMonocle($id, $supermonocle = false)
     $id = (int) $id;
     if ($id <= 0) return;
 
+    $userInfo = $mdb->findDoc("users", ['characterID' => $id]);
+    $shinyPortraits = @$userInfo['shinyPortraits'];
+    if (is_string($shinyPortraits)) {
+        $decodedShinyPortraits = json_decode($shinyPortraits, true);
+        if ($decodedShinyPortraits !== null) $shinyPortraits = $decodedShinyPortraits;
+    }
+    if ($shinyPortraits === false || $shinyPortraits == 'false') return;
+
     $values = ['monocle' => true];
     if ($supermonocle) {
         $values['supermonocle'] = true;
