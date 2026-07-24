@@ -15,8 +15,10 @@ nav.navbar.navbar-expand-md.navbar-dark.bg-dark(style="margin-bottom: 0px;")
     #navbar-main.collapse.navbar-collapse.navbar-main.me-md-2
       ul.navbar-nav.me-auto.mb-2.mb-md-0
         li.nav-item.dropdown
-          button.nav-link.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false") Menu
-          ul.dropdown-menu.asclicks
+          button.nav-link.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false")
+            i.fas.fa-compass.me-1(aria-hidden="true")
+            | Explore
+          ul.dropdown-menu.asclicks.nav-menu-dropdown
             li
               a.dropdown-item(href="/character/ranks/k/all/alltime/1/") Top Ranks
             li
@@ -77,14 +79,20 @@ nav.navbar.navbar-expand-md.navbar-dark.bg-dark(style="margin-bottom: 0px;")
             li
               a.dropdown-item(href="/ztop/") zTop
         li#tracker-menu.nav-item.dropdown
-          button.nav-link.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false") Tracker
+          button.nav-link.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false")
+            i.fas.fa-eye.me-1(aria-hidden="true")
+            | Tracker
           ul#tracker-dropdown.dropdown-menu
             li
               span.dropdown-item-text Please log in first.
         li#postExternalMail.nav-item
-          a.nav-link(href="/post/") Post
+          a.nav-link(href="/post/")
+            i.fas.fa-upload.me-1(aria-hidden="true")
+            | Post
         li#maplink.nav-item
-          a.nav-link(href="/map/index.html" target="_blank" rel="noopener noreferrer") Map
+          a.nav-link(href="/map/index.html" target="_blank" rel="noopener noreferrer")
+            i.fas.fa-map.me-1(aria-hidden="true")
+            | Map
         li.nav-item.d-none.d-md-block
           a.nav-link(href="/scanalyzer/" aria-label="Scanalyzer" title="Scanalyzer")
             span.scanalyzer(aria-hidden="true") &#128924;
@@ -115,7 +123,7 @@ nav.navbar.navbar-expand-md.navbar-dark.bg-dark(style="margin-bottom: 0px;")
       .input-group
         a.input-group-text(href="/asearch/" rel="tooltip" title="Advanced Search" aria-label="Advanced Search")
           i.fas.fa-search(style="color: white;" aria-hidden="true")
-        input#searchbox.form-control(type="text" placeholder="search '/', '^' or '\\'" autocomplete="off" name="searchbox" aria-label="Search zKillboard")
+        input#searchbox.form-control(type="text" placeholder="search '/', '^' or '\\'" autocomplete="off" name="searchbox" aria-label="Search zKillboard" data-zkb-autocomplete-align="input")
 
     ul.navbar-nav.nav-user-shell.flex-row
       li#usermenu.nav-item.dropdown

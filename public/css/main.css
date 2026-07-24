@@ -106,6 +106,18 @@ h1, h2, h3, h4, h5, h6 {
 	display: block;
 }
 
+@media only screen and (min-width: 768px) {
+	.nav-menu-dropdown {
+		min-width: 24rem;
+		column-count: 2;
+		column-gap: 0.5rem;
+	}
+
+	.nav-menu-dropdown > li {
+		break-inside: avoid;
+	}
+}
+
 #navibar .navbar-brand {
 	display: inline-flex;
 	align-items: center;
@@ -163,13 +175,26 @@ h1, h2, h3, h4, h5, h6 {
 	}
 
 	#search.nav-search-item {
-		flex: 0 1 300px;
-		min-width: 120px;
-		max-width: 300px;
+		flex: 0 0 200px;
+		min-width: 200px;
+		max-width: 200px;
+		position: relative;
+		z-index: 1057;
+	}
+
+	#search.nav-search-item .input-group {
+		width: 200px;
+		transition: width 0.15s ease-in-out, margin-left 0.15s ease-in-out;
+	}
+
+	#search.nav-search-item:focus-within .input-group {
+		width: 400px;
+		margin-left: -200px;
 	}
 
 	.form-control#searchbox {
 		width: 100% !important;
+		max-width: none;
 	}
 
 	.nav-user-shell {

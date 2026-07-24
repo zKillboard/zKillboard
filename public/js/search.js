@@ -143,7 +143,7 @@
 					}
 
 					//if its not visible already fade it in - and position it as needed and autoselect the first item
-					this.data['menu'].not(':visible').css(this.get_position()).fadeIn(200);
+					this.data['menu'].css(this.get_position()).not(':visible').fadeIn(200);
 					if (result.length > 0) this.data['menu'].find('li').first().addClass('active');
 				}, this)});
 			}, this), 50);

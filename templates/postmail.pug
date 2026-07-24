@@ -14,7 +14,9 @@ block content
   .row
     .col-lg-6
       .row
-        h3 Post External Killmail Link (ESI)
+        h3
+          i.fas.fa-upload.me-1(aria-hidden="true")
+          | Post External Killmail Link (ESI)
         form.form(name="postkillmailurl" method="post" action="/post/")
           .mb-3
             input#killmailurl.form-control(type="text" name="killmailurl" required placeholder="External Killmail Link")
