@@ -28,7 +28,7 @@ $(document).ready(function () {
     scheduleVersionCheck();
 
     // autocomplete
-    $('#searchbox').zz_search( function(data, event) { navigateTo('/' + data.type + '/' + data.id + '/'); event.preventDefault(); } );
+    $('#searchbox').zz_search( function(data, event) { if (event) event.preventDefault(); return navigateTo('/' + data.type + '/' + data.id + '/'); } );
 
     // prevent firing of window.location in table rows if a link is clicked directly
     $('.killListRow a').click(function(e) {
@@ -920,7 +920,7 @@ function navigateTo(href) {
         return fullNavigate(url.href);
     }
 
-    spaNavigate(url.href, true);
+    return spaNavigate(url.href, true);
 }
 
 function prepTippy() {

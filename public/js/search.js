@@ -33,9 +33,12 @@
 	var zz_search = function(element, callback) {
 		//create our objects and things
 		this.data = {}, this.data['element'] = element, this.data['menu'] = $('<ul class="autocomplete dropdown-menu" style="display: none;"></ul>').appendTo('body'), this.callback = callback;
+		this.data['isNavbarSearch'] = element.attr('id') == 'searchbox';
+		if (this.data['isNavbarSearch']) this.data['menu'].addClass('nav-search-autocomplete');
 		this.data['source'] = element.data('zkbAutocompleteSource') || '/autocomplete/';
 		this.data['linkPrefix'] = element.data('zkbAutocompleteLinkPrefix') || '';
 		this.data['submitFormOnEnter'] = element.data('zkbAutocompleteSubmitForm') === true || element.attr('data-zkb-autocomplete-submit-form') != null;
+		this.data['placeholder'] = element.attr('placeholder') || '';
 		if (this.data['source'].slice(-1) != '/') this.data['source'] += '/';
 
 		//bind our primary search event
@@ -47,7 +50,7 @@
 			switch(event.keyCode) {
 				case 38: $.proxy(this.move_prev(event), this); break;
 				case 40: $.proxy(this.move_next(event), this); break;
-				case 27: $.proxy(this.hide_menu(event), this); break;
+				case 27: this.data['element'].val(''); this.hide_menu(event); this.data['element'].blur(); break;
 			}
 		}, this));
 		
@@ -64,7 +67,21 @@
 		}, this));
 		
 		//handle a couple of other types of event
-		this.data['element'].on('blur', $.proxy(function(){ $.proxy(this.hide_menu(), this); }, this));
+		this.data['element'].on('focus', $.proxy(function(){
+			if (this.data['isNavbarSearch']) {
+				this.data['element'].closest('.nav-search-item').addClass('search-active');
+				this.data['element'].attr('placeholder', 'ESC to clear search');
+			}
+		}, this));
+		this.data['element'].on('blur', $.proxy(function(){
+			this.hide_menu();
+			if (this.data['isNavbarSearch']) {
+				this.data['element'].attr('placeholder', this.data['placeholder']);
+				setTimeout($.proxy(function() {
+					if (!this.data['element'].is(':focus')) this.data['element'].closest('.nav-search-item').removeClass('search-active');
+				}, this), 150);
+			}
+		}, this));
 		this.data['menu'].on('click', 'a', $.proxy(function(event){ this.run_callback(event); }, this));	
 		this.data['menu'].on('mouseenter', 'li', $.proxy(function(event){ if ($(event.currentTarget).data('value') == null) return; this.data['menu'].find('.active').removeClass('active'); $(event.currentTarget).addClass('active').addClass('active'); }, this));
 	}
@@ -85,19 +102,25 @@
 			var menuWidth = (isMobile || alignInput) ? anchor.outerWidth() : 375;
 			var searchOffsetX = (isMobile || alignInput) ? anchorOffset.left : pos.left - 90;
 			var searchOffsetY = pos.top + pos.height;
+			var viewportLeft = $(window).scrollLeft();
 			var viewportWidth = $(window).width();
 			var gutter = 8;
 
-			menuWidth = Math.max(200, Math.min(menuWidth, viewportWidth - (gutter * 2)));
-			if (searchOffsetX + menuWidth > viewportWidth - gutter) searchOffsetX = viewportWidth - gutter - menuWidth;
-			if (searchOffsetX < gutter) searchOffsetX = gutter;
+			if (isMobile && this.data['isNavbarSearch']) {
+				menuWidth = viewportWidth - (gutter * 2);
+				searchOffsetX = viewportLeft + gutter;
+			} else {
+				menuWidth = Math.max(200, Math.min(menuWidth, viewportWidth - (gutter * 2)));
+				if (searchOffsetX + menuWidth > viewportLeft + viewportWidth - gutter) searchOffsetX = viewportLeft + viewportWidth - gutter - menuWidth;
+				if (searchOffsetX < viewportLeft + gutter) searchOffsetX = viewportLeft + gutter;
+			}
 
 			return { top: searchOffsetY, left: searchOffsetX, width: menuWidth };
 		},
 				
 		//move the selection around
-		move_prev: function(event) { event.preventDefault(); this.data['menu'].find('.active').removeClass('active').prev().addClass('active'); if ( this.data['menu'].find('.active').length == 0) { this.data['menu'].find('li').last().addClass('active'); } },
-		move_next: function(event) { event.preventDefault(); this.data['menu'].find('.active').removeClass('active').next().addClass('active'); if ( this.data['menu'].find('.active').length == 0) { this.data['menu'].find('li').first().addClass('active'); } },
+		move_prev: function(event) { event.preventDefault(); var active = this.data['menu'].find('li.active[data-value]'); var prev = active.prevAll('li[data-value]').first(); active.removeClass('active'); if (prev.length == 0) prev = this.data['menu'].find('li[data-value]').last(); prev.addClass('active'); },
+		move_next: function(event) { event.preventDefault(); var active = this.data['menu'].find('li.active[data-value]'); var next = active.nextAll('li[data-value]').first(); active.removeClass('active'); if (next.length == 0) next = this.data['menu'].find('li[data-value]').first(); next.addClass('active'); },
 	
 		//goto the selected items seach page
 		run_callback: function(event) {
@@ -109,7 +132,14 @@
 			if (selected == null) selected = this.data['menu'].find('.active').data('value');
 			this.data['element'].val('');
 			this.hide_menu(event);
-			$.proxy(this.callback(selected, event), this);
+			this.data['element'].blur();
+			var result = this.callback(selected, event);
+			if (this.data['isNavbarSearch'] && result && typeof result.then == 'function') {
+				result.then(function() {
+					var content = document.getElementById('zkb-page-content');
+					if (content) content.focus({ preventScroll: true });
+				});
+			}
 		},
 	
 		//hide the drop down
@@ -136,15 +166,39 @@
 					if (result.length == 0) {
 						this.data['menu'].append($('<li class="autocomplete-empty"><i class="fas fa-search" aria-hidden="true"></i><span>No results</span></li>'));
 					} else {
-						this.data['menu'].append($.map(result, $.proxy(function(item, index) {
+						var itemHtml = $.proxy(function(item, index) {
 							var href = this.data['linkPrefix'] != '' ? this.data['linkPrefix'] + item.id + '/' : '/' + item.type + '/' + item.id + '/';
 							return $('<li><a href="' + href + '">' + image_html(item) + '<p style="width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">' + item.name.replace(RegExp('(' + this.data['element'].val() + ')', "gi"), function($1, match){ return '<strong>' + match + '</strong>'; } ) + '</p><span><small>' + item.type + '</small></span></a></li>').attr('data-value', JSON.stringify(item));
-						}, this)));
+						}, this);
+						if (this.data['menu'].hasClass('nav-search-autocomplete')) {
+							var groups = {};
+							var typeOrder = [];
+							var typeLabels = { ship: 'Ships', item: 'Items', alliance: 'Alliances', corporation: 'Corporations', character: 'Characters', faction: 'Factions', system: 'Systems', region: 'Regions', constellation: 'Constellations', group: 'Groups', location: 'Locations' };
+							$.each(result, $.proxy(function(index, item) {
+								if (groups[item.type] == null) {
+									groups[item.type] = [];
+									typeOrder.push(item.type);
+								}
+								groups[item.type].push({ item: item, index: index });
+							}, this));
+							$.each(typeOrder, $.proxy(function(index, type) {
+								this.data['menu'].append($('<li class="dropdown-header autocomplete-group-header"></li>').text(typeLabels[type] || type));
+								$.each(groups[type], $.proxy(function(index, row) {
+									this.data['menu'].append(itemHtml(row.item, row.index));
+								}, this));
+							}, this));
+						} else {
+							this.data['menu'].append($.map(result, itemHtml));
+						}
 					}
 
 					//if its not visible already fade it in - and position it as needed and autoselect the first item
-					this.data['menu'].css(this.get_position()).not(':visible').fadeIn(200);
-					if (result.length > 0) this.data['menu'].find('li').first().addClass('active');
+					if (this.data['menu'].hasClass('nav-search-autocomplete')) {
+						this.data['menu'].css($.extend(this.get_position(), { display: 'grid' }));
+					} else {
+						this.data['menu'].css(this.get_position()).not(':visible').fadeIn(200);
+					}
+					if (result.length > 0) this.data['menu'].find('li[data-value]').first().addClass('active');
 				}, this)});
 			}, this), 50);
 		}
