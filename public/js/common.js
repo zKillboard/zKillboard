@@ -73,6 +73,7 @@ $(document).ready(function () {
     $(document).on('click', '[data-zkb-comment-upvote]', commentUpVoteClick);
     $(document).on('click', '[data-zkb-related-kill]', relatedKillRowClick);
     $(document).on('submit', 'form[action^="/ccpoauth2/"]', interceptLoginSubmit);
+    $(document).on('submit', 'form[action="/post/"]', postKillmailSubmit);
     $(document).on('submit', 'form[data-zkb-confirm]', confirmSubmit);
     $(document).on('change', '#login-scope-all', loginScopeAllChange);
     $(document).on('change', '#loginOptionsModal .login-scope', syncLoginScopeAllCheckbox);
@@ -552,10 +553,29 @@ async function spaNavigate(href, pushState, historyState) {
 
         const html = await response.text();
         const doc = new DOMParser().parseFromString(html, "text/html");
+        if (!await renderSpaDocument(doc, targetURL, pushState, historyState)) return fullNavigate(targetURL.href);
+        contentSwapped = true;
+    } catch (e) {
+        if (e.name === "AbortError") return;
+        console.error("SPA navigation failed:", e);
+        if (contentSwapped || e.zkbContentSwapped) {
+            spaRenderedURL = window.location.href;
+            spaRenderedHash = window.location.hash || "";
+            return;
+        }
+        fullNavigate(targetURL.href);
+    }
+}
+
+async function renderSpaDocument(doc, targetURL, pushState, historyState) {
+    let contentSwapped = false;
+
+    try {
+        targetURL = new URL(targetURL, window.location.href);
         const nextContent = doc.querySelector("#zkb-page-content");
         const currentContent = document.querySelector("#zkb-page-content");
 
-        if (!nextContent || !currentContent) return fullNavigate(targetURL.href);
+        if (!nextContent || !currentContent) return false;
 
         const nextModals = doc.querySelector("#zkb-page-modals");
         const currentModals = document.querySelector("#zkb-page-modals");
@@ -566,7 +586,7 @@ async function spaNavigate(href, pushState, historyState) {
         syncSpaHeadExtras(doc);
         await loadSpaHeadStylesheets(doc);
 
-        if (pushState) {
+        if (pushState && !isSpaRenderedURL(targetURL.href)) {
             window.history.pushState(getSpaHistoryState({ scrollX: 0, scrollY: 0 }), document.title, targetURL.href);
         }
 
@@ -590,15 +610,10 @@ async function spaNavigate(href, pushState, historyState) {
         spaRenderedURL = window.location.href;
         spaRenderedHash = window.location.hash || "";
         collapseMobileNav();
+        return true;
     } catch (e) {
-        if (e.name === "AbortError") return;
-        console.error("SPA navigation failed:", e);
-        if (contentSwapped) {
-            spaRenderedURL = window.location.href;
-            spaRenderedHash = window.location.hash || "";
-            return;
-        }
-        fullNavigate(targetURL.href);
+        e.zkbContentSwapped = contentSwapped;
+        throw e;
     }
 }
 
@@ -921,6 +936,59 @@ function navigateTo(href) {
     }
 
     return spaNavigate(url.href, true);
+}
+
+function postKillmailSubmit(event) {
+    const form = this;
+    if ((form.getAttribute("method") || "get").toLowerCase() !== "post") return;
+    if (!window.history || !window.history.pushState || !window.fetch || !window.FormData || !window.DOMParser) return;
+
+    event.preventDefault();
+    submitPostKillmailForm(form);
+}
+
+async function submitPostKillmailForm(form) {
+    if (form.getAttribute("data-zkb-submitting") === "1") return;
+    form.setAttribute("data-zkb-submitting", "1");
+
+    const targetURL = new URL(form.getAttribute("action") || form.action || "/post/", window.location.href);
+    saveSpaScrollPosition();
+    hideTransientTooltips();
+    spaNavigationGeneration++;
+    clearPendingLittleKillLoads();
+
+    if (spaAbortController) spaAbortController.abort();
+    spaAbortController = new AbortController();
+
+    try {
+        const response = await fetch(targetURL.href, {
+            method: "POST",
+            credentials: "same-origin",
+            body: new FormData(form),
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            signal: spaAbortController.signal
+        });
+
+        if (!response.ok) return submitFormNormally(form);
+
+        const html = await response.text();
+        const responseURL = new URL(response.url || targetURL.href, window.location.href);
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        if (!await renderSpaDocument(doc, responseURL, true, null)) return submitFormNormally(form);
+    } catch (e) {
+        if (e.name === "AbortError") return;
+        console.error("Killmail post failed:", e);
+        if (!e.zkbContentSwapped) submitFormNormally(form);
+    } finally {
+        form.removeAttribute("data-zkb-submitting");
+    }
+}
+
+function submitFormNormally(form) {
+    hideTransientTooltips();
+    HTMLFormElement.prototype.submit.call(form);
 }
 
 function prepTippy() {
@@ -1403,7 +1471,9 @@ async function pasteCrestUrlAsync() {
         if (!parseKillmailUrl(str)) return navigateTo('/post/');
 
         $('#externalurl').val(str);
-        $('#externalkmform').submit();
+        const form = document.getElementById('externalkmform');
+        if (!form) return navigateTo('/post/');
+        submitPostKillmailForm(form);
         console.log('submitted');
 
         return false;
