@@ -402,6 +402,8 @@ let spaAbortController = null;
 let spaScrollSaveTimeout = null;
 let spaRenderedURL = window.location.href;
 let spaRenderedHash = window.location.hash || "";
+let spaNavigationGeneration = 0;
+const pendingLittleKillTimeouts = new Set();
 const spaLoadedScripts = new Set(Array.from(document.scripts)
     .map(script => script.src)
     .filter(Boolean)
@@ -410,6 +412,13 @@ const spaLoadedStyles = new Set(Array.from(document.querySelectorAll('link[rel="
     .map(link => link.href)
     .filter(Boolean)
     .map(normalizeAssetURL));
+
+function clearPendingLittleKillLoads() {
+    pendingLittleKillTimeouts.forEach(function(timeoutId) {
+        clearTimeout(timeoutId);
+    });
+    pendingLittleKillTimeouts.clear();
+}
 
 function initSpaNavigation() {
     if (!window.history || !window.fetch || !window.DOMParser) return;
@@ -523,6 +532,8 @@ async function spaNavigate(href, pushState, historyState) {
     let contentSwapped = false;
     if (pushState) saveSpaScrollPosition();
     hideTransientTooltips();
+    spaNavigationGeneration++;
+    clearPendingLittleKillLoads();
 
     if (spaAbortController) spaAbortController.abort();
     spaAbortController = new AbortController();
@@ -1105,7 +1116,13 @@ function wslog(msg)
         $("#commentblock").html(json.html);
     } else if (json.action === 'littlekill') {
         var killID = json.killID;
-        setTimeout(function() { loadLittleMail(killID); }, Math.floor(Math.random() * 1000));    
+        const generation = spaNavigationGeneration;
+        const timeoutId = setTimeout(function() {
+            pendingLittleKillTimeouts.delete(timeoutId);
+            if (generation !== spaNavigationGeneration) return;
+            loadLittleMail(killID);
+        }, Math.floor(Math.random() * 1000));
+        pendingLittleKillTimeouts.add(timeoutId);
     } else if (json.action == 'statsbox') {
         console.log(json);
         statsboxUpdate(json);
