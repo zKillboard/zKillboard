@@ -137,10 +137,11 @@ br
                     tr
                       th Birthday:
                       td(itemprop="birthday")= $dateOnly($detailData['birthday'])
-                  if (($key ?? '') == 'character' && array_key_exists('achievement_score', $detailData))
-                    tr
-                      th Achievements:
-                      td(itemprop="achievement_score")= number_format((float) $detailData['achievement_score'], 0)
+                  //- Achievement score is hidden on character overviews; it does not provide useful context.
+                  //- if (($key ?? '') == 'character' && array_key_exists('achievement_score', $detailData))
+                  //-   tr
+                  //-     th Achievements:
+                  //-     td(itemprop="achievement_score")= number_format((float) $detailData['achievement_score'], 0)
                   if (($key ?? '') != 'corporation' && !empty($detailData['date_founded']))
                     tr
                       th Founded:
