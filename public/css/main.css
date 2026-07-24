@@ -279,7 +279,7 @@ zk-home-side {
 	--character-shiny-soft: rgba(190, 214, 226, 0.3);
 	box-shadow: 0 0 10px var(--character-shiny-glow);
 	filter: saturate(1.23) brightness(1.08);
-	animation: character-shiny 3.5s ease-in-out infinite;
+	animation: character-shiny 20s ease-in-out infinite;
 }
 
 .character-super-shiny {
