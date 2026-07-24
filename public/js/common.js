@@ -1397,10 +1397,10 @@ function pasteCrestUrl() {
 async function pasteCrestUrlAsync() {
     try {
         const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
-        if (isFirefox) return window.location = '/post/';
+        if (isFirefox) return navigateTo('/post/');
 
         let str = await navigator.clipboard.readText();
-        if (!parseKillmailUrl(str)) return window.location = '/post/';
+        if (!parseKillmailUrl(str)) return navigateTo('/post/');
 
         $('#externalurl').val(str);
         $('#externalkmform').submit();
@@ -1409,7 +1409,7 @@ async function pasteCrestUrlAsync() {
         return false;
     } catch (e) {
         console.log(e);
-        return window.location = '/post/';
+        return navigateTo('/post/');
     }
 }
 
