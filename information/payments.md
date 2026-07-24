@@ -32,11 +32,13 @@ Remove all advertisements from zKillboard when logged in with your character.
    - Example: 5,000,000 ISK (5m), 30,000,000 ISK (30m), 60,000,000 ISK (60m)
 3. **Processing:** Payment detected within 30-60 minutes and applied to your character
 4. **Confirmation:** Golden wreck icon <img src="/img/gold_logo_cropped_32.png"> appears on your character page
-5. **Eve Mail:** An eve mail will be sent to you letting you know that the funs have been received.  You might not get the eve mail if your CSPA is over 1 million ISK or you have blocked unknown senders.
+5. **Eve Mail:** An eve mail will be sent to you letting you know that the funds have been received.  You might not get the eve mail if your CSPA is over 1 million ISK or you have blocked unknown senders.
 
-### 🎩 Exclusive: Permanent Monocle
+### 🎩 Exclusive: Permanent Monocle Shine
 
-Send **1 billion ISK** and receive a permanent monocle icon <img src='https://zkillboard.com/img/monocled.png' style='width: 18px; height: 16px; vertical-align: middle;'> on your character page!
+Send **1 billion ISK** and receive a permanent monocle icon <img src='/img/monocled.png' style='width: 18px; height: 16px; vertical-align: middle;'> on your character page, plus a silver shiny glow on your character portrait.
+
+Send **10 billion ISK** and receive a super monocle icon <img src='/img/golden_monocle.png' style='width: 18px; height: 18px; vertical-align: middle;'> with a gold shiny glow on your character portrait.
 
 ---
 
