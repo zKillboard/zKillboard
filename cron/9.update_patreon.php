@@ -17,9 +17,8 @@ use MongoDB\BSON\UTCDateTime;
 
 if ($kvc->get("zkb:patreonupdates") == "true") exit();
 
-global $patreon_client_id, $patreon_client_secret, $patreon_redirect_uri, $patroen_campaign_id;
+global $patreon_client_id, $patreon_client_secret, $patreon_redirect_uri, $patreon_campaign_id;
 if (!isset($patreon_campaign_id)) exit(); // not setup in local, stop erroring
-
 
 $client_id = $patreon_client_id;
 $client_secret = $patreon_client_secret;
@@ -105,7 +104,7 @@ foreach ($members as $m) {
     $amount = ($attrs['currently_entitled_amount_cents'] ?? 0) / 100;
     $pledgeCadence = (int) ($attrs['pledge_cadence'] ?? 0);
     $cadenceLabel = $pledgeCadence === 12 ? 'yearly' : ($pledgeCadence === 1 ? 'monthly' : 'unknown');
-    $fullName = $attrs['full_name'] ?? '(no name)';
+    //$fullName = $attrs['full_name'] ?? '(no name)';
     $email = $attrs['email'] ?? '(hidden)';
 
     // Find linked user info (Patreon account)
@@ -114,21 +113,34 @@ foreach ($members as $m) {
         $userId = (int) $m['relationships']['user']['data']['id'];
     }
     
-//if ($userId == 4656951) print_r($m);
     $row = $mdb->findDoc("patreon", ['patreon_id' => $userId]);
     if ($row) {
+        $id = (int) $row['character_id'];
         if ($amount <= 0) continue;
+        $monthlyAmount = $pledgeCadence > 0 ? (((float) $amount) / $pledgeCadence) : 0;
+        if ($monthlyAmount <= 0) continue;
+        $tierAmount = $amount / ($pledgeCadence == 12 ? 10 : $pledgeCadence);
         $active++;
-        $total += $pledgeCadence > 0 ? (((float) $amount) / $pledgeCadence) : 0;
-        $charName = Info::getInfoField("characterID", $row['character_id'], "name");
+        $total += $monthlyAmount;
+        $charName = Info::getInfoField("characterID", $id, "name");
         $dt = new DateTime();
         // Add 14 days to allow for buffer
         $dt->modify('+14 days');
         $mongoDate = new UTCDateTime($dt->getTimestamp() * 1000);
         $mdb->set("patreon", $row, ['expires' => $mongoDate]);
+        if ($tierAmount <= 1) {
+            syncPatreonShiny($id, 'patreonGold');
+        } else if ($tierAmount <= 5) {
+            syncPatreonShiny($id, 'patreonPurple');
+        } else {
+            syncPatreonShiny($id, 'patreonPrismatic');
+        }
         $humanDate = $mongoDate->toDateTime()->format(DateTime::ATOM);
         Util::out(" - {$charName} :: pledged=\${$amount} cadence={$cadenceLabel} ({$pledgeCadence}) thru $humanDate");
     }
+}
+foreach ($mdb->find("patreon", ['expires' => ['$lte' => $mdb->now()]], [], null, ['character_id' => 1]) as $row) {
+    syncPatreonShiny((int) $row['character_id']);
 }
 $total = number_format($total, 2);
 $kvc->set("patreon_total", $total);
@@ -136,3 +148,54 @@ Util::out("Patreon subs refreshed: $active subs at \$$total per month");
 
 $kvc->setex("zkb:patreonupdates", 88888, "true");
 
+function syncPatreonShiny($id, $flag = null)
+{
+    global $mdb, $redis;
+
+    $id = (int) $id;
+    if ($id <= 0) return;
+    $userInfo = $mdb->findDoc("users", ['characterID' => $id]);
+    if ($userInfo == null) {
+        $userInfo = $mdb->findDoc("users", ['userID' => "user:$id"]);
+        if ($userInfo != null) {
+            $mdb->set("users", $userInfo, ['characterID' => $id]);
+        } else {
+            if ($flag == null) return;
+            $mdb->insert("users", ['userID' => "user:$id", 'characterID' => $id]);
+            $userInfo = $mdb->findDoc("users", ['characterID' => $id]);
+        }
+    }
+
+    $flags = ['patreonSilver', 'patreonGold', 'patreonPurple', 'patreonPrismatic'];
+    $changed = false;
+    foreach ($flags as $patreonFlag) {
+        if (!empty($userInfo[$patreonFlag]) != ($flag == $patreonFlag)) $changed = true;
+    }
+    if (!$changed) return;
+
+    foreach ($flags as $patreonFlag) {
+        $mdb->removeField("users", ['characterID' => $id], $patreonFlag);
+        $mdb->removeField("information", ['type' => 'characterID', 'id' => $id], $patreonFlag);
+    }
+    if ($flag != null) {
+        $values = [$flag => true];
+        $mdb->set("users", ['characterID' => $id], $values);
+
+        $userInfo[$flag] = true;
+    }
+
+    $shinyPortraits = @$userInfo['shinyPortraits'];
+    if (is_string($shinyPortraits)) {
+        $decodedShinyPortraits = json_decode($shinyPortraits, true);
+        if ($decodedShinyPortraits !== null) $shinyPortraits = $decodedShinyPortraits;
+    }
+    if ($flag != null && $shinyPortraits !== false && $shinyPortraits != 'false') {
+        $mdb->set("information", ['type' => 'characterID', 'id' => $id], $values);
+    }
+
+    $redis->del(Info::getRedisKey('characterID', $id));
+    $redis->del("RC:" . md5("info:details:characterID:$id"));
+    $redis->del("zkb:overview:character:$id");
+    $redis->del("zkb:overview:characterID:$id");
+    $redis->sadd("queueCacheTags", "overview:$id");
+}

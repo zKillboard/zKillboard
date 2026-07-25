@@ -164,11 +164,18 @@ if ($_POST) {
 		if ($shinyPortraits == 'false') {
 			$mdb->removeField("information", ['type' => 'characterID', 'id' => $userID], 'monocle');
 			$mdb->removeField("information", ['type' => 'characterID', 'id' => $userID], 'supermonocle');
+			$mdb->removeField("information", ['type' => 'characterID', 'id' => $userID], 'patreonSilver');
+			$mdb->removeField("information", ['type' => 'characterID', 'id' => $userID], 'patreonGold');
+			$mdb->removeField("information", ['type' => 'characterID', 'id' => $userID], 'patreonPurple');
+			$mdb->removeField("information", ['type' => 'characterID', 'id' => $userID], 'patreonPrismatic');
 		} else {
 			$userInfo = $mdb->findDoc("users", ['userID' => "user:$userID"]);
 			$values = [];
 			if (@$userInfo['monocle'] == true) $values['monocle'] = true;
 			if (@$userInfo['supermonocle'] == true) $values['supermonocle'] = true;
+			if (@$userInfo['patreonGold'] == true) $values['patreonGold'] = true;
+			if (@$userInfo['patreonPurple'] == true) $values['patreonPurple'] = true;
+			if (@$userInfo['patreonPrismatic'] == true) $values['patreonPrismatic'] = true;
 			if (!empty($values)) $mdb->set("information", ['type' => 'characterID', 'id' => $userID], $values);
 		}
 		$redis->del(Info::getRedisKey('characterID', $userID));

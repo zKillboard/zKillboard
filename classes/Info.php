@@ -535,6 +535,15 @@ class Info
 						if (!empty($characterInfo['supermonocle'])) {
 							$element['supermonocle'] = true;
 						}
+						if (!empty($characterInfo['patreonGold'])) {
+							$element['patreonGold'] = true;
+						}
+						if (!empty($characterInfo['patreonPurple'])) {
+							$element['patreonPurple'] = true;
+						}
+						if (!empty($characterInfo['patreonPrismatic'])) {
+							$element['patreonPrismatic'] = true;
+						}
 						break;
 					case 'corporationID':
 						if (!isset($element['corporationName'])) {

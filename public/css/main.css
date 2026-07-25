@@ -289,6 +289,45 @@ zk-home-side {
 	--character-shiny-soft: rgba(255, 215, 96, 0.3);
 }
 
+.character-patreon-purple {
+	--character-shiny-edge: rgba(190, 126, 255, 0.65);
+	--character-shiny-glow: rgba(183, 98, 255, 0.55);
+	--character-shiny-bright: rgba(228, 196, 255, 0.7);
+	--character-shiny-soft: rgba(168, 72, 255, 0.35);
+}
+
+.character-patreon-prismatic {
+	box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.42), 0 0 12px rgba(255, 69, 132, 0.65), 0 0 24px rgba(79, 214, 255, 0.5), 0 0 34px rgba(255, 225, 92, 0.4);
+	filter: none;
+	animation: character-prismatic 8s ease-in-out infinite;
+}
+
+.character-prismatic-shine {
+	border-radius: 0 6px 6px 6px;
+	display: inline-block;
+	line-height: 0;
+	position: relative;
+	vertical-align: middle;
+}
+
+.character-prismatic-shine .character-patreon-prismatic {
+	display: block;
+}
+
+.character-prismatic-shine::after {
+	background: linear-gradient(45deg, transparent 0%, transparent 44%, rgba(255, 255, 255, 0.92) 50%, transparent 56%, transparent 100%);
+	background-position: 100% 0%;
+	background-size: 220% 220%;
+	border-radius: inherit;
+	content: "";
+	inset: 0;
+	mix-blend-mode: screen;
+	opacity: 0;
+	pointer-events: none;
+	position: absolute;
+	animation: character-prismatic-shine 30s ease-in-out infinite;
+}
+
 @keyframes character-shiny {
 	50% {
 		box-shadow: 0 0 16px var(--character-shiny-bright), 0 0 28px var(--character-shiny-soft);
@@ -296,8 +335,43 @@ zk-home-side {
 	}
 }
 
+@keyframes character-prismatic {
+	16% {
+		box-shadow: 0 0 0 1px rgba(255, 208, 105, 0.55), 0 0 14px rgba(255, 144, 72, 0.7), 0 0 25px rgba(255, 58, 151, 0.55), 0 0 38px rgba(121, 88, 255, 0.42);
+	}
+	32% {
+		box-shadow: 0 0 0 1px rgba(118, 255, 185, 0.55), 0 0 14px rgba(80, 255, 149, 0.68), 0 0 26px rgba(70, 214, 255, 0.58), 0 0 38px rgba(255, 242, 93, 0.42);
+	}
+	48% {
+		box-shadow: 0 0 0 1px rgba(120, 213, 255, 0.62), 0 0 14px rgba(66, 176, 255, 0.72), 0 0 27px rgba(140, 99, 255, 0.62), 0 0 40px rgba(255, 83, 226, 0.42);
+	}
+	64% {
+		box-shadow: 0 0 0 1px rgba(242, 151, 255, 0.62), 0 0 14px rgba(255, 95, 226, 0.72), 0 0 27px rgba(255, 82, 116, 0.58), 0 0 40px rgba(255, 210, 76, 0.42);
+	}
+	80% {
+		box-shadow: 0 0 0 1px rgba(255, 247, 135, 0.58), 0 0 14px rgba(255, 230, 74, 0.7), 0 0 27px rgba(255, 116, 72, 0.56), 0 0 40px rgba(94, 255, 191, 0.42);
+	}
+}
+
+@keyframes character-prismatic-shine {
+	0%, 68% {
+		background-position: 100% 0%;
+		opacity: 0;
+	}
+	76% {
+		opacity: 0.95;
+	}
+	90%, 100% {
+		background-position: 0% 100%;
+		opacity: 0;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.character-shiny {
+		animation: none;
+	}
+	.character-prismatic-shine::after {
 		animation: none;
 	}
 }
