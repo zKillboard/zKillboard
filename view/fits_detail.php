@@ -5,25 +5,31 @@ function handler($request, $response, $args, $container)
     global $mdb, $redis;
 
     $hash = strtolower((string) ($args['hash'] ?? ''));
-    if (!preg_match('/^[0-9a-f]{16}$/', $hash)) {
+    $killID = (int) ($args['killID'] ?? 0);
+    if ($killID <= 0 && !preg_match('/^[0-9a-f]{16}$/', $hash)) {
         $response->getBody()->write('Invalid fit.');
         return $response->withStatus(404)->withHeader('Cache-Tag', 'www,fits');
     }
 
-    $runID = $redis->get('zkb:fitKillers:runID');
-    $query = ['hash' => $hash];
-    if ($runID != null) $query['runID'] = $runID;
+    if ($killID <= 0) {
+        $runID = $redis->get('zkb:fitKillers:runID');
+        $query = ['hash' => $hash];
+        if ($runID != null) $query['runID'] = $runID;
 
-    $fit = $mdb->findDoc('fitkillers', $query, [], ['_id' => 0]);
-    if ($fit == null) {
-        $fit = $mdb->findDoc('fitkillers', ['hash' => $hash], ['updated' => -1], ['_id' => 0]);
-    }
-    if ($fit == null) {
-        $response->getBody()->write('Fit not found.');
-        return $response->withStatus(404)->withHeader('Cache-Tag', 'www,fits');
+        $fit = $mdb->findDoc('fitkillers', $query, [], ['_id' => 0]);
+        if ($fit == null) {
+            $fit = $mdb->findDoc('fitkillers', ['hash' => $hash], ['updated' => -1], ['_id' => 0]);
+        }
+        if ($fit == null) {
+            $response->getBody()->write('Fit not found.');
+            return $response->withStatus(404)->withHeader('Cache-Tag', 'www,fits');
+        }
+
+        $killID = (int) ($fit['sampleLossID'] ?? 0);
+    } else {
+        $fit = ['sampleLossID' => $killID];
     }
 
-    $killID = (int) ($fit['sampleLossID'] ?? 0);
     $esimail = $killID > 0 ? Kills::getEsiKill($killID) : null;
     if ($esimail == null || !isset($esimail['victim']['items'])) {
         $response->getBody()->write('Sample fit is not available.');

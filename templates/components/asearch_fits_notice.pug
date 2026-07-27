@@ -1,0 +1,12 @@
+- $noticeIsNpcLosses = isset($isNpcLosses) ? $isNpcLosses : false;
+- $noticeRegularFitsHref = $regularFitsHref ?? '/fits/';
+.alert.alert-secondary.mb-2(role="alert")
+  span.badge.bg-info.text-white.me-2 Last 90 days only
+  if ($noticeIsNpcLosses)
+    strong PVE Losses.
+    |  PVE selected: one ship filter is not required; other Advanced Search filters apply to this popular-loss ranking, and Timespan controls are disabled for this view.
+  else
+    strong Inferred Fits.
+    |  Select exactly one ship filter; other Advanced Search filters apply to the inferred fit ranking, and Timespan controls are disabled for this view.
+  |  
+  a.alert-link(href=$noticeRegularFitsHref) View regular inferred fits

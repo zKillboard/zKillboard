@@ -55,7 +55,19 @@ function handler($request, $response, $args, $container) {
 		$groupType = (string) @$queryParams['groupType'];
 		unset($queryParams['groupType']);
 
+		$fitShipTypeID = 0;
+		$fitShipSelectCount = 0;
+		foreach (['neutrals', 'attackers', 'victims'] as $shipFilterKey) {
+			foreach ((array) ($queryParams[$shipFilterKey] ?? []) as $row) {
+				$type = (string) ($row['type'] ?? '');
+				if (!in_array($type, ['shipID', 'shipTypeID', 'typeID'], true)) continue;
+				$fitShipSelectCount++;
+				if ($fitShipTypeID == 0) $fitShipTypeID = (int) ($row['id'] ?? 0);
+			}
+		}
+
 		$buttons = (isset($queryParams['labels']) ? $queryParams['labels'] : []);
+		$fitNpcMode = in_array('npc', (array) $buttons, true);
 
 		$query = AdvancedSearch::buildQuery($queryParams, $query, "neutrals", null, AdvancedSearch::getSelectedFromBase('either', $buttons), true);
 		$query = AdvancedSearch::buildQuery($queryParams, $query, "attackers", false, AdvancedSearch::getSelectedFromBase('attackers-', $buttons), true);
@@ -73,6 +85,11 @@ function handler($request, $response, $args, $container) {
 		unset($queryParams['includeAssociates']);
 
 		$epochButton = (string) @$queryParams['epochbtn'];
+		if ($queryType == 'fits') {
+			$epochButton = 'recent';
+			$queryParams['epochbtn'] = 'recent';
+			unset($queryParams['epoch']);
+		}
 		$usePeriodCollectionOnly = in_array($epochButton, ['week', 'recent'], true);
 
 		$query = AdvancedSearch::buildQuery($queryParams, $query, "location", null, 'or');
@@ -110,7 +127,9 @@ function handler($request, $response, $args, $container) {
 			unset($queryParams['radios']['group-agg-type']);
 		}
 
-		if ($epochButton == 'week') {
+		if ($queryType == 'fits') {
+			$coll = ['ninetyDays'];
+		} else if ($epochButton == 'week') {
 			$coll = ['oneWeek'];
 		} else if ($epochButton == 'recent') {
 			$coll = ['ninetyDays'];
@@ -120,6 +139,7 @@ function handler($request, $response, $args, $container) {
 			$coll = ['killmails'];
 		}
 		$aggregateCollection = getAsearchAggregateCollection($startTime, $now, $epochButton);
+		if ($queryType == 'fits') $aggregateCollection = 'ninetyDays';
 		$cacheTime = getAsearchCacheTime($startTime, $endTime, $epochButton, $queryType == "kills" ? $coll : [$aggregateCollection]);
 		unset($query['hasDateFilter']);
 
@@ -153,8 +173,15 @@ function handler($request, $response, $args, $container) {
 			'types' => $types,
 			'queryParams' => $queryParams,
 			'itemJoin' => AdvancedSearch::getSelectedFromBase('items-', $buttons),
-			'cacheTime' => $cacheTime
+			'cacheTime' => $cacheTime,
+			'fitShipTypeID' => $fitShipTypeID,
+			'fitShipSelectCount' => $fitShipSelectCount,
+			'fitNpcMode' => $fitNpcMode
 		];
+		if ($queryType == 'fits' && !$fitNpcMode && $fitShipSelectCount != 1) {
+			$message = $fitShipSelectCount == 0 ? 'Select exactly one ship filter to view inferred fits.' : 'Inferred fits works with one ship filter only. Remove extra ship filters and try again.';
+			return renderAsearchResult($response, $container, $cacheTag, $job, ['fits' => [], 'windowDays' => 90, 'shipSelectCount' => $fitShipSelectCount, 'message' => $message], $labelGroupMaps);
+		}
 		if ($queryType != 'kills' && $queryType != 'count') {
 			$rendered = $redis->get("$queryType:$key");
 			if ($rendered !== false && $rendered !== null && trim($rendered) !== "") {
@@ -271,6 +298,8 @@ function renderAsearchResult($response, $container, $cacheTag, $job, $result, $l
 			'sortKey' => $job['sortKey'],
 			'sortBy' => $job['sortBy']
 		]]);
+	} else if ($job['queryType'] == 'fits') {
+		$rendered = $container->get('view')->getEnvironment()->render("components/asearch_fits.pug", ['result' => $result]);
 	} else if ($job['queryType'] == 'labels') {
 		if ($result == null) $result = [];
 		foreach ($result as $labelGroup) {

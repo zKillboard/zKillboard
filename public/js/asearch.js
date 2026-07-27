@@ -4,6 +4,7 @@ var first_load = true;
 var asearchRollTimeTimer = null;
 var asearchClickCatchTimer = null;
 var asearchHistoryNavigation = false;
+var asearchResultMode = 'kills';
 
 var radios = { sort: { sortBy: 'date', sortDir: 'desc' } };  // to be deprecated
 var asfilter = { location: [], attackers: [], neutrals: [], victims: [], items: [], sort: { sortBy: 'date', sortDir: 'desc' } };
@@ -25,6 +26,7 @@ function zkbInitAsearch() {
 	filtersStringified = undefined;
 	radios = { sort: { sortBy: 'date', sortDir: 'desc' } };
 	asfilter = { location: [], attackers: [], neutrals: [], victims: [], items: [], sort: { sortBy: 'date', sortDir: 'desc' } };
+	asearchResultMode = 'kills';
 	checkCharID();
 }
 
@@ -33,7 +35,7 @@ window.zkbInitAsearch = zkbInitAsearch;
 function updateAsearchButtonStates() {
 	var root = document.getElementById('asearchcontent');
 	if (!root) return;
-	root.querySelectorAll('.filter-btn, .radio-btn, .tfilter, #togglefilters, #rolling-times, #toggleGroupLayout').forEach(function (element) {
+	root.querySelectorAll('.filter-btn, .radio-btn, .tfilter, #togglefilters, #rolling-times, #toggleGroupLayout, #toggleInferredFits').forEach(function (element) {
 		if (!element.classList.contains('btn')) return;
 		var pressed = element.classList.contains('btn-primary');
 		element.setAttribute('aria-pressed', pressed ? 'true' : 'false');
@@ -82,7 +84,10 @@ function loadasearch() {
 	$("#btn_save").off('click.zkb-asearch').on('click.zkb-asearch', btn_save);
 	$("#btn_export").off('click.zkb-asearch').on('click.zkb-asearch', btn_export);
 	$("#exportCsv").off('click.zkb-asearch').on('click.zkb-asearch', exportCsv);
+	$("#toggleInferredFits").off('click.zkb-asearch').on('click.zkb-asearch', toggleInferredFits);
 	$("#toggleGroupLayout").off('click.zkb-asearch').on('click.zkb-asearch', toggleGroupLayout);
+	$(document).off('click.zkb-asearch-fit-detail').on('click.zkb-asearch-fit-detail', '[data-zkb-asearch-fit-detail]', toggleAsearchFitDetail);
+	$(document).off('click.zkb-asearch-copy-eft').on('click.zkb-asearch-copy-eft', '#inferred-fits-result [data-zkb-copy-eft]', copyAsearchEft);
 	$(".tfilter").off('click.zkb-asearch').on('click.zkb-asearch', selectTimeFilter);
 	$(".filter-btn").off('click.zkb-asearch').on('click.zkb-asearch', toggleFilterBtn);
 	$(".radio-btn").not(".tfilter").off('click.zkb-asearch').on('click.zkb-asearch', toggleRadioBtn);
@@ -93,7 +98,7 @@ function loadasearch() {
 	$("#dtstart").off('input.zkb-asearch').on('input.zkb-asearch', clickPage1);
 	$("#dtend").off('input.zkb-asearch').on('input.zkb-asearch', clickPage1);
 
-	$("#includeAssociates").off('change.zkb-asearch').on('change.zkb-asearch', doQuery.bind(null, 'groups'));
+	$("#includeAssociates").off('change.zkb-asearch').on('change.zkb-asearch', function() { doQuery(asearchResultMode == 'fits' ? 'all' : 'groups'); });
 
 	if (window.location.hash != '') {
 		setFilters();
@@ -152,6 +157,7 @@ function toggleRollingTime(event, enabled) {
 function toggleGroupLayout(event, enabled) {
 	if (event) event.preventDefault();
 	if (enabled == undefined) enabled = !$("#toggleGroupLayout").hasClass("btn-primary");
+	if (enabled && asearchResultMode == 'fits') enabled = false;
 	$("#page").toggleClass("d-none", enabled);
 	$("#result-groups-column").toggleClass("col-md-2", !enabled).toggleClass("col-12", enabled);
 	$("#result-groups-all").toggleClass("row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3", enabled);
@@ -159,6 +165,35 @@ function toggleGroupLayout(event, enabled) {
 	$("#toggleGroupLayout").toggleClass("btn-primary", enabled).toggleClass("btn-secondary", !enabled);
 	updateAsearchButtonStates();
 	if (allowChange) setHash();
+}
+
+function setAsearchTimespanDisabled(disabled) {
+	var section = $("#asearchTimespanSection");
+	if (section.length == 0) return;
+	section.toggleClass("opacity-50", disabled).attr("aria-disabled", disabled ? "true" : "false");
+	section.find(".tfilter, #rolling-times").prop("disabled", disabled).attr("aria-disabled", disabled ? "true" : "false");
+	var dateDisabled = disabled || $(".tfilter.btn-primary").first().val() != 'custom';
+	$("#dtstart, #dtend").prop("disabled", dateDisabled).attr("aria-disabled", dateDisabled ? "true" : "false");
+}
+
+function toggleInferredFits(event, enabled, updateHashAndQuery) {
+	if (event) event.preventDefault();
+	if (enabled == undefined) enabled = asearchResultMode != 'fits';
+	if (updateHashAndQuery == undefined) updateHashAndQuery = true;
+
+	if (enabled) toggleGroupLayout(null, false);
+	asearchResultMode = enabled ? 'fits' : 'kills';
+	$("#killmails-result").toggleClass("d-none", enabled);
+	$("#inferred-fits-result").toggleClass("d-none", !enabled);
+	$("#pagefilters").toggleClass("d-none", enabled);
+	$("#toggleInferredFits").toggleClass("btn-primary", enabled).toggleClass("btn-secondary", !enabled);
+	$("#toggleGroupLayout").prop("disabled", enabled).attr("aria-disabled", enabled ? "true" : "false");
+	setAsearchTimespanDisabled(enabled);
+	updateAsearchButtonStates();
+
+	if (!allowChange || !updateHashAndQuery) return;
+	filtersStringified = null;
+	doQuery(enabled ? 'fits' : 'kills');
 }
 
 function rollTime() {
@@ -431,6 +466,7 @@ function setFilters(hashfilters) {
 
 	// Reset the search
 	toggleGroupLayout(null, false);
+	toggleInferredFits(null, false, false);
 	$(".filter-remove").click();
 	$(".btn.btn-primary:not(.notafilter)").removeClass("btn-primary").addClass("btn-secondary");
 
@@ -445,6 +481,9 @@ function setFilters(hashfilters) {
 
 		var promises = [];
 		switch (key) {
+			case 'results':
+				toggleInferredFits(null, value == 'fits', false);
+				break;
 			case 'includeAssociates':
 				$("#includeAssociates").prop('checked', value);
 				break;
@@ -480,6 +519,7 @@ function resetFilters() {
 	$(".btn.btn-primary:not(.notafilter)").removeClass("btn-primary").addClass("btn-secondary");
 	radios = { sort: { sortBy: 'date', sortDir: 'desc' } };
 	asfilter = { location: [], attackers: [], neutrals: [], victims: [], items: [], sort: { sortBy: 'date', sortDir: 'desc' } };
+	toggleInferredFits(null, false, false);
 	$("#includeAssociates").prop('checked', false);
 	$("#stats-epoch-week").removeClass("btn-secondary").addClass("btn-primary");
 	adjustTime(null, $("#stats-epoch-week"));
@@ -494,6 +534,7 @@ function setHash() {
 		var elem = $(this);
 		var value = elem.attr('value');
 		if (value == 'prior month' || value == 'current month') value = 'custom';
+		if (value == 'inferred-fits') return;
 		if (value != null && value.length > 0) buttons.push(value);
 	});
 	var filter = {};
@@ -507,6 +548,7 @@ function setHash() {
 	filter = setHashAdd(filter, asfilter, 'items');
 
 	filter.includeAssociates = $("#includeAssociates").prop('checked') == true;
+	if (asearchResultMode == 'fits') filter.results = 'fits';
 
 	var hash = '';
 	if (Object.keys(filter).length > 0) hash = '#' + encodeURIComponent(JSON.stringify(filter));
@@ -541,10 +583,11 @@ function doQuery(queryType = 'all', isRetry = false) {
 
 	var f = getFilters();
 	var stringified = JSON.stringify(f);
-	if (!isRetry && filtersStringified === stringified) {
+	var queryKey = queryType + ':' + asearchResultMode + ':' + stringified;
+	if (!isRetry && filtersStringified === queryKey) {
 		return;
 	}
-	if (!isRetry) filtersStringified = stringified;
+	if (!isRetry) filtersStringified = queryKey;
 
 	asearchBatch = null;
 	while (xhrs.length > 0) {
@@ -562,7 +605,10 @@ function doQuery(queryType = 'all', isRetry = false) {
 
 	if (!isRetry) clearAsearchResults(queryType);
 
-	if (queryType == 'all' || queryType == 'kills') {
+	var loadKills = queryType == 'kills' || (queryType == 'all' && asearchResultMode == 'kills');
+	var loadFits = queryType == 'fits' || (queryType == 'all' && asearchResultMode == 'fits');
+
+	if (loadKills) {
 		var f1 = {};
 		Object.assign(f1, f);
 		f1.queryType = "kills";
@@ -571,6 +617,20 @@ function doQuery(queryType = 'all', isRetry = false) {
 			method: 'get',
 			error: handleError,
 			success: applyKillQueryResult,
+			timeout: 60000 // 60 seconds
+		});
+	}
+
+	if (loadFits) {
+		var f5 = {};
+		Object.assign(f5, f);
+		f5.queryType = "fits";
+		request({
+			title: 'fits',
+			data: f5,
+			method: 'get',
+			error: handleError,
+			success: applyFitsResult,
 			timeout: 60000 // 60 seconds
 		});
 	}
@@ -686,6 +746,12 @@ function applyKillQueryResult(data, textStatus, jqXHR) {
 	}
 }
 
+function applyFitsResult(data, textStatus, jqXHR) {
+	if (asearchProcessing(jqXHR, 'fits')) return;
+	$("#inferred-fits-result").attr("aria-busy", "false").html(data);
+	setAsearchStatus("Loaded inferred fits.");
+}
+
 function applyCountQueryResult(data, textStatus, jqXHR) {
 	if (asearchProcessing(jqXHR, 'groups')) return;
 	if (data == null || data.exceeds == true) {
@@ -717,6 +783,10 @@ function applyGroupQueryResult(data, textStatus, jqXHR) {
 	$("#result-groups-" + this.title).html(data);
 }
 
+function getAsearchFitsNoticeHtml() {
+	return '<div class="alert alert-secondary mb-2" role="alert"><span class="badge bg-info text-white me-2">Last 90 days only</span><strong>Inferred Fits.</strong> Select exactly one ship filter, or select PVE to show popular losses; other Advanced Search filters apply, and Timespan controls are disabled for this view. <a class="alert-link" href="/fits/">View regular inferred fits</a></div>';
+}
+
 function scheduleAsearchRetry(queryType) {
 	asearchRetryQueryType = (asearchRetryQueryType && asearchRetryQueryType != queryType) ? 'all' : queryType;
 	if (asearchRetryTimer != null) return;
@@ -743,15 +813,21 @@ function clearAsearchResults(queryType) {
 		for (var i = 0; i < types.length; i++) $("#result-groups-" + types[i]).html("");
 		if (queryType == 'groups') setAsearchStatus("Loading result groups.");
 	}
+	if (queryType == 'all' || queryType == 'fits') {
+		$("#inferred-fits-result").attr("aria-busy", "true").html(getAsearchFitsNoticeHtml() + '<div class="text-muted" role="status">Loading inferred fits...</div>');
+		if (queryType == 'fits') setAsearchStatus("Loading inferred fits.");
+	}
 }
 
 function handleError(jqXHR, textStatus, errorThrown) {
 	//console.log(jqXHR.status);
 	if (textStatus == 'abort') return;
 	filtersStringified = null;
-	if (jqXHR.status == 403) killlistmessage('Server Reinforced - no advanced search as this time.');
-	else if (jqXHR.status == 408) killlistmessage('Query took too long and timed out.');
-	else killlistmessage(errorThrown + ' ' + textStatus);
+	var message = errorThrown + ' ' + textStatus;
+	if (jqXHR.status == 403) message = 'Server Reinforced - no advanced search as this time.';
+	else if (jqXHR.status == 408) message = 'Query took too long and timed out.';
+	if (this && this.title == 'fits') fitlistmessage(message);
+	else killlistmessage(message);
 }
 
 function killlistmessage(message) {
@@ -764,6 +840,89 @@ function killlistmessage(message) {
 	var td = $("<td>").attr('colspan', 7).html('<i>' + message + '</i>');
 	tr.append(td);
 	$("#killmails-list").append(tr);
+}
+
+function fitlistmessage(message) {
+	$("#inferred-fits-result").attr("aria-busy", "false").html(getAsearchFitsNoticeHtml() + '<div class="alert alert-info mb-0" role="status"><i>' + message + '</i></div>');
+	setAsearchStatus(message);
+}
+
+function toggleAsearchFitDetail(event) {
+	event.preventDefault();
+	var button = event.currentTarget;
+	var hash = button.getAttribute('data-zkb-asearch-fit-detail');
+	var detail = document.getElementById('asearch-fit-detail-' + hash);
+	var row = detail ? detail.closest('.asearch-fit-detail-row') : null;
+	if (!detail || !row) return;
+
+	var open = button.getAttribute('aria-expanded') != 'true';
+	document.querySelectorAll('#inferred-fits-result .asearch-fit-detail-row').forEach(function(openRow) {
+		if (openRow !== row) {
+			openRow.classList.add('d-none');
+			openRow.setAttribute('aria-hidden', 'true');
+		}
+	});
+	document.querySelectorAll('#inferred-fits-result [data-zkb-asearch-fit-detail][aria-expanded="true"]').forEach(function(openButton) {
+		if (openButton !== button) setAsearchFitButton(openButton, false);
+	});
+
+	row.classList.toggle('d-none', !open);
+	row.setAttribute('aria-hidden', open ? 'false' : 'true');
+	setAsearchFitButton(button, open);
+	if (open) loadAsearchFitDetail(detail);
+}
+
+function setAsearchFitButton(button, open) {
+	button.setAttribute('aria-expanded', open ? 'true' : 'false');
+	button.classList.toggle('btn-primary', open);
+	button.classList.toggle('btn-secondary', !open);
+	var icon = button.querySelector('i');
+	if (icon) {
+		icon.classList.toggle('fa-eye', !open);
+		icon.classList.toggle('fa-eye-slash', open);
+	}
+	var label = button.querySelector('span');
+	if (label) label.textContent = open ? 'Hide Fit' : 'View Fit';
+}
+
+function loadAsearchFitDetail(detail) {
+	var hash = detail.getAttribute('data-zkb-fit-detail-hash');
+	var url = detail.getAttribute('data-zkb-fit-detail-url') || ('/fits/detail/' + encodeURIComponent(hash) + '/');
+	var body = detail.querySelector('[data-zkb-fit-detail-body]');
+	if (!hash || !body || body.getAttribute('data-zkb-loaded') == 'true' || body.getAttribute('data-zkb-loading') == 'true') return;
+
+	body.setAttribute('data-zkb-loading', 'true');
+	fetch(url)
+		.then(function(response) {
+			if (!response.ok) throw new Error('Unable to load fit.');
+			return response.text();
+		})
+		.then(function(html) {
+			body.innerHTML = html;
+			body.setAttribute('data-zkb-loaded', 'true');
+			body.removeAttribute('data-zkb-loading');
+		})
+		.catch(function() {
+			body.innerHTML = '<div class="alert alert-warning mb-0" role="alert">Unable to load this fit.</div>';
+			body.removeAttribute('data-zkb-loading');
+		});
+}
+
+function copyAsearchEft(event) {
+	var button = event.currentTarget;
+	var box = button.closest('.position-relative');
+	var eft = box ? box.querySelector('textarea') : null;
+	if (!eft || !navigator.clipboard || !navigator.clipboard.writeText) {
+		setAsearchStatus('Clipboard is not available');
+		return;
+	}
+
+	navigator.clipboard.writeText(eft.value).then(function() {
+		setAsearchStatus('EFT fit copied to clipboard');
+		if (typeof showToast === 'function') showToast('EFT fit copied to your clipboard');
+	}).catch(function() {
+		setAsearchStatus('Unable to copy EFT fit');
+	});
 }
 
 var killIDs = [];
@@ -946,6 +1105,7 @@ function updateTitle() {
 	if (sort !== '' && sort != 'Date Desc') filters.push(sort);
 	var currentPage = $(".pagenum.btn-primary").text().trim();
 	if (currentPage !== '' && currentPage != '1') filters.push('Page ' + currentPage);
+	if (asearchResultMode == 'fits') filters.push('Inferred Fits');
 
 	var title = ' Advanced Search: ' + (filters.length > 0 ? filters.join(', ') : 'No filters selected');
 	$("#titlecontent").text(title);
@@ -1041,6 +1201,11 @@ function updateDrillDownPreference(e) {
 }
 
 function exportCsv() {
+	if (asearchResultMode == 'fits') {
+		exportAsearchFitsXlsx();
+		return;
+	}
+
 	let groups = $("#result-groups-all table");
 
 	const wb = XLSX.utils.book_new();
@@ -1095,6 +1260,75 @@ function exportCsv() {
 
 	// Export
 	XLSX.writeFile(wb, "export.xlsx");
+}
+
+function exportAsearchFitsXlsx() {
+	var details = Array.from(document.querySelectorAll('#inferred-fits-result .asearch-fit-detail'));
+	if (details.length == 0) {
+		setAsearchStatus("No inferred fits to export.");
+		return;
+	}
+
+	var exportButton = $("#exportCsv");
+	exportButton.prop("disabled", true);
+	setAsearchStatus("Exporting " + details.length + " fit" + (details.length == 1 ? "" : "s") + ".");
+
+	Promise.all(details.map(function(detail, index) {
+		var mainRow = detail.closest('tr') ? detail.closest('tr').previousElementSibling : null;
+		var shipLink = mainRow ? mainRow.querySelector('a[href^="/ship/"]') : null;
+		var shipName = shipLink ? shipLink.textContent.trim() : ("Ship " + (index + 1));
+		var hash = detail.getAttribute('data-zkb-fit-detail-hash');
+		var url = detail.getAttribute('data-zkb-fit-detail-url') || ('/fits/detail/' + encodeURIComponent(hash) + '/');
+		var body = detail.querySelector('[data-zkb-fit-detail-body]');
+		var html = body && body.getAttribute('data-zkb-loaded') == 'true' ? body.innerHTML : null;
+		var request = html == null ? fetch(url).then(function(response) {
+			if (!response.ok) throw new Error('Unable to load fit.');
+			return response.text();
+		}) : Promise.resolve(html);
+
+		return request.then(function(html) {
+			var doc = new DOMParser().parseFromString(html, 'text/html');
+			var eft = doc.querySelector('textarea');
+			var kill = doc.querySelector('a[aria-label^="Open sample loss"]') || doc.querySelector('a[href^="/kill/"]');
+			var killUrl = kill ? kill.getAttribute('href') : '';
+			if (killUrl != '') {
+				var link = document.createElement('a');
+				link.href = killUrl;
+				killUrl = link.href;
+			}
+			return {
+				shipName: shipName,
+				killUrl: killUrl,
+				eft: eft ? eft.value : ''
+			};
+		});
+	})).then(function(rows) {
+		var wb = XLSX.utils.book_new();
+		var data = [['Ship', 'Killmail', 'EFT']];
+		rows.forEach(function(row) {
+			data.push([row.shipName, row.killUrl, row.eft]);
+		});
+
+		var ws = XLSX.utils.aoa_to_sheet(data);
+		ws['!cols'] = [{ wch: 28 }, { wch: 48 }, { wch: 120 }];
+		ws['!rows'] = [{ hpt: 22 }];
+		rows.forEach(function(row, index) {
+			var sheetRow = index + 1;
+			var killCell = ws[XLSX.utils.encode_cell({ r: sheetRow, c: 1 })];
+			var eftCell = ws[XLSX.utils.encode_cell({ r: sheetRow, c: 2 })];
+			if (killCell && row.killUrl != '') killCell.l = { Target: row.killUrl, Tooltip: 'Open killmail' };
+			if (eftCell) eftCell.s = { alignment: { wrapText: true, vertical: 'top' } };
+			ws['!rows'][sheetRow] = { hpt: Math.min(420, Math.max(120, row.eft.split(/\r?\n/).length * 15)) };
+		});
+
+		XLSX.utils.book_append_sheet(wb, ws, "Fits");
+		XLSX.writeFile(wb, "inferred-fits.xlsx");
+		setAsearchStatus("Exported " + rows.length + " fit" + (rows.length == 1 ? "" : "s") + ".");
+	}).catch(function() {
+		setAsearchStatus("Unable to export inferred fits.");
+	}).finally(function() {
+		exportButton.prop("disabled", false);
+	});
 }
 
 function buildZkillbotFilter() {

@@ -20,6 +20,7 @@ $routes = [
 	'/br/{battleID}/' => ['GET', 'view/battle_report.php'],
 	'/brsave/' => ['GET', 'view/brsave.php'],
 	'/bigisk/' => ['GET', 'view/bigisk.php'],
+	'/fits/loss/{killID}/' => ['GET', 'view/fits_detail.php'],
 	'/fits/detail/{hash}/' => ['GET', 'view/fits_detail.php'],
 	'/fits/[{ship}/]' => ['GET', 'view/fits.php'],
 	'/{type}/ranks/{kl}/{solo}/{epoch}/{page}/' => ['GET', 'view/typeRanks.php'],

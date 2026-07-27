@@ -36,9 +36,9 @@ class AdvancedSearch
         'flags' => [
             "awox" => "Awox", 
             "ganked" => "HighSec Gank", 
-            "npc" => "NPC", 
             "pvp" => "PVP", 
-            "padding" => "Padding"
+            "padding" => "Padding",
+            "npc" => "PVE"
         ],
         'isk' => [
             "isk:1b+" => "1b+", 
@@ -76,6 +76,24 @@ class AdvancedSearch
         global $mdb, $advancedSearchMaxTimeSeconds;
 
         $maxTimeMS = (isset($advancedSearchMaxTimeSeconds) ? max(1, (int) $advancedSearchMaxTimeSeconds) : 60) * 1000;
+
+        if ($job['queryType'] == 'fits') {
+            $fitNpcMode = (bool) ($job['fitNpcMode'] ?? false);
+            $fitShipSelectCount = (int) ($job['fitShipSelectCount'] ?? 0);
+            $fitShipTypeID = (int) ($job['fitShipTypeID'] ?? 0);
+            if (!$fitNpcMode && ($fitShipSelectCount != 1 || $fitShipTypeID <= 0)) {
+                $message = $fitShipSelectCount == 0 ? 'Select exactly one ship filter to view inferred fits.' : 'Inferred fits works with one ship filter only. Remove extra ship filters and try again.';
+                return ['fits' => [], 'windowDays' => 90, 'shipSelectCount' => $fitShipSelectCount, 'message' => $message];
+            }
+            $fitsBase = [
+                'npc' => $fitNpcMode,
+                'labels' => ['$all' => ($fitNpcMode ? ['cat:6'] : ['pvp', 'cat:6'])],
+                'dttm' => ['$gte' => new MongoDB\BSON\UTCDateTime((time() - (90 * 86400)) * 1000)]
+            ];
+            if (empty($job['query'])) $job['query'] = $fitsBase;
+            else if (isset($job['query']['$and']) && is_array($job['query']['$and'])) $job['query']['$and'][] = $fitsBase;
+            else $job['query'] = ['$and' => [$job['query'], $fitsBase]];
+        }
 
         if (isset($job['queryParams']['items'])) {
             if (isset($job['query']['$and']) && is_array($job['query']['$and'])) $queries = $job['query']['$and'];
@@ -121,6 +139,8 @@ class AdvancedSearch
         }
         if ($job['queryType'] == 'labels') return self::getLabels($job['query'], $job['victimsOnly']);
         if ($job['queryType'] == 'distincts') return self::getDistincts($job['query'], $job['filter'], $job['victimsOnly'], $job['aggregateCollection'], $maxTimeMS);
+        if ($job['queryType'] == 'fits' && (bool) ($job['fitNpcMode'] ?? false)) return Inferred::getPopularPveLosses($job['query'], $maxTimeMS);
+        if ($job['queryType'] == 'fits') return Inferred::getAdvancedSearchFits($job['query'], (int) $job['fitShipTypeID'], $maxTimeMS);
         return [];
     }
 

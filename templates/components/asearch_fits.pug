@@ -1,0 +1,99 @@
+- $resultData = is_object($result ?? null) ? (array) $result : ($result ?? []);
+- $mode = $resultData['mode'] ?? 'fits';
+- $isNpcLosses = $mode == 'npcLosses';
+- $fits = $resultData['fits'] ?? [];
+- $losses = $resultData['losses'] ?? [];
+- $message = $resultData['message'] ?? '';
+- $regularFitsHref = (!$isNpcLosses && (int) ($resultData['shipTypeID'] ?? 0) > 0) ? '/fits/' . (int) ($resultData['shipTypeID'] ?? 0) . '/' : '/fits/';
+include asearch_fits_notice.pug
+if (!empty($message))
+  .alert.alert-info.mb-0(role="status")= $message
+else if ($isNpcLosses)
+  if (count($losses) > 0)
+    .table-responsive
+      table.table.table-sm.table-bordered.caption-top.align-middle
+        caption
+          strong Top 5 popular PVE losses
+        thead
+          tr
+            th.text-center(scope="col" style="width: 4em;") Rank
+            th.text-center(scope="col" aria-label="Ship image") Pic
+            th(scope="col") Ship
+            th.text-end(scope="col") Losses
+            th.text-end(scope="col") Avg. Cost
+            th.text-center(scope="col" style="width: 8em;") Fit
+        tbody
+          each $loss in $losses
+            - $loss = is_object($loss) ? (array) $loss : $loss;
+            - $shipTypeID = (int) ($loss['shipTypeID'] ?? 0);
+            - $sampleKillID = (int) ($loss['sampleKillID'] ?? 0);
+            - $detailKey = 'loss-' . $sampleKillID;
+            - $detailID = 'asearch-fit-detail-' . $detailKey;
+            tr
+              td.text-center= number_format((int) ($loss['displayRank'] ?? 0))
+              td.text-center
+                - $field = ['shipTypeID' => $shipTypeID, 'shipName' => $loss['shipName'] ?? '', 'pip' => $loss['pip'] ?? ''];
+                - $imageSize = 64;
+                include image_ship.pug
+              td
+                a(href=('/ship/' . $shipTypeID . '/'))= $loss['shipName'] ?? ''
+              td.text-end(format="format-int-once" raw=($loss['losses'] ?? 0))= number_format((int) ($loss['losses'] ?? 0))
+              td.text-end(format="format-isk-once" raw=($loss['avgCost'] ?? 0))= number_format((float) ($loss['avgCost'] ?? 0), 0)
+              td.text-center
+                if ($sampleKillID > 0)
+                  button.btn.btn-sm.btn-secondary.d-inline-flex.align-items-center.justify-content-center.gap-1(type="button" aria-expanded="false" aria-controls=$detailID data-zkb-asearch-fit-detail=$detailKey)
+                    i.fas.fa-eye(aria-hidden="true")
+                    span View Fit
+            if ($sampleKillID > 0)
+              tr.asearch-fit-detail-row.d-none(aria-hidden="true")
+                td.p-0(colspan="6")
+                  div.asearch-fit-detail(id=$detailID data-zkb-fit-detail-hash=$detailKey data-zkb-fit-detail-url=('/fits/loss/' . $sampleKillID . '/') role="region" aria-label=(($loss['shipName'] ?? 'Ship') . ' PVE loss fit details'))
+                    div.p-2(data-zkb-fit-detail-body=$detailKey)
+                      .text-muted(role="status") Loading fit...
+  else
+    .alert.alert-info.mb-0 No PVE ship losses found for the last 90 days of this Advanced Search match.
+else if (count($fits) > 0)
+  .table-responsive
+    table.table.table-sm.table-bordered.caption-top.align-middle
+      caption
+        strong= 'Top 5 inferred fits for ' . ($resultData['shipName'] ?? 'the selected ship')
+      thead
+        tr
+          th.text-center(scope="col" style="width: 4em;") Rank
+          th.text-center(scope="col" aria-label="Ship image") Pic
+          th(scope="col") Ship
+          th.text-end(scope="col") Filtered Fit Kills
+          th.text-end(scope="col") Final / Solo
+          th.text-end(scope="col") Avg. Cost
+          th.text-center(scope="col" style="width: 8em;") Fit
+      tbody
+        each $fit in $fits
+          - $fit = is_object($fit) ? (array) $fit : $fit;
+          - $hash = (string) ($fit['hash'] ?? '');
+          - $detailID = 'asearch-fit-detail-' . preg_replace('/[^A-Za-z0-9_-]/', '', $hash);
+          - $shipTypeID = (int) ($fit['shipTypeID'] ?? 0);
+          tr
+            td.text-center= number_format((int) ($fit['displayRank'] ?? 0))
+            td.text-center
+              - $field = ['shipTypeID' => $shipTypeID, 'shipName' => $fit['shipName'] ?? '', 'pip' => $fit['pip'] ?? ''];
+              - $imageSize = 64;
+              include image_ship.pug
+            td
+              a(href=('/ship/' . $shipTypeID . '/'))= $fit['shipName'] ?? ''
+            td.text-end(format="format-int-once" raw=($fit['matchedKills'] ?? $fit['kills'] ?? 0))= number_format((int) ($fit['matchedKills'] ?? $fit['kills'] ?? 0))
+            td.text-end
+              = number_format((int) ($fit['finalBlows'] ?? 0))
+              |  / 
+              = number_format((int) ($fit['soloKills'] ?? 0))
+            td.text-end(format="format-isk-once" raw=($fit['avgCost'] ?? 0))= number_format((float) ($fit['avgCost'] ?? 0), 0)
+            td.text-center
+              button.btn.btn-sm.btn-secondary.d-inline-flex.align-items-center.justify-content-center.gap-1(type="button" aria-expanded="false" aria-controls=$detailID data-zkb-asearch-fit-detail=$hash)
+                i.fas.fa-eye(aria-hidden="true")
+                span View Fit
+          tr.asearch-fit-detail-row.d-none(aria-hidden="true")
+            td.p-0(colspan="7")
+              div.asearch-fit-detail(id=$detailID data-zkb-fit-detail-hash=$hash role="region" aria-label=(($fit['shipName'] ?? 'Ship') . ' inferred fit details'))
+                div.p-2(data-zkb-fit-detail-body=$hash)
+                  .text-muted(role="status") Loading fit...
+else
+  .alert.alert-info.mb-0 No inferred fits found for the last 90 days of this Advanced Search match.
