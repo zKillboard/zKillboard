@@ -11,7 +11,9 @@ table.table.table-sm.table-striped.table-hover.related-list-table(style="table-l
           - $corporationID = $related['corporationID'] ?? 0;
           - $allianceID = $related['allianceID'] ?? 0;
           if ($shipTypeID > 0)
-            a(href=('/ship/' . $shipTypeID . '/') rel="tooltip" title=($related['shipName'] ?? ''))
+            - $shipHref = $relatedKillID > 0 ? ('/kill/' . $relatedKillID . '/') : ('/ship/' . $shipTypeID . '/');
+            - $shipTitle = $relatedKillID > 0 ? ('Detail for ' . $relatedKillID) : ($related['shipName'] ?? '');
+            a(href=$shipHref rel="tooltip" title=$shipTitle)
               img.eveimage.img-rounded(src=(($image_item ?? 'https://images.evetech.net/types/') . $shipTypeID . '/render?size=64') style="height: 64px; width: 64px;" alt=($related['shipName'] ?? '') loading="lazy" decoding="async" fetchpriority="low")
           if ($characterID > 0)
             - $field = $related;
