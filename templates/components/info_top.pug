@@ -16,7 +16,7 @@
 - $friendlyFire = $detailData['friendly_fire'] ?? ($detailData['friendly_fire_enabled'] ?? null);
 - $friendlyFireText = is_bool($friendlyFire) ? ($friendlyFire ? 'Enabled' : 'Disabled') : ucwords(str_replace('_', ' ', (string) $friendlyFire));
 - $friendlyFireEnabled = is_bool($friendlyFire) ? $friendlyFire : in_array(strtolower((string) $friendlyFire), ['enabled', 'legal', 'true', 'yes', '1'], true);
-- $corpUrl = (string) ($detailData['url'] ?? '');
+- $corpUrl = (string) ((($key ?? '') == 'alliance') ? ($detailData['executorCorpUrl'] ?? '') : ($detailData['url'] ?? ''));
 - $corpUrlValid = filter_var($corpUrl, FILTER_VALIDATE_URL) && preg_match('/^https?:\\/\\//i', $corpUrl);
 //- Corp title display is disabled for now; titles are UGC and can contain presentation-breaking art.
 //- - $corpTitleRaw = html_entity_decode((string) ($detailData['corporation_title'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
@@ -221,7 +221,7 @@ br
                           | (Closed)
                         else
                           = number_format((float) $detailData['memberCount'], 0)
-                  if (($key ?? '') == 'corporation' && $corpUrlValid)
+                  if (((($key ?? '') == 'corporation') || (($key ?? '') == 'alliance')) && $corpUrlValid)
                     tr
                       th Website:
                       td

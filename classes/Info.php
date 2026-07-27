@@ -475,8 +475,12 @@ class Info
 						}
 						break;
 					case 'executorCorpID':
+						$executorCorpInfo = self::getInfo('corporationID', $value);
 						if (!isset($element['executorCorpName'])) {
-							$element['executorCorpName'] = self::getInfoField('corporationID', $value, 'name');
+							$element['executorCorpName'] = @$executorCorpInfo['name'];
+						}
+						if (!isset($element['executorCorpUrl']) && !empty($executorCorpInfo['url'])) {
+							$element['executorCorpUrl'] = $executorCorpInfo['url'];
 						}
 						break;
 					case 'ceoID':
