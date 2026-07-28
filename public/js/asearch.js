@@ -110,8 +110,7 @@ function loadasearch() {
 	$("#rolling-times").off('click.zkb-asearch').on('click.zkb-asearch', toggleRollingTime);
 	$("#togglefilters").off('click.zkb-asearch').on('click.zkb-asearch', toggleFiltersClick);
 
-	$("#dtstart").off('input.zkb-asearch').on('input.zkb-asearch', clickPage1);
-	$("#dtend").off('input.zkb-asearch').on('input.zkb-asearch', clickPage1);
+	setupAsearchDatepickers();
 
 	$("#includeAssociates").off('change.zkb-asearch').on('change.zkb-asearch', function() { doQuery(asearchResultMode == 'fits' ? 'all' : 'groups'); });
 
@@ -147,11 +146,29 @@ function asearchPopstate() {
 	}
 }
 
-function datepick() {
-	if (allowChange) {
-		$(this).datetimepicker({ format: 'Y-m-d H:i' });
-		clickPage1();
+function setupAsearchDatepickers() {
+	var inputs = $("#dtstart, #dtend");
+	if ($.fn.datetimepicker) {
+		inputs.datetimepicker({
+			format: 'Y-m-d H:i',
+			formatDate: 'Y-m-d',
+			formatTime: 'H:i',
+			step: 15,
+			scrollInput: false,
+			dayOfWeekStart: 1,
+			onChangeDateTime: function(currentTime, input) {
+				normalizeAsearchUTCInput(input);
+				clickPage1();
+			}
+		});
 	}
+	inputs
+		.off('input.zkb-asearch change.zkb-asearch blur.zkb-asearch')
+		.on('input.zkb-asearch', clickPage1)
+		.on('change.zkb-asearch blur.zkb-asearch', function() {
+			normalizeAsearchUTCInput(this);
+			clickPage1();
+		});
 }
 
 function toggleRollingTime(event, enabled) {
@@ -220,11 +237,11 @@ function rollTime() {
 	try {
 		var roll = ($('#rolling-times').hasClass('btn-primary'));
 		if (roll == false) return;
-		var currentStartTime = toUTCISOString($('#dtstart').val());
-		var currentEndTime = toUTCISOString($('#dtend').val());
+		var currentStartTime = getAsearchUTCValue("#dtstart");
+		var currentEndTime = getAsearchUTCValue("#dtend");
 		adjustTime(null, $(".tfilter.btn-primary").first());
 
-		if ((currentStartTime != $('#dtstart').val()) || (currentEndTime != $('#dtend').val())) clickPage1();
+		if ((currentStartTime != getAsearchUTCValue("#dtstart")) || (currentEndTime != getAsearchUTCValue("#dtend"))) clickPage1();
 	} finally {
 		asearchRollTimeTimer = setTimeout(rollTime, 5000);
 	}
@@ -270,15 +287,12 @@ function adjustTime(event, triggerButton) {
 			// no changes needed
 			break;
 		case 'current month':
-			startTime = Math.floor(new Date(date.getFullYear(), date.getUTCMonth(), 1, 0, 0, 0).getTime() / 1000);
-			startTime = startTime - (startTime % 86400);
+			startTime = Math.floor(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1, 0, 0, 0) / 1000);
 			isRolling = false;
 			break;
 		case 'prior month':
-			startTime = Math.floor(new Date(date.getFullYear(), date.getUTCMonth() - 1, 1, 0, 0, 0).getTime() / 1000);
-			endTime = Math.floor(new Date(date.getFullYear(), date.getUTCMonth(), 1, 0, -1, 0).getTime() / 1000);
-			startTime = startTime - (startTime % 86400);
-			endTime = endTime - (endTime % 86400) - 60;
+			startTime = Math.floor(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() - 1, 1, 0, 0, 0) / 1000);
+			endTime = Math.floor(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1, 0, 0, 0) / 1000) - 60;
 			isRolling = false;
 			break;
 		case 'custom':
@@ -286,29 +300,55 @@ function adjustTime(event, triggerButton) {
 			isRolling = false;
 	}
 
-	$('#dtstart').prop('disabled', isDisabled).val(getFormattedTime(startTime));
-	$('#dtend').prop('disabled', isDisabled).val(getFormattedTime(endTime));
+	$('#dtstart').prop('disabled', isDisabled).val(getAsearchUTCDisplayValue(startTime));
+	$('#dtend').prop('disabled', isDisabled).val(getAsearchUTCDisplayValue(endTime));
 	toggleRollingTime(null, isRolling);
 	//if (isDisabled == false) $("#dtstart").focus();
 }
 
-function toUTCISOString(datetimeValue) {
-	if (datetimeValue == null || datetimeValue.length == 0) return '';
-	// Example input: "2025-10-23T10:30"
-	const [datePart, timePart] = datetimeValue.split('T');
-	const [year, month, day] = datePart.split('-').map(Number);
-	const [hour = 0, minute = 0] = timePart.split(':').map(Number);
-
-	// Construct UTC date explicitly
-	const utcDate = new Date(Date.UTC(year, month - 1, day, hour, minute));
-	return utcDate.toISOString(); // "2025-10-23T10:30:00.000Z"
+function normalizeAsearchUTCInput(input) {
+	var field = $(input);
+	if (field.length == 0) return;
+	var parsed = parseAsearchUTCDateTime(field.val());
+	if (parsed != null) field.val(getAsearchUTCDisplayValue(parsed));
 }
 
+function getAsearchUTCValue(input) {
+	var value = $(input).val();
+	var parsed = parseAsearchUTCDateTime(value);
+	if (parsed == null) return $.trim(String(value || ''));
+	return getFormattedTime(parsed);
+}
+
+function getAsearchUTCDisplayValue(value) {
+	var parsed = parseAsearchUTCDateTime(value);
+	if (parsed == null) return '';
+	return getFormattedTime(parsed).replace('T', ' ');
+}
+
+function parseAsearchUTCDateTime(value) {
+	if (value == null || value === '') return null;
+	if (typeof value == 'number') return isFinite(value) ? value : null;
+
+	value = $.trim(String(value));
+	var match = value.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})(?:[ T](\d{1,2})(?::(\d{1,2}))?(?::\d{1,2})?(?:\.\d{1,3})?Z?)?$/);
+	if (!match) return null;
+
+	var year = parseInt(match[1], 10);
+	var month = parseInt(match[2], 10);
+	var day = parseInt(match[3], 10);
+	var hour = parseInt(match[4] || '0', 10);
+	var minute = parseInt(match[5] || '0', 10);
+	if (month < 1 || month > 12 || day < 1 || day > 31 || hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+
+	var date = new Date(Date.UTC(year, month - 1, day, hour, minute, 0));
+	if (date.getUTCFullYear() != year || date.getUTCMonth() != month - 1 || date.getUTCDate() != day || date.getUTCHours() != hour || date.getUTCMinutes() != minute) return null;
+	return Math.floor(date.getTime() / 1000);
+}
 
 function getFormattedTime(unixtime) {
 	if (unixtime == null) return '';
 	var date = new Date(unixtime * 1000);
-	// convert the unixtime to datetime-local format
 	return date.getUTCFullYear() + '-' + zeroPad(date.getUTCMonth() + 1) + '-' + zeroPad(date.getUTCDate()) + 'T' + zeroPad(date.getUTCHours()) + ':' + zeroPad(date.getUTCMinutes());
 }
 
@@ -504,7 +544,7 @@ function setFilters(hashfilters) {
 				break;
 			case 'dtstart':
 			case 'dtend':
-				$("#" + key).val(value);
+				$("#" + key).val(getAsearchUTCDisplayValue(value));
 				break;
 			case 'location':
 			case 'attackers':
@@ -554,8 +594,8 @@ function setHash() {
 	});
 	var filter = {};
 	if (buttons.length > 0) filter.buttons = buttons;
-	if (buttons.indexOf('custom') >= 0 && $("#dtstart").val() != '') filter.dtstart = $("#dtstart").val();
-	if (buttons.indexOf('custom') >= 0 && $("#dtend").val() != '') filter.dtend = $("#dtend").val();
+	if (buttons.indexOf('custom') >= 0 && getAsearchUTCValue("#dtstart") != '') filter.dtstart = getAsearchUTCValue("#dtstart");
+	if (buttons.indexOf('custom') >= 0 && getAsearchUTCValue("#dtend") != '') filter.dtend = getAsearchUTCValue("#dtend");
 	filter = setHashAdd(filter, asfilter, 'attackers');
 	filter = setHashAdd(filter, asfilter, 'neutrals');
 	filter = setHashAdd(filter, asfilter, 'victims');
@@ -715,7 +755,7 @@ function getFilters() {
 	$(".tfilter.btn-primary").each(function () { retVal.epochbtn = $(this).val(); });
 	$(".filter-btn.btn-primary").each(function () { retVal.labels.push($(this).attr('data-label')); });
 	$(".andor .btn-primary").each(function () { retVal.labels.push($(this).val()); });
-	retVal.epoch = { start: $("#dtstart").val(), end: $("#dtend").val() };
+	retVal.epoch = { start: getAsearchUTCValue("#dtstart"), end: getAsearchUTCValue("#dtend") };
 	retVal.radios = radios;
 	retVal.includeAssociates = $("#includeAssociates").prop('checked') == true;
 	return retVal;
@@ -1263,14 +1303,14 @@ function campaignValidationMessage(filters) {
 	if (Array.isArray(filters.neutrals) && filters.neutrals.length > 0) return "Remove filters from Either.";
 	if (!Array.isArray(filters.buttons) || filters.buttons.indexOf('custom') < 0 || !filters.dtstart) return "Select a custom start date.";
 
-	var start = Date.parse(filters.dtstart);
-	if (isNaN(start)) return "Select a valid custom start date.";
+	var start = parseAsearchUTCDateTime(filters.dtstart);
+	if (start == null) return "Select a valid custom start date.";
 	if (filters.dtend) {
-		var end = Date.parse(filters.dtend);
-		if (isNaN(end) || end <= start) return "Select an end date after the start date.";
-		var maxEnd = new Date(start);
-		maxEnd.setFullYear(maxEnd.getFullYear() + 1);
-		if (end > maxEnd.getTime()) return "Campaigns can cover at most one year.";
+		var end = parseAsearchUTCDateTime(filters.dtend);
+		if (end == null || end <= start) return "Select an end date after the start date.";
+		var maxEnd = new Date(start * 1000);
+		maxEnd.setUTCFullYear(maxEnd.getUTCFullYear() + 1);
+		if (end > Math.floor(maxEnd.getTime() / 1000)) return "Campaigns can cover at most one year.";
 	}
 	return "";
 }

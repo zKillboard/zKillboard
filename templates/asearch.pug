@@ -52,10 +52,10 @@ block content
           #timeframe.d-flex.flex-wrap.justify-content-center.gap-2
             .input-group.input-group-sm.w-auto
               label.input-group-text(for="dtstart") Start
-              input#dtstart.form-control.form-line(type="datetime-local" style="min-width: 14em; max-width: 14em;" autocomplete="off" disabled)
+              input#dtstart.form-control.form-line(type="text" style="min-width: 14em; max-width: 14em;" placeholder="YYYY-MM-DD HH:mm" inputmode="numeric" autocomplete="off" disabled)
             .input-group.input-group-sm.w-auto
               label.input-group-text(for="dtend") End
-              input#dtend.form-control.form-line(type="datetime-local" style="min-width: 14em; max-width: 14em;" autocomplete="off" disabled)
+              input#dtend.form-control.form-line(type="text" style="min-width: 14em; max-width: 14em;" placeholder="YYYY-MM-DD HH:mm" inputmode="numeric" autocomplete="off" disabled)
     hr.asearchfilters
     .row.centered.asearchfilters
       each $group, $name in ($labels ?? [])

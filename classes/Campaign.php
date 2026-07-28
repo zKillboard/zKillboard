@@ -10,6 +10,7 @@ class Campaign
 
     public static function normalizeFilters($filters, $implyEndDate = true)
     {
+        $filters = is_object($filters) ? (array) $filters : $filters;
         if (!is_array($filters)) return [];
 
         $normalized = [];
@@ -26,6 +27,9 @@ class Campaign
         foreach (['attackers', 'neutrals', 'victims', 'location', 'items'] as $key) {
             $rows = [];
             foreach ((array) ($filters[$key] ?? []) as $row) {
+                $row = is_object($row) ? (array) $row : $row;
+                if (!is_array($row)) continue;
+
                 $type = preg_replace('/[^a-zA-Z0-9]/', '', (string) ($row['type'] ?? ''));
                 $id = (int) ($row['id'] ?? 0);
                 if ($type == '' || $id <= 0) continue;
@@ -142,8 +146,7 @@ class Campaign
 
     public static function title($campaign)
     {
-        $campaign = is_object($campaign) ? (array) $campaign : $campaign;
-        $filters = self::normalizeFilters(is_array($campaign) ? ($campaign['filters'] ?? []) : []);
+        $filters = self::campaignFilters($campaign);
 
         $campaignTitle = self::sideTitle($filters, 'attackers', 'Attackers') . ' v. ' . self::sideTitle($filters, 'victims', 'Defenders');
         $parts = [];
@@ -282,10 +285,7 @@ class Campaign
 
     public static function sideEntities($campaign, $side)
     {
-        $campaign = is_object($campaign) ? (array) $campaign : $campaign;
-        if (!is_array($campaign)) return [];
-
-        $filters = is_object($campaign['filters'] ?? null) ? (array) $campaign['filters'] : ($campaign['filters'] ?? []);
+        $filters = self::campaignFilters($campaign);
         $entities = [];
         $seen = [];
         foreach ((array) ($filters[$side] ?? []) as $row) {
@@ -302,10 +302,7 @@ class Campaign
 
     public static function sideIDs($campaign, $side)
     {
-        $campaign = is_object($campaign) ? (array) $campaign : $campaign;
-        if (!is_array($campaign)) return [];
-
-        $filters = is_object($campaign['filters'] ?? null) ? (array) $campaign['filters'] : ($campaign['filters'] ?? []);
+        $filters = self::campaignFilters($campaign);
         $ids = [];
         foreach ((array) ($filters[$side] ?? []) as $row) {
             $row = is_object($row) ? (array) $row : $row;
@@ -408,15 +405,21 @@ class Campaign
 
     public static function searchUrl($campaign, $modify = false)
     {
+        $campaign = is_object($campaign) ? (array) $campaign : $campaign;
+        if (!is_array($campaign)) $campaign = [];
+
         $uid = (string) ($campaign['_id'] ?? '');
         $campaignParam = ($modify && $uid != '') ? '?campaign=' . rawurlencode($uid) : '';
-        return '/asearch/' . $campaignParam . '#' . rawurlencode(json_encode(self::normalizeFilters($campaign['filters'] ?? []), JSON_UNESCAPED_SLASHES));
+        return '/asearch/' . $campaignParam . '#' . rawurlencode(json_encode(self::campaignFilters($campaign), JSON_UNESCAPED_SLASHES));
     }
 
     public static function getKillIDs($campaign)
     {
+        $campaign = is_object($campaign) ? (array) $campaign : $campaign;
+        if (!is_array($campaign)) $campaign = [];
+
         $uid = (string) ($campaign['_id'] ?? '');
-        $filters = $campaign['filters'] ?? [];
+        $filters = self::campaignFilters($campaign);
         $cacheKey = 'campaign:part:v1:' . $uid . ':killIDs:' . md5(json_encode($filters));
         $cached = RedisCache::get($cacheKey);
         if ($cached !== null) return $cached;
@@ -445,8 +448,11 @@ class Campaign
 
     public static function getSideStats($campaign)
     {
+        $campaign = is_object($campaign) ? (array) $campaign : $campaign;
+        if (!is_array($campaign)) $campaign = [];
+
         $uid = (string) ($campaign['_id'] ?? '');
-        $filters = $campaign['filters'] ?? [];
+        $filters = self::campaignFilters($campaign);
         $params = self::filtersToQueryParams($filters);
         if (($params['epochbtn'] ?? '') == 'alltime') return null;
 
@@ -464,8 +470,11 @@ class Campaign
 
     public static function getTopSets($campaign, $victimsOnly)
     {
+        $campaign = is_object($campaign) ? (array) $campaign : $campaign;
+        if (!is_array($campaign)) $campaign = [];
+
         $uid = (string) ($campaign['_id'] ?? '');
-        $filters = $campaign['filters'] ?? [];
+        $filters = self::campaignFilters($campaign);
         $part = $victimsOnly ? 'victims' : 'attackers';
         $sideName = $victimsOnly ? 'Defender' : 'Attacker';
         $cacheKey = 'campaign:part:v3:' . $uid . ':' . $part . ':' . md5(json_encode($filters));
@@ -498,6 +507,13 @@ class Campaign
     {
         $campaign = self::swapSides(['filters' => $filters]);
         return $campaign['filters'] ?? [];
+    }
+
+    private static function campaignFilters($campaign)
+    {
+        $campaign = is_object($campaign) ? (array) $campaign : $campaign;
+        if (!is_array($campaign)) return [];
+        return self::normalizeFilters($campaign['filters'] ?? []);
     }
 
     private static function sortKills(&$kills, $params)
@@ -778,9 +794,7 @@ class Campaign
 
         $hasDateFilter = ($query['hasDateFilter'] ?? false) == true;
         $startTime = (int) ($query['start'] ?? 0);
-        $endTime = (int) ($query['end'] ?? 0);
         $now = time();
-        if ($endTime == 0) $endTime = $now;
 
         $labels = [];
         foreach ($buttons as $label) {
@@ -805,7 +819,6 @@ class Campaign
         else $coll = ['killmails'];
 
         $aggregateCollection = self::getAggregateCollection($startTime, $now, $epochButton);
-        $cacheTime = self::getCacheTime($startTime, $endTime, $epochButton, $queryType == 'kills' ? $coll : [$aggregateCollection]);
 
         return [
             'key' => 'campaign:' . md5(json_encode($queryParams) . $queryType),
@@ -823,26 +836,8 @@ class Campaign
             'types' => $types,
             'queryParams' => $queryParams,
             'itemJoin' => AdvancedSearch::getSelectedFromBase('items-', $buttons),
-            'cacheTime' => $cacheTime,
+            'cacheTime' => self::RESULT_CACHE_SECONDS,
         ];
-    }
-
-    private static function getCacheTime($startTime, $endTime, $epochButton, $collections)
-    {
-        $span = ($startTime > 0 && $endTime > $startTime) ? $endTime - $startTime : 0;
-        if ($span > 0) {
-            if ($span <= 604800) return 900;
-            if ($span <= 2678400) return 3600;
-            if ($span <= 7776000) return 14400;
-            return 86400;
-        }
-
-        if ($epochButton == 'week') return 900;
-        if ($epochButton == 'recent') return 14400;
-        if (in_array('killmails', $collections, true)) return 86400;
-        if (in_array('oneWeek', $collections, true)) return 900;
-        if (in_array('ninetyDays', $collections, true)) return 14400;
-        return 86400;
     }
 
     private static function getAggregateCollection($startTime, $now, $epochButton = '')
