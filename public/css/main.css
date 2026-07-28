@@ -2127,6 +2127,14 @@ code {
 	color: #5db7ff;
 }
 
+.campaign-list-stat-attacker {
+	color: #5db7ff;
+}
+
+.campaign-list-stat-defender {
+	color: #f2a36a;
+}
+
 .campaign-matchup-link,
 .campaign-matchup-row {
 	display: flex;

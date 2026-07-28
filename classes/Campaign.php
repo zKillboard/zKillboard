@@ -469,6 +469,67 @@ class Campaign
         return $stats;
     }
 
+    public static function updateStoredStats($campaign)
+    {
+        global $mdb;
+
+        $campaign = is_object($campaign) ? (array) $campaign : $campaign;
+        if (!is_array($campaign) || empty($campaign['_id'])) return false;
+
+        $uid = (string) $campaign['_id'];
+        $filters = self::campaignFilters($campaign);
+        if (count(self::validateFilters($filters)) > 0) return false;
+
+        $filterKey = self::filterKey($filters);
+        $defenderFilters = self::swappedFilters($filters);
+        $attackerSequence = self::latestSequence($filters);
+        $defenderSequence = self::latestSequence($defenderFilters);
+        if ($attackerSequence === null || $defenderSequence === null) return false;
+
+        $current = is_object($campaign['stats'] ?? null) ? (array) $campaign['stats'] : ($campaign['stats'] ?? []);
+        $currentAttacker = is_object($current['attacker'] ?? null) ? (array) $current['attacker'] : ($current['attacker'] ?? []);
+        $currentDefender = is_object($current['defender'] ?? null) ? (array) $current['defender'] : ($current['defender'] ?? []);
+        if (isset($currentAttacker['kills'], $currentDefender['kills']) &&
+            (string) ($current['filterKey'] ?? '') == $filterKey &&
+            (int) ($currentAttacker['sequence'] ?? -1) == $attackerSequence &&
+            (int) ($currentDefender['sequence'] ?? -1) == $defenderSequence) {
+            return false;
+        }
+
+        $attacker = self::freshDirectionalSummary($filters);
+        $defender = self::freshDirectionalSummary($defenderFilters);
+        if (!empty($attacker['timedOut']) || !empty($defender['timedOut'])) return false;
+
+        $stats = [
+            'filterKey' => $filterKey,
+            'sequence' => max($attackerSequence, $defenderSequence),
+            'attacker' => [
+                'kills' => (int) ($attacker['kills'] ?? 0),
+                'sequence' => $attackerSequence,
+            ],
+            'defender' => [
+                'kills' => (int) ($defender['kills'] ?? 0),
+                'sequence' => $defenderSequence,
+            ],
+            'updated' => $mdb->now(),
+        ];
+
+        try {
+            $result = $mdb->getCollection('campaigns')->updateOne(
+                ['_id' => new ObjectId($uid)],
+                ['$set' => ['stats' => $stats]]
+            );
+            if ($result->getModifiedCount() > 0) {
+                self::clearCacheTags();
+                return true;
+            }
+        } catch (Exception $ex) {
+            return false;
+        }
+
+        return false;
+    }
+
     public static function getTopSets($campaign, $victimsOnly)
     {
         $campaign = is_object($campaign) ? (array) $campaign : $campaign;
@@ -502,6 +563,62 @@ class Campaign
     {
         $job = self::buildJob(self::filtersToQueryParams($filters), 'count');
         return AdvancedSearch::runQueuedQuery($job);
+    }
+
+    private static function freshDirectionalSummary($filters)
+    {
+        $maxTimeMS = 10000;
+        $job = self::buildJob(self::filtersToQueryParams($filters), 'count');
+        $result = AdvancedSearch::getSums($job['groupType'] . 'ID', self::jobQuery($job, $maxTimeMS), $job['victimsOnly'], true, true, $job['aggregateCollection'], $maxTimeMS);
+        unset($result['_id']);
+        return $result;
+    }
+
+    private static function latestSequence($filters)
+    {
+        global $mdb;
+
+        $maxTimeMS = 10000;
+        $job = self::buildJob(self::filtersToQueryParams($filters), 'count');
+        $collection = (string) ($job['aggregateCollection'] ?? 'killmails');
+        if (!in_array($collection, ['oneWeek', 'ninetyDays', 'killmails'], true)) $collection = 'killmails';
+        $query = self::jobQuery($job, $maxTimeMS);
+
+        if (($job['victimsOnly'] ?? 'null') !== 'null') {
+            $victimQuery = ['involved.isVictim' => ($job['victimsOnly'] == 'true')];
+            if (empty($query)) $query = $victimQuery;
+            else if (isset($query['$and']) && is_array($query['$and'])) $query['$and'][] = $victimQuery;
+            else $query = ['$and' => [$query, $victimQuery]];
+        }
+
+        try {
+            $row = $mdb->getCollection($collection)->findOne(
+                empty($query) ? [] : $query,
+                ['sort' => ['sequence' => -1], 'projection' => ['sequence' => 1], 'maxTimeMS' => $maxTimeMS]
+            );
+            return (int) ($row['sequence'] ?? 0);
+        } catch (Exception $ex) {
+            if ($ex->getCode() == 50) AdvancedSearch::logTimeout('Campaign::latestSequence', [
+                'collection' => $collection,
+                'query' => $query,
+            ], $ex);
+        }
+
+        return null;
+    }
+
+    private static function jobQuery($job, $maxTimeMS)
+    {
+        $query = $job['query'] ?? [];
+        if (!isset($job['queryParams']['items'])) return $query;
+
+        if (isset($query['$and']) && is_array($query['$and'])) $queries = $query['$and'];
+        else $queries = empty($query) ? [] : [$query];
+
+        $queries = AdvancedSearch::buildItemHistoryQuery($job['queryParams'], $queries, 'items', $job['itemJoin'], $maxTimeMS);
+        if (sizeof($queries) == 0) return [];
+        if (sizeof($queries) == 1) return $queries[0];
+        return ['$and' => $queries];
     }
 
     private static function swappedFilters($filters)

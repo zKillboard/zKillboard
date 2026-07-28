@@ -10,6 +10,8 @@ else
             th Owner
           if ($showCampaignVisibility ?? false)
             th Visibility
+          th.text-end Attacker Kills
+          th.text-end Defender Kills
           th Created
           th.text-end Actions
       tbody
@@ -17,6 +19,10 @@ else
           - $campaign = is_object($campaign) ? (array) $campaign : $campaign;
           - $uid = (string) ($campaign['_id'] ?? '');
           - $campaignTitle = Campaign::title($campaign);
+          - $campaignStats = is_object($campaign['stats'] ?? null) ? (array) $campaign['stats'] : ($campaign['stats'] ?? []);
+          - $attackerStats = is_object($campaignStats['attacker'] ?? null) ? (array) $campaignStats['attacker'] : ($campaignStats['attacker'] ?? []);
+          - $defenderStats = is_object($campaignStats['defender'] ?? null) ? (array) $campaignStats['defender'] : ($campaignStats['defender'] ?? []);
+          - $statsCurrent = isset($attackerStats['kills'], $defenderStats['kills']) && (string) ($campaignStats['filterKey'] ?? '') == Campaign::filterKey($campaign['filters'] ?? []);
           - $ownerID = (int) ($campaign['userID'] ?? 0);
           - $ownerName = (string) ($campaign['ownerName'] ?? '');
           - $created = $campaign['created'] ?? null;
@@ -40,6 +46,16 @@ else
                   span.badge.bg-success Public
                 else
                   span.badge.bg-secondary Private
+            td.text-end
+              if ($statsCurrent)
+                span.campaign-list-stat-attacker= number_format((int) ($attackerStats['kills'] ?? 0))
+              else
+                span.text-muted -
+            td.text-end
+              if ($statsCurrent)
+                span.campaign-list-stat-defender= number_format((int) ($defenderStats['kills'] ?? 0))
+              else
+                span.text-muted -
             td.text-muted= $createdText
             td.text-end
               a.btn.btn-sm.bg-primary.text-white.border-primary(href=('/campaign/' . $uid . '/')) View
