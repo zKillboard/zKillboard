@@ -7,6 +7,7 @@ class Campaign
 {
     const MAX_SPAN_SECONDS = 31622400;
     const RESULT_CACHE_SECONDS = 900;
+    const KILLMAIL_LIMIT = 100;
 
     public static function normalizeFilters($filters, $implyEndDate = true)
     {
@@ -199,7 +200,7 @@ class Campaign
         $sortTitle = ($sortNames[$sortBy] ?? ucwords($sortBy)) . ' ' . ucfirst($sortDir);
         if ($sortTitle != 'Date Desc') $parts[] = $sortTitle;
 
-        if (!empty($parts)) $campaignTitle .= ' - ' . implode(', ', array_values(array_unique($parts)));
+        if (!empty($parts)) $campaignTitle .= ', ' . implode(', ', array_values(array_unique($parts)));
         return $campaignTitle;
     }
 
@@ -422,7 +423,7 @@ class Campaign
         $filters = self::campaignFilters($campaign);
         $cacheKey = 'campaign:part:v1:' . $uid . ':killIDs:' . md5(json_encode($filters));
         $cached = RedisCache::get($cacheKey);
-        if ($cached !== null) return $cached;
+        if ($cached !== null) return array_slice(array_values((array) $cached), 0, self::KILLMAIL_LIMIT);
 
         $params = self::filtersToQueryParams($filters);
         $killIDs = self::directionalKillIDs($filters);
@@ -441,7 +442,7 @@ class Campaign
             }
         }
 
-        $killIDs = array_slice(array_values($killIDs), 0, 100);
+        $killIDs = array_slice(array_values($killIDs), 0, self::KILLMAIL_LIMIT);
         RedisCache::set($cacheKey, $killIDs, self::RESULT_CACHE_SECONDS);
         return $killIDs;
     }

@@ -292,23 +292,23 @@ class AdvancedSearch
 
         $time = strtotime($val);
         if ($time === false) return $query;
+        $queryTime = $which == 'end' ? $time + 59 : $time;
+        $operator = $which == 'start' ? '$gte' : '$lte';
 
         if ($time > time()) {
-            if ($which == 'start') {
-                $query[] = ['dttm' => ['$gte' => new MongoDB\BSON\UTCDateTime($time * 1000)]];
-                $query['hasDateFilter'] = true;
-            }
+            $query[] = ['dttm' => [$operator => new MongoDB\BSON\UTCDateTime($queryTime * 1000)]];
+            $query['hasDateFilter'] = true;
             $query[$which] = $time;
             return $query;
         }
 
         $killID = Info::findKillID($time, $which);
         if ($killID != null) {
-            $query[] = ['killID' => [($which == 'start' ? '$gte' : '$lte') => $killID]];
+            $query[] = ['killID' => [$operator => $killID]];
             $query['hasDateFilter'] = true;
             $query[$which] = $time;
         } else {
-            $query[] = ['dttm' => [($which == 'start' ? '$gte' : '$lte') => new MongoDB\BSON\UTCDateTime($time * 1000)]];
+            $query[] = ['dttm' => [$operator => new MongoDB\BSON\UTCDateTime($queryTime * 1000)]];
             $query['hasDateFilter'] = true;
             $query[$which] = $time;
         }

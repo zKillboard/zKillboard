@@ -220,12 +220,18 @@ function toggleInferredFits(event, enabled, updateHashAndQuery) {
 	$("#pagefilters").toggleClass("d-none", enabled);
 	$("#toggleInferredFits").toggleClass("btn-primary", enabled).toggleClass("btn-secondary", !enabled);
 	$("#toggleGroupLayout").prop("disabled", enabled).attr("aria-disabled", enabled ? "true" : "false");
+	$("#btn_campaign").prop("disabled", enabled).attr("aria-disabled", enabled ? "true" : "false").attr("title", enabled ? "Campaigns can't be created from Inferred Fits." : "");
+	if (enabled) hideMatchingCampaigns();
 	setAsearchTimespanDisabled(enabled);
 	updateAsearchButtonStates();
 
 	if (!allowChange || !updateHashAndQuery) return;
 	filtersStringified = null;
 	doQuery(enabled ? 'fits' : 'kills');
+}
+
+function campaignModeDisabledMessage() {
+	return asearchResultMode == 'fits' ? "Campaigns can't be created or modified from Inferred Fits." : "";
 }
 
 function rollTime() {
@@ -1218,12 +1224,24 @@ function getCampaignFilters(updateHash = true) {
 	return filters;
 }
 
+function hideMatchingCampaigns() {
+	matchingCampaignsKey = null;
+	matchingCampaignsByUID = {};
+	$("#matchingCampaigns").addClass("d-none");
+	$("#matchingCampaignsList").empty();
+	$("#matchingCampaignsStatus").removeClass("text-danger text-success").text("");
+}
+
 async function updateMatchingCampaigns() {
 	var box = $("#matchingCampaigns");
 	var list = $("#matchingCampaignsList");
 	var status = $("#matchingCampaignsStatus");
 	if (box.length == 0) return;
 	status.removeClass("text-danger text-success").text("");
+	if (campaignModeDisabledMessage() != "") {
+		hideMatchingCampaigns();
+		return;
+	}
 
 	let filters;
 	try {
@@ -1269,19 +1287,19 @@ async function updateMatchingCampaigns() {
 
 		list.empty();
 		var rendered = {};
-		campaigns.forEach(function(campaign, index) {
+		var appendCampaign = function(campaign) {
 			var title = campaign.ownerName ? "Created by " + campaign.ownerName : "Campaign";
-			if (index > 0) list.append(document.createTextNode(", "));
-			$("<a>").attr("href", campaign.url).attr("title", title).text(campaign.title || "Campaign").appendTo(list);
+			var row = $("<span>").addClass("d-flex align-items-center gap-2 flex-wrap mt-1");
+			$("<a>").attr("href", campaign.url).attr("title", title).text(campaign.title || "Campaign").appendTo(row);
+			$("<button>").attr("type", "button").attr("data-zkb-campaign-update", "1").attr("data-campaign-uid", campaign.uid).addClass("btn btn-info asearch-toolbar-control d-inline-flex align-items-center justify-content-center").text("Update Campaign").appendTo(row);
+			row.appendTo(list);
 			rendered[campaign.uid] = true;
+		};
+		campaigns.forEach(function(campaign) {
+			if (campaign.uid) appendCampaign(campaign);
 		});
 		if (editableCampaign) {
-			if (!rendered[editableCampaign.uid]) {
-				if (list.contents().length > 0) list.append(document.createTextNode(", "));
-				$("<a>").attr("href", editableCampaign.url).text(editableCampaign.title || "Campaign").appendTo(list);
-			}
-			list.append(document.createTextNode(" "));
-			$("<button>").attr("type", "button").attr("data-zkb-campaign-update", "1").attr("data-campaign-uid", editableCampaign.uid).addClass("btn btn-info asearch-toolbar-control d-inline-flex align-items-center justify-content-center ms-2").text("Update Campaign").appendTo(list);
+			if (!rendered[editableCampaign.uid]) appendCampaign(editableCampaign);
 		}
 		box.removeClass("d-none");
 	} catch (err) {
@@ -1344,14 +1362,42 @@ function showCampaignModal(mode, campaign, filters) {
 	$("#campaignCreateSubmit").text(mode == 'update' ? "Update Campaign" : "Create Campaign").prop("disabled", false);
 	$("#campaignPublic").prop("checked", mode == 'update' ? campaign.public !== false : true);
 	$("#campaignAutoEndNotice").toggleClass("d-none", !!filters.dtend);
-	$("#campaignCreateStatus").addClass("d-none").text("");
+	$("#campaignCreateStatus").removeClass("alert-info").addClass("alert-danger d-none").text("");
 
 	var modalEl = document.getElementById("campaignCreateModal");
 	if (!modalEl) return;
 	bootstrap.Modal.getOrCreateInstance(modalEl).show();
 }
 
+async function waitForCacheTagClear(tag, status) {
+	if (!tag) return;
+
+	var url = "/cache/bypass/cachetag/" + encodeURIComponent(tag) + "/";
+	var wait = function(ms) { return new Promise(function(resolve) { setTimeout(resolve, ms); }); };
+	while (true) {
+		try {
+			let res = await fetch(url, {
+				credentials: "same-origin",
+				headers: { "Accept": "application/json" }
+			});
+			let data = await res.json();
+			if (res.ok && data.success && data.pending === false) {
+				status.text("Cache cleared. Loading campaign...");
+				await wait(5000);
+				return;
+			}
+		} catch (err) {}
+		await wait(3000);
+	}
+}
+
 function campaign_open(event) {
+	var modeMessage = campaignModeDisabledMessage();
+	if (modeMessage != "") {
+		showCampaignOpenError(event, modeMessage);
+		return;
+	}
+
 	let filters;
 	try {
 		filters = getCampaignFilters();
@@ -1374,7 +1420,13 @@ async function campaign_create(event) {
 	if (event) event.preventDefault();
 	var status = $("#campaignCreateStatus");
 	var button = $("#campaignCreateSubmit");
-	status.addClass("d-none").text("");
+	status.removeClass("alert-info").addClass("alert-danger d-none").text("");
+
+	var modeMessage = campaignModeDisabledMessage();
+	if (modeMessage != "") {
+		status.removeClass("d-none").text(modeMessage);
+		return;
+	}
 
 	let filters;
 	try {
@@ -1409,13 +1461,17 @@ async function campaign_create(event) {
 		});
 		let data = await res.json();
 		if (!res.ok || !data.success) throw new Error(data.message || ("Unexpected status " + res.status));
+		if (campaignModalMode == 'update' && campaignModalUID) {
+			status.removeClass("alert-danger d-none").addClass("alert-info").text("Waiting for campaign cache to clear...");
+			await waitForCacheTagClear("campaign:" + campaignModalUID, status);
+		}
 		window.location.href = data.url;
 	} catch (err) {
 		if (err.message && err.message.indexOf("log in") >= 0) {
 			window.location.href = "/ccpoauth2/";
 			return;
 		}
-		status.removeClass("d-none").text(err.message || (campaignModalMode == 'update' ? "Unable to update campaign." : "Unable to create campaign."));
+		status.removeClass("alert-info d-none").addClass("alert-danger").text(err.message || (campaignModalMode == 'update' ? "Unable to update campaign." : "Unable to create campaign."));
 		button.prop("disabled", false);
 	}
 }
@@ -1428,6 +1484,12 @@ async function campaign_update(event) {
 	if (!uid) return;
 
 	status.removeClass("text-danger text-success").text("");
+	var modeMessage = campaignModeDisabledMessage();
+	if (modeMessage != "") {
+		status.addClass("text-danger").text(modeMessage);
+		return;
+	}
+
 	var campaign = matchingCampaignsByUID[uid];
 	if (!campaign) {
 		status.addClass("text-danger").text("Unable to load campaign details.");

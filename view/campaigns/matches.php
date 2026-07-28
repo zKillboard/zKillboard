@@ -25,11 +25,7 @@ function handler($request, $response, $args, $container) {
     if ($campaignUID != '' && count(Campaign::validateFilters($filters)) == 0) {
         $campaign = Campaign::findOwned($campaignUID, $userID);
         if ($campaign != null) {
-            $row = Campaign::listRow($campaign);
-            $campaignKey = (string) ($campaign['filterKey'] ?? '');
-            if ($campaignKey == '') $campaignKey = Campaign::filterKey($campaign['filters'] ?? []);
-            $row['changed'] = Campaign::filterKey($filters) != $campaignKey && Campaign::filterKey($filters, false) != $campaignKey;
-            $editableCampaign = $row;
+            $editableCampaign = Campaign::listRow($campaign);
         }
     }
 

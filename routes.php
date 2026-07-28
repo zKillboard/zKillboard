@@ -48,6 +48,7 @@ $routes = [
 	'/api/stats/{type}/{id}/{sort:kills|isk}/' => ['GET', 'view/apistats.php'],
 	'/api/stats/{type}/{id}/' => ['GET', 'view/apistats.php'],
 	'/scanalyzer/' => ['GET', 'view/scanalyzer.php'],
+	'/cache/bypass/cachetag/{tag}/' => ['GET', 'view/cachetag.php'],
 	'/cache/{cacheType:bypass|1hour|24hour|tagged}/stats/' => ['GET', 'view/ajax/stats.php'],
 	'/cache/{cacheType:1hour|24hour|tagged}/killlist/' => ['GET', 'view/ajax/killlist.php'],
 	'/cache/{cacheType:1hour|24hour|tagged}/statstop10/' => ['GET', 'view/ajax/statstop10.php'],
