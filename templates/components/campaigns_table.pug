@@ -1,0 +1,51 @@
+if (count($campaigns ?? []) == 0)
+  .alert.alert-info No campaigns found.
+else
+  .table-responsive
+    table.table.table-sm.table-striped.table-hover.align-middle
+      thead
+        tr
+          th Campaign
+          if ($showCampaignOwner ?? true)
+            th Owner
+          if ($showCampaignVisibility ?? false)
+            th Visibility
+          th Created
+          th.text-end Actions
+      tbody
+        each $campaign in ($campaigns ?? [])
+          - $campaign = is_object($campaign) ? (array) $campaign : $campaign;
+          - $uid = (string) ($campaign['_id'] ?? '');
+          - $campaignTitle = Campaign::title($campaign);
+          - $ownerID = (int) ($campaign['userID'] ?? 0);
+          - $ownerName = (string) ($campaign['ownerName'] ?? '');
+          - $created = $campaign['created'] ?? null;
+          - $createdText = '';
+          if ($created instanceof MongoDB\BSON\UTCDateTime)
+            - $createdText = $created->toDateTime()->format('Y-m-d H:i');
+          elseif (is_array($created) && isset($created['sec']))
+            - $createdText = date('Y-m-d H:i', (int) $created['sec']);
+          tr
+            td
+              a(href=('/campaign/' . $uid . '/') title=$campaignTitle)= $campaignTitle
+            if ($showCampaignOwner ?? true)
+              td
+                if ($ownerID > 0 && $ownerName != '')
+                  a(href=('/character/' . $ownerID . '/'))= $ownerName
+                elseif ($ownerName != '')
+                  = $ownerName
+            if ($showCampaignVisibility ?? false)
+              td
+                if (($campaign['public'] ?? true) === true)
+                  span.badge.bg-success Public
+                else
+                  span.badge.bg-secondary Private
+            td.text-muted= $createdText
+            td.text-end
+              a.btn.btn-sm.bg-primary.text-white.border-primary(href=('/campaign/' . $uid . '/')) View
+              if ($showCampaignModify ?? false)
+                a.btn.btn-sm.bg-info.text-white.border-info.ms-2(href=Campaign::searchUrl($campaign, true)) Modify Campaign
+              if ($showCampaignDelete ?? false)
+                form.d-inline.ms-2(method="post" action="/account/campaigns/" data-zkb-confirm="Are you sure you want to delete this campaign?")
+                  input(type="hidden" name="deletecampaignid" value=$uid)
+                  input.btn.btn-sm.btn-danger(type="submit" value="Delete")

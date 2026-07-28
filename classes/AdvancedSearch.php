@@ -291,8 +291,14 @@ class AdvancedSearch
         if ($val == "") return $query;
 
         $time = strtotime($val);
+        if ($time === false) return $query;
+
         if ($time > time()) {
-			// no point in adding a filter for a future date
+            if ($which == 'start') {
+                $query[] = ['dttm' => ['$gte' => new MongoDB\BSON\UTCDateTime($time * 1000)]];
+                $query['hasDateFilter'] = true;
+            }
+            $query[$which] = $time;
             return $query;
         }
 
@@ -300,7 +306,11 @@ class AdvancedSearch
         if ($killID != null) {
             $query[] = ['killID' => [($which == 'start' ? '$gte' : '$lte') => $killID]];
             $query['hasDateFilter'] = true;
-            $query[$which] = strtotime($val);
+            $query[$which] = $time;
+        } else {
+            $query[] = ['dttm' => [($which == 'start' ? '$gte' : '$lte') => new MongoDB\BSON\UTCDateTime($time * 1000)]];
+            $query['hasDateFilter'] = true;
+            $query[$which] = $time;
         }
 
         return $query;
@@ -410,7 +420,7 @@ class AdvancedSearch
 
         $collection = self::getAggregateCollection($collection);
         if ($collection == null) return self::getEmptySums();
-        $hashKey = "Stats::getSums:q:$collection:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly);
+        $hashKey = "Stats::getSums:v2:q:$collection:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly);
         try {
             $result = RedisCache::get($hashKey);
             if ($cacheOverride == false && $result != null) {
@@ -443,6 +453,7 @@ class AdvancedSearch
                 'fitted' => ['$sum' => '$zkb.fittedValue'], 
                 'dropped' => ['$sum' => '$zkb.droppedValue'], 
                 'destroyed' => ['$sum' => '$zkb.destroyedValue'], 
+                'points' => ['$sum' => '$zkb.points'],
                 'kills' => ['$sum' => 1]
                 ]
             ];
@@ -929,6 +940,7 @@ class AdvancedSearch
             'fitted' => 0,
             'dropped' => 0,
             'destroyed' => 0,
+            'points' => 0,
             'kills' => 0
         ];
     }

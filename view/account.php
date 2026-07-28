@@ -138,6 +138,15 @@ if ($_POST) {
 		}
 	}
 
+	$deleteCampaignID = Util::getPost('deletecampaignid');
+	if (isset($deleteCampaignID)) {
+		if (Campaign::delete($deleteCampaignID, $userID)) {
+			User::sendMessage("The campaign has been deleted.");
+		} else {
+			User::sendMessage("We did nothing. Were you supposed to attempt that?");
+		}
+	}
+
 	// Tracker Notification
 	$tn = Util::getPost('trackernotification');
 	if (isset($tn)) {
@@ -253,6 +262,9 @@ $data['sponsoredTotalIsk'] = $sponsoredTotalIsk;
 
 if ($key == 'tracker') {
 	$data = array_merge($data, trackerDashboardData($userID));
+}
+if ($key == 'campaigns') {
+	$data['campaigns'] = Campaign::userCampaigns($userID);
 }
 
     $accountData = array('data' => $data, 'message' => $error, 'key' => $key, 'reqid' => $reqid);

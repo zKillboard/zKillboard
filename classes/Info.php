@@ -897,14 +897,13 @@ class Info
 			$unixtime += 59;  // start at the end of the minute
 		else
 			$unixtime = $unixtime - ($unixtime % 60);  // start at the beginning of the minute
-		$starttime = $unixtime;
-		do {
-			$killID = $mdb->findField('killmails', 'killID', ['dttm' => new MongoDB\BSON\UTCDateTime($unixtime * 1000)], ['killID' => ($which == 'start' ? 1 : -1)]);
-			$unixtime += ($which == 'start' ? 1 : -1);
-			if (abs($starttime - $unixtime) > 3600)
-				break;  // only check 1 hour worth of mails
-		} while ($killID == null);
-		return $killID;
+
+		$operator = $which == 'start' ? '$gte' : '$lte';
+		$sort = [
+			'dttm' => $which == 'start' ? 1 : -1,
+			'killID' => $which == 'start' ? 1 : -1
+		];
+		return $mdb->findField('killmails', 'killID', ['dttm' => [$operator => new MongoDB\BSON\UTCDateTime($unixtime * 1000)]], $sort);
 	}
 
 	public static $itemIDs = [];

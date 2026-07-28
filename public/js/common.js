@@ -64,6 +64,7 @@ $(document).ready(function () {
     $(document).on('click', '[data-zkb-sponsor-url]', sponsorClick);
     $(document).on('click', '[data-zkb-save-fitting]', saveFittingClick);
     $(document).on('click', '[data-zkb-select-on-click]', selectOnClick);
+    $(document).on('click', '[data-zkb-copy-link]', copyLinkClick);
     $(document).on('click', '[data-zkb-history-back]', historyBackClick);
     $(document).on('click', '[data-zkb-ingame-link-src]', ingameLinkClick);
     $(document).on('click', '[data-zkb-show-grouping]', showGroupingClick);
@@ -187,8 +188,9 @@ function loadDailyAsyncParts() {
             const loadingTimer = setTimeout(function () {
                 target.setAttribute("data-show-loading", "1");
             }, 300);
-            let url = base + "&part=" + encodeURIComponent(target.getAttribute("data-part") || "");
-            if (target.getAttribute("data-group")) url += "&group=" + encodeURIComponent(target.getAttribute("data-group"));
+            const part = encodeURIComponent(target.getAttribute("data-part") || "");
+            let url = base.indexOf("{part}") !== -1 ? base.replace("{part}", part) : base + "&part=" + part;
+            if (target.getAttribute("data-group")) url += (url.indexOf("?") === -1 ? "?" : "&") + "group=" + encodeURIComponent(target.getAttribute("data-group"));
 
             const load = function () {
                 fetch(url, { credentials: "same-origin", headers: { "X-Requested-With": "XMLHttpRequest" } }).then(function (response) {
@@ -205,6 +207,7 @@ function loadDailyAsyncParts() {
                         if (minHeight > 0) target.style.minHeight = minHeight + "px";
                         target.innerHTML = html;
                         executeInsertedScripts(target);
+                        loadFetchmeKillRows();
                         const loadedHeight = Math.max(target.offsetHeight || 0, target.scrollHeight || 0);
                         if (loadedHeight > minHeight) target.style.minHeight = loadedHeight + "px";
                         target.setAttribute("data-loaded", "1");
@@ -379,7 +382,7 @@ function loadFetchmeKillRows() {
         const row = $(this);
         if (row.attr("data-fetching") === "true") return;
         row.attr("data-fetching", "true");
-        loadKillRow(row.attr("data-kill-id") || row.attr("killID"));
+        loadKillRow(row.attr("data-kill-id") || row.attr("killID"), row.attr("data-row-url") || "");
     });
 }
 
@@ -1050,6 +1053,19 @@ function copyToClipboard(e) {
     }
 }
 
+function copyLinkClick(event) {
+    event.preventDefault();
+    const href = this.getAttribute("href") || this.getAttribute("data-zkb-copy-link") || window.location.href;
+    const link = new URL(href, window.location.origin).href;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(function () {
+            showToast("Campaign link copied to your clipboard");
+        }).catch(function () {
+            showToast("Unable to copy campaign link", 5000);
+        });
+    }
+}
+
 const asciiForwardSlash = '/'.charCodeAt(0);
 const asciiBackSlash = '\\'.charCodeAt(0);
 
@@ -1231,8 +1247,8 @@ function loadLittleMail(killID) {
         $.get("/cache/24hour/killlistrow/" + killID + "/", addLittleKill);
 }
 
-function loadKillRow(killID, retries = 0) {
-        fetch("/cache/24hour/killlistrow/" + killID + "/", { credentials: 'same-origin' })
+function loadKillRow(killID, rowUrl = "", retries = 0) {
+        fetch(rowUrl || "/cache/24hour/killlistrow/" + killID + "/", { credentials: 'same-origin' })
             .then(function(res) {
                 if (!res.ok) throw new Error('Failed to load kill row');
                 return res.text();
@@ -1242,7 +1258,7 @@ function loadKillRow(killID, retries = 0) {
             })
             .catch(function() {
                 retries++;
-                if (retries < 3) setTimeout(loadKillRow.bind(null, killID, retries), 1000);
+                if (retries < 3) setTimeout(loadKillRow.bind(null, killID, rowUrl, retries), 1000);
             });
 }
 
@@ -1257,8 +1273,11 @@ function addKillRow(data, id) {
 var dateFormatter = new Intl.DateTimeFormat(undefined, {dateStyle: 'long', timeZone: 'UTC' });
 var longFormatter = new Intl.DateTimeFormat(undefined, {dateStyle: 'long', timeStyle: 'long', timeZone: 'UTC' });
 function adjustKillmailPresentation() {
+    const killmailsBody = document.getElementById('killmailstobdy');
+    if (!killmailsBody) return;
+
     // Remove excess killmails
-    while (document.querySelectorAll('.tr-killmail').length > 50) {
+    while (killmailsBody.getAttribute('data-no-row-prune') !== '1' && document.querySelectorAll('.tr-killmail').length > 50) {
         const rows = document.querySelectorAll('.tr-killmail');
         const lastRow = rows[rows.length - 1];
         if (!lastRow) break;
@@ -1266,8 +1285,6 @@ function adjustKillmailPresentation() {
     }
 
     // Ensure the last row isn't a dangling date row
-    const killmailsBody = document.getElementById('killmailstobdy');
-    if (!killmailsBody) return;
     while (killmailsBody.lastElementChild && killmailsBody.lastElementChild.classList.contains('tr-date')) {
         killmailsBody.lastElementChild.remove();
     }
@@ -1926,6 +1943,9 @@ function assignRowColor() {
     document.querySelectorAll('.kltbd').forEach(function(el) {
         assignGreenRed.call(el);
     });
+    document.querySelectorAll('.war-kill-card.tr-killmail').forEach(function(el) {
+        assignKillListRowV2Color.call(el);
+    });
 }
 
 function assignGreenRed() {
@@ -1950,6 +1970,36 @@ function assignGreenRed() {
     const okIcon = document.querySelector('#kill-' + (row.getAttribute('data-kill-id') || row.getAttribute('killID')) + ' .fa-check');
     if (okIcon) okIcon.classList.remove('d-none');
     row.classList.add('winwin');
+}
+
+function assignKillListRowV2Color() {
+    const row = this;
+    const body = row.closest('[data-zkb-attacker-ids]');
+    if (!body) return;
+
+    const attackerIDs = (body.getAttribute('data-zkb-attacker-ids') || '').split(',').filter(Boolean);
+    if (attackerIDs.length == 0) return;
+
+    const vics = (row.getAttribute('data-vics') || row.getAttribute('vics') || '').split(',').filter(Boolean);
+    if (vics.length == 0) return;
+
+    let victimIsAttacker = false;
+    for (let i = 0; i < vics.length; i++) {
+        if (attackerIDs.indexOf(vics[i]) >= 0) {
+            victimIsAttacker = true;
+            break;
+        }
+    }
+
+    const victimSide = row.querySelector('.war-kill-victim');
+    const finalBlowSide = row.querySelector('.war-kill-finalblow');
+    row.classList.remove('war-kill-victim-attacker', 'war-kill-victim-defender', 'war-kill-victim-unknown');
+    if (victimSide) victimSide.classList.remove('war-kill-side-attacker', 'war-kill-side-defender', 'war-kill-side-unknown');
+    if (finalBlowSide) finalBlowSide.classList.remove('war-kill-side-attacker', 'war-kill-side-defender', 'war-kill-side-unknown');
+
+    row.classList.add(victimIsAttacker ? 'war-kill-victim-attacker' : 'war-kill-victim-defender');
+    if (victimSide) victimSide.classList.add(victimIsAttacker ? 'war-kill-side-attacker' : 'war-kill-side-defender');
+    if (finalBlowSide) finalBlowSide.classList.add(victimIsAttacker ? 'war-kill-side-defender' : 'war-kill-side-attacker');
 }
 
 function fixCCPsBrokenImages() {

@@ -1,0 +1,18 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'Public Campaigns';
+
+block title
+  include components/title.pug
+
+block content
+  h1.h3 Public Campaigns
+  .alert.alert-info
+    | To create a campaign, open the
+    a.alert-link(href="/asearch/") search page
+    | , add at least one attacker and one defender, leave Either empty, select a custom start date, keep any end date within one year, then click Create Campaign next to Save Search.
+  - $showCampaignOwner = true;
+  - $showCampaignVisibility = false;
+  - $showCampaignDelete = false;
+  include components/campaigns_table.pug

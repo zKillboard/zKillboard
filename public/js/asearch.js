@@ -5,6 +5,12 @@ var asearchRollTimeTimer = null;
 var asearchClickCatchTimer = null;
 var asearchHistoryNavigation = false;
 var asearchResultMode = 'kills';
+var activeCampaignUID = null;
+var campaignModalMode = 'create';
+var campaignModalUID = null;
+var matchingCampaignsByUID = {};
+var matchingCampaignsKey = null;
+var matchingCampaignsRequest = 0;
 
 var radios = { sort: { sortBy: 'date', sortDir: 'desc' } };  // to be deprecated
 var asfilter = { location: [], attackers: [], neutrals: [], victims: [], items: [], sort: { sortBy: 'date', sortDir: 'desc' } };
@@ -17,13 +23,19 @@ function zkbInitAsearch() {
 	var container = document.getElementById('asearchcontent');
 	if (!container) return;
 
-	var initKey = window.location.pathname + window.location.hash;
+	var initKey = window.location.pathname + window.location.search + window.location.hash;
 	if (container.getAttribute('data-zkb-asearch-init-key') === initKey) return;
 	container.setAttribute('data-zkb-asearch-init-key', initKey);
 
 	allowChange = true;
 	first_load = true;
 	filtersStringified = undefined;
+	matchingCampaignsKey = null;
+	matchingCampaignsRequest = 0;
+	activeCampaignUID = (new URLSearchParams(window.location.search)).get('campaign') || null;
+	campaignModalMode = 'create';
+	campaignModalUID = null;
+	matchingCampaignsByUID = {};
 	radios = { sort: { sortBy: 'date', sortDir: 'desc' } };
 	asfilter = { location: [], attackers: [], neutrals: [], victims: [], items: [], sort: { sortBy: 'date', sortDir: 'desc' } };
 	asearchResultMode = 'kills';
@@ -82,7 +94,10 @@ function loadasearch() {
 
 
 	$("#btn_save").off('click.zkb-asearch').on('click.zkb-asearch', btn_save);
+	$("#btn_campaign").off('click.zkb-asearch').on('click.zkb-asearch', campaign_open);
+	$("#campaignCreateSubmit").off('click.zkb-asearch').on('click.zkb-asearch', campaign_create);
 	$("#btn_export").off('click.zkb-asearch').on('click.zkb-asearch', btn_export);
+	$(document).off('click.zkb-asearch-campaign-update').on('click.zkb-asearch-campaign-update', '[data-zkb-campaign-update]', campaign_update);
 	$("#exportCsv").off('click.zkb-asearch').on('click.zkb-asearch', exportCsv);
 	$("#toggleInferredFits").off('click.zkb-asearch').on('click.zkb-asearch', toggleInferredFits);
 	$("#toggleGroupLayout").off('click.zkb-asearch').on('click.zkb-asearch', toggleGroupLayout);
@@ -552,9 +567,10 @@ function setHash() {
 
 	var hash = '';
 	if (Object.keys(filter).length > 0) hash = '#' + encodeURIComponent(JSON.stringify(filter));
-	if ((window.location.pathname + window.location.hash) != (window.location.pathname + hash)) {
+	var url = window.location.pathname + window.location.search + hash;
+	if ((window.location.pathname + window.location.search + window.location.hash) != url) {
 		var historyState = (typeof getSpaHistoryState === 'function') ? getSpaHistoryState() : "";
-		history.pushState(historyState, document.title, window.location.pathname + hash);
+		history.pushState(historyState, document.title, url);
 	}
 }
 
@@ -690,6 +706,7 @@ function doQuery(queryType = 'all', isRetry = false) {
 		if (batch === asearchBatch && asearchRetryTimer == null) updateAsearchQueueIndicator();
 	});
 	if (!asearchHistoryNavigation) setHash();
+	if (!isRetry) updateMatchingCampaigns();
 }
 
 function getFilters() {
@@ -1147,6 +1164,251 @@ async function btn_save(event) {
 	} finally {
 		setTimeout(() => { button.prop("disabled", false).removeClass('btn-info').attr("title", ""); }, 3000);
 	}
+}
+
+function getCampaignFilters(updateHash = true) {
+	if (updateHash) setHash();
+	var hash = decodeURIComponent((window.location.hash || '').replace(/^#/, ''));
+	var filters = hash == '' ? {} : JSON.parse(hash);
+	if (filters.buttons == null) filters.buttons = [];
+	filters.buttons = filters.buttons.filter(function(button) { return !/^page\d+$/.test(button) && button != 'inferred-fits'; });
+	filters.buttons.push('page1');
+	filters.buttons = filters.buttons.filter(function(button, index, arr) { return arr.indexOf(button) == index; });
+	delete filters.results;
+	return filters;
+}
+
+async function updateMatchingCampaigns() {
+	var box = $("#matchingCampaigns");
+	var list = $("#matchingCampaignsList");
+	var status = $("#matchingCampaignsStatus");
+	if (box.length == 0) return;
+	status.removeClass("text-danger text-success").text("");
+
+	let filters;
+	try {
+		filters = getCampaignFilters(false);
+	} catch (err) {
+		box.addClass("d-none");
+		return;
+	}
+
+	if (campaignValidationMessage(filters) != "") {
+		matchingCampaignsKey = null;
+		box.addClass("d-none");
+		list.empty();
+		return;
+	}
+
+	var key = JSON.stringify({ filters: filters, campaignUID: activeCampaignUID });
+	if (key == matchingCampaignsKey) return;
+	matchingCampaignsKey = key;
+
+	var request = ++matchingCampaignsRequest;
+	try {
+		let res = await fetch("/account/campaigns/matches/", {
+			method: "POST",
+			credentials: "same-origin",
+			headers: { "Content-Type": "application/json", "Accept": "application/json" },
+			body: JSON.stringify({ filters: filters, campaignUID: activeCampaignUID })
+		});
+		let data = await res.json();
+		if (request != matchingCampaignsRequest) return;
+
+		var campaigns = Array.isArray(data.campaigns) ? data.campaigns.slice(0, 5) : [];
+		var editableCampaign = data.editableCampaign || null;
+		matchingCampaignsByUID = {};
+		campaigns.forEach(function(campaign) { if (campaign.uid) matchingCampaignsByUID[campaign.uid] = campaign; });
+		if (data.editableCampaign && data.editableCampaign.uid) matchingCampaignsByUID[data.editableCampaign.uid] = data.editableCampaign;
+		if (campaigns.length == 1 && activeCampaignUID == null) activeCampaignUID = campaigns[0].uid;
+		if (!res.ok || !data.success || (campaigns.length == 0 && !editableCampaign)) {
+			box.addClass("d-none");
+			list.empty();
+			return;
+		}
+
+		list.empty();
+		var rendered = {};
+		campaigns.forEach(function(campaign, index) {
+			var title = campaign.ownerName ? "Created by " + campaign.ownerName : "Campaign";
+			if (index > 0) list.append(document.createTextNode(", "));
+			$("<a>").attr("href", campaign.url).attr("title", title).text(campaign.title || "Campaign").appendTo(list);
+			rendered[campaign.uid] = true;
+		});
+		if (editableCampaign) {
+			if (!rendered[editableCampaign.uid]) {
+				if (list.contents().length > 0) list.append(document.createTextNode(", "));
+				$("<a>").attr("href", editableCampaign.url).text(editableCampaign.title || "Campaign").appendTo(list);
+			}
+			list.append(document.createTextNode(" "));
+			$("<button>").attr("type", "button").attr("data-zkb-campaign-update", "1").attr("data-campaign-uid", editableCampaign.uid).addClass("btn btn-info asearch-toolbar-control d-inline-flex align-items-center justify-content-center ms-2").text("Update Campaign").appendTo(list);
+		}
+		box.removeClass("d-none");
+	} catch (err) {
+		if (request == matchingCampaignsRequest) {
+			box.addClass("d-none");
+			list.empty();
+		}
+	}
+}
+
+function campaignValidationMessage(filters) {
+	if (!filters) return "Add at least one attacker and at least one defender.";
+
+	var missing = [];
+	if (!Array.isArray(filters.attackers) || filters.attackers.length == 0) missing.push("attacker");
+	if (!Array.isArray(filters.victims) || filters.victims.length == 0) missing.push("defender");
+	if (missing.length == 2) return "Add at least one attacker and at least one defender.";
+	if (missing.length == 1) return "Add at least one " + missing[0] + ".";
+	if (Array.isArray(filters.neutrals) && filters.neutrals.length > 0) return "Remove filters from Either.";
+	if (!Array.isArray(filters.buttons) || filters.buttons.indexOf('custom') < 0 || !filters.dtstart) return "Select a custom start date.";
+
+	var start = Date.parse(filters.dtstart);
+	if (isNaN(start)) return "Select a valid custom start date.";
+	if (filters.dtend) {
+		var end = Date.parse(filters.dtend);
+		if (isNaN(end) || end <= start) return "Select an end date after the start date.";
+		var maxEnd = new Date(start);
+		maxEnd.setFullYear(maxEnd.getFullYear() + 1);
+		if (end > maxEnd.getTime()) return "Campaigns can cover at most one year.";
+	}
+	return "";
+}
+
+function showCampaignOpenError(event, message) {
+	if (event) event.preventDefault();
+
+	$("#campaignOpenErrorMessage").text(message);
+	var modalEl = document.getElementById("campaignOpenErrorModal");
+	if (modalEl && window.bootstrap && bootstrap.Modal) {
+		bootstrap.Modal.getOrCreateInstance(modalEl).show();
+		return;
+	}
+
+	var messageBox = $("#zkb-message");
+	if (messageBox.length > 0) {
+		messageBox.text(message).addClass("text-center").removeClass("d-none");
+		return;
+	}
+
+	if (typeof showToast === 'function') showToast(message, 5000);
+	else alert(message);
+}
+
+function showCampaignModal(mode, campaign, filters) {
+	campaign = campaign || {};
+	campaignModalMode = mode;
+	campaignModalUID = mode == 'update' ? (campaign.uid || null) : null;
+
+	$("#campaignCreateTitle").text(mode == 'update' ? "Update Campaign" : "Create Campaign");
+	$("#campaignCreateSubmit").text(mode == 'update' ? "Update Campaign" : "Create Campaign").prop("disabled", false);
+	$("#campaignPublic").prop("checked", mode == 'update' ? campaign.public !== false : true);
+	$("#campaignAutoEndNotice").toggleClass("d-none", !!filters.dtend);
+	$("#campaignCreateStatus").addClass("d-none").text("");
+
+	var modalEl = document.getElementById("campaignCreateModal");
+	if (!modalEl) return;
+	bootstrap.Modal.getOrCreateInstance(modalEl).show();
+}
+
+function campaign_open(event) {
+	let filters;
+	try {
+		filters = getCampaignFilters();
+	} catch (err) {
+		showCampaignOpenError(event, "Unable to read this search.");
+		return;
+	}
+
+	var validationMessage = campaignValidationMessage(filters);
+	if (validationMessage != "") {
+		showCampaignOpenError(event, validationMessage);
+		return;
+	}
+
+	if (event) event.preventDefault();
+	showCampaignModal('create', null, filters);
+}
+
+async function campaign_create(event) {
+	if (event) event.preventDefault();
+	var status = $("#campaignCreateStatus");
+	var button = $("#campaignCreateSubmit");
+	status.addClass("d-none").text("");
+
+	let filters;
+	try {
+		filters = getCampaignFilters();
+	} catch (err) {
+		status.removeClass("d-none").text("Unable to read this search.");
+		return;
+	}
+
+	var validationMessage = campaignValidationMessage(filters);
+	if (validationMessage != "") {
+		status.removeClass("d-none").text(validationMessage);
+		return;
+	}
+
+	if (campaignModalMode == 'update' && !campaignModalUID) {
+		status.removeClass("d-none").text("Unable to identify this campaign.");
+		return;
+	}
+
+	button.prop("disabled", true);
+	try {
+		var url = campaignModalMode == 'update' ? "/account/campaigns/update/" + encodeURIComponent(campaignModalUID) + "/" : "/account/campaigns/create/";
+		let res = await fetch(url, {
+			method: "POST",
+			credentials: "same-origin",
+			headers: { "Content-Type": "application/json", "Accept": "application/json" },
+			body: JSON.stringify({
+				visibility: $("#campaignPublic").prop("checked") ? "public" : "private",
+				filters: filters
+			})
+		});
+		let data = await res.json();
+		if (!res.ok || !data.success) throw new Error(data.message || ("Unexpected status " + res.status));
+		window.location.href = data.url;
+	} catch (err) {
+		if (err.message && err.message.indexOf("log in") >= 0) {
+			window.location.href = "/ccpoauth2/";
+			return;
+		}
+		status.removeClass("d-none").text(err.message || (campaignModalMode == 'update' ? "Unable to update campaign." : "Unable to create campaign."));
+		button.prop("disabled", false);
+	}
+}
+
+async function campaign_update(event) {
+	if (event) event.preventDefault();
+	var button = $(event.currentTarget);
+	var status = $("#matchingCampaignsStatus");
+	var uid = button.attr("data-campaign-uid");
+	if (!uid) return;
+
+	status.removeClass("text-danger text-success").text("");
+	var campaign = matchingCampaignsByUID[uid];
+	if (!campaign) {
+		status.addClass("text-danger").text("Unable to load campaign details.");
+		return;
+	}
+
+	let filters;
+	try {
+		filters = getCampaignFilters();
+	} catch (err) {
+		status.addClass("text-danger").text("Unable to read this search.");
+		return;
+	}
+
+	var validationMessage = campaignValidationMessage(filters);
+	if (validationMessage != "") {
+		status.addClass("text-danger").text(validationMessage);
+		return;
+	}
+
+	showCampaignModal('update', campaign, filters);
 }
 
 function assignClickCatch() {

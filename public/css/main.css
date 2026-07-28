@@ -1666,6 +1666,31 @@ code {
 	gap: 0.45rem;
 }
 
+.war-kill-column-header {
+	display: grid;
+	grid-template-columns: minmax(0, 33.5%) minmax(220px, 33%) minmax(0, 33.5%);
+	gap: 0.5rem;
+	padding: 0 0.65rem;
+}
+
+.war-kill-column-title {
+	color: #8f9ca8;
+	font-size: 0.72rem;
+	font-weight: 700;
+	line-height: 1.2;
+	text-transform: uppercase;
+}
+
+.war-kill-column-party-title {
+	display: grid;
+	grid-template-columns: 56px minmax(0, 1fr);
+	gap: 0.45rem;
+}
+
+.war-kill-column-party-title span {
+	grid-column: 2;
+}
+
 .war-kill-date {
 	padding: 0.25rem 0.55rem;
 	background: #000;
@@ -1687,28 +1712,22 @@ code {
 	align-items: start;
 }
 
+.war-kill-card.war-kill-victim-attacker {
+	background: rgba(120, 24, 24, 0.32);
+	border-color: rgba(200, 65, 65, 0.45);
+}
+
 .war-kill-card.war-kill-victim-defender {
-	border-left: 3px solid #f2a36a;
+	background: rgba(24, 96, 48, 0.28);
+	border-color: rgba(75, 175, 95, 0.45);
 }
 
-.war-kill-card.war-kill-victim-aggressor {
-	border-left: 3px solid #5db7ff;
-}
-
-.war-kill-card.war-kill-finalblow-defender {
-	border-right: 3px solid #f2a36a;
-}
-
-.war-kill-card.war-kill-finalblow-aggressor {
-	border-right: 3px solid #5db7ff;
-}
-
-.war-kill-side-defender .war-kill-party-image img {
-	box-shadow: 0 0 0 1px rgba(242, 163, 106, 0.7);
-}
-
-.war-kill-side-aggressor .war-kill-party-image img {
-	box-shadow: 0 0 0 1px rgba(93, 183, 255, 0.7);
+.war-kill-placeholder {
+	min-height: 4.5rem;
+	padding: 1.25rem 0.5rem;
+	background: rgba(255, 255, 255, 0.035);
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 0.45rem;
 }
 
 .war-kill-party,
@@ -1727,8 +1746,8 @@ code {
 }
 
 .war-kill-finalblow {
-	grid-template-columns: minmax(0, 1fr) 56px;
-	text-align: right;
+	grid-template-columns: 56px minmax(0, 1fr);
+	text-align: left;
 	justify-self: stretch;
 }
 
@@ -1751,7 +1770,6 @@ code {
 
 .war-kill-ship-copy {
 	position: relative;
-	padding-right: 3.2rem;
 }
 
 .war-kill-party-copy a,
@@ -1774,7 +1792,7 @@ code {
 }
 
 .war-kill-finalblow .war-kill-label {
-	justify-content: flex-end;
+	justify-content: flex-start;
 }
 
 .war-kill-involved-count {
@@ -1803,7 +1821,7 @@ code {
 
 .war-kill-time {
 	position: absolute;
-	top: 0;
+	top: 1.15rem;
 	right: 0;
 	color: #9facb8;
 	font-size: 0.76rem;
@@ -1813,7 +1831,7 @@ code {
 
 .war-kill-time-meta {
 	position: absolute;
-	top: 1rem;
+	top: 2.15rem;
 	right: 0;
 	color: #c0c9d2;
 	font-size: 0.74rem;
@@ -1843,6 +1861,7 @@ code {
 
 .war-kill-value {
 	display: block;
+	padding-right: 3.2rem;
 	color: #c9d8e4;
 	font-weight: 700;
 	line-height: 1.16;
@@ -1852,6 +1871,7 @@ code {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.25rem;
+	padding-right: 3.2rem;
 	color: #9faab5;
 	font-size: 0.78rem;
 	line-height: 1.16;
@@ -1862,6 +1882,7 @@ code {
 	flex-wrap: wrap;
 	gap: 0.25rem;
 	margin-top: 0.08rem;
+	padding-right: 3.2rem;
 	color: #98a4af;
 	font-size: 0.72rem;
 }
@@ -1964,6 +1985,10 @@ code {
 
 	.war-kill-card {
 		grid-template-columns: 1fr;
+	}
+
+	.war-kill-column-header {
+		display: none;
 	}
 
 	.war-kill-finalblow {
@@ -2080,6 +2105,97 @@ code {
 	text-align: left;
 }
 
+.campaign-matchup-entity {
+	line-height: 1.15;
+	white-space: normal;
+}
+
+.campaign-matchup-role {
+	display: block;
+	margin-bottom: 0.2rem;
+	font-size: 0.42em;
+	font-weight: 700;
+	line-height: 1;
+	text-transform: uppercase;
+}
+
+.campaign-matchup-defender .campaign-matchup-role {
+	color: #f2a36a;
+}
+
+.campaign-matchup-attacker .campaign-matchup-role {
+	color: #5db7ff;
+}
+
+.campaign-matchup-link,
+.campaign-matchup-row {
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+	min-width: 0;
+	overflow: hidden;
+	color: inherit;
+}
+
+.campaign-matchup-row-left {
+	justify-content: flex-end;
+	padding-right: 0.35rem;
+	border-right: 3px solid rgba(93, 183, 255, 0.85);
+}
+
+.campaign-matchup-row-right {
+	justify-content: flex-start;
+	padding-left: 0.35rem;
+	border-left: 3px solid rgba(242, 163, 106, 0.85);
+}
+
+.campaign-matchup-name {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.campaign-matchup-image {
+	width: 32px;
+	height: 32px;
+	flex: 0 0 32px;
+	border-radius: 4px;
+	object-fit: contain;
+}
+
+.campaign-matchup-defender .campaign-matchup-image {
+	box-shadow: 0 0 0 1px rgba(242, 163, 106, 0.75);
+}
+
+.campaign-matchup-attacker .campaign-matchup-image {
+	box-shadow: 0 0 0 1px rgba(93, 183, 255, 0.75);
+}
+
+.campaign-matchup-link:hover,
+.campaign-matchup-link:focus {
+	color: #d8effb;
+	text-decoration: none;
+}
+
+.campaign-report-page .war-top-rail-left > .float-start {
+	border-top-color: rgba(93, 183, 255, 0.75);
+}
+
+.campaign-report-page .war-top-rail-right > .float-start {
+	border-top-color: rgba(242, 163, 106, 0.85);
+}
+
+.campaign-report-page .war-top-rail-left h5,
+.campaign-report-page .war-top-rail-left .topBoxes td:last-child {
+	color: #9ed8ff;
+}
+
+.campaign-report-page .war-top-rail-right h5,
+.campaign-report-page .war-top-rail-right .topBoxes td:last-child {
+	color: #ffc27a;
+}
+
 .war-matchup-versus {
 	color: #9fb8cb;
 	font-size: 0.82em;
@@ -2088,8 +2204,32 @@ code {
 	text-decoration: none;
 }
 
+.war-matchup-center {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	line-height: 1;
+	text-align: center;
+}
+
+.war-matchup-swap {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.15em;
+	height: 1em;
+	margin-top: 0.16rem;
+	color: #d8effb;
+	font-size: 0.58em;
+	line-height: 1;
+	text-decoration: none;
+}
+
 .war-matchup-versus:hover,
-.war-matchup-versus:focus {
+.war-matchup-versus:focus,
+.war-matchup-swap:hover,
+.war-matchup-swap:focus {
 	color: #d8effb;
 	text-decoration: none;
 }
@@ -2103,6 +2243,10 @@ code {
 	padding: 0.45rem 0;
 	border-top: 1px solid rgba(255, 255, 255, 0.08);
 	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.campaign-report-page .war-report-meta {
+	justify-content: flex-start;
 }
 
 .war-report-meta div {
@@ -2201,6 +2345,25 @@ code {
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 0.65rem;
 	margin: 0.3rem 0 0.8rem;
+}
+
+.campaign-quick-compare {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.campaign-quick-compare .related-quick-metric {
+	padding: 0.45rem;
+}
+
+.campaign-quick-compare .related-quick-team {
+	grid-template-columns: 48px minmax(0, 1fr) auto;
+	gap: 0.3rem;
+	font-size: 0.82rem;
+}
+
+.campaign-side-rail-title {
+	margin-bottom: 0.5rem;
+	text-align: center;
 }
 
 .related-quick-metric {

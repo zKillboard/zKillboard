@@ -11,22 +11,7 @@ each $kill, $index in ($killList ?? [])
     if ($sDate != $previousDate)
       div(class=('war-kill-date tr-date tr-date-' . $sDate) date=$date)
         em= $sDate
-    article(class=('war-kill-card tr-killmail war-kill-victim-' . ($kill['victimWarSide'] ?? 'unknown') . ' war-kill-finalblow-' . ($kill['finalBlowWarSide'] ?? 'unknown')) id=('kill-' . $kill['killID']) date=($kill['unixtime'] ?? 0) killID=$kill['killID'] vics=($kill['vics'] ?? ''))
-      section(class=('war-kill-party war-kill-victim war-kill-side-' . ($kill['victimWarSide'] ?? 'unknown')))
-        .war-kill-party-image
-          - $field = $victim;
-          if (($victim['allianceID'] ?? 0) != 0)
-            include image_alli.pug
-          else
-            include image_corp.pug
-        .war-kill-party-copy
-          if (!empty($victim['characterID']))
-            a.war-kill-name(href=('/character/' . $victim['characterID'] . '/'))= $victim['characterName'] ?? ''
-          else
-            span.war-kill-name Unknown pilot
-          a(href=('/corporation/' . ($victim['corporationID'] ?? 0) . '/'))= $victim['corporationName'] ?? ''
-          if (($victim['allianceID'] ?? 0) != 0)
-            a(href=('/alliance/' . $victim['allianceID'] . '/'))= $victim['allianceName'] ?? ''
+    article.war-kill-card.tr-killmail.war-kill-victim-unknown(id=('kill-' . $kill['killID']) date=($kill['unixtime'] ?? 0) data-kill-id=$kill['killID'] killID=$kill['killID'] data-vics=($kill['vics'] ?? '') vics=($kill['vics'] ?? ''))
       section.war-kill-ship
         .war-kill-ship-image
           - $field = $victim;
@@ -61,7 +46,28 @@ each $kill, $index in ($killList ?? [])
               span.war-kill-badge.war-kill-badge-danger 1000+
             else if (($kill['attackerCount'] ?? 0) >= 100)
               span.war-kill-badge.war-kill-badge-warning 100+
-      section(class=('war-kill-party war-kill-finalblow war-kill-side-' . ($kill['finalBlowWarSide'] ?? 'unknown')))
+      section.war-kill-party.war-kill-victim.war-kill-side-unknown
+        .war-kill-party-image
+          - $field = $victim;
+          if (($victim['allianceID'] ?? 0) != 0)
+            include image_alli.pug
+          else
+            include image_corp.pug
+        .war-kill-party-copy
+          if (!empty($victim['characterID']))
+            a.war-kill-name(href=('/character/' . $victim['characterID'] . '/'))= $victim['characterName'] ?? ''
+          else
+            span.war-kill-name Unknown pilot
+          a(href=('/corporation/' . ($victim['corporationID'] ?? 0) . '/'))= $victim['corporationName'] ?? ''
+          if (($victim['allianceID'] ?? 0) != 0)
+            a(href=('/alliance/' . $victim['allianceID'] . '/'))= $victim['allianceName'] ?? ''
+      section.war-kill-party.war-kill-finalblow.war-kill-side-unknown
+        .war-kill-party-image
+          - $field = $finalBlow;
+          if (($finalBlow['allianceID'] ?? 0) != 0)
+            include image_alli.pug
+          else
+            include image_corp.pug
         .war-kill-party-copy
           if (!empty($finalBlow['characterID']))
             a.war-kill-name(href=('/character/' . $finalBlow['characterID'] . '/'))= $finalBlow['characterName'] ?? ''
@@ -73,10 +79,4 @@ each $kill, $index in ($killList ?? [])
             a(href=('/alliance/' . $finalBlow['allianceID'] . '/'))= $finalBlow['allianceName'] ?? ''
           if (($finalBlow['factionID'] ?? 0) == 500021)
             a(href=('/faction/' . $finalBlow['factionID'] . '/')) Unknown
-        .war-kill-party-image
-          - $field = $finalBlow;
-          if (($finalBlow['allianceID'] ?? 0) != 0)
-            include image_alli.pug
-          else
-            include image_corp.pug
     - unset($resizeImage);

@@ -18,14 +18,14 @@ block content
       span#titlecontent Advanced Search
     hr
     br
-    .row.asearchfilters
-      .col-md-8
-        .mb-3
-          input#asearch-autocomplete.asearch-autocomplete.form-control(type="Search" placeholder="Search" aria-label="Search")
-      .col-md-4(style="text-align: right;")
-        a.btn.btn-secondary.nocatch(href="/asearch/") Reset
-        button#btn_export.btn.btn-success(type="button" style="background-color: purple; border-color: purple;") Export (zKillBot)
-        button#btn_save.btn.btn-success(type="button" style="margin-left: 2em;") Save
+    .d-flex.asearchfilters.asearch-toolbar.align-items-stretch.gap-2.flex-wrap.flex-md-nowrap
+      .asearch-toolbar-search.flex-grow-1
+        input#asearch-autocomplete.asearch-autocomplete.form-control.asearch-toolbar-control(type="Search" placeholder="Search" aria-label="Search")
+      a.btn.btn-secondary.nocatch.asearch-toolbar-control.flex-shrink-0.d-inline-flex.align-items-center.justify-content-center(href="/asearch/" role="button") Reset
+      button#btn_export.btn.btn-success.asearch-toolbar-control.flex-shrink-0.d-inline-flex.align-items-center.justify-content-center(type="button" style="background-color: purple; border-color: purple;") Export (zKillBot)
+      .btn-group.asearch-toolbar-actions.flex-shrink-0(role="group" aria-label="Create campaign or save search")
+        button#btn_campaign.btn.btn-info.asearch-toolbar-control.d-inline-flex.align-items-center.justify-content-center(type="button") Create Campaign
+        button#btn_save.btn.btn-success.asearch-toolbar-control.d-inline-flex.align-items-center.justify-content-center(type="button") Save Search
     hr.asearchfilters
     .row.centered.asearchfilters
       .col-md-6
@@ -116,6 +116,10 @@ block content
           i.fas.fa-wrench(aria-hidden="true")
           |  Inferred Fits
         button#toggleGroupLayout.btn.btn-secondary.btn-sm(type="button" value="split" style="margin-top: 0.5em; margin-left: 0.5em;" title="Toggle wide aggregation layout" aria-pressed="false" aria-controls="page result-groups-column") Wide Groups
+    #matchingCampaigns.asearchfilters.d-none.mt-2(role="status" aria-live="polite" aria-atomic="true")
+      span.fw-bold.me-2 Your Matching Campaigns:
+      span#matchingCampaignsList
+      span#matchingCampaignsStatus.ms-2
     hr
     #asearchStatus.visually-hidden(role="status" aria-live="polite" aria-atomic="true")
     #clickablecontent.row
@@ -187,3 +191,33 @@ block script
   script(defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js" integrity="sha512-AIOTidJAcHBH2G/oZv9viEGXRqDNmfdPVPYOYKGy3fti0xIplnlgMHUGfuNRzC6FkzIo0iIxgFnr9RikFxK+sw==" crossorigin="anonymous")
   script(defer src="/js/asearch.js?v=" . $version)
   script(defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js")
+
+block modal
+  #campaignCreateModal.modal.fade(tabindex="-1" aria-labelledby="campaignCreateTitle" aria-hidden="true")
+    .modal-dialog
+      .modal-content
+        .modal-header
+          h2#campaignCreateTitle.modal-title.h5 Create Campaign
+          button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+        .modal-body
+          .d-flex.align-items-center.gap-2
+            span Private
+            .form-check.form-switch.mb-0
+              input#campaignPublic.form-check-input(type="checkbox" role="switch" checked)
+              label.form-check-label(for="campaignPublic") Public
+          #campaignAutoEndNotice.alert.alert-info.mt-3.mb-0.d-none(role="status")
+            | No end date selected. Campaigns automatically end one year after the start date.
+          #campaignCreateStatus.alert.alert-danger.mt-3.mb-0.d-none(role="alert")
+        .modal-footer
+          button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancel
+          button#campaignCreateSubmit.btn.btn-info(type="button") Create Campaign
+  #campaignOpenErrorModal.modal.fade(tabindex="-1" aria-labelledby="campaignOpenErrorTitle" aria-hidden="true")
+    .modal-dialog
+      .modal-content
+        .modal-header
+          h2#campaignOpenErrorTitle.modal-title.h5 Create Campaign
+          button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+        .modal-body
+          #campaignOpenErrorMessage.alert.alert-danger.mb-0(role="alert")
+        .modal-footer
+          button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Close

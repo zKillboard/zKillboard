@@ -63,6 +63,22 @@ echo "Creating index : 'pageID' => 1, 'commentID' => 1 ... ";
 $comments->createIndex(['pageID' => 1, 'commentID' => 1], ['unique' => true]);
 echo "Done\n";
 
+// campaigns
+echo "\nCreating collection campaigns ... ";
+$db->createCollection("campaigns");
+$collection = "campaigns";
+$campaigns = $db->$collection;
+echo "Done\n";
+echo "Creating index : 'userID' => 1, 'created' => -1 ... ";
+$campaigns->createIndex(['userID' => 1, 'created' => -1], []);
+echo "Done\n";
+echo "Creating index : 'public' => 1, 'created' => -1 ... ";
+$campaigns->createIndex(['public' => 1, 'created' => -1], []);
+echo "Done\n";
+echo "Creating index : 'filterKey' => 1, 'public' => 1, 'created' => -1 ... ";
+$campaigns->createIndex(['filterKey' => 1, 'public' => 1, 'created' => -1], []);
+echo "Done\n";
+
 // crestmails
 echo "\nCreating collection crestmails ... ";
 $db->createCollection("crestmails");

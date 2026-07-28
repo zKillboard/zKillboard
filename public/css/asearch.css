@@ -106,6 +106,25 @@ hr {
 	order: 6;
 }
 
+.asearch-toolbar {
+	height: auto;
+}
+
+.asearch-toolbar-search {
+	flex-basis: 100%;
+	min-width: 0;
+}
+
+.asearch-toolbar-actions,
+.asearch-toolbar-control {
+	height: 2.5rem;
+}
+
+.asearchfilters.asearch-toolbar .btn-group {
+	margin-top: 0;
+	margin-right: 0;
+}
+
 .asearchfilters .btn-group {
 	margin-right: 1em;
 }
@@ -117,6 +136,17 @@ hr {
 
 .row.centered.asearchfilters {
 	justify-content: center;
+}
+
+@media only screen and (min-width: 768px) {
+	.asearch-toolbar {
+		height: 2.5rem;
+	}
+
+	.asearch-toolbar-search {
+		flex-basis: 0;
+		min-width: 12rem;
+	}
 }
 
 

@@ -1,0 +1,109 @@
+- $stats = is_object($campaignSideStats ?? null) ? (array) $campaignSideStats : ($campaignSideStats ?? null);
+if ($stats !== null)
+  - $attacker = is_object($stats['attacker'] ?? null) ? (array) $stats['attacker'] : ($stats['attacker'] ?? []);
+  - $defender = is_object($stats['defender'] ?? null) ? (array) $stats['defender'] : ($stats['defender'] ?? []);
+  - $attackerKills = (float) ($attacker['kills'] ?? 0);
+  - $defenderKills = (float) ($defender['kills'] ?? 0);
+  - $attackerIsk = (float) ($attacker['isk'] ?? 0);
+  - $defenderIsk = (float) ($defender['isk'] ?? 0);
+  - $attackerPoints = (float) ($attacker['points'] ?? 0);
+  - $defenderPoints = (float) ($defender['points'] ?? 0);
+  - $attackerDropped = (float) ($attacker['dropped'] ?? 0);
+  - $defenderDropped = (float) ($defender['dropped'] ?? 0);
+  - $attackerDroppable = (float) ($attacker['droppable'] ?? 0);
+  - $defenderDroppable = (float) ($defender['droppable'] ?? 0);
+  - $attackerDestroyed = (float) ($attacker['destroyed'] ?? 0);
+  - $defenderDestroyed = (float) ($defender['destroyed'] ?? 0);
+  - $killTotal = $attackerKills + $defenderKills;
+  - $iskTotal = $attackerIsk + $defenderIsk;
+  - $pointsTotal = $attackerPoints + $defenderPoints;
+  - $droppedTotal = $attackerDropped + $defenderDropped;
+  - $droppableTotal = $attackerDroppable + $defenderDroppable;
+  - $destroyedTotal = $attackerDestroyed + $defenderDestroyed;
+  - $attackerKillsPct = $killTotal > 0 ? ($attackerKills / $killTotal * 100) : 50;
+  - $defenderKillsPct = $killTotal > 0 ? ($defenderKills / $killTotal * 100) : 50;
+  - $attackerIskPct = $iskTotal > 0 ? ($attackerIsk / $iskTotal * 100) : 50;
+  - $defenderIskPct = $iskTotal > 0 ? ($defenderIsk / $iskTotal * 100) : 50;
+  - $attackerPointsPct = $pointsTotal > 0 ? ($attackerPoints / $pointsTotal * 100) : 50;
+  - $defenderPointsPct = $pointsTotal > 0 ? ($defenderPoints / $pointsTotal * 100) : 50;
+  - $attackerDroppedPct = $droppedTotal > 0 ? ($attackerDropped / $droppedTotal * 100) : 50;
+  - $defenderDroppedPct = $droppedTotal > 0 ? ($defenderDropped / $droppedTotal * 100) : 50;
+  - $attackerDroppablePct = $droppableTotal > 0 ? ($attackerDroppable / $droppableTotal * 100) : 50;
+  - $defenderDroppablePct = $droppableTotal > 0 ? ($defenderDroppable / $droppableTotal * 100) : 50;
+  - $attackerDestroyedPct = $destroyedTotal > 0 ? ($attackerDestroyed / $destroyedTotal * 100) : 50;
+  - $defenderDestroyedPct = $destroyedTotal > 0 ? ($defenderDestroyed / $destroyedTotal * 100) : 50;
+  .related-quick-compare.campaign-quick-compare
+    .related-quick-metric
+      .related-quick-label Ships Killed
+      .related-quick-team.related-quick-team-a
+        span.related-quick-team-name Attacker
+        .related-quick-track
+          .related-quick-fill(style=('width: ' . number_format((float) $attackerKillsPct, 2, '.', '') . '%'))
+        span.related-quick-value= number_format($attackerKills, 0)
+      .related-quick-team.related-quick-team-b
+        span.related-quick-team-name Defender
+        .related-quick-track
+          .related-quick-fill(style=('width: ' . number_format((float) $defenderKillsPct, 2, '.', '') . '%'))
+        span.related-quick-value= number_format($defenderKills, 0)
+    .related-quick-metric
+      .related-quick-label ISK Total
+      .related-quick-team.related-quick-team-a
+        span.related-quick-team-name Attacker
+        .related-quick-track
+          .related-quick-fill(style=('width: ' . number_format((float) $attackerIskPct, 2, '.', '') . '%'))
+        span.related-quick-value= $shortNum($attackerIsk)
+      .related-quick-team.related-quick-team-b
+        span.related-quick-team-name Defender
+        .related-quick-track
+          .related-quick-fill(style=('width: ' . number_format((float) $defenderIskPct, 2, '.', '') . '%'))
+        span.related-quick-value= $shortNum($defenderIsk)
+    .related-quick-metric
+      .related-quick-label Points
+      .related-quick-team.related-quick-team-a
+        span.related-quick-team-name Attacker
+        .related-quick-track
+          .related-quick-fill(style=('width: ' . number_format((float) $attackerPointsPct, 2, '.', '') . '%'))
+        span.related-quick-value= number_format($attackerPoints, 0)
+      .related-quick-team.related-quick-team-b
+        span.related-quick-team-name Defender
+        .related-quick-track
+          .related-quick-fill(style=('width: ' . number_format((float) $defenderPointsPct, 2, '.', '') . '%'))
+        span.related-quick-value= number_format($defenderPoints, 0)
+    .related-quick-metric
+      .related-quick-label ISK Dropped
+      .related-quick-team.related-quick-team-a
+        span.related-quick-team-name Attacker
+        .related-quick-track
+          .related-quick-fill(style=('width: ' . number_format((float) $attackerDroppedPct, 2, '.', '') . '%'))
+        span.related-quick-value= $shortNum($attackerDropped)
+      .related-quick-team.related-quick-team-b
+        span.related-quick-team-name Defender
+        .related-quick-track
+          .related-quick-fill(style=('width: ' . number_format((float) $defenderDroppedPct, 2, '.', '') . '%'))
+        span.related-quick-value= $shortNum($defenderDropped)
+    .related-quick-metric
+      .related-quick-label ISK Destroyed
+      .related-quick-team.related-quick-team-a
+        span.related-quick-team-name Attacker
+        .related-quick-track
+          .related-quick-fill(style=('width: ' . number_format((float) $attackerDestroyedPct, 2, '.', '') . '%'))
+        span.related-quick-value= $shortNum($attackerDestroyed)
+      .related-quick-team.related-quick-team-b
+        span.related-quick-team-name Defender
+        .related-quick-track
+          .related-quick-fill(style=('width: ' . number_format((float) $defenderDestroyedPct, 2, '.', '') . '%'))
+        span.related-quick-value= $shortNum($defenderDestroyed)
+    .related-quick-metric
+      .related-quick-label ISK Droppable
+      .related-quick-team.related-quick-team-a
+        span.related-quick-team-name Attacker
+        .related-quick-track
+          .related-quick-fill(style=('width: ' . number_format((float) $attackerDroppablePct, 2, '.', '') . '%'))
+        span.related-quick-value= $shortNum($attackerDroppable)
+      .related-quick-team.related-quick-team-b
+        span.related-quick-team-name Defender
+        .related-quick-track
+          .related-quick-fill(style=('width: ' . number_format((float) $defenderDroppablePct, 2, '.', '') . '%'))
+        span.related-quick-value= $shortNum($defenderDroppable)
+else
+  .alert.alert-secondary Campaign side stats are not shown for alltime campaigns.

@@ -14,6 +14,8 @@ block content
   .navbar.navbar-dark.navbar-expand.mb-3
     ul.navbar-nav
       li.nav-item
+        a.nav-link(class=(($key ?? '') == 'campaigns' ? 'active' : '') href="/account/campaigns/") Your Campaigns
+      li.nav-item
         a.nav-link(class=(($key ?? '') == 'api' ? 'active' : '') href="/account/api/") API
       li.nav-item
         a.nav-link(class=(($key ?? '') == 'log' ? 'active' : '') href="/account/log/") Log
@@ -37,6 +39,8 @@ block content
     include account/sponsored_ships.pug
   elseif (($key ?? '') == 'tracker')
     include account/tracker.pug
+  elseif (($key ?? '') == 'campaigns')
+    include account/campaigns.pug
   else
     include account/sitesettings.pug
 

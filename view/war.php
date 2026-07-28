@@ -7,7 +7,6 @@ $warFinished = @$warData['finished'] === true;
 //ZLog::log(print_r($warData, true));
 
 $p = array('warID' => $warID);
-$kills = Kills::getKills($p);
 
 $topPods = array();
 $topIsk = array();
@@ -32,35 +31,8 @@ unset($p['kills']);
 // get latest kills
 $killsLimit = 50;
 $p['limit'] = $killsLimit;
-$preKills = Kills::getKills($p);
-$kills = array();
-$agrID = $warData['aggressor']['id'] ?? 0;
-$dfdID = $warData['defender']['id'] ?? 0;
+$kills = Kills::getKills($p, true, false);
 
-foreach ($preKills as $kill) {
-    $victim = $kill['victim'];
-    if (@$victim['corporationID'] == $dfdID || @$victim['allianceID'] == $dfdID) {
-        $kill['displayAsKill'] = true;
-        $kill['victimWarSide'] = 'defender';
-        $kill['finalBlowWarSide'] = 'aggressor';
-    } else {
-        $kill['displayAsLoss'] = true;
-        $kill['victimWarSide'] = 'aggressor';
-        $kill['finalBlowWarSide'] = 'defender';
-    }
-    $vics = array();
-    foreach (array('characterID', 'corporationID', 'allianceID', 'shipTypeID', 'groupID', 'factionID') as $key) {
-        if (isset($kill['victim'][$key])) {
-            $vics[] = $kill['victim'][$key];
-        }
-    }
-    $kill['vics'] = implode(',', $vics);
-    if (isset($kill['dttm'])) {
-        $kill['unixtime'] = $kill['dttm']->toDateTime()->getTimestamp();
-    }
-    $kills[] = $kill;
-}
-
-return $container->get('view')->render($response->withHeader('Cache-Tag', "www,wars,war,war:$warID"), 'index.pug', array('war' => $warData, 'wars' => array($warData), 'topPods' => $topPods, 'topIsk' => $topIsk, 'topPoints' => $topPoints, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => 'war', 'pager' => false, 'pageTitle' => $pageTitle));
+return $container->get('view')->render($response->withHeader('Cache-Tag', "www,wars,war,war:$warID"), 'index.pug', array('war' => $warData, 'wars' => array($warData), 'topPods' => $topPods, 'topIsk' => $topIsk, 'topPoints' => $topPoints, 'topKillers' => $top, 'kills' => $kills, 'page' => $page, 'pageType' => 'war', 'pager' => false, 'pageTitle' => $pageTitle, 'killListRowV2AttackerIDs' => [(int) ($warData['aggressor']['id'] ?? 0)]));
 
 }

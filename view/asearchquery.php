@@ -101,8 +101,7 @@ function handler($request, $response, $args, $container) {
 		$startTime = (int) @$query['start'];
 		$endTime = (int) @$query['end'];
 		$now = time();
-		if ($startTime > $now) $startTime = $now;
-		if ($endTime == 0 || $endTime > $now) $endTime = $now;
+		if ($endTime == 0) $endTime = $now;
 
 		$labels = [];
 		foreach ($buttons as $label) {
@@ -155,7 +154,8 @@ function handler($request, $response, $args, $container) {
 		array_multisort($query);
 		$jsoned = json_encode($query, true) . json_encode($filter, true) . json_encode(@$queryParams['items'], true) . AdvancedSearch::getSelectedFromBase('items-', $buttons);
 		$collectionScope = ($queryType == "kills" ? implode(',', $coll) : $aggregateCollection);
-		$key = "asearch:$queryType:$groupType:$victimsOnly:$collectionScope:" . ($queryType == "kills" ? "$page:$sortKey:$sortBy:" : "") . md5($jsoned);
+		$resultVersion = $queryType == "count" ? "v2:" : "";
+		$key = "asearch:$resultVersion$queryType:$groupType:$victimsOnly:$collectionScope:" . ($queryType == "kills" ? "$page:$sortKey:$sortBy:" : "") . md5($jsoned);
 		$cacheTag = "www,asearch,asearch:$key";
 		$job = [
 			'key' => $key,

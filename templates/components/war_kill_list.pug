@@ -1,11 +1,24 @@
 include pager.pug
+- $killListRowV2AttackerIDString = is_array($killListRowV2AttackerIDs ?? null) ? implode(',', array_filter($killListRowV2AttackerIDs)) : (string) ($killListRowV2AttackerIDs ?? '');
 section.war-kill-list-shell.kill-list-shell
   header.kill-list-header.war-kill-list-header
     h3.kill-list-title= $killListTitle ?? ''
-  #killmailstobdy.war-kill-list(aria-live="polite" aria-atomic="false" aria-busy="false")
+  #killmailstobdy.war-kill-list(aria-live="polite" aria-atomic="false" aria-busy="false" data-no-row-prune="1" data-zkb-attacker-ids=$killListRowV2AttackerIDString)
     if (count($killList ?? []) == 0)
       #kms_loading.war-kill-empty(role="status")
         em No kills found.
     else
-      include war_kill_list_row.pug
+      .war-kill-column-header
+        span
+        span.war-kill-column-title.war-kill-column-party-title
+          span Victim
+        span.war-kill-column-title.war-kill-column-party-title
+          span Final Blow
+      - $rowBase = $killListRowV2Base ?? '/cache/24hour/killlistrow_v2/{killID}/';
+      each $kill in ($killList ?? [])
+        - $killData = is_object($kill ?? null) ? (array) $kill : $kill;
+        - $killID = is_array($killData) ? (int) ($killData['killID'] ?? 0) : (int) $killData;
+        if ($killID > 0)
+          div.fetchme.war-kill-placeholder(id=('kill-' . $killID) data-kill-id=$killID data-row-url=str_replace('{killID}', $killID, $rowBase))
+            .text-muted.small.text-center.py-2 Loading killmail...
 include pager.pug
