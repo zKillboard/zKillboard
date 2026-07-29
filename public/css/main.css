@@ -1824,7 +1824,7 @@ code {
 	top: 1.15rem;
 	right: 0;
 	color: #9facb8;
-	font-size: 0.76rem;
+	font-size: 0.88rem;
 	font-weight: 700;
 	line-height: 1.15;
 }
@@ -1834,13 +1834,13 @@ code {
 	top: 2.15rem;
 	right: 0;
 	color: #c0c9d2;
-	font-size: 0.74rem;
+	font-size: 0.86rem;
 	font-weight: 700;
 	line-height: 1.15;
 }
 
 .war-kill-time-meta .war-kill-badge {
-	font-size: 0.68rem;
+	font-size: 0.72rem;
 }
 
 .war-kill-ship {
@@ -1861,7 +1861,7 @@ code {
 
 .war-kill-value {
 	display: block;
-	padding-right: 3.2rem;
+	padding-right: 3.8rem;
 	color: #c9d8e4;
 	font-weight: 700;
 	line-height: 1.16;
@@ -1871,10 +1871,10 @@ code {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.25rem;
-	padding-right: 3.2rem;
+	padding-right: 3.8rem;
 	color: #9faab5;
-	font-size: 0.78rem;
-	line-height: 1.16;
+	font-size: 0.9rem;
+	line-height: 1.2;
 }
 
 .war-kill-security {
@@ -1887,7 +1887,7 @@ code {
 	flex-wrap: wrap;
 	gap: 0.25rem;
 	margin-top: 0.08rem;
-	padding-right: 3.2rem;
+	padding-right: 3.8rem;
 	color: #98a4af;
 	font-size: 0.72rem;
 }
