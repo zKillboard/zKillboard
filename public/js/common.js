@@ -7,6 +7,9 @@ window.onerror = function (message, source, lineno, colno, error) {
 	console.error("Global error:", message, error);
 };
 
+const pendingDailyAsyncControllers = new Set();
+const pendingDailyAsyncTimeouts = new Set();
+
 function showModal(selector) {
     const modalEl = document.querySelector(selector);
     if (!modalEl) return;
@@ -193,9 +196,17 @@ function loadDailyAsyncParts() {
             if (target.getAttribute("data-group")) url += (url.indexOf("?") === -1 ? "?" : "&") + "group=" + encodeURIComponent(target.getAttribute("data-group"));
 
             const load = function () {
-                fetch(url, { credentials: "same-origin", headers: { "X-Requested-With": "XMLHttpRequest" } }).then(function (response) {
+                if (!target.isConnected) return;
+
+                const controller = new AbortController();
+                pendingDailyAsyncControllers.add(controller);
+                fetch(url, { credentials: "same-origin", headers: { "X-Requested-With": "XMLHttpRequest" }, signal: controller.signal }).then(function (response) {
                     if (response.status === 202) {
-                        setTimeout(load, 1500);
+                        const timeoutID = setTimeout(function () {
+                            pendingDailyAsyncTimeouts.delete(timeoutID);
+                            load();
+                        }, 1500);
+                        pendingDailyAsyncTimeouts.add(timeoutID);
                         return "";
                     }
                     if (!response.ok) throw new Error("daily query failed");
@@ -219,6 +230,7 @@ function loadDailyAsyncParts() {
                         settleHeight();
                     }
                 }).catch(function () {
+                    if (controller.signal.aborted || !target.isConnected) return;
                     clearTimeout(loadingTimer);
                     target.removeAttribute("data-loading");
                     target.removeAttribute("data-show-loading");
@@ -227,6 +239,8 @@ function loadDailyAsyncParts() {
                         target.removeAttribute("data-loaded");
                         loadDailyAsyncParts();
                     }, 3000);
+                }).finally(function () {
+                    pendingDailyAsyncControllers.delete(controller);
                 });
             };
 
@@ -424,6 +438,17 @@ function clearPendingLittleKillLoads() {
     pendingLittleKillTimeouts.clear();
 }
 
+function clearPendingDailyAsyncLoads() {
+    pendingDailyAsyncControllers.forEach(function(controller) {
+        controller.abort();
+    });
+    pendingDailyAsyncControllers.clear();
+    pendingDailyAsyncTimeouts.forEach(function(timeoutID) {
+        clearTimeout(timeoutID);
+    });
+    pendingDailyAsyncTimeouts.clear();
+}
+
 function initSpaNavigation() {
     if (!window.history || !window.fetch || !window.DOMParser) return;
 
@@ -538,6 +563,7 @@ async function spaNavigate(href, pushState, historyState) {
     hideTransientTooltips();
     spaNavigationGeneration++;
     clearPendingLittleKillLoads();
+    clearPendingDailyAsyncLoads();
 
     if (spaAbortController) spaAbortController.abort();
     spaAbortController = new AbortController();
@@ -959,6 +985,7 @@ async function submitPostKillmailForm(form) {
     hideTransientTooltips();
     spaNavigationGeneration++;
     clearPendingLittleKillLoads();
+    clearPendingDailyAsyncLoads();
 
     if (spaAbortController) spaAbortController.abort();
     spaAbortController = new AbortController();

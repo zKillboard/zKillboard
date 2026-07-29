@@ -11,6 +11,9 @@ function handler($request, $response, $args, $container) {
     $part = (string) ($args['part'] ?? ($request->getQueryParams()['part'] ?? ''));
     $swapped = str_ends_with($request->getUri()->getPath(), '/swap/');
     if ($swapped) $campaign = Campaign::swapSides($campaign);
+    $group = (string) ($request->getQueryParams()['group'] ?? '');
+    if (!isset(Campaign::topGroups()[$group])) $group = '';
+
     $env = $container->get('view')->getEnvironment();
     $html = '';
     switch ($part) {
@@ -18,10 +21,10 @@ function handler($request, $response, $args, $container) {
             $html = $env->render('components/campaign_side_stats.pug', ['campaignSideStats' => Campaign::getSideStats($campaign)]);
             break;
         case 'victims':
-            $html = $env->render('components/campaign_top_sets.pug', ['topSets' => Campaign::getTopSets($campaign, true)]);
+            $html = $env->render('components/campaign_top_sets.pug', ['topSets' => Campaign::getTopSets($campaign, true, $group)]);
             break;
         case 'attackers':
-            $html = $env->render('components/campaign_top_sets.pug', ['topSets' => Campaign::getTopSets($campaign, false)]);
+            $html = $env->render('components/campaign_top_sets.pug', ['topSets' => Campaign::getTopSets($campaign, false, $group)]);
             break;
         case 'kills':
             $html = $env->render('components/war_kill_list.pug', [
@@ -44,5 +47,5 @@ function handler($request, $response, $args, $container) {
     return $response
         ->withHeader('Content-Type', 'text/html; charset=utf-8')
         ->withHeader('Cache-Control', $cacheControl)
-        ->withHeader('Cache-Tag', "www,campaign,campaign:$uid,campaign:$uid:$part");
+        ->withHeader('Cache-Tag', "www,campaign,campaign:$uid,campaign:$uid:$part" . ($group != '' ? ":$group" : ""));
 }

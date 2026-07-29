@@ -301,6 +301,30 @@ class Campaign
         return $entities;
     }
 
+    public static function filterBadges($campaign)
+    {
+        $filters = self::campaignFilters($campaign);
+        $badges = [];
+
+        $labelNames = [];
+        foreach (AdvancedSearch::$labels as $group) {
+            foreach ($group as $labelID => $labelName) $labelNames[$labelID] = $labelName;
+        }
+        foreach ((array) ($filters['buttons'] ?? []) as $button) {
+            if (!str_starts_with((string) $button, 'label-')) continue;
+            $labelID = substr((string) $button, 6);
+            $badges[] = ['text' => $labelNames[$labelID] ?? $labelID, 'url' => ''];
+        }
+
+        foreach ((array) ($filters['location'] ?? []) as $row) {
+            $entity = self::filterEntity($row);
+            if (($entity['name'] ?? '') == '') continue;
+            $badges[] = ['text' => $entity['name'], 'url' => $entity['url'] ?? ''];
+        }
+
+        return $badges;
+    }
+
     public static function sideIDs($campaign, $side)
     {
         $filters = self::campaignFilters($campaign);
@@ -530,7 +554,7 @@ class Campaign
         return false;
     }
 
-    public static function getTopSets($campaign, $victimsOnly)
+    public static function getTopSets($campaign, $victimsOnly, $groupType = '')
     {
         $campaign = is_object($campaign) ? (array) $campaign : $campaign;
         if (!is_array($campaign)) $campaign = [];
@@ -538,14 +562,30 @@ class Campaign
         $uid = (string) ($campaign['_id'] ?? '');
         $filters = self::campaignFilters($campaign);
         $part = $victimsOnly ? 'victims' : 'attackers';
+        $groupType = (string) $groupType;
         $sideName = $victimsOnly ? 'Defender' : 'Attacker';
-        $cacheKey = 'campaign:part:v5:' . $uid . ':' . $part . ':' . md5(json_encode($filters));
+        $cacheKey = 'campaign:part:v6:' . $uid . ':' . $part . ':' . $groupType . ':' . md5(json_encode($filters));
         $cached = RedisCache::get($cacheKey);
         if ($cached !== null) return $cached;
 
-        $sets = self::getSideTopSets($filters, $victimsOnly, $sideName);
+        $sets = self::getSideTopSets($filters, $victimsOnly, $sideName, $groupType);
         RedisCache::set($cacheKey, $sets, self::RESULT_CACHE_SECONDS);
         return $sets;
+    }
+
+    public static function topGroups()
+    {
+        return [
+            'character' => 'Characters',
+            'corporation' => 'Corporations',
+            'alliance' => 'Alliances',
+            'faction' => 'Factions',
+            'shipType' => 'Ships',
+            'group' => 'Ship Groups',
+            'location' => 'Locations',
+            'solarSystem' => 'Systems',
+            'region' => 'Regions',
+        ];
     }
 
     private static function directionalKillIDs($filters)
@@ -755,21 +795,15 @@ class Campaign
         ];
     }
 
-    private static function getSideTopSets($filters, $victimsOnly, $sideName)
+    private static function getSideTopSets($filters, $victimsOnly, $sideName, $groupType = '')
     {
         $prefix = $sideName;
         $sets = [];
-        $groups = [
-            'character' => 'Characters',
-            'corporation' => 'Corporations',
-            'alliance' => 'Alliances',
-            'faction' => 'Factions',
-            'shipType' => 'Ships',
-            'group' => 'Ship Groups',
-            'location' => 'Locations',
-            'solarSystem' => 'Systems',
-            'region' => 'Regions',
-        ];
+        $groups = self::topGroups();
+        if ($groupType != '') {
+            if (!isset($groups[$groupType])) return [];
+            $groups = [$groupType => $groups[$groupType]];
+        }
 
         foreach ($groups as $groupType => $title) {
             if ($victimsOnly) {

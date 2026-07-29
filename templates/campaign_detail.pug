@@ -11,11 +11,12 @@ block content
   - $filters = is_object($campaignData['filters'] ?? null) ? (array) $campaignData['filters'] : ($campaignData['filters'] ?? []);
   - $startText = (string) ($filters['dtstart'] ?? '');
   - $endText = (string) ($filters['dtend'] ?? '');
+  - $filterBadges = Campaign::filterBadges($campaignData);
   - $now = time();
   - $startTime = $startText != '' ? strtotime($startText) : 0;
   - $endTime = $endText != '' ? strtotime($endText) : 0;
   section.related-report-page.war-report-page.campaign-report-page
-    h1.related-report-title= $pageTitle
+    h1.visually-hidden= $pageTitle
     h2.related-report-title.war-matchup-title
       span.war-matchup-entity.war-matchup-aggressor.campaign-matchup-entity.campaign-matchup-attacker
         span.campaign-matchup-role Attacker
@@ -76,6 +77,16 @@ block content
           div
             dt= $endTime > $now ? 'Ending' : 'Ended'
             dd= str_replace('T', ' ', $endText)
+        if (!empty($filterBadges))
+          div
+            dt Filters
+            dd.d-flex.flex-wrap.gap-1
+              each $badge in $filterBadges
+                - $badge = is_object($badge) ? (array) $badge : $badge;
+                if (($badge['url'] ?? '') != '')
+                  a.badge.bg-secondary.text-decoration-none(href=($badge['url'] ?? '#'))= $badge['text'] ?? ''
+                else
+                  span.badge.bg-secondary= $badge['text'] ?? ''
       .related-report-actions(style="margin: 0;")
         a.btn.btn-sm.btn-info(href=($campaignSearchUrl ?? '/asearch/'))
           i.fas.fa-search(aria-hidden="true")
@@ -93,12 +104,14 @@ block content
       .war-kill-layout
         aside.war-top-rail.war-top-rail-left
           h3.kill-list-title.campaign-side-rail-title Kills
-          .daily-async-part(data-part="attackers")
-            .text-muted.small.text-center.py-3 Loading Attacker groups...
+          each $groupTitle, $groupType in Campaign::topGroups()
+            .daily-async-part(data-part="attackers" data-group=$groupType)
+              .text-muted.small.text-center.py-3= 'Loading Attacker ' . $groupTitle . '...'
         .war-kill-center
           .daily-async-part(data-part="kills")
             .text-muted.small.text-center.py-3 Loading campaign killmails...
         aside.war-top-rail.war-top-rail-right
           h3.kill-list-title.campaign-side-rail-title Losses
-          .daily-async-part(data-part="victims")
-            .text-muted.small.text-center.py-3 Loading Defender groups...
+          each $groupTitle, $groupType in Campaign::topGroups()
+            .daily-async-part(data-part="victims" data-group=$groupType)
+              .text-muted.small.text-center.py-3= 'Loading Defender ' . $groupTitle . '...'
