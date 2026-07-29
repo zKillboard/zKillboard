@@ -94,6 +94,9 @@ block content
         a.btn.btn-sm.btn-secondary(href=($campaignUrl ?? '#') data-zkb-copy-link="1" title="Copy campaign link" aria-label="Copy campaign link")
           i.fas.fa-copy(aria-hidden="true")
           |  Campaign Link
+    .text-muted.small.mb-3
+      i.fas.fa-info-circle.me-1(aria-hidden="true")
+      | Campaigns are experimental and currently in beta. Expect more tweaks and fixes as they settle in.
     if (($campaignData['public'] ?? true) !== true)
       .text-muted.small.text-end.mb-3
         | This is a private campaign, however anyone with the link can view it for sharing purposes.
