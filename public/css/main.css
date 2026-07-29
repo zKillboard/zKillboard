@@ -1877,6 +1877,11 @@ code {
 	line-height: 1.16;
 }
 
+.war-kill-security {
+	font-weight: 700;
+	text-shadow: 0 0 2px #000, 0 1px 1px #000;
+}
+
 .war-kill-meta {
 	display: flex;
 	flex-wrap: wrap;

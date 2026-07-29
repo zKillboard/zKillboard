@@ -26,7 +26,7 @@ each $kill, $index in ($killList ?? [])
           a.war-kill-ship-name(href=('/ship/' . ($victim['shipTypeID'] ?? 0) . '/'))= $victim['shipName'] ?? ''
           a.war-kill-value(href=('/kill/' . $kill['killID'] . '/') format="format-isk-once" raw=($kill['zkb']['totalValue'] ?? 0))= $formatIsk($kill['zkb']['totalValue'] ?? 0)
           .war-kill-location
-            span(style=('color: ' . ($kill['system']['systemColorCode'] ?? '')))
+            span.war-kill-security(style=('color: ' . ($kill['system']['systemColorCode'] ?? '')))
               if (!empty($kill['system']['systemClass']))
                 = 'C' . $kill['system']['systemClass']
               else

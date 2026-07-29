@@ -151,7 +151,7 @@ class Campaign
 
         $campaignTitle = self::sideTitle($filters, 'attackers', 'Attackers') . ' v. ' . self::sideTitle($filters, 'victims', 'Defenders');
         $parts = [];
-        foreach (['neutrals' => 'Either', 'location' => 'Location', 'items' => 'Items'] as $key => $label) {
+        foreach (['location' => 'Location', 'items' => 'Items'] as $key => $label) {
             $names = self::filterEntityNames($filters, $key);
             if (!empty($names)) $parts[] = $label . ': ' . self::compactNames($names);
         }
@@ -346,7 +346,16 @@ class Campaign
     {
         global $mdb;
 
-        return $mdb->find('campaigns', self::publicQuery(), ['created' => -1], max(1, min(100, (int) $limit)));
+        $now = gmdate('Y-m-d\TH:i');
+        $query = [
+            '$and' => [
+                self::publicQuery(),
+                ['filters.dtstart' => ['$lte' => $now]],
+                ['filters.dtend' => ['$gte' => $now]],
+            ],
+        ];
+        $sort = ['stats.attacker.kills' => -1, 'stats.defender.kills' => -1, 'created' => -1];
+        return $mdb->find('campaigns', $query, $sort, max(1, min(100, (int) $limit)));
     }
 
     public static function userCampaigns($userID, $limit = 100)
@@ -670,7 +679,9 @@ class Campaign
     {
         $campaign = is_object($campaign) ? (array) $campaign : $campaign;
         if (!is_array($campaign)) return [];
-        return self::normalizeFilters($campaign['filters'] ?? []);
+        $filters = self::normalizeFilters($campaign['filters'] ?? []);
+        unset($filters['neutrals']);
+        return $filters;
     }
 
     private static function sortKills(&$kills, $params)
