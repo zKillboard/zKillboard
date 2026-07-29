@@ -366,7 +366,7 @@ class Campaign
             if ($public !== null) $set['public'] = (bool) $public;
             $result = $mdb->getCollection('campaigns')->updateOne(
                 ['_id' => new ObjectId((string) $uid), 'userID' => (int) $userID],
-                ['$set' => $set, '$unset' => ['name' => '', 'sideNames' => '']]
+                ['$set' => $set, '$unset' => ['name' => '', 'sideNames' => '', 'stats' => '']]
             );
             if ($result->getMatchedCount() > 0) {
                 self::clearCacheTags($uid);
@@ -539,7 +539,7 @@ class Campaign
         $filters = self::campaignFilters($campaign);
         $part = $victimsOnly ? 'victims' : 'attackers';
         $sideName = $victimsOnly ? 'Defender' : 'Attacker';
-        $cacheKey = 'campaign:part:v3:' . $uid . ':' . $part . ':' . md5(json_encode($filters));
+        $cacheKey = 'campaign:part:v5:' . $uid . ':' . $part . ':' . md5(json_encode($filters));
         $cached = RedisCache::get($cacheKey);
         if ($cached !== null) return $cached;
 
@@ -763,8 +763,12 @@ class Campaign
             'character' => 'Characters',
             'corporation' => 'Corporations',
             'alliance' => 'Alliances',
+            'faction' => 'Factions',
             'shipType' => 'Ships',
             'group' => 'Ship Groups',
+            'location' => 'Locations',
+            'solarSystem' => 'Systems',
+            'region' => 'Regions',
         ];
 
         foreach ($groups as $groupType => $title) {
@@ -781,7 +785,7 @@ class Campaign
                     $groupType
                 );
             }
-            $rows = array_slice($rows, 0, 10);
+            $rows = array_slice($rows, 0, 500);
             if (empty($rows)) continue;
             $sets[] = [
                 'type' => $groupType,
