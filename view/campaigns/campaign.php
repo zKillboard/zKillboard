@@ -18,7 +18,7 @@ function handler($request, $response, $args, $container) {
     $data = [
         'campaign' => $campaign,
         'campaignUrl' => "/campaign/$uid/" . ($swapped ? 'swap/' : ''),
-        'campaignAsyncBase' => "/campaign/$uid/section/{part}/" . ($swapped ? 'swap/' : ''),
+        'campaignAsyncBase' => Campaign::asearchQueryBase($savedCampaign, $swapped),
         'campaignSwapUrl' => "/campaign/$uid/" . ($swapped ? '' : 'swap/'),
         'campaignSearchUrl' => Campaign::searchUrl($savedCampaign, true),
         'victimEntities' => Campaign::sideEntities($campaign, 'victims'),

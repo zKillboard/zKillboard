@@ -447,6 +447,95 @@ class Campaign
         return '/asearch/' . $campaignParam . '#' . rawurlencode(json_encode(self::campaignFilters($campaign), JSON_UNESCAPED_SLASHES));
     }
 
+    public static function asearchQueryBase($campaign, $swapped = false)
+    {
+        $campaign = is_object($campaign) ? (array) $campaign : $campaign;
+        if (!is_array($campaign)) $campaign = [];
+
+        $uid = (string) ($campaign['_id'] ?? '');
+        if ($uid == '') return '';
+
+        $params = ['campaign' => $uid];
+        if ($swapped) $params['campaignSwap'] = '1';
+        return '/asearchquery/?' . http_build_query($params, '', '&', PHP_QUERY_RFC3986);
+    }
+
+    public static function buildAsearchPartJob($queryParams)
+    {
+        $uid = (string) ($queryParams['campaign'] ?? '');
+        if ($uid == '') return null;
+
+        $part = (string) ($queryParams['part'] ?? '');
+        $campaign = self::find($uid);
+        if (!self::canView($campaign)) return null;
+
+        $campaign = is_object($campaign) ? (array) $campaign : $campaign;
+        if (!is_array($campaign)) return null;
+
+        $campaign['filters'] = self::normalizeFilters($campaign['filters'] ?? []);
+        $swapped = (string) ($queryParams['campaignSwap'] ?? '') == '1';
+        if ($swapped) $campaign = self::swapSides($campaign);
+
+        $filters = self::campaignFilters($campaign);
+        $filterKey = self::filterKey($filters);
+        $swapKey = $swapped ? 'swap' : 'normal';
+        $baseJob = [
+            'campaign' => $campaign,
+            'campaignUID' => $uid,
+            'campaignSwap' => $swapped,
+            'cacheTime' => self::RESULT_CACHE_SECONDS,
+        ];
+
+        if ($part == 'stats') {
+            return array_merge($baseJob, [
+                'key' => "asearch:campaign:stats:$uid:$swapKey:$filterKey",
+                'queryType' => 'campaignStats',
+                'part' => $part,
+            ]);
+        }
+
+        if ($part == 'kills') {
+            return array_merge($baseJob, [
+                'key' => "asearch:campaign:kills:$uid:$swapKey:$filterKey",
+                'queryType' => 'campaignKills',
+                'part' => $part,
+                'attackerIDs' => self::sideIDs($campaign, 'attackers'),
+            ]);
+        }
+
+        if ($part == 'attackers' || $part == 'victims') {
+            $group = (string) ($queryParams['group'] ?? '');
+            if (!isset(self::topGroups()[$group])) $group = '';
+            $groupKey = $group != '' ? $group : 'all';
+            return array_merge($baseJob, [
+                'key' => "asearch:campaign:top:$uid:$swapKey:$part:$groupKey:$filterKey",
+                'queryType' => 'campaignTop',
+                'part' => $part,
+                'groupType' => $group,
+                'victimsOnly' => $part == 'victims',
+            ]);
+        }
+
+        return null;
+    }
+
+    public static function runQueuedAsearchPart($job)
+    {
+        $campaign = is_object($job['campaign'] ?? null) ? (array) $job['campaign'] : ($job['campaign'] ?? []);
+        if (!is_array($campaign)) return [];
+
+        switch ((string) ($job['queryType'] ?? '')) {
+            case 'campaignStats':
+                return ['stats' => self::getSideStats($campaign)];
+            case 'campaignKills':
+                return ['killIDs' => self::getKillIDs($campaign)];
+            case 'campaignTop':
+                return ['topSets' => self::getTopSets($campaign, !empty($job['victimsOnly']), (string) ($job['groupType'] ?? ''))];
+        }
+
+        return [];
+    }
+
     public static function getKillIDs($campaign)
     {
         $campaign = is_object($campaign) ? (array) $campaign : $campaign;
