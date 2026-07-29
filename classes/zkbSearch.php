@@ -2,6 +2,8 @@
 
 class zkbSearch
 {
+    private const DEFAULT_LIMIT = 8;
+
     public static $imageMap = [
         'typeID' => 'https://images.evetech.net/types/%1$d/icon?size=%2$d',
         'groupID' => 'https://image.eveonline.com/types/1/icon?size=%2$d',
@@ -36,7 +38,7 @@ class zkbSearch
             do {
 				$query =  ['type' => $type, 'l_name' => ['$regex' => "^$low"]];
 				if ($type == "typeID") $query['published'] = true;
-				$result = $mdb->find("information", $query, ['l_name' => 1], 5, ['l_name' => 1, 'id' => 1]);
+				$result = $mdb->find("information", $query, ['l_name' => 1], self::DEFAULT_LIMIT, ['l_name' => 1, 'id' => 1]);
                 if ($result == null) $result = [];
                 if (sizeof($result) == 0) $sub = substr($sub, 0, strlen($sub) - 1);
             } while (sizeof($result) == 0 && strlen($sub) > 0);
@@ -46,13 +48,13 @@ class zkbSearch
                 $wordPrefix = '^' . implode('.*\b', $terms);
                 $query = ['type' => $type, 'l_name' => ['$regex' => $wordPrefix]];
                 if ($type == "typeID") $query['published'] = true;
-                $result = $mdb->find("information", $query, ['l_name' => 1], 5, ['l_name' => 1, 'id' => 1]);
+                $result = $mdb->find("information", $query, ['l_name' => 1], self::DEFAULT_LIMIT, ['l_name' => 1, 'id' => 1]);
                 if ($result == null) $result = [];
             }
 
             if (trim($rawSearch) != '' && ($type == 'corporationID' || $type == 'allianceID')) {
                 $tickerSearch = preg_quote(strtoupper(trim($rawSearch)));
-                $tickerResult = $mdb->find("information", ['type' => $type, 'ticker' => ['$regex' => "^$tickerSearch"]], ['ticker' => 1], 5, ['ticker' => 1, 'id' => 1]);
+                $tickerResult = $mdb->find("information", ['type' => $type, 'ticker' => ['$regex' => "^$tickerSearch"]], ['ticker' => 1], self::DEFAULT_LIMIT, ['ticker' => 1, 'id' => 1]);
                 if ($tickerResult == null) $tickerResult = [];
                 foreach ($tickerResult as &$row) $row['tickerMatch'] = true;
                 unset($row);
