@@ -1123,7 +1123,12 @@ async function btn_save(event) {
 	button.prop("disabled", true).attr("title", "Saving");
 
 	try {
-		let res = await fetch("/asearchsave/?url=" + encodeURIComponent(window.location.href), {
+		updateTitle();
+		let title = ($("#titlecontent").text() || '').replace(/^\s*Advanced Search:\s*/, '').trim();
+		if (title.length > 180) title = title.substring(0, 177) + '...';
+		let saveUrl = "/asearchsave/?url=" + encodeURIComponent(window.location.href);
+		if (title !== '') saveUrl += "&title=" + encodeURIComponent(title);
+		let res = await fetch(saveUrl, {
 			credentials: "same-origin"
 		});
 		let savedPath = await res.text();

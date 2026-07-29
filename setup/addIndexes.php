@@ -1250,6 +1250,12 @@ $db->createCollection("searches");
 $collection = "searches";
 $searches = $db->$collection;
 echo "Done\n";
+echo "Creating index : 'characterID' => 1, 'updatedTime' => -1 ... ";
+$searches->createIndex(['characterID' => 1, 'updatedTime' => -1], []);
+echo "Done\n";
+echo "Creating index : 'characterID' => 1, 'shortenerID' => 1 ... ";
+$searches->createIndex(['characterID' => 1, 'shortenerID' => 1], ['unique' => true, 'partialFilterExpression' => ['characterID' => ['$exists' => true], 'shortenerID' => ['$exists' => true]]]);
+echo "Done\n";
 
 // sessions
 echo "\nCreating collection sessions ... ";

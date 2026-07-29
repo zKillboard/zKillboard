@@ -1,0 +1,31 @@
+.row
+  .col-12
+    h3 Saved Searches
+    - $savedSearches = $data['savedSearches'] ?? [];
+    if (empty($savedSearches))
+      .alert.alert-info No saved searches found. Save one from Advanced Search while logged in.
+    else
+      .table-responsive
+        table.table.table-striped.table-sm.align-middle
+          thead
+            tr
+              th Search
+              th.col-lg-2 Saved
+              th.text-end.col-lg-2 Action
+          tbody
+            each $row in $savedSearches
+              - $updatedTime = $row['updatedTime'] ?? ($row['createdTime'] ?? null);
+              - $path = (string) ($row['path'] ?? '');
+              if ($path == '' && !empty($row['shortenerID']))
+                - $path = '/asearchsaved/' . (string) $row['shortenerID'] . '/';
+              tr
+                td
+                  = $row['displayTitle'] ?? ($row['title'] ?? 'Advanced Search')
+                td
+                  if ($updatedTime instanceof MongoDB\BSON\UTCDateTime)
+                    = $updatedTime->toDateTime()->format('Y/m/d H:i:s')
+                  elseif (is_array($updatedTime) && isset($updatedTime['sec']))
+                    = date('Y/m/d H:i:s', (int) $updatedTime['sec'])
+                td.text-end
+                  if ($path != '')
+                    a.btn.btn-primary.btn-sm(href=$path) Open

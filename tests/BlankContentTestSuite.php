@@ -216,6 +216,7 @@ class BlankContentTestSuite {
         // Account routes (may redirect but should not be blank)
         echo "\n--- Account Routes ---\n";
         $this->testRouteContent('/account/', [200, 302], 'Account main');
+        $this->testRouteContent('/account/asearches/', [200, 302], 'Account saved searches');
         $this->testRouteContent('/account/favorites/', [200], 'Account favorites');
         
         // Cache and utility routes

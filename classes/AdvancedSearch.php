@@ -64,6 +64,134 @@ class AdvancedSearch
         ]
     ];
 
+    public static function summarizeSavedUrl($url)
+    {
+        $url = (string) $url;
+        if ($url == '') return '';
+
+        $parsedUrl = parse_url($url);
+        if (!is_array($parsedUrl)) return '';
+
+        $fragment = (string) ($parsedUrl['fragment'] ?? '');
+        if ($fragment == '') return 'Last 7 Days';
+
+        $filters = json_decode(rawurldecode($fragment), true);
+        if (!is_array($filters)) return '';
+
+        return self::summarizeFilters($filters);
+    }
+
+    public static function summarizeFilters($filters)
+    {
+        if (!is_array($filters)) return '';
+
+        $buttons = [];
+        foreach (($filters['buttons'] ?? []) as $button) $buttons[(string) $button] = true;
+
+        $parts = [];
+        $entityGroups = [];
+        foreach (['attackers' => 'Attackers', 'neutrals' => 'Either', 'victims' => 'Victims', 'location' => 'Location', 'items' => 'Items'] as $filterKey => $label) {
+            $entities = is_array($filters[$filterKey] ?? null) ? $filters[$filterKey] : [];
+            if (empty($entities)) continue;
+
+            $names = [];
+            foreach (array_slice($entities, 0, 3) as $entity) {
+                $name = self::savedSearchEntityName($entity);
+                if ($name != '') $names[] = $name;
+            }
+            if (count($entities) > 3) $names[] = '+' . (count($entities) - 3);
+            if (!empty($names)) $entityGroups[$label] = $names;
+        }
+
+        if (count($entityGroups) == 1) {
+            $parts[] = implode(', ', current($entityGroups));
+        } else {
+            foreach ($entityGroups as $label => $names) $parts[] = "$label: " . implode(', ', $names);
+        }
+
+        foreach (array_keys($buttons) as $button) {
+            if (!str_starts_with($button, 'label-')) continue;
+            $parts[] = self::savedSearchLabelName(substr($button, 6));
+        }
+
+        if (($filters['results'] ?? '') == 'fits') $parts[] = 'Inferred Fits';
+
+        $timeLabel = self::savedSearchTimeLabel($buttons, $filters);
+        if ($timeLabel != '') $parts[] = $timeLabel;
+
+        $sortLabel = self::savedSearchSortLabel($buttons);
+        if ($sortLabel != '') $parts[] = $sortLabel;
+
+        foreach (range(2, 10) as $page) {
+            if (isset($buttons["page$page"])) {
+                $parts[] = "Page $page";
+                break;
+            }
+        }
+        if (($filters['includeAssociates'] ?? true) === false || ($filters['includeAssociates'] ?? '') === 'false') $parts[] = 'No Associates';
+
+        $parts = array_values(array_unique(array_filter($parts)));
+        $summary = empty($parts) ? 'Last 7 Days' : implode(', ', $parts);
+        if (strlen($summary) > 180) $summary = substr($summary, 0, 177) . '...';
+        return $summary;
+    }
+
+    private static function savedSearchEntityName($entity)
+    {
+        $storedName = str_replace(['<', '>'], '', (string) ($entity['name'] ?? ''));
+        if ($storedName != '') return $storedName;
+
+        $type = preg_replace('/[^A-Za-z0-9]/', '', (string) ($entity['type'] ?? ''));
+        $id = (int) ($entity['id'] ?? 0);
+        if ($type == '' || $id <= 0) return '';
+        if ($type == 'systemID') $type = 'solarSystemID';
+        if ($type == 'shipID') $type = 'shipTypeID';
+        if ($type == 'itemID') $type = 'typeID';
+
+        try {
+            $name = Info::getInfoField($type, $id, 'name');
+        } catch (Exception $ex) {
+            $name = '';
+        }
+        return $name ?: "$type $id";
+    }
+
+    private static function savedSearchLabelName($label)
+    {
+        foreach (self::$labels as $labels) {
+            if (isset($labels[$label])) return $labels[$label];
+        }
+        return $label;
+    }
+
+    private static function savedSearchTimeLabel($buttons, $filters)
+    {
+        if (isset($buttons['custom'])) {
+            $start = str_replace('T', ' ', (string) ($filters['dtstart'] ?? ''));
+            $end = str_replace('T', ' ', (string) ($filters['dtend'] ?? ''));
+            if ($start != '' && $end != '') return "$start to $end";
+            if ($start != '') return "From $start";
+            if ($end != '') return "Until $end";
+            return 'Custom';
+        }
+        if (isset($buttons['prior month'])) return 'Prior Month';
+        if (isset($buttons['current month'])) return 'Current Month';
+        if (isset($buttons['recent'])) return 'Last 90 Days';
+        if (isset($buttons['alltime'])) return 'Alltime';
+        return 'Last 7 Days';
+    }
+
+    private static function savedSearchSortLabel($buttons)
+    {
+        $sort = '';
+        foreach (['sort-isk' => 'ISK', 'sort-involved' => 'Involved', 'sort-damage' => 'Damage', 'sort-points' => 'Points'] as $button => $label) {
+            if (isset($buttons[$button])) $sort = $label;
+        }
+        if ($sort == '') return '';
+
+        return $sort . (isset($buttons['sort-asc']) ? ' Asc' : ' Desc');
+    }
+
     public static function buildQuery($queryParams, $queries, $key, $isVictim = null, $joinType = 'and', $useElemMatch = true)
     {
         $query = self::buildFromArray($key, $isVictim, $joinType, $useElemMatch, $queryParams);

@@ -262,6 +262,7 @@ class RouteTestSuite {
         $this->testRoute('/account/settings/', [200, 302], 'Account settings');
         $this->testRoute('/account/api/', [200, 302], 'Account API');
         $this->testRoute('/account/stats/', [200, 302], 'Account stats');
+        $this->testRoute('/account/asearches/', [200, 302], 'Account saved searches');
         $this->testRoute('/account/favorites/', 200, 'Account favorites');
         $this->testRoute('/account/logout/', 302, 'Account logout');
         $this->testRoute("/account/tracker/character/{$this->realCharacterId}/add/", [200, 302, 404], 'Account tracker add character');

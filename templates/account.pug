@@ -17,6 +17,8 @@ block content
         a.nav-link(class=(($key ?? '') == 'api' ? 'active' : '') href="/account/api/") API
       li.nav-item
         a.nav-link(class=(($key ?? '') == 'log' ? 'active' : '') href="/account/log/") Log
+      li.nav-item
+        a.nav-link(class=(($key ?? '') == 'asearches' ? 'active' : '') href="/account/asearches/") Saved Searches
       if (($adFreeMonthCost ?? 0) > 0)
         li.nav-item
           a.nav-link(class=(($key ?? '') == 'payments' ? 'active' : '') href="/account/payments/") Payments
@@ -31,6 +33,8 @@ block content
     include account/api.pug
   elseif (($key ?? '') == 'log')
     include account/log.pug
+  elseif (($key ?? '') == 'asearches')
+    include account/asearches.pug
   elseif (($key ?? '') == 'payments')
     include account/payments.pug
   elseif (($key ?? '') == 'sponsored')

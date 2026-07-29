@@ -254,7 +254,19 @@ $data['sponsoredTotalIsk'] = $sponsoredTotalIsk;
 if ($key == 'tracker') {
 	$data = array_merge($data, trackerDashboardData($userID));
 }
+if ($key == 'asearches') {
+	$savedSearches = $mdb->find("searches", ['characterID' => (int) $userID], ['updatedTime' => -1], 100);
+	foreach ($savedSearches as &$savedSearch) {
+		$displayTitle = trim(preg_replace('/^Advanced Search:\s*/', '', (string) ($savedSearch['title'] ?? '')));
+		if ($displayTitle == '' || $displayTitle == 'Advanced Search') {
+			$displayTitle = AdvancedSearch::summarizeSavedUrl((string) ($savedSearch['url'] ?? ''));
+		}
+		$savedSearch['displayTitle'] = $displayTitle ?: 'Advanced Search';
+	}
+	unset($savedSearch);
+	$data['savedSearches'] = $savedSearches;
+}
 
     $accountData = array('data' => $data, 'message' => $error, 'key' => $key, 'reqid' => $reqid);
-    return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,account'), 'account.pug', $accountData);
+    return $container->get('view')->render($response->withHeader('Cache-Control', 'no-store')->withHeader('Cache-Tag', 'www,account'), 'account.pug', $accountData);
 }

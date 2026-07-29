@@ -26,11 +26,27 @@ function handler($request, $response, $args, $container) {
         }
         $id = (string) $record['_id'];
         $output = "/asearchsaved/$id/";
+
+        if (User::isLoggedIn()) {
+            $title = trim(str_replace(['<', '>'], '', (string) ($queryParams['title'] ?? '')));
+            $title = preg_replace('/^\s*Advanced Search:\s*/', '', $title);
+            if ($title == '') $title = AdvancedSearch::summarizeSavedUrl($url) ?: 'Advanced Search';
+            if (strlen($title) > 180) $title = substr($title, 0, 177) . '...';
+            $now = $mdb->now();
+            $mdb->getCollection('searches')->updateOne(
+                ['characterID' => (int) User::getUserID(), 'shortenerID' => $record['_id']],
+                [
+                    '$set' => ['url' => $url, 'path' => $output, 'title' => $title, 'updatedTime' => $now],
+                    '$setOnInsert' => ['createdTime' => $now],
+                ],
+                ['upsert' => true]
+            );
+        }
     } catch (Exception $ex) {
         $output = $ex->getMessage();
         $response = $response->withStatus(400);
     }
     
     $response->getBody()->write($output);
-    return $response->withHeader('Content-Type', 'text/plain; charset=utf-8')->withHeader('Cache-Tag', 'www,asearch,asearchsave');
+    return $response->withHeader('Content-Type', 'text/plain; charset=utf-8')->withHeader('Cache-Control', 'no-store')->withHeader('Cache-Tag', 'www,asearch,asearchsave');
 }
