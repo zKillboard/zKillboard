@@ -573,7 +573,7 @@ class Campaign
         $part = $victimsOnly ? 'victims' : 'attackers';
         $groupType = (string) $groupType;
         $sideName = $victimsOnly ? 'Defender' : 'Attacker';
-        $cacheKey = 'campaign:part:v6:' . $uid . ':' . $part . ':' . $groupType . ':' . md5(json_encode($filters));
+        $cacheKey = 'campaign:part:v7:' . $uid . ':' . $part . ':' . $groupType . ':' . md5(json_encode($filters));
         $cached = RedisCache::get($cacheKey);
         if ($cached !== null) return $cached;
 
@@ -816,19 +816,7 @@ class Campaign
         }
 
         foreach ($groups as $groupType => $title) {
-            if ($victimsOnly) {
-                $rows = self::mergeTopRows(
-                    self::sideTopRows($filters, $groupType, true),
-                    self::sideTopRows(self::swappedFilters($filters), $groupType, false),
-                    $groupType
-                );
-            } else {
-                $rows = self::mergeTopRows(
-                    self::sideTopRows($filters, $groupType, false),
-                    self::sideTopRows(self::swappedFilters($filters), $groupType, true),
-                    $groupType
-                );
-            }
+            $rows = self::sideTopRows($filters, $groupType, $victimsOnly);
             $rows = array_slice($rows, 0, 500);
             if (empty($rows)) continue;
             $sets[] = [
@@ -850,22 +838,6 @@ class Campaign
         $job['groupType'] = $groupType;
         $job['victimsOnly'] = $victimsOnly ? 'true' : 'false';
         return (array) AdvancedSearch::runQueuedQuery($job);
-    }
-
-    private static function mergeTopRows($left, $right, $groupType)
-    {
-        $field = $groupType . 'ID';
-        $rows = [];
-        foreach (array_merge((array) $left, (array) $right) as $row) {
-            $row = is_object($row) ? (array) $row : $row;
-            $id = (int) ($row[$field] ?? 0);
-            if ($id <= 0) continue;
-            if (!isset($rows[$id])) $rows[$id] = $row;
-            else $rows[$id]['kills'] = (float) ($rows[$id]['kills'] ?? 0) + (float) ($row['kills'] ?? 0);
-        }
-        $rows = array_values($rows);
-        usort($rows, fn($a, $b) => ((float) ($b['kills'] ?? 0)) <=> ((float) ($a['kills'] ?? 0)));
-        return $rows;
     }
 
     private static function filtersToQueryParams($filters)
