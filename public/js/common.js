@@ -207,12 +207,12 @@ function loadDailyAsyncParts() {
                             load();
                         }, 1500);
                         pendingDailyAsyncTimeouts.add(timeoutID);
-                        return "";
+                        return null;
                     }
                     if (!response.ok) throw new Error("daily query failed");
                     return response.text();
                 }).then(function (html) {
-                    if (html) {
+                    if (html !== null) {
                         clearTimeout(loadingTimer);
                         const minHeight = Math.max(target.offsetHeight || 0, target.scrollHeight || 0);
                         if (minHeight > 0) target.style.minHeight = minHeight + "px";
