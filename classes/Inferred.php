@@ -126,6 +126,11 @@ class Inferred
         unset($characterIDs[0]);
         $characterIDs = array_values($characterIDs);
 
+        $lossOptions = [
+            'projection' => ['_id' => 0, 'killID' => 1, 'dttm' => 1, 'involved' => 1, 'zkb.totalValue' => 1],
+            'sort' => ['dttm' => -1, 'killID' => -1],
+        ];
+        if ($maxTimeMS !== null) $lossOptions['maxTimeMS'] = $maxTimeMS;
         $lossRows = iterator_to_array($killmails->find(
             [
                 'dttm' => ['$gte' => new MongoDB\BSON\UTCDateTime((time() - (90 * 86400)) * 1000)],
@@ -135,20 +140,15 @@ class Inferred
                     'isVictim' => true,
                 ]],
             ],
-            [
-                'projection' => ['_id' => 0, 'killID' => 1, 'dttm' => 1, 'involved' => 1, 'zkb.totalValue' => 1],
-                'sort' => ['dttm' => -1, 'killID' => -1],
-                'maxTimeMS' => $maxTimeMS,
-            ]
+            $lossOptions
         ));
         if (sizeof($lossRows) == 0) return ['fits' => [], 'windowDays' => 90, 'shipTypeID' => $shipTypeID, 'shipName' => $shipName, 'message' => "No inferred fit losses found for matching $shipName pilots in the last 90 days."];
 
         $lossIDs = [];
         foreach ($lossRows as $lossRow) $lossIDs[] = (int) ($lossRow['killID'] ?? 0);
-        $esiRows = iterator_to_array($mdb->getCollection('esimails')->find(
-            ['killmail_id' => ['$in' => $lossIDs]],
-            ['projection' => ['_id' => 0, 'killmail_id' => 1, 'victim.items' => 1, 'victim.ship_type_id' => 1], 'maxTimeMS' => $maxTimeMS]
-        ));
+        $esiOptions = ['projection' => ['_id' => 0, 'killmail_id' => 1, 'victim.items' => 1, 'victim.ship_type_id' => 1]];
+        if ($maxTimeMS !== null) $esiOptions['maxTimeMS'] = $maxTimeMS;
+        $esiRows = iterator_to_array($mdb->getCollection('esimails')->find(['killmail_id' => ['$in' => $lossIDs]], $esiOptions));
         $esiByKillID = [];
         foreach ($esiRows as $esiRow) $esiByKillID[(int) ($esiRow['killmail_id'] ?? 0)] = $esiRow;
 

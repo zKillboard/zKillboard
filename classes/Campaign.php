@@ -607,8 +607,8 @@ class Campaign
 
     private static function freshDirectionalSummary($filters)
     {
-        $maxTimeMS = 10000;
         $job = self::buildJob(self::filtersToQueryParams($filters), 'count');
+        $maxTimeMS = array_key_exists('maxTimeMS', $job) ? $job['maxTimeMS'] : 10000;
         $result = AdvancedSearch::getSums($job['groupType'] . 'ID', self::jobQuery($job, $maxTimeMS), $job['victimsOnly'], true, true, $job['aggregateCollection'], $maxTimeMS);
         unset($result['_id']);
         return $result;
@@ -618,8 +618,8 @@ class Campaign
     {
         global $mdb;
 
-        $maxTimeMS = 10000;
         $job = self::buildJob(self::filtersToQueryParams($filters), 'count');
+        $maxTimeMS = array_key_exists('maxTimeMS', $job) ? $job['maxTimeMS'] : 10000;
         $collection = (string) ($job['aggregateCollection'] ?? 'killmails');
         if (!in_array($collection, ['oneWeek', 'ninetyDays', 'killmails'], true)) $collection = 'killmails';
         $query = self::jobQuery($job, $maxTimeMS);
@@ -632,10 +632,9 @@ class Campaign
         }
 
         try {
-            $row = $mdb->getCollection($collection)->findOne(
-                empty($query) ? [] : $query,
-                ['sort' => ['sequence' => -1], 'projection' => ['sequence' => 1], 'maxTimeMS' => $maxTimeMS]
-            );
+            $options = ['sort' => ['sequence' => -1], 'projection' => ['sequence' => 1]];
+            if ($maxTimeMS !== null) $options['maxTimeMS'] = $maxTimeMS;
+            $row = $mdb->getCollection($collection)->findOne(empty($query) ? [] : $query, $options);
             return (int) ($row['sequence'] ?? 0);
         } catch (Exception $ex) {
             if ($ex->getCode() == 50) AdvancedSearch::logTimeout('Campaign::latestSequence', [
@@ -950,7 +949,9 @@ class Campaign
 
         $hasDateFilter = ($query['hasDateFilter'] ?? false) == true;
         $startTime = (int) ($query['start'] ?? 0);
+        $endTime = (int) ($query['end'] ?? 0);
         $now = time();
+        if ($endTime == 0) $endTime = $now;
 
         $labels = [];
         foreach ($buttons as $label) {
@@ -976,7 +977,7 @@ class Campaign
 
         $aggregateCollection = self::getAggregateCollection($startTime, $now, $epochButton);
 
-        return [
+        $job = [
             'key' => 'campaign:' . md5(json_encode($queryParams) . $queryType),
             'queryType' => $queryType,
             'groupType' => '',
@@ -994,6 +995,8 @@ class Campaign
             'itemJoin' => AdvancedSearch::getSelectedFromBase('items-', $buttons),
             'cacheTime' => self::RESULT_CACHE_SECONDS,
         ];
+        if ($startTime > 0 && $endTime > $startTime && ($endTime - $startTime) <= AdvancedSearch::MAX_NO_TIMEOUT_SPAN_SECONDS) $job['maxTimeMS'] = null;
+        return $job;
     }
 
     private static function getAggregateCollection($startTime, $now, $epochButton = '')

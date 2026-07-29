@@ -6,6 +6,7 @@ class AdvancedSearch
 {
     const MAX_ITEM_HISTORY_KILLIDS = 25000;
     const LOG_CONTEXT_MAX_LENGTH = 12000;
+    const MAX_NO_TIMEOUT_SPAN_SECONDS = 31622400;
 
     static public $labels = [
         'location' => [
@@ -75,7 +76,7 @@ class AdvancedSearch
     {
         global $mdb, $advancedSearchMaxTimeSeconds;
 
-        $maxTimeMS = (isset($advancedSearchMaxTimeSeconds) ? max(1, (int) $advancedSearchMaxTimeSeconds) : 60) * 1000;
+        $maxTimeMS = array_key_exists('maxTimeMS', $job) ? $job['maxTimeMS'] : (isset($advancedSearchMaxTimeSeconds) ? max(1, (int) $advancedSearchMaxTimeSeconds) : 60) * 1000;
 
         if ($job['queryType'] == 'fits') {
             $fitNpcMode = (bool) ($job['fitNpcMode'] ?? false);
@@ -108,7 +109,9 @@ class AdvancedSearch
             try {
                 $result = [];
                 foreach ($job['coll'] as $col) {
-                    $cursor = $mdb->getCollection($col)->find($job['query'], ['sort' => $job['sort'], 'limit' => 100, 'skip' => 100 * $job['page'], 'maxTimeMS' => $maxTimeMS]);
+                    $options = ['sort' => $job['sort'], 'limit' => 100, 'skip' => 100 * $job['page']];
+                    if ($maxTimeMS !== null) $options['maxTimeMS'] = $maxTimeMS;
+                    $cursor = $mdb->getCollection($col)->find($job['query'], $options);
                     $result = is_array($cursor) ? $cursor : iterator_to_array($cursor);
                     if (sizeof($result) >= 100) break;
                 }

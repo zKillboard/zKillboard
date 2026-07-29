@@ -140,6 +140,7 @@ function handler($request, $response, $args, $container) {
 		$aggregateCollection = getAsearchAggregateCollection($startTime, $now, $epochButton);
 		if ($queryType == 'fits') $aggregateCollection = 'ninetyDays';
 		$cacheTime = getAsearchCacheTime($startTime, $endTime, $epochButton, $queryType == "kills" ? $coll : [$aggregateCollection]);
+		$noQueryTimeout = in_array($epochButton, ['week', 'recent'], true) || ($startTime > 0 && $endTime > $startTime && ($endTime - $startTime) <= AdvancedSearch::MAX_NO_TIMEOUT_SPAN_SECONDS);
 		unset($query['hasDateFilter']);
 
 		if (sizeof($query) == 0) $query = [];
@@ -178,6 +179,7 @@ function handler($request, $response, $args, $container) {
 			'fitShipSelectCount' => $fitShipSelectCount,
 			'fitNpcMode' => $fitNpcMode
 		];
+		if ($noQueryTimeout) $job['maxTimeMS'] = null;
 		if ($queryType == 'fits' && !$fitNpcMode && $fitShipSelectCount != 1) {
 			$message = $fitShipSelectCount == 0 ? 'Select exactly one ship filter to view inferred fits.' : 'Inferred fits works with one ship filter only. Remove extra ship filters and try again.';
 			return renderAsearchResult($response, $container, $cacheTag, $job, ['fits' => [], 'windowDays' => 90, 'shipSelectCount' => $fitShipSelectCount, 'message' => $message], $labelGroupMaps);

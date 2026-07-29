@@ -20,7 +20,7 @@ function handler($request, $response, $args, $container) {
         'campaignUrl' => "/campaign/$uid/" . ($swapped ? 'swap/' : ''),
         'campaignAsyncBase' => "/campaign/$uid/section/{part}/" . ($swapped ? 'swap/' : ''),
         'campaignSwapUrl' => "/campaign/$uid/" . ($swapped ? '' : 'swap/'),
-        'campaignSearchUrl' => Campaign::searchUrl($savedCampaign),
+        'campaignSearchUrl' => Campaign::searchUrl($savedCampaign, true),
         'victimEntities' => Campaign::sideEntities($campaign, 'victims'),
         'attackerEntities' => Campaign::sideEntities($campaign, 'attackers'),
         'pageTitle' => $pageTitle,
