@@ -2,6 +2,8 @@
 
 class War
 {
+    const RESULT_CACHE_SECONDS = 900;
+
     public static function getWars($id, $active = true, $combined = false)
     {
         if (!self::isAlliance($id)) {
@@ -56,6 +58,207 @@ class War
         $warInfo['dscr'] = "$agrName vs $dfdName";
 
         return $warInfo;
+    }
+
+    public static function swapSides($war)
+    {
+        $war = is_object($war) ? (array) $war : $war;
+        if (!is_array($war)) return [];
+
+        $aggressor = $war['aggressor'] ?? [];
+        $war['aggressor'] = $war['defender'] ?? [];
+        $war['defender'] = $aggressor;
+
+        foreach ([['agrName', 'dfdName'], ['agrLink', 'dfdLink']] as $keys) {
+            $left = $war[$keys[0]] ?? null;
+            $war[$keys[0]] = $war[$keys[1]] ?? null;
+            $war[$keys[1]] = $left;
+        }
+
+        $war['dscr'] = trim((string) ($war['agrName'] ?? '')) . ' vs ' . trim((string) ($war['dfdName'] ?? ''));
+        return $war;
+    }
+
+    public static function sideEntities($war, $side)
+    {
+        $entity = self::sideEntity($war, $side);
+        return empty($entity) ? [] : [$entity];
+    }
+
+    public static function sideIDs($war, $side)
+    {
+        $entity = self::sideEntity($war, $side);
+        $id = (int) ($entity['id'] ?? 0);
+        return $id > 0 ? [$id] : [];
+    }
+
+    public static function asearchQueryBase($warID, $swapped = false)
+    {
+        $warID = (int) $warID;
+        if ($warID <= 0) return '';
+
+        $params = ['warID' => $warID];
+        if ($swapped) $params['warSwap'] = '1';
+        return '/asearchquery/?' . http_build_query($params, '', '&', PHP_QUERY_RFC3986);
+    }
+
+    public static function topGroups()
+    {
+        return [
+            'character' => ['field' => 'characterID', 'title' => 'Characters'],
+            'corporation' => ['field' => 'corporationID', 'title' => 'Corporations'],
+            'alliance' => ['field' => 'allianceID', 'title' => 'Alliances'],
+            'shipType' => ['field' => 'shipTypeID', 'title' => 'Ships'],
+            'solarSystem' => ['field' => 'solarSystemID', 'title' => 'Systems'],
+        ];
+    }
+
+    public static function buildAsearchPartJob($queryParams)
+    {
+        $warID = (int) ($queryParams['warID'] ?? 0);
+        if ($warID <= 0) return null;
+
+        $warData = self::getWarInfo($warID);
+        if (empty($warData)) return null;
+
+        $part = (string) ($queryParams['part'] ?? '');
+        $swapped = (string) ($queryParams['warSwap'] ?? '') == '1';
+        if ($swapped) $warData = self::swapSides($warData);
+        $baseJob = [
+            'warID' => $warID,
+            'warSwap' => $swapped,
+            'cacheTime' => self::RESULT_CACHE_SECONDS,
+            'attackerIDs' => self::sideIDs($warData, 'aggressor'),
+            'attackerFilter' => self::sideFilter($warData, 'aggressor'),
+            'defenderFilter' => self::sideFilter($warData, 'defender'),
+        ];
+
+        if ($part == 'kills') {
+            return array_merge($baseJob, [
+                'key' => "asearch:war:kills:$warID:" . ($swapped ? 'swap' : 'normal'),
+                'queryType' => 'warKills',
+                'part' => $part,
+            ]);
+        }
+
+        if ($part == 'attackers' || $part == 'victims') {
+            $topGroup = self::topGroup((string) ($queryParams['group'] ?? ''));
+            if ($topGroup == null) return null;
+
+            $victimsOnly = $part == 'victims';
+            $directionKey = md5(json_encode([$baseJob['attackerFilter'], $baseJob['defenderFilter']], JSON_UNESCAPED_SLASHES));
+            return array_merge($baseJob, [
+                'key' => "asearch:war:top:v2:$warID:" . ($swapped ? 'swap' : 'normal') . ":$part:" . ($queryParams['group'] ?? '') . ":$directionKey",
+                'queryType' => 'warTop',
+                'part' => $part,
+                'groupType' => (string) ($queryParams['group'] ?? ''),
+                'victimsOnly' => $victimsOnly,
+                'sideTitle' => $part == 'victims' ? 'Defender' : 'Attacker',
+            ]);
+        }
+
+        return null;
+    }
+
+    public static function runQueuedAsearchPart($job)
+    {
+        $warID = (int) ($job['warID'] ?? 0);
+        if ($warID <= 0) return [];
+
+        switch ((string) ($job['queryType'] ?? '')) {
+            case 'warKills':
+                $result = AdvancedSearch::runQueuedQuery(self::buildAdvancedSearchJob($warID, 'kills'));
+                return ['killIDs' => $result['kills'] ?? []];
+            case 'warTop':
+                $topGroup = self::topGroup((string) ($job['groupType'] ?? ''));
+                if ($topGroup == null) return ['topSet' => []];
+
+                $victimsOnly = !empty($job['victimsOnly']);
+                $rows = AdvancedSearch::runQueuedQuery(self::buildAdvancedSearchJob($warID, 'groups', (string) ($job['groupType'] ?? ''), $victimsOnly, $job['attackerFilter'] ?? null, $job['defenderFilter'] ?? null));
+                $sideTitle = (string) ($job['sideTitle'] ?? ($victimsOnly ? 'Defender' : 'Attacker'));
+                return ['topSet' => Info::doMakeCommon("Top $sideTitle " . $topGroup['title'], $topGroup['field'], array_slice($rows, 0, 10))];
+        }
+
+        return [];
+    }
+
+    private static function buildAdvancedSearchJob($warID, $queryType, $groupType = '', $victimsOnly = false, $attackerFilter = null, $defenderFilter = null)
+    {
+        $sortKey = 'killID';
+        $sortBy = -1;
+        $query = [['warID' => $warID]];
+        if (is_array($attackerFilter)) {
+            $attackerQuery = AdvancedSearch::buildFromArray('attackers', false, 'and', true, ['attackers' => [$attackerFilter]]);
+            if ($attackerQuery != null) $query[] = $attackerQuery;
+        }
+        if (is_array($defenderFilter)) {
+            $defenderQuery = AdvancedSearch::buildFromArray('victims', true, 'and', true, ['victims' => [$defenderFilter]]);
+            if ($defenderQuery != null) $query[] = $defenderQuery;
+        }
+        $directionKey = md5(json_encode([$attackerFilter, $defenderFilter], JSON_UNESCAPED_SLASHES));
+        if (sizeof($query) == 1) $query = $query[0];
+        else $query = ['$and' => $query];
+
+        return [
+            'key' => "war:$warID:$queryType:$groupType:" . ($victimsOnly ? 'victims' : 'attackers') . ":$directionKey",
+            'queryType' => $queryType,
+            'groupType' => $groupType,
+            'victimsOnly' => $queryType == 'groups' ? ($victimsOnly ? 'true' : 'false') : 'null',
+            'coll' => ['killmails'],
+            'aggregateCollection' => 'killmails',
+            'page' => 0,
+            'sortKey' => $sortKey,
+            'sortBy' => $sortBy,
+            'sort' => [$sortKey => $sortBy],
+            'query' => $query,
+            'filter' => [],
+            'types' => ['character', 'corporation', 'alliance', 'group', 'region', 'solarSystem', 'shipType', 'faction', 'category', 'location', 'constellation'],
+            'queryParams' => ['warID' => $warID, 'attackers' => [$attackerFilter], 'victims' => [$defenderFilter]],
+            'itemJoin' => 'and',
+            'cacheTime' => self::RESULT_CACHE_SECONDS,
+        ];
+    }
+
+    private static function topGroup($group)
+    {
+        return self::topGroups()[$group] ?? null;
+    }
+
+    private static function sideFilter($war, $side)
+    {
+        $entity = self::sideEntity($war, $side);
+        $type = (string) ($entity['type'] ?? '');
+        $id = (int) ($entity['id'] ?? 0);
+        if ($type == '' || $id <= 0) return null;
+        return ['type' => $type, 'id' => $id];
+    }
+
+    private static function sideEntity($war, $side)
+    {
+        $war = is_object($war) ? (array) $war : $war;
+        if (!is_array($war)) return [];
+
+        $row = is_object($war[$side] ?? null) ? (array) $war[$side] : ($war[$side] ?? []);
+        if (!is_array($row)) return [];
+
+        $id = (int) ($row['alliance_id'] ?? ($row['corporation_id'] ?? ($row['id'] ?? 0)));
+        if ($id <= 0) return [];
+
+        $link = (string) ($side == 'aggressor' ? ($war['agrLink'] ?? '') : ($war['dfdLink'] ?? ''));
+        $type = isset($row['alliance_id']) || str_starts_with($link, '/alliance/') ? 'allianceID' : 'corporationID';
+        $name = (string) ($side == 'aggressor' ? ($war['agrName'] ?? '') : ($war['dfdName'] ?? ''));
+        if ($name == '') $name = (string) Info::getInfoField($type, $id, 'name');
+        if ($name == '') $name = ($type == 'allianceID' ? 'Alliance ' : 'Corporation ') . $id;
+        if ($link == '') $link = ($type == 'allianceID' ? '/alliance/' : '/corporation/') . "$id/";
+
+        return [
+            'name' => $name,
+            'url' => $link,
+            'image' => ($type == 'allianceID' ? "https://images.evetech.net/alliances/$id/logo?size=64" : "https://images.evetech.net/corporations/$id/logo?size=64"),
+            'imageOnError' => "this.removeAttribute('onerror'); this.src='/img/empty_32.png';",
+            'type' => $type,
+            'id' => $id,
+        ];
     }
 
     public static function getWarsPageTables($forceRefresh = false)

@@ -65,6 +65,7 @@ $routes = [
 	'/intel/supers/' => ['GET', 'view/intel.php'],
 	'/crestmail/{killID}/{hash}/' => ['GET', 'view/crestmail.php'],
 	'/war/eligible/' => ['GET', 'view/war_eligible.php'],
+	'/war/{warID}/swap/' => ['GET', 'view/war.php'],
 	'/war/{warID}/' => ['GET', 'view/war.php'],
 	'/wars/' => ['GET', 'view/wars.php'],
 	'/trophies/' => ['GET', 'view/trophies.php'],

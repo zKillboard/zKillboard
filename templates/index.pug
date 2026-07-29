@@ -13,20 +13,37 @@ block content
   - $killListTitle = 'Most recent kills';
   - $killList = $kills ?? [];
   if (($pageType ?? '') == 'war')
-    .war-kill-layout
-      aside.war-top-rail.war-top-rail-left
-        - $isEmbedded = true;
-        each $topSet, $topIndex in ($topKillers ?? [])
-          if (($topIndex + 1) % 2 == 1)
-            include components/top_killer_list.pug
-      .war-kill-center
-        - $showPager = 'false';
-        include components/war_kill_list.pug
-      aside.war-top-rail.war-top-rail-right
-        - $isEmbedded = true;
-        each $topSet, $topIndex in ($topKillers ?? [])
-          if (($topIndex + 1) % 2 == 0)
-            include components/top_killer_list.pug
+    if (($warAsyncBase ?? '') != '')
+      .daily-async.campaign-report-page(data-base=$warAsyncBase data-hash-applied="1")
+        .war-kill-layout
+          aside.war-top-rail.war-top-rail-left
+            h3.kill-list-title.campaign-side-rail-title Kills
+            each $topGroup, $topGroupName in War::topGroups()
+              .daily-async-part(data-part="attackers" data-group=$topGroupName)
+                .text-muted.small.text-center.py-3= 'Loading Attacker ' . ($topGroup['title'] ?? 'Top') . '...'
+          .war-kill-center
+            .daily-async-part(data-part="kills")
+              .text-muted.small.text-center.py-3 Loading war killmails...
+          aside.war-top-rail.war-top-rail-right
+            h3.kill-list-title.campaign-side-rail-title Losses
+            each $topGroup, $topGroupName in War::topGroups()
+              .daily-async-part(data-part="victims" data-group=$topGroupName)
+                .text-muted.small.text-center.py-3= 'Loading Defender ' . ($topGroup['title'] ?? 'Top') . '...'
+    else
+      .war-kill-layout
+        aside.war-top-rail.war-top-rail-left
+          - $isEmbedded = true;
+          each $topSet, $topIndex in ($topKillers ?? [])
+            if (($topIndex + 1) % 2 == 1)
+              include components/top_killer_list.pug
+        .war-kill-center
+          - $showPager = 'false';
+          include components/war_kill_list.pug
+        aside.war-top-rail.war-top-rail-right
+          - $isEmbedded = true;
+          each $topSet, $topIndex in ($topKillers ?? [])
+            if (($topIndex + 1) % 2 == 0)
+              include components/top_killer_list.pug
   else
     h1.visually-hidden zKillboard
     .row.gx-0.gx-md-3

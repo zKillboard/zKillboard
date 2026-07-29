@@ -11,32 +11,58 @@
 - $defenderKillsPct = $killTotal > 0 ? ($defenderKills / $killTotal * 100) : 50;
 - $aggressorIskPct = $iskTotal > 0 ? ($aggressorIsk / $iskTotal * 100) : 50;
 - $defenderIskPct = $iskTotal > 0 ? ($defenderIsk / $iskTotal * 100) : 50;
-.related-report-page.war-report-page
+.related-report-page.war-report-page.campaign-report-page
   h2.related-report-title.war-matchup-title
-    span.war-matchup-entity.war-matchup-aggressor= $aggressorName
-    a.war-matchup-versus(href="/wars/") v
-    span.war-matchup-entity.war-matchup-defender= $defenderName
-  dl.war-report-meta
-    div
-      dt War
-      dd= $warID
-    div
-      dt Started
-      dd= $war['started'] ?? 'Unknown'
-    div
-      dt Finished
-      dd= $war['finished'] ?? 'Active'
-    div
-      dt Mutual
-      dd= !empty($war['mutual']) ? 'Yes' : 'No'
-    div
-      dt Allies
-      dd= !empty($war['open_for_allies'] ?? ($war['openForAllies'] ?? false)) ? 'Open' : 'Closed'
+    span.war-matchup-entity.war-matchup-aggressor.campaign-matchup-entity.campaign-matchup-attacker
+      span.campaign-matchup-role Attacker
+      if (empty($warAttackerEntities ?? []))
+        span.d-block= $aggressorName
+      else
+        each $entity in ($warAttackerEntities ?? [])
+          - $entity = is_object($entity) ? (array) $entity : $entity;
+          a.campaign-matchup-link.campaign-matchup-row-left(href=($entity['url'] ?? '#'))
+            span.campaign-matchup-name= $entity['name'] ?? ''
+            img.campaign-matchup-image(src=($entity['image'] ?? '/img/empty_32.png') alt="" width="32" height="32" loading="lazy" decoding="async" fetchpriority="low" onerror=($entity['imageOnError'] ?? ''))
+    span.war-matchup-center
+      span.war-matchup-versus v
+      a.war-matchup-swap(href=($warSwapUrl ?? '#') title="Swap sides" aria-label="Swap war sides")
+        i.fas.fa-retweet(aria-hidden="true")
+    span.war-matchup-entity.war-matchup-defender.campaign-matchup-entity.campaign-matchup-defender
+      span.campaign-matchup-role Defender
+      if (empty($warDefenderEntities ?? []))
+        span.d-block= $defenderName
+      else
+        each $entity in ($warDefenderEntities ?? [])
+          - $entity = is_object($entity) ? (array) $entity : $entity;
+          a.campaign-matchup-link.campaign-matchup-row-right(href=($entity['url'] ?? '#'))
+            img.campaign-matchup-image(src=($entity['image'] ?? '/img/empty_32.png') alt="" width="32" height="32" loading="lazy" decoding="async" fetchpriority="low" onerror=($entity['imageOnError'] ?? ''))
+            span.campaign-matchup-name= $entity['name'] ?? ''
+  .d-flex.flex-wrap.align-items-center.justify-content-between.gap-2.mb-3
+    dl.war-report-meta.flex-grow-1(style="margin-bottom: 0;")
+      div
+        dt War
+        dd= $warID
+      div
+        dt Started
+        dd= $war['started'] ?? 'Unknown'
+      div
+        dt Finished
+        dd= $war['finished'] ?? 'Active'
+      div
+        dt Mutual
+        dd= !empty($war['mutual']) ? 'Yes' : 'No'
+      div
+        dt Allies
+        dd= !empty($war['open_for_allies'] ?? ($war['openForAllies'] ?? false)) ? 'Open' : 'Closed'
+    .related-report-actions(style="margin: 0;")
+      a.btn.btn-sm.btn-secondary(href=($warUrl ?? '#') data-zkb-copy-link="1" title="Copy war link" aria-label="Copy war link")
+        i.fas.fa-copy(aria-hidden="true")
+        |  War Link
   .related-quick-compare
     .related-quick-metric
       .related-quick-label Ships Killed
       .related-quick-team.related-quick-team-a
-        span.related-quick-team-name Aggressor
+        span.related-quick-team-name Attacker
         .related-quick-track
           .related-quick-fill(style=('width: ' . number_format((float) $aggressorKillsPct, 2, '.', '') . '%'))
         span.related-quick-value= number_format((float) $aggressorKills, 0)
@@ -48,7 +74,7 @@
     .related-quick-metric
       .related-quick-label ISK Destroyed
       .related-quick-team.related-quick-team-a
-        span.related-quick-team-name Aggressor
+        span.related-quick-team-name Attacker
         .related-quick-track
           .related-quick-fill(style=('width: ' . number_format((float) $aggressorIskPct, 2, '.', '') . '%'))
         span.related-quick-value= $shortNum($aggressorIsk)

@@ -71,6 +71,18 @@ function handler($request, $response, $args, $container) {
 			return handleAsearchJob($response, $container, $cacheTag, $job, $labelGroupMaps);
 		}
 
+		if (isset($queryParams['warID']) && isset($queryParams['part'])) {
+			$job = War::buildAsearchPartJob($queryParams);
+			if ($job == null) {
+				$response->getBody()->write('<div class="alert alert-warning mb-0">War section not found.</div>');
+				return $response->withStatus(404)->withHeader('Content-Type', 'text/html; charset=utf-8')->withHeader('Cache-Control', 'no-store')->withHeader('Cache-Tag', 'www,asearch,war,error');
+			}
+			$key = $job['key'];
+			$queryType = $job['queryType'];
+			$cacheTag = "www,asearch,war,war:" . ($job['warID'] ?? '') . ",asearch:$key";
+			return handleAsearchJob($response, $container, $cacheTag, $job, $labelGroupMaps);
+		}
+
 		$fitShipTypeID = 0;
 		$fitShipSelectCount = 0;
 		foreach (['neutrals', 'attackers', 'victims'] as $shipFilterKey) {
@@ -289,7 +301,7 @@ function isAsearchJsonResult($queryType)
 
 function asearchQueueName($queryType)
 {
-	return in_array($queryType, ['kills', 'campaignKills'], true) ? 'queueAsearchKillsSet' : 'queueAsearchAggregationsSet';
+	return in_array($queryType, ['kills', 'campaignKills', 'warKills'], true) ? 'queueAsearchKillsSet' : 'queueAsearchAggregationsSet';
 }
 
 function renderAsearchProcessing($response, $cacheTag, $queryType)
@@ -324,6 +336,8 @@ function renderAsearchResult($response, $container, $cacheTag, $job, $result, $l
 	$rendered = '';
 	if (str_starts_with((string) $job['queryType'], 'campaign')) {
 		$rendered = renderCampaignAsearchResult($container, $job, $result);
+	} else if (str_starts_with((string) $job['queryType'], 'war')) {
+		$rendered = renderWarAsearchResult($container, $job, $result);
 	} else if ($job['queryType'] == 'groups') {
 		$rendered = $container->get('view')->getEnvironment()->render("components/asearch_top_list.pug", ['topSet' => [
 			'type' => $job['groupType'],
@@ -387,6 +401,30 @@ function renderCampaignAsearchResult($container, $job, $result)
 
 	if ($queryType == 'campaignTop') {
 		$rendered = $env->render('components/campaign_top_sets.pug', ['topSets' => $result['topSets'] ?? []]);
+		return trim($rendered) == '' ? '<div class="d-none"></div>' : $rendered;
+	}
+
+	return '';
+}
+
+function renderWarAsearchResult($container, $job, $result)
+{
+	$env = $container->get('view')->getEnvironment();
+	$queryType = (string) ($job['queryType'] ?? '');
+
+	if ($queryType == 'warKills') {
+		return $env->render('components/war_kill_list.pug', [
+			'killList' => $result['killIDs'] ?? [],
+			'killListTitle' => 'War Killmails',
+			'showPager' => 'false',
+			'pager' => false,
+			'pageType' => 'war',
+			'killListRowV2AttackerIDs' => $job['attackerIDs'] ?? [],
+		]);
+	}
+
+	if ($queryType == 'warTop') {
+		$rendered = $env->render('components/top_killer_list.pug', ['topSet' => $result['topSet'] ?? [], 'isEmbedded' => true]);
 		return trim($rendered) == '' ? '<div class="d-none"></div>' : $rendered;
 	}
 

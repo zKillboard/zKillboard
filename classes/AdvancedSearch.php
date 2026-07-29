@@ -77,6 +77,7 @@ class AdvancedSearch
         global $mdb, $advancedSearchMaxTimeSeconds;
 
         if (str_starts_with((string) ($job['queryType'] ?? ''), 'campaign')) return Campaign::runQueuedAsearchPart($job);
+        if (str_starts_with((string) ($job['queryType'] ?? ''), 'war')) return War::runQueuedAsearchPart($job);
 
         $maxTimeMS = array_key_exists('maxTimeMS', $job) ? $job['maxTimeMS'] : (isset($advancedSearchMaxTimeSeconds) ? max(1, (int) $advancedSearchMaxTimeSeconds) : 60) * 1000;
 
