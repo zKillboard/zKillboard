@@ -486,7 +486,7 @@ function getEntityImage(type, id) {
 			image.onerror = "this.onerror=function(){this.removeAttribute('onerror'); this.src='/img/icons/" + id + "_64.png';}; this.src='https://images.evetech.net/types/" + id + "/bp?size=" + size + "';";
 			break;
 		case 'groupID':
-			image.src = "https://images.evetech.net/types/1/icon?size=" + size;
+			image.src = "/img/group.svg";
 			image.onerror = "this.removeAttribute('onerror'); this.src='/img/empty_32.png';";
 			break;
 		case 'systemID':
