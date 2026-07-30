@@ -24,7 +24,7 @@ block content
           li.nav-item.d-none.d-md-block
             a.nav-link(href=('/' . ($key ?? '') . '/' . $prevID . '/')) &lt;
         - $navItems = [['Overview','','overview'], ['Kills','kills/','kills'], ['Solo','solo/','solo'], ['Losses','losses/','losses']];
-        - if (!empty($showDailyStats)) $navItems[] = ['Dailies','daily/','daily'];
+        - if (!empty($showDailyStats)) $navItems[] = ['Top','daily/','daily'];
         each $nav in $navItems
           li.nav-item
             a.nav-link(class=$isActive($nav[2], $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/' . $nav[1] . ($nav[1] ? ($YWMurl ?? '') : '')))= $nav[0]
@@ -37,13 +37,6 @@ block content
         if (($key ?? '') == 'ship')
           li.nav-item
             a.nav-link(class=$isActive('Description', $pageType) href=('/item/' . ($id ?? '') . '/')) Description
-        li.nav-item.dropdown
-          button.nav-link.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false") Top
-          ul.dropdown-menu
-            li
-              a.dropdown-item(class=$isActive('top', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/top/')) Monthly Top
-            li
-              a.dropdown-item(class=$isActive('topalltime', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/topalltime/')) All Time Top
         li.nav-item
           a.nav-link(class=$isActive('ranks', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/ranks/')) Ranks
         li.nav-item
@@ -172,16 +165,6 @@ block content
       hr
       - $topSet = $topKills ?? [];
       - $topTitle = 'Most Valuable Kills - Month Selected';
-      - $isEmbedded = true;
-      include components/big_top_list.pug
-      hr
-      - $showImage = true;
-      include components/top_list.pug
-    else if ($pageType == 'topalltime')
-      .centered.publift.adrow.ad-xl-none#detailadrow(data-publift="home_incontent")
-      h4 Top All Time
-      - $topSet = $topKills ?? [];
-      - $topTitle = 'Most Valuable Kills - All Time';
       - $isEmbedded = true;
       include components/big_top_list.pug
       hr

@@ -2,14 +2,6 @@ if (count($topLists ?? []) > 0)
   - $imageSize = $imageSize ?? 32;
   - $showImage = $showImage ?? false;
   .row
-    if (!empty($nextTopRecalc))
-      .col-lg-12
-        | Next all time top lists recalculation will happen shortly after 
-        = number_format((float) $nextTopRecalc, 0)
-        |  kills has been reached.
-        br
-        br
-        hr
     each $topList in ($topLists ?? [])
       .col-lg-4.pll-left(style="margin: 0px; padding-left: 1em;")
         - $topList = is_object($topList ?? null) ? (array) $topList : ($topList ?? []);
@@ -62,7 +54,4 @@ if (count($topLists ?? []) > 0)
                 td(style="text-align: right; vertical-align: middle;" data-format="format-int-once" data-raw=($field['kills'] ?? 0))= $formatIsk($field['kills'] ?? 0, $isInt ?? false)
   .clear
 else
-  h4
-    | Nothing here? Checking 
-    a(href="/ztop/") zTop's
-    |  queueTopAlltime, the lists may be pending calculation or this entity does not have at least 10 kills.
+  h4 No top lists are available for this selection.
