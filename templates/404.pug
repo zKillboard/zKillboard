@@ -7,14 +7,20 @@ block title
   include components/title.pug
 
 block content
-  h2 404
-  .alert.alert-danger
-    | The content you're after isn't here. Please go 
-    button.btn.btn-link.p-0.align-baseline(type="button" data-zkb-history-back) back
-    |  and try again, or use the mighty fine search at the top! ;)
-    if ($message ?? false)
-      br
-      = $message
+  - $esiEntityFallbackPath = preg_match('/^\/(?:character|corporation|alliance)\/[1-9]\d{0,10}(?:\/|$)/', (string) ($actualURI ?? $requesturi ?? '')) === 1;
+  #zkb-404-standard(class=($esiEntityFallbackPath ? 'd-none' : ''))
+    h2 404
+    .alert.alert-danger
+      | The content you're after isn't here. Please go 
+      button.btn.btn-link.p-0.align-baseline(type="button" data-zkb-history-back) back
+      |  and try again, or use the mighty fine search at the top! ;)
+      if ($message ?? false)
+        br
+        = $message
+  #zkb-esi-entity-fallback.d-none
 
 block robots
   meta(name="robots" content="nofollow, noindex")
+
+block script
+  script(defer type="text/javascript" src=('/js/esi-entity-fallback.js?v=' . ($version ?? '')))
