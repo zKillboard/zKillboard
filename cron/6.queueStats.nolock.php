@@ -120,11 +120,13 @@ function calcStats($row, $maxSequence)
     if ($stats === null || @$stats['reset'] === true) {
         $resetInProgress = true;
         $id_ = isset($stats['_id']) ? $stats['_id'] : null;
+        $topAllTime = isset($stats['topAllTime']) ? $stats['topAllTime'] : null;
         $stats = [];
         $stats['type'] = $type;
         $stats['id'] = $id;
         if ($id_ !== null) {
             $stats['_id'] = $id_;
+            $stats['topAllTime'] = $topAllTime;
         }
         $row['sequence'] = 0;
     }
@@ -262,6 +264,7 @@ function calcStats($row, $maxSequence)
     }
 
 
+    if (@$stats['shipsDestroyed'] > 10 && @$stats['shipsDestroyed'] > @$stats['nextTopRecalc']) $stats['calcAlltime'] = true;
 	if ($type == 'characterID' && @$stats['shipsDestroyed'] > 1000) $stats['calcTrophies'] = true;
     // save it
     if ($resetInProgress) {

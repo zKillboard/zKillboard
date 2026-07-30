@@ -95,6 +95,7 @@ class Util
 					dire("Please remove the double slash // from the call");
 					break;
 				case 'top':
+				case 'topalltime':
 				case 'stats':
 				case 'daily':
 				case 'ranks':
