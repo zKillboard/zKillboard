@@ -1384,6 +1384,9 @@ echo "Done\n";
 echo "Creating index : 'type' => 1, 'id' => 1 ... ";
 $statistics->createIndex(['type' => 1, 'id' => 1], ['unique' => true]);
 echo "Done\n";
+echo "Creating index : 'dailyStatsBackfillComplete' => 1, 'type' => 1, 'id' => 1, 'dailyStatsBackfillQueued' => 1, 'dailyStatsBackfillQueuedAt' => 1, 'shipsDestroyed' => 1, 'shipsLost' => 1 ... ";
+$statistics->createIndex(['dailyStatsBackfillComplete' => 1, 'type' => 1, 'id' => 1, 'dailyStatsBackfillQueued' => 1, 'dailyStatsBackfillQueuedAt' => 1, 'shipsDestroyed' => 1, 'shipsLost' => 1], []);
+echo "Done\n";
 foreach (['alltime', 'recent', 'weekly'] as $rankEpoch) {
     foreach (['all', 'solo'] as $rankScope) {
         echo "Creating index : 'type' => 1, 'rankings.$rankEpoch.$rankScope.ranks.overall' => 1 ... ";
