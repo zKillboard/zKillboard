@@ -12,10 +12,15 @@ if ($redis->get("zkb:reinforced") == true) {
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    $candidates = $mdb->find(DailyStats::COLLECTION, ['updates' => ['$exists' => true]], ['type' => 1, 'id' => 1], 100);
+    $candidates = $mdb->getCollection(DailyStats::COLLECTION)->find(
+        ['updates' => ['$exists' => true]],
+        ['sort' => ['type' => 1, 'id' => 1], 'batchSize' => 100]
+    );
     $row = null;
     $lockKey = null;
+    $foundCandidate = false;
     foreach ($candidates as $candidate) {
+        $foundCandidate = true;
         $updates = (array) ($candidate['updates'] ?? []);
         if (count($updates) == 0) {
             $mdb->getCollection(DailyStats::COLLECTION)->updateOne(
@@ -32,7 +37,7 @@ while ($minute == date('Hi')) {
         }
     }
 
-    if ($row == null && count($candidates) == 0) {
+    if ($row == null && !$foundCandidate) {
         if ($mt == 0) {
             sleep(1);
         } else {
