@@ -263,27 +263,23 @@ class War
 
     public static function getWarsPageTables($forceRefresh = false)
     {
-        global $mdb, $redis;
+        global $mdb, $kvc;
 
-        $cacheKey = 'zkb:wars:page:v3';
+        $cacheKey = 'zkb:wars:page';
         if (!$forceRefresh) {
             try {
-                $cached = $redis->get($cacheKey);
+                $cached = $kvc->get($cacheKey);
                 if ($cached != null) {
-                    $wars = unserialize($cached);
+                    $wars = json_decode(json_encode($cached), true);
                     if (is_array($wars)) {
                         return $wars;
                     }
                 }
             } catch (Exception $ex) {
-                try {
-                    $redis->del($cacheKey);
-                } catch (Exception $ex) {
-                }
             }
         }
 
-        $fields = ['id' => 1, 'aggressor' => 1, 'defender' => 1, 'started' => 1, 'finished' => 1, 'timeStarted' => 1];
+        $fields = ['_id' => 0, 'id' => 1, 'aggressor' => 1, 'defender' => 1, 'started' => 1, 'finished' => 1, 'timeStarted' => 1];
         $topLimit = 50;
         $recentFinished = gmdate('Y-m-d\TH:i:s\Z', time() - (90 * 86400));
         $wars = array();
@@ -306,17 +302,35 @@ class War
         foreach ($wars as &$warTable) {
             foreach ($warTable['wars'] as &$war) {
                 foreach (['aggressor', 'defender'] as $side) {
-                    if (!isset($war[$side]) || !is_array($war[$side]) || isset($war[$side]['name'])) {
+                    if (!isset($war[$side]) || !is_array($war[$side])) {
                         continue;
                     }
                     $id = $war[$side]['alliance_id'] ?? ($war[$side]['corporation_id'] ?? ($war[$side]['id'] ?? 0));
                     if ((int) $id <= 0) {
                         continue;
                     }
-                    $type = isset($war[$side]['alliance_id']) ? 'allianceID' : 'corporationID';
-                    $name = Info::getInfoField($type, $id, 'name');
-                    if ($name != null && $name != '') {
-                        $war[$side]['name'] = $name;
+                    if (isset($war[$side]['alliance_id'])) {
+                        $war[$side]['allianceID'] = (int) $id;
+                    } else {
+                        $war[$side]['corporationID'] = (int) $id;
+                    }
+                }
+            }
+        }
+        unset($warTable, $war);
+
+        Info::addInfo($wars);
+
+        foreach ($wars as &$warTable) {
+            foreach ($warTable['wars'] as &$war) {
+                foreach (['aggressor', 'defender'] as $side) {
+                    if (!isset($war[$side]) || !is_array($war[$side]) || isset($war[$side]['name'])) {
+                        continue;
+                    }
+                    if (!empty($war[$side]['allianceName'])) {
+                        $war[$side]['name'] = $war[$side]['allianceName'];
+                    } elseif (!empty($war[$side]['corporationName'])) {
+                        $war[$side]['name'] = $war[$side]['corporationName'];
                     }
                 }
             }
@@ -324,9 +338,8 @@ class War
         unset($warTable, $war);
 
         try {
-            $redis->setex($cacheKey, 3900, serialize($wars));
+            $kvc->setex($cacheKey, 86400, $wars);
         } catch (Exception $ex) {
-            // The page can still render directly if Redis is temporarily unavailable.
         }
 
         return $wars;

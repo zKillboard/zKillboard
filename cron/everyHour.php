@@ -25,9 +25,6 @@ $redis->set('zkb:titans', serialize(Stats::getTop('characterID', $parameters)));
 $parameters = ['groupID' => 659, 'isVictim' => false, 'pastSeconds' => (86400 * 90), 'nolimit' => true];
 $redis->set('zkb:supers', serialize(Stats::getTop('characterID', $parameters)));
 
-$wars = War::getWarsPageTables(true);
-Util::out('Wars page cache refreshed: ' . count($wars) . ' tables.', 'wars page cache');
-
 $result = $mdb->getCollection('information')->updateMany(
     [
         'name' => ['$type' => 'string'],
