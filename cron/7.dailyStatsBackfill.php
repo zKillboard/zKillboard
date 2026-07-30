@@ -33,75 +33,88 @@ $statsMonthlyProjection = [DailyStats::MONTH_FIELD => 1, 'updates' => 1];
 for ($dayNum = 1; $dayNum <= 31; $dayNum++) {
     $statsMonthlyProjection[sprintf('%02d', $dayNum) . '.sequence'] = 1;
 }
-$cursor = $mdb->getCollection('statistics')->find($query, [
-    'projection' => ['type' => 1, 'id' => 1, 'months' => 1, 'dailyStatsBackfillComplete' => 1],
-    'sort' => ['type' => 1, 'id' => 1],
-]);
 $time = time();
 
-foreach ($cursor as $row) {
-    if ((time() - $time) > 900) {
-        $completedScan = false;
-        break;
+$incompleteQuery = $query;
+$incompleteQuery['dailyStatsBackfillComplete'] = ['$ne' => true];
+$completedQuery = $query;
+$completedQuery['dailyStatsBackfillComplete'] = true;
+
+foreach ([['query' => $incompleteQuery, 'audit' => false], ['query' => $completedQuery, 'audit' => true]] as $scan) {
+    $projection = ['type' => 1, 'id' => 1];
+    if ($scan['audit']) {
+        $projection['months'] = 1;
     }
 
-    $type = DailyStats::normalizeType($row['type'] ?? '');
-    $id = $type == 'label' ? (string) ($row['id'] ?? '') : (int) ($row['id'] ?? 0);
-    if (!isset(DailyStats::$types[$type]) || $id === '' || ($type != 'label' && $id == 0)) {
-        continue;
-    }
+    $cursor = $mdb->getCollection('statistics')->find($scan['query'], [
+        'projection' => $projection,
+        'sort' => ['type' => 1, 'id' => 1],
+    ]);
 
-    if (!empty($row['dailyStatsBackfillComplete'])) {
-        $expectedMonths = [];
-        foreach ((array) ($row['months'] ?? []) as $monthStats) {
-            $monthStats = is_object($monthStats) ? (array) $monthStats : (array) $monthStats;
-            $year = (int) ($monthStats['year'] ?? 0);
-            $month = (int) ($monthStats['month'] ?? 0);
-            $total = (int) ($monthStats['shipsDestroyed'] ?? 0) + (int) ($monthStats['shipsLost'] ?? 0);
-            if ($year <= 0 || $month <= 0 || $month > 12 || $total <= 0) {
-                continue;
-            }
-            $expectedMonths[sprintf('%04d-%02d', $year, $month)] = true;
+    foreach ($cursor as $row) {
+        if ((time() - $time) > 900) {
+            $completedScan = false;
+            break 2;
         }
-        if (count($expectedMonths) == 0) {
+
+        $type = DailyStats::normalizeType($row['type'] ?? '');
+        $id = $type == 'label' ? (string) ($row['id'] ?? '') : (int) ($row['id'] ?? 0);
+        if (!isset(DailyStats::$types[$type]) || $id === '' || ($type != 'label' && $id == 0)) {
             continue;
         }
 
-        $existingMonths = [];
-        $monthlyDocs = $mdb->getCollection(DailyStats::COLLECTION)->find(['type' => $type, 'id' => $id], [
-            'projection' => $statsMonthlyProjection,
-        ]);
-        foreach ($monthlyDocs as $monthlyDoc) {
-            $month = (string) ($monthlyDoc[DailyStats::MONTH_FIELD] ?? '');
-            if ($month == '') {
+        if ($scan['audit']) {
+            $expectedMonths = [];
+            foreach ((array) ($row['months'] ?? []) as $monthStats) {
+                $monthStats = is_object($monthStats) ? (array) $monthStats : (array) $monthStats;
+                $year = (int) ($monthStats['year'] ?? 0);
+                $month = (int) ($monthStats['month'] ?? 0);
+                $total = (int) ($monthStats['shipsDestroyed'] ?? 0) + (int) ($monthStats['shipsLost'] ?? 0);
+                if ($year <= 0 || $month <= 0 || $month > 12 || $total <= 0) {
+                    continue;
+                }
+                $expectedMonths[sprintf('%04d-%02d', $year, $month)] = true;
+            }
+            if (count($expectedMonths) == 0) {
                 continue;
             }
-            $hasData = count((array) ($monthlyDoc['updates'] ?? [])) > 0;
-            for ($dayNum = 1; !$hasData && $dayNum <= 31; $dayNum++) {
-                $dayField = sprintf('%02d', $dayNum);
-                $hasData = isset($monthlyDoc[$dayField]) && (is_array($monthlyDoc[$dayField]) || is_object($monthlyDoc[$dayField]));
+
+            $existingMonths = [];
+            $monthlyDocs = $mdb->getCollection(DailyStats::COLLECTION)->find(['type' => $type, 'id' => $id], [
+                'projection' => $statsMonthlyProjection,
+            ]);
+            foreach ($monthlyDocs as $monthlyDoc) {
+                $month = (string) ($monthlyDoc[DailyStats::MONTH_FIELD] ?? '');
+                if ($month == '') {
+                    continue;
+                }
+                $hasData = count((array) ($monthlyDoc['updates'] ?? [])) > 0;
+                for ($dayNum = 1; !$hasData && $dayNum <= 31; $dayNum++) {
+                    $dayField = sprintf('%02d', $dayNum);
+                    $hasData = isset($monthlyDoc[$dayField]) && (is_array($monthlyDoc[$dayField]) || is_object($monthlyDoc[$dayField]));
+                }
+                if ($hasData) {
+                    $existingMonths[$month] = true;
+                }
             }
-            if ($hasData) {
-                $existingMonths[$month] = true;
+
+            $missingMonths = array_keys(array_diff_key($expectedMonths, $existingMonths));
+            if (count($missingMonths) == 0) {
+                continue;
             }
+            $auditMissingEntities++;
+            Util::out("Daily stats audit found missing months for $type:$id (" . implode(', ', array_slice($missingMonths, 0, 5)) . (count($missingMonths) > 5 ? ', ...' : '') . ")");
         }
 
-        $missingMonths = array_keys(array_diff_key($expectedMonths, $existingMonths));
-        if (count($missingMonths) == 0) {
+        $days = DailyStats::populateBackfill($type, $id);
+        if ($days <= 0) {
             continue;
         }
-        $auditMissingEntities++;
-        Util::out("Daily stats audit found missing months for $type:$id (" . implode(', ', array_slice($missingMonths, 0, 5)) . (count($missingMonths) > 5 ? ', ...' : '') . ")");
-    }
 
-    $days = DailyStats::populateBackfill($type, $id);
-    if ($days <= 0) {
-        continue;
+        $queuedEntities++;
+        $queuedDays += $days;
+        Util::out("Queued daily stats backfill for $type:$id ($days days)");
     }
-
-    $queuedEntities++;
-    $queuedDays += $days;
-    Util::out("Queued daily stats backfill for $type:$id ($days days)");
 }
 
 if ($completedScan) {
