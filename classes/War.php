@@ -265,7 +265,7 @@ class War
     {
         global $mdb, $redis;
 
-        $cacheKey = 'zkb:wars:page:v2';
+        $cacheKey = 'zkb:wars:page:v3';
         if (!$forceRefresh) {
             try {
                 $cached = $redis->get($cacheKey);
@@ -284,7 +284,21 @@ class War
         }
 
         $fields = ['id' => 1, 'aggressor' => 1, 'defender' => 1, 'started' => 1, 'finished' => 1, 'timeStarted' => 1];
+        $topLimit = 50;
+        $recentFinished = gmdate('Y-m-d\TH:i:s\Z', time() - (90 * 86400));
         $wars = array();
+        $wars[] = ['name' => 'Current Wars - Top Kills', 'wars' => iterator_to_array($mdb->getCollection('information')->aggregate([
+            ['$match' => ['type' => 'warID', 'finished' => ['$exists' => false]]],
+            ['$project' => $fields + ['totalKills' => ['$add' => [['$ifNull' => ['$aggressor.ships_killed', 0]], ['$ifNull' => ['$defender.ships_killed', 0]]]]]],
+            ['$sort' => ['totalKills' => -1, 'started' => -1]],
+            ['$limit' => $topLimit],
+        ], ['allowDiskUse' => false, 'maxTimeMS' => 30000]))];
+        $wars[] = ['name' => 'Recently Finished Wars - Top Kills', 'wars' => iterator_to_array($mdb->getCollection('information')->aggregate([
+            ['$match' => ['type' => 'warID', 'finished' => ['$gte' => $recentFinished]]],
+            ['$project' => $fields + ['totalKills' => ['$add' => [['$ifNull' => ['$aggressor.ships_killed', 0]], ['$ifNull' => ['$defender.ships_killed', 0]]]]]],
+            ['$sort' => ['totalKills' => -1, 'finished' => -1]],
+            ['$limit' => $topLimit],
+        ], ['allowDiskUse' => false, 'maxTimeMS' => 30000]))];
         $wars[] = ['name' => 'Recent Declared Wars - Open to Allies', 'wars' => $mdb->find('information', ['cacheTime' => 3600, 'type' => 'warID', 'open_for_allies' => true], ['timeStarted' => -1], 50, $fields)];
         $wars[] = ['name' => 'Recent Declared Wars - Mutual', 'wars' => $mdb->find('information', ['cacheTime' => 3600, 'type' => 'warID', 'mutual' => true], ['timeStarted' => -1], 50, $fields)];
         $wars[] = ['name' => 'Recently Declared Wars', 'wars' => $mdb->find('information', ['cacheTime' => 3600, 'type' => 'warID'], ['started' => -1], 25, $fields)];

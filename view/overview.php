@@ -302,14 +302,47 @@ function handler($request, $response, $args, $container)
 	$prevID = null;
 	$nextID = null;
 
-	$warID = (int) $id;
-	$extra['hasWars'] = false;  // Db::queryField("select count(distinct warID) count from zz_wars where aggressor = $warID or defender = $warID", "count");
+	$extra['hasWars'] = in_array($key, ['corporation', 'alliance']);
 	$extra['wars'] = array();
-	if (false && $pageType == 'wars' && $extra['hasWars']) {
-		$extra['wars'][] = War::getNamedWars('Active Wars - Aggressor', "select * from zz_wars where aggressor = $warID and timeFinished is null order by timeStarted desc");
-		$extra['wars'][] = War::getNamedWars('Active Wars - Defending', "select * from zz_wars where defender = $warID and timeFinished is null order by timeStarted desc");
-		$extra['wars'][] = War::getNamedWars('Closed Wars - Aggressor', "select * from zz_wars where aggressor = $warID and timeFinished is not null order by timeFinished desc");
-		$extra['wars'][] = War::getNamedWars('Closed Wars - Defending', "select * from zz_wars where defender = $warID and timeFinished is not null order by timeFinished desc");
+	if ($pageType == 'wars' && $extra['hasWars']) {
+		$warEntityType = $key;
+		$warEntityID = (int) $id;
+		if ($key == 'corporation' && (int) ($detail['allianceID'] ?? 0) > 0) {
+			$warEntityType = 'alliance';
+			$warEntityID = (int) $detail['allianceID'];
+		}
+		$warEntityField = $warEntityType == 'alliance' ? 'alliance_id' : 'corporation_id';
+		$cacheKey = "zkb:overview:wars:$warEntityType:$warEntityID:v1";
+		try {
+			$cachedWars = $redis->get($cacheKey);
+			if ($cachedWars != null) {
+				$cachedWars = unserialize($cachedWars);
+				if (is_array($cachedWars)) $extra['wars'] = $cachedWars;
+			}
+		} catch (Exception $ex) {
+		}
+
+		if (empty($extra['wars'])) {
+			$fields = ['_id' => 0, 'id' => 1, 'aggressor' => 1, 'defender' => 1, 'started' => 1, 'finished' => 1, 'timeStarted' => 1];
+			$match = ['type' => 'warID', '$or' => [["aggressor.$warEntityField" => $warEntityID], ["defender.$warEntityField" => $warEntityID]]];
+			$openMatch = $match;
+			$openMatch['finished'] = ['$exists' => false];
+			$openMatch['cacheTime'] = 900;
+			$closedMatch = $match;
+			$closedMatch['finished'] = ['$exists' => true];
+			$closedWars = iterator_to_array($mdb->getCollection('information')->aggregate([
+				['$match' => $closedMatch],
+				['$project' => $fields + ['totalKills' => ['$add' => [['$ifNull' => ['$aggressor.ships_killed', 0]], ['$ifNull' => ['$defender.ships_killed', 0]]]]]],
+				['$sort' => ['totalKills' => -1, 'finished' => -1]],
+				['$limit' => 100],
+			], ['allowDiskUse' => false, 'maxTimeMS' => 30000]));
+			$extra['wars'][] = ['name' => 'Current Open Wars', 'wars' => $mdb->find('information', $openMatch, ['started' => -1], 100, $fields)];
+			$extra['wars'][] = ['name' => 'Past Closed Wars - Top Kills', 'wars' => $closedWars];
+			try {
+				$redis->setex($cacheKey, 900, serialize($extra['wars']));
+			} catch (Exception $ex) {
+			}
+		}
 	}
 
 	if ($key == 'system') {

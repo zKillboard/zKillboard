@@ -7,6 +7,7 @@
       .war-entity-cell Aggressor
       .war-num-cell Kills
       .war-num-cell ISK
+      .war-info-cell
       .war-num-cell Kills
       .war-num-cell ISK
       .war-entity-cell.war-defender-cell Defender
@@ -17,12 +18,14 @@
       - $defenderKills = $defender['ships_killed'] ?? 0;
       - $aggressorIsk = $aggressor['isk_destroyed'] ?? ($aggressor['isk_killed'] ?? 0);
       - $defenderIsk = $defender['isk_destroyed'] ?? ($defender['isk_killed'] ?? 0);
-      - $aggressorName = $aggressor['name'] ?? ($war['agrName'] ?? 'Unknown aggressor');
-      - $defenderName = $defender['name'] ?? ($war['dfdName'] ?? 'Unknown defender');
       - $aggressorID = $aggressor['alliance_id'] ?? ($aggressor['corporation_id'] ?? ($aggressor['id'] ?? 0));
       - $defenderID = $defender['alliance_id'] ?? ($defender['corporation_id'] ?? ($defender['id'] ?? 0));
       - $aggressorKind = isset($aggressor['alliance_id']) ? 'alliances' : 'corporations';
       - $defenderKind = isset($defender['alliance_id']) ? 'alliances' : 'corporations';
+      - $aggressorFallback = $aggressorID > 0 ? (($aggressorKind == 'alliances' ? 'Alliance ' : 'Corporation ') . $aggressorID) : 'Unknown aggressor';
+      - $defenderFallback = $defenderID > 0 ? (($defenderKind == 'alliances' ? 'Alliance ' : 'Corporation ') . $defenderID) : 'Unknown defender';
+      - $aggressorName = !empty($aggressor['name']) ? $aggressor['name'] : ($war['agrName'] ?? $aggressorFallback);
+      - $defenderName = !empty($defender['name']) ? $defender['name'] : ($war['dfdName'] ?? $defenderFallback);
       - $warLabel = 'War ' . $aggressorName . ' versus ' . $defenderName . ', aggressor ' . number_format((float) $aggressorKills, 0) . ' kills and ' . number_format((float) $aggressorIsk, 0) . ' ISK, defender ' . number_format((float) $defenderKills, 0) . ' kills and ' . number_format((float) $defenderIsk, 0) . ' ISK';
       .war-row(role="listitem" aria-label=$warLabel)
         a.war-entity-cell.war-entity-link(href=('/war/' . ($war['id'] ?? '') . '/') aria-label=('War ' . $aggressorName . ' versus ' . $defenderName))
@@ -30,6 +33,8 @@
           span= $aggressorName
         a.war-num-cell(href=('/war/' . ($war['id'] ?? '') . '/') class=($aggressorKills >= $defenderKills ? 'green' : 'red') data-format="format-int-once" data-raw=$aggressorKills aria-label=('Aggressor kills: ' . number_format((float) $aggressorKills, 0)))= $shortNum($aggressorKills)
         a.war-num-cell(href=('/war/' . ($war['id'] ?? '') . '/') class=($aggressorIsk >= $defenderIsk ? 'green' : 'red') data-format="format-isk-once" data-raw=$aggressorIsk aria-label=('Aggressor ISK destroyed: ' . number_format((float) $aggressorIsk, 0)))= $shortNum($aggressorIsk)
+        a.war-info-cell.war-info-link(href=('/war/' . ($war['id'] ?? '') . '/') title="War details" aria-label=('War details for ' . $aggressorName . ' versus ' . $defenderName))
+          i.fas.fa-info-circle(aria-hidden="true")
         a.war-num-cell(href=('/war/' . ($war['id'] ?? '') . '/') class=($defenderKills >= $aggressorKills ? 'green' : 'red') data-format="format-int-once" data-raw=$defenderKills aria-label=('Defender kills: ' . number_format((float) $defenderKills, 0)))= $shortNum($defenderKills)
         a.war-num-cell(href=('/war/' . ($war['id'] ?? '') . '/') class=($defenderIsk >= $aggressorIsk ? 'green' : 'red') data-format="format-isk-once" data-raw=$defenderIsk aria-label=('Defender ISK destroyed: ' . number_format((float) $defenderIsk, 0)))= $shortNum($defenderIsk)
         a.war-entity-cell.war-entity-link.war-defender-cell(href=('/war/' . ($war['id'] ?? '') . '/') aria-label=('War ' . $aggressorName . ' versus ' . $defenderName))

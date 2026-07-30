@@ -404,7 +404,7 @@ td.item_destroyed,
 
 .war-row {
 	display: grid;
-	grid-template-columns: minmax(125px, 1fr) minmax(52px, max-content) minmax(72px, max-content) minmax(52px, max-content) minmax(72px, max-content) minmax(125px, 1fr);
+	grid-template-columns: minmax(125px, 1fr) minmax(52px, max-content) minmax(72px, max-content) minmax(28px, max-content) minmax(52px, max-content) minmax(72px, max-content) minmax(125px, 1fr);
 	align-items: center;
 	column-gap: 0.5rem;
 	min-height: 44px;
@@ -478,6 +478,20 @@ td.item_destroyed,
 	text-align: right;
 	font-variant-numeric: tabular-nums;
 	white-space: nowrap;
+}
+
+.war-info-link {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #66BFFF;
+	font-size: 1rem;
+}
+
+.war-info-link:hover,
+.war-info-link:focus {
+	color: #66BFFF;
+	text-decoration: underline;
 }
 
 .war-row a.war-num-cell:hover,
@@ -676,7 +690,7 @@ td.item_destroyed,
 		grid-column: 1 / -1;
 		justify-content: flex-start;
 		text-align: left;
-		order: 4;
+		order: 5;
 	}
 
 	.war-defender-cell img {
@@ -722,12 +736,9 @@ td.item_destroyed,
 		content: "ISK";
 	}
 
-	.war-row > .war-num-cell:nth-child(4) {
-		order: 5;
-	}
-
-	.war-row > .war-num-cell:nth-child(4)::before {
-		content: "Kills";
+	.war-info-cell {
+		grid-column: 1 / -1;
+		order: 4;
 	}
 
 	.war-row > .war-num-cell:nth-child(5) {
@@ -735,6 +746,14 @@ td.item_destroyed,
 	}
 
 	.war-row > .war-num-cell:nth-child(5)::before {
+		content: "Kills";
+	}
+
+	.war-row > .war-num-cell:nth-child(6) {
+		order: 7;
+	}
+
+	.war-row > .war-num-cell:nth-child(6)::before {
 		content: "ISK";
 	}
 

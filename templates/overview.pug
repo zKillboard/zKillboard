@@ -51,7 +51,7 @@ block content
         if (!empty($extraData['hasSupers']))
           li.nav-item
             a.nav-link(class=$isActive('supers', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/supers/')) Supers
-        if (($extraData['hasWars'] ?? 0) > 0)
+        if (in_array(($key ?? ''), ['corporation', 'alliance']))
           li.nav-item
             a.nav-link(class=$isActive('wars', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/wars/')) Wars
         if (($key ?? '') == 'alliance')
@@ -201,16 +201,16 @@ block content
       include components/intel_table.pug
       .clearfix
     else if ($pageType == 'wars')
-      each $row, $idx in ($extraData['wars'] ?? [])
-        - $row = is_object($row) ? (array) $row : $row;
-        .col-lg-6.float-start
-          .text-center
-            h4= $row['name'] ?? ''
-          - $wars = $row['wars'] ?? [];
-          include components/wars_table.pug
-        if ($idx % 2 == 1)
-          .clearfix
-      .clearfix
+      .col-12
+        .war-table-grid
+          each $row in ($extraData['wars'] ?? [])
+            - $row = is_object($row) ? (array) $row : $row;
+            section.war-section
+              header.war-section-header
+                h3= $row['name'] ?? ''
+                span= number_format(count($row['wars'] ?? []), 0)
+              - $wars = $row['wars'] ?? [];
+              include components/wars_table.pug
 
 block opengraph
   meta(name="twitter:title" content=$pageTitle)

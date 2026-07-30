@@ -21,6 +21,5 @@ block content
         section.war-section
           header.war-section-header
             h2.h3= $row['name'] ?? ''
-            span= number_format(count($row['wars'] ?? []), 0)
           - $wars = $row['wars'] ?? [];
           include components/wars_table.pug
