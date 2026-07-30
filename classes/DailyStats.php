@@ -857,8 +857,9 @@ class DailyStats
             'topValueKillIDs' => self::onDemandTopValueKillIDs($type, $id, $days, $losses),
         ];
 
+        $filter = self::entityInvolvedFilter($type, $id);
         foreach (self::$topTypes as $topType => $meta) {
-            $stats['top'][$topType] = AdvancedSearch::getTop($topType, $query, $losses ? 'true' : 'false', [], false, 'killID', -1);
+            $stats['top'][$topType] = AdvancedSearch::getTop($topType, $query, $losses ? 'true' : 'false', $filter, false, 'killID', -1);
         }
         self::ensureCurrentEntityTopRow($stats, $type, $id);
 
@@ -1249,7 +1250,7 @@ class DailyStats
             ],
         ];
         foreach (self::$topTypes as $topType => $meta) {
-            $facets[$topType] = self::topEntityFacet($topType, $meta['field'], $losses);
+            $facets[$topType] = self::topEntityFacet($topType, $meta['field'], $losses, $type, $id);
         }
 
         $rows = iterator_to_array($mdb->getCollection('killmails')->aggregate([
@@ -1316,12 +1317,12 @@ class DailyStats
         }
     }
 
-    private static function topEntityFacet($type, $field, $losses)
+    private static function topEntityFacet($type, $field, $losses, $entityType = null, $entityID = null)
     {
         $pipeline = [];
         if (strpos($field, 'involved.') === 0) {
             $pipeline[] = ['$unwind' => '$involved'];
-            $pipeline[] = ['$match' => ['involved.isVictim' => $losses]];
+            $pipeline[] = ['$match' => array_merge(['involved.isVictim' => $losses], self::entityInvolvedFilter($entityType, $entityID))];
         }
         $pipeline[] = ['$match' => [$field => ['$nin' => [null, 0]]]];
         $pipeline[] = ['$group' => [
@@ -1338,6 +1339,14 @@ class DailyStats
         $pipeline[] = ['$project' => ['_id' => 0, $type => '$_id', 'kills' => 1, 'isk' => 1]];
 
         return $pipeline;
+    }
+
+    private static function entityInvolvedFilter($type, $id)
+    {
+        if (!isset(self::$topTypes[$type]) || strpos(self::$topTypes[$type]['field'], 'involved.') !== 0) {
+            return [];
+        }
+        return [self::$topTypes[$type]['field'] => (int) $id];
     }
 
     private static function hydrateForView(&$doc, $viewSides = ['kills', 'losses'])
@@ -1442,12 +1451,13 @@ class DailyStats
     private static function topListsOnDemand($type, $id, $days, $losses)
     {
         $query = self::buildQueryForSelectedDays($type, $id, $days, $losses);
+        $filter = self::entityInvolvedFilter($type, $id);
         $topLists = [];
         foreach (self::$topTypes as $group => $meta) {
             $topLists[] = [
                 'type' => $meta['label'] ?? $group,
                 'typeID' => $group,
-                'data' => AdvancedSearch::getTop($group, $query, $losses ? 'true' : 'false', [], true, 'killID', -1),
+                'data' => AdvancedSearch::getTop($group, $query, $losses ? 'true' : 'false', $filter, true, 'killID', -1),
             ];
         }
         return $topLists;
@@ -1460,7 +1470,7 @@ class DailyStats
         return [
             'type' => $meta['label'] ?? $group,
             'typeID' => $group,
-            'data' => AdvancedSearch::getTop($group, $query, $losses ? 'true' : 'false', [], true, 'killID', -1),
+            'data' => AdvancedSearch::getTop($group, $query, $losses ? 'true' : 'false', self::entityInvolvedFilter($type, $id), true, 'killID', -1),
         ];
     }
 
