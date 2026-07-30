@@ -561,10 +561,10 @@ class DailyStats
             return 0;
         }
 
-        return self::populateBackfill($type, $id);
+        return self::populateBackfill($type, $id, true);
     }
 
-    public static function populateBackfill($type, $id)
+    public static function populateBackfill($type, $id, $persistChecked = false)
     {
         global $mdb;
 
@@ -573,7 +573,7 @@ class DailyStats
             return 0;
         }
         $id = $type == 'label' ? (string) $id : (int) $id;
-        if ($id === '' || ($type != 'label' && $id == 0) || !self::shouldPersist($type, $id)) {
+        if ($id === '' || ($type != 'label' && $id == 0) || (!$persistChecked && !self::shouldPersist($type, $id))) {
             return 0;
         }
 
@@ -649,25 +649,31 @@ class DailyStats
             $mdb->getCollection(self::COLLECTION)->bulkWrite($ops, ['ordered' => false]);
         }
 
-        $mdb->getCollection('statistics')->updateOne(
-            $statsKey,
-            [
-                '$set' => count($ops) > 0 ? [
+        if (count($ops) > 0 || $pendingUpdates > 0) {
+            $statsUpdate = [
+                '$set' => [
                     'dailyStatsBackfillComplete' => false,
                     'dailyStatsBackfillQueued' => true,
                     'dailyStatsBackfillQueuedAt' => time(),
-                ] : ['dailyStatsBackfillComplete' => $pendingUpdates == 0],
-                '$unset' => count($ops) > 0 ? [
+                ],
+                '$unset' => [
                     'dailyStatsBackfillCompleteAt' => 1,
                     'dailyStatsBackfillNeededAt' => 1,
-                ] : [
+                ],
+            ];
+        } else {
+            $statsUpdate = [
+                '$set' => ['dailyStatsBackfillComplete' => true],
+                '$unset' => [
                     'dailyStatsBackfillQueued' => 1,
                     'dailyStatsBackfillQueuedAt' => 1,
                     'dailyStatsBackfillCompleteAt' => 1,
                     'dailyStatsBackfillNeededAt' => 1,
                 ],
-            ]
-        );
+            ];
+        }
+
+        $mdb->getCollection('statistics')->updateOne($statsKey, $statsUpdate);
 
         return count($ops);
     }

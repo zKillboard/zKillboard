@@ -37,6 +37,11 @@ $time = time();
 
 $incompleteQuery = $query;
 $incompleteQuery['dailyStatsBackfillComplete'] = ['$ne' => true];
+$incompleteQuery['$or'] = [
+    ['dailyStatsBackfillQueued' => ['$ne' => true]],
+    ['dailyStatsBackfillQueuedAt' => ['$exists' => false]],
+    ['dailyStatsBackfillQueuedAt' => ['$lt' => time() - 86400]],
+];
 $completedQuery = $query;
 $completedQuery['dailyStatsBackfillComplete'] = true;
 
@@ -106,7 +111,7 @@ foreach ([['query' => $incompleteQuery, 'audit' => false], ['query' => $complete
             Util::out("Daily stats audit found missing months for $type:$id (" . implode(', ', array_slice($missingMonths, 0, 5)) . (count($missingMonths) > 5 ? ', ...' : '') . ")");
         }
 
-        $days = DailyStats::populateBackfill($type, $id);
+        $days = DailyStats::populateBackfill($type, $id, true);
         if ($days <= 0) {
             continue;
         }
