@@ -44,6 +44,6 @@ while ($minute == date('Hi')) {
             $redis->del($key);
             $redis->del("$key:params");
         }
-        Util::out(print_r($e, true));
+        if ($e->getCode() != 50) Util::out(print_r($e, true));
     }
 }

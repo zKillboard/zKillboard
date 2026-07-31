@@ -25,7 +25,7 @@ while ($time >= time()) {
     if ($killID != null) {
         updateInfo($killID);
         updateStatsQueue($killID);
-        updateDailyStatsQueue($killID);
+        //updateDailyStatsQueue($killID);
 
         $queueSocial->push($killID);
         $queuePublish->push($killID);
