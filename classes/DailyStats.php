@@ -613,7 +613,7 @@ class DailyStats
 
         $query = self::buildBaseQuery($type, $id);
         $rows = iterator_to_array($mdb->getCollection('killmails')->aggregate([
-            ['$match' => $query],
+            self::matchStage($query),
             ['$group' => [
                 '_id' => ['$dateToString' => ['format' => '%Y-%m-%d', 'date' => '$dttm']],
                 'sequence' => ['$max' => '$sequence'],
@@ -796,7 +796,7 @@ class DailyStats
         $id = $type == 'label' ? (string) $id : (int) $id;
         $query = self::buildBaseQuery($type, $id);
         $rows = iterator_to_array($mdb->getCollection('killmails')->aggregate([
-            ['$match' => $query],
+            self::matchStage($query),
             ['$group' => [
                 '_id' => ['$dateToString' => ['format' => '%Y-%m-%d', 'date' => '$dttm']],
                 'sequence' => ['$max' => '$sequence'],
@@ -848,7 +848,7 @@ class DailyStats
         $query = self::buildQueryForDays($type, $id, $days, $losses);
         $summary = AdvancedSearch::getSums($type, $query, 'null', false, false);
         $pointsRows = iterator_to_array($mdb->getCollection('killmails')->aggregate([
-            ['$match' => $query],
+            self::matchStage($query),
             ['$group' => ['_id' => null, 'points' => ['$sum' => '$zkb.points']]],
         ], ['allowDiskUse' => true]));
 
@@ -886,6 +886,14 @@ class DailyStats
         }
 
         return MongoFilter::buildQuery($parameters);
+    }
+
+    private static function matchStage($query)
+    {
+        if (is_array($query) && count($query) == 0) {
+            $query = new stdClass();
+        }
+        return ['$match' => $query];
     }
 
     private static function buildParameters($type, $id, $day = null, $losses = null)
@@ -950,7 +958,7 @@ class DailyStats
         $query = MongoFilter::buildQuery($parameters);
 
         return iterator_to_array($mdb->getCollection('killmails')->aggregate([
-            ['$match' => $query],
+            self::matchStage($query),
             ['$group' => [
                 '_id' => ['$dateToString' => ['format' => '%Y-%m-%d', 'date' => '$dttm']],
                 'count' => ['$sum' => 1],
@@ -966,7 +974,7 @@ class DailyStats
         global $mdb;
 
         return iterator_to_array($mdb->getCollection('killmails')->aggregate([
-            ['$match' => $query],
+            self::matchStage($query),
             ['$unwind' => '$labels'],
             ['$group' => [
                 '_id' => '$labels',
@@ -1260,7 +1268,7 @@ class DailyStats
         }
 
         $rows = iterator_to_array($mdb->getCollection('killmails')->aggregate([
-            ['$match' => $query],
+            self::matchStage($query),
             ['$facet' => $facets],
         ], ['allowDiskUse' => true]));
         $row = $rows[0] ?? [];
@@ -1418,7 +1426,7 @@ class DailyStats
 
         $query = self::buildQueryForSelectedDays($type, $id, $days, $losses);
         $rows = iterator_to_array($mdb->getCollection('killmails')->aggregate([
-            ['$match' => $query],
+            self::matchStage($query),
             ['$group' => [
                 '_id' => null,
                 'count' => ['$sum' => 1],
