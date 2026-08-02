@@ -72,8 +72,11 @@ foreach ($cursor as $row) {
             } else Util::out("Iterated - $curDate");
             $totals[$curDate] = sizeof($hashes);
             $minKillID = min(array_keys($hashes));
+			$maxKillID = max(array_keys($hashes));
             $redis->setex("zkb:firstkillid:$curDate", 7 * 86400, $minKillID);
+			$redis->setex("zkb:lastkillid:$curDate", 7 * 86400, $maxKillID);
             $kvc->set("zkb:firstkillid:$curDate", $minKillID, (7 * 86400));
+            $kvc->set("zkb:lastkillid:$curDate", $maxKillID, (7 * 86400));
         }
 
         $hashes = [];

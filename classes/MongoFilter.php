@@ -342,6 +342,21 @@ class MongoFilter
         return $first;
     }
 
+	public static function getLastKillID($year, $month, $day = 1)
+	{
+		global $redis, $kvc;
+
+		if (strlen("$month") < 2) $month = "0$month";
+		if (strlen("$day") < 2) $day = "0$day";
+		$last = (int) $kvc->get("zkb:lastkillid:{$year}{$month}{$day}");
+		if ($last != 0) return $last;
+
+		$last = (int) Info::findKillID(strtotime("$year$month$day 23:59"), 'end');
+		if ($last == 0) $last = 999999999999;
+		$kvc->setex("zkb:lastkillid:{$year}{$month}{$day}", 300, $last);
+		return $last;
+	}
+
     public static function getFirstKillIDTime($time)
     {
         global $mdb;

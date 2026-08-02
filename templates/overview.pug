@@ -24,7 +24,7 @@ block content
           li.nav-item.d-none.d-md-block
             a.nav-link(href=('/' . ($key ?? '') . '/' . $prevID . '/')) &lt;
         - $navItems = [['Overview','','overview'], ['Kills','kills/','kills'], ['Solo','solo/','solo'], ['Losses','losses/','losses']];
-        //- - if (!empty($showDailyStats)) $navItems[] = ['Dailies','daily/','daily'];
+        - if (!empty($showDailyStats)) $navItems[] = ['Dailies','daily/','daily'];
         each $nav in $navItems
           li.nav-item
             a.nav-link(class=$isActive($nav[2], $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/' . $nav[1] . ($nav[1] ? ($YWMurl ?? '') : '')))= $nav[0]

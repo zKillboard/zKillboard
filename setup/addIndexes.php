@@ -138,17 +138,14 @@ $db->createCollection("stats_monthly");
 $collection = "stats_monthly";
 $stats_monthly = $db->$collection;
 echo "Done\n";
-echo "Creating index : 'type' => 1, 'id' => 1, 'yyyy-mm' => 1 ... ";
-$stats_monthly->createIndex(['type' => 1, 'id' => 1, 'yyyy-mm' => 1], ['unique' => true]);
+echo "Creating index : 'type' => 1, 'id' => 1, 'yyyymm' => 1 ... ";
+$stats_monthly->createIndex(['type' => 1, 'id' => 1, 'yyyymm' => 1], ['unique' => true]);
 echo "Done\n";
 echo "Creating index : 'updates' => 1 ... ";
 $stats_monthly->createIndex(['updates' => 1], ['partialFilterExpression' => ['updates' => ['$exists' => true]]]);
 echo "Done\n";
 echo "Creating index : 'type' => 1, 'id' => 1, 'updates' => 1 ... ";
 $stats_monthly->createIndex(['type' => 1, 'id' => 1, 'updates' => 1], ['partialFilterExpression' => ['updates' => ['$exists' => true]]]);
-echo "Done\n";
-echo "Creating index : 'type' => 1, 'id' => 1, 'yyyy-mm' => -1 ... ";
-$stats_monthly->createIndex(['type' => 1, 'id' => 1, 'yyyy-mm' => -1], []);
 echo "Done\n";
 
 // esimails

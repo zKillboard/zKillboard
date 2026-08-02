@@ -1,12 +1,13 @@
 <?php
 
-$mt = 4; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
+//$mt = 4; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
+$mt = 0;
 
 use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
 
-if (isset($cronForks[basename(__FILE__)]) && $mt > $cronForks[basename(__FILE__)]) exit();
+//if (isset($cronForks[basename(__FILE__)]) && $mt > $cronForks[basename(__FILE__)]) exit();
 
 global $queueSocial, $redisQAuthUser, $killBotWebhook;
 
@@ -25,7 +26,6 @@ while ($time >= time()) {
     if ($killID != null) {
         updateInfo($killID);
         updateStatsQueue($killID);
-        //updateDailyStatsQueue($killID);
 
         $queueSocial->push($killID);
         $queuePublish->push($killID);
@@ -79,30 +79,31 @@ function updateStatsQueue($killID)
     $kill = $mdb->findDoc('killmails', ['killID' => $killID]);
     $involved = $kill['involved'];
     $sequence = $kill['sequence'];
+	$date = $kill['dttm']->toDateTime()->format('Ymd');
 
     // solar system
-    addToStatsQueue('solarSystemID', $kill['system']['solarSystemID'], $sequence);
-    addToStatsQueue('constellationID', $kill['system']['constellationID'], $sequence);
-    addToStatsQueue('regionID', $kill['system']['regionID'], $sequence);
+    addToStatsQueue('solarSystemID', $kill['system']['solarSystemID'], $sequence, $date);
+    addToStatsQueue('constellationID', $kill['system']['constellationID'], $sequence, $date);
+    addToStatsQueue('regionID', $kill['system']['regionID'], $sequence, $date);
     if (isset($kill['locationID'])) {
-        addToStatsQueue('locationID', $kill['locationID'], $sequence);
+        addToStatsQueue('locationID', $kill['locationID'], $sequence, $date);
     }
 
     foreach ($involved as $inv) {
         foreach ($statArray as $stat) {
             if (isset($inv[$stat])) {
-                addToStatsQueue($stat, $inv[$stat], $sequence);
+                addToStatsQueue($stat, $inv[$stat], $sequence, $date);
             }
         }
     }
 
     foreach ($kill['labels'] as $label) {
-        addToStatsQueue("label", $label, $sequence);
+        addToStatsQueue("label", $label, $sequence, $date);
     }
-    addToStatsQueue("label", 'all', $sequence);
+    addToStatsQueue("label", 'all', $sequence, $date);
 }
 
-function addToStatsQueue($type, $id, $sequence)
+function addToStatsQueue($type, $id, $sequence, $date)
 {
     global $queueStats, $mdb, $redis;
 
@@ -110,18 +111,18 @@ function addToStatsQueue($type, $id, $sequence)
 
     $cacheTag = str_replace("shipType", "ship", str_replace("solarS", "s", str_replace("ID", "", "$type:$id")));
     $redis->sadd("queueCacheTagsDefer", "killlist:$cacheTag");
-}
 
-function updateDailyStatsQueue($killID)
-{
-    global $mdb;
-
-    $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
-    if ($killmail == null) {
-        return;
-    }
-
-    DailyStats::markDirtyFromKillmail($killmail);
+	if ($redis->hget("zkb:stats_monthly:qualified", "$type:$id") == true) {
+		$key = ['type' => $type, 'id' => $id, 'yyyymm' => substr($date, 0, 6)];
+		$mdb->getCollection("stats_monthly")->updateOne(
+			$key,
+			[
+				'$setOnInsert' => $key,
+				'$addToSet' => ['updates' => "$date:$sequence"]
+			],
+			['upsert' => true]
+		);
+	}
 }
 
 function updateInfo($killID)

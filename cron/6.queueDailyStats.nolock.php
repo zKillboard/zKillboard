@@ -5,48 +5,36 @@ $mt = 4; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pi
 require_once '../init.php';
 
 if (isset($cronForks[basename(__FILE__)]) && $mt > $cronForks[basename(__FILE__)]) exit();
-
-if ($redis->get("zkb:reinforced") == true) {
-    exit();
-}
+if ($redis->get('zkb:reinforced') == true) exit();
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
-    $candidates = $mdb->getCollection(DailyStats::COLLECTION)->find(
-        ['updates' => ['$exists' => true]],
-        ['sort' => ['type' => 1, 'id' => 1], 'batchSize' => 100]
-    );
     $row = null;
     $lockKey = null;
-    $foundCandidate = false;
+    $candidates = $mdb->getCollection(DailyStats::COLLECTION)->find(
+        ['updates' => ['$exists' => true], DailyStats::MONTH_FIELD => ['$exists' => true]],
+        ['sort' => ['type' => 1, 'id' => 1, DailyStats::MONTH_FIELD => 1], 'limit' => 100]
+    );
     foreach ($candidates as $candidate) {
-        $foundCandidate = true;
-        $updates = (array) ($candidate['updates'] ?? []);
-        if (count($updates) == 0) {
+        if (count((array) ($candidate['updates'] ?? [])) == 0) {
             $mdb->getCollection(DailyStats::COLLECTION)->updateOne(
                 ['_id' => $candidate['_id'], 'updates' => []],
                 ['$unset' => ['updates' => 1]]
             );
             continue;
         }
-        $candidateLockKey = "zkb:stats_monthly:{$candidate['_id']}";
-        if ($redis->set($candidateLockKey, "true", ['nx', 'ex' => 1800]) === true) {
+
+        $candidateLock = "zkb:stats_monthly:{$candidate['_id']}";
+        if ($redis->set($candidateLock, true, ['nx', 'ex' => 1800]) === true) {
             $row = $candidate;
-            $lockKey = $candidateLockKey;
+            $lockKey = $candidateLock;
             break;
         }
     }
 
-    if ($row == null && !$foundCandidate) {
-        if ($mt == 0) {
-            sleep(1);
-        } else {
-            break;
-        }
-        continue;
-    }
     if ($row == null) {
-        usleep(25000);
+        if ($mt == 0) usleep(250000);
+        else break;
         continue;
     }
 

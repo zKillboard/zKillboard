@@ -109,30 +109,12 @@ class AdvancedSearch
         }
 
         if ($job['queryType'] == 'kills') {
-            try {
-                $result = [];
-                foreach ($job['coll'] as $col) {
-                    $options = ['sort' => $job['sort'], 'limit' => 100, 'skip' => 100 * $job['page']];
-                    if ($maxTimeMS !== null) $options['maxTimeMS'] = $maxTimeMS;
-                    $cursor = $mdb->getCollection($col)->find($job['query'], $options);
-                    $result = is_array($cursor) ? $cursor : iterator_to_array($cursor);
-                    if (sizeof($result) >= 100) break;
-                }
-                $kills = [];
-                foreach ($result as $row) $kills[] = $row['killID'];
-                return ['kills' => $kills];
-            } catch (Exception $ex) {
-                if ($ex->getCode() == 50) self::logTimeout('AdvancedSearch::getKills', [
-                    'collections' => $job['coll'],
-                    'queryType' => $job['queryType'],
-                    'query' => $job['query'],
-                    'sort' => $job['sort'],
-                    'page' => $job['page'],
-                    'requestParams' => $job['queryParams'] ?? []
-                ], $ex);
-                else Util::zout(print_r($ex, true));
-                return ['kills' => []];
+            $kills = [];
+            foreach ($job['coll'] as $collection) {
+                $kills = self::getKillIDs($job['query'], $job['sort'], 100, $collection, $maxTimeMS, 100 * $job['page']);
+                if (count($kills) >= 100) break;
             }
+            return ['kills' => $kills];
         }
         if ($job['queryType'] == 'count') {
             $result = self::getSums($job['groupType'] . 'ID', $job['query'], $job['victimsOnly'], false, true, $job['aggregateCollection'], $maxTimeMS);
@@ -328,7 +310,7 @@ class AdvancedSearch
 
         $collection = self::getAggregateCollection($collection);
         if ($collection == null) return [];
-        $hashKey = "Stats::getTop:r:$collection:$groupByColumn:" . serialize($query) . ":" . serialize($victimsOnly) . ":$sortKey:$sortBy";
+        $hashKey = "Stats::getTop:r:$collection:$groupByColumn:" . serialize($query) . ':' . serialize($filter) . ":$victimsOnly:$sortKey:$sortBy";
         while ($redis->get("inprogress:$hashKey") == "true") sleep(1);
         try {
             $redis->setex("inprogress:$hashKey", 60, "true");
@@ -420,7 +402,7 @@ class AdvancedSearch
         }
     }
 
-    public static function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $addInfo = true, $collection = 'killmails', $maxTimeMS = 25000)
+    public static function getSums($groupByColumn, $query, $victimsOnly, $cacheOverride = false, $addInfo = true, $collection = 'killmails', $maxTimeMS = 25000, $throwOnError = false)
     {
         global $mdb, $longQueryMS;
 
@@ -480,6 +462,7 @@ class AdvancedSearch
 
             return $result;
         } catch (Exception $ex) {
+            if ($throwOnError) throw $ex;
             if ($ex->getCode() == 50) {
                 self::logTimeout('AdvancedSearch::getSums', [
                     'collection' => $collection,
@@ -498,6 +481,253 @@ class AdvancedSearch
             }
             RedisCache::set($hashKey, [], 900);
             return self::getEmptySums();
+        }
+    }
+
+    public static function getKillIDs($query, $sort = ['killID' => -1], $limit = 100, $collection = 'killmails', $maxTimeMS = 25000, $skip = 0)
+    {
+        global $mdb;
+
+        $collection = self::getAggregateCollection($collection);
+        if ($collection == null) return [];
+
+        try {
+            $options = [
+                'projection' => ['_id' => 0, 'killID' => 1],
+                'sort' => $sort,
+                'limit' => max(1, min(100, (int) $limit)),
+            ];
+            if ($skip > 0) $options['skip'] = (int) $skip;
+            if ($maxTimeMS !== null) $options['maxTimeMS'] = $maxTimeMS;
+
+            $killIDs = [];
+            foreach ($mdb->getCollection($collection)->find($query, $options) as $row) {
+                $killID = (int) ($row['killID'] ?? 0);
+                if ($killID > 0) $killIDs[] = $killID;
+            }
+            return $killIDs;
+        } catch (Exception $ex) {
+            if ($ex->getCode() == 50) self::logTimeout('AdvancedSearch::getKillIDs', [
+                'collection' => $collection,
+                'query' => $query,
+                'sort' => $sort,
+                'limit' => $limit,
+                'skip' => $skip,
+            ], $ex);
+            else Util::zout(print_r($ex, true));
+            return [];
+        }
+    }
+
+    public static function getDailySums($query, $collection = 'killmails', $maxTimeMS = 25000, $cacheOverride = false, $throwOnError = false)
+    {
+        global $mdb;
+
+        $collection = self::getAggregateCollection($collection);
+        if ($collection == null) return [];
+        $hashKey = 'AdvancedSearch::getDailySums:' . $collection . ':' . serialize($query);
+        $result = RedisCache::get($hashKey);
+        if (!$cacheOverride && $result != null) return $result;
+
+        try {
+            $options = ['allowDiskUse' => true];
+            if ($maxTimeMS !== null) $options['maxTimeMS'] = $maxTimeMS;
+            $result = iterator_to_array($mdb->getCollection($collection)->aggregate([
+                ['$match' => empty($query) ? new stdClass() : $query],
+                ['$group' => [
+                    '_id' => ['$dateToString' => ['format' => '%Y-%m-%d', 'date' => '$dttm']],
+                    'count' => ['$sum' => 1],
+                    'isk' => ['$sum' => '$zkb.totalValue'],
+                    'points' => ['$sum' => '$zkb.points'],
+                ]],
+                ['$sort' => ['_id' => 1]],
+                ['$project' => ['_id' => 0, 'day' => '$_id', 'count' => 1, 'isk' => 1, 'points' => 1]],
+            ], $options));
+            RedisCache::set($hashKey, $result, 900);
+            return $result;
+        } catch (Exception $ex) {
+            if ($throwOnError) throw $ex;
+            if ($ex->getCode() == 50) self::logTimeout('AdvancedSearch::getDailySums', [
+                'collection' => $collection,
+                'query' => $query,
+            ], $ex);
+            else Util::zout(print_r($ex, true));
+            return [];
+        }
+    }
+
+    public static function getDailyFacets($query, $victimsOnly, $filter, $groups, $collection = 'killmails', $maxTimeMS = 25000, $throwOnError = false)
+    {
+        global $mdb;
+
+        $collection = self::getAggregateCollection($collection);
+        if ($collection == null) return [];
+
+        $facets = [
+            'summary' => [
+                ['$group' => [
+                    '_id' => '$_dailyStatsDay',
+                    'count' => ['$sum' => 1],
+                    'isk' => ['$sum' => '$zkb.totalValue'],
+                    'points' => ['$sum' => '$zkb.points'],
+                ]],
+                ['$project' => ['_id' => 0, 'day' => '$_id', 'count' => 1, 'isk' => 1, 'points' => 1]],
+            ],
+            'labels' => [
+                ['$unwind' => '$labels'],
+                ['$group' => [
+                    '_id' => ['day' => '$_dailyStatsDay', 'label' => '$labels'],
+                    'count' => ['$sum' => 1],
+                    'isk' => ['$sum' => '$zkb.totalValue'],
+                ]],
+                ['$sort' => ['_id.day' => 1, 'count' => -1, 'isk' => -1]],
+                ['$group' => [
+                    '_id' => '$_id.day',
+                    'rows' => ['$push' => ['label' => '$_id.label', 'count' => '$count', 'isk' => '$isk']],
+                ]],
+                ['$project' => ['_id' => 0, 'day' => '$_id', 'rows' => 1]],
+            ],
+            'topValueKillIDs' => [
+                ['$sort' => ['_dailyStatsDay' => 1, 'zkb.totalValue' => -1, 'killID' => -1]],
+                ['$group' => ['_id' => '$_dailyStatsDay', 'rows' => ['$push' => '$killID']]],
+                ['$project' => ['_id' => 0, 'day' => '$_id', 'rows' => ['$slice' => ['$rows', 10]]]],
+            ],
+        ];
+        foreach ($groups as $group => $meta) {
+            $field = (string) ($meta['field'] ?? '');
+            if ($field == '') continue;
+
+            $pipeline = [];
+            if (strpos($field, 'involved.') === 0) {
+                $pipeline[] = ['$unwind' => '$involved'];
+                $pipeline[] = ['$match' => array_merge(['involved.isVictim' => (bool) $victimsOnly], $filter)];
+            }
+            $pipeline[] = ['$match' => [$field => ['$nin' => [null, 0]]]];
+            $pipeline[] = ['$group' => [
+                '_id' => ['day' => '$_dailyStatsDay', 'killID' => '$killID', 'entityID' => '$' . $field],
+                'isk' => ['$first' => '$zkb.totalValue'],
+            ]];
+            $pipeline[] = ['$group' => [
+                '_id' => ['day' => '$_id.day', 'entityID' => '$_id.entityID'],
+                'kills' => ['$sum' => 1],
+                'isk' => ['$sum' => '$isk'],
+            ]];
+            $pipeline[] = ['$sort' => ['_id.day' => 1, 'kills' => -1, 'isk' => -1]];
+            $pipeline[] = ['$group' => [
+                '_id' => '$_id.day',
+                'rows' => ['$push' => [$group => '$_id.entityID', 'kills' => '$kills', 'isk' => '$isk']],
+            ]];
+            $pipeline[] = ['$project' => ['_id' => 0, 'day' => '$_id', 'rows' => ['$slice' => ['$rows', 50]]]];
+            $facets[$group] = $pipeline;
+        }
+
+        try {
+            $options = ['allowDiskUse' => true];
+            if ($maxTimeMS !== null) $options['maxTimeMS'] = $maxTimeMS;
+            $rows = iterator_to_array($mdb->getCollection($collection)->aggregate([
+                ['$match' => empty($query) ? new stdClass() : $query],
+                ['$addFields' => ['_dailyStatsDay' => ['$dateToString' => ['format' => '%Y-%m-%d', 'date' => '$dttm']]]],
+                ['$facet' => $facets],
+            ], $options));
+            $faceted = (array) ($rows[0] ?? []);
+            $result = [];
+            foreach ((array) ($faceted['summary'] ?? []) as $summary) {
+                $summary = is_object($summary) ? (array) $summary : (array) $summary;
+                $day = (string) ($summary['day'] ?? '');
+                if ($day == '') continue;
+                $result[$day] = [
+                    'summary' => [
+                        'count' => (int) ($summary['count'] ?? 0),
+                        'isk' => (double) ($summary['isk'] ?? 0),
+                        'points' => (int) ($summary['points'] ?? 0),
+                    ],
+                    'labels' => [],
+                    'top' => array_fill_keys(array_keys($groups), []),
+                    'topValueKillIDs' => [],
+                ];
+            }
+            foreach ((array) ($faceted['labels'] ?? []) as $dayRows) {
+                $dayRows = is_object($dayRows) ? (array) $dayRows : (array) $dayRows;
+                $day = (string) ($dayRows['day'] ?? '');
+                if (!isset($result[$day])) continue;
+                foreach ((array) ($dayRows['rows'] ?? []) as $label) {
+                    $label = is_object($label) ? (array) $label : (array) $label;
+                    $result[$day]['labels'][] = [
+                        'label' => (string) ($label['label'] ?? ''),
+                        'count' => (int) ($label['count'] ?? 0),
+                        'isk' => (double) ($label['isk'] ?? 0),
+                    ];
+                }
+            }
+            foreach ((array) ($faceted['topValueKillIDs'] ?? []) as $dayRows) {
+                $dayRows = is_object($dayRows) ? (array) $dayRows : (array) $dayRows;
+                $day = (string) ($dayRows['day'] ?? '');
+                if (!isset($result[$day])) continue;
+                $result[$day]['topValueKillIDs'] = array_values(array_filter(array_map('intval', (array) ($dayRows['rows'] ?? []))));
+            }
+            foreach (array_keys($groups) as $group) {
+                foreach ((array) ($faceted[$group] ?? []) as $dayRows) {
+                    $dayRows = is_object($dayRows) ? (array) $dayRows : (array) $dayRows;
+                    $day = (string) ($dayRows['day'] ?? '');
+                    if (!isset($result[$day])) continue;
+                    foreach ((array) ($dayRows['rows'] ?? []) as $top) {
+                        $top = is_object($top) ? (array) $top : (array) $top;
+                        $entityID = (int) ($top[$group] ?? 0);
+                        if ($entityID == 0) continue;
+                        $result[$day]['top'][$group][] = [
+                            $group => $entityID,
+                            'kills' => (int) ($top['kills'] ?? 0),
+                            'isk' => (double) ($top['isk'] ?? 0),
+                        ];
+                    }
+                }
+            }
+            return $result;
+        } catch (Exception $ex) {
+            if ($throwOnError) throw $ex;
+            if ($ex->getCode() == 50) self::logTimeout('AdvancedSearch::getDailyFacets', [
+                'collection' => $collection,
+                'query' => $query,
+                'groups' => array_keys($groups),
+            ], $ex);
+            else Util::zout(print_r($ex, true));
+            return [];
+        }
+    }
+
+    public static function getLabelStats($query, $collection = 'killmails', $maxTimeMS = 25000)
+    {
+        global $mdb;
+
+        $collection = self::getAggregateCollection($collection);
+        if ($collection == null) return [];
+        $hashKey = 'AdvancedSearch::getLabelStats:' . $collection . ':' . serialize($query);
+        $result = RedisCache::get($hashKey);
+        if ($result != null) return $result;
+
+        try {
+            $options = ['allowDiskUse' => true];
+            if ($maxTimeMS !== null) $options['maxTimeMS'] = $maxTimeMS;
+            $result = iterator_to_array($mdb->getCollection($collection)->aggregate([
+                ['$match' => empty($query) ? new stdClass() : $query],
+                ['$unwind' => '$labels'],
+                ['$group' => [
+                    '_id' => '$labels',
+                    'count' => ['$sum' => 1],
+                    'isk' => ['$sum' => '$zkb.totalValue'],
+                ]],
+                ['$sort' => ['count' => -1, 'isk' => -1]],
+                ['$project' => ['_id' => 0, 'label' => '$_id', 'count' => 1, 'isk' => 1]],
+            ], $options));
+            RedisCache::set($hashKey, $result, 900);
+            return $result;
+        } catch (Exception $ex) {
+            if ($ex->getCode() == 50) self::logTimeout('AdvancedSearch::getLabelStats', [
+                'collection' => $collection,
+                'query' => $query,
+            ], $ex);
+            else Util::zout(print_r($ex, true));
+            return [];
         }
     }
 
