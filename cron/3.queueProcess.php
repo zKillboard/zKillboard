@@ -231,7 +231,7 @@ while ($time >= time()) {
                     }
 
                     $mdb->getCollection('crestmails')->bulkWrite([
-                            ['updateOne' => [['_id' => $row['_id']], ['$set' => ['processed' => true, 'killlistrow' => false]]]],
+                            ['updateOne' => [['_id' => $row['_id']], ['$set' => ['processed' => true]]]],
                     ], $bulkOptions);
 
                     $mdb->getCollection('queues')->bulkWrite([
