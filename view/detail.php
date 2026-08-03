@@ -188,8 +188,8 @@ if ($relatedKill) {
 		];
 }
 if ($relatedShip == null) {
-	$query = ['$and' => [['involved.characterID' => (int) @$killdata['victim']['characterID']], ['killID' => ['$lte' => ($id + 200)]], ['killID' => ['$gt' => $id]], ['labels' => 'cat:6'], ['vGroupID' => 29]]];
-	$relatedKill = $mdb->findDoc('killmails', $query);
+	$query = ['$and' => [['involved' => ['$elemMatch' => ['isVictim' => true, 'characterID' => (int) @$killdata['victim']['characterID']]]], ['killID' => ['$lte' => ($id + 200)]], ['killID' => ['$gt' => $id]], ['labels' => 'cat:6'], ['vGroupID' => 29]]];
+	$relatedKill = $mdb->findDoc('killmails', $query, ['killID' => 1]);
 	if ($relatedKill) {
 		$relatedShip = [
 			'killID' => $relatedKill['killID'], 
