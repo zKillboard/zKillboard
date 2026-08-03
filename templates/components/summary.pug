@@ -9,7 +9,7 @@ else
   .row
     each $divGroups in (($statistics['groups'] ?? []))
       .col-lg-3
-        table.table.table-sm(style="--bs-table-bg: transparent; --bs-table-accent-bg: transparent;")
+        table.table.table-sm.table-striped
           thead
             tr
               th Ship Class
