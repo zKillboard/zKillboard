@@ -215,7 +215,7 @@ h1, h2, h3, h4, h5, h6 {
 	}
 
 	ul.nav-search-autocomplete {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-template-columns: repeat(3, minmax(0, 1fr));
 	}
 
 	.nav-user-shell {
@@ -648,7 +648,9 @@ ul.autocomplete .autocomplete-empty span {
 }
 
 ul.nav-search-autocomplete {
+	max-height: calc(100vh - 4rem);
 	overflow-x: hidden;
+	overflow-y: auto;
 }
 
 ul.nav-search-autocomplete .autocomplete-group-header,
@@ -780,11 +782,6 @@ li.active img {
 		min-width: 0;
 		padding: 0.35rem 0.55rem;
 		font-size: 0.95rem;
-	}
-
-	ul.nav-search-autocomplete {
-		max-height: calc(100vh - 4rem);
-		overflow-y: auto;
 	}
 
 	ul.autocomplete a {

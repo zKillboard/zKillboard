@@ -2,7 +2,7 @@
 
 class zkbSearch
 {
-    private const DEFAULT_LIMIT = 8;
+    private const DEFAULT_LIMIT = 9;
 
     public static $imageMap = [
         'typeID' => 'https://images.evetech.net/types/%1$d/icon?size=%2$d',
@@ -28,14 +28,20 @@ class zkbSearch
         $exactMatch = [];
         $exactMatchID = [];
         $partialMatch = [];
-        $types = ['typeID', 'regionID', 'solarSystemID', 'factionID', 'allianceID', 'allianceID:flag', 'corporationID', 'corporationID:flag', 'characterID', 'groupID', 'locationID', 'constellationID'];
+        $types = ['typeID:ship', 'typeID:item', 'regionID', 'solarSystemID', 'factionID', 'allianceID', 'allianceID:flag', 'corporationID', 'corporationID:flag', 'characterID', 'groupID', 'locationID', 'constellationID'];
         foreach ($types as $type) {
-            if ($entityType != null && $entityType != $type) {
+            $queryType = str_replace([':ship', ':item'], '', $type);
+            if ($entityType != null && $entityType != $type && $entityType != $queryType) {
                 continue;
             }
 
-            $query =  ['type' => $type, 'l_name' => ['$regex' => "^$low"]];
-            if ($type == "typeID") $query['published'] = true;
+            $typeQuery = ['type' => $queryType];
+            if ($queryType == "typeID") {
+                $typeQuery['published'] = true;
+                $typeQuery['categoryID'] = $type == 'typeID:ship' ? ['$in' => [6, 65]] : ['$nin' => [6, 65]];
+            }
+            $query = $typeQuery;
+            $query['l_name'] = ['$regex' => "^$low"];
             $result = $mdb->find("information", $query, ['l_name' => 1], self::DEFAULT_LIMIT, ['l_name' => 1, 'id' => 1]);
             if ($result == null) $result = [];
 
@@ -47,16 +53,17 @@ class zkbSearch
                     $prefixes[] = ['l_name' => ['$regex' => "^$term"]];
                     $matches[] = ['l_name' => ['$regex' => "\\b$term"]];
                 }
-                $query = ['type' => $type, '$or' => $prefixes, '$and' => $matches];
-                if ($type == "typeID") $query['published'] = true;
+                $query = $typeQuery;
+                $query['$or'] = $prefixes;
+                $query['$and'] = $matches;
                 $result = $mdb->find("information", $query, ['l_name' => 1], self::DEFAULT_LIMIT, ['l_name' => 1, 'id' => 1]);
                 if ($result == null) $result = [];
             }
 
             if (sizeof($result) == 0 && trim($rawSearch) != '') {
                 $terms = preg_split('/\s+/', str_replace('"', '', trim($rawSearch)), -1, PREG_SPLIT_NO_EMPTY);
-                $query = ['type' => $type, '$text' => ['$search' => '"' . implode('" "', $terms) . '"', '$language' => 'none']];
-                if ($type == "typeID") $query['published'] = true;
+                $query = $typeQuery;
+                $query['$text'] = ['$search' => '"' . implode('" "', $terms) . '"', '$language' => 'none'];
                 $result = $mdb->find("information", $query, ['l_name' => 1], self::DEFAULT_LIMIT, ['l_name' => 1, 'id' => 1]);
                 if ($result == null) $result = [];
             }
@@ -70,10 +77,11 @@ class zkbSearch
                 $result = array_merge($tickerResult, $result);
             }
 
-            $type = str_replace(':flag', '', $type);
+            $resultType = $type;
+            $type = str_replace([':flag', ':ship', ':item'], '', $type);
             $ids = [];
             foreach ($result as $row) {
-                $searchType = $type;
+                $searchType = $resultType;
                 $id = $row['id'];
                 if (array_search($id, $ids) !== false) continue;
                 $ids[] = $id;
@@ -86,6 +94,12 @@ class zkbSearch
                 $image = sprintf($image, $id, $imageSize, $localImageSuffix);
                 if (Util::endsWith($name, "Blueprint")) $image = str_replace("/icon", "/bp", $image);
 
+                if ($searchType == 'typeID:ship') {
+                    $searchType = 'ship';
+                }
+                if ($searchType == 'typeID:item') {
+                    $searchType = 'item';
+                }
                 if ($searchType == 'typeID:flag' || $searchType == 'typeID') {
                     $searchType = in_array((int) @$info['categoryID'], [6, 65]) ? 'ship' : 'item';
                 }
@@ -130,11 +144,14 @@ class zkbSearch
             }
         }
 
-        $result = array_merge($exactMatch, $partialMatch);
-        if (sizeof($result) > 15) {
-            $result = array_slice($result, 0, 15);
+        $result = [];
+        $counts = [];
+        foreach (array_merge($exactMatch, $partialMatch) as $row) {
+            $type = $row['type'];
+            if (($counts[$type] ?? 0) >= self::DEFAULT_LIMIT) continue;
+            $counts[$type] = ($counts[$type] ?? 0) + 1;
+            $result[] = $row;
         }
-
-        return $result;
+        return array_slice($result, 0, 60);
     }
 }
