@@ -108,13 +108,13 @@ h1, h2, h3, h4, h5, h6 {
 
 @media only screen and (min-width: 768px) {
 	.nav-menu-dropdown {
-		min-width: 24rem;
-		column-count: 2;
-		column-gap: 0.5rem;
+		min-width: 30rem;
 	}
 
-	.nav-menu-dropdown > li {
-		break-inside: avoid;
+	.nav-menu-dropdown.show {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		column-gap: 0.5rem;
 	}
 }
 

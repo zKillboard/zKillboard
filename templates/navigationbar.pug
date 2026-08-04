@@ -19,68 +19,44 @@ nav.navbar.navbar-expand-md.navbar-dark.bg-dark(style="margin-bottom: 0px;")
             i.fas.fa-compass.me-1(aria-hidden="true")
             | Explore
           ul.dropdown-menu.asclicks.nav-menu-dropdown
-            li
-              a.dropdown-item(href="/campaigns/") Public Campaigns
-            li
-              a.dropdown-item(href="/sovereignty/") Sovereignty
-            li
-              a.dropdown-item(href="/character/ranks/k/all/alltime/1/") Top Ranks
-            li
+            li.nav-menu-column
+              h6.dropdown-header Search & Rankings
               a.dropdown-item(href="/asearch/") Advanced Search
-            li
+              a.dropdown-item(href="/character/ranks/k/all/alltime/1/") Top Ranks
               a.dropdown-item(href="/trophies/") Trophy Leaderboard
-            li
               a.dropdown-item(href="/fits/") Inferred Fits
-
-            li
               hr.dropdown-divider
-            li
+              h6.dropdown-header Kill Reports
               a.dropdown-item(href=$asearchHref(['buttons' => ['week', 'rolling', 'label-isk:5b+', 'sort-date', 'sort-desc', 'page1', 'victimsonly']])) Top Kills (5b+)
-            li
               a.dropdown-item(href=$asearchHref(['buttons' => ['week', 'rolling', 'label-isk:10b+', 'label-isk:100b+', 'sort-date', 'sort-desc', 'page1', 'victimsonly']])) Big Kills (10b+)
-            li
               a.dropdown-item(href=$asearchHref(['buttons' => ['week', 'rolling', 'label-capital', 'label-pvp', 'sort-date', 'sort-desc', 'page1', 'victimsonly']])) Capitals
-            li
               a.dropdown-item(href=$asearchHref(['buttons' => ['week', 'rolling', 'label-cat:65', 'label-pvp', 'sort-date', 'sort-desc', 'page1', 'victimsonly']])) Structures
-            li
               a.dropdown-item(href=$asearchHref(['buttons' => ['week', 'rolling', 'label-loc:abyssal', 'sort-date', 'sort-desc', 'page1', 'victimsonly']])) Abyssal
-            li
               a.dropdown-item(href=$asearchHref(['buttons' => ['week', 'rolling', 'label-loc:abyssal', 'label-pvp', 'sort-date', 'sort-desc', 'page1', 'victimsonly']])) Abyssal PvP
-            li
               a.dropdown-item(href=$asearchHref(['buttons' => ['week', 'rolling', 'label-awox', 'sort-date', 'sort-desc', 'page1', 'victimsonly']])) Awox
-            li
               a.dropdown-item(href=$asearchHref(['buttons' => ['week', 'rolling', 'label-ganked', 'sort-date', 'sort-desc', 'page1', 'victimsonly']])) Ganked
-            li
               a.dropdown-item(href=$asearchHref(['buttons' => ['week', 'rolling', 'label-solo', 'sort-date', 'sort-desc', 'page1', 'victimsonly']])) Solo
-            li
+            li.nav-menu-column
+              h6.dropdown-header Universe
+              a.dropdown-item(href="/campaigns/") Public Campaigns
+              a.dropdown-item(href="/sovereignty/") Sovereignty
               hr.dropdown-divider
-            li
+              h6.dropdown-header Space
               a.dropdown-item(href=$asearchHref(['buttons' => ['week', 'rolling', 'label-loc:highsec', 'sort-date', 'sort-desc', 'page1', 'victimsonly']])) Highsec
-            li
               a.dropdown-item(href=$asearchHref(['buttons' => ['week', 'rolling', 'label-loc:lowsec', 'sort-date', 'sort-desc', 'page1', 'victimsonly']])) Lowsec
-            li
               a.dropdown-item(href=$asearchHref(['buttons' => ['week', 'rolling', 'label-loc:nullsec', 'sort-date', 'sort-desc', 'page1', 'victimsonly']])) Nullsec
-            li
               a.dropdown-item(href=$asearchHref(['buttons' => ['week', 'rolling', 'label-loc:w-space', 'sort-date', 'sort-desc', 'page1', 'victimsonly']])) W-Space
-            li
               a.dropdown-item(href="/asearchsaved/68a46dfdda54f9254e0bf0e6/") Pochven
-            li
               hr.dropdown-divider
-            li
+              h6.dropdown-header Conflicts
               a.dropdown-item(href=$asearchHref(['buttons' => ['togglefilters', 'week', 'rolling', 'attackers-and', 'either-and', 'victims-and', 'sort-date', 'sort-desc', 'page1', 'allinvolved'], 'attackers' => [['type' => 'factionID', 'id' => '500001']], 'victims' => [['type' => 'factionID', 'id' => '500004']]])) Caldari vs Gallente
-            li
               a.dropdown-item(href=$asearchHref(['buttons' => ['togglefilters', 'week', 'rolling', 'attackers-and', 'either-and', 'victims-and', 'sort-date', 'sort-desc', 'page1', 'allinvolved'], 'attackers' => [['type' => 'factionID', 'id' => '500003']], 'victims' => [['type' => 'factionID', 'id' => '500002']]])) Amarr vs Minmatar
-            li
               a.dropdown-item(href="/wars/") Wars
-            li
               a.dropdown-item(href="/war/eligible/") War Eligible
-            li
               hr.dropdown-divider
-            li
+              h6.dropdown-header Highlights
               a.dropdown-item(href="/kills/sponsored/") Sponsored
-            li
               a.dropdown-item(href="/top/lasthour/all/") Hourly Stats
-            li
               a.dropdown-item(href="/ztop/") zTop
         li#tracker-menu.nav-item.dropdown
           button.nav-link.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false")
