@@ -34,14 +34,10 @@ class zkbSearch
                 continue;
             }
 
-            $sub = $low;
-            do {
-				$query =  ['type' => $type, 'l_name' => ['$regex' => "^$low"]];
-				if ($type == "typeID") $query['published'] = true;
-				$result = $mdb->find("information", $query, ['l_name' => 1], self::DEFAULT_LIMIT, ['l_name' => 1, 'id' => 1]);
-                if ($result == null) $result = [];
-                if (sizeof($result) == 0) $sub = substr($sub, 0, strlen($sub) - 1);
-            } while (sizeof($result) == 0 && strlen($sub) > 0);
+            $query =  ['type' => $type, 'l_name' => ['$regex' => "^$low"]];
+            if ($type == "typeID") $query['published'] = true;
+            $result = $mdb->find("information", $query, ['l_name' => 1], self::DEFAULT_LIMIT, ['l_name' => 1, 'id' => 1]);
+            if ($result == null) $result = [];
 
             if (sizeof($result) == 0 && strpos($low, ' ') !== false) {
                 $terms = array_filter(explode(' ', $low), 'strlen');
