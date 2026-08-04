@@ -10,8 +10,10 @@
 - Reuse existing code as much as possible without modifying it. If modification is necessary, keep it simple.
 - Don't create helper functions unless the code is actually reused.
 - Don't create const-like definitions that are used in only one place.
+- Prefer array access (`[]`) over object property access (`->`) for data structures.
 - Prefer small local simplifications when already touching code; avoid broad refactors unless requested.
 - When creating or modifying existing `cron/*` scripts, don't create new `classes/*.php` files unless the data is used by more than one cron file.
+- Do not version features.  Do not add backwards compatibility. Code and/or data will either work or it will not. Aim for working code.
 
 # CSS
 - Presentation should use as little custom CSS as possible, relying instead on BS5 classes.

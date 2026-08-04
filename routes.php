@@ -68,6 +68,7 @@ $routes = [
 	'/war/{warID}/swap/' => ['GET', 'view/war.php'],
 	'/war/{warID}/' => ['GET', 'view/war.php'],
 	'/wars/' => ['GET', 'view/wars.php'],
+	'/sovereignty/' => ['GET', 'view/sovereignty.php'],
 	'/trophies/' => ['GET', 'view/trophies.php'],
 	'/ccplogin/' => ['GET', 'view/ccplogin.php'],
 	'/ccpcallback/' => ['GET', 'view/ccpcallback.php'],

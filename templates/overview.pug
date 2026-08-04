@@ -57,6 +57,9 @@ block content
         if (($key ?? '') == 'alliance')
           li.nav-item
             a.nav-link(class=$isActive('corpstats', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/corpstats/')) Corporations
+        if (($key ?? '') == 'alliance' && !empty($hasSovereignty))
+          li.nav-item
+            a.nav-link(class=$isActive('sov', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/sov/')) Sov
       ul.navbar-nav.ms-auto.d-none.d-md-flex
         if (($key ?? '') == 'ship')
           li.nav-item.d-md-none.d-xl-block
@@ -190,6 +193,47 @@ block content
     else if ($pageType == 'corpstats')
       .centered.publift.adrow.ad-xl-none#detailadrow(data-publift="home_incontent")
       include components/corpstats.pug
+    else if ($pageType == 'sov')
+      .col-6
+        h2.mb-2
+          | Sovereignty
+          if (!empty($sovereigntyAvailable))
+            small.text-body-secondary.fw-normal= ' ' . number_format(count($sovereigntySystems ?? []), 0) . ' systems'
+        if (!empty($sovereigntyUpdatedAt))
+          p.text-body-secondary
+            | Last Updated:
+            time(datetime=gmdate('c', $sovereigntyUpdatedAt))= ' ' . gmdate('Y-m-d H:i', $sovereigntyUpdatedAt) . ' UTC'
+            | .
+        if (empty($sovereigntyAvailable))
+          .alert.alert-warning Sovereignty data is temporarily unavailable.
+        else if (empty($sovereigntySystems))
+          .alert.alert-secondary This alliance does not currently hold sovereignty over any systems.
+        else
+          .table-responsive
+            table.table.table-striped.table-hover.align-middle.datatable(data-order='[[0, "asc"], [1, "asc"], [2, "asc"]]' data-length-menu='[[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]')
+              caption.visually-hidden Systems where this alliance holds sovereignty, ordered by region, constellation, and system.
+              thead
+                tr
+                  th.col-4(scope="col") Region
+                  th.col-4(scope="col") Constellation
+                  th.col-4(scope="col") System
+              tbody
+                each $system in $sovereigntySystems
+                  tr
+                    td
+                      a.d-inline-flex.align-items-center.gap-2(href=('/region/' . $system['regionID'] . '/'))
+                        img.rounded(src=('/img/nohus/regions/' . $system['regionID'] . '.png') width="32" height="32" alt="" loading="lazy" decoding="async")
+                        span= $system['regionName']
+                    td
+                      a.d-inline-flex.align-items-center.gap-2(href=('/constellation/' . $system['constellationID'] . '/'))
+                        img.rounded(src=('/img/nohus/constellations/' . $system['constellationID'] . '.png') width="32" height="32" alt="" loading="lazy" decoding="async")
+                        span= $system['constellationName']
+                    td
+                      .d-flex.align-items-center.gap-2
+                        a.d-inline-flex.align-items-center.gap-2(href=('/system/' . $system['solarSystemID'] . '/'))
+                          img.rounded(src=('/img/nohus/systems/' . $system['solarSystemID'] . '.png') width="32" height="32" alt="" loading="lazy" decoding="async")
+                          span.fw-semibold= $system['solarSystemName']
+                        span.war-kill-security(style=('color: ' . $secStatusColor($system['secStatus'])) aria-label=('Security status ' . number_format((float) $system['secStatus'], 1)))= number_format((float) $system['secStatus'], 1)
     else if ($pageType == 'supers')
       .centered.publift.adrow.ad-xl-none#detailadrow(data-publift="home_incontent")
       h3

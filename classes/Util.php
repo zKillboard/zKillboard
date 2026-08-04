@@ -103,6 +103,7 @@ class Util
 				case 'wars':
 				case 'supers':
 				case 'corpstats':
+				case 'sov':
 					// These parameters can be safely ignored
 					break;
 				case 'reset':
