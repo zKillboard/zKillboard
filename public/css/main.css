@@ -648,7 +648,7 @@ ul.autocomplete .autocomplete-empty span {
 }
 
 ul.nav-search-autocomplete {
-	max-height: calc(100vh - 4rem);
+	max-height: 80vh;
 	overflow-x: hidden;
 	overflow-y: auto;
 }

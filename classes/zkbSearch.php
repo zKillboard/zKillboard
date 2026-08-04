@@ -152,6 +152,6 @@ class zkbSearch
             $counts[$type] = ($counts[$type] ?? 0) + 1;
             $result[] = $row;
         }
-        return array_slice($result, 0, 60);
+        return $result;
     }
 }
