@@ -52,6 +52,14 @@ class zkbSearch
                 if ($result == null) $result = [];
             }
 
+            if (sizeof($result) == 0 && trim($rawSearch) != '') {
+                $terms = preg_split('/\s+/', str_replace('"', '', trim($rawSearch)), -1, PREG_SPLIT_NO_EMPTY);
+                $query = ['type' => $type, '$text' => ['$search' => '"' . implode('" "', $terms) . '"', '$language' => 'none']];
+                if ($type == "typeID") $query['published'] = true;
+                $result = $mdb->find("information", $query, ['l_name' => 1], self::DEFAULT_LIMIT, ['l_name' => 1, 'id' => 1]);
+                if ($result == null) $result = [];
+            }
+
             if (trim($rawSearch) != '' && ($type == 'corporationID' || $type == 'allianceID')) {
                 $tickerSearch = preg_quote(strtoupper(trim($rawSearch)));
                 $tickerResult = $mdb->find("information", ['type' => $type, 'ticker' => ['$regex' => "^$tickerSearch"]], ['ticker' => 1], self::DEFAULT_LIMIT, ['ticker' => 1, 'id' => 1]);
