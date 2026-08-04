@@ -4,8 +4,8 @@ if (count($topLists ?? []) > 0)
   .row
     if (!empty($nextTopRecalc))
       .col-lg-12
-        | Next all time top lists recalculation will happen shortly after
-        = number_format((float) $nextTopRecalc, 0)
+        | Next all time top lists recalculation will happen shortly after&nbsp;
+        span(format="format-int-once" raw=$nextTopRecalc)= $nextTopRecalc
         |  kills has been reached.
         br
         br
