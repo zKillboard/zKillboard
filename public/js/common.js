@@ -265,7 +265,7 @@ window.zkbExecuteInsertedScripts = executeInsertedScripts;
 function scheduleVersionCheck() {
     if (zkbVersionCheckTimeout) clearTimeout(zkbVersionCheckTimeout);
 
-    const delay = (3000 + Math.floor(Math.random() * 1201)) * 1000;
+    const delay = (300 + Math.floor(Math.random() * 601)) * 1000;
     zkbVersionCheckTimeout = setTimeout(checkSiteVersion, delay);
 }
 
