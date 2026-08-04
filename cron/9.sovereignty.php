@@ -27,8 +27,18 @@ function success(&$guzzler, &$params, $content)
 
     if ($content == "") {
         if (@$params['STATUS_CODE'] == 304) {
-            if (!empty($params['snapshot'])) $kvc->set('zkb:sovereignty:map', $params['snapshot']);
-            if (!empty($params['allianceLookup'])) $kvc->set('zkb:sovereignty:alliances', $params['allianceLookup']);
+            if (!empty($params['snapshot'])) {
+                $allianceLookup = [];
+                foreach ((array) ($params['snapshot']['leaderboard'] ?? []) as $alliance) {
+                    $alliance = (array) $alliance;
+                    $allianceLookup[(int) $alliance['allianceID']] = (int) $alliance['systems'];
+                }
+                $storedLookup = $params['allianceLookup'] ?? null;
+                $storedLookup = is_object($storedLookup) ? (array) $storedLookup : (is_array($storedLookup) ? $storedLookup : []);
+                $kvc->set('zkb:sovereignty:map', $params['snapshot']);
+                $kvc->set('zkb:sovereignty:alliances', $allianceLookup);
+                if ($allianceLookup != $storedLookup) $redis->sadd("queueCacheTags", "sovereignty");
+            }
             $redis->setex("zkb:sovereignty:fetch", 3600, "true");
         }
         return;
@@ -114,7 +124,7 @@ function success(&$guzzler, &$params, $content)
     if (isset($headers['etag'][0])) $update['etag'] = $headers['etag'][0];
     if (isset($headers['last-modified'][0])) $update['lastModified'] = $headers['last-modified'][0];
     $kvc->set('zkb:sovereignty:map', $update);
-    $kvc->set('zkb:sovereignty:alliances', json_encode($allianceLookup));
+    $kvc->set('zkb:sovereignty:alliances', $allianceLookup);
     $redis->setex("zkb:sovereignty:fetch", 3333, "true");
     $redis->sadd("queueCacheTags", "sovereignty");
 }
