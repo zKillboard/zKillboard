@@ -20,6 +20,7 @@ function handler($request, $response, $args, $container)
 		'sovereignty.pug',
 		[
 			'alliances' => $alliances,
+			'sovereigntyMapData' => ['sovereignty' => (array) ($snapshot['alliances'] ?? []), 'alliances' => $alliances],
 			'sovereigntyAvailable' => isset($snapshot['leaderboard'], $snapshot['totals']),
 			'sovereigntyUpdatedAt' => (int) ($snapshot['updatedAt'] ?? 0),
 			'totalSystems' => (int) ($totals['systems'] ?? 0),

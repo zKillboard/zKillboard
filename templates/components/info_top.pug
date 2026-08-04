@@ -192,6 +192,14 @@ br
                       td(itemprop="region")
                         a(href=('/region/' . ($detailData['regionID'] ?? 0) . '/') class=$trigClass($detailData['regionID'] ?? 0, 12000001, 13000000))= $detailData['regionName']
                         include tracker.pug
+                  if (($key ?? '') == 'system' && !empty($detailData['sovereigntyAlliance']))
+                    - $sovereigntyAlliance = (array) $detailData['sovereigntyAlliance'];
+                    tr
+                      th Sov:
+                      td
+                        a(href=('/alliance/' . ($sovereigntyAlliance['allianceID'] ?? 0) . '/sov/'))= $sovereigntyAlliance['allianceName'] ?? ''
+                        if (!empty($sovereigntyAlliance['aticker']))
+                          span.text-body-secondary= ' <' . $sovereigntyAlliance['aticker'] . '>'
                   if (($key ?? '') == 'region' && !empty($detailData['constellations']))
                     tr
                       th Constellations:

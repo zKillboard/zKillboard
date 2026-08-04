@@ -200,7 +200,7 @@ block content
       .centered.publift.adrow.ad-xl-none#detailadrow(data-publift="home_incontent")
       include components/corpstats.pug
     else if ($pageType == 'sov')
-      .col-6
+      .col-12.col-lg-6
         h2.mb-2
           | Sovereignty
           if (!empty($sovereigntyAvailable))
@@ -240,6 +240,9 @@ block content
                           img.rounded(src=('/img/nohus/systems/' . $system['solarSystemID'] . '.png') width="32" height="32" alt="" loading="lazy" decoding="async")
                           span.fw-semibold= $system['solarSystemName']
                         span.war-kill-security(style=('color: ' . $secStatusColor($system['secStatus'])) aria-label=('Security status ' . number_format((float) $system['secStatus'], 1)))= number_format((float) $system['secStatus'], 1)
+      .col-12.col-lg-6
+        - $sovereigntyMapLabel = 'Map of sovereignty held by ' . ($pageName ?? 'this alliance');
+        include components/sovereignty_map.pug
     else if ($pageType == 'supers')
       .centered.publift.adrow.ad-xl-none#detailadrow(data-publift="home_incontent")
       h3
@@ -293,6 +296,8 @@ block opengraph
 
 block script
   script(defer type="text/javascript" src=('/js/overview.js?v=' . ($version ?? '')))
+  if (($pageType ?? '') == 'sov')
+    script(defer src=('/js/sovereignty-map.js?v=' . ($version ?? '')))
   script(defer type="text/javascript").
     const pageType = '#{($key ?? '')}';
     const pageID = '#{($id ?? '')}';

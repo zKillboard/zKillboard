@@ -1,0 +1,13 @@
+figure.sovereignty-map-component.position-sticky.mb-0(style="top: 1rem;")
+  .ratio.ratio-1x1
+    .sovereignty-map-frame.bg-black.border.rounded.overflow-hidden
+      canvas.sovereignty-map.position-absolute.top-0.start-0.w-100.h-100(style="touch-action: none; cursor: grab;" data-systems-url="/data/mapSystems2d.jsonl" data-constellations-url="/data/mapConstellations.jsonl" data-regions-url="/data/mapRegions.jsonl" aria-label=($sovereigntyMapLabel ?? 'Sovereignty map'))
+        | Sovereignty map
+      button.btn.btn-dark.btn-sm.position-absolute.top-0.end-0.m-2.z-1(type="button" data-sovereignty-map-reset aria-label="Re-center map" title="Re-center map")
+        svg(width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true")
+          circle(cx="12" cy="12" r="6")
+          path(d="M12 2v3M12 19v3M2 12h3M19 12h3")
+      .sovereignty-map-tooltip.d-none.position-absolute.bg-black.text-white.border.border-light.border-opacity-50.rounded.px-2.py-1.small.fw-semibold.shadow-lg.pe-none.z-1
+      .sovereignty-map-loading.position-absolute.top-50.start-50.translate-middle.text-body-secondary Loading map…
+  figcaption.small.text-body-secondary.mt-2 Four-color ownership map. Drag to pan, scroll to zoom, and select a system to open it.
+  template.sovereignty-map-data!= json_encode($sovereigntyMapData ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)

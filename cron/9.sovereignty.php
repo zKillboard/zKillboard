@@ -10,15 +10,14 @@ if ($kvc->get("zkb:noapi") == "true") exit($force ? "No API atm, force ignored":
 if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit($force ? "TQ count too low, force ignored": "");
 
 $snapshot = (array) ($kvc->get('zkb:sovereignty:map') ?? []);
-$allianceLookup = $kvc->get('zkb:sovereignty:alliances');
 $headers = ['X-Compatibility-Date' => '2026-07-21'];
-if (!$force && isset($snapshot['alliances'], $snapshot['leaderboard'], $snapshot['totals']) && $allianceLookup != null) {
+if (!$force) {
     if (!empty($snapshot['etag'])) $headers['If-None-Match'] = $snapshot['etag'];
     if (!empty($snapshot['lastModified'])) $headers['If-Modified-Since'] = $snapshot['lastModified'];
 }
 
 $guzzler = new Guzzler();
-$guzzler->call("$esiServer/sovereignty/systems/", "success", "fail", ['snapshot' => $snapshot, 'allianceLookup' => $allianceLookup], $headers);
+$guzzler->call("$esiServer/sovereignty/systems/", "success", "fail", [], $headers);
 $guzzler->finish();
 
 function success(&$guzzler, &$params, $content)
@@ -26,21 +25,7 @@ function success(&$guzzler, &$params, $content)
     global $kvc, $mdb, $redis;
 
     if ($content == "") {
-        if (@$params['STATUS_CODE'] == 304) {
-            if (!empty($params['snapshot'])) {
-                $allianceLookup = [];
-                foreach ((array) ($params['snapshot']['leaderboard'] ?? []) as $alliance) {
-                    $alliance = (array) $alliance;
-                    $allianceLookup[(int) $alliance['allianceID']] = (int) $alliance['systems'];
-                }
-                $storedLookup = $params['allianceLookup'] ?? null;
-                $storedLookup = is_object($storedLookup) ? (array) $storedLookup : (is_array($storedLookup) ? $storedLookup : []);
-                $kvc->set('zkb:sovereignty:map', $params['snapshot']);
-                $kvc->set('zkb:sovereignty:alliances', $allianceLookup);
-                if ($allianceLookup != $storedLookup) $redis->sadd("queueCacheTags", "sovereignty");
-            }
-            $redis->setex("zkb:sovereignty:fetch", 3600, "true");
-        }
+        if (@$params['STATUS_CODE'] == 304) $redis->setex("zkb:sovereignty:fetch", 3600, "true");
         return;
     }
 
@@ -48,12 +33,14 @@ function success(&$guzzler, &$params, $content)
     if (!is_array($json) || !isset($json['solar_systems']) || !is_array($json['solar_systems'])) return;
 
     $allianceSystemIDs = [];
+    $systemLookup = [];
     $systemIDs = [];
     foreach ($json['solar_systems'] as $row) {
         $allianceID = (int) ($row['claim']['alliance']['alliance_id'] ?? 0);
         $systemID = (int) ($row['solar_system_id'] ?? 0);
         if ($allianceID <= 0 || $systemID <= 0) continue;
         $allianceSystemIDs[$allianceID][] = $systemID;
+        $systemLookup[$systemID] = $allianceID;
         $systemIDs[] = $systemID;
     }
 
@@ -114,6 +101,7 @@ function success(&$guzzler, &$params, $content)
         ];
     }
     ksort($alliances);
+    ksort($systemLookup);
     usort($leaderboard, function ($a, $b) {
         return $b['systems'] <=> $a['systems'] ?: strcasecmp($a['allianceName'], $b['allianceName']);
     });
@@ -125,6 +113,7 @@ function success(&$guzzler, &$params, $content)
     if (isset($headers['last-modified'][0])) $update['lastModified'] = $headers['last-modified'][0];
     $kvc->set('zkb:sovereignty:map', $update);
     $kvc->set('zkb:sovereignty:alliances', $allianceLookup);
+    $kvc->set('zkb:sovereignty:systems', $systemLookup);
     $redis->setex("zkb:sovereignty:fetch", 3333, "true");
     $redis->sadd("queueCacheTags", "sovereignty");
 }
