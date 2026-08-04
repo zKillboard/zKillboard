@@ -29,24 +29,24 @@ block content
     .row.g-3
       .col-12.col-lg-6
         .table-responsive
-          table.table.table-striped.table-hover.align-middle.datatable(data-order='[[2, "desc"]]' data-page-length="-1" data-length-menu='[[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]')
+          table.table.table-striped.table-hover.align-middle.datatable(style="table-layout: fixed;" data-order='[[2, "desc"]]' data-page-length="-1" data-length-menu='[[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]')
             thead
               tr
-                th.text-center(scope="col") Rank
-                th(scope="col") Alliance
-                th.text-end(scope="col") Systems
+                th.col-2.text-center(scope="col") Rank
+                th.col-8(scope="col") Alliance
+                th.col-2.text-end.text-nowrap(scope="col") Systems
             tbody
               each $alliance, $index in ($alliances ?? [])
                 tr
                   td.text-center.noclipboard(data-order=($index + 1) data-value=($index + 1) format="format-int-once" raw=($index + 1))= $index + 1
-                  td
-                    a.d-inline-flex.align-items-center.gap-2(href=('/alliance/' . $alliance['allianceID'] . '/sov/'))
-                      img.rounded(src=('https://images.evetech.net/alliances/' . $alliance['allianceID'] . '/logo?size=32') width="32" height="32" alt=($alliance['allianceName'] . ' logo') loading="lazy" decoding="async")
-                      span
+                  td.overflow-hidden
+                    a.d-flex.align-items-center.gap-2.overflow-hidden(href=('/alliance/' . $alliance['allianceID'] . '/sov/'))
+                      img.rounded.flex-shrink-0(src=('https://images.evetech.net/alliances/' . $alliance['allianceID'] . '/logo?size=32') width="32" height="32" alt=($alliance['allianceName'] . ' logo') loading="lazy" decoding="async")
+                      span.d-block.text-truncate
                         = $alliance['allianceName']
                         if (!empty($alliance['ticker']))
                           span.text-body-secondary= ' <' . $alliance['ticker'] . '>'
-                  td.text-end(data-order=$alliance['systems'] data-value=$alliance['systems'])
+                  td.text-end.text-nowrap(data-order=$alliance['systems'] data-value=$alliance['systems'])
                     a.noclipboard(href=('/alliance/' . $alliance['allianceID'] . '/sov/') format="format-int-once" raw=$alliance['systems'])= $alliance['systems']
       .col-12.col-lg-6
         - $sovereigntyMapLabel = 'Map of all alliance sovereignty';
