@@ -41,8 +41,13 @@ class zkbSearch
 
             if (sizeof($result) == 0 && strpos($low, ' ') !== false) {
                 $terms = array_filter(explode(' ', $low), 'strlen');
-                $wordPrefix = '^' . implode('.*\b', $terms);
-                $query = ['type' => $type, 'l_name' => ['$regex' => $wordPrefix]];
+                $prefixes = [];
+                $matches = [];
+                foreach ($terms as $term) {
+                    $prefixes[] = ['l_name' => ['$regex' => "^$term"]];
+                    $matches[] = ['l_name' => ['$regex' => "\\b$term"]];
+                }
+                $query = ['type' => $type, '$or' => $prefixes, '$and' => $matches];
                 if ($type == "typeID") $query['published'] = true;
                 $result = $mdb->find("information", $query, ['l_name' => 1], self::DEFAULT_LIMIT, ['l_name' => 1, 'id' => 1]);
                 if ($result == null) $result = [];
