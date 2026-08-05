@@ -229,7 +229,7 @@ br
                           | (Closed)
                         else
                           = number_format((float) $detailData['memberCount'], 0)
-                  if (((($key ?? '') == 'corporation') || (($key ?? '') == 'alliance')) && $corpUrlValid)
+                  if (((($key ?? '') == 'corporation') || (($key ?? '') == 'alliance')) && $corpUrlValid && ($detailData['memberCount'] ?? 0) >= 1)
                     tr
                       th Website:
                       td
