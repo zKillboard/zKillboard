@@ -45,7 +45,7 @@ class zkbSearch
             $result = $mdb->find("information", $query, ['l_name' => 1], self::DEFAULT_LIMIT, ['l_name' => 1, 'id' => 1]);
             if ($result == null) $result = [];
 
-            if (sizeof($result) == 0 && strpos($low, ' ') !== false) {
+            if (strpos($low, ' ') !== false) {
                 $terms = array_filter(explode(' ', $low), 'strlen');
                 $prefixes = [];
                 $matches = [];
@@ -56,8 +56,9 @@ class zkbSearch
                 $query = $typeQuery;
                 $query['$or'] = $prefixes;
                 $query['$and'] = $matches;
-                $result = $mdb->find("information", $query, ['l_name' => 1], self::DEFAULT_LIMIT, ['l_name' => 1, 'id' => 1]);
-                if ($result == null) $result = [];
+                $wordResult = $mdb->find("information", $query, ['l_name' => 1], self::DEFAULT_LIMIT, ['l_name' => 1, 'id' => 1]);
+                if ($wordResult == null) $wordResult = [];
+                $result = array_merge($result, $wordResult);
             }
 
             if (sizeof($result) == 0 && trim($rawSearch) != '') {
