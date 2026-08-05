@@ -1,6 +1,5 @@
-body {
+#asearchcontent {
 	min-height: 10000px !important;
-	height: 10000px !important;
 }
 
 .autocomplete-suggestions {
