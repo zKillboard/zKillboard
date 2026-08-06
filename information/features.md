@@ -6,6 +6,28 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 
 ---
 
+## 🆕 June & July 2026 Highlights
+
+### June 2026
+- **Item-aware Advanced Search**: Search killmails for specific fitted, cargo, or dropped item types using AND/OR matching
+- **Queued Advanced Search**: Expensive searches and aggregations continue in the background, with the page polling until results are ready
+- **Daily Statistics**: Entity pages gained daily kills/losses analytics with selectable dates, Ships/ISK/Points graphs, summaries, top entities, top values, and label breakdowns
+- **Scoped Favorites**: Corporation CEOs and alliance executor CEOs can maintain shared corporation and alliance killmail favorites alongside personal favorites
+- **Trophy Leaderboard**: A dedicated leaderboard ranks characters by completed trophy levels and completion percentage
+- **Faster In-site Navigation**: Eligible internal links load through SPA-style navigation with browser history and scroll restoration
+- **Delayed Submissions**: Manual and API killmail submissions can request a strategic publication delay and receive clear queued-processing status
+
+### July 2026
+- **Richer Search Matching**: Autocomplete supports spaced partial-name matching and corporation/alliance ticker matching, with clearer match highlighting and more suggestions
+- **Expanded Statistics UX**: Daily analytics gained broader date-range handling, while overview rankings gained live recent/weekly refreshes and Kills/ISK sorting for top entities
+- **Inferred Fits**: A dedicated ship-fit explorer derives popular combat fits from observed killmail history and integrates those results with Advanced Search
+- **Campaigns (Beta)**: Users can turn attacker-versus-defender Advanced Searches into public or link-shareable private campaign reports with side comparisons, top lists, killmails, and ongoing statistics
+- **Richer Entity Profiles**: Character, corporation, and alliance pages expose more ESI-backed metadata, including corporation founder, home station, member count, tax rate, war eligibility, and alliance executor details when available
+- **Supporter Recognition**: 1B ISK supporters receive a silver portrait shine, 10B ISK supporters receive a gold super-monocle shine, and the portrait effect can be disabled in site settings
+- **ESI Entity Fallback**: Missing character, corporation, and alliance pages can show live public ESI identity details instead of only a generic 404
+
+---
+
 ## 🔐 Authentication & User Management
 
 ### EVE Online SSO Integration
@@ -21,6 +43,7 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 ### Account Management
 - **Profile Management**: Character information, corporation/alliance details, payment history
 - **API Scope Management**: Add, remove, and manage ESI scopes with last validation timestamps
+
 ### User Interface Features
 - **Theme Customization**: Multiple visual themes available for user selection
 - **Activity Heatmaps**: 90-day activity visualization with hourly breakdown 
@@ -33,6 +56,8 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 - **Notification Settings**: Tracker notifications and login page preferences
 - **Payment History**: ISK donation tracking and ad-free time management
 - **Activity Logs**: Personal activity and system interaction logs
+- **Expanded Entity Metadata**: ESI-backed character, corporation, and alliance details such as founder, home station, member count, tax rate, war eligibility, and executor corporation
+- **Missing Entity Fallback**: Public ESI data can provide a useful identity view when a character, corporation, or alliance is not yet available locally
 
 ---
 
@@ -99,14 +124,22 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 - **Kill/Loss Perspective**: Switch between kills made and losses taken
 - **Security Level**: High-sec, low-sec, null-sec, wormhole, abyssal filtering
 - **Location-based**: System, constellation, region, security band filtering
+- **Item History Filtering**: Match killmails containing one or more selected item types with AND/OR controls
+- **Queued Queries**: Long-running killmail and aggregation searches are completed by background workers while the interface reports queued status and retries automatically
+- **Result Aggregations**: Summaries and top groups for characters, corporations, alliances, factions, ships, groups, locations, systems, constellations, regions, and labels
+- **Flexible Sorting and Layouts**: Sort by date, ISK, involved count, damage, or points; switch between compact and wide aggregation layouts
+- **Campaign Creation**: Convert a qualifying attacker-versus-defender search into a reusable campaign report
+- **Inferred Fit Results**: With one ship filter selected, show inferred fits relevant to the current search criteria
 
 ### Autocomplete System
 - **Search Suggestions**: Instant search suggestions for all entity types
 - **Grouped Results**: Results organized by entity type (characters, corporations, etc.)
 - **Single Result Redirect**: Automatic redirection for unique matches
 - **Fuzzy Matching**: Intelligent matching for partial names and IDs
+- **Ticker Matching**: Find corporations and alliances by ticker as well as by name
+- **Multi-word Partial Matching**: Match spaced name fragments in order when a direct prefix match is unavailable
 - **OpenSearch Integration**: Browser search bar integration
-- **Keyboard Shortcuts**: Quick search (/) and advanced search (\) hotkeys
+- **Keyboard Shortcuts**: Focus quick search with `/` or `^`, and open Advanced Search with `\`
 
 ---
 
@@ -138,6 +171,25 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 
 ---
 
+## 🔧 Inferred Fits
+
+### Fit Discovery
+- **Observed Combat Fits**: Best-effort fits inferred from losses by pilots who previously earned kills in the same ship
+- **Ship Search**: Browse leading inferred fits across ships or search for a specific ship type
+- **Fit Rankings**: Rank fits by observed kills and show supporting final-blow and solo-kill counts
+- **Freshness Details**: Display when the inference data was updated and how many killmails and days contributed
+- **Advanced Search Integration**: Apply the current Advanced Search criteria to inferred-fit results when exactly one ship is selected
+
+### Fit Inspection & Export
+- **Fitting Wheel**: Inspect modules and slots in the familiar killmail fitting layout
+- **EFT Export**: View and copy an EFT-format fitting
+- **Sample Evidence**: Open the sample loss used to reconstruct the fit
+- **Save to EVE**: Import the inferred fit through ESI when authenticated with fitting permissions
+- **External Links**: Open the fit in EVE Ship Fit or EVE Workbench
+- **Best-effort Warning**: Clearly notes that ammo, drones, cargo, implants, boosters, and refits may be incomplete or inferred
+
+---
+
 ## 📊 Statistics & Rankings
 
 ### Statistics Engine
@@ -164,12 +216,17 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 - **Recent Activity API**: API endpoints for recent activity data
 - **Activity Heatmaps**: Visual representation of activity patterns
 - **Timezone-based Stats**: Activity broken down by major timezones
+- **Daily Analytics**: Per-entity kills and losses summarized by Ships, ISK, and Points across selectable days and date ranges
+- **Interactive History Graphs**: Switch metrics and sides, select or zoom date ranges, and drill into individual days
+- **Daily Breakdowns**: Top values, entity/ship/location lists, and combat-label distributions for the selected period
+- **Live Ranking Tabs**: Recent and weekly statistics refresh along with live all-time overview data
 
 ### Badge & Recognition System  
 - **Custom Badges**: External badge integration system for special recognition
 - **Badge Display**: Visual badges shown on killmail pages and profiles  
 - **Third-party Integration**: Support for external badge providers and services
 - **Achievement Display**: Visual recognition for accomplishments and milestones
+- **Trophy Leaderboard**: Site-wide ranking by completed trophy levels and overall completion percentage
 
 ---
 
@@ -193,6 +250,17 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 - **War Eligibility Tracking**: Corporations and alliances eligible for war declarations
 - **War Killmail Association**: Links killmails to specific war contexts
 - **Historical War Data**: Complete archive of war outcomes and statistics
+- **Side-by-side War Reports**: Aggressor and defender comparison views with side swapping, top participants, and war killmail feeds
+- **Precomputed War Tables**: Frequently viewed war listings are prepared in the background for faster page loads
+
+### Campaign System (Beta)
+- **Advanced Search Conversion**: Create a campaign from attacker and defender filters plus a custom start date
+- **Public or Private Campaigns**: Publish campaigns in the public directory or share private campaigns directly by link
+- **Configurable Duration**: Choose an end date up to one year from the start, with a one-year default when no end is supplied
+- **Side Comparisons**: Compare ships killed, ISK, points, dropped value, destroyed value, and droppable value for attackers and defenders
+- **Top Participants**: Separate top character, corporation, alliance, faction, ship, group, system, region, and location lists for each side
+- **Campaign Killmail Feed**: Browse matching killmails and swap attacker/defender perspectives
+- **Campaign Management**: Logged-in owners can view, modify, and delete their campaigns from the account area
 
 ---
 
@@ -211,11 +279,14 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 - **Sponsorship Duration**: 7-day sponsorship periods per killmail
 - **Multiple Sponsorships**: Multiple users can sponsor the same killmail
 - **Cumulative Tracking**: Total sponsorship amounts tracked per killmail
+- **Live Detail Updates**: Sponsorship state refreshes on an open killmail without requiring a full page reload
 - **Large Sponsorship Alerts**: Special notifications for 100M+ ISK sponsorships
 - **Sponsored Killmails Page**: Dedicated page showing recently sponsored killmails
 
 ### Recognition System
 - **Monocle Badge**: Permanent monocle icon for 1+ billion ISK total donations
+- **Super Monocle Badge**: Gold super-monocle icon and portrait shine for 10+ billion ISK total donations
+- **Configurable Portrait Shine**: Supporters can disable the shiny portrait effect in site settings
 - **Visual Recognition**: Special icons for supporting users
 - **Automatic Awards**: Cron job processing for monocle eligibility and EVE mail notifications
 
@@ -229,6 +300,7 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 - **Level Progression**: 5-level trophy system with progress tracking
 - **Completion Metrics**: Overall completion percentage and level counts
 - **Visual Display**: Trophy level icons and progress indicators
+- **Leaderboard**: Compare top trophy hunters by completed levels and overall completion percentage
 
 ### Achievement Types
 - **General Trophies**: Solo kills, total kills, losses, security level achievements
@@ -249,8 +321,10 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 
 ### Favorites System
 - **Killmail Favorites**: Save interesting killmails for later viewing
-- **Star Rating Interface**: Click star icons to add/remove favorites
+- **Star Interface**: Click star icons to add/remove favorites
 - **Personal Collection**: User-specific favorite killmail collections
+- **Corporation Favorites**: Corporation CEOs can curate a shared corporation collection
+- **Alliance Favorites**: Executor corporation CEOs can curate a shared alliance collection
 - **Quick Access**: Dedicated favorites page for easy browsing
 
 ### Tracker System
@@ -319,6 +393,8 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 - **JSON Support**: Standard JSON data format for API responses
 - **Error Handling**: Comprehensive error responses and logging
 - **IP-based Limiting**: Protection against abuse and overuse
+- **Full Killmail Responses**: Standard API results include the complete killmail body, with `zkbOnly` available for compact metadata-only responses
+- **Delayed Killmail Posting**: API clients can submit a supported delay and receive structured queued-status details
 
 ### RedisQ Integration
 - **Killmail Streaming**: Killmail streaming via Redis Queue
@@ -338,6 +414,7 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 - **Progress Indicators**: Visual loading indicators for operations
 - **AJAX Loading**: Dynamic content loading without page refresh
 - **Responsive Updates**: UI updates via WebSocket
+- **Cancelable Requests**: In-flight page and kill-list requests can be canceled when the user navigates or changes context
 
 ### Enhanced Navigation
 - **Search Integration**: Integrated search with autocomplete across all entity types
@@ -345,6 +422,9 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 - **Mobile Touch**: Touch-optimized interface elements
 - **Infinite Scroll**: Dynamic loading of additional content
 - **Toast Notifications**: Non-intrusive user notifications
+- **SPA-style Page Loads**: Eligible internal navigation replaces page content without a full reload while preserving browser history and scroll restoration
+- **Graceful Fallback**: Failed or unsupported dynamic navigation falls back to a normal full-page load
+- **Deployment Freshness**: Periodic version checks reload stale browser sessions after a site deployment
 
 ---
 
