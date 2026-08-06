@@ -17,10 +17,11 @@ block vars
   - $eveWhoCharacters = array_reduce($eveWhoRows, function ($rows, $row) { $row = is_object($row ?? null) ? (array) $row : ($row ?? []); $characterID = (int) ($row['characterID'] ?? 0); if ($characterID > 0 && !isset($rows[$characterID])) $rows[$characterID] = ['characterID' => $characterID, 'characterName' => $row['characterName'] ?? ('Character ' . $characterID)]; return $rows; }, []);
   - $eveWhoCharacters = array_values($eveWhoCharacters);
   - usort($eveWhoCharacters, fn($a, $b) => strcasecmp($a['characterName'] ?? '', $b['characterName'] ?? ''));
-  - $victim = (($victimData['characterID'] ?? 0) != 0) ? ($victimData['characterName'] ?? '') : ($victimData['corporationName'] ?? '');
+  - $victim = (($victimData['characterID'] ?? 0) != 0) ? ($victimData['characterName'] ?? 'Unknown character') : ($victimData['corporationName'] ?? 'Unknown corporation');
   - $pageTitle = ($victimData['shipName'] ?? '') . ' | ' . $victim . ' | Killmail';
-  - $description = $victim . ' lost their ' . ($victimData['shipName'] ?? '') . ' worth ' . number_format((float) ($extraData['totalisk'] ?? 0), 2, '.', ',') . ' ISK.';
+  - $description = $victim . ' lost their ' . ($victimData['shipName'] ?? 'ship') . ' in ' . ($systemData['solarSystemName'] ?? 'an unknown system') . (!empty($systemData['regionName']) ? (' (' . $systemData['regionName'] . ')') : '') . (!empty($finalBlowData['characterName']) ? ('. Final blow by ' . $finalBlowData['characterName'] . (!empty($finalBlowData['corporationName']) ? (' (' . $finalBlowData['corporationName'] . ')') : '') . (!empty($finalBlowData['shipName']) ? (' in a ' . $finalBlowData['shipName']) : '')) : '') . '. Total value: ' . number_format((float) ($extraData['totalisk'] ?? 0), 2, '.', ',') . ' ISK.';
   - $canonical = ($fullsiteurl ?? '') . '/kill/' . ($infoData['killID'] ?? 0) . '/';
+  - $pageMeta = ['card' => 'summary', 'image' => 'https://images.evetech.net/types/' . ($victimData['shipTypeID'] ?? 0) . '/render?size=512', 'imageWidth' => 512, 'imageHeight' => 512, 'imageAlt' => ($victimData['shipName'] ?? 'EVE Online ship') . ' render'];
 
 block title
   include components/title.pug
@@ -273,20 +274,6 @@ block modal
               #ingamelinkcontent
             .mb-3
               button.btn.btn-primary(type="button" data-bs-dismiss="modal") Close
-
-block opengraph
-  meta(name="twitter:title" content=$pageTitle)
-  meta(name="twitter:image" content=('https://images.evetech.net/types/' . ($victimData['shipTypeID'] ?? 0) . '/icon'))
-  meta(name="twitter:card" content="summary")
-  meta(property="og:title" content=$pageTitle)
-  meta(property="og:url" content=(($fullsiteurl ?? '') . '/kill/' . ($infoData['killID'] ?? 0) . '/'))
-  if (empty($finalBlowData['characterName']))
-    - $ogDescription = ($victimData['characterName'] ?? '') . ' (' . ($victimData['corporationName'] ?? '') . ') lost their ' . ($victimData['shipName'] ?? '') . ' in ' . ($systemData['solarSystemName'] ?? '') . ' (' . ($systemData['regionName'] ?? '') . ') Total Value: ' . number_format((float) ($extraData['totalisk'] ?? 0), 2, '.', ',') . ' ISK';
-  else
-    - $ogDescription = ($victimData['characterName'] ?? '') . ' (' . ($victimData['corporationName'] ?? '') . ') lost their ' . ($victimData['shipName'] ?? '') . ' in ' . ($systemData['solarSystemName'] ?? '') . ' (' . ($systemData['regionName'] ?? '') . '). Final Blow by ' . ($finalBlowData['characterName'] ?? '') . ' (' . ($finalBlowData['corporationName'] ?? '') . ') flying ' . (!empty($infoData['solo']) ? 'solo ' : '') . 'in a ' . ($finalBlowData['shipName'] ?? '') . '. Total Value: ' . number_format((float) ($extraData['totalisk'] ?? 0), 2, '.', ',') . ' ISK';
-  meta(name="twitter:description" content=$ogDescription)
-  meta(property="og:description" content=$ogDescription)
-  meta(property="og:image" content=('https://images.evetech.net/types/' . ($victimData['shipTypeID'] ?? 0) . '/icon'))
 
 block script
   script.

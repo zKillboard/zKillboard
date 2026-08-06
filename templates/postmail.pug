@@ -2,6 +2,7 @@ extends base.pug
 
 block vars
   - $pageTitle = 'Post';
+  - $robots = 'noindex,nofollow';
 
 block title
   include components/title.pug
@@ -34,6 +35,3 @@ block content
         .card-body
           form#loginform(action="/ccpoauth2/")
             input#ssologinimage(type="image" src="/img/ssologin.png" alt="Log in with EVE Online SSO")
-
-block robots
-  meta(name="robots" content="nofollow")

@@ -711,6 +711,14 @@ function updateHeadMeta(name, doc) {
 }
 
 function syncSpaHeadExtras(doc) {
+    const metadataSelector = 'meta[property^="og:"], meta[property^="fb:"], meta[name^="twitter:"], meta[name="robots"]';
+    document.head.querySelectorAll(metadataSelector).forEach(meta => meta.remove());
+    doc.head.querySelectorAll(metadataSelector).forEach(meta => {
+        const next = document.createElement("meta");
+        copyAttributes(meta, next);
+        document.head.appendChild(next);
+    });
+
     document.querySelectorAll("[data-spa-head-extra]").forEach(el => el.remove());
 
     doc.head.querySelectorAll("style").forEach(style => {

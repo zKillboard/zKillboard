@@ -8,6 +8,9 @@ block vars
   - $teamBTotals = is_object($teamB['totals'] ?? null) ? (array) $teamB['totals'] : ($teamB['totals'] ?? []);
   - $priceTitle = function ($prices) { $prices = is_object($prices ?? null) ? (array) $prices : ($prices ?? []); return '$' . number_format((float) ($prices['usd'] ?? 0), 2, '.', ',') . ' / ' . number_format((float) ($prices['eur'] ?? 0), 2, '.', ',') . ' euro / GBP ' . number_format((float) ($prices['gbp'] ?? 0), 2, '.', ','); };
   - $pageTitle = 'Related Kills | ' . ($systemName ?? '') . ' | ' . ($time ?? '');
+  - $totalLostISK = ($teamATotals['total_price'] ?? 0) + ($teamBTotals['total_price'] ?? 0);
+  - $totalSize = ($teamATotals['pilotCount'] ?? 0) + ($teamBTotals['pilotCount'] ?? 0);
+  - $description = 'Battle report for ' . ($systemName ?? 'an unknown system') . (!empty($regionName) ? (' (' . $regionName . ')') : '') . ' involving ' . number_format($totalSize, 0) . ' pilots and ' . number_format((float) $totalLostISK, 2, '.', ',') . ' ISK destroyed.';
 
 block title
   include components/title.pug
@@ -225,15 +228,3 @@ block content
       if (count($killList) > 0)
         .related-team-panel.related-team-panel-a.is-active(data-team="a")
           include components/kill_list.pug
-
-block opengraph
-  - $totalLostISK = ($teamATotals['total_price'] ?? 0) + ($teamBTotals['total_price'] ?? 0);
-  - $totalSize = ($teamATotals['pilotCount'] ?? 0) + ($teamBTotals['pilotCount'] ?? 0);
-  - $ogDescription = 'A battle took place in ' . ($systemName ?? '') . ' (' . ($regionName ?? '') . ') involving ' . $totalSize . ' pilots who lost a total of ' . number_format((float) $totalLostISK, 2, '.', ',') . ' isk';
-  meta(name="twitter:title" content=('zKillboard.com / ' . $pageTitle))
-  meta(name="twitter:image" content=(($fullsiteurl ?? '') . '/img/3D.png'))
-  meta(name="twitter:card" content="summary")
-  meta(name="og:title" content=('zKillboard.com / ' . $pageTitle))
-  meta(name="twitter:description" content=$ogDescription)
-  meta(name="og:description" content=$ogDescription)
-  meta(name="og:image" content=(($fullsiteurl ?? '') . '/img/3D.png'))

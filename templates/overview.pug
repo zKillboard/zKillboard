@@ -8,6 +8,39 @@ block vars
   - $rankText = !empty($detailData['ranks']['overallRank']) ? (': Ranked #' . number_format((float) $detailData['ranks']['overallRank'], 0) . ' with ') : ': ';
   - $description = ($pageName ?? '') . $rankText . number_format((float) ($detailData['shipsDestroyed'] ?? 0), 0) . ' ships destroyed and ' . number_format((float) ($detailData['shipsLost'] ?? 0), 0) . ' ships lost.';
   - $canonical = ($fullsiteurl ?? '') . '/' . ($key ?? '') . '/' . ($id ?? '') . '/';
+  - $pageMeta = ['card' => 'summary'];
+  if (($key ?? '') == 'character')
+    - $pageMeta['image'] = ($image_server ?? 'https://images.evetech.net/') . 'characters/' . ($id ?? '') . '/portrait?size=512';
+    - $pageMeta['imageWidth'] = 512;
+    - $pageMeta['imageHeight'] = 512;
+    - $pageMeta['imageAlt'] = ($pageName ?? '') . ' character portrait';
+  else if (in_array(($key ?? ''), ['corporation', 'alliance']))
+    - $pageMeta['image'] = ($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/logo?size=512';
+    - $pageMeta['imageWidth'] = 512;
+    - $pageMeta['imageHeight'] = 512;
+    - $pageMeta['imageAlt'] = ($pageName ?? '') . ' ' . ($key ?? '') . ' logo';
+  else if (($key ?? '') == 'system')
+    - $pageMeta['image'] = ($fullsiteurl ?? '') . '/img/nohus/systems/' . ($id ?? '') . '.png';
+    - $pageMeta['imageWidth'] = 128;
+    - $pageMeta['imageHeight'] = 128;
+    - $pageMeta['imageType'] = 'image/png';
+    - $pageMeta['imageAlt'] = ($pageName ?? '') . ' solar system map';
+  else if (($key ?? '') == 'ship')
+    - $pageMeta['image'] = ($image_server ?? 'https://images.evetech.net/') . 'types/' . ($id ?? '') . '/render?size=512';
+    - $pageMeta['imageWidth'] = 512;
+    - $pageMeta['imageHeight'] = 512;
+    - $pageMeta['imageAlt'] = ($pageName ?? '') . ' ship render';
+  else if (in_array(($key ?? ''), ['region', 'constellation']))
+    - $pageMeta['image'] = ($fullsiteurl ?? '') . '/img/nohus/' . ($key ?? '') . 's/' . ($id ?? '') . '.png';
+    - $pageMeta['imageWidth'] = 128;
+    - $pageMeta['imageHeight'] = 128;
+    - $pageMeta['imageType'] = 'image/png';
+    - $pageMeta['imageAlt'] = ($pageName ?? '') . ' ' . ($key ?? '') . ' map';
+  else
+    - $pageMeta['image'] = ($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/render?size=128';
+    - $pageMeta['imageWidth'] = 128;
+    - $pageMeta['imageHeight'] = 128;
+    - $pageMeta['imageAlt'] = ($pageName ?? '') . ' ' . ($key ?? '') . ' image';
 
 block title
   include components/title.pug
@@ -264,35 +297,6 @@ block content
                 span= number_format(count($row['wars'] ?? []), 0)
               - $wars = $row['wars'] ?? [];
               include components/wars_table.pug
-
-block opengraph
-  meta(name="twitter:title" content=$pageTitle)
-  meta(name="twitter:card" content="summary")
-  meta(name="og:title" content=$pageTitle)
-  meta(name="og:url" content=(($fullsiteurl ?? '') . '/' . ($key ?? '') . '/' . ($id ?? '') . '/'))
-  meta(name="twitter:description" content=$description)
-  meta(name="og:description" content=$description)
-  if (($key ?? '') == 'character')
-    meta(name="twitter:image" content=(($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/portrait?size=128'))
-    meta(name="og:image" content=(($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/portrait?size=128'))
-  else if (in_array(($key ?? ''), ['corporation', 'alliance']))
-    meta(name="twitter:image" content=(($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/logo?size=128'))
-    meta(name="og:image" content=(($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/logo?size=128'))
-  else if (($key ?? '') == 'system')
-    meta(name="twitter:image" content=('https://zkillboard.com/img/nohus/systems/' . ($id ?? '') . '.png'))
-    meta(name="og:image" content=('https://zkillboard.com/img/nohus/systems/' . ($id ?? '') . '.png'))
-  else if (($key ?? '') == 'ship')
-    meta(name="twitter:image" content=(($image_server ?? 'https://images.evetech.net/') . 'types/' . ($id ?? '') . '/render?size=64'))
-    meta(name="og:image" content=(($image_server ?? 'https://images.evetech.net/') . 'types/' . ($id ?? '') . '/render?size=64'))
-  else if (($key ?? '') == 'region')
-    meta(name="twitter:image" content=('https://zkillboard.com/img/nohus/regions/' . ($id ?? '') . '.png'))
-    meta(name="og:image" content=('https://zkillboard.com/img/nohus/regions/' . ($id ?? '') . '.png'))
-  else if (($key ?? '') == 'constellation')
-    meta(name="twitter:image" content=('https://zkillboard.com/img/nohus/constellations/' . ($id ?? '') . '.png'))
-    meta(name="og:image" content=('https://zkillboard.com/img/nohus/constellations/' . ($id ?? '') . '.png'))
-  else
-    meta(name="twitter:image" content=(($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/render?size=128'))
-    meta(name="og:image" content=(($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/render?size=128'))
 
 block script
   script(defer type="text/javascript" src=('/js/overview.js?v=' . ($version ?? '')))

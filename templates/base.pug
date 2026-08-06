@@ -3,38 +3,56 @@ doctype html
 html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
   head
     meta(charset="utf-8")
-    meta(http-equiv="X-UA-Compatible" content="IE=edge")
-    - $description = $description ?? 'zKillboard.com is the premier killboard for EVE Online. Track players, corporations, and alliances, analyze battle reports, and monitor PvP anywhere in New Eden.';
+    - $description = $description ?? (!empty($pageTitle) && $pageTitle != 'Home' ? ($pageTitle . ' on zKillboard, the EVE Online PvP killboard for killmails, characters, corporations, alliances, ships, and battles.') : 'zKillboard is the premier EVE Online killboard. Track characters, corporations, and alliances, analyze battle reports, and monitor PvP across New Eden.');
+    - $canonical = $canonical ?? (($fullsiteurl ?? '') . preg_replace('/\?.*$/', '', (string) ($requesturi ?? '/')));
+    - $pageMeta = is_object($pageMeta ?? null) ? (array) $pageMeta : ($pageMeta ?? []);
+    - $pageMeta['title'] = $pageMeta['title'] ?? ((!empty($pageTitle) ? ($pageTitle . ' | ') : '') . 'zKillboard');
+    - $pageMeta['description'] = $pageMeta['description'] ?? $description;
+    - $pageMeta['url'] = $pageMeta['url'] ?? $canonical;
+    - $pageMeta['type'] = $pageMeta['type'] ?? 'website';
+    if (empty($pageMeta['image']))
+      - $pageMeta['image'] = ($fullsiteurl ?? '') . '/img/social-card.jpg';
+      - $pageMeta['imageWidth'] = 1200;
+      - $pageMeta['imageHeight'] = 630;
+      - $pageMeta['imageType'] = 'image/jpeg';
+      - $pageMeta['card'] = 'summary_large_image';
+    - $pageMeta['imageAlt'] = $pageMeta['imageAlt'] ?? ($pageMeta['title'] . ' preview');
+    - $pageMeta['card'] = $pageMeta['card'] ?? 'summary';
+    - $robots = $robots ?? 'index,follow';
     meta(name="description" content=$description)
-    meta(name="title" content=(($pageTitle ?? '') . ' | ' . ($siteurl ?? '')))
-    meta(name="keywords" content="eve-online, eve, fenris, fenris creations, ccp, ccp games, kills, kill, massively, multiplayer, online, role, playing, game, mmorpg, rank, isk, mmorpg, killboard, zkillboard")
-    meta(name="robots" content="index,follow")
+    meta(name="robots" content=$robots)
     meta(property="og:locale" content="en_US")
-    meta(property="og:type" content="website")
-    meta(property="og:site_name" content=($siteurl ?? ''))
-    meta(name="fb:app_id" content=($fbAppID ?? ''))
+    meta(property="og:type" content=$pageMeta['type'])
+    meta(property="og:site_name" content="zKillboard")
+    meta(property="og:title" content=$pageMeta['title'])
+    meta(property="og:url" content=$pageMeta['url'])
+    meta(property="og:description" content=$pageMeta['description'])
+    meta(property="og:image" content=$pageMeta['image'])
+    if (!empty($pageMeta['imageType']))
+      meta(property="og:image:type" content=$pageMeta['imageType'])
+    if (!empty($pageMeta['imageWidth']))
+      meta(property="og:image:width" content=$pageMeta['imageWidth'])
+    if (!empty($pageMeta['imageHeight']))
+      meta(property="og:image:height" content=$pageMeta['imageHeight'])
+    meta(property="og:image:alt" content=$pageMeta['imageAlt'])
+    if (!empty($fbAppID))
+      meta(property="fb:app_id" content=$fbAppID)
+    meta(name="twitter:card" content=$pageMeta['card'])
     meta(name="twitter:site" content="@zKillboard")
-    meta(name="twitter:domain" content=($fullsiteurl ?? ''))
+    meta(name="twitter:title" content=$pageMeta['title'])
+    meta(name="twitter:description" content=$pageMeta['description'])
+    meta(name="twitter:image" content=$pageMeta['image'])
+    meta(name="twitter:image:alt" content=$pageMeta['imageAlt'])
     meta(name="application-name" content=($siteurl ?? ''))
     meta(name="msapplication-TileColor" content="#000000")
     meta(name="mobile-web-app-capable" content="yes")
     link(rel="icon" href="/img/logo.png")
-    block opengraph
-      meta(name="twitter:title" content=(($pageTitle ?? '') . ' | ' . ($siteurl ?? '')))
-      meta(name="twitter:card" content="summary")
-      meta(name="twitter:description" content=$description)
-      meta(name="twitter:image" content=(($fullsiteurl ?? '') . '/img/3D.png'))
-      meta(property="og:title" content=(($siteurl ?? '') . ' / ' . ($pageTitle ?? '')))
-      meta(property="og:url" content=($fullsiteurl ?? ''))
-      meta(property="og:description" content=$description)
-      meta(property="og:image" content=(($fullsiteurl ?? '') . '/img/3D.png'))
     block head
-    block robots
     meta(name="viewport" content="width=device-width, initial-scale=1.0")
     title
       block title
         = $siteurl ?? ''
-    link(rel="canonical" href=($canonical ?? (($fullsiteurl ?? '') . ($requesturi ?? ''))))
+    link(rel="canonical" href=$canonical)
     script
       != "const z3 = '" . addslashes((string) ($z3 ?? '')) . "';\n"
       != "const zkbVersion = '" . addslashes((string) ($version ?? '')) . "';\n"

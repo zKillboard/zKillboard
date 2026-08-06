@@ -2,6 +2,7 @@ extends base.pug
 
 block vars
   - $pageTitle = '404 Not Found';
+  - $robots = 'noindex,nofollow';
 
 block title
   include components/title.pug
@@ -18,9 +19,6 @@ block content
         br
         = $message
   #zkb-esi-entity-fallback.d-none
-
-block robots
-  meta(name="robots" content="nofollow, noindex")
 
 block script
   script(defer type="text/javascript" src=('/js/esi-entity-fallback.js?v=' . ($version ?? '')))
