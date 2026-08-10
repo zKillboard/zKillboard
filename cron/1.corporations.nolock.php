@@ -53,6 +53,17 @@ while ($time >= time()) {
     if ($corpID > 1999999) {
         if ($redis->set("esi-fetched:$corpID", "true", ['nx', 'ex' => 300]) === false) continue;
 
+        // Rotate through every token for this corporation instead of repeatedly using the same one.
+        $row = $mdb->findDoc(
+            "scopes",
+            ['scope' => 'esi-killmails.read_corporation_killmails.v1', 'corporationID' => $corpID],
+            ['lastFetch' => 1]
+        );
+        if ($row == null) continue;
+
+        // Mark the attempt immediately so a bad token cannot prevent the remaining tokens being checked.
+        $mdb->set("scopes", $row, ['lastFetch' => $mdb->now()]);
+
         $charID = $row['characterID'];
         $refreshToken = $row['refreshToken'];
         $params = ['row' => $row, 'tokenTime' => time(), 'refreshToken' => $refreshToken, 'corpID' => $corpID];
@@ -174,6 +185,10 @@ function success($params, $content)
     if ($adjustment > 0) {
         $variance = (3600 * $adjustment) / 12;
         $nextCheck = time() + (3600 * $adjustment) + random_int(-1 * $variance, $variance);		
+
+        // Leave a one-day buffer while ensuring every token is attempted within 28 days.
+        $scopeCount = max(1, $mdb->count("scopes", ['scope' => 'esi-killmails.read_corporation_killmails.v1', 'corporationID' => $corpID]));
+        $nextCheck = min($nextCheck, time() + max(300, floor((27 * 86400) / $scopeCount)));
     }
     $set = ['adjustment' => $adjustment];
     if ($nextCheck != -1) $set['nextCheck'] = $nextCheck;
