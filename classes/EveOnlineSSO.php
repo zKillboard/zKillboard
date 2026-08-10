@@ -23,6 +23,7 @@ class EveOnlineSSO
 
     protected $loginURL = "https://login.eveonline.com/v2/oauth/authorize";
     protected $tokenURL = "https://login.eveonline.com/v2/oauth/token";
+    protected $verifyURL = "https://login.eveonline.com/v2/oauth/verify";
 
     public function __construct($clientID, $secretKey, $callbackURL, $scopes = [], $userAgent = null)
     {
@@ -112,41 +113,132 @@ class EveOnlineSSO
 
     protected function validateStates($state, $oauth2State)
     {
-        if ($oauth2State !== $state) {
+        if (!is_string($state) || $state === '' || !is_string($oauth2State) || $oauth2State === '' || !hash_equals($oauth2State, $state)) {
             throw new \Exception("Invalid state returned - possible hijacking attempt", -99);
         }
     }
 
     public function handleCallback($code, $state, $session)
     {
-        global $ip;
+        global $ip, $resCode;
 
         $oauth2State = $this->getSessionState($session);
         $this->validateStates($state, $oauth2State);
 
         $fields = ['grant_type' => 'authorization_code', 'code' => $code];
         $tokenString = $this->doCall($this->tokenURL, $fields, null, 'POST');
-        $tokenJson = json_decode($tokenString, true);
-        $accessToken = $tokenJson['access_token'];
-        $decoded = json_decode(base64_decode(str_replace('_', '/', str_replace('-', '+', explode('.', $accessToken)[1]))), true);
+        if ($resCode < 200 || $resCode >= 300) {
+            throw new \Exception("EVE SSO token request failed");
+        }
 
-        $accessToken = @$tokenJson['access_token'];
-        $refreshToken = @$tokenJson['refresh_token'];
+        try {
+            $tokenJson = json_decode($tokenString, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            throw new \Exception("Invalid response from EVE SSO", 0, $e);
+        }
 
-        if (!isset($decoded['scp'])) $decoded['scp'] = 'publicData';
-        if (!is_array($decoded['scp'])) $decoded['scp'] = [$decoded['scp']];
+        $accessToken = $tokenJson['access_token'] ?? null;
+        $refreshToken = $tokenJson['refresh_token'] ?? null;
+        if (!is_string($accessToken) || $accessToken === '' || !is_string($refreshToken) || $refreshToken === '') {
+            throw new \Exception("Invalid token response from EVE SSO");
+        }
+
+        $decoded = $this->validateAccessToken($accessToken);
 
         $retValue = [
-            'characterID' => str_replace("CHARACTER:EVE:", "", $decoded['sub']),
+            'characterID' => $decoded['characterID'],
             'characterName' => $decoded['name'],
             'scopes' => implode(' ', $decoded['scp']),
             'tokenType' => 'Character',
-            'ownerHash' => $decoded['owner'],
+            'ownerHash' => $decoded['owner'] ?? null,
             'refreshToken' => $refreshToken,
             'accessToken' => $accessToken,
         ];
 
         return $retValue;
+    }
+
+    protected function validateAccessToken($accessToken)
+    {
+        global $resCode;
+
+        if (substr_count($accessToken, '.') !== 2) {
+            throw new \Exception("Invalid JWT returned by EVE SSO");
+        }
+
+        $verifyString = $this->doCall($this->verifyURL, [], $accessToken);
+        if ($resCode < 200 || $resCode >= 300) {
+            throw new \Exception("EVE SSO rejected the JWT");
+        }
+
+        try {
+            $verified = json_decode($verifyString, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            throw new \Exception("Invalid JWT verification response from EVE SSO", 0, $e);
+        }
+        if (!is_array($verified)) {
+            throw new \Exception("Invalid JWT verification response from EVE SSO");
+        }
+
+        $parts = explode('.', $accessToken);
+        if ($parts[0] === '' || $parts[1] === '' || $parts[2] === '' || preg_match('/[^A-Za-z0-9_-]/', $parts[1])) {
+            throw new \Exception("Invalid JWT returned by EVE SSO");
+        }
+
+        $payload = strtr($parts[1], '-_', '+/');
+        $payload .= str_repeat('=', (4 - strlen($payload) % 4) % 4);
+        $payload = base64_decode($payload, true);
+        if ($payload === false) {
+            throw new \Exception("Invalid JWT returned by EVE SSO");
+        }
+
+        try {
+            $decoded = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            throw new \Exception("Invalid JWT returned by EVE SSO", 0, $e);
+        }
+        if (!is_array($decoded)) {
+            throw new \Exception("Invalid JWT returned by EVE SSO");
+        }
+
+        $acceptedIssuers = ['https://login.eveonline.com', 'https://login.eveonline.com/', 'login.eveonline.com'];
+        if (!isset($decoded['iss']) || !in_array($decoded['iss'], $acceptedIssuers, true)) {
+            throw new \Exception("Invalid EVE SSO JWT issuer");
+        }
+        if (!isset($decoded['aud']) || !is_array($decoded['aud']) || !in_array('EVE Online', $decoded['aud'], true) || !in_array($this->clientID, $decoded['aud'], true)) {
+            throw new \Exception("Invalid EVE SSO JWT audience");
+        }
+
+        $now = time();
+        if (!isset($decoded['exp']) || !is_int($decoded['exp']) || $decoded['exp'] < $now - 60) {
+            throw new \Exception("Expired EVE SSO JWT");
+        }
+        if (isset($decoded['nbf']) && (!is_int($decoded['nbf']) || $decoded['nbf'] > $now + 60)) {
+            throw new \Exception("EVE SSO JWT is not valid yet");
+        }
+
+        if (!isset($decoded['sub']) || !is_string($decoded['sub']) || !preg_match('/^CHARACTER:EVE:([1-9][0-9]*)$/', $decoded['sub'], $matches)) {
+            throw new \Exception("Invalid EVE SSO JWT subject");
+        }
+        $characterID = filter_var($matches[1], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($characterID === false || !isset($decoded['name']) || !is_string($decoded['name']) || $decoded['name'] === '') {
+            throw new \Exception("Invalid EVE SSO JWT character");
+        }
+
+        if (!isset($decoded['scp'])) {
+            $decoded['scp'] = ['publicData'];
+        }
+        if (!is_array($decoded['scp'])) {
+            throw new \Exception("Invalid EVE SSO JWT scopes");
+        }
+        foreach ($decoded['scp'] as $scope) {
+            if (!is_string($scope) || $scope === '') {
+                throw new \Exception("Invalid EVE SSO JWT scopes");
+            }
+        }
+
+        $decoded['characterID'] = $characterID;
+        return $decoded;
     }
 
     public function getAccessToken($refreshToken, $scopes = [])
@@ -171,7 +263,8 @@ class EveOnlineSSO
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_USERAGENT, $this->userAgent);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
 
