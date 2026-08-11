@@ -228,6 +228,9 @@ class EveOnlineSSO
         if (!isset($decoded['scp'])) {
             $decoded['scp'] = ['publicData'];
         }
+        if (is_string($decoded['scp'])) {
+            $decoded['scp'] = [$decoded['scp']];
+        }
         if (!is_array($decoded['scp'])) {
             throw new \Exception("Invalid EVE SSO JWT scopes");
         }
