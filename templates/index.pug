@@ -89,23 +89,27 @@ block content
                   | 1 Million SP FREE
             != $sponsoredMessage ?? ''
             .col-12.bg-black
-              a.btn.bn-success.w-100(href="https://store.eveonline.com" target="_blank" rel="noopener noreferrer" style="background-color: #1D232A; color: white;")
-                span
-                  | EVE Online Store
-                  br
-                  small
-                    | use code zkill
+              .btn-group-vertical.w-100(role="group" aria-label="Partner links")
+                a.btn.bn-success(href="https://store.eveonline.com" target="_blank" rel="noopener noreferrer" style="background-color: #1D232A; color: white;")
+                  span
+                    | EVE Online Store
                     br
-                    |  to support zkill
-              a.btn.bn-success.w-100(href="https://discord.gg/sV2kkwg8UD" target="_blank" rel="noopener noreferrer" style="background-color: #6E85D2; color: white;")
-                img(src="/img/discord.png" alt="discord logo" height="22" loading="lazy" decoding="async" fetchpriority="low")
-                |  Discord
-              a.btn.bn-success.w-100(href="/cache/bypass/login/patreon/" target="_blank" rel="noopener noreferrer" style="background-color: white;")
-                img(src="/img/patreon_sm.png" alt="Patreon" height="25" loading="lazy" decoding="async" fetchpriority="low")
-              a.btn.bn-success.w-100(href="https://store.markeedragon.com/affiliate.php?id=928&redirect=index.php?cat=4" target="_blank" rel="noopener noreferrer" style="background-color: #223801; color: white;")
-                | SP &amp; PLEX
-                br
-                | Promo "zkill" 3% Off
+                    small
+                      | use code zkill
+                      br
+                      |  to support zkill
+                a.btn.bn-success(href="https://discord.gg/sV2kkwg8UD" target="_blank" rel="noopener noreferrer" style="background-color: #6E85D2; color: white;")
+                  img(src="/img/discord.png" alt="discord logo" height="22" loading="lazy" decoding="async" fetchpriority="low")
+                  |  Discord
+                a.btn.bn-success(href="/cache/bypass/login/patreon/" target="_blank" rel="noopener noreferrer" style="background-color: white;")
+                  img(src="/img/patreon_sm.png" alt="Patreon" height="25" loading="lazy" decoding="async" fetchpriority="low")
+                a.btn.bn-success(href="https://store.markeedragon.com/affiliate.php?id=928&redirect=index.php?cat=4" target="_blank" rel="noopener noreferrer" style="background-color: #223801; color: white;")
+                  | SP &amp; PLEX
+                  br
+                  | Promo "zkill" 3% Off
+                a.btn.bn-success(href="https://jitarun.com/?r=zkill" target="_blank" rel="noopener noreferrer" style="background-color: #0F171A; color: white;")
+                  span
+                    h4.mb-0 JitaRun (HSBB)
           hr
           #otherapps
             div
