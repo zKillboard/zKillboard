@@ -1277,7 +1277,7 @@ $collection = "sessions";
 $sessions = $db->$collection;
 echo "Done\n";
 echo "Creating index : 'updatedAt' => 1 ... ";
-$sessions->createIndex(['updatedAt' => 1], []);
+$sessions->createIndex(['updatedAt' => 1], ['expireAfterSeconds' => 7776000]);
 echo "Done\n";
 
 // shortener
