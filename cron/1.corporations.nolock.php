@@ -16,6 +16,7 @@ $minute = date('Hi');
 $time = time() + 63;
 $second = -1;
 while ($time >= time()) {
+	try {
 	if ($mt == 0 && date("s") != $second) {
         $second = date("s");
 
@@ -94,6 +95,10 @@ while ($time >= time()) {
     } else {
         sleep(1);
     }
+	} catch (Exception $ex) {
+		Util::out(__FILE__ . " error: " . $ex->getMessage());
+		sleep(1);
+	}
 }
 
 function success($params, $content) 
