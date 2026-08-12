@@ -15,18 +15,18 @@ class Killmail
         $newKills = 0;
         foreach ($kills as $index => $kill) {
             if (@$checked[$index] == "true") continue;
-            $newKills += self::addMail($kill['killmail_id'], $kill['killmail_hash'], $source, $delay);
+            $newKills += self::addMail($kill['killmail_id'], $kill['killmail_hash'], $source, $delay, true);
         }
         return $newKills;
     }
 
-    public static function addMail($killID, $hash, $source = 'Killmail::add', $delay = 0) 
+    public static function addMail($killID, $hash, $source = 'Killmail::add', $delay = 0, $cacheChecked = false)
     {
         global $mdb, $redis;
 
         $kmKey = "killmailChecked:$killID:$hash";
 
-        if ($redis->get($kmKey) == "true") return 0;
+        if (!$cacheChecked && $redis->get($kmKey) == "true") return 0;
         if (strlen($hash) != 40) return (int) Util::zout("Invalid Killmail::addMail $killID $hash");
 
         $exists = $mdb->exists('crestmails', ['killID' => $killID, 'hash' => $hash]);
