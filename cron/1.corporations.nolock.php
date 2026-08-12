@@ -99,6 +99,7 @@ while ($time >= time()) {
     } else if ($corpID > 0) {
         // npc corp, ignore it
         $mdb->set("scopes", $row, ['nextCheck' => (time() + mt_rand(86400, 99999))]);
+        usleep(50000);
     } else {
         sleep(1);
     }
