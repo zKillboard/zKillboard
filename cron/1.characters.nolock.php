@@ -56,11 +56,7 @@ while ($time >= time()) {
 			continue;
 		}
 
-		$corpID = (int) Info::getInfoField("characterID", $charID, "corporationID");
-		$row['corporationID'] = $corpID;
-		if ($corpID !== @$row['corporationID']) {
-			$mdb->set("scopes", $row, ['corporationID' => $corpID]);
-		}
+		$corpID = (int) @$row['corporationID'];
 
         if ($corpID == 1000001) {
             // Player has been recycled....

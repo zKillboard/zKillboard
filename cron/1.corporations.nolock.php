@@ -179,6 +179,8 @@ function success($params, $content)
         Util::out("$newKills kills added by corp $corpName" . ($delay == 0 ? '' : " (Delay: $delay)"));
     }
 
+    if ($redis->get("recentKillmailActivity:corp:$corpID") == "true") return;
+
     $latest = $mdb->findDoc("killmails", ['involved.corporationID' => $corpID], ['killID' => -1], ['killID' => 1, 'dttm' => 1]);
     $time = $latest == null ? 0 : $latest['dttm']->toDateTime()->getTimestamp();
     $threeDaysAgo = time() - (3 * 86400);

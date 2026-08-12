@@ -20,6 +20,7 @@ class EveOnlineSSO
     protected $scopes;
     protected $state;
     protected $userAgent;
+    protected $curlHandle;
 
     protected $loginURL = "https://login.eveonline.com/v2/oauth/authorize";
     protected $tokenURL = "https://login.eveonline.com/v2/oauth/token";
@@ -262,7 +263,9 @@ class EveOnlineSSO
 
         $url = $callType != 'GET' ? $url : $url . $this->buildParams($fields);
 
-        $ch = curl_init();
+        if ($this->curlHandle == null) $this->curlHandle = curl_init();
+        else curl_reset($this->curlHandle);
+        $ch = $this->curlHandle;
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_USERAGENT, $this->userAgent);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
