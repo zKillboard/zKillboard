@@ -8,6 +8,14 @@ $pageLoadMS = microtime(true);
 $uri = @$_SERVER['REQUEST_URI'] ?? '';
 $isApiRequest = substr($uri, 0, 5) == "/api/";
 
+$queryPosition = strpos($uri, '?');
+$path = $queryPosition === false ? $uri : substr($uri, 0, $queryPosition);
+$normalizedPath = preg_replace('#/{2,}#', '/', $path);
+if ($normalizedPath !== $path) {
+    $query = $queryPosition === false ? '' : substr($uri, $queryPosition);
+    return header("Location: $normalizedPath$query", true, 301);
+}
+
 if ($uri == "/kill/-1/") return header("Location: /keepstar1.html");
 
 $first7 = substr($uri, 0, 7);
