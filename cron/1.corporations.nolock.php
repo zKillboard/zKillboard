@@ -52,7 +52,10 @@ while ($time >= time()) {
 
     $corpID = (int) @$row['corporationID'];
     if ($corpID > 1999999) {
-        if ($redis->set("esi-fetched:$corpID", "true", ['nx', 'ex' => 300]) === false) continue;
+        if ($redis->set("esi-fetched:$corpID", "true", ['nx', 'ex' => 300]) === false) {
+			usleep(10000);
+			continue;
+		}
 
         // Rotate through every token for this corporation instead of repeatedly using the same one.
         $row = $mdb->findDoc(
@@ -60,7 +63,10 @@ while ($time >= time()) {
             ['scope' => 'esi-killmails.read_corporation_killmails.v1', 'corporationID' => $corpID],
             ['lastFetch' => 1]
         );
-        if ($row == null) continue;
+        if ($row == null) {
+			usleep(10000);
+			continue;
+		}
 
         // Mark the attempt immediately so a bad token cannot prevent the remaining tokens being checked.
         $mdb->set("scopes", $row, ['lastFetch' => $mdb->now()]);
@@ -75,6 +81,7 @@ while ($time >= time()) {
         $redis->rpush("timer:sso", round($timer->stop(), 0));
         if (is_array($accessToken) && @$accessToken['error'] == "invalid_grant") {
             $mdb->getCollection("scopes")->deleteMany(['characterID' => $charID]);
+			usleep(10000);
             continue;
         }
 

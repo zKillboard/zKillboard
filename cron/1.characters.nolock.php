@@ -51,8 +51,10 @@ while ($time >= time()) {
 
     $charID = (int) @$row['characterID'];
     if ($charID > 0) {
-        if ($redis->set("esi-fetched:$charID", 'true', ['nx', 'ex' => 300]) === false)	
+        if ($redis->set("esi-fetched:$charID", 'true', ['nx', 'ex' => 300]) === false)	{
+			usleep(10000);
 			continue;
+		}
 
 		$corpID = (int) Info::getInfoField("characterID", $charID, "corporationID");
 		$row['corporationID'] = $corpID;
@@ -63,6 +65,7 @@ while ($time >= time()) {
         if ($corpID == 1000001) {
             // Player has been recycled....
             $mdb->getCollection("scopes")->deleteMany(['characterID' => $charID]);
+			usleep(10000);
             continue;
         }
 
@@ -73,6 +76,7 @@ while ($time >= time()) {
 		$redis->rpush("timer:sso", round($timer->stop(), 0));
 		if (is_array($accessToken) && @$accessToken['error'] == "invalid_grant") {
             $mdb->getCollection("scopes")->deleteMany(['characterID' => $charID]);
+			usleep(10000);
 			continue;
 		}
 
