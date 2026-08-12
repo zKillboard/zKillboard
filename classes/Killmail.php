@@ -2,6 +2,24 @@
 
 class Killmail
 {
+    public static function addMails($kills, $source = 'Killmail::add', $delay = 0)
+    {
+        global $redis;
+
+        if (sizeof($kills) == 0) return 0;
+
+        $keys = [];
+        foreach ($kills as $kill) $keys[] = "killmailChecked:{$kill['killmail_id']}:{$kill['killmail_hash']}";
+        $checked = $redis->mget($keys);
+
+        $newKills = 0;
+        foreach ($kills as $index => $kill) {
+            if (@$checked[$index] == "true") continue;
+            $newKills += self::addMail($kill['killmail_id'], $kill['killmail_hash'], $source, $delay);
+        }
+        return $newKills;
+    }
+
     public static function addMail($killID, $hash, $source = 'Killmail::add', $delay = 0) 
     {
         global $mdb, $redis;

@@ -127,11 +127,7 @@ function success($params, $content)
         return;
     }
 
-    foreach ($kills as $kill) {
-        $killID = $kill['killmail_id'];
-        $hash = $kill['killmail_hash'];
-        $newKills += Killmail::addMail($killID, $hash, '1.characters', $delay);
-    }
+    $newKills = Killmail::addMails($kills, '1.characters', $delay);
 
     $charID = (int) $row['characterID'];
     $corpID = (int) $row['corporationID'];

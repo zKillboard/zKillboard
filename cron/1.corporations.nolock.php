@@ -156,12 +156,7 @@ function success($params, $content)
         sleep(1);
         return;
     }
-    foreach ($kills as $kill) {
-        $killID = $kill['killmail_id'];
-        $hash = $kill['killmail_hash'];
-
-        $newKills += Killmail::addMail($killID, $hash, '1.corporation', $delay);
-    }
+    $newKills = Killmail::addMails($kills, '1.corporation', $delay);
 
     $successes = 1 + ((int) @$row['successes']);
     $modifiers = [
