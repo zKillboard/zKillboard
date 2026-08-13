@@ -122,8 +122,9 @@ function runRankJob($job)
     if ($kvc->get($job['completeKey']) == true) return;
 
     Util::out("Calculating {$job['scope']} {$job['epoch']} ranks");
-    $types = collectPeriodRanks($job);
-    finishRanks($job, $types);
+    $runID = "{$job['date']}:" . time();
+    $types = collectPeriodRanks($job, $runID);
+    finishRanks($job, $types, $runID);
     $kvc->setex($job['completeKey'], $job['completeTtl'], 'true');
 }
 
@@ -160,12 +161,13 @@ function collectAlltimeRanks($job, $type)
     }
 }
 
-function collectPeriodRanks($job)
+function collectPeriodRanks($job, $runID)
 {
     global $mdb;
 
     $types = [];
     $stats = [];
+    $unranked = [];
     $allowed = [];
     $parameters = $job['query'];
     $query = MongoFilter::buildQuery($parameters);
@@ -204,10 +206,14 @@ function collectPeriodRanks($job)
 
     foreach ($stats as $type => $ids) {
         foreach ($ids as $id => $metrics) {
-            if ($metrics['shipsDestroyed'] < $job['minDestroyed']) continue;
+            if (!$allowed["$type:$id"] || $metrics['shipsDestroyed'] < $job['minDestroyed']) {
+                $unranked[$type][$id] = $metrics;
+                continue;
+            }
             addScratchMetrics($job, $type, $id, $metrics);
         }
     }
+    storeUnrankedPeriodStats($job, $unranked, $runID);
 
     return $types;
 }
@@ -225,7 +231,6 @@ function addPeriodStat(&$stats, &$types, &$allowed, &$seen, $killID, $type, $id,
     if (!isset($allowed["$type:$id"])) {
         $allowed["$type:$id"] = rankEntityAllowed($type, $id);
     }
-    if (!$allowed["$type:$id"]) return;
 
     if (!isset($stats[$type][$id])) {
         $stats[$type][$id] = [
@@ -268,11 +273,11 @@ function addScratchMetrics($job, $type, $id, $metrics)
     $multi->exec();
 }
 
-function finishRanks($job, $types)
+function finishRanks($job, $types, $runID = null)
 {
     foreach ($types as $type => $unused) {
         calculateOverallRanks($job, $type);
-        storeRanks($job, $type);
+        storeRanks($job, $type, $runID);
         purgeScratchRanks($job, $type);
     }
 }
@@ -308,7 +313,39 @@ function calculateOverallRanks($job, $type)
     }
 }
 
-function storeRanks($job, $type)
+function storeUnrankedPeriodStats($job, $stats, $runID)
+{
+    global $mdb;
+
+    $collection = $mdb->getCollection('statistics');
+    $now = Mdb::now();
+    foreach ($stats as $type => $ids) {
+        normalizeRankContainers($collection, $job, $type);
+        $ops = [];
+        foreach ($ids as $id => $metrics) {
+            $ops[] = ['updateOne' => [
+                ['type' => $type, 'id' => (int) $id],
+                [
+                    '$set' => ["rankings.{$job['epoch']}.{$job['scope']}" => [
+                        'metrics' => $metrics,
+                        'updated' => $now,
+                        'runID' => $runID,
+                    ]],
+                    '$setOnInsert' => ['type' => $type, 'id' => (int) $id],
+                ],
+                ['upsert' => true],
+            ]];
+            flushRankBulk($collection, $ops, false, function () use ($collection, $job, $type) {
+                normalizeRankContainers($collection, $job, $type);
+            });
+        }
+        flushRankBulk($collection, $ops, true, function () use ($collection, $job, $type) {
+            normalizeRankContainers($collection, $job, $type);
+        });
+    }
+}
+
+function storeRanks($job, $type, $runID = null)
 {
     global $mdb, $redis;
 
@@ -317,7 +354,7 @@ function storeRanks($job, $type)
     $now = Mdb::now();
     $ops = [];
 
-    $runID = "{$job['date']}:" . time();
+    if ($runID == null) $runID = "{$job['date']}:" . time();
     normalizeRankContainers($collection, $job, $type);
 
     foreach (rankIds($key) as $id) {

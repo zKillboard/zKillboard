@@ -8,7 +8,7 @@ class Ranks
     {
         global $mdb;
 
-        return $mdb->exists('statistics', ['type' => $type, "rankings.$epoch.$scope" => ['$exists' => true]]);
+        return $mdb->exists('statistics', ['type' => $type, "rankings.$epoch.$scope.ranks.overall" => ['$exists' => true]]);
     }
 
     public static function getRow($epoch, $scope, $type, $id, $date = null)
@@ -33,7 +33,11 @@ class Ranks
         $ids = [];
         $rows = $mdb->find(
             'statistics',
-            ['type' => $type, $field => ['$exists' => true]],
+            [
+                'type' => $type,
+                "rankings.$epoch.$scope.ranks.overall" => ['$exists' => true],
+                $field => ['$exists' => true],
+            ],
             [$field => $sortDir == 'asc' ? 1 : -1],
             self::PAGE_SIZE + 1,
             ['id' => 1, "rankings.$epoch.$scope" => 1],
