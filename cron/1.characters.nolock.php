@@ -126,7 +126,7 @@ function success($params, $content)
     $newKills = Killmail::addMails($kills, '1.characters', $delay);
 
     $charID = (int) $row['characterID'];
-    $corpID = (int) $row['corporationID'];
+    $corpID = (int) @$row['corporationID'];
 
     $modifiers = ['lastFetch' => $mdb->now(), 'errorCount' => 0];
     if (isset($resHeaders['etag'])) $modifiers['etag'] = $resHeaders['etag'];
