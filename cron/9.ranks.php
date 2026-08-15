@@ -20,24 +20,105 @@ const RANK_METRICS = ['shipsDestroyed', 'shipsLost', 'iskDestroyed', 'iskLost', 
 $today = date('Ymd');
 $alltimeDate = date('Ymd', time() - (3600 * 4));
 $started = time();
+$recentShipsCompleteKey = "zkb:recentShipsCalculated:$today";
 
 $jobs = [
     alltimeJob('all', $alltimeDate, 'zkb:alltimeRanksCalculated:%s:%s'),
     alltimeJob('solo', $alltimeDate, 'zkb:alltimeSoloRanksCalculated:%s:%s'),
     periodJob('recent', 'all', 'ninetyDays', $today, "zkb:recentRanksCalculated:$today", 86400, ['npc' => false, 'labels' => 'pvp']),
     periodJob('recent', 'solo', 'ninetyDays', $today, "zkb:recentRanksSoloCalculated:$today", 86400, ['npc' => false, 'labels' => 'pvp', 'solo' => true]),
-    periodJob('weekly', 'all', 'oneWeek', $today, 'zkb:weeklyRanksCalculated', 1200, ['npc' => false, 'labels' => 'pvp']),
-    periodJob('weekly', 'solo', 'oneWeek', $today, 'zkb:weeklyRanksSoloCalculated', 1200, ['npc' => false, 'labels' => 'pvp', 'solo' => true]),
+    periodJob('weekly', 'all', 'oneWeek', $today, 'zkb:weeklyRanksCalculated', 3600, ['npc' => false, 'labels' => 'pvp']),
+    periodJob('weekly', 'solo', 'oneWeek', $today, 'zkb:weeklyRanksSoloCalculated', 3600, ['npc' => false, 'labels' => 'pvp', 'solo' => true]),
 ];
 
 if (hasArg('--reset-complete') || hasArg('--recalculate')) {
     resetCompleteKeys($jobs);
+    $kvc->del($recentShipsCompleteKey);
     exit();
 }
 
 foreach ($jobs as $job) {
     runRankJob($job);
     if (time() - $started > 60) exit();
+
+    if ($job['epoch'] == 'recent' && $job['scope'] == 'all') {
+        materializeRecentShips($recentShipsCompleteKey, $today);
+        if (time() - $started > 60) exit();
+    }
+}
+
+function materializeRecentShips($completeKey, $date)
+{
+    global $kvc, $mdb;
+
+    if ($kvc->get($completeKey) == true) return;
+
+    Util::out('Calculating recent ships');
+    $runID = "$date:" . time();
+    $updated = Mdb::now();
+    // ScanAlyzer treats attacker and victim appearances alike, so this intentionally has no isVictim filter.
+    $pipeline = [
+        ['$project' => [
+            'involved.characterID' => 1,
+            'involved.shipTypeID' => 1,
+            'involved.groupID' => 1,
+            'zkb.totalValue' => 1,
+        ]],
+        ['$unwind' => '$involved'],
+        ['$match' => ['involved.characterID' => ['$gt' => 0]]],
+        ['$group' => [
+            '_id' => ['characterID' => '$involved.characterID', 'shipTypeID' => '$involved.shipTypeID'],
+            'groupID' => ['$first' => '$involved.groupID'],
+            'kills' => ['$sum' => 1],
+            'isk' => ['$sum' => '$zkb.totalValue'],
+        ]],
+        ['$group' => [
+            '_id' => '$_id.characterID',
+            'ships' => ['$topN' => [
+                'n' => 7,
+                'sortBy' => ['kills' => -1, 'isk' => -1],
+                'output' => [
+                    'shipTypeID' => '$_id.shipTypeID',
+                    'groupID' => '$groupID',
+                    'kills' => '$kills',
+                    'isk' => '$isk',
+                ],
+            ]],
+        ]],
+        ['$project' => [
+            '_id' => 0,
+            'type' => ['$literal' => 'characterID'],
+            'id' => '$_id',
+            'recentShips' => ['$slice' => [[
+                '$filter' => [
+                    'input' => ['$slice' => [[
+                        '$filter' => [
+                            'input' => '$ships',
+                            'as' => 'ship',
+                            'cond' => ['$gt' => ['$$ship.shipTypeID', 0]],
+                        ],
+                    ], 6]],
+                    'as' => 'ship',
+                    'cond' => ['$ne' => ['$$ship.groupID', 29]],
+                ],
+            ], 5]],
+            'recentShipsUpdated' => ['$literal' => $updated],
+            'recentShipsRunID' => ['$literal' => $runID],
+        ]],
+        ['$merge' => [
+            'into' => 'statistics',
+            'on' => ['type', 'id'],
+            'whenMatched' => 'merge',
+            'whenNotMatched' => 'insert',
+        ]],
+    ];
+
+    iterator_to_array($mdb->getCollection('ninetyDays')->aggregate($pipeline, ['allowDiskUse' => true]));
+    $mdb->getCollection('statistics')->updateMany(
+        ['type' => 'characterID', 'recentShipsRunID' => ['$exists' => true, '$ne' => $runID]],
+        ['$unset' => ['recentShips' => 1, 'recentShipsUpdated' => 1, 'recentShipsRunID' => 1]]
+    );
+    $kvc->setex($completeKey, 86400, 'true');
 }
 
 function hasArg($arg)
