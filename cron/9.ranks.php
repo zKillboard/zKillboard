@@ -19,8 +19,6 @@ const RANK_METRICS = ['shipsDestroyed', 'shipsLost', 'iskDestroyed', 'iskLost', 
 
 $today = date('Ymd');
 $alltimeDate = date('Ymd', time() - (3600 * 4));
-$hour = time() - (time() % 3600);
-$soloHour = (time() - 1800) - ((time() - 1800) % 3600);
 $started = time();
 
 $jobs = [
@@ -28,8 +26,8 @@ $jobs = [
     alltimeJob('solo', $alltimeDate, 'zkb:alltimeSoloRanksCalculated:%s:%s'),
     periodJob('recent', 'all', 'ninetyDays', $today, "zkb:recentRanksCalculated:$today", 86400, ['npc' => false, 'labels' => 'pvp']),
     periodJob('recent', 'solo', 'ninetyDays', $today, "zkb:recentRanksSoloCalculated:$today", 86400, ['npc' => false, 'labels' => 'pvp', 'solo' => true]),
-    periodJob('weekly', 'solo', 'oneWeek', $today, "zkb:weeklyRanksSoloCalculated:$soloHour", 1200, ['npc' => false, 'labels' => 'pvp', 'solo' => true]),
-    periodJob('weekly', 'all', 'oneWeek', $today, "zkb:weeklyRanksCalculated:$hour", 1200, ['npc' => false, 'labels' => 'pvp'], "zkb:weeklyRanksSoloCalculated:$hour"),
+    periodJob('weekly', 'all', 'oneWeek', $today, 'zkb:weeklyRanksCalculated', 1200, ['npc' => false, 'labels' => 'pvp']),
+    periodJob('weekly', 'solo', 'oneWeek', $today, 'zkb:weeklyRanksSoloCalculated', 1200, ['npc' => false, 'labels' => 'pvp', 'solo' => true]),
 ];
 
 if (hasArg('--reset-complete') || hasArg('--recalculate')) {
