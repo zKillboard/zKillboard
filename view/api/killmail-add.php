@@ -67,7 +67,8 @@ function handler($request, $response, $args, $container) {
     }
 
     // return URL for the mail
-    $responseData = ['status' => 'success', 'new' => $newKillmail, 'delayed' => false, 'delay' => $delay, 'url' => "https://zkillboard.com/kill/${killID}/"];
+    $package = array_map(function ($json) { return json_decode($json, true); }, Feed::getJSON([['killID' => $killID]], []));
+    $responseData = ['status' => 'success', 'new' => $newKillmail, 'delayed' => false, 'delay' => $delay, 'url' => "https://zkillboard.com/kill/${killID}/", 'package' => $package];
     $response->getBody()->write(json_encode($responseData));
     return $response->withHeader('Access-Control-Allow-Origin', '*')
         ->withHeader('Access-Control-Allow-Methods', 'GET, POST')
