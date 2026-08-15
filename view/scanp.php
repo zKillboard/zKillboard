@@ -8,7 +8,7 @@ function handler($request, $response, $args, $container) {
     $totalShips = 0;
     try {
         $includes = ['_id' => 0, 'id' => 1, 'ticker' => 1, 'name' => 1, 'corporationID' => 1, 'allianceID' => 1, 'factinoID' => 1, 'secStatus' => 1];
-        $statsIncludes = ['_id' => 0, 'id' => 1, 'shipsDestroyed' => 1, 'shipsLost' => 1, 'dangerRatio' => 1, 'gangRatio' => 1, 'avgGangSize' => 1, 'labels.ganked.shipsDestroyed' => 1];
+        $statsIncludes = ['_id' => 0, 'id' => 1, 'shipsDestroyed' => 1, 'shipsLost' => 1, 'dangerRatio' => 1, 'gangRatio' => 1, 'avgGangSize' => 1, 'labels.ganked.shipsDestroyed' => 1, 'recentShips' => 1, 'recentShipsUpdated' => 1];
 
         $postData = $request->getParsedBody();
         $scan = @$postData['scan'];
@@ -124,57 +124,14 @@ function handler($request, $response, $args, $container) {
             foreach ($rows as $row) $statsByID[(int) $row['id']] = $row;
         }
 
-        $recentShips = [];
         $recentShipTypeIDs = [];
         $recentGroupIDs = [];
-        if (sizeof($characterIDs)) {
-            $characterIDs = array_keys($characterIDs);
-            $pipeline = [
-                ['$match' => ['involved.characterID' => ['$in' => $characterIDs]]],
-                ['$project' => [
-                    'zkb.totalValue' => 1,
-                    'involved' => ['$filter' => [
-                        'input' => '$involved',
-                        'as' => 'entity',
-                        'cond' => ['$in' => ['$$entity.characterID', $characterIDs]],
-                    ]],
-                ]],
-                ['$unwind' => '$involved'],
-                ['$group' => [
-                    '_id' => ['characterID' => '$involved.characterID', 'shipTypeID' => '$involved.shipTypeID'],
-                    'groupID' => ['$first' => '$involved.groupID'],
-                    'kills' => ['$sum' => 1],
-                    'isk' => ['$sum' => '$zkb.totalValue'],
-                ]],
-                ['$group' => [
-                    '_id' => '$_id.characterID',
-                    'ships' => ['$topN' => [
-                        'n' => 7,
-                        'sortBy' => ['kills' => -1, 'isk' => -1],
-                        'output' => [
-                            'shipTypeID' => '$_id.shipTypeID',
-                            'groupID' => '$groupID',
-                            'kills' => '$kills',
-                            'isk' => '$isk',
-                        ],
-                    ]],
-                ]],
-                ['$project' => ['_id' => 0, 'characterID' => '$_id', 'ships' => 1]],
-            ];
-            $rows = $mdb->getCollection('ninetyDays')->aggregate($pipeline, ['allowDiskUse' => true]);
-            foreach ($rows as $row) {
-                $characterID = (int) $row['characterID'];
-                $recentShips[$characterID] = [];
-                foreach ($row['ships'] as $ship) {
-                    $shipTypeID = (int) ($ship['shipTypeID'] ?? 0);
-                    if ($shipTypeID <= 0) continue;
-                    $ship['shipTypeID'] = $shipTypeID;
-                    $ship['groupID'] = (int) ($ship['groupID'] ?? 0);
-                    $recentShips[$characterID][] = $ship;
-                    $recentShipTypeIDs[$shipTypeID] = true;
-                    if ($ship['groupID'] > 0) $recentGroupIDs[$ship['groupID']] = true;
-                    if (sizeof($recentShips[$characterID]) >= 6) break;
-                }
+        foreach ($statsByID as $stats) {
+            foreach ($stats['recentShips'] ?? [] as $ship) {
+                $shipTypeID = (int) ($ship['shipTypeID'] ?? 0);
+                $groupID = (int) ($ship['groupID'] ?? 0);
+                if ($shipTypeID > 0) $recentShipTypeIDs[$shipTypeID] = true;
+                if ($groupID > 0) $recentGroupIDs[$groupID] = true;
             }
         }
 
@@ -203,18 +160,23 @@ function handler($request, $response, $args, $container) {
         foreach ($chars as &$row) {
             $id = (int) $row['id'];
             $stats = $statsByID[$id] ?? [];
+            $recentShips = $stats['recentShips'] ?? [];
+            $hasRecentActivity = isset($stats['recentShipsUpdated']);
             unset($stats['id']);
+            unset($stats['recentShips'], $stats['recentShipsUpdated']);
             $row['stats'] = $stats;
             $row['stats']['ganked-shipsDestroyed'] = (int) @$stats['labels']['ganked']['shipsDestroyed'];
             unset($row['stats']['labels']);
 
-            if (!isset($recentShips[$id])) $row['inactive'] = true;
+            if (!$hasRecentActivity) $row['inactive'] = true;
             $row['ships'] = [];
-            foreach ($recentShips[$id] ?? [] as $topShip) {
-                $shipTypeID = $topShip['shipTypeID'];
-                $groupID = $topShip['groupID'] ?: (int) ($recentShipInfo[$shipTypeID]['groupID'] ?? 0);
+            foreach ($recentShips as $topShip) {
+                $shipTypeID = (int) ($topShip['shipTypeID'] ?? 0);
+                if ($shipTypeID <= 0) continue;
+                $groupID = (int) ($topShip['groupID'] ?? 0) ?: (int) ($recentShipInfo[$shipTypeID]['groupID'] ?? 0);
                 $topShip['shipName'] = $recentShipInfo[$shipTypeID]['name'] ?? '';
                 $topShip['pip'] = $recentShipInfo[$shipTypeID]['pip'] ?? '';
+                $topShip['shipTypeID'] = $shipTypeID;
                 $topShip['groupID'] = $groupID;
                 $topShip['groupName'] = $recentGroupNames[$groupID] ?? '';
                 if ($groupID != 29 && sizeof($row['ships']) < 5) $row['ships'][] = $topShip;
