@@ -8,4 +8,12 @@ block title
 
 block content
   .information
+    nav.mb-3(aria-label="Information pages")
+      ul.nav.nav-tabs.flex-nowrap.overflow-x-auto.overflow-y-hidden
+        each $label, $slug in ($informationPages ?? [])
+          li.nav-item
+            if (($page ?? '') == $slug)
+              a.nav-link.active(aria-current="page" href=('/information/' . $slug . '/'))= $label
+            else
+              a.nav-link(href=('/information/' . $slug . '/'))= $label
     != $data ?? ''

@@ -23,13 +23,18 @@ function handler($request, $response, $args, $container) {
 	}
 	$output = preg_replace('/href="#([^"]+)"/', 'class=\'hrefit\' id="$1" name="$1" href="#$1"', $output);
 
-	$titles = [
-		"faq" => "FAQ"
+	$pages = [
+		'about' => 'About',
+		'faq' => 'FAQ',
+		'features' => 'Features',
+		'delayed' => 'Delayed Killmails',
+		'payments' => 'Payments',
+		'streambox' => 'StreamBox',
+		'legal' => 'Legal',
 	];
 
-	if (isset($titles[$page])) $title = $titles[$page];
-	else $title = ucfirst($page);
+	$title = $pages[$page] ?? ucfirst($page);
 
-	$data = array('data' => $output, 'pageTitle' => $title);
+	$data = array('data' => $output, 'pageTitle' => $title, 'page' => $page, 'informationPages' => $pages);
 	return $container->get('view')->render($response->withHeader('Cache-Tag', "www,information,information:$page"), 'information.pug', $data);
 }

@@ -454,6 +454,7 @@ function initSpaNavigation() {
 
     if ("scrollRestoration" in window.history) window.history.scrollRestoration = "manual";
     window.history.replaceState(getSpaHistoryState(), document.title, window.location.href);
+    if (window.location.hash) requestAnimationFrame(() => scrollToHash(window.location.hash));
 
     $(document).on("click", "a[href]", function(event) {
         if (isAsearchDrillDownClick(this)) return;
@@ -635,7 +636,7 @@ async function renderSpaDocument(doc, targetURL, pushState, historyState) {
         initPageContent();
         applyTrackerControls();
         runSpaPageInitializers(mergeSpaAssetResults(contentAssets, modalAssets, pageAssets));
-        restoreSpaScrollPosition(pushState ? null : historyState);
+        restoreSpaScrollPosition(pushState ? null : historyState, targetURL.hash);
         spaRenderedURL = window.location.href;
         spaRenderedHash = window.location.hash || "";
         collapseMobileNav();
@@ -670,7 +671,23 @@ function scheduleSpaScrollSave() {
     }, 150);
 }
 
-function restoreSpaScrollPosition(historyState) {
+function scrollToHash(hash) {
+    if (!hash) return false;
+
+    try {
+        hash = decodeURIComponent(hash.replace(/^#/, ""));
+    } catch (e) {
+        return false;
+    }
+
+    const target = document.getElementById(hash);
+    if (!target) return false;
+    target.scrollIntoView({ behavior: "auto", block: "start" });
+    return true;
+}
+
+function restoreSpaScrollPosition(historyState, hash) {
+    if (!historyState && scrollToHash(hash)) return;
     const left = historyState ? historyState.scrollX || 0 : 0;
     const top = historyState ? historyState.scrollY || 0 : 0;
     window.scrollTo({ top: top, left: left, behavior: "auto" });
