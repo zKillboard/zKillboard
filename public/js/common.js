@@ -1134,7 +1134,7 @@ function checkForSearchKey(event) {
 function startWebSocket() {
 	try {
 		if (ws) return;
-		if (location.pathname != '/ztop/' && characterID == 0) return setTimeout(startWebSocket, 1000);
+		if (location.pathname != '/ztop/' && characterID == 0) return;
 
         addCurrentPagePubsubs();
         ws = new ReconnectingWebSocket((window.location.hostname == 'localhost' ? 'ws' : 'wss' ) + '://' + window.location.hostname + '/websocket/', '', {maxReconnectAttempts: 15});
@@ -1147,7 +1147,7 @@ function startWebSocket() {
 
         console.log('WebSocket connected');
     } catch (e) {
-        setTimeout(startWebSocket, 100);
+		console.error('WebSocket failed to start:', e);
     }
 }
 
@@ -1186,7 +1186,15 @@ function syncPagePubsubs() {
     basePubsubs.forEach(addPubsubChannel);
     addCurrentPagePubsubs();
 
-    if (!ws) return;
+    if (!ws) {
+        if (window.location.pathname == '/ztop/') startWebSocket();
+        return;
+    }
+    if (window.location.pathname != '/ztop/' && characterID == 0) {
+        ws.close();
+        ws = undefined;
+        return;
+    }
 
     previousPubsubs
         .filter((channel) => !isPersistentPubsub(channel) && !pubsubs.includes(channel))
