@@ -1,6 +1,7 @@
 var ws;
 var adblocked = undefined;
 var zkbVersionCheckTimeout = null;
+var prepTippyTimeout = null;
 window.zkbFavorites = window.zkbFavorites || [];
 
 window.onerror = function (message, source, lineno, colno, error) {
@@ -1040,6 +1041,7 @@ function submitFormNormally(form) {
 }
 
 function prepTippy() {
+	clearTimeout(prepTippyTimeout);
 	document.querySelectorAll('[rel="tooltip"], [title]:not([title=""])')
 		.forEach(el => {
 			// Skip empty titles or tooltips
@@ -1065,7 +1067,7 @@ function prepTippy() {
 				},
 			});
 		});
-	setTimeout(prepTippy, 500);
+	prepTippyTimeout = setTimeout(prepTippy, 500);
 }
 
 function hideTransientTooltips() {
