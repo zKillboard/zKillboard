@@ -624,6 +624,11 @@ async function renderSpaDocument(doc, targetURL, pushState, historyState) {
         clearSpaPageHelpers();
         destroyTooltipsIn(currentContent);
         if (currentModals) destroyTooltipsIn(currentModals);
+        if ($.fn.dataTable) {
+            $(currentContent).find(".datatable").each(function () {
+                if ($.fn.dataTable.isDataTable(this)) $(this).DataTable().destroy();
+            });
+        }
         copyAttributes(nextContent, currentContent);
         currentContent.innerHTML = nextContent.innerHTML;
         if (nextModals && currentModals) currentModals.innerHTML = nextModals.innerHTML;
