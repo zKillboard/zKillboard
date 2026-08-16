@@ -1922,12 +1922,7 @@ function statsboxUpdate(stats) {
 function setStatsboxValues(stats) {
     Object.keys(stats).forEach((e) => $('#' + e).attr('raw', stats[e]) )
         doFormats();
-    waitForStatsFunctionToLoadBecauseChromeIsBeingDumb(stats);
-}
-
-function waitForStatsFunctionToLoadBecauseChromeIsBeingDumb(stats) {
-    if (typeof updateStats == 'undefined') return setTimeout(function() { waitForStatsFunctionToLoadBecauseChromeIsBeingDumb(stats), 10});
-    updateStats(stats);
+    if (typeof updateStats == 'function') updateStats(stats);
 }
 
 function doFormats() {
