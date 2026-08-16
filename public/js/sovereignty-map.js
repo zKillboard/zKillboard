@@ -1,5 +1,6 @@
 (() => {
 	const COLORS = ['#4dabf7', '#51cf66', '#ffd43b', '#ff6b6b'];
+	let resizeObserver;
 
 	function parseJsonl(text) {
 		return text
@@ -84,6 +85,7 @@
 				constellationsResponse.text().then(parseJsonl),
 				regionsResponse.text().then(parseJsonl)
 			]);
+			if (!component.isConnected) return;
 			const regionByConstellation = new Map(constellations.map((constellation) => [number(constellation.id), number(constellation.regionID)]));
 			const regionNames = new Map(regions.map((region) => [number(region.id), region.regionName]));
 			const systems = rawSystems.filter((system) => regionByConstellation.get(number(system.constellationID)) < 10099999);
@@ -366,7 +368,8 @@
 			}, { passive: false });
 
 			reset.addEventListener('click', fit);
-			new ResizeObserver(resize).observe(frame);
+			resizeObserver = new ResizeObserver(resize);
+			resizeObserver.observe(frame);
 			loading.classList.add('d-none');
 			resize();
 		} catch (error) {
@@ -382,6 +385,10 @@
 			component.dataset.sovereigntyMapInitialized = '1';
 			initialize(component);
 		}
+		window.zkbPageCleanup = function () {
+			if (resizeObserver) resizeObserver.disconnect();
+			resizeObserver = undefined;
+		};
 	}
 
 	window.zkbInitSovereigntyMap = zkbInitSovereigntyMap;
