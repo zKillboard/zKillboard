@@ -422,7 +422,9 @@ let spaScrollSaveTimeout = null;
 let spaRenderedURL = window.location.href;
 let spaRenderedHash = window.location.hash || "";
 let spaNavigationGeneration = 0;
-const pendingLittleKillTimeouts = new Set();
+const pendingLittleKills = [];
+let pendingLittleKillTimeout = null;
+let pendingLittleKillRequest = null;
 const spaLoadedScripts = new Set(Array.from(document.scripts)
     .map(script => script.src)
     .filter(Boolean)
@@ -433,10 +435,11 @@ const spaLoadedStyles = new Set(Array.from(document.querySelectorAll('link[rel="
     .map(normalizeAssetURL));
 
 function clearPendingLittleKillLoads() {
-    pendingLittleKillTimeouts.forEach(function(timeoutId) {
-        clearTimeout(timeoutId);
-    });
-    pendingLittleKillTimeouts.clear();
+    pendingLittleKills.length = 0;
+    clearTimeout(pendingLittleKillTimeout);
+    pendingLittleKillTimeout = null;
+    if (pendingLittleKillRequest) pendingLittleKillRequest.abort();
+    pendingLittleKillRequest = null;
 }
 
 function clearPendingDailyAsyncLoads() {
@@ -1259,14 +1262,7 @@ function wslog(msg)
     } else if (json.action === 'comment') {
         $("#commentblock").html(json.html);
     } else if (json.action === 'littlekill') {
-        var killID = json.killID;
-        const generation = spaNavigationGeneration;
-        const timeoutId = setTimeout(function() {
-            pendingLittleKillTimeouts.delete(timeoutId);
-            if (generation !== spaNavigationGeneration) return;
-            loadLittleMail(killID);
-        }, Math.floor(Math.random() * 1000));
-        pendingLittleKillTimeouts.add(timeoutId);
+        queueLittleKill(json.killID);
     } else if (json.action == 'statsbox') {
         console.log(json);
         statsboxUpdate(json);
@@ -1302,9 +1298,29 @@ function setLiveCounter(elem, value) {
     doFieldUpdate(elem, formatted);
 }
 
-function loadLittleMail(killID) {
-        // Add the killmail to the live feed kill list
-        $.get("/cache/24hour/killlistrow/" + killID + "/", addLittleKill);
+function queueLittleKill(killID) {
+    if (!killID || pendingLittleKills.includes(killID)) return;
+    if (pendingLittleKills.length >= 50) pendingLittleKills.shift();
+    pendingLittleKills.push(killID);
+    loadLittleMail();
+}
+
+function loadLittleMail() {
+    if (pendingLittleKillTimeout || pendingLittleKillRequest || pendingLittleKills.length == 0) return;
+    const generation = spaNavigationGeneration;
+    pendingLittleKillTimeout = setTimeout(function() {
+        pendingLittleKillTimeout = null;
+        if (generation !== spaNavigationGeneration) return;
+        const killID = pendingLittleKills.shift();
+        pendingLittleKillRequest = $.get("/cache/24hour/killlistrow/" + killID + "/")
+            .done(function(data) {
+                if (generation === spaNavigationGeneration) addLittleKill(data);
+            })
+            .always(function() {
+                pendingLittleKillRequest = null;
+                if (generation === spaNavigationGeneration) loadLittleMail();
+            });
+    }, Math.floor(Math.random() * 1000));
 }
 
 function loadKillRow(killID, rowUrl = "", retries = 0) {
