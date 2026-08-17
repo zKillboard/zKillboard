@@ -66,6 +66,8 @@ function success($content)
 
     try {
         $root = json_decode($content, true);
+        if (($root['error'] ?? '') == 'ESI is currently in maintenance mode. Please try again later.') return fail();
+
         $version = $root['server_version'];
         if ($version != null) {
             $kvc->set('tqServerVersion', $version);
