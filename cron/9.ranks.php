@@ -289,6 +289,7 @@ function materializeBait($completeKey, $date, $firstKillID)
         }
 
         $interestingKillIDs = [];
+        $followUpKillIDs = [];
         foreach ($events as $event) {
             $systemID = $event['systemID'];
             $potential = [];
@@ -300,6 +301,7 @@ function materializeBait($completeKey, $date, $firstKillID)
 
             if ($event['isFollowUp'] && sizeof($potential)) {
                 $interestingKillIDs[$event['killID']] = $event['killID'];
+                $followUpKillIDs[$event['killID']] = $event['killID'];
             }
             if ($event['isCheapLoss']) {
                 $interestingKillIDs[$event['killID']] = $event['killID'];
@@ -324,6 +326,21 @@ function materializeBait($completeKey, $date, $firstKillID)
             }
         }
 
+        $presentByKillID = [];
+        foreach (array_chunk(array_values($followUpKillIDs), 1000) as $killIDs) {
+            $cursor = $mdb->getCollection('killmails')->find(
+                ['killID' => ['$in' => $killIDs]],
+                ['projection' => ['_id' => 0, 'killID' => 1, 'involved.characterID' => 1]]
+            );
+            foreach ($cursor as $row) {
+                $killID = (int) $row['killID'];
+                foreach ($row['involved'] ?? [] as $involved) {
+                    $characterID = (int) ($involved['characterID'] ?? 0);
+                    if ($characterID > 0) $presentByKillID[$killID][$characterID] = true;
+                }
+            }
+        }
+
         foreach ($events as $event) {
             $systemID = $event['systemID'];
             $position = $positions[$event['killID']] ?? null;
@@ -333,7 +350,7 @@ function materializeBait($completeKey, $date, $firstKillID)
                     $age = $event['time'] - $loss['time'];
                     if ($age > 300) continue;
                     $isMatch = false;
-                    if ($event['isFollowUp'] && $age >= 0 && $position != null) {
+                    if ($event['isFollowUp'] && $age >= 0 && $position != null && !isset($presentByKillID[$event['killID']][$loss['characterID']])) {
                         $x = $position['x'] - $loss['position']['x'];
                         $y = $position['y'] - $loss['position']['y'];
                         $z = $position['z'] - $loss['position']['z'];
