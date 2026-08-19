@@ -153,6 +153,7 @@ function popChar(ch) {
 
     ch.stats.shipsDestroyed = Number(ch.stats.shipsDestroyed) | 0;
     ch.stats.shipsLost = Number(ch.stats.shipsLost) | 0;
+    ch.stats.awoxCount = Number(ch.stats.awoxCount) | 0;
     ch.stats.dangerRatio = finiteOrBlank(ch.stats.dangerRatio);
     if (ch.stats.dangerRatio === '') {
         if (ch.stats.shipsLost > 0) {
@@ -172,6 +173,9 @@ function popChar(ch) {
     let alli = getName('allis', ch.allianceID);
     let image = getImage(ch.corporationID, ch.allianceID);
     let secColor = getStatusColor(ch.secStatus);
+    let negativeSecurity = Number(secStatus) < 0;
+    let secTextColor = negativeSecurity ? '#fff' : secColor;
+    let secBackground = negativeSecurity ? secColor : '#000';
     if (typeof ch.secStatus == 'undefined') ch.secStatus = 0;
     if (ch.allianceID) mapping['allis'][ch.allianceID] = (mapping['allis'][ch.allianceID] | 0) + 1;
     else if (ch.corporationID) mapping['corps'][ch.corporationID] = (mapping['corps'][ch.corporationID] | 0) + 1;
@@ -186,13 +190,14 @@ function popChar(ch) {
     if (ch.unknown == true) ch.labels.push('no known kb activity');
     else if (ch.inactive == true) ch.labels.push('no recent kb activity');
     if (ch.stats['ganked-shipsDestroyed'] > 10) ch.labels.push('<span class="red">ganker</span>');
+    if (ch.stats.awoxCount > 0) ch.labels.push(`<span class="badge bg-danger">AWOX (${ch.stats.awoxCount})</span>`);
 
     let soloColor = '';
     if (ch.stats.shipsDestroyed > 10 && ch.stats.soloRatio >= 50) soloColor = 'green';
 
     let notes = typeof ch.labels == 'undefined' ? '' : ch.labels.join(', ');
 
-    let h = $(`<tr danger="${ch.stats.dangerRatio}"><td>${char}<br/>Sec: <small><span style='color: ${secColor}' format="${secStatusFormat}" raw="${secStatus}"></span> <span>${notes}</span></small></td><td class='pilotships'>${ships}</td><td class='pilotships'>${topShips}</td><td class='pilotmemberimage'>${image}</td><td class="pilotmember">${corp}<br/>${alli}</td><td class="text-end"><span class="pilotkl green" format="format-int-once" raw="${ch.stats.shipsDestroyed}"></span><br/><span class="red" format="format-int-once" raw="${ch.stats.shipsLost}"></span></td><td class="pilotds text-end"><span class="red" format="format-pct-once" raw="${ch.stats.dangerRatio}"></span><br/><span  class="green" format="format-pct-once" raw="${ch.stats.snuggly}"></span></td><td class="text-end"><span format="format-pct-once" raw="${ch.stats.gangRatio}"></span><br/><span format="format-dec2-once" raw="${ch.stats.avgGangSize}"></td><td class='text-end ${soloColor}' format="format-pct-once" raw="${ch.stats.soloRatio}"></td></tr>`);
+    let h = $(`<tr danger="${ch.stats.dangerRatio}"><td>${char}<br/>Sec: <small><span class="fw-bold rounded px-1" style="color: ${secTextColor}; background-color: ${secBackground}; border: 1px solid ${secColor}; box-shadow: 0 0 3px ${secColor};" format="${secStatusFormat}" raw="${secStatus}"></span> <span>${notes}</span></small></td><td class='pilotships'>${ships}</td><td class='pilotships'>${topShips}</td><td class='pilotmemberimage'>${image}</td><td class="pilotmember">${corp}<br/>${alli}</td><td class="text-end"><span class="pilotkl green" format="format-int-once" raw="${ch.stats.shipsDestroyed}"></span><br/><span class="red" format="format-int-once" raw="${ch.stats.shipsLost}"></span></td><td class="pilotds text-end"><span class="red" format="format-pct-once" raw="${ch.stats.dangerRatio}"></span><br/><span  class="green" format="format-pct-once" raw="${ch.stats.snuggly}"></span></td><td class="text-end"><span format="format-pct-once" raw="${ch.stats.gangRatio}"></span><br/><span format="format-dec2-once" raw="${ch.stats.avgGangSize}"></td><td class='text-end ${soloColor}' format="format-pct-once" raw="${ch.stats.soloRatio}"></td></tr>`);
     $('#results').append(h);
 }
 

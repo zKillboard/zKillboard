@@ -22,6 +22,7 @@ $alltimeDate = date('Ymd', time() - (3600 * 4));
 $started = time();
 $recentShipsCompleteKey = "zkb:recentShipsCalculated:$today";
 $topShipsCompleteKey = "zkb:topShipsCalculated:$today";
+$awoxCountsCompleteKey = "zkb:awoxCountsCalculated:$today";
 
 $jobs = [
     alltimeJob('all', $alltimeDate, 'zkb:alltimeRanksCalculated:%s:%s'),
@@ -36,6 +37,7 @@ if (hasArg('--reset-complete') || hasArg('--recalculate')) {
     resetCompleteKeys($jobs);
     $kvc->del($recentShipsCompleteKey);
     $kvc->del($topShipsCompleteKey);
+    $kvc->del($awoxCountsCompleteKey);
     exit();
 }
 
@@ -49,6 +51,8 @@ foreach ($jobs as $job) {
         $yearAgo = strtotime('-1 year');
         $firstKillID = MongoFilter::getFirstKillID(date('Y', $yearAgo), date('n', $yearAgo), date('j', $yearAgo));
         materializeShips($topShipsCompleteKey, $today, 'killmails', 'topShips', $firstKillID);
+        if (time() - $started > 60) exit();
+        materializeAwoxCounts($awoxCountsCompleteKey, $today, $firstKillID);
         if (time() - $started > 60) exit();
     }
 }
@@ -132,6 +136,45 @@ function materializeShips($completeKey, $date, $collection, $field, $firstKillID
     $mdb->getCollection('statistics')->updateMany(
         ['type' => 'characterID', $field . 'RunID' => ['$exists' => true, '$ne' => $runID]],
         ['$unset' => [$field => 1, $field . 'Updated' => 1, $field . 'RunID' => 1]]
+    );
+    $kvc->setex($completeKey, 86400, 'true');
+}
+
+function materializeAwoxCounts($completeKey, $date, $firstKillID)
+{
+    global $kvc, $mdb;
+
+    if ($kvc->get($completeKey) == true) return;
+
+    Util::out('Calculating awox counts');
+    $runID = "$date:" . time();
+    $updated = Mdb::now();
+    $pipeline = [
+        ['$match' => ['awox' => true, 'killID' => ['$gte' => $firstKillID]]],
+        ['$project' => ['involved.characterID' => 1, 'involved.finalBlow' => 1]],
+        ['$unwind' => '$involved'],
+        ['$match' => ['involved.characterID' => ['$gt' => 0], 'involved.finalBlow' => true]],
+        ['$group' => ['_id' => '$involved.characterID', 'awoxCount' => ['$sum' => 1]]],
+        ['$project' => [
+            '_id' => 0,
+            'type' => ['$literal' => 'characterID'],
+            'id' => '$_id',
+            'awoxCount' => 1,
+            'awoxCountUpdated' => ['$literal' => $updated],
+            'awoxCountRunID' => ['$literal' => $runID],
+        ]],
+        ['$merge' => [
+            'into' => 'statistics',
+            'on' => ['type', 'id'],
+            'whenMatched' => 'merge',
+            'whenNotMatched' => 'insert',
+        ]],
+    ];
+
+    iterator_to_array($mdb->getCollection('killmails')->aggregate($pipeline, ['allowDiskUse' => true]));
+    $mdb->getCollection('statistics')->updateMany(
+        ['type' => 'characterID', 'awoxCountRunID' => ['$exists' => true, '$ne' => $runID]],
+        ['$unset' => ['awoxCount' => 1, 'awoxCountUpdated' => 1, 'awoxCountRunID' => 1]]
     );
     $kvc->setex($completeKey, 86400, 'true');
 }
