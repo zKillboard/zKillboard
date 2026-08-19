@@ -25,6 +25,7 @@ $topShipsCompleteKey = "zkb:topShipsCalculated:$today";
 $fcCompleteKey = "zkb:fcCalculated:$today";
 $awoxCountsCompleteKey = "zkb:awoxCountsCalculated:$today";
 $baitCompleteKey = "zkb:baitCalculated:$today";
+$cynoCompleteKey = "zkb:cynoCalculated:$today";
 
 $jobs = [
     alltimeJob('all', $alltimeDate, 'zkb:alltimeRanksCalculated:%s:%s'),
@@ -42,6 +43,7 @@ if (hasArg('--reset-complete') || hasArg('--recalculate')) {
     $kvc->del($fcCompleteKey);
     $kvc->del($awoxCountsCompleteKey);
     $kvc->del($baitCompleteKey);
+    $kvc->del($cynoCompleteKey);
     exit();
 }
 
@@ -59,6 +61,8 @@ foreach ($jobs as $job) {
         materializeAwoxCounts($awoxCountsCompleteKey, $today, $firstKillID);
         if (time() - $started > 60) exit();
         materializeBait($baitCompleteKey, $today, $firstKillID);
+        if (time() - $started > 60) exit();
+        materializeCyno($cynoCompleteKey, $today, $firstKillID);
         if (time() - $started > 60) exit();
     }
 }
@@ -348,6 +352,85 @@ function materializeBait($completeKey, $date, $firstKillID)
     $mdb->getCollection('statistics')->updateMany(
         ['type' => 'characterID', 'baitRunID' => ['$exists' => true, '$ne' => $runID]],
         ['$unset' => ['bait' => 1, 'baitUpdated' => 1, 'baitRunID' => 1]]
+    );
+    $kvc->setex($completeKey, 86400, 'true');
+}
+
+function materializeCyno($completeKey, $date, $firstKillID)
+{
+    global $kvc, $mdb;
+
+    if ($kvc->get($completeKey) == true) return;
+
+    Util::out('Calculating cyno usage');
+    $runID = "$date:" . time();
+    $updated = Mdb::now();
+    $cynoTypeIDs = [21096, 28646, 52694];
+    $candidateKillIDs = [];
+    $cursor = $mdb->getCollection('itemmails')->find(
+        ['typeID' => ['$in' => $cynoTypeIDs], 'killID' => ['$gte' => $firstKillID]],
+        ['projection' => ['_id' => 0, 'killID' => 1]]
+    );
+    foreach ($cursor as $row) {
+        $killID = (int) ($row['killID'] ?? 0);
+        if ($killID > 0) $candidateKillIDs[$killID] = $killID;
+    }
+
+    $cynoCounts = [];
+    foreach (array_chunk(array_values($candidateKillIDs), 1000) as $killIDs) {
+        $cursor = $mdb->getCollection('esimails')->find(
+            ['killmail_id' => ['$in' => $killIDs]],
+            ['projection' => [
+                '_id' => 0,
+                'killmail_id' => 1,
+                'victim.character_id' => 1,
+                'victim.items' => 1,
+            ]]
+        );
+        foreach ($cursor as $row) {
+            $characterID = (int) ($row['victim']['character_id'] ?? 0);
+            if ($characterID <= 0) continue;
+            $typeID = 0;
+            foreach ($row['victim']['items'] ?? [] as $item) {
+                $itemTypeID = (int) ($item['item_type_id'] ?? 0);
+                $flag = (int) ($item['flag'] ?? 0);
+                if ($flag >= 27 && $flag <= 34 && in_array($itemTypeID, $cynoTypeIDs, true)) {
+                    $typeID = $itemTypeID;
+                    break;
+                }
+            }
+            if ($typeID == 0) continue;
+            if (!isset($cynoCounts[$characterID])) {
+                $cynoCounts[$characterID] = ['count' => 0, 'standard' => 0, 'covert' => 0, 'industrial' => 0];
+            }
+            $cynoCounts[$characterID]['count']++;
+            if ($typeID == 21096) $cynoCounts[$characterID]['standard']++;
+            else if ($typeID == 28646) $cynoCounts[$characterID]['covert']++;
+            else if ($typeID == 52694) $cynoCounts[$characterID]['industrial']++;
+        }
+    }
+
+    $operations = [];
+    foreach ($cynoCounts as $characterID => $counts) {
+        $operations[] = ['updateOne' => [
+            ['type' => 'characterID', 'id' => $characterID],
+            ['$set' => [
+                'cyno' => $counts,
+                'cynoUpdated' => $updated,
+                'cynoRunID' => $runID,
+            ]],
+            ['upsert' => true],
+        ]];
+        if (sizeof($operations) == 1000) {
+            $mdb->getCollection('statistics')->bulkWrite($operations, ['ordered' => false]);
+            $operations = [];
+        }
+    }
+    if (sizeof($operations)) $mdb->getCollection('statistics')->bulkWrite($operations, ['ordered' => false]);
+
+    $mdb->getCollection('statistics')->updateMany(
+        ['type' => 'characterID', 'cynoRunID' => ['$exists' => true, '$ne' => $runID]],
+        ['$unset' => ['cyno' => 1, 'cynoUpdated' => 1, 'cynoRunID' => 1]]
     );
     $kvc->setex($completeKey, 86400, 'true');
 }

@@ -232,6 +232,11 @@ function popChar(ch) {
         let baitStyle = baitLevel == 'MEDIUM' ? ' style="background-color: #963800;"' : '';
         badges.push(`<span class="badge text-white ${baitClass}"${baitStyle} title="${baitCount} past-year bait matches">BAIT ${baitLevel} (${baitCount})</span>`);
     }
+    if (ch.stats.cyno) {
+        let cynoCount = Number(ch.stats.cyno.count) || 0;
+        let cynoTitle = `Past-year fitted cynos: ${Number(ch.stats.cyno.standard) || 0} standard, ${Number(ch.stats.cyno.covert) || 0} covert, ${Number(ch.stats.cyno.industrial) || 0} industrial`;
+        badges.push(`<span class="badge text-white" style="background-color: #633399;" title="${cynoTitle}">CYNO (${cynoCount})</span>`);
+    }
 
     let soloColor = '';
     if (ch.stats.shipsDestroyed > 10 && ch.stats.soloRatio >= 50) soloColor = 'green';
