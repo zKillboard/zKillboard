@@ -26,6 +26,7 @@ $fcCompleteKey = "zkb:fcCalculated:$today";
 $awoxCountsCompleteKey = "zkb:awoxCountsCalculated:$today";
 $baitCompleteKey = "zkb:baitCalculated:$today";
 $cynoCompleteKey = "zkb:cynoCalculated:$today";
+$gankerCompleteKey = "zkb:gankerCalculated:$today";
 
 $jobs = [
     alltimeJob('all', $alltimeDate, 'zkb:alltimeRanksCalculated:%s:%s'),
@@ -44,6 +45,7 @@ if (hasArg('--reset-complete') || hasArg('--recalculate')) {
     $kvc->del($awoxCountsCompleteKey);
     $kvc->del($baitCompleteKey);
     $kvc->del($cynoCompleteKey);
+    $kvc->del($gankerCompleteKey);
     exit();
 }
 
@@ -63,6 +65,8 @@ foreach ($jobs as $job) {
         materializeBait($baitCompleteKey, $today, $firstKillID);
         if (time() - $started > 60) exit();
         materializeCyno($cynoCompleteKey, $today, $firstKillID);
+        if (time() - $started > 60) exit();
+        materializeGankers($gankerCompleteKey, $today, $firstKillID);
         if (time() - $started > 60) exit();
     }
 }
@@ -431,6 +435,46 @@ function materializeCyno($completeKey, $date, $firstKillID)
     $mdb->getCollection('statistics')->updateMany(
         ['type' => 'characterID', 'cynoRunID' => ['$exists' => true, '$ne' => $runID]],
         ['$unset' => ['cyno' => 1, 'cynoUpdated' => 1, 'cynoRunID' => 1]]
+    );
+    $kvc->setex($completeKey, 86400, 'true');
+}
+
+function materializeGankers($completeKey, $date, $firstKillID)
+{
+    global $kvc, $mdb;
+
+    if ($kvc->get($completeKey) == true) return;
+
+    Util::out('Calculating ganker counts');
+    $runID = "$date:" . time();
+    $updated = Mdb::now();
+    $pipeline = [
+        ['$match' => ['ganked' => true, 'killID' => ['$gte' => $firstKillID]]],
+        ['$project' => ['involved.characterID' => 1, 'involved.isVictim' => 1]],
+        ['$unwind' => '$involved'],
+        ['$match' => ['involved.characterID' => ['$gt' => 0], 'involved.isVictim' => false]],
+        ['$group' => ['_id' => '$involved.characterID', 'gankerCount' => ['$sum' => 1]]],
+        ['$match' => ['gankerCount' => ['$gte' => 10]]],
+        ['$project' => [
+            '_id' => 0,
+            'type' => ['$literal' => 'characterID'],
+            'id' => '$_id',
+            'gankerCount' => 1,
+            'gankerUpdated' => ['$literal' => $updated],
+            'gankerRunID' => ['$literal' => $runID],
+        ]],
+        ['$merge' => [
+            'into' => 'statistics',
+            'on' => ['type', 'id'],
+            'whenMatched' => 'merge',
+            'whenNotMatched' => 'insert',
+        ]],
+    ];
+
+    iterator_to_array($mdb->getCollection('killmails')->aggregate($pipeline, ['allowDiskUse' => true]));
+    $mdb->getCollection('statistics')->updateMany(
+        ['type' => 'characterID', 'gankerRunID' => ['$exists' => true, '$ne' => $runID]],
+        ['$unset' => ['gankerCount' => 1, 'gankerUpdated' => 1, 'gankerRunID' => 1]]
     );
     $kvc->setex($completeKey, 86400, 'true');
 }

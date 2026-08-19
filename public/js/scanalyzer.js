@@ -218,7 +218,8 @@ function popChar(ch) {
     }
     if (ch.unknown == true) labels.push('no known kb activity');
     else if (ch.inactive == true) labels.push('no recent kb activity');
-    if (ch.stats['ganked-shipsDestroyed'] > 10) labels.push('<span class="red">ganker</span>');
+    ch.stats.gankerCount = Number(ch.stats.gankerCount) | 0;
+    if (ch.stats.gankerCount >= 10) badges.push(`<span class="badge bg-danger text-white" title="${ch.stats.gankerCount} past-year highsec ganks">GANKER (${ch.stats.gankerCount})</span>`);
     if (ch.stats.awoxCount > 0) badges.push(`<span class="badge bg-danger">AWOX (${ch.stats.awoxCount})</span>`);
     if (ch.stats.fc) {
         let fcLevel = String(ch.stats.fc.level || '').toUpperCase();
