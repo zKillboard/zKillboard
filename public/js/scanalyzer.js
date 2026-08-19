@@ -25,12 +25,25 @@ function scanReadyCharCheck() {
 
 function scanReady() {
     $('#scaninput').off('blur.zkb-scanalyzer').on('blur.zkb-scanalyzer', startProcess);
+    $('#scaninputtoggle').off('click.zkb-scanalyzer').on('click.zkb-scanalyzer', toggleScanInput);
 
     if (navigator.clipboard === undefined) $("#clip").hide();
     else $('#clippy').off('click.zkb-scanalyzer').on('click.zkb-scanalyzer', copypasta);
 
     clearInput();
     $("#clippy").removeAttr("disabled");
+}
+
+function toggleScanInput() {
+    let collapsed = $('#scan-input-column').hasClass('d-none');
+    $('#scan-input-column').toggleClass('d-none', !collapsed);
+    $('#scan-results-column').toggleClass('col-lg-10', collapsed).toggleClass('col-lg-12', !collapsed);
+    $('#scaninputtoggle')
+        .attr('aria-expanded', collapsed ? 'true' : 'false')
+        .attr('aria-label', collapsed ? 'Hide scan input' : 'Show scan input')
+        .attr('title', collapsed ? 'Hide scan input' : 'Show scan input')
+        .find('#scaninputtoggleicon')
+        .text(collapsed ? '◀ Input' : '▶ Input');
 }
 
 function clearInput() {
@@ -42,6 +55,7 @@ async function copypasta() {
     let val = await navigator.clipboard.readText();
     if (val.trim().length < 3) return updateStatus('no usable text in the clipboard');
     $("#scaninput").val(val);
+    if (!$('#scan-input-column').hasClass('d-none')) toggleScanInput();
     startProcess();
     return false;
 }
