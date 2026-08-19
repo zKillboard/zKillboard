@@ -8,7 +8,7 @@ function handler($request, $response, $args, $container) {
     $totalShips = 0;
     try {
         $includes = ['_id' => 0, 'id' => 1, 'ticker' => 1, 'name' => 1, 'corporationID' => 1, 'allianceID' => 1, 'factinoID' => 1, 'secStatus' => 1];
-        $statsIncludes = ['_id' => 0, 'id' => 1, 'shipsDestroyed' => 1, 'shipsLost' => 1, 'dangerRatio' => 1, 'gangRatio' => 1, 'avgGangSize' => 1, 'labels.ganked.shipsDestroyed' => 1, 'recentShips' => 1, 'recentShipsUpdated' => 1];
+        $statsIncludes = ['_id' => 0, 'id' => 1, 'shipsDestroyed' => 1, 'shipsLost' => 1, 'dangerRatio' => 1, 'gangRatio' => 1, 'avgGangSize' => 1, 'labels.ganked.shipsDestroyed' => 1, 'recentShips' => 1, 'recentShipsUpdated' => 1, 'topShips' => 1, 'topShipsUpdated' => 1];
 
         $postData = $request->getParsedBody();
         $scan = @$postData['scan'];
@@ -124,24 +124,26 @@ function handler($request, $response, $args, $container) {
             foreach ($rows as $row) $statsByID[(int) $row['id']] = $row;
         }
 
-        $recentShipTypeIDs = [];
-        $recentGroupIDs = [];
+        $shipTypeIDs = [];
+        $shipGroupIDs = [];
         foreach ($statsByID as $stats) {
-            foreach ($stats['recentShips'] ?? [] as $ship) {
-                $shipTypeID = (int) ($ship['shipTypeID'] ?? 0);
-                $groupID = (int) ($ship['groupID'] ?? 0);
-                if ($shipTypeID > 0) $recentShipTypeIDs[$shipTypeID] = true;
-                if ($groupID > 0) $recentGroupIDs[$groupID] = true;
+            foreach (['recentShips', 'topShips'] as $field) {
+                foreach ($stats[$field] ?? [] as $ship) {
+                    $shipTypeID = (int) ($ship['shipTypeID'] ?? 0);
+                    $groupID = (int) ($ship['groupID'] ?? 0);
+                    if ($shipTypeID > 0) $shipTypeIDs[$shipTypeID] = true;
+                    if ($groupID > 0) $shipGroupIDs[$groupID] = true;
+                }
             }
         }
 
-        $recentShipInfo = [];
-        $recentGroupNames = [];
+        $shipInfo = [];
+        $shipGroupNames = [];
         $metadataQuery = [];
         if (sizeof($corps)) $metadataQuery[] = ['type' => 'corporationID', 'id' => ['$in' => array_keys($corps)]];
         if (sizeof($allis)) $metadataQuery[] = ['type' => 'allianceID', 'id' => ['$in' => array_keys($allis)]];
-        if (sizeof($recentShipTypeIDs)) $metadataQuery[] = ['type' => 'typeID', 'id' => ['$in' => array_keys($recentShipTypeIDs)]];
-        if (sizeof($recentGroupIDs)) $metadataQuery[] = ['type' => 'groupID', 'id' => ['$in' => array_keys($recentGroupIDs)]];
+        if (sizeof($shipTypeIDs)) $metadataQuery[] = ['type' => 'typeID', 'id' => ['$in' => array_keys($shipTypeIDs)]];
+        if (sizeof($shipGroupIDs)) $metadataQuery[] = ['type' => 'groupID', 'id' => ['$in' => array_keys($shipGroupIDs)]];
         if (sizeof($metadataQuery)) {
             $metadataIncludes = $includes + ['type' => 1, 'groupID' => 1, 'pip' => 1];
             $query = sizeof($metadataQuery) == 1 ? $metadataQuery[0] : ['$or' => $metadataQuery];
@@ -152,34 +154,36 @@ function handler($request, $response, $args, $container) {
                 $id = (int) $row['id'];
                 if ($type == 'corporationID') $corps[$id] = $row;
                 else if ($type == 'allianceID') $allis[$id] = $row;
-                else if ($type == 'typeID') $recentShipInfo[$id] = $row;
-                else if ($type == 'groupID') $recentGroupNames[$id] = $row['name'];
+                else if ($type == 'typeID') $shipInfo[$id] = $row;
+                else if ($type == 'groupID') $shipGroupNames[$id] = $row['name'];
             }
         }
 
         foreach ($chars as &$row) {
             $id = (int) $row['id'];
             $stats = $statsByID[$id] ?? [];
-            $recentShips = $stats['recentShips'] ?? [];
+            $shipLists = ['ships' => $stats['recentShips'] ?? [], 'topShips' => $stats['topShips'] ?? []];
             $hasRecentActivity = isset($stats['recentShipsUpdated']);
             unset($stats['id']);
-            unset($stats['recentShips'], $stats['recentShipsUpdated']);
+            unset($stats['recentShips'], $stats['recentShipsUpdated'], $stats['topShips'], $stats['topShipsUpdated']);
             $row['stats'] = $stats;
             $row['stats']['ganked-shipsDestroyed'] = (int) @$stats['labels']['ganked']['shipsDestroyed'];
             unset($row['stats']['labels']);
 
             if (!$hasRecentActivity) $row['inactive'] = true;
-            $row['ships'] = [];
-            foreach ($recentShips as $topShip) {
-                $shipTypeID = (int) ($topShip['shipTypeID'] ?? 0);
-                if ($shipTypeID <= 0) continue;
-                $groupID = (int) ($topShip['groupID'] ?? 0) ?: (int) ($recentShipInfo[$shipTypeID]['groupID'] ?? 0);
-                $topShip['shipName'] = $recentShipInfo[$shipTypeID]['name'] ?? '';
-                $topShip['pip'] = $recentShipInfo[$shipTypeID]['pip'] ?? '';
-                $topShip['shipTypeID'] = $shipTypeID;
-                $topShip['groupID'] = $groupID;
-                $topShip['groupName'] = $recentGroupNames[$groupID] ?? '';
-                if ($groupID != 29 && sizeof($row['ships']) < 5) $row['ships'][] = $topShip;
+            foreach ($shipLists as $rowField => $shipsList) {
+                $row[$rowField] = [];
+                foreach ($shipsList as $topShip) {
+                    $shipTypeID = (int) ($topShip['shipTypeID'] ?? 0);
+                    if ($shipTypeID <= 0) continue;
+                    $groupID = (int) ($topShip['groupID'] ?? 0) ?: (int) ($shipInfo[$shipTypeID]['groupID'] ?? 0);
+                    $topShip['shipName'] = $shipInfo[$shipTypeID]['name'] ?? '';
+                    $topShip['pip'] = $shipInfo[$shipTypeID]['pip'] ?? '';
+                    $topShip['shipTypeID'] = $shipTypeID;
+                    $topShip['groupID'] = $groupID;
+                    $topShip['groupName'] = $shipGroupNames[$groupID] ?? '';
+                    if ($groupID != 29 && sizeof($row[$rowField]) < 5) $row[$rowField][] = $topShip;
+                }
             }
         }
         unset($row);

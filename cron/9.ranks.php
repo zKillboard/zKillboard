@@ -21,6 +21,7 @@ $today = date('Ymd');
 $alltimeDate = date('Ymd', time() - (3600 * 4));
 $started = time();
 $recentShipsCompleteKey = "zkb:recentShipsCalculated:$today";
+$topShipsCompleteKey = "zkb:topShipsCalculated:$today";
 
 $jobs = [
     alltimeJob('all', $alltimeDate, 'zkb:alltimeRanksCalculated:%s:%s'),
@@ -34,6 +35,7 @@ $jobs = [
 if (hasArg('--reset-complete') || hasArg('--recalculate')) {
     resetCompleteKeys($jobs);
     $kvc->del($recentShipsCompleteKey);
+    $kvc->del($topShipsCompleteKey);
     exit();
 }
 
@@ -42,22 +44,30 @@ foreach ($jobs as $job) {
     if (time() - $started > 60) exit();
 
     if ($job['epoch'] == 'recent' && $job['scope'] == 'all') {
-        materializeRecentShips($recentShipsCompleteKey, $today);
+        materializeShips($recentShipsCompleteKey, $today, 'ninetyDays', 'recentShips');
+        if (time() - $started > 60) exit();
+        $yearAgo = strtotime('-1 year');
+        $firstKillID = MongoFilter::getFirstKillID(date('Y', $yearAgo), date('n', $yearAgo), date('j', $yearAgo));
+        materializeShips($topShipsCompleteKey, $today, 'killmails', 'topShips', $firstKillID);
         if (time() - $started > 60) exit();
     }
 }
 
-function materializeRecentShips($completeKey, $date)
+function materializeShips($completeKey, $date, $collection, $field, $firstKillID = null)
 {
     global $kvc, $mdb;
 
     if ($kvc->get($completeKey) == true) return;
 
-    Util::out('Calculating recent ships');
+    Util::out("Calculating $field");
     $runID = "$date:" . time();
     $updated = Mdb::now();
     // ScanAlyzer treats attacker and victim appearances alike, so this intentionally has no isVictim filter.
-    $pipeline = [
+    $pipeline = [];
+    if ($firstKillID != null) {
+        $pipeline[] = ['$match' => ['killID' => ['$gte' => $firstKillID]]];
+    }
+    $pipeline = array_merge($pipeline, [
         ['$project' => [
             'involved.characterID' => 1,
             'involved.shipTypeID' => 1,
@@ -94,7 +104,7 @@ function materializeRecentShips($completeKey, $date)
             '_id' => 0,
             'type' => ['$literal' => 'characterID'],
             'id' => '$_id',
-            'recentShips' => ['$slice' => [[
+            $field => ['$slice' => [[
                 '$filter' => [
                     'input' => ['$slice' => [[
                         '$filter' => [
@@ -107,8 +117,8 @@ function materializeRecentShips($completeKey, $date)
                     'cond' => ['$ne' => ['$$ship.groupID', 29]],
                 ],
             ], 5]],
-            'recentShipsUpdated' => ['$literal' => $updated],
-            'recentShipsRunID' => ['$literal' => $runID],
+            $field . 'Updated' => ['$literal' => $updated],
+            $field . 'RunID' => ['$literal' => $runID],
         ]],
         ['$merge' => [
             'into' => 'statistics',
@@ -116,12 +126,12 @@ function materializeRecentShips($completeKey, $date)
             'whenMatched' => 'merge',
             'whenNotMatched' => 'insert',
         ]],
-    ];
+    ]);
 
-    iterator_to_array($mdb->getCollection('ninetyDays')->aggregate($pipeline, ['allowDiskUse' => true]));
+    iterator_to_array($mdb->getCollection($collection)->aggregate($pipeline, ['allowDiskUse' => true]));
     $mdb->getCollection('statistics')->updateMany(
-        ['type' => 'characterID', 'recentShipsRunID' => ['$exists' => true, '$ne' => $runID]],
-        ['$unset' => ['recentShips' => 1, 'recentShipsUpdated' => 1, 'recentShipsRunID' => 1]]
+        ['type' => 'characterID', $field . 'RunID' => ['$exists' => true, '$ne' => $runID]],
+        ['$unset' => [$field => 1, $field . 'Updated' => 1, $field . 'RunID' => 1]]
     );
     $kvc->setex($completeKey, 86400, 'true');
 }

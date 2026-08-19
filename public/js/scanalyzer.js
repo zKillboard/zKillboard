@@ -118,17 +118,24 @@ function finiteOrBlank(value) {
     return Number.isFinite(number) ? number : '';
 }
 
+function shipImages(characterID, ships) {
+    let html = '';
+    for (let ship of ships) {
+        html += `<a href='/character/${characterID}/reset/ship/${ship.shipTypeID}/'><img class="eveimage img-rounded" src="https://images.evetech.net/types/${ship.shipTypeID}/render?size=64" style='width: 40px;' title="${ship.shipName}: ${ship.appearances} appearances (${ship.kills} kills, ${ship.losses} losses)" /></a>`;
+    }
+    return html;
+}
+
 function popChar(ch) {
     let type = ch.allianceID > 0 ? 'alli' : 'corp';
     let id = ch.allianceID > 0 ? ch.allianceID : ch.corporationID;
     ch.stats = ch.stats || {};
     ch.labels = ch.labels || [];
     ch.ships = ch.ships || [];
+    ch.topShips = ch.topShips || [];
 
-    let ships = '';
-    for (let i = 0; i < ch.ships.length; i++) {
-        ships = ships + `<a href='/character/${ch.id}/reset/ship/${ch.ships[i].shipTypeID}/'><img class="eveimage img-rounded" src="https://images.evetech.net/types/${ch.ships[i].shipTypeID}/render?size=64" style='width: 40px;' title="${ch.ships[i].shipName}: ${ch.ships[i].appearances} appearances (${ch.ships[i].kills} kills, ${ch.ships[i].losses} losses)" /></a>`;
-    }
+    let ships = shipImages(ch.id, ch.ships);
+    let topShips = shipImages(ch.id, ch.topShips);
 
     ch.stats.shipsDestroyed = Number(ch.stats.shipsDestroyed) | 0;
     ch.stats.shipsLost = Number(ch.stats.shipsLost) | 0;
@@ -171,7 +178,7 @@ function popChar(ch) {
 
     let notes = typeof ch.labels == 'undefined' ? '' : ch.labels.join(', ');
 
-    let h = $(`<tr danger="${ch.stats.dangerRatio}"><td>${char}<br/>Sec: <small><span style='color: ${secColor}' format="${secStatusFormat}" raw="${secStatus}"></span> <span>${notes}</span></small></td><td class='pilotships'>${ships}</td><td class='pilotmemberimage'>${image}</td><td class="pilotmember">${corp}<br/>${alli}</td><td class="text-end"><span class="pilotkl green" format="format-int-once" raw="${ch.stats.shipsDestroyed}"></span><br/><span class="red" format="format-int-once" raw="${ch.stats.shipsLost}"></span></td><td class="pilotds text-end"><span class="red" format="format-pct-once" raw="${ch.stats.dangerRatio}"></span><br/><span  class="green" format="format-pct-once" raw="${ch.stats.snuggly}"></span></td><td class="text-end"><span format="format-pct-once" raw="${ch.stats.gangRatio}"></span><br/><span format="format-dec2-once" raw="${ch.stats.avgGangSize}"></td><td class='text-end ${soloColor}' format="format-pct-once" raw="${ch.stats.soloRatio}"></td></tr>`);
+    let h = $(`<tr danger="${ch.stats.dangerRatio}"><td>${char}<br/>Sec: <small><span style='color: ${secColor}' format="${secStatusFormat}" raw="${secStatus}"></span> <span>${notes}</span></small></td><td class='pilotships'>${ships}</td><td class='pilotships'>${topShips}</td><td class='pilotmemberimage'>${image}</td><td class="pilotmember">${corp}<br/>${alli}</td><td class="text-end"><span class="pilotkl green" format="format-int-once" raw="${ch.stats.shipsDestroyed}"></span><br/><span class="red" format="format-int-once" raw="${ch.stats.shipsLost}"></span></td><td class="pilotds text-end"><span class="red" format="format-pct-once" raw="${ch.stats.dangerRatio}"></span><br/><span  class="green" format="format-pct-once" raw="${ch.stats.snuggly}"></span></td><td class="text-end"><span format="format-pct-once" raw="${ch.stats.gangRatio}"></span><br/><span format="format-dec2-once" raw="${ch.stats.avgGangSize}"></td><td class='text-end ${soloColor}' format="format-pct-once" raw="${ch.stats.soloRatio}"></td></tr>`);
     $('#results').append(h);
 }
 
