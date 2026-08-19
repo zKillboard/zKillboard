@@ -231,7 +231,7 @@ function popChar(ch) {
         let baitCount = Number(ch.stats.bait.count) || 0;
         let baitClass = baitLevel == 'HIGH' ? 'bg-danger' : (baitLevel == 'LOW' ? 'bg-secondary' : '');
         let baitStyle = baitLevel == 'MEDIUM' ? ' style="background-color: #963800;"' : '';
-        badges.push(`<span class="badge text-white ${baitClass}"${baitStyle} title="${baitCount} past-year bait matches">BAIT ${baitLevel} (${baitCount})</span>`);
+        badges.push(`<span class="badge text-white ${baitClass}"${baitStyle} title="${baitCount} past-year sub-10M fitted-value losses followed within five minutes and 250 km">BAIT ${baitLevel} (${baitCount})</span>`);
     }
     if (ch.stats.cyno) {
         let cynoCount = Number(ch.stats.cyno.count) || 0;

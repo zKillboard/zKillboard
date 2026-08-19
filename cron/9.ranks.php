@@ -282,6 +282,85 @@ function materializeBait($completeKey, $date, $firstKillID)
     $updated = Mdb::now();
     $pendingBySystem = [];
     $baitCounts = [];
+    $processBatch = function ($events) use (&$pendingBySystem, &$baitCounts, $mdb) {
+        $potentialBySystem = [];
+        foreach ($pendingBySystem as $systemID => $losses) {
+            foreach ($losses as $loss) $potentialBySystem[$systemID][] = $loss['time'];
+        }
+
+        $interestingKillIDs = [];
+        foreach ($events as $event) {
+            $systemID = $event['systemID'];
+            $potential = [];
+            foreach ($potentialBySystem[$systemID] ?? [] as $time) {
+                if ($event['time'] - $time <= 300) $potential[] = $time;
+            }
+            if (sizeof($potential)) $potentialBySystem[$systemID] = $potential;
+            else unset($potentialBySystem[$systemID]);
+
+            if ($event['isFollowUp'] && sizeof($potential)) {
+                $interestingKillIDs[$event['killID']] = $event['killID'];
+            }
+            if ($event['isCheapLoss']) {
+                $interestingKillIDs[$event['killID']] = $event['killID'];
+                $potentialBySystem[$systemID][] = $event['time'];
+            }
+        }
+
+        $positions = [];
+        foreach (array_chunk(array_values($interestingKillIDs), 1000) as $killIDs) {
+            $cursor = $mdb->getCollection('esimails')->find(
+                ['killmail_id' => ['$in' => $killIDs]],
+                ['projection' => ['_id' => 0, 'killmail_id' => 1, 'victim.position' => 1]]
+            );
+            foreach ($cursor as $row) {
+                $position = $row['victim']['position'] ?? null;
+                if (!isset($position['x'], $position['y'], $position['z'])) continue;
+                $positions[(int) $row['killmail_id']] = [
+                    'x' => (float) $position['x'],
+                    'y' => (float) $position['y'],
+                    'z' => (float) $position['z'],
+                ];
+            }
+        }
+
+        foreach ($events as $event) {
+            $systemID = $event['systemID'];
+            $position = $positions[$event['killID']] ?? null;
+            if (isset($pendingBySystem[$systemID])) {
+                $pending = [];
+                foreach ($pendingBySystem[$systemID] as $loss) {
+                    $age = $event['time'] - $loss['time'];
+                    if ($age > 300) continue;
+                    $isMatch = false;
+                    if ($event['isFollowUp'] && $age >= 0 && $position != null) {
+                        $x = $position['x'] - $loss['position']['x'];
+                        $y = $position['y'] - $loss['position']['y'];
+                        $z = $position['z'] - $loss['position']['z'];
+                        // ESI positions are meters, so compare against 250 km squared.
+                        $isMatch = ($x * $x) + ($y * $y) + ($z * $z) <= 62500000000;
+                    }
+                    if ($isMatch) {
+                        $characterID = $loss['characterID'];
+                        $baitCounts[$characterID] = ($baitCounts[$characterID] ?? 0) + 1;
+                    } else {
+                        $pending[] = $loss;
+                    }
+                }
+                if (sizeof($pending)) $pendingBySystem[$systemID] = $pending;
+                else unset($pendingBySystem[$systemID]);
+            }
+
+            if ($event['isCheapLoss'] && $position != null) {
+                $pendingBySystem[$systemID][] = [
+                    'characterID' => $event['characterID'],
+                    'time' => $event['time'],
+                    'position' => $position,
+                ];
+            }
+        }
+    };
+
     $cursor = $mdb->getCollection('killmails')->find(
         ['killID' => ['$gte' => $firstKillID]],
         [
@@ -291,8 +370,9 @@ function materializeBait($completeKey, $date, $firstKillID)
                 'dttm' => 1,
                 'npc' => 1,
                 'attackerCount' => 1,
+                'categoryID' => 1,
                 'system.solarSystemID' => 1,
-                'zkb.totalValue' => 1,
+                'zkb.fittedValue' => 1,
                 'involved' => ['$elemMatch' => ['isVictim' => true]],
             ],
             'sort' => ['killID' => 1],
@@ -301,42 +381,37 @@ function materializeBait($completeKey, $date, $firstKillID)
         ]
     );
 
+    $events = [];
     foreach ($cursor as $row) {
         $systemID = (int) ($row['system']['solarSystemID'] ?? 0);
         $dttm = $row['dttm'] ?? null;
         if ($systemID <= 0 || !($dttm instanceof MongoDB\BSON\UTCDateTime)) continue;
-
-        $time = $dttm->toDateTime()->getTimestamp();
         $isPvp = ($row['npc'] ?? true) === false;
-        $isFollowUp = $isPvp && (int) ($row['attackerCount'] ?? 0) >= 2;
-        if (isset($pendingBySystem[$systemID])) {
-            $pending = [];
-            foreach ($pendingBySystem[$systemID] as $loss) {
-                $age = $time - $loss['time'];
-                if ($age > 300) continue;
-                if ($isFollowUp && $age >= 0) {
-                    $characterID = $loss['characterID'];
-                    $baitCounts[$characterID] = ($baitCounts[$characterID] ?? 0) + 1;
-                } else {
-                    $pending[] = $loss;
-                }
-            }
-            if (sizeof($pending)) $pendingBySystem[$systemID] = $pending;
-            else unset($pendingBySystem[$systemID]);
-        }
-
-        if (!$isPvp || (float) ($row['zkb']['totalValue'] ?? 0) >= 50000000) continue;
         $victim = $row['involved'][0] ?? [];
         $characterID = (int) ($victim['characterID'] ?? 0);
-        if ($characterID > 0) {
-            $pendingBySystem[$systemID][] = ['characterID' => $characterID, 'time' => $time];
+        $events[] = [
+            'killID' => (int) $row['killID'],
+            'time' => $dttm->toDateTime()->getTimestamp(),
+            'systemID' => $systemID,
+            'characterID' => $characterID,
+            'isFollowUp' => $isPvp && (int) ($row['attackerCount'] ?? 0) >= 2,
+            'isCheapLoss' => $isPvp
+                && $characterID > 0
+                && (int) ($row['categoryID'] ?? 0) == 6
+                && (int) ($victim['groupID'] ?? 0) != 29
+                && (float) ($row['zkb']['fittedValue'] ?? 10000000) < 10000000,
+        ];
+        if (sizeof($events) == 1000) {
+            $processBatch($events);
+            $events = [];
         }
     }
+    if (sizeof($events)) $processBatch($events);
 
     $operations = [];
     foreach ($baitCounts as $characterID => $count) {
-        if ($count < 5) continue;
-        $level = $count >= 25 ? 'high' : ($count >= 10 ? 'medium' : 'low');
+        if ($count < 2) continue;
+        $level = $count >= 10 ? 'high' : ($count >= 5 ? 'medium' : 'low');
         $operations[] = ['updateOne' => [
             ['type' => 'characterID', 'id' => $characterID],
             ['$set' => [
