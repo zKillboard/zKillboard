@@ -4,55 +4,59 @@ require_once '../init.php';
 
 if ($kvc->get("zkb:noapi") == "true") exit();
 
-$removeFields = ['corporationID', 'allianceID', 'factionID', 'secStatus', 'security_status', 'corporation_id', 'alliance_id', 'faction_id', 'title', 'gender', 'race_id', 'ancestry_id', 'bloodline_id'];
-
-$currentSecond = "";
 $guzzler = new Guzzler(5);
 $minute = date('Hi');
 while ($minute == date('Hi')) {
     if ($redis->get("zkb:reinforced") == true) break;
-    $row = $mdb->findDoc("information", ['type' => 'characterID'], ['lastApiUpdate' => 1]);
-    if ($row == null) {
+    $rows = $mdb->find("information", ['type' => 'characterID'], ['nextApiUpdate' => 1], 5);
+    if (sizeof($rows) == 0) {
         $guzzler->sleep(1);
         continue;
     }
-    if (isset($row['lastApiUpdate']) && $row['lastApiUpdate'] instanceof MongoDB\BSON\UTCDateTime && $row['lastApiUpdate']->toDateTime()->getTimestamp() > (time() - (7 * 86400))) {
+    $row = reset($rows);
+    if (isset($row['nextApiUpdate']) && $row['nextApiUpdate'] instanceof MongoDB\BSON\UTCDateTime && $row['nextApiUpdate']->toDateTime()->getTimestamp() > time()) {
         $guzzler->sleep(1);
-        continue;
-    }
-    $currentSecond = date('His');
-    $id = (int) $row['id'];
-    if ($id == 1) {
-        $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now()]);
         continue;
     }
 
-    if (isset($row['lastApiUpdate'])) {
-        $hasRecent = $mdb->exists("ninetyDays", ['involved.characterID' => $id]);
-        if ($id <= 1 || (!$hasRecent && $redis->get("apiVerified:$id") == null)) { // don't clear api verified characters
-            $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(), 'corporationID' => 0, 'allianceID' => 0, 'factionID' => 0]);        
-            foreach ($removeFields as $field) if (isset($row[$field])) $mdb->removeField("information", $row, $field);
+    $t = new Timer();
+    $requests = 0;
+    foreach ($rows as $row) {
+        if (isset($row['nextApiUpdate']) && $row['nextApiUpdate'] instanceof MongoDB\BSON\UTCDateTime && $row['nextApiUpdate']->toDateTime()->getTimestamp() > time()) continue;
+
+        $id = (int) $row['id'];
+        if ($id <= 1) {
+            $mdb->set("information", $row, ['nextApiUpdate' => $mdb->now(7 * 86400)]);
             continue;
         }
+        if (@$row['corporationID'] == 1000001) {
+            $mdb->set("information", $row, ['nextApiUpdate' => $mdb->now(7 * 86400)]);
+            continue;
+        }
+
+        $statistics = $mdb->findDoc('statistics', ['type' => 'characterID', 'id' => $id], [], ['topShipsUpdated' => 1]);
+        // topShipsUpdated only exists for characters seen on a killmail in the trailing year.
+        $refreshInterval = isset($statistics['topShipsUpdated']) ? 86400 : (7 * 86400);
+        if (!isset($row['nextApiUpdate']) && isset($row['lastApiUpdate']) && $row['lastApiUpdate'] instanceof MongoDB\BSON\UTCDateTime) {
+            $lastApiUpdate = $row['lastApiUpdate']->toDateTime()->getTimestamp();
+            if ($lastApiUpdate > (time() - $refreshInterval)) {
+                $mdb->set("information", $row, ['nextApiUpdate' => new MongoDB\BSON\UTCDateTime(($lastApiUpdate + $refreshInterval) * 1000)]);
+                continue;
+            }
+        }
+
+        $url = "$esiServer/characters/$id";
+        $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row, 'refreshInterval' => $refreshInterval];
+        $headers = ['X-Compatibility-Date' => '2026-07-21'];
+        if (!empty($row['etag'])) $headers['If-None-Match'] = $row['etag'];
+        if (!empty($row['last-modified'])) $headers['If-Modified-Since'] = $row['last-modified'];
+        $guzzler->call($url, "updateChar", "failChar", $params, $headers);
+        $requests++;
     }
-
-    // doomheimed characters now throw 404's....
-    // however, if a human manages to get their character brought back to life and log in with it,
-    // we should be able to fetch that character's information again, so don't skip them
-    if (isset($row['lastApiUpdate']) && (@$row['corporationID'] == 1000001 || $id <= 9999999)) {
-        $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now()]);
-        continue;
-    }
-
-
-    $url = "$esiServer/characters/$id";
-    $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
-    $headers = ['X-Compatibility-Date' => '2026-07-21'];
-    if (!empty($row['etag'])) $headers['If-None-Match'] = $row['etag'];
-    if (!empty($row['last-modified'])) $headers['If-Modified-Since'] = $row['last-modified'];
-    $guzzler->call($url, "updateChar", "failChar", $params, $headers);
     $guzzler->finish();
-    sleep(1);
+    do {
+        usleep(10000);
+    } while ($t->stop() < (max(1, $requests) * 50));
 }      
 $guzzler->finish();
 
@@ -74,10 +78,10 @@ function failChar(&$guzzler, &$params, &$connectionException)
         case 400: // who knows what's ccp doing here
             Util::out("ERROR $id");
             $guzzler->sleep(1);
-            $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(-23 * 3600)]); // try again in an hour
+            $mdb->set("information", $row, ['nextApiUpdate' => $mdb->now(3600)]);
             break;
         case 404: // not deleting it...
-            $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(86400 * 14)]);
+            $mdb->set("information", $row, ['nextApiUpdate' => $mdb->now(86400 * 21)]);
             $guzzler->sleep(1);
             break;
         case 420:
@@ -85,6 +89,7 @@ function failChar(&$guzzler, &$params, &$connectionException)
             exit();
         default:
             Util::out("/characters/ failed for $id with code $code");
+            $mdb->set("information", $row, ['nextApiUpdate' => $mdb->now(3600)]);
     }
 }
 
@@ -96,7 +101,7 @@ function updateChar(&$guzzler, &$params, &$content)
     $id = (int) $row['id'];
 
     if ($content == "") {
-        $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now()]);
+        $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(), 'nextApiUpdate' => $mdb->now($params['refreshInterval'])]);
         return;
     }
 
@@ -105,7 +110,7 @@ function updateChar(&$guzzler, &$params, &$content)
 
     $json = json_decode($content, true);
     if (@$json['name'] == "") {
-        $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now()]);
+        $mdb->set("information", $row, ['lastApiUpdate' => $mdb->now(), 'nextApiUpdate' => $mdb->now($params['refreshInterval'])]);
         return; // bad data, ignore it
     }
     if (json_last_error() != 0) {
@@ -132,6 +137,7 @@ function updateChar(&$guzzler, &$params, &$content)
     }
 
     $updates['lastApiUpdate'] = $mdb->now();
+    $updates['nextApiUpdate'] = $mdb->now($corpID == 1000001 ? (7 * 86400) : $params['refreshInterval']);
     $headers = @$params['HEADERS'];
     if (isset($headers['etag'][0])) $updates['etag'] = $headers['etag'][0];
     if (isset($headers['last-modified'][0])) $updates['last-modified'] = $headers['last-modified'][0];
