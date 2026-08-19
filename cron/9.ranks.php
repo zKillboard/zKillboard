@@ -62,6 +62,7 @@ function materializeRecentShips($completeKey, $date)
             'involved.characterID' => 1,
             'involved.shipTypeID' => 1,
             'involved.groupID' => 1,
+            'involved.isVictim' => 1,
             'zkb.totalValue' => 1,
         ]],
         ['$unwind' => '$involved'],
@@ -69,18 +70,22 @@ function materializeRecentShips($completeKey, $date)
         ['$group' => [
             '_id' => ['characterID' => '$involved.characterID', 'shipTypeID' => '$involved.shipTypeID'],
             'groupID' => ['$first' => '$involved.groupID'],
-            'kills' => ['$sum' => 1],
+            'appearances' => ['$sum' => 1],
+            'kills' => ['$sum' => ['$cond' => [['$eq' => ['$involved.isVictim', false]], 1, 0]]],
+            'losses' => ['$sum' => ['$cond' => [['$eq' => ['$involved.isVictim', true]], 1, 0]]],
             'isk' => ['$sum' => '$zkb.totalValue'],
         ]],
         ['$group' => [
             '_id' => '$_id.characterID',
             'ships' => ['$topN' => [
                 'n' => 7,
-                'sortBy' => ['kills' => -1, 'isk' => -1],
+                'sortBy' => ['appearances' => -1, 'isk' => -1],
                 'output' => [
                     'shipTypeID' => '$_id.shipTypeID',
                     'groupID' => '$groupID',
+                    'appearances' => '$appearances',
                     'kills' => '$kills',
+                    'losses' => '$losses',
                     'isk' => '$isk',
                 ],
             ]],

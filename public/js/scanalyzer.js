@@ -127,7 +127,7 @@ function popChar(ch) {
 
     let ships = '';
     for (let i = 0; i < ch.ships.length; i++) {
-        ships = ships + `<a href='/character/${ch.id}/reset/ship/${ch.ships[i].shipTypeID}/'><img class="eveimage img-rounded" src="https://images.evetech.net/types/${ch.ships[i].shipTypeID}/render?size=64" style='width: 40px;' title="${ch.ships[i].shipName} ${ch.ships[i].kills} Kills" /></a>`;
+        ships = ships + `<a href='/character/${ch.id}/reset/ship/${ch.ships[i].shipTypeID}/'><img class="eveimage img-rounded" src="https://images.evetech.net/types/${ch.ships[i].shipTypeID}/render?size=64" style='width: 40px;' title="${ch.ships[i].shipName}: ${ch.ships[i].appearances} appearances (${ch.ships[i].kills} kills, ${ch.ships[i].losses} losses)" /></a>`;
     }
 
     ch.stats.shipsDestroyed = Number(ch.stats.shipsDestroyed) | 0;
