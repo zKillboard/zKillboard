@@ -175,6 +175,7 @@ function popChar(ch) {
     let id = ch.allianceID > 0 ? ch.allianceID : ch.corporationID;
     ch.stats = ch.stats || {};
     let labels = (ch.labels || []).slice();
+    let badges = [];
     ch.ships = ch.ships || [];
     ch.topShips = ch.topShips || [];
 
@@ -218,14 +219,27 @@ function popChar(ch) {
     if (ch.unknown == true) labels.push('no known kb activity');
     else if (ch.inactive == true) labels.push('no recent kb activity');
     if (ch.stats['ganked-shipsDestroyed'] > 10) labels.push('<span class="red">ganker</span>');
-    if (ch.stats.awoxCount > 0) labels.push(`<span class="badge bg-danger">AWOX (${ch.stats.awoxCount})</span>`);
+    if (ch.stats.awoxCount > 0) badges.push(`<span class="badge bg-danger">AWOX (${ch.stats.awoxCount})</span>`);
+    if (ch.stats.fc) {
+        let fcLevel = String(ch.stats.fc.level || '').toUpperCase();
+        let fcTitle = `Past-year FC signal: ${Number(ch.stats.fc.monitorAppearances) || 0} Monitor, ${Number(ch.stats.fc.commandShipAppearances) || 0} command-ship, ${Number(ch.stats.fc.largeFleetAppearances) || 0} large-fleet appearances`;
+        badges.push(`<span class="badge text-white" style="background-color: #963800;" title="${fcTitle}">FC (${fcLevel})</span>`);
+    }
+    if (ch.stats.bait) {
+        let baitLevel = String(ch.stats.bait.level || '').toUpperCase();
+        let baitCount = Number(ch.stats.bait.count) || 0;
+        let baitClass = baitLevel == 'HIGH' ? 'bg-danger' : (baitLevel == 'LOW' ? 'bg-secondary' : '');
+        let baitStyle = baitLevel == 'MEDIUM' ? ' style="background-color: #963800;"' : '';
+        badges.push(`<span class="badge text-white ${baitClass}"${baitStyle} title="${baitCount} past-year bait matches">BAIT ${baitLevel} (${baitCount})</span>`);
+    }
 
     let soloColor = '';
     if (ch.stats.shipsDestroyed > 10 && ch.stats.soloRatio >= 50) soloColor = 'green';
 
     let notes = labels.join(', ');
+    let badgeNotes = badges.join(' ');
 
-    let nameCell = `<td>${char}<br/>Sec: <small><span class="fw-bold rounded px-1" style="color: ${secTextColor}; background-color: ${secBackground}; border: 1px solid ${secColor}; box-shadow: 0 0 3px ${secColor};" format="${secStatusFormat}" raw="${secStatus}"></span> <span>${notes}</span></small></td>`;
+    let nameCell = `<td>${char}<br/><small class="d-flex align-items-center gap-1"><span>Sec: <span class="fw-bold rounded px-1" style="color: ${secTextColor}; background-color: ${secBackground}; border: 1px solid ${secColor}; box-shadow: 0 0 3px ${secColor};" format="${secStatusFormat}" raw="${secStatus}"></span> <span>${notes}</span></span><span class="ms-auto text-nowrap">${badgeNotes}</span></small></td>`;
     let imageCell = `<td class='pilotmemberimage'>${image}</td>`;
     let memberCell = `<td class="pilotmember">${corp}<br/>${alli}</td>`;
     let current = ch.scanalyzerElement;

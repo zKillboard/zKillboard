@@ -22,7 +22,9 @@ $alltimeDate = date('Ymd', time() - (3600 * 4));
 $started = time();
 $recentShipsCompleteKey = "zkb:recentShipsCalculated:$today";
 $topShipsCompleteKey = "zkb:topShipsCalculated:$today";
+$fcCompleteKey = "zkb:fcCalculated:$today";
 $awoxCountsCompleteKey = "zkb:awoxCountsCalculated:$today";
+$baitCompleteKey = "zkb:baitCalculated:$today";
 
 $jobs = [
     alltimeJob('all', $alltimeDate, 'zkb:alltimeRanksCalculated:%s:%s'),
@@ -37,7 +39,9 @@ if (hasArg('--reset-complete') || hasArg('--recalculate')) {
     resetCompleteKeys($jobs);
     $kvc->del($recentShipsCompleteKey);
     $kvc->del($topShipsCompleteKey);
+    $kvc->del($fcCompleteKey);
     $kvc->del($awoxCountsCompleteKey);
+    $kvc->del($baitCompleteKey);
     exit();
 }
 
@@ -50,80 +54,153 @@ foreach ($jobs as $job) {
         if (time() - $started > 60) exit();
         $yearAgo = strtotime('-1 year');
         $firstKillID = MongoFilter::getFirstKillID(date('Y', $yearAgo), date('n', $yearAgo), date('j', $yearAgo));
-        materializeShips($topShipsCompleteKey, $today, 'killmails', 'topShips', $firstKillID);
+        materializeShips($topShipsCompleteKey, $today, 'killmails', 'topShips', $firstKillID, $fcCompleteKey);
         if (time() - $started > 60) exit();
         materializeAwoxCounts($awoxCountsCompleteKey, $today, $firstKillID);
+        if (time() - $started > 60) exit();
+        materializeBait($baitCompleteKey, $today, $firstKillID);
         if (time() - $started > 60) exit();
     }
 }
 
-function materializeShips($completeKey, $date, $collection, $field, $firstKillID = null)
+function materializeShips($completeKey, $date, $collection, $field, $firstKillID = null, $fcCompleteKey = null)
 {
     global $kvc, $mdb;
 
-    if ($kvc->get($completeKey) == true) return;
+    if ($kvc->get($completeKey) == true && ($fcCompleteKey == null || $kvc->get($fcCompleteKey) == true)) return;
 
     Util::out("Calculating $field");
     $runID = "$date:" . time();
     $updated = Mdb::now();
+    $includeFc = $fcCompleteKey != null;
     // ScanAlyzer treats attacker and victim appearances alike, so this intentionally has no isVictim filter.
     $pipeline = [];
     if ($firstKillID != null) {
         $pipeline[] = ['$match' => ['killID' => ['$gte' => $firstKillID]]];
     }
-    $pipeline = array_merge($pipeline, [
-        ['$project' => [
-            'involved.characterID' => 1,
-            'involved.shipTypeID' => 1,
-            'involved.groupID' => 1,
-            'involved.isVictim' => 1,
-            'zkb.totalValue' => 1,
+    $project = [
+        'involved.characterID' => 1,
+        'involved.shipTypeID' => 1,
+        'involved.groupID' => 1,
+        'involved.isVictim' => 1,
+        'zkb.totalValue' => 1,
+    ];
+    $shipGroup = [
+        '_id' => ['characterID' => '$involved.characterID', 'shipTypeID' => '$involved.shipTypeID'],
+        'groupID' => ['$first' => '$involved.groupID'],
+        'appearances' => ['$sum' => 1],
+        'kills' => ['$sum' => ['$cond' => [['$eq' => ['$involved.isVictim', false]], 1, 0]]],
+        'losses' => ['$sum' => ['$cond' => [['$eq' => ['$involved.isVictim', true]], 1, 0]]],
+        'isk' => ['$sum' => '$zkb.totalValue'],
+    ];
+    $characterGroup = [
+        '_id' => '$_id.characterID',
+        'ships' => ['$topN' => [
+            'n' => 7,
+            'sortBy' => ['appearances' => -1, 'isk' => -1],
+            'output' => [
+                'shipTypeID' => '$_id.shipTypeID',
+                'groupID' => '$groupID',
+                'appearances' => '$appearances',
+                'kills' => '$kills',
+                'losses' => '$losses',
+                'isk' => '$isk',
+            ],
         ]],
+    ];
+    $finalProject = [
+        '_id' => 0,
+        'type' => ['$literal' => 'characterID'],
+        'id' => '$_id',
+        $field => ['$slice' => [[
+            '$filter' => [
+                'input' => ['$slice' => [[
+                    '$filter' => [
+                        'input' => '$ships',
+                        'as' => 'ship',
+                        'cond' => ['$gt' => ['$$ship.shipTypeID', 0]],
+                    ],
+                ], 6]],
+                'as' => 'ship',
+                'cond' => ['$ne' => ['$$ship.groupID', 29]],
+            ],
+        ], 5]],
+        $field . 'Updated' => ['$literal' => $updated],
+        $field . 'RunID' => ['$literal' => $runID],
+    ];
+    $fcStages = [];
+    if ($includeFc) {
+        $project['attackerCount'] = 1;
+        $project['npc'] = 1;
+        $shipGroup['monitorAppearances'] = ['$sum' => ['$cond' => [[
+            '$and' => [
+                ['$eq' => ['$npc', false]],
+                ['$eq' => ['$involved.isVictim', false]],
+                ['$eq' => ['$involved.shipTypeID', 45534]],
+            ],
+        ], 1, 0]]];
+        $shipGroup['commandShipAppearances'] = ['$sum' => ['$cond' => [[
+            '$and' => [
+                ['$eq' => ['$npc', false]],
+                ['$eq' => ['$involved.isVictim', false]],
+                ['$eq' => ['$involved.groupID', 540]],
+            ],
+        ], 1, 0]]];
+        $shipGroup['largeFleetAppearances'] = ['$sum' => ['$cond' => [[
+            '$and' => [
+                ['$eq' => ['$npc', false]],
+                ['$eq' => ['$involved.isVictim', false]],
+                ['$gte' => ['$attackerCount', 25]],
+            ],
+        ], 1, 0]]];
+        $characterGroup['monitorAppearances'] = ['$sum' => '$monitorAppearances'];
+        $characterGroup['commandShipAppearances'] = ['$sum' => '$commandShipAppearances'];
+        $characterGroup['largeFleetAppearances'] = ['$sum' => '$largeFleetAppearances'];
+        $fcStages = [
+            ['$set' => ['fcScore' => ['$add' => [
+                ['$min' => [100, ['$multiply' => ['$monitorAppearances', 20]]]],
+                ['$min' => [40, ['$multiply' => ['$commandShipAppearances', 2]]]],
+                ['$min' => [20, ['$divide' => ['$largeFleetAppearances', 5]]]],
+            ]]]],
+            ['$set' => ['fcLevel' => ['$switch' => [
+                'branches' => [
+                    ['case' => ['$gte' => ['$fcScore', 100]], 'then' => 'high'],
+                    ['case' => ['$gte' => ['$fcScore', 60]], 'then' => 'medium'],
+                    ['case' => ['$gte' => ['$fcScore', 35]], 'then' => 'low'],
+                ],
+                'default' => null,
+            ]]]],
+        ];
+        $finalProject['fc'] = ['$cond' => [
+            ['$ne' => ['$fcLevel', null]],
+            [
+                'level' => '$fcLevel',
+                'score' => ['$round' => ['$fcScore', 0]],
+                'monitorAppearances' => '$monitorAppearances',
+                'commandShipAppearances' => '$commandShipAppearances',
+                'largeFleetAppearances' => '$largeFleetAppearances',
+            ],
+            '$$REMOVE',
+        ]];
+        $finalProject['fcUpdated'] = ['$cond' => [
+            ['$ne' => ['$fcLevel', null]],
+            ['$literal' => $updated],
+            '$$REMOVE',
+        ]];
+        $finalProject['fcRunID'] = ['$cond' => [
+            ['$ne' => ['$fcLevel', null]],
+            ['$literal' => $runID],
+            '$$REMOVE',
+        ]];
+    }
+    $pipeline = array_merge($pipeline, [
+        ['$project' => $project],
         ['$unwind' => '$involved'],
         ['$match' => ['involved.characterID' => ['$gt' => 0]]],
-        ['$group' => [
-            '_id' => ['characterID' => '$involved.characterID', 'shipTypeID' => '$involved.shipTypeID'],
-            'groupID' => ['$first' => '$involved.groupID'],
-            'appearances' => ['$sum' => 1],
-            'kills' => ['$sum' => ['$cond' => [['$eq' => ['$involved.isVictim', false]], 1, 0]]],
-            'losses' => ['$sum' => ['$cond' => [['$eq' => ['$involved.isVictim', true]], 1, 0]]],
-            'isk' => ['$sum' => '$zkb.totalValue'],
-        ]],
-        ['$group' => [
-            '_id' => '$_id.characterID',
-            'ships' => ['$topN' => [
-                'n' => 7,
-                'sortBy' => ['appearances' => -1, 'isk' => -1],
-                'output' => [
-                    'shipTypeID' => '$_id.shipTypeID',
-                    'groupID' => '$groupID',
-                    'appearances' => '$appearances',
-                    'kills' => '$kills',
-                    'losses' => '$losses',
-                    'isk' => '$isk',
-                ],
-            ]],
-        ]],
-        ['$project' => [
-            '_id' => 0,
-            'type' => ['$literal' => 'characterID'],
-            'id' => '$_id',
-            $field => ['$slice' => [[
-                '$filter' => [
-                    'input' => ['$slice' => [[
-                        '$filter' => [
-                            'input' => '$ships',
-                            'as' => 'ship',
-                            'cond' => ['$gt' => ['$$ship.shipTypeID', 0]],
-                        ],
-                    ], 6]],
-                    'as' => 'ship',
-                    'cond' => ['$ne' => ['$$ship.groupID', 29]],
-                ],
-            ], 5]],
-            $field . 'Updated' => ['$literal' => $updated],
-            $field . 'RunID' => ['$literal' => $runID],
-        ]],
+        ['$group' => $shipGroup],
+        ['$group' => $characterGroup],
+    ], $fcStages, [
+        ['$project' => $finalProject],
         ['$merge' => [
             'into' => 'statistics',
             'on' => ['type', 'id'],
@@ -137,6 +214,13 @@ function materializeShips($completeKey, $date, $collection, $field, $firstKillID
         ['type' => 'characterID', $field . 'RunID' => ['$exists' => true, '$ne' => $runID]],
         ['$unset' => [$field => 1, $field . 'Updated' => 1, $field . 'RunID' => 1]]
     );
+    if ($includeFc) {
+        $mdb->getCollection('statistics')->updateMany(
+            ['type' => 'characterID', 'fcRunID' => ['$exists' => true, '$ne' => $runID]],
+            ['$unset' => ['fc' => 1, 'fcUpdated' => 1, 'fcRunID' => 1]]
+        );
+        $kvc->setex($fcCompleteKey, 86400, 'true');
+    }
     $kvc->setex($completeKey, 86400, 'true');
 }
 
@@ -175,6 +259,95 @@ function materializeAwoxCounts($completeKey, $date, $firstKillID)
     $mdb->getCollection('statistics')->updateMany(
         ['type' => 'characterID', 'awoxCountRunID' => ['$exists' => true, '$ne' => $runID]],
         ['$unset' => ['awoxCount' => 1, 'awoxCountUpdated' => 1, 'awoxCountRunID' => 1]]
+    );
+    $kvc->setex($completeKey, 86400, 'true');
+}
+
+function materializeBait($completeKey, $date, $firstKillID)
+{
+    global $kvc, $mdb;
+
+    if ($kvc->get($completeKey) == true) return;
+
+    Util::out('Calculating bait');
+    $runID = "$date:" . time();
+    $updated = Mdb::now();
+    $pendingBySystem = [];
+    $baitCounts = [];
+    $cursor = $mdb->getCollection('killmails')->find(
+        ['killID' => ['$gte' => $firstKillID]],
+        [
+            'projection' => [
+                '_id' => 0,
+                'killID' => 1,
+                'dttm' => 1,
+                'npc' => 1,
+                'attackerCount' => 1,
+                'system.solarSystemID' => 1,
+                'zkb.totalValue' => 1,
+                'involved' => ['$elemMatch' => ['isVictim' => true]],
+            ],
+            'sort' => ['killID' => 1],
+            'batchSize' => 1000,
+            'noCursorTimeout' => true,
+        ]
+    );
+
+    foreach ($cursor as $row) {
+        $systemID = (int) ($row['system']['solarSystemID'] ?? 0);
+        $dttm = $row['dttm'] ?? null;
+        if ($systemID <= 0 || !($dttm instanceof MongoDB\BSON\UTCDateTime)) continue;
+
+        $time = $dttm->toDateTime()->getTimestamp();
+        $isPvp = ($row['npc'] ?? true) === false;
+        $isFollowUp = $isPvp && (int) ($row['attackerCount'] ?? 0) >= 2;
+        if (isset($pendingBySystem[$systemID])) {
+            $pending = [];
+            foreach ($pendingBySystem[$systemID] as $loss) {
+                $age = $time - $loss['time'];
+                if ($age > 300) continue;
+                if ($isFollowUp && $age >= 0) {
+                    $characterID = $loss['characterID'];
+                    $baitCounts[$characterID] = ($baitCounts[$characterID] ?? 0) + 1;
+                } else {
+                    $pending[] = $loss;
+                }
+            }
+            if (sizeof($pending)) $pendingBySystem[$systemID] = $pending;
+            else unset($pendingBySystem[$systemID]);
+        }
+
+        if (!$isPvp || (float) ($row['zkb']['totalValue'] ?? 0) >= 50000000) continue;
+        $victim = $row['involved'][0] ?? [];
+        $characterID = (int) ($victim['characterID'] ?? 0);
+        if ($characterID > 0) {
+            $pendingBySystem[$systemID][] = ['characterID' => $characterID, 'time' => $time];
+        }
+    }
+
+    $operations = [];
+    foreach ($baitCounts as $characterID => $count) {
+        if ($count < 5) continue;
+        $level = $count >= 25 ? 'high' : ($count >= 10 ? 'medium' : 'low');
+        $operations[] = ['updateOne' => [
+            ['type' => 'characterID', 'id' => $characterID],
+            ['$set' => [
+                'bait' => ['level' => $level, 'count' => $count],
+                'baitUpdated' => $updated,
+                'baitRunID' => $runID,
+            ]],
+            ['upsert' => true],
+        ]];
+        if (sizeof($operations) == 1000) {
+            $mdb->getCollection('statistics')->bulkWrite($operations, ['ordered' => false]);
+            $operations = [];
+        }
+    }
+    if (sizeof($operations)) $mdb->getCollection('statistics')->bulkWrite($operations, ['ordered' => false]);
+
+    $mdb->getCollection('statistics')->updateMany(
+        ['type' => 'characterID', 'baitRunID' => ['$exists' => true, '$ne' => $runID]],
+        ['$unset' => ['bait' => 1, 'baitUpdated' => 1, 'baitRunID' => 1]]
     );
     $kvc->setex($completeKey, 86400, 'true');
 }
