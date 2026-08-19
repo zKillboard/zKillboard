@@ -2249,3 +2249,61 @@ function setTime() {
 	let sleepTime = (60 - seconds) * 1000 + 50; // add a small buffer
 	setTimeTimeoutHandle = setTimeout(setTime, sleepTime);
 }
+
+let esiInfoDb;
+
+function getEsiInfoDb() {
+    if (esiInfoDb) return esiInfoDb;
+    if (!window.indexedDB) return Promise.resolve(null);
+
+    esiInfoDb = new Promise(function(resolve) {
+        let request = window.indexedDB.open('zkillboard-scanalyzer');
+        request.onupgradeneeded = function() {
+            request.result.createObjectStore('esi', {keyPath: 'key'});
+        };
+        request.onsuccess = function() { resolve(request.result); };
+        request.onerror = function() { resolve(null); };
+        request.onblocked = function() { resolve(null); };
+    });
+    return esiInfoDb;
+}
+
+async function getCachedEsiInfo(keys) {
+    if (keys.length == 0) return {};
+    let db = await getEsiInfoDb();
+    if (!db) return {};
+
+    return new Promise(function(resolve) {
+        let values = {};
+        let transaction = db.transaction('esi', 'readwrite');
+        let store = transaction.objectStore('esi');
+        for (let key of keys) {
+            let request = store.get(key);
+            request.onsuccess = function() {
+                let value = request.result;
+                if (value && value.expiresAt > Date.now()) values[key] = value.data;
+                else if (value) store.delete(key);
+            };
+        }
+        transaction.oncomplete = function() { resolve(values); };
+        transaction.onerror = function() { resolve({}); };
+        transaction.onabort = function() { resolve({}); };
+    });
+}
+
+async function cacheEsiInfo(values) {
+    if (values.length == 0) return;
+    let db = await getEsiInfoDb();
+    if (!db) return;
+
+    return new Promise(function(resolve) {
+        let transaction = db.transaction('esi', 'readwrite');
+        let store = transaction.objectStore('esi');
+        for (let value of values) {
+            store.put({key: value.key, data: value.data, expiresAt: Date.now() + 86400000});
+        }
+        transaction.oncomplete = function() { resolve(); };
+        transaction.onerror = function() { resolve(); };
+        transaction.onabort = function() { resolve(); };
+    });
+}

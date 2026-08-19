@@ -197,17 +197,16 @@ function popChar(ch) {
     }
     ch.stats.snuggly = ch.stats.dangerRatio === '' ? '' : 100 - ch.stats.dangerRatio;
     let char = ch.id > 0 ? `<a href='/character/${ch.id}/'>${ch.name}</a>` : ch.name;
-    let secStatus = ch.id > 0 && typeof ch.secStatus != 'undefined' ? ch.secStatus : '?';
-    if (secStatus == '?') labels.unshift('?');
-    let secStatusFormat = secStatus == '? ' ? '' : 'format-dec2-once';
+    let hasSecurity = ch.id > 0 && ch.secStatus !== null && ch.secStatus !== '' && typeof ch.secStatus != 'undefined';
+    let secStatus = hasSecurity ? Number(ch.secStatus) : '';
+    let secStatusFormat = hasSecurity ? 'format-dec2-once' : '';
     let corp = getName('corps', ch.corporationID);
     let alli = getName('allis', ch.allianceID);
     let image = getImage(ch.corporationID, ch.allianceID);
-    let secColor = getStatusColor(ch.secStatus);
+    let secColor = getStatusColor(secStatus);
     let negativeSecurity = Number(secStatus) < 0;
     let secTextColor = negativeSecurity ? '#fff' : secColor;
     let secBackground = negativeSecurity ? secColor : '#000';
-    if (typeof ch.secStatus == 'undefined') ch.secStatus = 0;
     ch.stats.gangRatio = finiteOrBlank(ch.stats.gangRatio);
     ch.stats.avgGangSize = finiteOrBlank(ch.stats.avgGangSize);
     if (!(ch.stats.shipsDestroyed > 1)) ch.stats.gangRatio = '';
@@ -245,7 +244,8 @@ function popChar(ch) {
     let notes = labels.join(', ');
     let badgeNotes = badges.join(' ');
 
-    let nameCell = `<td>${char}<br/><small class="d-flex align-items-center gap-1"><span>Sec: <span class="fw-bold rounded px-1" style="color: ${secTextColor}; background-color: ${secBackground}; border: 1px solid ${secColor}; box-shadow: 0 0 3px ${secColor};" format="${secStatusFormat}" raw="${secStatus}"></span> <span>${notes}</span></span><span class="ms-auto text-nowrap">${badgeNotes}</span></small></td>`;
+    let security = hasSecurity ? `<span class="fw-bold rounded px-1" style="color: ${secTextColor}; background-color: ${secBackground}; border: 1px solid ${secColor}; box-shadow: 0 0 3px ${secColor};" format="${secStatusFormat}" raw="${secStatus}"></span>` : '';
+    let nameCell = `<td>${char}<br/><small class="d-flex align-items-center gap-1"><span>Sec: ${security} <span>${notes}</span></span><span class="ms-auto text-nowrap">${badgeNotes}</span></small></td>`;
     let imageCell = `<td class='pilotmemberimage'>${image}</td>`;
     let memberCell = `<td class="pilotmember">${corp}<br/>${alli}</td>`;
     let current = ch.scanalyzerElement;
@@ -305,64 +305,6 @@ function popUEc(corp) {
     $('#playergroups').append(h);
 }
 
-let scanalyzerEsiDb;
-
-function getScanalyzerEsiDb() {
-    if (scanalyzerEsiDb) return scanalyzerEsiDb;
-    if (!window.indexedDB) return Promise.resolve(null);
-
-    scanalyzerEsiDb = new Promise(function(resolve) {
-        let request = window.indexedDB.open('zkillboard-scanalyzer');
-        request.onupgradeneeded = function() {
-            request.result.createObjectStore('esi', {keyPath: 'key'});
-        };
-        request.onsuccess = function() { resolve(request.result); };
-        request.onerror = function() { resolve(null); };
-        request.onblocked = function() { resolve(null); };
-    });
-    return scanalyzerEsiDb;
-}
-
-async function getCachedEsiInfo(keys) {
-    if (keys.length == 0) return {};
-    let db = await getScanalyzerEsiDb();
-    if (!db) return {};
-
-    return new Promise(function(resolve) {
-        let values = {};
-        let transaction = db.transaction('esi', 'readwrite');
-        let store = transaction.objectStore('esi');
-        for (let key of keys) {
-            let request = store.get(key);
-            request.onsuccess = function() {
-                let value = request.result;
-                if (value && value.expiresAt > Date.now()) values[key] = value.data;
-                else if (value) store.delete(key);
-            };
-        }
-        transaction.oncomplete = function() { resolve(values); };
-        transaction.onerror = function() { resolve({}); };
-        transaction.onabort = function() { resolve({}); };
-    });
-}
-
-async function cacheEsiInfo(values) {
-    if (values.length == 0) return;
-    let db = await getScanalyzerEsiDb();
-    if (!db) return;
-
-    return new Promise(function(resolve) {
-        let transaction = db.transaction('esi', 'readwrite');
-        let store = transaction.objectStore('esi');
-        for (let value of values) {
-            store.put({key: value.key, data: value.data, expiresAt: Date.now() + 86400000});
-        }
-        transaction.oncomplete = function() { resolve(); };
-        transaction.onerror = function() { resolve(); };
-        transaction.onabort = function() { resolve(); };
-    });
-}
-
 async function fetchEsiDetails(entities, onDetail) {
     let details = [];
     for (let i = 0; i < entities.length; i += 10) {
@@ -384,53 +326,74 @@ async function fetchEsiDetails(entities, onDetail) {
     return details;
 }
 
-async function enrichUnknownCharacters(scanResult, onCharacter, onAffiliation) {
+async function enrichCharacters(scanResult, onCharacter, onAffiliation) {
     if (Array.isArray(scanResult.corps)) scanResult.corps = Object.assign({}, scanResult.corps);
     if (Array.isArray(scanResult.allis)) scanResult.allis = Object.assign({}, scanResult.allis);
 
     let unknownByName = {};
+    let missingSecurityByID = {};
     for (let character of scanResult.chars) {
-        if (!(Number(character.id) > 0)) unknownByName[character.name.toLowerCase()] = character;
+        if (!(Number(character.id) > 0)) {
+            unknownByName[character.name.toLowerCase()] = character;
+        } else if (character.secStatus === null || character.secStatus === '' || typeof character.secStatus == 'undefined') {
+            missingSecurityByID[Number(character.id)] = character;
+        }
     }
 
     let characterNames = Object.keys(unknownByName);
-    if (characterNames.length == 0) return 0;
+    let missingSecurityIDs = Object.keys(missingSecurityByID);
+    if (characterNames.length == 0 && missingSecurityIDs.length == 0) return 0;
 
     let affiliations = [];
     let updated = 0;
     let applyCharacter = function(response) {
-        let character = unknownByName[response.entity.name.toLowerCase()];
+        let character = missingSecurityByID[Number(response.entity.id)];
+        let unknown = !character && response.entity.name ? unknownByName[response.entity.name.toLowerCase()] : null;
+        if (!character) character = unknown;
         if (!character) return;
         let detail = response.detail;
-        character.id = Number(response.entity.id);
-        character.name = detail.name || response.entity.name;
-        character.corporationID = Number(detail.corporation_id) || 0;
-        character.allianceID = Number(detail.alliance_id) || 0;
-        character.factionID = Number(detail.faction_id) || 0;
+        if (unknown) {
+            character.id = Number(response.entity.id);
+            character.name = detail.name || response.entity.name;
+            character.corporationID = Number(detail.corporation_id) || 0;
+            character.allianceID = Number(detail.alliance_id) || 0;
+            character.factionID = Number(detail.faction_id) || 0;
+            character.inactive = true;
+            delete character.unknown;
+        }
         if (detail.security_status != null) character.secStatus = Number(detail.security_status);
-        character.inactive = true;
-        delete character.unknown;
 
-        if (character.corporationID > 0 && (!scanResult.corps[character.corporationID] || typeof scanResult.corps[character.corporationID].name == 'undefined')) {
+        if (unknown && character.corporationID > 0 && (!scanResult.corps[character.corporationID] || typeof scanResult.corps[character.corporationID].name == 'undefined')) {
             affiliations.push({endpoint: 'corporations', id: character.corporationID});
         }
-        if (character.allianceID > 0 && (!scanResult.allis[character.allianceID] || typeof scanResult.allis[character.allianceID].name == 'undefined')) {
+        if (unknown && character.allianceID > 0 && (!scanResult.allis[character.allianceID] || typeof scanResult.allis[character.allianceID].name == 'undefined')) {
             affiliations.push({endpoint: 'alliances', id: character.allianceID});
         }
         updated++;
         if (onCharacter) onCharacter(character);
     };
 
-    let cachedCharacters = await getCachedEsiInfo(characterNames.map(function(name) { return `characters:${name}`; }));
+    let cachedCharacters = await getCachedEsiInfo(
+        characterNames.map(function(name) { return `characters:${name}`; })
+            .concat(missingSecurityIDs.map(function(id) { return `characters:${id}`; }))
+    );
     for (let name of characterNames) {
         let cached = cachedCharacters[`characters:${name}`];
+        if (cached) applyCharacter(cached);
+    }
+    for (let id of missingSecurityIDs) {
+        let cached = cachedCharacters[`characters:${id}`];
         if (cached) applyCharacter(cached);
     }
 
     let unknownNames = characterNames
         .filter(function(name) { return !cachedCharacters[`characters:${name}`]; })
         .map(function(name) { return unknownByName[name].name; });
-    let characterDetails = [];
+    let characterRequests = missingSecurityIDs
+        .filter(function(id) { return !cachedCharacters[`characters:${id}`]; })
+        .map(function(id) {
+            return {endpoint: 'characters', id: Number(id), name: missingSecurityByID[id].name};
+        });
     if (unknownNames.length > 0) {
         updateStatus('fetching missing characters from ESI');
         let resolved = [];
@@ -449,11 +412,35 @@ async function enrichUnknownCharacters(scanResult, onCharacter, onAffiliation) {
             console.warn('Unable to resolve ScanAlyzer character names through ESI', e);
         }
 
-        let characterRequests = resolved
+        characterRequests.push(...resolved
             .filter(function(character) { return unknownByName[character.name.toLowerCase()]; })
-            .map(function(character) { return {endpoint: 'characters', id: character.id, name: character.name}; });
+            .map(function(character) { return {endpoint: 'characters', id: character.id, name: character.name, cacheName: true}; }));
+    }
+
+    characterRequests = Array.from(new Map(characterRequests.map(function(entity) {
+        return [Number(entity.id), entity];
+    })).values());
+    let characterDetails = [];
+    if (characterRequests.length > 0) {
+        updateStatus('fetching missing character details from ESI');
         characterDetails = await fetchEsiDetails(characterRequests, applyCharacter);
         await cacheEsiInfo(characterDetails.map(function(response) {
+            return {
+                key: `characters:${response.entity.id}`,
+                data: {
+                    entity: response.entity,
+                    detail: {
+                        name: response.detail.name,
+                        corporation_id: response.detail.corporation_id,
+                        alliance_id: response.detail.alliance_id,
+                        faction_id: response.detail.faction_id,
+                        security_status: response.detail.security_status
+                    }
+                }
+            };
+        }).concat(characterDetails.filter(function(response) {
+            return response.entity.cacheName;
+        }).map(function(response) {
             return {
                 key: `characters:${response.entity.name.toLowerCase()}`,
                 data: {
@@ -467,7 +454,7 @@ async function enrichUnknownCharacters(scanResult, onCharacter, onAffiliation) {
                     }
                 }
             };
-        }));
+        })));
     }
 
     affiliations = Array.from(new Map(affiliations.map(function(entity) {
@@ -616,7 +603,7 @@ async function showResult(r) {
     doFormats();
     updateStatus('');
 
-    await enrichUnknownCharacters(result, function(character) {
+    await enrichCharacters(result, function(character) {
         indexAffiliations(character);
         queueCharacterUpdate(character);
     }, function(entity) {

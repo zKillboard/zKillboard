@@ -13,9 +13,56 @@ function zkbInitOverview() {
 	overviewLoadToken++;
 	loadKms(overviewLoadToken, window.location.pathname);
 	loadTops(overviewLoadToken, window.location.pathname, entityID);
+	loadMissingCharacterSecurity(overviewLoadToken, window.location.pathname, entityID);
 }
 
 window.zkbInitOverview = zkbInitOverview;
+async function loadMissingCharacterSecurity(token, pagePath, pageEntityID) {
+	let target = document.querySelector('[data-zkb-missing-character-security]');
+	let characterID = Number(target ? target.dataset.characterId : pageEntityID);
+	if (!target || !(characterID > 0)) return;
+
+	let key = `characters:${characterID}`;
+	let cached = await getCachedEsiInfo([key]);
+	let response = cached[key];
+	if (!response) {
+		try {
+			let esiResponse = await fetch(`https://esi.evetech.net/characters/${characterID}/?datasource=tranquility`, {
+				headers: {'Accept': 'application/json', 'X-User-Agent': 'zkillboard.com Character Page'}
+			});
+			if (!esiResponse.ok) return;
+			let detail = await esiResponse.json();
+			response = {
+				entity: {endpoint: 'characters', id: characterID},
+				detail: {
+					name: detail.name,
+					corporation_id: detail.corporation_id,
+					alliance_id: detail.alliance_id,
+					faction_id: detail.faction_id,
+					security_status: detail.security_status
+				}
+			};
+			await cacheEsiInfo([{key: key, data: response}]);
+		} catch (e) {
+			return;
+		}
+	}
+
+	if (!isCurrentOverviewLoad(token, pagePath) || !target.isConnected || Number(target.dataset.characterId) != characterID) return;
+	if (response.detail.security_status == null || response.detail.security_status === '') return;
+	let security = Number(response.detail.security_status);
+	if (!Number.isFinite(security)) return;
+	let calcStatus = Math.min(1, (Math.max(-5, Math.min(5, security)) / 5) + 0.8).toFixed(1);
+	let securityColors = {
+		'1.0': '#2c74e0', '0.9': '#3a9aeb', '0.8': '#4ecef8', '0.7': '#60d9a3', '0.6': '#71e554',
+		'0.5': '#f3fd82', '0.4': '#DC6D07', '0.3': '#ce440f', '0.2': '#bc1117', '0.1': '#722020'
+	};
+	target.textContent = security.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+	target.style.color = securityColors[calcStatus] || '#8d3264';
+	target.classList.remove('text-body-secondary');
+	target.removeAttribute('data-zkb-missing-character-security');
+}
+
 function updateStats(stats) {
 	overviewStats = stats;
 

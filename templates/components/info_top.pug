@@ -126,7 +126,18 @@ br
                           = $detailData['characterTitleName']
                         else
                           = $detailData['character_title_id']
-                  if (!empty($detailData['secStatus']) && empty($detailData['solarSystemName']))
+                  if (($key ?? '') == 'character' && empty($detailData['solarSystemName']))
+                    - $hasSecStatus = isset($detailData['secStatus']) && is_numeric($detailData['secStatus']);
+                    tr
+                      th Sec. Status:
+                      td(itemprop="sec_status")
+                        if ($hasSecStatus)
+                          - $calcStatus = max(-5, min(5, $detailData['secStatus']));
+                          - $calcStatus = min(1, ($calcStatus / 5) + 0.8);
+                          span(style=("color: " . $secStatusColor($calcStatus)))= number_format((float) $detailData['secStatus'], 2)
+                        else
+                          span(data-zkb-missing-character-security="1" data-character-id=($id ?? 0))
+                  else if (!empty($detailData['secStatus']) && empty($detailData['solarSystemName']))
                     - $calcStatus = max(-5, min(5, $detailData['secStatus']));
                     - $calcStatus = min(1, ($calcStatus / 5) + 0.8);
                     tr
