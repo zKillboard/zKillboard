@@ -3,8 +3,8 @@
 function handler($request, $response, $args, $container) {
     global $redis;
 
-    session_destroy();
-    session_start();
+    $_SESSION = [];
+    session_regenerate_id(true);
 
     $sessID = session_id();
     $uri = @$_SERVER['HTTP_REFERER'];

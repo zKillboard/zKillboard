@@ -86,7 +86,17 @@ $app = AppFactory::create();
 
 // Set up the session if we need it for this uri
 if (substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' || $uri == '/navbar/' || substr($uri, 0, 9) == '/account/' || $uri == '/logout/' || substr($uri, 0, 4) == '/ccp' || substr($uri, 0, 20) == "/cache/bypass/login/") {
-    session_set_save_handler(new MongoSessionHandler($mdb->getCollection("sessions")), true);
+    ini_set('session.use_strict_mode', '1');
+    ini_set('session.use_only_cookies', '1');
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'domain' => '',
+        'secure' => true,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+    session_set_save_handler(new MongoSessionHandler($mdb->getCollection("sessions"), $redis), true);
     session_start();
 }
 

@@ -49,6 +49,7 @@ function handler($request, $response, $args, $container)
 		if ($userInfo == null || sizeof($userInfo) == 0) {
 			return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,error,login'), 'error.pug', ['message' => 'CCP SSO is failed to send us the user information, please try logging in again.']);
 		}
+		session_regenerate_id(true);
 
 		$charID = (int) $userInfo['characterID'];
 		$charName = $userInfo['characterName'];
