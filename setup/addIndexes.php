@@ -1279,6 +1279,13 @@ echo "Done\n";
 echo "Creating index : 'updatedAt' => 1 ... ";
 $sessions->createIndex(['updatedAt' => 1], ['expireAfterSeconds' => 7776000]);
 echo "Done\n";
+echo "Creating index : 'createdAt' => 1 ... ";
+$sessions->createIndex(['createdAt' => 1], [
+    'name' => 'anonymous_sessions_ttl',
+    'expireAfterSeconds' => 1209600,
+    'partialFilterExpression' => ['characterID' => null],
+]);
+echo "Done\n";
 
 // shortener
 echo "\nCreating collection shortener ... ";
