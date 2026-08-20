@@ -1,5 +1,36 @@
 .row
   span.col-lg-6
+    - $killmailDelay = (int) ($data['killmailDelay'] ?? 0);
+    h3 Killmail Delay
+    form.mb-4(name="killmaildelay" method="post" action="/account/api/")
+      .mb-2
+        label.form-label(for="dls-slider")
+          | Delay killmails?
+          = ' '
+          a(href="/information/delayed/" rel="tooltip" title="Learn more about delayed killmails")
+            i.fas.fa-circle-question
+        input#dls-slider.form-range(type="range" name="killmailDelay" min="0" max="5" step="1" value=$killmailDelay)
+        .d-flex.justify-content-between.small.text-muted(aria-hidden="true")
+          span ASAP
+          span 1h
+          span 3h
+          span 8h
+          span 24h
+          span 72h
+        output#dls-value.d-block.mt-1
+          if ($killmailDelay == 0)
+            | ASAP - Killmails will post as they are received.
+          elseif ($killmailDelay == 1)
+            | 1 hour - Killmails will post when they are 1 hour old.
+          elseif ($killmailDelay == 2)
+            | 3 hours - Killmails will post when they are 3 hours old.
+          elseif ($killmailDelay == 3)
+            | 8 hours - Killmails will post when they are 8 hours old.
+          elseif ($killmailDelay == 4)
+            | 24 hours - Killmails will post when they are 24 hours old.
+          else
+            | 72 hours - Killmails will post when they are 72 hours (3 days) old.
+      input.btn.btn-primary(type="submit" value="Save Delay")
     h3 Scopes
     table.table.table-striped.table-sm.col-lg-4
       thead

@@ -124,6 +124,12 @@ function handler($request, $response, $args, $container) {
 if ($_POST) {
 	$deletekeyid = Util::getPost('deletekeyid');
 	$deleteentity = Util::getPost('deleteentity');
+	$killmailDelay = Util::getPost('killmailDelay');
+	if (isset($killmailDelay)) {
+		$killmailDelay = Util::parseKillmailDelay($killmailDelay);
+		$mdb->set('scopes', ['characterID' => $userID], ['delay' => $killmailDelay], true);
+		User::sendMessage("Your killmail delay was updated to $killmailDelay");
+	}
 	// Delete an apikey
 	if (isset($deletekeyid)) {
 		Util::zout("Character $userID deleting scope " . $deletekeyid);
@@ -211,6 +217,13 @@ $data['trackernotification'] = UserConfig::get('trackernotification');
 $data['loginPage'] = UserConfig::get('loginPage', 'character');
 $data['shinyPortraits'] = UserConfig::get('shinyPortraits', 'true');
 $data['apiScopes'] = $mdb->find("scopes", ['characterID' => (int) $userID], ['scope' => 1]);
+$data['killmailDelay'] = 0;
+foreach ($data['apiScopes'] as $scope) {
+	if (in_array($scope['scope'] ?? '', ['esi-killmails.read_killmails.v1', 'esi-killmails.read_corporation_killmails.v1'])) {
+		$data['killmailDelay'] = Util::parseKillmailDelay($scope['delay'] ?? 0);
+		break;
+	}
+}
 $data['history'] = User::getPaymentHistory($userID);
 $data['log'] = ZLog::get($userID);
 

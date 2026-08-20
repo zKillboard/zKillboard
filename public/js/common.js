@@ -55,10 +55,8 @@ $(document).ready(function () {
     addKillListClicks();
 
     $(document).on('keypress', checkForSearchKey);
-    $('#dls-slider').on('change input', updateDLS);
-    $('#dls-slider').on('click touchstart mousedown', stopPropagation);
-    $('#login-delay-slider').on('change input', updateDLS);
-    $('#login-delay-slider').on('click touchstart mousedown', stopPropagation);
+    $(document).on('change input', '#dls-slider, #login-delay-slider', updateDLS);
+    $(document).on('click touchstart mousedown', '#dls-slider, #login-delay-slider', stopPropagation);
     $(document).on('click', 'a[href^="/ccpoauth2/"]:not([href^="/ccpoauth2-"])', interceptLoginClick);
     $(document).on('click', 'a[href^="/account/tracker/"]', handleTrackerClick);
     $(document).on('click', '[data-zkb-close-tooltip]', closeLegacyTooltipClick);
