@@ -117,7 +117,7 @@ Character labels are inferred from killmails zKillboard received during the past
 
 - **AWOX** — The character dealt the final blow to a member of their own player corporation. The number is how many qualifying final blows were recorded.
 - **FC** — The character shows fleet-command signals through non-victim appearances in a Monitor, a Command Ship, or fleets with at least 25 attackers. The score adds 20 points per Monitor appearance (maximum 100), 2 per Command Ship appearance (maximum 40), and 1 per five large-fleet appearances (maximum 20). The combined score produces **Low** (35+), **Medium** (60+), or **High** (100+), so large-fleet participation cannot earn the label by itself.
-- **BAIT** — The character lost a PvP ship with a fitted value below 10 million ISK, followed within five minutes by another PvP killmail in the same system, within 250 km, with at least two attackers, where the bait pilot was not present. Levels are **Low** (2–4 matches), **Medium** (5–9), and **High** (10+).
+- **BAIT** — Outside high-security space and more than 0.1 AU from a stargate, the character lost a PvP ship with a fitted value below 10 million ISK, followed within five minutes by another PvP killmail in the same system, within 250 km, with at least three attackers, where the bait pilot was not present. Levels are **Low** (4–6 matches), **Medium** (7–11), and **High** (12+).
 - **CYNO** — The character lost a ship with a fitted standard, covert, or industrial cynosural field module. The number is the total qualifying fitted-cyno losses.
 - **GANKER** — The character appeared as an attacker on at least 10 killmails classified by zKillboard as high-security-space ganks. The number is the qualifying gank count.
 

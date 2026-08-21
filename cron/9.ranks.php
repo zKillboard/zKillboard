@@ -280,9 +280,25 @@ function materializeBait($completeKey, $date, $firstKillID)
     Util::out('Calculating bait');
     $runID = "$date:" . time();
     $updated = Mdb::now();
+    $gatePositionsBySystem = [];
+    $cursor = $mdb->getCollection('sde_mapStargates')->find(
+        [],
+        ['projection' => ['_id' => 0, 'solarSystemID' => 1, 'position' => 1]]
+    );
+    foreach ($cursor as $row) {
+        $systemID = (int) ($row['solarSystemID'] ?? 0);
+        $position = $row['position'] ?? null;
+        if ($systemID <= 0 || !isset($position['x'], $position['y'], $position['z'])) continue;
+        $gatePositionsBySystem[$systemID][] = [
+            'x' => (float) $position['x'],
+            'y' => (float) $position['y'],
+            'z' => (float) $position['z'],
+        ];
+    }
+    $gateDistanceSquared = pow(149597870700 * 0.1, 2);
     $pendingBySystem = [];
     $baitCounts = [];
-    $processBatch = function ($events) use (&$pendingBySystem, &$baitCounts, $mdb) {
+    $processBatch = function ($events) use (&$pendingBySystem, &$baitCounts, $mdb, $gatePositionsBySystem, $gateDistanceSquared) {
         $potentialBySystem = [];
         foreach ($pendingBySystem as $systemID => $losses) {
             foreach ($losses as $loss) $potentialBySystem[$systemID][] = $loss['time'];
@@ -369,6 +385,17 @@ function materializeBait($completeKey, $date, $firstKillID)
             }
 
             if ($event['isCheapLoss'] && $position != null) {
+                $nearGate = false;
+                foreach ($gatePositionsBySystem[$systemID] ?? [] as $gatePosition) {
+                    $x = $position['x'] - $gatePosition['x'];
+                    $y = $position['y'] - $gatePosition['y'];
+                    $z = $position['z'] - $gatePosition['z'];
+                    if (($x * $x) + ($y * $y) + ($z * $z) <= $gateDistanceSquared) {
+                        $nearGate = true;
+                        break;
+                    }
+                }
+                if ($nearGate) continue;
                 $pendingBySystem[$systemID][] = [
                     'characterID' => $event['characterID'],
                     'time' => $event['time'],
@@ -389,6 +416,7 @@ function materializeBait($completeKey, $date, $firstKillID)
                 'attackerCount' => 1,
                 'categoryID' => 1,
                 'system.solarSystemID' => 1,
+                'system.security' => 1,
                 'zkb.fittedValue' => 1,
                 'involved' => ['$elemMatch' => ['isVictim' => true]],
             ],
@@ -411,9 +439,10 @@ function materializeBait($completeKey, $date, $firstKillID)
             'time' => $dttm->toDateTime()->getTimestamp(),
             'systemID' => $systemID,
             'characterID' => $characterID,
-            'isFollowUp' => $isPvp && (int) ($row['attackerCount'] ?? 0) >= 2,
+            'isFollowUp' => $isPvp && (int) ($row['attackerCount'] ?? 0) >= 3,
             'isCheapLoss' => $isPvp
                 && $characterID > 0
+                && (float) ($row['system']['security'] ?? 1) < 0.45
                 && (int) ($row['categoryID'] ?? 0) == 6
                 && (int) ($victim['groupID'] ?? 0) != 29
                 && (float) ($row['zkb']['fittedValue'] ?? 10000000) < 10000000,
@@ -427,8 +456,8 @@ function materializeBait($completeKey, $date, $firstKillID)
 
     $operations = [];
     foreach ($baitCounts as $characterID => $count) {
-        if ($count < 2) continue;
-        $level = $count >= 10 ? 'high' : ($count >= 5 ? 'medium' : 'low');
+        if ($count < 4) continue;
+        $level = $count >= 12 ? 'high' : ($count >= 7 ? 'medium' : 'low');
         $operations[] = ['updateOne' => [
             ['type' => 'characterID', 'id' => $characterID],
             ['$set' => [
