@@ -218,8 +218,8 @@ function popChar(ch) {
     if (ch.unknown == true) labels.push('no known kb activity');
     else if (ch.inactive == true) labels.push('no recent kb activity');
     ch.stats.gankerCount = Number(ch.stats.gankerCount) | 0;
-    if (ch.stats.gankerCount >= 10) badges.push(`<span class="badge bg-danger text-white" title="${ch.stats.gankerCount} past-year highsec ganks">GANKER (${ch.stats.gankerCount})</span>`);
-    if (ch.stats.awoxCount > 0) badges.push(`<span class="badge bg-danger">AWOX (${ch.stats.awoxCount})</span>`);
+    if (ch.stats.gankerCount >= 10) badges.push(`<span class="badge zkb-label-danger text-white" title="${ch.stats.gankerCount} past-year highsec ganks">GANKER (${ch.stats.gankerCount})</span>`);
+    if (ch.stats.awoxCount > 0) badges.push(`<span class="badge zkb-label-danger text-white">AWOX (${ch.stats.awoxCount})</span>`);
     if (ch.stats.fc) {
         let fcLevel = String(ch.stats.fc.level || '').toUpperCase();
         let fcTitle = `Past-year FC signal: ${Number(ch.stats.fc.monitorAppearances) || 0} Monitor, ${Number(ch.stats.fc.commandShipAppearances) || 0} command-ship, ${Number(ch.stats.fc.largeFleetAppearances) || 0} large-fleet appearances`;
@@ -228,7 +228,7 @@ function popChar(ch) {
     if (ch.stats.bait) {
         let baitLevel = String(ch.stats.bait.level || '').toUpperCase();
         let baitCount = Number(ch.stats.bait.count) || 0;
-        let baitClass = baitLevel == 'HIGH' ? 'bg-danger' : (baitLevel == 'LOW' ? 'bg-secondary' : '');
+        let baitClass = baitLevel == 'HIGH' ? 'zkb-label-danger' : (baitLevel == 'LOW' ? 'bg-secondary' : '');
         let baitStyle = baitLevel == 'MEDIUM' ? ' style="background-color: #963800;"' : '';
         badges.push(`<span class="badge text-white ${baitClass}"${baitStyle} title="${baitCount} past-year bait matches">BAIT ${baitLevel} (${baitCount})</span>`);
     }

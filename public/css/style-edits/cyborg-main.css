@@ -36,6 +36,7 @@
 	font-size: 14px;
 	--zk-color-green: #008000;
 	--zk-color-red: #ff0000;
+	--zk-loss-background: #2F0202;
 }
 
 body {
@@ -170,7 +171,7 @@ h6, .h6 {
 }
 
 #killmailstobdy tr.tr-killmail.error > td {
-	background-color: #2F0202;
+	background-color: var(--zk-loss-background);
 }
 
 #killmailstobdy tr.tr-killmail.error:hover > td {
@@ -187,7 +188,11 @@ h6, .h6 {
 
 .table tbody tr.error td
 {
-  background-color: #2F0202;
+  background-color: var(--zk-loss-background);
+}
+
+.zkb-label-danger {
+	background-color: var(--zk-loss-background);
 }
 
 .table tbody tr.winwin td

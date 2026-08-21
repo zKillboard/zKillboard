@@ -21,9 +21,9 @@
       if ($gankerCount >= 10 || $awoxCount > 0 || !empty($fc) || !empty($bait) || !empty($cyno))
         .d-flex.flex-wrap.justify-content-center.gap-1.mt-1(style="width: 128px;")
           if ($gankerCount >= 10)
-            span.badge.bg-danger.text-white(rel="tooltip" title=($gankerCount . ' past-year highsec ganks'))= 'GANKER (' . number_format($gankerCount) . ')'
+            span.badge.zkb-label-danger.text-white(rel="tooltip" title=($gankerCount . ' past-year highsec ganks'))= 'GANKER (' . number_format($gankerCount) . ')'
           if ($awoxCount > 0)
-            span.badge.bg-danger.text-white= 'AWOX (' . number_format($awoxCount) . ')'
+            span.badge.zkb-label-danger.text-white= 'AWOX (' . number_format($awoxCount) . ')'
           if (!empty($fc))
             - $fcLevel = strtoupper((string) ($fc['level'] ?? ''));
             - $fcTitle = 'Past-year FC signal: ' . ((int) ($fc['monitorAppearances'] ?? 0)) . ' Monitor, ' . ((int) ($fc['commandShipAppearances'] ?? 0)) . ' command-ship, ' . ((int) ($fc['largeFleetAppearances'] ?? 0)) . ' large-fleet appearances';
@@ -31,7 +31,7 @@
           if (!empty($bait))
             - $baitLevel = strtoupper((string) ($bait['level'] ?? ''));
             - $baitCount = (int) ($bait['count'] ?? 0);
-            - $baitClass = $baitLevel == 'HIGH' ? 'bg-danger' : ($baitLevel == 'LOW' ? 'bg-secondary' : '');
+            - $baitClass = $baitLevel == 'HIGH' ? 'zkb-label-danger' : ($baitLevel == 'LOW' ? 'bg-secondary' : '');
             - $baitStyle = $baitLevel == 'MEDIUM' ? 'background-color: #963800;' : null;
             span.badge.text-white(class=$baitClass style=$baitStyle rel="tooltip" title=($baitCount . ' past-year bait matches'))= 'BAIT ' . $baitLevel . ' (' . number_format($baitCount) . ')'
           if (!empty($cyno))
