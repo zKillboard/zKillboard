@@ -111,6 +111,20 @@ Points are **final and not subject to debate**. Attempts to argue about point va
 
 ---
 
+### [#](#character-labels) What do the character labels mean?
+
+Character labels are inferred from killmails zKillboard received during the past year. They describe recorded combat patterns, not a pilot's intent or official role.
+
+- **AWOX** — The character dealt the final blow to a member of their own player corporation. The number is how many qualifying final blows were recorded.
+- **FC** — The character shows fleet-command signals through non-victim appearances in a Monitor, a Command Ship, or fleets with at least 25 attackers. The score adds 20 points per Monitor appearance (maximum 100), 2 per Command Ship appearance (maximum 40), and 1 per five large-fleet appearances (maximum 20). The combined score produces **Low** (35+), **Medium** (60+), or **High** (100+), so large-fleet participation cannot earn the label by itself.
+- **BAIT** — The character lost a PvP ship with a fitted value below 10 million ISK, followed within five minutes by another PvP killmail in the same system, within 250 km, with at least two attackers, where the bait pilot was not present. Levels are **Low** (2–4 matches), **Medium** (5–9), and **High** (10+).
+- **CYNO** — The character lost a ship with a fitted standard, covert, or industrial cynosural field module. The number is the total qualifying fitted-cyno losses.
+- **GANKER** — The character appeared as an attacker on at least 10 killmails classified by zKillboard as high-security-space ganks. The number is the qualifying gank count.
+
+Labels are normally recalculated daily. A label is removed after a successful recalculation when the character no longer qualifies within the rolling one-year window.
+
+---
+
 ## 💰 ISK Values
 
 ### [#](#prices) How are prices determined?
