@@ -35,15 +35,19 @@
           td(style="text-align: left")
             if (($rankTable['type'] ?? '') == 'alliance')
               include image_alli.pug
+              = ' '
               include text_alli.pug
             else if (($rankTable['type'] ?? '') == 'corporation')
               include image_corp.pug
+              = ' '
               include text_corp.pug
             else if (($rankTable['type'] ?? '') == 'character')
               include image_char.pug
+              = ' '
               include text_char.pug
             else if (($rankTable['type'] ?? '') == 'shipType')
               include image_ship.pug
+              = ' '
               include text_ship.pug
             else if (($rankTable['type'] ?? '') == 'group')
               include text_shipclass.pug

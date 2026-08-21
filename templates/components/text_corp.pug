@@ -1,6 +1,7 @@
 if (!empty($showImage))
   - $imageSize = 32;
   include image_corp.pug
+  = ' '
 if (!empty($field['executorCorpID']) && !empty($field['executorCorpName']))
   a.wrapplease(href=('/corporation/' . $field['executorCorpID'] . '/'))= $field['executorCorpName']
 else if (($field['corporationID'] ?? 0) != 0)

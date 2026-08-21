@@ -7,4 +7,5 @@ else if (($field['typeID'] ?? 0) != 0)
 if (!empty($showImage))
   - $imageSize = 32;
   include image_item.pug
+  = ' '
 a(href=('/item/' . ($typeID ?? 0) . '/' . ($entitySubpage ?? '')))= $typeName ?? ''
