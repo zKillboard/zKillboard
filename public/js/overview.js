@@ -13,22 +13,23 @@ function zkbInitOverview() {
 	overviewLoadToken++;
 	loadKms(overviewLoadToken, window.location.pathname);
 	loadTops(overviewLoadToken, window.location.pathname, entityID);
-	loadMissingCharacterSecurity(overviewLoadToken, window.location.pathname, entityID);
+	loadCharacterEsiInformation(overviewLoadToken, window.location.pathname, entityID);
 }
 
 window.zkbInitOverview = zkbInitOverview;
-async function loadMissingCharacterSecurity(token, pagePath, pageEntityID) {
-	let target = document.querySelector('[data-zkb-missing-character-security]');
-	let characterID = Number(target ? target.dataset.characterId : pageEntityID);
-	if (!target || !(characterID > 0)) return;
+async function loadCharacterEsiInformation(token, pagePath, pageEntityID) {
+	let securityTarget = document.querySelector('[data-zkb-character-security]');
+	let titleTarget = document.querySelector('[data-zkb-character-title]');
+	let characterID = Number(securityTarget ? securityTarget.dataset.characterId : (titleTarget ? titleTarget.dataset.characterId : pageEntityID));
+	if ((!securityTarget && !titleTarget) || !(characterID > 0)) return;
 
 	let key = `characters:${characterID}`;
 	let cached = await getCachedEsiInfo([key]);
 	let response = cached[key];
-	if (!response) {
+	if (!response || !response.detail || !Object.prototype.hasOwnProperty.call(response.detail, 'character_title_id')) {
 		try {
 			let esiResponse = await fetch(`https://esi.evetech.net/characters/${characterID}/?datasource=tranquility`, {
-				headers: {'Accept': 'application/json', 'X-User-Agent': 'zkillboard.com Character Page'}
+				headers: {'Accept': 'application/json', 'X-Compatibility-Date': '2026-07-21', 'X-User-Agent': 'zkillboard.com Character Page'}
 			});
 			if (!esiResponse.ok) return;
 			let detail = await esiResponse.json();
@@ -39,7 +40,8 @@ async function loadMissingCharacterSecurity(token, pagePath, pageEntityID) {
 					corporation_id: detail.corporation_id,
 					alliance_id: detail.alliance_id,
 					faction_id: detail.faction_id,
-					security_status: detail.security_status
+					security_status: detail.security_status,
+					character_title_id: detail.character_title_id || null
 				}
 			};
 			await cacheEsiInfo([{key: key, data: response}]);
@@ -48,19 +50,44 @@ async function loadMissingCharacterSecurity(token, pagePath, pageEntityID) {
 		}
 	}
 
-	if (!isCurrentOverviewLoad(token, pagePath) || !target.isConnected || Number(target.dataset.characterId) != characterID) return;
-	if (response.detail.security_status == null || response.detail.security_status === '') return;
-	let security = Number(response.detail.security_status);
-	if (!Number.isFinite(security)) return;
-	let calcStatus = Math.min(1, (Math.max(-5, Math.min(5, security)) / 5) + 0.8).toFixed(1);
-	let securityColors = {
-		'1.0': '#2c74e0', '0.9': '#3a9aeb', '0.8': '#4ecef8', '0.7': '#60d9a3', '0.6': '#71e554',
-		'0.5': '#f3fd82', '0.4': '#DC6D07', '0.3': '#ce440f', '0.2': '#bc1117', '0.1': '#722020'
-	};
-	target.textContent = security.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-	target.style.color = securityColors[calcStatus] || '#8d3264';
-	target.classList.remove('text-body-secondary');
-	target.removeAttribute('data-zkb-missing-character-security');
+	if (!isCurrentOverviewLoad(token, pagePath)) return;
+	if (securityTarget && securityTarget.isConnected && Number(securityTarget.dataset.characterId) == characterID && response.detail.security_status != null && response.detail.security_status !== '') {
+		let security = Number(response.detail.security_status);
+		if (Number.isFinite(security)) {
+			let calcStatus = Math.min(1, (Math.max(-5, Math.min(5, security)) / 5) + 0.8).toFixed(1);
+			let securityColors = {
+				'1.0': '#2c74e0', '0.9': '#3a9aeb', '0.8': '#4ecef8', '0.7': '#60d9a3', '0.6': '#71e554',
+				'0.5': '#f3fd82', '0.4': '#DC6D07', '0.3': '#ce440f', '0.2': '#bc1117', '0.1': '#722020'
+			};
+			securityTarget.textContent = security.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+			securityTarget.style.color = securityColors[calcStatus] || '#8d3264';
+		}
+	}
+
+	if (!titleTarget || !titleTarget.isConnected || Number(titleTarget.dataset.characterId) != characterID) return;
+	let titleRow = titleTarget.closest('[data-zkb-character-title-row]');
+	let titleID = response.detail.character_title_id || '';
+	if (titleID == '') {
+		titleTarget.textContent = '';
+		titleTarget.dataset.characterTitleId = '';
+		if (titleRow) titleRow.classList.add('d-none');
+		return;
+	}
+
+	if (titleTarget.dataset.characterTitleId != titleID || titleTarget.textContent.trim() == '' || titleTarget.textContent.trim() == titleID) {
+		let titleName = titleID;
+		try {
+			let titleResponse = await fetch(`/api/character-title/${encodeURIComponent(titleID)}/`);
+			if (titleResponse.ok) {
+				let titleDetail = await titleResponse.json();
+				if (titleDetail.name) titleName = titleDetail.name;
+			}
+		} catch (e) {}
+		if (!isCurrentOverviewLoad(token, pagePath) || !titleTarget.isConnected || Number(titleTarget.dataset.characterId) != characterID) return;
+		titleTarget.textContent = titleName;
+	}
+	titleTarget.dataset.characterTitleId = titleID;
+	if (titleRow) titleRow.classList.remove('d-none');
 }
 
 function updateStats(stats) {
