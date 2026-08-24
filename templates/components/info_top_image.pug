@@ -14,16 +14,13 @@
           i
             button.btn.btn-link.btn-sm.p-0(type="button" data-bs-toggle="modal" data-bs-target="#largeImage") Enlarge
       - $gankerCount = (int) ($statisticsData['gankerCount'] ?? 0);
-      - $awoxCount = (int) ($statisticsData['awoxCount'] ?? 0);
       - $fc = is_object($statisticsData['fc'] ?? null) ? (array) $statisticsData['fc'] : ($statisticsData['fc'] ?? []);
       - $bait = is_object($statisticsData['bait'] ?? null) ? (array) $statisticsData['bait'] : ($statisticsData['bait'] ?? []);
       - $cyno = is_object($statisticsData['cyno'] ?? null) ? (array) $statisticsData['cyno'] : ($statisticsData['cyno'] ?? []);
-      if ($gankerCount >= 10 || $awoxCount > 0 || !empty($fc) || !empty($bait) || !empty($cyno))
+      if ($gankerCount >= 10 || !empty($fc) || !empty($bait) || !empty($cyno))
         .d-flex.flex-wrap.justify-content-center.gap-1.mt-1(style="width: 128px;")
           if ($gankerCount >= 10)
             span.badge.zkb-label-danger.text-white(rel="tooltip" title=($gankerCount . ' past-year highsec ganks'))= 'GANKER (' . number_format($gankerCount) . ')'
-          if ($awoxCount > 0)
-            span.badge.zkb-label-danger.text-white= 'AWOX (' . number_format($awoxCount) . ')'
           if (!empty($fc))
             - $fcLevel = strtoupper((string) ($fc['level'] ?? ''));
             - $fcTitle = 'Past-year FC signal: ' . ((int) ($fc['monitorAppearances'] ?? 0)) . ' Monitor, ' . ((int) ($fc['commandShipAppearances'] ?? 0)) . ' command-ship, ' . ((int) ($fc['largeFleetAppearances'] ?? 0)) . ' large-fleet appearances';
