@@ -517,9 +517,21 @@ function handler($request, $response, $args, $container)
 		}
 	}
 
-	if ($key == 'character' && $pageType == 'trophies' && $disqualified == 0) {
-		$trophies = $mdb->findDoc('trophies', ['id' => (int) $id]);
-		$extra['trophies'] = $trophies ? $trophies['trophies'] : Trophies::getTrophies($id);
+	if ($key == 'character' && $disqualified == 0) {
+		$includes = $pageType == 'trophies' ? [] : ['trophies.levelCount' => 1, 'trophies.maxLevelCount' => 1, 'trophies.completedPct' => 1, 'trophies.boxes' => 1];
+		$trophyDoc = $mdb->findDoc('trophies', ['id' => (int) $id], [], $includes);
+		$storedTrophies = $trophyDoc ? $trophyDoc['trophies'] : null;
+		if ($pageType == 'trophies') {
+			$extra['trophies'] = $storedTrophies ?: Trophies::getTrophies($id);
+		}
+		if (($storedTrophies['levelCount'] ?? 0) > 0) {
+			$extra['trophySummary'] = [
+				'levelCount' => (int) $storedTrophies['levelCount'],
+				'maxLevelCount' => (int) ($storedTrophies['maxLevelCount'] ?? 0),
+				'completedPct' => (float) ($storedTrophies['completedPct'] ?? 0),
+				'boxes' => max(0, min(5, (int) ($storedTrophies['boxes'] ?? 0))),
+			];
+		}
 	}
 
 	if ($pageType == 'ranks') {

@@ -313,18 +313,6 @@ block script
     }
 
 block modal
-  if (!empty($detailData['characterID']) && ($key ?? '') == 'character')
-    #largeImage.modal.fade(tabindex="-1" aria-labelledby="largeImageLabel" aria-hidden="true")
-      .modal-dialog.modal-dialog-centered.modal-lg
-        .modal-content
-          .modal-header
-            h5#largeImageLabel.modal-title= $detailData['name'] ?? ($detailData['characterName'] ?? '')
-            button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
-          .modal-body.text-center
-            - $imageSize = 512;
-            - $imageStyle = 'max-width: min(90vw, 640px) !important; max-height: 75vh !important; width: auto !important; height: auto !important;';
-            - $field = $detailData;
-            include components/image_char.pug
   - $activity = is_object($extraData['activity'] ?? null) ? (array) $extraData['activity'] : ($extraData['activity'] ?? []);
   if ($pageType == 'overview' && ($activity['max'] ?? 0) > 0)
     #heatmap.modal.fade(tabindex="-1" aria-labelledby="heatmapLabel" aria-hidden="true")

@@ -9,10 +9,11 @@
     .text-center
       include image_char.pug
       br
-      small
-        small
-          i
-            button.btn.btn-link.btn-sm.p-0(type="button" data-bs-toggle="modal" data-bs-target="#largeImage") Enlarge
+      - $trophySummary = is_object($extraData['trophySummary'] ?? null) ? (array) $extraData['trophySummary'] : ($extraData['trophySummary'] ?? []);
+      if (!empty($trophySummary))
+        - $trophyTitle = number_format((float) ($trophySummary['levelCount'] ?? 0), 0) . ' / ' . number_format((float) ($trophySummary['maxLevelCount'] ?? 0), 0) . ' trophies (' . number_format((float) ($trophySummary['completedPct'] ?? 0), 0) . '%)';
+        a(href=('/character/' . ($detailData['characterID'] ?? 0) . '/trophies/') title=$trophyTitle aria-label=$trophyTitle)
+          img(src=('/img/level/level' . ($trophySummary['boxes'] ?? 0) . '.gif') alt=$trophyTitle)
       - $gankerCount = (int) ($statisticsData['gankerCount'] ?? 0);
       - $fc = is_object($statisticsData['fc'] ?? null) ? (array) $statisticsData['fc'] : ($statisticsData['fc'] ?? []);
       - $bait = is_object($statisticsData['bait'] ?? null) ? (array) $statisticsData['bait'] : ($statisticsData['bait'] ?? []);

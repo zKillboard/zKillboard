@@ -92,13 +92,13 @@ class Trophies
             $a = in_array(substr(strtolower($groupName), 0, 1), ['a', 'e', 'i', 'o', 'u']) ? 'an' : 'a';
 
             $values = @$stats['groups'][$groupID];
-            $level = self::getLevel(@$values['shipsDestroyed']);
+            $level = self::getLevel(@$values['shipsDestroyed'], 5);
             $levelCount += ($level > 0 ? 1 : 0);
-            $trophies['trophies']['Killed']["Kill $a $groupName"] = ['met' => (@$values['shipsDestroyed'] > 0), 'level' => $level, 'value' => (int) @$values['shipsDestroyed'], 'next' => static::getNext(@$values['shipsDestroyed']), 'link' => "/character/$charID/kills/reset/group/$groupID/losses/"];
+            $trophies['trophies']['Killed']["Kill $a $groupName"] = ['met' => (@$values['shipsDestroyed'] > 0), 'level' => $level, 'value' => (int) @$values['shipsDestroyed'], 'next' => static::getNext(@$values['shipsDestroyed'], 5), 'link' => "/character/$charID/kills/reset/group/$groupID/losses/"];
 
-            $level = static::getLevel(@$values['shipsLost'], 5);
+            $level = static::getLevel(@$values['shipsLost'], 2);
             $levelCount += ($level > 0 ? 1 : 0);
-            $trophies['trophies']['Lost']["Lose $a $groupName"] = ['met' => (@$values['shipsLost'] > 0), 'level' => $level, 'value' => (int) @$values['shipsLost'], 'next' => static::getNext(@$values['shipsLost'], 5), 'link' => "/character/$charID/losses/group/$groupID/"];
+            $trophies['trophies']['Lost']["Lose $a $groupName"] = ['met' => (@$values['shipsLost'] > 0), 'level' => $level, 'value' => (int) @$values['shipsLost'], 'next' => static::getNext(@$values['shipsLost'], 2), 'link' => "/character/$charID/losses/group/$groupID/"];
         }
 
         $trophies['levelCount'] = $levelCount;
@@ -185,40 +185,26 @@ class Trophies
         return $conditionMet ? 1 : 0;
     }
 
-    public static function getLevel($value, $divider = 1)
+    public static function getLevel($value, $base = null)
     {
         $value = (int) $value;
-        if ($value >= 5) return 5;
-        if ($value >= 4) return 4;
-        if ($value >= 3) return 3;
-        if ($value >= 2) return 2;
-        if ($value >= 1) return 1;
-        return 0;
+        if ($value <= 0) return 0;
+        if ($base === null) return min(5, $value);
 
-        if ($value == 0) return 0;
-        return 5;
-        if ($value <= 0) {
-            return 0;
+        $base = max(2, (int) $base);
+        $level = 1;
+        $next = $base;
+        while ($level < 5 && $value >= $next) {
+            ++$level;
+            $next *= $base;
         }
-        if ($value < (5 / $divider)) {
-            return 1;
-        }
-        if ($value < (10 / $divider)) {
-            return 2;
-        }
-        if ($value < (15 / $divider)) {
-            return 3;
-        }
-        if ($value < (20 / $divider)) {
-            return 4;
-        }
-
-        return 5;
+        return $level;
     }
 
-    public static function getNext($value, $divider = 1)
+    public static function getNext($value, $base = null)
     {
-        return $value + 1;
+        $level = static::getLevel($value, $base);
+        if ($level >= 5) return null;
+        return $base === null ? $level + 1 : pow(max(2, (int) $base), $level);
     }
 }
-

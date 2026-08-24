@@ -265,7 +265,7 @@ function calcStats($row, $maxSequence)
 
 
     if (@$stats['shipsDestroyed'] > 10 && @$stats['shipsDestroyed'] > @$stats['nextTopRecalc']) $stats['calcAlltime'] = true;
-	if ($type == 'characterID' && @$stats['shipsDestroyed'] > 1000) $stats['calcTrophies'] = true;
+	if ($type == 'characterID' && @$stats['shipsDestroyed'] >= 100) $stats['calcTrophies'] = true;
     // save it
     if ($resetInProgress) {
         $mdb->save('statistics', $stats);

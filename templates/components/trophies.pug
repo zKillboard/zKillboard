@@ -43,3 +43,18 @@ div
                 td(style="width: 0.5em;")
                   span.float-end
                     img(src=('/img/level/level' . ($value['level'] ?? 0) . '.gif') title=(!empty($value['noNext']) ? 'Hardcoded level (for now)' : ('At: ' . ($value['value'] ?? 0) . ((($value['level'] ?? 0) < 5) ? (' Next Level: ' . ($value['next'] ?? 0)) : ''))) alt=('Trophy level ' . ($value['level'] ?? 0)))
+    section.mt-4(aria-labelledby="trophy-faq-title")
+      h4#trophy-faq-title Trophy FAQ
+      dl
+        dt How do trophy levels work?
+        dd.mb-3 Each trophy has five levels. The number before the slash is the character's current value; the number after it is the next level's target. A fully filled level image means that trophy has reached level five.
+        dt What are the Killed trophy thresholds?
+        dd.mb-3 Ship-group Killed trophies reach levels one through five at 1, 5, 25, 125, and 625 kills.
+        dt What are the Lost trophy thresholds?
+        dd.mb-3 Ship-group Lost trophies reach levels one through five at 1, 2, 4, 8, and 16 losses.
+        dt What do Level / Total and Completed mean?
+        dd.mb-3 Level / Total is the character's aggregate trophy completion score compared with the maximum currently available. Completed is that score shown as a percentage, and the image beside it is a five-step summary of the percentage. Totals can change when trophies or published ship groups change.
+        dt When are trophies updated?
+        dd.mb-3 Characters with at least 100 recorded kills qualify for pre-calculation. Eligible trophy records are refreshed by a background job no more than once every 24 hours after their statistics are updated. This tab can calculate current results on demand, but the trophy image beneath a portrait is shown only when a pre-calculated record exists.
+        dt What do the green names and arrows mean?
+        dd Green means the character has met that trophy's basic requirement. Select an arrow to open the related filtered kill or loss records.
