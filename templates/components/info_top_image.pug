@@ -20,21 +20,21 @@
       if ($gankerCount >= 10 || !empty($fc) || !empty($bait) || !empty($cyno))
         .d-flex.flex-wrap.justify-content-center.gap-1.mt-1(style="width: 128px;")
           if ($gankerCount >= 10)
-            span.badge.zkb-label-danger.text-white(rel="tooltip" title=($gankerCount . ' past-year highsec ganks'))= 'GANKER (' . number_format($gankerCount) . ')'
+            a.badge.zkb-label-danger.text-white.text-decoration-none(href="/information/faq/#character-labels" rel="tooltip" title=($gankerCount . ' past-year highsec ganks'))= 'GANKER (' . number_format($gankerCount) . ')'
           if (!empty($fc))
             - $fcLevel = strtoupper((string) ($fc['level'] ?? ''));
             - $fcTitle = 'Past-year FC signal: ' . ((int) ($fc['monitorAppearances'] ?? 0)) . ' Monitor, ' . ((int) ($fc['commandShipAppearances'] ?? 0)) . ' command-ship, ' . ((int) ($fc['largeFleetAppearances'] ?? 0)) . ' large-fleet appearances';
-            span.badge.text-white(style="background-color: #963800;" rel="tooltip" title=$fcTitle)= 'FC (' . $fcLevel . ')'
+            a.badge.text-white.text-decoration-none(href="/information/faq/#character-labels" style="background-color: #963800;" rel="tooltip" title=$fcTitle)= 'FC (' . $fcLevel . ')'
           if (!empty($bait))
             - $baitLevel = strtoupper((string) ($bait['level'] ?? ''));
             - $baitCount = (int) ($bait['count'] ?? 0);
             - $baitClass = $baitLevel == 'HIGH' ? 'zkb-label-danger' : ($baitLevel == 'LOW' ? 'bg-secondary' : '');
             - $baitStyle = $baitLevel == 'MEDIUM' ? 'background-color: #963800;' : null;
-            span.badge.text-white(class=$baitClass style=$baitStyle rel="tooltip" title=($baitCount . ' past-year bait matches'))= 'BAIT ' . $baitLevel . ' (' . number_format($baitCount) . ')'
+            a.badge.text-white.text-decoration-none(href="/information/faq/#character-labels" class=$baitClass style=$baitStyle rel="tooltip" title=($baitCount . ' past-year bait matches'))= 'BAIT ' . $baitLevel . ' (' . number_format($baitCount) . ')'
           if (!empty($cyno))
             - $cynoCount = (int) ($cyno['count'] ?? 0);
             - $cynoTitle = 'Past-year fitted cynos: ' . ((int) ($cyno['standard'] ?? 0)) . ' standard, ' . ((int) ($cyno['covert'] ?? 0)) . ' covert, ' . ((int) ($cyno['industrial'] ?? 0)) . ' industrial';
-            span.badge.text-white(style="background-color: #633399;" rel="tooltip" title=$cynoTitle)= 'CYNO (' . number_format($cynoCount) . ')'
+            a.badge.text-white.text-decoration-none(href="/information/faq/#character-labels" style="background-color: #633399;" rel="tooltip" title=$cynoTitle)= 'CYNO (' . number_format($cynoCount) . ')'
       br
   if (!empty($detailData['corporationID']) && ($key ?? '') == 'corporation')
     include image_corp.pug
