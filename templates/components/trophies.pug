@@ -43,6 +43,17 @@ div
                 td(style="width: 0.5em;")
                   span.float-end
                     img(src=('/img/level/level' . ($value['level'] ?? 0) . '.gif') title=(!empty($value['noNext']) ? 'Hardcoded level (for now)' : ('At: ' . ($value['value'] ?? 0) . ((($value['level'] ?? 0) < 5) ? (' Next Level: ' . ($value['next'] ?? 0)) : ''))) alt=('Trophy level ' . ($value['level'] ?? 0)))
+    - $trophyCalculation = is_object($extra['trophyCalculation'] ?? null) ? (array) $extra['trophyCalculation'] : ($extra['trophyCalculation'] ?? []);
+    - $trophyUpdated = (int) ($trophyCalculation['updated'] ?? 0);
+    p.small.text-body-secondary.mt-2.mb-0
+      strong Last calculated:
+      if ($trophyUpdated > 0)
+        time(datetime=gmdate('c', $trophyUpdated))= ' ' . gmdate('Y-m-d H:i', $trophyUpdated) . ' UTC'
+      else
+        |  Never
+      |  &middot;&nbsp;
+      strong Pending calculation:
+      = !empty($trophyCalculation['pending']) ? ' Yes' : ' No'
     section.mt-4(aria-labelledby="trophy-faq-title")
       h4#trophy-faq-title Trophy FAQ
       dl

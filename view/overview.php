@@ -523,6 +523,10 @@ function handler($request, $response, $args, $container)
 		$storedTrophies = $trophyDoc ? $trophyDoc['trophies'] : null;
 		if ($pageType == 'trophies') {
 			$extra['trophies'] = $storedTrophies ?: Trophies::getTrophies($id);
+			$extra['trophyCalculation'] = [
+				'updated' => (int) ($storedTrophies['calcTrophies_updated'] ?? 0),
+				'pending' => !empty($statistics['calcTrophies']),
+			];
 		}
 		if (($storedTrophies['levelCount'] ?? 0) > 0) {
 			$extra['trophySummary'] = [
