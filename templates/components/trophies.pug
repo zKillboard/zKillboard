@@ -1,6 +1,11 @@
 div
   if (!empty($extra['trophies']))
     - $trophies = is_object($extra['trophies']) ? (array) $extra['trophies'] : $extra['trophies'];
+    - $levelCount = (int) ($trophies['levelCount'] ?? 0);
+    - $maxLevelCount = (int) ($trophies['maxLevelCount'] ?? 0);
+    - $boxes = max(0, min(5, (int) ($trophies['boxes'] ?? 0)));
+    - $nextBoxLevel = $boxes < 5 && $maxLevelCount > 0 ? (int) ceil($maxLevelCount * ($boxes + 1) / 5) : null;
+    - $overallTrophyTitle = 'At: ' . $levelCount . ($nextBoxLevel !== null ? (' Next Level: ' . $nextBoxLevel) : '');
     .row.g-3
       fieldset.col-12.col-lg-4
         legend Trophies
@@ -10,10 +15,10 @@ div
             th Completed
             th
           tr
-            td= ($trophies['levelCount'] ?? 0) . ' / ' . ($trophies['maxLevelCount'] ?? 0)
+            td= $levelCount . ' / ' . $maxLevelCount
             td= ($trophies['completedPct'] ?? 0) . '%'
             td
-              img(src=('https://zkillboard.com/img/level/level' . ($trophies['boxes'] ?? 0) . '.gif') alt=('Trophy completion level ' . ($trophies['boxes'] ?? 0)))
+              img(src=('https://zkillboard.com/img/level/level' . $boxes . '.gif') title=$overallTrophyTitle alt=('Trophy completion level ' . $boxes))
     .row.g-3
       each $conditions, $category in ($trophies['trophies'] ?? [])
         - $conditions = is_object($conditions) ? (array) $conditions : $conditions;
