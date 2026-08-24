@@ -100,6 +100,7 @@ class Util
 				case 'daily':
 				case 'ranks':
 				case 'trophies':
+				case 'scanalyzer':
 				case 'wars':
 				case 'supers':
 				case 'corpstats':

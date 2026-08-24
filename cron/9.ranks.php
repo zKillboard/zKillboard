@@ -21,6 +21,8 @@ $today = date('Ymd');
 $alltimeDate = date('Ymd', time() - (3600 * 4));
 $started = time();
 $recentShipsCompleteKey = "zkb:recentShipsCalculated:$today";
+$affiliatesCompleteKey = "zkb:affiliatesCalculated:$today";
+$associatesCompleteKey = "zkb:associatesCalculated:$today";
 $topShipsCompleteKey = "zkb:topShipsCalculated:$today";
 $fcCompleteKey = "zkb:fcCalculated:$today";
 $awoxCountsCompleteKey = "zkb:awoxCountsCalculated:$today";
@@ -40,6 +42,8 @@ $jobs = [
 if (hasArg('--reset-complete') || hasArg('--recalculate')) {
     resetCompleteKeys($jobs);
     $kvc->del($recentShipsCompleteKey);
+    $kvc->del($affiliatesCompleteKey);
+    $kvc->del($associatesCompleteKey);
     $kvc->del($topShipsCompleteKey);
     $kvc->del($fcCompleteKey);
     $kvc->del($awoxCountsCompleteKey);
@@ -56,6 +60,10 @@ foreach ($jobs as $job) {
     if ($job['epoch'] == 'recent' && $job['scope'] == 'all') {
         materializeShips($recentShipsCompleteKey, $today, 'ninetyDays', 'recentShips');
         if (time() - $started > 60) exit();
+        materializeAffiliates($affiliatesCompleteKey, $today);
+        if (time() - $started > 60) exit();
+        materializeAssociates($associatesCompleteKey, $today);
+        if (time() - $started > 60) exit();
         $yearAgo = strtotime('-1 year');
         $firstKillID = MongoFilter::getFirstKillID(date('Y', $yearAgo), date('n', $yearAgo), date('j', $yearAgo));
         materializeShips($topShipsCompleteKey, $today, 'killmails', 'topShips', $firstKillID, $fcCompleteKey);
@@ -69,6 +77,174 @@ foreach ($jobs as $job) {
         materializeGankers($gankerCompleteKey, $today, $firstKillID);
         if (time() - $started > 60) exit();
     }
+}
+
+function materializeAffiliates($completeKey, $date)
+{
+    global $kvc, $mdb;
+
+    if ($kvc->get($completeKey) == true) return;
+
+    Util::out('Calculating affiliates');
+    $runID = "$date:" . time();
+    $updated = Mdb::now();
+    $pipeline = [
+        ['$match' => ['labels' => 'pvp']],
+        ['$project' => [
+            'attackers' => ['$setUnion' => [[
+                '$map' => [
+                    'input' => ['$filter' => [
+                        'input' => '$involved',
+                        'as' => 'pilot',
+                        'cond' => ['$and' => [
+                            ['$eq' => ['$$pilot.isVictim', false]],
+                            ['$gt' => [['$ifNull' => ['$$pilot.characterID', 0]], 3999999]],
+                        ]],
+                    ]],
+                    'as' => 'pilot',
+                    'in' => [
+                        'characterID' => '$$pilot.characterID',
+                        'allianceID' => ['$ifNull' => ['$$pilot.allianceID', 0]],
+                    ],
+                ],
+            ], []]],
+            'allianceIDs' => ['$setUnion' => [[
+                '$map' => [
+                    'input' => ['$filter' => [
+                        'input' => '$involved',
+                        'as' => 'pilot',
+                        'cond' => ['$and' => [
+                            ['$eq' => ['$$pilot.isVictim', false]],
+                            ['$gt' => [['$ifNull' => ['$$pilot.allianceID', 0]], 0]],
+                        ]],
+                    ]],
+                    'as' => 'pilot',
+                    'in' => '$$pilot.allianceID',
+                ],
+            ], []]],
+        ]],
+        ['$unwind' => '$attackers'],
+        ['$set' => ['affiliateAllianceIDs' => ['$setDifference' => [
+            '$allianceIDs',
+            [['$ifNull' => ['$attackers.allianceID', 0]]],
+        ]]]],
+        ['$unwind' => '$affiliateAllianceIDs'],
+        ['$group' => [
+            '_id' => ['characterID' => '$attackers.characterID', 'allianceID' => '$affiliateAllianceIDs'],
+            'sharedKills' => ['$sum' => 1],
+        ]],
+        ['$match' => ['sharedKills' => ['$gte' => 3]]],
+        ['$project' => [
+            '_id' => 0,
+            'characterID' => '$_id.characterID',
+            'allianceID' => '$_id.allianceID',
+            'sharedKills' => 1,
+        ]],
+        ['$group' => [
+            '_id' => '$characterID',
+            'affiliates' => ['$topN' => [
+                'n' => 25,
+                'sortBy' => ['sharedKills' => -1, 'allianceID' => 1],
+                'output' => ['allianceID' => '$allianceID', 'sharedKills' => '$sharedKills'],
+            ]],
+        ]],
+        ['$project' => [
+            '_id' => 0,
+            'type' => ['$literal' => 'characterID'],
+            'id' => '$_id',
+            'affiliates' => 1,
+            'affiliatesUpdated' => ['$literal' => $updated],
+            'affiliatesRunID' => ['$literal' => $runID],
+        ]],
+        ['$merge' => [
+            'into' => 'statistics',
+            'on' => ['type', 'id'],
+            'whenMatched' => 'merge',
+            'whenNotMatched' => 'insert',
+        ]],
+    ];
+
+    iterator_to_array($mdb->getCollection('ninetyDays')->aggregate($pipeline, ['allowDiskUse' => true]));
+    $mdb->getCollection('statistics')->updateMany(
+        ['type' => 'characterID', 'affiliatesRunID' => ['$exists' => true, '$ne' => $runID]],
+        ['$unset' => ['affiliates' => 1, 'affiliatesUpdated' => 1, 'affiliatesRunID' => 1]]
+    );
+    $kvc->setex($completeKey, 86400, 'true');
+}
+
+function materializeAssociates($completeKey, $date)
+{
+    global $kvc, $mdb;
+
+    if ($kvc->get($completeKey) == true) return;
+
+    Util::out('Calculating associates');
+    $runID = "$date:" . time();
+    $updated = Mdb::now();
+    $characterIDs = ['$setUnion' => [[
+        '$map' => [
+            'input' => ['$filter' => [
+                'input' => '$involved',
+                'as' => 'pilot',
+                'cond' => ['$and' => [
+                    ['$eq' => ['$$pilot.isVictim', false]],
+                    ['$gt' => [['$ifNull' => ['$$pilot.characterID', 0]], 3999999]],
+                ]],
+            ]],
+            'as' => 'pilot',
+            'in' => '$$pilot.characterID',
+        ],
+    ], []]];
+    $pipeline = [
+        ['$match' => ['labels' => 'pvp']],
+        ['$project' => ['firstCharacterIDs' => $characterIDs, 'secondCharacterIDs' => $characterIDs]],
+        ['$unwind' => '$firstCharacterIDs'],
+        ['$unwind' => '$secondCharacterIDs'],
+        ['$match' => ['$expr' => ['$lt' => ['$firstCharacterIDs', '$secondCharacterIDs']]]],
+        ['$group' => [
+            '_id' => ['firstCharacterID' => '$firstCharacterIDs', 'secondCharacterID' => '$secondCharacterIDs'],
+            'sharedKills' => ['$sum' => 1],
+        ]],
+        ['$match' => ['sharedKills' => ['$gte' => 3]]],
+        ['$project' => [
+            '_id' => 0,
+            'sharedKills' => 1,
+            'directions' => [
+                ['characterID' => '$_id.firstCharacterID', 'associateID' => '$_id.secondCharacterID'],
+                ['characterID' => '$_id.secondCharacterID', 'associateID' => '$_id.firstCharacterID'],
+            ],
+        ]],
+        ['$unwind' => '$directions'],
+        ['$group' => [
+            '_id' => '$directions.characterID',
+            'associates' => ['$topN' => [
+                'n' => 50,
+                'sortBy' => ['sharedKills' => -1, 'directions.associateID' => 1],
+                'output' => ['characterID' => '$directions.associateID', 'sharedKills' => '$sharedKills'],
+            ]],
+        ]],
+        ['$project' => [
+            '_id' => 0,
+            'type' => ['$literal' => 'characterID'],
+            'id' => '$_id',
+            'associates' => 1,
+            'associatesUpdated' => ['$literal' => $updated],
+            'associatesRunID' => ['$literal' => $runID],
+        ]],
+        ['$merge' => [
+            'into' => 'statistics',
+            'on' => ['type', 'id'],
+            'whenMatched' => 'merge',
+            'whenNotMatched' => 'insert',
+        ]],
+    ];
+
+    iterator_to_array($mdb->getCollection('ninetyDays')->aggregate($pipeline, ['allowDiskUse' => true]));
+    $mdb->getCollection('statistics')->updateMany(
+        ['type' => 'characterID', 'associatesRunID' => ['$exists' => true, '$ne' => $runID]],
+        ['$unset' => ['associates' => 1, 'associatesUpdated' => 1, 'associatesRunID' => 1]]
+    );
+    $kvc->setex($completeKey, 86400, 'true');
 }
 
 function materializeShips($completeKey, $date, $collection, $field, $firstKillID = null, $fcCompleteKey = null)
@@ -104,7 +280,7 @@ function materializeShips($completeKey, $date, $collection, $field, $firstKillID
     $characterGroup = [
         '_id' => '$_id.characterID',
         'ships' => ['$topN' => [
-            'n' => 7,
+            'n' => 11,
             'sortBy' => ['appearances' => -1, 'isk' => -1],
             'output' => [
                 'shipTypeID' => '$_id.shipTypeID',
@@ -128,11 +304,11 @@ function materializeShips($completeKey, $date, $collection, $field, $firstKillID
                         'as' => 'ship',
                         'cond' => ['$gt' => ['$$ship.shipTypeID', 0]],
                     ],
-                ], 6]],
+                ], 10]],
                 'as' => 'ship',
                 'cond' => ['$ne' => ['$$ship.groupID', 29]],
             ],
-        ], 5]],
+        ], 9]],
         $field . 'Updated' => ['$literal' => $updated],
         $field . 'RunID' => ['$literal' => $runID],
     ];

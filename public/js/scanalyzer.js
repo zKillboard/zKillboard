@@ -28,6 +28,22 @@ function scanReadyCharCheck() {
 function scanReady() {
     $('#scaninput').off('blur.zkb-scanalyzer').on('blur.zkb-scanalyzer', startProcess);
     $('#scaninputtoggle').off('click.zkb-scanalyzer').on('click.zkb-scanalyzer', toggleScanInput);
+    $('#scanalyzerexpandall').off('click.zkb-scanalyzer').on('click.zkb-scanalyzer', function() {
+        if (!result || !result.chars.length) return;
+        let expanded = !result.chars.every(function(character) { return character.scanalyzerExpanded; });
+        result.chars.forEach(function(character) {
+            character.scanalyzerExpanded = expanded;
+            popChar(character);
+        });
+        updateScanalyzerExpandAll();
+    });
+    $('#results').off('click.zkb-scanalyzer-expand').on('click.zkb-scanalyzer-expand', '.scanalyzer-row-toggle', function() {
+        let character = result && result.chars[Number($(this).closest('tr').attr('data-scanalyzer-row'))];
+        if (!character) return;
+        character.scanalyzerExpanded = !character.scanalyzerExpanded;
+        popChar(character);
+        updateScanalyzerExpandAll();
+    });
 
     if (navigator.clipboard === undefined) $("#clip").hide();
     else $('#clippy').off('click.zkb-scanalyzer').on('click.zkb-scanalyzer', copypasta);
@@ -40,6 +56,7 @@ function toggleScanInput() {
     let collapsed = $('#scan-input-column').hasClass('d-none');
     $('#scan-input-column').toggleClass('d-none', !collapsed);
     $('#scan-results-column').toggleClass('col-lg-10', collapsed).toggleClass('col-lg-12', !collapsed);
+    (collapsed ? $('#clipinput') : $('#clipresults')).append($('#clip'));
     $('#scaninputtoggle')
         .attr('aria-expanded', collapsed ? 'true' : 'false')
         .attr('aria-label', collapsed ? 'Hide scan input' : 'Show scan input')
@@ -170,6 +187,17 @@ function formatScanalyzerRow(row) {
     });
 }
 
+function updateScanalyzerExpandAll() {
+    let expanded = result && result.chars.length > 0 && result.chars.every(function(character) { return character.scanalyzerExpanded; });
+    $('#scanalyzerexpandall')
+        .attr('aria-expanded', expanded ? 'true' : 'false')
+        .attr('aria-label', expanded ? 'Collapse all rows' : 'Expand all rows')
+        .attr('title', expanded ? 'Collapse all rows' : 'Expand all rows')
+        .find('i')
+        .toggleClass('fa-caret-down', expanded)
+        .toggleClass('fa-caret-right', !expanded);
+}
+
 function popChar(ch) {
     let type = ch.allianceID > 0 ? 'alli' : 'corp';
     let id = ch.allianceID > 0 ? ch.allianceID : ch.corporationID;
@@ -179,8 +207,19 @@ function popChar(ch) {
     ch.ships = ch.ships || [];
     ch.topShips = ch.topShips || [];
 
-    let ships = shipImages(ch.id, ch.ships);
-    let topShips = shipImages(ch.id, ch.topShips);
+    let expanded = ch.scanalyzerExpanded == true;
+    let ships = shipImages(ch.id, ch.ships.slice(0, expanded ? 9 : 5));
+    let topShips = shipImages(ch.id, ch.topShips.slice(0, expanded ? 9 : 5));
+    let associates = (ch.associates || []).slice(0, expanded ? 50 : 2).map(function(associate) {
+        let characterID = Number(associate.characterID);
+        let sharedKills = Number(associate.sharedKills) || 0;
+        return `<span class="text-nowrap" title="${sharedKills} shared PvP killmails in the past 90 days"><a href="/character/${characterID}/">${associate.name}</a> (${sharedKills.toLocaleString()})</span>`;
+    }).join('<br/>');
+    let affiliates = (ch.affiliates || []).slice(0, expanded ? 25 : 2).map(function(affiliate) {
+        let alliance = getName('allis', Number(affiliate.allianceID));
+        let sharedKills = Number(affiliate.sharedKills) || 0;
+        return alliance == '' ? '' : `<span class="text-nowrap" title="${sharedKills} shared PvP killmails in the past 90 days">${alliance} (${sharedKills.toLocaleString()})</span>`;
+    }).filter(Boolean).join('<br/>');
 
     ch.stats.shipsDestroyed = Number(ch.stats.shipsDestroyed) | 0;
     ch.stats.shipsLost = Number(ch.stats.shipsLost) | 0;
@@ -204,9 +243,12 @@ function popChar(ch) {
     let alli = getName('allis', ch.allianceID);
     let image = getImage(ch.corporationID, ch.allianceID);
     let secColor = getStatusColor(secStatus);
-    let negativeSecurity = Number(secStatus) < 0;
-    let secTextColor = negativeSecurity ? '#fff' : secColor;
-    let secBackground = negativeSecurity ? secColor : '#000';
+    let secRgb = secColor.match(/[0-9a-f]{2}/gi).map(function(value) {
+        value = parseInt(value, 16) / 255;
+        return value <= 0.04045 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
+    });
+    let secLuminance = 0.2126 * secRgb[0] + 0.7152 * secRgb[1] + 0.0722 * secRgb[2];
+    let secTextColor = (secLuminance + 0.05) / 0.05 >= 1.05 / (secLuminance + 0.05) ? '#000' : '#fff';
     ch.stats.gangRatio = finiteOrBlank(ch.stats.gangRatio);
     ch.stats.avgGangSize = finiteOrBlank(ch.stats.avgGangSize);
     if (!(ch.stats.shipsDestroyed > 1)) ch.stats.gangRatio = '';
@@ -244,21 +286,25 @@ function popChar(ch) {
     let notes = labels.join(', ');
     let badgeNotes = badges.join(' ');
 
-    let security = hasSecurity ? `<span class="fw-bold rounded px-1" style="color: ${secTextColor}; background-color: ${secBackground}; border: 1px solid ${secColor}; box-shadow: 0 0 3px ${secColor};" format="${secStatusFormat}" raw="${secStatus}"></span>` : '';
-    let nameCell = `<td>${char}<br/><small class="d-flex align-items-center gap-1"><span>Sec: ${security} <span>${notes}</span></span><span class="ms-auto text-nowrap">${badgeNotes}</span></small></td>`;
+    let security = hasSecurity ? `<span class="fw-bold rounded px-1" style="color: ${secTextColor}; background-color: ${secColor}; border: 1px solid ${secColor}; box-shadow: 0 0 3px ${secColor};" aria-label="Security status ${secStatus}" title="Security status ${secStatus}" format="${secStatusFormat}" raw="${secStatus}"></span>` : '';
+    let caret = expanded ? 'down' : 'right';
+    let toggleTitle = expanded ? 'Collapse row' : 'Expand row';
+    let nameCell = `<td><button type="button" class="btn btn-link btn-sm p-0 me-1 scanalyzer-row-toggle" aria-expanded="${expanded}" aria-label="${toggleTitle}" title="${toggleTitle}"><i class="fas fa-caret-${caret}" aria-hidden="true"></i></button>${char}<br/><small class="d-flex align-items-center gap-1"><span>${security} <span>${notes}</span></span><span class="ms-auto text-nowrap">${badgeNotes}</span></small></td>`;
+    let shipsCell = `<td class='pilotships'>${ships}</td>`;
+    let topShipsCell = `<td class='pilotships'>${topShips}</td>`;
+    let associateCell = `<td class="small">${associates}</td>`;
+    let affiliateCell = `<td class="small">${affiliates}</td>`;
     let imageCell = `<td class='pilotmemberimage'>${image}</td>`;
     let memberCell = `<td class="pilotmember">${corp}<br/>${alli}</td>`;
     let current = ch.scanalyzerElement;
     if (current && current.length && current[0].isConnected) {
         let currentCells = current.children();
-        let update = $(`<tr>${nameCell}${imageCell}${memberCell}</tr>`);
+        let update = $(`<tr>${nameCell}${imageCell}${memberCell}${shipsCell}${topShipsCell}${associateCell}${affiliateCell}</tr>`);
         formatScanalyzerRow(update);
         let cells = update.children();
-        currentCells.eq(0).replaceWith(cells.eq(0));
-        currentCells.eq(3).replaceWith(cells.eq(1));
-        currentCells.eq(4).replaceWith(cells.eq(2));
+        for (let i = 0; i < cells.length; i++) currentCells.eq(i).replaceWith(cells.eq(i));
     } else {
-        let h = $(`<tr data-scanalyzer-row="${ch.scanalyzerRow}" danger="${ch.stats.dangerRatio}">${nameCell}<td class='pilotships'>${ships}</td><td class='pilotships'>${topShips}</td>${imageCell}${memberCell}<td class="text-end"><span class="pilotkl green" format="format-int-once" raw="${ch.stats.shipsDestroyed}"></span><br/><span class="red" format="format-int-once" raw="${ch.stats.shipsLost}"></span></td><td class="pilotds text-end"><span class="red" format="format-pct-once" raw="${ch.stats.dangerRatio}"></span><br/><span class="green" format="format-pct-once" raw="${ch.stats.snuggly}"></span></td><td class="text-end"><span format="format-pct-once" raw="${ch.stats.gangRatio}"></span><br/><span format="format-dec2-once" raw="${ch.stats.avgGangSize}"></td><td class='text-end ${soloColor}' format="format-pct-once" raw="${ch.stats.soloRatio}"></td></tr>`);
+        let h = $(`<tr data-scanalyzer-row="${ch.scanalyzerRow}" danger="${ch.stats.dangerRatio}">${nameCell}${imageCell}${memberCell}${shipsCell}${topShipsCell}${associateCell}${affiliateCell}<td class="text-end"><span class="pilotkl green" format="format-int-once" raw="${ch.stats.shipsDestroyed}"></span><br/><span class="red" format="format-int-once" raw="${ch.stats.shipsLost}"></span></td><td class="pilotds text-end"><span class="red" format="format-pct-once" raw="${ch.stats.dangerRatio}"></span><br/><span class="green" format="format-pct-once" raw="${ch.stats.snuggly}"></span></td><td class="text-end"><span format="format-pct-once" raw="${ch.stats.gangRatio}"></span><br/><span format="format-dec2-once" raw="${ch.stats.avgGangSize}"></td><td class='text-end ${soloColor}' format="format-pct-once" raw="${ch.stats.soloRatio}"></td></tr>`);
         formatScanalyzerRow(h);
         $('#results').append(h);
         ch.scanalyzerElement = h;
@@ -283,7 +329,7 @@ function popUEa(alli) {
     let ticker = info.ticker || '';
     let img = `<img class="eveimage img-rounded" src='https://images.evetech.net/alliances/${alli}/logo?size=64' title="${name}" />`
     let link = `<a href='/alliance/${alli}/' class='nowrap'>&lt;${ticker}&gt;</a>`;
-    let h = $(`<div style='order: -${count}' class='float-start scan-entity text-center'>${img}<br/>${link}<br/><div class='text-center'>${count}</div></div>`);
+    let h = $(`<div style='order: -${count}' class='float-start flex-shrink-0 scan-entity text-center'>${img}<br/>${link}<br/><div class='text-center'>${count}</div></div>`);
     $('#playergroups').append(h);
 }
 
@@ -301,7 +347,7 @@ function popUEc(corp) {
     let ticker = info.ticker || '';
     let img = `<img class="eveimage img-rounded" src='https://images.evetech.net/corporations/${corp}/logo?size=64' title="${name}" />`
         let link = `<a href='/corporation/${corp}/' class='nowrap'>[${ticker}]</a>`
-        let h = $(`<div style='order: -${count}' class='float-start scan-entity text-center'>${img}<br/>${link}<br/><div class='text-center'>${count}</div></div>`);
+        let h = $(`<div style='order: -${count}' class='float-start flex-shrink-0 scan-entity text-center'>${img}<br/>${link}<br/><div class='text-center'>${count}</div></div>`);
     $('#playergroups').append(h);
 }
 
@@ -501,13 +547,17 @@ function renderCharacterResults() {
     mapping = {corps: {}, allis: {}};
     $('#results').html('');
     result.chars.forEach(popChar);
+    updateScanalyzerExpandAll();
     popUEs();
 }
 
 async function showResult(r) {
     if (!document.getElementById('scaninput')) return;
     result = r;
-    result.chars.forEach(function(character, index) { character.scanalyzerRow = index; });
+    result.chars.forEach(function(character, index) {
+        character.scanalyzerRow = index;
+        character.scanalyzerExpanded = false;
+    });
 
     let affiliationRows = {corporations: {}, alliances: {}};
     let indexAffiliations = function(character) {
@@ -643,6 +693,7 @@ function getStatusColor(sec) {
     if (calcStatus < -5) calcStatus = -5; 
     calcStatus = (calcStatus / 5) + 0.8;
     if (calcStatus > 1) calcStatus = 1;
+    calcStatus = Math.round(calcStatus * 10) / 10;
 
     switch (calcStatus) {
         case 1.0:

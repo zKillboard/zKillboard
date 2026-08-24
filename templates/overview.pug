@@ -48,6 +48,10 @@ block content
           a.nav-link(class=$isActive('ranks', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/ranks/')) Ranks
         li.nav-item
           a.nav-link(class=$isActive('stats', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/stats/')) Stats
+        if (($key ?? '') == 'character')
+          li.nav-item
+            a.nav-link(class=$isActive('scanalyzer', $pageType) href=('/character/' . ($id ?? '') . '/scanalyzer/') aria-label="Scanalyzer" title="Scanalyzer")
+              span.scanalyzer(aria-hidden="true") &#128924;
         if (!empty($extraData['hasSupers']))
           li.nav-item
             a.nav-link(class=$isActive('supers', $pageType) href=('/' . ($key ?? '') . '/' . ($id ?? '') . '/supers/')) Supers
@@ -152,6 +156,8 @@ block content
           each $topSet in ($topLists ?? [])
             - $topSet = is_object($topSet) ? (array) $topSet : $topSet;
             include components/top_killer_list.pug
+    else if ($pageType == 'scanalyzer')
+      include components/character_scanalyzer.pug
     else if ($pageType == 'trophies')
       .centered.publift.adrow.ad-xl-none#detailadrow(data-publift="home_incontent")
       include components/trophies.pug

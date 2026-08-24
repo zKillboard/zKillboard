@@ -1233,12 +1233,34 @@ td.centered {
 
 #scanlayout {
 	display: grid;
-	grid-template-columns: 75px minmax(0, 1fr);
+	grid-template-columns: minmax(0, 1fr);
 	width: 100%;
 }
 
 #scanlayout.has-ships {
-	grid-template-columns: 75px 75px minmax(0, 1fr);
+	grid-template-columns: 75px minmax(0, 1fr);
+}
+
+#scan-playergroups-col {
+	scrollbar-color: var(--bs-primary, #2a9fd6) #151515;
+	scrollbar-width: thin;
+}
+
+#scan-playergroups-col::-webkit-scrollbar {
+	height: 6px;
+}
+
+#scan-playergroups-col::-webkit-scrollbar-track {
+	background: #151515;
+}
+
+#scan-playergroups-col::-webkit-scrollbar-thumb {
+	background: var(--bs-primary, #2a9fd6);
+	border-radius: 3px;
+}
+
+#scan-playergroups-col::-webkit-scrollbar-thumb:hover {
+	background: #54b4eb;
 }
 
 #scan-shipgroups-col {

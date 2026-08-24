@@ -8,7 +8,7 @@ function handler($request, $response, $args, $container) {
     $totalShips = 0;
     try {
         $includes = ['_id' => 0, 'id' => 1, 'ticker' => 1, 'name' => 1, 'corporationID' => 1, 'allianceID' => 1, 'factinoID' => 1, 'secStatus' => 1];
-        $statsIncludes = ['_id' => 0, 'id' => 1, 'shipsDestroyed' => 1, 'shipsLost' => 1, 'dangerRatio' => 1, 'gangRatio' => 1, 'avgGangSize' => 1, 'recentShips' => 1, 'recentShipsUpdated' => 1, 'topShips' => 1, 'topShipsUpdated' => 1, 'awoxCount' => 1, 'fc' => 1, 'bait' => 1, 'cyno' => 1, 'gankerCount' => 1];
+        $statsIncludes = ['_id' => 0, 'id' => 1, 'shipsDestroyed' => 1, 'shipsLost' => 1, 'dangerRatio' => 1, 'gangRatio' => 1, 'avgGangSize' => 1, 'recentShips' => 1, 'recentShipsUpdated' => 1, 'topShips' => 1, 'topShipsUpdated' => 1, 'affiliates' => 1, 'associates' => 1, 'awoxCount' => 1, 'fc' => 1, 'bait' => 1, 'cyno' => 1, 'gankerCount' => 1];
 
         $postData = $request->getParsedBody();
         $scan = @$postData['scan'];
@@ -114,14 +114,25 @@ function handler($request, $response, $args, $container) {
         }
 
         $characterIDs = [];
+        $characterNamesByID = [];
         foreach ($chars as $row) {
-            if ($row['id'] > 0) $characterIDs[(int) $row['id']] = true;
+            if ($row['id'] > 0) {
+                $characterIDs[(int) $row['id']] = true;
+                $characterNamesByID[(int) $row['id']] = $row['name'];
+            }
         }
 
         $statsByID = [];
         if (sizeof($characterIDs)) {
             $rows = $mdb->find('statistics', ['type' => 'characterID', 'id' => ['$in' => array_keys($characterIDs)]], [], null, $statsIncludes);
             foreach ($rows as $row) $statsByID[(int) $row['id']] = $row;
+        }
+
+        foreach ($statsByID as $stats) {
+            foreach ($stats['affiliates'] ?? [] as $affiliate) {
+                $allianceID = (int) ($affiliate['allianceID'] ?? 0);
+                if ($allianceID > 0) $allis[$allianceID] = 1;
+            }
         }
 
         $shipTypeIDs = [];
@@ -163,10 +174,20 @@ function handler($request, $response, $args, $container) {
             $id = (int) $row['id'];
             $stats = $statsByID[$id] ?? [];
             $shipLists = ['ships' => $stats['recentShips'] ?? [], 'topShips' => $stats['topShips'] ?? []];
+            $affiliates = $stats['affiliates'] ?? [];
+            $associates = [];
+            foreach ($stats['associates'] ?? [] as $associate) {
+                $associateID = (int) ($associate['characterID'] ?? 0);
+                if (!isset($characterNamesByID[$associateID])) continue;
+                $associate['name'] = $characterNamesByID[$associateID];
+                $associates[] = $associate;
+            }
             $hasRecentActivity = isset($stats['recentShipsUpdated']);
             unset($stats['id']);
-            unset($stats['recentShips'], $stats['recentShipsUpdated'], $stats['topShips'], $stats['topShipsUpdated']);
+            unset($stats['recentShips'], $stats['recentShipsUpdated'], $stats['topShips'], $stats['topShipsUpdated'], $stats['affiliates'], $stats['associates']);
             $row['stats'] = $stats;
+            $row['affiliates'] = $affiliates;
+            $row['associates'] = $associates;
 
             if (!$hasRecentActivity) $row['inactive'] = true;
             foreach ($shipLists as $rowField => $shipsList) {
@@ -180,7 +201,7 @@ function handler($request, $response, $args, $container) {
                     $topShip['shipTypeID'] = $shipTypeID;
                     $topShip['groupID'] = $groupID;
                     $topShip['groupName'] = $shipGroupNames[$groupID] ?? '';
-                    if ($groupID != 29 && sizeof($row[$rowField]) < 5) $row[$rowField][] = $topShip;
+                    if ($groupID != 29 && sizeof($row[$rowField]) < 9) $row[$rowField][] = $topShip;
                 }
             }
         }

@@ -15,7 +15,11 @@ block content
     .row
       #scan-input-column.col-12.col-lg-2(style="padding-right: 0px;")
         fieldset
-          label.form-label(for="scaninput") Scan input
+          .d-flex.align-items-center.justify-content-between.py-1
+            label.form-label.mb-0(for="scaninput") Scan input
+            #clipinput
+              span#clip
+                button#clippy.btn.btn-sm.btn-info(type="button" disabled) &#128203; Paste
           textarea#scaninput(rows="25" style="width: 100%")
         br
         | Inspired by 
@@ -23,19 +27,16 @@ block content
         | .
       #scan-results-column.col-12.col-lg-10(style="padding-left: 5px;")
         fieldset
-          legend#resultslegend
+          legend#resultslegend.d-flex.align-items-center
             button#scaninputtoggle.btn.btn-sm.btn-secondary.fw-bold.me-2(type="button" aria-controls="scan-input-column" aria-expanded="true" aria-label="Hide scan input" title="Hide scan input")
               span#scaninputtoggleicon(aria-hidden="true") &#9664; Input
-            span#clip.me-2
-              button#clippy.btn.btn-sm.btn-info(type="button" disabled) &#128203; Paste
+            span#clipresults.me-2
             | Results 
             small#resultcounts
             small#status.ms-2(role="status" aria-live="polite")
+          #scan-playergroups-col.upperentities.overflow-auto(tabindex="0" role="region" aria-label="Scanned groups")
+            #playergroups.entitygroup.flex-nowrap
           #scanlayout
-            div
-              .upperentities
-                #playergroups.entitygroup
-                .clearfix
             #scan-shipgroups-col
               .upperentities
                 #shipgroups.entitygroup
@@ -46,21 +47,26 @@ block content
                   table#resultstable.table.table-sm(style="background-color: #000;")
                     thead
                       tr
-                        th Name
-                        th Recent Ships (90d)
-                        th Top Ships (1y)
+                        th
+                          button#scanalyzerexpandall.btn.btn-link.btn-sm.p-0.me-1(type="button" aria-expanded="false" aria-label="Expand all rows" title="Expand all rows")
+                            i.fas.fa-caret-right(aria-hidden="true")
+                          | Name
                         th
                           span.visually-hidden Member image
                         th Member
+                        th Recent Ships (90d)
+                        th Top Ships (1y)
+                        th Associates
+                        th Affiliates
                         th.text-end
                           span.green K
                           |  / 
                           span.red L
-                        th.text-end
+                        th.text-end.text-nowrap
                           span.red &#x26A0;
                           |  / 
                           span.green &#x2764;
-                        th.text-end
+                        th.text-end.text-nowrap
                           i.fas.fa-user
                           i.fas.fa-user
                           i.fas.fa-user
@@ -83,6 +89,12 @@ block content
                         | - cyno labels are fitted-module losses from the last year
                         br
                         | - ganker labels require at least 10 highsec ganks in the last year
+                        br
+                        | - collapsed rows show 5 ships and 2 associates/affiliates; expand a row to show up to 9 ships and all retained relationships
+                        br
+                        | - associates show scanned characters found in each pilot's retained top 50 co-attackers, requiring at least 3 shared PvP killmails in the past 90 days
+                        br
+                        | - affiliates show up to 25 alliances with at least 3 shared PvP killmails in the past 90 days, excluding the pilot's own alliance on each killmail
 
 block script
   script(defer src=('/js/scanalyzer.js?v=' . ($currentTime ?? '')))

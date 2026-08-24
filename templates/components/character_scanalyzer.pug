@@ -1,0 +1,99 @@
+- $scanalyzer = is_object($extraData['scanalyzer'] ?? null) ? (array) $extraData['scanalyzer'] : ($extraData['scanalyzer'] ?? []);
+.col-12
+  .d-flex.align-items-center.gap-2.mb-2
+    span.scanalyzer.fs-3(aria-hidden="true") &#128924;
+    h2.h3.mb-0 Scanalyzer
+
+  .row.g-3.mb-3
+    each $shipList in [['field' => 'recentShips', 'title' => 'Recent Ships (90d)', 'heading' => 'scanalyzer-recent-ships'], ['field' => 'topShips', 'title' => 'Top Ships (1y)', 'heading' => 'scanalyzer-top-ships']]
+      - $ships = $scanalyzer[$shipList['field']] ?? [];
+      .col-12.col-xl-6
+        section.card(aria-labelledby=$shipList['heading'])
+          .card-header.d-flex.justify-content-between.align-items-baseline
+            h3.h5.mb-0(id=$shipList['heading'])= $shipList['title']
+          if (empty($ships))
+            .card-body
+              p.text-body-secondary.mb-0 No ships retained for this period.
+          else
+            .table-responsive-md
+              table.table.table-sm.table-striped.align-middle.mb-0
+                caption.visually-hidden= $shipList['title'] . ' used by Scanalyzer.'
+                thead
+                  tr
+                    th(scope="col") Ship
+                    th.text-end(scope="col") Appearances
+                    th.text-end.text-nowrap(scope="col") K / L
+                    th.text-end(scope="col") ISK
+                tbody
+                  each $shipRow in $ships
+                    - $ship = is_object($shipRow) ? (array) $shipRow : $shipRow;
+                    - $shipTypeID = (int) ($ship['shipTypeID'] ?? 0);
+                    tr
+                      td
+                        .d-flex.align-items-center.gap-2
+                          a.flex-shrink-0(href=('/character/' . ($id ?? '') . '/reset/ship/' . $shipTypeID . '/'))
+                            img.rounded(src=(($image_server ?? 'https://images.evetech.net/') . 'types/' . $shipTypeID . '/render?size=64') width="48" height="48" alt=($ship['shipName'] ?? '') loading="lazy" decoding="async")
+                          div
+                            a.fw-semibold(href=('/character/' . ($id ?? '') . '/reset/ship/' . $shipTypeID . '/'))= $ship['shipName'] ?? ('Type ' . $shipTypeID)
+                            if (!empty($ship['groupName']))
+                              br
+                              a.small.text-body-secondary(href=('/group/' . ($ship['groupID'] ?? 0) . '/'))= $ship['groupName']
+                      td.text-end= number_format((int) ($ship['appearances'] ?? 0))
+                      td.text-end.text-nowrap= number_format((int) ($ship['kills'] ?? 0)) . ' / ' . number_format((int) ($ship['losses'] ?? 0))
+                      td.text-end.text-nowrap(title=(number_format((float) ($ship['isk'] ?? 0), 2) . ' ISK'))= $formatIsk($ship['isk'] ?? 0)
+
+  .row.g-3
+    .col-12.col-xl-6
+      - $associates = $scanalyzer['associates'] ?? [];
+      section.card(aria-labelledby="scanalyzer-associates-heading")
+        .card-header.d-flex.justify-content-between.align-items-baseline
+          h3#scanalyzer-associates-heading.h5.mb-0 Associates
+          small.text-body-secondary Past 90 days
+        if (empty($associates))
+          .card-body
+            p.text-body-secondary.mb-0 No associates retained from the past 90 days.
+        else
+          .table-responsive-md
+            table.table.table-sm.table-striped.align-middle.mb-0
+              caption.visually-hidden Characters most often appearing on the same PvP kills in the past 90 days.
+              thead
+                tr
+                  th.text-end(scope="col") #
+                  th(scope="col") Character
+                  th.text-end(scope="col") Shared kills
+              tbody
+                each $associateRow, $index in $associates
+                  - $associate = is_object($associateRow) ? (array) $associateRow : $associateRow;
+                  tr
+                    td.text-end.text-body-secondary= $index + 1
+                    td
+                      a(href=('/character/' . ($associate['characterID'] ?? 0) . '/'))= $associate['name'] ?? ('Character ' . ($associate['characterID'] ?? 0))
+                    td.text-end= number_format((int) ($associate['sharedKills'] ?? 0))
+    .col-12.col-xl-6
+      - $affiliates = $scanalyzer['affiliates'] ?? [];
+      section.card(aria-labelledby="scanalyzer-affiliates-heading")
+        .card-header.d-flex.justify-content-between.align-items-baseline
+          h3#scanalyzer-affiliates-heading.h5.mb-0 Affiliates
+          small.text-body-secondary Past 90 days
+        if (empty($affiliates))
+          .card-body
+            p.text-body-secondary.mb-0 No affiliates retained from the past 90 days.
+        else
+          .table-responsive-md
+            table.table.table-sm.table-striped.align-middle.mb-0
+              caption.visually-hidden Alliances most often appearing alongside this character on PvP kills in the past 90 days.
+              thead
+                tr
+                  th.text-end(scope="col") #
+                  th(scope="col") Alliance
+                  th.text-end(scope="col") Shared kills
+              tbody
+                each $affiliateRow, $index in $affiliates
+                  - $affiliate = is_object($affiliateRow) ? (array) $affiliateRow : $affiliateRow;
+                  tr
+                    td.text-end.text-body-secondary= $index + 1
+                    td
+                      a(href=('/alliance/' . ($affiliate['allianceID'] ?? 0) . '/'))= $affiliate['name'] ?? ('Alliance ' . ($affiliate['allianceID'] ?? 0))
+                      if (!empty($affiliate['ticker']))
+                        span.text-body-secondary= ' <' . $affiliate['ticker'] . '>'
+                    td.text-end= number_format((int) ($affiliate['sharedKills'] ?? 0))

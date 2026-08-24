@@ -49,6 +49,9 @@ function handler($request, $response, $args, $container)
 	}
 
 	$validPageTypes = array('kills', 'losses', 'solo', 'daily', 'stats', 'wars', 'supers', 'trophies', 'ranks', 'top', 'topalltime', 'streambox', 'recap2025');
+	if ($key == 'character') {
+		$validPageTypes[] = 'scanalyzer';
+	}
 	if ($key == 'alliance') {
 		$validPageTypes[] = 'corpstats';
 		$validPageTypes[] = 'sov';
@@ -383,6 +386,75 @@ function handler($request, $response, $args, $container)
 		$id = (int) $id;
 	}
 	$statistics = $mdb->findDoc('statistics', ['type' => $statType, 'id' => $id]);
+	if ($key == 'character' && $pageType == 'scanalyzer') {
+		$characterIDs = [];
+		$allianceIDs = [];
+		$shipTypeIDs = [];
+		$shipGroupIDs = [];
+		foreach ($statistics['associates'] ?? [] as $associate) {
+			$characterID = (int) ($associate['characterID'] ?? 0);
+			if ($characterID > 0) $characterIDs[$characterID] = true;
+		}
+		foreach ($statistics['affiliates'] ?? [] as $affiliate) {
+			$allianceID = (int) ($affiliate['allianceID'] ?? 0);
+			if ($allianceID > 0) $allianceIDs[$allianceID] = true;
+		}
+		foreach (['recentShips', 'topShips'] as $field) {
+			foreach ($statistics[$field] ?? [] as $ship) {
+				$shipTypeID = (int) ($ship['shipTypeID'] ?? 0);
+				$groupID = (int) ($ship['groupID'] ?? 0);
+				if ($shipTypeID > 0) $shipTypeIDs[$shipTypeID] = true;
+				if ($groupID > 0) $shipGroupIDs[$groupID] = true;
+			}
+		}
+
+		$informationQueries = [];
+		if (sizeof($characterIDs)) $informationQueries[] = ['type' => 'characterID', 'id' => ['$in' => array_keys($characterIDs)]];
+		if (sizeof($allianceIDs)) $informationQueries[] = ['type' => 'allianceID', 'id' => ['$in' => array_keys($allianceIDs)]];
+		if (sizeof($shipTypeIDs)) $informationQueries[] = ['type' => 'typeID', 'id' => ['$in' => array_keys($shipTypeIDs)]];
+		if (sizeof($shipGroupIDs)) $informationQueries[] = ['type' => 'groupID', 'id' => ['$in' => array_keys($shipGroupIDs)]];
+
+		$characters = [];
+		$alliances = [];
+		$ships = [];
+		$shipGroups = [];
+		if (sizeof($informationQueries)) {
+			$query = sizeof($informationQueries) == 1 ? $informationQueries[0] : ['$or' => $informationQueries];
+			$rows = $mdb->find('information', $query, [], null, ['_id' => 0, 'type' => 1, 'id' => 1, 'name' => 1, 'ticker' => 1, 'groupID' => 1]);
+			foreach ($rows as $row) {
+				$rowID = (int) $row['id'];
+				if ($row['type'] == 'characterID') $characters[$rowID] = $row;
+				else if ($row['type'] == 'allianceID') $alliances[$rowID] = $row;
+				else if ($row['type'] == 'typeID') $ships[$rowID] = $row;
+				else if ($row['type'] == 'groupID') $shipGroups[$rowID] = $row;
+			}
+		}
+
+		$extra['scanalyzer'] = ['recentShips' => [], 'topShips' => [], 'associates' => [], 'affiliates' => []];
+		foreach (['recentShips', 'topShips'] as $field) {
+			foreach ($statistics[$field] ?? [] as $ship) {
+				$shipTypeID = (int) ($ship['shipTypeID'] ?? 0);
+				$groupID = (int) ($ship['groupID'] ?? ($ships[$shipTypeID]['groupID'] ?? 0));
+				if ($shipTypeID <= 0 || $groupID == 29) continue;
+				$ship['shipName'] = $ships[$shipTypeID]['name'] ?? "Type $shipTypeID";
+				$ship['groupName'] = $shipGroups[$groupID]['name'] ?? '';
+				$extra['scanalyzer'][$field][] = $ship;
+			}
+		}
+		foreach ($statistics['associates'] ?? [] as $associate) {
+			$characterID = (int) ($associate['characterID'] ?? 0);
+			if ($characterID <= 0) continue;
+			$associate['name'] = $characters[$characterID]['name'] ?? "Character $characterID";
+			$extra['scanalyzer']['associates'][] = $associate;
+		}
+		foreach ($statistics['affiliates'] ?? [] as $affiliate) {
+			$allianceID = (int) ($affiliate['allianceID'] ?? 0);
+			if ($allianceID <= 0) continue;
+			$affiliate['name'] = $alliances[$allianceID]['name'] ?? "Alliance $allianceID";
+			$affiliate['ticker'] = $alliances[$allianceID]['ticker'] ?? '';
+			$extra['scanalyzer']['affiliates'][] = $affiliate;
+		}
+	}
 	$showDailyStats = ($showDailies ?? false) && DailyStats::hasData($statType, $id);
 	if ($pageType == 'daily' && !$showDailyStats) {
 		return renderCached404($container, $response, 'Not Found');
