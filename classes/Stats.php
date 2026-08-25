@@ -4,6 +4,43 @@ use cvweiss\redistools\RedisCache;
 
 class Stats
 {
+    public static function getCharacterTags($statistics, $detail)
+    {
+        $statistics = is_object($statistics ?? null) ? (array) $statistics : ($statistics ?? []);
+        $detail = is_object($detail ?? null) ? (array) $detail : ($detail ?? []);
+        $activityTags = is_object($statistics['activityTags'] ?? null) ? (array) $statistics['activityTags'] : ($statistics['activityTags'] ?? []);
+        $tags = [];
+        foreach ([
+            'blops' => ['label' => 'BLOPS', 'color' => '#4f246b', 'ship' => 'Black Ops battleship'],
+            'logi' => ['label' => 'LOGI', 'color' => '#2f5f55', 'ship' => 'logistics cruiser or frigate'],
+            'capital' => ['label' => 'CAPITAL', 'color' => '#6e331f', 'ship' => 'carrier, dreadnought, force auxiliary, supercarrier, or titan'],
+            'super' => ['label' => 'SUPER', 'color' => '#6b2f45', 'ship' => 'supercarrier'],
+            'titan' => ['label' => 'TITAN', 'color' => '#604515', 'ship' => 'titan'],
+        ] as $tag => $definition) {
+            $count = (int) ($activityTags[$tag] ?? 0);
+            if ($count > 0) $tags[] = [
+                'label' => $definition['label'],
+                'count' => $count,
+                'color' => $definition['color'],
+                'title' => "$count past-90-day combat appearances in a {$definition['ship']}",
+            ];
+        }
+
+        $birthday = strtotime((string) ($detail['birthday'] ?? ''));
+        $ageDays = $birthday === false ? -1 : (int) floor((time() - $birthday) / 86400);
+        $recentMetrics = $statistics['rankings']['recent']['all']['metrics'] ?? [];
+        $recentKills = (int) ($recentMetrics['shipsDestroyed'] ?? 0);
+        $recentLosses = (int) ($recentMetrics['shipsLost'] ?? 0);
+        if ($ageDays >= 0 && $ageDays < 180 && $recentLosses > $recentKills && (int) ($activityTags['capital'] ?? 0) == 0 && (int) ($activityTags['super'] ?? 0) == 0 && (int) ($activityTags['titan'] ?? 0) == 0 && empty($statistics['cyno']) && empty($statistics['bait'])) {
+            $tags[] = [
+                'label' => 'ROOKIE',
+                'color' => '#24536f',
+                'title' => "$ageDays days old with $recentKills PvP kills, $recentLosses losses in the past 90 days, and no CAPITAL, SUPER, TITAN, CYNO, or BAIT label",
+            ];
+        }
+        return $tags;
+    }
+
     public static function getTopIsk($parameters = array(), $allTime = false, $fittedValue = false, $cacheOverride = null)
     {
         if (!isset($parameters['limit'])) {

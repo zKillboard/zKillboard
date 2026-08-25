@@ -113,15 +113,30 @@ Points are **final and not subject to debate**. Attempts to argue about point va
 
 ### [#](#character-labels) What do the character labels mean?
 
-Character labels are inferred from killmails zKillboard received during the past year. They describe recorded combat patterns, not a pilot's intent or official role.
+Character labels are inferred from killmails zKillboard received. They describe recorded combat patterns, not a pilot's intent or official role. Each label below states its own time window.
 
-- <span class="badge zkb-label-danger text-white">AWOX (1)</span>: The character dealt the final blow to a member of their own player corporation. The number is how many qualifying final blows were recorded.
-- <span class="badge text-white" style="background-color: #963800;">FC (MEDIUM)</span>: The character shows fleet-command signals through non-victim appearances in a Monitor, a Command Ship, or fleets with at least 25 attackers. The score adds 20 points per Monitor appearance (maximum 100), 2 per Command Ship appearance (maximum 40), and 1 per five large-fleet appearances (maximum 20). The combined score produces **Low** (35+), **Medium** (60+), or **High** (100+), so large-fleet participation cannot earn the label by itself.
+- <span class="badge zkb-label-danger text-white">AWOX (1)</span>: During the past year, the character dealt the final blow to a member of their own player corporation. The number is how many qualifying final blows were recorded.
+- <span class="badge text-white" style="background-color: #963800;">FC (MEDIUM)</span>: During the past year, the character shows fleet-command signals through non-victim appearances in a Monitor, a Command Ship, or fleets with at least 25 attackers. The score adds 20 points per Monitor appearance (maximum 100), 2 per Command Ship appearance (maximum 40), and 1 per five large-fleet appearances (maximum 20). The combined score produces **Low** (35+), **Medium** (60+), or **High** (100+), so large-fleet participation cannot earn the label by itself.
 - <span class="badge text-white" style="background-color: #963800;">BAIT MEDIUM (7)</span>: Outside high-security space and more than 0.1 AU from a stargate, the character lost a PvP ship with a fitted value below 10 million ISK, followed within five minutes by another PvP killmail in the same system, within 250 km, with at least three attackers, where the bait pilot was not present. Levels are **Low** (4–6 matches), **Medium** (7–11), and **High** (12+).
-- <span class="badge text-white" style="background-color: #633399;">CYNO (1)</span>: The character lost a ship with a fitted standard, covert, or industrial cynosural field module. The number is the total qualifying fitted-cyno losses.
-- <span class="badge zkb-label-danger text-white">GANKER (10)</span>: The character appeared as an attacker on at least 10 killmails classified by zKillboard as high-security-space ganks. The number is the qualifying gank count.
+- <span class="badge text-white" style="background-color: #633399;">CYNO (1)</span>: During the past year, the character lost a ship with a fitted standard, covert, or industrial cynosural field module. The number is the total qualifying fitted-cyno losses.
+- <span class="badge zkb-label-danger text-white">GANKER (10)</span>: During the past year, the character appeared as an attacker on at least 10 killmails classified by zKillboard as high-security-space ganks. The number is the qualifying gank count.
+- <span class="badge text-white" style="background-color: #4f246b;">BLOPS (3)</span>: The character appeared as an attacker flying a Black Ops battleship during the past 90 days.
+- <span class="badge text-white" style="background-color: #2f5f55;">LOGI (12)</span>: The character appeared as an attacker flying a Logistics cruiser or Logistics frigate during the past 90 days.
+- <span class="badge text-white" style="background-color: #6e331f;">CAPITAL (4)</span>: The character appeared as an attacker flying a carrier, dreadnought, force auxiliary, supercarrier, or titan during the past 90 days. Supercarriers and titans also receive their more specific labels below.
+- <span class="badge text-white" style="background-color: #6b2f45;">SUPER (2)</span>: The character appeared as an attacker flying a supercarrier during the past 90 days.
+- <span class="badge text-white" style="background-color: #604515;">TITAN (2)</span>: The character appeared as an attacker flying a titan during the past 90 days.
+- <span class="badge text-white" style="background-color: #24536f;">ROOKIE</span>: The character is less than 180 days old, has more PvP losses than kills during the past 90 days, and does not currently qualify for the CAPITAL, SUPER, TITAN, CYNO, or BAIT labels.
 
-Labels are normally recalculated daily. A label is removed after a successful recalculation when the character no longer qualifies within the rolling one-year window.
+Labels are normally recalculated hourly or daily. A label is removed after a successful recalculation when the character no longer qualifies within its rolling window.
+
+### [#](#capital-labels) What is the difference between the capital labels?
+
+- `capital`: The victim is a capital ship.
+- `capinv`: A capital ship is involved as either the victim or an attacker.
+- `super`: The victim is a supercarrier.
+- `titan`: The victim is a titan.
+
+A capital victim receives both `capital` and `capinv`. Supercarrier and titan victims additionally receive `super` or `titan`. These killmail labels are separate from the character labels above.
 
 ---
 

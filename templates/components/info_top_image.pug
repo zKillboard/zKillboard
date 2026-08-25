@@ -24,7 +24,8 @@
       - $fc = is_object($statisticsData['fc'] ?? null) ? (array) $statisticsData['fc'] : ($statisticsData['fc'] ?? []);
       - $bait = is_object($statisticsData['bait'] ?? null) ? (array) $statisticsData['bait'] : ($statisticsData['bait'] ?? []);
       - $cyno = is_object($statisticsData['cyno'] ?? null) ? (array) $statisticsData['cyno'] : ($statisticsData['cyno'] ?? []);
-      if ($gankerCount >= 10 || !empty($fc) || !empty($bait) || !empty($cyno))
+      - $characterTags = is_object($extraData['characterTags'] ?? null) ? (array) $extraData['characterTags'] : ($extraData['characterTags'] ?? []);
+      if ($gankerCount >= 10 || !empty($fc) || !empty($bait) || !empty($cyno) || !empty($characterTags))
         .d-flex.flex-wrap.justify-content-center.gap-1.mt-1(style="width: 128px;")
           if ($gankerCount >= 10)
             a.badge.zkb-label-danger.text-white.text-decoration-none(href="/information/faq/#character-labels" rel="tooltip" title=($gankerCount . ' past-year highsec ganks'))= 'GANKER (' . number_format($gankerCount) . ')'
@@ -42,6 +43,10 @@
             - $cynoCount = (int) ($cyno['count'] ?? 0);
             - $cynoTitle = 'Past-year fitted cynos: ' . ((int) ($cyno['standard'] ?? 0)) . ' standard, ' . ((int) ($cyno['covert'] ?? 0)) . ' covert, ' . ((int) ($cyno['industrial'] ?? 0)) . ' industrial';
             a.badge.text-white.text-decoration-none(href="/information/faq/#character-labels" style="background-color: #633399;" rel="tooltip" title=$cynoTitle)= 'CYNO (' . number_format($cynoCount) . ')'
+          each $characterTag in $characterTags
+            - $characterTag = is_object($characterTag) ? (array) $characterTag : $characterTag;
+            - $characterTagText = $characterTag['label'] . (isset($characterTag['count']) ? ' (' . number_format((int) $characterTag['count']) . ')' : '');
+            a.badge.text-white.text-decoration-none(href="/information/faq/#character-labels" style=('background-color: ' . $characterTag['color'] . ';') rel="tooltip" title=$characterTag['title'])= $characterTagText
       br
   if (!empty($detailData['corporationID']) && ($key ?? '') == 'corporation')
     .position-relative.d-inline-block.image-expand-container

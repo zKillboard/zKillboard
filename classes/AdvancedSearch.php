@@ -64,7 +64,10 @@ class AdvancedSearch
             'cat:11' => "Structure Light Fighter",
             'cat:22' => "Anchored", 
             'atShip' => "AT Ships", 
-            'capital' => "Capitals", 
+            'capital' => "Capitals",
+            'capinv' => "Capital Involved",
+            'super' => "Supers",
+            'titan' => "Titans",
             'cat:18' => "Drone", 
             'cat:87' => "Fighter",
             'cat:46' => "PI", 
@@ -72,7 +75,6 @@ class AdvancedSearch
             'cat:6' => "Ship", 
             'cat:40' => "Sov",  
             'cat:65' => "Structure",
-            'cat:350001' => "Dust 514",
         ]
     ];
 

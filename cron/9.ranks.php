@@ -292,6 +292,14 @@ function materializeShips($completeKey, $date, $collection, $field, $firstKillID
             ],
         ]],
     ];
+    $includeActivityTags = $field == 'recentShips';
+    if ($includeActivityTags) {
+        $characterGroup['blopsAppearances'] = ['$sum' => ['$cond' => [['$eq' => ['$groupID', 898]], '$kills', 0]]];
+        $characterGroup['logiAppearances'] = ['$sum' => ['$cond' => [['$in' => ['$groupID', [832, 1527]]], '$kills', 0]]];
+        $characterGroup['capitalAppearances'] = ['$sum' => ['$cond' => [['$in' => ['$groupID', [30, 485, 547, 659, 1538, 4594, 5120]]], '$kills', 0]]];
+        $characterGroup['superAppearances'] = ['$sum' => ['$cond' => [['$eq' => ['$groupID', 659]], '$kills', 0]]];
+        $characterGroup['titanAppearances'] = ['$sum' => ['$cond' => [['$eq' => ['$groupID', 30]], '$kills', 0]]];
+    }
     $finalProject = [
         '_id' => 0,
         'type' => ['$literal' => 'characterID'],
@@ -312,6 +320,19 @@ function materializeShips($completeKey, $date, $collection, $field, $firstKillID
         $field . 'Updated' => ['$literal' => $updated],
         $field . 'RunID' => ['$literal' => $runID],
     ];
+    if ($includeActivityTags) {
+        $finalProject['activityTags'] = ['$cond' => [
+            ['$gt' => [['$add' => ['$blopsAppearances', '$logiAppearances', '$capitalAppearances', '$superAppearances', '$titanAppearances']], 0]],
+            [
+                'blops' => '$blopsAppearances',
+                'logi' => '$logiAppearances',
+                'capital' => '$capitalAppearances',
+                'super' => '$superAppearances',
+                'titan' => '$titanAppearances',
+            ],
+            [],
+        ]];
+    }
     $fcStages = [];
     if ($includeFc) {
         $project['attackerCount'] = 1;
@@ -394,9 +415,11 @@ function materializeShips($completeKey, $date, $collection, $field, $firstKillID
     ]);
 
     iterator_to_array($mdb->getCollection($collection)->aggregate($pipeline, ['allowDiskUse' => true]));
+    $unset = [$field => 1, $field . 'Updated' => 1, $field . 'RunID' => 1];
+    if ($includeActivityTags) $unset['activityTags'] = 1;
     $mdb->getCollection('statistics')->updateMany(
         ['type' => 'characterID', $field . 'RunID' => ['$exists' => true, '$ne' => $runID]],
-        ['$unset' => [$field => 1, $field . 'Updated' => 1, $field . 'RunID' => 1]]
+        ['$unset' => $unset]
     );
     if ($includeFc) {
         $mdb->getCollection('statistics')->updateMany(

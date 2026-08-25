@@ -279,6 +279,11 @@ function popChar(ch) {
         let cynoTitle = `Past-year fitted cynos: ${Number(ch.stats.cyno.standard) || 0} standard, ${Number(ch.stats.cyno.covert) || 0} covert, ${Number(ch.stats.cyno.industrial) || 0} industrial`;
         badges.push(`<span class="badge text-white" style="background-color: #633399;" title="${cynoTitle}">CYNO (${cynoCount})</span>`);
     }
+    (ch.stats.characterTags || []).forEach(function(tag) {
+        let hasCount = Object.prototype.hasOwnProperty.call(tag, 'count');
+        let tagText = String(tag.label || '') + (hasCount ? ` (${(Number(tag.count) || 0).toLocaleString()})` : '');
+        badges.push(`<span class="badge text-white" style="background-color: ${tag.color};" title="${tag.title}">${tagText}</span>`);
+    });
 
     let soloColor = '';
     if (ch.stats.shipsDestroyed > 10 && ch.stats.soloRatio >= 50) soloColor = 'green';

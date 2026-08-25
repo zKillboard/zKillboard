@@ -114,6 +114,16 @@ while ($time >= time()) {
             }
             $atShip |= in_array($victim['shipTypeID'], $atShipIDs);
             $kill['involved'] = $involved;
+            $victimIsCapital = isCapital($victim['shipTypeID']);
+            $capitalInvolved = $victimIsCapital;
+            if (!$capitalInvolved) {
+                foreach ($involved as $entity) {
+                    if (in_array((int) ($entity['groupID'] ?? 0), [30, 485, 513, 547, 659, 883, 902, 1538, 4594, 5120], true)) {
+                        $capitalInvolved = true;
+                        break;
+                    }
+                }
+            }
             $kill['npc'] = isNPC($kill);
             $kill['awox'] = ($kill['npc'] == true) ? false : isAwox($kill);
             $kill['solo'] = ($kill['npc'] == true) ? false : isSolo($kill);
@@ -169,7 +179,10 @@ while ($time >= time()) {
             addLabel($kill, $totalValue >= 10000000000 && $totalValue < 100000000000, 'isk:10b+');
             addLabel($kill, $totalValue >= 100000000000 && $totalValue < 1000000000000, 'isk:100b+');
             addLabel($kill, $totalValue >= 1000000000000, 'isk:1t+');
-            addLabel($kill, isCapital($victim['shipTypeID']), 'capital');
+            addLabel($kill, $victimIsCapital, 'capital');
+            addLabel($kill, $capitalInvolved, 'capinv');
+            addLabel($kill, $victim['groupID'] == 659, 'super');
+            addLabel($kill, $victim['groupID'] == 30, 'titan');
 
             $fwFaction = fwFaction($kill);
             if ($fwFaction !== null) {

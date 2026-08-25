@@ -7,8 +7,8 @@ function handler($request, $response, $args, $container) {
     $totalChars = 0;
     $totalShips = 0;
     try {
-        $includes = ['_id' => 0, 'id' => 1, 'ticker' => 1, 'name' => 1, 'corporationID' => 1, 'allianceID' => 1, 'factinoID' => 1, 'secStatus' => 1];
-        $statsIncludes = ['_id' => 0, 'id' => 1, 'shipsDestroyed' => 1, 'shipsLost' => 1, 'dangerRatio' => 1, 'gangRatio' => 1, 'avgGangSize' => 1, 'recentShips' => 1, 'recentShipsUpdated' => 1, 'topShips' => 1, 'topShipsUpdated' => 1, 'affiliates' => 1, 'associates' => 1, 'awoxCount' => 1, 'fc' => 1, 'bait' => 1, 'cyno' => 1, 'gankerCount' => 1];
+        $includes = ['_id' => 0, 'id' => 1, 'ticker' => 1, 'name' => 1, 'corporationID' => 1, 'allianceID' => 1, 'factinoID' => 1, 'secStatus' => 1, 'birthday' => 1];
+        $statsIncludes = ['_id' => 0, 'id' => 1, 'shipsDestroyed' => 1, 'shipsLost' => 1, 'dangerRatio' => 1, 'gangRatio' => 1, 'avgGangSize' => 1, 'recentShips' => 1, 'recentShipsUpdated' => 1, 'topShips' => 1, 'topShipsUpdated' => 1, 'affiliates' => 1, 'associates' => 1, 'awoxCount' => 1, 'fc' => 1, 'bait' => 1, 'cyno' => 1, 'gankerCount' => 1, 'activityTags' => 1, 'rankings.recent.all.metrics' => 1];
 
         $postData = $request->getParsedBody();
         $scan = @$postData['scan'];
@@ -173,6 +173,7 @@ function handler($request, $response, $args, $container) {
         foreach ($chars as &$row) {
             $id = (int) $row['id'];
             $stats = $statsByID[$id] ?? [];
+            $stats['characterTags'] = Stats::getCharacterTags($stats, $row);
             $shipLists = ['ships' => $stats['recentShips'] ?? [], 'topShips' => $stats['topShips'] ?? []];
             $affiliates = $stats['affiliates'] ?? [];
             $associates = [];
@@ -184,7 +185,8 @@ function handler($request, $response, $args, $container) {
             }
             $hasRecentActivity = isset($stats['recentShipsUpdated']);
             unset($stats['id']);
-            unset($stats['recentShips'], $stats['recentShipsUpdated'], $stats['topShips'], $stats['topShipsUpdated'], $stats['affiliates'], $stats['associates']);
+            unset($stats['recentShips'], $stats['recentShipsUpdated'], $stats['topShips'], $stats['topShipsUpdated'], $stats['affiliates'], $stats['associates'], $stats['activityTags'], $stats['rankings']);
+            unset($row['birthday']);
             $row['stats'] = $stats;
             $row['affiliates'] = $affiliates;
             $row['associates'] = $associates;

@@ -386,6 +386,9 @@ function handler($request, $response, $args, $container)
 		$id = (int) $id;
 	}
 	$statistics = $mdb->findDoc('statistics', ['type' => $statType, 'id' => $id]);
+	if ($key == 'character') {
+		$extra['characterTags'] = Stats::getCharacterTags($statistics, $detail);
+	}
 	if ($key == 'character' && $pageType == 'scanalyzer') {
 		$characterIDs = [];
 		$allianceIDs = [];

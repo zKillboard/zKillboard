@@ -28,6 +28,7 @@ function handler($request, $response, $args, $container)
 			$labels[$label] = ['name' => $name, 'order' => $order++];
 		}
 	}
+	$labels['cat:350001'] = ['name' => 'Dust 514', 'order' => $order++];
 	foreach ($stats as $label => $unused) {
 		if (!isset($labels[$label]) && preg_match('/^cat:\d+$/', $label)) $labels[$label] = ['name' => '', 'order' => $order++];
 	}
@@ -66,6 +67,9 @@ function handler($request, $response, $args, $container)
 		'ganked' => 'A killmail classified as a high-security-space gank.',
 		'padding' => 'A killmail identified as likely killboard padding.',
 		'capital' => 'The victim ship belongs to a capital market group.',
+		'capinv' => 'A capital ship appears as the victim or an attacker.',
+		'super' => 'The victim ship is a supercarrier.',
+		'titan' => 'The victim ship is a titan.',
 		'atShip' => 'An Alliance Tournament prize ship was involved.',
 		'fw:calgal' => 'Caldari–Gallente faction warfare combat.',
 		'fw:amamin' => 'Amarr–Minmatar faction warfare combat.',
@@ -80,7 +84,7 @@ function handler($request, $response, $args, $container)
 		'isk:100b+' => '#6e331f', 'isk:1t+' => '#6b2f45',
 		'pvp' => '#285c00', 'npc' => '#3f3f3f', 'awox' => '#781500', 'ganked' => '#6b2f45', 'padding' => '#604515',
 		'fw:calgal' => '#24536f', 'fw:caldari' => '#294f6b', 'fw:gallente' => '#285c40', 'fw:amamin' => '#604515',
-		'fw:amarr' => '#6b541e', 'fw:minmatar' => '#73331f', 'capital' => '#57285e', 'atShip' => '#6b2f45',
+		'fw:amarr' => '#6b541e', 'fw:minmatar' => '#73331f', 'capital' => '#57285e', 'capinv' => '#6e331f', 'super' => '#6b2f45', 'titan' => '#604515', 'atShip' => '#6b2f45',
 	];
 	$categoryColors = ['#24536f', '#2f5f55', '#3f5f2a', '#665a1f', '#604515', '#6e331f', '#6b2f45', '#57285e', '#3f3f3f'];
 
@@ -92,7 +96,7 @@ function handler($request, $response, $args, $container)
 		else if (str_starts_with($label, 'isk:')) $group = 'isk';
 		else if (str_starts_with($label, 'cat:')) $group = 'category';
 		else if (str_starts_with($label, 'fw:')) $group = 'fw';
-		else if (in_array($label, ['capital', 'atShip'], true)) $group = 'special';
+		else if (in_array($label, ['capital', 'capinv', 'super', 'titan', 'atShip'], true)) $group = 'special';
 		else $group = 'other';
 
 		$name = $nameOverrides[$label] ?? $labelData['name'];
