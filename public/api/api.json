@@ -1,0 +1,537 @@
+{
+    "sections": [
+        {
+            "id": "killmails",
+            "label": "Killmail queries",
+            "icon": "fa-crosshairs",
+            "description": "Build a filtered path to retrieve ESI-format killmails with zKillboard metadata.",
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/api/{modifiers}/",
+                    "summary": "Search killmails",
+                    "cache": "1-hour client cache",
+                    "description": "Modifiers are path segments, can be combined in any order, and return up to 200 killmails. Results are newest first and include the ESI killmail plus a zkb metadata object.",
+                    "parameters": [
+                        {
+                            "name": "kills, losses",
+                            "type": "flag",
+                            "description": "Match an entity as an attacker or victim. Omit both to include either side."
+                        },
+                        {
+                            "name": "characterID/{id}",
+                            "type": "Entity ID",
+                            "description": "Filter by character."
+                        },
+                        {
+                            "name": "corporationID/{id}",
+                            "type": "Entity ID",
+                            "description": "Filter by corporation."
+                        },
+                        {
+                            "name": "allianceID/{id}",
+                            "type": "Entity ID",
+                            "description": "Filter by alliance."
+                        },
+                        {
+                            "name": "factionID/{id}",
+                            "type": "Entity ID",
+                            "description": "Filter by faction."
+                        },
+                        {
+                            "name": "shipTypeID/{id}",
+                            "type": "Entity ID",
+                            "description": "Filter by victim or attacker ship type."
+                        },
+                        {
+                            "name": "groupID/{id}",
+                            "type": "Entity ID",
+                            "description": "Filter by inventory group."
+                        },
+                        {
+                            "name": "solarSystemID/{id}",
+                            "type": "Entity ID",
+                            "description": "Filter by solar system. systemID is accepted as an alias."
+                        },
+                        {
+                            "name": "constellationID/{id}",
+                            "type": "Entity ID",
+                            "description": "Filter by constellation."
+                        },
+                        {
+                            "name": "regionID/{id}",
+                            "type": "Entity ID",
+                            "description": "Filter by region."
+                        },
+                        {
+                            "name": "locationID/{id}",
+                            "type": "Entity ID",
+                            "description": "Filter by a resolved location."
+                        },
+                        {
+                            "name": "warID/{id}",
+                            "type": "Entity ID",
+                            "description": "Filter by war."
+                        },
+                        {
+                            "name": "killID/{id}",
+                            "type": "integer",
+                            "description": "Fetch one killmail by ID."
+                        },
+                        {
+                            "name": "highsec, lowsec, nullsec, w-space, abyssal",
+                            "type": "flag",
+                            "description": "Filter by security band or special space."
+                        },
+                        {
+                            "name": "solo, ganked",
+                            "type": "flag",
+                            "description": "Return only solo PvP or highsec ganks."
+                        },
+                        {
+                            "name": "awox/{0|1}, npc/{0|1}",
+                            "type": "boolean",
+                            "description": "Include or exclude awox and NPC killmails."
+                        },
+                        {
+                            "name": "label/{label}",
+                            "type": "string",
+                            "description": "Filter on a raw zKillboard label, such as capital or loc:pochven."
+                        },
+                        {
+                            "name": "finalblow-only",
+                            "type": "flag",
+                            "description": "Require the selected entity to have the final blow. Place an entity filter first."
+                        },
+                        {
+                            "name": "iskValue/{value}",
+                            "type": "integer",
+                            "description": "Minimum total value in ISK. The value must be a positive multiple of 500,000,000."
+                        },
+                        {
+                            "name": "pastSeconds/{seconds}",
+                            "type": "integer",
+                            "description": "Look back up to 604,800 seconds in one-hour increments. Place an entity filter first."
+                        },
+                        {
+                            "name": "year/{YYYY}/month/{M}",
+                            "type": "date",
+                            "description": "Select a calendar month. Month is 1–12 without a leading zero. Place an entity filter first."
+                        },
+                        {
+                            "name": "page/{page}",
+                            "type": "integer",
+                            "description": "Page 1–100, with up to 200 results per page. Place an entity filter first."
+                        },
+                        {
+                            "name": "pretty",
+                            "type": "flag",
+                            "description": "Pretty-print the JSON response."
+                        }
+                    ],
+                    "examples": [
+                        {
+                            "label": "Squizz Caphinator kills",
+                            "code": "https://zkillboard.com/api/kills/characterID/1633218082/",
+                            "url": "/api/kills/characterID/1633218082/"
+                        },
+                        {
+                            "label": "Hole Lotta Trouble losses in wormhole space",
+                            "code": "https://zkillboard.com/api/losses/w-space/corporationID/98798418/",
+                            "url": "/api/losses/w-space/corporationID/98798418/"
+                        },
+                        {
+                            "label": "The Wormhole Police kills",
+                            "code": "https://zkillboard.com/api/kills/allianceID/99010102/",
+                            "url": "/api/kills/allianceID/99010102/"
+                        },
+                        {
+                            "label": "A week of Squizz Caphinator solo kills",
+                            "code": "https://zkillboard.com/api/kills/characterID/1633218082/solo/pastSeconds/604800/",
+                            "url": "/api/kills/characterID/1633218082/solo/pastSeconds/604800/"
+                        }
+                    ],
+                    "response": "[\n  {\n    \"killmail_id\": 123456789,\n    \"killmail_time\": \"2026-08-24T20:15:00Z\",\n    \"solar_system_id\": 30000142,\n    \"victim\": { \"...\": \"ESI victim and items\" },\n    \"attackers\": [{ \"...\": \"ESI attacker\" }],\n    \"zkb\": {\n      \"hash\": \"...\",\n      \"totalValue\": 123456789.01,\n      \"points\": 42,\n      \"npc\": false,\n      \"solo\": true,\n      \"awox\": false,\n      \"labels\": [\"solo\", \"loc:highsec\"]\n    }\n  }\n]",
+                    "notes": [
+                        "Do not use query strings on this endpoint; filters belong in the path.",
+                        "Killmails less than five minutes old are withheld from this API.",
+                        "The legacy zkbOnly, no-attackers, no-items, asc, desc, json, xml, limit, orderDirection, startTime/endTime, beforeKillID/afterKillID, and comma-separated Entity ID modifiers are disabled.",
+                        "Responses include a wildcard CORS header for browser-based clients."
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "data",
+            "label": "Statistics & prices",
+            "icon": "fa-chart-bar",
+            "description": "Read entity statistics and the historical prices used to value killmails.",
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/api/stats/{entityType}/{entityID}/{sort}/",
+                    "summary": "Entity statistics",
+                    "cache": "10-minute server cache",
+                    "description": "Returns the statistics zKillboard displays for an entity, including rankings, activity, top lists, and recent high-value kills.",
+                    "parameters": [
+                        {
+                            "name": "entityType",
+                            "type": "enum",
+                            "required": true,
+                            "description": "characterID, corporationID, allianceID, factionID, shipTypeID, groupID, solarSystemID, or regionID."
+                        },
+                        {
+                            "name": "entityID",
+                            "type": "Entity ID",
+                            "required": true,
+                            "description": "The EVE Online ID for the selected entity."
+                        },
+                        {
+                            "name": "sort",
+                            "type": "enum",
+                            "description": "kills or isk. This changes the order of topLists only. Omit it to redirect to kills."
+                        },
+                        {
+                            "name": "callback",
+                            "type": "query string",
+                            "description": "Optional valid JavaScript callback name for JSONP."
+                        }
+                    ],
+                    "examples": [
+                        {
+                            "label": "Hole Lotta Trouble, top lists by kills",
+                            "code": "https://zkillboard.com/api/stats/corporationID/98798418/kills/",
+                            "url": "/api/stats/corporationID/98798418/kills/"
+                        },
+                        {
+                            "label": "Hole Lotta Trouble, top lists by ISK",
+                            "code": "https://zkillboard.com/api/stats/corporationID/98798418/isk/",
+                            "url": "/api/stats/corporationID/98798418/isk/"
+                        }
+                    ],
+                    "response": "{\n  \"shipsDestroyed\": 1234,\n  \"shipsLost\": 321,\n  \"iskDestroyed\": 123456789.01,\n  \"rankings\": { \"...\": \"all-time and recent rankings\" },\n  \"activepvp\": { \"...\": \"activity data\" },\n  \"info\": { \"id\": 98798418, \"name\": \"Hole Lotta Trouble\" },\n  \"topLists\": [{ \"title\": \"Top Characters\", \"values\": [] }],\n  \"topListsSort\": \"kills\",\n  \"topIskKillIDs\": []\n}"
+                },
+                {
+                    "method": "GET",
+                    "path": "/api/prices/{typeID}/",
+                    "summary": "Item price history",
+                    "cache": "10-minute server cache",
+                    "description": "Returns the daily price history and current price zKillboard uses when calculating killmail values.",
+                    "parameters": [
+                        {
+                            "name": "typeID",
+                            "type": "Entity ID",
+                            "required": true,
+                            "description": "Inventory type ID."
+                        },
+                        {
+                            "name": "callback",
+                            "type": "query string",
+                            "description": "Optional valid JavaScript callback name for JSONP."
+                        }
+                    ],
+                    "examples": [
+                        {
+                            "label": "Tritanium prices",
+                            "code": "https://zkillboard.com/api/prices/34/",
+                            "url": "/api/prices/34/"
+                        }
+                    ],
+                    "response": "{\n  \"2026-08-23\": 3.70,\n  \"2026-08-24\": 3.85,\n  \"currentPrice\": 3.94\n}"
+                }
+            ]
+        },
+        {
+            "id": "posting",
+            "label": "Posting killmails",
+            "icon": "fa-upload",
+            "description": "Submit an ESI killmail immediately or queue it for delayed publication.",
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/api/killmail/add/{killID}/{hash}/[{delay}/]",
+                    "summary": "Submit a killmail as JSON",
+                    "cache": "Not cached",
+                    "description": "Validates the ID and 40-character ESI hash, fetches the killmail, and returns a machine-readable result. Delayed requests return as soon as they are queued.",
+                    "parameters": [
+                        {
+                            "name": "killID",
+                            "type": "integer",
+                            "required": true,
+                            "description": "Killmail ID from ESI."
+                        },
+                        {
+                            "name": "hash",
+                            "type": "string",
+                            "required": true,
+                            "description": "The 40-character ESI killmail hash."
+                        },
+                        {
+                            "name": "delay",
+                            "type": "integer",
+                            "description": "0 ASAP, 1 one hour, 2 three hours, 3 eight hours, 4 one day, or 5 three days. Invalid values become 0."
+                        }
+                    ],
+                    "examples": [
+                        {
+                            "label": "Post with a one-hour delay",
+                            "code": "curl --compressed -X POST -A \"MyApp/1.0 (maintainer@example.com)\" \\\n  \"https://zkillboard.com/api/killmail/add/{killID}/{hash}/1/\""
+                        }
+                    ],
+                    "response": "{\n  \"status\": \"success\",\n  \"new\": true,\n  \"delayed\": true,\n  \"delay\": 1,\n  \"url\": \"https://zkillboard.com/kill/123456789/\"\n}",
+                    "notes": [
+                        "HTTP 401 means the poster exceeded the invalid-post trust limit; 408 means immediate processing timed out; 422 means the request or ESI result was invalid."
+                    ]
+                },
+                {
+                    "method": "POST",
+                    "path": "/post/",
+                    "summary": "Submit a killmail as a form",
+                    "cache": "Not cached",
+                    "description": "The browser-oriented alternative. Send an ESI killmail URL as form data; the response is HTML or a redirect to the killmail.",
+                    "parameters": [
+                        {
+                            "name": "killmailurl",
+                            "type": "form string",
+                            "required": true,
+                            "description": "A URL in the form https://esi.evetech.net/killmails/{killID}/{hash}/."
+                        },
+                        {
+                            "name": "delay",
+                            "type": "form integer",
+                            "description": "Uses the same 0–5 delay scale as the JSON endpoint."
+                        }
+                    ],
+                    "examples": [
+                        {
+                            "label": "Form submission",
+                            "code": "curl --compressed -A \"MyApp/1.0 (maintainer@example.com)\" \\\n  --data-urlencode \"killmailurl=https://esi.evetech.net/killmails/{killID}/{hash}/\" \\\n  --data \"delay=0\" https://zkillboard.com/post/"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "archives",
+            "label": "Live feed & archives",
+            "icon": "fa-stream",
+            "description": "Iterate new killmails through R2Z2 or download complete daily history files.",
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "r2z2.zkillboard.com/ephemeral/sequence.json",
+                    "summary": "Discover the R2Z2 sequence",
+                    "cache": "1-day cache",
+                    "description": "Returns a recent monotonic sequence ID. Fetch that numbered JSON file, increment the sequence, and continue until a 404.",
+                    "examples": [
+                        {
+                            "label": "Current sequence",
+                            "code": "https://r2z2.zkillboard.com/ephemeral/sequence.json",
+                            "url": "https://r2z2.zkillboard.com/ephemeral/sequence.json"
+                        }
+                    ],
+                    "response": "{ \"sequence\": 96088891 }",
+                    "notes": [
+                        "The pointer updates every 51 killmails. Sequence IDs are global, strictly increasing, and monotonic. A reprocessed killmail may appear again under a new sequence ID."
+                    ]
+                },
+                {
+                    "method": "GET",
+                    "path": "r2z2.zkillboard.com/ephemeral/{sequence}.json",
+                    "summary": "Fetch a live-feed killmail",
+                    "cache": "1-day cache",
+                    "description": "Returns the raw ESI killmail, zKillboard metadata, upload time, sequence ID, and an optional sequence_updated marker.",
+                    "parameters": [
+                        {
+                            "name": "sequence",
+                            "type": "integer",
+                            "required": true,
+                            "description": "The sequence to fetch. Increment by one after each successful response."
+                        }
+                    ],
+                    "examples": [
+                        {
+                            "label": "Sequence file",
+                            "code": "https://r2z2.zkillboard.com/ephemeral/96088891.json",
+                            "url": "https://r2z2.zkillboard.com/ephemeral/96088891.json"
+                        }
+                    ],
+                    "notes": [
+                        "Files remain available for at least 24 hours. Filter locally after retrieval.",
+                        "After a 404, wait at least six seconds before trying again. The service allows up to 15 requests per second per IP and requires a non-empty User-Agent."
+                    ]
+                },
+                {
+                    "method": "GET",
+                    "path": "r2z2.zkillboard.com/history/{YYYYMMDD}.json",
+                    "summary": "Daily killmail IDs and hashes",
+                    "cache": "1-day cache",
+                    "description": "Returns every known killmail ID and hash for a UTC date. Use this compact index when rebuilding an archive.",
+                    "parameters": [
+                        {
+                            "name": "YYYYMMDD",
+                            "type": "date",
+                            "required": true,
+                            "description": "UTC calendar date, such as 20160816."
+                        }
+                    ],
+                    "examples": [
+                        {
+                            "label": "ID and hash archive",
+                            "code": "https://r2z2.zkillboard.com/history/20160816.json",
+                            "url": "https://r2z2.zkillboard.com/history/20160816.json"
+                        },
+                        {
+                            "label": "Legacy redirect",
+                            "code": "https://zkillboard.com/api/history/20160816/",
+                            "url": "/api/history/20160816/"
+                        }
+                    ]
+                },
+                {
+                    "method": "GET",
+                    "path": "r2z2.zkillboard.com/history/raw/{YYYYMMDD}.json",
+                    "summary": "Daily full killmail archive",
+                    "cache": "1-day cache",
+                    "description": "Downloads the full raw killmail data known to zKillboard for one UTC date.",
+                    "examples": [
+                        {
+                            "label": "Full daily archive",
+                            "code": "https://r2z2.zkillboard.com/history/raw/20160816.json",
+                            "url": "https://r2z2.zkillboard.com/history/raw/20160816.json"
+                        }
+                    ]
+                },
+                {
+                    "method": "GET",
+                    "path": "r2z2.zkillboard.com/history/totals.json",
+                    "summary": "Daily archive totals",
+                    "cache": "1-day cache",
+                    "description": "Returns the number of archived killmails for each date so clients can identify missing or changed daily files.",
+                    "examples": [
+                        {
+                            "label": "Archive counts",
+                            "code": "https://r2z2.zkillboard.com/history/totals.json",
+                            "url": "https://r2z2.zkillboard.com/history/totals.json"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "utilities",
+            "label": "Supporting endpoints",
+            "icon": "fa-toolbox",
+            "description": "Smaller public endpoints used by zKillboard pages and integrations.",
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/api/related/{systemID}/{YYYYMMDDHHMM}/",
+                    "summary": "Related battle report data",
+                    "cache": "10-minute server cache",
+                    "description": "Builds the JSON data behind a related-kills report for a solar system and UTC time.",
+                    "parameters": [
+                        {
+                            "name": "systemID",
+                            "type": "Entity ID",
+                            "required": true,
+                            "description": "Solar system ID."
+                        },
+                        {
+                            "name": "YYYYMMDDHHMM",
+                            "type": "UTC date/time",
+                            "required": true,
+                            "description": "Report center time, such as 202510311800."
+                        }
+                    ],
+                    "examples": [
+                        {
+                            "label": "Jita related report",
+                            "code": "https://zkillboard.com/api/related/30000142/202510311800/",
+                            "url": "/api/related/30000142/202510311800/"
+                        }
+                    ]
+                },
+                {
+                    "method": "GET",
+                    "path": "/api/recentactivity/",
+                    "summary": "Recently active entity IDs",
+                    "cache": "10-minute server cache",
+                    "description": "Returns distinct character, corporation, alliance, faction, ship type, and group IDs present in the rolling 90-day activity collection.",
+                    "examples": [
+                        {
+                            "label": "Recent activity IDs",
+                            "code": "https://zkillboard.com/api/recentactivity/",
+                            "url": "/api/recentactivity/"
+                        }
+                    ],
+                    "response": "{\n  \"characterID\": [123, 456],\n  \"corporationID\": [789],\n  \"allianceID\": [],\n  \"factionID\": [],\n  \"shipTypeID\": [587],\n  \"groupID\": [25]\n}"
+                },
+                {
+                    "method": "GET",
+                    "path": "/api/supers/",
+                    "summary": "Known supercapital activity",
+                    "cache": "10-minute server cache",
+                    "description": "Returns the cached titan and supercarrier intel datasets used by the supers page.",
+                    "examples": [
+                        {
+                            "label": "Supercapital intel",
+                            "code": "https://zkillboard.com/api/supers/",
+                            "url": "/api/supers/"
+                        }
+                    ],
+                    "response": "{\n  \"titans\": { \"title\": \"Titans\", \"data\": [] },\n  \"supercarriers\": { \"title\": \"Supercarriers\", \"data\": [] }\n}"
+                },
+                {
+                    "method": "GET",
+                    "path": "/api/version/",
+                    "summary": "Application version",
+                    "cache": "1-hour client cache",
+                    "description": "Returns the currently deployed zKillboard build identifier. Cached for one hour.",
+                    "examples": [
+                        {
+                            "label": "Current version",
+                            "code": "https://zkillboard.com/api/version/",
+                            "url": "/api/version/"
+                        }
+                    ],
+                    "response": "{ \"version\": \"910d6f91\" }"
+                },
+                {
+                    "method": "GET",
+                    "path": "/api/character-title/{titleID}/",
+                    "summary": "Resolve a character title",
+                    "cache": "24-hour client cache",
+                    "description": "Resolves an SDE character-title UUID to its English name. Unknown or malformed IDs return HTTP 404.",
+                    "parameters": [
+                        {
+                            "name": "titleID",
+                            "type": "UUID",
+                            "required": true,
+                            "description": "Character title UUID from the EVE static data export."
+                        }
+                    ],
+                    "response": "{\n  \"id\": \"00000000-0000-0000-0000-000000000000\",\n  \"name\": \"Title name\"\n}"
+                },
+                {
+                    "method": "GET",
+                    "path": "/cache/bypass/healthcheck/",
+                    "summary": "Service health",
+                    "cache": "Not cached",
+                    "description": "Checks whether the application can reach Redis and MongoDB and whether the responding host sees itself as the MongoDB primary.",
+                    "examples": [
+                        {
+                            "label": "Current service health",
+                            "code": "https://zkillboard.com/cache/bypass/healthcheck/",
+                            "url": "/cache/bypass/healthcheck/"
+                        }
+                    ],
+                    "response": "{\n  \"host\": \"web-host\",\n  \"redis\": true,\n  \"redis-error\": null,\n  \"mongo\": true,\n  \"mongo-error\": null,\n  \"isMongoPrimary\": false\n}",
+                    "notes": [
+                        "This endpoint bypasses caches and performs live dependency checks. Poll it sparingly."
+                    ]
+                }
+            ]
+        }
+    ]
+}

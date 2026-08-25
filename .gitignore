@@ -6,7 +6,8 @@ public/sitemaps/
 /vendor/
 work
 public/ztop.txt
-public/api/
+public/api/*
+!public/api/api.json
 public/ads.txt
 public/img/sales/
 public/img/icons/

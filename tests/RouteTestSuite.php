@@ -324,6 +324,8 @@ class RouteTestSuite {
         
         // API routes - REAL vs FAKE entity testing
         echo "\n--- API Routes (Real IDs) ---\n";
+        $this->testRoute('/api/', 200, 'API documentation');
+        $this->testRoute('/api/api.json', 200, 'API documentation JSON');
         $this->testRoute('/api/stats/', 200, 'API stats endpoint');
         $this->testRoute("/api/stats/character/{$this->realCharacterId}/", [200, 302, 404], 'API character stats (REAL character)');
         $this->testRoute("/api/related/{$this->realSystemId}/202510311800/", 200, 'API related kills (REAL system)');

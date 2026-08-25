@@ -1,0 +1,320 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'API Documentation';
+  - $description = 'Human-friendly documentation for the zKillboard API, live R2Z2 feed, killmail archives, statistics, prices, and posting endpoints.';
+
+block title
+  include components/title.pug
+
+block style
+  style.
+    .api-docs { --api-accent: #153f56; --bs-primary-rgb: 21, 63, 86; --bs-focus-ring-color: rgba(21, 63, 86, .35); padding-top: 1rem; }
+    .api-docs .alert-primary { background-color: var(--api-accent); }
+    .api-docs .btn-primary { --bs-btn-bg: var(--api-accent); --bs-btn-border-color: var(--api-accent); --bs-btn-hover-bg: #1b526f; --bs-btn-hover-border-color: #1b526f; --bs-btn-active-bg: #113348; --bs-btn-active-border-color: #113348; }
+    .api-docs .list-group-item-action:hover { border-color: var(--api-accent); }
+    .api-docs .text-primary { color: var(--bs-gray-200) !important; }
+    .api-docs-endpoint > summary { align-items: center; border-bottom-color: transparent; cursor: pointer; display: flex; list-style: none; }
+    .api-docs-endpoint > summary::-webkit-details-marker { display: none; }
+    .api-docs-endpoint > summary::before { color: var(--bs-gray-200); content: '›'; flex: 0 0 .75rem; font-size: 1.25rem; line-height: 1; margin-right: .5rem; text-align: center; transition: transform .15s ease; }
+    .api-docs-endpoint[open] > summary { border-bottom-color: var(--api-accent); }
+    .api-docs-endpoint[open] > summary::before { transform: rotate(90deg); }
+    .api-docs-endpoint:not([open]) > summary { border-radius: calc(var(--bs-border-radius) - 1px); }
+    .api-docs-endpoint > summary > .d-flex { flex: 1; min-width: 0; }
+    .api-docs [data-api-endpoint], .api-docs section { scroll-margin-top: 1rem; }
+    .api-docs pre { max-height: 24rem; white-space: pre-wrap; word-break: break-word; }
+    .api-docs code { color: var(--bs-gray-200); overflow-wrap: anywhere; }
+    .api-docs-search::placeholder { color: var(--bs-secondary-color); opacity: 1; }
+    .api-docs-endpoint { border: 1px solid var(--api-accent); border-left-width: .25rem; overflow: hidden; }
+    #publifttop, #publifttop + .pbsep, #publifttop + .pbsep + .pbblock { display: none !important; }
+    @media (min-width: 992px) {
+      .api-docs-nav { position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; }
+    }
+
+block content
+  .api-docs
+    header.mb-4
+      h1.display-6.fw-bold.mt-0.mb-0 zKillboard API
+
+    .row.g-4
+      aside.col-lg-3
+        .api-docs-nav
+          label.form-label.fw-bold(for="api-docs-search") Find an endpoint
+          .input-group.mb-2
+            span.input-group-text
+              i.fas.fa-search(aria-hidden="true")
+            input#api-docs-search.api-docs-search.form-control(type="search" placeholder="Search endpoints…" autocomplete="off")
+            button#api-docs-clear.btn.btn-secondary(type="button" disabled aria-label="Clear endpoint search") Clear
+          p#api-docs-status.small.text-body-secondary.mb-3(role="status" aria-live="polite")
+          nav.list-group.mb-4(aria-label="API documentation sections")
+            a.list-group-item.list-group-item-action.bg-black(href="#quick-start")
+              i.fas.fa-rocket.fa-fw.me-2.text-primary(aria-hidden="true")
+              | Quick start
+            each $section in ($sections ?? [])
+              a.list-group-item.list-group-item-action.bg-black(href=('#' . $section['id']))
+                i.fas.fa-fw.me-2.text-primary(class=$section['icon'] aria-hidden="true")
+                = $section['label']
+                span.badge.bg-primary.float-end= count($section['endpoints'])
+          p.small.text-body-secondary.mb-2
+            strong Need help?
+            |  Ask in the #zkillboard-com channel and include the request URL, response status, and your use case.
+          a.btn.bn-success.w-100(href=($discordServer ?? '') target="_blank" rel="noopener noreferrer" style="background-color: #6E85D2; color: white;")
+            img(src="/img/discord.png" alt="Discord logo" height="22" loading="lazy" decoding="async" fetchpriority="low")
+            |  Discord
+
+      .col-lg-9
+        section#quick-start.mb-5(data-api-section)
+          .d-flex.align-items-center.gap-2.mb-2
+            i.fas.fa-rocket.fa-lg.text-primary(aria-hidden="true")
+            h2.h3.mb-0 Quick start
+          p.text-body-secondary Build a common killmail query here, or compose any of the path modifiers documented below.
+
+          .card.bg-black.border-primary.mb-3
+            .card-header.fw-bold.text-primary Killmail URL builder
+            .card-body
+              .row.g-3
+                .col-sm-6.col-xl-2
+                  label.form-label(for="api-builder-side") Side
+                  select#api-builder-side.form-select
+                    option(value="kills" selected) Kills
+                    option(value="losses") Losses
+                    option(value="") Kills and losses
+                .col-sm-6.col-xl-4
+                  label.form-label(for="api-builder-entity") Entity
+                  select#api-builder-entity.form-select
+                    option(value="characterID" data-example-id="1633218082" selected) Character — Squizz Caphinator
+                    option(value="corporationID" data-example-id="98798418") Corporation — Hole Lotta Trouble
+                    option(value="allianceID" data-example-id="99010102") Alliance — The Wormhole Police
+                    option(value="factionID" data-example-id="500001") Faction — Caldari State
+                    option(value="shipTypeID" data-example-id="587") Ship type — Rifter
+                    option(value="groupID" data-example-id="25") Group — Frigate
+                    option(value="solarSystemID" data-example-id="30000142") Solar system — Jita
+                    option(value="constellationID" data-example-id="20000020") Constellation — Kimotoro
+                    option(value="regionID" data-example-id="10000002") Region — The Forge
+                    option(value="warID" data-example-id="697413") War — The Wormhole Police
+                .col-sm-6.col-xl-3
+                  label.form-label(for="api-builder-id") Entity ID
+                  input#api-builder-id.form-control(type="number" min="1" value="1633218082" inputmode="numeric")
+                .col-sm-6.col-xl-3
+                  label.form-label(for="api-builder-space") Space
+                  select#api-builder-space.form-select
+                    option(value="" selected) Any
+                    option(value="highsec") Highsec
+                    option(value="lowsec") Lowsec
+                    option(value="nullsec") Nullsec
+                    option(value="w-space") W-Space
+                    option(value="abyssal") Abyssal
+              .d-flex.flex-wrap.gap-3.mt-3
+                .form-check
+                  input#api-builder-solo.form-check-input(type="checkbox")
+                  label.form-check-label(for="api-builder-solo") Solo only
+                .form-check
+                  input#api-builder-ganked.form-check-input(type="checkbox")
+                  label.form-check-label(for="api-builder-ganked") Ganked only
+                .form-check
+                  input#api-builder-pretty.form-check-input(type="checkbox")
+                  label.form-check-label(for="api-builder-pretty") Pretty JSON
+              label.form-label.fw-bold.mt-3(for="api-builder-url") Generated URL
+              .input-group
+                input#api-builder-url.form-control.font-monospace(type="text" readonly)
+                button.btn.btn-secondary(type="button" data-copy-target="api-builder-url")
+                  i.fas.fa-copy.me-1(aria-hidden="true")
+                  | Copy
+                a#api-builder-open.btn.btn-primary(href="#" target="_blank" rel="noopener noreferrer")
+                  i.fas.fa-external-link-alt.me-1(aria-hidden="true")
+                  | Open
+
+          .row.g-3
+            .col-md-6
+              .card.bg-black.border-primary.h-100
+                .card-header.fw-bold.text-primary Request etiquette
+                .card-body
+                  ul.mb-0
+                    li Send a descriptive 
+                      code User-Agent
+                      |  with a maintainer or project URL.
+                    li Send 
+                      code Accept-Encoding: gzip
+                      |  or use a client with compression enabled.
+                    li Cache responses locally and space repeated requests out.
+                    li A trailing slash is required on zKillboard API paths.
+            .col-md-6
+              .card.bg-black.border-primary.h-100
+                .card-header.fw-bold.text-primary First request
+                .card-body
+                  pre.bg-black.border.rounded.p-3.mb-2
+                    code curl --compressed \
+                      | 
+                      |   -A "MyApp/1.0 (maintainer@example.com)" \
+                      | 
+                      |   "https://zkillboard.com/api/kills/characterID/1633218082/"
+                  button.btn.btn-sm.btn-secondary(type="button" data-copy='curl --compressed -A "MyApp/1.0 (maintainer@example.com)" "https://zkillboard.com/api/kills/characterID/1633218082/"')
+                    i.fas.fa-copy.me-1(aria-hidden="true")
+                    | Copy cURL
+
+          .card.bg-black.border-primary.mt-3
+            .card-body.py-3
+              strong.text-primary Conventions:
+              |  Entity IDs come from EVE Online, dates and times are UTC, and read endpoints do not require authentication. Validation errors from older endpoints may use a JSON 
+              code error
+              |  object without a non-2xx HTTP status, so clients should inspect the response body.
+
+        #api-docs-empty.alert.alert-secondary.d-none No endpoints match that search.
+
+        each $section in ($sections ?? [])
+          section.mb-5(data-api-section id=$section['id'])
+            .d-flex.align-items-center.gap-2.mb-1
+              i.fas.fa-lg.text-primary(class=$section['icon'] aria-hidden="true")
+              h2.h3.mb-0= $section['label']
+            p.text-body-secondary.mb-3= $section['description']
+
+            each $endpoint in $section['endpoints']
+              - $searchText = strtolower($section['label'] . ' ' . json_encode($endpoint));
+              details.api-docs-endpoint.card.bg-black.mb-3(data-api-endpoint data-api-search=$searchText)
+                summary.card-header.py-3.bg-black
+                  .d-flex.flex-wrap.justify-content-between.align-items-center.gap-2.ms-1
+                    span.d-inline-flex.flex-wrap.align-items-center.gap-2
+                      span.badge.bg-primary= $endpoint['method']
+                      code.fs-6= $endpoint['path']
+                      span.text-body-secondary= '— ' . $endpoint['summary']
+                    span.small.text-body-secondary.text-nowrap
+                      i.fas.fa-clock.me-1(aria-hidden="true")
+                      = 'Cache: ' . $endpoint['cache']
+                .card-body
+                  if (!empty($endpoint['description']))
+                    p= $endpoint['description']
+
+                  if (!empty($endpoint['parameters']))
+                    h3.h6.mt-4 Parameters
+                    .table-responsive
+                      table.table.table-sm.table-striped.align-middle
+                        thead
+                          tr
+                            th(scope="col") Name
+                            th(scope="col") Type
+                            th(scope="col") Description
+                        tbody
+                          each $parameter in $endpoint['parameters']
+                            tr
+                              td
+                                code= $parameter['name']
+                                if (!empty($parameter['required']))
+                                  span.badge.bg-secondary.ms-2 Required
+                              td.text-nowrap= $parameter['type']
+                              td= $parameter['description']
+
+                  if (!empty($endpoint['examples']))
+                    h3.h6.mt-4 Examples
+                    each $example in $endpoint['examples']
+                      .border.rounded.mb-2
+                        .d-flex.flex-wrap.justify-content-between.align-items-center.gap-2.px-3.py-2.border-bottom
+                          strong.small= $example['label']
+                          .btn-group.btn-group-sm
+                            button.btn.btn-secondary(type="button" data-copy=$example['code'])
+                              i.fas.fa-copy.me-1(aria-hidden="true")
+                              | Copy
+                            if (!empty($example['url']))
+                              a.btn.btn-primary(href=$example['url'] target="_blank" rel="noopener noreferrer") Open
+                        pre.bg-black.border-0.rounded-0.rounded-bottom.p-3.mb-0
+                          code= $example['code']
+
+                  if (!empty($endpoint['response']))
+                    h3.h6.mt-4 Response shape
+                    pre.bg-black.border.rounded.p-3.mb-0
+                      code= $endpoint['response']
+
+                  if (!empty($endpoint['notes']))
+                    .border.border-primary.rounded.p-3.mt-3
+                      ul.mb-0
+                        each $note in $endpoint['notes']
+                          li= $note
+
+block script
+  script.
+    (function () {
+      const search = document.getElementById('api-docs-search');
+      const clear = document.getElementById('api-docs-clear');
+      const status = document.getElementById('api-docs-status');
+      const empty = document.getElementById('api-docs-empty');
+      const endpoints = Array.from(document.querySelectorAll('[data-api-endpoint]'));
+      const sections = Array.from(document.querySelectorAll('[data-api-section]')).filter(function (section) {
+        return section.id !== 'quick-start';
+      });
+
+      function filterEndpoints() {
+        const query = search.value.trim().toLowerCase();
+        let visible = 0;
+        endpoints.forEach(function (endpoint) {
+          const match = query === '' || endpoint.dataset.apiSearch.includes(query);
+          endpoint.classList.toggle('d-none', !match);
+          visible += match ? 1 : 0;
+        });
+        sections.forEach(function (section) {
+          section.classList.toggle('d-none', !section.querySelector('[data-api-endpoint]:not(.d-none)'));
+        });
+        clear.disabled = query === '';
+        empty.classList.toggle('d-none', visible !== 0);
+        status.textContent = query === '' ? endpoints.length + ' endpoints' : visible + ' of ' + endpoints.length + ' endpoints';
+      }
+
+      if (search && clear && status && empty) {
+        search.addEventListener('input', filterEndpoints);
+        search.addEventListener('keydown', function (event) {
+          if (event.key === 'Escape') {
+            search.value = '';
+            filterEndpoints();
+          }
+        });
+        clear.addEventListener('click', function () {
+          search.value = '';
+          filterEndpoints();
+          search.focus();
+        });
+        filterEndpoints();
+      }
+
+      const builderInputs = Array.from(document.querySelectorAll('[id^="api-builder-"]')).filter(function (element) {
+        return !['api-builder-url', 'api-builder-open'].includes(element.id);
+      });
+      const builderUrl = document.getElementById('api-builder-url');
+      const builderOpen = document.getElementById('api-builder-open');
+
+      function updateBuilder() {
+        const parts = ['/api'];
+        const side = document.getElementById('api-builder-side').value;
+        const entity = document.getElementById('api-builder-entity').value;
+        const entityID = document.getElementById('api-builder-id').value.trim();
+        const space = document.getElementById('api-builder-space').value;
+        if (side) parts.push(side);
+        if (space) parts.push(space);
+        if (entity && /^\d+$/.test(entityID) && Number(entityID) > 0) parts.push(entity, entityID);
+        if (document.getElementById('api-builder-solo').checked) parts.push('solo');
+        if (document.getElementById('api-builder-ganked').checked) parts.push('ganked');
+        if (document.getElementById('api-builder-pretty').checked) parts.push('pretty');
+        const path = parts.join('/') + '/';
+        builderUrl.value = window.location.origin + path;
+        builderOpen.href = path;
+      }
+
+      builderInputs.forEach(function (input) {
+        input.addEventListener('input', updateBuilder);
+        input.addEventListener('change', updateBuilder);
+      });
+      document.getElementById('api-builder-entity').addEventListener('change', function () {
+        document.getElementById('api-builder-id').value = this.selectedOptions[0].dataset.exampleId;
+        updateBuilder();
+      });
+      updateBuilder();
+
+      document.addEventListener('click', function (event) {
+        const button = event.target.closest('[data-copy], [data-copy-target]');
+        if (!button) return;
+        const target = button.dataset.copyTarget ? document.getElementById(button.dataset.copyTarget) : null;
+        const value = target ? target.value : button.dataset.copy;
+        navigator.clipboard.writeText(value).then(function () {
+          const oldHtml = button.innerHTML;
+          button.textContent = 'Copied';
+          setTimeout(function () { button.innerHTML = oldHtml; }, 1200);
+        });
+      });
+    })();
