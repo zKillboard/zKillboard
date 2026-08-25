@@ -925,7 +925,7 @@ function collectPeriodRanks($job, $runID)
         if ($job['scope'] == 'all') {
             foreach ((array) ($row['labels'] ?? []) as $label) {
                 $label = (string) $label;
-                if (str_starts_with($label, 'loc:') || str_starts_with($label, 'tz:')) $statLabels[$label] = true;
+                if (str_starts_with($label, 'loc:') || str_starts_with($label, 'tz:') || str_starts_with($label, '#:') || $label == 'solo') $statLabels[$label] = true;
             }
             if ((int) ($row['system']['regionID'] ?? 0) == 10000070) {
                 foreach (array_keys($statLabels) as $label) {

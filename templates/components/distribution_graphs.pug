@@ -1,0 +1,46 @@
+- $distributionRanges = [['alltime', 'Alltime'], ['recent', 'Recent 90d'], ['weekly', 'Weekly 7d']];
+- $asearchEntityTypes = ['character' => 'characterID', 'corporation' => 'corporationID', 'alliance' => 'allianceID', 'faction' => 'factionID', 'system' => 'systemID', 'constellation' => 'constellationID', 'region' => 'regionID', 'group' => 'groupID', 'ship' => 'shipTypeID', 'location' => 'locationID'];
+- $asearchEntityType = $asearchEntityTypes[$key ?? ''] ?? '';
+- $asearchEntitySlot = in_array(($key ?? ''), ['system', 'constellation', 'region', 'location']) ? 'location' : 'attackers';
+- $hasDistributions = false;
+each $range in $distributionRanges
+  - if (!empty($extraData[$range[0] . 'TimezoneStats']) || !empty($extraData[$range[0] . 'LocationStats']) || !empty($extraData[$range[0] . 'EngagementStats'])) $hasDistributions = true;
+if ($hasDistributions)
+  section.bg-black.bg-opacity-25.rounded.p-3(aria-labelledby="activity-distribution-heading")
+    .d-flex.flex-wrap.justify-content-between.align-items-center.gap-2.mb-3
+      h3#activity-distribution-heading.mb-0 Activity Distribution
+      .nav.nav-pills(role="tablist" aria-label="Activity distribution range")
+        each $range, $rangeIndex in $distributionRanges
+          button.nav-link(type="button" role="tab" class=($rangeIndex == 0 ? 'active' : '') id=('distribution-' . $range[0] . '-tab') data-bs-toggle="tab" data-bs-target=('#distribution-' . $range[0]) aria-controls=('distribution-' . $range[0]) aria-selected=($rangeIndex == 0 ? 'true' : 'false'))= $range[1]
+    .tab-content
+      each $range, $rangeIndex in $distributionRanges
+        - $timezoneStats = $extraData[$range[0] . 'TimezoneStats'] ?? [];
+        - $locationStats = $extraData[$range[0] . 'LocationStats'] ?? [];
+        - $engagementStats = $extraData[$range[0] . 'EngagementStats'] ?? [];
+        - $asearchButtons = ['togglefilters', ($range[0] == 'weekly' ? 'week' : $range[0]), 'attackers-and', 'either-and', 'victims-and', 'sort-date', 'sort-desc', 'page1', 'allinvolved'];
+        - if ($range[0] != 'alltime') $asearchButtons[] = 'rolling';
+        .tab-pane(role="tabpanel" class=($rangeIndex == 0 ? 'show active' : '') id=('distribution-' . $range[0]) aria-labelledby=('distribution-' . $range[0] . '-tab') tabindex="0")
+          .row.g-3
+            each $graph in [['Activity timezone', $timezoneStats, '19rem'], ['Killmail locations', $locationStats, '19rem'], ['Engagement size', $engagementStats, '30rem']]
+              .col-12.col-lg-4
+                .p-3.h-100(style=('min-height: ' . $graph[2] . ';'))
+                  h4.h5= $graph[0]
+                  if (empty($graph[1]))
+                    p.text-body-secondary.mb-0 No data available for this range.
+                  else
+                    each $barStat in $graph[1]
+                      - $barStat = is_object($barStat) ? (array) $barStat : $barStat;
+                      if (($barStat['count'] ?? 0) > 0)
+                        - $barButtons = array_merge($asearchButtons, ['label-' . ($barStat['id'] ?? '')]);
+                        - $barFilters = ['buttons' => $barButtons];
+                        - if (($key ?? '') == 'label' && ($id ?? '') != ($barStat['id'] ?? '')) $barFilters['buttons'][] = 'label-' . $id;
+                        - if ($asearchEntityType != '') $barFilters[$asearchEntitySlot] = [['type' => $asearchEntityType, 'id' => (string) ($id ?? '')]];
+                        - $barHref = '/asearch/#' . rawurlencode(json_encode($barFilters, JSON_UNESCAPED_SLASHES));
+                        .d-flex.justify-content-between.gap-2.small.mb-1
+                          a.text-decoration-none(href=$barHref)= $barStat['label'] ?? ''
+                          span.text-body-secondary= number_format((float) $barStat['count'], 0) . ' killmails' . (($barStat['ratio'] ?? 0) < 5 ? (' · ' . number_format((float) ($barStat['ratio'] ?? 0), 1) . '%') : '')
+                        .progress.mb-2(style="height: 1.25rem;" aria-label=(($barStat['label'] ?? '') . ': ' . number_format((float) $barStat['count'], 0) . ' killmails, ' . number_format((float) ($barStat['ratio'] ?? 0), 1) . '%'))
+                          .progress-bar.text-white(role="progressbar" aria-valuenow=($barStat['ratio'] ?? 0) aria-valuemin="0" aria-valuemax="100" style=('width: ' . ($barStat['ratio'] ?? 0) . '%; background-color: ' . ($barStat['color'] ?? '#3f3f3f') . ';'))
+                            if (($barStat['ratio'] ?? 0) >= 5)
+                              = number_format((float) $barStat['ratio'], 0) . '%'
+  hr.border-top.border-secondary.opacity-100.my-3

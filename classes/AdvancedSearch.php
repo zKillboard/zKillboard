@@ -13,6 +13,7 @@ class AdvancedSearch
             "loc:highsec" => "HighSec", 
             "loc:lowsec" => "LowSec", 
             "loc:nullsec" => "NullSec", 
+            "loc:pochven" => "Pochven",
             "loc:w-space" => "W-Space", 
             "loc:abyssal" => "Abyssal",
         ],

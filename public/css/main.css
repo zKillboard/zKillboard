@@ -996,7 +996,10 @@ td.centered {
 	display: flex;
 	gap: 8px;
 	min-height: 42px;
-	opacity: 0.50;
+}
+
+#statsbox .stat-range-details .red {
+	color: #800000;
 }
 
 @media (max-width: 767px) {

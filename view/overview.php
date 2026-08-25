@@ -570,6 +570,91 @@ function handler($request, $response, $args, $container)
 	if (@$extra['dangerRatio'] !== null && date('md') == '0401') {  // Everyone is snuggly on the first day of the fourth month
 		$extra['dangerRatio'] = 0;
 	}
+	$buildLocationStats = function ($labels, $killmailTotal) {
+		$labels = is_object($labels ?? null) ? (array) $labels : ($labels ?? []);
+		$locationStats = [
+			'loc:highsec' => ['label' => 'Highsec', 'color' => '#285c00', 'count' => 0],
+			'loc:lowsec' => ['label' => 'Lowsec', 'color' => '#804000', 'count' => 0],
+			'loc:nullsec' => ['label' => 'Nullsec', 'color' => '#781500', 'count' => 0],
+			'loc:w-space' => ['label' => 'W-Space', 'color' => '#4f246b', 'count' => 0],
+			'loc:pochven' => ['label' => 'Pochven', 'color' => '#3f3f3f', 'count' => 0],
+		];
+		foreach ($locationStats as $location => $locationStat) {
+			$locationStats[$location]['id'] = $location;
+			$locationStats[$location]['count'] = (int) ($labels[$location]['shipsDestroyed'] ?? 0) + (int) ($labels[$location]['shipsLost'] ?? 0);
+		}
+		$locationTotal = array_sum(array_column($locationStats, 'count'));
+		$otherLocationTotal = 0;
+		foreach ($labels as $location => $locationStat) {
+			if (str_starts_with((string) $location, 'loc:') && !isset($locationStats[$location])) {
+				$otherLocationTotal += (int) ($locationStat['shipsDestroyed'] ?? 0) + (int) ($locationStat['shipsLost'] ?? 0);
+			}
+		}
+		// Older statistics predate loc:pochven, so preserve those counts as the remaining known-space location.
+		$unclassifiedLocationTotal = $locationTotal + $otherLocationTotal > 0
+			? max(0, (int) $killmailTotal - $locationTotal - $otherLocationTotal)
+			: 0;
+		$locationStats['loc:pochven']['count'] += $unclassifiedLocationTotal;
+		$locationTotal += $unclassifiedLocationTotal;
+		if ($locationTotal == 0) return [];
+
+		foreach ($locationStats as $location => $locationStat) {
+			$locationStats[$location]['ratio'] = $locationStat['count'] / $locationTotal * 100;
+		}
+		return array_values($locationStats);
+	};
+	$extra['alltimeLocationStats'] = $buildLocationStats(
+		$statistics['labels'] ?? [],
+		(int) ($statistics['shipsDestroyed'] ?? 0) + (int) ($statistics['shipsLost'] ?? 0)
+	);
+	$buildTimezoneStats = function ($labels) {
+		$labels = is_object($labels ?? null) ? (array) $labels : ($labels ?? []);
+		$timezoneStats = [
+			'tz:au' => ['label' => 'AU / China', 'color' => '#24536f', 'count' => 0],
+			'tz:ru' => ['label' => 'Russia', 'color' => '#6b2f45', 'count' => 0],
+			'tz:eu' => ['label' => 'Europe', 'color' => '#3f5f2a', 'count' => 0],
+			'tz:use' => ['label' => 'USA East', 'color' => '#604515', 'count' => 0],
+			'tz:usw' => ['label' => 'USA West', 'color' => '#4a356a', 'count' => 0],
+		];
+		foreach ($timezoneStats as $timezone => $timezoneStat) {
+			$timezoneStats[$timezone]['id'] = $timezone;
+			$timezoneStats[$timezone]['count'] = (int) ($labels[$timezone]['shipsDestroyed'] ?? 0) + (int) ($labels[$timezone]['shipsLost'] ?? 0);
+		}
+		$timezoneTotal = array_sum(array_column($timezoneStats, 'count'));
+		if ($timezoneTotal == 0) return [];
+
+		foreach ($timezoneStats as $timezone => $timezoneStat) {
+			$timezoneStats[$timezone]['ratio'] = $timezoneStat['count'] / $timezoneTotal * 100;
+		}
+		return array_values($timezoneStats);
+	};
+	$extra['alltimeTimezoneStats'] = $buildTimezoneStats($statistics['labels'] ?? []);
+	$buildEngagementStats = function ($labels) {
+		$labels = is_object($labels ?? null) ? (array) $labels : ($labels ?? []);
+		$engagementStats = [
+			'solo' => ['label' => 'Solo', 'color' => '#24536f', 'count' => 0],
+			'#:1' => ['label' => '1 attacker', 'color' => '#2f5f55', 'count' => 0],
+			'#:2+' => ['label' => '2–4 attackers', 'color' => '#3f5f2a', 'count' => 0],
+			'#:5+' => ['label' => '5–9 attackers', 'color' => '#665a1f', 'count' => 0],
+			'#:10+' => ['label' => '10–24 attackers', 'color' => '#604515', 'count' => 0],
+			'#:25+' => ['label' => '25–49 attackers', 'color' => '#6e331f', 'count' => 0],
+			'#:50+' => ['label' => '50–99 attackers', 'color' => '#6b2f45', 'count' => 0],
+			'#:100+' => ['label' => '100–999 attackers', 'color' => '#57285e', 'count' => 0],
+			'#:1000+' => ['label' => '1,000+ attackers', 'color' => '#3f3f3f', 'count' => 0],
+		];
+		foreach ($engagementStats as $engagement => $engagementStat) {
+			$engagementStats[$engagement]['id'] = $engagement;
+			$engagementStats[$engagement]['count'] = (int) ($labels[$engagement]['shipsDestroyed'] ?? 0) + (int) ($labels[$engagement]['shipsLost'] ?? 0);
+		}
+		$engagementTotal = array_sum(array_column($engagementStats, 'count'));
+		if ($engagementTotal == 0) return [];
+
+		foreach ($engagementStats as $engagement => $engagementStat) {
+			$engagementStats[$engagement]['ratio'] = $engagementStat['count'] / $engagementTotal * 100;
+		}
+		return array_values($engagementStats);
+	};
+	$extra['alltimeEngagementStats'] = $buildEngagementStats($statistics['labels'] ?? []);
 	if (@$statistics['labels']) {
 		$invChecks = ['solo', '#:2+', '#:5+', '#:10+', '#:25+', '#:50+', '#:100+', '#:1000+'];
 		$invCounts = [];
@@ -627,6 +712,12 @@ function handler($request, $response, $args, $container)
 			$extra['recentDangerRatio'] = $ratio;
 		}
 	}
+	$extra['recentLocationStats'] = $buildLocationStats(
+		$statistics['recentLabels'] ?? [],
+		(int) ($statistics['recentShipsDestroyed'] ?? 0) + (int) ($statistics['recentShipsLost'] ?? 0)
+	);
+	$extra['recentTimezoneStats'] = $buildTimezoneStats($statistics['recentLabels'] ?? []);
+	$extra['recentEngagementStats'] = $buildEngagementStats($statistics['recentLabels'] ?? []);
 
 	$getSoloStats = true;
 	if ($type == 'label') {
@@ -676,6 +767,12 @@ function handler($request, $response, $args, $container)
 			$extra['weeklyDangerRatio'] = $ratio;
 		}
 	}
+	$extra['weeklyLocationStats'] = $buildLocationStats(
+		$statistics['weeklyLabels'] ?? [],
+		(int) ($statistics['weeklyShipsDestroyed'] ?? 0) + (int) ($statistics['weeklyShipsLost'] ?? 0)
+	);
+	$extra['weeklyTimezoneStats'] = $buildTimezoneStats($statistics['weeklyLabels'] ?? []);
+	$extra['weeklyEngagementStats'] = $buildEngagementStats($statistics['weeklyLabels'] ?? []);
 
 	$weeklySoloKills = 0;
 	if ($getSoloStats) {
