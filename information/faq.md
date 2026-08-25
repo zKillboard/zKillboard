@@ -133,10 +133,10 @@ Labels are normally recalculated hourly or daily. A label is removed after a suc
 
 - `capital`: The victim is a capital ship.
 - `capinv`: A capital ship is involved as either the victim or an attacker.
-- `super`: The victim is a supercarrier.
-- `titan`: The victim is a titan.
+- `super`: A supercarrier is involved as either the victim or an attacker.
+- `titan`: A titan is involved as either the victim or an attacker.
 
-A capital victim receives both `capital` and `capinv`. Supercarrier and titan victims additionally receive `super` or `titan`. These killmail labels are separate from the character labels above.
+A capital victim receives both `capital` and `capinv`. Any killmail involving a supercarrier or titan additionally receives `super` or `titan`. These killmail labels are separate from the character labels above.
 
 ---
 
