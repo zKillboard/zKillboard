@@ -857,8 +857,9 @@ function runRankJob($job)
 
     Util::out("Calculating {$job['scope']} {$job['epoch']} ranks");
     $runID = "{$job['date']}:" . time();
-    $types = collectPeriodRanks($job, $runID);
-    finishRanks($job, $types, $runID);
+    [$types, $periodLabels] = collectPeriodRanks($job, $runID);
+    finishRanks($job, $types, $runID, $periodLabels);
+    clearOldPeriodLabels($job, $runID);
     $kvc->setex($job['completeKey'], $job['completeTtl'], 'true');
 }
 
@@ -909,6 +910,7 @@ function collectPeriodRanks($job, $runID)
         'projection' => [
             'involved' => 1,
             'killID' => 1,
+            'labels' => 1,
             'locationID' => 1,
             'system' => 1,
             'zkb.points' => 1,
@@ -919,6 +921,16 @@ function collectPeriodRanks($job, $runID)
     foreach ($rows as $row) {
         $seen = [];
         $killID = $row['killID'];
+        $location = null;
+        if ($job['scope'] == 'all') {
+            foreach ((array) ($row['labels'] ?? []) as $label) {
+                if (str_starts_with((string) $label, 'loc:')) {
+                    $location = (string) $label;
+                    break;
+                }
+            }
+            if ((int) ($row['system']['regionID'] ?? 0) == 10000070) $location = 'loc:pochven';
+        }
         $value = [
             'ships' => 1,
             'isk' => (int) ($row['zkb']['totalValue'] ?? 0),
@@ -929,17 +941,21 @@ function collectPeriodRanks($job, $runID)
             $isVictim = (bool) ($entity['isVictim'] ?? false);
             foreach ($entity as $type => $id) {
                 if (strpos($type, 'ID') === false) continue;
-                addPeriodStat($stats, $types, $allowed, $seen, $killID, $type, $id, $isVictim, $value);
+                addPeriodStat($stats, $types, $allowed, $seen, $killID, $type, $id, $isVictim, $value, $location);
             }
 
             foreach (periodLocationIds($row) as $type => $id) {
-                addPeriodStat($stats, $types, $allowed, $seen, $killID, $type, $id, $isVictim, $value);
+                addPeriodStat($stats, $types, $allowed, $seen, $killID, $type, $id, $isVictim, $value, $location);
             }
         }
     }
 
+    $periodLabels = [];
     foreach ($stats as $type => $ids) {
         foreach ($ids as $id => $metrics) {
+            if ($job['scope'] == 'all') $periodLabels[$type][$id] = $metrics['labels'] ?? [];
+            unset($stats[$type][$id]['labels']);
+            unset($metrics['labels']);
             if (!$allowed["$type:$id"] || $metrics['shipsDestroyed'] < $job['minDestroyed']) {
                 $unranked[$type][$id] = $metrics;
                 continue;
@@ -947,12 +963,12 @@ function collectPeriodRanks($job, $runID)
             addScratchMetrics($job, $type, $id, $metrics);
         }
     }
-    storeUnrankedPeriodStats($job, $unranked, $runID);
+    storeUnrankedPeriodStats($job, $unranked, $runID, $periodLabels);
 
-    return $types;
+    return [$types, $periodLabels];
 }
 
-function addPeriodStat(&$stats, &$types, &$allowed, &$seen, $killID, $type, $id, $isVictim, $value)
+function addPeriodStat(&$stats, &$types, &$allowed, &$seen, $killID, $type, $id, $isVictim, $value, $location)
 {
     if ($id === null || $id === '') return;
 
@@ -981,6 +997,12 @@ function addPeriodStat(&$stats, &$types, &$allowed, &$seen, $killID, $type, $id,
     $stats[$type][$id]["ships$suffix"] += $value['ships'];
     $stats[$type][$id]["isk$suffix"] += $value['isk'];
     $stats[$type][$id]["points$suffix"] += $value['points'];
+    if ($location != null) {
+        if (!isset($stats[$type][$id]['labels'][$location])) {
+            $stats[$type][$id]['labels'][$location] = ['shipsDestroyed' => 0, 'shipsLost' => 0];
+        }
+        $stats[$type][$id]['labels'][$location]["ships$suffix"]++;
+    }
 }
 
 function periodLocationIds($row)
@@ -1007,11 +1029,11 @@ function addScratchMetrics($job, $type, $id, $metrics)
     $multi->exec();
 }
 
-function finishRanks($job, $types, $runID = null)
+function finishRanks($job, $types, $runID = null, $periodLabels = [])
 {
     foreach ($types as $type => $unused) {
         calculateOverallRanks($job, $type);
-        storeRanks($job, $type, $runID);
+        storeRanks($job, $type, $runID, $periodLabels[$type] ?? []);
         purgeScratchRanks($job, $type);
     }
 }
@@ -1047,7 +1069,7 @@ function calculateOverallRanks($job, $type)
     }
 }
 
-function storeUnrankedPeriodStats($job, $stats, $runID)
+function storeUnrankedPeriodStats($job, $stats, $runID, $periodLabels)
 {
     global $mdb;
 
@@ -1057,14 +1079,15 @@ function storeUnrankedPeriodStats($job, $stats, $runID)
         normalizeRankContainers($collection, $job, $type);
         $ops = [];
         foreach ($ids as $id => $metrics) {
+            $set = ["rankings.{$job['epoch']}.{$job['scope']}" => [
+                'metrics' => $metrics,
+                'updated' => $now,
+                'runID' => $runID,
+            ]] + periodLabelUpdate($job, $periodLabels[$type][$id] ?? [], $now, $runID);
             $ops[] = ['updateOne' => [
                 ['type' => $type, 'id' => (int) $id],
                 [
-                    '$set' => ["rankings.{$job['epoch']}.{$job['scope']}" => [
-                        'metrics' => $metrics,
-                        'updated' => $now,
-                        'runID' => $runID,
-                    ]],
+                    '$set' => $set,
                     '$setOnInsert' => ['type' => $type, 'id' => (int) $id],
                 ],
                 ['upsert' => true],
@@ -1079,7 +1102,7 @@ function storeUnrankedPeriodStats($job, $stats, $runID)
     }
 }
 
-function storeRanks($job, $type, $runID = null)
+function storeRanks($job, $type, $runID = null, $periodLabels = [])
 {
     global $mdb, $redis;
 
@@ -1093,13 +1116,14 @@ function storeRanks($job, $type, $runID = null)
 
     foreach (rankIds($key) as $id) {
         $row = rankRowFromRedis($job, $type, $id, $key, $now, $runID);
+        $set = [
+            "rankings.{$job['epoch']}.{$job['scope']}" => $row,
+            "rankHistory.{$job['epoch']}.{$job['scope']}.{$job['date']}" => $row,
+        ] + periodLabelUpdate($job, $periodLabels[$id] ?? [], $now, $runID);
         $ops[] = ['updateOne' => [
             ['type' => $type, 'id' => (int) $id],
             [
-                '$set' => [
-                    "rankings.{$job['epoch']}.{$job['scope']}" => $row,
-                    "rankHistory.{$job['epoch']}.{$job['scope']}.{$job['date']}" => $row,
-                ],
+                '$set' => $set,
                 '$setOnInsert' => ['type' => $type, 'id' => (int) $id],
             ],
             ['upsert' => true],
@@ -1117,6 +1141,31 @@ function storeRanks($job, $type, $runID = null)
     if ($job['epoch'] != 'alltime') {
         clearOldRanks($collection, $job, $type, $runID);
     }
+}
+
+function periodLabelUpdate($job, $labels, $updated, $runID)
+{
+    if ($job['epoch'] == 'alltime' || $job['scope'] != 'all') return [];
+
+    $field = $job['epoch'] . 'Labels';
+    return [
+        $field => $labels,
+        $field . 'Updated' => $updated,
+        $field . 'RunID' => $runID,
+    ];
+}
+
+function clearOldPeriodLabels($job, $runID)
+{
+    global $mdb;
+
+    if ($job['epoch'] == 'alltime' || $job['scope'] != 'all') return;
+
+    $field = $job['epoch'] . 'Labels';
+    $mdb->getCollection('statistics')->updateMany(
+        [$field . 'RunID' => ['$exists' => true, '$ne' => $runID]],
+        ['$unset' => [$field => 1, $field . 'Updated' => 1, $field . 'RunID' => 1]]
+    );
 }
 
 function normalizeRankContainers($collection, $job, $type)
