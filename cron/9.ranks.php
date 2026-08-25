@@ -921,16 +921,20 @@ function collectPeriodRanks($job, $runID)
     foreach ($rows as $row) {
         $seen = [];
         $killID = $row['killID'];
-        $location = null;
+        $statLabels = [];
         if ($job['scope'] == 'all') {
             foreach ((array) ($row['labels'] ?? []) as $label) {
-                if (str_starts_with((string) $label, 'loc:')) {
-                    $location = (string) $label;
-                    break;
-                }
+                $label = (string) $label;
+                if (str_starts_with($label, 'loc:') || str_starts_with($label, 'tz:')) $statLabels[$label] = true;
             }
-            if ((int) ($row['system']['regionID'] ?? 0) == 10000070) $location = 'loc:pochven';
+            if ((int) ($row['system']['regionID'] ?? 0) == 10000070) {
+                foreach (array_keys($statLabels) as $label) {
+                    if (str_starts_with($label, 'loc:')) unset($statLabels[$label]);
+                }
+                $statLabels['loc:pochven'] = true;
+            }
         }
+        $statLabels = array_keys($statLabels);
         $value = [
             'ships' => 1,
             'isk' => (int) ($row['zkb']['totalValue'] ?? 0),
@@ -941,11 +945,11 @@ function collectPeriodRanks($job, $runID)
             $isVictim = (bool) ($entity['isVictim'] ?? false);
             foreach ($entity as $type => $id) {
                 if (strpos($type, 'ID') === false) continue;
-                addPeriodStat($stats, $types, $allowed, $seen, $killID, $type, $id, $isVictim, $value, $location);
+                addPeriodStat($stats, $types, $allowed, $seen, $killID, $type, $id, $isVictim, $value, $statLabels);
             }
 
             foreach (periodLocationIds($row) as $type => $id) {
-                addPeriodStat($stats, $types, $allowed, $seen, $killID, $type, $id, $isVictim, $value, $location);
+                addPeriodStat($stats, $types, $allowed, $seen, $killID, $type, $id, $isVictim, $value, $statLabels);
             }
         }
     }
@@ -968,7 +972,7 @@ function collectPeriodRanks($job, $runID)
     return [$types, $periodLabels];
 }
 
-function addPeriodStat(&$stats, &$types, &$allowed, &$seen, $killID, $type, $id, $isVictim, $value, $location)
+function addPeriodStat(&$stats, &$types, &$allowed, &$seen, $killID, $type, $id, $isVictim, $value, $labels)
 {
     if ($id === null || $id === '') return;
 
@@ -997,11 +1001,11 @@ function addPeriodStat(&$stats, &$types, &$allowed, &$seen, $killID, $type, $id,
     $stats[$type][$id]["ships$suffix"] += $value['ships'];
     $stats[$type][$id]["isk$suffix"] += $value['isk'];
     $stats[$type][$id]["points$suffix"] += $value['points'];
-    if ($location != null) {
-        if (!isset($stats[$type][$id]['labels'][$location])) {
-            $stats[$type][$id]['labels'][$location] = ['shipsDestroyed' => 0, 'shipsLost' => 0];
+    foreach ($labels as $label) {
+        if (!isset($stats[$type][$id]['labels'][$label])) {
+            $stats[$type][$id]['labels'][$label] = ['shipsDestroyed' => 0, 'shipsLost' => 0];
         }
-        $stats[$type][$id]['labels'][$location]["ships$suffix"]++;
+        $stats[$type][$id]['labels'][$label]["ships$suffix"]++;
     }
 }
 
