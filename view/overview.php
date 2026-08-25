@@ -573,7 +573,7 @@ function handler($request, $response, $args, $container)
 	if (@$extra['dangerRatio'] !== null && date('md') == '0401') {  // Everyone is snuggly on the first day of the fourth month
 		$extra['dangerRatio'] = 0;
 	}
-	$buildLocationStats = function ($labels, $killmailTotal) {
+	$buildLocationStats = function ($labels) {
 		$labels = is_object($labels ?? null) ? (array) $labels : ($labels ?? []);
 		$locationStats = [
 			'loc:highsec' => ['label' => 'Highsec', 'color' => '#285c00', 'count' => 0],
@@ -587,18 +587,6 @@ function handler($request, $response, $args, $container)
 			$locationStats[$location]['count'] = (int) ($labels[$location]['shipsDestroyed'] ?? 0) + (int) ($labels[$location]['shipsLost'] ?? 0);
 		}
 		$locationTotal = array_sum(array_column($locationStats, 'count'));
-		$otherLocationTotal = 0;
-		foreach ($labels as $location => $locationStat) {
-			if (str_starts_with((string) $location, 'loc:') && !isset($locationStats[$location])) {
-				$otherLocationTotal += (int) ($locationStat['shipsDestroyed'] ?? 0) + (int) ($locationStat['shipsLost'] ?? 0);
-			}
-		}
-		// Older statistics predate loc:pochven, so preserve those counts as the remaining known-space location.
-		$unclassifiedLocationTotal = $locationTotal + $otherLocationTotal > 0
-			? max(0, (int) $killmailTotal - $locationTotal - $otherLocationTotal)
-			: 0;
-		$locationStats['loc:pochven']['count'] += $unclassifiedLocationTotal;
-		$locationTotal += $unclassifiedLocationTotal;
 		if ($locationTotal == 0) return [];
 
 		foreach ($locationStats as $location => $locationStat) {
@@ -606,10 +594,7 @@ function handler($request, $response, $args, $container)
 		}
 		return array_values($locationStats);
 	};
-	$extra['alltimeLocationStats'] = $buildLocationStats(
-		$statistics['labels'] ?? [],
-		(int) ($statistics['shipsDestroyed'] ?? 0) + (int) ($statistics['shipsLost'] ?? 0)
-	);
+	$extra['alltimeLocationStats'] = $buildLocationStats($statistics['labels'] ?? []);
 	$buildTimezoneStats = function ($labels) {
 		$labels = is_object($labels ?? null) ? (array) $labels : ($labels ?? []);
 		$timezoneStats = [
@@ -785,10 +770,7 @@ function handler($request, $response, $args, $container)
 			$extra['recentDangerRatio'] = $ratio;
 		}
 	}
-	$extra['recentLocationStats'] = $buildLocationStats(
-		$statistics['recentLabels'] ?? [],
-		(int) ($statistics['recentShipsDestroyed'] ?? 0) + (int) ($statistics['recentShipsLost'] ?? 0)
-	);
+	$extra['recentLocationStats'] = $buildLocationStats($statistics['recentLabels'] ?? []);
 	$extra['recentTimezoneStats'] = $buildTimezoneStats($statistics['recentLabels'] ?? []);
 	$extra['recentEngagementStats'] = $buildEngagementStats($statistics['recentLabels'] ?? []);
 	$recentKillmailTotal = (int) ($statistics['recentShipsDestroyed'] ?? 0) + (int) ($statistics['recentShipsLost'] ?? 0);
@@ -845,10 +827,7 @@ function handler($request, $response, $args, $container)
 			$extra['weeklyDangerRatio'] = $ratio;
 		}
 	}
-	$extra['weeklyLocationStats'] = $buildLocationStats(
-		$statistics['weeklyLabels'] ?? [],
-		(int) ($statistics['weeklyShipsDestroyed'] ?? 0) + (int) ($statistics['weeklyShipsLost'] ?? 0)
-	);
+	$extra['weeklyLocationStats'] = $buildLocationStats($statistics['weeklyLabels'] ?? []);
 	$extra['weeklyTimezoneStats'] = $buildTimezoneStats($statistics['weeklyLabels'] ?? []);
 	$extra['weeklyEngagementStats'] = $buildEngagementStats($statistics['weeklyLabels'] ?? []);
 	$weeklyKillmailTotal = (int) ($statistics['weeklyShipsDestroyed'] ?? 0) + (int) ($statistics['weeklyShipsLost'] ?? 0);
