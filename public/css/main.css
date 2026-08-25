@@ -1422,6 +1422,11 @@ td.centered {
 	height: attr(--size);
 }
 
+.image-expand-icon {
+	-webkit-text-stroke: 1px #000;
+	paint-order: stroke fill;
+}
+
 .shipImageIcon {
 	display: none;
 }

@@ -4,10 +4,16 @@
   - $imageSize = 128;
   - $field = $detailData;
   if (!empty($detailData['shipTypeID']) && ($key ?? '') == 'ship')
-    include image_ship.pug
+    .position-relative.d-inline-block
+      include image_ship.pug
+      button.btn.btn-sm.position-absolute.bottom-0.end-0.m-1.p-1.lh-1.bg-transparent.border-0.text-white(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge ship render" title="Enlarge ship render")
+        i.fas.fa-expand.image-expand-icon(aria-hidden="true")
   if (!empty($detailData['characterID']) && ($key ?? '') == 'character')
     .text-center
-      include image_char.pug
+      .position-relative.d-inline-block
+        include image_char.pug
+        button.btn.btn-sm.position-absolute.bottom-0.end-0.m-1.p-1.lh-1.bg-transparent.border-0.text-white(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge character portrait" title="Enlarge character portrait")
+          i.fas.fa-expand.image-expand-icon(aria-hidden="true")
       br
       - $trophySummary = is_object($extraData['trophySummary'] ?? null) ? (array) $extraData['trophySummary'] : ($extraData['trophySummary'] ?? []);
       if (!empty($trophySummary))
@@ -38,22 +44,41 @@
             a.badge.text-white.text-decoration-none(href="/information/faq/#character-labels" style="background-color: #633399;" rel="tooltip" title=$cynoTitle)= 'CYNO (' . number_format($cynoCount) . ')'
       br
   if (!empty($detailData['corporationID']) && ($key ?? '') == 'corporation')
-    include image_corp.pug
+    .position-relative.d-inline-block
+      include image_corp.pug
+      button.btn.btn-sm.position-absolute.bottom-0.end-0.m-1.p-1.lh-1.bg-transparent.border-0.text-white(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge corporation logo" title="Enlarge corporation logo")
+        i.fas.fa-expand.image-expand-icon(aria-hidden="true")
   if (($detailData['allianceID'] ?? 0) != 0 && ($key ?? '') == 'alliance')
-    include image_alli.pug
+    .position-relative.d-inline-block
+      include image_alli.pug
+      button.btn.btn-sm.position-absolute.bottom-0.end-0.m-1.p-1.lh-1.bg-transparent.border-0.text-white(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge alliance logo" title="Enlarge alliance logo")
+        i.fas.fa-expand.image-expand-icon(aria-hidden="true")
   if (($detailData['factionID'] ?? 0) != 0 && ($key ?? '') == 'faction')
     include image_faction.pug
   if (!empty($detailData['solarSystemName']) && ($key ?? '') == 'system')
-    include image_system.pug
+    .position-relative.d-inline-block
+      include image_system.pug
+      button.btn.btn-sm.position-absolute.bottom-0.end-0.m-1.p-1.lh-1.bg-transparent.border-0.text-white(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge system image" title="Enlarge system image")
+        i.fas.fa-expand.image-expand-icon(aria-hidden="true")
   if (!empty($detailData['constellationName']) && ($key ?? '') == 'constellation')
     - $imageSize = 128;
-    include image_constellation.pug
+    .position-relative.d-inline-block
+      include image_constellation.pug
+      button.btn.btn-sm.position-absolute.bottom-0.end-0.m-1.p-1.lh-1.bg-transparent.border-0.text-white(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge constellation image" title="Enlarge constellation image")
+        i.fas.fa-expand.image-expand-icon(aria-hidden="true")
   if (!empty($detailData['regionName']) && ($key ?? '') == 'region')
     - $imageSize = 128;
-    include image_region.pug
+    .position-relative.d-inline-block
+      include image_region.pug
+      button.btn.btn-sm.position-absolute.bottom-0.end-0.m-1.p-1.lh-1.bg-transparent.border-0.text-white(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge region image" title="Enlarge region image")
+        i.fas.fa-expand.image-expand-icon(aria-hidden="true")
   if (($key ?? '') == 'location')
     - $imageSize = 128;
-    include image_item.pug
+    .position-relative.d-inline-block
+      include image_item.pug
+      if (!empty($detailData['typeID']))
+        button.btn.btn-sm.position-absolute.bottom-0.end-0.m-1.p-1.lh-1.bg-transparent.border-0.text-white(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge location image" title="Enlarge location image")
+          i.fas.fa-expand.image-expand-icon(aria-hidden="true")
 if (!empty($detailData['groupShips']))
   .float-start
     - $imageSize = 64;

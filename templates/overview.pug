@@ -313,6 +313,34 @@ block script
     }
 
 block modal
+  if ((!empty($detailData['characterID']) && ($key ?? '') == 'character') || (!empty($detailData['corporationID']) && ($key ?? '') == 'corporation') || (!empty($detailData['allianceID']) && ($key ?? '') == 'alliance') || (!empty($detailData['shipTypeID']) && ($key ?? '') == 'ship') || (!empty($detailData['solarSystemID']) && ($key ?? '') == 'system') || (!empty($detailData['constellationID']) && ($key ?? '') == 'constellation') || (!empty($detailData['regionID']) && ($key ?? '') == 'region') || (!empty($detailData['locationID']) && !empty($detailData['typeID']) && ($key ?? '') == 'location'))
+    #largeImage.modal.fade(tabindex="-1" aria-labelledby="largeImageLabel" aria-hidden="true")
+      .modal-dialog.modal-dialog-centered.modal-lg
+        .modal-content
+          .modal-header
+            h5#largeImageLabel.modal-title= $pageName ?? ''
+            button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+          .modal-body.text-center
+            if (($key ?? '') == 'character')
+              - $imageSize = 512;
+              - $imageStyle = 'max-width: min(90vw, 640px) !important; max-height: 75vh !important; width: auto !important; height: auto !important;';
+              - $field = $detailData;
+              include components/image_char.pug
+            else if (($key ?? '') == 'corporation')
+              img.eveimage.img-rounded.img-fluid(src=(($image_corporation ?? 'https://images.evetech.net/corporations/') . $detailData['corporationID'] . '/logo?size=512') style="max-height: 75vh;" width="512" height="512" alt=($detailData['corporationName'] ?? '') loading="lazy" decoding="async")
+            else if (($key ?? '') == 'alliance')
+              img.eveimage.img-rounded.img-fluid(src=(($image_alliance ?? 'https://images.evetech.net/alliances/') . $detailData['allianceID'] . '/logo?size=512') style="max-height: 75vh;" width="512" height="512" alt=($detailData['allianceName'] ?? '') loading="lazy" decoding="async")
+            else if (($key ?? '') == 'ship')
+              img.shipImageRender.eveimage.img-rounded.img-fluid(src=(($image_ship ?? 'https://images.evetech.net/types/') . $detailData['shipTypeID'] . '/render?size=512') style="max-height: 75vh;" width="512" height="512" alt=($detailData['shipName'] ?? '') onerror="this.setAttribute('shipImageError', 'true')" loading="lazy" decoding="async")
+            else if (($key ?? '') == 'system')
+              - $systemImage = $detailData['solarSystemID'] < 32000000 ? ('/img/nohus/systems/' . $detailData['solarSystemID'] . '.png') : '/img/empty_32.png';
+              img.eveimage.img-rounded.img-fluid(src=$systemImage style="max-height: 75vh;" width="512" height="512" alt=($detailData['solarSystemName'] ?? '') onerror=("this.removeAttribute('onerror'); this.src='" . ($image_item ?? 'https://images.evetech.net/types/') . ($detailData['sunTypeID'] ?? 0) . "/render?size=512';") loading="lazy" decoding="async")
+            else if (($key ?? '') == 'constellation')
+              img.eveimage.img-rounded.img-fluid(src=('/img/nohus/constellations/' . $detailData['constellationID'] . '.png') style="max-height: 75vh;" width="512" height="512" alt=($detailData['constellationName'] ?? '') loading="lazy" decoding="async")
+            else if (($key ?? '') == 'region')
+              img.eveimage.img-rounded.img-fluid(src=('/img/nohus/regions/' . $detailData['regionID'] . '.png') style="max-height: 75vh;" width="512" height="512" alt=($detailData['regionName'] ?? '') loading="lazy" decoding="async")
+            else if (($key ?? '') == 'location')
+              img.eveimage.img-rounded.img-fluid(src=(($image_item ?? 'https://images.evetech.net/types/') . $detailData['typeID'] . '/render?size=512') style="max-height: 75vh;" width="512" height="512" alt=($detailData['locationName'] ?? ($pageName ?? '')) onerror=("this.onerror=function(){this.removeAttribute('onerror'); this.src='/img/icons/" . $detailData['typeID'] . "_64.png';}; this.src='" . ($image_item ?? 'https://images.evetech.net/types/') . $detailData['typeID'] . "/icon?size=512';") loading="lazy" decoding="async")
   - $activity = is_object($extraData['activity'] ?? null) ? (array) $extraData['activity'] : ($extraData['activity'] ?? []);
   if ($pageType == 'overview' && ($activity['max'] ?? 0) > 0)
     #heatmap.modal.fade(tabindex="-1" aria-labelledby="heatmapLabel" aria-hidden="true")
