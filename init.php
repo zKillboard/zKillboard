@@ -20,7 +20,11 @@ require 'vendor/autoload.php';
 
 $mdb = new Mdb();
 
+$mhostname = trim((string) $mhostname);
+if ($mhostname == '') $mhostname = $redisServer;
+if (!isset($redisPort)) $redisPort = 6379;
+
 $redis = new Redis();
-$redis->pconnect($mhostname, 6379, 1.0);
+$redis->pconnect($mhostname, $redisPort, 1.0);
 
 $kvc = new KVCache($mdb);

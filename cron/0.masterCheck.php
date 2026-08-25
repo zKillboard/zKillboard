@@ -37,7 +37,12 @@ while ($minute == date("Hi")) {
 	}
 
 	// Update the lock files
-	if (file_get_contents("master.lock") != $masterHostname) file_put_contents("master.lock", $masterHostname);
+	if ($masterHostname !== null && $masterHostname !== '' && $previousMaster != $masterHostname) {
+		$masterLockTemp = "master.lock." . getmypid() . ".tmp";
+		if (file_put_contents($masterLockTemp, $masterHostname, LOCK_EX) === false || !rename($masterLockTemp, "master.lock")) {
+			@unlink($masterLockTemp);
+		}
+	}
 	if ($isMaster) file_put_contents("isMaster.lock", $hostname);
 	else @unlink("isMaster.lock");
 
