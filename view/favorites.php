@@ -34,8 +34,7 @@ function handler($request, $response, $args, $container) {
         return $response->withStatus(403)->withHeader('Cache-Tag', 'www,account,favorites');
     }
 
-    $killIDs = $mdb->find("favorites", ['characterID' => (int) $id], ['killID' => -1]);
-    $kills = Kills::getDetails($killIDs);
+    $kills = $mdb->find('favorites', ['characterID' => (int) $id], ['killID' => -1], 50, ['_id' => 0, 'killID' => 1]);
 
     $data = ['kills' => $kills, 'title' => $title, 'scope' => $scope];
     return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,account,favorites'), 'favorites.pug', $data);
