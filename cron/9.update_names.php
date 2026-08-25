@@ -103,8 +103,14 @@ function fail($guzzler, $params, $ex)
     $set = $params['set'];
 
     if (sizeof($set) == 1) {
-        Util::out("Failure to resolve name for ID: " . $set[0] . " - " . $ex->getMessage());
-        $redis->srem($rset, $set[0]);
+        $id = (int) $set[0];
+        $current = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $id]);
+        if (@$current['corporationID'] == 1000001 && @$current['name'] == "Character $id") {
+            $name = "Deleted Character $id";
+            $mdb->set('information', ['type' => 'characterID', 'id' => $id], ['name' => $name, 'l_name' => strtolower($name)]);
+        }
+        Util::out("Failure to resolve name for ID: $id - " . $ex->getMessage());
+        $redis->srem($rset, $id);
         return;
     }
 
