@@ -54,6 +54,7 @@ $routes = [
 	'/api/prices/{id}/' => ['GET', 'view/apiprices.php'],
 	'/api/{input:.*}' => ['GET', 'view/api.php'],
 	'/post/' => ['GET', 'view/postmail.php'],
+	'/labels/' => ['GET', 'view/labels.php'],
 	'/asearch/' => ['GET', 'view/asearch.php'],
 	'/asearchsave/' => ['GET', 'view/asearchsave.php'],
 	'/asearchsaved/{id}/' => ['GET', 'view/asearchsaved.php'],

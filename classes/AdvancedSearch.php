@@ -15,6 +15,7 @@ class AdvancedSearch
             "loc:nullsec" => "NullSec", 
             "loc:pochven" => "Pochven",
             "loc:w-space" => "W-Space", 
+            "loc:drifter" => "Drifter",
             "loc:abyssal" => "Abyssal",
         ],
         'count' => [

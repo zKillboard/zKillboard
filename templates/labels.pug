@@ -1,0 +1,140 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'Labels Explorer';
+  - $description = 'Explore the labels zKillboard uses to classify EVE Online killmails by location, timezone, engagement size, value, victim category, and more.';
+
+block title
+  include components/title.pug
+
+block style
+  style.
+    #label-explorer-search::placeholder { color: #555; opacity: 1; }
+    @media (min-width: 992px) {
+      #label-explorer-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      #label-explorer-groups > [data-label-group] { min-width: 0; padding-right: 1rem; }
+      #label-explorer-groups > .label-explorer-right-column { border-left: 1px solid #666; padding-right: 0; padding-left: 1rem; }
+      #label-explorer-groups > .label-explorer-following-row { border-top: 1px solid #666; padding-top: 1rem; }
+      #labels-location { order: 1; }
+      #labels-fw { order: 2; }
+      #labels-timezone { order: 3; }
+      #labels-isk { order: 4; }
+      #labels-engagement { order: 5; }
+      #labels-category { order: 6; }
+      #labels-type { order: 7; }
+      #labels-special { order: 8; }
+      #labels-other { order: 9; }
+    }
+
+block content
+  .d-flex.flex-wrap.justify-content-between.align-items-start.gap-3.mb-3
+    div
+      h1.h3.mb-1 Labels Explorer
+      p.text-body-secondary.mb-0 Find the classifications zKillboard applies to killmails, then open their statistics or search with them.
+    a.btn.btn-secondary(href="/asearch/")
+      i.fas.fa-filter.me-2(aria-hidden="true")
+      | Advanced Search
+
+  .input-group.mb-2
+    label.input-group-text(for="label-explorer-search")
+      i.fas.fa-search(aria-hidden="true")
+      span.visually-hidden Search labels
+    input#label-explorer-search.form-control(type="search" placeholder="Search by name, raw label, or meaning" autocomplete="off")
+    button#label-explorer-clear.btn.btn-secondary(type="button" disabled) Clear
+  p#label-explorer-status.text-body-secondary.small.mb-3(role="status" aria-live="polite")= number_format((float) ($labelCount ?? 0), 0) . ' labels'
+
+  nav.d-flex.flex-wrap.gap-2.mb-4(aria-label="Label groups")
+    each $group, $groupID in ($groups ?? [])
+      if (!empty($group['labels']))
+        a.btn.btn-sm.btn-secondary.text-white(href=('#labels-' . $groupID) style=('background-color: ' . $group['color'] . '; border-color: ' . $group['color'] . ';'))
+          i.fas.me-1(class=$group['icon'] aria-hidden="true")
+          = $group['name']
+
+  #label-explorer-empty.alert.alert-secondary.d-none No labels match that search.
+  #label-explorer-groups
+    each $group, $groupID in ($groups ?? [])
+      if (!empty($group['labels']))
+        div(data-label-group id=('labels-' . $groupID))
+          section.card.bg-black.border-0.mb-4
+            .card-header
+              .d-flex.align-items-center.gap-2
+                i.fas.fa-fw(class=$group['icon'] aria-hidden="true")
+                h2.h4.mb-0= $group['name']
+              p.text-body-secondary.small.mb-0.mt-1= $group['description']
+            .list-group.list-group-flush
+              each $label in $group['labels']
+                article.list-group-item.bg-transparent.py-3(data-label-entry data-label-search=strtolower($label['name'] . ' ' . $label['id'] . ' ' . $label['description'] . ' ' . $group['name']))
+                  .d-flex.flex-wrap.justify-content-between.align-items-center.gap-2
+                    div
+                      a.badge.text-white.text-decoration-none.fs-6.px-2.py-1(href=$label['viewHref'] style=('background-color: ' . $label['color'] . ';'))= $label['name']
+                      br
+                      code.text-body-secondary= $label['id']
+                    .d-flex.align-items-center.gap-2.ms-auto
+                      if (($label['count'] ?? 0) > 0)
+                        span.text-nowrap(title=($formatIsk($label['isk'] ?? 0) . ' ISK destroyed'))
+                          strong= number_format((float) $label['count'], 0)
+                          |  killmails
+                      .btn-group.btn-group-sm(role="group" aria-label=('Actions for ' . $label['name']))
+                        a.btn.btn-secondary.text-white(href=$label['viewHref'] style="background-color: #24536f; border-color: #24536f;") View
+                        if (!empty($label['searchHref']))
+                          a.btn.btn-secondary(href=$label['searchHref']) Search
+                  p.text-body-secondary.small.mb-0.mt-2= $label['description']
+
+block script
+  script.
+    (function () {
+      const input = document.getElementById('label-explorer-search');
+      const clear = document.getElementById('label-explorer-clear');
+      const status = document.getElementById('label-explorer-status');
+      const empty = document.getElementById('label-explorer-empty');
+      const groups = Array.from(document.querySelectorAll('[data-label-group]'));
+      const total = document.querySelectorAll('[data-label-entry]').length;
+      if (!input || !clear || !status || !empty) return;
+
+      function alignColumns() {
+        const visibleGroups = groups.filter(function (group) { return !group.classList.contains('d-none'); });
+        if (window.matchMedia('(min-width: 992px)').matches) {
+          visibleGroups.sort(function (a, b) {
+            return Number(getComputedStyle(a).order) - Number(getComputedStyle(b).order);
+          });
+        }
+        visibleGroups.forEach(function (group, index) {
+          group.classList.toggle('label-explorer-right-column', index % 2 === 1);
+          group.classList.toggle('label-explorer-following-row', index >= 2);
+        });
+      }
+
+      function filterLabels() {
+        const query = input.value.trim().toLowerCase();
+        let visible = 0;
+        groups.forEach(function (group) {
+          let groupVisible = 0;
+          group.querySelectorAll('[data-label-entry]').forEach(function (entry) {
+            const match = query === '' || entry.dataset.labelSearch.includes(query);
+            entry.classList.toggle('d-none', !match);
+            if (match) groupVisible++;
+          });
+          group.classList.toggle('d-none', groupVisible === 0);
+          visible += groupVisible;
+        });
+        alignColumns();
+        clear.disabled = query === '';
+        empty.classList.toggle('d-none', visible !== 0);
+        status.textContent = query === '' ? total + ' labels' : visible + ' of ' + total + ' labels';
+      }
+
+      input.addEventListener('input', filterLabels);
+      input.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+          input.value = '';
+          filterLabels();
+        }
+      });
+      clear.addEventListener('click', function () {
+        input.value = '';
+        filterLabels();
+        input.focus();
+      });
+      window.addEventListener('resize', alignColumns);
+      filterLabels();
+    })();
