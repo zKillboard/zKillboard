@@ -49,7 +49,17 @@ class AdvancedSearch
             "isk:100b+" => "100b+",
             "isk:1t+" => "1t+"
         ],
+        'faction warfare' => [
+            "fw:amarr" => "Amarr",
+            "fw:minmatar" => "Minmatar",
+            "fw:caldari" => "Caldari",
+            "fw:gallente" => "Gallente",
+            "fw:amamin" => "Amarr / Minmatar",
+            "fw:calgal" => "Caldari / Gallente",
+        ],
         'custom' => [
+            'cat:0' => "Unknown",
+            'cat:11' => "Structure Light Fighter",
             'cat:22' => "Anchored", 
             'atShip' => "AT Ships", 
             'capital' => "Capitals", 
@@ -59,10 +69,8 @@ class AdvancedSearch
             'cat:23' => "POS",  
             'cat:6' => "Ship", 
             'cat:40' => "Sov",  
-            'cat:65' => "Structure"
-            /*'cat:0' => "Cat 0", */
-            /*'cat:11' => "Structure Light Fighter", */
-            /*'cat:350001' => "Dust 514", */
+            'cat:65' => "Structure",
+            'cat:350001' => "Dust 514",
         ]
     ];
 
