@@ -5,7 +5,6 @@ class DailyStatsCharts
     public static function labelRadarCharts($rows)
     {
         $groups = self::labelGroups($rows);
-        self::addUnderOneBillionIskBand($groups);
 
         $charts = [];
         foreach ($groups as $group) {
@@ -70,34 +69,6 @@ class DailyStatsCharts
         }
 
         return $axisLabel;
-    }
-
-    private static function addUnderOneBillionIskBand(&$groups)
-    {
-        $pvpRow = null;
-        foreach (($groups['_labels']['rows'] ?? []) as $row) {
-            if (($row['label'] ?? '') == 'pvp') {
-                $pvpRow = $row;
-                break;
-            }
-        }
-        if ($pvpRow == null) {
-            return;
-        }
-
-        $groups['isk'] = $groups['isk'] ?? ['title' => 'ISK Bands', 'rows' => []];
-        $knownCount = 0;
-        $knownIsk = 0;
-        foreach ($groups['isk']['rows'] as $row) {
-            $knownCount += (int) ($row['count'] ?? 0);
-            $knownIsk += (double) ($row['isk'] ?? 0);
-        }
-
-        $underCount = max(0, (int) ($pvpRow['count'] ?? 0) - $knownCount);
-        $underIsk = max(0, (double) ($pvpRow['isk'] ?? 0) - $knownIsk);
-        if ($underCount > 0 || $underIsk > 0) {
-            $groups['isk']['rows'][] = ['label' => 'isk:<1b', 'axisLabel' => '<1b', 'count' => $underCount, 'isk' => $underIsk];
-        }
     }
 
     private static function radarChart($title, $rows, $totalCount, $totalIsk)

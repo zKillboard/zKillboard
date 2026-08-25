@@ -43,6 +43,7 @@ class AdvancedSearch
             "npc" => "PVE"
         ],
         'isk' => [
+            "isk:under1b" => "<1b",
             "isk:1b+" => "1b+", 
             "isk:5b+" => "5b+", 
             "isk:10b+" => "10b+", 

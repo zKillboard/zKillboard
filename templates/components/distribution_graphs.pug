@@ -35,16 +35,13 @@ if ($hasDistributions)
                     each $barStat in $graph[1]
                       - $barStat = is_object($barStat) ? (array) $barStat : $barStat;
                       if (($barStat['count'] ?? 0) > 0)
+                        - $barButtons = array_merge($asearchButtons, ['label-' . ($barStat['id'] ?? '')]);
+                        - $barFilters = ['buttons' => $barButtons];
+                        - if (($key ?? '') == 'label' && ($id ?? '') != ($barStat['id'] ?? '')) $barFilters['buttons'][] = 'label-' . $id;
+                        - if ($asearchEntityType != '') $barFilters[$asearchEntitySlot] = [['type' => $asearchEntityType, 'id' => (string) ($id ?? '')]];
+                        - $barHref = '/asearch/#' . rawurlencode(json_encode($barFilters, JSON_UNESCAPED_SLASHES));
                         .d-flex.justify-content-between.gap-2.small.mb-1
-                          if (($barStat['searchable'] ?? true) && !empty($barStat['id']))
-                            - $barButtons = array_merge($asearchButtons, ['label-' . $barStat['id']]);
-                            - $barFilters = ['buttons' => $barButtons];
-                            - if (($key ?? '') == 'label' && ($id ?? '') != $barStat['id']) $barFilters['buttons'][] = 'label-' . $id;
-                            - if ($asearchEntityType != '') $barFilters[$asearchEntitySlot] = [['type' => $asearchEntityType, 'id' => (string) ($id ?? '')]];
-                            - $barHref = '/asearch/#' . rawurlencode(json_encode($barFilters, JSON_UNESCAPED_SLASHES));
-                            a.text-decoration-none(href=$barHref)= $barStat['label'] ?? ''
-                          else
-                            span= $barStat['label'] ?? ''
+                          a.text-decoration-none(href=$barHref)= $barStat['label'] ?? ''
                           span.text-body-secondary= number_format((float) $barStat['count'], 0) . ' killmails' . (($barStat['ratio'] ?? 0) < 5 ? (' · ' . number_format((float) ($barStat['ratio'] ?? 0), 1) . '%') : '')
                         .progress.mb-2(style="height: 1.25rem;" aria-label=(($barStat['label'] ?? '') . ': ' . number_format((float) $barStat['count'], 0) . ' killmails, ' . number_format((float) ($barStat['ratio'] ?? 0), 1) . '%'))
                           .progress-bar.text-white(role="progressbar" aria-valuenow=($barStat['ratio'] ?? 0) aria-valuemin="0" aria-valuemax="100" style=('width: ' . ($barStat['ratio'] ?? 0) . '%; background-color: ' . ($barStat['color'] ?? '#3f3f3f') . ';'))

@@ -698,26 +698,13 @@ function handler($request, $response, $args, $container)
 		return $categoryStats;
 	};
 	$iskLabels = [
+		'isk:under1b' => ['label' => '<1b ISK', 'color' => '#24536f'],
 		'isk:1b+' => ['label' => '1–5b ISK', 'color' => '#285c00'],
 		'isk:5b+' => ['label' => '5–10b ISK', 'color' => '#3f5f2a'],
 		'isk:10b+' => ['label' => '10–100b ISK', 'color' => '#665a1f'],
 		'isk:100b+' => ['label' => '100b–1t ISK', 'color' => '#6e331f'],
 		'isk:1t+' => ['label' => '1t+ ISK', 'color' => '#6b2f45'],
 	];
-	$buildIskStats = function ($labels, $killmailTotal) use ($buildLabelStats, $iskLabels) {
-		$iskStats = $buildLabelStats($labels, $iskLabels, $killmailTotal);
-		$underOneBillion = max(0, $killmailTotal - array_sum(array_column($iskStats, 'count')));
-		if ($underOneBillion > 0) {
-			array_unshift($iskStats, [
-				'label' => '<1b ISK',
-				'color' => '#24536f',
-				'count' => $underOneBillion,
-				'ratio' => $killmailTotal > 0 ? $underOneBillion / $killmailTotal * 100 : 0,
-				'searchable' => false,
-			]);
-		}
-		return $iskStats;
-	};
 	$typeLabels = [
 		'pvp' => ['label' => 'PvP', 'color' => '#285c00'],
 		'npc' => ['label' => 'PvE', 'color' => '#3f3f3f'],
@@ -734,7 +721,7 @@ function handler($request, $response, $args, $container)
 		'fw:minmatar' => ['label' => 'Minmatar', 'color' => '#73331f'],
 	];
 	$alltimeKillmailTotal = (int) ($statistics['shipsDestroyed'] ?? 0) + (int) ($statistics['shipsLost'] ?? 0);
-	$extra['alltimeIskStats'] = $buildIskStats($statistics['labels'] ?? [], $alltimeKillmailTotal);
+	$extra['alltimeIskStats'] = $buildLabelStats($statistics['labels'] ?? [], $iskLabels, $alltimeKillmailTotal);
 	$extra['alltimeTypeStats'] = $buildLabelStats($statistics['labels'] ?? [], $typeLabels, $alltimeKillmailTotal);
 	$extra['alltimeCategoryStats'] = $buildCategoryStats($statistics['labels'] ?? []);
 	$extra['alltimeFwStats'] = $buildLabelStats($statistics['labels'] ?? [], $fwLabels, $alltimeKillmailTotal);
@@ -802,7 +789,7 @@ function handler($request, $response, $args, $container)
 	$extra['recentTimezoneStats'] = $buildTimezoneStats($statistics['recentLabels'] ?? []);
 	$extra['recentEngagementStats'] = $buildEngagementStats($statistics['recentLabels'] ?? []);
 	$recentKillmailTotal = (int) ($statistics['recentShipsDestroyed'] ?? 0) + (int) ($statistics['recentShipsLost'] ?? 0);
-	$extra['recentIskStats'] = $buildIskStats($statistics['recentLabels'] ?? [], $recentKillmailTotal);
+	$extra['recentIskStats'] = $buildLabelStats($statistics['recentLabels'] ?? [], $iskLabels, $recentKillmailTotal);
 	$extra['recentTypeStats'] = $buildLabelStats($statistics['recentLabels'] ?? [], $typeLabels, $recentKillmailTotal);
 	$extra['recentCategoryStats'] = $buildCategoryStats($statistics['recentLabels'] ?? []);
 	$extra['recentFwStats'] = $buildLabelStats($statistics['recentLabels'] ?? [], $fwLabels, $recentKillmailTotal);
@@ -862,7 +849,7 @@ function handler($request, $response, $args, $container)
 	$extra['weeklyTimezoneStats'] = $buildTimezoneStats($statistics['weeklyLabels'] ?? []);
 	$extra['weeklyEngagementStats'] = $buildEngagementStats($statistics['weeklyLabels'] ?? []);
 	$weeklyKillmailTotal = (int) ($statistics['weeklyShipsDestroyed'] ?? 0) + (int) ($statistics['weeklyShipsLost'] ?? 0);
-	$extra['weeklyIskStats'] = $buildIskStats($statistics['weeklyLabels'] ?? [], $weeklyKillmailTotal);
+	$extra['weeklyIskStats'] = $buildLabelStats($statistics['weeklyLabels'] ?? [], $iskLabels, $weeklyKillmailTotal);
 	$extra['weeklyTypeStats'] = $buildLabelStats($statistics['weeklyLabels'] ?? [], $typeLabels, $weeklyKillmailTotal);
 	$extra['weeklyCategoryStats'] = $buildCategoryStats($statistics['weeklyLabels'] ?? []);
 	$extra['weeklyFwStats'] = $buildLabelStats($statistics['weeklyLabels'] ?? [], $fwLabels, $weeklyKillmailTotal);

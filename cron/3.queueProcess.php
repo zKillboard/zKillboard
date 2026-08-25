@@ -163,6 +163,7 @@ while ($time >= time()) {
             addLabel($kill, $solarSystem['regionID'] >= 11000000 && $solarSystem['regionID'] < 12000000 && $solarSystem['regionID'] != 11000033, 'loc:w-space');
             addLabel($kill, $solarSystem['regionID'] == 11000033, 'loc:drifter');
             addLabel($kill, $solarSystem['regionID'] >= 12000000 && $solarSystem['regionID'] < 13000000, 'loc:abyssal');
+            addLabel($kill, $totalValue < 1000000000, 'isk:under1b');
             addLabel($kill, $totalValue >= 1000000000 && $totalValue < 5000000000, 'isk:1b+');
             addLabel($kill, $totalValue >= 5000000000 && $totalValue < 10000000000, 'isk:5b+');
             addLabel($kill, $totalValue >= 10000000000 && $totalValue < 100000000000, 'isk:10b+');
