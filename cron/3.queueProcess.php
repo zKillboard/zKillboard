@@ -159,6 +159,7 @@ while ($time >= time()) {
             addLabel($kill, $solarSystem['security'] >= 0.45, 'loc:highsec');
             addLabel($kill, $solarSystem['security'] < 0.45 && $solarSystem['security'] >= 0, 'loc:lowsec');
             addLabel($kill, $solarSystem['security'] < 0 && $solarSystem['regionID'] < 11000001 && $solarSystem['regionID'] != 10000070 && $solarSystem['regionID'] != 10001000, 'loc:nullsec');
+            addLabel($kill, $solarSystem['regionID'] == 10000070, 'loc:pochven');
             addLabel($kill, $solarSystem['regionID'] >= 11000000 && $solarSystem['regionID'] < 12000000 && $solarSystem['regionID'] != 11000033, 'loc:w-space');
             addLabel($kill, $solarSystem['regionID'] == 11000033, 'loc:drifter');
             addLabel($kill, $solarSystem['regionID'] >= 12000000 && $solarSystem['regionID'] < 13000000, 'loc:abyssal');
