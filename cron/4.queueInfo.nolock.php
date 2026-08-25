@@ -157,7 +157,10 @@ function updateEntity($killID, $entity)
         if ($mdb->count('information', $row) == 0) {
             $insert = $row;
             $insert['name'] = $defaultName;
-            try {$mdb->insert('information', $row);} catch (Exception $eex) {} 
+            try {
+                $mdb->insert('information', $insert);
+                $redis->sadd('zkb:updatenames', $id);
+            } catch (Exception $eex) {}
         }
 
         if ($killID < ((int) $redis->get('zkb:topKillID') - 100000)) continue;
@@ -166,7 +169,8 @@ function updateEntity($killID, $entity)
         do {
             $info = $mdb->findDoc("information", ['type' => $type, 'id' => $id]);
             $name = @$info['name'];
-            if ($name == $defaultName) {
+            if ($name == '' || $name == $defaultName) {
+                $redis->sadd('zkb:updatenames', $id);
                 if ($redis->get("zkb:updatenow:$type:$id") != "true") {
                     $mdb->removeField("information", ['type' => $type, 'id' => $id], 'lastApiUpdate');
                     $redis->setex("zkb:updatenow:$type:$id", 300, "true");
@@ -174,6 +178,6 @@ function updateEntity($killID, $entity)
                 sleep(1);
                 $iterations++;
             }
-        } while ($name == $defaultName && $iterations <= 20);
+        } while (($name == '' || $name == $defaultName) && $iterations <= 20);
     }
 }
