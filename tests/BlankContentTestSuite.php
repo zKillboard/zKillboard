@@ -151,7 +151,7 @@ class BlankContentTestSuite {
         $this->testRouteContent('/', [200], 'Homepage');
         $this->testRouteContent('/information/about/', [200], 'About page');
         $this->testRouteContent('/information/faq/', [200], 'FAQ page');
-        $this->testRouteContent('/api/', [200], 'API documentation');
+        $this->testRouteContent('/api/docs/', [200], 'API documentation');
         $this->testRouteContent('/api/api.json', [200], 'API documentation JSON');
         
         // Top routes that were showing redirects instead of content
