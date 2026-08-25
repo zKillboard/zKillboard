@@ -4,15 +4,15 @@
   - $imageSize = 128;
   - $field = $detailData;
   if (!empty($detailData['shipTypeID']) && ($key ?? '') == 'ship')
-    .position-relative.d-inline-block
+    .position-relative.d-inline-block.image-expand-container
       include image_ship.pug
-      button.btn.btn-sm.position-absolute.bottom-0.end-0.m-1.p-1.lh-1.bg-transparent.border-0.text-white(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge ship render" title="Enlarge ship render")
+      button.btn.btn-sm.position-absolute.bottom-0.end-0.lh-1.bg-transparent.border-0.text-white.image-expand-button(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge ship render" title="Enlarge ship render")
         i.fas.fa-expand.image-expand-icon(aria-hidden="true")
   if (!empty($detailData['characterID']) && ($key ?? '') == 'character')
     .text-center
-      .position-relative.d-inline-block
+      .position-relative.d-inline-block.image-expand-container
         include image_char.pug
-        button.btn.btn-sm.position-absolute.bottom-0.end-0.m-1.p-1.lh-1.bg-transparent.border-0.text-white(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge character portrait" title="Enlarge character portrait")
+        button.btn.btn-sm.position-absolute.bottom-0.end-0.lh-1.bg-transparent.border-0.text-white.image-expand-button(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge character portrait" title="Enlarge character portrait")
           i.fas.fa-expand.image-expand-icon(aria-hidden="true")
       br
       - $trophySummary = is_object($extraData['trophySummary'] ?? null) ? (array) $extraData['trophySummary'] : ($extraData['trophySummary'] ?? []);
@@ -44,40 +44,40 @@
             a.badge.text-white.text-decoration-none(href="/information/faq/#character-labels" style="background-color: #633399;" rel="tooltip" title=$cynoTitle)= 'CYNO (' . number_format($cynoCount) . ')'
       br
   if (!empty($detailData['corporationID']) && ($key ?? '') == 'corporation')
-    .position-relative.d-inline-block
+    .position-relative.d-inline-block.image-expand-container
       include image_corp.pug
-      button.btn.btn-sm.position-absolute.bottom-0.end-0.m-1.p-1.lh-1.bg-transparent.border-0.text-white(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge corporation logo" title="Enlarge corporation logo")
+      button.btn.btn-sm.position-absolute.bottom-0.end-0.lh-1.bg-transparent.border-0.text-white.image-expand-button(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge corporation logo" title="Enlarge corporation logo")
         i.fas.fa-expand.image-expand-icon(aria-hidden="true")
   if (($detailData['allianceID'] ?? 0) != 0 && ($key ?? '') == 'alliance')
-    .position-relative.d-inline-block
+    .position-relative.d-inline-block.image-expand-container
       include image_alli.pug
-      button.btn.btn-sm.position-absolute.bottom-0.end-0.m-1.p-1.lh-1.bg-transparent.border-0.text-white(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge alliance logo" title="Enlarge alliance logo")
+      button.btn.btn-sm.position-absolute.bottom-0.end-0.lh-1.bg-transparent.border-0.text-white.image-expand-button(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge alliance logo" title="Enlarge alliance logo")
         i.fas.fa-expand.image-expand-icon(aria-hidden="true")
   if (($detailData['factionID'] ?? 0) != 0 && ($key ?? '') == 'faction')
     include image_faction.pug
   if (!empty($detailData['solarSystemName']) && ($key ?? '') == 'system')
-    .position-relative.d-inline-block
+    .position-relative.d-inline-block.image-expand-container
       include image_system.pug
-      button.btn.btn-sm.position-absolute.bottom-0.end-0.m-1.p-1.lh-1.bg-transparent.border-0.text-white(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge system image" title="Enlarge system image")
+      button.btn.btn-sm.position-absolute.bottom-0.end-0.lh-1.bg-transparent.border-0.text-white.image-expand-button(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge system image" title="Enlarge system image")
         i.fas.fa-expand.image-expand-icon(aria-hidden="true")
   if (!empty($detailData['constellationName']) && ($key ?? '') == 'constellation')
     - $imageSize = 128;
-    .position-relative.d-inline-block
+    .position-relative.d-inline-block.image-expand-container
       include image_constellation.pug
-      button.btn.btn-sm.position-absolute.bottom-0.end-0.m-1.p-1.lh-1.bg-transparent.border-0.text-white(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge constellation image" title="Enlarge constellation image")
+      button.btn.btn-sm.position-absolute.bottom-0.end-0.lh-1.bg-transparent.border-0.text-white.image-expand-button(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge constellation image" title="Enlarge constellation image")
         i.fas.fa-expand.image-expand-icon(aria-hidden="true")
   if (!empty($detailData['regionName']) && ($key ?? '') == 'region')
     - $imageSize = 128;
-    .position-relative.d-inline-block
+    .position-relative.d-inline-block.image-expand-container
       include image_region.pug
-      button.btn.btn-sm.position-absolute.bottom-0.end-0.m-1.p-1.lh-1.bg-transparent.border-0.text-white(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge region image" title="Enlarge region image")
+      button.btn.btn-sm.position-absolute.bottom-0.end-0.lh-1.bg-transparent.border-0.text-white.image-expand-button(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge region image" title="Enlarge region image")
         i.fas.fa-expand.image-expand-icon(aria-hidden="true")
   if (($key ?? '') == 'location')
     - $imageSize = 128;
-    .position-relative.d-inline-block
+    .position-relative.d-inline-block.image-expand-container
       include image_item.pug
       if (!empty($detailData['typeID']))
-        button.btn.btn-sm.position-absolute.bottom-0.end-0.m-1.p-1.lh-1.bg-transparent.border-0.text-white(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge location image" title="Enlarge location image")
+        button.btn.btn-sm.position-absolute.bottom-0.end-0.lh-1.bg-transparent.border-0.text-white.image-expand-button(type="button" data-bs-toggle="modal" data-bs-target="#largeImage" aria-label="Enlarge location image" title="Enlarge location image")
           i.fas.fa-expand.image-expand-icon(aria-hidden="true")
 if (!empty($detailData['groupShips']))
   .float-start

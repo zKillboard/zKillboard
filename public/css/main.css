@@ -1422,9 +1422,24 @@ td.centered {
 	height: attr(--size);
 }
 
+.image-expand-container {
+	line-height: 0;
+}
+
+.image-expand-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.5rem;
+	height: 1.5rem;
+	margin: 0.125rem;
+	padding: 0;
+}
+
 .image-expand-icon {
 	-webkit-text-stroke: 1px #000;
 	paint-order: stroke fill;
+	transform: translateY(1px);
 }
 
 .shipImageIcon {
