@@ -2,6 +2,8 @@
 
 require_once '../init.php';
 
+if ($redis->scard('queueStatsSet') >= 1000) exit();
+
 const RANK_TYPES = [
     'allianceID',
     'characterID',
