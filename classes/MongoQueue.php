@@ -43,6 +43,36 @@ class MongoQueue
         return $doc === null ? null : $doc['value'];
     }
 
+    public function popMany($limit)
+    {
+        global $redis;
+
+        $values = [];
+        while (sizeof($values) < $limit && $this->legacyRedis) {
+            $value = $this->legacySet ? $redis->spop($this->name) : $redis->lPop($this->name);
+            if ($value === false || $value === null) break;
+            $values[] = $this->legacySet ? $value : unserialize($value);
+        }
+
+        $remaining = $limit - sizeof($values);
+        if ($remaining > 0) {
+            $docs = $this->mdb->getCollection('queues')->find(
+                ['queue' => $this->name],
+                ['sort' => ['_id' => 1], 'limit' => $remaining, 'projection' => ['_id' => 1, 'value' => 1]]
+            );
+            $ids = [];
+            foreach ($docs as $doc) {
+                $values[] = $doc['value'];
+                $ids[] = $doc['_id'];
+            }
+            if (sizeof($ids) > 0) {
+                $this->mdb->getCollection('queues')->deleteMany(['_id' => ['$in' => $ids]]);
+            }
+        }
+
+        return $values;
+    }
+
     private function decrementCounter($redis)
     {
         $redis->eval(

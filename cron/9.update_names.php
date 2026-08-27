@@ -38,12 +38,9 @@ if ($kvc->get($rsetLoad) != "true" && $nameQueue->count() <= 100) {
 $minute = date("Hi");
 
 do {
-    $set = [];
-    while (sizeof($set) < 1000) {
-        $next = $nameQueue->pop();
-        if ($next === null) break;
-        if ($next != "" && $next != "1" && !in_array($next, $set)) $set[] = $next;
-    }
+    $set = array_values(array_unique(array_filter($nameQueue->popMany(1000), function ($value) {
+        return $value != "" && $value != "1";
+    })));
     if (sizeof($set) > 0) {
         doCall($guzzler, $mdb, $redis, $rset, $set);
         $guzzler->finish();
