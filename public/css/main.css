@@ -24,6 +24,10 @@ h1, h2, h3, h4, h5, h6 {
 	box-sizing: border-box;
 }
 
+.page-shell.nobackground {
+	display: flow-root;
+}
+
 #navibar.page-shell {
 	max-width: 1170px;
 	padding-left: 0.5rem;
@@ -1349,10 +1353,6 @@ td.centered {
 }
 
 .publift:empty+.pbsep {
-	display: none;
-}
-
-#publifttop:empty {
 	display: none;
 }
 
