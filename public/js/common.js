@@ -545,6 +545,7 @@ function isSpaExcludedPath(pathname) {
         "/cache/",
         "/account/logout/",
         "/account/tracker/",
+        "/asearch/",
         "/asearchsaved/",
         "/brsave/",
         "/ccp",
