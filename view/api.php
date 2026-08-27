@@ -3,7 +3,7 @@
 use cvweiss\redistools\RedisQueue;
 
 function handler($request, $response, $args, $container) {
-    global $redis, $ip, $uri;
+    global $mdb, $redis, $ip, $uri;
 
     $inputString = $args['input'] ?? '';
     $input = explode('/', trim($inputString, '/'));
