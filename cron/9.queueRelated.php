@@ -32,6 +32,7 @@ while ($minute == date('Hi')) {
         $serial = serialize($summary);
         if ($redis->ping() != 1) connectRedis();
         $redis->setex($parameters['key'], 900, $serial);
+        $redis->del("zkb:queueRelatedSet:queued:$key");
         $redis->del("$key:params");
 
     } catch (Exception $e) {

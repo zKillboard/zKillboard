@@ -86,8 +86,12 @@ class RelatedReport {
         while (strlen($summary) == 0) {
             $parameters = array('solarSystemID' => $systemID, 'relatedTime' => $relatedTime, 'exHours' => $exHours, 'nolimit' => true, 'options' => $json_options, 'key' => $key);
             $serial = serialize($parameters);
-            (new MongoQueue($mdb, 'queueRelatedSet', true))->push($key);
             $redis->setex("$key:params", 3600, $serial);
+            $queuedKey = "zkb:queueRelatedSet:queued:$key";
+            if ($redis->setnx($queuedKey, 1)) {
+                $redis->expire($queuedKey, 3600);
+                (new MongoQueue($mdb, 'queueRelatedSet', true))->push($key);
+            }
 
             usleep(100000);
             ++$sleeps;
