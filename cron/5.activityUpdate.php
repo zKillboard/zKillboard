@@ -1,10 +1,8 @@
 <?php
 
-use cvweiss\redistools\RedisQueue;
-
 require_once "../init.php";
 
-$queueApiCheck = new RedisQueue('queueApiCheck');
+$queueApiCheck = new MongoQueue($mdb, 'queueApiCheck');
 
 $delta = 9600;
 

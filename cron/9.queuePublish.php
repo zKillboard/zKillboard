@@ -1,10 +1,8 @@
 <?php
 
-use cvweiss\redistools\RedisQueue;
-
 require_once '../init.php';
 
-$queuePublish = new RedisQueue('queuePublish');
+$queuePublish = new MongoQueue($mdb, 'queuePublish');
 $minute = date('Hi');
 
 $topKillID = max(1, $mdb->findField('killmails', 'killID', [], ['killID' => -1]));

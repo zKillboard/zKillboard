@@ -2,8 +2,6 @@
 
 $mt = 8; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit(); $pid = $mt;
 
-use cvweiss\redistools\RedisQueue;
-
 require_once '../init.php';
 
 if (isset($cronForks[basename(__FILE__)]) && $mt > $cronForks[basename(__FILE__)]) exit();
@@ -19,7 +17,7 @@ if ($redis->get("zkb:reinforced") == true) bailout("reinforced - exiting");
 
 if ($mt == 0) $mdb->getCollection("statistics")->updateMany(['reset' => false], ['$unset' => ['reset' => true]]);
 
-$queueStats = new RedisQueue('queueStats');
+$queueStats = new MongoQueue($mdb, 'queueStats');
 $minute = date('Hi');
 
 function checkForResets() {

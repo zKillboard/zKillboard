@@ -1,8 +1,8 @@
 <?php
 
-$mt = 4; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
-
 use cvweiss\redistools\RedisQueue;
+
+$mt = 4; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
 require_once '../init.php';
 
@@ -10,11 +10,11 @@ if (isset($cronForks[basename(__FILE__)]) && $mt > $cronForks[basename(__FILE__)
 
 global $queueSocial, $redisQAuthUser, $killBotWebhook;
 
-$queueInfo = new RedisQueue('queueInfo');
-$queueApiCheck = new RedisQueue('queueApiCheck');
-$queueSocial = new RedisQueue('queueSocial');
-$queueStats = new RedisQueue('queueStats');
-$queuePublish = new RedisQueue('queuePublish');
+$queueInfo = new MongoQueue($mdb, 'queueInfo');
+$queueApiCheck = new MongoQueue($mdb, 'queueApiCheck');
+$queueSocial = new MongoQueue($mdb, 'queueSocial');
+$queueStats = new MongoQueue($mdb, 'queueStats');
+$queuePublish = new MongoQueue($mdb, 'queuePublish');
 $statArray = ['characterID', 'corporationID', 'allianceID', 'factionID', 'shipTypeID', 'groupID'];
 
 $minute = date('Hi');

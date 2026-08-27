@@ -10,7 +10,8 @@ $minute = date('Hi');
 while ($minute == date('Hi')) {
     if ($redis->get("zkb:reinforced") == true) break;
 
-    $key = $redis->spop("queueAPI");
+    $queueAPI = $queueAPI ?? new MongoQueue($mdb, 'queueAPI', true);
+    $key = $queueAPI->pop();
     if ($key == null) { 
     	usleep(100000);
     	continue;

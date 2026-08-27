@@ -2,9 +2,9 @@
 
 //$mt = 2; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
-use cvweiss\redistools\RedisQueue;
-
 require_once '../init.php';
+
+$queueRelated = new MongoQueue($mdb, 'queueRelatedSet', true);
 
 $minute = date('Hi');
 while ($minute == date('Hi')) {
@@ -13,7 +13,7 @@ while ($minute == date('Hi')) {
         if ($redis->get("zkb:reinforced") == true) break;
         if ($redis->ping() != 1) connectRedis();
 
-        $key = $redis->spop("queueRelatedSet");
+        $key = $queueRelated->pop();
         if ($key == null) { sleep(1); continue; }
         $serial = $redis->get("$key:params");
         if ($serial == null) continue;
@@ -32,7 +32,7 @@ while ($minute == date('Hi')) {
         $serial = serialize($summary);
         if ($redis->ping() != 1) connectRedis();
         $redis->setex($parameters['key'], 900, $serial);
-        $redis->srem('queueRelatedSet', $key);
+        $queueRelated->remove($key);
         $redis->del("$key:params");
 
     } catch (Exception $e) {

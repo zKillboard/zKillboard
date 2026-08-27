@@ -53,7 +53,7 @@ function handler($request, $response, $args, $container) {
         return $response->withStatus(302)->withHeader('Location', "/kill/$id/");
     }
 
-	while ($mdb->count('queueInfo', ['killID' => $id])) {
+	while ($mdb->count('queues', ['queue' => 'queueInfo', 'value' => $id])) {
 		sleep(1);
 	}
 

@@ -40,7 +40,7 @@ function handler($request, $response, $args, $container) {
     if ($return == null || $return == "") {
         $redis->setex("zkb:api:params:$key", 61, serialize($parameters));
         $redis->setex("zkb:api:status:$key", 60, "PENDING");
-        $redis->sadd("queueAPI", $key);
+        $mdb->insert('queues', ['queue' => 'queueAPI', 'value' => $key, 'created' => Mdb::now()]);
     
         while ($redis->get("zkb:api:status:$key") == "PENDING") usleep(100000);
     }

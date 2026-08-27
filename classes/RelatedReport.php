@@ -86,7 +86,7 @@ class RelatedReport {
         while (strlen($summary) == 0) {
             $parameters = array('solarSystemID' => $systemID, 'relatedTime' => $relatedTime, 'exHours' => $exHours, 'nolimit' => true, 'options' => $json_options, 'key' => $key);
             $serial = serialize($parameters);
-            $redis->sadd('queueRelatedSet', $key);
+            $mdb->insert('queues', ['queue' => 'queueRelatedSet', 'value' => $key, 'created' => Mdb::now()]);
             $redis->setex("$key:params", 3600, $serial);
 
             usleep(100000);

@@ -1,6 +1,5 @@
 <?php
 
-use cvweiss\redistools\RedisQueue;
 use cvweiss\redistools\RedisTtlCounter;
 
 require_once '../init.php';
@@ -20,7 +19,7 @@ $redis->expire("zkb:loot:red:$dateYesterday", 86400);
 
 $crestmails = $mdb->getCollection('crestmails');
 $killmails = $mdb->getCollection('killmails');
-$queueInfo = new RedisQueue('queueInfo');
+$queueInfo = new MongoQueue($mdb, 'queueInfo');
 $storage = $mdb->getCollection('storage');
 $killsLastHour = new RedisTtlCounter('killsLastHour');
 

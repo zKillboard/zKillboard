@@ -1,10 +1,8 @@
 <?php
 
-use cvweiss\redistools\RedisQueue;
-
 require_once '../init.php';
 
-$queueSocial = new RedisQueue('queueSocial');
+$queueSocial = new MongoQueue($mdb, 'queueSocial');
 $minute = date('Hi');
 
 while ($minute == date('Hi')) {

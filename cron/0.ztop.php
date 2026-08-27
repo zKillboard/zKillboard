@@ -30,22 +30,16 @@ $metrics = [];
 $metricIndex = 0;
 $serverRows = [];
 $knownRedisQueues = [
-	'queueAPI',
 	'queueAsearchAggregationsSet',
 	'queueAsearchKillsSet',
-	'queueApiCheck',
 	'queueCacheTags',
 	'queueCacheTagsDefer',
 	'queueCacheTagsStatsTop',
 	'queueCacheUrls',
 	'queueCacheUrlsDefer',
 	'queueDailyStatsSet',
-	'queueInfo',
 	'queueItemIndex',
-	'queuePublish',
 	'queueRelated',
-	'queueRelatedSet',
-	'queueSocial',
 	'queueStats',
 	'queueStatsSet',
 	'queueStatsUpdated',
@@ -54,6 +48,7 @@ $knownRedisQueues = [
 	'zkb:updatemarket',
 	'zkb:updatenames'
 ];
+$mongoBackedQueues = ['queueAPI', 'queueApiCheck', 'queueInfo', 'queuePublish', 'queueRelatedSet', 'queueSocial', 'queueStats'];
 foreach ($knownRedisQueues as $knownRedisQueue) $redis->sadd('queues', $knownRedisQueue);
 
 $lastKillCountSent = null;
@@ -133,7 +128,11 @@ while ($hour == date('H')) {
 		if ($queueLabel === '') $queueLabel = $queue;
 
 		$queueType = $redisQueueTypes[$queue];
-		if ($queue == 'queueStats') $queueCount = $redis->scard('queueStatsSet');
+		if (in_array($queue, $mongoBackedQueues)) {
+			$queueCount = $mdb->count('queues', ['queue' => $queue]);
+			if ($redis->type($queue) == Redis::REDIS_LIST) $queueCount += $redis->lLen($queue);
+			else if ($redis->type($queue) == Redis::REDIS_SET) $queueCount += $redis->scard($queue);
+		}
 		else if ($queueType == Redis::REDIS_SET && $redis->type($queue) == Redis::REDIS_NOT_FOUND) $queueCount = $redis->scard($queue . 'Set');
 		else if ($queueType == Redis::REDIS_SET) $queueCount = $redis->scard($queue);
 		else if ($queueType == Redis::REDIS_LIST) $queueCount = $redis->lLen($queue);

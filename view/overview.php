@@ -931,7 +931,12 @@ function handler($request, $response, $args, $container)
 		$extra['sponsoredMails'] = $sponsored;
 	}
 
-	$extra['statsRecalced'] = $redis->llen('queueStats');
+	$mongoStatsQueueCount = $kvc->get('zkb:queueStats:count');
+	if ($mongoStatsQueueCount === null) {
+		$mongoStatsQueueCount = $mdb->count('queues', ['queue' => 'queueStats']);
+		$kvc->setex('zkb:queueStats:count', 300, $mongoStatsQueueCount);
+	}
+	$extra['statsRecalced'] = $redis->llen('queueStats') + (int) $mongoStatsQueueCount;
 
 	$extra['recentkills'] = $type == 'character' && $redis->get("recentKillmailActivity:char:$id") == true;
 
