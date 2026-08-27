@@ -39,8 +39,9 @@ $minute = date("Hi");
 
 do {
     $set = [];
-    while (sizeof($set) < 1000 && $nameQueue->count() > 0) {
+    while (sizeof($set) < 1000) {
         $next = $nameQueue->pop();
+        if ($next === null) break;
         if ($next != "" && $next != "1" && !in_array($next, $set)) $set[] = $next;
     }
     if (sizeof($set) > 0) {
