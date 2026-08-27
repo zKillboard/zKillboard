@@ -1352,6 +1352,10 @@ td.centered {
 	display: none;
 }
 
+#publifttop:empty {
+	display: none;
+}
+
 .publift:empty+.pbsep+.pbblock {
 	display: none;
 }
