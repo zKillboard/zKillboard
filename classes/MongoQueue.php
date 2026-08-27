@@ -28,7 +28,7 @@ class MongoQueue
         global $redis;
 
         $value = $this->legacySet ? $redis->spop($this->name) : $redis->lPop($this->name);
-        if ($value !== false && $value !== null) return unserialize($value);
+        if ($value !== false && $value !== null) return $this->legacySet ? $value : unserialize($value);
 
         $doc = $this->mdb->getCollection('queues')->findOneAndDelete(['queue' => $this->name], ['sort' => ['_id' => 1]]);
         return $doc === null ? null : $doc['value'];

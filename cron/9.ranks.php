@@ -2,7 +2,8 @@
 
 require_once '../init.php';
 
-if ($redis->scard('queueStatsSet') >= 1000) exit();
+$queueStatsSet = new MongoQueue($mdb, 'queueStatsSet');
+if ($queueStatsSet->count() >= 1000) exit();
 
 const RANK_TYPES = [
     'allianceID',

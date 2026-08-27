@@ -14,6 +14,7 @@ $queueInfo = new MongoQueue($mdb, 'queueInfo');
 $queueApiCheck = new MongoQueue($mdb, 'queueApiCheck');
 $queueSocial = new MongoQueue($mdb, 'queueSocial');
 $queueStats = new MongoQueue($mdb, 'queueStats');
+$queueStatsSet = new MongoQueue($mdb, 'queueStatsSet');
 $queuePublish = new MongoQueue($mdb, 'queuePublish');
 $statArray = ['characterID', 'corporationID', 'allianceID', 'factionID', 'shipTypeID', 'groupID'];
 
@@ -104,9 +105,9 @@ function updateStatsQueue($killID)
 
 function addToStatsQueue($type, $id, $sequence)
 {
-    global $queueStats, $mdb, $redis;
+    global $queueStats, $queueStatsSet, $mdb, $redis;
 
-    $redis->sadd("queueStatsSet", "$type:$id");
+    $queueStatsSet->add("$type:$id");
 
     $cacheTag = str_replace("shipType", "ship", str_replace("solarS", "s", str_replace("ID", "", "$type:$id")));
     $redis->sadd("queueCacheTagsDefer", "killlist:$cacheTag");

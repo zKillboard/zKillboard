@@ -6,7 +6,8 @@ require_once '../init.php';
 
 if ($redis->get("tobefetched") > 1000) exit();
 if ($redis->get("zkb:reinforced") == true) exit();
-if ($redis->scard("queueStatsSet") > 1000) exit();
+$queueStatsSet = new MongoQueue($mdb, 'queueStatsSet');
+if ($queueStatsSet->count() > 1000) exit();
 
 $minute = date("Hi");
 while ($minute == date("Hi")) {

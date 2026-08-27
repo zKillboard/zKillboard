@@ -18,6 +18,7 @@ if ($redis->get("zkb:reinforced") == true) bailout("reinforced - exiting");
 if ($mt == 0) $mdb->getCollection("statistics")->updateMany(['reset' => false], ['$unset' => ['reset' => true]]);
 
 $queueStats = new MongoQueue($mdb, 'queueStats');
+$queueStatsSet = new MongoQueue($mdb, 'queueStatsSet', true);
 $minute = date('Hi');
 
 function checkForResets() {
@@ -30,8 +31,8 @@ function checkForResets() {
     foreach ($cursor as $row) {
         
         $raw = $row['type'] . ":" . $row['id'];
-        if (!$redis->sismember("queueStatsSet", $raw)) {
-            $redis->sadd("queueStatsSet", $raw);
+		if ($mdb->count('queues', ['queue' => 'queueStatsSet', 'value' => $raw]) == 0) {
+			$queueStatsSet->add($raw);
             $count++;
             $hasResets = true;
         }
@@ -41,13 +42,13 @@ function checkForResets() {
 }
 
 $noStatsCount = 0;
-if ($mt == 0 && $redis->scard("queueStatsSet") < 500) checkForResets();
+if ($mt == 0 && $queueStatsSet->count() < 500) checkForResets();
 while ($minute == date('Hi')) {
     if ($redis->get("zkb:statsStop") == "true") break;
 
-    $raw = $redis->srandmember("queueStatsSet");
+	$raw = $queueStatsSet->pop();
     if ($raw == ":" || $raw == ":0") {
-        $redis->srem("queueStatsSet", $raw);
+		$queueStatsSet->remove($raw);
         continue;
     }
     if ($raw == null) {
@@ -60,7 +61,7 @@ while ($minute == date('Hi')) {
     $type = $arr[0];
     if ($type == "itemID" || $type == "typeID") {
         Util::out("Invalid stats request: $raw");        
-        $redis->srem("queueStatsSet", $raw);
+		$queueStatsSet->remove($raw);
         continue;
     }
 
@@ -87,7 +88,7 @@ while ($minute == date('Hi')) {
 
             if ($complete) {
                 Util::statsBoxUpdate($type, $id);
-                $redis->srem("queueStatsSet", $raw);
+				$queueStatsSet->remove($raw);
                 $cacheKey = str_replace("shipType", "ship", str_replace("solarS", "s", str_replace("ID", "", "$type:$id")));
                 $redis->sadd("queueCacheTags", "stats:$cacheKey");
             }
@@ -101,7 +102,7 @@ while ($minute == date('Hi')) {
         }
     } else {
         usleep(25000); // 1/4th of a second
-        $redis->sadd("queueStatsSet", $raw);
+                $queueStatsSet->add($raw);
     }
 }
 
