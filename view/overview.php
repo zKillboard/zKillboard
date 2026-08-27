@@ -937,6 +937,7 @@ function handler($request, $response, $args, $container)
 		$kvc->setex('zkb:queueStats:count', 300, $mongoStatsQueueCount);
 	}
 	$extra['statsRecalced'] = $redis->llen('queueStats') + (int) $mongoStatsQueueCount;
+	$templates->addGlobal('tobeStatsCount', (int) $kvc->get('zkb:queueStatsSet:count', 0));
 
 	$extra['recentkills'] = $type == 'character' && $redis->get("recentKillmailActivity:char:$id") == true;
 

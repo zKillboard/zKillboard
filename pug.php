@@ -131,7 +131,6 @@ $templates->addGlobal('entityID' , 0);
 $templates->addGlobal('reinforced', $redis->get("zkb:reinforced") == true ? "true" : "false");
 $templates->addGlobal("universeUpdating", $redis->get("zkb:universeLoaded") == "false"? "true" : "false");
 $templates->addGlobal("tobefetched", $redis->get("tobefetched"));
-$templates->addGlobal("tobeStatsCount", $redis->scard("queueStatsSet"));
 $templates->addGlobal("z3", $z3);
 
 $templates->addGlobal('referralLink', $referralLink);

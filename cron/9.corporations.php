@@ -107,9 +107,9 @@ function updateCorp(&$guzzler, &$params, &$content)
             $characterInfo = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $characterID], [], ['name' => 1]);
             if ($characterInfo == null) {
                 $mdb->insertUpdate('information', ['type' => 'characterID', 'id' => $characterID], ['name' => "Character $characterID"]);
-                $redis->sadd('zkb:updatenames', $characterID);
+                (new MongoQueue($mdb, 'zkb:updatenames'))->add($characterID);
             } else if (@$characterInfo['name'] == "Character $characterID") {
-                $redis->sadd('zkb:updatenames', $characterID);
+                (new MongoQueue($mdb, 'zkb:updatenames'))->add($characterID);
             }
         }
 

@@ -22,7 +22,7 @@ foreach ($cursor as $row) {
         $defaultName = "$type $id";
         $row = ['type' => $type, 'id' => (int) $id];
         $mdb->insertUpdate('information', $row, ['name' => $defaultName]);
-        if ($type == 'characterID') $redis->sadd('zkb:updatenames', $id);
+        if ($type == 'characterID') (new MongoQueue($mdb, 'zkb:updatenames'))->add($id);
         $count = 0;
     }
     if ($count > 100000) break;

@@ -48,7 +48,7 @@ $knownRedisQueues = [
 	'zkb:updatemarket',
 	'zkb:updatenames'
 ];
-$mongoBackedQueues = ['queueAPI', 'queueApiCheck', 'queueInfo', 'queuePublish', 'queueRelatedSet', 'queueSocial', 'queueStats'];
+$mongoBackedQueues = ['queueAPI', 'queueApiCheck', 'queueInfo', 'queuePublish', 'queueRelatedSet', 'queueSocial', 'queueStats', 'queueStatsSet'];
 foreach ($knownRedisQueues as $knownRedisQueue) $redis->sadd('queues', $knownRedisQueue);
 
 $lastKillCountSent = null;
@@ -158,6 +158,7 @@ while ($hour == date('H')) {
 
 	foreach ($queueMetrics as $queueMetric) {
 		addInfo($queueMetric['label'], $queueMetric['count']);
+		if ($queueMetric['source'] == 'queueStatsSet') $kvc->setex('zkb:queueStatsSet:count', 300, $queueMetric['count']);
 	}
 
 	addInfo('', 0);
@@ -165,7 +166,8 @@ while ($hour == date('H')) {
 	if (((int) $redis->get("tobefetched")) > 100000) addInfo('Kills remaining to be fetched. *', $redis->get("tobefetched"));
 	else addInfo('Kills remaining to be fetched.', $mdb->count("crestmails", ['processed' => false]));
 
-	addInfo('Kills remaining to be parsed.', $redis->zcard("tobeparsed"));
+	$parseQueue = new MongoQueue($mdb, 'tobeparsed', false, false);
+	addInfo('Kills remaining to be parsed.', $parseQueue->count());
 	$killsLastHour = new RedisTtlCounter('killsLastHour', 3600);
 	$kCount = $killsLastHour->count();
 	addInfo('Kills parsed last hour', $kCount);

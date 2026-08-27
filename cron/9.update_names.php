@@ -5,13 +5,14 @@ require_once "../init.php";
 if ($kvc->get("zkb:noapi") == "true") exit();
 
 $rset = "zkb:updatenames";
+$nameQueue = new MongoQueue($mdb, $rset, true);
 $rsetLoad = "zkb:updatenames:" . date('Ymd');
 $rsetMonthlyCharacters = "zkb:updatenames:characters:" . date('Ym');
 $rsetMonthlyCharactersLastID = "$rsetMonthlyCharacters:lastID";
 
 $guzzler = new Guzzler();
 
-if ($kvc->get($rsetMonthlyCharacters) != "true" && (date('j') == 1 || $kvc->get($rsetMonthlyCharactersLastID) !== null) && $redis->scard($rset) <= 50000) {
+if ($kvc->get($rsetMonthlyCharacters) != "true" && (date('j') == 1 || $kvc->get($rsetMonthlyCharactersLastID) !== null) && $nameQueue->count() <= 50000) {
     $lastID = (int) $kvc->get($rsetMonthlyCharactersLastID, 0);
     $rows = $mdb->getCollection('information')->find(['type' => 'characterID', 'id' => ['$gt' => $lastID]], ['projection' => ['_id' => 0, 'id' => 1], 'sort' => ['id' => 1], 'limit' => 5000]);
     $set = [];
@@ -20,7 +21,7 @@ if ($kvc->get($rsetMonthlyCharacters) != "true" && (date('j') == 1 || $kvc->get(
         $lastID = $row['id'];
     }
     if (sizeof($set) > 0) {
-        $redis->sadd($rset, ...$set);
+        foreach ($set as $id) $nameQueue->add($id);
         $kvc->setex($rsetMonthlyCharactersLastID, 86400 * 40, $lastID);
     } else {
         $kvc->setex($rsetMonthlyCharacters, 86400 * 40, "true");
@@ -28,23 +29,19 @@ if ($kvc->get($rsetMonthlyCharacters) != "true" && (date('j') == 1 || $kvc->get(
     }
 }
 
-if ($redis->get($rsetLoad) != "true" && $redis->scard($rset) <= 100) {
-    addToRset($redis, $rset, $mdb->getCollection('ninetyDays')->distinct('involved.characterID'));
-    addToRset($redis, $rset, $mdb->getCollection('ninetyDays')->distinct('involved.corporationID'));
-    addToRset($redis, $rset, $mdb->getCollection('ninetyDays')->distinct('involved.allianceID'));
+if ($redis->get($rsetLoad) != "true" && $nameQueue->count() <= 100) {
+    addToRset($nameQueue, $mdb->getCollection('ninetyDays')->distinct('involved.characterID'));
+    addToRset($nameQueue, $mdb->getCollection('ninetyDays')->distinct('involved.corporationID'));
+    addToRset($nameQueue, $mdb->getCollection('ninetyDays')->distinct('involved.allianceID'));
 }
-$redis->srem($rset, "");
-$redis->srem($rset, "1");
 
 $minute = date("Hi");
 
 do {
     $set = [];
-    while (sizeof($set) < 1000 && $redis->scard($rset) > 0) {
-        $next = $redis->srandmember($rset);
-        $redis->srem($rset, $next);
-        if (!in_array($next, $set)) 
-            $set[] = $next;
+    while (sizeof($set) < 1000 && $nameQueue->count() > 0) {
+        $next = $nameQueue->pop();
+        if ($next != "" && $next != "1" && !in_array($next, $set)) $set[] = $next;
     }
     if (sizeof($set) > 0) {
         doCall($guzzler, $mdb, $redis, $rset, $set);
@@ -53,7 +50,7 @@ do {
     sleep(10);
 } while ($minute == date("Hi"));
 
-if ($redis->scard($rset) == 0) $redis->setex($rsetLoad, 86400, "true");
+if ($nameQueue->count() == 0) $redis->setex($rsetLoad, 86400, "true");
 
 function doCall($guzzler, $mdb, $redis, $rset, $set) {
     $guzzler->call("https://esi.evetech.net/universe/names", "success", "fail", ['mdb' => $mdb, 'rset' => $rset, 'redis' => $redis, 'set' => $set], [], 'POST_JSON', json_encode($set));
@@ -122,9 +119,9 @@ function fail($guzzler, $params, $ex)
     doCall($guzzler, $mdb, $redis, $rset, $part2);
 }
 
-function addToRSet($redis, $rset, $cursor) {
+function addToRSet($queue, $cursor) {
     foreach ($cursor as $row) {
-        $redis->sadd($rset, $row);
+        $queue->add($row);
     }
 
 }

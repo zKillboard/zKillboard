@@ -3,6 +3,7 @@
 require_once "../init.php";
 
 $minute = date("Hi");
+$parseQueue = new MongoQueue($mdb, 'tobeparsed');
 
 $delays = [
     0 => 0,
@@ -23,7 +24,7 @@ while ($minute == date("Hi")) {
         foreach ($delayed as $crestmail) {
             $killID = $crestmail['killID'];
             $mdb->set('crestmails', $crestmail, ['processed' => 'fetched']);
-            $redis->zadd("tobeparsed", $killID, $killID);
+            $parseQueue->push($killID);
         }    
     }
     sleep(1);

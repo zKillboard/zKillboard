@@ -20,6 +20,7 @@ $redis->expire("zkb:loot:red:$dateYesterday", 86400);
 $crestmails = $mdb->getCollection('crestmails');
 $killmails = $mdb->getCollection('killmails');
 $queueInfo = new MongoQueue($mdb, 'queueInfo');
+$parseQueue = new MongoQueue($mdb, 'tobeparsed', false, false);
 $storage = $mdb->getCollection('storage');
 $killsLastHour = new RedisTtlCounter('killsLastHour');
 
@@ -43,11 +44,9 @@ while ($time >= time()) {
 
             $row = $mdb->findDoc('crestmails', ['processed' => 'fetched'], ['killID' => 1]);
             if ($row == null) {
-                $killID = $redis->zrevrange("tobeparsed", 0, 0);
-                $killID = (int) @$killID[0];
+                    $killID = (int) $parseQueue->pop();
                 $row = $mdb->findDoc('crestmails', ['killID' => $killID, 'processed' => true]);
                 if ($row != null) {
-                    $redis->zrem("tobeparsed", $killID);
                     continue;
                 }
             }
@@ -77,7 +76,7 @@ while ($time >= time()) {
             $systemID = (int) $mail['solar_system_id'];
             $system = Info::getInfo('solarSystemID', $systemID);
             if ($system == null) {
-                $redis->zadd("tobeparsed", $killID, $killID);
+                $parseQueue->push($killID);
                 Util::out("NULL SYSTEM $systemID for killmail $killID " . $unixtime);
                 continue;
             }
@@ -268,7 +267,6 @@ while ($time >= time()) {
 
                     $killsLastHour->add($row['killID']);
                     $queueInfo->push($killID);
-                    $redis->zrem("tobeparsed", $killID);
                 } catch (Exception $exxx) {
                     if ($session->isInTransaction()) {
                         $session->abortTransaction();
