@@ -29,7 +29,7 @@ if ($kvc->get($rsetMonthlyCharacters) != "true" && (date('j') == 1 || $kvc->get(
     }
 }
 
-if ($redis->get($rsetLoad) != "true" && $nameQueue->count() <= 100) {
+if ($kvc->get($rsetLoad) != "true" && $nameQueue->count() <= 100) {
     addToRset($nameQueue, $mdb->getCollection('ninetyDays')->distinct('involved.characterID'));
     addToRset($nameQueue, $mdb->getCollection('ninetyDays')->distinct('involved.corporationID'));
     addToRset($nameQueue, $mdb->getCollection('ninetyDays')->distinct('involved.allianceID'));
@@ -50,7 +50,7 @@ do {
     sleep(10);
 } while ($minute == date("Hi"));
 
-if ($nameQueue->count() == 0) $redis->setex($rsetLoad, 86400, "true");
+if ($nameQueue->count() == 0) $kvc->setex($rsetLoad, 86400, "true");
 
 function doCall($guzzler, $mdb, $redis, $rset, $set) {
     $guzzler->call("https://esi.evetech.net/universe/names", "success", "fail", ['mdb' => $mdb, 'rset' => $rset, 'redis' => $redis, 'set' => $set], [], 'POST_JSON', json_encode($set));

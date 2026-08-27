@@ -11,9 +11,9 @@ while ($minute == date('Hi')) {
     $killID = (int) $queuePublish->pop();
     if ($killID > 0 ) {
         if ($redis->get("tobefetched") > 1000 && $killID < ($topKillID - 10000)) continue;
-        if ($redis->get("zkb:published:$killID") == "true") continue;
+        if ($kvc->get("zkb:published:$killID") == "true") continue;
         publish($killID);
-        $redis->setex("zkb:published:$killID", 86400, "true");
+        $kvc->setex("zkb:published:$killID", 86400, "true");
     } else sleep(1);
 }
 

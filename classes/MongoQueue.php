@@ -45,6 +45,8 @@ class MongoQueue
     public function count()
     {
         global $redis;
-        return $this->mdb->count('queues', ['queue' => $this->name]);
+        $count = $this->mdb->count('queues', ['queue' => $this->name]);
+        if ($this->legacyRedis) $count += $this->legacySet ? $redis->sCard($this->name) : $redis->lLen($this->name);
+        return $count;
     }
 }

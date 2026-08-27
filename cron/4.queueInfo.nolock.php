@@ -15,6 +15,7 @@ $queueApiCheck = new MongoQueue($mdb, 'queueApiCheck');
 $queueSocial = new MongoQueue($mdb, 'queueSocial');
 $queueStats = new MongoQueue($mdb, 'queueStats');
 $queueStatsSet = new MongoQueue($mdb, 'queueStatsSet');
+$nameQueue = new MongoQueue($mdb, 'zkb:updatenames');
 $queuePublish = new MongoQueue($mdb, 'queuePublish');
 $statArray = ['characterID', 'corporationID', 'allianceID', 'factionID', 'shipTypeID', 'groupID'];
 
@@ -145,7 +146,7 @@ function updateItems($killID)
 
 function updateEntity($killID, $entity)
 {
-    global $mdb, $debug, $redis;
+    global $mdb, $debug, $redis, $nameQueue;
     $types = ['characterID', 'corporationID', 'allianceID'];
 
     foreach ($types as $type) {
@@ -160,7 +161,7 @@ function updateEntity($killID, $entity)
             $insert['name'] = $defaultName;
             try {
                 $mdb->insert('information', $insert);
-                $redis->sadd('zkb:updatenames', $id);
+                $nameQueue->add($id);
             } catch (Exception $eex) {}
         }
 
@@ -171,7 +172,7 @@ function updateEntity($killID, $entity)
             $info = $mdb->findDoc("information", ['type' => $type, 'id' => $id]);
             $name = @$info['name'];
             if ($name == '' || $name == $defaultName) {
-                $redis->sadd('zkb:updatenames', $id);
+                $nameQueue->add($id);
                 if ($redis->get("zkb:updatenow:$type:$id") != "true") {
                     $mdb->removeField("information", ['type' => $type, 'id' => $id], 'lastApiUpdate');
                     $redis->setex("zkb:updatenow:$type:$id", 300, "true");
