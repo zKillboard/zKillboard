@@ -62,6 +62,7 @@ try {
     $mdb = $params['mdb'];
     $rset = $params['rset'];
     $redis = $params['redis'];
+    $queue = new MongoQueue($mdb, $rset, true);
 
     $rows = json_decode($content, true);
     foreach ($rows as $row) {
@@ -85,6 +86,7 @@ try {
             }
         }
         $redis->srem($rset, $row['id']);
+        $queue->remove($row['id']);
     }
     } catch (Exception $ex) {
         print_r($ex);
@@ -96,6 +98,7 @@ function fail($guzzler, $params, $ex)
     $mdb = $params['mdb'];
     $rset = $params['rset'];
     $redis = $params['redis'];
+    $queue = new MongoQueue($mdb, $rset, true);
 
     $set = $params['set'];
 
@@ -108,6 +111,7 @@ function fail($guzzler, $params, $ex)
         }
         Util::out("Failure to resolve name for ID: $id - " . $ex->getMessage());
         $redis->srem($rset, $id);
+        $queue->remove($id);
         return;
     }
 

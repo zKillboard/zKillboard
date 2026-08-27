@@ -19,7 +19,7 @@ class MongoQueue
     {
         $this->mdb->insert('queues', ['queue' => $this->name, 'value' => $value, 'created' => Mdb::now()]);
         global $redis;
-        $redis->incr('zkb:queue:count:' . $this->name);
+        if ($this->name != 'zkb:updatenames') $redis->incr('zkb:queue:count:' . $this->name);
     }
 
     public function add($value)
@@ -34,12 +34,12 @@ class MongoQueue
         if (!$this->legacyRedis) $value = false;
         else $value = $this->legacySet ? $redis->spop($this->name) : $redis->lPop($this->name);
         if ($value !== false && $value !== null) {
-            $this->decrementCounter($redis);
+            if ($this->name != 'zkb:updatenames') $this->decrementCounter($redis);
             return $this->legacySet ? $value : unserialize($value);
         }
 
         $doc = $this->mdb->getCollection('queues')->findOneAndDelete(['queue' => $this->name], ['sort' => ['_id' => 1]]);
-        if ($doc !== null) $this->decrementCounter($redis);
+        if ($doc !== null && $this->name != 'zkb:updatenames') $this->decrementCounter($redis);
         return $doc === null ? null : $doc['value'];
     }
 
@@ -54,7 +54,13 @@ class MongoQueue
 
     public function remove($value)
     {
-        $this->mdb->remove('queues', ['queue' => $this->name, 'value' => $value]);
+        global $redis;
+        do {
+            $removed = $this->mdb->remove('queues', ['queue' => $this->name, 'value' => $value]);
+            if (($removed['n'] ?? 0) > 0 && $this->name != 'zkb:updatenames') {
+                $this->decrementCounter($redis);
+            }
+        } while (($removed['n'] ?? 0) > 0);
     }
 
     public function count()

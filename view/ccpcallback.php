@@ -185,8 +185,10 @@ function handler($request, $response, $args, $container)
 		if ($redirect == '')
 			$redirect = '/';
 
-		(new MongoQueue($mdb, 'queueStatsSet'))->add("characterID:$charID");  // encourage stats calc on newly logged in chars
-		(new MongoQueue($mdb, 'zkb:updatenames'))->add($charID);
+		$queueStatsSet = new MongoQueue($mdb, 'queueStatsSet');
+		$queueNames = new MongoQueue($mdb, 'zkb:updatenames');
+		$queueStatsSet->add("characterID:$charID");  // encourage stats calc on newly logged in chars
+		$queueNames->add($charID);
 		return $response->withStatus(302)->withHeader('Location', $redirect);
 	} catch (Exception $e) {
 		$sessid = session_id();

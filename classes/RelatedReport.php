@@ -82,6 +82,7 @@ class RelatedReport {
 
         $sleeps = 0;
         $key = 'br:'.md5("brq:$systemID:$relatedTime:$exHours:".json_encode($json_options).($battleID != null ? ":$battleID" : ''));
+        $queue = new MongoQueue($mdb, 'queueRelatedSet', true);
         $summary = $redis->get($key);
         while (strlen($summary) == 0) {
             $parameters = array('solarSystemID' => $systemID, 'relatedTime' => $relatedTime, 'exHours' => $exHours, 'nolimit' => true, 'options' => $json_options, 'key' => $key);
@@ -90,7 +91,7 @@ class RelatedReport {
             $queuedKey = "zkb:queueRelatedSet:queued:$key";
             if ($redis->setnx($queuedKey, 1)) {
                 $redis->expire($queuedKey, 3600);
-                (new MongoQueue($mdb, 'queueRelatedSet', true))->push($key);
+                $queue->push($key);
             }
 
             usleep(100000);

@@ -5,6 +5,7 @@ require_once "../init.php";
 if (date("i") != 0) exit();
 
 $count = 0;
+$queueNames = new MongoQueue($mdb, 'zkb:updatenames');
 $collection = $mdb->getCollection("statistics");
 $cursor = $collection->find([], [
     'sort' => ['$natural' => -1],
@@ -22,7 +23,7 @@ foreach ($cursor as $row) {
         $defaultName = "$type $id";
         $row = ['type' => $type, 'id' => (int) $id];
         $mdb->insertUpdate('information', $row, ['name' => $defaultName]);
-        if ($type == 'characterID') (new MongoQueue($mdb, 'zkb:updatenames'))->add($id);
+        if ($type == 'characterID') $queueNames->add($id);
         $count = 0;
     }
     if ($count > 100000) break;

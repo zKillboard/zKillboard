@@ -6,6 +6,7 @@ if ($kvc->get("zkb:noapi") == "true") exit();
 if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit();
 
 $guzzler = new Guzzler();
+$queueNames = new MongoQueue($mdb, 'zkb:updatenames');
 
 
 $currentSecond = "";
@@ -107,9 +108,9 @@ function updateCorp(&$guzzler, &$params, &$content)
             $characterInfo = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $characterID], [], ['name' => 1]);
             if ($characterInfo == null) {
                 $mdb->insertUpdate('information', ['type' => 'characterID', 'id' => $characterID], ['name' => "Character $characterID"]);
-                (new MongoQueue($mdb, 'zkb:updatenames'))->add($characterID);
+                $queueNames->add($characterID);
             } else if (@$characterInfo['name'] == "Character $characterID") {
-                (new MongoQueue($mdb, 'zkb:updatenames'))->add($characterID);
+                $queueNames->add($characterID);
             }
         }
 
