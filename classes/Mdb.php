@@ -23,7 +23,7 @@ class Mdb
                 if ($mongoConnString == null) $mongoConnString = "mongodb://$mongoServer:$mongoPort";
                 $this->mongoClient = new MongoDB\Client($mongoConnString, [
                     'connectTimeoutMS' => 10000,
-                    'socketTimeoutMS' => 3600000,
+                    'socketTimeoutMS' => 7200000,
                 ], [
                     'typeMap' => [
                         'root' => 'array',
