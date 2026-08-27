@@ -22,8 +22,13 @@ function handler($request, $response, $args, $container) {
     $ks = @$params['ks'];
     $ke = @$params['ke'];
 
+    // The homepage has no entity path to rank; avoid parsing '/' as a killboard URI.
+    if ($uri === '/') {
+        return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,statstop,statstop10'), 'components/top_killer_list.pug', []);
+    }
+
     $split = explode("/", $uri);
-    $cacheTagKey = $split[1] . ":" . $split[2];
+    $cacheTagKey = ($split[1] ?? '') . ":" . ($split[2] ?? '');
 
     $epoch = time();
     $epoch = $epoch - ($epoch % 900);
