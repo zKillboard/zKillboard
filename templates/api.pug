@@ -145,10 +145,10 @@ block content
                   pre.bg-black.border.rounded.p-3.mb-2
                     code curl --compressed \
                       | 
-                      |   -A "MyApp/1.0 (maintainer@example.com)" \
+                      |   -A "Default zKill API example" \
                       | 
                       |   "https://zkillboard.com/api/kills/characterID/1633218082/"
-                  button.btn.btn-sm.btn-secondary(type="button" data-copy='curl --compressed -A "MyApp/1.0 (maintainer@example.com)" "https://zkillboard.com/api/kills/characterID/1633218082/"')
+                  button.btn.btn-sm.btn-secondary(type="button" data-copy='curl --compressed -A "Default zKill API example" "https://zkillboard.com/api/kills/characterID/1633218082/"')
                     i.fas.fa-copy.me-1(aria-hidden="true")
                     | Copy cURL
 
@@ -168,7 +168,7 @@ block content
               h2.h3.mb-0= $section['label']
             p.text-body-secondary.mb-3= $section['description']
 
-            each $endpoint in $section['endpoints']
+            each $endpoint, $endpointIndex in $section['endpoints']
               - $searchText = strtolower($section['label'] . ' ' . json_encode($endpoint));
               details.api-docs-endpoint.card.bg-black.mb-3(data-api-endpoint data-api-search=$searchText)
                 summary.card-header.py-3.bg-black
@@ -184,27 +184,72 @@ block content
                   if (!empty($endpoint['description']))
                     p= $endpoint['description']
 
+                  if (!empty($endpoint['form']))
+                    - $form = $endpoint['form'];
+                    - $formID = 'api-example-' . $section['id'] . '-' . $endpointIndex;
+                    h3.h6.mt-4 Example form
+                    form.border.border-primary.rounded.p-3(data-api-example-form data-api-base=$form['base'] data-api-suffix=($form['suffix'] ?? '/') data-api-method=$endpoint['method'])
+                      .row.g-3
+                        if (empty($form['fields']))
+                          .col-12.text-body-secondary No configurable values.
+                        each $field in ($form['fields'] ?? [])
+                          - $fieldID = $formID . '-' . $field['name'];
+                          if ($field['type'] == 'checkbox')
+                            .col-sm-6.col-xl-4
+                              .form-check.mt-sm-4.pt-sm-2
+                                input.form-check-input(type="checkbox" id=$fieldID checked=!empty($field['default']) data-api-field=$field['name'] data-api-location=$field['location'] data-api-value=$field['value'] data-api-prefix=($field['prefix'] ?? ''))
+                                label.form-check-label(for=$fieldID)= $field['label']
+                          else
+                            .col-sm-6.col-xl-4
+                              label.form-label(for=$fieldID)
+                                = $field['label']
+                                if (empty($field['required']))
+                                  span.small.text-body-secondary.ms-1 (optional)
+                              if ($field['type'] == 'select')
+                                select.form-select(id=$fieldID required=!empty($field['required']) data-api-field=$field['name'] data-api-location=$field['location'] data-api-prefix=($field['prefix'] ?? '') data-api-example-target=($field['exampleTarget'] ?? ''))
+                                  each $option in $field['options']
+                                    option(value=$option['value'] selected=($option['value'] == ($field['default'] ?? '')) data-api-example=($option['example'] ?? ''))= $option['label']
+                              else
+                                input.form-control(type=$field['type'] id=$fieldID value=($field['default'] ?? '') placeholder=($field['placeholder'] ?? '') required=!empty($field['required']) min=($field['min'] ?? null) max=($field['max'] ?? null) step=($field['step'] ?? null) inputmode=($field['inputmode'] ?? null) data-api-field=$field['name'] data-api-location=$field['location'] data-api-prefix=($field['prefix'] ?? ''))
+                      label.form-label.fw-bold.mt-3(for=($formID . '-request')) Generated request
+                      textarea.form-control.font-monospace(id=($formID . '-request') rows="3" readonly data-api-request)
+                      .d-flex.flex-wrap.gap-2.mt-2
+                        button.btn.btn-sm.btn-secondary(type="button" data-copy-target=($formID . '-request'))
+                          i.fas.fa-copy.me-1(aria-hidden="true")
+                          | Copy cURL
+                        a.btn.btn-sm.btn-primary(class=($endpoint['method'] == 'GET' ? '' : 'd-none') href="#" target="_blank" rel="noopener noreferrer" data-api-open)
+                          i.fas.fa-external-link-alt.me-1(aria-hidden="true")
+                          | Open
+
+                  h3.h6.mt-4 Configuration
                   if (!empty($endpoint['parameters']))
-                    h3.h6.mt-4 Parameters
                     .table-responsive
                       table.table.table-sm.table-striped.align-middle
                         thead
                           tr
                             th(scope="col") Name
                             th(scope="col") Type
+                            th(scope="col") Example
+                            th(scope="col") Default
                             th(scope="col") Description
                         tbody
                           each $parameter in $endpoint['parameters']
                             tr
-                              td
+                              th.fw-normal(scope="row")
                                 code= $parameter['name']
                                 if (!empty($parameter['required']))
                                   span.badge.bg-secondary.ms-2 Required
                               td.text-nowrap= $parameter['type']
+                              td
+                                code= $parameter['example']
+                              td
+                                code= $parameter['default']
                               td= $parameter['description']
+                  else
+                    p.text-body-secondary No parameters or request body.
 
-                  if (!empty($endpoint['examples']))
-                    h3.h6.mt-4 Examples
+                  if (count($endpoint['examples'] ?? []) > 1)
+                    h3.h6.mt-4 More examples
                     each $example in $endpoint['examples']
                       .border.rounded.mb-2
                         .d-flex.flex-wrap.justify-content-between.align-items-center.gap-2.px-3.py-2.border-bottom
@@ -305,6 +350,62 @@ block script
         updateBuilder();
       });
       updateBuilder();
+
+      function shellQuote(value) {
+        return "'" + value.replace(/'/g, "'\\''") + "'";
+      }
+
+      function updateExampleForm(form) {
+        const path = [];
+        const query = new URLSearchParams();
+        const body = [];
+        const fields = Array.from(form.querySelectorAll('[data-api-field]'));
+
+        fields.forEach(function (field) {
+          const value = field.type === 'checkbox' ? (field.checked ? field.dataset.apiValue : '') : field.value.trim();
+          if (value === '') return;
+          if (field.dataset.apiLocation === 'path') {
+            if (field.dataset.apiPrefix) path.push(encodeURIComponent(field.dataset.apiPrefix));
+            path.push(encodeURIComponent(value));
+          } else if (field.dataset.apiLocation === 'query') {
+            query.set(field.dataset.apiField, value);
+          } else if (field.dataset.apiLocation === 'body') {
+            body.push([field.dataset.apiField, value]);
+          }
+        });
+
+        const base = form.dataset.apiBase.replace(/\/+$/, '');
+        const suffix = form.dataset.apiSuffix || '';
+        let url = base + (path.length ? '/' + path.join('/') : '') + suffix;
+        const queryString = query.toString();
+        if (queryString) url += '?' + queryString;
+
+        const curl = ['curl --compressed'];
+        if (form.dataset.apiMethod !== 'GET') curl.push('-X ' + form.dataset.apiMethod);
+        curl.push('-A ' + shellQuote('Default zKill API example'));
+        body.forEach(function (entry) {
+          curl.push('--data-urlencode ' + shellQuote(entry[0] + '=' + entry[1]));
+        });
+        curl.push(shellQuote(url));
+        form.querySelector('[data-api-request]').value = curl.join(' \\\n  ');
+
+        const open = form.querySelector('[data-api-open]');
+        if (open) open.href = url;
+      }
+
+      document.querySelectorAll('[data-api-example-form]').forEach(function (form) {
+        form.addEventListener('submit', function (event) { event.preventDefault(); });
+        form.addEventListener('input', function () { updateExampleForm(form); });
+        form.addEventListener('change', function (event) {
+          const source = event.target.closest('[data-api-example-target]');
+          if (source && source.dataset.apiExampleTarget) {
+            const target = form.querySelector('[data-api-field="' + source.dataset.apiExampleTarget + '"]');
+            if (target) target.value = source.selectedOptions[0].dataset.example || '';
+          }
+          updateExampleForm(form);
+        });
+        updateExampleForm(form);
+      });
 
       document.addEventListener('click', function (event) {
         const button = event.target.closest('[data-copy], [data-copy-target]');

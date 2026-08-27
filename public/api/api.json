@@ -12,142 +12,385 @@
                     "summary": "Search killmails",
                     "cache": "1-hour client cache",
                     "description": "Modifiers are path segments, can be combined in any order, and return up to 200 killmails. Results are newest first and include the ESI killmail plus a zkb metadata object.",
+                    "form": {
+                        "base": "https://zkillboard.com/api",
+                        "suffix": "/",
+                        "fields": [
+                            {
+                                "name": "side",
+                                "label": "Side",
+                                "location": "path",
+                                "type": "select",
+                                "default": "kills",
+                                "options": [
+                                    { "label": "Kills", "value": "kills" },
+                                    { "label": "Losses", "value": "losses" },
+                                    { "label": "Kills and losses", "value": "" }
+                                ]
+                            },
+                            {
+                                "name": "entityType",
+                                "label": "Entity type",
+                                "location": "path",
+                                "type": "select",
+                                "default": "characterID",
+                                "exampleTarget": "entityID",
+                                "options": [
+                                    { "label": "Character — Squizz Caphinator", "value": "characterID", "example": "1633218082" },
+                                    { "label": "Corporation — Hole Lotta Trouble", "value": "corporationID", "example": "98798418" },
+                                    { "label": "Alliance — The Wormhole Police", "value": "allianceID", "example": "99010102" },
+                                    { "label": "Faction — Caldari State", "value": "factionID", "example": "500001" },
+                                    { "label": "Ship type — Rifter", "value": "shipTypeID", "example": "587" },
+                                    { "label": "Group — Frigate", "value": "groupID", "example": "25" },
+                                    { "label": "Solar system — Jita", "value": "solarSystemID", "example": "30000142" },
+                                    { "label": "Constellation — Kimotoro", "value": "constellationID", "example": "20000020" },
+                                    { "label": "Region — The Forge", "value": "regionID", "example": "10000002" },
+                                    { "label": "Location — Jita IV - Moon 4", "value": "locationID", "example": "60003760" },
+                                    { "label": "War", "value": "warID", "example": "697413" },
+                                    { "label": "Killmail", "value": "killID", "example": "138006538" },
+                                    { "label": "No entity filter", "value": "", "example": "" }
+                                ]
+                            },
+                            {
+                                "name": "entityID",
+                                "label": "Entity ID",
+                                "location": "path",
+                                "type": "number",
+                                "default": "1633218082",
+                                "min": "1",
+                                "inputmode": "numeric"
+                            },
+                            {
+                                "name": "space",
+                                "label": "Space",
+                                "location": "path",
+                                "type": "select",
+                                "default": "",
+                                "options": [
+                                    { "label": "Any space", "value": "" },
+                                    { "label": "Highsec", "value": "highsec" },
+                                    { "label": "Lowsec", "value": "lowsec" },
+                                    { "label": "Nullsec", "value": "nullsec" },
+                                    { "label": "W-Space", "value": "w-space" },
+                                    { "label": "Abyssal", "value": "abyssal" }
+                                ]
+                            },
+                            {
+                                "name": "engagement",
+                                "label": "Engagement",
+                                "location": "path",
+                                "type": "select",
+                                "default": "",
+                                "options": [
+                                    { "label": "Any engagement", "value": "" },
+                                    { "label": "Solo only", "value": "solo" },
+                                    { "label": "Ganked only", "value": "ganked" }
+                                ]
+                            },
+                            {
+                                "name": "awox",
+                                "label": "Awox",
+                                "location": "path",
+                                "prefix": "awox",
+                                "type": "select",
+                                "default": "",
+                                "options": [
+                                    { "label": "Include both", "value": "" },
+                                    { "label": "Awox only", "value": "1" },
+                                    { "label": "Exclude awox", "value": "0" }
+                                ]
+                            },
+                            {
+                                "name": "npc",
+                                "label": "NPC",
+                                "location": "path",
+                                "prefix": "npc",
+                                "type": "select",
+                                "default": "",
+                                "options": [
+                                    { "label": "Include both", "value": "" },
+                                    { "label": "NPC only", "value": "1" },
+                                    { "label": "Exclude NPC", "value": "0" }
+                                ]
+                            },
+                            {
+                                "name": "label",
+                                "label": "Label",
+                                "location": "path",
+                                "prefix": "label",
+                                "type": "text",
+                                "default": "",
+                                "placeholder": "capital or loc:pochven"
+                            },
+                            {
+                                "name": "iskValue",
+                                "label": "Minimum ISK value",
+                                "location": "path",
+                                "prefix": "iskValue",
+                                "type": "number",
+                                "default": "",
+                                "min": "500000000",
+                                "step": "500000000",
+                                "inputmode": "numeric"
+                            },
+                            {
+                                "name": "pastSeconds",
+                                "label": "Past seconds",
+                                "location": "path",
+                                "prefix": "pastSeconds",
+                                "type": "number",
+                                "default": "",
+                                "min": "3600",
+                                "max": "604800",
+                                "step": "3600",
+                                "inputmode": "numeric"
+                            },
+                            {
+                                "name": "year",
+                                "label": "Year",
+                                "location": "path",
+                                "prefix": "year",
+                                "type": "number",
+                                "default": "",
+                                "min": "2007",
+                                "max": "2026",
+                                "inputmode": "numeric"
+                            },
+                            {
+                                "name": "month",
+                                "label": "Month",
+                                "location": "path",
+                                "prefix": "month",
+                                "type": "select",
+                                "default": "",
+                                "options": [
+                                    { "label": "Any month", "value": "" },
+                                    { "label": "January", "value": "1" },
+                                    { "label": "February", "value": "2" },
+                                    { "label": "March", "value": "3" },
+                                    { "label": "April", "value": "4" },
+                                    { "label": "May", "value": "5" },
+                                    { "label": "June", "value": "6" },
+                                    { "label": "July", "value": "7" },
+                                    { "label": "August", "value": "8" },
+                                    { "label": "September", "value": "9" },
+                                    { "label": "October", "value": "10" },
+                                    { "label": "November", "value": "11" },
+                                    { "label": "December", "value": "12" }
+                                ]
+                            },
+                            {
+                                "name": "page",
+                                "label": "Page",
+                                "location": "path",
+                                "prefix": "page",
+                                "type": "number",
+                                "default": "",
+                                "placeholder": "1",
+                                "min": "1",
+                                "max": "100",
+                                "inputmode": "numeric"
+                            },
+                            {
+                                "name": "finalblow-only",
+                                "label": "Final blow only",
+                                "location": "path",
+                                "type": "checkbox",
+                                "value": "finalblow-only",
+                                "default": false
+                            },
+                            {
+                                "name": "pretty",
+                                "label": "Pretty JSON",
+                                "location": "path",
+                                "type": "checkbox",
+                                "value": "pretty",
+                                "default": false
+                            }
+                        ]
+                    },
                     "parameters": [
                         {
                             "name": "kills, losses",
                             "type": "flag",
+                            "example": "kills",
+                            "default": "None (kills and losses)",
                             "description": "Match an entity as an attacker or victim. Omit both to include either side."
                         },
                         {
                             "name": "characterID/{id}",
                             "type": "Entity ID",
+                            "example": "characterID/1633218082",
+                            "default": "None",
                             "description": "Filter by character."
                         },
                         {
                             "name": "corporationID/{id}",
                             "type": "Entity ID",
+                            "example": "corporationID/98798418",
+                            "default": "None",
                             "description": "Filter by corporation."
                         },
                         {
                             "name": "allianceID/{id}",
                             "type": "Entity ID",
+                            "example": "allianceID/99010102",
+                            "default": "None",
                             "description": "Filter by alliance."
                         },
                         {
                             "name": "factionID/{id}",
                             "type": "Entity ID",
+                            "example": "factionID/500001",
+                            "default": "None",
                             "description": "Filter by faction."
                         },
                         {
                             "name": "shipTypeID/{id}",
                             "type": "Entity ID",
+                            "example": "shipTypeID/587",
+                            "default": "None",
                             "description": "Filter by victim or attacker ship type."
                         },
                         {
                             "name": "groupID/{id}",
                             "type": "Entity ID",
+                            "example": "groupID/25",
+                            "default": "None",
                             "description": "Filter by inventory group."
                         },
                         {
                             "name": "solarSystemID/{id}",
                             "type": "Entity ID",
+                            "example": "solarSystemID/30000142",
+                            "default": "None",
                             "description": "Filter by solar system. systemID is accepted as an alias."
                         },
                         {
                             "name": "constellationID/{id}",
                             "type": "Entity ID",
+                            "example": "constellationID/20000020",
+                            "default": "None",
                             "description": "Filter by constellation."
                         },
                         {
                             "name": "regionID/{id}",
                             "type": "Entity ID",
+                            "example": "regionID/10000002",
+                            "default": "None",
                             "description": "Filter by region."
                         },
                         {
                             "name": "locationID/{id}",
                             "type": "Entity ID",
+                            "example": "locationID/60003760",
+                            "default": "None",
                             "description": "Filter by a resolved location."
                         },
                         {
                             "name": "warID/{id}",
                             "type": "Entity ID",
+                            "example": "warID/697413",
+                            "default": "None",
                             "description": "Filter by war."
                         },
                         {
                             "name": "killID/{id}",
                             "type": "integer",
+                            "example": "killID/138006538",
+                            "default": "None",
                             "description": "Fetch one killmail by ID."
                         },
                         {
                             "name": "highsec, lowsec, nullsec, w-space, abyssal",
                             "type": "flag",
+                            "example": "w-space",
+                            "default": "None (all space)",
                             "description": "Filter by security band or special space."
                         },
                         {
                             "name": "solo, ganked",
                             "type": "flag",
+                            "example": "solo",
+                            "default": "None",
                             "description": "Return only solo PvP or highsec ganks."
                         },
                         {
                             "name": "awox/{0|1}, npc/{0|1}",
                             "type": "boolean",
+                            "example": "npc/0",
+                            "default": "None (include both)",
                             "description": "Include or exclude awox and NPC killmails."
                         },
                         {
                             "name": "label/{label}",
                             "type": "string",
+                            "example": "label/loc:pochven",
+                            "default": "None",
                             "description": "Filter on a raw zKillboard label, such as capital or loc:pochven."
                         },
                         {
                             "name": "finalblow-only",
                             "type": "flag",
+                            "example": "finalblow-only",
+                            "default": "Off",
                             "description": "Require the selected entity to have the final blow. Place an entity filter first."
                         },
                         {
                             "name": "iskValue/{value}",
                             "type": "integer",
+                            "example": "iskValue/500000000",
+                            "default": "None",
                             "description": "Minimum total value in ISK. The value must be a positive multiple of 500,000,000."
                         },
                         {
                             "name": "pastSeconds/{seconds}",
                             "type": "integer",
+                            "example": "pastSeconds/604800",
+                            "default": "None",
                             "description": "Look back up to 604,800 seconds in one-hour increments. Place an entity filter first."
                         },
                         {
                             "name": "year/{YYYY}/month/{M}",
                             "type": "date",
+                            "example": "year/2026/month/8",
+                            "default": "None",
                             "description": "Select a calendar month. Month is 1–12 without a leading zero. Place an entity filter first."
                         },
                         {
                             "name": "page/{page}",
                             "type": "integer",
+                            "example": "page/2",
+                            "default": "1",
                             "description": "Page 1–100, with up to 200 results per page. Place an entity filter first."
                         },
                         {
                             "name": "pretty",
                             "type": "flag",
+                            "example": "pretty",
+                            "default": "Off (compact JSON)",
                             "description": "Pretty-print the JSON response."
                         }
                     ],
                     "examples": [
                         {
                             "label": "Squizz Caphinator kills",
-                            "code": "https://zkillboard.com/api/kills/characterID/1633218082/",
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  \"https://zkillboard.com/api/kills/characterID/1633218082/\"",
                             "url": "/api/kills/characterID/1633218082/"
                         },
                         {
                             "label": "Hole Lotta Trouble losses in wormhole space",
-                            "code": "https://zkillboard.com/api/losses/w-space/corporationID/98798418/",
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  \"https://zkillboard.com/api/losses/w-space/corporationID/98798418/\"",
                             "url": "/api/losses/w-space/corporationID/98798418/"
                         },
                         {
                             "label": "The Wormhole Police kills",
-                            "code": "https://zkillboard.com/api/kills/allianceID/99010102/",
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  \"https://zkillboard.com/api/kills/allianceID/99010102/\"",
                             "url": "/api/kills/allianceID/99010102/"
                         },
                         {
                             "label": "A week of Squizz Caphinator solo kills",
-                            "code": "https://zkillboard.com/api/kills/characterID/1633218082/solo/pastSeconds/604800/",
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  \"https://zkillboard.com/api/kills/characterID/1633218082/solo/pastSeconds/604800/\"",
                             "url": "/api/kills/characterID/1633218082/solo/pastSeconds/604800/"
                         }
                     ],
@@ -173,39 +416,86 @@
                     "summary": "Entity statistics",
                     "cache": "10-minute server cache",
                     "description": "Returns the statistics zKillboard displays for an entity, including rankings, activity, top lists, and recent high-value kills.",
+                    "form": {
+                        "base": "https://zkillboard.com/api/stats",
+                        "suffix": "/",
+                        "fields": [
+                            {
+                                "name": "entityType",
+                                "label": "Entity type",
+                                "location": "path",
+                                "type": "select",
+                                "required": true,
+                                "default": "corporationID",
+                                "exampleTarget": "entityID",
+                                "options": [
+                                    { "label": "Character — Squizz Caphinator", "value": "characterID", "example": "1633218082" },
+                                    { "label": "Corporation — Hole Lotta Trouble", "value": "corporationID", "example": "98798418" },
+                                    { "label": "Alliance — The Wormhole Police", "value": "allianceID", "example": "99010102" },
+                                    { "label": "Faction — Caldari State", "value": "factionID", "example": "500001" },
+                                    { "label": "Ship type — Rifter", "value": "shipTypeID", "example": "587" },
+                                    { "label": "Group — Frigate", "value": "groupID", "example": "25" },
+                                    { "label": "Solar system — Jita", "value": "solarSystemID", "example": "30000142" },
+                                    { "label": "Region — The Forge", "value": "regionID", "example": "10000002" }
+                                ]
+                            },
+                            {
+                                "name": "entityID",
+                                "label": "Entity ID",
+                                "location": "path",
+                                "type": "number",
+                                "required": true,
+                                "default": "98798418",
+                                "min": "1",
+                                "inputmode": "numeric"
+                            },
+                            {
+                                "name": "sort",
+                                "label": "Top-list sort",
+                                "location": "path",
+                                "type": "select",
+                                "default": "kills",
+                                "options": [
+                                    { "label": "Kills", "value": "kills" },
+                                    { "label": "ISK destroyed", "value": "isk" }
+                                ]
+                            }
+                        ]
+                    },
                     "parameters": [
                         {
                             "name": "entityType",
                             "type": "enum",
                             "required": true,
+                            "example": "corporationID",
+                            "default": "None",
                             "description": "characterID, corporationID, allianceID, factionID, shipTypeID, groupID, solarSystemID, or regionID."
                         },
                         {
                             "name": "entityID",
                             "type": "Entity ID",
                             "required": true,
+                            "example": "98798418",
+                            "default": "None",
                             "description": "The EVE Online ID for the selected entity."
                         },
                         {
                             "name": "sort",
                             "type": "enum",
+                            "example": "kills",
+                            "default": "kills",
                             "description": "kills or isk. This changes the order of topLists only. Omit it to redirect to kills."
-                        },
-                        {
-                            "name": "callback",
-                            "type": "query string",
-                            "description": "Optional valid JavaScript callback name for JSONP."
                         }
                     ],
                     "examples": [
                         {
                             "label": "Hole Lotta Trouble, top lists by kills",
-                            "code": "https://zkillboard.com/api/stats/corporationID/98798418/kills/",
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  \"https://zkillboard.com/api/stats/corporationID/98798418/kills/\"",
                             "url": "/api/stats/corporationID/98798418/kills/"
                         },
                         {
                             "label": "Hole Lotta Trouble, top lists by ISK",
-                            "code": "https://zkillboard.com/api/stats/corporationID/98798418/isk/",
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  \"https://zkillboard.com/api/stats/corporationID/98798418/isk/\"",
                             "url": "/api/stats/corporationID/98798418/isk/"
                         }
                     ],
@@ -217,23 +507,36 @@
                     "summary": "Item price history",
                     "cache": "10-minute server cache",
                     "description": "Returns the daily price history and current price zKillboard uses when calculating killmail values.",
+                    "form": {
+                        "base": "https://zkillboard.com/api/prices",
+                        "suffix": "/",
+                        "fields": [
+                            {
+                                "name": "typeID",
+                                "label": "Type ID — Tritanium",
+                                "location": "path",
+                                "type": "number",
+                                "required": true,
+                                "default": "34",
+                                "min": "1",
+                                "inputmode": "numeric"
+                            }
+                        ]
+                    },
                     "parameters": [
                         {
                             "name": "typeID",
                             "type": "Entity ID",
                             "required": true,
+                            "example": "34",
+                            "default": "None",
                             "description": "Inventory type ID."
-                        },
-                        {
-                            "name": "callback",
-                            "type": "query string",
-                            "description": "Optional valid JavaScript callback name for JSONP."
                         }
                     ],
                     "examples": [
                         {
                             "label": "Tritanium prices",
-                            "code": "https://zkillboard.com/api/prices/34/",
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  \"https://zkillboard.com/api/prices/34/\"",
                             "url": "/api/prices/34/"
                         }
                     ],
@@ -253,32 +556,82 @@
                     "summary": "Submit a killmail as JSON",
                     "cache": "Not cached",
                     "description": "Validates the ID and 40-character ESI hash, fetches the killmail, and returns a machine-readable result. Delayed requests return as soon as they are queued.",
+                    "form": {
+                        "base": "https://zkillboard.com/api/killmail/add",
+                        "suffix": "/",
+                        "fields": [
+                            {
+                                "name": "killID",
+                                "label": "Killmail ID",
+                                "location": "path",
+                                "type": "number",
+                                "required": true,
+                                "default": "138006538",
+                                "min": "1",
+                                "inputmode": "numeric"
+                            },
+                            {
+                                "name": "hash",
+                                "label": "Killmail hash",
+                                "location": "path",
+                                "type": "text",
+                                "required": true,
+                                "default": "89e64654414cb55b11b19675a4a1fa8194e11ca9"
+                            },
+                            {
+                                "name": "delay",
+                                "label": "Publishing delay",
+                                "location": "path",
+                                "type": "select",
+                                "default": "",
+                                "options": [
+                                    { "label": "Default — ASAP", "value": "" },
+                                    { "label": "ASAP", "value": "0" },
+                                    { "label": "1 hour", "value": "1" },
+                                    { "label": "3 hours", "value": "2" },
+                                    { "label": "8 hours", "value": "3" },
+                                    { "label": "24 hours", "value": "4" },
+                                    { "label": "72 hours", "value": "5" }
+                                ]
+                            }
+                        ]
+                    },
                     "parameters": [
                         {
                             "name": "killID",
                             "type": "integer",
                             "required": true,
+                            "example": "138006538",
+                            "default": "None",
                             "description": "Killmail ID from ESI."
                         },
                         {
                             "name": "hash",
                             "type": "string",
                             "required": true,
+                            "example": "89e64654414cb55b11b19675a4a1fa8194e11ca9",
+                            "default": "None",
                             "description": "The 40-character ESI killmail hash."
                         },
                         {
                             "name": "delay",
                             "type": "integer",
+                            "example": "1",
+                            "default": "0 (ASAP)",
                             "description": "0 ASAP, 1 one hour, 2 three hours, 3 eight hours, 4 one day, or 5 three days. Invalid values become 0."
                         }
                     ],
                     "examples": [
                         {
+                            "label": "Immediate post (default)",
+                            "code": "curl --compressed -X POST -A \"Default zKill API example\" \\\n  \"https://zkillboard.com/api/killmail/add/138006538/89e64654414cb55b11b19675a4a1fa8194e11ca9/\""
+                        },
+                        {
                             "label": "Post with a one-hour delay",
-                            "code": "curl --compressed -X POST -A \"MyApp/1.0 (maintainer@example.com)\" \\\n  \"https://zkillboard.com/api/killmail/add/{killID}/{hash}/1/\""
+                            "code": "curl --compressed -X POST -A \"Default zKill API example\" \\\n  \"https://zkillboard.com/api/killmail/add/138006538/89e64654414cb55b11b19675a4a1fa8194e11ca9/1/\""
                         }
                     ],
-                    "response": "{\n  \"status\": \"success\",\n  \"new\": true,\n  \"delayed\": true,\n  \"delay\": 1,\n  \"url\": \"https://zkillboard.com/kill/123456789/\"\n}",
+                    "response": "{\n  \"status\": \"success\",\n  \"new\": false,\n  \"delayed\": false,\n  \"delay\": 0,\n  \"url\": \"https://zkillboard.com/kill/138006538/\",\n  \"package\": [{ \"...\": \"killmail data\" }]\n}",
                     "notes": [
                         "HTTP 401 means the poster exceeded the invalid-post trust limit; 408 means immediate processing timed out; 422 means the request or ESI result was invalid."
                     ]
@@ -289,23 +642,57 @@
                     "summary": "Submit a killmail as a form",
                     "cache": "Not cached",
                     "description": "The browser-oriented alternative. Send an ESI killmail URL as form data; the response is HTML or a redirect to the killmail.",
+                    "form": {
+                        "base": "https://zkillboard.com/post",
+                        "suffix": "/",
+                        "fields": [
+                            {
+                                "name": "killmailurl",
+                                "label": "ESI killmail URL",
+                                "location": "body",
+                                "type": "text",
+                                "required": true,
+                                "default": "https://esi.evetech.net/killmails/138006538/89e64654414cb55b11b19675a4a1fa8194e11ca9/"
+                            },
+                            {
+                                "name": "delay",
+                                "label": "Publishing delay",
+                                "location": "body",
+                                "type": "select",
+                                "default": "",
+                                "options": [
+                                    { "label": "Default — ASAP", "value": "" },
+                                    { "label": "ASAP", "value": "0" },
+                                    { "label": "1 hour", "value": "1" },
+                                    { "label": "3 hours", "value": "2" },
+                                    { "label": "8 hours", "value": "3" },
+                                    { "label": "24 hours", "value": "4" },
+                                    { "label": "72 hours", "value": "5" }
+                                ]
+                            }
+                        ]
+                    },
                     "parameters": [
                         {
                             "name": "killmailurl",
                             "type": "form string",
                             "required": true,
+                            "example": "https://esi.evetech.net/killmails/138006538/89e64654414cb55b11b19675a4a1fa8194e11ca9/",
+                            "default": "None",
                             "description": "A URL in the form https://esi.evetech.net/killmails/{killID}/{hash}/."
                         },
                         {
                             "name": "delay",
                             "type": "form integer",
+                            "example": "1",
+                            "default": "0 (ASAP)",
                             "description": "Uses the same 0–5 delay scale as the JSON endpoint."
                         }
                     ],
                     "examples": [
                         {
                             "label": "Form submission",
-                            "code": "curl --compressed -A \"MyApp/1.0 (maintainer@example.com)\" \\\n  --data-urlencode \"killmailurl=https://esi.evetech.net/killmails/{killID}/{hash}/\" \\\n  --data \"delay=0\" https://zkillboard.com/post/"
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  --data-urlencode \"killmailurl=https://esi.evetech.net/killmails/138006538/89e64654414cb55b11b19675a4a1fa8194e11ca9/\" \\\n  https://zkillboard.com/post/"
                         }
                     ]
                 }
@@ -323,14 +710,19 @@
                     "summary": "Discover the R2Z2 sequence",
                     "cache": "1-day cache",
                     "description": "Returns a recent monotonic sequence ID. Fetch that numbered JSON file, increment the sequence, and continue until a 404.",
+                    "form": {
+                        "base": "https://r2z2.zkillboard.com/ephemeral/sequence.json",
+                        "suffix": "",
+                        "fields": []
+                    },
                     "examples": [
                         {
                             "label": "Current sequence",
-                            "code": "https://r2z2.zkillboard.com/ephemeral/sequence.json",
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  \"https://r2z2.zkillboard.com/ephemeral/sequence.json\"",
                             "url": "https://r2z2.zkillboard.com/ephemeral/sequence.json"
                         }
                     ],
-                    "response": "{ \"sequence\": 96088891 }",
+                    "response": "{ \"sequence\": 99243281 }",
                     "notes": [
                         "The pointer updates every 51 killmails. Sequence IDs are global, strictly increasing, and monotonic. A reprocessed killmail may appear again under a new sequence ID."
                     ]
@@ -341,19 +733,36 @@
                     "summary": "Fetch a live-feed killmail",
                     "cache": "1-day cache",
                     "description": "Returns the raw ESI killmail, zKillboard metadata, upload time, sequence ID, and an optional sequence_updated marker.",
+                    "form": {
+                        "base": "https://r2z2.zkillboard.com/ephemeral",
+                        "suffix": ".json",
+                        "fields": [
+                            {
+                                "name": "sequence",
+                                "label": "Sequence ID",
+                                "location": "path",
+                                "type": "number",
+                                "required": true,
+                                "default": "99243281",
+                                "min": "1",
+                                "inputmode": "numeric"
+                            }
+                        ]
+                    },
                     "parameters": [
                         {
                             "name": "sequence",
                             "type": "integer",
                             "required": true,
+                            "example": "99243281",
+                            "default": "None",
                             "description": "The sequence to fetch. Increment by one after each successful response."
                         }
                     ],
                     "examples": [
                         {
                             "label": "Sequence file",
-                            "code": "https://r2z2.zkillboard.com/ephemeral/96088891.json",
-                            "url": "https://r2z2.zkillboard.com/ephemeral/96088891.json"
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  \"https://r2z2.zkillboard.com/ephemeral/99243281.json\""
                         }
                     ],
                     "notes": [
@@ -367,23 +776,41 @@
                     "summary": "Daily killmail IDs and hashes",
                     "cache": "1-day cache",
                     "description": "Returns every known killmail ID and hash for a UTC date. Use this compact index when rebuilding an archive.",
+                    "form": {
+                        "base": "https://r2z2.zkillboard.com/history",
+                        "suffix": ".json",
+                        "fields": [
+                            {
+                                "name": "YYYYMMDD",
+                                "label": "UTC date",
+                                "location": "path",
+                                "type": "text",
+                                "required": true,
+                                "default": "20160816",
+                                "placeholder": "YYYYMMDD",
+                                "inputmode": "numeric"
+                            }
+                        ]
+                    },
                     "parameters": [
                         {
                             "name": "YYYYMMDD",
                             "type": "date",
                             "required": true,
+                            "example": "20160816",
+                            "default": "None",
                             "description": "UTC calendar date, such as 20160816."
                         }
                     ],
                     "examples": [
                         {
                             "label": "ID and hash archive",
-                            "code": "https://r2z2.zkillboard.com/history/20160816.json",
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  \"https://r2z2.zkillboard.com/history/20160816.json\"",
                             "url": "https://r2z2.zkillboard.com/history/20160816.json"
                         },
                         {
                             "label": "Legacy redirect",
-                            "code": "https://zkillboard.com/api/history/20160816/",
+                            "code": "curl --compressed -L -A \"Default zKill API example\" \\\n  \"https://zkillboard.com/api/history/20160816/\"",
                             "url": "/api/history/20160816/"
                         }
                     ]
@@ -394,10 +821,36 @@
                     "summary": "Daily full killmail archive",
                     "cache": "1-day cache",
                     "description": "Downloads the full raw killmail data known to zKillboard for one UTC date.",
+                    "form": {
+                        "base": "https://r2z2.zkillboard.com/history/raw",
+                        "suffix": ".json",
+                        "fields": [
+                            {
+                                "name": "YYYYMMDD",
+                                "label": "UTC date",
+                                "location": "path",
+                                "type": "text",
+                                "required": true,
+                                "default": "20160816",
+                                "placeholder": "YYYYMMDD",
+                                "inputmode": "numeric"
+                            }
+                        ]
+                    },
+                    "parameters": [
+                        {
+                            "name": "YYYYMMDD",
+                            "type": "date",
+                            "required": true,
+                            "example": "20160816",
+                            "default": "None",
+                            "description": "UTC calendar date, such as 20160816."
+                        }
+                    ],
                     "examples": [
                         {
                             "label": "Full daily archive",
-                            "code": "https://r2z2.zkillboard.com/history/raw/20160816.json",
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  \"https://r2z2.zkillboard.com/history/raw/20160816.json\"",
                             "url": "https://r2z2.zkillboard.com/history/raw/20160816.json"
                         }
                     ]
@@ -408,10 +861,15 @@
                     "summary": "Daily archive totals",
                     "cache": "1-day cache",
                     "description": "Returns the number of archived killmails for each date so clients can identify missing or changed daily files.",
+                    "form": {
+                        "base": "https://r2z2.zkillboard.com/history/totals.json",
+                        "suffix": "",
+                        "fields": []
+                    },
                     "examples": [
                         {
                             "label": "Archive counts",
-                            "code": "https://r2z2.zkillboard.com/history/totals.json",
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  \"https://r2z2.zkillboard.com/history/totals.json\"",
                             "url": "https://r2z2.zkillboard.com/history/totals.json"
                         }
                     ]
@@ -430,24 +888,54 @@
                     "summary": "Related battle report data",
                     "cache": "10-minute server cache",
                     "description": "Builds the JSON data behind a related-kills report for a solar system and UTC time.",
+                    "form": {
+                        "base": "https://zkillboard.com/api/related",
+                        "suffix": "/",
+                        "fields": [
+                            {
+                                "name": "systemID",
+                                "label": "Solar system ID — Jita",
+                                "location": "path",
+                                "type": "number",
+                                "required": true,
+                                "default": "30000142",
+                                "min": "1",
+                                "inputmode": "numeric"
+                            },
+                            {
+                                "name": "YYYYMMDDHHMM",
+                                "label": "UTC report time",
+                                "location": "path",
+                                "type": "text",
+                                "required": true,
+                                "default": "202510311800",
+                                "placeholder": "YYYYMMDDHHMM",
+                                "inputmode": "numeric"
+                            }
+                        ]
+                    },
                     "parameters": [
                         {
                             "name": "systemID",
                             "type": "Entity ID",
                             "required": true,
+                            "example": "30000142",
+                            "default": "None",
                             "description": "Solar system ID."
                         },
                         {
                             "name": "YYYYMMDDHHMM",
                             "type": "UTC date/time",
                             "required": true,
+                            "example": "202510311800",
+                            "default": "None",
                             "description": "Report center time, such as 202510311800."
                         }
                     ],
                     "examples": [
                         {
                             "label": "Jita related report",
-                            "code": "https://zkillboard.com/api/related/30000142/202510311800/",
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  \"https://zkillboard.com/api/related/30000142/202510311800/\"",
                             "url": "/api/related/30000142/202510311800/"
                         }
                     ]
@@ -458,10 +946,15 @@
                     "summary": "Recently active entity IDs",
                     "cache": "10-minute server cache",
                     "description": "Returns distinct character, corporation, alliance, faction, ship type, and group IDs present in the rolling 90-day activity collection.",
+                    "form": {
+                        "base": "https://zkillboard.com/api/recentactivity",
+                        "suffix": "/",
+                        "fields": []
+                    },
                     "examples": [
                         {
                             "label": "Recent activity IDs",
-                            "code": "https://zkillboard.com/api/recentactivity/",
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  \"https://zkillboard.com/api/recentactivity/\"",
                             "url": "/api/recentactivity/"
                         }
                     ],
@@ -473,10 +966,15 @@
                     "summary": "Known supercapital activity",
                     "cache": "10-minute server cache",
                     "description": "Returns the cached titan and supercarrier intel datasets used by the supers page.",
+                    "form": {
+                        "base": "https://zkillboard.com/api/supers",
+                        "suffix": "/",
+                        "fields": []
+                    },
                     "examples": [
                         {
                             "label": "Supercapital intel",
-                            "code": "https://zkillboard.com/api/supers/",
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  \"https://zkillboard.com/api/supers/\"",
                             "url": "/api/supers/"
                         }
                     ],
@@ -488,10 +986,15 @@
                     "summary": "Application version",
                     "cache": "1-hour client cache",
                     "description": "Returns the currently deployed zKillboard build identifier. Cached for one hour.",
+                    "form": {
+                        "base": "https://zkillboard.com/api/version",
+                        "suffix": "/",
+                        "fields": []
+                    },
                     "examples": [
                         {
                             "label": "Current version",
-                            "code": "https://zkillboard.com/api/version/",
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  \"https://zkillboard.com/api/version/\"",
                             "url": "/api/version/"
                         }
                     ],
@@ -503,15 +1006,38 @@
                     "summary": "Resolve a character title",
                     "cache": "24-hour client cache",
                     "description": "Resolves an SDE character-title UUID to its English name. Unknown or malformed IDs return HTTP 404.",
+                    "form": {
+                        "base": "https://zkillboard.com/api/character-title",
+                        "suffix": "/",
+                        "fields": [
+                            {
+                                "name": "titleID",
+                                "label": "Character title UUID — Squizz Caphinator",
+                                "location": "path",
+                                "type": "text",
+                                "required": true,
+                                "default": "e305d38a-e7f7-546f-b403-4a388986e6b7"
+                            }
+                        ]
+                    },
                     "parameters": [
                         {
                             "name": "titleID",
                             "type": "UUID",
                             "required": true,
+                            "example": "e305d38a-e7f7-546f-b403-4a388986e6b7",
+                            "default": "None",
                             "description": "Character title UUID from the EVE static data export."
                         }
                     ],
-                    "response": "{\n  \"id\": \"00000000-0000-0000-0000-000000000000\",\n  \"name\": \"Title name\"\n}"
+                    "examples": [
+                        {
+                            "label": "Squizz Caphinator title",
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  \"https://zkillboard.com/api/character-title/e305d38a-e7f7-546f-b403-4a388986e6b7/\"",
+                            "url": "/api/character-title/e305d38a-e7f7-546f-b403-4a388986e6b7/"
+                        }
+                    ],
+                    "response": "{\n  \"id\": \"e305d38a-e7f7-546f-b403-4a388986e6b7\",\n  \"name\": \"Wayfinder\"\n}"
                 },
                 {
                     "method": "GET",
@@ -519,10 +1045,15 @@
                     "summary": "Service health",
                     "cache": "Not cached",
                     "description": "Checks whether the application can reach Redis and MongoDB and whether the responding host sees itself as the MongoDB primary.",
+                    "form": {
+                        "base": "https://zkillboard.com/cache/bypass/healthcheck",
+                        "suffix": "/",
+                        "fields": []
+                    },
                     "examples": [
                         {
                             "label": "Current service health",
-                            "code": "https://zkillboard.com/cache/bypass/healthcheck/",
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  \"https://zkillboard.com/cache/bypass/healthcheck/\"",
                             "url": "/cache/bypass/healthcheck/"
                         }
                     ],
