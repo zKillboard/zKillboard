@@ -21,7 +21,7 @@ class zkbSearch
     {
         global $redis, $mdb;
 
-        $rawSearch = (string) $search;
+        $rawSearch = iconv('UTF-8', 'UTF-8//IGNORE', (string) $search);
         $search = strtolower(preg_quote($search));
         $low = $search;
 

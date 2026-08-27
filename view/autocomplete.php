@@ -31,6 +31,7 @@ function handler($request, $response, $args, $container) {
             ];
         }
     } else {
+        $search = iconv('UTF-8', 'UTF-8//IGNORE', (string) $search);
         $result = zkbSearch::getResults(ltrim($search), $entityType);
         if (sizeof($result) == 0) $result = zkbSearch::getResults(trim($search), $entityType);
     }
