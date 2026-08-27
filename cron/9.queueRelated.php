@@ -16,22 +16,28 @@ while ($minute == date('Hi')) {
         $key = $queueRelated->pop();
         if ($key == null) { sleep(1); continue; }
         $serial = $redis->get("$key:params");
-        if ($serial == null) continue;
+        if ($serial == null) {
+            $queueRelated->remove($key);
+            continue;
+        }
 
         $parameters = unserialize($serial);
-        $current = $redis->get($parameters['key']);
-        if ($redis->get($parameters['key']) !== false) continue;
+        if ($redis->get($parameters['key']) !== false) {
+            $queueRelated->remove($key);
+            $redis->del("zkb:queueRelatedSet:queued:$key");
+            continue;
+        }
 
         //if ($redis->scard("queueRelatedSet") > 10 && (sizeof($parameters['options']['A']) > 0 || sizeof($parameters['options']['B']) > 0)) continue;
         //if ($redis->scard("queueRelatedSet") > 20) continue;
 
-        if ($redis->get($parameters['key']) != null) continue;
         $kills = Kills::getKills($parameters);
         $summary = Related::buildSummary($kills, $parameters['options']);
 
         $serial = serialize($summary);
         if ($redis->ping() != 1) connectRedis();
         $redis->setex($parameters['key'], 900, $serial);
+        $queueRelated->remove($key);
         $redis->del("zkb:queueRelatedSet:queued:$key");
         $redis->del("$key:params");
 
