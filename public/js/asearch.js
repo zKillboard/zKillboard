@@ -4,6 +4,7 @@ var first_load = true;
 var asearchRollTimeTimer = null;
 var asearchClickCatchTimer = null;
 var asearchHistoryNavigation = false;
+var asearchInitialHashSet = false;
 var asearchResultMode = 'kills';
 var activeCampaignUID = null;
 var campaignModalMode = 'create';
@@ -29,6 +30,7 @@ function zkbInitAsearch() {
 
 	allowChange = true;
 	first_load = true;
+	asearchInitialHashSet = false;
 	filtersStringified = undefined;
 	matchingCampaignsKey = null;
 	matchingCampaignsRequest = 0;
@@ -590,6 +592,8 @@ function resetFilters() {
 }
 
 function setHash() {
+	if (first_load || asearchHistoryNavigation) return;
+
 	var buttons = [];
 	$(".btn.btn-primary").each(function () {
 		var elem = $(this);
@@ -616,7 +620,11 @@ function setHash() {
 	var url = window.location.pathname + window.location.search + hash;
 	if ((window.location.pathname + window.location.search + window.location.hash) != url) {
 		var historyState = (typeof getSpaHistoryState === 'function') ? getSpaHistoryState() : "";
-		history.pushState(historyState, document.title, url);
+		if (asearchInitialHashSet) history.pushState(historyState, document.title, url);
+		else {
+			history.replaceState(historyState, document.title, url);
+			asearchInitialHashSet = true;
+		}
 	}
 }
 
