@@ -53,18 +53,18 @@ function handler($request, $response, $args, $container) {
         return $response->withStatus(302)->withHeader('Location', "/kill/$id/");
     }
 
-	while ($mdb->count('queues', ['queue' => 'queueInfo', 'value' => $id])) {
-		sleep(1);
+	for ($i = 0; $i < 2 && $mdb->count('queues', ['queue' => 'queueInfo', 'value' => $id]); ++$i) {
+		usleep(100000);
 	}
 
-	$exists = $mdb->exists('killmails', ['killID' => $id]);
-	if (!$exists) {
+	$killdata = Kills::getKillDetails($id);
+	if ($killdata === null) {
 			return $container->get('view')->render($response->withStatus(404)->withHeader('Cache-Tag', "www,error,404,kill,kill:$id"), '404.pug', array('message' => "KillID $id does not exist."));
 	}
 
 	// Create the details on this kill
-	$killdata = Kills::getKillDetails($id);
-	$rawmail = Kills::getEsiKill($id);
+	$rawmail = $killdata['rawmail'];
+	unset($killdata['rawmail']);
 
 	// create the dropdown involved array
 	$allinvolved = $killdata['involved'];

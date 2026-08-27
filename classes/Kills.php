@@ -129,7 +129,14 @@ class Kills
 
         $key = "zkb::detail:$killID";
         $stored = RedisCache::get($key);
-        if ($stored != null) return $stored;
+        if ($stored != null) {
+            // Older cache entries predate storing the ESI mail with the details.
+            if (!array_key_exists('rawmail', $stored)) {
+                $stored['rawmail'] = self::getEsiKill($killID);
+                RedisCache::set($key, $stored, 86400);
+            }
+            return $stored;
+        }
 
         $killmail = $mdb->findDoc('killmails', ['killID' => (int) $killID]);
         
@@ -182,7 +189,8 @@ class Kills
         unset($items);
 
         $stored = array('info' => $killmail, 'victim' => $victim, 'involved' => $infoInvolved, 'items' => $infoItems);
-        RedisCache::set($key, $stored, 60);
+		$stored['rawmail'] = $esimail;
+        RedisCache::set($key, $stored, 86400);
         return $stored;
     }
 
