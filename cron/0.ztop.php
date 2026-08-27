@@ -129,7 +129,13 @@ while ($hour == date('H')) {
 
 		$queueType = $redisQueueTypes[$queue];
 		if (in_array($queue, $mongoBackedQueues)) {
-			$queueCount = $mdb->count('queues', ['queue' => $queue]);
+			$counterKey = "zkb:queue:count:$queue";
+			$queueCount = $redis->get($counterKey);
+			if ($queueCount === false || $queueCount === null) {
+				$queueCount = $mdb->count('queues', ['queue' => $queue]);
+				$redis->set($counterKey, $queueCount);
+			}
+			$queueCount = max(0, (int) $queueCount);
 			if ($redis->type($queue) == Redis::REDIS_LIST) $queueCount += $redis->lLen($queue);
 			else if ($redis->type($queue) == Redis::REDIS_SET) $queueCount += $redis->scard($queue);
 		}
