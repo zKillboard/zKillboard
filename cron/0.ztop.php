@@ -51,6 +51,12 @@ $knownRedisQueues = [
 $mongoBackedQueues = ['queueAPI', 'queueApiCheck', 'queueInfo', 'queuePublish', 'queueRelatedSet', 'queueSocial', 'queueStats', 'queueStatsSet'];
 foreach ($knownRedisQueues as $knownRedisQueue) $redis->sadd('queues', $knownRedisQueue);
 
+// Reconcile Mongo queue counters once at startup so stale Redis values do not persist.
+foreach ($mongoBackedQueues as $queue) {
+	$queueCount = (int) $mdb->count('queues', ['queue' => $queue]);
+	$redis->set("zkb:queue:count:$queue", max(0, $queueCount));
+}
+
 $lastKillCountSent = null;
 $hour = date('H');
 while ($hour == date('H')) {
