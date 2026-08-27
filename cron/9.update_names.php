@@ -84,7 +84,6 @@ try {
             }
         }
         $redis->srem($rset, $row['id']);
-        $queue->remove($row['id']);
     }
     } catch (Exception $ex) {
         print_r($ex);
