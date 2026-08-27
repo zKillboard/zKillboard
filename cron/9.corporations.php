@@ -26,7 +26,7 @@ while ($minute == date('Hi')) {
     $currentSecond = date('His');
 
     $url = "$esiServer/corporations/$id/";
-    $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row];
+    $params = ['mdb' => $mdb, 'redis' => $redis, 'row' => $row, 'queueNames' => $queueNames];
     $headers = ['X-Compatibility-Date' => '2026-07-21'];
     if (!empty($row['etag'])) $headers['If-None-Match'] = $row['etag'];
     if (!empty($row['last-modified'])) $headers['If-Modified-Since'] = $row['last-modified'];
@@ -67,6 +67,7 @@ function updateCorp(&$guzzler, &$params, &$content)
     try {
         $redis = $params['redis'];
         $mdb = $params['mdb'];
+        $queueNames = $params['queueNames'];
         $row = $params['row'];
         $id = $row['id'];
 
