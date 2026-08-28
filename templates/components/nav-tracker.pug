@@ -73,7 +73,7 @@ if (!empty($sessionusername))
     != json_encode((int) ($showAds ?? 0))
     | ;
     if (($showAds ?? 0) != 0)
-      | $.getScript("https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js").done(loadads).fail(showAdblockedMessage);
+      | $.getScript("https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js").done(scheduleAdsLoad).fail(showAdblockedMessage);
     else
       | $('img[src="/n5dev.png"').remove();
       | startWebSocket();
@@ -192,7 +192,7 @@ else
     != json_encode(($image_character ?? '') . '1/portrait?size=32')
     | );
     | $("#loginforapi").show();
-    | $.getScript("https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js").done(loadads).fail(showAdblockedMessage);
+    | $.getScript("https://cdn.fuseplatform.net/publift/tags/2/2136/fuse.js").done(scheduleAdsLoad).fail(showAdblockedMessage);
     | $("#loginsideimage").removeClass("collapse").css("display", "block");
     | gtag('event', 'navbar_loaded');
   li Please log in first.

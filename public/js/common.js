@@ -1853,15 +1853,40 @@ function commentUpVote(pageID, commentID)
 
 var adnumber = 0;
 var adfailcount = 0;
+var adsLoadScheduled = false;
+var adsLoaded = false;
 function loadads() {
+    if (adsLoaded) return;
+    adsLoaded = true;
     $("#messagedad").remove();
-    var adblocks = $(".publift:visible");
-    adnumber = adblocks.length;
-    adblocks.each(function() {
-        const elem = $(this);
+    const loadAd = function (elem) {
         const fuse = elem.attr("data-publift") || '';
-		if (fuse.trim().length > 0) elem.load('/cache/1hour/publift/' + fuse + '/', adblockloaded);
-    });
+        if (fuse.trim().length == 0 || elem.attr("data-ad-loading") == "true") return;
+        elem.attr("data-ad-loading", "true");
+        adnumber++;
+        elem.load('/cache/1hour/publift/' + fuse + '/', adblockloaded);
+    };
+    const adblocks = $(".publift:visible");
+    if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) return;
+                observer.unobserve(entry.target);
+                loadAd($(entry.target));
+            });
+        }, { rootMargin: "300px 0px" });
+        adblocks.each(function () { observer.observe(this); });
+    } else {
+        adblocks.each(function () { loadAd($(this)); });
+    }
+}
+
+function scheduleAdsLoad() {
+    if (adsLoadScheduled || adsLoaded) return;
+    adsLoadScheduled = true;
+    const start = function () { adsLoadScheduled = false; loadads(); };
+    if (window.requestIdleCallback) requestIdleCallback(start, { timeout: 2000 });
+    else setTimeout(start, 1000);
 }
 
 var bottomad = null;
