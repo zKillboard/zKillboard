@@ -14,6 +14,7 @@ class ZKillSSO extends EveOnlineSSO
         global $ccpCallback, $ccpClientID, $ccpSecret;
 
         if ($scopes === null) $scopes = self::$defaultScopes;
+        if (!in_array('publicData', $scopes, true)) $scopes[] = 'publicData';
 
         return new self($ccpClientID, $ccpSecret, $ccpCallback, $scopes, "zkillboard.com (Squizz Caphinator)");
     }

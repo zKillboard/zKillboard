@@ -159,7 +159,7 @@ class EveOnlineSSO
         return $retValue;
     }
 
-    protected function validateAccessToken($accessToken)
+    public function validateAccessToken($accessToken)
     {
         global $resCode;
 
@@ -243,7 +243,8 @@ class EveOnlineSSO
 
         $decoded['characterID'] = $characterID;
         return $decoded;
-    }
+	}
+
 
     public function getAccessToken($refreshToken, $scopes = [])
     {

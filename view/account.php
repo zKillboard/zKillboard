@@ -134,6 +134,7 @@ if ($_POST) {
 	if (isset($deletekeyid)) {
 		Util::zout("Character $userID deleting scope " . $deletekeyid);
 		try {
+			if ($deletekeyid == 'publicData') throw new Exception('The publicData scope cannot be removed.');
 			$i = $mdb->remove("scopes", ['characterID' => $userID, 'scope' => $deletekeyid]);
 			if (isset($i['n']) && $i['n'] > 0) $error = "The scope has been removed.";
 			else $error = "We did nothing. Were you supposed to attempt that?";
@@ -216,7 +217,7 @@ $data['trackernotification'] = UserConfig::get('trackernotification');
 
 $data['loginPage'] = UserConfig::get('loginPage', 'character');
 $data['shinyPortraits'] = UserConfig::get('shinyPortraits', 'true');
-$data['apiScopes'] = $mdb->find("scopes", ['characterID' => (int) $userID], ['scope' => 1]);
+$data['apiScopes'] = $mdb->find("scopes", ['characterID' => (int) $userID, 'scope' => ['$ne' => 'publicData']], ['scope' => 1]);
 $data['killmailDelay'] = 0;
 foreach ($data['apiScopes'] as $scope) {
 	if (in_array($scope['scope'] ?? '', ['esi-killmails.read_killmails.v1', 'esi-killmails.read_corporation_killmails.v1'])) {

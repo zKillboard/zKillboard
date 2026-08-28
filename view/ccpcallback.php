@@ -52,6 +52,7 @@ function handler($request, $response, $args, $container)
 
 		$charID = (int) $userInfo['characterID'];
 		$charName = $userInfo['characterName'];
+		$ownerHash = $userInfo['ownerHash'];
 		$scopes = explode(' ', $userInfo['scopes']);
 		$refresh_token = $userInfo['refreshToken'];
 		$access_token = $userInfo['accessToken'];
@@ -123,16 +124,14 @@ function handler($request, $response, $args, $container)
 
 		// Clear out existing scopes
 		if ($charID != $adminCharacter)
-			$mdb->remove('scopes', ['characterID' => $charID]);
+			$mdb->getCollection('scopes')->deleteMany(['characterID' => (int) $charID]);
 		$delay = (int) $redis->get("delay:$sessID");
 
 		foreach ($scopes as $scope) {
-			if ($scope == 'publicData')
-				continue;
 			$row = ['characterID' => $charID, 'scope' => $scope, 'delay' => $delay, 'refreshToken' => $refresh_token, 'oauth2' => true];
 			if ($mdb->count('scopes', ['characterID' => $charID, 'scope' => $scope]) == 0) {
 				$mdb->save('scopes', $row);
-				$scopeCount++;
+				if ($scope != 'publicData') $scopeCount++;
 			}
 		}
 
@@ -156,8 +155,13 @@ function handler($request, $response, $args, $container)
 			ZLog::add("Logged in: $charName ($charID) (Delay: $delay)", $charID, true);
 		unset($_SESSION['oauth2State']);
 
+		$mdb->getCollection('sessions')->deleteMany([
+			'characterID' => $charID,
+			'ownerHash' => ['$ne' => $ownerHash],
+		]);
 		$_SESSION['characterID'] = $charID;
 		$_SESSION['characterName'] = $charName;
+		$_SESSION['ownerHash'] = $ownerHash;
 
 		// Determine where to redirect the user
 		$redirect = '/';

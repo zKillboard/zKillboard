@@ -28,6 +28,7 @@ class MongoSessionHandler implements SessionHandlerInterface {
                     'updatedAt' => new MongoDB\BSON\UTCDateTime(),
                     'characterID' => @$_SESSION['characterID'],
                     'characterName' => @$_SESSION['characterName'],
+                    'ownerHash' => @$_SESSION['ownerHash'],
                 ]
             ],
             [
@@ -48,4 +49,3 @@ class MongoSessionHandler implements SessionHandlerInterface {
         return true;
     }
 }
-
