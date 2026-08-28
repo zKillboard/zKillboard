@@ -1,6 +1,6 @@
 <?php
 
-$mt = 32; $workerID = $mt; do { $mt--; $workerID = $mt; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
+$mt = 128; $workerID = $mt; do { $mt--; $workerID = $mt; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
 require_once '../init.php';
 
