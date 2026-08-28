@@ -787,7 +787,7 @@ class AdvancedSearch
             $encoded = substr($encoded, 0, self::LOG_CONTEXT_MAX_LENGTH) . '... [truncated]';
         }
 
-        Util::zout("Advanced search query timeout: " . $encoded);
+        //Util::zout("Advanced search query timeout: " . $encoded);
     }
 
     private static function summarizeTimeoutTimeSpan($params)
