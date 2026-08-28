@@ -52,10 +52,24 @@ class Killmail
 
         $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
 
-        if ($killmail) foreach ($killmail['involved'] as $involved) {
-            foreach ($involved as $type => $id) {
-                $mdb->set('statistics', ['type' => $type, 'id' => (int) $id], ['reset' => true]);
+        if ($killmail) {
+            foreach ($killmail['involved'] as $involved) {
+                foreach ($involved as $type => $id) {
+                    $mdb->set('statistics', ['type' => $type, 'id' => (int) $id], ['reset' => true]);
+                }
             }
+            foreach (['solarSystemID', 'constellationID', 'regionID'] as $type) {
+                if (isset($killmail['system'][$type])) {
+                    $mdb->set('statistics', ['type' => $type, 'id' => (int) $killmail['system'][$type]], ['reset' => true]);
+                }
+            }
+            if (isset($killmail['locationID'])) {
+                $mdb->set('statistics', ['type' => 'locationID', 'id' => (int) $killmail['locationID']], ['reset' => true]);
+            }
+            foreach ((array) ($killmail['labels'] ?? []) as $label) {
+                $mdb->set('statistics', ['type' => 'label', 'id' => $label], ['reset' => true]);
+            }
+            $mdb->set('statistics', ['type' => 'label', 'id' => 'all'], ['reset' => true]);
         }
         $p = ['killID' => $killID];
         $mdb->remove('killmails', $p);
