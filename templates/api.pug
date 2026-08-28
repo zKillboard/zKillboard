@@ -286,6 +286,7 @@ block script
       const sections = Array.from(document.querySelectorAll('[data-api-section]')).filter(function (section) {
         return section.id !== 'quick-start';
       });
+      const sectionLinks = Array.from(document.querySelectorAll('nav[aria-label="API documentation sections"] a[href^="#"]'));
 
       function filterEndpoints() {
         const query = search.value.trim().toLowerCase();
@@ -297,6 +298,10 @@ block script
         });
         sections.forEach(function (section) {
           section.classList.toggle('d-none', !section.querySelector('[data-api-endpoint]:not(.d-none)'));
+        });
+        sectionLinks.forEach(function (link) {
+          const section = document.getElementById(link.getAttribute('href').slice(1));
+          link.classList.toggle('d-none', section && section.classList.contains('d-none'));
         });
         clear.disabled = query === '';
         empty.classList.toggle('d-none', visible !== 0);
