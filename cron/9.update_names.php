@@ -79,9 +79,6 @@ try {
         if (@$current['name'] !== $name) {
             $currentName = @$current['name'];
             $mdb->set("information", ['type' => $row['category'] . "ID", 'id' => $row['id']], ['name' => $name, 'l_name' => strtolower($name)]);
-            if ($currentName != "" && $name != "" && strpos(strtolower($currentName), "character ") !== 0 && strpos($name, "Character ") !== 0) {
-                Util::out("Name Update: $currentName -> $name");
-            }
         }
         $redis->srem($rset, $row['id']);
     }
