@@ -21,7 +21,7 @@ $queueStats = new MongoQueue($mdb, 'queueStats');
 $queueStatsSet = new MongoQueue($mdb, 'queueStatsSet', true);
 $minute = date('Hi');
 
-function checkForResets() {
+function checkForResets($queueStatsSet) {
     global $mdb, $redis;
 
     $count = 0;
@@ -42,7 +42,7 @@ function checkForResets() {
 }
 
 $noStatsCount = 0;
-if ($mt == 0 && $queueStatsSet->count() < 500) checkForResets();
+if ($mt == 0 && $queueStatsSet->count() < 500) checkForResets($queueStatsSet);
 while ($minute == date('Hi')) {
     if ($redis->get("zkb:statsStop") == "true") break;
 
@@ -52,7 +52,7 @@ while ($minute == date('Hi')) {
         continue;
     }
     if ($raw == null) {
-        if ($mt == 0) checkForResets();
+        if ($mt == 0) checkForResets($queueStatsSet);
         sleep(1);
         continue;
     }
