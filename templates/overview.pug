@@ -208,10 +208,12 @@ block content
       include components/corpstats.pug
     else if ($pageType == 'sov')
       .col-12.col-lg-6
-        h2.mb-2
-          | Sovereignty
-          if (!empty($sovereigntyAvailable))
-            small.text-body-secondary.fw-normal= ' ' . number_format(count($sovereigntySystems ?? []), 0) . ' systems'
+        .d-flex.align-items-baseline.justify-content-between.gap-3.mb-2
+          h2.mb-0
+            | Sovereignty
+            if (!empty($sovereigntyAvailable))
+              small.text-body-secondary.fw-normal= ' ' . number_format(count($sovereigntySystems ?? []), 0) . ' systems'
+          a.text-nowrap(href="/sovereignty/") Full Sovereignty Map
         if (!empty($sovereigntyUpdatedAt))
           p.text-body-secondary
             | Last Updated:
