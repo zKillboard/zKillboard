@@ -330,7 +330,7 @@ function materializeShips($completeKey, $date, $collection, $field, $firstKillID
                 'super' => '$superAppearances',
                 'titan' => '$titanAppearances',
             ],
-            [],
+            '$$REMOVE',
         ]];
     }
     $fcStages = [];
