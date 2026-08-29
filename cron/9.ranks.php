@@ -127,10 +127,7 @@ function materializeAffiliates($completeKey, $date)
             ], []]],
         ]],
         ['$unwind' => '$attackers'],
-        ['$set' => ['affiliateAllianceIDs' => ['$setDifference' => [
-            '$allianceIDs',
-            [['$ifNull' => ['$attackers.allianceID', 0]]],
-        ]]]],
+        ['$set' => ['affiliateAllianceIDs' => '$allianceIDs']],
         ['$unwind' => '$affiliateAllianceIDs'],
         ['$group' => [
             '_id' => ['characterID' => '$attackers.characterID', 'allianceID' => '$affiliateAllianceIDs'],
