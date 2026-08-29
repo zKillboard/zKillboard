@@ -26,6 +26,14 @@ body {
 	overflow: hidden;
 }
 
+#content a {
+	text-decoration: none;
+}
+
+#content a:hover {
+	text-decoration: underline;
+}
+
 .shipImageSpan {
 	position: relative;
 	display: inline-block;

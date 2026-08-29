@@ -67,7 +67,12 @@ async function prepKills(data) {
             valueNode.classList.add(isVictim ? 'lost' : 'killed');
             wrapper.appendChild(valueNode);
 
-            content.appendChild(wrapper);
+            const link = document.createElement('a');
+            link.href = `/kill/${killID}/`;
+            link.target = '_blank';
+            link.rel = 'noopener';
+            link.appendChild(wrapper);
+            content.appendChild(link);
         }
         if (document.getElementById('contenttemp').innerHTML != document.getElementById('content').innerHTML) {
             console.log('updating streambox');
