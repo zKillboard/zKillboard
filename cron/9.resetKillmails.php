@@ -1,5 +1,7 @@
 <?php 
 
+if (date("Hi") != 400) exit();
+
 require_once "../init.php";
 
 if ($mdb->count("killmails", ['reset' => true]) > 0) {
