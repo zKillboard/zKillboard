@@ -42,12 +42,15 @@ div
                 td
                   span.float-end
                     = number_format((float) ($value['value'] ?? 0), 0)
-                    if (($value['level'] ?? 0) < 5)
+                    if (!empty($value['total']))
+                      | &nbsp;/&nbsp;
+                      = number_format((float) $value['total'], 0)
+                    else if (($value['level'] ?? 0) < 5)
                       | &nbsp;/&nbsp;
                       = number_format((float) ($value['next'] ?? 0), 0)
                 td(style="width: 0.5em;")
                   span.float-end
-                    img(src=('/img/level/level' . ($value['level'] ?? 0) . '.gif') title=(!empty($value['noNext']) ? 'Hardcoded level (for now)' : ('At: ' . ($value['value'] ?? 0) . ((($value['level'] ?? 0) < 5) ? (' Next Level: ' . ($value['next'] ?? 0)) : ''))) alt=('Trophy level ' . ($value['level'] ?? 0)))
+                    img(src=('/img/level/level' . ($value['level'] ?? 0) . '.gif') title=(!empty($value['total']) ? ('At: ' . ($value['value'] ?? 0) . ' / ' . $value['total']) : ('At: ' . ($value['value'] ?? 0) . ((($value['level'] ?? 0) < 5) ? (' Next Level: ' . ($value['next'] ?? 0)) : ''))) alt=('Trophy level ' . ($value['level'] ?? 0)))
     - $trophyCalculation = is_object($extra['trophyCalculation'] ?? null) ? (array) $extra['trophyCalculation'] : ($extra['trophyCalculation'] ?? []);
     - $trophyUpdated = (int) ($trophyCalculation['updated'] ?? 0);
     p.small.text-body-secondary.mt-2.mb-0
@@ -71,6 +74,6 @@ div
         dt What do Level / Total and Completed mean?
         dd.mb-3 Level / Total is the character's aggregate trophy completion score compared with the maximum currently available. Completed is that score shown as a percentage, and the image beside it is a five-step summary of the percentage. Totals can change when trophies or published ship groups change.
         dt When are trophies updated?
-        dd.mb-3 Characters with at least 100 recorded kills qualify for pre-calculation. Eligible trophy records are refreshed by a background job no more than once every 24 hours after their statistics are updated. This tab can calculate current results on demand, but the trophy image beneath a portrait is shown only when a pre-calculated record exists.
+        dd.mb-3 Characters with at least 100 recorded kills qualify for pre-calculation. Eligible trophy records are refreshed by a background job no more than once every 24 hours after their statistics are updated. Trophy pages and portrait images use only these pre-calculated records.
         dt What do the green names and arrows mean?
         dd Green means the character has met that trophy's basic requirement. Select an arrow to open the related filtered kill or loss records.

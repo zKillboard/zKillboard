@@ -4,6 +4,7 @@ class Trophies
 {
     private static $shipGroups = null;
     private static $groupIDsWithTypes = null;
+    private static $regionalTotals = null;
 
     // isk values
     // be in tournament region
@@ -28,6 +29,23 @@ class Trophies
         ['type' => 'Special', 'name' => 'Backstab Special: You awoxed!', 'filter' => ['characterID' => '?', 'isVictim' => false, 'awox' => true], 'rank' => 25, 'link' => '../awox/1/kills/'],
         ['type' => 'Special', 'name' => 'My Back Hurts: Got awoxed!', 'filter' => ['characterID' => '?', 'isVictim' => true, 'awox' => true], 'rank' => 25, 'link' => '../awox/1/losses/'],
         ];
+
+    public static $regionalConditions = [
+        ['type' => 'Regional Kills', 'name' => 'Kill in every High Sec system', 'field' => 'solarSystemID', 'label' => 'loc:highsec', 'isVictim' => false, 'link' => '../kills/highsec/'],
+        ['type' => 'Regional Kills', 'name' => 'Kill in every Low Sec system', 'field' => 'solarSystemID', 'label' => 'loc:lowsec', 'isVictim' => false, 'link' => '../kills/lowsec/'],
+        ['type' => 'Regional Kills', 'name' => 'Kill in every Null Sec system', 'field' => 'solarSystemID', 'label' => 'loc:nullsec', 'isVictim' => false, 'link' => '../kills/nullsec/'],
+        ['type' => 'Regional Kills', 'name' => 'Kill in every Pochven system', 'field' => 'solarSystemID', 'label' => 'loc:pochven', 'isVictim' => false, 'link' => '../region/10000070/'],
+        ['type' => 'Regional Kills', 'name' => 'Kill in every W-Space system', 'field' => 'solarSystemID', 'label' => 'loc:w-space', 'isVictim' => false, 'link' => '../kills/w-space/'],
+        ['type' => 'Regional Kills', 'name' => 'Kill in every Drifter system', 'field' => 'solarSystemID', 'label' => 'loc:drifter', 'isVictim' => false, 'link' => '../kills/'],
+        ['type' => 'Regional Kills', 'name' => 'Get a kill in Zarzakh', 'field' => 'solarSystemID', 'label' => 'loc:zarzakh', 'isVictim' => false, 'link' => '../system/30100000/'],
+        ['type' => 'Regional Losses', 'name' => 'Lose a ship in every High Sec region', 'field' => 'regionID', 'label' => 'loc:highsec', 'isVictim' => true, 'link' => '../losses/highsec/'],
+        ['type' => 'Regional Losses', 'name' => 'Lose a ship in every Low Sec region', 'field' => 'regionID', 'label' => 'loc:lowsec', 'isVictim' => true, 'link' => '../losses/lowsec/'],
+        ['type' => 'Regional Losses', 'name' => 'Lose a ship in every Null Sec region', 'field' => 'regionID', 'label' => 'loc:nullsec', 'isVictim' => true, 'link' => '../losses/nullsec/'],
+        ['type' => 'Regional Losses', 'name' => 'Lose a ship in every Pochven system', 'field' => 'solarSystemID', 'label' => 'loc:pochven', 'isVictim' => true, 'link' => '../region/10000070/losses/'],
+        ['type' => 'Regional Losses', 'name' => 'Lose a ship in every W-Space region', 'field' => 'regionID', 'label' => 'loc:w-space', 'isVictim' => true, 'link' => '../losses/w-space/'],
+        ['type' => 'Regional Losses', 'name' => 'Lose a ship in every Drifter system', 'field' => 'solarSystemID', 'label' => 'loc:drifter', 'isVictim' => true, 'link' => '../losses/'],
+        ['type' => 'Regional Losses', 'name' => 'Lose a ship in Zarzakh', 'field' => 'solarSystemID', 'label' => 'loc:zarzakh', 'isVictim' => true, 'link' => '../system/30100000/losses/'],
+    ];
 
     public static function getTrophies($charID)
     {
@@ -80,6 +98,79 @@ class Trophies
             }
         }
 
+        if (static::$regionalTotals === null) {
+            $universeValues = [];
+            $systems = $mdb->getCollection('information')->find(
+                ['type' => 'solarSystemID'],
+                ['projection' => ['_id' => 0, 'id' => 1, 'regionID' => 1, 'secStatus' => 1]]
+            );
+            foreach ($systems as $system) {
+                $systemID = (int) ($system['id'] ?? 0);
+                $regionID = (int) ($system['regionID'] ?? 0);
+                $security = (float) ($system['secStatus'] ?? 0);
+                $systemLabels = [];
+                if ($security >= 0.45) $systemLabels[] = 'loc:highsec';
+                if ($security < 0.45 && $security >= 0) $systemLabels[] = 'loc:lowsec';
+                if ($security < 0 && $regionID < 11000001 && $regionID != 10000070 && $regionID != 10001000) $systemLabels[] = 'loc:nullsec';
+                if ($regionID == 10000070) $systemLabels[] = 'loc:pochven';
+                if ($regionID >= 11000000 && $regionID < 12000000 && $regionID != 11000033) $systemLabels[] = 'loc:w-space';
+                if ($regionID == 11000033) $systemLabels[] = 'loc:drifter';
+                if ($systemID == 30100000) $systemLabels[] = 'loc:zarzakh';
+                foreach ($systemLabels as $label) {
+                    if ($systemID > 0) $universeValues[$label . ':solarSystemID'][$systemID] = true;
+                    if ($regionID > 0) $universeValues[$label . ':regionID'][$regionID] = true;
+                }
+            }
+            static::$regionalTotals = array_map('count', $universeValues);
+        }
+
+        $labels = array_values(array_unique(array_column(static::$regionalConditions, 'label')));
+        $rows = $mdb->getCollection('killmails')->aggregate([
+            ['$match' => ['involved.characterID' => $charID, '$or' => [
+                ['labels' => ['$in' => $labels]],
+                ['system.solarSystemID' => 30100000],
+            ]]],
+            ['$unwind' => '$involved'],
+            ['$match' => ['involved.characterID' => $charID]],
+            ['$set' => ['coverageLabels' => ['$concatArrays' => [
+                ['$ifNull' => ['$labels', []]],
+                ['$cond' => [['$eq' => ['$system.solarSystemID', 30100000]], ['loc:zarzakh'], []]],
+            ]]]],
+            ['$unwind' => '$coverageLabels'],
+            ['$match' => ['coverageLabels' => ['$in' => $labels]]],
+            ['$group' => ['_id' => [
+                'label' => '$coverageLabels',
+                'isVictim' => '$involved.isVictim',
+                'solarSystemID' => '$system.solarSystemID',
+                'regionID' => '$system.regionID',
+            ]]],
+        ], ['allowDiskUse' => true]);
+        $regionalValues = [];
+        foreach ($rows as $row) {
+            $row = (array) $row['_id'];
+            foreach (['solarSystemID', 'regionID'] as $field) {
+                $value = (int) ($row[$field] ?? 0);
+                if ($value > 0) $regionalValues[$row['label'] . ':' . (int) $row['isVictim'] . ':' . $field][$value] = true;
+            }
+        }
+
+        foreach (static::$regionalConditions as $condition) {
+            $key = $condition['label'] . ':' . (int) $condition['isVictim'] . ':' . $condition['field'];
+            $count = count($regionalValues[$key] ?? []);
+            $total = (int) (static::$regionalTotals[$condition['label'] . ':' . $condition['field']] ?? 0);
+            $met = $total > 0 && $count >= $total;
+            $level = $count > 0 && $total > 0 ? min(5, (int) ceil(($count / $total) * 5)) : 0;
+            $trophies['trophies'][$condition['type']][$condition['name']] = [
+                'met' => $met,
+                'level' => $level,
+                'value' => $count,
+                'total' => $total,
+                'link' => $condition['link'],
+            ];
+            $levelCount += $level;
+            $maxLevelCount += 5;
+        }
+
         $groups = static::getShipGroups();
 
         foreach ($groups as $row) {
@@ -100,6 +191,12 @@ class Trophies
             $levelCount += ($level > 0 ? 1 : 0);
             $trophies['trophies']['Lost']["Lose $a $groupName"] = ['met' => (@$values['shipsLost'] > 0), 'level' => $level, 'value' => (int) @$values['shipsLost'], 'next' => static::getNext(@$values['shipsLost'], 2), 'link' => "/character/$charID/losses/group/$groupID/"];
         }
+
+        $orderedTrophies = [];
+        foreach (['General', 'Special', 'Killed', 'Lost', 'Regional Kills', 'Regional Losses'] as $category) {
+            if (isset($trophies['trophies'][$category])) $orderedTrophies[$category] = $trophies['trophies'][$category];
+        }
+        $trophies['trophies'] = $orderedTrophies;
 
         $trophies['levelCount'] = $levelCount;
         $trophies['maxLevelCount'] = $maxLevelCount;
@@ -173,10 +270,10 @@ class Trophies
         return null;
     }
 
-    public static function addTrophy(&$trophies, $condition, $conditionMet, $value, $noNext = false, $link = null)
+    public static function addTrophy(&$trophies, $condition, $conditionMet, $value)
     {
         $level = static::getLevel($value);
-        $arr = ['met' => $conditionMet, 'level' => $level, 'value' => $value, 'next' => static::getNext($value), 'noNext' => $noNext];
+        $arr = ['met' => $conditionMet, 'level' => $level, 'value' => $value, 'next' => static::getNext($value)];
         if (isset($condition['link'])) {
             $arr['link'] = $condition['link'];
         }
