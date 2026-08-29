@@ -26,6 +26,7 @@ function showModal(selector) {
 
 $(document).ready(function () {	
 	setTime();
+	setInterval(hamsterNoZkill, 5 * 60 * 1000);
 
     refreshNavbarTracker();
     initSpaNavigation();
@@ -2329,4 +2330,40 @@ async function cacheEsiInfo(values) {
         transaction.onerror = function() { resolve(); };
         transaction.onabort = function() { resolve(); };
     });
+}
+
+function hamsterNoZkill() {
+	if (Math.floor(Math.random() * 1000000) != 0 || document.getElementById('zkb-easter-egg')) return;
+
+	const hamster = document.createElement('a');
+	hamster.id = 'zkb-easter-egg';
+	hamster.className = 'position-fixed top-0 start-0';
+	hamster.style.zIndex = 1090;
+	hamster.href = 'https://www.youtube.com/watch?v=TcHfYy_HbUo';
+	hamster.target = '_blank';
+	hamster.rel = 'noopener noreferrer';
+	hamster.setAttribute('aria-label', 'Easter egg');
+
+	const image = document.createElement('img');
+	image.src = '/img/hamster-no-zkill.gif';
+	image.alt = '';
+	image.className = 'd-block';
+	image.width = 112;
+	image.height = 112;
+	hamster.appendChild(image);
+	document.body.appendChild(hamster);
+
+	const maxY = Math.max(0, window.innerHeight - image.height);
+	const startY = Math.floor(Math.random() * (maxY + 1));
+	const endY = Math.floor(Math.random() * (maxY + 1));
+	const animation = hamster.animate([
+		{transform: `translate(-112px, ${startY}px)`},
+		{transform: `translate(calc(100vw + 112px), ${endY}px)`},
+	], {
+		duration: 12000,
+		easing: 'linear',
+	});
+	animation.onfinish = function () {
+		hamster.remove();
+	};
 }
