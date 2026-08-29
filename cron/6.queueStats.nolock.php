@@ -274,14 +274,13 @@ function calcStats($row, $maxSequence)
         $mdb->getCollection('statistics')->updateOne($statKey, ['$set' => $statsUpdate], ['upsert' => true]);
     }
 
-    $newDailyStatsTotal = (int) ($stats['shipsDestroyed'] ?? 0) + (int) ($stats['shipsLost'] ?? 0);
-    if ($oldDailyStatsTotal < DailyStats::PERSIST_MIN_TOTAL && $newDailyStatsTotal >= DailyStats::PERSIST_MIN_TOTAL) {
-        $queuedDays = DailyStats::queueBackfill($type, $id);
-        if ($queuedDays > 0) {
-            Util::out("Queued daily stats backfill for $type:$id ($queuedDays days)");
-        }
-    }
-
+    // $newDailyStatsTotal = (int) ($stats['shipsDestroyed'] ?? 0) + (int) ($stats['shipsLost'] ?? 0);
+    // if ($oldDailyStatsTotal < DailyStats::PERSIST_MIN_TOTAL && $newDailyStatsTotal >= DailyStats::PERSIST_MIN_TOTAL) {
+    //     $queuedDays = DailyStats::queueBackfill($type, $id);
+    //     if ($queuedDays > 0) {
+    //         Util::out("Queued daily stats backfill for $type:$id ($queuedDays days)");
+    //     }
+    // }
 
     return ($newSequence == $maxSequence);
 }
