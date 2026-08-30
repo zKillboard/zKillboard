@@ -4,6 +4,7 @@ class Trophies
 {
     private static $shipGroups = null;
     private static $groupIDsWithTypes = null;
+    private static $regionalTargets = null;
     private static $regionalTotals = null;
 
     // isk values
@@ -36,6 +37,7 @@ class Trophies
         ['type' => 'Regional Kills', 'name' => 'Kill in every Null Sec system', 'field' => 'solarSystemID', 'label' => 'loc:nullsec', 'isVictim' => false, 'link' => '../kills/nullsec/'],
         ['type' => 'Regional Kills', 'name' => 'Kill in every Pochven system', 'field' => 'solarSystemID', 'label' => 'loc:pochven', 'isVictim' => false, 'link' => '../region/10000070/'],
         ['type' => 'Regional Kills', 'name' => 'Kill in every W-Space system', 'field' => 'solarSystemID', 'label' => 'loc:w-space', 'isVictim' => false, 'link' => '../kills/w-space/'],
+        ['type' => 'Regional Kills', 'name' => 'Get a kill in Thera', 'field' => 'solarSystemID', 'systemID' => 31000005, 'isVictim' => false, 'link' => '../system/31000005/'],
         ['type' => 'Regional Kills', 'name' => 'Kill in every Drifter system', 'field' => 'solarSystemID', 'label' => 'loc:drifter', 'isVictim' => false, 'link' => '../kills/'],
         ['type' => 'Regional Kills', 'name' => 'Get a kill in Zarzakh', 'field' => 'solarSystemID', 'label' => 'loc:zarzakh', 'isVictim' => false, 'link' => '../system/30100000/'],
         ['type' => 'Regional Losses', 'name' => 'Lose a ship in every High Sec region', 'field' => 'regionID', 'label' => 'loc:highsec', 'isVictim' => true, 'link' => '../losses/highsec/'],
@@ -43,6 +45,7 @@ class Trophies
         ['type' => 'Regional Losses', 'name' => 'Lose a ship in every Null Sec region', 'field' => 'regionID', 'label' => 'loc:nullsec', 'isVictim' => true, 'link' => '../losses/nullsec/'],
         ['type' => 'Regional Losses', 'name' => 'Lose a ship in every Pochven system', 'field' => 'solarSystemID', 'label' => 'loc:pochven', 'isVictim' => true, 'link' => '../region/10000070/losses/'],
         ['type' => 'Regional Losses', 'name' => 'Lose a ship in every W-Space region', 'field' => 'regionID', 'label' => 'loc:w-space', 'isVictim' => true, 'link' => '../losses/w-space/'],
+        ['type' => 'Regional Losses', 'name' => 'Lose a ship in Thera', 'field' => 'solarSystemID', 'systemID' => 31000005, 'isVictim' => true, 'link' => '../system/31000005/losses/'],
         ['type' => 'Regional Losses', 'name' => 'Lose a ship in every Drifter system', 'field' => 'solarSystemID', 'label' => 'loc:drifter', 'isVictim' => true, 'link' => '../losses/'],
         ['type' => 'Regional Losses', 'name' => 'Lose a ship in Zarzakh', 'field' => 'solarSystemID', 'label' => 'loc:zarzakh', 'isVictim' => true, 'link' => '../system/30100000/losses/'],
     ];
@@ -113,14 +116,16 @@ class Trophies
                 if ($security < 0.45 && $security >= 0) $systemLabels[] = 'loc:lowsec';
                 if ($security < 0 && $regionID < 11000001 && $regionID != 10000070 && $regionID != 10001000) $systemLabels[] = 'loc:nullsec';
                 if ($regionID == 10000070) $systemLabels[] = 'loc:pochven';
-                if ($regionID >= 11000000 && $regionID < 12000000 && $regionID != 11000033) $systemLabels[] = 'loc:w-space';
+                if ($regionID >= 11000000 && $regionID < 12000000) $systemLabels[] = 'loc:w-space';
                 if ($regionID == 11000033) $systemLabels[] = 'loc:drifter';
                 if ($systemID == 30100000) $systemLabels[] = 'loc:zarzakh';
                 foreach ($systemLabels as $label) {
                     if ($systemID > 0) $universeValues[$label . ':solarSystemID'][$systemID] = true;
                     if ($regionID > 0) $universeValues[$label . ':regionID'][$regionID] = true;
                 }
+                if ($systemID == 31000005) $universeValues['31000005:solarSystemID'][$systemID] = true;
             }
+            static::$regionalTargets = $universeValues;
             static::$regionalTotals = array_map('count', $universeValues);
         }
 
@@ -128,16 +133,18 @@ class Trophies
         $rows = $mdb->getCollection('killmails')->aggregate([
             ['$match' => ['involved.characterID' => $charID, '$or' => [
                 ['labels' => ['$in' => $labels]],
-                ['system.solarSystemID' => 30100000],
+                ['system.solarSystemID' => ['$in' => [30100000, 31000005]]],
             ]]],
             ['$unwind' => '$involved'],
             ['$match' => ['involved.characterID' => $charID]],
             ['$set' => ['coverageLabels' => ['$concatArrays' => [
                 ['$ifNull' => ['$labels', []]],
+                ['$cond' => [['$eq' => ['$system.regionID', 11000033]], ['loc:w-space'], []]],
                 ['$cond' => [['$eq' => ['$system.solarSystemID', 30100000]], ['loc:zarzakh'], []]],
+                ['$cond' => [['$eq' => ['$system.solarSystemID', 31000005]], [31000005], []]],
             ]]]],
             ['$unwind' => '$coverageLabels'],
-            ['$match' => ['coverageLabels' => ['$in' => $labels]]],
+            ['$match' => ['coverageLabels' => ['$in' => array_merge($labels, [31000005])]]],
             ['$group' => ['_id' => [
                 'label' => '$coverageLabels',
                 'isVictim' => '$involved.isVictim',
@@ -155,9 +162,11 @@ class Trophies
         }
 
         foreach (static::$regionalConditions as $condition) {
-            $key = $condition['label'] . ':' . (int) $condition['isVictim'] . ':' . $condition['field'];
-            $count = count($regionalValues[$key] ?? []);
-            $total = (int) (static::$regionalTotals[$condition['label'] . ':' . $condition['field']] ?? 0);
+            $coverage = $condition['systemID'] ?? $condition['label'];
+            $key = $coverage . ':' . (int) $condition['isVictim'] . ':' . $condition['field'];
+            $targetKey = $coverage . ':' . $condition['field'];
+            $count = count(array_intersect_key($regionalValues[$key] ?? [], static::$regionalTargets[$targetKey] ?? []));
+            $total = (int) (static::$regionalTotals[$targetKey] ?? 0);
             $met = $total > 0 && $count >= $total;
             $level = $count > 0 && $total > 0 ? min(5, (int) ceil(($count / $total) * 5)) : 0;
             $trophies['trophies'][$condition['type']][$condition['name']] = [
