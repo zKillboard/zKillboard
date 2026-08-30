@@ -19,6 +19,15 @@ class ZKillSSO extends EveOnlineSSO
         return new self($ccpClientID, $ccpSecret, $ccpCallback, $scopes, "zkillboard.com (Squizz Caphinator)");
     }
 
+    public static function cleanupInvalidGrant($characterID, $mdb)
+    {
+        $deletedSessions = $mdb->getCollection('sessions')->deleteMany(['characterID' => $characterID]);
+        $deletedScopes = $mdb->getCollection('scopes')->deleteMany(['characterID' => $characterID]);
+        if ($deletedSessions->getDeletedCount() > 0 || $deletedScopes->getDeletedCount() > 0) {
+            ZLog::add("SSO invalid grant detected, for security all logged in sessions removed.", $characterID);
+        }
+    }
+
     public function getAccessToken($refreshToken, $scopes = [])
     {
         global $mdb, $redis;

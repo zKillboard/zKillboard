@@ -71,7 +71,7 @@ while ($time >= time()) {
 		$accessToken = $sso->getAccessToken($refreshToken);
 		$redis->rpush("timer:sso", round($timer->stop(), 0));
 		if (is_array($accessToken) && @$accessToken['error'] == "invalid_grant") {
-            $mdb->getCollection("scopes")->deleteMany(['characterID' => $charID]);
+            ZKillSSO::cleanupInvalidGrant($charID, $mdb);
 			usleep(10000);
 			continue;
 		}

@@ -25,7 +25,7 @@ while ($minute == date('Hi')) {
     $accessToken = $sso->getAccessToken($refreshToken);
     if (is_array($accessToken)) {
         if ($accessToken['error'] == "invalid_grant") {
-            $mdb->remove("scopes", $row);
+            ZKillSSO::cleanupInvalidGrant($charID, $mdb);
             continue;
         }
     }

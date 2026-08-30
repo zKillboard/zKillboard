@@ -24,6 +24,10 @@ foreach ($rows as $scope) {
         $accessToken = $sso->getAccessToken($scope['refreshToken']);
         if (is_array($accessToken)) {
             $error = is_string($accessToken['error'] ?? null) ? $accessToken['error'] : 'unknown_error';
+            if ($error == 'invalid_grant') {
+                ZKillSSO::cleanupInvalidGrant($characterID, $mdb);
+                continue;
+            }
             throw new Exception("EVE SSO token refresh failed: $error");
         }
         $decoded = $sso->validateAccessToken($accessToken);
