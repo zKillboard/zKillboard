@@ -2,6 +2,9 @@
 
 require_once "../init.php";
 
+$key = "zkb:trophy-leaders:" . date('Ymd');
+if ($kvc->get($key) == "true") exit();
+
 $latest = $mdb->findDoc(
 	'trophies',
 	['trophies.calcTrophies_updated' => ['$gt' => 0]],
@@ -9,8 +12,6 @@ $latest = $mdb->findDoc(
 	['_id' => 0, 'trophies.calcTrophies_updated' => 1]
 );
 $sourceUpdated = (int) ($latest['trophies']['calcTrophies_updated'] ?? 0);
-$leaderDoc = $mdb->findDoc('trophies', ['id' => 0], [], ['_id' => 0, 'sourceUpdated' => 1]);
-if ($leaderDoc !== null && (int) ($leaderDoc['sourceUpdated'] ?? 0) >= $sourceUpdated && $sourceUpdated < time() - 120) exit;
 
 $rows = $mdb->getCollection('trophies')->aggregate([
 	['$match' => ['trophies.id' => ['$gt' => 0], 'trophies.trophies' => ['$exists' => true]]],
@@ -87,3 +88,4 @@ $mdb->insertUpdate('trophies', ['id' => 0], [
 	'updated' => Mdb::now(),
 ]);
 $redis->sadd("queueCacheTags", "trophies");
+$kvc->setex($key, 86400, "true");
