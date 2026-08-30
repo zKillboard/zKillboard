@@ -45,7 +45,11 @@ function handler($request, $response, $args, $container)
 		];
 	}
 
+	$leaderDoc = $mdb->findDoc('trophies', ['id' => 0], [], ['_id' => 0, 'trophyLeaders' => 1]);
+	$trophyLeaders = (array) ($leaderDoc['trophyLeaders'] ?? []);
+
 	Info::addInfo($leaders);
+	Info::addInfo($trophyLeaders);
 
 	$cacheControl = 'public, max-age=3600, s-maxage=3600';
 	$response = $response
@@ -60,6 +64,7 @@ function handler($request, $response, $args, $container)
 		'trophies.pug',
 		[
 			'leaders' => $leaders,
+			'trophyLeaders' => $trophyLeaders,
 			'showAds' => true,
 		]
 	);
