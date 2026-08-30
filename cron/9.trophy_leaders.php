@@ -79,3 +79,4 @@ $mdb->insertUpdate('trophies', ['id' => 0], [
 	'sourceUpdated' => $sourceUpdated,
 	'updated' => Mdb::now(),
 ]);
+$redis->sadd("queueCacheTags", "trophies");
