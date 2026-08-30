@@ -95,6 +95,14 @@ block content
       else
         p Individual trophy leaders will be populated by the trophy leaderboard job.
 
+  section.mt-4(aria-labelledby="trophy-leader-rules-title")
+    h5#trophy-leader-rules-title How Trophy Leaders Are Chosen
+    ul.mb-0
+      li The character with the highest value for a specific trophy leads that trophy.
+      li If values tie, the character with more total trophy levels wins.
+      li If total trophy levels also tie, the older character wins.
+      li If both characters are still tied, the lower character ID wins to keep the result stable.
+
 block script
   script(type="text/javascript").
     document.addEventListener("DOMContentLoaded", function () {

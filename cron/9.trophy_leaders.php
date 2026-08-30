@@ -31,6 +31,7 @@ $rows = $mdb->getCollection('trophies')->aggregate([
 		'_id' => 0,
 		'characterID' => '$trophies.id',
 		'trophies' => '$trophies.trophies',
+		'levelCount' => '$trophies.levelCount',
 		'birthday' => ['$arrayElemAt' => ['$character.birthday', 0]],
 	]],
 ], ['allowDiskUse' => true]);
@@ -38,6 +39,7 @@ $rows = $mdb->getCollection('trophies')->aggregate([
 $trophyLeaders = [];
 foreach ($rows as $row) {
 	$characterID = (int) ($row['characterID'] ?? 0);
+	$levelCount = (int) ($row['levelCount'] ?? 0);
 	$birthday = $row['birthday'] ?? null;
 	if ($birthday instanceof MongoDB\BSON\UTCDateTime) {
 		$birthday = $birthday->toDateTime()->getTimestamp();
@@ -51,16 +53,21 @@ foreach ($rows as $row) {
 			$trophy = (array) $trophy;
 			$value = (int) ($trophy['value'] ?? 0);
 			$current = $trophyLeaders[$category][$name] ?? null;
+			$currentLevelCount = $current['levelCount'] ?? 0;
 			$currentBirthday = $current['birthday'] ?? null;
 			$winsTie = $current !== null && $value == $current['value'] && (
-				($birthday !== null && ($currentBirthday === null || $birthday < $currentBirthday))
-				|| ($birthday === $currentBirthday && $characterID < $current['characterID'])
+				$levelCount > $currentLevelCount
+				|| ($levelCount == $currentLevelCount && (
+					($birthday !== null && ($currentBirthday === null || $birthday < $currentBirthday))
+					|| ($birthday === $currentBirthday && $characterID < $current['characterID'])
+				))
 			);
 			if ($current === null || $value > $current['value'] || $winsTie) {
 				$trophyLeaders[$category][$name] = [
 					'characterID' => $characterID,
 					'value' => $value,
 					'level' => (int) ($trophy['level'] ?? 0),
+					'levelCount' => $levelCount,
 					'birthday' => $birthday,
 				];
 				if (isset($trophy['total'])) $trophyLeaders[$category][$name]['total'] = (int) $trophy['total'];
@@ -70,7 +77,7 @@ foreach ($rows as $row) {
 }
 
 foreach ($trophyLeaders as &$trophies) {
-	foreach ($trophies as &$leader) unset($leader['birthday']);
+	foreach ($trophies as &$leader) unset($leader['levelCount'], $leader['birthday']);
 }
 unset($trophies, $leader);
 
