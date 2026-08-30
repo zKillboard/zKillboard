@@ -163,7 +163,7 @@ class EveOnlineSSO
     {
         global $resCode;
 
-        if (substr_count($accessToken, '.') !== 2) {
+        if (!is_string($accessToken) || $accessToken === '' || substr_count($accessToken, '.') !== 2) {
             throw new \Exception("Invalid JWT returned by EVE SSO");
         }
 

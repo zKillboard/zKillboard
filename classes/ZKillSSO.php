@@ -21,7 +21,7 @@ class ZKillSSO extends EveOnlineSSO
 
     public function getAccessToken($refreshToken, $scopes = [])
     {
-        global $mdb, $redis; 
+        global $mdb, $redis;
 
         $accessToken = $redis->get("oauth2:$refreshToken");
         if ($accessToken != null) {
@@ -36,9 +36,9 @@ class ZKillSSO extends EveOnlineSSO
 
 
         $accessToken = $accessJson['access_token'];
-        $newRT = $accessJson['refresh_token'];
+        $newRT = $accessJson['refresh_token'] ?? null;
         if ($newRT != null && $newRT != $refreshToken) {
-            $mdb->set("scopes", ['refreshToken' => $refreshToken], ['refreshToken' -> $newRT], true);
+            $mdb->set("scopes", ['refreshToken' => $refreshToken], ['refreshToken' => $newRT], true);
         }
         $expires = max($accessJson['expires_in'] - 1, 1);
         $redis->setex("oauth2:$refreshToken", $expires, $accessToken);
