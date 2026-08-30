@@ -34,7 +34,14 @@ function success(&$guzzler, &$params, $content)
 
     $id = $params['id'];
     if ($content == "") {
-        if (@$params['STATUS_CODE'] == 304) $mdb->set("information", $params['row'], ['lastApiUpdate' => $mdb->now()]);
+        if (@$params['STATUS_CODE'] == 304) {
+            $memberCount = 0;
+            $corps = $mdb->find("information", ['type' => 'corporationID', 'allianceID' => $id]);
+            foreach ($corps as $corp) {
+                $memberCount += @$corp['memberCount'];
+            }
+            $mdb->set("information", $params['row'], ['lastApiUpdate' => $mdb->now(), 'corpCount' => sizeof($corps), 'memberCount' => $memberCount]);
+        }
         return;
     }
 
