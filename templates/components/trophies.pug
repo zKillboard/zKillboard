@@ -19,6 +19,10 @@ div
             td= ($trophies['completedPct'] ?? 0) . '%'
             td
               img(src=('https://zkillboard.com/img/level/level' . $boxes . '.gif') title=$overallTrophyTitle alt=('Trophy completion level ' . $boxes))
+      .col-12.col-lg-8.text-end
+        a.fs-5(href="/trophies/" style="color: #66BFFF;")
+          | Trophy Leaderboard&nbsp;
+          span.fas.fa-arrow-right.small(aria-hidden="true")
     .row.g-3
       each $conditions, $category in ($trophies['trophies'] ?? [])
         - $conditions = is_object($conditions) ? (array) $conditions : $conditions;
