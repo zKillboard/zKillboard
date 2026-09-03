@@ -2,6 +2,8 @@
 - $actualSize = $resizeImage ?? $imageSize;
 - $imageStyleText = !empty($imageStyle) ? (' ' . $imageStyle) : '';
 - $characterName = !empty($field['characterName']) ? $field['characterName'] : ('Character ' . ($field['characterID'] ?? 0));
+- $characterImageOverrides = [2124677425 => '/img/fc-cow-moo.png'];
+- $characterImage = $characterImageOverrides[$field['characterID'] ?? 0] ?? (($image_character ?? 'https://images.evetech.net/characters/') . ($field['characterID'] ?? 1) . '/portrait?size=' . $imageSize);
 - $characterImageClass = '';
 - $characterImageLinkClass = '';
 if (!empty($field['patreonPrismatic']))
@@ -18,6 +20,6 @@ if (($field['characterID'] ?? 0) == 0)
 else
   a(href=('/character/' . $field['characterID'] . '/') rel="tooltip" title=$characterName class=$characterImageLinkClass)
     if (!empty($isDelayed))
-      img.eveimage.img-rounded.delayed(src="#" data-src=(($image_character ?? 'https://images.evetech.net/characters/') . $field['characterID'] . '/portrait?size=' . $imageSize) style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;' . $imageStyleText) class=$characterImageClass alt=$characterName loading="lazy" decoding="async" fetchpriority="low")
+      img.eveimage.img-rounded.delayed(src="#" data-src=$characterImage style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;' . $imageStyleText) class=$characterImageClass alt=$characterName loading="lazy" decoding="async" fetchpriority="low")
     else
-      img.eveimage.img-rounded(src=(($image_character ?? 'https://images.evetech.net/characters/') . $field['characterID'] . '/portrait?size=' . $imageSize) style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;' . $imageStyleText) class=$characterImageClass alt=$characterName loading="lazy" decoding="async" fetchpriority="low")
+      img.eveimage.img-rounded(src=$characterImage style=('height: ' . $actualSize . 'px; width: ' . $actualSize . 'px;' . $imageStyleText) class=$characterImageClass alt=$characterName loading="lazy" decoding="async" fetchpriority="low")
