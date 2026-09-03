@@ -99,7 +99,7 @@ function fail($guzzler, $params, $ex)
     if (sizeof($set) == 1) {
         $id = (int) $set[0];
         $current = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $id]);
-        if (@$current['corporationID'] == 1000001 && @$current['name'] == "Character $id") {
+        if (in_array(@$current['name'], ["Character $id", "characterID $id"])) {
             $name = "Deleted Character $id";
             $mdb->set('information', ['type' => 'characterID', 'id' => $id], ['name' => $name, 'l_name' => strtolower($name)]);
         }
