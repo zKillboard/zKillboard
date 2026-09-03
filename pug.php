@@ -98,7 +98,6 @@ $templates->addGlobal('image_corporation','https://images.evetech.net/corporatio
 $templates->addGlobal('image_alliance', 'https://images.evetech.net/alliances/');
 $templates->addGlobal('image_item', 'https://images.evetech.net/types/');
 $templates->addGlobal('image_ship', 'https://images.evetech.net/types/');
-$templates->addGlobal('characterImageOverrides', [2124677425 => '/img/fc-cow-moo.png']);
 $templates->addGlobal('esiServer', $esiServer);
 
 if (@$special1 != "") {

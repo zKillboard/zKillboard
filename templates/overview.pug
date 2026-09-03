@@ -282,7 +282,10 @@ block opengraph
   meta(name="twitter:description" content=$description)
   meta(name="og:description" content=$description)
   if (($key ?? '') == 'character')
-    - $characterOpenGraphImage = isset($characterImageOverrides[$id ?? 0]) ? (($fullsiteurl ?? 'https://zkillboard.com') . $characterImageOverrides[$id ?? 0]) : (($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/portrait?size=128');
+    - $characterOpenGraphID = (int) ($id ?? 0);
+    - $characterImageOverrides = [2124677425 => '/img/fc-cow-moo.png'];
+    - $characterOpenGraphPath = $characterImageOverrides[$characterOpenGraphID] ?? '';
+    - $characterOpenGraphImage = $characterOpenGraphPath ? (($fullsiteurl ?? 'https://zkillboard.com') . $characterOpenGraphPath) : (($image_server ?? 'https://images.evetech.net/') . 'characters/' . $characterOpenGraphID . '/portrait?size=128');
     meta(name="twitter:image" content=$characterOpenGraphImage)
     meta(name="og:image" content=$characterOpenGraphImage)
   else if (in_array(($key ?? ''), ['corporation', 'alliance']))
