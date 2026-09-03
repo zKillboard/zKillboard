@@ -282,8 +282,9 @@ block opengraph
   meta(name="twitter:description" content=$description)
   meta(name="og:description" content=$description)
   if (($key ?? '') == 'character')
-    meta(name="twitter:image" content=(($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/portrait?size=128'))
-    meta(name="og:image" content=(($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/portrait?size=128'))
+    - $characterOpenGraphImage = isset($characterImageOverrides[$id ?? 0]) ? (($fullsiteurl ?? 'https://zkillboard.com') . $characterImageOverrides[$id ?? 0]) : (($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/portrait?size=128');
+    meta(name="twitter:image" content=$characterOpenGraphImage)
+    meta(name="og:image" content=$characterOpenGraphImage)
   else if (in_array(($key ?? ''), ['corporation', 'alliance']))
     meta(name="twitter:image" content=(($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/logo?size=128'))
     meta(name="og:image" content=(($image_server ?? 'https://images.evetech.net/') . ($key ?? '') . 's/' . ($id ?? '') . '/logo?size=128'))

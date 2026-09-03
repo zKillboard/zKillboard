@@ -2,7 +2,6 @@
 - $actualSize = $resizeImage ?? $imageSize;
 - $imageStyleText = !empty($imageStyle) ? (' ' . $imageStyle) : '';
 - $characterName = !empty($field['characterName']) ? $field['characterName'] : ('Character ' . ($field['characterID'] ?? 0));
-- $characterImageOverrides = [2124677425 => '/img/fc-cow-moo.png'];
 - $characterImage = $characterImageOverrides[$field['characterID'] ?? 0] ?? (($image_character ?? 'https://images.evetech.net/characters/') . ($field['characterID'] ?? 1) . '/portrait?size=' . $imageSize);
 - $characterImageClass = '';
 - $characterImageLinkClass = '';
