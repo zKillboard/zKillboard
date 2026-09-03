@@ -98,10 +98,14 @@ function fail($guzzler, $params, $ex)
 
     if (sizeof($set) == 1) {
         $id = (int) $set[0];
-        $current = $mdb->findDoc('information', ['type' => 'characterID', 'id' => $id]);
-        if (in_array(@$current['name'], ["Character $id", "characterID $id"])) {
-            $name = "Deleted Character $id";
-            $mdb->set('information', ['type' => 'characterID', 'id' => $id], ['name' => $name, 'l_name' => strtolower($name)]);
+        $current = $mdb->findDoc('information', ['type' => ['$in' => ['characterID', 'corporationID', 'allianceID', 'factionID']], 'id' => $id]);
+        if ($current != null && in_array($ex->getCode(), [404, 422])) {
+            $entityType = ucfirst(str_replace('ID', '', $current['type']));
+            $currentName = $current['name'] ?? '';
+            if (in_array($currentName, ['', "$entityType $id", $current['type'] . " $id"])) {
+                $name = "Deleted $entityType $id";
+                $mdb->set('information', ['type' => $current['type'], 'id' => $id], ['name' => $name, 'l_name' => strtolower($name)]);
+            }
         }
         Util::out("Failure to resolve name for ID: $id - " . $ex->getMessage());
         $redis->srem($rset, $id);
