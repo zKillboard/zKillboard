@@ -114,7 +114,7 @@ if (($tobefetched ?? 0) > 1000)
       b ALL
       |  killmails
     | , please be patient while this extremely large task is completed. No killmails have been lost, they just need to be reparsed.
-if (($tobeStatsCount ?? 0) > 10000)
+if (($tobeStatsCount ?? 0) > 100000)
   .alert.alert-secondary
     h4 Missing Statistics?
     | zKillboard is currently recalculating&nbsp;

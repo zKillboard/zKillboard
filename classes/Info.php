@@ -76,7 +76,7 @@ class Info
 		return "info::$type:$id";
 	}
 
-	public static function loadIntoRedis($type, $id)
+	public static function loadIntoRedis($type, $id, $cacheTime = 30)
 	{
 		global $mdb, $redis;
 
@@ -119,7 +119,7 @@ class Info
 				break;
 		}
 
-		$redis->setex($redisKey, 30, serialize($data));
+		$redis->setex($redisKey, $cacheTime, serialize($data));
 
 		return $data;
 	}

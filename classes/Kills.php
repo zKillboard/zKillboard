@@ -185,7 +185,7 @@ class Kills
 
         $stored = array('info' => $killmail, 'victim' => $victim, 'involved' => $infoInvolved, 'items' => $infoItems);
 		$stored['rawmail'] = $esimail;
-        RedisCache::set($key, $stored, 60);
+        RedisCache::set($key, $stored, 3600);
         return $stored;
     }
 
