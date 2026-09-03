@@ -79,6 +79,7 @@ try {
         if (@$current['name'] !== $name) {
             $currentName = @$current['name'];
             $mdb->set("information", ['type' => $row['category'] . "ID", 'id' => $row['id']], ['name' => $name, 'l_name' => strtolower($name)]);
+            $redis->del(Info::getRedisKey($row['category'] . 'ID', $row['id']));
         }
         $redis->srem($rset, $row['id']);
     }
@@ -105,7 +106,9 @@ function fail($guzzler, $params, $ex)
             if (in_array($currentName, ['', "$entityType $id", $current['type'] . " $id"])) {
                 $name = "Deleted $entityType $id";
                 $mdb->set('information', ['type' => $current['type'], 'id' => $id], ['name' => $name, 'l_name' => strtolower($name)]);
+                $redis->del(Info::getRedisKey($current['type'], $id));
             }
+            if ($current['type'] == 'characterID') $mdb->removeField('information', ['type' => 'characterID', 'id' => $id], 'nextApiUpdate');
         }
         Util::out("Failure to resolve name for ID: $id - " . $ex->getMessage());
         $redis->srem($rset, $id);

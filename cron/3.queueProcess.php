@@ -20,6 +20,7 @@ $redis->expire("zkb:loot:red:$dateYesterday", 86400);
 $crestmails = $mdb->getCollection('crestmails');
 $killmails = $mdb->getCollection('killmails');
 $queueInfo = new MongoQueue($mdb, 'queueInfo');
+$nameQueue = new MongoQueue($mdb, 'zkb:updatenames');
 $parseQueue = new MongoQueue($mdb, 'tobeparsed', false, false);
 $storage = $mdb->getCollection('storage');
 $killsLastHour = new RedisTtlCounter('killsLastHour');
@@ -112,6 +113,46 @@ while ($time >= time()) {
             }
             $atShip |= in_array($victim['shipTypeID'], $atShipIDs);
             $kill['involved'] = $involved;
+
+            $entities = [];
+            foreach ($involved as $entity) {
+                foreach (['characterID', 'corporationID', 'allianceID', 'factionID'] as $type) {
+                    $id = (int) ($entity[$type] ?? 0);
+                    if ($id > 1) $entities["$type:$id"] = ['type' => $type, 'id' => $id];
+                }
+            }
+            $entityInfo = [];
+            if (sizeof($entities)) {
+                $rows = $mdb->find('information', ['$or' => array_values($entities)], [], null, ['type' => 1, 'id' => 1, 'name' => 1]);
+                foreach ($rows as $info) $entityInfo[$info['type'] . ':' . $info['id']] = $info;
+            }
+            $pendingNames = [];
+            foreach ($entities as $key => $entity) {
+                $info = $entityInfo[$key] ?? null;
+                $defaultName = $entity['type'] . ' ' . $entity['id'];
+                if ($info == null) {
+                    try {
+                        $mdb->insert('information', $entity + ['name' => $defaultName]);
+                    } catch (Exception $ex) {}
+                }
+                if ($info == null || ($info['name'] ?? '') == '' || $info['name'] == $defaultName) {
+                    $nameQueue->add($entity['id']);
+                    $pendingNames[$key] = $entity;
+                }
+            }
+            for ($iteration = 0; $iteration < 3 && sizeof($pendingNames); $iteration++) {
+                sleep(1);
+                $rows = $mdb->find('information', ['$or' => array_values($pendingNames)], [], null, ['type' => 1, 'id' => 1, 'name' => 1]);
+                foreach ($rows as $info) {
+                    $key = $info['type'] . ':' . $info['id'];
+                    $defaultName = $info['type'] . ' ' . $info['id'];
+                    if (($info['name'] ?? '') != '' && $info['name'] != $defaultName) unset($pendingNames[$key]);
+                }
+            }
+            if (sizeof($pendingNames)) {
+                Util::out("Saving killmail $killID with " . sizeof($pendingNames) . " entity names still pending");
+            }
+
             $victimIsCapital = isCapital($victim['shipTypeID']);
             $capitalInvolved = $victimIsCapital;
             $superInvolved = false;

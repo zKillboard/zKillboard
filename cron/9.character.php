@@ -129,7 +129,12 @@ function updateChar(&$guzzler, &$params, &$content)
     }
     if (isset($json['security_status'])) compareAttributes($updates, "secStatus", @$row['secStatus'], (double) $json['security_status']);
 
-    if (@$row['name'] != "" && strpos($updates['name'], " Citizen ") === false) unset($updates['name']); // Names will no longer be updated here
+    $currentName = $row['name'] ?? '';
+    if ($currentName != '' && !in_array($currentName, ["Character $id", "characterID $id", "Deleted Character $id"]) && strpos($updates['name'], " Citizen ") === false) {
+        unset($updates['name']); // Names will no longer be updated here
+    } else {
+        $updates['l_name'] = strtolower($updates['name']);
+    }
 
     $corpExists = $mdb->count('information', ['type' => 'corporationID', 'id' => $corpID]);
     if ($corpExists == 0) {
