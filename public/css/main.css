@@ -1350,6 +1350,31 @@ td.centered {
 
 .scanalyzer {
 	color: red;
+	display: inline-block;
+	position: relative;
+	width: 0.7em;
+	height: 0.7em;
+	border: 0.1em solid currentColor;
+	overflow: hidden;
+	text-indent: -9999px;
+	transform: rotate(45deg);
+	vertical-align: 0.05em;
+}
+
+.scanalyzer::after {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 0.2em;
+	height: 0.2em;
+	background: currentColor;
+	transform: translate(-50%, -50%);
+}
+
+#navibar .scanalyzer {
+	margin-top: 0.4em;
+	margin-bottom: 0.4em;
 }
 
 .publift:empty+.pbsep {
@@ -2819,3 +2844,4 @@ code {
 .btn-primary {
 	background-color: #1E73BE;
 }
+
