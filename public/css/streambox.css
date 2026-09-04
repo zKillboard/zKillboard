@@ -26,6 +26,14 @@ body {
 	overflow: hidden;
 }
 
+#content a,
+#content a:visited,
+#content a:hover,
+#content a:focus,
+#content a:active {
+	color: white;
+}
+
 #content a {
 	text-decoration: none;
 }
