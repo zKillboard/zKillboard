@@ -26,13 +26,14 @@ async function prepKills(data) {
     const our_id = window.location.pathname.split('/')[2];
     const unixtime = Math.floor(Date.now() / 1000); // This is always UTC
     const afterEpoch = unixtime - (3600 * 8); // show kills 8 hours old or less
+    const maxKills = Math.min(25, Math.max(1, parseInt(getComputedStyle(document.documentElement).getPropertyValue('--max-kills'), 10) || 5));
 
     try {
         const content = document.getElementById('contenttemp');
         content.innerHTML = '';
         const temp = document.getElementById('temp');
 
-        for (let i = 0; i < data.length && i < 25; i++) {
+        for (let i = 0; i < data.length && i < maxKills; i++) {
             const killID = data[i];
 
             let res = await fetch(`/cache/24hour/killlistrow/${killID}/`);
