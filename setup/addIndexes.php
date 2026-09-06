@@ -545,6 +545,19 @@ $killmails->createIndex(['involved.corporationID' => 1, 'killID' => -1, 'solo' =
 )]);
 echo "Done\n";
 
+echo "Creating index : 'involved.corporationID' => 1, 'involved.shipTypeID' => 1 ... ";
+$killmails->createIndex(['involved.corporationID' => 1, 'involved.shipTypeID' => 1], []);
+echo "Done\n";
+echo "Creating index : 'involved.allianceID' => 1, 'involved.shipTypeID' => 1 ... ";
+$killmails->createIndex(['involved.allianceID' => 1, 'involved.shipTypeID' => 1], ['partialFilterExpression' => ['involved.allianceID' => ['$gt' => 0]]]);
+echo "Done\n";
+echo "Creating index : 'involved.corporationID' => 1, 'involved.groupID' => 1 ... ";
+$killmails->createIndex(['involved.corporationID' => 1, 'involved.groupID' => 1], []);
+echo "Done\n";
+echo "Creating index : 'involved.allianceID' => 1, 'involved.groupID' => 1 ... ";
+$killmails->createIndex(['involved.allianceID' => 1, 'involved.groupID' => 1], ['partialFilterExpression' => ['involved.allianceID' => ['$gt' => 0]]]);
+echo "Done\n";
+
 // locations
 echo "\nCreating collection locations ... ";
 $db->createCollection("locations");
