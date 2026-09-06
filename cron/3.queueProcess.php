@@ -512,34 +512,26 @@ function isAwox($row)
     if ($vGroupID == 237 || $vGroupID == 29) {
         return false;
     }
-    if (isset($victim['corporationID']) && $vGroupID != 29) {
-        $vicCorpID = $victim['corporationID'];
-        if ($vicCorpID > 0) {
-            foreach ($row['involved'] as $key => $involved) {
-                if ($key == 0) {
-                    continue;
-                }
-                if (!isset($involved['finalBlow'])) {
-                    continue;
-                }
-                if ($involved['finalBlow'] != true) {
-                    continue;
-                }
 
-                if (!isset($involved['corporationID'])) {
-                    continue;
-                }
-                $invCorpID = $involved['corporationID'];
-                if ($invCorpID == 0) {
-                    continue;
-                }
-                if ($invCorpID <= 1999999) {
-                    continue;
-                }
-                if ($vicCorpID == $invCorpID) {
-                    return true;
-                }
-            }
+    $vicCorpID = isset($victim['corporationID']) ? (int) $victim['corporationID'] : 0;
+    $vicFactionID = isset($victim['factionID']) ? (int) $victim['factionID'] : 0;
+
+    foreach ($row['involved'] as $key => $involved) {
+        if ($key == 0) {
+            continue;
+        }
+        if (!isset($involved['finalBlow']) || $involved['finalBlow'] != true) {
+            continue;
+        }
+
+        $invCorpID = isset($involved['corporationID']) ? (int) $involved['corporationID'] : 0;
+        if ($vicCorpID > 0 && $invCorpID > 1999999 && $vicCorpID == $invCorpID) {
+            return true;
+        }
+
+        $invFactionID = isset($involved['factionID']) ? (int) $involved['factionID'] : 0;
+        if ($vicFactionID > 0 && $invFactionID > 0 && $vicFactionID == $invFactionID) {
+            return true;
         }
     }
 
