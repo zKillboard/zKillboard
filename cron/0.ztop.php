@@ -261,7 +261,7 @@ addInfo('', 0);
 	$memUsed = number_format(((int) $memory['MemTotal'] - (int) $memory['MemFree'] - (int) $memory['Cached']) / (1024 * 1024), 2);
 
 	$cpu = exec("top -d 0.5 -b -n2 | grep \"Cpu(s)\"| tail -n 1 | awk '{print $2 + $4}'");
-	$cpu = str_pad(number_format($cpu, 1, '.', ''), 5, " ", STR_PAD_LEFT);
+	$cpu = str_pad(is_numeric($cpu) ? number_format((float) $cpu, 1, '.', '') : 'N/A', 5, " ", STR_PAD_LEFT);
 	$load = str_pad(Util::getLoad(), 5, " ", STR_PAD_LEFT);
 	$memUsed = str_pad($memUsed, 5, " ", STR_PAD_LEFT);
 	$memTotal = str_pad($memTotal, 5, " ", STR_PAD_LEFT);
