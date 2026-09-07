@@ -2,24 +2,30 @@ extends base.pug
 
 block vars
   - $summaryData = is_object($summary ?? null) ? (array) $summary : ($summary ?? []);
-  - $teamA = is_object($summaryData['teamA'] ?? null) ? (array) $summaryData['teamA'] : ($summaryData['teamA'] ?? []);
-  - $teamB = is_object($summaryData['teamB'] ?? null) ? (array) $summaryData['teamB'] : ($summaryData['teamB'] ?? []);
-  - $teamATotals = is_object($teamA['totals'] ?? null) ? (array) $teamA['totals'] : ($teamA['totals'] ?? []);
-  - $teamBTotals = is_object($teamB['totals'] ?? null) ? (array) $teamB['totals'] : ($teamB['totals'] ?? []);
+  - $teams = array_filter($summaryData, function ($key) { return str_starts_with($key, 'team'); }, ARRAY_FILTER_USE_KEY);
+  - $excluded = (array) ($summaryData['excluded'] ?? []);
+  - $totalLostISK = 0; $totalSize = 0; $totalShips = 0; $totalPoints = 0;
+  - foreach ($teams as $team) { $totals = (array) (((array) $team)['totals'] ?? []); $totalLostISK += $totals['total_price'] ?? 0; $totalSize += $totals['pilotCount'] ?? 0; $totalShips += $totals['totalShips'] ?? 0; $totalPoints += $totals['total_points'] ?? 0; }
+  - $nextSide = 'C'; while (isset($teams['team' . $nextSide])) { ++$nextSide; }
+  - $reportUrl = '/related/' . ($solarSystemID ?? 0) . '/' . ($relatedTime ?? 0) . '/o/' . rawurlencode($options ?? '{}') . '/';
   - $priceTitle = function ($prices) { $prices = is_object($prices ?? null) ? (array) $prices : ($prices ?? []); return '$' . number_format((float) ($prices['usd'] ?? 0), 2, '.', ',') . ' / ' . number_format((float) ($prices['eur'] ?? 0), 2, '.', ',') . ' euro / GBP ' . number_format((float) ($prices['gbp'] ?? 0), 2, '.', ','); };
   - $pageTitle = 'Related Kills | ' . ($systemName ?? '') . ' | ' . ($time ?? '');
 
 block title
   include components/title.pug
 
+block style
+  style.
+    body:has(#related-report.related-report-wide) .ad-xl-block {
+      display: none !important;
+    }
+
 block content
-  .related-report-page
+  #related-report.related-report-page(class=(count($teams) > 2 ? 'related-report-wide' : ''))
     h2.related-report-title
       small Battle Report: 
       = ($systemName ?? '') . ' (' . ($regionName ?? '') . ') / ' . ($time ?? '')
     .related-report-links
-      a(href=('https://br.evetools.org/related/' . ($solarSystemID ?? 0) . '/' . ($unixtime ?? 0) . '/') target="_blank" rel="noopener noreferrer")
-        i br.evetools.org
       a(href=('https://warbeacon.net/br/related/' . ($solarSystemID ?? 0) . '/' . ($relatedTime ?? 0) . '/') target="_blank" rel="noopener noreferrer")
         i warbeacon.net
       a(target="_blank" href="https://riftforeve.online/" rel="noopener noreferrer")
@@ -28,135 +34,67 @@ block content
       a(href=('https://killmail.app/related/' . ($solarSystemID ?? 0) . '/' . ($relatedTime ?? 0) . '/') target="_blank" rel="noopener noreferrer")
         img(src="/img/killmail-app/logo.png" style="margin-right: 6px; height: 20px; width: 20px;" alt="killmail.app" loading="lazy" decoding="async")
         | killmail.app
-    - $teamATotal = $teamATotals['total_price'] ?? 0;
-    - $teamBTotal = $teamBTotals['total_price'] ?? 0;
-    - $teamATotalConv = $teamATotals['total_price_conv'] ?? [];
-    - $teamBTotalConv = $teamBTotals['total_price_conv'] ?? [];
-    - $total = $teamATotal + $teamBTotal;
-    - $teamATotalDropped = $teamATotals['total_dropped'] ?? 0;
-    - $teamBTotalDropped = $teamBTotals['total_dropped'] ?? 0;
-    - $teamADroppedConv = $teamATotals['total_dropped_conv'] ?? [];
-    - $teamBDroppedConv = $teamBTotals['total_dropped_conv'] ?? [];
-    - $teamAPoints = $teamATotals['total_points'] ?? 0;
-    - $teamBPoints = $teamBTotals['total_points'] ?? 0;
-    if ($total == 0)
-      em
-        = 'There was no battle in ' . ($systemName ?? '') . ' '
-        small= '(' . ($regionName ?? '') . ')'
-        = ' at ' . ($time ?? '') . '.'
-      br
-      br
+    .related-report-actions
+      a.btn.btn-sm.btn-success.active(href=('/related/' . ($solarSystemID ?? 0) . '/' . ($relatedTime ?? 0) . '/')) Reset Report
+      a.btn.btn-sm.btn-success.active(rel="nofollow" href=('/brsave/?sID=' . ($solarSystemID ?? 0) . '&dttm=' . ($relatedTime ?? 0) . '&options=' . rawurlencode($options ?? '{}'))) Save Battle Report
+    if (!$totalSize && !$totalShips && !$excluded)
+      em= 'There was no battle in ' . ($systemName ?? '') . ' (' . ($regionName ?? '') . ') at ' . ($time ?? '') . '.'
     else
-      - $totalSize = ($teamATotals['pilotCount'] ?? 0) + ($teamBTotals['pilotCount'] ?? 0);
-      - $teamASize = $teamATotals['pilotCount'] ?? 0;
-      - $teamBSize = $teamBTotals['pilotCount'] ?? 0;
-      - $teamAEff = $teamBTotal / $total * 100;
-      - $teamBEff = $teamATotal / $total * 100;
-      - $shipTotalLost = ($teamATotals['totalShips'] ?? 0) + ($teamBTotals['totalShips'] ?? 0);
-      - $pointTotalLost = $teamAPoints + $teamBPoints;
-      - $teamAISKLostPct = $total > 0 ? ($teamATotal / $total * 100) : 50;
-      - $teamBISKLostPct = $total > 0 ? ($teamBTotal / $total * 100) : 50;
-      - $teamAShipsPct = $shipTotalLost > 0 ? (($teamATotals['totalShips'] ?? 0) / $shipTotalLost * 100) : 50;
-      - $teamBShipsPct = $shipTotalLost > 0 ? (($teamBTotals['totalShips'] ?? 0) / $shipTotalLost * 100) : 50;
-      - $teamAPointsPct = $pointTotalLost > 0 ? ($teamAPoints / $pointTotalLost * 100) : 50;
-      - $teamBPointsPct = $pointTotalLost > 0 ? ($teamBPoints / $pointTotalLost * 100) : 50;
-      .related-quick-compare
-        each $metric in [['ISK Lost', $teamATotal, $teamBTotal, $teamAISKLostPct, $teamBISKLostPct, 2, ''], ['Points Lost', $teamAPoints, $teamBPoints, $teamAPointsPct, $teamBPointsPct, 0, ''], ['Ships Lost', $teamATotals['totalShips'] ?? 0, $teamBTotals['totalShips'] ?? 0, $teamAShipsPct, $teamBShipsPct, 0, ''], ['Efficiency', $teamAEff, $teamBEff, $teamAEff, $teamBEff, 1, '%']]
-          .related-quick-metric
-            .related-quick-label= $metric[0]
-            .related-quick-team.related-quick-team-a
-              span.related-quick-team-name Team A
-              .related-quick-track
-                .related-quick-fill(style=('width: ' . number_format((float) $metric[3], 2, '.', '') . '%'))
-              span.related-quick-value= number_format((float) $metric[1], $metric[5]) . $metric[6]
-            .related-quick-team.related-quick-team-b
-              span.related-quick-team-name Team B
-              .related-quick-track
-                .related-quick-fill(style=('width: ' . number_format((float) $metric[4], 2, '.', '') . '%'))
-              span.related-quick-value= number_format((float) $metric[2], $metric[5]) . $metric[6]
-      .related-report-actions
-        a.btn.btn-sm.btn-success.active(href=('/related/' . ($solarSystemID ?? 0) . '/' . ($relatedTime ?? 0) . '/')) Reset Report
-        a.btn.btn-sm.btn-success.active(rel="nofollow" href=('/brsave/?sID=' . ($solarSystemID ?? 0) . '&dttm=' . ($relatedTime ?? 0) . '&options=' . ($options ?? ''))) Save Battle Report
-      .related-mobile-tabs.d-lg-none(role="tablist" aria-label="Select team")
-        button.btn.btn-sm.related-mobile-tab.is-active(type="button" data-team="a" aria-pressed="true") Team A
-        button.btn.btn-sm.related-mobile-tab(type="button" data-team="b" aria-pressed="false") Team B
-      .row.g-3.related-team-grid
-        .col-12.col-lg-6.order-1.order-lg-1.related-team-panel.related-team-panel-a.is-active(data-team="a")
-          section.related-team-card.related-team-card-a
-            h5.related-team-heading
-              | Team A 
-              small= '(' . $teamASize . ' involved)'
-            .related-team-entities
-              each $data, $entity in ($teamA['entities'] ?? [])
-                - $data = is_object($data) ? (array) $data : $data;
-                - $entityName = is_array($data) ? ($data['name'] ?? '') : $data;
-                - $entityType = is_array($data) ? ($data['type'] ?? 'corporation') : 'corporation';
-                .related-entity-row.related-entity-row-a
-                  a.related-entity-move(rel="nofollow" href=('./?right=' . $entity) title="Move to Team B")
-                    i.fas.fa-arrow-alt-circle-right
-                  a.related-entity-name(href=('/' . $entityType . '/' . $entity . '/'))= $entityName
-            .related-team-block
-              - $groupIDs = $teamATotals['groupIDs'] ?? [];
-              include components/related_summary.pug
-            ul.related-team-stats.list-unstyled
-              li
-                span Ships Lost
-                strong= number_format((float) ($teamATotals['totalShips'] ?? 0), 0) . ' Ships'
-              li
-                span Points Lost
-                strong= number_format((float) $teamAPoints, 0)
-              li(rel="tooltip" title=$priceTitle($teamATotalConv))
-                span ISK Lost
-                strong= number_format((float) $teamATotal, 2)
-              li(rel="tooltip" title=$priceTitle($teamADroppedConv))
-                span Loot Dropped
-                strong= number_format((float) $teamATotalDropped, 2)
-              li
-                span Efficiency
-                strong= number_format((float) $teamAEff, 1) . ' %'
-        .col-12.col-lg-6.order-3.order-lg-2.related-team-panel.related-team-panel-b(data-team="b")
-          section.related-team-card.related-team-card-b
-            h5.related-team-heading.text-lg-end
-              | Team B 
-              small= '(' . $teamBSize . ' involved)'
-            .related-team-entities
-              each $data, $entity in ($teamB['entities'] ?? [])
-                - $data = is_object($data) ? (array) $data : $data;
-                - $entityName = is_array($data) ? ($data['name'] ?? '') : $data;
-                - $entityType = is_array($data) ? ($data['type'] ?? 'corporation') : 'corporation';
-                .related-entity-row.related-entity-row-b
-                  a.related-entity-name(href=('/' . $entityType . '/' . $entity . '/'))= $entityName
-                  a.related-entity-move(rel="nofollow" href=('./?left=' . $entity) title="Move to Team A")
-                    i.fas.fa-arrow-alt-circle-left
-            .related-team-block
-              - $groupIDs = $teamBTotals['groupIDs'] ?? [];
-              include components/related_summary.pug
-            ul.related-team-stats.list-unstyled
-              li
-                span Ships Lost
-                strong= number_format((float) ($teamBTotals['totalShips'] ?? 0), 0) . ' Ships'
-              li
-                span Points Lost
-                strong= number_format((float) $teamBPoints, 0)
-              li(rel="tooltip" title=$priceTitle($teamBTotalConv))
-                span ISK Lost
-                strong= number_format((float) $teamBTotal, 2)
-              li(rel="tooltip" title=$priceTitle($teamBDroppedConv))
-                span Loot Dropped
-                strong= number_format((float) $teamBTotalDropped, 2)
-              li
-                span Efficiency
-                strong= number_format((float) $teamBEff, 1) . ' %'
-        .col-12.col-lg-6.order-2.order-lg-3.related-team-panel.related-team-panel-a.is-active(data-team="a")
-          section.related-team-card.related-team-card-a.related-team-list-card
-            .related-team-block.mb-0
-              - $list = $teamA['list'] ?? [];
-              include components/related_list.pug
-        .col-12.col-lg-6.order-4.order-lg-4.related-team-panel.related-team-panel-b(data-team="b")
-          section.related-team-card.related-team-card-b.related-team-list-card
-            .related-team-block
-              - $list = $teamB['list'] ?? [];
-              include components/related_list.pug
+      button.btn.btn-outline-secondary.d-lg-none.w-100.mb-2(type="button" data-bs-toggle="collapse" data-bs-target="#relatedComparison" aria-expanded="false" aria-controls="relatedComparison") Compare all sides
+      #relatedComparison.collapse.d-lg-block
+        .related-quick-compare
+          each $metric in [['ISK Lost', 'total_price', $totalLostISK, 2], ['Points Lost', 'total_points', $totalPoints, 0], ['Ships Lost', 'totalShips', $totalShips, 0], ['Efficiency', 'efficiency', 100, 1]]
+            .related-quick-metric
+              .related-quick-label= $metric[0]
+              each $team, $teamKey in $teams
+                - $totals = (array) (((array) $team)['totals'] ?? []);
+                - $value = $metric[1] == 'efficiency' ? ($totalLostISK > 0 ? (1 - ($totals['total_price'] ?? 0) / $totalLostISK) * 100 : 0) : ($totals[$metric[1]] ?? 0);
+                - $pct = $metric[2] > 0 ? $value / $metric[2] * 100 : 0;
+                .related-quick-team(class=('related-quick-team-' . strtolower(substr($teamKey, 4))))
+                  span.related-quick-team-name= 'Team ' . substr($teamKey, 4)
+                  .related-quick-track
+                    .related-quick-fill(class=(!in_array($teamKey, ['teamA', 'teamB']) ? 'bg-secondary' : '') style=('width: ' . number_format((float) $pct, 2, '.', '') . '%'))
+                  span.related-quick-value= number_format((float) $value, $metric[3]) . ($metric[1] == 'efficiency' ? '%' : '')
+        if (count($teams) > 2)
+          p.small.text-body-secondary Efficiency compares each side's ISK losses with the combined losses of all other included sides.
+      .related-mobile-tabs.d-lg-none.flex-nowrap.overflow-x-auto(role="group" aria-label="Select team")
+        each $team, $teamKey in $teams
+          button.btn.btn-sm.related-mobile-tab(type="button" class=($teamKey == 'teamA' ? 'is-active' : '') data-team=strtolower(substr($teamKey, 4)) aria-pressed=($teamKey == 'teamA' ? 'true' : 'false'))= 'Team ' . substr($teamKey, 4)
+      .row.g-3.flex-lg-nowrap.related-team-grid
+        each $team, $teamKey in $teams
+          - $team = (array) $team;
+          - $totals = (array) ($team['totals'] ?? []);
+          - $side = substr($teamKey, 4); $sideClass = strtolower($side);
+          .col-12.col-lg.position-relative.overflow-hidden.related-team-panel(class=('related-team-panel-' . $sideClass . ($side == 'A' ? ' is-active' : '')) data-team=$sideClass)
+            section.related-team-card.overflow-hidden(class=('related-team-card-' . $sideClass))
+              h5.related-team-heading
+                = 'Team ' . $side . ' '
+                small= '(' . ($totals['pilotCount'] ?? 0) . ' involved)'
+              .related-team-entities
+                - $entities = $team['entities'] ?? []; $currentSide = $side;
+                include components/related_entities.pug
+              .related-team-block.related-team-summary.flex-grow-0.flex-shrink-0.overflow-auto
+                - $groupIDs = $totals['groupIDs'] ?? [];
+                include components/related_summary.pug
+              ul.related-team-stats.list-unstyled
+                li
+                  span Ships Lost
+                  strong= number_format((float) ($totals['totalShips'] ?? 0), 0) . ' Ships'
+                li
+                  span Points Lost
+                  strong= number_format((float) ($totals['total_points'] ?? 0), 0)
+                li(rel="tooltip" title=$priceTitle($totals['total_price_conv'] ?? []))
+                  span ISK Lost
+                  strong= number_format((float) ($totals['total_price'] ?? 0), 2)
+                li(rel="tooltip" title=$priceTitle($totals['total_dropped_conv'] ?? []))
+                  span Loot Dropped
+                  strong= number_format((float) ($totals['total_dropped'] ?? 0), 2)
+                li
+                  span Efficiency
+                  strong= number_format($totalLostISK > 0 ? (1 - ($totals['total_price'] ?? 0) / $totalLostISK) * 100 : 0, 1) . ' %'
+              .related-team-block.flex-grow-0.flex-shrink-0.mb-0.overflow-auto
+                - $list = $team['list'] ?? [];
+                include components/related_list.pug
       script(type="text/javascript").
         document.addEventListener("DOMContentLoaded", function () {
           if (typeof window.zkbPageCleanup === "function") window.zkbPageCleanup();
@@ -164,18 +102,19 @@ block content
           var panels = document.querySelectorAll(".related-team-panel");
           if (!tabs.length || !panels.length) return;
           var resizeTimer = null;
-          function alignEntityRows() {
-            var entityRows = document.querySelectorAll(".related-team-card:not(.related-team-list-card) > .related-team-entities");
-            entityRows.forEach(function (row) { row.style.minHeight = ""; });
-            if (window.innerWidth < 992) return;
-            var maxHeight = 0;
-            entityRows.forEach(function (row) { maxHeight = Math.max(maxHeight, row.offsetHeight); });
-            entityRows.forEach(function (row) { row.style.minHeight = maxHeight + "px"; });
+          function alignTeamRows() {
+            [".related-team-heading", ".related-team-entities", ".related-team-summary", ".related-team-stats"].forEach(function (selector) {
+              var rows = document.querySelectorAll(".related-team-grid .related-team-card > " + selector);
+              rows.forEach(function (row) { row.style.minHeight = ""; });
+              if (window.innerWidth < 992) return;
+              var maxHeight = 0;
+              rows.forEach(function (row) { maxHeight = Math.max(maxHeight, row.getBoundingClientRect().height); });
+              rows.forEach(function (row) { row.style.minHeight = Math.ceil(maxHeight) + "px"; });
+            });
           }
           function teamFromHash() {
-            if (window.location.hash === "#team-b") return "b";
-            if (window.location.hash === "#team-a") return "a";
-            return null;
+            var team = window.location.hash.replace(/^#team-/, "");
+            return Array.from(tabs).some(function (tab) { return tab.dataset.team === team; }) ? team : null;
           }
           function setTeam(team, updateHash) {
             tabs.forEach(function (tab) {
@@ -185,7 +124,7 @@ block content
             });
             panels.forEach(function (panel) { panel.classList.toggle("is-active", panel.dataset.team === team); });
             if (updateHash) {
-              var nextHash = team === "b" ? "#team-b" : "#team-a";
+              var nextHash = "#team-" + team;
               if (window.history && window.history.replaceState) {
                 var historyState = (typeof getSpaHistoryState === "function") ? getSpaHistoryState() : window.history.state;
                 window.history.replaceState(historyState, "", nextHash);
@@ -196,10 +135,10 @@ block content
           }
           tabs.forEach(function (tab) { tab.addEventListener("click", function () { setTeam(tab.dataset.team || "a", true); }); });
           setTeam(teamFromHash() || "a", false);
-          alignEntityRows();
+          alignTeamRows();
           function resizeHandler() {
             clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(alignEntityRows, 100);
+            resizeTimer = setTimeout(alignTeamRows, 100);
           }
           function hashChangeHandler() {
             var team = teamFromHash();
@@ -213,22 +152,23 @@ block content
             $(document).off("zkb:spa:hashchange.relatedTeam", hashChangeHandler);
           };
         });
-      - $killListTitle = 'Team B Losses';
-      - $killList = $teamB['kills'] ?? [];
-      - $isEmbedded = true;
-      if (count($killList) > 0)
-        .related-team-panel.related-team-panel-b(data-team="b")
-          include components/kill_list.pug
-      - $killListTitle = 'Team A Losses';
-      - $killList = $teamA['kills'] ?? [];
-      - $isEmbedded = true;
-      if (count($killList) > 0)
-        .related-team-panel.related-team-panel-a.is-active(data-team="a")
-          include components/kill_list.pug
+      .row.g-3.flex-lg-nowrap
+        each $team, $teamKey in $teams
+          .col-12.col-lg.position-relative.overflow-hidden.related-team-panel(class=($teamKey == 'teamA' ? 'is-active' : '') data-team=strtolower(substr($teamKey, 4)))
+            - $killListTitle = 'Team ' . substr($teamKey, 4) . ' Losses';
+            - $killList = ((array) $team)['kills'] ?? [];
+            - $isEmbedded = true;
+            if (count($killList) > 0)
+              .related-kill-list
+                include components/war_kill_list.pug
+    if ($excluded)
+      section.related-team-card.d-inline-flex.w-auto.mw-100.h-auto.mt-3.mb-3
+        h5.related-team-heading Excluded entities
+        p.small Excluded from totals. Choose a side to restore.
+        - $entities = $excluded; $currentSide = 'excluded';
+        include components/related_entities.pug
 
 block opengraph
-  - $totalLostISK = ($teamATotals['total_price'] ?? 0) + ($teamBTotals['total_price'] ?? 0);
-  - $totalSize = ($teamATotals['pilotCount'] ?? 0) + ($teamBTotals['pilotCount'] ?? 0);
   - $ogDescription = 'A battle took place in ' . ($systemName ?? '') . ' (' . ($regionName ?? '') . ') involving ' . $totalSize . ' pilots who lost a total of ' . number_format((float) $totalLostISK, 2, '.', ',') . ' isk';
   meta(name="twitter:title" content=('zKillboard.com / ' . $pageTitle))
   meta(name="twitter:image" content=(($fullsiteurl ?? '') . '/img/3D.png'))

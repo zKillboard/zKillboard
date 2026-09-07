@@ -8,50 +8,20 @@ function handler($request, $response, $args, $container) {
     $options = $args['options'] ?? '';
     $cacheTag = "www,related,related:system:$system";
     
-    // Handle query parameters like ?right=1000167 or ?left=12345
     $queryParams = $request->getQueryParams();
-    if (!empty($queryParams)) {
-        // Build the redirect URL with options parameter
-        $json_options = [];
-        if ($options) {
-            $json_options = json_decode(urldecode($options), true) ?: [];
+    $entity = $queryParams['entity'] ?? null;
+    $side = $queryParams['side'] ?? null;
+    if (is_scalar($entity) && ctype_digit((string) $entity) && $entity > 0 && is_string($side) && ($side == 'excluded' || preg_match('/^[A-Z]+$/D', $side))) {
+        $json_options = Related::normalizeOptions(json_decode(urldecode($options), true));
+        foreach ($json_options as &$entities) {
+            $entities = array_values(array_diff($entities, [$entity]));
         }
-        
-        $redirect = false;
-        if (isset($queryParams['left'])) {
-            $entity = $queryParams['left'];
-            if (!isset($json_options['A'])) {
-                $json_options['A'] = array();
-            }
-            if (isset($json_options['B']) && ($key = array_search($entity, $json_options['B'])) !== false) {
-                unset($json_options['B'][$key]);
-            }
-            if (!in_array($entity, $json_options['A'])) {
-                $json_options['A'][] = $entity;
-            }
-            $redirect = true;
-        }
-        if (isset($queryParams['right'])) {
-            $entity = $queryParams['right'];
-            if (!isset($json_options['B'])) {
-                $json_options['B'] = array();
-            }
-            if (isset($json_options['A']) && ($key = array_search($entity, $json_options['A'])) !== false) {
-                unset($json_options['A'][$key]);
-            }
-            if (!in_array($entity, $json_options['B'])) {
-                $json_options['B'][] = $entity;
-            }
-            $redirect = true;
-        }
-        
-        if ($redirect) {
-            $json = urlencode(json_encode($json_options));
-            $url = "/related/$system/$time/o/$json/";
-            return $response->withHeader('Location', $url)->withStatus(302);
-        }
+        unset($entities);
+        $json_options[$side][] = (int) $entity;
+        $json = urlencode(json_encode(Related::normalizeOptions($json_options)));
+        return $response->withHeader('Location', "/related/$system/$time/o/$json/")->withStatus(302);
     }
-    
+
     try {
         $mc = RelatedReport::generateReport($system, $time, $options, $battleID, null);
         if (@$mc['complete'] !== true) {

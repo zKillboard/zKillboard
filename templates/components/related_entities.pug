@@ -1,0 +1,12 @@
+each $data, $entity in $entities
+  - $data = (array) $data;
+  .d-flex.align-items-center.gap-2.mb-2
+    form.flex-shrink-0(method="get" action=$reportUrl data-bs-theme="dark")
+      input(type="hidden" name="entity" value=$entity)
+      select.form-select.form-select-sm.w-auto.ps-1.pe-4.text-body.bg-black(name="side" aria-label=('Team for ' . ($data['name'] ?? $entity)) onchange="this.form.requestSubmit()")
+        each $destination, $destinationKey in $teams
+          - $destinationSide = substr($destinationKey, 4);
+          option(value=$destinationSide selected=($currentSide == $destinationSide))= 'Team ' . $destinationSide
+        option(value=$nextSide) New team
+        option(value="excluded" selected=($currentSide == 'excluded')) Exclude
+    a.related-entity-name(href=('/' . ($data['type'] ?? 'corporation') . '/' . $entity . '/'))= $data['name'] ?? ''

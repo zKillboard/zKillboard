@@ -75,10 +75,10 @@ function handler($request, $response, $args, $container) {
     
     try {
         $mc = RelatedReport::generateReport($system, $time, $options, $battleID, null);
-        if (is_array($mc) && !empty($mc)) {
+        if (($mc['complete'] ?? false) === true) {
             return $container->get('view')->render($response->withHeader('Cache-Tag', $cacheTag), 'related.pug', $mc);
         } else {
-            // Empty array means report is being generated
+            // The report is still being generated.
             return $container->get('view')->render($response->withStatus(202)->withHeader('Cache-Tag', $cacheTag), 'related_wait.pug', ['showAds' => false]);
         }
     } catch (\InvalidArgumentException $ex) {

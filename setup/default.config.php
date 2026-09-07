@@ -131,14 +131,10 @@ $ccpCallback = '';
 $ccpClientID = '';
 $ccpSecret = '';
 
-$listenRedisQ = false;
-$listenRedisQID = '';
 $primePrices = true;
 
 # Save analytics
 $doAnalytics = false;
-
-$battleSize = 100;
 
 $allowReinforced = false;
 

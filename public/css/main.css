@@ -2412,7 +2412,9 @@ code {
 }
 
 .related-mobile-tab {
-	flex: 1 1 0;
+	flex: 1 0 auto;
+	min-height: 44px;
+	white-space: nowrap;
 	border: 1px solid rgba(255, 255, 255, 0.25);
 	background: rgba(255, 255, 255, 0.04);
 	color: #cfd8e2;
@@ -2513,6 +2515,24 @@ code {
 
 .related-team-grid {
 	margin-bottom: 0.75rem;
+}
+
+#related-report .related-team-panel {
+	min-width: 0;
+}
+
+@media (min-width: 768px) {
+	.related-kill-list .war-kill-card,
+	.related-kill-list .war-kill-column-header {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+@media (min-width: 992px) {
+	.page-shell:has(#related-report.related-report-wide),
+	body:has(#related-report.related-report-wide) #navibar.page-shell {
+		max-width: none;
+	}
 }
 
 .related-team-list-card {
@@ -2659,6 +2679,10 @@ code {
 	color: inherit;
 }
 
+#related-report select.form-select {
+	background-position: right 0.25rem center;
+}
+
 .related-entity-move {
 	display: inline-flex;
 	align-items: center;
@@ -2776,6 +2800,33 @@ code {
 	border-left-color: #d45a6a;
 }
 
+@media only screen and (max-width: 991px) {
+	#related-report select.form-select {
+		min-height: 44px;
+		font-size: 16px;
+	}
+
+	#related-report .related-report-actions .btn,
+	#related-report [data-bs-target="#relatedComparison"] {
+		padding: 0.65rem 0.75rem;
+	}
+
+	#related-report .related-team-panel {
+		display: none;
+	}
+
+	#related-report .related-team-panel.is-active {
+		display: block;
+	}
+}
+
+@media (max-width: 575px) {
+	#related-report .related-entity-name {
+		white-space: normal;
+		overflow-wrap: anywhere;
+	}
+}
+
 @media only screen and (max-width: 767px) {
 	.related-team-panel {
 		display: none;
@@ -2828,6 +2879,10 @@ code {
 		flex-wrap: nowrap;
 	}
 
+	#related-report .related-report-actions {
+		flex-wrap: wrap;
+	}
+
 	.related-report-actions .btn {
 		white-space: nowrap;
 	}
@@ -2844,4 +2899,3 @@ code {
 .btn-primary {
 	background-color: #1E73BE;
 }
-

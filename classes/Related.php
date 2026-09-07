@@ -6,90 +6,54 @@ class Related
 
     public static function buildSummary(&$kills, $options)
     {
-        $timer = new Timer();
-        $involvedEntities = array();
-        foreach ($kills as $killID => $kill) {
-            self::addAllInvolved($involvedEntities, $killID, $kill);
-        }
-
-        list($redTeam, $blueTeam) = self::createTeams($kills);
-
-        if (isset($options['A'])) {
-            self::assignSides($options['A'], $redTeam, $blueTeam);
-        }
-        if (isset($options['B'])) {
-            self::assignSides($options['B'], $blueTeam, $redTeam);
-        }
-
-        $redInvolved = self::getInvolved($kills, $redTeam);
-        $blueInvolved = self::getInvolved($kills, $blueTeam);
-
-        $redKills = self::getKills($kills, $redTeam);
-        $blueKills = self::getKills($kills, $blueTeam);
-
-        self::addMoreInvolved($redInvolved, $redKills);
-        self::addMoreInvolved($blueInvolved, $blueKills);
-        Info::addInfo($redInvolved);
-        Info::addInfo($blueInvolved);
-
-        $redTotals = self::getStatsKillList(array_keys($redKills));
-        $redTotals['pilotCount'] = sizeof($redInvolved);
-        $blueTotals = self::getStatsKillList(array_keys($blueKills));
-        $blueTotals['pilotCount'] = sizeof($blueInvolved);
-
-        $red = self::addInfo($redTeam);
-        asort($red);
-        $blue = self::addInfo($blueTeam);
-        asort($blue);
-
-        usort($redInvolved, 'Related::compareShips');
-        usort($blueInvolved, 'Related::compareShips');
-
-        $retValue = array(
-                'teamA' => array(
-                    'list' => $redInvolved,
-                    'kills' => $redKills,
-                    'totals' => $redTotals,
-                    'entities' => $red,
-                    ),
-                'teamB' => array(
-                    'list' => $blueInvolved,
-                    'kills' => $blueKills,
-                    'totals' => $blueTotals,
-                    'entities' => $blue,
-                    ),
-                );
-
-        return $retValue;
-    }
-
-    private static function addAllInvolved(&$entities, $killID, $kill)
-    {
-        self::$killstorage[$killID] = $kill;
-
-        $victim = $kill['involved'][0];
-        self::addInvolved($entities, $victim);
-        $involved = $kill['involved'];
-        array_shift($involved);
-        if (is_array($involved)) {
-            foreach ($involved as $entry) {
-                self::addInvolved($entities, $entry);
+        self::$killstorage = $kills;
+        $options = self::normalizeOptions($options);
+        list($teams['A'], $teams['B']) = self::createTeams($kills);
+        $available = array_unique(array_merge($teams['A'], $teams['B']));
+        foreach ($options as $side => $entities) {
+            if ($side != 'excluded' && !isset($teams[$side])) $teams[$side] = [];
+            foreach ($teams as &$team) {
+                $team = array_diff($team, $entities);
+            }
+            unset($team);
+            if ($side != 'excluded') {
+                $teams[$side] = array_unique(array_merge($teams[$side], array_intersect($entities, $available)));
             }
         }
+        ksort($teams, SORT_NATURAL);
+
+        $summary = [];
+        foreach ($teams as $side => $team) {
+            if (!in_array($side, ['A', 'B']) && !$team) continue;
+            $involved = self::getInvolved($kills, $team);
+            $losses = self::getKills($kills, $team);
+            self::addMoreInvolved($involved, $losses);
+            Info::addInfo($involved);
+            $totals = self::getStatsKillList(array_keys($losses), $team);
+            $totals['pilotCount'] = count($involved);
+            $entities = self::addInfo($team);
+            asort($entities);
+            usort($involved, 'Related::compareShips');
+            $summary['team' . $side] = ['list' => $involved, 'kills' => $losses, 'totals' => $totals, 'entities' => $entities];
+        }
+        $summary['excluded'] = self::addInfo(array_intersect($options['excluded'], $available));
+        return $summary;
     }
 
-    private static function addInvolved(&$entities, &$entry)
+    public static function normalizeOptions($options)
     {
-        $entity = isset($entry['allianceID']) && $entry['allianceID'] != 0 ? $entry['allianceID'] : @$entry['corporationID'];
-        if ($entity == 0) {
-            return;
+        $normalized = ['A' => [], 'B' => []];
+        foreach (is_array($options) ? $options : [] as $side => $entities) {
+            if (($side != 'excluded' && !preg_match('/^[A-Z]+$/D', (string) $side)) || !is_array($entities)) continue;
+            $normalized[$side] = array_values(array_unique(array_filter($entities, function ($id) {
+                return (is_int($id) || is_string($id)) && ctype_digit((string) $id) && $id > 0;
+            })));
         }
-        if (!isset($entities["$entity"])) {
-            $entities["$entity"] = array();
-        }
-        if (!in_array(@$entry['characterID'], $entities["$entity"])) {
-            $entities["$entity"][] = @$entry['characterID'];
-        }
+        $excluded = $normalized['excluded'] ?? [];
+        unset($normalized['excluded']);
+        ksort($normalized, SORT_NATURAL);
+        $normalized['excluded'] = $excluded;
+        return $normalized;
     }
 
     private static function getInvolved(&$kills, $team)
@@ -102,13 +66,7 @@ class Related
             array_shift($attackers);
             if (is_array($attackers)) {
                 foreach ($attackers as $entry) {
-                    $add = false;
-                    if (@$entry['allianceID'] != 0 && in_array(@$entry['allianceID'], $team)) {
-                        $add = true;
-                    }
-                    if (@$entry['corporationID'] != 0 && in_array(@$entry['corporationID'], $team)) {
-                        $add = true;
-                    }
+                    $add = in_array(self::determineAffiliationId($entry), $team);
 
                     if ($add) {
                         $key = @$entry['characterID'].':'.@$entry['corporationID'].':'.@$entry['allianceID'].':'.@$entry['shipTypeID'];
@@ -144,7 +102,7 @@ class Related
         $teamsKills = array();
         foreach ($kills as $killID => $kill) {
             $victim = $kill['victim'];
-            $add = in_array((int) @$victim['allianceID'], $team) || in_array($victim['corporationID'], $team);
+            $add = in_array(self::determineAffiliationId($victim), $team);
 
             if ($add) {
                 $teamsKills[$killID] = $kill;
@@ -154,7 +112,7 @@ class Related
         return $teamsKills;
     }
 
-    private static function getStatsKillList($killIDs)
+    private static function getStatsKillList($killIDs, $team)
     {
         $totalPrice = 0;
         $totalDropped = 0;
@@ -181,6 +139,7 @@ class Related
             $groupIDs[$groupID]['points'] += $kill['zkb']['points'];
             ++$totalShips;
             foreach ($kill['involved'] as $involved) {
+                if (!in_array(self::determineAffiliationId($involved), $team)) continue;
                 $charID = @$involved['characterID'];
                 $groupID = @$involved['groupID'];
                 if ($charID == 0 || $groupID == 0) continue;
@@ -204,7 +163,7 @@ class Related
                 );
     }
 
-    private static function addInfo(&$team)
+    private static function addInfo($team)
     {
         $retValue = array();
         foreach ($team as $entity) {
@@ -285,7 +244,7 @@ class Related
     private static function determineAffiliationId($entity)
     {
         foreach (array('allianceID', 'corporationID') as $possibleId) {
-            if (isset($entity[$possibleId])) {
+            if (!empty($entity[$possibleId])) {
                 return $entity[$possibleId];
             }
         }
@@ -302,7 +261,7 @@ class Related
     private static function determineEntityId($entity)
     {
         foreach (array('characterID', 'corporationID', 'allianceID') as $possibleId) {
-            if (isset($entity[$possibleId])) {
+            if (!empty($entity[$possibleId])) {
                 return $entity[$possibleId];
             }
         }
@@ -396,18 +355,6 @@ class Related
         }
 
         return $score;
-    }
-
-    private static function assignSides($assignees, &$teamA, &$teamB)
-    {
-        foreach ($assignees as $id) {
-            if (!isset($teamA[$id])) {
-                $teamA[] = $id;
-            }
-            if (($key = array_search($id, $teamB)) !== false) {
-                unset($teamB[$key]);
-            }
-        }
     }
 
     public static $masses = [];
