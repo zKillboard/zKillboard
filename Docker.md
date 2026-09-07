@@ -235,6 +235,8 @@ docker run -d --restart unless-stopped --network host -v "$(pwd):/app" -v /app/v
 
 Use a bind mount so file edits on the host are reflected immediately in the container:
 
+Set `$pugCache = false;` in `config.php` to see template edits immediately.
+
 ```bash
 # php-fpm mode (default)
 docker run -d --restart unless-stopped --network host -v "$(pwd):/app" -v /app/vendor --name zkill-www \
