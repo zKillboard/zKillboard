@@ -26,6 +26,8 @@ block content
       small Battle Report: 
       = ($systemName ?? '') . ' (' . ($regionName ?? '') . ') / ' . ($time ?? '')
     .related-report-links
+      a(href=('https://br.evetools.org/related/' . ($solarSystemID ?? 0) . '/' . ($unixtime ?? 0) . '/') target="_blank" rel="noopener noreferrer")
+        i br.evetools.org
       a(href=('https://warbeacon.net/br/related/' . ($solarSystemID ?? 0) . '/' . ($relatedTime ?? 0) . '/') target="_blank" rel="noopener noreferrer")
         i warbeacon.net
       a(target="_blank" href="https://riftforeve.online/" rel="noopener noreferrer")
