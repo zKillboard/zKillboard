@@ -39,6 +39,7 @@ function handler($request, $response, $args, $container) {
         $array = $mdb->findDoc('statistics', ['type' => $type, 'id' => $id]);
         unset($array['_id']);
         unset($array['trophies']);
+        if (empty($array['activityTags'])) unset($array['activityTags']);
 
         $array['activepvp'] = (object) Stats::getActivePvpStats([$type => [$id]]);
         $array['info'] = $mdb->findDoc('information', ['type' => $type, 'id' => $id]);

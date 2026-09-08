@@ -409,7 +409,10 @@ function materializeShips($completeKey, $date, $collection, $field, $firstKillID
         ['$merge' => [
             'into' => 'statistics',
             'on' => ['type', 'id'],
-            'whenMatched' => 'merge',
+            'whenMatched' => $includeActivityTags ? [
+                ['$replaceRoot' => ['newRoot' => ['$mergeObjects' => ['$$ROOT', '$$new']]]],
+                ['$set' => ['activityTags' => ['$ifNull' => ['$$new.activityTags', '$$REMOVE']]]],
+            ] : 'merge',
             'whenNotMatched' => 'insert',
         ]],
     ]);
