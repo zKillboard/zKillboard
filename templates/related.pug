@@ -40,23 +40,22 @@ block content
         img(src="/img/killmail-app/logo.png" style="margin-right: 6px; height: 20px; width: 20px;" alt="killmail.app" loading="lazy" decoding="async")
         | killmail.app
     .mb-3
-      .d-flex.flex-wrap.align-items-center.gap-2.mb-2
-        strong= 'Systems (' . count((array) ($selectedSystems ?? [])) . '/10):'
-        each $name, $id in ($selectedSystems ?? [])
-          if (count((array) ($selectedSystems ?? [])) == 1)
-            span.badge.text-bg-secondary= $name
-          else
-            a.badge.text-bg-secondary.text-decoration-none(rel="nofollow" href=($reportUrl . '?removeSystem=' . $id) title=('Remove ' . $name))= $name . ' ×'
+      if (count((array) ($selectedSystems ?? [])) > 1 || !empty($adjacentSystems))
+        .d-flex.flex-wrap.align-items-center.gap-2.mb-2
+          strong= 'Systems (' . count((array) ($selectedSystems ?? [])) . '/10):'
+          each $name, $id in ($selectedSystems ?? [])
+            if (count((array) ($selectedSystems ?? [])) == 1)
+              span.badge.text-bg-secondary= $name
+            else
+              a.badge.text-bg-secondary.text-decoration-none(rel="nofollow" href=($reportUrl . '?removeSystem=' . $id) title=('Remove ' . $name))= $name . ' ×'
       .row.g-2.align-items-center
-        if (count((array) ($selectedSystems ?? [])) < 10)
+        if (count((array) ($selectedSystems ?? [])) < 10 && !empty($adjacentSystems))
           form.col-12.col-lg-auto.d-flex.flex-wrap.align-items-center.gap-2(method="get" action=$reportUrl data-bs-theme="dark")
             label.form-label.mb-0(for="related-add-system") Add adjacent system
-            select#related-add-system.form-select.form-select-sm.w-auto.mw-100.ps-1.pe-4.text-body.bg-black(name="addSystem" disabled=empty($adjacentSystems))
-              if (empty($adjacentSystems))
-                option No adjacent systems available
+            select#related-add-system.form-select.form-select-sm.w-auto.mw-100.ps-1.pe-4.text-body.bg-black(name="addSystem")
               each $name, $id in ($adjacentSystems ?? [])
                 option(value=$id)= $name
-            button.btn.btn-sm.btn-success.active.py-2.py-lg-1(type="submit" disabled=empty($adjacentSystems)) Add system
+            button.btn.btn-sm.btn-success.active.py-2.py-lg-1(type="submit") Add system
         form.col-12.col-lg-auto.d-flex.flex-wrap.align-items-center.gap-2(method="get" action=$reportUrl data-bs-theme="dark")
           .d-flex.align-items-center.gap-2
             label.form-label.mb-0(for="related-hours-before") Earlier
@@ -72,8 +71,6 @@ block content
         .col-12.col-lg-auto.ms-lg-auto.d-flex.flex-wrap.justify-content-end.align-items-center.gap-2
           a.btn.btn-sm.btn-secondary.py-2.py-lg-1(href=('/related/' . ($solarSystemID ?? 0) . '/' . ($relatedTime ?? 0) . '/')) Reset Report
           a.btn.btn-sm.btn-success.active.py-2.py-lg-1(rel="nofollow" href=('/brsave/?sID=' . ($solarSystemID ?? 0) . '&dttm=' . ($relatedTime ?? 0) . '&options=' . rawurlencode($options ?? '{}'))) Save Battle Report
-      if (count((array) ($selectedSystems ?? [])) < 10 && empty($adjacentSystems))
-        p.small.text-warning.mb-0 No additional stargate connections were found in the local map data.
     if (!$totalSize && !$totalShips && !$excluded)
       em= 'There was no battle in the selected systems during ' . $reportTime . '.'
     else
