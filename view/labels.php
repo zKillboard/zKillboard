@@ -63,7 +63,7 @@ function handler($request, $response, $args, $container)
 		'#:1' => 'One attacker, excluding killmails classified as solo PvP.',
 		'pvp' => 'Player-versus-player combat that is not classified as padding.',
 		'npc' => 'A kill attributed to NPC activity rather than PvP.',
-		'awox' => 'The attacker and victim share a corporation or alliance affiliation.',
+		'awox' => 'The attacker and victim share a corporation, or are enlisted in the same faction.',
 		'ganked' => 'A killmail classified as a high-security-space gank.',
 		'padding' => 'A killmail identified as likely killboard padding.',
 		'capital' => 'The victim ship belongs to a capital market group.',
