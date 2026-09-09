@@ -173,6 +173,7 @@
         if (!state) return;
 
         if (state.openTopFitTimer != null) clearTimeout(state.openTopFitTimer);
+        window.zkbCleanupFitStats();
         if (state.fitShipForm) state.fitShipForm.removeEventListener('submit', fitShipFormSubmit);
         document.removeEventListener('DOMContentLoaded', zkbInitFits);
         document.removeEventListener('click', fitDetailClick);
@@ -204,6 +205,7 @@
         fitShipForm.addEventListener('submit', fitShipFormSubmit);
         document.addEventListener('click', fitDetailClick);
         document.addEventListener('click', copyEftClick);
+        window.zkbInitFitStats();
         if (fitShipForm.getAttribute('data-zkb-open-top-fit') === 'true') fitState.openTopFitTimer = setTimeout(openTopFit, 0);
 
         window.zkbPageCleanup = cleanupFits;

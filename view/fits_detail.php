@@ -71,6 +71,16 @@ function handler($request, $response, $args, $container)
             'eftText' => $eftText,
             'hideFittingWheelActions' => true,
             'sampleLossID' => $killID,
+            'statsFit' => (int) Info::getInfoField('groupID', $victim['groupID'], 'categoryID') == 6 ? [
+                'ship_type_id' => $shipTypeID,
+                'items' => array_map(function ($item) {
+                    return [
+                        'type_id' => (int) $item['item_type_id'],
+                        'flag' => (int) $item['flag'],
+                        'quantity' => (int) ($item['quantity_dropped'] ?? 0) + (int) ($item['quantity_destroyed'] ?? 0),
+                    ];
+                }, $esimail['victim']['items']),
+            ] : null,
         ]
     );
 }

@@ -1,0 +1,10 @@
+if (!empty($statsFit))
+  .mt-3(id=($fitKey . '-stats-panel') hidden=!empty($hideStatsButton) data-zkb-fit-stats=json_encode($statsFit ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT))
+    if (empty($hideStatsButton))
+      button.btn.btn-sm.btn-secondary(type="button" data-zkb-calculate-fit aria-controls=($fitKey . '-stats') aria-expanded="false")
+        span Fit Stats
+        i.fas.fa-chevron-down.ms-1(aria-hidden="true")
+    div.mt-2(hidden id=($fitKey . '-stats') data-zkb-fit-stats-output role="status" aria-live="polite")
+    div(hidden data-zkb-fit-stats-notice)
+      p.small.text-muted.mt-2.mb-0 Simulation: all skills V, modules active where supported, no heat, implants, boosts, or system effects. Uses recorded charges; drones remain in bay. EHP assumes equal damage types. These are not the victim's actual combat stats.
+      a.small(href="https://github.com/EVEShipFit/dogma-engine" target="_blank" rel="noopener noreferrer") Calculated with EVEShip.fit

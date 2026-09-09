@@ -125,6 +125,12 @@ block content
           br.d-lg-none
           .col-lg-5.p-0
             include components/victim_info.pug
+        if (!empty($extraData['statsFit']))
+          .mb-3
+            - $fitKey = 'kill-' . ($infoData['killID'] ?? 0);
+            - $statsFit = $extraData['statsFit'] ?? [];
+            - $hideStatsButton = true;
+            include components/fit_stats.pug
         .row.gx-0
           if (($extraData['items'] ?? null) == 'asyncload')
             #asyncitemlist
@@ -289,6 +295,7 @@ block opengraph
   meta(property="og:image" content=('https://images.evetech.net/types/' . ($victimData['shipTypeID'] ?? 0) . '/icon'))
 
 block script
+  script(defer src=('/js/fit-stats.js?v=' . ($version ?? '')))
   script.
     window.killID = '#{($infoData['killID'] ?? 0)}';
     window.zkbDetailActiveKillID = window.killID;
@@ -322,9 +329,11 @@ block script
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+      window.zkbInitFitStats();
       resizeMobileFittingWheel();
       window.addEventListener('resize', resizeMobileFittingWheel, { passive: true });
       window.zkbPageCleanup = function () {
+        window.zkbCleanupFitStats();
         window.removeEventListener('resize', resizeMobileFittingWheel);
         window.zkbDetailActiveKillID = undefined;
       };

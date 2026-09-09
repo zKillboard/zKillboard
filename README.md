@@ -3,6 +3,28 @@ zkillboard.com is a killboard for the Massively Multiplayer Online Role Playing 
 
 Fun fact: zKillboard.com was originally called killwhore.com until it was discovered that the EVE Online forums censored the word whore.
 
+## Setup
+
+See [Docker.md](Docker.md) for the application and service setup.
+
+The EVEShip.fit engine, bindings, license notices, and verified `data.json.gz`
+snapshot are included in the repository and Docker images. Each web/static server
+uses its deployed copy; no cron job or shared storage is required for Fit Stats.
+
+Updates are manual. From the repository root with Node.js 24 installed:
+
+```bash
+node setup/updateFitData.mjs
+```
+
+The updater checks the latest public release, downloads changed data, and runs the
+fitting tests before atomically replacing the snapshot. Pass a release argument to
+select a specific upstream release. Review and commit the changed
+`public/vendor/eveshipfit/data.json.gz`, then deploy it to the web/static servers
+(or rebuild the web image). Failed downloads or tests retain the current snapshot.
+The snapshot records its data release.
+See [Docker.md](Docker.md#eveshipfit-fit-stats) for setup and source details.
+
 ## Contact
 If you're seeking assistance, please join the [zKillboard Discord](https://discord.gg/sV2kkwg8UD) and ask in the `#zkillboard-com` channel.
 

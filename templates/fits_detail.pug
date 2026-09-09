@@ -30,3 +30,4 @@
       button.btn.btn-sm.btn-secondary.position-absolute.top-0.end-0.mt-1.me-4(type="button" title="Copy to Clipboard" aria-label=('Copy ' . $shipName . ' EFT fit to clipboard') aria-controls=$eftID data-zkb-copy-eft)
         i.fas.fa-copy(aria-hidden="true")
       textarea.form-control.fitting.pe-5(id=$eftID data-zkb-select-on-click rows="18" readonly="readonly" style="padding-right: 4rem !important;")= $eftText ?? ''
+    include components/fit_stats.pug

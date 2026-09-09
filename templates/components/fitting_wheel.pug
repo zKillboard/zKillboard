@@ -78,6 +78,10 @@ div(id=($fittingWheelIDPrefix . 'Fitting_Panel') style="position: relative; heig
       include image_ship.pug
   div(id=($fittingWheelIDPrefix . 'badges') style="position: absolute; right: 3px; top: 350px; z-index: 5;")
   if (empty($hideFittingWheelActions))
+    if (!empty($extraData['statsFit']))
+      button.btn.btn-sm.btn-secondary.position-absolute.bottom-0.end-0.me-3(type="button" data-zkb-calculate-fit=('kill-' . ($crest['killID'] ?? 0) . '-stats-panel') aria-controls=('kill-' . ($crest['killID'] ?? 0) . '-stats') aria-expanded="false")
+        span Fit Stats
+        i.fas.fa-chevron-down.ms-1(aria-hidden="true")
     div(id=($fittingWheelIDPrefix . 'eveworkbench') style="position: absolute; left: 0px; top: 340px; z-index: 5;")
       span
         a.green(target="_blank" rel="noopener noreferrer" href=('/kill/' . ($crest['killID'] ?? 0) . '/redirect/esi/')) Verified

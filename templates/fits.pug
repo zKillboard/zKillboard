@@ -136,4 +136,5 @@ block content
     #fit-action-status.visually-hidden(role="status" aria-live="polite" aria-atomic="true")
 
 block script
+  script(defer src=('/js/fit-stats.js?v=' . ($version ?? '')))
   script(defer type="text/javascript" src=('/js/fits.js?v=' . ($version ?? '')))
