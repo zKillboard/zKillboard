@@ -1238,6 +1238,9 @@ echo "Done\n";
 echo "Creating index : 'key' => 1 ... ";
 $sde_mapStargates->createIndex(['key' => 1], ['sparse' => true, 'unique' => true]);
 echo "Done\n";
+echo "Creating index : 'solarSystemID' => 1 ... ";
+$sde_mapStargates->createIndex(['solarSystemID' => 1]);
+echo "Done\n";
 
 // sde_mapStars
 echo "\nCreating collection sde_mapStars ... ";

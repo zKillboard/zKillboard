@@ -28,6 +28,10 @@ class RelatedReport {
         }
 
         $json_options = Related::normalizeOptions(json_decode($options, true));
+        $systems = Related::getSystems($systemID, $json_options['systems'] ?? []);
+        if (!in_array($systemID, $systems['selected'])) $systemID = $systems['selected'][0];
+        if (count($systems['selected']) > 1) $json_options['systems'] = $systems['selected'];
+        else unset($json_options['systems']);
 
         $systemInfo = $mdb->findDoc('information', ['cacheTime' => 3600, 'type' => 'solarSystemID', 'id' => $systemID]);
         $systemName = $systemInfo['name'] ?? 'Unknown System';
@@ -36,16 +40,15 @@ class RelatedReport {
         $time = date('Y-m-d H:i', $unixTime);
 
         $exHours = 1;
-        if (((int) $exHours) < 1 || ((int) $exHours > 12)) {
-            $exHours = 1;
-        }
+        $startTime = gmdate('Y-m-d H:i', $unixTime - 3600 * ($json_options['hoursBefore'] ?? 1));
+        $endTime = gmdate('Y-m-d H:i', $unixTime + 3600 * ($json_options['hoursAfter'] ?? 2));
 
         $sleeps = 0;
         $key = 'br:'.md5("brq:$systemID:$relatedTime:$exHours:".json_encode($json_options).($battleID != null ? ":$battleID" : ''));
         $queue = new MongoQueue($mdb, 'queueRelatedSet', true);
         $summary = $redis->get($key);
         while (strlen($summary) == 0) {
-            $parameters = array('solarSystemID' => $systemID, 'relatedTime' => $relatedTime, 'exHours' => $exHours, 'nolimit' => true, 'options' => $json_options, 'key' => $key);
+            $parameters = array('solarSystemID' => $systems['selected'], 'startTime' => $startTime . ' UTC', 'endTime' => $endTime . ' UTC', 'nolimit' => true, 'options' => $json_options, 'key' => $key);
             $serial = serialize($parameters);
             $redis->setex("$key:params", 3600, $serial);
             $queuedKey = "zkb:queueRelatedSet:queued:$key";
@@ -63,6 +66,12 @@ class RelatedReport {
         }
 
         $summary = unserialize($summary);
+        $selectedSystems = [];
+        $adjacentSystems = [];
+        foreach ($systems['selected'] as $id) $selectedSystems[$id] = Info::getInfoField('solarSystemID', $id, 'name') ?? "System $id";
+        asort($selectedSystems, SORT_NATURAL | SORT_FLAG_CASE);
+        foreach ($systems['adjacent'] as $id) $adjacentSystems[$id] = Info::getInfoField('solarSystemID', $id, 'name') ?? "System $id";
+        asort($adjacentSystems);
         self::normalizeEntityLinks($summary);
         $mc = array('summary' => $summary, 'systemID' => $systemID, 'systemName' => $systemName, 'regionName' => $regionName, 'time' => $time, 'exHours' => $exHours, 'solarSystemID' => $systemID, 'relatedTime' => $relatedTime, 'options' => json_encode($json_options), 'unixtime' => $unixTime);
 
@@ -76,6 +85,10 @@ class RelatedReport {
             $mdb->set('battles', ['battleID' => $battleID], $totals);
         }
 		$mc['complete'] = true;
+        $mc['selectedSystems'] = $selectedSystems;
+        $mc['adjacentSystems'] = $adjacentSystems;
+        $mc['startTime'] = $startTime;
+        $mc['endTime'] = $endTime;
 
         return $mc;
     }

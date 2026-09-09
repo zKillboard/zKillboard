@@ -11,6 +11,7 @@ class Related
         list($teams['A'], $teams['B']) = self::createTeams($kills);
         $available = array_unique(array_merge($teams['A'], $teams['B']));
         foreach ($options as $side => $entities) {
+            if (in_array($side, ['systems', 'hoursBefore', 'hoursAfter'])) continue;
             if ($side != 'excluded' && !isset($teams[$side])) $teams[$side] = [];
             foreach ($teams as &$team) {
                 $team = array_diff($team, $entities);
@@ -53,7 +54,37 @@ class Related
         unset($normalized['excluded']);
         ksort($normalized, SORT_NATURAL);
         $normalized['excluded'] = $excluded;
+        if (isset($options['systems']) && is_array($options['systems'])) {
+            $normalized['systems'] = array_slice(array_values(array_unique(array_map('intval', array_filter($options['systems'], function ($id) {
+                return (is_int($id) || is_string($id)) && ctype_digit((string) $id) && $id > 0;
+            })))), 0, 10);
+        }
+        foreach (['hoursBefore' => 1, 'hoursAfter' => 2] as $key => $default) {
+            $hours = $options[$key] ?? null;
+            if ((is_int($hours) || is_string($hours)) && ctype_digit((string) $hours)) {
+                $hours = max(1, min(12, (int) $hours));
+                if ($hours != $default) $normalized[$key] = $hours;
+            }
+        }
         return $normalized;
+    }
+
+    public static function getSystems($systemID, $requested)
+    {
+        global $mdb;
+
+        $selected = self::normalizeOptions(['systems' => $requested])['systems'];
+        if (!$selected) $selected = [(int) $systemID];
+        $adjacent = [];
+        for ($i = 0; $i < count($selected); ++$i) {
+            $gates = $mdb->find('sde_mapStargates', ['cacheTime' => 3600, 'solarSystemID' => $selected[$i]]);
+            foreach ($gates as $gate) {
+                $destination = (int) ($gate['destination']['solarSystemID'] ?? 0);
+                if ($destination > 0) $adjacent[$destination] = $destination;
+            }
+        }
+        sort($selected, SORT_NUMERIC);
+        return ['selected' => $selected, 'adjacent' => array_values(array_diff($adjacent, $selected))];
     }
 
     private static function getInvolved(&$kills, $team)

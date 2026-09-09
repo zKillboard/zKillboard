@@ -9,7 +9,10 @@ block vars
   - $nextSide = 'C'; while (isset($teams['team' . $nextSide])) { ++$nextSide; }
   - $reportUrl = '/related/' . ($solarSystemID ?? 0) . '/' . ($relatedTime ?? 0) . '/o/' . rawurlencode($options ?? '{}') . '/';
   - $priceTitle = function ($prices) { $prices = is_object($prices ?? null) ? (array) $prices : ($prices ?? []); return '$' . number_format((float) ($prices['usd'] ?? 0), 2, '.', ',') . ' / ' . number_format((float) ($prices['eur'] ?? 0), 2, '.', ',') . ' euro / GBP ' . number_format((float) ($prices['gbp'] ?? 0), 2, '.', ','); };
-  - $pageTitle = 'Related Kills | ' . ($systemName ?? '') . ' | ' . ($time ?? '');
+  - $reportSystemNames = implode(', ', (array) ($selectedSystems ?? [$systemName ?? '']));
+  - $timeOptions = json_decode($options ?? '{}', true) ?? [];
+  - $reportTime = ($startTime ?? '') . ' – ' . ($endTime ?? '') . ' UTC';
+  - $pageTitle = 'Related Kills | ' . $reportSystemNames . ' | ' . $reportTime;
 
 block title
   include components/title.pug
@@ -24,7 +27,7 @@ block content
   #related-report.related-report-page(class=(count($teams) > 2 ? 'related-report-wide' : ''))
     h2.related-report-title
       small Battle Report: 
-      = ($systemName ?? '') . ' (' . ($regionName ?? '') . ') / ' . ($time ?? '')
+      = $reportSystemNames . (count((array) ($selectedSystems ?? [])) <= 1 ? ' (' . ($regionName ?? '') . ')' : '') . ' / ' . $reportTime
     .related-report-links
       a(href=('https://br.evetools.org/related/' . ($solarSystemID ?? 0) . '/' . ($unixtime ?? 0) . '/') target="_blank" rel="noopener noreferrer")
         i br.evetools.org
@@ -36,11 +39,43 @@ block content
       a(href=('https://killmail.app/related/' . ($solarSystemID ?? 0) . '/' . ($relatedTime ?? 0) . '/') target="_blank" rel="noopener noreferrer")
         img(src="/img/killmail-app/logo.png" style="margin-right: 6px; height: 20px; width: 20px;" alt="killmail.app" loading="lazy" decoding="async")
         | killmail.app
-    .related-report-actions
-      a.btn.btn-sm.btn-success.active(href=('/related/' . ($solarSystemID ?? 0) . '/' . ($relatedTime ?? 0) . '/')) Reset Report
-      a.btn.btn-sm.btn-success.active(rel="nofollow" href=('/brsave/?sID=' . ($solarSystemID ?? 0) . '&dttm=' . ($relatedTime ?? 0) . '&options=' . rawurlencode($options ?? '{}'))) Save Battle Report
+    .mb-3
+      .d-flex.flex-wrap.align-items-center.gap-2.mb-2
+        strong= 'Systems (' . count((array) ($selectedSystems ?? [])) . '/10):'
+        each $name, $id in ($selectedSystems ?? [])
+          if (count((array) ($selectedSystems ?? [])) == 1)
+            span.badge.text-bg-secondary= $name
+          else
+            a.badge.text-bg-secondary.text-decoration-none(rel="nofollow" href=($reportUrl . '?removeSystem=' . $id) title=('Remove ' . $name))= $name . ' ×'
+      .row.g-2.align-items-center
+        if (count((array) ($selectedSystems ?? [])) < 10)
+          form.col-12.col-lg-auto.d-flex.flex-wrap.align-items-center.gap-2(method="get" action=$reportUrl data-bs-theme="dark")
+            label.form-label.mb-0(for="related-add-system") Add adjacent system
+            select#related-add-system.form-select.form-select-sm.w-auto.mw-100.ps-1.pe-4.text-body.bg-black(name="addSystem" disabled=empty($adjacentSystems))
+              if (empty($adjacentSystems))
+                option No adjacent systems available
+              each $name, $id in ($adjacentSystems ?? [])
+                option(value=$id)= $name
+            button.btn.btn-sm.btn-success.active.py-2.py-lg-1(type="submit" disabled=empty($adjacentSystems)) Add system
+        form.col-12.col-lg-auto.d-flex.flex-wrap.align-items-center.gap-2(method="get" action=$reportUrl data-bs-theme="dark")
+          .d-flex.align-items-center.gap-2
+            label.form-label.mb-0(for="related-hours-before") Earlier
+            select#related-hours-before.form-select.form-select-sm.w-auto.ps-1.pe-4.text-body.bg-black(name="hoursBefore")
+              each $hours in range(1, 12)
+                option(value=$hours selected=($hours == ($timeOptions['hoursBefore'] ?? 1)))= $hours . ($hours == 1 ? ' hour' : ' hours')
+          .d-flex.align-items-center.gap-2
+            label.form-label.mb-0(for="related-hours-after") Later
+            select#related-hours-after.form-select.form-select-sm.w-auto.ps-1.pe-4.text-body.bg-black(name="hoursAfter")
+              each $hours in range(1, 12)
+                option(value=$hours selected=($hours == ($timeOptions['hoursAfter'] ?? 2)))= $hours . ($hours == 1 ? ' hour' : ' hours')
+          button.btn.btn-sm.btn-success.active.py-2.py-lg-1(type="submit") Update time
+        .col-12.col-lg-auto.ms-lg-auto.d-flex.flex-wrap.justify-content-end.align-items-center.gap-2
+          a.btn.btn-sm.btn-secondary.py-2.py-lg-1(href=('/related/' . ($solarSystemID ?? 0) . '/' . ($relatedTime ?? 0) . '/')) Reset Report
+          a.btn.btn-sm.btn-success.active.py-2.py-lg-1(rel="nofollow" href=('/brsave/?sID=' . ($solarSystemID ?? 0) . '&dttm=' . ($relatedTime ?? 0) . '&options=' . rawurlencode($options ?? '{}'))) Save Battle Report
+      if (count((array) ($selectedSystems ?? [])) < 10 && empty($adjacentSystems))
+        p.small.text-warning.mb-0 No additional stargate connections were found in the local map data.
     if (!$totalSize && !$totalShips && !$excluded)
-      em= 'There was no battle in ' . ($systemName ?? '') . ' (' . ($regionName ?? '') . ') at ' . ($time ?? '') . '.'
+      em= 'There was no battle in the selected systems during ' . $reportTime . '.'
     else
       button.btn.btn-outline-secondary.d-lg-none.w-100.mb-2(type="button" data-bs-toggle="collapse" data-bs-target="#relatedComparison" aria-expanded="false" aria-controls="relatedComparison") Compare all sides
       #relatedComparison.collapse.d-lg-block
