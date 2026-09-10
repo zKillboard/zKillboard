@@ -24,7 +24,7 @@ function initRankTableServerSorting() {
 
             header.css('cursor', 'pointer');
             header.find('.sort-pip').remove();
-            header.append(`<span class='sort-pip text-muted' style='font-size: 9px; margin-left: 4px;'>${pip}</span>`);
+            header.append($(document.createElement('span')).addClass('sort-pip text-muted').css({'font-size': '9px', 'margin-left': '4px'}).text(pip));
             header.attr('title', `Sort by ${direction.toUpperCase()}`);
             header.off('click.zkb-ranks').on('click.zkb-ranks', function() {
                 navigateTo(buildURL(ranksType, ranksKL, ranksGroup, ranksEpoch, 1, sortKey, direction));

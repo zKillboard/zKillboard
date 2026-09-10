@@ -62,7 +62,11 @@
         if (!hash || !body || body.getAttribute('data-zkb-loaded') === 'true' || body.getAttribute('data-zkb-loading') === 'true') return;
 
         body.setAttribute('data-zkb-loading', 'true');
-        body.innerHTML = '<div class="text-muted" role="status">Loading fit...</div>';
+        const notice = document.createElement('div');
+        notice.className = 'text-muted';
+        notice.setAttribute('role', 'status');
+        notice.textContent = 'Loading fit...';
+        body.replaceChildren(notice);
         fetch('/fits/detail/' + encodeURIComponent(hash) + '/')
             .then(function(response) {
                 if (!response.ok) throw new Error('Unable to load fit.');
@@ -74,7 +78,11 @@
                 body.removeAttribute('data-zkb-loading');
             })
             .catch(function() {
-                body.innerHTML = '<div class="alert alert-warning mb-0" role="alert">Unable to load this fit.</div>';
+                const notice = document.createElement('div');
+                notice.className = 'alert alert-warning mb-0';
+                notice.setAttribute('role', 'alert');
+                notice.textContent = 'Unable to load this fit.';
+                body.replaceChildren(notice);
                 body.removeAttribute('data-zkb-loading');
             });
     }

@@ -163,22 +163,18 @@ function renderServers(servers) {
     const container = document.getElementById('ztop-servers');
     if (!container) return;
     if (!servers || servers.length === 0) {
-        container.innerHTML = '';
+        container.replaceChildren();
         return;
     }
-    container.innerHTML = '';
+    container.replaceChildren();
 
     const header = document.createElement('div');
     header.className = 'ztop-server-header';
-    header.innerHTML = `
-        <div>R</div>
-        <div>Host</div>
-        <div>CPU</div>
-        <div>Load</div>
-        <div>Memory</div>
-        <div>Redis</div>
-        <div>MongoDB</div>
-    `;
+    ['R', 'Host', 'CPU', 'Load', 'Memory', 'Redis', 'MongoDB'].forEach((label) => {
+        const cell = document.createElement('div');
+        cell.textContent = label;
+        header.appendChild(cell);
+    });
     container.appendChild(header);
 
     servers.forEach((server) => {
@@ -211,30 +207,25 @@ function renderServers(servers) {
 
         const row = document.createElement('div');
         row.className = 'ztop-server-row';
-        row.innerHTML = `
-            <div class="ztop-server-role">${parsed ? parsed.role : ''}</div>
-            <div class="ztop-server-host">${server.host || '--'}</div>
-            <div class="ztop-server-metric-graph">
-                <canvas class="ztop-server-sparkline" data-series="cpu"></canvas>
-                <span class="ztop-server-metric">${parsed ? parsed.cpu : '--'}</span>
-            </div>
-            <div class="ztop-server-metric-graph">
-                <canvas class="ztop-server-sparkline" data-series="load"></canvas>
-                <span class="ztop-server-metric">${parsed ? parsed.load : '--'}</span>
-            </div>
-            <div class="ztop-server-metric-graph">
-                <canvas class="ztop-server-sparkline" data-series="mem"></canvas>
-                <span class="ztop-server-metric">${parsed ? parsed.memory : '--'}</span>
-            </div>
-            <div class="ztop-server-metric-graph">
-                <canvas class="ztop-server-sparkline" data-series="redis"></canvas>
-                <span class="ztop-server-metric">${parsed ? parsed.redis : '--'}</span>
-            </div>
-            <div class="ztop-server-metric-graph">
-                <canvas class="ztop-server-sparkline" data-series="mongo"></canvas>
-                <span class="ztop-server-metric">${parsed ? parsed.mongo : '--'}</span>
-            </div>
-        `;
+        const role = document.createElement('div');
+        role.className = 'ztop-server-role';
+        role.textContent = parsed ? parsed.role : '';
+        const host = document.createElement('div');
+        host.className = 'ztop-server-host';
+        host.textContent = server.host || '--';
+        row.append(role, host);
+        ['cpu', 'load', 'mem', 'redis', 'mongo'].forEach((key) => {
+            const graph = document.createElement('div');
+            graph.className = 'ztop-server-metric-graph';
+            const canvas = document.createElement('canvas');
+            canvas.className = 'ztop-server-sparkline';
+            canvas.setAttribute('data-series', key);
+            const metric = document.createElement('span');
+            metric.className = 'ztop-server-metric';
+            metric.textContent = parsed ? parsed[key === 'mem' ? 'memory' : key] : '--';
+            graph.append(canvas, metric);
+            row.appendChild(graph);
+        });
         container.appendChild(row);
 
         row.querySelectorAll('.ztop-server-sparkline').forEach((canvas) => {
@@ -309,7 +300,7 @@ function updateEsiBucketSeries(bucketName, codes) {
 function renderEsiBuckets(buckets) {
     const container = document.getElementById('ztop-esi-buckets');
     if (!container) return;
-    container.innerHTML = '';
+    container.replaceChildren();
     addText(container, 'ztop-group-title', 'ESI outbound calls');
 
     if (!Array.isArray(buckets) || buckets.length === 0) {
@@ -382,7 +373,7 @@ function renderGroups(metrics) {
 
     const container = document.getElementById('ztop-groups');
     if (!container) return;
-    container.innerHTML = '';
+    container.replaceChildren();
 
     const groupTitles = {
         1: 'Queues',

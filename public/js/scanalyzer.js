@@ -86,9 +86,9 @@ function startProcess() {
     scanalyzerRowObserver = undefined;
     $("#clippy").attr("disabled", "true");
     $('#resultssection').hide();
-    $('#resultcounts').html('');
-    $('#playergroups').html('');
-    $('#shipgroups').html('');
+    $('#resultcounts').empty();
+    $('#playergroups').empty();
+    $('#shipgroups').empty();
     $('#scanlayout').removeClass('has-ships');
 
     if (scanCall != undefined) clearTimeout(scanCall);
@@ -104,9 +104,9 @@ function doScan() {
     if (val.length < 3) return updateStatus('valid input please');
     if (val.length > 25000) return updateStatus('input too large! 25000 character limit');
 
-    $("#results").html('');
-    $("#playergroups").html('');
-    $("#shipgroups").html('');
+    $("#results").empty();
+    $("#playergroups").empty();
+    $("#shipgroups").empty();
 
     $("#scaninput").attr('disabled', 'true');
     let json = {scan: JSON.stringify(val)};
@@ -130,14 +130,14 @@ error: function(a, b, c) {
 
 function getImage(corp, alli) {
     if (alli) {
-        let name = getName('alli', alli);
-        let img = `<img class="eveimage img-rounded" style='height: 40px;' src='https://images.evetech.net/alliances/${alli}/logo?size=64' title="${name}" />`
-            return `<a href='/alliance/${alli}/'>${img}</a>`
+        let name = (result.allis[alli] || {}).name || '';
+        let img = $(document.createElement('img')).addClass("eveimage img-rounded").css("height", "40px").attr("src", "https://images.evetech.net/alliances/" + alli + "/logo?size=64").attr("title", name);
+        return $(document.createElement('a')).attr("href", "/alliance/" + alli + "/").append(img);
     }
     if (corp) {
-        let name = getName('corp', corp);
-        let img = `<img class="eveimage img-rounded" style='height: 40px;' src='https://images.evetech.net/corporations/${corp}/logo?size=64' title="${name}" />`
-        return `<a href='/corporation/${corp}/'>${img}</a>`
+        let name = (result.corps[corp] || {}).name || '';
+        let img = $(document.createElement('img')).addClass("eveimage img-rounded").css("height", "40px").attr("src", "https://images.evetech.net/corporations/" + corp + "/logo?size=64").attr("title", name);
+        return $(document.createElement('a')).attr("href", "/corporation/" + corp + "/").append(img);
     }
     return '';
 }
@@ -148,8 +148,8 @@ function getName(type, id) {
         if (typeof i.name == 'undefined') return '';
 
 
-        if (type == 'corps') return `<a href='/corporation/${i.id}/'>[${i.ticker}]</a>`;
-        return `<a href='/alliance/${i.id}/'>&lt;${i.ticker}&gt;</a>`;
+        if (type == 'corps') return $(document.createElement('a')).attr("href", "/corporation/" + i.id + "/").text("[" + i.ticker + "]");
+        return $(document.createElement('a')).attr("href", "/alliance/" + i.id + "/").text("<" + i.ticker + ">");
     } catch (e) {
         return '';
     }
@@ -162,11 +162,11 @@ function finiteOrBlank(value) {
 }
 
 function shipImages(characterID, ships) {
-    let html = '';
+    let images = [];
     for (let ship of ships) {
-        html += `<a href='/character/${characterID}/reset/ship/${ship.shipTypeID}/'><img class="eveimage img-rounded" src="https://images.evetech.net/types/${ship.shipTypeID}/render?size=64" style='width: 40px;' title="${ship.shipName}: ${ship.appearances} appearances (${ship.kills} kills, ${ship.losses} losses)" /></a>`;
+        images.push($(document.createElement('a')).attr("href", "/character/" + characterID + "/reset/ship/" + ship.shipTypeID + "/").append($(document.createElement('img')).addClass("eveimage img-rounded").attr("src", "https://images.evetech.net/types/" + ship.shipTypeID + "/render?size=64").css("width", "40px").attr("title", ship.shipName + ": " + ship.appearances + " appearances (" + ship.kills + " kills, " + ship.losses + " losses)")));
     }
-    return html;
+    return images;
 }
 
 function formatScanalyzerRow(row) {
@@ -213,13 +213,13 @@ function popChar(ch) {
     let associates = (ch.associates || []).slice(0, expanded ? 50 : 2).map(function(associate) {
         let characterID = Number(associate.characterID);
         let sharedKills = Number(associate.sharedKills) || 0;
-        return `<span class="text-nowrap" title="${sharedKills} shared PvP killmails in the past 90 days"><a href="/character/${characterID}/">${associate.name}</a> (${sharedKills.toLocaleString()})</span>`;
-    }).join('<br/>');
+        return $(document.createElement('span')).addClass("text-nowrap").attr("title", sharedKills + " shared PvP killmails in the past 90 days").append($(document.createElement('a')).attr("href", "/character/" + characterID + "/").text(associate.name), document.createTextNode(" ("), document.createTextNode(sharedKills.toLocaleString()), document.createTextNode(")"));
+    }).flatMap(function(node, index) { return index ? [document.createElement('br'), node] : [node]; });
     let affiliates = (ch.affiliates || []).slice(0, expanded ? 25 : 2).map(function(affiliate) {
         let alliance = getName('allis', Number(affiliate.allianceID));
         let sharedKills = Number(affiliate.sharedKills) || 0;
-        return alliance == '' ? '' : `<span class="text-nowrap" title="${sharedKills} shared PvP killmails in the past 90 days">${alliance} (${sharedKills.toLocaleString()})</span>`;
-    }).filter(Boolean).join('<br/>');
+        return alliance == '' ? '' : $(document.createElement('span')).addClass("text-nowrap").attr("title", sharedKills + " shared PvP killmails in the past 90 days").append(alliance, document.createTextNode(" ("), document.createTextNode(sharedKills.toLocaleString()), document.createTextNode(")"));
+    }).filter(Boolean).flatMap(function(node, index) { return index ? [document.createElement('br'), node] : [node]; });
 
     ch.stats.shipsDestroyed = Number(ch.stats.shipsDestroyed) | 0;
     ch.stats.shipsLost = Number(ch.stats.shipsLost) | 0;
@@ -235,7 +235,7 @@ function popChar(ch) {
         }
     }
     ch.stats.snuggly = ch.stats.dangerRatio === '' ? '' : 100 - ch.stats.dangerRatio;
-    let char = ch.id > 0 ? `<a href='/character/${ch.id}/'>${ch.name}</a>` : ch.name;
+    let char = ch.id > 0 ? $(document.createElement('a')).attr("href", "/character/" + ch.id + "/").text(ch.name) : document.createTextNode(ch.name);
     let hasSecurity = ch.id > 0 && ch.secStatus !== null && ch.secStatus !== '' && typeof ch.secStatus != 'undefined';
     let secStatus = hasSecurity ? Number(ch.secStatus) : '';
     let secStatusFormat = hasSecurity ? 'format-dec2-once' : '';
@@ -260,56 +260,74 @@ function popChar(ch) {
     if (ch.unknown == true) labels.push('no known kb activity');
     else if (ch.inactive == true) labels.push('no recent kb activity');
     ch.stats.gankerCount = Number(ch.stats.gankerCount) | 0;
-    if (ch.stats.gankerCount >= 10) badges.push(`<span class="badge zkb-label-danger text-white" title="${ch.stats.gankerCount} past-year highsec ganks">GANKER (${ch.stats.gankerCount})</span>`);
-    if (ch.stats.awoxCount > 0) badges.push(`<span class="badge zkb-label-danger text-white">AWOX (${ch.stats.awoxCount})</span>`);
+    if (ch.stats.gankerCount >= 10) badges.push($(document.createElement('span')).addClass("badge zkb-label-danger text-white").attr("title", ch.stats.gankerCount + " past-year highsec ganks").text("GANKER (" + ch.stats.gankerCount + ")"));
+    if (ch.stats.awoxCount > 0) badges.push($(document.createElement('span')).addClass("badge zkb-label-danger text-white").text("AWOX (" + ch.stats.awoxCount + ")"));
     if (ch.stats.fc) {
         let fcLevel = String(ch.stats.fc.level || '').toUpperCase();
         let fcTitle = `Past-year FC signal: ${Number(ch.stats.fc.monitorAppearances) || 0} Monitor, ${Number(ch.stats.fc.commandShipAppearances) || 0} command-ship, ${Number(ch.stats.fc.largeFleetAppearances) || 0} large-fleet appearances`;
-        badges.push(`<span class="badge text-white" style="background-color: #963800;" title="${fcTitle}">FC (${fcLevel})</span>`);
+        badges.push($(document.createElement('span')).addClass("badge text-white").css("background-color", "#963800").attr("title", fcTitle).text("FC (" + fcLevel + ")"));
     }
     if (ch.stats.bait) {
         let baitLevel = String(ch.stats.bait.level || '').toUpperCase();
         let baitCount = Number(ch.stats.bait.count) || 0;
         let baitClass = baitLevel == 'HIGH' ? 'zkb-label-danger' : (baitLevel == 'LOW' ? 'bg-secondary' : '');
-        let baitStyle = baitLevel == 'MEDIUM' ? ' style="background-color: #963800;"' : '';
-        badges.push(`<span class="badge text-white ${baitClass}"${baitStyle} title="${baitCount} past-year bait matches">BAIT ${baitLevel} (${baitCount})</span>`);
+        let baitStyle = baitLevel == 'MEDIUM' ? '#963800' : '';
+        badges.push($(document.createElement('span')).addClass("badge text-white " + baitClass).css("background-color", baitStyle).attr("title", baitCount + " past-year bait matches").text("BAIT " + baitLevel + " (" + baitCount + ")"));
     }
     if (ch.stats.cyno) {
         let cynoCount = Number(ch.stats.cyno.count) || 0;
         let cynoTitle = `Past-year fitted cynos: ${Number(ch.stats.cyno.standard) || 0} standard, ${Number(ch.stats.cyno.covert) || 0} covert, ${Number(ch.stats.cyno.industrial) || 0} industrial`;
-        badges.push(`<span class="badge text-white" style="background-color: #633399;" title="${cynoTitle}">CYNO (${cynoCount})</span>`);
+        badges.push($(document.createElement('span')).addClass("badge text-white").css("background-color", "#633399").attr("title", cynoTitle).text("CYNO (" + cynoCount + ")"));
     }
     (ch.stats.characterTags || []).forEach(function(tag) {
         let hasCount = Object.prototype.hasOwnProperty.call(tag, 'count');
         let tagText = String(tag.label || '') + (hasCount ? ` (${(Number(tag.count) || 0).toLocaleString()})` : '');
-        badges.push(`<span class="badge text-white" style="background-color: ${tag.color};" title="${tag.title}">${tagText}</span>`);
+        badges.push($(document.createElement('span')).addClass("badge text-white").css("background-color", tag.color).attr("title", tag.title).text(tagText));
     });
 
     let soloColor = '';
     if (ch.stats.shipsDestroyed > 10 && ch.stats.soloRatio >= 50) soloColor = 'green';
 
     let notes = labels.join(', ');
-    let badgeNotes = badges.join(' ');
+    let badgeNotes = badges.flatMap(function(badge, index) { return index ? [document.createTextNode(' '), badge] : [badge]; });
 
-    let security = hasSecurity ? `<span class="fw-bold rounded px-1" style="color: ${secTextColor}; background-color: ${secColor}; border: 1px solid ${secColor}; box-shadow: 0 0 3px ${secColor};" aria-label="Security status ${secStatus}" title="Security status ${secStatus}" format="${secStatusFormat}" raw="${secStatus}"></span>` : '';
+    let security = hasSecurity ? $(document.createElement('span')).addClass("fw-bold rounded px-1").attr("style", "color: " + secTextColor + "; background-color: " + secColor + "; border: 1px solid " + secColor + "; box-shadow: 0 0 3px " + secColor + ";").attr("aria-label", "Security status " + secStatus).attr("title", "Security status " + secStatus).attr("format", secStatusFormat).attr("raw", secStatus) : '';
     let caret = expanded ? 'down' : 'right';
     let toggleTitle = expanded ? 'Collapse row' : 'Expand row';
-    let nameCell = `<td><button type="button" class="btn btn-link btn-sm p-0 me-1 scanalyzer-row-toggle" aria-expanded="${expanded}" aria-label="${toggleTitle}" title="${toggleTitle}"><i class="fas fa-caret-${caret}" aria-hidden="true"></i></button>${char}<br/><small class="d-flex align-items-center gap-1"><span>${security} <span>${notes}</span></span><span class="ms-auto text-nowrap">${badgeNotes}</span></small></td>`;
-    let shipsCell = `<td class='pilotships'>${ships}</td>`;
-    let topShipsCell = `<td class='pilotships'>${topShips}</td>`;
-    let associateCell = `<td class="small">${associates}</td>`;
-    let affiliateCell = `<td class="small">${affiliates}</td>`;
-    let imageCell = `<td class='pilotmemberimage'>${image}</td>`;
-    let memberCell = `<td class="pilotmember">${corp}<br/>${alli}</td>`;
+    let nameCell = $(document.createElement('td')).append(
+        $(document.createElement('button')).attr("type", "button").addClass("btn btn-link btn-sm p-0 me-1 scanalyzer-row-toggle")
+            .attr("aria-expanded", expanded).attr("aria-label", toggleTitle).attr("title", toggleTitle)
+            .append($(document.createElement('i')).addClass("fas fa-caret-" + caret).attr("aria-hidden", "true")),
+        char, document.createElement('br'),
+        $(document.createElement('small')).addClass("d-flex align-items-center gap-1").append(
+            $(document.createElement('span')).append(security, document.createTextNode(" "), $(document.createElement('span')).text(notes)),
+            $(document.createElement('span')).addClass("ms-auto text-nowrap").append(badgeNotes)));
+    let shipsCell = $(document.createElement('td')).addClass("pilotships").append(ships);
+    let topShipsCell = $(document.createElement('td')).addClass("pilotships").append(topShips);
+    let associateCell = $(document.createElement('td')).addClass("small").append(associates);
+    let affiliateCell = $(document.createElement('td')).addClass("small").append(affiliates);
+    let imageCell = $(document.createElement('td')).addClass("pilotmemberimage").append(image);
+    let memberCell = $(document.createElement('td')).addClass("pilotmember").append(corp, $(document.createElement('br')), alli);
     let current = ch.scanalyzerElement;
     if (current && current.length && current[0].isConnected) {
         let currentCells = current.children();
-        let update = $(`<tr>${nameCell}${imageCell}${memberCell}${shipsCell}${topShipsCell}${associateCell}${affiliateCell}</tr>`);
+        let update = $(document.createElement('tr')).append(nameCell, imageCell, memberCell, shipsCell, topShipsCell, associateCell, affiliateCell);
         formatScanalyzerRow(update);
         let cells = update.children();
         for (let i = 0; i < cells.length; i++) currentCells.eq(i).replaceWith(cells.eq(i));
     } else {
-        let h = $(`<tr data-scanalyzer-row="${ch.scanalyzerRow}" danger="${ch.stats.dangerRatio}">${nameCell}${imageCell}${memberCell}${shipsCell}${topShipsCell}${associateCell}${affiliateCell}<td class="text-end"><span class="pilotkl green" format="format-int-once" raw="${ch.stats.shipsDestroyed}"></span><br/><span class="red" format="format-int-once" raw="${ch.stats.shipsLost}"></span></td><td class="pilotds text-end"><span class="red" format="format-pct-once" raw="${ch.stats.dangerRatio}"></span><br/><span class="green" format="format-pct-once" raw="${ch.stats.snuggly}"></span></td><td class="text-end"><span format="format-pct-once" raw="${ch.stats.gangRatio}"></span><br/><span format="format-dec2-once" raw="${ch.stats.avgGangSize}"></td><td class='text-end ${soloColor}' format="format-pct-once" raw="${ch.stats.soloRatio}"></td></tr>`);
+        let h = $(document.createElement('tr')).attr("data-scanalyzer-row", ch.scanalyzerRow).attr("danger", ch.stats.dangerRatio).append(
+            nameCell, imageCell, memberCell, shipsCell, topShipsCell, associateCell, affiliateCell,
+            $(document.createElement('td')).addClass("text-end").append(
+                $(document.createElement('span')).addClass("pilotkl green").attr("format", "format-int-once").attr("raw", ch.stats.shipsDestroyed),
+                document.createElement('br'), $(document.createElement('span')).addClass("red").attr("format", "format-int-once").attr("raw", ch.stats.shipsLost)),
+            $(document.createElement('td')).addClass("pilotds text-end").append(
+                $(document.createElement('span')).addClass("red").attr("format", "format-pct-once").attr("raw", ch.stats.dangerRatio),
+                document.createElement('br'), $(document.createElement('span')).addClass("green").attr("format", "format-pct-once").attr("raw", ch.stats.snuggly)),
+            $(document.createElement('td')).addClass("text-end").append(
+                $(document.createElement('span')).attr("format", "format-pct-once").attr("raw", ch.stats.gangRatio),
+                document.createElement('br'), $(document.createElement('span')).attr("format", "format-dec2-once").attr("raw", ch.stats.avgGangSize)),
+            $(document.createElement('td')).addClass("text-end " + soloColor).attr("format", "format-pct-once").attr("raw", ch.stats.soloRatio));
         formatScanalyzerRow(h);
         $('#results').append(h);
         ch.scanalyzerElement = h;
@@ -322,7 +340,7 @@ function popUEs() {
         if (character.allianceID) mapping.allis[character.allianceID] = (mapping.allis[character.allianceID] | 0) + 1;
         else if (character.corporationID) mapping.corps[character.corporationID] = (mapping.corps[character.corporationID] | 0) + 1;
     }
-    $('#playergroups').html('');
+    $('#playergroups').empty();
     Object.keys(mapping.allis).forEach(popUEa);
     Object.keys(mapping.corps).forEach(popUEc);
 }
@@ -332,16 +350,16 @@ function popUEa(alli) {
     let info = result.allis[alli] || {};
     let name = info.name || '';
     let ticker = info.ticker || '';
-    let img = `<img class="eveimage img-rounded" src='https://images.evetech.net/alliances/${alli}/logo?size=64' title="${name}" />`
-    let link = `<a href='/alliance/${alli}/' class='nowrap'>&lt;${ticker}&gt;</a>`;
-    let h = $(`<div style='order: -${count}' class='float-start flex-shrink-0 scan-entity text-center'>${img}<br/>${link}<br/><div class='text-center'>${count}</div></div>`);
+    let img = $(document.createElement('img')).addClass("eveimage img-rounded").attr("src", "https://images.evetech.net/alliances/" + alli + "/logo?size=64").attr("title", name);
+    let link = $(document.createElement('a')).attr("href", "/alliance/" + alli + "/").addClass("nowrap").text("<" + ticker + ">");
+    let h = $(document.createElement('div')).css("order", -count).addClass("float-start flex-shrink-0 scan-entity text-center").append(img, $(document.createElement('br')), link, $(document.createElement('br')), $(document.createElement('div')).addClass("text-center").text(count));
     $('#playergroups').append(h);
 }
 
 function popShip(ship) {
-    let img = `<img src="https://images.evetech.net/types/${ship.shipTypeID}/render?size=64" alt="${ship.shipName}" />`;
-    let link = `<a href='/ship/${ship.shipTypeID}/'>${ship.shipName}</a>`;
-    let h = $(`<div style='order: -${ship.count}' class='float-start scan-entity text-center'>${img}<br/>${link}<br/><span format="format-int-once" raw="${ship.count}"></span></div>`);
+    let img = $(document.createElement('img')).attr("src", "https://images.evetech.net/types/" + ship.shipTypeID + "/render?size=64").attr("alt", ship.shipName);
+    let link = $(document.createElement('a')).attr("href", "/ship/" + ship.shipTypeID + "/").text(ship.shipName);
+    let h = $(document.createElement('div')).css("order", -ship.count).addClass("float-start scan-entity text-center").append(img, $(document.createElement('br')), link, $(document.createElement('br')), $(document.createElement('span')).attr("format", "format-int-once").attr("raw", ship.count));
     $('#shipgroups').append(h);
 }
 
@@ -350,9 +368,9 @@ function popUEc(corp) {
     let info = result.corps[corp] || {};
     let name = info.name || '';
     let ticker = info.ticker || '';
-    let img = `<img class="eveimage img-rounded" src='https://images.evetech.net/corporations/${corp}/logo?size=64' title="${name}" />`
-        let link = `<a href='/corporation/${corp}/' class='nowrap'>[${ticker}]</a>`
-        let h = $(`<div style='order: -${count}' class='float-start flex-shrink-0 scan-entity text-center'>${img}<br/>${link}<br/><div class='text-center'>${count}</div></div>`);
+    let img = $(document.createElement('img')).addClass("eveimage img-rounded").attr("src", "https://images.evetech.net/corporations/" + corp + "/logo?size=64").attr("title", name);
+    let link = $(document.createElement('a')).attr("href", "/corporation/" + corp + "/").addClass("nowrap").text("[" + ticker + "]");
+    let h = $(document.createElement('div')).css("order", -count).addClass("float-start flex-shrink-0 scan-entity text-center").append(img, $(document.createElement('br')), link, $(document.createElement('br')), $(document.createElement('div')).addClass("text-center").text(count));
     $('#playergroups').append(h);
 }
 
@@ -550,7 +568,7 @@ let scanalyzerRowObserver;
 
 function renderCharacterResults() {
     mapping = {corps: {}, allis: {}};
-    $('#results').html('');
+    $('#results').empty();
     result.chars.forEach(popChar);
     updateScanalyzerExpandAll();
     popUEs();
@@ -613,7 +631,7 @@ async function showResult(r) {
 
     console.log(result);
     if (result.chars.length == 0 && result.ships.length == 0) {
-        $("#resultcounts").html('');
+        $("#resultcounts").empty();
         return updateStatus('nothing to show here - did you provide valid input?');
     }
 
@@ -627,7 +645,6 @@ async function showResult(r) {
     }
     if (result.ships.length) resultcount += result.ships.length + ' ships';
     resultcount += ' identified';
-    //$("#resultcounts").html(`<i>${resultcount}</i>`);
 
     renderCharacterResults();
     if (window.IntersectionObserver) {
@@ -685,10 +702,10 @@ function showDone() {
 function updateStatus(msg = '') {
     if (!document.getElementById('status')) return;
     if (msg == '') {
-        $('#status').html('').hide();
+        $('#status').empty().hide();
         $('#resultssection').show();
     } else {
-        $('#status').html(`<i>... ${msg} ...</i>`).show();
+        $('#status').empty().append($(document.createElement('i')).text("... " + msg + " ...")).show();
     }
 }
 

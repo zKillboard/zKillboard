@@ -106,25 +106,50 @@
 		if (standard404) standard404.classList.add("d-none");
 
 		root.className = "row m-0 p-0 overview-top";
-		root.innerHTML = [
-			"<h1 class=\"visually-hidden\">" + escapeHtml(entity.name + " | " + config.label) + "</h1>",
-			"<div class=\"col-12 col-md-6 float-start\" style=\"margin:0;padding:0;padding-right:2em;\">",
-				"<table class=\"table table-sm table-borderless m-0 p-0\"><tbody>",
-					"<tr class=\"d-table-row d-md-none\"><td colspan=\"2\">" + entityImage(entity) + "</td></tr>",
-					"<tr>",
-						"<td class=\"d-none d-md-table-cell\" style=\"width:130px;border-top:none;margin:0;padding:0;\">" + entityImage(entity) + "</td>",
-						"<td style=\"border-top:none;margin:0;padding:0;\">",
-							"<div class=\"float-start\" itemscope>",
-								"<table class=\"table table-sm table-borderless\"><tbody>",
-									detailRows(entity, related),
-									websiteRow(entity),
-								"</tbody></table>",
-							"</div>",
-						"</td>",
-					"</tr>",
-				"</tbody></table>",
-			"</div>"
-		].join("");
+		const heading = document.createElement('h1');
+		heading.className = 'visually-hidden';
+		heading.textContent = entity.name + ' | ' + config.label;
+		const column = document.createElement('div');
+		column.className = 'col-12 col-md-6 float-start m-0 py-0 ps-0';
+		column.style.paddingRight = '2em';
+		const table = document.createElement('table');
+		table.className = 'table table-sm table-borderless m-0 p-0';
+		const body = table.createTBody();
+		const mobileRow = body.insertRow();
+		mobileRow.className = 'd-table-row d-md-none';
+		const mobileImage = mobileRow.insertCell();
+		mobileImage.colSpan = 2;
+		mobileImage.append(entityImage(entity));
+		const row = body.insertRow();
+		const desktopImage = row.insertCell();
+		desktopImage.className = 'd-none d-md-table-cell border-top-0 m-0 p-0';
+		desktopImage.style.width = '130px';
+		desktopImage.append(entityImage(entity));
+		const details = row.insertCell();
+		details.className = 'border-top-0 m-0 p-0';
+		const detailWrap = document.createElement('div');
+		detailWrap.className = 'float-start';
+		detailWrap.setAttribute('itemscope', '');
+		const detailTable = document.createElement('table');
+		detailTable.className = 'table table-sm table-borderless';
+		const detailBody = detailTable.createTBody();
+		detailBody.append(...detailRows(entity, related));
+		const url = type === 'corporation' ? safeUrl(entity.url) : '';
+		if (url) {
+			const link = document.createElement('a');
+			link.className = 'wrapplease';
+			link.href = url;
+			link.target = '_blank';
+			link.rel = 'nofollow ugc noopener noreferrer';
+			link.textContent = url;
+			const rows = [];
+			addRow(rows, 'Website', link);
+			detailBody.append(...rows);
+		}
+		detailWrap.append(detailTable);
+		details.append(detailWrap);
+		column.append(table);
+		root.replaceChildren(heading, column);
 	}
 
 	function showStandard404() {
@@ -132,17 +157,27 @@
 		if (standard404) standard404.classList.remove("d-none");
 		root.className = "d-none";
 		root.textContent = "";
-		root.innerHTML = "";
 	}
 
 	function entityImage(entity) {
-		return [
-			"<div class=\"float-start\" style=\"margin-right:0.5em;\">",
-				"<a href=\"" + escapeHtml(config.zkbPath) + "\" rel=\"tooltip\" title=\"" + escapeHtml(entity.name) + "\">",
-					"<img class=\"eveimage " + config.imageClass + "\" src=\"" + escapeHtml(config.image) + "\" style=\"height:128px;width:128px;\" alt=\"" + escapeHtml(config.imageAlt) + "\" loading=\"lazy\" decoding=\"async\">",
-				"</a>",
-			"</div>"
-		].join("");
+		const wrap = document.createElement('div');
+		wrap.className = 'float-start';
+		wrap.style.marginRight = '0.5em';
+		const link = document.createElement('a');
+		link.href = config.zkbPath;
+		link.rel = 'tooltip';
+		link.title = entity.name;
+		const image = document.createElement('img');
+		image.className = 'eveimage ' + config.imageClass;
+		image.src = config.image;
+		image.style.height = '128px';
+		image.style.width = '128px';
+		image.alt = config.imageAlt;
+		image.loading = 'lazy';
+		image.decoding = 'async';
+		link.append(image);
+		wrap.append(link);
+		return wrap;
 	}
 
 	function detailRows(entity, related) {
@@ -171,30 +206,30 @@
 			addRow(rows, "Founded", dateOnly(entity.date_founded));
 		}
 
-		return rows.join("");
+		return rows;
 	}
 
 	function addRow(rows, label, value) {
 		if (value === null || value === undefined || value === "") return;
-		rows.push("<tr><th>" + escapeHtml(label) + ":</th><td>" + escapeHtml(value) + "</td></tr>");
+		const row = document.createElement('tr');
+		const heading = document.createElement('th');
+		heading.textContent = label + ':';
+		const cell = document.createElement('td');
+		cell.append(value);
+		row.append(heading, cell);
+		rows.push(row);
 	}
 
 	function addLinkedRow(rows, label, linkType, entityID, entity) {
 		if (!entityID) return;
-		const name = entity && entity.name ? entity.name : label + " " + entityID;
-		const href = "/" + linkType + "/" + entityID + "/";
-		rows.push("<tr><th>" + escapeHtml(label) + ":</th><td><a class=\"wrapplease\" href=\"" + escapeHtml(href) + "\">" + escapeHtml(name) + "</a>" + linkedTicker(linkType, entity) + "</td></tr>");
-	}
-
-	function linkedTicker(linkType, entity) {
-		if (!entity || !entity.ticker) return "";
-		return " " + escapeHtml(ticker(linkType, entity.ticker));
-	}
-
-	function websiteRow(entity) {
-		const url = type === "corporation" ? safeUrl(entity.url) : "";
-		if (!url) return "";
-		return "<tr><th>Website:</th><td><a class=\"wrapplease\" href=\"" + escapeHtml(url) + "\" target=\"_blank\" rel=\"nofollow ugc noopener noreferrer\">" + escapeHtml(url) + "</a></td></tr>";
+		const link = document.createElement('a');
+		link.className = 'wrapplease';
+		link.href = '/' + linkType + '/' + entityID + '/';
+		link.textContent = entity && entity.name ? entity.name : label + ' ' + entityID;
+		const value = document.createDocumentFragment();
+		value.append(link);
+		if (entity && entity.ticker) value.append(' ' + ticker(linkType, entity.ticker));
+		addRow(rows, label, value);
 	}
 
 	function ticker(entityType, value) {
@@ -218,15 +253,4 @@
 		}
 	}
 
-	function escapeHtml(value) {
-		return String(value).replace(/[&<>"']/g, function (char) {
-			return {
-				"&": "&amp;",
-				"<": "&lt;",
-				">": "&gt;",
-				"\"": "&quot;",
-				"'": "&#039;"
-			}[char];
-		});
-	}
 })();

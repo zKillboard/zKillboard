@@ -1417,7 +1417,9 @@ function addLittleKill(data) {
 	while ($("#killlist tbody tr").length > 100) $("#killlist tbody tr:last").remove();
 	// Tell the user what's going on and not to expect sequential killmails
 	if ($("#livefeednotif").length == 0) {
-		$("#killlist thead tr").after("<tr><td id='livefeednotif' colspan='7'><strong><em>Live feed - killmails may be out of order.</em></strong></td></tr>");
+		$("#killlist thead tr").after($(document.createElement('tr')).append(
+			$(document.createElement('td')).attr({id: 'livefeednotif', colspan: 7}).append(
+				$(document.createElement('strong')).append($(document.createElement('em')).text('Live feed - killmails may be out of order.')))));
 	}
 	assignRowColor();
 	adjustKillmailPresentation();
@@ -1456,7 +1458,7 @@ function audio(uri)
 }
 
 function saveFitting(id, fit = null) {
-    $('#modalMessageBody').html('<div style="color: white;">Saving fit....</div>');
+    $('#modalMessageBody').empty().append($(document.createElement('div')).addClass('text-white').text('Saving fit....'));
     showModal('#modalMessage');
 
     var request = $.ajax({
@@ -1468,7 +1470,7 @@ dataType: "text"
 });
 
 request.done(function(msg) {
-        $('#modalMessageBody').html('<div style="color: white;">' + msg + '</div>');
+        $('#modalMessageBody').empty().append($(document.createElement('div')).addClass('text-white').text(msg));
         showModal('#modalMessage');
         });
 request.fail(function() {

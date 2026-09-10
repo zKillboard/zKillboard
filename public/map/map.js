@@ -757,11 +757,13 @@ document.addEventListener('DOMContentLoaded', () => {
 	function showHint(screenX, screenY, system) {
 		if (!hint) return;
 		const killCount = getSystemKillCount(system.id);
-		hint.innerHTML = `
-			<div class="hint-name">${system.name}</div>
-			<div>${system.regionName || '-'}</div>
-			<div class="hint-muted">Kills: ${killCount}</div>
-		`;
+		hint.replaceChildren();
+		for (const [className, text] of [['hint-name', system.name], ['', system.regionName || '-'], ['hint-muted', `Kills: ${killCount}`]]) {
+			const line = document.createElement('div');
+			line.className = className;
+			line.textContent = text;
+			hint.append(line);
+		}
 		hint.style.display = 'block';
 		hint.style.left = `${Math.min(screenX + 18, window.innerWidth - 270)}px`;
 		hint.style.top = `${Math.min(screenY + 18, window.innerHeight - 120)}px`;
@@ -799,18 +801,36 @@ document.addEventListener('DOMContentLoaded', () => {
 			const imageUrl = getKillImageUrl(kill.victim_ship_type_id);
 			const killId = asNumber(kill.killmail_id || kill.sequence_id);
 			const killUrl = killId > 0 ? `https://zkillboard.com/kill/${killId}/` : '#';
-			item.innerHTML = `
-				<a href="${killUrl}" target="_blank" rel="noopener noreferrer">
-					<div class="kill-row">
-						<div class="kill-image"><img src="${imageUrl}" alt="" loading="lazy" decoding="async" fetchpriority="low"></div>
-						<div class="kill-copy">
-							<div class="kill-time">${formatTime(kill.killmail_time || kill.uploaded_at)}</div>
-							<div class="kill-system">${kill.systemName || 'Unknown system'}</div>
-							<div class="kill-meta">${kill.regionName ? `${kill.regionName} | ` : ''}${formatIsk(kill.total_value)} ISK | ${kill.attacker_count} attackers</div>
-						</div>
-					</div>
-				</a>
-			`;
+			const link = document.createElement('a');
+			link.href = killUrl;
+			link.target = '_blank';
+			link.rel = 'noopener noreferrer';
+			const row = document.createElement('div');
+			row.className = 'kill-row';
+			const imageWrap = document.createElement('div');
+			imageWrap.className = 'kill-image';
+			const image = document.createElement('img');
+			image.src = imageUrl;
+			image.alt = '';
+			image.loading = 'lazy';
+			image.decoding = 'async';
+			image.setAttribute('fetchpriority', 'low');
+			imageWrap.append(image);
+			const copy = document.createElement('div');
+			copy.className = 'kill-copy';
+			for (const [className, text] of [
+				['kill-time', formatTime(kill.killmail_time || kill.uploaded_at)],
+				['kill-system', kill.systemName || 'Unknown system'],
+				['kill-meta', `${kill.regionName ? `${kill.regionName} | ` : ''}${formatIsk(kill.total_value)} ISK | ${kill.attacker_count} attackers`]
+			]) {
+				const line = document.createElement('div');
+				line.className = className;
+				line.textContent = text;
+				copy.append(line);
+			}
+			row.append(imageWrap, copy);
+			link.append(row);
+			item.append(link);
 			liveFeed.appendChild(item);
 		}
 		updateRegionActivity();

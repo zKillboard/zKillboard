@@ -390,7 +390,7 @@ function addEntity(suggestion, slot = 'neutrals') {
 		case 'regionID':
 			// Clear "All systems" placeholder if it exists
 			if ($("#location").html().trim() == "All systems") {
-				$("#location").html("");
+				$("#location").empty();
 			}
 			asfilter.location.push(suggestion.data);
 			add('location', suggestion);
@@ -804,7 +804,7 @@ function applyLabelsResult(data, textStatus, jqXHR) {
 
 function applyKillQueryResult(data, textStatus, jqXHR) {
 	if (asearchProcessing(jqXHR, 'kills')) return;
-	$("#killmails-list").html("");
+	$("#killmails-list").empty();
 	killIDs = data.kills;
 	asearchKillRowBatch = {};
 	pendingKillRows = data.kills.length;
@@ -826,10 +826,10 @@ function applyFitsResult(data, textStatus, jqXHR) {
 function applyCountQueryResult(data, textStatus, jqXHR) {
 	if (asearchProcessing(jqXHR, 'groups')) return;
 	if (data == null || data.exceeds == true) {
-		$("#result-groups-count").html("Timespan > 31 Days");
+		$("#result-groups-count").text("Timespan > 31 Days");
 		return;
 	}
-	if (data.timedOut == true || data.kills == 0) $("#result-groups-count").html('')
+	if (data.timedOut == true || data.kills == 0) $("#result-groups-count").empty()
 	// get the integer percentages for each of these
 	let droppable = data.droppable > 0 ? data.droppable : data.isk;
 	let droppableDestroyed = Math.max(0, droppable - data.dropped);
@@ -837,16 +837,30 @@ function applyCountQueryResult(data, textStatus, jqXHR) {
 	let pctDestroyed = droppable > 0 ? Math.round((droppableDestroyed / droppable) * 100) : 0;
 	let pctFitted = data.isk > 0 ? Math.round((data.fitted / data.isk) * 100) : 0;
 
-	let count = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><span>Killmails</span><span class="small"></span></div><div style="display:flex; justify-content:space-between; align-items:flex-end;"><span></span><span raw="${data.kills}" format="format-int-once"></span></div>`;
-	let isk = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><span>Total</span><span class="small"></span></div><div style="display:flex; justify-content:space-between; align-items:flex-end;"><span></span><span raw="${data.isk}" format="format-isk-once"></span></div>`;
-	let droppablePct = `<span class="small" style="display:inline-flex; gap:12px; align-items:center;"><span class="green" title="Dropped: Percentage of Droppable Value"><span raw="${pctDropped}" format="format-pct-once"></span> <i class="fas fa-check" aria-hidden="true" style="color: inherit;"></i></span><span class="red" title="Destroyed: Percentage of Droppable Value"><span raw="${pctDestroyed}" format="format-pct-once"></span> <i class="fas fa-times" aria-hidden="true" style="color: inherit;"></i></span></span>`;
-	let droppableHtml = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><span>Droppable</span><span class="small"></span></div><div style="display:flex; justify-content:space-between; align-items:flex-end;"><span></span><span raw="${droppable}" format="format-isk-once"></span></div><div style="display:flex; justify-content:flex-end; align-items:center; line-height:1.1; margin-top:2px;">${droppablePct}</div>`;
-	let fitted = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><span>Fitted</span><span class="small" raw="${pctFitted}" format="format-pct-once"></span></div><div style="display:flex; justify-content:space-between; align-items:flex-end;"><span></span><span raw="${data.fitted}" format="format-isk"></span></div>`;
-	let dropped = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><span>Dropped</span><span class="small" raw="${pctDropped}" format="format-pct-once"></span></div><div style="display:flex; justify-content:space-between; align-items:flex-end;"><span></span><span class="green" raw="${data.dropped}" format="format-isk-once"></span></div>`;
-	let destroyed = `<div style="display:flex; justify-content:space-between; align-items:flex-end;"><span>Destroyed</span><span class="small" raw="${pctDestroyed}" format="format-pct-once"></span></div><div style="display:flex; justify-content:space-between; align-items:flex-end;"><span></span><span class="red" raw="${data.destroyed}" format="format-isk-once"></span></div>`;
-
-	let html = [count, isk, fitted, dropped, destroyed, droppableHtml].join('<span style="display:block; height:0.5em;"></span>');
-	$("#result-groups-count").html(html);
+	let container = $("#result-groups-count").empty();
+	[
+		['Killmails', data.kills, 'format-int-once'],
+		['Total', data.isk, 'format-isk-once'],
+		['Fitted', data.fitted, 'format-isk', pctFitted],
+		['Dropped', data.dropped, 'format-isk-once', pctDropped, 'green'],
+		['Destroyed', data.destroyed, 'format-isk-once', pctDestroyed, 'red'],
+		['Droppable', droppable, 'format-isk-once']
+	].forEach(function(metric, index) {
+		if (index) container.append($(document.createElement('span')).addClass('d-block').css('height', '0.5em'));
+		let percentage = $(document.createElement('span')).addClass('small');
+		if (metric[3] != null) percentage.attr('raw', metric[3]).attr('format', 'format-pct-once');
+		container.append($(document.createElement('div')).addClass('d-flex justify-content-between align-items-end').append(
+			$(document.createElement('span')).text(metric[0]), percentage));
+		container.append($(document.createElement('div')).addClass('d-flex justify-content-between align-items-end').append(
+			document.createElement('span'), $(document.createElement('span')).addClass(metric[4] || '').attr('raw', metric[1]).attr('format', metric[2])));
+	});
+	let percentages = $(document.createElement('span')).addClass('small d-inline-flex align-items-center').css('gap', '12px');
+	[['Dropped', pctDropped, 'green', 'check'], ['Destroyed', pctDestroyed, 'red', 'times']].forEach(function(metric) {
+		percentages.append($(document.createElement('span')).addClass(metric[2]).attr('title', metric[0] + ': Percentage of Droppable Value').append(
+			$(document.createElement('span')).attr('raw', metric[1]).attr('format', 'format-pct-once'), document.createTextNode(' '),
+			$(document.createElement('i')).addClass('fas fa-' + metric[3]).attr('aria-hidden', 'true').css('color', 'inherit')));
+	});
+	container.append($(document.createElement('div')).addClass('d-flex justify-content-end align-items-center').css({'line-height': '1.1', 'margin-top': '2px'}).append(percentages));
 }
 
 function applyGroupQueryResult(data, textStatus, jqXHR) {
@@ -854,8 +868,12 @@ function applyGroupQueryResult(data, textStatus, jqXHR) {
 	$("#result-groups-" + this.title).html(data);
 }
 
-function getAsearchFitsNoticeHtml() {
-	return '<div class="alert alert-secondary mb-2" role="alert"><span class="badge bg-info text-white me-2">Last 90 days only</span><strong>Inferred Fits.</strong> Select exactly one ship filter, or select PVE to show popular losses; other Advanced Search filters apply, and Timespan controls are disabled for this view. <a class="alert-link" href="/fits/">View regular inferred fits</a></div>';
+function getAsearchFitsNotice() {
+	return $(document.createElement('div')).addClass('alert alert-secondary mb-2').attr('role', 'alert').append(
+		$(document.createElement('span')).addClass('badge bg-info text-white me-2').text('Last 90 days only'),
+		$(document.createElement('strong')).text('Inferred Fits.'),
+		document.createTextNode(' Select exactly one ship filter, or select PVE to show popular losses; other Advanced Search filters apply, and Timespan controls are disabled for this view. '),
+		$(document.createElement('a')).addClass('alert-link').attr('href', '/fits/').text('View regular inferred fits'));
 }
 
 function scheduleAsearchRetry(queryType) {
@@ -874,18 +892,18 @@ function clearAsearchResults(queryType) {
 		asearchKillRowBatch = {};
 		pendingKillRows = 0;
 		lastAsearchKillCount = 0;
-		$("#killmails-list").attr("aria-busy", "true").html("");
+		$("#killmails-list").attr("aria-busy", "true").empty();
 		setAsearchStatus("Loading killmails.");
 	}
 	if (queryType == 'all' || queryType == 'groups') {
-		$("#result-groups-count").html("");
-		$("#result-groups-labels").html("");
-		$("#result-groups-distincts").html("");
-		for (var i = 0; i < types.length; i++) $("#result-groups-" + types[i]).html("");
+		$("#result-groups-count").empty();
+		$("#result-groups-labels").empty();
+		$("#result-groups-distincts").empty();
+		for (var i = 0; i < types.length; i++) $("#result-groups-" + types[i]).empty();
 		if (queryType == 'groups') setAsearchStatus("Loading result groups.");
 	}
 	if (queryType == 'all' || queryType == 'fits') {
-		$("#inferred-fits-result").attr("aria-busy", "true").html(getAsearchFitsNoticeHtml() + '<div class="text-muted" role="status">Loading inferred fits...</div>');
+		$("#inferred-fits-result").attr("aria-busy", "true").empty().append(getAsearchFitsNotice(), $(document.createElement('div')).addClass('text-muted').attr('role', 'status').text('Loading inferred fits...'));
 		if (queryType == 'fits') setAsearchStatus("Loading inferred fits.");
 	}
 }
@@ -908,13 +926,13 @@ function killlistmessage(message) {
 	setAsearchStatus(message);
 	$(".killlistmessage").remove();
 	var tr = $("<tr>").addClass('killlistmessage');
-	var td = $("<td>").attr('colspan', 7).html('<i>' + message + '</i>');
+	var td = $("<td>").attr('colspan', 7).append($(document.createElement('i')).text(message));
 	tr.append(td);
 	$("#killmails-list").append(tr);
 }
 
 function fitlistmessage(message) {
-	$("#inferred-fits-result").attr("aria-busy", "false").html(getAsearchFitsNoticeHtml() + '<div class="alert alert-info mb-0" role="status"><i>' + message + '</i></div>');
+	$("#inferred-fits-result").attr("aria-busy", "false").empty().append(getAsearchFitsNotice(), $(document.createElement('div')).addClass('alert alert-info mb-0').attr('role', 'status').append($(document.createElement('i')).text(message)));
 	setAsearchStatus(message);
 }
 
@@ -974,7 +992,7 @@ function loadAsearchFitDetail(detail) {
 			body.removeAttribute('data-zkb-loading');
 		})
 		.catch(function() {
-			body.innerHTML = '<div class="alert alert-warning mb-0" role="alert">Unable to load this fit.</div>';
+			$(body).empty().append($(document.createElement('div')).addClass('alert alert-warning mb-0').attr('role', 'alert').text('Unable to load this fit.'));
 			body.removeAttribute('data-zkb-loading');
 		});
 }
@@ -1063,7 +1081,7 @@ function moveOut() {
 
 	// If location div is empty or only has whitespace, show "All systems" placeholder
 	if (location == 'location' && $("#location").html().trim() == "") {
-		$("#location").html('All systems');
+		$("#location").text('All systems');
 	}
 	clickPage1();
 }
@@ -1764,25 +1782,17 @@ function btn_export() {
 	}
 
 	// Show a modal with the filter and option to copy to clipboard
-	var modal = $(`
-		<div class="modal fade" id="exportModal" tabindex="-1" role="dialog" aria-labelledby="exportModalLabel" aria-hidden="true">
-		  <div class="modal-dialog" role="document">
-		    <div class="modal-content">
-		      <div class="modal-header">
-		        <h5 class="modal-title" id="exportModalLabel">zKillBot Export</h5>
-		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-		      </div>
-		      <div class="modal-body">
-		        <p>Copy the filter below to use in zkillbot:</p>
-		        <input type="text" class="form-control" id="zkillFilterInput" readonly>
-		      </div>
-		      <div class="modal-footer">
-		        <button type="button" class="btn btn-primary" id="copyZkillFilter">Copy to Clipboard</button>
-		      </div>
-		    </div>
-		  </div>
-		</div>
-	`);
+	var modal = $(document.createElement('div')).addClass('modal fade').attr({id: 'exportModal', tabindex: '-1', role: 'dialog', 'aria-labelledby': 'exportModalLabel', 'aria-hidden': 'true'});
+	var content = $(document.createElement('div')).addClass('modal-content');
+	content.append($(document.createElement('div')).addClass('modal-header').append(
+		$(document.createElement('h5')).addClass('modal-title').attr('id', 'exportModalLabel').text('zKillBot Export'),
+		$(document.createElement('button')).addClass('btn-close').attr({type: 'button', 'data-bs-dismiss': 'modal', 'aria-label': 'Close'})));
+	content.append($(document.createElement('div')).addClass('modal-body').append(
+		$(document.createElement('p')).text('Copy the filter below to use in zkillbot:'),
+		$(document.createElement('input')).addClass('form-control').attr({type: 'text', id: 'zkillFilterInput', readonly: true})));
+	content.append($(document.createElement('div')).addClass('modal-footer').append(
+		$(document.createElement('button')).addClass('btn btn-primary').attr({type: 'button', id: 'copyZkillFilter'}).text('Copy to Clipboard')));
+	modal.append($(document.createElement('div')).addClass('modal-dialog').attr('role', 'document').append(content));
 	modal.find('#zkillFilterInput').val('/zkillbot subscribe advanced:' + filter);
 	$('body').append(modal);
 	const modalEl = modal[0];

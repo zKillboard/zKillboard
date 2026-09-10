@@ -1,38 +1,49 @@
 (function( $ ) {
     let query_count = 0;
 
-	function attr_text(value) {
-		return String(value || '').replace(/[&<>"']/g, function(char) {
-			return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char];
-		});
-	}
+	function imageNode(item) {
+		if (item.image == '') return document.createTextNode('');
 
-	function image_html(item) {
-		if (item.image == '') return '';
-
-		var onerror = '';
-		var alt = attr_text(item.name);
+		var image = document.createElement('img');
+		image.src = item.image;
+		image.width = 32;
+		image.height = 32;
+		image.alt = item.name || '';
 		if (item.type == 'item') {
 			var id = parseInt(item.id);
-			onerror = ' onerror="this.onerror=function(){this.removeAttribute(\'onerror\'); this.src=\'/img/icons/' + id + '_64.png\';}; this.src=\'https://images.evetech.net/types/' + id + '/bp?size=32\';"';
+			image.onerror = function() {
+				this.onerror = function() {
+					this.onerror = null;
+					this.src = '/img/icons/' + id + '_64.png';
+				};
+				this.src = 'https://images.evetech.net/types/' + id + '/bp?size=32';
+			};
 		}
-
 		if (item.type == 'ship') {
-			var pipLabel = item.pip ? item.pip.replace(/^pip_/, '').replace(/\.png$/, '').replace(/^tech([0-9])$/, 'Tech $1') : '';
-			pipLabel = pipLabel ? pipLabel.charAt(0).toUpperCase() + pipLabel.slice(1) : '';
-			var pip = item.pip ? '<img class="pip" src="/img/pips/' + item.pip + '" alt="' + attr_text(pipLabel) + '">' : '';
-			return '<span class="shipImageSpan" data-l="32px" data-i="32" style="height: 32px; width: 32px; --size: 32px; --sizei: 32;">' +
-				'<img class="shipImageRender eveimage img-rounded" src="' + item.image + '" width="32" height="32" alt="' + alt + '" onerror="this.setAttribute(\'shipImageError\', \'true\')">' +
-				pip +
-				'</span>';
+			var wrap = document.createElement('span');
+			wrap.className = 'shipImageSpan';
+			wrap.setAttribute('data-l', '32px');
+			wrap.setAttribute('data-i', '32');
+			wrap.style.cssText = 'height: 32px; width: 32px; --size: 32px; --sizei: 32;';
+			image.className = 'shipImageRender eveimage img-rounded';
+			image.onerror = function() { this.setAttribute('shipImageError', 'true'); };
+			wrap.append(image);
+			if (item.pip) {
+				var pipLabel = item.pip.replace(/^pip_/, '').replace(/\.png$/, '').replace(/^tech([0-9])$/, 'Tech $1');
+				var pip = document.createElement('img');
+				pip.className = 'pip';
+				pip.src = '/img/pips/' + item.pip;
+				pip.alt = pipLabel ? pipLabel.charAt(0).toUpperCase() + pipLabel.slice(1) : '';
+				wrap.append(pip);
+			}
+			return wrap;
 		}
-
-		return '<img src="' + item.image + '" width="32" height="32" alt="' + alt + '"' + onerror + '>';
+		return image;
 	}
 
 	var zz_search = function(element, callback, source) {
 		//create our objects and things
-		this.data = {}, this.data['element'] = element, this.data['menu'] = $('<ul class="autocomplete dropdown-menu" style="display: none;"></ul>').appendTo('body'), this.callback = callback;
+		this.data = {}, this.data['element'] = element, this.data['menu'] = $(document.createElement('ul')).addClass('autocomplete dropdown-menu').hide().appendTo('body'), this.callback = callback;
 		this.data['isNavbarSearch'] = element.attr('id') == 'searchbox';
 		if (this.data['isNavbarSearch']) this.data['menu'].addClass('nav-search-autocomplete');
 		this.data['source'] = source || element.data('zkbAutocompleteSource') || '/autocomplete/';
@@ -164,11 +175,26 @@
 					//empty the dropdown and append the new data
 					this.data['menu'].empty();
 					if (result.length == 0) {
-						this.data['menu'].append($('<li class="autocomplete-empty"><i class="fas fa-search" aria-hidden="true"></i><span>No results</span></li>'));
+						this.data['menu'].append($(document.createElement('li')).addClass('autocomplete-empty').append($(document.createElement('i')).addClass('fas fa-search').attr('aria-hidden', 'true'), $(document.createElement('span')).text('No results')));
 					} else {
-						var itemHtml = $.proxy(function(item, index) {
+						var itemNode = $.proxy(function(item, index) {
 							var href = this.data['linkPrefix'] != '' ? this.data['linkPrefix'] + item.id + '/' : '/' + item.type + '/' + item.id + '/';
-							return $('<li><a href="' + href + '">' + image_html(item) + '<p style="width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">' + item.name.replace(RegExp('(' + this.data['element'].val() + ')', "gi"), function($1, match){ return '<strong>' + match + '</strong>'; } ) + '</p><span><small>' + item.type + '</small></span></a></li>').attr('data-value', JSON.stringify(item));
+							var name = document.createElement('p');
+							name.style.cssText = 'width: 100%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;';
+							var query = this.data['element'].val().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+							var offset = 0;
+							if (query) item.name.replace(new RegExp(query, 'gi'), function(match, index) {
+								name.append(document.createTextNode(item.name.slice(offset, index)));
+								var strong = document.createElement('strong');
+								strong.textContent = match;
+								name.append(strong);
+								offset = index + match.length;
+								return match;
+							});
+							name.append(document.createTextNode(item.name.slice(offset)));
+							return $(document.createElement('li')).attr('data-value', JSON.stringify(item)).append(
+								$(document.createElement('a')).attr('href', href).append(imageNode(item), name,
+									$(document.createElement('span')).append($(document.createElement('small')).text(item.type))));
 						}, this);
 						if (this.data['menu'].hasClass('nav-search-autocomplete')) {
 							var groups = {};
@@ -182,13 +208,13 @@
 								groups[item.type].push({ item: item, index: index });
 							}, this));
 							$.each(typeOrder, $.proxy(function(index, type) {
-								this.data['menu'].append($('<li class="dropdown-header autocomplete-group-header"></li>').text(typeLabels[type] || type));
+								this.data['menu'].append($(document.createElement('li')).addClass('dropdown-header autocomplete-group-header').text(typeLabels[type] || type));
 								$.each(groups[type], $.proxy(function(index, row) {
-									this.data['menu'].append(itemHtml(row.item, row.index));
+									this.data['menu'].append(itemNode(row.item, row.index));
 								}, this));
 							}, this));
 						} else {
-							this.data['menu'].append($.map(result, itemHtml));
+							this.data['menu'].append($.map(result, itemNode));
 						}
 					}
 
