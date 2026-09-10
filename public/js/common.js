@@ -947,6 +947,7 @@ function runSpaPageInitializers(pageAssets) {
     if (typeof window.zkbInitScanalyzer === "function" && document.querySelector("#scaninput") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/scanalyzer.js")) window.zkbInitScanalyzer();
     if (typeof window.zkbInitAsearch === "function" && document.querySelector("#asearchcontent") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/asearch.js")) window.zkbInitAsearch();
     if (typeof window.zkbInitFits === "function" && document.querySelector("#fit-ship-form") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/fits.js")) window.zkbInitFits();
+    if (typeof window.zkbInitSimulate === "function" && document.querySelector("#simulate") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/simulate.js")) window.zkbInitSimulate();
     if (typeof window.zkbInitSovereigntyMap === "function" && document.querySelector(".sovereignty-map-component") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/sovereignty-map.js")) window.zkbInitSovereigntyMap();
     if (typeof window.resizeMobileFittingWheel === "function") window.resizeMobileFittingWheel();
 }
@@ -1454,13 +1455,15 @@ function audio(uri)
     audio.play();
 }
 
-function saveFitting(id) {
+function saveFitting(id, fit = null) {
     $('#modalMessageBody').html('<div style="color: white;">Saving fit....</div>');
     showModal('#modalMessage');
 
     var request = $.ajax({
-url: "/ccpsavefit/" + id + "/",
-type: "GET",
+url: fit ? "/simulate/save/" : "/ccpsavefit/" + id + "/",
+type: fit ? "POST" : "GET",
+contentType: fit ? "application/json" : undefined,
+data: fit ? JSON.stringify(fit) : undefined,
 dataType: "text"
 });
 
@@ -1468,6 +1471,10 @@ request.done(function(msg) {
         $('#modalMessageBody').html('<div style="color: white;">' + msg + '</div>');
         showModal('#modalMessage');
         });
+request.fail(function() {
+    $('#modalMessageBody').text('Unable to save the fit. Please try again.');
+});
+
 }
 
 

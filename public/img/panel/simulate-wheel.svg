@@ -1,0 +1,558 @@
+<!--
+Fitting wheel by David Douglas (ddouglas).
+Source: https://github.com/eveisesi/fitting-wheel-svg
+Adapted from zkilljs/www/public/img/tyrannis-plain.svg; original geometry retained.
+
+MIT License
+
+Copyright (c) 2020 EveisESI
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:html="http://www.w3.org/1999/xhtml" id="simulate-wheel-svg" viewBox="0 0 335 335" y="0px" x="0px" class="w-100 h-100 d-block" aria-label="Ship fitting wheel">
+   <foreignObject x="68.746025" y="68.413689" width="205" height="205"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-bigship" class="w-100 h-100"></div></foreignObject><g transform="translate(-102.17693,-72.665946)">
+      
+      <path fill="#a5a5a5" d="m 362.917,191.729 4.112,-7.122 h -8.224 -8.182 C 332.858,159.167 303.382,142.51 270,142.51 c -33.383,0 -62.858,16.657 -80.623,42.097 h -8.13 -8.224 l 4.112,7.122 4.031,6.982 c -6.057,12.76 -9.456,27.026 -9.456,42.09 0,15.393 3.562,29.944 9.871,42.911 h 5.285 5.858 l -2.929,5.074 -2.743,4.75 c 16.119,25.284 43.487,42.701 75.056,45.212 l 3.78,6.547 4.112,7.122 4.112,-7.122 3.78,-6.547 c 31.619,-2.515 59.027,-19.982 75.136,-45.332 l -2.673,-4.63 -2.929,-5.074 h 5.858 5.135 c 6.309,-12.967 9.871,-27.518 9.871,-42.911 0,-15.044 -3.391,-29.292 -9.433,-42.039 z m 1.857,49.073 c 0,13.741 -2.886,26.983 -8.581,39.396 h -14.856 l 7.565,13.109 c -16.037,24.021 -42.532,39.648 -71.29,41.936 l -1.843,0.147 -5.771,9.996 -5.768,-9.996 -1.843,-0.147 c -28.699,-2.282 -55.162,-17.865 -71.21,-41.822 l 7.634,-13.223 h -15.004 c -5.695,-12.413 -8.581,-25.655 -8.581,-39.396 0,-14.185 3.067,-27.839 9.117,-40.581 l 0.79,-1.669 -6.02,-10.429 h 12.097 l 1.048,-1.504 c 17.751,-25.417 46.812,-40.593 77.741,-40.593 30.929,0 59.992,15.176 77.743,40.593 l 1.048,1.504 h 12.148 l -6.047,10.479 0.79,1.666 c 6.033,12.734 9.093,26.372 9.093,40.534 z" />
+      
+      <path fill="#a5a5a5" d="m 414.267,162.301 -1,-1.833 h -8.89 l 4.347,-7.533 -1.181,-1.808 C 377.051,104.452 325.634,76.586 270,76.586 c -55.268,0 -106.497,27.575 -137.044,73.765 l -1.199,1.813 4.793,8.304 h -9.815 l -1,1.833 c -13.049,23.931 -19.948,51.076 -19.948,78.501 0,87.661 68.53,159.702 156.015,164.008 l 2.145,0.105 6.054,-10.488 6.057,10.488 2.143,-0.105 c 87.487,-4.306 156.017,-76.347 156.017,-164.008 -0.003,-27.425 -6.902,-54.57 -19.951,-78.501 z m -136.24,238.997 -3.915,-6.781 -4.112,-7.122 -4.112,7.122 -3.915,6.781 C 176.951,397.115 109.3,326.861 109.3,240.801 c 0,-27.825 7.077,-53.996 19.522,-76.818 h 5.594 8.224 l -4.112,-7.122 -2.639,-4.571 C 164.646,108.802 213.961,80.101 270,80.101 c 56.362,0 105.913,29.039 134.599,72.947 l -2.201,3.813 -4.112,7.122 h 8.224 4.669 c 12.445,22.823 19.522,48.993 19.522,76.818 -0.001,86.06 -67.652,156.314 -152.674,160.497 z" />
+      
+      <path fill="#0d1517" d="m 411.178,163.982 h -4.669 -8.224 l 4.112,-7.122 2.201,-3.813 C 375.913,109.139 326.362,80.101 270,80.101 c -56.039,0 -105.354,28.702 -134.112,72.188 l 2.639,4.571 4.112,7.122 h -8.224 -5.594 c -12.444,22.823 -19.521,48.993 -19.521,76.819 0,86.06 67.651,156.314 152.673,160.497 l 3.915,-6.781 4.112,-7.122 4.112,7.122 3.915,6.781 C 363.05,397.115 430.7,326.861 430.7,240.801 c 0,-27.826 -7.077,-53.996 -19.522,-76.819 z m -52.759,119.73 h -5.135 -5.858 l 2.929,5.074 2.673,4.63 c -16.109,25.351 -43.516,42.817 -75.136,45.332 l -3.78,6.547 -4.112,7.122 -4.112,-7.122 -3.78,-6.547 c -31.569,-2.511 -58.937,-19.927 -75.056,-45.212 l 2.743,-4.75 2.929,-5.074 h -5.858 -5.285 c -6.309,-12.967 -9.871,-27.518 -9.871,-42.911 0,-15.064 3.399,-29.33 9.456,-42.09 l -4.031,-6.982 -4.112,-7.122 h 8.224 8.13 c 17.765,-25.44 47.241,-42.097 80.623,-42.097 33.383,0 62.858,16.657 80.623,42.097 h 8.182 8.224 l -4.112,7.122 -4.06,7.032 c 6.042,12.747 9.433,26.995 9.433,42.039 0,15.394 -3.562,29.945 -9.871,42.912 z" />
+   </g>
+   
+   
+   <g id="loSlot0" class="slot loSlotRack flag11" style="display: none;">
+      <g class="fitted">
+         <g style="stroke-width:2.35801" transform="matrix(0.14258043,0.39950833,-0.39931708,0.14251218,348.61671,76.862939)">
+            <g transform="translate(-168.81042,-36.38373)" style="fill:none;stroke-width:2.358">
+               <g style="fill:none;stroke-width:2.358">
+                  <path fill="transparent" stroke="#808080" stroke-width="11.7566" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" style="fill:none;stroke-width:2.358" />
+               </g>
+            </g>
+            <rect style="fill:#999;stroke:none;stroke-width:2.358" width="20" height="5" x="125.19523" y="-64.67881" ry="0" transform="matrix(0.00221434,0.99999755,-0.99999467,0.00326547,0,0)" rx="0" />
+         </g>
+         <foreignObject x="287.04449" y="106.02922" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-low1" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="262.04364" y="120.00013" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-low1l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="loSlot1" class="slot loSlotRack flag12" style="display: none;">
+      <g class="fitted">
+         <g style="stroke-width:2.35801" transform="matrix(0.04179714,0.42212449,-0.42192242,0.04177714,365.61897,123.23093)">
+            <g transform="translate(-168.81042,-36.38373)" style="fill:none;stroke-width:2.358">
+               <g style="fill:none;stroke-width:2.358">
+                  <path fill="transparent" stroke="#808080" stroke-width="11.7566" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" style="fill:none;stroke-width:2.358" />
+               </g>
+            </g>
+            <rect style="fill:#999;stroke:none;stroke-width:2.358" width="20" height="5" x="125.19523" y="-64.67881" ry="0" transform="matrix(0.00221434,0.99999755,-0.99999467,0.00326547,0,0)" rx="0" />
+         </g>
+         <foreignObject x="294.13037" y="138.27432" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-low2" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="266.96521" y="147.08856" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-low2l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="loSlot2" class="slot loSlotRack flag13" style="display: none;">
+      <g class="fitted">
+         <g transform="matrix(-0.06474019,0.41921928,-0.41901859,-0.0647092,370.7897,172.85827)" style="stroke-width:2.35801">
+            <g style="fill:none;stroke-width:2.358" transform="translate(-168.81042,-36.38373)">
+               <g style="fill:none;stroke-width:2.358">
+                  <path style="fill:none;stroke-width:2.358" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" stroke-width="11.7566" stroke="#808080" fill="transparent" />
+               </g>
+            </g>
+            <rect rx="0" transform="matrix(0.00221434,0.99999755,-0.99999467,0.00326547,0,0)" ry="0" y="-64.67881" x="125.19523" height="5" width="20" style="fill:#999;stroke:none;stroke-width:2.358" />
+         </g>
+         <foreignObject x="293.02155" y="174.7477" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-low3" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="266.71594" y="173.91942" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-low3l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="loSlot3" class="slot loSlotRack flag14" style="display: none;">
+      <g class="fitted">
+         <g style="stroke-width:2.35801" transform="matrix(-0.16193726,0.39206174,-0.39187406,-0.16185974,363.64334,221.23713)">
+            <g transform="translate(-168.81042,-36.38373)" style="fill:none;stroke-width:2.358">
+               <g style="fill:none;stroke-width:2.358">
+                  <path fill="transparent" stroke="#808080" stroke-width="11.7566" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" style="fill:none;stroke-width:2.358" />
+               </g>
+            </g>
+            <rect style="fill:#999;stroke:none;stroke-width:2.358" width="20" height="5" x="125.19523" y="-64.67881" ry="0" transform="matrix(0.00221434,0.99999755,-0.99999467,0.00326547,0,0)" rx="0" />
+         </g>
+         <foreignObject x="284.35342" y="207.41641" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-low4" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="259.91809" y="199.67514" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-low4l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="loSlot4" class="slot loSlotRack flag15" style="display: none;">
+      <g class="fitted">
+         <g transform="matrix(-0.24772843,0.34433519,-0.34417035,-0.24760982,345.60938,266.07584)" style="stroke-width:2.35801">
+            <g style="fill:none;stroke-width:2.358" transform="translate(-168.81042,-36.38373)">
+               <g style="fill:none;stroke-width:2.358">
+                  <path style="fill:none;stroke-width:2.358" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" stroke-width="11.7566" stroke="#808080" fill="transparent" />
+               </g>
+            </g>
+            <rect rx="0" transform="matrix(0.00221434,0.99999755,-0.99999467,0.00326547,0,0)" ry="0" y="-64.67881" x="125.19523" height="5" width="20" style="fill:#999;stroke:none;stroke-width:2.358" />
+         </g>
+         <foreignObject x="267.90253" y="237.32713" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-low5" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="246.54135" y="223.6868" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-low5l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="loSlot5" class="slot loSlotRack flag16" style="display: none;">
+      <g class="fitted">
+         <g style="stroke-width:2.35801" transform="matrix(-0.32895617,0.26781325,-0.26768505,-0.3287987,315.92267,307.57535)">
+            <g transform="translate(-168.81042,-36.38373)" style="fill:none;stroke-width:2.358">
+               <g style="fill:none;stroke-width:2.358">
+                  <path fill="transparent" stroke="#808080" stroke-width="11.7566" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" style="fill:none;stroke-width:2.358" />
+               </g>
+            </g>
+            <rect style="fill:#999;stroke:none;stroke-width:2.358" width="20" height="5" x="125.19523" y="-64.67881" ry="0" transform="matrix(0.00221434,0.99999755,-0.99999467,0.00326547,0,0)" rx="0" />
+         </g>
+         <foreignObject x="244.14014" y="262.91742" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-low6" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="227.68098" y="244.20886" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-low6l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="loSlot6" class="slot loSlotRack flag17" style="display: none;">
+      <g class="fitted">
+         <g transform="matrix(-0.38345937,0.18136982,-0.181283,-0.3832758,277.74096,339.00884)" style="stroke-width:2.35801">
+            <g style="fill:none;stroke-width:2.358" transform="translate(-168.81042,-36.38373)">
+               <g style="fill:none;stroke-width:2.358">
+                  <path style="fill:none;stroke-width:2.358" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" stroke-width="11.7566" stroke="#808080" fill="transparent" />
+               </g>
+            </g>
+            <rect rx="0" transform="matrix(0.00221434,0.99999755,-0.99999467,0.00326547,0,0)" ry="0" y="-64.67881" x="125.19523" height="5" width="20" style="fill:#999;stroke:none;stroke-width:2.358" />
+         </g>
+         <foreignObject x="212.65079" y="282.19324" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-low7" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="204.00168" y="259.33038" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-low7l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="loSlot7" class="slot loSlotRack flag18" style="display: none;">
+      <g class="fitted">
+         <g style="stroke-width:2.35801" transform="matrix(-0.4151436,0.08713142,-0.0870897,-0.41494487,233.75049,360.17364)">
+            <g transform="translate(-168.81042,-36.38373)" style="fill:none;stroke-width:2.358">
+               <g style="fill:none;stroke-width:2.358">
+                  <path fill="transparent" stroke="#808080" stroke-width="11.7566" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" style="fill:none;stroke-width:2.358" />
+               </g>
+            </g>
+            <rect style="fill:#999;stroke:none;stroke-width:2.358" width="20" height="5" x="125.19523" y="-64.67881" ry="0" transform="matrix(0.00221434,0.99999755,-0.99999467,0.00326547,0,0)" rx="0" />
+         </g>
+         <foreignObject x="180.4137" y="292.66199" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-low8" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="177.8298" y="268.30359" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-low8l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="medSlot0" class="slot medSlotRack flag19" style="display: none;">
+      <g class="fitted">
+         <g transform="matrix(-0.41374485,-0.09354839,0.0935036,-0.41354676,151.35576,370.47781)" style="stroke-width:2.35801">
+            <g transform="translate(-168.81042,-36.38373)" style="fill:none;stroke-width:2.358">
+               <g style="fill:none;stroke-width:2.358">
+                  <path fill="transparent" stroke="#808080" stroke-width="11.7566" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" style="fill:none;stroke-width:2.358" />
+               </g>
+            </g>
+            <rect style="fill:#999;stroke:none;stroke-width:2.358" width="19.990425" height="5.0023947" x="-58.949261" y="-140.019" ry="0" transform="matrix(-0.99996343,-0.00855174,0.00749557,-0.99997191,0,0)" rx="0" />
+            <rect rx="0" transform="matrix(-0.99996343,-0.00855175,0.00749556,-0.99997191,0,0)" ry="0" y="-139.82927" x="-87.768166" height="5.0023947" width="19.990425" style="fill:#999;stroke:none;stroke-width:2.358" />
+         </g>
+         <foreignObject x="122.69744" y="292.082" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-mid1" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="131.30202" y="265.4787" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-mid1l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="medSlot1" class="slot medSlotRack flag20" style="display: none;">
+      <g class="fitted">
+         <g style="stroke-width:2.35801" transform="matrix(-0.37936127,-0.18979232,0.18970145,-0.37917965,103.51735,360.03867)">
+            <g style="fill:none;stroke-width:2.358" transform="translate(-168.81042,-36.38373)">
+               <g style="fill:none;stroke-width:2.358">
+                  <path style="fill:none;stroke-width:2.358" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" stroke-width="11.7566" stroke="#808080" fill="transparent" />
+               </g>
+            </g>
+            <rect rx="0" transform="matrix(-0.99996343,-0.00855174,0.00749557,-0.99997191,0,0)" ry="0" y="-140.019" x="-58.949261" height="5.0023947" width="19.990425" style="fill:#999;stroke:none;stroke-width:2.358" />
+            <rect style="fill:#999;stroke:none;stroke-width:2.358" width="19.990425" height="5.0023947" x="-87.768166" y="-139.82927" ry="0" transform="matrix(-0.99996343,-0.00855175,0.00749556,-0.99997191,0,0)" rx="0" />
+         </g>
+         <foreignObject x="90.792671" y="279.86844" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-mid2" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="105.29631" y="256.00699" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-mid2l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="medSlot2" class="slot medSlotRack flag21" style="display: none;">
+      <g class="fitted">
+         <g transform="matrix(-0.32516759,-0.2724007,0.27227028,-0.32501192,60.223006,338.77389)" style="stroke-width:2.35801">
+            <g transform="translate(-168.81042,-36.38373)" style="fill:none;stroke-width:2.358">
+               <g style="fill:none;stroke-width:2.358">
+                  <path fill="transparent" stroke="#808080" stroke-width="11.7566" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" style="fill:none;stroke-width:2.358" />
+               </g>
+            </g>
+            <rect style="fill:#999;stroke:none;stroke-width:2.358" width="19.990425" height="5.0023947" x="-58.949261" y="-140.019" ry="0" transform="matrix(-0.99996343,-0.00855174,0.00749557,-0.99997191,0,0)" rx="0" />
+            <rect rx="0" transform="matrix(-0.99996343,-0.00855175,0.00749556,-0.99997191,0,0)" ry="0" y="-139.82927" x="-87.768166" height="5.0023947" width="19.990425" style="fill:#999;stroke:none;stroke-width:2.358" />
+         </g>
+         <foreignObject x="61.629723" y="261.50656" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-mid3" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="83.44487" y="241.1347" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-mid3l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="medSlot3" class="slot medSlotRack flag22" style="display: none;">
+      <g class="fitted">
+         <g style="stroke-width:2.35801" transform="matrix(-0.24906505,-0.34336964,0.34320523,-0.24894582,22.093477,307.18154)">
+            <g style="fill:none;stroke-width:2.358" transform="translate(-168.81042,-36.38373)">
+               <g style="fill:none;stroke-width:2.358">
+                  <path style="fill:none;stroke-width:2.358" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" stroke-width="11.7566" stroke="#808080" fill="transparent" />
+               </g>
+            </g>
+            <rect rx="0" transform="matrix(-0.99996343,-0.00855174,0.00749557,-0.99997191,0,0)" ry="0" y="-140.019" x="-58.949261" height="5.0023947" width="19.990425" style="fill:#999;stroke:none;stroke-width:2.358" />
+            <rect style="fill:#999;stroke:none;stroke-width:2.358" width="19.990425" height="5.0023947" x="-87.768166" y="-139.82927" ry="0" transform="matrix(-0.99996343,-0.00855175,0.00749556,-0.99997191,0,0)" rx="0" />
+         </g>
+         <foreignObject x="37.950405" y="236.41481" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-mid4" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="64.750671" y="222.02509" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-mid4l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="medSlot4" class="slot medSlotRack flag23" style="display: none;">
+      <g class="fitted">
+         <g transform="matrix(-0.16091131,-0.39248395,0.39229604,-0.16083429,-6.9252347,267.97902)" style="stroke-width:2.35801">
+            <g transform="translate(-168.81042,-36.38373)" style="fill:none;stroke-width:2.358">
+               <g style="fill:none;stroke-width:2.358">
+                  <path fill="transparent" stroke="#808080" stroke-width="11.7566" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" style="fill:none;stroke-width:2.358" />
+               </g>
+            </g>
+            <rect style="fill:#999;stroke:none;stroke-width:2.358" width="19.990425" height="5.0023947" x="-58.949261" y="-140.019" ry="0" transform="matrix(-0.99996343,-0.00855174,0.00749557,-0.99997191,0,0)" rx="0" />
+            <rect rx="0" transform="matrix(-0.99996343,-0.00855175,0.00749556,-0.99997191,0,0)" ry="0" y="-139.82927" x="-87.768166" height="5.0023947" width="19.990425" style="fill:#999;stroke:none;stroke-width:2.358" />
+         </g>
+         <foreignObject x="21.41643" y="206.25484" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-mid5" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="51.623192" y="198.26268" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-mid5l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="medSlot5" class="slot medSlotRack flag24" style="display: none;">
+      <g class="fitted">
+         <g style="stroke-width:2.35801" transform="matrix(-0.06580633,-0.41905325,0.41885262,-0.06577483,-25.718222,223.46262)">
+            <g style="fill:none;stroke-width:2.358" transform="translate(-168.81042,-36.38373)">
+               <g style="fill:none;stroke-width:2.358">
+                  <path style="fill:none;stroke-width:2.358" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" stroke-width="11.7566" stroke="#808080" fill="transparent" />
+               </g>
+            </g>
+            <rect rx="0" transform="matrix(-0.99996343,-0.00855174,0.00749557,-0.99997191,0,0)" ry="0" y="-140.019" x="-58.949261" height="5.0023947" width="19.990425" style="fill:#999;stroke:none;stroke-width:2.358" />
+            <rect style="fill:#999;stroke:none;stroke-width:2.358" width="19.990425" height="5.0023947" x="-87.768166" y="-139.82927" ry="0" transform="matrix(-0.99996343,-0.00855175,0.00749556,-0.99997191,0,0)" rx="0" />
+         </g>
+         <foreignObject x="12.277043" y="173.18687" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-mid6" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="43.480831" y="172.00774" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-mid6l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="medSlot6" class="slot medSlotRack flag25" style="display: none;">
+      <g class="fitted">
+         <g transform="matrix(0.03472347,-0.42276516,0.42256275,0.03470684,-33.66387,175.45462)" style="stroke-width:2.35801">
+            <g transform="translate(-168.81042,-36.38373)" style="fill:none;stroke-width:2.358">
+               <g style="fill:none;stroke-width:2.358">
+                  <path fill="transparent" stroke="#808080" stroke-width="11.7566" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" style="fill:none;stroke-width:2.358" />
+               </g>
+            </g>
+            <rect style="fill:#999;stroke:none;stroke-width:2.358" width="19.990425" height="5.0023947" x="-58.949261" y="-140.019" ry="0" transform="matrix(-0.99996343,-0.00855174,0.00749557,-0.99997191,0,0)" rx="0" />
+            <rect rx="0" transform="matrix(-0.99996343,-0.00855175,0.00749556,-0.99997191,0,0)" ry="0" y="-139.82927" x="-87.768166" height="5.0023947" width="19.990425" style="fill:#999;stroke:none;stroke-width:2.358" />
+         </g>
+         <foreignObject x="10.949366" y="138.3587" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-mid7" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="42.035431" y="144.85721" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-mid7l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="medSlot7" class="slot medSlotRack flag26" style="display: none;">
+      <g class="fitted">
+         <g style="stroke-width:2.35801" transform="matrix(0.13506195,-0.40211239,0.40191986,0.13499728,-29.944782,126.4623)">
+            <g style="fill:none;stroke-width:2.358" transform="translate(-168.81042,-36.38373)">
+               <g style="fill:none;stroke-width:2.358">
+                  <path style="fill:none;stroke-width:2.358" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" stroke-width="11.7566" stroke="#808080" fill="transparent" />
+               </g>
+            </g>
+            <rect rx="0" transform="matrix(-0.99996343,-0.00855174,0.00749557,-0.99997191,0,0)" ry="0" y="-140.019" x="-58.949261" height="5.0023947" width="19.990425" style="fill:#999;stroke:none;stroke-width:2.358" />
+            <rect style="fill:#999;stroke:none;stroke-width:2.358" width="19.990425" height="5.0023947" x="-87.768166" y="-139.82927" ry="0" transform="matrix(-0.99996343,-0.00855175,0.00749556,-0.99997191,0,0)" rx="0" />
+         </g>
+         <foreignObject x="17.345249" y="104.54626" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-mid8" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="47.053497" y="118.16845" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-mid8l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="hiSlot0" class="slot hiSlotRack flag27" style="display: none;">
+      <g class="fitted">
+         <g transform="matrix(0.27368205,-0.29554387,0.30613311,0.26521702,-25.97128,86.047464)" style="stroke-width:2.47643">
+            <g transform="translate(120.23686,-139.05355)" style="stroke-width:2.47643">
+               <g transform="translate(-175.94714,100.15297)" style="fill:none;stroke-width:2.47642">
+                  <g style="fill:none;stroke-width:2.47642">
+                     <g>
+                        <path style="fill:none;stroke-width:2.47642" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" stroke-width="11.7566" stroke="#808080" fill="transparent" />
+                     </g>
+                  </g>
+               </g>
+               <rect style="fill:#999;stroke:none;stroke-width:2.47642" width="19.992865" height="5.0017872" x="98.584892" y="264.60129" ry="0" transform="matrix(-0.8631108,0.50501461,0.50374905,0.86385004,0,0)" rx="0" />
+               <rect rx="0" transform="matrix(0.86745383,0.49751769,0.49806845,-0.86713771,0,0)" ry="0" y="-216.61035" x="190.78946" height="5.0018005" width="19.992792" style="fill:#999;stroke:none;stroke-width:2.47642" />
+               <rect rx="0" transform="matrix(0.00461025,0.99998937,0.99999364,-0.00356563,0,0)" ry="0" y="50.329563" x="253.68503" height="5" width="19.999998" style="fill:#999;stroke:none;stroke-width:2.47642" />
+            </g>
+         </g>
+         <foreignObject x="47.422134" y="54.528896" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-high1" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="71.231323" y="74.382492" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-high1l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="hiSlot1" class="slot hiSlotRack flag28" style="display: none;">
+      <g class="fitted">
+         <g style="stroke-width:2.47643" transform="matrix(0.33795549,-0.22496462,0.23333036,0.32717273,-2.0449835,44.021946)">
+            <g transform="translate(120.23686,-139.05355)" style="stroke-width:2.47643">
+               <g style="fill:none;stroke-width:2.47642" transform="translate(-175.94714,100.15297)">
+                  <g style="fill:none;stroke-width:2.47642">
+                     <path style="fill:none;stroke-width:2.47642" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" stroke-width="11.7566" stroke="#808080" fill="transparent" />
+                  </g>
+               </g>
+               <rect rx="0" transform="matrix(-0.8631108,0.50501461,0.50374905,0.86385004,0,0)" ry="0" y="264.60129" x="98.584892" height="5.0017872" width="19.992865" style="fill:#999;stroke:none;stroke-width:2.47642" />
+               <rect style="fill:#999;stroke:none;stroke-width:2.47642" width="19.992792" height="5.0018005" x="190.78946" y="-216.61035" ry="0" transform="matrix(0.86745383,0.49751769,0.49806845,-0.86713771,0,0)" rx="0" />
+               <rect style="fill:#999;stroke:none;stroke-width:2.47642" width="19.999998" height="5" x="253.68503" y="50.329563" ry="0" transform="matrix(0.00461025,0.99998937,0.99999364,-0.00356563,0,0)" rx="0" />
+            </g>
+         </g>
+         <foreignObject x="72.929329" y="33.425224" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-high2" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="91.919563" y="58.679363" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-high2l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="hiSlot2" class="slot hiSlotRack flag29" style="display: none;">
+      <g class="fitted">
+         <g style="stroke-width:2.47643" transform="matrix(0.38466394,-0.13839191,0.14395464,0.37211376,31.700792,7.9382574)">
+            <g transform="translate(120.23686,-139.05355)" style="stroke-width:2.47643">
+               <g style="fill:none;stroke-width:2.47642" transform="translate(-175.94714,100.15297)">
+                  <g style="fill:none;stroke-width:2.47642">
+                     <path style="fill:none;stroke-width:2.47642" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" stroke-width="11.7566" stroke="#808080" fill="transparent" />
+                  </g>
+               </g>
+               <rect rx="0" transform="matrix(-0.8631108,0.50501461,0.50374905,0.86385004,0,0)" ry="0" y="264.60129" x="98.584892" height="5.0017872" width="19.992865" style="fill:#999;stroke:none;stroke-width:2.47642" />
+               <rect style="fill:#999;stroke:none;stroke-width:2.47642" width="19.992792" height="5.0018005" x="190.78946" y="-216.61035" ry="0" transform="matrix(0.86745383,0.49751769,0.49806845,-0.86713771,0,0)" rx="0" />
+               <rect style="fill:#999;stroke:none;stroke-width:2.47642" width="19.999998" height="5" x="253.68503" y="50.329563" ry="0" transform="matrix(0.00461025,0.99998937,0.99999364,-0.00356563,0,0)" rx="0" />
+            </g>
+         </g>
+         <foreignObject x="102.59079" y="18.220612" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-high3" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="115.43271" y="46.881248" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-high3l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="hiSlot3" class="slot hiSlotRack flag30" style="display: none;">
+      <g class="fitted">
+         <g style="stroke-width:2.47643" transform="matrix(0.40784159,-0.04618957,0.04870443,0.39429836,73.216432,-18.80523)">
+            <g transform="translate(120.23686,-139.05355)" style="stroke-width:2.47643">
+               <g style="fill:none;stroke-width:2.47642" transform="translate(-175.94714,100.15297)">
+                  <g style="fill:none;stroke-width:2.47642">
+                     <path style="fill:none;stroke-width:2.47642" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" stroke-width="11.7566" stroke="#808080" fill="transparent" />
+                  </g>
+               </g>
+               <rect rx="0" transform="matrix(-0.8631108,0.50501461,0.50374905,0.86385004,0,0)" ry="0" y="264.60129" x="98.584892" height="5.0017872" width="19.992865" style="fill:#999;stroke:none;stroke-width:2.47642" />
+               <rect style="fill:#999;stroke:none;stroke-width:2.47642" width="19.992792" height="5.0018005" x="190.78946" y="-216.61035" ry="0" transform="matrix(0.86745383,0.49751769,0.49806845,-0.86713771,0,0)" rx="0" />
+               <rect style="fill:#999;stroke:none;stroke-width:2.47642" width="19.999998" height="5" x="253.68503" y="50.329563" ry="0" transform="matrix(0.00461025,0.99998937,0.99999364,-0.00356563,0,0)" rx="0" />
+            </g>
+         </g>
+         <foreignObject x="135.57565" y="10.327506" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-high4" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="142.35806" y="40.317509" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-high4l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="hiSlot4" class="slot hiSlotRack flag31" style="display: none;">
+      <g class="fitted">
+         <g transform="matrix(0.40790747,0.04751213,-0.04815004,0.39414133,119.74278,-35.057187)" style="stroke-width:2.47643">
+            <g transform="translate(120.23686,-139.05355)" style="stroke-width:2.47643">
+               <g transform="translate(-175.94714,100.15297)" style="fill:none;stroke-width:2.47642">
+                  <g style="fill:none;stroke-width:2.47642">
+                     <path fill="transparent" stroke="#808080" stroke-width="11.7566" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" style="fill:none;stroke-width:2.47642" />
+                  </g>
+               </g>
+               <rect style="fill:#999;stroke:none;stroke-width:2.47642" width="19.992865" height="5.0017872" x="98.584892" y="264.60129" ry="0" transform="matrix(-0.8631108,0.50501461,0.50374905,0.86385004,0,0)" rx="0" />
+               <rect rx="0" transform="matrix(0.86745383,0.49751769,0.49806845,-0.86713771,0,0)" ry="0" y="-216.61035" x="190.78946" height="5.0018005" width="19.992792" style="fill:#999;stroke:none;stroke-width:2.47642" />
+               <rect rx="0" transform="matrix(0.00461025,0.99998937,0.99999364,-0.00356563,0,0)" ry="0" y="50.329563" x="253.68503" height="5" width="19.999998" style="fill:#999;stroke:none;stroke-width:2.47642" />
+            </g>
+         </g>
+         <foreignObject x="168.57268" y="11.407616" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-high5" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="168.35806" y="40.317509" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-high5l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="hiSlot5" class="slot hiSlotRack flag32" style="display: none;">
+      <g class="fitted">
+         <g style="stroke-width:2.47643" transform="matrix(0.38508903,0.13904324,-0.14281475,0.37187109,169.25916,-40.411316)">
+            <g transform="translate(120.23686,-139.05355)" style="stroke-width:2.47643">
+               <g style="fill:none;stroke-width:2.47642" transform="translate(-175.94714,100.15297)">
+                  <g style="fill:none;stroke-width:2.47642">
+                     <path style="fill:none;stroke-width:2.47642" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" stroke-width="11.7566" stroke="#808080" fill="transparent" />
+                  </g>
+               </g>
+               <rect rx="0" transform="matrix(-0.8631108,0.50501461,0.50374905,0.86385004,0,0)" ry="0" y="264.60129" x="98.584892" height="5.0017872" width="19.992865" style="fill:#999;stroke:none;stroke-width:2.47642" />
+               <rect style="fill:#999;stroke:none;stroke-width:2.47642" width="19.992792" height="5.0018005" x="190.78946" y="-216.61035" ry="0" transform="matrix(0.86745383,0.49751769,0.49806845,-0.86713771,0,0)" rx="0" />
+               <rect style="fill:#999;stroke:none;stroke-width:2.47642" width="19.999998" height="5" x="253.68503" y="50.329563" ry="0" transform="matrix(0.00461025,0.99998937,0.99999364,-0.00356563,0,0)" rx="0" />
+            </g>
+         </g>
+         <foreignObject x="201.30829" y="19.633062" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-high6" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="194.94536" y="46.216564" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-high6l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="hiSlot6" class="slot hiSlotRack flag33" style="display: none;">
+      <g class="fitted">
+         <g transform="matrix(0.33880176,0.22531754,-0.23210107,0.32693001,219.30823,-34.264042)" style="stroke-width:2.47643">
+            <g transform="translate(120.23686,-139.05355)" style="stroke-width:2.47643">
+               <g transform="translate(-175.94714,100.15297)" style="fill:none;stroke-width:2.47642">
+                  <g style="fill:none;stroke-width:2.47642">
+                     <path fill="transparent" stroke="#808080" stroke-width="11.7566" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" style="fill:none;stroke-width:2.47642" />
+                  </g>
+               </g>
+               <rect style="fill:#999;stroke:none;stroke-width:2.47642" width="19.992865" height="5.0017872" x="98.584892" y="264.60129" ry="0" transform="matrix(-0.8631108,0.50501461,0.50374905,0.86385004,0,0)" rx="0" />
+               <rect rx="0" transform="matrix(0.86745383,0.49751769,0.49806845,-0.86713771,0,0)" ry="0" y="-216.61035" x="190.78946" height="5.0018005" width="19.992792" style="fill:#999;stroke:none;stroke-width:2.47642" />
+               <rect rx="0" transform="matrix(0.00461025,0.99998937,0.99999364,-0.00356563,0,0)" ry="0" y="50.329563" x="253.68503" height="5" width="19.999998" style="fill:#999;stroke:none;stroke-width:2.47642" />
+            </g>
+         </g>
+         <foreignObject x="231.46826" y="34.671505" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-high7" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="219.28934" y="59.177876" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-high7l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="hiSlot7" class="slot hiSlotRack flag34" style="display: none;">
+      <g class="fitted">
+         <g style="stroke-width:2.47643" transform="matrix(0.27555844,0.29516413,-0.30444684,0.26563918,265.4145,-16.743357)">
+            <g transform="translate(120.23686,-139.05355)" style="stroke-width:2.47643">
+               <g style="fill:none;stroke-width:2.47642" transform="translate(-175.94714,100.15297)">
+                  <g style="fill:none;stroke-width:2.47642">
+                     <path style="fill:none;stroke-width:2.47642" d="m 190,140 q 45,-5 80,0 l -5,70 q -30,-3 -70,0 z" stroke-width="11.7566" stroke="#808080" fill="transparent" />
+                  </g>
+               </g>
+               <rect rx="0" transform="matrix(-0.8631108,0.50501461,0.50374905,0.86385004,0,0)" ry="0" y="264.60129" x="98.584892" height="5.0017872" width="19.992865" style="fill:#999;stroke:none;stroke-width:2.47642" />
+               <rect style="fill:#999;stroke:none;stroke-width:2.47642" width="19.992792" height="5.0018005" x="190.78946" y="-216.61035" ry="0" transform="matrix(0.86745383,0.49751769,0.49806845,-0.86713771,0,0)" rx="0" />
+               <rect style="fill:#999;stroke:none;stroke-width:2.47642" width="19.999998" height="5" x="253.68503" y="50.329563" ry="0" transform="matrix(0.00461025,0.99998937,0.99999364,-0.00356563,0,0)" rx="0" />
+            </g>
+         </g>
+         <foreignObject x="256.14459" y="55.941345" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-high8" class="w-100 h-100"></div></foreignObject></g>
+      <g class="charge">
+         <foreignObject x="238.64822" y="76.376534" width="26" height="26"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-high8l" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="subSystem0" class="slot subSystemRack flag125" style="display: none;">
+      <g class="fitted">
+         <g transform="matrix(0.72854279,-0.5851356,0.59685915,0.71637958,-88.834203,-12.852654)" style="stroke-width:1.0714">
+            <g style="fill:none;stroke-width:2.52636" transform="matrix(0.42172657,-0.04563774,0.04561589,0.42152468,-26.914177,177.35408)">
+               <g style="fill:none;stroke-width:2.52636">
+                  <path style="fill:none;stroke-width:2.52636" d="m 190,140 q 45,-8 80,0 l -8,70 q -30,-6 -62,0 z" stroke-width="11.7566" stroke="#808080" fill="transparent" />
+               </g>
+            </g>
+            <g transform="matrix(3.7583823,-0.39923851,0.39923851,3.7583823,-83.106323,-59.105887)" style="stroke-width:1.0714">
+               <path style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="m 32.948827,80.789059 1.200573,-0.906183 1.187782,0.919349" />
+               <path d="m 35.893687,81.22157 1.190086,0.91276 -0.447155,1.422759" style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+               <path style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="m 36.395968,84.330368 -0.441516,1.426233 -1.493883,-0.0064" />
+               <path d="m 31.886377,84.330368 0.441516,1.426233 1.493883,-0.0064" style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+               <path style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="m 32.403272,81.213225 -1.195053,0.906247 0.43938,1.42518" />
+            </g>
+         </g>
+         <foreignObject x="95.540672" y="97.567093" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-sub1" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="subSystem1" class="slot subSystemRack flag126" style="display: none;">
+      <g class="fitted">
+         <g transform="matrix(0.89138421,-0.30000099,0.30404067,0.87498097,-6.0371743,-90.789053)" style="stroke-width:1.0714">
+            <g transform="matrix(0.42172657,-0.04563774,0.04561589,0.42152468,-26.914177,177.35408)" style="fill:none;stroke-width:2.52636">
+               <g style="fill:none;stroke-width:2.52636">
+                  <path fill="transparent" stroke="#808080" stroke-width="11.7566" d="m 190,140 q 45,-8 80,0 l -8,70 q -30,-6 -62,0 z" style="fill:none;stroke-width:2.52636" />
+               </g>
+            </g>
+            <g transform="matrix(3.7583823,-0.39923851,0.39923851,3.7583823,-83.106323,-59.105887)" style="stroke-width:1.0714">
+               <path d="m 32.948827,80.789059 1.200573,-0.906183 1.187782,0.919349" style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+               <path style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="m 35.893687,81.22157 1.190086,0.91276 -0.447155,1.422759" />
+               <path d="m 36.395968,84.330368 -0.441516,1.426233 -1.493883,-0.0064" style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+               <path style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="m 31.886377,84.330368 0.441516,1.426233 1.493883,-0.0064" />
+               <path d="m 32.403272,81.213225 -1.195053,0.906247 0.43938,1.42518" style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+            </g>
+         </g>
+         <foreignObject x="120.38319" y="80.036095" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-sub2" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="subSystem2" class="slot subSystemRack flag127" style="display: none;">
+      <g class="fitted">
+         <g transform="matrix(0.93596109,0.10192219,-0.1049217,0.91933616,119.9484,-139.83025)" style="stroke-width:1.0714">
+            <g style="fill:none;stroke-width:2.52636" transform="matrix(0.42172657,-0.04563774,0.04561589,0.42152468,-26.914177,177.35408)">
+               <g style="fill:none;stroke-width:2.52636">
+                  <path style="fill:none;stroke-width:2.52636" d="m 190,140 q 45,-8 80,0 l -8,70 q -30,-6 -62,0 z" stroke-width="11.7566" stroke="#808080" fill="transparent" />
+               </g>
+            </g>
+            <g transform="matrix(3.7583823,-0.39923851,0.39923851,3.7583823,-83.106323,-59.105887)" style="stroke-width:1.0714">
+               <path style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="m 32.948827,80.789059 1.200573,-0.906183 1.187782,0.919349" />
+               <path d="m 35.893687,81.22157 1.190086,0.91276 -0.447155,1.422759" style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+               <path style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="m 36.395968,84.330368 -0.441516,1.426233 -1.493883,-0.0064" />
+               <path d="m 31.886377,84.330368 0.441516,1.426233 1.493883,-0.0064" style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+               <path style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="m 32.403272,81.213225 -1.195053,0.906247 0.43938,1.42518" />
+            </g>
+         </g>
+         <foreignObject x="152.20485" y="73.140007" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-sub3" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="subSystem3" class="slot subSystemRack flag128" style="display: none;">
+      <g class="fitted">
+         <g transform="matrix(0.80650137,0.47642496,-0.48637648,0.79285027,252.79485,-132.16716)" style="stroke-width:1.0714">
+            <g transform="matrix(0.42172657,-0.04563774,0.04561589,0.42152468,-26.914177,177.35408)" style="fill:none;stroke-width:2.52636">
+               <g style="fill:none;stroke-width:2.52636">
+                  <path fill="transparent" stroke="#808080" stroke-width="11.7566" d="m 190,140 q 45,-8 80,0 l -8,70 q -30,-6 -62,0 z" style="fill:none;stroke-width:2.52636" />
+               </g>
+            </g>
+            <g transform="matrix(3.7583823,-0.39923851,0.39923851,3.7583823,-83.106323,-59.105887)" style="stroke-width:1.0714">
+               <path d="m 32.948827,80.789059 1.200573,-0.906183 1.187782,0.919349" style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+               <path style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="m 35.893687,81.22157 1.190086,0.91276 -0.447155,1.422759" />
+               <path d="m 36.395968,84.330368 -0.441516,1.426233 -1.493883,-0.0064" style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+               <path style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="m 31.886377,84.330368 0.441516,1.426233 1.493883,-0.0064" />
+               <path d="m 32.403272,81.213225 -1.195053,0.906247 0.43938,1.42518" style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+            </g>
+         </g>
+         <foreignObject x="183.94345" y="79.371407" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-sub4" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="subSystem4" class="slot subSystemRack flag129" style="display: none;">
+      <g class="fitted">
+         <g transform="matrix(0.56946285,0.73409452,-0.74979463,0.56322656,359.82564,-79.637392)" style="stroke-width:1.0714">
+            <g style="fill:none;stroke-width:2.52636" transform="matrix(0.42172657,-0.04563774,0.04561589,0.42152468,-26.914177,177.35408)">
+               <g style="fill:none;stroke-width:2.52636">
+                  <path style="fill:none;stroke-width:2.52636" d="m 190,140 q 45,-8 80,0 l -8,70 q -30,-6 -62,0 z" stroke-width="11.7566" stroke="#808080" fill="transparent" />
+               </g>
+            </g>
+            <g transform="matrix(3.7583823,-0.39923851,0.39923851,3.7583823,-83.106323,-59.105887)" style="stroke-width:1.0714">
+               <path style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="m 32.948827,80.789059 1.200573,-0.906183 1.187782,0.919349" />
+               <path d="m 35.893687,81.22157 1.190086,0.91276 -0.447155,1.422759" style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+               <path style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="m 36.395968,84.330368 -0.441516,1.426233 -1.493883,-0.0064" />
+               <path d="m 31.886377,84.330368 0.441516,1.426233 1.493883,-0.0064" style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+               <path style="fill:none;stroke:gray;stroke-width:.283474px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="m 32.403272,81.213225 -1.195053,0.906247 0.43938,1.42518" />
+            </g>
+         </g>
+         <foreignObject x="208.61978" y="97.234741" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-sub5" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="rigSlot0" class="slot rigRack flag92" style="display: none;">
+      <g class="fitted">
+         <g transform="rotate(16.38068,502.61462,-219.72224)">
+            <g transform="matrix(-0.4194982,-0.06290762,0.0628775,-0.41929737,362.6291,404.02815)" style="fill:none;stroke-width:2.358">
+               <g style="fill:none;stroke-width:2.358">
+                  <path fill="transparent" stroke="#808080" stroke-width="11.7566" d="m 190,140 q 45,-8 80,0 l -8,70 q -30,-6 -62,0 z" style="fill:none;stroke-width:2.358" />
+               </g>
+            </g>
+            <g transform="matrix(-3.7366245,-0.56786112,0.56786112,-3.7366245,765.37226,795.47516)">
+               <path d="m 149.78651,106.30006 c 6.7e-4,1.50276 -0.67513,2.22138 -2.22128,2.22113" style="fill:none;stroke:gray;stroke-width:.265;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+               <path style="fill:none;stroke:gray;stroke-width:.264999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" d="m 143.8975,106.30006 c -6.7e-4,1.50276 0.67513,2.22138 2.22128,2.22113" />
+               <path style="fill:none;stroke:gray;stroke-width:.264999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" d="m 149.78651,105.15363 c 6.7e-4,-1.50276 -0.67513,-2.22138 -2.22128,-2.22113" />
+               <path d="m 143.8975,105.15363 c -6.7e-4,-1.50276 0.67513,-2.22138 2.22128,-2.22113" style="fill:none;stroke:gray;stroke-width:.264999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+            </g>
+         </g>
+         <foreignObject x="118.72147" y="215.79749" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-rig1" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="rigSlot1" class="slot rigRack flag93" style="display: none;">
+      <g class="fitted">
+         <g transform="rotate(-8.5414574,-302.11386,1008.9749)">
+            <g style="fill:none;stroke-width:2.358" transform="matrix(-0.4194982,-0.06290762,0.0628775,-0.41929737,362.6291,404.02815)">
+               <g style="fill:none;stroke-width:2.358">
+                  <path style="fill:none;stroke-width:2.358" d="m 190,140 q 45,-8 80,0 l -8,70 q -30,-6 -62,0 z" stroke-width="11.7566" stroke="#808080" fill="transparent" />
+               </g>
+            </g>
+            <g transform="matrix(-3.7366245,-0.56786112,0.56786112,-3.7366245,765.37226,795.47516)">
+               <path style="fill:none;stroke:gray;stroke-width:.265;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" d="m 149.78651,106.30006 c 6.7e-4,1.50276 -0.67513,2.22138 -2.22128,2.22113" />
+               <path d="m 143.8975,106.30006 c -6.7e-4,1.50276 0.67513,2.22138 2.22128,2.22113" style="fill:none;stroke:gray;stroke-width:.264999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+               <path d="m 149.78651,105.15363 c 6.7e-4,-1.50276 -0.67513,-2.22138 -2.22128,-2.22113" style="fill:none;stroke:gray;stroke-width:.264999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+               <path style="fill:none;stroke:gray;stroke-width:.264999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" d="m 143.8975,105.15363 c -6.7e-4,-1.50276 0.67513,-2.22138 2.22128,-2.22113" />
+            </g>
+         </g>
+         <foreignObject x="151.45709" y="222.77667" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-rig2" class="w-100 h-100"></div></foreignObject></g>
+   </g>
+   <g id="rigSlot2" class="slot rigRack flag94" style="display: none;">
+      <g class="fitted">
+         <foreignObject x="184.52505" y="216.21292" width="32" height="32"><div xmlns="http://www.w3.org/1999/xhtml" id="simulate-rig3" class="w-100 h-100"></div></foreignObject><g transform="matrix(-0.95940913,0.28201796,0.28201796,0.95940913,376.41163,-150.66506)">
+            <g style="fill:none;stroke-width:2.358" transform="matrix(-0.4194982,-0.06290762,0.0628775,-0.41929737,362.6291,404.02815)">
+               <g style="fill:none;stroke-width:2.358">
+                  <path style="fill:none;stroke-width:2.358" d="m 190,140 q 45,-8 80,0 l -8,70 q -30,-6 -62,0 z" stroke-width="11.7566" stroke="#808080" fill="transparent" />
+               </g>
+            </g>
+            <g transform="matrix(-3.7366245,-0.56786112,0.56786112,-3.7366245,765.37226,795.47516)">
+               <path style="fill:none;stroke:gray;stroke-width:.265;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" d="m 149.78651,106.30006 c 6.7e-4,1.50276 -0.67513,2.22138 -2.22128,2.22113" />
+               <path d="m 143.8975,106.30006 c -6.7e-4,1.50276 0.67513,2.22138 2.22128,2.22113" style="fill:none;stroke:gray;stroke-width:.264999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+               <path d="m 149.78651,105.15363 c 6.7e-4,-1.50276 -0.67513,-2.22138 -2.22128,-2.22113" style="fill:none;stroke:gray;stroke-width:.264999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+               <path style="fill:none;stroke:gray;stroke-width:.264999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" d="m 143.8975,105.15363 c -6.7e-4,-1.50276 0.67513,-2.22138 2.22128,-2.22113" />
+            </g>
+         </g>
+      </g>
+   </g>
+</svg>

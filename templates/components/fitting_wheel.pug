@@ -51,7 +51,7 @@ div(id=($fittingWheelIDPrefix . 'Fitting_Panel') style="position: relative; heig
     div(id=($fittingWheelIDPrefix . $slot[0]) style=('position:absolute; left:' . $slot[1] . '; top:' . $slot[2] . '; width:32px; height:32px;'))
       include image_item.pug
   if (count($fitting['sub'] ?? []) > 0)
-    div(id=($fittingWheelIDPrefix . 'subx') style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;")
+    div(id=($fittingWheelIDPrefix . 'subx') hidden=!empty($hideSubsystemSlots) style="position:absolute; left: 0px; top: 0px; width: 398px; height: 398px; z-index:-1;")
       if (count($fitting['sub'] ?? []) == 4)
         img(src="/img/panel/4s.png" alt="" style="border:0px;")
       else
@@ -59,7 +59,7 @@ div(id=($fittingWheelIDPrefix . 'Fitting_Panel') style="position: relative; heig
     - $slots = [['sub1','117px','131px',125],['sub2','147px','108px',126],['sub3','184px','98px',127],['sub4','221px','107px',128],['sub5','250px','131px',129]];
     each $slot in $slots
       - $field = $slotItem('sub', $slot[3], 0);
-      div(id=($fittingWheelIDPrefix . $slot[0]) style=('position:absolute; left:' . $slot[1] . '; top:' . $slot[2] . '; width:32px; height:32px;'))
+      div(id=($fittingWheelIDPrefix . $slot[0]) hidden=!empty($hideSubsystemSlots) style=('position:absolute; left:' . $slot[1] . '; top:' . $slot[2] . '; width:32px; height:32px;'))
         include image_item.pug
   - $imageSize = 32;
   - $resizeImage = 24;
@@ -79,9 +79,12 @@ div(id=($fittingWheelIDPrefix . 'Fitting_Panel') style="position: relative; heig
   div(id=($fittingWheelIDPrefix . 'badges') style="position: absolute; right: 3px; top: 350px; z-index: 5;")
   if (empty($hideFittingWheelActions))
     if (!empty($extraData['statsFit']))
-      button.btn.btn-sm.btn-secondary.position-absolute.bottom-0.end-0.me-3(type="button" data-zkb-calculate-fit=('kill-' . ($crest['killID'] ?? 0) . '-stats-panel') aria-controls=('kill-' . ($crest['killID'] ?? 0) . '-stats') aria-expanded="false")
-        span Fit Stats
-        i.fas.fa-chevron-down.ms-1(aria-hidden="true")
+      .position-absolute.bottom-0.end-0.me-3.d-flex.flex-column.align-items-end.gap-2
+        a.btn.btn-sm.btn-primary.text-white(href=('/simulate/#eft=' . rawurlencode($eftText ?? '')) data-spa="off" title="Simulate this fit" aria-label="Simulate this fit")
+          i.fas.fa-play(aria-hidden="true")
+        button.btn.btn-sm.btn-secondary(type="button" data-zkb-calculate-fit=('kill-' . ($crest['killID'] ?? 0) . '-stats-panel') aria-controls=('kill-' . ($crest['killID'] ?? 0) . '-stats') aria-expanded="false")
+          span Fit Stats
+          i.fas.fa-chevron-down.ms-1(aria-hidden="true")
     div(id=($fittingWheelIDPrefix . 'eveworkbench') style="position: absolute; left: 0px; top: 340px; z-index: 5;")
       span
         a.green(target="_blank" rel="noopener noreferrer" href=('/kill/' . ($crest['killID'] ?? 0) . '/redirect/esi/')) Verified

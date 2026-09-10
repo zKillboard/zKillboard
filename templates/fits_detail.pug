@@ -10,6 +10,8 @@
     include components/fitting_wheel.pug
   .col-12.col-xl
     .d-flex.flex-wrap.align-items-center.gap-2.mb-2
+      if (!empty($statsFit))
+        a.btn.btn-sm.btn-primary.text-white(href=('/simulate/#eft=' . rawurlencode($eftText ?? '')) data-spa="off") Simulate
       button.btn.btn-sm.btn-primary.text-white.d-inline-flex.align-items-center.gap-1(type="button" data-zkb-save-fitting=$lossID aria-label=('Save inferred ' . $shipName . ' fit'))
         i.fas.fa-save(aria-hidden="true")
         span Save Fit

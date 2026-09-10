@@ -1,0 +1,121 @@
+extends base.pug
+
+block vars
+  - $pageTitle = 'Simulator';
+  - $description = 'Fit an EVE Online ship and simulate its performance.';
+
+block title
+  include components/title.pug
+
+block content
+  #simulate
+    h1 Simulator
+      small.fs-6 &nbsp;(very, very alpha)
+    noscript
+      .alert.alert-info JavaScript is required to fit and simulate a ship.
+    fieldset#simulate-controls(disabled)
+      legend.visually-hidden Ship fitting
+      .row.g-3
+        #simulate-equipment.col-12.col-lg-3
+          #simulate-status.visually-hidden(role="status" aria-live="polite") Loading ships and fitting data…
+          .row.g-2.mb-3
+            .col-12
+              label.form-label.mb-1(for="simulate-ship") Ship
+              .input-group
+                input#simulate-ship.form-control(type="search" placeholder="Choose a ship" autocomplete="off" aria-autocomplete="list" data-zkb-autocomplete-align="input")
+                button#simulate-new.btn.btn-primary(type="button") New fit
+            .col-8
+              label.form-label.mb-1(for="simulate-name") Fit name
+              input#simulate-name.form-control(value="New fit" maxlength="100")
+            .col-4
+              label.form-label.mb-1(for="simulate-skills") Skills
+              select#simulate-skills.form-select
+                option(value="5") All V
+                option(value="0") All 0
+          .card
+            .card-body
+              h2.h5.mx-0 Equipment
+              label.form-label(for="simulate-search") Search equipment
+              input#simulate-search.form-control.mb-2(type="search" placeholder="Module or item name" autocomplete="off")
+              label.form-label(for="simulate-category") Slot / bay
+              .input-group.mb-2
+                select#simulate-category.form-select
+                  option(value="All") All slots / bays
+                  option(value="High") High slots
+                  option(value="Medium") Mid slots
+                  option(value="Low") Low slots
+                  option(value="Rig") Rigs
+                  option(value="SubSystem") Subsystems
+                  option(value="Drone") Drones
+                  option(value="Cargo") Cargo
+                button#simulate-sort.btn.btn-primary.text-white.flex-shrink-0(type="button" style="width: 5rem;" title="Toggle equipment sorting" aria-label="Equipment sort: Meta") Meta
+              #simulate-results.list-group.overflow-auto(style="max-height: 32rem;" aria-label="Equipment results")
+        .col-12.col-lg-9.col-xl-6
+          .card.mb-3.bg-black
+            .card-body
+              #simulate-wheel.mx-auto.position-relative.w-100(style="aspect-ratio: 1;")
+                #simulate-Fitting_Panel.position-absolute.top-0.start-0.w-100.h-100!= $fittingWheelSVG
+                .position-absolute.top-0.start-0.d-flex.flex-column.align-items-start.gap-1
+                  button#simulate-save.btn.btn-sm.btn-primary.text-white(type="button") Save Fit
+                  button#simulate-eft-open.btn.btn-sm.btn-primary.text-white(type="button" data-bs-toggle="modal" data-bs-target="#simulate-eft-modal") EFT
+                h2#simulate-hull.h4.m-0.position-absolute.top-0.end-0.text-end.pe-none
+                .position-absolute.bottom-0.end-0.d-flex.flex-column.align-items-end.gap-1(style="z-index: 4;")
+                  .d-flex.gap-2(role="group" aria-label="Fit history")
+                    button#simulate-undo.btn.border-0.text-white.p-0.fs-4(type="button" disabled title="Undo (Ctrl/Cmd+Z)" aria-label="Undo" aria-keyshortcuts="Control+z Meta+z") ↶
+                    button#simulate-redo.btn.border-0.text-white.p-0.fs-4(type="button" disabled title="Redo (Ctrl/Cmd+R)" aria-label="Redo" aria-keyshortcuts="Control+r Meta+r") ↷
+                  div#simulate-trash.text-white.p-0(style="font-size: 175%;" title="Drag fitted items here to remove them" role="img" aria-label="Drop fitted items here to remove them")
+                    i.fas.fa-trash.pe-none(aria-hidden="true")
+              #simulate-slots
+        .col-12.col-xl-3
+          #simulate-mode-control.btn-group.w-100.mb-2(role="group" aria-label="Tactical mode" hidden)
+            button#simulate-mode-Defense.btn.btn-sm.btn-outline-primary(type="button" aria-pressed="true") Defense
+            button#simulate-mode-Propulsion.btn.btn-sm.btn-outline-primary(type="button" aria-pressed="false") Propulsion
+            button#simulate-mode-Sharpshooter.btn.btn-sm.btn-outline-primary(type="button" aria-pressed="false") Sharpshooter
+          #simulate-warnings.alert.alert-warning(hidden role="status")
+          #simulate-stats.row.g-2(aria-live="polite" aria-label="Calculated fitting statistics")
+      #simulate-eft-modal.modal.fade(tabindex="-1" aria-labelledby="simulate-eft-title" aria-hidden="true")
+        .modal-dialog.modal-lg
+          .modal-content
+            .modal-header
+              h2#simulate-eft-title.modal-title.h5 EFT fitting
+              button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+            .modal-body
+              label.form-label(for="simulate-eft-modal-text") Copy this fit, or paste another fit to import.
+              textarea#simulate-eft-modal-text.form-control.font-monospace(rows="16" maxlength="50000")
+              #simulate-eft-modal-status.small.mt-2(role="status" aria-live="polite")
+            .modal-footer
+              button#simulate-eft-modal-copy.btn.btn-primary.text-white(type="button") Copy to clipboard
+              button#simulate-eft-modal-import.btn.btn-primary.text-white(type="button") Import EFT
+              button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Close
+      .row.g-3.mt-3
+        .col-12.col-md-6
+          h2.h5.mx-0 Instructions
+          ul.small.ps-3.mb-0
+            li Choose a ship, name your fit, and select a skill level. For tactical destroyers, use the mode buttons above the stats.
+            li Search equipment or expand a slot or bay to browse. Use Add or drag a module onto a wheel slot. Click an empty slot to choose where to fit it.
+            li Click a fitted module to cycle online, overheated, and offline where supported. Green slot outlines mean online; red means overheated.
+            li Adding a module reveals compatible charges below it. Use Load or drag a charge onto the module. Drop a fitted module onto the equipment panel to browse it and its compatible charges.
+            li Drag equipment from the browser into Drones or Cargo. Adjust quantities and the number of deployed drones in those sections.
+            li Drag fitted modules or charges to the wheel’s trash can to remove them. Use the trash buttons to remove drones or cargo.
+            li Use the undo and redo arrows for up to 30 changes. Click a stats chevron to toggle one section; double-click it to toggle all sections.
+            li Click EFT to view and copy the current fit, or paste a fit from EVE, Pyfa, or another fitting tool and click Import EFT.
+        .col-12.col-md-6
+          h2.h5.mx-0 Disclaimers & Credits
+          p.small.mb-2 Calculations exclude implants, combat boosters, command boosts, and system effects. EHP assumes equal incoming damage types.
+          p.small.mb-2 EFT does not preserve module activation states, deployed drone counts, or tactical destroyer modes. Your current fit is saved in this browser.
+          p.small.mb-2
+            | Calculated locally with&#32;
+            a(href="https://github.com/EVEShipFit/dogma-engine" target="_blank" rel="noopener noreferrer") EVEShip.fit’s engine
+            | .
+          p.small.mb-0
+            | Fitting wheel by&#32;
+            a(href="https://github.com/eveisesi/fitting-wheel-svg" target="_blank" rel="noopener noreferrer") David Douglas (ddouglas)
+          h3.h6.mx-0.mt-3 Other Fitting Utilities
+          ul.small.ps-3.mb-0
+            li
+              a(href="https://github.com/pyfa-org/Pyfa" target="_blank" rel="noopener noreferrer") Pyfa
+            li
+              a(href="https://eveship.fit/" target="_blank" rel="noopener noreferrer") EVEShip.fit
+
+block script
+  script(type="module" src=('/js/simulate.js?v=' . ($version ?? '')))

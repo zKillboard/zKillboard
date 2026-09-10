@@ -6,6 +6,7 @@ block vars
   - $infoData = is_object($killData['info'] ?? null) ? (array) $killData['info'] : ($killData['info'] ?? []);
   - $systemData = is_object($infoData['system'] ?? null) ? (array) $infoData['system'] : ($infoData['system'] ?? []);
   - $extraData = is_object($extra ?? null) ? (array) $extra : ($extra ?? []);
+  - $eftText = '[' . ($victimData['shipName'] ?? '') . ', ' . ($victimData['characterName'] ?? '') . "'s " . ($victimData['shipName'] ?? '') . "]\n" . ($extraData['efttext'] ?? '');
   - $crestData = is_object($extraData['crest'] ?? null) ? (array) $extraData['crest'] : ($extraData['crest'] ?? []);
   - $finalBlowData = is_object($finalBlow ?? null) ? (array) $finalBlow : ($finalBlow ?? []);
   - $topDamageData = is_object($topDamage ?? null) ? (array) $topDamage : ($topDamage ?? []);
@@ -77,6 +78,9 @@ block content
                 a.dropdown-item(href=('https://kb.evetools.org/kill/' . ($infoData['killID'] ?? 0)) target="_blank" rel="noopener noreferrer") EVE Tools KB
               li
                 a.dropdown-item(href=('https://socketkill.com/kill/' . ($infoData['killID'] ?? 0) . '/') target="_blank" rel="noopener noreferrer") SocketKill
+        if (!empty($extraData['statsFit']))
+          li.nav-item
+            a.nav-link(href=('/simulate/#eft=' . rawurlencode($eftText)) data-spa="off") Simulate
         li.nav-item.dropdown
           button.nav-link.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false") Export
           ul.dropdown-menu
@@ -264,7 +268,7 @@ block modal
         .modal-body
           form(name="myform")
             .mb-3
-              textarea#eft.fitting.col-md-12(data-zkb-select-on-click rows="15" name="eft" readonly="readonly")= '[' . ($victimData['shipName'] ?? '') . ', ' . ($victimData['characterName'] ?? '') . "'s " . ($victimData['shipName'] ?? '') . "]\n" . ($extraData['efttext'] ?? '')
+              textarea#eft.fitting.col-md-12(data-zkb-select-on-click rows="15" name="eft" readonly="readonly")= $eftText
             .mb-3
               button.btn.btn-primary(type="button" data-bs-dismiss="modal") Close
   #ingamelink.modal.fade

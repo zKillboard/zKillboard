@@ -30,16 +30,16 @@
 		return '<img src="' + item.image + '" width="32" height="32" alt="' + alt + '"' + onerror + '>';
 	}
 
-	var zz_search = function(element, callback) {
+	var zz_search = function(element, callback, source) {
 		//create our objects and things
 		this.data = {}, this.data['element'] = element, this.data['menu'] = $('<ul class="autocomplete dropdown-menu" style="display: none;"></ul>').appendTo('body'), this.callback = callback;
 		this.data['isNavbarSearch'] = element.attr('id') == 'searchbox';
 		if (this.data['isNavbarSearch']) this.data['menu'].addClass('nav-search-autocomplete');
-		this.data['source'] = element.data('zkbAutocompleteSource') || '/autocomplete/';
+		this.data['source'] = source || element.data('zkbAutocompleteSource') || '/autocomplete/';
 		this.data['linkPrefix'] = element.data('zkbAutocompleteLinkPrefix') || '';
 		this.data['submitFormOnEnter'] = element.data('zkbAutocompleteSubmitForm') === true || element.attr('data-zkb-autocomplete-submit-form') != null;
 		this.data['placeholder'] = element.attr('placeholder') || '';
-		if (this.data['source'].slice(-1) != '/') this.data['source'] += '/';
+		if (typeof this.data['source'] === 'string' && this.data['source'].slice(-1) != '/') this.data['source'] += '/';
 
 		//bind our primary search event
 		this.data['element'].on('keyup', $.proxy(function(event) { if (!event.isDefaultPrevented() && event.keyCode != 9 && event.keyCode != 38 && event.keyCode != 40) { return $.proxy(this.do_search(event), this); } }, this));
@@ -158,7 +158,7 @@
 			this.data['throttle'] = setTimeout($.proxy(function() {
                 const search = this.data['element'].val();
                 if (search.includes('/') || search.includes(':')) return this.data['menu'].empty();
-				$.ajax(this.data['source'] + encodeURIComponent(search) + '/', {'type' : 'get', 'dataType' : 'json', 'success' : $.proxy(function(result) {
+				var options = {'type' : 'get', 'dataType' : 'json', 'success' : $.proxy(function(result) {
 
                     if (current_query_count != query_count) return console.log('search aborted after additional input received');
 					//empty the dropdown and append the new data
@@ -199,16 +199,18 @@
 						this.data['menu'].css(this.get_position()).not(':visible').fadeIn(200);
 					}
 					if (result.length > 0) this.data['menu'].find('li[data-value]').first().addClass('active');
-				}, this)});
+				}, this)};
+                if (typeof this.data['source'] === 'function') this.data['source'](search, options.success);
+                else $.ajax(this.data['source'] + encodeURIComponent(search) + '/', options);
 			}, this), 50);
 		}
 	};
 
 	//define the zz_search method
-	$.fn.zz_search = function(callback) {
+	$.fn.zz_search = function(callback, source) {
 		return this.each(function() {
 			var $this = $(this), data = $this.data('zz_search');
-			if (!data) { $this.data('zz_search', (data = new zz_search($this, callback))); }
+			if (!data) { $this.data('zz_search', (data = new zz_search($this, callback, source))); }
 		});
 	}
 })( jQuery );

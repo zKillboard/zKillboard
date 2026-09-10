@@ -12,6 +12,16 @@ async function loadData() {
     const attributes = {};
     const skills = {};
     for (const [id, attribute] of Object.entries(data.dogmaAttributes)) attributes[attribute.name] = Number(id);
+    // These subsystem effects have no modifierInfo in the SDE; supply their additive slot modifiers.
+    for (const [effectID, modifiers] of [
+        [3773, [['turretSlotsLeft', 'turretHardPointModifier'], ['launcherSlotsLeft', 'launcherHardPointModifier']]],
+        [3774, [['hiSlots', 'hiSlotModifier'], ['medSlots', 'medSlotModifier'], ['lowSlots', 'lowSlotModifier']]]
+    ]) {
+        data.dogmaEffects[effectID].modifierInfo = modifiers.map(([target, source]) => ({
+            domain: 1, func: 0, operation: 2,
+            modifiedAttributeID: attributes[target], modifyingAttributeID: attributes[source]
+        }));
+    }
     for (const [id, type] of Object.entries(data.types)) {
         if (type.categoryID === 16) skills[id] = 5;
     }
@@ -43,9 +53,31 @@ self.onmessage = async ({ data: request }) => {
             throw error;
         });
         const { data, skills } = await ready;
+        if (request.catalog) {
+            const catalog = {};
+            for (const [id, type] of Object.entries(data.types)) {
+                if (!type.published || ![6, 7, 8, 18, 32].includes(type.categoryID) || !data.typeDogma[id]) continue;
+                const dogma = data.typeDogma[id];
+                catalog[id] = {
+                    ...type, id: Number(id),
+                    attributes: Object.fromEntries(dogma.dogmaAttributes.map(attribute => [data.dogmaAttributes[attribute.attributeID]?.name, attribute.value])),
+                    effects: dogma.dogmaEffects.map(effect => data.dogmaEffects[effect.effectID]?.name)
+                };
+            }
+            self.postMessage({ id: request.id, catalog });
+            return;
+        }
         const fit = { ship_type_id: request.fit.ship_type_id, modules: [], drones: [] };
         if (data.types[fit.ship_type_id]?.categoryID !== 6 || !data.typeDogma[fit.ship_type_id]) {
             throw new Error('This hull is not supported by the fitting data.');
+        }
+
+        if (request.simulate && data.types[fit.ship_type_id].groupID === 1305) {
+            const mode = request.fit.mode || 'Defense';
+            if (!['Defense', 'Propulsion', 'Sharpshooter'].includes(mode)) throw new Error('Invalid tactical destroyer mode.');
+            const modeType = Object.entries(data.types).find(([, type]) => type.groupID === 1306 && type.name === data.types[fit.ship_type_id].name + ' ' + mode + ' Mode');
+            if (!modeType) throw new Error('Tactical destroyer mode data is unavailable.');
+            fit.modules.push({ type_id: Number(modeType[0]), slot: { type: 'SubSystem', index: 1 }, state: 'Active' });
         }
 
         const slots = new Map();
@@ -54,7 +86,8 @@ self.onmessage = async ({ data: request }) => {
                 if (data.types[item.type_id]?.categoryID !== 18 || !data.typeDogma[item.type_id]) {
                     throw new Error('This fit contains an unsupported drone.');
                 }
-                for (let i = 0; i < item.quantity; i++) fit.drones.push({ type_id: item.type_id, state: 'Passive' });
+                if (!Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 1000) throw new Error('Invalid drone quantity.');
+                for (let i = 0; i < item.quantity; i++) fit.drones.push({ type_id: item.type_id, state: request.simulate && i < item.active ? 'Active' : 'Passive' });
             }
             let slot;
             for (const [start, end, type] of [[11, 18, 'Low'], [19, 26, 'Medium'], [27, 34, 'High'], [92, 99, 'Rig'], [125, 132, 'SubSystem']]) {
@@ -71,7 +104,7 @@ self.onmessage = async ({ data: request }) => {
             } else if (type.categoryID === 7 || type.categoryID === 32) {
                 if (entry.type_id || item.quantity !== 1) throw new Error('Multiple modules were recorded in one slot.');
                 entry.type_id = item.type_id;
-                entry.state = 'Active';
+                entry.state = request.simulate && ['Passive', 'Online', 'Active', 'Overload'].includes(item.state) ? item.state : 'Active';
             } else {
                 throw new Error('This fit contains an unsupported fitted item.');
             }
@@ -81,11 +114,14 @@ self.onmessage = async ({ data: request }) => {
             fit.modules.push(entry);
         }
 
-        const result = engine.calculate(fit, skills);
+        const result = engine.calculate(fit, request.simulate && request.skillLevel === 0 ? {} : skills);
         const stats = {};
         for (const [id, attribute] of result.hull.attributes) {
             const name = data.dogmaAttributes[id]?.name;
             if (name) stats[name] = attribute.value;
+        }
+        if (!Number.isFinite(stats.upgradeLoad)) {
+            stats.upgradeLoad = result.items.reduce((total, item) => total + (item.attributes.get(1153)?.value || 0), 0);
         }
         const character = {};
         for (const [id, attribute] of result.char.attributes) {
@@ -103,7 +139,9 @@ self.onmessage = async ({ data: request }) => {
                 details.push({
                     name: entry === result.char ? 'Pilot (all skills V)' : (data.types[entry.type_id]?.name || 'Item'),
                     slot: entry.slot,
+                    type_id: entry.type_id,
                     state: entry.state,
+                    maxState: entry.max_state,
                     attributes: Array.from(entry.attributes, ([id, attribute]) => ({
                         name: data.dogmaAttributes[id]?.name || String(id),
                         label: data.dogmaAttributes[id]?.displayName || data.dogmaAttributes[id]?.name || String(id),
