@@ -547,7 +547,7 @@
                     "path": "/api/prices/date/{date}/",
                     "summary": "Item prices by date",
                     "cache": "10-minute server cache",
-                    "description": "Returns all available item prices for one UTC market date, keyed by inventory type ID.",
+                    "description": "Returns all available item prices for one UTC market date from 2003-01-01 through today, keyed by inventory type ID.",
                     "form": {
                         "base": "https://zkillboard.com/api/prices/date",
                         "suffix": "/",
@@ -569,7 +569,7 @@
                             "required": true,
                             "example": "2026-08-24",
                             "default": "None",
-                            "description": "UTC market date in YYYY-MM-DD format."
+                            "description": "UTC market date in YYYY-MM-DD format, from 2003-01-01 through today."
                         }
                     ],
                     "examples": [
