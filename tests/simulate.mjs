@@ -15,7 +15,7 @@ globalThis.fetch = async url => {
             rateLimitedPrice = url;
             return new Response('', { status: 429, headers: { 'Retry-After': '0' } });
         }
-        return new Response(JSON.stringify({ currentPrice: 100 }));
+        return new Response(JSON.stringify(Object.fromEntries(Object.keys(catalog).map(typeID => [typeID, 100]))));
     }
     return new Response(await readFile(url));
 };
@@ -723,7 +723,8 @@ const lookupCount = priceLookups.length;
 controls.get('high1').children[0].click();
 await settle();
 assert.equal(priceLookups.length, lookupCount, 'Module state changes reuse cached prices');
-assert.equal(priceLookups[1], rateLimitedPrice, 'Rate-limited lookup retries before the next queued price');
+assert.equal(priceLookups[0], '/api/prices/date/' + new Date(Date.now() - 86400000).toISOString().slice(0, 10) + '/', 'Pricing uses the previous UTC date snapshot');
+assert.equal(priceLookups[1], rateLimitedPrice, 'Rate-limited snapshot lookup retries');
 window.zkbPageCleanup();
 let autocompleteData;
 let menusRemoved = 0;

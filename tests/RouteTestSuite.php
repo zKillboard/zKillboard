@@ -333,6 +333,8 @@ class RouteTestSuite {
         $this->testRoute("/api/prices/{$this->realItemId}/", 200, 'API item prices (REAL item - Tritanium)');
         $this->testRoute('/api/prices/date/2025-10-31/', 200, 'API prices by date');
         $this->testRoute('/api/prices/date/invalid/', 400, 'API prices by invalid date');
+        $this->testRoute('/api/prices/date/2002-12-31/', 400, 'API prices before 2003');
+        $this->testRoute('/api/prices/date/2999-01-01/', 400, 'API prices in the future');
         $this->testRoute('/api/recentactivity/', 200, 'API recent activity');
         $this->testRoute('/api/supers/', 200, 'API supers intel');
         

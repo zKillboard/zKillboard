@@ -29,9 +29,7 @@ window.zkbInitSimulate = function() {
     const events = new AbortController();
     const fittingImages = new Map();
     const prices = new Map();
-    const priceRequests = new Map();
-    let priceQueue = Promise.resolve();
-    let priceResumeAt = 0;
+    let priceRequest;
     const expandedSections = new Set(['Fitting', 'Pricing']);
     const wheel = element('Fitting_Panel');
     let savedUI;
@@ -596,38 +594,35 @@ window.zkbInitSimulate = function() {
         };
         updatePrices();
         const ids = [...new Set(Object.values(costs).flat().map(item => item.type_id))];
-        for (const id of ids) {
-            if (!priceRequests.has(id)) {
-                priceQueue = priceQueue.then(async () => {
-                    for (let attempt = 0; attempt < 3; attempt++) {
-                        if (!alive) return;
-                        if (priceResumeAt > Date.now()) {
-                            await new Promise(resolve => {
-                                const abort = () => { clearTimeout(timeout); resolve(); };
-                                const timeout = setTimeout(() => { events.signal.removeEventListener('abort', abort); resolve(); }, priceResumeAt - Date.now());
-                                events.signal.addEventListener('abort', abort, { once: true });
-                            });
-                        }
-                        if (!alive) return;
-                        const response = await fetch('/api/prices/' + id + '/', { signal: events.signal });
-                        if (response.status === 429) {
-                            const retryAfter = response.headers.get('Retry-After');
-                            const delay = retryAfter === null ? NaN : /^\d+$/.test(retryAfter) ? Number(retryAfter) * 1000 : Date.parse(retryAfter) - Date.now();
-                            priceResumeAt = Date.now() + (Number.isFinite(delay) ? Math.max(0, delay) : 60000 * (attempt + 1));
-                            continue;
-                        }
-                        if (!response.ok) throw new Error('Price unavailable');
-                        const data = await response.json();
-                        const price = Number(data.currentPrice);
-                        prices.set(id, Number.isFinite(price) && price > 0.01 ? price : null);
-                        return;
+        if (!priceRequest) {
+            priceRequest = (async () => {
+                for (let attempt = 0; attempt < 3; attempt++) {
+                    if (!alive) return;
+                    const response = await fetch('/api/prices/date/' + new Date(Date.now() - 86400000).toISOString().slice(0, 10) + '/', { signal: events.signal });
+                    if (response.status === 429) {
+                        const retryAfter = response.headers.get('Retry-After');
+                        const delay = retryAfter === null ? NaN : /^\d+$/.test(retryAfter) ? Number(retryAfter) * 1000 : Date.parse(retryAfter) - Date.now();
+                        if (attempt < 2) await new Promise(resolve => {
+                            const abort = () => { clearTimeout(timeout); resolve(); };
+                            const timeout = setTimeout(() => { events.signal.removeEventListener('abort', abort); resolve(); }, Number.isFinite(delay) ? Math.max(0, delay) : 60000 * (attempt + 1));
+                            events.signal.addEventListener('abort', abort, { once: true });
+                        });
+                        continue;
                     }
-                    prices.set(id, null);
-                }).catch(() => prices.set(id, null));
-                priceRequests.set(id, priceQueue);
-            }
+                    if (!response.ok) throw new Error('Prices unavailable');
+                    for (const [typeID, value] of Object.entries(await response.json())) {
+                        const price = Number(value);
+                        prices.set(Number(typeID), Number.isFinite(price) && price > 0.01 ? price : null);
+                    }
+                    return;
+                }
+            })().catch(() => {});
         }
-        Promise.all(ids.map(id => priceRequests.get(id))).then(() => { if (alive) updatePrices(); });
+        priceRequest.then(() => {
+            if (!alive) return;
+            for (const id of ids) if (!prices.has(id)) prices.set(id, null);
+            updatePrices();
+        });
         const sections = [
             ['Fitting', [
                 ['CPU', number('cpuLoad') + ' / ' + number('cpuOutput') + ' tf'],
