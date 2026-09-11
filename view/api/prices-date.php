@@ -16,6 +16,14 @@ function handler($request, $response, $args, $container) {
         $response->getBody()->write(json_encode(['error' => 'Invalid date; expected YYYY-MM-DD']));
         return $response->withStatus(400);
     }
+    if ($date < '2003-01-01') {
+        $response->getBody()->write(json_encode(['error' => 'Date must be on or after 2003-01-01']));
+        return $response->withStatus(400);
+    }
+    if ($date > gmdate('Y-m-d')) {
+        $response->getBody()->write(json_encode(['error' => 'Future dates are not allowed']));
+        return $response->withStatus(400);
+    }
 
     $rows = $mdb->find('prices', [$date => ['$exists' => true]], ['typeID' => 1], null, ['typeID' => 1, $date => 1]);
     $prices = [];
