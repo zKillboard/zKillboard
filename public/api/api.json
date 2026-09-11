@@ -541,6 +541,45 @@
                         }
                     ],
                     "response": "{\n  \"2026-08-23\": 3.70,\n  \"2026-08-24\": 3.85,\n  \"currentPrice\": 3.94\n}"
+                },
+                {
+                    "method": "GET",
+                    "path": "/api/prices/date/{date}/",
+                    "summary": "Item prices by date",
+                    "cache": "10-minute server cache",
+                    "description": "Returns all available item prices for one UTC market date, keyed by inventory type ID.",
+                    "form": {
+                        "base": "https://zkillboard.com/api/prices/date",
+                        "suffix": "/",
+                        "fields": [
+                            {
+                                "name": "date",
+                                "label": "Date",
+                                "location": "path",
+                                "type": "date",
+                                "required": true,
+                                "default": "2026-08-24"
+                            }
+                        ]
+                    },
+                    "parameters": [
+                        {
+                            "name": "date",
+                            "type": "date",
+                            "required": true,
+                            "example": "2026-08-24",
+                            "default": "None",
+                            "description": "UTC market date in YYYY-MM-DD format."
+                        }
+                    ],
+                    "examples": [
+                        {
+                            "label": "All item prices for a date",
+                            "code": "curl --compressed -A \"Default zKill API example\" \\\n  \"https://zkillboard.com/api/prices/date/2026-08-24/\"",
+                            "url": "/api/prices/date/2026-08-24/"
+                        }
+                    ],
+                    "response": "{\n  \"34\": 3.85,\n  \"35\": 10.42,\n  \"36\": 77.01\n}"
                 }
             ]
         },

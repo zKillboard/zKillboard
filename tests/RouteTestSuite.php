@@ -331,6 +331,8 @@ class RouteTestSuite {
         $this->testRoute("/api/related/{$this->realSystemId}/202510311800/", 200, 'API related kills (REAL system)');
         $this->testRoute('/api/history/20251031/', 302, 'API history redirect');
         $this->testRoute("/api/prices/{$this->realItemId}/", 200, 'API item prices (REAL item - Tritanium)');
+        $this->testRoute('/api/prices/date/2025-10-31/', 200, 'API prices by date');
+        $this->testRoute('/api/prices/date/invalid/', 400, 'API prices by invalid date');
         $this->testRoute('/api/recentactivity/', 200, 'API recent activity');
         $this->testRoute('/api/supers/', 200, 'API supers intel');
         
