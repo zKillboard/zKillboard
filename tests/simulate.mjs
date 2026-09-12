@@ -154,7 +154,7 @@ class Element extends EventTarget {
     select() {}
 }
 const controls = new Map();
-for (const name of ['sort', 'eft-modal', 'eft-modal-text', 'eft-modal-status', 'equipment', 'mode-Defense', 'mode-Propulsion', 'mode-Sharpshooter', 'mode-control', 'status', 'controls', 'ship', 'ships', 'name', 'skills', 'new', 'category', 'search', 'results', 'hull', 'image', 'slots', 'stats', 'warnings', 'trash', 'undo', 'redo', 'wheel', 'Fitting_Panel', 'bigship']) {
+for (const name of ['sort', 'eft-modal', 'eft-modal-text', 'eft-modal-status', 'equipment', 'mode-Defense', 'mode-Propulsion', 'mode-Sharpshooter', 'mode-control', 'status', 'controls', 'ship', 'ships', 'name', 'skills', 'new', 'category', 'search', 'results', 'hull', 'image', 'slots', 'stats', 'warnings', 'trash', 'undo', 'redo', 'wheel', 'Fitting_Panel', 'bigship', 'resource-cpu', 'resource-powergrid']) {
     const control = new Element();
     control.id = 'simulate-' + name;
     controls.set(name, control);
@@ -231,7 +231,7 @@ controls.get('eft-modal-text').value = '[Svipul, Mode speed test]\n1MN Afterburn
 click('eft-modal-import');
 await settle();
 const displayedSpeed = () => {
-    const rows = controls.get('stats').children[4].children[0].children[0].children[1].children;
+    const rows = controls.get('stats').children[3].children[0].children[0].children[1].children;
     return rows[rows.findIndex(row => row.children[1]?.textContent === 'Speed') + 1].textContent;
 };
 const svipulDefenseSpeed = displayedSpeed();
@@ -290,8 +290,24 @@ await settle();
 assert.equal(controls.get('hull').textContent, 'Rifter');
 assert.deepEqual(controls.get('slots').children.map(section => section.children[0].textContent), ['Cargo'], 'Ships without a drone bay hide the Drones section');
 assert.equal(controls.get('stats').children.length, 7, controls.get('status').textContent);
-const fittingStats = controls.get('stats').children[0].children[0].children[0].children[1];
-assert.equal(fittingStats.children[0].children[0].src, '/img/simulate/cpu.png', 'Stats use EVE fitting icons');
+const compactResource = value => value.toLocaleString(undefined, { maximumFractionDigits: 1 });
+assert.equal(controls.get('resource-cpu').textContent, compactResource(result.stats.cpuOutput - result.stats.cpuLoad) + '/' + compactResource(result.stats.cpuOutput), 'CPU shows remaining/total on the fitting wheel');
+assert.equal(controls.get('resource-powergrid').textContent, compactResource(result.stats.powerOutput - result.stats.powerLoad) + '/' + compactResource(result.stats.powerOutput), 'Power grid shows remaining/total on the fitting wheel');
+const fittingStats = controls.get('stats').children[5].children[0].children[0].children[1];
+assert.equal(fittingStats.children[0].children[0].src, '/img/simulate/icon-rigslot.png', 'Remaining fitting stats keep their EVE icons');
+const capacitorBody = controls.get('stats').children[0].children[0].children[0];
+assert.equal(capacitorBody.children[0].children[0].children[1].children[0].textContent, 'Stable', 'Capacitor stability is summarized in the header');
+assert.equal(capacitorBody.children[1].children[0].children[0].src, '/img/simulate/capacitor.png', 'Compact capacitor summary uses the EVE icon');
+assert.match(capacitorBody.children[1].children[0].children[1].children[1].textContent, /^Δ .+ GJ\/s \(.+%\)$/);
+const defenseStats = controls.get('stats').children[2].children[0].children[0].children[1];
+const resistanceGrid = defenseStats.children[0];
+assert.equal(resistanceGrid.children[0].textContent, 'HP', 'HP is the first defense column heading');
+assert.equal(resistanceGrid.children[1].children[0].src, '/img/simulate/electromagnetic-resistance-32x32.png', 'Damage types use resistance icons');
+assert.equal(resistanceGrid.children[5].children[0].src, '/img/simulate/shield-resistance-32x32.png', 'Resistances are grouped by defense layer');
+assert.doesNotMatch(resistanceGrid.children[5].children[1].textContent, /HP$/, 'Layer values do not repeat the HP unit');
+assert.match(resistanceGrid.children[6].textContent, /^\d+\.\d%$/);
+assert.match(resistanceGrid.children[6].className, /simulate-resistance-value/);
+assert.match(resistanceGrid.children[20].children[1].textContent, /^Shield recharge \d+\.\d+ EHP\/s · \d+\.\d+ s$/, 'Shield recharge rate and time share their own line below resistances');
 const statsToggles = controls.get('stats').querySelectorAll('button[aria-expanded]');
 for (const expanded of ['true', 'false']) {
     statsToggles[1].click();

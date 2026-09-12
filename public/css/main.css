@@ -2899,3 +2899,7 @@ code {
 .btn-primary {
 	background-color: #1E73BE;
 }
+
+.simulate-resistance-value {
+	text-shadow: 0 1px 1px #101820, 0 0 1px #101820;
+}

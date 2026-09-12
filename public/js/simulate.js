@@ -30,7 +30,7 @@ window.zkbInitSimulate = function() {
     const fittingImages = new Map();
     const prices = new Map();
     let priceRequest;
-    const expandedSections = new Set(['Fitting', 'Pricing']);
+    const expandedSections = new Set(['Capacitor', 'Pricing']);
     const wheel = element('Fitting_Panel');
     let savedUI;
     try { savedUI = JSON.parse(localStorage.getItem('zkb:simulate-ui')); } catch (error) { /* Invalid or unavailable storage. */ }
@@ -558,6 +558,14 @@ window.zkbInitSimulate = function() {
         pilotStats = result.character;
         calculatedItems = result.details;
         const number = (key, divisor = 1) => Number.isFinite(stats[key]) ? (stats[key] / divisor).toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—';
+        const compact = value => Number.isFinite(value) ? value.toLocaleString(undefined, { maximumFractionDigits: 1 }) : '—';
+        const duration = value => {
+            if (!Number.isFinite(value)) return '—';
+            const seconds = Math.max(0, Math.round(value));
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor(seconds % 3600 / 60);
+            return (hours ? hours + 'h ' : '') + (minutes ? minutes + 'm ' : '') + seconds % 60 + 's';
+        };
         const pricing = node('div');
         const costs = { Hull: [{ type_id: fit.ship_type_id, quantity: 1 }], Modules: [], 'Loaded charges': [], Drones: [], Cargo: [] };
         for (const item of fit.items) {
@@ -623,31 +631,17 @@ window.zkbInitSimulate = function() {
             for (const id of ids) if (!prices.has(id)) prices.set(id, null);
             updatePrices();
         });
+        element('resource-cpu').textContent = compact(stats.cpuOutput - stats.cpuLoad) + '/' + compact(stats.cpuOutput);
+        element('resource-powergrid').textContent = compact(stats.powerOutput - stats.powerLoad) + '/' + compact(stats.powerOutput);
         const sections = [
-            ['Fitting', [
-                ['CPU', number('cpuLoad') + ' / ' + number('cpuOutput') + ' tf', 'cpu'],
-                ['Powergrid', number('powerLoad') + ' / ' + number('powerOutput') + ' MW', 'powergrid'],
-                ['Calibration', number('upgradeLoad') + ' / ' + number('upgradeCapacity'), 'icon-rigslot'],
-                ['Free turret / launcher hardpoints', number('turretSlotsLeft') + ' / ' + number('launcherSlotsLeft'), 'turret_missile']
-            ]],
+            ['Capacitor', []],
             ['Offense', [
                 ['DPS without reload', number('damagePerSecondWithoutReload'), 'turret_missile'],
                 ['DPS with reload', number('damagePerSecondWithReload'), 'sustained'],
                 ['Volley', number('damageAlpha'), 'volley'],
                 ['Drone DPS', number('droneDamagePerSecond'), 'drone']
             ]],
-            ['Defense', [
-                ['Effective HP', number('ehp'), 'hp'],
-                ['Shield / Armor / Hull HP', number('shieldCapacity') + ' / ' + number('armorHP') + ' / ' + number('hp'), 'hp'],
-                ['Passive shield tank', number('passiveShieldEffectiveRechargeRate') + ' EHP/s', 'shield_recharge'],
-                ['Shield boost / Armor repair', number('shieldEffectiveBoostRate') + ' / ' + number('armorEffectiveRepairRate') + ' EHP/s', 'shield_boost']
-            ]],
-            ['Capacitor', [
-                ['Capacity', number('capacitorCapacity') + ' GJ', 'capacitor'],
-                ['Sustain', stats.capacitorDepletesIn < 0 ? 'Stable' : number('capacitorDepletesIn') + ' s', 'capacitor'],
-                ['Recharge', number('rechargeRate', 1000) + ' s', 'capacitor'],
-                ['Peak surplus / deficit', number('capacitorPeakDelta') + ' GJ/s', 'capacitor']
-            ]],
+            ['Defense', []],
             ['Navigation & targeting', [
                 ['Speed', number('maxVelocity') + ' m/s', 'propulsion'],
                 ['Align', number('alignTime') + ' s', 'microwarpdrive'],
@@ -661,20 +655,18 @@ window.zkbInitSimulate = function() {
                 ['Drone bandwidth', number('droneBandwidthLoad') + ' / ' + number('droneBandwidth') + ' Mbit/s', 'dronebandwith'],
                 ['Cargo capacity', number('capacity') + ' m³', 'cargo']
             ]],
+            ['Fitting', [
+                ['Calibration', number('upgradeLoad') + ' / ' + number('upgradeCapacity'), 'icon-rigslot'],
+                ['Free turret / launcher hardpoints', number('turretSlotsLeft') + ' / ' + number('launcherSlotsLeft'), 'turret_missile']
+            ]],
             ['Pricing', []]
         ];
-        for (const [label, prefix] of [['Shield', 'shield'], ['Armor', 'armor'], ['Hull', '']]) {
-            sections[2][1].push([label + ' EM / Th / Kin / Exp', ['Em', 'Thermal', 'Kinetic', 'Explosive'].map(damage => {
-                const value = stats[prefix + (prefix ? damage : damage.toLowerCase()) + 'DamageResonance'];
-                return Number.isFinite(value) ? ((1 - value) * 100).toFixed(1) + '%' : '—';
-            }).join(' / '), label.toLowerCase() + '-resistance-32x32']);
-        }
         element('stats').replaceChildren();
         for (const [title, rows] of sections) {
             const column = node('section', 'col-12 col-md-6 col-xl-12');
             const card = node('div', 'card bg-black border-primary border-opacity-25 shadow-sm');
             const body = node('div', 'card-body px-3 py-2');
-            const list = node(title === 'Pricing' ? 'div' : 'dl', 'row gx-2 gy-1 small lh-sm mb-0');
+            const list = node(['Capacitor', 'Defense', 'Pricing'].includes(title) ? 'div' : 'dl', 'row gx-2 gy-1 small lh-sm mb-0');
             list.id = 'simulate-stats-' + title.toLowerCase().replace(/[^a-z]+/g, '-');
             list.hidden = !expandedSections.has(title);
             const heading = node('h3', 'h6 mx-0 mb-0 border-bottom border-primary pb-1');
@@ -698,18 +690,88 @@ window.zkbInitSimulate = function() {
                     if (section.getAttribute('aria-expanded') !== expanded) section.click();
                 });
             });
-            toggle.append(node('span', 'fw-bold', title), icon);
+            if (title === 'Capacitor') {
+                const summary = node('span', 'd-flex align-items-center gap-2');
+                summary.append(node('span', stats.capacitorDepletesIn < 0 ? 'text-success fw-semibold' : 'text-warning fw-semibold', stats.capacitorDepletesIn < 0 ? 'Stable' : duration(stats.capacitorDepletesIn)), icon);
+                toggle.append(node('span', 'fw-bold', title), summary);
+            } else if (title === 'Defense') {
+                const summary = node('span', 'd-flex align-items-center gap-2');
+                summary.append(node('span', 'fw-semibold', number('ehp') + ' EHP'), icon);
+                toggle.append(node('span', 'fw-bold', title), summary);
+            } else toggle.append(node('span', 'fw-bold', title), icon);
             heading.append(toggle);
             body.append(heading);
             list.className += ' mt-2';
-            rows.forEach(([label, value, image]) => {
-                const term = node('dt', 'col-6 mb-1 d-flex align-items-center text-white fw-normal');
-                const icon = node('img', 'me-1 flex-shrink-0');
-                icon.src = '/img/simulate/' + image + '.png';
-                icon.width = 20;
-                icon.height = 20;
-                icon.alt = '';
-                term.append(icon, node('span', '', label));
+            if (title === 'Capacitor') {
+                const capacitor = node('div', 'col-12 d-flex align-items-center gap-2 text-white');
+                const capacitorIcon = node('img', 'flex-shrink-0');
+                capacitorIcon.src = '/img/simulate/capacitor.png';
+                capacitorIcon.width = 40;
+                capacitorIcon.height = 40;
+                capacitorIcon.alt = '';
+                const values = node('div', 'd-flex flex-column gap-1');
+                values.append(node('span', 'fw-semibold', number('capacitorCapacity') + ' GJ / ' + duration(stats.rechargeRate / 1000)));
+                const percentage = Number.isFinite(stats.capacitorPeakDeltaPercentage) ? stats.capacitorPeakDeltaPercentage.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%' : '—';
+                values.append(node('span', '', 'Δ ' + number('capacitorPeakDelta') + ' GJ/s (' + percentage + ')'));
+                capacitor.append(capacitorIcon, values);
+                list.append(capacitor);
+            } else if (title === 'Defense') {
+                const grid = node('div', 'col-12 row g-1 align-items-center mx-0');
+                grid.append(node('div', 'col-4 pe-2 text-end text-white fw-semibold', 'HP'));
+                const damages = [['Em', 'EM', 'electromagnetic', 'bg-primary'], ['Thermal', 'Thermal', 'thermal', 'bg-danger'], ['Kinetic', 'Kinetic', 'kinetic', 'bg-secondary'], ['Explosive', 'Explosive', 'explosive', 'bg-warning']];
+                for (const [, name, image] of damages) {
+                    const damage = node('div', 'col-2 text-center');
+                    const damageIcon = node('img', 'd-block mx-auto');
+                    damageIcon.src = '/img/simulate/' + image + '-resistance-32x32.png';
+                    damageIcon.width = 20;
+                    damageIcon.height = 20;
+                    damageIcon.alt = name;
+                    damage.append(damageIcon);
+                    grid.append(damage);
+                }
+                for (const [label, prefix, hp] of [['Shield', 'shield', 'shieldCapacity'], ['Armor', 'armor', 'armorHP'], ['Hull', '', 'hp']]) {
+                    const layer = node('div', 'col-4 d-flex align-items-center text-white');
+                    const layerIcon = node('img', 'me-1 flex-shrink-0');
+                    layerIcon.src = '/img/simulate/' + label.toLowerCase() + '-resistance-32x32.png';
+                    layerIcon.width = 20;
+                    layerIcon.height = 20;
+                    layerIcon.alt = label;
+                    layer.append(layerIcon, node('span', 'fw-semibold', number(hp)));
+                    grid.append(layer);
+                    for (const [damage, , , color] of damages) {
+                        const value = stats[prefix + (prefix ? damage : damage.toLowerCase()) + 'DamageResonance'];
+                        grid.append(node('div', 'simulate-resistance-value col-2 px-1 py-1 rounded-1 text-center text-white fw-semibold ' + color, Number.isFinite(value) ? ((1 - value) * 100).toFixed(1) + '%' : '—'));
+                    }
+                }
+                const tank = node('div', 'col-12 mt-1 pt-1 border-top border-secondary border-opacity-25 d-flex align-items-center text-white');
+                const tankIcon = node('img', 'me-1 flex-shrink-0');
+                tankIcon.src = '/img/simulate/shield_recharge.png';
+                tankIcon.width = 20;
+                tankIcon.height = 20;
+                tankIcon.alt = '';
+                tank.append(tankIcon, node('span', '', 'Shield recharge ' + number('passiveShieldEffectiveRechargeRate') + ' EHP/s · ' + number('shieldRechargeRate', 1000) + ' s'));
+                grid.append(tank);
+                const repairs = node('div', 'col-12 d-flex flex-column gap-1 text-white');
+                for (const [label, stat, image] of [['Shield boost', 'shieldEffectiveBoostRate', 'shield_boost'], ['Armor repair', 'armorEffectiveRepairRate', 'armor_repair']]) {
+                    const repair = node('span', 'd-flex align-items-center');
+                    const repairIcon = node('img', 'me-1');
+                    repairIcon.src = '/img/simulate/' + image + '.png';
+                    repairIcon.width = 20;
+                    repairIcon.height = 20;
+                    repairIcon.alt = '';
+                    repair.append(repairIcon, node('span', '', label + ' ' + number(stat) + ' EHP/s'));
+                    repairs.append(repair);
+                }
+                grid.append(repairs);
+                list.append(grid);
+            } else rows.forEach(([label, value, image]) => {
+                const term = node('dt', 'col-6 mb-1 fw-normal d-flex align-items-center text-white');
+                const rowIcon = node('img', 'me-1 flex-shrink-0');
+                rowIcon.src = '/img/simulate/' + image + '.png';
+                rowIcon.width = 20;
+                rowIcon.height = 20;
+                rowIcon.alt = '';
+                term.append(rowIcon, node('span', '', label));
                 list.append(term, node('dd', 'col-6 mb-1 text-end text-white fw-semibold', value));
             });
             if (title === 'Pricing') list.append(pricing);

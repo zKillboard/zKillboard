@@ -58,13 +58,19 @@ block content
                 .position-absolute.top-0.start-0.d-flex.flex-column.align-items-start.gap-1
                   button#simulate-save.btn.btn-sm.btn-primary.text-white(type="button") Save Fit
                   button#simulate-eft-open.btn.btn-sm.btn-primary.text-white(type="button" data-bs-toggle="modal" data-bs-target="#simulate-eft-modal") EFT
-                h2#simulate-hull.h4.m-0.position-absolute.top-0.end-0.text-end.pe-none
-                .position-absolute.bottom-0.end-0.d-flex.flex-column.align-items-end.gap-1(style="z-index: 4;")
+                .position-absolute.top-0.end-0.text-end.pe-none(style="z-index: 4;")
+                  h2#simulate-hull.h4.m-0
+                .position-absolute.bottom-0.start-0.d-flex.flex-column.align-items-start.gap-1(style="z-index: 4;")
                   .d-flex.gap-2(role="group" aria-label="Fit history")
                     button#simulate-undo.btn.border-0.text-white.p-0.fs-4(type="button" disabled title="Undo (Ctrl/Cmd+Z)" aria-label="Undo" aria-keyshortcuts="Control+z Meta+z") ↶
                     button#simulate-redo.btn.border-0.text-white.p-0.fs-4(type="button" disabled title="Redo (Ctrl/Cmd+R)" aria-label="Redo" aria-keyshortcuts="Control+r Meta+r") ↷
                   div#simulate-trash.text-white.p-0(style="font-size: 175%;" title="Drag fitted items here to remove them" role="img" aria-label="Drop fitted items here to remove them")
                     i.fas.fa-trash.pe-none(aria-hidden="true")
+                #simulate-resources.position-absolute.bottom-0.end-0.bg-black.bg-opacity-75.rounded.px-2.py-1.text-end.text-white.pe-none(style="z-index: 4;")
+                  .small.fw-bold CPU
+                  #simulate-resource-cpu.small.font-monospace(title="Remaining / total CPU (tf)") —
+                  .small.fw-bold.mt-1 PG
+                  #simulate-resource-powergrid.small.font-monospace(title="Remaining / total power grid (MW)") —
               #simulate-slots
         .col-12.col-xl-3
           #simulate-mode-control.btn-group.w-100.mb-2(role="group" aria-label="Tactical mode" hidden)
