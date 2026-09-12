@@ -672,12 +672,12 @@ window.zkbInitSimulate = function() {
         element('stats').replaceChildren();
         for (const [title, rows] of sections) {
             const column = node('section', 'col-12 col-md-6 col-xl-12');
-            const card = node('div', 'card');
+            const card = node('div', 'card bg-black border-primary border-opacity-25 shadow-sm');
             const body = node('div', 'card-body px-3 py-2');
-            const list = node(title === 'Pricing' ? 'div' : 'dl', 'row small lh-sm mb-0');
+            const list = node(title === 'Pricing' ? 'div' : 'dl', 'row gx-2 gy-1 small lh-sm mb-0');
             list.id = 'simulate-stats-' + title.toLowerCase().replace(/[^a-z]+/g, '-');
             list.hidden = !expandedSections.has(title);
-            const heading = node('h3', 'h6 mx-0 mb-0');
+            const heading = node('h3', 'h6 mx-0 mb-0 border-bottom border-primary pb-1');
             const icon = node('i', 'fas fa-chevron-' + (list.hidden ? 'down' : 'up'));
             icon.setAttribute('aria-hidden', 'true');
             const toggle = button('', () => {
@@ -687,7 +687,7 @@ window.zkbInitSimulate = function() {
                 toggle.setAttribute('aria-expanded', String(!list.hidden));
                 icon.className = 'fas fa-chevron-' + (list.hidden ? 'down' : 'up');
                 saveState();
-            }, 'btn p-0 border-0 text-reset w-100 d-flex align-items-center justify-content-between text-start');
+            }, 'btn p-0 border-0 text-white w-100 d-flex align-items-center justify-content-between text-start');
             toggle.setAttribute('aria-expanded', String(!list.hidden));
             toggle.setAttribute('aria-controls', list.id);
             icon.title = 'Double-click to expand or collapse all sections';
@@ -703,14 +703,14 @@ window.zkbInitSimulate = function() {
             body.append(heading);
             list.className += ' mt-2';
             rows.forEach(([label, value, image]) => {
-                const term = node('dt', 'col-6 mb-1 d-flex align-items-center');
+                const term = node('dt', 'col-6 mb-1 d-flex align-items-center text-white fw-normal');
                 const icon = node('img', 'me-1 flex-shrink-0');
                 icon.src = '/img/simulate/' + image + '.png';
                 icon.width = 20;
                 icon.height = 20;
                 icon.alt = '';
                 term.append(icon, node('span', '', label));
-                list.append(term, node('dd', 'col-6 mb-1', value));
+                list.append(term, node('dd', 'col-6 mb-1 text-end text-white fw-semibold', value));
             });
             if (title === 'Pricing') list.append(pricing);
             body.append(list);
