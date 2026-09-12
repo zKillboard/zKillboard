@@ -232,7 +232,7 @@ click('eft-modal-import');
 await settle();
 const displayedSpeed = () => {
     const rows = controls.get('stats').children[4].children[0].children[0].children[1].children;
-    return rows[rows.findIndex(row => row.textContent === 'Speed') + 1].textContent;
+    return rows[rows.findIndex(row => row.children[1]?.textContent === 'Speed') + 1].textContent;
 };
 const svipulDefenseSpeed = displayedSpeed();
 controls.get('mode-Propulsion').click();
@@ -290,6 +290,8 @@ await settle();
 assert.equal(controls.get('hull').textContent, 'Rifter');
 assert.deepEqual(controls.get('slots').children.map(section => section.children[0].textContent), ['Cargo'], 'Ships without a drone bay hide the Drones section');
 assert.equal(controls.get('stats').children.length, 7, controls.get('status').textContent);
+const fittingStats = controls.get('stats').children[0].children[0].children[0].children[1];
+assert.equal(fittingStats.children[0].children[0].src, '/img/simulate/cpu.png', 'Stats use EVE fitting icons');
 const statsToggles = controls.get('stats').querySelectorAll('button[aria-expanded]');
 for (const expanded of ['true', 'false']) {
     statsToggles[1].click();

@@ -625,41 +625,41 @@ window.zkbInitSimulate = function() {
         });
         const sections = [
             ['Fitting', [
-                ['CPU', number('cpuLoad') + ' / ' + number('cpuOutput') + ' tf'],
-                ['Powergrid', number('powerLoad') + ' / ' + number('powerOutput') + ' MW'],
-                ['Calibration', number('upgradeLoad') + ' / ' + number('upgradeCapacity')],
-                ['Free turret / launcher hardpoints', number('turretSlotsLeft') + ' / ' + number('launcherSlotsLeft')]
+                ['CPU', number('cpuLoad') + ' / ' + number('cpuOutput') + ' tf', 'cpu'],
+                ['Powergrid', number('powerLoad') + ' / ' + number('powerOutput') + ' MW', 'powergrid'],
+                ['Calibration', number('upgradeLoad') + ' / ' + number('upgradeCapacity'), 'icon-rigslot'],
+                ['Free turret / launcher hardpoints', number('turretSlotsLeft') + ' / ' + number('launcherSlotsLeft'), 'turret_missile']
             ]],
             ['Offense', [
-                ['DPS without reload', number('damagePerSecondWithoutReload')],
-                ['DPS with reload', number('damagePerSecondWithReload')],
-                ['Volley', number('damageAlpha')],
-                ['Drone DPS', number('droneDamagePerSecond')]
+                ['DPS without reload', number('damagePerSecondWithoutReload'), 'turret_missile'],
+                ['DPS with reload', number('damagePerSecondWithReload'), 'sustained'],
+                ['Volley', number('damageAlpha'), 'volley'],
+                ['Drone DPS', number('droneDamagePerSecond'), 'drone']
             ]],
             ['Defense', [
-                ['Effective HP', number('ehp')],
-                ['Shield / Armor / Hull HP', number('shieldCapacity') + ' / ' + number('armorHP') + ' / ' + number('hp')],
-                ['Passive shield tank', number('passiveShieldEffectiveRechargeRate') + ' EHP/s'],
-                ['Shield boost / Armor repair', number('shieldEffectiveBoostRate') + ' / ' + number('armorEffectiveRepairRate') + ' EHP/s']
+                ['Effective HP', number('ehp'), 'hp'],
+                ['Shield / Armor / Hull HP', number('shieldCapacity') + ' / ' + number('armorHP') + ' / ' + number('hp'), 'hp'],
+                ['Passive shield tank', number('passiveShieldEffectiveRechargeRate') + ' EHP/s', 'shield_recharge'],
+                ['Shield boost / Armor repair', number('shieldEffectiveBoostRate') + ' / ' + number('armorEffectiveRepairRate') + ' EHP/s', 'shield_boost']
             ]],
             ['Capacitor', [
-                ['Capacity', number('capacitorCapacity') + ' GJ'],
-                ['Sustain', stats.capacitorDepletesIn < 0 ? 'Stable' : number('capacitorDepletesIn') + ' s'],
-                ['Recharge', number('rechargeRate', 1000) + ' s'],
-                ['Peak surplus / deficit', number('capacitorPeakDelta') + ' GJ/s']
+                ['Capacity', number('capacitorCapacity') + ' GJ', 'capacitor'],
+                ['Sustain', stats.capacitorDepletesIn < 0 ? 'Stable' : number('capacitorDepletesIn') + ' s', 'capacitor'],
+                ['Recharge', number('rechargeRate', 1000) + ' s', 'capacitor'],
+                ['Peak surplus / deficit', number('capacitorPeakDelta') + ' GJ/s', 'capacitor']
             ]],
             ['Navigation & targeting', [
-                ['Speed', number('maxVelocity') + ' m/s'],
-                ['Align', number('alignTime') + ' s'],
-                ['Warp', number('warpSpeedMultiplier') + ' AU/s'],
-                ['Target range / targets', number('maxTargetRange', 1000) + ' km / ' + number('maxLockedTargets')],
-                ['Scan resolution', number('scanResolution') + ' mm'],
-                ['Signature', number('signatureRadius') + ' m']
+                ['Speed', number('maxVelocity') + ' m/s', 'propulsion'],
+                ['Align', number('alignTime') + ' s', 'microwarpdrive'],
+                ['Warp', number('warpSpeedMultiplier') + ' AU/s', 'microwarpdrive'],
+                ['Target range / targets', number('maxTargetRange', 1000) + ' km / ' + number('maxLockedTargets'), 'targeting_range'],
+                ['Scan resolution', number('scanResolution') + ' mm', 'targeting_resolution'],
+                ['Signature', number('signatureRadius') + ' m', 'targeting_strength']
             ]],
             ['Drones & cargo', [
-                ['Drone bay', number('droneCapacityLoad') + ' / ' + number('droneCapacity') + ' m³'],
-                ['Drone bandwidth', number('droneBandwidthLoad') + ' / ' + number('droneBandwidth') + ' Mbit/s'],
-                ['Cargo capacity', number('capacity') + ' m³']
+                ['Drone bay', number('droneCapacityLoad') + ' / ' + number('droneCapacity') + ' m³', 'dronebay'],
+                ['Drone bandwidth', number('droneBandwidthLoad') + ' / ' + number('droneBandwidth') + ' Mbit/s', 'dronebandwith'],
+                ['Cargo capacity', number('capacity') + ' m³', 'cargo']
             ]],
             ['Pricing', []]
         ];
@@ -667,7 +667,7 @@ window.zkbInitSimulate = function() {
             sections[2][1].push([label + ' EM / Th / Kin / Exp', ['Em', 'Thermal', 'Kinetic', 'Explosive'].map(damage => {
                 const value = stats[prefix + (prefix ? damage : damage.toLowerCase()) + 'DamageResonance'];
                 return Number.isFinite(value) ? ((1 - value) * 100).toFixed(1) + '%' : '—';
-            }).join(' / ')]);
+            }).join(' / '), label.toLowerCase() + '-resistance-32x32']);
         }
         element('stats').replaceChildren();
         for (const [title, rows] of sections) {
@@ -702,7 +702,16 @@ window.zkbInitSimulate = function() {
             heading.append(toggle);
             body.append(heading);
             list.className += ' mt-2';
-            rows.forEach(([label, value]) => list.append(node('dt', 'col-6 mb-1', label), node('dd', 'col-6 mb-1', value)));
+            rows.forEach(([label, value, image]) => {
+                const term = node('dt', 'col-6 mb-1 d-flex align-items-center');
+                const icon = node('img', 'me-1 flex-shrink-0');
+                icon.src = '/img/simulate/' + image + '.png';
+                icon.width = 20;
+                icon.height = 20;
+                icon.alt = '';
+                term.append(icon, node('span', '', label));
+                list.append(term, node('dd', 'col-6 mb-1', value));
+            });
             if (title === 'Pricing') list.append(pricing);
             body.append(list);
             card.append(body);
