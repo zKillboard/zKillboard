@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { runInNewContext } from 'node:vm';
+import { gunzipSync } from 'node:zlib';
 
 const results = new Map();
 const fetches = [];
@@ -10,7 +11,10 @@ globalThis.self = { postMessage: result => results.set(result.id, result) };
 globalThis.fetch = async url => {
     assert.equal(url.protocol, 'file:', 'Tests must not contact external services');
     fetches.push(url.pathname);
-    return new Response(await readFile(process.argv[2] && url.pathname.endsWith('/data.json.gz') ? process.argv[2] : url));
+    let path = url;
+    if (process.argv[2] && url.pathname.endsWith('/data.json.gz')) path = process.argv[2];
+    if (process.argv[3] && url.pathname.endsWith('/sde.dat.gz')) path = process.argv[3];
+    return new Response(await readFile(path));
 };
 await import('../public/js/fit-stats-worker.js');
 
@@ -30,10 +34,11 @@ const [bare, afterburner] = await Promise.all([
 ]);
 assert.ok(!bare.error, bare.error);
 assert.ok(!afterburner.error, afterburner.error);
-assert.equal(fetches.length, 2, 'Concurrent fits share one data/engine load');
+assert.equal(fetches.length, 3, 'Concurrent fits share one data/engine load');
 
 // Rifter base stats receive the all-V engineering, navigation and HP bonuses.
-const base = Object.fromEntries(window.get_dogma_attributes(587).map(attribute => [attribute.attributeID, attribute.value]));
+const snapshot = JSON.parse(gunzipSync(await readFile(process.argv[2] || new URL('../public/vendor/eveshipfit/data.json.gz', import.meta.url))));
+const base = Object.fromEntries(snapshot.data.typeDogma[587].dogmaAttributes.map(attribute => [attribute.attributeID, attribute.value]));
 close(bare.stats.cpuOutput, base[48] * 1.25);
 close(bare.stats.powerOutput, base[11] * 1.25);
 close(bare.stats.maxVelocity, base[37] * 1.25);
@@ -77,13 +82,23 @@ const mining = await calculate([
     { type_id: 22542, flag: 11, quantity: 1 }
 ], 32880);
 assert.ok(!mining.error, mining.error);
+const structure = await calculate([
+    { type_id: 37180, flag: 92, quantity: 1 },
+    { type_id: 35892, flag: 164, quantity: 1 }
+], 35832);
+assert.ok(!structure.error, structure.error);
+assert.ok(structure.details.some(item => item.name === 'Astrahus'));
+assert.ok(structure.details.some(item => item.slot?.type === 'Rig'));
+assert.ok(structure.details.some(item => item.slot?.type === 'Service'));
+const structureBase = Object.fromEntries(snapshot.data.typeDogma[35832].dogmaAttributes.map(attribute => [attribute.attributeID, attribute.value]));
+close(structure.stats.cpuOutput, structureBase[48]);
 
 assert.match((await calculate([gun, gun])).error, /Multiple modules/);
 assert.match((await calculate([charge])).error, /no recorded module/);
 assert.match((await calculate([{ type_id: 999999999, flag: 19, quantity: 1 }])).error, /missing/);
 assert.match((await calculate([], 34)).error, /not supported/);
-assert.equal(fetches.length, 2, 'Later calculations reuse the loaded data');
-console.log('Fit statistics checks passed: all-V bonuses, module effects, charges, cargo, invalid fits, and shared loading.');
+assert.equal(fetches.length, 3, 'Later calculations reuse the loaded data');
+console.log('Fit statistics checks passed: ships, structures, modules, charges, drones, cargo, invalid fits, and shared loading.');
 
 // Exercise the shared panel with real calculation output and a small DOM stub.
 class Element {

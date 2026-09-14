@@ -17,7 +17,7 @@ docker build -f Dockerfile.cron -t zkill-cron .
 
 ## EVEShip.fit (Fit Stats)
 
-The verified fitting-data snapshot is committed alongside the engine, bindings,
+The verified fitting-data assets are committed alongside the engine, bindings,
 and license notices in `public/vendor/eveshipfit/`. The Docker build copies these
 assets into the image. Neither builds nor container startup download fitting data,
 and no fitting updater runs in cron. The web and cron servers can run independently.
@@ -36,13 +36,16 @@ docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/app" -w /app \
 ```
 
 An unchanged release causes no data downloads. For a new release, the updater
-fetches four public data files and runs the fitting tests before publishing one
-atomic `data.json.gz` snapshot. Failures retain the existing snapshot. No npm
-install or GitHub token is needed. Do not run multiple manual updates concurrently.
+fetches the public `@eveshipfit/sde` FlatBuffer, derives the UI metadata, and runs
+the fitting tests before publishing `data.json.gz` and `sde.dat.gz`. The worker
+checks that both files contain the same SDE build. Failures retain the existing
+assets. No npm install or GitHub token is needed. Do not run multiple manual
+updates concurrently.
 
-Review and commit the updated `public/vendor/eveshipfit/data.json.gz`, then rebuild
-and deploy the web image. nginx must serve the same deployed asset snapshot; the
-local nginx example already mounts the checkout's `public/` directory. No shared
+Review and commit the updated `public/vendor/eveshipfit/data.json.gz` and
+`public/vendor/eveshipfit/sde.dat.gz`, then rebuild and deploy the web image. nginx
+must serve the same deployed assets; the local nginx example already mounts the
+checkout's `public/` directory. No shared
 writable fitting-data volume between cron and web is needed. With a full `/app`
 bind mount, the snapshot comes from that checkout rather than the image.
 
@@ -50,13 +53,11 @@ Run `node tests/fit-stats.mjs` to verify the installed snapshot independently.
 On a ship kill page, click **Fit Stats** to check the deployment. Open panels keep
 their loaded data until navigation or reload.
 
-The bundled engine is [EVEShipFit dogma-engine 7.1.0](https://github.com/EVEShipFit/dogma-engine/releases/tag/v7.1.0),
-obtained from this [public package mirror](https://github.com/philihp/edencom-link/blob/04aad920cbe3a17e69fda924fdcdc3ac05170a94/vendor/eveshipfit/eveshipfit-dogma-engine-7.1.0.tgz).
-The Protobuf decoders come from [EVEShipFit/react](https://github.com/EVEShipFit/react/tree/3d6d6322e8c718a52e95446fe32d4a7d53fd3647/src/providers/EveDataProvider);
-the reader's CommonJS export is changed to an ES module export. The WASM and its
-bindings are unmodified and must be updated together. Game data comes from
-[EVEShipFit/data](https://github.com/EVEShipFit/data). Required license notices are
-preserved in [public/vendor/eveshipfit/LICENSE](public/vendor/eveshipfit/LICENSE).
+The bundled engine is [EVEShipFit dogma-engine 10.1.0](https://github.com/EVEShipFit/dogma-engine/releases/tag/v10.1.0),
+obtained from its official public npm package. The WASM and its bindings are
+unmodified and must be updated together. Game data comes from the official public
+[`@eveshipfit/sde` package](https://www.npmjs.com/package/@eveshipfit/sde).
+Required notices are preserved in [public/vendor/eveshipfit/](public/vendor/eveshipfit/).
 
 ## Install MongoDB 7
 

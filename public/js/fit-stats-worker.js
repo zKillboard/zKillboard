@@ -3,38 +3,23 @@ import * as engine from '../vendor/eveshipfit/esf_dogma_engine_bg.js';
 let ready;
 
 async function loadData() {
-    const response = await fetch(new URL('../vendor/eveshipfit/data.json.gz', import.meta.url), { cache: 'no-store' });
-    if (response.status === 404) throw new Error('Fitting data is unavailable. Please try again later.');
-    if (!response.ok) throw new Error('Unable to load fitting data.');
-    const snapshot = await new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).json();
+    const [metadataResponse, sdeResponse] = await Promise.all([
+        fetch(new URL('../vendor/eveshipfit/data.json.gz', import.meta.url), { cache: 'no-store' }),
+        fetch(new URL('../vendor/eveshipfit/sde.dat.gz', import.meta.url), { cache: 'no-store' })
+    ]);
+    if (metadataResponse.status === 404 || sdeResponse.status === 404) throw new Error('Fitting data is unavailable. Please try again later.');
+    if (!metadataResponse.ok || !sdeResponse.ok) throw new Error('Unable to load fitting data.');
+    const [snapshot, sde] = await Promise.all([
+        new Response(metadataResponse.body.pipeThrough(new DecompressionStream('gzip'))).json(),
+        new Response(sdeResponse.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer()
+    ]);
     const data = snapshot.data;
 
-    const attributes = {};
     const skills = {};
-    for (const [id, attribute] of Object.entries(data.dogmaAttributes)) attributes[attribute.name] = Number(id);
-    // These subsystem effects have no modifierInfo in the SDE; supply their additive slot modifiers.
-    for (const [effectID, modifiers] of [
-        [3773, [['turretSlotsLeft', 'turretHardPointModifier'], ['launcherSlotsLeft', 'launcherHardPointModifier']]],
-        [3774, [['hiSlots', 'hiSlotModifier'], ['medSlots', 'medSlotModifier'], ['lowSlots', 'lowSlotModifier']]]
-    ]) {
-        data.dogmaEffects[effectID].modifierInfo = modifiers.map(([target, source]) => ({
-            domain: 1, func: 0, operation: 2,
-            modifiedAttributeID: attributes[target], modifyingAttributeID: attributes[source]
-        }));
-    }
     for (const [id, type] of Object.entries(data.types)) {
         if (type.categoryID === 16) skills[id] = 5;
     }
 
-    // The upstream WASM bindings use window callbacks; here they stay inside the worker.
-    globalThis.window = {
-        get_dogma_attributes: id => data.typeDogma[id].dogmaAttributes,
-        get_dogma_attribute: id => data.dogmaAttributes[id],
-        get_dogma_effects: id => data.typeDogma[id].dogmaEffects,
-        get_dogma_effect: id => data.dogmaEffects[id],
-        get_type: id => data.types[id],
-        attribute_name_to_id: name => attributes[name]
-    };
     const wasmResponse = await fetch(new URL('../vendor/eveshipfit/esf_dogma_engine_bg.wasm', import.meta.url));
     if (!wasmResponse.ok) throw new Error('Unable to load fitting engine.');
     const { instance } = await WebAssembly.instantiate(await wasmResponse.arrayBuffer(), {
@@ -43,6 +28,7 @@ async function loadData() {
     engine.__wbg_set_wasm(instance.exports);
     instance.exports.__wbindgen_start();
     engine.init();
+    if (engine.load_sde(new Uint8Array(sde)) !== snapshot.build) throw new Error('Fitting data files do not match.');
     return { data, skills };
 }
 
@@ -67,17 +53,17 @@ self.onmessage = async ({ data: request }) => {
             self.postMessage({ id: request.id, catalog });
             return;
         }
-        const fit = { ship_type_id: request.fit.ship_type_id, modules: [], drones: [] };
-        if (data.types[fit.ship_type_id]?.categoryID !== 6 || !data.typeDogma[fit.ship_type_id]) {
+        const fit = { ship: { type_id: request.fit.ship_type_id }, items: [], character: { skills: request.simulate && request.skillLevel === 0 ? {} : skills } };
+        if (![6, 65].includes(data.types[fit.ship.type_id]?.categoryID) || !data.typeDogma[fit.ship.type_id]) {
             throw new Error('This hull is not supported by the fitting data.');
         }
 
-        if (request.simulate && data.types[fit.ship_type_id].groupID === 1305) {
+        if (request.simulate && data.types[fit.ship.type_id].groupID === 1305) {
             const mode = request.fit.mode || 'Defense';
             if (!['Defense', 'Propulsion', 'Sharpshooter'].includes(mode)) throw new Error('Invalid tactical destroyer mode.');
-            const modeType = Object.entries(data.types).find(([, type]) => type.groupID === 1306 && type.name === data.types[fit.ship_type_id].name + ' ' + mode + ' Mode');
+            const modeType = Object.entries(data.types).find(([, type]) => type.groupID === 1306 && type.name === data.types[fit.ship.type_id].name + ' ' + mode + ' Mode');
             if (!modeType) throw new Error('Tactical destroyer mode data is unavailable.');
-            fit.modules.push({ type_id: Number(modeType[0]), slot: { type: 'SubSystem', index: 1 }, state: 'Active' });
+            fit.items.push({ type_id: Number(modeType[0]), slot: { type: 'subsystem', index: 0 }, state: 'active' });
         }
 
         const slots = new Map();
@@ -87,11 +73,13 @@ self.onmessage = async ({ data: request }) => {
                     throw new Error('This fit contains an unsupported drone.');
                 }
                 if (!Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 1000) throw new Error('Invalid drone quantity.');
-                for (let i = 0; i < item.quantity; i++) fit.drones.push({ type_id: item.type_id, state: request.simulate && i < item.active ? 'Active' : 'Passive' });
+                const active = request.simulate ? Math.min(item.quantity, item.active || 0) : 0;
+                if (active) fit.items.push({ type_id: item.type_id, quantity: active, slot: { type: 'drone_bay' }, state: 'active' });
+                if (active < item.quantity) fit.items.push({ type_id: item.type_id, quantity: item.quantity - active, slot: { type: 'drone_bay' }, state: 'offline' });
             }
             let slot;
-            for (const [start, end, type] of [[11, 18, 'Low'], [19, 26, 'Medium'], [27, 34, 'High'], [92, 99, 'Rig'], [125, 132, 'SubSystem']]) {
-                if (item.flag >= start && item.flag <= end) slot = { type, index: item.flag - start + 1 };
+            for (const [start, end, type] of [[11, 18, 'low'], [19, 26, 'medium'], [27, 34, 'high'], [92, 99, 'rig'], [125, 132, 'subsystem'], [164, 171, 'service']]) {
+                if (item.flag >= start && item.flag <= end) slot = { type, index: item.flag - start };
             }
             if (!slot) continue;
             const type = data.types[item.type_id];
@@ -101,22 +89,24 @@ self.onmessage = async ({ data: request }) => {
             if (type.categoryID === 8) {
                 if (entry.charge) throw new Error('Multiple charges were recorded in one slot.');
                 entry.charge = { type_id: item.type_id };
-            } else if (type.categoryID === 7 || type.categoryID === 32) {
+            } else if ([7, 32, 66].includes(type.categoryID)) {
                 if (entry.type_id || item.quantity !== 1) throw new Error('Multiple modules were recorded in one slot.');
                 entry.type_id = item.type_id;
-                entry.state = request.simulate && ['Passive', 'Online', 'Active', 'Overload'].includes(item.state) ? item.state : 'Active';
+                entry.state = request.simulate && ['Passive', 'Online', 'Active', 'Overload'].includes(item.state)
+                    ? { Passive: 'offline', Online: 'online', Active: 'active', Overload: 'overload' }[item.state]
+                    : 'active';
             } else {
                 throw new Error('This fit contains an unsupported fitted item.');
             }
         }
         for (const entry of slots.values()) {
             if (!entry.type_id) throw new Error('A loaded charge has no recorded module.');
-            fit.modules.push(entry);
+            fit.items.push(entry);
         }
 
-        const result = engine.calculate(fit, request.simulate && request.skillLevel === 0 ? {} : skills);
+        const result = engine.calculate(fit);
         const stats = {};
-        for (const [id, attribute] of result.hull.attributes) {
+        for (const [id, attribute] of result.ship.attributes) {
             const name = data.dogmaAttributes[id]?.name;
             if (name) stats[name] = attribute.value;
         }
@@ -124,24 +114,35 @@ self.onmessage = async ({ data: request }) => {
             stats.upgradeLoad = result.items.reduce((total, item) => total + (item.attributes.get(1153)?.value || 0), 0);
         }
         const character = {};
-        for (const [id, attribute] of result.char.attributes) {
+        for (const [id, attribute] of result.character.attributes) {
             const name = data.dogmaAttributes[id]?.name;
             if (name) character[name] = attribute.value;
         }
+        const calculatedItems = result.items.map((item, index) => ({
+            ...item,
+            type_id: fit.items[index].type_id,
+            slot: fit.items[index].slot,
+            charge: item.charge && { ...item.charge, type_id: fit.items[index].charge.type_id }
+        }));
         const details = [];
         const droneTypes = new Set();
-        for (const item of [result.hull, result.char, ...result.items]) {
-            if (item.slot?.type === 'DroneBay') {
+        for (const item of [{ ...result.ship, type_id: fit.ship.type_id }, result.character, ...calculatedItems]) {
+            if (item.slot?.type === 'drone_bay') {
                 if (droneTypes.has(item.type_id)) continue;
                 droneTypes.add(item.type_id);
             }
             for (const entry of [item, item.charge].filter(Boolean)) {
+                const slot = entry.slot && {
+                    type: { high: 'High', medium: 'Medium', low: 'Low', rig: 'Rig', subsystem: 'SubSystem', service: 'Service', drone_bay: 'DroneBay', cargo: 'Cargo' }[entry.slot.type],
+                    ...('index' in entry.slot ? { index: entry.slot.index + 1 } : {})
+                };
+                const state = { offline: 'Passive', online: 'Online', active: 'Active', overload: 'Overload' };
                 details.push({
-                    name: entry === result.char ? 'Pilot (all skills V)' : (data.types[entry.type_id]?.name || 'Item'),
-                    slot: entry.slot,
+                    name: entry === result.character ? 'Pilot (all skills V)' : (data.types[entry.type_id]?.name || 'Item'),
+                    slot,
                     type_id: entry.type_id,
-                    state: entry.state,
-                    maxState: entry.max_state,
+                    state: state[entry.state] || entry.state,
+                    maxState: state[entry.max_state] || entry.max_state,
                     attributes: Array.from(entry.attributes, ([id, attribute]) => ({
                         name: data.dogmaAttributes[id]?.name || String(id),
                         label: data.dogmaAttributes[id]?.displayName || data.dogmaAttributes[id]?.name || String(id),
