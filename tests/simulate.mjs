@@ -2,7 +2,7 @@
 // Run: node tests/simulate.mjs
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { racks, slotCount, compatible, compatibleCharge, hasDroneBay, validateDrones, addModule, importEFT, exportEFT, warnings } from '../public/js/simulate-model.js';
+import { racks, slotCount, compatible, compatibleCharge, hasDroneBay, validateDrones, addModule, importEFT, importTypeIDFit, exportEFT, warnings } from '../public/js/simulate-model.js';
 
 let result;
 globalThis.self = { postMessage: value => { result = value; } };
@@ -377,6 +377,16 @@ assert.equal(stored.get('zkb:simulate'), savedBeforeBadLink);
 window.zkbPageCleanup();
 console.log('Linked fit checks passed: automatic import, charges, precedence, and invalid-link preservation.');
 
+window.location.hash = '#fit=587%3B28%3A3074%3B28%3A230';
+window.zkbInitSimulate();
+await settle();
+const linkedIDFit = JSON.parse(stored.get('zkb:simulate'));
+assert.equal(linkedIDFit.ship_type_id, 587);
+assert.ok(linkedIDFit.items.some(item => item.type_id === 3074 && item.flag === 28), 'Type ID links preserve the module slot');
+assert.ok(linkedIDFit.items.some(item => item.type_id === 230 && item.flag === 28), 'Type ID links preserve the charge slot');
+window.zkbPageCleanup();
+console.log('Type ID link checks passed: ship, module, charge, and exact slots.');
+
 window.location.hash = '#eft=' + encodeURIComponent('[Rifter, Trash test]\n150mm Railgun II, Antimatter Charge S');
 window.zkbInitSimulate();
 await settle();
@@ -508,9 +518,14 @@ assert.equal(controls.get('status').textContent, '', 'Successful simulations cle
 window.zkbPageCleanup();
 for (const template of ['detail.pug', 'fits_detail.pug']) {
     const source = await readFile(new URL('../templates/' + template, import.meta.url), 'utf8');
-    assert.match(source, /href=\('\/simulate\/#eft='[^\n]+data-spa="off"\) Simulate/);
+    assert.match(source, /href=\('\/simulate\/#fit='[^\n]+data-spa="off"\) Simulate/);
 }
-console.log('Reported Tholos killmail loads and calculates; Simulate links use same-tab document navigation.');
+const idFit = importTypeIDFit('593;28:3074;28:230;87:2454:2;5:999999999:20', catalog);
+assert.equal(idFit.ship_type_id, 593);
+assert.deepEqual(idFit.items.map(item => [item.flag, item.type_id, item.quantity]), [[28, 3074, 1], [28, 230, 1], [87, 2454, 2]]);
+await calculate(idFit);
+assert.throws(() => importTypeIDFit('587;28:999999999', catalog), /Unknown item type ID/);
+console.log('Reported Tholos killmail loads and calculates; Simulate links preserve slot and type IDs.');
 
 window.location.hash = '#eft=' + encodeURIComponent('[Rifter, Charge drop]\n150mm Railgun II');
 window.zkbInitSimulate();

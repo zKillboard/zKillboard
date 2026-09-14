@@ -46,6 +46,22 @@ class Fitting
         return trim($eft);
     }
 
+    public static function simulationPayload($fit)
+    {
+        $payload = [(int) $fit['ship_type_id']];
+        foreach ($fit['items'] as $item) {
+            $flag = (int) $item['flag'];
+            if ($flag != 87 && !($flag >= 11 && $flag <= 34) && !($flag >= 92 && $flag <= 99) && !($flag >= 125 && $flag <= 132) && !($flag >= 164 && $flag <= 171)) continue;
+            $quantity = (int) $item['quantity'];
+            if ($quantity < 1) continue;
+            $value = $flag . ':' . (int) $item['type_id'];
+            if ($quantity != 1) $value .= ':' . $quantity;
+            $payload[] = $value;
+        }
+
+        return implode(';', $payload);
+    }
+
     public static function DNA($array = array(), $ship)
     {
         $goodspots = array('High Slots', 'SubSystems', 'Rigs', 'Low Slots', 'Mid Slots', 'Drone Bay', 'Fuel Bay');

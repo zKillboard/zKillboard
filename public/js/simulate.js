@@ -1,4 +1,4 @@
-import { racks, rackFor, slotCount, compatible, compatibleCharge, hasDroneBay, validateDrones, addModule, importEFT, exportEFT, exportESIFit, warnings } from './simulate-model.js';
+import { racks, rackFor, slotCount, compatible, compatibleCharge, hasDroneBay, validateDrones, addModule, importEFT, importTypeIDFit, exportEFT, exportESIFit, warnings } from './simulate-model.js';
 
 let cleanup;
 
@@ -934,12 +934,14 @@ window.zkbInitSimulate = function() {
                 }
                 element('controls').disabled = false;
                 element('status').textContent = 'Choose a ship or import an EFT fit.';
-                const incomingEFT = new URLSearchParams(window.location.hash.slice(1)).get('eft');
-                if (incomingEFT !== null) {
-                    element('eft-modal-text').value = incomingEFT;
+                const incoming = new URLSearchParams(window.location.hash.slice(1));
+                const incomingFit = incoming.get('fit');
+                const incomingEFT = incoming.get('eft');
+                if (incomingFit !== null || incomingEFT !== null) {
+                    if (incomingEFT !== null) element('eft-modal-text').value = incomingEFT;
                     try {
                         restoring = false;
-                        loadFit(importEFT(incomingEFT, catalog));
+                        loadFit(incomingFit !== null ? importTypeIDFit(incomingFit, catalog) : importEFT(incomingEFT, catalog));
                         window.history?.replaceState(null, '', window.location.pathname + window.location.search);
                     }
                     catch (error) { showStatus('Unable to load this fit: ' + error.message); }

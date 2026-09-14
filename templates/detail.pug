@@ -80,7 +80,7 @@ block content
                 a.dropdown-item(href=('https://socketkill.com/kill/' . ($infoData['killID'] ?? 0) . '/') target="_blank" rel="noopener noreferrer") SocketKill
         if (!empty($extraData['statsFit']) && ($victimData['groupID'] ?? 0) != 29)
           li.nav-item
-            a.nav-link(href=('/simulate/#eft=' . rawurlencode($eftText)) data-spa="off") Simulate
+            a.nav-link(href=('/simulate/#fit=' . rawurlencode(Fitting::simulationPayload($extraData['statsFit']))) data-spa="off") Simulate
         li.nav-item.dropdown
           button.nav-link.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false") Export
           ul.dropdown-menu

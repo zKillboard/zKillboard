@@ -174,6 +174,30 @@ export function importEFT(text, catalog) {
     return fit;
 }
 
+export function importTypeIDFit(text, catalog) {
+    if (text.length > 50000) throw new Error('This fit is too large.');
+    const entries = text.split(';');
+    if (!/^\d+$/.test(entries[0])) throw new Error('Invalid ship type ID.');
+    const hull = catalog[Number(entries.shift())];
+    if (hull?.categoryID !== 6) throw new Error('Unknown ship type ID.');
+    const fit = { ship_type_id: hull.id, name: hull.name + ' loss', items: [] };
+    for (const entry of entries) {
+        const fields = entry.match(/^(\d+):(\d+)(?::(\d+))?$/);
+        if (!fields) throw new Error('Invalid slot and type ID entry.');
+        const flag = Number(fields[1]);
+        if (flag !== 87 && !racks.some(rack => flag >= rack.start && flag < rack.start + 8) && !(flag >= 164 && flag <= 171)) continue;
+        const type = catalog[Number(fields[2])];
+        const quantity = Number(fields[3] || 1);
+        if (!type) throw new Error('Unknown item type ID: ' + fields[2]);
+        if (!Number.isInteger(quantity) || quantity < 1 || quantity > (type.categoryID === 18 ? 1000 : 1000000)) throw new Error('Item quantities are out of range.');
+        fit.items.push({ type_id: type.id, flag, quantity, ...(type.categoryID === 18 ? { active: 0 } : type.categoryID === 8 ? {} : { state: 'Active' }) });
+    }
+    if (fit.items.length > 300 || fit.items.filter(item => item.flag === 87).reduce((sum, item) => sum + item.quantity, 0) > 1000) throw new Error('This fit contains too many items.');
+    validateSlots(fit.items, hull, catalog);
+    validateDrones(fit, catalog);
+    return fit;
+}
+
 export function warnings(fit, catalog, stats, character) {
     const messages = [];
     for (const [load, output, label] of [['cpuLoad', 'cpuOutput', 'CPU'], ['powerLoad', 'powerOutput', 'Powergrid'], ['upgradeLoad', 'upgradeCapacity', 'Calibration'], ['droneCapacityLoad', 'droneCapacity', 'Drone bay'], ['droneBandwidthLoad', 'droneBandwidth', 'Drone bandwidth']]) {
