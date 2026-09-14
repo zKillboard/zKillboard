@@ -1,4 +1,4 @@
-import { racks, rackFor, slotCount, compatible, compatibleCharge, hasDroneBay, validateDrones, addModule, importEFT, importTypeIDFit, exportEFT, exportESIFit, warnings } from './simulate-model.js';
+const { racks, rackFor, slotCount, compatible, compatibleCharge, hasDroneBay, validateDrones, addModule, importEFT, importTypeIDFit, exportEFT, exportESIFit, warnings } = await import(new URL('./simulate-model.js' + new URL(import.meta.url).search, import.meta.url));
 
 let cleanup;
 
