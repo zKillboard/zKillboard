@@ -17,7 +17,9 @@ globalThis.fetch = async url => {
         }
         return new Response(JSON.stringify(Object.fromEntries(Object.keys(catalog).map(typeID => [typeID, 100]))));
     }
-    return new Response(await readFile(url));
+    const path = new URL(url);
+    path.search = '';
+    return new Response(await readFile(path));
 };
 await import('../public/js/fit-stats-worker.js');
 await self.onmessage({ data: { id: 1, catalog: true } });

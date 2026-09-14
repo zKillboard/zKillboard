@@ -14,6 +14,10 @@ globalThis.fetch = async url => {
     let path = url;
     if (process.argv[2] && url.pathname.endsWith('/data.json.gz')) path = process.argv[2];
     if (process.argv[3] && url.pathname.endsWith('/sde.dat.gz')) path = process.argv[3];
+    if (path instanceof URL) {
+        path = new URL(path);
+        path.search = '';
+    }
     return new Response(await readFile(path));
 };
 await import('../public/js/fit-stats-worker.js');

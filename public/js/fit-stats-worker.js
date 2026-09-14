@@ -1,4 +1,4 @@
-import * as engine from '../vendor/eveshipfit/esf_dogma_engine_bg.js';
+import * as engine from '../vendor/eveshipfit/esf_dogma_engine_bg.js?v=10.1.0';
 
 let ready;
 
@@ -22,7 +22,7 @@ async function loadData() {
         if (type.categoryID === 16) skills[id] = 5;
     }
 
-    const wasmResponse = await fetch(new URL('../vendor/eveshipfit/esf_dogma_engine_bg.wasm', import.meta.url));
+    const wasmResponse = await fetch(new URL('../vendor/eveshipfit/esf_dogma_engine_bg.wasm?v=10.1.0', import.meta.url));
     if (!wasmResponse.ok) throw new Error('Unable to load fitting engine.');
     const { instance } = await WebAssembly.instantiate(await wasmResponse.arrayBuffer(), {
         './esf_dogma_engine_bg.js': engine
