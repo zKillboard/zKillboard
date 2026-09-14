@@ -128,7 +128,7 @@ function handler($request, $response, $args, $container)
 		$delay = (int) $redis->get("delay:$sessID");
 
 		foreach ($scopes as $scope) {
-			$row = ['characterID' => $charID, 'scope' => $scope, 'delay' => $delay, 'refreshToken' => $refresh_token, 'oauth2' => true];
+			$row = ['characterID' => $charID, 'corporationID' => (int) $corpID, 'scope' => $scope, 'delay' => $delay, 'refreshToken' => $refresh_token, 'oauth2' => true];
 			if ($mdb->count('scopes', ['characterID' => $charID, 'scope' => $scope]) == 0) {
 				$mdb->save('scopes', $row);
 				if ($scope != 'publicData') $scopeCount++;
