@@ -165,6 +165,8 @@ while ($time >= time()) {
             }
             $kill['npc'] = isNPC($kill);
             $kill['awox'] = ($kill['npc'] == true) ? false : isAwox($kill);
+            $allianceAwox = ($kill['npc'] == true) ? false : isAwox($kill, 'allianceID');
+            $factionAwox = ($kill['npc'] == true) ? false : isAwox($kill, 'factionID');
             $kill['solo'] = ($kill['npc'] == true) ? false : isSolo($kill);
 
             $items = $mail['victim']['items'];
@@ -205,6 +207,8 @@ while ($time >= time()) {
             addLabel($kill, $kill['npc'], 'npc');
             addLabel($kill, ($kill['npc'] === false && $isPaddedKill === false), 'pvp');
             addLabel($kill, $kill['awox'], 'awox');
+            addLabel($kill, $allianceAwox, 'a:awox');
+            addLabel($kill, $factionAwox, 'f:awox');
             addLabel($kill, $solarSystem['security'] >= 0.45, 'loc:highsec');
             addLabel($kill, $solarSystem['security'] < 0.45 && $solarSystem['security'] >= 0, 'loc:lowsec');
             addLabel($kill, $solarSystem['security'] < 0 && $solarSystem['regionID'] < 11000001 && $solarSystem['regionID'] != 10000070 && $solarSystem['regionID'] != 10001000, 'loc:nullsec');
@@ -505,16 +509,16 @@ function trackItemLoop($ttlc, $j)
     }
 }
 
-function isAwox($row)
+function isAwox($row, $affiliation = 'corporationID')
 {
     $victim = $row['involved'][0];
     $vGroupID = $row['vGroupID'];
     if ($vGroupID == 237 || $vGroupID == 29) {
         return false;
     }
-    if (isset($victim['corporationID']) && $vGroupID != 29) {
-        $vicCorpID = $victim['corporationID'];
-        if ($vicCorpID > 0) {
+    if (isset($victim[$affiliation]) && $vGroupID != 29) {
+        $victimAffiliationID = $victim[$affiliation];
+        if ($victimAffiliationID > 0) {
             foreach ($row['involved'] as $key => $involved) {
                 if ($key == 0) {
                     continue;
@@ -526,17 +530,17 @@ function isAwox($row)
                     continue;
                 }
 
-                if (!isset($involved['corporationID'])) {
+                if (!isset($involved[$affiliation])) {
                     continue;
                 }
-                $invCorpID = $involved['corporationID'];
-                if ($invCorpID == 0) {
+                $attackerAffiliationID = $involved[$affiliation];
+                if ($attackerAffiliationID == 0) {
                     continue;
                 }
-                if ($invCorpID <= 1999999) {
+                if (($involved['corporationID'] ?? 0) <= 1999999) {
                     continue;
                 }
-                if ($vicCorpID == $invCorpID) {
+                if ($victimAffiliationID == $attackerAffiliationID) {
                     return true;
                 }
             }

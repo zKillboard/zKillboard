@@ -224,6 +224,8 @@ function popChar(ch) {
     ch.stats.shipsDestroyed = Number(ch.stats.shipsDestroyed) | 0;
     ch.stats.shipsLost = Number(ch.stats.shipsLost) | 0;
     ch.stats.awoxCount = Number(ch.stats.awoxCount) | 0;
+    ch.stats.allianceAwoxCount = Number(ch.stats.allianceAwoxCount) | 0;
+    ch.stats.factionAwoxCount = Number(ch.stats.factionAwoxCount) | 0;
     ch.stats.dangerRatio = finiteOrBlank(ch.stats.dangerRatio);
     if (ch.stats.dangerRatio === '') {
         if (ch.stats.shipsLost > 0) {
@@ -261,7 +263,9 @@ function popChar(ch) {
     else if (ch.inactive == true) labels.push('no recent kb activity');
     ch.stats.gankerCount = Number(ch.stats.gankerCount) | 0;
     if (ch.stats.gankerCount >= 10) badges.push($(document.createElement('span')).addClass("badge zkb-label-danger text-white").attr("title", ch.stats.gankerCount + " past-year highsec ganks").text("GANKER (" + ch.stats.gankerCount + ")"));
-    if (ch.stats.awoxCount > 0) badges.push($(document.createElement('span')).addClass("badge zkb-label-danger text-white").text("AWOX (" + ch.stats.awoxCount + ")"));
+    if (ch.stats.awoxCount >= 10) badges.push($(document.createElement('span')).addClass("badge zkb-label-danger text-white").text("AWOX (" + ch.stats.awoxCount + ")"));
+    if (ch.stats.allianceAwoxCount >= 15) badges.push($(document.createElement('span')).addClass("badge zkb-label-danger text-white").text("ALLIANCE AWOX (" + ch.stats.allianceAwoxCount + ")"));
+    if (ch.stats.factionAwoxCount >= 20) badges.push($(document.createElement('span')).addClass("badge zkb-label-danger text-white").text("FACTION AWOX (" + ch.stats.factionAwoxCount + ")"));
     if (ch.stats.fc) {
         let fcLevel = String(ch.stats.fc.level || '').toUpperCase();
         let fcTitle = `Past-year FC signal: ${Number(ch.stats.fc.monitorAppearances) || 0} Monitor, ${Number(ch.stats.fc.commandShipAppearances) || 0} command-ship, ${Number(ch.stats.fc.largeFleetAppearances) || 0} large-fleet appearances`;

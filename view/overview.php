@@ -697,6 +697,8 @@ function handler($request, $response, $args, $container)
 		'pvp' => ['label' => 'PvP', 'color' => '#285c00'],
 		'npc' => ['label' => 'PvE', 'color' => '#3f3f3f'],
 		'awox' => ['label' => 'Awox', 'color' => '#781500'],
+		'a:awox' => ['label' => 'Alliance Awox', 'color' => '#781500'],
+		'f:awox' => ['label' => 'Faction Awox', 'color' => '#781500'],
 		'ganked' => ['label' => 'Ganked', 'color' => '#6b2f45'],
 		'padding' => ['label' => 'Padding', 'color' => '#604515'],
 	];

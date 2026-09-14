@@ -20,13 +20,22 @@
         - $trophyTitle = number_format((float) ($trophySummary['levelCount'] ?? 0), 0) . ' / ' . number_format((float) ($trophySummary['maxLevelCount'] ?? 0), 0) . ' trophies (' . number_format((float) ($trophySummary['completedPct'] ?? 0), 0) . '%)';
         a(href=('/character/' . ($detailData['characterID'] ?? 0) . '/trophies/') title=$trophyTitle aria-label=$trophyTitle)
           img(src=('/img/level/level' . ($trophySummary['boxes'] ?? 0) . '.gif') alt=$trophyTitle)
+      - $awoxCount = (int) ($statisticsData['awoxCount'] ?? 0);
+      - $allianceAwoxCount = (int) ($statisticsData['allianceAwoxCount'] ?? 0);
+      - $factionAwoxCount = (int) ($statisticsData['factionAwoxCount'] ?? 0);
       - $gankerCount = (int) ($statisticsData['gankerCount'] ?? 0);
       - $fc = is_object($statisticsData['fc'] ?? null) ? (array) $statisticsData['fc'] : ($statisticsData['fc'] ?? []);
       - $bait = is_object($statisticsData['bait'] ?? null) ? (array) $statisticsData['bait'] : ($statisticsData['bait'] ?? []);
       - $cyno = is_object($statisticsData['cyno'] ?? null) ? (array) $statisticsData['cyno'] : ($statisticsData['cyno'] ?? []);
       - $characterTags = is_object($extraData['characterTags'] ?? null) ? (array) $extraData['characterTags'] : ($extraData['characterTags'] ?? []);
-      if ($gankerCount >= 10 || !empty($fc) || !empty($bait) || !empty($cyno) || !empty($characterTags))
+      if ($awoxCount >= 10 || $allianceAwoxCount >= 15 || $factionAwoxCount >= 20 || $gankerCount >= 10 || !empty($fc) || !empty($bait) || !empty($cyno) || !empty($characterTags))
         .d-flex.flex-wrap.justify-content-center.gap-1.mt-1(style="width: 128px;")
+          if ($awoxCount >= 10)
+            a.badge.zkb-label-danger.text-white.text-decoration-none(href="/information/faq/#character-labels" rel="tooltip" title=($awoxCount . ' past-year corporation awox final blows'))= 'AWOX (' . number_format($awoxCount) . ')'
+          if ($allianceAwoxCount >= 15)
+            a.badge.zkb-label-danger.text-white.text-decoration-none(href="/information/faq/#character-labels" rel="tooltip" title=($allianceAwoxCount . ' past-year alliance awox final blows'))= 'ALLIANCE AWOX (' . number_format($allianceAwoxCount) . ')'
+          if ($factionAwoxCount >= 20)
+            a.badge.zkb-label-danger.text-white.text-decoration-none(href="/information/faq/#character-labels" rel="tooltip" title=($factionAwoxCount . ' past-year faction awox final blows'))= 'FACTION AWOX (' . number_format($factionAwoxCount) . ')'
           if ($gankerCount >= 10)
             a.badge.zkb-label-danger.text-white.text-decoration-none(href="/information/faq/#character-labels" rel="tooltip" title=($gankerCount . ' past-year highsec ganks'))= 'GANKER (' . number_format($gankerCount) . ')'
           if (!empty($fc))

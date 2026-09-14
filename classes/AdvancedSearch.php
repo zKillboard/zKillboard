@@ -38,6 +38,8 @@ class AdvancedSearch
         ],
         'flags' => [
             "awox" => "Awox", 
+            "a:awox" => "Alliance Awox",
+            "f:awox" => "Faction Awox",
             "ganked" => "HighSec Gank", 
             "pvp" => "PVP", 
             "padding" => "Padding",

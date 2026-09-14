@@ -444,11 +444,22 @@ function materializeAwoxCounts($completeKey, $date, $firstKillID)
     $runID = "$date:" . time();
     $updated = Mdb::now();
     $pipeline = [
-        ['$match' => ['awox' => true, 'killID' => ['$gte' => $firstKillID]]],
-        ['$project' => ['involved.characterID' => 1, 'involved.finalBlow' => 1]],
+        ['$match' => [
+            'killID' => ['$gte' => $firstKillID],
+            '$or' => [
+                ['awox' => true],
+                ['labels' => ['$in' => ['a:awox', 'f:awox']]],
+            ],
+        ]],
+        ['$project' => ['awox' => 1, 'labels' => 1, 'involved.characterID' => 1, 'involved.finalBlow' => 1]],
         ['$unwind' => '$involved'],
         ['$match' => ['involved.characterID' => ['$gt' => 0], 'involved.finalBlow' => true]],
-        ['$group' => ['_id' => '$involved.characterID', 'awoxCount' => ['$sum' => 1]]],
+        ['$group' => [
+            '_id' => '$involved.characterID',
+            'awoxCount' => ['$sum' => ['$cond' => ['$awox', 1, 0]]],
+            'allianceAwoxCount' => ['$sum' => ['$cond' => [['$in' => ['a:awox', ['$ifNull' => ['$labels', []]]]], 1, 0]]],
+            'factionAwoxCount' => ['$sum' => ['$cond' => [['$in' => ['f:awox', ['$ifNull' => ['$labels', []]]]], 1, 0]]],
+        ]],
         ['$project' => [
             '_id' => 0,
             'type' => ['$literal' => 'characterID'],
@@ -456,6 +467,12 @@ function materializeAwoxCounts($completeKey, $date, $firstKillID)
             'awoxCount' => 1,
             'awoxCountUpdated' => ['$literal' => $updated],
             'awoxCountRunID' => ['$literal' => $runID],
+            'allianceAwoxCount' => 1,
+            'allianceAwoxCountUpdated' => ['$literal' => $updated],
+            'allianceAwoxCountRunID' => ['$literal' => $runID],
+            'factionAwoxCount' => 1,
+            'factionAwoxCountUpdated' => ['$literal' => $updated],
+            'factionAwoxCountRunID' => ['$literal' => $runID],
         ]],
         ['$merge' => [
             'into' => 'statistics',
@@ -466,10 +483,12 @@ function materializeAwoxCounts($completeKey, $date, $firstKillID)
     ];
 
     iterator_to_array($mdb->getCollection('killmails')->aggregate($pipeline, ['allowDiskUse' => true]));
-    $mdb->getCollection('statistics')->updateMany(
-        ['type' => 'characterID', 'awoxCountRunID' => ['$exists' => true, '$ne' => $runID]],
-        ['$unset' => ['awoxCount' => 1, 'awoxCountUpdated' => 1, 'awoxCountRunID' => 1]]
-    );
+    foreach (['awoxCount', 'allianceAwoxCount', 'factionAwoxCount'] as $field) {
+        $mdb->getCollection('statistics')->updateMany(
+            ['type' => 'characterID', $field . 'RunID' => ['$exists' => true, '$ne' => $runID]],
+            ['$unset' => [$field => 1, $field . 'Updated' => 1, $field . 'RunID' => 1]]
+        );
+    }
     $kvc->setex($completeKey, 86400, 'true');
 }
 
@@ -951,7 +970,7 @@ function collectPeriodRanks($job, $runID)
         if ($job['scope'] == 'all') {
             foreach ((array) ($row['labels'] ?? []) as $label) {
                 $label = (string) $label;
-                if (str_starts_with($label, 'loc:') || str_starts_with($label, 'tz:') || str_starts_with($label, '#:') || str_starts_with($label, 'isk:') || str_starts_with($label, 'cat:') || str_starts_with($label, 'fw:') || in_array($label, ['solo', 'pvp', 'npc', 'awox', 'ganked', 'padding'], true)) $statLabels[$label] = true;
+                if (str_starts_with($label, 'loc:') || str_starts_with($label, 'tz:') || str_starts_with($label, '#:') || str_starts_with($label, 'isk:') || str_starts_with($label, 'cat:') || str_starts_with($label, 'fw:') || in_array($label, ['solo', 'pvp', 'npc', 'awox', 'a:awox', 'f:awox', 'ganked', 'padding'], true)) $statLabels[$label] = true;
             }
             if ((int) ($row['system']['regionID'] ?? 0) == 10000070) {
                 foreach (array_keys($statLabels) as $label) {
