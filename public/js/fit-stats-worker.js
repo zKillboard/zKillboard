@@ -15,7 +15,9 @@ async function loadData() {
     ]);
     const data = snapshot.data;
 
+    const attributes = {};
     const skills = {};
+    for (const [id, attribute] of Object.entries(data.dogmaAttributes)) attributes[attribute.name] = Number(id);
     for (const [id, type] of Object.entries(data.types)) {
         if (type.categoryID === 16) skills[id] = 5;
     }
@@ -29,7 +31,7 @@ async function loadData() {
     instance.exports.__wbindgen_start();
     engine.init();
     if (engine.load_sde(new Uint8Array(sde)) !== snapshot.build) throw new Error('Fitting data files do not match.');
-    return { data, skills };
+    return { data, attributes, skills };
 }
 
 self.onmessage = async ({ data: request }) => {
@@ -38,7 +40,7 @@ self.onmessage = async ({ data: request }) => {
             ready = null;
             throw error;
         });
-        const { data, skills } = await ready;
+        const { data, attributes, skills } = await ready;
         if (request.catalog) {
             const catalog = {};
             for (const [id, type] of Object.entries(data.types)) {
@@ -109,6 +111,10 @@ self.onmessage = async ({ data: request }) => {
         for (const [id, attribute] of result.ship.attributes) {
             const name = data.dogmaAttributes[id]?.name;
             if (name) stats[name] = attribute.value;
+        }
+        const baseAttribute = (typeID, name) => data.typeDogma[typeID]?.dogmaAttributes.find(attribute => attribute.attributeID === attributes[name])?.value || 0;
+        for (const [target, source] of [['turretSlotsLeft', 'turretHardPointModifier'], ['launcherSlotsLeft', 'launcherHardPointModifier'], ['hiSlots', 'hiSlotModifier'], ['medSlots', 'medSlotModifier'], ['lowSlots', 'lowSlotModifier']]) {
+            stats[target] = baseAttribute(fit.ship.type_id, target) + fit.items.reduce((total, item) => total + baseAttribute(item.type_id, source) * (item.quantity || 1), 0);
         }
         if (!Number.isFinite(stats.upgradeLoad)) {
             stats.upgradeLoad = result.items.reduce((total, item) => total + (item.attributes.get(1153)?.value || 0), 0);

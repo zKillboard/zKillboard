@@ -53,9 +53,9 @@ block content
         .col-12.col-lg-9.col-xl-6
           .card.mb-3.bg-black
             .card-body
-              #simulate-wheel.mx-auto.position-relative.w-100(style="aspect-ratio: 1;")
-                #simulate-Fitting_Panel.position-absolute.top-0.start-0.w-100.h-100!= $fittingWheelSVG
-                .position-absolute.top-0.start-0.d-flex.flex-column.align-items-start.gap-1
+              #simulate-wheel.mx-auto.position-relative.w-100.overflow-hidden(style="aspect-ratio: 1; isolation: isolate;")
+                #simulate-Fitting_Panel.position-absolute.top-0.start-0.w-100.h-100(style="z-index: 1;")!= $fittingWheelSVG
+                .position-absolute.top-0.start-0.d-flex.flex-column.align-items-start.gap-1(style="z-index: 4;")
                   button#simulate-save.btn.btn-sm.btn-primary.text-white(type="button") Save Fit
                   button#simulate-eft-open.btn.btn-sm.btn-primary.text-white(type="button" data-bs-toggle="modal" data-bs-target="#simulate-eft-modal") EFT
                 .position-absolute.top-0.end-0.text-end.pe-none(style="z-index: 4;")
@@ -66,7 +66,7 @@ block content
                     button#simulate-redo.btn.border-0.text-white.p-0.fs-4(type="button" disabled title="Redo (Ctrl/Cmd+R)" aria-label="Redo" aria-keyshortcuts="Control+r Meta+r") ↷
                   div#simulate-trash.text-white.p-0(style="font-size: 175%;" title="Drag fitted items here to remove them" role="img" aria-label="Drop fitted items here to remove them")
                     i.fas.fa-trash.pe-none(aria-hidden="true")
-                #simulate-resources.position-absolute.bottom-0.end-0.bg-black.bg-opacity-75.rounded.px-2.py-1.text-end.text-white.pe-none(style="z-index: 4;")
+                #simulate-resources.position-absolute.bottom-0.end-0.text-end.text-white.pe-none(style="z-index: 0;")
                   .small.fw-bold CPU
                   #simulate-resource-cpu.small.font-monospace(title="Remaining / total CPU (tf)") —
                   .small.fw-bold.mt-1 PG

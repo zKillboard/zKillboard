@@ -176,7 +176,8 @@ globalThis.document = { getElementById: () => root, createElement: () => new Ele
 globalThis.Option = class extends Element {
     constructor(label, value) { super(); this.textContent = label; this.value = value; }
 };
-// Keep the engine callbacks: the worker and page share this test process.
+// The worker and page share this test process, so provide the page global here.
+globalThis.window = globalThis;
 window.location = { hash: '' };
 const toasts = [];
 window.showToast = message => toasts.push(message);
