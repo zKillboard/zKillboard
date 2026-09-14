@@ -642,7 +642,7 @@ window.zkbInitSimulate = function() {
                 ['Drone DPS', number('droneDamagePerSecond'), 'drone']
             ]],
             ['Defense', []],
-            ['Navigation & targeting', [
+            ['Navigation & Targeting', [
                 ['Speed', number('maxVelocity') + ' m/s', 'propulsion'],
                 ['Align', number('alignTime') + ' s', 'microwarpdrive'],
                 ['Warp', number('warpSpeedMultiplier') + ' AU/s', 'microwarpdrive'],
@@ -650,7 +650,7 @@ window.zkbInitSimulate = function() {
                 ['Scan resolution', number('scanResolution') + ' mm', 'targeting_resolution'],
                 ['Signature', number('signatureRadius') + ' m', 'targeting_strength']
             ]],
-            ['Drones & cargo', [
+            ['Drones & Cargo', [
                 ['Drone bay', number('droneCapacityLoad') + ' / ' + number('droneCapacity') + ' m³', 'dronebay'],
                 ['Drone bandwidth', number('droneBandwidthLoad') + ' / ' + number('droneBandwidth') + ' Mbit/s', 'dronebandwith'],
                 ['Cargo capacity', number('capacity') + ' m³', 'cargo']
