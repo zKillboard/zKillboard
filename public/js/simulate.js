@@ -20,6 +20,7 @@ window.zkbInitSimulate = function() {
     let equipmentModule;
     let dragType;
     let dragFromFit = false;
+    let dragSource;
     const dropTargets = new Map();
     const fitHistory = [];
     let historyIndex = -1;
@@ -104,11 +105,15 @@ window.zkbInitSimulate = function() {
         changed();
     }
 
-    function highlightDropTargets(type, fromFit = false) {
+    function highlightDropTargets(type, fromFit = false, source = null) {
         dragType = type;
         dragFromFit = fromFit;
-        element('trash').style.filter = '';
-        element('trash').style.outline = type && fromFit ? '2px solid #0dcaf0' : '';
+        dragSource = source;
+        const trash = element('trash');
+        trash.style.filter = '';
+        trash.style.outline = '';
+        trash.style.color = '';
+        trash.className = (trash.className || '').replace(/\btext-(?:white|danger)\b/g, '').trim() + (type && fromFit ? ' text-danger' : ' text-white');
         for (const [target, accepts] of dropTargets) {
             const highlighted = type && accepts(type);
             target.style.filter = '';
@@ -142,7 +147,7 @@ window.zkbInitSimulate = function() {
             event.dataTransfer.setData('application/x-zkb-fitted-item', JSON.stringify({ flag: item.flag, type_id: item.type_id }));
             event.dataTransfer.effectAllowed = catalog[item.type_id].categoryID === 8 ? 'copyMove' : 'move';
             setDragPreview(event);
-            highlightDropTargets(catalog[item.type_id], true);
+            highlightDropTargets(catalog[item.type_id], true, item);
         };
         target.addEventListener('dragstart', target.zkbRemovalDrag);
     }
@@ -237,6 +242,28 @@ window.zkbInitSimulate = function() {
         if (typeID) fit.items.push({ type_id: typeID, flag, quantity: 1 });
     }
 
+    function storeInCargo(items) {
+        const additions = new Map();
+        for (const item of items) additions.set(item.type.id, (additions.get(item.type.id) || 0) + item.quantity);
+        const used = fit.items.filter(item => item.flag === 5).reduce((total, item) => total + catalog[item.type_id].volume * item.quantity, 0);
+        const added = [...additions].reduce((total, [typeID, quantity]) => total + catalog[typeID].volume * quantity, 0);
+        if (used + added > (stats?.capacity || 0) + 0.001) throw new Error('Not enough cargo space.');
+        for (const [typeID, quantity] of additions) {
+            const existing = fit.items.find(item => item.flag === 5 && item.type_id === typeID);
+            if ((existing?.quantity || 0) + quantity > 1000000) throw new Error('Maximum quantity reached.');
+        }
+        for (const [typeID, quantity] of additions) {
+            const existing = fit.items.find(item => item.flag === 5 && item.type_id === typeID);
+            if (existing) existing.quantity += quantity;
+            else fit.items.push({ type_id: typeID, flag: 5, quantity });
+        }
+    }
+
+    function removeFromCargo(item) {
+        item.quantity--;
+        if (item.quantity <= 0) fit.items = fit.items.filter(other => other !== item);
+    }
+
     function addCargoCharge(type, minimum = 1) {
         const reload = fit.items.filter(item => ![5, 87].includes(item.flag) && rackFor(catalog[item.type_id]) && compatibleCharge(catalog[item.type_id], type)).reduce((total, item) => {
             const capacity = catalog[item.type_id].capacity || 0;
@@ -244,14 +271,13 @@ window.zkbInitSimulate = function() {
         }, 0);
         const existing = fit.items.find(item => item.flag === 5 && item.type_id === type.id);
         const quantity = Math.max((existing?.quantity || 0) + minimum, reload);
-        if (quantity > 1000000) throw new Error('Maximum quantity reached.');
-        if (existing) existing.quantity = quantity;
-        else fit.items.push({ type_id: type.id, flag: 5, quantity });
+        storeInCargo([{ type, quantity: quantity - (existing?.quantity || 0) }]);
     }
 
     function addToBay(type, flag) {
         if (!fit) throw new Error('Choose a ship first.');
         if (!type || (flag === 87 && type.categoryID !== 18) || (flag === 158 && type.categoryID !== 87)) throw new Error('This item cannot go in that bay.');
+        if (flag === 5) return storeInCargo([{ type, quantity: 1 }]);
         if (flag === 87) validateDrones({ ...fit, items: [...fit.items, { type_id: type.id, flag, quantity: 1 }] }, catalog, pilotStats?.maxActiveDrones);
         if (flag === 158) validateFighters({ ...fit, items: [...fit.items, { type_id: type.id, flag, quantity: 1 }] }, catalog, stats?.fighterCapacity);
         const existing = fit.items.find(item => item.type_id === type.id && item.flag === flag);
@@ -309,21 +335,21 @@ window.zkbInitSimulate = function() {
                         equipmentGroups.set(match.category, group.open);
                         saveState();
                     });
-                    group.append(node('summary', 'p-2 fw-bold', label));
+                    group.append(node('summary', 'p-2 fw-bold text-white', label));
                     groupResults = node('div', 'list-group list-group-flush');
                     group.append(groupResults);
                     results.append(group);
                 } else {
-                    results.append(node('div', 'list-group-item fw-bold', label));
+                    results.append(node('div', 'list-group-item fw-bold text-white', label));
                 }
                 previousCategory = match.category;
                 previousMeta = null;
             }
             const meta = equipmentSort === 'Meta' ? metaLabel(type) : null;
-            if (meta && meta !== previousMeta) groupResults.append(node('div', 'list-group-item small fw-bold', meta));
+            if (meta && meta !== previousMeta) groupResults.append(node('div', 'list-group-item small fw-bold text-white', meta));
             previousMeta = meta;
             let chargeList;
-            const row = node('div', 'list-group-item d-flex flex-wrap align-items-center justify-content-between gap-2');
+            const row = node('div', 'list-group-item d-flex flex-wrap align-items-center justify-content-between gap-2 text-white');
             const showCharges = fitted => {
                 revealedCharges.set(type.id, fitted.flag);
                 const charges = types.filter(charge => compatibleCharge(type, charge)).sort(compareEquipment);
@@ -332,14 +358,14 @@ window.zkbInitSimulate = function() {
                         chargeList = node('div', 'list-group list-group-flush w-100');
                         row.append(chargeList);
                     }
-                    chargeList.replaceChildren(node('div', 'list-group-item fw-bold', 'Valid charges'));
+                    chargeList.replaceChildren(node('div', 'list-group-item fw-bold text-white', 'Valid charges'));
                     let previousChargeMeta;
                     for (const charge of charges) {
                         const label = equipmentSort === 'Meta' ? metaLabel(charge) : null;
-                        if (label && label !== previousChargeMeta) chargeList.append(node('div', 'list-group-item small fw-bold', label));
+                        if (label && label !== previousChargeMeta) chargeList.append(node('div', 'list-group-item small fw-bold text-white', label));
                         previousChargeMeta = label;
-                        const chargeRow = node('div', 'list-group-item d-flex align-items-center justify-content-between gap-2 ps-3');
-                        const chargeName = node('span', 'small', charge.name.replace(/\s+(XS|S|M|L|XL|XXL)$/, '\u00a0$1'));
+                        const chargeRow = node('div', 'list-group-item d-flex align-items-center justify-content-between gap-2 ps-3 text-white');
+                        const chargeName = node('span', 'small text-white', charge.name.replace(/\s+(XS|S|M|L|XL|XXL)$/, '\u00a0$1'));
                         chargeName.style.flex = '1 1 0';
                         chargeName.style.minWidth = '0';
                         chargeRow.append(chargeName, button('Load', () => {
@@ -360,7 +386,7 @@ window.zkbInitSimulate = function() {
                     }
                 }
             };
-            const name = node('span', 'small', type.name.replace(/\s+(XS|S|M|L|XL|XXL)$/, '\u00a0$1'));
+            const name = node('span', 'small text-white', type.name.replace(/\s+(XS|S|M|L|XL|XXL)$/, '\u00a0$1'));
             name.style.flex = '1 1 0';
             name.style.minWidth = '0';
             row.append(name, button('Add', () => {
@@ -395,7 +421,7 @@ window.zkbInitSimulate = function() {
             const revealed = fit?.items.find(item => item.type_id === type.id && item.flag === revealedCharges.get(type.id));
             if (revealed) showCharges(revealed);
         }
-        if (!matches.length) results.append(node('p', 'text-muted p-2 mb-0', hull ? 'No matching equipment.' : 'Choose a ship first.'));
+        if (!matches.length) results.append(node('p', 'text-white p-2 mb-0', hull ? 'No matching equipment.' : 'Choose a ship first.'));
     }
 
     function renderFit() {
@@ -470,9 +496,9 @@ window.zkbInitSimulate = function() {
                 const accepts = type => type.categoryID === 8 ? !!item && compatibleCharge(catalog[item.type_id], type) : !item && rackFor(type)?.name === rack.name && compatible(type, hull);
                 if (frame) dropTargets.set(frame, accepts);
                 const dragover = event => {
-                    if (!dragType || !accepts(dragType) || (dragFromFit && dragType.categoryID !== 8)) return;
+                    if (!dragType || !accepts(dragType) || (dragFromFit && dragSource?.flag !== 5 && dragType.categoryID !== 8)) return;
                     event.preventDefault();
-                    event.dataTransfer.dropEffect = 'copy';
+                    event.dataTransfer.dropEffect = dragSource?.flag === 5 ? 'move' : 'copy';
                 };
                 const drop = event => {
                     event.stopPropagation();
@@ -482,11 +508,16 @@ window.zkbInitSimulate = function() {
                         const payload = event.dataTransfer.getData('application/x-zkb-fitted-item');
                         const source = payload ? JSON.parse(payload) : null;
                         const type = catalog[source?.type_id || Number(event.dataTransfer.getData('application/x-zkb-module'))];
-                        if (source && type?.categoryID !== 8) throw new Error('Drop a charge onto a compatible module.');
-                        if (type?.categoryID === 8) setCharge(flag, type.id);
+                        const sourceItem = source && fit.items.find(item => item.flag === source.flag && item.type_id === source.type_id);
+                        if (source && source.flag !== 5 && type?.categoryID !== 8) throw new Error('Drop a charge onto a compatible module.');
+                        if (type?.categoryID === 8) {
+                            setCharge(flag, type.id);
+                            if (sourceItem?.flag === 5) removeFromCargo(sourceItem);
+                        }
                         else {
                             if (!type || rackFor(type)?.name !== rack.name || (rack.name === 'SubSystem' && type.attributes.subSystemSlot !== flag)) throw new Error('This module does not fit that slot.');
                             addModule(fit, type, catalog, stats, flag);
+                            if (sourceItem?.flag === 5) removeFromCargo(sourceItem);
                         }
                         selected = { rack: rack.name, flag };
                         changed();
@@ -514,17 +545,19 @@ window.zkbInitSimulate = function() {
         for (const [flag, label] of [[87, 'Drones'], [158, 'Fighters'], [5, 'Cargo']]) {
             if (flag === 87 && !hasDroneBay(fit, catalog)) continue;
             if (flag === 158 && !hasFighterBay(fit, catalog)) continue;
-            const section = node('section', 'mb-3 p-2 rounded');
+            const section = node('section', 'mb-3 p-2 rounded text-white');
             section.dataset.bay = 'true';
             section.style.border = '1px solid transparent';
             section.style.minHeight = '4rem';
             const accepts = type => flag === 5 || (flag === 87 && type.categoryID === 18 && hasDroneBay(fit, catalog)) || (flag === 158 && type.categoryID === 87 && hasFighterBay(fit, catalog));
             dropTargets.set(section, accepts);
             section.addEventListener('dragover', event => {
-                const movingCharge = flag === 5 && dragFromFit && dragType?.categoryID === 8;
-                if (!movingCharge && (!dragType || dragFromFit || !accepts(dragType))) return;
+                const movingToCargo = flag === 5 && dragFromFit;
+                const movingFromCargo = flag !== 5 && dragSource?.flag === 5;
+                if (!movingToCargo && !movingFromCargo && (!dragType || dragFromFit || !accepts(dragType))) return;
+                if (!dragType || !accepts(dragType)) return;
                 event.preventDefault();
-                event.dataTransfer.dropEffect = 'copy';
+                event.dataTransfer.dropEffect = (movingToCargo && dragType.categoryID !== 8) || movingFromCargo ? 'move' : 'copy';
             });
             section.addEventListener('drop', event => {
                 const typeID = event.dataTransfer.getData('application/x-zkb-module');
@@ -535,9 +568,22 @@ window.zkbInitSimulate = function() {
                 try {
                     if (payload) {
                         const dropped = JSON.parse(payload);
-                        const charge = fit.items.find(item => item.flag === dropped.flag && item.type_id === dropped.type_id);
-                        if (flag !== 5 || !charge || [5, 87, 158].includes(charge.flag) || catalog[charge.type_id].categoryID !== 8) return;
-                        addCargoCharge(catalog[charge.type_id], charge.quantity);
+                        const item = fit.items.find(item => item.flag === dropped.flag && item.type_id === dropped.type_id);
+                        if (!item || item.flag === flag) return;
+                        if (item.flag === 5) {
+                            addToBay(catalog[item.type_id], flag);
+                            removeFromCargo(item);
+                        } else if (flag !== 5) return;
+                        else if (catalog[item.type_id].categoryID === 8) addCargoCharge(catalog[item.type_id], item.quantity);
+                        else {
+                            const moving = [87, 158].includes(item.flag) ? [item] : fit.items.filter(other => other.flag === item.flag);
+                            storeInCargo(moving.map(other => ({ type: catalog[other.type_id], quantity: other.quantity })));
+                            fit.items = fit.items.filter(other => !moving.includes(other));
+                            if (item.flag === 158) {
+                                fit.fighterTubes = (fit.fighterTubes || []).map(tube => tube?.type_id === item.type_id ? null : tube);
+                                fit.items = fighterItemsForTubes(fit.items, fit.fighterTubes);
+                            }
+                        }
                     } else {
                         const type = catalog[Number(typeID)];
                         if (flag === 5 && type?.categoryID === 8) addCargoCharge(type);
@@ -546,14 +592,20 @@ window.zkbInitSimulate = function() {
                     changed();
                 } catch (error) { showStatus(error.message); }
             });
-            section.append(node('h3', 'h6 mx-0 border-bottom pb-2', label));
             const items = fit.items.filter(item => item.flag === flag)
                 .sort((a, b) => catalog[a.type_id].name.localeCompare(catalog[b.type_id].name));
-            if (!items.length && flag !== 158) section.append(node('p', 'text-muted small', 'Empty'));
+            const heading = node('h3', 'h6 mx-0 border-bottom pb-2', label);
+            if (flag === 5) {
+                const used = items.reduce((total, item) => total + catalog[item.type_id].volume * item.quantity, 0);
+                heading.className += ' d-flex justify-content-between align-items-center';
+                heading.append(node('span', 'text-white fw-normal', used.toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' / ' + (stats?.capacity || 0).toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' m³ used'));
+            }
+            section.append(heading);
+            if (!items.length && flag === 87) section.append(node('p', 'text-white small', 'Empty'));
             if (flag === 158) {
                 const deployed = (fit.fighterTubes || []).filter(Boolean).reduce((total, tube) => total + tube.quantity, 0);
                 const stored = items.reduce((total, item) => total + item.quantity - deployedFighters(item.type_id), 0);
-                section.append(node('p', 'small text-secondary mb-2', deployed + ' deployed fighters in ' + items.reduce((total, item) => total + (item.active || 0), 0) + ' / ' + (stats?.fighterTubes ?? hull.attributes.fighterTubes ?? 0) + ' tubes are included in Fighter DPS · ' + stored + ' fighters stored in bay'));
+                section.append(node('p', 'small text-white mb-2', deployed + ' deployed fighters in ' + items.reduce((total, item) => total + (item.active || 0), 0) + ' / ' + (stats?.fighterTubes ?? hull.attributes.fighterTubes ?? 0) + ' tubes are included in Fighter DPS · ' + stored + ' fighters stored in bay'));
                 const roles = node('div', 'd-flex flex-wrap gap-3 small mb-2');
                 for (const [label, attribute, fighterAttribute] of [['Light', 'fighterLightSlots', 'fighterSquadronIsLight'], ['Support', 'fighterSupportSlots', 'fighterSquadronIsSupport'], ['Heavy', 'fighterHeavySlots', 'fighterSquadronIsHeavy']]) {
                     const limit = hull.attributes[attribute] || 0;
@@ -567,9 +619,9 @@ window.zkbInitSimulate = function() {
                 for (let index = 0; index < assignments.length; index++) {
                     const item = items.find(item => item.type_id === assignments[index]?.type_id);
                     const column = node('div', 'col');
-                    const card = node('div', 'card bg-black ' + (item ? 'border-success' : 'border-secondary') + ' h-100 text-center');
+                    const card = node('div', 'card bg-black text-white ' + (item ? 'border-success' : 'border-secondary') + ' h-100 text-center');
                     const body = node('div', 'card-body p-2 position-relative');
-                    body.append(node('span', 'position-absolute top-0 start-0 small text-secondary ps-1', String(index + 1)));
+                    body.append(node('span', 'position-absolute top-0 start-0 small text-white ps-1', String(index + 1)));
                     if (item) {
                         const type = catalog[item.type_id];
                         const squadronSize = type.attributes.fighterSquadronMaxSize || item.quantity;
@@ -602,7 +654,7 @@ window.zkbInitSimulate = function() {
                         };
                         fighterName.append(adjust(-1, 'Remove'), node('div', 'small text-white text-truncate', type.name), adjust(1, 'Add'));
                         body.append(dial, fighterName);
-                    } else body.append(node('div', 'display-6 text-secondary lh-1 mt-2', '+'), node('div', 'small text-secondary mt-1', 'Open'), node('div', 'small text-secondary fst-italic text-truncate', 'Empty'));
+                    } else body.append(node('div', 'display-6 text-white lh-1 mt-2', '+'), node('div', 'small text-white mt-1', 'Open'), node('div', 'small text-white fst-italic text-truncate', 'Empty'));
                     const options = [[0, 'Open']];
                     for (const candidate of items) {
                         const nextTubes = assignments.map(tube => tube && { ...tube });
@@ -630,14 +682,17 @@ window.zkbInitSimulate = function() {
                     tubes.append(column);
                 }
                 section.append(tubes);
-                section.append(node('div', 'small fw-bold text-secondary text-uppercase border-bottom pb-1 mb-2', 'Fighter bay inventory'));
-                if (!items.length) section.append(node('p', 'text-muted small', 'No fighters in inventory.'));
+                section.append(node('h3', 'h6 mx-0 border-bottom pb-2', 'Fighter bay'));
+                if (!items.length) section.append(node('p', 'text-white small', 'No fighters in inventory.'));
+            }
+            if (flag === 5) {
+                if (!items.length) section.append(node('p', 'text-white small', 'No items in cargo.'));
             }
             items.forEach(item => {
-                const row = node('div', flag === 158 ? 'd-grid align-items-center gap-2 py-1 border-bottom border-secondary border-opacity-25' : 'd-flex flex-wrap align-items-center gap-2 mb-2');
-                if (flag === 158) row.style.gridTemplateColumns = '4rem auto 32px minmax(0, 1fr) auto';
-                if (flag === 158) {
-                    row.append(node('span', 'small text-secondary', '×'));
+                const compactInventory = [5, 158].includes(flag);
+                const row = node('div', compactInventory ? 'd-grid align-items-center gap-2 py-1 border-bottom border-secondary border-opacity-25' : 'd-flex flex-wrap align-items-center gap-2 mb-2');
+                if (compactInventory) row.style.gridTemplateColumns = '4rem 32px minmax(0, 1fr) auto';
+                if (compactInventory) {
                     const image = node('img', 'rounded flex-shrink-0');
                     image.src = 'https://images.evetech.net/types/' + item.type_id + '/icon?size=64';
                     image.width = 32;
@@ -645,7 +700,7 @@ window.zkbInitSimulate = function() {
                     image.alt = '';
                     row.append(image);
                 }
-                const itemName = node('span', 'flex-grow-1 small', catalog[item.type_id].name);
+                const itemName = node('span', 'flex-grow-1 small text-white', catalog[item.type_id].name);
                 itemName.style.minWidth = '0';
                 if (flag === 158) {
                     const type = catalog[item.type_id];
@@ -655,13 +710,16 @@ window.zkbInitSimulate = function() {
                     const maximum = type.volume > 0 ? Math.floor(capacity / type.volume) : 0;
                     const otherLoad = items.filter(other => other !== item).reduce((total, other) => total + catalog[other.type_id].volume * (other.quantity - deployedFighters(other.type_id)), 0);
                     const available = type.volume > 0 ? Math.floor(Math.max(0, capacity - otherLoad) / type.volume) : 0;
-                    itemName.append(node('small', 'd-block text-secondary text-truncate', deployed + ' deployed · ' + (item.quantity - deployed) + ' in bay · max ' + maximum + ' in empty bay'));
+                    itemName.append(node('small', 'd-block text-white text-truncate', deployed + ' deployed · ' + (item.quantity - deployed) + ' in bay · max ' + maximum + ' in empty bay'));
                     itemName.title = squadronSize + ' per squadron · empty bay fits ' + maximum + ' fighters · current bay allows ' + available;
+                } else if (flag === 5) {
+                    const volume = catalog[item.type_id].volume || 0;
+                    itemName.append(node('small', 'd-block text-white text-truncate', (volume * item.quantity).toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' m³ total · ' + volume.toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' m³ each'));
                 }
                 row.append(itemName);
                 const quantity = node('input', 'form-control form-control-sm');
-                quantity.style.width = flag === 158 ? '4rem' : '5rem';
-                if (flag === 158) quantity.className += ' order-first';
+                quantity.style.width = compactInventory ? '4rem' : '5rem';
+                if (compactInventory) quantity.className += ' order-first';
                 quantity.type = 'number';
                 quantity.min = '1';
                 quantity.max = [87, 158].includes(flag) ? '1000' : '1000000';
@@ -731,7 +789,7 @@ window.zkbInitSimulate = function() {
             });
             slots.append(section);
         }
-        if (dragType) highlightDropTargets(dragType, dragFromFit);
+        if (dragType) highlightDropTargets(dragType, dragFromFit, dragSource);
     }
 
     function renderStats(result) {
@@ -747,7 +805,7 @@ window.zkbInitSimulate = function() {
             const minutes = Math.floor(seconds % 3600 / 60);
             return (hours ? hours + 'h ' : '') + (minutes ? minutes + 'm ' : '') + seconds % 60 + 's';
         };
-        const pricing = node('div');
+        const pricing = node('div', 'text-white');
         const costs = { Hull: [{ type_id: fit.ship_type_id, quantity: 1 }], Modules: [], 'Loaded charges': [], Drones: [], Fighters: [], Cargo: [] };
         for (const item of fit.items) {
             const group = item.flag === 5 ? 'Cargo' : item.flag === 87 ? 'Drones' : item.flag === 158 ? 'Fighters' : catalog[item.type_id].categoryID === 8 ? 'Loaded charges' : 'Modules';
@@ -758,10 +816,10 @@ window.zkbInitSimulate = function() {
             const row = node('div', 'd-flex justify-content-between gap-3 py-1' + (label === 'Total' ? ' fw-bold border-top' : ''));
             const amount = node('span', 'text-end');
             row.append(node('span', '', label), amount);
-            amounts.set(label, amount);
+            amounts.set(label, { amount, row });
             pricing.append(row);
         }
-        pricing.append(node('small', 'text-secondary', 'Estimated ISK values using zKillboard prices.'));
+        pricing.append(node('small', 'text-white', 'Estimated ISK values using zKillboard prices.'));
         const updatePrices = () => {
             let total = 0;
             let complete = true;
@@ -775,11 +833,16 @@ window.zkbInitSimulate = function() {
                     else if (price === null) missing = true;
                     else subtotal += price * (item.quantity || 1);
                 }
-                amounts.get(label).textContent = pending ? 'Loading…' : missing ? 'Unavailable' : subtotal.toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' ISK';
+                const display = amounts.get(label);
+                display.amount.textContent = pending ? 'Loading…' : missing ? 'Unavailable' : subtotal.toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' ISK';
+                display.row.hidden = !pending && !missing && subtotal === 0;
+                display.row.className = display.row.className.replace(' d-none', '') + (display.row.hidden ? ' d-none' : '');
                 total += subtotal;
                 complete &&= !pending && !missing;
             }
-            amounts.get('Total').textContent = complete ? total.toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' ISK' : '—';
+            amounts.get('Total').amount.textContent = complete ? total.toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' ISK' : '—';
+            amounts.get('Total').row.hidden = complete && total === 0;
+            amounts.get('Total').row.className = amounts.get('Total').row.className.replace(' d-none', '') + (amounts.get('Total').row.hidden ? ' d-none' : '');
         };
         updatePrices();
         const ids = [...new Set(Object.values(costs).flat().map(item => item.type_id))];
@@ -814,6 +877,8 @@ window.zkbInitSimulate = function() {
         });
         element('resource-cpu').textContent = compact(stats.cpuOutput - stats.cpuLoad) + '/' + compact(stats.cpuOutput);
         element('resource-powergrid').textContent = compact(stats.powerOutput - stats.powerLoad) + '/' + compact(stats.powerOutput);
+        const storage = [...(hasDroneBay(fit, catalog) ? ['Drones'] : []), ...(hasFighterBay(fit, catalog) ? ['Fighters'] : []), 'Cargo'];
+        const storageTitle = storage.length === 3 ? storage.slice(0, -1).join(', ') + ', & ' + storage.at(-1) : storage.join(' & ');
         const sections = [
             ['Capacitor', []],
             ['Offense', [
@@ -832,12 +897,16 @@ window.zkbInitSimulate = function() {
                 ['Scan resolution', number('scanResolution') + ' mm', 'targeting_resolution'],
                 ['Signature', number('signatureRadius') + ' m', 'targeting_strength']
             ]],
-            ['Drones, Fighters & Cargo', [
-                ['Drone bay', number('droneCapacityLoad') + ' / ' + number('droneCapacity') + ' m³', 'dronebay'],
-                ['Drone bandwidth', number('droneBandwidthLoad') + ' / ' + number('droneBandwidth') + ' Mbit/s', 'dronebandwith'],
-                ['Fighter bay (' + number('fighterCraftInBay') + ' stored)', number('fighterCapacityLoad') + ' / ' + number('fighterCapacity') + ' m³', 'dronebay'],
-                ['Fighter tubes', number('fighterTubesUsed') + ' / ' + number('fighterTubes'), 'drone'],
-                ...[['Light', 'fighterLightSlots'], ['Support', 'fighterSupportSlots'], ['Heavy', 'fighterHeavySlots']].filter(([, key]) => stats[key] > 0).map(([role, key]) => [role + ' fighter tubes', number(key + 'Used') + ' / ' + number(key), 'drone']),
+            [storageTitle, [
+                ...(hasDroneBay(fit, catalog) ? [
+                    ['Drone bay', number('droneCapacityLoad') + ' / ' + number('droneCapacity') + ' m³', 'dronebay'],
+                    ['Drone bandwidth', number('droneBandwidthLoad') + ' / ' + number('droneBandwidth') + ' Mbit/s', 'dronebandwith']
+                ] : []),
+                ...(hasFighterBay(fit, catalog) ? [
+                    ['Fighter bay (' + number('fighterCraftInBay') + ' stored)', number('fighterCapacityLoad') + ' / ' + number('fighterCapacity') + ' m³', 'dronebay'],
+                    ['Fighter tubes', number('fighterTubesUsed') + ' / ' + number('fighterTubes'), 'drone'],
+                    ...[['Light', 'fighterLightSlots'], ['Support', 'fighterSupportSlots'], ['Heavy', 'fighterHeavySlots']].filter(([, key]) => stats[key] > 0).map(([role, key]) => [role + ' fighter tubes', number(key + 'Used') + ' / ' + number(key), 'drone'])
+                ] : []),
                 ['Cargo capacity', number('capacity') + ' m³', 'cargo']
             ]],
             ['Fitting', [
@@ -849,7 +918,7 @@ window.zkbInitSimulate = function() {
         element('stats').replaceChildren();
         for (const [title, rows] of sections) {
             const column = node('section', 'col-12 col-md-6 col-xl-12');
-            const card = node('div', 'card bg-black border-primary border-opacity-25 shadow-sm');
+            const card = node('div', 'card bg-black border-primary border-opacity-25 shadow-sm text-white');
             const body = node('div', 'card-body px-3 py-2');
             const list = node(['Capacitor', 'Defense', 'Pricing'].includes(title) ? 'div' : 'dl', 'row gx-2 gy-1 small lh-sm mb-0');
             list.id = 'simulate-stats-' + title.toLowerCase().replace(/[^a-z]+/g, '-');
@@ -879,6 +948,10 @@ window.zkbInitSimulate = function() {
                 const summary = node('span', 'd-flex align-items-center gap-2');
                 summary.append(node('span', stats.capacitorDepletesIn < 0 ? 'text-success fw-semibold' : 'text-warning fw-semibold', stats.capacitorDepletesIn < 0 ? 'Stable' : duration(stats.capacitorDepletesIn)), icon);
                 toggle.append(node('span', 'fw-bold', title), summary);
+            } else if (title === 'Offense') {
+                const summary = node('span', 'd-flex align-items-center gap-2');
+                summary.append(node('span', 'fw-semibold', number('damagePerSecondWithoutReload') + ' DPS'), icon);
+                toggle.append(node('span', 'fw-bold', title), summary);
             } else if (title === 'Defense') {
                 const summary = node('span', 'd-flex align-items-center gap-2');
                 summary.append(node('span', 'fw-semibold', number('ehp') + ' EHP'), icon);
@@ -902,7 +975,7 @@ window.zkbInitSimulate = function() {
                 list.append(capacitor);
             } else if (title === 'Defense') {
                 const grid = node('div', 'col-12 row g-1 align-items-center mx-0');
-                grid.append(node('div', 'col-4 pe-2 text-end text-white fw-semibold', 'HP'));
+                grid.append(node('div', 'col-4 ps-4 text-start text-white fw-semibold', 'HP'));
                 const damages = [['Em', 'EM', 'electromagnetic', 'bg-primary'], ['Thermal', 'Thermal', 'thermal', 'bg-danger'], ['Kinetic', 'Kinetic', 'kinetic', 'bg-secondary'], ['Explosive', 'Explosive', 'explosive', 'bg-warning']];
                 for (const [, name, image] of damages) {
                     const damage = node('div', 'col-2 text-center');
