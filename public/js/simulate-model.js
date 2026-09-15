@@ -44,6 +44,80 @@ export function hasDroneBay(fit, catalog) {
     return droneBayCapacity(fit, catalog) > 0;
 }
 
+export function hasFighterBay(fit, catalog) {
+    return (catalog[fit.ship_type_id].attributes.fighterCapacity || 0) > 0;
+}
+
+function inferFighters(fit, catalog) {
+    const fighters = fit.items.filter(item => item.flag === 158);
+    fighters.forEach(item => { item.active = 0; });
+    fit.fighterTubes = [];
+    const hull = catalog[fit.ship_type_id];
+    const limits = { light: hull.attributes.fighterLightSlots || 0, support: hull.attributes.fighterSupportSlots || 0, heavy: hull.attributes.fighterHeavySlots || 0 };
+    const used = { light: 0, support: 0, heavy: 0 };
+    let tubes = 0;
+    while (tubes < (hull.attributes.fighterTubes || 0)) {
+        let launched = false;
+        for (const item of fighters) {
+            const type = catalog[item.type_id];
+            const role = [['light', 'fighterSquadronIsLight'], ['support', 'fighterSquadronIsSupport'], ['heavy', 'fighterSquadronIsHeavy']].find(([, attribute]) => type.attributes[attribute]);
+            const quantity = type.attributes.fighterSquadronMaxSize || item.quantity;
+            if (!role || used[role[0]] >= limits[role[0]] || item.quantity < (item.active + 1) * quantity) continue;
+            item.active++;
+            fit.fighterTubes.push({ type_id: item.type_id, quantity });
+            used[role[0]]++;
+            tubes++;
+            launched = true;
+            if (tubes >= hull.attributes.fighterTubes) break;
+        }
+        if (!launched) break;
+    }
+}
+
+export function validateFighters(fit, catalog, fighterCapacity) {
+    const fighters = fit.items.filter(item => item.flag === 158);
+    if (!fighters.length) return;
+    const hull = catalog[fit.ship_type_id];
+    if ((hull.attributes.fighterCapacity || 0) <= 0) throw new Error('This ship has no fighter bay.');
+    const limits = { light: hull.attributes.fighterLightSlots || 0, support: hull.attributes.fighterSupportSlots || 0, heavy: hull.attributes.fighterHeavySlots || 0 };
+    const used = { light: 0, support: 0, heavy: 0 };
+    let tubes = 0;
+    let volume = 0;
+    if (Array.isArray(fit.fighterTubes)) {
+        const deployed = new Map();
+        for (const tube of fit.fighterTubes.filter(Boolean)) {
+            const item = fighters.find(item => item.type_id === tube.type_id);
+            const type = item && catalog[item.type_id];
+            const quantity = type?.attributes.fighterSquadronMaxSize || 0;
+            const role = type && [['light', 'fighterSquadronIsLight'], ['support', 'fighterSquadronIsSupport'], ['heavy', 'fighterSquadronIsHeavy']].find(([, attribute]) => type.attributes[attribute]);
+            if (!item || !role || !Number.isInteger(tube.quantity) || tube.quantity < 1 || tube.quantity > quantity) throw new Error('Invalid fighter tube assignment.');
+            deployed.set(item.type_id, (deployed.get(item.type_id) || 0) + tube.quantity);
+            used[role[0]]++;
+            tubes++;
+        }
+        if (tubes > (hull.attributes.fighterTubes || 0) || Object.entries(used).some(([role, count]) => count > limits[role])) throw new Error('Too many fighter squadrons deployed.');
+        for (const item of fighters) {
+            if ((deployed.get(item.type_id) || 0) > item.quantity) throw new Error('Too many fighters deployed.');
+            volume += catalog[item.type_id].volume * (item.quantity - (deployed.get(item.type_id) || 0));
+        }
+        if (Number.isFinite(fighterCapacity) && volume > fighterCapacity + 0.001) throw new Error('Not enough space in the fighter bay.');
+        return;
+    }
+    for (const item of fighters) {
+        const type = catalog[item.type_id];
+        const role = [['light', 'fighterSquadronIsLight'], ['support', 'fighterSquadronIsSupport'], ['heavy', 'fighterSquadronIsHeavy']].find(([, attribute]) => type.attributes[attribute]);
+        const active = item.active || 0;
+        const quantity = type.attributes.fighterSquadronMaxSize || item.quantity;
+        if (!Number.isInteger(active) || active < 0 || active * quantity > item.quantity) throw new Error('Too many fighter squadrons deployed.');
+        if (active && !role) throw new Error('Unsupported fighter squadron role.');
+        if (role) used[role[0]] += active;
+        tubes += active;
+        volume += type.volume * (item.quantity - active * quantity);
+    }
+    if (tubes > (hull.attributes.fighterTubes || 0) || Object.entries(used).some(([role, count]) => count > limits[role])) throw new Error('Too many fighter squadrons deployed.');
+    if (Number.isFinite(fighterCapacity) && volume > fighterCapacity + 0.001) throw new Error('Not enough space in the fighter bay.');
+}
+
 export function validateDrones(fit, catalog, maxActiveDrones = fit.skillLevel === 0 ? 0 : 5) {
     const drones = fit.items.filter(item => item.flag === 87);
     if (!drones.length) return;
@@ -61,7 +135,7 @@ export function validateDrones(fit, catalog, maxActiveDrones = fit.skillLevel ==
 }
 
 function validateSlots(items, hull, catalog) {
-    const fitted = items.filter(item => ![5, 87].includes(item.flag) && catalog[item.type_id].categoryID !== 8);
+    const fitted = items.filter(item => ![5, 87, 158].includes(item.flag) && catalog[item.type_id].categoryID !== 8);
     const subsystems = fitted.filter(item => catalog[item.type_id].categoryID === 32);
     for (const [effect, attribute, modifier, label] of [
         ['launcherFitted', 'launcherSlotsLeft', 'launcherHardPointModifier', 'launcher'],
@@ -92,7 +166,7 @@ export function addModule(fit, type, catalog, stats, flag) {
         flag = Array.from({ length: count }, (_, i) => rack.start + i).find(slot => !modules.some(item => item.flag === slot));
     }
     if (!Number.isInteger(flag) || flag < rack.start || flag >= rack.start + count) throw new Error('No available ' + rack.label.toLowerCase() + '.');
-    const others = fit.items.filter(item => item.flag !== flag && item.flag !== 5 && item.flag !== 87 && catalog[item.type_id].categoryID !== 8);
+    const others = fit.items.filter(item => item.flag !== flag && ![5, 87, 158].includes(item.flag) && catalog[item.type_id].categoryID !== 8);
     for (const [attribute, field] of [['maxGroupFitted', 'groupID'], ['maxTypeFitted', 'id']]) {
         if (type.attributes[attribute] && others.filter(item => catalog[item.type_id][field] === type[field]).length >= type.attributes[attribute]) {
             throw new Error('The fitting limit for this module has been reached.');
@@ -116,7 +190,7 @@ export function exportEFT(fit, catalog) {
         }
         lines.push('');
     }
-    for (const flag of [87, 5]) {
+    for (const flag of [87, 158, 5]) {
         for (const item of fit.items.filter(item => item.flag === flag)) lines.push(catalog[item.type_id].name + ' x' + item.quantity);
         lines.push('');
     }
@@ -147,10 +221,10 @@ export function importEFT(text, catalog) {
         const type = names.get((stack ? stack[1] : parts[0]).toLowerCase());
         if (!type) throw new Error('Unknown item: ' + parts[0]);
         const quantity = stack ? Number(stack[2]) : 1;
-        if (!Number.isInteger(quantity) || quantity < 1 || quantity > (type.categoryID === 18 ? 1000 : 1000000)) throw new Error('Item quantities are out of range.');
-        if (type.categoryID === 18 || stack || type.categoryID === 8) {
-            if (parts.length !== 1) throw new Error('Unexpected charge on a cargo or drone entry.');
-            const flag = type.categoryID === 18 ? 87 : 5;
+        if (!Number.isInteger(quantity) || quantity < 1 || quantity > ([18, 87].includes(type.categoryID) ? 1000 : 1000000)) throw new Error('Item quantities are out of range.');
+        if ([18, 87].includes(type.categoryID) || stack || type.categoryID === 8) {
+            if (parts.length !== 1) throw new Error('Unexpected charge on a cargo, drone, or fighter entry.');
+            const flag = type.categoryID === 18 ? 87 : type.categoryID === 87 ? 158 : 5;
             const existing = fit.items.find(item => item.flag === flag && item.type_id === type.id);
             if (existing) existing.quantity += quantity;
             else fit.items.push({ type_id: type.id, flag, quantity, active: 0 });
@@ -168,39 +242,47 @@ export function importEFT(text, catalog) {
             fit.items.push({ type_id: charge.id, flag, quantity: 1 });
         }
     }
-    if (fit.items.length > 300 || fit.items.filter(item => item.flag === 87).reduce((sum, item) => sum + item.quantity, 0) > 1000) throw new Error('This fit contains too many items.');
+    if (fit.items.length > 300 || fit.items.filter(item => [87, 158].includes(item.flag)).reduce((sum, item) => sum + item.quantity, 0) > 1000) throw new Error('This fit contains too many items.');
     validateSlots(fit.items, hull, catalog);
     validateDrones(fit, catalog);
+    inferFighters(fit, catalog);
+    validateFighters(fit, catalog);
     return fit;
 }
 
 export function importTypeIDFit(text, catalog) {
     if (text.length > 50000) throw new Error('This fit is too large.');
     const entries = text.split(';');
-    if (!/^\d+$/.test(entries[0])) throw new Error('Invalid ship type ID.');
-    const hull = catalog[Number(entries.shift())];
+    const header = entries.shift().match(/^(\d+)(?::(.*))?$/);
+    if (!header) throw new Error('Invalid ship type ID.');
+    const hull = catalog[Number(header[1])];
     if (hull?.categoryID !== 6) throw new Error('Unknown ship type ID.');
-    const fit = { ship_type_id: hull.id, name: hull.name + ' loss', items: [] };
+    const fit = { ship_type_id: hull.id, name: header[2] ? decodeURIComponent(header[2]) : hull.name + ' loss', items: [] };
     for (const entry of entries) {
         const fields = entry.match(/^(\d+):(\d+)(?::(\d+))?$/);
         if (!fields) throw new Error('Invalid slot and type ID entry.');
         const flag = Number(fields[1]);
-        if (flag !== 87 && !racks.some(rack => flag >= rack.start && flag < rack.start + 8) && !(flag >= 164 && flag <= 171)) continue;
+        if (![87, 158].includes(flag) && !racks.some(rack => flag >= rack.start && flag < rack.start + 8) && !(flag >= 164 && flag <= 171)) continue;
         const type = catalog[Number(fields[2])];
         const quantity = Number(fields[3] || 1);
         if (!type) throw new Error('Unknown item type ID: ' + fields[2]);
-        if (!Number.isInteger(quantity) || quantity < 1 || quantity > (type.categoryID === 18 ? 1000 : 1000000)) throw new Error('Item quantities are out of range.');
-        fit.items.push({ type_id: type.id, flag, quantity, ...(type.categoryID === 18 ? { active: 0 } : type.categoryID === 8 ? {} : { state: 'Active' }) });
+        if (!Number.isInteger(quantity) || quantity < 1 || quantity > ([18, 87].includes(type.categoryID) ? 1000 : 1000000)) throw new Error('Item quantities are out of range.');
+        if ((flag === 87 && type.categoryID !== 18) || (flag === 158 && type.categoryID !== 87)) throw new Error('Item type does not match its bay.');
+        const existing = [87, 158].includes(flag) && fit.items.find(item => item.flag === flag && item.type_id === type.id);
+        if (existing) existing.quantity += quantity;
+        else fit.items.push({ type_id: type.id, flag, quantity, ...(type.categoryID === 18 ? { active: 0 } : [8, 87].includes(type.categoryID) ? {} : { state: 'Active' }) });
     }
-    if (fit.items.length > 300 || fit.items.filter(item => item.flag === 87).reduce((sum, item) => sum + item.quantity, 0) > 1000) throw new Error('This fit contains too many items.');
+    if (fit.items.length > 300 || fit.items.filter(item => [87, 158].includes(item.flag)).reduce((sum, item) => sum + item.quantity, 0) > 1000) throw new Error('This fit contains too many items.');
     validateSlots(fit.items, hull, catalog);
     validateDrones(fit, catalog);
+    inferFighters(fit, catalog);
+    validateFighters(fit, catalog);
     return fit;
 }
 
 export function warnings(fit, catalog, stats, character) {
     const messages = [];
-    for (const [load, output, label] of [['cpuLoad', 'cpuOutput', 'CPU'], ['powerLoad', 'powerOutput', 'Powergrid'], ['upgradeLoad', 'upgradeCapacity', 'Calibration'], ['droneCapacityLoad', 'droneCapacity', 'Drone bay'], ['droneBandwidthLoad', 'droneBandwidth', 'Drone bandwidth']]) {
+    for (const [load, output, label] of [['cpuLoad', 'cpuOutput', 'CPU'], ['powerLoad', 'powerOutput', 'Powergrid'], ['upgradeLoad', 'upgradeCapacity', 'Calibration'], ['droneCapacityLoad', 'droneCapacity', 'Drone bay'], ['droneBandwidthLoad', 'droneBandwidth', 'Drone bandwidth'], ['fighterCapacityLoad', 'fighterCapacity', 'Fighter bay']]) {
         if (stats[load] > stats[output] + 0.001) messages.push(label + ' capacity exceeded.');
     }
     for (const key of ['turretSlotsLeft', 'launcherSlotsLeft']) if (stats[key] < 0) messages.push('Not enough ' + (key === 'turretSlotsLeft' ? 'turret' : 'launcher') + ' hardpoints.');
@@ -212,10 +294,10 @@ export function warnings(fit, catalog, stats, character) {
     if (active > (character.maxActiveDrones || 0)) messages.push('Too many deployed drones.');
     const cargo = fit.items.filter(item => item.flag === 5).reduce((sum, item) => sum + catalog[item.type_id].volume * item.quantity, 0);
     if (cargo > stats.capacity) messages.push('Cargo capacity exceeded.');
-    for (const item of fit.items.filter(item => ![5, 87].includes(item.flag) && catalog[item.type_id].categoryID !== 8)) {
+    for (const item of fit.items.filter(item => ![5, 87, 158].includes(item.flag) && catalog[item.type_id].categoryID !== 8)) {
         const type = catalog[item.type_id];
         for (const [attribute, field] of [['maxGroupFitted', 'groupID'], ['maxTypeFitted', 'id'], ['maxGroupActive', 'groupID'], ['maxGroupOnline', 'groupID']]) {
-            const count = fit.items.filter(other => ![5, 87].includes(other.flag) && catalog[other.type_id][field] === type[field]
+            const count = fit.items.filter(other => ![5, 87, 158].includes(other.flag) && catalog[other.type_id][field] === type[field]
                 && (!attribute.endsWith('Active') || ['Active', 'Overload'].includes(other.state))
                 && (!attribute.endsWith('Online') || other.state !== 'Passive')).length;
             if (type.attributes[attribute] && count > type.attributes[attribute]) messages.push(type.name + ': ' + attribute + ' limit exceeded.');
@@ -227,7 +309,7 @@ export function warnings(fit, catalog, stats, character) {
 export function exportESIFit(fit, catalog) {
     const items = new Map();
     for (const item of fit.items) {
-        let flag = item.flag === 87 ? 'DroneBay' : 'Cargo';
+        let flag = item.flag === 87 ? 'DroneBay' : item.flag === 158 ? 'FighterBay' : 'Cargo';
         if (catalog[item.type_id].categoryID !== 8) {
             const rack = racks.find(rack => item.flag >= rack.start && item.flag < rack.start + 8);
             if (rack) flag = { High: 'HiSlot', Medium: 'MedSlot', Low: 'LoSlot', Rig: 'RigSlot', SubSystem: 'SubSystemSlot' }[rack.name] + (item.flag - rack.start);

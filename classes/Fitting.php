@@ -48,10 +48,12 @@ class Fitting
 
     public static function simulationPayload($fit)
     {
-        $payload = [(int) $fit['ship_type_id']];
+        $ship = (string) (int) $fit['ship_type_id'];
+        if (!empty($fit['name'])) $ship .= ':' . rawurlencode($fit['name']);
+        $payload = [$ship];
         foreach ($fit['items'] as $item) {
             $flag = (int) $item['flag'];
-            if ($flag != 87 && !($flag >= 11 && $flag <= 34) && !($flag >= 92 && $flag <= 99) && !($flag >= 125 && $flag <= 132) && !($flag >= 164 && $flag <= 171)) continue;
+            if ($flag != 87 && $flag != 158 && !($flag >= 11 && $flag <= 34) && !($flag >= 92 && $flag <= 99) && !($flag >= 125 && $flag <= 132) && !($flag >= 164 && $flag <= 171)) continue;
             $quantity = (int) $item['quantity'];
             if ($quantity < 1) continue;
             $value = $flag . ':' . (int) $item['type_id'];

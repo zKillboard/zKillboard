@@ -2,7 +2,7 @@
 // Run: node tests/simulate.mjs
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { racks, slotCount, compatible, compatibleCharge, hasDroneBay, validateDrones, addModule, importEFT, importTypeIDFit, exportEFT, warnings } from '../public/js/simulate-model.js';
+import { racks, slotCount, compatible, compatibleCharge, hasDroneBay, hasFighterBay, validateDrones, validateFighters, addModule, importEFT, importTypeIDFit, exportEFT, warnings } from '../public/js/simulate-model.js';
 
 let result;
 globalThis.self = { postMessage: value => { result = value; } };
@@ -133,7 +133,41 @@ const stacked = importEFT('[Vexor, Stacks]\nHobgoblin I x2\nHobgoblin I x3\nAnti
 assert.equal(stacked.items.length, 2);
 assert.equal(stacked.items.find(item => item.flag === 87).quantity, 5);
 assert.equal(stacked.items.find(item => item.flag === 5).quantity, 300);
-console.log('Simulator checks passed: catalog, skills, module states and heat, fitting limits, charges, EFT round trips and errors, drones, and subsystems.');
+const carrierFit = importTypeIDFit('23913;158:40560:18;158:40560:6;158:40561:9', catalog);
+assert.ok(hasFighterBay(carrierFit, catalog));
+assert.equal(byName('Thanatos').attributes.fighterTubes, 4);
+assert.equal(byName('Nyx').attributes.fighterTubes, 5);
+assert.equal(carrierFit.items.find(item => item.type_id === 40560).quantity, 24);
+assert.equal(carrierFit.items.reduce((sum, item) => sum + item.active, 0), 4);
+validateFighters(carrierFit, catalog);
+const carrier = await calculate(carrierFit);
+assert.ok(carrier.stats.fighterDamagePerSecond > 0);
+assert.equal(carrier.stats.fighterTubesUsed, 4);
+assert.equal(carrier.stats.fighterCraftDeployed, 24);
+assert.equal(carrier.stats.fighterCraftInBay, 9);
+assert.equal(carrier.stats.fighterHeavySlotsUsed, 4);
+assert.match(exportEFT(carrierFit, catalog), /Ametat II x24/);
+const partialCarrier = { ...carrierFit, fighterTubes: carrierFit.fighterTubes.map(tube => ({ ...tube })) };
+partialCarrier.fighterTubes[0].quantity--;
+const partialFighters = await calculate(partialCarrier);
+assert.equal(partialFighters.stats.fighterCraftDeployed, 23);
+assert.ok(partialFighters.stats.fighterDamagePerSecond < carrier.stats.fighterDamagePerSecond);
+carrierFit.items.forEach(item => { item.active = 0; });
+carrierFit.fighterTubes = [];
+validateFighters(carrierFit, catalog);
+const inactiveCarrier = await calculate(carrierFit);
+assert.equal(inactiveCarrier.stats.fighterDamagePerSecond || 0, 0);
+assert.equal(inactiveCarrier.stats.fighterTubesUsed, 0);
+const supercarrierFit = importTypeIDFit('23913;158:40556:12;158:40564:29;158:40565:12;158:40565:17', catalog);
+validateFighters(supercarrierFit, catalog);
+const supercarrier = await calculate(supercarrierFit);
+assert.equal(supercarrier.stats.fighterTubesUsed, 5);
+assert.equal(supercarrier.stats.fighterCapacityLoad, 75400);
+assert.ok(supercarrier.stats.fighterCapacityLoad < supercarrier.stats.fighterCapacity);
+validateFighters({ ...supercarrierFit, fighterTubes: [], items: supercarrierFit.items.map(item => ({ ...item, active: 0 })) }, catalog, supercarrier.stats.fighterCapacity);
+assert.throws(() => validateFighters({ ...supercarrierFit, fighterTubes: [], items: supercarrierFit.items.map(item => ({ ...item, quantity: 1000, active: 0 })) }, catalog, supercarrier.stats.fighterCapacity), /space in the fighter bay/);
+assert.throws(() => importTypeIDFit('587;158:40560:6', catalog), /no fighter bay/);
+console.log('Simulator checks passed: catalog, skills, module states and heat, fitting limits, charges, EFT round trips and errors, drones, fighters, and subsystems.');
 
 // Exercise page controls and SPA cleanup without a browser dependency.
 class Element extends EventTarget {
@@ -187,6 +221,7 @@ const stored = new Map();
 globalThis.localStorage = { getItem: key => stored.get(key) || null, setItem: (key, value) => stored.set(key, value) };
 let pending = Promise.resolve();
 let workerCount = 0;
+let workerPosts = 0;
 let terminated = 0;
 globalThis.Worker = class {
     constructor(url) {
@@ -195,6 +230,7 @@ globalThis.Worker = class {
     }
     terminate() { terminated++; }
     postMessage(request) {
+        workerPosts++;
         pending = pending.then(async () => {
             await self.onmessage({ data: request });
             this.onmessage({ data: result });
@@ -214,6 +250,12 @@ function click(name) {
 }
 function equipmentButtons(element) {
     return (element['aria-label']?.startsWith('Add ') ? [element] : []).concat(element.children.flatMap(equipmentButtons));
+}
+function treeText(element) {
+    return (element.textContent || '') + ' ' + element.children.map(treeText).join(' ');
+}
+function findElements(element, predicate) {
+    return (predicate(element) ? [element] : []).concat(element.children.flatMap(child => findElements(child, predicate)));
 }
 controls.get('ship').value = 'Confessor';
 click('new');
@@ -387,6 +429,49 @@ assert.ok(linkedIDFit.items.some(item => item.type_id === 230 && item.flag === 2
 window.zkbPageCleanup();
 console.log('Type ID link checks passed: ship, module, charge, and exact slots.');
 
+window.location.hash = '#fit=23913%3B158%3A40560%3A18%3B158%3A40560%3A6%3B158%3A40561%3A9';
+window.zkbInitSimulate();
+await settle();
+const linkedCarrier = JSON.parse(stored.get('zkb:simulate'));
+assert.equal(linkedCarrier.items.length, 2, 'Linked fighter stacks of one type are merged');
+assert.match(treeText(controls.get('stats').children[1]), /Fighter DPS \(24 deployed\)/);
+assert.match(treeText(controls.get('stats').children[4]), /Fighter bay \(9 stored\).*Fighter tubes.*Heavy fighter tubes/);
+assert.match(treeText(controls.get('slots')), /Fighters.*Ametat II.*Malleus II/);
+let fighterTubeSelectors = findElements(controls.get('slots'), element => /^Fighter tube \d/.test(element['aria-label'] || ''));
+assert.equal(fighterTubeSelectors.length, 5);
+assert.match(treeText(controls.get('slots')), /24 deployed fighters.*included in Fighter DPS.*9 fighters stored in bay.*Heavy 4 \/ 4.*6.*Ametat II.*Malleus II.*Open.*18 deployed · 6 in bay · max 68 in empty bay/);
+assert.doesNotMatch(treeText(controls.get('slots')), /Simulated|fighters in DPS/);
+assert.match(treeText(controls.get('slots')), /Open.*Empty/);
+const fighterDials = findElements(controls.get('slots'), element => element.title?.includes('fighters deployed in tube'));
+assert.equal(fighterDials.length, 4);
+assert.match(fighterDials[0].style.background, /conic-gradient/);
+assert.equal(findElements(controls.get('slots'), element => element.style.gridTemplateColumns === '4rem auto 32px minmax(0, 1fr) auto').length, 2, 'Each fighter type uses one compact inventory row');
+findElements(controls.get('slots'), element => element['aria-label']?.startsWith('Remove Ametat II'))[0].click();
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).fighterTubes[0].quantity, 5);
+assert.equal(result.stats.fighterCraftDeployed, 23);
+findElements(controls.get('slots'), element => element['aria-label']?.startsWith('Add Ametat II'))[0].click();
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).fighterTubes[0].quantity, 6);
+assert.equal(result.stats.fighterCraftDeployed, 24);
+fighterTubeSelectors = findElements(controls.get('slots'), element => /^Fighter tube \d/.test(element['aria-label'] || ''));
+assert.ok(findElements(controls.get('slots'), element => element['aria-label']?.endsWith(' quantity')).every(input => Number(input.max) < 1000), 'Fighter quantities use available bay capacity');
+const postsBeforeRapidFighterChanges = workerPosts;
+for (let index = 0; index < 20; index++) {
+    fighterTubeSelectors[0].value = String(index % 2 ? 40560 : 0);
+    fighterTubeSelectors[0].dispatchEvent(new Event('change'));
+}
+for (const selector of fighterTubeSelectors) {
+    selector.value = '0';
+    selector.dispatchEvent(new Event('change'));
+}
+await settle();
+assert.ok(workerPosts - postsBeforeRapidFighterChanges <= 2, 'Rapid fighter changes retain only the running and latest calculations');
+assert.ok(JSON.parse(stored.get('zkb:simulate')).items.every(item => item.flag !== 158 || item.active === 0));
+assert.equal(result.stats.fighterDamagePerSecond || 0, 0);
+window.zkbPageCleanup();
+console.log('Fighter link checks passed: import, Offense, fighter statistics, bay inventory, and deployment controls.');
+
 window.location.hash = '#eft=' + encodeURIComponent('[Rifter, Trash test]\n150mm Railgun II, Antimatter Charge S');
 window.zkbInitSimulate();
 await settle();
@@ -522,7 +607,9 @@ for (const template of ['detail.pug', 'fits_detail.pug']) {
 }
 const idFit = importTypeIDFit('593;28:3074;28:230;87:2454:2;5:999999999:20', catalog);
 assert.equal(idFit.ship_type_id, 593);
+assert.equal(idFit.name, 'Tristan loss');
 assert.deepEqual(idFit.items.map(item => [item.flag, item.type_id, item.quantity]), [[28, 3074, 1], [28, 230, 1], [87, 2454, 2]]);
+assert.equal(importTypeIDFit('593:Jane%20Doe%27s%20Rifter', catalog).name, "Jane Doe's Rifter");
 await calculate(idFit);
 assert.throws(() => importTypeIDFit('587;28:999999999', catalog), /Unknown item type ID/);
 console.log('Reported Tholos killmail loads and calculates; Simulate links preserve slot and type IDs.');

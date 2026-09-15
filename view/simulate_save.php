@@ -15,8 +15,8 @@ function handler($request, $response, $args, $container)
         $items = [];
         foreach ($fit['items'] as $item) {
             if (!is_array($item) || !is_int($item['type_id'] ?? null) || $item['type_id'] < 1 || !is_int($item['quantity'] ?? null) || $item['quantity'] < 1 || $item['quantity'] > 1000000) throw new Exception('Invalid fitting item.');
-            if (!is_string($item['flag'] ?? null) || !preg_match('/^(Cargo|DroneBay|HiSlot[0-7]|MedSlot[0-7]|LoSlot[0-7]|RigSlot[0-2]|SubSystemSlot[0-3])$/D', $item['flag'])) throw new Exception('Invalid fitting slot.');
-            if (!in_array($item['flag'], ['Cargo', 'DroneBay']) && $item['quantity'] !== 1) throw new Exception('Only one module can occupy a slot.');
+            if (!is_string($item['flag'] ?? null) || !preg_match('/^(Cargo|DroneBay|FighterBay|HiSlot[0-7]|MedSlot[0-7]|LoSlot[0-7]|RigSlot[0-2]|SubSystemSlot[0-3])$/D', $item['flag'])) throw new Exception('Invalid fitting slot.');
+            if (!in_array($item['flag'], ['Cargo', 'DroneBay', 'FighterBay']) && $item['quantity'] !== 1) throw new Exception('Only one module can occupy a slot.');
             $items[] = ['flag' => $item['flag'], 'type_id' => $item['type_id'], 'quantity' => $item['quantity']];
         }
         $result = ESI::saveFitting(0, 0, [

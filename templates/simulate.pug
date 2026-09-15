@@ -47,6 +47,7 @@ block content
                   option(value="Rig") Rigs
                   option(value="SubSystem") Subsystems
                   option(value="Drone") Drones
+                  option(value="Fighter") Fighters
                   option(value="Cargo") Cargo
                 button#simulate-sort.btn.btn-primary.text-white.flex-shrink-0(type="button" style="width: 5rem;" title="Toggle equipment sorting" aria-label="Equipment sort: Meta") Meta
               #simulate-results.list-group.overflow-auto(style="max-height: 32rem;" aria-label="Equipment results")
@@ -101,14 +102,14 @@ block content
             li Search equipment or expand a slot or bay to browse. Use Add or drag a module onto a wheel slot. Click an empty slot to choose where to fit it.
             li Click a fitted module to cycle online, overheated, and offline where supported. Green slot outlines mean online; red means overheated.
             li Adding a module reveals compatible charges below it. Use Load or drag a charge onto the module. Drop a fitted module onto the equipment panel to browse it and its compatible charges.
-            li Drag equipment from the browser into Drones or Cargo. Adjust quantities and the number of deployed drones in those sections.
-            li Drag fitted modules or charges to the wheel’s trash can to remove them. Use the trash buttons to remove drones or cargo.
+            li Drag equipment from the browser into Drones, Fighters, or Cargo. Adjust quantities and the number of deployed drones in those sections.
+            li Drag fitted modules or charges to the wheel’s trash can to remove them. Use the trash buttons to remove drones, fighters, or cargo.
             li Use the undo and redo arrows for up to 30 changes. Click a stats chevron to toggle one section; double-click it to toggle all sections.
             li Click EFT to view and copy the current fit, or paste a fit from EVE, Pyfa, or another fitting tool and click Import EFT.
         .col-12.col-md-6
           h2.h5.mx-0 Disclaimers & Credits
           p.small.mb-2 Calculations exclude implants, combat boosters, command boosts, and system effects. EHP assumes equal incoming damage types.
-          p.small.mb-2 EFT does not preserve module activation states, deployed drone counts, or tactical destroyer modes. Your current fit is saved in this browser.
+          p.small.mb-2 EFT does not preserve module activation states, deployed drone counts, fighter tube assignments, or tactical destroyer modes. Fighter tubes are initially estimated from available full squadrons. Your current fit is saved in this browser.
           p.small.mb-2
             | Calculated locally with&#32;
             a(href="https://github.com/EVEShipFit/dogma-engine" target="_blank" rel="noopener noreferrer") EVEShip.fit’s engine

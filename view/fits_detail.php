@@ -73,6 +73,7 @@ function handler($request, $response, $args, $container)
             'sampleLossID' => $killID,
             'statsFit' => (int) Info::getInfoField('groupID', $victim['groupID'], 'categoryID') == 6 ? [
                 'ship_type_id' => $shipTypeID,
+                'name' => $fitName,
                 'items' => array_map(function ($item) {
                     return [
                         'type_id' => (int) $item['item_type_id'],

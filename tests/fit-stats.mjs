@@ -80,6 +80,37 @@ assert.ok(!drones.error, drones.error);
 close(drones.stats.droneCapacityLoad, 25);
 assert.equal(drones.details.filter(item => item.slot?.type === 'DroneBay').length, 1);
 assert.ok(!drones.stats.droneDamagePerSecond, 'Bay drones must not contribute active DPS');
+const fighters = await calculate([
+    { type_id: 40556, flag: 159, quantity: 6 },
+    { type_id: 40556, flag: 158, quantity: 3 }
+], 23911);
+const launchedFighters = await calculate([{ type_id: 40556, flag: 159, quantity: 6 }], 23911);
+assert.ok(!fighters.error, fighters.error);
+assert.ok(fighters.stats.fighterDamagePerSecond > 0);
+close(fighters.stats.damagePerSecondWithoutReload, fighters.stats.fighterDamagePerSecond);
+close(fighters.stats.fighterDamagePerSecond, launchedFighters.stats.fighterDamagePerSecond);
+assert.equal(fighters.stats.fighterTubesUsed, 1);
+assert.ok(fighters.details.some(item => item.slot?.type === 'FighterTube'));
+assert.ok(fighters.details.some(item => item.slot?.type === 'FighterBay'));
+const inferredFighters = await calculate([
+    { type_id: 40556, flag: 158, quantity: 12 },
+    { type_id: 40564, flag: 158, quantity: 29 },
+    { type_id: 40565, flag: 158, quantity: 12 },
+    { type_id: 40565, flag: 158, quantity: 17 }
+], 23913);
+assert.ok(!inferredFighters.error, inferredFighters.error);
+assert.ok(inferredFighters.stats.fighterDamagePerSecond > 0);
+assert.equal(inferredFighters.stats.fighterTubesUsed, 5);
+assert.equal(inferredFighters.details.filter(item => item.slot?.type === 'FighterTube').length, 5);
+const heavyFighters = await calculate([
+    { type_id: 40560, flag: 158, quantity: 18 },
+    { type_id: 40560, flag: 158, quantity: 6 },
+    { type_id: 40561, flag: 158, quantity: 9 }
+], 23913);
+const heavySquadrons = heavyFighters.details.filter(item => item.slot?.type === 'FighterTube');
+assert.equal(heavyFighters.stats.fighterTubesUsed, 4, 'Nyx has four heavy-fighter tubes');
+assert.equal(heavySquadrons.filter(item => item.name === 'Ametat II').length, 3);
+assert.equal(heavySquadrons.filter(item => item.name === 'Malleus II').length, 1);
 const mining = await calculate([
     { type_id: 5245, flag: 27, quantity: 1 },
     { type_id: 5245, flag: 28, quantity: 1 },
@@ -102,7 +133,7 @@ assert.match((await calculate([charge])).error, /no recorded module/);
 assert.match((await calculate([{ type_id: 999999999, flag: 19, quantity: 1 }])).error, /missing/);
 assert.match((await calculate([], 34)).error, /not supported/);
 assert.equal(fetches.length, 3, 'Later calculations reuse the loaded data');
-console.log('Fit statistics checks passed: ships, structures, modules, charges, drones, cargo, invalid fits, and shared loading.');
+console.log('Fit statistics checks passed: ships, structures, modules, charges, drones, fighters, cargo, invalid fits, and shared loading.');
 
 // Exercise the shared panel with real calculation output and a small DOM stub.
 class Element {
@@ -159,11 +190,18 @@ assert.equal(output.hidden, true, 'Stats can be collapsed while calculating');
 assert.equal(notice.hidden, true);
 click();
 assert.equal(calculations, 1, 'Reopening during loading must not start another calculation');
-worker.onmessage({ data: { ...loaded, id: worker.request.id } });
+worker.onmessage({ data: {
+    ...loaded,
+    id: worker.request.id,
+    stats: { ...loaded.stats, ...Object.fromEntries(Object.entries(fighters.stats).filter(([name]) => name.startsWith('fighter'))) },
+    details: [...loaded.details, ...fighters.details.filter(item => item.slot?.type.startsWith('Fighter'))]
+} });
 function text(element) { return element.textContent + ' ' + element.children.map(text).join(' '); }
-for (const heading of ['Fitting', 'Offense', 'Defense', 'Capacitor', 'Targeting', 'Navigation', 'Drones', 'All calculated attributes', '150mm Railgun II', 'Antimatter Charge S']) {
+for (const heading of ['Fitting', 'Offense', 'Defense', 'Capacitor', 'Targeting', 'Navigation', 'Drones', 'Fighters', 'All calculated attributes', '150mm Railgun II', 'Antimatter Charge S', 'Templar II']) {
     assert.ok(text(output).includes(heading), 'Missing panel content: ' + heading);
 }
+assert.ok(text(output).includes('Fighter DPS'));
+assert.ok(!text(output.children[0].children[1]).includes('HP/s'), 'Offense values use DPS units');
 assert.ok(!text(output.children[0]).includes('Mining'), 'Combat fits should not show a mining section');
 click();
 assert.equal(output.hidden, true);

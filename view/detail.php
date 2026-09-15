@@ -149,7 +149,8 @@ $extra['fittedisk'] = isset($killdata['info']['zkb']['fittedValue']) ? $killdata
 $extra['relatedtime'] = date('YmdH00', strtotime($killdata['info']['dttm']));
 $extra['fittingwheel'] = Detail::eftarray($killdata['items']);
 if ((int) Info::getInfoField('groupID', $killdata['victim']['groupID'], 'categoryID') == 6) {
-    $extra['statsFit'] = ['ship_type_id' => (int) $killdata['victim']['shipTypeID'], 'items' => []];
+    $fitName = !empty($killdata['victim']['characterName']) ? $killdata['victim']['characterName'] . "'s " . $killdata['victim']['shipName'] : $killdata['victim']['shipName'];
+    $extra['statsFit'] = ['ship_type_id' => (int) $killdata['victim']['shipTypeID'], 'name' => $fitName, 'items' => []];
     foreach ($killdata['items'] as $item) {
         if (!empty($item['inContainer'])) continue;
         $extra['statsFit']['items'][] = [

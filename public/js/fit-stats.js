@@ -1,5 +1,6 @@
 (function() {
     var statsState = null;
+    var workerVersion = document.currentScript ? new URL(document.currentScript.src).search : '';
 
     function failFitStats(state, message) {
         if (state.statsWorker) state.statsWorker.terminate();
@@ -36,7 +37,7 @@
 
         try {
             if (!state.statsWorker) {
-                state.statsWorker = new Worker('/js/fit-stats-worker.js', { type: 'module' });
+                state.statsWorker = new Worker('/js/fit-stats-worker.js' + workerVersion, { type: 'module' });
                 state.statsWorker.onerror = function() {
                     failFitStats(state, 'Unable to load fitting statistics. Please try again.');
                 };
@@ -89,9 +90,10 @@
                         ['Turret / Launcher hardpoints free', number('turretSlotsLeft') + ' / ' + number('launcherSlotsLeft')],
                         ['Cargo capacity', number('capacity', ' m³')]
                     ]);
-                    section('Offense (recorded charges, no active drones)', [
-                        ['DPS (without reload)', number('damagePerSecondWithoutReload', ' HP/s')],
-                        ['DPS (with reload)', number('damagePerSecondWithReload', ' HP/s')],
+                    section('Offense (recorded charges; estimated fighter squadrons; no active drones)', [
+                        ['DPS (without reload)', number('damagePerSecondWithoutReload')],
+                        ['DPS (with reload)', number('damagePerSecondWithReload')],
+                        ['Fighter DPS', number('fighterDamagePerSecond')],
                         ['Volley damage', number('damageAlpha', ' HP')]
                     ]);
                     var defense = [
@@ -139,6 +141,24 @@
                         ['Control range', number('droneControlDistance', ' km', 1000, event.data.character)],
                         ['Active drone DPS', '0 (none deployed)']
                     ]);
+                    var fighters = event.data.details.filter(function(item) { return item.slot && (item.slot.type === 'FighterTube' || item.slot.type === 'FighterBay'); });
+                    if (fighters.length || stats.fighterCapacity > 0 || stats.fighterTubes > 0) {
+                        var fighterRows = [
+                            ['Fighter DPS', number('fighterDamagePerSecond')],
+                            ['Tubes used / capacity', number('fighterTubesUsed') + ' / ' + number('fighterTubes')],
+                            ['Light tubes used / capacity', number('fighterLightSlotsUsed') + ' / ' + number('fighterLightSlots')],
+                            ['Support tubes used / capacity', number('fighterSupportSlotsUsed') + ' / ' + number('fighterSupportSlots')],
+                            ['Heavy tubes used / capacity', number('fighterHeavySlotsUsed') + ' / ' + number('fighterHeavySlots')],
+                            ['Fighter capacity used / total', number('fighterCapacityLoad') + ' / ' + number('fighterCapacity', ' m³')]
+                        ];
+                        fighters.forEach(function(item) {
+                            fighterRows.push([
+                                item.slot.type === 'FighterTube' ? 'Tube ' + item.slot.index : 'Bay reserve',
+                                item.name + ' ×' + item.quantity
+                            ]);
+                        });
+                        section('Fighters (estimated full squadrons)', fighterRows);
+                    }
                     var miningRows = [];
                     var miningYield = 0;
                     event.data.details.forEach(function(item) {
@@ -163,7 +183,7 @@
                     var all = document.createElement('details');
                     all.className = 'mt-3';
                     var summary = document.createElement('summary');
-                    summary.textContent = 'All calculated attributes: ship, pilot, modules, charges and drones';
+                    summary.textContent = 'All calculated attributes: ship, pilot, modules, charges, drones and fighters';
                     all.append(summary);
                     event.data.details.forEach(function(item) {
                         var detail = document.createElement('details');
