@@ -491,10 +491,15 @@ for (const state of ['Overload', 'Passive', 'Active']) {
 }
 const dragStart = new Event('dragstart');
 const removalTransfer = new Map();
-Object.defineProperty(dragStart, 'dataTransfer', { value: { setData: (key, value) => removalTransfer.set(key, value) } });
+let dragPreviewUses = 0;
+Object.defineProperty(dragStart, 'dataTransfer', { value: {
+    setData: (key, value) => removalTransfer.set(key, value),
+    setDragImage: () => dragPreviewUses++
+} });
 const trashDrop = new Event('drop');
 Object.defineProperty(trashDrop, 'dataTransfer', { value: { getData: key => removalTransfer.get(key) || '' } });
 controls.get('high1').children[0].children[0].dispatchEvent(dragStart);
+assert.equal(dragPreviewUses, 1, 'Fitted items use a small dedicated drag preview');
 const fitBeforeBrowse = stored.get('zkb:simulate');
 controls.get('equipment').dispatchEvent(trashDrop);
 assert.equal(stored.get('zkb:simulate'), fitBeforeBrowse, 'Browsing a dragged module preserves the fit');
@@ -644,7 +649,7 @@ click('redo');
 await settle();
 controls.get('high1l').children[0].dispatchEvent(dragStart);
 const trashOver = new Event('dragover', { cancelable: true });
-Object.defineProperty(trashOver, 'dataTransfer', { value: { types: [...removalTransfer.keys()] } });
+Object.defineProperty(trashOver, 'dataTransfer', { value: { get types() { throw new Error('dragover must not inspect DataTransfer types'); } } });
 controls.get('trash').dispatchEvent(trashOver);
 assert.ok(trashOver.defaultPrevented, 'Trash accepts fitted-item drags');
 controls.get('trash').dispatchEvent(trashDrop);
@@ -784,21 +789,29 @@ assert.equal(eftModalHidden, true, 'Successful import closes the modal to reveal
 controls.get('eft-modal-text').value = '[Rifter, Charge drop targets]\n150mm Railgun II, Antimatter Charge S\n150mm Railgun II';
 click('eft-modal-import');
 await settle();
+const flag28Stroke = frames.get('.flag28').querySelector('.fitted path').style.stroke;
 controls.get('high1l').children[0].dispatchEvent(dragStart);
-assert.ok(frames.get('.flag28').style.filter.includes('drop-shadow'), 'Compatible module outlines highlight while dragging');
-assert.ok(controls.get('trash').style.filter.includes('drop-shadow'), 'Trash highlights for a loaded charge');
-assert.equal(frames.get('.flag29').style.filter, '', 'Empty slots are not highlighted for charges');
+assert.equal(frames.get('.flag28').querySelector('.fitted path').style.stroke, '#0dcaf0', 'Compatible module outlines highlight while dragging');
+assert.equal(controls.get('trash').style.outline, '2px solid #0dcaf0', 'Trash highlights for a loaded charge');
+assert.notEqual(frames.get('.flag29').querySelector('.fitted path').style.stroke, '#0dcaf0', 'Empty slots are not highlighted for charges');
 frames.get('.flag28').ondrop(trashDrop);
 await settle();
 assert.equal(JSON.parse(stored.get('zkb:simulate')).items.filter(item => item.type_id === 222).length, 2, 'Dropping on a slot frame loads the destination and preserves the source charge');
 root.dispatchEvent(new Event('dragend'));
-assert.equal(frames.get('.flag28').style.filter, '', 'Drag highlights clear after drag ends');
-assert.equal(controls.get('trash').style.filter, '', 'Trash highlight clears after drag ends');
+assert.equal(frames.get('.flag28').querySelector('.fitted path').style.stroke, flag28Stroke, 'Drag highlights clear after drag ends');
+assert.equal(controls.get('trash').style.outline, '', 'Trash highlight clears after drag ends');
 controls.get('high1').children[0].children[0].dispatchEvent(dragStart);
-assert.equal(frames.get('.flag27').style.filter, '', 'Occupied slots are not highlighted for modules');
-assert.equal(frames.get('.flag28').style.filter, '', 'Other occupied slots are not highlighted for modules');
-assert.ok(frames.get('.flag29').style.filter.includes('drop-shadow'), 'Empty compatible slots still highlight for modules');
+assert.notEqual(frames.get('.flag27').querySelector('.fitted path').style.stroke, '#0dcaf0', 'Occupied slots are not highlighted for modules');
+assert.notEqual(frames.get('.flag28').querySelector('.fitted path').style.stroke, '#0dcaf0', 'Other occupied slots are not highlighted for modules');
+assert.equal(frames.get('.flag29').querySelector('.fitted path').style.stroke, '#0dcaf0', 'Empty compatible slots still highlight for modules');
 root.dispatchEvent(new Event('dragend'));
+const restoredFlag29Stroke = frames.get('.flag29').querySelector('.fitted path').style.stroke;
+for (let index = 0; index < 50; index++) {
+    controls.get('high1').children[0].children[0].dispatchEvent(dragStart);
+    root.dispatchEvent(new Event('dragend'));
+}
+assert.equal(frames.get('.flag29').querySelector('.fitted path').style.stroke, restoredFlag29Stroke, 'Repeated drags restore slot styling without accumulating effects');
+assert.ok([...frames.values()].every(frame => !frame.style.filter), 'Drag highlighting does not use expensive SVG filters');
 controls.get('eft-modal-text').value = '[Rifter, Cargo browsing]\n\nAntimatter Charge S x100';
 click('eft-modal-import');
 await settle();

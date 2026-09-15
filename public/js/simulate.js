@@ -31,6 +31,11 @@ window.zkbInitSimulate = function() {
     const events = new AbortController();
     const fittingImages = new Map();
     const prices = new Map();
+    const dragPreview = document.createElement('div');
+    dragPreview.className = 'd-flex align-items-center justify-content-center rounded-circle border border-info bg-dark text-info';
+    dragPreview.style.cssText = 'position:fixed;left:-48px;top:-48px;width:32px;height:32px;pointer-events:none;z-index:-1';
+    dragPreview.textContent = '\u2197';
+    root.append(dragPreview);
     let priceRequest;
     const expandedSections = new Set(['Capacitor', 'Pricing']);
     const wheel = element('Fitting_Panel');
@@ -67,6 +72,7 @@ window.zkbInitSimulate = function() {
         queuedCalculation = null;
         worker?.terminate();
         events.abort();
+        dragPreview.remove?.();
         if (shipSearch) {
             const autocomplete = shipSearch.data('zz_search');
             if (autocomplete) {
@@ -101,14 +107,32 @@ window.zkbInitSimulate = function() {
     function highlightDropTargets(type, fromFit = false) {
         dragType = type;
         dragFromFit = fromFit;
-        element('trash').style.filter = type && fromFit ? 'drop-shadow(0 0 4px #0dcaf0)' : '';
+        element('trash').style.filter = '';
+        element('trash').style.outline = type && fromFit ? '2px solid #0dcaf0' : '';
         for (const [target, accepts] of dropTargets) {
-            target.style.filter = type && accepts(type) ? 'drop-shadow(0 0 4px #0dcaf0)' : '';
-            if (target.dataset.bay) target.style.borderColor = type && accepts(type) ? '#0dcaf0' : 'transparent';
+            const highlighted = type && accepts(type);
+            target.style.filter = '';
+            if (target.dataset.bay) target.style.borderColor = highlighted ? '#0dcaf0' : 'transparent';
+            else {
+                const outline = target.querySelector('.fitted path');
+                if (!outline) continue;
+                if (target.zkbDragStroke !== undefined) {
+                    outline.style.stroke = target.zkbDragStroke;
+                    delete target.zkbDragStroke;
+                }
+                if (highlighted) {
+                    target.zkbDragStroke = outline.style.stroke;
+                    outline.style.stroke = '#0dcaf0';
+                }
+            }
         }
     }
     root.addEventListener('dragend', () => highlightDropTargets(null), { capture: true, signal: events.signal });
     root.addEventListener('drop', () => queueMicrotask(() => highlightDropTargets(null)), { capture: true, signal: events.signal });
+
+    function setDragPreview(event) {
+        if (typeof event.dataTransfer.setDragImage === 'function') event.dataTransfer.setDragImage(dragPreview, 16, 16);
+    }
 
     function removalDrag(target, item) {
         target.draggable = true;
@@ -117,18 +141,20 @@ window.zkbInitSimulate = function() {
             event.stopPropagation();
             event.dataTransfer.setData('application/x-zkb-fitted-item', JSON.stringify({ flag: item.flag, type_id: item.type_id }));
             event.dataTransfer.effectAllowed = catalog[item.type_id].categoryID === 8 ? 'copyMove' : 'move';
+            setDragPreview(event);
             highlightDropTargets(catalog[item.type_id], true);
         };
         target.addEventListener('dragstart', target.zkbRemovalDrag);
     }
 
     element('trash').addEventListener('dragover', event => {
-        if (!Array.from(event.dataTransfer.types).includes('application/x-zkb-fitted-item')) return;
+        if (!dragFromFit) return;
         event.preventDefault();
         event.dataTransfer.dropEffect = 'move';
     }, { signal: events.signal });
     element('trash').addEventListener('drop', event => {
         event.preventDefault();
+        highlightDropTargets(null);
         const payload = event.dataTransfer.getData('application/x-zkb-fitted-item');
         if (!payload || !fit) return;
         try {
@@ -139,7 +165,7 @@ window.zkbInitSimulate = function() {
     }, { signal: events.signal });
 
     element('equipment').addEventListener('dragover', event => {
-        if (!Array.from(event.dataTransfer.types).includes('application/x-zkb-fitted-item')) return;
+        if (!dragFromFit) return;
         event.preventDefault();
         event.dataTransfer.dropEffect = 'move';
     }, { signal: events.signal });
@@ -147,6 +173,7 @@ window.zkbInitSimulate = function() {
         const payload = event.dataTransfer.getData('application/x-zkb-fitted-item');
         if (!payload || !fit) return;
         event.preventDefault();
+        highlightDropTargets(null);
         try {
             const dropped = JSON.parse(payload);
             const item = fit.items.find(item => item.flag === dropped.flag && item.type_id === dropped.type_id);
@@ -326,6 +353,7 @@ window.zkbInitSimulate = function() {
                             event.stopPropagation();
                             event.dataTransfer.setData('application/x-zkb-module', String(charge.id));
                             event.dataTransfer.effectAllowed = 'copy';
+                            setDragPreview(event);
                             highlightDropTargets(charge);
                         });
                         chargeList.append(chargeRow);
@@ -359,6 +387,7 @@ window.zkbInitSimulate = function() {
                 row.addEventListener('dragstart', event => {
                     event.dataTransfer.setData('application/x-zkb-module', String(type.id));
                     event.dataTransfer.effectAllowed = 'copy';
+                    setDragPreview(event);
                     highlightDropTargets(type);
                 });
             }
@@ -441,13 +470,14 @@ window.zkbInitSimulate = function() {
                 const accepts = type => type.categoryID === 8 ? !!item && compatibleCharge(catalog[item.type_id], type) : !item && rackFor(type)?.name === rack.name && compatible(type, hull);
                 if (frame) dropTargets.set(frame, accepts);
                 const dragover = event => {
-                    if (dragType && !accepts(dragType)) return;
+                    if (!dragType || !accepts(dragType) || (dragFromFit && dragType.categoryID !== 8)) return;
                     event.preventDefault();
                     event.dataTransfer.dropEffect = 'copy';
                 };
                 const drop = event => {
                     event.stopPropagation();
                     event.preventDefault();
+                    highlightDropTargets(null);
                     try {
                         const payload = event.dataTransfer.getData('application/x-zkb-fitted-item');
                         const source = payload ? JSON.parse(payload) : null;
@@ -488,11 +518,11 @@ window.zkbInitSimulate = function() {
             section.dataset.bay = 'true';
             section.style.border = '1px solid transparent';
             section.style.minHeight = '4rem';
-            dropTargets.set(section, type => flag === 5 || (flag === 87 && type.categoryID === 18 && hasDroneBay(fit, catalog)) || (flag === 158 && type.categoryID === 87 && hasFighterBay(fit, catalog)));
+            const accepts = type => flag === 5 || (flag === 87 && type.categoryID === 18 && hasDroneBay(fit, catalog)) || (flag === 158 && type.categoryID === 87 && hasFighterBay(fit, catalog));
+            dropTargets.set(section, accepts);
             section.addEventListener('dragover', event => {
-                const types = Array.from(event.dataTransfer.types);
-                const moving = flag === 5 && types.includes('application/x-zkb-fitted-item');
-                if (!moving && !types.includes('application/x-zkb-module')) return;
+                const movingCharge = flag === 5 && dragFromFit && dragType?.categoryID === 8;
+                if (!movingCharge && (!dragType || dragFromFit || !accepts(dragType))) return;
                 event.preventDefault();
                 event.dataTransfer.dropEffect = 'copy';
             });
@@ -501,6 +531,7 @@ window.zkbInitSimulate = function() {
                 const payload = event.dataTransfer.getData('application/x-zkb-fitted-item');
                 if (!typeID && !payload) return;
                 event.preventDefault();
+                highlightDropTargets(null);
                 try {
                     if (payload) {
                         const dropped = JSON.parse(payload);
