@@ -8,10 +8,12 @@ import { gunzipSync } from 'node:zlib';
 const results = new Map();
 const fetches = [];
 globalThis.self = { postMessage: result => results.set(result.id, result) };
-globalThis.fetch = async url => {
+globalThis.fetch = async (url, options) => {
     assert.equal(url.protocol, 'file:', 'Tests must not contact external services');
     fetches.push(url.pathname);
-    let path = url;
+    assert.equal(options.cache, 'force-cache', 'Fitting assets use the browser cache');
+    let path = new URL(url);
+    path.search = '';
     if (process.argv[2] && url.pathname.endsWith('/data.json.gz')) path = process.argv[2];
     if (process.argv[3] && url.pathname.endsWith('/sde.dat.gz')) path = process.argv[3];
     if (path instanceof URL) {
@@ -42,6 +44,7 @@ assert.equal(fetches.length, 3, 'Concurrent fits share one data/engine load');
 
 // Rifter base stats receive the all-V engineering, navigation and HP bonuses.
 const snapshot = JSON.parse(gunzipSync(await readFile(process.argv[2] || new URL('../public/vendor/eveshipfit/data.json.gz', import.meta.url))));
+assert.equal(snapshot.data.types[3], undefined, 'Metadata excludes non-fitting types');
 const base = Object.fromEntries(snapshot.data.typeDogma[587].dogmaAttributes.map(attribute => [attribute.attributeID, attribute.value]));
 close(bare.stats.cpuOutput, base[48] * 1.25);
 close(bare.stats.powerOutput, base[11] * 1.25);

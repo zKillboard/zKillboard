@@ -3,15 +3,19 @@ import * as engine from '../vendor/eveshipfit/esf_dogma_engine_bg.js?v=10.4.0';
 let ready;
 
 async function loadData() {
-    const [metadataResponse, sdeResponse] = await Promise.all([
-        fetch(new URL('../vendor/eveshipfit/data.json.gz', import.meta.url), { cache: 'no-store' }),
-        fetch(new URL('../vendor/eveshipfit/sde.dat.gz', import.meta.url), { cache: 'no-store' })
+    const assetVersion = '?v=10.4.0-3.3503375.1';
+    const [metadataResponse, sdeResponse, wasmResponse] = await Promise.all([
+        fetch(new URL('../vendor/eveshipfit/data.json.gz' + assetVersion, import.meta.url), { cache: 'force-cache' }),
+        fetch(new URL('../vendor/eveshipfit/sde.dat.gz' + assetVersion, import.meta.url), { cache: 'force-cache' }),
+        fetch(new URL('../vendor/eveshipfit/esf_dogma_engine_bg.wasm' + assetVersion, import.meta.url), { cache: 'force-cache' })
     ]);
     if (metadataResponse.status === 404 || sdeResponse.status === 404) throw new Error('Fitting data is unavailable. Please try again later.');
     if (!metadataResponse.ok || !sdeResponse.ok) throw new Error('Unable to load fitting data.');
-    const [snapshot, sde] = await Promise.all([
+    if (!wasmResponse.ok) throw new Error('Unable to load fitting engine.');
+    const [snapshot, sde, wasm] = await Promise.all([
         new Response(metadataResponse.body.pipeThrough(new DecompressionStream('gzip'))).json(),
-        new Response(sdeResponse.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer()
+        new Response(sdeResponse.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer(),
+        wasmResponse.arrayBuffer()
     ]);
     const data = snapshot.data;
 
@@ -22,9 +26,7 @@ async function loadData() {
         if (type.categoryID === 16) skills[id] = 5;
     }
 
-    const wasmResponse = await fetch(new URL('../vendor/eveshipfit/esf_dogma_engine_bg.wasm?v=10.4.0', import.meta.url));
-    if (!wasmResponse.ok) throw new Error('Unable to load fitting engine.');
-    const { instance } = await WebAssembly.instantiate(await wasmResponse.arrayBuffer(), {
+    const { instance } = await WebAssembly.instantiate(wasm, {
         './esf_dogma_engine_bg.js': engine
     });
     engine.__wbg_set_wasm(instance.exports);
