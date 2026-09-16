@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "66073aa28a9b1fb8b4710762a733e1d1",
+    "content-hash": "bc11c7ff797affcdf64c948142b1af85",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -972,16 +972,16 @@
         },
         {
             "name": "mongodb/mongodb",
-            "version": "1.21.3",
+            "version": "1.21.5",
             "source": {
                 "type": "git",
-                "url": "https://github.com/mongodb/mongo-php-library.git",
-                "reference": "b8f569ec52542d2f1bfca88286f20d14a7f72536"
+                "url": "https://github.com/mongodb/mongo-php-library",
+                "reference": "8c0b165069ab29d52a80a379a947ac9a55734601"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mongodb/mongo-php-library/zipball/b8f569ec52542d2f1bfca88286f20d14a7f72536",
-                "reference": "b8f569ec52542d2f1bfca88286f20d14a7f72536",
+                "url": "https://api.github.com/repos/mongodb/mongo-php-library/zipball/8c0b165069ab29d52a80a379a947ac9a55734601",
+                "reference": "8c0b165069ab29d52a80a379a947ac9a55734601",
                 "shasum": ""
             },
             "require": {
@@ -996,7 +996,7 @@
             "require-dev": {
                 "doctrine/coding-standard": "^12.0",
                 "phpunit/phpunit": "^10.5.35",
-                "rector/rector": "^2.1.4",
+                "rector/rector": "~2.5.9",
                 "squizlabs/php_codesniffer": "^3.7",
                 "vimeo/psalm": "6.5.*"
             },
@@ -1040,11 +1040,7 @@
                 "mongodb",
                 "persistence"
             ],
-            "support": {
-                "issues": "https://github.com/mongodb/mongo-php-library/issues",
-                "source": "https://github.com/mongodb/mongo-php-library/tree/1.21.3"
-            },
-            "time": "2025-09-22T12:34:29+00:00"
+            "time": "2026-09-10T14:53:17+00:00"
         },
         {
             "name": "mtdowling/jmespath.php",
