@@ -53,7 +53,7 @@ Run `node tests/fit-stats.mjs` to verify the installed snapshot independently.
 On a ship kill page, click **Fit Stats** to check the deployment. Open panels keep
 their loaded data until navigation or reload.
 
-The bundled engine is [EVEShipFit dogma-engine 10.3.0](https://github.com/EVEShipFit/dogma-engine/releases/tag/v10.3.0),
+The bundled engine is [EVEShipFit dogma-engine 10.4.0](https://github.com/EVEShipFit/dogma-engine/releases/tag/v10.4.0),
 obtained from its official public npm package. The WASM and its bindings are
 unmodified and must be updated together. Game data comes from the official public
 [`@eveshipfit/sde` package](https://www.npmjs.com/package/@eveshipfit/sde).
