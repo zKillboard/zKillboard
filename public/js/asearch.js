@@ -375,7 +375,9 @@ function createSuggestion(json, slot) {
 	}, slot);
 }
 
-function addEntity(suggestion, slot = 'neutrals') {
+function addEntity(suggestion, slot) {
+	var slotSpecified = slot != undefined;
+	if (!slotSpecified) slot = 'neutrals';
 	delete suggestion.data.groupBy;
 	if (suggestion.data.type == 'item') suggestion.data.type = 'typeID';
 	else if (suggestion.data.type == 'ship') suggestion.data.type = 'shipID';
@@ -396,8 +398,9 @@ function addEntity(suggestion, slot = 'neutrals') {
 			add('location', suggestion);
 			break;
 		case 'typeID':
-			asfilter.items.push(suggestion.data);
-			add('items', suggestion);
+			if (!slotSpecified) slot = 'items';
+			asfilter[slot].push(suggestion.data);
+			add(slot, suggestion);
 			break;
 		default:
 			asfilter[slot].push(suggestion.data);
