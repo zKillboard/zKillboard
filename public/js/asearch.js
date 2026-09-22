@@ -830,7 +830,7 @@ function startAsearchMonthlyQuery(filters, start, end) {
 		if (key != 'count') $('#result-groups-' + key).text('Loading ' + key + '...');
 	});
 	function pump() {
-		while (!run.cancelled && run.active < 3 && run.nextMonth < months.length) {
+		while (!run.cancelled && run.active < 12 && run.nextMonth < months.length) {
 			var month = months[run.nextMonth++];
 			run.active++;
 			requestMonth(month, 0);
