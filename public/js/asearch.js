@@ -645,6 +645,7 @@ var filtersStringified = undefined;
 var asearchRetryTimer = null;
 var asearchRetryQueryType = null;
 var asearchBatch = null;
+var asearchMonthlyRun = null;
 var asearchKillRowBatch = null;
 var pendingKillRows = 0;
 var lastAsearchKillCount = 0;
@@ -663,6 +664,11 @@ function doQuery(queryType = 'all', isRetry = false) {
 	if (!isRetry) filtersStringified = queryKey;
 
 	asearchBatch = null;
+	if (asearchMonthlyRun) cancelAsearchMonthlyRun(asearchMonthlyRun);
+	$('#asearchMonthProgress').remove();
+	if (asearchRetryTimer != null) clearTimeout(asearchRetryTimer);
+	asearchRetryTimer = null;
+	asearchRetryQueryType = null;
 	while (xhrs.length > 0) {
 		var xhr = xhrs.pop();
 		xhr.abort();
@@ -677,6 +683,23 @@ function doQuery(queryType = 'all', isRetry = false) {
 	}
 
 	if (!isRetry) clearAsearchResults(queryType);
+	var start = parseAsearchUTCDateTime(f.epoch.start);
+	var end = parseAsearchUTCDateTime(f.epoch.end);
+	var now = Math.floor(Date.now() / 1000);
+	if (f.epochbtn == 'alltime') start = 0;
+	if (end == null) end = now;
+	if ((queryType == 'all' || queryType == 'groups') && f.epochbtn != 'week' && f.epochbtn != 'recent' && start != null && end - start > 31 * 86400) {
+		if (queryType == 'all' && asearchResultMode == 'kills') {
+			request({ data: Object.assign({}, f, { queryType: 'kills' }), method: 'get', error: handleError, success: applyKillQueryResult, timeout: 60000 });
+		}
+		if (queryType == 'all' && asearchResultMode == 'fits') {
+			request({ title: 'fits', data: Object.assign({}, f, { queryType: 'fits' }), method: 'get', error: handleError, success: applyFitsResult, timeout: 60000 });
+		}
+		startAsearchMonthlyQuery(f, start, end);
+		if (!asearchHistoryNavigation) setHash();
+		if (!isRetry) updateMatchingCampaigns();
+		return;
+	}
 
 	var loadKills = queryType == 'kills' || (queryType == 'all' && asearchResultMode == 'kills');
 	var loadFits = queryType == 'fits' || (queryType == 'all' && asearchResultMode == 'fits');
@@ -766,6 +789,296 @@ function doQuery(queryType = 'all', isRetry = false) {
 	if (!isRetry) updateMatchingCampaigns();
 }
 
+function cancelAsearchMonthlyRun(run) {
+	run.cancelled = true;
+	run.retryTimers.forEach(clearTimeout);
+	clearTimeout(run.countRenderTimer);
+	Object.keys(run.renderTimers).forEach(function (key) { clearTimeout(run.renderTimers[key]); });
+	if (run === asearchMonthlyRun) asearchMonthlyRun = null;
+}
+
+function startAsearchMonthlyQuery(filters, start, end) {
+	var queries = [{ queryType: 'count' }, { queryType: 'labels' }, { queryType: 'distincts' }];
+	types.forEach(function (type) { queries.push({ queryType: 'groups', groupType: type }); });
+	var months = [];
+	var cursor = Math.max(start, Date.UTC(2003, 0, 1) / 1000);
+	while (cursor <= end) {
+		var date = new Date(cursor * 1000);
+		var next = Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1) / 1000;
+		months.push({ start: cursor, end: Math.min(end, next - 60) });
+		cursor = next;
+	}
+	var run = { cancelled: false, active: 0, nextMonth: 0, completedMonths: 0, results: {}, pending: {}, retryTimers: [], countRenderTimer: null, renderTimers: {}, renderData: {} };
+	asearchMonthlyRun = run;
+	$('#result-groups-column').prepend($('<div>').attr('id', 'asearchMonthProgress').addClass('progress mb-2 position-relative').attr({ role: 'progressbar', 'aria-label': 'Months aggregated', 'aria-valuenow': 0, 'aria-valuemin': 0, 'aria-valuemax': months.length })
+		.append($('<div>').addClass('progress-bar').css('width', '0%'), $('<span>').addClass('position-absolute w-100 h-100 d-flex align-items-center justify-content-center text-white').text((0).toLocaleString() + ' / ' + months.length.toLocaleString() + ' (' + (0).toLocaleString(undefined, { style: 'percent' }) + ')')));
+	queries.forEach(function (query) {
+		var key = query.groupType || query.queryType;
+		run.results[key] = {};
+		run.pending[key] = months.length;
+		if (key != 'count') $('#result-groups-' + key).text('Loading ' + key + '...');
+	});
+	function pump() {
+		while (!run.cancelled && run.active < 3 && run.nextMonth < months.length) {
+			var month = months[run.nextMonth++];
+			run.active++;
+			requestMonth(month, 0);
+		}
+		if (!run.cancelled && !run.active && run.nextMonth == months.length) updateAsearchQueueIndicator();
+	}
+	function requestMonth(month, queryIndex) {
+		if (run.cancelled) return;
+		if (queryIndex == queries.length) {
+			run.active--;
+			run.completedMonths++;
+			var percentage = Math.floor(100 * run.completedMonths / months.length);
+			$('#asearchMonthProgress').attr('aria-valuenow', run.completedMonths).find('.progress-bar').css('width', percentage + '%');
+			$('#asearchMonthProgress > span').text(run.completedMonths == months.length ? 'Finished' : run.completedMonths.toLocaleString() + ' / ' + months.length.toLocaleString() + ' (' + (percentage / 100).toLocaleString(undefined, { style: 'percent', maximumFractionDigits: 0 }) + ')');
+			pump();
+			return;
+		}
+		var query = queries[queryIndex];
+		var key = query.groupType || query.queryType;
+		var data = Object.assign({}, filters, query, { monthly: 1, epochbtn: 'custom', epoch: {
+			start: getFormattedTime(month.start), end: getFormattedTime(month.end)
+		} });
+		var xhr = $.ajax('/asearchquery/', { data: data, method: 'get', timeout: 60000 });
+		xhrs.push(xhr);
+		xhr.done(function (result, status, jqXHR) {
+			if (run.cancelled) return;
+			if (jqXHR.status == 202) {
+				updateAsearchQueueIndicator(jqXHR);
+				run.retryTimers.push(setTimeout(function () { requestMonth(month, queryIndex); }, 3000));
+				return;
+			}
+			if (result && result.timedOut) {
+				cancelAsearchMonthlyRun(run);
+				xhrs.slice().forEach(function (request) { if (request !== xhr) request.abort(); });
+				$('#result-groups-count').text('Aggregations timed out.');
+				return;
+			}
+			run.pending[key]--;
+			applyAsearchMonthlyResult(run, { query: query, key: key }, filters, result);
+			requestMonth(month, queryIndex + 1);
+		}).fail(function (jqXHR, status, error) {
+			if (run.cancelled) return;
+			cancelAsearchMonthlyRun(run);
+			xhrs.slice().forEach(function (request) { if (request !== xhr) request.abort(); });
+			$('#result-groups-count').text('Could not load aggregations.');
+		}).always(function () {
+			xhrs = xhrs.filter(function (item) { return item !== xhr; });
+		});
+	}
+	pump();
+}
+
+function applyAsearchMonthlyResult(run, job, filters, data) {
+	if (run.cancelled || run !== asearchMonthlyRun) return;
+	var aggregate = run.results[job.key];
+	if (job.query.queryType == 'count') {
+		Object.keys(data || {}).forEach(function (key) { if (typeof data[key] == 'number') aggregate[key] = (aggregate[key] || 0) + data[key]; });
+		if (run.pending[job.key] == 0) {
+			clearTimeout(run.countRenderTimer);
+			run.countRenderTimer = null;
+			applyCountQueryResult(aggregate, null, { status: 200, monthly: true });
+		} else if (run.countRenderTimer == null) {
+			run.countRenderTimer = setTimeout(function () {
+				run.countRenderTimer = null;
+				if (!run.cancelled) applyCountQueryResult(aggregate, null, { status: 200, monthly: true });
+			}, 750);
+		}
+		return;
+	}
+	if (job.query.queryType == 'distincts') {
+		Object.keys(data || {}).forEach(function (key) {
+			if (key == '_id') return;
+			if (!aggregate[key]) aggregate[key] = new Set();
+			(data[key] || []).forEach(function (id) { if (id != null) aggregate[key].add(id); });
+		});
+		if (!Object.keys(aggregate).length && run.pending[job.key] > 0) return;
+		var counts = {};
+		Object.keys(aggregate).forEach(function (key) { counts[key] = aggregate[key].size; });
+		scheduleAsearchMonthlyRender(run, job, filters, counts);
+		return;
+	}
+	if (job.query.queryType == 'labels') {
+		(data || []).forEach(function (group) {
+			if (!aggregate[group._id]) aggregate[group._id] = {};
+			(group.rights || []).forEach(function (right) {
+				if (!aggregate[group._id][right.right]) aggregate[group._id][right.right] = { right: right.right, name: right.name, count: 0 };
+				aggregate[group._id][right.right].count += Number(right.count || 0);
+			});
+		});
+		if (!Object.keys(aggregate).length && run.pending[job.key] > 0) return;
+		var groups = Object.keys(aggregate).map(function (key) {
+			var rights = Object.keys(aggregate[key]).map(function (right) { return aggregate[key][right]; });
+			rights.sort(function (a, b) { return (a.count - b.count) * (filters.radios.sort.sortDir == 'asc' ? 1 : -1); });
+			return { _id: key, rights: rights };
+		});
+		scheduleAsearchMonthlyRender(run, job, filters, groups);
+		return;
+	}
+	var type = job.query.groupType;
+	var idKey = type + 'ID';
+	(data || []).forEach(function (entry) {
+		var id = entry[idKey];
+		if (id == null) return;
+		if (!aggregate[id]) aggregate[id] = Object.assign({}, entry, { kills: 0, matches: 0 });
+		if (filters.radios.sort.sortBy == 'involved') {
+			aggregate[id].kills += Number(entry.kills || 0) * Number(entry.matches || 0);
+			aggregate[id].matches += Number(entry.matches || 0);
+		} else aggregate[id].kills += Number(entry.kills || 0);
+	});
+	var result = Object.keys(aggregate).map(function (id) {
+		var row = Object.assign({}, aggregate[id]);
+		if (filters.radios.sort.sortBy == 'involved' && row.matches) row.kills /= row.matches;
+		return row;
+	}).sort(function (a, b) { return (a.kills - b.kills) * (filters.radios.sort.sortDir == 'asc' ? 1 : -1); }).slice(0, 500);
+	if (!result.length && run.pending[job.key] > 0) return;
+	scheduleAsearchMonthlyRender(run, job, filters, result);
+}
+
+function scheduleAsearchMonthlyRender(run, job, filters, result) {
+	var key = job.key;
+	run.renderData[key] = { job: job, filters: filters, result: result };
+	if (run.renderTimers[key]) return;
+	run.renderTimers[key] = setTimeout(function () {
+		delete run.renderTimers[key];
+		if (!run.cancelled) renderAsearchMonthlySnapshot(run.renderData[key]);
+	}, run.pending[key] == 0 ? 0 : 750);
+}
+
+function renderAsearchMonthlySnapshot(snapshot) {
+	var job = snapshot.job;
+	var result = snapshot.result;
+	var container = $('#result-groups-' + job.key);
+	if (job.query.queryType == 'distincts') {
+		var table = container.find('table');
+		if (!table.length) {
+			table = $('<table>').addClass('table table-sm topBoxes col-lg-2').css({ padding: 0, margin: 0, width: '100%' }).attr({ 'data-singular': 'Distincts', 'aria-label': 'Distincts' });
+			table.append($('<tbody>'));
+			container.empty().append($('<div>').addClass('float-start').css('width', '100%').append($('<div>').addClass('text-center').append($('<h5>').text('Distincts')), table));
+		}
+		Object.keys(result).forEach(function (key) {
+			var cell = table.find('[data-asearch-distinct="' + key + '"]');
+			if (!cell.length) {
+				cell = $('<td>').addClass('text-end').attr('data-asearch-distinct', key);
+				table.children('tbody').append($('<tr>').append($('<td>').text(key.replace(/IDs$/, 's').replace(/^[a-z]/, function (letter) { return letter.toUpperCase(); })), cell));
+			}
+			var formatted = Number(result[key]).toLocaleString();
+			if (cell.text() != formatted) cell.attr('raw', result[key]).text(formatted);
+		});
+		return;
+	}
+	var reports = [];
+	if (job.query.queryType == 'labels') {
+		var names = { cat: 'Categories', isk: 'ISK Ranges', loc: 'Region Types', tz: 'Timezones' };
+		result.forEach(function (group) { reports.push(createAsearchTopReport('Top ' + (names[group._id] || group._id), names[group._id] || group._id, group.rights, snapshot.filters)); });
+	} else {
+		var names = { character: 'Characters', corporation: 'Corporations', alliance: 'Alliances', faction: 'Factions', shipType: 'ShipTypes', group: 'Groups', location: 'Locations', solarSystem: 'SolarSystems', constellation: 'Constellations', region: 'Regions' };
+		reports.push(createAsearchTopReport('Top ' + names[job.query.groupType], job.query.groupType, result, snapshot.filters));
+	}
+	if (!result.length) {
+		container.empty().append(reports);
+		return;
+	}
+	if (!container.children('.groupReport').length) container.empty();
+	reports.forEach(function (report) {
+		var title = report.find('table').attr('aria-label');
+		var old = container.children('.groupReport').filter(function () { return $(this).find('table').attr('aria-label') == title; }).first();
+		if (!old.length) container.append(report, $('<div>').addClass('clearfix'));
+		else patchAsearchTopList(old, report);
+	});
+}
+
+function createAsearchTopReport(title, type, rows, filters) {
+	if (!rows.length) return $('<span>').text(type == 'character' ? 'Empty result or some resultsets too large for fast grouping. Check your filters.' : '');
+	var report = $('<div>').addClass('groupReport float-start').css({ width: '100%', padding: 0, margin: 0 }).append($('<div>').addClass('text-center').append($('<h5>').text(title)));
+	var table = $('<table>').addClass('table table-sm topBoxes col-lg-2').css({ width: '100%', padding: 0, margin: 0 }).attr({ 'data-singular': type.charAt(0).toUpperCase() + type.slice(1), 'aria-label': title });
+	var body = $('<tbody>').appendTo(table);
+	var paths = { character: 'character', corporation: 'corporation', alliance: 'alliance', faction: 'faction', shipType: 'ship', group: 'group', location: 'location', solarSystem: 'system', region: 'region' };
+	var names = { shipType: 'shipName' };
+	var first = rows[0];
+	var firstID = first[type + 'ID'];
+	var firstName = first[names[type] || type + 'Name'] || '';
+	var image = '';
+	if (type == 'character') image = firstID == 2124677425 ? '/img/fc-cow-moo.png' : 'https://images.evetech.net/characters/' + (firstID || 1) + '/portrait?size=64';
+	else if (type == 'corporation' || type == 'faction') image = 'https://images.evetech.net/corporations/' + (firstID || 1) + '/logo?size=64';
+	else if (type == 'alliance' && firstID) image = 'https://images.evetech.net/alliances/' + firstID + '/logo?size=64';
+	else if (type == 'shipType') image = firstID ? 'https://images.evetech.net/types/' + firstID + '/render?size=64' : '/img/eve-question.png';
+	else if (type == 'solarSystem') image = firstID < 32000000 ? '/img/nohus/systems/' + firstID + '.png' : '/img/empty_32.png';
+	else if (type == 'group') image = '/img/group.svg';
+	else if (type == 'region') image = '/img/nohus/regions/' + firstID + '.png';
+	else if (type == 'location' && first.typeID) image = 'https://images.evetech.net/types/' + first.typeID + '/icon?size=64';
+	var imageRow = $('<tr>');
+	if (['character', 'corporation', 'alliance', 'faction', 'solarSystem', 'shipType', 'group', 'location', 'region'].indexOf(type) >= 0) {
+		var imageCell = $('<td>').attr('colspan', 3);
+		if (image) {
+			var photo = $('<img>').addClass('eveimage img-rounded').attr({ src: image, alt: firstName, loading: 'lazy', decoding: 'async', fetchpriority: 'low' }).css({ height: '64px', width: '64px' });
+			if (type == 'shipType' && firstID) {
+				photo.addClass('shipImageRender');
+				var frame = $('<span>').addClass('shipImageSpan').attr({ 'data-l': '64px', 'data-i': 64 }).css({ height: '64px', width: '64px', '--size': '64px', '--sizei': 64 }).append(photo);
+				if (first.pip) frame.append($('<img>').addClass('pip').attr({ src: '/img/pips/' + first.pip, alt: '', loading: 'lazy', decoding: 'async', fetchpriority: 'low' }));
+				photo = frame;
+			}
+			imageCell.append($('<a>').attr({ href: '/' + paths[type] + '/' + firstID + '/', rel: 'tooltip', title: firstName }).append(photo));
+		}
+		imageRow.append(imageCell);
+	}
+	body.append(imageRow);
+	rows.forEach(function (row, index) {
+		if (index == 10) body.append($('<tr>').addClass('grouping-all-' + type).append($('<td>').attr('colspan', 4).append($('<div>').addClass('text-center').append($('<button>').addClass('btn btn-sm btn-primary').attr({ type: 'button', 'data-zkb-show-grouping': type }).text('The Rest (' + (rows.length - 10) + ')')))));
+		var id = paths[type] ? row[type + 'ID'] : row.right;
+		var name = paths[type] ? (row[names[type] || type + 'Name'] || row.name || (type + ' ' + id)) : (row.name || row.right);
+		var tr = $('<tr>').addClass('grouping-' + type + (index >= 10 ? ' collapse' : ''));
+		tr.append($('<td>').addClass('deepfilter hidedeepfilter').css('display', 'none').append($('<input>').addClass('topfilter').attr({ type: 'checkbox', 'data-filter-type': type, 'data-filter-id': id })));
+		var label = $('<td>');
+		if (paths[type] && id) label.append($('<a>').addClass(['character', 'corporation', 'alliance'].indexOf(type) >= 0 ? 'wrapplease' : '').attr('href', '/' + paths[type] + '/' + id + '/').text(name));
+		else label.text(name);
+		var value = paths[type] ? Number(row.kills || 0) : Number(row.count || 0);
+		var format = paths[type] && filters.radios.sort.sortBy == 'isk' ? 'isk' : paths[type] && filters.radios.sort.sortBy == 'involved' ? 'dec1' : 'int';
+		var formatted = format == 'isk' ? formatISK(value) : value.toLocaleString(undefined, { minimumFractionDigits: format == 'dec1' ? 1 : 0, maximumFractionDigits: format == 'dec1' ? 1 : 0 });
+		tr.append(label, $('<td>').css('text-align', 'right').attr('raw', value).text(formatted));
+		body.append(tr);
+	});
+	return report.append(table);
+}
+
+function patchAsearchTopList(old, fresh) {
+	var table = old.find('table').first();
+	var oldRows = {};
+	table.find('tr').each(function () {
+		var id = $(this).find('input.topfilter').attr('data-filter-id');
+		if (id != null) oldRows[id] = this;
+	});
+	var oldRest = table.find('[data-zkb-show-grouping]').closest('tr');
+	var expanded = oldRest.length && !oldRest.is(':visible');
+	var oldLeader = table.find('input.topfilter').first().attr('data-filter-id');
+	var newLeader = fresh.find('input.topfilter').first().attr('data-filter-id');
+	var desired = [];
+	fresh.find('tr').each(function () {
+		var row = $(this);
+		var id = row.find('input.topfilter').attr('data-filter-id');
+		if (id != null && oldRows[id]) {
+			var current = $(oldRows[id]);
+			var value = row.find('td:last');
+			if (current.find('td:last').text() != value.text()) current.find('td:last').attr('raw', value.attr('raw')).text(value.text());
+			if (current.find('td:eq(1)').text() != row.find('td:eq(1)').text()) current.find('td:eq(1)').empty().append(row.find('td:eq(1)').contents().clone());
+			current.attr('class', row.attr('class')).attr('style', row.attr('style') || '');
+			if (expanded) current.show();
+			desired.push(current[0]);
+		} else if (row.find('[data-zkb-show-grouping]').length && oldRest.length) {
+			oldRest.find('button').text(row.find('button').text());
+			oldRest.toggle(!expanded);
+			desired.push(oldRest[0]);
+		} else if (id == null && !row.find('button').length && oldLeader == newLeader) desired.push(table.find('tr').first()[0]);
+		else { if (id != null && expanded) row.show(); desired.push(this); }
+	});
+	var parent = table.find('tbody')[0] || table[0];
+	desired.forEach(function (row, index) { if (parent.children[index] !== row) parent.insertBefore(row, parent.children[index] || null); });
+	Array.from(parent.children).forEach(function (row) { if (desired.indexOf(row) < 0) row.remove(); });
+}
+
 function getFilters() {
 	var retVal = asfilter;
 	retVal.labels = [];
@@ -832,13 +1145,29 @@ function applyCountQueryResult(data, textStatus, jqXHR) {
 		$("#result-groups-count").text("Timespan > 31 Days");
 		return;
 	}
-	if (data.timedOut == true || data.kills == 0) $("#result-groups-count").empty()
+	if (!jqXHR.monthly && (data.timedOut == true || data.kills == 0)) $("#result-groups-count").empty()
 	// get the integer percentages for each of these
 	let droppable = data.droppable > 0 ? data.droppable : data.isk;
 	let droppableDestroyed = Math.max(0, droppable - data.dropped);
 	let pctDropped = droppable > 0 ? Math.round((data.dropped / droppable) * 100) : 0;
 	let pctDestroyed = droppable > 0 ? Math.round((droppableDestroyed / droppable) * 100) : 0;
 	let pctFitted = data.isk > 0 ? Math.round((data.fitted / data.isk) * 100) : 0;
+	if (jqXHR.monthly && $('#result-groups-count [data-asearch-count-value]').length) {
+		let values = { Killmails: data.kills, Total: data.isk, Fitted: data.fitted, Dropped: data.dropped, Destroyed: data.destroyed, Droppable: droppable };
+		let percentages = { Fitted: pctFitted, Dropped: pctDropped, Destroyed: pctDestroyed };
+		$('#result-groups-count [data-asearch-count-value]').each(function () {
+			let element = $(this);
+			let value = values[element.attr('data-asearch-count-value')] || 0;
+			let formatted = element.attr('data-asearch-count-value') == 'Killmails' ? value.toLocaleString() : formatISK(value);
+			if (element.attr('raw') != String(value) || element.text() != formatted) element.attr('raw', value).text(formatted);
+		});
+		$('#result-groups-count [data-asearch-count-pct], #result-groups-count [data-asearch-count-bottom]').each(function () {
+			let element = $(this);
+			let value = percentages[element.attr('data-asearch-count-pct') || element.attr('data-asearch-count-bottom')] || 0;
+			if (element.attr('raw') != String(value) || element.text() != value + '%') element.attr('raw', value).text(value + '%');
+		});
+		return;
+	}
 
 	let container = $("#result-groups-count").empty();
 	[
@@ -851,19 +1180,23 @@ function applyCountQueryResult(data, textStatus, jqXHR) {
 	].forEach(function(metric, index) {
 		if (index) container.append($(document.createElement('span')).addClass('d-block').css('height', '0.5em'));
 		let percentage = $(document.createElement('span')).addClass('small');
-		if (metric[3] != null) percentage.attr('raw', metric[3]).attr('format', 'format-pct-once');
+		if (metric[3] != null) percentage.attr('raw', metric[3]).attr('format', 'format-pct-once').attr('data-asearch-count-pct', metric[0]);
 		container.append($(document.createElement('div')).addClass('d-flex justify-content-between align-items-end').append(
 			$(document.createElement('span')).text(metric[0]), percentage));
 		container.append($(document.createElement('div')).addClass('d-flex justify-content-between align-items-end').append(
-			document.createElement('span'), $(document.createElement('span')).addClass(metric[4] || '').attr('raw', metric[1]).attr('format', metric[2])));
+			document.createElement('span'), $(document.createElement('span')).addClass(metric[4] || '').attr('raw', metric[1]).attr('format', metric[2]).attr('data-asearch-count-value', metric[0])));
 	});
 	let percentages = $(document.createElement('span')).addClass('small d-inline-flex align-items-center').css('gap', '12px');
 	[['Dropped', pctDropped, 'green', 'check'], ['Destroyed', pctDestroyed, 'red', 'times']].forEach(function(metric) {
 		percentages.append($(document.createElement('span')).addClass(metric[2]).attr('title', metric[0] + ': Percentage of Droppable Value').append(
-			$(document.createElement('span')).attr('raw', metric[1]).attr('format', 'format-pct-once'), document.createTextNode(' '),
+			$(document.createElement('span')).attr('raw', metric[1]).attr('format', 'format-pct-once').attr('data-asearch-count-bottom', metric[0]), document.createTextNode(' '),
 			$(document.createElement('i')).addClass('fas fa-' + metric[3]).attr('aria-hidden', 'true').css('color', 'inherit')));
 	});
 	container.append($(document.createElement('div')).addClass('d-flex justify-content-end align-items-center').css({'line-height': '1.1', 'margin-top': '2px'}).append(percentages));
+	if (jqXHR.monthly) {
+		container.find('[format]').removeAttr('format');
+		applyCountQueryResult(data, null, { status: 200, monthly: true });
+	}
 }
 
 function applyGroupQueryResult(data, textStatus, jqXHR) {

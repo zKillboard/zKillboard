@@ -52,6 +52,9 @@ function handler($request, $response, $args, $container) {
 		if ($queryType == "") $queryType = "kills";
 		unset($queryParams['queryType']);
 
+		$monthly = !empty($queryParams['monthly']);
+		unset($queryParams['monthly']);
+
 		$groupType = (string) @$queryParams['groupType'];
 		unset($queryParams['groupType']);
 
@@ -130,6 +133,7 @@ function handler($request, $response, $args, $container) {
 		$endTime = (int) @$query['end'];
 		$now = time();
 		if ($endTime == 0) $endTime = $now;
+		if ($monthly && (!in_array($queryType, ['count', 'groups', 'labels', 'distincts'], true) || $startTime <= 0 || $endTime <= $startTime || $endTime - $startTime > 31 * 86400)) return $response->withStatus(400);
 
 		$labels = [];
 		foreach ($buttons as $label) {
@@ -168,6 +172,7 @@ function handler($request, $response, $args, $container) {
 		$aggregateCollection = getAsearchAggregateCollection($startTime, $now, $epochButton);
 		if ($queryType == 'fits') $aggregateCollection = 'ninetyDays';
 		$cacheTime = getAsearchCacheTime($startTime, $endTime, $epochButton, $queryType == "kills" ? $coll : [$aggregateCollection]);
+		$historical = $endTime < $now - 7776000;
 		$noQueryTimeout = in_array($epochButton, ['week', 'recent'], true) || ($startTime > 0 && $endTime > $startTime && ($endTime - $startTime) <= AdvancedSearch::MAX_NO_TIMEOUT_SPAN_SECONDS);
 		unset($query['hasDateFilter']);
 
@@ -180,6 +185,7 @@ function handler($request, $response, $args, $container) {
 		$jsoned = json_encode($query, true) . json_encode($filter, true) . json_encode(@$queryParams['items'], true) . AdvancedSearch::getSelectedFromBase('items-', $buttons);
 		$collectionScope = ($queryType == "kills" ? implode(',', $coll) : $aggregateCollection);
 		$resultVersion = $queryType == "count" ? "v2:" : "";
+		if ($monthly) $resultVersion = "monthlyJson:$resultVersion";
 		$key = "asearch:$resultVersion$queryType:$groupType:$victimsOnly:$collectionScope:" . ($queryType == "kills" ? "$page:$sortKey:$sortBy:" : "") . md5($jsoned);
 		$cacheTag = "www,asearch,asearch:$key";
 		$job = [
@@ -199,10 +205,12 @@ function handler($request, $response, $args, $container) {
 			'queryParams' => $queryParams,
 			'itemJoin' => AdvancedSearch::getSelectedFromBase('items-', $buttons),
 			'cacheTime' => $cacheTime,
+			'historical' => $historical,
 			'fitShipTypeID' => $fitShipTypeID,
 			'fitShipSelectCount' => $fitShipSelectCount,
 			'fitNpcMode' => $fitNpcMode
 		];
+		if ($monthly) $job['monthly'] = true;
 		if ($noQueryTimeout) $job['maxTimeMS'] = null;
 		if ($queryType == 'fits' && !$fitNpcMode && $fitShipSelectCount != 1) {
 			$message = $fitShipSelectCount == 0 ? 'Select exactly one ship filter to view inferred fits.' : 'Inferred fits works with one ship filter only. Remove extra ship filters and try again.';
@@ -322,10 +330,28 @@ function renderAsearchProcessing($response, $cacheTag, $queryType)
 function renderAsearchResult($response, $container, $cacheTag, $job, $result, $labelGroupMaps)
 {
 	global $redis;
+	if (!empty($job['monthly'])) {
+		if ($job['queryType'] == 'labels') {
+			foreach ($result as $i => $labelGroup) {
+				if ($labelGroup['_id'] != 'cat') continue;
+				$rights = [];
+				foreach ($labelGroup['rights'] as $right) {
+					$right = (array) $right;
+					$right['name'] = Util::pluralize(Info::getInfoField('categoryID', (int) $right['right'], 'name'));
+					$rights[] = $right;
+				}
+				$result[$i] = ['_id' => 'cat', 'rights' => $rights];
+			}
+		}
+		$jsoned = json_encode($result);
+		if ($job['queryType'] != 'distincts' || !empty($job['historical'])) $redis->setex($job['key'], !empty($job['historical']) ? 86400 : min((int) ($job['cacheTime'] ?? 300), 900), $jsoned);
+		$response->getBody()->write($jsoned);
+		return withAsearchCacheHeaders($response, (int) ($job['cacheTime'] ?? 300))->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', $cacheTag);
+	}
 
 	$key = $job['key'];
 	$cacheTime = (int) ($job['cacheTime'] ?? 300);
-	$redisCacheTime = min($cacheTime, 900);
+	$redisCacheTime = !empty($job['historical']) ? 86400 : min($cacheTime, 900);
 	if ($job['queryType'] == 'kills' || $job['queryType'] == 'count') {
 		$jsoned = json_encode($result, true);
 		$redis->setex($key, $redisCacheTime, $jsoned);
@@ -449,6 +475,7 @@ function withAsearchCacheHeaders($response, $cacheTime)
 
 function getAsearchCacheTime($startTime, $endTime, $epochButton, $collections)
 {
+	if ($endTime > 0 && $endTime < time() - 7776000) return 86400;
 	$span = ($startTime > 0 && $endTime > $startTime) ? $endTime - $startTime : 0;
 	if ($span > 0) {
 		if ($span <= 604800) return 900;

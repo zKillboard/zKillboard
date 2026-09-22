@@ -159,7 +159,7 @@ class AdvancedSearch
             return self::getTop($job['groupType'] . 'ID', $job['query'], $job['victimsOnly'], $job['filter'], true, $job['sortKey'], $job['sortBy'], $job['aggregateCollection'], $maxTimeMS);
         }
         if ($job['queryType'] == 'labels') return self::getLabels($job['query'], $job['victimsOnly']);
-        if ($job['queryType'] == 'distincts') return self::getDistincts($job['query'], $job['filter'], $job['victimsOnly'], $job['aggregateCollection'], $maxTimeMS);
+        if ($job['queryType'] == 'distincts') return self::getDistincts($job['query'], $job['filter'], $job['victimsOnly'], $job['aggregateCollection'], $maxTimeMS, !empty($job['monthly']));
         if ($job['queryType'] == 'fits' && (bool) ($job['fitNpcMode'] ?? false)) return Inferred::getPopularPveLosses($job['query'], $maxTimeMS);
         if ($job['queryType'] == 'fits') return Inferred::getAdvancedSearchFits($job['query'], (int) $job['fitShipTypeID'], $maxTimeMS);
         return [];
@@ -386,7 +386,7 @@ class AdvancedSearch
             if ($sortKey == "damage_taken") {
                 $pipeline[] = ['$group' => ['_id' => $groupValueField, 'kills' => ['$sum' => $damageField]]];
             } else if ($sortKey == "attackerCount") {
-                $pipeline[] = ['$group' => ['_id' => $groupValueField, 'kills' => ['$avg' => $involvedField]]];
+                $pipeline[] = ['$group' => ['_id' => $groupValueField, 'kills' => ['$avg' => $involvedField], 'matches' => ['$sum' => 1]]];
             } else if ($sortKey == "zkb.totalValue") {
                 $pipeline[] = ['$group' => ['_id' => $groupValueField, 'kills' => ['$sum' => $totalValueField]]];
             } else {
@@ -394,7 +394,9 @@ class AdvancedSearch
             }
             $pipeline[] = ['$sort' => ['kills' => $sortBy]];
             $pipeline[] = ['$limit' => 550];
-            $pipeline[] = ['$project' => [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0]];
+            $projection = [$groupByColumn => '$_id', 'kills' => 1, '_id' => 0];
+            if ($sortKey == 'attackerCount') $projection['matches'] = 1;
+            $pipeline[] = ['$project' => $projection];
 
             $options = ['cursor' => ['batchSize' => 1000], 'allowDiskUse' => true];
             if ($maxTimeMS !== null) $options['maxTimeMS'] = $maxTimeMS;
@@ -653,7 +655,7 @@ class AdvancedSearch
         }
     }
 
-    public static function getDistincts($query, $filter, $victimsOnly, $collection = 'killmails', $maxTimeMS = 25000)
+    public static function getDistincts($query, $filter, $victimsOnly, $collection = 'killmails', $maxTimeMS = 25000, $returnIDs = false)
     {
         global $mdb, $longQueryMS;
 
@@ -688,7 +690,7 @@ class AdvancedSearch
                 ]
             ];
 
-            $pipeline[] = [
+            if (!$returnIDs) $pipeline[] = [
                 '$project' => [
                     '_id' => 0,
                     'characterIDs' => ['$size' => ['$filter' => ['input' => '$characterIDs', 'cond' => ['$ne' => ['$$this', null]]]]],
