@@ -303,6 +303,17 @@ function adjustTime(event, triggerButton) {
 			endTime = Math.floor(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1, 0, 0, 0) / 1000) - 60;
 			isRolling = false;
 			break;
+		case 'previous year':
+			startTime = Math.floor(Date.UTC(date.getUTCFullYear() - 1, 0, 1) / 1000);
+			endTime = Math.floor(Date.UTC(date.getUTCFullYear(), 0, 1) / 1000) - 60;
+			break;
+		case 'current year':
+			startTime = Math.floor(Date.UTC(date.getUTCFullYear(), 0, 1) / 1000);
+			break;
+		case 'last year':
+			startTime = now - (86400 * 365);
+			startTime = startTime - (startTime % 900);
+			break;
 		case 'custom':
 			isDisabled = false;
 			isRolling = false;
@@ -601,7 +612,7 @@ function setHash() {
 	$(".btn.btn-primary").each(function () {
 		var elem = $(this);
 		var value = elem.attr('value');
-		if (value == 'prior month' || value == 'current month') value = 'custom';
+		if (value == 'prior month' || value == 'current month' || value == 'previous year' || value == 'current year') value = 'custom';
 		if (value == 'inferred-fits') return;
 		if (value != null && value.length > 0) buttons.push(value);
 	});

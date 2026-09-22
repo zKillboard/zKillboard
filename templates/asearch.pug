@@ -37,12 +37,18 @@ block content
           .btn-group.btn-group-sm.centered(data-zkill-var="epoch" role="group" aria-label="Timespan")
             button#stats-epoch-week.tfilter.btn.btn-primary.radio-btn(value="week" title="Last 7 Days" aria-pressed="true") 7
             button#stats-epoch-recent.tfilter.btn.btn-secondary.radio-btn(value="recent" title="Last 90 Days" aria-pressed="false") 90
+            button#stats-epoch-last-year.tfilter.btn.btn-secondary.radio-btn(value="last year" title="Last 365 Days" aria-label="Last 365 days" aria-pressed="false") 365
             button#stats-epoch-alltime.tfilter.btn.btn-secondary.radio-btn(value="alltime" title="Alltime" aria-pressed="false") &infin;
             button#stats-epoch-prior-month.tfilter.btn.btn-secondary.radio-btn(value="prior month" title="Prior Month" aria-label="Prior month" aria-pressed="false")
               i.fas.fa-arrow-left(aria-hidden="true")
               i.fas.fa-calendar(aria-hidden="true")
             button#stats-epoch-current-month.tfilter.btn.btn-secondary.radio-btn(value="current month" title="Current Month" aria-label="Current month" aria-pressed="false")
               i.fas.fa-calendar(aria-hidden="true")
+            button#stats-epoch-previous-year.tfilter.btn.btn-secondary.radio-btn(value="previous year" title="Previous Calendar Year" aria-label="Previous calendar year" aria-pressed="false")
+              i.fas.fa-arrow-left(aria-hidden="true")
+              i.fas.fa-calendar-alt(aria-hidden="true")
+            button#stats-epoch-current-year.tfilter.btn.btn-secondary.radio-btn(value="current year" title="Current Calendar Year" aria-label="Current calendar year" aria-pressed="false")
+              i.fas.fa-calendar-alt(aria-hidden="true")
             button#stats-epoch-custom.tfilter.btn.btn-secondary.radio-btn(value="custom" title="Custom Date Range" aria-label="Custom date range" aria-pressed="false") ✏️
           .btn-group.btn-group-sm
             button#rolling-times.btn.btn-secondary(type="button" value="rolling" title="Time will adjust automatically in 15 minute increments." aria-label="Use rolling timespan" aria-pressed="false")

@@ -802,7 +802,7 @@ class AdvancedSearch
         if ($span == '' && isset($params['buttons']) && is_array($params['buttons'])) {
             foreach ($params['buttons'] as $button) {
                 $button = trim((string) $button);
-                if (in_array($button, ['week', 'recent', 'alltime', 'prior month', 'current month', 'custom'], true)) {
+                if (in_array($button, ['week', 'recent', 'alltime', 'prior month', 'current month', 'previous year', 'current year', 'last year', 'custom'], true)) {
                     $span = $button;
                     break;
                 }
@@ -816,6 +816,9 @@ class AdvancedSearch
             'alltime' => 'Alltime',
             'prior month' => 'Prior Month',
             'current month' => 'Current Month',
+            'previous year' => 'Previous Calendar Year',
+            'current year' => 'Current Calendar Year',
+            'last year' => 'Last 365 Days',
             'custom' => 'Custom Date Range'
         ];
         $label = isset($labels[$span]) ? $labels[$span] : $span;
