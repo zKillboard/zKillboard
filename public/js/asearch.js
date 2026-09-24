@@ -698,6 +698,7 @@ function doQuery(queryType = 'all', isRetry = false) {
 	var end = parseAsearchUTCDateTime(f.epoch.end);
 	var now = Math.floor(Date.now() / 1000);
 	if (f.epochbtn == 'alltime') start = 0;
+	else if (start == null) start = 0;
 	if (end == null) end = now;
 	if ((queryType == 'all' || queryType == 'groups') && f.epochbtn != 'week' && f.epochbtn != 'recent' && start != null && end - start > 31 * 86400) {
 		if (queryType == 'all' && asearchResultMode == 'kills') {
