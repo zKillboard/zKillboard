@@ -8,7 +8,7 @@ each $kill, $index in ($killList ?? [])
     - $sDate = date('Y-m-d', (int) ($kill['unixtime'] ?? 0));
     - $date = date('M d, Y', (int) ($kill['unixtime'] ?? 0));
     - $previousDate = $index == 0 ? '' : date('Y-m-d', (int) ($killList[$index - 1]['unixtime'] ?? 0));
-    if ($sDate != $previousDate)
+    if (empty($hideDate) && $sDate != $previousDate)
       div(class=('war-kill-date tr-date tr-date-' . $sDate) date=$date)
         em= $sDate
     article.war-kill-card.tr-killmail.war-kill-victim-unknown(id=('kill-' . $kill['killID']) date=($kill['unixtime'] ?? 0) data-kill-id=$kill['killID'] killID=$kill['killID'] data-vics=($kill['vics'] ?? '') vics=($kill['vics'] ?? ''))

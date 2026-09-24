@@ -192,6 +192,7 @@ block content
             - $killListTitle = 'Team ' . substr($teamKey, 4) . ' Losses';
             - $killList = ((array) $team)['kills'] ?? [];
             - $isEmbedded = true;
+            - $killListRowV2Base = '/cache/24hour/killlistrow_v2/{killID}/?hideDate=1';
             if (count($killList) > 0)
               .related-kill-list
                 include components/war_kill_list.pug

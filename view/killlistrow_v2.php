@@ -3,6 +3,7 @@
 function handler($request, $response, $args, $container) {
     $killID = (int) ($args['killID'] ?? 0);
     if ($killID <= 0) return $response->withStatus(404);
+    $hideDate = !empty($request->getQueryParams()['hideDate']);
 
     $kills = Kills::getDetails([$killID], true);
     if (empty($kills)) return $response->withStatus(404);
@@ -17,7 +18,7 @@ function handler($request, $response, $args, $container) {
     }
     unset($kill);
 
-    $html = $container->get('view')->getEnvironment()->render('components/kill_list_row_v2.pug', ['killList' => array_values($kills)]);
+    $html = $container->get('view')->getEnvironment()->render('components/kill_list_row_v2.pug', ['killList' => array_values($kills), 'hideDate' => $hideDate]);
     $cacheTime = ($args['cacheType'] ?? '') == '24hour' ? 86400 : 3600;
     $cacheControl = "public, max-age=$cacheTime, s-maxage=$cacheTime";
     $response->getBody()->write($html);
