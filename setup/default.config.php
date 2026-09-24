@@ -52,6 +52,14 @@ $cookie_name = 'zKillboard';
 $cookie_ssl = true;
 $cookie_time = (86400 * 30);
 $cookie_secret = 'cookie';
+$cookie_params = [
+        'lifetime' => $cookie_time,
+        'path' => '/',
+        'domain' => '',
+        'secure' => $cookie_ssl,
+        'httponly' => true,
+        'samesite' => 'Lax'
+];
 
 $beSocial = false;
 $showDailies = true;
