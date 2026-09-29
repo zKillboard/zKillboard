@@ -1,9 +1,9 @@
-import * as engine from '../vendor/eveshipfit/esf_dogma_engine_bg.js?v=10.4.0';
+import initEngine, * as engine from '../vendor/eveshipfit/esf_dogma_engine_bg.js?v=13.1.0';
 
 let ready;
 
 async function loadData() {
-    const assetVersion = '?v=10.4.0-3.3503375.1';
+    const assetVersion = '?v=13.1.0-3.3503375.1';
     const [metadataResponse, sdeResponse, wasmResponse] = await Promise.all([
         fetch(new URL('../vendor/eveshipfit/data.json.gz' + assetVersion, import.meta.url), { cache: 'force-cache' }),
         fetch(new URL('../vendor/eveshipfit/sde.dat.gz' + assetVersion, import.meta.url), { cache: 'force-cache' }),
@@ -26,12 +26,7 @@ async function loadData() {
         if (type.categoryID === 16) skills[id] = 5;
     }
 
-    const { instance } = await WebAssembly.instantiate(wasm, {
-        './esf_dogma_engine_bg.js': engine
-    });
-    engine.__wbg_set_wasm(instance.exports);
-    instance.exports.__wbindgen_start();
-    engine.init();
+    await initEngine({ module_or_path: wasm });
     if (engine.load_sde(new Uint8Array(sde)) !== snapshot.build) throw new Error('Fitting data files do not match.');
     return { data, attributes, skills };
 }
