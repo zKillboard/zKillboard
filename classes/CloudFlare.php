@@ -6,6 +6,7 @@
 
 use Aws\Exception\AwsException;
 use Aws\S3\S3Client;
+use GuzzleHttp\Exception\RequestException;
 
 class CloudFlare
 {
@@ -49,15 +50,7 @@ class CloudFlare
                 'Body' => fopen($localPath, 'rb'),
         ], $options);
 
-        try {
-            return $r2->putObject($params)->toArray();
-        } catch (AwsException $e) {
-            throw new RuntimeException(
-                    'R2 upload failed: ' . $e->getAwsErrorMessage(),
-                    (int) $e->getCode(),
-                    $e
-                    );
-        }
+        return self::r2putObject($r2, $params);
     }
 
     /**
@@ -87,14 +80,29 @@ class CloudFlare
                 'ContentType' => 'application/json',
         ], $options);
 
-        try {
-            return $r2->putObject($params)->toArray();
-        } catch (AwsException $e) {
-            throw new RuntimeException(
-                    'R2 upload failed: ' . $e->getAwsErrorMessage(),
-                    (int) $e->getCode(),
-                    $e
-                    );
+        return self::r2putObject($r2, $params);
+    }
+
+    private static function r2putObject(S3Client $r2, array $params): array
+    {
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            try {
+                return $r2->putObject($params)->toArray();
+            } catch (AwsException | RequestException $e) {
+                $status = $e instanceof AwsException
+                    ? $e->getStatusCode()
+                    : ($e->getResponse() ? $e->getResponse()->getStatusCode() : null);
+
+                if ($attempt == 4 || ($status != 429 && ($status < 500 || $status >= 600))) {
+                    $message = $e instanceof AwsException ? $e->getAwsErrorMessage() : $e->getMessage();
+                    throw new RuntimeException('R2 upload failed: ' . $message, (int) $e->getCode(), $e);
+                }
+
+                sleep(2 ** $attempt);
+                if (is_resource($params['Body'])) {
+                    rewind($params['Body']);
+                }
+            }
         }
     }
 
