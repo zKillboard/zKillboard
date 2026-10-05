@@ -11,6 +11,9 @@ globalThis.self = { postMessage: value => { result = value; } };
 const priceLookups = [];
 let rateLimitedPrice;
 globalThis.fetch = async url => {
+    if (String(url).startsWith('/api/killID/')) {
+        return new Response(JSON.stringify([{ victim: { items: [{ flag: 89, item_type_id: 3084, quantity_destroyed: 1 }] } }]));
+    }
     if (String(url).startsWith('/api/prices/')) {
         priceLookups.push(url);
         if (!rateLimitedPrice) {
@@ -444,6 +447,15 @@ assert.ok(linkedIDFit.items.some(item => item.type_id === 3074 && item.flag === 
 assert.ok(linkedIDFit.items.some(item => item.type_id === 230 && item.flag === 28), 'Type ID links preserve the charge slot');
 window.zkbPageCleanup();
 console.log('Type ID link checks passed: ship, module, charge, and exact slots.');
+
+window.location.hash = '#fit=587&capsule=138883655';
+window.zkbInitSimulate();
+await new Promise(resolve => setTimeout(resolve, 0));
+await settle();
+const linkedCapsuleFit = JSON.parse(stored.get('zkb:simulate'));
+assert.deepEqual(linkedCapsuleFit.implants, [{ type_id: 3084, slot: 7 }], 'Related capsule implants load through the killmail API');
+window.zkbPageCleanup();
+console.log('Related capsule API check passed.');
 
 window.location.hash = '#fit=23913%3B158%3A40560%3A18%3B158%3A40560%3A6%3B158%3A40561%3A9';
 window.zkbInitSimulate();

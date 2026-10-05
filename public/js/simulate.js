@@ -1307,6 +1307,25 @@ window.zkbInitSimulate = function() {
         searchImplants();
     }
 
+    async function loadCapsuleImplants(killID) {
+        const response = await fetch('/api/killID/' + killID + '/', { signal: events.signal });
+        if (!response.ok) throw new Error('Unable to load the related capsule fit.');
+        const killmail = (await response.json())?.[0];
+        const items = killmail?.victim?.items;
+        if (!Array.isArray(items)) throw new Error('The related capsule fit is unavailable.');
+        const implants = [];
+        for (const item of items) {
+            if (Number(item.flag) !== 89) continue;
+            const type = catalog[Number(item.item_type_id)];
+            const slot = type?.attributes.implantness;
+            if (!Number.isInteger(slot) || implants.some(implant => implant.slot === slot)) continue;
+            implants.push({ type_id: type.id, slot });
+        }
+        fit.implants = implants;
+        changed();
+        showStatus(implants.length ? 'Loaded implants from the related capsule loss.' : 'The related capsule loss contains no implants.');
+    }
+
     root.addEventListener('click', async event => {
         try {
             switch (event.target.id) {
@@ -1456,6 +1475,8 @@ window.zkbInitSimulate = function() {
                     try {
                         restoring = false;
                         loadFit(incomingFit !== null ? importTypeIDFit(incomingFit, catalog) : importEFT(incomingEFT, catalog));
+                        const capsuleKillID = Number(incoming.get('capsule'));
+                        if (Number.isInteger(capsuleKillID) && capsuleKillID > 0) loadCapsuleImplants(capsuleKillID).catch(error => showStatus(error.message));
                         window.history?.replaceState(null, '', window.location.pathname + window.location.search);
                     }
                     catch (error) { showStatus('Unable to load this fit: ' + error.message); }
