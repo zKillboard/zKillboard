@@ -1,43 +1,40 @@
 import initEngine, * as engine from '../vendor/eveshipfit/esf_dogma_engine_bg.js?v=13.1.0';
 
-let ready;
+let metadataReady;
+let engineReady;
 
-async function loadData() {
+async function loadMetadata() {
     const assetVersion = '?v=13.1.0-3.3503375.1-2';
-    const [metadataResponse, sdeResponse, wasmResponse] = await Promise.all([
-        fetch(new URL('../vendor/eveshipfit/data.json.gz' + assetVersion, import.meta.url), { cache: 'force-cache' }),
+    const metadataResponse = await fetch(new URL('../vendor/eveshipfit/data.json.gz' + assetVersion, import.meta.url), { cache: 'force-cache' });
+    if (!metadataResponse.ok) throw new Error(metadataResponse.status === 404 ? 'Fitting data is unavailable. Please try again later.' : 'Unable to load fitting data.');
+    const snapshot = await new Response(metadataResponse.body.pipeThrough(new DecompressionStream('gzip'))).json();
+    return { snapshot, data: snapshot.data };
+}
+
+async function loadEngine(snapshot) {
+    const assetVersion = '?v=13.1.0-3.3503375.1-2';
+    const [sdeResponse, wasmResponse] = await Promise.all([
         fetch(new URL('../vendor/eveshipfit/sde.dat.gz' + assetVersion, import.meta.url), { cache: 'force-cache' }),
         fetch(new URL('../vendor/eveshipfit/esf_dogma_engine_bg.wasm' + assetVersion, import.meta.url), { cache: 'force-cache' })
     ]);
-    if (metadataResponse.status === 404 || sdeResponse.status === 404) throw new Error('Fitting data is unavailable. Please try again later.');
-    if (!metadataResponse.ok || !sdeResponse.ok) throw new Error('Unable to load fitting data.');
+    if (sdeResponse.status === 404) throw new Error('Fitting data is unavailable. Please try again later.');
+    if (!sdeResponse.ok) throw new Error('Unable to load fitting data.');
     if (!wasmResponse.ok) throw new Error('Unable to load fitting engine.');
-    const [snapshot, sde, wasm] = await Promise.all([
-        new Response(metadataResponse.body.pipeThrough(new DecompressionStream('gzip'))).json(),
+    const [sde, wasm] = await Promise.all([
         new Response(sdeResponse.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer(),
         wasmResponse.arrayBuffer()
     ]);
-    const data = snapshot.data;
-
-    const attributes = {};
-    const skills = {};
-    for (const [id, attribute] of Object.entries(data.dogmaAttributes)) attributes[attribute.name] = Number(id);
-    for (const [id, type] of Object.entries(data.types)) {
-        if (type.categoryID === 16) skills[id] = 5;
-    }
-
     await initEngine({ module_or_path: wasm });
     if (engine.load_sde(new Uint8Array(sde)) !== snapshot.build) throw new Error('Fitting data files do not match.');
-    return { data, attributes, skills };
 }
 
 self.onmessage = async ({ data: request }) => {
     try {
-        if (!ready) ready = loadData().catch(error => {
-            ready = null;
+        if (!metadataReady) metadataReady = loadMetadata().catch(error => {
+            metadataReady = null;
             throw error;
         });
-        const { data, attributes, skills } = await ready;
+        const { snapshot, data } = await metadataReady;
         if (request.catalog) {
             const catalog = {};
             for (const [id, type] of Object.entries(data.types)) {
@@ -51,6 +48,17 @@ self.onmessage = async ({ data: request }) => {
             }
             self.postMessage({ id: request.id, catalog });
             return;
+        }
+        if (!engineReady) engineReady = loadEngine(snapshot).catch(error => {
+            engineReady = null;
+            throw error;
+        });
+        await engineReady;
+        const attributes = {};
+        const skills = {};
+        for (const [id, attribute] of Object.entries(data.dogmaAttributes)) attributes[attribute.name] = Number(id);
+        for (const [id, type] of Object.entries(data.types)) {
+            if (type.categoryID === 16) skills[id] = 5;
         }
         const baseAttribute = (typeID, name) => data.typeDogma[typeID]?.dogmaAttributes.find(attribute => attribute.attributeID === attributes[name])?.value || 0;
         const fit = { ship: { type_id: request.fit.ship_type_id }, items: [], character: { skills: request.simulate && request.skillLevel === 0 ? {} : skills } };

@@ -1270,7 +1270,7 @@ window.zkbInitSimulate = function() {
         element('status').textContent = '';
         const request = { id: ++sequence, fit: JSON.parse(JSON.stringify(fit)), simulate: true, skillLevel: fit.skillLevel };
         const capsuleSnapshot = JSON.stringify([request.fit.implants, fit.skillLevel]);
-        if (capsuleSnapshot !== capsuleRequestSnapshot) {
+        if ((activeTab === 'capsule' || request.fit.implants.length) && capsuleSnapshot !== capsuleRequestSnapshot) {
             capsuleRequestSnapshot = capsuleSnapshot;
             capsuleWorker.postMessage({ id: ++capsuleSequence, fit: { ship_type_id: 670, items: [], implants: request.fit.implants }, simulate: true, skillLevel: fit.skillLevel });
         }
@@ -1343,7 +1343,15 @@ window.zkbInitSimulate = function() {
                     renderFit();
                     if (activeTab === 'capsule' && capsuleResult) renderStats(capsuleResult, true);
                     else if (activeTab === 'ship' && lastResult) renderStats(lastResult);
-                    if (activeTab === 'capsule') searchImplants();
+                    if (activeTab === 'capsule') {
+                        searchImplants();
+                        const capsuleSnapshot = JSON.stringify([fit?.implants || [], fit?.skillLevel]);
+                        if (fit && capsuleSnapshot !== capsuleRequestSnapshot) {
+                            capsuleRequestSnapshot = capsuleSnapshot;
+                            element('stats').setAttribute('aria-busy', 'true');
+                            capsuleWorker.postMessage({ id: ++capsuleSequence, fit: { ship_type_id: 670, items: [], implants: fit.implants || [] }, simulate: true, skillLevel: fit.skillLevel });
+                        }
+                    }
                     saveState();
                     break;
                 case 'simulate-sort':
