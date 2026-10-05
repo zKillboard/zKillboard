@@ -789,6 +789,7 @@ window.zkbInitSimulate = function() {
                         const count = node('span', 'position-absolute bottom-0 start-50 translate-middle-x badge rounded-pill text-bg-dark border border-success', String(assignments[index].quantity));
                         dial.append(image, count);
                         const fighterName = node('div', 'd-flex align-items-center justify-content-center gap-1');
+                        fighterName.style.height = '23px';
                         const adjust = (change, label) => {
                             const control = button(change < 0 ? '−' : '+', () => {
                                 const nextTubes = (fit.fighterTubes || []).map(tube => tube && { ...tube });
@@ -807,7 +808,14 @@ window.zkbInitSimulate = function() {
                         };
                         fighterName.append(adjust(-1, 'Remove'), node('div', 'small text-white text-truncate', type.name), adjust(1, 'Add'));
                         body.append(dial, fighterName);
-                    } else body.append(node('div', 'display-6 text-white lh-1 mt-2', '+'), node('div', 'small text-white mt-1', 'Open'), node('div', 'small text-white fst-italic text-truncate', 'Empty'));
+                    } else {
+                        const emptyDial = node('div', 'd-flex align-items-center justify-content-center rounded-circle mx-auto mb-1 display-6 text-white lh-1', '+');
+                        emptyDial.style.width = '64px';
+                        emptyDial.style.height = '64px';
+                        const emptyName = node('div', 'd-flex align-items-center justify-content-center small text-white fst-italic text-truncate', 'Empty');
+                        emptyName.style.height = '23px';
+                        body.append(emptyDial, emptyName);
+                    }
                     const options = [[0, 'Open']];
                     for (const candidate of items) {
                         const nextTubes = assignments.map(tube => tube && { ...tube });
