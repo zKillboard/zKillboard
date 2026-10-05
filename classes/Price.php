@@ -4,6 +4,24 @@ use cvweiss\redistools\RedisCache;
 
 class Price
 {
+    public static function getSpecialPriceTypeIDs()
+    {
+        return [
+            635, 2233, 2834, 2836, 3514, 3516, 3518, 9860, 11011, 11019, 11375, 11936, 11938, 11940,
+            11942, 12478, 13202, 25560, 26840, 26842, 32209, 32788, 32790, 33395, 33397, 33673, 33675,
+            34556, 34557, 34558, 34559, 34560, 35779, 35781, 36902, 42124, 42125, 42126, 42241, 42242,
+            42243, 42245, 42246, 44264, 44265, 45530, 45531, 45645, 45647, 45649, 47512, 47514, 48635,
+            48636, 55511, 60764, 60765, 74141, 74316, 77726, 78414, 78576, 85062, 85229, 85236, 87381,
+            88001, 89807, 89808,
+        ];
+    }
+
+    public static function getSpecialPrice($typeID, $date)
+    {
+        $price = static::getFixedPrice($typeID, $date);
+        return $price !== null ? $price : static::getCalculatedPrice($typeID, $date, false);
+    }
+
     public static function getItemPrice($typeID, $kmDate, $fetch = false, $recalc = false)
     {
         global $mdb, $redis, $esiServer;
@@ -238,15 +256,15 @@ class Price
         return;
     }
 
-    public static function getCalculatedPrice($typeID, $date)
+    public static function getCalculatedPrice($typeID, $date, $fetch = true)
     {
         switch ($typeID) {
             case 2233: // Gantry
-                $gantry = self::getItemPrice(3962, $date, true);
-                $nodes = self::getItemPrice(2867, $date, true);
-                $modules = self::getItemPrice(2871, $date, true);
-                $mainframes = self::getItemPrice(2876, $date, true);
-                $cores = self::getItemPrice(2872, $date, true);
+                $gantry = self::getItemPrice(3962, $date, $fetch);
+                $nodes = self::getItemPrice(2867, $date, $fetch);
+                $modules = self::getItemPrice(2871, $date, $fetch);
+                $mainframes = self::getItemPrice(2876, $date, $fetch);
+                $cores = self::getItemPrice(2872, $date, $fetch);
                 $total = $gantry + (($nodes + $modules + $mainframes + $cores) * 8);
 
                 return $total;

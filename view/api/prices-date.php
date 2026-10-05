@@ -31,6 +31,20 @@ function handler($request, $response, $args, $container) {
         $prices[(string) $row['typeID']] = $row[$date];
     }
 
+    $specialTypeIDs = Price::getSpecialPriceTypeIDs();
+    $groupPricedTypes = $mdb->find('information', [
+        'type' => 'typeID',
+        'groupID' => ['$in' => [29, 30, 659, 4513, 4759]],
+    ], [], null, ['id' => 1]);
+    foreach ($groupPricedTypes as $type) {
+        $specialTypeIDs[] = (int) $type['id'];
+    }
+    foreach (array_unique($specialTypeIDs) as $typeID) {
+        if (isset($prices[(string) $typeID])) continue;
+        $price = Price::getSpecialPrice($typeID, $date);
+        if ($price !== null) $prices[(string) $typeID] = $price;
+    }
+
     $queryParams = $request->getQueryParams();
     if (isset($queryParams['callback']) && Util::isValidCallback($queryParams['callback'])) {
         $response = $response->withHeader('Content-Type', 'application/javascript; charset=utf-8')
