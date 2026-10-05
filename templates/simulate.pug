@@ -15,7 +15,12 @@ block content
       .alert.alert-info JavaScript is required to fit and simulate a ship.
     fieldset#simulate-controls(disabled)
       legend.visually-hidden Ship fitting
-      .row.g-3
+      ul.nav.nav-tabs.mb-3(role="tablist" aria-label="Simulator fitting")
+        li.nav-item(role="presentation")
+          button#simulate-tab-ship.nav-link.active(type="button" role="tab" aria-selected="true") Ship
+        li.nav-item(role="presentation")
+          button#simulate-tab-capsule.nav-link(type="button" role="tab" aria-selected="false") Capsule
+      #simulate-ship-panel.row.g-3
         #simulate-equipment.col-12.col-lg-3
           #simulate-status.visually-hidden(role="status" aria-live="polite") Loading ships and fitting data…
           .row.g-2.mb-3
@@ -73,13 +78,33 @@ block content
                   .small.fw-bold.mt-1 PG
                   #simulate-resource-powergrid.small.font-monospace(title="Remaining / total power grid (MW)") —
               #simulate-slots
-        .col-12.col-xl-3
+        #simulate-ship-stats.col-12.col-xl-3
           #simulate-mode-control.btn-group.w-100.mb-2(role="group" aria-label="Tactical mode" hidden)
             button#simulate-mode-Defense.btn.btn-sm.btn-outline-primary(type="button" aria-pressed="true") Defense
             button#simulate-mode-Propulsion.btn.btn-sm.btn-outline-primary(type="button" aria-pressed="false") Propulsion
             button#simulate-mode-Sharpshooter.btn.btn-sm.btn-outline-primary(type="button" aria-pressed="false") Sharpshooter
           #simulate-warnings.alert.alert-warning(hidden role="status")
           #simulate-stats.row.g-2(aria-live="polite" aria-label="Calculated fitting statistics")
+      #simulate-capsule-panel.row.g-3(hidden)
+        .col-12.col-lg-3
+          .card
+            .card-body
+              h2.h5.mx-0 Implants
+              label.form-label(for="simulate-implant-search") Search implants
+              input#simulate-implant-search.form-control.mb-2(type="search" placeholder="Implant name" autocomplete="off")
+              #simulate-implant-results.list-group.overflow-auto(style="max-height: 36rem;" aria-label="Implant results")
+        .col-12.col-lg-6
+          .card.bg-black
+            .card-body
+              h2.h5.mx-0 Capsule implants
+              p.small Implants fitted here affect the calculated ship statistics shown on the Ship tab.
+              #simulate-implant-wheel.mx-auto.position-relative.w-100.overflow-hidden(style="aspect-ratio: 1; isolation: isolate;")
+                #simulate-implant-Fitting_Panel.position-absolute.top-0.start-0.w-100.h-100!= $implantWheelSVG
+                .position-absolute.top-0.start-0.d-flex.flex-column.align-items-start.gap-1(style="z-index: 4;")
+                  button#simulate-capsule-save.btn.btn-sm.btn-primary.text-white(type="button") Save Fit
+                  button#simulate-capsule-eft-open.btn.btn-sm.btn-primary.text-white(type="button" data-bs-toggle="modal" data-bs-target="#simulate-eft-modal") EFT
+              #simulate-implants.mt-3
+        #simulate-capsule-stats.col-12.col-lg-3
       #simulate-eft-modal.modal.fade(tabindex="-1" aria-labelledby="simulate-eft-title" aria-hidden="true")
         .modal-dialog.modal-lg
           .modal-content
@@ -99,6 +124,7 @@ block content
           h2.h5.mx-0 Instructions
           ul.small.ps-3.mb-0
             li Choose a ship, name your fit, and select a skill level. For tactical destroyers, use the mode buttons above the stats.
+            li Use the Capsule tab to search for and fit one implant per implant slot. Implant bonuses are included in the ship statistics.
             li Search equipment or expand a slot or bay to browse. Use Add or drag a module onto a wheel slot. Click an empty slot to choose where to fit it.
             li Click a fitted module to cycle online, overheated, and offline where supported. Green slot outlines mean online; red means overheated.
             li Adding a module reveals compatible charges below it. Use Load or drag a charge onto the module. Drop a fitted module onto the equipment panel to browse it and its compatible charges.
@@ -108,8 +134,8 @@ block content
             li Click EFT to view and copy the current fit, or paste a fit from EVE, Pyfa, or another fitting tool and click Import EFT.
         .col-12.col-md-6
           h2.h5.mx-0 Disclaimers & Credits
-          p.small.mb-2 Calculations exclude implants, combat boosters, command boosts, and system effects. EHP assumes equal incoming damage types.
-          p.small.mb-2 EFT does not preserve module activation states, deployed drone counts, fighter tube assignments, or tactical destroyer modes. Fighter tubes are initially estimated from available full squadrons. Your current fit is saved in this browser.
+          p.small.mb-2 Calculations exclude combat boosters, command boosts, and system effects. EHP assumes equal incoming damage types.
+          p.small.mb-2 EFT does not preserve module activation states, enabled implants, deployed drone counts, fighter tube assignments, or tactical destroyer modes. Fighter tubes are initially estimated from available full squadrons. Your current fit is saved in this browser.
           p.small.mb-2
             | Calculated locally with&#32;
             a(href="https://github.com/EVEShipFit/dogma-engine" target="_blank" rel="noopener noreferrer") EVEShip.fit’s engine

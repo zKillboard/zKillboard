@@ -194,6 +194,7 @@ export function exportEFT(fit, catalog) {
         for (const item of fit.items.filter(item => item.flag === flag)) lines.push(catalog[item.type_id].name + ' x' + item.quantity);
         lines.push('');
     }
+    for (const implant of fit.implants || []) lines.push(catalog[implant.type_id].name);
     return lines.join('\n').trim();
 }
 
@@ -205,7 +206,7 @@ export function importEFT(text, catalog) {
     const names = new Map(Object.values(catalog).map(type => [type.name.toLowerCase(), type]));
     const hull = names.get(header[1].trim().toLowerCase());
     if (hull?.categoryID !== 6) throw new Error('Unknown ship: ' + header[1]);
-    const fit = { ship_type_id: hull.id, name: header[2].trim() || 'Imported fit', items: [] };
+    const fit = { ship_type_id: hull.id, name: header[2].trim() || 'Imported fit', items: [], implants: [] };
     const positions = Object.fromEntries(racks.map(rack => [rack.name, rack.start]));
     for (const raw of lines) {
         const line = raw.trim();
@@ -222,6 +223,12 @@ export function importEFT(text, catalog) {
         if (!type) throw new Error('Unknown item: ' + parts[0]);
         const quantity = stack ? Number(stack[2]) : 1;
         if (!Number.isInteger(quantity) || quantity < 1 || quantity > ([18, 87].includes(type.categoryID) ? 1000 : 1000000)) throw new Error('Item quantities are out of range.');
+        if (type.categoryID === 20) {
+            const slot = type.attributes.implantness;
+            if (stack || parts.length !== 1 || !Number.isInteger(slot) || slot < 1 || fit.implants.some(implant => implant.slot === slot)) throw new Error('Invalid or duplicate implant slot: ' + type.name);
+            fit.implants.push({ type_id: type.id, slot });
+            continue;
+        }
         if ([18, 87].includes(type.categoryID) || stack || type.categoryID === 8) {
             if (parts.length !== 1) throw new Error('Unexpected charge on a cargo, drone, or fighter entry.');
             const flag = type.categoryID === 18 ? 87 : type.categoryID === 87 ? 158 : 5;
@@ -257,7 +264,7 @@ export function importTypeIDFit(text, catalog) {
     if (!header) throw new Error('Invalid ship type ID.');
     const hull = catalog[Number(header[1])];
     if (hull?.categoryID !== 6) throw new Error('Unknown ship type ID.');
-    const fit = { ship_type_id: hull.id, name: header[2] ? decodeURIComponent(header[2]) : hull.name + ' loss', items: [] };
+    const fit = { ship_type_id: hull.id, name: header[2] ? decodeURIComponent(header[2]) : hull.name + ' loss', items: [], implants: [] };
     for (const entry of entries) {
         const fields = entry.match(/^(\d+):(\d+)(?::(\d+))?$/);
         if (!fields) throw new Error('Invalid slot and type ID entry.');

@@ -96,7 +96,7 @@ for (let i = 0; i < types.length; i++) {
         metaGroupID: integer(table, 7),
         raceID: integer(table, 8)
     };
-    if (![6, 7, 8, 16, 18, 32, 65, 66, 87].includes(type.categoryID) && type.groupID !== 1306) continue;
+    if (![6, 7, 8, 16, 18, 20, 32, 65, 66, 87].includes(type.categoryID) && type.groupID !== 1306) continue;
     for (const [index, name] of [[9, 'capacity'], [10, 'mass'], [11, 'radius'], [12, 'volume']]) {
         const value = float(table, index);
         if (value !== undefined) type[name] = value;

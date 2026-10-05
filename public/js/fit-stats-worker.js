@@ -3,7 +3,7 @@ import initEngine, * as engine from '../vendor/eveshipfit/esf_dogma_engine_bg.js
 let ready;
 
 async function loadData() {
-    const assetVersion = '?v=13.1.0-3.3503375.1';
+    const assetVersion = '?v=13.1.0-3.3503375.1-2';
     const [metadataResponse, sdeResponse, wasmResponse] = await Promise.all([
         fetch(new URL('../vendor/eveshipfit/data.json.gz' + assetVersion, import.meta.url), { cache: 'force-cache' }),
         fetch(new URL('../vendor/eveshipfit/sde.dat.gz' + assetVersion, import.meta.url), { cache: 'force-cache' }),
@@ -41,7 +41,7 @@ self.onmessage = async ({ data: request }) => {
         if (request.catalog) {
             const catalog = {};
             for (const [id, type] of Object.entries(data.types)) {
-                if (!type.published || ![6, 7, 8, 18, 32, 87].includes(type.categoryID) || !data.typeDogma[id]) continue;
+                if (!type.published || ![6, 7, 8, 18, 20, 32, 87].includes(type.categoryID) || !data.typeDogma[id]) continue;
                 const dogma = data.typeDogma[id];
                 catalog[id] = {
                     ...type, id: Number(id),
@@ -56,6 +56,12 @@ self.onmessage = async ({ data: request }) => {
         const fit = { ship: { type_id: request.fit.ship_type_id }, items: [], character: { skills: request.simulate && request.skillLevel === 0 ? {} : skills } };
         if (![6, 65].includes(data.types[fit.ship.type_id]?.categoryID) || !data.typeDogma[fit.ship.type_id]) {
             throw new Error('This hull is not supported by the fitting data.');
+        }
+        for (const implant of (request.fit.implants || []).filter(implant => implant.enabled !== false)) {
+            const type = data.types[implant.type_id];
+            const slot = baseAttribute(implant.type_id, 'implantness');
+            if (type?.categoryID !== 20 || !data.typeDogma[implant.type_id] || !Number.isInteger(implant.slot) || implant.slot !== slot) throw new Error('Invalid implant.');
+            fit.items.push({ type_id: implant.type_id, slot: { type: 'implant', index: implant.slot }, state: 'online' });
         }
 
         if (request.simulate && data.types[fit.ship.type_id].groupID === 1305) {

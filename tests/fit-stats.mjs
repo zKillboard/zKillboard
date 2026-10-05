@@ -25,9 +25,9 @@ globalThis.fetch = async (url, options) => {
 await import('../public/js/fit-stats-worker.js');
 
 let requestID = 0;
-async function calculate(items = [], ship = 587) {
+async function calculate(items = [], ship = 587, implants = []) {
     const id = ++requestID;
-    await self.onmessage({ data: { id, fit: { ship_type_id: ship, items } } });
+    await self.onmessage({ data: { id, fit: { ship_type_id: ship, items, implants } } });
     return results.get(id);
 }
 function close(actual, expected) {
@@ -50,6 +50,10 @@ close(bare.stats.cpuOutput, base[48] * 1.25);
 close(bare.stats.powerOutput, base[11] * 1.25);
 close(bare.stats.maxVelocity, base[37] * 1.25);
 close(bare.stats.shieldCapacity, base[263] * 1.25);
+const implanted = await calculate([], 587, [{ type_id: 3084, slot: 7 }]);
+close(implanted.stats.shieldCapacity, bare.stats.shieldCapacity * 1.06);
+const disabledImplant = await calculate([], 587, [{ type_id: 3084, slot: 7, enabled: false }]);
+close(disabledImplant.stats.shieldCapacity, bare.stats.shieldCapacity);
 assert.equal(bare.stats.cpuLoad, 0);
 assert.equal(bare.stats.powerLoad, 0);
 assert.ok(bare.stats.capacitorDepletesIn < 0);

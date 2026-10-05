@@ -9,12 +9,16 @@ window.zkbInitSimulate = function() {
     root.dataset.initialized = 'true';
     const element = name => root.querySelector('#simulate-' + name);
     let worker;
+    let capsuleWorker;
     let shipSearch;
     let catalog;
     let types;
     let fit;
     let stats;
     let pilotStats;
+    let lastResult;
+    let capsuleResult;
+    let capsuleRequestSnapshot;
     let calculatedItems = [];
     let selected;
     let equipmentModule;
@@ -25,6 +29,7 @@ window.zkbInitSimulate = function() {
     const fitHistory = [];
     let historyIndex = -1;
     let sequence = 0;
+    let capsuleSequence = 0;
     let timer;
     let calculationPending = false;
     let queuedCalculation;
@@ -44,17 +49,18 @@ window.zkbInitSimulate = function() {
     try { savedUI = JSON.parse(localStorage.getItem('zkb:simulate-ui')); } catch (error) { /* Invalid or unavailable storage. */ }
     let equipmentSort = savedUI?.sort === 'Alpha' ? 'Alpha' : 'Meta';
     let restoring = true;
+    let activeTab = savedUI?.tab === 'capsule' ? 'capsule' : 'ship';
     const equipmentGroups = new Map();
     const revealedCharges = new Map();
     function saveState() {
         if (restoring || !alive) return;
         try {
             localStorage.setItem('zkb:simulate-ui', JSON.stringify({
-                search: element('search').value, category: element('category').value, sort: equipmentSort,
+                search: element('search').value, implantSearch: element('implant-search').value, category: element('category').value, sort: equipmentSort,
                 ship: element('ship').value, name: element('name').value,
                 eft: element('eft-modal-text').value,
                 expanded: [...expandedSections], groups: [...equipmentGroups], charges: [...revealedCharges],
-                selected, equipmentModule: equipmentModule?.id, history: fitHistory, historyIndex,
+                selected, equipmentModule: equipmentModule?.id, history: fitHistory, historyIndex, tab: activeTab,
                 resultsScroll: element('results').scrollTop, pageScroll: window.scrollY || 0
             }));
         } catch (error) { /* Storage may be disabled or full. */ }
@@ -72,6 +78,7 @@ window.zkbInitSimulate = function() {
         calculationPending = false;
         queuedCalculation = null;
         worker?.terminate();
+        capsuleWorker?.terminate();
         events.abort();
         dragPreview.remove?.();
         if (shipSearch) {
@@ -309,7 +316,7 @@ window.zkbInitSimulate = function() {
             ['High', 'High slots'], ['Medium', 'Mid slots'], ['Low', 'Low slots'],
             ['Rig', 'Rigs'], ['SubSystem', 'Subsystems'], ['Drone', 'Drones'], ['Fighter', 'Fighters'], ['Cargo', 'Cargo']
         ];
-        const matches = types.filter(type => type.categoryID !== 6 && (category !== 'Fighter' || type.categoryID === 87)).map(type => ({
+        const matches = types.filter(type => type.categoryID !== 6 && !Number.isInteger(type.attributes.implantness) && (category !== 'Fighter' || type.categoryID === 87)).map(type => ({
             type, category: category === 'Cargo' ? 'Cargo' : (rackFor(type)?.name || (type.categoryID === 18 ? 'Drone' : type.categoryID === 87 ? 'Fighter' : 'Cargo'))
         })).filter(match => (category === 'All' || match.category === category)
             && (match.type.categoryID !== 32 || (hull && hull.attributes.maxSubSystems > 0 && compatible(match.type, hull)))
@@ -424,9 +431,155 @@ window.zkbInitSimulate = function() {
         if (!matches.length) results.append(node('p', 'text-white p-2 mb-0', hull ? 'No matching equipment.' : 'Choose a ship first.'));
     }
 
+    function searchImplants() {
+        const query = element('implant-search').value.trim().toLowerCase();
+        const results = element('implant-results');
+        results.replaceChildren();
+        const matches = types.filter(type => Number.isInteger(type.attributes.implantness)
+            && query.split(/\s+/).every(word => type.name.toLowerCase().includes(word))).sort((a, b) =>
+            a.attributes.implantness - b.attributes.implantness
+            || (a.attributes.metaLevelOld || 0) - (b.attributes.metaLevelOld || 0)
+            || (a.metaGroupID || 1) - (b.metaGroupID || 1)
+            || a.name.localeCompare(b.name));
+        let previousSlot;
+        let previousMeta;
+        let slotResults = results;
+        let metaResults = results;
+        for (const type of matches) {
+            const slot = type.attributes.implantness;
+            if (slot !== previousSlot) {
+                const group = node('details', 'border-bottom');
+                const key = 'Implant-slot-' + slot;
+                group.open = equipmentGroups.get(key) ?? Boolean(query);
+                group.addEventListener('toggle', () => {
+                    equipmentGroups.set(key, group.open);
+                    saveState();
+                });
+                group.append(node('summary', 'p-2 fw-bold text-white', 'Slot ' + slot));
+                slotResults = node('div', 'list-group list-group-flush');
+                group.append(slotResults);
+                results.append(group);
+                previousSlot = slot;
+                previousMeta = null;
+            }
+            const meta = metaLabel(type);
+            if (meta !== previousMeta) {
+                const group = node('details', '');
+                const key = 'Implant-slot-' + slot + '-meta-' + (type.attributes.metaLevelOld || 0) + '-' + (type.metaGroupID || 1);
+                group.open = equipmentGroups.get(key) ?? Boolean(query);
+                group.addEventListener('toggle', () => {
+                    equipmentGroups.set(key, group.open);
+                    saveState();
+                });
+                group.append(node('summary', 'list-group-item small fw-bold text-white', meta));
+                metaResults = node('div', 'list-group list-group-flush');
+                group.append(metaResults);
+                slotResults.append(group);
+                previousMeta = meta;
+            }
+            const row = node('div', 'list-group-item d-flex align-items-center justify-content-between gap-2 text-white');
+            row.append(node('span', 'small', type.name), button('Add', () => {
+                if (!fit) throw new Error('Choose a ship on the Ship tab first.');
+                const slot = type.attributes.implantness;
+                fit.implants = (fit.implants || []).filter(implant => implant.slot !== slot);
+                fit.implants.push({ type_id: type.id, slot });
+                changed();
+            }, 'btn btn-sm btn-primary text-white fw-semibold flex-shrink-0'));
+            row.lastChild.disabled = !fit;
+            row.lastChild.setAttribute('aria-label', 'Add ' + type.name);
+            metaResults.append(row);
+        }
+        if (!matches.length) results.append(node('p', 'text-white p-2 mb-0', 'No matching implants.'));
+    }
+
     function renderFit() {
         dropTargets.clear();
         const hull = catalog[fit.ship_type_id];
+        element('ship-panel').hidden = activeTab !== 'ship';
+        element('capsule-panel').hidden = activeTab !== 'capsule';
+        element(activeTab + '-stats').append(element('warnings'), element('stats'));
+        for (const tab of ['ship', 'capsule']) {
+            const active = tab === activeTab;
+            element('tab-' + tab).className = 'nav-link' + (active ? ' active' : '');
+            element('tab-' + tab).setAttribute('aria-selected', String(active));
+        }
+        const implants = element('implants');
+        implants.replaceChildren();
+        const implantWheel = element('implant-Fitting_Panel');
+        const capsuleMount = implantWheel.querySelector('#implant-simulate-bigship');
+        const capsule = node('img', 'w-100 h-100 rounded');
+        capsule.src = 'https://images.evetech.net/types/670/render?size=256';
+        capsule.width = 256;
+        capsule.height = 256;
+        capsule.alt = 'Capsule';
+        capsuleMount.replaceChildren(capsule);
+        for (const rack of racks) {
+            for (let index = 0; index < 8; index++) {
+                const frame = implantWheel.querySelector('.flag' + (rack.start + index));
+                if (frame) frame.style.display = 'none';
+            }
+        }
+        const implantMounts = [
+            ['high1', 27], ['high2', 28], ['high3', 29], ['high4', 30], ['high5', 31],
+            ['low1', 11], ['low2', 12], ['low3', 13], ['low4', 14], ['low5', 15]
+        ];
+        for (let index = 0; index < implantMounts.length; index++) {
+            const slot = index + 1;
+            const [mountID, flag] = implantMounts[index];
+            const fitted = (fit.implants || []).find(implant => implant.slot === slot);
+            const frame = implantWheel.querySelector('.flag' + flag);
+            if (frame) frame.style.display = '';
+            const mount = implantWheel.querySelector('#implant-simulate-' + mountID);
+            mount.replaceChildren();
+            const control = button('', () => {
+                if (!fitted) return;
+                fit.implants = fit.implants.filter(implant => implant !== fitted);
+                changed();
+            }, 'btn p-0 rounded-1 w-100 h-100 border-0 bg-transparent text-white shadow-none');
+            control.title = 'Implant slot ' + slot + ': ' + (fitted ? catalog[fitted.type_id].name + ' (click to remove)' : 'Empty');
+            control.setAttribute('aria-label', control.title);
+            if (fitted) {
+                const image = node('img', 'w-100 h-100 rounded-1');
+                image.src = 'https://images.evetech.net/types/' + fitted.type_id + '/icon?size=128';
+                image.alt = '';
+                control.replaceChildren(image);
+            }
+            mount.append(control);
+        }
+        implants.append(node('h3', 'h5 mx-0 px-2 py-2 bg-black text-white border border-secondary', 'Implants'));
+        const fittedImplants = [...(fit.implants || [])].sort((a, b) => a.slot - b.slot);
+        for (const fitted of fittedImplants) {
+            const row = node('div', 'd-flex align-items-center gap-2 px-2 py-1 text-white');
+            const image = node('img', 'rounded flex-shrink-0');
+            image.src = 'https://images.evetech.net/types/' + fitted.type_id + '/icon?size=64';
+            image.width = 40;
+            image.height = 40;
+            image.alt = '';
+            const description = node('div', 'lh-sm flex-grow-1');
+            description.append(node('div', '', catalog[fitted.type_id].name), node('div', 'small', 'Slot: ' + fitted.slot));
+            const price = node('div', 'small text-white text-end flex-shrink-0', 'Loading…');
+            const updatePrice = () => {
+                const value = prices.get(fitted.type_id);
+                price.textContent = value === undefined ? 'Loading…' : value === null ? 'Unavailable' : value.toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' ISK';
+            };
+            updatePrice();
+            priceRequest?.then(updatePrice);
+            row.append(image, description, price);
+            row.tabIndex = 0;
+            row.setAttribute('role', 'button');
+            row.setAttribute('aria-label', 'Remove ' + catalog[fitted.type_id].name + ' from implant slot ' + fitted.slot);
+            row.title = 'Click to remove implant';
+            const remove = () => {
+                fit.implants = fit.implants.filter(implant => implant !== fitted);
+                changed();
+            };
+            row.addEventListener('click', remove);
+            row.addEventListener('keydown', event => {
+                if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); remove(); }
+            });
+            implants.append(row);
+        }
+        if (!fittedImplants.length) implants.append(node('p', 'small px-2', 'No implants fitted.'));
         element('hull').textContent = hull.name;
         const ship = fittingImage('ship-' + hull.id, 'w-100 h-100 rounded');
         ship.src = 'https://images.evetech.net/types/' + hull.id + '/render?size=512';
@@ -789,10 +942,39 @@ window.zkbInitSimulate = function() {
             });
             slots.append(section);
         }
+        if ((fit.implants || []).length) {
+            const section = node('section', 'mb-3 p-2 rounded text-white');
+            section.append(node('h3', 'h6 mx-0 border-bottom pb-2', 'Affected by Implants'));
+            for (const implant of [...fit.implants].sort((a, b) => a.slot - b.slot)) {
+                const row = node('div', 'd-flex align-items-center gap-2 mb-2' + (implant.enabled === false ? ' opacity-50' : ''));
+                const enabled = node('input', 'form-check-input flex-shrink-0');
+                enabled.type = 'checkbox';
+                enabled.checked = implant.enabled !== false;
+                enabled.setAttribute('aria-label', (enabled.checked ? 'Disable ' : 'Enable ') + catalog[implant.type_id].name);
+                enabled.addEventListener('change', () => {
+                    implant.enabled = enabled.checked;
+                    changed();
+                });
+                const image = node('img', 'rounded flex-shrink-0');
+                image.src = 'https://images.evetech.net/types/' + implant.type_id + '/icon?size=64';
+                image.width = 32;
+                image.height = 32;
+                image.alt = '';
+                const description = node('div', 'small lh-sm');
+                description.append(node('div', '', catalog[implant.type_id].name), node('div', '', 'Slot: ' + implant.slot));
+                row.append(enabled, image, description);
+                section.append(row);
+            }
+            slots.append(section);
+        }
         if (dragType) highlightDropTargets(dragType, dragFromFit, dragSource);
     }
 
-    function renderStats(result) {
+    function renderStats(result, capsuleStats = false) {
+        const shipStats = stats;
+        const shipPilotStats = pilotStats;
+        const shipCalculatedItems = calculatedItems;
+        if (!capsuleStats) lastResult = result;
         stats = result.stats;
         pilotStats = result.character;
         calculatedItems = result.details;
@@ -806,8 +988,10 @@ window.zkbInitSimulate = function() {
             return (hours ? hours + 'h ' : '') + (minutes ? minutes + 'm ' : '') + seconds % 60 + 's';
         };
         const pricing = node('div', 'text-white');
-        const costs = { Hull: [{ type_id: fit.ship_type_id, quantity: 1 }], Modules: [], 'Loaded charges': [], Drones: [], Fighters: [], Cargo: [] };
-        for (const item of fit.items) {
+        const costs = capsuleStats
+            ? { Capsule: [{ type_id: 670, quantity: 1 }], Implants: (fit.implants || []).map(implant => ({ ...implant, quantity: 1 })) }
+            : { Hull: [{ type_id: fit.ship_type_id, quantity: 1 }], Modules: [], 'Loaded charges': [], Drones: [], Fighters: [], Cargo: [] };
+        if (!capsuleStats) for (const item of fit.items) {
             const group = item.flag === 5 ? 'Cargo' : item.flag === 87 ? 'Drones' : item.flag === 158 ? 'Fighters' : catalog[item.type_id].categoryID === 8 ? 'Loaded charges' : 'Modules';
             costs[group].push({ ...item });
         }
@@ -879,7 +1063,7 @@ window.zkbInitSimulate = function() {
         element('resource-powergrid').textContent = compact(stats.powerOutput - stats.powerLoad) + '/' + compact(stats.powerOutput);
         const storage = [...(hasDroneBay(fit, catalog) ? ['Drones'] : []), ...(hasFighterBay(fit, catalog) ? ['Fighters'] : []), 'Cargo'];
         const storageTitle = storage.length === 3 ? storage.slice(0, -1).join(', ') + ', & ' + storage.at(-1) : storage.join(' & ');
-        const sections = [
+        let sections = [
             ['Capacitor', []],
             ['Offense', [
                 ['DPS without reload', number('damagePerSecondWithoutReload'), 'turret_missile'],
@@ -889,13 +1073,15 @@ window.zkbInitSimulate = function() {
                 ['Fighter DPS (' + number('fighterCraftDeployed') + ' deployed)', number('fighterDamagePerSecond'), 'drone']
             ]],
             ['Defense', []],
-            ['Navigation & Targeting', [
+            [activeTab === 'capsule' ? 'Navigation' : 'Navigation & Targeting', [
                 ['Speed', number('maxVelocity') + ' m/s', 'propulsion'],
                 ['Align', number('alignTime') + ' s', 'microwarpdrive'],
                 ['Warp', number('warpSpeedMultiplier') + ' AU/s', 'microwarpdrive'],
-                ['Target range / targets', number('maxTargetRange', 1000) + ' km / ' + number('maxLockedTargets'), 'targeting_range'],
-                ['Scan resolution', number('scanResolution') + ' mm', 'targeting_resolution'],
-                ['Signature', number('signatureRadius') + ' m', 'targeting_strength']
+                ...(activeTab === 'capsule' ? [] : [
+                    ['Target range / targets', number('maxTargetRange', 1000) + ' km / ' + number('maxLockedTargets'), 'targeting_range'],
+                    ['Scan resolution', number('scanResolution') + ' mm', 'targeting_resolution'],
+                    ['Signature', number('signatureRadius') + ' m', 'targeting_strength']
+                ])
             ]],
             [storageTitle, [
                 ...(hasDroneBay(fit, catalog) ? [
@@ -915,6 +1101,7 @@ window.zkbInitSimulate = function() {
             ]],
             ['Pricing', []]
         ];
+        if (activeTab === 'capsule') sections = sections.filter(([title]) => ['Capacitor', 'Defense', 'Navigation', 'Pricing'].includes(title));
         element('stats').replaceChildren();
         for (const [title, rows] of sections) {
             const column = node('section', 'col-12 col-md-6 col-xl-12');
@@ -1038,9 +1225,14 @@ window.zkbInitSimulate = function() {
             column.append(card);
             element('stats').append(column);
         }
-        const messages = warnings(fit, catalog, stats, result.character);
+        const messages = capsuleStats ? [] : warnings(fit, catalog, stats, result.character);
         element('warnings').hidden = messages.length === 0;
         element('warnings').textContent = messages.join(' ');
+        if (capsuleStats) {
+            stats = shipStats;
+            pilotStats = shipPilotStats;
+            calculatedItems = shipCalculatedItems;
+        }
         renderFit();
     }
 
@@ -1069,6 +1261,11 @@ window.zkbInitSimulate = function() {
         element('stats').setAttribute('aria-busy', 'true');
         element('status').textContent = '';
         const request = { id: ++sequence, fit: JSON.parse(JSON.stringify(fit)), simulate: true, skillLevel: fit.skillLevel };
+        const capsuleSnapshot = JSON.stringify([request.fit.implants, fit.skillLevel]);
+        if (capsuleSnapshot !== capsuleRequestSnapshot) {
+            capsuleRequestSnapshot = capsuleSnapshot;
+            capsuleWorker.postMessage({ id: ++capsuleSequence, fit: { ship_type_id: 670, items: [], implants: request.fit.implants }, simulate: true, skillLevel: fit.skillLevel });
+        }
         if (calculationPending) queuedCalculation = request;
         else postCalculation(request);
     }
@@ -1085,6 +1282,7 @@ window.zkbInitSimulate = function() {
 
     function loadFit(next) {
         fit = next;
+        if (!Array.isArray(fit.implants)) fit.implants = [];
         fit.items.filter(item => item.flag === 158 && !Number.isInteger(item.active)).forEach(item => { item.active = 0; });
         if (!Array.isArray(fit.fighterTubes)) fit.fighterTubes = fit.items.filter(item => item.flag === 158).flatMap(item => Array.from({ length: item.active || 0 }, () => ({ type_id: item.type_id, quantity: catalog[item.type_id].attributes.fighterSquadronMaxSize || item.quantity })));
         fit.fighterTubes = fit.fighterTubes.slice(0, catalog[fit.ship_type_id].attributes.fighterTubes || 0).map(tube => {
@@ -1097,6 +1295,8 @@ window.zkbInitSimulate = function() {
         equipmentModule = null;
         stats = null;
         pilotStats = null;
+        lastResult = null;
+        capsuleResult = null;
         calculatedItems = [];
         selected = null;
         element('ship').value = catalog[fit.ship_type_id].name;
@@ -1104,20 +1304,36 @@ window.zkbInitSimulate = function() {
         element('skills').value = fit.skillLevel === 0 ? '0' : '5';
         changed();
         search();
+        searchImplants();
     }
 
     root.addEventListener('click', async event => {
         try {
             switch (event.target.id) {
+                case 'simulate-tab-ship':
+                case 'simulate-tab-capsule':
+                    activeTab = event.target.id.endsWith('capsule') ? 'capsule' : 'ship';
+                    renderFit();
+                    if (activeTab === 'capsule' && capsuleResult) renderStats(capsuleResult, true);
+                    else if (activeTab === 'ship' && lastResult) renderStats(lastResult);
+                    if (activeTab === 'capsule') searchImplants();
+                    saveState();
+                    break;
                 case 'simulate-sort':
                     equipmentSort = equipmentSort === 'Meta' ? 'Alpha' : 'Meta';
                     search();
                     saveState();
                     break;
                 case 'simulate-eft-open':
-                    element('eft-modal-text').value = fit ? exportEFT({ ...fit, name: element('name').value || 'New fit' }, catalog) : element('eft-modal-text').value;
+                case 'simulate-capsule-eft-open':
+                    element('eft-modal-text').value = fit ? exportEFT(event.target.id === 'simulate-capsule-eft-open'
+                        ? { ship_type_id: 670, name: 'Capsule', items: [], implants: fit.implants || [] }
+                        : { ...fit, name: element('name').value || 'New fit' }, catalog) : element('eft-modal-text').value;
                     element('eft-modal-status').textContent = '';
                     element('eft-modal-status').className = 'small mt-2';
+                    break;
+                case 'simulate-capsule-save':
+                    showStatus('EVE ESI does not support saving capsule fittings. This capsule fit is already saved in this browser.');
                     break;
                 case 'simulate-eft-modal-copy':
                 case 'simulate-eft-modal-import':
@@ -1169,6 +1385,7 @@ window.zkbInitSimulate = function() {
     }, { signal: events.signal });
     element('category').addEventListener('change', () => { equipmentModule = null; selected = null; search(); if (fit) renderFit(); }, { signal: events.signal });
     element('search').addEventListener('input', () => { equipmentModule = null; element('category').value = 'All'; search(); }, { signal: events.signal });
+    element('implant-search').addEventListener('input', searchImplants, { signal: events.signal });
     element('name').addEventListener('change', changed, { signal: events.signal });
     element('skills').addEventListener('change', changed, { signal: events.signal });
     for (const mode of ['Defense', 'Propulsion', 'Sharpshooter']) {
@@ -1180,6 +1397,17 @@ window.zkbInitSimulate = function() {
     }
     try {
         worker = new Worker(new URL('./fit-stats-worker.js' + new URL(import.meta.url).search, import.meta.url), { type: 'module' });
+        capsuleWorker = new Worker(new URL('./fit-stats-worker.js' + new URL(import.meta.url).search, import.meta.url), { type: 'module' });
+        capsuleWorker.onmessage = ({ data }) => {
+            if (!alive || data.id !== capsuleSequence) return;
+            if (data.error) { showStatus(data.error); return; }
+            capsuleResult = data;
+            if (activeTab === 'capsule') {
+                element('stats').setAttribute('aria-busy', 'false');
+                renderStats(data, true);
+            }
+        };
+        capsuleWorker.onerror = () => showStatus('Unable to calculate capsule statistics.');
         worker.onerror = () => {
             clearTimeout(timer);
             element('controls').disabled = true;
@@ -1249,6 +1477,7 @@ window.zkbInitSimulate = function() {
                 if (!fit) element('hull').textContent = 'Choose a ship to begin';
                 if (savedUI) {
                     element('search').value = savedUI.search || '';
+                    element('implant-search').value = savedUI.implantSearch || '';
                     element('category').value = savedUI.category || 'All';
                     element('ship').value = savedUI.ship ?? element('ship').value;
                     element('name').value = savedUI.name ?? element('name').value;
@@ -1261,12 +1490,14 @@ window.zkbInitSimulate = function() {
                     equipmentModule = catalog[savedUI.equipmentModule];
                 }
                 search();
+                searchImplants();
                 element('results').scrollTop = savedUI?.resultsScroll || 0;
                 restoring = false;
                 return;
             }
             element('status').textContent = '';
-            renderStats(data);
+            lastResult = data;
+            if (activeTab === 'ship') renderStats(data);
             if (savedUI?.pageScroll) {
                 window.scrollTo?.(0, savedUI.pageScroll);
                 savedUI.pageScroll = 0;

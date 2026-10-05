@@ -45,6 +45,14 @@ for (const ship of ['Confessor', 'Svipul', 'Jackdaw', 'Hecate']) {
 const fit = { ship_type_id: 587, name: 'Test fit', items: [] };
 const bare = await calculate(fit);
 assert.equal(bare.stats.upgradeLoad, 0, 'An unrigged hull uses zero calibration');
+const implantFit = importEFT("[Rifter, Implants]\nZainou 'Gnome' Shield Management SM-706", catalog);
+assert.deepEqual(implantFit.implants, [{ type_id: 3084, slot: 7 }]);
+const implanted = await calculate(implantFit);
+assert.ok(implanted.stats.shieldCapacity > bare.stats.shieldCapacity, 'Implants affect ship statistics');
+assert.equal(importEFT(exportEFT(implantFit, catalog), catalog).implants[0].type_id, 3084, 'EFT preserves implants');
+assert.throws(() => importEFT("[Rifter, Implants]\nZainou 'Gnome' Shield Management SM-706\nZainou 'Gnome' Shield Management SM-704", catalog), /duplicate implant slot/);
+assert.equal(importEFT("[Rifter, Implants]\nGenolution 'Auroral' AU-79", catalog).implants[0].slot, 79, 'Published special implant slots are supported');
+assert.equal(byName("Agency 'Hardshell' TB9 Dose IV").attributes.implantness, undefined, 'Combat boosters are not implants');
 const rigged = await calculate(importEFT('[Rifter, Calibration]\nSmall Trimark Armor Pump I\nSmall Trimark Armor Pump I', catalog));
 assert.equal(rigged.stats.upgradeLoad, 100, 'Calibration includes both fitted rigs');
 const unskilled = await calculate(fit, 0);
@@ -192,7 +200,7 @@ class Element extends EventTarget {
     select() {}
 }
 const controls = new Map();
-for (const name of ['sort', 'eft-modal', 'eft-modal-text', 'eft-modal-status', 'equipment', 'mode-Defense', 'mode-Propulsion', 'mode-Sharpshooter', 'mode-control', 'status', 'controls', 'ship', 'ships', 'name', 'skills', 'new', 'category', 'search', 'results', 'hull', 'image', 'slots', 'stats', 'warnings', 'trash', 'undo', 'redo', 'wheel', 'Fitting_Panel', 'bigship', 'resource-cpu', 'resource-powergrid']) {
+for (const name of ['sort', 'eft-modal', 'eft-modal-text', 'eft-modal-status', 'equipment', 'mode-Defense', 'mode-Propulsion', 'mode-Sharpshooter', 'mode-control', 'status', 'controls', 'ship', 'ships', 'name', 'skills', 'new', 'category', 'search', 'results', 'hull', 'image', 'slots', 'stats', 'warnings', 'trash', 'undo', 'redo', 'wheel', 'Fitting_Panel', 'implant-Fitting_Panel', 'bigship', 'resource-cpu', 'resource-powergrid', 'ship-panel', 'capsule-panel', 'ship-stats', 'capsule-stats', 'implants', 'implant-search', 'implant-results', 'tab-ship', 'tab-capsule']) {
     const control = new Element();
     control.id = 'simulate-' + name;
     controls.set(name, control);
@@ -244,7 +252,7 @@ await import('../public/js/simulate.js?test=worker-refresh');
 await settle();
 assert.equal(controls.get('controls').disabled, false);
 window.zkbInitSimulate();
-assert.equal(workerCount, 1, 'Repeated initialization should reuse this page');
+assert.equal(workerCount, 2, 'Repeated initialization should reuse the ship and capsule workers');
 function click(name) {
     const event = new Event('click');
     Object.defineProperty(event, 'target', { value: { id: 'simulate-' + name } });
@@ -403,10 +411,10 @@ controls.get('eft-modal-text').value = '[Vexor, Invalid]\nUnknown Module';
 click('eft-modal-import');
 assert.equal(stored.get('zkb:simulate'), beforeError, 'Failed import must preserve the existing fit');
 window.zkbPageCleanup();
-assert.equal(terminated, 1);
+assert.equal(terminated, 2);
 window.zkbInitSimulate();
 await settle();
-assert.equal(workerCount, 2);
+assert.equal(workerCount, 4);
 assert.equal(controls.get('hull').textContent, 'Vexor', 'Returning to the page restores the saved fit');
 window.zkbPageCleanup();
 console.log('Simulator page checks passed: initialization, ship choice, equipment search and fitting, stats rendering, atomic imports, export, persistence, and SPA cleanup.');
@@ -478,7 +486,7 @@ for (const selector of fighterTubeSelectors) {
     selector.dispatchEvent(new Event('change'));
 }
 await settle();
-assert.ok(workerPosts - postsBeforeRapidFighterChanges <= 2, 'Rapid fighter changes retain only the running and latest calculations');
+assert.ok(workerPosts - postsBeforeRapidFighterChanges <= 2, 'Rapid fighter changes do not recalculate the independent capsule');
 assert.ok(JSON.parse(stored.get('zkb:simulate')).items.every(item => item.flag !== 158 || item.active === 0));
 assert.equal(result.stats.fighterDamagePerSecond || 0, 0);
 window.zkbPageCleanup();
