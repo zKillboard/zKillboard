@@ -132,9 +132,8 @@ block content
         - $topSet = $topKills ?? [];
         - $topTitle = 'Most Valuable Kills - Last 7 Days';
         include components/big_top_list.pug
-        - $topTitle = 'Sponsored Killmails - Last 7 Days';
-        - $topSet = $extraData['sponsoredMails'] ?? [];
-        include components/big_top_list.pug
+        if (in_array($pageType, ['overview', 'losses']))
+          #topset-sponsored
         .centered.publift.adrow.ad-xl-none#detailadrow(data-publift="home_incontent")
         include components/kill_list.pug
       .col-lg-2.float-start.p-0

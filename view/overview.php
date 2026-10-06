@@ -913,26 +913,6 @@ function handler($request, $response, $args, $container)
 			$extra['hasSuperMonocle'] = true;
 	}
 
-	// Sponsored killmails
-	if ($pageType == 'overview' || $pageType == 'losses') {
-		$sponsoredKey = "victim.${type}ID";
-		$result = Mdb::group('sponsored', ['killID'], [$sponsoredKey => (int) $id, 'entryTime' => ['$gte' => $mdb->now(86400 * -7)]], [], 'isk', ['iskSum' => -1], 6);
-		$sponsored = [];
-		foreach ($result as $kill) {
-			if ($kill['iskSum'] <= 0)
-				continue;
-			$killmail = $mdb->findDoc('killmails', ['killID' => $kill['killID']]);
-			Info::addInfo($killmail);
-			if (isset($killmail['involved']) && isset($killmail['involved'][0])) {
-				$killmail['victim'] = $killmail['involved'][0];
-				$killmail['zkb']['totalValue'] = $kill['iskSum'];
-
-				$sponsored[$kill['killID']] = $killmail;
-			}
-		}
-		$extra['sponsoredMails'] = $sponsored;
-	}
-
 	$mongoStatsQueueCount = $kvc->get('zkb:queueStats:count');
 	if ($mongoStatsQueueCount === null) {
 		$mongoStatsQueueCount = $mdb->count('queues', ['queue' => 'queueStats']);

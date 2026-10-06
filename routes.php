@@ -53,6 +53,7 @@ $routes = [
 	'/cache/{cacheType:1hour|24hour|tagged}/killlist/' => ['GET', 'view/ajax/killlist.php'],
 	'/cache/{cacheType:1hour|24hour|tagged}/statstop10/' => ['GET', 'view/ajax/statstop10.php'],
 	'/cache/{cacheType:1hour|24hour|tagged}/statstopisk/' => ['GET', 'view/ajax/statstopisk.php'],
+	'/cache/{cacheType:1hour|24hour|tagged}/sponsored/' => ['GET', 'view/ajax/sponsored.php'],
 	'/api/prices/date/{date}/' => ['GET', 'view/api/prices-date.php'],
 	'/api/prices/{id}/' => ['GET', 'view/apiprices.php'],
 	'/api/{input:.*}' => ['GET', 'view/api.php'],

@@ -13,10 +13,27 @@ function zkbInitOverview() {
 	overviewLoadToken++;
 	loadKms(overviewLoadToken, window.location.pathname);
 	loadTops(overviewLoadToken, window.location.pathname, entityID);
+	loadSponsoredKillmails(overviewLoadToken, window.location.pathname);
 	loadCharacterEsiInformation(overviewLoadToken, window.location.pathname, entityID);
 }
 
 window.zkbInitOverview = zkbInitOverview;
+async function loadSponsoredKillmails(token, pagePath) {
+	const element = document.querySelector('#topset-sponsored');
+	if (!element) return;
+
+	try {
+		const response = await fetch('/cache/1hour/sponsored/?u=' + pagePath);
+		if (response.status >= 400) throw new Error('Unexpected status ' + response.status);
+		const html = await response.text();
+		if (!isCurrentOverviewLoad(token, pagePath) || !element.isConnected) return;
+		element.innerHTML = html;
+	} catch (error) {
+		if (!isCurrentOverviewLoad(token, pagePath)) return;
+		console.error('Failed to load sponsored killmails:', error);
+	}
+}
+
 async function loadCharacterEsiInformation(token, pagePath, pageEntityID) {
 	let securityTarget = document.querySelector('[data-zkb-character-security]');
 	let titleTarget = document.querySelector('[data-zkb-character-title]');
