@@ -50,6 +50,7 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 
 ### Killmail Display & Analysis
 - **Complete Breakdown**: Ship fitting, damage, attackers, victim details, items destroyed/dropped
+- **Fit Statistics**: Client-side dogma calculations show offense, defense, capacitor, resistance, mobility, targeting, and fitting-resource statistics for inferred fits
 - **Fitting Export**: Direct export to EVE Online (requires `esi-fittings.write_fittings.v1` scope)
 - **Value Calculations**: ISK values using integrated market data
 - **Damage Analysis**: Detailed damage breakdown by attacker and weapon type
@@ -73,6 +74,9 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 - **Killmail Navigation**: Previous/next killmail browsing within search contexts
 - **Final Blow & Top Damage**: Special recognition for key participants
 - **ESI Fit Import**: One-click fitting import to game via ESI
+- **Fitting Simulator**: Build and modify ship fittings with module, charge, drone, fighter, and implant support; calculated stats update as the fit changes
+- **Simulator Import & Export**: Import/export EFT fits, copy fits, save them to EVE through ESI, and open inferred killmail fits directly in the simulator
+- **Simulator Workflow**: Undo/redo changes, select skill levels, switch between ship and capsule implants, and retain the current fit in the browser
 - **In-game Link Generation**: Create shareable in-game links for killmails
 - **Sponsorship System**: Allow users to sponsor killmails for promotion
 - **ESI Verification**: Visual verification badges showing ESI data source
@@ -91,6 +95,7 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 
 ### Advanced Search Features
 - **Saved Searches**: Save and share complex search queries
+- **Campaign Creation**: Turn Advanced Search filters into persistent public or private campaigns
 - **Search Export**: Export search results to Excel/CSV formats
 - **Quick Filters**: Pre-configured filters for common searches
 - **Advanced Search Interface**: Dedicated advanced search page with complex filtering
@@ -179,12 +184,20 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 - **Automatic Detection**: Identifies major engagements based on killmail clustering by time and location
 - **Battle Reconstruction**: Complete timeline reconstruction of conflicts
 - **Related Killmail System**: Groups killmails by proximity and time
+- **Adjustable Scope**: Expand or narrow report time windows and include selected systems adjacent to the initial engagement
 - **Side Analysis**: Automatic determination of opposing forces
 - **ISK Analysis**: Total losses and efficiency calculations for each side
 - **Participant Lists**: All involved pilots, corporations, and alliances
 - **Battle Saving**: Save battle reports with persistent IDs
 - **Shareable URLs**: Persistent battle report links for sharing
 - **Integration Links**: Links to external battle report tools (warbeacon.net, RIFT)
+
+### Campaign System
+- **Custom Matchups**: Define attacker and defender sides using Advanced Search entity and location filters
+- **Campaign Analytics**: Separate kills and losses, ISK efficiency, top participants, ship groups, and campaign killmail lists
+- **Public & Private Campaigns**: Publish campaigns in the campaign directory or keep them unlisted and share them by link
+- **Persistent Campaigns**: Logged-in users can create and update campaigns, reopen matching campaigns from Advanced Search, and swap the displayed sides
+- **Flexible Time Ranges**: Set campaign start and end dates, with an automatic one-year end when no end date is selected
 
 ### War System
 - **War Declaration Tracking**: Monitors official EVE Online wars
@@ -317,6 +330,7 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 - **Caching System**: Multi-tier Redis caching for performance
 - **CORS Support**: Cross-origin resource sharing for web applications
 - **JSON Support**: Standard JSON data format for API responses
+- **Historical Daily Prices**: Retrieve a complete item-price snapshot for a specific date
 - **Error Handling**: Comprehensive error responses and logging
 - **IP-based Limiting**: Protection against abuse and overuse
 
@@ -333,7 +347,7 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 ### JavaScript Functionality
 - **WebSocket Integration**: Killmail feeds and notifications
 - **Autocomplete Search**: Search suggestions with entity grouping
-- **Keyboard Shortcuts**: Quick search (/) and advanced search (\) hotkeys
+- **Keyboard Shortcuts**: Context-aware navigation and actions for searches, kill lists, killmails, and the fitting simulator, with an in-page `?` help dialog
 - **Clipboard Integration**: Copy raw values to clipboard on click
 - **Progress Indicators**: Visual loading indicators for operations
 - **AJAX Loading**: Dynamic content loading without page refresh
@@ -342,6 +356,7 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 ### Enhanced Navigation
 - **Search Integration**: Integrated search with autocomplete across all entity types
 - **Quick Navigation**: Keyboard shortcuts and fast navigation features
+- **Two-key Page Navigation**: Jump to home, your character/corporation/alliance, Advanced Search, fits, simulator, wars, ranks, map, or killmail posting with `g` sequences
 - **Mobile Touch**: Touch-optimized interface elements
 - **Infinite Scroll**: Dynamic loading of additional content
 - **Toast Notifications**: Non-intrusive user notifications
