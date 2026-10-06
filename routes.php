@@ -7,6 +7,7 @@ $routes = [
 	'/faq/' => ['redirect', '/information/faq/'],
 	'/google/' => ['redirect', '/cache/1hour/google/'],
 	'/google/{mobile}/' => ['redirect', '/cache/1hour/google/'],
+	'/market/' => ['redirect', '/market/44992/'],
 	
 	// GET routes
 	'/' => ['GET', 'view/index.php'],
@@ -27,6 +28,8 @@ $routes = [
 	'/fits/detail/{hash}/' => ['GET', 'view/fits_detail.php'],
 	'/fits/[{ship}/]' => ['GET', 'view/fits.php'],
 	'/simulate/' => ['GET', 'view/simulate.php'],
+	'/market/data/' => ['GET', 'view/market_data.php'],
+	'/market/{item}/' => ['GET', 'view/market.php'],
 	'/{type}/ranks/{kl}/{solo}/{epoch}/{page}/' => ['GET', 'view/typeRanks.php'],
 	'/{type}/ranks/{kl}/{solo}/{epoch}/{page}/{sort}/{dir}/' => ['GET', 'view/typeRanks.php'],
 	'/top/lasthour/{type}/' => ['GET', 'view/lasthour.php'],

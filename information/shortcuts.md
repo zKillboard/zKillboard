@@ -30,6 +30,7 @@ Press `g`, then press one of the following keys within four seconds. A toast dis
 | `g`, then `o` | Your corporation |
 | `g`, then `l` | Your alliance |
 | `g`, then `a` | Advanced Search |
+| `g`, then `e` | EVEconomy |
 | `g`, then `f` | Inferred Fits |
 | `g`, then `s` | Fitting Simulator |
 | `g`, then `w` | Wars |
@@ -84,6 +85,16 @@ Actions only activate when the corresponding control is available on the killmai
 | `Alt+F` | Focus the entity filter field |
 
 Saving a search requires a logged-in character.
+
+## EVEconomy
+
+| Shortcut | Action |
+| --- | --- |
+| `f` | Focus the market-item search |
+| `l` | Toggle page-scroll lock |
+| `↑` / `↓` | Select the previous or next visible search result |
+| `Enter` | Open the selected search result |
+| `Esc` | Clear the market search, or remove focus when it is empty |
 
 ## Fitting Simulator
 

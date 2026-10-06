@@ -308,6 +308,7 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 - **Last Hour Statistics**: Top killers and losers across all security levels (nullsec, lowsec, highsec, w-space, solo)
 - **Type Rankings**: Comprehensive ranking systems for characters, corporations, alliances, ships, groups with efficiency metrics
 - **Manual Killmail Posting**: Submit external ESI killmail links for manual processing
+- **EVEconomy Market Browser**: Browse live sell and buy orders across selectable regions, search the EVE market catalog, identify market hubs and structures, and watch orders update as ESI caches expire
 - **Market Data Integration**: Historical pricing information display for items
 - **War Declaration Tracking**: Monitor war eligibility and active conflicts
 - **Sponsored Killmail System**: ISK-based killmail promotion with 7-day visibility periods
@@ -347,7 +348,7 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 ### JavaScript Functionality
 - **WebSocket Integration**: Killmail feeds and notifications
 - **Autocomplete Search**: Search suggestions with entity grouping
-- **Keyboard Shortcuts**: Context-aware navigation and actions for searches, kill lists, killmails, and the fitting simulator, with an in-page `?` help dialog
+- **Keyboard Shortcuts**: Context-aware navigation and actions for searches, kill lists, killmails, EVEconomy, and the fitting simulator, with an in-page `?` help dialog
 - **Clipboard Integration**: Copy raw values to clipboard on click
 - **Progress Indicators**: Visual loading indicators for operations
 - **AJAX Loading**: Dynamic content loading without page refresh
@@ -356,7 +357,7 @@ This guide outlines the features and capabilities of zKillboard based on codebas
 ### Enhanced Navigation
 - **Search Integration**: Integrated search with autocomplete across all entity types
 - **Quick Navigation**: Keyboard shortcuts and fast navigation features
-- **Two-key Page Navigation**: Jump to home, your character/corporation/alliance, Advanced Search, fits, simulator, wars, ranks, map, or killmail posting with `g` sequences
+- **Two-key Page Navigation**: Jump to home, your character/corporation/alliance, Advanced Search, EVEconomy, fits, simulator, wars, ranks, map, or killmail posting with `g` sequences
 - **Mobile Touch**: Touch-optimized interface elements
 - **Infinite Scroll**: Dynamic loading of additional content
 - **Toast Notifications**: Non-intrusive user notifications

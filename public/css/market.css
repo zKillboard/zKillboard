@@ -1,0 +1,234 @@
+#market {
+    height: calc(100vh - 6rem);
+    min-height: 600px;
+}
+
+html.market-page-locked,
+html.market-page-locked body {
+    overflow: hidden;
+}
+
+#market > .row,
+#market-search-panel,
+#market-orders-panel {
+    height: 100%;
+}
+
+#market-search-panel,
+#market-orders-panel,
+#market-orders-panel > .row > .col-12 {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#market-tree {
+    flex: 1;
+    min-height: 0;
+    overflow-y: scroll !important;
+}
+
+#market-search {
+    height: 1.75rem;
+    padding: .125rem .25rem;
+    border-color: #ccc;
+    border-radius: 0;
+    background: #fff;
+    color: #212529;
+}
+
+#market-search::placeholder {
+    color: #6c757d;
+    opacity: 1;
+}
+
+.market-group-children {
+    margin-left: 1rem;
+}
+
+.market-group > button,
+.market-item {
+    text-align: left;
+}
+
+.market-group > button {
+    padding: .125rem .5rem;
+    color: #ccc;
+    font-size: 1rem;
+}
+
+.market-group > button::before {
+    display: inline-block;
+    width: 1.5rem;
+    color: #aaa;
+    content: "+";
+    font-size: 1.65rem;
+    font-weight: bold;
+    line-height: .75;
+    vertical-align: -.15rem;
+}
+
+.market-group > button[aria-expanded="true"]::before {
+    content: "−";
+}
+
+.market-item {
+    padding: .125rem .5rem .125rem 2rem;
+    background: transparent;
+    color: #ddd;
+    cursor: pointer;
+}
+
+.market-item:hover,
+.market-item:focus-visible,
+.market-item-keyboard {
+    background: #222;
+    color: #fff;
+}
+
+.market-item-selected {
+    outline: 2px solid var(--bs-info);
+}
+
+.market-order-table {
+    flex: 1;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    padding-right: .5rem;
+}
+
+#market-tree,
+.market-order-table {
+    scrollbar-color: #777 #050505;
+}
+
+#market-orders-panel h2 {
+    margin: 0;
+    color: #ccc;
+    font-size: 1rem;
+    font-weight: normal;
+}
+
+#market-orders-panel > .row > .col-12 + .col-12 h2 {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+#market-orders-panel > .row > .col-12 + .col-12 h2::after {
+    flex: 1;
+    order: 1;
+    border-top: 1px solid #333;
+    content: "";
+}
+
+#market-scroll-lock {
+    order: 2;
+    margin-left: .25rem;
+    line-height: 1;
+}
+
+#market-orders-panel > .row {
+    flex: 1;
+    flex-flow: column nowrap;
+    min-height: 0;
+}
+
+#market-orders-panel > .row > .col-12 {
+    flex: 1 1 0;
+}
+
+.market-order {
+    display: grid;
+    grid-template-columns: minmax(7rem, .7fr) minmax(8rem, .8fr) minmax(16rem, 2fr) minmax(7rem, .6fr);
+    gap: 1rem;
+    padding: .0625rem .25rem;
+    color: #ccc;
+    font-size: 1rem;
+    line-height: 1.35;
+}
+
+.market-order > span:nth-child(3) {
+    min-width: 0;
+}
+
+.market-order-location {
+    display: flex;
+    align-items: baseline;
+}
+
+.market-order-location-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.market-order-region {
+    flex: none;
+    margin-left: .75rem;
+    color: #777;
+    font-size: 75%;
+}
+
+.market-hub-jita .market-order-region {
+    color: lightblue;
+}
+
+.market-hub-amarr .market-order-region {
+    color: gold;
+}
+
+.market-hub-dodixie .market-order-region,
+.market-hub-rens .market-order-region {
+    color: #4cda64;
+}
+
+.market-hub-hek .market-order-region {
+    color: #e06b45;
+}
+
+.market-order-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    font-weight: bold;
+    background: var(--bs-body-bg);
+    border-bottom: 1px solid #222;
+    box-shadow: 0 2px 5px #050505;
+}
+
+.market-order-new {
+    color: #00ce00;
+}
+
+.market-order-changed {
+    color: #00ce00;
+}
+
+.market-order-new > span:first-child::before,
+.market-order-changed::before {
+    color: #999;
+    content: "↻";
+    float: left;
+    font-size: 70%;
+}
+
+.market-order-removed {
+    color: #cc203a;
+}
+
+.market-order-removed > span:first-child::before {
+    color: #999;
+    content: "X";
+    float: left;
+    font-size: 75%;
+}
+
+@media (max-width: 575.98px) {
+    #market.market-show-search #market-orders-panel,
+    #market:not(.market-show-search) #market-search-panel {
+        display: none;
+    }
+}

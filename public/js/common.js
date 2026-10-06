@@ -959,6 +959,7 @@ function runSpaPageInitializers(pageAssets) {
     if (typeof window.zkbInitAsearch === "function" && document.querySelector("#asearchcontent") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/asearch.js")) window.zkbInitAsearch();
     if (typeof window.zkbInitFits === "function" && document.querySelector("#fit-ship-form") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/fits.js")) window.zkbInitFits();
     if (typeof window.zkbInitSimulate === "function" && document.querySelector("#simulate") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/simulate.js")) window.zkbInitSimulate();
+    if (typeof window.zkbInitMarket === "function" && document.querySelector("#market") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/market.js")) window.zkbInitMarket();
     if (typeof window.zkbInitSovereigntyMap === "function" && document.querySelector(".sovereignty-map-component") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/sovereignty-map.js")) window.zkbInitSovereigntyMap();
     if (typeof window.resizeMobileFittingWheel === "function") window.resizeMobileFittingWheel();
 }
@@ -1164,7 +1165,8 @@ function openKeyboardShortcuts() {
         list: !!document.querySelector('[data-kill-id], .killListRow[killID]'),
         detail: window.location.pathname.startsWith('/kill/'),
         asearch: !!document.getElementById('asearchcontent'),
-        simulate: !!document.getElementById('simulate')
+        simulate: !!document.getElementById('simulate'),
+        market: !!document.getElementById('market')
     };
     document.querySelectorAll('#keyboardShortcutsModal [data-shortcut-scope]').forEach(function(section) {
         section.classList.toggle('d-none', !scopes[section.getAttribute('data-shortcut-scope')]);
@@ -1235,6 +1237,13 @@ function handleKeyboardShortcut(event) {
         return;
     }
     if (key === 'escape') {
+        const marketSearch = document.getElementById('market-search');
+        if (document.activeElement === marketSearch && marketSearch.value) {
+            event.preventDefault();
+            marketSearch.value = '';
+            marketSearch.dispatchEvent(new Event('input'));
+            return;
+        }
         keyboardGoPending = false;
         clearTimeout(keyboardGoTimer);
         hideToast(keyboardGoToast);
@@ -1244,6 +1253,16 @@ function handleKeyboardShortcut(event) {
         return;
     }
     if (editable) {
+        if (event.target.id === 'market-search') {
+            if ((key === 'arrowdown' || key === 'arrowup') && window.zkbMarketMoveSelection?.(key === 'arrowdown' ? 1 : -1)) {
+                event.preventDefault();
+                return;
+            }
+            if (key === 'enter' && window.zkbMarketOpenSelection?.()) {
+                event.preventDefault();
+                return;
+            }
+        }
         if (document.getElementById('asearchcontent') && key === 'enter' && (event.ctrlKey || event.metaKey)) {
             event.preventDefault();
             if (typeof doQuery === 'function') doQuery();
@@ -1270,7 +1289,7 @@ function handleKeyboardShortcut(event) {
         keyboardGoPending = false;
         clearTimeout(keyboardGoTimer);
         const profileLink = { c: '#nav-character-link', o: '#nav-corporation-link', l: '#nav-alliance-link' }[key];
-        const destination = profileLink ? document.querySelector(profileLink)?.getAttribute('href') : { h: '/', a: '/asearch/', f: '/fits/', s: '/simulate/', w: '/wars/', r: '/character/ranks/k/all/alltime/1/', m: '/map/index.html' }[key];
+        const destination = profileLink ? document.querySelector(profileLink)?.getAttribute('href') : { h: '/', a: '/asearch/', e: '/market/44992/', f: '/fits/', s: '/simulate/', w: '/wars/', r: '/character/ranks/k/all/alltime/1/', m: '/map/index.html' }[key];
         if (profileLink && (!destination || destination.endsWith('/0/'))) {
             event.preventDefault();
             hideToast(keyboardGoToast);
@@ -1297,8 +1316,13 @@ function handleKeyboardShortcut(event) {
         keyboardGoPending = true;
         clearTimeout(keyboardGoTimer);
         keyboardGoTimer = setTimeout(function() { keyboardGoPending = false; }, 4000);
-        keyboardGoToast = showToast('Go to: H home, C character, O corporation, L alliance, A search, F fits, S simulator, W wars, R ranks, M map, P post clipboard killmail', 4000);
+        keyboardGoToast = showToast('Go to: H home, C character, O corporation, L alliance, A search, E EVEconomy, F fits, S simulator, W wars, R ranks, M map, P post clipboard killmail', 4000);
         return;
+    }
+
+    if (document.getElementById('market')) {
+        if (key === 'f') { event.preventDefault(); document.getElementById('market-search')?.focus(); return; }
+        if (key === 'l') { event.preventDefault(); document.getElementById('market-scroll-lock')?.click(); return; }
     }
 
     if (key === 'j' || key === 'k') {

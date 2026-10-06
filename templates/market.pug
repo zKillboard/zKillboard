@@ -1,0 +1,76 @@
+extends base.pug
+
+block vars
+  - $pageTitle = $pageTitle ?? 'EVEconomy';
+  - $description = $description ?? 'Browse live EVE Online market orders across New Eden.';
+  - $marketItemName = $marketItemName ?? 'EVEconomy';
+  - $marketItemPath = $marketItemPath ?? '/item/44992/';
+  - $canonical = ($fullsiteurl ?? '') . '/market/' . ($marketItemID ?? 44992) . '/';
+  - $ogTitle = $pageTitle . ' | zKillboard.com';
+
+block title
+  include components/title.pug
+
+block opengraph
+  meta(name="twitter:title" content=$ogTitle)
+  meta(name="twitter:card" content="summary")
+  meta(name="og:title" content=$ogTitle)
+  meta(name="og:url" content=$canonical)
+  meta(name="twitter:description" content=$description)
+  meta(name="og:description" content=$description)
+  meta(name="twitter:image" content=(($fullsiteurl ?? '') . '/img/icons/' . ($marketItemID ?? 44992) . '_64.png'))
+  meta(name="og:image" content=(($fullsiteurl ?? '') . '/img/icons/' . ($marketItemID ?? 44992) . '_64.png'))
+
+block style
+  link(rel="stylesheet" href=('/css/market.css?v=' . ($version ?? '')))
+
+block content
+  #market(data-item-id=($marketItemID ?? 44992))
+    .row.g-3
+      aside#market-search-panel.col-12.col-sm-5.col-lg-3
+        h2.h4.mb-2 EVEconomy
+        .d-flex.align-items-center.mb-2
+          input#market-search.form-control(type="search" placeholder="Search market items" aria-label="Search market items" autocomplete="off")
+          button#market-show-orders.btn.btn-sm.btn-secondary.d-sm-none.ms-2(type="button" aria-label="Show market orders")
+            i.fas.fa-chart-line(aria-hidden="true")
+        #market-search-message.alert.alert-info.py-2.d-none(role="status")
+        #market-tree.px-2.overflow-auto
+      section#market-orders-panel.col-12.col-sm-7.col-lg-9
+        .d-flex.align-items-center.gap-2.mb-2
+          button#market-show-search.btn.btn-sm.btn-secondary.d-sm-none(type="button" aria-label="Show item search")
+            i.fas.fa-search(aria-hidden="true")
+          a#market-item-image-link.flex-shrink-0(href=$marketItemPath)
+            img#market-item-image.rounded(src=('/img/icons/' . ($marketItemID ?? 44992) . '_64.png') width="40" height="40" alt=$marketItemName)
+          div
+            h1.h4.mb-0
+              a#market-item-name(href=$marketItemPath)= $marketItemName
+            small#market-status.text-muted(role="status" aria-live="polite") Loading market data…
+          .d-flex.align-items-center.ms-auto
+            label.form-label.mb-0.me-2(for="market-region") Region
+            select#market-region.form-select.form-select-sm.w-auto
+              option(value="all") All regions
+        .row.g-3
+          .col-12
+            h2.h6 Sell Orders
+            .market-order-table
+              .market-order.market-order-header
+                span.text-end Remaining
+                span.text-end Price
+                span Location
+                span.text-end Range
+              #market-sell-orders
+          .col-12
+            h2.h6
+              | Buy Orders
+              button#market-scroll-lock.btn.btn-sm.border-0.text-secondary.py-0(type="button" aria-label="Unlock page scrolling" aria-pressed="true" title="Unlock page scrolling")
+                i.fas.fa-lock(aria-hidden="true")
+            .market-order-table
+              .market-order.market-order-header
+                span.text-end Remaining
+                span.text-end Price
+                span Location
+                span.text-end Range
+              #market-buy-orders
+
+block script
+  script(type="module" src=('/js/market.js?v=' . ($version ?? '')))
