@@ -880,7 +880,7 @@ function handler($request, $response, $args, $container)
 		if (@$user['adFreeUntil'] >= time()) {
 			$gold = 1 + floor(($user['adFreeUntil'] - time()) / (86400 * 365));
 		}
-		if ($mdb->find('sponsored', ['characterID' => (int) $id])) {
+		if ($mdb->exists('sponsored', ['characterID' => (int) $id])) {
 			$extra['hasSponsored'] = true;
 		}
 		if (@$user['monocle'] == true)
@@ -889,12 +889,6 @@ function handler($request, $response, $args, $container)
 			$extra['hasSuperMonocle'] = true;
 	}
 
-	$mongoStatsQueueCount = $kvc->get('zkb:queueStats:count');
-	if ($mongoStatsQueueCount === null) {
-		$mongoStatsQueueCount = $mdb->count('queues', ['queue' => 'queueStats']);
-		$kvc->setex('zkb:queueStats:count', 300, $mongoStatsQueueCount);
-	}
-	$extra['statsRecalced'] = $redis->llen('queueStats') + (int) $mongoStatsQueueCount;
 	$tobeStatsCount = (int) $kvc->get('zkb:queueStatsSet:count', 0);
 
 	$extra['recentkills'] = $type == 'character' && $redis->get("recentKillmailActivity:char:$id") == true;
