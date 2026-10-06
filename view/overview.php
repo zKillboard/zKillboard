@@ -385,7 +385,7 @@ function handler($request, $response, $args, $container)
 		$statType = "{$key}ID";
 		$id = (int) $id;
 	}
-	$statistics = $mdb->findDoc('statistics', ['type' => $statType, 'id' => $id]);
+	$statistics = $key == 'label' ? $mdb->findDoc('statistics', ['type' => $statType, 'id' => $id]) : ($detail['stats'] ?? []);
 	if ($key == 'character') {
 		$extra['characterTags'] = Stats::getCharacterTags($statistics, $detail);
 	}
@@ -542,13 +542,13 @@ function handler($request, $response, $args, $container)
 	}
 
 	if ($pageType == 'ranks') {
-		$alltimeRanks = getNearbyRanks($key, 'alltime', 'all', $id, 'Alltime Rank', $statType);
-		$day90Ranks = getNearbyRanks($key, 'recent', 'all', $id, '90 Day Rank', $statType);
-		$day7Ranks = getNearbyRanks($key, 'weekly', 'all', $id, '7 Day Rank', $statType);
+		$alltimeRanks = getNearbyRanks($key, 'alltime', 'all', 'Alltime Rank', $statType, $statistics['rankings']['alltime']['all'] ?? null);
+		$day90Ranks = getNearbyRanks($key, 'recent', 'all', '90 Day Rank', $statType, $statistics['rankings']['recent']['all'] ?? null);
+		$day7Ranks = getNearbyRanks($key, 'weekly', 'all', '7 Day Rank', $statType, $statistics['rankings']['weekly']['all'] ?? null);
 		$extra['allranks'] = ['7day' => $day7Ranks, '90Day' => $day90Ranks, 'alltime' => $alltimeRanks];
 	}
 
-	$alltimeRankRow = Ranks::getRow('alltime', 'all', $statType, $id);
+	$alltimeRankRow = $statistics['rankings']['alltime']['all'] ?? null;
 	$statistics['shipsDestroyedRank'] = rankRowRank($alltimeRankRow, 'shipsDestroyed');
 	$statistics['shipsLostRank'] = rankRowRank($alltimeRankRow, 'shipsLost');
 	$statistics['iskDestroyedRank'] = rankRowRank($alltimeRankRow, 'iskDestroyed');
@@ -748,8 +748,8 @@ function handler($request, $response, $args, $container)
 		$extra['gangFactor'] = $gangFactor;
 	}
 
-	$recentRankRow = Ranks::getRow('recent', 'all', $statType, $id);
-	$recentSoloRankRow = Ranks::getRow('recent', 'solo', $statType, $id);
+	$recentRankRow = $statistics['rankings']['recent']['all'] ?? null;
+	$recentSoloRankRow = $statistics['rankings']['recent']['solo'] ?? null;
 	$statistics['recentShipsDestroyed'] = rankRowMetric($recentRankRow, 'shipsDestroyed');
 	$statistics['recentShipsDestroyedRank'] = rankRowRank($recentRankRow, 'shipsDestroyed');
 	$statistics['recentShipsLost'] = (int) rankRowMetric($recentRankRow, 'shipsLost');
@@ -805,8 +805,8 @@ function handler($request, $response, $args, $container)
 	}
 	$statistics['recentSoloKills'] = $recentSoloKills;
 
-	$weeklyRankRow = Ranks::getRow('weekly', 'all', $statType, $id);
-	$weeklySoloRankRow = Ranks::getRow('weekly', 'solo', $statType, $id);
+	$weeklyRankRow = $statistics['rankings']['weekly']['all'] ?? null;
+	$weeklySoloRankRow = $statistics['rankings']['weekly']['solo'] ?? null;
 	$statistics['weeklyShipsDestroyed'] = rankRowMetric($weeklyRankRow, 'shipsDestroyed');
 	$statistics['weeklyShipsDestroyedRank'] = rankRowRank($weeklyRankRow, 'shipsDestroyed');
 	$statistics['weeklyShipsLost'] = (int) rankRowMetric($weeklyRankRow, 'shipsLost');
@@ -856,13 +856,13 @@ function handler($request, $response, $args, $container)
 	$previousRank = null;
 	do {
 		$previousDate = date('Ymd', $previousTime);
-		$previousRank = Ranks::rank('alltime', 'all', $statType, $id, 'overall', $previousDate);
+		$previousRank = $statistics['rankHistory']['alltime']['all'][$previousDate]['ranks']['overall'] ?? null;
 		if ($previousRank === null) {
 			$previousTime += 86400;
 		}
 	} while ($previousRank === null && $previousTime < time());
 	$prevRanks = ['overallRank' => $previousRank, 'date' => date('Y-m-d', $previousTime)];
-	$prevRanks['recentOverallRank'] = Ranks::rank('recent', 'all', $statType, $id, 'overall', $previousDate);
+	$prevRanks['recentOverallRank'] = $statistics['rankHistory']['recent']['all'][$previousDate]['ranks']['overall'] ?? null;
 	$statistics['prevRanks'] = $prevRanks;
 
 	$groups = @$statistics['groups'];
@@ -1020,12 +1020,12 @@ function renderCached404($container, $response, $message = 'Not Found')
 	return $container->get('view')->render($cached404Response, '404.pug', array('message' => $message));
 }
 
-function getNearbyRanks($key, $epoch, $scope, $id, $title, $statType)
+function getNearbyRanks($key, $epoch, $scope, $title, $statType, $rankRow)
 {
 	$array = [];
-	$rank = Ranks::rank($epoch, $scope, $statType, $id);
+	$rank = rankRowRank($rankRow, 'overall');
 	if ($rank !== null) {
-		$array['data'] = Ranks::nearby($epoch, $scope, $statType, $id);
+		$array['data'] = Ranks::nearby($epoch, $scope, $statType, $rank);
 		if (sizeof($array['data']) > 0) Info::addInfo($array);
 		$title = $title . ' #' . number_format($rank, 0);
 	}

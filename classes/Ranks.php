@@ -73,14 +73,11 @@ class Ranks
         return $row['metrics'][$metric] ?? 0;
     }
 
-    public static function nearby($epoch, $scope, $type, $id, $radius = 25)
+    public static function nearby($epoch, $scope, $type, $rank, $radius = 25)
     {
         global $mdb;
 
-        $row = self::getRow($epoch, $scope, $type, $id);
-        if ($row == null || !isset($row['ranks']['overall'])) return [];
-
-        $rank = (int) $row['ranks']['overall'];
+        $rank = (int) $rank;
         $rankField = self::sortField($epoch, $scope, 'overallRank');
         $rows = $mdb->find(
             'statistics',
