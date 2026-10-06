@@ -17,6 +17,8 @@ Shortcuts do not fire while typing in an input, textarea, select, or editable el
 
 The help dialog includes an **Enable keyboard shortcuts** switch. The setting is stored in the browser. The `?` shortcut remains available when other shortcuts are disabled so they can be turned back on.
 
+Pasting a valid ESI killmail URL into the main search box posts it automatically. A URL typed into the search box is posted when `Enter` is pressed.
+
 ## Go to a page
 
 Press `g`, then press one of the following keys within four seconds. A toast displays the available destinations while zKillboard waits for the second key. Press `Esc` to cancel.

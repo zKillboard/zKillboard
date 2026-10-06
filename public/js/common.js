@@ -38,6 +38,11 @@ $(document).ready(function () {
 
     // autocomplete
     $('#searchbox').zz_search( function(data, event) { if (event) event.preventDefault(); return navigateTo('/' + data.type + '/' + data.id + '/'); } );
+    $('#searchbox').on('paste.zkb-killmail', function() {
+        setTimeout(function() { submitSearchboxKillmail(); }, 1);
+    }).on('keydown.zkb-killmail', function(event) {
+        if (event.key === 'Enter' && submitSearchboxKillmail()) event.preventDefault();
+    });
 
     // prevent firing of window.location in table rows if a link is clicked directly
     $('.killListRow a').click(function(e) {
@@ -1768,6 +1773,23 @@ function sendCrestUrl() {
     $.get(url);
 }
 
+function submitKillmailUrl(str) {
+    if (!parseKillmailUrl(str)) return false;
+
+    $('#externalurl').val(str);
+    const form = document.getElementById('externalkmform');
+    if (!form) return false;
+    submitPostKillmailForm(form);
+    return true;
+}
+
+function submitSearchboxKillmail() {
+    const searchbox = $('#searchbox');
+    if (!submitKillmailUrl(searchbox.val())) return false;
+    searchbox.val('').blur();
+    return true;
+}
+
 function pasteCrestUrl() {
     setTimeout(pasteCrestUrlAsync, 1);
     return false;
@@ -1778,12 +1800,7 @@ async function pasteCrestUrlAsync() {
         if (isFirefox) return navigateTo('/post/');
 
         let str = await navigator.clipboard.readText();
-        if (!parseKillmailUrl(str)) return navigateTo('/post/');
-
-        $('#externalurl').val(str);
-        const form = document.getElementById('externalkmform');
-        if (!form) return navigateTo('/post/');
-        submitPostKillmailForm(form);
+        if (!submitKillmailUrl(str)) return navigateTo('/post/');
         console.log('submitted');
 
         return false;
