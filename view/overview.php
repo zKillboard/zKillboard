@@ -231,23 +231,6 @@ function handler($request, $response, $args, $container)
 		}
 	}
 
-	$activity = ['max' => 0];
-	if ($pageType == 'overview') {
-		$raw = $redis->hget('zkb:activity', $id);
-		if ($raw != null)
-			$activity = unserialize($raw);
-		else
-			for ($day = 0; $day <= 6; $day++) {
-				for ($hour = 0; $hour <= 23; $hour++) {
-					$count = $mdb->count('activity', ['id' => (int) $id, 'day' => $day, 'hour' => $hour]);
-					if ($count > 0)
-						$activity[$day][$hour] = $count;
-					$activity['max'] = max($activity['max'], $count);
-				}
-			}
-		$activity['days'] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-	}
-
 	$corpList = array();
 	if ($pageType == 'api') {
 		$corpList = Info::getCorps($id);
@@ -301,7 +284,6 @@ function handler($request, $response, $args, $container)
 	$extra = array();
 	$extra['padSum'] = 0;  // $padSum;
 	$extra['vPadSum'] = 0;  // $vPadSum;
-	$extra['activity'] = $activity;
 	$tracked = false;
 	if (User::isLoggedIn()) {
 		$trackers = [];
@@ -890,12 +872,6 @@ function handler($request, $response, $args, $container)
 		$statistics['months'] = null;
 	}
 
-	// Collect active PVP stats
-	if ($key == 'label')
-		$activePvP = [];
-	else
-		$activePvP = Stats::getActivePvpStats($parameters);
-
 	$hasPager = in_array($pageType, ['overview', 'kills', 'losses', 'solo']);
 
 	$gold = 0;
@@ -960,7 +936,7 @@ function handler($request, $response, $args, $container)
 		$detail['systems'] = $mdb->find('information', ['type' => 'solarSystemID', 'constellationID' => (int) $id], ['name' => 1], null, ['id' => 1, 'name' => 1]);
 	}
 
-	$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'hasSovereignty' => $hasSovereignty, 'sovereigntySystems' => $sovereigntySystems, 'sovereigntyMapData' => $sovereigntyMapData, 'sovereigntyAvailable' => $sovereigntyAvailable, 'sovereigntyUpdatedAt' => $sovereigntyUpdatedAt, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'tobeStatsCount' => $tobeStatsCount, 'activePvP' => $activePvP, 'nextTopRecalc' => $nextTopRecalc, 'showDailyStats' => $showDailyStats, 'dailyStats' => $dailyStats, 'dailyDays' => $dailyDays, 'dailyDate' => $dailyDate, 'dailySide' => $dailySide, 'dailySelectedDays' => $dailySelectedDays, 'dailySelectedStart' => $dailySelectedStart, 'dailySelectedEnd' => $dailySelectedEnd, 'dailyGraphStart' => $dailyGraphStart, 'dailyGraphEnd' => $dailyGraphEnd, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified, 'dqChars' => $dqChars);
+	$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'hasSovereignty' => $hasSovereignty, 'sovereigntySystems' => $sovereigntySystems, 'sovereigntyMapData' => $sovereigntyMapData, 'sovereigntyAvailable' => $sovereigntyAvailable, 'sovereigntyUpdatedAt' => $sovereigntyUpdatedAt, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'tobeStatsCount' => $tobeStatsCount, 'nextTopRecalc' => $nextTopRecalc, 'showDailyStats' => $showDailyStats, 'dailyStats' => $dailyStats, 'dailyDays' => $dailyDays, 'dailyDate' => $dailyDate, 'dailySide' => $dailySide, 'dailySelectedDays' => $dailySelectedDays, 'dailySelectedStart' => $dailySelectedStart, 'dailySelectedEnd' => $dailySelectedEnd, 'dailyGraphStart' => $dailyGraphStart, 'dailyGraphEnd' => $dailyGraphEnd, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified, 'dqChars' => $dqChars);
 
 	$overviewResponse = $response->withHeader('Cache-Tag', "www,overview,overview:$id" . ($pageType == 'daily' ? ',daily-v2' : '') . ($key == 'character' && $pageType == 'trophies' ? ",trophy,trophy:$id" : '') . (in_array($key, ['alliance', 'system']) ? ',sovereignty' : ''));
 	if ($pageType == 'daily') {

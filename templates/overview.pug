@@ -142,7 +142,7 @@ block content
             a#loginsideimage.btn.w-100.collapse(href="/ccpoauth2/" aria-label="Log in with EVE Online SSO")
               img(src="/img/ssologin.png" alt="Log in with EVE Online SSO" style="width: 100%; max-width: 100%; margin-bottom: 1em;" loading="lazy" decoding="async" fetchpriority="low")
         include components/activity.pug
-        include components/activePvP.pug
+        #active-pvp-placeholder
         #topset-characterID
         #topset-corporationID
         #topset-allianceID
@@ -347,43 +347,5 @@ block modal
               img.eveimage.img-rounded.img-fluid(src=('/img/nohus/regions/' . $detailData['regionID'] . '.png') style="max-height: 75vh;" width="512" height="512" alt=($detailData['regionName'] ?? '') loading="lazy" decoding="async")
             else if (($key ?? '') == 'location')
               img.eveimage.img-rounded.img-fluid(src=(($image_item ?? 'https://images.evetech.net/types/') . $detailData['typeID'] . '/render?size=512') style="max-height: 75vh;" width="512" height="512" alt=($detailData['locationName'] ?? ($pageName ?? '')) onerror=("this.onerror=function(){this.removeAttribute('onerror'); this.src='/img/icons/" . $detailData['typeID'] . "_64.png';}; this.src='" . ($image_item ?? 'https://images.evetech.net/types/') . $detailData['typeID'] . "/icon?size=512';") loading="lazy" decoding="async")
-  - $activity = is_object($extraData['activity'] ?? null) ? (array) $extraData['activity'] : ($extraData['activity'] ?? []);
-  if ($pageType == 'overview' && ($activity['max'] ?? 0) > 0)
-    #heatmap.modal.fade(tabindex="-1" aria-labelledby="heatmapLabel" aria-hidden="true")
-      .modal-dialog.modal-xl.modal-dialog-scrollable.heatmap-modal-dialog
-        .modal-content.heatmap-modal-content
-          .modal-header
-            h5#heatmapLabel.modal-title Activity Heatmap
-            button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
-          .modal-body.heatmap-modal-body
-            - $steps = floor(($activity['max'] ?? 0) / 5);
-            if ($steps < 1)
-              - $steps = 1;
-            - $days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            .activity-heatmap-scroll.d-none.d-md-block
-              table#activity-heatmap.activity-heatmap-table
-                tr
-                  td.heatmap-axis-cell
-                  each $hour in range(0, 23)
-                    td.heatmap-axis-cell= $hour
-                each $day in range(0, 6)
-                  tr
-                    td.heatmap-axis-cell= $days[$day]
-                    each $hour in range(0, 23)
-                      - $value = $activity[$day][$hour] ?? 0;
-                      - $level = $value > 0 ? min(5, (int) ceil($value / $steps)) : 0;
-                      td.heatmap-cell(style=('--level: ' . $level . ';'))= $value > 0 ? $value : ''
-            .activity-heatmap-mobile.d-md-none
-              table.activity-heatmap-mobile-table
-                tr
-                  td.heatmap-axis-cell
-                  each $day in range(0, 6)
-                    td.heatmap-axis-cell= $days[$day]
-                each $hour in range(0, 23)
-                  tr
-                    td.heatmap-axis-cell= $hour
-                    each $day in range(0, 6)
-                      - $value = $activity[$day][$hour] ?? 0;
-                      - $level = $value > 0 ? min(5, (int) ceil($value / $steps)) : 0;
-                      td.heatmap-cell.heatmap-cell-mobile(style=('--level: ' . $level . ';'))= $value > 0 ? $value : ''
-            p Each block represents an hour of the day for each day of the week. The number indicates how many kills were achieved in that hour over the last 90 days. The redder the block the more kills. A black, empty box indicates 0 kills.
+  if ($pageType == 'overview')
+    #activity-modal-placeholder

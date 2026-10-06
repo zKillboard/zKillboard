@@ -1,0 +1,55 @@
+- $activity = is_object($activity ?? null) ? (array) $activity : ($activity ?? []);
+#activity-sidebar-response
+  if (($activity['max'] ?? 0) > 0)
+    h5.text-center Activity (last 90 days)
+    a.d-block.text-center.text-decoration-none(href="#heatmap" data-bs-toggle="modal" data-bs-target="#heatmap")
+      div(style="line-height: 0;")
+        - $steps = max(1, floor(($activity['max'] ?? 0) / 5));
+        each $day in range(0, 6)
+          each $hour in range(0, 23)
+            - $value = $activity[$day][$hour] ?? 0;
+            - $level = $value > 0 ? min(5, (int) ceil($value / $steps)) : 0;
+            span(style=('width: calc(100% / 24); height: 8px; background-color: hsla(0, 92%, ' . ($level * 10) . '%, 1); display: inline-block; margin: 0; padding: 0; box-sizing: border-box;'))
+          br.m-0.p-0
+      small
+        small
+          i Click to enlarge
+    br
+#activity-modal-response
+  if (($activity['max'] ?? 0) > 0)
+    #heatmap.modal.fade(tabindex="-1" aria-labelledby="heatmapLabel" aria-hidden="true")
+      .modal-dialog.modal-xl.modal-dialog-scrollable.heatmap-modal-dialog
+        .modal-content.heatmap-modal-content
+          .modal-header
+            h5#heatmapLabel.modal-title Activity Heatmap
+            button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+          .modal-body.heatmap-modal-body
+            - $steps = max(1, floor(($activity['max'] ?? 0) / 5));
+            - $days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            .activity-heatmap-scroll.d-none.d-md-block
+              table#activity-heatmap.activity-heatmap-table
+                tr
+                  td.heatmap-axis-cell
+                  each $hour in range(0, 23)
+                    td.heatmap-axis-cell= $hour
+                each $day in range(0, 6)
+                  tr
+                    td.heatmap-axis-cell= $days[$day]
+                    each $hour in range(0, 23)
+                      - $value = $activity[$day][$hour] ?? 0;
+                      - $level = $value > 0 ? min(5, (int) ceil($value / $steps)) : 0;
+                      td.heatmap-cell(style=('--level: ' . $level . ';'))= $value > 0 ? $value : ''
+            .activity-heatmap-mobile.d-md-none
+              table.activity-heatmap-mobile-table
+                tr
+                  td.heatmap-axis-cell
+                  each $day in range(0, 6)
+                    td.heatmap-axis-cell= $days[$day]
+                each $hour in range(0, 23)
+                  tr
+                    td.heatmap-axis-cell= $hour
+                    each $day in range(0, 6)
+                      - $value = $activity[$day][$hour] ?? 0;
+                      - $level = $value > 0 ? min(5, (int) ceil($value / $steps)) : 0;
+                      td.heatmap-cell.heatmap-cell-mobile(style=('--level: ' . $level . ';'))= $value > 0 ? $value : ''
+            p Each block represents an hour of the day for each day of the week. The number indicates how many kills were achieved in that hour over the last 90 days. The redder the block the more kills. A black, empty box indicates 0 kills.
