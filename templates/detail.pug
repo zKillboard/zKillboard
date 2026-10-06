@@ -40,7 +40,7 @@ block content
       ul.navbar-nav.align-items-center.me-2.d-none.d-md-flex
         if (!empty($extraData['prevKillID']))
           li.nav-item.d-none.d-md-flex.align-items-center
-            a.nav-link.py-2(href=('/kill/' . $extraData['prevKillID'] . '/')) &lt;
+            a#killmail-previous.nav-link.py-2(href=('/kill/' . $extraData['prevKillID'] . '/') aria-label="Previous killmail" aria-keyshortcuts="ArrowLeft") &lt;
       ul.navbar-nav.align-items-center.ms-auto
         if (($infoData['killID'] ?? 0) < 0)
           li.nav-item
@@ -82,7 +82,7 @@ block content
           li.nav-item
             a.nav-link(href=('/simulate/#fit=' . rawurlencode(Fitting::simulationPayload($extraData['statsFit'])) . (!empty($victimData['related']['killID']) ? '&capsule=' . (int) $victimData['related']['killID'] : '')) data-spa="off") Simulate
         li.nav-item.dropdown
-          button.nav-link.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false") Export
+          button#killmail-export.nav-link.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-keyshortcuts="e") Export
           ul.dropdown-menu
             li
               button.dropdown-item(type="button" data-zkb-save-fitting=($crestData['killID'] ?? 0)) Import Fit via ESI
@@ -113,7 +113,7 @@ block content
           a.nav-link(href=('/related/' . ($systemData['solarSystemID'] ?? 0) . '/' . ($extraData['relatedtime'] ?? 0) . '/')) Related
         if (!empty($extraData['nextKillID']))
           li.nav-item.d-none.d-md-flex.align-items-center
-            a.nav-link.py-2(href=('/kill/' . $extraData['nextKillID'] . '/')) &gt;
+            a#killmail-next.nav-link.py-2(href=('/kill/' . $extraData['nextKillID'] . '/') aria-label="Next killmail" aria-keyshortcuts="ArrowRight") &gt;
   if (($pageview ?? 'overview') == 'overview')
     .row.gx-0.gx-md-3
       .col-lg-8(style="padding-left: 0px;")

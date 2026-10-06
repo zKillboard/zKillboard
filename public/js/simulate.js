@@ -1408,12 +1408,36 @@ window.zkbInitSimulate = function() {
         } catch (error) { showStatus(error.message); }
     }, { signal: events.signal });
     globalThis.addEventListener?.('keydown', event => {
-        if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey || event.isComposing) return;
-        if (event.target.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) return;
-        const action = { z: 'undo', r: 'redo' }[event.key.toLowerCase()];
-        if (!action) return;
+        if (event.isComposing) return;
+        if (localStorage.getItem('zkb-keyboard-shortcuts') === 'off') return;
+        if (document.querySelector('.modal.show')) return;
+        const key = event.key.toLowerCase();
+        const modified = event.ctrlKey || event.metaKey;
+        const editable = event.target.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"])');
+        let control = null;
+        if (modified && !event.altKey) {
+            if (editable && (key === 'z' || key === 'r')) return;
+            if (event.shiftKey && key === 'c' && fit) {
+                event.preventDefault();
+                const exported = exportEFT(activeTab === 'capsule'
+                    ? { ship_type_id: 670, name: 'Capsule', items: [], implants: fit.implants || [] }
+                    : { ...fit, name: element('name').value || 'New fit' }, catalog);
+                navigator.clipboard.writeText(exported).then(() => showStatus('EFT copied.')).catch(() => showStatus('Unable to copy EFT.'));
+                return;
+            }
+            if (key === 'z') control = element(event.shiftKey ? 'redo' : 'undo');
+            else if (!event.shiftKey && key === 'r') control = element('redo');
+            else if (!event.shiftKey && key === 's') control = element(activeTab === 'capsule' ? 'capsule-save' : 'save');
+            else if (!event.shiftKey && key === 'e') control = element(activeTab === 'capsule' ? 'capsule-eft-open' : 'eft-open');
+        } else if (event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey && !editable) {
+            if (key === 'n') control = element('new');
+            else if (key === '1') control = element('tab-ship');
+            else if (key === '2') control = element('tab-capsule');
+            else if (key === 'f') control = element(activeTab === 'capsule' ? 'implant-search' : 'search');
+        }
+        if (!control || control.disabled) return;
         event.preventDefault();
-        if (!element(action).disabled) element(action).click();
+        control.matches('input, textarea, select') ? control.focus() : control.click();
     }, { signal: events.signal });
     element('ship').addEventListener('keydown', event => {
         if (event.key === 'Enter' && !shipSearch) { event.preventDefault(); element('new').click(); }

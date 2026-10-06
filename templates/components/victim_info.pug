@@ -63,7 +63,7 @@ div(style="padding: 0px; width: 100%; margin: 0px;")
       - $field = is_object($victim['related']) ? (array) $victim['related'] : $victim['related'];
       tr
         th Related:
-        td
+        td.related-killmail
           include text_ship.pug
           |  
           small(format="format-isk-once" raw=($field['zkb']['totalValue'] ?? 0))

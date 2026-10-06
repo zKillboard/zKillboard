@@ -180,6 +180,158 @@ html.no-js(prefix="og: http://ogp.me/ns#" lang="en")
           .modal-footer
             button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancel
             button#continueLoginWithOptions.btn.btn-primary(type="button") Continue to EVE Login
+    #keyboardShortcutsModal.modal.fade(tabindex="-1" aria-labelledby="keyboardShortcutsTitle" aria-hidden="true")
+      .modal-dialog.modal-lg
+        .modal-content
+          .modal-header
+            h2#keyboardShortcutsTitle.modal-title.h5 Keyboard shortcuts
+            button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+          .modal-body
+            .row.g-4
+              .col-12.col-md-6
+                h3.h6 Global
+                dl.row.small.mb-0
+                  dt.col-5
+                    kbd / or ^
+                  dd.col-7 Focus search
+                  dt.col-5
+                    kbd= '\\'
+                  dd.col-7 Advanced Search
+                  dt.col-5
+                    kbd g
+                    |  then&nbsp;
+                    kbd h
+                  dd.col-7 Home
+                  dt.col-5
+                    kbd g
+                    |  then&nbsp;
+                    kbd c
+                  dd.col-7 Your character
+                  dt.col-5
+                    kbd g
+                    |  then&nbsp;
+                    kbd o
+                  dd.col-7 Your corporation
+                  dt.col-5
+                    kbd g
+                    |  then&nbsp;
+                    kbd l
+                  dd.col-7 Your alliance
+                  dt.col-5
+                    kbd g
+                    |  then&nbsp;
+                    kbd a
+                  dd.col-7 Advanced Search
+                  dt.col-5
+                    kbd g
+                    |  then&nbsp;
+                    kbd f
+                  dd.col-7 Inferred Fits
+                  dt.col-5
+                    kbd g
+                    |  then&nbsp;
+                    kbd s
+                  dd.col-7 Fitting Simulator
+                  dt.col-5
+                    kbd g
+                    |  then&nbsp;
+                    kbd w
+                  dd.col-7 Wars
+                  dt.col-5
+                    kbd g
+                    |  then&nbsp;
+                    kbd r
+                  dd.col-7 Top Ranks
+                  dt.col-5
+                    kbd g
+                    |  then&nbsp;
+                    kbd m
+                  dd.col-7 Universe map
+                  dt.col-5
+                    kbd g
+                    |  then&nbsp;
+                    kbd p
+                  dd.col-7 Post Killmail
+                  dt.col-5
+                    kbd r
+                  dd.col-7 Refresh the page
+                  dt.col-5
+                    kbd ?
+                  dd.col-7 Show this help
+                  dt.col-5
+                    kbd Esc
+                  dd.col-7 Close or cancel
+              .col-12.col-md-6(data-shortcut-scope="list")
+                h3.h6 Kill lists
+                dl.row.small.mb-0
+                  dt.col-5
+                    kbd j
+                    |  /
+                    kbd k
+                  dd.col-7 Next / previous kill
+                  dt.col-5
+                    kbd Enter
+                    |  /
+                    kbd o
+                  dd.col-7 Open / open in new tab
+                  dt.col-5
+                    kbd c
+                    |  /
+                    kbd f
+                  dd.col-7 Copy link / favorite
+              .col-12.col-md-6(data-shortcut-scope="detail")
+                h3.h6 Killmail
+                dl.row.small.mb-0
+                  dt.col-5
+                    kbd ←
+                    |  /
+                    kbd →
+                  dd.col-7 Previous / next killmail
+                  dt.col-5
+                    kbd f
+                    |  /
+                    kbd c
+                  dd.col-7 Favorite / copy link
+                  dt.col-5
+                    kbd e
+                    |  /
+                    kbd s
+                    |  /
+                    kbd b
+                  dd.col-7 Export / save fit / battle report
+                  dt.col-5
+                    kbd x
+                  dd.col-7 Open linked related loss
+              .col-12.col-md-6(data-shortcut-scope="asearch")
+                h3.h6 Advanced Search
+                dl.row.small.mb-0
+                  dt.col-5
+                    kbd Ctrl/Cmd+Enter
+                  dd.col-7 Run search
+                  dt.col-5
+                    kbd Alt+R/S/E/F
+                  dd.col-7 Reset / save / export / focus filter
+              .col-12.col-md-6(data-shortcut-scope="simulate")
+                h3.h6 Simulator
+                dl.row.small.mb-0
+                  dt.col-5
+                    kbd Ctrl/Cmd+Z
+                    |  /
+                    kbd Ctrl/Cmd+Shift+Z
+                  dd.col-7 Undo / redo
+                  dt.col-5
+                    kbd Ctrl/Cmd+S/E
+                  dd.col-7 Save / EFT
+                  dt.col-5
+                    kbd Ctrl/Cmd+Shift+C
+                  dd.col-7 Copy EFT
+                  dt.col-5
+                    kbd Alt+N/1/2/F
+                  dd.col-7 New / Ship / Capsule / search
+            hr
+            .form-check.form-switch
+              input#keyboardShortcutsEnabled.form-check-input(type="checkbox" role="switch" checked)
+              label.form-check-label(for="keyboardShortcutsEnabled") Enable keyboard shortcuts
     .ad-xl-block
       .ad-xl-block.left-sticky-ad.publift(data-publift="left-sticky")
     .ad-xl-block

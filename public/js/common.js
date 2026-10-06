@@ -2,6 +2,10 @@ var ws;
 var adblocked = undefined;
 var zkbVersionCheckTimeout = null;
 var prepTippyTimeout = null;
+var keyboardGoTimer = null;
+var keyboardGoPending = false;
+var keyboardGoToast = null;
+var keyboardSelectedKillID = null;
 window.zkbFavorites = window.zkbFavorites || [];
 
 window.onerror = function (message, source, lineno, colno, error) {
@@ -56,6 +60,8 @@ $(document).ready(function () {
     addKillListClicks();
 
     $(document).on('keypress', checkForSearchKey);
+    $(document).on('keydown', handleKeyboardShortcut);
+    $(document).on('change', '#keyboardShortcutsEnabled', keyboardShortcutsEnabledChange);
     $(document).on('change input', '#dls-slider, #login-delay-slider', updateDLS);
     $(document).on('click touchstart mousedown', '#dls-slider, #login-delay-slider', stopPropagation);
     $(document).on('click', 'a[href^="/ccpoauth2/"]:not([href^="/ccpoauth2-"])', interceptLoginClick);
@@ -1125,6 +1131,7 @@ const asciiForwardSlash = '/'.charCodeAt(0);
 const asciiBackSlash = '\\'.charCodeAt(0);
 
 function checkForSearchKey(event) {
+    if (!keyboardShortcutsEnabled()) return;
     if ($("input:focus, textarea:focus").length == 0) {
         if (event.which == asciiForwardSlash || event.which == '^'.charCodeAt(0)) {$("#searchbox").focus(); return false; }
         if (event.which == asciiBackSlash) {
@@ -1132,6 +1139,196 @@ function checkForSearchKey(event) {
             return false;
         }
     }
+}
+
+function keyboardShortcutsEnabled() {
+    return localStorage.getItem('zkb-keyboard-shortcuts') !== 'off';
+}
+
+function keyboardShortcutsEnabledChange() {
+    localStorage.setItem('zkb-keyboard-shortcuts', this.checked ? 'on' : 'off');
+}
+
+function keyboardTargetIsEditable(target) {
+    return !!target.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"])');
+}
+
+function openKeyboardShortcuts() {
+    document.getElementById('keyboardShortcutsEnabled').checked = keyboardShortcutsEnabled();
+    const scopes = {
+        list: !!document.querySelector('[data-kill-id], .killListRow[killID]'),
+        detail: window.location.pathname.startsWith('/kill/'),
+        asearch: !!document.getElementById('asearchcontent'),
+        simulate: !!document.getElementById('simulate')
+    };
+    document.querySelectorAll('#keyboardShortcutsModal [data-shortcut-scope]').forEach(function(section) {
+        section.classList.toggle('d-none', !scopes[section.getAttribute('data-shortcut-scope')]);
+    });
+    showModal('#keyboardShortcutsModal');
+}
+
+function selectKillRow(direction) {
+    const rows = Array.from(document.querySelectorAll('.killListRow[data-kill-id], .killListRow[killID], .tr-killmail[data-kill-id], .tr-killmail[killID]'));
+    if (!rows.length) return false;
+    let index = rows.findIndex(function(row) { return String(row.getAttribute('data-kill-id') || row.getAttribute('killID')) === String(keyboardSelectedKillID); });
+    index = direction > 0 ? Math.min(index + 1, rows.length - 1) : (index < 0 ? rows.length - 1 : Math.max(index - 1, 0));
+    rows.forEach(function(row) { row.classList.remove('zkb-keyboard-selected'); row.removeAttribute('aria-current'); });
+    const row = rows[index];
+    keyboardSelectedKillID = row.getAttribute('data-kill-id') || row.getAttribute('killID');
+    row.classList.add('zkb-keyboard-selected');
+    row.setAttribute('aria-current', 'true');
+    row.scrollIntoView({ block: 'nearest' });
+    return true;
+}
+
+function selectedKillRow() {
+    return document.querySelector('.zkb-keyboard-selected[data-kill-id], .zkb-keyboard-selected[killID]');
+}
+
+function selectedKillUrl() {
+    const row = selectedKillRow();
+    if (!row) return null;
+    return '/kill/' + (row.getAttribute('data-kill-id') || row.getAttribute('killID')) + '/';
+}
+
+function navigateResultsPage(direction) {
+    const activeAsearchPage = document.querySelector('#asearchcontent .pagenum.btn-primary');
+    if (activeAsearchPage) {
+        const pages = Array.from(document.querySelectorAll('#asearchcontent .pagenum'));
+        const page = pages[pages.indexOf(activeAsearchPage) + direction];
+        if (page) { page.click(); return true; }
+    }
+    const link = document.querySelector(direction > 0 ? 'a[rel~="next"]' : 'a[rel~="prev"], a[rel~="previous"]');
+    if (!link) return false;
+    link.click();
+    return true;
+}
+
+function copyShortcutLink(url) {
+    if (!navigator.clipboard || !navigator.clipboard.writeText) return;
+    navigator.clipboard.writeText(new URL(url, window.location.origin).href).then(function() {
+        showToast('Link copied to your clipboard');
+    }).catch(function() { showToast('Unable to copy link', 5000); });
+}
+
+function handleKeyboardShortcut(event) {
+    if (event.defaultPrevented || event.isComposing) return;
+
+    const key = event.key.toLowerCase();
+    const editable = keyboardTargetIsEditable(event.target);
+    const modal = document.querySelector('.modal.show');
+
+    if (modal) {
+        if (key === 'escape') bootstrap.Modal.getInstance(modal)?.hide();
+        return;
+    }
+    if (!keyboardShortcutsEnabled() && key !== '?') return;
+
+    if (key === '?' && !editable && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        event.preventDefault();
+        openKeyboardShortcuts();
+        return;
+    }
+    if (key === 'escape') {
+        keyboardGoPending = false;
+        clearTimeout(keyboardGoTimer);
+        hideToast(keyboardGoToast);
+        keyboardGoToast = null;
+        document.activeElement?.blur();
+        document.querySelectorAll('.dropdown-menu.show').forEach(function(menu) { bootstrap.Dropdown.getInstance(menu.previousElementSibling)?.hide(); });
+        return;
+    }
+    if (editable) {
+        if (document.getElementById('asearchcontent') && key === 'enter' && (event.ctrlKey || event.metaKey)) {
+            event.preventDefault();
+            if (typeof doQuery === 'function') doQuery();
+        }
+        return;
+    }
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+        if (!document.getElementById('asearchcontent') || !event.altKey || event.ctrlKey || event.metaKey) return;
+        const target = { r: 'a.btn-secondary[href="/asearch/"]', s: '#btn_save', e: '#btn_export', f: '#asearch-autocomplete' }[key];
+        const control = target && document.querySelector('#asearchcontent ' + target);
+        if (!control) return;
+        event.preventDefault();
+        if (key === 'r' && !confirm('Reset all Advanced Search filters?')) return;
+        key === 'f' ? control.focus() : control.click();
+        return;
+    }
+
+    if (keyboardGoPending) {
+        keyboardGoPending = false;
+        clearTimeout(keyboardGoTimer);
+        const profileLink = { c: '#nav-character-link', o: '#nav-corporation-link', l: '#nav-alliance-link' }[key];
+        const destination = profileLink ? document.querySelector(profileLink)?.getAttribute('href') : { h: '/', a: '/asearch/', f: '/fits/', s: '/simulate/', w: '/wars/', r: '/character/ranks/k/all/alltime/1/', m: '/map/index.html', p: '/post/' }[key];
+        if (profileLink && (!destination || destination.endsWith('/0/'))) {
+            event.preventDefault();
+            hideToast(keyboardGoToast);
+            keyboardGoToast = null;
+            showToast('Please log in to use that shortcut.', 5000);
+            return;
+        }
+        if (!destination) return;
+        event.preventDefault();
+        hideToast(keyboardGoToast);
+        keyboardGoToast = null;
+        if (key === 'm') window.open(destination, '_blank', 'noopener');
+        else navigateTo(destination);
+        return;
+    }
+    if (key === 'g') {
+        keyboardGoPending = true;
+        clearTimeout(keyboardGoTimer);
+        keyboardGoTimer = setTimeout(function() { keyboardGoPending = false; }, 4000);
+        keyboardGoToast = showToast('Go to: H home, C character, O corporation, L alliance, A search, F fits, S simulator, W wars, R ranks, M map, P post', 4000);
+        return;
+    }
+
+    if (key === 'j' || key === 'k') {
+        if (selectKillRow(key === 'j' ? 1 : -1)) event.preventDefault();
+        return;
+    }
+    if ((key === 'home' || key === 'end') && selectedKillRow()) {
+        keyboardSelectedKillID = null;
+        if (selectKillRow(key === 'home' ? 1 : -1)) event.preventDefault();
+        return;
+    }
+    if (key === 'n' || key === 'p') {
+        if (navigateResultsPage(key === 'n' ? 1 : -1)) event.preventDefault();
+        return;
+    }
+    const selectedUrl = selectedKillUrl();
+    if (selectedUrl) {
+        if (key === 'enter') { event.preventDefault(); navigateTo(selectedUrl); return; }
+        if (key === 'o') { event.preventDefault(); window.open(selectedUrl, '_blank', 'noopener'); return; }
+        if (key === 'c') { event.preventDefault(); copyShortcutLink(selectedUrl); return; }
+        if (key === 'f') {
+            const star = selectedKillRow().querySelector('[data-zkb-favorite-kill]');
+            event.preventDefault();
+            if (characterID <= 0) { showToast('Please log in to favorite killmails.', 5000); return; }
+            if (star) star.click();
+            else if (typeof doFavorite === 'function') doFavorite(parseInt(keyboardSelectedKillID, 10));
+            return;
+        }
+    }
+
+    if (window.location.pathname.startsWith('/kill/')) {
+        const detailActions = {
+            arrowleft: '#killmail-previous',
+            arrowright: '#killmail-next',
+            f: '[data-zkb-favorite-kill]:not([data-zkb-favorite-scope])',
+            e: '#killmail-export',
+            s: '[data-zkb-save-fitting]',
+            b: '#detail-navibar a[href^="/related/"]',
+            x: '.related-killmail a[href^="/kill/"]'
+        };
+        if (key === 'c') { event.preventDefault(); copyShortcutLink(window.location.href); return; }
+        if (key === 'f' && characterID <= 0) { event.preventDefault(); showToast('Please log in to favorite killmails.', 5000); return; }
+        const control = document.querySelector(detailActions[key]);
+        if (control) { event.preventDefault(); control.click(); return; }
+    }
+
+    if (key === 'r') { event.preventDefault(); spaNavigate(window.location.href, false); }
 }
 
 function startWebSocket() {
@@ -1715,7 +1912,7 @@ function doFavorite(killID, star, scope) {
     var favoriteStars = favoriteStarsForScope(killID, scope);
     var clickedElement = star ? $(star) : favoriteStars.first();
     var clickedStar = clickedElement.hasClass("fa-star") ? clickedElement : clickedElement.find(".fa-star").first();
-    var action = clickedStar.hasClass("fas") ? "remove" : "save";
+    var action = clickedStar.length ? (clickedStar.hasClass("fas") ? "remove" : "save") : (getFavoritesByScope()[scope].has(killID) ? "remove" : "save");
     var url = scope === "character" ? '/account/favorite/' + killID + '/' + action + '/' : '/account/favorite/' + scope + '/' + killID + '/' + action + '/';
     $.post(url, function( result ) {
 		console.log(result);
@@ -2244,6 +2441,7 @@ function showToast(message, duration = 3000) {
 
 	// Hide and remove after duration
 	setTimeout(() => { hideToast(toast); }, duration);
+	return toast;
 }
 
 function hideToast(toast) {

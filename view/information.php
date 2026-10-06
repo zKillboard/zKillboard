@@ -25,12 +25,13 @@ function handler($request, $response, $args, $container) {
 
 	$pages = [
 		'about' => 'About',
+		'delayed' => 'Delayed Killmails',
 		'faq' => 'FAQ',
 		'features' => 'Features',
-		'delayed' => 'Delayed Killmails',
+		'shortcuts' => 'Keyboard Shortcuts',
+		'legal' => 'Legal',
 		'payments' => 'Payments',
 		'streambox' => 'StreamBox',
-		'legal' => 'Legal',
 	];
 
 	$title = $pages[$page] ?? ucfirst($page);

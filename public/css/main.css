@@ -2903,3 +2903,7 @@ code {
 .simulate-resistance-value {
 	text-shadow: 0 1px 1px #101820, 0 0 1px #101820;
 }
+.zkb-keyboard-selected {
+    outline: 2px solid var(--bs-info);
+    outline-offset: -2px;
+}

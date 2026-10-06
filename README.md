@@ -3,6 +3,10 @@ zkillboard.com is a killboard for the Massively Multiplayer Online Role Playing 
 
 Fun fact: zKillboard.com was originally called killwhore.com until it was discovered that the EVE Online forums censored the word whore.
 
+## Documentation
+
+- [Keyboard shortcuts](information/shortcuts.md)
+
 ## Setup
 
 See [Docker.md](Docker.md) for the application and service setup.
