@@ -10,6 +10,7 @@ Shortcuts do not fire while typing in an input, textarea, select, or editable el
 | --- | --- |
 | `/` or `^` | Focus the main search box |
 | `\` | Open Advanced Search |
+| `Ctrl/Cmd+V` | Post a killmail URL from the clipboard, or open the Post page |
 | `?` | Open keyboard shortcut help |
 | `r` | Refresh the current page |
 | `Esc` | Close or cancel the active UI and remove focus from the search box |
@@ -32,7 +33,7 @@ Press `g`, then press one of the following keys within four seconds. A toast dis
 | `g`, then `w` | Wars |
 | `g`, then `r` | Top Ranks |
 | `g`, then `m` | Universe map in a new tab |
-| `g`, then `p` | Post Killmail |
+| `g`, then `p` | Post a killmail URL from the clipboard, or open the Post page |
 
 Character, corporation, and alliance destinations require a logged-in character and the corresponding EVE entity.
 

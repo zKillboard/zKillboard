@@ -1246,6 +1246,11 @@ function handleKeyboardShortcut(event) {
         return;
     }
     if (event.ctrlKey || event.metaKey || event.altKey) {
+        if (key === 'v' && (event.ctrlKey || event.metaKey) && !event.altKey) {
+            event.preventDefault();
+            pasteCrestUrl();
+            return;
+        }
         if (!document.getElementById('asearchcontent') || !event.altKey || event.ctrlKey || event.metaKey) return;
         const target = { r: 'a.btn-secondary[href="/asearch/"]', s: '#btn_save', e: '#btn_export', f: '#asearch-autocomplete' }[key];
         const control = target && document.querySelector('#asearchcontent ' + target);
@@ -1260,12 +1265,19 @@ function handleKeyboardShortcut(event) {
         keyboardGoPending = false;
         clearTimeout(keyboardGoTimer);
         const profileLink = { c: '#nav-character-link', o: '#nav-corporation-link', l: '#nav-alliance-link' }[key];
-        const destination = profileLink ? document.querySelector(profileLink)?.getAttribute('href') : { h: '/', a: '/asearch/', f: '/fits/', s: '/simulate/', w: '/wars/', r: '/character/ranks/k/all/alltime/1/', m: '/map/index.html', p: '/post/' }[key];
+        const destination = profileLink ? document.querySelector(profileLink)?.getAttribute('href') : { h: '/', a: '/asearch/', f: '/fits/', s: '/simulate/', w: '/wars/', r: '/character/ranks/k/all/alltime/1/', m: '/map/index.html' }[key];
         if (profileLink && (!destination || destination.endsWith('/0/'))) {
             event.preventDefault();
             hideToast(keyboardGoToast);
             keyboardGoToast = null;
             showToast('Please log in to use that shortcut.', 5000);
+            return;
+        }
+        if (key === 'p') {
+            event.preventDefault();
+            hideToast(keyboardGoToast);
+            keyboardGoToast = null;
+            pasteCrestUrl();
             return;
         }
         if (!destination) return;
@@ -1280,7 +1292,7 @@ function handleKeyboardShortcut(event) {
         keyboardGoPending = true;
         clearTimeout(keyboardGoTimer);
         keyboardGoTimer = setTimeout(function() { keyboardGoPending = false; }, 4000);
-        keyboardGoToast = showToast('Go to: H home, C character, O corporation, L alliance, A search, F fits, S simulator, W wars, R ranks, M map, P post', 4000);
+        keyboardGoToast = showToast('Go to: H home, C character, O corporation, L alliance, A search, F fits, S simulator, W wars, R ranks, M map, P post clipboard killmail', 4000);
         return;
     }
 
