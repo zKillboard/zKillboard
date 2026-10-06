@@ -194,21 +194,7 @@ async function loadTops(token, pagePath, pageEntityID) {
 	if (pagePath.includes('/page/')) return;
 
 	try {
-		// Load ISK top stats
-		try {
-			const response = await fetch("/cache/tagged/statstopisk/?u=" + pagePath);
-			if (response.status >= 400) throw new Error("Unexpected status " + response.status);
-			const html = await response.text();
-			if (!isCurrentOverviewLoad(token, pagePath)) return;
-			const element = document.querySelector("#topset-isk");
-			if (element) element.innerHTML = html;
-		} catch (error) {
-			if (!isCurrentOverviewLoad(token, pagePath)) return;
-			console.error('Failed to load ISK stats:', error);
-		}
-
-		// Load top types
-		for (const t of validTopTypes) {
+		const requests = validTopTypes.map(async function(t) {
 			try {
 				const response = await fetch("/cache/tagged/statstop10/?u=" + pagePath + "&t=" + t);
 				if (response.status >= 400) throw new Error("Unexpected status " + response.status);
@@ -220,7 +206,21 @@ async function loadTops(token, pagePath, pageEntityID) {
 				if (!isCurrentOverviewLoad(token, pagePath)) return;
 				console.error('Failed to load top stats for ' + t + ':', error);
 			}
-		}
+		});
+		requests.push((async function() {
+			try {
+				const response = await fetch("/cache/tagged/statstopisk/?u=" + pagePath);
+				if (response.status >= 400) throw new Error("Unexpected status " + response.status);
+				const html = await response.text();
+				if (!isCurrentOverviewLoad(token, pagePath)) return;
+				const element = document.querySelector("#topset-isk");
+				if (element) element.innerHTML = html;
+			} catch (error) {
+				if (!isCurrentOverviewLoad(token, pagePath)) return;
+				console.error('Failed to load ISK stats:', error);
+			}
+		})());
+		await Promise.all(requests);
 
 		topsLoaded = true;
 		console.log('tops loaded');
