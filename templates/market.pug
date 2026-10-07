@@ -41,10 +41,10 @@ block content
             i.fas.fa-search(aria-hidden="true")
           a#market-item-image-link.flex-shrink-0(href=$marketItemPath)
             img#market-item-image.rounded(src=('/img/icons/' . ($marketItemID ?? 44992) . '_64.png') width="40" height="40" alt=$marketItemName)
-          div
-            h1.h4.mb-0
+          .overflow-hidden
+            h1.h4.m-0.text-truncate
               a#market-item-name(href=$marketItemPath)= $marketItemName
-            small#market-status.text-muted(role="status" aria-live="polite") Loading market data…
+            small#market-status.text-muted.d-block.text-truncate(role="status" aria-live="polite") Loading market data…
           .d-flex.align-items-center.ms-auto
             label.form-label.mb-0.me-2(for="market-region") Region
             select#market-region.form-select.form-select-sm.w-auto
