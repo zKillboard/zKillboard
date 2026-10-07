@@ -1,12 +1,12 @@
 let root = null;
 const marketDataSource = '/market/data/';
-const esi = 'https://esi.evetech.net/latest';
+const esi = 'https://esi.evetech.net';
 const state = {
     itemID: 44992,
     regions: [],
     regionNames: new Map(),
-    systemRegions: new Map(),
-    structures: {},
+    systems: {},
+    locations: {},
     items: [],
     itemElements: new Map(),
     controller: null,
@@ -140,42 +140,16 @@ function populateRegions() {
     });
 }
 
-async function locationName(order) {
-    const cacheKey = 'market-location-' + order.location_id;
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) return cached;
-    let name = state.structures[order.location_id];
-    if (!name && order.location_id <= 69999999) {
-        try { name = (await getJSON(esi + '/universe/stations/' + order.location_id + '/')).name; } catch (error) { name = null; }
-    }
-    if (!name) {
-        try { name = (await getJSON(esi + '/universe/systems/' + order.system_id + '/')).name + ' Structure'; } catch (error) { name = String(order.location_id); }
-    }
-    localStorage.setItem(cacheKey, name);
-    return name;
+function locationName(order) {
+    const name = state.locations[order.location_id];
+    if (name) return name;
+    const system = state.systems[order.system_id];
+    return system?.name ? system.name + ' Structure' : 'Loading…';
 }
 
-async function regionName(order) {
+function regionName(order) {
     let regionID = order.market_region_id;
-    if (!regionID || regionID === 19000001) {
-        const cacheKey = 'market-system-' + order.system_id;
-        regionID = state.systemRegions.get(order.system_id) || Number(localStorage.getItem(cacheKey));
-        if (!regionID) {
-            regionID = (async () => {
-                const systemData = await getJSON(esi + '/universe/systems/' + order.system_id + '/');
-                const constellation = await getJSON(esi + '/universe/constellations/' + systemData.constellation_id + '/');
-                localStorage.setItem(cacheKey, String(constellation.region_id));
-                state.systemRegions.set(order.system_id, constellation.region_id);
-                return constellation.region_id;
-            })();
-            state.systemRegions.set(order.system_id, regionID);
-        }
-        try { regionID = await regionID; }
-        catch (error) {
-            state.systemRegions.delete(order.system_id);
-            return '';
-        }
-    }
+    if (!regionID || regionID === 19000001) regionID = state.systems[order.system_id]?.region_id;
     return state.regionNames.get(Number(regionID)) || '';
 }
 
@@ -193,16 +167,17 @@ function orderNode(order, inserted = false) {
     price.textContent = formatPrice(order.price);
     const location = document.createElement('span');
     location.className = 'market-order-location';
+    location.dataset.locationId = order.location_id;
+    location.dataset.systemId = order.system_id;
+    location.dataset.regionId = order.market_region_id;
     const locationText = document.createElement('span');
     locationText.className = 'market-order-location-name';
     locationText.textContent = 'Loading…';
     const locationRegion = document.createElement('small');
     locationRegion.className = 'market-order-region';
     location.append(locationText, locationRegion);
-    locationName(order).then(name => {
-        locationText.textContent = name;
-    });
-    regionName(order).then(name => { locationRegion.textContent = name; });
+    locationText.textContent = locationName(order);
+    locationRegion.textContent = regionName(order);
     switch (Number(order.location_id)) {
         case 60003760: location.classList.add('market-hub-jita'); break;
         case 60008494: location.classList.add('market-hub-amarr'); break;
@@ -441,9 +416,14 @@ async function init() {
     byID('scroll-lock').addEventListener('click', () => setScrollLocked(byID('scroll-lock').getAttribute('aria-pressed') !== 'true'), { signal: state.events.signal });
     window.addEventListener('popstate', () => loadItem(location.pathname.split('/')[2] || 44992), { signal: state.events.signal });
     try {
-        const data = await getJSON(marketDataSource);
-        state.structures = data.locations || {};
-        state.regions = data.regions || [];
+        const [data, systems, regions] = await Promise.all([
+            getJSON(marketDataSource),
+            getJSON('/data/market-systems.json'),
+            getJSON('/data/market-regions.json')
+        ]);
+        state.systems = systems.systems;
+        state.locations = systems.locations;
+        state.regions = regions;
         state.regionNames = new Map(state.regions.map(region => [Number(region.id), region.name]));
         populateRegions();
         createGroup(byID('tree'), data.groups || {});

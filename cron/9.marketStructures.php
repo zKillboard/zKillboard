@@ -20,10 +20,7 @@ try {
     if ($csv === '') throw new RuntimeException('The structure CSV was empty.');
 
     $hash = hash('sha256', $csv);
-    if ($redis->get('zkb:marketStructures:hash') === $hash) {
-        $redis->setex($runKey, 172800, 'unchanged');
-        exit();
-    }
+    $unchanged = $redis->get('zkb:marketStructures:hash') === $hash;
 
     $stream = fopen('php://temp', 'w+');
     fwrite($stream, $csv);
@@ -43,6 +40,44 @@ try {
     }
     fclose($stream);
     if (count($structures) < 1000) throw new RuntimeException('The structure CSV contained too few valid rows.');
+
+    $systems = [];
+    foreach ($mdb->find('information', ['type' => 'solarSystemID'], [], null, ['_id' => 0, 'id' => 1, 'name' => 1, 'regionID' => 1]) as $row) {
+        $id = (int) ($row['id'] ?? 0);
+        if ($id > 0) $systems[(string) $id] = ['name' => (string) ($row['name'] ?? ''), 'region_id' => (int) ($row['regionID'] ?? 0)];
+    }
+
+    $locations = [];
+    foreach ($mdb->getCollection('sde_npcStations')->find([], ['projection' => ['_id' => 0, '_key' => 1, 'name.en' => 1]]) as $row) {
+        $id = (int) ($row['_key'] ?? 0);
+        $name = (string) ($row['name']['en'] ?? '');
+        if ($id > 0 && $name !== '') $locations[(string) $id] = $name;
+    }
+    foreach ($structures as $id => $name) $locations[(string) $id] = $name;
+
+    $regions = [];
+    foreach ($mdb->find('information', ['type' => 'regionID'], ['l_name' => 1], null, ['_id' => 0, 'id' => 1, 'name' => 1]) as $row) {
+        $id = (int) ($row['id'] ?? 0);
+        if ($id === 10000019 || ($id >= 11000000 && $id < 13000000)) continue;
+        $regions[] = ['id' => $id, 'name' => (string) ($row['name'] ?? '')];
+    }
+
+    $files = [
+        __DIR__ . '/../public/data/market-systems.json' => json_encode(['systems' => $systems, 'locations' => $locations], JSON_UNESCAPED_SLASHES),
+        __DIR__ . '/../public/data/market-regions.json' => json_encode($regions, JSON_UNESCAPED_SLASHES),
+    ];
+    foreach ($files as $path => $json) {
+        $temporary = $path . '.tmp';
+        if ($json === false || file_put_contents($temporary, $json, LOCK_EX) === false || !rename($temporary, $path)) {
+            @unlink($temporary);
+            throw new RuntimeException('Unable to update ' . basename($path) . '.');
+        }
+    }
+
+    if ($unchanged) {
+        $redis->setex($runKey, 172800, 'unchanged');
+        exit();
+    }
 
     $collection = $mdb->getCollection('marketStructures');
     $existing = [];
@@ -76,7 +111,6 @@ try {
 
     $redis->set('zkb:marketStructures:hash', $hash);
     $redis->setex($runKey, 172800, (string) count($structures));
-    $redis->del('market:data:v6');
     Util::out('Updated ' . number_format(count($structures)) . ' market structure names.');
 } catch (Throwable $error) {
     Util::zout('Market structure update failed: ' . $error->getMessage());

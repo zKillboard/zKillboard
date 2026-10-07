@@ -4,7 +4,7 @@ function handler($request, $response, $args, $container)
 {
     global $mdb, $redis;
 
-    $cacheKey = 'market:data:v6';
+    $cacheKey = 'market:data';
     $json = $redis->get($cacheKey);
     if ($json === false || $json === null) {
         $types = $mdb->find('information', [
@@ -42,29 +42,8 @@ function handler($request, $response, $args, $container)
             $groups[$categoryName]['subgroups'][$groupName]['items'][$name] = ['item_id' => $id, 'name' => $name, 'category_id' => $groupsByID[$groupID]['categoryID']];
         }
 
-        $regions = [];
-        foreach ($mdb->find('information', ['type' => 'regionID'], ['l_name' => 1], null, ['_id' => 0, 'id' => 1, 'name' => 1]) as $row) {
-            $regionID = (int) ($row['id'] ?? 0);
-            if ($regionID === 10000019 || ($regionID >= 11000000 && $regionID < 13000000)) continue;
-            $regions[] = ['id' => $regionID, 'name' => (string) ($row['name'] ?? '')];
-        }
-
-        $locations = [];
-        $stations = $mdb->getCollection('sde_npcStations')->find([], ['projection' => ['_id' => 0, '_key' => 1, 'name.en' => 1]]);
-        foreach ($stations as $row) {
-            $id = (int) ($row['_key'] ?? 0);
-            $name = (string) ($row['name']['en'] ?? '');
-            if ($id > 0 && $name !== '') $locations[(string) $id] = $name;
-        }
-        $structures = $mdb->getCollection('marketStructures')->find([], ['projection' => ['_id' => 0, 'structureID' => 1, 'name' => 1]]);
-        foreach ($structures as $row) {
-            $id = (int) (string) ($row['structureID'] ?? 0);
-            $name = (string) ($row['name'] ?? '');
-            if ($id > 0 && $name !== '') $locations[(string) $id] = $name;
-        }
-
         ksort($groups, SORT_NATURAL | SORT_FLAG_CASE);
-        $json = json_encode(['groups' => $groups, 'regions' => $regions, 'locations' => $locations], JSON_UNESCAPED_SLASHES);
+        $json = json_encode(['groups' => $groups], JSON_UNESCAPED_SLASHES);
         $redis->setex($cacheKey, 86400, $json);
     }
 
