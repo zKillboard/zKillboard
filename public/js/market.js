@@ -153,6 +153,12 @@ function regionName(order) {
     return state.regionNames.get(Number(regionID)) || '';
 }
 
+function filterOrders(orders, itemID) {
+    const regionID = byID('region').value;
+    if (itemID !== 44992 || regionID === 'all') return orders;
+    return orders.filter(order => state.systems[order.system_id]?.region_id === Number(regionID));
+}
+
 function orderNode(order, inserted = false) {
     const row = document.createElement('div');
     row.className = 'market-order' + (inserted ? ' market-order-new' : '');
@@ -293,7 +299,7 @@ async function pollRegion(regionID, itemID, controller) {
     try {
         const result = await fetchRegionOrders(regionID, itemID, controller.signal);
         if (controller.signal.aborted || state.controller !== controller || state.itemID !== itemID) return;
-        state.regionOrders.set(regionID, result.orders);
+        state.regionOrders.set(regionID, filterOrders(result.orders, itemID));
         const orders = Array.from(state.regionOrders.values()).flat();
         renderOrders(orders, true, regionID);
         status(formatInt(orders.length) + ' orders');
@@ -322,10 +328,10 @@ async function loadOrders() {
             const region = regions[cursor++];
             try {
                 const result = await fetchRegionOrders(region, itemID, controller.signal, rows => {
-                    orders.push(...rows);
+                    orders.push(...filterOrders(rows, itemID));
                     renderOrders(orders, false);
                 });
-                state.regionOrders.set(region, result.orders);
+                state.regionOrders.set(region, filterOrders(result.orders, itemID));
                 scheduleRegionPoll(region, itemID, result.expires, controller);
             }
             catch (error) {
