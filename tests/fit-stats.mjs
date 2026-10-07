@@ -11,7 +11,7 @@ globalThis.self = { postMessage: result => results.set(result.id, result) };
 globalThis.fetch = async (url, options) => {
     assert.equal(url.protocol, 'file:', 'Tests must not contact external services');
     fetches.push(url.pathname);
-    assert.equal(options.cache, 'force-cache', 'Fitting assets use the browser cache');
+    assert.equal(options.cache, url.pathname.endsWith('/data.json.gz') ? 'no-cache' : 'force-cache', 'Fitting assets use the expected browser cache policy');
     let path = new URL(url);
     path.search = '';
     if (process.argv[2] && url.pathname.endsWith('/data.json.gz')) path = process.argv[2];

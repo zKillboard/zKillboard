@@ -19,10 +19,10 @@ docker build -f Dockerfile.cron -t zkill-cron .
 
 The verified fitting-data assets are committed alongside the engine, bindings,
 and license notices in `public/vendor/eveshipfit/`. The Docker build copies these
-assets into the image. Neither builds nor container startup download fitting data,
-and no fitting updater runs in cron. The web and cron servers can run independently.
+assets into the image. The master cron worker checks for updates once per UTC day
+and atomically replaces both data files after validation when Node.js 24 is available.
 
-For a manual update, use Node.js 24 on the host from the repository root:
+To update locally, use Node.js 24 on the host from the repository root:
 
 ```bash
 node setup/updateFitData.mjs
@@ -42,12 +42,11 @@ checks that both files contain the same SDE build. Failures retain the existing
 assets. No npm install or GitHub token is needed. Do not run multiple manual
 updates concurrently.
 
-Review and commit the updated `public/vendor/eveshipfit/data.json.gz` and
-`public/vendor/eveshipfit/sde.dat.gz`, then rebuild and deploy the web image. nginx
-must serve the same deployed assets; the local nginx example already mounts the
-checkout's `public/` directory. No shared
-writable fitting-data volume between cron and web is needed. With a full `/app`
-bind mount, the snapshot comes from that checkout rather than the image.
+The cron worker and nginx must share the checkout's writable `public/` directory
+so nginx serves the updated assets. The local live-code examples already mount
+the full checkout at `/app`. Without a shared mount, updates remain inside the
+cron container; immutable deployments should still commit the updated assets and
+rebuild the web image.
 
 Run `node tests/fit-stats.mjs` to verify the installed snapshot independently.
 On a ship kill page, click **Fit Stats** to check the deployment. Open panels keep
@@ -218,7 +217,7 @@ Verify the PHP memory limit (prints `4G`):
 docker exec zkill-cron php -r 'echo ini_get("memory_limit"), PHP_EOL;'
 ```
 
-The cron image includes `mongosh` for the SDE importer. After changing `Dockerfile.cron`, rebuild the image and recreate the container; restarting an existing container does not install new image dependencies.
+The cron image includes `mongosh` for the SDE importer. After changing `Dockerfile.cron`, rebuild the image and recreate the container; restarting an existing container does not install new image dependencies. Install Node.js 24 in the cron environment to enable automatic fitting-data updates.
 
 Individual job logs are written to `/app/cron/logs/`. With the live code bind mount above, they appear in the host's `cron/logs/` directory too. Without that mount, they stay inside the container. `docker logs zkill-cron` shows startup output and output not redirected by `cron.sh`; Docker's log rotation options apply to that output, while `cron/rotate.sh` handles the job log files.
 

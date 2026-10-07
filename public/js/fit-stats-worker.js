@@ -4,15 +4,14 @@ let metadataReady;
 let engineReady;
 
 async function loadMetadata() {
-    const assetVersion = '?v=13.1.0-3.3503375.1-2';
-    const metadataResponse = await fetch(new URL('../vendor/eveshipfit/data.json.gz' + assetVersion, import.meta.url), { cache: 'force-cache' });
+    const metadataResponse = await fetch(new URL('../vendor/eveshipfit/data.json.gz', import.meta.url), { cache: 'no-cache' });
     if (!metadataResponse.ok) throw new Error(metadataResponse.status === 404 ? 'Fitting data is unavailable. Please try again later.' : 'Unable to load fitting data.');
     const snapshot = await new Response(metadataResponse.body.pipeThrough(new DecompressionStream('gzip'))).json();
     return { snapshot, data: snapshot.data };
 }
 
 async function loadEngine(snapshot) {
-    const assetVersion = '?v=13.1.0-3.3503375.1-2';
+    const assetVersion = '?v=13.1.0-' + snapshot.release;
     const [sdeResponse, wasmResponse] = await Promise.all([
         fetch(new URL('../vendor/eveshipfit/sde.dat.gz' + assetVersion, import.meta.url), { cache: 'force-cache' }),
         fetch(new URL('../vendor/eveshipfit/esf_dogma_engine_bg.wasm' + assetVersion, import.meta.url), { cache: 'force-cache' })
