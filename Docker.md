@@ -217,7 +217,7 @@ Verify the PHP memory limit (prints `4G`):
 docker exec zkill-cron php -r 'echo ini_get("memory_limit"), PHP_EOL;'
 ```
 
-The cron image includes `mongosh` for the SDE importer. After changing `Dockerfile.cron`, rebuild the image and recreate the container; restarting an existing container does not install new image dependencies. Install Node.js 24 in the cron environment to enable automatic fitting-data updates.
+The cron image includes `mongosh` for the SDE importer and Node.js 24 for automatic fitting-data updates. After changing `Dockerfile.cron`, rebuild the image and recreate the container; restarting an existing container does not install new image dependencies.
 
 Individual job logs are written to `/app/cron/logs/`. With the live code bind mount above, they appear in the host's `cron/logs/` directory too. Without that mount, they stay inside the container. `docker logs zkill-cron` shows startup output and output not redirected by `cron.sh`; Docker's log rotation options apply to that output, while `cron/rotate.sh` handles the job log files.
 
