@@ -1293,8 +1293,12 @@ function handleError(jqXHR, textStatus, errorThrown) {
 	//console.log(jqXHR.status);
 	if (textStatus == 'abort') return;
 	filtersStringified = null;
+	if (jqXHR.status == 403 && jqXHR.getResponseHeader('cf-mitigated') == 'challenge') {
+		window.location.reload();
+		return;
+	}
 	var message = errorThrown + ' ' + textStatus;
-	if (jqXHR.status == 403) message = 'Server Reinforced - no advanced search as this time.';
+	if (jqXHR.status == 403) message = 'Server Reinforced - no advanced search at this time.';
 	else if (jqXHR.status == 408) message = 'Query took too long and timed out.';
 	if (this && this.title == 'fits') fitlistmessage(message);
 	else killlistmessage(message);
