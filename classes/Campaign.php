@@ -36,6 +36,7 @@ class Campaign
                 if ($type == '' || $id <= 0) continue;
                 $clean = ['type' => $type, 'id' => $id];
                 if (!empty($row['pip'])) $clean['pip'] = preg_replace('/[^a-zA-Z0-9_.-]/', '', (string) $row['pip']);
+                if (AdvancedSearch::isExcluded($row)) $clean['not'] = true;
                 $rows[] = $clean;
             }
             if (!empty($rows)) $normalized[$key] = $rows;
@@ -63,8 +64,8 @@ class Campaign
         $filters = self::normalizeFilters($filters);
         $errors = [];
 
-        $missingAttacker = empty($filters['attackers']);
-        $missingVictim = empty($filters['victims']);
+        $missingAttacker = empty(array_filter((array) ($filters['attackers'] ?? []), function ($row) { return !AdvancedSearch::isExcluded($row); }));
+        $missingVictim = empty(array_filter((array) ($filters['victims'] ?? []), function ($row) { return !AdvancedSearch::isExcluded($row); }));
         if ($missingAttacker && $missingVictim) $errors[] = 'Add at least one attacker and at least one defender.';
         else if ($missingAttacker) $errors[] = 'Add at least one attacker.';
         else if ($missingVictim) $errors[] = 'Add at least one defender.';
@@ -290,6 +291,7 @@ class Campaign
         $entities = [];
         $seen = [];
         foreach ((array) ($filters[$side] ?? []) as $row) {
+            if (AdvancedSearch::isExcluded($row)) continue;
             $entity = self::filterEntity($row);
             if (empty($entity)) continue;
             $key = ($entity['url'] ?? '') . ':' . ($entity['name'] ?? '');
@@ -331,6 +333,7 @@ class Campaign
         $ids = [];
         foreach ((array) ($filters[$side] ?? []) as $row) {
             $row = is_object($row) ? (array) $row : $row;
+            if (AdvancedSearch::isExcluded($row)) continue;
             $id = (int) ($row['id'] ?? 0);
             if ($id > 0) $ids[$id] = $id;
         }
@@ -844,6 +847,7 @@ class Campaign
         ];
         $name = (string) Info::getInfoField($type, $id, 'name');
         if ($name == '') $name = ($labels[$type] ?? $type) . ' ' . $id;
+        if (AdvancedSearch::isExcluded($row)) $name = 'NOT ' . $name;
 
         $image = '/img/empty_32.png';
         $imageOnError = "this.removeAttribute('onerror'); this.src='/img/empty_32.png';";

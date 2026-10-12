@@ -69,9 +69,66 @@ hr {
 
 #attackers,
 #neutrals,
-#victims {
+#victims,
+#items {
 	display: flex;
 	flex-direction: column;
+	min-height: 44px;
+}
+
+.filter[draggable="true"],
+.filter[draggable="true"] .entity {
+	cursor: grab;
+}
+
+.filter[draggable="true"]:active,
+.filter[draggable="true"] .entity:active {
+	cursor: grabbing;
+}
+
+.filter[draggable="true"] button {
+	cursor: pointer;
+}
+
+.asearch-drop-target {
+	outline: 2px dashed var(--bs-info);
+	outline-offset: -2px;
+}
+
+.asearch-drop-target-active {
+	background-color: rgba(var(--bs-info-rgb), 0.15);
+}
+
+#asearch-filter-trash {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 10;
+	display: flex;
+	width: calc(25% - 24px);
+	height: 44px;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	border: 2px dashed #ff6b6b;
+	border-radius: 0.375rem;
+	background-color: #212529;
+	color: #fff;
+	text-align: center;
+}
+
+@media only screen and (max-width: 767px) {
+	#asearch-filter-trash {
+		width: calc(100% - 24px);
+	}
+}
+
+#asearch-filter-trash.asearch-drop-target-active {
+	border-color: #fff;
+	border-style: solid;
+	background-color: #842029;
+	color: #fff;
 }
 
 .entity {
@@ -158,9 +215,13 @@ div[entity-type] {
 	margin: 3px;
 }
 
+div.filter[entity-type] {
+	margin-top: 0;
+}
+
 
 .entity {
-	cursor: default !important;
+	cursor: default;
 	white-space: normal;
 	overflow-wrap: anywhere;
 }

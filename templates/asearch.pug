@@ -105,7 +105,10 @@ block content
           button#items-joinType-or.btn.btn-secondary.radio-btn(value="items-or" title="Or" aria-pressed="false") Or
         #items
     hr#clickToDigHr
-    #clickToDig(style="display: flex;")
+    #clickToDig.position-relative(style="display: flex;")
+      #asearch-filter-trash.d-none(aria-hidden="true" aria-label="Drop to remove" title="Drop to remove")
+        i.fas.fa-trash(aria-hidden="true")
+        span.ms-2 Drop to remove
       .checkbox
         label
           input#clickToDigCheckbox(type="checkbox")

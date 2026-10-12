@@ -172,24 +172,43 @@ class AdvancedSearch
         if (!isset($queryParams[$key]) || !is_array($queryParams[$key])) return $queries;
 
         $typeIDs = [];
+        $notTypeIDs = [];
         foreach ($queryParams[$key] as $row) {
             if (!isset($row['id'])) continue;
             $typeID = (int) $row['id'];
-            if ($typeID > 0) $typeIDs[$typeID] = $typeID;
+            if ($typeID > 0 && self::isExcluded($row)) $notTypeIDs[$typeID] = $typeID;
+            else if ($typeID > 0) $typeIDs[$typeID] = $typeID;
         }
         $typeIDs = array_values($typeIDs);
-        if (sizeof($typeIDs) == 0) return $queries;
+        $notTypeIDs = array_values($notTypeIDs);
+        if (sizeof($typeIDs) == 0 && sizeof($notTypeIDs) == 0) return $queries;
 
         $candidateKillIDs = self::getCandidateKillIDs($queries, $maxTimeMS);
         if (sizeof($candidateKillIDs) == 0) {
             $queries[] = ['killID' => -1];
             return $queries;
         }
+        if (sizeof($typeIDs)) {
+            $killIDs = self::getItemKillIDs($typeIDs, $candidateKillIDs, $joinType != 'or' && $joinType != '-or', $maxTimeMS);
+            $queries[] = ['killID' => sizeof($killIDs) ? ['$in' => $killIDs] : -1];
+        } else {
+            $queries[] = ['killID' => ['$in' => $candidateKillIDs]];
+        }
+        if (sizeof($notTypeIDs)) {
+            $killIDs = self::getItemKillIDs($notTypeIDs, $candidateKillIDs, false, $maxTimeMS);
+            if (sizeof($killIDs)) $queries[] = ['killID' => ['$nin' => $killIDs]];
+        }
+        return $queries;
+    }
+
+    private static function getItemKillIDs($typeIDs, $candidateKillIDs, $requireAll, $maxTimeMS)
+    {
+        global $mdb;
+
         $itemmails = $mdb->getCollection('itemmails');
         $itemMatch = ['typeID' => ['$in' => $typeIDs], 'killID' => ['$in' => $candidateKillIDs]];
-
         $killIDs = [];
-        if ($joinType == 'or' || $joinType == '-or' || sizeof($typeIDs) == 1) {
+        if (!$requireAll || sizeof($typeIDs) == 1) {
             $options = ['projection' => ['killID' => 1, '_id' => 0]];
             if ($maxTimeMS !== null) $options['maxTimeMS'] = $maxTimeMS;
             $cursor = $itemmails->find($itemMatch, $options);
@@ -212,9 +231,7 @@ class AdvancedSearch
             }
         }
 
-        $killIDs = array_values($killIDs);
-        $queries[] = ['killID' => sizeof($killIDs) ? ['$in' => $killIDs] : -1];
-        return $queries;
+        return array_values($killIDs);
     }
 
     private static function getCandidateKillIDs($queries, $maxTimeMS = 5000)
@@ -274,6 +291,7 @@ class AdvancedSearch
 
         $arr = $queryParams[$key];
         $params = [];
+        $notParams = [];
         foreach ($arr as $row) {
             $param = [];
             if ($row['type'] == 'systemID') $row['type'] = 'solarSystemID';
@@ -283,19 +301,33 @@ class AdvancedSearch
             $param[$row['type']] = (int) $row['id'];
             if ($isVictim === false) $param['kills'] = true;
             else if ($isVictim === true) $param['losses'] = true;
-            $params[] = MongoFilter::buildQuery($param, $useElemMatch);
+            $param = MongoFilter::buildQuery($param, $useElemMatch);
+            if (self::isExcluded($row)) $notParams[] = $param;
+            else $params[] = $param;
         }
 
-        if ($joinType == 'or' || $joinType == '-or') return ['$or' => $params];
-        if ($joinType == 'and' || $joinType == "-and") return ['$and' => $params];
-
-        // Last option is 'mergedand' or 'In' on the site, we need to merge everything
-        $merged = [];
-        foreach ($params as $param) {
-            $merged = array_merge_recursive($merged, $param);
+        $query = null;
+        if (sizeof($params)) {
+            if ($joinType == 'or' || $joinType == '-or') $query = ['$or' => $params];
+            else if ($joinType == 'and' || $joinType == '-and') $query = ['$and' => $params];
+            else {
+                // Last option is 'mergedand' or 'In' on the site, we need to merge everything
+                $query = [];
+                foreach ($params as $param) {
+                    $query = array_merge_recursive($query, $param);
+                }
+                if (isset($query['involved']['$elemMatch']['isVictim'])) $query['involved']['$elemMatch']['isVictim'] = $isVictim;
+            }
         }
-        if (isset($merged['involved']['$elemMatch']['isVictim'])) $merged['involved']['$elemMatch']['isVictim'] = $isVictim;
-        return $merged;
+
+        if (!sizeof($notParams)) return $query;
+        $notQuery = ['$nor' => $notParams];
+        return $query == null ? $notQuery : ['$and' => [$query, $notQuery]];
+    }
+
+    public static function isExcluded($row)
+    {
+        return in_array($row['not'] ?? false, [true, 1, '1', 'true'], true);
     }
 
     public static function getLabelGroup($label)

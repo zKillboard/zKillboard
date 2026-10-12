@@ -12,6 +12,9 @@ var campaignModalUID = null;
 var matchingCampaignsByUID = {};
 var matchingCampaignsKey = null;
 var matchingCampaignsRequest = 0;
+var asearchDraggedFilter = null;
+var asearchDragOffset = null;
+var asearchDragDestination = null;
 
 var radios = { sort: { sortBy: 'date', sortDir: 'desc' } };  // to be deprecated
 var asfilter = { location: [], attackers: [], neutrals: [], victims: [], items: [], sort: { sortBy: 'date', sortDir: 'desc' } };
@@ -38,6 +41,9 @@ function zkbInitAsearch() {
 	campaignModalMode = 'create';
 	campaignModalUID = null;
 	matchingCampaignsByUID = {};
+	asearchDraggedFilter = null;
+	asearchDragOffset = null;
+	asearchDragDestination = null;
 	radios = { sort: { sortBy: 'date', sortDir: 'desc' } };
 	asfilter = { location: [], attackers: [], neutrals: [], victims: [], items: [], sort: { sortBy: 'date', sortDir: 'desc' } };
 	asearchResultMode = 'kills';
@@ -111,6 +117,23 @@ function loadasearch() {
 
 	$("#rolling-times").off('click.zkb-asearch').on('click.zkb-asearch', toggleRollingTime);
 	$("#togglefilters").off('click.zkb-asearch').on('click.zkb-asearch', toggleFiltersClick);
+	$(document).off('.zkb-asearch-filter-drag')
+		.on('dragover.zkb-asearch-filter-drag', function (event) {
+			if (!asearchDraggedFilter) return;
+			event.preventDefault();
+			var dataTransfer = (event.originalEvent || event).dataTransfer;
+			if (dataTransfer) dataTransfer.dropEffect = 'move';
+		})
+		.on('drop.zkb-asearch-filter-drag', function (event) {
+			if (!asearchDraggedFilter) return;
+			event.preventDefault();
+			var filter = asearchDraggedFilter;
+			var destination = asearchDragDestination;
+			asearchDraggedFilter = null;
+			asearchDragDestination = null;
+			clearAsearchDropTargets();
+			if (destination) applyFilterDrop(filter, destination);
+		});
 
 	setupAsearchDatepickers();
 
@@ -376,14 +399,9 @@ function zeroPad(text) {
 }
 
 function createSuggestion(json, slot) {
-	addEntity({
-		value: json.name,
-		data: {
-			type: json.type,
-			id: json.id,
-			pip: json.pip
-		}
-	}, slot);
+	var data = { type: json.type, id: json.id, pip: json.pip };
+	if (json.not === true) data.not = true;
+	addEntity({ value: json.name, data: data }, slot);
 }
 
 function addEntity(suggestion, slot) {
@@ -421,59 +439,73 @@ function addEntity(suggestion, slot) {
 	clickPage1();
 }
 
-function getHTML(suggestion) {
+function getHTML(suggestion, slot) {
 	suggestion.data.type = suggestion.data.type.replace(/[\W_]+/g, '');
 	suggestion.data.id = parseInt(suggestion.data.id);
 	suggestion.value = suggestion.value.replaceAll('<', '').replaceAll('>', '');
 	var entityImage = getEntityImage(suggestion.data.type, suggestion.data.id);
 	//console.log(suggestion.data.type, suggestion.data.id, suggestion.data.value);
 	var filterName = suggestion.value || 'filter';
-	var left = $("<button>").attr("type", "button").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("fas").addClass("fa-chevron-left").attr('direction', 'left').attr('aria-label', 'Move ' + filterName + ' filter left').attr('title', 'Move filter left').on('click', moveLeft);
-	var right = $("<button>").attr("type", "button").addClass('btn').addClass('btn-sm').addClass('btn-success').addClass("fas").addClass("fa-chevron-right").attr('direction', 'right').attr('aria-label', 'Move ' + filterName + ' filter right').attr('title', 'Move filter right').on('click', moveRight);
-	var remove = $("<button>").attr("type", "button").addClass('btn').addClass('btn-sm').addClass("fas").addClass("fa-times").addClass("filter-remove").addClass('alert-danger').attr('aria-label', 'Remove ' + filterName + ' filter').attr('title', 'Remove filter').on('click', moveOut);
-	left.css({ flex: "0 0 auto", width: "34px", display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: "6px 0 0 6px", marginRight: "3px" });
-	right.css({ flex: "0 0 auto", width: "34px", display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 0 });
-	remove.css({ flex: "0 0 auto", width: "30px", display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: "0 6px 6px 0" });
+	var left = $("<button>").attr("type", "button").addClass('dropdown-item filter-move-left').append($("<i>").addClass('fas fa-chevron-left fa-fw me-2'), 'Move left').on('click', moveLeft);
+	var right = $("<button>").attr("type", "button").addClass('dropdown-item filter-move-right').append($("<i>").addClass('fas fa-chevron-right fa-fw me-2'), 'Move right').on('click', moveRight);
+	var not = $("<button>").attr("type", "button").addClass('dropdown-item filter-not').attr('aria-pressed', suggestion.data.not ? 'true' : 'false').append($("<i>").addClass('fas fa-fw me-2'), $("<span>")).on('click', toggleFilterNot);
+	var remove = $("<button>").attr("type", "button").addClass('dropdown-item filter-remove').append($("<i>").addClass('fas fa-times fa-fw me-2'), 'Remove').on('click', moveOut);
+	var menu = $("<ul>").addClass('dropdown-menu dropdown-menu-end').append($("<li>").append(left), $("<li>").append(right), $("<li>").append(not), $("<li>").append(remove));
+	var actions = $("<div>").addClass('dropdown d-flex').append($("<button>").attr({ type: 'button', 'data-bs-toggle': 'dropdown', 'aria-expanded': 'false', 'aria-label': 'Actions for ' + filterName, title: 'Filter actions' }).addClass('btn fas filter-actions').css({ width: '24px', padding: 0, borderRadius: '0 6px 6px 0' }), menu);
 	var imageWrap = $("<span>")
-		.css({ width: "42px", height: "42px", marginRight: "0.55em", flex: "0 0 42px", display: "inline-flex", alignItems: "center", justifyContent: "flex-start", overflow: "hidden" });
+		.css({ width: "36px", height: "36px", marginLeft: "0.35em", marginRight: "0.4em", flex: "0 0 36px", display: "inline-flex", alignItems: "center", justifyContent: "flex-start", overflow: "hidden" });
 	var image = $("<img>")
 		.attr("src", entityImage.src)
 		.attr("alt", "")
+		.attr("draggable", "false")
 		.attr("loading", "lazy")
 		.attr("decoding", "async")
-		.css({ width: "42px", height: "42px", flex: "0 0 42px", objectFit: "contain", objectPosition: "left center" })
+		.css({ width: "36px", height: "36px", flex: "0 0 36px", objectFit: "contain", objectPosition: "left center" })
 		.addClass("eveimage img-rounded");
 	if (entityImage.onerror != undefined) image.attr("onerror", entityImage.onerror);
 	if ((suggestion.data.type == 'shipID' || suggestion.data.type == 'shipTypeID') && suggestion.data.pip) {
 		image = $("<span>")
 			.addClass("shipImageSpan")
-			.css({ width: "42px", height: "42px", "--size": "42px", "--sizei": "42", margin: 0 })
+			.css({ width: "36px", height: "36px", "--size": "36px", "--sizei": "36", margin: 0 })
 			.append(image)
-			.append($("<img>").addClass("pip").attr("src", "/img/pips/" + suggestion.data.pip).attr("alt", ""));
+			.append($("<img>").addClass("pip").attr("src", "/img/pips/" + suggestion.data.pip).attr("alt", "").attr("draggable", "false"));
 	}
 	imageWrap.append(image);
 	var data = $("<span>")
 		.addClass("entity")
 		.addClass('btn')
-		.css({ display: "inline-flex", alignItems: "center", justifyContent: "flex-start", textAlign: "left", flex: "1 1 auto", width: "auto", minWidth: 0, padding: "4px 10px 4px 0", borderRadius: 0, color: "#ddd", backgroundColor: "#111" })
+		.css({ display: "inline-flex", alignItems: "center", justifyContent: "flex-start", textAlign: "left", flex: "1 1 auto", width: "auto", minWidth: 0, padding: "4px 10px 4px 0", borderRadius: "6px 0 0 6px", color: "#ddd", backgroundColor: "#111" })
 		.attr("id", suggestion.data.type + ':' + suggestion.data.id)
 		.attr("entity-id", suggestion.data.id)
 		.attr("entity-type", suggestion.data.type)
 		.attr("entity-name", suggestion.value)
 		.append(imageWrap)
 		.append($("<span>").text(suggestion.value));
-	return $("<div>")
+	var filter = $("<div>")
 		.attr('entity-type', suggestion.data.type)
 		.attr('entity-id', suggestion.data.id)
 		.attr('entity-pip', suggestion.data.pip || "")
+		.attr('entity-not', suggestion.data.not ? 'true' : 'false')
 		.attr('time-id', 'id-' + Date.now())
-		.css({ display: "flex", alignItems: "stretch", borderRadius: "7px", overflow: "hidden", padding: 0, backgroundColor: "#111" })
+		.attr('draggable', slot == 'location' ? 'false' : 'true')
+		.css({ display: "flex", alignItems: "stretch", borderRadius: "7px", padding: 0, backgroundColor: "#111" })
 		.addClass('filter')
 		.addClass('filter-' + suggestion.data.type)
-		.append(left)
-		.append(data)
-		.append(right)
-		.append(remove);
+		.on('dragstart', filterDragStart)
+		.on('drag', filterDrag)
+		.on('dragend', filterDragEnd);
+	filter.append(data).append(actions);
+	updateFilterActions(filter, slot);
+	return filter;
+}
+
+function updateFilterActions(filter, slot) {
+	filter.find('.filter-move-left').closest('li').toggle(slot == 'neutrals' || slot == 'victims' || slot == 'items');
+	filter.find('.filter-move-right').closest('li').toggle(slot == 'attackers' || slot == 'neutrals' || slot == 'victims');
+	var excluded = filter.attr('entity-not') == 'true';
+	filter.find('.filter-actions').toggleClass('btn-danger fa-ban', excluded).toggleClass('btn-secondary fa-ellipsis-v', !excluded);
+	filter.find('.filter-not').attr('aria-pressed', excluded ? 'true' : 'false').find('i').toggleClass('fa-ban', !excluded).toggleClass('fa-check', excluded);
+	filter.find('.filter-not span').text(excluded ? 'Include' : 'Exclude');
 }
 
 function getEntityImage(type, id) {
@@ -525,7 +557,7 @@ function getEntityImage(type, id) {
 }
 
 function add(id, suggestion) {
-	var newhtml = getHTML(suggestion);
+	var newhtml = getHTML(suggestion, id);
 	var tag = $("#" + id);
 
 	tag.append(newhtml);
@@ -574,10 +606,11 @@ function setFilters(hashfilters) {
 			case 'victims':
 			case 'items':
 				for (var i = 0; i < value.length; i++) {
-					var url = '/asearchinfo/?type=' + value[i].type + '&id=' + value[i].id;
+					let savedFilter = value[i];
+					var url = '/asearchinfo/?type=' + savedFilter.type + '&id=' + savedFilter.id;
 					promises.push($.ajax({
 						url: url,
-						success: function (json) { createSuggestion(json, key); }
+						success: function (json) { json.not = savedFilter.not == true; createSuggestion(json, key); }
 					}));
 				}
 				break;
@@ -1396,20 +1429,107 @@ function moveRight() {
 }
 
 function move(element, arr) {
-	var parent = $(element).parent();
+	var parent = $(element).closest('.filter');
 	var location = parent.parent().attr('id');
-
-	var data = { type: parent.attr('entity-type'), id: parent.attr('entity-id') };
-	var pip = parent.attr('entity-pip');
-	if (pip != undefined && pip != '') data.pip = pip;
 	var destination = arr[location];
+	if (destination != undefined) moveFilter(parent, destination);
+}
 
-	if (destination != undefined && canMoveTo(data, destination)) {
-		filterCleanup(data);
+function filterData(filter) {
+	filter = $(filter);
+	var data = { type: filter.attr('entity-type'), id: filter.attr('entity-id') };
+	var pip = filter.attr('entity-pip');
+	if (pip != undefined && pip != '') data.pip = pip;
+	if (filter.attr('entity-not') == 'true') data.not = true;
+	return data;
+}
+
+function moveFilter(filter, destination) {
+	var parent = $(filter);
+	var location = parent.parent().attr('id');
+	var data = filterData(parent);
+	if (destination != location && canMoveTo(data, destination)) {
+		filterCleanup(data, location);
 		asfilter[destination].push(data);
 		parent.detach().appendTo('#' + destination);
-		clickPage1();
+		updateFilterActions(parent, destination);
+		setTimeout(clickPage1, 0);
 	}
+}
+
+function applyFilterDrop(filter, destination) {
+	if (destination == 'asearch-filter-trash') removeFilter(filter);
+	else moveFilter(filter, destination);
+}
+
+function filterDragStart(event) {
+	asearchDraggedFilter = $(this);
+	var nativeEvent = event.originalEvent || event;
+	var rect = this.getBoundingClientRect();
+	asearchDragOffset = { x: nativeEvent.clientX - rect.left, y: nativeEvent.clientY - rect.top, width: rect.width, height: rect.height };
+	asearchDragDestination = null;
+	var actionButton = this.querySelector('[data-bs-toggle="dropdown"]');
+	if (actionButton && typeof bootstrap != 'undefined' && bootstrap.Dropdown) bootstrap.Dropdown.getOrCreateInstance(actionButton).hide();
+	$(this).find('.dropdown, .dropdown-menu').removeClass('show');
+	$(actionButton).removeClass('show').attr('aria-expanded', 'false');
+	var dragImage = this.cloneNode(true);
+	dragImage.removeAttribute('id');
+	dragImage.querySelectorAll('[id]').forEach(function (element) { element.removeAttribute('id'); });
+	dragImage.querySelectorAll('.dropdown-menu').forEach(function (menu) { menu.remove(); });
+	dragImage.style.position = 'fixed';
+	dragImage.style.left = '-10000px';
+	dragImage.style.top = '0';
+	dragImage.style.width = rect.width + 'px';
+	document.body.appendChild(dragImage);
+	var location = asearchDraggedFilter.parent().attr('id');
+	var data = filterData(asearchDraggedFilter);
+	$('#attackers, #neutrals, #victims, #items').each(function () {
+		$(this).toggleClass('asearch-drop-target', this.id != location && canMoveTo(data, this.id));
+	});
+	$('#asearch-filter-trash').removeClass('d-none').attr('aria-hidden', 'false');
+	var dataTransfer = nativeEvent.dataTransfer;
+	if (dataTransfer) {
+		dataTransfer.effectAllowed = 'move';
+		dataTransfer.setData('text/plain', $(this).attr('time-id'));
+		dataTransfer.setDragImage(dragImage, asearchDragOffset.x, asearchDragOffset.y);
+	}
+	setTimeout(function () { dragImage.remove(); }, 0);
+}
+
+function filterDrag(event) {
+	var nativeEvent = event.originalEvent || event;
+	if (!asearchDragOffset || nativeEvent.clientX <= 0 || nativeEvent.clientY <= 0) return;
+	var left = nativeEvent.clientX - asearchDragOffset.x;
+	var top = nativeEvent.clientY - asearchDragOffset.y;
+	var right = left + asearchDragOffset.width;
+	var bottom = top + asearchDragOffset.height;
+	var bestArea = 0;
+	asearchDragDestination = null;
+	$('.asearch-drop-target, #asearch-filter-trash').each(function () {
+		var rect = this.getBoundingClientRect();
+		var area = Math.max(0, Math.min(right, rect.right) - Math.max(left, rect.left)) * Math.max(0, Math.min(bottom, rect.bottom) - Math.max(top, rect.top));
+		if (area > bestArea) {
+			bestArea = area;
+			asearchDragDestination = this.id;
+		}
+	});
+	$('.asearch-drop-target, #asearch-filter-trash').removeClass('asearch-drop-target-active');
+	if (asearchDragDestination) $('#' + asearchDragDestination).addClass('asearch-drop-target-active');
+}
+
+function filterDragEnd() {
+	var filter = asearchDraggedFilter;
+	var destination = asearchDragDestination;
+	asearchDraggedFilter = null;
+	asearchDragOffset = null;
+	asearchDragDestination = null;
+	clearAsearchDropTargets();
+	if (filter && destination) applyFilterDrop(filter, destination);
+}
+
+function clearAsearchDropTargets() {
+	$('#attackers, #neutrals, #victims, #items').removeClass('asearch-drop-target asearch-drop-target-active');
+	$('#asearch-filter-trash').addClass('d-none').attr('aria-hidden', 'true').removeClass('asearch-drop-target-active');
 }
 
 function canMoveTo(data, destination) {
@@ -1419,17 +1539,37 @@ function canMoveTo(data, destination) {
 }
 
 function moveOut() {
-	var parent = $(this).parent();
+	removeFilter($(this).closest('.filter'));
+}
+
+function removeFilter(parent) {
 	var location = parent.parent().attr('id');
 
 	var data = { type: parent.attr('entity-type'), id: parent.attr('entity-id') };
-	filterCleanup(data);
+	filterCleanup(data, location);
 
 	parent.remove();
 
 	// If location div is empty or only has whitespace, show "All systems" placeholder
 	if (location == 'location' && $("#location").html().trim() == "") {
 		$("#location").text('All systems');
+	}
+	clickPage1();
+}
+
+function toggleFilterNot() {
+	var button = $(this);
+	var parent = button.closest('.filter');
+	var location = parent.parent().attr('id');
+	var excluded = parent.attr('entity-not') != 'true';
+	parent.attr('entity-not', excluded ? 'true' : 'false');
+	updateFilterActions(parent, location);
+	for (var i = 0; i < asfilter[location].length; i++) {
+		if (asfilter[location][i].type == parent.attr('entity-type') && asfilter[location][i].id == parent.attr('entity-id')) {
+			if (excluded) asfilter[location][i].not = true;
+			else delete asfilter[location][i].not;
+			break;
+		}
 	}
 	clickPage1();
 }
@@ -1480,19 +1620,13 @@ function remove(arr, value) {
 }
 
 // Remove the element from the asfilter 
-function filterCleanup(data) {
-	var keys = Object.keys(asfilter);
-	for (i = 0; i < keys.length; i++) {
-		var key = keys[i];
-		var value = asfilter[key];
-		if (Array.isArray(value)) {
-			for (j = 0; j < value.length; j++) {
-				if (data.type == value[j].type && data.id == value[j].id) {
-					value.splice(j, 1);
-					asfilter[key] = value;
-					return;
-				}
-			}
+function filterCleanup(data, location) {
+	var value = asfilter[location];
+	if (!Array.isArray(value)) return;
+	for (var i = 0; i < value.length; i++) {
+		if (data.type == value[i].type && data.id == value[i].id) {
+			value.splice(i, 1);
+			return;
 		}
 	}
 }
@@ -1527,6 +1661,7 @@ function updateTitle() {
 	var filters = [];
 	$(".entity").each(function () {
 		var entityText = $(this).attr('entity-name') || $(this).text();
+		if ($(this).closest('.filter').attr('entity-not') == 'true') entityText = 'NOT ' + entityText;
 		if (entityText != undefined && entityText !== '') filters.push(entityText);
 	});
 	var epochTitle = $(".tfilter.btn-primary").attr('title') ?? $(".tfilter.btn-primary").attr('prev-title');	
@@ -1688,8 +1823,8 @@ function campaignValidationMessage(filters) {
 	if (!filters) return "Add at least one attacker and at least one defender.";
 
 	var missing = [];
-	if (!Array.isArray(filters.attackers) || filters.attackers.length == 0) missing.push("attacker");
-	if (!Array.isArray(filters.victims) || filters.victims.length == 0) missing.push("defender");
+	if (!Array.isArray(filters.attackers) || !filters.attackers.some(function (row) { return row.not !== true; })) missing.push("attacker");
+	if (!Array.isArray(filters.victims) || !filters.victims.some(function (row) { return row.not !== true; })) missing.push("defender");
 	if (missing.length == 2) return "Add at least one attacker and at least one defender.";
 	if (missing.length == 1) return "Add at least one " + missing[0] + ".";
 	if (Array.isArray(filters.neutrals) && filters.neutrals.length > 0) return "Remove filters from Either.";
@@ -2123,6 +2258,10 @@ function buildZkillbotFilter() {
 }
 
 function btn_export() {
+	if ($(".filter[entity-not='true']").length) {
+		alert('NOT filters cannot be exported to a zkillbot filter.');
+		return;
+	}
 	var filter = buildZkillbotFilter();
 	if (!filter) {
 		alert('No filters selected to export!');

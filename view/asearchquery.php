@@ -90,6 +90,7 @@ function handler($request, $response, $args, $container) {
 		$fitShipSelectCount = 0;
 		foreach (['neutrals', 'attackers', 'victims'] as $shipFilterKey) {
 			foreach ((array) ($queryParams[$shipFilterKey] ?? []) as $row) {
+				if (AdvancedSearch::isExcluded($row)) continue;
 				$type = (string) ($row['type'] ?? '');
 				if (!in_array($type, ['shipID', 'shipTypeID', 'typeID'], true)) continue;
 				$fitShipSelectCount++;
