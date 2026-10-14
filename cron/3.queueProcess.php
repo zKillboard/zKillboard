@@ -311,6 +311,8 @@ while ($time >= time()) {
                     } while ($tries > 0);
 
                     $killsLastHour->add($row['killID']);
+                    $redis->sadd("queueCacheTags", "kill:$killID");
+                    $redis->sadd("queueCacheUrls", "https://zkillboard.com/kill/$killID/");
                     $queueInfo->push($killID);
                 } catch (Exception $exxx) {
                     if ($session->isInTransaction()) {
