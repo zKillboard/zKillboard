@@ -33,6 +33,7 @@ window.zkbInitSimulate = function() {
     let timer;
     let calculationPending = false;
     let queuedCalculation;
+    let panelHeight = 0;
     let alive = true;
     const events = new AbortController();
     const fittingImages = new Map();
@@ -49,7 +50,7 @@ window.zkbInitSimulate = function() {
     try { savedUI = JSON.parse(localStorage.getItem('zkb:simulate-ui')); } catch (error) { /* Invalid or unavailable storage. */ }
     let equipmentSort = savedUI?.sort === 'Alpha' ? 'Alpha' : 'Meta';
     let restoring = true;
-    let activeTab = savedUI?.tab === 'capsule' ? 'capsule' : 'ship';
+    let activeTab = ['ship', 'capsule', 'configure'].includes(savedUI?.tab) ? savedUI.tab : 'ship';
     const equipmentGroups = new Map();
     const revealedCharges = new Map();
     function saveState() {
@@ -495,10 +496,20 @@ window.zkbInitSimulate = function() {
     function renderFit() {
         dropTargets.clear();
         const hull = catalog[fit.ship_type_id];
+        const panels = ['ship', 'capsule', 'configure'].map(tab => element(tab + '-panel'));
+        const visiblePanel = panels.find(panel => !panel.hidden);
+        panelHeight = Math.max(panelHeight, visiblePanel?.offsetHeight || 0);
         element('ship-panel').hidden = activeTab !== 'ship';
         element('capsule-panel').hidden = activeTab !== 'capsule';
-        element(activeTab + '-stats').append(element('warnings'), element('stats'));
-        for (const tab of ['ship', 'capsule']) {
+        element('configure-panel').hidden = activeTab !== 'configure';
+        for (const panel of panels) panel.style.minHeight = panelHeight ? panelHeight + 'px' : '';
+        globalThis.requestAnimationFrame?.(() => {
+            if (!alive) return;
+            panelHeight = Math.max(panelHeight, element(activeTab + '-panel').offsetHeight || 0);
+            for (const panel of panels) panel.style.minHeight = panelHeight + 'px';
+        });
+        if (activeTab !== 'configure') element(activeTab + '-stats').append(element('warnings'), element('stats'));
+        for (const tab of ['ship', 'capsule', 'configure']) {
             const active = tab === activeTab;
             element('tab-' + tab).className = 'nav-link' + (active ? ' active' : '');
             element('tab-' + tab).setAttribute('aria-selected', String(active));
@@ -1246,6 +1257,16 @@ window.zkbInitSimulate = function() {
 
     function changed() {
         if (!fit) return;
+        fit.damageProfile = Object.fromEntries(['em', 'thermal', 'kinetic', 'explosive'].map(damage => {
+            const value = Math.max(0, Math.min(100, Number(element('damage-' + damage).value) || 0));
+            element('damage-' + damage).value = value;
+            return [damage, value];
+        }));
+        const damageTotal = Object.values(fit.damageProfile).reduce((total, value) => total + value, 0);
+        const validDamageTotal = Math.abs(damageTotal - 100) < 0.001;
+        element('damage-status').textContent = 'Total: ' + damageTotal.toLocaleString(undefined, { maximumFractionDigits: 2 }) + '%' + (validDamageTotal ? '' : ' (must equal 100%)');
+        element('damage-status').className = 'small mt-3' + (validDamageTotal ? '' : ' text-warning');
+        if (!validDamageTotal) return;
         element('mode-control').hidden = catalog[fit.ship_type_id].groupID !== 1305;
         for (const mode of ['Defense', 'Propulsion', 'Sharpshooter']) {
             const active = mode === (fit.mode || 'Defense');
@@ -1290,6 +1311,8 @@ window.zkbInitSimulate = function() {
 
     function loadFit(next) {
         fit = next;
+        if (!fit.damageProfile || ['em', 'thermal', 'kinetic', 'explosive'].some(damage => !Number.isFinite(fit.damageProfile[damage]))) fit.damageProfile = { em: 25, thermal: 25, kinetic: 25, explosive: 25 };
+        for (const damage of ['em', 'thermal', 'kinetic', 'explosive']) element('damage-' + damage).value = fit.damageProfile[damage];
         if (!Array.isArray(fit.implants)) fit.implants = [];
         fit.items.filter(item => item.flag === 158 && !Number.isInteger(item.active)).forEach(item => { item.active = 0; });
         if (!Array.isArray(fit.fighterTubes)) fit.fighterTubes = fit.items.filter(item => item.flag === 158).flatMap(item => Array.from({ length: item.active || 0 }, () => ({ type_id: item.type_id, quantity: catalog[item.type_id].attributes.fighterSquadronMaxSize || item.quantity })));
@@ -1339,7 +1362,8 @@ window.zkbInitSimulate = function() {
             switch (event.target.id) {
                 case 'simulate-tab-ship':
                 case 'simulate-tab-capsule':
-                    activeTab = event.target.id.endsWith('capsule') ? 'capsule' : 'ship';
+                case 'simulate-tab-configure':
+                    activeTab = event.target.id.replace('simulate-tab-', '');
                     renderFit();
                     if (activeTab === 'capsule' && capsuleResult) renderStats(capsuleResult, true);
                     else if (activeTab === 'ship' && lastResult) renderStats(lastResult);
@@ -1447,6 +1471,22 @@ window.zkbInitSimulate = function() {
     element('implant-search').addEventListener('input', searchImplants, { signal: events.signal });
     element('name').addEventListener('change', changed, { signal: events.signal });
     element('skills').addEventListener('change', changed, { signal: events.signal });
+    const damages = ['em', 'thermal', 'kinetic', 'explosive'];
+    damages.forEach((damage, index) => element('damage-' + damage).addEventListener('change', () => {
+        if (!fit) return;
+        const previous = fit.damageProfile[damage];
+        const value = Math.max(0, Math.min(100, Number(element('damage-' + damage).value) || 0));
+        let remaining = value - previous;
+        element('damage-' + damage).value = value;
+        for (let offset = 1; offset < damages.length && remaining !== 0; offset++) {
+            const other = damages[(index + offset) % damages.length];
+            const otherValue = fit.damageProfile[other];
+            const adjustment = remaining > 0 ? Math.min(remaining, otherValue) : Math.max(remaining, otherValue - 100);
+            element('damage-' + other).value = otherValue - adjustment;
+            remaining -= adjustment;
+        }
+        changed();
+    }, { signal: events.signal }));
     for (const mode of ['Defense', 'Propulsion', 'Sharpshooter']) {
         element('mode-' + mode).addEventListener('click', () => {
             if (catalog[fit?.ship_type_id]?.groupID !== 1305 || (fit.mode || 'Defense') === mode) return;

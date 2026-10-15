@@ -46,6 +46,13 @@ for (const ship of ['Confessor', 'Svipul', 'Jackdaw', 'Hecate']) {
     assert.ok(defense.stats.ehp > sharpshooter.stats.ehp, ship + ' defense bonus');
 }
 const fit = { ship_type_id: 587, name: 'Test fit', items: [] };
+const uniformDamage = await calculate(fit);
+const emDamage = await calculate({ ...fit, damageProfile: { em: 100, thermal: 0, kinetic: 0, explosive: 0 } });
+assert.notEqual(emDamage.stats.ehp, uniformDamage.stats.ehp, 'Incoming damage profile changes effective HP');
+const repairingFit = importEFT('[Rifter, Repair profile]\nSmall Armor Repairer I', catalog);
+const uniformRepair = await calculate(repairingFit);
+const emRepair = await calculate({ ...repairingFit, damageProfile: { em: 100, thermal: 0, kinetic: 0, explosive: 0 } });
+assert.notEqual(emRepair.stats.armorEffectiveRepairRate, uniformRepair.stats.armorEffectiveRepairRate, 'Incoming damage profile changes effective repair rates');
 const bare = await calculate(fit);
 assert.equal(bare.stats.upgradeLoad, 0, 'An unrigged hull uses zero calibration');
 const implantFit = importEFT("[Rifter, Implants]\nZainou 'Gnome' Shield Management SM-706", catalog);
@@ -203,7 +210,7 @@ class Element extends EventTarget {
     select() {}
 }
 const controls = new Map();
-for (const name of ['sort', 'eft-modal', 'eft-modal-text', 'eft-modal-status', 'equipment', 'mode-Defense', 'mode-Propulsion', 'mode-Sharpshooter', 'mode-control', 'status', 'controls', 'ship', 'ships', 'name', 'skills', 'new', 'category', 'search', 'results', 'hull', 'image', 'slots', 'stats', 'warnings', 'trash', 'undo', 'redo', 'wheel', 'Fitting_Panel', 'implant-Fitting_Panel', 'bigship', 'resource-cpu', 'resource-powergrid', 'ship-panel', 'capsule-panel', 'ship-stats', 'capsule-stats', 'implants', 'implant-search', 'implant-results', 'tab-ship', 'tab-capsule']) {
+for (const name of ['sort', 'eft-modal', 'eft-modal-text', 'eft-modal-status', 'equipment', 'mode-Defense', 'mode-Propulsion', 'mode-Sharpshooter', 'mode-control', 'status', 'controls', 'ship', 'ships', 'name', 'skills', 'new', 'category', 'search', 'results', 'hull', 'image', 'slots', 'stats', 'warnings', 'trash', 'undo', 'redo', 'wheel', 'Fitting_Panel', 'implant-Fitting_Panel', 'bigship', 'resource-cpu', 'resource-powergrid', 'ship-panel', 'capsule-panel', 'configure-panel', 'ship-stats', 'capsule-stats', 'implants', 'implant-search', 'implant-results', 'tab-ship', 'tab-capsule', 'tab-configure', 'damage-em', 'damage-thermal', 'damage-kinetic', 'damage-explosive', 'damage-status']) {
     const control = new Element();
     control.id = 'simulate-' + name;
     controls.set(name, control);
@@ -971,6 +978,21 @@ await settle();
 assert.equal(root.dataset.initialized, 'true');
 assert.equal(stored.get('zkb:simulate'), fitBeforeNavigation, 'Returning restores the current fit');
 assert.equal(controls.get('stats').children.length, 7, 'Returning renders fitting stats');
+controls.get('damage-em').value = 35;
+controls.get('damage-em').dispatchEvent(new Event('change'));
+await settle();
+let damageProfile = JSON.parse(stored.get('zkb:simulate')).damageProfile;
+assert.deepEqual(damageProfile, { em: 35, thermal: 15, kinetic: 25, explosive: 25 }, 'Increasing damage removes the difference from the next type');
+controls.get('damage-em').value = 100;
+controls.get('damage-em').dispatchEvent(new Event('change'));
+await settle();
+damageProfile = JSON.parse(stored.get('zkb:simulate')).damageProfile;
+assert.deepEqual(damageProfile, { em: 100, thermal: 0, kinetic: 0, explosive: 0 }, 'Increasing damage drains each following type as necessary');
+controls.get('damage-em').value = 25;
+controls.get('damage-em').dispatchEvent(new Event('change'));
+await settle();
+damageProfile = JSON.parse(stored.get('zkb:simulate')).damageProfile;
+assert.deepEqual(damageProfile, { em: 25, thermal: 75, kinetic: 0, explosive: 0 }, 'Decreasing damage adds the difference to following types');
 window.zkbPageCleanup();
 window.zkbPageCleanup();
 assert.equal(menusRemoved, 2, 'Repeated cleanup removes each autocomplete menu only once');

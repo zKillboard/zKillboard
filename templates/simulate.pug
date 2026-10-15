@@ -20,6 +20,8 @@ block content
           button#simulate-tab-ship.nav-link.active(type="button" role="tab" aria-selected="true") Ship
         li.nav-item(role="presentation")
           button#simulate-tab-capsule.nav-link(type="button" role="tab" aria-selected="false") Capsule
+        li.nav-item(role="presentation")
+          button#simulate-tab-configure.nav-link(type="button" role="tab" aria-selected="false") Configure
       #simulate-ship-panel.row.g-3
         #simulate-equipment.col-12.col-lg-3
           #simulate-status.visually-hidden(role="status" aria-live="polite") Loading ships and fitting data…
@@ -105,6 +107,34 @@ block content
                   button#simulate-capsule-eft-open.btn.btn-sm.btn-primary.text-white(type="button" data-bs-toggle="modal" data-bs-target="#simulate-eft-modal") EFT
               #simulate-implants.mt-3
         #simulate-capsule-stats.col-12.col-lg-3
+      #simulate-configure-panel.row.g-3(hidden)
+        .col-12.col-lg-6
+          .card
+            .card-body
+              h2.h5.mx-0 Incoming damage
+              p.small Set the percentage of each damage type used to calculate effective HP and repair rates.
+              .row.g-3
+                .col-6.col-md-3
+                  label.form-label(for="simulate-damage-em") EM
+                  .input-group
+                    input#simulate-damage-em.form-control(type="number" min="0" max="100" step="1" value="25" inputmode="decimal")
+                    span.input-group-text %
+                .col-6.col-md-3
+                  label.form-label(for="simulate-damage-thermal") Thermal
+                  .input-group
+                    input#simulate-damage-thermal.form-control(type="number" min="0" max="100" step="1" value="25" inputmode="decimal")
+                    span.input-group-text %
+                .col-6.col-md-3
+                  label.form-label(for="simulate-damage-kinetic") Kinetic
+                  .input-group
+                    input#simulate-damage-kinetic.form-control(type="number" min="0" max="100" step="1" value="25" inputmode="decimal")
+                    span.input-group-text %
+                .col-6.col-md-3
+                  label.form-label(for="simulate-damage-explosive") Explosive
+                  .input-group
+                    input#simulate-damage-explosive.form-control(type="number" min="0" max="100" step="1" value="25" inputmode="decimal")
+                    span.input-group-text %
+              #simulate-damage-status.small.mt-3(role="status" aria-live="polite") Total: 100%
       #simulate-eft-modal.modal.fade(tabindex="-1" aria-labelledby="simulate-eft-title" aria-hidden="true")
         .modal-dialog.modal-lg
           .modal-content
@@ -124,6 +154,7 @@ block content
           h2.h5.mx-0 Instructions
           ul.small.ps-3.mb-0
             li Choose a ship, name your fit, and select a skill level. For tactical destroyers, use the mode buttons above the stats.
+            li Use the Configure tab to set the incoming damage profile used for effective HP and repair calculations.
             li Use the Capsule tab to search for and fit one implant per implant slot. Implant bonuses are included in the ship statistics.
             li Search equipment or expand a slot or bay to browse. Use Add or drag a module onto a wheel slot. Click an empty slot to choose where to fit it.
             li Click a fitted module to cycle online, overheated, and offline where supported. Green slot outlines mean online; red means overheated.
@@ -134,7 +165,7 @@ block content
             li Click EFT to view and copy the current fit, or paste a fit from EVE, Pyfa, or another fitting tool and click Import EFT.
         .col-12.col-md-6
           h2.h5.mx-0 Disclaimers & Credits
-          p.small.mb-2 Calculations exclude combat boosters, command boosts, and system effects. EHP assumes equal incoming damage types.
+          p.small.mb-2 Calculations exclude combat boosters, command boosts, and system effects. EHP uses the incoming damage profile on the Configure tab.
           p.small.mb-2 EFT does not preserve module activation states, enabled implants, deployed drone counts, fighter tube assignments, or tactical destroyer modes. Fighter tubes are initially estimated from available full squadrons. Your current fit is saved in this browser.
           p.small.mb-2
             | Calculated locally with&#32;

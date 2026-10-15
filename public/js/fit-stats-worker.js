@@ -61,6 +61,9 @@ self.onmessage = async ({ data: request }) => {
         }
         const baseAttribute = (typeID, name) => data.typeDogma[typeID]?.dogmaAttributes.find(attribute => attribute.attributeID === attributes[name])?.value || 0;
         const fit = { ship: { type_id: request.fit.ship_type_id }, items: [], character: { skills: request.simulate && request.skillLevel === 0 ? {} : skills } };
+        if (request.fit.damageProfile) {
+            fit.environment = { damage_profile: Object.fromEntries(Object.entries(request.fit.damageProfile).map(([damage, value]) => [damage, value / 100])) };
+        }
         if (![6, 65].includes(data.types[fit.ship.type_id]?.categoryID) || !data.typeDogma[fit.ship.type_id]) {
             throw new Error('This hull is not supported by the fitting data.');
         }
