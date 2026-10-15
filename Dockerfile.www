@@ -59,7 +59,7 @@ RUN docker-php-ext-install -j$(nproc) \
 # Install PECL extensions required by composer dependencies.
 # Updating the PECL channel avoids stale index failures (e.g. "No releases available").
 RUN pecl channel-update pecl.php.net \
-    && pecl install igbinary mongodb-2.5.4 redis \
+    && pecl install igbinary mongodb-1.21.5 redis \
     && docker-php-ext-enable igbinary mongodb redis
 
 # Install Composer
