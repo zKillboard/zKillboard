@@ -1004,6 +1004,23 @@ window.zkbInitSimulate = function() {
         calculatedItems = result.details;
         const number = (key, divisor = 1) => Number.isFinite(stats[key]) ? (stats[key] / divisor).toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—';
         const compact = value => Number.isFinite(value) ? value.toLocaleString(undefined, { maximumFractionDigits: 1 }) : '—';
+        const popoverMarker = (label, content) => {
+            const marker = node('span', 'text-warning fw-bold', '*');
+            marker.tabIndex = 0;
+            marker.setAttribute('role', 'button');
+            marker.setAttribute('aria-label', label);
+            marker.setAttribute('data-bs-toggle', 'popover');
+            marker.setAttribute('data-bs-trigger', 'focus');
+            marker.setAttribute('data-bs-content', content);
+            marker.addEventListener('click', event => event.stopPropagation());
+            marker.addEventListener('keydown', event => {
+                if (!['Enter', ' '].includes(event.key)) return;
+                event.preventDefault();
+                event.stopPropagation();
+            });
+            window.bootstrap?.Popover?.getOrCreateInstance(marker);
+            return marker;
+        };
         const duration = value => {
             if (!Number.isFinite(value)) return '—';
             const seconds = Math.max(0, Math.round(value));
@@ -1165,7 +1182,11 @@ window.zkbInitSimulate = function() {
                 toggle.append(node('span', 'fw-bold', title), summary);
             } else if (title === 'Defense') {
                 const summary = node('span', 'd-flex align-items-center gap-2');
-                summary.append(node('span', 'fw-semibold', number('ehp') + ' EHP'), icon);
+                summary.append(node('span', 'fw-semibold', number('ehp') + ' EHP'));
+                if (!capsuleStats && Object.values(fit.damageProfile || {}).some(value => value !== 25)) {
+                    summary.append(popoverMarker('EHP adjusted by incoming damage profile', 'Adjusted by the incoming damage profile. Change the values under Configure.'));
+                }
+                summary.append(icon);
                 toggle.append(node('span', 'fw-bold', title), summary);
             } else toggle.append(node('span', 'fw-bold', title), icon);
             heading.append(toggle);
@@ -1229,6 +1250,11 @@ window.zkbInitSimulate = function() {
                     repairIcon.height = 20;
                     repairIcon.alt = '';
                     repair.append(repairIcon, node('span', '', label + ' ' + number(stat) + ' EHP/s'));
+                    if (Number.isFinite(stats.concordTankBonus)) {
+                        const marker = popoverMarker(label + ' adjusted by security status', 'Adjusted by security status. Change the value under Configure.');
+                        marker.className += ' ms-1';
+                        repair.append(marker);
+                    }
                     repairs.append(repair);
                 }
                 grid.append(repairs);
