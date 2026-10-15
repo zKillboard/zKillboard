@@ -78,6 +78,7 @@ $(document).ready(function () {
     $(document).on('click', '[data-zkb-sponsor-url]', sponsorClick);
     $(document).on('click', '[data-zkb-save-fitting]', saveFittingClick);
     $(document).on('click', '[data-zkb-select-on-click]', selectOnClick);
+    $(document).on('click', '[data-zkb-copy-fitting-export]', copyFittingExportClick);
     $(document).on('click', '[data-zkb-copy-link]', copyLinkClick);
     $(document).on('click', '[data-zkb-history-back]', historyBackClick);
     $(document).on('click', '[data-zkb-ingame-link-src]', ingameLinkClick);
@@ -1866,6 +1867,22 @@ function saveFittingClick(event) {
 
 function selectOnClick() {
     if (typeof this.select === "function") this.select();
+}
+
+function copyFittingExportClick() {
+    if (typeof this.select === "function") this.select();
+    const status = document.getElementById(this.getAttribute("aria-describedby"));
+    const label = this.getAttribute("data-zkb-copy-fitting-export") || "Fitting";
+    if (!navigator.clipboard || !navigator.clipboard.writeText) {
+        if (status) status.textContent = "Clipboard access is unavailable. Select and copy the text manually.";
+        return;
+    }
+    navigator.clipboard.writeText(this.value).then(function () {
+        if (status) status.textContent = label + " copied to your clipboard.";
+        showToast(label + " copied to your clipboard");
+    }).catch(function () {
+        if (status) status.textContent = "Unable to copy automatically. Select and copy the text manually.";
+    });
 }
 
 function historyBackClick(event) {

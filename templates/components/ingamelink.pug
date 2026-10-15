@@ -1,5 +1,9 @@
 html
   head
+    style.
+      body { margin: 0; font-family: system-ui, sans-serif; }
+      textarea { box-sizing: border-box; width: 100%; padding: .5rem .75rem; color: #dee2e6; background: #212529; border: 1px solid #495057; border-radius: .375rem; font: .875rem/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; resize: vertical; }
+      #copied { margin-top: .25rem; color: #adb5bd; font-size: .875rem; }
     script.
       document.addEventListener('DOMContentLoaded', function () {
         const textarea = document.getElementById('textarea');
@@ -12,13 +16,12 @@ html
 
       function copyToClipboard() {
         const text = document.getElementById('textarea').value;
-        console.log('Attempting to copy to clipboard:', text);
         navigator.clipboard.writeText(text).then(() => {
             document.getElementById('copied').style.display = 'block';
         });
       }
   body
-    textarea#textarea(rows="3" style="width: 100%;")
+    textarea#textarea.form-control.font-monospace(rows="3" readonly="readonly" aria-describedby="copied" style="width: 100%;")
       | <url=killReport:
       = $crest['killID'] ?? ''
       | :
@@ -28,5 +31,4 @@ html
       |  (
       = $killdata['victim']['shipName'] ?? ''
       | )</url>
-    #copied(style="display: none; color: white;")
-      i ... Link has been copied to your clipboard ...
+    #copied.form-text(role="status" aria-live="polite" style="display: none;") Link copied to your clipboard.

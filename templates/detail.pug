@@ -250,39 +250,41 @@ block modal
           else
             .alert.alert-warning Sorry, you are not logged in.
   #DNA.modal.fade
-    .modal-dialog
+    .modal-dialog.modal-lg
       .modal-content
         .modal-header
-          h4.modal-title DNA
+          h4.modal-title Ship Fitting - In-Game Link
+          button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
         .modal-body
-          form(name="myform")
-            .mb-3
-              textarea#dna.fitting.col-md-12(data-zkb-select-on-click rows="2" name="dna" readonly="readonly")= $extraData['dnalink'] ?? ''
-            .mb-3
-              button.btn.btn-primary(type="button" data-bs-dismiss="modal") Close
+          p.mb-2 Click the fitting link below to copy it. Paste it into an EVE in-game Notepad to create a link you can open or drag into chat.
+          textarea#dna.form-control.font-monospace(data-zkb-copy-fitting-export="Fitting link" aria-describedby="dna-copy-status" rows="4" name="dna" readonly="readonly")= $extraData['dnalink'] ?? ''
+          #dna-copy-status.form-text(role="status" aria-live="polite") Click the text to copy the fitting link.
+        .modal-footer
+          button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Close
   #EFT.modal.fade
-    .modal-dialog
+    .modal-dialog.modal-lg
       .modal-content
         .modal-header
-          h4.modal-title EFT
+          h4.modal-title EFT Fitting - Clipboard Import
+          button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
         .modal-body
-          form(name="myform")
-            .mb-3
-              textarea#eft.fitting.col-md-12(data-zkb-select-on-click rows="15" name="eft" readonly="readonly")= $eftText
-            .mb-3
-              button.btn.btn-primary(type="button" data-bs-dismiss="modal") Close
+          p.mb-2 Click the fitting below to copy it. In EVE, open the Fitting window and choose Import & Export, then Import from Clipboard.
+          textarea#eft.form-control.font-monospace(data-zkb-copy-fitting-export="EFT fitting" aria-describedby="eft-copy-status" rows="15" name="eft" readonly="readonly")= $eftText
+          #eft-copy-status.form-text(role="status" aria-live="polite") Click the text to copy the EFT fitting.
+        .modal-footer
+          button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Close
   #ingamelink.modal.fade
     .modal-dialog
       .modal-content
         .modal-header
-          h4.modal-title Killmail - In Game Link
+          h4.modal-title Killmail - In-Game Link
+          button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
         .modal-body
-          form.form(name="myform")
-            p Must copy to in game notepad to create the link in game, then you can drag and copy that elsewhere. Human verification is in place because of scrapers slamming the site, sorry.
-            .mb-3
-              #ingamelinkcontent
-            .mb-3
-              button.btn.btn-primary(type="button" data-bs-dismiss="modal") Close
+          p.mb-2 Click the killmail link below to copy it. Paste it into an EVE in-game Notepad to create a link you can open or drag into chat.
+          #ingamelinkcontent
+          p.form-text.mb-0 Human verification protects this service from automated scraping.
+        .modal-footer
+          button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Close
 
 block opengraph
   meta(name="twitter:title" content=$pageTitle)
