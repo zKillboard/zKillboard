@@ -132,6 +132,10 @@ self.onmessage = async ({ data: request }) => {
                 entry.state = request.simulate && ['Passive', 'Online', 'Active', 'Overload'].includes(item.state)
                     ? { Passive: 'offline', Online: 'online', Active: 'active', Overload: 'overload' }[item.state]
                     : 'active';
+                if (request.simulate && Number.isFinite(item.spoolBonus)) {
+                    const maximum = baseAttribute(item.type_id, 'damageMultiplierBonusMax') || baseAttribute(item.type_id, 'repairMultiplierBonusMax');
+                    if (maximum) entry.spool = { multiplier_bonus: Math.max(0, Math.min(maximum, item.spoolBonus)) };
+                }
             } else {
                 throw new Error('This fit contains an unsupported fitted item.');
             }

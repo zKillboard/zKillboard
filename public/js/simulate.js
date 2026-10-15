@@ -1270,6 +1270,42 @@ window.zkbInitSimulate = function() {
                 term.append(rowIcon, node('span', '', label));
                 list.append(term, node('dd', 'col-6 mb-1 text-end text-white fw-semibold', value));
             });
+            if (title === 'Offense') for (const item of fit.items.filter(item => catalog[item.type_id].attributes.damageMultiplierBonusMax)) {
+                const detail = calculatedItems.find(detail => detail.type_id === item.type_id && detail.slot?.type === 'High' && detail.slot.index === item.flag - 26);
+                const attribute = name => detail?.attributes.find(attribute => attribute.name === name)?.value ?? catalog[item.type_id].attributes[name];
+                const increment = attribute('damageMultiplierBonusPerCycle');
+                const maximum = attribute('damageMultiplierBonusMax');
+                const maximumCycles = Math.ceil(maximum / increment);
+                const cycles = Number.isFinite(item.spoolBonus) ? Math.min(maximumCycles, Math.ceil(item.spoolBonus / increment)) : maximumCycles;
+                const control = node('div', 'col-12 border-top border-secondary border-opacity-25 mt-1 pt-2');
+                const label = node('label', 'd-block mb-1', catalog[item.type_id].name);
+                const selectedCycles = node('span', '', cycles + ' cycles');
+                const percentage = node('span', 'fw-semibold text-end', '+' + (Math.min(maximum, cycles * increment) * 100).toLocaleString(undefined, { maximumFractionDigits: 1 }) + '%');
+                const output = node('div', 'd-flex justify-content-between mb-1');
+                output.append(selectedCycles, percentage);
+                const slider = node('input', 'form-range simulate-spool-slider');
+                slider.type = 'range';
+                slider.min = '0';
+                slider.max = maximumCycles;
+                slider.step = '1';
+                slider.value = cycles;
+                slider.setAttribute('aria-label', catalog[item.type_id].name + ' spool cycles');
+                control.append(label, output,
+                    node('div', 'small', '+' + (increment * 100).toLocaleString(undefined, { maximumFractionDigits: 1 }) + '% damage each cycle'),
+                    node('div', 'small mb-1', 'Fully spooled after ' + maximumCycles + ' cycles'), slider);
+                slider.addEventListener('input', () => {
+                    const cycles = Number(slider.value);
+                    selectedCycles.textContent = cycles + ' cycles';
+                    percentage.textContent = '+' + (Math.min(maximum, cycles * increment) * 100).toLocaleString(undefined, { maximumFractionDigits: 1 }) + '%';
+                });
+                slider.addEventListener('change', () => {
+                    const selectedCycles = Number(slider.value);
+                    if (selectedCycles === maximumCycles) delete item.spoolBonus;
+                    else item.spoolBonus = Math.min(maximum, selectedCycles * increment);
+                    changed();
+                });
+                list.append(control);
+            }
             if (title === 'Pricing') list.append(pricing);
             body.append(list);
             card.append(body);

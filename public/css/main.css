@@ -2917,7 +2917,12 @@ code {
 }
 
 #simulate-security-status::-moz-range-track,
-.simulate-damage-slider::-moz-range-track {
+.simulate-damage-slider::-moz-range-track,
+.simulate-spool-slider::-moz-range-track {
+	background-color: #282828;
+}
+
+.simulate-spool-slider::-webkit-slider-runnable-track {
 	background-color: #282828;
 }
 
