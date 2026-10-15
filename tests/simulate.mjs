@@ -10,7 +10,12 @@ let result;
 globalThis.self = { postMessage: value => { result = value; } };
 const priceLookups = [];
 let rateLimitedPrice;
+let characterLookups = 0;
 globalThis.fetch = async url => {
+    if (String(url).startsWith('https://esi.evetech.net/characters/')) {
+        characterLookups++;
+        return new Response(JSON.stringify({ name: 'Test Pilot', security_status: 4.2 }));
+    }
     if (String(url).startsWith('/api/killID/')) {
         return new Response(JSON.stringify([{ victim: { items: [{ flag: 89, item_type_id: 3084, quantity_destroyed: 1 }] } }]));
     }
@@ -53,6 +58,10 @@ const repairingFit = importEFT('[Rifter, Repair profile]\nSmall Armor Repairer I
 const uniformRepair = await calculate(repairingFit);
 const emRepair = await calculate({ ...repairingFit, damageProfile: { em: 100, thermal: 0, kinetic: 0, explosive: 0 } });
 assert.notEqual(emRepair.stats.armorEffectiveRepairRate, uniformRepair.stats.armorEffectiveRepairRate, 'Incoming damage profile changes effective repair rates');
+const pacifier = { ship_type_id: byName('Pacifier').id, items: [] };
+const lowSecurity = await calculate({ ...pacifier, securityStatus: -10 });
+const highSecurity = await calculate({ ...pacifier, securityStatus: 5 });
+assert.notEqual(lowSecurity.stats.concordTankBonus, highSecurity.stats.concordTankBonus, 'Pilot security status changes security-scaled ship bonuses');
 const bare = await calculate(fit);
 assert.equal(bare.stats.upgradeLoad, 0, 'An unrigged hull uses zero calibration');
 const implantFit = importEFT("[Rifter, Implants]\nZainou 'Gnome' Shield Management SM-706", catalog);
@@ -210,7 +219,7 @@ class Element extends EventTarget {
     select() {}
 }
 const controls = new Map();
-for (const name of ['sort', 'eft-modal', 'eft-modal-text', 'eft-modal-status', 'equipment', 'mode-Defense', 'mode-Propulsion', 'mode-Sharpshooter', 'mode-control', 'status', 'controls', 'ship', 'ships', 'name', 'skills', 'new', 'category', 'search', 'results', 'hull', 'image', 'slots', 'stats', 'warnings', 'trash', 'undo', 'redo', 'wheel', 'Fitting_Panel', 'implant-Fitting_Panel', 'bigship', 'resource-cpu', 'resource-powergrid', 'ship-panel', 'capsule-panel', 'configure-panel', 'ship-stats', 'capsule-stats', 'implants', 'implant-search', 'implant-results', 'tab-ship', 'tab-capsule', 'tab-configure', 'damage-em', 'damage-thermal', 'damage-kinetic', 'damage-explosive', 'damage-status']) {
+for (const name of ['sort', 'eft-modal', 'eft-modal-text', 'eft-modal-status', 'equipment', 'mode-Defense', 'mode-Propulsion', 'mode-Sharpshooter', 'mode-control', 'status', 'controls', 'ship', 'ships', 'name', 'skills', 'new', 'category', 'search', 'results', 'hull', 'image', 'slots', 'stats', 'warnings', 'trash', 'undo', 'redo', 'wheel', 'Fitting_Panel', 'implant-Fitting_Panel', 'bigship', 'resource-cpu', 'resource-powergrid', 'ship-panel', 'capsule-panel', 'configure-panel', 'ship-stats', 'capsule-stats', 'implants', 'implant-search', 'implant-results', 'tab-ship', 'tab-capsule', 'tab-configure', 'damage-em', 'damage-thermal', 'damage-kinetic', 'damage-explosive', 'damage-em-slider', 'damage-thermal-slider', 'damage-kinetic-slider', 'damage-explosive-slider', 'damage-status', 'damage-reset', 'security-status', 'security-status-value', 'security-status-minus10', 'security-status-minus5', 'security-status-zero', 'security-status-plus5', 'security-status-reset', 'security-status-source', 'security-status-character-image', 'security-status-character-name', 'security-status-detail']) {
     const control = new Element();
     control.id = 'simulate-' + name;
     controls.set(name, control);
@@ -235,6 +244,7 @@ globalThis.Option = class extends Element {
 // The worker and page share this test process, so provide the page global here.
 globalThis.window = globalThis;
 window.location = { hash: '' };
+window.characterID = 123456;
 const toasts = [];
 window.showToast = message => toasts.push(message);
 const stored = new Map();
@@ -280,6 +290,12 @@ function findElements(element, predicate) {
 controls.get('ship').value = 'Confessor';
 click('new');
 await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).securityStatus, 4.2, 'New fits use the logged-in pilot security status from ESI');
+assert.ok(characterLookups > 0, 'The simulator polls the versionless ESI character route when logged in');
+assert.equal(controls.get('security-status-character-name').textContent, 'Test Pilot');
+assert.equal(controls.get('security-status-detail').textContent, 'Security status: 4.2');
+assert.equal(controls.get('security-status-character-image').src, 'https://images.evetech.net/characters/123456/portrait?size=64');
+assert.doesNotMatch(controls.get('security-status-source').className, /\bd-none\b/, 'The ESI pilot identity becomes visible after loading');
 assert.equal(controls.get('mode-control').hidden, false);
 const defenseDisplay = JSON.stringify(controls.get('stats').children);
 controls.get('mode-Propulsion').click();
@@ -993,6 +1009,35 @@ controls.get('damage-em').dispatchEvent(new Event('change'));
 await settle();
 damageProfile = JSON.parse(stored.get('zkb:simulate')).damageProfile;
 assert.deepEqual(damageProfile, { em: 25, thermal: 75, kinetic: 0, explosive: 0 }, 'Decreasing damage adds the difference to following types');
+controls.get('damage-kinetic-slider').value = 100;
+controls.get('damage-kinetic-slider').dispatchEvent(new Event('input'));
+await settle();
+damageProfile = JSON.parse(stored.get('zkb:simulate')).damageProfile;
+assert.deepEqual(damageProfile, { em: 0, thermal: 0, kinetic: 100, explosive: 0 }, 'Damage sliders update and redistribute the profile');
+assert.equal(controls.get('damage-kinetic').value, 100, 'Damage sliders update their number boxes');
+assert.equal(controls.get('damage-em-slider').value, 0, 'Redistribution updates the other damage sliders');
+controls.get('damage-reset').click();
+await settle();
+damageProfile = JSON.parse(stored.get('zkb:simulate')).damageProfile;
+assert.deepEqual(damageProfile, { em: 25, thermal: 25, kinetic: 25, explosive: 25 }, 'Damage reset restores the uniform profile');
+assert.equal(controls.get('damage-kinetic-slider').value, 25, 'Damage reset updates the sliders');
+controls.get('security-status-minus10').click();
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).securityStatus, -10, 'The -10 security shortcut updates the fit');
+controls.get('security-status-minus5').click();
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).securityStatus, -5, 'The -5.0 security shortcut updates the fit');
+controls.get('security-status-zero').click();
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).securityStatus, 0, 'The 0.0 security shortcut updates the fit');
+controls.get('security-status-plus5').click();
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).securityStatus, 5, 'The 5.0 security shortcut updates the fit');
+assert.equal(controls.get('security-status-value').textContent, '5.0', 'Pilot security status displays one decimal place');
+assert.equal(controls.get('security-status-detail').textContent, 'Security status: 4.2', 'The character row continues to show the ESI value');
+controls.get('security-status-reset').click();
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).securityStatus, 4.2, 'Security reset restores the logged-in character value');
 window.zkbPageCleanup();
 window.zkbPageCleanup();
 assert.equal(menusRemoved, 2, 'Repeated cleanup removes each autocomplete menu only once');

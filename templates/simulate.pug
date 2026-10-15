@@ -109,32 +109,66 @@ block content
         #simulate-capsule-stats.col-12.col-lg-3
       #simulate-configure-panel.row.g-3(hidden)
         .col-12.col-lg-6
-          .card
-            .card-body
+          .card.bg-black.simulate-configure-card
+            .card-body.d-flex.flex-column
               h2.h5.mx-0 Incoming damage
               p.small Set the percentage of each damage type used to calculate effective HP and repair rates.
               .row.g-3
                 .col-6.col-md-3
-                  label.form-label(for="simulate-damage-em") EM
+                  label.form-label.d-flex.align-items-center.gap-1(for="simulate-damage-em")
+                    img(src="/img/simulate/electromagnetic-resistance-32x32.png" width="20" height="20" alt="")
+                    span EM
                   .input-group
                     input#simulate-damage-em.form-control(type="number" min="0" max="100" step="1" value="25" inputmode="decimal")
                     span.input-group-text %
+                  input#simulate-damage-em-slider.simulate-damage-slider.form-range.mt-2(type="range" min="0" max="100" step="1" value="25" aria-label="EM damage percentage")
                 .col-6.col-md-3
-                  label.form-label(for="simulate-damage-thermal") Thermal
+                  label.form-label.d-flex.align-items-center.gap-1(for="simulate-damage-thermal")
+                    img(src="/img/simulate/thermal-resistance-32x32.png" width="20" height="20" alt="")
+                    span Thermal
                   .input-group
                     input#simulate-damage-thermal.form-control(type="number" min="0" max="100" step="1" value="25" inputmode="decimal")
                     span.input-group-text %
+                  input#simulate-damage-thermal-slider.simulate-damage-slider.form-range.mt-2(type="range" min="0" max="100" step="1" value="25" aria-label="Thermal damage percentage")
                 .col-6.col-md-3
-                  label.form-label(for="simulate-damage-kinetic") Kinetic
+                  label.form-label.d-flex.align-items-center.gap-1(for="simulate-damage-kinetic")
+                    img(src="/img/simulate/kinetic-resistance-32x32.png" width="20" height="20" alt="")
+                    span Kinetic
                   .input-group
                     input#simulate-damage-kinetic.form-control(type="number" min="0" max="100" step="1" value="25" inputmode="decimal")
                     span.input-group-text %
+                  input#simulate-damage-kinetic-slider.simulate-damage-slider.form-range.mt-2(type="range" min="0" max="100" step="1" value="25" aria-label="Kinetic damage percentage")
                 .col-6.col-md-3
-                  label.form-label(for="simulate-damage-explosive") Explosive
+                  label.form-label.d-flex.align-items-center.gap-1(for="simulate-damage-explosive")
+                    img(src="/img/simulate/explosive-resistance-32x32.png" width="20" height="20" alt="")
+                    span Explosive
                   .input-group
                     input#simulate-damage-explosive.form-control(type="number" min="0" max="100" step="1" value="25" inputmode="decimal")
                     span.input-group-text %
-              #simulate-damage-status.small.mt-3(role="status" aria-live="polite") Total: 100%
+                  input#simulate-damage-explosive-slider.simulate-damage-slider.form-range.mt-2(type="range" min="0" max="100" step="1" value="25" aria-label="Explosive damage percentage")
+              .d-flex.align-items-center.justify-content-between.mt-3
+                #simulate-damage-status.small(role="status" aria-live="polite") Total: 100%
+                button#simulate-damage-reset.btn.btn-sm.btn-primary.text-white(type="button") Reset
+        .col-12.col-lg-6
+          .card.bg-black.simulate-configure-card
+            .card-body.d-flex.flex-column
+              h2.h5.mx-0 Pilot
+              label.form-label.d-flex.justify-content-between(for="simulate-security-status")
+                span Pilot's security status
+                output#simulate-security-status-value(for="simulate-security-status") 0.0
+              input#simulate-security-status.form-range(type="range" min="-10" max="5" step="0.1" value="0")
+              .position-relative(style="height: 2.25rem;")
+                button#simulate-security-status-minus10.btn.btn-sm.btn-primary.text-white.position-absolute.top-0.start-0(type="button") -10
+                button#simulate-security-status-minus5.btn.btn-sm.btn-primary.text-white.position-absolute.top-0.translate-middle-x(type="button" style="left: 33.3333%;") -5.0
+                button#simulate-security-status-zero.btn.btn-sm.btn-primary.text-white.position-absolute.top-0.translate-middle-x(type="button" style="left: 66.6667%;") 0.0
+                button#simulate-security-status-plus5.btn.btn-sm.btn-primary.text-white.position-absolute.top-0.end-0(type="button") 5.0
+              .d-flex.align-items-end.justify-content-between.gap-3.mt-auto.pt-3
+                #simulate-security-status-source.d-none.d-flex.align-items-center.gap-2(role="status" aria-live="polite")
+                  img#simulate-security-status-character-image.rounded(width="40" height="40" alt="")
+                  .small
+                    #simulate-security-status-character-name.fw-semibold
+                    #simulate-security-status-detail
+                button#simulate-security-status-reset.btn.btn-sm.btn-primary.text-white.ms-auto(type="button") Reset
       #simulate-eft-modal.modal.fade(tabindex="-1" aria-labelledby="simulate-eft-title" aria-hidden="true")
         .modal-dialog.modal-lg
           .modal-content

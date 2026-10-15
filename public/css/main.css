@@ -2911,6 +2911,48 @@ code {
 	background-color: #1E73BE;
 }
 
+#simulate-security-status::-webkit-slider-runnable-track,
+.simulate-damage-slider::-webkit-slider-runnable-track {
+	background-color: #282828;
+}
+
+#simulate-security-status::-moz-range-track,
+.simulate-damage-slider::-moz-range-track {
+	background-color: #282828;
+}
+
+#simulate-configure-panel .card {
+	border-color: #282828;
+}
+
+@media (min-width: 992px) {
+	#simulate-configure-panel {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1rem;
+		align-content: start;
+		margin-right: 0;
+		margin-left: 0;
+	}
+
+	#simulate-configure-panel > .col-lg-6 {
+		width: auto;
+		padding: 0;
+		margin-top: 0;
+	}
+
+	.simulate-configure-card {
+		height: 100%;
+	}
+}
+
+#simulate-configure-panel .form-control,
+#simulate-configure-panel .input-group-text {
+	color: #fff;
+	background-color: #161616;
+	border-color: #282828;
+}
+
 .simulate-resistance-value {
 	text-shadow: 0 1px 1px #101820, 0 0 1px #101820;
 }

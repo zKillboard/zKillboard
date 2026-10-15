@@ -31,9 +31,13 @@ window.zkbInitSimulate = function() {
     let sequence = 0;
     let capsuleSequence = 0;
     let timer;
+    let loginTimer;
     let calculationPending = false;
     let queuedCalculation;
     let panelHeight = 0;
+    let pilotSecurityStatus;
+    let pilotCharacterID;
+    let pilotCharacterName;
     let alive = true;
     const events = new AbortController();
     const fittingImages = new Map();
@@ -76,6 +80,7 @@ window.zkbInitSimulate = function() {
         saveState();
         alive = false;
         clearTimeout(timer);
+        clearTimeout(loginTimer);
         calculationPending = false;
         queuedCalculation = null;
         worker?.terminate();
@@ -1255,11 +1260,29 @@ window.zkbInitSimulate = function() {
         renderFit();
     }
 
+    function renderSecuritySource() {
+        const source = element('security-status-source');
+        source.hidden = !Number.isFinite(pilotSecurityStatus);
+        source.className = 'd-flex align-items-center gap-2' + (source.hidden ? ' d-none' : '');
+        if (source.hidden) return;
+        const image = element('security-status-character-image');
+        image.src = 'https://images.evetech.net/characters/' + pilotCharacterID + '/portrait?size=64';
+        image.alt = pilotCharacterName;
+        element('security-status-character-name').textContent = pilotCharacterName;
+        element('security-status-detail').textContent = 'Security status: ' + pilotSecurityStatus.toFixed(1);
+    }
+
     function changed() {
         if (!fit) return;
+        fit.securityStatus = Math.max(-10, Math.min(5, Number(element('security-status').value) || 0));
+        element('security-status').value = fit.securityStatus;
+        element('security-status-value').value = fit.securityStatus.toFixed(1);
+        element('security-status-value').textContent = fit.securityStatus.toFixed(1);
+        renderSecuritySource();
         fit.damageProfile = Object.fromEntries(['em', 'thermal', 'kinetic', 'explosive'].map(damage => {
             const value = Math.max(0, Math.min(100, Number(element('damage-' + damage).value) || 0));
             element('damage-' + damage).value = value;
+            element('damage-' + damage + '-slider').value = value;
             return [damage, value];
         }));
         const damageTotal = Object.values(fit.damageProfile).reduce((total, value) => total + value, 0);
@@ -1309,10 +1332,19 @@ window.zkbInitSimulate = function() {
         }, 60000);
     }
 
-    function loadFit(next) {
+    function loadFit(next, preserveSecurityStatus = false) {
         fit = next;
+        if (!Number.isFinite(fit.securityStatus)) fit.securityStatus = 0;
+        if (!preserveSecurityStatus && Number.isFinite(pilotSecurityStatus)) fit.securityStatus = pilotSecurityStatus;
+        element('security-status').value = fit.securityStatus;
+        element('security-status-value').value = fit.securityStatus.toFixed(1);
+        element('security-status-value').textContent = fit.securityStatus.toFixed(1);
+        renderSecuritySource();
         if (!fit.damageProfile || ['em', 'thermal', 'kinetic', 'explosive'].some(damage => !Number.isFinite(fit.damageProfile[damage]))) fit.damageProfile = { em: 25, thermal: 25, kinetic: 25, explosive: 25 };
-        for (const damage of ['em', 'thermal', 'kinetic', 'explosive']) element('damage-' + damage).value = fit.damageProfile[damage];
+        for (const damage of ['em', 'thermal', 'kinetic', 'explosive']) {
+            element('damage-' + damage).value = fit.damageProfile[damage];
+            element('damage-' + damage + '-slider').value = fit.damageProfile[damage];
+        }
         if (!Array.isArray(fit.implants)) fit.implants = [];
         fit.items.filter(item => item.flag === 158 && !Number.isInteger(item.active)).forEach(item => { item.active = 0; });
         if (!Array.isArray(fit.fighterTubes)) fit.fighterTubes = fit.items.filter(item => item.flag === 158).flatMap(item => Array.from({ length: item.active || 0 }, () => ({ type_id: item.type_id, quantity: catalog[item.type_id].attributes.fighterSquadronMaxSize || item.quantity })));
@@ -1417,10 +1449,10 @@ window.zkbInitSimulate = function() {
                     window.saveFitting(null, exportESIFit({ ...fit, name: element('name').value || 'New fit' }, catalog));
                     break;
                 case 'simulate-undo':
-                    if (historyIndex > 0) loadFit(JSON.parse(fitHistory[--historyIndex]));
+                    if (historyIndex > 0) loadFit(JSON.parse(fitHistory[--historyIndex]), true);
                     break;
                 case 'simulate-redo':
-                    if (historyIndex < fitHistory.length - 1) loadFit(JSON.parse(fitHistory[++historyIndex]));
+                    if (historyIndex < fitHistory.length - 1) loadFit(JSON.parse(fitHistory[++historyIndex]), true);
                     break;
                 case 'simulate-new': {
                     const hull = types.find(type => type.categoryID === 6 && type.name.toLowerCase() === element('ship').value.trim().toLowerCase());
@@ -1471,11 +1503,24 @@ window.zkbInitSimulate = function() {
     element('implant-search').addEventListener('input', searchImplants, { signal: events.signal });
     element('name').addEventListener('change', changed, { signal: events.signal });
     element('skills').addEventListener('change', changed, { signal: events.signal });
+    element('security-status').addEventListener('input', changed, { signal: events.signal });
+    for (const [control, value] of [['minus10', -10], ['minus5', -5], ['zero', 0], ['plus5', 5]]) {
+        element('security-status-' + control).addEventListener('click', () => {
+            if (!fit) return;
+            element('security-status').value = value;
+            changed();
+        }, { signal: events.signal });
+    }
+    element('security-status-reset').addEventListener('click', () => {
+        if (!fit) return;
+        element('security-status').value = Number.isFinite(pilotSecurityStatus) ? pilotSecurityStatus : 0;
+        changed();
+    }, { signal: events.signal });
     const damages = ['em', 'thermal', 'kinetic', 'explosive'];
-    damages.forEach((damage, index) => element('damage-' + damage).addEventListener('change', () => {
+    const changeDamage = (damage, index, value) => {
         if (!fit) return;
         const previous = fit.damageProfile[damage];
-        const value = Math.max(0, Math.min(100, Number(element('damage-' + damage).value) || 0));
+        value = Math.max(0, Math.min(100, Number(value) || 0));
         let remaining = value - previous;
         element('damage-' + damage).value = value;
         for (let offset = 1; offset < damages.length && remaining !== 0; offset++) {
@@ -1486,7 +1531,16 @@ window.zkbInitSimulate = function() {
             remaining -= adjustment;
         }
         changed();
-    }, { signal: events.signal }));
+    };
+    damages.forEach((damage, index) => {
+        element('damage-' + damage).addEventListener('change', event => changeDamage(damage, index, event.target.value), { signal: events.signal });
+        element('damage-' + damage + '-slider').addEventListener('input', event => changeDamage(damage, index, event.target.value), { signal: events.signal });
+    });
+    element('damage-reset').addEventListener('click', () => {
+        if (!fit) return;
+        for (const damage of damages) element('damage-' + damage).value = 25;
+        changed();
+    }, { signal: events.signal });
     for (const mode of ['Defense', 'Propulsion', 'Sharpshooter']) {
         element('mode-' + mode).addEventListener('click', () => {
             if (catalog[fit?.ship_type_id]?.groupID !== 1305 || (fit.mode || 'Defense') === mode) return;
@@ -1495,6 +1549,32 @@ window.zkbInitSimulate = function() {
         }, { signal: events.signal });
     }
     try {
+        let loginPolls = 0;
+        const loadPilotSecurityStatus = () => {
+            const loggedInCharacterID = Number(globalThis.characterID);
+            if ((!Number.isFinite(loggedInCharacterID) || loggedInCharacterID < 0) && loginPolls++ < 100) {
+                loginTimer = setTimeout(loadPilotSecurityStatus, 100);
+                return;
+            }
+            if (!(loggedInCharacterID > 0)) return;
+            fetch('https://esi.evetech.net/characters/' + loggedInCharacterID + '/?datasource=tranquility', {
+                headers: { 'Accept': 'application/json', 'X-Compatibility-Date': '2026-07-21', 'X-User-Agent': 'zkillboard.com Fitting Simulator' },
+                signal: events.signal
+            }).then(response => response.ok ? response.json() : null).then(character => {
+                const securityStatus = Number(character?.security_status);
+                if (!alive || !Number.isFinite(securityStatus)) return;
+                pilotCharacterID = loggedInCharacterID;
+                pilotCharacterName = character.name || 'Logged-in character';
+                pilotSecurityStatus = Math.max(-10, Math.min(5, securityStatus));
+                if (fit && fit.securityStatus !== pilotSecurityStatus) {
+                    element('security-status').value = pilotSecurityStatus;
+                    fit.securityStatus = pilotSecurityStatus;
+                    if (historyIndex >= 0) fitHistory[historyIndex] = JSON.stringify(fit);
+                    changed();
+                }
+            }).catch(() => {});
+        };
+        loadPilotSecurityStatus();
         worker = new Worker(new URL('./fit-stats-worker.js' + new URL(import.meta.url).search, import.meta.url), { type: 'module' });
         capsuleWorker = new Worker(new URL('./fit-stats-worker.js' + new URL(import.meta.url).search, import.meta.url), { type: 'module' });
         capsuleWorker.onmessage = ({ data }) => {
