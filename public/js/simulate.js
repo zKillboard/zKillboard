@@ -501,6 +501,7 @@ window.zkbInitSimulate = function() {
     function renderFit() {
         dropTargets.clear();
         const hull = catalog[fit.ship_type_id];
+        element('tab-capsule').textContent = 'Implants (' + (fit.implants || []).length + ')';
         const panels = ['ship', 'capsule', 'configure'].map(tab => element(tab + '-panel'));
         const visiblePanel = panels.find(panel => !panel.hidden);
         panelHeight = Math.max(panelHeight, visiblePanel?.offsetHeight || 0);

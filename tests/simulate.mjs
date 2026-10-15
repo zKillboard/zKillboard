@@ -290,6 +290,7 @@ function findElements(element, predicate) {
 controls.get('ship').value = 'Confessor';
 click('new');
 await settle();
+assert.equal(controls.get('tab-capsule').textContent, 'Implants (0)', 'The Implants tab shows the fitted implant count');
 assert.equal(JSON.parse(stored.get('zkb:simulate')).securityStatus, 4.2, 'New fits use the logged-in pilot security status from ESI');
 assert.ok(characterLookups > 0, 'The simulator polls the versionless ESI character route when logged in');
 assert.equal(controls.get('security-status-character-name').textContent, 'Test Pilot');
@@ -477,6 +478,7 @@ await new Promise(resolve => setTimeout(resolve, 0));
 await settle();
 const linkedCapsuleFit = JSON.parse(stored.get('zkb:simulate'));
 assert.deepEqual(linkedCapsuleFit.implants, [{ type_id: 3084, slot: 7 }], 'Related capsule implants load through the killmail API');
+assert.equal(controls.get('tab-capsule').textContent, 'Implants (1)', 'The Implants tab count updates when implants load');
 window.zkbPageCleanup();
 console.log('Related capsule API check passed.');
 
