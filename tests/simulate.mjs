@@ -10,6 +10,7 @@ let result;
 globalThis.self = { postMessage: value => { result = value; } };
 const priceLookups = [];
 let rateLimitedPrice;
+let priceFallbacks = 0;
 let characterLookups = 0;
 globalThis.fetch = async url => {
     if (String(url).startsWith('https://esi.evetech.net/characters/')) {
@@ -19,13 +20,17 @@ globalThis.fetch = async url => {
     if (String(url).startsWith('/api/killID/')) {
         return new Response(JSON.stringify([{ victim: { items: [{ flag: 89, item_type_id: 3084, quantity_destroyed: 1 }] } }]));
     }
-    if (String(url).startsWith('/api/prices/')) {
+    if (String(url).startsWith('/api/prices/date/')) {
         priceLookups.push(url);
         if (!rateLimitedPrice) {
             rateLimitedPrice = url;
             return new Response('', { status: 429, headers: { 'Retry-After': '0' } });
         }
-        return new Response(JSON.stringify(Object.fromEntries(Object.keys(catalog).map(typeID => [typeID, 100]))));
+        return new Response(JSON.stringify(Object.fromEntries(Object.keys(catalog).filter(typeID => Number(typeID) !== byName('Avatar').id).map(typeID => [typeID, 100]))));
+    }
+    if (String(url).startsWith('/api/prices/')) {
+        priceFallbacks++;
+        return new Response(JSON.stringify({ currentPrice: 75000000000 }));
     }
     const path = new URL(url);
     path.search = '';
@@ -369,6 +374,8 @@ for (const shipName of ['Tholos', 'Avatar']) {
     controls.get('category').dispatchEvent(new Event('change'));
     assert.ok(equipmentButtons(controls.get('results')).length > 1, 'Cargo browsing allows carrying hull-incompatible modules');
 }
+await new Promise(resolve => setTimeout(resolve, 0));
+assert.ok(priceFallbacks > 0, 'Missing daily capital prices fall back to the current item price');
 controls.get('search').value = '';
 controls.get('category').value = 'High';
 controls.get('ship').value = 'Rifter';
@@ -970,10 +977,10 @@ const pricingCard = controls.get('stats').children.at(-1).children[0].children[0
 assert.equal(pricingCard.children[0].children[0].children[0].textContent, 'Pricing', 'Pricing is the final section in the right stats column');
 const pricing = pricingCard.children[1].children[0];
 const currentFit = JSON.parse(stored.get('zkb:simulate'));
-assert.equal(pricing.children.find(row => row.children[0]?.textContent === 'Total').children[1].textContent,
+assert.equal(treeText(pricing.children.find(row => row.children[0]?.textContent === 'Total').children[1]).trim(),
     ((1 + currentFit.items.reduce((sum, item) => sum + (item.quantity || 1), 0)) * 100).toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' ISK', 'Pricing includes hull and all item quantities');
-assert.ok(pricing.children.filter(row => row.children.length === 2).every(row => row.children[1].textContent !== '0 ISK' || row.hidden), 'Zero-ISK pricing rows are hidden');
-assert.ok(pricing.children.filter(row => row.children[1]?.textContent === '0 ISK').every(row => row.className.includes('d-none')), 'Flex pricing rows use d-none so zero values stay hidden in the browser');
+assert.ok(pricing.children.filter(row => row.children.length === 2).every(row => treeText(row.children[1]).trim() !== '0 ISK' || row.hidden), 'Zero-ISK pricing rows are hidden');
+assert.ok(pricing.children.filter(row => row.children[1] && treeText(row.children[1]).trim() === '0 ISK').every(row => row.className.includes('d-none')), 'Flex pricing rows use d-none so zero values stay hidden in the browser');
 assert.equal(pricing.children.find(row => row.children[0]?.textContent === 'Hull').hidden, false, 'Non-zero pricing rows remain visible');
 const lookupCount = priceLookups.length;
 controls.get('high1').children[0].click();

@@ -48,6 +48,7 @@ window.zkbInitSimulate = function() {
     dragPreview.textContent = '\u2197';
     root.append(dragPreview);
     let priceRequest;
+    const priceFallbackRequests = new Map();
     const expandedSections = new Set(['Capacitor', 'Pricing']);
     const wheel = element('Fitting_Panel');
     let savedUI;
@@ -1047,26 +1048,36 @@ window.zkbInitSimulate = function() {
         }
         pricing.append(node('small', 'text-white', 'Estimated ISK values using zKillboard prices.'));
         const updatePrices = () => {
+            const showAmount = (element, value, missing = []) => {
+                element.replaceChildren(node('span', 'd-block', value));
+                if (!missing.length) return;
+                const detail = node('span', 'd-flex justify-content-end align-items-center gap-1 small fw-normal');
+                detail.append(node('span', '', missing.reduce((total, item) => total + (item.quantity || 1), 0).toLocaleString() + ' unavailable'),
+                    popoverMarker('Show unavailable prices', missing.map(item => catalog[item.type_id].name + ((item.quantity || 1) > 1 ? ' ×' + item.quantity : '')).join(', ')));
+                element.append(detail);
+            };
             let total = 0;
             let complete = true;
+            let totalPending = false;
             for (const [label, items] of Object.entries(costs)) {
                 let subtotal = 0;
                 let pending = false;
-                let missing = false;
+                const missing = [];
                 for (const item of items) {
                     const price = prices.get(item.type_id);
                     if (price === undefined) pending = true;
-                    else if (price === null) missing = true;
+                    else if (price === null) missing.push(item);
                     else subtotal += price * (item.quantity || 1);
                 }
                 const display = amounts.get(label);
-                display.amount.textContent = pending ? 'Loading…' : missing ? 'Unavailable' : subtotal.toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' ISK';
-                display.row.hidden = !pending && !missing && subtotal === 0;
+                showAmount(display.amount, pending ? 'Loading…' : subtotal.toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' ISK', pending ? 0 : missing);
+                display.row.hidden = !pending && !missing.length && subtotal === 0;
                 display.row.className = display.row.className.replace(' d-none', '') + (display.row.hidden ? ' d-none' : '');
                 total += subtotal;
-                complete &&= !pending && !missing;
+                totalPending ||= pending;
+                complete &&= !pending && !missing.length;
             }
-            amounts.get('Total').amount.textContent = complete ? total.toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' ISK' : '—';
+            showAmount(amounts.get('Total').amount, totalPending ? 'Loading…' : total.toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' ISK');
             amounts.get('Total').row.hidden = complete && total === 0;
             amounts.get('Total').row.className = amounts.get('Total').row.className.replace(' d-none', '') + (amounts.get('Total').row.hidden ? ' d-none' : '');
         };
@@ -1096,9 +1107,21 @@ window.zkbInitSimulate = function() {
                 }
             })().catch(() => {});
         }
-        priceRequest.then(() => {
+        const requestedPrices = priceRequest.then(() => Promise.all(ids.filter(id => !prices.has(id)).map(id => {
+            if (!priceFallbackRequests.has(id)) priceFallbackRequests.set(id, (async () => {
+                try {
+                    const response = await fetch('/api/prices/' + id + '/', { signal: events.signal });
+                    if (!response.ok) throw new Error('Price unavailable');
+                    const price = Number((await response.json()).currentPrice);
+                    prices.set(id, Number.isFinite(price) && price > 0.01 ? price : null);
+                } catch (error) {
+                    prices.set(id, null);
+                }
+            })());
+            return priceFallbackRequests.get(id);
+        })));
+        requestedPrices.then(() => {
             if (!alive) return;
-            for (const id of ids) if (!prices.has(id)) prices.set(id, null);
             updatePrices();
         });
         element('resource-cpu').textContent = compact(stats.cpuOutput - stats.cpuLoad) + '/' + compact(stats.cpuOutput);
