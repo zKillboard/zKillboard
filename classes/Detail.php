@@ -36,6 +36,7 @@ class Detail
         $eftarray['low'] = array(); // low
         $eftarray['rig'] = array(); // rig
         $eftarray['drone'] = array(); // drone
+        $eftarray['cargo'] = array(); // cargo
         $eftarray['sub'] = array(); // sub
         $subSlot = 125;
 
@@ -98,6 +99,9 @@ class Detail
             }
 
             $key = $itm['typeName'].'|'.$itm['flagName'];
+            if ($itm['flagName'] == 'Cargo Hold' && $itm['inContainer'] == 0) {
+                $eftarray['cargo'][$itm['typeID']][] = array('typeName' => $itm['typeName'], 'typeID' => $itm['typeID'], 'qty' => @$itm['quantity_dropped'] + @$itm['quantity_destroyed']);
+            }
             if (isset($itm['flagName'])) {
                 if ($itm['flagName'] == 'Structure Service Slots' || $itm['flagName'] == 'SubSystems' || $itm['flagName'] == 'Rigs' || ($itm['fittable'] && $itm['inContainer'] == 0)) {
                     // not ammo or whatever

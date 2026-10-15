@@ -43,6 +43,15 @@ class Fitting
             }
         }
 
+        if (isset($array['cargo'])) {
+            $eft .= "\n";
+            foreach ($array['cargo'] as $flags) {
+                foreach ($flags as $items) {
+                    $eft .= $items['typeName'].' x'.$items['qty']."\n";
+                }
+            }
+        }
+
         return trim($eft);
     }
 
@@ -66,7 +75,7 @@ class Fitting
 
     public static function DNA($array = array(), $ship)
     {
-        $goodspots = array('High Slots', 'SubSystems', 'Rigs', 'Low Slots', 'Mid Slots', 'Drone Bay', 'Fuel Bay');
+        $goodspots = array('High Slots', 'SubSystems', 'Rigs', 'Low Slots', 'Mid Slots', 'Drone Bay', 'Fuel Bay', 'Cargo Hold');
         $fitArray = array();
         $fitString = $ship.':';
 

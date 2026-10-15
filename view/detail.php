@@ -168,6 +168,7 @@ $extra['droppedprice'] = Util::iskToUsdEurGbp($extra['droppedisk']);
 $extra['fittedprice'] = Util::iskToUsdEurGbp($extra['fittedisk']);
 $extra['efttext'] = Fitting::EFT($extra['fittingwheel']);
 $extra['dnatext'] = Fitting::DNA($killdata['items'], $killdata['victim']['shipTypeID']);
+$extra['dnalink'] = '<url=fitting:' . $extra['dnatext'] . '>' . $killdata['victim']['shipName'] . '</url>';
 $extra['edkrawmail'] = 'deprecated - use CREST';
 $extra['zkbrawmail'] = 'deprecated - use CREST';
 $extra['slotCounts'] = Info::getSlotCounts($killdata['victim']['shipTypeID']);

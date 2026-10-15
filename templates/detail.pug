@@ -257,7 +257,7 @@ block modal
         .modal-body
           form(name="myform")
             .mb-3
-              textarea#dna.fitting.col-md-12(data-zkb-select-on-click rows="2" name="dna")= $extraData['dnatext'] ?? ''
+              textarea#dna.fitting.col-md-12(data-zkb-select-on-click rows="2" name="dna" readonly="readonly")= $extraData['dnalink'] ?? ''
             .mb-3
               button.btn.btn-primary(type="button" data-bs-dismiss="modal") Close
   #EFT.modal.fade
