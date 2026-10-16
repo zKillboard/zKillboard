@@ -1294,6 +1294,16 @@ echo "Creating index : 'key' => 1 ... ";
 $sde_types->createIndex(['key' => 1], ['sparse' => true, 'unique' => true]);
 echo "Done\n";
 
+// sde_dynamicItemAttributes
+echo "\nCreating collection sde_dynamicItemAttributes ... ";
+$db->createCollection("sde_dynamicItemAttributes");
+$collection = "sde_dynamicItemAttributes";
+$sde_dynamicItemAttributes = $db->$collection;
+echo "Done\n";
+echo "Creating index : 'inputOutputMapping.resultingType' => 1 ... ";
+$sde_dynamicItemAttributes->createIndex(['inputOutputMapping.resultingType' => 1]);
+echo "Done\n";
+
 // searches
 echo "\nCreating collection searches ... ";
 $db->createCollection("searches");

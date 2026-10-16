@@ -134,6 +134,9 @@ function ensureUniqueSparseIndex(field, indexName) {
 
 ensureUniqueSparseIndex('_key', '_key_unique');
 ensureUniqueSparseIndex('key', 'key_unique');
+if (collectionName === 'sde_dynamicItemAttributes') {
+  collection.createIndex({ 'inputOutputMapping.resultingType': 1 });
+}
 
 const raw = fs.readFileSync(jsonlPath, 'utf8');
 const lines = raw.split(/\r?\n/);
@@ -226,10 +229,11 @@ if [[ ${import_count} -eq 0 ]]; then
 fi
 
 echo "Recalculating SDE locations..."
-(cd "${REPO_ROOT}/scratch" && php sde_locations_calced.php)
+cd "${REPO_ROOT}/scratch"
+php sde_locations_calced.php
 
 echo "Updating type pips..."
-(cd "${REPO_ROOT}/scratch" && php pips.php)
+php pips.php
 
 mv "${remote_latest_file}" "${LOCAL_LATEST_FILE}"
 echo "SDE import complete. Updated ${LOCAL_LATEST_FILE}."

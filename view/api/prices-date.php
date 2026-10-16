@@ -39,6 +39,10 @@ function handler($request, $response, $args, $container) {
     foreach ($groupPricedTypes as $type) {
         $specialTypeIDs[] = (int) $type['id'];
     }
+    $abyssalTypes = $mdb->find('sde_types', ['metaGroupID' => 15], [], null, ['_key' => 1]);
+    foreach ($abyssalTypes as $type) {
+        $specialTypeIDs[] = (int) $type['_key'];
+    }
     foreach (array_unique($specialTypeIDs) as $typeID) {
         if (isset($prices[(string) $typeID])) continue;
         $price = Price::getSpecialPrice($typeID, $date);

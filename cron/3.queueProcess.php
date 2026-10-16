@@ -171,15 +171,15 @@ while ($time >= time()) {
 
             $items = $mail['victim']['items'];
             $i = array();
-            $destroyedValue = getDValue($killID, $items, $date, false);
-            $droppedValue = getDValue($killID, $items, $date, true);
+            $destroyedValue = getDValue($killID, $items, $date, false, $items);
+            $droppedValue = getDValue($killID, $items, $date, true, $items);
 
             $shipValue = Price::getItemPrice($mail['victim']['ship_type_id'], $date);
             $destroyedValue += $shipValue;
-            $fittedValue = getFittedValue($killID, $mail['victim']['items'], $date);
+            $fittedValue = getFittedValue($killID, $mail['victim']['items'], $date, $items);
             $fittedValue += $shipValue;
             $totalValue = $destroyedValue + $droppedValue;
-            $totalDroppableValue = getTotalDroppableValue($killID, $mail['victim']['items'], $date);
+            $totalDroppableValue = getTotalDroppableValue($killID, $mail['victim']['items'], $date, false, $items);
 
             $isPaddedKill = false;
             $padhash = getPadHash($kill);
@@ -367,7 +367,7 @@ function createInvolved($data)
     return $array;
 }
 
-function getFittedValue($killID, $items, $dttm)
+function getFittedValue($killID, $items, $dttm, $fitItems)
 {
     global $fittedArray;
 
@@ -380,31 +380,33 @@ function getFittedValue($killID, $items, $dttm)
         $add = in_array($infernoFlag, $fittedArray);
         if ($add) {
             $qty = ((int) @$item['quantity_dropped'] + (int) @$item['quantity_destroyed']);
-            $price = Price::getItemPrice($typeID, $dttm);
+            $price = Price::getAbyssalPrice($typeID, $dttm, $fitItems);
+            if ($price === null) $price = Price::getItemPrice($typeID, $dttm);
             $fittedValue += ($qty * $price);
         }
     }
     return $fittedValue;
 }
 
-function getDValue($killID, $items, $dttm, $dropped)
+function getDValue($killID, $items, $dttm, $dropped, $fitItems)
 {
     $droppedOrDestroyed = 'quantity_' . ($dropped == true ? 'dropped' : 'destroyed');
 
     $dValue = 0;
     foreach ($items as $item) {
         $qty = ((int) @$item[$droppedOrDestroyed]);
-        if ($qty > 0) $dValue += processItems($killID, [$item], $dttm);
+        if ($qty > 0) $dValue += processItems($killID, [$item], $dttm, false, 0, $fitItems);
     }
     return $dValue;
 }
 
-function getTotalDroppableValue($killID, $items, $dttm, $isCargo = false)
+function getTotalDroppableValue($killID, $items, $dttm, $isCargo = false, $fitItems = null)
 {
     if ($killID < 21112472) {
         return 0;
     }
 
+    if ($fitItems === null) $fitItems = $items;
     $totalDroppableValue = 0;
     foreach ($items as $item) {
         $flagLocation = Info::getFlagLocation((int) @$item['flag']);
@@ -412,17 +414,17 @@ function getTotalDroppableValue($killID, $items, $dttm, $isCargo = false)
             continue;
         }
 
-        $totalDroppableValue += getItemValue($killID, $item, $dttm, $isCargo);
+        $totalDroppableValue += getItemValue($killID, $item, $dttm, $isCargo, $fitItems);
 
         if (@is_array($item['items'])) {
-            $totalDroppableValue += getTotalDroppableValue($killID, $item['items'], $dttm, true);
+            $totalDroppableValue += getTotalDroppableValue($killID, $item['items'], $dttm, true, $fitItems);
         }
     }
 
     return $totalDroppableValue;
 }
 
-function getItemValue($killID, $item, $dttm, $isCargo = false)
+function getItemValue($killID, $item, $dttm, $isCargo = false, $fitItems = [])
 {
     $typeID = (int) $item['item_type_id'];
     if ($typeID == 0) return 0;
@@ -430,7 +432,10 @@ function getItemValue($killID, $item, $dttm, $isCargo = false)
 
     if ($typeID == 33329 && $flag == 89) $price = 0.01;
     else if ($flag == 179) $price = 0.01;
-    else $price = Price::getItemPrice($typeID, $dttm);
+    else {
+        $price = Price::getAbyssalPrice($typeID, $dttm, $fitItems);
+        if ($price === null) $price = Price::getItemPrice($typeID, $dttm);
+    }
 
     if ($killID < 21112472 && $isCargo) {
         $itemName = Info::getInfoField("typeID", $typeID, "name");
@@ -444,21 +449,22 @@ function getItemValue($killID, $item, $dttm, $isCargo = false)
     return $price * (@$item['quantity_dropped'] + @$item['quantity_destroyed']);
 }
 
-function processItems($killID, $items, $dttm, $isCargo = false, $parentFlag = 0)
+function processItems($killID, $items, $dttm, $isCargo = false, $parentFlag = 0, $fitItems = null)
 {
+    if ($fitItems === null) $fitItems = $items;
     $totalCost = 0;
     foreach ($items as $item) {
-        $totalCost += processItem($killID, $item, $dttm, $isCargo, $parentFlag);
+        $totalCost += processItem($killID, $item, $dttm, $isCargo, $parentFlag, $fitItems);
         if (@is_array($item['items'])) {
             $itemContainerFlag = $item['flag'];
-            $totalCost += processItems($killID, $item['items'], $dttm, true, $itemContainerFlag);
+            $totalCost += processItems($killID, $item['items'], $dttm, true, $itemContainerFlag, $fitItems);
         }
     }
 
     return $totalCost;
 }
 
-function processItem($killID, $item, $dttm, $isCargo = false, $parentContainerFlag = -1)
+function processItem($killID, $item, $dttm, $isCargo = false, $parentContainerFlag = -1, $fitItems = [])
 {
     global $mdb;
 
@@ -466,7 +472,10 @@ function processItem($killID, $item, $dttm, $isCargo = false, $parentContainerFl
 
     if ($typeID == 33329 && $item['flag'] == 89) $price = 0.01; // Golden pod implant can't be destroyed
     else if ($item['flag'] == 179) $price = 0.01; // Ships in frigate bay have no real value for killmail
-    else $price = Price::getItemPrice($typeID, $dttm);
+    else {
+        $price = Price::getAbyssalPrice($typeID, $dttm, $fitItems);
+        if ($price === null) $price = Price::getItemPrice($typeID, $dttm);
+    }
 
     if ($killID < 21112472 && $isCargo) {
         $itemName = Info::getInfoField("typeID", $typeID, "name");

@@ -36,6 +36,11 @@ each $item in $flagItems
           = $item['typeName'] ?? ''
           if (($item['singleton'] ?? 0) == 2)
             |  (Copy)
+        if !empty($item['priceEstimated'])
+          - $estimate = $item['priceEstimate'] ?? [];
+          - $estimateTitle = 'Estimated from the average ' . ($estimate['tier'] ?? '') . ' equivalent price: ' . number_format((float) ($estimate['price'] ?? 0), 2) . ' ISK across ' . (int) ($estimate['count'] ?? 0) . ' priced item(s).';
+          = ' '
+          button.btn.btn-link.text-white.p-0.align-baseline(type="button" rel="tooltip" data-zkb-tooltip-click title=$estimateTitle aria-label=$estimateTitle) *
       - $qty = ($item['quantity_dropped'] ?? 0) + ($item['quantity_destroyed'] ?? 0);
       td.columnQty(style="text-align: right;" data-order=$qty class=(!empty($dropped) ? $dropped : $destroyed))
         span(format="format-int-once" raw=$qty)= $qty

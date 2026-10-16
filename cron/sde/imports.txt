@@ -2,6 +2,7 @@
 blueprints
 categories
 characterTitles
+dynamicItemAttributes
 groups
 typeMaterials
 types
