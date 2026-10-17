@@ -39,7 +39,6 @@ br
               i.fas.fa-sort(aria-hidden="true")
     tbody
       - $items = $extraData['items'] ?? [];
-      - $hasEstimatedPrices = count(array_filter($items, fn($item) => !empty($item['priceEstimated']))) > 0;
       each $flagName, $flag in ($flags ?? [])
         include flag_list.pug
       tr.hide-when-sorted
@@ -87,8 +86,6 @@ br
             h5(rel="tooltip" title=$priceTitle($extraData['totalprice'] ?? []) format="format-dec2-once" raw=($extraData['totalisk'] ?? 0))= number_format((float) ($extraData['totalisk'] ?? 0), 2, '.', ',')
         td.d-none
         td.d-none
-  if $hasEstimatedPrices
-    small.text-muted * Estimated value; hover the marker for the tier and average equivalent price used.
 if (($extraData['insurance']['Basic']['payout'] ?? 0) > 0)
   .col-lg-4
     h4

@@ -1083,7 +1083,6 @@ function prepTippy() {
 				content,
 				allowHTML: true,
 				delay: 250,
-				trigger: el.hasAttribute('data-zkb-tooltip-click') ? 'click' : 'mouseenter focus',
 				onShow(instance) {
 					if (tippy.hideAll) tippy.hideAll({ exclude: instance });
 				},
