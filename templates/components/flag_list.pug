@@ -36,7 +36,7 @@ each $item in $flagItems
           = $item['typeName'] ?? ''
           if (($item['singleton'] ?? 0) == 2)
             |  (Copy)
-        if !empty($item['priceEstimated'])
+        if !empty($item['priceEstimated']) && ($item['price'] ?? 0) > 0.01
           - $estimate = $item['priceEstimate'] ?? [];
           - $estimateTitle = 'Estimated from the average ' . ($estimate['tier'] ?? '') . ' equivalent price: ' . number_format((float) ($estimate['price'] ?? 0), 2) . ' ISK across ' . (int) ($estimate['count'] ?? 0) . ' priced item(s).';
           = ' '

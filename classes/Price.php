@@ -140,6 +140,7 @@ class Price
         $typeID = (int) $typeID;
         $estimate = null;
         if (!static::isAbyssalType($typeID)) return null;
+        return 0.01;
 
         if (!array_key_exists($typeID, $equivalentTypesByTypeID)) {
             $equivalentTypesByTypeID[$typeID] = [];
