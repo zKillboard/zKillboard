@@ -23,7 +23,8 @@ class Mdb
                 if ($mongoConnString == null) $mongoConnString = "mongodb://$mongoServer:$mongoPort";
                 $this->mongoClient = new MongoDB\Client($mongoConnString, [
                     'connectTimeoutMS' => 10000,
-                    'socketTimeoutMS' => 7200000,
+                    // Cron queries can run indefinitely; 0 uses the driver's default timeout.
+                    'socketTimeoutMS' => php_sapi_name() === 'cli' ? -1 : 7200000,
                 ], [
                     'typeMap' => [
                         'root' => 'array',
