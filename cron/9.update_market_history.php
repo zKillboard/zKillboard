@@ -9,8 +9,9 @@ $rset = "zkb:updatemarket";
 $rsetLoad = "zkb:updatemarket:" . date('Ymd', time() - 40500);
 
 if ($kvc->get($rsetLoad) == "true") exit();
+if ($redis->exists("$rset:retry")) exit();
 
-$guzzler = new Guzzler(5);
+$guzzler = new Guzzler(1);
 
 if ($redis->scard($rset) == 0) {
     msuccess($guzzler, ['page' => 0, 'rset' => $rset, 'redis' => $redis], "---");
@@ -19,7 +20,7 @@ if ($redis->scard($rset) == 0) {
 
 $fetched = [];
 $minute = date("Hi");
-while ($minute == date("Hi") && $redis->scard($rset) > 0) {
+while ($minute == date("Hi") && $redis->scard($rset) > 0 && !$redis->exists("$rset:retry")) {
     $type_id = (int) $redis->srandmember($rset);
 
     // Ensure the type_id is public and has a market group https://github.com/esi/esi-issues/issues/1429
@@ -32,6 +33,9 @@ while ($minute == date("Hi") && $redis->scard($rset) > 0) {
     $fetched[] = $type_id;
 
     $guzzler->call("https://esi.evetech.net/markets/10000002/history?type_id=$type_id", "isuccess", "ifail", ['mdb' => $mdb, 'redis' => $redis, 'type_id' => $type_id, 'rset' => $rset]);
+    // Finish before checking cooldowns; stay below the 300 requests/minute/IP limit.
+    $guzzler->finish();
+    usleep(250000);
 }
 $guzzler->finish();
 
@@ -60,8 +64,14 @@ function ifail(&$guzzler, $params, $ex) {
     $rset = $params['rset'];
     $redis = $params['redis'];
 
-    $redis->srem($rset, $type_id);
-    Util::out("market history item fetch fail: $type_id with http code " . $ex->getCode());
+    $code = $params['STATUS_CODE'] ?? $ex->getCode();
+    if ($code == 429 || $code == 420) {
+        // Some ESI rate limiters omit Retry-After; allow at least a minute to recover.
+        $retryAfter = max(60, (int) ($params['HEADERS']['retry-after'][0] ?? 0), (int) ($params['HEADERS']['x-esi-error-limit-reset'][0] ?? 0));
+        $redis->setex("$rset:retry", $retryAfter + 1, "true");
+    }
+    // Keep failed types queued for a later cron run, including exhausted Guzzler retries.
+    Util::out("market history item fetch fail: $type_id with http code $code; queued for retry");
 }
 
 function msuccess(&$guzzler, $params, $content) {
