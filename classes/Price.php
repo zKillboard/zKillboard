@@ -18,9 +18,6 @@ class Price
 
     public static function getSpecialPrice($typeID, $date)
     {
-        $price = static::getAbyssalPrice($typeID, $date);
-        if ($price !== null) return $price;
-        
         $price = static::getFixedPrice($typeID, $date);
         return $price !== null ? $price : static::getCalculatedPrice($typeID, $date, false);
     }
@@ -41,12 +38,6 @@ class Price
         if ($price !== null) {
             return $price;
         }
-
-        $price = static::getAbyssalPrice($typeID, $kmDate);
-        if ($price !== null) {
-            return $price;
-        }
-
         $price = static::getCalculatedPrice($typeID, $kmDate);
         if ($price !== null) {
             return $price;
@@ -130,93 +121,6 @@ class Price
 			$redis->expire($priceKey, 3600);
 		}
         return $avgPrice;
-    }
-
-    public static function getAbyssalPrice($typeID, $date, $items = [], &$estimate = null)
-    {
-        global $mdb;
-        static $equivalentTypesByTypeID = [];
-
-        $typeID = (int) $typeID;
-        $estimate = null;
-        if (!static::isAbyssalType($typeID)) return null;
-        return 0.01;
-
-        if (!array_key_exists($typeID, $equivalentTypesByTypeID)) {
-            $equivalentTypesByTypeID[$typeID] = [];
-            $attribute = $mdb->findDoc(
-                'sde_dynamicItemAttributes',
-                ['inputOutputMapping.resultingType' => $typeID],
-                [],
-                ['inputOutputMapping' => 1]
-            );
-            if (is_array($attribute) && is_array($attribute['inputOutputMapping'] ?? null)) {
-                foreach ($attribute['inputOutputMapping'] as $mapping) {
-                    if (!is_array($mapping) || (int) ($mapping['resultingType'] ?? 0) != $typeID) continue;
-                    if (!is_array($mapping['applicableTypes'] ?? null)) continue;
-                    foreach ($mapping['applicableTypes'] as $equivalentTypeID) {
-                        $metaGroupID = static::getMetaGroupID($equivalentTypeID);
-                        $tier = [2 => 1, 3 => 2, 4 => 3, 6 => 4, 5 => 5][$metaGroupID] ?? 0;
-                        if ($tier > 0) $equivalentTypesByTypeID[$typeID][$tier][] = (int) $equivalentTypeID;
-                    }
-                }
-            }
-        }
-
-        $equivalentTypes = $equivalentTypesByTypeID[$typeID];
-        if (sizeof($equivalentTypes) == 0) return 0.01; // Unknown, default to 0.01
-
-        $fitTier = 3;
-        $checkItems = function ($items) use (&$fitTier) {
-            foreach ($items as $item) {
-                $flag = Info::getFlagLocation((int) @$item['flag']);
-                if (!in_array($flag, [11, 12, 13, 159, 164, 2663, 3772])) continue;
-                $metaGroupID = static::getMetaGroupID((int) @$item['item_type_id']);
-                $tier = [2 => 1, 3 => 2, 4 => 3, 6 => 4, 5 => 5][$metaGroupID] ?? 0;
-                if ($metaGroupID != 15) $fitTier = max($fitTier, $tier);
-            }
-        };
-        if (is_array($items)) $checkItems($items);
-
-        $tierNames = [1 => 'Tech II', 2 => 'storyline', 3 => 'faction', 4 => 'deadspace', 5 => 'officer'];
-        for ($tier = $fitTier; $tier >= 1; --$tier) {
-            $prices = [];
-            foreach (@$equivalentTypes[$tier] ?: [] as $equivalentTypeID) {
-                $price = static::getItemPrice($equivalentTypeID, $date);
-                if ($price > 0.01) $prices[] = $price;
-            }
-            if (sizeof($prices) == 0) continue;
-            $price = round(array_sum($prices) / sizeof($prices), 2);
-            $estimate = ['tier' => $tierNames[$tier], 'price' => $price, 'count' => sizeof($prices)];
-            return $price;
-        }
-        return 0.01; // default to 0.01
-    }
-
-    private static function getMetaGroupID($typeID)
-    {
-        global $mdb;
-        static $metaGroups = [];
-
-        $typeID = (int) $typeID;
-        if (!array_key_exists($typeID, $metaGroups)) {
-            $type = $mdb->findDoc('sde_types', ['_key' => $typeID], [], ['metaGroupID' => 1]);
-            $metaGroups[$typeID] = isset($type['metaGroupID']) ? (int) $type['metaGroupID'] : null;
-        }
-        return $metaGroups[$typeID];
-    }
-
-    private static function isAbyssalType($typeID)
-    {
-        global $mdb;
-        static $abyssalTypes = null;
-
-        if ($abyssalTypes === null) {
-            $abyssalTypes = [];
-            $types = $mdb->find('sde_types', ['metaGroupID' => 15], [], null, ['_key' => 1]);
-            foreach ($types as $type) $abyssalTypes[(int) $type['_key']] = true;
-        }
-        return isset($abyssalTypes[(int) $typeID]);
     }
 
     protected static function getFixedPrice($typeID, $date)

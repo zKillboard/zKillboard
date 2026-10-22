@@ -198,19 +198,16 @@ class Kills
         return $items;
     }
 
-    public static function addItems($killID, &$itemArray, $items, $killTime, $inContainer = 0, $parentFlag = 0, $fitItems = null)
+    public static function addItems($killID, &$itemArray, $items, $killTime, $inContainer = 0, $parentFlag = 0)
     {
         if ($items == null) {
             return;
         }
-        if ($fitItems === null) $fitItems = $items;
         if (is_array($items)) {
             foreach ($items as $item) {
                 $typeID = $item['item_type_id'];
                 $item['typeID'] = $typeID;
-                $item['price'] = Price::getAbyssalPrice($typeID, $killTime, $fitItems, $item['priceEstimate']);
-                $item['priceEstimated'] = $item['price'] !== null;
-                if (!$item['priceEstimated']) $item['price'] = Price::getItemPrice($typeID, $killTime);
+                $item['price'] = Price::getItemPrice($typeID, $killTime);
                 $item['inContainer'] = $inContainer;
                 if ($inContainer) {
                     $item['flag'] = $parentFlag;
@@ -220,14 +217,13 @@ class Kills
                 }
                 if ($item['singleton'] == 2 || $item['flag'] == 179) { // bpcs and ships in frigate bay have no real value
                     $item['price'] = 0.01;
-                    $item['priceEstimated'] = false;
                 }
                 unset($item['_stringValue']);
                 $itemArray[] = $item;
                 $subItems = isset($item['items']) ? $item['items'] : null;
                 unset($item['items']);
                 if ($subItems != null) {
-                    self::addItems($killID, $itemArray, $subItems, $killTime, 1, $item['flag'], $fitItems);
+                    self::addItems($killID, $itemArray, $subItems, $killTime, 1, $item['flag']);
                 }
             }
         }

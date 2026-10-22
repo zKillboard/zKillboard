@@ -164,19 +164,7 @@ Prices are meant to keep killmail values stable and abuse-resistant. They will n
 
 ### [#](#abyssal-prices) How are Abyssal item prices determined?
 
-Abyssal items do not have dependable market prices because a killmail identifies the resulting item type, but not its mutated attributes. zKillboard therefore estimates their value from equivalent, unmutated modules in the EVE Static Data Export (SDE).
-
-**The Abyssal pricing flow:**
-
-1. Inspect the meta tiers of the non-Abyssal modules fitted to the destroyed ship
-2. Use the highest fitted tier, with **faction** as the minimum target tier, even when Tech II is the highest tier fitted
-3. Find the unmutated modules that can produce that Abyssal item using the SDE's dynamic item mappings
-4. Average the historical zKillboard prices of the equivalent modules at the target tier
-5. If no usable prices exist at that tier, try each lower tier until a price can be calculated
-
-The tier order is **Tech II, storyline, faction, deadspace, then officer**. If the required SDE metadata or a usable equivalent price is unavailable, the Abyssal item is valued at **0.01 ISK**.
-
-Estimated Abyssal prices are marked with a white **\*** to the right of the item name on killmail detail pages. Select the **\*** to see the tier, calculated average, and number of equivalent module prices used.
+Abyssal items do not have dependable market prices because a killmail identifies the resulting item type, but not its mutated attributes. zKillboard does not estimate their value from equivalent modules or the ship's fitting. They follow the standard item pricing fallback, which defaults to **0.01 ISK** when no market price or build cost is available.
 
 ---
 
