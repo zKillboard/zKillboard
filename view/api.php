@@ -38,14 +38,20 @@ function handler($request, $response, $args, $container) {
 
     $return = $redis->get("zkb:api:result:$key");
     if ($return == null || $return == "") {
-        $redis->setex("zkb:api:params:$key", 61, serialize($parameters));
-        $redis->setex("zkb:api:status:$key", 60, "PENDING");
-        $mdb->insert('queues', ['queue' => 'queueAPI', 'value' => $key, 'created' => Mdb::now()]);
+        if ($redis->set("zkb:api:status:$key", "PENDING", ['nx', 'ex' => 60])) {
+            $redis->setex("zkb:api:params:$key", 61, serialize($parameters));
+            $mdb->insert('queues', ['queue' => 'queueAPI', 'value' => $key, 'created' => Mdb::now()]);
+        }
     
         while ($redis->get("zkb:api:status:$key") == "PENDING") usleep(100000);
+        $return = $redis->get("zkb:api:result:$key");
     }
 
-    $return = unserialize($redis->get("zkb:api:result:$key"));
+    $return = $return ? unserialize($return) : false;
+    if (!is_array($return)) {
+        $response->getBody()->write(json_encode(['error' => 'API result unavailable, please try again later']));
+        return $response->withStatus(503)->withHeader('Cache-Control', 'no-store')->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', 'www,api,error');
+    }
 
     $array = array();
     foreach ($return as $json) {

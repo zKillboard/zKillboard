@@ -1,6 +1,6 @@
 <?php
 
-$mt = 4; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
+$mt = 8; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit();
 
 require_once "../init.php";
 
@@ -18,10 +18,8 @@ while ($minute == date('Hi')) {
     }
 
     $paramsKey = "zkb:api:params:$key";
-    $serial = $redis->get($paramsKey);
-    $redis->del($paramsKey);
+    $serial = $redis->getDel($paramsKey);
     if ($serial === false || $serial === null) {
-        $redis->del("zkb:api:status:$key");
         continue;
     }
     $parameters = unserialize($serial);
