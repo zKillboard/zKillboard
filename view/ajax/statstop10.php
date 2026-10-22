@@ -30,22 +30,20 @@ function handler($request, $response, $args, $container) {
     $split = explode("/", $uri);
     $cacheTagKey = ($split[1] ?? '') . ":" . ($split[2] ?? '');
 
-    $epoch = time();
-    $epoch = $epoch - ($epoch % 900);
-
     $p = Util::convertUriToParameters($uri);
-    $q = MongoFilter::buildQuery($p);
-    $q['cacheTime'] = 60;
-    $ksa = (int) $mdb->findField('oneWeek', 'sequence', $q, ['sequence' => 1]);
-    $kea = (int) $mdb->findField('oneWeek', 'sequence', $q, ['sequence' => -1]);
+    if ($tagged === false) {
+        $q = MongoFilter::buildQuery($p);
+        $q['cacheTime'] = 60;
+        $ksa = (int) $mdb->findField('oneWeek', 'sequence', $q, ['sequence' => 1]);
+        $kea = (int) $mdb->findField('oneWeek', 'sequence', $q, ['sequence' => -1]);
 
-    if ($tagged === false) 
-    if ($bypass || "$ks" != "$ksa" || "$ke" != "$kea") {
-        // Redirect to proper sequence URL
-        $redirectParams = ['u' => $uri, 't' => $topType];
-        if ($sortBy == 'isk') $redirectParams['s'] = $sortBy;
-        $redirectUrl = "/cache/tagged/statstop10/?".http_build_query($redirectParams);
-        return $response->withHeader('Location', $redirectUrl)->withStatus(302);
+        if ($bypass || "$ks" != "$ksa" || "$ke" != "$kea") {
+            // Redirect to proper sequence URL
+            $redirectParams = ['u' => $uri, 't' => $topType];
+            if ($sortBy == 'isk') $redirectParams['s'] = $sortBy;
+            $redirectUrl = "/cache/tagged/statstop10/?".http_build_query($redirectParams);
+            return $response->withHeader('Location', $redirectUrl)->withStatus(302);
+        }
     }
 
     $disqualified = 0;
