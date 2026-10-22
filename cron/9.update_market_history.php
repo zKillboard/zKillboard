@@ -65,6 +65,11 @@ function ifail(&$guzzler, $params, $ex) {
     $redis = $params['redis'];
 
     $code = $params['STATUS_CODE'] ?? $ex->getCode();
+    if ($code == 400) {
+        $redis->srem($rset, $type_id);
+        Util::out("market history item fetch fail: $type_id with http code $code; removed invalid market item");
+        return;
+    }
     if ($code == 429 || $code == 420) {
         // Some ESI rate limiters omit Retry-After; allow at least a minute to recover.
         $retryAfter = max(60, (int) ($params['HEADERS']['retry-after'][0] ?? 0), (int) ($params['HEADERS']['x-esi-error-limit-reset'][0] ?? 0));
