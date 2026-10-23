@@ -18,7 +18,10 @@ while ($minute == date('Hi')) {
     }
 
     $paramsKey = "zkb:api:params:$key";
-    $serial = $redis->getDel($paramsKey);
+    $redis->multi();
+    $redis->get($paramsKey);
+    $redis->del($paramsKey);
+    $serial = $redis->exec()[0];
     if ($serial === false || $serial === null) {
         continue;
     }
