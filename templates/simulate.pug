@@ -104,7 +104,7 @@ block content
             .card-body
               #simulate-implant-wheel.mx-auto.position-relative.w-100.overflow-hidden(style="aspect-ratio: 1; isolation: isolate;")
                 #simulate-implant-Fitting_Panel.position-absolute.top-0.start-0.w-100.h-100!= $implantWheelSVG
-                .position-absolute.top-0.start-0.d-flex.flex-column.align-items-start.gap-1(style="z-index: 4;")
+                .d-none
                   button#simulate-capsule-save.btn.btn-sm.btn-primary.text-white(type="button") Save Fit
                   button#simulate-capsule-eft-open.btn.btn-sm.btn-primary.text-white(type="button" data-bs-toggle="modal" data-bs-target="#simulate-eft-modal") EFT
               #simulate-implants.mt-3
@@ -123,7 +123,7 @@ block content
               h2.h5.mx-0 Selected boosters
               p.small Choose one drug or booster per slot. Adding another replaces the booster in that slot. Bonuses apply while enabled; random side effects and expiry are not simulated.
               p.small A * beside a statistic indicates that enabled boosters change it.
-              .d-flex.gap-1.mb-3
+              .d-none
                 button#simulate-boosters-save.btn.btn-sm.btn-primary.text-white(type="button") Save Fit
                 button#simulate-boosters-eft-open.btn.btn-sm.btn-primary.text-white(type="button" data-bs-toggle="modal" data-bs-target="#simulate-eft-modal") EFT
               #simulate-boosters
@@ -190,6 +190,20 @@ block content
                     #simulate-security-status-character-name.fw-semibold
                     #simulate-security-status-detail
                 button#simulate-security-status-reset.btn.btn-sm.btn-primary.text-white.ms-auto(type="button") Reset
+      #simulate-item-modal.modal.fade(tabindex="-1" aria-labelledby="simulate-item-title" aria-hidden="true")
+        .modal-dialog.modal-lg.modal-dialog-scrollable
+          .modal-content
+            .modal-header
+              h2#simulate-item-title.modal-title.h5
+              button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+            .modal-body
+              .d-flex.align-items-center.gap-3.mb-3
+                img#simulate-item-image.rounded(width="64" height="64" alt="")
+                #simulate-item-details
+              #simulate-item-description.text-break(style="white-space: pre-line" role="status")
+            .modal-footer
+              a#simulate-item-link.btn.btn-primary.text-white(target="_blank" rel="noopener") Item page
+              button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Close
       #simulate-share-modal.modal.fade(tabindex="-1" aria-labelledby="simulate-share-title" aria-hidden="true")
         .modal-dialog.modal-lg
           .modal-content

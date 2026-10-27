@@ -440,6 +440,31 @@ window.zkbInitSimulate = function() {
         if (!matches.length) results.append(node('p', 'text-white p-2 mb-0', hull ? 'No matching equipment.' : 'Choose a ship first.'));
     }
 
+    const itemDescriptions = new Map();
+    let informationTypeID;
+    async function showAugmentation(typeID) {
+        const type = catalog[typeID];
+        informationTypeID = typeID;
+        element('item-title').textContent = type.name;
+        element('item-image').src = 'https://images.evetech.net/types/' + typeID + '/icon?size=64';
+        element('item-details').textContent = 'Slot: ' + (type.attributes.implantness ?? type.attributes.boosterness) + ' · Volume: ' + type.volume + ' m³';
+        element('item-link').href = '/item/' + typeID + '/';
+        element('item-description').textContent = 'Loading description…';
+        window.bootstrap.Modal.getOrCreateInstance(element('item-modal')).show();
+        try {
+            if (!itemDescriptions.has(typeID)) {
+                const response = await fetch('https://esi.evetech.net/universe/types/' + typeID + '/', { signal: events.signal });
+                if (!response.ok) throw new Error('Unable to load item information.');
+                const item = await response.json();
+                const description = new DOMParser().parseFromString((item.description || '').replace(/<br\s*\/?\s*>/gi, '\n'), 'text/html').body.textContent;
+                itemDescriptions.set(typeID, description || 'No description available.');
+            }
+            if (alive && informationTypeID === typeID) element('item-description').textContent = itemDescriptions.get(typeID);
+        } catch (error) {
+            if (alive && informationTypeID === typeID) element('item-description').textContent = 'Unable to load the description. Try again or open the item page.';
+        }
+    }
+
     function toggleAugmentations(items) {
         if (!items?.length) return;
         const enabled = !items.every(item => item.enabled !== false);
@@ -498,7 +523,7 @@ window.zkbInitSimulate = function() {
                 previousMeta = meta;
             }
             const row = node('div', 'list-group-item d-flex align-items-center justify-content-between gap-2 text-white');
-            row.append(node('span', 'small', type.name), button('Add', () => {
+            row.append(button(type.name, () => showAugmentation(type.id), 'btn btn-link text-white text-start text-decoration-none p-0 small'), button('Add', () => {
                 if (!fit) throw new Error('Choose a ship on the Ship tab first.');
                 const slot = type.attributes[attribute];
                 fit[collection] = (fit[collection] || []).filter(item => item.slot !== slot);
@@ -569,10 +594,9 @@ window.zkbInitSimulate = function() {
             mount.replaceChildren();
             const control = button('', () => {
                 if (!fitted) return;
-                fit.implants = fit.implants.filter(implant => implant !== fitted);
-                changed();
+                showAugmentation(fitted.type_id);
             }, 'btn p-0 rounded-1 w-100 h-100 border-0 bg-transparent text-white shadow-none');
-            control.title = 'Implant slot ' + slot + ': ' + (fitted ? catalog[fitted.type_id].name + ' (click to remove)' : 'Empty');
+            control.title = 'Implant slot ' + slot + ': ' + (fitted ? catalog[fitted.type_id].name + ' (click for information)' : 'Empty');
             control.setAttribute('aria-label', control.title);
             if (fitted) {
                 const image = node('img', 'w-100 h-100 rounded-1');
@@ -600,19 +624,20 @@ window.zkbInitSimulate = function() {
             };
             updatePrice();
             priceRequest?.then(updatePrice);
-            row.append(image, description, price);
-            row.tabIndex = 0;
-            row.setAttribute('role', 'button');
-            row.setAttribute('aria-label', 'Remove ' + catalog[fitted.type_id].name + ' from implant slot ' + fitted.slot);
-            row.title = 'Click to remove implant';
-            const remove = () => {
+            const information = button('', () => showAugmentation(fitted.type_id), 'btn btn-link text-white text-start text-decoration-none p-0 d-flex align-items-center gap-2 flex-grow-1');
+            information.append(image, description);
+            const remove = button('', () => {
                 fit.implants = fit.implants.filter(implant => implant !== fitted);
                 changed();
-            };
-            row.addEventListener('click', remove);
-            row.addEventListener('keydown', event => {
-                if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); remove(); }
-            });
+            }, 'btn btn-sm btn-danger text-white flex-shrink-0');
+            remove.style.backgroundColor = '#550404';
+            remove.style.borderColor = '#550404';
+            remove.setAttribute('aria-label', 'Remove ' + catalog[fitted.type_id].name);
+            remove.title = 'Remove ' + catalog[fitted.type_id].name;
+            const trash = node('i', 'fas fa-trash');
+            trash.setAttribute('aria-hidden', 'true');
+            remove.append(trash);
+            row.append(information, price, remove);
             implants.append(row);
         }
         if (!fittedImplants.length) implants.append(node('p', 'small px-2', 'No implants fitted.'));
@@ -1018,7 +1043,9 @@ window.zkbInitSimulate = function() {
                 image.alt = '';
                 const description = node('div', 'small lh-sm');
                 description.append(node('div', '', catalog[item.type_id].name), node('div', '', 'Slot: ' + item.slot));
-                row.append(enabled, image, description);
+                const information = button('', () => showAugmentation(item.type_id), 'btn btn-link text-white text-start text-decoration-none p-0 d-flex align-items-center gap-2');
+                information.append(image, description);
+                row.append(enabled, information);
                 if (label === 'Boosters' && activeTab === 'boosters') {
                     const remove = button('', () => {
                         fit.boosters = fit.boosters.filter(booster => booster !== item);
