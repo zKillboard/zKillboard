@@ -21,7 +21,9 @@ block content
         li.nav-item(role="presentation")
           button#simulate-tab-capsule.nav-link(type="button" role="tab" aria-selected="false") Implants (0)
         li.nav-item(role="presentation")
-          button#simulate-tab-configure.nav-link(type="button" role="tab" aria-selected="false") Configure
+          button#simulate-tab-boosters.nav-link(type="button" role="tab" aria-selected="false") Boosters (0)
+        li.nav-item.ms-auto(role="presentation")
+          button#simulate-tab-configure.nav-link(type="button" role="tab" aria-selected="false" aria-keyshortcuts="Alt+c" title="Configure (Alt+C)") Configure
       #simulate-ship-panel.row.g-3
         #simulate-equipment.col-12.col-lg-3
           #simulate-status.visually-hidden(role="status" aria-live="polite") Loading ships and fitting data…
@@ -98,8 +100,6 @@ block content
         .col-12.col-lg-6
           .card.bg-black
             .card-body
-              h2.h5.mx-0 Capsule implants
-              p.small Implants fitted here affect the calculated ship statistics shown on the Ship tab.
               #simulate-implant-wheel.mx-auto.position-relative.w-100.overflow-hidden(style="aspect-ratio: 1; isolation: isolate;")
                 #simulate-implant-Fitting_Panel.position-absolute.top-0.start-0.w-100.h-100!= $implantWheelSVG
                 .position-absolute.top-0.start-0.d-flex.flex-column.align-items-start.gap-1(style="z-index: 4;")
@@ -107,6 +107,25 @@ block content
                   button#simulate-capsule-eft-open.btn.btn-sm.btn-primary.text-white(type="button" data-bs-toggle="modal" data-bs-target="#simulate-eft-modal") EFT
               #simulate-implants.mt-3
         #simulate-capsule-stats.col-12.col-lg-3
+      #simulate-boosters-panel.row.g-3(hidden)
+        .col-12.col-lg-3
+          .card
+            .card-body
+              h2.h5.mx-0 Drugs and Boosters
+              label.form-label(for="simulate-booster-search") Search boosters
+              input#simulate-booster-search.form-control.mb-2(type="search" placeholder="Drug or booster name" autocomplete="off")
+              #simulate-booster-results.list-group.overflow-auto(style="max-height: 36rem;" aria-label="Booster results")
+        .col-12.col-lg-6
+          .card.bg-black
+            .card-body
+              h2.h5.mx-0 Selected boosters
+              p.small Choose one drug or booster per slot. Adding another replaces the booster in that slot. Bonuses apply while enabled; random side effects and expiry are not simulated.
+              p.small A * beside a statistic indicates that enabled boosters change it.
+              .d-flex.gap-1.mb-3
+                button#simulate-boosters-save.btn.btn-sm.btn-primary.text-white(type="button") Save Fit
+                button#simulate-boosters-eft-open.btn.btn-sm.btn-primary.text-white(type="button" data-bs-toggle="modal" data-bs-target="#simulate-eft-modal") EFT
+              #simulate-boosters
+        #simulate-boosters-stats.col-12.col-lg-3
       #simulate-configure-panel.row.g-3(hidden)
         .col-12.col-lg-6
           .card.bg-black.simulate-configure-card
@@ -190,6 +209,7 @@ block content
             li Choose a ship, name your fit, and select a skill level. For tactical destroyers, use the mode buttons above the stats.
             li Use the Configure tab to set the incoming damage profile used for effective HP and repair calculations. Spool-capable modules can be adjusted under Offense.
             li Use the Implants tab to search for and fit one implant per implant slot. Implant bonuses are included in the ship statistics.
+            li Use the Boosters tab to search drugs and boosters, add one per booster slot, and enable or remove them. Click a * beside a statistic for details.
             li Search equipment or expand a slot or bay to browse. Use Add or drag a module onto a wheel slot. Click an empty slot to choose where to fit it.
             li Click a fitted module to cycle online, overheated, and offline where supported. Green slot outlines mean online; red means overheated.
             li Adding a module reveals compatible charges below it. Use Load or drag a charge onto the module. Drop a fitted module onto the equipment panel to browse it and its compatible charges.
@@ -199,8 +219,8 @@ block content
             li Click EFT to view and copy the current fit, or paste a fit from EVE, Pyfa, or another fitting tool and click Import EFT.
         .col-12.col-md-6
           h2.h5.mx-0 Disclaimers & Credits
-          p.small.mb-2 Calculations exclude combat boosters, command boosts, and system effects. EHP uses the incoming damage profile on the Configure tab.
-          p.small.mb-2 EFT does not preserve module activation states, spool levels, enabled implants, deployed drone counts, fighter tube assignments, or tactical destroyer modes. Fighter tubes are initially estimated from available full squadrons. Your current fit is saved in this browser.
+          p.small.mb-2 Calculations exclude random booster side effects, booster expiry, command boosts, and system effects. EHP uses the incoming damage profile on the Configure tab.
+          p.small.mb-2 EFT does not preserve module activation states, spool levels, enabled implants or boosters, deployed drone counts, fighter tube assignments, or tactical destroyer modes. Fighter tubes are initially estimated from available full squadrons. Your current fit is saved in this browser.
           p.small.mb-2
             | Calculated locally with&#32;
             a(href="https://github.com/EVEShipFit/dogma-engine" target="_blank" rel="noopener noreferrer") EVEShip.fit’s engine

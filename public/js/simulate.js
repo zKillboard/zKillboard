@@ -36,6 +36,7 @@ window.zkbInitSimulate = function() {
     let queuedCalculation;
     let panelHeight = 0;
     let pilotSecurityStatus;
+    let usePilotSecurityStatus = false;
     let pilotCharacterID;
     let pilotCharacterName;
     let alive = true;
@@ -55,14 +56,14 @@ window.zkbInitSimulate = function() {
     try { savedUI = JSON.parse(localStorage.getItem('zkb:simulate-ui')); } catch (error) { /* Invalid or unavailable storage. */ }
     let equipmentSort = savedUI?.sort === 'Alpha' ? 'Alpha' : 'Meta';
     let restoring = true;
-    let activeTab = ['ship', 'capsule', 'configure'].includes(savedUI?.tab) ? savedUI.tab : 'ship';
+    let activeTab = ['ship', 'capsule', 'boosters', 'configure'].includes(savedUI?.tab) ? savedUI.tab : 'ship';
     const equipmentGroups = new Map();
     const revealedCharges = new Map();
     function saveState() {
         if (restoring || !alive) return;
         try {
             localStorage.setItem('zkb:simulate-ui', JSON.stringify({
-                search: element('search').value, implantSearch: element('implant-search').value, category: element('category').value, sort: equipmentSort,
+                search: element('search').value, implantSearch: element('implant-search').value, boosterSearch: element('booster-search').value, category: element('category').value, sort: equipmentSort,
                 ship: element('ship').value, name: element('name').value,
                 eft: element('eft-modal-text').value,
                 expanded: [...expandedSections], groups: [...equipmentGroups], charges: [...revealedCharges],
@@ -323,7 +324,7 @@ window.zkbInitSimulate = function() {
             ['High', 'High slots'], ['Medium', 'Mid slots'], ['Low', 'Low slots'],
             ['Rig', 'Rigs'], ['SubSystem', 'Subsystems'], ['Drone', 'Drones'], ['Fighter', 'Fighters'], ['Cargo', 'Cargo']
         ];
-        const matches = types.filter(type => type.categoryID !== 6 && !Number.isInteger(type.attributes.implantness) && (category !== 'Fighter' || type.categoryID === 87)).map(type => ({
+        const matches = types.filter(type => type.categoryID !== 6 && !Number.isInteger(type.attributes.implantness) && (!Number.isInteger(type.attributes.boosterness) || category === 'Cargo') && (category !== 'Fighter' || type.categoryID === 87)).map(type => ({
             type, category: category === 'Cargo' ? 'Cargo' : (rackFor(type)?.name || (type.categoryID === 18 ? 'Drone' : type.categoryID === 87 ? 'Fighter' : 'Cargo'))
         })).filter(match => (category === 'All' || match.category === category)
             && (match.type.categoryID !== 32 || (hull && hull.attributes.maxSubSystems > 0 && compatible(match.type, hull)))
@@ -438,13 +439,22 @@ window.zkbInitSimulate = function() {
         if (!matches.length) results.append(node('p', 'text-white p-2 mb-0', hull ? 'No matching equipment.' : 'Choose a ship first.'));
     }
 
-    function searchImplants() {
-        const query = element('implant-search').value.trim().toLowerCase();
-        const results = element('implant-results');
+    function toggleAugmentations(items) {
+        if (!items?.length) return;
+        const enabled = !items.every(item => item.enabled !== false);
+        items.forEach(item => { item.enabled = enabled; });
+        changed();
+    }
+
+    function searchAugmentations(kind) {
+        const attribute = kind === 'implant' ? 'implantness' : 'boosterness';
+        const collection = kind === 'implant' ? 'implants' : 'boosters';
+        const query = element(kind + '-search').value.trim().toLowerCase();
+        const results = element(kind + '-results');
         results.replaceChildren();
-        const matches = types.filter(type => Number.isInteger(type.attributes.implantness)
+        const matches = types.filter(type => Number.isInteger(type.attributes[attribute])
             && query.split(/\s+/).every(word => type.name.toLowerCase().includes(word))).sort((a, b) =>
-            a.attributes.implantness - b.attributes.implantness
+            a.attributes[attribute] - b.attributes[attribute]
             || (a.attributes.metaLevelOld || 0) - (b.attributes.metaLevelOld || 0)
             || (a.metaGroupID || 1) - (b.metaGroupID || 1)
             || a.name.localeCompare(b.name));
@@ -453,12 +463,13 @@ window.zkbInitSimulate = function() {
         let slotResults = results;
         let metaResults = results;
         for (const type of matches) {
-            const slot = type.attributes.implantness;
+            const slot = type.attributes[attribute];
             if (slot !== previousSlot) {
                 const group = node('details', 'border-bottom');
-                const key = 'Implant-slot-' + slot;
-                group.open = equipmentGroups.get(key) ?? Boolean(query);
+                const key = (kind === 'implant' ? 'Implant' : kind) + '-slot-' + slot;
+                group.open = Boolean(query) || (equipmentGroups.get(key) ?? false);
                 group.addEventListener('toggle', () => {
+                    if (query) return;
                     equipmentGroups.set(key, group.open);
                     saveState();
                 });
@@ -472,9 +483,10 @@ window.zkbInitSimulate = function() {
             const meta = metaLabel(type);
             if (meta !== previousMeta) {
                 const group = node('details', '');
-                const key = 'Implant-slot-' + slot + '-meta-' + (type.attributes.metaLevelOld || 0) + '-' + (type.metaGroupID || 1);
-                group.open = equipmentGroups.get(key) ?? Boolean(query);
+                const key = (kind === 'implant' ? 'Implant' : kind) + '-slot-' + slot + '-meta-' + (type.attributes.metaLevelOld || 0) + '-' + (type.metaGroupID || 1);
+                group.open = Boolean(query) || (equipmentGroups.get(key) ?? false);
                 group.addEventListener('toggle', () => {
+                    if (query) return;
                     equipmentGroups.set(key, group.open);
                     saveState();
                 });
@@ -487,27 +499,29 @@ window.zkbInitSimulate = function() {
             const row = node('div', 'list-group-item d-flex align-items-center justify-content-between gap-2 text-white');
             row.append(node('span', 'small', type.name), button('Add', () => {
                 if (!fit) throw new Error('Choose a ship on the Ship tab first.');
-                const slot = type.attributes.implantness;
-                fit.implants = (fit.implants || []).filter(implant => implant.slot !== slot);
-                fit.implants.push({ type_id: type.id, slot });
+                const slot = type.attributes[attribute];
+                fit[collection] = (fit[collection] || []).filter(item => item.slot !== slot);
+                fit[collection].push({ type_id: type.id, slot });
                 changed();
             }, 'btn btn-sm btn-primary text-white fw-semibold flex-shrink-0'));
             row.lastChild.disabled = !fit;
             row.lastChild.setAttribute('aria-label', 'Add ' + type.name);
             metaResults.append(row);
         }
-        if (!matches.length) results.append(node('p', 'text-white p-2 mb-0', 'No matching implants.'));
+        if (!matches.length) results.append(node('p', 'text-white p-2 mb-0', 'No matching ' + collection + '.'));
     }
 
     function renderFit() {
         dropTargets.clear();
-        const hull = catalog[fit.ship_type_id];
-        element('tab-capsule').textContent = 'Implants (' + (fit.implants || []).length + ')';
-        const panels = ['ship', 'capsule', 'configure'].map(tab => element(tab + '-panel'));
+        element('tab-boosters').textContent = 'Boosters (' + (fit?.boosters || []).length + ')';
+        element('boosters').replaceChildren();
+        element('tab-capsule').textContent = 'Implants (' + (fit?.implants || []).length + ')';
+        const panels = ['ship', 'capsule', 'boosters', 'configure'].map(tab => element(tab + '-panel'));
         const visiblePanel = panels.find(panel => !panel.hidden);
         panelHeight = Math.max(panelHeight, visiblePanel?.offsetHeight || 0);
         element('ship-panel').hidden = activeTab !== 'ship';
         element('capsule-panel').hidden = activeTab !== 'capsule';
+        element('boosters-panel').hidden = activeTab !== 'boosters';
         element('configure-panel').hidden = activeTab !== 'configure';
         for (const panel of panels) panel.style.minHeight = panelHeight ? panelHeight + 'px' : '';
         globalThis.requestAnimationFrame?.(() => {
@@ -516,11 +530,13 @@ window.zkbInitSimulate = function() {
             for (const panel of panels) panel.style.minHeight = panelHeight + 'px';
         });
         if (activeTab !== 'configure') element(activeTab + '-stats').append(element('warnings'), element('stats'));
-        for (const tab of ['ship', 'capsule', 'configure']) {
+        for (const tab of ['ship', 'capsule', 'boosters', 'configure']) {
             const active = tab === activeTab;
             element('tab-' + tab).className = 'nav-link' + (active ? ' active' : '');
             element('tab-' + tab).setAttribute('aria-selected', String(active));
         }
+        if (!fit) return;
+        const hull = catalog[fit.ship_type_id];
         const implants = element('implants');
         implants.replaceChildren();
         const implantWheel = element('implant-Fitting_Panel');
@@ -968,31 +984,58 @@ window.zkbInitSimulate = function() {
             });
             slots.append(section);
         }
-        if ((fit.implants || []).length) {
-            const section = node('section', 'mb-3 p-2 rounded text-white');
-            section.append(node('h3', 'h6 mx-0 border-bottom pb-2', 'Affected by Implants'));
-            for (const implant of [...fit.implants].sort((a, b) => a.slot - b.slot)) {
-                const row = node('div', 'd-flex align-items-center gap-2 mb-2' + (implant.enabled === false ? ' opacity-50' : ''));
+        const affected = node('div', 'row gx-3');
+        for (const [label, items, target] of [['Implants', fit.implants, affected], ['Boosters', fit.boosters, activeTab === 'boosters' ? element('boosters') : affected]]) {
+            if (!items?.length) {
+                if (label === 'Boosters') element('boosters').append(node('p', 'small', 'No boosters selected.'));
+                continue;
+            }
+            const section = node('section', 'mb-3 p-2 text-white' + (target === affected ? ' col-12 col-md-6' : ''));
+            const heading = node('div', 'd-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom pb-2 mb-2');
+            const toggleAll = button(items.every(item => item.enabled !== false) ? 'Deselect all' : 'Select all', () => toggleAugmentations(items), 'btn btn-sm btn-primary text-white');
+            const shortcut = label === 'Implants' ? 'Alt+I' : 'Alt+B';
+            toggleAll.setAttribute('aria-label', toggleAll.textContent + ' ' + label.toLowerCase());
+            toggleAll.setAttribute('aria-keyshortcuts', shortcut);
+            toggleAll.title = toggleAll.textContent + ' (' + shortcut + ')';
+            heading.append(node('h3', 'h6 m-0', 'Affected by ' + label), toggleAll);
+            section.append(heading);
+            for (const item of [...items].sort((a, b) => a.slot - b.slot)) {
+                const row = node('div', 'd-flex align-items-center gap-2 mb-2' + (item.enabled === false ? ' opacity-50' : ''));
                 const enabled = node('input', 'form-check-input flex-shrink-0');
                 enabled.type = 'checkbox';
-                enabled.checked = implant.enabled !== false;
-                enabled.setAttribute('aria-label', (enabled.checked ? 'Disable ' : 'Enable ') + catalog[implant.type_id].name);
+                enabled.checked = item.enabled !== false;
+                enabled.setAttribute('aria-label', (enabled.checked ? 'Disable ' : 'Enable ') + catalog[item.type_id].name);
                 enabled.addEventListener('change', () => {
-                    implant.enabled = enabled.checked;
+                    item.enabled = enabled.checked;
                     changed();
                 });
                 const image = node('img', 'rounded flex-shrink-0');
-                image.src = 'https://images.evetech.net/types/' + implant.type_id + '/icon?size=64';
+                image.src = 'https://images.evetech.net/types/' + item.type_id + '/icon?size=64';
                 image.width = 32;
                 image.height = 32;
                 image.alt = '';
                 const description = node('div', 'small lh-sm');
-                description.append(node('div', '', catalog[implant.type_id].name), node('div', '', 'Slot: ' + implant.slot));
+                description.append(node('div', '', catalog[item.type_id].name), node('div', '', 'Slot: ' + item.slot));
                 row.append(enabled, image, description);
+                if (label === 'Boosters' && activeTab === 'boosters') {
+                    const remove = button('', () => {
+                        fit.boosters = fit.boosters.filter(booster => booster !== item);
+                        changed();
+                    }, 'btn btn-sm btn-danger text-white flex-shrink-0 ms-auto');
+                    remove.style.backgroundColor = '#550404';
+                    remove.style.borderColor = '#550404';
+                    remove.setAttribute('aria-label', 'Remove ' + catalog[item.type_id].name);
+                    remove.title = 'Remove ' + catalog[item.type_id].name;
+                    const trash = node('i', 'fas fa-trash');
+                    trash.setAttribute('aria-hidden', 'true');
+                    remove.append(trash);
+                    row.append(remove);
+                }
                 section.append(row);
             }
-            slots.append(section);
+            target.append(section);
         }
+        if (affected.children.length) slots.append(affected);
         if (dragType) highlightDropTargets(dragType, dragFromFit, dragSource);
     }
 
@@ -1023,6 +1066,13 @@ window.zkbInitSimulate = function() {
             window.bootstrap?.Popover?.getOrCreateInstance(marker);
             return marker;
         };
+        const markBoosters = (target, keys) => {
+            if (!capsuleStats && keys.some(key => result.boosterAffected?.includes(key))) {
+                const marker = popoverMarker('Adjusted by boosters', 'Adjusted by enabled boosters. Change them under Boosters.');
+                marker.className += ' ms-1';
+                target.append(marker);
+            }
+        };
         const duration = value => {
             if (!Number.isFinite(value)) return '—';
             const seconds = Math.max(0, Math.round(value));
@@ -1033,7 +1083,7 @@ window.zkbInitSimulate = function() {
         const pricing = node('div', 'text-white');
         const costs = capsuleStats
             ? { Capsule: [{ type_id: 670, quantity: 1 }], Implants: (fit.implants || []).map(implant => ({ ...implant, quantity: 1 })) }
-            : { Hull: [{ type_id: fit.ship_type_id, quantity: 1 }], Modules: [], 'Loaded charges': [], Drones: [], Fighters: [], Cargo: [] };
+            : { Hull: [{ type_id: fit.ship_type_id, quantity: 1 }], Modules: [], 'Loaded charges': [], Drones: [], Fighters: [], Cargo: [], Boosters: (fit.boosters || []).map(booster => ({ ...booster, quantity: 1 })) };
         if (!capsuleStats) for (const item of fit.items) {
             const group = item.flag === 5 ? 'Cargo' : item.flag === 87 ? 'Drones' : item.flag === 158 ? 'Fighters' : catalog[item.type_id].categoryID === 8 ? 'Loaded charges' : 'Modules';
             costs[group].push({ ...item });
@@ -1126,43 +1176,45 @@ window.zkbInitSimulate = function() {
         });
         element('resource-cpu').textContent = compact(stats.cpuOutput - stats.cpuLoad) + '/' + compact(stats.cpuOutput);
         element('resource-powergrid').textContent = compact(stats.powerOutput - stats.powerLoad) + '/' + compact(stats.powerOutput);
+        markBoosters(element('resource-cpu'), ['cpuOutput', 'cpuLoad']);
+        markBoosters(element('resource-powergrid'), ['powerOutput', 'powerLoad']);
         const storage = [...(hasDroneBay(fit, catalog) ? ['Drones'] : []), ...(hasFighterBay(fit, catalog) ? ['Fighters'] : []), 'Cargo'];
         const storageTitle = storage.length === 3 ? storage.slice(0, -1).join(', ') + ', & ' + storage.at(-1) : storage.join(' & ');
         let sections = [
             ['Capacitor', []],
             ['Offense', [
-                ['DPS without reload', number('damagePerSecondWithoutReload'), 'turret_missile'],
-                ['DPS with reload', number('damagePerSecondWithReload'), 'sustained'],
-                ['Volley', number('damageAlpha'), 'volley'],
-                ['Drone DPS', number('droneDamagePerSecond'), 'drone'],
-                ['Fighter DPS (' + number('fighterCraftDeployed') + ' deployed)', number('fighterDamagePerSecond'), 'drone']
+                ['DPS without reload', number('damagePerSecondWithoutReload'), 'turret_missile', ['damagePerSecondWithoutReload']],
+                ['DPS with reload', number('damagePerSecondWithReload'), 'sustained', ['damagePerSecondWithReload']],
+                ['Volley', number('damageAlpha'), 'volley', ['damageAlpha']],
+                ['Drone DPS', number('droneDamagePerSecond'), 'drone', ['droneDamagePerSecond']],
+                ['Fighter DPS (' + number('fighterCraftDeployed') + ' deployed)', number('fighterDamagePerSecond'), 'drone', ['fighterCraftDeployed', 'fighterDamagePerSecond']]
             ]],
             ['Defense', []],
             [activeTab === 'capsule' ? 'Navigation' : 'Navigation & Targeting', [
-                ['Speed', number('maxVelocity') + ' m/s', 'propulsion'],
-                ['Align', number('alignTime') + ' s', 'microwarpdrive'],
-                ['Warp', number('warpSpeedMultiplier') + ' AU/s', 'microwarpdrive'],
+                ['Speed', number('maxVelocity') + ' m/s', 'propulsion', ['maxVelocity']],
+                ['Align', number('alignTime') + ' s', 'microwarpdrive', ['alignTime']],
+                ['Warp', number('warpSpeedMultiplier') + ' AU/s', 'microwarpdrive', ['warpSpeedMultiplier']],
                 ...(activeTab === 'capsule' ? [] : [
-                    ['Target range / targets', number('maxTargetRange', 1000) + ' km / ' + number('maxLockedTargets'), 'targeting_range'],
-                    ['Scan resolution', number('scanResolution') + ' mm', 'targeting_resolution'],
-                    ['Signature', number('signatureRadius') + ' m', 'targeting_strength']
+                    ['Target range / targets', number('maxTargetRange', 1000) + ' km / ' + number('maxLockedTargets'), 'targeting_range', ['maxTargetRange', 'maxLockedTargets']],
+                    ['Scan resolution', number('scanResolution') + ' mm', 'targeting_resolution', ['scanResolution']],
+                    ['Signature', number('signatureRadius') + ' m', 'targeting_strength', ['signatureRadius']]
                 ])
             ]],
             [storageTitle, [
                 ...(hasDroneBay(fit, catalog) ? [
-                    ['Drone bay', number('droneCapacityLoad') + ' / ' + number('droneCapacity') + ' m³', 'dronebay'],
-                    ['Drone bandwidth', number('droneBandwidthLoad') + ' / ' + number('droneBandwidth') + ' Mbit/s', 'dronebandwith']
+                    ['Drone bay', number('droneCapacityLoad') + ' / ' + number('droneCapacity') + ' m³', 'dronebay', ['droneCapacityLoad', 'droneCapacity']],
+                    ['Drone bandwidth', number('droneBandwidthLoad') + ' / ' + number('droneBandwidth') + ' Mbit/s', 'dronebandwith', ['droneBandwidthLoad', 'droneBandwidth']]
                 ] : []),
                 ...(hasFighterBay(fit, catalog) ? [
-                    ['Fighter bay (' + number('fighterCraftInBay') + ' stored)', number('fighterCapacityLoad') + ' / ' + number('fighterCapacity') + ' m³', 'dronebay'],
-                    ['Fighter tubes', number('fighterTubesUsed') + ' / ' + number('fighterTubes'), 'drone'],
+                    ['Fighter bay (' + number('fighterCraftInBay') + ' stored)', number('fighterCapacityLoad') + ' / ' + number('fighterCapacity') + ' m³', 'dronebay', ['fighterCraftInBay', 'fighterCapacityLoad', 'fighterCapacity']],
+                    ['Fighter tubes', number('fighterTubesUsed') + ' / ' + number('fighterTubes'), 'drone', ['fighterTubesUsed', 'fighterTubes']],
                     ...[['Light', 'fighterLightSlots'], ['Support', 'fighterSupportSlots'], ['Heavy', 'fighterHeavySlots']].filter(([, key]) => stats[key] > 0).map(([role, key]) => [role + ' fighter tubes', number(key + 'Used') + ' / ' + number(key), 'drone'])
                 ] : []),
-                ['Cargo capacity', number('capacity') + ' m³', 'cargo']
+                ['Cargo capacity', number('capacity') + ' m³', 'cargo', ['capacity']]
             ]],
             ['Fitting', [
-                ['Calibration', number('upgradeLoad') + ' / ' + number('upgradeCapacity'), 'icon-rigslot'],
-                ['Free turret / launcher hardpoints', number('turretSlotsLeft') + ' / ' + number('launcherSlotsLeft'), 'turret_missile']
+                ['Calibration', number('upgradeLoad') + ' / ' + number('upgradeCapacity'), 'icon-rigslot', ['upgradeLoad', 'upgradeCapacity']],
+                ['Free turret / launcher hardpoints', number('turretSlotsLeft') + ' / ' + number('launcherSlotsLeft'), 'turret_missile', ['turretSlotsLeft', 'launcherSlotsLeft']]
             ]],
             ['Pricing', []]
         ];
@@ -1198,11 +1250,15 @@ window.zkbInitSimulate = function() {
             });
             if (title === 'Capacitor') {
                 const summary = node('span', 'd-flex align-items-center gap-2');
-                summary.append(node('span', stats.capacitorDepletesIn < 0 ? 'text-success fw-semibold' : 'text-warning fw-semibold', stats.capacitorDepletesIn < 0 ? 'Stable' : duration(stats.capacitorDepletesIn)), icon);
+                summary.append(node('span', stats.capacitorDepletesIn < 0 ? 'text-success fw-semibold' : 'text-warning fw-semibold', stats.capacitorDepletesIn < 0 ? 'Stable' : duration(stats.capacitorDepletesIn)));
+                markBoosters(summary, ['capacitorDepletesIn']);
+                summary.append(icon);
                 toggle.append(node('span', 'fw-bold', title), summary);
             } else if (title === 'Offense') {
                 const summary = node('span', 'd-flex align-items-center gap-2');
-                summary.append(node('span', 'fw-semibold', number('damagePerSecondWithoutReload') + ' DPS'), icon);
+                summary.append(node('span', 'fw-semibold', number('damagePerSecondWithoutReload') + ' DPS'));
+                markBoosters(summary, ['damagePerSecondWithoutReload']);
+                summary.append(icon);
                 toggle.append(node('span', 'fw-bold', title), summary);
             } else if (title === 'Defense') {
                 const summary = node('span', 'd-flex align-items-center gap-2');
@@ -1210,6 +1266,7 @@ window.zkbInitSimulate = function() {
                 if (!capsuleStats && Object.values(fit.damageProfile || {}).some(value => value !== 25)) {
                     summary.append(popoverMarker('EHP adjusted by incoming damage profile', 'Adjusted by the incoming damage profile. Change the values under Configure.'));
                 }
+                markBoosters(summary, ['ehp']);
                 summary.append(icon);
                 toggle.append(node('span', 'fw-bold', title), summary);
             } else toggle.append(node('span', 'fw-bold', title), icon);
@@ -1227,6 +1284,8 @@ window.zkbInitSimulate = function() {
                 values.append(node('span', 'fw-semibold', number('capacitorCapacity') + ' GJ / ' + duration(stats.rechargeRate / 1000)));
                 const percentage = Number.isFinite(stats.capacitorPeakDeltaPercentage) ? stats.capacitorPeakDeltaPercentage.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%' : '—';
                 values.append(node('span', '', 'Δ ' + number('capacitorPeakDelta') + ' GJ/s (' + percentage + ')'));
+                markBoosters(values.children[0], ['capacitorCapacity', 'rechargeRate']);
+                markBoosters(values.children[1], ['capacitorPeakDelta', 'capacitorPeakDeltaPercentage']);
                 capacitor.append(capacitorIcon, values);
                 list.append(capacitor);
             } else if (title === 'Defense') {
@@ -1251,10 +1310,13 @@ window.zkbInitSimulate = function() {
                     layerIcon.height = 20;
                     layerIcon.alt = label;
                     layer.append(layerIcon, node('span', 'fw-semibold', number(hp)));
+                    markBoosters(layer, [hp]);
                     grid.append(layer);
                     for (const [damage, , , color] of damages) {
                         const value = stats[prefix + (prefix ? damage : damage.toLowerCase()) + 'DamageResonance'];
-                        grid.append(node('div', 'simulate-resistance-value col-2 px-1 py-1 rounded-1 text-center text-white fw-semibold ' + color, Number.isFinite(value) ? ((1 - value) * 100).toFixed(1) + '%' : '—'));
+                        const resistance = node('div', 'simulate-resistance-value col-2 px-1 py-1 rounded-1 text-center text-white fw-semibold ' + color, Number.isFinite(value) ? ((1 - value) * 100).toFixed(1) + '%' : '—');
+                        markBoosters(resistance, [prefix + (prefix ? damage : damage.toLowerCase()) + 'DamageResonance']);
+                        grid.append(resistance);
                     }
                 }
                 const tank = node('div', 'col-12 mt-1 pt-1 border-top border-secondary border-opacity-25 d-flex align-items-center text-white');
@@ -1264,6 +1326,7 @@ window.zkbInitSimulate = function() {
                 tankIcon.height = 20;
                 tankIcon.alt = '';
                 tank.append(tankIcon, node('span', '', 'Shield recharge ' + number('passiveShieldEffectiveRechargeRate') + ' EHP/s · ' + number('shieldRechargeRate', 1000) + ' s'));
+                markBoosters(tank, ['passiveShieldEffectiveRechargeRate', 'shieldRechargeRate']);
                 grid.append(tank);
                 const repairs = node('div', 'col-12 d-flex flex-column gap-1 text-white');
                 for (const [label, stat, image] of [['Shield boost', 'shieldEffectiveBoostRate', 'shield_boost'], ['Armor repair', 'armorEffectiveRepairRate', 'armor_repair']]) {
@@ -1279,11 +1342,12 @@ window.zkbInitSimulate = function() {
                         marker.className += ' ms-1';
                         repair.append(marker);
                     }
+                    markBoosters(repair, [stat]);
                     repairs.append(repair);
                 }
                 grid.append(repairs);
                 list.append(grid);
-            } else rows.forEach(([label, value, image]) => {
+            } else rows.forEach(([label, value, image, keys = []]) => {
                 const term = node('dt', 'col-6 mb-1 fw-normal d-flex align-items-center text-white');
                 const rowIcon = node('img', 'me-1 flex-shrink-0');
                 rowIcon.src = '/img/simulate/' + image + '.png';
@@ -1291,7 +1355,9 @@ window.zkbInitSimulate = function() {
                 rowIcon.height = 20;
                 rowIcon.alt = '';
                 term.append(rowIcon, node('span', '', label));
-                list.append(term, node('dd', 'col-6 mb-1 text-end text-white fw-semibold', value));
+                const description = node('dd', 'col-6 mb-1 text-end text-white fw-semibold', value);
+                markBoosters(description, keys);
+                list.append(term, description);
             });
             if (title === 'Offense') for (const item of fit.items.filter(item => catalog[item.type_id].attributes.damageMultiplierBonusMax)) {
                 const detail = calculatedItems.find(detail => detail.type_id === item.type_id && detail.slot?.type === 'High' && detail.slot.index === item.flag - 26);
@@ -1418,10 +1484,10 @@ window.zkbInitSimulate = function() {
         }, 60000);
     }
 
-    function loadFit(next, preserveSecurityStatus = false) {
+    function loadFit(next) {
         fit = next;
-        if (!Number.isFinite(fit.securityStatus)) fit.securityStatus = 0;
-        if (!preserveSecurityStatus && Number.isFinite(pilotSecurityStatus)) fit.securityStatus = pilotSecurityStatus;
+        usePilotSecurityStatus = !Number.isFinite(fit.securityStatus);
+        if (usePilotSecurityStatus) fit.securityStatus = pilotSecurityStatus ?? 0;
         element('security-status').value = fit.securityStatus;
         element('security-status-value').value = fit.securityStatus.toFixed(1);
         element('security-status-value').textContent = fit.securityStatus.toFixed(1);
@@ -1432,6 +1498,7 @@ window.zkbInitSimulate = function() {
             element('damage-' + damage + '-slider').value = fit.damageProfile[damage];
         }
         if (!Array.isArray(fit.implants)) fit.implants = [];
+        if (!Array.isArray(fit.boosters)) fit.boosters = [];
         fit.items.filter(item => item.flag === 158 && !Number.isInteger(item.active)).forEach(item => { item.active = 0; });
         if (!Array.isArray(fit.fighterTubes)) fit.fighterTubes = fit.items.filter(item => item.flag === 158).flatMap(item => Array.from({ length: item.active || 0 }, () => ({ type_id: item.type_id, quantity: catalog[item.type_id].attributes.fighterSquadronMaxSize || item.quantity })));
         fit.fighterTubes = fit.fighterTubes.slice(0, catalog[fit.ship_type_id].attributes.fighterTubes || 0).map(tube => {
@@ -1446,6 +1513,7 @@ window.zkbInitSimulate = function() {
         pilotStats = null;
         lastResult = null;
         capsuleResult = null;
+        capsuleRequestSnapshot = null;
         calculatedItems = [];
         selected = null;
         element('ship').value = catalog[fit.ship_type_id].name;
@@ -1453,7 +1521,8 @@ window.zkbInitSimulate = function() {
         element('skills').value = fit.skillLevel === 0 ? '0' : '5';
         changed();
         search();
-        searchImplants();
+        searchAugmentations('implant');
+        searchAugmentations('booster');
     }
 
     async function loadCapsuleImplants(killID) {
@@ -1480,13 +1549,14 @@ window.zkbInitSimulate = function() {
             switch (event.target.id) {
                 case 'simulate-tab-ship':
                 case 'simulate-tab-capsule':
+                case 'simulate-tab-boosters':
                 case 'simulate-tab-configure':
                     activeTab = event.target.id.replace('simulate-tab-', '');
                     renderFit();
                     if (activeTab === 'capsule' && capsuleResult) renderStats(capsuleResult, true);
-                    else if (activeTab === 'ship' && lastResult) renderStats(lastResult);
+                    else if (['ship', 'boosters'].includes(activeTab) && lastResult) renderStats(lastResult);
                     if (activeTab === 'capsule') {
-                        searchImplants();
+                        searchAugmentations('implant');
                         const capsuleSnapshot = JSON.stringify([fit?.implants || [], fit?.skillLevel]);
                         if (fit && capsuleSnapshot !== capsuleRequestSnapshot) {
                             capsuleRequestSnapshot = capsuleSnapshot;
@@ -1494,6 +1564,7 @@ window.zkbInitSimulate = function() {
                             capsuleWorker.postMessage({ id: ++capsuleSequence, fit: { ship_type_id: 670, items: [], implants: fit.implants || [] }, simulate: true, skillLevel: fit.skillLevel });
                         }
                     }
+                    if (activeTab === 'boosters') searchAugmentations('booster');
                     saveState();
                     break;
                 case 'simulate-sort':
@@ -1502,6 +1573,7 @@ window.zkbInitSimulate = function() {
                     saveState();
                     break;
                 case 'simulate-eft-open':
+                case 'simulate-boosters-eft-open':
                 case 'simulate-capsule-eft-open':
                     element('eft-modal-text').value = fit ? exportEFT(event.target.id === 'simulate-capsule-eft-open'
                         ? { ship_type_id: 670, name: 'Capsule', items: [], implants: fit.implants || [] }
@@ -1531,14 +1603,15 @@ window.zkbInitSimulate = function() {
                     }
                     break;
                 case 'simulate-save':
+                case 'simulate-boosters-save':
                     if (!fit) throw new Error('Choose a ship first.');
                     window.saveFitting(null, exportESIFit({ ...fit, name: element('name').value || 'New fit' }, catalog));
                     break;
                 case 'simulate-undo':
-                    if (historyIndex > 0) loadFit(JSON.parse(fitHistory[--historyIndex]), true);
+                    if (historyIndex > 0) loadFit(JSON.parse(fitHistory[--historyIndex]));
                     break;
                 case 'simulate-redo':
-                    if (historyIndex < fitHistory.length - 1) loadFit(JSON.parse(fitHistory[++historyIndex]), true);
+                    if (historyIndex < fitHistory.length - 1) loadFit(JSON.parse(fitHistory[++historyIndex]));
                     break;
                 case 'simulate-new': {
                     const hull = types.find(type => type.categoryID === 6 && type.name.toLowerCase() === element('ship').value.trim().toLowerCase());
@@ -1572,10 +1645,17 @@ window.zkbInitSimulate = function() {
             else if (!event.shiftKey && key === 's') control = element(activeTab === 'capsule' ? 'capsule-save' : 'save');
             else if (!event.shiftKey && key === 'e') control = element(activeTab === 'capsule' ? 'capsule-eft-open' : 'eft-open');
         } else if (event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey && !editable) {
+            if (key === 'i' || key === 'b') {
+                event.preventDefault();
+                if (!event.repeat) toggleAugmentations(fit?.[key === 'i' ? 'implants' : 'boosters']);
+                return;
+            }
             if (key === 'n') control = element('new');
             else if (key === '1') control = element('tab-ship');
             else if (key === '2') control = element('tab-capsule');
-            else if (key === 'f') control = element(activeTab === 'capsule' ? 'implant-search' : 'search');
+            else if (key === '3') control = element('tab-boosters');
+            else if (key === 'c') control = element('tab-configure');
+            else if (key === 'f') control = element(activeTab === 'capsule' ? 'implant-search' : activeTab === 'boosters' ? 'booster-search' : 'search');
         }
         if (!control || control.disabled) return;
         event.preventDefault();
@@ -1586,19 +1666,21 @@ window.zkbInitSimulate = function() {
     }, { signal: events.signal });
     element('category').addEventListener('change', () => { equipmentModule = null; selected = null; search(); if (fit) renderFit(); }, { signal: events.signal });
     element('search').addEventListener('input', () => { equipmentModule = null; element('category').value = 'All'; search(); }, { signal: events.signal });
-    element('implant-search').addEventListener('input', searchImplants, { signal: events.signal });
+    for (const kind of ['implant', 'booster']) element(kind + '-search').addEventListener('input', () => searchAugmentations(kind), { signal: events.signal });
     element('name').addEventListener('change', changed, { signal: events.signal });
     element('skills').addEventListener('change', changed, { signal: events.signal });
-    element('security-status').addEventListener('input', changed, { signal: events.signal });
+    element('security-status').addEventListener('input', () => { usePilotSecurityStatus = false; changed(); }, { signal: events.signal });
     for (const [control, value] of [['minus10', -10], ['minus5', -5], ['zero', 0], ['plus5', 5]]) {
         element('security-status-' + control).addEventListener('click', () => {
             if (!fit) return;
+            usePilotSecurityStatus = false;
             element('security-status').value = value;
             changed();
         }, { signal: events.signal });
     }
     element('security-status-reset').addEventListener('click', () => {
         if (!fit) return;
+        usePilotSecurityStatus = false;
         element('security-status').value = Number.isFinite(pilotSecurityStatus) ? pilotSecurityStatus : 0;
         changed();
     }, { signal: events.signal });
@@ -1652,7 +1734,8 @@ window.zkbInitSimulate = function() {
                 pilotCharacterID = loggedInCharacterID;
                 pilotCharacterName = character.name || 'Logged-in character';
                 pilotSecurityStatus = Math.max(-10, Math.min(5, securityStatus));
-                if (fit && fit.securityStatus !== pilotSecurityStatus) {
+                renderSecuritySource();
+                if (fit && usePilotSecurityStatus && fit.securityStatus !== pilotSecurityStatus) {
                     element('security-status').value = pilotSecurityStatus;
                     fit.securityStatus = pilotSecurityStatus;
                     if (historyIndex >= 0) fitHistory[historyIndex] = JSON.stringify(fit);
@@ -1745,6 +1828,7 @@ window.zkbInitSimulate = function() {
                 if (savedUI) {
                     element('search').value = savedUI.search || '';
                     element('implant-search').value = savedUI.implantSearch || '';
+                    element('booster-search').value = savedUI.boosterSearch || '';
                     element('category').value = savedUI.category || 'All';
                     element('ship').value = savedUI.ship ?? element('ship').value;
                     element('name').value = savedUI.name ?? element('name').value;
@@ -1757,14 +1841,16 @@ window.zkbInitSimulate = function() {
                     equipmentModule = catalog[savedUI.equipmentModule];
                 }
                 search();
-                searchImplants();
+                searchAugmentations('implant');
+                searchAugmentations('booster');
                 element('results').scrollTop = savedUI?.resultsScroll || 0;
                 restoring = false;
                 return;
             }
             element('status').textContent = '';
             lastResult = data;
-            if (activeTab === 'ship') renderStats(data);
+            if (activeTab !== 'capsule') renderStats(data);
+            else renderFit();
             if (savedUI?.pageScroll) {
                 window.scrollTo?.(0, savedUI.pageScroll);
                 savedUI.pageScroll = 0;

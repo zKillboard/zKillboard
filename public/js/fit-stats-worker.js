@@ -74,6 +74,13 @@ self.onmessage = async ({ data: request }) => {
             if (type?.categoryID !== 20 || !data.typeDogma[implant.type_id] || !Number.isInteger(implant.slot) || implant.slot !== slot) throw new Error('Invalid implant.');
             fit.items.push({ type_id: implant.type_id, slot: { type: 'implant', index: implant.slot }, state: 'online' });
         }
+        const boosterSlots = new Set();
+        for (const booster of request.fit.boosters || []) {
+            const slot = baseAttribute(booster.type_id, 'boosterness');
+            if (data.types[booster.type_id]?.categoryID !== 20 || !Number.isInteger(slot) || slot < 1 || booster.slot !== slot || boosterSlots.has(slot)) throw new Error('Invalid or duplicate booster slot.');
+            boosterSlots.add(slot);
+            if (booster.enabled !== false) fit.items.push({ type_id: booster.type_id, slot: { type: 'booster', index: slot }, state: 'online' });
+        }
 
         if (request.simulate && data.types[fit.ship.type_id].groupID === 1305) {
             const mode = request.fit.mode || 'Defense';
@@ -191,6 +198,14 @@ self.onmessage = async ({ data: request }) => {
         }
 
         const result = engine.calculate(fit);
+        const boosterAffected = [];
+        if (fit.items.some(item => item.slot.type === 'booster')) {
+            const withoutBoosters = engine.calculate({ ...fit, items: fit.items.filter(item => item.slot.type !== 'booster') });
+            for (const [id, attribute] of result.ship.attributes) {
+                const baseline = withoutBoosters.ship.attributes.get(id)?.value;
+                if (Number.isFinite(baseline) && Number.isFinite(attribute.value) && Math.abs(attribute.value - baseline) > 1e-8 * Math.max(1, Math.abs(baseline))) boosterAffected.push(data.dogmaAttributes[id]?.name);
+            }
+        }
         const stats = {};
         for (const [id, attribute] of result.ship.attributes) {
             const name = data.dogmaAttributes[id]?.name;
@@ -251,7 +266,7 @@ self.onmessage = async ({ data: request }) => {
                 });
             }
         }
-        self.postMessage({ id: request.id, stats, character, details });
+        self.postMessage({ id: request.id, stats, character, details, boosterAffected });
     } catch (error) {
         self.postMessage({ id: request.id, error: error instanceof WebAssembly.RuntimeError ? 'This fit could not be simulated.' : error.message });
     }

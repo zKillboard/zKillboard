@@ -195,6 +195,7 @@ export function exportEFT(fit, catalog) {
         lines.push('');
     }
     for (const implant of fit.implants || []) lines.push(catalog[implant.type_id].name);
+    for (const booster of fit.boosters || []) lines.push(catalog[booster.type_id].name);
     return lines.join('\n').trim();
 }
 
@@ -206,7 +207,7 @@ export function importEFT(text, catalog) {
     const names = new Map(Object.values(catalog).map(type => [type.name.toLowerCase(), type]));
     const hull = names.get(header[1].trim().toLowerCase());
     if (hull?.categoryID !== 6) throw new Error('Unknown ship: ' + header[1]);
-    const fit = { ship_type_id: hull.id, name: header[2].trim() || 'Imported fit', items: [], implants: [] };
+    const fit = { ship_type_id: hull.id, name: header[2].trim() || 'Imported fit', items: [], implants: [], boosters: [] };
     const positions = Object.fromEntries(racks.map(rack => [rack.name, rack.start]));
     for (const raw of lines) {
         const line = raw.trim();
@@ -223,7 +224,13 @@ export function importEFT(text, catalog) {
         if (!type) throw new Error('Unknown item: ' + parts[0]);
         const quantity = stack ? Number(stack[2]) : 1;
         if (!Number.isInteger(quantity) || quantity < 1 || quantity > ([18, 87].includes(type.categoryID) ? 1000 : 1000000)) throw new Error('Item quantities are out of range.');
-        if (type.categoryID === 20) {
+        if (type.categoryID === 20 && !(stack && Number.isInteger(type.attributes.boosterness))) {
+            if (Number.isInteger(type.attributes.boosterness)) {
+                const slot = type.attributes.boosterness;
+                if (parts.length !== 1 || slot < 1 || fit.boosters.some(booster => booster.slot === slot)) throw new Error('Invalid or duplicate booster slot: ' + type.name);
+                fit.boosters.push({ type_id: type.id, slot });
+                continue;
+            }
             const slot = type.attributes.implantness;
             if (stack || parts.length !== 1 || !Number.isInteger(slot) || slot < 1 || fit.implants.some(implant => implant.slot === slot)) throw new Error('Invalid or duplicate implant slot: ' + type.name);
             fit.implants.push({ type_id: type.id, slot });
