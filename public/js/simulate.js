@@ -1,4 +1,4 @@
-const { racks, rackFor, slotCount, compatible, compatibleCharge, hasDroneBay, hasFighterBay, validateDrones, validateFighters, addModule, importEFT, importTypeIDFit, exportEFT, exportESIFit, warnings } = await import(new URL('./simulate-model.js' + new URL(import.meta.url).search, import.meta.url));
+const { racks, rackFor, slotCount, compatible, compatibleCharge, hasDroneBay, hasFighterBay, validateDrones, validateFighters, addModule, importEFT, importSimulation, importTypeIDFit, exportEFT, exportESIFit, warnings } = await import(new URL('./simulate-model.js' + new URL(import.meta.url).search, import.meta.url));
 
 let cleanup;
 
@@ -8,6 +8,7 @@ window.zkbInitSimulate = function() {
     if (cleanup) cleanup();
     root.dataset.initialized = 'true';
     const element = name => root.querySelector('#simulate-' + name);
+    element('share').disabled = true;
     let worker;
     let capsuleWorker;
     let shipSearch;
@@ -513,6 +514,7 @@ window.zkbInitSimulate = function() {
 
     function renderFit() {
         dropTargets.clear();
+        element('share').disabled = !fit;
         element('tab-boosters').textContent = 'Boosters (' + (fit?.boosters || []).length + ')';
         element('boosters').replaceChildren();
         element('tab-capsule').textContent = 'Implants (' + (fit?.implants || []).length + ')';
@@ -1547,6 +1549,31 @@ window.zkbInitSimulate = function() {
     root.addEventListener('click', async event => {
         try {
             switch (event.target.id) {
+                case 'simulate-share': {
+                    element('share-url').value = '';
+                    if (!fit) throw new Error('Choose a ship first.');
+                    const snapshot = JSON.stringify({ ...fit, name: element('name').value || 'New fit' });
+                    importSimulation(snapshot, catalog);
+                    const compressed = await new Response(new Blob([snapshot]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
+                    if (!alive) return;
+                    const encoded = btoa(Array.from(new Uint8Array(compressed), byte => String.fromCharCode(byte)).join(''))
+                        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+                    element('share-url').value = window.location.origin + '/simulate/#state=' + encoded;
+                    break;
+                }
+                case 'simulate-share-url':
+                case 'simulate-share-copy':
+                    if (!element('share-url').value) break;
+                    try {
+                        await navigator.clipboard.writeText(element('share-url').value);
+                        window.bootstrap?.Modal.getInstance(element('share-modal'))?.hide();
+                        showStatus('URL copied to clipboard.');
+                    } catch (error) {
+                        element('share-url').focus();
+                        element('share-url').select();
+                        showStatus('Unable to copy. Copy the selected link manually.');
+                    }
+                    break;
                 case 'simulate-tab-ship':
                 case 'simulate-tab-capsule':
                 case 'simulate-tab-boosters':
@@ -1664,6 +1691,7 @@ window.zkbInitSimulate = function() {
     element('ship').addEventListener('keydown', event => {
         if (event.key === 'Enter' && !shipSearch) { event.preventDefault(); element('new').click(); }
     }, { signal: events.signal });
+    element('share-url').addEventListener('focus', event => event.target.select(), { signal: events.signal });
     element('category').addEventListener('change', () => { equipmentModule = null; selected = null; search(); if (fit) renderFit(); }, { signal: events.signal });
     element('search').addEventListener('input', () => { equipmentModule = null; element('category').value = 'All'; search(); }, { signal: events.signal });
     for (const kind of ['implant', 'booster']) element(kind + '-search').addEventListener('input', () => searchAugmentations(kind), { signal: events.signal });
@@ -1761,7 +1789,7 @@ window.zkbInitSimulate = function() {
             element('controls').disabled = true;
             showStatus('Unable to run the fitting engine. Reload the page to try again.');
         };
-        worker.onmessage = ({ data }) => {
+        worker.onmessage = async ({ data }) => {
             if (!alive) {
                 clearTimeout(timer);
                 calculationPending = false;
@@ -1799,13 +1827,37 @@ window.zkbInitSimulate = function() {
                 const incoming = new URLSearchParams(window.location.hash.slice(1));
                 const incomingFit = incoming.get('fit');
                 const incomingEFT = incoming.get('eft');
-                if (incomingFit !== null || incomingEFT !== null) {
+                const incomingState = incoming.get('state');
+                if (incomingState !== null || incomingFit !== null || incomingEFT !== null) {
                     if (incomingEFT !== null) element('eft-modal-text').value = incomingEFT;
                     try {
                         restoring = false;
-                        loadFit(incomingFit !== null ? importTypeIDFit(incomingFit, catalog) : importEFT(incomingEFT, catalog));
+                        let snapshot;
+                        if (incomingState !== null) {
+                            if (incomingState.length > 270000 || !/^[A-Za-z0-9_-]+$/.test(incomingState)) throw new Error('Invalid share link.');
+                            const compressed = Uint8Array.from(atob(incomingState.replace(/-/g, '+').replace(/_/g, '/')), character => character.charCodeAt(0));
+                            const reader = new Blob([compressed]).stream().pipeThrough(new DecompressionStream('gzip')).getReader();
+                            const chunks = [];
+                            let size = 0;
+                            while (true) {
+                                const { value, done } = await reader.read();
+                                if (done) break;
+                                size += value.length;
+                                if (size > 200000) {
+                                    await reader.cancel();
+                                    throw new Error('Shared fit is too large.');
+                                }
+                                chunks.push(value);
+                            }
+                            snapshot = await new Blob(chunks).text();
+                            if (!alive) return;
+                        }
+                        const next = incomingState !== null ? importSimulation(snapshot, catalog)
+                            : incomingFit !== null ? importTypeIDFit(incomingFit, catalog) : importEFT(incomingEFT, catalog);
+                        if (incomingState !== null) activeTab = 'ship';
+                        loadFit(next);
                         const capsuleKillID = Number(incoming.get('capsule'));
-                        if (Number.isInteger(capsuleKillID) && capsuleKillID > 0) loadCapsuleImplants(capsuleKillID).catch(error => showStatus(error.message));
+                        if (incomingState === null && Number.isInteger(capsuleKillID) && capsuleKillID > 0) loadCapsuleImplants(capsuleKillID).catch(error => showStatus(error.message));
                         window.history?.replaceState(null, '', window.location.pathname + window.location.search);
                     }
                     catch (error) { showStatus('Unable to load this fit: ' + error.message); }

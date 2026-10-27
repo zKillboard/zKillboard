@@ -22,7 +22,9 @@ block content
           button#simulate-tab-capsule.nav-link(type="button" role="tab" aria-selected="false") Implants (0)
         li.nav-item(role="presentation")
           button#simulate-tab-boosters.nav-link(type="button" role="tab" aria-selected="false") Boosters (0)
-        li.nav-item.ms-auto(role="presentation")
+        li.nav-item.ms-auto.d-flex.align-items-center.me-2(role="presentation")
+          button#simulate-share.btn.btn-sm.btn-primary.text-white(type="button" disabled data-bs-toggle="modal" data-bs-target="#simulate-share-modal") Share
+        li.nav-item(role="presentation")
           button#simulate-tab-configure.nav-link(type="button" role="tab" aria-selected="false" aria-keyshortcuts="Alt+c" title="Configure (Alt+C)") Configure
       #simulate-ship-panel.row.g-3
         #simulate-equipment.col-12.col-lg-3
@@ -188,6 +190,18 @@ block content
                     #simulate-security-status-character-name.fw-semibold
                     #simulate-security-status-detail
                 button#simulate-security-status-reset.btn.btn-sm.btn-primary.text-white.ms-auto(type="button") Reset
+      #simulate-share-modal.modal.fade(tabindex="-1" aria-labelledby="simulate-share-title" aria-hidden="true")
+        .modal-dialog.modal-lg
+          .modal-content
+            .modal-header
+              h2#simulate-share-title.modal-title.h5 Share fit
+              button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+            .modal-body
+              label.form-label(for="simulate-share-url") Link to this fit and its simulator settings
+              input#simulate-share-url.form-control(type="text" readonly)
+            .modal-footer
+              button#simulate-share-copy.btn.btn-primary.text-white(type="button") Copy link
+              button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Close
       #simulate-eft-modal.modal.fade(tabindex="-1" aria-labelledby="simulate-eft-title" aria-hidden="true")
         .modal-dialog.modal-lg
           .modal-content
@@ -217,6 +231,7 @@ block content
             li Drag fitted modules or charges to the wheel’s trash can to remove them. Use the trash buttons to remove drones, fighters, or cargo.
             li Use the undo and redo arrows for up to 30 changes. Click a stats chevron to toggle one section; double-click it to toggle all sections.
             li Click EFT to view and copy the current fit, or paste a fit from EVE, Pyfa, or another fitting tool and click Import EFT.
+            li Click Share to copy a link that includes the fit and its simulator settings.
         .col-12.col-md-6
           h2.h5.mx-0 Disclaimers & Credits
           p.small.mb-2 Calculations exclude random booster side effects, booster expiry, command boosts, and system effects. EHP uses the incoming damage profile on the Configure tab.

@@ -2,7 +2,8 @@
 // Run: node tests/simulate.mjs
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { racks, slotCount, compatible, compatibleCharge, hasDroneBay, hasFighterBay, validateDrones, validateFighters, addModule, importEFT, importTypeIDFit, exportEFT, warnings } from '../public/js/simulate-model.js';
+import { gzipSync, gunzipSync } from 'node:zlib';
+import { racks, slotCount, compatible, compatibleCharge, hasDroneBay, hasFighterBay, validateDrones, validateFighters, addModule, importEFT, importSimulation, importTypeIDFit, exportEFT, warnings } from '../public/js/simulate-model.js';
 
 assert.doesNotMatch(await readFile(new URL('../public/js/simulate.js', import.meta.url), 'utf8'), /text-(?:muted|secondary|body-secondary)/, 'Simulator text must not use low-contrast gray utilities');
 
@@ -255,7 +256,7 @@ class Element extends EventTarget {
     select() {}
 }
 const controls = new Map();
-for (const name of ['sort', 'eft-modal', 'eft-modal-text', 'eft-modal-status', 'equipment', 'mode-Defense', 'mode-Propulsion', 'mode-Sharpshooter', 'mode-control', 'status', 'controls', 'ship', 'ships', 'name', 'skills', 'new', 'category', 'search', 'results', 'hull', 'image', 'slots', 'stats', 'warnings', 'trash', 'undo', 'redo', 'wheel', 'Fitting_Panel', 'implant-Fitting_Panel', 'bigship', 'resource-cpu', 'resource-powergrid', 'ship-panel', 'capsule-panel', 'configure-panel', 'ship-stats', 'capsule-stats', 'implants', 'implant-search', 'implant-results', 'booster-search', 'booster-results', 'boosters', 'boosters-panel', 'boosters-stats', 'tab-boosters', 'tab-ship', 'tab-capsule', 'tab-configure', 'damage-em', 'damage-thermal', 'damage-kinetic', 'damage-explosive', 'damage-em-slider', 'damage-thermal-slider', 'damage-kinetic-slider', 'damage-explosive-slider', 'damage-status', 'damage-reset', 'security-status', 'security-status-value', 'security-status-minus10', 'security-status-minus5', 'security-status-zero', 'security-status-plus5', 'security-status-reset', 'security-status-source', 'security-status-character-image', 'security-status-character-name', 'security-status-detail']) {
+for (const name of ['share', 'share-url', 'share-modal', 'share-copy', 'sort', 'eft-modal', 'eft-modal-text', 'eft-modal-status', 'equipment', 'mode-Defense', 'mode-Propulsion', 'mode-Sharpshooter', 'mode-control', 'status', 'controls', 'ship', 'ships', 'name', 'skills', 'new', 'category', 'search', 'results', 'hull', 'image', 'slots', 'stats', 'warnings', 'trash', 'undo', 'redo', 'wheel', 'Fitting_Panel', 'implant-Fitting_Panel', 'bigship', 'resource-cpu', 'resource-powergrid', 'ship-panel', 'capsule-panel', 'configure-panel', 'ship-stats', 'capsule-stats', 'implants', 'implant-search', 'implant-results', 'booster-search', 'booster-results', 'boosters', 'boosters-panel', 'boosters-stats', 'tab-boosters', 'tab-ship', 'tab-capsule', 'tab-configure', 'damage-em', 'damage-thermal', 'damage-kinetic', 'damage-explosive', 'damage-em-slider', 'damage-thermal-slider', 'damage-kinetic-slider', 'damage-explosive-slider', 'damage-status', 'damage-reset', 'security-status', 'security-status-value', 'security-status-minus10', 'security-status-minus5', 'security-status-zero', 'security-status-plus5', 'security-status-reset', 'security-status-source', 'security-status-character-image', 'security-status-character-name', 'security-status-detail']) {
     const control = new Element();
     control.id = 'simulate-' + name;
     controls.set(name, control);
@@ -299,7 +300,7 @@ globalThis.Worker = class {
         workerPosts++;
         pending = pending.then(async () => {
             await self.onmessage({ data: request });
-            this.onmessage({ data: result });
+            await this.onmessage({ data: result });
         });
     }
 };
@@ -1334,3 +1335,99 @@ assert.equal(bulkShortcut('b').defaultPrevented, false, 'Bulk shortcuts are igno
 delete keyboardEvents.closest;
 window.zkbPageCleanup();
 console.log('Bulk shortcut checks passed: independent groups, all tabs, partial selection, undo, key repeat, and keyboard guards.');
+
+// Share links preserve the simulation state that EFT cannot represent.
+const sharedSimulation = importEFT("[Tristan, Share test]\n[Empty High slot]\n150mm Railgun II, Antimatter Charge S\nHobgoblin I x3\nAntimatter Charge S x100\nZainou 'Gnome' Shield Management SM-706\nQuafe Zero Classic", catalog);
+sharedSimulation.items.find(item => item.type_id === byName('150mm Railgun II').id).state = 'Overload';
+sharedSimulation.items.find(item => item.flag === 87).active = 2;
+sharedSimulation.implants[0].enabled = false;
+sharedSimulation.boosters[0].enabled = false;
+sharedSimulation.skillLevel = 0;
+sharedSimulation.securityStatus = -5;
+sharedSimulation.damageProfile = { em: 40, thermal: 30, kinetic: 20, explosive: 10 };
+sharedSimulation.fighterTubes = [];
+assert.deepEqual(importSimulation(JSON.stringify(sharedSimulation), catalog), sharedSimulation, 'Simulation import preserves exact slots, states, charges, cargo, drones, implants, boosters, skills and Configure settings');
+assert.deepEqual(importSimulation(JSON.stringify(partialCarrier), catalog), partialCarrier, 'Simulation import preserves partial fighter tube assignments');
+assert.deepEqual(importSimulation(JSON.stringify({ ...spoolingFit, mode: 'Defense' }), catalog), { ...spoolingFit, mode: 'Defense' }, 'Simulation import preserves mode and spool settings');
+for (const invalid of [null, { ...sharedSimulation, items: [null] }, { ...sharedSimulation, ship_type_id: 99999999 },
+    { ...sharedSimulation, skillLevel: 7 }, { ...sharedSimulation, securityStatus: -11 }, { ...sharedSimulation, damageProfile: { em: 25, thermal: 25, kinetic: 25, explosive: 0 } },
+    { ...sharedSimulation, implants: [{ ...sharedSimulation.implants[0], enabled: 'false' }] },
+    { ...sharedSimulation, boosters: [{ ...sharedSimulation.boosters[0], slot: 2 }] },
+    { ...sharedSimulation, items: [{ ...sharedSimulation.items[0], state: 'invalid' }] },
+    { ...sharedSimulation, items: [{ ...sharedSimulation.items[0], flag: 87 }] },
+    { ...sharedSimulation, items: [sharedSimulation.items[0], sharedSimulation.items[0]] },
+    { ...sharedSimulation, fighterTubes: [{ type_id: byName('Hobgoblin I').id, quantity: 1 }] }
+]) assert.throws(() => importSimulation(JSON.stringify(invalid), catalog), 'Invalid shared data is rejected before changing the saved fit');
+assert.throws(() => importSimulation('x'.repeat(50001), catalog), /too large/);
+window.location.origin = 'http://localhost';
+window.location.hash = '';
+stored.set('zkb:simulate', JSON.stringify(sharedSimulation));
+window.zkbInitSimulate();
+await settle();
+assert.equal(controls.get('share').disabled, false, 'Share becomes available for a loaded fit');
+controls.get('name').value = 'Pilot 🚀 & fleet / fit';
+click('share');
+for (let attempt = 0; attempt < 200 && !controls.get('share-url').value; attempt++) await new Promise(resolve => setTimeout(resolve, 5));
+const sharedURL = controls.get('share-url').value;
+assert.ok(sharedURL.startsWith('http://localhost/simulate/#state='), 'Share uses the current host and the /simulate/ fragment');
+const sharedPayload = new URLSearchParams(new URL(sharedURL).hash.slice(1)).get('state');
+assert.match(sharedPayload, /^[A-Za-z0-9_-]+$/, 'Compressed payload uses URL-safe Base64');
+const sharedState = JSON.parse(gunzipSync(Buffer.from(sharedPayload, 'base64url')).toString('utf8'));
+const uncompressedURL = window.location.origin + '/simulate/#' + new URLSearchParams({ state: JSON.stringify(sharedState) });
+assert.ok(sharedURL.length < uncompressedURL.length / 2, 'Compression more than halves the representative share link');
+console.log(`Share link compressed from ${uncompressedURL.length} to ${sharedURL.length} characters.`);
+assert.deepEqual(sharedState, { ...JSON.parse(stored.get('zkb:simulate')), name: 'Pilot 🚀 & fleet / fit' });
+const previousNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+let copiedShare;
+Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { clipboard: { writeText: async text => { copiedShare = text; } } } });
+const previousBootstrap = window.bootstrap;
+let shareModalClosed = 0;
+window.bootstrap = { Modal: { getInstance: modal => {
+    assert.equal(modal, controls.get('share-modal'));
+    return { hide: () => { shareModalClosed++; } };
+} } };
+for (const target of ['share-copy', 'share-url']) {
+    copiedShare = null;
+    click(target);
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(copiedShare, sharedURL, 'Both share controls copy the URL');
+    assert.equal(toasts.at(-1), 'URL copied to clipboard.');
+}
+assert.equal(shareModalClosed, 2, 'Both share controls close the modal after copying');
+let selectedShare = false;
+controls.get('share-url').select = () => { selectedShare = true; };
+navigator.clipboard.writeText = async () => { throw new Error('Clipboard denied'); };
+click('share-copy');
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(selectedShare, true, 'Clipboard failure selects the link for manual copying');
+assert.equal(toasts.at(-1), 'Unable to copy. Copy the selected link manually.');
+assert.equal(shareModalClosed, 2, 'Clipboard failure keeps the selected URL available');
+window.bootstrap = previousBootstrap;
+if (previousNavigator) Object.defineProperty(globalThis, 'navigator', previousNavigator);
+else delete globalThis.navigator;
+window.zkbPageCleanup();
+window.location.hash = new URL(sharedURL).hash;
+stored.set('zkb:simulate', JSON.stringify({ ship_type_id: 587, name: 'Old fit', items: [] }));
+window.zkbInitSimulate();
+await settle();
+assert.deepEqual(JSON.parse(stored.get('zkb:simulate')), sharedState, 'Opening a share link restores all settings and overrides the old saved fit');
+assert.equal(controls.get('ship-panel').hidden, false, 'Shared fits open on the Ship tab');
+assert.equal(controls.get('skills').value, '0');
+assert.equal(controls.get('security-status-value').textContent, '-5.0');
+assert.deepEqual((await calculate(JSON.parse(stored.get('zkb:simulate')), 0)).stats, (await calculate(sharedSimulation, 0)).stats, 'Shared fit statistics match the original');
+window.zkbPageCleanup();
+const savedBeforeBadShare = stored.get('zkb:simulate');
+for (const payload of [
+    gzipSync(JSON.stringify({ ...sharedState, damageProfile: { em: 0, thermal: 0, kinetic: 0, explosive: 0 } })).toString('base64url'),
+    'invalid!', Buffer.from('not gzip').toString('base64url'), gzipSync('x'.repeat(200001)).toString('base64url')
+]) {
+    window.location.hash = '#state=' + payload;
+    window.zkbInitSimulate();
+    await settle();
+    assert.equal(stored.get('zkb:simulate'), savedBeforeBadShare, 'An invalid share link leaves the saved fit untouched');
+    assert.equal(controls.get('share').disabled, true, 'An invalid incoming fit cannot share stale data');
+    assert.match(controls.get('status').textContent, /Unable to load this fit/);
+    window.zkbPageCleanup();
+}
+window.location.hash = '';
+console.log('Share checks passed: full-state links, validation, Unicode names, copy/fallback, exact restore, and invalid-link preservation.');

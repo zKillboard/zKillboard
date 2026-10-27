@@ -264,6 +264,51 @@ export function importEFT(text, catalog) {
     return fit;
 }
 
+export function importSimulation(text, catalog) {
+    if (text.length > 50000) throw new Error('This simulation is too large.');
+    const fit = JSON.parse(text);
+    if (!fit || !Number.isInteger(fit.ship_type_id) || catalog[fit.ship_type_id]?.categoryID !== 6 || typeof fit.name !== 'string' || !Array.isArray(fit.items) || fit.items.length > 300) throw new Error('Invalid simulation fit.');
+    for (const item of fit.items) {
+        const type = catalog[item?.type_id];
+        if (!type || !Number.isInteger(item.type_id) || !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > ([18, 87].includes(type.categoryID) ? 1000 : 1000000)
+            || !Number.isInteger(item.flag) || (![5, 87, 158].includes(item.flag) && !racks.some(rack => item.flag >= rack.start && item.flag < rack.start + 8))) throw new Error('Invalid simulation item.');
+        if ((item.flag === 87 && type.categoryID !== 18) || (item.flag === 158 && type.categoryID !== 87)) throw new Error('Item type does not match its bay.');
+        if (![5, 87, 158].includes(item.flag)) {
+            if (type.categoryID === 8) {
+                const module = fit.items.find(other => other.flag === item.flag && rackFor(catalog[other.type_id]));
+                if (!module || !compatibleCharge(catalog[module.type_id], type) || fit.items.filter(other => other.flag === item.flag && catalog[other.type_id]?.categoryID === 8).length !== 1) throw new Error('Invalid loaded charge.');
+            } else {
+                const rack = rackFor(type);
+                if (!rack || item.flag < rack.start || item.flag >= rack.start + 8 || item.quantity !== 1
+                    || (rack.name === 'SubSystem' && item.flag !== type.attributes.subSystemSlot)
+                    || fit.items.filter(other => other.flag === item.flag && catalog[other.type_id]?.categoryID !== 8).length !== 1) throw new Error('Invalid fitted module.');
+            }
+        }
+        if (item.state !== undefined && !['Passive', 'Online', 'Active', 'Overload'].includes(item.state)) throw new Error('Invalid module state.');
+        if (item.active !== undefined && (!Number.isInteger(item.active) || item.active < 0 || item.active > item.quantity)) throw new Error('Invalid deployed quantity.');
+        if (item.spoolBonus !== undefined && (!Number.isFinite(item.spoolBonus) || item.spoolBonus < 0)) throw new Error('Invalid spool bonus.');
+    }
+    for (const [collection, attribute] of [['implants', 'implantness'], ['boosters', 'boosterness']]) {
+        if (fit[collection] !== undefined && !Array.isArray(fit[collection])) throw new Error('Invalid ' + collection + '.');
+        for (const item of fit[collection] || []) {
+            if (!item || !Number.isInteger(item.type_id) || !Number.isInteger(item.slot) || item.slot < 1 || catalog[item.type_id]?.attributes[attribute] !== item.slot
+                || (item.enabled !== undefined && typeof item.enabled !== 'boolean')) throw new Error('Invalid ' + collection + '.');
+        }
+    }
+    if ((fit.skillLevel !== undefined && ![0, 5].includes(fit.skillLevel))
+        || (fit.securityStatus !== undefined && (!Number.isFinite(fit.securityStatus) || fit.securityStatus < -10 || fit.securityStatus > 5))
+        || (fit.mode !== undefined && !['Defense', 'Propulsion', 'Sharpshooter'].includes(fit.mode))) throw new Error('Invalid simulation settings.');
+    if (fit.damageProfile !== undefined) {
+        const values = ['em', 'thermal', 'kinetic', 'explosive'].map(damage => fit.damageProfile?.[damage]);
+        if (values.some(value => !Number.isFinite(value) || value < 0 || value > 100) || Math.abs(values.reduce((sum, value) => sum + value, 0) - 100) > 0.001) throw new Error('Invalid incoming damage profile.');
+    }
+    if (fit.fighterTubes !== undefined && (!Array.isArray(fit.fighterTubes) || fit.fighterTubes.length > (catalog[fit.ship_type_id].attributes.fighterTubes || 0))) throw new Error('Invalid fighter tubes.');
+    // Validate the equipment without losing simulation state through an EFT round trip.
+    importEFT(exportEFT(fit, catalog), catalog);
+    validateFighters(fit, catalog);
+    return fit;
+}
+
 export function importTypeIDFit(text, catalog) {
     if (text.length > 50000) throw new Error('This fit is too large.');
     const entries = text.split(';');
