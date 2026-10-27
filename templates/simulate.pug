@@ -22,6 +22,8 @@ block content
           button#simulate-tab-capsule.nav-link(type="button" role="tab" aria-selected="false") Implants (0)
         li.nav-item(role="presentation")
           button#simulate-tab-boosters.nav-link(type="button" role="tab" aria-selected="false") Boosters (0)
+        li.nav-item(role="presentation")
+          button#simulate-tab-effects.nav-link(type="button" role="tab" aria-selected="false" aria-keyshortcuts="Alt+4" title="Effects (Alt+4)") Effects (0)
         li.nav-item.ms-auto.d-flex.align-items-center.me-2(role="presentation")
           button#simulate-share.btn.btn-sm.btn-primary.text-white(type="button" disabled data-bs-toggle="modal" data-bs-target="#simulate-share-modal") Share
         li.nav-item(role="presentation")
@@ -128,6 +130,29 @@ block content
                 button#simulate-boosters-eft-open.btn.btn-sm.btn-primary.text-white(type="button" data-bs-toggle="modal" data-bs-target="#simulate-eft-modal") EFT
               #simulate-boosters
         #simulate-boosters-stats.col-12.col-lg-3
+      #simulate-effects-panel.row.g-3(hidden)
+        .col-12.col-lg-3
+          .card
+            .card-body
+              h2.h5.mx-0 Environmental effects
+              label.form-label(for="simulate-effect-search") Search effects
+              input#simulate-effect-search.form-control.mb-2(type="search" placeholder="Wormhole, weather, or system effect" autocomplete="off")
+              #simulate-effect-results.list-group.overflow-auto(style="max-height: 36rem;" aria-label="Environmental effect results")
+        .col-12.col-lg-6
+          .card.bg-black
+            .card-body
+              h2.h5.mx-0 Environment
+              #simulate-space-security-control.mb-3(hidden)
+                label.form-label(for="simulate-space-security") Space security
+                select#simulate-space-security.form-select
+                  option(value="high_sec") High security
+                  option(value="low_sec") Low security
+                  option(value="null_sec") Null security
+                  option(value="wormhole") Wormhole space
+              p.small Choose one environmental effect. Selecting another replaces it. Disable it to compare your fit with and without the effect.
+              p.small A * beside a statistic indicates that the selected environment changes it.
+              #simulate-effects
+        #simulate-effects-stats.col-12.col-lg-3
       #simulate-configure-panel.row.g-3(hidden)
         .col-12.col-lg-6
           .card.bg-black.simulate-configure-card
@@ -246,10 +271,11 @@ block content
             li Use the undo and redo arrows for up to 30 changes. Click a stats chevron to toggle one section; double-click it to toggle all sections.
             li Click EFT to view and copy the current fit, or paste a fit from EVE, Pyfa, or another fitting tool and click Import EFT.
             li Click Share to copy a link that includes the fit and its simulator settings.
+            li Use Effects to select an environmental effect and space security. Toggle the effect to compare statistics; * marks affected values.
         .col-12.col-md-6
           h2.h5.mx-0 Disclaimers & Credits
-          p.small.mb-2 Calculations exclude random booster side effects, booster expiry, command boosts, and system effects. EHP uses the incoming damage profile on the Configure tab.
-          p.small.mb-2 EFT does not preserve module activation states, spool levels, enabled implants or boosters, deployed drone counts, fighter tube assignments, or tactical destroyer modes. Fighter tubes are initially estimated from available full squadrons. Your current fit is saved in this browser.
+          p.small.mb-2 Calculations exclude random booster side effects, booster expiry, and command boosts. Environmental effects apply when selected on the Effects tab. EHP uses the incoming damage profile on the Configure tab.
+          p.small.mb-2 EFT does not preserve module activation states, spool levels, enabled implants or boosters, environmental effects, space security, deployed drone counts, fighter tube assignments, or tactical destroyer modes. Fighter tubes are initially estimated from available full squadrons. Your current fit is saved in this browser.
           p.small.mb-2
             | Calculated locally with&#32;
             a(href="https://github.com/EVEShipFit/dogma-engine" target="_blank" rel="noopener noreferrer") EVEShip.fit’s engine

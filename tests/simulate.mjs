@@ -72,6 +72,34 @@ const bare = await calculate(fit);
 assert.equal(bare.stats.upgradeLoad, 0, 'An unrigged hull uses zero calibration');
 const implantFit = importEFT("[Rifter, Implants]\nZainou 'Gnome' Shield Management SM-706", catalog);
 assert.deepEqual(implantFit.implants, [{ type_id: 3084, slot: 7 }]);
+
+const pulsar = byName('Class 1 Pulsar Effects');
+assert.equal(pulsar.environmental, true);
+assert.equal(byName('Abyssal Electrical Storm — Strength 1').environmentGroup, 'Abyssal weather');
+const pulsarFit = { ...fit, spaceSecurity: 'wormhole', environmentEffect: { type_id: pulsar.id, enabled: true } };
+const pulsarResult = await calculate(pulsarFit);
+assert.ok(Math.abs(pulsarResult.stats.shieldCapacity / bare.stats.shieldCapacity - 1.3) < 0.00001, 'Class 1 Pulsar adds 30% shield HP through the real engine');
+assert.ok(pulsarResult.environmentAffected.includes('shieldCapacity'));
+assert.ok(pulsarResult.environmentAffected.includes('ehp'), 'Derived environmental changes are marked too');
+const strongPulsar = await calculate({ ...pulsarFit, environmentEffect: { type_id: byName('Class 6 Pulsar Effects').id } });
+assert.equal(strongPulsar.stats.shieldCapacity, bare.stats.shieldCapacity * 2, 'Wormhole class changes effect strength');
+const noEnvironment = await calculate({ ...pulsarFit, environmentEffect: { ...pulsarFit.environmentEffect, enabled: false } });
+assert.deepEqual(noEnvironment.stats, bare.stats, 'Disabling an environment restores baseline statistics');
+assert.deepEqual(noEnvironment.environmentAffected, []);
+const darkness = await calculate({ ...fit, environmentEffect: { type_id: byName('Abyssal Dark Matter Field — Strength 1').id } });
+assert.equal(darkness.stats.maxVelocity, bare.stats.maxVelocity * 1.5, 'Abyssal buffs are applied as well as projected effects');
+const environmentalImplants = await calculate({ ...implantFit, environmentEffect: pulsarFit.environmentEffect });
+assert.ok(Math.abs(environmentalImplants.stats.shieldCapacity / bare.stats.shieldCapacity - 1.3 * 1.06) < 0.00001, 'Environment combines with implants');
+for (const type of Object.values(catalog).filter(type => type.environmental)) {
+    await calculate({ ...fit, environmentEffect: { type_id: type.id } });
+}
+for (const settings of [{ spaceSecurity: 'invalid' }, { environmentEffect: null }, { environmentEffect: { type_id: 587 } }, { environmentEffect: { type_id: pulsar.id, enabled: 'false' } }]) {
+    await self.onmessage({ data: { id: 3, fit: { ...fit, ...settings }, simulate: true } });
+    assert.match(result.error, /Invalid (space security|environmental effect)/);
+    assert.throws(() => importSimulation(JSON.stringify({ ...fit, ...settings }), catalog), /Invalid (space security|environmental effect)/);
+}
+console.log('Environment engine checks passed: all supported beacons, class strength, Abyssal buffs, implants, disable, markers, and validation.');
+
 const implanted = await calculate(implantFit);
 assert.ok(implanted.stats.shieldCapacity > bare.stats.shieldCapacity, 'Implants affect ship statistics');
 assert.equal(importEFT(exportEFT(implantFit, catalog), catalog).implants[0].type_id, 3084, 'EFT preserves implants');
@@ -256,7 +284,7 @@ class Element extends EventTarget {
     select() {}
 }
 const controls = new Map();
-for (const name of ['share', 'share-url', 'share-modal', 'share-copy', 'sort', 'eft-modal', 'eft-modal-text', 'eft-modal-status', 'equipment', 'mode-Defense', 'mode-Propulsion', 'mode-Sharpshooter', 'mode-control', 'status', 'controls', 'ship', 'ships', 'name', 'skills', 'new', 'category', 'search', 'results', 'hull', 'image', 'slots', 'stats', 'warnings', 'trash', 'undo', 'redo', 'wheel', 'Fitting_Panel', 'implant-Fitting_Panel', 'bigship', 'resource-cpu', 'resource-powergrid', 'ship-panel', 'capsule-panel', 'configure-panel', 'ship-stats', 'capsule-stats', 'implants', 'implant-search', 'implant-results', 'booster-search', 'booster-results', 'boosters', 'boosters-panel', 'boosters-stats', 'tab-boosters', 'tab-ship', 'tab-capsule', 'tab-configure', 'damage-em', 'damage-thermal', 'damage-kinetic', 'damage-explosive', 'damage-em-slider', 'damage-thermal-slider', 'damage-kinetic-slider', 'damage-explosive-slider', 'damage-status', 'damage-reset', 'security-status', 'security-status-value', 'security-status-minus10', 'security-status-minus5', 'security-status-zero', 'security-status-plus5', 'security-status-reset', 'security-status-source', 'security-status-character-image', 'security-status-character-name', 'security-status-detail']) {
+for (const name of ['tab-effects', 'effects-panel', 'effects-stats', 'effects', 'effect-search', 'effect-results', 'space-security', 'space-security-control', 'share', 'share-url', 'share-modal', 'share-copy', 'sort', 'eft-modal', 'eft-modal-text', 'eft-modal-status', 'equipment', 'mode-Defense', 'mode-Propulsion', 'mode-Sharpshooter', 'mode-control', 'status', 'controls', 'ship', 'ships', 'name', 'skills', 'new', 'category', 'search', 'results', 'hull', 'image', 'slots', 'stats', 'warnings', 'trash', 'undo', 'redo', 'wheel', 'Fitting_Panel', 'implant-Fitting_Panel', 'bigship', 'resource-cpu', 'resource-powergrid', 'ship-panel', 'capsule-panel', 'configure-panel', 'ship-stats', 'capsule-stats', 'implants', 'implant-search', 'implant-results', 'booster-search', 'booster-results', 'boosters', 'boosters-panel', 'boosters-stats', 'tab-boosters', 'tab-ship', 'tab-capsule', 'tab-configure', 'damage-em', 'damage-thermal', 'damage-kinetic', 'damage-explosive', 'damage-em-slider', 'damage-thermal-slider', 'damage-kinetic-slider', 'damage-explosive-slider', 'damage-status', 'damage-reset', 'security-status', 'security-status-value', 'security-status-minus10', 'security-status-minus5', 'security-status-zero', 'security-status-plus5', 'security-status-reset', 'security-status-source', 'security-status-character-image', 'security-status-character-name', 'security-status-detail']) {
     const control = new Element();
     control.id = 'simulate-' + name;
     controls.set(name, control);
@@ -1336,6 +1364,68 @@ delete keyboardEvents.closest;
 window.zkbPageCleanup();
 console.log('Bulk shortcut checks passed: independent groups, all tabs, partial selection, undo, key repeat, and keyboard guards.');
 
+// Environmental effects work across tabs, history, local saves and shortcuts.
+stored.set('zkb:simulate', JSON.stringify({ ship_type_id: 587, name: 'Effects test', items: [] }));
+window.zkbInitSimulate();
+await settle();
+click('tab-effects');
+assert.equal(controls.get('effects-panel').hidden, false);
+assert.equal(controls.get('effects-stats').children.includes(controls.get('stats')), true, 'Effects tab displays live ship statistics');
+controls.get('effect-search').value = 'class 1 pulsar';
+controls.get('effect-search').dispatchEvent(new Event('input'));
+const selectPulsar = findElements(controls.get('effect-results'), element => element['aria-label'] === 'Select Class 1 Pulsar Effects')[0];
+assert.ok(selectPulsar, 'Environmental search matches all words');
+selectPulsar.click();
+await settle();
+assert.deepEqual(JSON.parse(stored.get('zkb:simulate')).environmentEffect, { type_id: pulsar.id, enabled: true });
+assert.equal(controls.get('space-security').value, 'wormhole');
+assert.ok(findElements(controls.get('stats'), element => element['aria-label'] === 'Adjusted by environment').length, 'Environmental changes use the existing star popovers');
+const disableEnvironment = findElements(controls.get('effects'), element => element.type === 'checkbox')[0];
+disableEnvironment.checked = false;
+disableEnvironment.dispatchEvent(new Event('change'));
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).environmentEffect.enabled, false);
+assert.equal(findElements(controls.get('stats'), element => element['aria-label'] === 'Adjusted by environment').length, 0);
+click('undo');
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).environmentEffect.enabled, true, 'Undo restores the environmental effect');
+assert.equal(findElements(controls.get('effects'), element => element.type === 'checkbox')[0]['aria-keyshortcuts'], 'Alt+e');
+for (const tab of ['ship', 'effects']) {
+    click('tab-' + tab);
+    assert.equal(bulkShortcut('e').defaultPrevented, true);
+    await settle();
+    assert.equal(JSON.parse(stored.get('zkb:simulate')).environmentEffect.enabled, false, 'Alt+E disables the environment from either tab');
+    bulkShortcut('e', true);
+    await settle();
+    assert.equal(JSON.parse(stored.get('zkb:simulate')).environmentEffect.enabled, false, 'Holding Alt+E does not toggle repeatedly');
+    bulkShortcut('e');
+    await settle();
+    assert.equal(JSON.parse(stored.get('zkb:simulate')).environmentEffect.enabled, true, 'Alt+E re-enables the selected effect');
+}
+
+controls.get('space-security').value = 'null_sec';
+controls.get('space-security').dispatchEvent(new Event('change'));
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).spaceSecurity, 'null_sec');
+click('tab-ship');
+assert.ok(treeText(controls.get('slots')).includes('Class 1 Pulsar Effects'), 'Ship tab identifies the active environment');
+assert.equal(findElements(controls.get('slots'), element => element['aria-label'] === 'Remove Class 1 Pulsar Effects').length, 0, 'Ship summary has no trash button');
+controls.get('search').value = 'pulsar';
+controls.get('search').dispatchEvent(new Event('input'));
+assert.equal(equipmentButtons(controls.get('results')).some(element => element['aria-label'] === 'Add Class 1 Pulsar Effects'), false, 'Environmental beacons are not cargo');
+window.zkbPageCleanup();
+window.zkbInitSimulate();
+await settle();
+assert.deepEqual(JSON.parse(stored.get('zkb:simulate')).environmentEffect, { type_id: pulsar.id, enabled: true }, 'Local saves preserve the selected environment');
+assert.equal(controls.get('space-security').value, 'null_sec');
+click('tab-effects');
+findElements(controls.get('effects'), element => element['aria-label'] === 'Remove Class 1 Pulsar Effects')[0].click();
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).environmentEffect, undefined);
+assert.match(treeText(controls.get('effects')), /No environmental effect/);
+window.zkbPageCleanup();
+console.log('Environment UI checks passed: search, selection, markers, toggle, history, local saves, Ship summary, security and removal.');
+
 // Share links preserve the simulation state that EFT cannot represent.
 const sharedSimulation = importEFT("[Tristan, Share test]\n[Empty High slot]\n150mm Railgun II, Antimatter Charge S\nHobgoblin I x3\nAntimatter Charge S x100\nZainou 'Gnome' Shield Management SM-706\nQuafe Zero Classic", catalog);
 sharedSimulation.items.find(item => item.type_id === byName('150mm Railgun II').id).state = 'Overload';
@@ -1346,6 +1436,8 @@ sharedSimulation.skillLevel = 0;
 sharedSimulation.securityStatus = -5;
 sharedSimulation.damageProfile = { em: 40, thermal: 30, kinetic: 20, explosive: 10 };
 sharedSimulation.fighterTubes = [];
+sharedSimulation.environmentEffect = { type_id: pulsar.id, enabled: true };
+sharedSimulation.spaceSecurity = 'wormhole';
 assert.deepEqual(importSimulation(JSON.stringify(sharedSimulation), catalog), sharedSimulation, 'Simulation import preserves exact slots, states, charges, cargo, drones, implants, boosters, skills and Configure settings');
 assert.deepEqual(importSimulation(JSON.stringify(partialCarrier), catalog), partialCarrier, 'Simulation import preserves partial fighter tube assignments');
 assert.deepEqual(importSimulation(JSON.stringify({ ...spoolingFit, mode: 'Defense' }), catalog), { ...spoolingFit, mode: 'Defense' }, 'Simulation import preserves mode and spool settings');
@@ -1414,6 +1506,7 @@ assert.deepEqual(JSON.parse(stored.get('zkb:simulate')), sharedState, 'Opening a
 assert.equal(controls.get('ship-panel').hidden, false, 'Shared fits open on the Ship tab');
 assert.equal(controls.get('skills').value, '0');
 assert.equal(controls.get('security-status-value').textContent, '-5.0');
+assert.equal(controls.get('space-security').value, 'wormhole', 'Share links restore space security');
 assert.deepEqual((await calculate(JSON.parse(stored.get('zkb:simulate')), 0)).stats, (await calculate(sharedSimulation, 0)).stats, 'Shared fit statistics match the original');
 window.zkbPageCleanup();
 const savedBeforeBadShare = stored.get('zkb:simulate');

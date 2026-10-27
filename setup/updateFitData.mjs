@@ -20,7 +20,7 @@ if (!/^\d+(\.\d+)+$/.test(release)) throw new Error('Invalid data release.');
 try {
     const installed = JSON.parse(gunzipSync(await readFile(new URL('data.json.gz', directory))));
     await readFile(new URL('sde.dat.gz', directory));
-    if (installed.release === release && installed.filtered === true && Number.isInteger(installed.build)) {
+    if (installed.release === release && installed.filtered === true && Number.isInteger(installed.build) && installed.data.types[30844] && installed.data.types[47378]) {
         console.log('Fitting data is current: ' + release);
         process.exit(0);
     }
@@ -96,7 +96,8 @@ for (let i = 0; i < types.length; i++) {
         metaGroupID: integer(table, 7),
         raceID: integer(table, 8)
     };
-    if (![6, 7, 8, 16, 18, 20, 32, 65, 66, 87].includes(type.categoryID) && type.groupID !== 1306) continue;
+    if (![6, 7, 8, 16, 18, 20, 32, 65, 66, 87].includes(type.categoryID) && type.groupID !== 1306
+        && !(type.groupID === 920 && type.published) && !/^(darkness|electric_storm|caustic_toxin|xenon_gas|infernal)_weather_[123]$/.test(type.name)) continue;
     for (const [index, name] of [[9, 'capacity'], [10, 'mass'], [11, 'radius'], [12, 'volume']]) {
         const value = float(table, index);
         if (value !== undefined) type[name] = value;

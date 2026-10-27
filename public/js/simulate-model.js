@@ -298,6 +298,12 @@ export function importSimulation(text, catalog) {
     if ((fit.skillLevel !== undefined && ![0, 5].includes(fit.skillLevel))
         || (fit.securityStatus !== undefined && (!Number.isFinite(fit.securityStatus) || fit.securityStatus < -10 || fit.securityStatus > 5))
         || (fit.mode !== undefined && !['Defense', 'Propulsion', 'Sharpshooter'].includes(fit.mode))) throw new Error('Invalid simulation settings.');
+    if (fit.spaceSecurity !== undefined && !['high_sec', 'low_sec', 'null_sec', 'wormhole'].includes(fit.spaceSecurity)) throw new Error('Invalid space security.');
+    if (fit.environmentEffect !== undefined) {
+        const effect = fit.environmentEffect;
+        if (!effect || !Number.isInteger(effect.type_id) || !catalog[effect.type_id]?.environmental
+            || (effect.enabled !== undefined && typeof effect.enabled !== 'boolean')) throw new Error('Invalid environmental effect.');
+    }
     if (fit.damageProfile !== undefined) {
         const values = ['em', 'thermal', 'kinetic', 'explosive'].map(damage => fit.damageProfile?.[damage]);
         if (values.some(value => !Number.isFinite(value) || value < 0 || value > 100) || Math.abs(values.reduce((sum, value) => sum + value, 0) - 100) > 0.001) throw new Error('Invalid incoming damage profile.');

@@ -3,6 +3,10 @@ import initEngine, * as engine from '../vendor/eveshipfit/esf_dogma_engine_bg.js
 let metadataReady;
 let engineReady;
 
+function environmentType(type) {
+    return type && ((type.groupID === 920 && type.published) || /^(darkness|electric_storm|caustic_toxin|xenon_gas|infernal)_weather_[123]$/.test(type.name));
+}
+
 async function loadMetadata() {
     const metadataResponse = await fetch(new URL('../vendor/eveshipfit/data.json.gz', import.meta.url), { cache: 'no-cache' });
     if (!metadataResponse.ok) throw new Error(metadataResponse.status === 404 ? 'Fitting data is unavailable. Please try again later.' : 'Unable to load fitting data.');
@@ -37,10 +41,18 @@ self.onmessage = async ({ data: request }) => {
         if (request.catalog) {
             const catalog = {};
             for (const [id, type] of Object.entries(data.types)) {
-                if (!type.published || ![6, 7, 8, 18, 20, 32, 87].includes(type.categoryID) || !data.typeDogma[id]) continue;
+                const environmental = environmentType(type);
+                if ((!environmental && (!type.published || ![6, 7, 8, 18, 20, 32, 87].includes(type.categoryID)))
+                    || !data.typeDogma[id] || (environmental && !data.typeDogma[id].dogmaEffects.length)) continue;
                 const dogma = data.typeDogma[id];
+                const weather = type.name.match(/^(darkness|electric_storm|caustic_toxin|xenon_gas|infernal)_weather_([123])$/);
                 catalog[id] = {
                     ...type, id: Number(id),
+                    ...(environmental ? {
+                        environmental: true,
+                        environmentGroup: weather ? 'Abyssal weather' : /^Class [1-6] /.test(type.name) ? 'Wormholes' : 'System effects',
+                        name: weather ? 'Abyssal ' + ({ darkness: 'Dark Matter Field', electric_storm: 'Electrical Storm', caustic_toxin: 'Exotic Particle Storm', xenon_gas: 'Gamma-Ray Afterglow', infernal: 'Plasma Firestorm' }[weather[1]]) + ' — Strength ' + weather[2] : type.name
+                    } : {}),
                     attributes: Object.fromEntries(dogma.dogmaAttributes.map(attribute => [data.dogmaAttributes[attribute.attributeID]?.name, attribute.value])),
                     effects: dogma.dogmaEffects.map(effect => data.dogmaEffects[effect.effectID]?.name)
                 };
@@ -64,6 +76,16 @@ self.onmessage = async ({ data: request }) => {
         fit.character.security_status = Math.max(-10, Math.min(5, Number(request.fit.securityStatus) || 0));
         if (request.fit.damageProfile) {
             fit.environment = { damage_profile: Object.fromEntries(Object.entries(request.fit.damageProfile).map(([damage, value]) => [damage, value / 100])) };
+        }
+        if (request.fit.spaceSecurity !== undefined) {
+            if (!['high_sec', 'low_sec', 'null_sec', 'wormhole'].includes(request.fit.spaceSecurity)) throw new Error('Invalid space security.');
+            fit.environment = { ...fit.environment, security: request.fit.spaceSecurity };
+        }
+        if (request.fit.environmentEffect !== undefined) {
+            const effect = request.fit.environmentEffect;
+            if (!effect || !Number.isInteger(effect.type_id) || !environmentType(data.types[effect.type_id])
+                || (effect.enabled !== undefined && typeof effect.enabled !== 'boolean')) throw new Error('Invalid environmental effect.');
+            if (request.simulate && effect.enabled !== false) fit.incoming = engine.beacon(effect.type_id);
         }
         if (![6, 65].includes(data.types[fit.ship.type_id]?.categoryID) || !data.typeDogma[fit.ship.type_id]) {
             throw new Error('This hull is not supported by the fitting data.');
@@ -206,6 +228,14 @@ self.onmessage = async ({ data: request }) => {
                 if (Number.isFinite(baseline) && Number.isFinite(attribute.value) && Math.abs(attribute.value - baseline) > 1e-8 * Math.max(1, Math.abs(baseline))) boosterAffected.push(data.dogmaAttributes[id]?.name);
             }
         }
+        const environmentAffected = [];
+        if (fit.incoming) {
+            const withoutEnvironment = engine.calculate({ ...fit, incoming: {} });
+            for (const [id, attribute] of result.ship.attributes) {
+                const baseline = withoutEnvironment.ship.attributes.get(id)?.value;
+                if (Number.isFinite(baseline) && Number.isFinite(attribute.value) && Math.abs(attribute.value - baseline) > 1e-8 * Math.max(1, Math.abs(baseline))) environmentAffected.push(data.dogmaAttributes[id]?.name);
+            }
+        }
         const stats = {};
         for (const [id, attribute] of result.ship.attributes) {
             const name = data.dogmaAttributes[id]?.name;
@@ -266,7 +296,7 @@ self.onmessage = async ({ data: request }) => {
                 });
             }
         }
-        self.postMessage({ id: request.id, stats, character, details, boosterAffected });
+        self.postMessage({ id: request.id, stats, character, details, boosterAffected, environmentAffected });
     } catch (error) {
         self.postMessage({ id: request.id, error: error instanceof WebAssembly.RuntimeError ? 'This fit could not be simulated.' : error.message });
     }
