@@ -316,6 +316,14 @@ class MongoFilter
             $and[] = ['involved' => ['$elemMatch' => $elemMatch]];
         }
 
+        // A victim-group-only match can use the stored victim group directly.
+        foreach ($and as $key => $filter) {
+            $match = $filter['involved']['$elemMatch'] ?? [];
+            if (sizeof($match) == 2 && ($match['isVictim'] ?? null) === true && isset($match['groupID'])) {
+                $and[$key] = ['vGroupID' => $match['groupID']];
+            }
+        }
+
         // Prep the query, not using $and if it isn't needed
         $query = array();
         if (sizeof($and) == 1) {

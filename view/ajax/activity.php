@@ -18,6 +18,7 @@ function handler($request, $response, $args, $container)
 
 	$activity = ['max' => 0];
 	$raw = $redis->hget('zkb:activity', $id);
+	if ($raw == null) $raw = $redis->get("zkb:activity:$id");
 	if ($raw != null) {
 		$activity = unserialize($raw);
 	} else {
@@ -32,6 +33,7 @@ function handler($request, $response, $args, $container)
 			$activity[$day][$hour] = $count;
 			$activity['max'] = max($activity['max'], $count);
 		}
+		$redis->setex("zkb:activity:$id", 3600, serialize($activity));
 	}
 
 	return $container->get('view')->render($response->withHeader('Cache-Tag', "www,activity,overview:$id"), 'components/activity_async.pug', ['activity' => $activity]);
