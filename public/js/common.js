@@ -2202,7 +2202,7 @@ return Math.floor(Date.now() / 1000);
 }
 
 // gtcplex320.jpg  gtcplex728.jpg  merch320.jpg  merch728.jpg
-var banner_links = ['https://store.markeedragon.com/affiliate.php?id=928&redirect=index.php?cat=4', 'https://www.zazzle.com/store/zkillboard/products'];
+var banner_links = ['https://markeedragon.com/eve/zkill', 'https://www.zazzle.com/store/zkillboard/products'];
 var banners_sm = ['/img/banners/gtcplex320.jpg', '/img/banners/merch320.jpg'];
 var banners_lg = ['/img/banners/gtcplex728.jpg?1', '/img/banners/merch728.jpg'];
 var ob_firstcall = true;
