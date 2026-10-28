@@ -20,7 +20,8 @@ if (!/^\d+(\.\d+)+$/.test(release)) throw new Error('Invalid data release.');
 try {
     const installed = JSON.parse(gunzipSync(await readFile(new URL('data.json.gz', directory))));
     await readFile(new URL('sde.dat.gz', directory));
-    if (installed.release === release && installed.filtered === true && Number.isInteger(installed.build) && installed.data.types[30844] && installed.data.types[47378]) {
+    if (installed.release === release && installed.filtered === true && Number.isInteger(installed.build) && installed.data.types[30844] && installed.data.types[47378]
+        && installed.data.types[527]?.groupName && installed.data.dogmaEffects[-88]?.projected) {
         console.log('Fitting data is current: ' + release);
         process.exit(0);
     }
@@ -80,7 +81,21 @@ for (let i = 0; i < attributes.length; i++) {
 const effects = vector(root, 5);
 for (let i = 0; i < effects.length; i++) {
     const table = vectorTable(effects, i);
-    data.dogmaEffects[integer(table, 0)] = { name: string(table, 1) };
+    const category = field(table, 3);
+    const modifiers = vector(table, 19);
+    let projected = false;
+    if (category && [1, 2].includes(sde.readInt8(category))) {
+        for (let j = 0; j < modifiers.length; j++) {
+            if ([5, 6].includes(sde.readInt8(modifiers.start + j * 20))) projected = true;
+        }
+    }
+    data.dogmaEffects[integer(table, 0)] = { name: string(table, 1), ...(projected ? { projected: true } : {}) };
+}
+const groupNames = {};
+const groups = vector(root, 2);
+for (let i = 0; i < groups.length; i++) {
+    const table = vectorTable(groups, i);
+    groupNames[integer(table, 0)] = string(table, 1);
 }
 const types = vector(root, 1);
 for (let i = 0; i < types.length; i++) {
@@ -89,6 +104,7 @@ for (let i = 0; i < types.length; i++) {
     const type = {
         name: string(table, 1),
         groupID: integer(table, 2),
+        groupName: groupNames[integer(table, 2)],
         categoryID: integer(table, 3),
         published: boolean(table, 4),
         factionID: integer(table, 5),

@@ -1,7 +1,18 @@
 import initEngine, * as engine from '../vendor/eveshipfit/esf_dogma_engine_bg.js?v=13.1.0';
+const fleetOptionsReady = import(new URL('./simulate-model.js' + new URL(import.meta.url).search, import.meta.url));
 
 let metadataReady;
 let engineReady;
+const moduleProjections = new Map();
+const fleetSkills = { Armor: 'Armored Command Specialist', Shield: 'Shield Command Specialist', Information: 'Information Command Specialist', Skirmish: 'Skirmish Command Specialist', Mining: 'Mining Director', Expedition: 'Expedition Command Specialist' };
+
+function fleetFamily(type) {
+    return Object.keys(fleetSkills).find(family => type.name.includes(family));
+}
+
+function mergeProjections(...projections) {
+    return { buffs: projections.flatMap(projection => projection.buffs || []), effects: projections.flatMap(projection => projection.effects || []) };
+}
 
 function environmentType(type) {
     return type && ((type.groupID === 920 && type.published) || /^(darkness|electric_storm|caustic_toxin|xenon_gas|infernal)_weather_[123]$/.test(type.name));
@@ -33,6 +44,7 @@ async function loadEngine(snapshot) {
 
 self.onmessage = async ({ data: request }) => {
     try {
+        const { validateFleetBoostOptions } = await fleetOptionsReady;
         if (!metadataReady) metadataReady = loadMetadata().catch(error => {
             metadataReady = null;
             throw error;
@@ -48,6 +60,8 @@ self.onmessage = async ({ data: request }) => {
                 const weather = type.name.match(/^(darkness|electric_storm|caustic_toxin|xenon_gas|infernal)_weather_([123])$/);
                 catalog[id] = {
                     ...type, id: Number(id),
+                    ...(type.categoryID === 7 && type.groupID === 1770 ? { fleetModule: true, fleetFamily: fleetFamily(type), fleetSkillName: fleetSkills[fleetFamily(type)] } : {}),
+                    ...(type.categoryID === 7 && dogma.dogmaEffects.some(effect => data.dogmaEffects[effect.effectID]?.projected) ? { projectedModule: true } : {}),
                     ...(environmental ? {
                         environmental: true,
                         environmentGroup: weather ? 'Abyssal weather' : /^Class [1-6] /.test(type.name) ? 'Wormholes' : 'System effects',
@@ -67,9 +81,13 @@ self.onmessage = async ({ data: request }) => {
         await engineReady;
         const attributes = {};
         const skills = {};
+        const skillTypeIDs = {};
         for (const [id, attribute] of Object.entries(data.dogmaAttributes)) attributes[attribute.name] = Number(id);
         for (const [id, type] of Object.entries(data.types)) {
-            if (type.categoryID === 16) skills[id] = 5;
+            if (type.categoryID === 16) {
+                skills[id] = 5;
+                skillTypeIDs[type.name] = Number(id);
+            }
         }
         const baseAttribute = (typeID, name) => data.typeDogma[typeID]?.dogmaAttributes.find(attribute => attribute.attributeID === attributes[name])?.value || 0;
         const fit = { ship: { type_id: request.fit.ship_type_id }, items: [], character: { skills: request.simulate && request.skillLevel === 0 ? {} : skills } };
@@ -219,6 +237,61 @@ self.onmessage = async ({ data: request }) => {
             fit.items.push(entry);
         }
 
+        const environment = fit.incoming || {};
+        const fleet = { buffs: [] };
+        const projected = { effects: [] };
+        const moduleKeys = new Set();
+        for (const [collection, outgoingKey, incoming] of [['fleetBoosts', 'buffs', fleet], ['projectedEffects', 'effects', projected]]) {
+            const modules = request.fit[collection] ?? [];
+            if (!Array.isArray(modules) || modules.length > 32) throw new Error('Use at most 32 modules per effect group.');
+            for (const module of modules) {
+                const type = data.types[module?.type_id];
+                const dogma = data.typeDogma[module?.type_id];
+                if (!module || !Number.isInteger(module.type_id) || type?.categoryID !== 7 || !type.published || !dogma
+                    || !Number.isInteger(module.quantity) || module.quantity < 1 || module.quantity > (collection === 'fleetBoosts' ? 1 : 20)
+                    || typeof module.enabled !== 'boolean'
+                    || (collection === 'fleetBoosts' ? type.groupID !== 1770 : !dogma.dogmaEffects.some(effect => data.dogmaEffects[effect.effectID]?.projected))) throw new Error('Invalid effect module.');
+                if (module.charge_type_id !== undefined) {
+                    const charge = data.types[module.charge_type_id];
+                    if (!Number.isInteger(module.charge_type_id) || charge?.categoryID !== 8
+                        || !dogma.dogmaAttributes.some(attribute => /^chargeGroup\d+$/.test(data.dogmaAttributes[attribute.attributeID]?.name) && attribute.value === charge.groupID)
+                        || (baseAttribute(module.type_id, 'chargeSize') && baseAttribute(module.type_id, 'chargeSize') !== baseAttribute(module.charge_type_id, 'chargeSize'))
+                        || (type.capacity && charge.volume > type.capacity + 0.000001)) throw new Error('Invalid effect module charge.');
+                } else if (collection === 'fleetBoosts') throw new Error('Choose a command burst charge.');
+                const family = collection === 'fleetBoosts' ? fleetFamily(type) : undefined;
+                if (collection === 'fleetBoosts') validateFleetBoostOptions(module, { fleetFamily: family });
+                const key = JSON.stringify([module.type_id, module.charge_type_id, fit.environment?.security, request.fit.environmentEffect,
+                    collection === 'fleetBoosts' ? [module.specialistLevel ?? 5, module.shipBonus || 0, Boolean(module.mindlink), module.industrialCoreBonus || 0] : null]);
+                moduleKeys.add(key);
+                if (!moduleProjections.has(key)) {
+                    const entry = { type_id: module.type_id, slot: { type: dogma.dogmaEffects.some(effect => data.dogmaEffects[effect.effectID]?.name === 'medPower') ? 'medium' : 'high', index: 0 }, state: 'active' };
+                    if (module.charge_type_id !== undefined) entry.charge = { type_id: module.charge_type_id };
+                    const sourceFit = { ship: { type_id: 0 }, character: { skills }, items: [entry], incoming: environment };
+                    if (collection === 'fleetBoosts') {
+                        sourceFit.character.skills = { ...skills, [skillTypeIDs[fleetSkills[family]]]: module.specialistLevel ?? 5 };
+                        if (module.mindlink) {
+                            const name = ({ Armor: 'Armored Command Mindlink', Mining: 'Mining Foreman Mindlink' }[family]) || family + ' Command Mindlink';
+                            const mindlink = Object.entries(data.types).find(([, type]) => type.name === name);
+                            if (!mindlink) throw new Error('This command mindlink is missing from the fitting data.');
+                            sourceFit.items.push({ type_id: Number(mindlink[0]), slot: { type: 'implant', index: 10 }, state: 'online' });
+                        }
+                    }
+                    const outgoing = engine.calculate(sourceFit).outgoing || {};
+                    if (collection === 'fleetBoosts') {
+                        const multiplier = (1 + (module.shipBonus || 0) / 100) * (1 + (module.industrialCoreBonus || 0) / 100);
+                        outgoing.buffs = (outgoing.buffs || []).map(buff => ({ ...buff, value: buff.value * multiplier }));
+                    }
+                    moduleProjections.set(key, outgoing);
+                }
+                const outgoing = moduleProjections.get(key);
+                if (request.simulate && module.enabled) {
+                    for (let index = 0; index < module.quantity; index++) incoming[outgoingKey].push(...(outgoing[outgoingKey] || []));
+                }
+            }
+        }
+        for (const key of moduleProjections.keys()) if (!moduleKeys.has(key)) moduleProjections.delete(key);
+        fit.incoming = mergeProjections(environment, fleet, projected);
+
         const result = engine.calculate(fit);
         const boosterAffected = [];
         if (fit.items.some(item => item.slot.type === 'booster')) {
@@ -229,11 +302,18 @@ self.onmessage = async ({ data: request }) => {
             }
         }
         const environmentAffected = [];
-        if (fit.incoming) {
-            const withoutEnvironment = engine.calculate({ ...fit, incoming: {} });
+        const fleetAffected = [];
+        const projectedAffected = [];
+        for (const [active, incoming, affected] of [
+            [Boolean(environment.buffs?.length || environment.effects?.length), mergeProjections(fleet, projected), environmentAffected],
+            [fleet.buffs.length > 0, mergeProjections(environment, projected), fleetAffected],
+            [projected.effects.length > 0, mergeProjections(environment, fleet), projectedAffected]
+        ]) {
+            if (!active) continue;
+            const withoutEffect = engine.calculate({ ...fit, incoming });
             for (const [id, attribute] of result.ship.attributes) {
-                const baseline = withoutEnvironment.ship.attributes.get(id)?.value;
-                if (Number.isFinite(baseline) && Number.isFinite(attribute.value) && Math.abs(attribute.value - baseline) > 1e-8 * Math.max(1, Math.abs(baseline))) environmentAffected.push(data.dogmaAttributes[id]?.name);
+                const baseline = withoutEffect.ship.attributes.get(id)?.value ?? 0;
+                if (Number.isFinite(baseline) && Number.isFinite(attribute.value) && Math.abs(attribute.value - baseline) > 1e-8 * Math.max(1, Math.abs(baseline))) affected.push(data.dogmaAttributes[id]?.name);
             }
         }
         const stats = {};
@@ -296,7 +376,7 @@ self.onmessage = async ({ data: request }) => {
                 });
             }
         }
-        self.postMessage({ id: request.id, stats, character, details, boosterAffected, environmentAffected });
+        self.postMessage({ id: request.id, stats, character, details, boosterAffected, environmentAffected, fleetAffected, projectedAffected });
     } catch (error) {
         self.postMessage({ id: request.id, error: error instanceof WebAssembly.RuntimeError ? 'This fit could not be simulated.' : error.message });
     }

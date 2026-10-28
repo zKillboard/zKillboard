@@ -100,6 +100,73 @@ for (const settings of [{ spaceSecurity: 'invalid' }, { environmentEffect: null 
 }
 console.log('Environment engine checks passed: all supported beacons, class strength, Abyssal buffs, implants, disable, markers, and validation.');
 
+const shieldSource = { type_id: byName('Shield Command Burst II').id, charge_type_id: byName('Shield Harmonizing Charge').id, quantity: 1, enabled: true };
+const webSource = { type_id: byName('Stasis Webifier II').id, quantity: 1, enabled: true };
+const shieldFleet = await calculate({ ...fit, fleetBoosts: [shieldSource] });
+assert.ok(shieldFleet.stats.ehp > bare.stats.ehp, 'Fleet shield harmonizing increases effective HP');
+assert.ok(shieldFleet.fleetAffected.includes('ehp'));
+assert.equal((await calculate({ ...fit, fleetBoosts: [shieldSource, shieldSource] })).stats.ehp, shieldFleet.stats.ehp, 'Identical fleet boosts do not stack');
+const weakerSource = { ...shieldSource, type_id: byName('Shield Command Burst I').id };
+const weakerFleet = await calculate({ ...fit, fleetBoosts: [weakerSource] });
+assert.ok(weakerFleet.stats.ehp < shieldFleet.stats.ehp, 'Command burst module bonuses affect fleet strength');
+assert.equal((await calculate({ ...fit, fleetBoosts: [weakerSource, shieldSource] })).stats.ehp, shieldFleet.stats.ehp, 'Strongest fleet bonus wins');
+// Command burst strength follows specialization × module × ship × mindlink × mining core.
+assert.equal(byName('Shield Command Burst II').fleetFamily, 'Shield');
+assert.equal(byName('Expedition Command Burst II').fleetFamily, 'Expedition');
+for (const [options, expected] of [
+    [{ type_id: weakerSource.type_id, specialistLevel: 0 }, 8],
+    [{ specialistLevel: 0 }, 10],
+    [{ specialistLevel: 3 }, 13],
+    [{ specialistLevel: 5 }, 15],
+    [{ specialistLevel: 5, shipBonus: 15 }, 17.25],
+    [{ specialistLevel: 5, shipBonus: 15, mindlink: true }, 21.5625],
+    [{ specialistLevel: 5, shipBonus: 25, mindlink: true }, 23.4375]
+]) {
+    const boosted = await calculate({ ...fit, fleetBoosts: [{ ...shieldSource, ...options }] });
+    const actual = (1 - boosted.stats.shieldEmDamageResonance / bare.stats.shieldEmDamageResonance) * 100;
+    assert.ok(Math.abs(actual - expected) < 0.00001, 'Shield burst strength ' + actual + ' matches ' + expected);
+}
+const miningFit = importEFT('[Venture, Mining fleet]\nMiner II', catalog);
+const unboostedMining = await calculate(miningFit);
+const miningSource = { type_id: byName('Mining Foreman Burst II').id, charge_type_id: byName('Mining Laser Optimization Charge').id, quantity: 1, enabled: true, specialistLevel: 5, shipBonus: 25, mindlink: true, industrialCoreBonus: 40 };
+const boostedMining = await calculate({ ...miningFit, fleetBoosts: [miningSource] });
+const miningCycle = result => result.details.find(item => item.type_id === byName('Miner II').id).attributes.find(attribute => attribute.name === 'cycleTime').value;
+assert.ok(Math.abs(miningCycle(boostedMining) / miningCycle(unboostedMining) - (1 - 0.615234375)) < 0.00001, 'Mining strength includes the industrial core multiplier');
+for (const options of [{ specialistLevel: 6 }, { shipBonus: 26 }, { mindlink: 1 }, { industrialCoreBonus: 40 }]) {
+    assert.throws(() => importSimulation(JSON.stringify({ ...fit, fleetBoosts: [{ ...shieldSource, ...options }] }), catalog), /Invalid fleet boost strength/);
+    await self.onmessage({ data: { id: 3, fit: { ...fit, fleetBoosts: [{ ...shieldSource, ...options }] }, simulate: true } });
+    assert.match(result.error, /Invalid fleet boost strength/);
+}
+console.log('Fleet leadership checks passed: specialist levels, T1/T2 strength, ship bonuses, mindlinks, mining core, and input validation.');
+const webbed = await calculate({ ...fit, projectedEffects: [webSource] });
+assert.ok(Math.abs(webbed.stats.maxVelocity / bare.stats.maxVelocity - 0.4) < 0.00001, 'Projected web slows the target');
+assert.ok(webbed.projectedAffected.includes('maxVelocity'));
+assert.equal((await calculate({ ...fit, projectedEffects: [{ ...webSource, enabled: false }] })).stats.maxVelocity, bare.stats.maxVelocity, 'Disabled source has no effect');
+const twoWebs = await calculate({ ...fit, projectedEffects: [{ ...webSource, quantity: 2 }] });
+assert.ok(twoWebs.stats.maxVelocity < webbed.stats.maxVelocity, 'Multiple active modules from a source project');
+assert.ok(twoWebs.stats.maxVelocity > bare.stats.maxVelocity * 0.16, 'Projected webs use stacking penalties');
+const remoteSensor = { type_id: byName('Remote Sensor Booster II').id, charge_type_id: byName('Targeting Range Script').id, quantity: 1, enabled: true };
+const sensorBoosted = await calculate({ ...fit, projectedEffects: [remoteSensor] });
+assert.ok(sensorBoosted.stats.maxTargetRange > bare.stats.maxTargetRange, 'Scripts affect remote sensor projection');
+const remoteRepair = { type_id: byName('Small Remote Shield Booster II').id, quantity: 1, enabled: true };
+const repaired = await calculate({ ...fit, projectedEffects: [remoteRepair] });
+assert.ok(repaired.stats.shieldEffectiveBoostRate > bare.stats.shieldEffectiveBoostRate, 'Incoming remote repair affects displayed tank');
+assert.ok(repaired.projectedAffected.includes('shieldEffectiveBoostRate'));
+const neutralizer = { type_id: byName('Small Energy Neutralizer II').id, quantity: 1, enabled: true };
+const neutralized = await calculate({ ...fit, projectedEffects: [neutralizer] });
+assert.ok(neutralized.stats.capacitorPeakDelta < bare.stats.capacitorPeakDelta, 'Incoming neut changes capacitor balance');
+assert.ok(neutralized.stats.capacitorDepletesIn > 0, 'Incoming neut can make capacitor unstable');
+const combinedEffects = await calculate({ ...pulsarFit, fleetBoosts: [shieldSource], projectedEffects: [webSource] });
+assert.ok(combinedEffects.stats.ehp > pulsarResult.stats.ehp);
+assert.equal(combinedEffects.stats.maxVelocity, webbed.stats.maxVelocity);
+assert.ok(combinedEffects.environmentAffected.includes('shieldCapacity'));
+assert.ok(combinedEffects.fleetAffected.includes('ehp'));
+assert.ok(combinedEffects.projectedAffected.includes('maxVelocity'));
+for (const settings of [{ fleetBoosts: {} }, { fleetBoosts: [null] }, { projectedEffects: [{ ...webSource, type_id: 587 }] }, { fleetBoosts: [{ ...shieldSource, quantity: 2 }] }, { projectedEffects: Array(33).fill(webSource) }, { projectedEffects: [{ ...remoteSensor, charge_type_id: shieldSource.charge_type_id }] }, { fleetBoosts: [{ ...shieldSource, charge_type_id: undefined }] }]) {
+    assert.throws(() => importSimulation(JSON.stringify({ ...fit, ...settings }), catalog));
+}
+console.log('Fleet/projection engine checks passed: module bonuses, strongest boosts, web stacking, scripts, remote repairs, capacitor warfare, disabled modules, environment and validation.');
+
 const implanted = await calculate(implantFit);
 assert.ok(implanted.stats.shieldCapacity > bare.stats.shieldCapacity, 'Implants affect ship statistics');
 assert.equal(importEFT(exportEFT(implantFit, catalog), catalog).implants[0].type_id, 3084, 'EFT preserves implants');
@@ -284,7 +351,7 @@ class Element extends EventTarget {
     select() {}
 }
 const controls = new Map();
-for (const name of ['tab-effects', 'effects-panel', 'effects-stats', 'effects', 'effect-search', 'effect-results', 'space-security', 'space-security-control', 'share', 'share-url', 'share-modal', 'share-copy', 'sort', 'eft-modal', 'eft-modal-text', 'eft-modal-status', 'equipment', 'mode-Defense', 'mode-Propulsion', 'mode-Sharpshooter', 'mode-control', 'status', 'controls', 'ship', 'ships', 'name', 'skills', 'new', 'category', 'search', 'results', 'hull', 'image', 'slots', 'stats', 'warnings', 'trash', 'undo', 'redo', 'wheel', 'Fitting_Panel', 'implant-Fitting_Panel', 'bigship', 'resource-cpu', 'resource-powergrid', 'ship-panel', 'capsule-panel', 'configure-panel', 'ship-stats', 'capsule-stats', 'implants', 'implant-search', 'implant-results', 'booster-search', 'booster-results', 'boosters', 'boosters-panel', 'boosters-stats', 'tab-boosters', 'tab-ship', 'tab-capsule', 'tab-configure', 'damage-em', 'damage-thermal', 'damage-kinetic', 'damage-explosive', 'damage-em-slider', 'damage-thermal-slider', 'damage-kinetic-slider', 'damage-explosive-slider', 'damage-status', 'damage-reset', 'security-status', 'security-status-value', 'security-status-minus10', 'security-status-minus5', 'security-status-zero', 'security-status-plus5', 'security-status-reset', 'security-status-source', 'security-status-character-image', 'security-status-character-name', 'security-status-detail']) {
+for (const name of ['tab-projected', 'projected-panel', 'projected-stats', 'tab-fleet', 'fleet-panel', 'fleet-stats', 'fleet-search', 'fleet-results', 'fleet-modules', 'projected-search', 'projected-results', 'projected-modules', 'tab-effects', 'effects-panel', 'effects-stats', 'effects', 'effect-search', 'effect-results', 'space-security', 'space-security-control', 'share', 'share-url', 'share-modal', 'share-copy', 'sort', 'eft-modal', 'eft-modal-text', 'eft-modal-status', 'equipment', 'mode-Defense', 'mode-Propulsion', 'mode-Sharpshooter', 'mode-control', 'status', 'controls', 'ship', 'ships', 'name', 'skills', 'new', 'category', 'search', 'results', 'hull', 'image', 'slots', 'stats', 'warnings', 'trash', 'undo', 'redo', 'wheel', 'Fitting_Panel', 'implant-Fitting_Panel', 'bigship', 'resource-cpu', 'resource-powergrid', 'ship-panel', 'capsule-panel', 'configure-panel', 'ship-stats', 'capsule-stats', 'implants', 'implant-search', 'implant-results', 'booster-search', 'booster-results', 'boosters', 'boosters-panel', 'boosters-stats', 'tab-boosters', 'tab-ship', 'tab-capsule', 'tab-configure', 'damage-em', 'damage-thermal', 'damage-kinetic', 'damage-explosive', 'damage-em-slider', 'damage-thermal-slider', 'damage-kinetic-slider', 'damage-explosive-slider', 'damage-status', 'damage-reset', 'security-status', 'security-status-value', 'security-status-minus10', 'security-status-minus5', 'security-status-zero', 'security-status-plus5', 'security-status-reset', 'security-status-source', 'security-status-character-image', 'security-status-character-name', 'security-status-detail']) {
     const control = new Element();
     control.id = 'simulate-' + name;
     controls.set(name, control);
@@ -1426,6 +1493,109 @@ assert.match(treeText(controls.get('effects')), /No environmental effect/);
 window.zkbPageCleanup();
 console.log('Environment UI checks passed: search, selection, markers, toggle, history, local saves, Ship summary, security and removal.');
 
+// Fleet and projected module browsers integrate with page controls and persistence.
+stored.set('zkb:simulate', JSON.stringify({ ship_type_id: 587, name: 'Projection test', items: [] }));
+window.zkbInitSimulate();
+await settle();
+click('tab-fleet');
+assert.equal(controls.get('fleet-panel').hidden, false);
+assert.equal(controls.get('fleet-stats').children.includes(controls.get('stats')), true);
+assert.deepEqual(controls.get('fleet-results').children.map(group => group.children[0].textContent), ['Armor', 'Expedition', 'Information', 'Mining', 'Shield', 'Skirmish'], 'Fleet search groups boosts by family');
+controls.get('fleet-search').value = 'shield harmonizing';
+controls.get('fleet-search').dispatchEvent(new Event('input'));
+assert.ok(findElements(controls.get('fleet-results'), element => element['aria-label'] === 'Add Shield Command Burst II').length, 'Search matches charge names as well as modules');
+controls.get('fleet-search').value = 'Shield Command Burst II';
+controls.get('fleet-search').dispatchEvent(new Event('input'));
+assert.equal(controls.get('fleet-results').children[0].open, true, 'Search reveals matching module groups');
+const fleetCharge = findElements(controls.get('fleet-results'), element => element['aria-label'] === 'Charge for Shield Command Burst II')[0];
+fleetCharge.value = String(shieldSource.charge_type_id);
+fleetCharge.dispatchEvent(new Event('change'));
+findElements(controls.get('fleet-results'), element => element['aria-label'] === 'Add Shield Command Burst II')[0].click();
+await settle();
+assert.deepEqual(JSON.parse(stored.get('zkb:simulate')).fleetBoosts, [shieldSource]);
+assert.equal(controls.get('tab-fleet').textContent, 'Fleet (1)');
+assert.ok(findElements(controls.get('stats'), element => element['aria-label'] === 'Adjusted by fleet boosts').length);
+const specialist = findElements(controls.get('fleet-modules'), element => element['aria-label'] === 'Specialist level for Shield Command Burst II')[0];
+specialist.value = '3';
+specialist.dispatchEvent(new Event('change'));
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).fleetBoosts[0].specialistLevel, 3);
+const shipBonusControl = findElements(controls.get('fleet-modules'), element => element['aria-label'] === 'Ship strength bonus for Shield Command Burst II')[0];
+shipBonusControl.value = 15;
+shipBonusControl.dispatchEvent(new Event('change'));
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).fleetBoosts[0].shipBonus, 15);
+const mindlinkControl = findElements(controls.get('fleet-modules'), element => element['aria-label'] === 'Command mindlink for Shield Command Burst II')[0];
+mindlinkControl.checked = true;
+mindlinkControl.dispatchEvent(new Event('change'));
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).fleetBoosts[0].mindlink, true);
+click('undo');
+await settle();
+click('undo');
+await settle();
+click('undo');
+await settle();
+
+click('tab-projected');
+controls.get('projected-search').value = 'Stasis Webifier II';
+controls.get('projected-search').dispatchEvent(new Event('input'));
+const addWeb = findElements(controls.get('projected-results'), element => element['aria-label'] === 'Add Stasis Webifier II')[0];
+assert.ok(addWeb, 'Projected modules are searchable by name');
+addWeb.click();
+await settle();
+assert.deepEqual(JSON.parse(stored.get('zkb:simulate')).projectedEffects, [webSource]);
+assert.equal(controls.get('tab-projected').textContent, 'Projected (1)');
+assert.ok(findElements(controls.get('stats'), element => element['aria-label'] === 'Adjusted by projected effects').length);
+addWeb.click();
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).projectedEffects[0].quantity, 2, 'Adding the same projected module increments its quantity');
+assert.equal(controls.get('tab-projected').textContent, 'Projected (2)');
+click('undo');
+await settle();
+const quantity = findElements(controls.get('projected-modules'), element => element['aria-label'] === 'Quantity of Stasis Webifier II')[0];
+const beforeInvalidQuantity = stored.get('zkb:simulate');
+quantity.value = 0;
+quantity.dispatchEvent(new Event('change'));
+assert.equal(stored.get('zkb:simulate'), beforeInvalidQuantity, 'Invalid quantity leaves the fit untouched');
+const disableModule = findElements(controls.get('projected-modules'), element => element.type === 'checkbox')[0];
+disableModule.checked = false;
+disableModule.dispatchEvent(new Event('change'));
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).projectedEffects[0].enabled, false);
+assert.equal(findElements(controls.get('stats'), element => element['aria-label'] === 'Adjusted by projected effects').length, 0);
+click('undo');
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).projectedEffects[0].enabled, true);
+bulkShortcut('l');
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).fleetBoosts[0].enabled, false);
+bulkShortcut('l');
+await settle();
+bulkShortcut('p');
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).projectedEffects[0].enabled, false);
+bulkShortcut('p');
+await settle();
+click('tab-ship');
+assert.ok(treeText(controls.get('slots')).includes('Shield Command Burst II'));
+assert.ok(treeText(controls.get('slots')).includes('Stasis Webifier II'));
+assert.doesNotMatch(treeText(controls.get('slots')), /Affected by/);
+assert.equal(findElements(controls.get('slots'), element => element['aria-label'] === 'Remove Shield Command Burst II').length, 0, 'Module removal stays on its own tab');
+window.zkbPageCleanup();
+window.zkbInitSimulate();
+await settle();
+assert.deepEqual(JSON.parse(stored.get('zkb:simulate')).fleetBoosts, [shieldSource]);
+assert.deepEqual(JSON.parse(stored.get('zkb:simulate')).projectedEffects, [webSource]);
+click('tab-projected');
+findElements(controls.get('projected-modules'), element => element['aria-label'] === 'Remove Stasis Webifier II')[0].click();
+await settle();
+assert.equal(JSON.parse(stored.get('zkb:simulate')).projectedEffects.length, 0);
+assert.equal(controls.get('tab-projected').textContent, 'Projected (0)');
+assert.equal(controls.get('tab-fleet').textContent, 'Fleet (1)');
+window.zkbPageCleanup();
+console.log('Fleet/projection UI checks passed: module search, charges, quantity, toggles, shortcuts, markers, history, saves, removal and counts.');
+
 // Share links preserve the simulation state that EFT cannot represent.
 const sharedSimulation = importEFT("[Tristan, Share test]\n[Empty High slot]\n150mm Railgun II, Antimatter Charge S\nHobgoblin I x3\nAntimatter Charge S x100\nZainou 'Gnome' Shield Management SM-706\nQuafe Zero Classic", catalog);
 sharedSimulation.items.find(item => item.type_id === byName('150mm Railgun II').id).state = 'Overload';
@@ -1438,6 +1608,8 @@ sharedSimulation.damageProfile = { em: 40, thermal: 30, kinetic: 20, explosive: 
 sharedSimulation.fighterTubes = [];
 sharedSimulation.environmentEffect = { type_id: pulsar.id, enabled: true };
 sharedSimulation.spaceSecurity = 'wormhole';
+sharedSimulation.fleetBoosts = [{ ...shieldSource, specialistLevel: 5, shipBonus: 15, mindlink: true }];
+sharedSimulation.projectedEffects = [webSource];
 assert.deepEqual(importSimulation(JSON.stringify(sharedSimulation), catalog), sharedSimulation, 'Simulation import preserves exact slots, states, charges, cargo, drones, implants, boosters, skills and Configure settings');
 assert.deepEqual(importSimulation(JSON.stringify(partialCarrier), catalog), partialCarrier, 'Simulation import preserves partial fighter tube assignments');
 assert.deepEqual(importSimulation(JSON.stringify({ ...spoolingFit, mode: 'Defense' }), catalog), { ...spoolingFit, mode: 'Defense' }, 'Simulation import preserves mode and spool settings');

@@ -57,7 +57,7 @@ window.zkbInitSimulate = function() {
     try { savedUI = JSON.parse(localStorage.getItem('zkb:simulate-ui')); } catch (error) { /* Invalid or unavailable storage. */ }
     let equipmentSort = savedUI?.sort === 'Alpha' ? 'Alpha' : 'Meta';
     let restoring = true;
-    let activeTab = ['ship', 'capsule', 'boosters', 'effects', 'configure'].includes(savedUI?.tab) ? savedUI.tab : 'ship';
+    let activeTab = ['ship', 'capsule', 'boosters', 'effects', 'fleet', 'projected', 'configure'].includes(savedUI?.tab) ? savedUI.tab : 'ship';
     const equipmentGroups = new Map();
     const revealedCharges = new Map();
     function saveState() {
@@ -66,7 +66,7 @@ window.zkbInitSimulate = function() {
             localStorage.setItem('zkb:simulate-ui', JSON.stringify({
                 search: element('search').value, implantSearch: element('implant-search').value, boosterSearch: element('booster-search').value, effectSearch: element('effect-search').value, category: element('category').value, sort: equipmentSort,
                 ship: element('ship').value, name: element('name').value,
-                eft: element('eft-modal-text').value,
+                eft: element('eft-modal-text').value, fleetSearch: element('fleet-search').value, projectedSearch: element('projected-search').value,
                 expanded: [...expandedSections], groups: [...equipmentGroups], charges: [...revealedCharges],
                 selected, equipmentModule: equipmentModule?.id, history: fitHistory, historyIndex, tab: activeTab,
                 resultsScroll: element('results').scrollTop, pageScroll: window.scrollY || 0
@@ -448,7 +448,7 @@ window.zkbInitSimulate = function() {
         element('item-title').textContent = type.name;
         element('item-image').src = 'https://images.evetech.net/types/' + typeID + '/icon?size=64';
         element('item-details').textContent = type.environmental ? type.environmentGroup
-            : 'Slot: ' + (type.attributes.implantness ?? type.attributes.boosterness) + ' · Volume: ' + type.volume + ' m³';
+            : (Number.isInteger(type.attributes.implantness ?? type.attributes.boosterness) ? 'Slot: ' + (type.attributes.implantness ?? type.attributes.boosterness) + ' · ' : '') + 'Volume: ' + type.volume + ' m³';
         element('item-link').href = '/item/' + typeID + '/';
         element('item-description').textContent = 'Loading description…';
         window.bootstrap.Modal.getOrCreateInstance(element('item-modal')).show();
@@ -562,7 +562,7 @@ window.zkbInitSimulate = function() {
                     equipmentGroups.set(key, group.open);
                     saveState();
                 });
-                group.append(node('summary', 'p-2 fw-bold text-white', type.environmentGroup));
+                group.append(node('summary', 'p-2 fw-bold text-white', type.environmentGroup.replace(/\b\w/g, letter => letter.toUpperCase())));
                 groupResults = node('div', 'list-group list-group-flush');
                 group.append(groupResults);
                 results.append(group);
@@ -586,20 +586,104 @@ window.zkbInitSimulate = function() {
         if (!matches.length) results.append(node('p', 'small p-2 mb-0', 'No matching effects.'));
     }
 
+    const projectionCharges = new Map();
+    function projectionChargeOptions(type, required) {
+        if (!projectionCharges.has(type.id)) {
+            const groups = Object.entries(type.attributes).filter(([name]) => /^chargeGroup\d+$/.test(name)).map(([, value]) => value);
+            projectionCharges.set(type.id, types.filter(charge => charge.categoryID === 8 && groups.includes(charge.groupID) && compatibleCharge(type, charge))
+                .sort((a, b) => a.name.localeCompare(b.name)).map(charge => [charge.id, charge.name]));
+        }
+        const options = projectionCharges.get(type.id);
+        return !options.length || required ? options : [[0, 'Unscripted'], ...options];
+    }
+
+    function searchProjectionModules(prefix) {
+        const collection = prefix === 'fleet' ? 'fleetBoosts' : 'projectedEffects';
+        const query = element(prefix + '-search').value.trim().toLowerCase();
+        const results = element(prefix + '-results');
+        results.replaceChildren();
+        const matches = types.filter(type => {
+            if (!type[prefix === 'fleet' ? 'fleetModule' : 'projectedModule']) return false;
+            const text = (type.name + (prefix === 'fleet' ? ' ' + type.fleetFamily + ' ' + projectionChargeOptions(type, true).map(([, name]) => name).join(' ') : '')).toLowerCase();
+            return query.split(/\s+/).every(word => text.includes(word));
+        }).sort((a, b) => (prefix === 'fleet' ? a.fleetFamily.localeCompare(b.fleetFamily) : a.groupName.localeCompare(b.groupName)) || compareEquipment(a, b));
+        let previousGroup;
+        let groupResults;
+        for (const type of matches) {
+            const groupID = prefix === 'fleet' ? type.fleetFamily : type.groupID;
+            if (groupID !== previousGroup) {
+                const group = node('details', 'border-bottom');
+                const key = prefix + '-modules-' + groupID;
+                group.open = Boolean(query) || (equipmentGroups.get(key) ?? false);
+                group.addEventListener('toggle', () => {
+                    if (query) return;
+                    equipmentGroups.set(key, group.open);
+                    saveState();
+                });
+                group.append(node('summary', 'p-2 fw-bold text-white', prefix === 'fleet' ? type.fleetFamily : type.groupName));
+                groupResults = node('div', 'list-group list-group-flush');
+                group.append(groupResults);
+                results.append(group);
+                previousGroup = groupID;
+            }
+            const row = node('div', 'list-group-item text-white');
+            row.append(button(type.name, () => showAugmentation(type.id), 'btn btn-link text-white text-start text-decoration-none p-0 small'));
+            const controls = node('div', 'd-flex gap-2 mt-1');
+            const options = projectionChargeOptions(type, prefix === 'fleet');
+            const matchingCharge = prefix === 'fleet' && query ? options.find(([, name]) => query.split(/\s+/).every(word => (type.name + ' ' + type.fleetFamily + ' ' + name).toLowerCase().includes(word))) : undefined;
+            let chargeTypeID = prefix === 'fleet' ? (matchingCharge || options[0])?.[0] : undefined;
+            if (options.length) {
+                const charge = select(options, chargeTypeID || 0, 'Charge for ' + type.name, value => { chargeTypeID = Number(value) || undefined; });
+                charge.className = 'form-select form-select-sm';
+                controls.append(charge);
+            }
+            const add = button('Add', () => {
+                if (!fit) throw new Error('Choose a ship first.');
+                const modules = fit[collection] || [];
+                const existing = modules.find(module => module.type_id === type.id && module.charge_type_id === chargeTypeID);
+                if (existing) {
+                    if (prefix === 'projected') {
+                        if (existing.quantity >= 20) throw new Error('Use at most 20 of the same projected module.');
+                        existing.quantity++;
+                    }
+                    existing.enabled = true;
+                } else {
+                    if (modules.length >= 32) throw new Error('Use at most 32 modules per effect group.');
+                    if (prefix === 'fleet' && !chargeTypeID) throw new Error('Choose a command burst charge.');
+                    fit[collection] ??= [];
+                    fit[collection].push({ type_id: type.id, ...(chargeTypeID ? { charge_type_id: chargeTypeID } : {}), quantity: 1, enabled: true });
+                }
+                changed();
+            }, 'btn btn-sm btn-primary text-white flex-shrink-0');
+            add.disabled = !fit;
+            add.setAttribute('aria-label', 'Add ' + type.name);
+            controls.append(add);
+            row.append(controls);
+            groupResults.append(row);
+        }
+        if (!matches.length) results.append(node('p', 'small p-2 mb-0', 'No matching modules.'));
+    }
+
     function renderFit() {
         dropTargets.clear();
         element('share').disabled = !fit;
         element('tab-boosters').textContent = 'Boosters (' + (fit?.boosters || []).length + ')';
         element('tab-effects').textContent = 'Effects (' + (fit?.environmentEffect ? 1 : 0) + ')';
+        element('tab-projected').textContent = 'Projected (' + (fit?.projectedEffects || []).reduce((total, module) => total + module.quantity, 0) + ')';
+        element('tab-fleet').textContent = 'Fleet (' + (fit?.fleetBoosts || []).length + ')';
+        element('fleet-modules').replaceChildren(node('p', 'small mb-0', 'No fleet boost modules selected.'));
+        element('projected-modules').replaceChildren(node('p', 'small mb-0', 'No projected modules selected.'));
         element('boosters').replaceChildren();
         element('tab-capsule').textContent = 'Implants (' + (fit?.implants || []).length + ')';
-        const panels = ['ship', 'capsule', 'boosters', 'effects', 'configure'].map(tab => element(tab + '-panel'));
+        const panels = ['ship', 'capsule', 'boosters', 'effects', 'fleet', 'projected', 'configure'].map(tab => element(tab + '-panel'));
         const visiblePanel = panels.find(panel => !panel.hidden);
         panelHeight = Math.max(panelHeight, visiblePanel?.offsetHeight || 0);
         element('ship-panel').hidden = activeTab !== 'ship';
         element('capsule-panel').hidden = activeTab !== 'capsule';
         element('boosters-panel').hidden = activeTab !== 'boosters';
         element('effects-panel').hidden = activeTab !== 'effects';
+        element('fleet-panel').hidden = activeTab !== 'fleet';
+        element('projected-panel').hidden = activeTab !== 'projected';
         element('configure-panel').hidden = activeTab !== 'configure';
         for (const panel of panels) panel.style.minHeight = panelHeight ? panelHeight + 'px' : '';
         globalThis.requestAnimationFrame?.(() => {
@@ -608,7 +692,7 @@ window.zkbInitSimulate = function() {
             for (const panel of panels) panel.style.minHeight = panelHeight + 'px';
         });
         if (activeTab !== 'configure') element(activeTab + '-stats').append(element('warnings'), element('stats'));
-        for (const tab of ['ship', 'capsule', 'boosters', 'effects', 'configure']) {
+        for (const tab of ['ship', 'capsule', 'boosters', 'effects', 'fleet', 'projected', 'configure']) {
             const active = tab === activeTab;
             element('tab-' + tab).className = 'nav-link' + (active ? ' active' : '');
             element('tab-' + tab).setAttribute('aria-selected', String(active));
@@ -1080,7 +1164,7 @@ window.zkbInitSimulate = function() {
             toggleAll.setAttribute('aria-label', toggleAll.textContent + ' ' + label.toLowerCase());
             toggleAll.setAttribute('aria-keyshortcuts', shortcut);
             toggleAll.title = toggleAll.textContent + ' (' + shortcut + ')';
-            heading.append(node('h3', 'h6 m-0', 'Affected by ' + label), toggleAll);
+            heading.append(node('h3', 'h6 m-0', label), toggleAll);
             section.append(heading);
             for (const item of [...items].sort((a, b) => a.slot - b.slot)) {
                 const row = node('div', 'd-flex align-items-center gap-2 mb-2' + (item.enabled === false ? ' opacity-50' : ''));
@@ -1129,7 +1213,7 @@ window.zkbInitSimulate = function() {
                 const section = node('section', 'mb-3 p-2 text-white' + (target === affected ? ' col-12 col-md-6' : ''));
                 const heading = node('div', 'd-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom pb-2 mb-2');
                 heading.style.minHeight = '2.75rem';
-                heading.append(node('h3', 'h6 m-0', 'Affected by environment'));
+                heading.append(node('h3', 'h6 m-0', 'Environment'));
                 section.append(heading);
                 const row = node('div', 'd-flex align-items-center gap-2 mb-2' + (effect.enabled === false ? ' opacity-50' : ''));
                 row.style.minHeight = '40px';
@@ -1157,6 +1241,127 @@ window.zkbInitSimulate = function() {
                     row.append(remove);
                 }
                 section.append(row);
+                target.append(section);
+            }
+        }
+        for (const [collection, label, prefix, shortcut] of [['fleetBoosts', 'Fleet Boosts', 'fleet', 'Alt+L'], ['projectedEffects', 'Projected Effects', 'projected', 'Alt+P']]) {
+            const modules = fit[collection] || [];
+            if (!modules.length) continue;
+            element(prefix + '-modules').replaceChildren();
+            for (const target of [element(prefix + '-modules'), affected]) {
+                const section = node('section', 'mb-3 p-2 text-white' + (target === affected ? ' col-12 col-md-6' : ''));
+                const heading = node('div', 'd-flex align-items-center justify-content-between gap-2 border-bottom pb-2 mb-2');
+                heading.style.minHeight = '2.75rem';
+                const toggleAll = button(modules.every(module => module.enabled) ? 'Deselect all' : 'Select all', () => toggleAugmentations(modules), 'btn btn-sm btn-primary text-white');
+                toggleAll.setAttribute('aria-label', toggleAll.textContent + ' ' + label.toLowerCase());
+                toggleAll.setAttribute('aria-keyshortcuts', shortcut);
+                toggleAll.title = toggleAll.textContent + ' (' + shortcut + ')';
+                heading.append(node('h3', 'h6 m-0', label), toggleAll);
+                section.append(heading);
+                for (const module of modules) {
+                    const type = catalog[module.type_id];
+                    const row = node('div', 'd-flex align-items-center gap-2 mb-2' + (module.enabled ? '' : ' opacity-50'));
+                    row.style.minHeight = '40px';
+                    const enabled = node('input', 'form-check-input flex-shrink-0');
+                    enabled.type = 'checkbox';
+                    enabled.checked = module.enabled;
+                    enabled.setAttribute('aria-label', (module.enabled ? 'Disable ' : 'Enable ') + type.name);
+                    enabled.addEventListener('change', () => { module.enabled = enabled.checked; changed(); });
+                    const information = button('', () => showAugmentation(type.id), 'btn btn-link text-white text-start text-decoration-none p-0 d-flex align-items-center gap-2 flex-grow-1');
+                    const image = node('img', 'rounded flex-shrink-0');
+                    image.src = 'https://images.evetech.net/types/' + type.id + '/icon?size=64';
+                    image.width = 32;
+                    image.height = 32;
+                    image.alt = '';
+                    const description = node('div', 'small lh-sm');
+                    description.append(node('div', '', type.name + (module.quantity > 1 ? ' ×' + module.quantity : '')), node('div', '', catalog[module.charge_type_id]?.name || type.groupName));
+                    information.append(image, description);
+                    row.append(enabled, information);
+                    if (target !== affected) {
+                        if (prefix === 'projected') {
+                            const quantity = node('input', 'form-control form-control-sm w-auto');
+                            quantity.type = 'number';
+                            quantity.min = 1;
+                            quantity.max = 20;
+                            quantity.value = module.quantity;
+                            quantity.style.width = '5rem';
+                            quantity.setAttribute('aria-label', 'Quantity of ' + type.name);
+                            quantity.addEventListener('change', () => {
+                                const value = Number(quantity.value);
+                                if (!Number.isInteger(value) || value < 1 || value > 20) { quantity.value = module.quantity; return; }
+                                module.quantity = value;
+                                changed();
+                            });
+                            row.append(quantity);
+                        }
+                        const remove = button('', () => { fit[collection] = modules.filter(other => other !== module); changed(); }, 'btn btn-sm btn-danger text-white flex-shrink-0 ms-auto');
+                        remove.style.backgroundColor = '#550404';
+                        remove.style.borderColor = '#550404';
+                        remove.setAttribute('aria-label', 'Remove ' + type.name);
+                        remove.title = 'Remove ' + type.name;
+                        const trash = node('i', 'fas fa-trash');
+                        trash.setAttribute('aria-hidden', 'true');
+                        remove.append(trash);
+                        row.append(remove);
+                    }
+                    section.append(row);
+                    if (target !== affected) {
+                        const options = projectionChargeOptions(type, prefix === 'fleet');
+                        if (options.length) {
+                            const charge = select(options, module.charge_type_id || 0, 'Charge for ' + type.name, value => {
+                                if (Number(value)) module.charge_type_id = Number(value);
+                                else delete module.charge_type_id;
+                                changed();
+                            });
+                            charge.className = 'form-select form-select-sm mb-3';
+                            section.append(charge);
+                        }
+                        if (prefix === 'fleet') {
+                            const strength = node('details', 'border-bottom pb-2 mb-3');
+                            const key = 'fleet-strength-' + modules.indexOf(module);
+                            strength.open = equipmentGroups.get(key) ?? false;
+                            strength.addEventListener('toggle', () => { equipmentGroups.set(key, strength.open); saveState(); });
+                            strength.append(node('summary', 'small fw-bold text-white', 'Boost Strength'));
+                            const settings = node('div', 'row g-2 mt-1 small');
+                            const specialist = node('label', 'col-12 col-md-6');
+                            specialist.append(node('span', 'd-block mb-1', type.fleetSkillName),
+                                select([[0, '0'], [1, 'I'], [2, 'II'], [3, 'III'], [4, 'IV'], [5, 'V']], module.specialistLevel ?? 5, 'Specialist level for ' + type.name, value => { module.specialistLevel = Number(value); changed(); }));
+                            const ship = node('label', 'col-12 col-md-6');
+                            const shipBonus = node('input', 'form-control form-control-sm');
+                            shipBonus.type = 'number';
+                            shipBonus.min = 0;
+                            shipBonus.max = 25;
+                            shipBonus.step = 1;
+                            shipBonus.value = module.shipBonus || 0;
+                            shipBonus.setAttribute('aria-label', 'Ship strength bonus for ' + type.name);
+                            shipBonus.title = 'Total hull and ship-skill strength bonus; for example, 3% per level at V gives 15%.';
+                            shipBonus.addEventListener('change', () => {
+                                const value = Number(shipBonus.value);
+                                if (!Number.isFinite(value) || value < 0 || value > 25) { shipBonus.value = module.shipBonus || 0; return; }
+                                module.shipBonus = value;
+                                changed();
+                            });
+                            ship.append(node('span', 'd-block mb-1', 'Ship Strength Bonus (%)'), shipBonus);
+                            const mindlink = node('label', 'col-12 d-flex align-items-center gap-2');
+                            const implanted = node('input', 'form-check-input flex-shrink-0');
+                            implanted.type = 'checkbox';
+                            implanted.checked = Boolean(module.mindlink);
+                            implanted.setAttribute('aria-label', 'Command mindlink for ' + type.name);
+                            implanted.addEventListener('change', () => { module.mindlink = implanted.checked; changed(); });
+                            mindlink.append(implanted, node('span', '', 'Command Mindlink (+25%)'));
+                            settings.append(specialist, ship, mindlink);
+                            if (type.fleetFamily === 'Mining') {
+                                const core = node('label', 'col-12');
+                                core.append(node('span', 'd-block mb-1', 'Industrial Core Strength Bonus'),
+                                    select([[0, 'No core'], [5, 'Medium I (+5%)'], [7.5, 'Medium II (+7.5%)'], [10, 'Large I (+10%)'], [15, 'Large II (+15%)'], [30, 'Capital I (+30%)'], [40, 'Capital II (+40%)']], module.industrialCoreBonus || 0, 'Industrial core for ' + type.name, value => { module.industrialCoreBonus = Number(value); changed(); }));
+                                settings.append(core);
+                            }
+                            settings.append(node('p', 'col-12 mb-0', 'Strength modifiers multiply. Leadership, Wing Command, and Fleet Command affect burst range, not passive ship bonuses.'));
+                            strength.append(settings);
+                            section.append(strength);
+                        }
+                    }
+                }
                 target.append(section);
             }
         }
@@ -1194,7 +1399,9 @@ window.zkbInitSimulate = function() {
         const markEffects = (target, keys) => {
             for (const [affected, label, content] of [
                 [result.boosterAffected, 'Adjusted by boosters', 'Adjusted by enabled boosters. Change them under Boosters.'],
-                [result.environmentAffected, 'Adjusted by environment', 'Adjusted by the selected environment. Change it under Effects.']
+                [result.environmentAffected, 'Adjusted by environment', 'Adjusted by the selected environment. Change it under Effects.'],
+                [result.fleetAffected, 'Adjusted by fleet boosts', 'Adjusted by enabled command burst modules. Change them under Fleet.'],
+                [result.projectedAffected, 'Adjusted by projected effects', 'Adjusted by enabled projected modules. Change them under Projected.']
             ]) {
                 if (!capsuleStats && keys.some(key => affected?.includes(key))) {
                     const marker = popoverMarker(label, content);
@@ -1655,6 +1862,8 @@ window.zkbInitSimulate = function() {
         searchAugmentations('implant');
         searchAugmentations('booster');
         searchEffects();
+        searchProjectionModules('fleet');
+        searchProjectionModules('projected');
     }
 
     async function loadCapsuleImplants(killID) {
@@ -1708,11 +1917,13 @@ window.zkbInitSimulate = function() {
                 case 'simulate-tab-capsule':
                 case 'simulate-tab-boosters':
                 case 'simulate-tab-effects':
+                case 'simulate-tab-fleet':
+                case 'simulate-tab-projected':
                 case 'simulate-tab-configure':
                     activeTab = event.target.id.replace('simulate-tab-', '');
                     renderFit();
                     if (activeTab === 'capsule' && capsuleResult) renderStats(capsuleResult, true);
-                    else if (['ship', 'boosters', 'effects'].includes(activeTab) && lastResult) renderStats(lastResult);
+                    else if (['ship', 'boosters', 'effects', 'fleet', 'projected'].includes(activeTab) && lastResult) renderStats(lastResult);
                     if (activeTab === 'capsule') {
                         searchAugmentations('implant');
                         const capsuleSnapshot = JSON.stringify([fit?.implants || [], fit?.skillLevel]);
@@ -1724,6 +1935,7 @@ window.zkbInitSimulate = function() {
                     }
                     if (activeTab === 'boosters') searchAugmentations('booster');
                     if (activeTab === 'effects') searchEffects();
+                    if (activeTab === 'fleet' || activeTab === 'projected') searchProjectionModules(activeTab);
                     saveState();
                     break;
                 case 'simulate-sort':
@@ -1804,10 +2016,11 @@ window.zkbInitSimulate = function() {
             else if (!event.shiftKey && key === 's') control = element(activeTab === 'capsule' ? 'capsule-save' : 'save');
             else if (!event.shiftKey && key === 'e') control = element(activeTab === 'capsule' ? 'capsule-eft-open' : 'eft-open');
         } else if (event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey && !editable) {
-            if (key === 'i' || key === 'b' || key === 'e') {
+            if (['i', 'b', 'e', 'l', 'p'].includes(key)) {
                 event.preventDefault();
                 if (!event.repeat) {
                     if (key === 'e') toggleEnvironment();
+                    else if (key === 'l' || key === 'p') toggleAugmentations(fit?.[key === 'l' ? 'fleetBoosts' : 'projectedEffects']);
                     else toggleAugmentations(fit?.[key === 'i' ? 'implants' : 'boosters']);
                 }
                 return;
@@ -1817,8 +2030,10 @@ window.zkbInitSimulate = function() {
             else if (key === '2') control = element('tab-capsule');
             else if (key === '3') control = element('tab-boosters');
             else if (key === '4') control = element('tab-effects');
+            else if (key === '5') control = element('tab-fleet');
+            else if (key === '6') control = element('tab-projected');
             else if (key === 'c') control = element('tab-configure');
-            else if (key === 'f') control = element(activeTab === 'capsule' ? 'implant-search' : activeTab === 'boosters' ? 'booster-search' : activeTab === 'effects' ? 'effect-search' : 'search');
+            else if (key === 'f') control = element(activeTab === 'capsule' ? 'implant-search' : activeTab === 'boosters' ? 'booster-search' : activeTab === 'effects' ? 'effect-search' : activeTab === 'fleet' ? 'fleet-search' : activeTab === 'projected' ? 'projected-search' : 'search');
         }
         if (!control || control.disabled) return;
         event.preventDefault();
@@ -1831,6 +2046,7 @@ window.zkbInitSimulate = function() {
     element('category').addEventListener('change', () => { equipmentModule = null; selected = null; search(); if (fit) renderFit(); }, { signal: events.signal });
     element('search').addEventListener('input', () => { equipmentModule = null; element('category').value = 'All'; search(); }, { signal: events.signal });
     for (const kind of ['implant', 'booster']) element(kind + '-search').addEventListener('input', () => searchAugmentations(kind), { signal: events.signal });
+    for (const prefix of ['fleet', 'projected']) element(prefix + '-search').addEventListener('input', () => searchProjectionModules(prefix), { signal: events.signal });
     element('effect-search').addEventListener('input', searchEffects, { signal: events.signal });
     element('space-security').addEventListener('change', () => {
         if (!fit) return;
@@ -2010,7 +2226,7 @@ window.zkbInitSimulate = function() {
                     const saved = JSON.parse(localStorage.getItem('zkb:simulate'));
                     if (saved) {
                         // Validate without round-tripping away slot positions and module state.
-                        importEFT(exportEFT(saved, catalog), catalog);
+                        importSimulation(JSON.stringify(saved), catalog);
                         if (savedUI?.history?.[savedUI.historyIndex] === JSON.stringify(saved)) {
                             fitHistory.push(...savedUI.history);
                             historyIndex = savedUI.historyIndex;
@@ -2028,6 +2244,8 @@ window.zkbInitSimulate = function() {
                     element('ship').value = savedUI.ship ?? element('ship').value;
                     element('name').value = savedUI.name ?? element('name').value;
                     element('eft-modal-text').value = savedUI.eft || '';
+                    element('fleet-search').value = savedUI.fleetSearch || '';
+                    element('projected-search').value = savedUI.projectedSearch || '';
                     expandedSections.clear();
                     for (const title of savedUI.expanded || []) expandedSections.add(title);
                     for (const [key, value] of savedUI.groups || []) equipmentGroups.set(key, value);
@@ -2039,6 +2257,8 @@ window.zkbInitSimulate = function() {
                 searchAugmentations('implant');
                 searchAugmentations('booster');
                 searchEffects();
+                searchProjectionModules('fleet');
+                searchProjectionModules('projected');
                 element('results').scrollTop = savedUI?.resultsScroll || 0;
                 restoring = false;
                 return;

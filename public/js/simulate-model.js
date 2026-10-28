@@ -264,6 +264,14 @@ export function importEFT(text, catalog) {
     return fit;
 }
 
+export function validateFleetBoostOptions(module, type) {
+    if ((module.specialistLevel !== undefined && (!Number.isInteger(module.specialistLevel) || module.specialistLevel < 0 || module.specialistLevel > 5))
+        || (module.shipBonus !== undefined && (!Number.isFinite(module.shipBonus) || module.shipBonus < 0 || module.shipBonus > 25))
+        || (module.mindlink !== undefined && typeof module.mindlink !== 'boolean')
+        || (module.industrialCoreBonus !== undefined && (![0, 5, 7.5, 10, 15, 30, 40].includes(module.industrialCoreBonus)
+            || (module.industrialCoreBonus !== 0 && type.fleetFamily !== 'Mining')))) throw new Error('Invalid fleet boost strength settings.');
+}
+
 export function importSimulation(text, catalog) {
     if (text.length > 50000) throw new Error('This simulation is too large.');
     const fit = JSON.parse(text);
@@ -303,6 +311,19 @@ export function importSimulation(text, catalog) {
         const effect = fit.environmentEffect;
         if (!effect || !Number.isInteger(effect.type_id) || !catalog[effect.type_id]?.environmental
             || (effect.enabled !== undefined && typeof effect.enabled !== 'boolean')) throw new Error('Invalid environmental effect.');
+    }
+    for (const collection of ['fleetBoosts', 'projectedEffects']) {
+        if (fit[collection] === undefined) continue;
+        if (!Array.isArray(fit[collection]) || fit[collection].length > 32) throw new Error('Use at most 32 modules per effect group.');
+        for (const module of fit[collection]) {
+            const type = catalog[module?.type_id];
+            if (!module || !Number.isInteger(module.type_id) || !type?.[collection === 'fleetBoosts' ? 'fleetModule' : 'projectedModule']
+                || !Number.isInteger(module.quantity) || module.quantity < 1 || module.quantity > (collection === 'fleetBoosts' ? 1 : 20)
+                || typeof module.enabled !== 'boolean') throw new Error('Invalid effect module.');
+            if (module.charge_type_id !== undefined && (!Number.isInteger(module.charge_type_id) || !catalog[module.charge_type_id] || !compatibleCharge(type, catalog[module.charge_type_id]))) throw new Error('Invalid effect module charge.');
+            if (collection === 'fleetBoosts' && module.charge_type_id === undefined) throw new Error('Choose a command burst charge.');
+            if (collection === 'fleetBoosts') validateFleetBoostOptions(module, type);
+        }
     }
     if (fit.damageProfile !== undefined) {
         const values = ['em', 'thermal', 'kinetic', 'explosive'].map(damage => fit.damageProfile?.[damage]);
