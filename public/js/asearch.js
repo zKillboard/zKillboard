@@ -450,11 +450,16 @@ function getHTML(suggestion, slot) {
 	var entityImage = getEntityImage(suggestion.data.type, suggestion.data.id);
 	//console.log(suggestion.data.type, suggestion.data.id, suggestion.data.value);
 	var filterName = suggestion.value || 'filter';
-	var left = $("<button>").attr("type", "button").addClass('dropdown-item filter-move-left').append($("<i>").addClass('fas fa-chevron-left fa-fw me-2'), 'Move left').on('click', moveLeft);
-	var right = $("<button>").attr("type", "button").addClass('dropdown-item filter-move-right').append($("<i>").addClass('fas fa-chevron-right fa-fw me-2'), 'Move right').on('click', moveRight);
+	var menu = $("<ul>").addClass('dropdown-menu dropdown-menu-end');
+	Object.entries({ attackers: 'Attackers', neutrals: 'Either', victims: 'Victim', items: 'Items' }).forEach(function(entry) {
+		var button = $("<button>").attr({ type: 'button', 'data-move-filter': entry[0] }).addClass('dropdown-item').text('Move to ' + entry[1]).on('click', function() {
+			moveFilter($(this).closest('.filter'), entry[0]);
+		});
+		menu.append($("<li>").append(button));
+	});
 	var not = $("<button>").attr("type", "button").addClass('dropdown-item filter-not').attr('aria-pressed', suggestion.data.not ? 'true' : 'false').append($("<i>").addClass('fas fa-fw me-2'), $("<span>")).on('click', toggleFilterNot);
 	var remove = $("<button>").attr("type", "button").addClass('dropdown-item filter-remove').append($("<i>").addClass('fas fa-times fa-fw me-2'), 'Remove').on('click', moveOut);
-	var menu = $("<ul>").addClass('dropdown-menu dropdown-menu-end').append($("<li>").append(left), $("<li>").append(right), $("<li>").append(not), $("<li>").append(remove));
+	menu.append($("<li>").append(not), $("<li>").append(remove));
 	var actions = $("<div>").addClass('dropdown d-flex').append($("<button>").attr({ type: 'button', 'data-bs-toggle': 'dropdown', 'aria-expanded': 'false', 'aria-label': 'Actions for ' + filterName, title: 'Filter actions' }).addClass('btn fas filter-actions').css({ width: '24px', padding: 0, borderRadius: '0 6px 6px 0' }), menu);
 	var imageWrap = $("<span>")
 		.css({ width: "36px", height: "36px", marginLeft: "0.35em", marginRight: "0.4em", flex: "0 0 36px", display: "inline-flex", alignItems: "center", justifyContent: "flex-start", overflow: "hidden" });
@@ -504,8 +509,10 @@ function getHTML(suggestion, slot) {
 }
 
 function updateFilterActions(filter, slot) {
-	filter.find('.filter-move-left').closest('li').toggle(slot == 'neutrals' || slot == 'victims' || slot == 'items');
-	filter.find('.filter-move-right').closest('li').toggle(slot == 'attackers' || slot == 'neutrals' || slot == 'victims');
+	filter.find('[data-move-filter]').each(function() {
+		var destination = $(this).attr('data-move-filter');
+		$(this).closest('li').toggle(slot != 'location' && destination != slot && canMoveTo(filterData(filter), destination));
+	});
 	var excluded = filter.attr('entity-not') == 'true';
 	filter.find('.filter-actions').toggleClass('btn-danger fa-ban', excluded).toggleClass('btn-secondary fa-ellipsis-v', !excluded);
 	filter.find('.filter-not').attr('aria-pressed', excluded ? 'true' : 'false').find('i').toggleClass('fa-ban', !excluded).toggleClass('fa-check', excluded);
@@ -1472,23 +1479,6 @@ function popEm() {
 		});
 		popEm();
 	}
-}
-
-var lefts = { 'neutrals': 'attackers', 'victims': 'neutrals', 'items': 'victims' };
-function moveLeft() {
-	move(this, lefts);
-}
-
-var rights = { 'neutrals': 'victims', 'attackers': 'neutrals', 'victims': 'items' };
-function moveRight() {
-	move(this, rights);
-}
-
-function move(element, arr) {
-	var parent = $(element).closest('.filter');
-	var location = parent.parent().attr('id');
-	var destination = arr[location];
-	if (destination != undefined) moveFilter(parent, destination);
 }
 
 function filterData(filter) {
