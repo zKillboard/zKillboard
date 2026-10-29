@@ -589,12 +589,14 @@ function setFilters(hashfilters) {
 	toggleInferredFits(null, false, false);
 	$(".filter-remove").click();
 	$(".btn.btn-primary:not(.notafilter)").removeClass("btn-primary").addClass("btn-secondary");
+	$("#victim-joinType-in").removeClass("btn-secondary").addClass("btn-primary");
 
 	var keys = Object.keys(hashfilters);
 	for (const key in hashfilters) {
 		var value = hashfilters[key];
 		if (key == 'buttons') {
 			for (j = 0; j < value.length; j++) {
+				if (value[j] == 'victims-and') value[j] = 'victims-aand';
 				$("[value='" + value[j] + "']").click();
 			}
 		}
@@ -638,6 +640,7 @@ function resetFilters() {
 	toggleGroupLayout(null, false);
 	$(".filter-remove").click();
 	$(".btn.btn-primary:not(.notafilter)").removeClass("btn-primary").addClass("btn-secondary");
+	$("#victim-joinType-in").removeClass("btn-secondary").addClass("btn-primary");
 	radios = { sort: { sortBy: 'date', sortDir: 'desc' } };
 	asfilter = { location: [], attackers: [], neutrals: [], victims: [], items: [], sort: { sortBy: 'date', sortDir: 'desc' } };
 	toggleInferredFits(null, false, false);

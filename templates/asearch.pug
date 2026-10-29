@@ -51,7 +51,7 @@ block content
               i.fas.fa-calendar-alt(aria-hidden="true")
             button#stats-epoch-custom.tfilter.btn.btn-secondary.radio-btn(value="custom" title="Custom Date Range" aria-label="Custom date range" aria-pressed="false") ✏️
           .btn-group.btn-group-sm
-            button#rolling-times.btn.btn-secondary(type="button" value="rolling" title="Time will adjust automatically in 15 minute increments." aria-label="Use rolling timespan" aria-pressed="false")
+            button#rolling-times.btn.btn-secondary(type="button" value="rolling" title="Move the start of a relative range (7, 90, or 365 days) forward in 15-minute steps." aria-label="Use rolling timespan" aria-pressed="false")
               i.fas.fa-arrow-down(aria-hidden="true")
           br
           br
@@ -77,32 +77,31 @@ block content
         label Attackers
         br
         #attackers-joinType.andor.btn-group.centered(role="group" aria-label="Attackers match type")
-          button#attackers-joinType-and.btn.btn-primary.radio-btn(value="attackers-and" title="And" aria-pressed="true") And
-          button#attackers-joinType-in.btn.btn-secondary.radio-btn(value="attackers-aand" title="AAnd" aria-pressed="false") In
-          button#attackers-joinType-or.btn.btn-secondary.radio-btn(value="attackers-or" title="Or" aria-pressed="false") Or
+          button#attackers-joinType-and.btn.btn-primary.radio-btn(value="attackers-and" title="Match all included filters on the same killmail. Different attackers may satisfy each filter." aria-pressed="true") And
+          button#attackers-joinType-in.btn.btn-secondary.radio-btn(value="attackers-aand" title="Match the included filters on the same participant. For example, a character in a particular ship, or a ship flown by a member of a particular alliance." aria-pressed="false") In
+          button#attackers-joinType-or.btn.btn-secondary.radio-btn(value="attackers-or" title="Match at least one included filter among the attackers." aria-pressed="false") Or
         #attackers
       .col-md-3
         label Either
         br
         #either-joinType.andor.btn-group.centered(role="group" aria-label="Either match type")
-          button#either-joinType-and.btn.btn-primary.radio-btn(value="either-and" title="And" aria-pressed="true") And
-          button#either-joinType-in.btn.btn-secondary.radio-btn(value="either-aand" title="AAnd" aria-pressed="false") In
-          button#either-joinType-or.btn.btn-secondary.radio-btn(value="either-or" title="Or" aria-pressed="false") Or
+          button#either-joinType-and.btn.btn-primary.radio-btn(value="either-and" title="Match all included filters on the same killmail. They may match different attackers or the victim." aria-pressed="true") And
+          button#either-joinType-in.btn.btn-secondary.radio-btn(value="either-aand" title="Match the included filters on the same participant. For example, a character in a particular ship, or a ship flown by a member of a particular alliance." aria-pressed="false") In
+          button#either-joinType-or.btn.btn-secondary.radio-btn(value="either-or" title="Match at least one included filter on either side of the killmail." aria-pressed="false") Or
         #neutrals
       #victim.col-md-3
         label Victim
         br
         #victim-joinType.andor.btn-group.centered(role="group" aria-label="Victim match type")
-          button#victim-joinType-and.btn.btn-primary.radio-btn(value="victims-and" title="And" aria-pressed="true") And
-          button#victim-joinType-in.btn.btn-secondary.radio-btn(value="victims-aand" title="AAnd" aria-pressed="false") In
-          button#victim-joinType-or.btn.btn-secondary.radio-btn(value="victims-or" title="Or" aria-pressed="false") Or
+          button#victim-joinType-in.btn.btn-primary.radio-btn(value="victims-aand" title="Match the included filters on the same participant. For example, a character in a particular ship, or a ship flown by a member of a particular alliance." aria-pressed="true") In
+          button#victim-joinType-or.btn.btn-secondary.radio-btn(value="victims-or" title="The victim must match at least one included filter." aria-pressed="false") Or
         #victims
       .col-md-3
         label Items
         br
         #items-joinType.andor.btn-group.centered(role="group" aria-label="Items match type")
-          button#items-joinType-and.btn.btn-primary.radio-btn(value="items-and" title="And" aria-pressed="true") And
-          button#items-joinType-or.btn.btn-secondary.radio-btn(value="items-or" title="Or" aria-pressed="false") Or
+          button#items-joinType-and.btn.btn-primary.radio-btn(value="items-and" title="The killmail must contain every included item." aria-pressed="true") And
+          button#items-joinType-or.btn.btn-secondary.radio-btn(value="items-or" title="The killmail must contain at least one included item." aria-pressed="false") Or
         #items
     hr#clickToDigHr
     #clickToDig.position-relative(style="display: flex;")
@@ -120,7 +119,7 @@ block content
           span#asearchQueueIndicator.badge.bg-warning.text-black.flex-shrink-0(style="display: none;" role="status" aria-live="polite" aria-atomic="true")
           button#asearchRetry.btn.btn-secondary.btn-sm.flex-shrink-0.d-none(type="button") Retry
       .checkbox
-        label
+        label(title="Include other participants on matching killmails in rankings and participant counts. Uncheck to show only participants matching your filters.")
           input#includeAssociates(type="checkbox" checked)
           span#includeAssociatesLabel Include Associates
       div
