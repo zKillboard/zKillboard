@@ -401,10 +401,10 @@ function zeroPad(text) {
 function createSuggestion(json, slot) {
 	var data = { type: json.type, id: json.id, pip: json.pip };
 	if (json.not === true) data.not = true;
-	addEntity({ value: json.name, data: data }, slot);
+	addEntity({ value: json.name, data: data }, slot, false);
 }
 
-function addEntity(suggestion, slot) {
+function addEntity(suggestion, slot, resetPage = true) {
 	var slotSpecified = slot != undefined;
 	if (!slotSpecified) slot = 'neutrals';
 	delete suggestion.data.groupBy;
@@ -436,7 +436,7 @@ function addEntity(suggestion, slot) {
 			add(slot, suggestion);
 
 	}
-	clickPage1();
+	clickPage1(resetPage);
 }
 
 function getHTML(suggestion, slot) {
@@ -1609,8 +1609,15 @@ function toggleRadioBtn() {
 	else clickPage1();
 }
 
-function clickPage1() {
-	if (allowChange) doQuery('all');
+function clickPage1(resetPage = true) {
+	if (allowChange) {
+		if (resetPage) {
+			$(".pagenum").removeClass("btn-primary").addClass("btn-secondary");
+			$("#page1").removeClass("btn-secondary").addClass("btn-primary");
+			radios.page = "1";
+		}
+		doQuery('all');
+	}
 	toggleFilters();
 }
 
