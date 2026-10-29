@@ -113,8 +113,12 @@ block content
         label
           input#clickToDigCheckbox(type="checkbox")
           span#clickText Clicking will Drill Down
-      div(style="flex: 1; text-align: center;")
-        span#asearchQueueIndicator.badge.bg-warning.text-black.fs-6(style="display: none; margin-top: 0.4em;" role="status" aria-live="polite" aria-atomic="true")
+      .position-relative(style="flex: 1; min-width: 8rem;")
+        #asearchFeedback.invisible.position-absolute.top-50.start-0.end-0.translate-middle-y.d-flex.align-items-center.justify-content-center.gap-1.small
+          span#asearchSpinner.spinner-border.spinner-border-sm.flex-shrink-0.d-none(aria-hidden="true")
+          #asearchStatus.text-muted.text-truncate(role="status" aria-live="polite" aria-atomic="true")
+          span#asearchQueueIndicator.badge.bg-warning.text-black.flex-shrink-0(style="display: none;" role="status" aria-live="polite" aria-atomic="true")
+          button#asearchRetry.btn.btn-secondary.btn-sm.flex-shrink-0.d-none(type="button") Retry
       .checkbox
         label
           input#includeAssociates(type="checkbox" checked)
@@ -130,7 +134,6 @@ block content
       span#matchingCampaignsList.d-block
       span#matchingCampaignsStatus.ms-2
     hr
-    #asearchStatus.visually-hidden(role="status" aria-live="polite" aria-atomic="true")
     #clickablecontent.row
       #page.col-md-10
         #pagefilters

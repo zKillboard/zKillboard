@@ -107,6 +107,10 @@ function loadasearch() {
 	$("#btn_export").off('click.zkb-asearch').on('click.zkb-asearch', btn_export);
 	$(document).off('click.zkb-asearch-campaign-update').on('click.zkb-asearch-campaign-update', '[data-zkb-campaign-update]', campaign_update);
 	$("#exportCsv").off('click.zkb-asearch').on('click.zkb-asearch', exportCsv);
+	$("#asearchRetry").off('click.zkb-asearch').on('click.zkb-asearch', function() {
+		filtersStringified = undefined;
+		doQuery();
+	});
 	$("#toggleInferredFits").off('click.zkb-asearch').on('click.zkb-asearch', toggleInferredFits);
 	$("#toggleGroupLayout").off('click.zkb-asearch').on('click.zkb-asearch', toggleGroupLayout);
 	$(document).off('click.zkb-asearch-fit-detail').on('click.zkb-asearch-fit-detail', '[data-zkb-asearch-fit-detail]', toggleAsearchFitDetail);
@@ -693,6 +697,29 @@ var asearchMonthlyRun = null;
 var asearchKillRowBatch = null;
 var pendingKillRows = 0;
 var lastAsearchKillCount = 0;
+var asearchSearchError = '';
+
+function updateAsearchProgress() {
+	var killsLoading = asearchResultMode == 'kills' && pendingKillRows > 0;
+	var fitsLoading = false;
+	var groupsLoading = asearchMonthlyRun && !asearchMonthlyRun.cancelled && Object.values(asearchMonthlyRun.pending).some(function(count) { return count > 0; });
+	(asearchBatch || []).forEach(function(xhr) {
+		if (xhr.state() != 'pending' && xhr.status != 202) return;
+		if (xhr.asearchQueryType == 'kills') killsLoading = true;
+		else if (xhr.asearchQueryType == 'fits') fitsLoading = true;
+		else groupsLoading = true;
+	});
+	var busy = killsLoading || fitsLoading || groupsLoading;
+	var message = killsLoading ? 'Loading killmails…' : fitsLoading ? 'Loading inferred fits…' : groupsLoading ? 'Calculating statistics…' : 'Search complete.';
+	if ((killsLoading || fitsLoading) && groupsLoading) message += ' Calculating statistics…';
+	if (asearchSearchError) message = asearchSearchError + (busy ? ' Other results are still loading.' : '');
+	$('#asearchFeedback').toggleClass('invisible', !busy && !asearchSearchError);
+	$('#asearchSpinner').toggleClass('d-none', !busy);
+	$('#asearchRetry').toggleClass('d-none', !asearchSearchError);
+	$('#asearchStatus').toggleClass('text-muted', !asearchSearchError).toggleClass('text-warning', !!asearchSearchError).attr('title', message);
+	setAsearchStatus(message);
+}
+
 function doQuery(queryType = 'all', isRetry = false) {
 	if (first_load) return;
 	if (!allowChange) return;
@@ -717,13 +744,23 @@ function doQuery(queryType = 'all', isRetry = false) {
 		var xhr = xhrs.pop();
 		xhr.abort();
 	}
-	if (!isRetry) updateAsearchQueueIndicator();
+	if (!isRetry) {
+		asearchSearchError = '';
+		updateAsearchQueueIndicator();
+	}
 	var batch = [];
 	asearchBatch = batch;
 	function request(options) {
+		options.asearchQueryType = options.data.queryType;
 		var xhr = $.ajax('/asearchquery/', options);
+		xhr.asearchQueryType = options.asearchQueryType;
 		xhrs.push(xhr);
 		batch.push(xhr);
+		xhr.always(function() {
+			if (batch !== asearchBatch) return;
+			if (xhr.responseJSON && xhr.responseJSON.timedOut) asearchSearchError = 'Search timed out. Retry or narrow your filters.';
+			updateAsearchProgress();
+		});
 	}
 
 	if (!isRetry) clearAsearchResults(queryType);
@@ -741,6 +778,7 @@ function doQuery(queryType = 'all', isRetry = false) {
 			request({ title: 'fits', data: Object.assign({}, f, { queryType: 'fits' }), method: 'get', error: handleError, success: applyFitsResult, timeout: 60000 });
 		}
 		startAsearchMonthlyQuery(f, start, end);
+		updateAsearchProgress();
 		if (!asearchHistoryNavigation) setHash();
 		if (!isRetry) updateMatchingCampaigns();
 		return;
@@ -827,6 +865,7 @@ function doQuery(queryType = 'all', isRetry = false) {
 		}
 	}
 
+	updateAsearchProgress();
 	$.when.apply($, batch).always(function () {
 		if (batch === asearchBatch && asearchRetryTimer == null) updateAsearchQueueIndicator();
 	});
@@ -869,7 +908,10 @@ function startAsearchMonthlyQuery(filters, start, end) {
 			run.active++;
 			requestMonth(month, 0);
 		}
-		if (!run.cancelled && !run.active && run.nextMonth == months.length) updateAsearchQueueIndicator();
+		if (!run.cancelled && !run.active && run.nextMonth == months.length) {
+			updateAsearchQueueIndicator();
+			updateAsearchProgress();
+		}
 	}
 	function requestMonth(month, queryIndex) {
 		if (run.cancelled) return;
@@ -900,6 +942,8 @@ function startAsearchMonthlyQuery(filters, start, end) {
 				cancelAsearchMonthlyRun(run);
 				xhrs.slice().forEach(function (request) { if (request !== xhr) request.abort(); });
 				$('#result-groups-count').text('Aggregations timed out.');
+				asearchSearchError = 'Statistics timed out. Retry or narrow your filters.';
+				updateAsearchProgress();
 				return;
 			}
 			run.pending[key]--;
@@ -910,6 +954,8 @@ function startAsearchMonthlyQuery(filters, start, end) {
 			cancelAsearchMonthlyRun(run);
 			xhrs.slice().forEach(function (request) { if (request !== xhr) request.abort(); });
 			$('#result-groups-count').text('Could not load aggregations.');
+			asearchSearchError = 'Could not load statistics. Please retry.';
+			updateAsearchProgress();
 		}).always(function () {
 			xhrs = xhrs.filter(function (item) { return item !== xhr; });
 		});
@@ -1300,8 +1346,9 @@ function handleError(jqXHR, textStatus, errorThrown) {
 	var message = errorThrown + ' ' + textStatus;
 	if (jqXHR.status == 403) message = 'Server Reinforced - no advanced search at this time.';
 	else if (jqXHR.status == 408) message = 'Query took too long and timed out.';
+	asearchSearchError = jqXHR.status == 403 || jqXHR.status == 408 ? message : 'Could not load search results. Please retry.';
 	if (this && this.title == 'fits') fitlistmessage(message);
-	else killlistmessage(message);
+	else if (this && this.asearchQueryType == 'kills') killlistmessage(message);
 }
 
 function killlistmessage(message) {
@@ -1408,15 +1455,20 @@ function popEm() {
 		tr.append($("<td>").attr('colspan', 7).addClass('visually-hidden').text('Loading killmail'));
 		$("#killmails-list").append(tr);
 		$.get("/cache/24hour/killlistrow/" + killID + "/", function (data) {
+			if (rowBatch !== asearchKillRowBatch) return;
 			$("#kill-" + killID).replaceWith(data);
 			doDateCleanup();
+		}).fail(function() {
+			if (rowBatch !== asearchKillRowBatch) return;
+			asearchSearchError = 'Could not load some killmails. Please retry.';
+			$("#kill-" + killID).find('td').removeClass('visually-hidden').text('Unable to load killmail.');
 		}).always(function () {
 			if (rowBatch !== asearchKillRowBatch) return;
 			pendingKillRows--;
 			if (pendingKillRows <= 0) {
 				$("#killmails-list").attr("aria-busy", "false");
-				setAsearchStatus("Loaded " + lastAsearchKillCount + " killmail" + (lastAsearchKillCount == 1 ? "" : "s") + ".");
 			}
+			updateAsearchProgress();
 		});
 		popEm();
 	}
