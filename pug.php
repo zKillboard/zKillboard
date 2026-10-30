@@ -113,10 +113,11 @@ if (isset($highlightMessage) && $highlightMessage != "") {
 	$templates->addGlobal('highlightClass', $highlightClass);
 }
 
-$templates->addGlobal('tqStatus', $redis->get('tqStatus'));
-$templates->addGlobal('tqCount', $redis->get('tqCount'));
+$templateStatus = $redis->mGet(['tqStatus', 'tqCount', 'tq:apiStatus', 'zkb:reinforced', 'zkb:universeLoaded', 'tobefetched', 'timestamp']);
+$templates->addGlobal('tqStatus', $templateStatus[0]);
+$templates->addGlobal('tqCount', $templateStatus[1]);
 
-$templates->addGlobal('apiStatus', $redis->get('tq:apiStatus'));
+$templates->addGlobal('apiStatus', $templateStatus[2]);
 
 $templates->addGlobal('siteurl', $baseAddr);
 $templates->addGlobal('fullsiteurl', $fullAddr);
@@ -128,9 +129,9 @@ $templates->addGlobal('discordServer', $discordServer);
 
 $templates->addGlobal('entityType', 'none');
 $templates->addGlobal('entityID' , 0);
-$templates->addGlobal('reinforced', $redis->get("zkb:reinforced") == true ? "true" : "false");
-$templates->addGlobal("universeUpdating", $redis->get("zkb:universeLoaded") == "false"? "true" : "false");
-$templates->addGlobal("tobefetched", $redis->get("tobefetched"));
+$templates->addGlobal('reinforced', $templateStatus[3] == true ? "true" : "false");
+$templates->addGlobal("universeUpdating", $templateStatus[4] == "false"? "true" : "false");
+$templates->addGlobal("tobefetched", $templateStatus[5]);
 $templates->addGlobal("z3", $z3);
 
 $templates->addGlobal('referralLink', $referralLink);
@@ -154,7 +155,7 @@ $templates->addGlobal('accountBalance', $accountBalance);
 $templates->addGlobal('adFreeMonthCost', $adFreeMonthCost);
 
 // File timestamp
-$timestamp = (int) $redis->get("timestamp");
+$timestamp = (int) $templateStatus[6];
 if ($timestamp == 0) {
   $timestamp = time();
   $redis->set("timestamp", $timestamp);

@@ -106,13 +106,13 @@ class Info
 				break;
 			case 'characterID':
 				$data['isCEO'] = $mdb->exists('information', ['type' => 'corporationID', 'id' => (int) @$data['corporationID'], 'ceoID' => (int) $id]);
-				$data['isExecutorCEO'] = $mdb->exists('information', ['type' => 'allianceID', 'id' => (int) @$data['allianceID'], 'executorCorpID' => (int) (int) @$data['corporationID']]);
+				$data['isExecutorCEO'] = !empty($data['allianceID']) && $mdb->exists('information', ['type' => 'allianceID', 'id' => (int) $data['allianceID'], 'executorCorpID' => (int) @$data['corporationID']]);
 				break;
 			case 'corporationID':
 				$data['cticker'] = @$data['ticker'];
 				break;
 			case 'shipTypeID':
-				$data['shipTypeName'] = self::getInfoField('typeID', $id, 'name');
+				$data['shipTypeName'] = $data['name'] ?? null;
 				break;
 			case 'allianceID':
 				$data['aticker'] = @$data['ticker'];
@@ -135,9 +135,12 @@ class Info
 	{
 		global $redis;
 
+		if ($id == null)
+			return;
+
 		$redisKey = self::getRedisKey($type, $id);
-		$data = @self::$infoFieldCache[$redisKey];
-		if ($data == null) {
+		$data = self::$infoFieldCache[$redisKey] ?? null;
+		if ($data === null) {
 			try {
 				$raw = $redis->get($redisKey);
 				if ($raw != null)

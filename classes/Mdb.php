@@ -195,16 +195,15 @@ class Mdb
         $cacheTime = isset($query['cacheTime']) ? $query['cacheTime'] : 0;
         $cacheTime = min($cacheTime, 900);
         unset($query['cacheTime']); // reserved zkb field for caching doesn't need to be in queries
-        $serialized = "Mdb::find|$collection|".serialize($query).'|'.serialize($sort)."|$limit|".serialize($includes)."|$skip";
-        $cacheKey = $serialized;
         if ($cacheTime > 0) {
+            $cacheKey = "Mdb::find|$collection|".serialize($query).'|'.serialize($sort)."|$limit|".serialize($includes)."|$skip";
             try {
-            $cached = RedisCache::get($cacheKey);
+                $cached = RedisCache::get($cacheKey);
             } catch (Exception $ex) {
                 $cached = null;
                 RedisCache::delete($cacheKey);
             }
-            if ($cached != null) {
+            if (is_array($cached)) {
                 return $cached;
             }
         }
@@ -233,6 +232,10 @@ class Mdb
         $time = $timer->stop();
         if ($time > $longQueryMS) {
             global $uri;
+        }
+
+        if ($cacheTime > 0) {
+            RedisCache::set($cacheKey, $result, $cacheTime);
         }
 
         return $result;
