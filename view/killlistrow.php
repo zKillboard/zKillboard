@@ -18,7 +18,7 @@ function handler($request, $response, $args, $container) {
             );
     $vics = ['characterID' => 'character', 'corporationID' => 'corporation', 'allianceID' => 'alliance', 'shipTypeID' => 'ship', 'groupID' => 'group', 'factionID' => 'faction'];
 
-    $kills = Kills::getKills(['killID' => $killID], true, true, true);
+    $kills = Kills::getDetails([$killID], true);
     if (isset($entityID) && $entityID > 0) {
         $type = @$map[$entityType]['column'] . "ID";
         $kills = Kills::mergeKillArrays($kills, array(), 100, $type, $entityID);

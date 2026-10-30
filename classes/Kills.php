@@ -44,6 +44,7 @@ class Kills
 
             if ($killmail == null) {
                 $killmail = $mdb->findDoc('killmails', ['killID' => $killID]);
+                if ($killmail === null) continue;
                 $killmail['victim'] = $killmail['involved'][0];
                 $killmail['victim']['killID'] = $killID;
                 foreach ($killmail['involved'] as $inv) {
