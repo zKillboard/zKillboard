@@ -89,13 +89,13 @@ if (substr($uri, 0, 9) == "/sponsor/" || substr($uri, 0, 11) == '/crestmail/' ||
     session_set_cookie_params($cookie_params);
     session_set_save_handler(new MongoSessionHandler($mdb->getCollection("sessions")), true);
     session_start();
-}
 
-// Insert into visitor log without any write concern
-$n = $mdb->getCollection("visitorlog")->insertOne(
-	['ip' => $ip, 'uri' => $uri, 'api' => $isApiRequest, 'agent' =>  iconv("UTF-8", "UTF-8//IGNORE", $agent), 'dttm' => $mdb->now()],
-	['writeConcern' => new MongoDB\Driver\WriteConcern(0)]
-);
+    // Insert into visitor log without any write concern
+    $n = $mdb->getCollection("visitorlog")->insertOne(
+        ['ip' => $ip, 'uri' => $uri, 'api' => $isApiRequest, 'agent' =>  iconv("UTF-8", "UTF-8//IGNORE", $agent), 'dttm' => $mdb->now()],
+        ['writeConcern' => new MongoDB\Driver\WriteConcern(0)]
+    );
+}
 
 // Theme
 $theme = 'cyborg';
