@@ -872,6 +872,14 @@ class Info
 	{
 		global $mdb, $redis;
 
+		$attributes = self::$infoFieldCache[self::getRedisKey('typeID', $typeID)]['dogma_attributes'] ?? null;
+		if ($attributes !== null) {
+			foreach ($attributes as $attribute) {
+				if ($attribute['attribute_id'] == $attr_id) return $attribute['value'];
+			}
+			return null;
+		}
+
 		$p = $redis->get("zkb:dogma:$typeID:$attr_id");
 		if ($p == 'null')
 			return null;
