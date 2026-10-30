@@ -134,7 +134,7 @@ function handler($request, $response, $args, $container) {
 		$endTime = (int) @$query['end'];
 		$now = time();
 		if ($endTime == 0) $endTime = $now;
-		if ($monthly && (!in_array($queryType, ['count', 'groups', 'labels', 'distincts'], true) || $startTime <= 0 || $endTime <= $startTime || $endTime - $startTime > 31 * 86400)) return $response->withStatus(400);
+		if ($monthly && (!in_array($queryType, ['count', 'groups', 'labels', 'distincts'], true) || $startTime <= 0 || $endTime < $startTime || $endTime - $startTime > 31 * 86400)) return $response->withStatus(400);
 
 		$labels = [];
 		foreach ($buttons as $label) {
@@ -151,6 +151,8 @@ function handler($request, $response, $args, $container) {
 		$page = (isset($queryParams['radios']['page']) ? max(1, min(10, (int) @$queryParams['radios']['page'])) - 1 : 0);
 		$sortKey = (isset($queryParams['radios']['sort']['sortBy']) && isset($validSortBy[$queryParams['radios']['sort']['sortBy']]) ? $validSortBy[$queryParams['radios']['sort']['sortBy']] : 'killID');
 		$sortBy = (isset($queryParams['radios']['sort']['sortDir']) && isset($validSortDir[$queryParams['radios']['sort']['sortDir']]) ? $validSortDir[$queryParams['radios']['sort']['sortDir']] : -1);
+		if ($queryType == 'groups' || $queryType == 'labels') $sortBy = -1;
+		if ($queryType == 'labels') $sortKey = 'killID';
 		$sort = [$sortKey => $sortBy];
 
 		$groupAggType = (string) ($queryParams['radios']['group-agg-type'] ?? '');
@@ -188,6 +190,8 @@ function handler($request, $response, $args, $container) {
 		$resultVersion = $queryType == "count" ? "v2:" : "";
 		if ($monthly) $resultVersion = "monthlyJson:$resultVersion";
 		$key = "asearch:$resultVersion$queryType:$groupType:$victimsOnly:$collectionScope:" . ($queryType == "kills" ? "$page:$sortKey:$sortBy:" : "") . md5($jsoned);
+		if ($queryType == 'groups') $key .= ":$sortKey:$sortBy";
+		else if ($queryType == 'labels' && !$monthly) $key .= ":$sortBy";
 		$cacheTag = "www,asearch,asearch:$key";
 		$job = [
 			'key' => $key,

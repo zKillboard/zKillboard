@@ -184,20 +184,42 @@ function setupAsearchDatepickers() {
 			formatTime: 'H:i',
 			step: 15,
 			scrollInput: false,
-			dayOfWeekStart: 1,
-			onChangeDateTime: function(currentTime, input) {
-				normalizeAsearchUTCInput(input);
-				clickPage1();
-			}
+			validateOnBlur: false,
+			dayOfWeekStart: 1
 		});
 	}
 	inputs
 		.off('input.zkb-asearch change.zkb-asearch blur.zkb-asearch')
-		.on('input.zkb-asearch', clickPage1)
+		.on('input.zkb-asearch', function() { validateAsearchDates(); })
 		.on('change.zkb-asearch blur.zkb-asearch', function() {
+			if (!validateAsearchDates()) return;
 			normalizeAsearchUTCInput(this);
 			clickPage1();
 		});
+}
+
+function validateAsearchDates() {
+	var startValue = $.trim($('#dtstart').val());
+	var endValue = $.trim($('#dtend').val());
+	var start = parseAsearchUTCDateTime(startValue);
+	var end = parseAsearchUTCDateTime(endValue);
+	var errors = { dtstart: '', dtend: '' };
+	if ($('.tfilter.btn-primary').val() == 'custom' && asearchResultMode != 'fits') {
+		$('#dtstart, #dtend').each(function() {
+			var value = $.trim(this.value);
+			if (value != '' && (!/^\d{4}-\d{2}-\d{2}(?:[ T]\d{2}:\d{2})?$/.test(value) || parseAsearchUTCDateTime(value) == null)) {
+				errors[this.id] = 'Enter a valid ' + (this.id == 'dtstart' ? 'start' : 'end') + ' date: YYYY-MM-DD or YYYY-MM-DD HH:mm (UTC).';
+			}
+		});
+		if (startValue == '' && endValue == '') errors.dtstart = 'Enter a custom start or end date.';
+		else if (!errors.dtstart && !errors.dtend && start != null && end != null && end < start) errors.dtend = 'The end date cannot be earlier than the start date.';
+	}
+	$('#dtstart, #dtend').each(function() {
+		$(this).toggleClass('is-invalid', !!errors[this.id]).attr('aria-invalid', errors[this.id] ? 'true' : 'false').attr('aria-describedby', errors[this.id] ? 'asearchStatus' : null);
+	});
+	asearchDateError = errors.dtstart || errors.dtend;
+	updateAsearchProgress();
+	return !asearchDateError;
 }
 
 function toggleRollingTime(event, enabled) {
@@ -205,6 +227,7 @@ function toggleRollingTime(event, enabled) {
 	if (enabled == undefined) {
 		enabled = !($('#rolling-times').hasClass('btn-primary'));
 	}
+	if ($('#rolling-times').prop('disabled')) enabled = false;
 
 	$('#rolling-times').removeClass('btn-secondary').removeClass('btn-primary');
 
@@ -232,7 +255,9 @@ function setAsearchTimespanDisabled(disabled) {
 	var section = $("#asearchTimespanSection");
 	if (section.length == 0) return;
 	section.toggleClass("opacity-50", disabled).attr("aria-disabled", disabled ? "true" : "false");
-	section.find(".tfilter, #rolling-times").prop("disabled", disabled).attr("aria-disabled", disabled ? "true" : "false");
+	section.find(".tfilter").prop("disabled", disabled).attr("aria-disabled", disabled ? "true" : "false");
+	var rollingDisabled = disabled || ['week', 'recent', 'last year'].indexOf($(".tfilter.btn-primary").first().val()) < 0;
+	$("#rolling-times").prop("disabled", rollingDisabled).attr("aria-disabled", rollingDisabled ? "true" : "false");
 	var dateDisabled = disabled || $(".tfilter.btn-primary").first().val() != 'custom';
 	$("#dtstart, #dtend").prop("disabled", dateDisabled).attr("aria-disabled", dateDisabled ? "true" : "false");
 }
@@ -271,7 +296,7 @@ function rollTime() {
 
 	try {
 		var roll = ($('#rolling-times').hasClass('btn-primary'));
-		if (roll == false) return;
+		if (roll == false || $('#rolling-times').prop('disabled')) return;
 		var currentStartTime = getAsearchUTCValue("#dtstart");
 		var currentEndTime = getAsearchUTCValue("#dtend");
 		adjustTime(null, $(".tfilter.btn-primary").first());
@@ -307,7 +332,7 @@ function adjustTime(event, triggerButton) {
 	var endTime = null;
 
 	var isDisabled = true;
-	var isRolling = false;
+	var isRolling = $('#rolling-times').hasClass('btn-primary');
 
 	switch (epoch) {
 		case 'week':
@@ -323,12 +348,10 @@ function adjustTime(event, triggerButton) {
 			break;
 		case 'current month':
 			startTime = Math.floor(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1, 0, 0, 0) / 1000);
-			isRolling = false;
 			break;
 		case 'prior month':
 			startTime = Math.floor(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() - 1, 1, 0, 0, 0) / 1000);
 			endTime = Math.floor(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1, 0, 0, 0) / 1000) - 60;
-			isRolling = false;
 			break;
 		case 'previous year':
 			startTime = Math.floor(Date.UTC(date.getUTCFullYear() - 1, 0, 1) / 1000);
@@ -343,11 +366,11 @@ function adjustTime(event, triggerButton) {
 			break;
 		case 'custom':
 			isDisabled = false;
-			isRolling = false;
 	}
 
 	$('#dtstart').prop('disabled', isDisabled).val(getAsearchUTCDisplayValue(startTime));
 	$('#dtend').prop('disabled', isDisabled).val(getAsearchUTCDisplayValue(endTime));
+	setAsearchTimespanDisabled(asearchResultMode == 'fits');
 	toggleRollingTime(null, isRolling);
 	//if (isDisabled == false) $("#dtstart").focus();
 }
@@ -611,7 +634,7 @@ function setFilters(hashfilters) {
 				break;
 			case 'dtstart':
 			case 'dtend':
-				$("#" + key).val(getAsearchUTCDisplayValue(value));
+				$("#" + key).val(getAsearchUTCDisplayValue(value) || value);
 				break;
 			case 'location':
 			case 'attackers':
@@ -708,6 +731,7 @@ var asearchKillRowBatch = null;
 var pendingKillRows = 0;
 var lastAsearchKillCount = 0;
 var asearchSearchError = '';
+var asearchDateError = '';
 
 function updateAsearchProgress() {
 	var killsLoading = asearchResultMode == 'kills' && pendingKillRows > 0;
@@ -723,16 +747,18 @@ function updateAsearchProgress() {
 	var message = killsLoading ? 'Loading killmails…' : fitsLoading ? 'Loading inferred fits…' : groupsLoading ? 'Calculating statistics…' : 'Search complete.';
 	if ((killsLoading || fitsLoading) && groupsLoading) message += ' Calculating statistics…';
 	if (asearchSearchError) message = asearchSearchError + (busy ? ' Other results are still loading.' : '');
-	$('#asearchFeedback').toggleClass('invisible', !busy && !asearchSearchError);
-	$('#asearchSpinner').toggleClass('d-none', !busy);
-	$('#asearchRetry').toggleClass('d-none', !asearchSearchError);
-	$('#asearchStatus').toggleClass('text-muted', !asearchSearchError).toggleClass('text-warning', !!asearchSearchError).attr('title', message);
+	if (asearchDateError) message = asearchDateError;
+	$('#asearchFeedback').toggleClass('invisible', !busy && !asearchSearchError && !asearchDateError);
+	$('#asearchSpinner').toggleClass('d-none', !busy || !!asearchDateError);
+	$('#asearchRetry').toggleClass('d-none', !asearchSearchError || !!asearchDateError);
+	$('#asearchStatus').toggleClass('text-muted', !asearchSearchError && !asearchDateError).toggleClass('text-warning', !!asearchSearchError || !!asearchDateError).attr('title', message);
 	setAsearchStatus(message);
 }
 
 function doQuery(queryType = 'all', isRetry = false) {
 	if (first_load) return;
 	if (!allowChange) return;
+	if (!validateAsearchDates()) return;
 
 	console.log('doQuery executing')
 
@@ -892,6 +918,7 @@ function cancelAsearchMonthlyRun(run) {
 }
 
 function startAsearchMonthlyQuery(filters, start, end) {
+	filters = Object.assign({}, filters, { radios: Object.assign({}, filters.radios, { sort: { sortBy: filters.radios.sort.sortBy, sortDir: 'desc' } }) });
 	var queries = [{ queryType: 'count' }, { queryType: 'labels' }, { queryType: 'distincts' }];
 	types.forEach(function (type) { queries.push({ queryType: 'groups', groupType: type }); });
 	var months = [];
@@ -1649,7 +1676,8 @@ function toggleRadioBtn() {
 	else radios[variable] = $(this).text().toLowerCase();
 
 	updateAsearchButtonStates();
-	if (variable == 'page' || variable == 'sort') doQuery('kills');
+	if (variable == 'sort' && key == 'sortBy') doQuery('all');
+	else if (variable == 'page' || variable == 'sort') doQuery('kills');
 	else if (variable == 'group-agg-type') doQuery('groups');
 	else clickPage1();
 }
