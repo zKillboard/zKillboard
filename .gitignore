@@ -12,6 +12,8 @@ public/ads.txt
 public/img/sales/
 public/img/icons/
 public/data/market-*.json*
+public/vendor/eveshipfit/data.json.gz
+public/vendor/eveshipfit/sde.dat.gz
 
 .idea
 isMaster.lock
