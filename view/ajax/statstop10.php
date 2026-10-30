@@ -8,6 +8,11 @@ function handler($request, $response, $args, $container) {
     $bypass = strpos($uri, "/bypass/") !== false;
     $tagged = strpos($uri, "/tagged/") !== false;
 
+    if ($tagged) {
+        $response = $response->withHeader('Cache-Control', 'public, max-age=0')
+            ->withHeader('Cloudflare-CDN-Cache-Control', 'public, max-age=900, stale-while-revalidate=60');
+    }
+
     try {
         if ($tagged || $bypass) $params = URI::validate($uri, ['u' => true, 't' => true, 's' => false]);
         else $params = URI::validate($uri, ['u' => true, 't' => true, 'ks' => !$bypass, 'ke' => !$bypass, 's' => false]);

@@ -11,7 +11,8 @@ if ($kvc->get($key) == true) {
     exit();
 }
 
-$redis->sadd("queueCacheTags", "statstop");
+// Top-10 lists expire at the edge and refresh with stale-while-revalidate.
+$redis->sadd("queueCacheTags", "statstopisk");
 
 $p = array();
 $numDays = 7;
