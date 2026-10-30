@@ -202,7 +202,7 @@ class Info
 	{
 		global $redis;
 
-		if ($systemID < 3100000) {
+		if ($systemID < 31000000 || $systemID >= 32000000) {
 			return;
 		}
 
