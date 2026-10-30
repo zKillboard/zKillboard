@@ -15,7 +15,7 @@ class MongoFilter
 
         $hashKey = 'MongoFilter::getKills:'.serialize($parameters).":$limit:$page:$sortKey:$sortDirection:$buildQuery";
         $result = RedisCache::get($hashKey);
-        if ($result != null) {
+        if (is_array($result)) {
             return $result;
         }
 

@@ -51,7 +51,7 @@ class Stats
 
         $hashKey = 'getTopIsk:'.serialize($parameters);
         $result = ($cacheOverride == null) ? RedisCache::get($hashKey) : null;
-        if ($result != null) {
+        if (is_array($result)) {
             return $result;
         }
 
