@@ -618,7 +618,6 @@ class Info
 								}
 								$element['solarSystemSecurity'] = $securityLevel;
 								$element['systemColorCode'] = self::getSystemColorCode($securityLevel);
-								$regionInfo = self::getRegionInfoFromSystemID($value);
 								$wspaceInfo = self::getWormholeSystemInfo($value);
 								if ($wspaceInfo) {
 									$element['systemClass'] = $wspaceInfo['class'];
