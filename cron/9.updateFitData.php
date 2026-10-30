@@ -8,9 +8,9 @@ $runKey = 'zkb:updateFitData:run:' . gmdate('Y-m-d');
 if ($redis->get($runKey) !== false) exit();
 $redis->setex($runKey, 3333, 'attempting');
 
-$node = '/usr/local/bin/node';
-if (!is_executable($node)) {
-    Util::zout("Fitting data update failed: $node is unavailable.");
+$node = trim(shell_exec('command -v node') ?? '');
+if ($node === '' || !is_executable($node)) {
+    Util::zout('Fitting data update failed: node is unavailable in PATH.');
     exit();
 }
 
