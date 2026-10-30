@@ -71,7 +71,7 @@ class Stats
         $sortBy = $sortBy == 'isk' ? 'isk' : 'kills';
         $hashKey = "Stats::getTop:$groupByColumn:$sortBy:".serialize($parameters);
         $result = RedisCache::get($hashKey);
-        if ($cacheOverride == false && $result != null) {
+        if ($cacheOverride == false && is_array($result)) {
             return $result;
         }
 
