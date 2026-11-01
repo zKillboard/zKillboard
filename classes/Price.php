@@ -148,15 +148,12 @@ class Price
             case 88001:
                 if ($date <= "2025-06-01") return 10_000_000_000; // 10b
                 break;
-            case 45645: // Loggerhead
-                return 35_000_000_000; // 35b
             case 87381: // Sarathiel
             case 42124:
                 return 45_000_000_000; // 45b
             case 42243: // Chemosh
                 return 70_000_000_000;  // 70b
             case 2834: // Utu
-            case 3516: // Malice
             case 11375: // Freki
                 return 80_000_000_000; // 80b
             case 3514: // Revenant
@@ -166,12 +163,10 @@ class Price
             case 3518: // Vangel
             case 32788: // Cambion
             case 32790: // Etana
-            case 32209: // Mimir
             case 11942: // Silver Magnate
             case 33673: // Whiptail
                 return 100_000_000_000; // 100b
             case 35779: // Imp
-            case 42125: // Vendetta
             case 42246: // Caedes
                 return 120_000_000_000; // 120b
             case 74141: // Geri
@@ -179,11 +174,7 @@ class Price
                 // https://forums.eveonline.com/t/517277/13
                 return 145_000_000_000; // 145b
             case 2836: // Adrestia
-            case 33675: // Chameleon
             case 35781: // Fiend
-            case 45530: // Virtuoso
-            case 48636: // Hydra
-            case 74316: // Bestla
             case 78414: // Shapash
                 return 150_000_000_000; // 150b
             case 60765: // Raiju
@@ -191,7 +182,6 @@ class Price
                 // https://forums.eveonline.com/t/505136/5 (accepted in posts 6-7)
                 return 455_000_000_000; // 455b
             case 33397: // Chremoas
-            case 85062: // Sidewinder
                 return 200_000_000_000; // 200b
             case 42245: // Rabisu
                 if ($date < "2025-12-19") return 200_000_000_000; // 200b
@@ -201,8 +191,6 @@ class Price
                 if ($date < "2026-03-22") return 230_000_000_000; // 230b
                 // https://forums.eveonline.com/t/508238/5
                 return 700_000_000_000; // 700b
-            case 89808: // Skua
-                return 230_000_000_000; // 230b
             case 48635: // Tiamat
                 if ($date < "2025-12-20") return 230_000_000_000; // 230b
                 // https://forums.eveonline.com/t/503238/10 (sold in post 12)
@@ -211,8 +199,6 @@ class Price
                 if ($date < "2025-11-26") return 230_000_000_000; // 230b
                 // https://forums.eveonline.com/t/501776/2
                 return 800_000_000_000; // 800b
-            case 77726: // Cybele
-                return 230_000_000_000;
             case 85229: // Cobra
                 return 250_000_000_000; // 250b
             case 47512: // 'Moreau' Fortizar
@@ -227,11 +213,65 @@ class Price
                 return 1_000_000_000_000; // 1 trillion, rare dev ships
             case 85236: // Python
                 return 1_250_000_000_000; // 1.25 trillion
-            case 42126: // Vanquisher
-                return 650_000_000_000;
             case 42241: // Molok
                 if ($date <= "2019-07-01") return 350_000_000_000; // 350b 
                 return 650_000_000_000; // 650b
+            case 45645: // Loggerhead
+                if ($date < "2026-05-25") return 35_000_000_000; // 35b
+                // https://forums.eveonline.com/t/504718/12 (sold in post 15; asking-price estimate)
+                return 52_000_000_000; // 52b
+            case 3516: // Malice
+                if ($date < "2026-02-09") return 80_000_000_000; // 80b
+                // https://forums.eveonline.com/t/506338/1 (sold listing; listing date and asking-price estimate)
+                return 425_000_000_000; // 425b
+            case 33675: // Chameleon
+                if ($date < "2026-01-05") return 150_000_000_000; // 150b
+                // https://forums.eveonline.com/t/503238/1 (sold in post 35; asking-price estimate)
+                return 600_000_000_000; // 600b
+            case 45530: // Virtuoso
+                if ($date < "2025-07-24") return 150_000_000_000; // 150b
+                // https://forums.eveonline.com/t/494037/1 (sold listing; listing date and asking-price estimate)
+                return 400_000_000_000; // 400b
+            case 48636: // Hydra
+                if ($date < "2025-12-31") return 150_000_000_000; // 150b
+                // https://forums.eveonline.com/t/503238/29 (reported hull sale; report date)
+                return 475_000_000_000; // 475b
+            case 74316: // Bestla
+                if ($date < "2024-11-24") return 150_000_000_000; // 150b
+                // https://forums.eveonline.com/t/469177/1 (reported sales; listing date)
+                return 235_000_000_000; // 235b
+            case 85062: // Sidewinder
+                if ($date < "2026-04-15") return 200_000_000_000; // 200b
+                // https://forums.eveonline.com/t/509406/14 (sold in post 15; asking-price estimate)
+                return 235_000_000_000; // 235b
+            case 89808: // Skua
+                if ($date < "2026-04-19") return 230_000_000_000; // 230b
+                // https://forums.eveonline.com/t/509406/15 (sold in post 16; asking-price estimate)
+                return 235_000_000_000; // 235b
+            case 77726: // Cybele
+                if ($date < "2026-04-15") return 230_000_000_000; // 230b
+                // https://forums.eveonline.com/t/509406/15 (listing date and asking-price estimate; closing date unknown)
+                return 330_000_000_000; // 330b
+            case 42125: // Vendetta
+                if ($date < "2026-03-09") return 120_000_000_000; // 120b
+                // https://forums.eveonline.com/t/507360/1 (sold in post 3; asking-price estimate)
+                return 235_000_000_000; // 235b
+            case 78576: // Azariel (Angel Titan)
+                if ($date < "2026-05-18") return 750_000_000_000; // 750b
+                // https://forums.eveonline.com/t/479236/97 (sold listing; listing date and asking-price estimate)
+                return 500_000_000_000; // 500b
+            case 42126: // Vanquisher
+                if ($date < "2025-11-06") return 650_000_000_000; // 650b
+                // https://forums.eveonline.com/t/500305/3 (sold in post 7; asking-price estimate)
+                return 700_000_000_000; // 700b
+            case 33395: // Moracha
+                if ($date < "2025-03-11") return 500_000_000_000; // 500b
+                // https://forums.eveonline.com/t/478973/2 (sold in post 5; bid-based estimate)
+                return 900_000_000_000; // 900b
+            case 32209: // Mimir
+                if ($date < "2023-11-02") return 100_000_000_000; // 100b
+                // https://forums.eveonline.com/t/424301/16 (reported sale)
+                return 320_000_000_000; // 320b
             // Rare cruisers
             case 11940: // Gold Magnate
 		    if ($date <= "2020-01-25") return 500_000_000; // 500b
@@ -239,14 +279,12 @@ class Price
             case 635: // Opux Luxury Yacht
             case 11011: // Guardian-Vexor
             case 25560: // Opux Dragoon Yacht
-            case 33395: // Moracha
                 return 500_000_000_000; // 500b
                 // Rare battleships
             case 13202: // Megathron Federate Issue
             case 11936: // Apocalypse Imperial Issue
             case 11938: // Armageddon Imperial Issue
             case 26842: // Tempest Tribal Issue
-            case 78576: // Azariel (Angel Titan)
                 return 750_000_000_000; // 750b
             case 26840: // Raven State Issue
                 return 2_500_000_000_000; // 2.5t
