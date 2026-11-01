@@ -173,26 +173,44 @@ class Price
             case 35779: // Imp
             case 42125: // Vendetta
             case 42246: // Caedes
-            case 74141: // Geri
                 return 120_000_000_000; // 120b
+            case 74141: // Geri
+                if ($date < "2026-09-20") return 120_000_000_000; // 120b
+                // https://forums.eveonline.com/t/517277/13
+                return 145_000_000_000; // 145b
             case 2836: // Adrestia
             case 33675: // Chameleon
             case 35781: // Fiend
             case 45530: // Virtuoso
             case 48636: // Hydra
-            case 60765: // Raiju
             case 74316: // Bestla
             case 78414: // Shapash
                 return 150_000_000_000; // 150b
+            case 60765: // Raiju
+                if ($date < "2026-01-24") return 150_000_000_000; // 150b
+                // https://forums.eveonline.com/t/505136/5 (accepted in posts 6-7)
+                return 455_000_000_000; // 455b
             case 33397: // Chremoas
-            case 42245: // Rabisu
             case 85062: // Sidewinder
                 return 200_000_000_000; // 200b
+            case 42245: // Rabisu
+                if ($date < "2025-12-19") return 200_000_000_000; // 200b
+                // https://forums.eveonline.com/t/503238/8
+                return 875_000_000_000; // 875b
             case 45531: // Victor
+                if ($date < "2026-03-22") return 230_000_000_000; // 230b
+                // https://forums.eveonline.com/t/508238/5
+                return 700_000_000_000; // 700b
             case 89808: // Skua
                 return 230_000_000_000; // 230b
             case 48635: // Tiamat
+                if ($date < "2025-12-20") return 230_000_000_000; // 230b
+                // https://forums.eveonline.com/t/503238/10 (sold in post 12)
+                return 600_000_000_000; // 600b
             case 60764: // Laelaps
+                if ($date < "2025-11-26") return 230_000_000_000; // 230b
+                // https://forums.eveonline.com/t/501776/2
+                return 800_000_000_000; // 800b
             case 77726: // Cybele
                 return 230_000_000_000;
             case 85229: // Cobra
