@@ -1779,6 +1779,7 @@ async function btn_save(event) {
 	button.prop("disabled", true).attr("title", "Saving");
 
 	try {
+		setHash();
 		let res = await fetch("/asearchsave/?url=" + encodeURIComponent(window.location.href), {
 			credentials: "same-origin"
 		});
@@ -2343,7 +2344,7 @@ function buildZkillbotFilter() {
 
 function btn_export() {
 	if ($(".filter[entity-not='true']").length) {
-		alert('NOT filters cannot be exported to a zkillbot filter.');
+		alert('zKillBot\'s != does not work the same as zKill\'s NOT.\n\nFor example, an attacker filter using != can match when one attacker is outside the selected corporation, even if another attacker belongs to it. zKill\'s NOT excludes the entire killmail if any attacker belongs to that corporation.\n\nNOT filters cannot be exported without changing which killmails match. Remove them to export, or use Save Search to share this search with its exclusions.');
 		return;
 	}
 	var filter = buildZkillbotFilter();
