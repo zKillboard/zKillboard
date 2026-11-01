@@ -226,6 +226,7 @@ while ($time >= time()) {
             addLabel($kill, $capitalInvolved, 'capinv');
             addLabel($kill, $superInvolved, 'super');
             addLabel($kill, $titanInvolved, 'titan');
+            addLabel($kill, (bool) $atShip, 'atShip');
 
             $fwFaction = fwFaction($kill);
             if ($fwFaction !== null) {
