@@ -9,7 +9,7 @@ function handler($request, $response, $args, $container) {
     $response = $response->withHeader('Access-Control-Allow-Origin', '*')
                         ->withHeader('Access-Control-Allow-Methods', 'GET')
                         ->withHeader('Content-Type', 'application/json; charset=utf-8')
-                        ->withHeader('Cache-Control', 'public, max-age=600')
+                        ->withHeader('Cache-Control', 'public, max-age=28800')
                         ->withHeader('Cache-Tag', "www,api,prices,date:$date");
 
     if ($parsedDate === false || $parsedDate->format('Y-m-d') !== $date) {
@@ -25,10 +25,25 @@ function handler($request, $response, $args, $container) {
         return $response->withStatus(400);
     }
 
-    $rows = $mdb->find('prices', [$date => ['$exists' => true]], ['typeID' => 1], null, ['typeID' => 1, $date => 1]);
+    // Stream histories so items without a trade on this date are still included.
+    $rows = $mdb->getCollection('prices')->find([], ['sort' => ['typeID' => 1], 'maxTimeMS' => 30000]);
     $prices = [];
+    $fallbackPrices = [];
     foreach ($rows as $row) {
-        $prices[(string) $row['typeID']] = $row[$date];
+        $typeID = (int) $row['typeID'];
+        if (isset($row[$date])) {
+            $prices[$typeID] = $row[$date];
+            continue;
+        }
+        unset($row['_id'], $row['typeID']);
+        $latestDate = '';
+        $fallbackPrices[$typeID] = 0.01;
+        foreach ($row as $priceDate => $price) {
+            if ($priceDate >= '2003-01-01' && $priceDate <= $date && $priceDate > $latestDate) {
+                $latestDate = $priceDate;
+                $fallbackPrices[$typeID] = $price;
+            }
+        }
     }
 
     $specialTypeIDs = Price::getSpecialPriceTypeIDs();
@@ -40,10 +55,12 @@ function handler($request, $response, $args, $container) {
         $specialTypeIDs[] = (int) $type['id'];
     }
     foreach (array_unique($specialTypeIDs) as $typeID) {
-        if (isset($prices[(string) $typeID])) continue;
+        if (!isset($fallbackPrices[$typeID])) continue;
         $price = Price::getSpecialPrice($typeID, $date);
         if ($price !== null) $prices[(string) $typeID] = $price;
     }
+    $prices += $fallbackPrices;
+    ksort($prices, SORT_NUMERIC);
 
     $queryParams = $request->getQueryParams();
     if (isset($queryParams['callback']) && Util::isValidCallback($queryParams['callback'])) {
