@@ -125,15 +125,18 @@ function loadasearch() {
 		.on('dragover.zkb-asearch-filter-drag', function (event) {
 			if (!asearchDraggedFilter) return;
 			event.preventDefault();
+			filterDrag(event);
 			var dataTransfer = (event.originalEvent || event).dataTransfer;
 			if (dataTransfer) dataTransfer.dropEffect = 'move';
 		})
 		.on('drop.zkb-asearch-filter-drag', function (event) {
 			if (!asearchDraggedFilter) return;
 			event.preventDefault();
+			filterDrag(event);
 			var filter = asearchDraggedFilter;
 			var destination = asearchDragDestination;
 			asearchDraggedFilter = null;
+			asearchDragOffset = null;
 			asearchDragDestination = null;
 			clearAsearchDropTargets();
 			if (destination) applyFilterDrop(filter, destination);
@@ -524,7 +527,6 @@ function getHTML(suggestion, slot) {
 		.addClass('filter')
 		.addClass('filter-' + suggestion.data.type)
 		.on('dragstart', filterDragStart)
-		.on('drag', filterDrag)
 		.on('dragend', filterDragEnd);
 	filter.append(data).append(actions);
 	updateFilterActions(filter, slot);
@@ -1574,7 +1576,7 @@ function filterDragStart(event) {
 
 function filterDrag(event) {
 	var nativeEvent = event.originalEvent || event;
-	if (!asearchDragOffset || nativeEvent.clientX <= 0 || nativeEvent.clientY <= 0) return;
+	if (!asearchDragOffset) return;
 	var left = nativeEvent.clientX - asearchDragOffset.x;
 	var top = nativeEvent.clientY - asearchDragOffset.y;
 	var right = left + asearchDragOffset.width;
@@ -1594,13 +1596,10 @@ function filterDrag(event) {
 }
 
 function filterDragEnd() {
-	var filter = asearchDraggedFilter;
-	var destination = asearchDragDestination;
 	asearchDraggedFilter = null;
 	asearchDragOffset = null;
 	asearchDragDestination = null;
 	clearAsearchDropTargets();
-	if (filter && destination) applyFilterDrop(filter, destination);
 }
 
 function clearAsearchDropTargets() {
