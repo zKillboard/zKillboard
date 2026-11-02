@@ -1,6 +1,7 @@
 <?php
 
 use cvweiss\redistools\RedisTtlCounter;
+use cvweiss\redistools\RedisCache;
 
 require_once "../init.php";
 
@@ -26,7 +27,25 @@ $redis->setex('zkb:topKillID', 86400, $topKillID);
 $redis->set('zkb:TopIsk', json_encode(Stats::getTopIsk(array('pastSeconds' => (7 * 86400), 'limit' => 6, 'npc' => false))));
 $redis->set('zkb:TopIskShips', json_encode(Stats::getTopIsk(array('categoryID' => 6, 'pastSeconds' => (7 * 86400), 'limit' => 6, 'npc' => false))));
 $redis->set('zkb:TopIskStructures', json_encode(Stats::getTopIsk(array('categoryID' => ['$ne' => 6], 'pastSeconds' => (7 * 86400), 'limit' => 6, 'npc' => false))));
-$redis->set('zkb:TopSpecialLosses', json_encode(Stats::getTopIsk(array('regionID' => 10000004, 'pastSeconds' => (7 * 86400), 'limit' => 6, 'npc' => false))));
+$topSpecialLosses = RedisCache::get('TopSpecialLosses');
+if (!is_array($topSpecialLosses)) {
+    $topLosses = [];
+    $uniqueLosses = [];
+    $cursor = $mdb->getCollection('oneWeek')->find(['system.regionID' => 10000004, 'npc' => false], [
+        'projection' => ['_id' => 0, 'killID' => 1, 'involved' => ['$slice' => 1]],
+        'sort' => ['zkb.totalValue' => -1],
+    ]);
+    foreach ($cursor as $kill) {
+        if (count($topLosses) < 6) $topLosses[] = $kill['killID'];
+        $shipTypeID = $kill['involved'][0]['shipTypeID'];
+        // Highest value first: keep only the most expensive loss of each type.
+        if (!isset($uniqueLosses[$shipTypeID])) $uniqueLosses[$shipTypeID] = $kill['killID'];
+        if (count($uniqueLosses) >= 6) break;
+    }
+    $topSpecialLosses = Kills::getDetails(count($uniqueLosses) >= 6 ? array_values($uniqueLosses) : $topLosses, true);
+    RedisCache::set('TopSpecialLosses', $topSpecialLosses, 900);
+}
+$redis->set('zkb:TopSpecialLosses', json_encode($topSpecialLosses));
 
 $redis->set("zkb:totalChars", $redis->zcard("zkb:characterID"));
 $redis->set("zkb:totalCorps", $redis->zcard("zkb:corporationID"));
