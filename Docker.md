@@ -6,30 +6,11 @@ Requires Linux, Docker 20.10+, and ports 80, 9000, 15241, 27017, and 6379 availa
 
 ```bash
 ./scripts/build-docker-containers.sh
-
-docker run -d --restart unless-stopped --name zkill-mongo \
-    -p 27017:27017 -v zkill-mongo-data:/data/db \
-    --log-opt max-size=50m --log-opt max-file=3 \
-    mongo:7.0 --replSet rs0 --bind_ip_all
 ```
 
-Once MongoDB is listening, initialize its replica set once per data volume:
+Build prepares the images. Start creates any missing MongoDB, Redis, and redis-websocket containers and initializes MongoDB's replica set only if it is not already initialized.
 
-```bash
-docker exec zkill-mongo mongosh --quiet --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]})'
-
-docker run -d --restart unless-stopped --name zkill-redis \
-    -p 6379:6379 -v zkill-redis-data:/data \
-    --log-opt max-size=50m --log-opt max-file=3 \
-    redis:7 redis-server --appendonly yes
-
-docker run -d --restart unless-stopped --network host --name redis-websocket \
-    -e SERVERS=127.0.0.1 -e PORT=15241 \
-    --log-opt max-size=10m --log-opt max-file=5 \
-    redis-websocket
-```
-
-MongoDB and Redis persist in named volumes. Both publish without authentication; restrict ports 27017 and 6379 to trusted machines.
+MongoDB and Redis persist in named volumes, which start reuses. Both publish without authentication; restrict ports 27017 and 6379 to trusted machines.
 
 Configure `config.php`:
 
