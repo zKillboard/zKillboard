@@ -29,6 +29,7 @@ nav.navbar.navbar-expand-md.navbar-dark.bg-dark(style="margin-bottom: 0px;")
               a.dropdown-item(href="/simulate/") Fitting Simulator
               hr.dropdown-divider
               h6.dropdown-header Kill Reports
+              a.dropdown-item(href=$asearchHref(['buttons' => ['week', 'rolling', 'label-atShip', 'sort-date', 'sort-desc', 'page1', 'victimsonly']])) AT Ships
               a.dropdown-item(href=$asearchHref(['buttons' => ['week', 'rolling', 'label-isk:5b+', 'sort-date', 'sort-desc', 'page1', 'victimsonly']])) Top Kills (5b+)
               a.dropdown-item(href=$asearchHref(['buttons' => ['week', 'rolling', 'label-isk:10b+', 'label-isk:100b+', 'sort-date', 'sort-desc', 'page1', 'victimsonly']])) Big Kills (10b+)
               a.dropdown-item(href=$asearchHref(['buttons' => ['week', 'rolling', 'label-capital', 'label-pvp', 'sort-date', 'sort-desc', 'page1', 'victimsonly']])) Capitals
