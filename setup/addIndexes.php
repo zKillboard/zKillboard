@@ -1320,6 +1320,9 @@ echo "Done\n";
 echo "Creating index : 'updatedAt' => 1 ... ";
 $sessions->createIndex(['updatedAt' => 1], ['expireAfterSeconds' => 7776000]);
 echo "Done\n";
+echo "Creating index : 'characterID' => 1 ... ";
+$sessions->createIndex(['characterID' => 1], []);
+echo "Done\n";
 
 // shortener
 echo "\nCreating collection shortener ... ";
