@@ -1,14 +1,11 @@
 - $txtLength = 60;
 - $titleLower = strtolower((string) ($killListTitle ?? ''));
-- $isMostRecentKills = $titleLower == 'most recent kills';
 - $isTeamAKills = $titleLower == 'team a losses';
 - $isTeamBKills = $titleLower == 'team b losses';
 - $shellClass = 'kill-list-shell' . ($isTeamAKills ? ' kill-list-shell-a' : ($isTeamBKills ? ' kill-list-shell-b' : ''));
 div(class=$shellClass)
   .kill-list-header
-    h2.h3(class=('kill-list-title' . ($isMostRecentKills ? ' most-recent-kills-title' : '')) id=($isMostRecentKills ? 'mostRecentKillsTitle' : false))= $killListTitle ?? ''
-    if ($isMostRecentKills)
-      #ambientKillmailHost.kill-list-ambience
+    h2.h3.kill-list-title= $killListTitle ?? ''
     include pager.pug
   - $CurrentYear = '';
   - $CurrentMonth = '';

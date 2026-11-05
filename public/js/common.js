@@ -1647,9 +1647,7 @@ function addLittleKill(data) {
 
     var data = $(data);
     killdata = $(data);
-    const row = data.filter('.tr-killmail').first();
     $("#killlist tbody tr").first().before(data);
-    if (row.length > 0 && typeof window.playAmbientKillmailNote === 'function') window.playAmbientKillmailNote(row);
     doFormats();
 
 	// Keep the page from growing too much...

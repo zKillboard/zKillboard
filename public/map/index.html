@@ -6,6 +6,7 @@
 		<meta name="description" content="Official zKillboard live map of New Eden.">
 		<meta name="theme-color" content="#04070b">
 		<link rel="canonical" href="/map/index.html">
+		<link rel="stylesheet" href="/vendor/bootstrap/5.3.3/cyborg/bootstrap.min.css">
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap">
@@ -134,11 +135,9 @@
 				pointer-events: auto;
 				justify-items: center;
 			}
-			.map-ambient-volume label {
-				font: italic 700 9px/1 "Noto Sans", "Segoe UI", sans-serif;
-				letter-spacing: 0.08em;
-				text-transform: uppercase;
-				color: rgba(221, 233, 248, 0.82);
+			.map-ambient-volume button {
+				font: 900 22px/1 "Noto Sans", "Segoe UI", sans-serif;
+				color: var(--text);
 			}
 			.map-ambient-volume input[type="range"] {
 				width: 14px;
@@ -149,6 +148,9 @@
 				direction: rtl;
 				-webkit-appearance: slider-vertical;
 			}
+			#mapJukebox { position: absolute; top: 96px; right: 56px; z-index: 7; width: min(360px, calc(100vw - 70px)); max-height: calc(100dvh - 110px); overflow: auto; background: rgba(8, 12, 18, 0.97); }
+			#jukeboxTracks { max-height: 30vh; }
+			#mapJukebox[hidden], #jukeboxTracks button[hidden] { display: none; }
 			.region-activity {
 				position: absolute;
 				right: 14px;
@@ -237,10 +239,36 @@
 			</button>
 			<button id="projectionToggle" class="projection-btn" type="button" data-mode="2d" aria-label="Switch map projection" aria-pressed="true">2D</button>
 			<button id="regionLabelToggle" class="region-label-toggle" type="button" aria-label="Toggle region labels" aria-pressed="false" title="Toggle region labels">RG</button>
-			<div class="map-ambient-volume" aria-label="Map ambience volume">
-				<label for="ambientVolumeSlider">AMB</label>
-				<input id="ambientVolumeSlider" type="range" min="0" max="1" step="0.01" value="0" aria-label="Map ambience volume">
+			<div class="map-ambient-volume" aria-label="Map music volume" title="EVE soundtrack · raise volume to start · slide to 0 to mute">
+				<button id="jukeboxToggle" class="border-0 bg-transparent p-0" type="button" aria-label="Open jukebox" aria-expanded="false" aria-controls="mapJukebox" title="Open jukebox">♫</button>
+				<input id="ambientVolumeSlider" type="range" min="0" max="1" step="0.01" value="0" aria-label="Map music volume">
 			</div>
+			<aside id="mapJukebox" class="card shadow-lg p-3" data-bs-theme="dark" aria-labelledby="jukeboxTitle" hidden>
+				<div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+					<h2 id="jukeboxTitle" class="h5 mb-0">New Eden Jukebox</h2>
+					<button id="jukeboxClose" class="btn-close" type="button" aria-label="Close jukebox"></button>
+				</div>
+				<p class="small text-body-secondary mb-3">67 tracks · EVE Online soundtrack</p>
+				<div class="small text-info text-uppercase">Now playing</div>
+				<div id="jukeboxNowPlaying" class="fw-bold my-1">Below the Asteroids</div>
+				<div id="jukeboxStatus" class="small text-body-secondary mb-2" role="status">Raise volume or press play</div>
+				<input id="jukeboxSeek" class="form-range" type="range" min="0" max="0" step="1" value="0" aria-label="Track position" disabled>
+				<div class="d-flex justify-content-between small text-body-secondary mb-2">
+					<span id="jukeboxElapsed">0:00</span><span id="jukeboxDuration">0:00</span>
+				</div>
+				<div class="d-flex gap-2 mb-3">
+					<button id="jukeboxPrevious" class="btn btn-secondary btn-sm" type="button" aria-label="Previous track">⏮</button>
+					<button id="jukeboxPlay" class="btn btn-secondary btn-sm" type="button" aria-label="Play">▶</button>
+					<button id="jukeboxNext" class="btn btn-secondary btn-sm" type="button" aria-label="Next track">⏭</button>
+					<button id="jukeboxShuffle" class="btn btn-outline-info btn-sm active ms-auto" type="button" aria-pressed="true">Shuffle</button>
+				</div>
+				<label for="jukeboxVolume" class="form-label small mb-0">Volume</label>
+				<input id="jukeboxVolume" class="form-range" type="range" min="0" max="1" step="0.01" value="0">
+				<label for="jukeboxSearch" class="visually-hidden">Search tracks</label>
+				<input id="jukeboxSearch" class="form-control form-control-sm mb-2" type="search" placeholder="Search tracks…" autocomplete="off">
+				<div id="jukeboxTracks" class="list-group overflow-auto" aria-label="Soundtrack"></div>
+				<p id="jukeboxEmpty" class="small text-body-secondary mb-0" hidden>No matching tracks.</p>
+			</aside>
 			<aside class="killmail-stream" id="liveKillsPanel">
 				<ul class="feed-list" id="liveKillFeed"></ul>
 			</aside>
@@ -271,7 +299,7 @@
 				constellationsUrl: '/data/mapConstellations.jsonl'
 			};
 		</script>
-		<script src="/js/ambience.js?v=map1"></script>
+		<script src="/map/music.js"></script>
 		<script src="/map/map.js?v=ws3"></script>
 	</body>
 </html>

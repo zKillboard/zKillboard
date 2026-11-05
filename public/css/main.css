@@ -1648,22 +1648,6 @@ code {
 	background-color: #CC5500;
 }
 
-.ambient-killmail-toggle {
-	position: fixed;
-	right: 14px;
-	bottom: 14px;
-	padding: 7px 12px;
-	border: 1px solid #2f3a4f;
-	border-radius: 999px;
-	background: rgba(12, 16, 28, 0.86);
-	color: #d4dfef;
-	font-size: 12px;
-	line-height: 1;
-	letter-spacing: 0.03em;
-	transition: all 0.2s ease;
-	backdrop-filter: blur(6px);
-}
-
 .kill-list-header {
 	display: flex;
 	align-items: flex-end;
@@ -2015,45 +1999,7 @@ code {
 	border-top-color: #f2a36a;
 }
 
-.kill-list-ambience {
-	display: none;
-	margin-top: 0;
-}
-
-.kill-list-ambience .ambient-killmail-toggle {
-	position: static;
-	right: auto;
-	bottom: auto;
-	padding: 5px 10px;
-	font-size: 11px;
-	letter-spacing: 0.02em;
-	line-height: 1;
-}
-
-.ambient-killmail-toggle:hover {
-	border-color: #4c6385;
-	color: #eef4ff;
-	background: rgba(16, 24, 40, 0.94);
-}
-
-.ambient-killmail-toggle.is-on {
-	border-color: #548e71;
-	background: rgba(14, 30, 23, 0.9);
-	color: #ccefdc;
-}
-
 @media only screen and (max-width: 767px) {
-	.ambient-killmail-toggle {
-		right: 10px;
-		bottom: 10px;
-		font-size: 11px;
-		padding: 7px 10px;
-	}
-
-	.kill-list-ambience {
-		margin-top: 0;
-	}
-
 	.war-kill-layout {
 		grid-template-columns: 1fr;
 	}
