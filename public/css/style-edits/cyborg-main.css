@@ -1,7 +1,7 @@
 @media (min-width: 768px) {
 	body {
 		background-color: #111;
-		background: url(/img/Catalyst_4k_Clean.jpg) no-repeat center center fixed;
+		background: url(/img/bg_fractured_skies.webp) no-repeat center center fixed;
 		background-size: cover !important;
 	}
 }
@@ -14,9 +14,13 @@
 	}
 }
 
-.nobackground, .navbar {
+.nobackground, .navbar, .content.page-shell {
        background: #000;
        box-shadow: 0 0 5px 5px rgba(6,6,6,0.95);
+}
+
+.content > .nobackground {
+	box-shadow: none;
 }
 
 #navibar {
