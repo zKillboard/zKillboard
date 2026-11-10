@@ -1,6 +1,6 @@
 <?php
 
-$mt = 8; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit(); $pid = $mt;
+$mt = 16; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit(); $pid = $mt;
 
 require_once '../init.php';
 
@@ -47,6 +47,7 @@ while ($minute == date('Hi')) {
     if ($redis->get("zkb:statsStop") == "true") break;
 
 	$raw = $queueStatsSet->pop();
+    $queueStatsSet->add($raw); // not done until its done with complete block
     if ($raw == ":" || $raw == ":0") {
 		$queueStatsSet->remove($raw);
         continue;
@@ -56,7 +57,6 @@ while ($minute == date('Hi')) {
         sleep(1);
         continue;
     }
-
     $arr = explode(":", $raw);
     $type = $arr[0];
     if ($type == "itemID" || $type == "typeID") {
@@ -72,10 +72,7 @@ while ($minute == date('Hi')) {
     }
     $key = "$type";
 
-    if ($key == "shipTypeID" && $mt > 2) continue; // limit number of shipTypeID threads
-
-    if ($key == 'characterID' || $key == 'corporationID' || $key == "allianceID" || $key == "locationID" || $key == "shipTypeID") $lockKey = "zkb:stats:$key:$id";
-    else $lockKey = "zkb:stats:$key";
+    $lockKey = "zkb:stats:lock:$mt";
     if ($redis->set($lockKey, "true", ['nx', 'ex' => 3600]) === true) {
         try {
             $redis->setex("zkb:stats:current:$type:$id", 10800, "true");
@@ -84,7 +81,7 @@ while ($minute == date('Hi')) {
 
             do {
                 $complete = calcStats($row, $maxSequence);
-            } while ($complete == false && date("Hi") == $minute);
+            } while ($complete == false && $minute == date('Hi'));
 
             if ($complete) {
                 Util::statsBoxUpdate($type, $id);
@@ -102,7 +99,7 @@ while ($minute == date('Hi')) {
         }
     } else {
         usleep(25000); // 1/4th of a second
-                $queueStatsSet->add($raw);
+        $queueStatsSet->add($raw);
     }
 }
 
@@ -140,7 +137,6 @@ function calcStats($row, $maxSequence)
         case "locationID":
         case "allianceID":
         case "corporationID":
-        case "groupID":
         case "constellationID":
         case "solarSystemID";
             $delta = 1000000;
@@ -148,6 +144,7 @@ function calcStats($row, $maxSequence)
         case "shipTypeID":
         case "factionID":
         case "regionID":
+        case "groupID":
         case "label":
             $delta = 100000;
             break;
@@ -158,7 +155,7 @@ function calcStats($row, $maxSequence)
     $oldSequence = (int) @$stats['sequence'];
     $newSequence = min($oldSequence + $delta, $maxSequence);
 
-    //if ($newSequence != $maxSequence && $newSequence % 10000000 == 0) Util::out("next $type $id $oldSequence $newSequence");
+    //if ($newSequence != $maxSequence) Util::out("next $type $id $oldSequence $newSequence");
 
     for ($i = 0; $i <= 1; ++$i) {
         $isVictim = ($i == 0);
