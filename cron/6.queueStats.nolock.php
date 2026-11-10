@@ -74,7 +74,14 @@ while ($minute == date('Hi')) {
 
     $lockKey = "zkb:stats:lock:$mt";
     if ($redis->set($lockKey, "true", ['nx', 'ex' => 3600]) === true) {
+        $statsLockKey = "zkb:stats:lock:$type:$id";
+        $statsLocked = false;
         try {
+            $statsLocked = $redis->set($statsLockKey, "true", ['nx', 'ex' => 3600]) === true;
+            if (!$statsLocked) {
+                usleep(25000);
+                continue;
+            }
             $redis->setex("zkb:stats:current:$type:$id", 10800, "true");
             $maxSequence = $mdb->findField("killmails", "sequence", [], ['sequence' => -1]);
             $row = ['type' => $type, 'id' => $id, 'sequence' => $maxSequence];
@@ -94,7 +101,10 @@ while ($minute == date('Hi')) {
             throw $ex;
         } finally {
             if ($redis->ping() != 1) connectRedis();
-            $redis->del("zkb:stats:current:$type:$id");
+            if ($statsLocked) {
+                $redis->del("zkb:stats:current:$type:$id");
+                $redis->del($statsLockKey);
+            }
             $redis->del($lockKey);
         }
     } else {
@@ -263,7 +273,7 @@ function calcStats($row, $maxSequence)
     if (@$stats['shipsDestroyed'] > 10 && @$stats['shipsDestroyed'] > @$stats['nextTopRecalc']) $stats['calcAlltime'] = true;
 	if ($type == 'characterID' && @$stats['shipsDestroyed'] >= 100) $stats['calcTrophies'] = true;
     // save it
-    if ($resetInProgress) {
+    if ($resetInProgress && isset($stats['_id'])) {
         $mdb->save('statistics', $stats);
     } else {
         $statsUpdate = $stats;
