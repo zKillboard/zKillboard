@@ -1,5 +1,8 @@
 {
 	"require": {
+		"php": "^8.2",
+		"ext-redis": "*",
+		"ext-curl": "*",
 		"cvweiss/redistools": "v0.0.*",
 		"slim/slim": "^4.0",
 		"slim/psr7": "^1.2",
