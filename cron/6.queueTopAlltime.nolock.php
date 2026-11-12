@@ -1,5 +1,7 @@
 <?php
 
+$mt = 5; do { $mt--; $pid = pcntl_fork(); } while ($pid > 0 && $mt > 0); if ($pid > 0) exit(); $pid = $mt;
+
 use cvweiss\redistools\RedisQueue;
 
 require_once '../init.php';
@@ -11,37 +13,41 @@ if ($queueStatsSet->count() > 1000) exit();
 
 $minute = date("Hi");
 while ($minute == date("Hi")) {
-    $rows = $mdb->find("statistics", ['calcAlltime' => true, 'reset' => ['$ne' => true]], ['shipsDestroyed' => 1], 25);
+    $direction = $mt === 0 ? -1 : 1;
+    $rows = $mdb->find("statistics", ['calcAlltime' => true, 'reset' => ['$ne' => true]], ['shipsDestroyed' => $direction], 25);
     if (sizeof($rows) == 0) exit();
     foreach ($rows as $row) {
         if ($row['id'] == 0) {
             $mdb->set("statistics", $row, ['calcAlltime' => false]);
             continue;
         }
-        $cacheKey = "zkb:top:" . $row['type'] . ":" . $row['id'];
+        $cacheKey = "zkb:topAlltime:" . $row['type'] . ":" . $row['id'];
         $instanceKey = "x";
         $proceed = false;
         $set = false;
         $instance = -1;
         try {
             // Ensure we never have more than 5 instances running at once
-            for ($instance = 0; $instance < 3; $instance++) {
-                $instanceKey = "zkb:topInstance:$instance";
-                if ($redis->set($instanceKey, "true", ['nx', 'ex' => 10800]) === true) {
-                    $proceed = true;
-                    break;
-                }
-            }
-            if (!$proceed) {
+            $instanceKey = "zkb:topAlltimeInstance:$mt:";
+            if ($redis->set($instanceKey, "true", ['nx', 'ex' => 86400]) === true) {
+                $proceed = true;
+            } else {
                 sleep(1);
                 break; // 5 or more instances already running.....
+            }
+            if ($mt > 0 && $row['shipsDestroyed'] > 1000000) {
+                // only $mt 0 should be handling very large stats to prevent excessive high laod
+                // from multiple threads handling large stats
+                sleep(1);
+                continue;
             }
 
             $i = $row['type'] . " " . $row['id'] . " : " . $row['shipsDestroyed'];
 
-            if ($redis->set($cacheKey, "false", ['nx', 'ex' => 10800]) !== true) continue;
+            if ($redis->set($cacheKey, "false", ['nx', 'ex' => 86400]) !== true) continue;
             $set = true;
 
+            //Util::out("$mt $i");
             //$now = time();
             calcTop($row);
             //Util::out("calcTop $i -> " . (time() - $now) . " seconds");
