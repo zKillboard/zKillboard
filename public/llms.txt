@@ -1,0 +1,36 @@
+# zKillboard
+
+> zKillboard provides EVE Online killmail data. Agents must use the documented APIs, not scrape website pages or HTML fragments.
+
+## Start here
+
+- [API documentation](https://zkillboard.com/api/docs/): Endpoint reference and examples for people.
+- [API catalog](https://zkillboard.com/api/api.json): Machine-readable endpoint descriptions, parameters, examples, cache guidance, and response formats. This is a custom JSON catalog, not an OpenAPI schema.
+- [MCP server](https://zkillboard.com/mcp/): Public, read-only instructions and API documentation over Streamable HTTP. Configure this exact URL, including the trailing slash; no authentication is required. Tools: get_instructions and get_api_documentation. The same documents are available through resources/list and resources/read. This server supplies documentation; call the documented APIs directly for data.
+
+## Rules for agents
+
+- Do not scrape HTML pages, search results, kill lists, or internal AJAX/UI endpoints. Do not crawl the website to reconstruct datasets. Reading the API documentation is welcome.
+- Read the API catalog before constructing requests. Use only documented endpoints and parameters. If a requested feature is unavailable through the APIs, explain the limitation instead of scraping or inventing an endpoint.
+- Send a descriptive User-Agent identifying your application and a maintainer contact or project URL. Enable gzip compression (for example, curl --compressed).
+- Keep the trailing slash on API paths; static .json URLs do not need one. Use EVE entity IDs and UTC dates/times.
+- Cache responses according to the documented cache duration and HTTP cache headers. Reuse cached results, space requests out, and avoid parallel request bursts or repeated polling of cached queries.
+- On HTTP 429 or other rate-limit responses, honor Retry-After when present and back off. Stop on access blocks; do not rotate identities or bypass restrictions. Inspect JSON error fields even when HTTP status is 200.
+- For bulk historical data, use the documented R2Z2 daily archives instead of paging through the query API. For live ingestion, use the documented R2Z2 sequence feed and follow its retention and polling guidance.
+- Fetch only the data needed for the user's request. A page of results is not necessarily a complete history. Do not claim completeness when filters, limits, or archive availability prevent it.
+- Submission endpoints change data: use them only when the user explicitly requests a submission.
+- Include relevant zKillboard links so users can view the results themselves. You don't need to fetch or scrape those pages to link to them.
+
+## Choosing an API
+
+- Filtered kills or losses: /api/{modifiers}/, following the killmails section of the catalog.
+- Entity statistics and item prices: the data section of the catalog.
+- Related battle data and other lookups: the utilities section of the catalog.
+- Historical datasets and live ingestion: the archives section of the catalog, hosted at https://r2z2.zkillboard.com/.
+- Killmail submissions: the posting section of the catalog; these are not read operations.
+
+## Example
+
+curl --compressed -A "YourApp (https://your-project.example/contact)" "https://zkillboard.com/api/kills/characterID/1633218082/"
+
+For exact response shapes and supported modifiers, read the API catalog rather than assuming a schema.

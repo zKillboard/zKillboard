@@ -1,3 +1,7 @@
+# Agents: use documented APIs, not HTML scraping.
+# Instructions: https://zkillboard.com/llms.txt
+# API catalog: https://zkillboard.com/api/api.json
+# MCP (Streamable HTTP): https://zkillboard.com/mcp/
 User-agent: bingbot
 User-agent: googlebot
 User-agent: msnbot
@@ -7,6 +11,8 @@ User-agent: discordbot
 User-agent: slack
 Disallow: /cache/*
 Disallow: /api/*
+Allow: /api/docs/$
+Allow: /api/api.json$
 Disallow: /navbar/
 Disallow: /br/*
 Disallow: /related/*
@@ -22,3 +28,7 @@ sitemap: https://zkillboard.com/sitemaps/sitemaps.xml
 
 User-agent: *
 Disallow: /
+Allow: /llms.txt$
+Allow: /api/docs/$
+Allow: /api/api.json$
+Allow: /mcp/$

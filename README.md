@@ -6,6 +6,16 @@ Fun fact: zKillboard.com was originally called killwhore.com until it was discov
 ## Documentation
 
 - [Keyboard shortcuts](information/shortcuts.md)
+- [Agent instructions](public/llms.txt) — use the APIs, not HTML scraping.
+- [API catalog](public/api/api.json) and [API documentation](https://zkillboard.com/api/docs/).
+
+Agents can connect to `https://zkillboard.com/mcp/` using Streamable HTTP without
+authentication. The read-only `get_instructions` and `get_api_documentation` tools
+expose the same local files as MCP resources. The server does not query killmail
+data or proxy API requests. It supports MCP protocol `2025-11-25`, JSON responses,
+and stateless requests; GET streaming and DELETE return 405. Discovery starts at
+`/llms.txt`, linked from the site and `robots.txt`. This helps agents find the
+guidance; it does not enforce compliance or automatically register the MCP in clients.
 
 ## Setup
 

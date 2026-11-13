@@ -36,6 +36,14 @@ block content
   .api-docs
     header.mb-4
       h1.display-6.fw-bold.mt-0.mb-0 zKillboard API
+      p.mt-3.mb-0
+        = 'AI agents: use the APIs, do not scrape the site. Read the '
+        a(href="/llms.txt") agent instructions
+        = ' and '
+        a(href="/api/api.json") JSON API catalog
+        = '. Connect an MCP client to '
+        code https://zkillboard.com/mcp/
+        |  for instructions and documentation (Streamable HTTP, no authentication).
 
     .row.g-4
       aside.col-lg-3

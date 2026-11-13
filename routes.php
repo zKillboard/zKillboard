@@ -113,6 +113,7 @@ $routes = [
 	'/account/campaigns/update/{uid}/' => ['POST', 'view/campaigns/update.php'],
 	
 	// Mixed routes
+	'/mcp/' => [['GET', 'POST', 'DELETE'], 'view/mcp.php'],
 	'/account/[{req}/[{reqid}/]]' => [['GET', 'POST'], 'view/account.php'],
 	'/search/[{search}/]' => [['GET', 'POST'], 'view/search.php'],
 	'/post/' => [['GET', 'POST'], 'view/postmail.php'],
