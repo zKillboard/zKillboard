@@ -4,6 +4,7 @@
 
 ## Start here
 
+- [MCP setup guide](https://zkillboard.com/api/docs/#mcp): Human-readable connection instructions, client configuration examples, tools, and troubleshooting.
 - [API documentation](https://zkillboard.com/api/docs/): Endpoint reference and examples for people.
 - [API catalog](https://zkillboard.com/api/api.json): Machine-readable endpoint descriptions, parameters, examples, cache guidance, and response formats. This is a custom JSON catalog, not an OpenAPI schema.
 - [MCP server](https://zkillboard.com/mcp/): Public, read-only instructions and API documentation over Streamable HTTP. Configure this exact URL, including the trailing slash; no authentication is required. Tools: get_instructions and get_api_documentation. The same documents are available through resources/list and resources/read. This server supplies documentation; call the documented APIs directly for data.

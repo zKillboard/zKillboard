@@ -8,6 +8,7 @@ Fun fact: zKillboard.com was originally called killwhore.com until it was discov
 - [Keyboard shortcuts](information/shortcuts.md)
 - [Agent instructions](public/llms.txt) — use the APIs, not HTML scraping.
 - [API catalog](public/api/api.json) and [API documentation](https://zkillboard.com/api/docs/).
+- [MCP setup guide](https://zkillboard.com/api/docs/#mcp) — connection examples, tools, and troubleshooting.
 
 Agents can connect to `https://zkillboard.com/mcp/` using Streamable HTTP without
 authentication. The read-only `get_instructions` and `get_api_documentation` tools

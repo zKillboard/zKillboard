@@ -1,0 +1,214 @@
+section#mcp.mb-5(aria-labelledby="mcp-title")
+  .d-flex.align-items-center.gap-2.mb-2
+    i.fas.fa-plug.fa-lg.text-primary(aria-hidden="true")
+    h2#mcp-title.h3.mb-0 zKillboard for your AI assistant
+  p Connect your assistant to zKillboard's Model Context Protocol (MCP) server to learn which APIs to use, how to request data, and where to find the documentation.
+  p.text-body-secondary The MCP supplies instructions and an API reference. Your assistant needs its own HTTP tools to retrieve killmails or other data from the documented APIs. No zKillboard login, EVE login, or API key is needed for this MCP.
+
+  .card.bg-black.border-primary.mb-4
+    .card-body
+      label.form-label.fw-bold(for="mcp-server-url") Server address
+      .input-group.mb-3
+        input#mcp-server-url.form-control.font-monospace(type="text" value="https://zkillboard.com/mcp/" readonly)
+        button.btn.btn-primary(type="button" data-copy-target="mcp-server-url")
+          i.fas.fa-copy.me-1(aria-hidden="true")
+          | Copy URL
+      .d-flex.flex-wrap.gap-2
+        span.badge.bg-secondary Streamable HTTP
+        span.badge.bg-secondary No authentication
+        span.badge.bg-secondary Read-only documentation
+      p.small.text-body-secondary.mt-3.mb-0 Keep the trailing slash. This is a client connection address; opening it in a browser returns HTTP 405. You're already on the human-readable documentation page.
+
+  h3.h5 Add it to your assistant
+  p Use a client that supports remote MCP servers over Streamable HTTP. If it asks for authentication, choose None. Custom server availability depends on your client and workspace settings.
+  ul.nav.nav-tabs.flex-wrap(role="tablist" aria-label="MCP client setup")
+    li.nav-item(role="presentation")
+      button#mcp-chatgpt-tab.nav-link.active(type="button" data-bs-toggle="tab" data-bs-target="#mcp-chatgpt" role="tab" aria-controls="mcp-chatgpt" aria-selected="true") ChatGPT
+    li.nav-item(role="presentation")
+      button#mcp-claude-web-tab.nav-link(type="button" data-bs-toggle="tab" data-bs-target="#mcp-claude-web" role="tab" aria-controls="mcp-claude-web" aria-selected="false") Claude
+    li.nav-item(role="presentation")
+      button#mcp-codex-tab.nav-link(type="button" data-bs-toggle="tab" data-bs-target="#mcp-codex" role="tab" aria-controls="mcp-codex" aria-selected="false") Codex
+    li.nav-item(role="presentation")
+      button#mcp-claude-tab.nav-link(type="button" data-bs-toggle="tab" data-bs-target="#mcp-claude" role="tab" aria-controls="mcp-claude" aria-selected="false") Claude Code
+    li.nav-item(role="presentation")
+      button#mcp-cursor-tab.nav-link(type="button" data-bs-toggle="tab" data-bs-target="#mcp-cursor" role="tab" aria-controls="mcp-cursor" aria-selected="false") Cursor
+    li.nav-item(role="presentation")
+      button#mcp-vscode-tab.nav-link(type="button" data-bs-toggle="tab" data-bs-target="#mcp-vscode" role="tab" aria-controls="mcp-vscode" aria-selected="false") VS Code
+    li.nav-item(role="presentation")
+      button#mcp-antigravity-tab.nav-link(type="button" data-bs-toggle="tab" data-bs-target="#mcp-antigravity" role="tab" aria-controls="mcp-antigravity" aria-selected="false") Antigravity
+    li.nav-item(role="presentation")
+      button#mcp-gemini-tab.nav-link(type="button" data-bs-toggle="tab" data-bs-target="#mcp-gemini" role="tab" aria-controls="mcp-gemini" aria-selected="false") Gemini CLI
+    li.nav-item(role="presentation")
+      button#mcp-general-tab.nav-link(type="button" data-bs-toggle="tab" data-bs-target="#mcp-general" role="tab" aria-controls="mcp-general" aria-selected="false") Other clients
+  .tab-content.border.border-top-0.rounded-bottom.p-3.mb-4
+    #mcp-chatgpt.tab-pane.show.active(role="tabpanel" aria-labelledby="mcp-chatgpt-tab" tabindex="0")
+      ol
+        li
+          = 'Open '
+          a(href="https://chatgpt.com/plugins") ChatGPT Plugins
+          | , select the plus button, then Add custom MCP server.
+        li Name it zKillboard and paste the server address above into Server URL.
+        li Choose No authentication, review the confirmation, then select Create as a plugin.
+        li Enable the plugin in your conversation and try the prompt below.
+      p.mb-0
+        = 'Your workspace must allow custom MCP servers. See the '
+        a(href="https://developers.openai.com/api/docs/guides/custom-mcp-server") ChatGPT setup guide
+        | .
+    #mcp-claude-web.tab-pane(role="tabpanel" aria-labelledby="mcp-claude-web-tab" tabindex="0")
+      ol
+        li In Claude's web or desktop app, open Customize → Connectors, then Add → Custom → Web.
+        li Name the connector zKillboard and paste the server address above.
+        li Review the detected authentication settings; zKillboard requires no authentication. Finish adding the connector and enable it for your conversation.
+      p.mb-0
+        = 'Your organization may need to enable custom connectors. See the '
+        a(href="https://support.claude.com/en/articles/11176164-use-connectors-to-extend-claude-s-capabilities") Claude connector guide
+        | .
+    #mcp-codex.tab-pane(role="tabpanel" aria-labelledby="mcp-codex-tab" tabindex="0")
+      p Run this command in your terminal:
+      pre.bg-black.border.rounded.p-3
+        code#mcp-codex-command codex mcp add zkillboard --url https://zkillboard.com/mcp/
+      button.btn.btn-sm.btn-secondary.mb-3(type="button" data-copy-target="mcp-codex-command") Copy command
+      p
+        = 'Or add this to '
+        code ~/.codex/config.toml
+        | :
+      pre.bg-black.border.rounded.p-3
+        code#mcp-codex-config.
+          [mcp_servers.zkillboard]
+          url = "https://zkillboard.com/mcp/"
+      button.btn.btn-sm.btn-secondary.mb-3(type="button" data-copy-target="mcp-codex-config") Copy TOML
+      p.mb-0
+        = 'Check the entry with '
+        code codex mcp list
+        = '. See the '
+        a(href="https://learn.chatgpt.com/docs/extend/mcp") Codex MCP guide
+        | .
+    #mcp-general.tab-pane(role="tabpanel" aria-labelledby="mcp-general-tab" tabindex="0")
+      ol.mb-0
+        li Open your assistant's custom MCP server settings.
+        li Add a remote server named zKillboard using the server address above.
+        li Select Streamable HTTP and no authentication, where those options are offered.
+        li Enable its tools in your conversation, then try the prompt below.
+    #mcp-claude.tab-pane(role="tabpanel" aria-labelledby="mcp-claude-tab" tabindex="0")
+      p Run this command in your terminal:
+      pre.bg-black.border.rounded.p-3
+        code#mcp-claude-config claude mcp add --transport http zkillboard https://zkillboard.com/mcp/
+      button.btn.btn-sm.btn-secondary.mb-3(type="button" data-copy-target="mcp-claude-config") Copy command
+      p.mb-0
+        = 'Run '
+        code /mcp
+        = ' in Claude Code to check the connection. See the '
+        a(href="https://code.claude.com/docs/en/mcp") Claude Code MCP guide
+        | .
+    #mcp-cursor.tab-pane(role="tabpanel" aria-labelledby="mcp-cursor-tab" tabindex="0")
+      p
+        = 'Add this entry to '
+        code .cursor/mcp.json
+        = ' in your project, or '
+        code ~/.cursor/mcp.json
+        |  for all projects. Merge it with any existing servers.
+      pre.bg-black.border.rounded.p-3
+        code#mcp-cursor-config.
+          {
+            "mcpServers": {
+              "zkillboard": { "url": "https://zkillboard.com/mcp/" }
+            }
+          }
+      button.btn.btn-sm.btn-secondary.mb-3(type="button" data-copy-target="mcp-cursor-config") Copy JSON
+      p.mb-0
+        a(href="https://cursor.com/docs/mcp") Cursor MCP guide
+    #mcp-vscode.tab-pane(role="tabpanel" aria-labelledby="mcp-vscode-tab" tabindex="0")
+      p
+        = 'Add this entry to '
+        code .vscode/mcp.json
+        |  in your workspace. Merge it with any existing servers.
+      pre.bg-black.border.rounded.p-3
+        code#mcp-vscode-config.
+          {
+            "servers": {
+              "zkillboard": {
+                "type": "http",
+                "url": "https://zkillboard.com/mcp/"
+              }
+            }
+          }
+      button.btn.btn-sm.btn-secondary.mb-3(type="button" data-copy-target="mcp-vscode-config") Copy JSON
+      p.mb-0
+        a(href="https://code.visualstudio.com/docs/agent-customization/mcp-servers") VS Code MCP guide
+    #mcp-antigravity.tab-pane(role="tabpanel" aria-labelledby="mcp-antigravity-tab" tabindex="0")
+      p In Antigravity IDE, open MCP Servers → Manage MCP Servers → View raw config. Merge this entry with any existing servers:
+      pre.bg-black.border.rounded.p-3
+        code#mcp-antigravity-config.
+          {
+            "mcpServers": {
+              "zkillboard": { "serverUrl": "https://zkillboard.com/mcp/" }
+            }
+          }
+      button.btn.btn-sm.btn-secondary.mb-3(type="button" data-copy-target="mcp-antigravity-config") Copy JSON
+      p
+        = 'The IDE and CLI use '
+        code ~/.gemini/config/mcp_config.json
+        = ' globally, or '
+        code .agents/mcp_config.json
+        |  for a workspace.
+      p.mb-0
+        a(href="https://antigravity.google/docs/mcp") Antigravity MCP guide
+    #mcp-gemini.tab-pane(role="tabpanel" aria-labelledby="mcp-gemini-tab" tabindex="0")
+      p
+        = 'Merge this entry into '
+        code ~/.gemini/settings.json
+        = ' for all projects, or '
+        code .gemini/settings.json
+        |  for the current project:
+      pre.bg-black.border.rounded.p-3
+        code#mcp-gemini-config.
+          {
+            "mcpServers": {
+              "zkillboard": { "httpUrl": "https://zkillboard.com/mcp/" }
+            }
+          }
+      button.btn.btn-sm.btn-secondary.mb-3(type="button" data-copy-target="mcp-gemini-config") Copy JSON
+      p.mb-0
+        = 'Run '
+        code /mcp
+        = ' in Gemini CLI to check the connection. See the '
+        a(href="https://geminicli.com/docs/tools/mcp-server/") Gemini CLI MCP guide
+        | .
+
+  h3.h5 What it can do
+  .row.g-3.mb-4
+    .col-md-6
+      .card.bg-black.border-primary.h-100
+        .card-body
+          h4.h6
+            code get_instructions
+          p.mb-0 Read the agent guidance: use APIs instead of scraping, cache responses, back off when rate limited, and choose archives for bulk data.
+    .col-md-6
+      .card.bg-black.border-primary.h-100
+        .card-body
+          h4.h6
+            code get_api_documentation
+          p.mb-0 Read the API catalog: supported endpoints, parameters, examples, response formats, and cache guidance.
+  p Both tools take no arguments. They return documentation and do not submit killmails or modify account data.
+  p
+    = 'Clients with MCP resource support can also read '
+    a(href="/llms.txt") https://zkillboard.com/llms.txt
+    = ' and '
+    a(href="/api/api.json") https://zkillboard.com/api/api.json
+    |  through resources/list and resources/read. These documents are also available directly over HTTP.
+
+  .card.bg-black.border-primary.my-4
+    .card-body
+      h3.h5 Try it
+      blockquote.mb-0 Read the zKillboard instructions and API documentation. Show me the API request for recent losses by character 1633218082, explain how long to cache it, and don't scrape any pages.
+
+  h3.h5 Fair use
+  p Use the documented APIs with a descriptive User-Agent and compression enabled. Cache results, avoid request bursts, and honor Retry-After when rate limited. Use the R2Z2 archives for bulk history. If an API doesn't provide what you need, explain the limitation instead of scraping the website.
+  details.border.rounded.p-3
+    summary.fw-bold Connection troubleshooting
+    ul.mt-3.mb-0
+      li Use the exact HTTPS server address, including the trailing slash, and Streamable HTTP transport.
+      li This server supports MCP protocol 2025-11-25. Update your client if it cannot negotiate that protocol.
+      li HTTP 405 from a browser GET is expected; MCP calls use POST. This server does not offer a persistent event stream.
+      li If you receive a rate-limit response, wait before retrying. A browser challenge or unexpected HTML response should be reported in the support channel linked on this page.
+      li If your assistant can read the documentation but cannot retrieve data, it needs an HTTP tool or can give you an API request to run yourself.

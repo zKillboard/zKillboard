@@ -37,13 +37,9 @@ block content
     header.mb-4
       h1.display-6.fw-bold.mt-0.mb-0 zKillboard API
       p.mt-3.mb-0
-        = 'AI agents: use the APIs, do not scrape the site. Read the '
-        a(href="/llms.txt") agent instructions
-        = ' and '
-        a(href="/api/api.json") JSON API catalog
-        = '. Connect an MCP client to '
-        code https://zkillboard.com/mcp/
-        |  for instructions and documentation (Streamable HTTP, no authentication).
+        = 'Using an AI assistant? '
+        a(href="#mcp") Connect to the zKillboard MCP
+        |  for API instructions and documentation. Use the APIs, do not scrape the site.
 
     .row.g-4
       aside.col-lg-3
@@ -59,6 +55,9 @@ block content
             a.list-group-item.list-group-item-action.bg-black(href="#quick-start")
               i.fas.fa-rocket.fa-fw.me-2.text-primary(aria-hidden="true")
               | Quick start
+            a.list-group-item.list-group-item-action.bg-black(href="#mcp")
+              i.fas.fa-plug.fa-fw.me-2.text-primary(aria-hidden="true")
+              | AI agents / MCP
             each $section in ($sections ?? [])
               a.list-group-item.list-group-item-action.bg-black(href=('#' . $section['id']))
                 i.fas.fa-fw.me-2.text-primary(class=$section['icon'] aria-hidden="true")
@@ -167,6 +166,8 @@ block content
               |  Entity IDs come from EVE Online, dates and times are UTC, and read endpoints do not require authentication. Validation errors from older endpoints may use a JSON 
               code error
               |  object without a non-2xx HTTP status, so clients should inspect the response body.
+
+        include components/api-mcp.pug
 
         #api-docs-empty.alert.alert-secondary.d-none No endpoints match that search.
 
@@ -425,7 +426,7 @@ block script
         const button = event.target.closest('[data-copy], [data-copy-target]');
         if (!button) return;
         const target = button.dataset.copyTarget ? document.getElementById(button.dataset.copyTarget) : null;
-        const value = target ? target.value : button.dataset.copy;
+        const value = target ? (target.value ?? target.textContent) : button.dataset.copy;
         navigator.clipboard.writeText(value).then(function () {
           const oldHtml = button.innerHTML;
           button.textContent = 'Copied';
