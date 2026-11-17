@@ -56,6 +56,14 @@ async function prepKills(data) {
             if (!image) continue;
 
             const clone = image.cloneNode(true);
+            const render = clone.querySelector('img.shipImageRender');
+            if (render) render.src = render.src.replace(/size=\d+/, 'size=256');
+
+            const age = Math.max(0, Math.floor((unixtime - epoch) / 60));
+            const ageNode = document.createElement('span');
+            ageNode.classList.add('killAge');
+            ageNode.textContent = age < 60 ? `${age}m` : `${Math.floor(age / 60)}h`;
+            clone.appendChild(ageNode);
 
             const wrapper = document.createElement('div');
             wrapper.style.display = "inline-block";

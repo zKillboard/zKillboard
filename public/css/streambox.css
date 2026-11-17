@@ -3,6 +3,8 @@
 	/* valid values are from 1 to 25 */
 	--vertical: 0;
 	/* 0 for horizontal, 1 for vertical */
+	--kill-age-display: block;
+	/* block to show killmail ages, none to hide */
 }
 
 body {
@@ -53,6 +55,18 @@ body {
 
 .shipImageIcon {
 	display: none;
+}
+
+.killAge {
+	display: var(--kill-age-display);
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	font-size: 12px;
+	font-weight: bold;
+	background: rgba(0, 0, 0, 0.75);
+	padding: 1px 3px;
+	border-radius: 2px;
 }
 
 .pip {

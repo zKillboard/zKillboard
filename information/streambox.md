@@ -93,8 +93,23 @@ Add this CSS block to your **OBS Custom CSS** section (or equivalent in your str
 :root {
 	--max-kills: 5;   /* Number of kills to display (1–25 recommended) */
 	--vertical: 0;    /* 0 = horizontal layout, 1 = vertical layout */
+	--kill-age-display: block; /* block = show killmail ages, none = hide */
 }
 ```
+
+### 🕒 Hiding Killmail Ages
+
+Killmail ages are shown by default in the bottom-right corner of each ship image, in minutes (e.g. **15m**) or hours (e.g. **6h**). They update with the streambox refresh, approximately once per minute.
+
+To hide the age boxes, add this rule to your **OBS Custom CSS**:
+
+```css
+:root {
+	--kill-age-display: none;
+}
+```
+
+Set it back to `block` to show them again.
 
 ### 📐 Recommended Browser Source Sizes
 
