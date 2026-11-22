@@ -924,7 +924,9 @@ function collectAlltimeRanks($job, $type)
     global $mdb;
 
     $field = sourceMetric('shipsDestroyed', $job);
-    $rows = $mdb->getCollection($job['source'])->find(['type' => $type]);
+    $projection = ['_id' => 0, 'id' => 1];
+    foreach (RANK_METRICS as $metric) $projection[sourceMetric($metric, $job)] = 1;
+    $rows = $mdb->getCollection($job['source'])->find(['type' => $type], ['projection' => $projection]);
     foreach ($rows as $row) {
         $id = $row['id'];
         if (($row[$field] ?? 0) < $job['minDestroyed']) continue;
@@ -986,6 +988,8 @@ function collectPeriodRanks($job, $runID)
             'points' => (int) ($row['zkb']['points'] ?? 0),
         ];
 
+        $locationIds = periodLocationIds($row);
+        $locationSides = [];
         foreach ($row['involved'] as $entity) {
             $isVictim = (bool) ($entity['isVictim'] ?? false);
             foreach ($entity as $type => $id) {
@@ -993,8 +997,11 @@ function collectPeriodRanks($job, $runID)
                 addPeriodStat($stats, $types, $allowed, $seen, $killID, $type, $id, $isVictim, $value, $statLabels);
             }
 
-            foreach (periodLocationIds($row) as $type => $id) {
-                addPeriodStat($stats, $types, $allowed, $seen, $killID, $type, $id, $isVictim, $value, $statLabels);
+            if (!isset($locationSides[(int) $isVictim])) {
+                $locationSides[(int) $isVictim] = true;
+                foreach ($locationIds as $type => $id) {
+                    addPeriodStat($stats, $types, $allowed, $seen, $killID, $type, $id, $isVictim, $value, $statLabels);
+                }
             }
         }
     }

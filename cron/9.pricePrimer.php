@@ -15,41 +15,20 @@ $key = "tq:pricesChecked:$date";
 // We'll wait a few minutes then start pulling
 if ($kvc->get($key) == "true" || date('Hi') < 1115) exit();
 
-$guzzler = new Guzzler(1, 1000000);
-$guzzler->call("$esiServer/markets/groups/", "groupsSuccess", "fail");
+// Universe import supplies market membership from SDE types.
+if ($kvc->get("zkb:universeSdeVersion") == null) exit();
+$guzzler = new Guzzler(1);
+$today = date('Ymd', time());
+$fetchedKey = "tq:pricesFetched:$today";
+$types = $mdb->getCollection('information')->find(['type' => 'typeID', 'published' => true, 'market_group_id' => ['$gt' => 0]], ['projection' => ['id' => 1]]);
+foreach ($types as $type) {
+    $typeID = $type['id'];
+    if ($redis->hget($fetchedKey, $typeID) == true) continue;
+    $guzzler->call("$esiServer/markets/10000002/history/?type_id=$typeID", "typeHistorySuccess", "fail", ['typeID' => $typeID]);
+}
 $guzzler->finish();
 
 $kvc->setex($key, 86400, "true");
-
-function groupsSuccess($guzzler, $params, $content)
-{
-    global $esiServer;
-
-    $groups = json_decode($content, true);
-    foreach ($groups as $groupID) {
-        $guzzler->call("$esiServer/markets/groups/$groupID/", "groupSuccess", "fail", ['groupID' => $groupID]);
-    }  
-}
-
-function groupSuccess($guzzler, $params, $content)
-{
-    global $redis, $esiServer;
-
-    $group = json_decode($content, true);
-    $marketGroupID = $group['market_group_id'];
-    $types = $group['types'];
-
-    $today = date('Ymd', time());
-    $key = "tq:pricesFetched:$today";
-
-    foreach ($types as $typeID) {
-        $typeInfo = Info::getInfo("typeID", $typeID);
-
-        if (@$typeInfo['published'] != true) continue;
-        if ($redis->hget($key, $typeID) == true) continue;
-        $guzzler->call("$esiServer/markets/10000002/history/?type_id=$typeID", "typeHistorySuccess", "fail", ['typeID' => $typeID], []);
-    }
-}
 
 function typeHistorySuccess($guzzler, $params, $content)
 {

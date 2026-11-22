@@ -3,184 +3,100 @@
 require_once '../init.php';
 
 if ($kvc->get("zkb:noapi") == "true") exit();
-if ($redis->get("tqCountInt") < 100 || $redis->get("zkb:420ed") == "true") exit();
+if ($redis->get("zkb:sdeUniverseCheck")) exit();
+$redis->setex("zkb:sdeUniverseCheck", 900, "true");
 
-$serverVersion = $kvc->get("tqServerVersion");
-$loadedVersion = $kvc->get("zkb:tqServerVersion");
-
-// get distinct shipTypeIDs to adjust published on typeIDs
-$distinctTypeIDs = $mdb->getCollection('killmails')->distinct('involved.shipTypeID');
-
-if ($serverVersion != "" && $serverVersion == $loadedVersion && $kvc->get("zkb:universeLoaded") == true) {
-    exit();
-}
-
-Util::out("Prepping to load universe");
-$kvc->del("zkb:universeLoaded");
-$kvc->del("zkb:tqServerVersion");
-$guzzler = new Guzzler(25, 10);
-
-$guzzler->call("$esiServer/universe/regions/", "regionsSuccess", "fail");
-$guzzler->finish();
-$guzzler->call("$esiServer/universe/categories/", "categoriesSuccess", "fail");
-$guzzler->finish();
-
-$kvc->set("zkb:tqServerVersion", $serverVersion);
-$kvc->set("zkb:universeLoaded", "true");
-
-function fail($guzzler, $params, $error) 
-{
-    $uri = $params['uri'];
-    Util::out("Failure! $uri");
-    $guzzler->call($uri, $params['fulfilled'], $params['rejected']);
-    exit();
-}
-
-function categoriesSuccess($guzzler, $params, $content)
-{
-    global $esiServer;
-
-    $cats = json_decode($content, true);
-
-    foreach ($cats as $cat) {
-        $guzzler->call("$esiServer/universe/categories/$cat/", "categorySuccess", "fail");
+try {
+    $manifest = SDE::manifest();
+    $tables = ['categories', 'groups', 'types', 'typeDogma', 'mapRegions', 'mapConstellations', 'mapSolarSystems', 'mapStars'];
+    $versions = [];
+    foreach ($tables as $table) {
+        if (empty($manifest['tables'][$table]['version'])) throw new RuntimeException("Missing SDE table $table");
+        $versions[$table] = $manifest['tables'][$table]['version'];
     }
-}
+    $version = hash('sha256', json_encode($versions));
+    if ($kvc->get("zkb:universeSdeVersion") == $version && $kvc->get("zkb:universeLoaded") == "true") exit();
 
-function categorySuccess($guzzler, $params, $content)
-{
-    global $mdb, $esiServer;
-
-    $cat = json_decode($content, true);
-    $id = $cat['category_id'];
-    $name = $cat['name'];
-    $groups = $cat['groups'];
-    //Util::out("Category $name $id");
-
-    $mdb->insertUpdate("information", ['type' => 'categoryID', 'id' => $id], $cat);
-
-    foreach ($groups as $group) {
-        $guzzler->call("$esiServer/universe/groups/$group/", "groupSuccess", "fail", ['categoryID' => $id]);
+    Util::out("Loading universe from SDE " . $manifest['release']);
+    $categories = [];
+    foreach (SDE::rows($manifest, 'categories') as $row) {
+        $categories[$row['categoryID']] = ['category_id' => $row['categoryID'], 'name' => $row['name']['en'], 'published' => $row['published'], 'groups' => []];
     }
-}
-
-function groupSuccess($guzzler, $params, $content)
-{
-    global $mdb, $esiServer;
-
-    $group = json_decode($content, true);
-    $id = $group['group_id'];
-    $name = $group['name'];
-    //Util::out("Group $name $id");
-
-    $update = $group;
-    $update['categoryID'] = $params['categoryID'];
-    $mdb->insertUpdate("information", ['type' => 'groupID', 'id' => $id], $update);
-
-    foreach ($group['types'] as $type) {
-        $guzzler->call("$esiServer/universe/types/$type/", "typeSuccess", "fail", ['categoryID' => $group['category_id']]);
+    $groups = [];
+    foreach (SDE::rows($manifest, 'groups') as $row) {
+        if (!isset($categories[$row['categoryID']])) throw new RuntimeException('Missing SDE category');
+        $categories[$row['categoryID']]['groups'][] = $row['groupID'];
+        $groups[$row['groupID']] = ['group_id' => $row['groupID'], 'category_id' => $row['categoryID'], 'categoryID' => $row['categoryID'], 'name' => $row['name']['en'], 'published' => $row['published'] ?? false, 'types' => []];
     }
-}
 
-function typeSuccess($guzzler, $params, $content)
-{
-    global $mdb, $distinctTypeIDs;
-
-    $type = json_decode($content, true);
-    $id = $type['type_id'];
-    $name = $type['name'];
-    $groupID = $type['group_id'];
-    $type['groupID'] = $type['group_id'];
-    $type['categoryID'] = $params['categoryID'];
-    $type['portionSize'] = @$params['portion_size'];
-
-	// check the distinctTypeIDs array to see if this typeID has kills
-	$hasKills = array_search($id, $distinctTypeIDs) !== false;
-	if ($id > 0 && $hasKills && $type['published'] == false) {
-		//Util::out("Type {$type['name']} $id - has kills, setting published to true");
-		$type['published'] = true;
-	} //else Util::out("Type $name $id");
-	
-    $mdb->insertUpdate("information", ['type' => 'typeID', 'id' => $id], $type);
-}
-
-function regionsSuccess($guzzler, $params, $content)
-{
-    global $esiServer;
-
-    $regions = json_decode($content, true);
-
-    foreach ($regions as $regionID) {
-        $guzzler->call("$esiServer/universe/regions/$regionID/", "regionSuccess", "fail");
+    // Keep dogma compact in memory; decode only the type being imported.
+    $dogma = [];
+    foreach (SDE::rows($manifest, 'typeDogma') as $row) {
+        $dogma[$row['typeID']] = json_encode($row);
     }
-}
-
-function regionSuccess($guzzler, $params, $content)
-{
-    global $mdb, $esiServer;
-
-    $region = json_decode($content, true);
-    $regionID = (int) $region['region_id'];
-    $name = ($regionID >= 12000000 && $regionID < 13000000) ? Info::getMangledSystemName($regionID, $regionID)  : $region['name'];
-    $constellations = $region['constellations'];
-    //Util::out("Region: $name");
-
-    $mdb->insertUpdate("information", ['type' => 'regionID', 'id' => $regionID], $region);
-
-    foreach ($constellations as $constellation) {
-        $guzzler->call("$esiServer/universe/constellations/$constellation/", "constellationSuccess", "fail");
+    $distinctTypeIDs = array_fill_keys($mdb->getCollection('killmails')->distinct('involved.shipTypeID'), true);
+    foreach (SDE::rows($manifest, 'types') as $row) {
+        $id = $row['typeID'];
+        $groupID = $row['groupID'];
+        if (!isset($groups[$groupID])) throw new RuntimeException("Missing SDE group for type $id");
+        $groups[$groupID]['types'][] = $id;
+        $type = [
+            'type_id' => $id, 'name' => $row['name']['en'], 'description' => $row['description']['en'] ?? '',
+            'group_id' => $groupID, 'groupID' => $groupID, 'categoryID' => $groups[$groupID]['categoryID'],
+            'published' => ($row['published'] ?? false) || ($id > 0 && isset($distinctTypeIDs[$id])),
+            'portionSize' => $row['portionSize'] ?? 1, 'portion_size' => $row['portionSize'] ?? 1,
+            'dogma_attributes' => [], 'dogma_effects' => [],
+        ];
+        foreach (['capacity' => 'capacity', 'mass' => 'mass', 'volume' => 'volume', 'radius' => 'radius', 'packagedVolume' => 'packaged_volume', 'marketGroupID' => 'market_group_id', 'graphicID' => 'graphic_id', 'iconID' => 'icon_id', 'raceID' => 'race_id'] as $source => $field) {
+            $type[$field] = $row[$source] ?? null;
+        }
+        $attributes = isset($dogma[$id]) ? json_decode($dogma[$id], true, 512, JSON_THROW_ON_ERROR) : [];
+        foreach ($attributes['dogmaAttributes'] ?? [] as $attribute) {
+            $type['dogma_attributes'][] = ['attribute_id' => $attribute['attributeID'], 'value' => $attribute['value']];
+        }
+        foreach ($attributes['dogmaEffects'] ?? [] as $effect) {
+            $type['dogma_effects'][] = ['effect_id' => $effect['effectID'], 'is_default' => $effect['isDefault']];
+        }
+        $mdb->insertUpdate("information", ['type' => 'typeID', 'id' => $id], $type);
     }
-}
+    unset($dogma);
+    foreach ($groups as $id => $group) $mdb->insertUpdate("information", ['type' => 'groupID', 'id' => $id], $group);
+    foreach ($categories as $id => $category) $mdb->insertUpdate("information", ['type' => 'categoryID', 'id' => $id], $category);
 
-function constellationSuccess($guzzler, $params, $content)
-{
-    global $mdb, $esiServer;
-
-    $const = json_decode($content, true);
-    $constID = (int) $const['constellation_id'];
-    $name = ($constID >= 22000000 && $constID < 23000000) ? Info::getMangledSystemName($constID, 0) : $const['name'];
-    $regionID = $const['region_id'];
-    $systems = $const['systems'];
-    //Util::out("Constellation: $name");
-
-    $update = $const;
-    $update['regionID'] = $regionID;
-    $mdb->insertUpdate("information", ['type' => 'constellationID', 'id' => $constID], $update);
-
-    foreach ($systems as $system) {
-        $guzzler->call("$esiServer/universe/systems/$system/", "systemSuccess", "fail", ['regionID' => $regionID, 'constellationID' => $constID]);
+    foreach (SDE::rows($manifest, 'mapRegions') as $row) {
+        $id = $row['regionID'];
+        $region = ['region_id' => $id, 'name' => $row['name']['en'], 'constellations' => $row['constellationIDs'], 'description' => $row['description']['en'] ?? ''];
+        $mdb->insertUpdate("information", ['type' => 'regionID', 'id' => $id], $region);
     }
-}
+    foreach (SDE::rows($manifest, 'mapConstellations') as $row) {
+        $id = $row['constellationID'];
+        $constellation = ['constellation_id' => $id, 'name' => $row['name']['en'], 'region_id' => $row['regionID'], 'regionID' => $row['regionID'], 'systems' => $row['solarSystemIDs'], 'position' => $row['position']];
+        $mdb->insertUpdate("information", ['type' => 'constellationID', 'id' => $id], $constellation);
+    }
+    foreach (SDE::rows($manifest, 'mapSolarSystems') as $row) {
+        $id = $row['solarSystemID'];
+        $name = ($id >= 32000000 && $id < 33000000) ? Info::getMangledSystemName($id, 0) : $row['name']['en'];
+        $system = [
+            'system_id' => $id, 'name' => $name, 'position' => $row['position'],
+            'constellation_id' => $row['constellationID'], 'constellationID' => $row['constellationID'], 'regionID' => $row['regionID'],
+            'security_status' => $row['securityStatus'], 'secStatus' => $row['securityStatus'],
+            'security_class' => $row['securityClass'] ?? null, 'secClass' => $row['securityClass'] ?? null,
+            'star_id' => $row['starID'] ?? null, 'stargates' => $row['stargateIDs'],
+        ];
+        $mdb->insertUpdate("information", ['type' => 'solarSystemID', 'id' => $id], $system);
+    }
+    foreach (SDE::rows($manifest, 'mapStars') as $row) {
+        $id = $row['starID'];
+        $star = ['type_id' => $row['typeID'], 'solar_system_id' => $row['solarSystemID'], 'radius' => $row['radius']];
+        foreach (['age' => 'age', 'life' => 'life', 'luminosity' => 'luminosity', 'spectralClass' => 'spectral_class', 'temperature' => 'temperature'] as $source => $field) {
+            $star[$field] = $row['statistics'][$source] ?? null;
+        }
+        $mdb->insertUpdate("information", ['type' => 'starID', 'id' => $id], $star);
+    }
 
-function systemSuccess($guzzler, $params, $content)
-{
-    global $mdb, $esiServer;
-
-    $system = json_decode($content, true);
-    $constID = $system['constellation_id'];
-    $regionID = $params['regionID'];
-    $id = $system['system_id'];
-    $name = ($id >= 32000000 && $id < 33000000) ? Info::getMangledSystemName($id, 0) : $system['name'];
-    //Util::out("System $name $id");
-    
-    $update = array_merge($system, ['name' => $name, 'secClass' => @$system['security_class'], 'secStatus' => $system['security_status'], 'regionID' => $params['regionID'], 'constellationID' => $params['constellationID']]);
-    $mdb->insertUpdate("information", ['type' => 'solarSystemID', 'id' => $id], $update);
-
-    if (isset($system['star_id'])) $guzzler->call("$esiServer/universe/stars/" . $system['star_id'] . "/", "starSuccess", "fail", ['starID' => $system['star_id']]);
-}
-
-function starSuccess($guzzler, $params, $content)
-{
-    global $mdb; 
-
-    $star = json_decode($content, true);
-    $starID = $params['starID'];
-    $id = (int) $params['starID'];
-    if ($id <= 1) return;
-
-    $star['type'] = 'starID';
-    $star['id'] = $id;
-    //Util::out("Star $id");
-
-    $mdb->insertUpdate("information", ['type' => 'starID', 'id' => $id], $star);
+    $kvc->set("zkb:universeSdeVersion", $version);
+    $kvc->set("zkb:universeLoaded", "true");
+} catch (Throwable $ex) {
+    Util::out("SDE universe import failed: " . $ex->getMessage());
+    exit(1);
 }
