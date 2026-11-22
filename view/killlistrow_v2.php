@@ -20,13 +20,13 @@ function handler($request, $response, $args, $container) {
 
     $html = $container->get('view')->getEnvironment()->render('components/kill_list_row_v2.pug', ['killList' => array_values($kills), 'hideDate' => $hideDate]);
     $cacheTime = ($args['cacheType'] ?? '') == '24hour' ? 86400 : 3600;
-    $cacheControl = "public, max-age=$cacheTime, s-maxage=$cacheTime";
+    $cacheControl = "public, max-age=3600, s-maxage=$cacheTime";
     $response->getBody()->write($html);
     return $response
         ->withHeader('Content-Type', 'text/html; charset=utf-8')
         ->withHeader('Cache-Control', $cacheControl)
         ->withHeader('CDN-Cache-Control', $cacheControl)
         ->withHeader('Cloudflare-CDN-Cache-Control', $cacheControl)
-        ->withHeader('Expires', gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT')
+        ->withHeader('Expires', gmdate('D, d M Y H:i:s', time() + 3600) . ' GMT')
         ->withHeader('Cache-Tag', "www,killrow,kill:$killID");
 }

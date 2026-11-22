@@ -88,6 +88,7 @@ function handler($request, $response, $args, $container) {
             $response->getBody()->write(json_encode($array));
         }
     } catch (Exception $ex) {
+        $response = $response->withHeader('Cache-Control', 'no-store');
         $response = $response->withHeader('Content-Type', 'application/json')->withHeader('Cache-Tag', 'www,api,apistats,error');
         $error = ['error' => $ex->getMessage()];
         $response->getBody()->write(json_encode($error));

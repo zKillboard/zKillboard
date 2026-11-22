@@ -33,5 +33,5 @@ function handler($request, $response, $args, $container) {
     if ($publish) $redis->publish("comment:$pageID", json_encode(['action' => 'comment', 'html' => $out]));
 
     $response->getBody()->write($out);
-    return $response->withHeader('Cache-Control', 'max-age:86400')->withHeader('Cache-Tag', "www,comments,$key");
+    return $response->withHeader('Cache-Control', 'no-store')->withHeader('Cloudflare-CDN-Cache-Control', 'public, max-age=28800')->withHeader('Cache-Tag', "www,comments,$key");
 }

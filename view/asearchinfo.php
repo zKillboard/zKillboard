@@ -32,6 +32,7 @@ function handler($request, $response, $args, $container) {
         $response->getBody()->write($output);
         return $response;
     } catch (Exception $ex) {
+        $response = $response->withHeader('Cache-Control', 'no-store');
         Util::zout(print_r($ex, true));
         $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', 'www,asearch,asearchinfo,error');
         $response->getBody()->write('{"error": "Internal error"}');

@@ -122,19 +122,53 @@ $routes = [
 	'/{input:.*}/' => ['GET', 'view/overview.php'],
 ];
 
-// Generate all routes from configuration - single iteration
+// Handler-specific defaults; handlers can set a more specific response policy.
+$cachePolicies = [
+	'view/detail.php' => 'public, max-age=3600, s-maxage=86400',
+	'view/detail_ingamelink.php' => 'public, max-age=3600, s-maxage=86400',
+	'view/information.php' => 'public, max-age=3600, s-maxage=86400',
+	'view/publift.php' => 'public, max-age=28800, s-maxage=604800',
+	'view/challenge.php' => 'no-store',
+	'view/brsave.php' => 'no-store',
+	'view/asearchsave.php' => 'no-store',
+	'view/navbar.php' => 'no-store',
+];
+
 foreach ($routes as $route => [$method, $target]) {
-	if ($method === 'redirect') {
-		// Handle redirects
-		$app->get($route, function ($request, $response, $args) use ($target) {
-			return $response->withStatus(302)->withHeader('Location', $target);
-		});
-	} else {
-		// Handle all other routes - normalize method to array and map
-		$methods = is_array($method) ? $method : [$method];
-		$app->map($methods, $route, function ($request, $response, $args) use ($target, $container) {
+	$methods = $method === 'redirect' ? ['GET'] : (is_array($method) ? $method : [$method]);
+	$app->map($methods, $route, function ($request, $response, $args) use ($method, $target, $route, $container, $cachePolicies) {
+		$hadSession = session_status() === PHP_SESSION_ACTIVE;
+		if ($method === 'redirect') {
+			$response = $response->withStatus(302)->withHeader('Location', $target);
+		} else {
 			require_once $target;
-			return handler($request, $response, $args, $container);
-		});
-	}
+			$response = handler($request, $response, $args, $container);
+		}
+
+		$cacheControl = $cachePolicies[$target] ?? 'public, max-age=3600';
+		if ($hadSession || session_status() === PHP_SESSION_ACTIVE || !in_array($request->getMethod(), ['GET', 'HEAD']) || $response->hasHeader('Set-Cookie') || str_starts_with($request->getUri()->getPath(), '/cache/bypass/') || $cacheControl === 'no-store') {
+			return $response->withHeader('Cache-Control', 'no-store')
+				->withHeader('CDN-Cache-Control', 'no-store')
+				->withHeader('Cloudflare-CDN-Cache-Control', 'no-store')
+				->withHeader('Expires', '0');
+		}
+
+		if ($response->getStatusCode() >= 400 || in_array('error', explode(',', $response->getHeaderLine('Cache-Tag')))) {
+			return $response->withHeader('Cache-Control', 'no-store')
+				->withHeader('CDN-Cache-Control', 'public, max-age=60')
+				->withHeader('Cloudflare-CDN-Cache-Control', 'public, max-age=60')
+				->withHeader('Expires', '0');
+		}
+
+		if (!$response->hasHeader('Cache-Control')) {
+			if (($args['cacheType'] ?? '') === 'tagged') {
+				$cacheControl = 'no-store';
+				$response = $response->withHeader('Cloudflare-CDN-Cache-Control', 'public, max-age=28800');
+			} elseif (($args['cacheType'] ?? '') === '24hour' || $route === '/information/') {
+				$cacheControl = 'public, max-age=3600, s-maxage=86400';
+			}
+			$response = $response->withHeader('Cache-Control', $cacheControl);
+		}
+		return $response;
+	});
 }

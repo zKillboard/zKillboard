@@ -46,7 +46,7 @@ function handler($request, $response, $args, $container) {
     try {
         $mc = RelatedReport::generateReport($system, $time, $options, $battleID, null);
         if (@$mc['complete'] !== true) {
-			return $container->get('view')->render($response->withStatus(202)->withHeader('Cache-Tag', $cacheTag), 'related_wait.pug', ['showAds' => false]);
+			return $container->get('view')->render($response->withHeader('Cache-Control', 'no-store')->withStatus(202)->withHeader('Cache-Tag', $cacheTag), 'related_wait.pug', ['showAds' => false]);
         }
 
 		return $container->get('view')->render($response->withHeader('Cache-Tag', $cacheTag), 'related.pug', $mc);
@@ -59,13 +59,13 @@ function handler($request, $response, $args, $container) {
         $systemID = (int) $system;
         $unixTime = strtotime($time);
         if ($ex->getMessage() === "System is reinforced") {
-            return $container->get('view')->render($response->withStatus(202)->withHeader('Cache-Tag', $cacheTag), 'related_reinforced.pug', ['showAds' => false]);
+            return $container->get('view')->render($response->withHeader('Cache-Control', 'no-store')->withStatus(202)->withHeader('Cache-Tag', $cacheTag . ',error'), 'related_reinforced.pug', ['showAds' => false]);
         } else if (str_contains($ex->getMessage(), "Queue is too busy")) {
-            return $container->get('view')->render($response->withStatus(202)->withHeader('Cache-Tag', $cacheTag), 'related_notnow.pug', ['showAds' => false, 'solarSystemID' => $systemID, 'unixtime' => $unixTime]);
+            return $container->get('view')->render($response->withHeader('Cache-Control', 'no-store')->withStatus(202)->withHeader('Cache-Tag', $cacheTag . ',error'), 'related_notnow.pug', ['showAds' => false, 'solarSystemID' => $systemID, 'unixtime' => $unixTime]);
         } else {
-            return $container->get('view')->render($response->withStatus(202)->withHeader('Cache-Tag', $cacheTag), 'related_wait.pug', ['showAds' => false]);
+            return $container->get('view')->render($response->withHeader('Cache-Control', 'no-store')->withStatus(202)->withHeader('Cache-Tag', $cacheTag . ',error'), 'related_wait.pug', ['showAds' => false]);
         }
     } catch (Exception $ex) {
-        return $container->get('view')->render($response->withHeader('Cache-Tag', $cacheTag), 'related_wait.pug', ['showAds' => false]);
+        return $container->get('view')->render($response->withHeader('Cache-Control', 'no-store')->withHeader('Cache-Tag', $cacheTag . ',error'), 'related_wait.pug', ['showAds' => false]);
     }
 }

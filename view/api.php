@@ -91,6 +91,7 @@ function handler($request, $response, $args, $container) {
             return $response->withHeader('Content-Type', 'application/json; charset=utf-8')->withHeader('Cache-Tag', 'www,api');
         }
     } catch (Exception $ex) {
+        $response = $response->withHeader('Cache-Control', 'no-store');
         $redis->incr("IP:errorCount:$ip");
         $redis->expire("IP:errorCount:$ip", 300);
         $count = $redis->get("IP:errorCount:$ip");
