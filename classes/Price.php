@@ -50,7 +50,7 @@ class Price
 
         // Have we fetched prices for this typeID today?
         $today = date('Ymd', time() - 3601); // Back one hour because of CREST cache
-        $fetchedKey = "RC:tq:pricesFetched:$today";
+        $fetchedKey = "tq:pricesFetched:$today";
         if ($fetch === true) {
             if ($redis->hGet($fetchedKey, $typeID) != true) {
                 static::getCrestPrices($typeID);
