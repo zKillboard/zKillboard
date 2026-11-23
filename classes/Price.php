@@ -366,12 +366,22 @@ class Price
             $key = "zkb:market:" . date('H');
             $market = RedisCache::get($key);
             if ($market == null) {
-                $market = json_decode($sso->doCall("$esiServer/markets/prices/"), true);
+                $raw = "";
+                $guzzler->call("$esiServer/markets/prices/",
+                    function($guzzler, $params, $content) use (&$raw) {
+                        $raw = $content;
+                    },
+                    function($guzzler, $params, $ex) {
+                        Util::out("Market prices fetch failed for " . $params['uri'] . " with http code " . $ex->getCode());
+                    });
+                $guzzler->finish();
+                $market = json_decode($raw, true);
+                if (!is_array($market)) return;
                 RedisCache::set($key, $market, 3600);
             }
             $date = date('Y-m-d');
             foreach ($market as $item) {
-                if (@$item['type']['id'] == $typeID) {
+                if (($item['type_id'] ?? null) == $typeID) {
                     $price = @$item['average_price'];
                     if ($price > 0) $mdb->set('prices', ['typeID' => $typeID], [$date => $price]);
                 }
