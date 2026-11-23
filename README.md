@@ -22,24 +22,6 @@ guidance; it does not enforce compliance or automatically register the MCP in cl
 
 See [Docker.md](Docker.md) for the application and service setup.
 
-The EVEShip.fit engine, bindings, license notices, and verified fitting-data
-assets are included in the repository and Docker images. Each web/static server
-uses its deployed copy; no cron job or shared storage is required for Fit Stats.
-
-The master cron worker checks daily for new public fitting data, validates it,
-and atomically replaces the bundled assets when they change. To update from the
-repository root with Node.js 24 installed:
-
-```bash
-node setup/updateFitData.mjs
-```
-
-The updater checks the latest public `@eveshipfit/sde` release, downloads changed
-data, and runs the fitting tests before replacing the data assets. Pass a release
-argument to select a specific upstream release. Failed downloads or tests retain
-the current assets. The metadata records both its package release and SDE build.
-See [Docker.md](Docker.md#eveshipfit-fit-stats) for setup and source details.
-
 ## Contact
 If you're seeking assistance, please join the [zKillboard Discord](https://discord.gg/sV2kkwg8UD) and ask in the `#zkillboard-com` channel.
 

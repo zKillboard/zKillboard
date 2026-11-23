@@ -959,7 +959,6 @@ function runSpaPageInitializers(pageAssets) {
     if (typeof window.zkbInitScanalyzer === "function" && document.querySelector("#scaninput") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/scanalyzer.js")) window.zkbInitScanalyzer();
     if (typeof window.zkbInitAsearch === "function" && document.querySelector("#asearchcontent") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/asearch.js")) window.zkbInitAsearch();
     if (typeof window.zkbInitFits === "function" && document.querySelector("#fit-ship-form") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/fits.js")) window.zkbInitFits();
-    if (typeof window.zkbInitSimulate === "function" && document.querySelector("#simulate") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/simulate.js")) window.zkbInitSimulate();
     if (typeof window.zkbInitMarket === "function" && document.querySelector("#market") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/market.js")) window.zkbInitMarket();
     if (typeof window.zkbInitSovereigntyMap === "function" && document.querySelector(".sovereignty-map-component") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/sovereignty-map.js")) window.zkbInitSovereigntyMap();
     if (typeof window.resizeMobileFittingWheel === "function") window.resizeMobileFittingWheel();
@@ -1166,7 +1165,6 @@ function openKeyboardShortcuts() {
         list: !!document.querySelector('[data-kill-id], .killListRow[killID]'),
         detail: window.location.pathname.startsWith('/kill/'),
         asearch: !!document.getElementById('asearchcontent'),
-        simulate: !!document.getElementById('simulate'),
         market: !!document.getElementById('market')
     };
     document.querySelectorAll('#keyboardShortcutsModal [data-shortcut-scope]').forEach(function(section) {
@@ -1290,7 +1288,7 @@ function handleKeyboardShortcut(event) {
         keyboardGoPending = false;
         clearTimeout(keyboardGoTimer);
         const profileLink = { c: '#nav-character-link', o: '#nav-corporation-link', l: '#nav-alliance-link' }[key];
-        const destination = profileLink ? document.querySelector(profileLink)?.getAttribute('href') : { h: '/', a: '/asearch/', e: '/market/44992/', f: '/fits/', s: '/simulate/', w: '/wars/', r: '/character/ranks/k/all/alltime/1/', m: '/map/index.html' }[key];
+        const destination = profileLink ? document.querySelector(profileLink)?.getAttribute('href') : { h: '/', a: '/asearch/', e: '/market/44992/', f: '/fits/', s: 'https://eveship.fit/', w: '/wars/', r: '/character/ranks/k/all/alltime/1/', m: '/map/index.html' }[key];
         if (profileLink && (!destination || destination.endsWith('/0/'))) {
             event.preventDefault();
             hideToast(keyboardGoToast);
@@ -1309,7 +1307,7 @@ function handleKeyboardShortcut(event) {
         event.preventDefault();
         hideToast(keyboardGoToast);
         keyboardGoToast = null;
-        if (key === 'm') window.open(destination, '_blank', 'noopener');
+        if (key === 'm' || key === 's') window.open(destination, '_blank', 'noopener');
         else navigateTo(destination);
         return;
     }
@@ -1694,15 +1692,13 @@ function audio(uri)
     audio.play();
 }
 
-function saveFitting(id, fit = null) {
+function saveFitting(id) {
     $('#modalMessageBody').empty().append($(document.createElement('div')).addClass('text-white').text('Saving fit....'));
     showModal('#modalMessage');
 
     var request = $.ajax({
-url: fit ? "/simulate/save/" : "/ccpsavefit/" + id + "/",
-type: fit ? "POST" : "GET",
-contentType: fit ? "application/json" : undefined,
-data: fit ? JSON.stringify(fit) : undefined,
+url: "/ccpsavefit/" + id + "/",
+type: "GET",
 dataType: "text"
 });
 

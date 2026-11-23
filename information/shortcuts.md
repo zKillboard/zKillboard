@@ -32,7 +32,7 @@ Press `g`, then press one of the following keys within four seconds. A toast dis
 | `g`, then `a` | Advanced Search |
 | `g`, then `e` | EVEconomy |
 | `g`, then `f` | Inferred Fits |
-| `g`, then `s` | Fitting Simulator |
+| `g`, then `s` | EVEShip.fit (new tab) |
 | `g`, then `w` | Wars |
 | `g`, then `r` | Top Ranks |
 | `g`, then `m` | Universe map in a new tab |
@@ -95,20 +95,3 @@ Saving a search requires a logged-in character.
 | `↑` / `↓` | Select the previous or next visible search result |
 | `Enter` | Open the selected search result |
 | `Esc` | Clear the market search, or remove focus when it is empty |
-
-## Fitting Simulator
-
-| Shortcut | Action |
-| --- | --- |
-| `Ctrl/Cmd+Z` | Undo |
-| `Ctrl/Cmd+R` | Redo |
-| `Ctrl/Cmd+Shift+Z` | Redo |
-| `Ctrl/Cmd+S` | Save the current fit |
-| `Ctrl/Cmd+E` | Open the EFT import/export dialog |
-| `Ctrl/Cmd+Shift+C` | Copy the current EFT fit |
-| `Alt+N` | Start a new fit using the selected ship |
-| `Alt+1` | Switch to the Ship tab |
-| `Alt+2` | Switch to the Capsule tab |
-| `Alt+F` | Focus equipment or implant search for the active tab |
-
-Undo and redo retain the normal text-editing behavior when a form field has focus. Simulator shortcuts do not run while a modal is open.

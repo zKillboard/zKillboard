@@ -55,22 +55,71 @@ class Fitting
         return trim($eft);
     }
 
-    public static function simulationPayload($fit)
+    public static function eveShipFitURL($shipTypeID, $name, $items, $capsuleID = 0)
     {
-        $ship = (string) (int) $fit['ship_type_id'];
-        if (!empty($fit['name'])) $ship .= ':' . rawurlencode($fit['name']);
-        $payload = [$ship];
-        foreach ($fit['items'] as $item) {
-            $flag = (int) $item['flag'];
-            if ($flag != 87 && $flag != 158 && !($flag >= 11 && $flag <= 34) && !($flag >= 92 && $flag <= 99) && !($flag >= 125 && $flag <= 132) && !($flag >= 164 && $flag <= 171)) continue;
-            $quantity = (int) $item['quantity'];
-            if ($quantity < 1) continue;
-            $value = $flag . ':' . (int) $item['type_id'];
-            if ($quantity != 1) $value .= ':' . $quantity;
-            $payload[] = $value;
+        // esf/1 protobuf fields: https://github.com/EVEShipFit/esf-format/blob/main/esf.proto
+        $varint = function ($value) {
+            $bytes = '';
+            do {
+                $bytes .= chr(($value & 127) | ($value > 127 ? 128 : 0));
+                $value >>= 7;
+            } while ($value);
+            return $bytes;
+        };
+        $field = function ($number, $value) use ($varint) {
+            return is_string($value) ? $varint(($number << 3) | 2) . $varint(strlen($value)) . $value
+                : $varint($number << 3) . $varint($value);
+        };
+        $fit = $field(1, 1) . $field(2, (int) $shipTypeID);
+        if ($name !== '') $fit .= $field(3, $name);
+        if ($capsuleID > 0) {
+            $capsule = Kills::getEsiKill($capsuleID);
+            foreach ($capsule['victim']['items'] ?? [] as $item) {
+                if ((int) $item['flag'] !== 89) continue;
+                $items[] = ['typeID' => (int) $item['item_type_id'], 'flag' => 89, 'quantity_destroyed' => 1];
+            }
         }
-
-        return implode(';', $payload);
+        $racks = [];
+        $stored = [];
+        $implants = [];
+        foreach ($items as $item) {
+            if (!empty($item['inContainer'])) continue;
+            $typeID = (int) $item['typeID'];
+            $quantity = (int) ($item['quantity_dropped'] ?? 0) + (int) ($item['quantity_destroyed'] ?? 0);
+            if ($typeID < 1 || $quantity < 1) continue;
+            $flag = (int) $item['flag'];
+            if (in_array($flag, [88, 89])) {
+                $implants[$typeID] = $field(1, $typeID);
+                continue;
+            }
+            $rack = null;
+            foreach ([[11, 18, 3], [19, 26, 2], [27, 34, 1], [92, 99, 4], [125, 132, 5], [159, 163, 28], [164, 171, 6]] as [$first, $last, $location]) {
+                if ($flag >= $first && $flag <= $last) {
+                    $rack = $location;
+                    $slot = $flag - $first;
+                    break;
+                }
+            }
+            if ($rack !== null) {
+                if ((int) Info::getInfoField('typeID', $typeID, 'categoryID') === 8) {
+                    $racks[$rack][$slot]['charge'] = $field(4, $typeID) . $field(5, $quantity);
+                } else {
+                    $racks[$rack][$slot]['module'] = $field(1, $typeID) . ($rack === 28 ? $field(2, $quantity) : '');
+                }
+            } else {
+                $stored[] = $field(1, $typeID) . ($quantity !== 1 ? $field(2, $quantity) : '') . $field(10, in_array($flag, [87, 158]) ? 8 : 7);
+            }
+        }
+        foreach ([5, 1, 2, 3, 4, 6, 28] as $rack) {
+            $slots = $racks[$rack] ?? [];
+            if (!$slots) continue;
+            for ($slot = 0; $slot <= max(array_keys($slots)); $slot++) {
+                $entry = isset($slots[$slot]['module']) ? $slots[$slot]['module'] . ($slots[$slot]['charge'] ?? '') : $field(10, $rack);
+                $fit .= $field(5, $entry);
+            }
+        }
+        foreach (array_merge($stored, array_values($implants)) as $entry) $fit .= $field(5, $entry);
+        return 'https://eveship.fit/?fit=esf1:' . rtrim(strtr(base64_encode($field(1, $fit)), '+/', '-_'), '=');
     }
 
     public static function DNA($array = array(), $ship)

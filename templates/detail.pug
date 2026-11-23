@@ -78,9 +78,9 @@ block content
                 a.dropdown-item(href=('https://kb.evetools.org/kill/' . ($infoData['killID'] ?? 0)) target="_blank" rel="noopener noreferrer") EVE Tools KB
               li
                 a.dropdown-item(href=('https://socketkill.com/kill/' . ($infoData['killID'] ?? 0) . '/') target="_blank" rel="noopener noreferrer") SocketKill
-        if (!empty($extraData['statsFit']) && ($victimData['groupID'] ?? 0) != 29)
+        if (($victimData['groupID'] ?? 0) != 29)
           li.nav-item
-            a.nav-link(href=('/simulate/#fit=' . rawurlencode(Fitting::simulationPayload($extraData['statsFit'])) . (!empty($victimData['related']['killID']) ? '&capsule=' . (int) $victimData['related']['killID'] : '')) data-spa="off") Simulate
+            a.nav-link(href=$extraData['eveShipFitURL'] target="_blank" rel="noopener noreferrer") Simulate
         li.nav-item.dropdown
           button#killmail-export.nav-link.dropdown-toggle(type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-keyshortcuts="e") Export
           ul.dropdown-menu
@@ -129,12 +129,6 @@ block content
           br.d-lg-none
           .col-lg-5.p-0
             include components/victim_info.pug
-        if (!empty($extraData['statsFit']))
-          .mb-3
-            - $fitKey = 'kill-' . ($infoData['killID'] ?? 0);
-            - $statsFit = $extraData['statsFit'] ?? [];
-            - $hideStatsButton = true;
-            include components/fit_stats.pug
         .row.gx-0
           if (($extraData['items'] ?? null) == 'asyncload')
             #asyncitemlist
@@ -301,7 +295,6 @@ block opengraph
   meta(property="og:image" content=('https://images.evetech.net/types/' . ($victimData['shipTypeID'] ?? 0) . '/icon'))
 
 block script
-  script(defer src=('/js/fit-stats.js?v=' . ($version ?? '')))
   script.
     window.killID = '#{($infoData['killID'] ?? 0)}';
     window.zkbDetailActiveKillID = window.killID;

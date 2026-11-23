@@ -148,18 +148,6 @@ $extra['destroyedpriceWship'] = Util::iskToUsdEurGbp($extra['destroyediskWship']
 $extra['fittedisk'] = isset($killdata['info']['zkb']['fittedValue']) ? $killdata['info']['zkb']['fittedValue'] : fittedIsk(md5($id), $killdata['items']) + $extra['shipprice'];
 $extra['relatedtime'] = date('YmdH00', strtotime($killdata['info']['dttm']));
 $extra['fittingwheel'] = Detail::eftarray($killdata['items']);
-if ((int) Info::getInfoField('groupID', $killdata['victim']['groupID'], 'categoryID') == 6) {
-    $fitName = !empty($killdata['victim']['characterName']) ? $killdata['victim']['characterName'] . "'s " . $killdata['victim']['shipName'] : $killdata['victim']['shipName'];
-    $extra['statsFit'] = ['ship_type_id' => (int) $killdata['victim']['shipTypeID'], 'name' => $fitName, 'items' => []];
-    foreach ($killdata['items'] as $item) {
-        if (!empty($item['inContainer'])) continue;
-        $extra['statsFit']['items'][] = [
-            'type_id' => (int) $item['typeID'],
-            'flag' => (int) $item['flag'],
-            'quantity' => (int) ($item['quantity_dropped'] ?? 0) + (int) ($item['quantity_destroyed'] ?? 0),
-        ];
-    }
-}
 $extra['involvedships'] = involvedships($killdata['involved']);
 $extra['involvedshipscount'] = count($extra['involvedships']);
 $extra['totalprice'] = Util::iskToUsdEurGbp($killdata['info']['zkb']['totalValue']);
@@ -215,6 +203,9 @@ if ($relatedShip == null && !$currentIsCapsule) {
 }
 Info::addInfo($relatedShip);
 $killdata['victim']['related'] = $relatedShip;
+$fitName = !empty($killdata['victim']['characterName']) ? $killdata['victim']['characterName'] . "'s " . $killdata['victim']['shipName'] : $killdata['victim']['shipName'];
+$capsuleID = !$currentIsCapsule && (int) Info::getInfoField('groupID', $killdata['victim']['groupID'], 'categoryID') == 6 ? (int) ($relatedShip['killID'] ?? 0) : 0;
+$extra['eveShipFitURL'] = Fitting::eveShipFitURL($killdata['victim']['shipTypeID'], $fitName, $killdata['items'], $capsuleID);
 
 $extra['isExploit'] = in_array($id, [55403284]);
 

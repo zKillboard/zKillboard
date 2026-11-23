@@ -78,21 +78,15 @@ div(id=($fittingWheelIDPrefix . 'Fitting_Panel') style="position: relative; heig
       include image_ship.pug
   div(id=($fittingWheelIDPrefix . 'badges') style="position: absolute; right: 3px; top: 350px; z-index: 5;")
   if (empty($hideFittingWheelActions))
-    if (!empty($extraData['statsFit']))
-      .position-absolute.bottom-0.end-0.me-3.d-flex.flex-column.align-items-end.gap-2
-        if (($victim['groupID'] ?? 0) != 29)
-          a.btn.btn-sm.btn-primary.text-white(href=('/simulate/#fit=' . rawurlencode(Fitting::simulationPayload($extraData['statsFit'])) . (!empty($victim['related']['killID']) ? '&capsule=' . (int) $victim['related']['killID'] : '')) data-spa="off" title="Simulate this fit" aria-label="Simulate this fit")
-            i.fas.fa-play(aria-hidden="true")
-        button.btn.btn-sm.btn-secondary(type="button" data-zkb-calculate-fit=('kill-' . ($crest['killID'] ?? 0) . '-stats-panel') aria-controls=('kill-' . ($crest['killID'] ?? 0) . '-stats') aria-expanded="false")
-          span Fit Stats
-          i.fas.fa-chevron-down.ms-1(aria-hidden="true")
-    div(id=($fittingWheelIDPrefix . 'eveworkbench') style="position: absolute; left: 0px; top: 340px; z-index: 5;")
+    if (($victim['groupID'] ?? 0) != 29)
+      .position-absolute.bottom-0.end-0.me-3
+        a.btn.btn-sm.btn-primary.text-white(href=$extraData['eveShipFitURL'] target="_blank" rel="noopener noreferrer" title="Simulate in EVEShip.fit (opens in a new window)" aria-label="Simulate this fit in EVEShip.fit (opens in a new window)")
+          span Simulate
+          i.fas.fa-external-link-alt.ms-1(aria-hidden="true")
+    .position-absolute.bottom-0.start-0(id=($fittingWheelIDPrefix . 'eveworkbench') style="z-index: 5;")
       span
         a.green(target="_blank" rel="noopener noreferrer" href=('/kill/' . ($crest['killID'] ?? 0) . '/redirect/esi/')) Verified
         br
-      span
-        a.green(href=('/kill/' . ($crest['killID'] ?? 0) . '/redirect/eveshipfit/') target="_blank" rel="noopener noreferrer") EVEShip.Fit
-      br
       span
         a.green(href=('/kill/' . ($crest['killID'] ?? 0) . '/redirect/eveworkbench/') target="_blank" rel="noopener noreferrer") EVE Workbench
     .favorite-stack.float-end.d-flex.flex-column.align-items-center.gap-1.me-2.text-center(style="width: 1.5em; font-size: 1rem; line-height: 1.25;")
