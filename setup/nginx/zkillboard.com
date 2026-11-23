@@ -1,64 +1,35 @@
-proxy_cache_path /tmp/nginxproxy/ levels=1:2 keys_zone=zkb:10m max_size=10g inactive=62m use_temp_path=off;
-
 server {
 	listen 443 ssl;
-	server_name zkillboard.com:443;
+	server_name zkillboard.com;
 	include snippets/self-signed.conf;
 	include snippets/ssl-params.conf;
 
 	root        /var/www/zkillboard.com/public/;
 
-	location ~\mraid.js$ {
-		deny all;
-		return 404;
-	}
-
-        location = /websocket/ {
-                proxy_pass http://127.0.0.1:15241;
-                proxy_http_version 1.1;
-                proxy_set_header   Upgrade $http_upgrade;
-                proxy_set_header   Connection "upgrade";
-                proxy_set_header Host $host;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        }
-
-	location = / {
-		proxy_cache_valid 200 1m;
-		expires 1m;
-		include "zkb-upstream.conf";
-	}
-
-	location ~ ^/cache/1hour/ {
-		proxy_cache_valid 200 60m;
-		expires 60m;
-		include "zkb-upstream.conf";
-	}
-
-	location ~ ^/comment/kill-.*/-1/up/$ {
-		proxy_cache_valid 200 1s;
-		expires 1s;
-		include "zkb-upstream.conf";
-	}
-
-	location ~ ^/post/ {
-		proxy_cache_valid 200 2m;
-		include "zkb-upstream.conf";
-	}
-
-	location ~ ^/(asearch|asearchinfo|asearchquery|killlistrow|information|api|autocomplete|ztop|google/false|google/true)/ {
-		proxy_cache_valid 200 10m;
-		include "zkb-upstream.conf";
-	}
-
-	location ~ ^/(kill|related|br|kills|character|corporation|alliance|faction|rank|ranks|ship|group|system|location|wars|war|map|bigisk|top|item|search|constellation|region|detail|label)/ {
-		proxy_cache_valid 200 5m;
-		include "zkb-upstream.conf";
+	location = /websocket/ {
+			proxy_pass http://127.0.0.1:15241;
+			proxy_http_version 1.1;
+			proxy_set_header   Upgrade $http_upgrade;
+			proxy_set_header   Connection "upgrade";
+			proxy_set_header Host $host;
+			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 	}
 
 	location / {
-		proxy_pass http://localhost:12345;
-		#include snippets/fastcgi-php.conf;
-		#fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
+		try_files $uri $uri/ /index.php$is_args$args;
+		index index.php;
+	}
+
+	location ~ \.php$ {
+		try_files $uri =404;
+		fastcgi_cache off;
+		fastcgi_pass unix:/var/run/php/php-fpm.sock;
+		fastcgi_index index.php;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		fastcgi_read_timeout 90;
+		fastcgi_buffers 256 4k;
+		fastcgi_temp_path /dev/shm/fastcgi/;
+		include fastcgi_params;
 	}
 
 	set_real_ip_from 103.21.244.0/22;
