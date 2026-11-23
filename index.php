@@ -13,10 +13,14 @@ $path = $queryPosition === false ? $uri : substr($uri, 0, $queryPosition);
 $normalizedPath = preg_replace('#/{2,}#', '/', $path);
 if ($normalizedPath !== $path) {
     $query = $queryPosition === false ? '' : substr($uri, $queryPosition);
+    header("Cache-Control: no-store");
     return header("Location: $normalizedPath$query", true, 301);
 }
 
-if ($uri == "/kill/-1/") return header("Location: /keepstar1.html");
+if ($uri == "/kill/-1/") {
+    header("Cache-Control: no-store");
+    return header("Location: /keepstar1.html");
+}
 
 $first7 = substr($uri, 0, 7);
 if (strpos($uri, "/asearch") === false && strpos($uri, "/cache/") === false)  {
@@ -42,7 +46,12 @@ if (strpos($uri, "/asearch") === false && strpos($uri, "/cache/") === false)  {
             /* Facebook and other media sites like to add tracking to the URL... remove it */
             $s = explode('?', $uri);
             $uri = $s[0];
+            header("Cache-Control: no-store");
             return header("Location: $uri", true, 302);
+        }
+
+        foreach (errorCacheHeaders(session_status() !== PHP_SESSION_ACTIVE && in_array($_SERVER['REQUEST_METHOD'], ['GET', 'HEAD'])) as $name => $value) {
+            header("$name: $value");
         }
 
         if ($isApiRequest) {
@@ -57,8 +66,6 @@ if (strpos($uri, "/asearch") === false && strpos($uri, "/cache/") === false)  {
             header("Link: <$url>; rel=\"canonical\"");
             header("Content-Type: text/html; charset=UTF-8");
             header("Cache-Tag: www,error,404,trailing-slash");
-            header("Cache-Control: public, max-age=86400");
-            header("Expires: " . gmdate("D, d M Y H:i:s", time() + 86400) . " GMT");
             echo "<!DOCTYPE html><html><head><meta http-equiv=\"refresh\" content=\"15;url=$url\"></head><body>Invalid URL!  Put a slash at the end... like this: <a href=\"$url\">$url</a></body></html>";
             return;
         }
@@ -132,7 +139,7 @@ $app->add(function ($request, $handler) {
 });
 
 // Setup error handling for Slim 4
-$errorMiddleware = $app->addErrorMiddleware(true, true, true);
+$errorMiddleware = $app->addErrorMiddleware(false, true, true);
 $errorHandler = $errorMiddleware->getDefaultErrorHandler();
 $errorHandler->forceContentType('text/html');
 
@@ -169,7 +176,20 @@ function contains($needle, $haystack) {
     return (strpos($haystack, 0, strlen($needle)) !== false);
 }
 
+function errorCacheHeaders($cacheable) {
+    $cdnCacheControl = $cacheable ? 'public, max-age=60' : 'no-store';
+    return [
+        'Cache-Control' => 'no-store',
+        'CDN-Cache-Control' => $cdnCacheControl,
+        'Cloudflare-CDN-Cache-Control' => $cdnCacheControl,
+        'Expires' => '0',
+    ];
+}
+
 function html403($reason) {
+    foreach (errorCacheHeaders(false) as $name => $value) {
+        header("$name: $value");
+    }
     header("Cache-Tag: www,error,403");
     header("HTTP/1.1 403 $reason");
     exit();

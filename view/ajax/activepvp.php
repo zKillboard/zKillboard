@@ -9,7 +9,7 @@ function handler($request, $response, $args, $container)
 		$pageUri = $params['u'];
 		$parameters = Util::convertUriToParameters($pageUri);
 	} catch (Exception $e) {
-		return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,activepvp'), 'components/activePvP.pug', []);
+		return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,activepvp,error'), 'components/activePvP.pug', []);
 	}
 
 	$split = explode('/', trim($pageUri, '/'));

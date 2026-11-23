@@ -134,6 +134,23 @@ $cachePolicies = [
 	'view/navbar.php' => 'no-store',
 ];
 
+// Wrap the error middleware so framework errors receive the same cache policy.
+$app->add(function ($request, $handler) use ($routes, $cachePolicies) {
+    $hadSession = session_status() === PHP_SESSION_ACTIVE;
+    $response = $handler->handle($request);
+    if ($response->getStatusCode() >= 400 && !$response->hasHeader('Cloudflare-CDN-Cache-Control')) {
+        $target = $routes[$request->getUri()->getPath()][1] ?? '';
+        $cacheable = ($cachePolicies[$target] ?? '') !== 'no-store' && !$hadSession && session_status() !== PHP_SESSION_ACTIVE
+            && in_array($request->getMethod(), ['GET', 'HEAD'])
+            && !$response->hasHeader('Set-Cookie')
+            && !str_starts_with($request->getUri()->getPath(), '/cache/bypass/');
+        foreach (errorCacheHeaders($cacheable) as $name => $value) {
+            $response = $response->withHeader($name, $value);
+        }
+    }
+    return $response;
+});
+
 foreach ($routes as $route => [$method, $target]) {
 	$methods = $method === 'redirect' ? ['GET'] : (is_array($method) ? $method : [$method]);
 	$app->map($methods, $route, function ($request, $response, $args) use ($method, $target, $route, $container, $cachePolicies) {

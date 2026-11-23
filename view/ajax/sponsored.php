@@ -7,7 +7,7 @@ function handler($request, $response, $args, $container)
 	try {
 		$params = URI::validate($uri, ['u' => true]);
 	} catch (Exception $e) {
-		return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,sponsored'), 'components/big_top_list.pug', []);
+		return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,sponsored,error'), 'components/big_top_list.pug', []);
 	}
 
 	$split = explode('/', trim($params['u'], '/'));

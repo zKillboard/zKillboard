@@ -7,7 +7,7 @@ function handler($request, $response, $args, $container)
 	try {
 		$params = URI::validate($uri, ['u' => true]);
 	} catch (Exception $e) {
-		return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,activity'), 'components/activity_async.pug', []);
+		return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,activity,error'), 'components/activity_async.pug', []);
 	}
 
 	$split = explode('/', trim($params['u'], '/'));

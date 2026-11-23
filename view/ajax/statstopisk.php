@@ -16,7 +16,7 @@ function handler($request, $response, $args, $container) {
         else $params = URI::validate($uri, ['u' => true, 'ks' => !$bypass, 'ke' => !$bypass]);
     } catch (Exception $e) {
         // If validation fails, return empty result
-        return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,statstop,statstopisk'), 'components/top_killer_list.pug', []);
+        return $container->get('view')->render($response->withHeader('Cache-Tag', 'www,statstop,statstopisk,error'), 'components/top_killer_list.pug', []);
     }
 
     $uri = $params['u'];
