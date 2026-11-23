@@ -11,7 +11,7 @@ function handler($request, $response, $args, $container) {
     
     $row = $mdb->findDoc("prices", ['typeID' => (int) $id]);
     unset($row['_id']);
-    $row['currentPrice'] = Price::getItemPrice((int) $id, null);
+    $row['currentPrice'] = (float) Price::getItemPrice((int) $id, null);
     
     $queryParams = $request->getQueryParams();
     
