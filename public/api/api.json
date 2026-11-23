@@ -505,8 +505,8 @@
                     "method": "GET",
                     "path": "/api/prices/{typeID}/",
                     "summary": "Item price history",
-                    "cache": "10-minute server cache",
-                    "description": "Returns the daily price history and current price zKillboard uses when calculating killmail values.",
+                    "cache": "1-hour client cache",
+                    "description": "Returns the daily price history and current price zKillboard uses when calculating killmail values. currentPrice can be a number or a numeric string; 0.01 means zKillboard has no price for the type.",
                     "form": {
                         "base": "https://zkillboard.com/api/prices",
                         "suffix": "/",
@@ -540,14 +540,14 @@
                             "url": "/api/prices/34/"
                         }
                     ],
-                    "response": "{\n  \"2026-08-23\": 3.70,\n  \"2026-08-24\": 3.85,\n  \"currentPrice\": 3.94\n}"
+                    "response": "{\n  \"typeID\": 34,\n  \"2026-08-23\": 3.70,\n  \"2026-08-24\": 3.85,\n  \"currentPrice\": \"3.94\"\n}"
                 },
                 {
                     "method": "GET",
                     "path": "/api/prices/date/{date}/",
                     "summary": "Item prices by date",
-                    "cache": "10-minute server cache",
-                    "description": "Returns all available item prices for one UTC market date from 2003-01-01 through today, keyed by inventory type ID.",
+                    "cache": "8-hour client cache",
+                    "description": "Returns all available item prices for one UTC market date from 2003-01-01 through today, keyed by inventory type ID. A type without a price on that date gets its most recent earlier price; 0.01 means zKillboard has no price for it at all. Today's prices can still change during the day.",
                     "form": {
                         "base": "https://zkillboard.com/api/prices/date",
                         "suffix": "/",
