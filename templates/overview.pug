@@ -20,6 +20,14 @@ block content
       span.navbar-toggler-icon
     #overview-menu.collapse.navbar-collapse.navbar-sub
       ul.navbar-nav.me-auto
+        - $entitySearch = ['buttons' => ['togglefilters', 'week', 'rolling', 'attackers-and', 'either-and', 'victims-and', 'sort-date', 'sort-desc', 'page1', 'allinvolved']];
+        if ($key == 'label')
+          - $entitySearch['buttons'][] = 'label-' . $id;
+        else
+          - $entitySearch[in_array($key, ['system', 'constellation', 'region', 'location']) ? 'location' : 'neutrals'] = [['type' => $key . 'ID', 'id' => (string) $id]];
+        li.nav-item
+          a.nav-link(href=('/asearch/#' . rawurlencode(json_encode($entitySearch, JSON_UNESCAPED_SLASHES))) rel="tooltip" title="Open in Advanced Search" aria-label="Open in Advanced Search")
+            i.fas.fa-search.text-white(aria-hidden="true")
         if (!empty($prevID))
           li.nav-item.d-none.d-md-block
             a.nav-link(href=('/' . ($key ?? '') . '/' . $prevID . '/')) &lt;
