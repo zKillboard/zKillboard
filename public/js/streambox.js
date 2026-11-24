@@ -27,11 +27,11 @@ async function prepKills(data) {
     const unixtime = Math.floor(Date.now() / 1000); // This is always UTC
     const afterEpoch = unixtime - (3600 * 8); // show kills 8 hours old or less
     const maxKills = Math.min(25, Math.max(1, parseInt(getComputedStyle(document.documentElement).getPropertyValue('--max-kills'), 10) || 5));
+    const temp = document.getElementById('temp');
 
     try {
         const content = document.getElementById('contenttemp');
         content.innerHTML = '';
-        const temp = document.getElementById('temp');
 
         for (let i = 0; i < data.length && i < maxKills; i++) {
             const killID = data[i];

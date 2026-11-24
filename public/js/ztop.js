@@ -1,5 +1,3 @@
-window.zkbZtopLoadTimeout = setTimeout(load_ztop, 1000);
-
 function load_ztop() {
     if (window.location.pathname != '/ztop/') return;
     if (!pubsub) {
@@ -17,7 +15,6 @@ const ztopState = {
     esiBucketSeries: {},
     serverSeries: {}
 };
-window.ztopState = ztopState;
 
 function toNumber(value) {
     if (value === null || value === undefined) return null;
@@ -479,7 +476,10 @@ window.ztopUpdate = function(payload) {
     ztopState.lastUpdateAt = Date.now();
 };
 
-if (!window.zkbZtopConnectionInterval) {
+function zkbInitZtop() {
+    if (window.zkbZtopConnectionInterval) return;
+    window.ztopState = ztopState;
+    window.zkbZtopLoadTimeout = setTimeout(load_ztop, 1000);
     window.zkbZtopConnectionInterval = setInterval(() => {
         const connection = document.getElementById('ztop-connection');
         if (!connection || !window.ztopState || !window.ztopState.lastUpdateAt) return;
@@ -490,12 +490,14 @@ if (!window.zkbZtopConnectionInterval) {
             connection.classList.add('is-offline');
         }
     }, 3000);
+    window.zkbPageCleanup = function () {
+        clearTimeout(window.zkbZtopLoadTimeout);
+        clearInterval(window.zkbZtopConnectionInterval);
+        window.zkbZtopLoadTimeout = undefined;
+        window.zkbZtopConnectionInterval = undefined;
+        window.ztopState = undefined;
+    };
 }
 
-window.zkbPageCleanup = function () {
-    clearTimeout(window.zkbZtopLoadTimeout);
-    clearInterval(window.zkbZtopConnectionInterval);
-    window.zkbZtopLoadTimeout = undefined;
-    window.zkbZtopConnectionInterval = undefined;
-    window.ztopState = undefined;
-};
+window.zkbInitZtop = zkbInitZtop;
+zkbInitZtop();

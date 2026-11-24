@@ -959,6 +959,7 @@ function runSpaPageInitializers(pageAssets) {
     if (typeof window.zkbInitScanalyzer === "function" && document.querySelector("#scaninput") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/scanalyzer.js")) window.zkbInitScanalyzer();
     if (typeof window.zkbInitAsearch === "function" && document.querySelector("#asearchcontent") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/asearch.js")) window.zkbInitAsearch();
     if (typeof window.zkbInitFits === "function" && document.querySelector("#fit-ship-form") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/fits.js")) window.zkbInitFits();
+    if (typeof window.zkbInitZtop === "function" && document.querySelector("#ztop-connection") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/ztop.js")) window.zkbInitZtop();
     if (typeof window.zkbInitMarket === "function" && document.querySelector("#market") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/market.js")) window.zkbInitMarket();
     if (typeof window.zkbInitSovereigntyMap === "function" && document.querySelector(".sovereignty-map-component") && hasSpaPageScript(reusedScripts, loadedScripts, "/js/sovereignty-map.js")) window.zkbInitSovereigntyMap();
     if (typeof window.resizeMobileFittingWheel === "function") window.resizeMobileFittingWheel();
