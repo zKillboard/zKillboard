@@ -17,6 +17,19 @@ function zkbInitOverview() {
 	loadActivePvp(overviewLoadToken, window.location.pathname);
 	loadActivity(overviewLoadToken, window.location.pathname);
 	loadCharacterEsiInformation(overviewLoadToken, window.location.pathname, entityID);
+
+	// the previous page's filter menu is left behind on SPA navigation
+	$('ul.autocomplete:not(.nav-search-autocomplete)').remove();
+	$('#overview-filter').zz_search(function(data, event) {
+		if (event) event.preventDefault();
+		if (!data) return;
+		const path = window.location.pathname.replace(/page\/\d+\/$/, '').replace(new RegExp('/' + data.type + '/\\d+/'), '/');
+		navigateTo(path + data.type + '/' + data.id + '/');
+	}, function(search, success) {
+		$.getJSON('/autocomplete/' + encodeURIComponent(search) + '/', function(result) {
+			success(result.filter(row => row.type != 'item' && row.type != window.location.pathname.split('/')[1]));
+		});
+	});
 }
 
 window.zkbInitOverview = zkbInitOverview;

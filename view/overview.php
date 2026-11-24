@@ -109,6 +109,12 @@ function handler($request, $response, $args, $container)
 	}
 	unset($parameters['streambox']);
 
+	$filters = [];
+	foreach ($map as $filterKey => $filterMap) {
+		$filterID = $parameters[$filterMap['column'] . 'ID'][0] ?? 0;
+		if ($filterKey != $key && $filterID > 0) $filters[] = ['url' => "$filterKey/$filterID/", 'name' => Info::getInfoField($filterMap['column'] . 'ID', $filterID, 'name'), 'image' => sprintf(zkbSearch::$imageMap[$filterKey == 'ship' ? 'typeID' : $filterMap['column'] . 'ID'], $filterID, 32, '_32')];
+	}
+
 	$information = $mdb->findDoc('information', ['type' => "${key}ID", 'id' => (int) $id, 'cacheTime' => 3600]);
 	$disqualified = ((int) @$information['disqualified']);
 	$dqChars = [];
@@ -930,7 +936,7 @@ function handler($request, $response, $args, $container)
 		$detail['systems'] = $mdb->find('information', ['type' => 'solarSystemID', 'constellationID' => (int) $id], ['name' => 1], null, ['id' => 1, 'name' => 1]);
 	}
 
-	$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'hasSovereignty' => $hasSovereignty, 'sovereigntySystems' => $sovereigntySystems, 'sovereigntyMapData' => $sovereigntyMapData, 'sovereigntyAvailable' => $sovereigntyAvailable, 'sovereigntyUpdatedAt' => $sovereigntyUpdatedAt, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'tobeStatsCount' => $tobeStatsCount, 'nextTopRecalc' => $nextTopRecalc, 'showDailyStats' => $showDailyStats, 'dailyStats' => $dailyStats, 'dailyDays' => $dailyDays, 'dailyDate' => $dailyDate, 'dailySide' => $dailySide, 'dailySelectedDays' => $dailySelectedDays, 'dailySelectedStart' => $dailySelectedStart, 'dailySelectedEnd' => $dailySelectedEnd, 'dailyGraphStart' => $dailyGraphStart, 'dailyGraphEnd' => $dailyGraphEnd, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified, 'dqChars' => $dqChars);
+	$renderParams = array('pageName' => $pageName, 'kills' => $kills, 'losses' => $losses, 'detail' => $detail, 'page' => $page, 'topKills' => $topKills, 'mixed' => $mixedKills, 'key' => $key, 'id' => $id, 'pageType' => $pageType, 'solo' => $solo, 'topLists' => $topLists, 'corps' => $corpList, 'corpStats' => $corpStats, 'hasSovereignty' => $hasSovereignty, 'sovereigntySystems' => $sovereigntySystems, 'sovereigntyMapData' => $sovereigntyMapData, 'sovereigntyAvailable' => $sovereigntyAvailable, 'sovereigntyUpdatedAt' => $sovereigntyUpdatedAt, 'summaryTable' => $stats, 'pager' => $hasPager, 'datepicker' => true, 'nextApiCheck' => $nextApiCheck, 'apiVerified' => false, 'apiCorpVerified' => false, 'prevID' => $prevID, 'nextID' => $nextID, 'extra' => $extra, 'statistics' => $statistics, 'tobeStatsCount' => $tobeStatsCount, 'nextTopRecalc' => $nextTopRecalc, 'showDailyStats' => $showDailyStats, 'dailyStats' => $dailyStats, 'dailyDays' => $dailyDays, 'dailyDate' => $dailyDate, 'dailySide' => $dailySide, 'dailySelectedDays' => $dailySelectedDays, 'dailySelectedStart' => $dailySelectedStart, 'dailySelectedEnd' => $dailySelectedEnd, 'dailyGraphStart' => $dailyGraphStart, 'dailyGraphEnd' => $dailyGraphEnd, 'entityID' => $id, 'entityType' => $key, 'gold' => $gold, 'disqualified' => $disqualified, 'dqChars' => $dqChars, 'filters' => $filters);
 
 	$overviewResponse = $response->withHeader('Cache-Tag', "www,overview,overview:$id" . ($pageType == 'daily' ? ',daily-v2' : '') . ($key == 'character' && $pageType == 'trophies' ? ",trophy,trophy:$id" : '') . (in_array($key, ['alliance', 'system']) ? ',sovereignty' : ''));
 	if ($pageType == 'daily') {
