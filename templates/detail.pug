@@ -328,11 +328,9 @@ block script
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-      window.zkbInitFitStats();
       resizeMobileFittingWheel();
       window.addEventListener('resize', resizeMobileFittingWheel, { passive: true });
       window.zkbPageCleanup = function () {
-        window.zkbCleanupFitStats();
         window.removeEventListener('resize', resizeMobileFittingWheel);
         window.zkbDetailActiveKillID = undefined;
       };
