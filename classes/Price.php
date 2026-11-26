@@ -201,6 +201,12 @@ class Price
                 return 800_000_000_000; // 800b
             case 85229: // Cobra
                 return 250_000_000_000; // 250b
+            case 97793: // Herald
+                // https://forums.eveonline.com/t/522535/1 (asking-price estimate)
+                return 250_000_000_000; // 250b
+            case 97904: // Penitence
+                // https://forums.eveonline.com/t/522535/1 (asking-price estimate)
+                return 500_000_000_000; // 500b
             case 47512: // 'Moreau' Fortizar
             case 45647: // Caiman
                 return 60_000_000_000; // 60b 
