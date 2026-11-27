@@ -10,6 +10,14 @@ class MongoSessionHandler implements SessionHandlerInterface {
     public function open($savePath, $sessionName) { return true; }
     public function close() { return true; }
 
+    public function create_sid(): string {
+        return bin2hex(random_bytes(32));
+    }
+
+    public function validateId($id): bool {
+        return $this->collection->findOne(['_id' => $id], ['projection' => ['_id' => 1]]) !== null;
+    }
+
     public function read($id) {
         $doc = $this->collection->findOne(['_id' => $id]);
         return $doc['data'] ?? '';
