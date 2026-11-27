@@ -8,6 +8,9 @@ class MongoFilter
     {
         global $mdb;
 
+        $maxTimeMS = $parameters['maxTimeMS'] ?? -1;
+        unset($parameters['maxTimeMS']);
+
         $limit = max(1, min(200, isset($parameters['limit']) ? (int) $parameters['limit']  : 50));
         $sortDirection = isset($parameters['orderDirection']) ? ($parameters['orderDirection'] == 'asc' ? 1 : -1)  : -1;
         $sortKey = isset($parameters['orderBy']) ? $parameters['orderBy'] : 'killID';
@@ -46,6 +49,7 @@ class MongoFilter
 
         // Cap server-side query time for web requests (matches Stats.php/Mdb.php pattern)
         if (php_sapi_name() !== 'cli') $options['maxTimeMS'] = 30000;
+        if ($maxTimeMS > 0) $options['maxTimeMS'] = min($options['maxTimeMS'] ?? $maxTimeMS, $maxTimeMS);
 
         // Start the query
         $killmails = $mdb->getCollection($collection);

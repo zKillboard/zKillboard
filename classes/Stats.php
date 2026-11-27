@@ -140,6 +140,7 @@ class Stats
 
         $options = ['batchSize' => 1000, 'allowDiskUse' => true, 'noCursorTimeout' => true];
         if (php_sapi_name() !== 'cli') $options['maxTimeMS'] = 35000; // web requests should not run longer than 35 seconds
+        if ($maxTimeMS > 0) $options['maxTimeMS'] = min($options['maxTimeMS'] ?? $maxTimeMS, $maxTimeMS);
 
         $rr = $killmails->aggregate($pipeline, $options);
         $result = iterator_to_array($rr);

@@ -11,12 +11,13 @@ if ($redis->get("zkb:reinforced") == true) exit();
 $queueStatsSet = new MongoQueue($mdb, 'queueStatsSet');
 if ($queueStatsSet->count() > 1000) exit();
 
-$minute = date("Hi");
-while ($minute == date("Hi")) {
+$deadline = time() + 60;
+while (time() < $deadline) {
     $direction = $mt === 0 ? -1 : 1;
     $rows = $mdb->find("statistics", ['calcAlltime' => true, 'reset' => ['$ne' => true]], ['shipsDestroyed' => $direction], 25);
     if (sizeof($rows) == 0) exit();
     foreach ($rows as $row) {
+        if (time() >= $deadline) break;
         if ($row['id'] == 0) {
             $mdb->set("statistics", $row, ['calcAlltime' => false]);
             continue;
@@ -51,6 +52,10 @@ while ($minute == date("Hi")) {
             //$now = time();
             calcTop($row);
             //Util::out("calcTop $i -> " . (time() - $now) . " seconds");
+        } catch (MongoDB\Driver\Exception\ExecutionTimeoutException $ex) {
+            $mdb->set('statistics', ['_id' => $row['_id']], ['calcAlltime' => true]);
+            Util::out("Top alltime timed out: $i");
+            break;
         } finally {
             if ($proceed) $redis->del($instanceKey);
             if ($set) $redis->del($cacheKey);
@@ -81,6 +86,7 @@ function calcTop($row)
     $parameters = [$row['type'] => $row['id']];
     $parameters['limit'] = 100;
     $parameters['kills'] = true;
+    $parameters['maxTimeMS'] = 3 * 60 * 60 * 1000; // Allow long alltime queries, but not unlimited execution.
     if ($row['type'] == 'label') $parameters['labels'] = $row['id'];
     else $parameters['labels'] = 'pvp';
 
