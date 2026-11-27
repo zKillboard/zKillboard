@@ -2,6 +2,30 @@
 
 Requires Linux, Docker 20.10+, and ports 80, 9000, 15241, 27017, and 6379 available. Run from the repository root with Docker permissions (use `sudo` if needed).
 
+The web and cron images use PHP 8.4 on Debian Bookworm, MongoDB extension 2.5.9, and the MongoDB 2.5 Composer library.
+
+## PHP and MongoDB upgrade checks
+
+Build both application images, then run isolated checks without starting web servers, cron jobs, or database connections:
+
+```bash
+./scripts/build-docker-containers.sh zkill-www
+./scripts/build-docker-containers.sh zkill-cron
+
+for image in zkill-www zkill-cron; do
+    docker run --rm --network none --entrypoint sh "$image" -ec '
+        php -v
+        composer check-platform-reqs --no-dev
+        php tests/pug_smoke.php
+        php tests/fitting_export.php
+    '
+done
+
+docker run --rm --network none --entrypoint php-fpm zkill-www -t
+```
+
+These checks do not replace testing application routes and login behavior against the existing local environment. The normal start command below initializes indexes and enables cron; it is not an isolated test command.
+
 ## Local development setup
 
 ```bash

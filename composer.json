@@ -11,7 +11,7 @@
 		"ircmaxell/random-lib": "^1.1",
 		"guzzlehttp/promises": "^3.0",
 		"guzzlehttp/guzzle": "^8.0",
-		"mongodb/mongodb": "^1.21.5",
+		"mongodb/mongodb": "^2.5",
 		"patreon/patreon": "1.0.0",
 		"php-di/php-di": "^7.1",
 		"nyholm/psr7": "^1.3",

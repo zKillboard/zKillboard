@@ -1,7 +1,7 @@
 # Multi-stage build for zKillboard
 
 # Stage 1: PHP-FPM Application
-FROM php:8.2-fpm
+FROM php:8.4-fpm-bookworm
 
 STOPSIGNAL SIGQUIT
 
@@ -29,26 +29,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libsqlite3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions to mirror the local environment.
+# Compile extensions not already supplied by the official PHP image.
 RUN docker-php-ext-install -j$(nproc) \
     calendar \
-    curl \
-    dom \
     exif \
     ffi \
     ftp \
     gettext \
     intl \
-    xml \
-    mbstring \
     mysqli \
-    opcache \
     pcntl \
     pdo_mysql \
     shmop \
-    simplexml \
     sockets \
-    sodium \
     sysvmsg \
     sysvsem \
     sysvshm \
@@ -59,7 +52,7 @@ RUN docker-php-ext-install -j$(nproc) \
 # Install PECL extensions required by composer dependencies.
 # Updating the PECL channel avoids stale index failures (e.g. "No releases available").
 RUN pecl channel-update pecl.php.net \
-    && pecl install igbinary mongodb-1.21.5 redis \
+    && pecl install igbinary mongodb-2.5.9 redis \
     && docker-php-ext-enable igbinary mongodb redis
 
 # Install Composer
