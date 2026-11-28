@@ -58,6 +58,7 @@ foreach ($mongoBackedQueues as $queue) {
 }
 
 $lastKillCountSent = null;
+$previousCpu = null;
 $hour = date('H');
 while ($hour == date('H')) {
 	$curSecond = (int) date('s');
@@ -249,7 +250,7 @@ addInfo('', 0);
 	addinfo("420'ed", max(0, $redis->ttl("zkb:420ed")));
 	addinfo("420 Prone", (int) ($redis->get("zkb:420prone") == "true"));
 
-	$info = $redis->info();
+	$info = $hostRedis->info('memory');
 	$mem = $info['used_memory_human'];
 
 	$stats = $mdb->getDb()->command(['dbstats' => 1])->toArray()[0];
@@ -260,7 +261,13 @@ addInfo('', 0);
 	$memTotal = number_format((int) $memory['MemTotal'] / (1024 * 1024), 2);
 	$memUsed = number_format(((int) $memory['MemTotal'] - (int) $memory['MemFree'] - (int) $memory['Cached']) / (1024 * 1024), 2);
 
-	$cpu = exec("top -d 0.5 -b -n2 | grep \"Cpu(s)\"| tail -n 1 | awk '{print $2 + $4}'");
+	$cpuTimes = array_map('intval', array_slice(preg_split('/\s+/', trim(strtok(file_get_contents('/proc/stat'), "\n"))), 1, 8));
+	$cpuTotal = array_sum($cpuTimes);
+	$cpuActive = $cpuTimes[0] + $cpuTimes[2];
+	$cpu = $previousCpu !== null && $cpuTotal > $previousCpu['total']
+		? 100 * ($cpuActive - $previousCpu['active']) / ($cpuTotal - $previousCpu['total'])
+		: null;
+	$previousCpu = ['total' => $cpuTotal, 'active' => $cpuActive];
 	$cpu = str_pad(is_numeric($cpu) ? number_format((float) $cpu, 1, '.', '') : 'N/A', 5, " ", STR_PAD_LEFT);
 	$load = str_pad(Util::getLoad(), 5, " ", STR_PAD_LEFT);
 	$memUsed = str_pad($memUsed, 5, " ", STR_PAD_LEFT);
