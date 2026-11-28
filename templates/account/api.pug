@@ -1,5 +1,5 @@
 .row
-  span.col-lg-6
+  .col-lg-6
     - $killmailDelay = (int) ($data['killmailDelay'] ?? 0);
     h3 Killmail Delay
     form.mb-4(name="killmaildelay" method="post" action="/account/api/")
@@ -52,10 +52,15 @@
               form(name="deleteapi" method="post" action="/account/api/" data-zkb-confirm="Are you sure you want to remove this API key?")
                 input#deletekeyid(name="deletekeyid" type="hidden" value=($row['scope'] ?? ''))
                 input.btn.btn-danger.btn-sm(type="submit" value="Remove")
-.row
-  span.col-lg-6
     | Manage SSO API Keys here:
     br
     a(target="_blank" rel="noopener noreferrer" href="https://developers.eveonline.com/authorized-apps") https://developers.eveonline.com/authorized-apps
     br
-  .clearfix
+  .col-lg-6.mt-4.mt-lg-0.ps-lg-5
+    .border-start.border-info.ps-3.py-2
+      h3.h5.mb-2 Looking for the zKillboard API?
+      p.mb-3.text-muted Build apps and tools with zKillboard's killmail data.
+      a.d-inline-flex.align-items-center.gap-2.fw-semibold(href="/api/docs/")
+        | Explore the API documentation
+        i.fas.fa-arrow-right.small(aria-hidden="true")
+      p.small.text-muted.mt-3.mb-0 This page is for your EVE Online permissions and killmail delay settings.
