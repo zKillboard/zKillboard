@@ -38,6 +38,11 @@
 /* Normalize Bootstrap 5 typography closer to historical site baseline (BS3-era). */
 :root {
 	font-size: 14px;
+	/* At least 8:1 contrast on dark surfaces through #282828. */
+	--bs-body-color: #c0c0c0;
+	--bs-body-color-rgb: 192, 192, 192;
+	--bs-secondary-color: #c0c0c0;
+	--bs-secondary-color-rgb: 192, 192, 192;
 	--zk-color-green: #008000;
 	--zk-color-red: #ff0000;
 	--zk-loss-background: #2F0202;
@@ -45,7 +50,7 @@
 
 body {
 	font-family: "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-	color: #888;
+	color: var(--bs-body-color);
 	font-size: 1rem;
 	line-height: 1.42857143;
 }
@@ -88,6 +93,10 @@ h6, .h6 {
 	line-height: 1.1;
 }
 
+.navbar {
+	--bs-navbar-color: var(--bs-body-color);
+}
+
 #navibar .navbar {
 	--bs-navbar-padding-y: 0;
 	--bs-navbar-nav-link-padding-x: 15px;
@@ -124,7 +133,7 @@ h6, .h6 {
 
 #navibar .navbar-nav .btn.nav-link {
 	padding: 15px;
-	color: #888;
+	color: var(--bs-body-color);
 	line-height: 20px;
 	background: transparent;
 	border: 0;
@@ -159,7 +168,7 @@ h6, .h6 {
 
 #navibar .navbar-nav .btn.nav-link:hover,
 #navibar .navbar-nav .btn.nav-link:focus {
-	color: #888;
+	color: var(--bs-body-color);
 }
 
 #navibar .dropdown-menu .dropdown-item {
@@ -810,8 +819,8 @@ tr.heading {
 }
 
 .nav .caret, .nav a:hover .caret {
-	border-top-color: #888;
-	border-bottom-color: #888;
+	border-top-color: var(--bs-body-color);
+	border-bottom-color: var(--bs-body-color);
 }
 
 input.datepicker {
@@ -871,7 +880,7 @@ pre {
 }*/
 
 .table {
-	--bs-table-color: #ababab;
-	--bs-table-striped-color: #ababab;
-	color: #ababab;
+	--bs-table-color: var(--bs-body-color);
+	--bs-table-striped-color: var(--bs-body-color);
+	color: var(--bs-body-color);
 }
