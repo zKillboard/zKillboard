@@ -30,7 +30,6 @@ while ($minute == date("Hi")) {
 
 	foreach ($r['members'] as $member) {
 		$server = (split(':', $member['name']))[0];
-		$servers[] = $server;
 		$state = $member['state'];
 		if ($state == 1) $masterHostname = $server;
 		if ($state == 1 && $server == $hostname) $isMaster = true;
@@ -61,40 +60,5 @@ while ($minute == date("Hi")) {
 		}
 	}
 
-	// only adjust redis master if we're the server with mongodb primary
-	if ($hostname == $masterHostname) {
-		foreach ($servers as $server) {
-			// connect to each redis server and ensure it is master/slave appropriately
-			try {
-				$redisClient = new Redis();
-				$redisClient->connect($server, 6379, 1.0);
-				$nRole = $server == $masterHostname ? "master" : "slave";
-				ensureRole($redisClient, $server, $masterHostname, $nRole);
-				continue;
-			} catch (Exception $ex) {
-				// server having issues apparently, ignore it and move on
-			}
-		}
-	}
 	sleep(15);
-}
-
-
-function getRole($redisClient)
-{
-	$info = $redisClient->rawCommand('info', 'replication');
-	$lines = explode("\n", $info);
-	foreach ($lines as $line) {
-		if (stripos($line, 'role:') === 0) {
-			$role = trim(substr($line, 5));
-			return $role;
-		}
-	}
-}
-
-function ensureRole($redisClient, $server, $mServer, $nRole)
-{
-	$role = getRole($redisClient);
-	if ($nRole == "master") $redisClient->rawCommand('replicaof', 'no', 'one');
-	else $redisClient->rawCommand('replicaof', $mServer, 6379);
 }
